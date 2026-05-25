@@ -109,21 +109,22 @@ On an existing page the author writes `{% expand "PROJ-123" /%}` (inline snapsho
       "contentDir": "./content",
       "entityRoutes": [
         {
-          "match": { "type": "spec" },
+          "type": "spec",
           "url": "/specs/{id}/",
           "title": "{title}",
           "render": "{% expand $entity.id canonical=true /%}"
         },
         {
-          "match": { "type": "work" },
+          "type": "work",
+          "filter": "status:ready status:in-progress",
           "url": "/work/{id}/",
           "title": "{id} — {title}",
           "render": "{% expand $entity.id /%}"
         },
         {
-          "match": { "type": "decision" },
+          "type": "decision",
           "url": "/decisions/{id}/",
-          "render": "{% expand $entity.id canonical=true /%}",
+          "render-template": "templates:decision-page.md",
           "frontmatter": { "category": "decision-log" }
         }
       ]
@@ -132,7 +133,9 @@ On an existing page the author writes `{% expand "PROJ-123" /%}` (inline snapsho
 }
 ```
 
-For each registered entity matching a rule's `match` clause, the content loader synthesizes a virtual page at the templated URL, with frontmatter from the rule's `frontmatter` field (merged with reasonable defaults derived from the entity), title from the templated `title`, and content from the templated `render` string. Substitution placeholders (`{id}`, `{title}`, etc.) draw from the entity's `data` payload plus the resolved `id` and `type`.
+For each registered entity matching a rule's `type` + optional `filter` (see *Selecting entities*), the content loader synthesizes a virtual page at the templated URL, with frontmatter from the rule's `frontmatter` field (merged with reasonable defaults derived from the entity), title from the templated `title`, and content from either an inline `render` string or a `render-template` partial. Substitution placeholders (`{id}`, `{title}`, etc.) draw from the entity's `data` payload plus the resolved `id` and `type`.
+
+**Inline `render` vs `render-template` partial.** `render` is a markdoc string — fine for a one-liner like `{% expand $entity.id /%}`. But anything richer (a hero + embed + related-items section) becomes multi-line markdoc crammed into a JSON string with escapes — miserable to author and review. For those, point `render-template` at a markdoc partial (resolved via the existing partial + file-roots machinery), authored as a real `.md` file with syntax highlighting and formatting, reusable across rules and sites. `render` and `render-template` are mutually exclusive (both set → build error). This is the same inline-vs-partial split SPEC-070's collection uses for its per-item template; the two specs share the "a template, transformed per entity with a bound variable" mechanism (`$entity` here, `$item` there).
 
 ### Page axis, programmatic — `Plugin.contributePages`
 
@@ -230,7 +233,7 @@ Downstream consumers (sitemap, search index, route enumeration, layout cascade) 
 
 ```json
 {
-  "match": { "type": "character" },
+  "type": "character",
   "url": "/cast/{id}/",
   "title": "{name}",
   "render": "{% expand $entity.id canonical=true /%}",
@@ -245,24 +248,22 @@ URL substitution is per-segment-encoded (same as xref). Title and content substi
 
 Missing fields render as empty strings, matching xref pattern behavior. A rule that depends on a field the entity doesn't have will produce an empty value at that placeholder; the build emits a warning but doesn't fail.
 
-### Match clauses
+### Selecting entities — `type` + `filter`
 
-The `match` object filters which entities the rule applies to. Minimum supported keys:
+Which entities a rule applies to is expressed exactly as collection (SPEC-070) expresses it — *the same grammar and the same parser*, so there's one way to "select registry entities" across the whole system:
 
-| Key | Meaning |
-|-----|---------|
-| `type` | Exact entity-type match (`"spec"`, `"work"`, `"character"`). Required for the v1 surface — every rule must match by type. |
-| `tag` | Entity must have this tag (entity data carries `tags?: string[]` by convention). |
-| `status` | Entity's `data.status` equals this value. |
-| `where` | (future, deferred) — arbitrary predicate function. Out of scope for v1. |
+- **`type`** (required) — the entity type(s) the rule matches. Comma-separated for multiple: `"type": "spec,decision"`.
+- **`filter`** (optional) — additional field conditions as a `field:value` string. Exact (`status:ready`), prefix/glob (`url:/blog/*`), regex (future). Same-field clauses OR; different fields AND. Matches any field including `url`. Example: `"filter": "status:ready priority:high priority:critical"`.
 
-Multiple keys combine with AND. Multiple rules can match the same entity — each produces a separate page (different URLs presumably; the loader errors on URL collisions).
+This replaces the earlier structured `match: { type, tag, status }` object. The string `filter` form is what makes the grammar shareable between a JSON config field (here) and a markdoc attribute (collection's `filter=`) — a structured object can't be a markdoc attribute, but a string works in both. It also matches the xref-patterns precedent (string matching in JSON config) and is implemented by **one shared parser** across `entityRoutes`, `collection`, and `backlog`.
+
+Multiple rules can match the same entity — each produces a separate page (the loader errors on URL collisions).
 
 ### Variable surface inside `render`
 
-The `render` string is markdoc content. The substituted entity is exposed as `$entity` (a content variable, same surface as `$page.path` etc.). So `{% expand $entity.id /%}` is the canonical pattern.
+The `render` string (or `render-template` partial) is markdoc content. The substituted entity is exposed as `$entity` (a bound content variable, same surface as `$page.path` etc. — and the page-axis sibling of collection's per-item `$item`). So `{% expand $entity.id /%}` is the canonical pattern.
 
-Render strings can also reference the entity's data fields directly: `# {% $entity.data.title %}`. The full Markdoc variable model applies.
+Templates can also reference the entity's data fields directly: `# {% $entity.data.title %}`. The full Markdoc variable model applies. The inline `render` and the `render-template` partial bind `$entity` identically; the only difference is where the markdoc source lives.
 
 -----
 
@@ -375,7 +376,7 @@ export interface Plugin {
 
 ### Built-in config-rules adapter
 
-Ships as part of `@refrakt-md/content`. Reads `site.entityRoutes`, walks the registry, applies match clauses, runs substitution, returns the contributed pages. Same shape as third-party plugins from the loader's perspective — it just happens to live in the framework.
+Ships as part of `@refrakt-md/content`. Reads `site.entityRoutes`, walks the registry, applies each rule's `type` + `filter` selector (via the shared field-match parser), runs substitution, and renders the inline `render` or `render-template` partial per entity with `$entity` bound. Returns the contributed pages — same shape as third-party plugins from the loader's perspective; it just happens to live in the framework.
 
 ### Plugin guidance
 
@@ -485,10 +486,12 @@ Worth shipping in `@refrakt-md/*` directly: probably the `typedoc`, `openapi`, `
 - **`@refrakt-md/types`** —
   - `EntityRegistration` gains optional `embed?: () => Node | string` (file-less embeddable content) and `canonicalUrl?: string` (external source-of-truth URL). `sourceUrl`'s documented meaning sharpens to "on-site URL" (back-fillable by route rules).
   - New `ContributedPage` interface, `PluginContributePagesContext` interface, optional `contributePages` field on `Plugin`.
-  - `SiteConfig.entityRoutes` field with the rule shape above.
+  - `SiteConfig.entityRoutes` field — each rule `{ type, filter?, url, title?, render? | render-template?, frontmatter? }`.
 - **`@refrakt-md/runes`** — amend the expand resolver (SPEC-066): embeddability is `embed()` *or* (`sourceFile` + `extract`); resolution calls `embed()` when present, else reads the file. `canonical=true` link prefers `canonicalUrl`, falls back to `sourceUrl`. This is the cross-spec dependency surfaced by the scenario walkthrough — SPEC-066's contract is widened here.
+- **Shared field-match parser** — the `type` + `filter` selector grammar (exact / prefix-glob / future regex; AND across fields, OR within) is **one implementation** used by `entityRoutes` (this spec), `collection` (SPEC-070), and `backlog`. Lives wherever the registry-consuming runes share helpers (`@refrakt-md/runes`); the plan plugin's existing backlog filter parser folds into it. The string grammar is what lets the same selector work in a JSON config field (here) and a markdoc attribute (collection).
 - **`@refrakt-md/content`** —
-  - Built-in config-rules adapter that turns `entityRoutes` into `ContributedPage[]`, **back-filling each matched entity's `sourceUrl`** with the generated route URL before the postProcess xref pass.
+  - Built-in config-rules adapter that turns `entityRoutes` into `ContributedPage[]`: applies each rule's `type` + `filter`, renders the inline `render` string or the `render-template` partial per entity with `$entity` bound, and **back-fills each matched entity's `sourceUrl`** with the generated route URL before the postProcess xref pass.
+  - `render-template` resolution via the existing partial + file-roots machinery; `render` / `render-template` mutual-exclusion check.
   - Two-pass loader: file pages first, register pass, contribution phase, transform contributed pages, register pass again, aggregate, postProcess.
   - URL-collision detection and warning surfacing.
   - `SitePage.source` discriminated union (`{ type: 'file', path: string } | { type: 'contributed', plugin: string, ruleIndex?: number }`).
@@ -518,15 +521,15 @@ The residual gap — listing entities of a type that is *neither* a page *nor* a
       "contentDir": "./content",
       "plugins": ["@refrakt-md/plan"],
       "entityRoutes": [
-        { "match": { "type": "spec" }, "url": "/specs/{id}/",
+        { "type": "spec", "url": "/specs/{id}/",
           "title": "{title}", "render": "{% expand $entity.id /%}" },
-        { "match": { "type": "work" }, "url": "/work/{id}/",
+        { "type": "work", "url": "/work/{id}/",
           "title": "{id} — {title}", "render": "{% expand $entity.id /%}" },
-        { "match": { "type": "bug" }, "url": "/bugs/{id}/",
+        { "type": "bug", "url": "/bugs/{id}/",
           "title": "{id} — {title}", "render": "{% expand $entity.id /%}" },
-        { "match": { "type": "decision" }, "url": "/decisions/{id}/",
+        { "type": "decision", "url": "/decisions/{id}/",
           "title": "{title}", "render": "{% expand $entity.id /%}" },
-        { "match": { "type": "milestone" }, "url": "/milestones/{name}/",
+        { "type": "milestone", "url": "/milestones/{name}/",
           "title": "{name}", "render": "{% expand $entity.name /%}" }
       ]
     }
@@ -557,16 +560,16 @@ Plus `content/index.md` with dashboards (multiple `{% backlog %}` blocks), `cont
 - [ ] `Plugin.contributePages` interface defined; optional; sync or async return; takes a context with registry, projectRoot, site config, pipeline context
 - [ ] Content loader runs a contribution phase after file-page registration but before aggregation, collecting `ContributedPage[]` from every plugin's hook
 - [ ] Contributed pages flow through the normal parse + transform + register + aggregate + postProcess pipeline; downstream consumers cannot tell file from contributed
-- [ ] `SiteConfig.entityRoutes` schema accepts `{ match, url, title?, render, frontmatter? }` records
+- [ ] `SiteConfig.entityRoutes` schema accepts `{ type, filter?, url, title?, render | render-template, frontmatter? }` records (`render` and `render-template` are mutually exclusive)
 - [ ] Built-in config-rules adapter ships as part of `@refrakt-md/content`, runs as a plugin in the contribution phase, turns `entityRoutes` into pages
 - [ ] Placeholder substitution: `{name}` interpolates from entity top-level fields + `data` fields; per-segment URL encoding for the `url` field; plain text for `title` / `render` / `frontmatter` values
-- [ ] `match` clause supports at least `type` (required), `tag`, `status`
+- [ ] `type` (required, comma-separated for multiple) + optional `filter` string select entities via the shared field-match parser (exact / prefix-glob; AND across fields, OR within)
 - [ ] Multiple rules matching the same entity each produce a separate page (loader errors on URL collision)
 - [ ] File-backed pages win against contributed pages at the same URL, with a build warning
 - [ ] URL collisions between two contributed pages fail the build with attribution naming both sources
 - [ ] Contributed pages appear in the sitemap, search index, route enumeration, and nav-auto graph
 - [ ] `{% ref %}` to a URL produced by a contributed page resolves correctly (page entity is registered by core's existing register hook)
-- [ ] `$entity` variable available inside `render` strings; full entity data accessible (`$entity.id`, `$entity.data.title`, etc.)
+- [ ] `$entity` variable available inside `render` strings and `render-template` partials; full entity data accessible (`$entity.id`, `$entity.data.title`, etc.)
 - [ ] Plugin error in `contributePages` is caught, surfaces as a build warning, build continues with that plugin's contributions skipped
 - [ ] Empty `contributePages` return (no contributions) is a no-op
 - [ ] Plugin authoring docs cover: when to use config rules vs the hook directly, caching guidance for external data, env-var convention, graceful failure for upstream issues
@@ -659,7 +662,7 @@ That said: the spec leaves room for refrakt to later add a **convenience tier** 
 - **Lazy / on-demand page generation.** The full set of pages must be enumerable at build start.
 - **A secrets / credentials system.** Plugins read `process.env`. The convention is documented; refrakt doesn't manage it.
 - **A core caching layer for contribution responses.** Plugins own their own caching. Refrakt may eventually offer a shared cache primitive, but that's its own design.
-- **Per-rule custom predicate functions** (`match.where`). Defer until the declarative `match` shape proves insufficient.
+- **Per-rule custom predicate functions** (a `where` callback). Defer until the declarative `type` + `filter` selector proves insufficient.
 - **Plugin-supplied layouts for contributed pages.** Contributed pages use the host site's layout cascade (`_layout.md`). A plugin wanting an opinionated layout writes it as content and ships it as a contributed page itself.
 - **Recursive contribution.** Contributed pages cannot themselves trigger another contribution phase. The graph is one level deep by design — keeps the build deterministic.
 - **Watch-mode HMR for external-data contributions.** Dev-server HMR for file pages keeps working; contributed pages refresh on full build. Watching external sources is a plugin's call to make (file-system watcher, polling, webhook listener — out of scope for core).
@@ -672,7 +675,7 @@ That said: the spec leaves room for refrakt to later add a **convenience tier** 
 
 **Where exactly does the contribution phase fit in the multi-site loader?** A monorepo with several sites in `refrakt.config.json` runs the pipeline per site today. Contributions are per-site (each site picks its own `entityRoutes`). But plugins that fetch from external sources would be called once per site if naively integrated — wasted work. Recommend: per-site is the safe default; plugins that want to dedupe across sites cache internally. Revisit if real performance issues surface.
 
-**Should `match` support multiple types in one rule?** E.g. `match: { type: ["spec", "decision"] }`. Tempting (saves duplication) but adds matching complexity. Recommend: defer — duplicate rules until the duplication is painful.
+**Should a rule match multiple entity types?** Resolved: yes, via comma-separated `type` (`"type": "spec,decision"`) — it costs nothing in the shared parser (split on comma) and reads naturally. Anything finer-grained (per-type field filters in one rule) is handled by writing separate rules.
 
 **How does the contribution-phase ordering interact with `Plugin.configure`?** `configure` runs first (one-time setup, file-root registration, etc.). Contributions read the configured state. So contributions implicitly happen after configure; document explicitly.
 
