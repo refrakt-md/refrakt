@@ -40,11 +40,11 @@ Inventory of the current commands' user-facing surface, and where each lands:
 |------------------------------|-------------|
 | One page per spec/work/bug/decision/milestone | `entityRoutes` rule per type, body `{% expand $item.id /%}` |
 | Dashboard (`index.html`): progress, recent activity, milestones, blockers, decisions | Authored `index.md` using `plan-progress`, `plan-activity`, `backlog`, `decision-log` runes |
-| Per-status filter pages (`/work/ready/`, `/bug/confirmed/`) | `collection`/`backlog` listings on authored pages (or filterable dashboard); see *Open Questions* |
+| Per-status filter pages (`/work/ready/`, `/bug/confirmed/`) | One grouped/filterable `collection`/`backlog` view per type (see *Resolved Decisions*), not discrete per-status URLs |
 | Grouped "view" pages (by tag / assignee / milestone) | `collection group="…"` on authored pages |
 | Relationships + history tabs on entity pages | `expand`-embedded entity body already carries these; `plan-history` rune for the timeline |
 | Full-text search (pagefind) | Standard site search (docs layout) |
-| Dev server + file watcher + SSE reload | Adapter dev server (`refrakt dev`); see *Open Questions* for plan-file HMR |
+| Dev server + file watcher + SSE reload | Adapter dev server (`refrakt dev`); plan-entity edits need a rebuild in v1 (see *Resolved Decisions*) |
 | `theme.css` + `behaviors.js` emission | Standard adapter asset pipeline |
 | Sidebar nav + plan layout shell | `docsLayout` preset + plan `_layout.md` |
 
@@ -155,15 +155,15 @@ The two sites build independently (per-site pipeline). The `plan` site can be se
 - **A general external-source dogfood** (GitHub issues, typedoc). Valuable separate proofs of SPEC-069's *external* path, but the plan site is the in-repo one.
 - **Multi-theme plan sites.** The scaffold ships `lumina`; theming is the standard site concern.
 
-## Open Questions
+## Resolved Decisions
 
-**Dev-server HMR for plan-entity edits.** `plan serve` watches `plan/*.md` and live-reloads. Standard adapter HMR watches the *content dir* — but plan entity files are registry sources outside it, and SPEC-069 scoped contributed-page HMR out. So editing `plan/work/WORK-1.md` may need a full rebuild to update its generated route. Options: (a) accept rebuild-on-edit for plan entities in dev (document it); (b) the plan plugin registers a watcher that invalidates affected routes. Recommend (a) for v1, revisit if painful.
+**Dev-server HMR for plan-entity edits — accept rebuild-on-edit in v1.** `plan serve` watches `plan/*.md` and live-reloads. Standard adapter HMR watches the *content dir*, but plan entity files are registry sources outside it, and SPEC-069 scoped contributed-page HMR out. So editing `plan/work/WORK-1.md` requires a full rebuild to refresh its generated route. **Decision:** accept rebuild-on-edit for plan entities in dev for v1 and document it as a known difference from `plan serve`; a plan-plugin watcher that invalidates affected routes is a possible later enhancement, not v1.
 
-**Per-status pages: generate or filter?** `plan build` emits discrete `/work/ready/` pages. The collection model favors *one* grouped/filterable view (`{% collection type="work" group="status" /%}`). Discrete per-status URLs would need either many authored pages or an entityRoutes-style "page per status value" (the deferred `groupBy` from SPEC-069's Out of Scope). Recommend: one grouped dashboard view in v1; if discrete status URLs matter, promote status to an entity or author the handful of pages.
+**Per-status views — one grouped/filterable collection, not discrete per-status pages.** `plan build` emits discrete `/work/ready/` URLs. **Decision:** v1 ships *one* grouped/filterable view per type (`{% collection type="work" group="status" sort="priority" /%}`) rather than a page per status value. Discrete status URLs would need the deferred `groupBy` primitive (SPEC-069 Out of Scope) or a handful of authored pages; if they prove necessary, promote `status` to a registered entity or author those pages — not a v1 concern.
 
-**Does refrakt's plan site live at a sub-path of the docs site or as its own deployment?** A `sites.plan` with its own base path vs. a nested section of `main`. Recommend its own site (clean separation, independent build), surfaced from the docs site via a link.
+**refrakt's plan site is its own site, not a sub-path of the docs site.** **Decision:** a dedicated `sites.plan` entry with its own base path and independent build, surfaced from the docs site via a link. Clean separation, independent deploy cadence, and it keeps the dogfood from entangling the main site's build.
 
-**Search parity.** Confirm the standard site search indexes `entityRoutes`-generated detail pages (SPEC-069 says contributed pages are indexed) and that it's an adequate replacement for the plan-specific pagefind UI.
+**Search — rely on the standard site search.** **Decision:** the plan site uses the standard site search rather than a plan-specific pagefind UI; SPEC-069 guarantees `entityRoutes`-generated pages are in the search index. The acceptance criteria verify generated detail pages appear in search; if the standard search proves an inadequate replacement for the plan-specific UI during implementation, that's a finding to feed back (not a reason to keep the bespoke index).
 
 ## References
 
