@@ -1,5 +1,18 @@
 # @refrakt-md/behaviors
 
+## 0.15.0
+
+### Minor Changes
+
+- Drawer rune: a body-only rune that opens its content as a slide-in panel from an xref-as-trigger in prose (SPEC-060). A cross-reference to the drawer's id anywhere on the page opens the drawer; the body is registered as a page-scoped entity rather than rendered inline.
+
+  - Ships in two states: a no-JS `<details>`-style fallback that works without scripts, and a progressively-enhanced `<dialog>` with slide-in animation, scroll-lock, a keyboard shortcut, URL-hash sync, and back-button integration.
+  - New `EntityRegistration.scope: 'page' | 'site'` field distinguishes page-local entities (drawer bodies) from site-wide ones, so a drawer registered on one page doesn't leak into another page's xref namespace.
+  - `@refrakt-md/types`: `EntityRegistration.scope`.
+  - `@refrakt-md/runes`: `{% drawer %}` schema + transform + drawer pipeline; engine config for both rendered states.
+  - `@refrakt-md/behaviors`: `drawer` behavior (`<dialog>` enhancement, shortcut, hash sync, back-button).
+  - `@refrakt-md/lumina`: drawer CSS for the no-JS and JS states.
+
 ## 0.14.4
 
 ## 0.14.3

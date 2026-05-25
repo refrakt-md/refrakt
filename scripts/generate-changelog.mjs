@@ -1,40 +1,41 @@
 #!/usr/bin/env node
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
+import { join, dirname, resolve } from 'path';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const outPath = join(root, 'site', 'content', 'releases.md');
 
-// Collect CHANGELOG.md files from all workspace packages
-const dirs = [
-  ...glob('packages'),
-  ...glob('plugins'),
-  ...glob('themes'),
-];
+function main() {
+  // Collect CHANGELOG.md files from all workspace packages
+  const dirs = [
+    ...glob('packages'),
+    ...glob('plugins'),
+    ...glob('themes'),
+  ];
 
-const versions = new Map(); // version → Set<change>
+  const versions = new Map(); // version → Set<change>
 
-for (const dir of dirs) {
-  const file = join(root, dir, 'CHANGELOG.md');
-  if (!existsSync(file)) continue;
-  parseChangelog(readFileSync(file, 'utf8'), versions);
-}
+  for (const dir of dirs) {
+    const file = join(root, dir, 'CHANGELOG.md');
+    if (!existsSync(file)) continue;
+    parseChangelog(readFileSync(file, 'utf8'), versions);
+  }
 
-// Sort versions by semver descending
-const sorted = [...versions.keys()].sort((a, b) => compareSemver(b, a));
+  // Sort versions by semver descending
+  const sorted = [...versions.keys()].sort((a, b) => compareSemver(b, a));
 
-// Build output
-let body = '';
-for (const version of sorted) {
-  const date = getTagDate(version);
-  const heading = date ? `## v${version} - ${date}` : `## v${version}`;
-  const changes = [...versions.get(version)].join('\n');
-  body += `${heading}\n\n${changes}\n\n`;
-}
+  // Build output
+  let body = '';
+  for (const version of sorted) {
+    const date = getTagDate(version);
+    const heading = date ? `## v${version} - ${date}` : `## v${version}`;
+    const changes = [...versions.get(version)].join('\n');
+    body += `${heading}\n\n${changes}\n\n`;
+  }
 
-const output = `---
+  const output = `---
 title: Changelog
 description: Release history for refrakt.md
 ---
@@ -46,8 +47,16 @@ ${body.trim() || '_No releases yet._'}
 {% /changelog %}
 `;
 
-writeFileSync(outPath, output);
-console.log(`Wrote ${outPath}`);
+  writeFileSync(outPath, output);
+  console.log(`Wrote ${outPath}`);
+}
+
+// Run only when invoked directly (e.g. `node scripts/generate-changelog.mjs`
+// from `npm run version-packages`). Importing the module for tests does not
+// regenerate releases.md.
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main();
+}
 
 // --- helpers ---
 
@@ -59,7 +68,7 @@ function glob(subdir) {
     .map(d => join(subdir, d.name));
 }
 
-function parseChangelog(text, versions) {
+export function parseChangelog(text, versions) {
   const lines = text.split('\n');
   let currentVersion = null;
   let bulletLines = null;
@@ -116,6 +125,17 @@ function parseChangelog(text, versions) {
 
 function processBulletBlock(lines, versionSet) {
   if (!lines.length || !versionSet) return;
+
+  // Drop fenced code blocks before flattening. The changelog is a prose
+  // summary; embedded code examples collapse into broken inline markdown when
+  // paragraphs are unwrapped (the ``` markers end up mid-line), and any Markdoc
+  // rune syntax inside them (e.g. `{% snippet %}`) would then parse as a LIVE
+  // rune in the rendered releases.md instead of as an example — snippet in
+  // particular throws at transform time by design. Stripping fences keeps the
+  // changelog inert. Inline `` `{% x %}` `` code spans are untouched (Markdoc
+  // doesn't parse tags inside inline code), so prose examples still render.
+  lines = stripCodeFences(lines);
+  if (!lines.length) return;
 
   const firstContent = lines[0].replace(/^- /, '');
 
@@ -179,6 +199,23 @@ function processBulletBlock(lines, versionSet) {
     const cleaned = cleanEntry(`- ${unwrapped}`);
     if (cleaned) versionSet.add(cleaned);
   }
+}
+
+/** Remove fenced code blocks (``` … ```) from a block of changelog lines,
+ *  including the fence markers and everything between them. Toggles on any
+ *  line whose first non-whitespace characters are three backticks, so it
+ *  handles the indented fences that changesets nest under a bullet. */
+export function stripCodeFences(lines) {
+  const out = [];
+  let inFence = false;
+  for (const line of lines) {
+    if (/^\s*```/.test(line)) {
+      inFence = !inFence;
+      continue;
+    }
+    if (!inFence) out.push(line);
+  }
+  return out;
 }
 
 function cleanEntry(line) {

@@ -1,5 +1,137 @@
 # @refrakt-md/runes
 
+## 0.15.0
+
+### Minor Changes
+
+- Drawer rune: a body-only rune that opens its content as a slide-in panel from an xref-as-trigger in prose (SPEC-060). A cross-reference to the drawer's id anywhere on the page opens the drawer; the body is registered as a page-scoped entity rather than rendered inline.
+
+  - Ships in two states: a no-JS `<details>`-style fallback that works without scripts, and a progressively-enhanced `<dialog>` with slide-in animation, scroll-lock, a keyboard shortcut, URL-hash sync, and back-button integration.
+  - New `EntityRegistration.scope: 'page' | 'site'` field distinguishes page-local entities (drawer bodies) from site-wide ones, so a drawer registered on one page doesn't leak into another page's xref namespace.
+  - `@refrakt-md/types`: `EntityRegistration.scope`.
+  - `@refrakt-md/runes`: `{% drawer %}` schema + transform + drawer pipeline; engine config for both rendered states.
+  - `@refrakt-md/behaviors`: `drawer` behavior (`<dialog>` enhancement, shortcut, hash sync, back-button).
+  - `@refrakt-md/lumina`: drawer CSS for the no-JS and JS states.
+
+- Expand rune: inline a registered entity's body into the current page (SPEC-066). `{% expand "SPEC-023" /%}` pulls the target entity's content into the host page at an author-chosen heading `level=`, so a single `.md` source can render as its own canonical page and also embed inline elsewhere.
+
+  - New generic `data-outline-scope` walkers isolate the embedded content's table-of-contents and namespace its heading IDs, so the embedded outline doesn't collide with the host page's headings or TOC.
+  - Includes a canonical-link affordance back to the entity's own page.
+  - Works for plan content that isn't published to the site, via the plan plugin's unconditional entity registration (SPEC-064).
+  - `@refrakt-md/runes`: `{% expand %}` schema + resolver + expand pipeline; `outline-scope` walkers.
+  - `@refrakt-md/lumina`: expand CSS (embedded-entity framing + canonical-link affordance).
+
+- 55de91d: File roots: configurable named directories that file-reading runes can reach via `namespace:filename` syntax (SPEC-063).
+
+  A new top-level `fileRoots` field in `refrakt.config.json` registers named directories that Markdoc partials (and, when SPEC-062's v2 lands, the snippet rune) can resolve from:
+
+  ```jsonc
+  {
+    "fileRoots": {
+      "shared": "_shared-partials",
+      "legal": "../legal-snippets"
+    }
+  }
+  ```
+
+  ```markdoc
+  {% partial file="shared:footer.md" /%}
+  {% partial file="legal:terms.md" /%}
+  ```
+
+  Plugins can declare their own file roots via a new `Plugin.fileRoots` field on the plugin shape (paths relative to the plugin package's own directory). User-config and plugin-registered roots merge at load time: user config wins any collision (with a dev warning); plugin-vs-plugin namespace collisions throw at plugin load.
+
+  The namespace `site` is reserved for future site-level resolution. Empty namespace, absolute paths, and traversal escapes are all rejected with clear errors.
+
+  Backwards-compatible: existing unprefixed `{% partial file="footer.md" /%}` references continue to resolve from each site's `_partials/` directory.
+
+  New exports:
+
+  - `@refrakt-md/types`: `RefraktConfig.fileRoots`, `Plugin.fileRoots`.
+  - `@refrakt-md/runes`: `assertFileRootNamespaceAllowed`, plus `LoadedPlugin.fileRoots` / `MergedPluginResult.fileRoots` so adapters can introspect plugin-contributed roots.
+  - `@refrakt-md/content`: `readFileRoots`, `resolveUserFileRoots`, `mergeFileRoots`, `validateNamespacedReference`, plus the new `fileRoots` option on `SiteLoaderOptions`, `VirtualSiteLoaderOptions`, `LoadContentFromTreeOptions`, and `VirtualRefraktLoaderOptions`.
+
+  `createRefraktLoader` automatically reads `refrakt.config.json#/fileRoots`, merges with plugin roots, and threads the result through the loader. Diagnostics (e.g. shadowed plugin namespaces) print to stderr.
+
+- f5fa9d5: Page variables: add `$page.dir`, `$page.slug`, `$page.title`, and `$file.path`; rename `$page.filePath` to `$page.path` (breaking).
+
+  The Markdoc variable surface available to authored content is now:
+
+  - `$page.path` — content-root-relative file path, POSIX-normalized (replaces `$page.filePath`)
+  - `$page.dir` — directory portion of `$page.path` (`""` for content-root pages, no trailing slash)
+  - `$page.slug` — last segment of `$page.url` (for index pages, the directory name; `""` for the homepage)
+  - `$page.title` — `$frontmatter.title` when present and non-empty after trimming, else the first H1 in the page AST (depth-first, descending into rune children), else `undefined`
+  - `$file.path` — project-root-relative source file path, POSIX-normalized (project root is the directory containing `refrakt.config.json`)
+
+  **Breaking:** `$page.filePath` is removed. Authored content that referenced `$page.filePath` must use `$page.path` instead. A grep of the refrakt corpus showed zero usages; external sites that adopted it should rename in the same step they upgrade.
+
+  Adapters (SvelteKit, Eleventy, Editor) now thread the project root through to the content loader so `$file.path` works out of the box. Hosts using `loadContentFromTree` directly can pass `projectRoot` on the options bag; when omitted, `$file.path` falls back to the content-root-relative path.
+
+- ce36eac: Snippet rune: embed a project file as a syntax-highlighted code block (SPEC-062). Core rune; composes transparently inside `{% codegroup %}`, `{% diff %}`, and any future fence-consuming container via pre-resolve.
+
+  ```markdoc
+  {% snippet path="src/lib/foo.ts" /%}
+  {% snippet path="src/lib/foo.ts" lines="10-25" /%}
+  {% snippet path=$file.path lang="md" title="This page" /%}
+
+  {% codegroup %}
+  {% snippet path="examples/button.svelte" /%}
+  {% snippet path="examples/button.vue" /%}
+  {% /codegroup %}
+  ```
+
+  **Implementation as AST preprocessor.** Snippet is not a transform-time rune — every `{% snippet %}` tag is replaced with a Markdoc `fence` node before the schema-driven transform runs. The fence carries the file's resolved content, the inferred (or explicit) language, and `data-snippet-source` / `data-snippet-title` / `data-snippet-lines` attributes for downstream tooling.
+
+  By transform time, no snippet tags remain — only fences. Container runes that match `fence` (codegroup, diff, future runes) consume them transparently with no per-rune awareness of snippet. The standalone form's `<figure class="rf-snippet">` chrome is applied by a post-transform wrap step that only fires for `<pre data-snippet-source>` elements _not_ descended from a fence-consuming container output.
+
+  **New `preprocess` pipeline phase.** `PluginPipelineHooks` gains a `preprocess` hook that runs per page on the parsed Markdoc AST before the transform. The `PreprocessContext` extends `PipelineContext` with `projectRoot` and `sandbox` so file-reading preprocessors (snippet, future macros, future build-time include resolvers) have what they need; variables from the transform config aren't available pre-transform. Hook signature:
+
+  ```ts
+  preprocess?: (
+    ast: Markdoc.Node,
+    page: { url: string; relativePath: string; filePath: string },
+    ctx: PreprocessContext,
+  ) => Markdoc.Node | void | Promise<...>;
+  ```
+
+  Core's `corePipelineHooks` registers the snippet preprocess hook through the existing `createCorePipelineHooks` factory — exercises the hook contract from within core, validating it as a general extension point.
+
+  **Sandbox enforcement** (in `packages/runes/src/lib/read-file.ts`): absolute paths rejected, traversal escapes rejected, symlinks escaping the project root rejected, missing files / directories rejected. All errors produce build errors that name the resolved path and the referencing page; line-range clamps produce warnings.
+
+  **`<pre>` data-attribute pass-through.** The fence node transform (`packages/runes/src/nodes.ts`) now forwards `data-*` attributes from the fence node to the rendered `<pre>`. This is how snippet markers (`data-snippet-source`, etc.) survive the transform so the wrap step can find them.
+
+  **Docs site dogfood.** New page at `site/content/runes/snippet.md` linked from the "Code & Data" sidebar section. The page renders live snippets of actual files in this repository, demonstrates composition with codegroup and diff using real source files, and ends with a recursive view-source-of-itself example via `{% snippet path=$file.path lang="markdoc" /%}` — the snippet docs page literally embeds its own source markdown.
+
+  **Lumina** ships baseline `.rf-snippet` and `.rf-snippet__title` styling.
+
+- 8f8daec: Cross-reference resolution: configurable URL patterns, decoupled entity/URL lookup, per-segment encoding, and `data-target-type` propagation (SPEC-065).
+
+  The xref resolver now supports a `xrefs: XrefPattern[]` array in `refrakt.config.json` that maps unresolved IDs to URLs via regex + template. Compiled once per build via `compileXrefPatterns` (exported from `@refrakt-md/runes`).
+
+  Resolution model:
+
+  1. **Entity lookup** — find the entity in the registry (exact ID, then name/title). Captures metadata (label, type) regardless of whether a URL is available.
+  2. **URL resolution** — use the entity's `sourceUrl` if present and non-empty; otherwise iterate `xrefs` patterns, first match wins; otherwise unresolved.
+  3. **Rendered anchor** carries `data-xref-id`, `data-xref-source="registry"|"pattern"`, and `data-target-type="{entity-type}"` when the entity was matched (drawer / future addressable runes query this).
+
+  `EntityRegistration.sourceUrl` is now optional. Empty strings passed at registration are normalized to `undefined` so plan content registered without a URL (SPEC-064) flows correctly through pattern resolution. The byTypeAndUrl index skips entries without a URL.
+
+  Substituted template values are encoded per URL segment (split on `/`, encode each segment, rejoin) so path-shaped captures like `(?<path>[a-z0-9/-]+)` preserve their slash structure: a pattern matching `docs:guide/intro` now resolves to `.../guide/intro`, not `.../guide%2Fintro`.
+
+  Authors using `corePipelineHooks` directly continue to work unchanged; the new `createCorePipelineHooks({ xrefPatterns })` factory is used by the content loader to inject compiled patterns. `createRefraktLoader` reads `refrakt.config.json#/xrefs` and compiles automatically.
+
+  The old `data-entity-type` / `data-entity-id` attributes on resolved anchors are replaced by `data-target-type` / `data-xref-id`. No production code outside of the resolver itself referenced the old names.
+
+### Patch Changes
+
+- Updated dependencies
+- Updated dependencies [55de91d]
+- Updated dependencies [8a0a6fa]
+- Updated dependencies [ce36eac]
+- Updated dependencies [8f8daec]
+  - @refrakt-md/types@0.15.0
+  - @refrakt-md/transform@0.15.0
+
 ## 0.14.4
 
 ### Patch Changes
