@@ -33,11 +33,11 @@ Today the options are: hand-maintain a markdown list that drifts from the data; 
 
 **Plural counterpart to ref / expand.** Same registry substrate, same lookup vocabulary. An author who knows `{% ref %}` and `{% expand %}` understands `{% collection %}` as "the same thing, for a list". The three compose: a `collection` of cards each linking via the entity's resolved URL; a `collection` inside a `{% drawer %}`; a `collection` filtered by the same `field:value` syntax backlog and xref patterns already use.
 
-**Generic over entity type; told what to show.** backlog can hardcode "id, status badge, priority" because it knows plan entities. `collection` can't assume the shape of a `product` or `character`, so display is *configured*, not baked in. This forces a zero-config → full-config progression (see Authoring Surface) rather than a fixed card template.
+**Query engine, not a renderer — delegate deliberate presentation.** collection's real value is the *query* (which entities, filtered/sorted/grouped/limited). Per-item *rendering* is a separate concern that spans from generic (built-in layouts projecting fields) to domain-specific (a deliberate `product-card` / `article-card`). A generic field-projection card is right for a price table; it's *wrong* for a storefront gallery. So collection delegates per-item rendering to a named **item-renderer rune** via `item=`, and the built-in layouts are reserved for generic data display. This separation is what keeps collection from being either too bland (generic-only) or too bloated (knowing every domain's card design).
 
-**Zero-config baseline always works.** `{% collection type="character" /%}` with no other attributes renders each entity's title as a link to its resolved URL. No knowledge of the entity's fields required. Everything past that (field projection, layouts, templates) is opt-in sophistication.
+**Zero-config baseline always works.** `{% collection type="character" /%}` with no other attributes renders each entity's title as a link to its resolved URL. No knowledge of the entity's fields required. Everything past that (built-in layouts, field projection, `item=` delegation) is opt-in sophistication.
 
-**Backlog becomes a preset, not a peer.** Once `collection` exists, `{% backlog %}` is conceptually `collection` specialized to plan types with nicer default chrome. It stays as a convenience (plan users keep writing `{% backlog %}`), but it's no longer a parallel implementation — ideally it delegates to the shared collection resolver. `{% blog %}` is *not* absorbed: it lists pages from the content corpus by folder, a different substrate (page entities with folder semantics) than collection's type-based registry query.
+**Listers are query-engine + item-card; the existing ones become presets.** Once `collection` + the item-renderer contract exist, `{% backlog %}` and `{% blog %}` are revealed as special cases — query + a domain card (`work-card` / `article-card`). They stay as convenience wrappers (back-compat + nice defaults) but the powerful, composable form is `collection item="…"`. backlog reduces *almost* fully (its aggregations stay bespoke); blog reduces cleanly once "folder" is expressed as a `url` prefix filter rather than a special axis. The refactor is decoupled from collection's launch (see *Sequencing*).
 
 **Build-time, registry-driven, no manual maintenance.** Like backlog, the list is resolved from the registry during the cross-page pipeline. Add an entity anywhere — a new plan file, a new CMS row, a new character — and every `collection` that matches picks it up on the next build. No list to maintain.
 
@@ -62,14 +62,17 @@ Today the options are: hand-maintain a markdown list that drifts from the data; 
 | Attribute | Type | Default | Meaning |
 |-----------|------|---------|---------|
 | `type` | string | **required** | Entity type to list. Comma-separated for multiple types (`"spec,decision"`). |
-| `filter` | string | — | Space-separated `field:value` pairs. Same-field values OR; different fields AND. Same syntax as `{% backlog %}` / xref patterns. |
+| `filter` | string | — | Space-separated `field:value` clauses. Supports exact, prefix/glob, and (future) regex matching — so "folder membership" is just a `url` prefix match, not a special axis (see *Filtering*). Same-field clauses OR; different fields AND. |
 | `sort` | string | — | Entity `data` field to sort by. Unset preserves registration order. |
 | `group` | string | — | Group into sections by a `data` field. |
 | `limit` | number | — | Cap rendered count, applied post-sort, pre-group (same semantics as backlog's `limit`). |
-| `layout` | `table` \| `cards` \| `list` \| `grid` | `list` | Presentation. |
-| `fields` | string | — | Comma-separated `data` field names to project. Required for `table`; optional enrichment for `cards`/`grid`; ignored by `list` (title-only). |
+| `item` | string | — | Name of a rune that renders one entity — collection delegates each item to it (e.g. `item="product-card"`). The domain-presentation path. When unset, the built-in `layout` handles rendering. |
+| `layout` | `table` \| `cards` \| `list` \| `grid` | `list` | Built-in presentation for the generic-data path. Ignored when `item=` is set (the item rune owns rendering). |
+| `fields` | string | — | Comma-separated `data` field names to project into the built-in `layout`. Required for `table`; optional enrichment for `cards`/`grid`; ignored by `list` and when `item=` is set. |
 
-### Three levels of display control
+### Display control — generic data vs. domain presentation
+
+collection's real value is the **query** (which entities, filtered/sorted/grouped/limited). *Rendering* spans a spectrum from zero-config to fully domain-specific, and the right level depends on whether you're displaying generic data or a deliberate domain gallery:
 
 **1. Zero-config — directory of links.**
 
@@ -77,30 +80,50 @@ Today the options are: hand-maintain a markdown list that drifts from the data; 
 {% collection type="character" /%}
 ```
 
-Each entity renders as its title (`data.title` / `data.name`) linking to its resolved URL (`sourceUrl` → `canonicalUrl` → pattern, same chain as xref). Works for any entity type with no knowledge of its fields. The fallback baseline.
+Each entity renders as its title (`data.title` / `data.name`) linking to its resolved URL (`sourceUrl` → `canonicalUrl` → pattern, same chain as xref). Works for any entity type with no knowledge of its fields. The always-works baseline.
 
-**2. Field projection — tables and enriched cards.**
+**2. Built-in layouts + field projection — generic data display.**
 
 ```markdoc
 {% collection type="product" layout="table" fields="name,price,stock" sort="price" /%}
 ```
 
-Projects the named `data` fields into the layout: table columns, or labeled card rows. Covers the bulk of tabular / catalog use without per-item templating.
+Projects named `data` fields into a built-in layout (table columns, labeled card rows). This is the path for **generic data** — price tables, directories, comparison matrices, reference lists — where functional-but-plain is exactly right. It is *not* the answer for a rich domain gallery (see level 3); a product catalog rendered as generic projected cards reads as bland data, not a storefront.
 
-**3. Item template *(future / escape hatch)*.**
+**3. `item=` delegation — domain presentation (first-class).**
 
-A rune body acting as a per-item template with `$item.*` access, for full control of each entity's rendering. Deferred — same config-vs-function layering as `entityRoutes` (SPEC-069). Ship levels 1–2 first; add templates only if declarative projection proves insufficient.
+```markdoc
+{% collection type="product" item="product-card" sort="price" limit=12 /%}
+```
 
-### Layouts
+collection does the query; a purpose-built **item-renderer rune** (`product-card`, `article-card`, `character-card`) renders each entity deliberately — image-forward layout, price prominence, badges, whatever the domain wants. This is how you get an actual catalog gallery, character roster, or release feed rather than projected fields. The item rune is reusable standalone (to feature one entity) and as collection's `item=` target. See *Item-renderer contract* for the input surface every such rune receives.
+
+This decomposition is the core of the design: **collection is the query engine; domain runes are the per-item renderers; `item=` composes them.** It's the same split that lets `{% backlog %}` and `{% blog %}` become presets (see *Relationship to existing runes*).
+
+**4. Inline item template *(deferred escape hatch)*.**
+
+A rune body acting as a per-item template with `$item.*` access, for one-off per-item rendering without defining a named rune. Deferred — `item=` (a named, reusable renderer) covers the structured cases; an inline template is only for throwaway custom rendering. Add only if real demand appears.
+
+### Built-in layouts (the level-2 path)
 
 | Layout | Renders | Field use |
 |--------|---------|-----------|
 | `list` | compact title (+ optional one-line description), each a link | title only |
-| `cards` | a card per entity, backlog-style chrome | optional projected fields |
-| `grid` | card grid (for entities with images/media) | optional projected fields |
+| `cards` | a card per entity, generic chrome | optional projected fields |
+| `grid` | card grid | optional projected fields |
 | `table` | one row per entity, columns from `fields` | required |
 
-Per-item rendering delegates to the layout — an item is a link (`list`), a card (`cards`/`grid`), or a row (`table`). An item is **not** rendered via full `{% expand %}` by default: too heavy for a list, and many listable entities aren't embeddable. (A future item-template level could opt into richer per-item rendering.)
+These are the *generic* presentations. For deliberate domain cards, use `item=` (level 3) — the built-in `cards`/`grid` are intentionally plain so they don't masquerade as a designed gallery. An item is never rendered via full `{% expand %}` by default (too heavy for a list, many entities aren't embeddable).
+
+### Filtering — field matching, not a folder axis
+
+The `filter` grammar matches entity fields, and "folder membership" falls out of it rather than being a special concept. A `page` entity already carries its URL (`sourceUrl` / `data.url`); a blog folder is just a URL prefix. So:
+
+- **Exact:** `status:ready` — field equals value.
+- **Prefix / glob:** `url:/blog/*` — field starts with / matches a glob. This is how `{% blog folder="/blog" %}` reduces to a collection query: `filter="url:/blog/*"`.
+- **Regex (future):** `url:~^/blog/[^/]+/$` — full pattern match, if prefix/glob proves insufficient.
+
+Same-field clauses OR (`status:ready status:review`); different fields AND. Membership in array fields (`tags`) tests inclusion. Keeping folder as "a `url` prefix match" rather than a dedicated axis means collection's query model stays one thing — *match fields* — and any entity with a URL (pages, contributed entities) participates uniformly. This is the generalization that lets a single query engine back both `backlog` (type + field match) and `blog` (url prefix match).
 
 -----
 
@@ -150,7 +173,23 @@ BEM:
 - `.rf-collection__field` — a projected field (carries `data-field`)
 - `.rf-collection__group` / `.rf-collection__group-title` — grouping (when `group` set)
 
-Data attributes: `data-rune="collection"`, `data-type`, `data-layout` on the wrapper; `data-entity-id` per item; `data-field` per projected field; `data-group` on group containers.
+Data attributes: `data-rune="collection"`, `data-type`, `data-layout` on the wrapper; `data-entity-id` per item; `data-field` per projected field; `data-group` on group containers. When `item=` is set, each item is the item-renderer rune's own output (`.rf-product-card`, etc.) instead of a built-in `.rf-collection__card`/`__row`; the wrapper carries `data-item="product-card"` so themes/tooling can see the delegation.
+
+-----
+
+## Item-renderer contract
+
+For `{% collection item="x-card" %}` to delegate per-item rendering, every item-renderer rune shares a uniform input contract — "given one entity, render it". This is the new design artifact the `item=` mechanism forces into existence, and specifying it is what makes card runes composable rather than each inventing its own surface.
+
+An item-renderer rune:
+
+- **Receives the entity via the `$item` variable.** `$item.id`, `$item.type`, `$item.data.*` (title, price, tags, …), and `$item.url` (the resolved on-site/canonical URL via the standard xref chain). Same shape collection would project into a built-in card, but the rune decides the markup.
+- **Is a normal rune otherwise.** It has a schema, an engine config entry (BEM block), CSS. It renders one entity's worth of output (typically an `<article>`/`<a>` card). Nothing about it is collection-specific — which is why it's reusable standalone.
+- **Used standalone** by passing an entity id: `{% product-card "SKU-123" /%}` resolves that one entity and renders the same card. (Standalone form resolves the id through the registry the way `{% ref %}` / `{% expand %}` do; the collection form hands the entity in directly.)
+
+So an item-renderer is "a rune whose content is one registry entity". `product-card`, `article-card`, `work-card`, `character-card`, `event-card` all fit this shape. The contract is small (entity in → card out) but uniform, so collection can delegate to any of them without knowing the type.
+
+Mechanically, collection's resolver transforms each item-renderer invocation through the same `embedConfig` transform path expand uses (SPEC-069) — it emits an `item` rune node per entity with `$item` bound, and transforms it. No new transform machinery; it reuses expand's.
 
 -----
 
@@ -159,11 +198,11 @@ Data attributes: `data-rune="collection"`, `data-type`, `data-layout` on the wra
 Like backlog, `collection` is a sentinel rune: the schema emits a placeholder with the attributes as meta tags; a postProcess pass resolves it against the registry.
 
 1. **Collect** — registry entities of the requested `type`(s).
-2. **Filter** — apply `field:value` clauses against entity `data`.
+2. **Filter** — apply field-match clauses (exact / prefix-glob / future regex) against entity fields including `url`.
 3. **Sort** — by `sort` field (string / number / date inferred from value).
 4. **Limit** — slice post-sort, pre-group.
 5. **Group** — partition by `group` field if set.
-6. **Render** — per the layout, projecting `fields`. Each item's title links to the entity's resolved URL via the standard xref chain (`sourceUrl` → `data.url` → patterns → unresolved-but-still-render-as-text).
+6. **Render** — *either* the built-in `layout` (projecting `fields`), *or*, when `item=` is set, delegate each entity to the named item-renderer rune (transformed via the `embedConfig` path, `$item` bound). Each item's title/link resolves to the entity's URL via the standard xref chain (`sourceUrl` → `data.url` → patterns → text fallback).
 
 The resolver is shared, type-agnostic core code. It lives wherever the cross-page registry-consuming runes live (alongside the xref / expand resolvers in `@refrakt-md/runes`), so it sees the fully-populated registry — including externally-contributed entities (SPEC-069) and plan entities (SPEC-064) — uniformly.
 
@@ -171,21 +210,35 @@ The resolver is shared, type-agnostic core code. It lives wherever the cross-pag
 
 ## Relationship to existing runes
 
-- **`{% backlog %}`** (`@refrakt-md/plan`) — becomes a preset of `collection`: plan-type defaults, status/priority/severity badge chrome, the milestone-aware grouping. Reimplement it as a thin wrapper over the shared collection resolver (so plan keeps its nice chrome but stops duplicating filter/sort/group/limit logic), or leave it as-is and share only the resolver internals. Either way, `collection` is the general primitive; backlog is the plan-flavored convenience.
-- **`{% blog %}`** (core) — stays separate. It lists *pages* from the content corpus by folder + frontmatter, not *entities* by type. Different substrate, different query model. A contributed page (SPEC-069) shows up in `{% blog %}` because it's a page; a registered entity shows up in `{% collection %}` because it's an entity. Both can be true of the same underlying thing.
-- **`{% datatable %}`** (core) — renders an *authored* markdown table with interactivity (sort/filter client-side). `collection` with `layout="table"` renders a table from *registry data*. Different inputs (authored vs. queried); a future enhancement could let a `collection` table opt into datatable's client behaviors.
-- **`{% ref %}` / `{% expand %}`** — the singular members of the same family; `collection` is the plural one.
+Once `collection` + the item-renderer contract exist, the existing listers are revealed to be **special cases of "query engine + item card"**. They stay as convenience wrappers (back-compat + nice defaults), but the powerful form is `collection item="…"`:
+
+- **`{% backlog %}`** (`@refrakt-md/plan`) ≈ `collection type="work,bug" item="work-card"` with plan defaults. Reduces *almost* cleanly: the query (filter/sort/group/limit) and the per-item card (`work-card` rendering status/priority/severity badges) both fit the model. The residual that *doesn't* fully reduce is backlog's **aggregations** — milestone auto-backlog, checklist-progress roll-ups across items — which compute derived values, not just query+render. Those stay as wrapper-local logic. So backlog becomes "collection for the listing + a little bespoke aggregation glue", not a 100% preset. Honest about the 10%.
+- **`{% blog %}`** (core) ≈ `collection type="page" item="article-card" filter="url:/blog/*" sort="date-desc"`. The "folder" concept dissolves into a `url` prefix match (see *Filtering*) — pages already carry their URL, so blog is just a collection query over `page` entities. `article-card` is the per-item renderer. The draft-exclusion and frontmatter-sort behaviors map onto field filters/sorts. This reduces more cleanly than backlog (no aggregations).
+- **`{% datatable %}`** (core) — renders an *authored* markdown table with client-side interactivity. `collection layout="table"` renders a table from *registry data*. Different inputs (authored vs. queried); a future enhancement could let a collection table opt into datatable's client behaviors.
+- **`{% ref %}` / `{% expand %}`** — the singular members of the same family; `collection` is the plural one. An item-renderer rune is the third leg: "one entity → a card", reusable standalone or as collection's `item=`.
+
+### Sequencing — don't couple the refactor to the launch
+
+The blog/backlog reduction is a *behavior-preserving refactor of shipped runes* — existing tests, theme CSS, and structure contracts could shift subtly. Decouple it from collection's launch:
+
+1. Ship `collection` with first-class `item=` + the item-renderer contract.
+2. Build the first card runes (`article-card` in core; `product-card` etc. in plugins) and prove the delegation path.
+3. Refactor `blog` / `backlog` to delegate as a *later, separate* change, diffing output for regressions, keeping the wrapper syntax 100% back-compatible.
+
+Launching a new primitive shouldn't be gated on re-plumbing two existing ones.
 
 -----
 
 ## Engine Changes
 
 - New rune schema `packages/runes/src/tags/collection.ts` — sentinel emitter (placeholder + attribute meta tags), following the backlog pattern.
-- New resolver `packages/runes/src/collection-resolve.ts` (or fold into the existing registry-consumer resolver module) — generic filter/sort/group/limit/project over `registry.getAll(type)`. Shares the filter-parse + sort helpers with backlog rather than duplicating them; those helpers move to a shared location if they currently live inside the plan plugin.
+- New resolver `packages/runes/src/collection-resolve.ts` (or fold into the existing registry-consumer resolver module) — generic field-match/sort/group/limit over `registry.getAll(type)`, with two render paths: built-in layout (project `fields`) or `item=` delegation. Shares the filter-parse + sort helpers with backlog rather than duplicating them; those helpers move to a shared location if they currently live inside the plan plugin. The `item=` path reuses expand's `embedConfig` transform to render each item-renderer rune with `$item` bound.
+- **Item-renderer contract** — a documented convention (not new machinery): a rune that takes one entity via `$item` and renders a card. Schema + engine-config + CSS like any rune; usable standalone (`{% product-card "id" /%}`) or as collection's `item=`. The first core card rune (`article-card`) ships alongside collection as the reference implementation.
 - `corePipelineHooks.postProcess` gains a collection-resolution step (after expand + xref so item links resolve through the same chain).
 - `Collection` engine config entry in `packages/runes/src/config.ts` (`block: 'collection'`, layout modifier from meta).
-- CSS `packages/lumina/styles/runes/collection.css` — the four layouts (list/cards/grid/table) + grouping + field projection.
-- `@refrakt-md/plan` — optionally refactor `{% backlog %}` to delegate to the shared resolver. Not required for collection to ship; can follow.
+- Filter grammar extension — exact + prefix/glob matching (regex deferred) so `url:/blog/*` expresses folder membership. Shared with backlog's filter parser.
+- CSS `packages/lumina/styles/runes/collection.css` — the built-in layouts (list/cards/grid/table) + grouping + field projection. Card-rune CSS lives with each card rune.
+- `@refrakt-md/plan` — `{% backlog %}` refactor to delegate is a *separate, later* change (see *Sequencing*); not required for collection to ship.
 
 -----
 
@@ -226,26 +279,30 @@ The throughline: anywhere a hand-maintained list mirrors structured data, `colle
 - [ ] `{% collection type="X" /%}` lists registry entities of type X
 - [ ] Zero-config (type only) renders each entity's title as a link to its resolved URL (xref chain: `sourceUrl` → `data.url` → pattern → text fallback)
 - [ ] `type` accepts comma-separated multiple types
-- [ ] `filter` applies `field:value` clauses (AND across fields, OR within) against entity `data` — same syntax as backlog
+- [ ] `filter` applies field-match clauses (AND across fields, OR within) against entity fields including `url`
+- [ ] `filter` supports exact (`status:ready`) and prefix/glob (`url:/blog/*`) matching; folder membership expresses as a `url` prefix match with no special folder axis
 - [ ] `sort` orders by a `data` field; string / number / date ordering inferred from the value
 - [ ] `limit` caps the rendered count post-sort, pre-group (degenerate values treated as unset, matching backlog's defensive parse)
 - [ ] `group` partitions into sections by a `data` field
-- [ ] `layout` supports `list` (default), `cards`, `grid`, `table`
-- [ ] `fields` projects named `data` fields; required for `table`, optional for `cards`/`grid`, ignored by `list`
-- [ ] Output carries `data-rune="collection"`, `data-type`, `data-layout`; items carry `data-entity-id`; projected fields carry `data-field`
+- [ ] **`item=` delegates per-item rendering to the named rune**, transformed with `$item` bound via the expand `embedConfig` path
+- [ ] When `item=` is set, `layout` / `fields` are ignored and each item is the item-renderer's own output; the wrapper carries `data-item`
+- [ ] Item-renderer runes receive the entity via `$item` (`$item.id`, `$item.type`, `$item.data.*`, `$item.url`) and work standalone (`{% x-card "id" /%}`) as well as via `item=`
+- [ ] Built-in `layout` (no `item=`) supports `list` (default), `cards`, `grid`, `table`
+- [ ] `fields` projects named `data` fields; required for `table`, optional for `cards`/`grid`, ignored by `list` and when `item=` is set
+- [ ] Output carries `data-rune="collection"`, `data-type`, `data-layout` (or `data-item`); items carry `data-entity-id`; projected fields carry `data-field`
 - [ ] Resolution runs in postProcess after expand + xref so item links resolve through the same chain
 - [ ] Works for plan entities, externally-contributed entities (SPEC-069), and any plugin-registered type — no type-specific code in the resolver
-- [ ] Lumina ships CSS for all four layouts + grouping + field projection
+- [ ] Lumina ships CSS for the built-in layouts + grouping + field projection; the reference `article-card` ships with its own CSS
 - [ ] `refrakt inspect collection` shows the expected HTML
 - [ ] CSS coverage tests pass for `.rf-collection*`
 - [ ] Empty result (no matching entities) renders a stable empty state, not a broken/blank section
-- [ ] Authoring docs cover the rune, the three display levels, the layouts, the relationship to `backlog` / `blog` / `datatable`, and the registry-driven "no manual list maintenance" model
+- [ ] Authoring docs cover the rune, the display levels (zero-config → built-in layouts → `item=` delegation), the item-renderer contract, the relationship to `backlog` / `blog` / `datatable`, and the registry-driven "no manual list maintenance" model
 
 -----
 
 ## Out of Scope
 
-- **Item templates** (`$item.*` per-item body templating). Deferred to a follow-up; levels 1–2 (zero-config + field projection) ship first. Add only if declarative projection proves insufficient.
+- **Inline item templates** (a per-item body template, vs. a named `item=` rune). `item=` (a reusable named renderer) is *in scope* and first-class; an *inline* throwaway template is deferred — add only if pointing at a named rune proves too heavyweight for one-off cases.
 - **Client-side interactivity** (sortable columns, live filtering). `collection` is build-time static. A future enhancement could bridge a `table`-layout collection into `{% datatable %}`'s client behaviors, but that's its own design.
 - **Pagination UI** (page 1 / 2 / 3 of a large collection). `limit` caps the set; rendering N pages of navigation is a separate concern. Large collections either cap or render fully.
 - **Cross-site collections** in a monorepo. Each site queries its own registry.
@@ -262,11 +319,15 @@ The throughline: anywhere a hand-maintained list mirrors structured data, `colle
 
 **What's the empty-state contract?** A `collection` that matches nothing should render *something* stable (an empty container with a class themes can style, or an optional `empty=` message attribute) rather than a blank gap. Recommend an empty container with `data-empty` so themes decide; revisit an `empty=` message attribute if authors want inline copy.
 
-**Should `fields` support dotted paths** (`author.name` for nested `data`)? Entity `data` can be nested. Tempting, but adds projection complexity. Recommend flat fields for v1; nested access waits for the item-template level (which has full `$item` access anyway).
+**Should `fields` support dotted paths** (`author.name` for nested `data`)? Entity `data` can be nested. Tempting, but adds projection complexity. Recommend flat fields for v1 in the built-in layouts; nested access is available anyway through `item=` (the renderer rune has full `$item` access).
 
-**Should `collection` default `layout` differ by entity type?** A `character` might want cards; a `product` a table. Tempting to let plugins declare a preferred default layout per type. Recommend no for v1 — explicit `layout` keeps the rune predictable; per-type defaults are a plugin-config concern that can come later.
+**What exactly is the item-renderer's `$item` shape, and is it stable enough to be a public contract?** `item=` makes the `$item` surface (`id`, `type`, `data.*`, `url`) a contract every card rune depends on. Need to pin it precisely — which fields are guaranteed vs. type-specific (`data.*` is open-ended), how `url` resolves when an entity has neither `sourceUrl` nor a matching pattern (empty? omit the link?), and whether `$item` is frozen/read-only. This is the one genuinely new contract the spec introduces; worth nailing before card runes proliferate against it.
 
-**Does `collection` participate in `data-outline-scope`** (SPEC-066)? Its items are links/cards/rows, not headings, so it doesn't introduce outline entries — no interaction expected. Confirm there's no heading leakage from card titles (they should be links/spans, not `<hN>`).
+**Should the standalone form of a card rune (`{% product-card "id" /%}`) live in this spec or the card rune's own?** collection defines the `item=` *delegation*; the standalone form is the card rune's own surface. Recommend: this spec defines the `$item` contract and the delegation mechanism; each card rune's spec/docs defines its standalone syntax. Keeps collection from owning every card rune's API.
+
+**Should `collection` default `layout` differ by entity type?** A `character` might want cards; a `product` a gallery via `item=`. Tempting to let plugins declare a preferred default (layout *or* item rune) per type, so `{% collection type="product" /%}` "just works" with the commerce card. Recommend no for v1 — explicit `item=`/`layout` keeps the rune predictable; per-type defaults are a plugin-config concern that can come later (and would pair naturally with SPEC-069's entity registration — a plugin could register a "default card rune" alongside its entity type).
+
+**Does `collection` participate in `data-outline-scope`** (SPEC-066)? Its items are links/cards/rows, not headings, so it doesn't introduce outline entries — no interaction expected. Confirm there's no heading leakage from card titles, including from `item=` card runes (titles should be links/spans, not `<hN>`).
 
 -----
 
