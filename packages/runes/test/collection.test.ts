@@ -80,6 +80,25 @@ describe('collection resolver', () => {
 		expect(groups.length).toBe(2); // ready, done
 	});
 
+	it('renders heading-delimited table columns with per-cell $item templates', () => {
+		const out = render(
+			'{% collection type="work" filter="status:ready" layout="table" %}\n## Title\n{% $item.data.title %}\n\n## Status\n{% $item.data.status %}\n{% /collection %}',
+			reg,
+		);
+		const tables = findAll(out, (t) => t.name === 'table');
+		expect(tables).toHaveLength(1);
+		// Two heading-derived columns
+		const ths = findAll(out, (t) => t.name === 'th');
+		expect(ths.map((t) => (t.children ?? [])[0])).toEqual(['Title', 'Status']);
+		// One row per ready entity, each with 2 cells
+		const rows = findAll(out, (t) => t.name === 'tr' && t.attributes['data-entity-id'] !== undefined);
+		expect(rows).toHaveLength(2);
+		const blob = JSON.stringify(out);
+		expect(blob).toContain('Alpha');
+		expect(blob).toContain('Gamma');
+		expect(blob).not.toContain('Beta');
+	});
+
 	it('renders a per-entity body template with $item bound', () => {
 		const out = render(
 			'{% collection type="work" filter="status:ready" sort="priority" %}\n## {% $item.data.title %}\nStatus: {% $item.data.status %} ({% $item.id %})\n{% /collection %}',

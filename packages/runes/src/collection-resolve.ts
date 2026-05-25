@@ -13,7 +13,7 @@ import { parseFieldMatch, matchesFieldMatch, resolveEntityField, type MatchableE
 import { transformDeferredTemplate } from './deferred-body.js';
 import { COLLECTION_SENTINEL } from './tags/collection.js';
 
-const { Tag } = Markdoc;
+const { Tag, Ast } = Markdoc;
 type TagNode = InstanceType<typeof Tag>;
 
 export interface CollectionEmbedConfig {
@@ -136,6 +136,59 @@ function renderBuiltInItem(e: EntityRegistration, q: CollectionQuery): TagNode {
 	return new Tag('article', { class: 'rf-collection__card', 'data-entity-id': e.id }, [titleLink(e), ...fieldSpans]);
 }
 
+interface ColumnDef {
+	label: string;
+	cellSource: string;
+}
+
+/** Split a captured body source into table columns by heading (SPEC-070 / WORK-264). */
+function splitColumns(bodySource: string, ctx: PipelineContext, pageUrl: string): ColumnDef[] {
+	const ast = Markdoc.parse(bodySource);
+	const columns: ColumnDef[] = [];
+	let current: { label: string; cellNodes: unknown[] } | null = null;
+	for (const node of ast.children) {
+		if (node.type === 'heading') {
+			const label = Markdoc.format(node).replace(/^#+\s*/, '').trim();
+			if (label.includes('$item')) {
+				ctx.warn(`collection: $item in a table column heading ("${label}") is not per-row; use a static label`, pageUrl);
+			}
+			current = { label, cellNodes: [] };
+			columns.push({ label, cellSource: '' });
+		} else if (current) {
+			current.cellNodes.push(node);
+			columns[columns.length - 1].cellSource = Markdoc.format(
+				new Ast.Node('document', {}, current.cellNodes as never[]),
+			);
+		}
+	}
+	return columns;
+}
+
+function renderHeadingTable(
+	entities: EntityRegistration[],
+	bodySource: string,
+	embedConfig: CollectionEmbedConfig | undefined,
+	ctx: PipelineContext,
+	pageUrl: string,
+): TagNode {
+	const columns = splitColumns(bodySource, ctx, pageUrl);
+	if (!embedConfig) {
+		ctx.error('collection — table column templates present but no embedConfig threaded through the pipeline', pageUrl);
+		return new Tag('table', { class: 'rf-collection__table' }, []);
+	}
+	const thead = new Tag('thead', {}, [new Tag('tr', {}, columns.map((c) => new Tag('th', {}, [c.label])))]);
+	const rows = entities.map((e) => {
+		const item = { id: e.id, type: e.type, url: entityUrl(e), data: e.data };
+		const cells = columns.map((c) => {
+			const out = transformDeferredTemplate(c.cellSource, embedConfig as never, { item });
+			const kids = Array.isArray(out) ? out : [out];
+			return new Tag('td', {}, kids as RenderableTreeNode[]);
+		});
+		return new Tag('tr', { 'data-entity-id': e.id }, cells);
+	});
+	return new Tag('table', { class: 'rf-collection__table' }, [thead, new Tag('tbody', {}, rows)]);
+}
+
 function renderTable(entities: EntityRegistration[], q: CollectionQuery): TagNode {
 	const headCells = [new Tag('th', {}, ['Title']), ...q.fields.map((f) => new Tag('th', {}, [humanize(f)]))];
 	const thead = new Tag('thead', {}, [new Tag('tr', {}, headCells)]);
@@ -203,7 +256,10 @@ function resolveOne(
 
 	// Render items
 	let children: RenderableTreeNode[];
-	if (q.bodySource) {
+	if (q.layout === 'table' && q.bodySource) {
+		// Heading-delimited column templates (WORK-264).
+		children = renderGroupOrFlat(entities, q, (es) => [renderHeadingTable(es, q.bodySource, embedConfig, ctx, pageUrl)]);
+	} else if (q.bodySource) {
 		children = renderGroupOrFlat(entities, q, (es) => renderBody(es, q.bodySource, embedConfig, ctx, pageUrl));
 	} else if (q.layout === 'table') {
 		children = renderGroupOrFlat(entities, q, (es) => [renderTable(es, q)]);
