@@ -150,8 +150,34 @@ Move `humanize()` from `collection-resolve.ts` into the shared markdoc functions
 - **camelCase split:** add a camelCase word boundary (`/([a-z])([A-Z])/ → "$1 $2"`) so `prepTime` → "Prep Time" — strictly better for both headers and labels.
 - `collection`'s header logic calls the promoted function (no behavior change beyond the camelCase improvement).
 
+## Capability 5 — Body zones (preamble / template / fallback) + empty state
+
+`collection` (and `relationships`) today render an empty `__items` when a query yields nothing — the author has no fallback, and a *preceding sibling* heading (`## Blocked` above the rune) is left stranded when the section is empty. Because emptiness is resolved at **build time**, `{% if %}` can't express it. Two surfaces fix this:
+
+**Body zones (when there is a body).** Split the body on **top-level `hr` (`---`)** into positional zones, mirroring `card`/`recipe`:
+
+- **1 zone** → per-item template (today's behavior, unchanged — zero-config preserved).
+- **2 zones** → `preamble --- template`.
+- **3 zones** → `preamble --- template --- fallback`.
+- Lead with an empty zone (`--- template --- fallback`) to skip the preamble — the same escape hatch `card` uses for "no media."
+
+Semantics:
+- **preamble** — rendered **once, only when the result set is non-empty**, *above* the items. This is what lets the section heading live inside the rune so the whole section (heading + items) appears/disappears together. Transformed plainly (no `$item`/`$kind` binding).
+- **template** — the per-item/per-edge deferred template, exactly as today (may be empty → the built-in items render).
+- **fallback** — rendered **once, only when the result set is empty**, in place of items. Transformed plainly.
+- **Split on top-level `hr` only:** a `---` *inside* a nested `{% card %}`/`{% recipe %}` is a child of that tag, not a sibling, so it is never mistaken for a zone delimiter. In `table` layout the template zone keeps its heading-delimited column semantics — zones split first, then the template zone is column-split.
+
+**`empty` attribute (when there is no body).** The self-closing form (`{% collection … /%}` — the common dashboard) has no body to carry zones, so a string `empty="No results."` renders a muted empty state. Absent `empty` → render nothing (today's behavior preserved; an empty section may legitimately vanish).
+
+**Output:** add `.rf-collection__preamble` (rendered when non-empty) and `.rf-collection__empty` (rendered when empty); same `__items` otherwise. `relationships` gets `.rf-relationships__preamble` / `__empty`.
+
+**Scope note:** this controls only the rune's *own* output. "Hide a section heading that sits *outside* the rune" is solved by moving that heading into the **preamble** zone — there is no separate section-level wrapper.
+
 ## Acceptance Criteria
 
+- [ ] A top-level-`hr` body split yields preamble / template / fallback zones (1/2/3-zone positional, empty-leading-zone to skip preamble); a single-zone body is unchanged; nested-rune `---` is not a delimiter.
+- [ ] Preamble renders once above items only when non-empty; fallback renders once in place of items only when empty; both transform without `$item`/`$kind`.
+- [ ] The self-closing (no-body) form supports a string `empty=` fallback; absent → render nothing. Applies to `collection` and `relationships`.
 - [ ] `EntityRegistry` exposes `relate(edge)` and `getRelated(id, opts?)`; edges are directed, carry an arbitrary string `kind`, and exact duplicates are deduped by core.
 - [ ] `getRelated` filters by `kind` and target `type`, and returns each edge with its resolved target `EntityRegistration`.
 - [ ] The plan plugin contributes its existing edges via `relate()` from `aggregate`; its derivation behavior (reverse edges, precedence, status-dependent kind) is preserved; no private relationship maps remain.
