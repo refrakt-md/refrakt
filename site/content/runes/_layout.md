@@ -28,6 +28,8 @@ tint-lock: false
 - reveal
 - embed
 - expand
+- collection
+- card
 - icon
 - xref
 - badge
