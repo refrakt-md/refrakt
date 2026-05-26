@@ -28,13 +28,6 @@ describe('bin — flag validation', () => {
 		expect(r.stderr).toContain('--type must be "site", "theme", or "plan"');
 	});
 
-	it('rejects --type plan with --target', () => {
-		const r = run(['x', '--type', 'plan', '--target', 'astro']);
-		expect(r.status).toBe(1);
-		expect(r.stderr).toContain('--target');
-		expect(r.stderr).toContain('cannot be used with --type plan');
-	});
-
 	it('rejects --type plan with --theme', () => {
 		const r = run(['x', '--type', 'plan', '--theme', '@refrakt-md/aurora']);
 		expect(r.status).toBe(1);
@@ -66,5 +59,11 @@ describe('bin — flag validation', () => {
 		expect(r.status).toBe(0);
 		expect(r.stdout).toContain('--type <site|theme|plan>');
 		expect(r.stdout).toContain('--type plan');
+	});
+
+	it('help advertises --type plan --target', () => {
+		const r = run(['--help']);
+		expect(r.status).toBe(0);
+		expect(r.stdout).toContain('--type plan --target sveltekit');
 	});
 });

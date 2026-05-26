@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { scaffold, scaffoldPlan, scaffoldTheme } from './scaffold.js';
+import { scaffold, scaffoldPlan, scaffoldPlanSite, scaffoldTheme } from './scaffold.js';
 import type { ScaffoldTarget } from './scaffold.js';
 import * as path from 'node:path';
 
@@ -92,7 +92,8 @@ Usage: create-refrakt [name] [options]
 
 Options:
   --type <site|theme|plan>     What to create (default: site)
-  --target <target>            Adapter target (sites only, default: sveltekit)
+  --target <target>            Adapter target. Required for sites; optional for
+                               plan (turns it into a runnable plan site).
                                Targets: ${VALID_TARGETS.join(', ')}
   --theme, -t <package>        Theme package to use (sites only, default: @refrakt-md/lumina)
   --scope, -s <scope>          npm scope for the package (themes only, e.g., @my-org)
@@ -109,13 +110,13 @@ Examples:
   npx create-refrakt my-theme --type theme
   npx create-refrakt my-theme --type theme --scope @my-org
   npx create-refrakt my-plan --type plan
+  npx create-refrakt my-plan --type plan --target sveltekit
 `);
 }
 
 function validateFlagCombos(): void {
 	if (type === 'plan') {
 		const rejected: string[] = [];
-		if (targetExplicit) rejected.push('--target');
 		if (theme !== '@refrakt-md/lumina') rejected.push('--theme');
 		if (scope) rejected.push('--scope');
 		if (rejected.length > 0) {
@@ -204,7 +205,9 @@ async function run(): Promise<void> {
 			type === 'theme'
 				? 'theme'
 				: type === 'plan'
-					? 'planning project'
+					? targetExplicit
+						? `${TARGET_LABELS[target!]} plan site`
+						: 'planning project'
 					: `${TARGET_LABELS[target!]} site`;
 		outro(`Creating ${label}: ${projectName}`);
 	} else if (!projectName) {
@@ -224,7 +227,11 @@ async function run(): Promise<void> {
 		if (type === 'theme') {
 			scaffoldTheme({ themeName: projectName!, targetDir, scope });
 		} else if (type === 'plan') {
-			scaffoldPlan({ projectName: projectName!, targetDir });
+			if (targetExplicit) {
+				await scaffoldPlanSite({ projectName: projectName!, targetDir, target: target! });
+			} else {
+				scaffoldPlan({ projectName: projectName!, targetDir });
+			}
 		} else {
 			await scaffold({ projectName: projectName!, targetDir, theme, target });
 		}
@@ -253,7 +260,29 @@ Then use it in a site:
 Run \`refrakt scaffold-css\` to generate CSS stubs for all runes.
 `);
 	} else if (type === 'plan') {
-		console.log(`
+		if (targetExplicit) {
+			console.log(`
+Done! Your refrakt.md plan site is ready (target: ${target}).
+
+Next steps:
+
+  cd ${projectName}
+  npm install
+  npm run dev
+
+Plan content lives in:
+
+  plan/        — entity sources (specs, work, decisions, milestones)
+  plan-site/   — dashboards + layout (authored Markdoc pages)
+
+The site reads plan/ through the registry; entityRoutes generates a
+detail page per entity, and the dashboards in plan-site/ compose them
+via the collection rune.
+
+Documentation: https://refrakt.md/docs/plan
+`);
+		} else {
+			console.log(`
 Done! Your refrakt.md planning project is ready.
 
 Next steps:
@@ -271,6 +300,7 @@ Useful commands:
 
 Documentation: https://refrakt.md/docs/plan
 `);
+		}
 	} else {
 		const devCommands: Record<ScaffoldTarget, string> = {
 			sveltekit: `  cd ${projectName}\n  npm install\n  npm run dev`,

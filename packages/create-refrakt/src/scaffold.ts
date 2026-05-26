@@ -1117,3 +1117,256 @@ function generatePlanGitignore(): string {
 .plan-history-cache.json
 `;
 }
+
+// ─── Plan-site scaffolding (runnable site dogfood, SPEC-071) ─────────
+
+export interface PlanSiteScaffoldOptions {
+	projectName: string;
+	targetDir: string;
+	target: ScaffoldTarget;
+}
+
+/**
+ * Scaffold a runnable plan site (SPEC-071 / WORK-271): a full adapter project
+ * whose `refrakt.config.json` declares the plan plugin + `entityRoutes` rules
+ * and whose `content/` dir holds the dashboards + layout. Plan entity sources
+ * live in `plan/` (seeded via runInit) and are reached through the registry,
+ * not as content pages. Layout mirrors a regular `--type site` scaffold so
+ * the dev server, build, and conventions feel identical.
+ */
+export async function scaffoldPlanSite(options: PlanSiteScaffoldOptions): Promise<void> {
+	const { projectName, targetDir, target } = options;
+
+	// Lay down the adapter shell first — same scaffolders sites use. They
+	// write a default refrakt.config.json (and a `content/` dir with a sample
+	// page) which we overwrite below.
+	await scaffold({
+		projectName,
+		targetDir,
+		theme: '@refrakt-md/lumina',
+		target,
+	});
+
+	// Replace the adapter's default config with the plan-site shape.
+	writeFileSync(
+		path.join(targetDir, 'refrakt.config.json'),
+		generatePlanSiteRefraktConfig(adapterTargetString(target)),
+	);
+
+	// Add @refrakt-md/plan + @refrakt-md/cli to the project dependencies and
+	// the plan:* scripts to package.json. Adapter scaffolders only seed the
+	// marketing plugin, so we layer the plan plugin in after the fact.
+	mergePlanDepsIntoPackageJson(targetDir, target);
+
+	// Seed plan/ with one of each entity type so the dev server has something
+	// to render immediately. noPackageJson: true so the existing scripts and
+	// pinned versions survive (we already merged what we need).
+	runInit({
+		dir: path.join(targetDir, 'plan'),
+		projectRoot: targetDir,
+		noPackageJson: true,
+	});
+
+	// Overwrite the adapter's sample content with the plan dashboards. The
+	// content/ dir already exists from the adapter scaffold; we replace its
+	// contents so the project mirrors a regular `--type site` shape.
+	const contentDir = path.join(targetDir, 'content');
+	mkdirSync(contentDir, { recursive: true });
+	rmContentDirSamples(contentDir);
+	writeFileSync(path.join(contentDir, '_layout.md'), generatePlanSiteLayoutMd());
+	writeFileSync(path.join(contentDir, 'index.md'), generatePlanSiteIndexMd());
+	writeFileSync(path.join(contentDir, 'work.md'), generatePlanSiteWorkMd());
+	writeFileSync(path.join(contentDir, 'specs.md'), generatePlanSiteSpecsMd());
+	writeFileSync(path.join(contentDir, 'bugs.md'), generatePlanSiteBugsMd());
+	writeFileSync(path.join(contentDir, 'decisions.md'), generatePlanSiteDecisionsMd());
+	writeFileSync(path.join(contentDir, 'milestones.md'), generatePlanSiteMilestonesMd());
+}
+
+/** Remove the marketing-flavoured sample files the adapter scaffold drops into
+ *  `content/` (typically `index.md` and a hello-world page) before we write the
+ *  plan dashboards in their place. Best-effort — we only touch known sample
+ *  filenames, leaving anything else in the dir untouched. */
+function rmContentDirSamples(contentDir: string): void {
+	for (const name of ['index.md', 'hello.md', 'about.md']) {
+		const p = path.join(contentDir, name);
+		if (existsSync(p)) {
+			try { writeFileSync(p, ''); } catch { /* ignore */ }
+		}
+	}
+}
+
+/** Convert a ScaffoldTarget into the `target` string used in refrakt.config.json
+ *  (SvelteKit projects record `svelte` rather than `sveltekit`). */
+function adapterTargetString(target: ScaffoldTarget): string {
+	return target === 'sveltekit' ? 'svelte' : target;
+}
+
+/** Plan-site refrakt.config.json — the plan plugin plus the entityRoutes block
+ *  from SPEC-071. `contentDir` is `./content` (dashboards only); plan/
+ *  entities are registry sources, not content pages. */
+function generatePlanSiteRefraktConfig(target: string): string {
+	const config = {
+		$schema: `https://refrakt.md/schemas/${getRefraktSchemaVersion()}/refrakt.config.schema.json`,
+		plan: { dir: 'plan' },
+		sites: {
+			main: {
+				contentDir: './content',
+				theme: '@refrakt-md/lumina',
+				target,
+				plugins: ['@refrakt-md/plan'],
+				routeRules: [
+					{ pattern: '**', layout: 'docs' },
+				],
+				entityRoutes: [
+					{ type: 'spec',      url: '/specs/{id}/',        title: '{title}',         render: '{% expand $item.id /%}' },
+					{ type: 'work',      url: '/work/{id}/',         title: '{id} — {title}',  render: '{% expand $item.id /%}' },
+					{ type: 'bug',       url: '/bugs/{id}/',         title: '{id} — {title}',  render: '{% expand $item.id /%}' },
+					{ type: 'decision',  url: '/decisions/{id}/',    title: '{title}',         render: '{% expand $item.id /%}' },
+					{ type: 'milestone', url: '/milestones/{name}/', title: '{name}',          render: '{% expand $item.name /%}' },
+				],
+			},
+		},
+	};
+	return JSON.stringify(config, null, '\t') + '\n';
+}
+
+/** Adapter scaffolders seed `@refrakt-md/marketing` and adapter-specific deps.
+ *  Plan-site projects also need `@refrakt-md/plan` (for runes, register hook,
+ *  entityRoutes wiring) and `@refrakt-md/cli` (so `npx refrakt plan ...`
+ *  works for authoring). Add convenience scripts so users don't have to
+ *  remember the long `npx` invocations. */
+function mergePlanDepsIntoPackageJson(targetDir: string, _target: ScaffoldTarget): void {
+	const pkgPath = path.join(targetDir, 'package.json');
+	const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as {
+		dependencies?: Record<string, string>;
+		devDependencies?: Record<string, string>;
+		scripts?: Record<string, string>;
+	};
+	const v = `~${getRefraktVersion()}`;
+	pkg.dependencies = { ...(pkg.dependencies ?? {}), '@refrakt-md/plan': v };
+	pkg.devDependencies = { ...(pkg.devDependencies ?? {}), '@refrakt-md/cli': v };
+	pkg.scripts = {
+		...(pkg.scripts ?? {}),
+		plan: 'refrakt plan',
+		'plan:next': 'refrakt plan next',
+		'plan:status': 'refrakt plan status',
+		'plan:validate': 'refrakt plan validate',
+	};
+	writeFileSync(pkgPath, JSON.stringify(pkg, null, '\t') + '\n');
+}
+
+function generatePlanSiteLayoutMd(): string {
+	return `---
+tint-mode: auto
+tint-lock: false
+---
+{% layout %}
+{% region name="nav" %}
+{% nav collapsible=true %}
+- [Overview](/)
+- [Specs](/specs)
+- [Work](/work)
+- [Bugs](/bugs)
+- [Decisions](/decisions)
+- [Milestones](/milestones)
+{% /nav %}
+{% /region %}
+
+{% region name="pagination" %}
+{% pagination auto=true /%}
+{% /region %}
+{% /layout %}
+`;
+}
+
+function generatePlanSiteIndexMd(): string {
+	return `---
+title: Plan
+description: Live plan dashboard — progress, recent activity, ready work, and architecture decisions.
+---
+
+# Plan
+
+A live dashboard built from the \`plan/\` tree your project commits to git. Every entity below resolves through the standard refrakt pipeline — \`entityRoutes\` generates a detail page per spec/work/bug/decision/milestone, and \`collection\` lists them here.
+
+## Progress
+
+{% plan-progress /%}
+
+## Recent activity
+
+{% plan-activity limit=15 /%}
+
+## Ready work
+
+{% backlog filter="status:ready" sort="priority" group="priority" /%}
+
+## Recent decisions
+
+{% decision-log sort="date" /%}
+`;
+}
+
+function generatePlanSiteWorkMd(): string {
+	return `---
+title: Work
+description: Every work item, grouped by status.
+---
+
+# Work
+
+{% collection type="work" group="status" sort="priority" /%}
+`;
+}
+
+function generatePlanSiteSpecsMd(): string {
+	return `---
+title: Specs
+description: All specifications, grouped by status.
+---
+
+# Specs
+
+{% collection type="spec" group="status" sort="id" /%}
+`;
+}
+
+function generatePlanSiteBugsMd(): string {
+	return `---
+title: Bugs
+description: Open and resolved bug reports.
+---
+
+# Bugs
+
+{% collection type="bug" group="status" sort="severity" /%}
+`;
+}
+
+function generatePlanSiteDecisionsMd(): string {
+	return `---
+title: Decisions
+description: Architecture decision records.
+---
+
+# Decisions
+
+{% decision-log sort="date" /%}
+
+## All decisions
+
+{% collection type="decision" sort="id" /%}
+`;
+}
+
+function generatePlanSiteMilestonesMd(): string {
+	return `---
+title: Milestones
+description: Release targets and their progress.
+---
+
+# Milestones
+
+{% collection type="milestone" sort="-name" /%}
+`;
+}
