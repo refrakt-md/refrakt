@@ -62,8 +62,9 @@ and let the template (and later the layout) decide placement.
 
 **Cons:**
 - Loses the zero-config "milestone just shows its work." Mitigated by shipping a milestone-page partial/template so it stays a one-liner for authors.
-- Requires two new bound primitives (`$entity`, `$kind`) and a new `relationships` (and `history`) rune.
+- Requires two new bound primitives (`$entity`, `$kind`), a new generic `relationships` rune, and a core relationship-graph capability (the latter is its own follow-up spec).
 - The progress rollup currently computed inside `buildMilestoneBacklog` needs a new home.
+- History generalization is gated on a separate refrakt diff package; until then `plan-history` stays plan-specific.
 
 ## Decision
 
@@ -73,13 +74,15 @@ Adopt option 3. Specifically:
 
 2. **Milestone work → `collection`.** The milestone→work link is a forward field (`work.data.milestone`), so the milestone-page template uses `{% collection type="work,bug" filter="milestone:<name>" group="status" sort="priority" %}` with a `card` partial. The aggregate **progress rollup** (checked/total criteria) is *not* collection-expressible and moves to `plan-progress` (or a small formatter) rather than staying inside milestone.
 
-3. **New `relationships` rune, modeled on `collection`.** It is `collection` whose source set is the edges of an entity rather than a registry query, and each item carries its edge `kind`:
+3. **New generic core `relationships` rune** (in `@refrakt-md/runes`, not the plan plugin — the rune is domain-agnostic; only the *edge derivation* is plan-specific). It is `collection` whose source set is the edges of an entity rather than a registry query, and each item carries its edge `kind`:
+   - **Generic over kind.** The edge `kind` is an arbitrary **`string`**, not the plan-specific union it is today (relationships.ts:14). The rune groups by whatever kinds the graph contains and labels them via `humanize` — so it works for storytelling (`ally`/`rival`/`mentor`), plan (`implements`/`blocks`/`depends-on`), or any domain. There is no per-domain `relationships` rune; there is one rune and many edge contributors.
+   - **Backed by a core relationship graph.** This requires lifting relationships out of the plan plugin into a core capability: the `EntityRegistry` (which today has no edge concept — pipeline.ts:90) gains an edge store `{ fromId, toId, kind: string }`, a plugin contribution path during aggregate, and a `getRelated(id)` query. Plan's `buildRelationships` becomes a *contributor* (keeping all its plan-isms — reverse-edge synthesis, dedup precedence, status-dependent kind — in the contributor, not the rune). Storytelling's `bond` rune (today purely presentational, registering nothing) can likewise contribute `ally`/`rival`/… edges. This graph is a reusable primitive — `collection`/`ref` could later query it too — so it warrants its **own follow-up spec**.
    - **Binding:** the related entity binds to **`$item`** (identical contract to `collection`: `id`/`type`/`url`/`data`), and the edge kind binds to **`$kind`**. Using `$item` makes the same card partials (e.g. `work-card.md`) reusable across `collection` and `relationships`. Tradeoff accepted: when `relationships` is nested inside a `collection` body, the inner `$item` shadows the outer one (rare).
    - **Attributes mirror `collection`:** `of` (entity to describe; defaults to `$entity`; accepts an id or a bound entity), `kind` (edge kinds, comma-separated), `type` (restrict related entity types), `group` (defaults to `kind`; also `type`/`none`), `sort`, `limit`, `fields` (no-body projection), `item-template`, and a per-edge body template.
    - **Zero-config default:** no body → edges grouped by kind, each a title link to the related entity (the analog of `collection`'s `fields` shorthand). Labels via the generic `humanize` formatter below — no plan-specific label function.
-   - **Implementation:** refactor the per-item render helpers (built-in item, grouping, sort, deferred-body reparse) in `collection-resolve.ts` to be shared, and feed `relationships` the resolved edge set plus the `$kind` binding.
+   - **Implementation:** refactor the per-item render helpers (built-in item, grouping, sort, deferred-body reparse) in `collection-resolve.ts` into a shared module, and feed `relationships` the resolved edge set plus the `$kind` binding.
 
-4. **New `history` rune**, `$entity`-fed, rendering the git history for the entity (the data currently produced by the aggregate hook). Not collection-shaped.
+4. **History: reuse `plan-history` + `$entity` now; generalize later.** The per-entity history rune already exists as `plan-history` (`plan-history.ts`) — it supports per-entity (`id=`) and global modes and resolves from aggregated git data via a sentinel in `postProcess`, which is the correct pattern (author-placed rune, filled from aggregated data), *not* the injection anti-pattern. The only gap is the `$entity` binding so `{% plan-history /%}` on an entity page targets the page entity without repeating `id=`. **No new `history` rune is introduced now.** `plan-history` is plan-specific only because its events are a *semantic* changelog (created / attribute-change / criteria-check / resolution / content — `HistoryEvent`, history.ts:28), reconstructed by understanding the plan rune format. Long term, once a generic refrakt **diff package** can diff any entity's attributes/content across revisions, a generic core `history` rune renders those events (mirroring `relationships`), and `plan-history` collapses into a thin plan-flavored layer. That generalization is **gated on the diff package** and tracked as future work, not part of this ADR.
 
 5. **New `$entity` bound variable** — the page's primary entity, the page-level analog of `$item`/`$page`/`$file`. `relationships`/`history` default `of=$entity`.
 
@@ -95,17 +98,20 @@ The milestone backlog and the relationships/history tabs converge on one move: *
 
 Composing at the *entityRoutes template* level (not in per-entity content) is what makes this viable without migration: content stays pure, downstream tools are unaffected, and the template is authored once per type. The end-of-page + TOC placement is the pragmatic answer to the long-article problem that tabs/accordion couldn't solve, and because the panels are standalone runes under headings, the eventual sidebar treatment is a pure layout/CSS change.
 
-Keeping `relationships`/`history` as dedicated runes (rather than forcing them into `collection`) respects the data's actual shape — a typed bidirectional graph and a git log — neither of which is a field-match over self-owned data. Binding the related entity to `$item` maximizes template/partial reuse, the strongest argument for the small nesting-shadow tradeoff. Promoting `humanize` keeps the formatter family generic and domain-agnostic, the rule established with `collection`.
+Keeping relationships and history as dedicated runes (rather than forcing them into `collection`) respects the data's actual shape — a typed bidirectional graph and a semantic changelog — neither of which is a field-match over self-owned data. But the *rune* is generic and the *data derivation* is domain-specific: the `relationships` rune lives in core and groups arbitrary string kinds, while plan (and later storytelling's `bond`) contribute the edges — the same split refrakt already draws between the generic identity transform and per-plugin rune config. Binding the related entity to `$item` maximizes template/partial reuse, the strongest argument for the small nesting-shadow tradeoff. Promoting `humanize` keeps the formatter family generic and domain-agnostic, the rule established with `collection`.
 
 ## Consequences
 
 **For `@refrakt-md/plan`:**
-- Remove `buildMilestoneBacklog` and the tab-wrapping branch from `postProcess` (pipeline.ts:546-…). The `aggregate` hook still produces `relationships`, `history`, and the entity arrays — that data now feeds the new runes instead of injection.
-- Add `relationships` and `history` runes (schemas + theme config + CSS under `plugins/plan/styles/`).
+- Remove `buildMilestoneBacklog` and the tab-wrapping branch from `postProcess` (pipeline.ts:546-…).
+- Convert `buildRelationships` from a private aggregate map into an **edge contributor** to the core relationship graph (kinds stay plan's vocabulary; the derivation logic is unchanged).
+- Add `$entity` support to `plan-history` so `id=` can be omitted on entity pages. No new history rune.
 - Move the milestone progress rollup to `plan-progress` (or a formatter); decide as part of the follow-up work.
 - Ship a milestone-page partial/template so milestone pages stay one-liners.
 
-**For `@refrakt-md/runes` (core):**
+**For `@refrakt-md/runes` + `@refrakt-md/content` (core):**
+- Add a relationship-graph capability to the `EntityRegistry`: an edge store `{ fromId, toId, kind: string }`, a plugin contribution path during aggregate, and a `getRelated(id)` query (pipeline.ts:90 currently has no edge concept).
+- Add the generic `relationships` rune (groups arbitrary string kinds; `$item`/`$kind` bindings).
 - Promote `humanize()` from `collection-resolve.ts` into the shared functions module as a public formatter; `collection`'s header logic calls the promoted function. Add the camelCase boundary.
 - Refactor the per-item render helpers in `collection-resolve.ts` into a shared module consumable by `relationships`.
 - Introduce the `$entity` bound variable (page-primary-entity), alongside the existing `$item`/`$page`/`$file` bindings.
@@ -119,7 +125,8 @@ Keeping `relationships`/`history` as dedicated runes (rather than forcing them i
 - Downstream consumers compose (or omit) the panels in their own templates; nothing is force-injected.
 
 **Open follow-up:**
-- A spec should formalize the `relationships`/`history` rune contracts, the `$entity` binding semantics, and the shared render-helper extraction.
+- A **spec for the core relationship-graph capability** — registry edge store, the plugin contribution API, `getRelated` semantics, the generic `relationships` rune contract, and the `$entity` binding. Plan and storytelling (`bond`) are its first two contributors.
+- A **future spec for a generic refrakt diff package**, on which a generic core `history` rune would ride; `plan-history` then becomes a thin layer. Out of scope here, recorded as direction.
 - Decide the precise home and shape of the milestone progress rollup.
 - Consider the responsive sidebar/rail theme treatment (rail on wide → accordion/section on narrow) as a separate, non-breaking layout enhancement.
 - The auto-injected tabs removal is a behavior change for existing plan sites; note it in the v0.16.0 (or successor) milestone notes.
