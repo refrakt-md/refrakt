@@ -11,6 +11,7 @@ import type { RenderableTreeNode } from '@markdoc/markdoc';
 import type { EntityRegistry, EntityRegistration, PipelineContext } from '@refrakt-md/types';
 import { parseFieldMatch, matchesFieldMatch, resolveEntityField, type MatchableEntity } from './field-match.js';
 import { transformDeferredTemplate } from './deferred-body.js';
+import { humanize } from './functions.js';
 import { COLLECTION_SENTINEL } from './tags/collection.js';
 
 const { Tag, Ast } = Markdoc;
@@ -39,13 +40,6 @@ function hasSentinel(tag: TagNode): boolean {
 	return (tag.children ?? []).some(
 		(c) => isTag(c) && c.name === 'meta' && c.attributes['data-field'] === COLLECTION_SENTINEL,
 	);
-}
-
-function humanize(field: string): string {
-	return field
-		.replace(/[-_]+/g, ' ')
-		.replace(/\b\w/g, (c) => c.toUpperCase())
-		.trim();
 }
 
 function entityUrl(e: EntityRegistration): string {

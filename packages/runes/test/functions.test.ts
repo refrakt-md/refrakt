@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import Markdoc from '@markdoc/markdoc';
-import { functions } from '../src/functions.js';
+import { functions, humanize } from '../src/functions.js';
 
 function run(src: string, variables: Record<string, unknown> = {}): string {
 	const rendered = Markdoc.transform(Markdoc.parse(src), { functions, variables } as never);
@@ -33,5 +33,19 @@ describe('formatter functions', () => {
 	it('are usable inside markdoc interpolation with variables', () => {
 		const blob = run('Price: {% currency($p, "USD") %}', { p: 9 });
 		expect(blob).toContain('$9.00');
+	});
+
+	it('humanize title-cases slugs, snake_case and camelCase', () => {
+		expect(humanize('blocked-by')).toBe('Blocked By');
+		expect(humanize('depends-on')).toBe('Depends On');
+		expect(humanize('in-progress')).toBe('In Progress');
+		expect(humanize('prepTime')).toBe('Prep Time');
+		expect(humanize('status')).toBe('Status');
+		expect(humanize('')).toBe('');
+	});
+
+	it('humanize is exposed as a markdoc function', () => {
+		expect(functions.humanize.transform!({ 0: 'blocked-by' } as never, {} as never)).toBe('Blocked By');
+		expect(run('{% humanize($k) %}', { k: 'in-progress' })).toContain('In Progress');
 	});
 });
