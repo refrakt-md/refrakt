@@ -9,18 +9,23 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 import type { EntityRegistry, EntityRegistration, PipelineContext } from '@refrakt-md/types';
-import { parseFieldMatch, matchesFieldMatch, resolveEntityField, type MatchableEntity } from './field-match.js';
+import { parseFieldMatch, matchesFieldMatch, type MatchableEntity } from './field-match.js';
 import { transformDeferredTemplate } from './deferred-body.js';
 import { humanize } from './functions.js';
+import {
+	type CollectionEmbedConfig,
+	fieldValue, titleLink as titleLinkFor,
+	sortEntities, groupEntities, projectItem,
+} from './collection-helpers.js';
 import { COLLECTION_SENTINEL } from './tags/collection.js';
 
 const { Tag, Ast } = Markdoc;
 type TagNode = InstanceType<typeof Tag>;
 
-export interface CollectionEmbedConfig {
-	tags: Record<string, unknown>;
-	nodes: Record<string, unknown>;
-	projectRoot?: string;
+export type { CollectionEmbedConfig };
+
+function titleLink(e: EntityRegistration): TagNode {
+	return titleLinkFor(e, 'rf-collection');
 }
 
 function isTag(node: unknown): node is TagNode {
@@ -40,57 +45,6 @@ function hasSentinel(tag: TagNode): boolean {
 	return (tag.children ?? []).some(
 		(c) => isTag(c) && c.name === 'meta' && c.attributes['data-field'] === COLLECTION_SENTINEL,
 	);
-}
-
-function entityUrl(e: EntityRegistration): string {
-	return e.sourceUrl || String((e.data as Record<string, unknown>).url ?? '');
-}
-
-function entityTitle(e: EntityRegistration): string {
-	const d = e.data as Record<string, unknown>;
-	return String(d.title ?? d.name ?? e.id);
-}
-
-function fieldValue(e: EntityRegistration, field: string): string {
-	const v = resolveEntityField(e as MatchableEntity, field);
-	if (Array.isArray(v)) return v.join(', ');
-	return String(v ?? '');
-}
-
-function titleLink(e: EntityRegistration): TagNode {
-	const url = entityUrl(e);
-	const label = entityTitle(e);
-	return url
-		? new Tag('a', { class: 'rf-collection__title', href: url }, [label])
-		: new Tag('span', { class: 'rf-collection__title' }, [label]);
-}
-
-function sortEntities(entities: EntityRegistration[], sortExpr: string): EntityRegistration[] {
-	if (!sortExpr) return entities;
-	let field = sortExpr.trim();
-	let dir = 1;
-	if (field.startsWith('-')) { dir = -1; field = field.slice(1); }
-	else if (field.endsWith('-desc')) { dir = -1; field = field.slice(0, -5); }
-	else if (field.endsWith('-asc')) { field = field.slice(0, -4); }
-	return [...entities].sort((a, b) => {
-		const av = fieldValue(a, field);
-		const bv = fieldValue(b, field);
-		const an = Number(av);
-		const bn = Number(bv);
-		if (av !== '' && bv !== '' && Number.isFinite(an) && Number.isFinite(bn)) return (an - bn) * dir;
-		return av.localeCompare(bv) * dir;
-	});
-}
-
-function groupEntities(entities: EntityRegistration[], field: string): Map<string, EntityRegistration[]> {
-	const groups = new Map<string, EntityRegistration[]>();
-	for (const e of entities) {
-		const key = fieldValue(e, field) || '(none)';
-		const arr = groups.get(key);
-		if (arr) arr.push(e);
-		else groups.set(key, [e]);
-	}
-	return groups;
 }
 
 interface CollectionQuery {
@@ -172,7 +126,7 @@ function renderHeadingTable(
 	}
 	const thead = new Tag('thead', {}, [new Tag('tr', {}, columns.map((c) => new Tag('th', {}, [c.label])))]);
 	const rows = entities.map((e) => {
-		const item = { id: e.id, type: e.type, url: entityUrl(e), data: e.data };
+		const item = projectItem(e);
 		const cells = columns.map((c) => {
 			const out = transformDeferredTemplate(c.cellSource, embedConfig as never, { item });
 			const kids = Array.isArray(out) ? out : [out];
@@ -208,7 +162,7 @@ function renderBody(
 		return [];
 	}
 	return entities.map((e) => {
-		const item = { id: e.id, type: e.type, url: entityUrl(e), data: e.data };
+		const item = projectItem(e);
 		const out = transformDeferredTemplate(bodySource, embedConfig as never, { item });
 		const children = Array.isArray(out) ? out : [out];
 		return new Tag('div', { class: 'rf-collection__item', 'data-entity-id': e.id }, children as RenderableTreeNode[]);
