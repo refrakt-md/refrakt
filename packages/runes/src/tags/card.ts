@@ -73,12 +73,38 @@ export const card = createContentModelSchema({
 			children.push(new Tag('div', { 'data-section': 'media', 'data-name': 'media' }, inner as RenderableTreeNode[]));
 		}
 
+		// Eyebrow: a leading paragraph immediately followed by a heading becomes a
+		// kicker (the page-section / recipe pattern). The rest stays freeform body.
+		let eyebrowNode: Node | undefined;
+		let mainBodyNodes = bodyNodes;
+		if (
+			bodyNodes.length >= 2 &&
+			bodyNodes[0].type === 'paragraph' &&
+			bodyNodes[1].type === 'heading'
+		) {
+			eyebrowNode = bodyNodes[0];
+			mainBodyNodes = bodyNodes.slice(1);
+		}
+
 		// Content zone (body + optional footer) — one grid child so the split
 		// layout puts media | content; footer sits at the bottom of content.
+		const bodyInner: RenderableTreeNode[] = [];
+		let eyebrowTag: InstanceType<typeof Tag> | undefined;
+		if (eyebrowNode) {
+			const eyebrowCursor = new RenderableNodeCursor(
+				Markdoc.transform([eyebrowNode], config) as RenderableTreeNode[],
+			);
+			const first = eyebrowCursor.toArray()[0];
+			if (Markdoc.Tag.isTag(first)) {
+				eyebrowTag = first;
+				bodyInner.push(eyebrowTag);
+			}
+		}
 		const bodyCursor = new RenderableNodeCursor(
-			Markdoc.transform(bodyNodes, config) as RenderableTreeNode[],
+			Markdoc.transform(mainBodyNodes, config) as RenderableTreeNode[],
 		);
-		const bodyDiv = new Tag('div', { 'data-name': 'body' }, bodyCursor.toArray() as RenderableTreeNode[]);
+		bodyInner.push(...(bodyCursor.toArray() as RenderableTreeNode[]));
+		const bodyDiv = new Tag('div', { 'data-name': 'body' }, bodyInner);
 		const contentChildren: RenderableTreeNode[] = [bodyDiv];
 		let footerTag: InstanceType<typeof Tag> | undefined;
 		if (footerNodes.length > 0) {
@@ -100,6 +126,7 @@ export const card = createContentModelSchema({
 		}
 
 		const refs: Record<string, InstanceType<typeof Tag>> = { content: contentDiv, body: bodyDiv };
+		if (eyebrowTag) refs.eyebrow = eyebrowTag;
 		if (footerTag) refs.footer = footerTag;
 		if (linkTag) refs.link = linkTag;
 

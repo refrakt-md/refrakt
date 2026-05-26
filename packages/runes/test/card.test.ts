@@ -69,6 +69,22 @@ describe('card rune', () => {
 		expect(link!.attributes.href).toBe('/posts/hello/');
 	});
 
+	it('leading paragraph before a heading becomes an eyebrow', () => {
+		const out = render('{% card %}\nBrunch classic\n\n### Tequila Sunrise\nBody text.\n{% /card %}');
+		const eyebrow = part(out, 'eyebrow');
+		expect(eyebrow).toBeDefined();
+		expect(eyebrow!.name).toBe('p');
+		expect(JSON.stringify(eyebrow)).toContain('Brunch classic');
+		// the heading + remaining body stay in the body zone
+		expect(find(part(out, 'body'), (x) => x.name === 'h3')).toBeDefined();
+	});
+
+	it('a paragraph not followed by a heading is plain body, not an eyebrow', () => {
+		const out = render('{% card %}\nJust a sentence.\n\nAnother sentence.\n{% /card %}');
+		expect(part(out, 'eyebrow')).toBeUndefined();
+		expect(JSON.stringify(part(out, 'body'))).toContain('Just a sentence.');
+	});
+
 	it('resolves $item in the body (collection-fed usage)', () => {
 		const out = render('{% card href=$item.url %}\n### {% $item.data.title %}\n{% /card %}', {
 			item: { url: '/r/tart/', data: { title: 'Lemon Tart' } },

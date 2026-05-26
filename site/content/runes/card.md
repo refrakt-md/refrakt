@@ -33,6 +33,8 @@ The body divides on `---` (a horizontal rule) into up to three zones — here al
 
 ---
 
+Brunch classic
+
 ### Tequila Sunrise
 A bright, layered cocktail — five minutes, no shaker.
 
@@ -48,6 +50,8 @@ Cocktail · Easy
 - **footer** (optional, trailing zone) — a muted meta row.
 
 Zones are assigned by count: **1 zone → body**; **2 → media + body**; **3 → media + body + footer**. To have a footer with no media, lead with an empty zone (`--- body --- footer`).
+
+In the body zone, a leading paragraph immediately followed by a heading is treated as an **eyebrow** — the small uppercase kicker above the title (the same pattern as [`page-section`](/runes/layout) and `recipe`). Above, `Brunch classic` is the eyebrow over the `Tequila Sunrise` heading.
 
 ### The media zone isn't just images
 
