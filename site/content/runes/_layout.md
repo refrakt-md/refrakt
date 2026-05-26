@@ -29,7 +29,9 @@ tint-lock: false
 - embed
 - expand
 - collection
+- relationships
 - card
+- progress
 - icon
 - xref
 - badge

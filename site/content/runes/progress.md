@@ -7,18 +7,26 @@ description: A generic completion bar — render a ratio from supplied numbers, 
 
 `{% progress %}` is a generic, presentational completion bar. You give it numbers — a `value`/`max` pair or a direct `percent` — and it renders a labelled bar. It computes nothing itself: the data is always supplied, either inline or fed from an aggregate (see [Feeding from data](#feeding-from-data)).
 
-```markdoc
+{% preview source=true %}
+
 {% progress value=3 max=4 %}Acceptance criteria{% /progress %}
-```
+
+{% /preview %}
 
 ## Input
 
 Two ways to express the ratio:
 
 - **`value` + `max`** (primary) — a count, e.g. `value=12 max=20`. Yields a "12/20" readout.
-- **`percent`** (alternative) — a direct `0–100` value when there's no count, e.g. `percent=60`.
+- **`percent`** (alternative) — a direct `0–100` value when there's no count.
 
 If both are given, `value`/`max` wins. The percentage is clamped to 0–100; a `max` of `0` (or absent) renders an empty bar with no numeric readout — never `NaN`.
+
+{% preview source=true %}
+
+{% progress percent=60 /%}
+
+{% /preview %}
 
 ## Readout — `display`
 
@@ -34,17 +42,21 @@ If both are given, `value`/`max` wins. The percentage is clamped to 0–100; a `
 
 An optional **body** is the label — it may hold inline markup, and its text also becomes the bar's accessible name (`aria-label`):
 
-```markdoc
+{% preview source=true %}
+
 {% progress percent=80 %}Funding goal{% /progress %}
-```
+
+{% /preview %}
 
 ## Variant
 
 `variant` tints the fill (`positive` / `caution` / `negative`); the neutral `default` uses the theme primary. There is **no** automatic threshold coloring — the variant is always explicit.
 
-```markdoc
-{% progress value=2 max=10 variant="caution" /%}
-```
+{% preview source=true %}
+
+{% progress value=2 max=10 variant="caution" %}Low stock{% /progress %}
+
+{% /preview %}
 
 ## Feeding from data
 
@@ -83,4 +95,3 @@ The fill width is driven by the `--rf-progress` custom property, so themes resty
 ## See also
 
 - [collection](/runes/collection) — pair `progress` with a per-item template to show a bar per entity.
-- The `stat` rune (single big number + label) is a separate, complementary primitive.
