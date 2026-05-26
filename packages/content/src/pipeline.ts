@@ -175,6 +175,11 @@ export async function runPipeline(
 	const resultPages = allPages.map((page, i) => ({
 		...page,
 		renderable: working[i].renderable as typeof page.renderable,
+		// `postProcess` can refresh headings (e.g. expand `level=N` inlines
+		// new headings that parse-time `extractHeadings` couldn't see). Merge
+		// the latest version back so the layout TOC builder sees what's in
+		// the final renderable.
+		headings: working[i].headings,
 	}));
 
 	// Tally entity count across all registered types

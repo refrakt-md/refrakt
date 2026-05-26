@@ -27,6 +27,11 @@ export interface SiteLoaderOptions {
 	xrefPatterns?: CompiledXrefPattern[];
 	/** Registered file roots — namespace → absolute directory path. */
 	fileRoots?: FileRoots;
+	/** Per-site config slice — passed to contributePages hooks so the built-in
+	 *  entityRoutes adapter can read `entityRoutes` and other site-scoped
+	 *  config. Without this, `entityRoutes` rules in the project's config
+	 *  silently produce no pages. */
+	siteConfig?: unknown;
 	/** When true, every load() call re-reads from disk (no caching). Default: false. */
 	dev?: boolean;
 }
@@ -56,6 +61,7 @@ export function createSiteLoader(options: SiteLoaderOptions): SiteLoader {
 				options.projectRoot,
 				options.xrefPatterns,
 				options.fileRoots,
+				options.siteConfig,
 			);
 			if (!options.dev) cached = promise;
 			return promise;
@@ -88,6 +94,9 @@ export interface VirtualSiteLoaderOptions {
 	xrefPatterns?: CompiledXrefPattern[];
 	/** Registered file roots — namespace → absolute directory path. */
 	fileRoots?: FileRoots;
+	/** Per-site config slice — passed to contributePages hooks. See
+	 *  {@link SiteLoaderOptions.siteConfig}. */
+	siteConfig?: unknown;
 	/** When true, every load() call re-runs the pipeline against the current
 	 *  tree (no caching). Use when the host swaps the tree's contents in place. */
 	dev?: boolean;
@@ -116,6 +125,7 @@ export function createVirtualSiteLoader(options: VirtualSiteLoaderOptions): Site
 				projectRoot: options.projectRoot,
 				xrefPatterns: options.xrefPatterns,
 				fileRoots: options.fileRoots,
+				siteConfig: options.siteConfig,
 			});
 			if (!options.dev) cached = promise;
 			return promise;

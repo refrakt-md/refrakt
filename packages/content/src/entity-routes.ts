@@ -45,7 +45,12 @@ function substituteFrontmatter(
 }
 
 function project(e: EntityRegistration) {
-	return { id: e.id, type: e.type, url: e.sourceUrl || String((e.data as Record<string, unknown>).url ?? ''), data: e.data };
+	const data = (e.data ?? {}) as Record<string, unknown>;
+	// Spread `data` so render templates can reference `$item.<field>` for the
+	// same fields available to URL `{name}` substitution. `id`, `type`, and
+	// `url` are canonical; `data` is preserved for templates that want the
+	// raw payload.
+	return { ...data, id: e.id, type: e.type, url: e.sourceUrl || String(data.url ?? ''), data };
 }
 
 /** Build the contributePages hook for a site's entityRoutes config. */

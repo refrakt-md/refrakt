@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdirSync, writeFileSync, rmSync, realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
@@ -14,7 +14,11 @@ let root: string;
 const blob = (n: unknown) => JSON.stringify(n);
 
 beforeEach(() => {
-	root = join(tmpdir(), `refrakt-dogfood-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+	// realpathSync — on macOS `/tmp` is a symlink to `/private/tmp`. The plan
+	// plugin's extract() reads through the file-root sandbox, which rejects
+	// paths that resolve outside their declared root via symlinks. Using the
+	// real path here makes the test work on both Linux and macOS.
+	root = join(realpathSync(tmpdir()), `refrakt-dogfood-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
 	// Plan entity sources (registry sources, not content pages).
 	mkdirSync(join(root, 'plan', 'specs'), { recursive: true });
 	mkdirSync(join(root, 'plan', 'work'), { recursive: true });

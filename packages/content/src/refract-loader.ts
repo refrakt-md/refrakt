@@ -270,6 +270,7 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 				projectRoot: configDir,
 				xrefPatterns,
 				fileRoots: Object.keys(fileRoots).length > 0 ? fileRoots : undefined,
+				siteConfig: site,
 				dev: options?.dev ?? false,
 			});
 		})();
@@ -405,6 +406,7 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 				projectRoot,
 				xrefPatterns,
 				fileRoots: Object.keys(fileRoots).length > 0 ? fileRoots : undefined,
+				siteConfig: site,
 				dev: dev ?? false,
 			});
 		})();

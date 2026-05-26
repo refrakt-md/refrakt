@@ -228,6 +228,11 @@ async function processContentTree(
       tags: embedTags as Record<string, unknown>,
       nodes: nodes as Record<string, unknown>,
       functions: functions as Record<string, unknown>,
+      // Pass parsed partials so `{% partial file="…" /%}` inside a collection
+      // body template (or an expand-resolved entity body) resolves the same
+      // way it would inside a top-level page. Without this, partial nodes in
+      // deferred templates silently render as empty `<article>` tags.
+      partials: parsedPartials,
       projectRoot: opts.projectRoot,
     },
   };
@@ -562,6 +567,10 @@ export interface LoadContentFromTreeOptions {
   xrefPatterns?: CompiledXrefPattern[];
   /** Registered file roots — namespace → absolute directory path. */
   fileRoots?: FileRoots;
+  /** Per-site config slice — passed to contributePages hooks so the built-in
+   *  entityRoutes adapter can read `entityRoutes` and other site-scoped
+   *  config. */
+  siteConfig?: unknown;
 }
 
 /**
@@ -598,5 +607,6 @@ export async function loadContentFromTree(
     projectRoot: options.projectRoot,
     xrefPatterns: options.xrefPatterns,
     fileRoots: options.fileRoots,
+    siteConfig: options.siteConfig,
   });
 }

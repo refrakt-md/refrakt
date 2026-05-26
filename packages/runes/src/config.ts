@@ -12,7 +12,7 @@ import { resolveXrefs } from './xref-resolve.js';
 import type { CompiledXrefPattern } from './xref-patterns.js';
 import { preprocessSnippets, wrapStandaloneSnippets } from './snippet-pipeline.js';
 import { registerDrawers, resolveAutoDrawerTitleLevels } from './drawer-pipeline.js';
-import { applyOutlineScopeWalkers } from './outline-scope.js';
+import { applyOutlineScopeWalkers, harvestHeadingsFromRenderable } from './outline-scope.js';
 import { resolveExpands } from './expand-pipeline.js';
 import { resolveCollections } from './collection-resolve.js';
 
@@ -2384,6 +2384,11 @@ export interface CorePipelineHooksOptions {
 		tags: Record<string, unknown>;
 		nodes: Record<string, unknown>;
 		functions?: Record<string, unknown>;
+		/** Parsed partials from the content tree's `_partials/` and any
+		 *  registered file-root namespaces. Threaded through so partial
+		 *  references inside deferred-body templates (collection, expand)
+		 *  resolve the same way they do in top-level page transforms. */
+		partials?: Record<string, unknown>;
 		projectRoot?: string;
 	};
 }
@@ -2505,6 +2510,7 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 				tags: Record<string, unknown>;
 				nodes: Record<string, unknown>;
 				functions?: Record<string, unknown>;
+				partials?: Record<string, unknown>;
 				projectRoot?: string;
 			};
 		} | undefined;
@@ -2615,6 +2621,17 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 		// see the final tree (including expand-substituted content once
 		// that lands in v0.15.0).
 		applyOutlineScopeWalkers(wrappedPage.renderable);
+
+		// Refresh `page.headings` from the final renderable. Parse-time
+		// `extractHeadings` only saw the raw AST — anything inlined by
+		// postProcess (expand `level=N`, collection bodies) wouldn't make
+		// it into the parse-time list, leaving the page TOC blind to those
+		// headings. Skips `data-outline-scope` subtrees so peer-document
+		// embeds stay isolated, matching the TOC walker.
+		const harvested = harvestHeadingsFromRenderable(wrappedPage.renderable);
+		if (harvested.length > 0 || wrappedPage.headings.length > 0) {
+			return { ...wrappedPage, headings: harvested };
+		}
 
 		return wrappedPage;
 	},
