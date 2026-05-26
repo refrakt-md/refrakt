@@ -106,4 +106,4 @@ The media / content split, responsive collapse, and mobile full-bleed media head
 ## See also
 
 - [collection](/runes/collection) — feeds cards from registry entities via a body template.
-- [recipe](/runes/recipe) — a domain rune built on the same split-layout skeleton.
+- The `recipe` rune is built on the same split-layout skeleton (media zone + delimited content).
