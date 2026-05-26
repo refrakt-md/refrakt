@@ -9,6 +9,16 @@
 	margin: var(--rf-spacing-md) 0;
 }
 
+/* Preamble — rendered above items only when the query is non-empty, so a
+ * heading/intro can live inside the rune and vanish with an empty section. */
+.rf-collection__preamble > :first-child { margin-top: 0; }
+
+/* Empty state — shown in place of items when the query yields nothing. */
+.rf-collection__empty {
+	color: var(--rf-color-muted);
+	font-size: 0.9375em;
+}
+
 .rf-collection__items {
 	display: flex;
 	flex-direction: column;

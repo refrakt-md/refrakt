@@ -9,13 +9,42 @@
  * `$item`).
  */
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
+import type { RenderableTreeNode, Node } from '@markdoc/markdoc';
 import type { EntityRegistration } from '@refrakt-md/types';
 import { resolveEntityField, type MatchableEntity } from './field-match.js';
 import { transformDeferredTemplate } from './deferred-body.js';
 
-const { Tag } = Markdoc;
+const { Tag, Ast } = Markdoc;
 type TagNode = InstanceType<typeof Tag>;
+
+/** The three optional body zones (SPEC-072 Cap 5), split on top-level `hr`. */
+export interface BodyZones {
+	preamble?: string;
+	template: string;
+	fallback?: string;
+}
+
+/**
+ * Split a captured body source on **top-level** `hr` (`---`) into zones,
+ * card-style: 1 → template; 2 → preamble + template; 3 → preamble + template +
+ * fallback. A leading empty zone skips the preamble. A `---` inside a nested
+ * tag (e.g. `{% card %}`) is a child of that tag, not a top-level sibling, so
+ * it is never a delimiter.
+ */
+export function splitBodyZones(bodySource: string): BodyZones {
+	if (!bodySource) return { template: '' };
+	const ast = Markdoc.parse(bodySource);
+	const segments: Node[][] = [[]];
+	for (const node of ast.children) {
+		if (node.type === 'hr') segments.push([]);
+		else segments[segments.length - 1].push(node);
+	}
+	if (segments.length === 1) return { template: bodySource };
+	const src = (nodes: Node[]) => (nodes.length ? Markdoc.format(new Ast.Node('document', {}, nodes)) : '');
+	const s = segments.map(src);
+	if (s.length === 2) return { preamble: s[0] || undefined, template: s[1] };
+	return { preamble: s[0] || undefined, template: s[1], fallback: s[2] || undefined };
+}
 
 /** Embed config threaded through the pipeline so deferred per-item templates
  *  can be re-transformed with the entity bound. */

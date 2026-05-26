@@ -8,6 +8,13 @@
 	margin: var(--rf-spacing-md) 0;
 }
 
+.rf-relationships__preamble > :first-child { margin-top: 0; }
+
+.rf-relationships__empty {
+	color: var(--rf-color-muted);
+	font-size: 0.9375em;
+}
+
 .rf-relationships__items {
 	display: flex;
 	flex-direction: column;

@@ -105,4 +105,11 @@ describe('relationships resolver', () => {
 		const items = findAll(out, (t) => t.attributes.class === 'rf-relationships__item');
 		expect(items).toHaveLength(2);
 	});
+
+	it('empty= renders a fallback when an entity has no matching edges', () => {
+		const out = render('{% relationships of="SPEC-1" empty="No relationships." /%}', registry());
+		const empty = findAll(out, (t) => t.attributes.class === 'rf-relationships__empty');
+		expect(empty).toHaveLength(1);
+		expect(JSON.stringify(empty[0])).toContain('No relationships.');
+	});
 });

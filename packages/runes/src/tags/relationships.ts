@@ -22,6 +22,7 @@ export const relationships = createContentModelSchema({
 		sort: { type: String, required: false, default: '', description: 'Sort related entities by a field (prefix - for descending).' },
 		limit: { type: String, required: false, default: '', description: 'Max edges.' },
 		fields: { type: String, required: false, default: '', description: 'Comma-separated data fields to project in the no-body built-in.' },
+		empty: { type: String, required: false, default: '', description: 'Fallback text shown when there are no edges (no-body form; body form uses a fallback zone). Absent → render nothing.' },
 	},
 	deferBody: true,
 	contentModel: { type: 'sequence', fields: [] },
@@ -43,6 +44,7 @@ export const relationships = createContentModelSchema({
 			meta('relationships-sort', String(attrs.sort ?? '')),
 			meta('relationships-limit', String(attrs.limit ?? '')),
 			meta('relationships-fields', String(attrs.fields ?? '')),
+			meta('relationships-empty', String(attrs.empty ?? '')),
 			meta(RELATIONSHIPS_SENTINEL, 'true'),
 		];
 		if (bodySource) metas.push(meta('relationships-body', bodySource));

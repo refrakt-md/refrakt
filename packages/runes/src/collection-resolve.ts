@@ -16,6 +16,7 @@ import {
 	type CollectionEmbedConfig, type Ordering,
 	fieldValue, titleLink as titleLinkFor,
 	sortEntities, groupEntities, projectItem, buildOrdering,
+	splitBodyZones, renderItemTemplate,
 } from './collection-helpers.js';
 import { COLLECTION_SENTINEL } from './tags/collection.js';
 
@@ -56,6 +57,7 @@ interface CollectionQuery {
 	fields: string[];
 	layout: string;
 	bodySource: string;
+	empty: string;
 }
 
 function readQuery(tag: TagNode): CollectionQuery {
@@ -70,6 +72,7 @@ function readQuery(tag: TagNode): CollectionQuery {
 		fields: metaContent(tag, 'collection-fields').split(',').map((s) => s.trim()).filter(Boolean),
 		layout: metaContent(tag, 'collection-layout') || 'list',
 		bodySource: metaContent(tag, 'collection-body'),
+		empty: metaContent(tag, 'collection-empty'),
 	};
 }
 
@@ -203,13 +206,29 @@ function resolveOne(
 	entities = sortEntities(entities, q.sort, ordering);
 	if (q.limit !== undefined && entities.length > q.limit) entities = entities.slice(0, q.limit);
 
-	// Render items
+	const zones = splitBodyZones(q.bodySource);
+	const tmpl = zones.template;
+	const attrs = { ...tag.attributes, 'data-type': q.types.join(','), 'data-layout': q.layout };
+
+	// Empty state (SPEC-072 Cap 5): fallback zone, else the `empty` attribute,
+	// else nothing. No preamble when empty.
+	if (entities.length === 0) {
+		const out: RenderableTreeNode[] = [];
+		if (zones.fallback && embedConfig) {
+			out.push(new Tag('div', { 'data-name': 'empty', class: 'rf-collection__empty' }, renderItemTemplate(zones.fallback, embedConfig, {})));
+		} else if (q.empty) {
+			out.push(new Tag('div', { 'data-name': 'empty', class: 'rf-collection__empty' }, [q.empty]));
+		}
+		return new Tag(tag.name, attrs, out);
+	}
+
+	// Render items from the template zone (or the built-in when it's empty).
 	let children: RenderableTreeNode[];
-	if (q.layout === 'table' && q.bodySource) {
+	if (q.layout === 'table' && tmpl) {
 		// Heading-delimited column templates (WORK-264).
-		children = renderGroupOrFlat(entities, q, ordering, (es) => [renderHeadingTable(es, q.bodySource, embedConfig, ctx, pageUrl)]);
-	} else if (q.bodySource) {
-		children = renderGroupOrFlat(entities, q, ordering, (es) => renderBody(es, q.bodySource, embedConfig, ctx, pageUrl));
+		children = renderGroupOrFlat(entities, q, ordering, (es) => [renderHeadingTable(es, tmpl, embedConfig, ctx, pageUrl)]);
+	} else if (tmpl) {
+		children = renderGroupOrFlat(entities, q, ordering, (es) => renderBody(es, tmpl, embedConfig, ctx, pageUrl));
 	} else if (q.layout === 'table') {
 		children = renderGroupOrFlat(entities, q, ordering, (es) => [renderTable(es, q)]);
 	} else {
@@ -217,8 +236,12 @@ function resolveOne(
 	}
 
 	const itemsDiv = new Tag('div', { 'data-name': 'items', class: 'rf-collection__items' }, children);
-	const attrs = { ...tag.attributes, 'data-type': q.types.join(','), 'data-layout': q.layout };
-	return new Tag(tag.name, attrs, [itemsDiv]);
+	// Preamble renders once, above items, only when non-empty.
+	const head: RenderableTreeNode[] = [];
+	if (zones.preamble && embedConfig) {
+		head.push(new Tag('div', { 'data-name': 'preamble', class: 'rf-collection__preamble' }, renderItemTemplate(zones.preamble, embedConfig, {})));
+	}
+	return new Tag(tag.name, attrs, [...head, itemsDiv]);
 }
 
 export function resolveCollections(
