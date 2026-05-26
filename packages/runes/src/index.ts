@@ -61,6 +61,11 @@ export { parseFieldMatch, matchesFieldMatch, matchesFilterExpr, resolveEntityFie
 export type { MatchableEntity, FieldMatchClause, ParsedFieldMatch } from './field-match.js';
 export { DEFERRED_BODY_ATTR, captureDeferredBodies, readDeferredBody, transformDeferredTemplate } from './deferred-body.js';
 export { resolveCollections } from './collection-resolve.js';
+export {
+	Ordering, buildOrdering, sortEntities, groupEntities, groupBy,
+	entityUrl, entityTitle, fieldValue, titleLink, projectItem, renderItemTemplate,
+} from './collection-helpers.js';
+export type { CollectionEmbedConfig } from './collection-helpers.js';
 export { COLLECTION_SENTINEL } from './tags/collection.js';
 export { functions, currency, date, number, join, humanize } from './functions.js';
 export { linkItem, pageSectionProperties, buildLayoutMetas, extractMediaImage, unwrapParagraphImages, name as nameHelper, description as descriptionHelper, SplitablePageSectionModel, SplitLayoutModel, splitLayoutAttributes } from './tags/common.js';

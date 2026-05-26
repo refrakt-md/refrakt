@@ -23,6 +23,50 @@ export interface CollectionEmbedConfig {
 	tags: Record<string, unknown>;
 	nodes: Record<string, unknown>;
 	projectRoot?: string;
+	/** Explicit `(type → field → ordered values)` overrides (SPEC-072 / WORK-276),
+	 *  used when presentation order differs from a rune's declaration order.
+	 *  Defaults are otherwise derived from each rune's attribute `matches`. */
+	orderings?: Record<string, Record<string, string[]>>;
+}
+
+/** Resolves a domain-aware order for an enum field, keyed by `(type, field)`
+ *  (SPEC-072). Defaults come from each rune's attribute `matches`; explicit
+ *  overrides win. Unknown `(type, field)` → no ordering (lexical fallback). */
+export class Ordering {
+	constructor(
+		private readonly matches: Record<string, Record<string, string[]>>,
+		private readonly overrides: Record<string, Record<string, string[]>> = {},
+	) {}
+
+	order(type: string, field: string): string[] | undefined {
+		return this.overrides[type]?.[field] ?? this.matches[type]?.[field];
+	}
+
+	/** Index of `value` within the `(type, field)` ordering, or -1 when there is
+	 *  no ordering or the value isn't in it. */
+	rank(type: string, field: string, value: string): number {
+		const ord = this.order(type, field);
+		if (!ord) return -1;
+		return ord.indexOf(value);
+	}
+}
+
+/** Build an {@link Ordering} from an embed config: derive defaults from each
+ *  tag schema's attribute `matches`, then layer the explicit `orderings`. */
+export function buildOrdering(embedConfig: CollectionEmbedConfig | undefined): Ordering {
+	const matches: Record<string, Record<string, string[]>> = {};
+	const tags = embedConfig?.tags ?? {};
+	for (const [type, schema] of Object.entries(tags)) {
+		const attrs = (schema as { attributes?: Record<string, { matches?: unknown }> })?.attributes;
+		if (!attrs) continue;
+		for (const [field, def] of Object.entries(attrs)) {
+			const m = def?.matches;
+			if (Array.isArray(m) && m.every((x) => typeof x === 'string')) {
+				(matches[type] ??= {})[field] = m as string[];
+			}
+		}
+	}
+	return new Ordering(matches, embedConfig?.orderings ?? {});
 }
 
 export function entityUrl(e: EntityRegistration): string {
@@ -57,16 +101,25 @@ export function projectItem(e: EntityRegistration) {
 }
 
 /** Sort entities by a `sort` expression (`field`, `-field`, `field-desc`).
- *  Numeric values sort numerically, otherwise lexically. WORK-276 will layer
- *  domain-aware `(type, field)` ordering on top of this fallback. */
-export function sortEntities(entities: EntityRegistration[], sortExpr: string): EntityRegistration[] {
+ *  With an {@link Ordering}, enum fields sort by domain rank (each entity ranked
+ *  within its *own* `(type, field)` order — so mixed-type sets compose); ranked
+ *  items come before unranked, which then fall back to numeric/lexical. */
+export function sortEntities(entities: EntityRegistration[], sortExpr: string, ordering?: Ordering): EntityRegistration[] {
 	if (!sortExpr) return entities;
 	let field = sortExpr.trim();
 	let dir = 1;
 	if (field.startsWith('-')) { dir = -1; field = field.slice(1); }
 	else if (field.endsWith('-desc')) { dir = -1; field = field.slice(0, -5); }
 	else if (field.endsWith('-asc')) { field = field.slice(0, -4); }
+	const ranked = ordering && entities.some((e) => ordering.order(e.type, field));
 	return [...entities].sort((a, b) => {
+		if (ranked) {
+			const ra = ordering!.rank(a.type, field, fieldValue(a, field));
+			const rb = ordering!.rank(b.type, field, fieldValue(b, field));
+			const aR = ra >= 0, bR = rb >= 0;
+			if (aR && bR) { if (ra !== rb) return (ra - rb) * dir; }
+			else if (aR !== bR) return aR ? -1 : 1; // ranked before unranked, dir-independent
+		}
 		const av = fieldValue(a, field);
 		const bv = fieldValue(b, field);
 		const an = Number(av);
@@ -88,9 +141,22 @@ export function groupBy<T>(items: T[], keyOf: (item: T) => string): Map<string, 
 	return groups;
 }
 
-/** Group entities by one of their fields (empty → `(none)`). */
-export function groupEntities(entities: EntityRegistration[], field: string): Map<string, EntityRegistration[]> {
-	return groupBy(entities, (e) => fieldValue(e, field) || '(none)');
+/** Group entities by one of their fields (empty → `(none)`). With an
+ *  {@link Ordering}, groups are emitted in domain order — each group's
+ *  representative (minimum) rank across its members, ranked groups first. */
+export function groupEntities(entities: EntityRegistration[], field: string, ordering?: Ordering): Map<string, EntityRegistration[]> {
+	const groups = groupBy(entities, (e) => fieldValue(e, field) || '(none)');
+	if (!ordering || ![...entities].some((e) => ordering.order(e.type, field))) return groups;
+	const repRank = (members: EntityRegistration[]): number => {
+		let min = Infinity;
+		for (const m of members) {
+			const r = ordering.rank(m.type, field, fieldValue(m, field));
+			if (r >= 0 && r < min) min = r;
+		}
+		return min;
+	};
+	const sorted = [...groups.entries()].sort((a, b) => repRank(a[1]) - repRank(b[1]));
+	return new Map(sorted);
 }
 
 /** Re-transform a captured per-item template with the given variables bound

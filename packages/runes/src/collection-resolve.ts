@@ -13,9 +13,9 @@ import { parseFieldMatch, matchesFieldMatch, type MatchableEntity } from './fiel
 import { transformDeferredTemplate } from './deferred-body.js';
 import { humanize } from './functions.js';
 import {
-	type CollectionEmbedConfig,
+	type CollectionEmbedConfig, type Ordering,
 	fieldValue, titleLink as titleLinkFor,
-	sortEntities, groupEntities, projectItem,
+	sortEntities, groupEntities, projectItem, buildOrdering,
 } from './collection-helpers.js';
 import { COLLECTION_SENTINEL } from './tags/collection.js';
 
@@ -169,9 +169,9 @@ function renderBody(
 	});
 }
 
-function renderGroupOrFlat(entities: EntityRegistration[], q: CollectionQuery, renderItems: (es: EntityRegistration[]) => RenderableTreeNode[]): RenderableTreeNode[] {
+function renderGroupOrFlat(entities: EntityRegistration[], q: CollectionQuery, ordering: Ordering, renderItems: (es: EntityRegistration[]) => RenderableTreeNode[]): RenderableTreeNode[] {
 	if (!q.group) return renderItems(entities);
-	const groups = groupEntities(entities, q.group);
+	const groups = groupEntities(entities, q.group, ordering);
 	const out: RenderableTreeNode[] = [];
 	for (const [name, es] of groups) {
 		out.push(new Tag('div', { class: 'rf-collection__group', 'data-group': name }, [
@@ -186,6 +186,7 @@ function resolveOne(
 	tag: TagNode,
 	registry: Readonly<EntityRegistry>,
 	embedConfig: CollectionEmbedConfig | undefined,
+	ordering: Ordering,
 	ctx: PipelineContext,
 	pageUrl: string,
 ): TagNode {
@@ -199,20 +200,20 @@ function resolveOne(
 		for (const w of parsed.warnings) ctx.warn(`collection filter: ${w}`, pageUrl);
 		entities = entities.filter((e) => matchesFieldMatch(e as MatchableEntity, parsed));
 	}
-	entities = sortEntities(entities, q.sort);
+	entities = sortEntities(entities, q.sort, ordering);
 	if (q.limit !== undefined && entities.length > q.limit) entities = entities.slice(0, q.limit);
 
 	// Render items
 	let children: RenderableTreeNode[];
 	if (q.layout === 'table' && q.bodySource) {
 		// Heading-delimited column templates (WORK-264).
-		children = renderGroupOrFlat(entities, q, (es) => [renderHeadingTable(es, q.bodySource, embedConfig, ctx, pageUrl)]);
+		children = renderGroupOrFlat(entities, q, ordering, (es) => [renderHeadingTable(es, q.bodySource, embedConfig, ctx, pageUrl)]);
 	} else if (q.bodySource) {
-		children = renderGroupOrFlat(entities, q, (es) => renderBody(es, q.bodySource, embedConfig, ctx, pageUrl));
+		children = renderGroupOrFlat(entities, q, ordering, (es) => renderBody(es, q.bodySource, embedConfig, ctx, pageUrl));
 	} else if (q.layout === 'table') {
-		children = renderGroupOrFlat(entities, q, (es) => [renderTable(es, q)]);
+		children = renderGroupOrFlat(entities, q, ordering, (es) => [renderTable(es, q)]);
 	} else {
-		children = renderGroupOrFlat(entities, q, (es) => es.map((e) => renderBuiltInItem(e, q)));
+		children = renderGroupOrFlat(entities, q, ordering, (es) => es.map((e) => renderBuiltInItem(e, q)));
 	}
 
 	const itemsDiv = new Tag('div', { 'data-name': 'items', class: 'rf-collection__items' }, children);
@@ -227,12 +228,13 @@ export function resolveCollections(
 	embedConfig: CollectionEmbedConfig | undefined,
 	ctx: PipelineContext,
 ): unknown {
+	const ordering = buildOrdering(embedConfig);
 	const walk = (node: unknown): unknown => {
 		if (Array.isArray(node)) return node.map(walk);
 		if (!isTag(node)) return node;
 		const tag = node;
 		if (tag.attributes?.['data-rune'] === 'collection' && hasSentinel(tag)) {
-			return resolveOne(tag, registry, embedConfig, ctx, pageUrl);
+			return resolveOne(tag, registry, embedConfig, ordering, ctx, pageUrl);
 		}
 		if (!tag.children || tag.children.length === 0) return tag;
 		return new Tag(tag.name, tag.attributes, tag.children.map(walk) as never[]);
