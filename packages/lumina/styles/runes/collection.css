@@ -21,6 +21,17 @@
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
 	gap: var(--rf-spacing-md);
+	align-items: stretch;
+}
+
+/* Uniform heights per row: grid stretches each item to the tallest in its row;
+ * a body-template item then lets its card fill that stretched height. */
+.rf-collection[data-layout='grid'] .rf-collection__item {
+	display: flex;
+}
+.rf-collection[data-layout='grid'] .rf-collection__item > * {
+	flex: 1;
+	min-width: 0;
 }
 
 .rf-collection__item {
