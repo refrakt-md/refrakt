@@ -20,7 +20,7 @@ export const collection = createContentModelSchema({
 		limit: { type: String, required: false, default: '', description: 'Max items.' },
 		show: { type: String, required: false, default: '', description: 'Alias for type (entity types to include).' },
 		fields: { type: String, required: false, default: '', description: 'Comma-separated data fields to project.' },
-		layout: { type: String, required: false, default: 'list', description: 'list | cards | grid | table.' },
+		layout: { type: String, required: false, default: 'list', description: 'Arrangement: list (stacked) | grid (multi-column) | table (aligned columns). Item chrome comes from the item — the no-body built-in, or a rune like {% card %} in the body template.' },
 	},
 	deferBody: true,
 	contentModel: { type: 'sequence', fields: [] },

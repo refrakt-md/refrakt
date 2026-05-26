@@ -39,5 +39,6 @@ Branch: `claude/v0.16.0`
 - Heading-delimited table columns are WORK-264 (this ships `fields` projection for tables; body templates are box-layout only so far).
 - `inspect` shows only the sentinel (collection resolves in postProcess like backlog), so resolver tests are the meaningful verification.
 - Contracts file regeneration deferred to a milestone-wide cleanup pass.
+- **Post-review (layout vocabulary):** the `cards` layout was dropped — `layout` is now *arrangement only* (`list` / `grid` / `table`); item *chrome* comes from the item (no-body built-in, or a `{% card %}` in the body template). A card gallery is `grid` + `{% card %}` items. This resolves the cards/grid redundancy and avoids auto-wrapping the body (which would double-wrap an explicit `{% card %}`). See SPEC-070 *Built-in layouts* and the WORK-266 card rune.
 
 {% /work %}

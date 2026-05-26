@@ -15,9 +15,9 @@
 	gap: var(--rf-spacing-sm);
 }
 
-/* grid / cards arrange items as a responsive grid */
-.rf-collection[data-layout='grid'] .rf-collection__items,
-.rf-collection[data-layout='cards'] .rf-collection__items {
+/* grid arranges items into responsive columns; list stays a stacked flow.
+ * Item chrome (a card box, bare row, …) comes from the item, not the layout. */
+.rf-collection[data-layout='grid'] .rf-collection__items {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
 	gap: var(--rf-spacing-md);

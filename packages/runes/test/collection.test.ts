@@ -50,7 +50,7 @@ describe('collection resolver', () => {
 	]);
 
 	it('renders cards with title links and projected fields', () => {
-		const out = render('{% collection type="work" layout="cards" fields="status,priority" /%}', reg);
+		const out = render('{% collection type="work" layout="grid" fields="status,priority" /%}', reg);
 		const cards = findAll(out, (t) => t.attributes.class === 'rf-collection__card');
 		expect(cards).toHaveLength(3);
 		const titles = findAll(out, (t) => t.attributes.class === 'rf-collection__title');
@@ -60,7 +60,7 @@ describe('collection resolver', () => {
 	});
 
 	it('applies a field:value filter', () => {
-		const out = render('{% collection type="work" filter="status:ready" layout="cards" /%}', reg);
+		const out = render('{% collection type="work" filter="status:ready" layout="grid" /%}', reg);
 		const cards = findAll(out, (t) => t.attributes.class === 'rf-collection__card');
 		expect(cards).toHaveLength(2);
 		expect(cards.map((c) => c.attributes['data-entity-id']).sort()).toEqual(['W-1', 'W-3']);
@@ -75,7 +75,7 @@ describe('collection resolver', () => {
 	});
 
 	it('groups items when group is set', () => {
-		const out = render('{% collection type="work" group="status" layout="cards" /%}', reg);
+		const out = render('{% collection type="work" group="status" layout="grid" /%}', reg);
 		const groups = findAll(out, (t) => t.attributes.class === 'rf-collection__group');
 		expect(groups.length).toBe(2); // ready, done
 	});

@@ -71,7 +71,7 @@ Today the options are: hand-maintain a markdown list that drifts from the data; 
 | `group` | string | — | Group into sections by a `data` field. |
 | `limit` | number | — | Cap rendered count, applied post-sort, pre-group (same semantics as backlog's `limit`). |
 | `item-template` | string | — | Path/name of a markdoc partial used as the per-item template (the reusable alternative to an inline body). Mutually exclusive with an inline body. |
-| `layout` | `table` \| `cards` \| `list` \| `grid` | `list` | Built-in presentation for the generic-data path. Ignored when a body template (inline or `item-template`) is present. |
+| `layout` | `list` \| `grid` \| `table` | `list` | *Arrangement* of items (stacked / multi-column / aligned columns). Item *chrome* comes from the item — the no-body built-in, or a rune like `{% card %}` in the body template. (No `cards` layout: a card gallery is `grid` + `{% card %}` items.) |
 | `fields` | string | — | Comma-separated `data` field names to project into the built-in `layout`. Required for `table`; optional enrichment for `cards`/`grid`; ignored by `list` and when a body template is present. |
 
 A per-item **rune** (`product-card` etc.) is not its own attribute — invoke it inside the body template: `{% collection type="product" %}{% product-card /%}{% /collection %}`. See *Display control*.
@@ -157,14 +157,15 @@ postProcess (per entity): Markdoc.parse(stashed) → transform(ast, { …embedCo
 
 | Layout | Renders | Field use |
 |--------|---------|-----------|
-| `list` | compact title (+ optional one-line description), each a link | title only |
-| `cards` | a card per entity, generic chrome | optional projected fields |
-| `grid` | card grid | optional projected fields |
+| `list` | stacked items; no body → compact title link | title only |
+| `grid` | responsive multi-column; no body → a generic auto-card (title + fields) | optional projected fields |
 | `table` | one row per entity; columns from `fields` (shorthand) or heading-delimited column templates | see below |
+
+`layout` is **arrangement only**; *chrome* comes from the item. No body → the built-in (list = title, grid = auto-card from `fields`, table = projection). With a body → the body *is* the item (raw per-entity template, `$item` bound), arranged by `layout`; add `{% card %}` for card chrome. There is **no `cards` layout** — a card gallery is `grid` + `{% card %}` items; this avoids auto-wrapping the body (which would double-wrap an explicit `{% card %}` and re-couple the layout to a specific rune).
 
 These are the *generic* presentations. For deliberate domain cards, use a body template that invokes a card rune (level 3) — the built-in `cards`/`grid` are intentionally plain so they don't masquerade as a designed gallery. An item is never rendered via full `{% expand %}` by default (too heavy for a list, many entities aren't embeddable).
 
-**The body means different things per layout.** For box layouts (`list` / `cards` / `grid`) the body is the *per-item template* (level 3). For `table` the body is a set of *column definitions*. In both, an **empty body falls back to `fields`** — the dumb shorthand. So `fields` is the zero-body shortcut and a body buys control, in either family. (Consequence: a body authored for `cards` isn't portable to `table` by flipping the attribute — the two families interpret it differently. That's inherent to tables aligning columns rather than arranging boxes.)
+**The body means different things per layout.** For box layouts (`list` / `grid`) the body is the *per-item template* (level 3) — raw output arranged by the layout; the author adds `{% card %}` (or any rune) for chrome, and `href`/etc. live on that rune, not on collection. For `table` the body is a set of *column definitions*. In both, an **empty body falls back to `fields`** — the dumb shorthand. So `fields` is the zero-body shortcut and a body buys control, in either family. (Consequence: a body authored for `grid` isn't portable to `table` by flipping the attribute — the two families interpret it differently. That's inherent to tables aligning columns rather than arranging boxes.)
 
 **`fields` — the dumb shorthand.** `fields="name,price,stock"` projects those `data` fields as columns (`table`) or labeled rows (`cards`/`grid`). Headers are the humanized field key (`unit_price` → "Unit Price"); values use default per-type stringification (string/number as-is, ISO date as-is, boolean → Yes/No, array → comma-join, missing → empty). No formatting, no combining — the moment you need either, use heading-delimited columns. (There is deliberately **no `key=Label` micro-syntax** on `fields`: custom labels are a reason to use the heading form, keeping `fields` dead-simple.)
 
