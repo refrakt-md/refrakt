@@ -5,7 +5,7 @@ description: Render a list, grid, or table of registry entities — the plural c
 
 # Collection
 
-`{% collection %}` queries the [entity registry](/extend/plugin-authoring) for *many* entities and projects them into a layout. It's the plural counterpart to `{% ref %}` (one entity → a link) and `{% expand %}` (one entity → inlined content): where those consume a single entity, `collection` selects a set — by type, with a `field:value` filter, sorted/grouped/limited — and renders each item.
+`{% collection %}` queries the [entity registry](/extend/plugin-authoring/pipeline) for *many* entities and projects them into a layout. It's the plural counterpart to `{% ref %}` (one entity → a link) and `{% expand %}` (one entity → inlined content): where those consume a single entity, `collection` selects a set — by type, with a `field:value` filter, sorted/grouped/limited — and renders each item.
 
 It's generic over entity type. Anything in the registry works the same way — plan `work` items, `page` entities, and any type a plugin registers — so a hand-maintained list that mirrors structured data becomes a live query instead.
 
@@ -25,7 +25,7 @@ That renders every registered `work` entity whose `status` is `ready`, highest p
 
 ### The field-match grammar
 
-This is the canonical reference for the `field:value` syntax — the *same grammar and parser* used by `collection`'s `filter`, [`backlog`](/runes/plan/backlog)'s `filter`, and [`entityRoutes`](/extend/theme-authoring/config-api). The operator is chosen by the **shape of the value**, so the same string works in a markdoc attribute and in JSON config:
+This is the canonical reference for the `field:value` syntax — the *same grammar and parser* used by `collection`'s `filter`, [`backlog`](/runes/plan/backlog)'s `filter`, and [`entityRoutes`](/extend/plugin-authoring/pipeline). The operator is chosen by the **shape of the value**, so the same string works in a markdoc attribute and in JSON config:
 
 | Form | Example | Matches |
 |------|---------|---------|

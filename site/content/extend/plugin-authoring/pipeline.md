@@ -5,7 +5,7 @@ description: How to use build-time pipeline hooks to build site-wide indexes and
 
 # Cross-Page Pipeline
 
-The cross-page pipeline is a build-time mechanism that lets packages scan all pages, build site-wide indexes, and enrich page content using cross-page data. It runs in three phases after all pages have been individually parsed and transformed.
+The cross-page pipeline is a build-time mechanism that lets packages scan all pages, build site-wide indexes, contribute virtual pages, and enrich page content using cross-page data. It runs in a sequence of phases after all pages have been individually parsed and transformed.
 
 ## When to Use It
 
@@ -24,6 +24,7 @@ The core pipeline hooks always run and provide these aggregations free of charge
 ```
 Phase 1 — Parse        Per page: Markdoc parse + rune transforms (existing pipeline)
 Phase 2 — Register     All packages scan all pages, register entities in EntityRegistry
+Phase 2.5 — Contribute Packages synthesize virtual pages from the registry / external data
 Phase 3 — Aggregate    All packages build cross-page indexes from the full registry
 Phase 4 — Post-process Per page: packages enrich pages using aggregated data
 ```
@@ -96,6 +97,76 @@ register(pages, registry, ctx) {
 
 Core always registers `page` entities (with `url`, `title`, `parentUrl`, `draft`, `description`, `date`, `order`) and `heading` entities (with `level`, `text`, `id`, `url`). File-derived timestamps (`$file.created` and `$file.modified`) are available as Markdoc variables on every page before registration runs — rune schemas can consume them as attribute defaults.
 
+### Phase 2.5 — contributePages
+
+```typescript
+contributePages(
+  ctx: ContributePagesContext,
+): ContributedPage[] | Promise<ContributedPage[]>
+```
+
+Synthesize *virtual pages* — pages that don't exist as files. Runs after register (so the registry is populated) and before aggregate, and the contributed pages flow through register / aggregate / postProcess **exactly like file-backed pages** (they appear in the sitemap, search index, nav, and resolve via `{% ref %}`). The hook is sync or async (fetch external data at build time here).
+
+```typescript
+async contributePages(ctx) {
+  const docs = await fetchFromCms(process.env.CMS_TOKEN);
+  return docs.map((doc) => ({
+    url: `/blog/${doc.slug}/`,
+    title: doc.title,
+    frontmatter: { date: doc.date, category: 'blog' },
+    content: toMarkdoc(doc.body),
+  }));
+},
+```
+
+A `ContributedPage` is `{ url, title?, frontmatter?, content, variables?, source? }` — `content` is markdoc source, `variables` binds extra template variables (e.g. `$item`). The context exposes the populated `registry`, `projectRoot`, and the per-site config. Rules:
+
+- **File pages win URL collisions** (with a warning); two contributed pages at the same URL is a build error naming both.
+- Contributed pages register their *own* entities (a second register pass) but **cannot trigger another contribution round** — the graph is one level deep, keeping the build deterministic.
+- A throwing hook is caught: its contributions are skipped with a build warning; the build continues.
+
+### Generating routes from entities — `entityRoutes`
+
+You usually don't need to write `contributePages` by hand. For the common case — "one page per registered entity" — use the **declarative `entityRoutes` adapter** in your site config. It's a built-in `contributePages` provider:
+
+```json
+{
+  "sites": {
+    "main": {
+      "contentDir": "./content",
+      "entityRoutes": [
+        { "type": "spec", "url": "/specs/{id}/", "title": "{title}", "render": "{% expand $item.id /%}" },
+        { "type": "work", "filter": "status:ready", "url": "/work/{id}/", "render": "{% expand $item.id /%}" },
+        { "type": "decision", "url": "/decisions/{id}/", "render-template": "templates:decision-page.md" }
+      ]
+    }
+  }
+}
+```
+
+Per rule, for each registered entity matching `type` + optional `filter` (the [field-match grammar](/runes/collection#the-field-match-grammar)):
+
+- **`url` / `title` / `frontmatter`** interpolate `{name}` placeholders from the entity's fields (`{id}`, `{title}`, …). `url` is per-segment URL-encoded and site-root-relative (the site's `basePath` is applied).
+- **`render`** is an inline markdoc body, or **`render-template`** points at a markdoc partial (mutually exclusive). Both are transformed per entity with **`$item` bound** — same contract as a [collection per-item template](/runes/collection#the-item-variable) — so `{% expand $item.id /%}` inlines the entity, and formatter functions like `{% date($item.data.published) %}` work here too.
+- The adapter **back-fills each matched entity's `sourceUrl`** with the generated route, so `{% ref %}` to that entity prefers the on-site page.
+
+### Embeddable entities — `embed()` / `sourceFile`
+
+For `{% expand $item.id /%}` (above) to render an entity's content, the entity must be **embeddable**. An entity is embeddable if it has either:
+
+- **`embed(): Node`** — returns the entity's content AST directly (for in-memory / external sources, no file on disk); or
+- **`sourceFile` + `extract(parsedSource): Node`** — a project-root-relative `.md` path plus a function that pulls the entity's subtree from the freshly-parsed source (the plan plugin's path).
+
+```typescript
+registry.register({
+  type: 'ticket', id: 'JIRA-1', sourceUrl: '',
+  data: { title: 'Live ticket' },
+  embed: () => markdocAstForTicket(),  // no source file needed
+});
+```
+
+`{% expand %}` prefers `embed()`, falling back to reading + extracting `sourceFile`; an entity with neither produces a clear build error.
+
 ### Phase 3 — aggregate
 
 ```typescript
@@ -163,6 +234,10 @@ interface EntityRegistration {
   id: string;         // unique within this type
   sourceUrl: string;  // page URL this entity was registered from
   data: Record<string, unknown>;
+  // Optional — make the entity embeddable by {% expand %} / entityRoutes:
+  sourceFile?: string;                       // project-root-relative .md path
+  extract?: (parsed: Node) => Node | null;   // pull the entity subtree from it
+  embed?: () => Node | null;                 // …or return the content AST directly
 }
 ```
 
