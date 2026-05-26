@@ -1,0 +1,41 @@
+/* card — generic content card (SPEC-070).
+ *
+ * Box chrome only. The media|content split + responsive collapse + mobile
+ * full-bleed media header come from the shared layouts/split.css (keyed off
+ * data-layout / data-section="media" / data-name="content" / data-media-position).
+ */
+
+.rf-card {
+	position: relative; /* anchor for the stretched link */
+	padding: var(--rune-padding, var(--rf-spacing-md));
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-md);
+	background: var(--rf-color-surface);
+}
+
+.rf-card:hover {
+	background: var(--rf-color-surface-hover);
+}
+
+.rf-card__body > :first-child { margin-top: 0; }
+.rf-card__body > :last-child { margin-bottom: 0; }
+
+.rf-card__footer {
+	margin-top: var(--rf-spacing-sm);
+	padding-top: var(--rf-spacing-sm);
+	border-top: 1px solid var(--rf-color-border);
+	font-size: 0.8125em;
+	color: var(--rf-color-muted);
+}
+
+/* Whole-card stretched link — covers the card; real links in body/footer
+ * sit above it via position:relative. */
+.rf-card__link {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+}
+.rf-card a:not(.rf-card__link) {
+	position: relative;
+	z-index: 1;
+}

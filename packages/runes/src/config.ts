@@ -163,9 +163,17 @@ export const coreConfig: ThemeConfig = {
 		 * (`resolveCollections`) fills it with queried entities. Engine config
 		 * provides the block name for CSS tree-shaking. */
 		Collection: { block: 'collection' },
-		/* article-card — plain presentational card; named parts get
-		 * rf-article-card__{title,image,date,excerpt} from data-name. */
-		ArticleCard: { block: 'article-card' },
+		/* card — generic content card. The `layout` meta drives the shared
+		 * split layout (split.css, data-attribute-keyed); data-media-position
+		 * hoists the media to a full-bleed header on mobile. Named parts
+		 * (media/content/body/footer/link) get rf-card__* from data-name. */
+		Card: {
+			block: 'card',
+			rootAttributes: { 'data-media-position': 'top' },
+			modifiers: {
+				layout: { source: 'meta', default: 'stacked' },
+			},
+		},
 		Embed: {
 			block: 'embed',
 			defaultDensity: 'compact',

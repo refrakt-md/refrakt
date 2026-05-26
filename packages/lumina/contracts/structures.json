@@ -208,13 +208,21 @@
 				"{content}"
 			]
 		},
-		"ArticleCard": {
-			"block": "article-card",
-			"root": ".rf-article-card",
-			"dataRune": "article-card",
+		"Card": {
+			"block": "card",
+			"root": ".rf-card",
+			"dataRune": "card",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"layout": {
+					"source": "meta",
+					"default": "stacked",
+					"classPattern": ".rf-card--{value}",
+					"dataAttribute": "data-layout"
+				}
+			}
 		},
 		"Embed": {
 			"block": "embed",
