@@ -54,6 +54,10 @@
 .rf-collection[data-layout='grid'] .rf-card[data-layout='stacked'] {
 	display: flex;
 	flex-direction: column;
+	/* The grid/flex wrapper stretches the card, but a nested flex container
+	 * doesn't always pass that height to its own flex children; pin it so the
+	 * content/body flex:1 reliably fills. */
+	height: 100%;
 }
 .rf-collection[data-layout='grid'] .rf-card[data-layout='stacked'] > .rf-card__content {
 	flex: 1;
