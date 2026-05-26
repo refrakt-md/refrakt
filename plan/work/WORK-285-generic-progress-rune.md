@@ -2,21 +2,24 @@
 
 # Generic progress rune
 
-A generic, domain-agnostic `progress` rune in `@refrakt-md/runes` — a presentational bar that renders a completion ratio from supplied numbers. Reusable for milestone completion (WORK-281), funding goals, skill levels, etc. The data is always *supplied* (explicit attributes or, for the milestone case, an aggregate the plan plugin writes onto the entity — WORK-281); the rune itself computes nothing from the registry.
-
-> The exact attribute surface, label/value display, and variants are being finalized in discussion — criteria below capture the agreed direction and will be tightened once the shape is settled.
+A generic, domain-agnostic `progress` rune in `@refrakt-md/runes` — a presentational bar that renders a completion ratio from supplied numbers. Reusable for milestone completion (WORK-281), funding goals, skill levels, etc. The data is always *supplied* (explicit attributes or, for the milestone case, an aggregate the plan plugin writes onto the entity — WORK-281); the rune computes nothing from the registry.
 
 ## Acceptance Criteria
-- [ ] A `progress` rune ships in `@refrakt-md/runes` (config entry + catalog entry), domain-agnostic.
-- [ ] It renders a bar from supplied numbers — `value`/`max` (and/or `percent`) — degrading gracefully when `max` is 0/absent.
-- [ ] Output is a clean BEM contract (`.rf-progress` + bar/fill/label elements) with the fill width driven by a CSS custom property (`--rf-progress`), mirroring the existing milestone progress markup (pipeline.ts:714-725).
-- [ ] Accessible: appropriate `role="progressbar"` + `aria-valuenow/min/max` (or equivalent).
-- [ ] Lumina CSS added; CSS coverage updated.
-- [ ] Usable fed by an aggregate field, e.g. `{% progress value=$item.data.progressDone max=$item.data.progressTotal /%}` (the WORK-281 milestone case).
-- [ ] Tests cover value/max rendering, percent computation, and the zero/empty degradation.
+- [ ] A `progress` rune ships in `@refrakt-md/runes` (config entry + catalog entry), domain-agnostic and presentational (identity-transform only, no resolver).
+- [ ] **Input:** accepts `value`+`max` (primary) and `percent` (alternative); when both are given `value`/`max` wins. The percent is clamped to 0–100; `max` of 0/absent → 0% with no numeric readout (never NaN). Numeric attributes accept variable interpolation (`value=$item.data.progressDone`).
+- [ ] **Readout:** a `display` attribute — `fraction` (default when `value`/`max` present → "12/20"), `percent` (→ "60%"), or `none`.
+- [ ] **Label:** an optional body is the label (may hold markup); it also feeds `aria-label`. No separate `label` attribute.
+- [ ] **Variant:** an optional `variant` (neutral default; `positive`/`caution`/… available). No automatic threshold coloring.
+- [ ] **Element + a11y:** a styled `div[role="progressbar"]` with `aria-valuenow`/`aria-valuemin="0"`/`aria-valuemax`; the fill width is driven by `--rf-progress`. (Not the native `<progress>` element — chosen for theming + label support.)
+- [ ] **Output contract:** `.rf-progress` → `__label?` + `__value?` + `__track` > `__fill`.
+- [ ] Lumina CSS added (lifted/generalized from the existing `.rf-milestone__progress*`, pipeline.ts:714-725); CSS coverage updated.
+- [ ] Tests cover value/max → fraction, percent input, `display` variants, clamping, and the zero/empty degradation.
+
+## Scope
+`progress` is a pure ratio bar — it does **not** grow a number-only / KPI mode; "big number + label" stays the separate (still-unbuilt) `stat` rune (WORK-005).
 
 ## Approach
-Presentational rune (identity-transform only, no resolver). Schema takes the numeric attributes; the transform emits the bar element with `--rf-progress` set from the computed percent and the accessible attributes. CSS lifts the existing `.rf-milestone__progress*` styling into a generic `.rf-progress` block. No registry access — see WORK-281 for how the milestone's aggregate numbers are produced and passed in.
+Presentational rune: the transform emits the bar element with `--rf-progress` set from the computed percent and the accessible attributes; the body becomes `__label`; `display` controls the `__value` readout. CSS generalizes the existing milestone progress styling into `.rf-progress`. No registry access — WORK-281 produces and passes in the milestone's aggregate numbers.
 
 ## Dependencies
 None for the rune itself. WORK-281 consumes it (and supplies the milestone aggregate).
