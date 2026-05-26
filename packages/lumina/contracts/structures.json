@@ -216,6 +216,22 @@
 				"{content}"
 			]
 		},
+		"Progress": {
+			"block": "progress",
+			"root": ".rf-progress",
+			"dataRune": "progress",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"variant": {
+					"source": "meta",
+					"default": "default",
+					"classPattern": ".rf-progress--{value}",
+					"dataAttribute": "data-variant"
+				}
+			}
+		},
 		"Card": {
 			"block": "card",
 			"root": ".rf-card",

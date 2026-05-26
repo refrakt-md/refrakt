@@ -1,0 +1,47 @@
+/* progress — generic completion bar (SPEC-072 / WORK-285).
+ *
+ * Presentational: the fill width is driven by the `--rf-progress` custom
+ * property set on the root from the computed percent. Generalized from the
+ * former plan milestone progress bar.
+ */
+
+.rf-progress {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: var(--rf-spacing-xs) var(--rf-spacing-sm);
+	margin: var(--rf-spacing-sm) 0;
+}
+
+.rf-progress__label {
+	font-weight: 600;
+	color: var(--rf-color-text);
+}
+
+.rf-progress__value {
+	font-size: 0.8125em;
+	color: var(--rf-color-muted);
+	margin-left: auto;
+}
+
+.rf-progress__track {
+	flex-basis: 100%;
+	height: 0.5rem;
+	border-radius: var(--rf-radius-pill, 999px);
+	background: var(--rf-color-surface-hover);
+	overflow: hidden;
+}
+
+.rf-progress__fill {
+	display: block;
+	height: 100%;
+	width: var(--rf-progress, 0%);
+	border-radius: inherit;
+	background: var(--rf-color-primary);
+	transition: width 0.3s ease;
+}
+
+/* Sentiment variants tint the fill; the neutral default uses the primary. */
+.rf-progress--positive .rf-progress__fill { background: var(--rf-color-positive, var(--rf-color-primary)); }
+.rf-progress--caution .rf-progress__fill { background: var(--rf-color-caution, var(--rf-color-primary)); }
+.rf-progress--negative .rf-progress__fill { background: var(--rf-color-negative, var(--rf-color-primary)); }

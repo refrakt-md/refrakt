@@ -165,6 +165,10 @@ export const coreConfig: ThemeConfig = {
 		 * provides the block name for CSS tree-shaking. */
 		Collection: { block: 'collection' },
 		Relationships: { block: 'relationships' },
+		Progress: {
+			block: 'progress',
+			modifiers: { variant: { source: 'meta', default: 'default' } },
+		},
 		/* card — generic content card. The `layout` meta drives the shared
 		 * split layout (split.css, data-attribute-keyed); data-media-position
 		 * hoists the media to a full-bleed header on mobile. Named parts

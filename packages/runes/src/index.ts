@@ -46,6 +46,7 @@ import { xref } from './tags/xref.js';
 import { expand } from './tags/expand.js';
 import { collection } from './tags/collection.js';
 import { relationships } from './tags/relationships.js';
+import { progress } from './tags/progress.js';
 import { card } from './tags/card.js';
 import { badge } from './tags/badge.js';
 import Markdoc from '@markdoc/markdoc';
@@ -582,6 +583,14 @@ export const runes = {
     typeName: 'Relationships',
     category: 'Content',
     snippet: ['{% relationships of="${1:WORK-1}" /%}'],
+  }),
+  progress: defineRune({
+    name: 'progress',
+    schema: progress,
+    description: 'A generic completion bar. Renders a ratio from supplied numbers — value+max (or percent) — with an optional body label; computes nothing itself. Feed it an aggregate (e.g. value=$item.data.progressDone max=$item.data.progressTotal).',
+    typeName: 'Progress',
+    category: 'Content',
+    snippet: ['{% progress value="${1:3}" max="${2:10}" /%}'],
   }),
   card: defineRune({
     name: 'card',
