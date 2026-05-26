@@ -45,6 +45,7 @@ import { blog } from './tags/blog.js';
 import { xref } from './tags/xref.js';
 import { expand } from './tags/expand.js';
 import { collection } from './tags/collection.js';
+import { relationships } from './tags/relationships.js';
 import { card } from './tags/card.js';
 import { badge } from './tags/badge.js';
 import Markdoc from '@markdoc/markdoc';
@@ -61,6 +62,8 @@ export { parseFieldMatch, matchesFieldMatch, matchesFilterExpr, resolveEntityFie
 export type { MatchableEntity, FieldMatchClause, ParsedFieldMatch } from './field-match.js';
 export { DEFERRED_BODY_ATTR, captureDeferredBodies, readDeferredBody, transformDeferredTemplate } from './deferred-body.js';
 export { resolveCollections } from './collection-resolve.js';
+export { resolveRelationships } from './relationships-resolve.js';
+export { RELATIONSHIPS_SENTINEL } from './tags/relationships.js';
 export {
 	Ordering, buildOrdering, sortEntities, groupEntities, groupBy,
 	entityUrl, entityTitle, fieldValue, titleLink, projectItem, renderItemTemplate,
@@ -571,6 +574,14 @@ export const runes = {
     typeName: 'Collection',
     category: 'Content',
     snippet: ['{% collection type="${1:work}" filter="${2:status:ready}" sort="${3:priority}" /%}'],
+  }),
+  relationships: defineRune({
+    name: 'relationships',
+    schema: relationships,
+    description: "Render an entity's relationship edges, grouped by kind — the plural-graph counterpart to ref/expand. Reads the registry relationship graph for `of` (an id, e.g. of=$item.id); each item is a related entity with its edge $kind bound. Generic over kind, so it serves any domain (plan, storytelling, …).",
+    typeName: 'Relationships',
+    category: 'Content',
+    snippet: ['{% relationships of="${1:WORK-1}" /%}'],
   }),
   card: defineRune({
     name: 'card',

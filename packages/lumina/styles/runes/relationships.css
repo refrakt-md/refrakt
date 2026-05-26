@@ -1,0 +1,51 @@
+/* Relationships — an entity's graph edges, grouped by kind (SPEC-072).
+ *
+ * Generic over kind: the rune emits `data-kind` on each item and a humanized
+ * group heading per kind. Mirrors collection's list chrome.
+ */
+
+.rf-relationships {
+	margin: var(--rf-spacing-md) 0;
+}
+
+.rf-relationships__items {
+	display: flex;
+	flex-direction: column;
+	gap: var(--rf-spacing-sm);
+}
+
+.rf-relationships__group {
+	margin-top: var(--rf-spacing-md);
+}
+.rf-relationships__group:first-child {
+	margin-top: 0;
+}
+
+.rf-relationships__group-title {
+	margin: 0 0 var(--rf-spacing-sm);
+	font-size: 0.875em;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--rf-color-muted);
+}
+
+.rf-relationships__item {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: var(--rf-spacing-xs) var(--rf-spacing-sm);
+}
+
+.rf-relationships__title {
+	font-weight: 600;
+	color: var(--rf-color-text);
+	text-decoration: none;
+}
+.rf-relationships__title:hover {
+	color: var(--rf-color-primary);
+}
+
+.rf-relationships__field {
+	font-size: 0.875em;
+	color: var(--rf-color-muted);
+}

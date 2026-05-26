@@ -208,6 +208,14 @@
 				"{content}"
 			]
 		},
+		"Relationships": {
+			"block": "relationships",
+			"root": ".rf-relationships",
+			"dataRune": "relationships",
+			"childOrder": [
+				"{content}"
+			]
+		},
 		"Card": {
 			"block": "card",
 			"root": ".rf-card",

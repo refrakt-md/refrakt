@@ -15,6 +15,7 @@ import { registerDrawers, resolveAutoDrawerTitleLevels } from './drawer-pipeline
 import { applyOutlineScopeWalkers, harvestHeadingsFromRenderable } from './outline-scope.js';
 import { resolveExpands } from './expand-pipeline.js';
 import { resolveCollections } from './collection-resolve.js';
+import { resolveRelationships } from './relationships-resolve.js';
 
 // ─── Budget postTransform helpers ───
 
@@ -163,6 +164,7 @@ export const coreConfig: ThemeConfig = {
 		 * (`resolveCollections`) fills it with queried entities. Engine config
 		 * provides the block name for CSS tree-shaking. */
 		Collection: { block: 'collection' },
+		Relationships: { block: 'relationships' },
 		/* card — generic content card. The `layout` meta drives the shared
 		 * split layout (split.css, data-attribute-keyed); data-media-position
 		 * hoists the media to a full-bleed header on mobile. Named parts
@@ -2590,6 +2592,17 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 		// SPEC-070 collection resolution — runs after expand and before xref so
 		// item-template `{% ref %}`s are resolved by the same xref pass.
 		renderable = resolveCollections(
+			renderable,
+			page.url,
+			coreData.registry,
+			coreData.embedConfig,
+			ctx,
+		);
+
+		// SPEC-072 relationships resolution — same placement rationale as
+		// collection: after expand, before xref (so item-template `{% ref %}`s
+		// resolve in the same xref pass).
+		renderable = resolveRelationships(
 			renderable,
 			page.url,
 			coreData.registry,
