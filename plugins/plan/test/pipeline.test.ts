@@ -16,14 +16,17 @@ function makePage(url: string, content: string): TransformedPage {
 
 function makeRegistry() {
 	const entries: EntityRegistration[] = [];
+	const edges: Array<{ fromId: string; toId: string; kind: string }> = [];
 	const registry: EntityRegistry = {
 		register(entry: EntityRegistration) { entries.push(entry); },
 		getAll(type: string) { return entries.filter(e => e.type === type); },
 		getById(type: string, id: string) { return entries.find(e => e.type === type && e.id === id); },
 		getByUrl(type: string, url: string) { return entries.filter(e => e.type === type && e.sourceUrl === url); },
 		getTypes() { return [...new Set(entries.map(e => e.type))]; },
+		relate(edge) { edges.push({ fromId: edge.fromId, toId: edge.toId, kind: edge.kind }); },
+		getRelated(id) { return []; void id; },
 	};
-	return { entries, registry };
+	return { entries, edges, registry };
 }
 
 function makeCtx() {
@@ -452,16 +455,28 @@ describe('planPipelineHooks.postProcess — milestone auto-backlog', () => {
 
 describe('planPipelineHooks — source attribute and implements relationships', () => {
 	function runFullPipeline(pages: TransformedPage[]) {
-		const { entries, registry } = makeRegistry();
+		const { entries, edges, registry } = makeRegistry();
 		const { ctx } = makeCtx();
 		planPipelineHooks.register!(pages, registry, ctx);
 		const aggregated = { plan: planPipelineHooks.aggregate!(registry) };
 		return {
 			entries,
+			edges,
 			aggregated,
 			processed: pages.map(page => planPipelineHooks.postProcess!(page, aggregated)),
 		};
 	}
+
+	it('contributes relationship edges to the registry graph (SPEC-072)', () => {
+		const pages = [
+			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}\n# Test Spec\n> Summary.\n{% /spec %}`),
+			makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" source="SPEC-001" %}\n# Implement spec\nDescription.\n{% /work %}`),
+		];
+		const { edges } = runFullPipeline(pages);
+		// forward + reverse edges both contributed
+		expect(edges).toContainEqual({ fromId: 'WORK-001', toId: 'SPEC-001', kind: 'implements' });
+		expect(edges).toContainEqual({ fromId: 'SPEC-001', toId: 'WORK-001', kind: 'implemented-by' });
+	});
 
 	it('registers source attribute on work items', () => {
 		const pages = [

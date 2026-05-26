@@ -469,6 +469,18 @@ export const planPipelineHooks: PluginPipelineHooks = {
 			_idReferences,
 		);
 
+		// SPEC-072 / WORK-279 — contribute the (already bidirectional) plan edges
+		// to the core registry graph so the generic `relationships` rune can query
+		// them via getRelated(). The local `relationships` map still drives the
+		// plugin's own relationship sections until the ADR-011 consumer work lands.
+		if (registry.relate) {
+			for (const edges of relationships.values()) {
+				for (const e of edges) {
+					registry.relate({ fromId: e.fromId, toId: e.toId, kind: e.kind, fromType: e.fromType, toType: e.toType });
+				}
+			}
+		}
+
 		// Extract git history for all entities
 		let history = new Map<string, HistoryEvent[]>();
 		let repositoryUrl: string | undefined;

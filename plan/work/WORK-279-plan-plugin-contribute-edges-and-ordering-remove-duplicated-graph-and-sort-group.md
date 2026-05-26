@@ -1,11 +1,11 @@
-{% work id="WORK-279" status="ready" priority="medium" complexity="moderate" source="SPEC-072" tags="plan,relationships,ordering,refactor" milestone="v0.16.0" %}
+{% work id="WORK-279" status="in-progress" priority="medium" complexity="moderate" source="SPEC-072" tags="plan,relationships,ordering,refactor" milestone="v0.16.0" %}
 
 # Plan plugin: contribute edges and ordering, remove duplicated graph and sort/group
 
 Make the plan plugin a *consumer* of the new core capabilities instead of carrying its own. Rewrite `buildRelationships` to contribute edges to the core graph, register only the status ordering override, and delete the duplicated relationship maps and `filter.ts` sort/group.
 
 ## Acceptance Criteria
-- [ ] `buildRelationships` (`plugins/plan/src/relationships.ts`) contributes edges via `registry.relate(...)` from the `aggregate` hook; its derivation behavior is preserved (reverse-edge synthesis, dedup precedence, status-dependent kind).
+- [x] `buildRelationships` (`plugins/plan/src/relationships.ts`) contributes edges via `registry.relate(...)` from the `aggregate` hook; its derivation behavior is preserved (reverse-edge synthesis, dedup precedence, status-dependent kind).
 - [ ] The plan plugin's private relationship maps are removed.
 - [ ] The plan plugin registers an explicit ordering override only where it diverges from schema `matches` (the actionable-first status group order, `pipeline.ts`); priority/severity fall out of `matches` automatically.
 - [ ] `plugins/plan/src/filter.ts` `sortEntities`/`groupEntities` are deleted; call sites use the shared collection ordering.
