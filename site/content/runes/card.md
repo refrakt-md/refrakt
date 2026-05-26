@@ -28,7 +28,7 @@ The body divides on `---` (a horizontal rule) into up to three zones — here al
 
 {% preview source=true %}
 
-{% card href="/runes/recipe" layout="split" %}
+{% card href="/runes/learning/recipe" layout="split" %}
 ![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
 
 ---
