@@ -106,6 +106,8 @@ Because the card is plain, a `collection` body template wires entity fields into
 
 See [collection → per-item templates](/runes/collection#per-item-templates) for the `$item` contract.
 
+In a `grid`, every card in a row shares the height of the tallest one, and the body stretches to fill that height — so the footers line up along a common baseline regardless of how much body each card has.
+
 ## Output contract
 
 ```html
