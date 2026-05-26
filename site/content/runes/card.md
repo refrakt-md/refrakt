@@ -24,22 +24,24 @@ Core rune · see also `expand`
 
 ## Zones
 
-The body divides on `---` (a horizontal rule) into up to three zones:
+The body divides on `---` (a horizontal rule) into up to three zones — here all three, with a real cover image:
 
-```markdoc
-{% card href="/posts/hello-world/" %}
-![A wide cover image](/img/hello.jpg)
+{% preview source=true %}
 
----
-
-### Hello World
-A short summary of the post, with **markdown**.
+{% card href="/runes/recipe" layout="split" %}
+![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
 
 ---
 
-Jan 15, 2024 · 4 min read
+### Tequila Sunrise
+A bright, layered cocktail — five minutes, no shaker.
+
+---
+
+Cocktail · Easy
 {% /card %}
-```
+
+{% /preview %}
 
 - **media** (optional, leading zone) — laid out beside the body on wide screens and as a full-bleed header on small screens.
 - **body** — the main content.
