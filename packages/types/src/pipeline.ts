@@ -86,6 +86,29 @@ export interface EntityRegistration {
 	data: Record<string, unknown>;
 }
 
+/** A directed, typed relationship edge between two entities (SPEC-072).
+ *  `kind` is an arbitrary, domain-defined string (e.g. `implements`,
+ *  `blocked-by`, `ally`). Bidirectional relationships are expressed by
+ *  contributing both directions, so "every edge touching X" is X's outgoing
+ *  edges. `fromType`/`toType` are optional hints that speed up target
+ *  resolution; when absent the registry resolves `toId` by scanning types. */
+export interface EntityEdge {
+	fromId: string;
+	toId: string;
+	kind: string;
+	fromType?: string;
+	toType?: string;
+}
+
+/** An edge with its target entity resolved, returned by
+ *  {@link EntityRegistry.getRelated}. */
+export interface ResolvedEdge {
+	kind: string;
+	fromId: string;
+	toId: string;
+	target: EntityRegistration;
+}
+
 /** The site-wide entity registry built during Phase 2 (Register) */
 export interface EntityRegistry {
 	register(entry: EntityRegistration): void;
@@ -103,6 +126,15 @@ export interface EntityRegistry {
 	getById(type: string, id: string, pageUrl?: string): EntityRegistration | undefined;
 	/** All registered entity type names */
 	getTypes(): string[];
+	/** Contribute a relationship edge to the graph (SPEC-072). Called by
+	 *  plugins during the aggregate phase. Exact `(fromId, toId, kind)`
+	 *  duplicates are deduped. Optional — a minimal registry need not carry a
+	 *  relationship graph. */
+	relate?(edge: EntityEdge): void;
+	/** Edges whose `fromId` is `id`, each with its target resolved (SPEC-072).
+	 *  `opts.kind` / `opts.type` filter by edge kind and target entity type.
+	 *  Edges to unknown entities are dropped. Optional — see {@link relate}. */
+	getRelated?(id: string, opts?: { kind?: string | string[]; type?: string | string[] }): ResolvedEdge[];
 }
 
 /**

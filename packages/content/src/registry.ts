@@ -1,4 +1,4 @@
-import type { EntityRegistration, EntityRegistry } from '@refrakt-md/types';
+import type { EntityRegistration, EntityRegistry, EntityEdge, ResolvedEdge } from '@refrakt-md/types';
 
 /**
  * Concrete implementation of the cross-page entity registry.
@@ -18,6 +18,8 @@ import type { EntityRegistration, EntityRegistry } from '@refrakt-md/types';
 export class EntityRegistryImpl implements EntityRegistry {
 	private byTypeAndId = new Map<string, Map<string, EntityRegistration>>();
 	private byTypeAndUrl = new Map<string, Map<string, EntityRegistration[]>>();
+	/** Relationship graph (SPEC-072): outgoing edges keyed by `fromId`. */
+	private edgesByFrom = new Map<string, EntityEdge[]>();
 
 	register(entry: EntityRegistration): void {
 		// Normalize empty-string sourceUrl to undefined — distinguishing
@@ -107,6 +109,52 @@ export class EntityRegistryImpl implements EntityRegistry {
 	getTypes(): string[] {
 		return [...this.byTypeAndId.keys()];
 	}
+
+	/** Contribute a directed relationship edge (SPEC-072). Exact
+	 *  `(fromId, toId, kind)` duplicates are dropped; richer precedence is the
+	 *  contributor's concern. */
+	relate(edge: EntityEdge): void {
+		let list = this.edgesByFrom.get(edge.fromId);
+		if (!list) {
+			list = [];
+			this.edgesByFrom.set(edge.fromId, list);
+		}
+		if (list.some((e) => e.toId === edge.toId && e.kind === edge.kind)) return;
+		list.push(edge);
+	}
+
+	/** Outgoing edges of `id`, each with its target entity resolved (SPEC-072).
+	 *  Edges to unknown entities are dropped. */
+	getRelated(id: string, opts?: { kind?: string | string[]; type?: string | string[] }): ResolvedEdge[] {
+		const edges = this.edgesByFrom.get(id);
+		if (!edges) return [];
+		const kinds = opts?.kind === undefined ? undefined : new Set(toArray(opts.kind));
+		const types = opts?.type === undefined ? undefined : new Set(toArray(opts.type));
+		const out: ResolvedEdge[] = [];
+		for (const edge of edges) {
+			if (kinds && !kinds.has(edge.kind)) continue;
+			const target = this.resolveTarget(edge);
+			if (!target) continue;
+			if (types && !types.has(target.type)) continue;
+			out.push({ kind: edge.kind, fromId: edge.fromId, toId: edge.toId, target });
+		}
+		return out;
+	}
+
+	/** Resolve an edge's target entity: by `toType` when given, else by
+	 *  scanning registered types for a site-scoped id match. */
+	private resolveTarget(edge: EntityEdge): EntityRegistration | undefined {
+		if (edge.toType) return this.getById(edge.toType, edge.toId);
+		for (const type of this.byTypeAndId.keys()) {
+			const hit = this.getById(type, edge.toId);
+			if (hit) return hit;
+		}
+		return undefined;
+	}
+}
+
+function toArray(v: string | string[]): string[] {
+	return Array.isArray(v) ? v : [v];
 }
 
 /** Internal storage key for an entry. Site-scoped uses the bare id (so

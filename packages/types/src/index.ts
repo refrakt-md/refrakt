@@ -84,6 +84,8 @@ export type {
 	PipelineHeadingInfo,
 	EntityRegistration,
 	EntityRegistry,
+	EntityEdge,
+	ResolvedEdge,
 	AggregatedData,
 	PipelineContext,
 	PipelineWarning,
