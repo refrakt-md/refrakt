@@ -9,6 +9,19 @@ description: A generic, self-contained content card — optional media, body, an
 
 There is one generic `card` (named by *shape*, not by entity) — refrakt deliberately has no `article-card` / `recipe-card` / per-entity card runes. A designed list item is `{% card %}` fed by entity fields, not a bespoke card per type.
 
+{% preview source=true %}
+
+{% card href="/runes/collection" %}
+### Collection rune
+The plural counterpart to `ref` and `expand` — query the registry and render the results.
+
+---
+
+Core rune · see also `expand`
+{% /card %}
+
+{% /preview %}
+
 ## Zones
 
 The body divides on `---` (a horizontal rule) into up to three zones:

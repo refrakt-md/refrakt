@@ -28,6 +28,8 @@ These runes are available out of the box — no extra installation needed. They 
 | [reveal](/runes/reveal) | Progressive disclosure where content appears step by step |
 | [embed](/runes/embed) | Embed external content like videos, tweets, and code demos |
 | [expand](/runes/expand) | Substitute a registered entity's source content inline — symmetric with `ref`, but inlines content rather than linking to it |
+| [collection](/runes/collection) | Render a list, grid, or table of registry entities — the plural counterpart to `ref`/`expand`, with filter/sort/group and per-item templates |
+| [card](/runes/card) | A generic content card — media / body / footer zones, an optional whole-card link; feed it from a collection or use it standalone |
 | [icon](/runes/icon) | Inline icons from the theme's icon registry |
 
 ### Layout

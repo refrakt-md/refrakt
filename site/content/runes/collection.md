@@ -9,11 +9,13 @@ description: Render a list, grid, or table of registry entities — the plural c
 
 It's generic over entity type. Anything in the registry works the same way — plan `work` items, `page` entities, and any type a plugin registers — so a hand-maintained list that mirrors structured data becomes a live query instead.
 
-```markdoc
-{% collection type="work" filter="status:ready" sort="priority" /%}
-```
+{% preview source=true %}
 
-That renders every registered `work` entity whose `status` is `ready`, highest priority first.
+{% collection type="work" filter="status:ready" sort="priority" limit=5 /%}
+
+{% /preview %}
+
+That renders every registered `work` entity whose `status` is `ready`, highest priority first (capped at five for this preview).
 
 ## Selecting entities — `type` + `filter`
 
@@ -68,9 +70,11 @@ Rules:
 
 `fields` is the zero-template shorthand for the no-body case: a comma-separated list of `data` fields rendered with humanized headers and default per-type formatting.
 
-```markdoc
-{% collection type="work" layout="table" fields="status,priority,assignee" /%}
-```
+{% preview source=true %}
+
+{% collection type="work" filter="status:ready" layout="table" fields="status,priority" limit=5 /%}
+
+{% /preview %}
 
 For anything richer than raw values (formatting, combining fields, a designed card), use a body template.
 
