@@ -77,6 +77,22 @@ describe('card rune', () => {
 		expect(JSON.stringify(eyebrow)).toContain('Brunch classic');
 		// the heading + remaining body stay in the body zone
 		expect(find(part(out, 'body'), (x) => x.name === 'h3')).toBeDefined();
+		// the heading under the eyebrow is the title
+		const title = part(out, 'title');
+		expect(title).toBeDefined();
+		expect(title!.name).toBe('h3');
+	});
+
+	it('a body leading with a heading tags it as the title', () => {
+		const out = render('{% card %}\n### Hello\nBody.\n{% /card %}');
+		const title = part(out, 'title');
+		expect(title).toBeDefined();
+		expect(title!.name).toBe('h3');
+	});
+
+	it('a body leading with prose has no title', () => {
+		const out = render('{% card %}\nNo heading here.\n{% /card %}');
+		expect(part(out, 'title')).toBeUndefined();
 	});
 
 	it('a paragraph not followed by a heading is plain body, not an eyebrow', () => {

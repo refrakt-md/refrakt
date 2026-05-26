@@ -112,7 +112,11 @@ See [collection → per-item templates](/runes/collection#per-item-templates) fo
 <div class="rf-card" data-rune="card" data-layout="stacked" data-media-position="top">
   <div data-section="media" data-name="media">…</div>
   <div data-name="content">
-    <div data-name="body">…</div>
+    <div data-name="body">
+      <p data-name="eyebrow">…</p>  <!-- leading paragraph before a heading -->
+      <h3 data-name="title">…</h3>  <!-- the body's leading heading -->
+      …
+    </div>
     <footer data-name="footer">…</footer>
   </div>
   <!-- only when href is set -->

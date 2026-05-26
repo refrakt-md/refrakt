@@ -103,7 +103,15 @@ export const card = createContentModelSchema({
 		const bodyCursor = new RenderableNodeCursor(
 			Markdoc.transform(mainBodyNodes, config) as RenderableTreeNode[],
 		);
-		bodyInner.push(...(bodyCursor.toArray() as RenderableTreeNode[]));
+		const bodyRendered = bodyCursor.toArray() as RenderableTreeNode[];
+		// The body's leading heading is the card title — give it a hook so it can
+		// sit tight under an eyebrow instead of carrying default prose top margin.
+		let titleTag: InstanceType<typeof Tag> | undefined;
+		const firstBody = bodyRendered[0];
+		if (Markdoc.Tag.isTag(firstBody) && /^h[1-6]$/.test(firstBody.name)) {
+			titleTag = firstBody;
+		}
+		bodyInner.push(...bodyRendered);
 		const bodyDiv = new Tag('div', { 'data-name': 'body' }, bodyInner);
 		const contentChildren: RenderableTreeNode[] = [bodyDiv];
 		let footerTag: InstanceType<typeof Tag> | undefined;
@@ -126,6 +134,7 @@ export const card = createContentModelSchema({
 		}
 
 		const refs: Record<string, InstanceType<typeof Tag>> = { content: contentDiv, body: bodyDiv };
+		if (titleTag) refs.title = titleTag;
 		if (eyebrowTag) refs.eyebrow = eyebrowTag;
 		if (footerTag) refs.footer = footerTag;
 		if (linkTag) refs.link = linkTag;
