@@ -1,0 +1,34 @@
+{
+	"name": "plan-site",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"license": "MIT",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+	},
+	"dependencies": {
+		"@markdoc/markdoc": "0.4.0",
+		"@refrakt-md/content": "0.15.0",
+		"@refrakt-md/highlight": "0.15.0",
+		"@refrakt-md/lumina": "0.15.0",
+		"@refrakt-md/plan": "0.15.0",
+		"@refrakt-md/runes": "0.15.0",
+		"@refrakt-md/svelte": "0.15.0",
+		"@refrakt-md/sveltekit": "0.15.0",
+		"@refrakt-md/types": "0.15.0"
+	},
+	"devDependencies": {
+		"@sveltejs/adapter-static": "^3.0.0",
+		"@sveltejs/kit": "^2.50.2",
+		"@sveltejs/vite-plugin-svelte": "^6.2.4",
+		"svelte": "^5.49.2",
+		"svelte-check": "^4.3.6",
+		"typescript": "^5.9.3",
+		"vite": "^7.3.1"
+	}
+}

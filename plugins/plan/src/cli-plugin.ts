@@ -70,7 +70,7 @@ async function handleServe(args: string[]): Promise<void> {
 async function handleBuild(args: string[]): Promise<void> {
 	let dir = resolvePlanDir().dir;
 	let specsDir: string | undefined;
-	let out = './plan-site';
+	let out = './.plan-build';
 	let theme = 'auto';
 	let baseUrl = '/';
 	let css: string | undefined;
