@@ -227,6 +227,9 @@ interface EntityRegistry {
   getByUrl(type: string, url: string): EntityRegistration[];
   getById(type: string, id: string): EntityRegistration | undefined;
   getTypes(): string[];
+  // Relationship graph (optional — see below)
+  relate?(edge: EntityEdge): void;
+  getRelated?(id: string, opts?: { kind?: string | string[]; type?: string | string[] }): ResolvedEdge[];
 }
 
 interface EntityRegistration {
@@ -240,6 +243,38 @@ interface EntityRegistration {
   embed?: () => Node | null;                 // …or return the content AST directly
 }
 ```
+
+### Contributing relationships — `relate()` / `getRelated()`
+
+The registry carries a directed, typed **relationship graph**. A plugin contributes edges from its `aggregate` hook; the generic [`relationships`](/runes/relationships) rune renders them via `getRelated`. The edge `kind` is an arbitrary string — your domain's vocabulary (`implements`, `blocked-by`, `ally`, …):
+
+```typescript
+interface EntityEdge { fromId: string; toId: string; kind: string; fromType?: string; toType?: string; }
+
+aggregate(registry, ctx) {
+  // Relationships are directed; emit both directions to make an edge mutual.
+  registry.relate?.({ fromId: 'WORK-1', toId: 'SPEC-1', kind: 'implements', toType: 'spec' });
+  registry.relate?.({ fromId: 'SPEC-1', toId: 'WORK-1', kind: 'implemented-by', toType: 'work' });
+  return { /* … */ };
+}
+```
+
+`getRelated(id, { kind?, type? })` returns the outgoing edges of `id`, each with its target entity resolved (edges to unknown ids are dropped). Exact `(fromId, toId, kind)` duplicates are deduped by core; any richer precedence is the contributor's job. Both methods are optional on the interface — a minimal registry may omit the graph — so call them with `?.` and have the rune fall back to empty.
+
+### Domain-aware ordering — `theme.orderings`
+
+`collection`/`relationships` sort and group enum fields (`status`, `priority`, …) in a meaningful order rather than lexically. The default order comes from each rune attribute's `matches` array automatically. When a *presentation* order differs from the declaration order (e.g. an actionable-first status dashboard), declare an override on your plugin's `theme`, keyed `type → field → ordered values`:
+
+```typescript
+theme: {
+  runes: { /* … */ },
+  orderings: {
+    work: { status: ['blocked', 'in-progress', 'review', 'ready', 'draft', 'done'] },
+  },
+}
+```
+
+Only declare the fields that diverge from `matches`; everything else is automatic.
 
 ## PipelineContext
 

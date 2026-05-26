@@ -66,6 +66,17 @@ Because `$item` means the same thing here as in a `collection` body, the **same 
 | `sort` | string | — | Sort related entities by a field. |
 | `limit` | number | — | Max edges. |
 | `fields` | string | — | Comma-separated `data` fields for the no-body built-in. |
+| `empty` | string | — | Fallback text when there are no matching edges (no-body form). Absent → render nothing. |
+
+## Empty state and body zones
+
+Like [`collection`](/runes/collection), `relationships` supports an empty state and `---`-delimited body zones. The self-closing form takes an `empty` fallback:
+
+```markdoc
+{% relationships of=$item.id empty="No relationships yet." /%}
+```
+
+With a body, split on a top-level `---` into **preamble** (rendered above the edges only when there are any), **template** (the per-edge template), and **fallback** (shown when there are none) — so a "Relationships" heading can live inside the rune and disappear when the entity has no edges.
 
 ## Output contract
 

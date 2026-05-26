@@ -54,6 +54,10 @@ Rules:
 - **`group`** — a field name; items are grouped under a heading per distinct value (empty values group under `(none)`).
 - **`limit`** — a positive integer cap, applied after sort. With `group`, the cap is on the total item count.
 
+### Domain-aware ordering
+
+Enum fields don't sort alphabetically. For a field whose values are a fixed set — a `work` item's `priority` (`critical`/`high`/`medium`/`low`), a `status`, a `severity` — `sort` and `group` order by the field's **declared order**, not lexically, so `sort="priority"` runs critical→low and `group="status"` lists statuses in a sensible sequence. The order is taken from each rune's attribute definition; a plugin may register an explicit override when a dashboard order differs from the declaration order. Across mixed types (`type="work,bug"`), each entity is ranked within *its own* type's ordering, so the groups still compose. Fields with no declared order fall back to numeric/lexical.
+
 ## Layouts
 
 `layout` controls **arrangement only** — item *chrome* comes from the item (see [Per-item templates](#per-item-templates)).
@@ -147,6 +151,7 @@ Value formatting is done with shared markdoc functions, usable **anywhere markdo
 | `date(value)` | `{% date($item.data.published) %}` | `Jan 15, 2024` |
 | `number(value)` | `{% number($item.data.views) %}` | `1,234,567` |
 | `join(array, sep?)` | `{% join($item.data.tags, " · ") %}` | `a · b · c` |
+| `humanize(value)` | `{% humanize($item.data.status) %}` | `In Progress` |
 
 Formatting lives in these functions, not in `fields` or a projection mini-language.
 
@@ -162,6 +167,28 @@ Formatting lives in these functions, not in `fields` or a projection mini-langua
 | `fields` | string | — | Comma-separated `data` fields for the no-body built-in. |
 | `layout` | `list` \| `grid` \| `table` | `list` | Arrangement. Item chrome comes from the item. |
 | `item-template` | string | — | Partial used as the per-item template (mutually exclusive with an inline body). |
+| `empty` | string | — | Fallback text shown when the query yields nothing (no-body form). Absent → render nothing. |
+
+## Body zones — preamble, template, fallback
+
+When you give `collection` a body, split it on a top-level `---` (horizontal rule) into up to three zones — the same convention as [`card`](/runes/card):
+
+```markdoc
+{% collection type="work" filter="status:blocked" group="status" %}
+## Blocked
+Work that can't progress.
+---
+{% card href=$item.url %}### {% $item.data.title %}{% /card %}
+---
+Nothing blocked — nice.
+{% /collection %}
+```
+
+- **preamble** (optional, leading) — rendered **once, above the items, only when the query is non-empty**. Put the section heading here so the whole section (heading + items) appears or vanishes together — something `{% if %}` can't do, since emptiness is resolved at build time.
+- **template** — the per-item template (today's single-zone body).
+- **fallback** (optional, trailing) — rendered **once, in place of the items, only when the query is empty**.
+
+Zones are positional: **1 zone → template**; **2 → preamble + template**; **3 → preamble + template + fallback**. A `---` *inside* a nested rune (a `{% card %}`'s own zones) is never a delimiter — only top-level rules split. For the self-closing form (no body), use the `empty` attribute for the fallback.
 
 ## Output contract
 
