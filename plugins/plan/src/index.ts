@@ -132,6 +132,13 @@ Custom properties cascade naturally without JavaScript.
 	},
 	theme: {
 		runes: config as unknown as Record<string, Record<string, unknown>>,
+		// SPEC-072 — dashboard (actionable-first) status order, which diverges
+		// from each rune's lifecycle `matches`. priority/severity fall out of
+		// `matches` automatically and need no override.
+		orderings: {
+			work: { status: ['blocked', 'in-progress', 'review', 'ready', 'pending', 'draft', 'done'] },
+			bug: { status: ['in-progress', 'confirmed', 'reported', 'fixed', 'wontfix', 'duplicate'] },
+		},
 	},
 	behaviors: {
 		'milestone-backlog': tabsBehavior,

@@ -222,12 +222,24 @@ async function processContentTree(
   // them to re-transform extracted entity subtrees using the same schemas
   // the host page used.
   const embedTags = opts.additionalTags ? { ...tags, ...opts.additionalTags } : tags;
+  // SPEC-072 — collect plugin-declared (type, field) ordering overrides so
+  // collection/relationships sort & group in domain order. Defaults still come
+  // from each rune's attribute `matches`; these only cover the divergent cases.
+  const orderings: Record<string, Record<string, string[]>> = {};
+  for (const pkg of opts.plugins ?? []) {
+    const o = pkg.theme?.orderings;
+    if (!o) continue;
+    for (const [type, fields] of Object.entries(o)) {
+      orderings[type] = { ...(orderings[type] ?? {}), ...fields };
+    }
+  }
   const coreHooksOptions = {
     xrefPatterns: opts.xrefPatterns,
     embedConfig: {
       tags: embedTags as Record<string, unknown>,
       nodes: nodes as Record<string, unknown>,
       functions: functions as Record<string, unknown>,
+      orderings,
       // Pass parsed partials so `{% partial file="…" /%}` inside a collection
       // body template (or an expand-resolved entity body) resolves the same
       // way it would inside a top-level page. Without this, partial nodes in

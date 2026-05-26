@@ -50,6 +50,11 @@ export interface PluginThemeConfig {
 	icons?: Record<string, Record<string, string>>;
 	/** Background preset definitions for this plugin's runes */
 	backgrounds?: Record<string, Record<string, unknown>>;
+	/** Domain-aware ordering overrides for collection/relationships sort &
+	 *  group (SPEC-072), keyed `type → field → ordered values`. Only needed
+	 *  where presentation order differs from a rune attribute's declaration
+	 *  `matches` (which is used as the default automatically). */
+	orderings?: Record<string, Record<string, string[]>>;
 }
 
 /** A plugin's exported registration object.
