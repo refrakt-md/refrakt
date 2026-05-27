@@ -156,3 +156,11 @@
 	letter-spacing: 0.05em;
 	color: var(--rf-color-muted);
 }
+
+/* Heading-template cells (`layout="table"` body) wrap their content as
+ * markdown paragraphs, which pick up the global `p { margin-bottom: 1rem }`
+ * and leave dead space inside each row. Drop it inside the table — table
+ * cells don't want paragraph spacing. */
+.rf-collection__table td p {
+	margin: 0;
+}
