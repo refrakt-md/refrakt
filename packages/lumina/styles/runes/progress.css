@@ -41,7 +41,9 @@
 	transition: width 0.3s ease;
 }
 
-/* Sentiment variants tint the fill; the neutral default uses the primary. */
-.rf-progress--positive .rf-progress__fill { background: var(--rf-color-positive, var(--rf-color-primary)); }
-.rf-progress--caution .rf-progress__fill { background: var(--rf-color-caution, var(--rf-color-primary)); }
-.rf-progress--negative .rf-progress__fill { background: var(--rf-color-negative, var(--rf-color-primary)); }
+/* Sentiment variants tint the fill; the neutral default uses the primary.
+ * Token names follow the sentiment scheme in dimensions/metadata.css
+ * (positive→success, caution→warning, negative→danger). */
+.rf-progress--positive .rf-progress__fill { background: var(--rf-color-success); }
+.rf-progress--caution .rf-progress__fill { background: var(--rf-color-warning); }
+.rf-progress--negative .rf-progress__fill { background: var(--rf-color-danger); }

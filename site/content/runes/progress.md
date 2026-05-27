@@ -54,7 +54,13 @@ An optional **body** is the label — it may hold inline markup, and its text al
 
 {% preview source=true %}
 
-{% progress value=2 max=10 variant="caution" %}Low stock{% /progress %}
+{% progress value=6 max=10 %}Default{% /progress %}
+
+{% progress value=9 max=10 variant="positive" %}Positive{% /progress %}
+
+{% progress value=4 max=10 variant="caution" %}Caution{% /progress %}
+
+{% progress value=2 max=10 variant="negative" %}Negative{% /progress %}
 
 {% /preview %}
 
