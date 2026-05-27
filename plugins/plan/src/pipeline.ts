@@ -7,7 +7,8 @@ import { DECISION_LOG_SENTINEL } from './tags/decision-log.js';
 import { PLAN_PROGRESS_SENTINEL } from './tags/plan-progress.js';
 import { PLAN_ACTIVITY_SENTINEL } from './tags/plan-activity.js';
 import { PLAN_HISTORY_SENTINEL } from './tags/plan-history.js';
-import { parseFilter, matchesFilter, sortEntities, groupEntities } from './filter.js';
+import { parseFilter, matchesFilter } from './filter.js';
+import { buildOrdering, sortEntities, groupEntities, Ordering } from '@refrakt-md/runes';
 import { execSync } from 'node:child_process';
 import {
 	extractBatchHistory,
@@ -527,17 +528,27 @@ export const planPipelineHooks: PluginPipelineHooks = {
 		const planData = aggregated['plan'] as PlanAggregatedData | undefined;
 		if (!planData) return page;
 
+		// Build the shared ordering once per page so collection-style sort &
+		// group inside backlog / decision-log / milestone backlog use the same
+		// `(type, field)` domain order as `collection` / `relationships`. Falls
+		// back to a no-op ordering when core data isn't available (shouldn't
+		// happen in practice — core runs before plan).
+		const coreData = aggregated['__core__'] as {
+			embedConfig?: { tags: Record<string, unknown>; nodes: Record<string, unknown>; orderings?: Record<string, Record<string, string[]>> };
+		} | undefined;
+		const ordering = buildOrdering(coreData?.embedConfig as never);
+
 		let modified = false;
 		const newRenderable = mapTags(page.renderable, (tag) => {
 			// Handle backlog sentinel
 			if (tag.attributes['data-rune'] === 'backlog' && hasSentinel(tag, BACKLOG_SENTINEL)) {
 				modified = true;
-				return resolveBacklog(tag, planData);
+				return resolveBacklog(tag, planData, ordering);
 			}
 			// Handle decision-log sentinel
 			if (tag.attributes['data-rune'] === 'decision-log' && hasSentinel(tag, DECISION_LOG_SENTINEL)) {
 				modified = true;
-				return resolveDecisionLog(tag, planData);
+				return resolveDecisionLog(tag, planData, ordering);
 			}
 			// Handle plan-progress sentinel
 			if (tag.attributes['data-rune'] === 'plan-progress' && hasSentinel(tag, PLAN_PROGRESS_SENTINEL)) {
@@ -559,7 +570,7 @@ export const planPipelineHooks: PluginPipelineHooks = {
 			if (tag.attributes['data-rune'] === 'milestone') {
 				const milestoneName = readField(tag, 'name');
 				if (milestoneName) {
-					const backlog = buildMilestoneBacklog(milestoneName, planData);
+					const backlog = buildMilestoneBacklog(milestoneName, planData, ordering);
 					if (backlog) {
 						modified = true;
 						tag = new Tag(tag.name, tag.attributes, [...tag.children, backlog]) as typeof tag;
@@ -621,7 +632,7 @@ export const planPipelineHooks: PluginPipelineHooks = {
 	},
 };
 
-function resolveBacklog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData): InstanceType<typeof Tag> {
+function resolveBacklog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData, ordering: Ordering): InstanceType<typeof Tag> {
 	const filterExpr = readField(tag, 'filter');
 	const sortField = readField(tag, 'sort') || 'priority';
 	const groupField = readField(tag, 'group');
@@ -650,7 +661,7 @@ function resolveBacklog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData)
 	entities = entities.filter(e => matchesFilter(e, filter));
 
 	// Sort
-	entities = sortEntities(entities, sortField);
+	entities = sortEntities(entities, sortField, ordering);
 
 	// Limit applies post-sort, pre-group so the rendered set is "top N
 	// by sort order". When grouped, the limit caps the total entity count
@@ -663,7 +674,7 @@ function resolveBacklog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData)
 	// Build output
 	let children: any[];
 	if (groupField) {
-		const groups = groupEntities(entities, groupField);
+		const groups = groupEntities(entities, groupField, ordering);
 		children = [];
 		for (const [groupName, groupEntities_] of groups) {
 			const groupTitle = new Tag('h3', { class: 'rf-backlog__group-title' }, [groupName]);
@@ -690,7 +701,7 @@ function resolveBacklog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData)
 }
 
 /** Build auto-backlog section for a milestone, showing assigned work/bug items grouped by status */
-function buildMilestoneBacklog(milestoneName: string, data: PlanAggregatedData): InstanceType<typeof Tag> | null {
+function buildMilestoneBacklog(milestoneName: string, data: PlanAggregatedData, ordering: Ordering): InstanceType<typeof Tag> | null {
 	// Collect work and bug entities assigned to this milestone
 	let entities = [
 		...data.workEntities,
@@ -700,10 +711,10 @@ function buildMilestoneBacklog(milestoneName: string, data: PlanAggregatedData):
 	if (entities.length === 0) return null;
 
 	// Sort by priority within each group
-	entities = sortEntities(entities, 'priority');
+	entities = sortEntities(entities, 'priority', ordering);
 
 	// Group by status
-	const groups = groupEntities(entities, 'status');
+	const groups = groupEntities(entities, 'status', ordering);
 
 	// Calculate aggregate progress from checklist counts
 	let totalChecked = 0;
@@ -784,9 +795,15 @@ function buildMilestoneBacklog(milestoneName: string, data: PlanAggregatedData):
 	return new Tag('div', { class: 'rf-milestone__backlog', 'data-name': 'backlog', 'data-rune': 'milestone-backlog' }, children);
 }
 
-function resolveDecisionLog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData): InstanceType<typeof Tag> {
+function resolveDecisionLog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData, ordering: Ordering): InstanceType<typeof Tag> {
 	const filterExpr = readField(tag, 'filter');
-	const sortField = readField(tag, 'sort') || 'date';
+	// The rune documents `sort="date"` as reverse-chronological (newest first)
+	// — its predecessor `sortEntities` baked that direction in. The shared
+	// sort is direction-agnostic and uses the `-` prefix, so we keep the
+	// rune's contract by mapping a bare `date` to `-date`. Authors can still
+	// pass an explicit `+date` / other field unchanged.
+	const sortRaw = readField(tag, 'sort') || 'date';
+	const sortField = sortRaw === 'date' ? '-date' : sortRaw;
 
 	let entities = [...data.decisionEntities];
 
@@ -795,7 +812,7 @@ function resolveDecisionLog(tag: InstanceType<typeof Tag>, data: PlanAggregatedD
 	entities = entities.filter(e => matchesFilter(e, filter));
 
 	// Sort
-	entities = sortEntities(entities, sortField);
+	entities = sortEntities(entities, sortField, ordering);
 
 	const entries = entities.map(e => buildDecisionEntry(e));
 	const list = new Tag('ol', { 'data-name': 'items', class: 'rf-decision-log__list' }, entries);
