@@ -19,7 +19,7 @@
 }
 
 .rf-progress__value {
-	font-size: 0.8125em;
+	font-weight: 600;
 	color: var(--rf-color-muted);
 	margin-left: auto;
 }
