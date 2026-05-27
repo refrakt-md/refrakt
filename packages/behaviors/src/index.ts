@@ -12,6 +12,7 @@ import { scrollspyBehavior } from './behaviors/scrollspy.js';
 import { versionSwitcherBehavior } from './behaviors/version-switcher.js';
 import { mobileMenuBehavior } from './behaviors/mobile-menu.js';
 import { searchBehavior } from './behaviors/search.js';
+import { themeToggleBehavior } from './behaviors/theme-toggle.js';
 import { sectionNavBehavior } from './behaviors/section-nav.js';
 import { galleryBehavior } from './behaviors/gallery.js';
 import { juxtaposeBehavior } from './behaviors/juxtapose.js';
@@ -117,6 +118,7 @@ export function initRuneBehaviors(
 const layoutBehaviors: Record<string, (container: HTMLElement | Document) => () => void> = {
 	'mobile-menu': mobileMenuBehavior,
 	'search': searchBehavior,
+	'theme-toggle': themeToggleBehavior,
 	'section-nav': sectionNavBehavior,
 };
 
@@ -171,6 +173,7 @@ export { versionSwitcherBehavior } from './behaviors/version-switcher.js';
 export { mobileMenuBehavior } from './behaviors/mobile-menu.js';
 export { sectionNavBehavior } from './behaviors/section-nav.js';
 export { searchBehavior } from './behaviors/search.js';
+export { themeToggleBehavior } from './behaviors/theme-toggle.js';
 export { galleryBehavior } from './behaviors/gallery.js';
 export { juxtaposeBehavior } from './behaviors/juxtapose.js';
 export { navCollapsibleBehavior } from './behaviors/nav-collapsible.js';

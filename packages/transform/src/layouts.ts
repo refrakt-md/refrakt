@@ -64,15 +64,37 @@ const searchButton: LayoutStructureEntry = {
 	],
 };
 
+// Theme-mode toggle (SPEC-073). Framework-agnostic chrome — peer to the search
+// trigger. The per-state icon is rendered by the theme from the button's
+// `data-theme-pref` (set by the `theme-toggle` behavior), so the chrome carries
+// only an icon span, not a static SVG.
+const themeToggleButton: LayoutStructureEntry = {
+	tag: 'button',
+	ref: 'theme-toggle',
+	attrs: {
+		class: 'rf-theme-toggle',
+		'aria-label': 'Toggle color theme',
+		'data-theme-toggle': '',
+	},
+	children: [
+		{
+			tag: 'span',
+			ref: 'theme-toggle-icon',
+			attrs: { class: 'rf-theme-toggle__icon', 'aria-hidden': 'true' },
+		} as LayoutStructureEntry,
+	],
+};
+
 // ─── Default Layout ───────────────────────────────────────────────────
 // Matches DefaultLayout.svelte: header + mobile panel + main content
 
 export const defaultLayout: LayoutConfig = {
 	block: 'default',
-	behaviors: ['mobile-menu', 'search'],
+	behaviors: ['mobile-menu', 'search', 'theme-toggle'],
 	chrome: {
 		menuButton,
 		searchButton,
+		themeToggleButton,
 	},
 	slots: {
 		header: {
@@ -84,7 +106,7 @@ export const defaultLayout: LayoutConfig = {
 					tag: 'div',
 					class: 'rf-header__inner',
 					source: 'region:header',
-					children: ['chrome:searchButton', 'chrome:menuButton'],
+					children: ['chrome:searchButton', 'chrome:themeToggleButton', 'chrome:menuButton'],
 				},
 			],
 		},
@@ -121,7 +143,7 @@ export const defaultLayout: LayoutConfig = {
 
 export const docsLayout: LayoutConfig = {
 	block: 'docs',
-	behaviors: ['mobile-menu', 'search'],
+	behaviors: ['mobile-menu', 'search', 'theme-toggle'],
 	computed: {
 		breadcrumb: {
 			type: 'breadcrumb',
@@ -144,6 +166,7 @@ export const docsLayout: LayoutConfig = {
 	chrome: {
 		menuButton,
 		searchButton,
+		themeToggleButton,
 		hamburger: {
 			tag: 'button',
 			ref: 'toolbar-hamburger',
@@ -165,7 +188,7 @@ export const docsLayout: LayoutConfig = {
 					tag: 'div',
 					class: 'rf-docs-header__inner',
 					source: 'region:header',
-					children: ['chrome:searchButton', 'chrome:menuButton'],
+					children: ['chrome:searchButton', 'chrome:themeToggleButton', 'chrome:menuButton'],
 				},
 			],
 		},
@@ -274,7 +297,7 @@ export const docsLayout: LayoutConfig = {
 
 export const planLayout: LayoutConfig = {
 	block: 'plan',
-	behaviors: ['mobile-menu', 'section-nav', 'search'],
+	behaviors: ['mobile-menu', 'section-nav', 'search', 'theme-toggle'],
 	computed: {
 		toc: {
 			type: 'toc',
@@ -288,6 +311,7 @@ export const planLayout: LayoutConfig = {
 	chrome: {
 		closeButton,
 		searchButton,
+		themeToggleButton,
 		hamburger: {
 			tag: 'button',
 			ref: 'toolbar-hamburger',
@@ -323,6 +347,7 @@ export const planLayout: LayoutConfig = {
 					pageText: 'frontmatter.toolbarTitle',
 				} as LayoutStructureEntry,
 				'chrome:searchButton',
+				'chrome:themeToggleButton',
 				'chrome:sectionNavToggle',
 			],
 		},
@@ -377,10 +402,11 @@ export const planLayout: LayoutConfig = {
 
 export const blogArticleLayout: LayoutConfig = {
 	block: 'blog-article',
-	behaviors: ['mobile-menu', 'search'],
+	behaviors: ['mobile-menu', 'search', 'theme-toggle'],
 	chrome: {
 		menuButton,
 		searchButton,
+		themeToggleButton,
 		articleHeader: {
 			tag: 'header',
 			ref: 'article-header',
@@ -434,7 +460,7 @@ export const blogArticleLayout: LayoutConfig = {
 					tag: 'div',
 					class: 'rf-blog-header__inner',
 					source: 'region:header',
-					children: ['chrome:searchButton', 'chrome:menuButton'],
+					children: ['chrome:searchButton', 'chrome:themeToggleButton', 'chrome:menuButton'],
 				},
 			],
 		},
