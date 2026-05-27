@@ -365,6 +365,19 @@ function performUnconditionalScan(
 			data[key] = value;
 		}
 
+		// Count acceptance-criteria checkboxes for work + bug items so the
+		// milestone progress rollup (aggregate, see below) sees them. The
+		// page-walk register loop counts via `countCheckboxes(tag)` on the
+		// rendered AST; the unconditional-scan path counts from the
+		// `entity.criteria` array `parseFileContent` already produced. Same
+		// shape on data — `checkedCount` / `totalCount` — so downstream
+		// readers (milestone aggregate, the rune-injected backlog while it
+		// still exists) don't care which path populated them.
+		if ((runeType === 'work' || runeType === 'bug') && entity.criteria.length > 0) {
+			data.checkedCount = entity.criteria.filter((c) => c.checked).length;
+			data.totalCount = entity.criteria.length;
+		}
+
 		// Closure-captured extractor — returns the top-level plan rune AST
 		// node from a re-parsed source file, or null if the file's structure
 		// has been edited away from the expected shape. Used by expand
@@ -482,6 +495,32 @@ export const planPipelineHooks: PluginPipelineHooks = {
 		if (_planDir) {
 			performUnconditionalScan(_planDir, _projectRoot, registry, ctx);
 		}
+
+		// SPEC-072 / WORK-281 — roll the criteria-checkbox progress per milestone
+		// onto the milestone entity's `data`, so the milestone render-template
+		// can drive a generic `{% progress value=... max=... /%}` rune instead
+		// of relying on the rune-injected backlog's bespoke progress bar. Runs
+		// at the end of `register` (rather than in `aggregate`) so the values
+		// land on the entity before `entityRoutes` contributePages snapshots
+		// `$item` into the contributed page's variables — the progress rune is
+		// identity-transform-only, so its attributes resolve at transform time,
+		// not postProcess. Sums `checkedCount` / `totalCount` populated above.
+		const workAndBug = [...registry.getAll('work'), ...registry.getAll('bug')];
+		for (const milestone of registry.getAll('milestone')) {
+			const members = workAndBug.filter((e) => String(e.data.milestone ?? '') === milestone.id);
+			let done = 0;
+			let total = 0;
+			for (const m of members) {
+				const c = Number(m.data.checkedCount ?? 0);
+				const t = Number(m.data.totalCount ?? 0);
+				if (t > 0) {
+					done += c;
+					total += t;
+				}
+			}
+			(milestone.data as Record<string, unknown>).progressDone = done;
+			(milestone.data as Record<string, unknown>).progressTotal = total;
+		}
 	},
 
 	aggregate(registry, ctx) {
@@ -512,6 +551,7 @@ export const planPipelineHooks: PluginPipelineHooks = {
 				}
 			}
 		}
+
 
 		// Extract git history for all entities
 		let history = new Map<string, HistoryEvent[]>();

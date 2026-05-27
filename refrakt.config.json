@@ -112,7 +112,7 @@
 				{ "type": "work",      "url": "/work/{id}/",        "title": "{id} — {title}", "render-template": "entity/work.md" },
 				{ "type": "bug",       "url": "/bugs/{id}/",        "title": "{id} — {title}", "render-template": "entity/bug.md" },
 				{ "type": "decision",  "url": "/decisions/{id}/",   "title": "{title}",        "render-template": "entity/decision.md" },
-				{ "type": "milestone", "url": "/milestones/{name}/","title": "{name}",         "render": "{% expand $item.name level=1 /%}" }
+				{ "type": "milestone", "url": "/milestones/{name}/","title": "{name}",         "render-template": "entity/milestone.md" }
 			]
 		}
 	}
