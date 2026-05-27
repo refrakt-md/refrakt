@@ -9,6 +9,7 @@
  *   {% date($item.data.published) %}          →  Jan 15, 2024
  *   {% number($item.data.views) %}            →  1,234,567
  *   {% join($item.data.tags, " · ") %}        →  a · b · c
+ *   concat("milestone:", $item.id)            →  "milestone:v0.16.0"
  */
 import type { ConfigFunction } from '@markdoc/markdoc';
 
@@ -54,6 +55,19 @@ export const join: ConfigFunction = {
 };
 
 /**
+ * String concatenation of all positional arguments. Each is stringified
+ * (null/undefined → empty string) and concatenated without a separator.
+ * Fills the gap Markdoc's string-literal grammar leaves — `"foo:$bar"`
+ * doesn't interpolate, so use `concat("foo:", $bar)` to compose dynamic
+ * attribute values like `filter` / `url` from variables at transform time.
+ */
+export const concat: ConfigFunction = {
+	transform(parameters) {
+		return Object.values(parameters).map((v) => (v == null ? '' : String(v))).join('');
+	},
+};
+
+/**
  * Title-case a slug/enum-ish token: split camelCase, turn `-`/`_` into spaces,
  * capitalize each word. `blocked-by` → "Blocked By", `prepTime` → "Prep Time".
  * Shared by collection's `fields` headers and the relationships rune's kind
@@ -74,4 +88,4 @@ const humanizeFn: ConfigFunction = {
 };
 
 /** The shared formatter-function set, keyed by their markdoc name. */
-export const functions: Record<string, ConfigFunction> = { currency, date, number, join, humanize: humanizeFn };
+export const functions: Record<string, ConfigFunction> = { currency, date, number, join, concat, humanize: humanizeFn };

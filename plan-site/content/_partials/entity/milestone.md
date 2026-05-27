@@ -2,11 +2,11 @@
 
 ## Progress
 
-{% progress value=$item.data.progressDone max=$item.data.progressTotal /%}
+{% progress value=$item.data.progressDone max=$item.data.progressTotal%}Work items{%/progress%}
 
 ## Work
 
-{% collection type="work,bug" filter=join(["milestone:", $item.id], "") group="status" sort="priority" %}
+{% collection type="work,bug" filter=concat("milestone:", $item.id) group="status" sort="priority" %}
 {% partial file="entity-card.md" variables={item: $item} /%}
 {% /collection %}
 

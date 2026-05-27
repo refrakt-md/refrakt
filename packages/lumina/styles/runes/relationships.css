@@ -31,11 +31,11 @@
 .rf-relationships__group:first-child {
 	margin-top: 0;
 }
-/* Roomier when items carry a body template that resolves to block content
- * (Markdoc's `document` node wraps the body source in `<article>`, so it's
- * a reliable signal for "this item is more than a one-liner"). */
+/* Modestly roomier when items carry a body template that resolves to block
+ * content (Markdoc's `document` node wraps the body source in `<article>`,
+ * so it's a reliable signal for "this item is more than a one-liner"). */
 .rf-relationships__group:has(article) {
-	gap: var(--rf-spacing-md);
+	gap: var(--rf-spacing-sm);
 }
 
 .rf-relationships__group-title {

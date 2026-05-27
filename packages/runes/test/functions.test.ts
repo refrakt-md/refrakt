@@ -25,6 +25,18 @@ describe('formatter functions', () => {
 		expect(functions.join.transform!({ 0: ['a', 'b', 'c'], 1: ' · ' } as never, {} as never)).toBe('a · b · c');
 	});
 
+	it('concat stringifies and joins positional args (no separator)', () => {
+		expect(functions.concat.transform!({ 0: 'milestone:', 1: 'v0.16.0' } as never, {} as never)).toBe('milestone:v0.16.0');
+		expect(functions.concat.transform!({ 0: 'a', 1: 'b', 2: 'c' } as never, {} as never)).toBe('abc');
+		expect(functions.concat.transform!({ 0: 'n=', 1: 42 } as never, {} as never)).toBe('n=42');
+		expect(functions.concat.transform!({ 0: 'x:', 1: null, 2: 'y' } as never, {} as never)).toBe('x:y');
+	});
+
+	it('concat composes dynamic attribute values with variables', () => {
+		const blob = run('Filter: {% concat("milestone:", $id) %}', { id: 'v0.16.0' });
+		expect(blob).toContain('milestone:v0.16.0');
+	});
+
 	it('formatters degrade gracefully on bad input', () => {
 		expect(functions.currency.transform!({ 0: 'n/a' } as never, {} as never)).toBe('n/a');
 		expect(functions.date.transform!({ 0: 'nope' } as never, {} as never)).toBe('nope');
