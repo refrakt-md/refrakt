@@ -88,11 +88,11 @@
 	padding: 0 1.25rem 1rem;
 }
 /* Prose styles for the standalone accordion rune's bodies (paragraphs,
- * lists, etc.). Scoped to `:not(:has(article))` so they don't bleed into
+ * lists, etc.). Scoped to `:not(:has([data-block]))` so they don't bleed into
  * block-content children like cards inside a collection/relationships
  * `group-display="accordion"` panel, where the card's own typography
  * should govern. */
-.rf-accordion-item__body:not(:has(article)) {
+.rf-accordion-item__body:not(:has([data-block])) {
 	font-size: 0.925rem;
 	line-height: 1.65;
 	color: var(--rf-color-muted);
@@ -100,13 +100,11 @@
 .rf-accordion-item__body p:last-child {
 	margin-bottom: 0;
 }
-/* Block-content children — same heuristic collection / relationships use:
- * Markdoc's `document` node wraps a deferred body in `<article>`, so a body
- * with article descendants is housing a body-template (typically a card).
- * Switch to flex column with the small gap so cards inside an accordion
- * panel (collection/relationships group-display="accordion") get the same
- * spacing they'd have under a heading-grouped layout. */
-.rf-accordion-item__body:has(article) {
+/* Block-content children — collection / relationships mark their body-template
+ * items `data-block`. A panel housing them (group-display="accordion") switches
+ * to a flex column with the small gap so cards get the same spacing they'd have
+ * under a heading-grouped layout. */
+.rf-accordion-item__body:has([data-block]) {
 	display: flex;
 	flex-direction: column;
 	gap: var(--rf-spacing-sm);

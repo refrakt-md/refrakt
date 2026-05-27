@@ -106,22 +106,27 @@
 	/* Tight default for short item rows (the built-in title link, no body). */
 	gap: var(--rf-spacing-xs);
 }
-/* Modestly roomier when items carry a body template that resolves to block
- * content (Markdoc's `document` node wraps the captured body in `<article>`),
- * so cards inside a group don't collide. Mirrors the rf-relationships rule. */
-.rf-collection__group:has(article) {
+/* Modestly roomier when items carry a body template (block content — a card,
+ * callout, list, …), so they don't collide. Body-template items are marked
+ * `data-block` by the resolver; the built-in inline title rows are not.
+ * Mirrors the rf-relationships rule. */
+.rf-collection__group:has(.rf-collection__item[data-block]) {
 	gap: var(--rf-spacing-sm);
 }
 
-/* Block-content body — let the inner article (and the card / callout / etc.
- * inside it) fill the container instead of shrink-fitting to its content.
- * No-op in grid mode (items there are already `display: flex` with
- * `flex: 1` on the child). */
-.rf-collection__item:has(article) {
+/* Block-content item — let the body template (card / callout / etc.) fill the
+ * container instead of shrink-fitting. No-op in grid mode (items there are
+ * already `display: flex` with `flex: 1` on the child). Trim the outer margins
+ * of the template's first/last block so the group `gap` controls inter-item
+ * spacing — works for any block content, not a wrapper element. */
+.rf-collection__item[data-block] {
 	display: block;
 }
-.rf-collection__item > article {
-	margin: 0;
+.rf-collection__item[data-block] > :first-child {
+	margin-top: 0;
+}
+.rf-collection__item[data-block] > :last-child {
+	margin-bottom: 0;
 }
 
 .rf-collection__group-title {

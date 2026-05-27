@@ -170,7 +170,7 @@ function renderBody(
 		const item = projectItem(e);
 		const out = transformDeferredTemplate(bodySource, embedConfig as never, { item });
 		const children = Array.isArray(out) ? out : [out];
-		return new Tag('div', { class: 'rf-collection__item', 'data-entity-id': e.id }, children as RenderableTreeNode[]);
+		return new Tag('div', { class: 'rf-collection__item', 'data-entity-id': e.id, 'data-block': '' }, children as RenderableTreeNode[]);
 	});
 }
 

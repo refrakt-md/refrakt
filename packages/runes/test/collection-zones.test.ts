@@ -142,3 +142,25 @@ describe('collection group-display="accordion" + count variables', () => {
 		expect(cls(out, 'rf-collection__item')).toHaveLength(2);
 	});
 });
+
+describe('collection deferred-template <article> unwrap', () => {
+	it('item body templates have no stray document <article>; item is data-block and renders the rune', () => {
+		const out = render('{% collection type="work" filter="status:ready" %}\n{% card %}### {% $item.data.title %}{% /card %}\n{% /collection %}', reg);
+		const items = cls(out, 'rf-collection__item');
+		expect(items).toHaveLength(2);
+		for (const item of items) {
+			expect(item.attributes['data-block']).toBeDefined();
+			// the Markdoc document wrapper <article> is unwrapped
+			expect(findAll(item, (t) => t.name === 'article')).toHaveLength(0);
+			// the card rune still renders inside the item
+			expect(findAll(item, (t) => t.attributes['data-rune'] === 'card').length).toBeGreaterThan(0);
+		}
+	});
+
+	it('table column templates render no <article> inside cells', () => {
+		const out = render('{% collection type="work" filter="status:ready" layout="table" %}\n## Title\n[{% $item.data.title %}]({% $item.url %})\n{% /collection %}', reg);
+		const tds = findAll(out, (t) => t.name === 'td');
+		expect(tds.length).toBeGreaterThan(0);
+		for (const td of tds) expect(findAll(td, (t) => t.name === 'article')).toHaveLength(0);
+	});
+});

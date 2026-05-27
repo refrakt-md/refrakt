@@ -62,5 +62,19 @@ export function transformDeferredTemplate(
 		...(config ?? {}),
 		variables: { ...((config?.variables as Record<string, unknown>) ?? {}), ...variables },
 	} as Config;
-	return Markdoc.transform(ast, merged);
+	const out = Markdoc.transform(ast, merged);
+	// Markdoc renders the parsed `document` as a single wrapping <article>.
+	// Unwrap it so callers splice the template's *real* content — no stray
+	// <article> (invalid inside a table cell, and something the theme would
+	// otherwise have to target). A rune that itself renders an <article> carries
+	// a class / data-rune, so only the bare document wrapper is unwrapped.
+	if (
+		Markdoc.Tag.isTag(out) &&
+		out.name === 'article' &&
+		!out.attributes?.class &&
+		!out.attributes?.['data-rune']
+	) {
+		return out.children;
+	}
+	return out;
 }

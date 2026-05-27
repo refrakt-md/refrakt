@@ -124,7 +124,7 @@ function renderEdges(
 	return edges.map((edge) => {
 		if (tmpl && embedConfig) {
 			const kids = renderItemTemplate(tmpl, embedConfig, { item: projectItem(edge.target), kind: edge.kind });
-			return new Tag('div', { class: 'rf-relationships__item', 'data-entity-id': edge.target.id, 'data-kind': edge.kind }, kids);
+			return new Tag('div', { class: 'rf-relationships__item', 'data-entity-id': edge.target.id, 'data-kind': edge.kind, 'data-block': '' }, kids);
 		}
 		return builtInItem(edge, q);
 	});

@@ -68,10 +68,10 @@
 .rf-relationships__group:first-child {
 	margin-top: 0;
 }
-/* Modestly roomier when items carry a body template that resolves to block
- * content (Markdoc's `document` node wraps the body source in `<article>`,
- * so it's a reliable signal for "this item is more than a one-liner"). */
-.rf-relationships__group:has(article) {
+/* Modestly roomier when items carry a body template (block content — more than
+ * a one-liner). Body-template items are marked `data-block` by the resolver;
+ * the built-in inline title+field rows are not. */
+.rf-relationships__group:has(.rf-relationships__item[data-block]) {
 	gap: var(--rf-spacing-sm);
 }
 
@@ -89,14 +89,18 @@
 	align-items: baseline;
 	gap: var(--rf-spacing-xs) var(--rf-spacing-sm);
 }
-/* Block-content body — let the article (and the card / callout / etc.
- * inside it) fill the container width instead of shrink-fitting to its
- * content. Same `:has(article)` signal as the group spacing above. */
-.rf-relationships__item:has(article) {
+/* Block-content item — let the body template (card / callout / etc.) fill the
+ * container width instead of shrink-fitting. Same `data-block` signal as the
+ * group spacing above; trim the template's outer block margins so the group
+ * `gap` governs spacing (works for any block content, not a wrapper element). */
+.rf-relationships__item[data-block] {
 	display: block;
 }
-.rf-relationships__item > article {
-	margin: 0;
+.rf-relationships__item[data-block] > :first-child {
+	margin-top: 0;
+}
+.rf-relationships__item[data-block] > :last-child {
+	margin-bottom: 0;
 }
 
 /* Card chrome for the grid built-in (mirrors collection's __card). */
