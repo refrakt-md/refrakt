@@ -27,7 +27,7 @@ Accepted records — the canonical reasoning behind current architecture.
 
 {% collection type="decision" sort="-date" layout="table" %}
 # Decision
-{% link href=$item.url %}**{% $item.id %}** {% $item.data.title %}{% /link %}
+{% link href=$item.url %}**{% $item.id %}** — {% $item.data.title %}{% /link %}
 # Status
 {% humanize($item.data.status) %}
 # Date
