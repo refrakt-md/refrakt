@@ -17,6 +17,6 @@ Add a tiny client entry (`import { initPage } from '@refrakt-md/html/client'; in
 
 ## References
 - {% ref "SPEC-073" /%}
-- {% ref "WORK-292" /%} — surfaced this gap; the no-flash injection landed there, but interactive cycling needs this bundle.
+- WORK-292 surfaced this gap (plain reference, not a dependency) — the no-flash injection landed there, but interactive cycling needs this bundle.
 
 {% /work %}
