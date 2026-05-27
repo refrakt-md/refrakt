@@ -217,6 +217,7 @@ async function build() {
 				siteName: site.siteName,
 				defaultImage: site.defaultImage,
 				logo: site.logo,
+					tintCascade: page.tintCascade,
 			},
 		);
 

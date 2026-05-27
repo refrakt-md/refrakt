@@ -1,4 +1,4 @@
-{% work id="WORK-292" status="ready" priority="low" complexity="moderate" source="SPEC-073" tags="theme,adapters,html,astro,nuxt,next,eleventy" milestone="v0.16.0" %}
+{% work id="WORK-292" status="in-progress" priority="low" complexity="moderate" source="SPEC-073" tags="theme,adapters,html,astro,nuxt,next,eleventy" milestone="v0.16.0" %}
 
 # Extend theme plumbing + toggle to the remaining adapters
 

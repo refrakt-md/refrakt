@@ -1,5 +1,14 @@
 import type { RenderPageInput } from './render.js';
 import { renderPage } from './render.js';
+import {
+	prePaintScript,
+	htmlTintAttributes,
+	colorSchemeMetaContent,
+	type ResolvedTintCascade,
+} from '@refrakt-md/content';
+
+const PRE_PAINT_SCRIPT = prePaintScript();
+const DEFAULT_CASCADE: ResolvedTintCascade = { tint: null, tintMode: 'auto', locked: false };
 
 interface OgMeta {
 	title?: string;
@@ -35,6 +44,10 @@ export interface PageShellOptions {
 	logo?: string;
 	/** SEO metadata extracted from the page */
 	seo?: PageSeo;
+	/** Per-page tint cascade (SPEC-073). Drives the no-flash `<html>` tint
+	 *  attributes + `color-scheme` meta. Absent → unlocked/auto default. The
+	 *  anti-FOIT pre-paint script is injected regardless. */
+	tintCascade?: ResolvedTintCascade;
 }
 
 function escapeHtml(s: string): string {
@@ -75,11 +88,18 @@ export function renderFullPage(input: RenderPageInput, options: PageShellOptions
 		defaultImage,
 		logo,
 		seo,
+		tintCascade = DEFAULT_CASCADE,
 	} = options;
 
 	const headParts: string[] = [];
 	headParts.push('<meta charset="utf-8">');
 	headParts.push('<meta name="viewport" content="width=device-width, initial-scale=1">');
+
+	// No-flash theme chrome (SPEC-073): the color-scheme meta + anti-FOIT
+	// pre-paint script go early, before any stylesheet, so the saved theme is
+	// applied before first paint. Tint attrs go on <html> below.
+	headParts.push(`<meta name="color-scheme" content="${escapeHtml(colorSchemeMetaContent(tintCascade))}">`);
+	headParts.push(`<script>${PRE_PAINT_SCRIPT}</script>`);
 
 	// Title
 	const title = seo?.og?.title ?? page.title;
@@ -177,8 +197,13 @@ export function renderFullPage(input: RenderPageInput, options: PageShellOptions
 	// Scripts
 	const scriptTags = scripts.map(src => `<script src="${escapeHtml(src)}"></script>`).join('\n');
 
+	// Tint attrs (data-theme / data-tint / data-tint-lock) on <html>, matching
+	// the SvelteKit adapter's SSR output.
+	const htmlAttrs = htmlTintAttributes(tintCascade);
+	const htmlTag = htmlAttrs ? `<html lang="${escapeHtml(lang)}" ${htmlAttrs}>` : `<html lang="${escapeHtml(lang)}">`;
+
 	return `<!DOCTYPE html>
-<html lang="${escapeHtml(lang)}">
+${htmlTag}
 <head>
 ${headParts.join('\n')}
 </head>

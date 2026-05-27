@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@refrakt-md/behaviors": "0.15.0",
+    "@refrakt-md/content": "0.15.0",
     "@refrakt-md/transform": "0.15.0",
     "@refrakt-md/types": "0.15.0"
   }
