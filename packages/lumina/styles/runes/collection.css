@@ -44,6 +44,27 @@
 	min-width: 0;
 }
 
+/* Grouped grid: the grid belongs to each group (its items are the cells), not
+ * to __items — whose children are the group blocks (heading groups) or the
+ * accordion wrapper. Left on __items, each group becomes a single cell, i.e. a
+ * column per group. So when __items holds groups it stacks them, and each
+ * group becomes the grid instead, with the group title spanning every column. */
+.rf-collection[data-layout='grid'] .rf-collection__items:has(.rf-collection__group),
+.rf-collection[data-layout='grid'] .rf-collection__items:has(.rf-accordion) {
+	display: flex;
+	flex-direction: column;
+	gap: var(--rf-spacing-md);
+}
+.rf-collection[data-layout='grid'] .rf-collection__group {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+	gap: var(--rf-spacing-md);
+	align-items: stretch;
+}
+.rf-collection[data-layout='grid'] .rf-collection__group-title {
+	grid-column: 1 / -1;
+}
+
 .rf-collection__item {
 	min-width: 0;
 }
