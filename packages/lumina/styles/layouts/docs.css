@@ -100,6 +100,15 @@
 	background: var(--rf-color-bg, #fff);
 	z-index: 5;
 }
+/* Match the sticky offset in the natural-flow position too. The fixed header
+ * is out of flow so `.rf-docs-body` starts at viewport top; without this
+ * margin, the sidebar's static position sits at Y=0 with its top 3.125rem
+ * hidden under the header — visible only when the page scrolls enough for
+ * sticky to activate. Scoped to `:has(.rf-docs-header)` so layouts without a
+ * header don't gain an unwanted top gap. */
+html:has(.rf-docs-header) .rf-docs-sidebar {
+	margin-top: 3.125rem;
+}
 .rf-docs-sidebar::-webkit-scrollbar {
 	width: 0;
 }
