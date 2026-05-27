@@ -55,14 +55,22 @@ function walkNodes(node: Node, predicate: (n: Node) => boolean): Node[] {
 	return results;
 }
 
-/** Extract the title from the first H1 heading's text content */
+/** Extract the title from the first H1 heading's text content.
+ *
+ * Picks up both `text` nodes and `code` nodes' content — Markdoc represents
+ * inline backticks as a `code` node whose value sits in `attributes.content`
+ * rather than as nested text, so a heading like `# Build rune \`name\``
+ * would otherwise drop the `name` segment entirely. Bold/italic/links work
+ * unchanged because they wrap nested `text` children. The result is plain
+ * text (no backticks), suitable for the `data.title` field which is
+ * interpolated into headings and `<title>` as a literal string. */
 function extractTitle(ast: Node): string | undefined {
 	const headings = walkNodes(ast, n => n.type === 'heading' && n.attributes.level === 1);
 	if (headings.length === 0) return undefined;
 
 	const texts: string[] = [];
 	walkNodes(headings[0], n => {
-		if (n.type === 'text' && n.attributes.content) {
+		if ((n.type === 'text' || n.type === 'code') && n.attributes.content) {
 			texts.push(n.attributes.content as string);
 		}
 		return false;
