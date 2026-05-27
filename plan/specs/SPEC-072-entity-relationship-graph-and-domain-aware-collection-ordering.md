@@ -194,6 +194,7 @@ Semantics:
 - Generic `history` rune + refrakt diff package (separate spec).
 - A shadow-stable page-entity alias for nested back-references (deferred per ADR-011).
 - Broader graph consumers (`collection`/`ref` querying relationships).
+- **Computed / indirect relationships** (e.g. "posts sharing tags", "see also", "more like this"). These need *no new core capability*: a plugin's `aggregate` hook computes the similarity (tag overlap, etc.) and contributes edges via `relate()` with a `kind` like `related`/`similar`; the generic `relationships` rune renders them indistinguishably from authored edges, and the contributor emits them in similarity order + caps. (Contrast: a *static* set like "all posts tagged X" is a plain `collection filter="tags:X"` — no graph. The graph is for "related to *this* entity", which a static filter can't express.) If rune-side ranking by strength is later wanted, add an optional `weight` (or `data`) to `EntityEdge` for `relationships sort=` — a small additive extension, deferred under YAGNI.
 - The ADR-011 template-composition and ADR-012 sugar changes — separate work items depending on this spec.
 
 ## References
