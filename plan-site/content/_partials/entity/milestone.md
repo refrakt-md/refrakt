@@ -1,10 +1,9 @@
 {% expand $item.id level=1 /%}
 
-## Progress
-
-{% progress value=$item.data.progressDone max=$item.data.progressTotal%}Work items{%/progress%}
 
 ## Work
+
+{% progress value=$item.data.progressDone max=$item.data.progressTotal%}Acceptance criteria{%/progress%}
 
 {% collection type="work,bug" filter=concat("milestone:", $item.id) group="status" sort="priority" %}
 {% partial file="entity-card.md" variables={item: $item} /%}

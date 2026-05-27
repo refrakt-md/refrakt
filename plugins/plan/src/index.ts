@@ -1,6 +1,4 @@
 import type { Plugin } from '@refrakt-md/types';
-import { tabsBehavior } from '@refrakt-md/behaviors';
-import { entityTabsBehavior } from './entity-tabs-behavior.js';
 import { spec } from './tags/spec.js';
 import { work } from './tags/work.js';
 import { bug } from './tags/bug.js';
@@ -139,10 +137,6 @@ Custom properties cascade naturally without JavaScript.
 			work: { status: ['blocked', 'in-progress', 'review', 'ready', 'pending', 'draft', 'done'] },
 			bug: { status: ['in-progress', 'confirmed', 'reported', 'fixed', 'wontfix', 'duplicate'] },
 		},
-	},
-	behaviors: {
-		'milestone-backlog': tabsBehavior,
-		'plan-entity-tabs': entityTabsBehavior,
 	},
 	pipeline: planPipelineHooks,
 	// File-root opt-in (SPEC-063) is wired dynamically via the plugin's
