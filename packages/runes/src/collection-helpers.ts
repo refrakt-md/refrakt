@@ -210,7 +210,7 @@ export function renderGroupAccordion(panels: AccordionPanel[]): RenderableTreeNo
 		new Tag('details', { class: 'rf-accordion-item', 'data-group': p.key }, [
 			new Tag('summary', { class: 'rf-accordion-item__header' }, [
 				new Tag('span', { class: 'rf-accordion-item__title' }, [p.label]),
-				new Tag('span', { class: 'rf-accordion-item__count' }, [`(${p.count})`]),
+				new Tag('span', { class: 'rf-accordion-item__count' }, [String(p.count)]),
 			]),
 			new Tag('div', { class: 'rf-accordion-item__body' }, p.nodes),
 		]),

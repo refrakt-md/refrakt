@@ -58,14 +58,10 @@
 	font-size: 0.95rem;
 	cursor: pointer;
 	user-select: none;
-	transition: background-color 200ms ease;
 	list-style: none;
 }
 .rf-accordion-item__header::-webkit-details-marker { display: none; }
 .rf-accordion-item__header::marker { display: none; content: ''; }
-.rf-accordion-item__header:hover {
-	background: var(--rf-color-surface);
-}
 .rf-accordion-item__header::after {
 	content: '▾';
 	flex-shrink: 0;
@@ -79,19 +75,39 @@
 	flex: 1;
 	min-width: 0;
 }
-/* Per-group count for collection/relationships group-display="accordion". */
+/* Per-group count for collection/relationships group-display="accordion".
+ * Inherits the header's font (weight + color) so the count reads as part
+ * of the same label rather than a separate muted aside. `margin-right`
+ * keeps it off the expand/collapse caret added by `::after`. */
 .rf-accordion-item__count {
 	flex-shrink: 0;
 	margin-left: 0.5rem;
-	color: var(--rf-color-muted);
-	font-weight: 400;
+	margin-right: 0.75rem;
 }
 .rf-accordion-item__body {
 	padding: 0 1.25rem 1rem;
+}
+/* Prose styles for the standalone accordion rune's bodies (paragraphs,
+ * lists, etc.). Scoped to `:not(:has(article))` so they don't bleed into
+ * block-content children like cards inside a collection/relationships
+ * `group-display="accordion"` panel, where the card's own typography
+ * should govern. */
+.rf-accordion-item__body:not(:has(article)) {
 	font-size: 0.925rem;
 	line-height: 1.65;
 	color: var(--rf-color-muted);
 }
 .rf-accordion-item__body p:last-child {
 	margin-bottom: 0;
+}
+/* Block-content children — same heuristic collection / relationships use:
+ * Markdoc's `document` node wraps a deferred body in `<article>`, so a body
+ * with article descendants is housing a body-template (typically a card).
+ * Switch to flex column with the small gap so cards inside an accordion
+ * panel (collection/relationships group-display="accordion") get the same
+ * spacing they'd have under a heading-grouped layout. */
+.rf-accordion-item__body:has(article) {
+	display: flex;
+	flex-direction: column;
+	gap: var(--rf-spacing-sm);
 }
