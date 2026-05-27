@@ -2,13 +2,9 @@ import Markdoc, { type Node } from '@markdoc/markdoc';
 import type { PluginPipelineHooks, EntityRegistration } from '@refrakt-md/types';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { BACKLOG_SENTINEL } from './tags/backlog.js';
-import { DECISION_LOG_SENTINEL } from './tags/decision-log.js';
 import { PLAN_PROGRESS_SENTINEL } from './tags/plan-progress.js';
-import { PLAN_ACTIVITY_SENTINEL } from './tags/plan-activity.js';
 import { PLAN_HISTORY_SENTINEL } from './tags/plan-history.js';
 import { parseFilter, matchesFilter } from './filter.js';
-import { buildOrdering, sortEntities, groupEntities, Ordering } from '@refrakt-md/runes';
 import { execSync } from 'node:child_process';
 import {
 	extractBatchHistory,
@@ -18,7 +14,6 @@ import {
 	type HistoryCache,
 } from './history.js';
 import { buildRelationships, type EntityRelationship } from './relationships.js';
-import { buildEntityCard, buildDecisionEntry } from './cards.js';
 import { parseFileContent } from './scanner-core.js';
 
 const { Tag } = Markdoc;
@@ -604,37 +599,18 @@ export const planPipelineHooks: PluginPipelineHooks = {
 		const planData = aggregated['plan'] as PlanAggregatedData | undefined;
 		if (!planData) return page;
 
-		// Build the shared ordering once per page so collection-style sort &
-		// group inside backlog / decision-log / milestone backlog use the same
-		// `(type, field)` domain order as `collection` / `relationships`. Falls
-		// back to a no-op ordering when core data isn't available (shouldn't
-		// happen in practice — core runs before plan).
-		const coreData = aggregated['__core__'] as {
-			embedConfig?: { tags: Record<string, unknown>; nodes: Record<string, unknown>; orderings?: Record<string, Record<string, string[]>> };
-		} | undefined;
-		const ordering = buildOrdering(coreData?.embedConfig as never);
-
 		let modified = false;
 		const newRenderable = mapTags(page.renderable, (tag) => {
-			// Handle backlog sentinel
-			if (tag.attributes['data-rune'] === 'backlog' && hasSentinel(tag, BACKLOG_SENTINEL)) {
-				modified = true;
-				return resolveBacklog(tag, planData, ordering);
-			}
-			// Handle decision-log sentinel
-			if (tag.attributes['data-rune'] === 'decision-log' && hasSentinel(tag, DECISION_LOG_SENTINEL)) {
-				modified = true;
-				return resolveDecisionLog(tag, planData, ordering);
-			}
+			// `backlog`, `decision-log`, and `plan-activity` are now thin sugar
+			// over `collection` (SPEC-072 / WORK-284): their schemas emit a
+			// `data-rune="collection"` renderable with COLLECTION_SENTINEL, so
+			// they're picked up by the core `resolveCollections` postProcess —
+			// no plan-side branch needed.
+
 			// Handle plan-progress sentinel
 			if (tag.attributes['data-rune'] === 'plan-progress' && hasSentinel(tag, PLAN_PROGRESS_SENTINEL)) {
 				modified = true;
 				return resolvePlanProgress(tag, planData);
-			}
-			// Handle plan-activity sentinel
-			if (tag.attributes['data-rune'] === 'plan-activity' && hasSentinel(tag, PLAN_ACTIVITY_SENTINEL)) {
-				modified = true;
-				return resolvePlanActivity(tag, planData);
 			}
 			// Handle plan-history sentinel
 			if (tag.attributes['data-rune'] === 'plan-history' && hasSentinel(tag, PLAN_HISTORY_SENTINEL)) {
@@ -659,107 +635,6 @@ export const planPipelineHooks: PluginPipelineHooks = {
 	},
 };
 
-function resolveBacklog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData, ordering: Ordering): InstanceType<typeof Tag> {
-	const filterExpr = readField(tag, 'filter');
-	const sortField = readField(tag, 'sort') || 'priority';
-	const groupField = readField(tag, 'group');
-	const show = readField(tag, 'show') || 'all';
-	const limitRaw = readField(tag, 'limit');
-	// Parse `limit` defensively — Markdoc surfaces the meta as a string.
-	// Treat 0 / negative / NaN the same as "unset" so a malformed
-	// authoring value doesn't silently render an empty backlog.
-	const limit = (() => {
-		if (!limitRaw) return undefined;
-		const n = Number(limitRaw);
-		return Number.isFinite(n) && n > 0 ? Math.floor(n) : undefined;
-	})();
-
-	// Collect entities by type
-	// "all" defaults to work+bug for backward compatibility; other types must be explicit
-	let entities: EntityRegistration[] = [];
-	if (show === 'all' || show === 'work') entities.push(...data.workEntities);
-	if (show === 'all' || show === 'bug') entities.push(...data.bugEntities);
-	if (show === 'spec') entities.push(...data.specEntities);
-	if (show === 'decision') entities.push(...data.decisionEntities);
-	if (show === 'milestone') entities.push(...data.milestoneEntities);
-
-	// Apply filter
-	const filter = parseFilter(filterExpr);
-	entities = entities.filter(e => matchesFilter(e, filter));
-
-	// Sort
-	entities = sortEntities(entities, sortField, ordering);
-
-	// Limit applies post-sort, pre-group so the rendered set is "top N
-	// by sort order". When grouped, the limit caps the total entity count
-	// across all groups — callers wanting a per-group cap would need a
-	// separate attribute; keep it simple until that ask surfaces.
-	if (limit !== undefined && entities.length > limit) {
-		entities = entities.slice(0, limit);
-	}
-
-	// Build output
-	let children: any[];
-	if (groupField) {
-		const groups = groupEntities(entities, groupField, ordering);
-		children = [];
-		for (const [groupName, groupEntities_] of groups) {
-			const groupTitle = new Tag('h3', { class: 'rf-backlog__group-title' }, [groupName]);
-			const cards = groupEntities_.map(e => buildEntityCard(e));
-			const groupDiv = new Tag('div', { class: 'rf-backlog__group', 'data-group': groupName }, [groupTitle, ...cards]);
-			children.push(groupDiv);
-		}
-	} else {
-		children = entities.map(e => buildEntityCard(e));
-	}
-
-	const itemsDiv = new Tag('div', { 'data-name': 'items' }, children);
-
-	// Rebuild tag, replacing the sentinel and placeholder with resolved content
-	const newChildren = tag.children.filter(
-		(c: unknown) => !(Markdoc.Tag.isTag(c) && (
-			c.attributes['data-field'] === BACKLOG_SENTINEL ||
-			c.attributes['data-name'] === 'items'
-		)),
-	);
-	newChildren.push(itemsDiv);
-
-	return new Tag(tag.name, tag.attributes, newChildren as any[]);
-}
-
-function resolveDecisionLog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData, ordering: Ordering): InstanceType<typeof Tag> {
-	const filterExpr = readField(tag, 'filter');
-	// The rune documents `sort="date"` as reverse-chronological (newest first)
-	// — its predecessor `sortEntities` baked that direction in. The shared
-	// sort is direction-agnostic and uses the `-` prefix, so we keep the
-	// rune's contract by mapping a bare `date` to `-date`. Authors can still
-	// pass an explicit `+date` / other field unchanged.
-	const sortRaw = readField(tag, 'sort') || 'date';
-	const sortField = sortRaw === 'date' ? '-date' : sortRaw;
-
-	let entities = [...data.decisionEntities];
-
-	// Apply filter
-	const filter = parseFilter(filterExpr);
-	entities = entities.filter(e => matchesFilter(e, filter));
-
-	// Sort
-	entities = sortEntities(entities, sortField, ordering);
-
-	const entries = entities.map(e => buildDecisionEntry(e));
-	const list = new Tag('ol', { 'data-name': 'items', class: 'rf-decision-log__list' }, entries);
-
-	// Rebuild tag
-	const newChildren = tag.children.filter(
-		(c: unknown) => !(Markdoc.Tag.isTag(c) && (
-			c.attributes['data-field'] === DECISION_LOG_SENTINEL ||
-			c.attributes['data-name'] === 'items'
-		)),
-	);
-	newChildren.push(list);
-
-	return new Tag(tag.name, tag.attributes, newChildren as any[]);
-}
 
 // --- Status labels for display ---
 const STATUS_LABELS: Record<string, string[]> = {
@@ -846,71 +721,6 @@ function resolvePlanProgress(tag: InstanceType<typeof Tag>, data: PlanAggregated
 	return new Tag(tag.name, tag.attributes, newChildren as any[]);
 }
 
-function resolvePlanActivity(tag: InstanceType<typeof Tag>, data: PlanAggregatedData): InstanceType<typeof Tag> {
-	const limit = parseInt(readField(tag, 'limit') || '10', 10);
-
-	// Collect all entities with mtime from their source URL registration data
-	const allEntities = [
-		...data.workEntities,
-		...data.bugEntities,
-		...data.decisionEntities,
-		...data.specEntities,
-		...data.milestoneEntities,
-	];
-
-	// Sort by modified date descending (entities with modification data)
-	const withModified = allEntities
-		.filter(e => {
-			const mod = e.data.modified ?? e.data.mtime;
-			if (mod == null) return false;
-			if (typeof mod === 'string') return mod.length > 0;
-			return Number(mod) > 0;
-		})
-		.sort((a, b) => {
-			const aDate = parseModifiedDate(a.data.modified ?? a.data.mtime);
-			const bDate = parseModifiedDate(b.data.modified ?? b.data.mtime);
-			return bDate - aDate;
-		})
-		.slice(0, limit);
-
-	const entries = withModified.map(e => {
-		const id = String(e.data.id ?? e.id);
-		const title = String(e.data.title ?? '');
-		const status = String(e.data.status ?? '');
-		const type = e.type;
-		const dateStr = formatModifiedDate(e.data.modified ?? e.data.mtime);
-
-		const innerChildren = [
-			new Tag('time', { class: 'rf-plan-activity__date' }, [dateStr]),
-			new Tag('span', { class: 'rf-plan-activity__type' }, [type]),
-			new Tag('span', { class: 'rf-plan-activity__id' }, [id]),
-			new Tag('span', { class: 'rf-plan-activity__status', 'data-status': status }, [status]),
-			new Tag('span', { class: 'rf-plan-activity__title' }, [title]),
-		];
-
-		const children: any[] = e.sourceUrl
-			? [new Tag('a', { class: 'rf-plan-activity__link', href: e.sourceUrl }, innerChildren)]
-			: innerChildren;
-
-		return new Tag('li', {
-			class: 'rf-plan-activity__entry',
-			'data-type': type,
-			'data-status': status,
-		}, children);
-	});
-
-	const list = new Tag('ol', { 'data-name': 'items', class: 'rf-plan-activity__list' }, entries);
-
-	const newChildren = tag.children.filter(
-		(c: unknown) => !(Markdoc.Tag.isTag(c) && (
-			c.attributes['data-field'] === PLAN_ACTIVITY_SENTINEL ||
-			c.attributes['data-name'] === 'items'
-		)),
-	);
-	newChildren.push(list);
-
-	return new Tag(tag.name, tag.attributes, newChildren as any[]);
-}
 
 // ─── Plan History Resolution ───
 
