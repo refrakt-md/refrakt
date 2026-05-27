@@ -188,6 +188,36 @@ export function groupEntities(entities: EntityRegistration[], field: string, ord
 	return new Map(sorted);
 }
 
+/** One collapsible group in a `group-display="accordion"` rendering. */
+export interface AccordionPanel {
+	/** Raw group key, surfaced as `data-group`. */
+	key: string;
+	/** Display label shown in the summary. */
+	label: string;
+	/** Member count, shown beside the label. */
+	count: number;
+	/** Already-rendered group contents. */
+	nodes: RenderableTreeNode[];
+}
+
+/** Render grouped items as an accordion of native `<details>` panels, styled to
+ *  match the accordion rune (`.rf-accordion` / `.rf-accordion-item`). Collapsed
+ *  by default and independent (multiple open) — the collapse is what makes the
+ *  per-group count worth showing. The classes are emitted directly because
+ *  collection/relationships resolve in postProcess, after the engine. */
+export function renderGroupAccordion(panels: AccordionPanel[]): RenderableTreeNode[] {
+	const items = panels.map((p) =>
+		new Tag('details', { class: 'rf-accordion-item', 'data-group': p.key }, [
+			new Tag('summary', { class: 'rf-accordion-item__header' }, [
+				new Tag('span', { class: 'rf-accordion-item__title' }, [p.label]),
+				new Tag('span', { class: 'rf-accordion-item__count' }, [`(${p.count})`]),
+			]),
+			new Tag('div', { class: 'rf-accordion-item__body' }, p.nodes),
+		]),
+	);
+	return [new Tag('div', { class: 'rf-accordion' }, items)];
+}
+
 /** Re-transform a captured per-item template with the given variables bound
  *  (e.g. `{ item }` for collection, `{ item, kind }` for relationships). */
 export function renderItemTemplate(

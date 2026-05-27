@@ -112,4 +112,26 @@ describe('relationships resolver', () => {
 		expect(empty).toHaveLength(1);
 		expect(JSON.stringify(empty[0])).toContain('No relationships.');
 	});
+
+	it('group-display=accordion renders details panels styled like the accordion rune', () => {
+		const out = render('{% relationships of="WORK-1" group-display="accordion" /%}', registry());
+		expect(findAll(out, (t) => t.attributes.class === 'rf-accordion')).toHaveLength(1);
+		const panels = findAll(out, (t) => t.name === 'details' && t.attributes.class === 'rf-accordion-item');
+		expect(panels.map((p) => p.attributes['data-group'])).toEqual(['implements', 'blocked-by']);
+		expect(panels.every((p) => p.attributes.open === undefined)).toBe(true);
+		expect(findAll(out, (t) => t.attributes.class === 'rf-accordion-item__title').map((t) => (t.children ?? [])[0]))
+			.toEqual(['Implements', 'Blocked By']);
+		expect(findAll(out, (t) => t.attributes.class === 'rf-accordion-item__count').map((c) => (c.children ?? [])[0]))
+			.toEqual(['(2)', '(1)']);
+		expect(findAll(out, (t) => t.attributes.class === 'rf-relationships__group')).toHaveLength(0);
+	});
+
+	it('binds $count (pre-limit) and $shown (post-limit) in the preamble', () => {
+		const out = render('{% relationships of="WORK-1" group="none" limit=2 %}\n{% $shown %} of {% $count %} links\n---\n- {% $item.data.title %}\n{% /relationships %}', registry());
+		const pre = findAll(out, (t) => t.attributes.class === 'rf-relationships__preamble');
+		expect(pre).toHaveLength(1);
+		const blob = JSON.stringify(pre[0]);
+		expect(blob).toContain('2');
+		expect(blob).toContain('3');
+	});
 });

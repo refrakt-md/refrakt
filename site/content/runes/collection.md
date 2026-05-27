@@ -52,7 +52,20 @@ Rules:
 
 - **`sort`** — a field name. Prefix `-` (or suffix `-desc`) for descending: `sort="-date"` or `sort="date-desc"`. Numeric values sort numerically, otherwise lexically (ISO dates sort chronologically as strings).
 - **`group`** — a field name; items are grouped under a heading per distinct value (empty values group under `(none)`).
+- **`group-display`** — how groups are presented: `headings` (default) or `accordion`. See [Group display](#group-display-headings-or-accordion).
 - **`limit`** — a positive integer cap, applied after sort. With `group`, the cap is on the total item count.
+
+### Group display — headings or accordion
+
+By default each group is a heading followed by its items. Set `group-display="accordion"` to render groups as collapsible native `<details>` panels instead — styled identically to the [`accordion`](/runes/accordion) rune, collapsed by default, with the group's item count beside its label:
+
+{% preview source=true %}
+
+{% collection type="work" group="status" group-display="accordion" /%}
+
+{% /preview %}
+
+Panels are independent (open as many as you like) and need no JavaScript — the disclosure is the browser's. The count is shown because collapsed panels hide their contents, so the size cue is genuinely useful there. For arbitrary per-group chrome beyond headings or accordion, render one filtered `collection` per group value, stacked.
 
 ### Domain-aware ordering
 
@@ -163,6 +176,7 @@ Formatting lives in these functions, not in `fields` or a projection mini-langua
 | `filter` | string | — | `field:value` clauses (see [grammar](#the-field-match-grammar)). |
 | `sort` | string | — | Sort field; `-field` / `field-desc` for descending. |
 | `group` | string | — | Group-by field. |
+| `group-display` | `headings` \| `accordion` | `headings` | How groups are presented (only with `group`). |
 | `limit` | number | — | Max items, applied after sort. |
 | `fields` | string | — | Comma-separated `data` fields for the no-body built-in. |
 | `layout` | `list` \| `grid` \| `table` | `list` | Arrangement. Item chrome comes from the item. |
@@ -190,6 +204,26 @@ Nothing blocked — nice.
 
 Zones are positional: **1 zone → template**; **2 → preamble + template**; **3 → preamble + template + fallback**. A `---` *inside* a nested rune (a `{% card %}`'s own zones) is never a delimiter — only top-level rules split. For the self-closing form (no body), use the `empty` attribute for the fallback.
 
+### Count variables — `$count` and `$shown`
+
+The preamble and fallback zones can read two bound variables describing the match set:
+
+| Variable | Value |
+|----------|-------|
+| `$count` | total entities matched, **before** `limit` |
+| `$shown` | entities actually rendered, **after** `limit` |
+
+```markdoc
+{% collection type="work" filter="status:ready" limit=5 %}
+## Ready work
+Showing {% $shown %} of {% $count %}.
+---
+{% card href=$item.url %}### {% $item.data.title %}{% /card %}
+{% /collection %}
+```
+
+They're list-scoped (the whole query), not per-group — a group's own count appears in its accordion summary automatically. In the fallback zone both are `0`.
+
 ## Output contract
 
 ```html
@@ -206,7 +240,7 @@ Zones are positional: **1 zone → template**; **2 → preamble + template**; **
 </section>
 ```
 
-When `group` is set, items are wrapped in `div.rf-collection__group[data-group]` with a `h3.rf-collection__group-title`. The `table` layout emits a `table.rf-collection__table` with `<thead>` + one `<tr data-entity-id>` per entity.
+When `group` is set, items are wrapped in `div.rf-collection__group[data-group]` with a `h3.rf-collection__group-title`. With `group-display="accordion"` the groups are instead a `div.rf-accordion` of `details.rf-accordion-item[data-group]` panels — reusing the [`accordion`](/runes/accordion) rune's classes (`__header` / `__title` / `__count` / `__body`). The `table` layout emits a `table.rf-collection__table` with `<thead>` + one `<tr data-entity-id>` per entity.
 
 ## See also
 

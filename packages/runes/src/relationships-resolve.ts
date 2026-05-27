@@ -14,6 +14,7 @@ import {
 	type CollectionEmbedConfig, type Ordering,
 	fieldValue, titleLink as titleLinkFor,
 	groupBy, projectItem, renderItemTemplate, buildOrdering, splitBodyZones,
+	renderGroupAccordion,
 } from './collection-helpers.js';
 import { RELATIONSHIPS_SENTINEL } from './tags/relationships.js';
 
@@ -48,6 +49,7 @@ interface RelQuery {
 	kinds: string[];
 	types: string[];
 	group: string;
+	groupDisplay: string;
 	sort: string;
 	limit?: number;
 	fields: string[];
@@ -63,6 +65,7 @@ function readQuery(tag: TagNode): RelQuery {
 		kinds: csv(metaContent(tag, 'relationships-kind')),
 		types: csv(metaContent(tag, 'relationships-type')),
 		group: metaContent(tag, 'relationships-group') || 'kind',
+		groupDisplay: metaContent(tag, 'relationships-group-display') || 'headings',
 		sort: metaContent(tag, 'relationships-sort'),
 		limit: limitRaw && Number.isFinite(limitNum) && limitNum > 0 ? Math.floor(limitNum) : undefined,
 		fields: csv(metaContent(tag, 'relationships-fields')),
@@ -141,7 +144,10 @@ function resolveOne(
 		})
 		: [];
 	edges = sortEdges(edges, q.sort, ordering);
+	// `$count` = total matched (pre-limit); `$shown` = rendered (post-limit).
+	const matched = edges.length;
 	if (q.limit !== undefined && edges.length > q.limit) edges = edges.slice(0, q.limit);
+	const counts = { count: matched, shown: edges.length };
 
 	const zones = splitBodyZones(q.bodySource);
 	const tmpl = zones.template;
@@ -151,7 +157,7 @@ function resolveOne(
 	if (edges.length === 0) {
 		const out: RenderableTreeNode[] = [];
 		if (zones.fallback && embedConfig) {
-			out.push(new Tag('div', { 'data-name': 'empty', class: 'rf-relationships__empty' }, renderItemTemplate(zones.fallback, embedConfig, {})));
+			out.push(new Tag('div', { 'data-name': 'empty', class: 'rf-relationships__empty' }, renderItemTemplate(zones.fallback, embedConfig, counts)));
 		} else if (q.empty) {
 			out.push(new Tag('div', { 'data-name': 'empty', class: 'rf-relationships__empty' }, [q.empty]));
 		}
@@ -165,19 +171,25 @@ function resolveOne(
 		// group by kind (default) or by target type
 		const keyOf = q.group === 'type' ? (e: ResolvedEdge) => e.target.type : (e: ResolvedEdge) => e.kind;
 		const groups = groupBy(edges, keyOf);
-		children = [];
-		for (const [key, es] of groups) {
-			children.push(new Tag('div', { class: 'rf-relationships__group', 'data-group': key }, [
-				new Tag('h3', { class: 'rf-relationships__group-title' }, [humanize(key)]),
-				...renderEdges(es, q, tmpl, embedConfig),
-			]));
+		if (q.groupDisplay === 'accordion') {
+			children = renderGroupAccordion(
+				[...groups].map(([key, es]) => ({ key, label: humanize(key), count: es.length, nodes: renderEdges(es, q, tmpl, embedConfig) })),
+			);
+		} else {
+			children = [];
+			for (const [key, es] of groups) {
+				children.push(new Tag('div', { class: 'rf-relationships__group', 'data-group': key }, [
+					new Tag('h3', { class: 'rf-relationships__group-title' }, [humanize(key)]),
+					...renderEdges(es, q, tmpl, embedConfig),
+				]));
+			}
 		}
 	}
 
 	const itemsDiv = new Tag('div', { 'data-name': 'items', class: 'rf-relationships__items' }, children);
 	const head: RenderableTreeNode[] = [];
 	if (zones.preamble && embedConfig) {
-		head.push(new Tag('div', { 'data-name': 'preamble', class: 'rf-relationships__preamble' }, renderItemTemplate(zones.preamble, embedConfig, {})));
+		head.push(new Tag('div', { 'data-name': 'preamble', class: 'rf-relationships__preamble' }, renderItemTemplate(zones.preamble, embedConfig, counts)));
 	}
 	return new Tag(tag.name, attrs, [...head, itemsDiv]);
 }

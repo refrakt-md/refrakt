@@ -83,3 +83,45 @@ describe('collection body zones + empty state (WORK-286)', () => {
 		expect(cls(out, 'rf-collection__item')).toHaveLength(2);
 	});
 });
+
+describe('collection group-display="accordion" + count variables', () => {
+	const multi = registry([
+		work('W-1', { title: 'Alpha', status: 'ready' }),
+		work('W-2', { title: 'Beta', status: 'ready' }),
+		work('W-3', { title: 'Gamma', status: 'done' }),
+	]);
+	const details = (node: unknown) => findAll(node, (t) => t.name === 'details' && t.attributes.class === 'rf-accordion-item');
+
+	it('renders native <details> panels styled like the accordion rune, collapsed by default', () => {
+		const out = render('{% collection type="work" group="status" group-display="accordion" /%}', multi);
+		expect(cls(out, 'rf-accordion')).toHaveLength(1);
+		const panels = details(out);
+		expect(panels.map((p) => p.attributes['data-group'])).toEqual(['ready', 'done']);
+		expect(panels.every((p) => p.attributes.open === undefined)).toBe(true);
+		// no plain heading groups when accordion
+		expect(cls(out, 'rf-collection__group')).toHaveLength(0);
+	});
+
+	it('each summary carries the group label and member count', () => {
+		const out = render('{% collection type="work" group="status" group-display="accordion" /%}', multi);
+		expect(cls(out, 'rf-accordion-item__title').map((t) => (t.children ?? [])[0])).toEqual(['ready', 'done']);
+		expect(cls(out, 'rf-accordion-item__count').map((c) => (c.children ?? [])[0])).toEqual(['(2)', '(1)']);
+	});
+
+	it('group-display=headings (default) still renders heading groups', () => {
+		const out = render('{% collection type="work" group="status" /%}', multi);
+		expect(cls(out, 'rf-accordion')).toHaveLength(0);
+		expect(cls(out, 'rf-collection__group')).toHaveLength(2);
+	});
+
+	it('$count is the pre-limit total and $shown the post-limit count in the preamble', () => {
+		const out = render('{% collection type="work" limit=2 %}\nShowing {% $shown %} of {% $count %}\n---\n{% card %}### {% $item.data.title %}{% /card %}\n{% /collection %}', multi);
+		const pre = cls(out, 'rf-collection__preamble');
+		expect(pre).toHaveLength(1);
+		const blob = JSON.stringify(pre[0]);
+		expect(blob).toContain('Showing');
+		expect(blob).toContain('2');
+		expect(blob).toContain('3');
+		expect(cls(out, 'rf-collection__item')).toHaveLength(2);
+	});
+});

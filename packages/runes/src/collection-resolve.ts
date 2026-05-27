@@ -16,7 +16,7 @@ import {
 	type CollectionEmbedConfig, type Ordering,
 	fieldValue, titleLink as titleLinkFor,
 	sortEntities, groupEntities, projectItem, buildOrdering,
-	splitBodyZones, renderItemTemplate,
+	splitBodyZones, renderItemTemplate, renderGroupAccordion,
 } from './collection-helpers.js';
 import { COLLECTION_SENTINEL } from './tags/collection.js';
 
@@ -53,6 +53,7 @@ interface CollectionQuery {
 	filter: string;
 	sort: string;
 	group: string;
+	groupDisplay: string;
 	limit?: number;
 	fields: string[];
 	layout: string;
@@ -68,6 +69,7 @@ function readQuery(tag: TagNode): CollectionQuery {
 		filter: metaContent(tag, 'collection-filter'),
 		sort: metaContent(tag, 'collection-sort'),
 		group: metaContent(tag, 'collection-group'),
+		groupDisplay: metaContent(tag, 'collection-group-display') || 'headings',
 		limit: limitRaw && Number.isFinite(limitNum) && limitNum > 0 ? Math.floor(limitNum) : undefined,
 		fields: metaContent(tag, 'collection-fields').split(',').map((s) => s.trim()).filter(Boolean),
 		layout: metaContent(tag, 'collection-layout') || 'list',
@@ -175,6 +177,11 @@ function renderBody(
 function renderGroupOrFlat(entities: EntityRegistration[], q: CollectionQuery, ordering: Ordering, renderItems: (es: EntityRegistration[]) => RenderableTreeNode[]): RenderableTreeNode[] {
 	if (!q.group) return renderItems(entities);
 	const groups = groupEntities(entities, q.group, ordering);
+	if (q.groupDisplay === 'accordion') {
+		return renderGroupAccordion(
+			[...groups].map(([name, es]) => ({ key: name, label: name, count: es.length, nodes: renderItems(es) })),
+		);
+	}
 	const out: RenderableTreeNode[] = [];
 	for (const [name, es] of groups) {
 		out.push(new Tag('div', { class: 'rf-collection__group', 'data-group': name }, [
@@ -204,7 +211,10 @@ function resolveOne(
 		entities = entities.filter((e) => matchesFieldMatch(e as MatchableEntity, parsed));
 	}
 	entities = sortEntities(entities, q.sort, ordering);
+	// `$count` = total matched (pre-limit); `$shown` = rendered (post-limit).
+	const matched = entities.length;
 	if (q.limit !== undefined && entities.length > q.limit) entities = entities.slice(0, q.limit);
+	const counts = { count: matched, shown: entities.length };
 
 	const zones = splitBodyZones(q.bodySource);
 	const tmpl = zones.template;
@@ -215,7 +225,7 @@ function resolveOne(
 	if (entities.length === 0) {
 		const out: RenderableTreeNode[] = [];
 		if (zones.fallback && embedConfig) {
-			out.push(new Tag('div', { 'data-name': 'empty', class: 'rf-collection__empty' }, renderItemTemplate(zones.fallback, embedConfig, {})));
+			out.push(new Tag('div', { 'data-name': 'empty', class: 'rf-collection__empty' }, renderItemTemplate(zones.fallback, embedConfig, counts)));
 		} else if (q.empty) {
 			out.push(new Tag('div', { 'data-name': 'empty', class: 'rf-collection__empty' }, [q.empty]));
 		}
@@ -239,7 +249,7 @@ function resolveOne(
 	// Preamble renders once, above items, only when non-empty.
 	const head: RenderableTreeNode[] = [];
 	if (zones.preamble && embedConfig) {
-		head.push(new Tag('div', { 'data-name': 'preamble', class: 'rf-collection__preamble' }, renderItemTemplate(zones.preamble, embedConfig, {})));
+		head.push(new Tag('div', { 'data-name': 'preamble', class: 'rf-collection__preamble' }, renderItemTemplate(zones.preamble, embedConfig, counts)));
 	}
 	return new Tag(tag.name, attrs, [...head, itemsDiv]);
 }

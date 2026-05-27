@@ -79,6 +79,13 @@
 	flex: 1;
 	min-width: 0;
 }
+/* Per-group count for collection/relationships group-display="accordion". */
+.rf-accordion-item__count {
+	flex-shrink: 0;
+	margin-left: 0.5rem;
+	color: var(--rf-color-muted);
+	font-weight: 400;
+}
 .rf-accordion-item__body {
 	padding: 0 1.25rem 1rem;
 	font-size: 0.925rem;

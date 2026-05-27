@@ -21,6 +21,7 @@ export const collection = createContentModelSchema({
 		show: { type: String, required: false, default: '', description: 'Alias for type (entity types to include).' },
 		fields: { type: String, required: false, default: '', description: 'Comma-separated data fields to project.' },
 		layout: { type: String, required: false, default: 'list', description: 'Arrangement: list (stacked) | grid (multi-column) | table (aligned columns). Item chrome comes from the item — the no-body built-in, or a rune like {% card %} in the body template.' },
+		'group-display': { type: String, required: false, default: 'headings', matches: ['headings', 'accordion'], description: 'How groups are presented when `group` is set: headings (default) or accordion (collapsible native <details> panels, styled like the accordion rune, with a per-group count).' },
 		empty: { type: String, required: false, default: '', description: 'Fallback text shown when the query yields nothing (no-body form; body-template form uses a fallback zone). Absent → render nothing.' },
 	},
 	deferBody: true,
@@ -37,6 +38,7 @@ export const collection = createContentModelSchema({
 			meta('collection-limit', String(attrs.limit ?? '')),
 			meta('collection-fields', String(attrs.fields ?? '')),
 			meta('collection-layout', String(attrs.layout ?? 'list')),
+			meta('collection-group-display', String(attrs['group-display'] ?? 'headings')),
 			meta('collection-empty', String(attrs.empty ?? '')),
 			meta(COLLECTION_SENTINEL, 'true'),
 		];
