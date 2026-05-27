@@ -28,6 +28,17 @@
 	outline-offset: 2px;
 }
 
+/* In the header chrome the brand/nav and the controls are flex siblings
+ * arranged by `order` (search is order 1, nav/menu order 3). Without this the
+ * toggle defaults to order 0 and groups with the brand on the left; order 2
+ * places it just after the right-aligned search trigger — matching the former
+ * component. The plan toolbar arranges by DOM order, so it isn't included. */
+.rf-header__inner .rf-theme-toggle,
+.rf-docs-header__inner .rf-theme-toggle,
+.rf-blog-header__inner .rf-theme-toggle {
+	order: 2;
+}
+
 /* Hidden on tint-locked pages: the saved preference is preserved but ignored
  * while the lock is active (SPEC-052), so a toggle that does nothing would be
  * confusing. Pure CSS — the lock lands on <html> at SSR and on client nav. */
