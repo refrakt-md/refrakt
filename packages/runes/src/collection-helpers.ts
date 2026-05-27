@@ -33,7 +33,12 @@ export interface BodyZones {
  */
 export function splitBodyZones(bodySource: string): BodyZones {
 	if (!bodySource) return { template: '' };
-	const ast = Markdoc.parse(bodySource);
+	// Prepend a newline so a leading `---` (the empty-preamble form,
+	// `--- template --- fallback`) isn't parsed as YAML frontmatter — which
+	// would swallow the first zone and its delimiter, collapsing everything to
+	// a single zone and dropping the fallback. Zone content is re-formatted
+	// from the segment nodes below, so the extra newline never leaks in.
+	const ast = Markdoc.parse('\n' + bodySource);
 	const segments: Node[][] = [[]];
 	for (const node of ast.children) {
 		if (node.type === 'hr') segments.push([]);

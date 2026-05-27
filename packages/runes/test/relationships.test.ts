@@ -113,6 +113,14 @@ describe('relationships resolver', () => {
 		expect(JSON.stringify(empty[0])).toContain('No relationships.');
 	});
 
+	it('leading-empty preamble (--- template --- fallback) renders the fallback when there are no edges', () => {
+		const out = render('{% relationships of="SPEC-1" %}\n---\n- {% $item.data.title %}\n---\nNo links.\n{% /relationships %}', registry());
+		expect(findAll(out, (t) => t.attributes.class === 'rf-relationships__preamble')).toHaveLength(0);
+		const empty = findAll(out, (t) => t.attributes.class === 'rf-relationships__empty');
+		expect(empty).toHaveLength(1);
+		expect(JSON.stringify(empty[0])).toContain('No links.');
+	});
+
 	it('group-display=accordion renders details panels styled like the accordion rune', () => {
 		const out = render('{% relationships of="WORK-1" group-display="accordion" /%}', registry());
 		expect(findAll(out, (t) => t.attributes.class === 'rf-accordion')).toHaveLength(1);

@@ -69,6 +69,23 @@ describe('collection body zones + empty state (WORK-286)', () => {
 		expect(JSON.stringify(empty[0])).toContain('Nothing open.');
 	});
 
+	it('leading-empty preamble (--- template --- fallback) renders the fallback when empty', () => {
+		const out = render('{% collection type="work" filter="status:zzz" %}\n---\n{% card %}### {% $item.data.title %}{% /card %}\n---\nNothing open.\n{% /collection %}', reg);
+		expect(cls(out, 'rf-collection__preamble')).toHaveLength(0);
+		expect(cls(out, 'rf-collection__items')).toHaveLength(0);
+		const empty = cls(out, 'rf-collection__empty');
+		expect(empty).toHaveLength(1);
+		expect(JSON.stringify(empty[0])).toContain('Nothing open.');
+	});
+
+	it('leading-empty preamble renders items (no preamble) when non-empty', () => {
+		const out = render('{% collection type="work" filter="status:ready" %}\n---\n{% card %}### {% $item.data.title %}{% /card %}\n---\nNothing open.\n{% /collection %}', reg);
+		expect(cls(out, 'rf-collection__preamble')).toHaveLength(0);
+		expect(cls(out, 'rf-collection__items')).toHaveLength(1);
+		expect(cls(out, 'rf-collection__item')).toHaveLength(2);
+		expect(cls(out, 'rf-collection__empty')).toHaveLength(0);
+	});
+
 	it('a single-zone body stays the per-item template (back-compat)', () => {
 		const out = render('{% collection type="work" filter="status:ready" %}\n{% card %}### {% $item.data.title %}{% /card %}\n{% /collection %}', reg);
 		expect(cls(out, 'rf-collection__preamble')).toHaveLength(0);
