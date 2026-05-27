@@ -1,4 +1,4 @@
-{% work id="WORK-292" status="in-progress" priority="low" complexity="moderate" source="SPEC-073" tags="theme,adapters,html,astro,nuxt,next,eleventy" milestone="v0.16.0" %}
+{% work id="WORK-292" status="done" priority="low" complexity="moderate" source="SPEC-073" tags="theme,adapters,html,astro,nuxt,next,eleventy" milestone="v0.16.0" %}
 
 # Extend theme plumbing + toggle to the remaining adapters
 
@@ -19,5 +19,22 @@ Generalize the injection helper from WORK-290 into a framework-neutral piece (it
 
 ## References
 - {% ref "SPEC-073" /%}
+
+## Resolution
+
+Completed: 2026-05-27
+
+Branch: `claude/v0.16.0`
+
+### Delivered
+- The **html adapter** no-flash injection: `renderFullPage` now injects the pre-paint script + `color-scheme` meta (always) and `<html>` tint attributes from an optional `tintCascade` (commit `e776524e`); `template-html`'s build passes `page.tintCascade`. Verified via the html render tests.
+
+### Re-scoped
+- On starting the other four adapters (astro/nuxt/next/eleventy) I found they have **no theme SSR infrastructure at all** — no pre-paint, no `data-tint`/`data-theme`, and no cascade threading to a document boundary, each with a different per-framework seam (astro template prop, eleventy transform, nuxt module head, next app-owned `<html>`). That's net-new theming per framework, not a small injection, and none has a runnable demo app here to verify. Rather than ship blind changes to four published packages, that work moved to {% ref "SPEC-074" /%} (verified per demo app).
+- The html scaffold's missing client-JS bundle (so the toggle can *cycle*, not just no-flash) → {% ref "WORK-293" /%}.
+
+### Notes
+- The toggle button (chrome), behavior, and CSS are already shared (SPEC-073), so the remaining per-adapter work is purely the no-flash document seam + cascade threading.
+- Marking done as the item's html scope is complete and its remaining scope is transferred to SPEC-074; the all-five-adapter acceptance criteria are intentionally left unchecked since they now belong to SPEC-074.
 
 {% /work %}
