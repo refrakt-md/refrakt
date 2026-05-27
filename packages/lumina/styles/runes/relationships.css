@@ -21,6 +21,43 @@
 	gap: var(--rf-spacing-sm);
 }
 
+/* grid arranges edges into responsive columns; list stays a stacked flow.
+ * Mirrors collection: item chrome comes from the item (the card built-in, or
+ * a {% card %} in the body template), not the layout. */
+.rf-relationships[data-layout='grid'] .rf-relationships__items {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+	gap: var(--rf-spacing-md);
+	align-items: stretch;
+}
+.rf-relationships[data-layout='grid'] .rf-relationships__item {
+	display: flex;
+}
+.rf-relationships[data-layout='grid'] .rf-relationships__item > * {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Grouped grid: the grid belongs to each group (its items are the cells), not
+ * to __items — whose children are the group blocks (or the accordion wrapper).
+ * Left on __items, each group collapses into a single column. So __items stacks
+ * the groups and each group becomes the grid, with its title spanning. */
+.rf-relationships[data-layout='grid'] .rf-relationships__items:has(.rf-relationships__group),
+.rf-relationships[data-layout='grid'] .rf-relationships__items:has(.rf-accordion) {
+	display: flex;
+	flex-direction: column;
+	gap: var(--rf-spacing-md);
+}
+.rf-relationships[data-layout='grid'] .rf-relationships__group {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+	gap: var(--rf-spacing-md);
+	align-items: stretch;
+}
+.rf-relationships[data-layout='grid'] .rf-relationships__group-title {
+	grid-column: 1 / -1;
+}
+
 .rf-relationships__group {
 	margin-top: var(--rf-spacing-md);
 	display: flex;
@@ -60,6 +97,20 @@
 }
 .rf-relationships__item > article {
 	margin: 0;
+}
+
+/* Card chrome for the grid built-in (mirrors collection's __card). */
+.rf-relationships__card {
+	display: flex;
+	flex-direction: column;
+	gap: var(--rf-spacing-xs);
+	padding: var(--rf-spacing-md);
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-md);
+	background: var(--rf-color-surface);
+}
+.rf-relationships__card:hover {
+	background: var(--rf-color-surface-hover);
 }
 
 .rf-relationships__title {

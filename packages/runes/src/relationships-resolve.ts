@@ -53,6 +53,7 @@ interface RelQuery {
 	sort: string;
 	limit?: number;
 	fields: string[];
+	layout: string;
 	bodySource: string;
 	empty: string;
 }
@@ -69,6 +70,7 @@ function readQuery(tag: TagNode): RelQuery {
 		sort: metaContent(tag, 'relationships-sort'),
 		limit: limitRaw && Number.isFinite(limitNum) && limitNum > 0 ? Math.floor(limitNum) : undefined,
 		fields: csv(metaContent(tag, 'relationships-fields')),
+		layout: metaContent(tag, 'relationships-layout') || 'list',
 		bodySource: metaContent(tag, 'relationships-body'),
 		empty: metaContent(tag, 'relationships-empty'),
 	};
@@ -101,12 +103,16 @@ function titleLink(e: EntityRegistration): TagNode {
 	return titleLinkFor(e, 'rf-relationships');
 }
 
-function builtInItem(edge: ResolvedEdge, fields: string[]): TagNode {
-	const spans = fields.map((f) =>
+function builtInItem(edge: ResolvedEdge, q: RelQuery): TagNode {
+	const spans = q.fields.map((f) =>
 		new Tag('span', { class: 'rf-relationships__field', 'data-field': f }, [fieldValue(edge.target, f)]),
 	);
-	return new Tag('div', { class: 'rf-relationships__item', 'data-entity-id': edge.target.id, 'data-kind': edge.kind },
-		[titleLink(edge.target), ...spans]);
+	const attrs = { 'data-entity-id': edge.target.id, 'data-kind': edge.kind };
+	// grid gets card chrome (mirroring collection); list stays an inline row.
+	if (q.layout === 'grid') {
+		return new Tag('article', { class: 'rf-relationships__card', ...attrs }, [titleLink(edge.target), ...spans]);
+	}
+	return new Tag('div', { class: 'rf-relationships__item', ...attrs }, [titleLink(edge.target), ...spans]);
 }
 
 function renderEdges(
@@ -120,7 +126,7 @@ function renderEdges(
 			const kids = renderItemTemplate(tmpl, embedConfig, { item: projectItem(edge.target), kind: edge.kind });
 			return new Tag('div', { class: 'rf-relationships__item', 'data-entity-id': edge.target.id, 'data-kind': edge.kind }, kids);
 		}
-		return builtInItem(edge, q.fields);
+		return builtInItem(edge, q);
 	});
 }
 
@@ -151,7 +157,7 @@ function resolveOne(
 
 	const zones = splitBodyZones(q.bodySource);
 	const tmpl = zones.template;
-	const attrs = { ...tag.attributes, 'data-of': q.of };
+	const attrs = { ...tag.attributes, 'data-of': q.of, 'data-layout': q.layout };
 
 	// Empty state (SPEC-072 Cap 5): fallback zone, else `empty` attribute, else nothing.
 	if (edges.length === 0) {

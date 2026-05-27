@@ -55,6 +55,7 @@ Because `$item` means the same thing here as in a `collection` body, the **same 
 - **`group-display`** — `headings` (default) or `accordion`, exactly as in [`collection`](/runes/collection#group-display-headings-or-accordion): `accordion` renders each group as a collapsible native `<details>` panel styled like the [`accordion`](/runes/accordion) rune, collapsed, with the group's edge count beside its label.
 - **`sort`** — a field on the *related* entity (`-field` / `field-desc` for descending). Enum fields honor the same [domain-aware ordering](/runes/collection#sort-group-limit) as `collection`.
 - **`limit`** — a positive integer cap.
+- **`layout`** — `list` (default, stacked) or `grid` (responsive multi-column), mirroring [`collection`](/runes/collection#layouts). With `group`, the grid arranges each group's edges into columns (the group title spans the row); item chrome comes from the item — the no-body built-in becomes a card, or use a `{% card %}` in the body template.
 
 ## Attributes
 
@@ -68,6 +69,7 @@ Because `$item` means the same thing here as in a `collection` body, the **same 
 | `sort` | string | — | Sort related entities by a field. |
 | `limit` | number | — | Max edges. |
 | `fields` | string | — | Comma-separated `data` fields for the no-body built-in. |
+| `layout` | `list` \| `grid` | `list` | Arrangement. Item chrome comes from the item. |
 | `empty` | string | — | Fallback text when there are no matching edges (no-body form). Absent → render nothing. |
 
 ## Empty state and body zones
@@ -83,7 +85,7 @@ With a body, split on a top-level `---` into **preamble** (rendered above the ed
 ## Output contract
 
 ```html
-<section class="rf-relationships" data-rune="relationships" data-of="WORK-1">
+<section class="rf-relationships" data-rune="relationships" data-of="WORK-1" data-layout="list">
   <div class="rf-relationships__items">
     <div class="rf-relationships__group" data-group="implements">
       <h3 class="rf-relationships__group-title">Implements</h3>
@@ -95,6 +97,8 @@ With a body, split on a top-level `---` into **preamble** (rendered above the ed
   </div>
 </section>
 ```
+
+In `layout="grid"` the no-body built-in is an `article.rf-relationships__card` (instead of the inline `__item` row), and each group is itself the grid so its cards flow into columns under a full-width group title.
 
 ## Where edges come from
 

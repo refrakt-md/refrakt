@@ -122,8 +122,20 @@ describe('relationships resolver', () => {
 		expect(findAll(out, (t) => t.attributes.class === 'rf-accordion-item__title').map((t) => (t.children ?? [])[0]))
 			.toEqual(['Implements', 'Blocked By']);
 		expect(findAll(out, (t) => t.attributes.class === 'rf-accordion-item__count').map((c) => (c.children ?? [])[0]))
-			.toEqual(['(2)', '(1)']);
+			.toEqual(['2', '1']);
 		expect(findAll(out, (t) => t.attributes.class === 'rf-relationships__group')).toHaveLength(0);
+	});
+
+	it('layout=grid sets data-layout and renders card built-ins', () => {
+		const out = render('{% relationships of="WORK-1" layout="grid" group="none" /%}', registry());
+		const root = findAll(out, (t) => t.attributes['data-rune'] === 'relationships')[0];
+		expect(root.attributes['data-layout']).toBe('grid');
+		const cards = findAll(out, (t) => t.name === 'article' && t.attributes.class === 'rf-relationships__card');
+		expect(cards).toHaveLength(3);
+		// list layout keeps the inline __item shape
+		const list = render('{% relationships of="WORK-1" group="none" /%}', registry());
+		expect(findAll(list, (t) => t.attributes.class === 'rf-relationships__card')).toHaveLength(0);
+		expect(findAll(list, (t) => t.attributes.class === 'rf-relationships__item')).toHaveLength(3);
 	});
 
 	it('binds $count (pre-limit) and $shown (post-limit) in the preamble', () => {

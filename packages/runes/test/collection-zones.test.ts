@@ -105,7 +105,7 @@ describe('collection group-display="accordion" + count variables', () => {
 	it('each summary carries the group label and member count', () => {
 		const out = render('{% collection type="work" group="status" group-display="accordion" /%}', multi);
 		expect(cls(out, 'rf-accordion-item__title').map((t) => (t.children ?? [])[0])).toEqual(['ready', 'done']);
-		expect(cls(out, 'rf-accordion-item__count').map((c) => (c.children ?? [])[0])).toEqual(['(2)', '(1)']);
+		expect(cls(out, 'rf-accordion-item__count').map((c) => (c.children ?? [])[0])).toEqual(['2', '1']);
 	});
 
 	it('group-display=headings (default) still renders heading groups', () => {
