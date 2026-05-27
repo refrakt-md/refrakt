@@ -2,7 +2,9 @@
 
 ## Relationships
 
-{% relationships of=$item.id /%}
+{% relationships of=$item.id %}
+{% partial file="entity-card.md" variables={item: $item} /%}
+{% /relationships %}
 
 ## History
 
