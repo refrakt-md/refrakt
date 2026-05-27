@@ -1,0 +1,56 @@
+/* Theme-mode toggle button (SPEC-073).
+ *
+ * Layout chrome — a peer of the search trigger, placed in the header/toolbar.
+ * The `theme-toggle` behavior cycles auto → light → dark and reflects the
+ * current preference onto the button as `data-theme-pref`; the icon below
+ * tracks that. Ported verbatim from the former `ThemeToggle.svelte` so the
+ * look is unchanged, with the icon selector rekeyed from a swapped class to
+ * the `data-theme-pref` attribute. */
+.rf-theme-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-md);
+	background: transparent;
+	color: var(--rf-color-text);
+	cursor: pointer;
+	transition: background-color 120ms ease, border-color 120ms ease;
+}
+.rf-theme-toggle:hover {
+	background: var(--rf-color-surface-hover);
+}
+.rf-theme-toggle:focus-visible {
+	outline: 2px solid var(--rf-color-primary);
+	outline-offset: 2px;
+}
+
+/* Hidden on tint-locked pages: the saved preference is preserved but ignored
+ * while the lock is active (SPEC-052), so a toggle that does nothing would be
+ * confusing. Pure CSS — the lock lands on <html> at SSR and on client nav. */
+html[data-tint-lock="true"] .rf-theme-toggle {
+	display: none;
+}
+
+/* Icon — a currentColor-tinted mask. Defaults to the auto glyph so the SSR'd
+ * button shows an icon before the behavior sets data-theme-pref; the light and
+ * dark glyphs swap in by state. */
+.rf-theme-toggle__icon {
+	display: inline-block;
+	width: 1rem;
+	height: 1rem;
+	background: currentColor;
+	mask-size: contain;
+	mask-repeat: no-repeat;
+	mask-position: center;
+	mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><path d='M12 2a10 10 0 0 0 0 20Z' fill='currentColor'/></svg>");
+}
+.rf-theme-toggle[data-theme-pref="light"] .rf-theme-toggle__icon {
+	mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='4'/><path d='M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41'/></svg>");
+}
+.rf-theme-toggle[data-theme-pref="dark"] .rf-theme-toggle__icon {
+	mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'/></svg>");
+}
