@@ -19,6 +19,7 @@ Markdoc already models attribute types as classes with `validate` / `transform`.
 ## Goals
 
 - A convention: a rune attribute's **type class may expose a static `compare(a, b)`**; `collection` sort consults it.
+- The same type class can **normalize** via Markdoc's `transform` (e.g. dates → ISO), so sort, filter, and storage share one canonical form while display stays the formatter's job.
 - A small, reusable library of such types — validated **and** comparable — usable by core and plugin runes, starting with **SemVer**.
 - `milestone.name` adopts SemVer so the roadmap sorts correctly with the intuitive `sort="name"`, and malformed versions fail at build.
 - Authoring stays intuitive: content and collection authors do nothing special; the rune author declares the type once.
@@ -40,11 +41,28 @@ Markdoc already models attribute types as classes with `validate` / `transform`.
 - Ship a `SemVer` attribute type (shared, exported from `@refrakt-md/runes` so plugins can reuse it): `validate` rejects non-`v?X.Y[.Z…]`; `transform` passes the string through; `compare` is dotted-numeric.
 - `milestone.name` uses `type: SemVer`. A `collection type="milestone" sort="name"` orders `v0.9.0 < v0.10.0 < v1.0.0`; a malformed name is a build-time validation error.
 
+## Capability 3 — normalization via `transform`
+
+Comparison isn't the only thing a value type owns. A type's `transform` can **normalize input to a canonical, serializable form**, which pays off across **sort, filter, and storage** at once — while human display stays the formatter's job (`date()`, etc.). The clearest case is **Date**: canonicalizing varied inputs (`"2024-1-5"`, `"Jan 5 2024"`) to ISO `2024-01-05` makes lexical sort correct *without* a `compare` (ISO sorts lexically), makes `collection`'s `filter` predictable (it matches the stored value), and keeps storage machine-clean while `date()` formats for humans. Durations likewise normalize to a canonical form; SemVer stays passthrough (keep the authored `v0.16.0` visible) unless canonical version display is wanted.
+
+So the type contract spans three methods, and different value types lean on different ones:
+
+| Type | `validate` | `transform` | `compare` |
+|------|-----------|-------------|-----------|
+| Date | ISO-ish input | → ISO (does the work) | unneeded — ISO sorts lexically |
+| SemVer | `v?X.Y[.Z…]` | passthrough | dotted-numeric |
+| Duration | parseable | → canonical | (or rely on canonical) |
+
+Two constraints:
+
+- **Serializable output only.** The transformed value lands in entity `data` and flows into rendered output across the server→client boundary, so `transform` must return a plain primitive (a normalized string / number) — not a `Date` / class instance, which wouldn't survive serialization. The parsed rich value is transient, used inside `compare`, never stored.
+- **`validate` is the gate, `transform` is coercion.** Malformed input errors in `validate`; `transform` canonicalizes the rest.
+
 ## Other attributes worth the same treatment (reflection)
 
 Enumerated so the mechanism is built once and reused; **not** all in scope now:
 
-- **Date / ISO datetime** — `created` / `modified` (work/spec/bug/milestone), `milestone.target`, blog `date`, places `event` dates. ISO strings already sort lexically-correct, so this is mostly a *validation + non-ISO tolerance* win — but it's the **most widely reused** sortable field, likely the highest-value second type.
+- **Date / ISO datetime** — `created` / `modified` (work/spec/bug/milestone), `milestone.target`, blog `date`, places `event` dates. The **transform-led** type (Capability 3): normalizing to ISO fixes sort *and* `filter` without a `compare`, and it's the **most widely reused** sortable field — likely the highest-value type after SemVer.
 - **Identifier / natural sort** (`PREFIX-<n>`) — plan ids (`WORK-9` vs `WORK-10`); any numbered id. High value for plan listings sorted by id.
 - **Duration** — learning `recipe` / `howto` `prepTime` / `cookTime` / `totalTime` (`"30m"`, `"PT1H30M"`).
 - **(Boundary)** `status` / `priority` / `severity` are fixed enums, already handled by `matches` / `orderings`; listed only to mark where the type-class approach does *not* apply.
@@ -53,7 +71,7 @@ A reasonable build order after SemVer: **Date** (breadth), then **Id / natural**
 
 ## Acceptance Criteria
 
-- [ ] Documented convention: attribute type classes may expose a static `compare(a, b)`; `collection` sort uses it.
+- [ ] Documented convention: attribute type classes own **validate + transform + compare** — `compare(a, b)` for sort, and `transform` for normalizing to a canonical *serializable* value (no class instances across the SSR boundary); `validate` remains the error gate.
 - [ ] `sortEntities` consults the field type's `compare` for `(type, field)`, ordered after enum ordering and before numeric / lexical; `-` / `-desc` honored; falls through cleanly when absent.
 - [ ] A `SemVer` type ships and is exported for reuse: `validate` rejects non-versions, `compare` is dotted-numeric (pre-release deferred), `transform` passes through.
 - [ ] `milestone.name` uses `SemVer`; `collection type="milestone" sort="name"` yields `v0.9.0 < v0.10.0 < v1.0.0`; a malformed `name` raises a build validation error.
