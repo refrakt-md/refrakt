@@ -602,9 +602,16 @@ export const runes = {
   }),
 };
 
-/** Markdoc-compatible tags map derived from runes + Markdoc built-in tags */
+/** Markdoc-compatible tags map derived from runes + Markdoc built-in tags.
+ *
+ * `link` is exposed as a tag in addition to its node registration (which
+ * handles `[text](url)` markdown syntax). Markdown link URLs are literal at
+ * parse-time, so they can't reference variables — `{% link href=$item.url %}`
+ * gives template authors a way to build dynamic links inside collection
+ * cells, partials, etc. */
 export const tags = {
   ...runeTagMap(runes),
+  link,
   ...Markdoc.tags,
 };
 
