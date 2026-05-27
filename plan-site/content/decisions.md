@@ -31,5 +31,5 @@ Accepted records — the canonical reasoning behind current architecture.
 # Status
 {% humanize($item.data.status) %}
 # Date
-{% $item.data.date %}
+{% date($item.data.date) %}
 {% /collection %}
