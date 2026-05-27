@@ -108,10 +108,10 @@
 				{ "pattern": "**", "layout": "docs" }
 			],
 			"entityRoutes": [
-				{ "type": "spec",      "url": "/specs/{id}/",       "title": "{title}",        "render": "{% expand $item.id level=1 /%}" },
-				{ "type": "work",      "url": "/work/{id}/",        "title": "{id} — {title}", "render": "{% expand $item.id level=1 /%}" },
-				{ "type": "bug",       "url": "/bugs/{id}/",        "title": "{id} — {title}", "render": "{% expand $item.id level=1 /%}" },
-				{ "type": "decision",  "url": "/decisions/{id}/",   "title": "{title}",        "render": "{% expand $item.id level=1 /%}" },
+				{ "type": "spec",      "url": "/specs/{id}/",       "title": "{title}",        "render-template": "entity/spec.md" },
+				{ "type": "work",      "url": "/work/{id}/",        "title": "{id} — {title}", "render-template": "entity/work.md" },
+				{ "type": "bug",       "url": "/bugs/{id}/",        "title": "{id} — {title}", "render-template": "entity/bug.md" },
+				{ "type": "decision",  "url": "/decisions/{id}/",   "title": "{title}",        "render-template": "entity/decision.md" },
 				{ "type": "milestone", "url": "/milestones/{name}/","title": "{name}",         "render": "{% expand $item.name level=1 /%}" }
 			]
 		}

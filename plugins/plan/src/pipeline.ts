@@ -316,6 +316,31 @@ function performUnconditionalScan(
 			return;
 		}
 
+		// Populate the relationship maps so `buildRelationships` produces edges
+		// for entities reached via the scan (the standard-load case for sites
+		// whose plan/ tree is outside the content dir — e.g. the plan-site
+		// dogfood). This runs **before** the early-return registry checks so
+		// the cross-page pipeline's "second register pass" (which fires after
+		// contributePages and re-clears the maps in `register`) still gets the
+		// edges repopulated even when the registry entries already exist.
+		const refs = entity.refs
+			.map((refId) => {
+				const prefix = refId.match(/^([A-Z]+)-/)?.[1];
+				const type = prefix ? ID_PREFIX_TO_TYPE[prefix] : undefined;
+				return type && refId !== id ? { id: refId, type } : null;
+			})
+			.filter((r): r is { id: string; type: string } => r !== null);
+		if (refs.length > 0) _idReferences.set(id, refs);
+
+		const sourceRefs = parseSourceIds(String(entity.attributes.source ?? '')).filter((r) => r.id !== id);
+		if (sourceRefs.length > 0) _sourceReferences.set(id, sourceRefs);
+
+		const depRefs = (entity.scopedRefs ?? [])
+			.filter((r) => r.section === 'Dependencies')
+			.map((r) => r.id)
+			.filter((depId) => depId !== id);
+		if (depRefs.length > 0) _scannerDependencies.set(id, depRefs);
+
 		// Site-load registration wins if both paths produced the same entity.
 		const existing = registry.getById(runeType, id);
 		if (existing && existing.sourceUrl) {
@@ -323,7 +348,9 @@ function performUnconditionalScan(
 			return;
 		}
 		if (existing && existing.sourceFile === sourceFile) {
-			// Already registered via the unconditional scan (idempotency). Skip.
+			// Already registered via the unconditional scan (idempotency). Skip
+			// the re-register; the maps above still get repopulated for the
+			// pipeline's second register pass.
 			return;
 		}
 		if (existing && existing.sourceFile && existing.sourceFile !== sourceFile) {
@@ -384,6 +411,10 @@ export const planPipelineHooks: PluginPipelineHooks = {
 	register(pages, registry, ctx) {
 		_idReferences.clear();
 		_sourceReferences.clear();
+		// `_scannerDependencies` is intentionally NOT cleared here — the bespoke
+		// `plan build` path seeds it via `setScannerDependencies()` *before*
+		// calling `register()` (see render-pipeline.ts). The standard-load path
+		// populates it via `performUnconditionalScan` below.
 
 		for (const page of pages) {
 			walkTags(page.renderable, (tag) => {

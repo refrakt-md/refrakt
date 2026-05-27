@@ -21,11 +21,19 @@ const repoRoot = (() => {
 	throw new Error('repo root not found');
 })();
 
+interface EntityRoute {
+	type: string;
+	url: string;
+	title: string;
+	render?: string;
+	'render-template'?: string;
+}
+
 interface PlanSiteConfig {
 	contentDir: string;
 	theme: unknown;
 	plugins: string[];
-	entityRoutes: Array<{ type: string; url: string; title: string; render: string }>;
+	entityRoutes: EntityRoute[];
 	routeRules?: Array<{ pattern: string; layout: string }>;
 	baseUrl?: string;
 }
@@ -42,8 +50,17 @@ describe('refrakt plan site dogfood (SPEC-071 / WORK-272)', () => {
 		expect(planSite.plugins).toContain('@refrakt-md/plan');
 		const types = planSite.entityRoutes.map((r) => r.type).sort();
 		expect(types).toEqual(['bug', 'decision', 'milestone', 'spec', 'work']);
+		// Each rule renders via either an inline `render` containing an
+		// expand call, or a `render-template` partial under entity/. The
+		// integration test below proves the templates expand and inline the
+		// real entity body.
 		for (const rule of planSite.entityRoutes) {
-			expect(rule.render).toMatch(/\{% expand .* \/%\}/);
+			const inline = rule.render ?? '';
+			const tmpl = rule['render-template'] ?? '';
+			const ok =
+				/\{% expand .* \/%\}/.test(inline) ||
+				/^entity\/[a-z]+\.md$/.test(tmpl);
+			expect(ok, `entityRoutes rule for type "${rule.type}" must declare render or render-template`).toBe(true);
 		}
 	});
 
