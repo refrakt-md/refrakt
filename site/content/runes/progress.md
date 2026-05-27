@@ -48,19 +48,19 @@ An optional **body** is the label — it may hold inline markup, and its text al
 
 {% /preview %}
 
-## Variant
+## Sentiment
 
-`variant` tints the fill (`positive` / `caution` / `negative`); the neutral `default` uses the theme primary. There is **no** automatic threshold coloring — the variant is always explicit.
+`sentiment` tints the fill (`positive` / `caution` / `negative`), reusing the theme's sentiment colors. When it's absent the bar uses the neutral primary fill. There is **no** automatic threshold coloring — the sentiment is always explicit.
 
 {% preview source=true %}
 
 {% progress value=6 max=10 %}Default{% /progress %}
 
-{% progress value=9 max=10 variant="positive" %}Positive{% /progress %}
+{% progress value=9 max=10 sentiment="positive" %}Positive{% /progress %}
 
-{% progress value=4 max=10 variant="caution" %}Caution{% /progress %}
+{% progress value=4 max=10 sentiment="caution" %}Caution{% /progress %}
 
-{% progress value=2 max=10 variant="negative" %}Negative{% /progress %}
+{% progress value=2 max=10 sentiment="negative" %}Negative{% /progress %}
 
 {% /preview %}
 
@@ -82,12 +82,12 @@ The rune stays generic; computing `progressDone`/`progressTotal` is the data lay
 | `max` | number | — | Total amount (paired with `value`). |
 | `percent` | number | — | Direct percentage 0–100, when there's no count. |
 | `display` | `fraction` \| `percent` \| `none` | `fraction` (with value/max) | The numeric readout. |
-| `variant` | string | `default` | Fill tint (`positive` / `caution` / `negative`). |
+| `sentiment` | `positive` \| `caution` \| `negative` | — | Fill tone cue. Absent → neutral primary fill. |
 
 ## Output contract
 
 ```html
-<div class="rf-progress" data-rune="progress" data-variant="default"
+<div class="rf-progress" data-rune="progress"
      role="progressbar" aria-valuenow="3" aria-valuemin="0" aria-valuemax="4"
      aria-label="Acceptance criteria" style="--rf-progress: 75%">
   <span class="rf-progress__label">Acceptance criteria</span>

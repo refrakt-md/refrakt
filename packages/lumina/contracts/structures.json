@@ -224,11 +224,10 @@
 				"{content}"
 			],
 			"modifiers": {
-				"variant": {
+				"sentiment": {
 					"source": "meta",
-					"default": "default",
 					"classPattern": ".rf-progress--{value}",
-					"dataAttribute": "data-variant"
+					"dataAttribute": "data-sentiment"
 				}
 			}
 		},

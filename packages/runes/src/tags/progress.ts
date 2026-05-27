@@ -5,6 +5,7 @@ import { createContentModelSchema, createComponentRenderable, asNodes } from '..
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
 const displayValues = ['fraction', 'percent', 'none'] as const;
+const sentimentValues = ['positive', 'caution', 'negative'] as const;
 
 /** Best-effort plain-text of a rendered subtree, for the accessible name. */
 function textContent(node: unknown): string {
@@ -26,7 +27,7 @@ export const progress = createContentModelSchema({
 		max: { type: Number, required: false, description: 'Total amount (paired with `value`).' },
 		percent: { type: Number, required: false, description: 'Direct percentage 0–100, when there is no count.' },
 		display: { type: String, required: false, matches: displayValues.slice(), description: 'Readout: fraction (default with value/max), percent, or none.' },
-		variant: { type: String, required: false, default: 'default', description: 'Visual variant.' },
+		sentiment: { type: String, required: false, matches: sentimentValues.slice(), description: 'Tone cue: positive / caution / negative. Absent → the neutral primary fill.' },
 	},
 	contentModel: {
 		type: 'sequence',
@@ -53,12 +54,15 @@ export const progress = createContentModelSchema({
 		const labelArr = labelNodes.toArray();
 		const labelText = textContent(labelArr).trim();
 
-		const variantMeta = new Tag('meta', { content: (attrs.variant as string) ?? 'default' });
+		// Optional tone cue — omit the meta entirely when absent so no modifier
+		// class is applied (the bar then uses the neutral primary fill).
+		const sentiment = attrs.sentiment as string | undefined;
+		const sentimentMeta = sentiment ? new Tag('meta', { content: sentiment }) : undefined;
 
 		const fillTag = new Tag('span', {}, []);
 		const trackTag = new Tag('span', {}, [fillTag]);
 		const refs: Record<string, InstanceType<typeof Tag>> = { track: trackTag, fill: fillTag };
-		const children: RenderableTreeNode[] = [variantMeta];
+		const children: RenderableTreeNode[] = sentimentMeta ? [sentimentMeta] : [];
 
 		if (labelArr.length > 0) {
 			const labelTag = new Tag('span', {}, labelArr);
@@ -75,7 +79,7 @@ export const progress = createContentModelSchema({
 		const out = createComponentRenderable({
 			rune: 'progress',
 			tag: 'div',
-			properties: { variant: variantMeta },
+			properties: sentimentMeta ? { sentiment: sentimentMeta } : {},
 			refs,
 			children,
 		});

@@ -64,4 +64,11 @@ describe('progress rune', () => {
 		expect(part(out, 'track')).toBeDefined();
 		expect(part(out, 'fill')).toBeDefined();
 	});
+
+	it('emits a sentiment meta only when set', () => {
+		const sentimentMeta = (t: unknown) => find(t, (x) => x.attributes['data-field'] === 'sentiment');
+		const withIt = render('{% progress percent=40 sentiment="caution" /%}');
+		expect(sentimentMeta(withIt)?.attributes.content).toBe('caution');
+		expect(sentimentMeta(render('{% progress percent=40 /%}'))).toBeUndefined();
+	});
 });

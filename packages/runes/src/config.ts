@@ -167,7 +167,7 @@ export const coreConfig: ThemeConfig = {
 		Relationships: { block: 'relationships' },
 		Progress: {
 			block: 'progress',
-			modifiers: { variant: { source: 'meta', default: 'default' } },
+			modifiers: { sentiment: { source: 'meta' } },
 		},
 		/* card — generic content card. The `layout` meta drives the shared
 		 * split layout (split.css, data-attribute-keyed); data-media-position
