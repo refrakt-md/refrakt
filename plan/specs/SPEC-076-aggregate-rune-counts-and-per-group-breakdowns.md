@@ -83,6 +83,55 @@ Other attributes mirror `collection`, with one rune-specific addition (`value`):
 | `limit` | Cap the number of groups (after sort). |
 | `empty` | Self-closing string fallback (same as `collection`); body fallback zone wins when both are present. |
 
+## Capability 3 — chart layout (deferred)
+
+With `layout="chart"`, the rune renders an SVG instead of a per-group body —
+composing with the `chart` rune's renderer the same way `progress` / `badge`
+compose inside the default body. The body reuses the **heading-as-columns**
+format already used by `collection`'s `layout="table"` ({% ref "SPEC-070" /%}),
+so authors don't learn new grammar:
+
+```markdoc
+{% aggregate type="work" value="status:done" group="status" layout="chart" chart-type="bar" %}
+# Work breakdown
+
+## Status
+{% humanize($item.key) %}
+
+## Total
+{% $item.count %}
+
+## Done
+{% $item.value %}
+{% /aggregate %}
+```
+
+- **Headings as columns** — `## …` declares a column label; the content under
+  it is the per-group cell template with `$item` bound to the group projection.
+  First column is the label series; subsequent columns are numeric series that
+  `chart` consumes as bars / lines / slices. Same machinery `collection`'s
+  table layout uses — `splitColumns` lifts to `collection-helpers` for shared
+  use.
+- **Title** — an `# H1` in the body becomes the chart title; the
+  `chart-title="…"` attribute is the fallback for the no-body form. Same
+  precedence as the body fallback zone vs the `empty` attribute.
+- **No body** — defaults to a `{label, count}` series (or
+  `{label, count, value}` when `value` is set). The common case stays a
+  one-liner: `{% aggregate type="work" group="status" layout="chart" chart-type="bar" /%}`.
+- **Chart attributes** — `chart-type`, `chart-title`, etc., pass through to
+  the chart renderer. Other layouts (`list`, the default body-zoned form)
+  ignore them.
+
+Composition with `chart` means lifting its SVG-building code out of
+`postTransform` into a helper both runes can call — small refactor, but it's
+what keeps the rune coupling at the *layout* level (the same level
+`collection`'s `layout="table"` sits at) rather than synthesising and
+re-parsing markdoc tables behind the scenes.
+
+Deferred — held until {% ref "WORK-294" /%} and {% ref "WORK-295" /%} land.
+New work items will be filed once the base aggregate rune and its Lumina
+styling are done.
+
 ## What this absorbs
 
 - **The "count rune"** — Capability 1 *is* the count rune. Withdraw the separate proposal.
