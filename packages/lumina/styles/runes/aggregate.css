@@ -1,0 +1,75 @@
+/* Aggregate — counts and per-group breakdowns from the registry (SPEC-076).
+ *
+ * Two modes share the same block class. The no-body inline form is a `<span>`
+ * carrying the integer; the body-zoned form is a `<section>` rendering
+ * preamble / per-group template / fallback. Most of the visual weight inside
+ * the body comes from other runes (`progress`, `badge`, `humanize` text), so
+ * this stylesheet sticks to container chrome and the inline single-number
+ * form.
+ */
+
+/* Block container — vertical rhythm matches collection / relationships. The
+ * bare selector also matches the inline form's `<span>`, but vertical margin
+ * on an inline span has no effect so it's safe to share. */
+.rf-aggregate {
+	margin: var(--rf-spacing-md) 0;
+}
+
+/* Inline single-number form — `<span class="rf-aggregate" data-aggregate="count">`.
+ * Tabular nums keep digits aligned when the count changes between renders;
+ * weight tuned to stand out modestly in prose. */
+.rf-aggregate[data-aggregate='count'] {
+	font-variant-numeric: tabular-nums;
+	font-weight: 600;
+	color: var(--rf-color-text);
+}
+
+/* Preamble — totals chrome above the breakdown (e.g. a progress bar). Trim
+ * first/last-child block margins so the rune's outer rhythm wins over the
+ * template's inner block margins (same pattern collection uses). */
+.rf-aggregate__preamble > :first-child { margin-top: 0; }
+.rf-aggregate__preamble > :last-child { margin-bottom: 0; }
+
+/* Empty state — replaces the breakdown when the query yields nothing. */
+.rf-aggregate__empty {
+	color: var(--rf-color-muted);
+	font-size: 0.9375em;
+}
+.rf-aggregate__empty > :first-child { margin-top: 0; }
+.rf-aggregate__empty > :last-child { margin-bottom: 0; }
+
+/* Items — either the per-group breakdown row, or the ungrouped single-render
+ * slot. Default stack handles the ungrouped case (one block element from the
+ * body). With groups, switch to a wrapping inline row so per-group renders
+ * (badges, pills, …) flow across the page. */
+.rf-aggregate__items {
+	display: flex;
+	flex-direction: column;
+	gap: var(--rf-spacing-sm);
+	margin-top: var(--rf-spacing-sm);
+}
+.rf-aggregate__items:has(.rf-aggregate__group) {
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: var(--rf-spacing-xs) var(--rf-spacing-sm);
+}
+
+/* Direct children of __items (the ungrouped template render) — trim outer
+ * block margins so the rune's outer rhythm wins, same pattern as preamble /
+ * empty. */
+.rf-aggregate__items > :first-child { margin-top: 0; }
+.rf-aggregate__items > :last-child { margin-bottom: 0; }
+
+/* Per-group block — wraps one render of the template. `data-block` is set
+ * by the resolver so we trim its outer block margins (the items-row `gap`
+ * governs inter-group spacing) — same pattern collection / relationships
+ * use for `__item[data-block]`. */
+.rf-aggregate__group {
+	min-width: 0;
+}
+.rf-aggregate__group[data-block] > :first-child {
+	margin-top: 0;
+}
+.rf-aggregate__group[data-block] > :last-child {
+	margin-bottom: 0;
+}

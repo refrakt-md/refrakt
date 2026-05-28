@@ -24,7 +24,6 @@ const UNSTYLED_BLOCKS = new Set([
 	'bg',                // directive rune — sets parent backdrop, no own visual
 	'region',            // structural rune — layout region container, no own visual
 	'definition',        // child of feature — styled inline within feature.css
-	'aggregate',         // SPEC-076 — CSS ships in WORK-295; remove once aggregate.css lands
 ]);
 
 const KNOWN_MISSING_SELECTORS = new Set([
