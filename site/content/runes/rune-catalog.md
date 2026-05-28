@@ -27,25 +27,38 @@ These runes are available out of the box — no extra installation needed. They 
 | [conversation](/runes/conversation) | Chat and dialogue display with alternating speaker messages |
 | [reveal](/runes/reveal) | Progressive disclosure where content appears step by step |
 | [embed](/runes/embed) | Embed external content like videos, tweets, and code demos |
+| [card](/runes/card) | A generic content card — media / body / footer zones, an optional whole-card link; feed it from a collection or use it standalone |
+| [progress](/runes/progress) | A generic completion bar — render a ratio from supplied numbers, with an optional label and sentiment variant |
+| [icon](/runes/icon) | Inline icons from the theme's icon registry |
+| [badge](/runes/badge) | Inline pill that flags a piece of content — status, category, recency, tag — with sentiment / rank / type variants from the universal metadata system |
+
+### Registry
+
+These runes query the cross-page entity registry and resolve in the **post-process phase** with the full registry in view — so they work on file-backed pages and dynamic entity routes alike. They share a `field:value` query grammar and project entities into different shapes: **one** (ref / expand), **many** (collection), **edges** (relationships), and **numbers** (aggregate).
+
+| Rune | Description |
+|------|-------------|
+| [xref](/runes/xref) | Inline cross-reference — resolves an entity by id or name from the registry to a link (alias: `ref`). The singular counterpart to `collection` |
 | [expand](/runes/expand) | Substitute a registered entity's source content inline — symmetric with `ref`, but inlines content rather than linking to it |
 | [collection](/runes/collection) | Render a list, grid, or table of registry entities — the plural counterpart to `ref`/`expand`, with filter/sort/group and per-item templates |
 | [relationships](/runes/relationships) | Render an entity's relationship edges, grouped by kind — the graph counterpart to `collection`, generic over any domain's relationship vocabulary |
 | [aggregate](/runes/aggregate) | Project numbers from the registry — single counts or per-group breakdowns; the number-projecting sibling to `collection` and `relationships`, with a sub-filter that drives progress-bar ratios |
-| [progress](/runes/progress) | A generic completion bar — render a ratio from supplied numbers, with an optional label and sentiment variant |
-| [card](/runes/card) | A generic content card — media / body / footer zones, an optional whole-card link; feed it from a collection or use it standalone |
-| [icon](/runes/icon) | Inline icons from the theme's icon registry |
 
 ### Layout
 
 | Rune | Description |
 |------|-------------|
 | [grid](/runes/grid) | Generic grid layout for arranging content in columns |
+| [gallery](/runes/gallery) | Multi-image gallery with grid, carousel, or masonry layouts and optional lightbox |
 | [tabs](/runes/tabs) | Tabbed content panels with heading-based tab labels |
 | [accordion](/runes/accordion) | Collapsible accordion sections for FAQ-style content |
 | [juxtapose](/runes/juxtapose) | Interactive side-by-side comparison with slider, toggle, fade, and auto modes |
 | [details](/runes/details) | Collapsible disclosure blocks for supplementary content |
 | [drawer](/runes/drawer) | Addressable side panels triggered by xrefs — progressive enhancement turns the body into a `<dialog>` |
 | [sandbox](/runes/sandbox) | Isolated HTML/CSS/JS rendering in an iframe |
+| [showcase](/runes/showcase) | Media presentation wrapper with shadow, bleed displacement, and aspect ratio enforcement |
+| [bg](/runes/bg) | Background image or video directive — modifies the parent section's backdrop |
+| [tint](/runes/tint) | Section-level colour override via CSS custom properties — declared as the first child of a block rune |
 
 ### Code & Data
 
@@ -70,6 +83,7 @@ These runes are available out of the box — no extra installation needed. They 
 | [pagination](/runes/pagination) | Sequential prev/next links for ordered docs and tutorials |
 | [toc](/runes/toc) | Auto-generated table of contents from page headings |
 | [breadcrumb](/runes/breadcrumb) | Navigation breadcrumbs showing page hierarchy |
+| [blog](/runes/blog) | Blog post listing with filtering, sorting, and multiple layouts — displays pages from a content folder as a navigable blog index |
 | error | Internal rune — displays validation errors as table rows (not used directly in content) |
 
 ## Official Packages
