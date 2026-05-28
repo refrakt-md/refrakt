@@ -67,6 +67,21 @@
 	color: var(--rf-color-muted);
 }
 
+/* Items with an inline badge (recognised by the nav schema and tagged with
+ * data-name="badge") sit on one row so the badge rides alongside the link
+ * instead of wrapping to the next line — the link's `display: block` would
+ * otherwise eat the full row. */
+.rf-nav-item:has(> .rf-badge[data-name="badge"]) {
+	display: flex;
+	align-items: center;
+	gap: 0.375rem;
+	padding: 0;
+}
+.rf-nav-item:has(> .rf-badge[data-name="badge"]) > .rf-nav-item__link {
+	flex: 0 1 auto;
+	min-width: 0;
+}
+
 /* ─── Collapsible groups (vertical sidebar) ───────────────────────────── */
 
 .rf-nav--collapsible .rf-nav-group h2,
