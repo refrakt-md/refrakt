@@ -30,6 +30,7 @@ These runes are available out of the box — no extra installation needed. They 
 | [expand](/runes/expand) | Substitute a registered entity's source content inline — symmetric with `ref`, but inlines content rather than linking to it |
 | [collection](/runes/collection) | Render a list, grid, or table of registry entities — the plural counterpart to `ref`/`expand`, with filter/sort/group and per-item templates |
 | [relationships](/runes/relationships) | Render an entity's relationship edges, grouped by kind — the graph counterpart to `collection`, generic over any domain's relationship vocabulary |
+| [aggregate](/runes/aggregate) | Project numbers from the registry — single counts or per-group breakdowns; the number-projecting sibling to `collection` and `relationships`, with a sub-filter that drives progress-bar ratios |
 | [progress](/runes/progress) | A generic completion bar — render a ratio from supplied numbers, with an optional label and sentiment variant |
 | [card](/runes/card) | A generic content card — media / body / footer zones, an optional whole-card link; feed it from a collection or use it standalone |
 | [icon](/runes/icon) | Inline icons from the theme's icon registry |

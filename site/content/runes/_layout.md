@@ -30,6 +30,7 @@ tint-lock: false
 - expand
 - collection
 - relationships
+- aggregate
 - card
 - progress
 - icon

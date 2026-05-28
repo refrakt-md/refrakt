@@ -263,7 +263,7 @@ aggregate(registry, ctx) {
 
 ### Domain-aware ordering — `theme.orderings`
 
-`collection`/`relationships` sort and group enum fields (`status`, `priority`, …) in a meaningful order rather than lexically. The default order comes from each rune attribute's `matches` array automatically. When a *presentation* order differs from the declaration order (e.g. an actionable-first status dashboard), declare an override on your plugin's `theme`, keyed `type → field → ordered values`:
+`collection` / `relationships` / `aggregate` sort and group enum fields (`status`, `priority`, …) in a meaningful order rather than lexically. The default order comes from each rune attribute's `matches` array automatically. When a *presentation* order differs from the declaration order (e.g. an actionable-first status dashboard), declare an override on your plugin's `theme`, keyed `type → field → ordered values`:
 
 ```typescript
 theme: {
