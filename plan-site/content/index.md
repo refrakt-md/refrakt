@@ -9,45 +9,65 @@ A live dashboard built from the same `plan/` tree the project commits to git. Ev
 
 ## Progress
 
+{% card %}
+### Work
+
 {% aggregate type="work" value="status:done" group="status" %}
-{% progress value=$item.value max=$item.count %}Work — {% $item.value %} of {% $item.count %} done{% /progress %}
+{% progress value=$item.value max=$item.count %}Done{% /progress %}
 ---
 {% badge data-status=$item.key %}{% $item.count %} {% humanize($item.key) %}{% /badge %}
 ---
 No work items yet.
 {% /aggregate %}
+{% /card %}
+
+{% card %}
+### Bugs
 
 {% aggregate type="bug" value="status:fixed" group="status" %}
-{% progress value=$item.value max=$item.count %}Bugs — {% $item.value %} of {% $item.count %} fixed{% /progress %}
+{% progress value=$item.value max=$item.count %}Fixed{% /progress %}
 ---
 {% badge data-status=$item.key %}{% $item.count %} {% humanize($item.key) %}{% /badge %}
 ---
 No bugs reported.
 {% /aggregate %}
+{% /card %}
+
+{% card %}
+### Specs
 
 {% aggregate type="spec" value="status:accepted" group="status" %}
-{% progress value=$item.value max=$item.count %}Specs — {% $item.value %} of {% $item.count %} accepted{% /progress %}
+{% progress value=$item.value max=$item.count %}Accepted{% /progress %}
 ---
 {% badge data-status=$item.key %}{% $item.count %} {% humanize($item.key) %}{% /badge %}
 ---
 No specs yet.
 {% /aggregate %}
+{% /card %}
+
+{% card %}
+### Decisions
 
 {% aggregate type="decision" value="status:accepted" group="status" %}
-{% progress value=$item.value max=$item.count %}Decisions — {% $item.value %} of {% $item.count %} accepted{% /progress %}
+{% progress value=$item.value max=$item.count %}Accepted{% /progress %}
 ---
 {% badge data-status=$item.key %}{% $item.count %} {% humanize($item.key) %}{% /badge %}
 ---
 No decisions yet.
 {% /aggregate %}
+{% /card %}
+
+{% card %}
+### Milestones
 
 {% aggregate type="milestone" value="status:complete" group="status" %}
-{% progress value=$item.value max=$item.count %}Milestones — {% $item.value %} of {% $item.count %} complete{% /progress %}
+{% progress value=$item.value max=$item.count %}Complete{% /progress %}
 ---
 {% badge data-status=$item.key %}{% $item.count %} {% humanize($item.key) %}{% /badge %}
 ---
 No milestones yet.
 {% /aggregate %}
+{% /card %}
 
 ## Recent activity
 
