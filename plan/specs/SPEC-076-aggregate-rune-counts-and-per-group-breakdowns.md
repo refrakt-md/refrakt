@@ -44,9 +44,9 @@ With a body, the source splits on top-level `hr` into the same **preamble / temp
 
 ```markdoc
 {% aggregate type="work" value="status:done" group="status" %}
-{% progress value=$item.value max=$item.max %}Progress{% /progress %}
+{% progress value=$item.value max=$item.count %}Progress{% /progress %}
 ---
-{% badge data-status=$item.key %}{% $item.count %} {% humanize($item.key) %}{% /badge %}
+{% badge data-status=$item.key %}{% $item.count %} of {% $item.total %} {% humanize($item.key) %}{% /badge %}
 ---
 Nothing to report.
 {% /aggregate %}
@@ -54,13 +54,22 @@ Nothing to report.
 
 | Zone | When rendered | `$item` shape |
 |------|---------------|---------------|
-| **preamble** | once, only when the query is non-empty, *above* the per-group output | `{ count, value, max, percent, total }` — totals across all matches; `count` and `total` are the same here |
-| **template** | once **per group**; this is the rune's main output | `{ key, count, value, max, percent, total, shown }` — projection for *this* group, plus the all-groups `total` |
+| **preamble** | once, only when the query is non-empty, *above* the per-group output | `{ count, value, percent, total }` — `count` and `total` are equal in this zone |
+| **template** | once **per group**; this is the rune's main output | `{ key, count, value, percent, total, shown }` — `count` is *this* group's count; `total` is the all-groups total |
 | **fallback** | once, only when the query matches no entities, *in place of* the template | all zeros |
 
-`$item.key` is the group value (e.g. `"done"`); `$item.count` is entities-in-group pre-limit; `$item.shown` is post-limit; `$item.total` is the all-groups total — so a per-group template can render share-of-total ratios without a second query. `$item.value` is the count of entities matching both `filter` and the `value` sub-filter (see below); `$item.max` is an alias for `$item.count` in this zone for readability when feeding `progress`; `$item.percent` is `(value / count) × 100`, rounded to an integer in `0–100`. When the rune has **no `value` attribute**, `$item.value` falls back to `$item.count` (so it carries the count without progress-bar semantics) and `$item.percent` is `100`.
+The two count-shaped fields:
 
-`group` is optional. Without it, the body renders once with the totals projection on `$item` — useful for a single composed element from a totals-only query (e.g. just a `progress` bar driven by `$item.value` / `$item.max`).
+- **`$item.count`** is the count **in this zone's context** — the entire primary set in the preamble; the current group's count in the template. This is the progress-bar denominator.
+- **`$item.total`** is the **all-groups total**, constant across every template iteration. Equal to `count` in the preamble (no in-context vs global distinction when you're not iterating); useful in the template for share-of-total ratios (e.g. `"3 of 12"`).
+
+And the other fields:
+
+- **`$item.value`** is the count matching both `filter` and the `value` sub-filter (see below). Falls back to `$item.count` when no `value` attribute is set, so it carries the count without progress-bar semantics.
+- **`$item.percent`** is `(value / count) × 100`, rounded to an integer in `0–100`. With no `value` attribute, it's `100`.
+- **`$item.key`** is the group value (template only); **`$item.shown`** is the post-limit count (template only, when `limit` applies).
+
+`group` is optional. Without it, the body renders once with the in-context projection on `$item` — useful for a single composed element from a totals-only query (e.g. just a `progress` bar driven by `$item.value` / `$item.count`).
 
 Other attributes mirror `collection`, with one rune-specific addition (`value`):
 
@@ -78,7 +87,7 @@ Other attributes mirror `collection`, with one rune-specific addition (`value`):
 
 - **The "count rune"** — Capability 1 *is* the count rune. Withdraw the separate proposal.
 - **Per-group iteration held in {% ref "SPEC-072" /%}** — held under `collection` because per-group iteration there has to splice an *item list* inside the group's chrome (a two-level deferred transform plus a slot-substitution primitive). Aggregate sidesteps that entirely: each group renders one template bound to a group projection, no items-list slot. The loop machinery collapses to "reparse body source per group, bind `$item`, splice" — the exact mechanism `collection`'s per-item template already uses, just at group granularity.
-- **Feeding counts to `progress`** without a deferred-function mechanism ({% ref "SPEC-075" /%}) — inside the aggregate body, `$item.value` / `$item.max` / `$item.count` are real numbers at post-process time, so `progress`'s `value` / `max` attributes can read them as plain Markdoc variables. The deferred-function path is no longer required for plan-progress.
+- **Feeding counts to `progress`** without a deferred-function mechanism ({% ref "SPEC-075" /%}) — inside the aggregate body, `$item.value` / `$item.count` / `$item.total` are real numbers at post-process time, so `progress`'s `value` / `max` attributes can read them as plain Markdoc variables. The deferred-function path is no longer required for plan-progress.
 - **plan-progress's decomposition** — becomes thin sugar emitting the same aggregate composition (preamble = progress bar; template = badge per status; fallback = empty line), with plan-specific defaults baked in (type set, status enum, sentiment mapping). Same pattern as decision-log / plan-activity wrapping `collection`.
 
 ## Future extensions
@@ -96,8 +105,8 @@ Not in scope for v1, but reserved by the rune's shape:
 
 - [ ] `{% aggregate type=… filter=… /%}` (no body) emits a single integer — the count of entities matching the query — usable inline.
 - [ ] With a body, the source splits on top-level `hr` into **preamble / template / fallback** zones; semantics match `collection` (preamble once when non-empty; template per group; fallback when empty).
-- [ ] In the preamble, `$item` is bound to the totals projection (`count`, `value`, `max`, `percent`, `total`); without a `value` attribute, `$item.value` falls back to `$item.count` and `$item.percent` is `100`.
-- [ ] In the template, `$item` is bound to the group projection (`key`, `count`, `value`, `max`, `percent`, `total`, `shown`); the template is reparsed per group. `$item.total` is the all-groups total (lets a per-group template render share-of-total ratios without a second query).
+- [ ] In the preamble, `$item` is bound to the in-context projection (`count`, `value`, `percent`, `total`); `count` and `total` are equal in this zone. Without a `value` attribute, `$item.value` falls back to `$item.count` and `$item.percent` is `100`.
+- [ ] In the template, `$item` is bound to the group projection (`key`, `count`, `value`, `percent`, `total`, `shown`); the template is reparsed per group. `$item.count` is this group's count; `$item.total` is the all-groups total (lets a per-group template render share-of-total ratios without a second query).
 - [ ] When a `value` attribute is set, `$item.value` is the count of entities matching both `filter` and `value`; `$item.percent` is `(value / count) × 100`, rounded to an integer in `0–100`.
 - [ ] In the fallback, all numeric fields are `0`.
 - [ ] `group` is optional — omit to render the body once with the totals projection.
