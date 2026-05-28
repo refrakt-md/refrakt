@@ -365,6 +365,20 @@ function performUnconditionalScan(
 			data[key] = value;
 		}
 
+		// Backfill `data.modified` from file mtime when the rune doesn't set
+		// it explicitly. Plan-activity's default template renders this column
+		// and would otherwise show blank for every entity that hasn't been
+		// hand-stamped — the bespoke `plan build` CLI already does the same
+		// (via mtimeMap in commands/render-pipeline.ts), so this brings the
+		// standard refrakt pipeline to parity. Falls back silently if stat
+		// fails (e.g. file vanished mid-scan).
+		if (!data.modified) {
+			try {
+				const mtimeMs = fs.statSync(absPath).mtimeMs;
+				data.modified = new Date(mtimeMs).toISOString().slice(0, 10);
+			} catch { /* ignore */ }
+		}
+
 		// Count acceptance-criteria checkboxes for work + bug items so the
 		// milestone progress rollup (aggregate, see below) sees them. The
 		// page-walk register loop counts via `countCheckboxes(tag)` on the

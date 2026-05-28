@@ -7,7 +7,10 @@ import { createContentModelSchema, createComponentRenderable, readDeferredBody, 
  * over all plan entity types, sorted by recent modification. Lowers to a
  * `collection`-shaped renderable so the shared `resolveCollections` resolver
  * handles selection, sorting, limit, and per-item rendering. The body is an
- * optional override; absent → a compact default card.
+ * optional override; absent → a default heading-template table (Item / Type /
+ * Status / Modified) — an "activity" feed reads as a scannable chronological
+ * list of changes, and the per-row Type column keeps mixed-entity rows
+ * self-explanatory.
  *
  * Legacy attribute preserved (`limit`, default 10) so existing
  * `{% plan-activity %}` content keeps working. Entities without a `modified`
@@ -15,14 +18,14 @@ import { createContentModelSchema, createComponentRenderable, readDeferredBody, 
  * the previous bespoke resolver did) — accepted per ADR-012.
  */
 
-const DEFAULT_PLAN_ACTIVITY_BODY = `{% card href=$item.url %}
----
-{% $item.id %}
-
-#### {% $item.data.title %}
----
-{% $item.data.modified %} · {% $item.type %} · Status: {% $item.data.status %}
-{% /card %}
+const DEFAULT_PLAN_ACTIVITY_BODY = `# Item
+{% link href=$item.url %}**{% $item.id %}** — {% $item.data.title %}{% /link %}
+# Type
+{% humanize($item.type) %}
+# Status
+{% humanize($item.data.status) %}
+# Modified
+{% date($item.data.modified) %}
 `;
 
 export const planActivity = createContentModelSchema({
@@ -43,7 +46,7 @@ export const planActivity = createContentModelSchema({
 			meta('collection-group', ''),
 			meta('collection-limit', String(limit)),
 			meta('collection-fields', ''),
-			meta('collection-layout', 'list'),
+			meta('collection-layout', 'table'),
 			meta('collection-group-display', 'headings'),
 			meta('collection-empty', ''),
 			meta(COLLECTION_SENTINEL, 'true'),
