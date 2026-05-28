@@ -16,7 +16,7 @@
 .rf-badge {
 	vertical-align: baseline;
 	border: none;
-	background: color-mix(in srgb, var(--meta-color, var(--rf-color-muted)) 18%, transparent);
+	background: color-mix(in srgb, var(--meta-color, var(--rf-color-muted)) 10%, transparent);
 	color: var(--meta-color, var(--rf-color-muted));
 	font-size: 0.75rem;
 	font-weight: 500;

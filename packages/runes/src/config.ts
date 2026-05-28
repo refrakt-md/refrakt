@@ -161,6 +161,11 @@ export const coreConfig: ThemeConfig = {
 		 * class="rf-expand" data-rune="expand">`. Engine config provides the
 		 * block name for CSS tree-shaking. */
 		Expand: { block: 'expand' },
+		/* Badge emits a complete `<span class="rf-badge" data-rune="badge">`
+		 * directly from its schema and needs no engine post-processing, but
+		 * still needs an entry in the theme config so `computeUsedCssBlocks`
+		 * includes `badge.css` in CSS tree-shaking when a badge is rendered. */
+		Badge: { block: 'badge' },
 		/* Collection emits a sentinel during transform; the postProcess hook
 		 * (`resolveCollections`) fills it with queried entities. Engine config
 		 * provides the block name for CSS tree-shaking. */
