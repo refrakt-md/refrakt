@@ -7,7 +7,9 @@ import { createContentModelSchema, createComponentRenderable, readDeferredBody, 
  * over plan decisions, sorted newest-first. Lowers to a `collection`-shaped
  * renderable so the shared `resolveCollections` resolver handles selection,
  * sorting, and per-item rendering. The body is an optional override; absent →
- * a default card showing id + title + status + date.
+ * a default heading-template table (Decision / Status / Date) — "log" reads
+ * as a scannable chronological reference, which fits a table better than the
+ * card layout.
  *
  * Legacy attributes preserved (`filter` / `sort`) so existing
  * `{% decision-log %}` content keeps working. The bare `sort="date"` value
@@ -18,14 +20,12 @@ import { createContentModelSchema, createComponentRenderable, readDeferredBody, 
  * `<div>` container) — accepted per ADR-012.
  */
 
-const DEFAULT_DECISION_LOG_BODY = `{% card href=$item.url %}
----
-{% $item.id %}
-
-#### {% $item.data.title %}
----
-Status: {% $item.data.status %} · {% $item.data.date %}
-{% /card %}
+const DEFAULT_DECISION_LOG_BODY = `# Decision
+{% link href=$item.url %}**{% $item.id %}** — {% $item.data.title %}{% /link %}
+# Status
+{% humanize($item.data.status) %}
+# Date
+{% date($item.data.date) %}
 `;
 
 export const decisionLog = createContentModelSchema({
@@ -52,7 +52,7 @@ export const decisionLog = createContentModelSchema({
 			meta('collection-group', ''),
 			meta('collection-limit', ''),
 			meta('collection-fields', ''),
-			meta('collection-layout', 'list'),
+			meta('collection-layout', 'table'),
 			meta('collection-group-display', 'headings'),
 			meta('collection-empty', ''),
 			meta(COLLECTION_SENTINEL, 'true'),
