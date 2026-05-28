@@ -216,6 +216,14 @@
 				"{content}"
 			]
 		},
+		"Aggregate": {
+			"block": "aggregate",
+			"root": ".rf-aggregate",
+			"dataRune": "aggregate",
+			"childOrder": [
+				"{content}"
+			]
+		},
 		"Progress": {
 			"block": "progress",
 			"root": ".rf-progress",

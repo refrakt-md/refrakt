@@ -46,6 +46,7 @@ import { xref } from './tags/xref.js';
 import { expand } from './tags/expand.js';
 import { collection } from './tags/collection.js';
 import { relationships } from './tags/relationships.js';
+import { aggregate } from './tags/aggregate.js';
 import { progress } from './tags/progress.js';
 import { card } from './tags/card.js';
 import { badge } from './tags/badge.js';
@@ -64,7 +65,9 @@ export type { MatchableEntity, FieldMatchClause, ParsedFieldMatch } from './fiel
 export { DEFERRED_BODY_ATTR, captureDeferredBodies, readDeferredBody, transformDeferredTemplate } from './deferred-body.js';
 export { resolveCollections } from './collection-resolve.js';
 export { resolveRelationships } from './relationships-resolve.js';
+export { resolveAggregates } from './aggregate-resolve.js';
 export { RELATIONSHIPS_SENTINEL } from './tags/relationships.js';
+export { AGGREGATE_SENTINEL } from './tags/aggregate.js';
 export {
 	Ordering, buildOrdering, sortEntities, groupEntities, groupBy,
 	entityUrl, entityTitle, fieldValue, titleLink, projectItem, renderItemTemplate,
@@ -583,6 +586,14 @@ export const runes = {
     typeName: 'Relationships',
     category: 'Content',
     snippet: ['{% relationships of="${1:WORK-1}" /%}'],
+  }),
+  aggregate: defineRune({
+    name: 'aggregate',
+    schema: aggregate,
+    description: 'Project numbers — counts (and per-group breakdowns) over the registry — beside collection (items) and relationships (edges). Two modes: a no-body inline integer (`{% aggregate type="work" filter="status:done" /%}`) or a body-zoned form whose preamble / template / fallback zones bind `$item` to a totals / per-group / zeros projection. Use the optional `value` sub-filter (e.g. `value="status:done"`) to drive a progress-bar ratio without a second query.',
+    typeName: 'Aggregate',
+    category: 'Content',
+    snippet: ['{% aggregate type="${1:work}" filter="${2:status:done}" /%}'],
   }),
   progress: defineRune({
     name: 'progress',

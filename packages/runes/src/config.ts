@@ -16,6 +16,7 @@ import { applyOutlineScopeWalkers, harvestHeadingsFromRenderable } from './outli
 import { resolveExpands } from './expand-pipeline.js';
 import { resolveCollections } from './collection-resolve.js';
 import { resolveRelationships } from './relationships-resolve.js';
+import { resolveAggregates } from './aggregate-resolve.js';
 
 // ─── Budget postTransform helpers ───
 
@@ -165,6 +166,11 @@ export const coreConfig: ThemeConfig = {
 		 * provides the block name for CSS tree-shaking. */
 		Collection: { block: 'collection' },
 		Relationships: { block: 'relationships' },
+		/* Aggregate emits a sentinel during transform; the postProcess hook
+		 * (`resolveAggregates`) fills it with either a single integer (no-body
+		 * form) or a body-zoned breakdown. Engine config provides the block
+		 * name for CSS tree-shaking. */
+		Aggregate: { block: 'aggregate' },
 		Progress: {
 			block: 'progress',
 			modifiers: { sentiment: { source: 'meta' } },
@@ -2607,6 +2613,17 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 		// collection: after expand, before xref (so item-template `{% ref %}`s
 		// resolve in the same xref pass).
 		renderable = resolveRelationships(
+			renderable,
+			page.url,
+			coreData.registry,
+			coreData.embedConfig,
+			ctx,
+		);
+
+		// SPEC-076 aggregate resolution — same placement as collection /
+		// relationships: after expand, before xref (so any `{% ref %}` inside
+		// the body template resolves in the same xref pass).
+		renderable = resolveAggregates(
 			renderable,
 			page.url,
 			coreData.registry,
