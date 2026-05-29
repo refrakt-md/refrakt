@@ -50,6 +50,8 @@ import { aggregate } from './tags/aggregate.js';
 import { fileRef } from './tags/file-ref.js';
 // Register the file-ref hoist builder at module load (side-effect import).
 import './file-ref-resolve.js';
+// Register the xref hoist builder at module load (side-effect import).
+import './xref-preview-resolve.js';
 import { progress } from './tags/progress.js';
 import { card } from './tags/card.js';
 import { badge } from './tags/badge.js';
@@ -71,6 +73,7 @@ export { resolveRelationships } from './relationships-resolve.js';
 export { resolveAggregates } from './aggregate-resolve.js';
 export { resolveFileRefs } from './file-ref-resolve.js';
 export { FILE_REF_SENTINEL } from './tags/file-ref.js';
+export { resolveXrefPreviews } from './xref-preview-resolve.js';
 export { RELATIONSHIPS_SENTINEL } from './tags/relationships.js';
 export { AGGREGATE_SENTINEL } from './tags/aggregate.js';
 export {

@@ -13,6 +13,7 @@ import type { CompiledXrefPattern } from './xref-patterns.js';
 import { preprocessSnippets, wrapStandaloneSnippets } from './snippet-pipeline.js';
 import { registerDrawers, resolveAutoDrawerTitleLevels, hoistPreviewDrawers } from './drawer-pipeline.js';
 import { resolveFileRefs } from './file-ref-resolve.js';
+import { resolveXrefPreviews } from './xref-preview-resolve.js';
 import { applyOutlineScopeWalkers, harvestHeadingsFromRenderable } from './outline-scope.js';
 import { resolveExpands } from './expand-pipeline.js';
 import { resolveCollections } from './collection-resolve.js';
@@ -2621,6 +2622,17 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			page.url,
 			coreData.repoUrl,
 			coreData.repoBranch,
+			ctx,
+		);
+
+		// SPEC-078 — rewrite xref placeholders carrying `data-xref-preview=
+		// "drawer"` into an inline `<a href="#drawer-{id}">` + hoist
+		// sentinel. Non-preview xref placeholders pass through to
+		// resolveXrefs later in the chain.
+		renderable = resolveXrefPreviews(
+			renderable,
+			page.url,
+			coreData.registry,
 			ctx,
 		);
 
