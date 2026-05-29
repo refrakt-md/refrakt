@@ -1,4 +1,4 @@
-{% spec id="SPEC-078" status="draft" tags="file-ref, xref, drawer, snippet, expand, preview, docs, runes" %}
+{% spec id="SPEC-078" status="accepted" tags="file-ref, xref, drawer, snippet, expand, preview, docs, runes" %}
 
 # `file-ref` rune + shared `preview` attribute on reference runes
 
