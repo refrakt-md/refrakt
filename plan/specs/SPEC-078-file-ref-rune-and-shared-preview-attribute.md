@@ -6,10 +6,10 @@ A path-based reference rune (`file-ref`) that points at a project file from
 prose with an auto-resolved GitHub URL, plus a shared `preview="…"`
 attribute on both `file-ref` and the existing `xref` rune that hoists a
 drawer (or future popover / details / sidenote) containing the referenced
-content. Bundles a small drawer styling refinement so a single-code-block
-drawer body fills edge-to-edge instead of sitting inside the default
-padded chrome — the common case for "preview a file or entity behind a
-link."
+content — the common case for "preview a file or entity behind a link."
+Adds a `footer` slot to the drawer rune for the canonical "View source on
+GitHub →" / "View full page" link, plus an always-visible flex-column
+chrome so the footer stays one tap away regardless of body scroll depth.
 
 ## Problem
 
@@ -50,9 +50,9 @@ Two specific gaps surface from this:
 - A **single preview vocabulary** across both reference runes — same
   attribute name, same target enum, same hoist mechanism. Authors learn one
   concept whether they're pointing at an entity id or a file path.
-- A **drawer styling refinement** for the common case where the drawer body
-  is a single code block: drop the body padding and the code block's own
-  rounded corners so it fills the drawer edge-to-edge.
+- A **drawer footer slot + always-visible flex-column chrome** so the
+  hoist's GitHub / page link stays one tap away regardless of body
+  scroll depth.
 
 ## Non-goals
 
@@ -225,44 +225,23 @@ flow* — block-level, one-time substitution. `xref preview="drawer"` is
 *keep the inline link, reveal on demand* — paragraph-safe, deduplicated
 across mentions. Different intents; the runes stay separate.
 
-## Capability 3 — single-block drawer styling
+## Capability 3 — single-block drawer styling (deferred)
 
 When a drawer body contains only a single code block (the canonical layout
 for `preview="drawer"`), the drawer's body padding and the code block's
 rounded corners look redundant — they make the code feel "boxed inside a
-box." Lumina applies an edge-to-edge treatment when the body has exactly
-one code-block child:
+box." A drawer-side `:has(> single-code-block:only-child)` selector that
+zeros padding looks attractive but **couples the drawer to specific rune
+class names** — every fillable rune (snippet, codegroup, chart, sandbox,
+plus future third-party runes) would need a hard-coded entry. Each rune
+also has different fill semantics (snippets scroll, charts fit,
+codegroups pin tabs, sandboxes own their iframe scroll), so a
+one-size-fits-all CSS shape on the drawer can't handle them.
 
-```css
-/* Pseudo-shape — exact selector follows from the snippet rune's wrapper
- * (figure.rf-snippet) plus bare-pre fallback. */
-.rf-drawer__body:has(> figure.rf-snippet:only-child),
-.rf-drawer__body:has(> pre:only-child) {
-  padding: 0;
-}
-.rf-drawer__body:has(> figure.rf-snippet:only-child) > figure.rf-snippet,
-.rf-drawer__body:has(> pre:only-child) > pre {
-  border-radius: 0;
-  border: 0;
-  margin: 0;
-}
-```
-
-The drawer's own rounded corners then shape the code block; the result
-reads as one unified surface. A figcaption inside the snippet figure (the
-"source label") keeps its own small padding so it doesn't kiss the drawer
-edge.
-
-Critical interaction: the `:only-child` test holds because the chrome
-footer (Capability 2) sits *outside* `__body`, not inside it. If the
-GitHub link sat in the body the body would have two children (snippet +
-footer link) and the selector would fail. Keeping chrome separate from
-body content is what makes both capabilities co-exist cleanly.
-
-Scope to `drawer` for v1. The same `:has()` pattern generalises to
-`{% details %}` and `{% card %}` later if usage warrants — or as a shared
-`[data-fill]` utility set by the engine when an only-child block is
-detected.
+**Deferred to a follow-up SPEC**: the `data-fill` opt-in contract sketched
+under Future extensions below. WORK-298 ships the chrome (footer slot +
+flex-column body scroll); the edge-to-edge story lands when the
+cross-rune design is ready.
 
 ## Implementation note
 
@@ -312,6 +291,25 @@ files error at build time. Same security boundary, same error messages.
 
 Not in scope for v1, but reserved by the rune's shape:
 
+- **`data-fill` opt-in contract for single-block edge-to-edge** — the
+  follow-up to the deferred Capability 3. The shape: a fillable rune
+  (snippet, codegroup, chart, sandbox, plus third-party) declares
+  `data-fill` on its root attributes. The rune's CSS targets
+  `.rf-myrune[data-fill]:only-child` to author its own fill behaviour
+  (own scroll container, internal chrome adjustments). Hosts that
+  participate (drawer body, future `card` media zone, future `details`
+  body) use a single generic selector `:has(> [data-fill]:only-child)`
+  to zero their own padding — no per-rune awareness on the host side,
+  so third-party runes participate without touching host code. Context
+  modifiers stay available as a refinement for runes that want
+  host-specific tweaks (`.rf-codegroup--in-drawer[data-fill]:only-child`
+  for drawer-only behaviour). Symmetric contract: rune says *"I can
+  fill if asked"*; host says *"I want fillable content to fill."* The
+  combination triggers; either side alone is a no-op. Held out of v1
+  because each fillable rune needs its own scroll-container CSS, and
+  that's a cross-rune design exercise (snippets scroll, charts fit,
+  codegroups pin tabs, sandboxes own their iframe scroll) that
+  deserves its own scoped SPEC.
 - **`symbol="…"`** on `file-ref` — auto-derive line range by parsing the
   file for the named export / interface / function. Per-language; needs a
   separate strategy (tree-sitter, language plugins, or a generic
@@ -374,10 +372,6 @@ Not in scope for v1, but reserved by the rune's shape:
 - [ ] `repoUrl` and `repoBranch` (default `"main"`) are accepted at the
   site level of `refrakt.config.json` (typed in `SiteConfig` and present
   in the JSON Schema).
-- [ ] Lumina drawer CSS applies edge-to-edge styling when the body
-  contains exactly one code-block child (snippet figure or bare pre).
-  Padding zeroed, inner border-radius / border removed so the drawer's
-  own corners shape the code.
 - [ ] Inline use in prose does not break the surrounding paragraph.
 - [ ] Authors can override the inferred `label`; default is the filename
   for `file-ref` and the entity title for `xref` (unchanged today).
