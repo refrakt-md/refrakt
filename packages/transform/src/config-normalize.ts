@@ -85,6 +85,8 @@ const SITE_FIELDS = [
 	'siteName',
 	'defaultImage',
 	'logo',
+	'repoUrl',
+	'repoBranch',
 	'runes',
 ] as const satisfies readonly (keyof SiteConfig)[];
 

@@ -116,6 +116,17 @@ export interface SiteConfig {
 	defaultImage?: string;
 	/** Site logo for Organization JSON-LD schema */
 	logo?: string;
+	/** Canonical GitHub (or compatible) repository URL — e.g.
+	 *  `"https://github.com/owner/repo"`. Used by file-ref (SPEC-078) to
+	 *  build deep-link "View source" URLs of the form
+	 *  `{repoUrl}/blob/{repoBranch}/{path}#L{start}-L{end}`. When absent,
+	 *  `file-ref` falls back to a no-href link / in-page anchor with a
+	 *  build warning. */
+	repoUrl?: string;
+	/** Git ref appended to GitHub source URLs (branch / tag / commit SHA).
+	 *  Defaults to `"main"` when omitted. Use a commit SHA for archival
+	 *  URLs that won't drift when the file is edited later. */
+	repoBranch?: string;
 	/** Rune resolution configuration */
 	runes?: {
 		prefer?: Record<string, string>;
@@ -211,6 +222,10 @@ export interface RefraktConfig {
 	defaultImage?: string;
 	/** @deprecated Shorthand for `sites.default.logo` */
 	logo?: string;
+	/** @deprecated Shorthand for `sites.default.repoUrl` */
+	repoUrl?: string;
+	/** @deprecated Shorthand for `sites.default.repoBranch` */
+	repoBranch?: string;
 	/** @deprecated Shorthand for `sites.default.runes` */
 	runes?: {
 		prefer?: Record<string, string>;

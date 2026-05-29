@@ -99,6 +99,8 @@ A `SiteConfig` accepts these fields. Required fields are bold.
 | `siteName` | `string` | Human-readable site name for `og:site_name` and Organization JSON-LD. |
 | `logo` | `string` | Site logo path used in Organization JSON-LD (e.g., `/favicon-192.png`). |
 | `defaultImage` | `string` | Default og:image for pages without their own (recommended 1200x630). |
+| `repoUrl` | `string` | Canonical GitHub (or compatible) repository URL — e.g. `"https://github.com/owner/repo"`. Used by the [`file-ref`](/runes/file-ref) rune to build deep-link `View source on GitHub →` URLs of the form `{repoUrl}/blob/{repoBranch}/{path}#L{start}-L{end}`. When absent, `file-ref` falls back to a no-href link / in-page anchor with a build warning. |
+| `repoBranch` | `string` | Git ref appended to GitHub source URLs — accepts any branch name, tag, or commit SHA. Defaults to `"main"` when omitted. Use a commit SHA for archival URLs that won't drift when the file is edited later. |
 
 ### Content rendering
 
