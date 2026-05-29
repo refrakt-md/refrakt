@@ -20,7 +20,7 @@
  */
 
 import Markdoc from '@markdoc/markdoc';
-import type { RenderableTreeNode } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
@@ -31,6 +31,21 @@ export const DRAWER_TITLE_AUTO_MARKER = 'data-drawer-title-auto';
 
 const drawerSides = ['right', 'left', 'top', 'bottom'] as const;
 const drawerSizes = ['sm', 'md', 'lg'] as const;
+
+/** Split a drawer body's node list on the **first** top-level `hr` into body
+ *  + footer zones. 1 zone → `{ body: nodes, footer: null }`; 2+ zones →
+ *  `{ body: before-hr, footer: after-hr }` where any subsequent hrs in the
+ *  footer render as ordinary horizontal rules within the footer. Matches the
+ *  body-zone convention `{% card %}` uses (positional, count-driven), scaled
+ *  down to the two-zone case the drawer needs. */
+function splitDrawerBodyZones(nodes: Node[]): { body: Node[]; footer: Node[] | null } {
+	const hrIndex = nodes.findIndex(n => n.type === 'hr');
+	if (hrIndex < 0) return { body: nodes, footer: null };
+	return {
+		body: nodes.slice(0, hrIndex),
+		footer: nodes.slice(hrIndex + 1),
+	};
+}
 
 export const drawer = createContentModelSchema({
 	attributes: {
@@ -104,9 +119,20 @@ export const drawer = createContentModelSchema({
 		headerChildren.push(closeButton);
 		const header = new Tag('header', {}, headerChildren);
 
+		// Split the body on the first top-level `hr` into body + footer zones
+		// (SPEC-078). 1 zone → all body; 2+ zones → body + footer. The footer
+		// zone shows up as `<footer data-name="footer" class="rf-drawer__footer">`
+		// alongside the body so the hoist mechanism for `preview="drawer"` and
+		// author-written standalone drawers populate the same slot.
+		const zones = splitDrawerBodyZones(asNodes(resolved.body));
 		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+			Markdoc.transform(zones.body, config) as RenderableTreeNode[],
 		).wrap('div');
+		const footer = zones.footer !== null
+			? new RenderableNodeCursor(
+				Markdoc.transform(zones.footer, config) as RenderableTreeNode[],
+			).wrap('footer')
+			: null;
 
 		// Property meta tags drive engine modifier-from-meta + data-attribute
 		// derivation. We always emit `side` and `size` so the engine applies
@@ -132,8 +158,14 @@ export const drawer = createContentModelSchema({
 				...(titleTag ? { title: titleTag } : {}),
 				close: closeButton,
 				body: body.tag('div'),
+				...(footer ? { footer: footer.tag('footer') } : {}),
 			},
-			children: [...Object.values(properties), header, body.next()],
+			children: [
+				...Object.values(properties),
+				header,
+				body.next(),
+				...(footer ? [footer.next()] : []),
+			],
 		});
 
 		// `data-drawer-id` carries the author-supplied id (before the

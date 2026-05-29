@@ -390,8 +390,8 @@ export const coreConfig: ThemeConfig = {
 				size: { source: 'meta', default: 'md' },
 				shortcut: { source: 'meta', noBemClass: true },
 			},
-			sections: { header: 'header', body: 'body' },
-			editHints: { title: 'inline', body: 'none', close: 'none' },
+			sections: { header: 'header', body: 'body', footer: 'footer' },
+			editHints: { title: 'inline', body: 'none', close: 'none', footer: 'none' },
 		},
 		Figure: {
 			block: 'figure',

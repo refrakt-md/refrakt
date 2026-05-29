@@ -200,6 +200,14 @@
 				"{content}"
 			]
 		},
+		"Badge": {
+			"block": "badge",
+			"root": ".rf-badge",
+			"dataRune": "badge",
+			"childOrder": [
+				"{content}"
+			]
+		},
 		"Collection": {
 			"block": "collection",
 			"root": ".rf-collection",
