@@ -7,9 +7,9 @@ description: refrakt.md plan dashboard — progress, recent activity, ready work
 
 A live dashboard built from the same `plan/` tree the project commits to git. Every entity below resolves through the standard refrakt pipeline — `entityRoutes` generates a detail page per spec/work/bug/decision/milestone, and `collection` lists them here.
 
+{% card %}
 ## Progress
 
-{% card %}
 ### Work
 
 {% aggregate type="work" value="status:done" group="status" %}
@@ -19,9 +19,7 @@ A live dashboard built from the same `plan/` tree the project commits to git. Ev
 ---
 No work items yet.
 {% /aggregate %}
-{% /card %}
 
-{% card %}
 ### Bugs
 
 {% aggregate type="bug" value="status:fixed" group="status" %}
@@ -31,9 +29,7 @@ No work items yet.
 ---
 No bugs reported.
 {% /aggregate %}
-{% /card %}
 
-{% card %}
 ### Specs
 
 {% aggregate type="spec" value="status:accepted" group="status" %}
@@ -43,9 +39,7 @@ No bugs reported.
 ---
 No specs yet.
 {% /aggregate %}
-{% /card %}
 
-{% card %}
 ### Decisions
 
 {% aggregate type="decision" value="status:accepted" group="status" %}
@@ -55,9 +49,7 @@ No specs yet.
 ---
 No decisions yet.
 {% /aggregate %}
-{% /card %}
 
-{% card %}
 ### Milestones
 
 {% aggregate type="milestone" value="status:complete" group="status" %}
@@ -78,6 +70,8 @@ No milestones yet.
 {% collection type="work" filter="status:ready" sort="priority" group="priority" layout="grid" %}
 {% partial file="work-card.md" variables={item: $item} /%}
 {% /collection %}
+
+---
 
 ## Recent decisions
 
