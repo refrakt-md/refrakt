@@ -1,4 +1,4 @@
-{% spec id="SPEC-078" status="draft" tags="file-ref, xref, drawer, snippet, expand, preview, docs, runes" %}
+{% spec id="SPEC-078" status="accepted" tags="file-ref, xref, drawer, snippet, expand, preview, docs, runes" %}
 
 # `file-ref` rune + shared `preview` attribute on reference runes
 
@@ -89,10 +89,24 @@ https://github.com/refrakt-md/refrakt/blob/main/packages/types/src/token-contrac
 | `preview` | enum | One of `drawer` (v1). Reserved values: `popover`, `details`, `sidenote`. Absent → no preview, just the inline link. |
 
 GitHub URL resolution requires a site-config `repoUrl` (string, e.g.
-`"https://github.com/refrakt-md/refrakt"`) and an optional `repoBranch`
-(default `"main"`). When `repoUrl` is absent the link renders without an
-`href` (or as an in-page anchor when `preview` is set) and a build warning
-notes the missing config.
+`"https://github.com/refrakt-md/refrakt"`) and an optional `repoBranch`.
+`repoBranch` accepts any git ref — a branch name (default `"main"`), a
+tag, or a commit SHA. Use a SHA for archival URLs that won't drift when
+the file is edited later.
+
+**When `repoUrl` is absent.** `file-ref` still works without it. With no
+`preview`, the inline link has no `href` (or, when a snippet of the same
+path already exists on the page, falls back to that in-page anchor) and
+a one-time build warning fires. With `preview="drawer"`, the drawer body
+embeds fine, the GitHub footer link silently hides, and the same warning
+fires.
+
+**Label default.** The filename default (`token-contract.ts`) is
+intentionally conservative — when the author is referring to a *symbol*
+that lives in the file (the usual case), they'll want to pass an explicit
+`label`. The forthcoming `symbol="…"` extension will default `label` to
+the symbol name automatically; until then, `label` is the official knob
+the docs should call out loudly.
 
 ## Capability 2 — shared `preview="…"` attribute
 
@@ -126,12 +140,83 @@ referenced interface doesn't multiply drawers.
 - **`xref preview="drawer"`** — drawer body is the `expand`-equivalent of
   the referenced entity (same resolver path `{% expand "id" /%}` uses).
   Chrome footer: a link to the entity's `sourceUrl` (or the registry's
-  resolved page URL) so readers can navigate to the full page.
+  resolved page URL) so readers can navigate to the full page. For
+  entities with no `sourceUrl` (heading entities, drawer-target
+  entities), the footer link hides — drawer body still renders, footer
+  zone stays empty.
 
 The chrome footer is a new drawer slot — `sections: { header, body,
 footer }` in the engine config — rendered outside the body so per-rune
 body styling stays clean. It carries its own small padding so the link
 doesn't kiss the drawer edge.
+
+### Drawer chrome behavior — always-visible footer
+
+The drawer becomes a flex column so the **header (when present) and
+footer pin while the body scrolls**. For long entity bodies or long file
+snippets, `View source on GitHub →` and the page-link stay one tap away
+regardless of scroll position. The CSS shape:
+
+```css
+.rf-drawer { display: flex; flex-direction: column; max-height: 100vh; }
+.rf-drawer__header,
+.rf-drawer__footer { flex: 0 0 auto; }
+.rf-drawer__body   { flex: 1 1 auto; overflow-y: auto; }
+```
+
+### Standalone drawers — opt-in footer via body zones
+
+The new `footer` slot serves both: `preview="drawer"` hoist injects
+content into it automatically, and **standalone authors fill it via the
+body-zone convention** — split the drawer body on top-level `---` into
+body + footer, the same shape `{% card %}` already uses:
+
+```markdoc
+{% drawer id="auth" title="Auth system" %}
+The auth system uses JWTs with refresh tokens.
+
+---
+
+[View on GitHub →](https://github.com/example/auth)
+{% /drawer %}
+```
+
+No auto-derivation from embedded `{% expand %}` runes for the standalone
+case — even for a single-expand drawer it's ambiguous (the author may
+not *want* the canonical URL there, the expand may be decorative inside
+richer chrome), and multi-expand is truly ambiguous (which entity's URL
+wins?). Author opt-in keeps semantics predictable.
+
+The footer zone is just markdoc rendered in a chrome region — any inline
+content goes there, not only hardcoded URLs. The canonical case is an
+`{% ref %}` pointing at the same entity that was just expanded:
+
+```markdoc
+{% drawer id="aggregate" title="Aggregate rune" %}
+{% expand "SPEC-076" /%}
+
+---
+
+See {% ref "SPEC-076" /%}
+{% /drawer %}
+```
+
+The xref resolves the URL from the registry, so the link stays correct
+as the entity moves and the author doesn't memorise URLs. The
+xref-patterns mechanism ({% ref "SPEC-065" /%}) works too — external
+issue refs or custom URL templates populate the footer the same way.
+Plain markdown links, `{% file-ref %}` (without preview), inline
+`{% humanize(…) %}` calls, anything that resolves to inline content
+works. The hoist mechanism is just one specific path to populate the
+footer slot; manual composition is the general case.
+
+**Nested previews in the footer.** A `{% ref "X" preview="drawer" /%}`
+inside a drawer footer would hoist another drawer for entity X —
+drawer-from-within-a-drawer. The mechanism doesn't prevent it and
+`<dialog>` stacking handles it on modern browsers, but it's a slightly
+awkward shape. Supported but discouraged; the build emits an info-level
+note if it's detected. (The alternative — blocking it — would require
+rune-aware validation that isn't worth the complexity for an edge use.)
 
 ### Why this and not "extend `expand`"
 
@@ -189,12 +274,39 @@ transform emits two parts:
 2. **Sentinel** — a meta tag carrying the drawer registration (`id`,
    `source`, `path` or `entity-id`, etc.). The page-level `registerDrawers`
    pass collects these from anywhere in the tree, dedups by `id`, and
-   emits the actual `<dialog>` markup at the page's drawer area.
+   emits the actual `<dialog>` markup at the page's drawer area (same
+   area as the existing drawer rune from {% ref "SPEC-060" /%}).
 
-The `id` for hoisted drawers is derived deterministically from the
-reference — for `file-ref`, a slug of the path + lines (`packages-types-src-token-contract-ts-L42-L58`);
-for `xref`, the entity id (`SPEC-076`). This is what enables per-page
-dedup: same reference = same id = one drawer.
+**Slug derivation.** The `id` for hoisted drawers is derived
+deterministically from the reference. For `file-ref`, the slug encodes
+both path and lines (`/` → `-`, range appended as `L{start}-L{end}` —
+e.g. `packages-types-src-token-contract-ts-L42-L58`), so different paths
+*or* different ranges of the same path get distinct drawer ids. For
+`xref`, the slug is the entity id (`SPEC-076`). Same reference = same
+id = one drawer; this is what enables per-page dedup.
+
+**Collision with author-declared drawers.** If an author writes
+`{% drawer id="…" %}…{% /drawer %}` block-level with the same id a
+preview hoist would generate, the **author-declared drawer wins** — the
+hoist defers, the inline preview link points at the existing drawer.
+This lets authors customise the drawer body or footer for a specific
+reference while keeping the inline-link ergonomics. The build emits an
+info-level note so the customisation is visible in CI output.
+
+**Accessibility and no-JS behaviour.** Inline preview links inherit the
+trigger machinery from {% ref "SPEC-060" /%}. With JS, the link opens
+the hoisted drawer via `dialog.showModal()`. Without JS,
+`href="#drawer-{id}"` is a real in-page anchor that scrolls to the
+drawer rendered as a visible block fallback (the existing drawer rune's
+SSR fallback). The inline link carries `aria-controls="drawer-{id}"`,
+and `aria-expanded` mirrors the dialog's open state — screen readers
+announce the trigger ↔ disclosure relationship without any new a11y
+plumbing.
+
+**Path sandbox.** `file-ref`'s path resolution reuses `snippet`'s
+`read-file.ts` sandbox: absolute paths rejected, traversal escapes
+(`..`) rejected, symlinks escaping the project root rejected, missing
+files error at build time. Same security boundary, same error messages.
 
 ## Future extensions
 
@@ -236,6 +348,27 @@ Not in scope for v1, but reserved by the rune's shape:
 - [ ] The drawer rune gains a `footer` section alongside the existing
   `header` / `body` (engine config + Lumina styling), rendered outside
   `__body` so per-rune body styling stays clean.
+- [ ] Drawer renders as a flex column — header and footer pinned via
+  `flex: 0 0 auto`, body scrolls via `flex: 1 1 auto; overflow-y: auto`.
+- [ ] Standalone drawers can populate the footer via the body-zone
+  convention (split on top-level `---` into body + footer), the same
+  shape `{% card %}` uses. No auto-derivation from embedded `expand`
+  runes; opt-in only.
+- [ ] When `repoUrl` is absent: `file-ref` without preview emits a
+  no-href link (or in-page anchor when a snippet of the same path
+  exists), with a one-time build warning. `file-ref preview="drawer"`
+  still renders the drawer body, footer GitHub link hides, same
+  warning fires.
+- [ ] `xref preview="drawer"` for entities without `sourceUrl` renders
+  the drawer body normally; the footer link hides.
+- [ ] `repoBranch` accepts any git ref (branch name, tag, or commit SHA).
+- [ ] When an author-declared `{% drawer id="…" %}` collides with a
+  hoist-generated id, the author drawer wins and the hoist defers to it.
+- [ ] `file-ref` path resolution reuses `snippet`'s read-file sandbox
+  (absolute paths / `..` escapes / out-of-root symlinks rejected;
+  missing files error at build).
+- [ ] Inline preview link carries `aria-controls` and reflects
+  `aria-expanded` on the hoisted dialog's open state.
 - [ ] Per-page dedup: N mentions of the same `preview` target collapse to
   one hoisted drawer.
 - [ ] `repoUrl` and `repoBranch` (default `"main"`) are accepted at the
