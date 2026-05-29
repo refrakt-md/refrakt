@@ -1,0 +1,166 @@
+/* Collection — list / grid / table / cards of registry entities (SPEC-070).
+ *
+ * The block is layout-agnostic; the `data-layout` attribute on the wrapper
+ * selects the arrangement. Built-in items carry `.rf-collection__card` /
+ * `__item`; a body template emits its own markup inside `.rf-collection__item`.
+ */
+
+.rf-collection {
+	margin: var(--rf-spacing-md) 0;
+}
+
+/* Preamble — rendered above items only when the query is non-empty, so a
+ * heading/intro can live inside the rune and vanish with an empty section. */
+.rf-collection__preamble > :first-child { margin-top: 0; }
+
+/* Empty state — shown in place of items when the query yields nothing. */
+.rf-collection__empty {
+	color: var(--rf-color-muted);
+	font-size: 0.9375em;
+}
+
+.rf-collection__items {
+	display: flex;
+	flex-direction: column;
+	gap: var(--rf-spacing-sm);
+}
+
+/* grid arranges items into responsive columns; list stays a stacked flow.
+ * Item chrome (a card box, bare row, …) comes from the item, not the layout. */
+.rf-collection[data-layout='grid'] .rf-collection__items {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+	gap: var(--rf-spacing-md);
+	align-items: stretch;
+}
+
+/* Uniform heights per row: grid stretches each item to the tallest in its row;
+ * a body-template item then lets its card fill that stretched height. */
+.rf-collection[data-layout='grid'] .rf-collection__item {
+	display: flex;
+}
+.rf-collection[data-layout='grid'] .rf-collection__item > * {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Grouped grid: the grid belongs to each group (its items are the cells), not
+ * to __items — whose children are the group blocks (heading groups) or the
+ * accordion wrapper. Left on __items, each group becomes a single cell, i.e. a
+ * column per group. So when __items holds groups it stacks them, and each
+ * group becomes the grid instead, with the group title spanning every column. */
+.rf-collection[data-layout='grid'] .rf-collection__items:has(.rf-collection__group),
+.rf-collection[data-layout='grid'] .rf-collection__items:has(.rf-accordion) {
+	display: flex;
+	flex-direction: column;
+	gap: var(--rf-spacing-md);
+}
+.rf-collection[data-layout='grid'] .rf-collection__group {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+	gap: var(--rf-spacing-md);
+	align-items: stretch;
+}
+.rf-collection[data-layout='grid'] .rf-collection__group-title {
+	grid-column: 1 / -1;
+}
+
+.rf-collection__item {
+	min-width: 0;
+}
+
+.rf-collection__card {
+	display: flex;
+	flex-direction: column;
+	gap: var(--rf-spacing-xs);
+	padding: var(--rf-spacing-md);
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-md);
+	background: var(--rf-color-surface);
+}
+
+.rf-collection__card:hover {
+	background: var(--rf-color-surface-hover);
+}
+
+.rf-collection__title {
+	font-weight: 600;
+	color: var(--rf-color-text);
+	text-decoration: none;
+}
+
+.rf-collection__title:hover {
+	color: var(--rf-color-primary);
+}
+
+.rf-collection__field {
+	font-size: 0.875em;
+	color: var(--rf-color-muted);
+}
+
+/* grouping */
+.rf-collection__group {
+	margin-top: var(--rf-spacing-md);
+	display: flex;
+	flex-direction: column;
+	/* Tight default for short item rows (the built-in title link, no body). */
+	gap: var(--rf-spacing-xs);
+}
+/* Modestly roomier when items carry a body template (block content — a card,
+ * callout, list, …), so they don't collide. Body-template items are marked
+ * `data-block` by the resolver; the built-in inline title rows are not.
+ * Mirrors the rf-relationships rule. */
+.rf-collection__group:has(.rf-collection__item[data-block]) {
+	gap: var(--rf-spacing-sm);
+}
+
+/* Block-content item — let the body template (card / callout / etc.) fill the
+ * container instead of shrink-fitting. No-op in grid mode (items there are
+ * already `display: flex` with `flex: 1` on the child). Trim the outer margins
+ * of the template's first/last block so the group `gap` controls inter-item
+ * spacing — works for any block content, not a wrapper element. */
+.rf-collection__item[data-block] {
+	display: block;
+}
+.rf-collection__item[data-block] > :first-child {
+	margin-top: 0;
+}
+.rf-collection__item[data-block] > :last-child {
+	margin-bottom: 0;
+}
+
+.rf-collection__group-title {
+	margin: 0 0 var(--rf-spacing-sm);
+	font-size: 0.875em;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--rf-color-muted);
+}
+
+/* table layout */
+.rf-collection__table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.rf-collection__table th,
+.rf-collection__table td {
+	padding: var(--rf-spacing-sm);
+	text-align: left;
+	border-bottom: 1px solid var(--rf-color-border);
+}
+
+.rf-collection__table th {
+	font-size: 0.875em;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--rf-color-muted);
+}
+
+/* Heading-template cells (`layout="table"` body) wrap their content as
+ * markdown paragraphs, which pick up the global `p { margin-bottom: 1rem }`
+ * and leave dead space inside each row. Drop it inside the table — table
+ * cells don't want paragraph spacing. */
+.rf-collection__table td p {
+	margin: 0;
+}

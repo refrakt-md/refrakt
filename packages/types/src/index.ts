@@ -30,6 +30,7 @@ export type {
   ThemeManifest,
   LayoutDefinition,
   RouteRule,
+  EntityRoute,
   ComponentDefinition,
 } from './theme.js';
 export { getThemePackage } from './theme.js';
@@ -83,6 +84,8 @@ export type {
 	PipelineHeadingInfo,
 	EntityRegistration,
 	EntityRegistry,
+	EntityEdge,
+	ResolvedEdge,
 	AggregatedData,
 	PipelineContext,
 	PipelineWarning,
@@ -90,6 +93,8 @@ export type {
 	PluginConfigureOptions,
 	PreprocessContext,
 	PreprocessPage,
+	ContributePagesContext,
+	ContributedPage,
 } from './pipeline.js';
 
 // CLI plugin contract

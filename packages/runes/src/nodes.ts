@@ -26,7 +26,12 @@ export const heading: Schema = {
       attributes.id = children
         .filter((child: any) => typeof child === 'string')
         .join(' ')
-        .replace(/[?]/g, '')
+        // Strip URL-unsafe punctuation that breaks fragment links. `%` in
+        // particular trips `decodeURI` (SvelteKit's prerender crawler) when
+        // it isn't followed by a valid hex pair — e.g. a heading whose text
+        // contains a literal `{% symbol %}` would otherwise produce an id
+        // like `…-{%-symbol-%}-…` and crash the prerender.
+        .replace(/[?{}%]/g, '')
         .replace(/\s+/g, '-')
         .toLowerCase();
     }

@@ -37,6 +37,8 @@ Today the options are: hand-maintain a markdown list that drifts from the data; 
 
 **Card runes are plain presentational runes — `$item` is just a bound variable.** Deliberate cards (`product-card`, `article-card`) that need loops, computed values, interactivity, or schema.org structured data are *runes with ordinary attributes* — they know nothing about `$item`, the registry, or collection. The body template wires entity fields into a card's attributes: `{% product-card title=$item.data.title price=$item.data.price href=$item.url /%}`. So `$item` is a bound *variable* (like `$page` / `$file`), not a card ABI; collection's entire render job is "bind `$item`, transform the template", and a card rune stays a self-contained component usable standalone with hand-authored data (`{% product-card title="Widget" price="$20" /%}`). The verbose field-mapping lives once in an `item-template` partial (see *Display control*), so decoupling doesn't cost verbosity in practice. There is no `item=` attribute and no card contract for the rune to implement.
 
+> **Implementation note (v0.16.0).** `product-card` / `article-card` above are illustrative. What actually ships in core is a *single generic* `card` rune (named by shape, not entity): body splits on `---` into `[media] / body / [footer]`, the media zone holds any content (image, codegroup, …) and reuses the shared split layout, and `href` makes the whole card a link. **Per-entity `*-card` runes are deliberately out of scope** — a designed collection item is `{% card %}` (or a built-in layout) fed by `$item` in the body template, not a `recipe-card`/`character-card`. A domain plugin *may* ship a bespoke card as a rare exception, but core stays at one generic `card`.
+
 **Zero-config baseline always works.** `{% collection type="character" /%}` with no other attributes renders each entity's title as a link to its resolved URL. No knowledge of the entity's fields required. Everything past that (built-in layouts, field projection, body template) is opt-in sophistication.
 
 **Listers are query-engine + item-card; the existing ones become presets.** Once `collection` exists, `{% backlog %}` and `{% blog %}` are revealed as special cases — query + a body template invoking a domain card (`work-card` / `article-card`). They stay as convenience wrappers (back-compat + nice defaults) but the powerful, composable form is `collection` with a template. backlog reduces *almost* fully (its aggregations stay bespoke); blog reduces cleanly once "folder" is expressed as a `url` prefix filter rather than a special axis. The refactor is decoupled from collection's launch (see *Sequencing*).
@@ -69,7 +71,7 @@ Today the options are: hand-maintain a markdown list that drifts from the data; 
 | `group` | string | — | Group into sections by a `data` field. |
 | `limit` | number | — | Cap rendered count, applied post-sort, pre-group (same semantics as backlog's `limit`). |
 | `item-template` | string | — | Path/name of a markdoc partial used as the per-item template (the reusable alternative to an inline body). Mutually exclusive with an inline body. |
-| `layout` | `table` \| `cards` \| `list` \| `grid` | `list` | Built-in presentation for the generic-data path. Ignored when a body template (inline or `item-template`) is present. |
+| `layout` | `list` \| `grid` \| `table` | `list` | *Arrangement* of items (stacked / multi-column / aligned columns). Item *chrome* comes from the item — the no-body built-in, or a rune like `{% card %}` in the body template. (No `cards` layout: a card gallery is `grid` + `{% card %}` items.) |
 | `fields` | string | — | Comma-separated `data` field names to project into the built-in `layout`. Required for `table`; optional enrichment for `cards`/`grid`; ignored by `list` and when a body template is present. |
 
 A per-item **rune** (`product-card` etc.) is not its own attribute — invoke it inside the body template: `{% collection type="product" %}{% product-card /%}{% /collection %}`. See *Display control*.
@@ -155,14 +157,15 @@ postProcess (per entity): Markdoc.parse(stashed) → transform(ast, { …embedCo
 
 | Layout | Renders | Field use |
 |--------|---------|-----------|
-| `list` | compact title (+ optional one-line description), each a link | title only |
-| `cards` | a card per entity, generic chrome | optional projected fields |
-| `grid` | card grid | optional projected fields |
+| `list` | stacked items; no body → compact title link | title only |
+| `grid` | responsive multi-column; no body → a generic auto-card (title + fields) | optional projected fields |
 | `table` | one row per entity; columns from `fields` (shorthand) or heading-delimited column templates | see below |
+
+`layout` is **arrangement only**; *chrome* comes from the item. No body → the built-in (list = title, grid = auto-card from `fields`, table = projection). With a body → the body *is* the item (raw per-entity template, `$item` bound), arranged by `layout`; add `{% card %}` for card chrome. There is **no `cards` layout** — a card gallery is `grid` + `{% card %}` items; this avoids auto-wrapping the body (which would double-wrap an explicit `{% card %}` and re-couple the layout to a specific rune).
 
 These are the *generic* presentations. For deliberate domain cards, use a body template that invokes a card rune (level 3) — the built-in `cards`/`grid` are intentionally plain so they don't masquerade as a designed gallery. An item is never rendered via full `{% expand %}` by default (too heavy for a list, many entities aren't embeddable).
 
-**The body means different things per layout.** For box layouts (`list` / `cards` / `grid`) the body is the *per-item template* (level 3). For `table` the body is a set of *column definitions*. In both, an **empty body falls back to `fields`** — the dumb shorthand. So `fields` is the zero-body shortcut and a body buys control, in either family. (Consequence: a body authored for `cards` isn't portable to `table` by flipping the attribute — the two families interpret it differently. That's inherent to tables aligning columns rather than arranging boxes.)
+**The body means different things per layout.** For box layouts (`list` / `grid`) the body is the *per-item template* (level 3) — raw output arranged by the layout; the author adds `{% card %}` (or any rune) for chrome, and `href`/etc. live on that rune, not on collection. For `table` the body is a set of *column definitions*. In both, an **empty body falls back to `fields`** — the dumb shorthand. So `fields` is the zero-body shortcut and a body buys control, in either family. (Consequence: a body authored for `grid` isn't portable to `table` by flipping the attribute — the two families interpret it differently. That's inherent to tables aligning columns rather than arranging boxes.)
 
 **`fields` — the dumb shorthand.** `fields="name,price,stock"` projects those `data` fields as columns (`table`) or labeled rows (`cards`/`grid`). Headers are the humanized field key (`unit_price` → "Unit Price"); values use default per-type stringification (string/number as-is, ISO date as-is, boolean → Yes/No, array → comma-join, missing → empty). No formatting, no combining — the moment you need either, use heading-delimited columns. (There is deliberately **no `key=Label` micro-syntax** on `fields`: custom labels are a reason to use the heading form, keeping `fields` dead-simple.)
 

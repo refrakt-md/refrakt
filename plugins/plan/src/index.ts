@@ -1,6 +1,4 @@
 import type { Plugin } from '@refrakt-md/types';
-import { tabsBehavior } from '@refrakt-md/behaviors';
-import { entityTabsBehavior } from './entity-tabs-behavior.js';
 import { spec } from './tags/spec.js';
 import { work } from './tags/work.js';
 import { bug } from './tags/bug.js';
@@ -132,10 +130,13 @@ Custom properties cascade naturally without JavaScript.
 	},
 	theme: {
 		runes: config as unknown as Record<string, Record<string, unknown>>,
-	},
-	behaviors: {
-		'milestone-backlog': tabsBehavior,
-		'plan-entity-tabs': entityTabsBehavior,
+		// SPEC-072 — dashboard (actionable-first) status order, which diverges
+		// from each rune's lifecycle `matches`. priority/severity fall out of
+		// `matches` automatically and need no override.
+		orderings: {
+			work: { status: ['blocked', 'in-progress', 'review', 'ready', 'pending', 'draft', 'done'] },
+			bug: { status: ['in-progress', 'confirmed', 'reported', 'fixed', 'wontfix', 'duplicate'] },
+		},
 	},
 	pipeline: planPipelineHooks,
 	// File-root opt-in (SPEC-063) is wired dynamically via the plugin's

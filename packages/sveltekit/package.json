@@ -21,6 +21,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./hooks": {
+      "types": "./dist/theme-hook.d.ts",
+      "default": "./dist/theme-hook.js"
+    },
     "./virtual": {
       "types": "./virtual.d.ts"
     }
@@ -33,9 +37,11 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@refrakt-md/content": "0.15.0",
     "@refrakt-md/types": "0.15.0"
   },
   "peerDependencies": {
+    "@sveltejs/kit": ">=2.0.0",
     "vite": ">=5.0.0"
   }
 }

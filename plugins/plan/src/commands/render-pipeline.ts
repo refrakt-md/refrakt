@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import Markdoc from '@markdoc/markdoc';
-import { tags as coreTags, nodes, extractHeadings, runeTagMap, defineRune, serializeTree, coreConfig, escapeFenceTags, resolveXrefs } from '@refrakt-md/runes';
+import { tags as coreTags, nodes, extractHeadings, runeTagMap, defineRune, serializeTree, coreConfig, escapeFenceTags, resolveXrefs, resolveCollections } from '@refrakt-md/runes';
 import { createTransform, renderToHtml, mergeThemeConfig, planLayout } from '@refrakt-md/transform';
 import type { ThemeConfig, LayoutPageData } from '@refrakt-md/transform';
 import type { RendererNode, SerializedTag, TransformedPage, EntityRegistry, EntityRegistration, PipelineContext } from '@refrakt-md/types';
@@ -1232,12 +1232,33 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 		planPipelineHooks.postProcess ? planPipelineHooks.postProcess(p, aggregated, ctx) : p,
 	);
 
-	// 4b. Resolve xref placeholders into clickable links. The plan CLI render
+	// 4b. Resolve `collection` sentinels — including the `backlog` /
+	// `decision-log` / `plan-activity` runes that lower to collections
+	// (WORK-284). The bespoke render-pipeline doesn't run the core
+	// cross-page pipeline, so we invoke the resolver directly. Orderings
+	// mirror the plan plugin's `theme.orderings` (the actionable-first
+	// status override) so groups land in the same order they would in
+	// a standard site build.
+	const embedConfig = {
+		tags: tags as unknown as Record<string, unknown>,
+		nodes: nodes as unknown as Record<string, unknown>,
+		orderings: {
+			work: { status: ['blocked', 'in-progress', 'review', 'ready', 'pending', 'draft', 'done'] },
+			bug: { status: ['in-progress', 'confirmed', 'reported', 'fixed', 'wontfix', 'duplicate'] },
+		},
+	};
+	const collectionResolvedPages = postProcessedPages.map(p => {
+		const resolved = resolveCollections(p.renderable, p.url, registry, embedConfig, ctx);
+		if (resolved === p.renderable) return p;
+		return { ...p, renderable: resolved as typeof p.renderable };
+	});
+
+	// 4c. Resolve xref placeholders into clickable links. The plan CLI render
 	// path doesn't currently consume `refrakt.config.json#/xrefs`, so patterns
 	// are empty here — unresolved refs render as `rf-xref--unresolved`. If CLI
 	// consumers later want pattern fallback, a future change can thread the
 	// compiled patterns through.
-	const processedPages = postProcessedPages.map(p => {
+	const processedPages = collectionResolvedPages.map(p => {
 		const resolved = resolveXrefs(p.renderable, p.url, registry, [], ctx);
 		if (resolved === p.renderable) return p;
 		return { ...p, renderable: resolved as typeof p.renderable };

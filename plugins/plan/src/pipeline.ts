@@ -2,12 +2,9 @@ import Markdoc, { type Node } from '@markdoc/markdoc';
 import type { PluginPipelineHooks, EntityRegistration } from '@refrakt-md/types';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { BACKLOG_SENTINEL } from './tags/backlog.js';
-import { DECISION_LOG_SENTINEL } from './tags/decision-log.js';
 import { PLAN_PROGRESS_SENTINEL } from './tags/plan-progress.js';
-import { PLAN_ACTIVITY_SENTINEL } from './tags/plan-activity.js';
 import { PLAN_HISTORY_SENTINEL } from './tags/plan-history.js';
-import { parseFilter, matchesFilter, sortEntities, groupEntities } from './filter.js';
+import { parseFilter, matchesFilter } from './filter.js';
 import { execSync } from 'node:child_process';
 import {
 	extractBatchHistory,
@@ -17,7 +14,6 @@ import {
 	type HistoryCache,
 } from './history.js';
 import { buildRelationships, type EntityRelationship } from './relationships.js';
-import { buildEntityCard, buildDecisionEntry } from './cards.js';
 import { parseFileContent } from './scanner-core.js';
 
 const { Tag } = Markdoc;
@@ -183,7 +179,12 @@ export interface PlanAggregatedData {
 	decisionEntities: EntityRegistration[];
 	specEntities: EntityRegistration[];
 	milestoneEntities: EntityRegistration[];
-	/** Bidirectional relationship index: entityId → relationships */
+	/** Bidirectional relationship index: entityId → edges. SPEC-072's
+	 *  `registry.relate()` graph is the authoritative store for rendering
+	 *  (the `relationships` rune queries it via `getRelated()`); this map
+	 *  remains exposed for the legacy `plan build` render-pipeline, which
+	 *  consumes it to mark nav items blocked by unresolved deps. Removable
+	 *  when `plan build` retires (out of scope for v0.16.0). */
 	relationships: Map<string, EntityRelationship[]>;
 	/** Git-derived history events per entity file path */
 	history: Map<string, HistoryEvent[]>;
@@ -315,6 +316,31 @@ function performUnconditionalScan(
 			return;
 		}
 
+		// Populate the relationship maps so `buildRelationships` produces edges
+		// for entities reached via the scan (the standard-load case for sites
+		// whose plan/ tree is outside the content dir — e.g. the plan-site
+		// dogfood). This runs **before** the early-return registry checks so
+		// the cross-page pipeline's "second register pass" (which fires after
+		// contributePages and re-clears the maps in `register`) still gets the
+		// edges repopulated even when the registry entries already exist.
+		const refs = entity.refs
+			.map((refId) => {
+				const prefix = refId.match(/^([A-Z]+)-/)?.[1];
+				const type = prefix ? ID_PREFIX_TO_TYPE[prefix] : undefined;
+				return type && refId !== id ? { id: refId, type } : null;
+			})
+			.filter((r): r is { id: string; type: string } => r !== null);
+		if (refs.length > 0) _idReferences.set(id, refs);
+
+		const sourceRefs = parseSourceIds(String(entity.attributes.source ?? '')).filter((r) => r.id !== id);
+		if (sourceRefs.length > 0) _sourceReferences.set(id, sourceRefs);
+
+		const depRefs = (entity.scopedRefs ?? [])
+			.filter((r) => r.section === 'Dependencies')
+			.map((r) => r.id)
+			.filter((depId) => depId !== id);
+		if (depRefs.length > 0) _scannerDependencies.set(id, depRefs);
+
 		// Site-load registration wins if both paths produced the same entity.
 		const existing = registry.getById(runeType, id);
 		if (existing && existing.sourceUrl) {
@@ -322,7 +348,9 @@ function performUnconditionalScan(
 			return;
 		}
 		if (existing && existing.sourceFile === sourceFile) {
-			// Already registered via the unconditional scan (idempotency). Skip.
+			// Already registered via the unconditional scan (idempotency). Skip
+			// the re-register; the maps above still get repopulated for the
+			// pipeline's second register pass.
 			return;
 		}
 		if (existing && existing.sourceFile && existing.sourceFile !== sourceFile) {
@@ -335,6 +363,33 @@ function performUnconditionalScan(
 		const data: Record<string, unknown> = { title: entity.title };
 		for (const [key, value] of Object.entries(entity.attributes)) {
 			data[key] = value;
+		}
+
+		// Backfill `data.modified` from file mtime when the rune doesn't set
+		// it explicitly. Plan-activity's default template renders this column
+		// and would otherwise show blank for every entity that hasn't been
+		// hand-stamped — the bespoke `plan build` CLI already does the same
+		// (via mtimeMap in commands/render-pipeline.ts), so this brings the
+		// standard refrakt pipeline to parity. Falls back silently if stat
+		// fails (e.g. file vanished mid-scan).
+		if (!data.modified) {
+			try {
+				const mtimeMs = fs.statSync(absPath).mtimeMs;
+				data.modified = new Date(mtimeMs).toISOString().slice(0, 10);
+			} catch { /* ignore */ }
+		}
+
+		// Count acceptance-criteria checkboxes for work + bug items so the
+		// milestone progress rollup (aggregate, see below) sees them. The
+		// page-walk register loop counts via `countCheckboxes(tag)` on the
+		// rendered AST; the unconditional-scan path counts from the
+		// `entity.criteria` array `parseFileContent` already produced. Same
+		// shape on data — `checkedCount` / `totalCount` — so downstream
+		// readers (milestone aggregate, the rune-injected backlog while it
+		// still exists) don't care which path populated them.
+		if ((runeType === 'work' || runeType === 'bug') && entity.criteria.length > 0) {
+			data.checkedCount = entity.criteria.filter((c) => c.checked).length;
+			data.totalCount = entity.criteria.length;
 		}
 
 		// Closure-captured extractor — returns the top-level plan rune AST
@@ -383,6 +438,10 @@ export const planPipelineHooks: PluginPipelineHooks = {
 	register(pages, registry, ctx) {
 		_idReferences.clear();
 		_sourceReferences.clear();
+		// `_scannerDependencies` is intentionally NOT cleared here — the bespoke
+		// `plan build` path seeds it via `setScannerDependencies()` *before*
+		// calling `register()` (see render-pipeline.ts). The standard-load path
+		// populates it via `performUnconditionalScan` below.
 
 		for (const page of pages) {
 			walkTags(page.renderable, (tag) => {
@@ -450,6 +509,32 @@ export const planPipelineHooks: PluginPipelineHooks = {
 		if (_planDir) {
 			performUnconditionalScan(_planDir, _projectRoot, registry, ctx);
 		}
+
+		// SPEC-072 / WORK-281 — roll the criteria-checkbox progress per milestone
+		// onto the milestone entity's `data`, so the milestone render-template
+		// can drive a generic `{% progress value=... max=... /%}` rune instead
+		// of relying on the rune-injected backlog's bespoke progress bar. Runs
+		// at the end of `register` (rather than in `aggregate`) so the values
+		// land on the entity before `entityRoutes` contributePages snapshots
+		// `$item` into the contributed page's variables — the progress rune is
+		// identity-transform-only, so its attributes resolve at transform time,
+		// not postProcess. Sums `checkedCount` / `totalCount` populated above.
+		const workAndBug = [...registry.getAll('work'), ...registry.getAll('bug')];
+		for (const milestone of registry.getAll('milestone')) {
+			const members = workAndBug.filter((e) => String(e.data.milestone ?? '') === milestone.id);
+			let done = 0;
+			let total = 0;
+			for (const m of members) {
+				const c = Number(m.data.checkedCount ?? 0);
+				const t = Number(m.data.totalCount ?? 0);
+				if (t > 0) {
+					done += c;
+					total += t;
+				}
+			}
+			(milestone.data as Record<string, unknown>).progressDone = done;
+			(milestone.data as Record<string, unknown>).progressTotal = total;
+		}
 	},
 
 	aggregate(registry, ctx) {
@@ -468,6 +553,19 @@ export const planPipelineHooks: PluginPipelineHooks = {
 			_scannerDependencies,
 			_idReferences,
 		);
+
+		// SPEC-072 / WORK-279 — contribute the (already bidirectional) plan edges
+		// to the core registry graph so the generic `relationships` rune can query
+		// them via getRelated(). The local `relationships` map still drives the
+		// plugin's own relationship sections until the ADR-011 consumer work lands.
+		if (registry.relate) {
+			for (const edges of relationships.values()) {
+				for (const e of edges) {
+					registry.relate({ fromId: e.fromId, toId: e.toId, kind: e.kind, fromType: e.fromType, toType: e.toType });
+				}
+			}
+		}
+
 
 		// Extract git history for all entities
 		let history = new Map<string, HistoryEvent[]>();
@@ -517,25 +615,16 @@ export const planPipelineHooks: PluginPipelineHooks = {
 
 		let modified = false;
 		const newRenderable = mapTags(page.renderable, (tag) => {
-			// Handle backlog sentinel
-			if (tag.attributes['data-rune'] === 'backlog' && hasSentinel(tag, BACKLOG_SENTINEL)) {
-				modified = true;
-				return resolveBacklog(tag, planData);
-			}
-			// Handle decision-log sentinel
-			if (tag.attributes['data-rune'] === 'decision-log' && hasSentinel(tag, DECISION_LOG_SENTINEL)) {
-				modified = true;
-				return resolveDecisionLog(tag, planData);
-			}
+			// `backlog`, `decision-log`, and `plan-activity` are now thin sugar
+			// over `collection` (SPEC-072 / WORK-284): their schemas emit a
+			// `data-rune="collection"` renderable with COLLECTION_SENTINEL, so
+			// they're picked up by the core `resolveCollections` postProcess —
+			// no plan-side branch needed.
+
 			// Handle plan-progress sentinel
 			if (tag.attributes['data-rune'] === 'plan-progress' && hasSentinel(tag, PLAN_PROGRESS_SENTINEL)) {
 				modified = true;
 				return resolvePlanProgress(tag, planData);
-			}
-			// Handle plan-activity sentinel
-			if (tag.attributes['data-rune'] === 'plan-activity' && hasSentinel(tag, PLAN_ACTIVITY_SENTINEL)) {
-				modified = true;
-				return resolvePlanActivity(tag, planData);
 			}
 			// Handle plan-history sentinel
 			if (tag.attributes['data-rune'] === 'plan-history' && hasSentinel(tag, PLAN_HISTORY_SENTINEL)) {
@@ -543,64 +632,15 @@ export const planPipelineHooks: PluginPipelineHooks = {
 				return resolvePlanHistory(tag, planData);
 			}
 
-			// Inject auto-backlog into milestone rune tags
-			if (tag.attributes['data-rune'] === 'milestone') {
-				const milestoneName = readField(tag, 'name');
-				if (milestoneName) {
-					const backlog = buildMilestoneBacklog(milestoneName, planData);
-					if (backlog) {
-						modified = true;
-						tag = new Tag(tag.name, tag.attributes, [...tag.children, backlog]) as typeof tag;
-					}
-				}
-			}
-
-			// Wrap entity content in tab-group with Overview / Relationships / History panels
-			if (PLAN_RUNE_TYPES.has(tag.attributes['data-rune'] as string)) {
-				const runeType = tag.attributes['data-rune'] as string;
-				const entityId = runeType === 'milestone'
-					? readField(tag, 'name')
-					: readField(tag, 'id');
-				if (entityId) {
-					const rels = planData.relationships.get(entityId);
-					const relationshipsSection = (rels && rels.length > 0)
-						? buildRelationshipsSection(rels, planData)
-						: null;
-					const historySection = buildAutoHistorySection(entityId, planData);
-
-					// Only add tabs if there is content for at least one extra panel
-					if (relationshipsSection || historySection) {
-						modified = true;
-
-						// Partition children: structural (meta fields, title, blurb) stay at top;
-						// body content goes into the Overview tab panel.
-						// Note: postProcess runs BEFORE the identity transform, so children
-						// have data-name/data-field from createComponentRenderable but no
-						// data-section or BEM classes yet.
-						const PREAMBLE_NAMES = new Set(['title', 'blurb']);
-						const structural: any[] = [];
-						const bodyContent: any[] = [];
-						for (const child of tag.children) {
-							if (Markdoc.Tag.isTag(child) && (
-								child.attributes['data-field'] != null ||
-								PREAMBLE_NAMES.has(child.attributes['data-name'])
-							)) {
-								structural.push(child);
-							} else {
-								bodyContent.push(child);
-							}
-						}
-
-						const tabWrapper = buildEntityTabGroup(
-							bodyContent,
-							relationshipsSection,
-							historySection,
-						);
-						return new Tag(tag.name, tag.attributes, [...structural, tabWrapper]);
-					}
-				}
-			}
-
+			// SPEC-072 / WORK-282 — the plan plugin no longer injects the
+			// milestone auto-backlog or the Overview/Relationships/History
+			// tab wrapper. Plan-site detail pages compose those panels at
+			// the `entityRoutes` render-template level (WORK-280 / WORK-281)
+			// using the generic `relationships` + `plan-history` + `collection`
+			// + `progress` runes. The plugin's postProcess now only resolves
+			// its own rune sentinels (backlog / decision-log / plan-progress /
+			// plan-activity / plan-history) — no more renderable mutation
+			// targeting other runes.
 			return tag;
 		});
 
@@ -609,196 +649,6 @@ export const planPipelineHooks: PluginPipelineHooks = {
 	},
 };
 
-function resolveBacklog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData): InstanceType<typeof Tag> {
-	const filterExpr = readField(tag, 'filter');
-	const sortField = readField(tag, 'sort') || 'priority';
-	const groupField = readField(tag, 'group');
-	const show = readField(tag, 'show') || 'all';
-	const limitRaw = readField(tag, 'limit');
-	// Parse `limit` defensively — Markdoc surfaces the meta as a string.
-	// Treat 0 / negative / NaN the same as "unset" so a malformed
-	// authoring value doesn't silently render an empty backlog.
-	const limit = (() => {
-		if (!limitRaw) return undefined;
-		const n = Number(limitRaw);
-		return Number.isFinite(n) && n > 0 ? Math.floor(n) : undefined;
-	})();
-
-	// Collect entities by type
-	// "all" defaults to work+bug for backward compatibility; other types must be explicit
-	let entities: EntityRegistration[] = [];
-	if (show === 'all' || show === 'work') entities.push(...data.workEntities);
-	if (show === 'all' || show === 'bug') entities.push(...data.bugEntities);
-	if (show === 'spec') entities.push(...data.specEntities);
-	if (show === 'decision') entities.push(...data.decisionEntities);
-	if (show === 'milestone') entities.push(...data.milestoneEntities);
-
-	// Apply filter
-	const filter = parseFilter(filterExpr);
-	entities = entities.filter(e => matchesFilter(e, filter));
-
-	// Sort
-	entities = sortEntities(entities, sortField);
-
-	// Limit applies post-sort, pre-group so the rendered set is "top N
-	// by sort order". When grouped, the limit caps the total entity count
-	// across all groups — callers wanting a per-group cap would need a
-	// separate attribute; keep it simple until that ask surfaces.
-	if (limit !== undefined && entities.length > limit) {
-		entities = entities.slice(0, limit);
-	}
-
-	// Build output
-	let children: any[];
-	if (groupField) {
-		const groups = groupEntities(entities, groupField);
-		children = [];
-		for (const [groupName, groupEntities_] of groups) {
-			const groupTitle = new Tag('h3', { class: 'rf-backlog__group-title' }, [groupName]);
-			const cards = groupEntities_.map(e => buildEntityCard(e));
-			const groupDiv = new Tag('div', { class: 'rf-backlog__group', 'data-group': groupName }, [groupTitle, ...cards]);
-			children.push(groupDiv);
-		}
-	} else {
-		children = entities.map(e => buildEntityCard(e));
-	}
-
-	const itemsDiv = new Tag('div', { 'data-name': 'items' }, children);
-
-	// Rebuild tag, replacing the sentinel and placeholder with resolved content
-	const newChildren = tag.children.filter(
-		(c: unknown) => !(Markdoc.Tag.isTag(c) && (
-			c.attributes['data-field'] === BACKLOG_SENTINEL ||
-			c.attributes['data-name'] === 'items'
-		)),
-	);
-	newChildren.push(itemsDiv);
-
-	return new Tag(tag.name, tag.attributes, newChildren as any[]);
-}
-
-/** Build auto-backlog section for a milestone, showing assigned work/bug items grouped by status */
-function buildMilestoneBacklog(milestoneName: string, data: PlanAggregatedData): InstanceType<typeof Tag> | null {
-	// Collect work and bug entities assigned to this milestone
-	let entities = [
-		...data.workEntities,
-		...data.bugEntities,
-	].filter(e => String(e.data.milestone ?? '') === milestoneName);
-
-	if (entities.length === 0) return null;
-
-	// Sort by priority within each group
-	entities = sortEntities(entities, 'priority');
-
-	// Group by status
-	const groups = groupEntities(entities, 'status');
-
-	// Calculate aggregate progress from checklist counts
-	let totalChecked = 0;
-	let totalCheckboxes = 0;
-	for (const e of entities) {
-		const checked = Number(e.data.checkedCount ?? 0);
-		const total = Number(e.data.totalCount ?? 0);
-		if (total > 0) {
-			totalChecked += checked;
-			totalCheckboxes += total;
-		}
-	}
-
-	const children: any[] = [];
-
-	// Add aggregate progress if any items have checklists
-	if (totalCheckboxes > 0) {
-		const fraction = `${totalChecked}/${totalCheckboxes}`;
-		const pct = Math.round((totalChecked / totalCheckboxes) * 100);
-		children.push(new Tag('div', {
-			class: 'rf-milestone__progress',
-			'data-progress-checked': String(totalChecked),
-			'data-progress-total': String(totalCheckboxes),
-			'data-percent': String(pct),
-		}, [
-			new Tag('div', { class: 'rf-milestone__progress-header' }, [
-				new Tag('span', { class: 'rf-milestone__progress-label' }, ['Progress']),
-				new Tag('span', { class: 'rf-milestone__progress-count' }, [`${fraction} criteria`]),
-			]),
-			new Tag('span', { class: 'rf-milestone__progress-bar', style: `--rf-progress: ${pct}%` }, []),
-		]));
-	}
-
-	// Build status-grouped cards as tabs (or flat list for single group)
-	const groupEntries = [...groups.entries()];
-
-	if (groupEntries.length === 1) {
-		// Single status — no tabs needed, render flat
-		const [groupName, groupItems] = groupEntries[0];
-		const cards = groupItems.map(e => buildEntityCard(e));
-		children.push(new Tag('div', {
-			class: 'rf-milestone__backlog-group',
-			'data-status': groupName,
-		}, [new Tag('h3', { class: 'rf-milestone__backlog-group-label' }, [groupName]), ...cards]));
-	} else {
-		// Multiple statuses — render as tabs
-		const tabButtons: any[] = [];
-		const tabPanels: any[] = [];
-
-		for (const [groupName, groupItems] of groupEntries) {
-			const label = groupName.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-			tabButtons.push(new Tag('button', {
-				role: 'tab',
-				class: 'rf-milestone__tab',
-				'data-status': groupName,
-			}, [`${label} (${groupItems.length})`]));
-
-			const cards = groupItems.map(e => buildEntityCard(e));
-			tabPanels.push(new Tag('div', {
-				role: 'tabpanel',
-				class: 'rf-milestone__panel',
-				'data-status': groupName,
-			}, cards));
-		}
-
-		children.push(new Tag('div', {
-			'data-name': 'tabs',
-			role: 'tablist',
-			class: 'rf-milestone__tabs',
-		}, tabButtons));
-
-		children.push(new Tag('div', {
-			'data-name': 'panels',
-			class: 'rf-milestone__panels',
-		}, tabPanels));
-	}
-
-	return new Tag('div', { class: 'rf-milestone__backlog', 'data-name': 'backlog', 'data-rune': 'milestone-backlog' }, children);
-}
-
-function resolveDecisionLog(tag: InstanceType<typeof Tag>, data: PlanAggregatedData): InstanceType<typeof Tag> {
-	const filterExpr = readField(tag, 'filter');
-	const sortField = readField(tag, 'sort') || 'date';
-
-	let entities = [...data.decisionEntities];
-
-	// Apply filter
-	const filter = parseFilter(filterExpr);
-	entities = entities.filter(e => matchesFilter(e, filter));
-
-	// Sort
-	entities = sortEntities(entities, sortField);
-
-	const entries = entities.map(e => buildDecisionEntry(e));
-	const list = new Tag('ol', { 'data-name': 'items', class: 'rf-decision-log__list' }, entries);
-
-	// Rebuild tag
-	const newChildren = tag.children.filter(
-		(c: unknown) => !(Markdoc.Tag.isTag(c) && (
-			c.attributes['data-field'] === DECISION_LOG_SENTINEL ||
-			c.attributes['data-name'] === 'items'
-		)),
-	);
-	newChildren.push(list);
-
-	return new Tag(tag.name, tag.attributes, newChildren as any[]);
-}
 
 // --- Status labels for display ---
 const STATUS_LABELS: Record<string, string[]> = {
@@ -885,71 +735,6 @@ function resolvePlanProgress(tag: InstanceType<typeof Tag>, data: PlanAggregated
 	return new Tag(tag.name, tag.attributes, newChildren as any[]);
 }
 
-function resolvePlanActivity(tag: InstanceType<typeof Tag>, data: PlanAggregatedData): InstanceType<typeof Tag> {
-	const limit = parseInt(readField(tag, 'limit') || '10', 10);
-
-	// Collect all entities with mtime from their source URL registration data
-	const allEntities = [
-		...data.workEntities,
-		...data.bugEntities,
-		...data.decisionEntities,
-		...data.specEntities,
-		...data.milestoneEntities,
-	];
-
-	// Sort by modified date descending (entities with modification data)
-	const withModified = allEntities
-		.filter(e => {
-			const mod = e.data.modified ?? e.data.mtime;
-			if (mod == null) return false;
-			if (typeof mod === 'string') return mod.length > 0;
-			return Number(mod) > 0;
-		})
-		.sort((a, b) => {
-			const aDate = parseModifiedDate(a.data.modified ?? a.data.mtime);
-			const bDate = parseModifiedDate(b.data.modified ?? b.data.mtime);
-			return bDate - aDate;
-		})
-		.slice(0, limit);
-
-	const entries = withModified.map(e => {
-		const id = String(e.data.id ?? e.id);
-		const title = String(e.data.title ?? '');
-		const status = String(e.data.status ?? '');
-		const type = e.type;
-		const dateStr = formatModifiedDate(e.data.modified ?? e.data.mtime);
-
-		const innerChildren = [
-			new Tag('time', { class: 'rf-plan-activity__date' }, [dateStr]),
-			new Tag('span', { class: 'rf-plan-activity__type' }, [type]),
-			new Tag('span', { class: 'rf-plan-activity__id' }, [id]),
-			new Tag('span', { class: 'rf-plan-activity__status', 'data-status': status }, [status]),
-			new Tag('span', { class: 'rf-plan-activity__title' }, [title]),
-		];
-
-		const children: any[] = e.sourceUrl
-			? [new Tag('a', { class: 'rf-plan-activity__link', href: e.sourceUrl }, innerChildren)]
-			: innerChildren;
-
-		return new Tag('li', {
-			class: 'rf-plan-activity__entry',
-			'data-type': type,
-			'data-status': status,
-		}, children);
-	});
-
-	const list = new Tag('ol', { 'data-name': 'items', class: 'rf-plan-activity__list' }, entries);
-
-	const newChildren = tag.children.filter(
-		(c: unknown) => !(Markdoc.Tag.isTag(c) && (
-			c.attributes['data-field'] === PLAN_ACTIVITY_SENTINEL ||
-			c.attributes['data-name'] === 'items'
-		)),
-	);
-	newChildren.push(list);
-
-	return new Tag(tag.name, tag.attributes, newChildren as any[]);
-}
 
 // ─── Plan History Resolution ───
 
@@ -1217,202 +1002,3 @@ function resolvePlanHistory(tag: InstanceType<typeof Tag>, data: PlanAggregatedD
 	return new Tag(tag.name, attrs, newChildren as any[]);
 }
 
-/**
- * Build a tab-group wrapper for entity pages with Overview, Relationships, and History panels.
- * Emits the same HTML contract that tabsBehavior expects.
- */
-function buildEntityTabGroup(
-	bodyContent: any[],
-	relationshipsSection: InstanceType<typeof Tag> | null,
-	historySection: InstanceType<typeof Tag> | null,
-): InstanceType<typeof Tag> {
-	const tabButtons: any[] = [];
-	const tabPanels: any[] = [];
-
-	// Overview tab (always present)
-	tabButtons.push(new Tag('button', {
-		role: 'tab',
-		class: 'rf-plan-entity-tabs__tab',
-		'data-tab': 'overview',
-	}, ['Overview']));
-	tabPanels.push(new Tag('div', {
-		role: 'tabpanel',
-		class: 'rf-plan-entity-tabs__panel',
-		'data-tab': 'overview',
-	}, bodyContent));
-
-	// Relationships tab (only if there are relationships)
-	if (relationshipsSection) {
-		tabButtons.push(new Tag('button', {
-			role: 'tab',
-			class: 'rf-plan-entity-tabs__tab',
-			'data-tab': 'relationships',
-		}, ['Relationships']));
-		tabPanels.push(new Tag('div', {
-			role: 'tabpanel',
-			class: 'rf-plan-entity-tabs__panel',
-			'data-tab': 'relationships',
-		}, [relationshipsSection]));
-	}
-
-	// History tab (only if there is history)
-	if (historySection) {
-		tabButtons.push(new Tag('button', {
-			role: 'tab',
-			class: 'rf-plan-entity-tabs__tab',
-			'data-tab': 'history',
-		}, ['History']));
-		tabPanels.push(new Tag('div', {
-			role: 'tabpanel',
-			class: 'rf-plan-entity-tabs__panel',
-			'data-tab': 'history',
-		}, [historySection]));
-	}
-
-	const tabList = new Tag('div', {
-		'data-name': 'tabs',
-		role: 'tablist',
-		class: 'rf-plan-entity-tabs__tabs',
-	}, tabButtons);
-
-	const panels = new Tag('div', {
-		'data-name': 'panels',
-		class: 'rf-plan-entity-tabs__panels',
-	}, tabPanels);
-
-	return new Tag('div', {
-		class: 'rf-plan-entity-tabs',
-		'data-rune': 'plan-entity-tabs',
-	}, [tabList, panels]);
-}
-
-const KIND_ORDER: Record<string, number> = { 'blocked-by': 0, 'blocks': 1, 'depends-on': 2, 'dependency-of': 3, 'implements': 4, 'implemented-by': 5, 'informs': 6, 'informed-by': 7, 'related': 8 };
-const KIND_LABELS: Record<string, string> = { 'blocked-by': 'Blocked by', 'blocks': 'Blocks', 'depends-on': 'Depends on', 'dependency-of': 'Dependency of', 'implements': 'Implements', 'implemented-by': 'Implemented by', 'informs': 'Informs', 'informed-by': 'Decisions', 'related': 'Related' };
-
-/** Look up an entity across all aggregated type arrays */
-function findEntity(id: string, data: PlanAggregatedData): EntityRegistration | undefined {
-	const allArrays = [data.workEntities, data.bugEntities, data.decisionEntities, data.specEntities, data.milestoneEntities];
-	for (const arr of allArrays) {
-		const found = arr.find(e => e.id === id);
-		if (found) return found;
-	}
-	return undefined;
-}
-
-function buildRelationshipsSection(
-	rels: EntityRelationship[],
-	data: PlanAggregatedData,
-): InstanceType<typeof Tag> | null {
-	// Group by kind
-	const byKind = new Map<string, EntityRelationship[]>();
-	for (const rel of rels) {
-		const kind = rel.kind;
-		if (!byKind.has(kind)) byKind.set(kind, []);
-		byKind.get(kind)!.push(rel);
-	}
-
-	// Deduplicate: same target ID within a kind group
-	for (const [kind, kindRels] of byKind) {
-		const seen = new Set<string>();
-		byKind.set(kind, kindRels.filter(r => {
-			const key = r.toId;
-			if (seen.has(key)) return false;
-			seen.add(key);
-			return true;
-		}));
-	}
-
-	const groups: any[] = [];
-	const sortedKinds = [...byKind.keys()].sort((a, b) => (KIND_ORDER[a] ?? 9) - (KIND_ORDER[b] ?? 9));
-
-	for (const kind of sortedKinds) {
-		const kindRels = byKind.get(kind)!;
-		const label = KIND_LABELS[kind] || kind;
-
-		// "Informed by" renders decision entry cards
-		if (kind === 'informed-by') {
-			const entries: any[] = [];
-			for (const rel of kindRels) {
-				const target = findEntity(rel.toId, data);
-				if (target) {
-					entries.push(buildDecisionEntry(target));
-				}
-			}
-			if (entries.length > 0) {
-				groups.push(new Tag('div', {
-					class: 'rf-plan-relationships__group',
-					'data-kind': kind,
-				}, [
-					new Tag('h3', { class: 'rf-plan-relationships__group-title' }, [label]),
-					new Tag('ol', { class: 'rf-plan-relationships__decisions' }, entries),
-				]));
-			}
-			continue;
-		}
-
-		const cards: any[] = [];
-		for (const rel of kindRels) {
-			const target = findEntity(rel.toId, data);
-			if (target) {
-				cards.push(buildEntityCard(target));
-			}
-		}
-		if (cards.length > 0) {
-			groups.push(new Tag('div', {
-				class: 'rf-plan-relationships__group',
-				'data-kind': kind,
-			}, [
-				new Tag('h3', { class: 'rf-plan-relationships__group-title' }, [label]),
-				new Tag('div', { class: 'rf-plan-relationships__cards' }, cards),
-			]));
-		}
-	}
-
-	if (groups.length === 0) return null;
-
-	return new Tag('section', {
-		class: 'rf-plan-relationships',
-		'data-name': 'relationships',
-	}, [
-		new Tag('h2', { class: 'rf-plan-relationships__heading' }, ['Relationships']),
-		...groups,
-	]);
-}
-
-/**
- * Build an auto-injected History section for an entity page.
- * Returns null for entities with only a single commit (created and never modified).
- */
-function buildAutoHistorySection(
-	entityId: string,
-	data: PlanAggregatedData,
-): InstanceType<typeof Tag> | null {
-	// Find history events by matching the entity ID in the first event's attributes
-	let entityEvents: HistoryEvent[] = [];
-	for (const [, events] of data.history) {
-		if (events.length > 0 && events[0].initialAttributes) {
-			const eventId = events[0].initialAttributes.id ?? events[0].initialAttributes.name;
-			if (eventId === entityId) {
-				entityEvents = events;
-				break;
-			}
-		}
-	}
-
-	// Skip entities with only a single commit (creation only) — no meaningful history
-	if (entityEvents.length <= 1) return null;
-
-	// Build timeline (newest-first), limit to 20 events
-	const limited = [...entityEvents].reverse().slice(0, 20);
-	const items = limited.map(e => buildEventTag(e, data.repositoryUrl));
-
-	const list = new Tag('ol', { class: 'rf-plan-history__events' }, items);
-
-	return new Tag('section', {
-		class: 'rf-plan-history',
-		'data-name': 'history',
-	}, [
-		new Tag('h2', { class: 'rf-plan-history__heading' }, ['History']),
-		list,
-	]);
-}

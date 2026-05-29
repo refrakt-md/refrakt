@@ -136,9 +136,10 @@ function resolveOnePlaceholder(
 		return errorNode(id, 'entity not found');
 	}
 
-	if (!entity.sourceFile || !entity.extract) {
+	// Embeddable via embed() OR (sourceFile + extract) — SPEC-069.
+	if (!entity.embed && !(entity.sourceFile && entity.extract)) {
 		rc.ctx.error(
-			`expand "${id}" on ${rc.pageUrl} — entity type "${entity.type}" does not support embedding (no sourceFile/extract)`,
+			`expand "${id}" on ${rc.pageUrl} — entity type "${entity.type}" does not support embedding (no embed() or sourceFile/extract)`,
 			rc.pageUrl,
 		);
 		return errorNode(id, `entity type "${entity.type}" does not support embedding`);
@@ -155,25 +156,30 @@ function resolveOnePlaceholder(
 		return errorNode(id, 'cycle detected');
 	}
 
-	const projectRoot = rc.embedConfig?.projectRoot;
-	if (!projectRoot) {
-		rc.ctx.error(`expand "${id}" — no project root configured (embedConfig.projectRoot is unset)`, rc.pageUrl);
-		return errorNode(id, 'no project root configured');
+	// Resolve the entity's content: embed() (in-memory) takes precedence; else
+	// read + extract from the source file (requires a project root).
+	let extracted: Node | null;
+	if (entity.embed) {
+		extracted = entity.embed();
+	} else {
+		const projectRoot = rc.embedConfig?.projectRoot;
+		if (!projectRoot) {
+			rc.ctx.error(`expand "${id}" — no project root configured (embedConfig.projectRoot is unset)`, rc.pageUrl);
+			return errorNode(id, 'no project root configured');
+		}
+		let parsed: Node;
+		try {
+			parsed = parseSourceFile(entity.sourceFile!, projectRoot, rc.parseCache);
+		} catch (err) {
+			const msg = err instanceof SnippetSandboxError ? err.message : (err as Error).message;
+			rc.ctx.error(`expand "${id}" — failed to read source file "${entity.sourceFile}": ${msg}`, rc.pageUrl);
+			return errorNode(id, msg);
+		}
+		extracted = entity.extract!(parsed);
 	}
-
-	let parsed: Node;
-	try {
-		parsed = parseSourceFile(entity.sourceFile, projectRoot, rc.parseCache);
-	} catch (err) {
-		const msg = err instanceof SnippetSandboxError ? err.message : (err as Error).message;
-		rc.ctx.error(`expand "${id}" — failed to read source file "${entity.sourceFile}": ${msg}`, rc.pageUrl);
-		return errorNode(id, msg);
-	}
-
-	const extracted = entity.extract(parsed);
 	if (!extracted) {
 		rc.ctx.error(
-			`expand "${id}" — extractor returned no content; "${entity.sourceFile}" may have been edited out-of-sync with the registry`,
+			`expand "${id}" — extractor returned no content; the entity may be out-of-sync with the registry`,
 			rc.pageUrl,
 		);
 		return errorNode(id, 'extractor returned no content');

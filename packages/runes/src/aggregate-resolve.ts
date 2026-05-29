@@ -1,0 +1,246 @@
+/**
+ * aggregate postProcess resolver (SPEC-076).
+ *
+ * Walks the serialized renderable, finds `aggregate` sentinels, queries the
+ * registry, and emits either a single integer (no-body inline form) or a
+ * body-zoned breakdown (preamble totals / per-group template / fallback). Per
+ * group the captured body source is reparsed with `$item` bound to the group
+ * projection — same machinery `collection`'s per-item template uses, just at
+ * group granularity (no nested item-list splice).
+ */
+import Markdoc from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
+import type { EntityRegistry, EntityRegistration, PipelineContext } from '@refrakt-md/types';
+import { parseFieldMatch, matchesFieldMatch, type MatchableEntity, type ParsedFieldMatch } from './field-match.js';
+import {
+	type CollectionEmbedConfig, type Ordering,
+	buildOrdering, splitBodyZones, renderItemTemplate, groupEntities,
+} from './collection-helpers.js';
+import { AGGREGATE_SENTINEL } from './tags/aggregate.js';
+
+const { Tag } = Markdoc;
+type TagNode = InstanceType<typeof Tag>;
+
+function isTag(node: unknown): node is TagNode {
+	return Tag.isTag(node as never);
+}
+
+function metaContent(tag: TagNode, field: string): string {
+	for (const child of tag.children ?? []) {
+		if (isTag(child) && child.name === 'meta' && child.attributes['data-field'] === field) {
+			return String(child.attributes.content ?? '');
+		}
+	}
+	return '';
+}
+
+function hasSentinel(tag: TagNode): boolean {
+	return (tag.children ?? []).some(
+		(c) => isTag(c) && c.name === 'meta' && c.attributes['data-field'] === AGGREGATE_SENTINEL,
+	);
+}
+
+interface AggregateQuery {
+	types: string[];
+	filter: string;
+	value: string;
+	group: string;
+	sort: string;
+	limit?: number;
+	bodySource: string;
+	empty: string;
+}
+
+function readQuery(tag: TagNode): AggregateQuery {
+	const limitRaw = metaContent(tag, 'aggregate-limit');
+	const limitNum = Number(limitRaw);
+	return {
+		types: metaContent(tag, 'aggregate-type').split(',').map((s) => s.trim()).filter(Boolean),
+		filter: metaContent(tag, 'aggregate-filter'),
+		value: metaContent(tag, 'aggregate-value'),
+		group: metaContent(tag, 'aggregate-group'),
+		sort: metaContent(tag, 'aggregate-sort'),
+		limit: limitRaw && Number.isFinite(limitNum) && limitNum > 0 ? Math.floor(limitNum) : undefined,
+		bodySource: metaContent(tag, 'aggregate-body'),
+		empty: metaContent(tag, 'aggregate-empty'),
+	};
+}
+
+function percentOf(value: number, count: number): number {
+	if (count <= 0) return 0;
+	return Math.round((value / count) * 100);
+}
+
+function countValue(entities: EntityRegistration[], valueParsed: ParsedFieldMatch | null): number {
+	if (!valueParsed) return entities.length;
+	return entities.filter((e) => matchesFieldMatch(e as MatchableEntity, valueParsed)).length;
+}
+
+/** Sort groups by a projection field (`key` | `count` | `value` | `percent`),
+ *  honoring domain-aware ordering on the group field when sorting by `key`. */
+function sortGroups(
+	groups: Array<[string, EntityRegistration[]]>,
+	sortExpr: string,
+	groupField: string,
+	ordering: Ordering,
+	valueParsed: ParsedFieldMatch | null,
+): Array<[string, EntityRegistration[]]> {
+	if (!sortExpr) return groups;
+	let field = sortExpr.trim();
+	let dir = 1;
+	if (field.startsWith('-')) { dir = -1; field = field.slice(1); }
+	else if (field.endsWith('-desc')) { dir = -1; field = field.slice(0, -5); }
+	else if (field.endsWith('-asc')) { field = field.slice(0, -4); }
+
+	if (field === 'count') {
+		return [...groups].sort(([, a], [, b]) => (a.length - b.length) * dir);
+	}
+	if (field === 'value') {
+		return [...groups].sort(([, a], [, b]) => (countValue(a, valueParsed) - countValue(b, valueParsed)) * dir);
+	}
+	if (field === 'percent') {
+		return [...groups].sort(([, a], [, b]) => {
+			const pa = percentOf(countValue(a, valueParsed), a.length);
+			const pb = percentOf(countValue(b, valueParsed), b.length);
+			return (pa - pb) * dir;
+		});
+	}
+	// 'key' (default explicit case) — domain ordering when groupField has one.
+	return [...groups].sort(([ka, ma], [kb, mb]) => {
+		const ta = ma[0]?.type ?? '';
+		const tb = mb[0]?.type ?? '';
+		const ra = ordering.rank(ta, groupField, ka);
+		const rb = ordering.rank(tb, groupField, kb);
+		const aR = ra >= 0, bR = rb >= 0;
+		if (aR && bR) { if (ra !== rb) return (ra - rb) * dir; }
+		else if (aR !== bR) return aR ? -1 : 1;
+		return ka.localeCompare(kb) * dir;
+	});
+}
+
+function resolveOne(
+	tag: TagNode,
+	registry: Readonly<EntityRegistry>,
+	embedConfig: CollectionEmbedConfig | undefined,
+	ordering: Ordering,
+	ctx: PipelineContext,
+	pageUrl: string,
+): TagNode {
+	const q = readQuery(tag);
+
+	// Primary set: union of registry.getAll(type) per type, then filter.
+	let entities: EntityRegistration[] = [];
+	for (const type of q.types) entities.push(...registry.getAll(type));
+	if (q.filter) {
+		const parsed = parseFieldMatch(q.filter);
+		for (const w of parsed.warnings) ctx.warn(`aggregate filter: ${w}`, pageUrl);
+		entities = entities.filter((e) => matchesFieldMatch(e as MatchableEntity, parsed));
+	}
+
+	const valueParsed = q.value ? parseFieldMatch(q.value) : null;
+	if (valueParsed) {
+		for (const w of valueParsed.warnings) ctx.warn(`aggregate value: ${w}`, pageUrl);
+	}
+
+	const countTotal = entities.length;
+	const valueTotal = countValue(entities, valueParsed);
+	// Without a `value` attribute, the in-context "achievement" is the count
+	// itself — so percent reads as 100 (a full bar, semantically vacuous).
+	const percentTotal = q.value ? percentOf(valueTotal, countTotal) : 100;
+
+	// No-body form → inline integer. The engine has already added
+	// `class="rf-aggregate"` to the wrapper span; we just stamp the count and
+	// swap children for the digit.
+	if (!q.bodySource) {
+		return new Tag(tag.name, {
+			...tag.attributes,
+			'data-aggregate': 'count',
+			'data-count': String(countTotal),
+		}, [String(countTotal)]);
+	}
+
+	const zones = splitBodyZones(q.bodySource);
+	const tmpl = zones.template;
+	const attrs = { ...tag.attributes, 'data-aggregate': 'breakdown' };
+
+	// Empty state: fallback zone, else `empty` attribute, else nothing.
+	if (countTotal === 0) {
+		const out: RenderableTreeNode[] = [];
+		if (zones.fallback && embedConfig) {
+			const vars = { item: { key: '', count: 0, value: 0, percent: 0, total: 0, shown: 0 } };
+			out.push(new Tag('div', { 'data-name': 'empty', class: 'rf-aggregate__empty' }, renderItemTemplate(zones.fallback, embedConfig, vars)));
+		} else if (q.empty) {
+			out.push(new Tag('div', { 'data-name': 'empty', class: 'rf-aggregate__empty' }, [q.empty]));
+		}
+		return new Tag(tag.name, attrs, out);
+	}
+
+	// Preamble (once, when non-empty) — totals projection on $item.
+	const head: RenderableTreeNode[] = [];
+	if (zones.preamble && embedConfig) {
+		const vars = { item: { count: countTotal, value: valueTotal, percent: percentTotal, total: countTotal } };
+		head.push(new Tag('div', { 'data-name': 'preamble', class: 'rf-aggregate__preamble' }, renderItemTemplate(zones.preamble, embedConfig, vars)));
+	}
+
+	// Ungrouped: render the template once with the totals projection on $item.
+	if (!q.group) {
+		const out: RenderableTreeNode[] = [...head];
+		if (tmpl && embedConfig) {
+			const vars = { item: { key: '', count: countTotal, value: valueTotal, percent: percentTotal, total: countTotal, shown: 1 } };
+			out.push(new Tag('div', { 'data-name': 'items', class: 'rf-aggregate__items' }, renderItemTemplate(tmpl, embedConfig, vars)));
+		}
+		return new Tag(tag.name, attrs, out);
+	}
+
+	// Grouped: groupEntities (domain order by default) → sort → limit.
+	let groups = [...groupEntities(entities, q.group, ordering).entries()];
+	groups = sortGroups(groups, q.sort, q.group, ordering, valueParsed);
+	if (q.limit !== undefined && groups.length > q.limit) groups = groups.slice(0, q.limit);
+	const shown = groups.length;
+
+	const groupNodes: RenderableTreeNode[] = [];
+	if (tmpl && embedConfig) {
+		for (const [key, members] of groups) {
+			const groupCount = members.length;
+			const groupValue = countValue(members, valueParsed);
+			const groupPercent = q.value ? percentOf(groupValue, groupCount) : 100;
+			const vars = {
+				item: {
+					key,
+					count: groupCount,
+					value: groupValue,
+					percent: groupPercent,
+					total: countTotal,
+					shown,
+				},
+			};
+			const kids = renderItemTemplate(tmpl, embedConfig, vars);
+			groupNodes.push(
+				new Tag('div', { class: 'rf-aggregate__group', 'data-group': key, 'data-block': '' }, kids),
+			);
+		}
+	}
+	const itemsDiv = new Tag('div', { 'data-name': 'items', class: 'rf-aggregate__items' }, groupNodes);
+	return new Tag(tag.name, attrs, [...head, itemsDiv]);
+}
+
+export function resolveAggregates(
+	renderable: unknown,
+	pageUrl: string,
+	registry: Readonly<EntityRegistry>,
+	embedConfig: CollectionEmbedConfig | undefined,
+	ctx: PipelineContext,
+): unknown {
+	const ordering = buildOrdering(embedConfig);
+	const walk = (node: unknown): unknown => {
+		if (Array.isArray(node)) return node.map(walk);
+		if (!isTag(node)) return node;
+		const tag = node;
+		if (tag.attributes?.['data-rune'] === 'aggregate' && hasSentinel(tag)) {
+			return resolveOne(tag, registry, embedConfig, ordering, ctx, pageUrl);
+		}
+		if (!tag.children || tag.children.length === 0) return tag;
+		return new Tag(tag.name, tag.attributes, tag.children.map(walk) as never[]);
+	};
+	return walk(renderable);
+}

@@ -88,7 +88,7 @@ A `SiteConfig` accepts these fields. Required fields are bold.
 | Field | Type | Description |
 |-------|------|-------------|
 | **`contentDir`** | `string` | Path to the content directory, relative to the project root. |
-| **`theme`** | `string` | Active theme — npm package name (e.g., `@refrakt-md/lumina`) or relative path. |
+| **`theme`** | `string \| SiteThemeConfig` | Active theme. Accepts either a package name string (legacy shorthand — `"@refrakt-md/lumina"`) or a full `SiteThemeConfig` object with `package`, `presets`, `tokens`, `modes`, and `code.colorScheme`. See [Theme presets](#theme-object-form) for the object form. |
 | **`target`** | `string` | Target adapter identifier (`svelte`, `astro`, `next`, `nuxt`, `eleventy`, `html`). |
 
 ### SEO and branding
@@ -108,11 +108,47 @@ A `SiteConfig` accepts these fields. Required fields are bold.
 | `routeRules` | `RouteRule[]` | Route-to-layout mapping rules (first match wins). |
 | `overrides` | `Record<string, string>` | Component overrides — `typeof` name → relative component path. |
 | `runes` | `RunesConfig` | Rune resolution: `prefer`, `aliases`, `local`. |
-| `highlight` | `HighlightConfig` | Syntax highlight theme — single name or `{ light, dark }`. |
+| `highlight` | `HighlightConfig` | **Legacy.** Picks a Shiki built-in theme by name (or `{ light, dark }` pair) for fenced code blocks. The recommended modern approach is **`theme.presets`** with a Lumina syntax preset (`@refrakt-md/lumina/presets/nord`, `…/tideline`, etc.) plus **`theme.code.colorScheme`** to force light/dark code. Kept for back-compat; both mechanisms can coexist. |
 | `icons` | `Record<string, string>` | Custom icon SVGs merged into the theme's global icon group. |
 | `tints` | `Record<string, object>` | Project-level tint presets. |
 | `backgrounds` | `Record<string, object>` | Project-level background presets. |
 | `sandbox` | `object` | `{ examplesDir }` — directory for `{% sandbox %}` examples. |
+
+### Theme object form
+
+The string form (`"theme": "@refrakt-md/lumina"`) is shorthand for `{ "package": "@refrakt-md/lumina" }`. Use the object form when you need any of:
+
+- **`presets`** — palette or syntax presets merged into the theme in declared order (last wins per token).
+- **`tokens`** — site-level token overrides applied on top of the theme and any presets.
+- **`modes`** — per-mode overlays (e.g. `dark`) layered on top of theme modes and preset modes.
+- **`code.colorScheme`** — force fenced code blocks to a fixed scheme (`light` / `dark`) regardless of the page's mode.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| **`package`** | `string` | Theme package name (e.g. `@refrakt-md/lumina`) or relative path. |
+| `presets` | `string[]` | Preset module identifiers merged into the theme (last wins per token). |
+| `colorScheme` | `'auto' \| 'light' \| 'dark'` | Initial colour scheme — `auto` respects user preference, `light` / `dark` force the scheme. |
+| `tokens` | `ThemeTokensConfig` | Token overrides applied on top of base + presets. |
+| `modes` | `Record<string, PartialTokenContract>` | Per-mode overlays (typically just `dark`). |
+| `code.colorScheme` | `'auto' \| 'light' \| 'dark'` | Force code blocks to a fixed scheme regardless of page mode. |
+
+```json
+{
+  "site": {
+    "theme": {
+      "package": "@refrakt-md/lumina",
+      "presets": ["@refrakt-md/lumina/presets/niwaki"],
+      "tokens": {
+        "color": { "primary": "#e15f80" }
+      },
+      "modes": {
+        "dark": { "color": { "primary": "#e8788f" } }
+      },
+      "code": { "colorScheme": "dark" }
+    }
+  }
+}
+```
 
 ### Example: full site
 
@@ -120,7 +156,11 @@ A `SiteConfig` accepts these fields. Required fields are bold.
 {
   "site": {
     "contentDir": "./content",
-    "theme": "@refrakt-md/lumina",
+    "theme": {
+      "package": "@refrakt-md/lumina",
+      "presets": ["@refrakt-md/lumina/presets/niwaki"],
+      "code": { "colorScheme": "dark" }
+    },
     "target": "svelte",
     "baseUrl": "https://example.com",
     "siteName": "My Documentation",
@@ -131,7 +171,6 @@ A `SiteConfig` accepts these fields. Required fields are bold.
       { "pattern": "docs/**", "layout": "docsLayout" },
       { "pattern": "**", "layout": "defaultLayout" }
     ],
-    "highlight": { "theme": { "light": "github-light", "dark": "github-dark" } },
     "runes": {
       "prefer": { "storyboard": "@refrakt-md/marketing" },
       "aliases": { "callout": "hint" }

@@ -1,0 +1,83 @@
+/* card — generic content card (SPEC-070).
+ *
+ * Borderless (no outline) but with a soft surface fill — the surface + the
+ * structure (media split, footer separator) carry the card, no border needed.
+ * The media|content split + responsive collapse + mobile full-bleed media
+ * header come from the shared layouts/split.css (keyed off data-layout /
+ * data-section="media" / data-name="content" / data-media-position).
+ */
+
+.rf-card {
+	position: relative; /* anchor for the stretched link + media bleed */
+	padding: var(--rune-padding, var(--rf-spacing-md));
+	border-radius: var(--rf-radius-md);
+	background: var(--rf-color-surface);
+}
+
+.rf-card:hover {
+	background: var(--rf-color-surface-hover);
+}
+
+.rf-card__body > :first-child { margin-top: 0; }
+.rf-card__body > :last-child { margin-bottom: 0; }
+
+/* Eyebrow — a leading paragraph immediately before a heading, the same kicker
+ * treatment as page-section / recipe. */
+.rf-card__eyebrow {
+	font-size: 0.8rem;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--rf-color-primary);
+	margin: 0 0 0.375rem;
+}
+
+/* The body's leading heading is the card title; drop its prose top margin so it
+ * hugs the eyebrow (or the top of the card) instead of opening a gap. */
+.rf-card__title {
+	margin-top: 0;
+}
+
+.rf-card__footer {
+	margin-top: var(--rf-spacing-sm);
+	padding-top: var(--rf-spacing-sm);
+	border-top: 1px solid var(--rf-color-border);
+	font-size: 0.8125em;
+	color: var(--rf-color-muted);
+}
+
+/* In a collection grid, each row stretches its items to the tallest (see
+ * collection.css); these rules make a stacked card spend that height usefully:
+ * the card becomes a column, its content fills the leftover height, and the
+ * body grows so footers drop to a common baseline across the row. Scoped to
+ * stacked cards so a split card's grid (layouts/split.css) is left intact. */
+.rf-collection[data-layout='grid'] .rf-card[data-layout='stacked'] {
+	display: flex;
+	flex-direction: column;
+	/* The grid/flex wrapper stretches the card, but a nested flex container
+	 * doesn't always pass that height to its own flex children; pin it so the
+	 * content/body flex:1 reliably fills. */
+	height: 100%;
+}
+.rf-collection[data-layout='grid'] .rf-card[data-layout='stacked'] > .rf-card__content {
+	flex: 1;
+}
+.rf-collection[data-layout='grid'] .rf-card[data-layout='stacked'] .rf-card__content {
+	display: flex;
+	flex-direction: column;
+}
+.rf-collection[data-layout='grid'] .rf-card[data-layout='stacked'] .rf-card__body {
+	flex: 1;
+}
+
+/* Whole-card stretched link — covers the card; real links in body/footer
+ * sit above it via position:relative. */
+.rf-card__link {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+}
+.rf-card a:not(.rf-card__link) {
+	position: relative;
+	z-index: 1;
+}

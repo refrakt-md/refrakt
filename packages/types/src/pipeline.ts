@@ -75,8 +75,38 @@ export interface EntityRegistration {
 	 *  extract the entity's subtree for inline substitution. Optional and
 	 *  paired with `sourceFile` — entities without a backing file omit both. */
 	extract?: (parsedSource: import('@markdoc/markdoc').Node) => import('@markdoc/markdoc').Node | null;
+	/** Return the entity's embeddable content as a Markdoc AST node directly,
+	 *  without reading a source file (SPEC-069). The generalization of
+	 *  `sourceFile` + `extract`: an entity is embeddable via `embed()` *or*
+	 *  (`sourceFile` + `extract`). Plugins backed by in-memory / external data
+	 *  (no file on disk) provide `embed()`; file-backed plugins keep
+	 *  `sourceFile` + `extract`. Consumed by {% expand %}. */
+	embed?: () => import('@markdoc/markdoc').Node | null;
 	/** Entity-specific payload */
 	data: Record<string, unknown>;
+}
+
+/** A directed, typed relationship edge between two entities (SPEC-072).
+ *  `kind` is an arbitrary, domain-defined string (e.g. `implements`,
+ *  `blocked-by`, `ally`). Bidirectional relationships are expressed by
+ *  contributing both directions, so "every edge touching X" is X's outgoing
+ *  edges. `fromType`/`toType` are optional hints that speed up target
+ *  resolution; when absent the registry resolves `toId` by scanning types. */
+export interface EntityEdge {
+	fromId: string;
+	toId: string;
+	kind: string;
+	fromType?: string;
+	toType?: string;
+}
+
+/** An edge with its target entity resolved, returned by
+ *  {@link EntityRegistry.getRelated}. */
+export interface ResolvedEdge {
+	kind: string;
+	fromId: string;
+	toId: string;
+	target: EntityRegistration;
 }
 
 /** The site-wide entity registry built during Phase 2 (Register) */
@@ -96,6 +126,15 @@ export interface EntityRegistry {
 	getById(type: string, id: string, pageUrl?: string): EntityRegistration | undefined;
 	/** All registered entity type names */
 	getTypes(): string[];
+	/** Contribute a relationship edge to the graph (SPEC-072). Called by
+	 *  plugins during the aggregate phase. Exact `(fromId, toId, kind)`
+	 *  duplicates are deduped. Optional — a minimal registry need not carry a
+	 *  relationship graph. */
+	relate?(edge: EntityEdge): void;
+	/** Edges whose `fromId` is `id`, each with its target resolved (SPEC-072).
+	 *  `opts.kind` / `opts.type` filter by edge kind and target entity type.
+	 *  Edges to unknown entities are dropped. Optional — see {@link relate}. */
+	getRelated?(id: string, opts?: { kind?: string | string[]; type?: string | string[] }): ResolvedEdge[];
 }
 
 /**
@@ -114,7 +153,7 @@ export interface PipelineContext {
 /** A diagnostic emitted by a pipeline hook */
 export interface PipelineWarning {
 	severity: 'info' | 'warning' | 'error';
-	phase: 'register' | 'aggregate' | 'postProcess';
+	phase: 'register' | 'contribute' | 'aggregate' | 'postProcess';
 	pluginName: string;
 	/** Page URL that triggered the warning, if applicable */
 	url?: string;
@@ -222,6 +261,18 @@ export interface PluginPipelineHooks {
 	) => void;
 
 	/**
+	 * Phase 2.5 — Contribute pages (SPEC-069).
+	 * Synthesize virtual pages (from registered entities or external data) that
+	 * flow through the rest of the pipeline exactly like file-backed pages.
+	 * Runs after register (so the registry is populated) and before aggregate.
+	 * Sync or async; the loader awaits the promise. Errors are caught and the
+	 * plugin's contributions are skipped with a build warning.
+	 */
+	contributePages?: (
+		ctx: ContributePagesContext,
+	) => ContributedPage[] | Promise<ContributedPage[]>;
+
+	/**
 	 * Phase 3 — Aggregate.
 	 * Build cross-page indexes, graphs, or collections from the full registry.
 	 * Called once after all register hooks have run.
@@ -243,4 +294,33 @@ export interface PluginPipelineHooks {
 		aggregated: AggregatedData,
 		ctx: PipelineContext,
 	) => TransformedPage;
+}
+
+/** Context handed to {@link PluginPipelineHooks.contributePages} (SPEC-069). */
+export interface ContributePagesContext extends PipelineContext {
+	/** The registry after Phase 2 — read entities to derive routes. */
+	registry: Readonly<EntityRegistry>;
+	/** Absolute path to the project root, for resolving config-relative paths. */
+	projectRoot?: string;
+	/** The per-site config slice (typed `unknown` to avoid a circular import;
+	 *  the built-in entityRoutes adapter casts to `SiteConfig`). */
+	siteConfig?: unknown;
+}
+
+/** A page synthesized by a plugin (SPEC-069). The framework parses + transforms
+ *  it and runs it through register / aggregate / postProcess like a file page. */
+export interface ContributedPage {
+	/** Site-root-relative route (basePath is applied by the loader). */
+	url: string;
+	/** Page title; falls back to the rendered content's heading when omitted. */
+	title?: string;
+	/** Frontmatter for the synthesized page. */
+	frontmatter?: Record<string, unknown>;
+	/** Markdoc source for the page body. */
+	content: string;
+	/** Extra markdoc variables bound when transforming the page body (e.g. the
+	 *  entityRoutes adapter binds `{ item }` so `$item` resolves in `render`). */
+	variables?: Record<string, unknown>;
+	/** Attribution for diagnostics / collision messages. */
+	source?: { plugin?: string; ruleIndex?: number };
 }

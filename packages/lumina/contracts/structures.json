@@ -200,6 +200,69 @@
 				"{content}"
 			]
 		},
+		"Badge": {
+			"block": "badge",
+			"root": ".rf-badge",
+			"dataRune": "badge",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Collection": {
+			"block": "collection",
+			"root": ".rf-collection",
+			"dataRune": "collection",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Relationships": {
+			"block": "relationships",
+			"root": ".rf-relationships",
+			"dataRune": "relationships",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Aggregate": {
+			"block": "aggregate",
+			"root": ".rf-aggregate",
+			"dataRune": "aggregate",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Progress": {
+			"block": "progress",
+			"root": ".rf-progress",
+			"dataRune": "progress",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"sentiment": {
+					"source": "meta",
+					"classPattern": ".rf-progress--{value}",
+					"dataAttribute": "data-sentiment"
+				}
+			}
+		},
+		"Card": {
+			"block": "card",
+			"root": ".rf-card",
+			"dataRune": "card",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"layout": {
+					"source": "meta",
+					"default": "stacked",
+					"classPattern": ".rf-card--{value}",
+					"dataAttribute": "data-layout"
+				}
+			}
+		},
 		"Embed": {
 			"block": "embed",
 			"root": ".rf-embed",

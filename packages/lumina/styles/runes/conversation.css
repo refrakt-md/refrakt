@@ -47,7 +47,12 @@
 }
 .rf-conversation-message__body p { margin: 0; }
 .rf-conversation-message__body p + p { margin-top: 0.5rem; }
-.rf-conversation-message__body > span[property],
+/* The speaker name lives inline-bold inside the bubble (the explicit form
+ * authors it that way, and the named-speakers form injects it the same way),
+ * so the property-carrier span is data only — hide it. Same for the meta
+ * tags the engine consumes. `data-field` is the post-engine attribute set by
+ * createComponentRenderable. */
+.rf-conversation-message > span[data-field="speaker"],
+.rf-conversation-message > meta[data-field] { display: none; }
+.rf-conversation-message__body > span[data-field],
 .rf-conversation-message__body > meta { display: none; }
-.rf-conversation-message > span[property="speaker"],
-.rf-conversation-message > meta[property] { display: none; }

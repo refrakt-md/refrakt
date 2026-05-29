@@ -16,6 +16,51 @@ describe('EntityRegistryImpl', () => {
 		expect(result?.data.title).toBe('Docs');
 	});
 
+	describe('relationship graph (SPEC-072)', () => {
+		function seeded() {
+			const r = new EntityRegistryImpl();
+			r.register({ type: 'work', id: 'WORK-1', data: { title: 'One' } });
+			r.register({ type: 'spec', id: 'SPEC-1', data: { title: 'Spec One' } });
+			r.register({ type: 'bug', id: 'BUG-1', data: { title: 'Bug One' } });
+			return r;
+		}
+
+		it('relate + getRelated resolves targets and is directed', () => {
+			const r = seeded();
+			r.relate({ fromId: 'WORK-1', toId: 'SPEC-1', kind: 'implements', toType: 'spec' });
+			const out = r.getRelated('WORK-1');
+			expect(out).toHaveLength(1);
+			expect(out[0].kind).toBe('implements');
+			expect(out[0].target.id).toBe('SPEC-1');
+			expect(out[0].target.data.title).toBe('Spec One');
+			// directed: SPEC-1 has no outgoing edge unless contributed
+			expect(r.getRelated('SPEC-1')).toHaveLength(0);
+		});
+
+		it('dedupes exact (fromId, toId, kind) edges', () => {
+			const r = seeded();
+			r.relate({ fromId: 'WORK-1', toId: 'SPEC-1', kind: 'implements' });
+			r.relate({ fromId: 'WORK-1', toId: 'SPEC-1', kind: 'implements' });
+			expect(r.getRelated('WORK-1')).toHaveLength(1);
+		});
+
+		it('filters by kind and target type, and drops unknown targets', () => {
+			const r = seeded();
+			r.relate({ fromId: 'WORK-1', toId: 'SPEC-1', kind: 'implements' });
+			r.relate({ fromId: 'WORK-1', toId: 'BUG-1', kind: 'related' });
+			r.relate({ fromId: 'WORK-1', toId: 'GHOST-9', kind: 'related' });
+			expect(r.getRelated('WORK-1')).toHaveLength(2); // GHOST-9 dropped
+			expect(r.getRelated('WORK-1', { kind: 'implements' })).toHaveLength(1);
+			expect(r.getRelated('WORK-1', { type: 'bug' }).map((e) => e.toId)).toEqual(['BUG-1']);
+		});
+
+		it('resolves target by scanning types when toType is omitted', () => {
+			const r = seeded();
+			r.relate({ fromId: 'WORK-1', toId: 'SPEC-1', kind: 'implements' });
+			expect(r.getRelated('WORK-1')[0].target.type).toBe('spec');
+		});
+	});
+
 	it('getAll returns all entities of a type in insertion order', () => {
 		const registry = new EntityRegistryImpl();
 		registry.register({ type: 'page', id: '/a/', sourceUrl: '/a/', data: { title: 'A' } });

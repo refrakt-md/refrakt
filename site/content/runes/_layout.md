@@ -27,10 +27,18 @@ tint-lock: false
 - conversation
 - reveal
 - embed
-- expand
+- card
+- progress
 - icon
-- xref
 - badge
+
+## Registry
+
+- xref
+- expand
+- collection
+- relationships
+- aggregate
 
 ## Layout
 

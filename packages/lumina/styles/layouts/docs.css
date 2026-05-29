@@ -100,6 +100,15 @@
 	background: var(--rf-color-bg, #fff);
 	z-index: 5;
 }
+/* Match the sticky offset in the natural-flow position too. The fixed header
+ * is out of flow so `.rf-docs-body` starts at viewport top; without this
+ * margin, the sidebar's static position sits at Y=0 with its top 3.125rem
+ * hidden under the header — visible only when the page scrolls enough for
+ * sticky to activate. Scoped to `:has(.rf-docs-header)` so layouts without a
+ * header don't gain an unwanted top gap. */
+html:has(.rf-docs-header) .rf-docs-sidebar {
+	margin-top: 3.125rem;
+}
 .rf-docs-sidebar::-webkit-scrollbar {
 	width: 0;
 }
@@ -190,6 +199,8 @@ html:has(.rf-docs-header) {
 	padding: 0.625rem 1rem;
 	border-bottom: 1px solid var(--rf-color-border);
 	background: var(--rf-color-bg, #fff);
+	max-width: 100%;
+	overflow: hidden;
 }
 .rf-docs-toolbar__hamburger {
 	background: none;
@@ -206,6 +217,12 @@ html:has(.rf-docs-header) {
 .rf-docs-toolbar__breadcrumb {
 	font-size: 0.8rem;
 	color: var(--rf-color-muted);
+	/* `flex: 1 1 0` (basis 0, not auto) so the breadcrumb shrinks against
+	 * the available space rather than starting at its full content width —
+	 * combined with `min-width: 0` this is what triggers ellipsis on long
+	 * titles. Without basis 0 a long page title overflows the toolbar and
+	 * forces horizontal page scroll on narrow viewports. */
+	flex: 1 1 0;
 	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;

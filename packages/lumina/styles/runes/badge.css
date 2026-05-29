@@ -1,33 +1,37 @@
-/* Badge rune — standalone inline pill that visually stands out from prose.
+/* Badge rune — standalone inline chip.
  *
- * Unlike the metadata badges that appear inside card chrome (plan items,
- * recipe meta, work item headers), standalone {% badge %} runes are meant
- * to pop. They reuse the universal `--meta-color` set by
- * dimensions/metadata.css's sentiment rules, applied as a sentiment-tinted
- * border, a low-opacity sentiment-tinted background, and sentiment-coloured
- * text. The leading sentiment dot from metadata.css is dropped — the
- * background tint already carries the sentiment cue.
+ * Built atop the metadata pill base (`data-meta-type`), but reshaped to the
+ * compact chip look used by plan-progress status counts: **no border**,
+ * solid-ish sentiment-tinted background, smaller font + tighter padding, and
+ * a small corner radius. Tints come from the universal `--meta-color` set by
+ * `dimensions/metadata.css`'s sentiment rules (positive / caution / negative /
+ * neutral → success / warning / danger / muted). Background is a `color-mix`
+ * of that color, so the chip stays sentiment-flexible — any value the theme
+ * gives `--meta-color` works without per-status selectors.
  *
- * rank="primary" boosts emphasis with a heavier background tint and a
- * bolder weight, useful for "Popular" / "Featured" labels that should
- * dominate over their neighbours.
+ * `rank="primary"` boosts emphasis with a heavier tint and bolder weight,
+ * useful for labels that should dominate over neighbours.
  */
 
 .rf-badge {
 	vertical-align: baseline;
-	border-color: var(--meta-color, var(--rf-color-border));
-	background: color-mix(in srgb, var(--meta-color, transparent) 12%, transparent);
-	color: var(--meta-color, var(--rf-color-text));
+	border: none;
+	background: color-mix(in srgb, var(--meta-color, var(--rf-color-muted)) 10%, transparent);
+	color: var(--meta-color, var(--rf-color-muted));
+	font-size: 0.75rem;
 	font-weight: 500;
+	padding: 0.125rem 0.5rem;
+	border-radius: var(--rf-radius-sm);
+	white-space: nowrap;
 }
 
 .rf-badge[data-meta-rank="primary"] {
-	background: color-mix(in srgb, var(--meta-color, transparent) 22%, transparent);
+	background: color-mix(in srgb, var(--meta-color, var(--rf-color-muted)) 28%, transparent);
 	font-weight: 600;
 }
 
 /* Drop the sentiment dot — the background tint carries the cue for
- * standalone badges, and the dot competes visually with adjacent prose. */
+ * standalone chips, and the dot competes visually with adjacent prose. */
 .rf-badge::before {
 	display: none;
 }

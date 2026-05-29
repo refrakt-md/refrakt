@@ -44,6 +44,11 @@ import { bg } from './tags/bg.js';
 import { blog } from './tags/blog.js';
 import { xref } from './tags/xref.js';
 import { expand } from './tags/expand.js';
+import { collection } from './tags/collection.js';
+import { relationships } from './tags/relationships.js';
+import { aggregate } from './tags/aggregate.js';
+import { progress } from './tags/progress.js';
+import { card } from './tags/card.js';
 import { badge } from './tags/badge.js';
 import Markdoc from '@markdoc/markdoc';
 
@@ -55,6 +60,21 @@ export { RenderableNodeCursor } from './lib/renderable.js';
 export { createContentModelSchema, createComponentRenderable, asNodes, schemaContentModels, sanitizeSandboxContent } from './lib/index.js';
 export type { DeprecationRule, ContentModelSchemaOptions } from './lib/index.js';
 export { resolve, resolveSequence, resolveDelimited, resolveContentModel, resolveListItems, evaluateCondition, matchesType } from './lib/resolver.js';
+export { parseFieldMatch, matchesFieldMatch, matchesFilterExpr, resolveEntityField } from './field-match.js';
+export type { MatchableEntity, FieldMatchClause, ParsedFieldMatch } from './field-match.js';
+export { DEFERRED_BODY_ATTR, captureDeferredBodies, readDeferredBody, transformDeferredTemplate } from './deferred-body.js';
+export { resolveCollections } from './collection-resolve.js';
+export { resolveRelationships } from './relationships-resolve.js';
+export { resolveAggregates } from './aggregate-resolve.js';
+export { RELATIONSHIPS_SENTINEL } from './tags/relationships.js';
+export { AGGREGATE_SENTINEL } from './tags/aggregate.js';
+export {
+	Ordering, buildOrdering, sortEntities, groupEntities, groupBy,
+	entityUrl, entityTitle, fieldValue, titleLink, projectItem, renderItemTemplate,
+} from './collection-helpers.js';
+export type { CollectionEmbedConfig } from './collection-helpers.js';
+export { COLLECTION_SENTINEL } from './tags/collection.js';
+export { functions, currency, date, number, join, concat, humanize } from './functions.js';
 export { linkItem, pageSectionProperties, buildLayoutMetas, extractMediaImage, unwrapParagraphImages, name as nameHelper, description as descriptionHelper, SplitablePageSectionModel, SplitLayoutModel, splitLayoutAttributes } from './tags/common.js';
 export type { LayoutMetas } from './tags/common.js';
 export { extractHeadings, firstH1, headingsToList } from './util.js';
@@ -551,11 +571,58 @@ export const runes = {
     category: 'Content',
     snippet: ['{% badge sentiment="${1|positive,negative,caution,neutral|}" %}', '${2:Label}', '{% /badge %}'],
   }),
+  collection: defineRune({
+    name: 'collection',
+    schema: collection,
+    description: 'Render a list, grid, or table of registry entities — the plural counterpart to ref/expand. Queries the registry by type with a field:value filter, sort, group, and limit; projects fields into a built-in layout or a per-item body template ($item bound).',
+    typeName: 'Collection',
+    category: 'Content',
+    snippet: ['{% collection type="${1:work}" filter="${2:status:ready}" sort="${3:priority}" /%}'],
+  }),
+  relationships: defineRune({
+    name: 'relationships',
+    schema: relationships,
+    description: "Render an entity's relationship edges, grouped by kind — the plural-graph counterpart to ref/expand. Reads the registry relationship graph for `of` (an id, e.g. of=$item.id); each item is a related entity with its edge $kind bound. Generic over kind, so it serves any domain (plan, storytelling, …).",
+    typeName: 'Relationships',
+    category: 'Content',
+    snippet: ['{% relationships of="${1:WORK-1}" /%}'],
+  }),
+  aggregate: defineRune({
+    name: 'aggregate',
+    schema: aggregate,
+    description: 'Project numbers — counts (and per-group breakdowns) over the registry — beside collection (items) and relationships (edges). Two modes: a no-body inline integer (`{% aggregate type="work" filter="status:done" /%}`) or a body-zoned form whose preamble / template / fallback zones bind `$item` to a totals / per-group / zeros projection. Use the optional `value` sub-filter (e.g. `value="status:done"`) to drive a progress-bar ratio without a second query.',
+    typeName: 'Aggregate',
+    category: 'Content',
+    snippet: ['{% aggregate type="${1:work}" filter="${2:status:done}" /%}'],
+  }),
+  progress: defineRune({
+    name: 'progress',
+    schema: progress,
+    description: 'A generic completion bar. Renders a ratio from supplied numbers — value+max (or percent) — with an optional body label; computes nothing itself. Feed it an aggregate (e.g. value=$item.data.progressDone max=$item.data.progressTotal).',
+    typeName: 'Progress',
+    category: 'Content',
+    snippet: ['{% progress value="${1:3}" max="${2:10}" /%}'],
+  }),
+  card: defineRune({
+    name: 'card',
+    schema: card,
+    description: 'A generic, self-contained content card. The body splits on `---` into [media] / body / [footer]: the media zone holds any content (image, codegroup, sandbox, …) and lays out beside the body on wide screens / as a full-bleed header on mobile; the footer is a muted meta row. Optional `href` makes the whole card a link. Knows nothing about the registry — usable standalone or inside a collection body template.',
+    typeName: 'Card',
+    category: 'Content',
+    snippet: ['{% card href="${1:/posts/slug/}" %}', '### ${2:Title}', '${3:A short summary.}', '{% /card %}'],
+  }),
 };
 
-/** Markdoc-compatible tags map derived from runes + Markdoc built-in tags */
+/** Markdoc-compatible tags map derived from runes + Markdoc built-in tags.
+ *
+ * `link` is exposed as a tag in addition to its node registration (which
+ * handles `[text](url)` markdown syntax). Markdown link URLs are literal at
+ * parse-time, so they can't reference variables — `{% link href=$item.url %}`
+ * gives template authors a way to build dynamic links inside collection
+ * cells, partials, etc. */
 export const tags = {
   ...runeTagMap(runes),
+  link,
   ...Markdoc.tags,
 };
 

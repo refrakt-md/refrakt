@@ -2,10 +2,10 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, relative, sep as pathSep, posix as pathPosix } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes, Schema } from '@markdoc/markdoc';
-import { tags, nodes, extractHeadings, firstH1, extractSeo, corePipelineHooks, createCorePipelineHooks, escapeFenceTags, resolveCoreSentinels } from '@refrakt-md/runes';
+import { tags, nodes, extractHeadings, firstH1, extractSeo, createCorePipelineHooks, escapeFenceTags, resolveCoreSentinels, captureDeferredBodies, functions } from '@refrakt-md/runes';
 import type { CompiledXrefPattern } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
-import type { Plugin, PipelineWarning, AggregatedData, SecurityPolicy } from '@refrakt-md/types';
+import type { Plugin, PipelineWarning, AggregatedData, SecurityPolicy, ContributedPage } from '@refrakt-md/types';
 import { resolveSecurityPolicy } from '@refrakt-md/types';
 import type { PipelineStats } from './pipeline.js';
 import { ContentTree, type PartialFile } from './content-tree.js';
@@ -15,6 +15,7 @@ import { resolveLayouts, ResolvedLayout } from './layout.js';
 import { resolveTintCascade, type ResolvedTintCascade } from './tint-cascade.js';
 import { NavTree } from './navigation.js';
 import { runPipeline, type HookSet } from './pipeline.js';
+import { createEntityRoutesHooks } from './entity-routes.js';
 import { getGitTimestamps, resolveTimestamps, type FileTimestamps } from './timestamps.js';
 import { readFileRoots, type FileRoots } from './file-roots.js';
 
@@ -51,6 +52,8 @@ export interface SitePage {
    *  (SPEC-052). Adapters emit this as `data-theme` / `data-tint` /
    *  `data-tint-lock` attributes on `<html>` at SSR time. */
   tintCascade: ResolvedTintCascade;
+  /** Provenance — file-backed by default, or contributed by a plugin (SPEC-069). */
+  source?: { type: 'file' | 'contributed'; plugin?: string; ruleIndex?: number };
 }
 
 /** Synchronous file reader that returns null on failure. */
@@ -83,7 +86,10 @@ function transformContent(
 ): { renderable: RenderableTreeNodes; headings: HeadingInfo[] } {
   const headings = extractHeadings(ast);
   const mergedTags = additionalTags ? { ...tags, ...additionalTags } : tags;
-  const config: Record<string, unknown> = { tags: mergedTags, nodes, variables: {
+  // Capture deferBody runes' bodies as source before transform, so their
+  // per-entity `$item` templates aren't resolved here (SPEC-070 / WORK-262).
+  captureDeferredBodies(ast, (name) => Boolean((mergedTags as Record<string, { deferBody?: boolean }>)[name]?.deferBody));
+  const config: Record<string, unknown> = { tags: mergedTags, nodes, functions, variables: {
     generatedIds: new Set<string>(), path, headings, __source: content, __sourcePath: sourcePath,
     ...(icons ? { __icons: icons } : {}),
     ...contentVariables,
@@ -159,6 +165,9 @@ interface ProcessContentTreeOptions {
    *  project-root-relative POSIX path. When omitted, `$file.path` falls
    *  back to the page's content-root-relative path (`$page.path`). */
   projectRoot?: string;
+  /** Per-site config slice, passed to contributePages hooks (SPEC-069). The
+   *  built-in entityRoutes adapter reads `entityRoutes` from it. */
+  siteConfig?: unknown;
   /** Compiled xref patterns from `refrakt.config.json#/xrefs`. Used by
    *  the xref resolver as a URL-resolution fallback when registry entities
    *  have no usable `sourceUrl`. */
@@ -213,23 +222,52 @@ async function processContentTree(
   // them to re-transform extracted entity subtrees using the same schemas
   // the host page used.
   const embedTags = opts.additionalTags ? { ...tags, ...opts.additionalTags } : tags;
+  // SPEC-072 — collect plugin-declared (type, field) ordering overrides so
+  // collection/relationships sort & group in domain order. Defaults still come
+  // from each rune's attribute `matches`; these only cover the divergent cases.
+  const orderings: Record<string, Record<string, string[]>> = {};
+  for (const pkg of opts.plugins ?? []) {
+    const o = pkg.theme?.orderings;
+    if (!o) continue;
+    for (const [type, fields] of Object.entries(o)) {
+      orderings[type] = { ...(orderings[type] ?? {}), ...fields };
+    }
+  }
   const coreHooksOptions = {
     xrefPatterns: opts.xrefPatterns,
     embedConfig: {
       tags: embedTags as Record<string, unknown>,
       nodes: nodes as Record<string, unknown>,
+      functions: functions as Record<string, unknown>,
+      orderings,
+      // Pass parsed partials so `{% partial file="…" /%}` inside a collection
+      // body template (or an expand-resolved entity body) resolves the same
+      // way it would inside a top-level page. Without this, partial nodes in
+      // deferred templates silently render as empty `<article>` tags.
+      partials: parsedPartials,
       projectRoot: opts.projectRoot,
     },
   };
-  const coreHooks = (opts.xrefPatterns && opts.xrefPatterns.length > 0) || opts.projectRoot
-    ? createCorePipelineHooks(coreHooksOptions)
-    : corePipelineHooks;
+  // Always thread embedConfig: collection (SPEC-070) and expand (SPEC-066) need
+  // the merged tags/nodes/functions to transform per-entity templates, even
+  // when a site sets no xref patterns or project root.
+  const coreHooks = createCorePipelineHooks(coreHooksOptions);
   const hookSets: HookSet[] = [{ pluginName: '__core__', hooks: coreHooks }];
   for (const pkg of opts.plugins ?? []) {
     if (pkg.pipeline) {
       hookSets.push({ pluginName: pkg.name, hooks: pkg.pipeline });
     }
   }
+  // Built-in entityRoutes config-rules adapter (SPEC-069). Resolves render-template
+  // partials from the (lazily populated) partials map. No-op unless the site
+  // config declares `entityRoutes`.
+  hookSets.push({
+    pluginName: '__entity-routes__',
+    hooks: createEntityRoutesHooks((name) => {
+      const node = parsedPartials?.[name];
+      return node ? Markdoc.format(node) : undefined;
+    }),
+  });
 
   // Per-page preprocess context — file-system + project-root shared with the
   // transform-time sandbox but exposed at preprocess time (variables aren't
@@ -323,10 +361,64 @@ async function processContentTree(
     pages.push({ route, frontmatter, content, renderable, headings, layout, seo, tintCascade });
   }
 
+  // Mark file-backed pages with their provenance (SPEC-069).
+  for (const p of pages) p.source = { type: 'file' };
+
+  // Render a plugin-contributed page (SPEC-069) into a full SitePage, applying
+  // basePath, resolving the layout/tint cascade for its URL, and running the
+  // same transform (incl. deferBody capture) as a file page.
+  const base = (opts.basePath ?? '/').replace(/\/$/, '');
+  const renderContributed = (cp: ContributedPage): SitePage => {
+    const frontmatter = { ...(cp.frontmatter ?? {}) } as Frontmatter;
+    if (cp.title != null && frontmatter.title === undefined) frontmatter.title = cp.title;
+    const url = cp.url.startsWith('/') ? `${base}${cp.url}` : `${base}/${cp.url}`;
+    const relativePath = cp.url.replace(/^\//, '');
+    // `raw` is read by resolveTintCascade (re-parses frontmatter). Contributed
+    // pages carry parsed frontmatter already; an empty raw means their tint
+    // comes from the layout cascade (no per-page tint frontmatter).
+    const layoutPage = { relativePath, raw: '' } as never;
+    const layout = resolveLayouts(layoutPage, tree.root, opts.icons);
+    const ast = Markdoc.parse(escapeFenceTags(cp.content));
+    const contentVariables: Record<string, unknown> = {
+      ...opts.variables,
+      frontmatter,
+      page: {
+        url,
+        path: relativePath,
+        dir: posixDirname(relativePath),
+        slug: lastUrlSegment(url),
+        title: cp.title ?? derivePageTitle(frontmatter, ast),
+        draft: frontmatter.draft === true,
+      },
+      file: { path: relativePath, created: undefined, modified: undefined },
+      __sandboxReadFile: sandbox.read,
+      __sandboxListDir: sandbox.list,
+      __sandboxDirExists: sandbox.exists,
+      __sandboxExamplesDir: opts.sandboxExamplesDir,
+      __securityPolicy: resolvedSecurity,
+      // Per-contribution bound variables (e.g. entityRoutes binds `item`).
+      ...(cp.variables ?? {}),
+    };
+    const { renderable, headings } = transformContent(
+      ast, cp.content, url, relativePath, opts.icons, opts.additionalTags, contentVariables, parsedPartials,
+    );
+    const seo = extractSeo(renderable, frontmatter, url);
+    const tintCascade = resolveTintCascade(layoutPage, tree.root, { colorScheme: opts.colorScheme });
+    return {
+      route: { url, filePath: `<contributed:${cp.source?.plugin ?? 'plugin'}>`, draft: frontmatter.draft === true },
+      frontmatter, content: cp.content, renderable, headings, layout, seo, tintCascade,
+      source: { type: 'contributed', plugin: cp.source?.plugin, ruleIndex: cp.source?.ruleIndex },
+    };
+  };
+
   // `hookSets` were built before the per-page loop so the preprocess phase
   // could run during page processing. They're reused here for register /
-  // aggregate / postProcess.
-  const { pages: enrichedPages, warnings, stats, aggregated } = await runPipeline(pages, hookSets);
+  // contribute / aggregate / postProcess.
+  const { pages: enrichedPages, warnings, stats, aggregated } = await runPipeline(pages, hookSets, {
+    renderContributed,
+    projectRoot: opts.projectRoot,
+    siteConfig: opts.siteConfig,
+  });
 
   // Funnel any preprocess-phase diagnostics (file-not-found, sandbox rejections,
   // line-range clamps) into the same warnings array the rest of the pipeline
@@ -416,6 +508,7 @@ export async function loadContent(
   projectRoot?: string,
   xrefPatterns?: CompiledXrefPattern[],
   fileRoots?: FileRoots,
+  siteConfig?: unknown,
 ): Promise<Site> {
   const tree = await ContentTree.fromDirectory(dirPath);
   const resolvedExamplesDir = sandboxExamplesDir
@@ -444,6 +537,7 @@ export async function loadContent(
     projectRoot: resolvedProjectRoot,
     xrefPatterns,
     fileRoots,
+    siteConfig,
   });
 }
 
@@ -485,6 +579,10 @@ export interface LoadContentFromTreeOptions {
   xrefPatterns?: CompiledXrefPattern[];
   /** Registered file roots — namespace → absolute directory path. */
   fileRoots?: FileRoots;
+  /** Per-site config slice — passed to contributePages hooks so the built-in
+   *  entityRoutes adapter can read `entityRoutes` and other site-scoped
+   *  config. */
+  siteConfig?: unknown;
 }
 
 /**
@@ -521,5 +619,6 @@ export async function loadContentFromTree(
     projectRoot: options.projectRoot,
     xrefPatterns: options.xrefPatterns,
     fileRoots: options.fileRoots,
+    siteConfig: options.siteConfig,
   });
 }

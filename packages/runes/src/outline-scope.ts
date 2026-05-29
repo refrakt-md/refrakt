@@ -42,6 +42,71 @@ export function applyOutlineScopeWalkers(renderable: unknown): unknown {
 	return renderable;
 }
 
+export interface HarvestedHeading {
+	level: number;
+	text: string;
+	id: string;
+}
+
+/**
+ * Walk a final renderable tree and collect every `h1`..`h6` not inside a
+ * `data-outline-scope` subtree, in document order. Used to refresh
+ * `page.headings` after postProcess substitutions (expand `level=N`,
+ * collection bodies, …) bring new headings into the host outline that
+ * the parse-time `extractHeadings` couldn't see — the source AST only
+ * had the placeholder rune at that point.
+ *
+ * Skips scoped subtrees so embedded sub-outlines (expand in peer-document
+ * mode) stay isolated from the host TOC, mirroring `filterTocItems`.
+ */
+export function harvestHeadingsFromRenderable(renderable: unknown): HarvestedHeading[] {
+	const out: HarvestedHeading[] = [];
+	walkAndHarvestHeadings(renderable, false, out);
+	return out;
+}
+
+function walkAndHarvestHeadings(
+	node: unknown,
+	insideScope: boolean,
+	out: HarvestedHeading[],
+): void {
+	if (Array.isArray(node)) {
+		for (const c of node) walkAndHarvestHeadings(c, insideScope, out);
+		return;
+	}
+	if (!Tag.isTag(node as never)) return;
+	const tag = node as InstanceType<typeof Tag>;
+	const attrs = tag.attributes as Record<string, unknown> | undefined;
+
+	if (HEADING_TAG_RE.test(tag.name)) {
+		if (insideScope) return; // scoped headings don't belong in the host outline
+		const level = Number(tag.name.slice(1));
+		const id = typeof attrs?.id === 'string' ? attrs.id : '';
+		const text = headingText(tag);
+		if (id && text) out.push({ level, text, id });
+		return; // no further descent into a heading
+	}
+
+	const childInsideScope = insideScope || (attrs && typeof attrs[OUTLINE_SCOPE_ATTR] === 'string');
+	if (!tag.children || tag.children.length === 0) return;
+	for (const c of tag.children) {
+		walkAndHarvestHeadings(c, !!childInsideScope, out);
+	}
+}
+
+/** Flatten a heading's inline content to plain text. Concatenates raw
+ *  string children and recurses into inline tags (em, strong, code, …) so
+ *  formatted headings produce the same plain string `extractHeadings`
+ *  would have. */
+function headingText(node: unknown): string {
+	if (typeof node === 'string') return node;
+	if (typeof node === 'number') return String(node);
+	if (Array.isArray(node)) return node.map(headingText).join('');
+	if (!Tag.isTag(node as never)) return '';
+	const tag = node as InstanceType<typeof Tag>;
+	return (tag.children ?? []).map(headingText).join('');
+}
+
 /** First pass — walk the tree, track an `outline-scope` stack (innermost
  *  wins), prefix each heading's `id` when scoped. Headings whose original
  *  IDs got prefixed are recorded in `scopedOriginalIds` so the TOC walker

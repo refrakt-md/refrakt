@@ -381,8 +381,10 @@ D.
 		// The milestone card should link to the milestone entity page, not the dashboard
 		expect(html).toContain('v1.0');
 		expect(html).toContain('/milestone/v1-0.html');
-		// The card link should point to the entity page, not /index.html
-		expect(html).toMatch(/rf-backlog__card-link" href="\/milestone\/v1-0\.html"/);
+		// The card link should point to the entity page, not /index.html.
+		// Backlog lowers to `collection` (WORK-284) and its default body uses
+		// the `card` rune, so the link emits as `rf-card__link`.
+		expect(html).toMatch(/<a[^>]*href="\/milestone\/v1-0\.html"[^>]*class="rf-card__link"/);
 	});
 
 	it('sidebar behavior scripts are injected', async () => {

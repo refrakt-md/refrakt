@@ -12,8 +12,11 @@ import { resolveXrefs } from './xref-resolve.js';
 import type { CompiledXrefPattern } from './xref-patterns.js';
 import { preprocessSnippets, wrapStandaloneSnippets } from './snippet-pipeline.js';
 import { registerDrawers, resolveAutoDrawerTitleLevels } from './drawer-pipeline.js';
-import { applyOutlineScopeWalkers } from './outline-scope.js';
+import { applyOutlineScopeWalkers, harvestHeadingsFromRenderable } from './outline-scope.js';
 import { resolveExpands } from './expand-pipeline.js';
+import { resolveCollections } from './collection-resolve.js';
+import { resolveRelationships } from './relationships-resolve.js';
+import { resolveAggregates } from './aggregate-resolve.js';
 
 // ─── Budget postTransform helpers ───
 
@@ -158,6 +161,36 @@ export const coreConfig: ThemeConfig = {
 		 * class="rf-expand" data-rune="expand">`. Engine config provides the
 		 * block name for CSS tree-shaking. */
 		Expand: { block: 'expand' },
+		/* Badge emits a complete `<span class="rf-badge" data-rune="badge">`
+		 * directly from its schema and needs no engine post-processing, but
+		 * still needs an entry in the theme config so `computeUsedCssBlocks`
+		 * includes `badge.css` in CSS tree-shaking when a badge is rendered. */
+		Badge: { block: 'badge' },
+		/* Collection emits a sentinel during transform; the postProcess hook
+		 * (`resolveCollections`) fills it with queried entities. Engine config
+		 * provides the block name for CSS tree-shaking. */
+		Collection: { block: 'collection' },
+		Relationships: { block: 'relationships' },
+		/* Aggregate emits a sentinel during transform; the postProcess hook
+		 * (`resolveAggregates`) fills it with either a single integer (no-body
+		 * form) or a body-zoned breakdown. Engine config provides the block
+		 * name for CSS tree-shaking. */
+		Aggregate: { block: 'aggregate' },
+		Progress: {
+			block: 'progress',
+			modifiers: { sentiment: { source: 'meta' } },
+		},
+		/* card — generic content card. The `layout` meta drives the shared
+		 * split layout (split.css, data-attribute-keyed); data-media-position
+		 * hoists the media to a full-bleed header on mobile. Named parts
+		 * (media/content/body/footer/link) get rf-card__* from data-name. */
+		Card: {
+			block: 'card',
+			rootAttributes: { 'data-media-position': 'top' },
+			modifiers: {
+				layout: { source: 'meta', default: 'stacked' },
+			},
+		},
 		Embed: {
 			block: 'embed',
 			defaultDensity: 'compact',
@@ -2367,6 +2400,12 @@ export interface CorePipelineHooksOptions {
 	embedConfig?: {
 		tags: Record<string, unknown>;
 		nodes: Record<string, unknown>;
+		functions?: Record<string, unknown>;
+		/** Parsed partials from the content tree's `_partials/` and any
+		 *  registered file-root namespaces. Threaded through so partial
+		 *  references inside deferred-body templates (collection, expand)
+		 *  resolve the same way they do in top-level page transforms. */
+		partials?: Record<string, unknown>;
 		projectRoot?: string;
 	};
 }
@@ -2487,6 +2526,8 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			embedConfig?: {
 				tags: Record<string, unknown>;
 				nodes: Record<string, unknown>;
+				functions?: Record<string, unknown>;
+				partials?: Record<string, unknown>;
 				projectRoot?: string;
 			};
 		} | undefined;
@@ -2563,6 +2604,38 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			ctx,
 		);
 
+		// SPEC-070 collection resolution — runs after expand and before xref so
+		// item-template `{% ref %}`s are resolved by the same xref pass.
+		renderable = resolveCollections(
+			renderable,
+			page.url,
+			coreData.registry,
+			coreData.embedConfig,
+			ctx,
+		);
+
+		// SPEC-072 relationships resolution — same placement rationale as
+		// collection: after expand, before xref (so item-template `{% ref %}`s
+		// resolve in the same xref pass).
+		renderable = resolveRelationships(
+			renderable,
+			page.url,
+			coreData.registry,
+			coreData.embedConfig,
+			ctx,
+		);
+
+		// SPEC-076 aggregate resolution — same placement as collection /
+		// relationships: after expand, before xref (so any `{% ref %}` inside
+		// the body template resolves in the same xref pass).
+		renderable = resolveAggregates(
+			renderable,
+			page.url,
+			coreData.registry,
+			coreData.embedConfig,
+			ctx,
+		);
+
 		renderable = resolveXrefs(
 			renderable,
 			page.url,
@@ -2587,6 +2660,17 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 		// see the final tree (including expand-substituted content once
 		// that lands in v0.15.0).
 		applyOutlineScopeWalkers(wrappedPage.renderable);
+
+		// Refresh `page.headings` from the final renderable. Parse-time
+		// `extractHeadings` only saw the raw AST — anything inlined by
+		// postProcess (expand `level=N`, collection bodies) wouldn't make
+		// it into the parse-time list, leaving the page TOC blind to those
+		// headings. Skips `data-outline-scope` subtrees so peer-document
+		// embeds stay isolated, matching the TOC walker.
+		const harvested = harvestHeadingsFromRenderable(wrappedPage.renderable);
+		if (harvested.length > 0 || wrappedPage.headings.length > 0) {
+			return { ...wrappedPage, headings: harvested };
+		}
 
 		return wrappedPage;
 	},

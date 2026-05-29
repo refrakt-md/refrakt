@@ -46,6 +46,28 @@ export interface SiteThemeConfig {
 	};
 }
 
+/** A declarative entity → page route (SPEC-069). Generates one page per
+ *  registered entity matching `type` + optional `filter`. `{name}` placeholders
+ *  in `url` / `title` / `frontmatter` interpolate entity fields; `$item` is
+ *  bound in `render` / `render-template`. `render` and `render-template` are
+ *  mutually exclusive. */
+export interface EntityRoute {
+	/** Entity type(s) the rule matches, comma-separated for multiple. */
+	type: string;
+	/** Optional field:value filter (SPEC-070 grammar). */
+	filter?: string;
+	/** Templated route, site-root-relative (basePath applied by the loader). */
+	url: string;
+	/** Templated page title; falls back to the rendered content's heading. */
+	title?: string;
+	/** Inline markdoc body, with `$item` bound. */
+	render?: string;
+	/** Markdoc partial used as the body instead of `render`. */
+	'render-template'?: string;
+	/** Frontmatter for the generated page (`{name}` placeholders interpolate). */
+	frontmatter?: Record<string, unknown>;
+}
+
 /** Per-site configuration. A project may declare a single site (via `site`) or
  *  multiple named sites (via `sites: { name: SiteConfig }`).
  *  Only `contentDir` and `theme` are strictly required for the site to load. */
@@ -64,6 +86,9 @@ export interface SiteConfig {
 	overrides?: Record<string, string>;
 	/** Route-to-layout mapping rules, evaluated in order (first match wins) */
 	routeRules?: RouteRule[];
+	/** Declarative entity → page routes (SPEC-069). Each rule generates one page
+	 *  per registered entity matching `type` + optional `filter`. */
+	entityRoutes?: EntityRoute[];
 	/** Syntax highlighting options */
 	highlight?: {
 		theme?: string | { light: string; dark: string };

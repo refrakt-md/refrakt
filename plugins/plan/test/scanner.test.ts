@@ -93,6 +93,18 @@ Token-based auth for the API.
 		expect(entity.title).toBe('Build the Scanner Library');
 	});
 
+	it('should include inline-code segments in the extracted title', () => {
+		writeMd('work.md', `{% work id="WORK-001" status="ready" %}
+
+# Build rune \`name\` with **bold** and *italic*
+
+{% /work %}`);
+
+		const [entity] = scanPlanFiles(TMP);
+		// Plain text — backticks stripped, formatting markers stripped.
+		expect(entity.title).toBe('Build rune name with bold and italic');
+	});
+
 	it('should return undefined title when no H1 exists', () => {
 		writeMd('work.md', `{% work id="WORK-001" status="ready" %}
 

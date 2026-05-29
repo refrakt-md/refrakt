@@ -19,6 +19,7 @@
 @import './styles/layouts/blog.css';
 @import './styles/layouts/on-this-page.css';
 @import './styles/layouts/search.css';
+@import './styles/layouts/theme-toggle.css';
 @import './styles/layouts/version-switcher.css';
 @import './styles/layouts/split.css';
 @import './styles/layouts/plan.css';
@@ -41,6 +42,7 @@
 @import './styles/runes/annotate.css';
 @import './styles/runes/audio.css';
 @import './styles/runes/api.css';
+@import './styles/runes/card.css';
 @import './styles/runes/badge.css';
 @import './styles/runes/bento.css';
 @import './styles/runes/blog.css';
@@ -49,6 +51,10 @@
 @import './styles/runes/budget.css';
 @import './styles/runes/cast.css';
 @import './styles/runes/character.css';
+@import './styles/runes/collection.css';
+@import './styles/runes/relationships.css';
+@import './styles/runes/aggregate.css';
+@import './styles/runes/progress.css';
 @import './styles/runes/changelog.css';
 @import './styles/runes/chart.css';
 @import './styles/runes/compare.css';
@@ -117,11 +123,6 @@
 @import './styles/runes/bug.css';
 @import './styles/runes/decision.css';
 @import './styles/runes/milestone.css';
-@import './styles/runes/backlog.css';
-@import './styles/runes/decision-log.css';
 @import './styles/runes/plan-progress.css';
-@import './styles/runes/plan-activity.css';
 @import './styles/runes/plan-ref.css';
-@import './styles/runes/plan-relationships.css';
 @import './styles/runes/plan-history.css';
-@import './styles/runes/plan-entity-tabs.css';

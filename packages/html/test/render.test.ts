@@ -128,6 +128,30 @@ describe('renderFullPage', () => {
 		expect(html).toContain('<title>My Page</title>');
 	});
 
+	it('always injects the no-flash pre-paint script + color-scheme meta (SPEC-073)', () => {
+		const theme = makeTheme({ layouts: {} });
+		const page = makePageData();
+		const html = renderFullPage({ theme, page });
+
+		expect(html).toMatch(/<script>[^]*rf-theme[^]*<\/script>/);
+		expect(html).toMatch(/<meta name="color-scheme" content="[^"]+">/);
+		// Default (no cascade) leaves <html> without tint attrs.
+		expect(html).toContain('<html lang="en">');
+	});
+
+	it('writes tint attributes on <html> from a locked cascade (SPEC-073)', () => {
+		const theme = makeTheme({ layouts: {} });
+		const page = makePageData();
+		const html = renderFullPage({ theme, page }, {
+			tintCascade: { tint: 'niwaki', tintMode: 'dark', locked: true },
+		});
+
+		expect(html).toContain('data-theme="dark"');
+		expect(html).toContain('data-tint="niwaki"');
+		expect(html).toContain('data-tint-lock="true"');
+		expect(html).toMatch(/<html lang="en" [^>]*data-tint-lock="true"[^>]*>/);
+	});
+
 	it('includes SEO meta tags when provided', () => {
 		const theme = makeTheme({ layouts: {} });
 		const page = makePageData();

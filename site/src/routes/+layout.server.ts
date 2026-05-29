@@ -13,7 +13,7 @@ export async function load({ url }) {
 	// Per-route cascade ships to the client so +layout.svelte can re-apply
 	// the SSR-equivalent <html> attributes on client-side navigation —
 	// SvelteKit reuses the same <html> across nav so attrs set by the
-	// ThemeToggle on an unlocked page would otherwise leak into the next
+	// theme toggle on an unlocked page would otherwise leak into the next
 	// locked page.
 	const tintCascade: ResolvedTintCascade = currentPage?.tintCascade ?? DEFAULT_CASCADE;
 
