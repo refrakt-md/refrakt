@@ -119,12 +119,19 @@ referenced interface doesn't multiply drawers.
 ### Drawer body contents per source
 
 - **`file-ref preview="drawer"`** — drawer body is a `{% snippet path=…
-  lines=… /%}` plus a footer link to the GitHub URL (`View source on
-  GitHub →`) with the line-range anchor.
+  lines=… /%}` only. A `View source on GitHub →` link with the line-range
+  anchor sits in the **drawer chrome footer** (`__footer` — new region
+  alongside the existing `__header` / `__body`), not in the body itself,
+  so the single-block edge-to-edge styling in Capability 3 still triggers.
 - **`xref preview="drawer"`** — drawer body is the `expand`-equivalent of
   the referenced entity (same resolver path `{% expand "id" /%}` uses).
-  Footer link: the entity's `sourceUrl` (or the registry's resolved page
-  URL) so readers can navigate to the full page.
+  Chrome footer: a link to the entity's `sourceUrl` (or the registry's
+  resolved page URL) so readers can navigate to the full page.
+
+The chrome footer is a new drawer slot — `sections: { header, body,
+footer }` in the engine config — rendered outside the body so per-rune
+body styling stays clean. It carries its own small padding so the link
+doesn't kiss the drawer edge.
 
 ### Why this and not "extend `expand`"
 
@@ -160,6 +167,12 @@ The drawer's own rounded corners then shape the code block; the result
 reads as one unified surface. A figcaption inside the snippet figure (the
 "source label") keeps its own small padding so it doesn't kiss the drawer
 edge.
+
+Critical interaction: the `:only-child` test holds because the chrome
+footer (Capability 2) sits *outside* `__body`, not inside it. If the
+GitHub link sat in the body the body would have two children (snippet +
+footer link) and the selector would fail. Keeping chrome separate from
+body content is what makes both capabilities co-exist cleanly.
 
 Scope to `drawer` for v1. The same `:has()` pattern generalises to
 `{% details %}` and `{% card %}` later if usage warrants — or as a shared
@@ -213,11 +226,16 @@ Not in scope for v1, but reserved by the rune's shape:
   resolved GitHub URL when `repoUrl` is configured, or a no-href / in-page
   anchor otherwise (with a build warning).
 - [ ] With `preview="drawer"`, `file-ref` renders an inline `<a>` linking
-  to the hoisted drawer; the drawer body is a `{% snippet %}` plus a
-  GitHub footer link.
+  to the hoisted drawer; the drawer body is a `{% snippet %}` and a
+  `View source on GitHub →` link sits in the drawer chrome footer (not in
+  the body).
 - [ ] `xref` accepts `preview="drawer"`; renders an inline `<a>` linking
   to the hoisted drawer; the drawer body is the entity's expanded content
-  plus a footer link to the entity's resolved page URL.
+  and a link to the entity's resolved page URL sits in the drawer chrome
+  footer.
+- [ ] The drawer rune gains a `footer` section alongside the existing
+  `header` / `body` (engine config + Lumina styling), rendered outside
+  `__body` so per-rune body styling stays clean.
 - [ ] Per-page dedup: N mentions of the same `preview` target collapse to
   one hoisted drawer.
 - [ ] `repoUrl` and `repoBranch` (default `"main"`) are accepted at the
