@@ -12,6 +12,7 @@ There is one generic `card` (named by *shape*, not by entity) — refrakt delibe
 {% preview source=true %}
 
 {% card href="/runes/collection" %}
+---
 ### Collection rune
 The plural counterpart to `ref` and `expand` — query the registry and render the results.
 
