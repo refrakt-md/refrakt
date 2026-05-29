@@ -50,7 +50,7 @@
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
-	padding: 0.875rem 1.25rem;
+	padding: 0.875rem 0rem;
 	font-weight: 600;
 	font-size: 0.95rem;
 	cursor: pointer;
