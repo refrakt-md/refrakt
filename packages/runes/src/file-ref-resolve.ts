@@ -228,10 +228,14 @@ function buildFileRefHoist(
 
 	// Drawer body — a figure.rf-snippet wrapping a `<pre data-language>`
 	// so the existing snippet CSS + highlight transform pick it up.
+	// `data-language` lives on BOTH the <pre> (for snippet CSS hooks +
+	// the highlight transform's color-scheme stamping pass) AND on the
+	// <code> with text children — the highlight walker only highlights
+	// nodes whose children are text, so the <code> is the actual hit.
 	const codeBlock = new Tag('pre', {
 		'data-language': lang,
 		'data-codeblock': 'true',
-	}, [new Tag('code', {}, [fileContent])]);
+	}, [new Tag('code', { 'data-language': lang, 'data-codeblock': 'true' }, [fileContent])]);
 	const snippetFigure = new Tag('figure', {
 		class: 'rf-snippet',
 		'data-rune': 'snippet',
