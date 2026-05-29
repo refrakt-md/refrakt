@@ -43,22 +43,40 @@
 
 /* ─── Media zone base styles ──────────────────────────────────────── */
 
-/* Only clip overflow when media zone contains an image. Interactive content
-   (preview, juxtapose) needs overflow visible for bleed effects. */
-[data-section="media"]:has(> img) {
+/* Clip overflow + round corners when the media zone holds media-like
+   content: an image, or a self-contained block rune that wants the same
+   "fills the slot" treatment (codegroup, snippet, chart, sandbox). Anything
+   else keeps overflow visible so interactive bleed effects (preview,
+   juxtapose) still work. Add new rune-typed media here when they should
+   participate in the same chrome. */
+[data-section="media"]:where(
+  :has(> img),
+  :has(> [data-rune="code-group"]),
+  :has(> [data-rune="snippet"]),
+  :has(> [data-rune="chart"]),
+  :has(> [data-rune="sandbox"])
+) {
   border-radius: var(--rf-radius-lg);
   overflow: hidden;
 }
-[data-section="media"] img {
+[data-section="media"] > :where(
+  img,
+  [data-rune="code-group"],
+  [data-rune="snippet"],
+  [data-rune="chart"],
+  [data-rune="sandbox"]
+) {
   display: block;
   width: 100%;
   height: auto;
   border-radius: var(--rf-radius-lg);
+  margin: 0;
 }
 
-/* Split layout media gets subtle depth */
-[data-layout="split"] > [data-section="media"] img,
-[data-layout="split-reverse"] > [data-section="media"] img {
+/* Split layout images get subtle depth. Block runes carry their own visual
+   weight (topbars, frames) so the shadow is image-only. */
+[data-layout="split"] > [data-section="media"] > img,
+[data-layout="split-reverse"] > [data-section="media"] > img {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
@@ -109,7 +127,13 @@
     margin-bottom: var(--rune-padding, var(--rf-spacing-md));
     border-radius: 0;
   }
-  [data-media-position="top"] > [data-section="media"] img {
+  [data-media-position="top"] > [data-section="media"] > :where(
+    img,
+    [data-rune="code-group"],
+    [data-rune="snippet"],
+    [data-rune="chart"],
+    [data-rune="sandbox"]
+  ) {
     border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
   }
 
@@ -134,7 +158,13 @@
     margin-bottom: var(--rune-padding, var(--rf-spacing-md));
     border-radius: 0;
   }
-  [data-media-position="top"][data-collapse="sm"] > [data-section="media"] img {
+  [data-media-position="top"][data-collapse="sm"] > [data-section="media"] > :where(
+    img,
+    [data-rune="code-group"],
+    [data-rune="snippet"],
+    [data-rune="chart"],
+    [data-rune="sandbox"]
+  ) {
     border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
   }
   /* Reset grid placement on collapse for header/content */
@@ -157,7 +187,13 @@
     margin-bottom: var(--rune-padding, var(--rf-spacing-md));
     border-radius: 0;
   }
-  [data-media-position="top"][data-collapse="md"] > [data-section="media"] img {
+  [data-media-position="top"][data-collapse="md"] > [data-section="media"] > :where(
+    img,
+    [data-rune="code-group"],
+    [data-rune="snippet"],
+    [data-rune="chart"],
+    [data-rune="sandbox"]
+  ) {
     border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
   }
   [data-media-position="top"][data-collapse="md"] > [data-section="header"],
@@ -179,7 +215,13 @@
     margin-bottom: var(--rune-padding, var(--rf-spacing-md));
     border-radius: 0;
   }
-  [data-media-position="top"][data-collapse="lg"] > [data-section="media"] img {
+  [data-media-position="top"][data-collapse="lg"] > [data-section="media"] > :where(
+    img,
+    [data-rune="code-group"],
+    [data-rune="snippet"],
+    [data-rune="chart"],
+    [data-rune="sandbox"]
+  ) {
     border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
   }
   [data-media-position="top"][data-collapse="lg"] > [data-section="header"],
