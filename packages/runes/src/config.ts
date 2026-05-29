@@ -11,7 +11,7 @@ import { XREF_RUNE_MARKER } from './tags/xref.js';
 import { resolveXrefs } from './xref-resolve.js';
 import type { CompiledXrefPattern } from './xref-patterns.js';
 import { preprocessSnippets, wrapStandaloneSnippets } from './snippet-pipeline.js';
-import { registerDrawers, resolveAutoDrawerTitleLevels } from './drawer-pipeline.js';
+import { registerDrawers, resolveAutoDrawerTitleLevels, hoistPreviewDrawers } from './drawer-pipeline.js';
 import { applyOutlineScopeWalkers, harvestHeadingsFromRenderable } from './outline-scope.js';
 import { resolveExpands } from './expand-pipeline.js';
 import { resolveCollections } from './collection-resolve.js';
@@ -2591,6 +2591,19 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 		// resolution so the rewritten title doesn't carry the sentinel
 		// attribute into the rendered HTML.
 		renderable = resolveAutoDrawerTitleLevels(renderable);
+
+		// SPEC-078 hoist mechanism — collect `preview="drawer"` sentinels
+		// from file-ref / xref / future reference runes and emit hoisted
+		// `<section class="rf-drawer">` at the page root. Runs before
+		// expand resolution so an xref-preview drawer's body (which uses
+		// the expand resolver internally) is resolved by the same pass.
+		renderable = hoistPreviewDrawers(
+			renderable,
+			page.url,
+			coreData.registry,
+			coreData.embedConfig?.projectRoot,
+			ctx,
+		);
 
 		// SPEC-066 expand resolution — substitutes embedded entity content
 		// before xref runs so refs inside substituted content are resolved

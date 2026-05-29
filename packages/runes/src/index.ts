@@ -69,6 +69,14 @@ export { resolveAggregates } from './aggregate-resolve.js';
 export { RELATIONSHIPS_SENTINEL } from './tags/relationships.js';
 export { AGGREGATE_SENTINEL } from './tags/aggregate.js';
 export {
+	hoistPreviewDrawers,
+	registerHoistBuilder,
+	getHoistBuilder,
+	pathToSlug,
+	HOIST_DRAWER_SENTINEL,
+} from './drawer-pipeline.js';
+export type { HoistBuilder, HoistBuildContext } from './drawer-pipeline.js';
+export {
 	Ordering, buildOrdering, sortEntities, groupEntities, groupBy,
 	entityUrl, entityTitle, fieldValue, titleLink, projectItem, renderItemTemplate,
 } from './collection-helpers.js';
