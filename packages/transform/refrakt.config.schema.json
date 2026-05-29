@@ -25,7 +25,13 @@
 			"additionalProperties": { "$ref": "#/definitions/SiteConfig" }
 		},
 		"contentDir": { "type": "string", "description": "Legacy shorthand for sites.default.contentDir" },
-		"theme": { "type": "string", "description": "Legacy shorthand for sites.default.theme" },
+		"theme": {
+			"description": "Legacy shorthand for sites.default.theme. Accepts either a package name string (legacy shorthand) or a full SiteThemeConfig object with `package`, `presets`, `tokens`, `modes`, and `code.colorScheme`.",
+			"oneOf": [
+				{ "type": "string" },
+				{ "$ref": "#/definitions/SiteThemeConfig" }
+			]
+		},
 		"target": { "type": "string", "description": "Legacy shorthand for sites.default.target. Documentation-only — no adapter consumes this field. Slated for removal in v1.0.", "deprecated": true },
 		"overrides": { "type": "object", "additionalProperties": { "type": "string" } },
 		"routeRules": {
@@ -67,7 +73,13 @@
 			"required": ["contentDir", "theme"],
 			"properties": {
 				"contentDir": { "type": "string" },
-				"theme": { "type": "string" },
+				"theme": {
+					"description": "Active theme — accepts a package name string (legacy shorthand) or a full SiteThemeConfig with presets, token overrides, mode overlays, and code-block colour scheme.",
+					"oneOf": [
+						{ "type": "string" },
+						{ "$ref": "#/definitions/SiteThemeConfig" }
+					]
+				},
 				"target": {
 					"type": "string",
 					"description": "Documentation-only adapter hint (svelte, astro, next, nuxt, eleventy, html). No adapter validates or reads this field today; it serves as an in-config record of the intended adapter. Slated for removal in v1.0.",
@@ -107,8 +119,10 @@
 		},
 		"HighlightConfig": {
 			"type": "object",
+			"description": "Legacy syntax-highlighting configuration — picks a Shiki built-in theme by name (or a `{ light, dark }` pair) for fenced code blocks. The recommended modern approach is `theme.presets` (which contribute `--rf-syntax-*` token overrides via Lumina syntax presets like `@refrakt-md/lumina/presets/nord`) plus `theme.code.colorScheme` for forced light/dark code blocks. Kept for back-compat; both mechanisms can coexist.",
 			"properties": {
 				"theme": {
+					"description": "Built-in Shiki theme name (e.g. `github-dark`), or a `{ light, dark }` pair for dual-theme support that switches with the site's light/dark mode.",
 					"oneOf": [
 						{ "type": "string" },
 						{
@@ -121,6 +135,48 @@
 							"additionalProperties": false
 						}
 					]
+				}
+			},
+			"additionalProperties": false
+		},
+		"SiteThemeConfig": {
+			"type": "object",
+			"description": "Per-site theme configuration with token overrides, presets, modes, and code-block colour-scheme behaviour. The legacy string form (`\"theme\": \"@refrakt-md/lumina\"`) is shorthand for `{ \"package\": \"@refrakt-md/lumina\" }`.",
+			"required": ["package"],
+			"properties": {
+				"package": {
+					"type": "string",
+					"description": "Active theme — npm package name (e.g., `@refrakt-md/lumina`) or relative path."
+				},
+				"presets": {
+					"type": "array",
+					"description": "Preset modules merged into the theme in declared order (last wins per token). Each entry is a module identifier (npm package + export path) resolving to a token preset — e.g. `@refrakt-md/lumina/presets/niwaki` for palette presets, `@refrakt-md/lumina/presets/nord` for syntax-colour presets.",
+					"items": { "type": "string" }
+				},
+				"colorScheme": {
+					"description": "Initial colour scheme behaviour for the rendered site. `auto` (default) respects user preference (saved or system); `light` / `dark` force the scheme regardless of preference.",
+					"enum": ["auto", "light", "dark"]
+				},
+				"tokens": {
+					"type": "object",
+					"description": "Site-level token overrides applied on top of the theme's base values and any presets. Validated against the theme's TokenContract at build time. Nested by token category (e.g. `color`, `space`, `radius`).",
+					"additionalProperties": true
+				},
+				"modes": {
+					"type": "object",
+					"description": "Site-level per-mode overlays (e.g. `dark`). Layer on top of the theme's modes and any preset modes. Keys are mode names; values are partial token contracts.",
+					"additionalProperties": { "type": "object", "additionalProperties": true }
+				},
+				"code": {
+					"type": "object",
+					"description": "Code-block-specific theme settings.",
+					"properties": {
+						"colorScheme": {
+							"description": "Force fenced code blocks to a fixed colour scheme regardless of the page's light/dark mode. `auto` (default) lets code follow the page mode; `light` / `dark` stamp `data-color-scheme` on each `<pre>` so the cascade picks that scheme's syntax token values — useful for an always-dark code aesthetic on light pages (Stripe / Vercel style) without a parallel override stylesheet.",
+							"enum": ["auto", "light", "dark"]
+						}
+					},
+					"additionalProperties": false
 				}
 			},
 			"additionalProperties": false
