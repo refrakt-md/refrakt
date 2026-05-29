@@ -58,18 +58,25 @@ In the body zone, a leading paragraph immediately followed by a heading is treat
 
 The media zone holds *any* content — it's ordinary markdown, transformed in place. An image is the common case, but a `{% codegroup %}`, a `{% sandbox %}`, a chart, or a video embed work equally well:
 
-````markdoc
+{% preview source=true %}
+
 {% card %}
+{% codegroup %}
 ```js
 export const sum = (a, b) => a + b;
 ```
+```py
+def sum(a, b): return a + b
+```
+{% /codegroup %}
 
 ---
 
 ### Tiny utilities
 A starter kit of one-liners.
 {% /card %}
-````
+
+{% /preview %}
 
 ## Whole-card links
 
