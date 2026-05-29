@@ -44,9 +44,9 @@ Markdown is powerful but limited. Runes extend it with semantic structure — wi
 
   refrakt projects ship an MCP server out of the box. Agents like Claude Code get typed tools for every CLI command and live resources for your plan and rune contracts — so they can scaffold pages, inspect output, and update work items without parsing text or asking for an API key.
 
-- {% icon name="layers" /%} **Layout inheritance**
+- {% icon name="database" /%} **Cross-page pipeline**
 
-  Define regions in `_layout.md` files that cascade down directory trees. Headers, navigation, and sidebars compose automatically — no config files needed.
+  Refrakt builds a typed registry of every entity across your content. Plain Markdown becomes a live data layer — query it from any page (`collection` / `relationships` / `aggregate`), generate routes from it (`entityRoutes`), link across it (`ref` / `expand`).
 
 - {% icon name="package" /%} **Portable content**
 
