@@ -38,8 +38,9 @@ These runes query the cross-page entity registry and resolve in the **post-proce
 
 | Rune | Description |
 |------|-------------|
-| [xref](/runes/xref) | Inline cross-reference — resolves an entity by id or name from the registry to a link (alias: `ref`). The singular counterpart to `collection` |
+| [xref](/runes/xref) | Inline cross-reference — resolves an entity by id or name from the registry to a link (alias: `ref`). The singular counterpart to `collection`. Optional `preview="drawer"` hoists a drawer with the entity's expanded body |
 | [expand](/runes/expand) | Substitute a registered entity's source content inline — symmetric with `ref`, but inlines content rather than linking to it |
+| [file-ref](/runes/file-ref) | Path-based inline reference to a project file — third member of the Registry family beside `xref` and `expand`. Renders as an `<a>` to the file's canonical GitHub URL; optional `preview="drawer"` hoists a drawer with the file's snippet + a "View source on GitHub →" footer link |
 | [collection](/runes/collection) | Render a list, grid, or table of registry entities — the plural counterpart to `ref`/`expand`, with filter/sort/group and per-item templates |
 | [relationships](/runes/relationships) | Render an entity's relationship edges, grouped by kind — the graph counterpart to `collection`, generic over any domain's relationship vocabulary |
 | [aggregate](/runes/aggregate) | Project numbers from the registry — single counts or per-group breakdowns; the number-projecting sibling to `collection` and `relationships`, with a sub-filter that drives progress-bar ratios |

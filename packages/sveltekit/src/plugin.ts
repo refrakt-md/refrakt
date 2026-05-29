@@ -173,6 +173,11 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 					undefined,
 					options.security,
 					resolvedRoot,
+					undefined,
+					undefined,
+					activeSite,
+					activeSite.repoUrl,
+					activeSite.repoBranch,
 				);
 
 				process.stderr.write(

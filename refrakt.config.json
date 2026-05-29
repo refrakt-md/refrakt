@@ -42,6 +42,8 @@
 			"baseUrl": "https://refrakt.md",
 			"siteName": "refrakt.md",
 			"logo": "/favicon-192.png",
+			"repoUrl": "https://github.com/refrakt-md/refrakt",
+			"repoBranch": "main",
 			"plugins": [
 				"@refrakt-md/marketing",
 				"@refrakt-md/docs",

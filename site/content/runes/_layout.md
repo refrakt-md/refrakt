@@ -36,6 +36,7 @@ tint-lock: false
 
 - xref
 - expand
+- file-ref
 - collection
 - relationships
 - aggregate

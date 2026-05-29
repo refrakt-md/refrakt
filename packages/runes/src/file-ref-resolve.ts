@@ -68,8 +68,6 @@ function defaultLabel(path: string): string {
 	return slash >= 0 ? trimmed.slice(slash + 1) : trimmed;
 }
 
-let repoUrlMissingWarnedForPage = new Set<string>();
-
 /**
  * Resolve every `file-ref` sentinel on the page: bind the inline `<a>` to
  * the GitHub URL (or in-page anchor when `preview="drawer"`), emit a

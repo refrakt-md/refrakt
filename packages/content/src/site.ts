@@ -172,6 +172,13 @@ interface ProcessContentTreeOptions {
    *  the xref resolver as a URL-resolution fallback when registry entities
    *  have no usable `sourceUrl`. */
   xrefPatterns?: CompiledXrefPattern[];
+  /** Canonical repo URL (`SiteConfig.repoUrl`) threaded through to the
+   *  file-ref resolver (SPEC-078) for canonical `View source on GitHub`
+   *  URL construction. */
+  repoUrl?: string;
+  /** Git ref appended to GitHub source URLs (`SiteConfig.repoBranch`).
+   *  Defaults to `"main"` when omitted. */
+  repoBranch?: string;
   /** Registered file roots — namespace → absolute directory path. Each
    *  root is scanned at content-load time and its `.md` files become
    *  available as Markdoc partials under `namespace:filename` keys. */
@@ -235,6 +242,8 @@ async function processContentTree(
   }
   const coreHooksOptions = {
     xrefPatterns: opts.xrefPatterns,
+    repoUrl: opts.repoUrl,
+    repoBranch: opts.repoBranch,
     embedConfig: {
       tags: embedTags as Record<string, unknown>,
       nodes: nodes as Record<string, unknown>,
@@ -509,6 +518,8 @@ export async function loadContent(
   xrefPatterns?: CompiledXrefPattern[],
   fileRoots?: FileRoots,
   siteConfig?: unknown,
+  repoUrl?: string,
+  repoBranch?: string,
 ): Promise<Site> {
   const tree = await ContentTree.fromDirectory(dirPath);
   const resolvedExamplesDir = sandboxExamplesDir
@@ -538,6 +549,8 @@ export async function loadContent(
     xrefPatterns,
     fileRoots,
     siteConfig,
+    repoUrl,
+    repoBranch,
   });
 }
 
@@ -577,6 +590,12 @@ export interface LoadContentFromTreeOptions {
    *  environments that own their config resolution can compile patterns via
    *  `compileXrefPatterns` and pass them here. */
   xrefPatterns?: CompiledXrefPattern[];
+  /** Canonical repo URL (`SiteConfig.repoUrl`) threaded to the file-ref
+   *  resolver (SPEC-078) for GitHub source URL construction. */
+  repoUrl?: string;
+  /** Git ref appended to GitHub source URLs (`SiteConfig.repoBranch`).
+   *  Defaults to `"main"` when omitted. */
+  repoBranch?: string;
   /** Registered file roots — namespace → absolute directory path. */
   fileRoots?: FileRoots;
   /** Per-site config slice — passed to contributePages hooks so the built-in
@@ -618,6 +637,8 @@ export async function loadContentFromTree(
     colorScheme: options.colorScheme,
     projectRoot: options.projectRoot,
     xrefPatterns: options.xrefPatterns,
+    repoUrl: options.repoUrl,
+    repoBranch: options.repoBranch,
     fileRoots: options.fileRoots,
     siteConfig: options.siteConfig,
   });

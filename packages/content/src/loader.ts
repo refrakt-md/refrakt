@@ -25,6 +25,12 @@ export interface SiteLoaderOptions {
 	 *  that read the config should compile via `compileXrefPatterns` and
 	 *  pass the result here. */
 	xrefPatterns?: CompiledXrefPattern[];
+	/** Canonical repo URL (`SiteConfig.repoUrl`) threaded to the file-ref
+	 *  resolver (SPEC-078) for GitHub source URL construction. */
+	repoUrl?: string;
+	/** Git ref appended to GitHub source URLs (`SiteConfig.repoBranch`).
+	 *  Defaults to `"main"` when omitted. */
+	repoBranch?: string;
 	/** Registered file roots — namespace → absolute directory path. */
 	fileRoots?: FileRoots;
 	/** Per-site config slice — passed to contributePages hooks so the built-in
@@ -62,6 +68,8 @@ export function createSiteLoader(options: SiteLoaderOptions): SiteLoader {
 				options.xrefPatterns,
 				options.fileRoots,
 				options.siteConfig,
+				options.repoUrl,
+				options.repoBranch,
 			);
 			if (!options.dev) cached = promise;
 			return promise;
@@ -92,6 +100,12 @@ export interface VirtualSiteLoaderOptions {
 	projectRoot?: string;
 	/** Compiled xref patterns from `refrakt.config.json#/xrefs`. */
 	xrefPatterns?: CompiledXrefPattern[];
+	/** Canonical repo URL (`SiteConfig.repoUrl`) threaded to the file-ref
+	 *  resolver (SPEC-078) for GitHub source URL construction. */
+	repoUrl?: string;
+	/** Git ref appended to GitHub source URLs (`SiteConfig.repoBranch`).
+	 *  Defaults to `"main"` when omitted. */
+	repoBranch?: string;
 	/** Registered file roots — namespace → absolute directory path. */
 	fileRoots?: FileRoots;
 	/** Per-site config slice — passed to contributePages hooks. See
@@ -124,6 +138,8 @@ export function createVirtualSiteLoader(options: VirtualSiteLoaderOptions): Site
 				reader: options.reader,
 				projectRoot: options.projectRoot,
 				xrefPatterns: options.xrefPatterns,
+				repoUrl: options.repoUrl,
+				repoBranch: options.repoBranch,
 				fileRoots: options.fileRoots,
 				siteConfig: options.siteConfig,
 			});
