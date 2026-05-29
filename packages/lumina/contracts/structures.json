@@ -224,6 +224,14 @@
 				"{content}"
 			]
 		},
+		"FileRef": {
+			"block": "file-ref",
+			"root": ".rf-file-ref",
+			"dataRune": "file-ref",
+			"childOrder": [
+				"{content}"
+			]
+		},
 		"Aggregate": {
 			"block": "aggregate",
 			"root": ".rf-aggregate",

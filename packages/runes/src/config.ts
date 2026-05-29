@@ -12,6 +12,7 @@ import { resolveXrefs } from './xref-resolve.js';
 import type { CompiledXrefPattern } from './xref-patterns.js';
 import { preprocessSnippets, wrapStandaloneSnippets } from './snippet-pipeline.js';
 import { registerDrawers, resolveAutoDrawerTitleLevels, hoistPreviewDrawers } from './drawer-pipeline.js';
+import { resolveFileRefs } from './file-ref-resolve.js';
 import { applyOutlineScopeWalkers, harvestHeadingsFromRenderable } from './outline-scope.js';
 import { resolveExpands } from './expand-pipeline.js';
 import { resolveCollections } from './collection-resolve.js';
@@ -171,6 +172,13 @@ export const coreConfig: ThemeConfig = {
 		 * provides the block name for CSS tree-shaking. */
 		Collection: { block: 'collection' },
 		Relationships: { block: 'relationships' },
+		/* file-ref emits a sentinel during transform; resolveFileRefs in
+		 * the postProcess chain binds it to a GitHub URL anchor (and to
+		 * a hoist sentinel for the drawer pipeline when preview="drawer").
+		 * Engine config entry exists so the BEM block / data-rune are
+		 * registered and CSS tree-shaking includes file-ref.css when
+		 * authors use the rune. */
+		FileRef: { block: 'file-ref' },
 		/* Aggregate emits a sentinel during transform; the postProcess hook
 		 * (`resolveAggregates`) fills it with either a single integer (no-body
 		 * form) or a body-zoned breakdown. Engine config provides the block
@@ -2392,6 +2400,13 @@ export interface CorePipelineHooksOptions {
 	 *  through `aggregate` into the postProcess `coreData` shape so the xref
 	 *  resolver can use them as a URL-resolution fallback. */
 	xrefPatterns?: CompiledXrefPattern[];
+	/** Canonical GitHub (or compatible) repository URL — `SiteConfig.repoUrl`
+	 *  threaded through to the file-ref resolver (SPEC-078) so it can build
+	 *  deep-link source URLs of the form `{repoUrl}/blob/{ref}/{path}#L{...}`. */
+	repoUrl?: string;
+	/** Git ref appended to GitHub source URLs (branch / tag / commit SHA).
+	 *  Defaults to `"main"` when omitted. */
+	repoBranch?: string;
 	/** Merged Markdoc transform config (tags + nodes from core + every
 	 *  loaded plugin) plus the project root. Threaded through `aggregate`
 	 *  so the expand postProcess (SPEC-066) can re-transform embedded
@@ -2421,6 +2436,8 @@ export interface CorePipelineHooksOptions {
 export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): PluginPipelineHooks {
 	const xrefPatterns = opts.xrefPatterns ?? [];
 	const embedConfig = opts.embedConfig;
+	const repoUrl = opts.repoUrl;
+	const repoBranch = opts.repoBranch;
 
 	return {
 	preprocess: preprocessSnippets,
@@ -2513,7 +2530,7 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			frontmatter: e.data as Record<string, unknown>,
 		}));
 
-		return { pageTree, breadcrumbPaths, pagesByUrl, headingIndex, allPosts, registry, xrefPatterns, embedConfig };
+		return { pageTree, breadcrumbPaths, pagesByUrl, headingIndex, allPosts, registry, xrefPatterns, embedConfig, repoUrl, repoBranch };
 	},
 
 	postProcess(page: TransformedPage, aggregated: AggregatedData, ctx: PipelineContext): TransformedPage {
@@ -2523,6 +2540,8 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			allPosts: BlogPostData[];
 			registry: Readonly<EntityRegistry>;
 			xrefPatterns?: CompiledXrefPattern[];
+			repoUrl?: string;
+			repoBranch?: string;
 			embedConfig?: {
 				tags: Record<string, unknown>;
 				nodes: Record<string, unknown>;
@@ -2591,6 +2610,19 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 		// resolution so the rewritten title doesn't carry the sentinel
 		// attribute into the rendered HTML.
 		renderable = resolveAutoDrawerTitleLevels(renderable);
+
+		// SPEC-078 — bind file-ref sentinels to their GitHub URLs and emit
+		// the hoist sentinel when `preview="drawer"`. Must run before
+		// `hoistPreviewDrawers` (which consumes the hoist sentinel) and
+		// before xref resolution (so the file-ref's inline `<a>` carries
+		// its final href into the rendered tree).
+		renderable = resolveFileRefs(
+			renderable,
+			page.url,
+			coreData.repoUrl,
+			coreData.repoBranch,
+			ctx,
+		);
 
 		// SPEC-078 hoist mechanism — collect `preview="drawer"` sentinels
 		// from file-ref / xref / future reference runes and emit hoisted
