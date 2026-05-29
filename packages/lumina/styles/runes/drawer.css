@@ -85,17 +85,13 @@ section.rf-drawer .rf-drawer__footer > :last-child { margin-bottom: 0; }
 
 /* ─── JS / dialog mode ─────────────────────────────────────────── */
 
-/* Dialog is a flex column so the header (when present) and footer (when
- * present) pin via `flex: 0 0 auto` while the body scrolls via
- * `flex: 1 1 auto; overflow-y: auto`. The dialog's `max-height` provides
- * the scroll context — body content beyond that height scrolls inside,
- * chrome stays put. `overflow: hidden` on the dialog itself contains the
- * body's scroll (without it, the dialog would also scroll and we'd lose
- * the pinning). */
+/* Dialog base. Crucially the `display: flex` rule below is scoped to the
+ * `[open]` state — without that scope, declaring `display: flex` on the
+ * bare `dialog.rf-drawer` overrides the browser UA's `display: none` for
+ * closed dialogs, so the closed dialog renders visibly as an empty box
+ * positioned by the side `inset` rules. */
 dialog.rf-drawer {
 	box-sizing: border-box;
-	display: flex;
-	flex-direction: column;
 	background: var(--rf-drawer-bg);
 	color: var(--rf-drawer-fg);
 	border: 1px solid var(--rf-drawer-border);
@@ -106,6 +102,15 @@ dialog.rf-drawer {
 	overflow: hidden;
 	max-width: calc(100vw - 2 * var(--rf-drawer-gutter));
 	max-height: calc(100vh - 2 * var(--rf-drawer-gutter));
+}
+
+/* Flex column layout only when the dialog is actually open. The header
+ * and footer pin via `flex: 0 0 auto`; the body scrolls via `flex: 1 1
+ * auto; overflow-y: auto`. The dialog's `max-height` cap on the dialog
+ * provides the scroll context. */
+dialog.rf-drawer[open] {
+	display: flex;
+	flex-direction: column;
 }
 
 dialog.rf-drawer::backdrop {
@@ -184,23 +189,39 @@ dialog.rf-drawer .rf-drawer__body > :last-child > :last-child {
 }
 
 /* Single-code-block edge-to-edge (SPEC-078 Capability 3). When the body
- * contains exactly one code-block child — a snippet figure or a bare
- * `<pre>` from a fenced block — drop the body padding and strip the
- * inner block's own border-radius / border / outer margin. The drawer's
- * own rounded corners then shape the code; the result reads as one
- * unified surface rather than "code-in-a-box". Inner figcaptions (the
- * snippet "source label") keep their own padding so they don't kiss the
- * drawer edge. */
+ * contains exactly one code-block child the body padding zeroes and the
+ * inner block's own margin / border / radius strip so the drawer's
+ * outer rounded corners shape the code. The Markdoc fence node renders
+ * as `<div class="rf-codeblock">` (with `<pre>` or `<figure
+ * class="rf-snippet"><pre>` inside depending on whether the snippet
+ * rune ran), so the only-child predicate gates on the wrapper. Bare
+ * `pre`-only and bare-figure-only forms are also matched for cases
+ * where the wrapper is skipped (e.g. nested inside a codegroup, future
+ * fence-consuming containers). */
+dialog.rf-drawer .rf-drawer__body:has(> .rf-codeblock:only-child),
 dialog.rf-drawer .rf-drawer__body:has(> figure.rf-snippet:only-child),
 dialog.rf-drawer .rf-drawer__body:has(> pre:only-child) {
 	padding: 0;
 }
-dialog.rf-drawer .rf-drawer__body:has(> figure.rf-snippet:only-child) > figure.rf-snippet,
-dialog.rf-drawer .rf-drawer__body:has(> pre:only-child) > pre {
+
+/* Walk the codeblock → snippet → pre chain and zero margin / border /
+ * radius so the column reads as one continuous surface from the drawer
+ * header to the footer (or dialog edge). */
+dialog.rf-drawer .rf-drawer__body > .rf-codeblock:only-child,
+dialog.rf-drawer .rf-drawer__body > .rf-codeblock:only-child > figure.rf-snippet,
+dialog.rf-drawer .rf-drawer__body > .rf-codeblock:only-child > figure.rf-snippet > pre,
+dialog.rf-drawer .rf-drawer__body > .rf-codeblock:only-child > pre,
+dialog.rf-drawer .rf-drawer__body > figure.rf-snippet:only-child,
+dialog.rf-drawer .rf-drawer__body > figure.rf-snippet:only-child > pre,
+dialog.rf-drawer .rf-drawer__body > pre:only-child {
+	margin: 0;
 	border-radius: 0;
 	border: 0;
-	margin: 0;
 }
+
+/* Figcaption (the snippet "source label" when titled) keeps its own
+ * padding so it doesn't kiss the drawer edge. */
+dialog.rf-drawer .rf-drawer__body > .rf-codeblock:only-child > figure.rf-snippet > figcaption,
 dialog.rf-drawer .rf-drawer__body > figure.rf-snippet:only-child > figcaption {
 	padding: var(--rf-spacing-xs) var(--rf-spacing-lg);
 }
@@ -347,9 +368,8 @@ dialog.rf-drawer[data-state="closing"]::backdrop {
 	dialog.rf-drawer .rf-drawer__footer {
 		padding: 0.75rem 1rem;
 	}
-	/* Preserve the single-code-block edge-to-edge override on mobile too —
-	 * `:has()` selector wins over the bare body-padding here because of
-	 * source order; spelling it out keeps the rule readable. */
+	/* Preserve the single-code-block edge-to-edge override on mobile. */
+	dialog.rf-drawer .rf-drawer__body:has(> .rf-codeblock:only-child),
 	dialog.rf-drawer .rf-drawer__body:has(> figure.rf-snippet:only-child),
 	dialog.rf-drawer .rf-drawer__body:has(> pre:only-child) {
 		padding: 0;
