@@ -7,7 +7,7 @@ description: Neon-on-night palette by Enkia. Day + Storm canonical pair. The lin
 
 Tokyo Night is Enkia's blue-magenta-cyan palette, inspired by the neon-on-night aesthetic of the city it's named for. Three variants: **Storm** (the canonical dark), **Moon** (lighter dark), and **Day** (light). Phase 1 of the SPEC-057 lineup ships the canonical pair — Storm + Day. Moon defers to a future milestone.
 
-Tokyo Night is the **role-split champion** of the lineup. It deliberately uses distinct hues for `type`, `function`, `parameter`, `keyword`, `number`, `tag`, and `attribute` — the SPEC-056 extended-role contract was sized around palettes like Tokyo Night, so if any palette validates the widening, this is the one that does. MIT licensed.
+Tokyo Night is the **role-split champion** of the lineup. It deliberately uses distinct hues for `type`, `function`, `parameter`, `keyword`, `number`, `tag`, and `attribute` — the {% ref "SPEC-056" preview="drawer" /%} extended-role contract was sized around palettes like Tokyo Night, so if any palette validates the widening, this is the one that does. MIT licensed.
 
 This page is rendered on a site whose active preset is **niwaki**. The Tokyo Night look you see in the palettes and the live preview below is scoped to those subtrees via `tint="tokyo-night"` — the surrounding prose stays in niwaki.
 

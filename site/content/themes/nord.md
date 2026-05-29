@@ -26,7 +26,7 @@ The palette is structured as four named groups: **Polar Night** (the dark canvas
 
 The palette swatches below sit on Nord's canonical canvas (Polar Night nord0 in dark mode, Snow Storm nord6 in light mode) so the contrast story is honest — Nord wasn't designed to be read on a warm-cream canvas, and showing it that way would lie about the palette.
 
-This page is rendered on a site whose active preset is **niwaki**, not Nord. The Nord look you see in the swatches and the live code example below is scoped to those subtrees via the `tint="nord"` universal attribute — the surrounding prose stays in niwaki. That's the SPEC-056 scoped-tint projection working end-to-end.
+This page is rendered on a site whose active preset is **niwaki**, not Nord. The Nord look you see in the swatches and the live code example below is scoped to those subtrees via the `tint="nord"` universal attribute — the surrounding prose stays in niwaki. That's the {% ref "SPEC-056" preview="drawer" /%} scoped-tint projection working end-to-end.
 
 {% palette title="Nord — light" tint="nord" tint-mode="light" showContrast=true showA11y=true %}
 - Polar Night nord0 / Text (variable): #2e3440

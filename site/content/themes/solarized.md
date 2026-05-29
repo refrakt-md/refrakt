@@ -92,7 +92,7 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Solarized exercises the SPEC-056 extended roles thoroughly: **types** (`User`) in Yellow, distinct from **functions** (`findUser`) in Blue; **numbers** (`42`) in Orange, distinct from **constants** (which would also use violet) — the split that Nord first proved is meaningful; **regex** (`/^\d+$/`) in Green, distinct from string Cyan; **operators** in Violet, distinct from punctuation; **tags** and **attributes** in Red and Blue respectively.
+Solarized exercises the {% ref "SPEC-056" preview="drawer" /%} extended roles thoroughly: **types** (`User`) in Yellow, distinct from **functions** (`findUser`) in Blue; **numbers** (`42`) in Orange, distinct from **constants** (which would also use violet) — the split that Nord first proved is meaningful; **regex** (`/^\d+$/`) in Green, distinct from string Cyan; **operators** in Violet, distinct from punctuation; **tags** and **attributes** in Red and Blue respectively.
 
 ## Composing with tideline
 

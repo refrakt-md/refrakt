@@ -136,4 +136,4 @@ A few choices in the cascade design that might not be obvious:
 - **`tint-lock` is independent of `tint-mode`.** You can lock a page to `tint-mode: auto` (the user's system preference is final, no toggle UI). Useful for embedded surfaces where you don't want users fiddling but also don't have a brand preference.
 - **The cascade doesn't merge `tint` overlays.** A layout's `tint: warm` plus a page's `tint: brand-special` → the page wins, the layout's `warm` is gone. There's no concept of "stacked tints." Use a named tint preset that already combines what you want.
 
-See {% ref "SPEC-052" /%} for the full design rationale.
+See {% ref "SPEC-052" preview="drawer" /%} for the full design rationale.

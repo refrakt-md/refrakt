@@ -70,7 +70,7 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-One Dark exercises **4 of 7** SPEC-056 extended roles distinctly: `type` (Yellow) ≠ `function` (Blue), `regex` (Cyan) ≠ `string` (Green), `operator` (Cyan), `tag` (Red) ≠ `keyword` (Purple). `number` collapses with `constant`, `attribute` with `constant` (both orange) — Atom's intent.
+One Dark exercises **4 of 7** {% ref "SPEC-056" preview="drawer" /%} extended roles distinctly: `type` (Yellow) ≠ `function` (Blue), `regex` (Cyan) ≠ `string` (Green), `operator` (Cyan), `tag` (Red) ≠ `keyword` (Purple). `number` collapses with `constant`, `attribute` with `constant` (both orange) — Atom's intent.
 
 ## Composing with tideline
 

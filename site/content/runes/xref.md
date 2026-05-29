@@ -54,10 +54,11 @@ Without a type hint, ambiguous references use the first match and emit a build w
 
 Set `preview="drawer"` to keep the inline link *and* hoist a drawer containing the entity's expanded body, opening on click. Same shape `{% file-ref %}` uses — one preview vocabulary across both reference runes (SPEC-078).
 
-```markdoc
-The {% ref "SPEC-076" preview="drawer" /%} aggregate spec defines a third
-post-process query rune that pairs with collection and relationships.
-```
+{% preview source=true %}
+
+This page is itself the work of {% ref "SPEC-078" preview="drawer" /%}: a single shared `preview` attribute on every reference rune that hoists a drawer instead of navigating away.
+
+{% /preview %}
 
 When the reader clicks the inline link, a drawer slides in containing the entity's `{% expand %}`-equivalent content. The drawer's chrome footer links to the entity's resolved page URL (or hides silently when the entity has no `sourceUrl` — heading entities, drawer-target entities, plan content scanned without a route). The link itself reads like a normal xref in prose; the only visible difference is that clicking opens a drawer rather than navigating away.
 

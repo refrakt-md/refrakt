@@ -86,7 +86,7 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Catppuccin exercises **six of the seven** SPEC-056 extended optional roles distinctly: `type` (Yellow), `parameter` (Maroon), `number` (Peach), `regex` (Pink), `operator` (Sky), `string-expression` (Pink). `attribute` and `tag` collapse with `type` and `keyword` respectively — Catppuccin's intent, not the contract's limitation.
+Catppuccin exercises **six of the seven** {% ref "SPEC-056" preview="drawer" /%} extended optional roles distinctly: `type` (Yellow), `parameter` (Maroon), `number` (Peach), `regex` (Pink), `operator` (Sky), `string-expression` (Pink). `attribute` and `tag` collapse with `type` and `keyword` respectively — Catppuccin's intent, not the contract's limitation.
 
 ## Composing with tideline
 

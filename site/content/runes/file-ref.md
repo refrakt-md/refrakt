@@ -42,10 +42,11 @@ The href becomes `https://github.com/{owner}/{repo}/blob/{repoBranch}/packages/t
 
 `preview="drawer"` is where file-ref earns its keep for docs. The inline link stays in prose, and clicking opens a hoisted drawer containing the file's snippet:
 
-```markdoc
-See {% file-ref path="packages/types/src/theme.ts" lines="42-58" label="SiteThemeConfig" preview="drawer" /%}
-for the shape.
-```
+{% preview source=true %}
+
+See {% file-ref path="packages/types/src/theme.ts" lines="74-125" label="SiteConfig" preview="drawer" /%} for the full shape.
+
+{% /preview %}
 
 - The inline `<a>` gets `href="#drawer-{slug}"`, `aria-controls`, `aria-expanded` — the drawer behavior layer flips `aria-expanded` on open.
 - The drawer body is a `{% snippet path=… lines=… /%}` of the file. Syntax-highlighted via the standard highlight pass.
@@ -60,7 +61,7 @@ The inline `href="#drawer-{slug}"` is a real in-page anchor that scrolls to the 
 
 ## Label conventions
 
-The filename default (e.g. `theme.ts`) is conservative — when the file-ref refers to a symbol inside the file, pass an explicit `label`. Until a future `symbol="…"` attribute lands ({% ref "SPEC-078" /%} future extensions), `label` is the only knob:
+The filename default (e.g. `theme.ts`) is conservative — when the file-ref refers to a symbol inside the file, pass an explicit `label`. Until a future `symbol="…"` attribute lands ({% ref "SPEC-078" preview="drawer" /%} future extensions), `label` is the only knob:
 
 ```markdoc
 {# Refers to the file: filename is fine #}
