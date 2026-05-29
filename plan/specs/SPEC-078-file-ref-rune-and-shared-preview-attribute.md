@@ -187,6 +187,37 @@ not *want* the canonical URL there, the expand may be decorative inside
 richer chrome), and multi-expand is truly ambiguous (which entity's URL
 wins?). Author opt-in keeps semantics predictable.
 
+The footer zone is just markdoc rendered in a chrome region — any inline
+content goes there, not only hardcoded URLs. The canonical case is an
+`{% ref %}` pointing at the same entity that was just expanded:
+
+```markdoc
+{% drawer id="aggregate" title="Aggregate rune" %}
+{% expand "SPEC-076" /%}
+
+---
+
+See {% ref "SPEC-076" /%}
+{% /drawer %}
+```
+
+The xref resolves the URL from the registry, so the link stays correct
+as the entity moves and the author doesn't memorise URLs. The
+xref-patterns mechanism ({% ref "SPEC-065" /%}) works too — external
+issue refs or custom URL templates populate the footer the same way.
+Plain markdown links, `{% file-ref %}` (without preview), inline
+`{% humanize(…) %}` calls, anything that resolves to inline content
+works. The hoist mechanism is just one specific path to populate the
+footer slot; manual composition is the general case.
+
+**Nested previews in the footer.** A `{% ref "X" preview="drawer" /%}`
+inside a drawer footer would hoist another drawer for entity X —
+drawer-from-within-a-drawer. The mechanism doesn't prevent it and
+`<dialog>` stacking handles it on modern browsers, but it's a slightly
+awkward shape. Supported but discouraged; the build emits an info-level
+note if it's detected. (The alternative — blocking it — would require
+rune-aware validation that isn't worth the complexity for an edge use.)
+
 ### Why this and not "extend `expand`"
 
 `expand`'s contract is *replace the call site with the entity body in
