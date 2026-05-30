@@ -93,16 +93,16 @@ When neither `labels=` nor a per-fence `label` annotation is set, codegroup deri
 
 ```markdoc
 {% codegroup %}
-{% snippet path="packages/runes/src/lang-map.ts" lines="3-7" linenumbers=true /%}
-{% snippet path="packages/runes/src/tags/codegroup.ts" lines="7-14" linenumbers=true /%}
+{% snippet path="packages/runes/src/lang-map.ts" lines="3-7" linenumbers=true highlight="4-5" /%}
+{% snippet path="packages/runes/src/tags/codegroup.ts" lines="7-14" linenumbers=true highlight="8-9" /%}
 {% /codegroup %}
 ```
 
-Renders with tabs `lang-map.ts:3-7` and `codegroup.ts:7-14`, and each panel's gutter starting at the file's real line offset (3 and 7 respectively — `linenumbers` propagates from the snippet rune through to the fence, same as `source` and `lines`):
+Renders with tabs `lang-map.ts:3-7` and `codegroup.ts:7-14`, each panel's gutter starting at the file's real line offset (3 and 7 respectively), and each panel's `highlight` range emphasized — all four annotations (`source`, `lines`, `linenumbers`, `highlight`) propagate through the snippet → fence → codegroup chain uniformly:
 
 {% codegroup %}
-{% snippet path="packages/runes/src/lang-map.ts" lines="3-7" linenumbers=true /%}
-{% snippet path="packages/runes/src/tags/codegroup.ts" lines="7-14" linenumbers=true /%}
+{% snippet path="packages/runes/src/lang-map.ts" lines="3-7" linenumbers=true highlight="4-5" /%}
+{% snippet path="packages/runes/src/tags/codegroup.ts" lines="7-14" linenumbers=true highlight="8-9" /%}
 {% /codegroup %}
 
 The label resolution chain (first match wins):
