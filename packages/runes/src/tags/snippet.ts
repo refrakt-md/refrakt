@@ -34,6 +34,16 @@ export const snippet = createContentModelSchema({
 			required: false,
 			description: 'Syntax-highlighting language hint. Overrides the extension-based inference.',
 		},
+		linenumbers: {
+			type: Boolean,
+			required: false,
+			description: 'Show line numbers in the gutter. Starting number derives from the `lines` range start (e.g. lines="74-125" → first line is 74), so numbers reflect the file\'s real offsets. WORK-304.',
+		},
+		highlight: {
+			type: String,
+			required: false,
+			description: 'Range(s) to emphasize without cropping — Shiki-style format: "74-78", "74-78,82,90-92". Indices are file coordinates (same frame as `lines=`). Use this when you want full context visible but want to draw the eye to specific lines. WORK-304.',
+		},
 	},
 	contentModel: { type: 'sequence', fields: [] },
 	transform(_resolved, _attrs) {

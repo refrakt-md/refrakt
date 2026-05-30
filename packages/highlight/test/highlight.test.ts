@@ -456,3 +456,77 @@ describe('highlight transform — SPEC-056 extended syntax roles', () => {
 		}
 	});
 });
+
+describe('highlight transform — line highlight (WORK-304)', () => {
+	it('adds data-line-status="highlight" to the matching span.line rows', async () => {
+		const hl = await createHighlightTransform({ langs: ['javascript'] });
+		// 5 lines of code; highlight lines 2-3.
+		const code = ['a();', 'b();', 'c();', 'd();', 'e();'].join('\n');
+		const tree = tag('code', {
+			'data-language': 'javascript',
+			'data-highlight-lines': '2-3',
+		}, [code]);
+		const result = hl(tree) as SerializedTag;
+		const html = result.children[0] as string;
+		// Two `<span class="line"` rows should carry the status attribute,
+		// the other three should not.
+		const highlighted = html.match(/<span class="line" data-line-status="highlight"/g) ?? [];
+		const allLines = html.match(/<span class="line"/g) ?? [];
+		expect(highlighted.length).toBe(2);
+		expect(allLines.length).toBe(5);
+	});
+
+	it('translates from file coordinates using data-lines start (slice offset)', async () => {
+		const hl = await createHighlightTransform({ langs: ['javascript'] });
+		// 3 lines of code representing file lines 50-52; highlight file line 51.
+		const code = ['a();', 'b();', 'c();'].join('\n');
+		const tree = tag('code', {
+			'data-language': 'javascript',
+			'data-lines': '50-52',
+			'data-highlight-lines': '51',
+		}, [code]);
+		const result = hl(tree) as SerializedTag;
+		const html = result.children[0] as string;
+		// Only one line should be highlighted (the second of three — file 51).
+		const highlighted = html.match(/<span class="line" data-line-status="highlight"/g) ?? [];
+		expect(highlighted.length).toBe(1);
+		// First and third lines remain unmarked.
+		expect(html.indexOf('<span class="line" data-line-status="highlight"')).toBeGreaterThan(html.indexOf('a();'));
+	});
+
+	it('handles multi-range highlight values (comma-separated)', async () => {
+		const hl = await createHighlightTransform({ langs: ['javascript'] });
+		const code = ['a();', 'b();', 'c();', 'd();', 'e();', 'f();'].join('\n');
+		const tree = tag('code', {
+			'data-language': 'javascript',
+			'data-highlight-lines': '1,3-4,6',
+		}, [code]);
+		const result = hl(tree) as SerializedTag;
+		const html = result.children[0] as string;
+		// 4 lines highlighted (1, 3, 4, 6).
+		const highlighted = html.match(/<span class="line" data-line-status="highlight"/g) ?? [];
+		expect(highlighted.length).toBe(4);
+	});
+
+	it('silently drops invalid range tokens', async () => {
+		const hl = await createHighlightTransform({ langs: ['javascript'] });
+		const code = 'a();\nb();';
+		const tree = tag('code', {
+			'data-language': 'javascript',
+			'data-highlight-lines': 'foo,2,5-3', // garbage + valid + reversed
+		}, [code]);
+		const result = hl(tree) as SerializedTag;
+		const html = result.children[0] as string;
+		const highlighted = html.match(/<span class="line" data-line-status="highlight"/g) ?? [];
+		// Only line 2 is in range; reversed and gibberish are dropped silently.
+		expect(highlighted.length).toBe(1);
+	});
+
+	it('does nothing when data-highlight-lines is absent', async () => {
+		const hl = await createHighlightTransform({ langs: ['javascript'] });
+		const tree = tag('code', { 'data-language': 'javascript' }, ['a();\nb();']);
+		const result = hl(tree) as SerializedTag;
+		const html = result.children[0] as string;
+		expect(html).not.toContain('data-line-status=');
+	});
+});

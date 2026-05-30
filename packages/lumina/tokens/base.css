@@ -52,6 +52,20 @@
 	--rf-color-success-bg: #e0eee4;
 	--rf-color-success-border: #b8d4be;
 
+	/* WORK-304 — neutral tint for line highlight (the third
+	 * `[data-line-status]` value that snippet / codegroup / diff share).
+	 * Subtle surface tint so highlighted rows read as emphasized but not
+	 * status-coloured (which would compete with diff's add/remove channel
+	 * and the semantic palette above). `*-rail` is the optional left-edge
+	 * border colour; falls back to the primary accent via the consuming
+	 * CSS for themes that don't override it. */
+	--rf-color-line-highlight: color-mix(in srgb, var(--rf-color-text) 6%, transparent);
+	--rf-color-line-highlight-rail: var(--rf-color-primary, var(--rf-color-text));
+	/* Gutter colour for `pre[data-linenumbers]` line counter. Defers to
+	 * the existing muted text token by default; themes can pin a
+	 * dedicated hue without overriding muted. */
+	--rf-color-line-number: var(--rf-color-muted);
+
 	/* Radii */
 	--rf-radius-sm: 6px;
 	--rf-radius-md: 10px;

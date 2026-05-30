@@ -80,6 +80,18 @@ export interface TokenContract {
 			text: string;
 			'inline-bg': string;
 		};
+
+		/** Line-level annotation tokens shared by snippet / codegroup / diff
+		 *  (WORK-304). `highlight` is the neutral surface tint applied to
+		 *  `[data-line-status="highlight"]` rows; `highlight-rail` is the
+		 *  left-edge border colour (kept as a separate token so themes can
+		 *  repaint the rail without touching the row background); `number`
+		 *  is the gutter colour for `pre[data-linenumbers]`. */
+		line: {
+			highlight: string;
+			'highlight-rail': string;
+			number: string;
+		};
 	};
 
 	/** Border-radius tokens. */

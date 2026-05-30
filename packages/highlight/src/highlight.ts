@@ -265,7 +265,20 @@ function highlightNode(
 		.join('');
 
 	try {
-		const html = highlightFn(text, lang);
+		let html = highlightFn(text, lang);
+		// WORK-304 — apply `data-highlight-lines` after Shiki has produced
+		// `<span class="line">…</span>` rows. The annotation lives on the
+		// same `<code>` node (the fence transform forwards it onto both
+		// `<pre>` and `<code>`), and `data-lines` (slice start) is used to
+		// translate from file coordinates to slice-relative indices.
+		const hlAttr = node.attributes?.['data-highlight-lines'];
+		if (typeof hlAttr === 'string' && hlAttr.length > 0) {
+			const sliceStart = parseLinesStart(node.attributes?.['data-lines']);
+			const ranges = parseHighlightRanges(hlAttr);
+			if (ranges.length > 0) {
+				html = applyLineHighlight(html, ranges, sliceStart);
+			}
+		}
 		return {
 			...node,
 			attributes: { ...node.attributes, 'data-codeblock': true },
@@ -275,6 +288,59 @@ function highlightNode(
 		// Unknown language or highlight failure — leave text unchanged
 		return node;
 	}
+}
+
+/** Parse the leading integer of a `data-lines="N-M"` (or `"N"`) attribute
+ *  and return it; defaults to 1 when missing / malformed. Used to translate
+ *  from file coordinates (`data-highlight-lines`) to slice-relative `<span
+ *  class="line">` indices. */
+function parseLinesStart(value: unknown): number {
+	if (typeof value !== 'string' || value.length === 0) return 1;
+	const m = /^(\d+)/.exec(value.trim());
+	if (!m) return 1;
+	const n = Number(m[1]);
+	return Number.isFinite(n) && n > 0 ? n : 1;
+}
+
+/** Parse a Shiki-style highlight range: `"74-78"`, `"74-78,82,90-92"`.
+ *  Returns a sorted, deduped array of line numbers (file coordinates).
+ *  Invalid range tokens are silently dropped. */
+function parseHighlightRanges(value: string): number[] {
+	const out = new Set<number>();
+	for (const token of value.split(',')) {
+		const trimmed = token.trim();
+		if (!trimmed) continue;
+		const range = /^(\d+)\s*-\s*(\d+)$/.exec(trimmed);
+		if (range) {
+			const start = Number(range[1]);
+			const end = Number(range[2]);
+			if (!Number.isFinite(start) || !Number.isFinite(end) || start <= 0 || end < start) continue;
+			for (let i = start; i <= end; i++) out.add(i);
+			continue;
+		}
+		const single = /^(\d+)$/.exec(trimmed);
+		if (single) {
+			const n = Number(single[1]);
+			if (Number.isFinite(n) && n > 0) out.add(n);
+		}
+	}
+	return [...out].sort((a, b) => a - b);
+}
+
+/** Inject `data-line-status="highlight"` into the `<span class="line">`
+ *  rows whose **file-coordinate** index falls in `range`. `sliceStart` is
+ *  the first line number represented in the slice (i.e. `data-lines` start;
+ *  defaults to 1 for a full-file fence), so the Nth `<span class="line">`
+ *  represents file line `sliceStart + N - 1`. */
+function applyLineHighlight(html: string, range: number[], sliceStart: number): string {
+	const targets = new Set(range);
+	let counter = sliceStart;
+	return html.replace(/<span class="line"/g, () => {
+		const lineNumber = counter++;
+		return targets.has(lineNumber)
+			? '<span class="line" data-line-status="highlight"'
+			: '<span class="line"';
+	});
 }
 
 /** Strip Shiki's <pre><code> wrapper to get just the highlighted spans. */

@@ -71,6 +71,18 @@ export const luminaTokens: ThemeTokensConfig = {
 			// alias via `extra` below for downstream CSS that still reads it.
 			'inline-bg': '#e6e5e3',
 		},
+
+		// WORK-304 — line-level annotation tokens shared by snippet /
+		// codegroup / diff. `highlight` is the neutral surface tint applied
+		// to `[data-line-status="highlight"]` rows; `highlight-rail` is the
+		// left-edge border colour (left as a soft accent so themes can
+		// repaint just the rail without touching the row background);
+		// `number` is the gutter colour for `pre[data-linenumbers]`.
+		line: {
+			highlight: 'color-mix(in srgb, var(--rf-color-text) 6%, transparent)',
+			'highlight-rail': 'var(--rf-color-primary, var(--rf-color-text))',
+			number: 'var(--rf-color-muted)',
+		},
 	},
 
 	radius: {

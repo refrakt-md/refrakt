@@ -59,15 +59,15 @@ const z = 3;
 		expect(lines.length).toBeGreaterThan(0);
 
 		// "const x = 1;" is equal in both
-		const equalLine = lines.find(l => l.attributes['data-type'] === 'equal');
+		const equalLine = lines.find(l => l.attributes['data-line-status'] === 'equal');
 		expect(equalLine).toBeDefined();
 
 		// "const y = 2;" is removed
-		const removeLine = lines.find(l => l.attributes['data-type'] === 'remove');
+		const removeLine = lines.find(l => l.attributes['data-line-status'] === 'remove');
 		expect(removeLine).toBeDefined();
 
 		// "const z = 3;" is added
-		const addLine = lines.find(l => l.attributes['data-type'] === 'add');
+		const addLine = lines.find(l => l.attributes['data-line-status'] === 'add');
 		expect(addLine).toBeDefined();
 	});
 
@@ -113,7 +113,7 @@ const x = 1;
 		expect(lines.length).toBeGreaterThan(0);
 
 		// All lines should be equal
-		expect(lines.every(l => l.attributes['data-type'] === 'equal')).toBe(true);
+		expect(lines.every(l => l.attributes['data-line-status'] === 'equal')).toBe(true);
 	});
 
 	it('should produce split renderable with panels', () => {
@@ -205,7 +205,7 @@ const z = 3;
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
 		const lines = findAllTags(tag!, t => t.attributes['data-name'] === 'line');
 
-		const removeLine = lines.find(l => l.attributes['data-type'] === 'remove');
+		const removeLine = lines.find(l => l.attributes['data-line-status'] === 'remove');
 		expect(removeLine).toBeDefined();
 		const removeNums = findAllTags(removeLine!, t => t.attributes['data-name'] === 'gutter-num');
 		expect(removeNums.length).toBe(2);
@@ -213,7 +213,7 @@ const z = 3;
 		expect(removeNums.find(n => n.attributes['data-side'] === 'before')!.children[0]).not.toBe('');
 		expect(removeNums.find(n => n.attributes['data-side'] === 'after')!.children[0]).toBe('');
 
-		const addLine = lines.find(l => l.attributes['data-type'] === 'add');
+		const addLine = lines.find(l => l.attributes['data-line-status'] === 'add');
 		expect(addLine).toBeDefined();
 		const addNums = findAllTags(addLine!, t => t.attributes['data-name'] === 'gutter-num');
 		// after-num populated, before-num empty
@@ -257,5 +257,101 @@ const x = 2;
 		const splitContainer = findTag(tag!, t => t.attributes['data-name'] === 'split-container');
 		const headerInsidePanel = findTag(splitContainer!, t => t.attributes['data-name'] === 'header');
 		expect(headerInsidePanel).toBeUndefined();
+	});
+
+	// WORK-304 — fence-level annotations: per-side gutter offsets, source-
+	// derived header, ignored highlight.
+	describe('fence-level annotations (WORK-304)', () => {
+		it('derives the header from a shared fence `source` when title is unset', () => {
+			const result = parse(`{% diff %}
+\`\`\`ts {% source="theme.ts" %}
+const x = 1;
+\`\`\`
+
+\`\`\`ts {% source="theme.ts" %}
+const x = 2;
+\`\`\`
+{% /diff %}`);
+			const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
+			const header = findTag(tag!, t => t.attributes['data-name'] === 'header');
+			expect(header).toBeDefined();
+			expect(header!.children).toContain('theme.ts');
+		});
+
+		it('renders `before → after` header when fence sources differ', () => {
+			const result = parse(`{% diff %}
+\`\`\`ts {% source="old/theme.ts" %}
+const x = 1;
+\`\`\`
+
+\`\`\`ts {% source="new/theme.ts" %}
+const x = 2;
+\`\`\`
+{% /diff %}`);
+			const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
+			const header = findTag(tag!, t => t.attributes['data-name'] === 'header');
+			expect(header).toBeDefined();
+			expect(header!.children?.[0]).toBe('old/theme.ts → new/theme.ts');
+		});
+
+		it('explicit `title=` overrides fence `source` for the header', () => {
+			const result = parse(`{% diff title="explicit" %}
+\`\`\`ts {% source="theme.ts" %}
+const x = 1;
+\`\`\`
+
+\`\`\`ts {% source="theme.ts" %}
+const x = 2;
+\`\`\`
+{% /diff %}`);
+			const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
+			const header = findTag(tag!, t => t.attributes['data-name'] === 'header');
+			expect(header!.children?.[0]).toBe('explicit');
+		});
+
+		it('per-side gutter numbers offset by each fence `lines` start', () => {
+			const result = parse(`{% diff %}
+\`\`\`ts {% lines="50-52" %}
+const x = 1;
+const y = 1;
+const z = 1;
+\`\`\`
+
+\`\`\`ts {% lines="100-102" %}
+const x = 2;
+const y = 1;
+const z = 1;
+\`\`\`
+{% /diff %}`);
+			const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
+			const beforeGutters = findAllTags(tag!, t => t.attributes['data-name'] === 'gutter-num' && t.attributes['data-side'] === 'before');
+			const afterGutters = findAllTags(tag!, t => t.attributes['data-name'] === 'gutter-num' && t.attributes['data-side'] === 'after');
+			// First non-empty before gutter should start at 50, not 1.
+			const beforeFirst = beforeGutters.map(g => String(g.children?.[0] ?? '')).find(s => s !== '');
+			const afterFirst = afterGutters.map(g => String(g.children?.[0] ?? '')).find(s => s !== '');
+			expect(beforeFirst).toBe('50');
+			expect(afterFirst).toBe('100');
+		});
+
+		it('silently ignores a fence `highlight` annotation inside diff', () => {
+			const result = parse(`{% diff %}
+\`\`\`ts {% highlight="1-2" %}
+const x = 1;
+\`\`\`
+
+\`\`\`ts {% highlight="1-2" %}
+const x = 2;
+\`\`\`
+{% /diff %}`);
+			// No data-highlight-lines on any diff descendant — the annotation
+			// is read at the rune level (not at all, in fact) and never
+			// propagated to the rendered <pre>/<code>.
+			const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
+			const hl = findTag(tag!, t => 'data-highlight-lines' in (t.attributes ?? {}));
+			expect(hl).toBeUndefined();
+			// And the diff still rendered cleanly — content with an add and a remove.
+			const lines = findAllTags(tag!, t => t.attributes['data-name'] === 'line');
+			expect(lines.some(l => l.attributes['data-line-status'] === 'add' || l.attributes['data-line-status'] === 'remove')).toBe(true);
+		});
 	});
 });

@@ -17,6 +17,26 @@ function prettifyLanguage(lang: string): string {
   return languageNames[lang] || lang.charAt(0).toUpperCase() + lang.slice(1);
 }
 
+/** Extract the trailing filename from a project-root-relative path.
+ *  Falls back to the trimmed input when no separator is present. */
+function basename(path: string): string {
+  if (!path) return '';
+  const trimmed = path.endsWith('/') ? path.slice(0, -1) : path;
+  const slash = trimmed.lastIndexOf('/');
+  return slash >= 0 ? trimmed.slice(slash + 1) : trimmed;
+}
+
+/** Derive a tab label from a fence's `source` (+ optional `lines`) annotation:
+ *  `theme.ts` standalone, or `theme.ts:74-125` when a range is specified.
+ *  Returns empty string when no `source` is set so callers can fall through
+ *  to the next step in the label-resolution chain. */
+function labelFromSource(source: string | undefined, lines: string | undefined): string {
+  if (!source) return '';
+  const name = basename(source);
+  if (!name) return '';
+  return lines ? `${name}:${lines}` : name;
+}
+
 const overflowValues = ['scroll', 'wrap', 'hide'] as const;
 
 export const codegroup = createContentModelSchema({
@@ -70,7 +90,25 @@ export const codegroup = createContentModelSchema({
 
 		for (const child of panels) {
 			const lang = child.attributes.language || 'shell';
-			const label = customLabels[tabItems.length] || prettifyLanguage(lang);
+			// Label precedence (WORK-304):
+			//   1. Group-level `labels=` positional override
+			//   2. Per-fence `label` annotation (` ```ts {% label="X" %} `)
+			//   3. Derived from fence `source` annotation (basename, with
+			//      `:lines` suffix when set) — populated automatically when
+			//      the panel is `{% snippet %}`-derived, and authorable on
+			//      hand-written fences for the same effect
+			//   4. Prettified language name (today's default)
+			const fenceLabelAttr = typeof child.attributes.label === 'string'
+				? (child.attributes.label as string)
+				: '';
+			const sourceLabel = labelFromSource(
+				typeof child.attributes.source === 'string' ? child.attributes.source as string : undefined,
+				typeof child.attributes.lines === 'string' ? child.attributes.lines as string : undefined,
+			);
+			const label = customLabels[tabItems.length]
+				|| fenceLabelAttr
+				|| sourceLabel
+				|| prettifyLanguage(lang);
 
 			const nameSpan = new Tag('span', {}, [label]);
 			tabItems.push(new Tag('button', { 'data-name': 'tab', role: 'tab' }, [nameSpan]));

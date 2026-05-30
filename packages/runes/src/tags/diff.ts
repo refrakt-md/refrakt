@@ -108,13 +108,17 @@ function getUnifiedLines(hunks: DiffHunk[]): { hunk: DiffHunk; beforeNum: number
  *  before-num for an add line) takes the place of the old `+`/`-` prefix as
  *  the directional cue: combined with the change-tinted number colour and
  *  the line's left-edge border, the absence/presence pattern says which way
- *  the change goes without a dedicated prefix column. */
-function buildUnifiedRenderable(hunks: DiffHunk[], lang: string) {
+ *  the change goes without a dedicated prefix column.
+ *
+ *  WORK-304 — line spans carry `data-line-status` (was `data-type`) to
+ *  share the row primitive with code-block line highlighting and any
+ *  future per-line state. Values: `equal | add | remove`. */
+function buildUnifiedRenderable(hunks: DiffHunk[], lang: string, beforeOffset = 0, afterOffset = 0) {
 	const lines = getUnifiedLines(hunks);
 	const lineNodes = lines.map(({ hunk, beforeNum, afterNum }) => {
-		return new Tag('span', { 'data-name': 'line', 'data-type': hunk.type }, [
-			new Tag('span', { 'data-name': 'gutter-num', 'data-side': 'before' }, [beforeNum != null ? String(beforeNum) : '']),
-			new Tag('span', { 'data-name': 'gutter-num', 'data-side': 'after' }, [afterNum != null ? String(afterNum) : '']),
+		return new Tag('span', { 'data-name': 'line', 'data-line-status': hunk.type }, [
+			new Tag('span', { 'data-name': 'gutter-num', 'data-side': 'before' }, [beforeNum != null ? String(beforeNum + beforeOffset) : '']),
+			new Tag('span', { 'data-name': 'gutter-num', 'data-side': 'after' }, [afterNum != null ? String(afterNum + afterOffset) : '']),
 			new Tag('span', { 'data-name': 'line-content', ...(lang ? { 'data-language': lang } : {}) }, [hunk.text]),
 		]);
 	});
@@ -125,15 +129,20 @@ function buildUnifiedRenderable(hunks: DiffHunk[], lang: string) {
 /** Build split diff renderable — side-by-side panels with one numbered
  *  gutter per panel. Placeholder rows (where the matching side has the
  *  add/remove) render an empty gutter + empty content; the fixed gutter
- *  width keeps the column rigid so rows align across panels. */
-function buildSplitRenderable(hunks: DiffHunk[], lang: string) {
+ *  width keeps the column rigid so rows align across panels.
+ *
+ *  WORK-304 — same `data-line-status` rename + per-side offset support
+ *  as the unified renderable. `beforeOffset` / `afterOffset` are the
+ *  `lines=` start minus one, so a fence with `lines="50-100"` adds 49
+ *  to its 1-indexed `num` to produce gutter values starting at 50. */
+function buildSplitRenderable(hunks: DiffHunk[], lang: string, beforeOffset = 0, afterOffset = 0) {
 	const { before, after } = getSplitLines(hunks);
 
-	function buildPanelLines(lines: SplitLine[], side: 'before' | 'after') {
+	function buildPanelLines(lines: SplitLine[], side: 'before' | 'after', offset: number) {
 		return lines.map(line => {
 			const type = line ? line.hunk.type : 'empty';
-			return new Tag('span', { 'data-name': 'line', 'data-type': type }, [
-				new Tag('span', { 'data-name': 'gutter-num', 'data-side': side }, [line ? String(line.num) : '']),
+			return new Tag('span', { 'data-name': 'line', 'data-line-status': type }, [
+				new Tag('span', { 'data-name': 'gutter-num', 'data-side': side }, [line ? String(line.num + offset) : '']),
 				new Tag('span', { 'data-name': 'line-content', ...(line && lang ? { 'data-language': lang } : {}) }, [
 					line ? line.hunk.text : '',
 				]),
@@ -143,12 +152,45 @@ function buildSplitRenderable(hunks: DiffHunk[], lang: string) {
 
 	return [new Tag('div', { 'data-name': 'split-container' }, [
 		new Tag('div', { 'data-name': 'panel' }, [
-			new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, buildPanelLines(before, 'before')),
+			new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, buildPanelLines(before, 'before', beforeOffset)),
 		]),
 		new Tag('div', { 'data-name': 'panel' }, [
-			new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, buildPanelLines(after, 'after')),
+			new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, buildPanelLines(after, 'after', afterOffset)),
 		]),
 	])];
+}
+
+/** Parse the leading integer of a `lines="N-M"` (or `"N"`) annotation and
+ *  return `N - 1` as the gutter offset, or 0 when the annotation is
+ *  missing / malformed. Diff uses this per side so each panel's gutter
+ *  reflects the file's actual coordinates rather than always starting at 1. */
+function gutterOffsetFromLines(linesAttr: unknown): number {
+	if (typeof linesAttr !== 'string' || linesAttr.length === 0) return 0;
+	const m = /^(\d+)/.exec(linesAttr.trim());
+	if (!m) return 0;
+	const n = Number(m[1]);
+	return Number.isFinite(n) && n > 0 ? n - 1 : 0;
+}
+
+/** Build the diff header: explicit `title` attribute wins, otherwise the
+ *  fence `source` annotations form the header. When both sides share a
+ *  source they collapse to a single label; differing sources render as
+ *  `before → after`. Falls back to no header when nothing is set. */
+function deriveHeader(
+	title: string,
+	beforeSource: string | undefined,
+	afterSource: string | undefined,
+): InstanceType<typeof Tag>[] {
+	if (title) return [new Tag('div', { 'data-name': 'header' }, [title])];
+	if (beforeSource && afterSource) {
+		if (beforeSource === afterSource) {
+			return [new Tag('div', { 'data-name': 'header' }, [beforeSource])];
+		}
+		return [new Tag('div', { 'data-name': 'header' }, [`${beforeSource} → ${afterSource}`])];
+	}
+	const single = beforeSource || afterSource;
+	if (single) return [new Tag('div', { 'data-name': 'header' }, [single])];
+	return [];
 }
 
 export const diff = createContentModelSchema({
@@ -177,17 +219,33 @@ export const diff = createContentModelSchema({
 		const afterSource = fences.length > 1 ? (fences[1].attributes.content || '').replace(/\n$/, '') : '';
 		const lang = language || (fences.length > 0 ? fences[0].attributes.language || '' : '');
 
+		// WORK-304 — per-fence annotations:
+		//   - `source` populates the diff header (and collapses to a single
+		//     label when both sides share it; renders `before → after`
+		//     otherwise).
+		//   - `lines` derives per-side gutter offsets so each panel's
+		//     line numbers reflect the file's real coordinates.
+		//   - `highlight` is intentionally ignored — diff's add/remove
+		//     status IS the primary line-level signal, and emphasis on
+		//     top would muddy the +/- channel. Silent no-op; no warning.
+		const beforeFenceSource = fences.length > 0 && typeof fences[0].attributes.source === 'string'
+			? fences[0].attributes.source as string
+			: undefined;
+		const afterFenceSource = fences.length > 1 && typeof fences[1].attributes.source === 'string'
+			? fences[1].attributes.source as string
+			: undefined;
+		const beforeOffset = fences.length > 0 ? gutterOffsetFromLines(fences[0].attributes.lines) : 0;
+		const afterOffset = fences.length > 1 ? gutterOffsetFromLines(fences[1].attributes.lines) : 0;
+
 		// Compute line-level diff (highlighting deferred to highlight transform)
 		const hunks = computeLineDiff(beforeSource, afterSource);
 
 		// Build expanded renderable AST
 		const expanded = mode === 'split'
-			? buildSplitRenderable(hunks, lang)
-			: buildUnifiedRenderable(hunks, lang);
+			? buildSplitRenderable(hunks, lang, beforeOffset, afterOffset)
+			: buildUnifiedRenderable(hunks, lang, beforeOffset, afterOffset);
 
-		const header = title
-			? [new Tag('div', { 'data-name': 'header' }, [title])]
-			: [];
+		const header = deriveHeader(title, beforeFenceSource, afterFenceSource);
 
 		const renderable = createComponentRenderable({ rune: 'diff',
 			tag: 'div',

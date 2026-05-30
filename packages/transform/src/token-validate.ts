@@ -47,6 +47,10 @@ const TOKEN_CONTRACT_SHAPE: Record<string, ContractNode> = {
 		code: {
 			bg: 'leaf', text: 'leaf', 'inline-bg': 'leaf',
 		},
+		// WORK-304 — line-level annotation tokens (snippet / codegroup / diff).
+		line: {
+			highlight: 'leaf', 'highlight-rail': 'leaf', number: 'leaf',
+		},
 	},
 	radius: {
 		sm: 'leaf', md: 'leaf', lg: 'leaf', full: 'leaf',

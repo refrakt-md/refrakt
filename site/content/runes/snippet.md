@@ -146,6 +146,36 @@ Paths are resolved relative to the directory containing `refrakt.config.json`. T
 
 These rules make snippet safe to use on sites that accept untrusted author content (a hosted authoring product, an external editor) — the worst a malicious author can do with snippet is point at a file inside the project root.
 
+## Line numbers
+
+Set `linenumbers=true` to show a numbered gutter. The starting number derives from `lines=` so the gutter reflects the file's real offsets — `lines="74-125"` starts the count at 74, not 1. SPEC-062 / WORK-304.
+
+```markdoc
+{% snippet path="packages/runes/src/lang-map.ts" lines="15-25" linenumbers=true /%}
+```
+
+Renders with the gutter starting at 15 (file coordinates), matching what you'd see in your editor:
+
+{% snippet path="packages/runes/src/lang-map.ts" lines="15-25" linenumbers=true /%}
+
+The implementation is pure CSS — `pre[data-linenumbers]` gets a `counter-reset` seeded by an inlined `--rf-start-line` custom property the fence schema computes from `data-lines`. No JS, no DOM rewriting.
+
+## Highlighting specific lines
+
+`highlight="74-78"` emphasizes specific lines without cropping. Unlike `lines=` (which slices), highlight keeps the surrounding context visible and draws the eye to the lines that matter. Use it for "look at this part" callouts inside a larger code block.
+
+```markdoc
+{% snippet path="packages/runes/src/lang-map.ts" lines="10-40" linenumbers=true highlight="18-22" /%}
+```
+
+Renders the slice 10-40 with file lines 18-22 emphasized via a neutral surface tint and a primary-coloured left rail:
+
+{% snippet path="packages/runes/src/lang-map.ts" lines="10-40" linenumbers=true highlight="18-22" /%}
+
+Range syntax matches Shiki: single ranges (`"74-78"`), single lines (`"82"`), or comma-separated mixed (`"74-78,82,90-92"`). Indices are **file coordinates** — if you've set `lines="10-40" highlight="20"`, the highlighted line is file line 20, not the 20th line of the slice. Less surprising for citing line numbers from a real file.
+
+Both `linenumbers` and `highlight` are also fence-level annotations — `` ```ts {% linenumbers=true highlight="3-5" %} `` works on any hand-authored fence too, no snippet required.
+
 ## Attributes
 
 | Attribute | Type | Required | Description |
@@ -153,6 +183,8 @@ These rules make snippet safe to use on sites that accept untrusted author conte
 | `path` | String | Yes | Path to the source file, relative to the project root. |
 | `lines` | String | No | Line range. `"10-25"` / `"10-"` / `"-20"` / `"10"`. 1-indexed, inclusive. |
 | `lang` | String | No | Override the extension-inferred syntax-highlighting language. |
+| `linenumbers` | Boolean | No | Show line numbers in the gutter. Start counter derives from `lines` (file coordinates). |
+| `highlight` | String | No | Range(s) to emphasize without cropping. Shiki-style format: `"74-78"`, `"74-78,82,90-92"`. File coordinates. |
 
 No `title` attribute. Snippet's output is a fence; for a labelled chrome wrap in `{% codegroup title="..." %}`.
 

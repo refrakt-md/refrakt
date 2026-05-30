@@ -35,21 +35,30 @@
 	font-size: 0.8125rem;
 	line-height: 1.6;
 }
+/* WORK-304 — annotated line primitive. Three states share one row
+ * shape (`add`, `remove`, `highlight`); only the tint token and the
+ * gutter rail colour change. The same selector form is reused by the
+ * standalone code block for `data-line-status="highlight"` via the
+ * `.rf-codeblock` rules below. */
 .rf-diff__line {
 	display: flex;
 	min-height: 1.6em;
 	border-left: 3px solid transparent;
 }
-.rf-diff__line[data-type="equal"]  { background: transparent; }
-.rf-diff__line[data-type="remove"] {
+.rf-diff__line[data-line-status="equal"]  { background: transparent; }
+.rf-diff__line[data-line-status="remove"] {
 	background: color-mix(in srgb, var(--rf-color-danger) 18%, transparent);
 	border-left-color: var(--rf-color-danger);
 }
-.rf-diff__line[data-type="add"] {
+.rf-diff__line[data-line-status="add"] {
 	background: color-mix(in srgb, var(--rf-color-success) 18%, transparent);
 	border-left-color: var(--rf-color-success);
 }
-.rf-diff__line[data-type="empty"]  { background: transparent; }
+.rf-diff__line[data-line-status="highlight"] {
+	background: var(--rf-color-line-highlight);
+	border-left-color: var(--rf-color-line-highlight-rail, var(--rf-color-primary));
+}
+.rf-diff__line[data-line-status="empty"]  { background: transparent; }
 .rf-diff__gutter-num {
 	flex-shrink: 0;
 	padding: 0 0.5rem;
@@ -65,10 +74,10 @@
  * Remove lines colour the before-number; add lines colour the after-number.
  * The opposite side renders empty (no number) which itself signals "nothing
  * here on this side". */
-.rf-diff__line[data-type="remove"] .rf-diff__gutter-num[data-side="before"] {
+.rf-diff__line[data-line-status="remove"] .rf-diff__gutter-num[data-side="before"] {
 	color: var(--rf-color-danger);
 }
-.rf-diff__line[data-type="add"] .rf-diff__gutter-num[data-side="after"] {
+.rf-diff__line[data-line-status="add"] .rf-diff__gutter-num[data-side="after"] {
 	color: var(--rf-color-success);
 }
 .rf-diff .rf-codeblock {

@@ -97,7 +97,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 		expect(ast.children[0].type).toBe('fence');
 		expect(ast.children[0].attributes.content).toBe('const x = 1;\nconst y = 2;\n');
 		expect(ast.children[0].attributes.language).toBe('typescript');
-		expect(ast.children[0].attributes['data-snippet-source']).toBe('foo.ts');
+		expect(ast.children[0].attributes.source).toBe('foo.ts');
 	});
 
 	it('respects the `lang=` attribute over inferred language', () => {
@@ -115,9 +115,30 @@ describe('snippet preprocess (SPEC-062)', () => {
 		const { ctx } = makePreprocessCtx(tmpRoot);
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
 
-		expect(ast.children[0].attributes['data-snippet-lines']).toBe('5-10');
+		expect(ast.children[0].attributes.lines).toBe('5-10');
 		// 5-10 inclusive = lines 5 through 10 = 6 lines.
 		expect(ast.children[0].attributes.content).toBe('line 5\nline 6\nline 7\nline 8\nline 9\nline 10');
+	});
+
+	it('propagates linenumbers + highlight from the rune to the fence (WORK-304)', () => {
+		writeFileSync(join(tmpRoot, 'big.ts'), Array.from({ length: 20 }, (_, i) => `line ${i + 1}`).join('\n'));
+		const ast = Markdoc.parse('{% snippet path="big.ts" lines="5-10" linenumbers=true highlight="7-8" /%}\n');
+		const { ctx } = makePreprocessCtx(tmpRoot);
+		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+
+		expect(ast.children[0].type).toBe('fence');
+		expect(ast.children[0].attributes.linenumbers).toBe(true);
+		expect(ast.children[0].attributes.highlight).toBe('7-8');
+	});
+
+	it('omits linenumbers / highlight from the fence when the rune did not set them', () => {
+		writeFileSync(join(tmpRoot, 'foo.ts'), 'const x = 1;\n');
+		const ast = Markdoc.parse('{% snippet path="foo.ts" /%}\n');
+		const { ctx } = makePreprocessCtx(tmpRoot);
+		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
+
+		expect(ast.children[0].attributes.linenumbers).toBeUndefined();
+		expect(ast.children[0].attributes.highlight).toBeUndefined();
 	});
 
 	it('rejects absolute paths with a build error and replaces with an error fence', () => {
@@ -217,7 +238,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 		expect(warnings.filter(w => w.severity === 'error')).toHaveLength(0);
 		expect(ast.children[0].type).toBe('fence');
 		expect(ast.children[0].attributes.content).toBe('const x = 1;\n');
-		expect(ast.children[0].attributes['data-snippet-source']).toBe('foo.ts');
+		expect(ast.children[0].attributes.source).toBe('foo.ts');
 	});
 
 	it('produces an error fence (not a left-over snippet tag) when a Variable is unresolvable', () => {
@@ -315,11 +336,11 @@ describe('snippet composition (SPEC-062)', () => {
 			'{% diff %}\n{% snippet path="before.ts" /%}\n{% snippet path="after.ts" /%}\n{% /diff %}\n',
 			{ projectRoot: tmpRoot },
 		);
-		// Diff produces line spans with `data-type` attributes (equal / add / remove).
+		// Diff produces line spans with `data-line-status` attributes (equal / add / remove).
 		const diffLines = findAllTags(renderable, (t) => (t.attributes as any)?.['data-name'] === 'line');
 		expect(diffLines.length).toBeGreaterThan(0);
 		const hasAddOrRemove = diffLines.some(
-			(t) => (t.attributes as any)?.['data-type'] === 'add' || (t.attributes as any)?.['data-type'] === 'remove',
+			(t) => (t.attributes as any)?.['data-line-status'] === 'add' || (t.attributes as any)?.['data-line-status'] === 'remove',
 		);
 		expect(hasAddOrRemove).toBe(true);
 		// No snippet figure wrapper.
