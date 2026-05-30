@@ -93,16 +93,16 @@ When neither `labels=` nor a per-fence `label` annotation is set, codegroup deri
 
 ```markdoc
 {% codegroup %}
-{% snippet path="packages/runes/src/lang-map.ts" lines="3-7" /%}
-{% snippet path="packages/runes/src/tags/codegroup.ts" lines="7-14" /%}
+{% snippet path="packages/runes/src/lang-map.ts" lines="3-7" linenumbers=true /%}
+{% snippet path="packages/runes/src/tags/codegroup.ts" lines="7-14" linenumbers=true /%}
 {% /codegroup %}
 ```
 
-Renders with tabs `lang-map.ts:3-7` and `codegroup.ts:7-14`:
+Renders with tabs `lang-map.ts:3-7` and `codegroup.ts:7-14`, and each panel's gutter starting at the file's real line offset (3 and 7 respectively — `linenumbers` propagates from the snippet rune through to the fence, same as `source` and `lines`):
 
 {% codegroup %}
-{% snippet path="packages/runes/src/lang-map.ts" lines="3-7" /%}
-{% snippet path="packages/runes/src/tags/codegroup.ts" lines="7-14" /%}
+{% snippet path="packages/runes/src/lang-map.ts" lines="3-7" linenumbers=true /%}
+{% snippet path="packages/runes/src/tags/codegroup.ts" lines="7-14" linenumbers=true /%}
 {% /codegroup %}
 
 The label resolution chain (first match wins):
