@@ -56,15 +56,39 @@
  * fence transform inlines on `<pre>` when `data-lines` is set
  * (e.g. lines="74-125" → --rf-start-line: 73 so the first
  * counter-increment lands on 74). Defaults to 0 so unannotated fences
- * count from 1. */
-.rf-codeblock pre[data-linenumbers] code {
-	counter-reset: rf-line var(--rf-start-line, 0);
-	display: block;
+ * count from 1.
+ *
+ * `<code>` becomes a CSS grid so:
+ *   - consecutive `.line` rows tile perfectly with no subpixel cracks
+ *     at non-100% zoom (the previous inline-block stacking left faint
+ *     gaps the rail and bg shone through);
+ *   - line bg + rail extend across the full horizontal scroll region
+ *     (grid track width = max-content keeps lines full-width even
+ *     when the pre scrolls).
+ *
+ * Every line carries a 3px transparent left border so geometry stays
+ * consistent across highlighted and plain rows — matches the diff row
+ * primitive at `runes/diff.css`. Highlighted rows just colour the
+ * border + add the surface tint. */
+.rf-codeblock pre code {
+	display: grid;
+	min-width: max-content;
 }
 
-.rf-codeblock pre[data-linenumbers] code .line {
-	display: inline-block;
-	width: 100%;
+.rf-codeblock pre code .line {
+	border-left: 3px solid transparent;
+}
+
+/* Line numbers — gutter::before owns the left column. Strip the pre's
+ * horizontal padding when linenumbers are on so the gutter sits flush
+ * against the codeblock edge; the gutter's own padding + right border
+ * provides the visual separation from the code body. */
+.rf-codeblock pre[data-linenumbers] {
+	padding-left: 0;
+}
+
+.rf-codeblock pre[data-linenumbers] code {
+	counter-reset: rf-line var(--rf-start-line, 0);
 }
 
 .rf-codeblock pre[data-linenumbers] code .line::before {
@@ -72,23 +96,21 @@
 	content: counter(rf-line);
 	display: inline-block;
 	width: 3em;
-	margin-right: 1em;
-	padding-right: 0.5rem;
+	padding-inline: 0.75rem 0.5rem;
+	margin-right: 0.75rem;
 	text-align: right;
-	color: var(--rf-color-line-number, var(--rf-color-muted));
+	color: var(--rf-color-line-number);
 	font-variant-numeric: tabular-nums;
 	user-select: none;
 	border-right: 1px solid var(--rf-color-border);
 }
 
 /* Highlighted lines share diff's row template — neutral surface tint
- * and a primary-coloured left rail, no +/- sigil. Diff's CSS at
- * runes/diff.css adds the `[data-line-status="highlight"]` case to its
- * `.rf-diff__line` selector with the same tokens, so the visual is
- * consistent across snippet / codegroup / diff. */
+ * + primary-coloured left rail, no `+`/`-` sigil. The grid layout on
+ * `<code>` above keeps consecutive highlighted rows continuous (no
+ * subpixel gaps between the rails). Border is on every `.line` (above)
+ * so the content alignment doesn't jump when highlighting a row. */
 .rf-codeblock pre code .line[data-line-status="highlight"] {
-	display: inline-block;
-	width: 100%;
 	background: var(--rf-color-line-highlight);
-	box-shadow: inset 3px 0 0 var(--rf-color-line-highlight-rail, var(--rf-color-primary));
+	border-left-color: var(--rf-color-line-highlight-rail);
 }
