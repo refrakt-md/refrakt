@@ -1,0 +1,31 @@
+/* file-ref — path-based inline reference to a project file (SPEC-078).
+ *
+ * Renders as `<span class="rf-file-ref"><a>label</a></span>` in prose
+ * (plus an invisible hoist sentinel `<meta>` when preview="drawer").
+ * The span carries the data-rune class; the inner `<a>` is the click
+ * target with its own visual treatment.
+ *
+ * Without preview, the link points at the canonical GitHub URL — give
+ * it a small external-link affordance so readers know they're about to
+ * leave the page. With preview, it points at the hoisted drawer's
+ * fragment id; visually the same inline-link affordance — what makes
+ * it a "preview link" rather than a "navigate-away link" is the drawer
+ * that opens on click, not extra inline chrome.
+ */
+
+.rf-file-ref {
+	display: inline;
+}
+
+.rf-file-ref > a {
+	color: var(--rf-color-primary);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 2px;
+	font-family: var(--rf-font-mono, ui-monospace, SFMono-Regular, monospace);
+	font-size: 0.9375em;
+}
+
+.rf-file-ref > a:hover {
+	text-decoration-thickness: 2px;
+}

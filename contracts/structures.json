@@ -200,6 +200,14 @@
 				"{content}"
 			]
 		},
+		"Badge": {
+			"block": "badge",
+			"root": ".rf-badge",
+			"dataRune": "badge",
+			"childOrder": [
+				"{content}"
+			]
+		},
 		"Collection": {
 			"block": "collection",
 			"root": ".rf-collection",
@@ -212,6 +220,14 @@
 			"block": "relationships",
 			"root": ".rf-relationships",
 			"dataRune": "relationships",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"FileRef": {
+			"block": "file-ref",
+			"root": ".rf-file-ref",
+			"dataRune": "file-ref",
 			"childOrder": [
 				"{content}"
 			]

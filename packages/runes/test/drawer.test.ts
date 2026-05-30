@@ -107,6 +107,88 @@ Body.
 		});
 	});
 
+	describe('body-zone footer split (SPEC-078)', () => {
+		it('emits no footer when the body has no top-level hr', () => {
+			const result = parse(`{% drawer id="x" title="T" %}
+Body content.
+{% /drawer %}`);
+			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
+			const footer = findTag(drawer!, t => t.attributes['data-name'] === 'footer');
+			expect(footer).toBeUndefined();
+		});
+
+		it('splits body on the first top-level hr into body + footer', () => {
+			const result = parse(`{% drawer id="x" title="T" %}
+Main content here.
+
+---
+
+Footer text.
+{% /drawer %}`);
+			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
+			const body = findTag(drawer!, t => t.attributes['data-name'] === 'body');
+			const footer = findTag(drawer!, t => t.attributes['data-name'] === 'footer');
+			expect(body).toBeDefined();
+			expect(footer).toBeDefined();
+			expect(footer!.name).toBe('footer');
+			expect(JSON.stringify(body)).toContain('Main content here');
+			expect(JSON.stringify(body)).not.toContain('Footer text');
+			expect(JSON.stringify(footer)).toContain('Footer text');
+		});
+
+		it('footer can carry inline markdoc (links, refs) — generic markdoc rendering', () => {
+			const result = parse(`{% drawer id="x" title="T" %}
+Body.
+
+---
+
+See [the source](https://example.com/source).
+{% /drawer %}`);
+			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
+			const footer = findTag(drawer!, t => t.attributes['data-name'] === 'footer');
+			expect(footer).toBeDefined();
+			const link = findTag(footer!, t => t.name === 'a');
+			expect(link).toBeDefined();
+			expect(link!.attributes.href).toBe('https://example.com/source');
+		});
+
+		it('leading-hr drawer body produces an empty body + footer with the rest', () => {
+			const result = parse(`{% drawer id="x" title="T" %}
+---
+
+Just footer content.
+{% /drawer %}`);
+			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
+			const body = findTag(drawer!, t => t.attributes['data-name'] === 'body');
+			const footer = findTag(drawer!, t => t.attributes['data-name'] === 'footer');
+			expect(body).toBeDefined();
+			expect(footer).toBeDefined();
+			expect(JSON.stringify(footer)).toContain('Just footer content');
+		});
+
+		it('subsequent hrs after the first stay as horizontal rules within the footer', () => {
+			const result = parse(`{% drawer id="x" title="T" %}
+Body.
+
+---
+
+First footer line.
+
+---
+
+Second footer line.
+{% /drawer %}`);
+			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
+			const footer = findTag(drawer!, t => t.attributes['data-name'] === 'footer');
+			expect(footer).toBeDefined();
+			expect(JSON.stringify(footer)).toContain('First footer line');
+			expect(JSON.stringify(footer)).toContain('Second footer line');
+			// hr renders as an <hr> tag inside the footer
+			const hrs = findAllTags(footer!, t => t.name === 'hr');
+			expect(hrs.length).toBe(1);
+		});
+	});
+
 	describe('register hook', () => {
 		it('registers each drawer as a page-scoped entity', () => {
 			const result = parse(`{% drawer id="auth" title="Auth" %}body{% /drawer %}

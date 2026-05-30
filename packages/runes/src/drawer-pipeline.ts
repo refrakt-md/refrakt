@@ -1,5 +1,5 @@
 /**
- * Drawer pipeline hooks (SPEC-060, WORK-257).
+ * Drawer pipeline hooks (SPEC-060, WORK-257; preview hoist SPEC-078, WORK-300).
  *
  * - **Register** walks each page's renderable for drawer tags
  *   (`data-rune="drawer"`), and adds each as a page-scoped entity
@@ -13,6 +13,18 @@
  *   tracks document outline depth (the most recent `<h{n}>` seen) and
  *   rewrites the marked tag to `h{n+1}` (clamped 1..6, default h2 when
  *   no preceding heading exists).
+ *
+ * - **postProcess (hoist)** turns inline `preview="drawer"` references
+ *   into hoisted drawer sections at the page root. Reference runes
+ *   (file-ref, xref) emit a `<meta data-field="hoist-drawer">` sentinel
+ *   next to their inline `<a>` link; the hoist pass collects these,
+ *   dedups by target id, detects collisions with author-declared
+ *   drawers (author wins, hoist defers), and appends a `<section
+ *   class="rf-drawer">` per unique reference to the end of the page
+ *   renderable. The drawer's body and footer content is built by a
+ *   source-specific builder that the consuming rune registers via
+ *   `registerHoistBuilder` at module load time, so this file knows
+ *   nothing about file paths, entity ids, or rune-specific rendering.
  */
 
 import Markdoc from '@markdoc/markdoc';
@@ -20,6 +32,7 @@ import type { EntityRegistry, PipelineContext, TransformedPage } from '@refrakt-
 import { DRAWER_TITLE_AUTO_MARKER } from './tags/drawer.js';
 
 const { Tag } = Markdoc;
+type TagNode = InstanceType<typeof Tag>;
 
 const HEADING_TAG_RE = /^h([1-6])$/;
 
@@ -231,4 +244,281 @@ function walkAndRewriteTitles(
 	});
 	if (!mutated) return tag;
 	return new Tag(tag.name, tag.attributes, newChildren as never[]);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Hoist preview drawers (SPEC-078, WORK-300)
+// ─────────────────────────────────────────────────────────────────────
+
+/** Sentinel `data-field` value emitted by reference runes on the meta tag
+ *  that carries the drawer payload. The hoist pass collects these and
+ *  removes them from the rendered tree. */
+export const HOIST_DRAWER_SENTINEL = 'hoist-drawer';
+
+/** Per-page context handed to source-specific hoist builders so they can
+ *  read the entity registry (for xref), resolve file paths against the
+ *  project root (for file-ref), or emit pipeline messages. */
+export interface HoistBuildContext {
+	pageUrl: string;
+	registry: Readonly<EntityRegistry> | undefined;
+	projectRoot: string | undefined;
+	ctx: PipelineContext;
+}
+
+/** Builder for a single hoist source (`file-ref`, `xref`, …). Reads
+ *  the sentinel's `data-*` attributes (payload) and returns a complete
+ *  hoisted drawer subtree — a `<section class="rf-drawer">` ready to be
+ *  appended to the page root. Returning `null` skips the hoist (used
+ *  when the source can't render anything meaningful, e.g. xref with an
+ *  unresolvable entity id). */
+export type HoistBuilder = (
+	payload: Record<string, string>,
+	context: HoistBuildContext,
+) => TagNode | null;
+
+const hoistBuilders = new Map<string, HoistBuilder>();
+
+/** Register a hoist builder for a given `source` value. Called by
+ *  reference runes at module load (e.g. `file-ref.ts` calls
+ *  `registerHoistBuilder('file-ref', …)`). Re-registration overwrites,
+ *  which lets tests stub out a builder per case. */
+export function registerHoistBuilder(source: string, builder: HoistBuilder): void {
+	hoistBuilders.set(source, builder);
+}
+
+/** Get the registered builder for a `source`, or undefined when none is
+ *  registered. Exposed for diagnostics / tests. */
+export function getHoistBuilder(source: string): HoistBuilder | undefined {
+	return hoistBuilders.get(source);
+}
+
+/** Internal: read every `data-*` attribute off a sentinel meta tag into
+ *  a plain string-string record. Non-string attribute values are
+ *  ignored. */
+function readPayload(meta: TagNode): Record<string, string> {
+	const out: Record<string, string> = {};
+	const attrs = meta.attributes as Record<string, unknown> | undefined;
+	if (!attrs) return out;
+	for (const [k, v] of Object.entries(attrs)) {
+		if (!k.startsWith('data-')) continue;
+		if (typeof v === 'string') out[k.slice('data-'.length)] = v;
+	}
+	return out;
+}
+
+/**
+ * Walk a page's renderable, collect every `<meta data-field="hoist-drawer">`
+ * sentinel, dedup by `data-target-id`, build a hoisted `<section>` per
+ * unique target via the registered source builder, and return a new
+ * renderable with the sentinels stripped and the hoisted drawers
+ * appended at the page root.
+ *
+ * Rules:
+ * - **Dedup**: N mentions of the same target id collapse to one drawer.
+ * - **Collision with author-declared drawer**: if the page already
+ *   declares `{% drawer id="X" %}` block-level and a hoist would emit
+ *   the same id, the author drawer wins — the hoist defers, no new
+ *   `<section>` is emitted, and an info-level pipeline message names
+ *   both sources.
+ * - **Nested preview**: a hoist sentinel inside another drawer's body
+ *   still hoists (we don't block it), but emits an info-level note so
+ *   authors can spot it in CI output.
+ */
+export function hoistPreviewDrawers(
+	renderable: unknown,
+	pageUrl: string,
+	registry: Readonly<EntityRegistry> | undefined,
+	projectRoot: string | undefined,
+	ctx: PipelineContext,
+): unknown {
+	// First pass: collect author-declared drawer ids so collisions can
+	// be detected before any hoist work runs.
+	const authorIds = collectAuthorDrawerIds(renderable);
+
+	// Second pass: walk the tree, strip hoist sentinels, collect their
+	// payloads (deduped, collision-checked, nesting-checked).
+	const payloads = new Map<string, Record<string, string>>();
+	const seenIds = new Set<string>();
+	const state: WalkState = {
+		payloads,
+		seenIds,
+		authorIds,
+		drawerDepth: 0,
+		pageUrl,
+		ctx,
+		mutated: false,
+	};
+	const stripped = walkStripSentinels(renderable, state);
+
+	if (payloads.size === 0) return state.mutated ? stripped : renderable;
+
+	// Third pass: build hoisted drawer sections via source-specific
+	// builders and append to the page renderable root.
+	const buildContext: HoistBuildContext = { pageUrl, registry, projectRoot, ctx };
+	const drawers: TagNode[] = [];
+	for (const payload of payloads.values()) {
+		const source = payload.source;
+		if (!source) {
+			ctx.warn(
+				`hoist drawer payload is missing required \`source\` attribute (target-id=${payload['target-id'] ?? '?'})`,
+				pageUrl,
+			);
+			continue;
+		}
+		const builder = hoistBuilders.get(source);
+		if (!builder) {
+			ctx.warn(
+				`hoist drawer source "${source}" has no registered builder — skipping target-id=${payload['target-id'] ?? '?'}`,
+				pageUrl,
+			);
+			continue;
+		}
+		const node = builder(payload, buildContext);
+		if (node) drawers.push(node);
+	}
+
+	if (drawers.length === 0) return stripped;
+
+	if (Array.isArray(stripped)) return [...stripped, ...drawers];
+	if (Tag.isTag(stripped as never)) {
+		const t = stripped as TagNode;
+		return new Tag(t.name, t.attributes, [...(t.children ?? []), ...drawers] as never[]);
+	}
+	return [stripped, ...drawers];
+}
+
+function collectAuthorDrawerIds(renderable: unknown): Set<string> {
+	const ids = new Set<string>();
+	const walk = (node: unknown): void => {
+		if (Array.isArray(node)) { for (const c of node) walk(c); return; }
+		if (!Tag.isTag(node as never)) return;
+		const tag = node as TagNode;
+		if ((tag.attributes as Record<string, unknown> | undefined)?.['data-rune'] === 'drawer') {
+			const id = (tag.attributes as Record<string, unknown> | undefined)?.['data-drawer-id'];
+			if (typeof id === 'string') ids.add(id);
+			return; // don't recurse into a drawer's body — drawer-in-drawer is its own concern
+		}
+		for (const c of tag.children ?? []) walk(c);
+	};
+	walk(renderable);
+	return ids;
+}
+
+interface WalkState {
+	payloads: Map<string, Record<string, string>>;
+	seenIds: Set<string>;
+	authorIds: Set<string>;
+	drawerDepth: number;
+	pageUrl: string;
+	ctx: PipelineContext;
+	mutated: boolean;
+}
+
+function walkStripSentinels(node: unknown, state: WalkState): unknown {
+	if (Array.isArray(node)) {
+		let mutated = false;
+		const out: unknown[] = [];
+		for (const c of node) {
+			const w = walkStripSentinels(c, state);
+			if (w !== c) mutated = true;
+			if (w !== STRIP) out.push(w);
+		}
+		if (!mutated) return node;
+		state.mutated = true;
+		return out;
+	}
+	if (!Tag.isTag(node as never)) return node;
+	const tag = node as TagNode;
+
+	// Strip the sentinel meta itself.
+	if (tag.name === 'meta'
+		&& (tag.attributes as Record<string, unknown> | undefined)?.['data-field'] === HOIST_DRAWER_SENTINEL
+	) {
+		const payload = readPayload(tag);
+		const targetId = payload['target-id'];
+		if (!targetId) {
+			state.ctx.warn(
+				`hoist drawer sentinel is missing required \`data-target-id\` attribute`,
+				state.pageUrl,
+			);
+			return STRIP;
+		}
+		// Collision with author-declared drawer? Author wins; hoist defers.
+		if (state.authorIds.has(targetId)) {
+			state.ctx.info(
+				`Hoist preview "${targetId}" (source=${payload.source ?? '?'}) collides with an author-declared {% drawer id="${targetId}" %} on this page — author drawer wins, hoist defers.`,
+				state.pageUrl,
+			);
+			return STRIP;
+		}
+		// Nested preview inside another drawer's body? Still hoist, but
+		// flag it — dialog stacking handles it but the shape is awkward.
+		if (state.drawerDepth > 0) {
+			state.ctx.info(
+				`Hoist preview "${targetId}" (source=${payload.source ?? '?'}) appears inside another drawer's body — nested previews stack on modern browsers, consider not nesting.`,
+				state.pageUrl,
+			);
+		}
+		// Dedup: keep the first occurrence's payload.
+		if (!state.seenIds.has(targetId)) {
+			state.payloads.set(targetId, payload);
+			state.seenIds.add(targetId);
+		}
+		return STRIP;
+	}
+
+	const isDrawer = (tag.attributes as Record<string, unknown> | undefined)?.['data-rune'] === 'drawer';
+	if (isDrawer) state.drawerDepth++;
+
+	if (!tag.children || tag.children.length === 0) {
+		if (isDrawer) state.drawerDepth--;
+		return tag;
+	}
+
+	let mutated = false;
+	const newChildren: unknown[] = [];
+	for (const c of tag.children) {
+		const w = walkStripSentinels(c, state);
+		if (w !== c) mutated = true;
+		if (w !== STRIP) newChildren.push(w);
+	}
+	if (isDrawer) state.drawerDepth--;
+	if (!mutated) return tag;
+	state.mutated = true;
+	return new Tag(tag.name, tag.attributes, newChildren as never[]);
+}
+
+/** Sentinel value returned by `walkStripSentinels` for elements that
+ *  should be removed from their position in the tree. Using a symbol
+ *  lets the array-walk path tell "removed" apart from "replaced with
+ *  another node". */
+const STRIP = Symbol('hoist-strip');
+
+// ─────────────────────────────────────────────────────────────────────
+// Slug derivation helpers — used by reference runes when emitting
+// sentinels and re-derived here so tests can lock the shape.
+// ─────────────────────────────────────────────────────────────────────
+
+/** Derive a drawer slug for a `file-ref` target. Encodes both path and
+ *  lines so different ranges of the same path produce distinct ids.
+ *
+ *  Examples:
+ *  - `pathToSlug('packages/types/src/token-contract.ts')` → `'packages-types-src-token-contract-ts'`
+ *  - `pathToSlug('packages/types/src/token-contract.ts', '42-58')` → `'packages-types-src-token-contract-ts-L42-L58'`
+ *  - `pathToSlug('docs/My File.md', '12')` → `'docs-my-file-md-L12'` */
+export function pathToSlug(path: string, lines?: string): string {
+	const base = path
+		.toLowerCase()
+		// keep [a-z0-9._-]; turn everything else (including `/`, ` `, parens) into `-`.
+		.replace(/[^a-z0-9.]+/g, '-')
+		// collapse repeated dashes and trim ends.
+		.replace(/-+/g, '-')
+		.replace(/^-|-$/g, '');
+	if (!lines) return base;
+	const trimmed = lines.trim();
+	const dash = trimmed.indexOf('-');
+	if (dash < 0) return `${base}-L${trimmed}`;
+	const start = trimmed.slice(0, dash).trim();
+	const end = trimmed.slice(dash + 1).trim();
+	return end ? `${base}-L${start}-L${end}` : `${base}-L${start}`;
 }

@@ -37,6 +37,10 @@ export { extractSelectors } from './selectors.js';
 export { mergeThemeConfig, applyRuneExtensions } from './merge.js';
 export type { ThemeConfigOverrides, RuneConfigExtension } from './merge.js';
 
+// GitHub source URL builder (SPEC-078) — used by file-ref to produce
+// deep-link "View source" URLs from a site's `repoUrl` + `repoBranch`.
+export { buildGithubBlobUrl, formatLineAnchor } from './github-url.js';
+
 // Token contract merging (SPEC-048) — deep-merge PartialTokenContract / ThemeTokensConfig
 export { mergeTokenContracts, mergeThemeTokensConfigs } from './token-merge.js';
 

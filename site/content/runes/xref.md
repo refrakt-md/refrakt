@@ -50,6 +50,26 @@ When a name is ambiguous (multiple entities share the same name), the `type` att
 
 Without a type hint, ambiguous references use the first match and emit a build warning.
 
+## Preview drawer
+
+Set `preview="drawer"` to keep the inline link *and* hoist a drawer containing the entity's expanded body, opening on click. Same shape `{% file-ref %}` uses — one preview vocabulary across both reference runes (SPEC-078).
+
+{% preview source=true %}
+
+This page is itself the work of {% ref "SPEC-078" preview="drawer" /%}: a single shared `preview` attribute on every reference rune that hoists a drawer instead of navigating away.
+
+{% /preview %}
+
+When the reader clicks the inline link, a drawer slides in containing the entity's `{% expand %}`-equivalent content. The drawer's chrome footer links to the entity's resolved page URL (or hides silently when the entity has no `sourceUrl` — heading entities, drawer-target entities, plan content scanned without a route). The link itself reads like a normal xref in prose; the only visible difference is that clicking opens a drawer rather than navigating away.
+
+Per-page **dedup**: N mentions of the same entity collapse to one hoisted drawer.
+
+**Composition note.** The drawer body is just an expand-pending placeholder that the regular `{% expand %}` resolver substitutes downstream. So `{% ref "X" preview="drawer" /%}` is structurally identical to a manual `{% drawer id="X" %}{% expand "X" /%}{% /drawer %}` — the preview attribute is the ergonomic shortcut, not a different rendering path.
+
+**Nested-preview caveat.** A `{% ref "X" preview="drawer" /%}` inside another drawer's body or footer still hoists, but it produces a drawer-from-within-a-drawer shape. Supported but discouraged; the build emits an info-level note when detected.
+
+See [file-ref](/runes/file-ref) for the path-based sibling that uses the same `preview` attribute over file content rather than registered entities.
+
 ## Attributes
 
 | Attribute | Type | Required | Description |
@@ -57,6 +77,7 @@ Without a type hint, ambiguous references use the first match and emit a build w
 | (positional) | String | Yes | Entity ID or name to resolve |
 | `label` | String | No | Custom link text (defaults to entity title) |
 | `type` | String | No | Entity type hint for disambiguation |
+| `preview` | `drawer` | No | Hoist a preview drawer with the entity's expanded body; the inline link opens it (SPEC-078). |
 
 ## Resolution order
 

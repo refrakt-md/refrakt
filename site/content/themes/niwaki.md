@@ -68,7 +68,7 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Niwaki, like tideline, was authored at the 9-role tier and doesn't set SPEC-056's extended roles. `type`, `attribute`, and other identifier-family scopes paint like function (sakura); `tag` paints like keyword (wakaba); `number` and `regex` fall through to constant and string respectively. Compare with [Nord](/themes/nord), which splits them out into the Frost and Aurora families.
+Niwaki, like tideline, was authored at the 9-role tier and doesn't set {% ref "SPEC-056" preview="drawer" /%}'s extended roles. `type`, `attribute`, and other identifier-family scopes paint like function (sakura); `tag` paints like keyword (wakaba); `number` and `regex` fall through to constant and string respectively. Compare with [Nord](/themes/nord), which splits them out into the Frost and Aurora families.
 
 ## Composing with tideline
 

@@ -150,7 +150,7 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Tideline's syntax palette was authored at the 9-role tier and doesn't set SPEC-056's extended roles (`type`, `tag`, `attribute`, `operator`, `number`, `regex`). Those fall back through the broad-mapping derivation — type and attribute paint like function, tag like keyword, operator like punctuation. Compare with [Nord](/themes/nord) to see what the extended-role splits look like in practice.
+Tideline's syntax palette was authored at the 9-role tier and doesn't set {% ref "SPEC-056" preview="drawer" /%}'s extended roles (`type`, `tag`, `attribute`, `operator`, `number`, `regex`). Those fall back through the broad-mapping derivation — type and attribute paint like function, tag like keyword, operator like punctuation. Compare with [Nord](/themes/nord) to see what the extended-role splits look like in practice.
 
 ## Typography
 

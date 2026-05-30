@@ -114,6 +114,55 @@ Two pages can each declare `id="auth"` without colliding in the registry — dra
 
 Explicit `headingLevel=` always wins.
 
+## Body and footer zones
+
+The drawer body splits on a top-level `---` into two zones — **body** and **footer** — same shape `{% card %}` uses (SPEC-078). 1 zone → all body (today's behaviour, unchanged); 2 zones → body + footer. The footer renders below the body with a top divider and slightly muted text:
+
+```markdoc
+{% drawer id="auth" title="Auth system" %}
+The auth system uses JWTs with refresh tokens.
+
+- Tokens live in HttpOnly cookies
+- 15-minute access, 30-day refresh
+- Rotation on every refresh
+
+---
+
+[Read the full design doc on Notion →](https://example.com/auth-design)
+{% /drawer %}
+```
+
+The footer zone is generic markdoc — any inline content goes there, not only hardcoded URLs. The canonical case is a `{% ref %}` pointing at the same entity the body expanded:
+
+```markdoc
+{% drawer id="aggregate" title="Aggregate rune" %}
+{% expand "SPEC-076" /%}
+
+---
+
+See {% ref "SPEC-076" /%}
+{% /drawer %}
+```
+
+The xref resolves the URL from the registry, so the link stays correct as the entity moves and the author doesn't memorise URLs.
+
+### Always-visible footer
+
+In dialog mode, the drawer becomes a **flex column** — header (when present) and footer (when present) pin via `flex: 0 0 auto`; body scrolls via `flex: 1 1 auto; overflow-y: auto`. The drawer's `max-height` cap provides the scroll context. So a long entity body or long file snippet scrolls inside the drawer with the footer staying one tap away regardless of scroll depth.
+
+## Hoisted drawers (`preview="drawer"`)
+
+[`xref`](/runes/xref) and [`file-ref`](/runes/file-ref) each accept `preview="drawer"` which **hoists** a drawer for the referenced target. The inline link stays in prose; the drawer is emitted at the page root and opens on click:
+
+```markdoc
+See {% file-ref path="packages/types/src/theme.ts" lines="74-125" label="SiteConfig" preview="drawer" /%}
+for the shape.
+```
+
+Hoisted drawers use the same `<section class="rf-drawer">` shape as author-declared drawers — same chrome, same body / footer zones, same behaviors-layer enhancement. The chrome footer is populated by the rune that hoists (file-ref: GitHub link; xref: entity page link).
+
+**Collision with author-declared drawers.** If an author writes `{% drawer id="X" %}` on the same page where a `preview="drawer"` reference would generate the same id, the **author drawer wins** — the hoist defers, the inline preview link points at the existing drawer. This lets authors customise a specific drawer's body or footer without losing the inline-link ergonomics. The build emits an info-level note naming both sources.
+
 ## Composition
 
 Drawers compose like any block container — embed runes, code blocks, even the snippet rune for a "view source" drawer. The drawer below is live on this page; click {% ref "page-source" label="view this page's source" /%} (or press `.`) to open it.
@@ -135,4 +184,5 @@ Nested drawers and multiple simultaneous open drawers aren't supported in v1 —
 ## See also
 
 - [xref](/runes/xref) — the trigger primitive. `data-target-type="{entity-type}"` propagation is what lets drawer (and any future addressable rune) opt into trigger behaviour.
-- [snippet](/runes/snippet) — embed a project file as a code block; pairs naturally with `{% drawer %}` for a view-source pattern.
+- [file-ref](/runes/file-ref) — path-based sibling of xref. Same `preview="drawer"` attribute hoists a drawer with a file's snippet.
+- [snippet](/runes/snippet) — embed a project file as a code block; pairs naturally with `{% drawer %}` for a view-source pattern, and is the body shape file-ref's preview drawer uses.

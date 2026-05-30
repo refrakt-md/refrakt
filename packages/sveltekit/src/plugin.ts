@@ -36,6 +36,7 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 	let mergedPackages: Plugin[] | undefined;
 	let contentLoaded = false;
 	let activeConfigDir = '';
+	let activeRawConfig: unknown = null;
 	/** Generated CSS for site-level token overrides (presets + theme.tokens +
 	 *  theme.modes), or empty string if no overrides are configured. Computed
 	 *  asynchronously in `buildStart` and consumed by the
@@ -48,6 +49,7 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 		config(_, env): Partial<UserConfig> {
 			isBuild = env.command === 'build';
 			const rawConfig = loadRefraktConfig(configPath);
+			activeRawConfig = rawConfig;
 			// configDir is the directory containing refrakt.config.json — used by
 			// the normalizer to absolutize nested-shape relative paths so adapters
 			// see file-relative semantics rather than cwd-relative.
@@ -163,6 +165,29 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 				const sandboxExamplesDir = activeSite.sandbox?.examplesDir
 					? resolve(resolvedRoot, activeSite.sandbox.examplesDir)
 					: undefined;
+
+				// Run each plugin's `configure` lifecycle hook before the
+				// pipeline runs — mirrors the createRefraktLoader path so
+				// plugins that need build-time config (the plan plugin reads
+				// `plan.dir` here to drive its unconditional scan) are set up
+				// before register sees their entities. Without this, the
+				// CSS-analysis pipeline run emits spurious "entity not found"
+				// warnings for any reference whose target lives outside the
+				// content tree.
+				for (const pkg of mergedPackages ?? []) {
+					if (pkg.pipeline?.configure) {
+						await pkg.pipeline.configure({
+							config: activeRawConfig,
+							configDir: activeConfigDir,
+						});
+					}
+				}
+
+				// `projectRoot` is the directory containing refrakt.config.json
+				// (the repo root in most projects), not Vite's project root —
+				// the plan plugin and the expand/snippet resolvers all
+				// compute their sandbox + sourceFile paths relative to it.
+				// This mirrors createRefraktLoader's `projectRoot: configDir`.
 				const site = await loadContent(
 					resolve(resolvedRoot, activeSite.contentDir),
 					'/',
@@ -172,7 +197,12 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 					sandboxExamplesDir,
 					undefined,
 					options.security,
-					resolvedRoot,
+					activeConfigDir,
+					undefined,
+					undefined,
+					activeSite,
+					activeSite.repoUrl,
+					activeSite.repoBranch,
 				);
 
 				process.stderr.write(

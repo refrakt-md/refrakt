@@ -70,8 +70,26 @@ section.rf-drawer .rf-drawer__title {
 section.rf-drawer .rf-drawer__body > :first-child { margin-top: 0; }
 section.rf-drawer .rf-drawer__body > :last-child { margin-bottom: 0; }
 
+/* In-flow footer — small text, top divider, mirrors the dialog-mode look so
+ * authors get the same chrome whether JS is enhancing or not. */
+section.rf-drawer .rf-drawer__footer {
+	display: block;
+	margin-top: var(--rf-spacing-md);
+	padding-top: var(--rf-spacing-sm);
+	border-top: 1px solid var(--rf-drawer-border);
+	font-size: 0.875rem;
+	color: var(--rf-color-muted);
+}
+section.rf-drawer .rf-drawer__footer > :first-child { margin-top: 0; }
+section.rf-drawer .rf-drawer__footer > :last-child { margin-bottom: 0; }
+
 /* ─── JS / dialog mode ─────────────────────────────────────────── */
 
+/* Dialog base. Crucially the `display: flex` rule below is scoped to the
+ * `[open]` state — without that scope, declaring `display: flex` on the
+ * bare `dialog.rf-drawer` overrides the browser UA's `display: none` for
+ * closed dialogs, so the closed dialog renders visibly as an empty box
+ * positioned by the side `inset` rules. */
 dialog.rf-drawer {
 	box-sizing: border-box;
 	background: var(--rf-drawer-bg);
@@ -81,9 +99,18 @@ dialog.rf-drawer {
 	box-shadow: var(--rf-drawer-shadow);
 	padding: 0;
 	margin: 0;
-	overflow: auto;
+	overflow: hidden;
 	max-width: calc(100vw - 2 * var(--rf-drawer-gutter));
 	max-height: calc(100vh - 2 * var(--rf-drawer-gutter));
+}
+
+/* Flex column layout only when the dialog is actually open. The header
+ * and footer pin via `flex: 0 0 auto`; the body scrolls via `flex: 1 1
+ * auto; overflow-y: auto`. The dialog's `max-height` cap on the dialog
+ * provides the scroll context. */
+dialog.rf-drawer[open] {
+	display: flex;
+	flex-direction: column;
 }
 
 dialog.rf-drawer::backdrop {
@@ -92,17 +119,16 @@ dialog.rf-drawer::backdrop {
 }
 
 dialog.rf-drawer .rf-drawer__header {
+	flex: 0 0 auto;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: var(--rf-spacing-md);
 	padding: var(--rf-spacing-md) var(--rf-spacing-lg);
 	border-bottom: 1px solid var(--rf-drawer-border);
-	position: sticky;
-	top: 0;
 	background: var(--rf-drawer-bg);
-	z-index: 1;
-}dialog.rf-drawer .rf-drawer__title {
+}
+dialog.rf-drawer .rf-drawer__title {
 	margin: 0;
 	font-size: 1.05rem;
 	font-weight: 600;
@@ -126,8 +152,26 @@ dialog.rf-drawer .rf-drawer__close:hover {
 }
 
 dialog.rf-drawer .rf-drawer__body {
+	flex: 1 1 auto;
+	overflow-y: auto;
 	padding: var(--rf-spacing-md) var(--rf-spacing-lg);
+	min-height: 0;
 }
+
+/* Dialog footer — small text, top divider, pinned at bottom via flex.
+ * Stays visible regardless of body scroll depth so links like "View
+ * source on GitHub →" (the SPEC-078 use case) are always one tap away. */
+dialog.rf-drawer .rf-drawer__footer {
+	flex: 0 0 auto;
+	padding: var(--rf-spacing-sm) var(--rf-spacing-lg);
+	border-top: 1px solid var(--rf-drawer-border);
+	background: var(--rf-drawer-bg);
+	font-size: 0.875rem;
+	color: var(--rf-color-muted);
+}
+dialog.rf-drawer .rf-drawer__footer > :first-child { margin-top: 0; }
+dialog.rf-drawer .rf-drawer__footer > :last-child { margin-bottom: 0; }
+dialog.rf-drawer .rf-drawer__footer p { margin: 0; }
 
 /* Collapse the vertical margins of first / last children inside the body
  * so the drawer's own padding is what spaces content from the chrome —
@@ -282,7 +326,8 @@ dialog.rf-drawer[data-state="closing"]::backdrop {
  */
 @media (max-width: 640px) {
 	dialog.rf-drawer .rf-drawer__header,
-	dialog.rf-drawer .rf-drawer__body {
+	dialog.rf-drawer .rf-drawer__body,
+	dialog.rf-drawer .rf-drawer__footer {
 		padding: 0.75rem 1rem;
 	}
 }

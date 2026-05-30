@@ -47,6 +47,11 @@ import { expand } from './tags/expand.js';
 import { collection } from './tags/collection.js';
 import { relationships } from './tags/relationships.js';
 import { aggregate } from './tags/aggregate.js';
+import { fileRef } from './tags/file-ref.js';
+// Register the file-ref hoist builder at module load (side-effect import).
+import './file-ref-resolve.js';
+// Register the xref hoist builder at module load (side-effect import).
+import './xref-preview-resolve.js';
 import { progress } from './tags/progress.js';
 import { card } from './tags/card.js';
 import { badge } from './tags/badge.js';
@@ -66,8 +71,19 @@ export { DEFERRED_BODY_ATTR, captureDeferredBodies, readDeferredBody, transformD
 export { resolveCollections } from './collection-resolve.js';
 export { resolveRelationships } from './relationships-resolve.js';
 export { resolveAggregates } from './aggregate-resolve.js';
+export { resolveFileRefs } from './file-ref-resolve.js';
+export { FILE_REF_SENTINEL } from './tags/file-ref.js';
+export { resolveXrefPreviews } from './xref-preview-resolve.js';
 export { RELATIONSHIPS_SENTINEL } from './tags/relationships.js';
 export { AGGREGATE_SENTINEL } from './tags/aggregate.js';
+export {
+	hoistPreviewDrawers,
+	registerHoistBuilder,
+	getHoistBuilder,
+	pathToSlug,
+	HOIST_DRAWER_SENTINEL,
+} from './drawer-pipeline.js';
+export type { HoistBuilder, HoistBuildContext } from './drawer-pipeline.js';
 export {
 	Ordering, buildOrdering, sortEntities, groupEntities, groupBy,
 	entityUrl, entityTitle, fieldValue, titleLink, projectItem, renderItemTemplate,
@@ -594,6 +610,14 @@ export const runes = {
     typeName: 'Aggregate',
     category: 'Content',
     snippet: ['{% aggregate type="${1:work}" filter="${2:status:done}" /%}'],
+  }),
+  'file-ref': defineRune({
+    name: 'file-ref',
+    schema: fileRef,
+    description: 'Path-based inline reference to a project file — third member of the Registry family beside `xref` (id → link) and `expand` (id → inlined content). Resolves to a deep-link `<a>` pointing at `{repoUrl}/blob/{repoBranch}/{path}#L{start}-L{end}` on GitHub. With `preview="drawer"`, hoists a drawer containing the file\'s snippet and a "View source on GitHub →" footer link, leaving an inline link at the call site that opens it.',
+    typeName: 'FileRef',
+    category: 'Content',
+    snippet: ['{% file-ref path="${1:packages/types/src/token-contract.ts}" lines="${2:42-58}" label="${3:ThemeTokensConfig}" /%}'],
   }),
   progress: defineRune({
     name: 'progress',

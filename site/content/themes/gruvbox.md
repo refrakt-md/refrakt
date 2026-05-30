@@ -84,7 +84,7 @@ const widget = <Button onClick={() => findUser(42)} variant="primary">Find</Butt
 ```
 {% /codegroup %}
 
-Gruvbox exercises **4 of 7** SPEC-056 extended roles distinctly in dark mode: `type` (Green) ≠ `function` (Yellow), `regex` (Orange) ≠ `string` (Green), `operator` (Orange), `attribute` (Blue) ≠ `function`. `number` collapses with `constant` (both purple) — Gruvbox's intent.
+Gruvbox exercises **4 of 7** {% ref "SPEC-056" preview="drawer" /%} extended roles distinctly in dark mode: `type` (Green) ≠ `function` (Yellow), `regex` (Orange) ≠ `string` (Green), `operator` (Orange), `attribute` (Blue) ≠ `function`. `number` collapses with `constant` (both purple) — Gruvbox's intent.
 
 ## Composing with tideline
 
