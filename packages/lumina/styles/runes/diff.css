@@ -61,20 +61,24 @@
  * standalone code block for `data-line-status="highlight"` via the
  * `.rf-codeblock` rules below.
  *
- * `width: max-content; min-width: 100%` on each line is what makes
- * the row bg + left rail extend across the full horizontal scroll
- * region (instead of clipping at the pre's visible width). The
- * `display: flex` interior is preserved — `width` just sizes the
- * outer flex container. Result: each line is at least as wide as
- * the pre's visible area, and as wide as its content when content
- * overflows, so the +/-/highlight tint never visually ends mid-row
- * when the user scrolls. */
+ * `display: block` + inline-block children (not `display: flex`) for
+ * the line container so the line's intrinsic max-content is the
+ * unambiguous sum of children's intrinsic widths — flex container
+ * max-content was being clipped by the flex-basis / flex-grow /
+ * flex-shrink combination depending on browser, leaving the row
+ * tint cut off at the text width when the user scrolled
+ * horizontally. `white-space: nowrap` keeps the inline-block
+ * children on a single row (the children themselves preserve their
+ * own `white-space: pre` for the code). `min-width: max-content`
+ * keeps the line at least as wide as its content (full row tint
+ * when content overflows the visible viewport); default width =
+ * 100% of pre keeps it filling the visible width on short rows. */
 .rf-diff__line {
-	display: flex;
+	display: block;
+	white-space: nowrap;
 	min-height: 1.6em;
 	border-left: 3px solid transparent;
-	width: max-content;
-	min-width: 100%;
+	min-width: max-content;
 }
 .rf-diff__line[data-line-status="equal"]  { background: transparent; }
 .rf-diff__line[data-line-status="remove"] {
@@ -91,7 +95,8 @@
 }
 .rf-diff__line[data-line-status="empty"]  { background: transparent; }
 .rf-diff__gutter-num {
-	flex-shrink: 0;
+	display: inline-block;
+	vertical-align: top;
 	padding: 0 0.5rem;
 	width: 2.5em;
 	min-height: 1.6em;
@@ -115,27 +120,19 @@
 	margin: 0;
 }
 .rf-diff__line-content {
-	/* `flex: none` (= `0 0 auto`) — no growing, no shrinking, basis
-	 * locked to content size. Critically, `shrink: 0` so the flex
-	 * container's max-content calc treats line-content's
-	 * `white-space: pre` text width as the contribution; without it,
-	 * the line's `width: max-content` was collapsing back toward the
-	 * gutters width and the row tint clipped at the text width on
-	 * long lines. Earlier variants tried `flex: 1` (basis: 0,
-	 * contributes 0) and `flex: 1 0 auto` (still let the max-content
-	 * calc weight the contribution by grow), neither of which gave
-	 * a clean row tint when the content overflowed horizontally.
-	 * line-content doesn't need to grow to fill the row — the parent
-	 * `.rf-diff__line` already takes `min-width: 100%`, so the line
-	 * bg covers the visible width on short rows, and `width:
-	 * max-content` extends it past the visible edge on long rows.
+	/* Inline-block (not a flex item) so the parent `.rf-diff__line`
+	 * (display: block) can compute its intrinsic max-content as the
+	 * unambiguous sum of children's intrinsic widths. `white-space:
+	 * pre` keeps the code content unwrapped; the parent's
+	 * `white-space: nowrap` keeps the inline-blocks on a single row.
 	 * WORK-304. */
-	flex: none;
+	display: inline-block;
+	vertical-align: top;
 	white-space: pre;
 	padding-right: 1rem;
-	/* Pin the row to 1.6em even when the text is empty — the highlighted
-	 * span for an empty input has no inline content to establish a line
-	 * box, so without this the flex item collapses below the parent's
-	 * min-height and rows visually drift in the split-mode grid. */
+	/* Pin the row to 1.6em even when the text is empty — an empty
+	 * inline-block has no content to establish a line box, so without
+	 * this the row collapses below the parent's min-height and rows
+	 * visually drift in the split-mode grid. */
 	min-height: 1.6em;
 }
