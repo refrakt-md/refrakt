@@ -26,6 +26,14 @@
 	color: var(--rf-color-muted);
 	background: var(--rf-color-surface);
 	border-bottom: 1px solid var(--rf-color-border);
+	/* `.rf-diff` is the horizontal scroll container (so mobile users
+	 * can swipe to reveal the off-screen split panel). Without
+	 * sticky, the header would scroll horizontally along with the
+	 * content and the filename label would slide off-screen.
+	 * `position: sticky; left: 0` pins the header to the visible left
+	 * edge of the scroll viewport at all scroll positions. WORK-304. */
+	position: sticky;
+	left: 0;
 }
 .rf-diff__split-container {
 	display: grid;
