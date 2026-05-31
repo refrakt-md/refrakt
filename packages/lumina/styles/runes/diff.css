@@ -54,6 +54,17 @@
 	font-family: var(--rf-font-mono);
 	font-size: 0.8125rem;
 	line-height: 1.6;
+	/* Grid layout: single column sized as `minmax(100%, max-content)`
+	 * so each `.rf-diff__line` (as a grid item) gets the full row
+	 * width — visible width when content fits, widest-line's
+	 * max-content when content overflows. This puts the row-width
+	 * sizing on the grid track (deterministic) rather than on the
+	 * flex line container (whose max-content varied by flex-basis /
+	 * grow / shrink combination). The line's own internal flex
+	 * layout still positions gutters + content; the line's WIDTH
+	 * comes from the grid track. WORK-304. */
+	display: grid;
+	grid-template-columns: minmax(100%, max-content);
 }
 /* WORK-304 — annotated line primitive. Three states share one row
  * shape (`add`, `remove`, `highlight`); only the tint token and the
@@ -74,11 +85,15 @@
  * when content overflows the visible viewport); default width =
  * 100% of pre keeps it filling the visible width on short rows. */
 .rf-diff__line {
-	display: block;
-	white-space: nowrap;
+	/* `display: flex` for internal layout (gutters + content side
+	 * by side). The line's WIDTH is determined by the parent grid
+	 * track (`.rf-diff__code`'s `grid-template-columns:
+	 * minmax(100%, max-content)`), not by the flex sizing here —
+	 * so the row tint covers the full grid column regardless of
+	 * how flex sizing would have resolved. */
+	display: flex;
 	min-height: 1.6em;
 	border-left: 3px solid transparent;
-	min-width: max-content;
 }
 .rf-diff__line[data-line-status="equal"]  { background: transparent; }
 .rf-diff__line[data-line-status="remove"] {
@@ -95,8 +110,7 @@
 }
 .rf-diff__line[data-line-status="empty"]  { background: transparent; }
 .rf-diff__gutter-num {
-	display: inline-block;
-	vertical-align: top;
+	flex-shrink: 0;
 	padding: 0 0.5rem;
 	width: 2.5em;
 	min-height: 1.6em;
@@ -120,19 +134,18 @@
 	margin: 0;
 }
 .rf-diff__line-content {
-	/* Inline-block (not a flex item) so the parent `.rf-diff__line`
-	 * (display: block) can compute its intrinsic max-content as the
-	 * unambiguous sum of children's intrinsic widths. `white-space:
-	 * pre` keeps the code content unwrapped; the parent's
-	 * `white-space: nowrap` keeps the inline-blocks on a single row.
-	 * WORK-304. */
-	display: inline-block;
-	vertical-align: top;
+	/* `flex: 1 0 auto` so line-content contributes its
+	 * `white-space: pre` text width to the line's intrinsic
+	 * max-content (which the parent grid track reads from); grow:1
+	 * lets it fill any free space in the row beyond the gutters
+	 * when the grid track is wider than the line's natural size
+	 * (short content / wide visible viewport). WORK-304. */
+	flex: 1 0 auto;
 	white-space: pre;
 	padding-right: 1rem;
-	/* Pin the row to 1.6em even when the text is empty — an empty
-	 * inline-block has no content to establish a line box, so without
-	 * this the row collapses below the parent's min-height and rows
-	 * visually drift in the split-mode grid. */
+	/* Pin the row to 1.6em even when the text is empty — the highlighted
+	 * span for an empty input has no inline content to establish a line
+	 * box, so without this the flex item collapses below the parent's
+	 * min-height and rows visually drift in the split-mode grid. */
 	min-height: 1.6em;
 }
