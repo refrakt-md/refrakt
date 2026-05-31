@@ -20,6 +20,12 @@
 	grid-template-columns: 1fr 1fr;
 	min-width: 40rem;
 	overflow-x: auto;
+	/* Mobile: keep the diff's own horizontal scroll contained so iOS
+	 * doesn't punt to the page-level scroll mid-gesture (the symptom
+	 * users see is "scroll bounces back" — the touch hand-off picks
+	 * the wrong scroll target when nested). */
+	overscroll-behavior-x: contain;
+	touch-action: pan-x pan-y;
 }
 .rf-diff__split-container .rf-diff__panel:first-child {
 	border-right: 1px solid var(--rf-color-border);
@@ -31,9 +37,23 @@
 	border-radius: 0;
 	background: var(--rf-color-code-bg);
 	overflow-x: auto;
+	overscroll-behavior-x: contain;
 	font-family: var(--rf-font-mono);
 	font-size: 0.8125rem;
 	line-height: 1.6;
+	/* Grid layout with a single column sized as
+	 * `minmax(100%, max-content)` so each `.rf-diff__line` spans the
+	 * full row width — visible width when content fits, max-content
+	 * (= widest line's intrinsic width) when content overflows. Result:
+	 * line bg + left rail extend across the full horizontal scroll
+	 * region, not clipped at the visible width. Same fix as the
+	 * standalone codeblock at `elements/code.css`, expressed via
+	 * grid-template-columns here because the pre is both the scroll
+	 * container AND the grid container — `min-width: max-content` on
+	 * the pre itself would expand the scroll container and defeat
+	 * `overflow-x: auto`. */
+	display: grid;
+	grid-template-columns: minmax(100%, max-content);
 }
 /* WORK-304 — annotated line primitive. Three states share one row
  * shape (`add`, `remove`, `highlight`); only the tint token and the
