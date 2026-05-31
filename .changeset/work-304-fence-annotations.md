@@ -1,9 +1,9 @@
 ---
-"@refrakt-md/runes": minor
-"@refrakt-md/highlight": minor
-"@refrakt-md/types": minor
-"@refrakt-md/transform": minor
-"@refrakt-md/lumina": minor
+"@refrakt-md/runes": patch
+"@refrakt-md/highlight": patch
+"@refrakt-md/types": patch
+"@refrakt-md/transform": patch
+"@refrakt-md/lumina": patch
 ---
 
 Fence-level annotations: `source`, `lines`, `linenumbers`, `highlight`, `label` (SPEC-062, WORK-304).
@@ -22,6 +22,9 @@ Consumer runes:
 
 CSS: diff's `[data-line-status]` row template grows a third `highlight` value with a neutral tint (`--rf-color-line-highlight`) and primary-accent left rail. Snippet and codegroup share the same row primitive for the new highlight state. New tokens: `--rf-color-line-highlight`, `--rf-color-line-highlight-rail`, `--rf-color-line-number`.
 
-**Breaking change**: the internal `data-snippet-source` / `data-snippet-lines` attributes emitted by the snippet rune are renamed to `data-source` / `data-lines`. These were documented as internal protocol when snippet shipped in v0.16 (SPEC-062); any CSS keyed on the old selectors needs to update.
+**Internal protocol changes** (no user-facing API broken; only CSS targeting the previous internal `data-*` names needs updating):
 
-Diff's per-line `data-type` attribute is renamed to `data-line-status` to share one CSS row primitive across snippet / codegroup / diff with the three states `add | remove | highlight`. Themes styling diff lines via `data-type` need to update their selectors.
+- The internal `data-snippet-source` / `data-snippet-lines` attributes emitted by the snippet rune are renamed to `data-source` / `data-lines`. These were documented as internal protocol when snippet shipped in v0.16 (SPEC-062).
+- Diff's per-line `data-type` attribute is renamed to `data-line-status` to share one CSS row primitive across snippet / codegroup / diff with the three states `add | remove | highlight`.
+- Diff's `<pre>` output now wraps its line spans in an inner `<div data-name="rows">` (`.rf-diff__rows`) — mirrors the codeblock's `<pre><code>` shape so the row tint extends across horizontal scroll. Themes targeting `.rf-diff__code > .rf-diff__line` directly need to update the selector.
+
