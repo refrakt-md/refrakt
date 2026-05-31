@@ -1,15 +1,17 @@
 /**
- * Snippet pipeline hooks (SPEC-062).
+ * Snippet pipeline hooks (SPEC-062, WORK-304).
  *
  * - **Preprocess** walks the parsed Markdoc AST, finds every `{% snippet %}`
  *   tag, resolves + slices its source file, and replaces the tag with a
- *   Markdoc `fence` node. The fence carries `content` and `language` (so
+ *   Markdoc `fence` node. The fence carries `content` + `language` (so
  *   the existing code-block transform syntax-highlights it identically to
- *   a triple-backtick fence) plus `data-snippet-source` / `data-snippet-lines`
- *   attributes for downstream tooling and the wrap step.
+ *   a triple-backtick fence) plus `source` / `lines` + author-set
+ *   `linenumbers` / `highlight` annotations (WORK-304). The fence schema
+ *   renders them as `data-source` / `data-lines` / `data-linenumbers` /
+ *   `data-highlight-lines` on the output `<pre>` + `<code>`.
  *
  * - **PostProcess** walks the rendered renderable tree, finds every `<pre>`
- *   element carrying `data-snippet-source`, and — when not nested under a
+ *   element carrying `data-source`, and — when not nested under a
  *   fence-consuming container (`data-rune="code-group"`, `data-rune="diff"`)
  *   — wraps it in `<figure class="rf-snippet">` so themes can style snippet
  *   blocks distinctly from regular code blocks (and tooling can find
@@ -112,13 +114,14 @@ function walkAndReplaceSnippets(
 /** Build a `fence` AST node that renders a clear error message in place of
  *  the snippet. Used when resolution fails (sandbox, missing file, malformed
  *  lines, unresolvable variable reference). The fence carries the original
- *  attempted path in `data-snippet-source` so tooling can still detect
- *  snippet provenance. */
+ *  attempted path in `source` so tooling can still detect snippet
+ *  provenance, plus a `data-snippet-error` raw data-attr that's
+ *  forwarded through the fence transform for the error styling hook. */
 function makeErrorFence(pathAttr: string, message: string): Node {
 	return new Ast.Node('fence', {
 		content: `snippet error: ${message}\n`,
 		language: 'text',
-		'data-snippet-source': pathAttr || '(unresolved)',
+		source: pathAttr || '(unresolved)',
 		'data-snippet-error': message,
 	});
 }
@@ -135,6 +138,14 @@ function resolveSnippetToFence(
 		: undefined;
 	const langAttr = tag.attributes.lang !== undefined
 		? resolveAttributeValue(tag.attributes.lang, ctx.variables)
+		: undefined;
+	// WORK-304 — propagate author-set fence-level annotations from the
+	// snippet rune through to the fence node. The fence schema renders
+	// them as `data-linenumbers` / `data-highlight-lines`. `linenumbers`
+	// arrives as a Boolean from the rune schema; `highlight` as a String.
+	const linenumbers = tag.attributes.linenumbers === true;
+	const highlight = tag.attributes.highlight !== undefined
+		? resolveAttributeValue(tag.attributes.highlight, ctx.variables)
 		: undefined;
 
 	if (!pathAttr) {
@@ -169,12 +180,18 @@ function resolveSnippetToFence(
 
 	const language = (langAttr && langAttr.length > 0) ? langAttr : inferLanguage(result.relativePath);
 
+	// WORK-304 — write unprefixed `source` / `lines` directly. The fence
+	// schema renders them as `data-source` / `data-lines`. `linenumbers` /
+	// `highlight` are propagated from the rune attributes (file-coordinate
+	// semantics — see WORK-304 acceptance criteria).
 	const fenceAttrs: Record<string, unknown> = {
 		content: result.content,
 		language,
-		'data-snippet-source': result.relativePath,
+		source: result.relativePath,
 	};
-	if (lines) fenceAttrs['data-snippet-lines'] = lines;
+	if (lines) fenceAttrs.lines = lines;
+	if (linenumbers) fenceAttrs.linenumbers = true;
+	if (highlight && highlight.length > 0) fenceAttrs.highlight = highlight;
 
 	// Construct a fence Ast.Node. Markdoc parses ``` blocks as
 	// new Ast.Node('fence', { content, language }) — same shape here.
@@ -220,7 +237,7 @@ function walkAndWrap(node: unknown, insideFenceContainer: boolean): unknown {
 	// Wrap matching <pre> elements that aren't inside a fence-consuming container.
 	if (
 		tag.name === 'pre' &&
-		(tag.attributes as Record<string, unknown> | undefined)?.['data-snippet-source'] !== undefined &&
+		(tag.attributes as Record<string, unknown> | undefined)?.['data-source'] !== undefined &&
 		!insideFenceContainer
 	) {
 		return wrapPreInFigure(tag);
@@ -241,8 +258,8 @@ function walkAndWrap(node: unknown, insideFenceContainer: boolean): unknown {
 
 function wrapPreInFigure(preTag: InstanceType<typeof Tag>): InstanceType<typeof Tag> {
 	const attrs = preTag.attributes as Record<string, unknown>;
-	const source = String(attrs['data-snippet-source'] ?? '');
-	const linesAttr = attrs['data-snippet-lines'] !== undefined ? String(attrs['data-snippet-lines']) : undefined;
+	const source = String(attrs['data-source'] ?? '');
+	const linesAttr = attrs['data-lines'] !== undefined ? String(attrs['data-lines']) : undefined;
 
 	const figureAttrs: Record<string, unknown> = {
 		class: 'rf-snippet',

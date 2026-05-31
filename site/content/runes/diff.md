@@ -80,6 +80,58 @@ The default mode shows changes in a single column with line numbers, `+`/`-` pre
 
 {% /preview %}
 
+## Header from fence `source`
+
+When no `title=` is set, diff derives the header from each panel's fence `source` annotation (auto-populated when the panel is a `{% snippet %}`, authorable on hand-written fences). Matching paths collapse to a single label; differing paths render as `before → after`. SPEC-062 / WORK-304.
+
+{% diff %}
+```js {% source="src/server.js" %}
+const app = express();
+app.get('/users', (req, res) => {
+  res.json(db.query('SELECT * FROM users'));
+});
+```
+
+```js {% source="src/server.js" %}
+const app = express();
+app.use(express.json());
+app.get('/users', async (req, res) => {
+  res.json(await db.query('SELECT * FROM users LIMIT 20'));
+});
+```
+{% /diff %}
+
+The fence on each side annotates the diff header with `src/server.js`. Explicit `title=` always wins when you'd rather pin the label; differing source paths between sides render as `before → after`.
+
+## Line numbers using file coordinates
+
+`linenumbers=true` on each panel's fence shifts that side's gutter to start at the fence's `lines` offset rather than `1` — so a diff between two slices of the same file shows the actual file line numbers per side.
+
+{% diff mode="split" %}
+```ts {% source="theme.ts" lines="74-78" linenumbers=true %}
+contentDir: string;
+theme: string | SiteThemeConfig;
+target?: string;
+overrides?: Record<string, string>;
+routeRules?: RouteRule[];
+```
+
+```ts {% source="theme.ts" lines="74-79" linenumbers=true %}
+contentDir: string;
+theme: string | SiteThemeConfig;
+target?: string;
+overrides?: Record<string, string>;
+routeRules?: RouteRule[];
+entityRoutes?: EntityRoute[];
+```
+{% /diff %}
+
+Both gutter columns start at 74 (matching the file's real coordinates), the header reads `theme.ts`, and the added line shows in the right column with `entityRoutes` highlighted as the new value.
+
+{% hint type="note" %}
+`highlight=` on a fence inside `{% diff %}` is **silently ignored**. Diff's add/remove channel is the primary line-level signal; a separate highlight layer on top would muddy the +/- semantics. Use a standalone `{% snippet highlight="..." /%}` instead when you want emphasis.
+{% /hint %}
+
 ### Attributes
 
 | Attribute | Type | Default | Description |

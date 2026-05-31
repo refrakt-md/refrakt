@@ -87,6 +87,33 @@ app.get('/', (req, res) => {
 
 {% /preview %}
 
+## Tab labels from fence annotations
+
+When neither `labels=` nor a per-fence `label` annotation is set, codegroup derives each tab label from the fence's `source` annotation — automatically populated when the panel is a `{% snippet %}`, and authorable on hand-written fences. SPEC-062 / WORK-304.
+
+```markdoc
+{% codegroup %}
+{% snippet path="packages/runes/src/lang-map.ts" lines="3-7" linenumbers=true highlight="4-5" /%}
+{% snippet path="packages/runes/src/tags/codegroup.ts" lines="7-14" linenumbers=true highlight="8-9" /%}
+{% /codegroup %}
+```
+
+Renders with tabs `lang-map.ts:3-7` and `codegroup.ts:7-14`, each panel's gutter starting at the file's real line offset (3 and 7 respectively), and each panel's `highlight` range emphasized — all four annotations (`source`, `lines`, `linenumbers`, `highlight`) propagate through the snippet → fence → codegroup chain uniformly:
+
+{% codegroup %}
+{% snippet path="packages/runes/src/lang-map.ts" lines="3-7" linenumbers=true highlight="4-5" /%}
+{% snippet path="packages/runes/src/tags/codegroup.ts" lines="7-14" linenumbers=true highlight="8-9" /%}
+{% /codegroup %}
+
+The label resolution chain (first match wins):
+
+1. **Group-level `labels=`** — positional override (`labels="A, B, C"`).
+2. **Per-fence `label` annotation** — `` ```ts {% label="SiteConfig" %} ``.
+3. **Derived from `source`** — basename of the path, with `:lines` suffix when `lines=` is also set (e.g. `theme.ts:74-125`).
+4. **Prettified language name** — today's default (`JavaScript`, `Python`, etc.).
+
+Same composition story snippet has elsewhere, just propagated through the fence-annotation surface.
+
 ## Overflow control
 
 Use the `overflow` attribute to control how long lines are handled. The default is `scroll` (horizontal scrollbar). Use `wrap` to wrap lines, or `hide` to clip without a scrollbar.

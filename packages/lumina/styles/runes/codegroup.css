@@ -95,6 +95,19 @@
 	word-break: break-word;
 	overflow-x: hidden;
 }
+/* WORK-304 — the standalone codeblock CSS at `elements/code.css`
+ * sets `display: grid; min-width: max-content` on `pre code` so
+ * row tints + line numbers extend across the horizontal scroll
+ * region. That sizing actively prevents wrapping (the code track
+ * is locked at max-content). Inside `overflow="wrap"` codegroups
+ * we WANT wrapping, so revert the code element back to a plain
+ * block with no min-width constraint. Lines stay block-flow so
+ * Shiki's `<span class="line">` children wrap with the pre's
+ * `white-space: pre-wrap`. */
+.rf-codegroup[data-overflow="wrap"] pre code {
+	display: block;
+	min-width: 0;
+}
 .rf-codegroup[data-overflow="hide"] pre {
 	overflow-x: hidden;
 }
