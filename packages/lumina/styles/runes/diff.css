@@ -115,16 +115,22 @@
 	margin: 0;
 }
 .rf-diff__line-content {
-	/* `flex: 1 0 auto` — grow:1 so line-content fills any free space
-	 * (so the line bg extends past the text on short lines that fit
-	 * the visible width), shrink:0 so it never compresses below its
-	 * `white-space: pre` content width (so the parent line's
-	 * max-content reflects the full text width and `width: max-content`
-	 * on the line gives a row bg that extends across horizontal scroll
-	 * with the content). `flex: 1` / `flex: auto` both let it shrink,
-	 * which caused the row tint to clip at the text width on long
-	 * lines. WORK-304. */
-	flex: 1 0 auto;
+	/* `flex: none` (= `0 0 auto`) — no growing, no shrinking, basis
+	 * locked to content size. Critically, `shrink: 0` so the flex
+	 * container's max-content calc treats line-content's
+	 * `white-space: pre` text width as the contribution; without it,
+	 * the line's `width: max-content` was collapsing back toward the
+	 * gutters width and the row tint clipped at the text width on
+	 * long lines. Earlier variants tried `flex: 1` (basis: 0,
+	 * contributes 0) and `flex: 1 0 auto` (still let the max-content
+	 * calc weight the contribution by grow), neither of which gave
+	 * a clean row tint when the content overflowed horizontally.
+	 * line-content doesn't need to grow to fill the row — the parent
+	 * `.rf-diff__line` already takes `min-width: 100%`, so the line
+	 * bg covers the visible width on short rows, and `width:
+	 * max-content` extends it past the visible edge on long rows.
+	 * WORK-304. */
+	flex: none;
 	white-space: pre;
 	padding-right: 1rem;
 	/* Pin the row to 1.6em even when the text is empty — the highlighted
