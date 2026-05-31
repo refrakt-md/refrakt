@@ -115,15 +115,16 @@
 	margin: 0;
 }
 .rf-diff__line-content {
-	/* `flex: auto` (= `1 1 auto`) so the flex container's max-content
-	 * size includes line-content's own intrinsic text width (with
-	 * `white-space: pre`). `flex: 1` would set `flex-basis: 0`, which
-	 * makes line-content contribute zero to the parent line's
-	 * max-content — and `.rf-diff__line { width: max-content }`
-	 * would then collapse to just the gutter widths, leaving the
-	 * highlight bg covering only the gutters instead of the full row.
-	 * WORK-304. */
-	flex: auto;
+	/* `flex: 1 0 auto` — grow:1 so line-content fills any free space
+	 * (so the line bg extends past the text on short lines that fit
+	 * the visible width), shrink:0 so it never compresses below its
+	 * `white-space: pre` content width (so the parent line's
+	 * max-content reflects the full text width and `width: max-content`
+	 * on the line gives a row bg that extends across horizontal scroll
+	 * with the content). `flex: 1` / `flex: auto` both let it shrink,
+	 * which caused the row tint to clip at the text width on long
+	 * lines. WORK-304. */
+	flex: 1 0 auto;
 	white-space: pre;
 	padding-right: 1rem;
 	/* Pin the row to 1.6em even when the text is empty — the highlighted
