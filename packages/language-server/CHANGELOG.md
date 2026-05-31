@@ -1,5 +1,14 @@
 # @refrakt-md/language-server
 
+## 0.16.1
+
+### Patch Changes
+
+- Updated dependencies [ae5c904]
+- Updated dependencies [8a84210]
+  - @refrakt-md/runes@0.16.1
+  - @refrakt-md/transform@0.16.1
+
 ## 0.16.0
 
 ### Minor Changes
