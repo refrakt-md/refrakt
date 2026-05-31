@@ -30,6 +30,25 @@
 .rf-diff__split-container .rf-diff__panel:first-child {
 	border-right: 1px solid var(--rf-color-border);
 }
+
+/* Mobile: stack the split panels instead of forcing 40rem width. The
+ * 40rem min-width was making the split-container wider than the
+ * viewport on phones; combined with `.rf-diff { overflow: hidden }`
+ * for the rounded corners, the overflowing right panel was invisible
+ * and the touch scroll had nowhere to go — the user saw a "bounce
+ * back". Below the side-by-side breakpoint, switch to a vertical
+ * stack so both panels fit. The :first-child border flips from
+ * right (between columns) to bottom (between rows). */
+@media (max-width: 40rem) {
+	.rf-diff__split-container {
+		grid-template-columns: 1fr;
+		min-width: 0;
+	}
+	.rf-diff__split-container .rf-diff__panel:first-child {
+		border-right: none;
+		border-bottom: 1px solid var(--rf-color-border);
+	}
+}
 .rf-diff__code {
 	margin: 0;
 	padding: var(--rf-spacing-sm) 0;
@@ -41,29 +60,27 @@
 	font-family: var(--rf-font-mono);
 	font-size: 0.8125rem;
 	line-height: 1.6;
-	/* Grid layout with a single column sized as
-	 * `minmax(100%, max-content)` so each `.rf-diff__line` spans the
-	 * full row width — visible width when content fits, max-content
-	 * (= widest line's intrinsic width) when content overflows. Result:
-	 * line bg + left rail extend across the full horizontal scroll
-	 * region, not clipped at the visible width. Same fix as the
-	 * standalone codeblock at `elements/code.css`, expressed via
-	 * grid-template-columns here because the pre is both the scroll
-	 * container AND the grid container — `min-width: max-content` on
-	 * the pre itself would expand the scroll container and defeat
-	 * `overflow-x: auto`. */
-	display: grid;
-	grid-template-columns: minmax(100%, max-content);
 }
 /* WORK-304 — annotated line primitive. Three states share one row
  * shape (`add`, `remove`, `highlight`); only the tint token and the
  * gutter rail colour change. The same selector form is reused by the
  * standalone code block for `data-line-status="highlight"` via the
- * `.rf-codeblock` rules below. */
+ * `.rf-codeblock` rules below.
+ *
+ * `width: max-content; min-width: 100%` on each line is what makes
+ * the row bg + left rail extend across the full horizontal scroll
+ * region (instead of clipping at the pre's visible width). The
+ * `display: flex` interior is preserved — `width` just sizes the
+ * outer flex container. Result: each line is at least as wide as
+ * the pre's visible area, and as wide as its content when content
+ * overflows, so the +/-/highlight tint never visually ends mid-row
+ * when the user scrolls. */
 .rf-diff__line {
 	display: flex;
 	min-height: 1.6em;
 	border-left: 3px solid transparent;
+	width: max-content;
+	min-width: 100%;
 }
 .rf-diff__line[data-line-status="equal"]  { background: transparent; }
 .rf-diff__line[data-line-status="remove"] {
