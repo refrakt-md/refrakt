@@ -54,17 +54,20 @@
 	font-family: var(--rf-font-mono);
 	font-size: 0.8125rem;
 	line-height: 1.6;
-	/* Grid layout: single column sized as `minmax(100%, max-content)`
-	 * so each `.rf-diff__line` (as a grid item) gets the full row
-	 * width — visible width when content fits, widest-line's
-	 * max-content when content overflows. This puts the row-width
-	 * sizing on the grid track (deterministic) rather than on the
-	 * flex line container (whose max-content varied by flex-basis /
-	 * grow / shrink combination). The line's own internal flex
-	 * layout still positions gutters + content; the line's WIDTH
-	 * comes from the grid track. WORK-304. */
+}
+
+/* WORK-304 — inner rows wrapper, sized as `display: grid; min-width:
+ * max-content` so every `.rf-diff__line` (grid item) spans the
+ * widest line's intrinsic width. The pre is the scroll container
+ * (`overflow-x: auto`); this wrapper is what actually expands past
+ * the pre's visible width when a line overflows, triggering the
+ * pre's scroll and keeping the row tint (+/-/highlight) contiguous
+ * across the full scroll region. Mirrors the
+ * `pre code { display: grid; min-width: max-content }` pattern in
+ * the standalone codeblock at `elements/code.css`. */
+.rf-diff__rows {
 	display: grid;
-	grid-template-columns: minmax(100%, max-content);
+	min-width: max-content;
 }
 /* WORK-304 — annotated line primitive. Three states share one row
  * shape (`add`, `remove`, `highlight`); only the tint token and the

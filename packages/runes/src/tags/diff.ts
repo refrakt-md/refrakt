@@ -123,7 +123,15 @@ function buildUnifiedRenderable(hunks: DiffHunk[], lang: string, beforeOffset = 
 		]);
 	});
 
-	return [new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, lineNodes)];
+	return [new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, [
+		// WORK-304 — inner wrapper hosts the `display: grid; min-width:
+		// max-content` row-width sizing so the row tint (+/-/highlight)
+		// extends across the full horizontal scroll region. Mirrors the
+		// `<pre><code>` pattern the standalone codeblock uses for the
+		// same reason: putting the sizing on the pre itself defeats
+		// `overflow-x: auto`. CSS hook: `.rf-diff__rows`.
+		new Tag('div', { 'data-name': 'rows' }, lineNodes),
+	])];
 }
 
 /** Build split diff renderable — side-by-side panels with one numbered
@@ -152,10 +160,14 @@ function buildSplitRenderable(hunks: DiffHunk[], lang: string, beforeOffset = 0,
 
 	return [new Tag('div', { 'data-name': 'split-container' }, [
 		new Tag('div', { 'data-name': 'panel' }, [
-			new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, buildPanelLines(before, 'before', beforeOffset)),
+			new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, [
+				new Tag('div', { 'data-name': 'rows' }, buildPanelLines(before, 'before', beforeOffset)),
+			]),
 		]),
 		new Tag('div', { 'data-name': 'panel' }, [
-			new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, buildPanelLines(after, 'after', afterOffset)),
+			new Tag('pre', { 'data-name': 'code', 'data-copy-selector': '[data-name="line-content"]' }, [
+				new Tag('div', { 'data-name': 'rows' }, buildPanelLines(after, 'after', afterOffset)),
+			]),
 		]),
 	])];
 }
