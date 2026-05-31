@@ -2,7 +2,19 @@
 .rf-diff {
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-lg);
-	overflow: hidden;
+	/* WORK-304 — horizontal scroll lives on `.rf-diff` itself, not on
+	 * `.rf-diff__split-container`. On mobile the split-container's
+	 * `min-width: 40rem` makes it wider than the viewport; previously
+	 * `.rf-diff { overflow: hidden }` clipped the right panel and the
+	 * touch scroll had nowhere to land. Moving the scroll affordance
+	 * up one level lets users swipe the entire diff sideways to
+	 * reveal the off-screen panel; the border-radius still clips the
+	 * children at the rounded corners because `overflow-x: auto` is
+	 * non-visible. `overflow-y: hidden` keeps the vertical clip for
+	 * the rounded top/bottom. */
+	overflow-x: auto;
+	overflow-y: hidden;
+	overscroll-behavior-x: contain;
 	font-size: 0.875rem;
 	background: var(--rf-color-code-bg);
 }
@@ -19,35 +31,9 @@
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	min-width: 40rem;
-	overflow-x: auto;
-	/* Mobile: keep the diff's own horizontal scroll contained so iOS
-	 * doesn't punt to the page-level scroll mid-gesture (the symptom
-	 * users see is "scroll bounces back" — the touch hand-off picks
-	 * the wrong scroll target when nested). */
-	overscroll-behavior-x: contain;
-	touch-action: pan-x pan-y;
 }
 .rf-diff__split-container .rf-diff__panel:first-child {
 	border-right: 1px solid var(--rf-color-border);
-}
-
-/* Mobile: stack the split panels instead of forcing 40rem width. The
- * 40rem min-width was making the split-container wider than the
- * viewport on phones; combined with `.rf-diff { overflow: hidden }`
- * for the rounded corners, the overflowing right panel was invisible
- * and the touch scroll had nowhere to go — the user saw a "bounce
- * back". Below the side-by-side breakpoint, switch to a vertical
- * stack so both panels fit. The :first-child border flips from
- * right (between columns) to bottom (between rows). */
-@media (max-width: 40rem) {
-	.rf-diff__split-container {
-		grid-template-columns: 1fr;
-		min-width: 0;
-	}
-	.rf-diff__split-container .rf-diff__panel:first-child {
-		border-right: none;
-		border-bottom: 1px solid var(--rf-color-border);
-	}
 }
 .rf-diff__code {
 	margin: 0;
@@ -121,7 +107,15 @@
 	margin: 0;
 }
 .rf-diff__line-content {
-	flex: 1;
+	/* `flex: auto` (= `1 1 auto`) so the flex container's max-content
+	 * size includes line-content's own intrinsic text width (with
+	 * `white-space: pre`). `flex: 1` would set `flex-basis: 0`, which
+	 * makes line-content contribute zero to the parent line's
+	 * max-content — and `.rf-diff__line { width: max-content }`
+	 * would then collapse to just the gutter widths, leaving the
+	 * highlight bg covering only the gutters instead of the full row.
+	 * WORK-304. */
+	flex: auto;
 	white-space: pre;
 	padding-right: 1rem;
 	/* Pin the row to 1.6em even when the text is empty — the highlighted
