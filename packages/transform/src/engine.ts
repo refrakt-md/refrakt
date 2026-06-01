@@ -1050,11 +1050,12 @@ function renderSplitLayout(
 		f.field.sentimentMap ? buildChip(f, { includeLabel: false }) : buildPlainValue(f),
 	);
 
+	// data-name drives the BEM class via applyBemClasses; don't set `class`
+	// here to avoid a duplicate `rf-{block}__{position}` token.
 	const wrapperAttrs: Record<string, string> = {
 		'data-name': position,
 		'data-zone': position,
 		'data-zone-layout': 'split',
-		class: `${block}__${position}`,
 	};
 
 	return makeTag('div', wrapperAttrs, [
@@ -1076,7 +1077,6 @@ function renderChipRowLayout(
 		'data-name': position,
 		'data-zone': position,
 		'data-zone-layout': 'chip-row',
-		class: `${block}__${position}`,
 	};
 
 	return makeTag('div', wrapperAttrs, fields.map(f => buildChip(f, { includeLabel: true })));
@@ -1098,7 +1098,6 @@ function renderDefListLayout(
 		'data-name': position,
 		'data-zone': position,
 		'data-zone-layout': 'definition-list',
-		class: `${block}__${position}`,
 	};
 
 	const rows: RendererNode[] = fields.map(f => {

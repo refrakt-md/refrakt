@@ -49,7 +49,7 @@ export const config: Record<string, RuneConfig> = {
 		},
 		contentSlots: {
 			title: 'title',
-			blurb: 'description',
+			blurb: 'blurb',
 			body: 'body',
 		},
 		editHints: { body: 'none' },
@@ -94,7 +94,7 @@ export const config: Record<string, RuneConfig> = {
 		},
 		contentSlots: {
 			title: 'title',
-			blurb: 'description',
+			blurb: 'blurb',
 			body: 'body',
 		},
 		editHints: { body: 'none' },
@@ -137,7 +137,7 @@ export const config: Record<string, RuneConfig> = {
 		},
 		contentSlots: {
 			title: 'title',
-			blurb: 'description',
+			blurb: 'blurb',
 			body: 'body',
 		},
 		editHints: { body: 'none' },
@@ -174,7 +174,7 @@ export const config: Record<string, RuneConfig> = {
 		},
 		contentSlots: {
 			title: 'title',
-			blurb: 'description',
+			blurb: 'blurb',
 			body: 'body',
 		},
 		editHints: { body: 'none' },
@@ -207,7 +207,7 @@ export const config: Record<string, RuneConfig> = {
 		},
 		contentSlots: {
 			title: 'title',
-			blurb: 'description',
+			blurb: 'blurb',
 			body: 'body',
 		},
 		editHints: { body: 'none' },
