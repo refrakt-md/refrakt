@@ -52,6 +52,7 @@ export const config: Record<string, RuneConfig> = {
 			blurb: 'blurb',
 			body: 'body',
 		},
+		sections: { title: 'title', blurb: 'description', body: 'body' },
 		editHints: { body: 'none' },
 	},
 	Work: {
@@ -97,6 +98,7 @@ export const config: Record<string, RuneConfig> = {
 			blurb: 'blurb',
 			body: 'body',
 		},
+		sections: { title: 'title', blurb: 'description', body: 'body' },
 		editHints: { body: 'none' },
 	},
 	Bug: {
@@ -140,6 +142,7 @@ export const config: Record<string, RuneConfig> = {
 			blurb: 'blurb',
 			body: 'body',
 		},
+		sections: { title: 'title', blurb: 'description', body: 'body' },
 		editHints: { body: 'none' },
 	},
 	Decision: {
@@ -177,6 +180,7 @@ export const config: Record<string, RuneConfig> = {
 			blurb: 'blurb',
 			body: 'body',
 		},
+		sections: { title: 'title', blurb: 'description', body: 'body' },
 		editHints: { body: 'none' },
 	},
 	Milestone: {
@@ -210,6 +214,7 @@ export const config: Record<string, RuneConfig> = {
 			blurb: 'blurb',
 			body: 'body',
 		},
+		sections: { title: 'title', blurb: 'description', body: 'body' },
 		editHints: { body: 'none' },
 	},
 	Backlog: {
