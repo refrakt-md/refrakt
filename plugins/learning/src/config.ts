@@ -69,13 +69,7 @@ export const config: Record<string, RuneConfig> = {
 		zones: {
 			metadata: { fields: ['prepTime', 'cookTime', 'servings', 'difficulty'] },
 		},
-		// Pull headline + blurb into the preamble so the canonical order
-		// (title → blurb → metadata) renders them above the def-list.
-		contentSlots: {
-			title: 'headline',
-			blurb: 'blurb',
-		},
-		zoneLayouts: { metadata: 'definition-list' },
+		zoneLayouts: { metadata: 'chip-row' },
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', ingredient: 'inline', step: 'inline', media: 'image' },
 	},

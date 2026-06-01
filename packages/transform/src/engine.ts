@@ -681,13 +681,41 @@ function assembleWithSlots(
 }
 
 /** Find and remove a child by data-name from a flat children array.
- *  Returns the removed element and the updated array, or null if not found. */
+ *  Returns the removed element and the updated array, or null if not found.
+ *
+ *  Also looks one level deep inside any direct-child wrapper carrying
+ *  `data-name="preamble"`. This lets SPEC-079 `contentSlots` find refs
+ *  (`headline`, `blurb`, etc.) that the rune's schema nested inside an
+ *  auto-labelled `<header data-name="preamble">` wrapper — otherwise the
+ *  extraction would silently fail and the dispatcher would emit a
+ *  second preamble alongside the schema's, producing duplicate wrappers
+ *  in the rendered DOM. */
 function extractByDataName(children: RendererNode[], name: string): { element: SerializedTag; rest: RendererNode[] } | null {
 	const idx = children.findIndex(c => isTag(c) && (c as SerializedTag).attributes?.['data-name'] === name);
-	if (idx === -1) return null;
-	const element = children[idx] as SerializedTag;
-	const rest = [...children.slice(0, idx), ...children.slice(idx + 1)];
-	return { element, rest };
+	if (idx !== -1) {
+		const element = children[idx] as SerializedTag;
+		const rest = [...children.slice(0, idx), ...children.slice(idx + 1)];
+		return { element, rest };
+	}
+	// Fall back: look inside any direct-child preamble wrapper.
+	for (let i = 0; i < children.length; i++) {
+		const c = children[i];
+		if (!isTag(c)) continue;
+		const wrapper = c as SerializedTag;
+		if (wrapper.attributes?.['data-name'] !== 'preamble') continue;
+		const inner = extractByDataName(wrapper.children, name);
+		if (!inner) continue;
+		const newRest = [...children];
+		if (inner.rest.length === 0) {
+			// Wrapper now empty — drop it so we don't emit a hollow
+			// preamble alongside the dispatcher's auto-derived one.
+			newRest.splice(i, 1);
+		} else {
+			newRest[i] = { ...wrapper, children: inner.rest };
+		}
+		return { element: inner.element, rest: newRest };
+	}
+	return null;
 }
 
 /** Find a child (or nested child) by data-name without removing it. */
