@@ -103,7 +103,11 @@ gradient.
 Lifting the semantic names out (`eyebrow` / `metadata`) also makes them
 reusable: any future rune wanting an eyebrow above its title can
 declare one with a one-line config, and themes style every eyebrow the
-same way.
+same way. The position name (`eyebrow`) is the same regardless of
+whether the rune projects structured chips into the slot (work, bug,
+decision) or expects the user to author prose there (card, recipe,
+hero) — the source-of-content distinction is per-rune config, not a
+vocabulary split.
 
 ## Goals
 
@@ -119,14 +123,37 @@ same way.
   per zone** from a small vocabulary of primitives. The engine renders
   by combining the two.
 
-- **Semantic zone names.** `eyebrow`, `metadata`, `body` replace
-  `header-primary`, `header-secondary`. Old positional names continue
-  to work via aliases for one release.
+- **Semantic zone names.** `eyebrow`, `metadata`, `body` name the
+  positions that today's plan-entity config calls
+  `header-primary`, `header-secondary`, etc. The existing `preamble`
+  slot keeps its current meaning (a CSS wrapper around the rune's
+  header region — eyebrow + title + blurb together); `eyebrow` is one
+  of the named slots that can live inside it. Old positional names
+  (`header-primary` / `header-secondary`) continue to work via
+  aliases for one release.
+
+- **One eyebrow slot per rune; the rune picks the source.**
+  The position above the title is called `eyebrow` regardless of
+  where its content comes from. A rune declares either
+  `zones.eyebrow = { left, right }` (engine projects structured chips
+  from the rune's attributes) **or** `sections.eyebrow = 'eyebrow'`
+  (user authors prose at that slot in the rune body). The two are
+  mutually exclusive — declaring both is a config-time error.
+  Runes that want neither just don't have an eyebrow. Same DOM
+  target (`.rf-{block}__eyebrow`, `[data-zone="eyebrow"]`), same
+  CSS, regardless of which source filled it.
 
 - **Layout primitives.** A small vocabulary covers the visible cases:
   `split`, `chip-row`, `definition-list`. Future additions
   (`table`, `inline-summary`, `sticky-bar`) plug into the same hook
   without touching plugin or engine code.
+
+- **Composable rune handles for layout primitives.** Each layout
+  primitive also exposes a user-authoring rune so the same shape can
+  be composed in prose without needing a plugin to project it:
+  `{% eyebrow %}…{% /eyebrow %}` (split layout) and
+  `{% deflist %}…{% /deflist %}` (definition-list layout). Same DOM,
+  same CSS, same chip primitive as the projected versions.
 
 - **Backwards compatible.** Existing structure trees continue to work
   via a transition path: the engine recognises legacy `header-primary`
@@ -148,6 +175,25 @@ shouldn't bake one choice into their config.
 contextualizing strip above the title"; `metadata` says "the
 descriptive field list below the title." A theme could render eyebrow
 as the right column of a sidebar without breaking semantics.
+
+**Position, source, and layout are independent dimensions.** This
+spec organises around three orthogonal axes:
+
+1. **Position** (the slot name): `eyebrow`, `metadata`, `body`, etc.
+   A vocabulary primitive that says "where in the rune's structure
+   this content lives." Themes style by position.
+2. **Source** (where the content comes from): `zones` (engine
+   projects from rune attrs) or `sections` (user authors prose at
+   the slot). The rune picks one per slot at config time.
+3. **Layout** (which DOM shape renders the contents): `split`,
+   `chip-row`, `definition-list`. The theme picks per zone. User
+   sections render as their natural inline content unless a
+   composable layout rune is dropped in.
+
+The three dimensions don't interact: a `metadata` zone could be
+rendered as `chip-row` or `definition-list` without changing what
+"metadata" means; an `eyebrow` could be projected by the engine or
+authored by the user without changing what "eyebrow" means.
 
 **Layout primitives are a closed vocabulary, not arbitrary HTML.** A
 theme picks one of `{split, chip-row, definition-list, …}`, not a tag
@@ -235,6 +281,63 @@ zoneLayouts: {
 
 The engine looks up the rune's zones, pairs each with the theme's
 layout choice, and renders.
+
+### Source-of-content per slot: `zones` vs `sections`
+
+A rune declares each header slot via **one** of two config keys:
+
+```ts
+// Work — projected eyebrow + projected metadata.
+Work: {
+  zones: {
+    eyebrow:  { left: ['id'], right: ['status'] },
+    metadata: { fields: ['priority', 'complexity', …] },
+  },
+  sections: { title: 'title', blurb: 'description', body: 'body' },
+}
+
+// Card — user-authored eyebrow, no projected meta.
+Card: {
+  zones: {},  // none
+  sections: {
+    eyebrow: 'eyebrow',   // user content fills the slot
+    title: 'title',
+    body: 'body',
+  },
+}
+
+// Recipe — user-authored eyebrow + projected metadata.
+Recipe: {
+  metaFields: {
+    servings:   { metaType: 'quantity', label: 'Serves' },
+    prepTime:   { metaType: 'temporal', label: 'Prep' },
+    cookTime:   { metaType: 'temporal', label: 'Cook' },
+    difficulty: { metaType: 'category', label: 'Difficulty',
+                  sentimentMap: { easy: 'positive', medium: 'caution',
+                                  hard: 'negative' } },
+  },
+  zones: {
+    metadata: { fields: ['servings', 'prepTime', 'cookTime', 'difficulty'] },
+  },
+  sections: {
+    eyebrow: 'eyebrow',   // user authors the eyebrow prose
+    title: 'title',
+    blurb: 'description',
+    body: 'body',
+  },
+}
+```
+
+Same slot name (`eyebrow`) in both keys is the conflict case — engine
+errors at config time. The rune picks one source per slot; mixing
+both is ambiguous and almost certainly a config mistake.
+
+When a slot's content source is `sections`, the user's authored
+content is rendered into the slot's wrapper element as-is. If the
+user wants the `split` layout inside an authored eyebrow section,
+they reach for `{% eyebrow %}` (see **Composable Rune Handles** below)
+inside the section content. Themes don't apply a layout primitive to
+authored sections automatically.
 
 ## Layout Primitives
 
@@ -337,6 +440,72 @@ text inside the `<dd>` with the existing `data-meta-type` for typing.
 - **`sticky-bar`** — same data as `chip-row` but pinned to viewport
   bottom while the entity body is in view.
 
+## Composable Rune Handles
+
+Each layout primitive also ships as a standalone authoring rune so the
+same shape can be composed in prose, inside other runes (card,
+recipe, hero), without needing a plugin to project it. Same DOM,
+same CSS, same chip primitive — the only difference is the content
+source (user-authored vs engine-projected).
+
+### `{% eyebrow %}` — split layout, composable
+
+A block-level rune that renders the `split` layout primitive. Body
+splits on a top-level `---` into `left` / `right` halves (matches the
+authoring convention `{% drawer %}` uses for its body / footer split,
+and `{% card %}` uses for its body / media split):
+
+```markdoc
+{% card %}
+{% eyebrow %}
+ID-123
+---
+{% badge sentiment="positive" %}done{% /badge %}
+{% /eyebrow %}
+
+# Card title
+
+Body content
+{% /card %}
+```
+
+DOM identical to a projected `zones.eyebrow = { left, right }` —
+`<div data-zone="eyebrow" data-layout="split">…</div>` with the two
+slots. Composable inside any container rune; renders as standalone
+when used in plain prose.
+
+### `{% deflist %}` — definition-list layout, composable
+
+A block-level rune that renders the `definition-list` layout
+primitive over user-authored term/description pairs. Authoring
+convention is a markdown list with `**Term:**` leading each item:
+
+```markdoc
+{% deflist %}
+- **Priority:** {% badge sentiment="caution" %}high{% /badge %}
+- **Complexity:** moderate
+- **Assignee:** @alice
+{% /deflist %}
+```
+
+The rune parses each `**Term:**` prefix as the `<dt>` and the rest of
+the list item as the `<dd>`. Inline runes inside the description
+(badges, refs, code) compose naturally. DOM identical to a projected
+metadata zone using the `definition-list` layout.
+
+Use cases beyond projected metadata:
+- A blog post explaining config options: term = option name,
+  description = behaviour + default.
+- A glossary in prose.
+- A card's body filling in attribute details.
+
+### Naming considerations
+
+`deflist` matches the HTML element shorthand and is the canonical
+name. `definitions` and `terms` are alternate aliases (registered via
+`Plugin.runes.aliases`). `{% chiprow %}` is deferred — see the Open
+Questions section for the reasoning.
+
 ## Engine Changes
 
 `packages/transform/src/engine.ts` gains:
@@ -402,9 +571,27 @@ milestone):
   `split`, `chip-row`, `definition-list`. New tests in
   `packages/transform/test/engine-zones.test.ts` cover each layout's
   DOM contract.
+- [ ] **Mutual-exclusion validation.** Engine errors at config time
+  when a rune declares both `zones.eyebrow` and `sections.eyebrow`
+  (or any other slot name used by both `zones` and `sections`).
+  Test in `engine-zones.test.ts` confirms the error message names
+  the conflicting slot.
 - [ ] Backwards-compat shim renders legacy `header-primary` /
   `header-secondary` structure trees via `chip-row` (with `split` when
   the slot is `header-primary` AND children fit a left/right pattern).
+- [ ] **`{% eyebrow %}` rune.** New core rune in
+  `packages/runes/src/tags/eyebrow.ts`. Content model splits body on
+  top-level `---` into `left` / `right`. Emits the same DOM as a
+  projected `zones.eyebrow = { left, right }` with the `split`
+  layout. Tests in `packages/runes/test/eyebrow.test.ts`.
+- [ ] **`{% deflist %}` rune.** New core rune in
+  `packages/runes/src/tags/deflist.ts`. Content model parses a list
+  where each item starts with `**Term:**` (or `<strong>Term:</strong>`
+  in the parsed AST) as a `<dt>` + `<dd>` pair. Emits the same DOM
+  as a projected metadata zone with the `definition-list` layout.
+  Tests in `packages/runes/test/deflist.test.ts` cover the parsing,
+  inline-rune composition (badges, refs inside `<dd>`), and the
+  fallback when items don't follow the `**Term:**` convention.
 - [ ] Lumina's metadata.css adopts the chip look as the universal base.
   `runes/badge.css` removed. CSS coverage tests in
   `packages/lumina/test/css-coverage.test.ts` updated.
@@ -457,6 +644,14 @@ milestone):
 
 ## Open Questions
 
+- **`{% chiprow %}` composable rune.** `{% eyebrow %}` and
+  `{% deflist %}` give authoring handles for the `split` and
+  `definition-list` primitives. The `chip-row` primitive doesn't get
+  one in v1 — the existing pattern of inlining multiple `{% badge %}`s
+  is already an authoring handle for chip-row-ish shapes. A dedicated
+  `{% chiprow %}` would mostly add wrapping / spacing guarantees, not
+  new capability. Worth revisiting once a concrete authoring need
+  appears.
 - **Vocabulary scope.** Does v1 ship `split` + `chip-row` +
   `definition-list`, or also include `table`? My instinct says ship
   three and add `table` when a concrete consumer asks for it.
@@ -474,5 +669,15 @@ milestone):
   conflict-check against existing `data-layout` attributes used by
   other runes (e.g. `gallery`)? Probably fine since the engine scopes
   them to zone elements, but worth verifying.
+- **Mutual-exclusion validation timing.** Should the
+  `zones.eyebrow` + `sections.eyebrow` conflict be caught at
+  `mergeThemeConfig` time (synchronous, fails the build with a clear
+  error) or only at pipeline preprocess time? Build-time feels right
+  but means the validator needs the full merged config to check.
+- **`{% deflist %}` authoring fallback.** When a list item inside
+  `{% deflist %}` doesn't start with `**Term:**`, do we (a) treat the
+  whole item as a `<dd>` with no `<dt>`, (b) error at build, (c) emit
+  the item as a plain `<li>` outside the `<dl>`? Probably (a) for
+  authoring forgiveness, but worth deciding.
 
 {% /spec %}
