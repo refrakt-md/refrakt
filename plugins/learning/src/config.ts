@@ -69,7 +69,7 @@ export const config: Record<string, RuneConfig> = {
 		zones: {
 			metadata: { fields: ['prepTime', 'cookTime', 'servings', 'difficulty'] },
 		},
-		zoneLayouts: { metadata: 'chip-row' },
+		zoneLayouts: { metadata: 'definition-list' },
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', ingredient: 'inline', step: 'inline', media: 'image' },
 	},
