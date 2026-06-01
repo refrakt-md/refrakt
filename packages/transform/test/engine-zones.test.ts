@@ -286,6 +286,81 @@ describe('SPEC-079 engine zone dispatcher', () => {
 		});
 	});
 
+	describe('zoneHost — nest projected zones into a pre-built content column', () => {
+		// Recipe-shaped: the transform hand-assembles `content` + `media`
+		// columns for a split layout, and projects a `metadata` def-list.
+		const recipeConfig: RuneConfig = {
+			block: 'recipe',
+			modifiers: {
+				prepTime: { source: 'meta', noBemClass: true },
+				difficulty: { source: 'meta', default: 'medium' },
+			},
+			metaFields: {
+				prepTime: { metaType: 'temporal', label: 'Prep', condition: 'prepTime' },
+				difficulty: { metaType: 'category', label: 'Difficulty', condition: 'difficulty' },
+			},
+			zones: { metadata: { fields: ['prepTime', 'difficulty'] } },
+			zoneLayouts: { metadata: 'definition-list' },
+			zoneHost: 'content',
+		};
+
+		function makeRecipeTag(host: 'content' | 'none' = 'content') {
+			const header = makeTag('header', { 'data-name': 'title' }, [makeTag('h1', {}, ['Pancakes'])]);
+			const body = makeTag('ul', { 'data-name': 'ingredients' }, [makeTag('li', {}, ['Flour'])]);
+			const contentName = host === 'content' ? 'content' : 'body';
+			const content = makeTag('div', { 'data-name': contentName }, [header, body]);
+			const media = makeTag('div', { 'data-name': 'media' }, [makeTag('img', { src: '/a.jpg' })]);
+			return makeTag('article', { 'data-rune': 'recipe' }, [
+				makeTag('meta', { 'data-field': 'prep-time', content: '10m' }),
+				makeTag('meta', { 'data-field': 'difficulty', content: 'easy' }),
+				media,
+				content,
+			]);
+		}
+
+		const directNames = (node: SerializedTag) =>
+			node.children
+				.filter((c): c is SerializedTag => typeof c === 'object' && c !== null && '$$mdtype' in c)
+				.filter(c => c.attributes['data-name'])
+				.map(c => c.attributes['data-name']);
+
+		it('keeps exactly the two pre-built columns at the top level (no third sibling)', () => {
+			const config = baseConfig({ Recipe: recipeConfig });
+			const transform = createTransform(config);
+			const result = asTag(transform(makeRecipeTag('content')));
+			// Only media + content remain as structural top-level children —
+			// the metadata def-list is nested, not a third grid item.
+			expect(directNames(result)).toEqual(['media', 'content']);
+			expect(findByName(result, 'preamble')).toBeUndefined();
+		});
+
+		it('nests the projected metadata def-list inside the content column, below the header', () => {
+			const config = baseConfig({ Recipe: recipeConfig });
+			const transform = createTransform(config);
+			const result = asTag(transform(makeRecipeTag('content')));
+
+			const content = findByName(result, 'content')!;
+			expect(content).toBeDefined();
+			// content children: [header(title), metadata dl, ingredients]
+			expect(directNames(content)).toEqual(['title', 'metadata', 'ingredients']);
+			const metadata = content.children[1] as SerializedTag;
+			expect(metadata.name).toBe('dl');
+			expect(metadata.attributes['data-zone']).toBe('metadata');
+			expect(metadata.attributes['data-zone-layout']).toBe('definition-list');
+		});
+
+		it('falls back to top-level projection when the named host is absent', () => {
+			const config = baseConfig({ Recipe: recipeConfig });
+			const transform = createTransform(config);
+			// host="none" produces a `body` column, so `zoneHost: 'content'` finds
+			// nothing and projects the preamble at the article top level.
+			const result = asTag(transform(makeRecipeTag('none')));
+			const preamble = findByName(result, 'preamble')!;
+			expect(preamble).toBeDefined();
+			expect(findByZone(preamble, 'metadata')).toBeDefined();
+		});
+	});
+
 	describe('splitOn — multi-value fields fan into per-item chips', () => {
 		const tagsConfig: RuneConfig = {
 			block: 'card',

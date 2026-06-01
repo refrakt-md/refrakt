@@ -172,6 +172,19 @@ export interface RuneConfig {
 	 *  outside the standard vocabulary. */
 	order?: string[];
 
+	/** Nest projected header zones (the auto-derived preamble) *inside* a
+	 *  pre-built content element instead of emitting them as top-level
+	 *  siblings. The value is the `data-name` of the host element the rune's
+	 *  transform already produced (e.g. `'content'`). Used by split-layout
+	 *  runes (recipe) whose transform hand-assembles a `content` + `media`
+	 *  column pair: a projected `metadata` def-list must live within the
+	 *  content column, not become a third grid child that breaks the split.
+	 *  When the named host isn't found among the children, the engine falls
+	 *  back to top-level projection — so it's safe to set on any rune.
+	 *  Projected zones are inserted after a leading `<header>` /
+	 *  `[data-section="header"]` within the host (below the heading/blurb). */
+	zoneHost?: string;
+
 	/** Auto-label children by tag name → data-name. E.g., { summary: 'header' } */
 	autoLabel?: Record<string, string>;
 

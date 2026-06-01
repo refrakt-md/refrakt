@@ -1315,6 +1315,21 @@ function assembleWithZones(
 		}
 	}
 
+	// Split-layout runes (e.g. recipe) hand-assemble a `content` + `media`
+	// column pair in their transform. Projecting header zones as top-level
+	// siblings would add a third grid child and break the split. When
+	// `zoneHost` names such a pre-built content element, nest the projected
+	// preamble inside it — below any leading header — instead of beside it.
+	if (config.zoneHost && headerEls.length > 0) {
+		const hosted = injectIntoHost(remaining, config.zoneHost, headerEls);
+		if (hosted) {
+			// Host found: preamble lives inside the content column. Keep the
+			// rune's own children (incl. content + media columns) at top level.
+			return [...tail, ...hosted];
+		}
+		// No matching host — fall through to top-level projection below.
+	}
+
 	const result: RendererNode[] = [];
 	if (headerEls.length > 0) {
 		// Preamble wrapper. The BEM pass will add `${block}__preamble`
@@ -1329,4 +1344,39 @@ function assembleWithZones(
 	result.push(...remaining);
 
 	return result;
+}
+
+/** Insert projected header elements inside a pre-built host element (matched
+ *  by `data-name`), positioned after a leading `<header>` /
+ *  `[data-section="header"]` so the metadata reads below the heading/blurb.
+ *  Returns a new children array with the host replaced, or `null` when no
+ *  host with the given `data-name` is found. */
+function injectIntoHost(
+	children: RendererNode[],
+	hostName: string,
+	headerEls: RendererNode[],
+): RendererNode[] | null {
+	const hostIdx = children.findIndex(
+		c => isTag(c) && c.attributes['data-name'] === hostName,
+	);
+	if (hostIdx === -1) return null;
+
+	const host = children[hostIdx] as SerializedTag;
+	const hostChildren = [...host.children];
+
+	// Place the projected zones after a leading header so they land below the
+	// heading/blurb. Default to the top of the host when no header is present.
+	let insertAt = 0;
+	for (let i = 0; i < hostChildren.length; i++) {
+		const hc = hostChildren[i];
+		if (isTag(hc) && (hc.name === 'header' || hc.attributes['data-section'] === 'header')) {
+			insertAt = i + 1;
+			break;
+		}
+	}
+	hostChildren.splice(insertAt, 0, ...headerEls);
+
+	const next = [...children];
+	next[hostIdx] = { ...host, children: hostChildren };
+	return next;
 }

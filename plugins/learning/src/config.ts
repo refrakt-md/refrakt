@@ -70,6 +70,10 @@ export const config: Record<string, RuneConfig> = {
 			metadata: { fields: ['prepTime', 'cookTime', 'servings', 'difficulty'] },
 		},
 		zoneLayouts: { metadata: 'definition-list' },
+		// Recipe hand-assembles content + media columns for its split layout;
+		// nest the projected metadata def-list inside the content column rather
+		// than emitting it as a third top-level grid child.
+		zoneHost: 'content',
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', ingredient: 'inline', step: 'inline', media: 'image' },
 	},
