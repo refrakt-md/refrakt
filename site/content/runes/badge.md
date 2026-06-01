@@ -7,7 +7,7 @@ description: Inline pill that flags a piece of content — status, category, rec
 
 Inline pill for flagging a piece of content. Useful for status indicators ("New", "Beta", "Deprecated"), commerce markers ("Popular", "Sale"), content categorisation ("Featured", "Sponsored"), identity ("Verified", "Staff"), recency ("Updated"), and arbitrary tagging ("Frontend", "Tutorial").
 
-The label is **children content** — free-form text, naturally localised, no hard-coded English. Visual variant comes from three orthogonal dimensions inherited from the universal metadata system: **sentiment** (positive / negative / caution / neutral), **rank** (primary / secondary), and **type** (status / category / quantity / temporal / tag / id). Themes that ship metadata-system CSS style every combination automatically.
+The label is **children content** — free-form text, naturally localised, no hard-coded English. Visual variant comes from two orthogonal dimensions inherited from the universal metadata system: **sentiment** (positive / negative / caution / neutral) and **type** (status / category / quantity / temporal / tag / id). Themes that ship metadata-system CSS style every combination automatically.
 
 ## Basic usage
 
@@ -38,17 +38,6 @@ The `sentiment` attribute controls the badge's tonal colour, drawn from the them
 
 {% /preview %}
 
-## Rank
-
-The `rank` attribute boosts emphasis for important badges. Omit it for the default treatment.
-
-{% preview source=true %}
-
-{% badge sentiment="positive" %}Standard{% /badge %}
-{% badge sentiment="positive" rank="primary" %}Primary{% /badge %}
-
-{% /preview %}
-
 ## Type
 
 The `type` attribute picks the badge's structural treatment from the metadata-system dimensions. Most badges are tags (the default); use `status` for state indicators, `temporal` for time-sensitive markers, `id` for identifier pills.
@@ -71,7 +60,6 @@ Common usage patterns. Authors pick the sentiment that matches intent — the la
 | Pre-release         | `{% badge sentiment="caution" %}Beta{% /badge %}`                        |
 | Coming soon         | `{% badge sentiment="neutral" %}Soon{% /badge %}`                        |
 | Deprecated API      | `{% badge sentiment="negative" %}Deprecated{% /badge %}`                 |
-| Popular tier        | `{% badge sentiment="positive" rank="primary" %}Popular{% /badge %}`     |
 | Sponsored content   | `{% badge sentiment="neutral" %}Sponsored{% /badge %}`                   |
 | Featured            | `{% badge sentiment="positive" %}Featured{% /badge %}`                   |
 | Verified identity   | `{% badge sentiment="positive" %}Verified{% /badge %}`                   |
@@ -84,10 +72,9 @@ Common usage patterns. Authors pick the sentiment that matches intent — the la
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `sentiment` | `positive` \| `negative` \| `caution` \| `neutral` | `neutral` | Tonal colour |
-| `rank` | `primary` \| `secondary` | — (omitted) | Emphasis boost |
 | `type` | `status` \| `category` \| `quantity` \| `temporal` \| `tag` \| `id` | `tag` | Structural treatment |
 
-All three attribute value sets match the universal metadata-system dimensions exactly — no new enums are introduced.
+Both attribute value sets match the universal metadata-system dimensions exactly — no new enums are introduced.
 
 ## Output
 
@@ -97,7 +84,6 @@ The identity transform emits a single `<span>` with the resolved data attributes
 <span class="rf-badge"
       data-rune="badge"
       data-meta-sentiment="positive"
-      data-meta-rank="primary"
       data-meta-type="tag">Popular</span>
 ```
 
