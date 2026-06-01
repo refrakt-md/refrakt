@@ -205,6 +205,17 @@ theme only.
 entity-header values share the same chip CSS. The chip is part of the
 metadata-dimension contract, not a per-rune style.
 
+**`metaType` is typography, not geometry.** `data-meta-type="id"`
+says "this is an identifier" (drives monospace font, copy semantics,
+a11y label hints). It does **not** say "render as a bordered
+monospace pill". The shape around a value (chip, plain text, gutter
+cell) comes from the layout primitive, not the type. The same field
+appears as primary-color text in an eyebrow's left slot and as a
+chip inside a `<dd>` of a def-list — no per-field config change.
+Today's metadata.css conflates the two; the rewrite splits them
+(`[data-meta-type="id"]` → typography only; geometry moves to
+`[data-layout]` selectors).
+
 -----
 
 ## Authoring Surface
@@ -341,29 +352,53 @@ authored sections automatically.
 
 ## Layout Primitives
 
-A closed vocabulary, each with a documented DOM shape and CSS contract.
+A closed vocabulary, each with a documented DOM shape, value-rendering
+rule, and CSS contract.
+
+**Value rendering is the layout's responsibility, not the field's.**
+A field's `metaType` is a typing hint (used for accessibility, copy
+semantics, monospace fonts, tabular numerals) — not a styling
+directive. The geometry (chip vs plain text vs gutter cell) comes
+from whichever layout primitive renders the field. The same field
+can appear as plain text in one layout and a chip in another without
+any per-field config change.
 
 ### `split`
 
-**Intent:** Eyebrow / contextual strip — two or more chips justified to
-opposite ends. No labels (visual position carries semantic). Used for
-identifier + status, breadcrumb + actions, etc.
+**Intent:** Eyebrow / contextual strip — two or more cells justified
+to opposite ends. No labels (visual position carries semantic). Used
+for identifier + status, breadcrumb + actions, etc.
+
+**Value rendering:** Left-side value = plain text (primary-color);
+right-side value = chip if the field carries `sentimentMap`,
+otherwise plain text. This produces the same visual a user would
+write manually in an authored `{% eyebrow %}` (text on the left,
+`{% badge %}` on the right). The chip emitted on the right is
+visually identical to the standalone `{% badge %}` rune.
 
 **DOM:**
 ```html
 <div class="rf-{block}__eyebrow" data-zone="eyebrow" data-layout="split">
-  <div data-name="eyebrow-left">
+  <div data-eyebrow-slot="left">
     <span data-meta-type="id" data-meta-rank="primary">WORK-051</span>
   </div>
-  <div data-name="eyebrow-right">
-    <span data-meta-type="status" data-meta-rank="primary"
+  <div data-eyebrow-slot="right">
+    <span class="rf-badge" data-meta-type="status"
+          data-meta-rank="primary"
           data-meta-sentiment="positive">done</span>
   </div>
 </div>
 ```
 
-**CSS contract:** `display: flex; justify-content: space-between;
-align-items: center; gap: 0.5rem`.
+The left-side `<span>` is plain text under Lumina's
+`[data-eyebrow-slot="left"]` CSS (`color: var(--rf-color-primary);
+font-weight: 500;` + monospace when `data-meta-type="id"`). The
+right-side child is the universal chip primitive — same class and
+DOM the `{% badge %}` rune emits — so the styling is shared, not
+duplicated.
+
+**CSS contract on the zone wrapper:** `display: flex;
+justify-content: space-between; align-items: center; gap: 0.5rem`.
 
 **Authoring:** `zones.eyebrow = { left: ['id'], right: ['status'] }`.
 Extends to N slots via `{ left, center, right }` or `{ slots: [...] }`
@@ -371,17 +406,24 @@ if needed.
 
 ### `chip-row`
 
-**Intent:** Today's secondary-header default — a flowing row of chips
-with optional labels. Good for at-a-glance summaries with 2–5 fields.
+**Intent:** Today's secondary-header default — a flowing row of
+chips with optional labels. Good for at-a-glance summaries with 2–5
+fields.
 
-**DOM:** (same as today's emit)
+**Value rendering:** Every field is rendered as a chip. The chip
+carries `data-meta-type` (for typography) and `data-meta-sentiment`
+(for tint, when sentiment is present). No bordered-pill geometry —
+the chip is the universal shape.
+
+**DOM:**
 ```html
 <div class="rf-{block}__metadata" data-zone="metadata" data-layout="chip-row">
-  <span data-meta-type="category" data-meta-sentiment="caution">
+  <span class="rf-badge" data-meta-type="category"
+        data-meta-sentiment="caution">
     <span data-meta-label>Priority:</span>
     <span data-meta-value>high</span>
   </span>
-  <span data-meta-type="quantity">
+  <span class="rf-badge" data-meta-type="quantity">
     <span data-meta-label>Complexity:</span>
     <span data-meta-value>moderate</span>
   </span>
@@ -389,15 +431,20 @@ with optional labels. Good for at-a-glance summaries with 2–5 fields.
 </div>
 ```
 
-**CSS contract:** `display: flex; flex-wrap: wrap; gap: 0.5rem`.
+**CSS contract on the zone wrapper:** `display: flex; flex-wrap:
+wrap; gap: 0.5rem`.
 
 ### `definition-list`
 
-**Intent:** Semantic term/description pairs for descriptive metadata.
-Better information density than chips when there are 5+ fields, and
-better a11y (`<dl>` announces as definition list to screen readers).
-Values that have sentiment (priority, status) render as chips inside
-the `<dd>`; values without sentiment render as plain text.
+**Intent:** Semantic term/description pairs for descriptive
+metadata. Better information density than chips when there are 5+
+fields, and better a11y (`<dl>` announces as definition list to
+screen readers).
+
+**Value rendering:** `<dd>` value = chip when the field carries
+`sentimentMap` (the chip lives inside the `<dd>` so the row layout
+isn't disrupted), otherwise plain text. The `<dt>` always renders
+the label.
 
 **DOM:**
 ```html
@@ -405,7 +452,8 @@ the `<dd>`; values without sentiment render as plain text.
   <div data-name="row">
     <dt data-meta-label>Priority</dt>
     <dd>
-      <span data-meta-type="category" data-meta-sentiment="caution"
+      <span class="rf-badge" data-meta-type="category"
+            data-meta-sentiment="caution"
             data-meta-rank="primary">high</span>
     </dd>
   </div>
@@ -421,15 +469,15 @@ the `<dd>`; values without sentiment render as plain text.
 </dl>
 ```
 
-**CSS contract:** `display: grid; grid-template-columns: max-content
-1fr; gap: 0.25rem 1rem`. Each `data-name="row"` is `display: contents`
-so the `<dt>` and `<dd>` participate in the outer grid.
+**CSS contract on the zone wrapper:** `display: grid;
+grid-template-columns: max-content 1fr; gap: 0.25rem 1rem`. Each
+`data-name="row"` is `display: contents` so the `<dt>` and `<dd>`
+participate in the outer grid.
 
-**Chip-or-text decision:** A field renders its value as a chip when its
-`metaType` is `status` or `category` (sentiment-bearing) AND its
-field declaration includes a `sentimentMap`. Everything else (id,
-quantity, temporal, tag, plain category without sentiment) renders as
-text inside the `<dd>` with the existing `data-meta-type` for typing.
+**Chip-or-text decision:** A field renders its value as a chip when
+it has a `sentimentMap`. Everything else renders as plain text
+inside the `<dd>` carrying the field's `data-meta-type` for
+typography (monospace for ids, tabular nums for quantities, etc.).
 
 ### Future primitives (out of v1 scope, declared for the vocabulary)
 
@@ -531,19 +579,36 @@ layout-level.
 
 ## Lumina Changes
 
-`packages/lumina/styles/dimensions/metadata.css`:
+The CSS rewrite is the "type is typography, layout is geometry"
+split.
 
-- Replace the bordered-pill base with the chip look (no border,
-  sentiment-tinted background via `color-mix`, compact padding).
-  `status` type keeps its border as the high-emphasis status pill.
-- Add CSS for `[data-layout="split"]` (flex justify-between),
-  `[data-layout="chip-row"]` (flex wrap), and `[data-layout=
-  "definition-list"]` (grid + display:contents rows).
+`packages/lumina/styles/dimensions/metadata.css` — strip geometry,
+keep typography:
 
-`packages/lumina/styles/runes/badge.css`:
+- Remove pill/border/padding from base `[data-meta-type=…]`
+  selectors. Keep only typography hints:
+  - `[data-meta-type="id"]` → `font-family: var(--rf-font-mono)`
+  - `[data-meta-type="quantity"]` → `font-variant-numeric:
+    tabular-nums`
+  - `[data-meta-type="temporal"]` → `font-variant-numeric:
+    tabular-nums`
+  - Other types: no base styling (typography comes from inheritance).
+- Move geometry to layout selectors:
+  - `[data-zone] [data-layout="chip-row"] > * { /* chip styling */ }`
+  - `[data-zone] [data-layout="split"] [data-eyebrow-slot="left"]
+    { color: var(--rf-color-primary); … }`
+  - `[data-zone] [data-layout="definition-list"] { display: grid; …}`
+- Sentiment rules unchanged (`[data-meta-sentiment]` still drives
+  `--meta-color`).
 
-- Delete. The chip is now the universal metadata-dimension base; the
-  badge rune doesn't need its own override.
+`packages/lumina/styles/runes/badge.css` — promote, then unify:
+
+- The chip look (no border, soft sentiment-tinted background, compact
+  padding) becomes the universal `.rf-badge` class.
+- Chips emitted by layout primitives (`chip-row` and the right-slot
+  of `split`, def-list `<dd>` with sentiment) carry `class="rf-badge"`
+  in addition to their `data-meta-*` attributes — same visual as the
+  standalone `{% badge %}` rune.
 
 `packages/lumina/styles/runes/work.css` (and bug, decision, spec,
 milestone):
@@ -553,6 +618,90 @@ milestone):
   `split` layout owns this).
 - Keep rune-specific touches: complexity dots, assignee `@` prefix,
   body section dividers.
+
+Linked-eyebrow special case (preserves today's hero behaviour):
+
+- `[data-zone="eyebrow"] a` → primary-color underline treatment.
+  Works for any eyebrow whose authored content is an `<a>`,
+  regardless of source. The existing hero pattern (e.g. site-index
+  hero with a link as eyebrow text) inherits this for free.
+
+## Zone Overrides — theme power
+
+Themes can rebalance content across zones for a specific rune. This
+is **Level 2** power in the spec's terms: theme can move fields
+between zones, but cannot invent new zone names or change zone
+semantics. The vocabulary stays closed.
+
+### Mechanism
+
+Plugin's `zones` declaration is the **default placement**. Theme
+provides per-rune overrides via `zones.{RuneName}` on the theme
+config. Each override **replaces** the corresponding plugin zone
+wholesale — no partial merge inside a zone (keeps the mental model
+simple).
+
+```ts
+// Plugin (storytelling)
+Character: {
+  metaFields: {
+    role:    { metaType: 'category', label: 'Role' },
+    status:  { metaType: 'status',   label: 'Status',
+               sentimentMap: { alive: 'positive', dead: 'negative',
+                               missing: 'caution', unknown: 'neutral' } },
+    age:     { metaType: 'quantity', label: 'Age' },
+    faction: { metaType: 'tag',      label: 'Faction',
+               condition: 'faction' },
+    realm:   { metaType: 'tag',      label: 'Realm',
+               condition: 'realm' },
+  },
+  zones: {                              // plugin's default placement
+    eyebrow:  { left: ['role'], right: ['status'] },
+    metadata: { fields: ['age', 'faction', 'realm'] },
+  },
+}
+
+// Lumina — accepts plugin defaults, only declares layouts
+zoneLayouts: { eyebrow: 'split', metadata: 'definition-list' }
+// Renders: `Antagonist | Alive` → `# Veshna` → def-list of age / faction / realm
+
+// Encyclopaedic theme — rebalances Character's fields
+zones: {
+  Character: {
+    eyebrow: null,                                                   // suppress
+    metadata: { fields: ['role', 'status', 'age', 'faction', 'realm'] },
+  },
+}
+// Renders: no eyebrow → `# Veshna` → def-list of all five fields including
+// role + status (with status rendering as a sentiment chip per def-list rules)
+```
+
+### Rules
+
+- **Omit a zone** in theme override → inherit plugin default.
+- **`null`** in theme override → suppress the zone (no rendering).
+- **Object** in theme override → replace the plugin zone wholesale.
+- **New zone the plugin didn't declare** → allowed, but only if
+  every field listed exists in the plugin's `metaFields`. Engine
+  errors at config time if the theme references unknown fields.
+- **Field reused across zones** → allowed. The same field can
+  appear in both `eyebrow` and `metadata` if the theme wants
+  redundancy (e.g. `id` on eyebrow AND in the metadata def-list as
+  copy-fodder). Engine doesn't error; it's a design choice.
+
+### Resolution order
+
+Configs layer plugin → theme → site → page-frontmatter. Each
+subsequent layer can override per-rune zone declarations from the
+previous. Site-level overrides are useful for "this whole site
+suppresses entity eyebrows" without changing plugin or theme code;
+page-frontmatter overrides are useful for one-off "this page wants
+the alternate layout" cases.
+
+The chain resolution semantic is **per zone**: later layers
+replace specific zones, not the whole `zones.{RuneName}` block.
+This way a site can suppress just the eyebrow without losing the
+theme's metadata override.
 
 ## Plan Plugin Changes
 
@@ -592,9 +741,24 @@ milestone):
   Tests in `packages/runes/test/deflist.test.ts` cover the parsing,
   inline-rune composition (badges, refs inside `<dd>`), and the
   fallback when items don't follow the `**Term:**` convention.
-- [ ] Lumina's metadata.css adopts the chip look as the universal base.
-  `runes/badge.css` removed. CSS coverage tests in
-  `packages/lumina/test/css-coverage.test.ts` updated.
+- [ ] **`metaType` typography / layout geometry split.** Lumina's
+  `dimensions/metadata.css` is rewritten so `[data-meta-type=…]`
+  selectors carry only typography hints (monospace, tabular nums,
+  etc.). Geometry (chip padding, border, layout) moves to
+  `[data-layout=…]` selectors. Existing CSS coverage tests updated;
+  the universal `.rf-badge` class becomes the chip primitive,
+  emitted by layout primitives + the standalone `{% badge %}` rune.
+  `runes/badge.css` consolidated into the metadata-dimension base.
+- [ ] **Zone overrides supported.** Theme can override per-zone via
+  `zones.{RuneName}.{zoneName}`. `null` suppresses; object replaces;
+  omit inherits plugin default. New zones (not declared by plugin)
+  allowed when every referenced field exists in `metaFields`;
+  engine errors otherwise. Tests in `engine-zones.test.ts` cover
+  replace, suppress, inherit, and unknown-field-error cases.
+- [ ] **Linked-eyebrow CSS preserved.** Lumina styles `[data-zone=
+  "eyebrow"] a` with the primary-color underline treatment (matches
+  today's hero behaviour). Tested visually on the site-index hero;
+  no regressions.
 - [ ] Plan plugin migrated. Work / bug / decision / spec / milestone
   all declare `metaFields` + `zones`, render with the new layouts on
   Lumina, and pass the existing snapshot/HTML tests with the new DOM
@@ -679,5 +843,16 @@ milestone):
   whole item as a `<dd>` with no `<dt>`, (b) error at build, (c) emit
   the item as a plain `<li>` outside the `<dl>`? Probably (a) for
   authoring forgiveness, but worth deciding.
+- **Partial-merge syntax for zone overrides.** v1 says theme override
+  replaces a zone wholesale. Reasonable shortcut for "add `lifespan`
+  to the right of Character's eyebrow without restating `left`"
+  syntax? Something like `zones.Character.eyebrow.right.append =
+  ['lifespan']`? Probably defer — wholesale replacement covers 95%
+  of cases and the partial-merge syntax adds confusion.
+- **Site / page-frontmatter override surface.** The spec proposes
+  plugin → theme → site → page-frontmatter as the layer chain. Is
+  page-frontmatter override actually useful, or does that put too
+  much theming power in content authors' hands? Site-level feels
+  important; page-level is more speculative.
 
 {% /spec %}
