@@ -216,7 +216,7 @@ appears as primary-color text in an eyebrow's left slot and as a
 chip inside a `<dd>` of a def-list — no per-field config change.
 Today's metadata.css conflates the two; the rewrite splits them
 (`[data-meta-type="id"]` → typography only; geometry moves to
-`[data-layout]` selectors).
+`[data-zone-layout]` selectors).
 
 -----
 
@@ -385,16 +385,36 @@ need to declare `preamble` explicitly.
 
 #### Custom ordering — opt-in escape hatch
 
-A rune that genuinely needs unusual ordering declares an explicit
-`order: [...]` field listing the positions in render order:
+A rune that genuinely needs unusual ordering OR a position outside
+the standard vocabulary declares an explicit `order: [...]` field
+listing the positions in render order:
 
 ```ts
 WeirdRune: {
-  zones: { ... },
-  sections: { ... },
-  order: ['metadata', 'eyebrow', 'title', 'body'],  // explicit override
+  zones: {
+    eyebrow: { left: ['id'], right: ['status'] },
+    sidebar: { fields: ['related-links'] },           // custom position
+  },
+  sections: { title: 'title', body: 'body' },
+  order: ['eyebrow', 'sidebar', 'title', 'body'],     // explicit
 }
 ```
+
+Standard positions retain their canonical CSS class
+(`.rf-{block}__eyebrow`); custom positions get an
+auto-derived class from the position name
+(`.rf-{block}__sidebar`). Themes can style custom positions
+specifically or rely on the engine's default bare-wrapper
+styling — no theme-default layout primitive applies, so the
+rune-author is on the hook for picking a fitting layout
+(`zoneLayouts.WeirdRune.sidebar = '…'`).
+
+This gives a closed canonical vocabulary for the common case
+(everyone gets the same shared positions, themes know what to
+style) + a graceful escape hatch for the long tail (custom
+positions live per-rune without polluting the shared set). New
+*first-class* positions — ones every theme should know to style
+— require a spec update; per-rune custom positions don't.
 
 Most runes won't need this. The vocabulary's canonical order
 covers the design pattern of nearly every entity, card, and hero
@@ -436,7 +456,7 @@ visually identical to the standalone `{% badge %}` rune.
 
 **DOM:**
 ```html
-<div class="rf-{block}__eyebrow" data-zone="eyebrow" data-layout="split">
+<div class="rf-{block}__eyebrow" data-zone="eyebrow" data-zone-layout="split">
   <div data-eyebrow-slot="left">
     <span data-meta-type="id" data-meta-rank="primary">WORK-051</span>
   </div>
@@ -475,7 +495,7 @@ the chip is the universal shape.
 
 **DOM:**
 ```html
-<div class="rf-{block}__metadata" data-zone="metadata" data-layout="chip-row">
+<div class="rf-{block}__metadata" data-zone="metadata" data-zone-layout="chip-row">
   <span class="rf-badge" data-meta-type="category"
         data-meta-sentiment="caution">
     <span data-meta-label>Priority:</span>
@@ -506,7 +526,7 @@ the label.
 
 **DOM:**
 ```html
-<dl class="rf-{block}__metadata" data-zone="metadata" data-layout="definition-list">
+<dl class="rf-{block}__metadata" data-zone="metadata" data-zone-layout="definition-list">
   <div data-name="row">
     <dt data-meta-label>Priority</dt>
     <dd>
@@ -576,7 +596,7 @@ Body content
 ```
 
 DOM identical to a projected `zones.eyebrow = { left, right }` —
-`<div data-zone="eyebrow" data-layout="split">…</div>` with the two
+`<div data-zone="eyebrow" data-zone-layout="split">…</div>` with the two
 slots. Composable inside any container rune; renders as standalone
 when used in plain prose.
 
@@ -652,10 +672,10 @@ keep typography:
     tabular-nums`
   - Other types: no base styling (typography comes from inheritance).
 - Move geometry to layout selectors:
-  - `[data-zone] [data-layout="chip-row"] > * { /* chip styling */ }`
-  - `[data-zone] [data-layout="split"] [data-eyebrow-slot="left"]
+  - `[data-zone] [data-zone-layout="chip-row"] > * { /* chip styling */ }`
+  - `[data-zone] [data-zone-layout="split"] [data-eyebrow-slot="left"]
     { color: var(--rf-color-primary); … }`
-  - `[data-zone] [data-layout="definition-list"] { display: grid; …}`
+  - `[data-zone] [data-zone-layout="definition-list"] { display: grid; …}`
 - Sentiment rules unchanged (`[data-meta-sentiment]` still drives
   `--meta-color`).
 
@@ -782,11 +802,14 @@ theme's metadata override.
   `split`, `chip-row`, `definition-list`. New tests in
   `packages/transform/test/engine-zones.test.ts` cover each layout's
   DOM contract.
-- [ ] **Mutual-exclusion validation.** Engine errors at config time
-  when a rune declares both `zones.eyebrow` and `sections.eyebrow`
-  (or any other slot name used by both `zones` and `sections`).
-  Test in `engine-zones.test.ts` confirms the error message names
-  the conflicting slot.
+- [ ] **Mutual-exclusion validation at `mergeThemeConfig`.** After
+  merging plugin + theme + site configs, the engine walks the
+  resolved config's `zones` + `sections` and set-intersects their
+  key names. Any non-empty intersection is a build error naming
+  both the rune and the conflicting position (e.g. "`Work` declares
+  both `zones.eyebrow` and `sections.eyebrow` — pick one source per
+  slot"). Test in `engine-zones.test.ts` confirms the error fires
+  on conflict and stays silent on the all-clear case.
 - [ ] Backwards-compat shim renders legacy `slots: [...]` +
   `structure: { ... }` rune configs via the matching layout
   primitives — `header-primary` → `split` (when children fit a
@@ -814,14 +837,17 @@ theme's metadata override.
   where each item starts with `**Term:**` (or `<strong>Term:</strong>`
   in the parsed AST) as a `<dt>` + `<dd>` pair. Emits the same DOM
   as a projected metadata zone with the `definition-list` layout.
-  Tests in `packages/runes/test/deflist.test.ts` cover the parsing,
-  inline-rune composition (badges, refs inside `<dd>`), and the
-  fallback when items don't follow the `**Term:**` convention.
+  **Fallback when an item lacks the `**Term:**` prefix:** emit an
+  empty `<dt>` + the item's full content in `<dd>` AND a
+  build-time warning naming the line number. Tests in
+  `packages/runes/test/deflist.test.ts` cover the parsing,
+  inline-rune composition (badges, refs inside `<dd>`), the
+  empty-dt fallback rendering, and the warning emission.
 - [ ] **`metaType` typography / layout geometry split.** Lumina's
   `dimensions/metadata.css` is rewritten so `[data-meta-type=…]`
   selectors carry only typography hints (monospace, tabular nums,
   etc.). Geometry (chip padding, border, layout) moves to
-  `[data-layout=…]` selectors. Existing CSS coverage tests updated;
+  `[data-zone-layout=…]` selectors. Existing CSS coverage tests updated;
   the universal `.rf-badge` class becomes the chip primitive,
   emitted by layout primitives + the standalone `{% badge %}` rune.
   `runes/badge.css` consolidated into the metadata-dimension base.
@@ -887,58 +913,63 @@ theme's metadata override.
   fits).
 - {% ref "SPEC-068" /%} — metadata dimension contract.
 
-## Open Questions
+## Resolutions
 
-- **`{% chiprow %}` composable rune.** `{% eyebrow %}` and
-  `{% deflist %}` give authoring handles for the `split` and
-  `definition-list` primitives. The `chip-row` primitive doesn't get
-  one in v1 — the existing pattern of inlining multiple `{% badge %}`s
-  is already an authoring handle for chip-row-ish shapes. A dedicated
-  `{% chiprow %}` would mostly add wrapping / spacing guarantees, not
-  new capability. Worth revisiting once a concrete authoring need
-  appears.
-- **Vocabulary scope.** Does v1 ship `split` + `chip-row` +
-  `definition-list`, or also include `table`? My instinct says ship
-  three and add `table` when a concrete consumer asks for it.
-- **Eyebrow slot count.** `split` is documented as 2-slot (left,
-  right). Some designs want 3-slot (left, center, right) — worth
-  supporting now or punt?
-- **Theme-level vs rune-level defaults.** The proposal allows both
-  (`zoneLayouts.eyebrow` is theme-wide, `zoneLayouts.Work.eyebrow`
-  overrides per-rune). Is that the right granularity, or should it
-  always be per-rune?
-- **Closed vocabulary scope.** The position vocabulary
-  (`eyebrow`, `title`, `blurb`, `metadata`, `body`) covers every
-  rune we've stress-tested against (plan entities, card, recipe,
-  hero, character). Worth declaring it formally closed (any
-  extension goes through a spec update) or leaving it open so
-  plugins can register new positions? Probably formally closed —
-  same logic as the layout primitive vocabulary; new positions
-  are vocabulary changes, not plugin config.
-- **CSS namespacing of `data-layout`.** Should `data-layout="split"`
-  conflict-check against existing `data-layout` attributes used by
-  other runes (e.g. `gallery`)? Probably fine since the engine scopes
-  them to zone elements, but worth verifying.
-- **Mutual-exclusion validation timing.** Should the
-  `zones.eyebrow` + `sections.eyebrow` conflict be caught at
-  `mergeThemeConfig` time (synchronous, fails the build with a clear
-  error) or only at pipeline preprocess time? Build-time feels right
-  but means the validator needs the full merged config to check.
-- **`{% deflist %}` authoring fallback.** When a list item inside
-  `{% deflist %}` doesn't start with `**Term:**`, do we (a) treat the
-  whole item as a `<dd>` with no `<dt>`, (b) error at build, (c) emit
-  the item as a plain `<li>` outside the `<dl>`? Probably (a) for
-  authoring forgiveness, but worth deciding.
-- **Partial-merge syntax for zone overrides.** v1 says theme override
-  replaces a zone wholesale. Reasonable shortcut for "add `lifespan`
-  to the right of Character's eyebrow without restating `left`"
-  syntax? Something like `zones.Character.eyebrow.right.append =
-  ['lifespan']`? Probably defer — wholesale replacement covers 95%
-  of cases and the partial-merge syntax adds confusion.
-- **Site / page-frontmatter override surface.** The spec proposes
-  plugin → theme → site → page-frontmatter as the layer chain. Is
-  page-frontmatter override actually useful, or does that put too
-  much theming power in content authors' hands? Site-level feels
-  important; page-level is more speculative.
+Decisions baked into the spec, captured here so the rationale isn't
+lost to git history:
+
+- **Vocabulary scope** — v1 ships `split`, `chip-row`,
+  `definition-list`. `table`, `inline-summary`, `sticky-bar` are
+  reserved vocabulary slots without v1 implementation; add when a
+  concrete consumer asks.
+- **Eyebrow slot count** — 2 slots (`left`, `right`) in v1. The
+  `split` layout's authoring extends to N slots later if needed; no
+  reason to over-build for hypothetical center-slot designs.
+- **Theme-level + rune-level defaults** — keep both granularities.
+  Theme-wide `zoneLayouts.eyebrow = 'split'` covers the common case;
+  per-rune `zoneLayouts.Work.eyebrow = '…'` is the override
+  escape-hatch. Forcing per-rune everywhere makes theme configs
+  N×M big for no real benefit.
+- **CSS namespacing** — use `data-zone-layout` (not `data-layout`)
+  to avoid collision with existing `data-layout` consumers like
+  `gallery`. Selectors target `[data-zone-layout="split"]` etc.
+- **Mutual-exclusion validation timing** — config-load time, in
+  `mergeThemeConfig`. Walk merged config's `zones` + `sections`,
+  set-intersect their key names, error with the conflicting slot
+  name in the message. Fails the build immediately at the source.
+- **`{% deflist %}` authoring fallback** — when a list item lacks
+  the `**Term:**` prefix, emit empty `<dt>` + full content in
+  `<dd>` AND emit a build warning naming the line number. Strict
+  mode (`--strict-deflist` or similar) can promote to error per
+  project preference. No mixed `<li>` / `<dl>` semantics.
+- **Closed vocabulary, with custom-position escape hatch** —
+  standard positions (`eyebrow`, `title`, `blurb`, `metadata`,
+  `body`) are formally closed; extending them requires a spec
+  update. A rune that needs a custom position declares it via the
+  `order: [...]` field and uses the custom name in `zones` /
+  `sections`. Custom positions get a generic `.rf-{block}__{name}`
+  CSS class auto-emitted; themes can style them specifically or
+  rely on the engine's default bare-wrapper styling. This gives a
+  closed canonical vocabulary for the common case + a graceful
+  escape hatch for the long tail without polluting the shared set.
+
+## Deferred
+
+Open questions intentionally not answered in v1 — revisit when
+concrete need emerges:
+
+- **`{% chiprow %}` composable rune** — `chip-row` doesn't get a
+  dedicated authoring handle; inlining multiple `{% badge %}`s
+  covers the common case. Add if a wrapping / spacing pattern
+  emerges across multiple plugins.
+- **Partial-merge syntax for zone overrides** — `zones.Character.
+  eyebrow.right.append = […]` style remains out of scope.
+  Wholesale per-zone replacement covers >95% of cases. Themes copy
+  the plugin default and modify when they need partial changes.
+- **Site / page-frontmatter override surface** — the layer chain in
+  v1 is plugin → theme. Site config + page-frontmatter overrides
+  are deferred; site is the more important of the two but neither
+  has a concrete consumer yet. Spec-level override mechanism is
+  the same when added (per-zone replacement, `null` to suppress).
 
 {% /spec %}
