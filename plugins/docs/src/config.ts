@@ -23,9 +23,9 @@ export const config: Record<string, RuneConfig> = {
 			header: {
 				tag: 'div', before: true,
 				children: [
-					{ tag: 'span', ref: 'method', metaText: 'method', metaType: 'category', metaRank: 'primary', sentimentMap: { GET: 'positive', POST: 'neutral', PUT: 'neutral', PATCH: 'caution', DELETE: 'negative' } },
+					{ tag: 'span', ref: 'method', metaText: 'method', metaType: 'category', sentimentMap: { GET: 'positive', POST: 'neutral', PUT: 'neutral', PATCH: 'caution', DELETE: 'negative' } },
 					{ tag: 'code', ref: 'path', metaText: 'path' },
-					{ tag: 'span', ref: 'auth', metaText: 'auth', condition: 'auth', metaType: 'status', metaRank: 'secondary' },
+					{ tag: 'span', ref: 'auth', metaText: 'auth', condition: 'auth', metaType: 'status' },
 				],
 			},
 		},
@@ -47,10 +47,10 @@ export const config: Record<string, RuneConfig> = {
 			header: {
 				tag: 'div', before: true,
 				children: [
-					{ tag: 'span', ref: 'kind-badge', metaText: 'kind', metaType: 'category', metaRank: 'primary' },
-					{ tag: 'span', ref: 'lang-badge', metaText: 'lang', metaType: 'category', metaRank: 'secondary' },
-					{ tag: 'span', ref: 'since-badge', metaText: 'since', label: 'Since:', condition: 'since', metaType: 'temporal', metaRank: 'secondary' },
-					{ tag: 'span', ref: 'deprecated-badge', metaText: 'deprecated', label: 'Deprecated:', condition: 'deprecated', metaType: 'status', metaRank: 'primary', sentimentMap: { true: 'negative' } },
+					{ tag: 'span', ref: 'kind-badge', metaText: 'kind', metaType: 'category' },
+					{ tag: 'span', ref: 'lang-badge', metaText: 'lang', metaType: 'category' },
+					{ tag: 'span', ref: 'since-badge', metaText: 'since', label: 'Since:', condition: 'since', metaType: 'temporal' },
+					{ tag: 'span', ref: 'deprecated-badge', metaText: 'deprecated', label: 'Deprecated:', condition: 'deprecated', metaType: 'status', sentimentMap: { true: 'negative' } },
 					{ tag: 'a', ref: 'source-link', condition: 'source', attrs: { href: { fromModifier: 'source' } }, children: ['Source'] },
 				],
 			},

@@ -19,7 +19,7 @@ import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 export type LayoutPrimitive = 'split' | 'chip-row' | 'definition-list';
 
 /** Pure data manifest entry for a meta-bearing field. Describes the
- *  field's domain semantics (type, rank, sentiment, label) independent
+ *  field's domain semantics (type, sentiment, label) independent
  *  of which layout primitive renders it. The same field can appear as
  *  primary-color text in an eyebrow's left slot and as a chip in a
  *  def-list's `<dd>` — no per-field config change. */
@@ -29,9 +29,6 @@ export interface MetaField {
 	 *  `quantity` / `temporal`), NOT geometry. The shape around the
 	 *  value (chip vs plain text) comes from the layout primitive. */
 	metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id';
-
-	/** Semantic metadata rank — emits `data-meta-rank` attribute. */
-	metaRank?: 'primary' | 'secondary';
 
 	/** Human-readable label emitted as `<span data-meta-label>`. Used
 	 *  by `chip-row` (inside the chip) and `definition-list` (as the
@@ -121,7 +118,7 @@ export interface RuneConfig {
 
 	/** Pure data manifest for meta-bearing fields — domain semantics only.
 	 *  Keyed by field name (the same name used in `zones.*.left/right/fields`
-	 *  arrays). Each field declares its metaType, metaRank, label, sentiment
+	 *  arrays). Each field declares its metaType, label, sentiment
 	 *  map, and optional condition for conditional rendering. The engine
 	 *  reads this manifest at zone resolution time to materialise field
 	 *  descriptors that layout primitives render. */
@@ -322,9 +319,6 @@ export interface StructureEntry {
 	/** Semantic metadata type — emits `data-meta-type` attribute.
 	 *  Values: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id' */
 	metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id';
-	/** Semantic metadata rank — emits `data-meta-rank` attribute.
-	 *  Values: 'primary' | 'secondary' */
-	metaRank?: 'primary' | 'secondary';
 	/** Maps modifier values to sentiment — emits `data-meta-sentiment` when the
 	 *  current modifier value (from `metaText`) has a matching entry.
 	 *  E.g., `{ accepted: 'positive', rejected: 'negative' }` */

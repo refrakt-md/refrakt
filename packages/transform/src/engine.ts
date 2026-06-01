@@ -865,9 +865,6 @@ function buildStructureElement(
 		const existingClass = baseAttrs.class || '';
 		baseAttrs.class = existingClass ? `rf-badge ${existingClass}` : 'rf-badge';
 	}
-	if (entry.metaRank) {
-		baseAttrs['data-meta-rank'] = entry.metaRank;
-	}
 	if (entry.sentimentMap && entry.metaText) {
 		const rawValue = modifierValues[entry.metaText];
 		if (rawValue) {
@@ -1000,7 +997,6 @@ function buildChip(
 	const { field, value } = resolved;
 	const attrs: Record<string, string> = { class: 'rf-badge' };
 	if (field.metaType) attrs['data-meta-type'] = field.metaType;
-	if (field.metaRank) attrs['data-meta-rank'] = field.metaRank;
 	if (field.sentimentMap) {
 		const sentiment = field.sentimentMap[value];
 		if (sentiment) attrs['data-meta-sentiment'] = sentiment;
@@ -1026,7 +1022,6 @@ function buildPlainValue(resolved: ResolvedField): SerializedTag {
 	const { field, value } = resolved;
 	const attrs: Record<string, string> = {};
 	if (field.metaType) attrs['data-meta-type'] = field.metaType;
-	if (field.metaRank) attrs['data-meta-rank'] = field.metaRank;
 	const tag = field.tag ?? 'span';
 	if (tag === 'time' && value) attrs.datetime = value;
 	return makeTag(tag, attrs, [value]);

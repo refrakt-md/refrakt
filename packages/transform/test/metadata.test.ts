@@ -55,36 +55,6 @@ describe('metadata dimensions', () => {
 		expect(badge!.attributes['data-meta-sentiment']).toBeUndefined();
 	});
 
-	it('emits data-meta-rank on a structure entry with metaRank', () => {
-		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
-			runes: {
-				Recipe: {
-					block: 'recipe',
-					modifiers: { servings: { source: 'meta' } },
-					structure: {
-						servings: {
-							tag: 'span',
-							metaText: 'servings',
-							metaType: 'quantity',
-							metaRank: 'secondary',
-						},
-					},
-				},
-			},
-		};
-		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'recipe' }, [
-			makeTag('meta', { 'data-field': 'servings', content: '4' }, []),
-		]);
-
-		const result = asTag(transform(tag));
-		const badge = findByDataName(result, 'servings');
-		expect(badge).toBeDefined();
-		expect(badge!.attributes['data-meta-type']).toBe('quantity');
-		expect(badge!.attributes['data-meta-rank']).toBe('secondary');
-	});
-
 	it('emits data-meta-sentiment when modifier value matches sentimentMap', () => {
 		const config: ThemeConfig = {
 			prefix: 'rf', tokenPrefix: '--rf', icons: {},
@@ -97,7 +67,6 @@ describe('metadata dimensions', () => {
 							tag: 'span',
 							metaText: 'status',
 							metaType: 'status',
-							metaRank: 'primary',
 							sentimentMap: {
 								done: 'positive',
 								blocked: 'negative',
@@ -118,7 +87,6 @@ describe('metadata dimensions', () => {
 		const badge = findByDataName(result, 'status');
 		expect(badge).toBeDefined();
 		expect(badge!.attributes['data-meta-type']).toBe('status');
-		expect(badge!.attributes['data-meta-rank']).toBe('primary');
 		expect(badge!.attributes['data-meta-sentiment']).toBe('positive');
 	});
 
@@ -167,7 +135,6 @@ describe('metadata dimensions', () => {
 							tag: 'span',
 							metaText: 'prepTime',
 							metaType: 'temporal',
-							metaRank: 'primary',
 							transform: 'duration',
 						},
 					},
@@ -183,7 +150,6 @@ describe('metadata dimensions', () => {
 		const badge = findByDataName(result, 'prep-time');
 		expect(badge).toBeDefined();
 		expect(badge!.attributes['data-meta-type']).toBe('temporal');
-		expect(badge!.attributes['data-meta-rank']).toBe('primary');
 		// Text should be transformed by the duration transform
 		expect(badge!.children[0]).toBe('30m');
 	});
@@ -200,7 +166,6 @@ describe('metadata dimensions', () => {
 							tag: 'span',
 							metaText: 'category',
 							metaType: 'tag',
-							metaRank: 'secondary',
 						},
 					},
 				},
@@ -215,7 +180,6 @@ describe('metadata dimensions', () => {
 		const badge = findByDataName(result, 'category');
 		expect(badge).toBeDefined();
 		expect(badge!.attributes['data-meta-type']).toBe('tag');
-		expect(badge!.attributes['data-meta-rank']).toBe('secondary');
 	});
 
 	it('emits id metaType correctly', () => {
@@ -230,7 +194,6 @@ describe('metadata dimensions', () => {
 							tag: 'span',
 							metaText: 'id',
 							metaType: 'id',
-							metaRank: 'secondary',
 						},
 					},
 				},
@@ -245,7 +208,6 @@ describe('metadata dimensions', () => {
 		const badge = findByDataName(result, 'id');
 		expect(badge).toBeDefined();
 		expect(badge!.attributes['data-meta-type']).toBe('id');
-		expect(badge!.attributes['data-meta-rank']).toBe('secondary');
 		expect(badge!.children[0]).toBe('SPEC-024');
 	});
 
@@ -326,7 +288,6 @@ describe('metadata dimensions', () => {
 							tag: 'span',
 							metaText: 'method',
 							metaType: 'category',
-							metaRank: 'primary',
 							sentimentMap: {
 								GET: 'positive',
 								DELETE: 'negative',
@@ -350,7 +311,6 @@ describe('metadata dimensions', () => {
 		const badge = findByDataName(result, 'method');
 		expect(badge).toBeDefined();
 		expect(badge!.attributes['data-meta-type']).toBe('category');
-		expect(badge!.attributes['data-meta-rank']).toBe('primary');
 		expect(badge!.attributes['data-meta-sentiment']).toBe('positive');
 	});
 });

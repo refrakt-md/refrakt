@@ -3,16 +3,14 @@ import type { RuneConfig } from '@refrakt-md/transform';
 /** Shared `eyebrow + status` rendering — every plan entity declares
  *  these two fields on its eyebrow zone. Pulled out so the per-entity
  *  metaFields blocks only carry the entity-specific extras. */
-const idField = { metaType: 'id' as const, metaRank: 'primary' as const };
+const idField = { metaType: 'id' as const };
 const tagField = (label: string, condition?: string) => ({
 	metaType: 'tag' as const,
-	metaRank: 'secondary' as const,
 	label,
 	...(condition ? { condition } : {}),
 });
 const timeField = (label: string, condition?: string) => ({
 	metaType: 'temporal' as const,
-	metaRank: 'secondary' as const,
 	label,
 	tag: 'time',
 	...(condition ? { condition } : {}),
@@ -34,11 +32,11 @@ export const config: Record<string, RuneConfig> = {
 		metaFields: {
 			id: idField,
 			status: {
-				metaType: 'status', metaRank: 'primary',
+				metaType: 'status',
 				sentimentMap: { draft: 'neutral', review: 'caution', accepted: 'positive', superseded: 'caution', deprecated: 'negative' },
 			},
-			version: { metaType: 'tag', metaRank: 'secondary', label: 'Version', condition: 'version' },
-			supersedes: { metaType: 'id', metaRank: 'secondary', label: 'Supersedes', condition: 'supersedes' },
+			version: { metaType: 'tag', label: 'Version', condition: 'version' },
+			supersedes: { metaType: 'id', label: 'Supersedes', condition: 'supersedes' },
 			created: timeField('Created', 'created'),
 			modified: timeField('Modified', 'modified'),
 			tags: tagField('Tags', 'tags'),
@@ -74,17 +72,17 @@ export const config: Record<string, RuneConfig> = {
 		metaFields: {
 			id: idField,
 			status: {
-				metaType: 'status', metaRank: 'primary',
+				metaType: 'status',
 				sentimentMap: { draft: 'neutral', ready: 'neutral', 'in-progress': 'neutral', review: 'caution', done: 'positive', blocked: 'negative' },
 			},
 			priority: {
-				metaType: 'category', metaRank: 'primary', label: 'Priority',
+				metaType: 'category', label: 'Priority',
 				sentimentMap: { critical: 'negative', high: 'caution', medium: 'neutral', low: 'neutral' },
 			},
-			complexity: { metaType: 'quantity', metaRank: 'secondary', label: 'Complexity' },
+			complexity: { metaType: 'quantity', label: 'Complexity' },
 			assignee: tagField('Assignee', 'assignee'),
 			milestone: tagField('Milestone', 'milestone'),
-			source: { metaType: 'id', metaRank: 'secondary', label: 'Source', condition: 'source' },
+			source: { metaType: 'id', label: 'Source', condition: 'source' },
 			created: timeField('Created', 'created'),
 			modified: timeField('Modified', 'modified'),
 			tags: tagField('Tags', 'tags'),
@@ -119,16 +117,16 @@ export const config: Record<string, RuneConfig> = {
 		metaFields: {
 			id: idField,
 			status: {
-				metaType: 'status', metaRank: 'primary',
+				metaType: 'status',
 				sentimentMap: { reported: 'neutral', confirmed: 'caution', 'in-progress': 'neutral', fixed: 'positive', wontfix: 'neutral', duplicate: 'neutral' },
 			},
 			severity: {
-				metaType: 'category', metaRank: 'primary', label: 'Severity',
+				metaType: 'category', label: 'Severity',
 				sentimentMap: { critical: 'negative', major: 'caution', minor: 'neutral', trivial: 'neutral' },
 			},
 			assignee: tagField('Assignee', 'assignee'),
 			milestone: tagField('Milestone', 'milestone'),
-			source: { metaType: 'id', metaRank: 'secondary', label: 'Source', condition: 'source' },
+			source: { metaType: 'id', label: 'Source', condition: 'source' },
 			created: timeField('Created', 'created'),
 			modified: timeField('Modified', 'modified'),
 			tags: tagField('Tags', 'tags'),
@@ -161,12 +159,12 @@ export const config: Record<string, RuneConfig> = {
 		metaFields: {
 			id: idField,
 			status: {
-				metaType: 'status', metaRank: 'primary',
+				metaType: 'status',
 				sentimentMap: { proposed: 'neutral', accepted: 'positive', superseded: 'caution', deprecated: 'negative' },
 			},
 			date: timeField('Date', 'date'),
-			supersedes: { metaType: 'id', metaRank: 'secondary', label: 'Supersedes', condition: 'supersedes' },
-			source: { metaType: 'id', metaRank: 'secondary', label: 'Source', condition: 'source' },
+			supersedes: { metaType: 'id', label: 'Supersedes', condition: 'supersedes' },
+			source: { metaType: 'id', label: 'Source', condition: 'source' },
 			created: timeField('Created', 'created'),
 			modified: timeField('Modified', 'modified'),
 			tags: tagField('Tags', 'tags'),
@@ -198,7 +196,7 @@ export const config: Record<string, RuneConfig> = {
 			// `name` modifier, which maps to the meta tag emitted by the rune.
 			name: idField,
 			status: {
-				metaType: 'status', metaRank: 'primary',
+				metaType: 'status',
 				sentimentMap: { planning: 'neutral', active: 'positive', complete: 'positive' },
 			},
 			target: timeField('Target', 'target'),

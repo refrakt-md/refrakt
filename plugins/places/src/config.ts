@@ -30,9 +30,9 @@ export const config: Record<string, RuneConfig> = {
 					{
 						tag: 'div', ref: 'meta',
 						children: [
-							{ tag: 'span', ref: 'meta-item', metaText: 'date', label: 'Date:', condition: 'date', metaType: 'temporal', metaRank: 'primary' },
-							{ tag: 'span', ref: 'meta-item', metaText: 'endDate', label: '—', condition: 'endDate', metaType: 'temporal', metaRank: 'primary' },
-							{ tag: 'span', ref: 'meta-item', metaText: 'location', label: 'Location:', condition: 'location', metaType: 'category', metaRank: 'primary' },
+							{ tag: 'span', ref: 'meta-item', metaText: 'date', label: 'Date:', condition: 'date', metaType: 'temporal' },
+							{ tag: 'span', ref: 'meta-item', metaText: 'endDate', label: '—', condition: 'endDate', metaType: 'temporal' },
+							{ tag: 'span', ref: 'meta-item', metaText: 'location', label: 'Location:', condition: 'location', metaType: 'category' },
 						],
 					},
 				],

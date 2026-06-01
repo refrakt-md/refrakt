@@ -334,7 +334,6 @@ describe('Lumina CSS coverage', () => {
 
 		const META_TYPES = ['status', 'category', 'quantity', 'temporal', 'tag', 'id'] as const;
 		const SENTIMENTS = ['positive', 'negative', 'caution', 'neutral'] as const;
-		const RANKS = ['primary', 'secondary'] as const;
 
 		it.each(META_TYPES)(
 			'meta type "%s" has CSS rule',
@@ -352,16 +351,6 @@ describe('Lumina CSS coverage', () => {
 				expect(
 					dimensionSelectors.has(`[data-meta-sentiment="${sentiment}"]`),
 					`Missing CSS for [data-meta-sentiment="${sentiment}"]`
-				).toBe(true);
-			}
-		);
-
-		it.each(RANKS)(
-			'rank "%s" has CSS rule',
-			(rank) => {
-				expect(
-					dimensionSelectors.has(`[data-meta-rank="${rank}"]`),
-					`Missing CSS for [data-meta-rank="${rank}"]`
 				).toBe(true);
 			}
 		);

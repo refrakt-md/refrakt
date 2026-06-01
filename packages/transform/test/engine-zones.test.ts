@@ -63,17 +63,17 @@ describe('SPEC-079 engine zone dispatcher', () => {
 			assignee: { source: 'meta', noBemClass: true },
 		},
 		metaFields: {
-			id: { metaType: 'id', metaRank: 'primary' },
+			id: { metaType: 'id' },
 			status: {
-				metaType: 'status', metaRank: 'primary',
+				metaType: 'status',
 				sentimentMap: { draft: 'neutral', done: 'positive', blocked: 'negative' },
 			},
 			priority: {
-				metaType: 'category', metaRank: 'primary', label: 'Priority',
+				metaType: 'category', label: 'Priority',
 				sentimentMap: { high: 'caution', medium: 'neutral' },
 			},
-			complexity: { metaType: 'quantity', metaRank: 'secondary', label: 'Complexity' },
-			assignee: { metaType: 'tag', metaRank: 'secondary', label: 'Assignee', condition: 'assignee' },
+			complexity: { metaType: 'quantity', label: 'Complexity' },
+			assignee: { metaType: 'tag', label: 'Assignee', condition: 'assignee' },
 		},
 		zones: {
 			eyebrow: { left: ['id'], right: ['status'] },
@@ -229,7 +229,7 @@ describe('SPEC-079 engine zone dispatcher', () => {
 		it('sparse positions render without empty wrappers', () => {
 			const sparseConfig: RuneConfig = {
 				block: 'card',
-				metaFields: { id: { metaType: 'id', metaRank: 'primary' } },
+				metaFields: { id: { metaType: 'id' } },
 				zones: { eyebrow: { left: ['id'], right: [] } },
 				contentSlots: { body: 'body' },
 				modifiers: { id: { source: 'meta' } },

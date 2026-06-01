@@ -300,8 +300,8 @@ export const coreConfig: ThemeConfig = {
 						{
 							tag: 'div', ref: 'meta',
 							children: [
-								{ tag: 'span', ref: 'meta-item', metaText: 'currency', condition: 'currency', metaType: 'category', metaRank: 'primary' },
-								{ tag: 'span', ref: 'meta-item', metaText: 'duration', label: 'Duration:', condition: 'duration', metaType: 'temporal', metaRank: 'secondary' },
+								{ tag: 'span', ref: 'meta-item', metaText: 'currency', condition: 'currency', metaType: 'category' },
+								{ tag: 'span', ref: 'meta-item', metaText: 'duration', label: 'Duration:', condition: 'duration', metaType: 'temporal' },
 							],
 						},
 					],

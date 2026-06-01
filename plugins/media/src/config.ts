@@ -29,7 +29,7 @@ export const config: Record<string, RuneConfig> = {
 			meta: {
 				tag: 'div', before: true,
 				children: [
-					{ tag: 'span', ref: 'type-badge', metaText: 'type', metaType: 'category', metaRank: 'primary' },
+					{ tag: 'span', ref: 'type-badge', metaText: 'type', metaType: 'category' },
 				],
 			},
 		},
