@@ -5,7 +5,7 @@ export const config: Record<string, RuneConfig> = {
 	Character: {
 		block: 'character',
 		defaultDensity: 'full',
-		sections: { badge: 'header', name: 'title', content: 'body', portrait: 'media' },
+		sections: { name: 'title', content: 'body', portrait: 'media' },
 		mediaSlots: { portrait: 'portrait' },
 		contentWrapper: { tag: 'div', ref: 'content' },
 		modifiers: {
@@ -14,14 +14,15 @@ export const config: Record<string, RuneConfig> = {
 			aliases: { source: 'meta' },
 			tags: { source: 'meta' },
 		},
-		structure: {
-			badge: {
-				tag: 'div', before: true,
-				children: [
-					{ tag: 'span', ref: 'role-badge', metaText: 'role', label: 'Role:', metaType: 'category' },
-					{ tag: 'span', ref: 'status-badge', metaText: 'status', label: 'Status:', condition: 'status', metaType: 'status', sentimentMap: { alive: 'positive', dead: 'negative', unknown: 'neutral', missing: 'caution' } },
-				],
+		metaFields: {
+			role: { metaType: 'category', label: 'Role' },
+			status: {
+				metaType: 'status', label: 'Status',
+				sentimentMap: { alive: 'positive', dead: 'negative', unknown: 'neutral', missing: 'caution' },
 			},
+		},
+		zones: {
+			eyebrow: { left: ['role'], right: ['status'] },
 		},
 		editHints: { name: 'inline', portrait: 'image', body: 'none', sections: 'none' },
 	},
@@ -30,7 +31,7 @@ export const config: Record<string, RuneConfig> = {
 	Realm: {
 		block: 'realm',
 		defaultDensity: 'full',
-		sections: { badge: 'header', name: 'title', scene: 'media' },
+		sections: { name: 'title', scene: 'media' },
 		mediaSlots: { scene: 'cover' },
 		rootAttributes: { 'data-media-position': 'top' },
 		modifiers: {
@@ -49,14 +50,12 @@ export const config: Record<string, RuneConfig> = {
 			valign: { prop: '--split-valign', transform: resolveValign },
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
-		structure: {
-			badge: {
-				tag: 'div', before: true,
-				children: [
-					{ tag: 'span', ref: 'type-badge', metaText: 'realmType', label: 'Type:', metaType: 'category' },
-					{ tag: 'span', ref: 'scale-badge', metaText: 'scale', label: 'Scale:', condition: 'scale', metaType: 'category' },
-				],
-			},
+		metaFields: {
+			realmType: { metaType: 'category', label: 'Type' },
+			scale: { metaType: 'category', label: 'Scale', condition: 'scale' },
+		},
+		zones: {
+			eyebrow: { left: ['realmType'], right: ['scale'] },
 		},
 		autoLabel: { scene: 'scene' },
 		editHints: { name: 'inline', scene: 'image', body: 'none', sections: 'none' },
@@ -66,29 +65,27 @@ export const config: Record<string, RuneConfig> = {
 	Lore: {
 		block: 'lore',
 		defaultDensity: 'full',
-		sections: { badge: 'header', title: 'title', content: 'body' },
+		sections: { title: 'title', content: 'body' },
 		contentWrapper: { tag: 'div', ref: 'content' },
 		modifiers: {
 			category: { source: 'meta' },
 			spoiler: { source: 'meta', default: 'false' },
 			tags: { source: 'meta' },
 		},
-		structure: {
-			badge: {
-				tag: 'div', before: true,
-				conditionAny: ['category'],
-				children: [
-					{ tag: 'span', ref: 'category-badge', metaText: 'category', label: 'Category:', condition: 'category', metaType: 'category' },
-				],
-			},
+		metaFields: {
+			category: { metaType: 'category', label: 'Category', condition: 'category' },
 		},
+		zones: {
+			metadata: { fields: ['category'] },
+		},
+		zoneLayouts: { metadata: 'chip-row' },
 		editHints: { title: 'inline', body: 'none' },
 	},
 
 	Faction: {
 		block: 'faction',
 		defaultDensity: 'full',
-		sections: { badge: 'header', name: 'title', scene: 'media' },
+		sections: { name: 'title', scene: 'media' },
 		mediaSlots: { scene: 'cover' },
 		rootAttributes: { 'data-media-position': 'top' },
 		modifiers: {
@@ -107,17 +104,19 @@ export const config: Record<string, RuneConfig> = {
 			valign: { prop: '--split-valign', transform: resolveValign },
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
-		structure: {
-			badge: {
-				tag: 'div', before: true,
-				conditionAny: ['factionType', 'alignment', 'size'],
-				children: [
-					{ tag: 'span', ref: 'type-badge', metaText: 'factionType', label: 'Type:', condition: 'factionType', metaType: 'category' },
-					{ tag: 'span', ref: 'alignment-badge', metaText: 'alignment', label: 'Alignment:', condition: 'alignment', metaType: 'category', sentimentMap: { good: 'positive', neutral: 'neutral', evil: 'negative', chaotic: 'caution', lawful: 'neutral' } },
-					{ tag: 'span', ref: 'size-badge', metaText: 'size', label: 'Size:', condition: 'size', metaType: 'quantity' },
-				],
+		metaFields: {
+			factionType: { metaType: 'category', label: 'Type', condition: 'factionType' },
+			alignment: {
+				metaType: 'category', label: 'Alignment', condition: 'alignment',
+				sentimentMap: { good: 'positive', neutral: 'neutral', evil: 'negative', chaotic: 'caution', lawful: 'neutral' },
 			},
+			size: { metaType: 'quantity', label: 'Size', condition: 'size' },
 		},
+		zones: {
+			eyebrow: { left: ['factionType'], right: ['alignment'] },
+			metadata: { fields: ['size'] },
+		},
+		zoneLayouts: { metadata: 'chip-row' },
 		autoLabel: { scene: 'scene' },
 		editHints: { name: 'inline', body: 'none', sections: 'none' },
 	},
@@ -126,21 +125,18 @@ export const config: Record<string, RuneConfig> = {
 	Plot: {
 		block: 'plot',
 		defaultDensity: 'full',
-		sections: { badge: 'header', title: 'title' },
+		sections: { title: 'title' },
 		modifiers: {
 			plotType: { source: 'meta', default: 'arc' },
 			structure: { source: 'meta', default: 'linear' },
 			tags: { source: 'meta' },
 		},
-		structure: {
-			badge: {
-				tag: 'div', before: true,
-				conditionAny: ['plotType', 'structure'],
-				children: [
-					{ tag: 'span', ref: 'type-badge', metaText: 'plotType', label: 'Type:', condition: 'plotType', metaType: 'category' },
-					{ tag: 'span', ref: 'structure-badge', metaText: 'structure', label: 'Structure:', condition: 'structure', metaType: 'category' },
-				],
-			},
+		metaFields: {
+			plotType: { metaType: 'category', label: 'Type' },
+			structure: { metaType: 'category', label: 'Structure' },
+		},
+		zones: {
+			eyebrow: { left: ['plotType'], right: ['structure'] },
 		},
 		editHints: { title: 'inline', beats: 'none' },
 		postTransform(node, { modifiers }) {

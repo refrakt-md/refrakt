@@ -54,7 +54,7 @@
 	align-items: var(--split-valign, start);
 }
 /* Split: badge + name + content left (col 1), scene right (col 2) */
-.rf-faction[data-layout="split"] > .rf-faction__badge {
+.rf-faction[data-layout="split"] > .rf-faction__preamble {
 	grid-column: 1;
 	grid-row: 1;
 }
@@ -71,7 +71,7 @@
 	grid-row: 1 / 4;
 }
 /* Split-reverse: scene left (col 1), badge + name + content right (col 2) */
-.rf-faction[data-layout="split-reverse"] > .rf-faction__badge {
+.rf-faction[data-layout="split-reverse"] > .rf-faction__preamble {
 	grid-column: 2;
 	grid-row: 1;
 }
@@ -94,11 +94,11 @@
 	.rf-faction[data-layout="split-reverse"] {
 		grid-template-columns: 1fr;
 	}
-	.rf-faction[data-layout="split"] > .rf-faction__badge,
+	.rf-faction[data-layout="split"] > .rf-faction__preamble,
 	.rf-faction[data-layout="split"] > span[property="name"],
 	.rf-faction[data-layout="split"] > .rf-faction__content,
 	.rf-faction[data-layout="split"] > .rf-faction__scene,
-	.rf-faction[data-layout="split-reverse"] > .rf-faction__badge,
+	.rf-faction[data-layout="split-reverse"] > .rf-faction__preamble,
 	.rf-faction[data-layout="split-reverse"] > span[property="name"],
 	.rf-faction[data-layout="split-reverse"] > .rf-faction__content,
 	.rf-faction[data-layout="split-reverse"] > .rf-faction__scene {
@@ -112,7 +112,7 @@
 }
 /* Reset grid placement when data-collapse triggers single-column from shared split.css */
 @media (max-width: 640px) {
-	.rf-faction[data-collapse="sm"] > .rf-faction__badge,
+	.rf-faction[data-collapse="sm"] > .rf-faction__preamble,
 	.rf-faction[data-collapse="sm"] > span[property="name"],
 	.rf-faction[data-collapse="sm"] > .rf-faction__content,
 	.rf-faction[data-collapse="sm"] > .rf-faction__scene {
@@ -124,7 +124,7 @@
 	}
 }
 @media (max-width: 768px) {
-	.rf-faction[data-collapse="md"] > .rf-faction__badge,
+	.rf-faction[data-collapse="md"] > .rf-faction__preamble,
 	.rf-faction[data-collapse="md"] > span[property="name"],
 	.rf-faction[data-collapse="md"] > .rf-faction__content,
 	.rf-faction[data-collapse="md"] > .rf-faction__scene {
@@ -136,7 +136,7 @@
 	}
 }
 @media (max-width: 1024px) {
-	.rf-faction[data-collapse="lg"] > .rf-faction__badge,
+	.rf-faction[data-collapse="lg"] > .rf-faction__preamble,
 	.rf-faction[data-collapse="lg"] > span[property="name"],
 	.rf-faction[data-collapse="lg"] > .rf-faction__content,
 	.rf-faction[data-collapse="lg"] > .rf-faction__scene {

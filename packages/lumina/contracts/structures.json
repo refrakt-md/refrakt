@@ -1996,7 +1996,6 @@
 			"root": ".rf-character",
 			"dataRune": "character",
 			"childOrder": [
-				"badge",
 				"{content:content}"
 			],
 			"modifiers": {
@@ -2024,24 +2023,6 @@
 				}
 			},
 			"elements": {
-				"badge": {
-					"tag": "div",
-					"selector": ".rf-character__badge",
-					"source": "structure"
-				},
-				"role-badge": {
-					"tag": "span",
-					"selector": ".rf-character__role-badge",
-					"source": "structure",
-					"parent": "badge"
-				},
-				"status-badge": {
-					"tag": "span",
-					"selector": ".rf-character__status-badge",
-					"source": "structure",
-					"parent": "badge",
-					"condition": "status"
-				},
 				"content": {
 					"tag": "div",
 					"selector": ".rf-character__content",
@@ -2070,7 +2051,6 @@
 			"root": ".rf-realm",
 			"dataRune": "realm",
 			"childOrder": [
-				"badge",
 				"{content}"
 			],
 			"modifiers": {
@@ -2122,24 +2102,6 @@
 				}
 			},
 			"elements": {
-				"badge": {
-					"tag": "div",
-					"selector": ".rf-realm__badge",
-					"source": "structure"
-				},
-				"type-badge": {
-					"tag": "span",
-					"selector": ".rf-realm__type-badge",
-					"source": "structure",
-					"parent": "badge"
-				},
-				"scale-badge": {
-					"tag": "span",
-					"selector": ".rf-realm__scale-badge",
-					"source": "structure",
-					"parent": "badge",
-					"condition": "scale"
-				},
 				"scene": {
 					"tag": "scene",
 					"selector": ".rf-realm__scene",
@@ -2179,7 +2141,6 @@
 			"root": ".rf-lore",
 			"dataRune": "lore",
 			"childOrder": [
-				"badge",
 				"{content:content}"
 			],
 			"modifiers": {
@@ -2201,21 +2162,6 @@
 				}
 			},
 			"elements": {
-				"badge": {
-					"tag": "div",
-					"selector": ".rf-lore__badge",
-					"source": "structure",
-					"conditionAny": [
-						"category"
-					]
-				},
-				"category-badge": {
-					"tag": "span",
-					"selector": ".rf-lore__category-badge",
-					"source": "structure",
-					"parent": "badge",
-					"condition": "category"
-				},
 				"content": {
 					"tag": "div",
 					"selector": ".rf-lore__content",
@@ -2228,7 +2174,6 @@
 			"root": ".rf-faction",
 			"dataRune": "faction",
 			"childOrder": [
-				"badge",
 				"{content}"
 			],
 			"modifiers": {
@@ -2279,37 +2224,6 @@
 				}
 			},
 			"elements": {
-				"badge": {
-					"tag": "div",
-					"selector": ".rf-faction__badge",
-					"source": "structure",
-					"conditionAny": [
-						"factionType",
-						"alignment",
-						"size"
-					]
-				},
-				"type-badge": {
-					"tag": "span",
-					"selector": ".rf-faction__type-badge",
-					"source": "structure",
-					"parent": "badge",
-					"condition": "factionType"
-				},
-				"alignment-badge": {
-					"tag": "span",
-					"selector": ".rf-faction__alignment-badge",
-					"source": "structure",
-					"parent": "badge",
-					"condition": "alignment"
-				},
-				"size-badge": {
-					"tag": "span",
-					"selector": ".rf-faction__size-badge",
-					"source": "structure",
-					"parent": "badge",
-					"condition": "size"
-				},
 				"scene": {
 					"tag": "scene",
 					"selector": ".rf-faction__scene",
@@ -2349,7 +2263,6 @@
 			"root": ".rf-plot",
 			"dataRune": "plot",
 			"childOrder": [
-				"badge",
 				"{content}"
 			],
 			"modifiers": {
@@ -2369,31 +2282,6 @@
 					"source": "meta",
 					"classPattern": ".rf-plot--{value}",
 					"dataAttribute": "data-tags"
-				}
-			},
-			"elements": {
-				"badge": {
-					"tag": "div",
-					"selector": ".rf-plot__badge",
-					"source": "structure",
-					"conditionAny": [
-						"plotType",
-						"structure"
-					]
-				},
-				"type-badge": {
-					"tag": "span",
-					"selector": ".rf-plot__type-badge",
-					"source": "structure",
-					"parent": "badge",
-					"condition": "plotType"
-				},
-				"structure-badge": {
-					"tag": "span",
-					"selector": ".rf-plot__structure-badge",
-					"source": "structure",
-					"parent": "badge",
-					"condition": "structure"
 				}
 			}
 		},
