@@ -877,6 +877,44 @@ theme's metadata override.
 
 ## Migration Notes
 
+### Migration phases
+
+The spec rolls out in three phases, so future readers don't read it
+as a single-PR mandate:
+
+**Phase 1 — the WORK items this spec produces.** Engine grows
+`metaFields` / `zones` / `sections` / `zoneLayouts` / the three
+layout primitives / the legacy-slots shim. Lumina ships the chip
+look as the universal base in `dimensions/metadata.css` (the
+bordered-pill geometry comes off `[data-meta-type=…]` selectors
+from day one). Plan plugin migrates as the proof case. Composable
+`{% eyebrow %}` and `{% deflist %}` runes ship.
+
+After Phase 1, every rune in the codebase that emits
+`data-meta-type` chips visually converges on the new chip look —
+plan entities (migrated config) AND any other meta-bearing runes
+still on `slots + structure` (legacy shim path). The legacy shim
+keeps the *layout* working unchanged; the *visual* change rides
+along for free because the engine emits the same `data-meta-*`
+attributes either way.
+
+**Phase 2 — per-rune progressive migration.** Each non-plan rune
+that uses meta-projection migrates its config from `slots +
+structure` to `metaFields` + `zones` at its own pace. No visual
+change required (Phase 1 already moved the chip look universally).
+Phase 2 is purely cleanup of config shape: more semantic config,
+themes can rebalance per-rune, the rune drops out of the legacy
+shim path. Order doesn't matter; each migration is small.
+Candidates include `card`, `recipe`, `hero`, character /
+faction / realm, and any third-party plugin runes.
+
+**Phase 3 — remove the legacy shim.** Lands when no consumers
+remain, tracked as a separate work item. Bumps as minor (real
+breaking change for any third-party plugin that hasn't migrated by
+then; first-party plugins are all done well before).
+
+### Per-actor migration steps
+
 - **Theme authors** can opt into the new manifest by declaring
   `zoneLayouts` on their theme config. Without it, the engine falls
   back to `chip-row` for any non-legacy zone — visually similar to
@@ -900,6 +938,12 @@ theme's metadata override.
   classes are zone-named (`.rf-work__eyebrow`, `.rf-work__metadata`).
   Documented in the changeset as an internal-protocol change (these
   classes are theme-level, not authored content).
+
+- **CSS authors targeting `[data-meta-type=…]` directly for
+  bordered-pill geometry** see a visual change in Phase 1 (chip
+  replaces pill). The data-attribute contract itself is unchanged;
+  only the default geometry. Themes that customised the type
+  selectors can re-customise against the chip baseline.
 
 ## Dependencies
 
