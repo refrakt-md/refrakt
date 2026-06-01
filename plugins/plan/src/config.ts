@@ -16,6 +16,21 @@ const timeField = (label: string, condition?: string) => ({
 	...(condition ? { condition } : {}),
 });
 
+/** Multi-value tags field — frontmatter `tags="a,b,c"` fans into one
+ *  chip per item via the `splitOn` directive. Plan entities lift `tags`
+ *  out of the metadata def-list into a `tags` custom zone (chip-row
+ *  trailer below the metadata block). */
+const tagsField = { metaType: 'tag' as const, label: 'Tags', condition: 'tags', splitOn: ',' };
+
+/** Shared trailer wiring — every entity declaring a `tags` zone uses
+ *  the same render order + layout. Pulled into a constant so the
+ *  Spec/Work/Bug/Decision configs don't repeat themselves. */
+const tagsTrailer = {
+	zones: { tags: { fields: ['tags'] } },
+	order: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'],
+	zoneLayouts: { tags: 'chip-row' as const },
+};
+
 export const config: Record<string, RuneConfig> = {
 	Spec: {
 		block: 'spec',
@@ -39,17 +54,20 @@ export const config: Record<string, RuneConfig> = {
 			supersedes: { metaType: 'id', label: 'Supersedes', condition: 'supersedes' },
 			created: timeField('Created', 'created'),
 			modified: timeField('Modified', 'modified'),
-			tags: tagField('Tags', 'tags'),
+			tags: tagsField,
 		},
 		zones: {
 			eyebrow: { left: ['id'], right: ['status'] },
-			metadata: { fields: ['version', 'supersedes', 'created', 'modified', 'tags'] },
+			metadata: { fields: ['version', 'supersedes', 'created', 'modified'] },
+			...tagsTrailer.zones,
 		},
 		contentSlots: {
 			title: 'title',
 			blurb: 'blurb',
 			body: 'body',
 		},
+		order: tagsTrailer.order,
+		zoneLayouts: tagsTrailer.zoneLayouts,
 		sections: { title: 'title', blurb: 'description', body: 'body' },
 		editHints: { body: 'none' },
 	},
@@ -85,26 +103,20 @@ export const config: Record<string, RuneConfig> = {
 			source: { metaType: 'id', label: 'Source', condition: 'source' },
 			created: timeField('Created', 'created'),
 			modified: timeField('Modified', 'modified'),
-			// Tags is a multi-value field — split on comma so each tag
-			// renders as its own chip. Used by the `tags` custom zone
-			// below as a chip-row trailer after the metadata def-list.
-			tags: { metaType: 'tag', label: 'Tags', condition: 'tags', splitOn: ',' },
+			tags: tagsField,
 		},
 		zones: {
 			eyebrow: { left: ['id'], right: ['status'] },
 			metadata: { fields: ['priority', 'complexity', 'assignee', 'milestone', 'source', 'created', 'modified'] },
-			tags: { fields: ['tags'] },
+			...tagsTrailer.zones,
 		},
 		contentSlots: {
 			title: 'title',
 			blurb: 'blurb',
 			body: 'body',
 		},
-		// Custom position via `order` — `tags` lives between metadata
-		// (def-list) and body (authored content) so the chip row reads
-		// as a metadata trailer, not part of the body.
-		order: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'],
-		zoneLayouts: { tags: 'chip-row' },
+		order: tagsTrailer.order,
+		zoneLayouts: tagsTrailer.zoneLayouts,
 		sections: { title: 'title', blurb: 'description', body: 'body' },
 		editHints: { body: 'none' },
 	},
@@ -138,17 +150,20 @@ export const config: Record<string, RuneConfig> = {
 			source: { metaType: 'id', label: 'Source', condition: 'source' },
 			created: timeField('Created', 'created'),
 			modified: timeField('Modified', 'modified'),
-			tags: tagField('Tags', 'tags'),
+			tags: tagsField,
 		},
 		zones: {
 			eyebrow: { left: ['id'], right: ['status'] },
-			metadata: { fields: ['severity', 'assignee', 'milestone', 'source', 'created', 'modified', 'tags'] },
+			metadata: { fields: ['severity', 'assignee', 'milestone', 'source', 'created', 'modified'] },
+			...tagsTrailer.zones,
 		},
 		contentSlots: {
 			title: 'title',
 			blurb: 'blurb',
 			body: 'body',
 		},
+		order: tagsTrailer.order,
+		zoneLayouts: tagsTrailer.zoneLayouts,
 		sections: { title: 'title', blurb: 'description', body: 'body' },
 		editHints: { body: 'none' },
 	},
@@ -176,17 +191,20 @@ export const config: Record<string, RuneConfig> = {
 			source: { metaType: 'id', label: 'Source', condition: 'source' },
 			created: timeField('Created', 'created'),
 			modified: timeField('Modified', 'modified'),
-			tags: tagField('Tags', 'tags'),
+			tags: tagsField,
 		},
 		zones: {
 			eyebrow: { left: ['id'], right: ['status'] },
-			metadata: { fields: ['date', 'supersedes', 'source', 'created', 'modified', 'tags'] },
+			metadata: { fields: ['date', 'supersedes', 'source', 'created', 'modified'] },
+			...tagsTrailer.zones,
 		},
 		contentSlots: {
 			title: 'title',
 			blurb: 'blurb',
 			body: 'body',
 		},
+		order: tagsTrailer.order,
+		zoneLayouts: tagsTrailer.zoneLayouts,
 		sections: { title: 'title', blurb: 'description', body: 'body' },
 		editHints: { body: 'none' },
 	},
