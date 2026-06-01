@@ -58,6 +58,13 @@ export interface MetaField {
 	 *  Currently applies to `chip-row` and `definition-list` layouts;
 	 *  `split` (eyebrow) ignores it since slots hold single values. */
 	splitOn?: string;
+
+	/** Pure-text transform applied to the resolved value before it's
+	 *  rendered. `duration` parses ISO 8601 (`PT30M`) → human-readable
+	 *  (`30m`). `uppercase` / `capitalize` are simple case
+	 *  transforms. Mirrors the legacy `StructureEntry.transform`
+	 *  field. */
+	transform?: 'duration' | 'uppercase' | 'capitalize';
 }
 
 /** A semantic zone's declared content shape. Each zone declares either

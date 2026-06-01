@@ -981,8 +981,11 @@ function resolveField(
 	const field = metaFields[name];
 	if (!field) return null;
 	if (field.condition && !modifierValues[field.condition]) return null;
-	const value = modifierValues[name] ?? '';
+	let value = modifierValues[name] ?? '';
 	if (!value && field.condition) return null;
+	if (field.transform && transforms[field.transform]) {
+		value = transforms[field.transform](value);
+	}
 	return { name, value, field };
 }
 

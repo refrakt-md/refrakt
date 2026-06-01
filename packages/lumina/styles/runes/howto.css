@@ -1,7 +1,7 @@
 /* HowTo — matches recipe design */
 
-/* Meta bar — extra bottom spacing beyond section header default */
-.rf-howto__meta {
+/* Metadata chip-row — extra bottom spacing beyond default */
+.rf-howto__metadata {
 	margin-bottom: 1.5rem;
 }
 

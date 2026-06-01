@@ -2960,7 +2960,6 @@
 			"root": ".rf-howto",
 			"dataRune": "how-to",
 			"childOrder": [
-				"meta",
 				"{content:content}"
 			],
 			"modifiers": {
@@ -2977,22 +2976,6 @@
 				}
 			},
 			"elements": {
-				"meta": {
-					"tag": "div",
-					"selector": ".rf-howto__meta",
-					"source": "structure",
-					"conditionAny": [
-						"estimatedTime",
-						"difficulty"
-					]
-				},
-				"meta-item": {
-					"tag": "span",
-					"selector": ".rf-howto__meta-item",
-					"source": "structure",
-					"parent": "meta",
-					"condition": "estimatedTime"
-				},
 				"content": {
 					"tag": "div",
 					"selector": ".rf-howto__content",
@@ -3030,7 +3013,6 @@
 			"root": ".rf-recipe",
 			"dataRune": "recipe",
 			"childOrder": [
-				"meta",
 				"{content}"
 			],
 			"modifiers": {
@@ -3079,31 +3061,6 @@
 				}
 			},
 			"elements": {
-				"meta": {
-					"tag": "div",
-					"selector": ".rf-recipe__meta",
-					"source": "structure",
-					"conditionAny": [
-						"prepTime",
-						"cookTime",
-						"servings",
-						"difficulty"
-					]
-				},
-				"meta-item": {
-					"tag": "span",
-					"selector": ".rf-recipe__meta-item",
-					"source": "structure",
-					"parent": "meta",
-					"condition": "prepTime"
-				},
-				"badge": {
-					"tag": "span",
-					"selector": ".rf-recipe__badge",
-					"source": "structure",
-					"parent": "meta",
-					"condition": "difficulty"
-				},
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-recipe__preamble",
