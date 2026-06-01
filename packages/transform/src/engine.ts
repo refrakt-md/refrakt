@@ -1074,7 +1074,28 @@ function renderChipRowLayout(
 		'data-zone-layout': 'chip-row',
 	};
 
-	return makeTag('div', wrapperAttrs, fields.map(f => buildChip(f, { includeLabel: true })));
+	// Fields with `splitOn` fan out into one chip per item (no label —
+	// the visual collection IS the label). Other fields render as a
+	// single labelled chip.
+	const chips = fields.flatMap(f => {
+		if (f.field.splitOn && f.value) {
+			return splitFieldValue(f).map(part =>
+				buildChip({ ...f, value: part }, { includeLabel: false }),
+			);
+		}
+		return [buildChip(f, { includeLabel: true })];
+	});
+
+	return makeTag('div', wrapperAttrs, chips);
+}
+
+/** Split a field's value into trimmed non-empty parts using
+ *  `field.splitOn`. Used by layouts that fan multi-value fields out
+ *  into one chip per item. */
+function splitFieldValue(resolved: ResolvedField): string[] {
+	const sep = resolved.field.splitOn;
+	if (!sep || !resolved.value) return [resolved.value].filter(Boolean);
+	return resolved.value.split(sep).map(s => s.trim()).filter(Boolean);
 }
 
 /** `definition-list` layout — `<dl>` with `<dt>` + `<dd>` per field.
@@ -1098,7 +1119,15 @@ function renderDefListLayout(
 	const rows: RendererNode[] = fields.map(f => {
 		const dt = makeTag('dt', { 'data-meta-label': '' }, [f.field.label ?? f.name]);
 		let dd: SerializedTag;
-		if (f.field.sentimentMap) {
+		if (f.field.splitOn) {
+			// Multi-value collection — render one chip per item inside
+			// the <dd>. CSS gives the dd a small inline gap so the chips
+			// flow as a mini chip-row within the def-list cell.
+			const chips = splitFieldValue(f).map(part =>
+				buildChip({ ...f, value: part }, { includeLabel: false }),
+			);
+			dd = makeTag('dd', { 'data-multi-value': '' }, chips);
+		} else if (f.field.sentimentMap) {
 			// Sentiment-mapped value renders as a chip inside the <dd>.
 			dd = makeTag('dd', {}, [buildChip(f, { includeLabel: false })]);
 		} else {

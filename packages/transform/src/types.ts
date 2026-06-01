@@ -50,6 +50,14 @@ export interface MetaField {
 	 *  override is `time` for temporal fields so the engine emits
 	 *  `<time datetime="…">…</time>`. */
 	tag?: string;
+
+	/** Treat the field's value as a delimited collection — split on
+	 *  this character and render one chip per item. Used for fields
+	 *  like `tags` where the modifier value is a comma-separated
+	 *  string but the rendering should be a row of individual chips.
+	 *  Currently applies to `chip-row` and `definition-list` layouts;
+	 *  `split` (eyebrow) ignores it since slots hold single values. */
+	splitOn?: string;
 }
 
 /** A semantic zone's declared content shape. Each zone declares either

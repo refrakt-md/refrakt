@@ -286,6 +286,65 @@ describe('SPEC-079 engine zone dispatcher', () => {
 		});
 	});
 
+	describe('splitOn — multi-value fields fan into per-item chips', () => {
+		const tagsConfig: RuneConfig = {
+			block: 'card',
+			modifiers: { tags: { source: 'meta' } },
+			metaFields: {
+				tags: { metaType: 'tag', label: 'Tags', splitOn: ',' },
+			},
+			zones: { tags: { fields: ['tags'] } },
+			contentSlots: { body: 'body' },
+			order: ['tags', 'body'],
+			zoneLayouts: { tags: 'chip-row' },
+		};
+
+		it('chip-row emits one chip per split item', () => {
+			const config = baseConfig({ Card: tagsConfig });
+			const transform = createTransform(config);
+			const result = asTag(transform(makeTag('article', { 'data-rune': 'card' }, [
+				makeTag('meta', { 'data-field': 'tags', content: 'plan,plugin,runes' }),
+				makeTag('div', { 'data-name': 'body' }, ['Body']),
+			])));
+			const zone = findByZone(result, 'tags')!;
+			expect(zone.attributes['data-zone-layout']).toBe('chip-row');
+			expect(zone.children.length).toBe(3);
+			const chips = zone.children as SerializedTag[];
+			expect(chips.map(c => c.children[0])).toEqual(['plan', 'plugin', 'runes']);
+			for (const chip of chips) {
+				expect(chip.attributes.class).toBe('rf-badge');
+				expect(chip.attributes['data-meta-type']).toBe('tag');
+			}
+		});
+
+		it('trims whitespace and drops empty parts', () => {
+			const config = baseConfig({ Card: tagsConfig });
+			const transform = createTransform(config);
+			const result = asTag(transform(makeTag('article', { 'data-rune': 'card' }, [
+				makeTag('meta', { 'data-field': 'tags', content: '  plan , , plugin ,runes ,' }),
+				makeTag('div', { 'data-name': 'body' }, ['Body']),
+			])));
+			const zone = findByZone(result, 'tags')!;
+			expect(zone.children.length).toBe(3);
+			expect((zone.children as SerializedTag[]).map(c => c.children[0])).toEqual(['plan', 'plugin', 'runes']);
+		});
+
+		it('definition-list emits multi-value dd with one chip per item', () => {
+			const config = baseConfig({ ...{ Card: { ...tagsConfig, zoneLayouts: { tags: 'definition-list' } } } });
+			const transform = createTransform(config);
+			const result = asTag(transform(makeTag('article', { 'data-rune': 'card' }, [
+				makeTag('meta', { 'data-field': 'tags', content: 'a,b,c' }),
+				makeTag('div', { 'data-name': 'body' }, ['Body']),
+			])));
+			const zone = findByZone(result, 'tags')!;
+			const row = zone.children[0] as SerializedTag;
+			const dd = row.children[1] as SerializedTag;
+			expect(dd.name).toBe('dd');
+			expect(dd.attributes['data-multi-value']).toBe('');
+			expect(dd.children.length).toBe(3);
+		});
+	});
+
 	describe('mutual-exclusion validation at mergeThemeConfig', () => {
 		it('throws when a slot name appears in both zones and contentSlots', () => {
 			const base: ThemeConfig = {

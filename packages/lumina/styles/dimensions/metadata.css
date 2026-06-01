@@ -106,6 +106,14 @@
 	font-size: 0.875rem;
 }
 
+/* Multi-value dd (fields with `splitOn`) renders a row of chips
+ * inside the cell, flowing naturally. */
+[data-zone-layout="definition-list"] dd[data-multi-value] {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
+}
+
 @media (min-width: 48rem) {
 	[data-zone-layout="definition-list"] {
 		grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));

@@ -85,17 +85,26 @@ export const config: Record<string, RuneConfig> = {
 			source: { metaType: 'id', label: 'Source', condition: 'source' },
 			created: timeField('Created', 'created'),
 			modified: timeField('Modified', 'modified'),
-			tags: tagField('Tags', 'tags'),
+			// Tags is a multi-value field — split on comma so each tag
+			// renders as its own chip. Used by the `tags` custom zone
+			// below as a chip-row trailer after the metadata def-list.
+			tags: { metaType: 'tag', label: 'Tags', condition: 'tags', splitOn: ',' },
 		},
 		zones: {
 			eyebrow: { left: ['id'], right: ['status'] },
-			metadata: { fields: ['priority', 'complexity', 'assignee', 'milestone', 'source', 'created', 'modified', 'tags'] },
+			metadata: { fields: ['priority', 'complexity', 'assignee', 'milestone', 'source', 'created', 'modified'] },
+			tags: { fields: ['tags'] },
 		},
 		contentSlots: {
 			title: 'title',
 			blurb: 'blurb',
 			body: 'body',
 		},
+		// Custom position via `order` — `tags` lives between metadata
+		// (def-list) and body (authored content) so the chip row reads
+		// as a metadata trailer, not part of the body.
+		order: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'],
+		zoneLayouts: { tags: 'chip-row' },
 		sections: { title: 'title', blurb: 'description', body: 'body' },
 		editHints: { body: 'none' },
 	},
