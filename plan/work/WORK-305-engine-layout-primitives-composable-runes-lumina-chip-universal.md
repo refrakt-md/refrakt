@@ -1,4 +1,4 @@
-{% work id="WORK-305" status="done" priority="medium" complexity="complex" source="SPEC-079" tags="engine,runes,lumina,zones,layouts,eyebrow,deflist,metadata,badges" milestone="v0.18.0" %}
+{% work id="WORK-305" status="done" priority="medium" complexity="complex" source="SPEC-079" tags="engine,runes,lumina,zones,layouts,eyebrow,deflist,metadata,badges" milestone="v0.17.0" %}
 
 # Engine + layout primitives + composable runes + Lumina chip-universal
 

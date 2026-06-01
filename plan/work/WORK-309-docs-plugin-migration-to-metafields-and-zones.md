@@ -1,4 +1,4 @@
-{% work id="WORK-309" status="ready" priority="medium" complexity="simple" source="SPEC-079" tags="docs,plugin,runes,migration,metafields,zones,phase-2" milestone="v0.18.0" %}
+{% work id="WORK-309" status="ready" priority="medium" complexity="simple" source="SPEC-079" tags="docs,plugin,runes,migration,metafields,zones,phase-2" milestone="v0.17.0" %}
 
 # Docs plugin migration to metaFields + zones
 

@@ -1,4 +1,4 @@
-{% work id="WORK-310" status="ready" priority="medium" complexity="simple" source="SPEC-079" tags="places,plugin,runes,migration,metafields,zones,phase-2" milestone="v0.18.0" %}
+{% work id="WORK-310" status="ready" priority="medium" complexity="simple" source="SPEC-079" tags="places,plugin,runes,migration,metafields,zones,phase-2" milestone="v0.17.0" %}
 
 # Places plugin migration to metaFields + zones
 

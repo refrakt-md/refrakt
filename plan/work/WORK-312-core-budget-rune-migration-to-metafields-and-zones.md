@@ -1,4 +1,4 @@
-{% work id="WORK-312" status="ready" priority="low" complexity="simple" source="SPEC-079" tags="core,runes,budget,migration,metafields,zones,phase-2" milestone="v0.18.0" %}
+{% work id="WORK-312" status="ready" priority="low" complexity="simple" source="SPEC-079" tags="core,runes,budget,migration,metafields,zones,phase-2" milestone="v0.17.0" %}
 
 # Core Budget rune migration to metaFields + zones
 

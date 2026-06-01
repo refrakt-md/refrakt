@@ -1,4 +1,4 @@
-{% work id="WORK-308" status="ready" priority="medium" complexity="simple" source="SPEC-079" tags="learning,plugin,runes,migration,metafields,zones,phase-2" milestone="v0.18.0" %}
+{% work id="WORK-308" status="ready" priority="medium" complexity="simple" source="SPEC-079" tags="learning,plugin,runes,migration,metafields,zones,phase-2" milestone="v0.17.0" %}
 
 # Learning plugin migration to metaFields + zones
 

@@ -1,4 +1,4 @@
-{% work id="WORK-313" status="ready" priority="low" complexity="simple" source="SPEC-079" tags="engine,cleanup,shim-removal,phase-3,breaking-change" milestone="v0.19.0" %}
+{% work id="WORK-313" status="ready" priority="low" complexity="simple" source="SPEC-079" tags="engine,cleanup,shim-removal,phase-3,breaking-change" milestone="v0.18.0" %}
 
 # Remove legacy slots + structure shim from engine
 

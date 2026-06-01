@@ -1,4 +1,4 @@
-{% work id="WORK-306" status="done" priority="medium" complexity="moderate" source="SPEC-079" tags="plan,plugin,runes,migration,metafields,zones" milestone="v0.18.0" %}
+{% work id="WORK-306" status="done" priority="medium" complexity="moderate" source="SPEC-079" tags="plan,plugin,runes,migration,metafields,zones" milestone="v0.17.0" %}
 
 # Plan plugin migration to metaFields + zones
 

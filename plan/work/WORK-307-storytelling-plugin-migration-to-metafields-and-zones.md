@@ -1,4 +1,4 @@
-{% work id="WORK-307" status="ready" priority="medium" complexity="moderate" source="SPEC-079" tags="storytelling,plugin,runes,migration,metafields,zones,phase-2" milestone="v0.18.0" %}
+{% work id="WORK-307" status="ready" priority="medium" complexity="moderate" source="SPEC-079" tags="storytelling,plugin,runes,migration,metafields,zones,phase-2" milestone="v0.17.0" %}
 
 # Storytelling plugin migration to metaFields + zones
 
