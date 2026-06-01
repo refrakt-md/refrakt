@@ -55,6 +55,8 @@ import './xref-preview-resolve.js';
 import { progress } from './tags/progress.js';
 import { card } from './tags/card.js';
 import { badge } from './tags/badge.js';
+import { eyebrow } from './tags/eyebrow.js';
+import { deflist } from './tags/deflist.js';
 import Markdoc from '@markdoc/markdoc';
 
 import { defineRune, runeTagMap } from './rune.js';
@@ -586,6 +588,23 @@ export const runes = {
     typeName: 'Badge',
     category: 'Content',
     snippet: ['{% badge sentiment="${1|positive,negative,caution,neutral|}" %}', '${2:Label}', '{% /badge %}'],
+  }),
+  eyebrow: defineRune({
+    name: 'eyebrow',
+    schema: eyebrow,
+    description: 'Block-level wrapper that renders the SPEC-079 split layout primitive over author-written content. Body splits on a top-level `---` into left/right halves. Same DOM as a projected `zones.eyebrow = { left, right }`.',
+    typeName: 'Eyebrow',
+    category: 'Content',
+    snippet: ['{% eyebrow %}', '${1:Left side}', '---', '${2:Right side}', '{% /eyebrow %}'],
+  }),
+  deflist: defineRune({
+    name: 'deflist',
+    aliases: ['definitions', 'terms'],
+    schema: deflist,
+    description: 'Block-level wrapper that renders the SPEC-079 definition-list layout primitive over a markdown list. Each `- **Term:** value` item becomes a <dt>/<dd> pair. Inline runes compose naturally inside <dd>.',
+    typeName: 'Deflist',
+    category: 'Content',
+    snippet: ['{% deflist %}', '- **${1:Term}:** ${2:Value}', '- **${3:Term}:** ${4:Value}', '{% /deflist %}'],
   }),
   collection: defineRune({
     name: 'collection',

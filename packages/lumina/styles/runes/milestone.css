@@ -1,12 +1,12 @@
 /* Milestone */
 
-/* Primary badges: name left, status right */
-.rf-milestone__header-primary {
-	justify-content: space-between;
+/* SPEC-079: eyebrow + metadata zone names replace header-primary /
+ * header-secondary. */
+
+.rf-milestone__eyebrow {
 	margin-bottom: 0.75rem;
 }
 
-/* Preamble: title + optional description between badge groups */
 .rf-milestone__preamble {
 	margin-bottom: 0.75rem;
 }
@@ -16,13 +16,8 @@
 	margin-top: 0;
 }
 
-/* Secondary badges: pill row below preamble */
-.rf-milestone__header-secondary {
+.rf-milestone__metadata {
 	margin-bottom: 1.5rem;
-}
-
-.rf-milestone__target-badge {
-	margin-left: auto;
 }
 .rf-milestone__body {
 	font-size: 0.925rem;

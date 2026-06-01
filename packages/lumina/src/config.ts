@@ -4,6 +4,14 @@ import { icons as lucideIcons } from './icons.js';
 
 /** Lumina theme configuration — extends base with icon SVGs and tint presets */
 export const luminaConfig = mergeThemeConfig(baseConfig, {
+	// SPEC-079: Lumina's theme-wide layout defaults per zone name. Plan
+	// entities (work / bug / spec / decision / milestone) and any other
+	// rune declaring an `eyebrow` or `metadata` zone inherit these unless
+	// they override per-rune via `zoneLayouts.{Rune}.{zone}`.
+	zoneLayouts: {
+		eyebrow: 'split',
+		metadata: 'definition-list',
+	},
 	tints: {
 		base: {
 			light: {

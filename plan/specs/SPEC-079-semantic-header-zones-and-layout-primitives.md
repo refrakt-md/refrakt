@@ -138,7 +138,7 @@ vocabulary split.
   The position above the title is called `eyebrow` regardless of
   where its content comes from. A rune declares either
   `zones.eyebrow = { left, right }` (engine projects structured chips
-  from the rune's attributes) **or** `sections.eyebrow = 'eyebrow'`
+  from the rune's attributes) **or** `contentSlots.eyebrow = 'eyebrow'`
   (user authors prose at that slot in the rune body). The two are
   mutually exclusive — declaring both is a config-time error.
   Runes that want neither just don't have an eyebrow. Same DOM
@@ -185,11 +185,11 @@ spec organises around three orthogonal axes:
    A vocabulary primitive that says "where in the rune's structure
    this content lives." Themes style by position.
 2. **Source** (where the content comes from): `zones` (engine
-   projects from rune attrs) or `sections` (user authors prose at
+   projects from rune attrs) or `contentSlots` (user authors prose at
    the slot). The rune picks one per slot at config time.
 3. **Layout** (which DOM shape renders the contents): `split`,
-   `chip-row`, `definition-list`. The theme picks per zone. User
-   sections render as their natural inline content unless a
+   `chip-row`, `definition-list`. The theme picks per zone. Authored
+   slots render as their natural inline content unless a
    composable layout rune is dropped in.
 
 The three dimensions don't interact: a `metadata` zone could be
@@ -272,8 +272,8 @@ Work: {
                          'source', 'created', 'modified', 'tags'] },
   },
 
-  // EXISTING: title + body sections continue to work as today.
-  sections: { title: 'title', blurb: 'description', body: 'body' },
+  // EXISTING: title + body content slots continue to work as today.
+  contentSlots: { title: 'title', blurb: 'description', body: 'body' },
 }
 ```
 
@@ -296,7 +296,7 @@ zoneLayouts: {
 The engine looks up the rune's zones, pairs each with the theme's
 layout choice, and renders.
 
-### Source-of-content per slot: `zones` vs `sections`
+### Source-of-content per slot: `zones` vs `contentSlots`
 
 A rune declares each header slot via **one** of two config keys:
 
@@ -307,13 +307,13 @@ Work: {
     eyebrow:  { left: ['id'], right: ['status'] },
     metadata: { fields: ['priority', 'complexity', …] },
   },
-  sections: { title: 'title', blurb: 'description', body: 'body' },
+  contentSlots: { title: 'title', blurb: 'description', body: 'body' },
 }
 
 // Card — user-authored eyebrow, no projected meta.
 Card: {
   zones: {},  // none
-  sections: {
+  contentSlots: {
     eyebrow: 'eyebrow',   // user content fills the slot
     title: 'title',
     body: 'body',
@@ -333,7 +333,7 @@ Recipe: {
   zones: {
     metadata: { fields: ['servings', 'prepTime', 'cookTime', 'difficulty'] },
   },
-  sections: {
+  contentSlots: {
     eyebrow: 'eyebrow',   // user authors the eyebrow prose
     title: 'title',
     blurb: 'description',
@@ -346,12 +346,12 @@ Same slot name (`eyebrow`) in both keys is the conflict case — engine
 errors at config time. The rune picks one source per slot; mixing
 both is ambiguous and almost certainly a config mistake.
 
-When a slot's content source is `sections`, the user's authored
+When a slot's content source is `contentSlots`, the user's authored
 content is rendered into the slot's wrapper element as-is. If the
 user wants the `split` layout inside an authored eyebrow section,
 they reach for `{% eyebrow %}` (see **Composable Rune Handles** below)
 inside the section content. Themes don't apply a layout primitive to
-authored sections automatically.
+authored content slots automatically.
 
 ### Canonical ordering, and the slots collapse
 
@@ -370,7 +370,7 @@ The previous `slots: string[]` array (today: `['header-primary',
 'preamble', 'header-secondary', 'content']`) is removed from the
 rune-level config in the new model. It collapsed three concerns
 into one (vertical ordering + wrapper naming + position-of-content);
-zones + sections handle naming and source, the canonical vocabulary
+zones + contentSlots handle naming and source, the canonical vocabulary
 handles ordering, and `'content'` becomes the implicit `body`
 section.
 
@@ -395,7 +395,7 @@ WeirdRune: {
     eyebrow: { left: ['id'], right: ['status'] },
     sidebar: { fields: ['related-links'] },           // custom position
   },
-  sections: { title: 'title', body: 'body' },
+  contentSlots: { title: 'title', body: 'body' },
   order: ['eyebrow', 'sidebar', 'title', 'body'],     // explicit
 }
 ```
@@ -804,10 +804,10 @@ theme's metadata override.
   DOM contract.
 - [ ] **Mutual-exclusion validation at `mergeThemeConfig`.** After
   merging plugin + theme + site configs, the engine walks the
-  resolved config's `zones` + `sections` and set-intersects their
+  resolved config's `zones` + `contentSlots` and set-intersects their
   key names. Any non-empty intersection is a build error naming
   both the rune and the conflicting position (e.g. "`Work` declares
-  both `zones.eyebrow` and `sections.eyebrow` — pick one source per
+  both `zones.eyebrow` and `contentSlots.eyebrow` — pick one source per
   slot"). Test in `engine-zones.test.ts` confirms the error fires
   on conflict and stays silent on the all-clear case.
 - [ ] Backwards-compat shim renders legacy `slots: [...]` +
@@ -883,7 +883,7 @@ The spec rolls out in three phases, so future readers don't read it
 as a single-PR mandate:
 
 **Phase 1 — the WORK items this spec produces.** Engine grows
-`metaFields` / `zones` / `sections` / `zoneLayouts` / the three
+`metaFields` / `zones` / `contentSlots` / `zoneLayouts` / the three
 layout primitives / the legacy-slots shim. Lumina ships the chip
 look as the universal base in `dimensions/metadata.css` (the
 bordered-pill geometry comes off `[data-meta-type=…]` selectors
@@ -978,7 +978,7 @@ lost to git history:
   to avoid collision with existing `data-layout` consumers like
   `gallery`. Selectors target `[data-zone-layout="split"]` etc.
 - **Mutual-exclusion validation timing** — config-load time, in
-  `mergeThemeConfig`. Walk merged config's `zones` + `sections`,
+  `mergeThemeConfig`. Walk merged config's `zones` + `contentSlots`,
   set-intersect their key names, error with the conflicting slot
   name in the message. Fails the build immediately at the source.
 - **`{% deflist %}` authoring fallback** — when a list item lacks
@@ -991,7 +991,7 @@ lost to git history:
   `body`) are formally closed; extending them requires a spec
   update. A rune that needs a custom position declares it via the
   `order: [...]` field and uses the custom name in `zones` /
-  `sections`. Custom positions get a generic `.rf-{block}__{name}`
+  `contentSlots`. Custom positions get a generic `.rf-{block}__{name}`
   CSS class auto-emitted; themes can style them specifically or
   rely on the engine's default bare-wrapper styling. This gives a
   closed canonical vocabulary for the common case + a graceful

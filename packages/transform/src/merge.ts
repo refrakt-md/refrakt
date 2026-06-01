@@ -1,4 +1,4 @@
-import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, TintTokens, BgPresetDefinition } from './types.js';
+import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, TintTokens, BgPresetDefinition, ZoneDeclaration, LayoutPrimitive } from './types.js';
 import type { ThemeTokensConfig } from '@refrakt-md/types';
 
 export interface ThemeConfigOverrides {
@@ -6,6 +6,7 @@ export interface ThemeConfigOverrides {
 	tokenPrefix?: string;
 	icons?: Record<string, Record<string, string>>;
 	runes?: Record<string, Partial<RuneConfig>>;
+	zoneLayouts?: Record<string, LayoutPrimitive>;
 	tints?: Record<string, TintDefinition>;
 	backgrounds?: Record<string, BgPresetDefinition>;
 }
@@ -32,8 +33,16 @@ export function mergeThemeConfig(
 	const mergedRunes = { ...base.runes };
 	if (overrides.runes) {
 		for (const [key, value] of Object.entries(overrides.runes)) {
-			mergedRunes[key] = { ...mergedRunes[key], ...value } as RuneConfig;
+			mergedRunes[key] = mergeRuneConfig(mergedRunes[key], value);
 		}
+	}
+
+	// SPEC-079: mutual-exclusion validation. A slot name appearing in
+	// both `zones` and `contentSlots` is ambiguous — pick one source per
+	// slot. Walk every merged rune and fail loudly if any intersection
+	// is present.
+	for (const [runeName, rune] of Object.entries(mergedRunes)) {
+		validateZoneContentSlotExclusion(runeName, rune);
 	}
 
 	const mergedTints = { ...base.tints, ...overrides.tints };
@@ -46,9 +55,87 @@ export function mergeThemeConfig(
 		tokenPrefix: overrides.tokenPrefix ?? base.tokenPrefix,
 		icons: { ...base.icons, ...overrides.icons },
 		runes: mergedRunes,
+		zoneLayouts: (base.zoneLayouts || overrides.zoneLayouts)
+			? { ...base.zoneLayouts, ...overrides.zoneLayouts }
+			: undefined,
 		tints: resolvedTints,
 		backgrounds: { ...base.backgrounds, ...overrides.backgrounds },
 	};
+}
+
+/**
+ * Per-rune config merge with SPEC-079 awareness.
+ *
+ * Most fields shallow-merge (override replaces base). The SPEC-079
+ * fields `metaFields`, `zones`, `contentSlots`, and `zoneLayouts` merge
+ * by inner key so a theme can override a single zone (or field, or
+ * layout choice) without restating the full plugin map. A `null` value
+ * for a zone suppresses an inherited declaration (per SPEC-079 §Zone
+ * Overrides).
+ *
+ * The `order` field replaces wholesale (it's an ordering list, not a
+ * map).
+ */
+function mergeRuneConfig(
+	base: RuneConfig | undefined,
+	override: Partial<RuneConfig>,
+): RuneConfig {
+	if (!base) return override as RuneConfig;
+
+	const merged: RuneConfig = { ...base, ...override };
+
+	if (base.metaFields || override.metaFields) {
+		merged.metaFields = { ...base.metaFields, ...override.metaFields };
+	}
+
+	if (base.zones || override.zones) {
+		const zones: Record<string, ZoneDeclaration> = { ...base.zones };
+		if (override.zones) {
+			for (const [zoneName, decl] of Object.entries(override.zones)) {
+				zones[zoneName] = decl;
+			}
+		}
+		merged.zones = zones;
+	}
+
+	if (base.contentSlots || override.contentSlots) {
+		merged.contentSlots = { ...base.contentSlots, ...override.contentSlots };
+	}
+
+	if (base.zoneLayouts || override.zoneLayouts) {
+		merged.zoneLayouts = { ...base.zoneLayouts, ...override.zoneLayouts };
+	}
+
+	return merged;
+}
+
+/**
+ * SPEC-079 mutual-exclusion validator. A position name (zone or
+ * authored slot) must come from exactly one source. Walks the merged
+ * rune's `zones` and `contentSlots` keys and errors loudly on overlap.
+ *
+ * `null` zone declarations (suppression) don't count — they remove the
+ * zone entirely, so the slot name is free for a `contentSlots` entry.
+ */
+function validateZoneContentSlotExclusion(runeName: string, rune: RuneConfig): void {
+	if (!rune.zones || !rune.contentSlots) return;
+
+	const conflicts: string[] = [];
+	for (const [slot, decl] of Object.entries(rune.zones)) {
+		if (decl === null) continue; // suppressed — not a real declaration
+		if (slot in rune.contentSlots) {
+			conflicts.push(slot);
+		}
+	}
+
+	if (conflicts.length > 0) {
+		const slotList = conflicts.map(s => `\`${s}\``).join(', ');
+		throw new Error(
+			`\`${runeName}\` declares both \`zones\` and \`contentSlots\` for ` +
+			`position ${slotList} — pick one source per slot ` +
+			`(projected via zones, OR user-authored via contentSlots).`,
+		);
+	}
 }
 
 /**

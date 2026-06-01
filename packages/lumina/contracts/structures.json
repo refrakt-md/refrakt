@@ -208,6 +208,22 @@
 				"{content}"
 			]
 		},
+		"Eyebrow": {
+			"block": "eyebrow",
+			"root": ".rf-eyebrow",
+			"dataRune": "eyebrow",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Deflist": {
+			"block": "deflist",
+			"root": ".rf-deflist",
+			"dataRune": "deflist",
+			"childOrder": [
+				"{content}"
+			]
+		},
 		"Collection": {
 			"block": "collection",
 			"root": ".rf-collection",

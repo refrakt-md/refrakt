@@ -1,12 +1,15 @@
 /* Work */
 
-/* Primary badges: ID left, status right */
-.rf-work__header-primary {
-	justify-content: space-between;
+/* SPEC-079: eyebrow + metadata zones replace the legacy header-primary
+ * / header-secondary slots. The split layout primitive owns the
+ * justify-content for eyebrow via [data-zone-layout] selectors in
+ * dimensions/metadata.css, so this file only carries the work-specific
+ * spacing + complexity dots + assignee prefix. */
+
+.rf-work__eyebrow {
 	margin-bottom: 0.75rem;
 }
 
-/* Preamble: title + optional blurb between badge groups */
 .rf-work__preamble {
 	margin-bottom: 0.75rem;
 }
@@ -16,15 +19,14 @@
 	margin-top: 0;
 }
 
-/* Secondary badges: pill row below preamble */
-.rf-work__header-secondary {
+.rf-work__metadata {
 	margin-bottom: 1.5rem;
 }
 
-.rf-work__assignee-badge {
-	margin-left: auto;
-}
-.rf-work__assignee-badge::before { content: '@'; }
+/* Assignee — `@` prefix on the plain-text def-list value. Targets the
+ * row by field name so milestone / tags don't get the prefix too. */
+.rf-work__metadata [data-field="assignee"] dd::before { content: '@'; }
+
 .rf-work__body {
 	font-size: 0.925rem;
 	line-height: 1.65;
@@ -38,12 +40,11 @@
 	margin-top: 0.75rem;
 }
 
-/* Complexity dots */
-.rf-work__complexity-badge::after {
-	margin-left: 0.25rem;
-}
-[data-complexity="trivial"] > .rf-work__header-secondary > .rf-work__complexity-badge::after { content: '●'; }
-[data-complexity="simple"] > .rf-work__header-secondary > .rf-work__complexity-badge::after { content: '●●'; }
-[data-complexity="moderate"] > .rf-work__header-secondary > .rf-work__complexity-badge::after { content: '●●●'; }
-[data-complexity="complex"] > .rf-work__header-secondary > .rf-work__complexity-badge::after { content: '●●●●'; }
-[data-complexity="unknown"] > .rf-work__header-secondary > .rf-work__complexity-badge::after { content: '?'; }
+/* Complexity dots — appended after the value cell in the def-list. The
+ * `data-complexity` attribute lives on the root work element (set by
+ * engine modifier processing). */
+[data-complexity="trivial"]  .rf-work__metadata [data-field="complexity"] dd::after { content: '  ●'; }
+[data-complexity="simple"]   .rf-work__metadata [data-field="complexity"] dd::after { content: '  ●●'; }
+[data-complexity="moderate"] .rf-work__metadata [data-field="complexity"] dd::after { content: '  ●●●'; }
+[data-complexity="complex"]  .rf-work__metadata [data-field="complexity"] dd::after { content: '  ●●●●'; }
+[data-complexity="unknown"]  .rf-work__metadata [data-field="complexity"] dd::after { content: '  ?'; }

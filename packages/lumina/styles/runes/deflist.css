@@ -1,0 +1,11 @@
+/* Deflist rune — composable handle for the SPEC-079 `definition-list`
+ * layout.
+ *
+ * Geometry comes from `[data-zone-layout="definition-list"]` in
+ * `dimensions/metadata.css` (grid, dt/dd typography). This file only
+ * carries the minimum class hook so the rune participates in CSS
+ * tree-shaking. */
+
+.rf-deflist {
+	margin: 0.75rem 0;
+}

@@ -168,6 +168,12 @@ export const coreConfig: ThemeConfig = {
 		 * still needs an entry in the theme config so `computeUsedCssBlocks`
 		 * includes `badge.css` in CSS tree-shaking when a badge is rendered. */
 		Badge: { block: 'badge' },
+		/* SPEC-079 composable rune handles — render the same DOM as the
+		 * engine's `split` / `definition-list` layout primitives. CSS comes
+		 * from the universal `[data-zone-layout=…]` selectors; per-rune
+		 * blocks exist so CSS tree-shaking includes them. */
+		Eyebrow: { block: 'eyebrow' },
+		Deflist: { block: 'deflist' },
 		/* Collection emits a sentinel during transform; the postProcess hook
 		 * (`resolveCollections`) fills it with queried entities. Engine config
 		 * provides the block name for CSS tree-shaking. */

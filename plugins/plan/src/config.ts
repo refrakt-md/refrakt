@@ -1,22 +1,27 @@
 import type { RuneConfig } from '@refrakt-md/transform';
 
-/** Shared projection config — moves title and blurb into the preamble container */
-const preambleProjection: NonNullable<RuneConfig['projection']> = {
-	relocate: {
-		title: { into: 'preamble', position: 'append' },
-		blurb: { into: 'preamble', position: 'append' },
-	},
-};
-
-/** Shared slot order for plan entity runes */
-const entitySlots = ['header-primary', 'preamble', 'header-secondary', 'content'] as const;
+/** Shared `eyebrow + status` rendering — every plan entity declares
+ *  these two fields on its eyebrow zone. Pulled out so the per-entity
+ *  metaFields blocks only carry the entity-specific extras. */
+const idField = { metaType: 'id' as const, metaRank: 'primary' as const };
+const tagField = (label: string, condition?: string) => ({
+	metaType: 'tag' as const,
+	metaRank: 'secondary' as const,
+	label,
+	...(condition ? { condition } : {}),
+});
+const timeField = (label: string, condition?: string) => ({
+	metaType: 'temporal' as const,
+	metaRank: 'secondary' as const,
+	label,
+	tag: 'time',
+	...(condition ? { condition } : {}),
+});
 
 export const config: Record<string, RuneConfig> = {
 	Spec: {
 		block: 'spec',
 		defaultDensity: 'full',
-		slots: [...entitySlots],
-		sections: { 'header-primary': 'header', preamble: 'preamble', title: 'title', blurb: 'description', 'header-secondary': 'header', body: 'body' },
 		modifiers: {
 			id: { source: 'meta' },
 			status: { source: 'meta', default: 'draft' },
@@ -26,34 +31,33 @@ export const config: Record<string, RuneConfig> = {
 			created: { source: 'meta', noBemClass: true },
 			modified: { source: 'meta', noBemClass: true },
 		},
-		structure: {
-			'header-primary': {
-				tag: 'div', slot: 'header-primary',
-				children: [
-					{ tag: 'span', ref: 'id-badge', metaText: 'id', label: 'ID:', labelHidden: true, metaType: 'id', metaRank: 'primary' },
-					{ tag: 'span', ref: 'status-badge', metaText: 'status', label: 'Status:', labelHidden: true, metaType: 'status', metaRank: 'primary', sentimentMap: { draft: 'neutral', review: 'caution', accepted: 'positive', superseded: 'caution', deprecated: 'negative' } },
-				],
+		metaFields: {
+			id: idField,
+			status: {
+				metaType: 'status', metaRank: 'primary',
+				sentimentMap: { draft: 'neutral', review: 'caution', accepted: 'positive', superseded: 'caution', deprecated: 'negative' },
 			},
-			preamble: { tag: 'div', slot: 'preamble' },
-			'header-secondary': {
-				tag: 'div', slot: 'header-secondary',
-				children: [
-					{ tag: 'span', ref: 'version-badge', metaText: 'version', condition: 'version', textPrefix: 'v', metaType: 'tag', metaRank: 'secondary' },
-					{ tag: 'span', ref: 'supersedes-badge', metaText: 'supersedes', condition: 'supersedes', label: 'Supersedes:', metaType: 'id', metaRank: 'secondary' },
-					{ tag: 'time', ref: 'created-badge', metaText: 'created', condition: 'created', label: 'Created:', metaType: 'temporal', metaRank: 'secondary' },
-					{ tag: 'time', ref: 'modified-badge', metaText: 'modified', condition: 'modified', label: 'Modified:', metaType: 'temporal', metaRank: 'secondary' },
-				],
-			},
+			version: { metaType: 'tag', metaRank: 'secondary', label: 'Version', condition: 'version' },
+			supersedes: { metaType: 'id', metaRank: 'secondary', label: 'Supersedes', condition: 'supersedes' },
+			created: timeField('Created', 'created'),
+			modified: timeField('Modified', 'modified'),
+			tags: tagField('Tags', 'tags'),
 		},
-		projection: preambleProjection,
-		editHints: { body: 'none', 'id-badge': 'none', 'status-badge': 'none', 'version-badge': 'none', 'supersedes-badge': 'none', 'created-badge': 'none', 'modified-badge': 'none' },
+		zones: {
+			eyebrow: { left: ['id'], right: ['status'] },
+			metadata: { fields: ['version', 'supersedes', 'created', 'modified', 'tags'] },
+		},
+		contentSlots: {
+			title: 'title',
+			blurb: 'description',
+			body: 'body',
+		},
+		editHints: { body: 'none' },
 	},
 	Work: {
 		block: 'work',
 		defaultDensity: 'full',
 		checklist: true,
-		slots: [...entitySlots],
-		sections: { 'header-primary': 'header', preamble: 'preamble', title: 'title', blurb: 'description', 'header-secondary': 'header', body: 'body' },
 		modifiers: {
 			id: { source: 'meta' },
 			status: { source: 'meta', default: 'draft' },
@@ -66,37 +70,39 @@ export const config: Record<string, RuneConfig> = {
 			created: { source: 'meta', noBemClass: true },
 			modified: { source: 'meta', noBemClass: true },
 		},
-		structure: {
-			'header-primary': {
-				tag: 'div', slot: 'header-primary',
-				children: [
-					{ tag: 'span', ref: 'id-badge', metaText: 'id', label: 'ID:', labelHidden: true, metaType: 'id', metaRank: 'primary' },
-					{ tag: 'span', ref: 'status-badge', metaText: 'status', label: 'Status:', labelHidden: true, metaType: 'status', metaRank: 'primary', sentimentMap: { draft: 'neutral', ready: 'neutral', 'in-progress': 'neutral', review: 'caution', done: 'positive', blocked: 'negative' } },
-				],
+		metaFields: {
+			id: idField,
+			status: {
+				metaType: 'status', metaRank: 'primary',
+				sentimentMap: { draft: 'neutral', ready: 'neutral', 'in-progress': 'neutral', review: 'caution', done: 'positive', blocked: 'negative' },
 			},
-			preamble: { tag: 'div', slot: 'preamble' },
-			'header-secondary': {
-				tag: 'div', slot: 'header-secondary',
-				children: [
-					{ tag: 'span', ref: 'priority-badge', metaText: 'priority', label: 'Priority:', metaType: 'category', metaRank: 'primary', sentimentMap: { critical: 'negative', high: 'caution', medium: 'neutral', low: 'neutral' } },
-					{ tag: 'span', ref: 'complexity-badge', metaText: 'complexity', label: 'Complexity:', metaType: 'quantity', metaRank: 'secondary' },
-					{ tag: 'span', ref: 'assignee-badge', metaText: 'assignee', label: 'Assignee:', condition: 'assignee', metaType: 'tag', metaRank: 'secondary' },
-					{ tag: 'span', ref: 'milestone-badge', metaText: 'milestone', label: 'Milestone:', condition: 'milestone', metaType: 'tag', metaRank: 'secondary' },
-					{ tag: 'span', ref: 'source-badge', metaText: 'source', condition: 'source', label: 'Source:', metaType: 'id', metaRank: 'secondary' },
-					{ tag: 'time', ref: 'created-badge', metaText: 'created', condition: 'created', label: 'Created:', metaType: 'temporal', metaRank: 'secondary' },
-					{ tag: 'time', ref: 'modified-badge', metaText: 'modified', condition: 'modified', label: 'Modified:', metaType: 'temporal', metaRank: 'secondary' },
-				],
+			priority: {
+				metaType: 'category', metaRank: 'primary', label: 'Priority',
+				sentimentMap: { critical: 'negative', high: 'caution', medium: 'neutral', low: 'neutral' },
 			},
+			complexity: { metaType: 'quantity', metaRank: 'secondary', label: 'Complexity' },
+			assignee: tagField('Assignee', 'assignee'),
+			milestone: tagField('Milestone', 'milestone'),
+			source: { metaType: 'id', metaRank: 'secondary', label: 'Source', condition: 'source' },
+			created: timeField('Created', 'created'),
+			modified: timeField('Modified', 'modified'),
+			tags: tagField('Tags', 'tags'),
 		},
-		projection: preambleProjection,
-		editHints: { body: 'none', 'id-badge': 'none', 'status-badge': 'none', 'priority-badge': 'none', 'complexity-badge': 'none', 'assignee-badge': 'none', 'milestone-badge': 'none', 'source-badge': 'none', 'created-badge': 'none', 'modified-badge': 'none' },
+		zones: {
+			eyebrow: { left: ['id'], right: ['status'] },
+			metadata: { fields: ['priority', 'complexity', 'assignee', 'milestone', 'source', 'created', 'modified', 'tags'] },
+		},
+		contentSlots: {
+			title: 'title',
+			blurb: 'description',
+			body: 'body',
+		},
+		editHints: { body: 'none' },
 	},
 	Bug: {
 		block: 'bug',
 		defaultDensity: 'full',
 		checklist: true,
-		slots: [...entitySlots],
-		sections: { 'header-primary': 'header', preamble: 'preamble', title: 'title', blurb: 'description', 'header-secondary': 'header', body: 'body' },
 		modifiers: {
 			id: { source: 'meta' },
 			status: { source: 'meta', default: 'reported' },
@@ -108,35 +114,37 @@ export const config: Record<string, RuneConfig> = {
 			created: { source: 'meta', noBemClass: true },
 			modified: { source: 'meta', noBemClass: true },
 		},
-		structure: {
-			'header-primary': {
-				tag: 'div', slot: 'header-primary',
-				children: [
-					{ tag: 'span', ref: 'id-badge', metaText: 'id', label: 'ID:', labelHidden: true, metaType: 'id', metaRank: 'primary' },
-					{ tag: 'span', ref: 'status-badge', metaText: 'status', label: 'Status:', labelHidden: true, metaType: 'status', metaRank: 'primary', sentimentMap: { reported: 'neutral', confirmed: 'caution', 'in-progress': 'neutral', fixed: 'positive', wontfix: 'neutral', duplicate: 'neutral' } },
-				],
+		metaFields: {
+			id: idField,
+			status: {
+				metaType: 'status', metaRank: 'primary',
+				sentimentMap: { reported: 'neutral', confirmed: 'caution', 'in-progress': 'neutral', fixed: 'positive', wontfix: 'neutral', duplicate: 'neutral' },
 			},
-			preamble: { tag: 'div', slot: 'preamble' },
-			'header-secondary': {
-				tag: 'div', slot: 'header-secondary',
-				children: [
-					{ tag: 'span', ref: 'severity-badge', metaText: 'severity', label: 'Severity:', metaType: 'category', metaRank: 'primary', sentimentMap: { critical: 'negative', major: 'caution', minor: 'neutral', trivial: 'neutral' } },
-					{ tag: 'span', ref: 'assignee-badge', metaText: 'assignee', label: 'Assignee:', condition: 'assignee', metaType: 'tag', metaRank: 'secondary' },
-					{ tag: 'span', ref: 'milestone-badge', metaText: 'milestone', label: 'Milestone:', condition: 'milestone', metaType: 'tag', metaRank: 'secondary' },
-					{ tag: 'span', ref: 'source-badge', metaText: 'source', condition: 'source', label: 'Source:', metaType: 'id', metaRank: 'secondary' },
-					{ tag: 'time', ref: 'created-badge', metaText: 'created', condition: 'created', label: 'Created:', metaType: 'temporal', metaRank: 'secondary' },
-					{ tag: 'time', ref: 'modified-badge', metaText: 'modified', condition: 'modified', label: 'Modified:', metaType: 'temporal', metaRank: 'secondary' },
-				],
+			severity: {
+				metaType: 'category', metaRank: 'primary', label: 'Severity',
+				sentimentMap: { critical: 'negative', major: 'caution', minor: 'neutral', trivial: 'neutral' },
 			},
+			assignee: tagField('Assignee', 'assignee'),
+			milestone: tagField('Milestone', 'milestone'),
+			source: { metaType: 'id', metaRank: 'secondary', label: 'Source', condition: 'source' },
+			created: timeField('Created', 'created'),
+			modified: timeField('Modified', 'modified'),
+			tags: tagField('Tags', 'tags'),
 		},
-		projection: preambleProjection,
-		editHints: { body: 'none', 'id-badge': 'none', 'status-badge': 'none', 'severity-badge': 'none', 'assignee-badge': 'none', 'milestone-badge': 'none', 'source-badge': 'none', 'created-badge': 'none', 'modified-badge': 'none' },
+		zones: {
+			eyebrow: { left: ['id'], right: ['status'] },
+			metadata: { fields: ['severity', 'assignee', 'milestone', 'source', 'created', 'modified', 'tags'] },
+		},
+		contentSlots: {
+			title: 'title',
+			blurb: 'description',
+			body: 'body',
+		},
+		editHints: { body: 'none' },
 	},
 	Decision: {
 		block: 'decision',
 		defaultDensity: 'full',
-		slots: [...entitySlots],
-		sections: { 'header-primary': 'header', preamble: 'preamble', title: 'title', blurb: 'description', 'header-secondary': 'header', body: 'body' },
 		modifiers: {
 			id: { source: 'meta' },
 			status: { source: 'meta', default: 'proposed' },
@@ -147,34 +155,33 @@ export const config: Record<string, RuneConfig> = {
 			created: { source: 'meta', noBemClass: true },
 			modified: { source: 'meta', noBemClass: true },
 		},
-		structure: {
-			'header-primary': {
-				tag: 'div', slot: 'header-primary',
-				children: [
-					{ tag: 'span', ref: 'id-badge', metaText: 'id', label: 'ID:', labelHidden: true, metaType: 'id', metaRank: 'primary' },
-					{ tag: 'span', ref: 'status-badge', metaText: 'status', label: 'Status:', labelHidden: true, metaType: 'status', metaRank: 'primary', sentimentMap: { proposed: 'neutral', accepted: 'positive', superseded: 'caution', deprecated: 'negative' } },
-				],
+		metaFields: {
+			id: idField,
+			status: {
+				metaType: 'status', metaRank: 'primary',
+				sentimentMap: { proposed: 'neutral', accepted: 'positive', superseded: 'caution', deprecated: 'negative' },
 			},
-			preamble: { tag: 'div', slot: 'preamble' },
-			'header-secondary': {
-				tag: 'div', slot: 'header-secondary',
-				children: [
-					{ tag: 'time', ref: 'date-badge', metaText: 'date', label: 'Date:', condition: 'date', metaType: 'temporal', metaRank: 'secondary' },
-					{ tag: 'span', ref: 'supersedes-badge', metaText: 'supersedes', condition: 'supersedes', label: 'Supersedes:', metaType: 'id', metaRank: 'secondary' },
-					{ tag: 'span', ref: 'source-badge', metaText: 'source', condition: 'source', label: 'Source:', metaType: 'id', metaRank: 'secondary' },
-					{ tag: 'time', ref: 'created-badge', metaText: 'created', condition: 'created', label: 'Created:', metaType: 'temporal', metaRank: 'secondary' },
-					{ tag: 'time', ref: 'modified-badge', metaText: 'modified', condition: 'modified', label: 'Modified:', metaType: 'temporal', metaRank: 'secondary' },
-				],
-			},
+			date: timeField('Date', 'date'),
+			supersedes: { metaType: 'id', metaRank: 'secondary', label: 'Supersedes', condition: 'supersedes' },
+			source: { metaType: 'id', metaRank: 'secondary', label: 'Source', condition: 'source' },
+			created: timeField('Created', 'created'),
+			modified: timeField('Modified', 'modified'),
+			tags: tagField('Tags', 'tags'),
 		},
-		projection: preambleProjection,
-		editHints: { body: 'none', 'id-badge': 'none', 'status-badge': 'none', 'date-badge': 'none', 'supersedes-badge': 'none', 'source-badge': 'none', 'created-badge': 'none', 'modified-badge': 'none' },
+		zones: {
+			eyebrow: { left: ['id'], right: ['status'] },
+			metadata: { fields: ['date', 'supersedes', 'source', 'created', 'modified', 'tags'] },
+		},
+		contentSlots: {
+			title: 'title',
+			blurb: 'description',
+			body: 'body',
+		},
+		editHints: { body: 'none' },
 	},
 	Milestone: {
 		block: 'milestone',
 		defaultDensity: 'full',
-		slots: [...entitySlots],
-		sections: { 'header-primary': 'header', preamble: 'preamble', title: 'title', blurb: 'description', 'header-secondary': 'header', body: 'body' },
 		modifiers: {
 			name: { source: 'meta' },
 			status: { source: 'meta', default: 'planning' },
@@ -182,26 +189,28 @@ export const config: Record<string, RuneConfig> = {
 			created: { source: 'meta', noBemClass: true },
 			modified: { source: 'meta', noBemClass: true },
 		},
-		structure: {
-			'header-primary': {
-				tag: 'div', slot: 'header-primary',
-				children: [
-					{ tag: 'span', ref: 'name-badge', metaText: 'name', label: 'Name:', labelHidden: true, metaType: 'id', metaRank: 'primary' },
-					{ tag: 'span', ref: 'status-badge', metaText: 'status', label: 'Status:', labelHidden: true, metaType: 'status', metaRank: 'primary', sentimentMap: { planning: 'neutral', active: 'positive', complete: 'positive' } },
-				],
+		metaFields: {
+			// Milestone's id field is `name` — the engine reads it from the
+			// `name` modifier, which maps to the meta tag emitted by the rune.
+			name: idField,
+			status: {
+				metaType: 'status', metaRank: 'primary',
+				sentimentMap: { planning: 'neutral', active: 'positive', complete: 'positive' },
 			},
-			preamble: { tag: 'div', slot: 'preamble' },
-			'header-secondary': {
-				tag: 'div', slot: 'header-secondary',
-				children: [
-					{ tag: 'time', ref: 'target-badge', metaText: 'target', label: 'Target:', condition: 'target', metaType: 'temporal', metaRank: 'secondary' },
-					{ tag: 'time', ref: 'created-badge', metaText: 'created', condition: 'created', label: 'Created:', metaType: 'temporal', metaRank: 'secondary' },
-					{ tag: 'time', ref: 'modified-badge', metaText: 'modified', condition: 'modified', label: 'Modified:', metaType: 'temporal', metaRank: 'secondary' },
-				],
-			},
+			target: timeField('Target', 'target'),
+			created: timeField('Created', 'created'),
+			modified: timeField('Modified', 'modified'),
 		},
-		projection: preambleProjection,
-		editHints: { body: 'none', 'name-badge': 'none', 'status-badge': 'none', 'target-badge': 'none', 'created-badge': 'none', 'modified-badge': 'none' },
+		zones: {
+			eyebrow: { left: ['name'], right: ['status'] },
+			metadata: { fields: ['target', 'created', 'modified'] },
+		},
+		contentSlots: {
+			title: 'title',
+			blurb: 'description',
+			body: 'body',
+		},
+		editHints: { body: 'none' },
 	},
 	Backlog: {
 		block: 'backlog',

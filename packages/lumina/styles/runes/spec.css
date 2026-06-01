@@ -1,12 +1,13 @@
 /* Spec */
 
-/* Primary badges: ID left, status right */
-.rf-spec__header-primary {
-	justify-content: space-between;
+/* SPEC-079: eyebrow + metadata zone names replace header-primary /
+ * header-secondary. Layout-level geometry lives on [data-zone-layout]
+ * selectors. */
+
+.rf-spec__eyebrow {
 	margin-bottom: 0.75rem;
 }
 
-/* Preamble: title + optional summary between badge groups */
 .rf-spec__preamble {
 	margin-bottom: 0.75rem;
 }
@@ -16,8 +17,7 @@
 	margin-top: 0;
 }
 
-/* Secondary badges: pill row below preamble */
-.rf-spec__header-secondary {
+.rf-spec__metadata {
 	margin-bottom: 1.5rem;
 }
 

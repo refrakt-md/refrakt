@@ -1,0 +1,10 @@
+/* Eyebrow rune — composable handle for the SPEC-079 `split` layout.
+ *
+ * Geometry comes from `[data-zone-layout="split"]` in
+ * `dimensions/metadata.css` (display: flex, justify-content: space-between,
+ * primary-color text on the left slot). This file only carries the
+ * minimum class hook so the rune participates in CSS tree-shaking. */
+
+.rf-eyebrow {
+	margin: 0.5rem 0;
+}

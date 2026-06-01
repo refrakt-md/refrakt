@@ -1,5 +1,77 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 
+// ─── SPEC-079: Layout primitive vocabulary ────────────────────────────
+
+/** Closed vocabulary of layout primitives the engine can dispatch to
+ *  for rendering a zone's resolved field list. Each primitive emits a
+ *  documented DOM shape (see SPEC-079 §Layout Primitives) and styles
+ *  itself via `[data-zone-layout="…"]` CSS selectors.
+ *
+ *  - `split` — two-slot row, opposite-justified. Used for eyebrow:
+ *    left = plain primary-color text, right = chip when the field
+ *    carries `sentimentMap`, plain text otherwise.
+ *  - `chip-row` — wrapping row, every value rendered as a chip.
+ *  - `definition-list` — `<dl>` with `<dt>` / `<dd>` per field, value
+ *    rendered as chip when sentiment-mapped, plain text otherwise.
+ *
+ *  Reserved-but-unimplemented (SPEC-079 §Future primitives): `table`,
+ *  `inline-summary`, `sticky-bar`. */
+export type LayoutPrimitive = 'split' | 'chip-row' | 'definition-list';
+
+/** Pure data manifest entry for a meta-bearing field. Describes the
+ *  field's domain semantics (type, rank, sentiment, label) independent
+ *  of which layout primitive renders it. The same field can appear as
+ *  primary-color text in an eyebrow's left slot and as a chip in a
+ *  def-list's `<dd>` — no per-field config change. */
+export interface MetaField {
+	/** Semantic metadata type — emits `data-meta-type` attribute.
+	 *  Drives typography (monospace for `id`, tabular-nums for
+	 *  `quantity` / `temporal`), NOT geometry. The shape around the
+	 *  value (chip vs plain text) comes from the layout primitive. */
+	metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id';
+
+	/** Semantic metadata rank — emits `data-meta-rank` attribute. */
+	metaRank?: 'primary' | 'secondary';
+
+	/** Human-readable label emitted as `<span data-meta-label>`. Used
+	 *  by `chip-row` (inside the chip) and `definition-list` (as the
+	 *  `<dt>`). Ignored by `split` (eyebrow slots are unlabelled). */
+	label?: string;
+
+	/** Maps the field's resolved value to a sentiment. Emits
+	 *  `data-meta-sentiment` when matched. Presence of a `sentimentMap`
+	 *  also triggers chip rendering in layouts that switch on it
+	 *  (`split` right-slot, `definition-list` `<dd>`). */
+	sentimentMap?: Record<string, 'positive' | 'negative' | 'caution' | 'neutral'>;
+
+	/** When set, the field only renders if the named modifier has a
+	 *  truthy resolved value. Use for optional fields like
+	 *  `assignee`, `milestone`, `source`. */
+	condition?: string;
+
+	/** Override the rendered element tag. Defaults to `span`; common
+	 *  override is `time` for temporal fields so the engine emits
+	 *  `<time datetime="…">…</time>`. */
+	tag?: string;
+}
+
+/** A semantic zone's declared content shape. Each zone declares either
+ *  a split-shape (`left`/`right` arrays of field names — used by the
+ *  `split` layout) or a flat-shape (`fields` array — used by all other
+ *  layouts).
+ *
+ *  Layout-specific shape choice is independent of which layout primitive
+ *  ultimately renders the zone (the theme picks that via `zoneLayouts`),
+ *  but layouts gracefully handle mismatches: a `split`-shaped zone
+ *  rendered as `chip-row` flattens `left` + `right` into a single row.
+ *
+ *  `null` is reserved for theme-level overrides to suppress an
+ *  inherited plugin zone (SPEC-079 §Zone Overrides). */
+export type ZoneDeclaration =
+	| { left: string[]; right: string[] }
+	| { fields: string[] }
+	| null;
+
 /** Configuration for a single rune's identity transform */
 export interface RuneConfig {
 	/** BEM block name (without prefix). E.g., 'hint' → .rf-hint */
@@ -34,11 +106,59 @@ export interface RuneConfig {
 
 	/** Ordered slot names for structure assembly. When declared, the engine
 	 *  assembles children by iterating slots in order instead of binary before/after.
-	 *  The special 'content' slot is where content children are placed. */
+	 *  The special 'content' slot is where content children are placed.
+	 *
+	 *  Legacy field — superseded by SPEC-079's `zones` + `sections` +
+	 *  canonical-ordering model. Runes that still declare `slots` + `structure`
+	 *  go through the backwards-compat shim. */
 	slots?: string[];
 
-	/** Structural overrides — additional elements to inject (keyed by data-name) */
+	/** Structural overrides — additional elements to inject (keyed by data-name).
+	 *  Legacy field — superseded by SPEC-079's `metaFields` + `zones`. */
 	structure?: Record<string, StructureEntry>;
+
+	// ─── SPEC-079: semantic header zones + per-zone layout primitives ───
+
+	/** Pure data manifest for meta-bearing fields — domain semantics only.
+	 *  Keyed by field name (the same name used in `zones.*.left/right/fields`
+	 *  arrays). Each field declares its metaType, metaRank, label, sentiment
+	 *  map, and optional condition for conditional rendering. The engine
+	 *  reads this manifest at zone resolution time to materialise field
+	 *  descriptors that layout primitives render. */
+	metaFields?: Record<string, MetaField>;
+
+	/** Semantic header zones — projected meta content groupings. Each zone
+	 *  references fields from `metaFields` and gets rendered by the
+	 *  theme-chosen layout primitive. Standard zone names: `eyebrow`,
+	 *  `metadata`. Custom positions require declaration in `order`. */
+	zones?: Record<string, ZoneDeclaration>;
+
+	/** User-authored content slots — the manifest of canonical positions
+	 *  that hold rune-author-written content. Each value is the
+	 *  `data-name` of the rune-emitted ref where authored content gets
+	 *  placed. Standard keys: `eyebrow` (user-authored prose), `title`,
+	 *  `blurb`, `body`. A slot name appearing in both `zones` and
+	 *  `contentSlots` is a config-time error (mutual exclusion — pick
+	 *  one source per slot).
+	 *
+	 *  Distinct from the existing `sections` field, which maps a child's
+	 *  `data-name` to a `data-section` role attribute for theme styling
+	 *  (different concept, different direction). */
+	contentSlots?: Record<string, string>;
+
+	/** Per-rune layout overrides for zones. Resolution chain:
+	 *  theme-level `zoneLayouts.{zoneName}` → per-rune
+	 *  `zoneLayouts.{Rune}.{zoneName}` (overrides the theme-wide default).
+	 *  Lives on the rune config so a plugin can ship a default layout
+	 *  preference, and on the theme config so themes can override per-rune. */
+	zoneLayouts?: Record<string, LayoutPrimitive>;
+
+	/** Explicit render-order override for the rune's zones + sections.
+	 *  When omitted, the engine derives order from the canonical position
+	 *  vocabulary: `eyebrow → title → blurb → metadata → body`. Use this
+	 *  when a rune needs unusual ordering OR declares a custom position
+	 *  outside the standard vocabulary. */
+	order?: string[];
 
 	/** Auto-label children by tag name → data-name. E.g., { summary: 'header' } */
 	autoLabel?: Record<string, string>;
@@ -294,6 +414,12 @@ export interface ThemeConfig {
 
 	/** Per-rune transform configuration */
 	runes: Record<string, RuneConfig>;
+
+	/** SPEC-079: theme-wide default layout primitives per zone name.
+	 *  Resolved AFTER per-rune `zoneLayouts`. E.g., `{ eyebrow: 'split',
+	 *  metadata: 'definition-list' }` makes every zone with those names
+	 *  render with the matching primitive unless a rune overrides. */
+	zoneLayouts?: Record<string, LayoutPrimitive>;
 
 	/** Named tint definitions for section-level colour overrides */
 	tints?: Record<string, TintDefinition>;

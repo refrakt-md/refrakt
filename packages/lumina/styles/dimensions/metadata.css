@@ -1,10 +1,13 @@
 /* ─── Metadata Dimensions ──────────────────────────────────────────────
- * Generic styling for metadata badges across all runes.
- * Works via data-meta-type, data-meta-rank, and data-meta-sentiment
- * attributes emitted by the identity transform engine.
- *
- * Composability: --meta-color cascades from sentiment → type rules.
- *                --meta-font-size cascades from rank → type rules.
+ * SPEC-079 typography / geometry split:
+ *  - `[data-meta-type=…]` selectors carry ONLY typography hints
+ *    (monospace, tabular-nums). No padding, no border, no chip geometry.
+ *  - Geometry comes from `[data-zone-layout=…]` selectors (chip-row,
+ *    split, definition-list) and from the universal `.rf-badge` class,
+ *    which is emitted by every layout primitive's chip path AND by the
+ *    standalone `{% badge %}` rune.
+ *  - Sentiment rules drive `--meta-color`, which the chip and any
+ *    sentiment-tinted text inherits.
  * ────────────────────────────────────────────────────────────────────── */
 
 /* ─── Rank ─────────────────────────────────────────────────────────── */
@@ -21,105 +24,99 @@
 [data-meta-sentiment="caution"]  { --meta-color: var(--rf-color-warning, #f59e0b); }
 [data-meta-sentiment="neutral"]  { --meta-color: var(--rf-color-muted, #64748b); }
 
-/* Colored dot for any item with a sentiment */
-[data-meta-sentiment]::before {
-	content: '';
-	width: 0.5rem;
-	height: 0.5rem;
-	border-radius: 50%;
-	background: var(--meta-color, var(--rf-color-muted));
-	flex-shrink: 0;
-}
+/* ─── Meta Types — typography only ─────────────────────────────────── */
 
-/* ─── Meta Types ───────────────────────────────────────────────────── */
-
-/* Status: bordered pill */
-[data-meta-type="status"] {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.375rem;
-	padding: 0.5em 1.0em;
-	border: 1px solid var(--rf-color-border);
-	border-radius: 999px;
-	font-size: var(--meta-font-size, 0.8125rem);
-	font-weight: 500;
-	color: var(--rf-color-muted);
-}
-
-/* Category: bordered pill */
-[data-meta-type="category"] {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.375rem;
-	padding: 0.5em 1.0em;
-	border: 1px solid var(--rf-color-border);
-	border-radius: 999px;
-	font-size: var(--meta-font-size, 0.8125rem);
-	font-weight: 500;
-	color: var(--rf-color-muted);
-}
-
-/* Quantity: bordered pill with tabular numbers */
-[data-meta-type="quantity"] {
-	display: inline-flex;
-	align-items: center;
-	padding: 0.5em 1.0em;
-	border: 1px solid var(--rf-color-border);
-	border-radius: 999px;
-	font-variant-numeric: tabular-nums;
-	font-weight: 600;
-	font-size: var(--meta-font-size, 0.8125rem);
-	color: var(--rf-color-muted);
-}
-
-/* Temporal: bordered pill with time association */
-[data-meta-type="temporal"] {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.25rem;
-	padding: 0.5em 1.0em;
-	border: 1px solid var(--rf-color-border);
-	border-radius: 999px;
-	font-size: var(--meta-font-size, 0.8125rem);
-	font-variant-numeric: tabular-nums;
-	color: var(--rf-color-muted);
-}
-
-/* Tag: bordered pill */
-[data-meta-type="tag"] {
-	display: inline-flex;
-	align-items: center;
-	padding: 0.5em 1.0em;
-	border: 1px solid var(--rf-color-border);
-	border-radius: 999px;
-	font-size: calc(var(--meta-font-size, 0.8125rem) * 0.9);
-	color: var(--rf-color-muted);
-}
-
-/* ID: bordered pill, monospace */
 [data-meta-type="id"] {
-	display: inline-flex;
-	align-items: center;
-	padding: 0.5em 1.0em;
-	border: 1px solid var(--rf-color-border);
-	border-radius: 999px;
 	font-family: var(--rf-font-mono, monospace);
 	font-size: var(--meta-font-size, 0.8125rem);
+}
+
+[data-meta-type="quantity"] {
+	font-variant-numeric: tabular-nums;
+	font-size: var(--meta-font-size, 0.8125rem);
+}
+
+[data-meta-type="temporal"] {
+	font-variant-numeric: tabular-nums;
+	font-size: var(--meta-font-size, 0.8125rem);
+}
+
+[data-meta-type="status"],
+[data-meta-type="category"],
+[data-meta-type="tag"] {
+	font-size: var(--meta-font-size, 0.8125rem);
+}
+
+/* ─── Layout: split (eyebrow's two-slot row) ───────────────────────── */
+
+[data-zone-layout="split"] {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+[data-zone-layout="split"] [data-eyebrow-slot="left"] {
+	color: var(--rf-color-primary);
+	font-weight: 500;
+}
+
+[data-zone-layout="split"] [data-eyebrow-slot="right"] {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+/* Linked eyebrow content (matches today's hero behaviour). */
+[data-zone="eyebrow"] a {
+	color: var(--rf-color-primary);
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+}
+
+/* ─── Layout: chip-row ─────────────────────────────────────────────── */
+
+[data-zone-layout="chip-row"] {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	align-items: center;
+}
+
+/* ─── Layout: definition-list ──────────────────────────────────────── */
+
+[data-zone-layout="definition-list"] {
+	display: grid;
+	grid-template-columns: max-content 1fr;
+	gap: 0.25rem 1rem;
+	align-items: baseline;
+	margin: 0;
+}
+
+[data-zone-layout="definition-list"] > [data-name="row"] {
+	display: contents;
+}
+
+[data-zone-layout="definition-list"] dt {
 	font-weight: 500;
 	color: var(--rf-color-muted);
+	font-size: var(--meta-font-size, 0.8125rem);
+}
+
+[data-zone-layout="definition-list"] dd {
+	margin: 0;
+	font-size: var(--meta-font-size, 0.8125rem);
 }
 
 /* ─── Labels ──────────────────────────────────────────────────────── */
 
-/* Label element within metadata items — thin, muted style.
- * Themes can override or hide entirely: [data-meta-label] { display: none } */
+/* Label element within a chip — thin, muted; pairs visually with the value */
 [data-meta-label] {
 	font-weight: 400;
 	opacity: 0.65;
 }
 
-/* Visually hidden labels — accessible to screen readers but not visible.
- * Themes can restore with: [data-meta-label-hidden] { position: static; ... } */
+/* Visually hidden labels — accessible to screen readers only */
 [data-meta-label-hidden] {
 	position: absolute;
 	width: 1px;
@@ -132,22 +129,15 @@
 	border: 0;
 }
 
-/* ─── Mobile: compact badges ─────────────────────────────────────────── */
+/* ─── Mobile: compact ──────────────────────────────────────────────── */
 
 @media (max-width: 48rem) {
-	[data-meta-type="status"],
-	[data-meta-type="category"],
-	[data-meta-type="quantity"],
-	[data-meta-type="temporal"],
-	[data-meta-type="tag"],
-	[data-meta-type="id"] {
-		padding: 0.25em 0.625em;
-		font-size: calc(var(--meta-font-size, 0.8125rem) * 0.9);
+	[data-zone-layout="chip-row"] {
+		gap: 0.375rem;
 	}
 
-	[data-meta-sentiment]::before {
-		width: 0.375rem;
-		height: 0.375rem;
+	[data-zone-layout="definition-list"] {
+		gap: 0.25rem 0.75rem;
 	}
 
 	[data-section="header"] {
