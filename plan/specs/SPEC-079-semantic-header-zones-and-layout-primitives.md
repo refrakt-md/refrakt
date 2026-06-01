@@ -123,14 +123,16 @@ vocabulary split.
   per zone** from a small vocabulary of primitives. The engine renders
   by combining the two.
 
-- **Semantic zone names.** `eyebrow`, `metadata`, `body` name the
-  positions that today's plan-entity config calls
-  `header-primary`, `header-secondary`, etc. The existing `preamble`
-  slot keeps its current meaning (a CSS wrapper around the rune's
-  header region — eyebrow + title + blurb together); `eyebrow` is one
-  of the named slots that can live inside it. Old positional names
-  (`header-primary` / `header-secondary`) continue to work via
-  aliases for one release.
+- **Semantic zone names + canonical ordering.** `eyebrow`,
+  `title`, `blurb`, `metadata`, `body` name the positions that
+  today's plan-entity config calls `header-primary`, `preamble`,
+  `header-secondary`, `content`, etc. The position vocabulary has
+  an implicit render order
+  (`eyebrow → title → blurb → metadata → body`), so the rune-level
+  `slots: string[]` array goes away — the vocabulary IS the order.
+  `preamble` becomes a derived CSS wrapper the engine emits around
+  the header region automatically. Old positional names continue
+  to work via the legacy `slots: [...]` shim for one release.
 
 - **One eyebrow slot per rune; the rune picks the source.**
   The position above the title is called `eyebrow` regardless of
@@ -235,7 +237,8 @@ Work: {
   block: 'work',
   defaultDensity: 'full',
   checklist: true,
-  slots: [...entitySlots],
+  // No `slots: [...]` array — engine derives render order from the
+  // canonical vocabulary (eyebrow → title → blurb → metadata → body).
 
   // NEW: pure data manifest — domain semantics only.
   metaFields: {
@@ -349,6 +352,61 @@ user wants the `split` layout inside an authored eyebrow section,
 they reach for `{% eyebrow %}` (see **Composable Rune Handles** below)
 inside the section content. Themes don't apply a layout primitive to
 authored sections automatically.
+
+### Canonical ordering, and the slots collapse
+
+Vocabulary positions have an implicit render order:
+
+```
+eyebrow → title → blurb → metadata → body
+```
+
+The engine emits each present zone / section as a wrapper at its
+canonical position, skipping the ones the rune didn't declare. No
+explicit `slots: string[]` field is needed on the rune config — the
+**vocabulary IS the order**.
+
+The previous `slots: string[]` array (today: `['header-primary',
+'preamble', 'header-secondary', 'content']`) is removed from the
+rune-level config in the new model. It collapsed three concerns
+into one (vertical ordering + wrapper naming + position-of-content);
+zones + sections handle naming and source, the canonical vocabulary
+handles ordering, and `'content'` becomes the implicit `body`
+section.
+
+#### `preamble` is a derived wrapper
+
+Some themes want a single CSS hook around the whole header region
+(`eyebrow + title + blurb + metadata`) — Lumina's existing
+`.rf-{block}__preamble` class. The engine derives this wrapper
+automatically when a rune declares any of the header-region
+positions; themes target it via the same selector. Plugins don't
+need to declare `preamble` explicitly.
+
+#### Custom ordering — opt-in escape hatch
+
+A rune that genuinely needs unusual ordering declares an explicit
+`order: [...]` field listing the positions in render order:
+
+```ts
+WeirdRune: {
+  zones: { ... },
+  sections: { ... },
+  order: ['metadata', 'eyebrow', 'title', 'body'],  // explicit override
+}
+```
+
+Most runes won't need this. The vocabulary's canonical order
+covers the design pattern of nearly every entity, card, and hero
+layout.
+
+#### Disambiguation: not the layout-system `slots`
+
+There's a separate `slots: Record<string, LayoutSlot>` field at
+`packages/transform/src/types.ts:338` used by the layout-system
+(SPEC-064-ish — page layouts with named regions). That's a
+different mechanism at a different layer and stays. The rune-level
+`slots: string[]` (described above) is what this spec removes.
 
 ## Layout Primitives
 
@@ -709,8 +767,12 @@ theme's metadata override.
 
 - Each entity gets a `metaFields` manifest + a `zones` declaration.
 - The existing `structure` field is removed (migrated to `zones`).
+- The existing `slots: [...entitySlots]` arrays are removed (engine
+  derives render order from canonical vocabulary).
+- The `entitySlots` constant goes away.
 - The engine's backwards-compat shim catches any third-party plugins
-  still using the old shape — plan plugin itself can lead the migration.
+  still using the old `slots` + `structure` shape — plan plugin
+  itself can lead the migration.
 
 ## Acceptance Criteria
 
@@ -725,9 +787,23 @@ theme's metadata override.
   (or any other slot name used by both `zones` and `sections`).
   Test in `engine-zones.test.ts` confirms the error message names
   the conflicting slot.
-- [ ] Backwards-compat shim renders legacy `header-primary` /
-  `header-secondary` structure trees via `chip-row` (with `split` when
-  the slot is `header-primary` AND children fit a left/right pattern).
+- [ ] Backwards-compat shim renders legacy `slots: [...]` +
+  `structure: { ... }` rune configs via the matching layout
+  primitives — `header-primary` → `split` (when children fit a
+  left/right pattern) or `chip-row`, `header-secondary` →
+  `chip-row`, `content` → body. Engine emits a build-time warning
+  on first encounter naming the rune + the migration path.
+- [ ] **Canonical-ordering engine path.** Engine derives render
+  order from the position vocabulary
+  (`eyebrow → title → blurb → metadata → body`) when no explicit
+  `order: [...]` field is declared. Test in
+  `engine-zones.test.ts` covers: all positions, sparse positions
+  (only eyebrow + body), custom-order override, and the legacy
+  `slots: [...]` shim path.
+- [ ] **`preamble` wrapper auto-derivation.** Engine emits the
+  `.rf-{block}__preamble` wrapper around `title + blurb` (and
+  `eyebrow` when projected, see canonical order) when any of those
+  positions is declared. No-op when the rune has no header region.
 - [ ] **`{% eyebrow %}` rune.** New core rune in
   `packages/runes/src/tags/eyebrow.ts`. Content model splits body on
   top-level `---` into `left` / `right`. Emits the same DOM as a
@@ -781,12 +857,17 @@ theme's metadata override.
   today's secondary-header layout.
 
 - **Plugin authors** migrate by:
-  1. Renaming `structure.header-primary` / `header-secondary` slots
-     into `metaFields` + `zones`.
-  2. Removing the per-field `tag` / `ref` boilerplate — the layout
+  1. Dropping the `slots: [...]` array from rune configs. The engine
+     derives render order from the canonical vocabulary.
+  2. Renaming `structure.header-primary` / `header-secondary`
+     entries into `metaFields` + `zones`. Slot-keyed structure
+     entries (`structure.X = { slot: 'header-primary', ... }`)
+     become field entries in the appropriate zone's `left` / `right`
+     / `fields` array.
+  3. Removing the per-field `tag` / `ref` boilerplate — the layout
      primitive owns the DOM shape now.
-  3. (Optional) Adding `eyebrow` / `metadata` as their zone names
-     instead of the positional aliases.
+  4. A rune that needs unusual ordering declares `order: [...]`
+     explicitly; otherwise the canonical vocabulary order applies.
 
 - **CSS authors targeting the old class names**
   (`.rf-work__header-primary`, etc.) need to update selectors. The new
@@ -826,9 +907,14 @@ theme's metadata override.
   (`zoneLayouts.eyebrow` is theme-wide, `zoneLayouts.Work.eyebrow`
   overrides per-rune). Is that the right granularity, or should it
   always be per-rune?
-- **The `slots` field.** Today's `slots` array names every wrapper the
-  rune supports. With zones, slot naming overlaps zone naming
-  (`eyebrow` is both). Worth unifying or keeping separate?
+- **Closed vocabulary scope.** The position vocabulary
+  (`eyebrow`, `title`, `blurb`, `metadata`, `body`) covers every
+  rune we've stress-tested against (plan entities, card, recipe,
+  hero, character). Worth declaring it formally closed (any
+  extension goes through a spec update) or leaving it open so
+  plugins can register new positions? Probably formally closed —
+  same logic as the layout primitive vocabulary; new positions
+  are vocabulary changes, not plugin config.
 - **CSS namespacing of `data-layout`.** Should `data-layout="split"`
   conflict-check against existing `data-layout` attributes used by
   other runes (e.g. `gallery`)? Probably fine since the engine scopes
