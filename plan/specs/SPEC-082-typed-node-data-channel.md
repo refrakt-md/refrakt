@@ -152,6 +152,19 @@ Steps 1–3 need zero adapter work and are individually shippable and reversible
 - **Value type.** Keep `fields` flat and scalar (`string | number | boolean |
   string[]`) and let structure live in config (`metaFields`), or allow nested
   objects? Leaning flat — the config already holds the shape.
+- **Carrier: attribute, not a child node — recorded assumption.** The bag rides
+  in `attributes` (a JSON-encoded reserved key) rather than a child
+  `<script type="application/json">` because this payload is *per-element*,
+  *build-time-only* (consumed by the engine and stripped before render), and
+  *small*. An attribute keeps the data bound to its owner node (no
+  re-association across nested runes), adds **no** tree node (a script tag is
+  still a node to walk, parse, and strip — with the same leak-if-missed risk we
+  are removing), and is conceptually metadata-about-the-node rather than
+  content. A `<script>` is the right carrier for the opposite profile —
+  client-bound, document-level, or large payloads (e.g. schema.org JSON-LD,
+  which deliberately *does* ship as a node). Revisit only if `fields` ever grows
+  large or deeply nested, where the opaque-string / attribute-escaping cost
+  would tilt back toward a node-based carrier.
 - **`modifiers.source`.** Today `modifiers: { x: { source: 'meta' } }`. Does it
   become `source: 'fields'` (default), or does `source` disappear once `fields`
   is the only channel?
