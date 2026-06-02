@@ -1,4 +1,4 @@
-{% work id="WORK-319" status="ready" priority="medium" complexity="complex" source="SPEC-080" tags="runes,plugins,migration,blocks,layout,storytelling,marketing,business,places,media,design,core" milestone="v0.17.0" %}
+{% work id="WORK-319" status="in-progress" priority="medium" complexity="complex" source="SPEC-080" tags="runes,plugins,migration,blocks,layout,storytelling,marketing,business,places,media,design,core" milestone="v0.17.0" %}
 
 # Migrate remaining rune packages to blocks/layout
 

@@ -23,11 +23,10 @@ export const config: Record<string, RuneConfig> = {
 		// Role/status render as a definition-list nested in the content column
 		// below the title (recipe pattern). The portrait stays a floated avatar
 		// (character-specific chrome), not a split media column.
-		zones: {
-			metadata: { fields: ['role', 'status'] },
+		blocks: {
+			metadata: { fields: ['role', 'status'], layout: 'definition-list' },
 		},
-		zoneLayouts: { metadata: 'definition-list' },
-		zoneHost: 'content',
+		layout: { content: ['preamble', 'metadata'] },
 		autoLabel: { header: 'preamble' },
 		editHints: { name: 'inline', portrait: 'image', body: 'none', sections: 'none' },
 	},
@@ -61,11 +60,10 @@ export const config: Record<string, RuneConfig> = {
 		},
 		// Facts render as a definition-list nested in the content column below
 		// the title (recipe pattern) — no separate eyebrow zone.
-		zones: {
-			metadata: { fields: ['realmType', 'scale'] },
+		blocks: {
+			metadata: { fields: ['realmType', 'scale'], layout: 'definition-list' },
 		},
-		zoneLayouts: { metadata: 'definition-list' },
-		zoneHost: 'content',
+		layout: { content: ['preamble', 'metadata'] },
 		autoLabel: { scene: 'scene', header: 'preamble' },
 		editHints: { name: 'inline', scene: 'image', body: 'none', sections: 'none' },
 	},
@@ -74,8 +72,7 @@ export const config: Record<string, RuneConfig> = {
 	Lore: {
 		block: 'lore',
 		defaultDensity: 'full',
-		sections: { title: 'title', content: 'body' },
-		contentWrapper: { tag: 'div', ref: 'content' },
+		sections: { title: 'title', body: 'body' },
 		modifiers: {
 			category: { source: 'meta' },
 			spoiler: { source: 'meta', default: 'false' },
@@ -84,10 +81,10 @@ export const config: Record<string, RuneConfig> = {
 		metaFields: {
 			category: { metaType: 'category', label: 'Category', condition: 'category' },
 		},
-		zones: {
-			metadata: { fields: ['category'] },
+		blocks: {
+			metadata: { fields: ['category'], layout: 'bar' },
 		},
-		zoneLayouts: { metadata: 'chip-row' },
+		layout: { root: ['title', 'metadata', 'body'] },
 		editHints: { title: 'inline', body: 'none' },
 	},
 
@@ -123,11 +120,10 @@ export const config: Record<string, RuneConfig> = {
 		},
 		// All facts render as a definition-list nested in the content column
 		// below the title (recipe pattern) — no separate eyebrow zone.
-		zones: {
-			metadata: { fields: ['factionType', 'alignment', 'size'] },
+		blocks: {
+			metadata: { fields: ['factionType', 'alignment', 'size'], layout: 'definition-list' },
 		},
-		zoneLayouts: { metadata: 'definition-list' },
-		zoneHost: 'content',
+		layout: { content: ['preamble', 'metadata'] },
 		autoLabel: { scene: 'scene', header: 'preamble' },
 		editHints: { name: 'inline', body: 'none', sections: 'none' },
 	},
@@ -146,9 +142,10 @@ export const config: Record<string, RuneConfig> = {
 			plotType: { metaType: 'category', label: 'Type' },
 			structure: { metaType: 'category', label: 'Structure' },
 		},
-		zones: {
-			eyebrow: { left: ['plotType'], right: ['structure'] },
+		blocks: {
+			eyebrow: { fields: ['plotType', { field: 'structure', align: 'end' }], layout: 'bar' },
 		},
+		layout: { root: ['eyebrow', 'title'] },
 		editHints: { title: 'inline', beats: 'none' },
 		postTransform(node, { modifiers }) {
 			// Linear plots use connected sequence for beat timeline

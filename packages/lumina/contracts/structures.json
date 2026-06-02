@@ -2070,7 +2070,7 @@
 			"root": ".rf-lore",
 			"dataRune": "lore",
 			"childOrder": [
-				"{content:content}"
+				"{content}"
 			],
 			"modifiers": {
 				"category": {
@@ -2088,13 +2088,6 @@
 					"source": "meta",
 					"classPattern": ".rf-lore--{value}",
 					"dataAttribute": "data-tags"
-				}
-			},
-			"elements": {
-				"content": {
-					"tag": "div",
-					"selector": ".rf-lore__content",
-					"source": "contentWrapper"
 				}
 			}
 		},
