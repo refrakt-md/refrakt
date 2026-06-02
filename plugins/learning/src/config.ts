@@ -29,8 +29,10 @@ export const config: Record<string, RuneConfig> = {
 		blocks: {
 			metadata: { fields: ['estimatedTime', 'difficulty'], layout: 'definition-list' },
 		},
-		// Metadata def-list nests in the content column, above the header.
-		layout: { content: ['metadata', 'preamble'] },
+		// Metadata def-list nests in the content column, below the header —
+		// the facts read naturally under the title/blurb (consistent with the
+		// storytelling runes).
+		layout: { content: ['preamble', 'metadata'] },
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', tool: 'inline', step: 'inline' },
 	},
@@ -70,9 +72,9 @@ export const config: Record<string, RuneConfig> = {
 			metadata: { fields: ['prepTime', 'cookTime', 'servings', 'difficulty'], layout: 'definition-list' },
 		},
 		// Recipe hand-assembles content + media columns for its split layout;
-		// the metadata def-list nests inside the content column, above the
+		// the metadata def-list nests inside the content column, below the
 		// header (root stays [media, content] as the transform emits it).
-		layout: { content: ['metadata', 'preamble'] },
+		layout: { content: ['preamble', 'metadata'] },
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', ingredient: 'inline', step: 'inline', media: 'image' },
 	},
