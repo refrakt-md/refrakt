@@ -222,6 +222,31 @@ describe('SPEC-080 block-and-layout assembly', () => {
 		});
 	});
 
+	describe('rating field', () => {
+		it('renders `total` marks with the first `value` filled', () => {
+			const cfg: RuneConfig = {
+				block: 'testimonial',
+				modifiers: { rating: { source: 'meta' }, ratingTotal: { source: 'meta', default: '5' } },
+				metaFields: { rating: { rating: { total: 'ratingTotal' }, condition: 'rating' } },
+				blocks: { rating: { fields: ['rating'], layout: 'bar' } },
+				layout: { root: ['rating', 'body'] },
+			};
+			const result = asTag(createTransform(baseConfig({ Testimonial: cfg }))(
+				makeTag('article', { 'data-rune': 'testimonial' }, [
+					makeTag('meta', { 'data-field': 'rating', content: '4' }),
+					makeTag('meta', { 'data-field': 'rating-total', content: '5' }),
+					makeTag('div', { 'data-name': 'body' }, ['x']),
+				]),
+			));
+			const widget = findByName(result, 'rating')!.children[0] as SerializedTag;
+			expect(widget.attributes['data-meta-type']).toBe('rating');
+			const marks = widget.children as SerializedTag[];
+			expect(marks.length).toBe(5);
+			expect(marks.filter(m => m.attributes['data-filled'] === 'true').length).toBe(4);
+			expect(marks.filter(m => m.attributes['data-filled'] === 'false').length).toBe(1);
+		});
+	});
+
 	describe('definition-list block — intrinsic shape', () => {
 		it('chip in dd for chip-type, bare dd for value-type', () => {
 			const cfg: RuneConfig = {

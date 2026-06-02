@@ -43,6 +43,23 @@
 	font-size: var(--meta-font-size, 0.8125rem);
 }
 
+/* Rating — `value` filled marks out of `total`; each mark carries
+ * `data-filled`. Stars via colour (filled = primary, empty = border). */
+[data-meta-type="rating"] {
+	display: inline-flex;
+	gap: 0.0625rem;
+	line-height: 1;
+}
+[data-meta-type="rating"] span::before {
+	content: '★';
+}
+[data-meta-type="rating"] span[data-filled="true"] {
+	color: var(--rf-color-primary);
+}
+[data-meta-type="rating"] span[data-filled="false"] {
+	color: var(--rf-color-border);
+}
+
 [data-meta-type="status"],
 [data-meta-type="category"],
 [data-meta-type="tag"] {

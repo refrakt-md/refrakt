@@ -73,6 +73,12 @@ export interface MetaField {
 	 *  any metadata that points elsewhere. */
 	href?: string;
 
+	/** Render the field as a rating widget. The field's value is the filled
+	 *  count; `total` names the modifier holding the maximum (default 5).
+	 *  Emits `total` mark elements, the first `value` of them `data-filled`.
+	 *  Used for star ratings, progress dots, etc. */
+	rating?: { total?: string };
+
 	/** Override the rendered element tag. Defaults to `span`; common
 	 *  override is `time` for temporal fields so the engine emits
 	 *  `<time datetime="…">…</time>`. */

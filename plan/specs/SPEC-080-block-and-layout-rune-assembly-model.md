@@ -160,10 +160,19 @@ metaFields?: Record<string, {
   tag?: string;
   splitOn?: string;
   transform?: 'duration' | 'uppercase' | 'capitalize';
-  // Render the field as a link: the named modifier's value is the URL, the
-  // field's label (or value) is the link text. Bare-rendered (no chip).
-  // Covers source/repo links and any metadata that points elsewhere.
+  // ── Rich field renderings (a field is one source value → one rendering,
+  //    which may be multi-node). Each is a small, opt-in rendering swap. ──
+  // Link: the named modifier's value is the URL, the field's label (or
+  // value) is the link text. Bare (no chip). Source/repo links etc.
   href?: string;
+  // Icon decoration: prefixes the value with an icon from
+  // `config.icons[group][value]` (engine renders the placeholder; lumina
+  // draws it via mask-image keyed on the value). The icon is part of THIS
+  // field — not a separate field. Covers hint type, etc.
+  icon?: { group: string };
+  // Rating: the value is a count; `total` names the modifier holding the
+  // max (default 5). Renders `total` marks, `value` of them filled.
+  rating?: { total?: string };
   // Render shape (chip vs bare) is derived from metaType — no per-field
   // override. If a real case ever needs one, revisit then.
 }>;
@@ -351,6 +360,20 @@ may mix both — `{ root: [...], content: [...] }` — when it has a container
   the deep-surgery escape hatch alongside `postTransform`; it is not subsumed
   into `layout`, which is deliberately shallow (ordered block names per
   container). Revisit if `layout` ever proves it can absorb the real cases.
+- **A field is one source → one rendering; no fan-out / fan-in.** Rich
+  renderings (`href`, `icon`, `rating`, `splitOn`) let a single field render
+  to multiple DOM nodes, and decorations (sentiment, `icon`) enrich it — but
+  the model deliberately has **no** "one value → multiple separate fields"
+  (fan-out) or "multiple values → one element" (fan-in) primitive. The two
+  genuinely-different needs go where they already belong: composing several
+  values into one is **transform** data-shaping (derive a single modifier);
+  placing one value in two spots is just **two fields** reading the same
+  modifier. This keeps fields as the single projection unit and avoids two
+  symmetric config mechanisms.
+- **`structure` is fully replaceable.** Its uses decompose into: metadata →
+  `blocks`; data-driven chrome (icon/label/rating) → rich field renderings;
+  pure decoration (e.g. codegroup window-dots) → CSS. So WORK-320 can remove
+  the `structure` path entirely (no `repeat`/injection mechanism survives).
 
 ## Open Questions
 

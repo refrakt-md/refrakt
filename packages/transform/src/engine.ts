@@ -1006,6 +1006,8 @@ interface ResolvedField {
 	field: MetaField;
 	/** Resolved link URL when the field declares `href` (a modifier name). */
 	href?: string;
+	/** Resolved rating maximum when the field declares `rating` (default 5). */
+	ratingTotal?: string;
 }
 
 function resolveField(
@@ -1023,7 +1025,10 @@ function resolveField(
 	}
 	const href = field.href ? (modifierValues[field.href] ?? '') : undefined;
 	if (field.href && !href) return null;
-	return { name, value, field, href };
+	const ratingTotal = field.rating
+		? (modifierValues[field.rating.total ?? ''] || '5')
+		: undefined;
+	return { name, value, field, href, ratingTotal };
 }
 
 /** Build a chip element — the universal `.rf-badge` primitive emitted by
@@ -1417,9 +1422,23 @@ function buildLinkValue(f: ResolvedField): SerializedTag {
 	}, [f.field.label ?? f.value]);
 }
 
-/** Render one resolved field in its intrinsic shape (link > chip > bare). */
+/** Build a rating widget — `total` mark elements, the first `value` filled.
+ *  Bare (no chip); CSS draws the marks (stars, dots) via `data-filled`. */
+function buildRatingValue(f: ResolvedField): SerializedTag {
+	const filled = Math.max(0, parseInt(f.value, 10) || 0);
+	const total = Math.max(0, parseInt(f.ratingTotal ?? '5', 10) || 5);
+	const marks: RendererNode[] = [];
+	for (let i = 0; i < total; i++) {
+		marks.push(makeTag('span', { 'data-filled': i < filled ? 'true' : 'false' }, []));
+	}
+	return makeTag('span', { 'data-meta-type': 'rating' }, marks);
+}
+
+/** Render one resolved field in its intrinsic shape (link > rating > chip >
+ *  bare). */
 function renderBlockValue(f: ResolvedField, includeLabel = false): SerializedTag {
 	if (f.field.href) return buildLinkValue(f);
+	if (f.field.rating) return buildRatingValue(f);
 	return fieldRendersAsChip(f.field)
 		? buildChip(f, { includeLabel })
 		: buildPlainValue(f);
