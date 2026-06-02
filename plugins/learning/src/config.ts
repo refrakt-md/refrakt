@@ -31,8 +31,9 @@ export const config: Record<string, RuneConfig> = {
 		},
 		zoneLayouts: { metadata: 'definition-list' },
 		// Nest the projected metadata def-list inside the content column,
-		// below the header — same placement as recipe.
+		// above the header — same placement as recipe.
 		zoneHost: 'content',
+		zoneHostPlacement: 'before',
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', tool: 'inline', step: 'inline' },
 	},
@@ -74,8 +75,9 @@ export const config: Record<string, RuneConfig> = {
 		zoneLayouts: { metadata: 'definition-list' },
 		// Recipe hand-assembles content + media columns for its split layout;
 		// nest the projected metadata def-list inside the content column rather
-		// than emitting it as a third top-level grid child.
+		// than emitting it as a third top-level grid child — above the header.
 		zoneHost: 'content',
+		zoneHostPlacement: 'before',
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', ingredient: 'inline', step: 'inline', media: 'image' },
 	},

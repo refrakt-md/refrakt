@@ -349,6 +349,17 @@ describe('SPEC-079 engine zone dispatcher', () => {
 			expect(metadata.attributes['data-zone-layout']).toBe('definition-list');
 		});
 
+		it('places the def-list above the header when zoneHostPlacement is "before"', () => {
+			const config = baseConfig({ Recipe: { ...recipeConfig, zoneHostPlacement: 'before' } });
+			const transform = createTransform(config);
+			const result = asTag(transform(makeRecipeTag('content')));
+
+			const content = findByName(result, 'content')!;
+			// metadata now reads on top of the header
+			expect(directNames(content)).toEqual(['metadata', 'title', 'ingredients']);
+			expect((content.children[0] as SerializedTag).name).toBe('dl');
+		});
+
 		it('falls back to top-level projection when the named host is absent', () => {
 			const config = baseConfig({ Recipe: recipeConfig });
 			const transform = createTransform(config);

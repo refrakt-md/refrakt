@@ -181,9 +181,15 @@ export interface RuneConfig {
 	 *  content column, not become a third grid child that breaks the split.
 	 *  When the named host isn't found among the children, the engine falls
 	 *  back to top-level projection — so it's safe to set on any rune.
-	 *  Projected zones are inserted after a leading `<header>` /
-	 *  `[data-section="header"]` within the host (below the heading/blurb). */
+	 *  Projected zones are inserted relative to a leading `<header>` /
+	 *  `[data-section="header"]` within the host — see `zoneHostPlacement`. */
 	zoneHost?: string;
+
+	/** Where projected zones land relative to the host's leading header:
+	 *  `'after'` (default) places them below the heading/blurb; `'before'`
+	 *  places them above it (metadata reads on top of the preamble). Only
+	 *  meaningful alongside `zoneHost`. */
+	zoneHostPlacement?: 'before' | 'after';
 
 	/** Auto-label children by tag name → data-name. E.g., { summary: 'header' } */
 	autoLabel?: Record<string, string>;

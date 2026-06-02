@@ -1321,7 +1321,7 @@ function assembleWithZones(
 	// `zoneHost` names such a pre-built content element, nest the projected
 	// preamble inside it — below any leading header — instead of beside it.
 	if (config.zoneHost && headerEls.length > 0) {
-		const hosted = injectIntoHost(remaining, config.zoneHost, headerEls);
+		const hosted = injectIntoHost(remaining, config.zoneHost, headerEls, config.zoneHostPlacement ?? 'after');
 		if (hosted) {
 			// Host found: preamble lives inside the content column. Keep the
 			// rune's own children (incl. content + media columns) at top level.
@@ -1347,14 +1347,15 @@ function assembleWithZones(
 }
 
 /** Insert projected header elements inside a pre-built host element (matched
- *  by `data-name`), positioned after a leading `<header>` /
- *  `[data-section="header"]` so the metadata reads below the heading/blurb.
- *  Returns a new children array with the host replaced, or `null` when no
- *  host with the given `data-name` is found. */
+ *  by `data-name`), positioned relative to a leading `<header>` /
+ *  `[data-section="header"]`: `'after'` reads below the heading/blurb,
+ *  `'before'` reads on top of it. Returns a new children array with the host
+ *  replaced, or `null` when no host with the given `data-name` is found. */
 function injectIntoHost(
 	children: RendererNode[],
 	hostName: string,
 	headerEls: RendererNode[],
+	placement: 'before' | 'after',
 ): RendererNode[] | null {
 	const hostIdx = children.findIndex(
 		c => isTag(c) && c.attributes['data-name'] === hostName,
@@ -1364,13 +1365,13 @@ function injectIntoHost(
 	const host = children[hostIdx] as SerializedTag;
 	const hostChildren = [...host.children];
 
-	// Place the projected zones after a leading header so they land below the
-	// heading/blurb. Default to the top of the host when no header is present.
+	// Anchor on a leading header; place the zones before or after it. When no
+	// header is present, both placements fall back to the top of the host.
 	let insertAt = 0;
 	for (let i = 0; i < hostChildren.length; i++) {
 		const hc = hostChildren[i];
 		if (isTag(hc) && (hc.name === 'header' || hc.attributes['data-section'] === 'header')) {
-			insertAt = i + 1;
+			insertAt = placement === 'before' ? i : i + 1;
 			break;
 		}
 	}
