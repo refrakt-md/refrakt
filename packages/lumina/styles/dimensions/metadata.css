@@ -148,6 +148,20 @@
 		gap: 0.375rem;
 	}
 
+	/* On narrow screens, fall back to the original label-left / value-right
+	 * list: each row's dt/dd flow directly into a two-column grid via
+	 * `display: contents`, which also drops the raised card surface (no box
+	 * to paint) so items read as a compact stacked list. */
+	[data-zone-layout="definition-list"] {
+		grid-template-columns: max-content 1fr;
+		gap: 0.25rem 1rem;
+		align-items: baseline;
+	}
+
+	[data-zone-layout="definition-list"] > [data-name="row"] {
+		display: contents;
+	}
+
 	[data-section="header"] {
 		gap: 0.375rem;
 		margin-bottom: 1.5rem;
