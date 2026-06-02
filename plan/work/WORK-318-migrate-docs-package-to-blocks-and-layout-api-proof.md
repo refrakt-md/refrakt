@@ -1,4 +1,4 @@
-{% work id="WORK-318" status="ready" priority="high" complexity="moderate" source="SPEC-080" tags="docs,plugin,api,symbol,migration,blocks,layout,bar,eyebrow,proof" milestone="v0.17.0" %}
+{% work id="WORK-318" status="in-progress" priority="high" complexity="moderate" source="SPEC-080" tags="docs,plugin,api,symbol,migration,blocks,layout,bar,eyebrow,proof" milestone="v0.17.0" %}
 
 # Migrate `docs` package to blocks/layout (api proof)
 

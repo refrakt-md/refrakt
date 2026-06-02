@@ -1768,8 +1768,7 @@
 			"root": ".rf-api",
 			"dataRune": "api",
 			"childOrder": [
-				"header",
-				"{content:body}"
+				"{content}"
 			],
 			"modifiers": {
 				"method": {
@@ -1787,37 +1786,6 @@
 					"source": "meta",
 					"classPattern": ".rf-api--{value}",
 					"dataAttribute": "data-auth"
-				}
-			},
-			"elements": {
-				"header": {
-					"tag": "div",
-					"selector": ".rf-api__header",
-					"source": "structure"
-				},
-				"method": {
-					"tag": "span",
-					"selector": ".rf-api__method",
-					"source": "structure",
-					"parent": "header"
-				},
-				"path": {
-					"tag": "code",
-					"selector": ".rf-api__path",
-					"source": "structure",
-					"parent": "header"
-				},
-				"auth": {
-					"tag": "span",
-					"selector": ".rf-api__auth",
-					"source": "structure",
-					"parent": "header",
-					"condition": "auth"
-				},
-				"body": {
-					"tag": "div",
-					"selector": ".rf-api__body",
-					"source": "contentWrapper"
 				}
 			}
 		},

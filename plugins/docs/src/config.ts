@@ -12,23 +12,24 @@ export const config: Record<string, RuneConfig> = {
 	Api: {
 		block: 'api',
 		defaultDensity: 'full',
-		sections: { header: 'header', body: 'body' },
-		contentWrapper: { tag: 'div', ref: 'body' },
+		sections: { body: 'body' },
 		modifiers: {
 			method: { source: 'meta', default: 'GET' },
 			path: { source: 'meta' },
 			auth: { source: 'meta' },
 		},
-		structure: {
-			header: {
-				tag: 'div', before: true,
-				children: [
-					{ tag: 'span', ref: 'method', metaText: 'method', metaType: 'category', sentimentMap: { GET: 'positive', POST: 'neutral', PUT: 'neutral', PATCH: 'caution', DELETE: 'negative' } },
-					{ tag: 'code', ref: 'path', metaText: 'path' },
-					{ tag: 'span', ref: 'auth', metaText: 'auth', condition: 'auth', metaType: 'status' },
-				],
-			},
+		metaFields: {
+			method: { metaType: 'category', sentimentMap: { GET: 'positive', POST: 'neutral', PUT: 'neutral', PATCH: 'caution', DELETE: 'negative' } },
+			path: { metaType: 'code' },
+			auth: { metaType: 'status', condition: 'auth' },
 		},
+		// Endpoint header as a single bar: method + path on the left, auth
+		// pushed to the right. Shape is intrinsic — method/auth are chips
+		// (category/status), path is bare monospace (code).
+		blocks: {
+			eyebrow: { fields: ['method', 'path', { field: 'auth', align: 'end' }], layout: 'bar', wrap: false },
+		},
+		layout: { root: ['eyebrow', 'body'] },
 		editHints: { body: 'none', method: 'none', path: 'none', auth: 'none' },
 	},
 	Symbol: {
