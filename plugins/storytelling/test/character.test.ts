@@ -39,13 +39,10 @@ Content.
 {% /character %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'character');
-		const roleMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'role');
-		expect(roleMeta).toBeDefined();
-		expect(roleMeta!.attributes.content).toBe('antagonist');
-
-		const statusMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'status');
-		expect(statusMeta).toBeDefined();
-		expect(statusMeta!.attributes.content).toBe('alive');
+		// SPEC-082: field values live in the data-rune-fields bag.
+		const fields = JSON.parse(tag!.attributes['data-rune-fields'] as string);
+		expect(fields.role).toBe('antagonist');
+		expect(fields.status).toBe('alive');
 	});
 
 	it('should handle compact card mode without headings', () => {

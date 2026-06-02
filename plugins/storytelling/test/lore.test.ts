@@ -29,9 +29,9 @@ Content.
 {% /lore %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
-		const catMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'category');
-		expect(catMeta).toBeDefined();
-		expect(catMeta!.attributes.content).toBe('prophecy');
+		// SPEC-082: field values live in the data-rune-fields bag.
+		const fields = JSON.parse(tag!.attributes['data-rune-fields'] as string);
+		expect(fields.category).toBe('prophecy');
 	});
 
 	it('should pass spoiler as meta string', () => {

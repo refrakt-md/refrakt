@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { extractSeo } from '@refrakt-md/runes';
 import { parse, findTag, findAllTags } from './helpers.js';
 
 describe('recipe tag', () => {
@@ -37,14 +38,10 @@ A classic Italian pasta dish.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
-		const metas = findAllTags(tag!, t => t.name === 'meta');
-		const prepTime = metas.find(m => m.attributes['data-field'] === 'prep-time');
-		expect(prepTime).toBeDefined();
-		expect(prepTime!.attributes.content).toBe('PT10M');
-
-		const difficulty = metas.find(m => m.attributes['data-field'] === 'difficulty');
-		expect(difficulty).toBeDefined();
-		expect(difficulty!.attributes.content).toBe('hard');
+		// SPEC-082: field values live in the data-rune-fields bag.
+		const fields = JSON.parse(tag!.attributes['data-rune-fields'] as string);
+		expect(fields.prepTime).toBe('PT10M');
+		expect(fields.difficulty).toBe('hard');
 	});
 
 	it('should create ingredients list and steps list', () => {
@@ -218,5 +215,25 @@ A delightful pasta recipe.
 
 		const blurb = findTag(header!, t => t.name === 'p' && t.attributes['data-name'] === 'blurb');
 		expect(blurb).toBeDefined();
+	});
+
+	// SPEC-082 (WORK-329): the schema.org SEO metas are independent of the data
+	// channel (no data-field) and render inline; JSON-LD parity is preserved and
+	// unset optionals are skipped (skip-empties).
+	it('keeps schema.org props in JSON-LD via the SEO metas, skipping unset optionals', () => {
+		const tree = parse(`{% recipe prepTime="PT15M" servings=4 %}
+# Test Recipe
+
+- one ingredient
+
+1. one step
+{% /recipe %}`);
+		const seo = extractSeo(tree as any, {} as any, '/test');
+		const recipe = seo.jsonLd.find((o: any) => o['@type'] === 'Recipe') as any;
+		expect(recipe).toBeDefined();
+		expect(recipe.prepTime).toBe('PT15M');
+		expect(recipe.recipeYield).toBe('4');
+		// cookTime was not set → skip-empties → absent from JSON-LD.
+		expect(recipe.cookTime).toBeUndefined();
 	});
 });

@@ -34,13 +34,10 @@ describe('plot tag', () => {
 {% /plot %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'plot');
-		const typeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'plot-type');
-		expect(typeMeta).toBeDefined();
-		expect(typeMeta!.attributes.content).toBe('quest');
-
-		const structMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'structure');
-		expect(structMeta).toBeDefined();
-		expect(structMeta!.attributes.content).toBe('linear');
+		// SPEC-082: field values live in the data-rune-fields bag.
+		const fields = JSON.parse(tag!.attributes['data-rune-fields'] as string);
+		expect(fields.plotType).toBe('quest');
+		expect(fields.structure).toBe('linear');
 	});
 
 	it('should parse status markers from list items', () => {
