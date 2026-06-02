@@ -1004,6 +1004,8 @@ interface ResolvedField {
 	name: string;
 	value: string;
 	field: MetaField;
+	/** Resolved link URL when the field declares `href` (a modifier name). */
+	href?: string;
 }
 
 function resolveField(
@@ -1019,7 +1021,9 @@ function resolveField(
 	if (field.transform && transforms[field.transform]) {
 		value = transforms[field.transform](value);
 	}
-	return { name, value, field };
+	const href = field.href ? (modifierValues[field.href] ?? '') : undefined;
+	if (field.href && !href) return null;
+	return { name, value, field, href };
 }
 
 /** Build a chip element — the universal `.rf-badge` primitive emitted by
@@ -1404,8 +1408,18 @@ interface BarItem {
 	align?: 'start' | 'end';
 }
 
-/** Render one resolved field in its intrinsic shape (chip vs bare). */
+/** Build a link value — `<a href>` carrying the field's label (or value) as
+ *  text, bare (no chip). `data-meta-type="link"` for theme typography. */
+function buildLinkValue(f: ResolvedField): SerializedTag {
+	return makeTag('a', {
+		href: f.href ?? '',
+		'data-meta-type': 'link',
+	}, [f.field.label ?? f.value]);
+}
+
+/** Render one resolved field in its intrinsic shape (link > chip > bare). */
 function renderBlockValue(f: ResolvedField, includeLabel = false): SerializedTag {
+	if (f.field.href) return buildLinkValue(f);
 	return fieldRendersAsChip(f.field)
 		? buildChip(f, { includeLabel })
 		: buildPlainValue(f);

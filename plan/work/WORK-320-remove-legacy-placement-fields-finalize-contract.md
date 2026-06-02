@@ -17,6 +17,10 @@ contract. Coordinate with `WORK-313` (remove the legacy `slots` /
   together or in sequence.
 - [ ] **`split` / `chip-row`** layout aliases removed; only `bar` and
   `definition-list` remain.
+- [ ] **Surface blocks in contracts.** Extend `generateStructureContract`
+  to read `blocks` / `layout` so projected block names (e.g. `eyebrow`,
+  `metadata`) appear as addressable elements + childOrder — one consistent
+  pass across plan / learning / docs (deferred here from WORK-314 / WORK-318).
 - [ ] **Contracts** regenerated.
 - [ ] **Docs.** Theme-authoring + plugin-authoring docs rewritten to the
   block / layout / `bar` / `code` vocabulary; zone-era documentation removed.

@@ -67,6 +67,12 @@ export interface MetaField {
 	 *  `assignee`, `milestone`, `source`. */
 	condition?: string;
 
+	/** Render the field as a link (`<a>`). The value of the named modifier
+	 *  is the URL; the field's `label` (falling back to its value) is the
+	 *  link text. Bare-rendered (no chip). Used for source/repo links and
+	 *  any metadata that points elsewhere. */
+	href?: string;
+
 	/** Override the rendered element tag. Defaults to `span`; common
 	 *  override is `time` for temporal fields so the engine emits
 	 *  `<time datetime="…">…</time>`. */

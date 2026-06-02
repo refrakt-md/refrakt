@@ -1,4 +1,4 @@
-{% work id="WORK-318" status="in-progress" priority="high" complexity="moderate" source="SPEC-080" tags="docs,plugin,api,symbol,migration,blocks,layout,bar,eyebrow,proof" milestone="v0.17.0" %}
+{% work id="WORK-318" status="done" priority="high" complexity="moderate" source="SPEC-080" tags="docs,plugin,api,symbol,migration,blocks,layout,bar,eyebrow,proof" milestone="v0.17.0" %}
 
 # Migrate `docs` package to blocks/layout (api proof)
 
@@ -15,14 +15,14 @@ the legacy `structure` path today, so this is its first real migration.
 
 ## Acceptance Criteria
 
-- [ ] **api.** `metaFields`: `method` (`category` + sentiment → chip),
+- [x] **api.** `metaFields`: `method` (`category` + sentiment → chip),
   `path` (`code` → bare `<code>`), `auth` (`status` → chip, conditional).
   `blocks: { eyebrow: { fields: ['method','path',{field:'auth',align:'end'}], layout: 'bar', wrap: false } }`,
   `layout: { content: ['eyebrow','body'] }`. The legacy `structure` block is
   removed.
-- [ ] **symbol.** Migrated analogously (kind / lang / since / deprecated /
+- [x] **symbol.** Migrated analogously (kind / lang / since / deprecated /
   source), preserving its sentiment and conditional fields.
-- [ ] **CSS + tests.** `api` / `symbol` CSS and docs tests updated; output
+- [x] **CSS + tests.** `api` / `symbol` CSS and docs tests updated; output
   matches today's visual (method/auth chips, path mono code).
 - [ ] **`WORK-309` marked superseded.**
 
@@ -42,5 +42,21 @@ of remaining packages (`WORK-319`).
 
 - {% ref "SPEC-080" /%} — api case study.
 - Supersedes `WORK-309` (SPEC-079 docs migration).
+
+## Resolution
+
+Completed: 2026-06-02
+
+Branch: claude/spec-079-implementation
+
+### What was done
+- api migrated straight to blocks/layout (the proof): endpoint header is one eyebrow bar — method (category->chip) + path (code->bare mono) + auth (status->chip, align end), all shape-from-metaType. Removed legacy structure/contentWrapper.
+- Added a link field type to the model (chosen over the alternatives): MetaField gains `href` (a modifier name); the field renders as a bare <a href> with the label (or value) as text, data-meta-type="link". Spec'd in SPEC-080.
+- symbol migrated: eyebrow bar (kind/lang chips + source link via href, aligned end) + a since/deprecated definition-list (labelled facts) + the authored headline; layout root [eyebrow, preamble, metadata, body]. CSS updated (.rf-symbol__eyebrow, link styling via [data-meta-type=link]); api.css trimmed to __eyebrow + __body.
+- Tests: engine-blocks gains a link-field case; contracts regenerated; full suite green (one pre-existing flaky plan history test passes on retry).
+
+### Notes
+- WORK-309 (SPEC-079 docs->zones) is superseded in substance; left untouched since the plan schema has no superseded/cancelled status (prior decision).
+- Deferred: surfacing block names in the generated structure contracts (the WORK-314 criterion). The generator reads structure/contentWrapper/autoLabel, not blocks/layout — it should be one consistent pass across plan/learning/docs, so it moves to WORK-320 (finalize contracts).
 
 {% /work %}

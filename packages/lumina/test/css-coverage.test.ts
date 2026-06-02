@@ -32,7 +32,7 @@ const KNOWN_MISSING_SELECTORS = new Set([
 	// pageSectionAutoLabel selectors — preamble + intro elements inherited from section system
 	'.rf-testimonial__quote',
 	'.rf-comparison__preamble', '.rf-comparison__eyebrow', '.rf-comparison__headline', '.rf-comparison__blurb', '.rf-comparison__image',
-	'.rf-symbol__preamble', '.rf-symbol__eyebrow', '.rf-symbol__headline', '.rf-symbol__blurb', '.rf-symbol__image',
+	'.rf-symbol__preamble', '.rf-symbol__headline', '.rf-symbol__blurb', '.rf-symbol__image',
 	'.rf-changelog__preamble', '.rf-changelog__eyebrow', '.rf-changelog__headline', '.rf-changelog__blurb', '.rf-changelog__image',
 	'.rf-blog__content', '.rf-blog__eyebrow', '.rf-blog__image',
 	'.rf-howto__preamble', '.rf-howto__eyebrow', '.rf-howto__headline', '.rf-howto__blurb', '.rf-howto__image',

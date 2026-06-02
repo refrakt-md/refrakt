@@ -197,6 +197,31 @@ describe('SPEC-080 block-and-layout assembly', () => {
 		});
 	});
 
+	describe('link field (href)', () => {
+		it('renders a bare <a> with the modifier value as href and label as text', () => {
+			const cfg: RuneConfig = {
+				block: 'symbol',
+				modifiers: { source: { source: 'meta' } },
+				metaFields: { source: { label: 'Source', href: 'source', condition: 'source' } },
+				blocks: { eyebrow: { fields: [{ field: 'source', align: 'end' }], layout: 'bar' } },
+				layout: { root: ['eyebrow', 'body'] },
+			};
+			const result = asTag(createTransform(baseConfig({ Symbol: cfg }))(
+				makeTag('article', { 'data-rune': 'symbol' }, [
+					makeTag('meta', { 'data-field': 'source', content: 'https://example.com/src.ts' }),
+					makeTag('div', { 'data-name': 'body' }, ['x']),
+				]),
+			));
+			const link = findByName(result, 'eyebrow')!.children[0] as SerializedTag;
+			expect(link.name).toBe('a');
+			expect(link.attributes.href).toBe('https://example.com/src.ts');
+			expect(link.attributes['data-meta-type']).toBe('link');
+			expect(link.attributes['data-align']).toBe('end');
+			expect(link.attributes.class).toBeUndefined(); // bare, not a chip
+			expect(link.children[0]).toBe('Source');
+		});
+	});
+
 	describe('definition-list block — intrinsic shape', () => {
 		it('chip in dd for chip-type, bare dd for value-type', () => {
 			const cfg: RuneConfig = {

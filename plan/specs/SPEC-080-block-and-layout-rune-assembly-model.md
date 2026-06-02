@@ -160,6 +160,10 @@ metaFields?: Record<string, {
   tag?: string;
   splitOn?: string;
   transform?: 'duration' | 'uppercase' | 'capitalize';
+  // Render the field as a link: the named modifier's value is the URL, the
+  // field's label (or value) is the link text. Bare-rendered (no chip).
+  // Covers source/repo links and any metadata that points elsewhere.
+  href?: string;
   // Render shape (chip vs bare) is derived from metaType — no per-field
   // override. If a real case ever needs one, revisit then.
 }>;

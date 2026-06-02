@@ -1794,8 +1794,7 @@
 			"root": ".rf-symbol",
 			"dataRune": "symbol",
 			"childOrder": [
-				"header",
-				"{content:body}"
+				"{content}"
 			],
 			"modifiers": {
 				"kind": {
@@ -1827,49 +1826,6 @@
 				}
 			},
 			"elements": {
-				"header": {
-					"tag": "div",
-					"selector": ".rf-symbol__header",
-					"source": "structure"
-				},
-				"kind-badge": {
-					"tag": "span",
-					"selector": ".rf-symbol__kind-badge",
-					"source": "structure",
-					"parent": "header"
-				},
-				"lang-badge": {
-					"tag": "span",
-					"selector": ".rf-symbol__lang-badge",
-					"source": "structure",
-					"parent": "header"
-				},
-				"since-badge": {
-					"tag": "span",
-					"selector": ".rf-symbol__since-badge",
-					"source": "structure",
-					"parent": "header",
-					"condition": "since"
-				},
-				"deprecated-badge": {
-					"tag": "span",
-					"selector": ".rf-symbol__deprecated-badge",
-					"source": "structure",
-					"parent": "header",
-					"condition": "deprecated"
-				},
-				"source-link": {
-					"tag": "a",
-					"selector": ".rf-symbol__source-link",
-					"source": "structure",
-					"parent": "header",
-					"condition": "source"
-				},
-				"body": {
-					"tag": "div",
-					"selector": ".rf-symbol__body",
-					"source": "contentWrapper"
-				},
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-symbol__preamble",

@@ -35,8 +35,7 @@ export const config: Record<string, RuneConfig> = {
 	Symbol: {
 		block: 'symbol',
 		defaultDensity: 'full',
-		sections: { header: 'header', preamble: 'preamble', headline: 'title', body: 'body' },
-		contentWrapper: { tag: 'div', ref: 'body' },
+		sections: { preamble: 'preamble', headline: 'title', body: 'body' },
 		modifiers: {
 			kind: { source: 'meta', default: 'function' },
 			lang: { source: 'meta', default: 'typescript' },
@@ -44,20 +43,22 @@ export const config: Record<string, RuneConfig> = {
 			deprecated: { source: 'meta' },
 			source: { source: 'meta' },
 		},
-		structure: {
-			header: {
-				tag: 'div', before: true,
-				children: [
-					{ tag: 'span', ref: 'kind-badge', metaText: 'kind', metaType: 'category' },
-					{ tag: 'span', ref: 'lang-badge', metaText: 'lang', metaType: 'category' },
-					{ tag: 'span', ref: 'since-badge', metaText: 'since', label: 'Since:', condition: 'since', metaType: 'temporal' },
-					{ tag: 'span', ref: 'deprecated-badge', metaText: 'deprecated', label: 'Deprecated:', condition: 'deprecated', metaType: 'status', sentimentMap: { true: 'negative' } },
-					{ tag: 'a', ref: 'source-link', condition: 'source', attrs: { href: { fromModifier: 'source' } }, children: ['Source'] },
-				],
-			},
+		metaFields: {
+			kind: { metaType: 'category' },
+			lang: { metaType: 'category' },
+			since: { metaType: 'temporal', label: 'Since', condition: 'since' },
+			deprecated: { metaType: 'status', label: 'Deprecated', condition: 'deprecated', sentimentMap: { true: 'negative' } },
+			source: { label: 'Source', href: 'source', condition: 'source' },
 		},
+		// Signature bar (kind + lang chips, source link pushed right) above the
+		// title; version facts (since / deprecated) as a labelled def-list.
+		blocks: {
+			eyebrow: { fields: ['kind', 'lang', { field: 'source', align: 'end' }], layout: 'bar' },
+			metadata: { fields: ['since', 'deprecated'], layout: 'definition-list' },
+		},
+		layout: { root: ['eyebrow', 'preamble', 'metadata', 'body'] },
 		autoLabel: pageSectionAutoLabel,
-		editHints: { headline: 'inline', body: 'none', 'kind-badge': 'none', 'lang-badge': 'none', 'since-badge': 'none', 'deprecated-badge': 'none', 'source-link': 'link' },
+		editHints: { headline: 'inline', body: 'none', kind: 'none', lang: 'none', since: 'none', deprecated: 'none', source: 'link' },
 	},
 	SymbolGroup: { block: 'symbol-group', parent: 'Symbol', editHints: { label: 'inline', body: 'none' } },
 	SymbolMember: { block: 'symbol-member', parent: 'Symbol', editHints: { name: 'inline', body: 'none' } },
