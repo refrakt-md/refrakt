@@ -318,11 +318,13 @@ after the title.
   the theme didn't name are appended in transform order, so the rune's own
   content is never silently dropped.
 
+- **`projection` stays.** `projection` (hide/group/relocate) is retained as
+  the deep-surgery escape hatch alongside `postTransform`; it is not subsumed
+  into `layout`, which is deliberately shallow (ordered block names per
+  container). Revisit if `layout` ever proves it can absorb the real cases.
+
 ## Open Questions
 
-- Fate of `projection` (hide/group/relocate): fully subsumed by `layout`, or
-  retained as the deep-surgery escape hatch alongside `postTransform`? (Leaning
-  retain — `layout` is deliberately shallow/explicit; deep tree surgery wants a
-  separate, clearly-escape-hatch home.)
+_None outstanding — see Resolved decisions._
 
 {% /spec %}
