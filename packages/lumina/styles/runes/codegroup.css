@@ -22,18 +22,26 @@
 	border-bottom: 1px solid var(--rf-color-border);
 	margin-bottom: 0;
 }
-.rf-codegroup__dot {
-	width: 10px;
+/* Window chrome — three traffic-light dots painted as gradients on one
+ * pseudo-element. The element reserves real width (three 10px dots, 1rem
+ * apart) so the flex row spaces the title clear of the dots — box-shadow
+ * dots take no layout space and overlapped the title. Pure decoration, so
+ * it lives entirely in CSS (no markup). */
+.rf-codegroup__topbar::before {
+	content: '';
+	flex: 0 0 auto;
+	width: 2.625rem;
 	height: 10px;
-	border-radius: var(--rf-radius-full);
 	opacity: 0.8;
+	background-repeat: no-repeat;
+	background-image:
+		radial-gradient(circle at 5px 50%, #ef4444 5px, transparent 5px),
+		radial-gradient(circle at calc(5px + 1rem) 50%, #f59e0b 5px, transparent 5px),
+		radial-gradient(circle at calc(5px + 2rem) 50%, #22c55e 5px, transparent 5px);
 }
-.rf-codegroup__dot:nth-child(1) { background: #ef4444; }
-.rf-codegroup__dot:nth-child(2) { background: #f59e0b; }
-.rf-codegroup__dot:nth-child(3) { background: #22c55e; }
-.rf-codegroup__title[data-section="title"] {
+/* Filename title — the topbar bar's lone `code` field. */
+.rf-codegroup__topbar [data-meta-type="code"] {
 	margin-left: 0.5rem;
-	font-family: var(--rf-font-mono);
 	font-size: 0.8rem;
 	font-weight: normal;
 	color: var(--rf-color-muted);

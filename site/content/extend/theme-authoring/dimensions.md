@@ -1,21 +1,21 @@
 ---
 title: Universal Theming Dimensions
-description: Ten semantic data attributes that enable generic cross-rune styling — metadata badges, density, sections, media, state, and more
+description: Semantic data attributes that enable generic cross-rune styling — metadata badges, density, sections, media, state, and more
 ---
 
 # Universal Theming Dimensions
 
 Traditional theme development requires per-rune CSS for every rune in the ecosystem. A recipe's difficulty badge, a character's status badge, and a work item's priority badge all need separate styles — even though they're conceptually the same thing.
 
-Universal theming dimensions solve this. Ten semantic data attributes describe **what** something is, not **how** it should look. The identity transform emits these attributes automatically from the rune config. A theme writes ~54 generic CSS rules targeting these attributes, and every rune — core, community, or custom — is styled.
+Universal theming dimensions solve this. A handful of semantic data attributes describe **what** something is, not **how** it should look. The identity transform emits these attributes automatically from the rune config. A theme writes generic CSS rules targeting these attributes, and every rune — core, community, or custom — is styled.
 
 ## Overview
 
 | Dimension | Attribute | Values | Controls | Declared by |
 |-----------|-----------|--------|----------|-------------|
-| **Meta type** | `data-meta-type` | `status`, `category`, `quantity`, `temporal`, `tag`, `id` | Badge visual shape | `StructureEntry.metaType` |
-| **Sentiment** | `data-meta-sentiment` | `positive`, `negative`, `caution`, `neutral` | Badge color | `StructureEntry.sentimentMap` |
-| **Rank** | `data-meta-rank` | `primary`, `secondary` | Badge prominence | `StructureEntry.metaRank` |
+| **Meta type** | `data-meta-type` | `status`, `category`, `quantity`, `temporal`, `tag`, `id` | Typography hints (monospace, tabular-nums) | `MetaField.metaType` (or legacy `StructureEntry.metaType`) |
+| **Sentiment** | `data-meta-sentiment` | `positive`, `negative`, `caution`, `neutral` | Badge / value color | `MetaField.sentimentMap` (or legacy `StructureEntry.sentimentMap`) |
+| **Zone layout** | `data-zone-layout` | `bar`, `definition-list` | Geometric shape of a metadata block (flex row, dt/dd grid) | A block's `layout` primitive in `blocks` (SPEC-080) |
 | **Density** | `data-density` | `full`, `compact`, `minimal` | Spacing and detail level | `RuneConfig.defaultDensity` + context |
 | **Section** | `data-section` | `header`, `preamble`, `title`, `description`, `body`, `footer`, `media` | Structural anatomy | `RuneConfig.sections` |
 | **Media** | `data-media` | `portrait`, `cover`, `thumbnail`, `hero`, `icon` | Image treatment | `RuneConfig.mediaSlots` |
@@ -24,7 +24,9 @@ Universal theming dimensions solve this. Ten semantic data attributes describe *
 | **State** | `data-state` | `open`, `closed`, `active`, `inactive`, `selected`, `disabled` | Interactive states | Behavior scripts |
 | **Surface** | (class-based) | `card`, `inline`, `banner`, `inset` | Container treatment | Theme only |
 
-The first three (meta type, sentiment, rank) style metadata badges. The remaining seven style the rune's structure, content, and behavior.
+The first three style metadata content. **Meta type** and **sentiment** describe the field itself; **zone layout** describes the geometric shape around groups of fields. The remaining dimensions style the rune's structure, content, and behavior.
+
+> **Type-vs-layout split.** `data-meta-type` is *typography only* — it controls monospace for `id` / `code`, tabular nums for `quantity` / `temporal`, primary color for `id`, and nothing else. The geometric shape (chip pill, plain text, def-list cell) comes from `data-zone-layout` and the universal `.rf-badge` class. The same field renders as a chip in one block and as plain text in another with no per-field config change — the field's `metaType` and decorations decide its intrinsic shape, the block's layout primitive decides the surrounding geometry.
 
 ---
 
@@ -32,9 +34,9 @@ The first three (meta type, sentiment, rank) style metadata badges. The remainin
 
 Metadata badges — status indicators, categories, durations, tags — appear across dozens of runes. The metadata system provides three dimensions so themes can style every badge generically.
 
-### Declaring metadata on structure entries
+### Declaring metadata — `metaFields`, `blocks`, `layout` (SPEC-080)
 
-Metadata dimensions are declared inline on `StructureEntry` children, alongside existing fields like `metaText` and `condition`:
+Runes declare their meta-bearing fields via the `metaFields` manifest on `RuneConfig`. Each entry is pure data — no rendering hints. Named `blocks` project fields from the manifest into a layout primitive, and the `layout` map places every child explicitly. See [Blocks & layout](/extend/theme-authoring/blocks-and-layout) for the full model.
 
 ```typescript
 Recipe: {
@@ -43,88 +45,89 @@ Recipe: {
     difficulty: { source: 'meta', default: 'medium' },
     prepTime: { source: 'meta' },
     servings: { source: 'meta' },
+    tags: { source: 'meta', noBemClass: true },
   },
-  structure: {
-    meta: {
-      tag: 'div', before: true,
-      conditionAny: ['prepTime', 'servings', 'difficulty'],
-      children: [
-        { tag: 'span', ref: 'meta-item', metaText: 'prepTime',
-          transform: 'duration', label: 'Prep:', condition: 'prepTime',
-          metaType: 'temporal', metaRank: 'primary' },
-        { tag: 'span', ref: 'meta-item', metaText: 'servings',
-          label: 'Serves:', condition: 'servings',
-          metaType: 'quantity', metaRank: 'primary' },
-        { tag: 'span', ref: 'badge', metaText: 'difficulty',
-          condition: 'difficulty',
-          metaType: 'category', metaRank: 'primary',
-          sentimentMap: { easy: 'positive', medium: 'neutral', hard: 'caution' } },
-      ],
-    },
+  metaFields: {
+    prepTime:   { metaType: 'temporal', label: 'Prep',     tag: 'time', condition: 'prepTime' },
+    servings:   { metaType: 'quantity', label: 'Serves',   condition: 'servings' },
+    difficulty: { metaType: 'category', label: 'Difficulty',
+                  sentimentMap: { easy: 'positive', medium: 'neutral', hard: 'caution' } },
+    tags:       { metaType: 'tag',      label: 'Tags',     condition: 'tags', splitOn: ',' },
   },
+  blocks: {
+    metadata: { fields: ['prepTime', 'servings', 'difficulty'], layout: 'definition-list' },
+    tags:     { fields: ['tags'], layout: 'bar' },
+  },
+  layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
 }
 ```
 
-### StructureEntry fields
+### MetaField fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `metaType` | `'status' \| 'category' \| 'quantity' \| 'temporal' \| 'tag' \| 'id'` | Determines visual shape (pill, chip, monospace, etc.). Emits `data-meta-type` |
-| `metaRank` | `'primary' \| 'secondary'` | Controls prominence — size and opacity. Emits `data-meta-rank` |
-| `sentimentMap` | `Record<string, 'positive' \| 'negative' \| 'caution' \| 'neutral'>` | Maps specific modifier values to sentiment colors. Emits `data-meta-sentiment` when matched |
+| `metaType` | `'status' \| 'category' \| 'quantity' \| 'temporal' \| 'tag' \| 'id' \| 'code'` | Semantic kind; drives intrinsic render shape and typography. Emits `data-meta-type` |
+| `sentimentMap` | `Record<string, 'positive' \| 'negative' \| 'caution' \| 'neutral'>` | Maps the field's resolved value to a sentiment. Emits `data-meta-sentiment` when matched — color only, never changes shape |
+| `label` | `string` | Human-readable label. Rendered as `<dt>` in a `definition-list`, and as link / icon text where applicable; `bar` fields are unlabelled |
+| `condition` | `string` | Field renders only when the named modifier has a truthy value |
+| `renderWhenEmpty` | `boolean` | Loosen `condition` to test *presence* instead of truthiness — the field renders when its modifier is defined, even if the value is `""`. Lets an empty-but-present value still project a block (e.g. `codegroup` `title=""` renders the window chrome without a filename) |
+| `href` | `string` | Render the field as a link; the named modifier holds the URL. Renders bare (no chip) |
+| `rating` | `{ total?: string }` | Render the field as a rating widget; the value is the filled count, `total` names the modifier holding the max (default `5`) |
+| `icon` | `{ group: string }` | Decorate with a leading icon; the field's *value* selects the glyph within `group` |
+| `tag` | `string` | Element tag override. Default `span`; use `time` for temporal fields so the engine emits `<time datetime="…">…</time>` |
+| `splitOn` | `string` | Treat the value as a delimited collection — split on this character, render one element per item. Used for `tags`-style fields |
+| `transform` | `'duration' \| 'uppercase' \| 'capitalize'` | Value transform applied before rendering |
+
+### Legacy `StructureEntry` fields
+
+Runes that haven't migrated to `metaFields` declare metadata inline on `StructureEntry` children (legacy path). The engine continues to render these through the existing slot-based assembly with the universal `.rf-badge` class applied automatically.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `metaType` | `'status' \| 'category' \| 'quantity' \| 'temporal' \| 'tag' \| 'id'` | Same semantics as `MetaField.metaType` |
+| `sentimentMap` | `Record<string, 'positive' \| 'negative' \| 'caution' \| 'neutral'>` | Same semantics as `MetaField.sentimentMap` |
 
 ### How the engine emits them
 
-When a structure entry has `metaType`, the engine adds data attributes to the generated element:
+When a field renders as a chip (`metaType` is `status`, `category`, or `tag`), the engine emits `class="rf-badge"` plus the meta attributes:
 
 ```html
-<!-- A recipe badge with difficulty="easy" -->
-<span class="rf-recipe__badge"
+<!-- A recipe badge for difficulty="easy" -->
+<span class="rf-badge"
       data-meta-type="category"
-      data-meta-rank="primary"
-      data-meta-sentiment="positive"
-      data-difficulty="easy"
-      data-name="badge">
-  easy
-</span>
+      data-meta-sentiment="positive">easy</span>
 ```
 
-The existing `data-{modifier}` attribute (e.g., `data-difficulty`) is still emitted as before — metadata attributes are additive.
+For bare values (`id`, `quantity`, `temporal`, `code`, or no `metaType`), the chip class is omitted and only typography hints carry through:
 
-When no `sentimentMap` is provided, or the current value has no mapping, `data-meta-sentiment` is omitted. The theme defaults to neutral styling.
+```html
+<!-- A complexity value in a def-list <dd> -->
+<dd data-meta-type="quantity">moderate</dd>
+```
+
+When no `sentimentMap` is provided, or the current value has no mapping, `data-meta-sentiment` is omitted and the value renders neutrally.
 
 ### Meta type CSS
 
-Each type gets a distinct visual treatment. All six share a common pill shape in Lumina but differ in font treatment:
+Each type gets typography only — monospace for `id` / `code`, tabular-nums for `quantity` / `temporal`, primary color for `id`, nothing else for the rest. Geometry (chip pill, definition list grid, bar row) lives on `[data-zone-layout]` selectors.
 
 ```css
-/* Status: bordered pill */
-[data-meta-type="status"] {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.5em 1.0em;
-  border: 1px solid var(--rf-color-border);
-  border-radius: 999px;
-  font-size: var(--meta-font-size, 0.8125rem);
-  font-weight: 500;
-}
-
-/* Quantity: tabular numbers for alignment */
-[data-meta-type="quantity"] {
-  /* ...same pill base... */
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-}
-
-/* ID: monospace for identifiers */
-[data-meta-type="id"] {
-  /* ...same pill base... */
+[data-meta-type="id"],
+[data-meta-type="code"] {
   font-family: var(--rf-font-mono, monospace);
+}
+
+[data-meta-type="id"] {
+  color: var(--rf-color-primary);
+}
+
+[data-meta-type="quantity"],
+[data-meta-type="temporal"] {
+  font-variant-numeric: tabular-nums;
 }
 ```
 
-A different theme could make types look completely different — status as a dot indicator, category as an outlined chip, quantity as a bold number. The attribute tells you **what** it is; your CSS decides **how** it looks.
+The chip primitive (universal `.rf-badge`) supplies the pill shape, sentiment-tinted background, and compact padding. Layout selectors supply the surrounding arrangement (bar row, def-list grid).
 
 ### Sentiment CSS
 
@@ -148,33 +151,54 @@ Sentiment maps to color through a `--meta-color` custom property:
 
 The `--meta-color` property cascades into the type rules. A status pill with `data-meta-sentiment="positive"` gets a green dot because `--meta-color` resolves to `--rf-color-success`.
 
-### Rank CSS
+### Zone layout CSS
 
-Rank controls size and opacity through a `--meta-font-size` custom property:
+The two layout primitives carry their own geometry:
 
 ```css
-[data-meta-rank="primary"] {
-  --meta-font-size: 0.8125rem;
+/* Horizontal flex row of fields, each in its intrinsic shape */
+[data-zone-layout="bar"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
 }
 
-[data-meta-rank="secondary"] {
-  --meta-font-size: 0.75rem;
-  opacity: 0.8;
+/* A field opting into align: 'end' is pushed (with everything after it) right */
+[data-zone-layout="bar"] [data-align="end"] {
+  margin-left: auto;
+}
+
+/* wrap: false keeps the row on one line */
+[data-zone-layout="bar"][data-wrap="false"] {
+  flex-wrap: nowrap;
+}
+
+/* Stacked dt/dd pairs flowing into multi-column at wider widths */
+[data-zone-layout="definition-list"] {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem 1.5rem;
+}
+
+@media (min-width: 48rem) {
+  [data-zone-layout="definition-list"] {
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  }
 }
 ```
 
-The type rules consume `--meta-font-size`. Secondary metadata is slightly smaller and faded regardless of type.
+See [Blocks & layout](/extend/theme-authoring/blocks-and-layout) for the complete DOM contract each primitive emits.
 
 ### Labels
 
-Structure entries can include a `label` field that emits a separate `<span data-meta-label>` element:
+`MetaField` (or legacy `StructureEntry`) entries can include a `label` field. In `definition-list` it becomes the `<dt>`; in a `bar` it's ignored (bar fields are unlabelled, eyebrow-style, by contract). It is also used as the text for `href` links and `icon`-decorated fields.
 
 ```typescript
-{ tag: 'span', ref: 'meta-item', metaText: 'prepTime',
-  label: 'Prep:', metaType: 'temporal', metaRank: 'primary' }
+prepTime: { metaType: 'temporal', label: 'Prep', tag: 'time', condition: 'prepTime' }
 ```
 
-Set `labelHidden: true` to make the label visually hidden but accessible to screen readers — useful when the value is self-explanatory (like an ID badge where "WORK-042" doesn't need a "ID:" prefix).
+For legacy `StructureEntry`-only paths, `labelHidden: true` makes the label visually hidden but accessible to screen readers — useful when the value is self-explanatory (like an ID badge where "WORK-042" doesn't need a visible "ID:" prefix).
 
 ---
 
@@ -460,7 +484,7 @@ All surfaces consume the `--rune-padding` variable set by the density dimension,
 Dimensions compose naturally. Key interactions:
 
 - **Density x Sections** — compact truncates descriptions to 2 lines; minimal hides description, body, and footer
-- **Density x Metadata** — compact and minimal hide secondary-rank metadata
+- **Density x Metadata** — compact and minimal can hide a metadata block entirely or collapse a `definition-list` block to a `bar`
 - **Density x Media** — compact shrinks portraits; minimal hides all media
 - **Density x Sequence** — compact tightens spacing; minimal removes indicators
 - **Surface x Density** — surfaces consume `--rune-padding` which density sets
@@ -475,7 +499,7 @@ Dimension CSS lives in a dedicated directory, separate from per-rune CSS:
 ```
 styles/
 ├── dimensions/
-│   ├── metadata.css      # data-meta-type, data-meta-sentiment, data-meta-rank
+│   ├── metadata.css      # data-meta-type, data-meta-sentiment, data-zone-layout
 │   ├── density.css        # data-density
 │   ├── sections.css       # data-section
 │   ├── state.css          # data-state
@@ -519,29 +543,29 @@ A plugin author declares dimensions on their rune config and gets themed automat
 WineTasting: {
   block: 'wine-tasting',
   defaultDensity: 'full',
-  sections: { header: 'header', title: 'title', notes: 'body', footer: 'footer' },
-  mediaSlots: { label: 'thumbnail' },
-  structure: {
-    header: {
-      tag: 'div', before: true,
-      children: [
-        { tag: 'span', ref: 'vintage', metaText: 'vintage',
-          metaType: 'temporal', metaRank: 'primary' },
-        { tag: 'span', ref: 'rating', metaText: 'rating',
-          metaType: 'quantity', metaRank: 'primary',
-          sentimentMap: { '90+': 'positive', '80-89': 'neutral', '<80': 'caution' } },
-        { tag: 'span', ref: 'varietal', metaText: 'varietal',
-          metaType: 'tag', metaRank: 'secondary' },
-      ],
-    },
+  modifiers: {
+    vintage: { source: 'meta' },
+    rating: { source: 'meta' },
+    varietal: { source: 'meta' },
   },
+  metaFields: {
+    vintage:  { metaType: 'temporal', label: 'Vintage', tag: 'time' },
+    rating:   { metaType: 'quantity', label: 'Rating',
+                sentimentMap: { '90+': 'positive', '80-89': 'neutral', '<80': 'caution' } },
+    varietal: { metaType: 'tag',      label: 'Varietal' },
+  },
+  blocks: {
+    metadata: { fields: ['vintage', 'rating', 'varietal'], layout: 'definition-list' },
+  },
+  layout: { root: ['title', 'metadata', 'body'] },
+  mediaSlots: { label: 'thumbnail' },
 }
 ```
 
 Without any theme-specific CSS for this rune:
-- The vintage renders as a temporal pill
-- The rating renders as a quantity pill with sentiment color
-- The varietal renders as a secondary tag (smaller, faded)
+- The vintage renders as bare temporal text (tabular nums) in its `<dd>`
+- The rating renders as bare quantity text, tinted by its sentiment color
+- The varietal renders as a tag chip (`.rf-badge`)
 - Sections get standard layout (header flex-row, title bold, body standard)
 - The label image gets thumbnail treatment
 - In a grid, density drops to compact automatically

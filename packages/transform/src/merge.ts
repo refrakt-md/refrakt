@@ -1,4 +1,4 @@
-import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, TintTokens, BgPresetDefinition } from './types.js';
+import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, TintTokens, BgPresetDefinition, BlockDef } from './types.js';
 import type { ThemeTokensConfig } from '@refrakt-md/types';
 
 export interface ThemeConfigOverrides {
@@ -32,7 +32,7 @@ export function mergeThemeConfig(
 	const mergedRunes = { ...base.runes };
 	if (overrides.runes) {
 		for (const [key, value] of Object.entries(overrides.runes)) {
-			mergedRunes[key] = { ...mergedRunes[key], ...value } as RuneConfig;
+			mergedRunes[key] = mergeRuneConfig(mergedRunes[key], value);
 		}
 	}
 
@@ -49,6 +49,43 @@ export function mergeThemeConfig(
 		tints: resolvedTints,
 		backgrounds: { ...base.backgrounds, ...overrides.backgrounds },
 	};
+}
+
+/**
+ * Per-rune config merge with SPEC-080 awareness.
+ *
+ * Most fields shallow-merge (override replaces base). The block-model
+ * fields `metaFields`, `blocks`, and `layout` merge by inner key so a
+ * theme can override a single field, block, or container's order without
+ * restating the full plugin map.
+ */
+function mergeRuneConfig(
+	base: RuneConfig | undefined,
+	override: Partial<RuneConfig>,
+): RuneConfig {
+	if (!base) return override as RuneConfig;
+
+	const merged: RuneConfig = { ...base, ...override };
+
+	if (base.metaFields || override.metaFields) {
+		merged.metaFields = { ...base.metaFields, ...override.metaFields };
+	}
+
+	if (base.blocks || override.blocks) {
+		const blocks: Record<string, BlockDef> = { ...base.blocks };
+		if (override.blocks) {
+			for (const [name, def] of Object.entries(override.blocks)) {
+				blocks[name] = def;
+			}
+		}
+		merged.blocks = blocks;
+	}
+
+	if (base.layout || override.layout) {
+		merged.layout = { ...base.layout, ...override.layout };
+	}
+
+	return merged;
 }
 
 /**

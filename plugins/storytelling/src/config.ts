@@ -5,24 +5,29 @@ export const config: Record<string, RuneConfig> = {
 	Character: {
 		block: 'character',
 		defaultDensity: 'full',
-		sections: { badge: 'header', name: 'title', content: 'body', portrait: 'media' },
+		sections: { preamble: 'preamble', name: 'title', portrait: 'media' },
 		mediaSlots: { portrait: 'portrait' },
-		contentWrapper: { tag: 'div', ref: 'content' },
 		modifiers: {
 			role: { source: 'meta', default: 'supporting' },
 			status: { source: 'meta', default: 'alive' },
 			aliases: { source: 'meta' },
 			tags: { source: 'meta' },
 		},
-		structure: {
-			badge: {
-				tag: 'div', before: true,
-				children: [
-					{ tag: 'span', ref: 'role-badge', metaText: 'role', label: 'Role:', metaType: 'category', metaRank: 'primary' },
-					{ tag: 'span', ref: 'status-badge', metaText: 'status', label: 'Status:', condition: 'status', metaType: 'status', metaRank: 'primary', sentimentMap: { alive: 'positive', dead: 'negative', unknown: 'neutral', missing: 'caution' } },
-				],
+		metaFields: {
+			role: { metaType: 'category', label: 'Role' },
+			status: {
+				metaType: 'status', label: 'Status',
+				sentimentMap: { alive: 'positive', dead: 'negative', unknown: 'neutral', missing: 'caution' },
 			},
 		},
+		// Role/status render as a definition-list nested in the content column
+		// below the title (recipe pattern). The portrait stays a floated avatar
+		// (character-specific chrome), not a split media column.
+		blocks: {
+			metadata: { fields: ['role', 'status'], layout: 'definition-list' },
+		},
+		layout: { content: ['preamble', 'metadata'] },
+		autoLabel: { header: 'preamble' },
 		editHints: { name: 'inline', portrait: 'image', body: 'none', sections: 'none' },
 	},
 	CharacterSection: { block: 'character-section', parent: 'Character', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
@@ -30,7 +35,7 @@ export const config: Record<string, RuneConfig> = {
 	Realm: {
 		block: 'realm',
 		defaultDensity: 'full',
-		sections: { badge: 'header', name: 'title', scene: 'media' },
+		sections: { preamble: 'preamble', name: 'title', scene: 'media' },
 		mediaSlots: { scene: 'cover' },
 		rootAttributes: { 'data-media-position': 'top' },
 		modifiers: {
@@ -49,16 +54,17 @@ export const config: Record<string, RuneConfig> = {
 			valign: { prop: '--split-valign', transform: resolveValign },
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
-		structure: {
-			badge: {
-				tag: 'div', before: true,
-				children: [
-					{ tag: 'span', ref: 'type-badge', metaText: 'realmType', label: 'Type:', metaType: 'category', metaRank: 'primary' },
-					{ tag: 'span', ref: 'scale-badge', metaText: 'scale', label: 'Scale:', condition: 'scale', metaType: 'category', metaRank: 'secondary' },
-				],
-			},
+		metaFields: {
+			realmType: { metaType: 'category', label: 'Type' },
+			scale: { metaType: 'category', label: 'Scale', condition: 'scale' },
 		},
-		autoLabel: { scene: 'scene' },
+		// Facts render as a definition-list nested in the content column below
+		// the title (recipe pattern) — no separate eyebrow zone.
+		blocks: {
+			metadata: { fields: ['realmType', 'scale'], layout: 'definition-list' },
+		},
+		layout: { content: ['preamble', 'metadata'] },
+		autoLabel: { scene: 'scene', header: 'preamble' },
 		editHints: { name: 'inline', scene: 'image', body: 'none', sections: 'none' },
 	},
 	RealmSection: { block: 'realm-section', parent: 'Realm', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
@@ -66,29 +72,26 @@ export const config: Record<string, RuneConfig> = {
 	Lore: {
 		block: 'lore',
 		defaultDensity: 'full',
-		sections: { badge: 'header', title: 'title', content: 'body' },
-		contentWrapper: { tag: 'div', ref: 'content' },
+		sections: { title: 'title', body: 'body' },
 		modifiers: {
 			category: { source: 'meta' },
 			spoiler: { source: 'meta', default: 'false' },
 			tags: { source: 'meta' },
 		},
-		structure: {
-			badge: {
-				tag: 'div', before: true,
-				conditionAny: ['category'],
-				children: [
-					{ tag: 'span', ref: 'category-badge', metaText: 'category', label: 'Category:', condition: 'category', metaType: 'category', metaRank: 'primary' },
-				],
-			},
+		metaFields: {
+			category: { metaType: 'category', label: 'Category', condition: 'category' },
 		},
+		blocks: {
+			metadata: { fields: ['category'], layout: 'bar' },
+		},
+		layout: { root: ['title', 'metadata', 'body'] },
 		editHints: { title: 'inline', body: 'none' },
 	},
 
 	Faction: {
 		block: 'faction',
 		defaultDensity: 'full',
-		sections: { badge: 'header', name: 'title', scene: 'media' },
+		sections: { preamble: 'preamble', name: 'title', scene: 'media' },
 		mediaSlots: { scene: 'cover' },
 		rootAttributes: { 'data-media-position': 'top' },
 		modifiers: {
@@ -107,18 +110,21 @@ export const config: Record<string, RuneConfig> = {
 			valign: { prop: '--split-valign', transform: resolveValign },
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
-		structure: {
-			badge: {
-				tag: 'div', before: true,
-				conditionAny: ['factionType', 'alignment', 'size'],
-				children: [
-					{ tag: 'span', ref: 'type-badge', metaText: 'factionType', label: 'Type:', condition: 'factionType', metaType: 'category', metaRank: 'primary' },
-					{ tag: 'span', ref: 'alignment-badge', metaText: 'alignment', label: 'Alignment:', condition: 'alignment', metaType: 'category', metaRank: 'primary', sentimentMap: { good: 'positive', neutral: 'neutral', evil: 'negative', chaotic: 'caution', lawful: 'neutral' } },
-					{ tag: 'span', ref: 'size-badge', metaText: 'size', label: 'Size:', condition: 'size', metaType: 'quantity', metaRank: 'secondary' },
-				],
+		metaFields: {
+			factionType: { metaType: 'category', label: 'Type', condition: 'factionType' },
+			alignment: {
+				metaType: 'category', label: 'Alignment', condition: 'alignment',
+				sentimentMap: { good: 'positive', neutral: 'neutral', evil: 'negative', chaotic: 'caution', lawful: 'neutral' },
 			},
+			size: { metaType: 'quantity', label: 'Size', condition: 'size' },
 		},
-		autoLabel: { scene: 'scene' },
+		// All facts render as a definition-list nested in the content column
+		// below the title (recipe pattern) — no separate eyebrow zone.
+		blocks: {
+			metadata: { fields: ['factionType', 'alignment', 'size'], layout: 'definition-list' },
+		},
+		layout: { content: ['preamble', 'metadata'] },
+		autoLabel: { scene: 'scene', header: 'preamble' },
 		editHints: { name: 'inline', body: 'none', sections: 'none' },
 	},
 	FactionSection: { block: 'faction-section', parent: 'Faction', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
@@ -126,22 +132,20 @@ export const config: Record<string, RuneConfig> = {
 	Plot: {
 		block: 'plot',
 		defaultDensity: 'full',
-		sections: { badge: 'header', title: 'title' },
+		sections: { title: 'title' },
 		modifiers: {
 			plotType: { source: 'meta', default: 'arc' },
 			structure: { source: 'meta', default: 'linear' },
 			tags: { source: 'meta' },
 		},
-		structure: {
-			badge: {
-				tag: 'div', before: true,
-				conditionAny: ['plotType', 'structure'],
-				children: [
-					{ tag: 'span', ref: 'type-badge', metaText: 'plotType', label: 'Type:', condition: 'plotType', metaType: 'category', metaRank: 'primary' },
-					{ tag: 'span', ref: 'structure-badge', metaText: 'structure', label: 'Structure:', condition: 'structure', metaType: 'category', metaRank: 'secondary' },
-				],
-			},
+		metaFields: {
+			plotType: { metaType: 'category', label: 'Type' },
+			structure: { metaType: 'category', label: 'Structure' },
 		},
+		blocks: {
+			eyebrow: { fields: ['plotType', { field: 'structure', align: 'end' }], layout: 'bar' },
+		},
+		layout: { root: ['eyebrow', 'title'] },
 		editHints: { title: 'inline', beats: 'none' },
 		postTransform(node, { modifiers }) {
 			// Linear plots use connected sequence for beat timeline

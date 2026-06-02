@@ -1,4 +1,4 @@
-{% work id="WORK-293" status="ready" priority="medium" complexity="moderate" source="SPEC-073" tags="html,scaffold,behaviors,client" milestone="v0.17.0" %}
+{% work id="WORK-293" status="ready" priority="medium" complexity="moderate" source="SPEC-073" tags="html,scaffold,behaviors,client" milestone="v0.18.0" %}
 
 # Ship the client behaviors bundle in the html scaffold
 

@@ -130,19 +130,20 @@ export const coreConfig: ThemeConfig = {
 			block: 'codegroup',
 			defaultDensity: 'compact',
 			modifiers: { title: { source: 'meta', noBemClass: true }, overflow: { source: 'meta', default: 'scroll' } },
-			structure: {
-				topbar: {
-					tag: 'div', before: true,
-					children: [
-						{ tag: 'span', ref: 'dot' },
-						{ tag: 'span', ref: 'dot' },
-						{ tag: 'span', ref: 'dot' },
-						{ tag: 'span', ref: 'title', metaText: 'title', condition: 'title' },
-					],
-				},
+			// The window chrome (three dots) is pure decoration — drawn in CSS
+			// on `.rf-codegroup__topbar`. The only metadata is the optional
+			// filename `title`, a bare monospace field in the topbar bar.
+			// `renderWhenEmpty` lets `title=""` still project the topbar (window
+			// chrome, no filename); an absent title renders no topbar.
+			metaFields: {
+				title: { metaType: 'code', condition: 'title', renderWhenEmpty: true },
 			},
-			sections: { topbar: 'header', title: 'title' },
-			editHints: { panel: 'code', title: 'none' },
+			blocks: {
+				topbar: { fields: ['title'], layout: 'bar' },
+			},
+			layout: { root: ['topbar'] },
+			sections: { topbar: 'header' },
+			editHints: { panel: 'code' },
 			postTransform(node) {
 				// Opt in to the highlight transform's `theme.code.colorScheme`
 				// cascade so the topbar + tab chrome flip with the inner code.
@@ -168,6 +169,12 @@ export const coreConfig: ThemeConfig = {
 		 * still needs an entry in the theme config so `computeUsedCssBlocks`
 		 * includes `badge.css` in CSS tree-shaking when a badge is rendered. */
 		Badge: { block: 'badge' },
+		/* SPEC-079 composable rune handles — render the same DOM as the
+		 * engine's `split` / `definition-list` layout primitives. CSS comes
+		 * from the universal `[data-zone-layout=…]` selectors; per-rune
+		 * blocks exist so CSS tree-shaking includes them. */
+		Bar: { block: 'bar' },
+		Deflist: { block: 'deflist' },
 		/* Collection emits a sentinel during transform; the postProcess hook
 		 * (`resolveCollections`) fills it with queried entities. Engine config
 		 * provides the block name for CSS tree-shaking. */
@@ -278,29 +285,25 @@ export const coreConfig: ThemeConfig = {
 		Budget: {
 			block: 'budget',
 			defaultDensity: 'full',
-			sections: { header: 'header', preamble: 'preamble', headline: 'title', footer: 'footer' },
-			editHints: { headline: 'inline', meta: 'none', 'meta-item': 'none' },
+			sections: { preamble: 'preamble', headline: 'title', footer: 'footer' },
+			editHints: { headline: 'inline' },
 			modifiers: {
 				currency: { source: 'meta', default: 'USD' },
 				duration: { source: 'meta' },
 				showPerDay: { source: 'meta', default: 'true' },
 				variant: { source: 'meta', default: 'detailed' },
 			},
-			structure: {
-				header: {
-					tag: 'div', before: true,
-					conditionAny: ['currency', 'duration'],
-					children: [
-						{
-							tag: 'div', ref: 'meta',
-							children: [
-								{ tag: 'span', ref: 'meta-item', metaText: 'currency', condition: 'currency', metaType: 'category', metaRank: 'primary' },
-								{ tag: 'span', ref: 'meta-item', metaText: 'duration', label: 'Duration:', condition: 'duration', metaType: 'temporal', metaRank: 'secondary' },
-							],
-						},
-					],
-				},
+			// Duration reads first as a bare chip (self-evident, no label);
+			// currency is pushed to the right edge where it reads naturally
+			// against the budget breakdown below.
+			metaFields: {
+				duration: { metaType: 'category', condition: 'duration' },
+				currency: { metaType: 'category', condition: 'currency' },
 			},
+			blocks: {
+				meta: { fields: ['duration', { field: 'currency', align: 'end' }], layout: 'bar' },
+			},
+			layout: { root: ['meta', 'preamble'] },
 			postTransform(node) {
 				const block = 'rf-budget';
 				const catBlock = 'rf-budget-category';
@@ -380,16 +383,16 @@ export const coreConfig: ThemeConfig = {
 			modifiers: { hintType: { source: 'meta', default: 'note' } },
 			contextModifiers: { 'hero': 'in-hero', 'feature': 'in-feature' },
 			sections: { header: 'header' },
-			editHints: { icon: 'none', title: 'none' },
-			structure: {
-				header: {
-					tag: 'div', before: true,
-					children: [
-						{ tag: 'span', ref: 'icon', icon: { group: 'hint', variant: 'hintType' } },
-						{ tag: 'span', ref: 'title', metaText: 'hintType' },
-					],
-				},
+			// Header is a single `hintType` field, icon-decorated: the value
+			// (note/warning/caution/check) selects both the glyph and the
+			// label text.
+			metaFields: {
+				hintType: { icon: { group: 'hint' } },
 			},
+			blocks: {
+				header: { fields: ['hintType'], layout: 'bar' },
+			},
+			layout: { root: ['header'] },
 		},
 		Drawer: {
 			block: 'drawer',

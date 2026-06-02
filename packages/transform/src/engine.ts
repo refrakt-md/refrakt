@@ -1,5 +1,5 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
-import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition } from './types.js';
+import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, MetaField, BlockDef } from './types.js';
 import { isTag, makeTag, readMeta, toKebabCase } from './helpers.js';
 
 /** The 6 tint colour tokens */
@@ -49,7 +49,7 @@ export function createTransform(config: ThemeConfig) {
 		const dataRune = tree.attributes?.['data-rune'];
 		const configKey = dataRune ? runeKeyMap.get(dataRune) : undefined;
 		if (configKey) {
-			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, runes, runeKeyMap, identityTransform, parentRune);
+			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, runes, runeKeyMap, identityTransform, configKey, parentRune);
 		}
 
 		// Detect checkbox markers on list items
@@ -78,6 +78,7 @@ function transformRune(
 	allRunes: Record<string, RuneConfig>,
 	runeKeyMap: Map<string, string>,
 	recurse: (node: RendererNode, parentRune?: string) => RendererNode,
+	runeName: string,
 	parentRune?: string
 ): SerializedTag {
 	const block = `${prefix}-${config.block}`;
@@ -108,6 +109,11 @@ function transformRune(
 						modifierValues[name] = mapped;
 					}
 				}
+			} else if (value === '') {
+				// Present but empty (e.g. `title=""`) — record it so
+				// `renderWhenEmpty` fields can tell present-empty from absent.
+				// No BEM class (would be a dangling `block--`) and no mapping.
+				modifierValues[name] = '';
 			}
 		}
 	}
@@ -340,33 +346,40 @@ function transformRune(
 		children = applyAutoLabel(children, config.autoLabel);
 	}
 
-	// 5. Inject structural elements from config
-	if (config.structure) {
-		if (config.slots) {
-			// Slot-based assembly: iterate slots in declared order
-			children = assembleWithSlots(config.slots, config.structure, children, config.contentWrapper, modifierValues, icons);
-		} else {
-			// Legacy before/after assembly
-			const prepend: RendererNode[] = [];
-			const append: RendererNode[] = [];
+	// 5. SPEC-080: block-and-layout assembly (metaFields + blocks + layout).
+	//    Projects named metadata blocks and places them into the transform
+	//    tree per `layout`. Takes precedence over the legacy `slots +
+	//    structure` shim (removed in WORK-313).
+	if (config.blocks || config.layout) {
+		children = assembleWithBlocks(config, block, children, modifierValues);
+	} else if (config.slots && config.structure) {
+		// Legacy slots + structure path — emit one-time migration warning if
+		// the rune uses the v0.16 slot vocabulary (header-primary etc.).
+		if (hasLegacySlotNames(config.slots)) {
+			warnLegacySlots(runeName);
+		}
+		children = assembleWithSlots(config.slots, config.structure, children, config.contentWrapper, modifierValues, icons);
+	} else if (config.structure) {
+		// Legacy before/after assembly
+		const prepend: RendererNode[] = [];
+		const append: RendererNode[] = [];
 
-			for (const [name, entry] of Object.entries(config.structure)) {
-				const element = buildStructureElement(entry, name, modifierValues, icons);
-				if (!element) continue;
-				if (entry.before) {
-					prepend.push(element);
-				} else {
-					append.push(element);
-				}
+		for (const [name, entry] of Object.entries(config.structure)) {
+			const element = buildStructureElement(entry, name, modifierValues, icons);
+			if (!element) continue;
+			if (entry.before) {
+				prepend.push(element);
+			} else {
+				append.push(element);
 			}
+		}
 
-			if (config.contentWrapper) {
-				const wrapped = makeTag(config.contentWrapper.tag,
-					{ 'data-name': config.contentWrapper.ref }, children);
-				children = [...prepend, wrapped, ...append];
-			} else if (prepend.length || append.length) {
-				children = [...prepend, ...children, ...append];
-			}
+		if (config.contentWrapper) {
+			const wrapped = makeTag(config.contentWrapper.tag,
+				{ 'data-name': config.contentWrapper.ref }, children);
+			children = [...prepend, wrapped, ...append];
+		} else if (prepend.length || append.length) {
+			children = [...prepend, ...children, ...append];
 		}
 	} else if (config.contentWrapper) {
 		const wrapped = makeTag(config.contentWrapper.tag,
@@ -670,13 +683,41 @@ function assembleWithSlots(
 }
 
 /** Find and remove a child by data-name from a flat children array.
- *  Returns the removed element and the updated array, or null if not found. */
+ *  Returns the removed element and the updated array, or null if not found.
+ *
+ *  Also looks one level deep inside any direct-child wrapper carrying
+ *  `data-name="preamble"`. This lets `projection` relocate refs
+ *  (`headline`, `blurb`, etc.) that the rune's schema nested inside an
+ *  auto-labelled `<header data-name="preamble">` wrapper — otherwise the
+ *  extraction would silently fail and the dispatcher would emit a
+ *  second preamble alongside the schema's, producing duplicate wrappers
+ *  in the rendered DOM. */
 function extractByDataName(children: RendererNode[], name: string): { element: SerializedTag; rest: RendererNode[] } | null {
 	const idx = children.findIndex(c => isTag(c) && (c as SerializedTag).attributes?.['data-name'] === name);
-	if (idx === -1) return null;
-	const element = children[idx] as SerializedTag;
-	const rest = [...children.slice(0, idx), ...children.slice(idx + 1)];
-	return { element, rest };
+	if (idx !== -1) {
+		const element = children[idx] as SerializedTag;
+		const rest = [...children.slice(0, idx), ...children.slice(idx + 1)];
+		return { element, rest };
+	}
+	// Fall back: look inside any direct-child preamble wrapper.
+	for (let i = 0; i < children.length; i++) {
+		const c = children[i];
+		if (!isTag(c)) continue;
+		const wrapper = c as SerializedTag;
+		if (wrapper.attributes?.['data-name'] !== 'preamble') continue;
+		const inner = extractByDataName(wrapper.children, name);
+		if (!inner) continue;
+		const newRest = [...children];
+		if (inner.rest.length === 0) {
+			// Wrapper now empty — drop it so we don't emit a hollow
+			// preamble alongside the dispatcher's auto-derived one.
+			newRest.splice(i, 1);
+		} else {
+			newRest[i] = { ...wrapper, children: inner.rest };
+		}
+		return { element: inner.element, rest: newRest };
+	}
+	return null;
 }
 
 /** Find a child (or nested child) by data-name without removing it. */
@@ -846,9 +887,13 @@ function buildStructureElement(
 	// Metadata dimension attributes — additive semantic markers for generic theme styling
 	if (entry.metaType) {
 		baseAttrs['data-meta-type'] = entry.metaType;
-	}
-	if (entry.metaRank) {
-		baseAttrs['data-meta-rank'] = entry.metaRank;
+		// SPEC-079: legacy `slots + structure` configs get the universal
+		// `.rf-badge` class on every meta-typed structure entry so the
+		// chip-look rides along without needing the new zone dispatcher.
+		// Layout primitives in the new zone path emit `.rf-badge`
+		// independently via buildChip().
+		const existingClass = baseAttrs.class || '';
+		baseAttrs.class = existingClass ? `rf-badge ${existingClass}` : 'rf-badge';
 	}
 	if (entry.sentimentMap && entry.metaText) {
 		const rawValue = modifierValues[entry.metaText];
@@ -901,4 +946,346 @@ function buildStructureElement(
 	}
 
 	return makeTag(entry.tag, baseAttrs, elementChildren);
+}
+
+// ─── Field resolution + value rendering ─────────────────────────────────
+
+/** One-time warning tracker — emits the migration hint once per rune
+ *  name per process. */
+const LEGACY_SLOT_WARNED = new Set<string>();
+const LEGACY_SLOT_NAMES = new Set<string>(['header-primary', 'header-secondary', 'preamble', 'content']);
+
+function hasLegacySlotNames(slots: string[]): boolean {
+	return slots.some(s => LEGACY_SLOT_NAMES.has(s));
+}
+
+function warnLegacySlots(runeName: string): void {
+	if (LEGACY_SLOT_WARNED.has(runeName)) return;
+	LEGACY_SLOT_WARNED.add(runeName);
+	// Use console.warn — engine has no logger infra.
+	// eslint-disable-next-line no-console
+	console.warn(
+		`[refrakt] Rune \`${runeName}\` uses legacy \`slots\` + \`structure\` config. ` +
+		`Migrate to the SPEC-080 \`metaFields\` + \`blocks\` + \`layout\` model. ` +
+		`Legacy configs continue to render via the backwards-compat shim ` +
+		`(removed in WORK-313).`,
+	);
+}
+
+/** A field resolved against the modifier values — ready for layout rendering. */
+interface ResolvedField {
+	name: string;
+	value: string;
+	field: MetaField;
+	/** Resolved link URL when the field declares `href` (a modifier name). */
+	href?: string;
+	/** Resolved rating maximum when the field declares `rating` (default 5). */
+	ratingTotal?: string;
+}
+
+function resolveField(
+	name: string,
+	metaFields: Record<string, MetaField>,
+	modifierValues: Record<string, string>,
+): ResolvedField | null {
+	const field = metaFields[name];
+	if (!field) return null;
+	if (field.condition) {
+		const condVal = modifierValues[field.condition];
+		// `renderWhenEmpty` gates on presence (defined) instead of truthiness.
+		const present = field.renderWhenEmpty ? condVal !== undefined : !!condVal;
+		if (!present) return null;
+	}
+	let value = modifierValues[name] ?? '';
+	if (!value && field.condition && !field.renderWhenEmpty) return null;
+	if (field.transform && transforms[field.transform]) {
+		value = transforms[field.transform](value);
+	}
+	const href = field.href ? (modifierValues[field.href] ?? '') : undefined;
+	if (field.href && !href) return null;
+	const ratingTotal = field.rating
+		? (modifierValues[field.rating.total ?? ''] || '5')
+		: undefined;
+	return { name, value, field, href, ratingTotal };
+}
+
+/** Build a chip element — the universal `.rf-badge` primitive emitted by
+ *  layout primitives that render values as chips (sentiment-mapped fields
+ *  in split / def-list, every field in chip-row). The standalone
+ *  `{% badge %}` rune emits the same DOM shape. */
+function buildChip(
+	resolved: ResolvedField,
+	options: { includeLabel: boolean } = { includeLabel: true },
+): SerializedTag {
+	const { field, value } = resolved;
+	const attrs: Record<string, string> = { class: 'rf-badge' };
+	if (field.metaType) attrs['data-meta-type'] = field.metaType;
+	if (field.sentimentMap) {
+		const sentiment = field.sentimentMap[value];
+		if (sentiment) attrs['data-meta-sentiment'] = sentiment;
+	}
+	const tag = field.tag ?? 'span';
+	const tagAttrs = { ...attrs };
+	if (tag === 'time' && value) tagAttrs.datetime = value;
+
+	if (options.includeLabel && field.label) {
+		return makeTag(tag, tagAttrs, [
+			makeTag('span', { 'data-meta-label': '' }, [field.label]),
+			makeTag('span', { 'data-meta-value': '' }, [value]),
+		]);
+	}
+	return makeTag(tag, tagAttrs, [value]);
+}
+
+/** Build a plain-text value element — typography hints via
+ *  `data-meta-type`, NO `.rf-badge` class (so no chip geometry). Used by
+ *  the def-list's `<dd>` and split's left slot when the field isn't
+ *  sentiment-mapped. */
+function buildPlainValue(resolved: ResolvedField): SerializedTag {
+	const { field, value } = resolved;
+	const attrs: Record<string, string> = {};
+	if (field.metaType) attrs['data-meta-type'] = field.metaType;
+	const tag = field.tag ?? 'span';
+	if (tag === 'time' && value) attrs.datetime = value;
+	return makeTag(tag, attrs, [value]);
+}
+
+/** Split a field's value into trimmed non-empty parts using
+ *  `field.splitOn`. Used by layouts that fan multi-value fields out
+ *  into one chip per item. */
+function splitFieldValue(resolved: ResolvedField): string[] {
+	const sep = resolved.field.splitOn;
+	if (!sep || !resolved.value) return [resolved.value].filter(Boolean);
+	return resolved.value.split(sep).map(s => s.trim()).filter(Boolean);
+}
+
+// ─── SPEC-080: block-and-layout assembly ──────────────────────────────────
+
+/** metaTypes that render as a chip (`.rf-badge`). Everything else — `id`,
+ *  `quantity`, `temporal`, `code`, or no metaType — renders as bare inline
+ *  text. Shape is intrinsic to the field, not the layout primitive. */
+const CHIP_METATYPES = new Set(['status', 'category', 'tag']);
+
+function fieldRendersAsChip(field: MetaField): boolean {
+	return field.metaType !== undefined && CHIP_METATYPES.has(field.metaType);
+}
+
+/** A resolved field plus its optional `bar` alignment. */
+interface BarItem {
+	resolved: ResolvedField;
+	align?: 'start' | 'end';
+}
+
+/** Build a link value — `<a href>` carrying the field's label (or value) as
+ *  text, bare (no chip). `data-meta-type="link"` for theme typography. */
+function buildLinkValue(f: ResolvedField): SerializedTag {
+	return makeTag('a', {
+		href: f.href ?? '',
+		'data-meta-type': 'link',
+	}, [f.field.label ?? f.value]);
+}
+
+/** Build a rating widget — `total` mark elements, the first `value` filled.
+ *  Bare (no chip); CSS draws the marks (stars, dots) via `data-filled`. */
+function buildRatingValue(f: ResolvedField): SerializedTag {
+	const filled = Math.max(0, parseInt(f.value, 10) || 0);
+	const total = Math.max(0, parseInt(f.ratingTotal ?? '5', 10) || 5);
+	const marks: RendererNode[] = [];
+	for (let i = 0; i < total; i++) {
+		marks.push(makeTag('span', { 'data-filled': i < filled ? 'true' : 'false' }, []));
+	}
+	return makeTag('span', { 'data-meta-type': 'rating' }, marks);
+}
+
+/** Build an icon-decorated value — a leading icon element (glyph selected
+ *  by the field's value via `data-icon-group` + `data-icon`) followed by the
+ *  value text. Bare (no chip); CSS draws the glyph via `mask-image`. */
+function buildIconValue(f: ResolvedField): SerializedTag {
+	const group = f.field.icon!.group;
+	const attrs: Record<string, string> = {};
+	if (f.field.metaType) attrs['data-meta-type'] = f.field.metaType;
+	return makeTag(f.field.tag ?? 'span', attrs, [
+		makeTag('span', { 'data-icon-group': group, 'data-icon': f.value }, []),
+		makeTag('span', { 'data-meta-value': '' }, [f.field.label ?? f.value]),
+	]);
+}
+
+/** Render one resolved field in its intrinsic shape (link > rating > icon >
+ *  chip > bare). */
+function renderBlockValue(f: ResolvedField, includeLabel = false): SerializedTag {
+	if (f.field.href) return buildLinkValue(f);
+	if (f.field.rating) return buildRatingValue(f);
+	if (f.field.icon) return buildIconValue(f);
+	return fieldRendersAsChip(f.field)
+		? buildChip(f, { includeLabel })
+		: buildPlainValue(f);
+}
+
+/** `bar` layout — a horizontal flex row of fields, each in its intrinsic
+ *  shape. `align: 'end'` tags a field so the shared
+ *  `[data-zone-layout="bar"] [data-align="end"] { margin-left: auto }` rule
+ *  pushes it (and everything after) to the right. Unlabelled (eyebrow-style);
+ *  labelled rows belong in `definition-list`. */
+function renderBarLayout(
+	blockName: string,
+	items: BarItem[],
+	wrap: boolean,
+): SerializedTag | null {
+	if (items.length === 0) return null;
+
+	const children: RendererNode[] = [];
+	for (const { resolved, align } of items) {
+		const els: SerializedTag[] = resolved.field.splitOn && resolved.value
+			? splitFieldValue(resolved).map(part => renderBlockValue({ ...resolved, value: part }))
+			: [renderBlockValue(resolved)];
+		if (align === 'end' && els.length > 0) {
+			els[0] = { ...els[0], attributes: { ...els[0].attributes, 'data-align': 'end' } };
+		}
+		children.push(...els);
+	}
+
+	const attrs: Record<string, string> = {
+		'data-name': blockName,
+		'data-zone': blockName,
+		'data-zone-layout': 'bar',
+	};
+	if (wrap === false) attrs['data-wrap'] = 'false';
+	return makeTag('div', attrs, children);
+}
+
+/** `definition-list` block — labelled `<dt>`/`<dd>` pairs, with the dd value
+ *  in its intrinsic shape. Mirrors the legacy def-list DOM but selects
+ *  chip-vs-bare from the field's metaType rather than `sentimentMap`. */
+function renderDefListBlock(
+	blockName: string,
+	fields: ResolvedField[],
+): SerializedTag | null {
+	if (fields.length === 0) return null;
+
+	const rows: RendererNode[] = fields.map(f => {
+		const dt = makeTag('dt', { 'data-meta-label': '' }, [f.field.label ?? f.name]);
+		let dd: SerializedTag;
+		if (f.field.splitOn && f.value) {
+			const items = splitFieldValue(f).map(part =>
+				renderBlockValue({ ...f, value: part }),
+			);
+			dd = makeTag('dd', { 'data-multi-value': '' }, items);
+		} else if (fieldRendersAsChip(f.field)) {
+			dd = makeTag('dd', {}, [buildChip(f, { includeLabel: false })]);
+		} else {
+			const ddAttrs: Record<string, string> = {};
+			if (f.field.metaType) ddAttrs['data-meta-type'] = f.field.metaType;
+			const text = f.field.tag === 'time' && f.value
+				? makeTag('time', { datetime: f.value }, [f.value])
+				: f.value;
+			dd = makeTag('dd', ddAttrs, [text]);
+		}
+		return makeTag('div', { 'data-name': 'row', 'data-field': f.name }, [dt, dd]);
+	});
+
+	return makeTag('dl', {
+		'data-name': blockName,
+		'data-zone': blockName,
+		'data-zone-layout': 'definition-list',
+	}, rows);
+}
+
+/** SPEC-080 main assembler — projects named metadata blocks and places them,
+ *  plus the rune's own transform blocks, into the tree per `layout`. */
+function assembleWithBlocks(
+	config: RuneConfig,
+	_block: string,
+	contentChildren: RendererNode[],
+	modifierValues: Record<string, string>,
+): RendererNode[] {
+	const blocks = config.blocks ?? {};
+	const layout = config.layout ?? {};
+	const metaFields = config.metaFields ?? {};
+
+	/** Render a named metadata block on demand; null if undefined or empty. */
+	const renderBlock = (name: string): SerializedTag | null => {
+		const def: BlockDef | undefined = blocks[name];
+		if (!def) return null;
+		const items: BarItem[] = [];
+		for (const spec of def.fields) {
+			const fieldName = typeof spec === 'string' ? spec : spec.field;
+			const align = typeof spec === 'string' ? undefined : spec.align;
+			const resolved = resolveField(fieldName, metaFields, modifierValues);
+			if (resolved) items.push({ resolved, align });
+		}
+		if (items.length === 0) return null;
+		if (def.layout === 'bar') return renderBarLayout(name, items, def.wrap ?? true);
+		return renderDefListBlock(name, items.map(i => i.resolved));
+	};
+
+	// No `layout` → render the transform tree verbatim (no projection).
+	if (Object.keys(layout).length === 0) return contentChildren;
+
+	// Compose the rune root first (reserved `root` key), then named containers.
+	let result = layout.root
+		? composeContainer(contentChildren, layout.root, renderBlock)
+		: contentChildren;
+
+	for (const [key, order] of Object.entries(layout)) {
+		if (key === 'root') continue;
+		result = updateContainerByName(result, key, children =>
+			composeContainer(children, order, renderBlock),
+		);
+	}
+	return result;
+}
+
+/** Reorder + inject blocks within one container's children per an ordered
+ *  list of block names. Transform children are placed by `data-name` where
+ *  the list names them; projected blocks are rendered in place; names absent
+ *  from both are skipped; transform children the list didn't name append in
+ *  their original order (never dropped). */
+function composeContainer(
+	children: RendererNode[],
+	order: string[],
+	renderBlock: (name: string) => SerializedTag | null,
+): RendererNode[] {
+	const byName = new Map<string, RendererNode>();
+	for (const c of children) {
+		if (isTag(c) && c.attributes['data-name']) byName.set(c.attributes['data-name'], c);
+	}
+	const named = new Set(order);
+
+	const result: RendererNode[] = [];
+	for (const name of order) {
+		const existing = byName.get(name);
+		if (existing) {
+			result.push(existing);
+		} else {
+			const projected = renderBlock(name);
+			if (projected) result.push(projected);
+		}
+	}
+	// Append unlisted transform children (incl. meta tags / untagged nodes).
+	for (const c of children) {
+		const dn = isTag(c) ? c.attributes['data-name'] : undefined;
+		if (dn && named.has(dn)) continue;
+		result.push(c);
+	}
+	return result;
+}
+
+/** Immutably replace the children of the first descendant carrying
+ *  `data-name === name`. Leaves the tree unchanged if no such element. */
+function updateContainerByName(
+	children: RendererNode[],
+	name: string,
+	fn: (children: RendererNode[]) => RendererNode[],
+): RendererNode[] {
+	let done = false;
+	const walk = (nodes: RendererNode[]): RendererNode[] =>
+		nodes.map(n => {
+			if (done || !isTag(n)) return n;
+			if (n.attributes['data-name'] === name) {
+				done = true;
+				return { ...n, children: fn(n.children) };
+			}
+			return { ...n, children: walk(n.children) };
+		});
+	return walk(children);
 }

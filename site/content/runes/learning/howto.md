@@ -20,7 +20,7 @@ A how-to guide with required tools and numbered steps.
 {% howto estimatedTime="PT1H" difficulty="medium" %}
 # How to Set Up a Development Environment
 
-You will need these tools:
+Get a local development environment running from scratch.
 
 - Node.js 18+
 - Git

@@ -293,13 +293,6 @@ export function formatMetaAuditResult(result: MetaAuditResult): string {
 		lines.push(`    ${DIM}none${RESET}`);
 	}
 
-	// Rank distribution
-	lines.push('');
-	lines.push(`  ${BOLD}Ranks${RESET}`);
-	for (const [rank, count] of Object.entries(result.rankCount)) {
-		lines.push(`    ${rank.padEnd(12)} ${count} field${count !== 1 ? 's' : ''}`);
-	}
-
 	// Sentiment coverage
 	lines.push('');
 	lines.push(`  ${BOLD}Sentiment Coverage${RESET}`);
@@ -319,8 +312,7 @@ export function formatMetaAuditResult(result: MetaAuditResult): string {
 		lines.push(`    ${CYAN}${rune}${RESET}`);
 		for (const f of fields) {
 			const sentiment = f.hasSentiment ? `${GREEN}\u2713 sentiment${RESET}` : `${DIM}no sentiment${RESET}`;
-			const rank = f.metaRank ? ` ${DIM}(${f.metaRank})${RESET}` : '';
-			lines.push(`      ${f.ref.padEnd(20)} ${f.metaType.padEnd(10)} ${sentiment}${rank}`);
+			lines.push(`      ${f.ref.padEnd(20)} ${f.metaType.padEnd(10)} ${sentiment}`);
 		}
 	}
 
@@ -332,7 +324,6 @@ export function formatMetaAuditResult(result: MetaAuditResult): string {
 		const allChecks = [
 			...Object.entries(result.css.types).map(([k, v]) => [`[data-meta-type="${k}"]`, v] as const),
 			...Object.entries(result.css.sentiments).map(([k, v]) => [`[data-meta-sentiment="${k}"]`, v] as const),
-			...Object.entries(result.css.ranks).map(([k, v]) => [`[data-meta-rank="${k}"]`, v] as const),
 		];
 
 		const warnings: string[] = [];
@@ -369,7 +360,6 @@ export function buildMetaAuditJson(result: MetaAuditResult): object {
 		summary: {
 			totalFields: result.fields.length,
 			typeCount: result.typeCount,
-			rankCount: result.rankCount,
 			withSentiment: result.withSentiment,
 			withoutSentiment: result.withoutSentiment,
 		},

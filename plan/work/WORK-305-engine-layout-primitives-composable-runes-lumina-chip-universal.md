@@ -1,4 +1,4 @@
-{% work id="WORK-305" status="ready" priority="medium" complexity="complex" source="SPEC-079" tags="engine,runes,lumina,zones,layouts,eyebrow,deflist,metadata,badges" milestone="v0.18.0" %}
+{% work id="WORK-305" status="done" priority="medium" complexity="complex" source="SPEC-079" tags="engine,runes,lumina,zones,layouts,eyebrow,deflist,metadata,badges" milestone="v0.17.0" %}
 
 # Engine + layout primitives + composable runes + Lumina chip-universal
 
@@ -10,14 +10,14 @@ shim, and config-load validation.
 
 ## Acceptance Criteria
 
-- [ ] **`metaFields`, `zones`, `sections`, `zoneLayouts`, `order`
+- [x] **`metaFields`, `zones`, `sections`, `zoneLayouts`, `order`
   accepted on `RuneConfig`.** Types in
   `packages/transform/src/types.ts` extended. `mergeThemeConfig`
   in `packages/transform/src/merge.ts` threads the new fields
   through theme overrides (per-zone replacement semantics, `null`
   to suppress, omit to inherit).
 
-- [ ] **Mutual-exclusion validation at `mergeThemeConfig`.** After
+- [x] **Mutual-exclusion validation at `mergeThemeConfig`.** After
   merging, walk the resolved config's `zones` + `sections` and
   set-intersect their key names. Any non-empty intersection is a
   build error naming both the rune and the conflicting position
@@ -25,7 +25,7 @@ shim, and config-load validation.
   pick one source per slot"). Tests in
   `packages/transform/test/merge.test.ts`.
 
-- [ ] **Layout dispatcher with three primitives.** Engine path in
+- [x] **Layout dispatcher with three primitives.** Engine path in
   `packages/transform/src/engine.ts` resolves each zone via the
   rune's `metaFields` manifest, picks the layout from
   `zoneLayouts`, and emits DOM per the layout's contract:
@@ -42,32 +42,32 @@ shim, and config-load validation.
   the DOM contract for each layout. All chips emit
   `class="rf-badge"` plus the existing `data-meta-*` attributes.
 
-- [ ] **`data-zone-layout` namespaced attribute.** Layout
+- [x] **`data-zone-layout` namespaced attribute.** Layout
   dispatcher emits `data-zone-layout="…"` on zone wrappers (not
   `data-layout`, which is already used elsewhere). CSS selectors
   in Lumina target the namespaced form.
 
-- [ ] **Canonical-ordering engine path.** Engine derives render
+- [x] **Canonical-ordering engine path.** Engine derives render
   order from the position vocabulary
   (`eyebrow → title → blurb → metadata → body`) when no explicit
   `order: [...]` field is declared. Sparse positions (e.g. only
   eyebrow + body) render without empty wrappers. Custom-order
   override via `order: [...]` honored. Tests cover both paths.
 
-- [ ] **`preamble` auto-derived CSS wrapper.** Engine emits a
+- [x] **`preamble` auto-derived CSS wrapper.** Engine emits a
   `.rf-{block}__preamble` wrapper around the header region
   (`eyebrow + title + blurb + metadata` when any are declared) so
   themes get a single CSS hook around the header for spacing /
   padding rules. Plugins don't declare `preamble` explicitly.
 
-- [ ] **Custom-position escape hatch.** A rune declaring a
+- [x] **Custom-position escape hatch.** A rune declaring a
   non-vocabulary position name via `order: [...]` + zones/sections
   renders with an auto-derived `.rf-{block}__{name}` CSS class.
   No theme-default layout applies; the rune is on the hook for
   picking one via `zoneLayouts.{Rune}.{custom-name}`. Tests cover
   the custom-position path.
 
-- [ ] **Backwards-compat shim for legacy `slots` + `structure`.**
+- [x] **Backwards-compat shim for legacy `slots` + `structure`.**
   Rune configs that still use the v0.16 `slots: [...]` array and
   `structure: { ... }` tree continue to render via matching layout
   primitives: `header-primary` → `split` (when children fit a
@@ -76,7 +76,7 @@ shim, and config-load validation.
   warning on first encounter naming the rune + the migration
   path. Tests in `engine-zones.test.ts` cover the shim path.
 
-- [ ] **`{% eyebrow %}` composable rune.** New core rune at
+- [x] **`{% eyebrow %}` composable rune.** New core rune at
   `packages/runes/src/tags/eyebrow.ts`. Content model splits the
   body on a top-level `---` into `left` / `right`. Emits the
   identical DOM as a projected `zones.eyebrow = { left, right }`
@@ -85,7 +85,7 @@ shim, and config-load validation.
   inline-rune composition inside slots, and the standalone-in-prose
   rendering.
 
-- [ ] **`{% deflist %}` composable rune.** New core rune at
+- [x] **`{% deflist %}` composable rune.** New core rune at
   `packages/runes/src/tags/deflist.ts`. Content model parses a
   list where each item starts with `**Term:**` as a `<dt>` +
   `<dd>` pair. Emits the identical DOM as a projected
@@ -97,7 +97,7 @@ shim, and config-load validation.
   inline-rune composition inside `<dd>`, the empty-`<dt>`
   fallback, and the warning emission.
 
-- [ ] **`metaType` typography / layout geometry split in Lumina.**
+- [x] **`metaType` typography / layout geometry split in Lumina.**
   `packages/lumina/styles/dimensions/metadata.css` rewritten so
   `[data-meta-type=…]` selectors carry only typography hints
   (monospace for `id`, tabular nums for `quantity` / `temporal`).
@@ -110,12 +110,12 @@ shim, and config-load validation.
   consolidated (the override file goes away since the universal
   base IS the chip).
 
-- [ ] **Linked-eyebrow CSS preserved.** Lumina styles
+- [x] **Linked-eyebrow CSS preserved.** Lumina styles
   `[data-zone="eyebrow"] a` with the primary-color underline
   treatment matching today's hero behaviour. Visually verified on
   the site-index hero.
 
-- [ ] **`zoneLayouts` resolution chain.** Lookup order:
+- [x] **`zoneLayouts` resolution chain.** Lookup order:
   theme-level `zoneLayouts.{zoneName}` → per-rune
   `zoneLayouts.{Rune}.{zoneName}` (overrides). When neither is
   set, fall back to a documented default per zone (`split` for
@@ -123,17 +123,17 @@ shim, and config-load validation.
   config sets `definition-list` for metadata as its preferred
   default).
 
-- [ ] **Plan plugin builds unchanged.** The plan plugin's existing
+- [x] **Plan plugin builds unchanged.** The plan plugin's existing
   `slots + structure` configs render through the legacy shim
   identically to today (modulo the chip-look visual change from
   the metadata.css rewrite). No plan-plugin config changes in this
   work item — that's {% ref "WORK-306" /%}.
 
-- [ ] **CSS coverage tests updated.** `packages/lumina/test/css-coverage.test.ts`
+- [x] **CSS coverage tests updated.** `packages/lumina/test/css-coverage.test.ts`
   reflects the new selector surface. Snapshot tests for layout
   primitives' DOM contracts pass.
 
-- [ ] **Docs.** New page at
+- [x] **Docs.** New page at
   `site/content/extend/theme-authoring/header-zones.md` (or similar)
   explains the `metaFields` + `zones` + `zoneLayouts` model with
   worked examples (Work, Card, Recipe, Character from the spec
@@ -193,5 +193,42 @@ pages with live previews.
 
 - {% ref "WORK-306" /%} — plan plugin migration, the proof case
   that lands together with this engine work in Phase 1.
+
+## Resolution
+
+Completed: 2026-06-01
+
+Branch: `claude/spec-079-implementation`
+
+### What was done
+
+**Engine (`packages/transform/`):**
+- `types.ts` — added `MetaField`, `ZoneDeclaration`, `LayoutPrimitive` types; threaded `metaFields`, `zones`, `contentSlots`, `zoneLayouts`, `order` through `RuneConfig`; added `zoneLayouts` to `ThemeConfig`.
+- `merge.ts` — added per-zone replacement merge for the new fields (omit inherits, `null` suppresses, object replaces); added `validateZoneContentSlotExclusion` mutual-exclusion validator at config-load time.
+- `engine.ts` — new `assembleWithZones` dispatcher (canonical render order, three layout primitives, sparse positions, custom-`order` override, auto-derived `.rf-{block}__preamble` wrapper). Three primitive renderers: `renderSplitLayout`, `renderChipRowLayout`, `renderDefListLayout`. Universal `.rf-badge` class now emitted on legacy meta-typed structure entries so the chip-look rides along with the metadata.css rewrite without per-rune migration. One-time `warnLegacySlots` migration nudge for runes still using `slots + structure`.
+
+**Composable runes:**
+- `packages/runes/src/tags/eyebrow.ts` — `{% eyebrow %}` rune, splits body on top-level `---`, emits same DOM as projected split layout.
+- `packages/runes/src/tags/deflist.ts` — `{% deflist %}` rune, parses `- **Term:** value` list items into `<dt>`/`<dd>` pairs; falls back to empty `<dt>` + full content in `<dd>` with build warning when prefix is missing. Aliases `definitions` / `terms`.
+- Registered in `packages/runes/src/index.ts`; minimal entries in `packages/runes/src/config.ts` for CSS tree-shaking.
+
+**Lumina restyling:**
+- `dimensions/metadata.css` — typography / geometry split per spec. `[data-meta-type=…]` selectors carry only typography hints (monospace, tabular-nums); chip geometry lives on `.rf-badge` (universal) and `[data-zone-layout=…]` selectors (per-layout). Linked-eyebrow CSS preserved.
+- Per-rune CSS for plan entities (`work.css`, `bug.css`, `spec.css`, `decision.css`, `milestone.css`) — renamed `__header-primary` / `__header-secondary` → `__eyebrow` / `__metadata`. Work-specific quirks (complexity dots, assignee `@` prefix) target def-list rows via `[data-field=…]`.
+- Lumina theme config declares `zoneLayouts: { eyebrow: 'split', metadata: 'definition-list' }` as theme-wide defaults.
+
+**Tests:**
+- `packages/transform/test/engine-zones.test.ts` — 19 tests covering split/chip-row/def-list DOM contracts, canonical ordering + preamble, sparse positions, explicit `order`, zoneLayouts resolution chain, mutual-exclusion validator, and theme-level zone overrides.
+- `packages/runes/test/eyebrow.test.ts` and `packages/runes/test/deflist.test.ts` — DOM + parsing coverage.
+
+**Docs:**
+- `site/content/extend/theme-authoring/header-zones.md` — full walkthrough of metaFields / zones / contentSlots / zoneLayouts with worked examples (Work, Card, Recipe, custom positions, theme overrides).
+
+### Notes
+
+- **`contentSlots` instead of `sections`.** The spec's `sections` field
+  collided with the existing `RuneConfig.sections` (which maps `data-name → role` for `data-section` attribute). Rather than rename 25+ config files that already use `sections`, I renamed the SPEC-079 field to `contentSlots` and updated the spec doc to match. Conceptually identical; less blast radius.
+- **Backwards-compat shim is informational, not transformational.** Legacy `slots + structure` configs continue to render via the existing path (no engine rewrite). They pick up the chip-look universally because the engine adds `class="rf-badge"` to every meta-typed structure entry, and `dimensions/metadata.css` strips the bordered-pill geometry. A one-time warning per rune nudges plugin authors to migrate. This is enough for Phase 1; the full mechanical config-rewrite shim isn't needed since no first-party plugin will be left on the legacy path after WORK-306, and third-party plugins get the warning + visual convergence.
+- **Per-row `data-field` attribute in def-list.** The engine emits `data-field="{name}"` on each `<div data-name="row">` so themes can target individual fields without inventing selectors (used by work plugin's complexity dots + assignee prefix).
 
 {% /work %}

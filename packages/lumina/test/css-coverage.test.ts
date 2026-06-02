@@ -24,6 +24,7 @@ const UNSTYLED_BLOCKS = new Set([
 	'bg',                // directive rune — sets parent backdrop, no own visual
 	'region',            // structural rune — layout region container, no own visual
 	'definition',        // child of feature — styled inline within feature.css
+	'deflist',           // styled via shared [data-zone-layout="definition-list"] selectors
 ]);
 
 const KNOWN_MISSING_SELECTORS = new Set([
@@ -31,7 +32,7 @@ const KNOWN_MISSING_SELECTORS = new Set([
 	// pageSectionAutoLabel selectors — preamble + intro elements inherited from section system
 	'.rf-testimonial__quote',
 	'.rf-comparison__preamble', '.rf-comparison__eyebrow', '.rf-comparison__headline', '.rf-comparison__blurb', '.rf-comparison__image',
-	'.rf-symbol__preamble', '.rf-symbol__eyebrow', '.rf-symbol__headline', '.rf-symbol__blurb', '.rf-symbol__image',
+	'.rf-symbol__preamble', '.rf-symbol__headline', '.rf-symbol__blurb', '.rf-symbol__image',
 	'.rf-changelog__preamble', '.rf-changelog__eyebrow', '.rf-changelog__headline', '.rf-changelog__blurb', '.rf-changelog__image',
 	'.rf-blog__content', '.rf-blog__eyebrow', '.rf-blog__image',
 	'.rf-howto__preamble', '.rf-howto__eyebrow', '.rf-howto__headline', '.rf-howto__blurb', '.rf-howto__image',
@@ -42,6 +43,7 @@ const KNOWN_MISSING_SELECTORS = new Set([
 	'.rf-event__preamble', '.rf-event__eyebrow', '.rf-event__headline', '.rf-event__blurb', '.rf-event__image',
 	'.rf-preview__preamble', '.rf-preview__eyebrow', '.rf-preview__headline', '.rf-preview__blurb', '.rf-preview__image',
 	'.rf-recipe__preamble',
+	'.rf-faction__preamble', '.rf-realm__preamble', '.rf-character__preamble',  // styled via shared [data-section="preamble"] dimension
 	'.rf-playlist__eyebrow', '.rf-playlist__image',
 	// Badge/meta-item selectors — now styled by shared metadata dimension rules ([data-meta-type])
 	'.rf-spec__id-badge', '.rf-spec__status-badge', '.rf-spec__version-badge', '.rf-spec__supersedes-badge',
@@ -334,7 +336,6 @@ describe('Lumina CSS coverage', () => {
 
 		const META_TYPES = ['status', 'category', 'quantity', 'temporal', 'tag', 'id'] as const;
 		const SENTIMENTS = ['positive', 'negative', 'caution', 'neutral'] as const;
-		const RANKS = ['primary', 'secondary'] as const;
 
 		it.each(META_TYPES)(
 			'meta type "%s" has CSS rule',
@@ -352,16 +353,6 @@ describe('Lumina CSS coverage', () => {
 				expect(
 					dimensionSelectors.has(`[data-meta-sentiment="${sentiment}"]`),
 					`Missing CSS for [data-meta-sentiment="${sentiment}"]`
-				).toBe(true);
-			}
-		);
-
-		it.each(RANKS)(
-			'rank "%s" has CSS rule',
-			(rank) => {
-				expect(
-					dimensionSelectors.has(`[data-meta-rank="${rank}"]`),
-					`Missing CSS for [data-meta-rank="${rank}"]`
 				).toBe(true);
 			}
 		);

@@ -31,6 +31,8 @@ tint-lock: false
 - progress
 - icon
 - badge
+- bar
+- deflist
 
 ## Registry
 

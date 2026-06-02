@@ -69,6 +69,7 @@ export function buildStoryContent(
 	sectionNodes: RenderableNodeCursor,
 	sectionTypeName: string,
 	config: Record<string, any>,
+	header?: RenderableTreeNode,
 ): {
 	mainContent: RenderableNodeCursor<Markdoc.Tag>;
 	sections: RenderableNodeCursor<Markdoc.Tag>;
@@ -83,8 +84,10 @@ export function buildStoryContent(
 	const sections = sectionNodes.tag('div').typeof(sectionTypeName) as RenderableNodeCursor<Markdoc.Tag>;
 	const hasSections = sections.count() > 0;
 
-	// Build content children (everything except scene)
+	// Build content children. An optional `header` (title etc.) leads so the
+	// projected metadata block can nest below it via `layout: { content: [...] }`.
 	const contentChildren: any[] = [];
+	if (header) contentChildren.push(header);
 	const allDescNodes = [...extraDescription, ...descRendered.toArray()];
 	if (allDescNodes.length > 0) {
 		contentChildren.push(...allDescNodes);

@@ -1,16 +1,13 @@
 /* Badge rune — standalone inline chip.
  *
- * Built atop the metadata pill base (`data-meta-type`), but reshaped to the
- * compact chip look used by plan-progress status counts: **no border**,
- * solid-ish sentiment-tinted background, smaller font + tighter padding, and
- * a small corner radius. Tints come from the universal `--meta-color` set by
- * `dimensions/metadata.css`'s sentiment rules (positive / caution / negative /
- * neutral → success / warning / danger / muted). Background is a `color-mix`
- * of that color, so the chip stays sentiment-flexible — any value the theme
+ * The universal chip primitive emitted by `{% badge %}` AND by every
+ * chip-type field a block renders (`bar` chips, `definition-list` `<dd>`
+ * for chip-type fields). Tints come from the
+ * universal `--meta-color` set by `dimensions/metadata.css`'s
+ * sentiment rules (positive / caution / negative / neutral → success
+ * / warning / danger / muted). Background is a `color-mix` of that
+ * color, so the chip stays sentiment-flexible — any value the theme
  * gives `--meta-color` works without per-status selectors.
- *
- * `rank="primary"` boosts emphasis with a heavier tint and bolder weight,
- * useful for labels that should dominate over neighbours.
  */
 
 .rf-badge {
@@ -23,15 +20,4 @@
 	padding: 0.125rem 0.5rem;
 	border-radius: var(--rf-radius-sm);
 	white-space: nowrap;
-}
-
-.rf-badge[data-meta-rank="primary"] {
-	background: color-mix(in srgb, var(--meta-color, var(--rf-color-muted)) 28%, transparent);
-	font-weight: 600;
-}
-
-/* Drop the sentiment dot — the background tint carries the cue for
- * standalone chips, and the dot competes visually with adjacent prose. */
-.rf-badge::before {
-	display: none;
 }

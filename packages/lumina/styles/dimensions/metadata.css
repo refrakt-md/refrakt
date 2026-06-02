@@ -1,18 +1,14 @@
 /* ─── Metadata Dimensions ──────────────────────────────────────────────
- * Generic styling for metadata badges across all runes.
- * Works via data-meta-type, data-meta-rank, and data-meta-sentiment
- * attributes emitted by the identity transform engine.
- *
- * Composability: --meta-color cascades from sentiment → type rules.
- *                --meta-font-size cascades from rank → type rules.
+ * SPEC-080 typography / geometry split:
+ *  - `[data-meta-type=…]` selectors carry ONLY typography hints
+ *    (monospace, tabular-nums). No padding, no border, no chip geometry.
+ *  - Geometry comes from `[data-zone-layout=…]` selectors (`bar`,
+ *    `definition-list`) and from the universal `.rf-badge` class, which
+ *    is emitted by chip-type fields AND by the standalone `{% badge %}`
+ *    rune.
+ *  - Sentiment rules drive `--meta-color`, which the chip and any
+ *    sentiment-tinted text inherits.
  * ────────────────────────────────────────────────────────────────────── */
-
-/* ─── Rank ─────────────────────────────────────────────────────────── */
-
-[data-meta-rank="primary"],
-[data-meta-rank="secondary"] {
-	--meta-font-size: 0.8125rem;
-}
 
 /* ─── Sentiment ────────────────────────────────────────────────────── */
 
@@ -21,105 +17,139 @@
 [data-meta-sentiment="caution"]  { --meta-color: var(--rf-color-warning, #f59e0b); }
 [data-meta-sentiment="neutral"]  { --meta-color: var(--rf-color-muted, #64748b); }
 
-/* Colored dot for any item with a sentiment */
-[data-meta-sentiment]::before {
-	content: '';
-	width: 0.5rem;
-	height: 0.5rem;
-	border-radius: 50%;
-	background: var(--meta-color, var(--rf-color-muted));
-	flex-shrink: 0;
-}
+/* ─── Meta Types — typography only ─────────────────────────────────── */
 
-/* ─── Meta Types ───────────────────────────────────────────────────── */
-
-/* Status: bordered pill */
-[data-meta-type="status"] {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.375rem;
-	padding: 0.5em 1.0em;
-	border: 1px solid var(--rf-color-border);
-	border-radius: 999px;
-	font-size: var(--meta-font-size, 0.8125rem);
-	font-weight: 500;
-	color: var(--rf-color-muted);
-}
-
-/* Category: bordered pill */
-[data-meta-type="category"] {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.375rem;
-	padding: 0.5em 1.0em;
-	border: 1px solid var(--rf-color-border);
-	border-radius: 999px;
-	font-size: var(--meta-font-size, 0.8125rem);
-	font-weight: 500;
-	color: var(--rf-color-muted);
-}
-
-/* Quantity: bordered pill with tabular numbers */
-[data-meta-type="quantity"] {
-	display: inline-flex;
-	align-items: center;
-	padding: 0.5em 1.0em;
-	border: 1px solid var(--rf-color-border);
-	border-radius: 999px;
-	font-variant-numeric: tabular-nums;
-	font-weight: 600;
-	font-size: var(--meta-font-size, 0.8125rem);
-	color: var(--rf-color-muted);
-}
-
-/* Temporal: bordered pill with time association */
-[data-meta-type="temporal"] {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.25rem;
-	padding: 0.5em 1.0em;
-	border: 1px solid var(--rf-color-border);
-	border-radius: 999px;
-	font-size: var(--meta-font-size, 0.8125rem);
-	font-variant-numeric: tabular-nums;
-	color: var(--rf-color-muted);
-}
-
-/* Tag: bordered pill */
-[data-meta-type="tag"] {
-	display: inline-flex;
-	align-items: center;
-	padding: 0.5em 1.0em;
-	border: 1px solid var(--rf-color-border);
-	border-radius: 999px;
-	font-size: calc(var(--meta-font-size, 0.8125rem) * 0.9);
-	color: var(--rf-color-muted);
-}
-
-/* ID: bordered pill, monospace */
-[data-meta-type="id"] {
-	display: inline-flex;
-	align-items: center;
-	padding: 0.5em 1.0em;
-	border: 1px solid var(--rf-color-border);
-	border-radius: 999px;
+[data-meta-type="id"],
+[data-meta-type="code"] {
 	font-family: var(--rf-font-mono, monospace);
 	font-size: var(--meta-font-size, 0.8125rem);
+}
+
+/* IDs read as primary-coloured references wherever they appear (eyebrow
+ * bars, metadata def-lists, etc.) — a semantic treatment of the `id` type,
+ * not a per-layout one. `code` (e.g. API paths) stays neutral monospace. */
+[data-meta-type="id"] {
+	color: var(--rf-color-primary);
+	font-weight: 500;
+}
+
+[data-meta-type="quantity"] {
+	font-variant-numeric: tabular-nums;
+	font-size: var(--meta-font-size, 0.8125rem);
+}
+
+[data-meta-type="temporal"] {
+	font-variant-numeric: tabular-nums;
+	font-size: var(--meta-font-size, 0.8125rem);
+}
+
+/* Rating — `value` filled marks out of `total`; each mark carries
+ * `data-filled`. Stars via colour (filled = primary, empty = border). */
+[data-meta-type="rating"] {
+	display: inline-flex;
+	gap: 0.0625rem;
+	line-height: 1;
+}
+[data-meta-type="rating"] span::before {
+	content: '★';
+}
+[data-meta-type="rating"] span[data-filled="true"] {
+	color: var(--rf-color-primary);
+}
+[data-meta-type="rating"] span[data-filled="false"] {
+	color: var(--rf-color-border);
+}
+
+[data-meta-type="status"],
+[data-meta-type="category"],
+[data-meta-type="tag"] {
+	font-size: var(--meta-font-size, 0.8125rem);
+}
+
+/* Linked eyebrow content (matches today's hero behaviour). */
+[data-zone="eyebrow"] a {
+	color: var(--rf-color-primary);
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+}
+
+/* ─── Layout: bar (SPEC-080) ───────────────────────────────────────── */
+
+/* Horizontal flex row of fields, each in its own intrinsic shape (chip or
+ * bare). Wraps by default; `data-wrap="false"` keeps it on one line. A field
+ * tagged `data-align="end"` (and everything after it) is pushed to the right
+ * edge. */
+[data-zone-layout="bar"] {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	align-items: center;
+}
+[data-zone-layout="bar"][data-wrap="false"] {
+	flex-wrap: nowrap;
+}
+[data-zone-layout="bar"] [data-align="end"] {
+	margin-left: auto;
+}
+
+/* ─── Layout: definition-list ──────────────────────────────────────── */
+
+/* Single source of truth for the `definition-list` primitive, shared by
+ * both the projected metadata zone (`<dl data-zone="…">`) and the authored
+ * `{% deflist %}` rune (`<dl data-rune="deflist">`) — they emit the same
+ * `data-zone-layout` so they render identically (geometry, borders, margin).
+ *
+ * Each row stacks `dt` above `dd`. Rows flow into multiple columns
+ * via `auto-fit` — CSS grid naturally collapses to a single column
+ * when the container is narrower than the minimum, so the same rule
+ * reads fine on mobile and packs dense on wider screens without a
+ * media-query step. The 8rem minimum keeps short label / value pairs
+ * like "Prep" + "15m" tight while leaving room for the per-item border. */
+[data-zone-layout="definition-list"] {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+	gap: 0.75rem;
+	margin: 1.25rem 0;
+}
+
+[data-zone-layout="definition-list"] > [data-name="row"] {
+	display: flex;
+	flex-direction: column;
+	gap: 0.125rem;
+	min-width: 0;
+	padding: 0.625rem 0.75rem;
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-sm);
+}
+
+[data-zone-layout="definition-list"] dt {
+	font-size: 0.75rem;
 	font-weight: 500;
 	color: var(--rf-color-muted);
+}
+
+[data-zone-layout="definition-list"] dd {
+	margin: 0;
+	font-size: 0.875rem;
+}
+
+/* Multi-value dd (fields with `splitOn`) renders a row of chips
+ * inside the cell, flowing naturally. */
+[data-zone-layout="definition-list"] dd[data-multi-value] {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem;
 }
 
 /* ─── Labels ──────────────────────────────────────────────────────── */
 
-/* Label element within metadata items — thin, muted style.
- * Themes can override or hide entirely: [data-meta-label] { display: none } */
+/* Label element within a chip — thin, muted; pairs visually with the value */
 [data-meta-label] {
 	font-weight: 400;
 	opacity: 0.65;
 }
 
-/* Visually hidden labels — accessible to screen readers but not visible.
- * Themes can restore with: [data-meta-label-hidden] { position: static; ... } */
+/* Visually hidden labels — accessible to screen readers only */
 [data-meta-label-hidden] {
 	position: absolute;
 	width: 1px;
@@ -132,22 +162,29 @@
 	border: 0;
 }
 
-/* ─── Mobile: compact badges ─────────────────────────────────────────── */
+/* ─── Mobile: compact ──────────────────────────────────────────────── */
 
 @media (max-width: 48rem) {
-	[data-meta-type="status"],
-	[data-meta-type="category"],
-	[data-meta-type="quantity"],
-	[data-meta-type="temporal"],
-	[data-meta-type="tag"],
-	[data-meta-type="id"] {
-		padding: 0.25em 0.625em;
-		font-size: calc(var(--meta-font-size, 0.8125rem) * 0.9);
+	[data-zone-layout="bar"] {
+		gap: 0.375rem;
 	}
 
-	[data-meta-sentiment]::before {
-		width: 0.375rem;
-		height: 0.375rem;
+	/* On narrow screens, fall back to the original label-left / value-right
+	 * list: each row's dt/dd flow directly into a two-column grid via
+	 * `display: contents`, which drops the per-item border (no box to paint).
+	 * The border + padding move to the list itself so the whole group reads
+	 * as one bordered card. */
+	[data-zone-layout="definition-list"] {
+		grid-template-columns: max-content 1fr;
+		gap: 0.25rem 1rem;
+		align-items: baseline;
+		padding: 0.75rem 1rem;
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-sm);
+	}
+
+	[data-zone-layout="definition-list"] > [data-name="row"] {
+		display: contents;
 	}
 
 	[data-section="header"] {

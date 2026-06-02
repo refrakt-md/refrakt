@@ -6,7 +6,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'playlist',
 		defaultDensity: 'full',
 		sequence: 'numbered',
-		sections: { meta: 'header', preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
+		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'cover' },
 		rootAttributes: { 'data-media-position': 'top' },
 		modifiers: {
@@ -25,14 +25,13 @@ export const config: Record<string, RuneConfig> = {
 			valign: { prop: '--split-valign', transform: resolveValign },
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
-		structure: {
-			meta: {
-				tag: 'div', before: true,
-				children: [
-					{ tag: 'span', ref: 'type-badge', metaText: 'type', metaType: 'category', metaRank: 'primary' },
-				],
-			},
+		metaFields: {
+			type: { metaType: 'category' },
 		},
+		blocks: {
+			eyebrow: { fields: ['type'], layout: 'bar' },
+		},
+		layout: { content: ['eyebrow', 'preamble'] },
 		autoLabel: {
 			header: 'preamble',
 			eyebrow: 'eyebrow',

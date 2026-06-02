@@ -73,18 +73,20 @@ export const realm = createContentModelSchema({
 		// Extract scene image (shared helper)
 		const { sceneDiv, sceneImgTag, extraDescription } = extractScene(resolved.scene, config);
 
-		// Build content div with sections (shared helper)
+		// Title lives in a header at the top of the content column (recipe
+		// pattern), so the projected metadata def-list nests below it via
+		// `layout: { content: [...] }` and the split sees only media + content.
+		const headerEl = new Tag('header', {}, [nameTag]);
 		const { mainContent, sections, hasSections } = buildStoryContent(
-			extraDescription, resolved.description, sectionNodes, 'RealmSection', config,
+			extraDescription, resolved.description, sectionNodes, 'RealmSection', config, headerEl,
 		);
 
-		// Build children array
-		// Scene before name so the image appears between header and title in stacked layout.
-		// In split layouts, CSS grid explicit placement controls the visual order.
+		// Build children array: media (scene) + content column only.
+		// Scene first so it sits on top in stacked / media-position="top".
 		const children: any[] = [];
 		if (sceneDiv) children.push(sceneDiv.next());
 		children.push(
-			nameTag, realmTypeMeta, scaleMeta, tagsMeta, parentMeta,
+			realmTypeMeta, scaleMeta, tagsMeta, parentMeta,
 			...layoutChildren,
 		);
 		children.push(mainContent.next());

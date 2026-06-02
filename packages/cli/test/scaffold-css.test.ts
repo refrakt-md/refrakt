@@ -55,16 +55,19 @@ describe('scaffoldCssCommand', () => {
 		expect(hintCss).toContain('.rf-hint--note {');
 	});
 
-	it('generates element selectors from structure', () => {
+	it('generates element selectors from blocks', () => {
 		const outputDir = tmpOutputDir();
 		cleanupDirs.push(outputDir);
 
 		scaffoldCssCommand({ outputDir, force: false });
 
+		// Hint uses the SPEC-080 block model: its `header` block surfaces in
+		// the contract as an addressable element, so the scaffold emits its
+		// `.rf-hint__header` selector under the Elements section.
 		const hintCss = readFileSync(join(outputDir, 'hint.css'), 'utf-8');
+		expect(hintCss).toContain('/* Elements */');
 		expect(hintCss).toContain('.rf-hint__header {');
-		expect(hintCss).toContain('.rf-hint__icon {');
-		expect(hintCss).toContain('.rf-hint__title {');
+		expect(hintCss).toContain('from block');
 	});
 
 	it('generates context modifier selectors', () => {
@@ -85,8 +88,8 @@ describe('scaffoldCssCommand', () => {
 
 		const hintCss = readFileSync(join(outputDir, 'hint.css'), 'utf-8');
 		expect(hintCss).toContain('/* Hint rune */');
-		expect(hintCss).toContain('/* Elements */');
-		expect(hintCss).toContain('from structure');
+		expect(hintCss).toContain('/* Modifiers */');
+		expect(hintCss).toContain('/* Context modifiers */');
 	});
 
 	it('skips existing files by default', () => {

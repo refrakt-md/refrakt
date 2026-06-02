@@ -11,24 +11,12 @@ describe('badge tag', () => {
 		expect(badge!.attributes['class']).toBe('rf-badge');
 		expect(badge!.attributes['data-meta-sentiment']).toBe('neutral');
 		expect(badge!.attributes['data-meta-type']).toBe('tag');
-		expect(badge!.attributes['data-meta-rank']).toBeUndefined();
 	});
 
 	it('emits data-meta-sentiment per attribute', () => {
 		const result = parse(`{% badge sentiment="positive" %}New{% /badge %}`);
 		const badge = findTag(result as any, t => t.attributes['data-rune'] === 'badge');
 		expect(badge!.attributes['data-meta-sentiment']).toBe('positive');
-	});
-
-	it('emits data-meta-rank only when rank is set', () => {
-		const withRank = parse(`{% badge rank="primary" %}Popular{% /badge %}`);
-		const withoutRank = parse(`{% badge %}Tag{% /badge %}`);
-
-		const withRankBadge = findTag(withRank as any, t => t.attributes['data-rune'] === 'badge');
-		const withoutRankBadge = findTag(withoutRank as any, t => t.attributes['data-rune'] === 'badge');
-
-		expect(withRankBadge!.attributes['data-meta-rank']).toBe('primary');
-		expect(withoutRankBadge!.attributes['data-meta-rank']).toBeUndefined();
 	});
 
 	it('emits data-meta-type per attribute, defaulting to tag', () => {
@@ -63,11 +51,10 @@ describe('badge tag', () => {
 		}
 	});
 
-	it('combines sentiment + rank + type', () => {
-		const result = parse(`{% badge type="status" sentiment="positive" rank="primary" %}Active{% /badge %}`);
+	it('combines sentiment + type', () => {
+		const result = parse(`{% badge type="status" sentiment="positive" %}Active{% /badge %}`);
 		const badge = findTag(result as any, t => t.attributes['data-rune'] === 'badge');
 		expect(badge!.attributes['data-meta-sentiment']).toBe('positive');
-		expect(badge!.attributes['data-meta-rank']).toBe('primary');
 		expect(badge!.attributes['data-meta-type']).toBe('status');
 	});
 

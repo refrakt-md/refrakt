@@ -1,10 +1,5 @@
 /* HowTo — matches recipe design */
 
-/* Meta bar — extra bottom spacing beyond section header default */
-.rf-howto__meta {
-	margin-bottom: 1.5rem;
-}
-
 /* Tools/materials list — surfaced zone with primary markers */
 .rf-howto__content ul {
 	background: var(--rf-color-surface);
@@ -76,3 +71,23 @@
 .rf-howto__content blockquote p {
 	margin: 0;
 }
+
+/* Metadata — est. time / difficulty are short, symmetric facts, so keep the
+ * def-list a dense tile grid at every width (a smaller column min than the
+ * 8rem default) instead of the shared mobile label/value list. */
+.rf-howto__metadata {
+	grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+}
+@media (max-width: 48rem) {
+	.rf-howto__metadata {
+		grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+		gap: 0.75rem;
+		align-items: normal;
+		padding: 0;
+		border: none;
+	}
+	.rf-howto__metadata > [data-name="row"] {
+		display: flex;
+	}
+}
+

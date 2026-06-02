@@ -10,7 +10,6 @@ export interface MetaField {
 	block: string;
 	ref: string;
 	metaType: string;
-	metaRank?: string;
 	hasSentiment: boolean;
 	sentimentValues?: string[];
 }
@@ -19,14 +18,12 @@ export interface MetaField {
 export interface MetaCssCoverage {
 	types: Record<string, { styled: boolean; file?: string; line?: number }>;
 	sentiments: Record<string, { styled: boolean; file?: string; line?: number }>;
-	ranks: Record<string, { styled: boolean; file?: string; line?: number }>;
 }
 
 /** Full metadata audit result */
 export interface MetaAuditResult {
 	fields: MetaField[];
 	typeCount: Record<string, number>;
-	rankCount: Record<string, number>;
 	withSentiment: number;
 	withoutSentiment: number;
 	css?: MetaCssCoverage;
@@ -36,7 +33,6 @@ export interface MetaAuditResult {
 export function collectMetadata(config: ThemeConfig): Omit<MetaAuditResult, 'css'> {
 	const fields: MetaField[] = [];
 	const typeCount: Record<string, number> = {};
-	const rankCount: Record<string, number> = {};
 	let withSentiment = 0;
 	let withoutSentiment = 0;
 
@@ -50,9 +46,6 @@ export function collectMetadata(config: ThemeConfig): Omit<MetaAuditResult, 'css
 
 	for (const field of fields) {
 		typeCount[field.metaType] = (typeCount[field.metaType] || 0) + 1;
-		if (field.metaRank) {
-			rankCount[field.metaRank] = (rankCount[field.metaRank] || 0) + 1;
-		}
 		if (field.hasSentiment) {
 			withSentiment++;
 		} else {
@@ -60,7 +53,7 @@ export function collectMetadata(config: ThemeConfig): Omit<MetaAuditResult, 'css
 		}
 	}
 
-	return { fields, typeCount, rankCount, withSentiment, withoutSentiment };
+	return { fields, typeCount, withSentiment, withoutSentiment };
 }
 
 /** Recursively collect metadata fields from a structure entry and its children */
@@ -77,7 +70,6 @@ function collectFromEntry(
 			block,
 			ref: entry.ref ?? key,
 			metaType: entry.metaType,
-			metaRank: entry.metaRank,
 			hasSentiment: !!entry.sentimentMap,
 			sentimentValues: entry.sentimentMap ? Object.keys(entry.sentimentMap) : undefined,
 		});
@@ -136,7 +128,6 @@ export function checkMetaCss(cssDir: string): MetaCssCoverage {
 
 	const EXPECTED_TYPES = ['status', 'category', 'quantity', 'temporal', 'tag', 'id'];
 	const EXPECTED_SENTIMENTS = ['positive', 'negative', 'caution', 'neutral'];
-	const EXPECTED_RANKS = ['primary', 'secondary'];
 
 	const types: MetaCssCoverage['types'] = {};
 	for (const type of EXPECTED_TYPES) {
@@ -152,12 +143,5 @@ export function checkMetaCss(cssDir: string): MetaCssCoverage {
 		sentiments[sentiment] = match ? { styled: true, file: match.file, line: match.line } : { styled: false };
 	}
 
-	const ranks: MetaCssCoverage['ranks'] = {};
-	for (const rank of EXPECTED_RANKS) {
-		const sel = `[data-meta-rank="${rank}"]`;
-		const match = selectors.get(sel);
-		ranks[rank] = match ? { styled: true, file: match.file, line: match.line } : { styled: false };
-	}
-
-	return { types, sentiments, ranks };
+	return { types, sentiments };
 }

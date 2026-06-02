@@ -31,6 +31,8 @@ These runes are available out of the box — no extra installation needed. They 
 | [progress](/runes/progress) | A generic completion bar — render a ratio from supplied numbers, with an optional label and sentiment variant |
 | [icon](/runes/icon) | Inline icons from the theme's icon registry |
 | [badge](/runes/badge) | Inline pill that flags a piece of content — status, category, recency, tag — with sentiment / rank / type variants from the universal metadata system |
+| [bar](/runes/bar) | Horizontal row of content — the `bar` layout primitive as a prose handle; an identifier on the left, a status or action pushed to the right |
+| [deflist](/runes/deflist) | Labelled definition list — the `definition-list` layout primitive as a prose handle; `term: value` rows in a responsive multi-column grid |
 
 ### Registry
 

@@ -1,11 +1,16 @@
 /* Event */
-.rf-event__meta {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 0.5rem;
+
+/* When/where def-list — geometry from the shared `[data-zone-layout=
+ * definition-list]` primitive; this block owns only its top margin. */
+.rf-event__metadata {
+	margin-top: 1.25rem;
 }
+
+/* Register CTA — a bar-wrapped link; style the inner `<a>` as a button. */
 .rf-event__register {
+	margin-top: 1.5rem;
+}
+.rf-event__register a {
 	display: inline-block;
 	padding: 0.5rem 1rem;
 	background: var(--rf-color-primary);
@@ -14,22 +19,21 @@
 	font-weight: 500;
 	font-size: 0.875rem;
 	text-decoration: none;
-	margin-top: 1.5rem;
 }
-.rf-event__register:hover {
+.rf-event__register a:hover {
 	background: var(--rf-color-primary-hover);
 }
-.rf-event__content {
+.rf-event__body {
 	margin-top: 1.5rem;
 }
-.rf-event__content ul,
-.rf-event__content ol {
+.rf-event__body ul,
+.rf-event__body ol {
 	padding-left: 1.5rem;
 }
-.rf-event__content a {
+.rf-event__body a {
 	color: var(--rf-color-primary);
 	text-decoration: none;
 }
-.rf-event__content a:hover {
+.rf-event__body a:hover {
 	color: var(--rf-color-primary-hover);
 }

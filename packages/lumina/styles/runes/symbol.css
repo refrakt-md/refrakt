@@ -1,14 +1,17 @@
 /* Symbol */
-.rf-symbol__header {
+
+/* SPEC-080: signature bar (kind/lang chips + source link). Geometry +
+ * the source link's right-push come from [data-zone-layout="bar"]; the
+ * source link is a `href` field (data-meta-type="link"). */
+.rf-symbol__eyebrow {
 	padding: 0.5rem 0;
 }
-.rf-symbol__source-link {
-	margin-left: auto;
+.rf-symbol__eyebrow [data-meta-type="link"] {
 	font-size: 0.75rem;
 	color: var(--rf-color-muted);
 	text-decoration: none;
 }
-.rf-symbol__source-link:hover {
+.rf-symbol__eyebrow [data-meta-type="link"]:hover {
 	color: var(--rf-color-primary);
 }
 .rf-symbol__body {

@@ -151,20 +151,11 @@
 				"topbar": {
 					"tag": "div",
 					"selector": ".rf-codegroup__topbar",
-					"source": "structure"
-				},
-				"dot": {
-					"tag": "span",
-					"selector": ".rf-codegroup__dot",
-					"source": "structure",
-					"parent": "topbar"
-				},
-				"title": {
-					"tag": "span",
-					"selector": ".rf-codegroup__title",
-					"source": "structure",
-					"parent": "topbar",
-					"condition": "title"
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"title"
+					]
 				}
 			}
 		},
@@ -204,6 +195,22 @@
 			"block": "badge",
 			"root": ".rf-badge",
 			"dataRune": "badge",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Bar": {
+			"block": "bar",
+			"root": ".rf-bar",
+			"dataRune": "bar",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Deflist": {
+			"block": "deflist",
+			"root": ".rf-deflist",
+			"dataRune": "deflist",
 			"childOrder": [
 				"{content}"
 			]
@@ -379,7 +386,8 @@
 			"root": ".rf-budget",
 			"dataRune": "budget",
 			"childOrder": [
-				"header",
+				"meta",
+				"preamble",
 				"{content}"
 			],
 			"modifiers": {
@@ -408,27 +416,15 @@
 				}
 			},
 			"elements": {
-				"header": {
-					"tag": "div",
-					"selector": ".rf-budget__header",
-					"source": "structure",
-					"conditionAny": [
-						"currency",
-						"duration"
-					]
-				},
 				"meta": {
 					"tag": "div",
 					"selector": ".rf-budget__meta",
-					"source": "structure",
-					"parent": "header"
-				},
-				"meta-item": {
-					"tag": "span",
-					"selector": ".rf-budget__meta-item",
-					"source": "structure",
-					"parent": "meta",
-					"condition": "currency"
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"duration",
+						"currency"
+					]
 				}
 			}
 		},
@@ -496,19 +492,11 @@
 				"header": {
 					"tag": "div",
 					"selector": ".rf-hint__header",
-					"source": "structure"
-				},
-				"icon": {
-					"tag": "span",
-					"selector": ".rf-hint__icon",
-					"source": "structure",
-					"parent": "header"
-				},
-				"title": {
-					"tag": "span",
-					"selector": ".rf-hint__title",
-					"source": "structure",
-					"parent": "header"
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"hintType"
+					]
 				}
 			}
 		},
@@ -1637,7 +1625,11 @@
 			"dataRune": "testimonial",
 			"childOrder": [
 				"rating",
-				"{content:content}"
+				"quote",
+				"author-name",
+				"author-role",
+				"avatar",
+				"{content}"
 			],
 			"modifiers": {
 				"variant": {
@@ -1660,19 +1652,11 @@
 				"rating": {
 					"tag": "div",
 					"selector": ".rf-testimonial__rating",
-					"source": "structure",
-					"condition": "rating"
-				},
-				"star": {
-					"tag": "span",
-					"selector": ".rf-testimonial__star",
-					"source": "structure",
-					"parent": "rating"
-				},
-				"content": {
-					"tag": "div",
-					"selector": ".rf-testimonial__content",
-					"source": "contentWrapper"
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"rating"
+					]
 				},
 				"quote": {
 					"tag": "blockquote",
@@ -1752,8 +1736,9 @@
 			"root": ".rf-api",
 			"dataRune": "api",
 			"childOrder": [
-				"header",
-				"{content:body}"
+				"eyebrow",
+				"body",
+				"{content}"
 			],
 			"modifiers": {
 				"method": {
@@ -1774,34 +1759,16 @@
 				}
 			},
 			"elements": {
-				"header": {
+				"eyebrow": {
 					"tag": "div",
-					"selector": ".rf-api__header",
-					"source": "structure"
-				},
-				"method": {
-					"tag": "span",
-					"selector": ".rf-api__method",
-					"source": "structure",
-					"parent": "header"
-				},
-				"path": {
-					"tag": "code",
-					"selector": ".rf-api__path",
-					"source": "structure",
-					"parent": "header"
-				},
-				"auth": {
-					"tag": "span",
-					"selector": ".rf-api__auth",
-					"source": "structure",
-					"parent": "header",
-					"condition": "auth"
-				},
-				"body": {
-					"tag": "div",
-					"selector": ".rf-api__body",
-					"source": "contentWrapper"
+					"selector": ".rf-api__eyebrow",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"method",
+						"path",
+						"auth"
+					]
 				}
 			}
 		},
@@ -1810,8 +1777,11 @@
 			"root": ".rf-symbol",
 			"dataRune": "symbol",
 			"childOrder": [
-				"header",
-				"{content:body}"
+				"eyebrow",
+				"preamble",
+				"metadata",
+				"body",
+				"{content}"
 			],
 			"modifiers": {
 				"kind": {
@@ -1843,57 +1813,24 @@
 				}
 			},
 			"elements": {
-				"header": {
-					"tag": "div",
-					"selector": ".rf-symbol__header",
-					"source": "structure"
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-symbol__eyebrow",
+					"source": "autoLabel"
 				},
-				"kind-badge": {
-					"tag": "span",
-					"selector": ".rf-symbol__kind-badge",
-					"source": "structure",
-					"parent": "header"
-				},
-				"lang-badge": {
-					"tag": "span",
-					"selector": ".rf-symbol__lang-badge",
-					"source": "structure",
-					"parent": "header"
-				},
-				"since-badge": {
-					"tag": "span",
-					"selector": ".rf-symbol__since-badge",
-					"source": "structure",
-					"parent": "header",
-					"condition": "since"
-				},
-				"deprecated-badge": {
-					"tag": "span",
-					"selector": ".rf-symbol__deprecated-badge",
-					"source": "structure",
-					"parent": "header",
-					"condition": "deprecated"
-				},
-				"source-link": {
-					"tag": "a",
-					"selector": ".rf-symbol__source-link",
-					"source": "structure",
-					"parent": "header",
-					"condition": "source"
-				},
-				"body": {
-					"tag": "div",
-					"selector": ".rf-symbol__body",
-					"source": "contentWrapper"
+				"metadata": {
+					"tag": "dl",
+					"selector": ".rf-symbol__metadata",
+					"source": "block",
+					"layout": "definition-list",
+					"fields": [
+						"since",
+						"deprecated"
+					]
 				},
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-symbol__preamble",
-					"source": "autoLabel"
-				},
-				"eyebrow": {
-					"tag": "eyebrow",
-					"selector": ".rf-symbol__eyebrow",
 					"source": "autoLabel"
 				},
 				"headline": {
@@ -1980,8 +1917,7 @@
 			"root": ".rf-character",
 			"dataRune": "character",
 			"childOrder": [
-				"badge",
-				"{content:content}"
+				"{content}"
 			],
 			"modifiers": {
 				"role": {
@@ -2008,28 +1944,20 @@
 				}
 			},
 			"elements": {
-				"badge": {
-					"tag": "div",
-					"selector": ".rf-character__badge",
-					"source": "structure"
+				"metadata": {
+					"tag": "dl",
+					"selector": ".rf-character__metadata",
+					"source": "block",
+					"layout": "definition-list",
+					"fields": [
+						"role",
+						"status"
+					]
 				},
-				"role-badge": {
-					"tag": "span",
-					"selector": ".rf-character__role-badge",
-					"source": "structure",
-					"parent": "badge"
-				},
-				"status-badge": {
-					"tag": "span",
-					"selector": ".rf-character__status-badge",
-					"source": "structure",
-					"parent": "badge",
-					"condition": "status"
-				},
-				"content": {
-					"tag": "div",
-					"selector": ".rf-character__content",
-					"source": "contentWrapper"
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-character__preamble",
+					"source": "autoLabel"
 				}
 			}
 		},
@@ -2054,7 +1982,6 @@
 			"root": ".rf-realm",
 			"dataRune": "realm",
 			"childOrder": [
-				"badge",
 				"{content}"
 			],
 			"modifiers": {
@@ -2106,27 +2033,24 @@
 				}
 			},
 			"elements": {
-				"badge": {
-					"tag": "div",
-					"selector": ".rf-realm__badge",
-					"source": "structure"
-				},
-				"type-badge": {
-					"tag": "span",
-					"selector": ".rf-realm__type-badge",
-					"source": "structure",
-					"parent": "badge"
-				},
-				"scale-badge": {
-					"tag": "span",
-					"selector": ".rf-realm__scale-badge",
-					"source": "structure",
-					"parent": "badge",
-					"condition": "scale"
+				"metadata": {
+					"tag": "dl",
+					"selector": ".rf-realm__metadata",
+					"source": "block",
+					"layout": "definition-list",
+					"fields": [
+						"realmType",
+						"scale"
+					]
 				},
 				"scene": {
 					"tag": "scene",
 					"selector": ".rf-realm__scene",
+					"source": "autoLabel"
+				},
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-realm__preamble",
 					"source": "autoLabel"
 				}
 			},
@@ -2163,8 +2087,10 @@
 			"root": ".rf-lore",
 			"dataRune": "lore",
 			"childOrder": [
-				"badge",
-				"{content:content}"
+				"title",
+				"metadata",
+				"body",
+				"{content}"
 			],
 			"modifiers": {
 				"category": {
@@ -2185,25 +2111,14 @@
 				}
 			},
 			"elements": {
-				"badge": {
+				"metadata": {
 					"tag": "div",
-					"selector": ".rf-lore__badge",
-					"source": "structure",
-					"conditionAny": [
+					"selector": ".rf-lore__metadata",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
 						"category"
 					]
-				},
-				"category-badge": {
-					"tag": "span",
-					"selector": ".rf-lore__category-badge",
-					"source": "structure",
-					"parent": "badge",
-					"condition": "category"
-				},
-				"content": {
-					"tag": "div",
-					"selector": ".rf-lore__content",
-					"source": "contentWrapper"
 				}
 			}
 		},
@@ -2212,7 +2127,6 @@
 			"root": ".rf-faction",
 			"dataRune": "faction",
 			"childOrder": [
-				"badge",
 				"{content}"
 			],
 			"modifiers": {
@@ -2263,40 +2177,25 @@
 				}
 			},
 			"elements": {
-				"badge": {
-					"tag": "div",
-					"selector": ".rf-faction__badge",
-					"source": "structure",
-					"conditionAny": [
+				"metadata": {
+					"tag": "dl",
+					"selector": ".rf-faction__metadata",
+					"source": "block",
+					"layout": "definition-list",
+					"fields": [
 						"factionType",
 						"alignment",
 						"size"
 					]
 				},
-				"type-badge": {
-					"tag": "span",
-					"selector": ".rf-faction__type-badge",
-					"source": "structure",
-					"parent": "badge",
-					"condition": "factionType"
-				},
-				"alignment-badge": {
-					"tag": "span",
-					"selector": ".rf-faction__alignment-badge",
-					"source": "structure",
-					"parent": "badge",
-					"condition": "alignment"
-				},
-				"size-badge": {
-					"tag": "span",
-					"selector": ".rf-faction__size-badge",
-					"source": "structure",
-					"parent": "badge",
-					"condition": "size"
-				},
 				"scene": {
 					"tag": "scene",
 					"selector": ".rf-faction__scene",
+					"source": "autoLabel"
+				},
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-faction__preamble",
 					"source": "autoLabel"
 				}
 			},
@@ -2333,7 +2232,8 @@
 			"root": ".rf-plot",
 			"dataRune": "plot",
 			"childOrder": [
-				"badge",
+				"eyebrow",
+				"title",
 				"{content}"
 			],
 			"modifiers": {
@@ -2356,28 +2256,15 @@
 				}
 			},
 			"elements": {
-				"badge": {
+				"eyebrow": {
 					"tag": "div",
-					"selector": ".rf-plot__badge",
-					"source": "structure",
-					"conditionAny": [
+					"selector": ".rf-plot__eyebrow",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
 						"plotType",
 						"structure"
 					]
-				},
-				"type-badge": {
-					"tag": "span",
-					"selector": ".rf-plot__type-badge",
-					"source": "structure",
-					"parent": "badge",
-					"condition": "plotType"
-				},
-				"structure-badge": {
-					"tag": "span",
-					"selector": ".rf-plot__structure-badge",
-					"source": "structure",
-					"parent": "badge",
-					"condition": "structure"
 				}
 			}
 		},
@@ -2486,9 +2373,11 @@
 			"root": ".rf-event",
 			"dataRune": "event",
 			"childOrder": [
-				"header",
-				"{content:content}",
-				"register"
+				"preamble",
+				"metadata",
+				"body",
+				"register",
+				"{content}"
 			],
 			"modifiers": {
 				"date": {
@@ -2513,38 +2402,25 @@
 				}
 			},
 			"elements": {
-				"header": {
-					"tag": "div",
-					"selector": ".rf-event__header",
-					"source": "structure",
-					"conditionAny": [
+				"metadata": {
+					"tag": "dl",
+					"selector": ".rf-event__metadata",
+					"source": "block",
+					"layout": "definition-list",
+					"fields": [
 						"date",
+						"endDate",
 						"location"
 					]
 				},
-				"meta": {
-					"tag": "div",
-					"selector": ".rf-event__meta",
-					"source": "structure",
-					"parent": "header"
-				},
-				"meta-item": {
-					"tag": "span",
-					"selector": ".rf-event__meta-item",
-					"source": "structure",
-					"parent": "meta",
-					"condition": "date"
-				},
 				"register": {
-					"tag": "a",
-					"selector": ".rf-event__register",
-					"source": "structure",
-					"condition": "url"
-				},
-				"content": {
 					"tag": "div",
-					"selector": ".rf-event__content",
-					"source": "contentWrapper"
+					"selector": ".rf-event__register",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"register"
+					]
 				},
 				"preamble": {
 					"tag": "header",
@@ -3056,8 +2932,7 @@
 			"root": ".rf-howto",
 			"dataRune": "how-to",
 			"childOrder": [
-				"meta",
-				"{content:content}"
+				"{content}"
 			],
 			"modifiers": {
 				"estimatedTime": {
@@ -3073,26 +2948,15 @@
 				}
 			},
 			"elements": {
-				"meta": {
-					"tag": "div",
-					"selector": ".rf-howto__meta",
-					"source": "structure",
-					"conditionAny": [
+				"metadata": {
+					"tag": "dl",
+					"selector": ".rf-howto__metadata",
+					"source": "block",
+					"layout": "definition-list",
+					"fields": [
 						"estimatedTime",
 						"difficulty"
 					]
-				},
-				"meta-item": {
-					"tag": "span",
-					"selector": ".rf-howto__meta-item",
-					"source": "structure",
-					"parent": "meta",
-					"condition": "estimatedTime"
-				},
-				"content": {
-					"tag": "div",
-					"selector": ".rf-howto__content",
-					"source": "contentWrapper"
 				},
 				"preamble": {
 					"tag": "header",
@@ -3126,7 +2990,6 @@
 			"root": ".rf-recipe",
 			"dataRune": "recipe",
 			"childOrder": [
-				"meta",
 				"{content}"
 			],
 			"modifiers": {
@@ -3175,30 +3038,17 @@
 				}
 			},
 			"elements": {
-				"meta": {
-					"tag": "div",
-					"selector": ".rf-recipe__meta",
-					"source": "structure",
-					"conditionAny": [
+				"metadata": {
+					"tag": "dl",
+					"selector": ".rf-recipe__metadata",
+					"source": "block",
+					"layout": "definition-list",
+					"fields": [
 						"prepTime",
 						"cookTime",
 						"servings",
 						"difficulty"
 					]
-				},
-				"meta-item": {
-					"tag": "span",
-					"selector": ".rf-recipe__meta-item",
-					"source": "structure",
-					"parent": "meta",
-					"condition": "prepTime"
-				},
-				"badge": {
-					"tag": "span",
-					"selector": ".rf-recipe__badge",
-					"source": "structure",
-					"parent": "meta",
-					"condition": "difficulty"
 				},
 				"preamble": {
 					"tag": "header",
@@ -3257,7 +3107,6 @@
 			"root": ".rf-playlist",
 			"dataRune": "playlist",
 			"childOrder": [
-				"meta",
 				"{content}"
 			],
 			"modifiers": {
@@ -3306,25 +3155,14 @@
 				}
 			},
 			"elements": {
-				"meta": {
-					"tag": "div",
-					"selector": ".rf-playlist__meta",
-					"source": "structure"
-				},
-				"type-badge": {
-					"tag": "span",
-					"selector": ".rf-playlist__type-badge",
-					"source": "structure",
-					"parent": "meta"
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-playlist__eyebrow",
+					"source": "autoLabel"
 				},
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-playlist__preamble",
-					"source": "autoLabel"
-				},
-				"eyebrow": {
-					"tag": "eyebrow",
-					"selector": ".rf-playlist__eyebrow",
 					"source": "autoLabel"
 				},
 				"headline": {
@@ -3407,9 +3245,12 @@
 			"root": ".rf-spec",
 			"dataRune": "spec",
 			"childOrder": [
-				"header-primary",
-				"preamble",
-				"header-secondary",
+				"eyebrow",
+				"title",
+				"blurb",
+				"metadata",
+				"tags",
+				"body",
 				"{content}"
 			],
 			"modifiers": {
@@ -3448,93 +3289,50 @@
 				}
 			},
 			"elements": {
-				"header-primary": {
+				"eyebrow": {
 					"tag": "div",
-					"selector": ".rf-spec__header-primary",
-					"source": "structure"
+					"selector": ".rf-spec__eyebrow",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"id",
+						"status"
+					]
 				},
-				"id-badge": {
-					"tag": "span",
-					"selector": ".rf-spec__id-badge",
-					"source": "structure",
-					"parent": "header-primary"
+				"metadata": {
+					"tag": "dl",
+					"selector": ".rf-spec__metadata",
+					"source": "block",
+					"layout": "definition-list",
+					"fields": [
+						"version",
+						"supersedes",
+						"created",
+						"modified"
+					]
 				},
-				"status-badge": {
-					"tag": "span",
-					"selector": ".rf-spec__status-badge",
-					"source": "structure",
-					"parent": "header-primary"
-				},
-				"preamble": {
+				"tags": {
 					"tag": "div",
-					"selector": ".rf-spec__preamble",
-					"source": "structure"
-				},
-				"header-secondary": {
-					"tag": "div",
-					"selector": ".rf-spec__header-secondary",
-					"source": "structure"
-				},
-				"version-badge": {
-					"tag": "span",
-					"selector": ".rf-spec__version-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "version"
-				},
-				"supersedes-badge": {
-					"tag": "span",
-					"selector": ".rf-spec__supersedes-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "supersedes"
-				},
-				"created-badge": {
-					"tag": "time",
-					"selector": ".rf-spec__created-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "created"
-				},
-				"modified-badge": {
-					"tag": "time",
-					"selector": ".rf-spec__modified-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "modified"
+					"selector": ".rf-spec__tags",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"tags"
+					]
 				}
-			},
-			"slots": [
-				"header-primary",
-				"preamble",
-				"header-secondary",
-				"content"
-			],
-			"projection": {
-				"relocate": {
-					"title": {
-						"into": "preamble",
-						"position": "append"
-					},
-					"blurb": {
-						"into": "preamble",
-						"position": "append"
-					}
-				}
-			},
-			"warnings": [
-				"projection.relocate source \"title\" is unknown",
-				"projection.relocate source \"blurb\" is unknown"
-			]
+			}
 		},
 		"Work": {
 			"block": "work",
 			"root": ".rf-work",
 			"dataRune": "work",
 			"childOrder": [
-				"header-primary",
-				"preamble",
-				"header-secondary",
+				"eyebrow",
+				"title",
+				"blurb",
+				"metadata",
+				"tags",
+				"body",
 				"{content}"
 			],
 			"modifiers": {
@@ -3587,112 +3385,53 @@
 				}
 			},
 			"elements": {
-				"header-primary": {
+				"eyebrow": {
 					"tag": "div",
-					"selector": ".rf-work__header-primary",
-					"source": "structure"
+					"selector": ".rf-work__eyebrow",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"id",
+						"status"
+					]
 				},
-				"id-badge": {
-					"tag": "span",
-					"selector": ".rf-work__id-badge",
-					"source": "structure",
-					"parent": "header-primary"
+				"metadata": {
+					"tag": "dl",
+					"selector": ".rf-work__metadata",
+					"source": "block",
+					"layout": "definition-list",
+					"fields": [
+						"priority",
+						"complexity",
+						"assignee",
+						"milestone",
+						"source",
+						"created",
+						"modified"
+					]
 				},
-				"status-badge": {
-					"tag": "span",
-					"selector": ".rf-work__status-badge",
-					"source": "structure",
-					"parent": "header-primary"
-				},
-				"preamble": {
+				"tags": {
 					"tag": "div",
-					"selector": ".rf-work__preamble",
-					"source": "structure"
-				},
-				"header-secondary": {
-					"tag": "div",
-					"selector": ".rf-work__header-secondary",
-					"source": "structure"
-				},
-				"priority-badge": {
-					"tag": "span",
-					"selector": ".rf-work__priority-badge",
-					"source": "structure",
-					"parent": "header-secondary"
-				},
-				"complexity-badge": {
-					"tag": "span",
-					"selector": ".rf-work__complexity-badge",
-					"source": "structure",
-					"parent": "header-secondary"
-				},
-				"assignee-badge": {
-					"tag": "span",
-					"selector": ".rf-work__assignee-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "assignee"
-				},
-				"milestone-badge": {
-					"tag": "span",
-					"selector": ".rf-work__milestone-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "milestone"
-				},
-				"source-badge": {
-					"tag": "span",
-					"selector": ".rf-work__source-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "source"
-				},
-				"created-badge": {
-					"tag": "time",
-					"selector": ".rf-work__created-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "created"
-				},
-				"modified-badge": {
-					"tag": "time",
-					"selector": ".rf-work__modified-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "modified"
+					"selector": ".rf-work__tags",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"tags"
+					]
 				}
-			},
-			"slots": [
-				"header-primary",
-				"preamble",
-				"header-secondary",
-				"content"
-			],
-			"projection": {
-				"relocate": {
-					"title": {
-						"into": "preamble",
-						"position": "append"
-					},
-					"blurb": {
-						"into": "preamble",
-						"position": "append"
-					}
-				}
-			},
-			"warnings": [
-				"projection.relocate source \"title\" is unknown",
-				"projection.relocate source \"blurb\" is unknown"
-			]
+			}
 		},
 		"Bug": {
 			"block": "bug",
 			"root": ".rf-bug",
 			"dataRune": "bug",
 			"childOrder": [
-				"header-primary",
-				"preamble",
-				"header-secondary",
+				"eyebrow",
+				"title",
+				"blurb",
+				"metadata",
+				"tags",
+				"body",
 				"{content}"
 			],
 			"modifiers": {
@@ -3739,106 +3478,52 @@
 				}
 			},
 			"elements": {
-				"header-primary": {
+				"eyebrow": {
 					"tag": "div",
-					"selector": ".rf-bug__header-primary",
-					"source": "structure"
+					"selector": ".rf-bug__eyebrow",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"id",
+						"status"
+					]
 				},
-				"id-badge": {
-					"tag": "span",
-					"selector": ".rf-bug__id-badge",
-					"source": "structure",
-					"parent": "header-primary"
+				"metadata": {
+					"tag": "dl",
+					"selector": ".rf-bug__metadata",
+					"source": "block",
+					"layout": "definition-list",
+					"fields": [
+						"severity",
+						"assignee",
+						"milestone",
+						"source",
+						"created",
+						"modified"
+					]
 				},
-				"status-badge": {
-					"tag": "span",
-					"selector": ".rf-bug__status-badge",
-					"source": "structure",
-					"parent": "header-primary"
-				},
-				"preamble": {
+				"tags": {
 					"tag": "div",
-					"selector": ".rf-bug__preamble",
-					"source": "structure"
-				},
-				"header-secondary": {
-					"tag": "div",
-					"selector": ".rf-bug__header-secondary",
-					"source": "structure"
-				},
-				"severity-badge": {
-					"tag": "span",
-					"selector": ".rf-bug__severity-badge",
-					"source": "structure",
-					"parent": "header-secondary"
-				},
-				"assignee-badge": {
-					"tag": "span",
-					"selector": ".rf-bug__assignee-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "assignee"
-				},
-				"milestone-badge": {
-					"tag": "span",
-					"selector": ".rf-bug__milestone-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "milestone"
-				},
-				"source-badge": {
-					"tag": "span",
-					"selector": ".rf-bug__source-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "source"
-				},
-				"created-badge": {
-					"tag": "time",
-					"selector": ".rf-bug__created-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "created"
-				},
-				"modified-badge": {
-					"tag": "time",
-					"selector": ".rf-bug__modified-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "modified"
+					"selector": ".rf-bug__tags",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"tags"
+					]
 				}
-			},
-			"slots": [
-				"header-primary",
-				"preamble",
-				"header-secondary",
-				"content"
-			],
-			"projection": {
-				"relocate": {
-					"title": {
-						"into": "preamble",
-						"position": "append"
-					},
-					"blurb": {
-						"into": "preamble",
-						"position": "append"
-					}
-				}
-			},
-			"warnings": [
-				"projection.relocate source \"title\" is unknown",
-				"projection.relocate source \"blurb\" is unknown"
-			]
+			}
 		},
 		"Decision": {
 			"block": "decision",
 			"root": ".rf-decision",
 			"dataRune": "decision",
 			"childOrder": [
-				"header-primary",
-				"preamble",
-				"header-secondary",
+				"eyebrow",
+				"title",
+				"blurb",
+				"metadata",
+				"tags",
+				"body",
 				"{content}"
 			],
 			"modifiers": {
@@ -3879,100 +3564,50 @@
 				}
 			},
 			"elements": {
-				"header-primary": {
+				"eyebrow": {
 					"tag": "div",
-					"selector": ".rf-decision__header-primary",
-					"source": "structure"
+					"selector": ".rf-decision__eyebrow",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"id",
+						"status"
+					]
 				},
-				"id-badge": {
-					"tag": "span",
-					"selector": ".rf-decision__id-badge",
-					"source": "structure",
-					"parent": "header-primary"
+				"metadata": {
+					"tag": "dl",
+					"selector": ".rf-decision__metadata",
+					"source": "block",
+					"layout": "definition-list",
+					"fields": [
+						"date",
+						"supersedes",
+						"source",
+						"created",
+						"modified"
+					]
 				},
-				"status-badge": {
-					"tag": "span",
-					"selector": ".rf-decision__status-badge",
-					"source": "structure",
-					"parent": "header-primary"
-				},
-				"preamble": {
+				"tags": {
 					"tag": "div",
-					"selector": ".rf-decision__preamble",
-					"source": "structure"
-				},
-				"header-secondary": {
-					"tag": "div",
-					"selector": ".rf-decision__header-secondary",
-					"source": "structure"
-				},
-				"date-badge": {
-					"tag": "time",
-					"selector": ".rf-decision__date-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "date"
-				},
-				"supersedes-badge": {
-					"tag": "span",
-					"selector": ".rf-decision__supersedes-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "supersedes"
-				},
-				"source-badge": {
-					"tag": "span",
-					"selector": ".rf-decision__source-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "source"
-				},
-				"created-badge": {
-					"tag": "time",
-					"selector": ".rf-decision__created-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "created"
-				},
-				"modified-badge": {
-					"tag": "time",
-					"selector": ".rf-decision__modified-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "modified"
+					"selector": ".rf-decision__tags",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"tags"
+					]
 				}
-			},
-			"slots": [
-				"header-primary",
-				"preamble",
-				"header-secondary",
-				"content"
-			],
-			"projection": {
-				"relocate": {
-					"title": {
-						"into": "preamble",
-						"position": "append"
-					},
-					"blurb": {
-						"into": "preamble",
-						"position": "append"
-					}
-				}
-			},
-			"warnings": [
-				"projection.relocate source \"title\" is unknown",
-				"projection.relocate source \"blurb\" is unknown"
-			]
+			}
 		},
 		"Milestone": {
 			"block": "milestone",
 			"root": ".rf-milestone",
 			"dataRune": "milestone",
 			"childOrder": [
-				"header-primary",
-				"preamble",
-				"header-secondary",
+				"eyebrow",
+				"title",
+				"blurb",
+				"metadata",
+				"body",
 				"{content}"
 			],
 			"modifiers": {
@@ -4001,77 +3636,28 @@
 				}
 			},
 			"elements": {
-				"header-primary": {
+				"eyebrow": {
 					"tag": "div",
-					"selector": ".rf-milestone__header-primary",
-					"source": "structure"
+					"selector": ".rf-milestone__eyebrow",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"name",
+						"status"
+					]
 				},
-				"name-badge": {
-					"tag": "span",
-					"selector": ".rf-milestone__name-badge",
-					"source": "structure",
-					"parent": "header-primary"
-				},
-				"status-badge": {
-					"tag": "span",
-					"selector": ".rf-milestone__status-badge",
-					"source": "structure",
-					"parent": "header-primary"
-				},
-				"preamble": {
-					"tag": "div",
-					"selector": ".rf-milestone__preamble",
-					"source": "structure"
-				},
-				"header-secondary": {
-					"tag": "div",
-					"selector": ".rf-milestone__header-secondary",
-					"source": "structure"
-				},
-				"target-badge": {
-					"tag": "time",
-					"selector": ".rf-milestone__target-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "target"
-				},
-				"created-badge": {
-					"tag": "time",
-					"selector": ".rf-milestone__created-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "created"
-				},
-				"modified-badge": {
-					"tag": "time",
-					"selector": ".rf-milestone__modified-badge",
-					"source": "structure",
-					"parent": "header-secondary",
-					"condition": "modified"
+				"metadata": {
+					"tag": "dl",
+					"selector": ".rf-milestone__metadata",
+					"source": "block",
+					"layout": "definition-list",
+					"fields": [
+						"target",
+						"created",
+						"modified"
+					]
 				}
-			},
-			"slots": [
-				"header-primary",
-				"preamble",
-				"header-secondary",
-				"content"
-			],
-			"projection": {
-				"relocate": {
-					"title": {
-						"into": "preamble",
-						"position": "append"
-					},
-					"blurb": {
-						"into": "preamble",
-						"position": "append"
-					}
-				}
-			},
-			"warnings": [
-				"projection.relocate source \"title\" is unknown",
-				"projection.relocate source \"blurb\" is unknown"
-			]
+			}
 		},
 		"Backlog": {
 			"block": "backlog",

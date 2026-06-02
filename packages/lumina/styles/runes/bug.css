@@ -1,13 +1,10 @@
 /* Bug */
 
-/* Primary badges: ID left, status right */
-.rf-bug__header-primary {
-	justify-content: space-between;
-	margin-bottom: 0.75rem;
-}
+/* SPEC-079: eyebrow + metadata zone names replace header-primary /
+ * header-secondary. Layout-level geometry lives on [data-zone-layout]
+ * selectors; this file carries bug-specific spacing + assignee prefix. */
 
-/* Preamble: title + optional description between badge groups */
-.rf-bug__preamble {
+.rf-bug__eyebrow {
 	margin-bottom: 0.75rem;
 }
 .rf-bug__title h1,
@@ -16,15 +13,12 @@
 	margin-top: 0;
 }
 
-/* Secondary badges: pill row below preamble */
-.rf-bug__header-secondary {
+.rf-bug__metadata {
 	margin-bottom: 1.5rem;
 }
 
-.rf-bug__assignee-badge {
-	margin-left: auto;
-}
-.rf-bug__assignee-badge::before { content: '@'; }
+.rf-bug__metadata [data-field="assignee"] dd .rf-badge::before { content: '@'; }
+
 .rf-bug__body {
 	font-size: 0.925rem;
 	line-height: 1.65;

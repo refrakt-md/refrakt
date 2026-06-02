@@ -1,15 +1,11 @@
 /* Api */
-.rf-api__header {
+
+/* SPEC-080: the endpoint header is a projected `eyebrow` bar (method + path
+ * + auth). Geometry + the auth right-push come from `[data-zone-layout="bar"]`
+ * in dimensions/metadata.css; field shape (method/auth chips, path mono code)
+ * is intrinsic to metaType. */
+.rf-api__eyebrow {
 	padding: 0.5rem 0;
-}
-.rf-api__method {
-	font-family: var(--rf-font-mono);
-}
-.rf-api__path {
-	background: none;
-}
-.rf-api__auth {
-	margin-left: auto;
 }
 .rf-api__body {
 	padding: 0;

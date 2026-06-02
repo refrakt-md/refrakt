@@ -1,5 +1,11 @@
-/* Faction */
-.rf-faction {
+/* Faction — split/stacked geometry, the title, and the metadata def-list all
+ * come from the shared layers: layouts/split.css ([data-layout] +
+ * [data-section="media"]), dimensions/sections.css ([data-section="title"] /
+ * "preamble"), and dimensions/metadata.css ([data-zone-layout]). This file
+ * only carries faction-specific chrome. */
+
+/* Stacked layout — split / split-reverse are handled by shared split.css */
+.rf-faction[data-layout="stacked"] {
 	display: flex;
 	flex-direction: column;
 }
@@ -19,13 +25,6 @@
 .rf-faction__content ol {
 	padding-left: 1.5rem;
 }
-.rf-faction > span[property="name"] {
-	display: block;
-	font-size: 1.5rem;
-	font-weight: 700;
-	margin-bottom: 0.5rem;
-	color: var(--rf-color-heading);
-}
 
 /* Faction Section */
 .rf-faction-section {
@@ -43,113 +42,4 @@
 .rf-faction-section__body ul,
 .rf-faction-section__body ol {
 	padding-left: 1.5rem;
-}
-
-/* Split layout — shared */
-.rf-faction[data-layout="split"],
-.rf-faction[data-layout="split-reverse"] {
-	display: grid;
-	grid-template-columns: var(--split-ratio, 1fr 1fr);
-	column-gap: var(--split-gap, 2rem);
-	align-items: var(--split-valign, start);
-}
-/* Split: badge + name + content left (col 1), scene right (col 2) */
-.rf-faction[data-layout="split"] > .rf-faction__badge {
-	grid-column: 1;
-	grid-row: 1;
-}
-.rf-faction[data-layout="split"] > span[property="name"] {
-	grid-column: 1;
-	grid-row: 2;
-}
-.rf-faction[data-layout="split"] > .rf-faction__content {
-	grid-column: 1;
-	grid-row: 3;
-}
-.rf-faction[data-layout="split"] > .rf-faction__scene {
-	grid-column: 2;
-	grid-row: 1 / 4;
-}
-/* Split-reverse: scene left (col 1), badge + name + content right (col 2) */
-.rf-faction[data-layout="split-reverse"] > .rf-faction__badge {
-	grid-column: 2;
-	grid-row: 1;
-}
-.rf-faction[data-layout="split-reverse"] > span[property="name"] {
-	grid-column: 2;
-	grid-row: 2;
-}
-.rf-faction[data-layout="split-reverse"] > .rf-faction__content {
-	grid-column: 2;
-	grid-row: 3;
-}
-.rf-faction[data-layout="split-reverse"] > .rf-faction__scene {
-	grid-column: 1;
-	grid-row: 1 / 4;
-	margin: 0;
-}
-/* Collapse to single column on small screens */
-@media (max-width: 640px) {
-	.rf-faction[data-layout="split"],
-	.rf-faction[data-layout="split-reverse"] {
-		grid-template-columns: 1fr;
-	}
-	.rf-faction[data-layout="split"] > .rf-faction__badge,
-	.rf-faction[data-layout="split"] > span[property="name"],
-	.rf-faction[data-layout="split"] > .rf-faction__content,
-	.rf-faction[data-layout="split"] > .rf-faction__scene,
-	.rf-faction[data-layout="split-reverse"] > .rf-faction__badge,
-	.rf-faction[data-layout="split-reverse"] > span[property="name"],
-	.rf-faction[data-layout="split-reverse"] > .rf-faction__content,
-	.rf-faction[data-layout="split-reverse"] > .rf-faction__scene {
-		grid-column: auto;
-		grid-row: auto;
-	}
-	.rf-faction[data-layout="split"]:not([data-media-position="top"]) > .rf-faction__scene,
-	.rf-faction[data-layout="split-reverse"]:not([data-media-position="top"]) > .rf-faction__scene {
-		margin-bottom: var(--rf-spacing-md);
-	}
-}
-/* Reset grid placement when data-collapse triggers single-column from shared split.css */
-@media (max-width: 640px) {
-	.rf-faction[data-collapse="sm"] > .rf-faction__badge,
-	.rf-faction[data-collapse="sm"] > span[property="name"],
-	.rf-faction[data-collapse="sm"] > .rf-faction__content,
-	.rf-faction[data-collapse="sm"] > .rf-faction__scene {
-		grid-column: auto;
-		grid-row: auto;
-	}
-	.rf-faction[data-collapse="sm"]:not([data-media-position="top"]) > .rf-faction__scene {
-		margin-bottom: var(--rf-spacing-md);
-	}
-}
-@media (max-width: 768px) {
-	.rf-faction[data-collapse="md"] > .rf-faction__badge,
-	.rf-faction[data-collapse="md"] > span[property="name"],
-	.rf-faction[data-collapse="md"] > .rf-faction__content,
-	.rf-faction[data-collapse="md"] > .rf-faction__scene {
-		grid-column: auto;
-		grid-row: auto;
-	}
-	.rf-faction[data-collapse="md"]:not([data-media-position="top"]) > .rf-faction__scene {
-		margin-bottom: var(--rf-spacing-md);
-	}
-}
-@media (max-width: 1024px) {
-	.rf-faction[data-collapse="lg"] > .rf-faction__badge,
-	.rf-faction[data-collapse="lg"] > span[property="name"],
-	.rf-faction[data-collapse="lg"] > .rf-faction__content,
-	.rf-faction[data-collapse="lg"] > .rf-faction__scene {
-		grid-column: auto;
-		grid-row: auto;
-	}
-	.rf-faction[data-collapse="lg"]:not([data-media-position="top"]) > .rf-faction__scene {
-		margin-bottom: var(--rf-spacing-md);
-	}
-}
-
-/* Split layout scene gets subtle depth */
-.rf-faction[data-layout="split"] .rf-faction__scene img,
-.rf-faction[data-layout="split-reverse"] .rf-faction__scene img {
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }

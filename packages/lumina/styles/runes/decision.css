@@ -1,13 +1,9 @@
 /* Decision */
 
-/* Primary badges: ID left, status right */
-.rf-decision__header-primary {
-	justify-content: space-between;
-	margin-bottom: 0.75rem;
-}
+/* SPEC-079: eyebrow + metadata zone names replace header-primary /
+ * header-secondary. */
 
-/* Preamble: title + optional description between badge groups */
-.rf-decision__preamble {
+.rf-decision__eyebrow {
 	margin-bottom: 0.75rem;
 }
 .rf-decision__title h1,
@@ -16,8 +12,7 @@
 	margin-top: 0;
 }
 
-/* Secondary badges: pill row below preamble */
-.rf-decision__header-secondary {
+.rf-decision__metadata {
 	margin-bottom: 1.5rem;
 }
 

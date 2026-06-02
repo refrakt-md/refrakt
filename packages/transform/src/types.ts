@@ -1,5 +1,112 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 
+// ─── SPEC-080: Layout primitive vocabulary ────────────────────────────
+
+/** Closed vocabulary of layout primitives a `BlockDef` can be rendered
+ *  with. Each primitive emits a documented DOM shape and styles itself
+ *  via `[data-zone-layout="…"]` CSS selectors.
+ *
+ *  - `bar` — horizontal flex row of fields, each in its intrinsic shape
+ *    (chip vs bare from `metaType`); supports `wrap` + per-field `align`.
+ *  - `definition-list` — `<dl>` with `<dt>` / `<dd>` per field; the dd
+ *    value renders as a chip for chip-type fields, bare otherwise. */
+export type LayoutPrimitive = 'definition-list' | 'bar';
+
+/** SPEC-080 block definition — a named group of meta-fields rendered by a
+ *  layout primitive. Field shape (chip vs bare) is intrinsic to each field's
+ *  `metaType`; this declares only which fields, their order, the layout, and
+ *  optional per-field horizontal alignment. */
+export interface BlockDef {
+	/** Field names (from `metaFields`), in order. A field may be given as
+	 *  `{ field, align }` to push it to the row end (`bar` layout). */
+	fields: (string | { field: string; align?: 'start' | 'end' })[];
+	/** `definition-list` (labeled pairs grid) or `bar` (horizontal flex row). */
+	layout: 'definition-list' | 'bar';
+	/** `bar` only — wrap onto multiple lines. Default true. */
+	wrap?: boolean;
+}
+
+/** Pure data manifest entry for a meta-bearing field. Describes the
+ *  field's domain semantics (type, sentiment, label) independent
+ *  of which layout primitive renders it. The same field can appear as
+ *  primary-color text in an eyebrow's left slot and as a chip in a
+ *  def-list's `<dd>` — no per-field config change. */
+export interface MetaField {
+	/** Semantic metadata type — emits `data-meta-type` attribute and, under
+	 *  the SPEC-080 block model, determines render *shape*: chip-rendered
+	 *  (`.rf-badge`) for `status` / `category` / `tag`; bare inline for
+	 *  `id` / `quantity` / `temporal` / `code`. Also drives typography
+	 *  (monospace for `id` / `code`, tabular-nums for `quantity` /
+	 *  `temporal`). `sentimentMap` only adds colour, never shape.
+	 *  (Legacy zones path still derives chip-vs-plain from the layout
+	 *  primitive — see `renderZone`.) */
+	metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id' | 'code';
+
+	/** Human-readable label emitted as `<span data-meta-label>`. Used
+	 *  by `chip-row` (inside the chip) and `definition-list` (as the
+	 *  `<dt>`). Ignored by `split` (eyebrow slots are unlabelled). */
+	label?: string;
+
+	/** Maps the field's resolved value to a sentiment. Emits
+	 *  `data-meta-sentiment` when matched. Presence of a `sentimentMap`
+	 *  also triggers chip rendering in layouts that switch on it
+	 *  (`split` right-slot, `definition-list` `<dd>`). */
+	sentimentMap?: Record<string, 'positive' | 'negative' | 'caution' | 'neutral'>;
+
+	/** When set, the field only renders if the named modifier has a
+	 *  truthy resolved value. Use for optional fields like
+	 *  `assignee`, `milestone`, `source`. */
+	condition?: string;
+
+	/** Loosen `condition` (and the empty-value skip) to test for
+	 *  *presence* rather than truthiness: the field renders when its
+	 *  source modifier is defined, even if the value is an empty string.
+	 *  Lets an empty-but-present value still project a block — e.g. a
+	 *  `codegroup` with `title=""` renders the window chrome without a
+	 *  filename, while an absent `title` renders nothing. */
+	renderWhenEmpty?: boolean;
+
+	/** Render the field as a link (`<a>`). The value of the named modifier
+	 *  is the URL; the field's `label` (falling back to its value) is the
+	 *  link text. Bare-rendered (no chip). Used for source/repo links and
+	 *  any metadata that points elsewhere. */
+	href?: string;
+
+	/** Render the field as a rating widget. The field's value is the filled
+	 *  count; `total` names the modifier holding the maximum (default 5).
+	 *  Emits `total` mark elements, the first `value` of them `data-filled`.
+	 *  Used for star ratings, progress dots, etc. */
+	rating?: { total?: string };
+
+	/** Decorate the field with a leading icon. The field's value selects the
+	 *  glyph (the variant); `group` names the icon set. Emits an icon element
+	 *  carrying `data-icon-group` + `data-icon` (value) ahead of the value
+	 *  text — CSS draws the glyph via `mask-image`. Bare-rendered (no chip).
+	 *  Used for the hint header (note/warning/caution/check) and similar
+	 *  labelled-with-icon metadata. */
+	icon?: { group: string };
+
+	/** Override the rendered element tag. Defaults to `span`; common
+	 *  override is `time` for temporal fields so the engine emits
+	 *  `<time datetime="…">…</time>`. */
+	tag?: string;
+
+	/** Treat the field's value as a delimited collection — split on
+	 *  this character and render one chip per item. Used for fields
+	 *  like `tags` where the modifier value is a comma-separated
+	 *  string but the rendering should be a row of individual chips.
+	 *  Currently applies to `chip-row` and `definition-list` layouts;
+	 *  `split` (eyebrow) ignores it since slots hold single values. */
+	splitOn?: string;
+
+	/** Pure-text transform applied to the resolved value before it's
+	 *  rendered. `duration` parses ISO 8601 (`PT30M`) → human-readable
+	 *  (`30m`). `uppercase` / `capitalize` are simple case
+	 *  transforms. Mirrors the legacy `StructureEntry.transform`
+	 *  field. */
+	transform?: 'duration' | 'uppercase' | 'capitalize';
+}
+
 /** Configuration for a single rune's identity transform */
 export interface RuneConfig {
 	/** BEM block name (without prefix). E.g., 'hint' → .rf-hint */
@@ -34,11 +141,46 @@ export interface RuneConfig {
 
 	/** Ordered slot names for structure assembly. When declared, the engine
 	 *  assembles children by iterating slots in order instead of binary before/after.
-	 *  The special 'content' slot is where content children are placed. */
+	 *  The special 'content' slot is where content children are placed.
+	 *
+	 *  Legacy field — superseded by the SPEC-080 `metaFields` + `blocks` +
+	 *  `layout` model. No first-party rune declares it; the backwards-compat
+	 *  shim is removed in WORK-313. */
 	slots?: string[];
 
-	/** Structural overrides — additional elements to inject (keyed by data-name) */
+	/** Structural overrides — additional elements to inject (keyed by data-name).
+	 *  Legacy field — superseded by SPEC-080 `metaFields` + `blocks`. No
+	 *  first-party rune declares it; removed in WORK-313. */
 	structure?: Record<string, StructureEntry>;
+
+	// ─── SPEC-080: block-and-layout assembly model ───
+
+	/** Pure data manifest for meta-bearing fields — domain semantics only.
+	 *  Keyed by field name. Each field declares its metaType, label,
+	 *  sentiment map, optional condition, and any rich rendering (`href`,
+	 *  `rating`, `icon`). Blocks reference these fields by name; the engine
+	 *  resolves them against modifier values and renders them. */
+	metaFields?: Record<string, MetaField>;
+
+	/** Named metadata blocks projected from `metaFields`. Each block is a
+	 *  flat list of fields (optionally per-field aligned) rendered by a
+	 *  layout primitive (`bar` / `definition-list`). Theme-overridable;
+	 *  plugins ship defaults.
+	 *
+	 *  Render *shape* (chip vs bare) of each field is intrinsic to the
+	 *  field's `metaType`, not the block's layout. */
+	blocks?: Record<string, BlockDef>;
+
+	/** The projected tree — ordered child block names per container. A key is
+	 *  a container's `data-name`, or the reserved `'root'` for the rune's own
+	 *  top-level children (flat runes with no content/media wrapper).
+	 *  `data-name="root"` is therefore not a valid block name.
+	 *
+	 *  Projected (`blocks`) entries appear ONLY where named here — no
+	 *  canonical/default placement. Transform-built children a list doesn't
+	 *  name are appended in transform order (rune content is never dropped).
+	 *  Omitting `layout` renders the transform tree verbatim, no projection. */
+	layout?: Record<string, string[]>;
 
 	/** Auto-label children by tag name → data-name. E.g., { summary: 'header' } */
 	autoLabel?: Record<string, string>;
@@ -202,9 +344,6 @@ export interface StructureEntry {
 	/** Semantic metadata type — emits `data-meta-type` attribute.
 	 *  Values: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id' */
 	metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id';
-	/** Semantic metadata rank — emits `data-meta-rank` attribute.
-	 *  Values: 'primary' | 'secondary' */
-	metaRank?: 'primary' | 'secondary';
 	/** Maps modifier values to sentiment — emits `data-meta-sentiment` when the
 	 *  current modifier value (from `metaText`) has a matching entry.
 	 *  E.g., `{ accepted: 'positive', rejected: 'negative' }` */
