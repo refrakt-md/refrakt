@@ -81,17 +81,17 @@
 /* Single source of truth for the `definition-list` primitive, shared by
  * both the projected metadata zone (`<dl data-zone="…">`) and the authored
  * `{% deflist %}` rune (`<dl data-rune="deflist">`) — they emit the same
- * `data-zone-layout` so they render identically (geometry, cards, margin).
+ * `data-zone-layout` so they render identically (geometry, borders, margin).
  *
  * Each row stacks `dt` above `dd`. Rows flow into multiple columns
  * via `auto-fit` — CSS grid naturally collapses to a single column
  * when the container is narrower than the minimum, so the same rule
  * reads fine on mobile and packs dense on wider screens without a
- * media-query step. The 6rem minimum keeps short label / value pairs
- * like "Prep" + "15m" tight without overflowing on narrow phones. */
+ * media-query step. The 8rem minimum keeps short label / value pairs
+ * like "Prep" + "15m" tight while leaving room for the per-item border. */
 [data-zone-layout="definition-list"] {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
 	gap: 0.75rem;
 	margin: 1.25rem 0;
 }
@@ -102,7 +102,7 @@
 	gap: 0.125rem;
 	min-width: 0;
 	padding: 0.625rem 0.75rem;
-	background: var(--rf-color-surface-raised);
+	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-sm);
 }
 
@@ -155,12 +155,16 @@
 
 	/* On narrow screens, fall back to the original label-left / value-right
 	 * list: each row's dt/dd flow directly into a two-column grid via
-	 * `display: contents`, which also drops the raised card surface (no box
-	 * to paint) so items read as a compact stacked list. */
+	 * `display: contents`, which drops the per-item border (no box to paint).
+	 * The border + padding move to the list itself so the whole group reads
+	 * as one bordered card. */
 	[data-zone-layout="definition-list"] {
 		grid-template-columns: max-content 1fr;
 		gap: 0.25rem 1rem;
 		align-items: baseline;
+		padding: 0.75rem 1rem;
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-sm);
 	}
 
 	[data-zone-layout="definition-list"] > [data-name="row"] {
