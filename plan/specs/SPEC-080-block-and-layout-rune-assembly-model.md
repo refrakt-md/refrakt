@@ -1,4 +1,4 @@
-{% spec id="SPEC-080" status="draft" source="SPEC-079" tags="theme, runes, structure, metadata, blocks, layout, eyebrow, definition-list, chip-row, api, recipe, lumina" %}
+{% spec id="SPEC-080" status="draft" source="SPEC-079" tags="theme, runes, structure, metadata, blocks, layout, bar, definition-list, eyebrow, api, recipe, lumina" %}
 
 # Block-and-layout rune assembly model
 
@@ -15,6 +15,24 @@ This supersedes the placement-related parts of SPEC-079 (`zones` shape,
 `zoneHost`, `zoneHostPlacement`, eyebrow left/right slots). The data-manifest
 idea (`metaFields`) and the plugin-declares-data / theme-declares-presentation
 split from SPEC-079 are kept and extended.
+
+## Terminology
+
+"Eyebrow" was overloaded across a position, a geometry, and a rune. We split
+the word's three meanings so each axis is named for what it is:
+
+- **`eyebrow` — a position only.** The kicker slot above the heading, in the
+  canonical order `eyebrow → title → blurb → metadata → body`. Positional, the
+  traditional editorial meaning. It names no geometry and no rune.
+- **`bar` — a geometry.** A horizontal flex row of fields with `wrap` + per-
+  field `align`. It is position-neutral (an eyebrow kicker, a metadata strip,
+  a footer row are all `bar`s). `bar` **replaces both `split` and `chip-row`** —
+  which were the same geometry differing only in wrap/alignment, and where
+  "chip-row" became a misnomer once field shape went intrinsic (a bare field
+  stays bare). The other layout primitive is `definition-list` (labeled pairs).
+- **`bar` — the rune.** The `eyebrow` rune created on the SPEC-079 branch
+  (unreleased) is renamed `bar`: a position-agnostic authoring handle for a
+  two-aligned row. *Where* it lands is placement, not the rune's identity.
 
 ## Problem
 
@@ -118,9 +136,10 @@ The test of the design: these four concerns never overlap.
 2. **Block** — *grouping + layout.* A named block is a flat list of fields plus
    a layout primitive (and optional per-field align). Plugin ships defaults,
    theme overrides.
-3. **Layout** — *geometry only.* `definition-list` (dt/dd grid), `chip-row`
-   (flex-wrap row), `eyebrow` (flex row, no wrap, honours align). Layouts
-   *arrange* fields; they never decide a field's shape.
+3. **Layout** — *geometry only.* `definition-list` (dt/dd grid) and `bar`
+   (horizontal flex row; `wrap` + per-field `align`). `bar` replaces both
+   `split` and `chip-row`. Layouts *arrange* fields; they never decide a
+   field's shape.
 4. **Placement / CSS** — *position.* The `layout` map decides which container a
    block sits in and its order among siblings; final visual nudges
    (e.g. right-aligning a field) live in CSS.
@@ -150,7 +169,9 @@ metaFields?: Record<string, {
 // THEME-overridable: metadata fields grouped into named blocks + layout.
 blocks?: Record<string, {
   fields: (string | { field: string; align?: 'start' | 'end' })[];
-  layout: 'definition-list' | 'chip-row' | 'eyebrow';
+  layout: 'definition-list' | 'bar';
+  /** `bar` only: wrap onto multiple lines (chip-row behaviour). Default true. */
+  wrap?: boolean;
 }>;
 
 // THEME-overridable: the projected tree — ordered child block names per
@@ -162,7 +183,9 @@ layout?: Record<string /* container data-name */, string[] /* block names */>;
 `metaFields`, `sections`, `mediaSlots`, `editHints`, `modifiers`, `styles`
 keep their roles. `zones`, `zoneLayouts`, `contentSlots`, `order`, `zoneHost`,
 `zoneHostPlacement`, and the legacy `slots` / `structure` are removed once all
-runes migrate.
+runes migrate. The `split` and `chip-row` layout primitives collapse into
+`bar`, and the unreleased `eyebrow` rune is renamed `bar` (the word `eyebrow`
+survives only as a position name).
 
 ## Field shape via metaType taxonomy
 
@@ -177,30 +200,33 @@ intrinsic to the field:
   field already has.
 
 Every layout iterates its fields and calls `buildChip` / `buildPlainValue`
-purely from the field — never from the layout. Consequence: `chip-row` stops
-forcing every field into a chip; it becomes "arrange fields (each in its own
-shape) in a wrapping row," which also removes the `id`-chip-vs-plain
-inconsistency. `eyebrow` is `chip-row` with no wrap plus `align`.
+purely from the field — never from the layout. Consequence: the horizontal
+`bar` no longer forces every field into a chip; it "arranges fields (each in
+its own shape) in a row," which also removes the `id`-chip-vs-plain
+inconsistency. `wrap: true` (default) gives the old chip-row behaviour;
+`wrap: false` plus per-field `align` gives the old split/eyebrow bar.
 
-## Eyebrow without left/right
+## Bar alignment (no left/right slots)
 
-"Left/right" is alignment, and alignment is presentation. Project the eyebrow
-as a flat field list; order + a per-field `align: 'end'` express the
-right-hand group; one shared rule does the work:
+"Left/right" is alignment, and alignment is presentation. Project the bar as a
+flat field list; order + a per-field `align: 'end'` express the right-hand
+group; one shared rule does the work:
 
 ```css
-[data-zone-layout="eyebrow"] [data-align="end"] { margin-left: auto; }
+[data-zone-layout="bar"] [data-align="end"] { margin-left: auto; }
 ```
 
 `margin-left: auto` in a flex row pushes the field and everything after it to
 the right edge — which covers the universal "left cluster / right cluster"
-eyebrow. Three distinct alignment groups are an escape-hatch CSS job, not new
+bar. Three distinct alignment groups are an escape-hatch CSS job, not new
 config.
 
-## Case study — api (eyebrow with mixed shapes)
+## Case study — api (bar in the eyebrow position, mixed shapes)
 
-api is visually an eyebrow today (`[method] [path] … [auth]`) but is still on
-the legacy `structure` path. Target:
+api is visually a bar in the eyebrow position today (`[method] [path] …
+[auth]`) but is still on the legacy `structure` path. Target — note the block
+is *named* for its position (`eyebrow`) while its *layout* is the geometry
+(`bar`):
 
 ```ts
 metaFields: {
@@ -209,7 +235,7 @@ metaFields: {
   auth:   { metaType: 'status', condition: 'auth' },                                                             // chip
 }
 blocks: {
-  eyebrow: { fields: ['method', 'path', { field: 'auth', align: 'end' }], layout: 'eyebrow' },
+  eyebrow: { fields: ['method', 'path', { field: 'auth', align: 'end' }], layout: 'bar', wrap: false },
 }
 layout: { content: ['eyebrow', 'body'] }
 ```
@@ -241,10 +267,14 @@ after the title.
 - `RuneConfig` exposes `blocks` and `layout`; `zones`, `zoneLayouts`,
   `contentSlots`, `order`, `zoneHost`, `zoneHostPlacement` are removed.
 - Field shape (chip vs bare) is decided from the field's `metaType` / `as`,
-  identically across `definition-list`, `chip-row`, and `eyebrow`.
+  identically across `definition-list` and `bar`.
 - A `code` metaType renders monospace inline with no chip geometry.
-- `eyebrow` is a flat layout; right-alignment is a per-field `align: 'end'`
-  driving one shared `margin-left: auto` rule (no left/right wrappers).
+- `bar` is the single horizontal layout (`split` and `chip-row` removed), with
+  a `wrap` knob and per-field `align`; right-alignment is `align: 'end'`
+  driving one shared `[data-zone-layout="bar"] [data-align="end"]
+  { margin-left: auto }` rule (no left/right wrappers).
+- The unreleased `eyebrow` rune is renamed `bar`; `eyebrow` remains only a
+  position name in the canonical order.
 - `layout` placement is sparse: unnamed transform blocks append in transform
   order; metadata blocks appear only when named; a block name absent from the
   tree is skipped.
@@ -264,15 +294,20 @@ after the title.
   transforms build their own block tree. This is the bulk of the work.
 - Ship behind the new fields with the legacy `slots`/`structure` and SPEC-079
   paths intact; remove them once every rune is migrated.
-- api first as the isolated proof of the flat-eyebrow + intrinsic-shape
+- api first as the isolated proof of the `bar` layout + intrinsic-shape
   mechanism.
+
+## Resolved decisions
+
+- **Eyebrow vs bar.** `eyebrow` is a *position* only. The horizontal geometry
+  is `bar` (one primitive; `wrap` + per-field `align`), absorbing both `split`
+  and `chip-row`. The unreleased `eyebrow` rune is renamed `bar`. (See
+  Terminology.)
 
 ## Open Questions
 
 - Vocabulary: settle one term for "addressable node in a rune's tree"
   (`block` vs `slot`); avoid `region` (page layout) and `zone` (SPEC-079).
-- Do we keep `eyebrow` as a distinct layout or express it as `chip-row` +
-  a `wrap: false` flag + align?
 - Is an explicit per-field `as` override worth shipping now, or only the
   metaType-derived default until a real case needs it?
 - Should `layout` containers support a default global placement (e.g. canonical
