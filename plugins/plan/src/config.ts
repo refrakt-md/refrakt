@@ -22,15 +22,6 @@ const timeField = (label: string, condition?: string) => ({
  *  trailer below the metadata block). */
 const tagsField = { metaType: 'tag' as const, label: 'Tags', condition: 'tags', splitOn: ',' };
 
-/** Shared trailer wiring — every entity declaring a `tags` zone uses
- *  the same render order + layout. Pulled into a constant so the
- *  Spec/Work/Bug/Decision configs don't repeat themselves. */
-const tagsTrailer = {
-	zones: { tags: { fields: ['tags'] } },
-	order: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'],
-	zoneLayouts: { tags: 'chip-row' as const },
-};
-
 export const config: Record<string, RuneConfig> = {
 	Spec: {
 		block: 'spec',
@@ -56,18 +47,12 @@ export const config: Record<string, RuneConfig> = {
 			modified: timeField('Modified', 'modified'),
 			tags: tagsField,
 		},
-		zones: {
-			eyebrow: { left: ['id'], right: ['status'] },
-			metadata: { fields: ['version', 'supersedes', 'created', 'modified'] },
-			...tagsTrailer.zones,
+		blocks: {
+			eyebrow: { fields: ['id', { field: 'status', align: 'end' }], layout: 'bar' },
+			metadata: { fields: ['version', 'supersedes', 'created', 'modified'], layout: 'definition-list' },
+			tags: { fields: ['tags'], layout: 'bar' },
 		},
-		contentSlots: {
-			title: 'title',
-			blurb: 'blurb',
-			body: 'body',
-		},
-		order: tagsTrailer.order,
-		zoneLayouts: tagsTrailer.zoneLayouts,
+		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
 		sections: { title: 'title', blurb: 'description', body: 'body' },
 		editHints: { body: 'none' },
 	},
@@ -105,18 +90,12 @@ export const config: Record<string, RuneConfig> = {
 			modified: timeField('Modified', 'modified'),
 			tags: tagsField,
 		},
-		zones: {
-			eyebrow: { left: ['id'], right: ['status'] },
-			metadata: { fields: ['priority', 'complexity', 'assignee', 'milestone', 'source', 'created', 'modified'] },
-			...tagsTrailer.zones,
+		blocks: {
+			eyebrow: { fields: ['id', { field: 'status', align: 'end' }], layout: 'bar' },
+			metadata: { fields: ['priority', 'complexity', 'assignee', 'milestone', 'source', 'created', 'modified'], layout: 'definition-list' },
+			tags: { fields: ['tags'], layout: 'bar' },
 		},
-		contentSlots: {
-			title: 'title',
-			blurb: 'blurb',
-			body: 'body',
-		},
-		order: tagsTrailer.order,
-		zoneLayouts: tagsTrailer.zoneLayouts,
+		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
 		sections: { title: 'title', blurb: 'description', body: 'body' },
 		editHints: { body: 'none' },
 	},
@@ -152,18 +131,12 @@ export const config: Record<string, RuneConfig> = {
 			modified: timeField('Modified', 'modified'),
 			tags: tagsField,
 		},
-		zones: {
-			eyebrow: { left: ['id'], right: ['status'] },
-			metadata: { fields: ['severity', 'assignee', 'milestone', 'source', 'created', 'modified'] },
-			...tagsTrailer.zones,
+		blocks: {
+			eyebrow: { fields: ['id', { field: 'status', align: 'end' }], layout: 'bar' },
+			metadata: { fields: ['severity', 'assignee', 'milestone', 'source', 'created', 'modified'], layout: 'definition-list' },
+			tags: { fields: ['tags'], layout: 'bar' },
 		},
-		contentSlots: {
-			title: 'title',
-			blurb: 'blurb',
-			body: 'body',
-		},
-		order: tagsTrailer.order,
-		zoneLayouts: tagsTrailer.zoneLayouts,
+		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
 		sections: { title: 'title', blurb: 'description', body: 'body' },
 		editHints: { body: 'none' },
 	},
@@ -193,18 +166,12 @@ export const config: Record<string, RuneConfig> = {
 			modified: timeField('Modified', 'modified'),
 			tags: tagsField,
 		},
-		zones: {
-			eyebrow: { left: ['id'], right: ['status'] },
-			metadata: { fields: ['date', 'supersedes', 'source', 'created', 'modified'] },
-			...tagsTrailer.zones,
+		blocks: {
+			eyebrow: { fields: ['id', { field: 'status', align: 'end' }], layout: 'bar' },
+			metadata: { fields: ['date', 'supersedes', 'source', 'created', 'modified'], layout: 'definition-list' },
+			tags: { fields: ['tags'], layout: 'bar' },
 		},
-		contentSlots: {
-			title: 'title',
-			blurb: 'blurb',
-			body: 'body',
-		},
-		order: tagsTrailer.order,
-		zoneLayouts: tagsTrailer.zoneLayouts,
+		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
 		sections: { title: 'title', blurb: 'description', body: 'body' },
 		editHints: { body: 'none' },
 	},
@@ -230,15 +197,11 @@ export const config: Record<string, RuneConfig> = {
 			created: timeField('Created', 'created'),
 			modified: timeField('Modified', 'modified'),
 		},
-		zones: {
-			eyebrow: { left: ['name'], right: ['status'] },
-			metadata: { fields: ['target', 'created', 'modified'] },
+		blocks: {
+			eyebrow: { fields: ['name', { field: 'status', align: 'end' }], layout: 'bar' },
+			metadata: { fields: ['target', 'created', 'modified'], layout: 'definition-list' },
 		},
-		contentSlots: {
-			title: 'title',
-			blurb: 'blurb',
-			body: 'body',
-		},
+		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'body'] },
 		sections: { title: 'title', blurb: 'description', body: 'body' },
 		editHints: { body: 'none' },
 	},

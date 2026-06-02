@@ -6,9 +6,9 @@
 .rf-milestone__eyebrow {
 	margin-bottom: 0.75rem;
 }
-
-.rf-milestone__preamble {
-	margin-bottom: 0.75rem;
+.rf-milestone__eyebrow [data-meta-type="id"] {
+	color: var(--rf-color-primary);
+	font-weight: 500;
 }
 .rf-milestone__title h1,
 .rf-milestone__title h2,

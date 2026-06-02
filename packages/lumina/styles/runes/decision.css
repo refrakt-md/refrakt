@@ -6,9 +6,9 @@
 .rf-decision__eyebrow {
 	margin-bottom: 0.75rem;
 }
-
-.rf-decision__preamble {
-	margin-bottom: 0.75rem;
+.rf-decision__eyebrow [data-meta-type="id"] {
+	color: var(--rf-color-primary);
+	font-weight: 500;
 }
 .rf-decision__title h1,
 .rf-decision__title h2,

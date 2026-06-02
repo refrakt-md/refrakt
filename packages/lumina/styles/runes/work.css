@@ -1,18 +1,19 @@
 /* Work */
 
-/* SPEC-079: eyebrow + metadata zones replace the legacy header-primary
- * / header-secondary slots. The split layout primitive owns the
- * justify-content for eyebrow via [data-zone-layout] selectors in
- * dimensions/metadata.css, so this file only carries the work-specific
- * spacing + complexity dots + assignee prefix. */
+/* SPEC-080: eyebrow / metadata / tags are projected blocks placed at the
+ * rune root via `layout`. Geometry comes from the universal
+ * `[data-zone-layout]` selectors in dimensions/metadata.css; this file
+ * carries the work-specific spacing + complexity dots + assignee prefix. */
 
 .rf-work__eyebrow {
 	margin-bottom: 0.75rem;
 }
-
-.rf-work__preamble {
-	margin-bottom: 0.75rem;
+/* Identifier in the eyebrow bar keeps the primary-colour kicker treatment. */
+.rf-work__eyebrow [data-meta-type="id"] {
+	color: var(--rf-color-primary);
+	font-weight: 500;
 }
+
 .rf-work__title h1,
 .rf-work__title h2,
 .rf-work__title h3 {
