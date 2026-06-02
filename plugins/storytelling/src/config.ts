@@ -31,7 +31,7 @@ export const config: Record<string, RuneConfig> = {
 	Realm: {
 		block: 'realm',
 		defaultDensity: 'full',
-		sections: { name: 'title', scene: 'media' },
+		sections: { preamble: 'preamble', name: 'title', scene: 'media' },
 		mediaSlots: { scene: 'cover' },
 		rootAttributes: { 'data-media-position': 'top' },
 		modifiers: {
@@ -54,10 +54,14 @@ export const config: Record<string, RuneConfig> = {
 			realmType: { metaType: 'category', label: 'Type' },
 			scale: { metaType: 'category', label: 'Scale', condition: 'scale' },
 		},
+		// Facts render as a definition-list nested in the content column below
+		// the title (recipe pattern) — no separate eyebrow zone.
 		zones: {
-			eyebrow: { left: ['realmType'], right: ['scale'] },
+			metadata: { fields: ['realmType', 'scale'] },
 		},
-		autoLabel: { scene: 'scene' },
+		zoneLayouts: { metadata: 'definition-list' },
+		zoneHost: 'content',
+		autoLabel: { scene: 'scene', header: 'preamble' },
 		editHints: { name: 'inline', scene: 'image', body: 'none', sections: 'none' },
 	},
 	RealmSection: { block: 'realm-section', parent: 'Realm', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },

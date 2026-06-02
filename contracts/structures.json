@@ -2106,6 +2106,11 @@
 					"tag": "scene",
 					"selector": ".rf-realm__scene",
 					"source": "autoLabel"
+				},
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-realm__preamble",
+					"source": "autoLabel"
 				}
 			},
 			"inlineStyles": {
