@@ -1,4 +1,4 @@
-{% work id="WORK-309" status="ready" priority="medium" complexity="simple" source="SPEC-079" tags="docs,plugin,runes,migration,metafields,zones,phase-2" milestone="v0.17.0" %}
+{% work id="WORK-309" status="done" priority="medium" complexity="simple" source="SPEC-079" tags="docs,plugin,runes,migration,metafields,zones,phase-2" milestone="v0.17.0" %}
 
 # Docs plugin migration to metaFields + zones
 
@@ -56,5 +56,11 @@ already carries the monospace typography hint.
 ## References
 
 - {% ref "SPEC-079" /%} — the spec being implemented.
+
+## Resolution
+
+Completed: 2026-06-02
+
+Superseded by WORK-318. Targeted the SPEC-079 zones model for the docs plugin (Api, Symbol); the docs package migrated straight to the SPEC-080 blocks/layout model instead (Api eyebrow bar, Symbol eyebrow + source href link + metadata def-list) on branch `claude/spec-079-implementation`. Same supersession as WORK-310/311/312.
 
 {% /work %}
