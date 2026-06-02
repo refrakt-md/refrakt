@@ -208,10 +208,10 @@
 				"{content}"
 			]
 		},
-		"Eyebrow": {
-			"block": "eyebrow",
-			"root": ".rf-eyebrow",
-			"dataRune": "eyebrow",
+		"Bar": {
+			"block": "bar",
+			"root": ".rf-bar",
+			"dataRune": "bar",
 			"childOrder": [
 				"{content}"
 			]
@@ -1996,7 +1996,7 @@
 			"root": ".rf-character",
 			"dataRune": "character",
 			"childOrder": [
-				"{content:content}"
+				"{content}"
 			],
 			"modifiers": {
 				"role": {
@@ -2023,10 +2023,10 @@
 				}
 			},
 			"elements": {
-				"content": {
-					"tag": "div",
-					"selector": ".rf-character__content",
-					"source": "contentWrapper"
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-character__preamble",
+					"source": "autoLabel"
 				}
 			}
 		},
@@ -2105,6 +2105,11 @@
 				"scene": {
 					"tag": "scene",
 					"selector": ".rf-realm__scene",
+					"source": "autoLabel"
+				},
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-realm__preamble",
 					"source": "autoLabel"
 				}
 			},
@@ -2227,6 +2232,11 @@
 				"scene": {
 					"tag": "scene",
 					"selector": ".rf-faction__scene",
+					"source": "autoLabel"
+				},
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-faction__preamble",
 					"source": "autoLabel"
 				}
 			},
@@ -2960,7 +2970,7 @@
 			"root": ".rf-howto",
 			"dataRune": "how-to",
 			"childOrder": [
-				"{content:content}"
+				"{content}"
 			],
 			"modifiers": {
 				"estimatedTime": {
@@ -2976,11 +2986,6 @@
 				}
 			},
 			"elements": {
-				"content": {
-					"tag": "div",
-					"selector": ".rf-howto__content",
-					"source": "contentWrapper"
-				},
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-howto__preamble",

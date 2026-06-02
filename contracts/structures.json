@@ -208,10 +208,10 @@
 				"{content}"
 			]
 		},
-		"Eyebrow": {
-			"block": "eyebrow",
-			"root": ".rf-eyebrow",
-			"dataRune": "eyebrow",
+		"Bar": {
+			"block": "bar",
+			"root": ".rf-bar",
+			"dataRune": "bar",
 			"childOrder": [
 				"{content}"
 			]

@@ -19,7 +19,8 @@
 
 /* ─── Meta Types — typography only ─────────────────────────────────── */
 
-[data-meta-type="id"] {
+[data-meta-type="id"],
+[data-meta-type="code"] {
 	font-family: var(--rf-font-mono, monospace);
 	font-size: var(--meta-font-size, 0.8125rem);
 }
@@ -74,6 +75,25 @@
 	flex-wrap: wrap;
 	gap: 0.5rem;
 	align-items: center;
+}
+
+/* ─── Layout: bar (SPEC-080) ───────────────────────────────────────── */
+
+/* Horizontal flex row of fields, each in its own intrinsic shape (chip or
+ * bare). Supersedes `split` + `chip-row`. Wraps by default; `data-wrap="false"`
+ * keeps it on one line. A field tagged `data-align="end"` (and everything
+ * after it) is pushed to the right edge. */
+[data-zone-layout="bar"] {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	align-items: center;
+}
+[data-zone-layout="bar"][data-wrap="false"] {
+	flex-wrap: nowrap;
+}
+[data-zone-layout="bar"] [data-align="end"] {
+	margin-left: auto;
 }
 
 /* ─── Layout: definition-list ──────────────────────────────────────── */

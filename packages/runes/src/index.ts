@@ -55,7 +55,7 @@ import './xref-preview-resolve.js';
 import { progress } from './tags/progress.js';
 import { card } from './tags/card.js';
 import { badge } from './tags/badge.js';
-import { eyebrow } from './tags/eyebrow.js';
+import { bar } from './tags/bar.js';
 import { deflist } from './tags/deflist.js';
 import Markdoc from '@markdoc/markdoc';
 
@@ -589,13 +589,13 @@ export const runes = {
     category: 'Content',
     snippet: ['{% badge sentiment="${1|positive,negative,caution,neutral|}" %}', '${2:Label}', '{% /badge %}'],
   }),
-  eyebrow: defineRune({
-    name: 'eyebrow',
-    schema: eyebrow,
-    description: 'Block-level wrapper that renders the SPEC-079 split layout primitive over author-written content. Body splits on a top-level `---` into left/right halves. Same DOM as a projected `zones.eyebrow = { left, right }`.',
-    typeName: 'Eyebrow',
+  bar: defineRune({
+    name: 'bar',
+    schema: bar,
+    description: 'Block-level wrapper that renders the SPEC-080 `bar` layout primitive (a horizontal flex row) over author-written content. Body splits on a top-level `---` into a left group and a right group; the right group is pushed to the end via `data-align="end"`. Position-agnostic.',
+    typeName: 'Bar',
     category: 'Content',
-    snippet: ['{% eyebrow %}', '${1:Left side}', '---', '${2:Right side}', '{% /eyebrow %}'],
+    snippet: ['{% bar %}', '${1:Left side}', '---', '${2:Right side}', '{% /bar %}'],
   }),
   deflist: defineRune({
     name: 'deflist',

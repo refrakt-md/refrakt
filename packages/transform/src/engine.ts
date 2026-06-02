@@ -1,5 +1,5 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
-import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, LayoutPrimitive, MetaField, ZoneDeclaration } from './types.js';
+import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, LayoutPrimitive, MetaField, ZoneDeclaration, BlockDef } from './types.js';
 import { isTag, makeTag, readMeta, toKebabCase } from './helpers.js';
 
 /** The 6 tint colour tokens */
@@ -342,11 +342,16 @@ function transformRune(
 		children = applyAutoLabel(children, config.autoLabel);
 	}
 
-	// 5. SPEC-079: zone-based assembly (metaFields + zones + contentSlots).
-	//    Takes precedence over the legacy `slots + structure` path. Resolves
-	//    canonical render order, projects zones via layout primitives, and
-	//    extracts user-authored content slots into zone wrappers.
-	if (config.zones || config.contentSlots) {
+	// 5. SPEC-080: block-and-layout assembly (metaFields + blocks + layout).
+	//    Takes precedence over the SPEC-079 zones path and the legacy
+	//    `slots + structure` path. Projects named metadata blocks and places
+	//    them into the transform tree per `layout`.
+	if (config.blocks || config.layout) {
+		children = assembleWithBlocks(config, block, children, modifierValues);
+	} else if (config.zones || config.contentSlots) {
+		// SPEC-079: zone-based assembly (metaFields + zones + contentSlots).
+		//    Resolves canonical render order, projects zones via layout
+		//    primitives, and extracts user-authored content slots.
 		children = assembleWithZones(
 			config, block, children, modifierValues, themeZoneLayouts, runeName,
 		);
@@ -1380,4 +1385,197 @@ function injectIntoHost(
 	const next = [...children];
 	next[hostIdx] = { ...host, children: hostChildren };
 	return next;
+}
+
+// ─── SPEC-080: block-and-layout assembly ──────────────────────────────────
+
+/** metaTypes that render as a chip (`.rf-badge`). Everything else — `id`,
+ *  `quantity`, `temporal`, `code`, or no metaType — renders as bare inline
+ *  text. Shape is intrinsic to the field, not the layout primitive. */
+const CHIP_METATYPES = new Set(['status', 'category', 'tag']);
+
+function fieldRendersAsChip(field: MetaField): boolean {
+	return field.metaType !== undefined && CHIP_METATYPES.has(field.metaType);
+}
+
+/** A resolved field plus its optional `bar` alignment. */
+interface BarItem {
+	resolved: ResolvedField;
+	align?: 'start' | 'end';
+}
+
+/** Render one resolved field in its intrinsic shape (chip vs bare). */
+function renderBlockValue(f: ResolvedField, includeLabel = false): SerializedTag {
+	return fieldRendersAsChip(f.field)
+		? buildChip(f, { includeLabel })
+		: buildPlainValue(f);
+}
+
+/** `bar` layout — a horizontal flex row of fields, each in its intrinsic
+ *  shape. `align: 'end'` tags a field so the shared
+ *  `[data-zone-layout="bar"] [data-align="end"] { margin-left: auto }` rule
+ *  pushes it (and everything after) to the right. Unlabelled (eyebrow-style);
+ *  labelled rows belong in `definition-list`. */
+function renderBarLayout(
+	blockName: string,
+	items: BarItem[],
+	wrap: boolean,
+): SerializedTag | null {
+	if (items.length === 0) return null;
+
+	const children: RendererNode[] = [];
+	for (const { resolved, align } of items) {
+		const els: SerializedTag[] = resolved.field.splitOn && resolved.value
+			? splitFieldValue(resolved).map(part => renderBlockValue({ ...resolved, value: part }))
+			: [renderBlockValue(resolved)];
+		if (align === 'end' && els.length > 0) {
+			els[0] = { ...els[0], attributes: { ...els[0].attributes, 'data-align': 'end' } };
+		}
+		children.push(...els);
+	}
+
+	const attrs: Record<string, string> = {
+		'data-name': blockName,
+		'data-zone': blockName,
+		'data-zone-layout': 'bar',
+	};
+	if (wrap === false) attrs['data-wrap'] = 'false';
+	return makeTag('div', attrs, children);
+}
+
+/** `definition-list` block — labelled `<dt>`/`<dd>` pairs, with the dd value
+ *  in its intrinsic shape. Mirrors the legacy def-list DOM but selects
+ *  chip-vs-bare from the field's metaType rather than `sentimentMap`. */
+function renderDefListBlock(
+	blockName: string,
+	fields: ResolvedField[],
+): SerializedTag | null {
+	if (fields.length === 0) return null;
+
+	const rows: RendererNode[] = fields.map(f => {
+		const dt = makeTag('dt', { 'data-meta-label': '' }, [f.field.label ?? f.name]);
+		let dd: SerializedTag;
+		if (f.field.splitOn && f.value) {
+			const items = splitFieldValue(f).map(part =>
+				renderBlockValue({ ...f, value: part }),
+			);
+			dd = makeTag('dd', { 'data-multi-value': '' }, items);
+		} else if (fieldRendersAsChip(f.field)) {
+			dd = makeTag('dd', {}, [buildChip(f, { includeLabel: false })]);
+		} else {
+			const ddAttrs: Record<string, string> = {};
+			if (f.field.metaType) ddAttrs['data-meta-type'] = f.field.metaType;
+			const text = f.field.tag === 'time' && f.value
+				? makeTag('time', { datetime: f.value }, [f.value])
+				: f.value;
+			dd = makeTag('dd', ddAttrs, [text]);
+		}
+		return makeTag('div', { 'data-name': 'row', 'data-field': f.name }, [dt, dd]);
+	});
+
+	return makeTag('dl', {
+		'data-name': blockName,
+		'data-zone': blockName,
+		'data-zone-layout': 'definition-list',
+	}, rows);
+}
+
+/** SPEC-080 main assembler — projects named metadata blocks and places them,
+ *  plus the rune's own transform blocks, into the tree per `layout`. */
+function assembleWithBlocks(
+	config: RuneConfig,
+	_block: string,
+	contentChildren: RendererNode[],
+	modifierValues: Record<string, string>,
+): RendererNode[] {
+	const blocks = config.blocks ?? {};
+	const layout = config.layout ?? {};
+	const metaFields = config.metaFields ?? {};
+
+	/** Render a named metadata block on demand; null if undefined or empty. */
+	const renderBlock = (name: string): SerializedTag | null => {
+		const def: BlockDef | undefined = blocks[name];
+		if (!def) return null;
+		const items: BarItem[] = [];
+		for (const spec of def.fields) {
+			const fieldName = typeof spec === 'string' ? spec : spec.field;
+			const align = typeof spec === 'string' ? undefined : spec.align;
+			const resolved = resolveField(fieldName, metaFields, modifierValues);
+			if (resolved) items.push({ resolved, align });
+		}
+		if (items.length === 0) return null;
+		if (def.layout === 'bar') return renderBarLayout(name, items, def.wrap ?? true);
+		return renderDefListBlock(name, items.map(i => i.resolved));
+	};
+
+	// No `layout` → render the transform tree verbatim (no projection).
+	if (Object.keys(layout).length === 0) return contentChildren;
+
+	// Compose the rune root first (reserved `root` key), then named containers.
+	let result = layout.root
+		? composeContainer(contentChildren, layout.root, renderBlock)
+		: contentChildren;
+
+	for (const [key, order] of Object.entries(layout)) {
+		if (key === 'root') continue;
+		result = updateContainerByName(result, key, children =>
+			composeContainer(children, order, renderBlock),
+		);
+	}
+	return result;
+}
+
+/** Reorder + inject blocks within one container's children per an ordered
+ *  list of block names. Transform children are placed by `data-name` where
+ *  the list names them; projected blocks are rendered in place; names absent
+ *  from both are skipped; transform children the list didn't name append in
+ *  their original order (never dropped). */
+function composeContainer(
+	children: RendererNode[],
+	order: string[],
+	renderBlock: (name: string) => SerializedTag | null,
+): RendererNode[] {
+	const byName = new Map<string, RendererNode>();
+	for (const c of children) {
+		if (isTag(c) && c.attributes['data-name']) byName.set(c.attributes['data-name'], c);
+	}
+	const named = new Set(order);
+
+	const result: RendererNode[] = [];
+	for (const name of order) {
+		const existing = byName.get(name);
+		if (existing) {
+			result.push(existing);
+		} else {
+			const projected = renderBlock(name);
+			if (projected) result.push(projected);
+		}
+	}
+	// Append unlisted transform children (incl. meta tags / untagged nodes).
+	for (const c of children) {
+		const dn = isTag(c) ? c.attributes['data-name'] : undefined;
+		if (dn && named.has(dn)) continue;
+		result.push(c);
+	}
+	return result;
+}
+
+/** Immutably replace the children of the first descendant carrying
+ *  `data-name === name`. Leaves the tree unchanged if no such element. */
+function updateContainerByName(
+	children: RendererNode[],
+	name: string,
+	fn: (children: RendererNode[]) => RendererNode[],
+): RendererNode[] {
+	let done = false;
+	const walk = (nodes: RendererNode[]): RendererNode[] =>
+		nodes.map(n => {
+			if (done || !isTag(n)) return n;
+			if (n.attributes['data-name'] === name) {
+				done = true;
+				return { ...n, children: fn(n.children) };
+			}
+			return { ...n, children: walk(n.children) };
+		});
+	return walk(children);
 }

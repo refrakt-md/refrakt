@@ -230,7 +230,7 @@ Each layout primitive also ships as a standalone authoring rune so
 authors can compose the same shape in prose without needing a plugin
 to project it:
 
-- **`{% eyebrow %}`** — split layout, body splits on top-level `---`
+- **`{% bar %}`** — bar layout, body splits on top-level `---`
   into left/right halves.
 - **`{% deflist %}`** — definition-list layout, body is a markdown
   list where each `- **Term:** value` becomes a `<dt>`/`<dd>` pair.

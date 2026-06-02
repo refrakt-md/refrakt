@@ -14,9 +14,26 @@ import type { SerializedTag, RendererNode } from '@refrakt-md/types';
  *  - `definition-list` — `<dl>` with `<dt>` / `<dd>` per field, value
  *    rendered as chip when sentiment-mapped, plain text otherwise.
  *
+ *  - `bar` — SPEC-080 horizontal flex row of fields; `wrap` + per-field
+ *    `align`. Supersedes `split` + `chip-row` for the block model.
+ *
  *  Reserved-but-unimplemented (SPEC-079 §Future primitives): `table`,
  *  `inline-summary`, `sticky-bar`. */
-export type LayoutPrimitive = 'split' | 'chip-row' | 'definition-list';
+export type LayoutPrimitive = 'split' | 'chip-row' | 'definition-list' | 'bar';
+
+/** SPEC-080 block definition — a named group of meta-fields rendered by a
+ *  layout primitive. Field shape (chip vs bare) is intrinsic to each field's
+ *  `metaType`; this declares only which fields, their order, the layout, and
+ *  optional per-field horizontal alignment. */
+export interface BlockDef {
+	/** Field names (from `metaFields`), in order. A field may be given as
+	 *  `{ field, align }` to push it to the row end (`bar` layout). */
+	fields: (string | { field: string; align?: 'start' | 'end' })[];
+	/** `definition-list` (labeled pairs grid) or `bar` (horizontal flex row). */
+	layout: 'definition-list' | 'bar';
+	/** `bar` only — wrap onto multiple lines. Default true. */
+	wrap?: boolean;
+}
 
 /** Pure data manifest entry for a meta-bearing field. Describes the
  *  field's domain semantics (type, sentiment, label) independent
@@ -24,11 +41,15 @@ export type LayoutPrimitive = 'split' | 'chip-row' | 'definition-list';
  *  primary-color text in an eyebrow's left slot and as a chip in a
  *  def-list's `<dd>` — no per-field config change. */
 export interface MetaField {
-	/** Semantic metadata type — emits `data-meta-type` attribute.
-	 *  Drives typography (monospace for `id`, tabular-nums for
-	 *  `quantity` / `temporal`), NOT geometry. The shape around the
-	 *  value (chip vs plain text) comes from the layout primitive. */
-	metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id';
+	/** Semantic metadata type — emits `data-meta-type` attribute and, under
+	 *  the SPEC-080 block model, determines render *shape*: chip-rendered
+	 *  (`.rf-badge`) for `status` / `category` / `tag`; bare inline for
+	 *  `id` / `quantity` / `temporal` / `code`. Also drives typography
+	 *  (monospace for `id` / `code`, tabular-nums for `quantity` /
+	 *  `temporal`). `sentimentMap` only adds colour, never shape.
+	 *  (Legacy zones path still derives chip-vs-plain from the layout
+	 *  primitive — see `renderZone`.) */
+	metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id' | 'code';
 
 	/** Human-readable label emitted as `<span data-meta-label>`. Used
 	 *  by `chip-row` (inside the chip) and `definition-list` (as the
@@ -171,6 +192,33 @@ export interface RuneConfig {
 	 *  when a rune needs unusual ordering OR declares a custom position
 	 *  outside the standard vocabulary. */
 	order?: string[];
+
+	// ─── SPEC-080: block-and-layout assembly model ───
+	// Supersedes the placement-related SPEC-079 fields above (zones shape,
+	// zoneLayouts, contentSlots, order, zoneHost, zoneHostPlacement). A rune
+	// opts into the new model by declaring `blocks` / `layout`; the legacy
+	// path is used otherwise. Removal of the legacy fields is tracked in
+	// WORK-320.
+
+	/** Named metadata blocks projected from `metaFields`. Each block is a
+	 *  flat list of fields (optionally per-field aligned) rendered by a
+	 *  layout primitive. Theme-overridable; plugins ship defaults. Replaces
+	 *  the SPEC-079 `zones` + `zoneLayouts`.
+	 *
+	 *  Render *shape* (chip vs bare) of each field is intrinsic to the
+	 *  field's `metaType`, not the block's layout. */
+	blocks?: Record<string, BlockDef>;
+
+	/** The projected tree — ordered child block names per container. A key is
+	 *  a container's `data-name`, or the reserved `'root'` for the rune's own
+	 *  top-level children (flat runes with no content/media wrapper).
+	 *  `data-name="root"` is therefore not a valid block name.
+	 *
+	 *  Projected (`blocks`) entries appear ONLY where named here — no
+	 *  canonical/default placement. Transform-built children a list doesn't
+	 *  name are appended in transform order (rune content is never dropped).
+	 *  Omitting `layout` renders the transform tree verbatim, no projection. */
+	layout?: Record<string, string[]>;
 
 	/** Nest projected header zones (the auto-derived preamble) *inside* a
 	 *  pre-built content element instead of emitting them as top-level

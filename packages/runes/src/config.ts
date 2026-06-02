@@ -172,7 +172,7 @@ export const coreConfig: ThemeConfig = {
 		 * engine's `split` / `definition-list` layout primitives. CSS comes
 		 * from the universal `[data-zone-layout=…]` selectors; per-rune
 		 * blocks exist so CSS tree-shaking includes them. */
-		Eyebrow: { block: 'eyebrow' },
+		Bar: { block: 'bar' },
 		Deflist: { block: 'deflist' },
 		/* Collection emits a sentinel during transform; the postProcess hook
 		 * (`resolveCollections`) fills it with queried entities. Engine config
