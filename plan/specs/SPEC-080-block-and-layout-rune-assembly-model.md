@@ -160,10 +160,8 @@ metaFields?: Record<string, {
   tag?: string;
   splitOn?: string;
   transform?: 'duration' | 'uppercase' | 'capitalize';
-  /** Optional shape override when render kind must differ from the
-   *  semantic type. Defaults from metaType. Add only when a real case
-   *  demands it. */
-  as?: 'badge' | 'text' | 'code';
+  // Render shape (chip vs bare) is derived from metaType — no per-field
+  // override. If a real case ever needs one, revisit then.
 }>;
 
 // THEME-overridable: metadata fields grouped into named blocks + layout.
@@ -175,8 +173,10 @@ blocks?: Record<string, {
 }>;
 
 // THEME-overridable: the projected tree — ordered child block names per
-// container. Sparse: any transform block not named is appended in transform
-// order; metadata blocks must be named to appear.
+// container. Projected (metadata) blocks appear ONLY where named here — no
+// canonical/default placement. Transform-built blocks the theme didn't name
+// are appended in transform order (rune content is never dropped). Omitting
+// `layout` entirely renders the transform tree verbatim, with no projection.
 layout?: Record<string /* container data-name */, string[] /* block names */>;
 ```
 
@@ -266,8 +266,10 @@ after the title.
 
 - `RuneConfig` exposes `blocks` and `layout`; `zones`, `zoneLayouts`,
   `contentSlots`, `order`, `zoneHost`, `zoneHostPlacement` are removed.
-- Field shape (chip vs bare) is decided from the field's `metaType` / `as`,
-  identically across `definition-list` and `bar`.
+- Field shape (chip vs bare) is decided from the field's `metaType`,
+  identically across `definition-list` and `bar`. No per-field override.
+- Every block in the rendered tree is placed by an explicit `layout` entry;
+  there is no implicit/default placement, even for simple runes.
 - A `code` metaType renders monospace inline with no chip geometry.
 - `bar` is the single horizontal layout (`split` and `chip-row` removed), with
   a `wrap` knob and per-field `align`; right-alignment is `align: 'end'`
@@ -303,16 +305,24 @@ after the title.
   is `bar` (one primitive; `wrap` + per-field `align`), absorbing both `split`
   and `chip-row`. The unreleased `eyebrow` rune is renamed `bar`. (See
   Terminology.)
+- **Vocabulary: `block`.** The addressable node in a rune's tree is a *block*.
+  `region` (page layout) and `zone` (SPEC-079) are not reused for this.
+- **No per-field shape override.** Render shape is derived from `metaType`
+  alone (chip types vs bare types). No `as` field ships now; revisit only if a
+  real case demands a shape that contradicts the semantic type.
+- **Explicit placement, no magic defaults.** There is no canonical/default
+  placement (e.g. "metadata after preamble"). Every projected block appears
+  only where an explicit `layout` entry names it — including simple runes. A
+  rune with no `layout` renders its transform tree verbatim (projected blocks
+  don't appear). Within a container `layout` addresses, transform-built blocks
+  the theme didn't name are appended in transform order, so the rune's own
+  content is never silently dropped.
 
 ## Open Questions
 
-- Vocabulary: settle one term for "addressable node in a rune's tree"
-  (`block` vs `slot`); avoid `region` (page layout) and `zone` (SPEC-079).
-- Is an explicit per-field `as` override worth shipping now, or only the
-  metaType-derived default until a real case needs it?
-- Should `layout` containers support a default global placement (e.g. canonical
-  "metadata after preamble") so simple runes need no `layout` at all?
 - Fate of `projection` (hide/group/relocate): fully subsumed by `layout`, or
-  retained as the deep-surgery escape hatch alongside `postTransform`?
+  retained as the deep-surgery escape hatch alongside `postTransform`? (Leaning
+  retain — `layout` is deliberately shallow/explicit; deep tree surgery wants a
+  separate, clearly-escape-hatch home.)
 
 {% /spec %}
