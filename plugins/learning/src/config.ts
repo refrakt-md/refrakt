@@ -26,14 +26,11 @@ export const config: Record<string, RuneConfig> = {
 				sentimentMap: { beginner: 'positive', intermediate: 'neutral', advanced: 'caution' },
 			},
 		},
-		zones: {
-			metadata: { fields: ['estimatedTime', 'difficulty'] },
+		blocks: {
+			metadata: { fields: ['estimatedTime', 'difficulty'], layout: 'definition-list' },
 		},
-		zoneLayouts: { metadata: 'definition-list' },
-		// Nest the projected metadata def-list inside the content column,
-		// above the header — same placement as recipe.
-		zoneHost: 'content',
-		zoneHostPlacement: 'before',
+		// Metadata def-list nests in the content column, above the header.
+		layout: { content: ['metadata', 'preamble'] },
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', tool: 'inline', step: 'inline' },
 	},
@@ -69,15 +66,13 @@ export const config: Record<string, RuneConfig> = {
 				sentimentMap: { easy: 'positive', medium: 'neutral', hard: 'caution' },
 			},
 		},
-		zones: {
-			metadata: { fields: ['prepTime', 'cookTime', 'servings', 'difficulty'] },
+		blocks: {
+			metadata: { fields: ['prepTime', 'cookTime', 'servings', 'difficulty'], layout: 'definition-list' },
 		},
-		zoneLayouts: { metadata: 'definition-list' },
 		// Recipe hand-assembles content + media columns for its split layout;
-		// nest the projected metadata def-list inside the content column rather
-		// than emitting it as a third top-level grid child — above the header.
-		zoneHost: 'content',
-		zoneHostPlacement: 'before',
+		// the metadata def-list nests inside the content column, above the
+		// header (root stays [media, content] as the transform emits it).
+		layout: { content: ['metadata', 'preamble'] },
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', ingredient: 'inline', step: 'inline', media: 'image' },
 	},
