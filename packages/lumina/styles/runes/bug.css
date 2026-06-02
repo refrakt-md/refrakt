@@ -7,10 +7,6 @@
 .rf-bug__eyebrow {
 	margin-bottom: 0.75rem;
 }
-.rf-bug__eyebrow [data-meta-type="id"] {
-	color: var(--rf-color-primary);
-	font-weight: 500;
-}
 .rf-bug__title h1,
 .rf-bug__title h2,
 .rf-bug__title h3 {
@@ -21,7 +17,7 @@
 	margin-bottom: 1.5rem;
 }
 
-.rf-bug__metadata [data-field="assignee"] dd::before { content: '@'; }
+.rf-bug__metadata [data-field="assignee"] dd .rf-badge::before { content: '@'; }
 
 .rf-bug__body {
 	font-size: 0.925rem;

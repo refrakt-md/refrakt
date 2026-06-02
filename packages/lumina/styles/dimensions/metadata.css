@@ -25,6 +25,14 @@
 	font-size: var(--meta-font-size, 0.8125rem);
 }
 
+/* IDs read as primary-coloured references wherever they appear (eyebrow
+ * bars, metadata def-lists, etc.) — a semantic treatment of the `id` type,
+ * not a per-layout one. `code` (e.g. API paths) stays neutral monospace. */
+[data-meta-type="id"] {
+	color: var(--rf-color-primary);
+	font-weight: 500;
+}
+
 [data-meta-type="quantity"] {
 	font-variant-numeric: tabular-nums;
 	font-size: var(--meta-font-size, 0.8125rem);

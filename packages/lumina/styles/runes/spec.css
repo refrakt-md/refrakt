@@ -7,10 +7,6 @@
 .rf-spec__eyebrow {
 	margin-bottom: 0.75rem;
 }
-.rf-spec__eyebrow [data-meta-type="id"] {
-	color: var(--rf-color-primary);
-	font-weight: 500;
-}
 .rf-spec__title h1,
 .rf-spec__title h2,
 .rf-spec__title h3 {

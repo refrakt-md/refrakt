@@ -8,11 +8,6 @@
 .rf-work__eyebrow {
 	margin-bottom: 0.75rem;
 }
-/* Identifier in the eyebrow bar keeps the primary-colour kicker treatment. */
-.rf-work__eyebrow [data-meta-type="id"] {
-	color: var(--rf-color-primary);
-	font-weight: 500;
-}
 
 .rf-work__title h1,
 .rf-work__title h2,
@@ -26,7 +21,7 @@
 
 /* Assignee — `@` prefix on the plain-text def-list value. Targets the
  * row by field name so milestone / tags don't get the prefix too. */
-.rf-work__metadata [data-field="assignee"] dd::before { content: '@'; }
+.rf-work__metadata [data-field="assignee"] dd .rf-badge::before { content: '@'; }
 
 .rf-work__body {
 	font-size: 0.925rem;
