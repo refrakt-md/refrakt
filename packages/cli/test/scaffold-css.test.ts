@@ -55,16 +55,19 @@ describe('scaffoldCssCommand', () => {
 		expect(hintCss).toContain('.rf-hint--note {');
 	});
 
-	it('generates element selectors from structure', () => {
+	it('omits the Elements section for structure-less runes', () => {
 		const outputDir = tmpOutputDir();
 		cleanupDirs.push(outputDir);
 
 		scaffoldCssCommand({ outputDir, force: false });
 
+		// Hint migrated to the SPEC-080 block model and no longer declares
+		// `structure`, so the contract carries no `elements`. Block-derived
+		// element scaffolding is surfaced in the contract by WORK-320; until
+		// then the scaffold emits the block + modifiers only.
 		const hintCss = readFileSync(join(outputDir, 'hint.css'), 'utf-8');
-		expect(hintCss).toContain('.rf-hint__header {');
-		expect(hintCss).toContain('.rf-hint__icon {');
-		expect(hintCss).toContain('.rf-hint__title {');
+		expect(hintCss).not.toContain('/* Elements */');
+		expect(hintCss).not.toContain('.rf-hint__header {');
 	});
 
 	it('generates context modifier selectors', () => {
@@ -85,8 +88,8 @@ describe('scaffoldCssCommand', () => {
 
 		const hintCss = readFileSync(join(outputDir, 'hint.css'), 'utf-8');
 		expect(hintCss).toContain('/* Hint rune */');
-		expect(hintCss).toContain('/* Elements */');
-		expect(hintCss).toContain('from structure');
+		expect(hintCss).toContain('/* Modifiers */');
+		expect(hintCss).toContain('/* Context modifiers */');
 	});
 
 	it('skips existing files by default', () => {

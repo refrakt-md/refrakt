@@ -1,9 +1,9 @@
 /* Budget */
+
+/* Duration + currency meta row — flex/gap from the shared
+ * `[data-zone-layout=bar]` primitive; this block owns only its spacing. */
 .rf-budget__meta {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 0.5rem;
+	margin-bottom: 0.75rem;
 }
 .rf-budget__preamble {
 	margin-bottom: 1.5rem;

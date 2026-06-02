@@ -1,4 +1,4 @@
-{% work id="WORK-311" status="ready" priority="medium" complexity="simple" source="SPEC-079" tags="media,plugin,runes,migration,metafields,zones,phase-2" milestone="v0.17.0" %}
+{% work id="WORK-311" status="done" priority="medium" complexity="simple" source="SPEC-079" tags="media,plugin,runes,migration,metafields,zones,phase-2" milestone="v0.17.0" %}
 
 # Media plugin migration to metaFields + zones
 
@@ -44,5 +44,11 @@ genuinely has no meta projection, it stays on the existing path.
 ## References
 
 - {% ref "SPEC-079" /%} — the spec being implemented.
+
+## Resolution
+
+Completed: 2026-06-02
+
+Superseded by WORK-319. Targeted the SPEC-079 zones model; media (Playlist) migrated straight to the SPEC-080 blocks/layout model instead on branch `claude/definitions-list-styling-9nOGL`.
 
 {% /work %}

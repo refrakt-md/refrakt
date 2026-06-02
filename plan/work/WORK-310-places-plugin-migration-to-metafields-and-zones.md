@@ -1,4 +1,4 @@
-{% work id="WORK-310" status="ready" priority="medium" complexity="simple" source="SPEC-079" tags="places,plugin,runes,migration,metafields,zones,phase-2" milestone="v0.17.0" %}
+{% work id="WORK-310" status="done" priority="medium" complexity="simple" source="SPEC-079" tags="places,plugin,runes,migration,metafields,zones,phase-2" milestone="v0.17.0" %}
 
 # Places plugin migration to metaFields + zones
 
@@ -55,5 +55,11 @@ side-by-side.
 ## References
 
 - {% ref "SPEC-079" /%} — the spec being implemented.
+
+## Resolution
+
+Completed: 2026-06-02
+
+Superseded by WORK-319. Targeted the SPEC-079 zones model; places (Event) migrated straight to the SPEC-080 blocks/layout model instead on branch `claude/definitions-list-styling-9nOGL`.
 
 {% /work %}

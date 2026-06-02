@@ -288,7 +288,7 @@ export const config: Record<string, RuneConfig> = {
 	Testimonial: {
 		block: 'testimonial',
 		defaultDensity: 'compact',
-		sections: { content: 'body', avatar: 'media' },
+		sections: { avatar: 'media' },
 		mediaSlots: { avatar: 'portrait' },
 		modifiers: {
 			variant: { source: 'meta', default: 'card' },
@@ -296,19 +296,15 @@ export const config: Record<string, RuneConfig> = {
 			ratingTotal: { source: 'meta', noBemClass: true, default: '5' },
 		},
 		autoLabel: { blockquote: 'quote' },
-		contentWrapper: { tag: 'div', ref: 'content' },
-		structure: {
-			rating: {
-				tag: 'div',
-				before: true,
-				condition: 'rating',
-				repeat: {
-					count: 'ratingTotal',
-					filled: 'rating',
-					element: { tag: 'span', ref: 'star' },
-				},
-			},
+		// Rating is a single `rating` field — `value` filled marks out of
+		// `total`, rendered by the shared `[data-meta-type=rating]` treatment.
+		metaFields: {
+			rating: { rating: { total: 'ratingTotal' }, condition: 'rating' },
 		},
+		blocks: {
+			rating: { fields: ['rating'], layout: 'bar' },
+		},
+		layout: { root: ['rating', 'quote', 'author-name', 'author-role', 'avatar'] },
 		editHints: { 'author-name': 'inline', 'author-role': 'inline', avatar: 'image', quote: 'inline' },
 	},
 	Comparison: {

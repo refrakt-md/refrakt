@@ -4,24 +4,11 @@
 	padding: 1.75rem 2rem;
 	background: var(--rf-color-surface);
 }
+/* Rating block — stars rendered by the shared `[data-meta-type=rating]`
+ * treatment; this rule only owns the spacing below the row. */
 .rf-testimonial__rating {
-	display: flex;
-	gap: 0.125rem;
 	margin-bottom: 0.75rem;
-}
-.rf-testimonial__star {
 	font-size: 1.1rem;
-	color: var(--rf-color-border);
-	line-height: 1;
-}
-.rf-testimonial__star::before {
-	content: '★';
-}
-.rf-testimonial__star[data-filled="true"] {
-	color: var(--rf-color-warning);
-}
-.rf-testimonial__content {
-	display: contents;
 }
 .rf-testimonial blockquote {
 	border: none;

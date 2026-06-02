@@ -79,6 +79,14 @@ export interface MetaField {
 	 *  Used for star ratings, progress dots, etc. */
 	rating?: { total?: string };
 
+	/** Decorate the field with a leading icon. The field's value selects the
+	 *  glyph (the variant); `group` names the icon set. Emits an icon element
+	 *  carrying `data-icon-group` + `data-icon` (value) ahead of the value
+	 *  text — CSS draws the glyph via `mask-image`. Bare-rendered (no chip).
+	 *  Used for the hint header (note/warning/caution/check) and similar
+	 *  labelled-with-icon metadata. */
+	icon?: { group: string };
+
 	/** Override the rendered element tag. Defaults to `span`; common
 	 *  override is `time` for temporal fields so the engine emits
 	 *  `<time datetime="…">…</time>`. */

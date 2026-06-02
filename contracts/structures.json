@@ -132,7 +132,6 @@
 			"root": ".rf-codegroup",
 			"dataRune": "code-group",
 			"childOrder": [
-				"topbar",
 				"{content}"
 			],
 			"modifiers": {
@@ -145,26 +144,6 @@
 					"default": "scroll",
 					"classPattern": ".rf-codegroup--{value}",
 					"dataAttribute": "data-overflow"
-				}
-			},
-			"elements": {
-				"topbar": {
-					"tag": "div",
-					"selector": ".rf-codegroup__topbar",
-					"source": "structure"
-				},
-				"dot": {
-					"tag": "span",
-					"selector": ".rf-codegroup__dot",
-					"source": "structure",
-					"parent": "topbar"
-				},
-				"title": {
-					"tag": "span",
-					"selector": ".rf-codegroup__title",
-					"source": "structure",
-					"parent": "topbar",
-					"condition": "title"
 				}
 			}
 		},
@@ -395,7 +374,6 @@
 			"root": ".rf-budget",
 			"dataRune": "budget",
 			"childOrder": [
-				"header",
 				"{content}"
 			],
 			"modifiers": {
@@ -421,30 +399,6 @@
 					"default": "detailed",
 					"classPattern": ".rf-budget--{value}",
 					"dataAttribute": "data-variant"
-				}
-			},
-			"elements": {
-				"header": {
-					"tag": "div",
-					"selector": ".rf-budget__header",
-					"source": "structure",
-					"conditionAny": [
-						"currency",
-						"duration"
-					]
-				},
-				"meta": {
-					"tag": "div",
-					"selector": ".rf-budget__meta",
-					"source": "structure",
-					"parent": "header"
-				},
-				"meta-item": {
-					"tag": "span",
-					"selector": ".rf-budget__meta-item",
-					"source": "structure",
-					"parent": "meta",
-					"condition": "currency"
 				}
 			}
 		},
@@ -487,7 +441,6 @@
 			"root": ".rf-hint",
 			"dataRune": "hint",
 			"childOrder": [
-				"header",
 				"{content}"
 			],
 			"modifiers": {
@@ -506,25 +459,6 @@
 				"feature": {
 					"suffix": "in-feature",
 					"selector": ".rf-hint--in-feature"
-				}
-			},
-			"elements": {
-				"header": {
-					"tag": "div",
-					"selector": ".rf-hint__header",
-					"source": "structure"
-				},
-				"icon": {
-					"tag": "span",
-					"selector": ".rf-hint__icon",
-					"source": "structure",
-					"parent": "header"
-				},
-				"title": {
-					"tag": "span",
-					"selector": ".rf-hint__title",
-					"source": "structure",
-					"parent": "header"
 				}
 			}
 		},
@@ -1652,8 +1586,7 @@
 			"root": ".rf-testimonial",
 			"dataRune": "testimonial",
 			"childOrder": [
-				"rating",
-				"{content:content}"
+				"{content}"
 			],
 			"modifiers": {
 				"variant": {
@@ -1673,23 +1606,6 @@
 				}
 			},
 			"elements": {
-				"rating": {
-					"tag": "div",
-					"selector": ".rf-testimonial__rating",
-					"source": "structure",
-					"condition": "rating"
-				},
-				"star": {
-					"tag": "span",
-					"selector": ".rf-testimonial__star",
-					"source": "structure",
-					"parent": "rating"
-				},
-				"content": {
-					"tag": "div",
-					"selector": ".rf-testimonial__content",
-					"source": "contentWrapper"
-				},
 				"quote": {
 					"tag": "blockquote",
 					"selector": ".rf-testimonial__quote",
@@ -2317,9 +2233,7 @@
 			"root": ".rf-event",
 			"dataRune": "event",
 			"childOrder": [
-				"header",
-				"{content:content}",
-				"register"
+				"{content}"
 			],
 			"modifiers": {
 				"date": {
@@ -2344,39 +2258,6 @@
 				}
 			},
 			"elements": {
-				"header": {
-					"tag": "div",
-					"selector": ".rf-event__header",
-					"source": "structure",
-					"conditionAny": [
-						"date",
-						"location"
-					]
-				},
-				"meta": {
-					"tag": "div",
-					"selector": ".rf-event__meta",
-					"source": "structure",
-					"parent": "header"
-				},
-				"meta-item": {
-					"tag": "span",
-					"selector": ".rf-event__meta-item",
-					"source": "structure",
-					"parent": "meta",
-					"condition": "date"
-				},
-				"register": {
-					"tag": "a",
-					"selector": ".rf-event__register",
-					"source": "structure",
-					"condition": "url"
-				},
-				"content": {
-					"tag": "div",
-					"selector": ".rf-event__content",
-					"source": "contentWrapper"
-				},
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-event__preamble",
@@ -3040,7 +2921,6 @@
 			"root": ".rf-playlist",
 			"dataRune": "playlist",
 			"childOrder": [
-				"meta",
 				"{content}"
 			],
 			"modifiers": {
@@ -3089,17 +2969,6 @@
 				}
 			},
 			"elements": {
-				"meta": {
-					"tag": "div",
-					"selector": ".rf-playlist__meta",
-					"source": "structure"
-				},
-				"type-badge": {
-					"tag": "span",
-					"selector": ".rf-playlist__type-badge",
-					"source": "structure",
-					"parent": "meta"
-				},
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-playlist__preamble",

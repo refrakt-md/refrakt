@@ -12,37 +12,28 @@ export const config: Record<string, RuneConfig> = {
 	Event: {
 		block: 'event',
 		defaultDensity: 'full',
-		sections: { header: 'header', preamble: 'preamble', headline: 'title', blurb: 'description', content: 'body' },
-		contentWrapper: { tag: 'div', ref: 'content' },
+		sections: { headline: 'title', blurb: 'description', body: 'body' },
 		autoLabel: pageSectionAutoLabel,
-		editHints: { headline: 'inline', blurb: 'inline', body: 'none', 'meta-item': 'none', register: 'link' },
+		editHints: { headline: 'inline', blurb: 'inline', body: 'none', date: 'none', endDate: 'none', location: 'none', register: 'link' },
 		modifiers: {
 			date: { source: 'meta' },
 			endDate: { source: 'meta' },
 			location: { source: 'meta' },
 			url: { source: 'meta' },
 		},
-		structure: {
-			header: {
-				tag: 'div', before: true,
-				conditionAny: ['date', 'location'],
-				children: [
-					{
-						tag: 'div', ref: 'meta',
-						children: [
-							{ tag: 'span', ref: 'meta-item', metaText: 'date', label: 'Date:', condition: 'date', metaType: 'temporal' },
-							{ tag: 'span', ref: 'meta-item', metaText: 'endDate', label: '—', condition: 'endDate', metaType: 'temporal' },
-							{ tag: 'span', ref: 'meta-item', metaText: 'location', label: 'Location:', condition: 'location', metaType: 'category' },
-						],
-					},
-				],
-			},
-			register: {
-				tag: 'a', ref: 'register', before: false, condition: 'url',
-				attrs: { href: { fromModifier: 'url' } },
-				children: ['Register'],
-			},
+		metaFields: {
+			date: { metaType: 'temporal', label: 'Date', condition: 'date' },
+			endDate: { metaType: 'temporal', label: 'Ends', condition: 'endDate' },
+			location: { metaType: 'category', label: 'Location', condition: 'location' },
+			register: { label: 'Register', href: 'url', condition: 'url' },
 		},
+		// When/where as a labelled def-list under the title/description; the
+		// Register CTA renders last as a bar-wrapped link.
+		blocks: {
+			metadata: { fields: ['date', 'endDate', 'location'], layout: 'definition-list' },
+			register: { fields: ['register'], layout: 'bar' },
+		},
+		layout: { root: ['eyebrow', 'headline', 'blurb', 'metadata', 'body', 'register'] },
 	},
 	Itinerary: {
 		block: 'itinerary',

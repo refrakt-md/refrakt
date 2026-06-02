@@ -1434,11 +1434,25 @@ function buildRatingValue(f: ResolvedField): SerializedTag {
 	return makeTag('span', { 'data-meta-type': 'rating' }, marks);
 }
 
-/** Render one resolved field in its intrinsic shape (link > rating > chip >
- *  bare). */
+/** Build an icon-decorated value — a leading icon element (glyph selected
+ *  by the field's value via `data-icon-group` + `data-icon`) followed by the
+ *  value text. Bare (no chip); CSS draws the glyph via `mask-image`. */
+function buildIconValue(f: ResolvedField): SerializedTag {
+	const group = f.field.icon!.group;
+	const attrs: Record<string, string> = {};
+	if (f.field.metaType) attrs['data-meta-type'] = f.field.metaType;
+	return makeTag(f.field.tag ?? 'span', attrs, [
+		makeTag('span', { 'data-icon-group': group, 'data-icon': f.value }, []),
+		makeTag('span', { 'data-meta-value': '' }, [f.field.label ?? f.value]),
+	]);
+}
+
+/** Render one resolved field in its intrinsic shape (link > rating > icon >
+ *  chip > bare). */
 function renderBlockValue(f: ResolvedField, includeLabel = false): SerializedTag {
 	if (f.field.href) return buildLinkValue(f);
 	if (f.field.rating) return buildRatingValue(f);
+	if (f.field.icon) return buildIconValue(f);
 	return fieldRendersAsChip(f.field)
 		? buildChip(f, { includeLabel })
 		: buildPlainValue(f);

@@ -247,6 +247,33 @@ describe('SPEC-080 block-and-layout assembly', () => {
 		});
 	});
 
+	describe('icon field', () => {
+		it('renders a leading icon element (value selects the glyph) plus the value text', () => {
+			const cfg: RuneConfig = {
+				block: 'hint',
+				modifiers: { hintType: { source: 'meta', default: 'note' } },
+				metaFields: { hintType: { icon: { group: 'hint' } } },
+				blocks: { header: { fields: ['hintType'], layout: 'bar' } },
+				layout: { root: ['header', 'body'] },
+			};
+			const result = asTag(createTransform(baseConfig({ Hint: cfg }))(
+				makeTag('article', { 'data-rune': 'hint' }, [
+					makeTag('meta', { 'data-field': 'hint-type', content: 'warning' }),
+					makeTag('div', { 'data-name': 'body' }, ['x']),
+				]),
+			));
+			const field = findByName(result, 'header')!.children[0] as SerializedTag;
+			const icon = field.children[0] as SerializedTag;
+			expect(icon.attributes['data-icon-group']).toBe('hint');
+			expect(icon.attributes['data-icon']).toBe('warning');
+			expect(icon.children.length).toBe(0); // glyph drawn in CSS
+			const value = field.children[1] as SerializedTag;
+			expect(value.attributes['data-meta-value']).toBe('');
+			expect(value.children[0]).toBe('warning');
+			expect(field.attributes.class).toBeUndefined(); // bare, not a chip
+		});
+	});
+
 	describe('definition-list block — intrinsic shape', () => {
 		it('chip in dd for chip-type, bare dd for value-type', () => {
 			const cfg: RuneConfig = {

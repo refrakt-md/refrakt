@@ -1,4 +1,4 @@
-{% work id="WORK-312" status="ready" priority="low" complexity="simple" source="SPEC-079" tags="core,runes,budget,migration,metafields,zones,phase-2" milestone="v0.17.0" %}
+{% work id="WORK-312" status="done" priority="low" complexity="simple" source="SPEC-079" tags="core,runes,budget,migration,metafields,zones,phase-2" milestone="v0.17.0" %}
 
 # Core Budget rune migration to metaFields + zones
 
@@ -47,5 +47,11 @@ own branch or batched with another Phase 2 item.
 ## References
 
 - {% ref "SPEC-079" /%} — the spec being implemented.
+
+## Resolution
+
+Completed: 2026-06-02
+
+Superseded by WORK-319. Targeted the SPEC-079 zones model; the core budget rune migrated straight to the SPEC-080 blocks/layout model instead on branch `claude/definitions-list-styling-9nOGL`.
 
 {% /work %}
