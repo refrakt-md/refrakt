@@ -1,19 +1,21 @@
-{% spec id="SPEC-082" status="draft" source="SPEC-080" tags="theme, runes, serialization, data-channel, transform, engine, adapters, renderer, contract, migration" %}
+{% spec id="SPEC-082" status="draft" source="SPEC-080" tags="theme, runes, serialization, data-channel, transform, engine, contract, migration" %}
 
 # Typed node data channel
 
 Replace the `<meta data-field>` side channel — by which a rune transform passes
 computed field data to the engine across the serialize boundary — with a typed
 `data` bag carried on the serialized node. Extracted from `SPEC-081` (Concern
-B) so the cross-cutting adapter migration can be planned and sequenced on its
-own. Sibling to `SPEC-081` (declarative structure assembly); both extend
+B) so it can be planned and sequenced on its own. Sibling to `SPEC-081`
+(declarative structure assembly); both extend
 `SPEC-080` and harden the rune output contract before third-party themes and
 additional framework renderers depend on its current shape.
 
-We start here because it is the channel the *whole* model rides on and the
-riskiest surface to change (it touches every framework adapter) — de-risking it
-first means later work writes into a typed channel instead of the meta side
-channel.
+We start here because it is the channel the *whole* model rides on, and
+because it clears the most accreted cruft. It is also **lower-risk than it
+first looks**: the engine consumes and strips this channel before any renderer
+sees the tree (just as it strips `<meta data-field>` today), so — contrary to
+an earlier framing — this needs **no** framework-adapter changes. The fix is
+confined to the schema, the engine, and the `createComponentRenderable` helper.
 
 ## Background — how data crosses the boundary today
 
@@ -55,94 +57,109 @@ them:
 
 ## Direction
 
-### The `data` bag
+### The carrier is `attributes`, not a new node field
 
-Add an optional typed bag to the serialized node — the engine's **input**,
-distinct from `attributes` (which, on output, the engine writes as
-presentational `data-*` HTML):
+Markdoc's `Tag` is only `{ name, attributes, children }`, and `serialize()`
+whitelists exactly those fields — so a separate typed slot on the node would
+have to be threaded through `serialize` and every boundary, and would still
+have nowhere to live during the Markdoc transform phase where the data is
+*produced*. And it would buy little, because the engine strips the internal
+channel before any renderer runs. So the carrier is the existing `attributes`
+map, used with discipline:
 
-```ts
-interface SerializedTag {
-  $$mdtype: 'Tag';
-  name: string;
-  attributes: Record<string, string>;
-  data?: Record<string, FieldValue>;   // NEW — engine input, never rendered
-  children: RendererNode[];
-}
-type FieldValue = string | number | boolean | string[];
-```
+- The rune schema writes field data to a **single reserved attribute** holding
+  a JSON-encoded typed object:
 
-- **Produced** by the rune schema: `createComponentRenderable`'s `properties`
-  populate `node.data` instead of emitting `<meta data-field>` children.
-- **Consumed** by the engine: `modifierValues` / `metaFields` resolution read
-  `node.data[key]` directly — no `readMeta`, no kebab transit (keys stay as
-  authored), no strip pass, values arrive typed.
-- **Never rendered:** the Renderer and every adapter treat `data` as opaque
-  pass-through metadata; it is not `attributes` and not `children`, so there is
-  nothing to strip and nothing to leak.
+  ```ts
+  attributes['data-rune-fields'] =
+    JSON.stringify({ status: 'warning', rating: 4, currency: 'USD' });
+  // type FieldValue = string | number | boolean | string[]
+  ```
+
+- The engine parses `data-rune-fields` **once** into a typed `fields` object,
+  resolves `modifierValues` / `metaFields` from it, and **deletes the key**
+  before output — one trivial strip that replaces the meta-strip filter, the
+  kebab-matching set, *and* the unconsumed-meta leak filter.
+- Values arrive **typed** (JSON preserves numbers / booleans / string lists),
+  and presence is `key in fields` / `undefined` — the stringly presence-collapse
+  is gone, and keys stay as authored (no kebab transit).
+- `attributes` stays `Record<string, string>` — the value is a JSON *string*,
+  so there is **no type widening** and no ripple through the Renderer, the BEM
+  logic, or the adapters.
+- Because the engine strips the reserved key before the tree reaches any
+  renderer, **no adapter sees it** — it crosses `serialize()` for free (just an
+  attribute) and is gone by render time.
+
+*(Optional later refinement — step 4: `serialize()` could promote the parsed
+object to a first-class `fields` POJO field and drop the reserved attribute, if
+a typed top-level slot proves worth the serialize / boundary edits. Deferred —
+the reserved attribute already delivers the wins.)*
 
 ### Output metas stay output
 
 schema.org / SEO `<meta property=…>` remain real children. The migration
 *splits* the two concerns runes currently conflate — `testimonial` emits the
-SEO `ratingValue` meta as output **and** puts `rating: 4` in `node.data` —
-which is cleaner than one dual-purpose node.
+SEO `ratingValue` meta as output **and** puts `rating: 4` in the `fields`
+attribute — which is cleaner than one dual-purpose node.
 
 ### What this removes
 
 - The `readMeta`-as-data path, the kebab-matching set, the unconsumed-meta leak
   filter, the meta-strip step, and the re-parse dance.
-- The *reason* `renderWhenEmpty` had to exist (presence is now `key in
-  node.data` / `undefined`) — the flag may remain as explicit authorial intent,
-  but it is no longer a workaround for a stringly channel.
+- The *reason* `renderWhenEmpty` had to exist (presence is now `key in fields`
+  / `undefined`) — the flag may remain as explicit authorial intent, but it is
+  no longer a workaround for a stringly channel.
 
 ## Migration
 
-This is the cross-cutting part. It touches the serialize step, every framework
-adapter (svelte / astro / nuxt / next / react / vue / eleventy), and the
-Renderer. Sequence it so no renderer ever reads metas while another reads
-`data`; behavior stays invariant until step 4.
+Smaller than a separate-bag approach: the engine sits between the channel and
+every renderer, so adapters never see it and need no changes. The work is
+confined to `createComponentRenderable`, the schemas, and the engine. Sequence
+so behavior stays invariant until step 3.
 
-1. **Carry `data` end-to-end (pure plumbing).** Add `data?` to the node type;
-   the serialize step preserves it; every adapter and the Renderer pass it
-   through and never render it. No behavior change — shippable on its own.
-2. **Populate `data` in schemas (dual-emit).** `createComponentRenderable`
-   writes `node.data` **and** still emits `<meta data-field>` (belt and
-   suspenders). No output change.
-3. **Engine reads `data` (dual-read).** `modifierValues` prefers `node.data`,
-   falls back to legacy metas. No output change.
-4. **Stop emitting data-field metas; delete the cruft.** Schemas drop the meta
-   emission; the engine drops the legacy meta read, the strip filter, and the
-   kebab set. SEO `property` metas untouched.
-5. **Remove dual paths; tighten types.** Optional per-rune typed `data`
-   interfaces where they earn their keep.
+1. **Schema writes the reserved attribute (dual-emit).**
+   `createComponentRenderable` populates `data-rune-fields` **and** keeps
+   emitting `<meta data-field>` (belt and suspenders). No output change.
+2. **Engine reads `fields` (dual-read).** `modifierValues` / `metaFields`
+   prefer the parsed `data-rune-fields`, fall back to legacy metas. No output
+   change.
+3. **Drop the metas; delete the cruft.** Schemas stop emitting
+   `<meta data-field>`; the engine drops the legacy meta read, the meta-strip
+   filter, and the kebab-matching set — keeping only the single reserved-key
+   parse + strip. SEO `property` metas untouched.
+4. **(Optional) Promote to a first-class `fields` field** via `serialize()`,
+   if a typed top-level slot earns the serialize / boundary edits. This is the
+   only step that would touch the serialize boundary; defer until proven worth
+   it.
 
-Each step is independently shippable and reversible.
+Steps 1–3 need zero adapter work and are individually shippable and reversible.
 
 ## Non-goals
 
 - Not changing the two-layer model, the SPEC-080 block / field / layout
   vocabulary, or the structural assembly (`SPEC-081` — separate, independent).
 - Not removing genuine output `<meta property>` / schema.org tags.
-- Not introducing per-framework data formats — one `data` shape across all
-  adapters.
+- Not widening `attributes` to a typed union — it stays `Record<string,
+  string>`; the reserved value is a JSON *string*, parsed only by the engine.
+- Not threading a new node field through the framework adapters (the engine
+  strips the channel before render; adapters are out of scope).
 
 ## Open questions
 
-- **Naming.** `data` risks confusion with HTML `data-*`. Candidates: `props`,
-  `fields`, `meta`. `data` is the working name; pick before step 1.
-- **Value type.** Keep `node.data` flat and scalar (`string | number | boolean
-  | string[]`) and let structure live in config (`metaFields`), or allow nested
+- **Naming.** Internal concept: `fields` (matches `metaFields` / `data-field`;
+  the node's resolved field values). Reserved attribute key: `data-rune-fields`
+  vs `data-fields` vs `data-rf-fields` — pick before step 1.
+- **Value type.** Keep `fields` flat and scalar (`string | number | boolean |
+  string[]`) and let structure live in config (`metaFields`), or allow nested
   objects? Leaning flat — the config already holds the shape.
 - **`modifiers.source`.** Today `modifiers: { x: { source: 'meta' } }`. Does it
-  become `source: 'data'` (default), or does `source` disappear once `data` is
-  the only channel?
-- **Markdoc Renderable compatibility.** Is `data` strictly owned by refrakt's
-  serialize step + adapters, or must it survive Markdoc's own `renderers` for
-  any consumer that bypasses refrakt's serialize? (Output metas are the
-  portable fallback in that unlikely case.)
+  become `source: 'fields'` (default), or does `source` disappear once `fields`
+  is the only channel?
+- **First-class promotion (step 4).** Is a typed top-level `fields` POJO field
+  worth the `serialize()` + boundary edits, or does the reserved JSON attribute
+  stay the end state? Decide after steps 1–3 land.
 - **Editor / `inspect`.** Both read `data-field` metas off the tree today; they
-  switch to `node.data`. Confirm `inspect --json` surfaces it.
+  switch to reading the parsed `fields`. Confirm `inspect --json` surfaces it.
 
 ## Relationship to other specs
 
