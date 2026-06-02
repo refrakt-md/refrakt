@@ -2228,6 +2228,11 @@
 					"tag": "scene",
 					"selector": ".rf-faction__scene",
 					"source": "autoLabel"
+				},
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-faction__preamble",
+					"source": "autoLabel"
 				}
 			},
 			"inlineStyles": {
@@ -2960,7 +2965,7 @@
 			"root": ".rf-howto",
 			"dataRune": "how-to",
 			"childOrder": [
-				"{content:content}"
+				"{content}"
 			],
 			"modifiers": {
 				"estimatedTime": {
@@ -2976,11 +2981,6 @@
 				}
 			},
 			"elements": {
-				"content": {
-					"tag": "div",
-					"selector": ".rf-howto__content",
-					"source": "contentWrapper"
-				},
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-howto__preamble",

@@ -85,7 +85,7 @@ export const config: Record<string, RuneConfig> = {
 	Faction: {
 		block: 'faction',
 		defaultDensity: 'full',
-		sections: { name: 'title', scene: 'media' },
+		sections: { preamble: 'preamble', name: 'title', scene: 'media' },
 		mediaSlots: { scene: 'cover' },
 		rootAttributes: { 'data-media-position': 'top' },
 		modifiers: {
@@ -112,12 +112,14 @@ export const config: Record<string, RuneConfig> = {
 			},
 			size: { metaType: 'quantity', label: 'Size', condition: 'size' },
 		},
+		// All facts render as a definition-list nested in the content column
+		// below the title (recipe pattern) — no separate eyebrow zone.
 		zones: {
-			eyebrow: { left: ['factionType'], right: ['alignment'] },
-			metadata: { fields: ['size'] },
+			metadata: { fields: ['factionType', 'alignment', 'size'] },
 		},
-		zoneLayouts: { metadata: 'chip-row' },
-		autoLabel: { scene: 'scene' },
+		zoneLayouts: { metadata: 'definition-list' },
+		zoneHost: 'content',
+		autoLabel: { scene: 'scene', header: 'preamble' },
 		editHints: { name: 'inline', body: 'none', sections: 'none' },
 	},
 	FactionSection: { block: 'faction-section', parent: 'Faction', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },

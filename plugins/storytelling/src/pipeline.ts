@@ -39,10 +39,22 @@ function readField(tag: InstanceType<typeof Tag>, field: string): string {
 	return Markdoc.Tag.isTag(meta) ? (meta.attributes.content as string) ?? '' : '';
 }
 
+/** Depth-first search for the first descendant carrying `data-name=name`.
+ *  Pre-order returns the entity's own title (e.g. in `content > header`)
+ *  before any nested section name, so it works whether the title is a direct
+ *  child (realm/character) or nested in the content column (faction). */
+function findByName(tag: InstanceType<typeof Tag>, name: string): InstanceType<typeof Tag> | undefined {
+	for (const c of tag.children) {
+		if (!Markdoc.Tag.isTag(c)) continue;
+		if (c.attributes['data-name'] === name) return c;
+		const found = findByName(c, name);
+		if (found) return found;
+	}
+	return undefined;
+}
+
 function readRefText(tag: InstanceType<typeof Tag>, name: string): string {
-	const ref = tag.children.find(
-		(c: unknown) => Markdoc.Tag.isTag(c) && c.attributes['data-name'] === name,
-	);
+	const ref = findByName(tag, name);
 	return ref ? extractTextContent(ref) : '';
 }
 
