@@ -143,16 +143,26 @@ stays invariant until step 4.
    each plugin's `register()` hook read field values from the bag (via a shared
    helper), falling back to the metas. No output change. *Required before the
    drop — these run on the pre-engine tree and would otherwise lose their data.*
-4. **Drop the metas; delete the cruft.** [`WORK-323`] Schemas stop emitting
-   `<meta data-field>`; the engine drops the legacy meta read, the meta-strip
-   filter, and the kebab-matching set — keeping only the single reserved-key
-   parse + strip. SEO `property` metas untouched.
-5. **(Optional) Promote to a first-class `fields` field** via `serialize()`,
+4. **Untangle the SEO metas (problem #4).** [`WORK-329`] Some metas are
+   conflated — they carry both `data-field` (data) and `property=` (schema.org,
+   via the `schema` map; e.g. recipe's `prepTime`). These feed JSON-LD
+   (`extractSeo` runs **pre-engine** and `collectProperties` reads their
+   `property=`) and rely on step-7's `data-field`-match strip to stay out of
+   rendered HTML. Split them so a meta is *either* a data carrier (→ bag,
+   dropped) *or* an SEO carrier (`property=`, no `data-field`) — keeping JSON-LD
+   parity and deciding the SEO metas' HTML presence. *Required before the drop —
+   otherwise dropping the conflated metas breaks JSON-LD, and the kebab/strip
+   machinery can't be removed while they still rely on it.*
+5. **Drop the metas; delete the cruft.** [`WORK-323`] Schemas stop emitting
+   `<meta data-field>` data carriers; the engine drops the legacy meta read, the
+   meta-strip filter, and the kebab-matching set — keeping only the single
+   reserved-key parse + strip. SEO `property` metas (now independent) untouched.
+6. **(Optional) Promote to a first-class `fields` field** via `serialize()`,
    if a typed top-level slot earns the serialize / boundary edits. This is the
    only step that would touch the serialize boundary; defer until proven worth
    it.
 
-Steps 1–4 need zero adapter work and are individually shippable and reversible.
+Steps 1–5 need zero adapter work and are individually shippable and reversible.
 
 ## Non-goals
 

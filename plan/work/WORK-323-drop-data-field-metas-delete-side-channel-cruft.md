@@ -32,6 +32,9 @@ SEO `<meta property>` tags are untouched.
 - {% ref "WORK-328" /%} — the pre-engine field consumers (SEO + plugin
   register hooks) must read the bag first; otherwise dropping the metas breaks
   entity registration and SEO.
+- {% ref "WORK-329" /%} — the schema.org SEO metas must be untangled from the
+  data channel first; otherwise dropping the conflated metas breaks JSON-LD and
+  the kebab/strip machinery can't be removed.
 
 ## References
 
