@@ -114,6 +114,6 @@ The behaviour follows container width, not authoring choice — the same `{% def
 
 ## See also
 
-- [Header zones + layout primitives](/extend/theme-authoring/header-zones) — the spec this rune projects.
+- [Blocks & layout](/extend/theme-authoring/blocks-and-layout) — the spec this rune projects.
 - [`{% bar %}`](/runes/bar) — sibling composable rune for the `bar` layout primitive.
 - [`{% badge %}`](/runes/badge) — the chip primitive used inside sentiment-mapped `<dd>` cells.

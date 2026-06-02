@@ -37,6 +37,7 @@ tint-lock: false
 - theme-authoring/overview
 - theme-authoring/config-api
 - theme-authoring/dimensions
+- theme-authoring/blocks-and-layout
 - theme-authoring/css
 - theme-authoring/creating-a-theme
 - theme-authoring/components

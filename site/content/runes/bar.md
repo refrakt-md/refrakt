@@ -92,6 +92,6 @@ Geometry comes from the universal `[data-zone-layout="bar"]` selector in Lumina'
 
 ## See also
 
-- [Header zones + layout primitives](/extend/theme-authoring/header-zones) — the spec this rune projects.
+- [Blocks & layout](/extend/theme-authoring/blocks-and-layout) — the spec this rune projects.
 - [`{% badge %}`](/runes/badge) — the chip primitive that pairs naturally with a bar's right group.
 - [`{% deflist %}`](/runes/deflist) — sibling composable rune for the `definition-list` layout primitive.
