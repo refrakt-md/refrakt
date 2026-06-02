@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/lumina",
   "description": "Lumina theme for refrakt.md — design tokens, CSS, identity transform, and layout configs",
-  "version": "0.16.1",
+  "version": "0.17.0",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -83,9 +83,9 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/runes": "0.16.1",
-    "@refrakt-md/transform": "0.16.1",
-    "@refrakt-md/types": "0.16.1"
+    "@refrakt-md/runes": "0.17.0",
+    "@refrakt-md/transform": "0.17.0",
+    "@refrakt-md/types": "0.17.0"
   },
   "devDependencies": {
     "postcss": "^8.4.0"
