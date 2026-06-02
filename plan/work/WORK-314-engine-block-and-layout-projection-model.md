@@ -16,7 +16,10 @@ working untouched during the migration.
   `fields` list + `layout` primitive (+ `bar` `wrap`). Theme-overridable
   via the existing merge chain.
 - [ ] **`RuneConfig` gains `layout`** — ordered child block names per
-  container (`Record<containerName, string[]>`).
+  container (`Record<containerName, string[]>`). A key is either a
+  container's `data-name` or the reserved `root` key, which addresses the
+  rune's own top-level children so **flat runes** (no content/media
+  wrapper) can place projected blocks. `data-name="root"` is disallowed.
 - [ ] **Engine projection.** Build projected blocks from `blocks`; compose
   the final tree per `layout` with the resolved semantics: explicit
   placement only (no canonical default); projected blocks appear only
@@ -29,8 +32,8 @@ working untouched during the migration.
 - [ ] **Contracts.** Block names surface in `contracts/structures.json` as
   the stable addressing API.
 - [ ] **Tests.** Extend `packages/transform/test/engine-zones.test.ts`
-  (or a new `engine-blocks.test.ts`) covering placement, append-unlisted,
-  omit-layout, and the media-overlay case.
+  (or a new `engine-blocks.test.ts`) covering container placement, the
+  `root` (flat-rune) case, append-unlisted, omit-layout, and media-overlay.
 
 ## Approach
 

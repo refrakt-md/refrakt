@@ -15,7 +15,9 @@ family leans hardest on the engine dispatcher.
 - [ ] **Transforms build a named-block tree.** Each plan rune emits its own
   addressable blocks (eyebrow content, title, body, trailers) instead of
   relying on the dispatcher to assemble from `contentSlots` + canonical
-  order.
+  order. Plan entities are **flat** (no content/media wrapper), so blocks
+  sit at the rune root and are ordered via `layout: { root: [...] }` — the
+  first real consumer of the reserved `root` key.
 - [ ] **Configs use `blocks` + `layout`.** Eyebrow projected as a `bar`
   (id left, status `align: 'end'`); metadata block(s) per current visual;
   `zones` / `zoneLayouts` / `contentSlots` / `order` removed from the plan

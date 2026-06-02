@@ -173,11 +173,14 @@ blocks?: Record<string, {
 }>;
 
 // THEME-overridable: the projected tree — ordered child block names per
-// container. Projected (metadata) blocks appear ONLY where named here — no
-// canonical/default placement. Transform-built blocks the theme didn't name
-// are appended in transform order (rune content is never dropped). Omitting
-// `layout` entirely renders the transform tree verbatim, with no projection.
-layout?: Record<string /* container data-name */, string[] /* block names */>;
+// container. A key is a container's `data-name`, or the reserved key `root`
+// for the rune's own top-level children (flat runes with no content/media
+// wrapper place their blocks here). Projected (metadata) blocks appear ONLY
+// where named — no canonical/default placement. Transform-built blocks the
+// theme didn't name are appended in transform order (rune content is never
+// dropped). Omitting `layout` renders the transform tree verbatim.
+//   `root` is reserved; `data-name="root"` is not a valid block name.
+layout?: Record<string /* 'root' | container data-name */, string[] /* block names */>;
 ```
 
 `metaFields`, `sections`, `mediaSlots`, `editHints`, `modifiers`, `styles`
@@ -262,6 +265,25 @@ list — no `zoneHostPlacement`. Faction/realm use the same with `metadata`
 after `preamble`; character keeps a floated portrait and places `metadata`
 after the title.
 
+## Case study — a flat rune (no content/media containers)
+
+Many runes have no `content`/`media` wrapper — their blocks sit directly
+under the rune root. The reserved `root` key addresses that top level:
+
+```
+<article data-rune="work">      ← the rune root
+  eyebrow                        (bar: id + status)
+  title
+  metadata                       (projected here)
+  body
+```
+
+`layout: { root: ['eyebrow', 'title', 'metadata', 'body'] }`. No wrapper
+element is introduced; the projected `metadata` block is placed among the
+root's own children, and unnamed transform blocks append as usual. A rune
+may mix both — `{ root: [...], content: [...] }` — when it has a container
+*and* top-level blocks.
+
 ## Acceptance Criteria
 
 - `RuneConfig` exposes `blocks` and `layout`; `zones`, `zoneLayouts`,
@@ -280,6 +302,9 @@ after the title.
 - `layout` placement is sparse: unnamed transform blocks append in transform
   order; metadata blocks appear only when named; a block name absent from the
   tree is skipped.
+- `layout` addresses both nested containers (by `data-name`) and the rune's
+  top-level children (the reserved `root` key), so flat runes — with no
+  content/media container — place projected blocks via `root`.
 - A theme can place a metadata block into the `media` container (overlay).
 - api, recipe, howto, faction, realm, character render equivalently to today
   (modulo intended changes) through the new model.
