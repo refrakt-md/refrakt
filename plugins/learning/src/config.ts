@@ -14,8 +14,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'howto',
 		defaultDensity: 'full',
 		sequence: 'numbered',
-		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', content: 'body' },
-		contentWrapper: { tag: 'div', ref: 'content' },
+		sections: { preamble: 'preamble', headline: 'title', blurb: 'description' },
 		modifiers: {
 			estimatedTime: { source: 'meta' },
 			difficulty: { source: 'meta', default: 'medium' },
@@ -30,7 +29,10 @@ export const config: Record<string, RuneConfig> = {
 		zones: {
 			metadata: { fields: ['estimatedTime', 'difficulty'] },
 		},
-		zoneLayouts: { metadata: 'chip-row' },
+		zoneLayouts: { metadata: 'definition-list' },
+		// Nest the projected metadata def-list inside the content column,
+		// below the header — same placement as recipe.
+		zoneHost: 'content',
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', tool: 'inline', step: 'inline' },
 	},

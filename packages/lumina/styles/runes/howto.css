@@ -1,10 +1,5 @@
 /* HowTo — matches recipe design */
 
-/* Metadata chip-row — extra bottom spacing beyond default */
-.rf-howto__metadata {
-	margin-bottom: 1.5rem;
-}
-
 /* Tools/materials list — surfaced zone with primary markers */
 .rf-howto__content ul {
 	background: var(--rf-color-surface);
