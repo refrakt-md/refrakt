@@ -44,6 +44,47 @@ export function readMeta(tag: SerializedTag, property: string, defaultValue?: st
 	return meta?.attributes.content ?? defaultValue;
 }
 
+/** Minimal structural shape shared by Markdoc `Tag` instances and serialized
+ *  `{$$mdtype:'Tag'}` POJOs — both carry `attributes` + `children`. */
+type FieldHost = { attributes?: Record<string, unknown>; children?: unknown[] };
+
+/** Parse the SPEC-082 `data-rune-fields` channel (a JSON object) off a node.
+ *  Malformed / absent → empty. Pass the parsed result to {@link readField} to
+ *  avoid re-parsing when reading several fields from the same node. */
+export function parseFields(tag: FieldHost): Record<string, unknown> {
+	const raw = tag.attributes?.['data-rune-fields'];
+	if (typeof raw !== 'string' || raw.length === 0) return {};
+	try {
+		const v = JSON.parse(raw);
+		return v && typeof v === 'object' && !Array.isArray(v) ? v as Record<string, unknown> : {};
+	} catch {
+		return {};
+	}
+}
+
+/** Read a field value off a rune node: prefer the typed `data-rune-fields` bag
+ *  (camelCase key), falling back to the legacy `<meta data-field>` child (kebab
+ *  match). Works on both Markdoc `Tag` instances and serialized POJOs. Used by
+ *  pre-engine consumers (plugin register hooks) so they read the same channel
+ *  the engine does. Scalars are returned as strings (matching the meta's
+ *  `content`); non-scalar / absent → the meta fallback. */
+export function readField(tag: FieldHost, name: string, fields?: Record<string, unknown>): string | undefined {
+	const bag = fields ?? parseFields(tag);
+	const v = bag[name];
+	if (v !== undefined && v !== null && typeof v !== 'object') {
+		return typeof v === 'string' ? v : String(v);
+	}
+	const kebab = toKebabCase(name);
+	const child = (tag.children ?? []).find(
+		(c): c is { attributes: Record<string, unknown> } =>
+			!!c && typeof c === 'object'
+			&& (c as { $$mdtype?: string }).$$mdtype === 'Tag'
+			&& (c as { name?: string }).name === 'meta'
+			&& (c as { attributes?: Record<string, unknown> }).attributes?.['data-field'] === kebab,
+	);
+	return child ? (child.attributes.content as string | undefined) : undefined;
+}
+
 /** Convert kebab-case to camelCase: "prep-time" → "prepTime" */
 export function fromKebabCase(s: string): string {
 	return s.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());

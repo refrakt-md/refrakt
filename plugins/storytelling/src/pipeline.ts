@@ -1,4 +1,5 @@
 import Markdoc from '@markdoc/markdoc';
+import { readField as readNodeField } from '@refrakt-md/transform';
 import type { PluginPipelineHooks, EntityRegistration } from '@refrakt-md/types';
 
 const { Tag } = Markdoc;
@@ -23,20 +24,9 @@ function extractTextContent(node: unknown): string {
 	return node.children.map(c => extractTextContent(c)).join('');
 }
 
-/** Convert camelCase to kebab-case (matching engine convention) */
-function toKebabCase(s: string): string {
-	return s
-		.replace(/([a-z])([A-Z])/g, '$1-$2')
-		.replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
-		.toLowerCase();
-}
-
 function readField(tag: InstanceType<typeof Tag>, field: string): string {
-	const kebab = toKebabCase(field);
-	const meta = tag.children.find(
-		(c: unknown) => Markdoc.Tag.isTag(c) && c.attributes['data-field'] === kebab,
-	);
-	return Markdoc.Tag.isTag(meta) ? (meta.attributes.content as string) ?? '' : '';
+	// SPEC-082: bag-first (data-rune-fields), legacy <meta data-field> fallback.
+	return readNodeField(tag, field) ?? '';
 }
 
 /** Depth-first search for the first descendant carrying `data-name=name`.
