@@ -1996,7 +1996,7 @@
 			"root": ".rf-character",
 			"dataRune": "character",
 			"childOrder": [
-				"{content:content}"
+				"{content}"
 			],
 			"modifiers": {
 				"role": {
@@ -2023,10 +2023,10 @@
 				}
 			},
 			"elements": {
-				"content": {
-					"tag": "div",
-					"selector": ".rf-character__content",
-					"source": "contentWrapper"
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-character__preamble",
+					"source": "autoLabel"
 				}
 			}
 		},

@@ -5,9 +5,8 @@ export const config: Record<string, RuneConfig> = {
 	Character: {
 		block: 'character',
 		defaultDensity: 'full',
-		sections: { name: 'title', content: 'body', portrait: 'media' },
+		sections: { preamble: 'preamble', name: 'title', portrait: 'media' },
 		mediaSlots: { portrait: 'portrait' },
-		contentWrapper: { tag: 'div', ref: 'content' },
 		modifiers: {
 			role: { source: 'meta', default: 'supporting' },
 			status: { source: 'meta', default: 'alive' },
@@ -21,9 +20,15 @@ export const config: Record<string, RuneConfig> = {
 				sentimentMap: { alive: 'positive', dead: 'negative', unknown: 'neutral', missing: 'caution' },
 			},
 		},
+		// Role/status render as a definition-list nested in the content column
+		// below the title (recipe pattern). The portrait stays a floated avatar
+		// (character-specific chrome), not a split media column.
 		zones: {
-			eyebrow: { left: ['role'], right: ['status'] },
+			metadata: { fields: ['role', 'status'] },
 		},
+		zoneLayouts: { metadata: 'definition-list' },
+		zoneHost: 'content',
+		autoLabel: { header: 'preamble' },
 		editHints: { name: 'inline', portrait: 'image', body: 'none', sections: 'none' },
 	},
 	CharacterSection: { block: 'character-section', parent: 'Character', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },

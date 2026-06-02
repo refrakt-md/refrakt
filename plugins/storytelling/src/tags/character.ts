@@ -77,20 +77,28 @@ export const character = createContentModelSchema({
 
 		const sections = sectionNodes.tag('div').typeof('CharacterSection');
 		const hasSections = sections.count() > 0;
+		const sectionsContainer = hasSections ? sections.wrap('div') : undefined;
+		const body = !hasSections ? sectionNodes.wrap('div') : undefined;
 
-		// Portrait before name so the image appears between header and title in stacked layout.
+		// Title lives in a header at the top of the content column, so the
+		// projected role/status def-list nests below it via zoneHost. The
+		// portrait stays a floated avatar sibling (character-specific chrome).
+		const headerEl = new Tag('header', {}, [nameTag]);
+		const mainContent = new RenderableNodeCursor([
+			headerEl,
+			hasSections ? sectionsContainer!.next() : body!.next(),
+		]).wrap('div');
+
+		// Portrait first so it floats and the content wraps around it.
 		const children: any[] = [];
 		if (portraitDiv) children.push(portraitDiv.next());
-		children.push(nameTag, roleMeta, statusMeta, aliasesMeta, tagsMeta);
+		children.push(roleMeta, statusMeta, aliasesMeta, tagsMeta);
+		children.push(mainContent.next());
 
 		const schemaMap = {
 			name: nameTag,
 			jobTitle: roleMeta,
 		};
-
-		const sectionsContainer = hasSections ? sections.wrap('div') : undefined;
-		const body = !hasSections ? sectionNodes.wrap('div') : undefined;
-		children.push(hasSections ? sectionsContainer!.next() : body!.next());
 
 		return createComponentRenderable({ rune: 'character', schemaOrgType: 'Person',
 			tag: 'article',
@@ -105,6 +113,7 @@ export const character = createContentModelSchema({
 			refs: {
 				name: nameTag,
 				...(portraitDiv ? { portrait: portraitDiv } : {}),
+				content: mainContent,
 				...(hasSections ? { sections: sectionsContainer! } : { body: body! }),
 			},
 			schema: schemaMap,

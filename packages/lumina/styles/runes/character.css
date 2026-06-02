@@ -1,6 +1,14 @@
-/* Character */
+/* Character — the title and the role/status def-list come from the shared
+ * dimensions (sections + metadata); only the floated portrait avatar is
+ * character-specific chrome. Unlike faction/realm, character is not a split
+ * rune: the portrait floats and the content column wraps around it. */
 
-/* Portrait */
+/* Contain the floated portrait within the article */
+.rf-character {
+	display: flow-root;
+}
+
+/* Portrait — floated circular avatar */
 .rf-character__portrait {
 	float: right;
 	margin-left: 1.5rem;
@@ -22,19 +30,9 @@
 	flex-direction: column;
 	gap: 1rem;
 }
-.rf-character__content {
-	clear: both;
-}
 .rf-character__content ul,
 .rf-character__content ol {
 	padding-left: 1.5rem;
-}
-.rf-character > span[property="name"] {
-	display: block;
-	font-size: 1.5rem;
-	font-weight: 700;
-	margin-bottom: 0.5rem;
-	color: var(--rf-color-heading);
 }
 
 /* Character Section */
