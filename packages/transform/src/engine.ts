@@ -67,6 +67,32 @@ export function createTransform(config: ThemeConfig) {
 	return (tree: RendererNode) => identityTransform(tree);
 }
 
+/** Parse the SPEC-082 `data-rune-fields` channel (a JSON object) once per node.
+ *  Malformed / absent → empty. */
+function parseFields(raw: unknown): Record<string, unknown> {
+	if (typeof raw !== 'string' || raw.length === 0) return {};
+	try {
+		const v = JSON.parse(raw);
+		return v && typeof v === 'object' && !Array.isArray(v) ? v as Record<string, unknown> : {};
+	} catch {
+		return {};
+	}
+}
+
+/** Read a modifier/field value: prefer the parsed `fields` bag (a scalar there
+ *  equals the legacy meta's `content`, so the result is unchanged), falling back
+ *  to the `<meta data-field>` child when the key is absent or non-scalar. */
+function readField(
+	tag: SerializedTag,
+	fields: Record<string, unknown>,
+	name: string,
+	def?: string,
+): string | undefined {
+	const v = fields[name];
+	if (v !== undefined && v !== null && typeof v !== 'object') return v as string;
+	return readMeta(tag, name, def);
+}
+
 /** Apply BEM classes and structural enhancements to a rune tag */
 function transformRune(
 	tag: SerializedTag,
@@ -84,7 +110,13 @@ function transformRune(
 	const block = `${prefix}-${config.block}`;
 	const dataRune = tag.attributes?.['data-rune'];
 
-	// 1. Read modifiers from meta tags, collecting resolved values
+	// SPEC-082 (WORK-322): the typed field-data channel. The engine reads
+	// modifier / metaField values from `data-rune-fields` (preferred), falling
+	// back per-field to the legacy `<meta data-field>` children. Both channels
+	// carry the same values (WORK-321 dual-emit), so output is unchanged.
+	const fields = parseFields(tag.attributes['data-rune-fields']);
+
+	// 1. Read modifiers from the field channel, collecting resolved values
 	const modifierClasses: string[] = [];
 	const modifierValues: Record<string, string> = {};
 	const mappedValues: Record<string, string> = {};
@@ -93,7 +125,7 @@ function transformRune(
 		for (const [name, mod] of Object.entries(config.modifiers)) {
 			if (mod.source === 'attribute') attrModifierNames.push(name);
 			const value = mod.source === 'meta'
-				? readMeta(tag, name, mod.default)
+				? readField(tag, fields, name, mod.default)
 				: tag.attributes[name] ?? mod.default;
 			if (value) {
 				modifierValues[name] = value;

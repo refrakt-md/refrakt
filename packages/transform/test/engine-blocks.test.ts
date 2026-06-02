@@ -333,4 +333,44 @@ describe('SPEC-080 block-and-layout assembly', () => {
 			expect(sinceDd.children[0]).toBe('v1.2');
 		});
 	});
+
+	describe('SPEC-082 fields channel (dual-read)', () => {
+		const cfg: RuneConfig = {
+			block: 'hint',
+			modifiers: { hintType: { source: 'meta', default: 'note' } },
+		};
+		const transform = createTransform(baseConfig({ Hint: cfg }));
+
+		it('reads a modifier from data-rune-fields identically to the legacy meta', () => {
+			const fromFields = asTag(transform(makeTag('div', {
+				'data-rune': 'hint',
+				'data-rune-fields': JSON.stringify({ hintType: 'warning' }),
+			}, [])));
+			const fromMeta = asTag(transform(makeTag('div', { 'data-rune': 'hint' }, [
+				makeTag('meta', { 'data-field': 'hint-type', content: 'warning' }),
+			])));
+
+			for (const out of [fromFields, fromMeta]) {
+				expect(out.attributes['data-hint-type']).toBe('warning');
+				expect(out.attributes.class).toContain('rf-hint--warning');
+			}
+			// The internal channel never reaches output.
+			expect(fromFields.attributes['data-rune-fields']).toBeUndefined();
+		});
+
+		it('prefers the fields bag over the legacy meta when both are present', () => {
+			const out = asTag(transform(makeTag('div', {
+				'data-rune': 'hint',
+				'data-rune-fields': JSON.stringify({ hintType: 'warning' }),
+			}, [
+				makeTag('meta', { 'data-field': 'hint-type', content: 'note' }),
+			])));
+			expect(out.attributes['data-hint-type']).toBe('warning'); // fields wins
+		});
+
+		it('falls back to the default when neither channel carries the field', () => {
+			const out = asTag(transform(makeTag('div', { 'data-rune': 'hint' }, [])));
+			expect(out.attributes['data-hint-type']).toBe('note'); // modifier default
+		});
+	});
 });
