@@ -70,8 +70,8 @@ export const howto = createContentModelSchema({
 		const stepsList = new Tag('ol', {}, steps);
 
 		// Wrap header + body in a content column (like recipe) so the
-		// projected metadata def-list nests inside it via `zoneHost` and the
-		// `.rf-howto__content` step styling applies.
+		// projected metadata def-list nests inside it via `layout: { content:
+		// [...] }` and the `.rf-howto__content` step styling applies.
 		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
 		const bodyChildren: any[] = [];
 		if (tools.length > 0) bodyChildren.push(toolsList);

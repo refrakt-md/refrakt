@@ -85,7 +85,7 @@ export function buildStoryContent(
 	const hasSections = sections.count() > 0;
 
 	// Build content children. An optional `header` (title etc.) leads so the
-	// projected metadata zone can nest below it via `zoneHost`.
+	// projected metadata block can nest below it via `layout: { content: [...] }`.
 	const contentChildren: any[] = [];
 	if (header) contentChildren.push(header);
 	const allDescNodes = [...extraDescription, ...descRendered.toArray()];

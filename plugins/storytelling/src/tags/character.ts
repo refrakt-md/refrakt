@@ -81,8 +81,8 @@ export const character = createContentModelSchema({
 		const body = !hasSections ? sectionNodes.wrap('div') : undefined;
 
 		// Title lives in a header at the top of the content column, so the
-		// projected role/status def-list nests below it via zoneHost. The
-		// portrait stays a floated avatar sibling (character-specific chrome).
+		// projected role/status def-list nests below it via `layout: { content:
+		// [...] }`. The portrait stays a floated avatar sibling (character chrome).
 		const headerEl = new Tag('header', {}, [nameTag]);
 		const mainContent = new RenderableNodeCursor([
 			headerEl,

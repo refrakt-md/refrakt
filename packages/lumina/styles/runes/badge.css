@@ -1,8 +1,8 @@
 /* Badge rune — standalone inline chip.
  *
  * The universal chip primitive emitted by `{% badge %}` AND by every
- * SPEC-079 layout that renders sentiment-mapped values (split right
- * slot, definition-list `<dd>`, chip-row). Tints come from the
+ * chip-type field a block renders (`bar` chips, `definition-list` `<dd>`
+ * for chip-type fields). Tints come from the
  * universal `--meta-color` set by `dimensions/metadata.css`'s
  * sentiment rules (positive / caution / negative / neutral → success
  * / warning / danger / muted). Background is a `color-mix` of that

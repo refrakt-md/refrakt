@@ -75,7 +75,7 @@ export const faction = createContentModelSchema({
 
 		// Title lives in a header at the top of the content column (recipe
 		// pattern), so the projected metadata def-list nests below it via
-		// `zoneHost: 'content'` and the split layout sees only media + content.
+		// `layout: { content: [...] }` and the split sees only media + content.
 		const headerEl = new Tag('header', {}, [nameTag]);
 		const { mainContent, sections, hasSections } = buildStoryContent(
 			extraDescription, resolved.description, sectionNodes, 'FactionSection', config, headerEl,

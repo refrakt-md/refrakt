@@ -55,19 +55,19 @@ describe('scaffoldCssCommand', () => {
 		expect(hintCss).toContain('.rf-hint--note {');
 	});
 
-	it('omits the Elements section for structure-less runes', () => {
+	it('generates element selectors from blocks', () => {
 		const outputDir = tmpOutputDir();
 		cleanupDirs.push(outputDir);
 
 		scaffoldCssCommand({ outputDir, force: false });
 
-		// Hint migrated to the SPEC-080 block model and no longer declares
-		// `structure`, so the contract carries no `elements`. Block-derived
-		// element scaffolding is surfaced in the contract by WORK-320; until
-		// then the scaffold emits the block + modifiers only.
+		// Hint uses the SPEC-080 block model: its `header` block surfaces in
+		// the contract as an addressable element, so the scaffold emits its
+		// `.rf-hint__header` selector under the Elements section.
 		const hintCss = readFileSync(join(outputDir, 'hint.css'), 'utf-8');
-		expect(hintCss).not.toContain('/* Elements */');
-		expect(hintCss).not.toContain('.rf-hint__header {');
+		expect(hintCss).toContain('/* Elements */');
+		expect(hintCss).toContain('.rf-hint__header {');
+		expect(hintCss).toContain('from block');
 	});
 
 	it('generates context modifier selectors', () => {

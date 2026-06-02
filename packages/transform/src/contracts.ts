@@ -30,6 +30,10 @@ export interface RuneContract {
 		parent?: string;
 		condition?: string;
 		conditionAny?: string[];
+		/** For `source: 'block'` — the layout primitive the block renders with. */
+		layout?: string;
+		/** For `source: 'block'` — the field names projected into the block. */
+		fields?: string[];
 	}>;
 	inlineStyles?: Record<string, string | { prop: string; template?: string; transform?: (value: string) => string }>;
 	childOrder: string[];
@@ -130,6 +134,21 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 	if (config.structure) {
 		for (const [key, entry] of Object.entries(config.structure)) {
 			collectStructureElements(entry, key, block, elements, undefined);
+		}
+	}
+
+	// SPEC-080 projected blocks — each named block becomes an addressable
+	// element (`.rf-{block}__{name}`) carrying its layout primitive + the
+	// field names it projects. `bar` emits a `<div>`, `definition-list` a `<dl>`.
+	if (config.blocks) {
+		for (const [name, def] of Object.entries(config.blocks)) {
+			elements[name] = {
+				tag: def.layout === 'definition-list' ? 'dl' : 'div',
+				selector: `.${block}__${name}`,
+				source: 'block',
+				layout: def.layout,
+				fields: def.fields.map(f => (typeof f === 'string' ? f : f.field)),
+			};
 		}
 	}
 
@@ -299,6 +318,15 @@ function collectStructureElements(
 
 /** Compute the child order array for a rune */
 function computeChildOrder(config: RuneConfig): string[] {
+	// SPEC-080 block-and-layout ordering. The reserved `root` key lists the
+	// rune's top-level order (projected block names + transform data-names);
+	// unlisted transform children append after, marked by `{content}`.
+	// Without a `root` key the transform tree renders verbatim.
+	if (config.blocks || config.layout) {
+		const root = config.layout?.root;
+		return root && root.length > 0 ? [...root, '{content}'] : ['{content}'];
+	}
+
 	// Slot-based ordering
 	if (config.slots && config.structure) {
 		const order: string[] = [];

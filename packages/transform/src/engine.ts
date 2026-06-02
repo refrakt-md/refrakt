@@ -1,5 +1,5 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
-import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, LayoutPrimitive, MetaField, ZoneDeclaration, BlockDef } from './types.js';
+import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, MetaField, BlockDef } from './types.js';
 import { isTag, makeTag, readMeta, toKebabCase } from './helpers.js';
 
 /** The 6 tint colour tokens */
@@ -35,7 +35,7 @@ const transforms: Record<string, (v: string) => string> = {
  * - Recurses into children for nested runes
  */
 export function createTransform(config: ThemeConfig) {
-	const { prefix, runes, icons = {}, tints = {}, backgrounds = {}, zoneLayouts: themeZoneLayouts = {} } = config;
+	const { prefix, runes, icons = {}, tints = {}, backgrounds = {} } = config;
 
 	// Build lowercase → config-key map for case-insensitive rune lookup
 	const runeKeyMap = new Map(Object.keys(runes).map(k => [toKebabCase(k), k]));
@@ -49,7 +49,7 @@ export function createTransform(config: ThemeConfig) {
 		const dataRune = tree.attributes?.['data-rune'];
 		const configKey = dataRune ? runeKeyMap.get(dataRune) : undefined;
 		if (configKey) {
-			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, runes, runeKeyMap, identityTransform, themeZoneLayouts, configKey, parentRune);
+			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, runes, runeKeyMap, identityTransform, configKey, parentRune);
 		}
 
 		// Detect checkbox markers on list items
@@ -78,7 +78,6 @@ function transformRune(
 	allRunes: Record<string, RuneConfig>,
 	runeKeyMap: Map<string, string>,
 	recurse: (node: RendererNode, parentRune?: string) => RendererNode,
-	themeZoneLayouts: Record<string, LayoutPrimitive>,
 	runeName: string,
 	parentRune?: string
 ): SerializedTag {
@@ -343,18 +342,11 @@ function transformRune(
 	}
 
 	// 5. SPEC-080: block-and-layout assembly (metaFields + blocks + layout).
-	//    Takes precedence over the SPEC-079 zones path and the legacy
-	//    `slots + structure` path. Projects named metadata blocks and places
-	//    them into the transform tree per `layout`.
+	//    Projects named metadata blocks and places them into the transform
+	//    tree per `layout`. Takes precedence over the legacy `slots +
+	//    structure` shim (removed in WORK-313).
 	if (config.blocks || config.layout) {
 		children = assembleWithBlocks(config, block, children, modifierValues);
-	} else if (config.zones || config.contentSlots) {
-		// SPEC-079: zone-based assembly (metaFields + zones + contentSlots).
-		//    Resolves canonical render order, projects zones via layout
-		//    primitives, and extracts user-authored content slots.
-		children = assembleWithZones(
-			config, block, children, modifierValues, themeZoneLayouts, runeName,
-		);
 	} else if (config.slots && config.structure) {
 		// Legacy slots + structure path — emit one-time migration warning if
 		// the rune uses the v0.16 slot vocabulary (header-primary etc.).
@@ -689,7 +681,7 @@ function assembleWithSlots(
  *  Returns the removed element and the updated array, or null if not found.
  *
  *  Also looks one level deep inside any direct-child wrapper carrying
- *  `data-name="preamble"`. This lets SPEC-079 `contentSlots` find refs
+ *  `data-name="preamble"`. This lets `projection` relocate refs
  *  (`headline`, `blurb`, etc.) that the rune's schema nested inside an
  *  auto-labelled `<header data-name="preamble">` wrapper — otherwise the
  *  extraction would silently fail and the dispatcher would emit a
@@ -951,30 +943,7 @@ function buildStructureElement(
 	return makeTag(entry.tag, baseAttrs, elementChildren);
 }
 
-// ─── SPEC-079: Zone dispatcher + layout primitives ──────────────────────
-
-/** Canonical render order for the position vocabulary. The engine emits
- *  zones / contentSlots in this order when the rune doesn't declare an
- *  explicit `order: [...]` field. Standard positions get canonical CSS
- *  classes; custom positions (declared via `order`) get auto-derived
- *  `.rf-{block}__{name}` classes. */
-const CANONICAL_POSITION_ORDER = ['eyebrow', 'title', 'blurb', 'metadata', 'body'] as const;
-
-/** Positions that belong to the auto-derived `.rf-{block}__preamble`
- *  header region wrapper. The engine groups any declared positions from
- *  this set into a single preamble element so themes get a stable CSS
- *  hook around the header. `body` and custom positions stay outside. */
-const PREAMBLE_POSITIONS = new Set<string>(['eyebrow', 'title', 'blurb', 'metadata']);
-
-/** Engine-side default layout per zone name when neither per-rune
- *  `zoneLayouts.{zone}` nor theme-level `zoneLayouts.{zone}` is set.
- *  Lumina's theme config overrides `metadata` to `definition-list` (its
- *  preferred default); the engine fallback is the more conservative
- *  `chip-row` which works without grid CSS support. */
-const DEFAULT_ZONE_LAYOUT: Record<string, LayoutPrimitive> = {
-	eyebrow: 'split',
-	metadata: 'chip-row',
-};
+// ─── Field resolution + value rendering ─────────────────────────────────
 
 /** One-time warning tracker — emits the migration hint once per rune
  *  name per process. */
@@ -992,10 +961,9 @@ function warnLegacySlots(runeName: string): void {
 	// eslint-disable-next-line no-console
 	console.warn(
 		`[refrakt] Rune \`${runeName}\` uses legacy \`slots\` + \`structure\` config. ` +
-		`Migrate to SPEC-079 \`metaFields\` + \`zones\` + \`contentSlots\` to ` +
-		`opt into the new layout primitives. Legacy configs continue to render ` +
-		`via the existing path; chip styling rides along universally from the ` +
-		`metadata.css rewrite.`,
+		`Migrate to the SPEC-080 \`metaFields\` + \`blocks\` + \`layout\` model. ` +
+		`Legacy configs continue to render via the backwards-compat shim ` +
+		`(removed in WORK-313).`,
 	);
 }
 
@@ -1072,68 +1040,6 @@ function buildPlainValue(resolved: ResolvedField): SerializedTag {
 	return makeTag(tag, attrs, [value]);
 }
 
-/** `split` layout — eyebrow's two-slot row.
- *  Left = plain text (primary-color via CSS); right = chip when
- *  sentiment-mapped, plain text otherwise. */
-function renderSplitLayout(
-	position: string,
-	left: ResolvedField[],
-	right: ResolvedField[],
-	block: string,
-): SerializedTag | null {
-	if (left.length === 0 && right.length === 0) return null;
-
-	const leftChildren = left.map(f =>
-		f.field.sentimentMap ? buildChip(f, { includeLabel: false }) : buildPlainValue(f),
-	);
-	const rightChildren = right.map(f =>
-		f.field.sentimentMap ? buildChip(f, { includeLabel: false }) : buildPlainValue(f),
-	);
-
-	// data-name drives the BEM class via applyBemClasses; don't set `class`
-	// here to avoid a duplicate `rf-{block}__{position}` token.
-	const wrapperAttrs: Record<string, string> = {
-		'data-name': position,
-		'data-zone': position,
-		'data-zone-layout': 'split',
-	};
-
-	return makeTag('div', wrapperAttrs, [
-		makeTag('div', { 'data-eyebrow-slot': 'left' }, leftChildren),
-		makeTag('div', { 'data-eyebrow-slot': 'right' }, rightChildren),
-	]);
-}
-
-/** `chip-row` layout — flowing row, every value rendered as a chip with
- *  optional inline label. */
-function renderChipRowLayout(
-	position: string,
-	fields: ResolvedField[],
-	block: string,
-): SerializedTag | null {
-	if (fields.length === 0) return null;
-
-	const wrapperAttrs: Record<string, string> = {
-		'data-name': position,
-		'data-zone': position,
-		'data-zone-layout': 'chip-row',
-	};
-
-	// Fields with `splitOn` fan out into one chip per item (no label —
-	// the visual collection IS the label). Other fields render as a
-	// single labelled chip.
-	const chips = fields.flatMap(f => {
-		if (f.field.splitOn && f.value) {
-			return splitFieldValue(f).map(part =>
-				buildChip({ ...f, value: part }, { includeLabel: false }),
-			);
-		}
-		return [buildChip(f, { includeLabel: true })];
-	});
-
-	return makeTag('div', wrapperAttrs, chips);
-}
-
 /** Split a field's value into trimmed non-empty parts using
  *  `field.splitOn`. Used by layouts that fan multi-value fields out
  *  into one chip per item. */
@@ -1141,259 +1047,6 @@ function splitFieldValue(resolved: ResolvedField): string[] {
 	const sep = resolved.field.splitOn;
 	if (!sep || !resolved.value) return [resolved.value].filter(Boolean);
 	return resolved.value.split(sep).map(s => s.trim()).filter(Boolean);
-}
-
-/** `definition-list` layout — `<dl>` with `<dt>` + `<dd>` per field.
- *  Each row wraps in `<div data-name="row">` with `display: contents`
- *  so dt/dd participate in the outer grid. Sentiment-mapped fields
- *  render the value as a chip inside `<dd>`; others render as plain
- *  text with `data-meta-type` for typography. */
-function renderDefListLayout(
-	position: string,
-	fields: ResolvedField[],
-	block: string,
-): SerializedTag | null {
-	if (fields.length === 0) return null;
-
-	const wrapperAttrs: Record<string, string> = {
-		'data-name': position,
-		'data-zone': position,
-		'data-zone-layout': 'definition-list',
-	};
-
-	const rows: RendererNode[] = fields.map(f => {
-		const dt = makeTag('dt', { 'data-meta-label': '' }, [f.field.label ?? f.name]);
-		let dd: SerializedTag;
-		if (f.field.splitOn) {
-			// Multi-value collection — render one chip per item inside
-			// the <dd>. CSS gives the dd a small inline gap so the chips
-			// flow as a mini chip-row within the def-list cell.
-			const chips = splitFieldValue(f).map(part =>
-				buildChip({ ...f, value: part }, { includeLabel: false }),
-			);
-			dd = makeTag('dd', { 'data-multi-value': '' }, chips);
-		} else if (f.field.sentimentMap) {
-			// Sentiment-mapped value renders as a chip inside the <dd>.
-			dd = makeTag('dd', {}, [buildChip(f, { includeLabel: false })]);
-		} else {
-			// Plain text value carries data-meta-type for typography hints
-			// (monospace for id, tabular-nums for quantity / temporal).
-			const ddAttrs: Record<string, string> = {};
-			if (f.field.metaType) ddAttrs['data-meta-type'] = f.field.metaType;
-			const text = f.field.tag === 'time' && f.value
-				? makeTag('time', { datetime: f.value }, [f.value])
-				: f.value;
-			dd = makeTag('dd', ddAttrs, [text]);
-		}
-		// `data-field` carries the field name so themes can target specific
-		// rows (e.g. `.rf-work__metadata [data-field="assignee"] dd::before
-		// { content: '@'; }`). Generic styles still target the dl + dt/dd
-		// selectors per layout primitive.
-		return makeTag('div', { 'data-name': 'row', 'data-field': f.name }, [dt, dd]);
-	});
-
-	return makeTag('dl', wrapperAttrs, rows);
-}
-
-/** Resolve the layout primitive for a zone. Lookup order:
- *    per-rune `zoneLayouts.{zone}` → theme-level `zoneLayouts.{zone}` →
- *    `DEFAULT_ZONE_LAYOUT[zone]` (engine fallback) → 'chip-row'. */
-function resolveZoneLayout(
-	zoneName: string,
-	runeZoneLayouts: Record<string, LayoutPrimitive> | undefined,
-	themeZoneLayouts: Record<string, LayoutPrimitive>,
-): LayoutPrimitive {
-	return runeZoneLayouts?.[zoneName]
-		?? themeZoneLayouts[zoneName]
-		?? DEFAULT_ZONE_LAYOUT[zoneName]
-		?? 'chip-row';
-}
-
-/** Render a single zone via the resolved layout primitive. */
-function renderZone(
-	position: string,
-	decl: ZoneDeclaration,
-	layout: LayoutPrimitive,
-	metaFields: Record<string, MetaField>,
-	modifierValues: Record<string, string>,
-	block: string,
-): SerializedTag | null {
-	if (decl === null) return null;
-
-	if ('left' in decl && 'right' in decl) {
-		const left = decl.left.map(n => resolveField(n, metaFields, modifierValues))
-			.filter((f): f is ResolvedField => f !== null);
-		const right = decl.right.map(n => resolveField(n, metaFields, modifierValues))
-			.filter((f): f is ResolvedField => f !== null);
-		if (layout === 'split') {
-			return renderSplitLayout(position, left, right, block);
-		}
-		// Flatten for non-split layouts
-		const flat = [...left, ...right];
-		if (layout === 'definition-list') return renderDefListLayout(position, flat, block);
-		return renderChipRowLayout(position, flat, block);
-	}
-
-	if ('fields' in decl) {
-		const fields = decl.fields.map(n => resolveField(n, metaFields, modifierValues))
-			.filter((f): f is ResolvedField => f !== null);
-		if (layout === 'split') {
-			// Mismatch: flat shape → split. First field is left, rest is right.
-			const [head, ...rest] = fields;
-			return renderSplitLayout(position, head ? [head] : [], rest, block);
-		}
-		if (layout === 'definition-list') return renderDefListLayout(position, fields, block);
-		return renderChipRowLayout(position, fields, block);
-	}
-
-	return null;
-}
-
-/** SPEC-079 main dispatcher — orchestrates zones + contentSlots into a
- *  child array honouring canonical render order, with header positions
- *  wrapped in an auto-derived `.rf-{block}__preamble` element. */
-function assembleWithZones(
-	config: RuneConfig,
-	block: string,
-	contentChildren: RendererNode[],
-	modifierValues: Record<string, string>,
-	themeZoneLayouts: Record<string, LayoutPrimitive>,
-	_runeName: string,
-): RendererNode[] {
-	const zones = config.zones ?? {};
-	const contentSlots = config.contentSlots ?? {};
-	const metaFields = config.metaFields ?? {};
-
-	// Declared positions — anything in zones (excluding nulls) OR contentSlots
-	const declared = new Set<string>();
-	for (const [pos, decl] of Object.entries(zones)) {
-		if (decl !== null) declared.add(pos);
-	}
-	for (const pos of Object.keys(contentSlots)) declared.add(pos);
-
-	// Resolve render order. Explicit `order: [...]` wins; otherwise canonical.
-	let order: string[];
-	if (config.order && config.order.length > 0) {
-		order = config.order.filter(p => declared.has(p));
-	} else {
-		order = CANONICAL_POSITION_ORDER.filter(p => declared.has(p));
-		// Any non-canonical declared positions (custom names without explicit `order`)
-		// land at the end.
-		for (const pos of declared) {
-			if (!order.includes(pos)) order.push(pos);
-		}
-	}
-
-	// Build elements per position. contentSlots extracts authored content
-	// by data-name; zones render projected fields via layout primitive.
-	let remaining = contentChildren;
-	const positionElements = new Map<string, RendererNode>();
-
-	for (const position of order) {
-		const zoneDecl = zones[position];
-		if (zoneDecl !== undefined) {
-			const layout = resolveZoneLayout(position, config.zoneLayouts, themeZoneLayouts);
-			const element = renderZone(position, zoneDecl, layout, metaFields, modifierValues, block);
-			if (element) positionElements.set(position, element);
-			continue;
-		}
-		const dataName = contentSlots[position];
-		if (dataName) {
-			const extracted = extractByDataName(remaining, dataName);
-			if (extracted) {
-				remaining = extracted.rest;
-				// Annotate the authored slot with data-zone so themes can style
-				// authored vs projected positions identically. Preserve the
-				// original data-name so the BEM pass adds the standard class.
-				const el = extracted.element;
-				positionElements.set(position, {
-					...el,
-					attributes: { ...el.attributes, 'data-zone': position },
-				});
-			}
-		}
-	}
-
-	// Group preamble positions (eyebrow + title + blurb + metadata) into
-	// one auto-derived wrapper so themes get a single CSS hook around the
-	// header region. Body and custom positions stay outside.
-	const headerEls: RendererNode[] = [];
-	const tail: RendererNode[] = [];
-	for (const position of order) {
-		const el = positionElements.get(position);
-		if (!el) continue;
-		if (PREAMBLE_POSITIONS.has(position)) {
-			headerEls.push(el);
-		} else {
-			tail.push(el);
-		}
-	}
-
-	// Split-layout runes (e.g. recipe) hand-assemble a `content` + `media`
-	// column pair in their transform. Projecting header zones as top-level
-	// siblings would add a third grid child and break the split. When
-	// `zoneHost` names such a pre-built content element, nest the projected
-	// preamble inside it — below any leading header — instead of beside it.
-	if (config.zoneHost && headerEls.length > 0) {
-		const hosted = injectIntoHost(remaining, config.zoneHost, headerEls, config.zoneHostPlacement ?? 'after');
-		if (hosted) {
-			// Host found: preamble lives inside the content column. Keep the
-			// rune's own children (incl. content + media columns) at top level.
-			return [...tail, ...hosted];
-		}
-		// No matching host — fall through to top-level projection below.
-	}
-
-	const result: RendererNode[] = [];
-	if (headerEls.length > 0) {
-		// Preamble wrapper. The BEM pass will add `${block}__preamble`
-		// class from the data-name. `data-section="preamble"` keeps theme
-		// styling that targets the section role working.
-		result.push(makeTag('div', { 'data-name': 'preamble', 'data-section': 'preamble' }, headerEls));
-	}
-	result.push(...tail);
-
-	// Append remaining content (untagged children, meta tags) — meta tags
-	// get filtered later (step 7), unmatched user content stays as-is.
-	result.push(...remaining);
-
-	return result;
-}
-
-/** Insert projected header elements inside a pre-built host element (matched
- *  by `data-name`), positioned relative to a leading `<header>` /
- *  `[data-section="header"]`: `'after'` reads below the heading/blurb,
- *  `'before'` reads on top of it. Returns a new children array with the host
- *  replaced, or `null` when no host with the given `data-name` is found. */
-function injectIntoHost(
-	children: RendererNode[],
-	hostName: string,
-	headerEls: RendererNode[],
-	placement: 'before' | 'after',
-): RendererNode[] | null {
-	const hostIdx = children.findIndex(
-		c => isTag(c) && c.attributes['data-name'] === hostName,
-	);
-	if (hostIdx === -1) return null;
-
-	const host = children[hostIdx] as SerializedTag;
-	const hostChildren = [...host.children];
-
-	// Anchor on a leading header; place the zones before or after it. When no
-	// header is present, both placements fall back to the top of the host.
-	let insertAt = 0;
-	for (let i = 0; i < hostChildren.length; i++) {
-		const hc = hostChildren[i];
-		if (isTag(hc) && (hc.name === 'header' || hc.attributes['data-section'] === 'header')) {
-			insertAt = placement === 'before' ? i : i + 1;
-			break;
-		}
-	}
-	hostChildren.splice(insertAt, 0, ...headerEls);
-
-	const next = [...children];
-	next[hostIdx] = { ...host, children: hostChildren };
-	return next;
 }
 
 // ─── SPEC-080: block-and-layout assembly ──────────────────────────────────

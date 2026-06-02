@@ -1,11 +1,11 @@
 /* ─── Metadata Dimensions ──────────────────────────────────────────────
- * SPEC-079 typography / geometry split:
+ * SPEC-080 typography / geometry split:
  *  - `[data-meta-type=…]` selectors carry ONLY typography hints
  *    (monospace, tabular-nums). No padding, no border, no chip geometry.
- *  - Geometry comes from `[data-zone-layout=…]` selectors (chip-row,
- *    split, definition-list) and from the universal `.rf-badge` class,
- *    which is emitted by every layout primitive's chip path AND by the
- *    standalone `{% badge %}` rune.
+ *  - Geometry comes from `[data-zone-layout=…]` selectors (`bar`,
+ *    `definition-list`) and from the universal `.rf-badge` class, which
+ *    is emitted by chip-type fields AND by the standalone `{% badge %}`
+ *    rune.
  *  - Sentiment rules drive `--meta-color`, which the chip and any
  *    sentiment-tinted text inherits.
  * ────────────────────────────────────────────────────────────────────── */
@@ -66,26 +66,6 @@
 	font-size: var(--meta-font-size, 0.8125rem);
 }
 
-/* ─── Layout: split (eyebrow's two-slot row) ───────────────────────── */
-
-[data-zone-layout="split"] {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	gap: 0.5rem;
-}
-
-[data-zone-layout="split"] [data-eyebrow-slot="left"]:not(:has(:is(h1, h2, h3, h4, h5, h6))) {
-	color: var(--rf-color-primary);
-	font-weight: 500;
-}
-
-[data-zone-layout="split"] [data-eyebrow-slot="right"] {
-	display: inline-flex;
-	align-items: center;
-	gap: 0.5rem;
-}
-
 /* Linked eyebrow content (matches today's hero behaviour). */
 [data-zone="eyebrow"] a {
 	color: var(--rf-color-primary);
@@ -93,21 +73,12 @@
 	text-underline-offset: 0.15em;
 }
 
-/* ─── Layout: chip-row ─────────────────────────────────────────────── */
-
-[data-zone-layout="chip-row"] {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.5rem;
-	align-items: center;
-}
-
 /* ─── Layout: bar (SPEC-080) ───────────────────────────────────────── */
 
 /* Horizontal flex row of fields, each in its own intrinsic shape (chip or
- * bare). Supersedes `split` + `chip-row`. Wraps by default; `data-wrap="false"`
- * keeps it on one line. A field tagged `data-align="end"` (and everything
- * after it) is pushed to the right edge. */
+ * bare). Wraps by default; `data-wrap="false"` keeps it on one line. A field
+ * tagged `data-align="end"` (and everything after it) is pushed to the right
+ * edge. */
 [data-zone-layout="bar"] {
 	display: flex;
 	flex-wrap: wrap;
@@ -194,7 +165,7 @@
 /* ─── Mobile: compact ──────────────────────────────────────────────── */
 
 @media (max-width: 48rem) {
-	[data-zone-layout="chip-row"] {
+	[data-zone-layout="bar"] {
 		gap: 0.375rem;
 	}
 
