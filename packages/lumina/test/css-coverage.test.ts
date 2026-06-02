@@ -24,6 +24,7 @@ const UNSTYLED_BLOCKS = new Set([
 	'bg',                // directive rune — sets parent backdrop, no own visual
 	'region',            // structural rune — layout region container, no own visual
 	'definition',        // child of feature — styled inline within feature.css
+	'deflist',           // styled via shared [data-zone-layout="definition-list"] selectors
 ]);
 
 const KNOWN_MISSING_SELECTORS = new Set([

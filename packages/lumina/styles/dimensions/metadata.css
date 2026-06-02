@@ -78,7 +78,12 @@
 
 /* ─── Layout: definition-list ──────────────────────────────────────── */
 
-/* Each row stacks `dt` above `dd`. Rows flow into multiple columns
+/* Single source of truth for the `definition-list` primitive, shared by
+ * both the projected metadata zone (`<dl data-zone="…">`) and the authored
+ * `{% deflist %}` rune (`<dl data-rune="deflist">`) — they emit the same
+ * `data-zone-layout` so they render identically (geometry, cards, margin).
+ *
+ * Each row stacks `dt` above `dd`. Rows flow into multiple columns
  * via `auto-fit` — CSS grid naturally collapses to a single column
  * when the container is narrower than the minimum, so the same rule
  * reads fine on mobile and packs dense on wider screens without a
