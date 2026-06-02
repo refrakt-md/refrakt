@@ -2373,9 +2373,7 @@
 			"root": ".rf-event",
 			"dataRune": "event",
 			"childOrder": [
-				"eyebrow",
-				"headline",
-				"blurb",
+				"preamble",
 				"metadata",
 				"body",
 				"register",

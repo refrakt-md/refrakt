@@ -57,7 +57,10 @@ export const codegroup = createContentModelSchema({
 		const properties: Record<string, any> = {};
 		const children: any[] = [];
 
-		if (attrs.title) {
+		// Emit the title meta whenever the attribute is *present* — even an
+		// empty string. `title=""` opts into the window chrome (stoplights)
+		// without a filename; an absent `title` renders no topbar at all.
+		if (attrs.title !== undefined) {
 			const titleMeta = new Tag('meta', { content: attrs.title });
 			properties.title = titleMeta;
 			children.push(titleMeta);

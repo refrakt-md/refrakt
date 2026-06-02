@@ -133,8 +133,10 @@ export const coreConfig: ThemeConfig = {
 			// The window chrome (three dots) is pure decoration — drawn in CSS
 			// on `.rf-codegroup__topbar`. The only metadata is the optional
 			// filename `title`, a bare monospace field in the topbar bar.
+			// `renderWhenEmpty` lets `title=""` still project the topbar (window
+			// chrome, no filename); an absent title renders no topbar.
 			metaFields: {
-				title: { metaType: 'code', condition: 'title' },
+				title: { metaType: 'code', condition: 'title', renderWhenEmpty: true },
 			},
 			blocks: {
 				topbar: { fields: ['title'], layout: 'bar' },

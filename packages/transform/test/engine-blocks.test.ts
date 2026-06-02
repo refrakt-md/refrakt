@@ -101,6 +101,34 @@ describe('SPEC-080 block-and-layout assembly', () => {
 			// auth absent → only method + path
 			expect(eyebrow.children.length).toBe(2);
 		});
+
+		it('renderWhenEmpty: present-but-empty value still projects the block; absent does not', () => {
+			const cfg: RuneConfig = {
+				block: 'codegroup',
+				modifiers: { title: { source: 'meta', noBemClass: true } },
+				metaFields: { title: { metaType: 'code', condition: 'title', renderWhenEmpty: true } },
+				blocks: { topbar: { fields: ['title'], layout: 'bar' } },
+				layout: { root: ['topbar', 'panels'] },
+			};
+			const transform = createTransform(baseConfig({ CodeGroup: cfg }));
+			const mk = (title: string | null) => makeTag('section', { 'data-rune': 'code-group' }, [
+				...(title !== null ? [makeTag('meta', { 'data-field': 'title', content: title })] : []),
+				makeTag('div', { 'data-name': 'panels' }, []),
+			]);
+
+			// title="" → topbar present, with an empty value span (window chrome).
+			const empty = asTag(transform(mk('')));
+			const emptyBar = findByName(empty, 'topbar');
+			expect(emptyBar).toBeDefined();
+			expect((emptyBar!.children[0] as SerializedTag).children[0]).toBe('');
+
+			// title="app.ts" → topbar present with the value.
+			const set = findByName(asTag(transform(mk('app.ts'))), 'topbar')!;
+			expect((set.children[0] as SerializedTag).children[0]).toBe('app.ts');
+
+			// title absent → no topbar at all.
+			expect(findByName(asTag(transform(mk(null))), 'topbar')).toBeUndefined();
+		});
 	});
 
 	describe('placement', () => {

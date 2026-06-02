@@ -109,6 +109,11 @@ function transformRune(
 						modifierValues[name] = mapped;
 					}
 				}
+			} else if (value === '') {
+				// Present but empty (e.g. `title=""`) — record it so
+				// `renderWhenEmpty` fields can tell present-empty from absent.
+				// No BEM class (would be a dangling `block--`) and no mapping.
+				modifierValues[name] = '';
 			}
 		}
 	}
@@ -985,9 +990,14 @@ function resolveField(
 ): ResolvedField | null {
 	const field = metaFields[name];
 	if (!field) return null;
-	if (field.condition && !modifierValues[field.condition]) return null;
+	if (field.condition) {
+		const condVal = modifierValues[field.condition];
+		// `renderWhenEmpty` gates on presence (defined) instead of truthiness.
+		const present = field.renderWhenEmpty ? condVal !== undefined : !!condVal;
+		if (!present) return null;
+	}
 	let value = modifierValues[name] ?? '';
-	if (!value && field.condition) return null;
+	if (!value && field.condition && !field.renderWhenEmpty) return null;
 	if (field.transform && transforms[field.transform]) {
 		value = transforms[field.transform](value);
 	}

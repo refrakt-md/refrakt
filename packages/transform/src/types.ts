@@ -58,6 +58,14 @@ export interface MetaField {
 	 *  `assignee`, `milestone`, `source`. */
 	condition?: string;
 
+	/** Loosen `condition` (and the empty-value skip) to test for
+	 *  *presence* rather than truthiness: the field renders when its
+	 *  source modifier is defined, even if the value is an empty string.
+	 *  Lets an empty-but-present value still project a block — e.g. a
+	 *  `codegroup` with `title=""` renders the window chrome without a
+	 *  filename, while an absent `title` renders nothing. */
+	renderWhenEmpty?: boolean;
+
 	/** Render the field as a link (`<a>`). The value of the named modifier
 	 *  is the URL; the field's `label` (falling back to its value) is the
 	 *  link text. Bare-rendered (no chip). Used for source/repo links and

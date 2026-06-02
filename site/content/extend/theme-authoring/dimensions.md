@@ -70,6 +70,7 @@ Recipe: {
 | `sentimentMap` | `Record<string, 'positive' \| 'negative' \| 'caution' \| 'neutral'>` | Maps the field's resolved value to a sentiment. Emits `data-meta-sentiment` when matched — color only, never changes shape |
 | `label` | `string` | Human-readable label. Rendered as `<dt>` in a `definition-list`, and as link / icon text where applicable; `bar` fields are unlabelled |
 | `condition` | `string` | Field renders only when the named modifier has a truthy value |
+| `renderWhenEmpty` | `boolean` | Loosen `condition` to test *presence* instead of truthiness — the field renders when its modifier is defined, even if the value is `""`. Lets an empty-but-present value still project a block (e.g. `codegroup` `title=""` renders the window chrome without a filename) |
 | `href` | `string` | Render the field as a link; the named modifier holds the URL. Renders bare (no chip) |
 | `rating` | `{ total?: string }` | Render the field as a rating widget; the value is the filled count, `total` names the modifier holding the max (default `5`) |
 | `icon` | `{ group: string }` | Decorate with a leading icon; the field's *value* selects the glyph within `group` |

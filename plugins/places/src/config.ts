@@ -28,12 +28,14 @@ export const config: Record<string, RuneConfig> = {
 			register: { label: 'Register', href: 'url', condition: 'url' },
 		},
 		// When/where as a labelled def-list under the title/description; the
-		// Register CTA renders last as a bar-wrapped link.
+		// Register CTA renders last as a bar-wrapped link. The schema wraps
+		// title + blurb in a `preamble` <header>, so place that (not the
+		// individual headline/blurb) ahead of the metadata.
 		blocks: {
 			metadata: { fields: ['date', 'endDate', 'location'], layout: 'definition-list' },
 			register: { fields: ['register'], layout: 'bar' },
 		},
-		layout: { root: ['eyebrow', 'headline', 'blurb', 'metadata', 'body', 'register'] },
+		layout: { root: ['preamble', 'metadata', 'body', 'register'] },
 	},
 	Itinerary: {
 		block: 'itinerary',
