@@ -36,6 +36,21 @@ them:
 - **Output metas** (`property=…`, schema.org / SEO) — genuine HTML output.
   Must render.
 
+**The engine is not the only reader.** The `data-field` value metas are also
+read on the **pre-engine tree** by:
+
+- `seo.ts` — SEO / metadata extraction (`findByDataField` → `content`).
+- each plugin's `register()` hook — `plan` / `storytelling` / `design`
+  pipelines read entity field values (status, priority, tokens, scope, …) to
+  index entities into the registry.
+
+So the channel feeds both the engine *and* the cross-page pipeline / SEO. All
+of these readers must move to the bag before the metas can be dropped — the
+migration below sequences that explicitly (it is not "engine-only", as an
+earlier framing implied). Postprocess **sentinels** (breadcrumb / pagination /
+collection / aggregate / drawer) are a separate use of `data-field` and are out
+of scope.
+
 ## Problem
 
 1. **Stringly-typed; presence collapses.** Absent, `""`, and `"false"` blur
@@ -114,25 +129,30 @@ attribute — which is cleaner than one dual-purpose node.
 
 Smaller than a separate-bag approach: the engine sits between the channel and
 every renderer, so adapters never see it and need no changes. The work is
-confined to `createComponentRenderable`, the schemas, and the engine. Sequence
-so behavior stays invariant until step 3.
+confined to `createComponentRenderable`, the schemas, the engine, and the
+pre-engine field readers (SEO + plugin `register()` hooks). Sequence so behavior
+stays invariant until step 4.
 
-1. **Schema writes the reserved attribute (dual-emit).**
+1. **Schema writes the reserved attribute (dual-emit).** [`WORK-321`]
    `createComponentRenderable` populates `data-rune-fields` **and** keeps
    emitting `<meta data-field>` (belt and suspenders). No output change.
-2. **Engine reads `fields` (dual-read).** `modifierValues` / `metaFields`
-   prefer the parsed `data-rune-fields`, fall back to legacy metas. No output
-   change.
-3. **Drop the metas; delete the cruft.** Schemas stop emitting
+2. **Engine reads `fields` (dual-read).** [`WORK-322`] `modifierValues` /
+   `metaFields` prefer the parsed `data-rune-fields`, fall back to legacy metas.
+   No output change.
+3. **Pre-engine consumers read `fields` (dual-read).** [`WORK-328`] `seo.ts` and
+   each plugin's `register()` hook read field values from the bag (via a shared
+   helper), falling back to the metas. No output change. *Required before the
+   drop — these run on the pre-engine tree and would otherwise lose their data.*
+4. **Drop the metas; delete the cruft.** [`WORK-323`] Schemas stop emitting
    `<meta data-field>`; the engine drops the legacy meta read, the meta-strip
    filter, and the kebab-matching set — keeping only the single reserved-key
    parse + strip. SEO `property` metas untouched.
-4. **(Optional) Promote to a first-class `fields` field** via `serialize()`,
+5. **(Optional) Promote to a first-class `fields` field** via `serialize()`,
    if a typed top-level slot earns the serialize / boundary edits. This is the
    only step that would touch the serialize boundary; defer until proven worth
    it.
 
-Steps 1–3 need zero adapter work and are individually shippable and reversible.
+Steps 1–4 need zero adapter work and are individually shippable and reversible.
 
 ## Non-goals
 

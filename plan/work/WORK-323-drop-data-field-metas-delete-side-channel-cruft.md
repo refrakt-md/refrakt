@@ -29,6 +29,9 @@ SEO `<meta property>` tags are untouched.
 
 - {% ref "WORK-322" /%} — the engine must already dual-read before the legacy
   channel can be removed.
+- {% ref "WORK-328" /%} — the pre-engine field consumers (SEO + plugin
+  register hooks) must read the bag first; otherwise dropping the metas breaks
+  entity registration and SEO.
 
 ## References
 
