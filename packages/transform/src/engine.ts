@@ -453,8 +453,10 @@ function transformRune(
 			: styleParts.join('; ');
 	}
 
-	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead)
-	const { width: _w, spacing: _s, inset: _i, density: _d, 'data-rune': _dr, ...rawPassAttrs } = tag.attributes;
+	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead).
+	// `data-rune-fields` (SPEC-082) is the internal field-data channel — strip it from output so
+	// the dual-emit in WORK-321 stays output-neutral; the engine begins *reading* it in WORK-322.
+	const { width: _w, spacing: _s, inset: _i, density: _d, 'data-rune': _dr, 'data-rune-fields': _drf, ...rawPassAttrs } = tag.attributes;
 	// Strip consumed attribute-source modifier names (expressed via data-* / BEM)
 	const passAttrs = attrModifierNames.length > 0
 		? Object.fromEntries(Object.entries(rawPassAttrs).filter(([k]) => !attrModifierNames.includes(k)))

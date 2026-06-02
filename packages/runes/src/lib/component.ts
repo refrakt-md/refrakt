@@ -51,15 +51,29 @@ export function createComponentRenderable(result: InlineTransformResult): Tag {
     }
   }
 
+  // SPEC-082 step 1: project scalar field values into a single reserved
+  // `data-rune-fields` JSON attribute, in addition to the legacy
+  // `<meta data-field>` children (dual-emit — the engine still reads the metas
+  // until WORK-322). Keys stay as authored (camelCase, matching modifier
+  // names — no kebab transit). Only `<meta>` carriers contribute a value;
+  // content-marker properties (cursors of real content tags, e.g. budget's
+  // `category`) get `data-field` but no field entry.
+  const fields: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(result.properties ?? {})) {
     if (v === undefined) continue;
     const tags: Tag[] = v instanceof RenderableNodeCursor ? v.nodes : Array.isArray(v) ? v : [v];
 
+    const values: unknown[] = [];
     tags.forEach(n => {
       if (Markdoc.Tag.isTag(n)) {
-        n.attributes['data-field'] = toKebabCase(k)
+        n.attributes['data-field'] = toKebabCase(k);
+        if (n.name === 'meta' && n.attributes.content !== undefined) {
+          values.push(n.attributes.content);
+        }
       }
     });
+    if (values.length === 1) fields[k] = values[0];
+    else if (values.length > 1) fields[k] = values;
   }
 
   for (const [k, v] of Object.entries(result.refs || {})) {
@@ -89,7 +103,8 @@ export function createComponentRenderable(result: InlineTransformResult): Tag {
     'data-field': result.property ? toKebabCase(result.property) : result.property,
     'data-rune': runeName,
     typeof: schemaOrgType,
-    class: result.class
+    class: result.class,
+    ...(Object.keys(fields).length > 0 ? { 'data-rune-fields': JSON.stringify(fields) } : {}),
   }, Array.isArray(result.children) ? result.children : [result.children]);
 
   return tag;
