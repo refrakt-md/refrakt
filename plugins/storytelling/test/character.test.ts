@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('character tag', () => {
 	it('should convert headings to character sections', () => {
@@ -63,9 +63,7 @@ Content.
 {% /character %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'character');
-		const aliasesMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'aliases');
-		expect(aliasesMeta).toBeDefined();
-		expect(aliasesMeta!.attributes.content).toBe('Strider, Elessar');
+		expect(fields(tag).aliases).toBe('Strider, Elessar');
 	});
 
 	it('should work with npc alias', () => {

@@ -30,7 +30,7 @@ The identity transform is a framework-agnostic function that walks the serialize
 1. Reads the rune's `data-rune` attribute (kebab-case rune name)
 2. Looks up the matching `RuneConfig` (keys are PascalCase `typeName` values; the engine matches via kebab-case)
 3. Adds BEM classes (`.rf-hint`, `.rf-hint--warning`)
-4. Reads modifier values from meta tags (`<meta data-field="...">`) and sets `data-*` attributes
+4. Reads modifier values from the `data-rune-fields` bag and sets `data-*` attributes
 5. Emits universal dimension attributes (`data-density`, `data-section`, `data-meta-type`, `data-media`, etc.) from the rune config
 6. Injects structural elements (headers, icons, badges) defined in the config
 7. Wraps content children if `contentWrapper` is configured
@@ -164,7 +164,7 @@ All the structural configuration — which BEM block each rune maps to, how modi
 When the identity transform encounters a tag with `data-rune="hint"`, it:
 
 1. **Finds the config**: Looks up `runes['Hint']` in the theme config (matched by kebab-casing the config key)
-2. **Reads modifiers**: Scans child `<meta data-field="hint-type">` tags for modifier values, falls back to defaults
+2. **Reads modifiers**: Reads modifier values from the `data-rune-fields` bag (e.g. `{"hintType":"warning"}`), falls back to defaults
 3. **Builds BEM classes**: `.rf-hint` (block) + `.rf-hint--note` (modifier value)
 4. **Sets data attributes**: `data-hint-type="note"` for CSS attribute selectors
 5. **Checks context**: If nested inside `Hero`, adds `.rf-hint--in-hero`

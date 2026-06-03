@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag } from './helpers.js';
+import { parse, findTag, fields } from './helpers.js';
 
 describe('figure tag', () => {
 	it('should transform image with caption attribute', () => {
@@ -38,12 +38,7 @@ A beautiful sunset over the ocean.
 		const fig = findTag(result as any, t => t.attributes['data-rune'] === 'figure');
 		expect(fig).toBeDefined();
 
-		const sizeMeta = findTag(fig!, t => t.name === 'meta' && t.attributes['data-field'] === 'size');
-		expect(sizeMeta).toBeDefined();
-		expect(sizeMeta!.attributes.content).toBe('large');
-
-		const alignMeta = findTag(fig!, t => t.name === 'meta' && t.attributes['data-field'] === 'align');
-		expect(alignMeta).toBeDefined();
-		expect(alignMeta!.attributes.content).toBe('center');
+		expect(fields(fig).size).toBe('large');
+		expect(fields(fig).align).toBe('center');
 	});
 });

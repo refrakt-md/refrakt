@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag } from './helpers.js';
+import { parse, findTag, fields } from './helpers.js';
 
 describe('showcase tag', () => {
 	it('should produce a Showcase renderable with viewport ref', () => {
@@ -23,9 +23,7 @@ describe('showcase tag', () => {
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'shadow');
-		expect(meta).toBeDefined();
-		expect(meta!.attributes.content).toBe('elevated');
+		expect(fields(tag).shadow).toBe('elevated');
 	});
 
 	it('should emit bleed meta when not none', () => {
@@ -34,9 +32,7 @@ describe('showcase tag', () => {
 {% /showcase %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bleed');
-		expect(meta).toBeDefined();
-		expect(meta!.attributes.content).toBe('top');
+		expect(fields(tag).bleed).toBe('top');
 	});
 
 	it('should emit offset meta when set', () => {
@@ -45,9 +41,7 @@ describe('showcase tag', () => {
 {% /showcase %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'offset');
-		expect(meta).toBeDefined();
-		expect(meta!.attributes.content).toBe('lg');
+		expect(fields(tag).offset).toBe('lg');
 	});
 
 	it('should emit aspect meta when set', () => {
@@ -56,9 +50,7 @@ describe('showcase tag', () => {
 {% /showcase %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'aspect');
-		expect(meta).toBeDefined();
-		expect(meta!.attributes.content).toBe('16/9');
+		expect(fields(tag).aspect).toBe('16/9');
 	});
 
 	it('should not emit meta tags for default values', () => {
@@ -69,11 +61,8 @@ describe('showcase tag', () => {
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 
-		const shadowMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'shadow');
-		expect(shadowMeta).toBeUndefined();
-
-		const bleedMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bleed');
-		expect(bleedMeta).toBeUndefined();
+		expect(fields(tag).shadow).toBeUndefined();
+		expect(fields(tag).bleed).toBeUndefined();
 	});
 
 	it('should emit multiple meta tags for combined attributes', () => {
@@ -84,16 +73,9 @@ describe('showcase tag', () => {
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 
-		const shadowMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'shadow');
-		expect(shadowMeta!.attributes.content).toBe('soft');
-
-		const bleedMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bleed');
-		expect(bleedMeta!.attributes.content).toBe('both');
-
-		const offsetMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'offset');
-		expect(offsetMeta!.attributes.content).toBe('md');
-
-		const aspectMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'aspect');
-		expect(aspectMeta!.attributes.content).toBe('4/3');
+		expect(fields(tag).shadow).toBe('soft');
+		expect(fields(tag).bleed).toBe('both');
+		expect(fields(tag).offset).toBe('md');
+		expect(fields(tag).aspect).toBe('4/3');
 	});
 });

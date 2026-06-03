@@ -55,27 +55,28 @@ modifiers: {
 
 | Property | Description |
 |----------|-------------|
-| `source` | `'meta'` reads from child `<meta data-field="name" content="value">` tags. `'attribute'` reads from the element's own attributes |
-| `default` | Fallback value when no meta tag or attribute is found |
+| `source` | `'meta'` reads the field value from the rune's `data-rune-fields` bag (a JSON object on the root). `'attribute'` reads from the element's own attributes |
+| `default` | Fallback value when the field is absent |
 
 For each modifier with a resolved value, the engine:
 
 1. Adds a BEM modifier class: `.rf-hint--note`
 2. Sets a data attribute: `data-hint-type="note"` (camelCase → kebab-case)
-3. Removes the consumed meta tag from the output
+3. Strips the `data-rune-fields` bag from the output (it is an internal,
+   pre-engine data channel — never a theming hook; themes target the BEM classes
+   and the `data-*` attributes above)
 
 **Example:** The Hint rune with `hintType: 'warning'`:
 
 ```html
-<!-- Before transform -->
-<div data-rune="hint">
-  <meta data-field="hint-type" content="warning">
+<!-- Before transform — field data rides the data-rune-fields bag (camelCase keys) -->
+<div data-rune="hint" data-rune-fields='{"hintType":"warning"}'>
   <p>Be careful!</p>
 </div>
 
 <!-- After transform -->
 <div class="rf-hint rf-hint--warning" data-rune="hint" data-hint-type="warning">
-  <!-- meta tag consumed, structural elements injected -->
+  <!-- bag consumed, structural elements injected -->
   <p>Be careful!</p>
 </div>
 ```

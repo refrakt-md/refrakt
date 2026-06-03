@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('organization tag', () => {
 	it('should transform a basic organization', () => {
@@ -25,9 +25,7 @@ Description.
 {% /organization %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'organization');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'type');
-		expect(meta).toBeDefined();
-		expect(meta!.attributes.content).toBe('LocalBusiness');
+		expect(fields(tag).type).toBe('LocalBusiness');
 	});
 
 	it('should work with business alias', () => {

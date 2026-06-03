@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('symbol tag', () => {
 	it('should transform a basic function symbol', () => {
@@ -31,27 +31,12 @@ Description.
 {% /symbol %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'symbol');
-		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const kind = metas.find(m => m.attributes['data-field'] === 'kind');
-		expect(kind).toBeDefined();
-		expect(kind!.attributes.content).toBe('function');
-
-		const lang = metas.find(m => m.attributes['data-field'] === 'lang');
-		expect(lang).toBeDefined();
-		expect(lang!.attributes.content).toBe('typescript');
-
-		const since = metas.find(m => m.attributes['data-field'] === 'since');
-		expect(since).toBeDefined();
-		expect(since!.attributes.content).toBe('1.0.0');
-
-		const deprecated = metas.find(m => m.attributes['data-field'] === 'deprecated');
-		expect(deprecated).toBeDefined();
-		expect(deprecated!.attributes.content).toBe('2.0.0');
-
-		const source = metas.find(m => m.attributes['data-field'] === 'source');
-		expect(source).toBeDefined();
-		expect(source!.attributes.content).toBe('https://github.com/example');
+		expect(fields(tag).kind).toBe('function');
+		expect(fields(tag).lang).toBe('typescript');
+		expect(fields(tag).since).toBe('1.0.0');
+		expect(fields(tag).deprecated).toBe('2.0.0');
+		expect(fields(tag).source).toBe('https://github.com/example');
 	});
 
 	it('should default kind to function and lang to typescript', () => {
@@ -62,13 +47,9 @@ Description.
 {% /symbol %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'symbol');
-		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const kind = metas.find(m => m.attributes['data-field'] === 'kind');
-		expect(kind!.attributes.content).toBe('function');
-
-		const lang = metas.find(m => m.attributes['data-field'] === 'lang');
-		expect(lang!.attributes.content).toBe('typescript');
+		expect(fields(tag).kind).toBe('function');
+		expect(fields(tag).lang).toBe('typescript');
 	});
 
 	it('should convert class group headings to SymbolGroup tags', () => {
@@ -185,8 +166,7 @@ type RuneMap = Record<string, RuneDefinition>
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'symbol');
 		expect(tag).toBeDefined();
-		const kind = findAllTags(tag!, t => t.name === 'meta').find(m => m.attributes['data-field'] === 'kind');
-		expect(kind!.attributes.content).toBe('type');
+		expect(fields(tag).kind).toBe('type');
 	});
 
 	it('should split groups at h3 and members at h4', () => {
@@ -227,8 +207,7 @@ useRuneContext(): RuneContext | null
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'symbol');
 		expect(tag).toBeDefined();
-		const kind = findAllTags(tag!, t => t.name === 'meta').find(m => m.attributes['data-field'] === 'kind');
-		expect(kind!.attributes.content).toBe('hook');
+		expect(fields(tag).kind).toBe('hook');
 	});
 
 	it('should include description paragraphs after code fence for class kind', () => {

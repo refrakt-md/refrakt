@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('timeline tag', () => {
 	it('should convert headings to timeline entries', () => {
@@ -49,8 +49,7 @@ Content.
 {% /timeline %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'timeline');
-		const dirMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'horizontal');
-		expect(dirMeta).toBeDefined();
+		expect(fields(tag).direction).toBe('horizontal');
 	});
 
 	it('should handle heading without date pattern', () => {

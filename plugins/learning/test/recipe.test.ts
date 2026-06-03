@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { extractSeo } from '@refrakt-md/runes';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('recipe tag', () => {
 	it('should transform a basic recipe', () => {
@@ -83,11 +83,8 @@ A recipe with a photo.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
-		// Layout meta
-		const metas = findAllTags(tag!, t => t.name === 'meta');
-		const layoutMeta = metas.find(m => m.attributes['data-field'] === 'layout');
-		expect(layoutMeta).toBeDefined();
-		expect(layoutMeta!.attributes.content).toBe('split');
+		// Layout field
+		expect(fields(tag).layout).toBe('split');
 
 		// Media zone should have an image
 		const media = findTag(tag!, t => t.attributes['data-name'] === 'media');
@@ -114,10 +111,7 @@ A recipe with a photo.
 		expect(ingredients).toBeDefined();
 
 		// Layout defaults to stacked
-		const metas = findAllTags(tag!, t => t.name === 'meta');
-		const layoutMeta = metas.find(m => m.attributes['data-field'] === 'layout');
-		expect(layoutMeta).toBeDefined();
-		expect(layoutMeta!.attributes.content).toBe('stacked');
+		expect(fields(tag).layout).toBe('stacked');
 	});
 
 	it('should handle recipe with only ingredients', () => {

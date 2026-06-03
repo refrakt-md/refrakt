@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('datatable tag', () => {
 	it('should transform a table into a datatable', () => {
@@ -23,15 +23,9 @@ describe('datatable tag', () => {
 {% /datatable %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'data-table');
-		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const sortable = metas.find(m => m.attributes['data-field'] === 'sortable');
-		expect(sortable).toBeDefined();
-		expect(sortable!.attributes.content).toBe('Name');
-
-		const pageSize = metas.find(m => m.attributes['data-field'] === 'page-size');
-		expect(pageSize).toBeDefined();
-		expect(pageSize!.attributes.content).toBe('10');
+		expect(fields(tag).sortable).toBe('Name');
+		expect(fields(tag).pageSize).toBe('10');
 	});
 
 	it('should include the table in refs', () => {

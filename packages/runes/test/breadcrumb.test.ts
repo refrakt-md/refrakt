@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('breadcrumb tag', () => {
 	it('should transform a list of links into breadcrumb items', () => {
@@ -33,8 +33,7 @@ describe('breadcrumb tag', () => {
 {% /breadcrumb %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'breadcrumb');
-		const sepMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === '>');
-		expect(sepMeta).toBeDefined();
+		expect(fields(tag).separator).toBe('>');
 	});
 
 	it('should handle last item without link as current page', () => {

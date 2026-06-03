@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag } from './helpers.js';
+import { parse, findTag, fields } from './helpers.js';
 
 describe('hero tag', () => {
 	it('should extract heading as title and paragraph as subtitle', () => {
@@ -24,8 +24,7 @@ Description text.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
 		expect(tag).toBeDefined();
 
-		const alignMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'left');
-		expect(alignMeta).toBeDefined();
+		expect(fields(tag).align).toBe('left');
 	});
 
 	it('should handle action links as LinkItem components', () => {

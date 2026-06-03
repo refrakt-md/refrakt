@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('plot tag', () => {
 	it('should convert list items to beats', () => {
@@ -52,11 +52,8 @@ describe('plot tag', () => {
 		const beats = findAllTags(tag!, t => t.attributes['data-rune'] === 'beat');
 		expect(beats.length).toBe(4);
 
-		// Check that status meta tags are present
-		const statuses = beats.map(beat => {
-			const meta = findTag(beat, t => t.name === 'meta' && t.attributes['data-field'] === 'status');
-			return meta?.attributes.content;
-		});
+		// Check that status field values are present in the bag
+		const statuses = beats.map(beat => fields(beat).status);
 		expect(statuses).toEqual(['complete', 'active', 'planned', 'abandoned']);
 	});
 

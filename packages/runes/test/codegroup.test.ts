@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('codegroup tag', () => {
   it('should create a CodeGroup component from bare code fences', () => {
@@ -85,8 +85,7 @@ const x = 1;
 {% /codegroup %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'code-group');
-    const titleMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'title' && t.attributes.content === 'app.js');
-    expect(titleMeta).toBeDefined();
+    expect(fields(tag).title).toBe('app.js');
   });
 
   it('should emit chrome-only (no tabs) for a single fence without labels', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('storyboard tag', () => {
   it('should create a Storyboard component', () => {
@@ -42,8 +42,7 @@ Caption.
 {% /storyboard %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'storyboard');
-    const variantMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'comic');
-    expect(variantMeta).toBeDefined();
+    expect(fields(tag).variant).toBe('comic');
   });
 
   it('should work with the comic alias', () => {
@@ -65,7 +64,6 @@ Caption.
 {% /storyboard %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'storyboard');
-    const columnsMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === '2');
-    expect(columnsMeta).toBeDefined();
+    expect(fields(tag).columns).toBe('2');
   });
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('toc tag', () => {
 	it('should generate links from document headings', () => {
@@ -52,9 +52,7 @@ Install steps.`);
 ## Second`);
 
 		const nav = findTag(result as any, t => t.attributes['data-rune'] === 'table-of-contents');
-		const orderedMeta = findTag(nav!, t => t.name === 'meta' && t.attributes['data-field'] === 'ordered');
-		expect(orderedMeta).toBeDefined();
-		expect(orderedMeta!.attributes.content).toBe(true);
+		expect(fields(nav).ordered).toBe(true);
 	});
 
 	it('should return empty list when no headings', () => {

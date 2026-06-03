@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('map tag', () => {
 	it('should create a Map component from a pin list', () => {
@@ -32,10 +32,8 @@ describe('map tag', () => {
 		const pin = findTag(result as any, t => t.attributes['data-rune'] === 'map-pin');
 		expect(pin).toBeDefined();
 
-		const latMeta = findTag(pin!, t => t.name === 'meta' && t.attributes['data-field'] === 'lat');
-		const lngMeta = findTag(pin!, t => t.name === 'meta' && t.attributes['data-field'] === 'lng');
-		expect(latMeta?.attributes.content).toBe('48.8566');
-		expect(lngMeta?.attributes.content).toBe('2.3522');
+		expect(fields(pin).lat).toBe('48.8566');
+		expect(fields(pin).lng).toBe('2.3522');
 	});
 
 	it('should parse pin name from bold text', () => {
@@ -64,8 +62,7 @@ describe('map tag', () => {
 {% /map %}`);
 
 		const pin = findTag(result as any, t => t.attributes['data-rune'] === 'map-pin');
-		const addressMeta = findTag(pin!, t => t.name === 'meta' && t.attributes['data-field'] === 'address');
-		expect(addressMeta?.attributes.content).toContain('123 Main St');
+		expect(fields(pin).address).toContain('123 Main St');
 	});
 
 	it('should group pins from headings', () => {
@@ -79,11 +76,8 @@ describe('map tag', () => {
 		const pins = findAllTags(result as any, t => t.attributes['data-rune'] === 'map-pin');
 		expect(pins.length).toBe(2);
 
-		const group1 = findTag(pins[0], t => t.name === 'meta' && t.attributes['data-field'] === 'group');
-		expect(group1?.attributes.content).toBe('Restaurants');
-
-		const group2 = findTag(pins[1], t => t.name === 'meta' && t.attributes['data-field'] === 'group');
-		expect(group2?.attributes.content).toBe('Museums');
+		expect(fields(pins[0]).group).toBe('Restaurants');
+		expect(fields(pins[1]).group).toBe('Museums');
 	});
 
 	it('should pass zoom and center attributes as meta tags', () => {
@@ -92,10 +86,8 @@ describe('map tag', () => {
 {% /map %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'map');
-		const zoomMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'zoom');
-		const centerMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'center');
-		expect(zoomMeta?.attributes.content).toBe('15');
-		expect(centerMeta?.attributes.content).toBe('48.8566, 2.3522');
+		expect(fields(tag).zoom).toBe('15');
+		expect(fields(tag).center).toBe('48.8566, 2.3522');
 	});
 
 	it('should pass variant and height as meta tags', () => {
@@ -104,10 +96,8 @@ describe('map tag', () => {
 {% /map %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'map');
-		const variantMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'variant');
-		const heightMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'height');
-		expect(variantMeta?.attributes.content).toBe('dark');
-		expect(heightMeta?.attributes.content).toBe('large');
+		expect(fields(tag).variant).toBe('dark');
+		expect(fields(tag).height).toBe('large');
 	});
 
 	it('should pass route and cluster as meta tags', () => {
@@ -116,10 +106,8 @@ describe('map tag', () => {
 {% /map %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'map');
-		const routeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'route');
-		const clusterMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'cluster');
-		expect(routeMeta?.attributes.content).toBe('true');
-		expect(clusterMeta?.attributes.content).toBe('true');
+		expect(fields(tag).route).toBe('true');
+		expect(fields(tag).cluster).toBe('true');
 	});
 
 	it('should wrap pins in an ol element', () => {
@@ -144,15 +132,11 @@ describe('map tag', () => {
 		const pins = findAllTags(result as any, t => t.attributes['data-rune'] === 'map-pin');
 		expect(pins.length).toBe(2);
 
-		const lat0 = findTag(pins[0], t => t.name === 'meta' && t.attributes['data-field'] === 'lat');
-		const lng0 = findTag(pins[0], t => t.name === 'meta' && t.attributes['data-field'] === 'lng');
-		expect(lat0?.attributes.content).toBe('45.5152');
-		expect(lng0?.attributes.content).toBe('-122.6784');
+		expect(fields(pins[0]).lat).toBe('45.5152');
+		expect(fields(pins[0]).lng).toBe('-122.6784');
 
-		const lat1 = findTag(pins[1], t => t.name === 'meta' && t.attributes['data-field'] === 'lat');
-		const lng1 = findTag(pins[1], t => t.name === 'meta' && t.attributes['data-field'] === 'lng');
-		expect(lat1?.attributes.content).toBe('37.7749');
-		expect(lng1?.attributes.content).toBe('-122.4194');
+		expect(fields(pins[1]).lat).toBe('37.7749');
+		expect(fields(pins[1]).lng).toBe('-122.4194');
 	});
 
 	it('should handle named pin with coordinates', () => {
@@ -162,11 +146,9 @@ describe('map tag', () => {
 
 		const pin = findTag(result as any, t => t.attributes['data-rune'] === 'map-pin');
 		const nameSpan = findTag(pin!, t => t.name === 'span' && t.attributes['data-name'] === 'name');
-		const latMeta = findTag(pin!, t => t.name === 'meta' && t.attributes['data-field'] === 'lat');
-		const lngMeta = findTag(pin!, t => t.name === 'meta' && t.attributes['data-field'] === 'lng');
 
 		expect(nameSpan?.children[0]).toBe('Louvre Museum');
-		expect(latMeta?.attributes.content).toBe('48.8606');
-		expect(lngMeta?.attributes.content).toBe('2.3376');
+		expect(fields(pin).lat).toBe('48.8606');
+		expect(fields(pin).lng).toBe('2.3376');
 	});
 });

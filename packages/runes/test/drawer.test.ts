@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 import { registerDrawers, resolveAutoDrawerTitleLevels } from '../src/drawer-pipeline.js';
 import { EntityRegistryImpl } from '../../content/src/registry.js';
 import type { PipelineContext, TransformedPage } from '@refrakt-md/types';
@@ -71,28 +71,23 @@ Body.
 		it('emits side and size meta tags with defaults', () => {
 			const result = parse(`{% drawer id="auth" title="T" %}body{% /drawer %}`);
 			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
-			const metas = findAllTags(drawer!, t => t.name === 'meta');
-			const fields = new Set(metas.map(m => m.attributes['data-field']));
-			expect(fields.has('side')).toBe(true);
-			expect(fields.has('size')).toBe(true);
-			const sideMeta = metas.find(m => m.attributes['data-field'] === 'side');
-			const sizeMeta = metas.find(m => m.attributes['data-field'] === 'size');
-			expect(sideMeta!.attributes.content).toBe('right');
-			expect(sizeMeta!.attributes.content).toBe('md');
+			expect(fields(drawer).side).toBeDefined();
+			expect(fields(drawer).size).toBeDefined();
+			expect(fields(drawer).side).toBe('right');
+			expect(fields(drawer).size).toBe('md');
 		});
 
 		it('omits the shortcut meta when no shortcut is set', () => {
 			const result = parse(`{% drawer id="auth" title="T" %}body{% /drawer %}`);
 			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
-			const shortcutMeta = findTag(drawer!, t => t.attributes['data-field'] === 'shortcut');
-			expect(shortcutMeta).toBeUndefined();
+			expect(fields(drawer).shortcut).toBeUndefined();
 		});
 
 		it('emits a shortcut meta when set', () => {
 			const result = parse(`{% drawer id="auth" title="T" shortcut="." %}body{% /drawer %}`);
-			const shortcutMeta = findTag(result as any, t => t.attributes['data-field'] === 'shortcut');
-			expect(shortcutMeta).toBeDefined();
-			expect(shortcutMeta!.attributes.content).toBe('.');
+			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
+			expect(fields(drawer).shortcut).toBeDefined();
+			expect(fields(drawer).shortcut).toBe('.');
 		});
 
 		it('supports drawers without a title (header still emitted with the close button)', () => {

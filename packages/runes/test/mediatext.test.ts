@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('mediatext tag', () => {
 	it('should extract image into media ref and text into body ref', () => {
@@ -65,13 +65,8 @@ Text content.
 
 		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'media-text');
 
-		const alignMeta = findTag(mt!, t => t.name === 'meta' && t.attributes['data-field'] === 'align');
-		expect(alignMeta).toBeDefined();
-		expect(alignMeta!.attributes.content).toBe('right');
-
-		const ratioMeta = findTag(mt!, t => t.name === 'meta' && t.attributes['data-field'] === 'ratio');
-		expect(ratioMeta).toBeDefined();
-		expect(ratioMeta!.attributes.content).toBe('2:1');
+		expect(fields(mt).align).toBe('right');
+		expect(fields(mt).ratio).toBe('2:1');
 	});
 
 	it('should render wrap meta tag when enabled', () => {
@@ -83,9 +78,7 @@ Text content.
 
 		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'media-text');
 
-		const wrapMeta = findTag(mt!, t => t.name === 'meta' && t.attributes['data-field'] === 'wrap');
-		expect(wrapMeta).toBeDefined();
-		expect(wrapMeta!.attributes.content).toBe('true');
+		expect(fields(mt).wrap).toBe('true');
 	});
 
 	it('should not render wrap meta tag when disabled', () => {
@@ -97,7 +90,6 @@ Text content.
 
 		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'media-text');
 
-		const wrapMeta = findTag(mt!, t => t.name === 'meta' && t.attributes['data-field'] === 'wrap');
-		expect(wrapMeta).toBeUndefined();
+		expect(fields(mt).wrap).toBeUndefined();
 	});
 });

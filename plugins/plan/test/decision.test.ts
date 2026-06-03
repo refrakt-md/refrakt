@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('decision tag', () => {
 	it('should transform a basic decision record', () => {
@@ -30,10 +30,8 @@ Context here.
 {% /decision %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'decision');
-		const metas = findAllTags(tag!, t => t.name === 'meta');
-
-		expect(metas.find(m => m.attributes['data-field'] === 'date')!.attributes.content).toBe('2026-03-15');
-		expect(metas.find(m => m.attributes['data-field'] === 'supersedes')!.attributes.content).toBe('ADR-003');
+		expect(fields(tag).date).toBe('2026-03-15');
+		expect(fields(tag).supersedes).toBe('ADR-003');
 	});
 
 	it('should work with adr alias', () => {
@@ -57,9 +55,7 @@ Context here.
 {% /decision %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'decision');
-		const metas = findAllTags(tag!, t => t.name === 'meta');
-
-		expect(metas.find(m => m.attributes['data-field'] === 'source')!.attributes.content).toBe('SPEC-001');
+		expect(fields(tag).source).toBe('SPEC-001');
 	});
 
 	it('should handle sections', () => {

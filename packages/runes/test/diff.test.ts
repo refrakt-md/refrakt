@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('diff tag', () => {
 	it('should transform two code blocks into a diff view', () => {
@@ -30,15 +30,9 @@ const x: number = 1;
 {% /diff %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
-		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const mode = metas.find(m => m.attributes['data-field'] === 'mode');
-		expect(mode).toBeDefined();
-		expect(mode!.attributes.content).toBe('split');
-
-		const language = metas.find(m => m.attributes['data-field'] === 'language');
-		expect(language).toBeDefined();
-		expect(language!.attributes.content).toBe('typescript');
+		expect(fields(tag).mode).toBe('split');
+		expect(fields(tag).language).toBe('typescript');
 	});
 
 	it('should produce expanded line spans with diff types', () => {

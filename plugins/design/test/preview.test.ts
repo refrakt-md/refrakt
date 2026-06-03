@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('preview tag', () => {
 	it('should transform with title and theme meta properties', () => {
@@ -11,11 +11,8 @@ Some content.
 		expect(preview).toBeDefined();
 		expect(preview!.name).toBe('div');
 
-		const titleMeta = findTag(preview!, t => t.name === 'meta' && t.attributes['data-field'] === 'title');
-		expect(titleMeta!.attributes.content).toBe('Demo');
-
-		const themeMeta = findTag(preview!, t => t.name === 'meta' && t.attributes['data-field'] === 'theme');
-		expect(themeMeta!.attributes.content).toBe('dark');
+		expect(fields(preview).title).toBe('Demo');
+		expect(fields(preview).theme).toBe('dark');
 	});
 
 	it('should not emit source property when no fence child exists', () => {
@@ -140,10 +137,7 @@ Some content.
 		const preview = findTag(result as any, t => t.attributes['data-rune'] === 'preview');
 		expect(preview).toBeDefined();
 
-		const responsiveMeta = findTag(preview!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'responsive');
-		expect(responsiveMeta).toBeDefined();
-		expect(responsiveMeta!.attributes.content).toBe('mobile,tablet,desktop');
+		expect(fields(preview).responsive).toBe('mobile,tablet,desktop');
 	});
 
 	it('should not emit responsive meta when not set', () => {
@@ -152,9 +146,7 @@ Some content.
 {% /preview %}`);
 
 		const preview = findTag(result as any, t => t.attributes['data-rune'] === 'preview');
-		const responsiveMeta = findTag(preview!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'responsive');
-		expect(responsiveMeta).toBeUndefined();
+		expect(fields(preview).responsive).toBeUndefined();
 	});
 
 	it('should generate htmlSource when source=true', () => {
@@ -177,7 +169,7 @@ A note.
 		expect(code).toBeDefined();
 		// Should contain structural attributes
 		expect(code!.children[0]).toContain('data-rune="hint"');
-		expect(code!.children[0]).toContain('data-field="hint-type"');
+		expect(code!.children[0]).toContain('hintType');
 	});
 
 	it('should not generate htmlSource when source is absent', () => {

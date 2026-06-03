@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('form tag', () => {
   it('should create a Form component', () => {
@@ -21,10 +21,7 @@ describe('form tag', () => {
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'form');
     expect(tag).toBeDefined();
 
-    const actionMeta = findTag(tag!, t =>
-      t.name === 'meta' && t.attributes.content === '/api/contact'
-    );
-    expect(actionMeta).toBeDefined();
+    expect(fields(tag).action).toBe('/api/contact');
   });
 
   it('should create FormField children from list items', () => {
@@ -45,10 +42,7 @@ describe('form tag', () => {
 {% /form %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'form');
-    const variantMeta = findTag(tag!, t =>
-      t.name === 'meta' && t.attributes.content === 'inline'
-    );
-    expect(variantMeta).toBeDefined();
+    expect(fields(tag).variant).toBe('inline');
   });
 });
 
@@ -135,11 +129,7 @@ describe('form field structural output', () => {
 {% /form %}`);
 
     const field = findTag(result as any, t => t.attributes['data-rune'] === 'form-field');
-    const meta = findTag(field!, t =>
-      t.name === 'meta' && t.attributes['data-field'] === 'field-type'
-    );
-    expect(meta).toBeDefined();
-    expect(meta!.attributes.content).toBe('email');
+    expect(fields(field).fieldType).toBe('email');
   });
 });
 

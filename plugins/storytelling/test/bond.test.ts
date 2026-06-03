@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag } from './helpers.js';
+import { parse, findTag, fields } from './helpers.js';
 
 describe('bond tag', () => {
 	it('should render from and to as span properties', () => {
@@ -26,17 +26,9 @@ Desc.
 {% /bond %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bond');
-		const typeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bond-type');
-		expect(typeMeta).toBeDefined();
-		expect(typeMeta!.attributes.content).toBe('rivalry');
-
-		const statusMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'status');
-		expect(statusMeta).toBeDefined();
-		expect(statusMeta!.attributes.content).toBe('active');
-
-		const bidiMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bidirectional');
-		expect(bidiMeta).toBeDefined();
-		expect(bidiMeta!.attributes.content).toBe('false');
+		expect(fields(tag).bondType).toBe('rivalry');
+		expect(fields(tag).status).toBe('active');
+		expect(fields(tag).bidirectional).toBe('false');
 	});
 
 	it('should default status to active', () => {
@@ -45,9 +37,7 @@ Desc.
 {% /bond %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bond');
-		const statusMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'status');
-		expect(statusMeta).toBeDefined();
-		expect(statusMeta!.attributes.content).toBe('active');
+		expect(fields(tag).status).toBe('active');
 	});
 
 	it('should default bidirectional to true', () => {
@@ -56,9 +46,7 @@ Desc.
 {% /bond %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bond');
-		const bidiMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bidirectional');
-		expect(bidiMeta).toBeDefined();
-		expect(bidiMeta!.attributes.content).toBe('true');
+		expect(fields(tag).bidirectional).toBe('true');
 	});
 
 	it('should work with relationship alias', () => {

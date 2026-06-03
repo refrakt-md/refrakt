@@ -68,7 +68,12 @@ export function createComponentRenderable(result: InlineTransformResult): Tag {
   // `data-field` (dropped by WORK-323). Content-marker properties (non-meta,
   // e.g. budget's `category`) get `data-field` but no field entry. Keys stay as
   // authored (camelCase, matching modifier names — no kebab transit).
+  // SPEC-082 (WORK-331): the `data-rune-fields` bag is the sole field-data
+  // representation. Collect the pure-data metas (those that got `data-field` and
+  // aren't SEO carriers) so they can be dropped from the emitted children — the
+  // value already lives in the bag.
   const fields: Record<string, unknown> = {};
+  const pureDataMetas = new Set<unknown>();
   for (const [k, v] of Object.entries(result.properties ?? {})) {
     if (v === undefined) continue;
     const tags: Tag[] = v instanceof RenderableNodeCursor ? v.nodes : Array.isArray(v) ? v : [v];
@@ -80,6 +85,7 @@ export function createComponentRenderable(result: InlineTransformResult): Tag {
         if (!isSeoMeta) n.attributes['data-field'] = toKebabCase(k);
         if (n.name === 'meta' && n.attributes.content !== undefined) {
           values.push(n.attributes.content);
+          if (!isSeoMeta) pureDataMetas.add(n);
         }
       }
     });
@@ -118,7 +124,7 @@ export function createComponentRenderable(result: InlineTransformResult): Tag {
   }
 
   const childArray = (Array.isArray(result.children) ? result.children : [result.children])
-    .filter(c => !emptySeoMetas.has(c));
+    .filter(c => !emptySeoMetas.has(c) && !pureDataMetas.has(c));
 
   const tag = new Markdoc.Tag(result.tag, {
     id: result.id,

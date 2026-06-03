@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import Markdoc from '@markdoc/markdoc';
 import { tags, nodes } from '../src/index.js';
+import { fields } from './helpers.js';
 
 function render(src: string) {
 	return Markdoc.transform(Markdoc.parse(src), { tags, nodes, variables: {} } as never);
@@ -66,9 +67,8 @@ describe('progress rune', () => {
 	});
 
 	it('emits a sentiment meta only when set', () => {
-		const sentimentMeta = (t: unknown) => find(t, (x) => x.attributes['data-field'] === 'sentiment');
 		const withIt = render('{% progress percent=40 sentiment="caution" /%}');
-		expect(sentimentMeta(withIt)?.attributes.content).toBe('caution');
-		expect(sentimentMeta(render('{% progress percent=40 /%}'))).toBeUndefined();
+		expect(fields(root(withIt)).sentiment).toBe('caution');
+		expect(fields(root(render('{% progress percent=40 /%}'))).sentiment).toBeUndefined();
 	});
 });

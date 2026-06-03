@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag } from './helpers.js';
+import { parse, findTag, fields } from './helpers.js';
 
 describe('hint tag', () => {
   it('should transform a basic hint', () => {
@@ -23,8 +23,6 @@ This is a note.
     const hint = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
     expect(hint).toBeDefined();
 
-    const meta = findTag(hint!, t => t.name === 'meta');
-    expect(meta).toBeDefined();
-    expect(meta!.attributes.content).toBe('note');
+    expect(fields(hint).hintType).toBe('note');
   });
 });

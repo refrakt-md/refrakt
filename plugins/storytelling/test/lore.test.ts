@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag } from './helpers.js';
+import { parse, findTag, fields } from './helpers.js';
 
 describe('lore tag', () => {
 	it('should render a basic lore entry', () => {
@@ -40,9 +40,7 @@ Hidden content.
 {% /lore %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
-		const spoilerMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'spoiler');
-		expect(spoilerMeta).toBeDefined();
-		expect(spoilerMeta!.attributes.content).toBe('true');
+		expect(fields(tag).spoiler).toBe('true');
 	});
 
 	it('should pass tags as meta', () => {
@@ -51,9 +49,7 @@ Content.
 {% /lore %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
-		const tagsMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'tags');
-		expect(tagsMeta).toBeDefined();
-		expect(tagsMeta!.attributes.content).toBe('magic,history');
+		expect(fields(tag).tags).toBe('magic,history');
 	});
 
 	it('should work with legend alias', () => {
