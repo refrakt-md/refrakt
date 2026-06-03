@@ -39,15 +39,16 @@ Apply the two layers cleanly:
   structure the cross-page pipeline can read. `type` / `title` / `stacked` /
   `provider` become **modifiers** (so the engine emits `data-chart-type` /
   `data-provider` / … for the client) — no JSON-in-meta, no `postTransform`.
-- **Rendering → pluggable presentation.** An `rf-chart` web component (the
+- **Rendering → pluggable presentation.** A single `rf-chart` web component (the
   progressive-enhancement pattern `sandbox` / `diagram` already use, which chart
-  oddly lacks) reads the `<table>` + `data-*` and renders via the selected
+  oddly lacks) reads the `<table>` + `data-*` and **delegates** to the selected
   **provider**. No-JS users keep the data table.
-- **Providers are the embed model.** A built-in `svg` provider (today's
-  renderer, *relocated out of the engine* into the provider) is the
-  zero-dependency default; additional providers (e.g. a charting library) slot
-  in behind the same contract. Selection is author- and/or theme-driven (the
-  precise model is an open question — see below).
+- **Providers are app-owned, theme-orthogonal.** Web components live in
+  `@refrakt-md/behaviors` (zero-dep) and are registered by the *framework
+  integration* (`registerElements()`), **not** by the theme — lumina is tokens +
+  CSS only. So the renderer is an app/author concern; the theme shapes only how
+  the chart *looks* (the provider reads `var(--rf-color-*)`, like diagram's
+  Mermaid colors). See the resolved model below.
 
 The valuable, cheap move is the **seam**: table-as-IR + `data-*` + a provider
 hook, with the existing SVG as the one built-in provider. Adding more providers
@@ -63,19 +64,62 @@ is later, demand-driven work — building them speculatively is a YAGNI trap.
 - Drops chart out of the `data-field` meta problem (WORK-331) for free — once
   data is a table and the knobs are modifiers, chart emits no field-metas.
 
-## Open questions (provider-selection model — to be settled before WORK-334)
+## Provider model (resolved)
 
-- **Selection precedence.** Author attribute (`provider=`) vs theme default vs a
-  built-in fallback — what wins, and how does a theme set a default?
-- **SSR vs client rendering.** Built-in `svg` could render at build (SSR, no-JS
-  chart) or client-side in the web component (data-table fallback only). Which
-  is the default contract?
-- **Provider contract.** What does a provider receive (parsed data + options)
-  and produce (DOM / canvas / SVG)? Registration shape.
-- **Home.** Chart + a provider zoo (possible library deps) likely belongs in a
-  **plugin**, not `packages/runes`. Decide whether the seam lands in core first
-  or chart relocates to a plugin as part of this.
-- **Which providers ship.** Only built-in `svg` initially; defer others.
+- **One element, delegation — not per-provider elements.** The rune always emits
+  `<rf-chart>` + the `<table>`; the provider is *a value* (`data-provider`), not
+  a different structure. On connect the element parses the table once →
+  `{ headers, rows }`, reads `data-provider`, and hands off to a provider.
+  Per-provider custom elements are rejected: they'd push a presentation choice
+  into the IR (the transform would pick the tag) and duplicate the shared
+  plumbing (table parsing, token reading, fallback handling).
+
+- **Provider contract** (SSR-capable optional):
+
+  ```ts
+  interface ChartProvider {
+    render(data: ChartData, container: HTMLElement, opts: ChartOptions): void | Promise<void>;
+    renderToString?(data: ChartData, opts: ChartOptions): string; // build-time / no-JS
+  }
+  ```
+
+  The provider owns the container's content (canvas for chartjs, innerHTML for
+  svg, DOM ops for d3). Heavy libs are **lazy-loaded via dynamic import only when
+  selected** — exactly how `diagram` pulls Mermaid on demand; the built-in `svg`
+  provider is bundled and zero-dep.
+
+- **Registration is app-level, mirroring existing precedent.** `behaviors`
+  already exposes `registerBehaviors(additional)` / `overrideBehavior(name, fn)`;
+  a chart provider registry (`registerChartProvider(name, provider)`) registers
+  the same way, where `registerElements()` is called. Adding a provider is an
+  app/plugin action — never a lumina/CSS action.
+
+- **Selection precedence (rides existing machinery).** `provider` is a modifier
+  resolved **author attr → site/app default → built-in `svg`**. The
+  modifier-default mechanism already does author-value-else-config-default; the
+  *default* is a site/app config decision, **not** the visual theme's.
+
+- **Theme stays orthogonal.** The chart reads design tokens (`var(--rf-color-*)`)
+  at render time, so it adapts to any theme regardless of provider — the theme
+  styles the result, never picks the renderer.
+
+- **Accessibility.** Keep the `<table>` in the DOM after a successful render
+  (visually-hidden) — chart + SR-readable data table, the gold-standard pattern,
+  essentially free here.
+
+## Open decisions (small, scoping)
+
+- **No-JS posture (default).** Default to table-only fallback (client renders the
+  chart), with SSR/no-JS-chart available as a **per-provider capability**
+  (`renderToString`, invoked at the framework-integration layer, same place as
+  `registerElements()`) rather than a global mode. Lean: yes — the deterministic
+  built-in `svg` is the natural first SSR-capable provider.
+- **Home.** Since providers register app-side (not in lumina), chart + the
+  provider zoo wants to be a **plugin**, with `behaviors` holding only the
+  built-in `svg`. Decide whether the seam lands in core first (`WORK-333`) then
+  chart relocates, or chart moves to a plugin as part of the seam.
+- **Which providers ship.** Only built-in `svg` initially; additional providers
+  are demand-driven (`WORK-334`).
 
 ## Non-goals
 

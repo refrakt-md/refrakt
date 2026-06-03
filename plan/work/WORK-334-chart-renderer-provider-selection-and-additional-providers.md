@@ -2,35 +2,33 @@
 
 # Chart renderer provider selection and additional providers
 
-Build out the {% ref "SPEC-083" /%} provider story on top of the seam from
-{% ref "WORK-333" /%}: a defined selection model (author vs theme vs default)
-and the contract for adding renderers beyond the built-in `svg` (e.g. a charting
-library).
+Demand-driven follow-up to the {% ref "WORK-333" /%} seam: ship renderers beyond
+the built-in `svg` (e.g. a charting library) and the SSR capability, on the
+provider model resolved in {% ref "SPEC-083" /%}.
 
-**Status: draft — blocked on the provider-selection model.** The design
-questions below are deliberately open; this item is a placeholder to be fleshed
-out once that model is settled. Do not start until the open questions in
-{% ref "SPEC-083" /%} are resolved.
+**Status: draft — demand-driven (not blocked).** The provider model is settled
+(single `rf-chart` delegating to an app-registered `ChartProvider`; selection
+author → site-default → `svg`; theme orthogonal via tokens). This item only
+makes sense once there's a concrete need for a second renderer — building one
+speculatively is the YAGNI trap SPEC-083 warns against.
 
-## Open design questions (resolve first)
+## Scope
 
-- **Selection precedence** — author `provider=` vs theme default vs built-in
-  fallback; how a theme sets/overrides the default.
-- **Provider contract** — what a provider receives (parsed data + options) and
-  returns (DOM / canvas / SVG); registration/lookup shape.
-- **SSR vs client** — per-provider, and the default.
-- **Home** — does chart (and the provider zoo + optional library deps) move to a
-  plugin.
-- **Which providers** to actually ship beyond built-in `svg`.
+- Additional `ChartProvider` implementations (e.g. `chartjs` / `d3`),
+  lazy-loaded via dynamic import only when selected.
+- The optional SSR path: providers implementing `renderToString`, invoked at the
+  framework-integration layer (where `registerElements()` runs) for a no-JS
+  chart — starting with the deterministic built-in `svg`.
+- Whatever plugin-home work the SPEC-083 "Home" decision implies (provider zoo +
+  optional deps out of core).
 
-## Acceptance Criteria (provisional — finalize after design)
+## Acceptance Criteria (finalize when a concrete provider lands)
 
-- [ ] A documented provider-selection model with defined precedence.
-- [ ] A provider registration/lookup contract additional renderers implement.
-- [ ] At least the built-in `svg` provider conforms; a second provider validates
-  the contract (only if a concrete need exists — otherwise prove the seam with
-  a stub and defer real libraries).
-- [ ] Theme can set a default provider; author can override per chart.
+- [ ] At least one additional provider implements `ChartProvider` and validates
+  the registry/lazy-load path (only when a real need exists).
+- [ ] SSR `renderToString` proven on the built-in `svg` provider (if the no-JS
+  posture decision lands that way).
+- [ ] Author per-chart override + site/app default both exercised end-to-end.
 - [ ] Docs; full suite green.
 
 ## Dependencies
