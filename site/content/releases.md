@@ -6,7 +6,22 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.17.0
+## v0.18.0
+
+- Remove the legacy `slots` + `structure` assembly shim from the identity transform engine (SPEC-079 phase 3).
+- **Breaking for third-party themes/plugins that still declare `RuneConfig.slots`.** Every first-party rune migrated to the SPEC-080 `metaFields` + `blocks` + `layout` model across v0.17.0, and the deprecation warning shipped for a full minor release. This release removes:
+- `RuneConfig.slots` (the ordered slot-name array) and the slot-based assembly path in the engine.
+- `StructureEntry.slot` and `StructureEntry.order` — only meaningful under slot assembly.
+- The automatic universal `.rf-badge` class the shim applied to every meta-typed `StructureEntry`. A `StructureEntry` that should render as a chip must now set its own `class` via `attrs`. The `data-meta-type` / `data-meta-sentiment` attributes are unchanged.
+- The `structure`-only before/after assembly (icons/badges injected around content) is **unchanged** — only the slot vocabulary is gone.
+- **Migration:** move slot ordering into a `layout` tree and project metadata through `metaFields` + `blocks`. See the SPEC-079 migration notes in the theme-authoring docs (`config-api`, `dimensions`).
+- Harden the rune output contract (SPEC-081 + SPEC-082).
+- **Declarative structure assembly (SPEC-081).** A recursive `layout` field assembles a rune's output tree from flat, named `data-name` slots the transform emits — wrappers, headers, and grouping are described in config rather than built imperatively in each rune's `transform`/`postTransform`. All first-party runes (recipe, howto, character, realm, faction, event, playlist, symbol, budget, embed, diagram, sandbox, mockup, comparison, …) migrated to flat-emit + `layout`, removing most `postTransform` structure-building.
+- **Typed node data channel (SPEC-082).** Rune field data now rides a single typed `data-rune-fields` JSON bag (camelCase keys) instead of per-field `<meta data-field>` children. The engine reads modifiers/metaFields/field-consumers from the bag and strips it from the final output, so rune HTML is markedly cleaner. Schema.org/RDFa SEO metadata is emitted inline and kept separate from the data channel.
+- **Chart seam.** `chart` keeps the authored `<table>` as the single source of truth and emits an `<rf-chart>` custom element that renders an SVG (bar/line) on the client; the table remains as the no-JS fallback.
+- Contracts now surface the layout skeleton; `projection.group`/`projection.relocate` are deprecated in favour of placing slots directly in the `layout` tree.
+
+## v0.17.0 - June 2, 2026
 
 - **v0.17.0 — Declarative metadata & layout.**
 - A new, fully declarative model for how metadata-bearing and media-bearing runes are assembled — replacing per-rune imperative structure code with a small, orthogonal config vocabulary, and giving every rune a consistent metadata treatment. Additive: existing content keeps rendering; meta-bearing runes simply gain a cleaner, theme-overridable structure.
