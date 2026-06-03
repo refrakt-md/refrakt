@@ -173,28 +173,21 @@ export const playlist = createContentModelSchema({
 		const artistMeta = artistValue ? new Tag('meta', { content: artistValue }) : null;
 		const idMeta = idValue ? new Tag('meta', { content: idValue }) : null;
 
-		// Structural wrapping — standard 3-section pattern (like recipe)
+		// SPEC-081: emit flat `data-name` slots — the `layout` config builds the
+		// content column (eyebrow block + preamble header + player + tracks +
+		// body) and the split sees only media + content.
 		const sectionProps = pageSectionProperties(header);
 
-		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
-		const bodyChildren: any[] = [];
-		if (playerEl) bodyChildren.push(playerEl);
-		bodyChildren.push(tracksOl);
-
-		// Transform any remaining body content
+		// Transform any remaining body content, wrapped in a body slot.
+		let bodyDiv: RenderableNodeCursor<Markdoc.Tag> | undefined;
 		if (contentZone.body) {
 			const bodyNodes = new RenderableNodeCursor(
 				Markdoc.transform(asNodes(contentZone.body), config) as RenderableTreeNode[],
 			);
 			if (bodyNodes.count() > 0) {
-				bodyChildren.push(...bodyNodes.toArray());
+				bodyDiv = bodyNodes.wrap('div') as RenderableNodeCursor<Markdoc.Tag>;
 			}
 		}
-
-		const mainContent = new RenderableNodeCursor([
-			...headerContent,
-			...bodyChildren,
-		]).wrap('div');
 
 		// Unwrap paragraph-wrapped images in the media zone
 		const mediaImgTag = extractMediaImage(side);
@@ -217,7 +210,10 @@ export const playlist = createContentModelSchema({
 
 		// Media before content so cover image appears at the top in stacked layout
 		if (hasMedia) children.push(mediaDiv.next());
-		children.push(mainContent.next());
+		children.push(...header.toArray());
+		if (playerEl) children.push(playerEl);
+		children.push(tracksOl);
+		if (bodyDiv) children.push(bodyDiv.next());
 
 		const trackItems = new RenderableNodeCursor(trackChildren);
 
@@ -237,7 +233,7 @@ export const playlist = createContentModelSchema({
 			},
 			refs: {
 				...sectionProps,
-				content: mainContent,
+				...(bodyDiv ? { body: bodyDiv } : {}),
 				media: mediaDiv,
 			},
 			schema: {

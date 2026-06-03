@@ -31,9 +31,15 @@ export const config: Record<string, RuneConfig> = {
 		blocks: {
 			eyebrow: { fields: ['type'], layout: 'bar' },
 		},
-		layout: { content: ['eyebrow', 'preamble'] },
+		// SPEC-081: the transform emits flat slots; `layout` builds the skeleton.
+		// The split sees media + content; the content column wraps the eyebrow
+		// bar, preamble header, player, tracks, and any trailing body.
+		layout: {
+			root: ['media', 'content'],
+			content: { tag: 'div', children: ['eyebrow', 'preamble', 'player', 'tracks', 'body'] },
+			preamble: { tag: 'header', children: ['headline', 'blurb', 'image'] },
+		},
 		autoLabel: {
-			header: 'preamble',
 			eyebrow: 'eyebrow',
 			headline: 'headline',
 			blurb: 'blurb',

@@ -3101,6 +3101,8 @@
 			"root": ".rf-playlist",
 			"dataRune": "playlist",
 			"childOrder": [
+				"media",
+				"content",
 				"{content}"
 			],
 			"modifiers": {
@@ -3152,11 +3154,6 @@
 				"eyebrow": {
 					"tag": "eyebrow",
 					"selector": ".rf-playlist__eyebrow",
-					"source": "autoLabel"
-				},
-				"preamble": {
-					"tag": "header",
-					"selector": ".rf-playlist__preamble",
 					"source": "autoLabel"
 				},
 				"headline": {

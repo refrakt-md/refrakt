@@ -38,12 +38,15 @@ export const event = createContentModelSchema({
 			new Tag('meta', { property: 'name', content: attrs.location }),
 		]) : undefined;
 
+		// SPEC-081: emit flat `data-name` header slots — `layout` wraps
+		// eyebrow/headline/blurb in the preamble <header>, so each is
+		// individually addressable (fixes the buried-preamble bug).
 		const resultChildren: any[] = [
 			dateMeta,
 			endDateMeta,
 			locationMeta,
 			urlMeta,
-			header.wrap('header').next(),
+			...header.toArray(),
 			bodyDiv.next(),
 		];
 		if (locationWrapper) resultChildren.push(locationWrapper);
