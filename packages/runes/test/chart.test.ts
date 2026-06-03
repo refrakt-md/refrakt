@@ -1,8 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag } from './helpers.js';
+
+// SPEC-083: chart emits the rf-chart custom element wrapping the authored data
+// `<table>` (the no-JS fallback + the source the web component parses). type /
+// stacked ride the data-rune-fields bag (→ data-*); the title is the caption.
 
 describe('chart tag', () => {
-	it('should transform a table into a chart', () => {
+	it('should transform a table into an rf-chart element', () => {
 		const result = parse(`{% chart type="bar" title="Sales" %}
 | Month | Revenue |
 |-------|---------|
@@ -13,10 +17,10 @@ describe('chart tag', () => {
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'chart');
 		expect(tag).toBeDefined();
-		expect(tag!.name).toBe('figure');
+		expect(tag!.name).toBe('rf-chart');
 	});
 
-	it('should pass chart type and title as meta', () => {
+	it('should carry type/stacked in the bag and the title in a caption', () => {
 		const result = parse(`{% chart type="line" title="Growth" stacked=true %}
 | Year | Users |
 |------|-------|
@@ -25,22 +29,17 @@ describe('chart tag', () => {
 {% /chart %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'chart');
-		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const type = metas.find(m => m.attributes['data-field'] === 'type');
-		expect(type).toBeDefined();
-		expect(type!.attributes.content).toBe('line');
+		const fields = JSON.parse(tag!.attributes['data-rune-fields'] as string);
+		expect(fields.type).toBe('line');
+		expect(fields.stacked).toBe('true');
 
-		const title = metas.find(m => m.attributes['data-field'] === 'title');
-		expect(title).toBeDefined();
-		expect(title!.attributes.content).toBe('Growth');
-
-		const stacked = metas.find(m => m.attributes['data-field'] === 'stacked');
-		expect(stacked).toBeDefined();
-		expect(stacked!.attributes.content).toBe('true');
+		const caption = findTag(tag!, t => t.name === 'caption');
+		expect(caption).toBeDefined();
+		expect(caption!.children).toContain('Growth');
 	});
 
-	it('should serialize table data as JSON in refs', () => {
+	it('should keep the data table as the source of truth', () => {
 		const result = parse(`{% chart %}
 | Month | Revenue |
 |-------|---------|
@@ -48,11 +47,9 @@ describe('chart tag', () => {
 {% /chart %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'chart');
-		const dataMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-name'] === 'data');
-		expect(dataMeta).toBeDefined();
-
-		const data = JSON.parse(dataMeta!.attributes.content);
-		expect(data.headers).toBeDefined();
-		expect(data.rows).toBeDefined();
+		const table = findTag(tag!, t => t.name === 'table' && t.attributes['data-name'] === 'data');
+		expect(table).toBeDefined();
+		expect(findTag(table!, t => t.name === 'thead')).toBeDefined();
+		expect(findTag(table!, t => t.name === 'tbody')).toBeDefined();
 	});
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, fields } from './helpers.js';
 
 describe('api tag', () => {
 	it('should transform a basic API endpoint', () => {
@@ -27,19 +27,10 @@ Creates a new user.
 {% /api %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'api');
-		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const method = metas.find(m => m.attributes['data-field'] === 'method');
-		expect(method).toBeDefined();
-		expect(method!.attributes.content).toBe('POST');
-
-		const path = metas.find(m => m.attributes['data-field'] === 'path');
-		expect(path).toBeDefined();
-		expect(path!.attributes.content).toBe('/api/users');
-
-		const auth = metas.find(m => m.attributes['data-field'] === 'auth');
-		expect(auth).toBeDefined();
-		expect(auth!.attributes.content).toBe('Bearer token');
+		expect(fields(tag).method).toBe('POST');
+		expect(fields(tag).path).toBe('/api/users');
+		expect(fields(tag).auth).toBe('Bearer token');
 	});
 
 	it('should work with endpoint alias', () => {

@@ -29,10 +29,15 @@ export const config: Record<string, RuneConfig> = {
 		blocks: {
 			metadata: { fields: ['estimatedTime', 'difficulty'], layout: 'definition-list' },
 		},
-		// Metadata def-list nests in the content column, below the header —
+		// SPEC-081: the transform emits flat slots; `layout` builds the skeleton.
+		// The metadata def-list nests in the content column below the header —
 		// the facts read naturally under the title/blurb (consistent with the
 		// storytelling runes).
-		layout: { content: ['preamble', 'metadata'] },
+		layout: {
+			root: ['content'],
+			content: { tag: 'div', children: ['preamble', 'metadata', 'tools', 'steps'] },
+			preamble: { tag: 'header', children: ['eyebrow', 'headline', 'blurb', 'image'] },
+		},
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', tool: 'inline', step: 'inline' },
 	},
@@ -73,8 +78,13 @@ export const config: Record<string, RuneConfig> = {
 		},
 		// Recipe hand-assembles content + media columns for its split layout;
 		// the metadata def-list nests inside the content column, below the
-		// header (root stays [media, content] as the transform emits it).
-		layout: { content: ['preamble', 'metadata'] },
+		// SPEC-081: the transform emits flat slots; `layout` builds the skeleton —
+		// the content column wraps the preamble header + metadata + body slots.
+		layout: {
+			root: ['media', 'content'],
+			content: { tag: 'div', children: ['preamble', 'metadata', 'ingredients', 'steps', 'tips'] },
+			preamble: { tag: 'header', children: ['eyebrow', 'headline', 'blurb'] },
+		},
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', ingredient: 'inline', step: 'inline', media: 'image' },
 	},

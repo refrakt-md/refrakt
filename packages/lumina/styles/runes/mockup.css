@@ -122,7 +122,7 @@
 	z-index: 2;
 }
 
-.rf-mockup__notch--dynamic-island {
+.rf-mockup__notch[data-notch="dynamic-island"] {
 	width: 120px;
 	height: 34px;
 	top: 12px;
@@ -130,7 +130,7 @@
 	border-radius: 20px;
 }
 
-.rf-mockup__notch--classic {
+.rf-mockup__notch[data-notch="classic"] {
 	width: 150px;
 	height: 28px;
 	top: 0;
@@ -138,7 +138,7 @@
 	border-radius: 0 0 20px 20px;
 }
 
-.rf-mockup__notch--punch-hole {
+.rf-mockup__notch[data-notch="punch-hole"] {
 	width: 12px;
 	height: 12px;
 	top: 16px;
@@ -225,7 +225,7 @@
 	padding-bottom: 60px;
 }
 
-.rf-mockup--iphone-se .rf-mockup__notch--classic {
+.rf-mockup--iphone-se .rf-mockup__notch[data-notch="classic"] {
 	position: relative;
 	top: auto;
 	left: auto;
@@ -355,15 +355,15 @@
 	border-radius: var(--rf-radius-full);
 }
 
-.rf-mockup__traffic-light--close {
+.rf-mockup__traffic-light[data-light="close"] {
 	background: #ff5f57;
 }
 
-.rf-mockup__traffic-light--minimize {
+.rf-mockup__traffic-light[data-light="minimize"] {
 	background: #febc2e;
 }
 
-.rf-mockup__traffic-light--maximize {
+.rf-mockup__traffic-light[data-light="maximize"] {
 	background: #28c840;
 }
 

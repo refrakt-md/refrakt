@@ -284,7 +284,14 @@
 			"dataRune": "embed",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"provider": {
+					"source": "meta",
+					"default": "generic",
+					"dataAttribute": "data-provider"
+				}
+			}
 		},
 		"Breadcrumb": {
 			"block": "breadcrumb",
@@ -424,6 +431,16 @@
 					"fields": [
 						"duration",
 						"currency"
+					]
+				},
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-budget__preamble",
+					"source": "layout",
+					"children": [
+						"headline",
+						"blurb",
+						"image"
 					]
 				}
 			}
@@ -737,7 +754,18 @@
 			"dataRune": "chart",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"type": {
+					"source": "meta",
+					"default": "bar",
+					"dataAttribute": "data-type"
+				},
+				"stacked": {
+					"source": "meta",
+					"dataAttribute": "data-stacked"
+				}
+			}
 		},
 		"PullQuote": {
 			"block": "pullquote",
@@ -1112,7 +1140,14 @@
 			"dataRune": "diagram",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"language": {
+					"source": "meta",
+					"default": "mermaid",
+					"dataAttribute": "data-language"
+				}
+			}
 		},
 		"Tint": {
 			"block": "tint",
@@ -1672,31 +1707,12 @@
 			"childOrder": [
 				"{content}"
 			],
-			"elements": {
-				"preamble": {
-					"tag": "header",
-					"selector": ".rf-comparison__preamble",
-					"source": "autoLabel"
-				},
-				"eyebrow": {
-					"tag": "eyebrow",
-					"selector": ".rf-comparison__eyebrow",
-					"source": "autoLabel"
-				},
-				"headline": {
-					"tag": "headline",
-					"selector": ".rf-comparison__headline",
-					"source": "autoLabel"
-				},
-				"blurb": {
-					"tag": "blurb",
-					"selector": ".rf-comparison__blurb",
-					"source": "autoLabel"
-				},
-				"image": {
-					"tag": "image",
-					"selector": ".rf-comparison__image",
-					"source": "autoLabel"
+			"modifiers": {
+				"layout": {
+					"source": "meta",
+					"default": "table",
+					"classPattern": ".rf-comparison--{value}",
+					"dataAttribute": "data-layout"
 				}
 			}
 		},
@@ -1831,7 +1847,12 @@
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-symbol__preamble",
-					"source": "autoLabel"
+					"source": "layout",
+					"children": [
+						"headline",
+						"blurb",
+						"image"
+					]
 				},
 				"headline": {
 					"tag": "headline",
@@ -1917,6 +1938,8 @@
 			"root": ".rf-character",
 			"dataRune": "character",
 			"childOrder": [
+				"portrait",
+				"content",
 				"{content}"
 			],
 			"modifiers": {
@@ -1954,10 +1977,24 @@
 						"status"
 					]
 				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-character__content",
+					"source": "layout",
+					"children": [
+						"preamble",
+						"metadata",
+						"sections",
+						"body"
+					]
+				},
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-character__preamble",
-					"source": "autoLabel"
+					"source": "layout",
+					"children": [
+						"name"
+					]
 				}
 			}
 		},
@@ -1982,6 +2019,8 @@
 			"root": ".rf-realm",
 			"dataRune": "realm",
 			"childOrder": [
+				"scene",
+				"content",
 				"{content}"
 			],
 			"modifiers": {
@@ -2048,10 +2087,24 @@
 					"selector": ".rf-realm__scene",
 					"source": "autoLabel"
 				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-realm__content",
+					"source": "layout",
+					"children": [
+						"preamble",
+						"metadata",
+						"body",
+						"sections"
+					]
+				},
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-realm__preamble",
-					"source": "autoLabel"
+					"source": "layout",
+					"children": [
+						"name"
+					]
 				}
 			},
 			"inlineStyles": {
@@ -2127,6 +2180,8 @@
 			"root": ".rf-faction",
 			"dataRune": "faction",
 			"childOrder": [
+				"scene",
+				"content",
 				"{content}"
 			],
 			"modifiers": {
@@ -2193,10 +2248,24 @@
 					"selector": ".rf-faction__scene",
 					"source": "autoLabel"
 				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-faction__content",
+					"source": "layout",
+					"children": [
+						"preamble",
+						"metadata",
+						"body",
+						"sections"
+					]
+				},
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-faction__preamble",
-					"source": "autoLabel"
+					"source": "layout",
+					"children": [
+						"name"
+					]
 				}
 			},
 			"inlineStyles": {
@@ -2425,7 +2494,13 @@
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-event__preamble",
-					"source": "autoLabel"
+					"source": "layout",
+					"children": [
+						"eyebrow",
+						"headline",
+						"blurb",
+						"image"
+					]
 				},
 				"eyebrow": {
 					"tag": "eyebrow",
@@ -2611,7 +2686,29 @@
 			"parent": "Map",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"lat": {
+					"source": "meta",
+					"dataAttribute": "data-lat"
+				},
+				"lng": {
+					"source": "meta",
+					"dataAttribute": "data-lng"
+				},
+				"address": {
+					"source": "meta",
+					"dataAttribute": "data-address"
+				},
+				"url": {
+					"source": "meta",
+					"dataAttribute": "data-url"
+				},
+				"group": {
+					"source": "meta",
+					"dataAttribute": "data-group"
+				}
+			}
 		},
 		"Cast": {
 			"block": "cast",
@@ -2932,6 +3029,7 @@
 			"root": ".rf-howto",
 			"dataRune": "how-to",
 			"childOrder": [
+				"content",
 				"{content}"
 			],
 			"modifiers": {
@@ -2961,7 +3059,13 @@
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-howto__preamble",
-					"source": "autoLabel"
+					"source": "layout",
+					"children": [
+						"eyebrow",
+						"headline",
+						"blurb",
+						"image"
+					]
 				},
 				"eyebrow": {
 					"tag": "eyebrow",
@@ -2982,6 +3086,17 @@
 					"tag": "image",
 					"selector": ".rf-howto__image",
 					"source": "autoLabel"
+				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-howto__content",
+					"source": "layout",
+					"children": [
+						"preamble",
+						"metadata",
+						"tools",
+						"steps"
+					]
 				}
 			}
 		},
@@ -2990,6 +3105,8 @@
 			"root": ".rf-recipe",
 			"dataRune": "recipe",
 			"childOrder": [
+				"media",
+				"content",
 				"{content}"
 			],
 			"modifiers": {
@@ -3053,7 +3170,12 @@
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-recipe__preamble",
-					"source": "autoLabel"
+					"source": "layout",
+					"children": [
+						"eyebrow",
+						"headline",
+						"blurb"
+					]
 				},
 				"eyebrow": {
 					"tag": "eyebrow",
@@ -3079,6 +3201,18 @@
 					"tag": "media",
 					"selector": ".rf-recipe__media",
 					"source": "autoLabel"
+				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-recipe__content",
+					"source": "layout",
+					"children": [
+						"preamble",
+						"metadata",
+						"ingredients",
+						"steps",
+						"tips"
+					]
 				}
 			},
 			"inlineStyles": {
@@ -3107,6 +3241,8 @@
 			"root": ".rf-playlist",
 			"dataRune": "playlist",
 			"childOrder": [
+				"media",
+				"content",
 				"{content}"
 			],
 			"modifiers": {
@@ -3160,11 +3296,6 @@
 					"selector": ".rf-playlist__eyebrow",
 					"source": "autoLabel"
 				},
-				"preamble": {
-					"tag": "header",
-					"selector": ".rf-playlist__preamble",
-					"source": "autoLabel"
-				},
 				"headline": {
 					"tag": "headline",
 					"selector": ".rf-playlist__headline",
@@ -3184,6 +3315,28 @@
 					"tag": "media",
 					"selector": ".rf-playlist__media",
 					"source": "autoLabel"
+				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-playlist__content",
+					"source": "layout",
+					"children": [
+						"eyebrow",
+						"preamble",
+						"player",
+						"tracks",
+						"body"
+					]
+				},
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-playlist__preamble",
+					"source": "layout",
+					"children": [
+						"headline",
+						"blurb",
+						"image"
+					]
 				}
 			},
 			"inlineStyles": {

@@ -26,6 +26,17 @@ export interface BlockDef {
 	wrap?: boolean;
 }
 
+/** SPEC-081 layout entry — one container's declaration within `layout`.
+ *  - A bare `string[]` orders an *existing* container's children (the
+ *    transform built the container; the engine reorders / injects into it).
+ *  - `{ tag, children }` *creates* a wrapper element (`<tag data-name=key>`)
+ *    and fills it with the resolved children, pulled from the flat transform
+ *    slots. `attrs` adds literal attributes to the created wrapper.
+ *  An object without `tag` behaves like the bare-array form (order existing). */
+export type LayoutEntry =
+	| string[]
+	| { tag?: string; children: string[]; attrs?: Record<string, string> };
+
 /** Pure data manifest entry for a meta-bearing field. Describes the
  *  field's domain semantics (type, sentiment, label) independent
  *  of which layout primitive renders it. The same field can appear as
@@ -139,15 +150,6 @@ export interface RuneConfig {
 	 *  Produces classes like: rf-callout--in-hero */
 	contextModifiers?: Record<string, string>;
 
-	/** Ordered slot names for structure assembly. When declared, the engine
-	 *  assembles children by iterating slots in order instead of binary before/after.
-	 *  The special 'content' slot is where content children are placed.
-	 *
-	 *  Legacy field — superseded by the SPEC-080 `metaFields` + `blocks` +
-	 *  `layout` model. No first-party rune declares it; the backwards-compat
-	 *  shim is removed in WORK-313. */
-	slots?: string[];
-
 	/** Structural overrides — additional elements to inject (keyed by data-name).
 	 *  Legacy field — superseded by SPEC-080 `metaFields` + `blocks`. No
 	 *  first-party rune declares it; removed in WORK-313. */
@@ -179,8 +181,12 @@ export interface RuneConfig {
 	 *  Projected (`blocks`) entries appear ONLY where named here — no
 	 *  canonical/default placement. Transform-built children a list doesn't
 	 *  name are appended in transform order (rune content is never dropped).
-	 *  Omitting `layout` renders the transform tree verbatim, no projection. */
-	layout?: Record<string, string[]>;
+	 *  Omitting `layout` renders the transform tree verbatim, no projection.
+	 *
+	 *  Each value is a {@link LayoutEntry}: a bare `string[]` orders an existing
+	 *  container, while `{ tag, children }` *creates* a wrapper element and
+	 *  fills it from the flat transform slots (SPEC-081 declarative assembly). */
+	layout?: Record<string, LayoutEntry>;
 
 	/** Auto-label children by tag name → data-name. E.g., { summary: 'header' } */
 	autoLabel?: Record<string, string>;
@@ -257,11 +263,21 @@ export interface RuneConfig {
 
 	/** Declarative structural reshaping of the output tree.
 	 *  Runs after BEM class application (Phase 6) but before meta tag filtering (Phase 7).
-	 *  Operates on `data-name` addresses. Execution order: hide → group → relocate. */
+	 *  Operates on `data-name` addresses. Execution order: hide → group → relocate.
+	 *
+	 *  SPEC-081 drew the boundary: `layout` is a rune/theme declaring its *own*
+	 *  intended structure (a tag-entry creates a wrapper, a named slot is placed
+	 *  wherever it appears); `projection` is post-hoc surgery on a tree you do
+	 *  *not* own — a theme bending a third-party rune's output by `data-name`.
+	 *  `hide` (explicit drop) and reshaping-unowned-trees are the retained role;
+	 *  `group` and `relocate` are deprecated, subsumed by recursive `layout`. */
 	projection?: {
 		/** Remove elements matching these data-name values from the children array entirely */
 		hide?: string[];
-		/** Collect elements by data-name, wrap in a new container, place at first member's position */
+		/** @deprecated SPEC-081 — use a `layout` tag-entry instead (a wrapper that
+		 *  creates a container *is* a group). Retained only for reshaping trees a
+		 *  theme does not own; new runes should declare structure via `layout`.
+		 *  Collect elements by data-name, wrap in a new container, place at first member's position. */
 		group?: Record<string, {
 			/** Container element tag */
 			tag: string;
@@ -270,7 +286,10 @@ export interface RuneConfig {
 			/** Optional slot assignment for the group container */
 			slot?: string;
 		}>;
-		/** Move elements by data-name into another element or slot */
+		/** @deprecated SPEC-081 — place the slot directly in the `layout` tree
+		 *  instead (you put a slot wherever you name it; no separate move op).
+		 *  Retained only for reshaping trees a theme does not own.
+		 *  Move elements by data-name into another element or slot. */
 		relocate?: Record<string, {
 			/** Target data-name or slot name */
 			into: string;
@@ -285,6 +304,11 @@ export interface RuneConfig {
 	postTransform?: (node: SerializedTag, context: {
 		modifiers: Record<string, string>;
 		parentType?: string;
+		/** The parsed SPEC-082 `data-rune-fields` bag for this node. The engine
+		 *  strips the bag attribute from the result before `postTransform` runs,
+		 *  so a hook that needs non-modifier field values reads them here (or via
+		 *  `readField(node, name, context.fields)` for bag-first + meta-fallback). */
+		fields: Record<string, unknown>;
 	}) => SerializedTag;
 }
 
@@ -297,10 +321,6 @@ export interface StructureEntry {
 	children?: (string | StructureEntry)[];
 	/** Insert before existing children */
 	before?: boolean;
-	/** Which slot this entry occupies (used when RuneConfig.slots is declared) */
-	slot?: string;
-	/** Ordering within a slot (default: 0, lower numbers first) */
-	order?: number;
 	/** Generate N copies of a template element. Used for star ratings, progress dots, etc. */
 	repeat?: {
 		/** Modifier name that provides the total count */

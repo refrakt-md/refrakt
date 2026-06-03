@@ -44,7 +44,11 @@ The best summer tunes.
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'playlist');
     expect(tag).toBeDefined();
 
-    const preamble = findTag(tag!, t => t.name === 'header');
-    expect(preamble).toBeDefined();
+    // SPEC-081: header fields are emitted flat (data-name); the engine's
+    // `layout` wraps them in the preamble <header>.
+    const headline = findTag(tag!, t => /^h[1-6]$/.test(t.name) && t.attributes['data-name'] === 'headline');
+    expect(headline).toBeDefined();
+    const blurb = findTag(tag!, t => t.name === 'p' && t.attributes['data-name'] === 'blurb');
+    expect(blurb).toBeDefined();
   });
 });

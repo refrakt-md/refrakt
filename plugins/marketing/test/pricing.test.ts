@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 import { extractSeo } from '@refrakt-md/runes';
 
 function seo(content: string) {
@@ -200,9 +200,7 @@ Features.
 {% /pricing %}`);
 
 		const tier = findTag(result as any, t => t.attributes['data-rune'] === 'tier');
-		const currencyMeta = findTag(tier!, t => t.name === 'meta' && t.attributes['data-field'] === 'currency');
-		expect(currencyMeta).toBeDefined();
-		expect(currencyMeta!.attributes.content).toBe('EUR');
+		expect(fields(tier).currency).toBe('EUR');
 	});
 
 	it('should extract Product with correct offers from SEO', () => {

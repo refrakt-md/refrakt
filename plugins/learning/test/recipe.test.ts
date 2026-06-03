@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { extractSeo } from '@refrakt-md/runes';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('recipe tag', () => {
 	it('should transform a basic recipe', () => {
@@ -37,14 +38,10 @@ A classic Italian pasta dish.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
-		const metas = findAllTags(tag!, t => t.name === 'meta');
-		const prepTime = metas.find(m => m.attributes['data-field'] === 'prep-time');
-		expect(prepTime).toBeDefined();
-		expect(prepTime!.attributes.content).toBe('PT10M');
-
-		const difficulty = metas.find(m => m.attributes['data-field'] === 'difficulty');
-		expect(difficulty).toBeDefined();
-		expect(difficulty!.attributes.content).toBe('hard');
+		// SPEC-082: field values live in the data-rune-fields bag.
+		const fields = JSON.parse(tag!.attributes['data-rune-fields'] as string);
+		expect(fields.prepTime).toBe('PT10M');
+		expect(fields.difficulty).toBe('hard');
 	});
 
 	it('should create ingredients list and steps list', () => {
@@ -86,11 +83,8 @@ A recipe with a photo.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
-		// Layout meta
-		const metas = findAllTags(tag!, t => t.name === 'meta');
-		const layoutMeta = metas.find(m => m.attributes['data-field'] === 'layout');
-		expect(layoutMeta).toBeDefined();
-		expect(layoutMeta!.attributes.content).toBe('split');
+		// Layout field
+		expect(fields(tag).layout).toBe('split');
 
 		// Media zone should have an image
 		const media = findTag(tag!, t => t.attributes['data-name'] === 'media');
@@ -111,15 +105,13 @@ A recipe with a photo.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
-		// Should still have content zone
-		const content = findTag(tag!, t => t.attributes['data-name'] === 'content');
-		expect(content).toBeDefined();
+		// SPEC-081: content slots are emitted flat (the engine's layout groups
+		// them into the content column).
+		const ingredients = findTag(tag!, t => t.attributes['data-name'] === 'ingredients');
+		expect(ingredients).toBeDefined();
 
 		// Layout defaults to stacked
-		const metas = findAllTags(tag!, t => t.name === 'meta');
-		const layoutMeta = metas.find(m => m.attributes['data-field'] === 'layout');
-		expect(layoutMeta).toBeDefined();
-		expect(layoutMeta!.attributes.content).toBe('stacked');
+		expect(fields(tag).layout).toBe('stacked');
 	});
 
 	it('should handle recipe with only ingredients', () => {
@@ -205,18 +197,35 @@ A delightful pasta recipe.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
-		// Header wrapper should exist
-		const header = findTag(tag!, t => t.name === 'header');
-		expect(header).toBeDefined();
-
-		// Should contain the eyebrow paragraph, heading, and blurb paragraph
-		const eyebrow = findTag(header!, t => t.name === 'p' && t.attributes['data-name'] === 'eyebrow');
+		// SPEC-081: header fields are emitted flat (data-name); the engine's
+		// `layout` wraps them in the preamble header.
+		const eyebrow = findTag(tag!, t => t.name === 'p' && t.attributes['data-name'] === 'eyebrow');
 		expect(eyebrow).toBeDefined();
 
-		const headline = findTag(header!, t => /^h[1-6]$/.test(t.name));
+		const headline = findTag(tag!, t => /^h[1-6]$/.test(t.name) && t.attributes['data-name'] === 'headline');
 		expect(headline).toBeDefined();
 
-		const blurb = findTag(header!, t => t.name === 'p' && t.attributes['data-name'] === 'blurb');
+		const blurb = findTag(tag!, t => t.name === 'p' && t.attributes['data-name'] === 'blurb');
 		expect(blurb).toBeDefined();
+	});
+
+	// SPEC-082 (WORK-329): the schema.org SEO metas are independent of the data
+	// channel (no data-field) and render inline; JSON-LD parity is preserved and
+	// unset optionals are skipped (skip-empties).
+	it('keeps schema.org props in JSON-LD via the SEO metas, skipping unset optionals', () => {
+		const tree = parse(`{% recipe prepTime="PT15M" servings=4 %}
+# Test Recipe
+
+- one ingredient
+
+1. one step
+{% /recipe %}`);
+		const seo = extractSeo(tree as any, {} as any, '/test');
+		const recipe = seo.jsonLd.find((o: any) => o['@type'] === 'Recipe') as any;
+		expect(recipe).toBeDefined();
+		expect(recipe.prepTime).toBe('PT15M');
+		expect(recipe.recipeYield).toBe('4');
+		// cookTime was not set → skip-empties → absent from JSON-LD.
+		expect(recipe.cookTime).toBeUndefined();
 	});
 });

@@ -1,4 +1,5 @@
 import Markdoc from '@markdoc/markdoc';
+import { readField as readNodeField } from '@refrakt-md/transform';
 import type { PluginPipelineHooks, DesignTokens } from '@refrakt-md/types';
 
 const { Tag } = Markdoc;
@@ -29,12 +30,12 @@ export const designPipelineHooks: PluginPipelineHooks = {
 		for (const page of pages) {
 			walkTags(page.renderable, (tag) => {
 				if (tag.attributes['data-rune'] !== 'design-context') return;
-				const tokensMeta = tag.children.find(c => Markdoc.Tag.isTag(c) && c.attributes['data-field'] === 'tokens');
-				const scopeMeta = tag.children.find(c => Markdoc.Tag.isTag(c) && c.attributes['data-field'] === 'scope');
-				if (!tokensMeta || !Markdoc.Tag.isTag(tokensMeta)) return;
-				const scope = (Markdoc.Tag.isTag(scopeMeta) ? scopeMeta.attributes.content as string : '') || 'default';
+				// SPEC-082: bag-first (data-rune-fields), legacy <meta data-field> fallback.
+				const tokensRaw = readNodeField(tag, 'tokens');
+				if (!tokensRaw) return;
+				const scope = readNodeField(tag, 'scope') || 'default';
 				try {
-					const tokens = JSON.parse(tokensMeta.attributes.content as string) as DesignTokens;
+					const tokens = JSON.parse(tokensRaw) as DesignTokens;
 					registry.register({ type: 'design-context', id: scope, sourceUrl: page.url, data: tokens as Record<string, unknown> });
 				} catch {
 					ctx.warn(`Failed to parse design tokens`, page.url);
@@ -58,8 +59,8 @@ export const designPipelineHooks: PluginPipelineHooks = {
 		let modified = false;
 		const newRenderable = mapTags(page.renderable, (tag) => {
 			if (tag.attributes['data-rune'] !== 'sandbox') return tag;
-			const contextMeta = tag.children.find(c => Markdoc.Tag.isTag(c) && c.attributes['data-field'] === 'context');
-			const scope = (Markdoc.Tag.isTag(contextMeta) ? contextMeta.attributes.content as string : '') || 'default';
+			// SPEC-082: bag-first (data-rune-fields), legacy <meta data-field> fallback.
+			const scope = readNodeField(tag, 'context') || 'default';
 			const tokens = designData.contexts[scope];
 			if (!tokens) {
 				if (scope !== 'default') {

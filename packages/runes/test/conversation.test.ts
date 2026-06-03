@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('conversation tag', () => {
   it('should create a Conversation component from blockquotes', () => {
@@ -38,9 +38,7 @@ describe('conversation tag', () => {
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'conversation');
     const messages = findAllTags(tag!, t => t.attributes['data-rune'] === 'conversation-message');
 
-    const alignments = messages.map(msg =>
-      findTag(msg, t => t.name === 'meta')?.attributes.content
-    );
+    const alignments = messages.map(msg => fields(msg).align);
     expect(alignments[0]).toBe('left');
     expect(alignments[1]).toBe('right');
   });

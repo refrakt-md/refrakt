@@ -1,5 +1,5 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
-import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, MetaField, BlockDef } from './types.js';
+import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, MetaField, BlockDef, LayoutEntry } from './types.js';
 import { isTag, makeTag, readMeta, toKebabCase } from './helpers.js';
 
 /** The 6 tint colour tokens */
@@ -49,7 +49,7 @@ export function createTransform(config: ThemeConfig) {
 		const dataRune = tree.attributes?.['data-rune'];
 		const configKey = dataRune ? runeKeyMap.get(dataRune) : undefined;
 		if (configKey) {
-			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, runes, runeKeyMap, identityTransform, configKey, parentRune);
+			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, runes, runeKeyMap, identityTransform, parentRune);
 		}
 
 		// Detect checkbox markers on list items
@@ -67,6 +67,32 @@ export function createTransform(config: ThemeConfig) {
 	return (tree: RendererNode) => identityTransform(tree);
 }
 
+/** Parse the SPEC-082 `data-rune-fields` channel (a JSON object) once per node.
+ *  Malformed / absent → empty. */
+function parseFields(raw: unknown): Record<string, unknown> {
+	if (typeof raw !== 'string' || raw.length === 0) return {};
+	try {
+		const v = JSON.parse(raw);
+		return v && typeof v === 'object' && !Array.isArray(v) ? v as Record<string, unknown> : {};
+	} catch {
+		return {};
+	}
+}
+
+/** Read a modifier/field value: prefer the parsed `fields` bag (a scalar there
+ *  equals the legacy meta's `content`, so the result is unchanged), falling back
+ *  to the `<meta data-field>` child when the key is absent or non-scalar. */
+function readField(
+	tag: SerializedTag,
+	fields: Record<string, unknown>,
+	name: string,
+	def?: string,
+): string | undefined {
+	const v = fields[name];
+	if (v !== undefined && v !== null && typeof v !== 'object') return v as string;
+	return readMeta(tag, name, def);
+}
+
 /** Apply BEM classes and structural enhancements to a rune tag */
 function transformRune(
 	tag: SerializedTag,
@@ -78,13 +104,18 @@ function transformRune(
 	allRunes: Record<string, RuneConfig>,
 	runeKeyMap: Map<string, string>,
 	recurse: (node: RendererNode, parentRune?: string) => RendererNode,
-	runeName: string,
 	parentRune?: string
 ): SerializedTag {
 	const block = `${prefix}-${config.block}`;
 	const dataRune = tag.attributes?.['data-rune'];
 
-	// 1. Read modifiers from meta tags, collecting resolved values
+	// SPEC-082 (WORK-322): the typed field-data channel. The engine reads
+	// modifier / metaField values from `data-rune-fields` (preferred), falling
+	// back per-field to the legacy `<meta data-field>` children. Both channels
+	// carry the same values (WORK-321 dual-emit), so output is unchanged.
+	const fields = parseFields(tag.attributes['data-rune-fields']);
+
+	// 1. Read modifiers from the field channel, collecting resolved values
 	const modifierClasses: string[] = [];
 	const modifierValues: Record<string, string> = {};
 	const mappedValues: Record<string, string> = {};
@@ -93,7 +124,7 @@ function transformRune(
 		for (const [name, mod] of Object.entries(config.modifiers)) {
 			if (mod.source === 'attribute') attrModifierNames.push(name);
 			const value = mod.source === 'meta'
-				? readMeta(tag, name, mod.default)
+				? readField(tag, fields, name, mod.default)
 				: tag.attributes[name] ?? mod.default;
 			if (value) {
 				modifierValues[name] = value;
@@ -348,17 +379,11 @@ function transformRune(
 
 	// 5. SPEC-080: block-and-layout assembly (metaFields + blocks + layout).
 	//    Projects named metadata blocks and places them into the transform
-	//    tree per `layout`. Takes precedence over the legacy `slots +
-	//    structure` shim (removed in WORK-313).
+	//    tree per `layout`. The legacy `slots + structure` shim was removed in
+	//    WORK-313; the `structure`-only before/after path below survives for
+	//    non-meta-projecting runes that just inject icons or badges.
 	if (config.blocks || config.layout) {
 		children = assembleWithBlocks(config, block, children, modifierValues);
-	} else if (config.slots && config.structure) {
-		// Legacy slots + structure path — emit one-time migration warning if
-		// the rune uses the v0.16 slot vocabulary (header-primary etc.).
-		if (hasLegacySlotNames(config.slots)) {
-			warnLegacySlots(runeName);
-		}
-		children = assembleWithSlots(config.slots, config.structure, children, config.contentWrapper, modifierValues, icons);
 	} else if (config.structure) {
 		// Legacy before/after assembly
 		const prepend: RendererNode[] = [];
@@ -453,8 +478,10 @@ function transformRune(
 			: styleParts.join('; ');
 	}
 
-	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead)
-	const { width: _w, spacing: _s, inset: _i, density: _d, 'data-rune': _dr, ...rawPassAttrs } = tag.attributes;
+	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead).
+	// `data-rune-fields` (SPEC-082) is the internal field-data channel — strip it from output so
+	// the dual-emit in WORK-321 stays output-neutral; the engine begins *reading* it in WORK-322.
+	const { width: _w, spacing: _s, inset: _i, density: _d, 'data-rune': _dr, 'data-rune-fields': _drf, ...rawPassAttrs } = tag.attributes;
 	// Strip consumed attribute-source modifier names (expressed via data-* / BEM)
 	const passAttrs = attrModifierNames.length > 0
 		? Object.fromEntries(Object.entries(rawPassAttrs).filter(([k]) => !attrModifierNames.includes(k)))
@@ -476,11 +503,14 @@ function transformRune(
 		children: filteredChildren,
 	};
 
-	// 9. Programmatic escape hatch — runs after all declarative processing
+	// 9. Programmatic escape hatch — runs after all declarative processing.
+	// `fields` is the parsed bag (the bag attribute was stripped from `result`
+	// above), so a hook can read non-modifier field values without the metas.
 	if (config.postTransform) {
 		return config.postTransform(result, {
 			modifiers: modifierValues,
 			parentType: parentRune,
+			fields,
 		});
 	}
 
@@ -609,77 +639,6 @@ function annotateSequence(children: RendererNode[], sequence: string, direction?
 			annotateSequence(child.children, sequence, direction);
 		}
 	}
-}
-
-/** Assemble children using named slots.
- *  Iterates slots in declared order, collecting structure entries per slot sorted by order,
- *  and places content children at the 'content' slot. */
-function assembleWithSlots(
-	slots: string[],
-	structure: Record<string, StructureEntry>,
-	contentChildren: RendererNode[],
-	contentWrapper: { tag: string; ref: string } | undefined,
-	modifierValues: Record<string, string>,
-	icons: Record<string, Record<string, string>>,
-): RendererNode[] {
-	// Determine the first and last non-content slots for before/after mapping
-	const nonContentSlots = slots.filter(s => s !== 'content');
-	const firstSlot = nonContentSlots[0];
-	const lastSlot = nonContentSlots[nonContentSlots.length - 1];
-
-	// Build all structure elements and assign to slots
-	type SlotEntry = { element: RendererNode; order: number };
-	const slotMap = new Map<string, SlotEntry[]>();
-	for (const slot of slots) {
-		slotMap.set(slot, []);
-	}
-
-	for (const [name, entry] of Object.entries(structure)) {
-		const element = buildStructureElement(entry, name, modifierValues, icons);
-		if (!element) continue;
-
-		// Determine slot assignment: explicit slot > before mapping > last slot
-		let targetSlot: string;
-		if (entry.slot) {
-			targetSlot = entry.slot;
-		} else if (entry.before && firstSlot) {
-			targetSlot = firstSlot;
-		} else if (lastSlot) {
-			targetSlot = lastSlot;
-		} else {
-			// Fallback: place before content if before=true, after otherwise
-			targetSlot = entry.before ? (firstSlot ?? slots[0]) : (lastSlot ?? slots[slots.length - 1]);
-		}
-
-		const bucket = slotMap.get(targetSlot);
-		if (bucket) {
-			bucket.push({ element, order: entry.order ?? 0 });
-		}
-	}
-
-	// Sort entries within each slot by order
-	for (const entries of slotMap.values()) {
-		entries.sort((a, b) => a.order - b.order);
-	}
-
-	// Assemble in slot order
-	const result: RendererNode[] = [];
-	for (const slot of slots) {
-		if (slot === 'content') {
-			if (contentWrapper) {
-				result.push(makeTag(contentWrapper.tag, { 'data-name': contentWrapper.ref }, contentChildren));
-			} else {
-				result.push(...contentChildren);
-			}
-		} else {
-			const entries = slotMap.get(slot) ?? [];
-			for (const { element } of entries) {
-				result.push(element);
-			}
-		}
-	}
-
-	return result;
 }
 
 /** Find and remove a child by data-name from a flat children array.
@@ -887,13 +846,6 @@ function buildStructureElement(
 	// Metadata dimension attributes — additive semantic markers for generic theme styling
 	if (entry.metaType) {
 		baseAttrs['data-meta-type'] = entry.metaType;
-		// SPEC-079: legacy `slots + structure` configs get the universal
-		// `.rf-badge` class on every meta-typed structure entry so the
-		// chip-look rides along without needing the new zone dispatcher.
-		// Layout primitives in the new zone path emit `.rf-badge`
-		// independently via buildChip().
-		const existingClass = baseAttrs.class || '';
-		baseAttrs.class = existingClass ? `rf-badge ${existingClass}` : 'rf-badge';
 	}
 	if (entry.sentimentMap && entry.metaText) {
 		const rawValue = modifierValues[entry.metaText];
@@ -949,28 +901,6 @@ function buildStructureElement(
 }
 
 // ─── Field resolution + value rendering ─────────────────────────────────
-
-/** One-time warning tracker — emits the migration hint once per rune
- *  name per process. */
-const LEGACY_SLOT_WARNED = new Set<string>();
-const LEGACY_SLOT_NAMES = new Set<string>(['header-primary', 'header-secondary', 'preamble', 'content']);
-
-function hasLegacySlotNames(slots: string[]): boolean {
-	return slots.some(s => LEGACY_SLOT_NAMES.has(s));
-}
-
-function warnLegacySlots(runeName: string): void {
-	if (LEGACY_SLOT_WARNED.has(runeName)) return;
-	LEGACY_SLOT_WARNED.add(runeName);
-	// Use console.warn — engine has no logger infra.
-	// eslint-disable-next-line no-console
-	console.warn(
-		`[refrakt] Rune \`${runeName}\` uses legacy \`slots\` + \`structure\` config. ` +
-		`Migrate to the SPEC-080 \`metaFields\` + \`blocks\` + \`layout\` model. ` +
-		`Legacy configs continue to render via the backwards-compat shim ` +
-		`(removed in WORK-313).`,
-	);
-}
 
 /** A field resolved against the modifier values — ready for layout rendering. */
 interface ResolvedField {
@@ -1220,54 +1150,123 @@ function assembleWithBlocks(
 
 	// No `layout` → render the transform tree verbatim (no projection).
 	if (Object.keys(layout).length === 0) return contentChildren;
+	const ctx: LayoutCtx = { layout, renderBlock };
 
-	// Compose the rune root first (reserved `root` key), then named containers.
-	let result = layout.root
-		? composeContainer(contentChildren, layout.root, renderBlock)
-		: contentChildren;
-
-	for (const [key, order] of Object.entries(layout)) {
-		if (key === 'root') continue;
-		result = updateContainerByName(result, key, children =>
-			composeContainer(children, order, renderBlock),
+	// `root` present → resolve the whole skeleton recursively, pulling flat
+	// transform slots into (possibly created) containers; unlisted slots append.
+	const rootEntry = layout.root;
+	if (rootEntry) {
+		const rootOrder = Array.isArray(rootEntry) ? rootEntry : rootEntry.children;
+		const byName = mapDataNames(contentChildren);
+		const consumed = new Set<string>();
+		const placed = placeNames(rootOrder, byName, consumed, ctx, ['root']);
+		const rest = contentChildren.filter(c =>
+			!(isTag(c) && c.attributes['data-name'] && consumed.has(c.attributes['data-name'])),
 		);
+		return [...placed, ...rest];
+	}
+
+	// No `root` → reorder existing containers in place (backward-compatible:
+	// the transform built the container; the engine reorders / injects into it).
+	let result = contentChildren;
+	for (const [key, entry] of Object.entries(layout)) {
+		const childOrder = Array.isArray(entry) ? entry : entry.children;
+		result = updateContainerByName(result, key, children => {
+			const byName = mapDataNames(children);
+			const consumed = new Set<string>();
+			const placed = placeNames(childOrder, byName, consumed, ctx, [key]);
+			const rest = children.filter(c =>
+				!(isTag(c) && c.attributes['data-name'] && consumed.has(c.attributes['data-name'])),
+			);
+			return [...placed, ...rest];
+		});
 	}
 	return result;
 }
 
-/** Reorder + inject blocks within one container's children per an ordered
- *  list of block names. Transform children are placed by `data-name` where
- *  the list names them; projected blocks are rendered in place; names absent
- *  from both are skipped; transform children the list didn't name append in
- *  their original order (never dropped). */
-function composeContainer(
-	children: RendererNode[],
-	order: string[],
-	renderBlock: (name: string) => SerializedTag | null,
-): RendererNode[] {
-	const byName = new Map<string, RendererNode>();
-	for (const c of children) {
-		if (isTag(c) && c.attributes['data-name']) byName.set(c.attributes['data-name'], c);
-	}
-	const named = new Set(order);
+interface LayoutCtx {
+	layout: Record<string, LayoutEntry>;
+	renderBlock: (name: string) => SerializedTag | null;
+}
 
-	const result: RendererNode[] = [];
-	for (const name of order) {
-		const existing = byName.get(name);
-		if (existing) {
-			result.push(existing);
-		} else {
-			const projected = renderBlock(name);
-			if (projected) result.push(projected);
-		}
-	}
-	// Append unlisted transform children (incl. meta tags / untagged nodes).
+const LAYOUT_CYCLE_WARNED = new Set<string>();
+function warnLayoutCycle(name: string): void {
+	if (LAYOUT_CYCLE_WARNED.has(name)) return;
+	LAYOUT_CYCLE_WARNED.add(name);
+	// eslint-disable-next-line no-console
+	console.warn(`[refrakt] layout reference cycle at "${name}" — skipping to break the loop.`);
+}
+
+/** Map a child array to a `data-name` → node index (tags carrying a data-name). */
+function mapDataNames(children: RendererNode[]): Map<string, SerializedTag> {
+	const m = new Map<string, SerializedTag>();
 	for (const c of children) {
-		const dn = isTag(c) ? c.attributes['data-name'] : undefined;
-		if (dn && named.has(dn)) continue;
-		result.push(c);
+		if (isTag(c) && c.attributes['data-name']) m.set(c.attributes['data-name'], c);
 	}
-	return result;
+	return m;
+}
+
+/** Resolve an ordered list of names into nodes, pulling from `byName` and
+ *  recording consumed names. Each name resolves, in order:
+ *   1. a `layout` entry with a `tag` → create a wrapper element and recurse
+ *      (its children pull from the same flat pool);
+ *   2. a `layout` entry without a `tag` → reorder the existing container of that
+ *      name in place;
+ *   3. a projected block;
+ *   4. a transform node carrying that `data-name`;
+ *   5. otherwise skip.
+ *  A name is placed at most once (diamond); reference cycles warn and skip. */
+function placeNames(
+	order: string[],
+	byName: Map<string, SerializedTag>,
+	consumed: Set<string>,
+	ctx: LayoutCtx,
+	ancestors: string[],
+): RendererNode[] {
+	const out: RendererNode[] = [];
+	for (const name of order) {
+		if (consumed.has(name)) continue;
+		if (ancestors.includes(name)) { warnLayoutCycle(name); continue; }
+
+		const entry = ctx.layout[name];
+
+		// 1. layout entry with a tag → create a wrapper, recurse into the pool
+		if (entry && !Array.isArray(entry) && entry.tag) {
+			consumed.add(name);
+			const kids = placeNames(entry.children, byName, consumed, ctx, [...ancestors, name]);
+			out.push(makeTag(entry.tag, { 'data-name': name, ...(entry.attrs ?? {}) }, kids));
+			continue;
+		}
+
+		// 2. layout entry without a tag → reorder the existing container in place
+		if (entry) {
+			const existing = byName.get(name);
+			if (existing) {
+				consumed.add(name);
+				const childOrder = Array.isArray(entry) ? entry : entry.children;
+				const innerByName = mapDataNames(existing.children);
+				const innerConsumed = new Set<string>();
+				const innerPlaced = placeNames(childOrder, innerByName, innerConsumed, ctx, [...ancestors, name]);
+				const innerRest = existing.children.filter(c =>
+					!(isTag(c) && c.attributes['data-name'] && innerConsumed.has(c.attributes['data-name'])),
+				);
+				out.push({ ...existing, children: [...innerPlaced, ...innerRest] });
+				continue;
+			}
+			// no existing container — fall through to block / node
+		}
+
+		// 3. projected block
+		const block = ctx.renderBlock(name);
+		if (block) { consumed.add(name); out.push(block); continue; }
+
+		// 4. transform node by data-name
+		const node = byName.get(name);
+		if (node) { consumed.add(name); out.push(node); continue; }
+
+		// 5. unresolved → skip
+	}
+	return out;
 }
 
 /** Immutably replace the children of the first descendant carrying

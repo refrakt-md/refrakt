@@ -8,7 +8,7 @@ export { layoutTransform } from './layout.js';
 export { buildBreadcrumb, buildToc, buildPrevNext, buildVersionSwitcher } from './computed.js';
 
 // Configuration types
-export type { ThemeConfig, RuneConfig, StructureEntry, TintTokens, TintDefinition, BgPresetDefinition } from './types.js';
+export type { ThemeConfig, RuneConfig, StructureEntry, TintTokens, TintDefinition, BgPresetDefinition, LayoutPrimitive, BlockDef, MetaField, LayoutEntry } from './types.js';
 export type { LayoutConfig, LayoutSlot, LayoutPageData, ComputedContent, LayoutStructureEntry } from './types.js';
 
 // Re-export serialized tree types for convenience
@@ -19,7 +19,7 @@ export { generateStructureContract } from './contracts.js';
 export type { StructureContract, RuneContract } from './contracts.js';
 
 // Helpers (useful for theme authors building custom transforms)
-export { toKebabCase, fromKebabCase, isTag, makeTag, findMeta, findByDataName, nonMetaChildren, readMeta, extractComponentInterface, resolveGap, ratioToFr, resolveOffset, resolveValign, parsePlacement } from './helpers.js';
+export { toKebabCase, fromKebabCase, isTag, makeTag, findMeta, findByDataName, nonMetaChildren, readMeta, parseFields, readField, extractComponentInterface, resolveGap, ratioToFr, resolveOffset, resolveValign, parsePlacement } from './helpers.js';
 export type { ComponentInterface } from './helpers.js';
 
 // HTML rendering

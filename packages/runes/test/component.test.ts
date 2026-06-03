@@ -117,4 +117,59 @@ describe('createComponentRenderable', () => {
 			expect(list.attributes['data-name']).toBe('ingredients');
 		});
 	});
+
+	describe('SPEC-082 fields channel (dual-emit)', () => {
+		it('projects scalar properties into data-rune-fields AND the legacy metas', () => {
+			const method = new Tag('meta', { content: 'GET' });
+			const ratingTotal = new Tag('meta', { content: 5 }); // typed number
+
+			const result = createComponentRenderable({
+				rune: 'api',
+				tag: 'article',
+				properties: { method, ratingTotal },
+				children: [method, ratingTotal],
+			});
+
+			// Legacy channel — data-field (kebab) still set on the metas.
+			expect(method.attributes['data-field']).toBe('method');
+			expect(ratingTotal.attributes['data-field']).toBe('rating-total');
+
+			// New channel — parsed fields bag: camelCase keys (matching modifier
+			// names), values typed (number stays a number).
+			const fields = JSON.parse(result.attributes['data-rune-fields'] as string);
+			expect(fields).toEqual({ method: 'GET', ratingTotal: 5 });
+			expect(typeof fields.ratingTotal).toBe('number');
+		});
+
+		it('excludes non-meta content-marker properties from the fields bag', () => {
+			const currency = new Tag('meta', { content: 'USD' });
+			const categories = new Tag('div', {}, ['…']); // content node, not a <meta>
+
+			const result = createComponentRenderable({
+				rune: 'budget',
+				tag: 'section',
+				properties: { currency, category: categories },
+				children: [currency, categories],
+			});
+
+			// The content-marker property still gets data-field…
+			expect(categories.attributes['data-field']).toBe('category');
+			// …but is not a scalar field value.
+			const fields = JSON.parse(result.attributes['data-rune-fields'] as string);
+			expect(fields).toEqual({ currency: 'USD' });
+		});
+
+		it('omits data-rune-fields entirely when there are no scalar properties', () => {
+			const body = new Tag('div', {}, ['x']);
+
+			const result = createComponentRenderable({
+				rune: 'simple',
+				tag: 'div',
+				refs: { body },
+				children: [body],
+			});
+
+			expect(result.attributes['data-rune-fields']).toBeUndefined();
+		});
+	});
 });

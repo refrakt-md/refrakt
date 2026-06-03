@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('plot tag', () => {
 	it('should convert list items to beats', () => {
@@ -34,13 +34,10 @@ describe('plot tag', () => {
 {% /plot %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'plot');
-		const typeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'plot-type');
-		expect(typeMeta).toBeDefined();
-		expect(typeMeta!.attributes.content).toBe('quest');
-
-		const structMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'structure');
-		expect(structMeta).toBeDefined();
-		expect(structMeta!.attributes.content).toBe('linear');
+		// SPEC-082: field values live in the data-rune-fields bag.
+		const fields = JSON.parse(tag!.attributes['data-rune-fields'] as string);
+		expect(fields.plotType).toBe('quest');
+		expect(fields.structure).toBe('linear');
 	});
 
 	it('should parse status markers from list items', () => {
@@ -55,11 +52,8 @@ describe('plot tag', () => {
 		const beats = findAllTags(tag!, t => t.attributes['data-rune'] === 'beat');
 		expect(beats.length).toBe(4);
 
-		// Check that status meta tags are present
-		const statuses = beats.map(beat => {
-			const meta = findTag(beat, t => t.name === 'meta' && t.attributes['data-field'] === 'status');
-			return meta?.attributes.content;
-		});
+		// Check that status field values are present in the bag
+		const statuses = beats.map(beat => fields(beat).status);
 		expect(statuses).toEqual(['complete', 'active', 'planned', 'abandoned']);
 	});
 

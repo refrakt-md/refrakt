@@ -147,10 +147,11 @@ export const symbol = createContentModelSchema({
 
 		const bodyDiv = bodyStream.wrap('div');
 
+		// SPEC-081: emit flat `data-name` header slots — `layout` wraps
+		// eyebrow/headline/blurb in the preamble <header>, so each is
+		// individually addressable (fixes the buried-preamble bug).
 		const children: any[] = [kindMeta, langMeta, sinceMeta, deprecatedMeta, sourceMeta];
-		if (header.count() > 0) {
-			children.push(header.wrap('header').next());
-		}
+		children.push(...header.toArray());
 		children.push(bodyDiv.next());
 
 		return createComponentRenderable({ rune: 'symbol', schemaOrgType: 'TechArticle',

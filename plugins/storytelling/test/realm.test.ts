@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('realm tag', () => {
 	it('should convert headings to realm sections', () => {
@@ -39,13 +39,10 @@ Content.
 {% /realm %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'realm');
-		const typeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'realm-type');
-		expect(typeMeta).toBeDefined();
-		expect(typeMeta!.attributes.content).toBe('sanctuary');
-
-		const scaleMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'scale');
-		expect(scaleMeta).toBeDefined();
-		expect(scaleMeta!.attributes.content).toBe('settlement');
+		// SPEC-082: field values live in the data-rune-fields bag.
+		const fields = JSON.parse(tag!.attributes['data-rune-fields'] as string);
+		expect(fields.realmType).toBe('sanctuary');
+		expect(fields.scale).toBe('settlement');
 	});
 
 	it('should pass parent attribute as meta', () => {
@@ -54,9 +51,7 @@ Content.
 {% /realm %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'realm');
-		const parentMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'parent');
-		expect(parentMeta).toBeDefined();
-		expect(parentMeta!.attributes.content).toBe('Eriador');
+		expect(fields(tag).parent).toBe('Eriador');
 	});
 
 	it('should work with location alias', () => {

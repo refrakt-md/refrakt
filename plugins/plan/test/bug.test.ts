@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('bug tag', () => {
 	it('should transform a basic bug report', () => {
@@ -31,10 +31,8 @@ Showcase is clipped.
 {% /bug %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bug');
-		const metas = findAllTags(tag!, t => t.name === 'meta');
-
-		expect(metas.find(m => m.attributes['data-field'] === 'status')!.attributes.content).toBe('reported');
-		expect(metas.find(m => m.attributes['data-field'] === 'severity')!.attributes.content).toBe('critical');
+		expect(fields(tag).status).toBe('reported');
+		expect(fields(tag).severity).toBe('critical');
 	});
 
 	it('should handle sections', () => {

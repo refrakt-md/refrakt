@@ -1,72 +1,61 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag } from './helpers.js';
+
+// SPEC-081: the sandbox transform emits the `rf-sandbox` custom element with its
+// config on `data-*` attributes (no field-metas); the source rides an inert
+// `<template data-content="source">` and the SSR fallback a
+// `<template data-content="fallback">`.
 
 describe('sandbox tag', () => {
-	it('should extract raw HTML content via __source + node.lines', () => {
+	it('should extract raw HTML content onto data-source-content', () => {
 		const result = parse(`{% sandbox %}
 <button class="btn">Click me</button>
 {% /sandbox %}`);
 
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox).toBeDefined();
-		expect(sandbox!.name).toBe('div');
-
-		const contentMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'content');
-		expect(contentMeta).toBeDefined();
-		expect(contentMeta!.attributes.content).toContain('<button class="btn">Click me</button>');
+		expect(sandbox!.name).toBe('rf-sandbox');
+		expect(sandbox!.attributes['data-source-content']).toContain('<button class="btn">Click me</button>');
 	});
 
-	it('should pass framework as meta property', () => {
+	it('should pass framework as a data attribute', () => {
 		const result = parse(`{% sandbox framework="tailwind" %}
 <div class="p-4">Hello</div>
 {% /sandbox %}`);
 
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const fwMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'framework');
-		expect(fwMeta).toBeDefined();
-		expect(fwMeta!.attributes.content).toBe('tailwind');
+		expect(sandbox!.attributes['data-framework']).toBe('tailwind');
 	});
 
-	it('should pass dependencies as meta property', () => {
+	it('should pass dependencies as a data attribute', () => {
 		const result = parse(`{% sandbox dependencies="https://cdn.example.com/lib.js,https://cdn.example.com/style.css" %}
 <div>Test</div>
 {% /sandbox %}`);
 
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const depMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'dependencies');
-		expect(depMeta).toBeDefined();
-		expect(depMeta!.attributes.content).toContain('lib.js');
-		expect(depMeta!.attributes.content).toContain('style.css');
+		expect(sandbox!.attributes['data-dependencies']).toContain('lib.js');
+		expect(sandbox!.attributes['data-dependencies']).toContain('style.css');
 	});
 
-	it('should include height meta with default auto', () => {
+	it('should default data-height to auto', () => {
 		const result = parse(`{% sandbox %}
 <p>Content</p>
 {% /sandbox %}`);
 
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const heightMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'height');
-		expect(heightMeta).toBeDefined();
-		expect(heightMeta!.attributes.content).toBe('auto');
+		expect(sandbox!.attributes['data-height']).toBe('auto');
 	});
 
-	it('should pass explicit height as meta property', () => {
+	it('should pass explicit height as a data attribute', () => {
 		const result = parse(`{% sandbox height=400 %}
 <p>Content</p>
 {% /sandbox %}`);
 
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const heightMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'height');
-		expect(heightMeta).toBeDefined();
-		expect(heightMeta!.attributes.content).toBe('400');
+		expect(sandbox!.attributes['data-height']).toBe('400');
 	});
 
-	it('should include static fallback pre/code for SSR', () => {
+	it('should include a static fallback pre/code for SSR (in a template)', () => {
 		const result = parse(`{% sandbox %}
 <div>Hello World</div>
 {% /sandbox %}`);
@@ -89,65 +78,48 @@ describe('sandbox tag', () => {
 {% /sandbox %}`);
 
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const contentMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'content');
-		expect(contentMeta).toBeDefined();
-		expect(contentMeta!.attributes.content).toContain('<style>');
-		expect(contentMeta!.attributes.content).toContain('.box { color: red; }');
-		expect(contentMeta!.attributes.content).toContain('<script>');
-		expect(contentMeta!.attributes.content).toContain("console.log('hello')");
+		const content = sandbox!.attributes['data-source-content'] as string;
+		expect(content).toContain('<style>');
+		expect(content).toContain('.box { color: red; }');
+		expect(content).toContain('<script>');
+		expect(content).toContain("console.log('hello')");
 	});
 
-	it('should pass label as meta property when provided', () => {
+	it('should pass label as a data attribute when provided', () => {
 		const result = parse(`{% sandbox label="Before" %}
 <button>Old</button>
 {% /sandbox %}`);
 
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const labelMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'label');
-		expect(labelMeta).toBeDefined();
-		expect(labelMeta!.attributes.content).toBe('Before');
+		expect(sandbox!.attributes['data-label']).toBe('Before');
 	});
 
-	it('should not emit label meta when label is not provided', () => {
+	it('should not set data-label when label is not provided', () => {
 		const result = parse(`{% sandbox %}
 <p>Content</p>
 {% /sandbox %}`);
 
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const labelMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'label');
-		expect(labelMeta).toBeUndefined();
+		expect(sandbox!.attributes['data-label']).toBeUndefined();
 	});
 
-	it('should have empty content when __source is not available', () => {
-		// parse() always sets __source, so we test with empty content
+	it('should have empty content when there is nothing between the tags', () => {
 		const result = parse(`{% sandbox %}
 {% /sandbox %}`);
 
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const contentMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'content');
-		expect(contentMeta).toBeDefined();
-		// Empty sandbox — nothing between open/close tags
-		expect(contentMeta!.attributes.content).toBe('');
+		expect(sandbox!.attributes['data-source-content']).toBe('');
 	});
 
-	it('should default framework and dependencies to empty strings', () => {
+	it('should omit framework / dependencies data attrs when empty', () => {
 		const result = parse(`{% sandbox %}
 <p>Test</p>
 {% /sandbox %}`);
 
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-
-		const fwMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'framework');
-		expect(fwMeta!.attributes.content).toBe('');
-
-		const depMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'dependencies');
-		expect(depMeta!.attributes.content).toBe('');
+		// Empty values are not serialized as data-* attributes.
+		expect(sandbox!.attributes['data-framework']).toBeUndefined();
+		expect(sandbox!.attributes['data-dependencies']).toBeUndefined();
 	});
 });
 
@@ -183,16 +155,13 @@ describe('sandbox with src attribute', () => {
 
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox).toBeDefined();
-
-		const contentMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'content');
-		expect(contentMeta).toBeDefined();
-		expect(contentMeta!.attributes.content).toContain('<form>Login</form>');
-		expect(contentMeta!.attributes.content).toContain('.form { padding: 1rem; }');
-		expect(contentMeta!.attributes.content).toContain('console.log("hello")');
+		const content = sandbox!.attributes['data-source-content'] as string;
+		expect(content).toContain('<form>Login</form>');
+		expect(content).toContain('.form { padding: 1rem; }');
+		expect(content).toContain('console.log("hello")');
 	});
 
-	it('should generate source panels with origin data', () => {
+	it('should expose source-file origins on data-source-origins', () => {
 		const vars = mockSandboxFs({
 			'/examples/card/index.html': '<div>Card</div>',
 			'/examples/card/style.css': '.card { border: 1px solid; }',
@@ -202,14 +171,11 @@ describe('sandbox with src attribute', () => {
 {% /sandbox %}`, vars);
 
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const panels = findAllTags(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'source-panel');
-
-		expect(panels.length).toBe(2);
-		expect(panels[0].attributes['data-label']).toBe('HTML');
-		expect(panels[0].attributes['data-origin']).toBe('card/index.html');
-		expect(panels[1].attributes['data-label']).toBe('CSS');
-		expect(panels[1].attributes['data-origin']).toBe('card/style.css');
+		// SPEC-081: panels are built client-side; the transform only ships the
+		// labelled origins (`{label}\t{origin}` per line).
+		const origins = sandbox!.attributes['data-source-origins'] as string;
+		expect(origins).toContain('HTML\tcard/index.html');
+		expect(origins).toContain('CSS\tcard/style.css');
 	});
 
 	it('should work with framework and other attributes', () => {
@@ -221,13 +187,8 @@ describe('sandbox with src attribute', () => {
 {% /sandbox %}`, vars);
 
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const fwMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'framework');
-		expect(fwMeta!.attributes.content).toBe('tailwind');
-
-		const contentMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'content');
-		expect(contentMeta!.attributes.content).toContain('<button>Click</button>');
+		expect(sandbox!.attributes['data-framework']).toBe('tailwind');
+		expect(sandbox!.attributes['data-source-content']).toContain('<button>Click</button>');
 	});
 
 	it('should show error when src directory does not exist', () => {
@@ -237,20 +198,15 @@ describe('sandbox with src attribute', () => {
 {% /sandbox %}`, vars);
 
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const contentMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'content');
-		expect(contentMeta!.attributes.content).toContain('not found');
+		expect(sandbox!.attributes['data-source-content']).toContain('not found');
 	});
 
 	it('should fall back to inline when sandbox variables are not available', () => {
-		// Without sandbox fs variables, src attribute is ignored and inline extraction is used
 		const result = parse(`{% sandbox src="login" %}
 <p>Inline content</p>
 {% /sandbox %}`);
 
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const contentMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'content');
-		expect(contentMeta!.attributes.content).toContain('<p>Inline content</p>');
+		expect(sandbox!.attributes['data-source-content']).toContain('<p>Inline content</p>');
 	});
 });

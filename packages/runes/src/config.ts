@@ -1,5 +1,5 @@
 import type { ThemeConfig, SerializedTag, RendererNode } from '@refrakt-md/transform';
-import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta, resolveGap, ratioToFr, resolveOffset, resolveValign, parsePlacement } from '@refrakt-md/transform';
+import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta, readField, resolveGap, ratioToFr, resolveOffset, resolveValign, parsePlacement } from '@refrakt-md/transform';
 import type { PluginPipelineHooks, TransformedPage, EntityRegistry, AggregatedData, PipelineContext } from '@refrakt-md/types';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
@@ -19,58 +19,6 @@ import { resolveExpands } from './expand-pipeline.js';
 import { resolveCollections } from './collection-resolve.js';
 import { resolveRelationships } from './relationships-resolve.js';
 import { resolveAggregates } from './aggregate-resolve.js';
-
-// ─── Budget postTransform helpers ───
-
-const BUDGET_CURRENCY_SYMBOLS: Record<string, string> = {
-	USD: '$', EUR: '€', GBP: '£', JPY: '¥', CNY: '¥',
-	AUD: 'A$', CAD: 'C$', CHF: 'CHF ', SEK: 'kr', NOK: 'kr', DKK: 'kr',
-	INR: '₹', KRW: '₩', BRL: 'R$', MXN: 'MX$', ZAR: 'R',
-};
-
-function formatBudgetAmount(amount: number, symbol: string): string {
-	const parts = (amount % 1 === 0 ? String(amount) : amount.toFixed(2)).split('.');
-	parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-	return symbol + parts.join('.');
-}
-
-function parseBudgetDays(duration: string): number {
-	let days = 0;
-	const dayMatch = duration.match(/(\d+)\s*day/i);
-	const weekMatch = duration.match(/(\d+)\s*week/i);
-	const monthMatch = duration.match(/(\d+)\s*month/i);
-	if (dayMatch) days += parseInt(dayMatch[1]);
-	if (weekMatch) days += parseInt(weekMatch[1]) * 7;
-	if (monthMatch) days += parseInt(monthMatch[1]) * 30;
-	if (days === 0) {
-		const num = parseInt(duration);
-		if (!isNaN(num)) days = num;
-	}
-	return days;
-}
-
-function parseBudgetAmount(str: string): number {
-	const cleaned = str.replace(/[€$£¥₹₩\s]/g, '').replace(/,/g, '');
-	const range = cleaned.match(/^([\d.]+)\s*[-–]\s*([\d.]+)/);
-	if (range) return (parseFloat(range[1]) + parseFloat(range[2])) / 2;
-	const num = parseFloat(cleaned);
-	return isNaN(num) ? 0 : num;
-}
-
-/** Recursively find all nodes with a specific data-rune attribute */
-function collectByRune(children: RendererNode[], typeName: string): SerializedTag[] {
-	const results: SerializedTag[] = [];
-	for (const c of children) {
-		if (isTag(c)) {
-			if (c.attributes?.['data-rune'] === typeName) {
-				results.push(c);
-			} else {
-				results.push(...collectByRune(c.children, typeName));
-			}
-		}
-	}
-	return results;
-}
 
 /** Read text content from a property span child */
 function readPropText(node: SerializedTag, prop: string): string {
@@ -143,12 +91,13 @@ export const coreConfig: ThemeConfig = {
 			},
 			layout: { root: ['topbar'] },
 			sections: { topbar: 'header' },
+			// Opt in to the highlight transform's `theme.code.colorScheme` cascade
+			// (topbar + tab chrome flip with the inner code). Static flag → declared
+			// via rootAttributes rather than a postTransform. The `data-code-host`
+			// consumer reads it truthily, so `"true"` is equivalent to the old
+			// valueless boolean.
+			rootAttributes: { 'data-code-host': 'true' },
 			editHints: { panel: 'code' },
-			postTransform(node) {
-				// Opt in to the highlight transform's `theme.code.colorScheme`
-				// cascade so the topbar + tab chrome flip with the inner code.
-				return { ...node, attributes: { ...node.attributes, 'data-code-host': true } };
-			},
 		},
 		PageSection: { block: 'page-section' },
 		TableOfContents: { block: 'toc' },
@@ -210,50 +159,13 @@ export const coreConfig: ThemeConfig = {
 		Embed: {
 			block: 'embed',
 			defaultDensity: 'compact',
-			editHints: { fallback: 'none' },
-			postTransform(node) {
-				const block = node.attributes.class?.split(' ')[0] || 'rf-embed';
-				const embedUrl = readMeta(node, 'embedUrl') || readMeta(node, 'url') || '';
-				const title = readMeta(node, 'title') || 'Embedded content';
-				const aspect = readMeta(node, 'aspect') || '16:9';
-				const provider = readMeta(node, 'provider') || '';
-
-				const [w, h] = aspect.split(':').map(Number);
-				const paddingPercent = h && w ? (h / w) * 100 : 56.25;
-
-				// Filter out consumed meta tags
-				const contentChildren = node.children.filter(child => {
-					if (!isTag(child) || child.name !== 'meta') return true;
-					const prop = child.attributes['data-field'];
-					return !['embedUrl', 'url', 'title', 'aspect', 'provider', 'type'].includes(prop);
-				});
-
-				const children: (SerializedTag | string)[] = [];
-				if (embedUrl) {
-					children.push(
-						makeTag('div', { class: `${block}__wrapper`, style: `padding-bottom: ${paddingPercent}%` }, [
-							makeTag('iframe', {
-								src: embedUrl,
-								title,
-								frameborder: '0',
-								allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
-								allowfullscreen: '',
-								loading: 'lazy',
-							}, []),
-						])
-					);
-				}
-				children.push(makeTag('div', { class: `${block}__fallback` }, contentChildren));
-
-				return {
-					...node,
-					attributes: {
-						...node.attributes,
-						...(provider ? { 'data-provider': provider } : {}),
-					},
-					children,
-				};
+			// SPEC-081: the rune transform builds the wrapper/iframe/fallback
+			// structure directly; `provider` is a bag-only modifier that surfaces
+			// as `data-provider`. No postTransform.
+			modifiers: {
+				provider: { source: 'meta', default: 'generic', noBemClass: true },
 			},
+			editHints: { fallback: 'none' },
 		},
 		Breadcrumb: {
 			block: 'breadcrumb',
@@ -303,64 +215,12 @@ export const coreConfig: ThemeConfig = {
 			blocks: {
 				meta: { fields: ['duration', { field: 'currency', align: 'end' }], layout: 'bar' },
 			},
-			layout: { root: ['meta', 'preamble'] },
-			postTransform(node) {
-				const block = 'rf-budget';
-				const catBlock = 'rf-budget-category';
-
-				// Read from data-* attributes (set by engine after consuming meta tags)
-				const currency = node.attributes['data-currency'] || 'USD';
-				const duration = node.attributes['data-duration'] || '';
-				const showPerDay = node.attributes['data-show-per-day'] !== 'false';
-
-				const symbol = BUDGET_CURRENCY_SYMBOLS[currency.toUpperCase()] || currency + ' ';
-
-				// Find all BudgetCategory children and compute totals
-				const categories = collectByRune(node.children, 'budget-category');
-				let grandTotal = 0;
-
-				for (const cat of categories) {
-					// Read from data attributes set by engine from label/subtotal modifiers
-					const label = cat.attributes['data-label'] || '';
-					const subtotalStr = cat.attributes['data-subtotal'] || '0';
-					const subtotal = parseFloat(subtotalStr) || 0;
-					grandTotal += subtotal;
-
-					// Inject category header with label and formatted subtotal
-					const catHeader = makeTag('div', { class: `${catBlock}__header` }, [
-						makeTag('span', { class: `${catBlock}__label` }, [label]),
-						makeTag('span', { class: `${catBlock}__subtotal` }, [formatBudgetAmount(subtotal, symbol)]),
-					]);
-					cat.children.unshift(catHeader);
-				}
-
-				// Build footer with totals
-				const footerChildren: (SerializedTag | string)[] = [
-					makeTag('div', { class: `${block}__total` }, [
-						makeTag('span', { class: `${block}__total-label` }, ['Total']),
-						makeTag('span', { class: `${block}__total-amount` }, [formatBudgetAmount(grandTotal, symbol)]),
-					]),
-				];
-
-				if (duration && showPerDay) {
-					const days = parseBudgetDays(duration);
-					if (days > 0) {
-						const perDay = grandTotal / days;
-						footerChildren.push(
-							makeTag('div', { class: `${block}__per-day` }, [
-								makeTag('span', { class: `${block}__per-day-label` }, ['Per day']),
-								makeTag('span', { class: `${block}__per-day-amount` }, [formatBudgetAmount(perDay, symbol)]),
-							])
-						);
-					}
-				}
-
-				const footer = makeTag('div', { class: `${block}__footer` }, footerChildren);
-
-				return {
-					...node,
-					children: [...node.children, footer],
-				};
+			// SPEC-081: the transform emits flat header slots and derives the
+			// totals (footer + category headers built there); `layout` builds the
+			// preamble <header>, and the categories / footer append after it.
+			layout: {
+				root: ['meta', 'preamble'],
+				preamble: { tag: 'header', children: ['headline', 'blurb', 'image'] },
 			},
 		},
 		BudgetCategory: {
@@ -522,126 +382,14 @@ export const coreConfig: ThemeConfig = {
 		Chart: {
 			block: 'chart',
 			defaultDensity: 'compact',
-			editHints: { data: 'none' },
-			postTransform(node) {
-				const block = node.attributes.class?.split(' ')[0] || 'rf-chart';
-				const chartType = readMeta(node, 'type') || 'bar';
-				const title = readMeta(node, 'title') || '';
-				const dataJson = findByDataName(node, 'data')?.attributes?.content || '{}';
-
-				let chartData: { headers: string[]; rows: string[][] } = { headers: [], rows: [] };
-				try { chartData = JSON.parse(dataJson); } catch { /* fallback */ }
-
-				const colors = [
-					'var(--rf-color-info)', 'var(--rf-color-success)',
-					'var(--rf-color-warning)', 'var(--rf-color-danger)',
-					'#7c3aed', '#0891b2',
-				];
-
-				const svgW = 600, svgH = 300;
-				const pad = { top: 30, right: 20, bottom: 40, left: 50 };
-				const cw = svgW - pad.left - pad.right;
-				const ch = svgH - pad.top - pad.bottom;
-
-				const labels = chartData.rows.map(r => r[0] || '');
-				const series = chartData.headers.slice(1);
-				const values = chartData.rows.map(r => r.slice(1).map(v => parseFloat(v) || 0));
-				const maxVal = Math.max(...values.flat(), 1);
-
-				const bgw = cw / Math.max(labels.length, 1);
-				const bw = bgw / Math.max(series.length + 1, 2);
-
-				// Build SVG children
-				const svgChildren: SerializedTag[] = [];
-
-				// Axes
-				svgChildren.push(makeTag('line', {
-					x1: String(pad.left), y1: String(pad.top),
-					x2: String(pad.left), y2: String(svgH - pad.bottom),
-					stroke: 'var(--rf-color-border)', 'stroke-width': '1',
-				}, []));
-				svgChildren.push(makeTag('line', {
-					x1: String(pad.left), y1: String(svgH - pad.bottom),
-					x2: String(svgW - pad.right), y2: String(svgH - pad.bottom),
-					stroke: 'var(--rf-color-border)', 'stroke-width': '1',
-				}, []));
-
-				if (chartType === 'bar') {
-					for (let i = 0; i < labels.length; i++) {
-						for (let si = 0; si < series.length; si++) {
-							const h = (values[i][si] / maxVal) * ch;
-							svgChildren.push(makeTag('rect', {
-								x: String(pad.left + i * bgw + si * bw + bw * 0.25),
-								y: String(pad.top + ch - h),
-								width: String(bw * 0.75),
-								height: String(h),
-								style: `fill: ${colors[si % colors.length]}`,
-								rx: '2',
-							}, []));
-						}
-						svgChildren.push(makeTag('text', {
-							x: String(pad.left + i * bgw + bgw / 2),
-							y: String(svgH - pad.bottom + 20),
-							'text-anchor': 'middle', 'font-size': '12',
-							fill: 'var(--rf-color-muted)',
-						}, [labels[i]]));
-					}
-				} else if (chartType === 'line') {
-					for (let si = 0; si < series.length; si++) {
-						const pts = labels.map((_, i) =>
-							`${pad.left + i * bgw + bgw / 2},${pad.top + ch - (values[i][si] / maxVal) * ch}`
-						).join(' ');
-						svgChildren.push(makeTag('polyline', {
-							points: pts, fill: 'none',
-							style: `stroke: ${colors[si % colors.length]}`,
-							'stroke-width': '2',
-						}, []));
-						for (let i = 0; i < labels.length; i++) {
-							svgChildren.push(makeTag('circle', {
-								cx: String(pad.left + i * bgw + bgw / 2),
-								cy: String(pad.top + ch - (values[i][si] / maxVal) * ch),
-								r: '4',
-								style: `fill: ${colors[si % colors.length]}`,
-							}, []));
-						}
-					}
-					for (let i = 0; i < labels.length; i++) {
-						svgChildren.push(makeTag('text', {
-							x: String(pad.left + i * bgw + bgw / 2),
-							y: String(svgH - pad.bottom + 20),
-							'text-anchor': 'middle', 'font-size': '12',
-							fill: 'var(--rf-color-muted)',
-						}, [labels[i]]));
-					}
-				}
-
-				const children: (SerializedTag | string)[] = [];
-				if (title) {
-					children.push(makeTag('figcaption', { class: `${block}__title` }, [title]));
-				}
-				children.push(makeTag('div', { class: `${block}__container` }, [
-					makeTag('svg', {
-						viewBox: `0 0 ${svgW} ${svgH}`,
-						class: `${block}__svg`,
-					}, svgChildren),
-				]));
-
-				// Legend
-				if (series.length > 1) {
-					const legendItems = series.map((name, i) =>
-						makeTag('span', { class: `${block}__legend-item` }, [
-							makeTag('span', {
-								class: `${block}__legend-color`,
-								style: `background: ${colors[i % colors.length]};`,
-							}, []),
-							name,
-						])
-					);
-					children.push(makeTag('div', { class: `${block}__legend` }, legendItems));
-				}
-
-				return { ...node, children };
+			// SPEC-083: the transform emits the rf-chart element wrapping the data
+			// `<table>`; `type` / `stacked` are bag-only modifiers (→ data-type /
+			// data-stacked) the web component reads. No postTransform.
+			modifiers: {
+				type: { source: 'meta', default: 'bar', noBemClass: true },
+				stacked: { source: 'meta', noBemClass: true },
 			},
+			editHints: { data: 'none' },
 		},
 
 		// ─── Text formatting & layout runes ───
@@ -780,34 +528,10 @@ export const coreConfig: ThemeConfig = {
 			block: 'diagram',
 			defaultDensity: 'compact',
 			editHints: { source: 'code' },
-			postTransform(node) {
-				const block = node.attributes.class?.split(' ')[0] || 'rf-diagram';
-				const language = readMeta(node, 'language') || 'mermaid';
-				const title = readMeta(node, 'title') || '';
-				const sourceMeta = findByDataName(node, 'source');
-				const source = sourceMeta?.attributes?.content || '';
-
-				// Build fallback HTML (visible in SSR, replaced by web component)
-				const children: (SerializedTag | string)[] = [];
-				if (title) {
-					children.push(makeTag('figcaption', { class: `${block}__title` }, [title]));
-				}
-				const containerChildren: (SerializedTag | string)[] = source
-					? [makeTag('pre', { class: `${block}__source` }, [makeTag('code', {}, [source])])]
-					: [];
-				children.push(makeTag('div', { class: `${block}__container` }, containerChildren));
-
-				// Hidden source for web component to read
-				if (source) {
-					children.push(makeTag('div', { 'data-content': 'source', style: 'display:none' }, [source]));
-				}
-
-				return {
-					...node,
-					name: 'rf-diagram',
-					attributes: { ...node.attributes, 'data-language': language },
-					children,
-				};
+			// SPEC-081: the rune transform emits the `rf-diagram` element + SSR
+			// fallback; `language` is a bag-only modifier (→ data-language).
+			modifiers: {
+				language: { source: 'meta', default: 'mermaid', noBemClass: true },
 			},
 		},
 		Tint: { block: 'tint', parent: '*' },
@@ -817,64 +541,6 @@ export const coreConfig: ThemeConfig = {
 			block: 'sandbox',
 			defaultDensity: 'compact',
 			editHints: { source: 'code' },
-			postTransform(node) {
-				// Read meta values
-				const content = readMeta(node, 'content') || '';
-				const framework = readMeta(node, 'framework') || '';
-				const dependencies = readMeta(node, 'dependencies') || '';
-				const label = readMeta(node, 'label') || '';
-				const height = readMeta(node, 'height') || 'auto';
-				const designTokens = readMeta(node, 'design-tokens') || '';
-				const securityMode = readMeta(node, 'security-mode') || 'trusted';
-				const allowJs = readMeta(node, 'allow-js') || 'true';
-				const sandboxOrigin = readMeta(node, 'sandbox-origin') || '';
-
-				// Keep non-meta children (fallback pre) and extract source panels
-				const fallbackChildren: typeof node.children = [];
-				const sourcePanelOrigins: string[] = [];
-				for (const child of node.children) {
-					if (!isTag(child)) { fallbackChildren.push(child); continue; }
-					if (child.name === 'meta') {
-						// Collect origin data from source panels
-						if (child.attributes?.['data-field'] === 'source-panel' && child.attributes?.['data-origin']) {
-							sourcePanelOrigins.push(`${child.attributes['data-label'] || ''}\t${child.attributes['data-origin']}`);
-						}
-						continue;
-					}
-					fallbackChildren.push(child);
-				}
-
-				// Wrap fallback and source in <template> tags (inert/invisible).
-				// Using <template> instead of <div> avoids HTML parser issues:
-				// when <rf-sandbox> is inside <p>, block elements like <pre> or
-				// <div> cause <p> to auto-close, pushing children out of the
-				// custom element. <template> is parsed but never rendered.
-				const children = [
-					...(fallbackChildren.length > 0
-						? [makeTag('template', { 'data-content': 'fallback' }, fallbackChildren)]
-						: []),
-					makeTag('template', { 'data-content': 'source' }, [content]),
-				];
-
-				return {
-					...node,
-					name: 'rf-sandbox',
-					attributes: {
-						...node.attributes,
-						'data-source-content': content,
-						...(framework ? { 'data-framework': framework } : {}),
-						...(dependencies ? { 'data-dependencies': dependencies } : {}),
-						...(label ? { 'data-label': label } : {}),
-						'data-height': height,
-						...(designTokens ? { 'data-design-tokens': designTokens } : {}),
-						...(sourcePanelOrigins.length > 0 ? { 'data-source-origins': sourcePanelOrigins.join('\n') } : {}),
-						'data-security-mode': securityMode,
-						'data-allow-js': allowJs,
-						...(sandboxOrigin ? { 'data-sandbox-origin': sandboxOrigin } : {}),
-					},
-					children,
-				};
-			},
 		},
 	},
 };
@@ -2288,23 +1954,12 @@ function resolveBlogPosts(
 	const result = mapBlogTags(renderable, (tag) => {
 		if (tag.attributes['data-rune'] !== 'blog') return tag;
 
-		const folderMeta = tag.children.find(
-			(c: unknown) => Tag.isTag(c) && c.attributes['data-field'] === 'folder',
-		);
-		const sortMeta = tag.children.find(
-			(c: unknown) => Tag.isTag(c) && c.attributes['data-field'] === 'sort',
-		);
-		const filterMeta = tag.children.find(
-			(c: unknown) => Tag.isTag(c) && c.attributes['data-field'] === 'filter',
-		);
-		const limitMeta = tag.children.find(
-			(c: unknown) => Tag.isTag(c) && c.attributes['data-field'] === 'limit',
-		);
-
-		const folder = Tag.isTag(folderMeta) ? (folderMeta.attributes.content as string) : '';
-		const sort = Tag.isTag(sortMeta) ? (sortMeta.attributes.content as string) : 'date-desc';
-		const filterStr = Tag.isTag(filterMeta) ? (filterMeta.attributes.content as string) : '';
-		const limitStr = Tag.isTag(limitMeta) ? (limitMeta.attributes.content as string) : '';
+		// SPEC-082: read field values from the bag (bag-first, meta-fallback).
+		// The cross-page tree still carries the `data-rune-fields` attribute.
+		const folder = readField(tag as never, 'folder') ?? '';
+		const sort = readField(tag as never, 'sort') || 'date-desc';
+		const filterStr = readField(tag as never, 'filter') ?? '';
+		const limitStr = readField(tag as never, 'limit') ?? '';
 		const limit = limitStr ? parseInt(limitStr, 10) : undefined;
 
 		if (!folder) {

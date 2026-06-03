@@ -22,7 +22,7 @@ describe('comparison tag', () => {
     expect(tag!.name).toBe('section');
   });
 
-  it('should create ComparisonColumn children from headings', () => {
+  it('should build a column header per heading', () => {
     const result = parse(`{% comparison %}
 
 ## Plan A
@@ -35,12 +35,18 @@ describe('comparison tag', () => {
 
 {% /comparison %}`);
 
+    // SPEC-081: the transform builds the table directly (no intermediate
+    // column/row renderables) — assert the column headers.
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'comparison');
-    const columns = findAllTags(tag!, t => t.attributes['data-rune'] === 'comparison-column');
-    expect(columns.length).toBe(2);
+    const colHeaders = findAllTags(tag!, t =>
+      t.name === 'th' && !String(t.attributes.class ?? '').includes('label-col')
+        && !String(t.attributes.class ?? '').includes('row-label'));
+    expect(colHeaders.length).toBe(2);
+    expect(JSON.stringify(tag)).toContain('Plan A');
+    expect(JSON.stringify(tag)).toContain('Plan B');
   });
 
-  it('should pass highlighted attribute as meta', () => {
+  it('should mark the highlighted column header', () => {
     const result = parse(`{% comparison highlighted="Plan B" %}
 
 ## Plan A
@@ -54,13 +60,13 @@ describe('comparison tag', () => {
 {% /comparison %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'comparison');
-    const highlightMeta = findTag(tag!, t =>
-      t.name === 'meta' && t.attributes.content === 'Plan B'
-    );
-    expect(highlightMeta).toBeDefined();
+    const highlighted = findTag(tag!, t =>
+      t.name === 'th' && String(t.attributes.class ?? '').includes('col-header--highlighted'));
+    expect(highlighted).toBeDefined();
+    expect(JSON.stringify(highlighted)).toContain('Plan B');
   });
 
-  it('should create ComparisonRow children within columns', () => {
+  it('should build a labelled row for each aligned feature', () => {
     const result = parse(`{% comparison %}
 
 ## Plan A
@@ -70,7 +76,9 @@ describe('comparison tag', () => {
 {% /comparison %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'comparison');
-    const row = findTag(tag!, t => t.attributes['data-rune'] === 'comparison-row');
-    expect(row).toBeDefined();
+    const rowLabel = findTag(tag!, t =>
+      t.name === 'th' && String(t.attributes.class ?? '').includes('row-label'));
+    expect(rowLabel).toBeDefined();
+    expect(rowLabel!.children).toContain('Feature');
   });
 });

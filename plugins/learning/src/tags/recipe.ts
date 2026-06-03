@@ -123,17 +123,6 @@ export const recipe = createContentModelSchema({
 		const stepsList = new Tag('ol', {}, steps);
 		const tipsDiv = new Tag('div', {}, tips);
 
-		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
-		const bodyChildren: any[] = [ingredientsList, stepsList];
-		if (tips.length > 0) {
-			bodyChildren.push(tipsDiv);
-		}
-
-		const mainContent = new RenderableNodeCursor([
-			...headerContent,
-			...bodyChildren,
-		]).wrap('div');
-
 		// Unwrap paragraph-wrapped images in the media zone
 		const mediaImgTag = extractMediaImage(side);
 		const mediaCursor = mediaImgTag
@@ -145,16 +134,20 @@ export const recipe = createContentModelSchema({
 		// Use the unwrapped image for SEO structured data
 		const seoImage = mediaImgTag;
 
+		// SPEC-081: emit flat `data-name` slots — the `layout` config groups them
+		// into the content column + preamble header. (The media column stays a
+		// single transform-built wrapper.)
 		const children: any[] = [
 			prepTimeMeta,
 			cookTimeMeta,
 			servingsMeta,
 			difficultyMeta,
 			...layoutChildren,
-			// Media before content so the image appears at the top in stacked layout.
-			// In split layouts, CSS grid explicit placement controls the visual order.
 			...(hasMedia ? [mediaDiv.next()] : []),
-			mainContent.next(),
+			...header.toArray(),
+			ingredientsList,
+			stepsList,
+			...(tips.length > 0 ? [tipsDiv] : []),
 		];
 
 		return createComponentRenderable({ rune: 'recipe', schemaOrgType: 'Recipe',
@@ -176,7 +169,6 @@ export const recipe = createContentModelSchema({
 				ingredients: ingredientsList,
 				steps: stepsList,
 				tips: tipsDiv,
-				content: mainContent,
 				media: mediaDiv,
 			},
 			schema: {

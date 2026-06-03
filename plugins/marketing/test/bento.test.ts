@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('bento tag', () => {
   it('should create a Bento component from headings', () => {
@@ -38,12 +38,9 @@ Small content.
     expect(cells.length).toBe(3);
 
     // h2 = large, h3 = medium, h4 = small
-    const sizeMetas = cells.map(cell =>
-      findTag(cell, t => t.name === 'meta')
-    );
-    expect(sizeMetas[0]!.attributes.content).toBe('large');
-    expect(sizeMetas[1]!.attributes.content).toBe('medium');
-    expect(sizeMetas[2]!.attributes.content).toBe('small');
+    expect(fields(cells[0]).size).toBe('large');
+    expect(fields(cells[1]).size).toBe('medium');
+    expect(fields(cells[2]).size).toBe('small');
   });
 
   it('should pass columns attribute as meta', () => {
@@ -54,8 +51,7 @@ Content.
 {% /bento %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const columnsMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === '3');
-    expect(columnsMeta).toBeDefined();
+    expect(fields(tag).columns).toBe('3');
   });
 
   it('should map h2 to large, h3 to medium, h4 to small', () => {
@@ -76,12 +72,9 @@ Content.
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
     const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
 
-    const sizeMetas = cells.map(cell =>
-      findTag(cell, t => t.name === 'meta' && t.attributes['data-field'] === 'size')
-    );
-    expect(sizeMetas[0]!.attributes.content).toBe('large');
-    expect(sizeMetas[1]!.attributes.content).toBe('medium');
-    expect(sizeMetas[2]!.attributes.content).toBe('small');
+    expect(fields(cells[0]).size).toBe('large');
+    expect(fields(cells[1]).size).toBe('medium');
+    expect(fields(cells[2]).size).toBe('small');
   });
 
   it('should produce span values in span mode with default columns=6', () => {
@@ -112,22 +105,16 @@ Spans 2 columns.
     expect(cells.length).toBe(5);
 
     // All cells should have size='span'
-    const sizeMetas = cells.map(cell =>
-      findTag(cell, t => t.name === 'meta' && t.attributes['data-field'] === 'size')
-    );
-    for (const meta of sizeMetas) {
-      expect(meta!.attributes.content).toBe('span');
+    for (const cell of cells) {
+      expect(fields(cell).size).toBe('span');
     }
 
     // Span values: h2→5, h3→4, h4→3, h5→2, h6→1
-    const spanMetas = cells.map(cell =>
-      findTag(cell, t => t.name === 'meta' && t.attributes['data-field'] === 'span')
-    );
-    expect(spanMetas[0]!.attributes.content).toBe('5');
-    expect(spanMetas[1]!.attributes.content).toBe('4');
-    expect(spanMetas[2]!.attributes.content).toBe('3');
-    expect(spanMetas[3]!.attributes.content).toBe('2');
-    expect(spanMetas[4]!.attributes.content).toBe('1');
+    expect(fields(cells[0]).span).toBe('5');
+    expect(fields(cells[1]).span).toBe('4');
+    expect(fields(cells[2]).span).toBe('3');
+    expect(fields(cells[3]).span).toBe('2');
+    expect(fields(cells[4]).span).toBe('1');
   });
 
   it('should use effective columns=6 in span mode when columns not set', () => {
@@ -139,8 +126,7 @@ Content.
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
     // Default columns=4 should become 6 in span mode
-    const columnsMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === '6');
-    expect(columnsMeta).toBeDefined();
+    expect(fields(tag).columns).toBe('6');
   });
 
   it('should respect explicit columns in span mode', () => {
@@ -157,11 +143,8 @@ Spans 7 columns.
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
     const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
 
-    const spanMetas = cells.map(cell =>
-      findTag(cell, t => t.name === 'meta' && t.attributes['data-field'] === 'span')
-    );
-    expect(spanMetas[0]!.attributes.content).toBe('7');
-    expect(spanMetas[1]!.attributes.content).toBe('6');
+    expect(fields(cells[0]).span).toBe('7');
+    expect(fields(cells[1]).span).toBe('6');
   });
 
   it('should extract icon from heading into a separate icon element', () => {

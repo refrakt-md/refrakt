@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('cast tag', () => {
 	it('should parse list items into cast members', () => {
@@ -41,8 +41,7 @@ describe('cast tag', () => {
 {% /cast %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'cast');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'list');
-		expect(meta).toBeDefined();
+		expect(fields(tag).layout).toBe('list');
 	});
 
 	it('should work with team alias', () => {

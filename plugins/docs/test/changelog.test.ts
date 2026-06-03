@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('changelog tag', () => {
 	it('should convert version headings to releases', () => {
@@ -48,8 +48,7 @@ describe('changelog tag', () => {
 {% /changelog %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'changelog');
-		const projectMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'refrakt.md');
-		expect(projectMeta).toBeDefined();
+		expect(fields(tag).project).toBe('refrakt.md');
 	});
 
 	it('should handle version without v prefix', () => {

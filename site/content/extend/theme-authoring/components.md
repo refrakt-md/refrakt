@@ -127,7 +127,7 @@ The renderer partitions a rune's children into three categories:
 
 | Category | Source | Component receives |
 |----------|--------|--------------------|
-| **Properties** | `<meta>` children with `data-field` | Scalar string props (e.g., `prepTime="15 min"`) |
+| **Properties** | the `data-rune-fields` bag | Scalar string props (e.g., `prepTime="15 min"`) |
 | **Named refs** | Top-level children with `data-name` | Named snippets with identity-transformed content |
 | **Anonymous content** | Everything else | `children` snippet |
 

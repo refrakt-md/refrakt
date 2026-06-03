@@ -30,10 +30,9 @@ You will need these tools:
 {% /howto %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'how-to');
-		const metas = findAllTags(tag!, t => t.name === 'meta');
-		const time = metas.find(m => m.attributes['data-field'] === 'estimated-time');
-		expect(time).toBeDefined();
-		expect(time!.attributes.content).toBe('PT30M');
+		// SPEC-082: field values live in the data-rune-fields bag.
+		const fields = JSON.parse(tag!.attributes['data-rune-fields'] as string);
+		expect(fields.estimatedTime).toBe('PT30M');
 	});
 
 	it('should set data-name on tool and step list items', () => {

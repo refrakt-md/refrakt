@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 /**
  * These tests verify that the content-model-based hero rune produces the
@@ -195,10 +195,7 @@ Just text content.
 {% /hero %}`);
 
 		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
-		const alignMeta = findTag(hero!, t =>
-			t.name === 'meta' && t.attributes.content === 'left',
-		);
-		expect(alignMeta).toBeDefined();
+		expect(fields(hero).align).toBe('left');
 	});
 
 	it('defaults align to center', () => {
@@ -207,10 +204,7 @@ Just text content.
 {% /hero %}`);
 
 		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
-		const alignMeta = findTag(hero!, t =>
-			t.name === 'meta' && t.attributes.content === 'center',
-		);
-		expect(alignMeta).toBeDefined();
+		expect(fields(hero).align).toBe('center');
 	});
 
 	it('passes layout meta for split layout', () => {
@@ -223,10 +217,7 @@ Just text content.
 {% /hero %}`);
 
 		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
-		const layoutMeta = findTag(hero!, t =>
-			t.name === 'meta' && t.attributes.content === 'split',
-		);
-		expect(layoutMeta).toBeDefined();
+		expect(fields(hero).layout).toBe('split');
 	});
 
 	it('includes ratio and valign metas for split layout', () => {
@@ -239,14 +230,8 @@ Just text content.
 {% /hero %}`);
 
 		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
-		const ratioMeta = findTag(hero!, t =>
-			t.name === 'meta' && t.attributes.content === '2 1',
-		);
-		const valignMeta = findTag(hero!, t =>
-			t.name === 'meta' && t.attributes.content === 'center',
-		);
-		expect(ratioMeta).toBeDefined();
-		expect(valignMeta).toBeDefined();
+		expect(fields(hero).ratio).toBe('2 1');
+		expect(fields(hero).valign).toBe('center');
 	});
 
 	// -----------------------------------------------------------------
@@ -295,10 +280,7 @@ Description.
 {% /hero %}`);
 
 		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
-		const alignMeta = findTag(hero!, t =>
-			t.name === 'meta' && t.attributes.content === 'right',
-		);
-		expect(alignMeta).toBeDefined();
+		expect(fields(hero).align).toBe('right');
 	});
 
 	// -----------------------------------------------------------------
@@ -339,9 +321,6 @@ The modern way to create documentation sites.
 		expect(img).toBeDefined();
 
 		// Layout metas
-		const splitMeta = findTag(hero!, t =>
-			t.name === 'meta' && t.attributes.content === 'split',
-		);
-		expect(splitMeta).toBeDefined();
+		expect(fields(hero).layout).toBe('split');
 	});
 });

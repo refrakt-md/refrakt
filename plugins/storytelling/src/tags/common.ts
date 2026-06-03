@@ -60,8 +60,15 @@ export function extractScene(
 /**
  * Shared content assembly for storytelling runes with sections (realm, faction).
  *
- * Takes the extra description nodes, resolved description field, section cursor,
- * and section type name, and returns a wrapped content div.
+ * SPEC-081: emits flat `data-name` slots rather than a hand-built content
+ * column — the rune's `layout` config groups `preamble` / `metadata` / `body`
+ * / `sections` into the content column. Returns:
+ *
+ * - `bodyDiv` — the lead description prose (plus any leftover authored body
+ *   nodes when there are no structured sections), wrapped in a `body` slot.
+ * - `sectionsContainer` — the structured sections wrapped in a `sections` slot
+ *   (only when section headings were authored).
+ * - `sections` / `hasSections` — the raw section cursor and presence flag.
  */
 export function buildStoryContent(
 	extraDescription: RenderableTreeNode[],
@@ -69,9 +76,9 @@ export function buildStoryContent(
 	sectionNodes: RenderableNodeCursor,
 	sectionTypeName: string,
 	config: Record<string, any>,
-	header?: RenderableTreeNode,
 ): {
-	mainContent: RenderableNodeCursor<Markdoc.Tag>;
+	bodyDiv: RenderableNodeCursor<Markdoc.Tag> | undefined;
+	sectionsContainer: RenderableNodeCursor<Markdoc.Tag> | undefined;
 	sections: RenderableNodeCursor<Markdoc.Tag>;
 	hasSections: boolean;
 } {
@@ -84,26 +91,17 @@ export function buildStoryContent(
 	const sections = sectionNodes.tag('div').typeof(sectionTypeName) as RenderableNodeCursor<Markdoc.Tag>;
 	const hasSections = sections.count() > 0;
 
-	// Build content children. An optional `header` (title etc.) leads so the
-	// projected metadata block can nest below it via `layout: { content: [...] }`.
-	const contentChildren: any[] = [];
-	if (header) contentChildren.push(header);
-	const allDescNodes = [...extraDescription, ...descRendered.toArray()];
-	if (allDescNodes.length > 0) {
-		contentChildren.push(...allDescNodes);
-	}
+	// Body prose: lead description + (when there are no structured sections) any
+	// leftover authored body nodes.
+	const bodyNodes: RenderableTreeNode[] = [...extraDescription, ...descRendered.toArray()];
+	if (!hasSections) bodyNodes.push(...sectionNodes.toArray());
+	const bodyDiv = bodyNodes.length > 0
+		? new RenderableNodeCursor(bodyNodes).wrap('div') as RenderableNodeCursor<Markdoc.Tag>
+		: undefined;
 
-	if (hasSections) {
-		const sectionsContainer = sections.wrap('div');
-		contentChildren.push(sectionsContainer.next());
-	} else {
-		const body = sectionNodes.wrap('div');
-		if (sectionNodes.count() > 0) {
-			contentChildren.push(body.next());
-		}
-	}
+	const sectionsContainer = hasSections
+		? sections.wrap('div') as RenderableNodeCursor<Markdoc.Tag>
+		: undefined;
 
-	const mainContent = new RenderableNodeCursor(contentChildren).wrap('div');
-
-	return { mainContent, sections, hasSections };
+	return { bodyDiv, sectionsContainer, sections, hasSections };
 }

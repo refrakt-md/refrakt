@@ -1,4 +1,5 @@
 import Markdoc, { type Node } from '@markdoc/markdoc';
+import { readField as readNodeField } from '@refrakt-md/transform';
 import type { PluginPipelineHooks, EntityRegistration } from '@refrakt-md/types';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
@@ -51,10 +52,8 @@ function mapTags(node: unknown, fn: (tag: InstanceType<typeof Tag>) => unknown):
 }
 
 function readField(tag: InstanceType<typeof Tag>, field: string): string {
-	const meta = tag.children.find(
-		(c: unknown) => Markdoc.Tag.isTag(c) && c.attributes['data-field'] === field,
-	);
-	return Markdoc.Tag.isTag(meta) ? (meta.attributes.content as string) ?? '' : '';
+	// SPEC-082: bag-first (data-rune-fields), legacy <meta data-field> fallback.
+	return readNodeField(tag, field) ?? '';
 }
 
 function hasSentinel(tag: InstanceType<typeof Tag>, sentinel: string): boolean {

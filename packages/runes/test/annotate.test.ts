@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag } from './helpers.js';
+import { parse, findTag, fields } from './helpers.js';
 
 describe('annotate tag', () => {
   it('should create an Annotate component', () => {
@@ -20,8 +20,7 @@ Main text content.
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'annotate');
     expect(tag).toBeDefined();
 
-    const variantMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'tooltip');
-    expect(variantMeta).toBeDefined();
+    expect(fields(tag).variant).toBe('tooltip');
   });
 
   it('should default variant to margin', () => {
@@ -30,7 +29,6 @@ Text.
 {% /annotate %}`);
 
     const tag = findTag(result as any, t => t.attributes['data-rune'] === 'annotate');
-    const variantMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'margin');
-    expect(variantMeta).toBeDefined();
+    expect(fields(tag).variant).toBe('margin');
   });
 });

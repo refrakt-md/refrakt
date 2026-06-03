@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('sidenote tag', () => {
 	it('should transform content into a sidenote', () => {
@@ -18,9 +18,7 @@ A footnote reference.
 {% /sidenote %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'sidenote');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'variant');
-		expect(meta).toBeDefined();
-		expect(meta!.attributes.content).toBe('footnote');
+		expect(fields(tag).variant).toBe('footnote');
 	});
 
 	it('should default variant to sidenote', () => {
@@ -29,9 +27,7 @@ Default variant note.
 {% /sidenote %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'sidenote');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'variant');
-		expect(meta).toBeDefined();
-		expect(meta!.attributes.content).toBe('sidenote');
+		expect(fields(tag).variant).toBe('sidenote');
 	});
 
 	it('should work with footnote alias', () => {

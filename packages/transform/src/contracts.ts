@@ -34,11 +34,13 @@ export interface RuneContract {
 		layout?: string;
 		/** For `source: 'block'` — the field names projected into the block. */
 		fields?: string[];
+		/** For `source: 'layout'` — the ordered child membership of a created wrapper. */
+		children?: string[];
+		/** For `source: 'layout'` — extra static attributes set on the wrapper. */
+		attrs?: Record<string, string>;
 	}>;
 	inlineStyles?: Record<string, string | { prop: string; template?: string; transform?: (value: string) => string }>;
 	childOrder: string[];
-	/** Named slot ordering (when declared) */
-	slots?: string[];
 	/** Child density imposed on nested runes */
 	childDensity?: 'compact' | 'minimal';
 	/** Projection declarations for structural reshaping */
@@ -172,6 +174,25 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 		}
 	}
 
+	// SPEC-081 layout-created wrappers — a `layout` entry with a `tag` creates a
+	// wrapper element (`.rf-{block}__{key}`); its `children` list is the ordered
+	// membership. Surfaces the whole declarative skeleton, not just projected
+	// metadata blocks. (Tagless / bare-array entries reorder an existing
+	// container and create no element.) Emitted last so a created wrapper
+	// supersedes any same-named autoLabel/structure stub.
+	if (config.layout) {
+		for (const [key, entry] of Object.entries(config.layout)) {
+			if (key === 'root' || Array.isArray(entry) || !entry.tag) continue;
+			elements[key] = {
+				tag: entry.tag,
+				selector: `.${block}__${key}`,
+				source: 'layout',
+				children: entry.children,
+				...(entry.attrs ? { attrs: entry.attrs } : {}),
+			};
+		}
+	}
+
 	if (Object.keys(elements).length > 0) {
 		contract.elements = elements;
 	}
@@ -186,11 +207,6 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 
 	// Child order
 	contract.childOrder = computeChildOrder(config);
-
-	// Slots
-	if (config.slots) {
-		contract.slots = config.slots;
-	}
 
 	// Child density
 	if (config.childDensity) {
@@ -214,6 +230,9 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 			}
 		}
 		if (config.projection.group) {
+			// SPEC-081: `projection.group` is subsumed by a `layout` tag-entry
+			// (a wrapper that creates a container is exactly a group). Deprecated.
+			warnings.push('projection.group is deprecated — use a `layout` tag-entry (a wrapper that groups its children) instead');
 			contract.projection.group = {};
 			for (const [key, def] of Object.entries(config.projection.group)) {
 				contract.projection.group[key] = { tag: def.tag, members: def.members };
@@ -232,6 +251,9 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 			}
 		}
 		if (config.projection.relocate) {
+			// SPEC-081: `projection.relocate` is subsumed by `layout` — you place a
+			// slot wherever you name it in the layout tree (no separate move op).
+			warnings.push('projection.relocate is deprecated — place the slot directly in the `layout` tree instead');
 			contract.projection.relocate = {};
 			for (const [source, def] of Object.entries(config.projection.relocate)) {
 				contract.projection.relocate[source] = {
@@ -241,9 +263,7 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 				if (!knownNames.has(source)) {
 					warnings.push(`projection.relocate source "${source}" is unknown`);
 				}
-				// Target can be a data-name or a slot name
-				const isSlotTarget = config.slots?.includes(def.into);
-				if (!knownNames.has(def.into) && !isSlotTarget) {
+				if (!knownNames.has(def.into)) {
 					warnings.push(`projection.relocate target "${def.into}" is unknown`);
 				}
 			}
@@ -323,57 +343,9 @@ function computeChildOrder(config: RuneConfig): string[] {
 	// unlisted transform children append after, marked by `{content}`.
 	// Without a `root` key the transform tree renders verbatim.
 	if (config.blocks || config.layout) {
-		const root = config.layout?.root;
+		const rootEntry = config.layout?.root;
+		const root = Array.isArray(rootEntry) ? rootEntry : rootEntry?.children;
 		return root && root.length > 0 ? [...root, '{content}'] : ['{content}'];
-	}
-
-	// Slot-based ordering
-	if (config.slots && config.structure) {
-		const order: string[] = [];
-		const nonContentSlots = config.slots.filter(s => s !== 'content');
-		const firstSlot = nonContentSlots[0];
-		const lastSlot = nonContentSlots[nonContentSlots.length - 1];
-
-		// Build slot → entries map
-		const slotEntries = new Map<string, Array<{ name: string; order: number }>>();
-		for (const slot of config.slots) {
-			slotEntries.set(slot, []);
-		}
-
-		for (const [key, entry] of Object.entries(config.structure)) {
-			const ref = entry.ref ?? key;
-			let targetSlot: string;
-			if (entry.slot) {
-				targetSlot = entry.slot;
-			} else if (entry.before && firstSlot) {
-				targetSlot = firstSlot;
-			} else if (lastSlot) {
-				targetSlot = lastSlot;
-			} else {
-				targetSlot = entry.before ? (firstSlot ?? config.slots[0]) : (lastSlot ?? config.slots[config.slots.length - 1]);
-			}
-			const bucket = slotEntries.get(targetSlot);
-			if (bucket) {
-				bucket.push({ name: ref, order: entry.order ?? 0 });
-			}
-		}
-
-		for (const slot of config.slots) {
-			if (slot === 'content') {
-				if (config.contentWrapper) {
-					order.push(`{content:${config.contentWrapper.ref}}`);
-				} else {
-					order.push('{content}');
-				}
-			} else {
-				const entries = slotEntries.get(slot) ?? [];
-				entries.sort((a, b) => a.order - b.order);
-				for (const { name } of entries) {
-					order.push(name);
-				}
-			}
-		}
-		return order;
 	}
 
 	// Legacy before/after ordering

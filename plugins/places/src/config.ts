@@ -28,14 +28,17 @@ export const config: Record<string, RuneConfig> = {
 			register: { label: 'Register', href: 'url', condition: 'url' },
 		},
 		// When/where as a labelled def-list under the title/description; the
-		// Register CTA renders last as a bar-wrapped link. The schema wraps
-		// title + blurb in a `preamble` <header>, so place that (not the
-		// individual headline/blurb) ahead of the metadata.
+		// Register CTA renders last as a bar-wrapped link. SPEC-081: the
+		// transform emits flat header slots and `layout` builds the preamble
+		// <header>, so headline/blurb are individually addressable.
 		blocks: {
 			metadata: { fields: ['date', 'endDate', 'location'], layout: 'definition-list' },
 			register: { fields: ['register'], layout: 'bar' },
 		},
-		layout: { root: ['preamble', 'metadata', 'body', 'register'] },
+		layout: {
+			root: ['preamble', 'metadata', 'body', 'register'],
+			preamble: { tag: 'header', children: ['eyebrow', 'headline', 'blurb', 'image'] },
+		},
 	},
 	Itinerary: {
 		block: 'itinerary',
@@ -81,10 +84,21 @@ export const config: Record<string, RuneConfig> = {
 			apiKey: { source: 'meta', noBemClass: true },
 		},
 		contentWrapper: { tag: 'div', ref: 'container' },
-		postTransform(node) {
-			// Change element name to web component
-			return { ...node, name: 'rf-map' };
+	},
+	MapPin: {
+		block: 'map-pin',
+		parent: 'Map',
+		editHints: { name: 'inline', description: 'inline' },
+		// Pin coordinates and metadata are read at runtime by the <rf-map> web
+		// component. They ride the SPEC-082 field bag through the transform, but
+		// the bag is stripped from output — so surface them as durable `data-*`
+		// attributes on the <li> (noBemClass: pure data, no BEM modifier class).
+		modifiers: {
+			lat: { source: 'meta', noBemClass: true },
+			lng: { source: 'meta', noBemClass: true },
+			address: { source: 'meta', noBemClass: true },
+			url: { source: 'meta', noBemClass: true },
+			group: { source: 'meta', noBemClass: true },
 		},
 	},
-	MapPin: { block: 'map-pin', parent: 'Map', editHints: { name: 'inline', description: 'inline' } },
 };

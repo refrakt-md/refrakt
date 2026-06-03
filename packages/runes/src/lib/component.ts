@@ -51,15 +51,46 @@ export function createComponentRenderable(result: InlineTransformResult): Tag {
     }
   }
 
+  // SPEC-082 (WORK-329): the schema.org SEO channel is independent of the data
+  // channel. Collect the `schema`-mapped tags up front so the properties loop
+  // can distinguish an SEO carrier from a pure data carrier.
+  const schemaTags = new Set<unknown>();
+  for (const v of Object.values(result.schema ?? {})) {
+    if (v === undefined) continue;
+    const tags: Tag[] = v instanceof RenderableNodeCursor ? v.nodes : Array.isArray(v) ? v : [v];
+    for (const t of tags) schemaTags.add(t);
+  }
+
+  // Project scalar field values into the reserved `data-rune-fields` attribute
+  // (the data channel). A meta that also carries schema.org `property=` is an
+  // SEO carrier — it does NOT get `data-field` (data and SEO are separate
+  // channels), but its value still lands in the bag. Pure-data metas keep
+  // `data-field` (dropped by WORK-323). Content-marker properties (non-meta,
+  // e.g. budget's `category`) get `data-field` but no field entry. Keys stay as
+  // authored (camelCase, matching modifier names — no kebab transit).
+  // SPEC-082 (WORK-331): the `data-rune-fields` bag is the sole field-data
+  // representation. Collect the pure-data metas (those that got `data-field` and
+  // aren't SEO carriers) so they can be dropped from the emitted children — the
+  // value already lives in the bag.
+  const fields: Record<string, unknown> = {};
+  const pureDataMetas = new Set<unknown>();
   for (const [k, v] of Object.entries(result.properties ?? {})) {
     if (v === undefined) continue;
     const tags: Tag[] = v instanceof RenderableNodeCursor ? v.nodes : Array.isArray(v) ? v : [v];
 
+    const values: unknown[] = [];
     tags.forEach(n => {
       if (Markdoc.Tag.isTag(n)) {
-        n.attributes['data-field'] = toKebabCase(k)
+        const isSeoMeta = n.name === 'meta' && schemaTags.has(n);
+        if (!isSeoMeta) n.attributes['data-field'] = toKebabCase(k);
+        if (n.name === 'meta' && n.attributes.content !== undefined) {
+          values.push(n.attributes.content);
+          if (!isSeoMeta) pureDataMetas.add(n);
+        }
       }
     });
+    if (values.length === 1) fields[k] = values[0];
+    else if (values.length > 1) fields[k] = values;
   }
 
   for (const [k, v] of Object.entries(result.refs || {})) {
@@ -73,24 +104,36 @@ export function createComponentRenderable(result: InlineTransformResult): Tag {
     });
   }
 
+  // Schema.org channel: stamp `property=` on SEO carriers (they render inline as
+  // RDFa — Option B). Skip empty-content metas (skip-empties) — an empty SEO
+  // value is noise in both HTML and JSON-LD; drop them from the output too.
+  const emptySeoMetas = new Set<unknown>();
   for (const [k, v] of Object.entries(result.schema ?? {})) {
     if (v === undefined) continue;
     const tags: Tag[] = v instanceof RenderableNodeCursor ? v.nodes : Array.isArray(v) ? v : [v];
 
     tags.forEach(n => {
       if (Markdoc.Tag.isTag(n)) {
+        if (n.name === 'meta' && (n.attributes.content === undefined || n.attributes.content === '')) {
+          emptySeoMetas.add(n);
+          return;
+        }
         n.attributes['property'] = k;
       }
     });
   }
+
+  const childArray = (Array.isArray(result.children) ? result.children : [result.children])
+    .filter(c => !emptySeoMetas.has(c) && !pureDataMetas.has(c));
 
   const tag = new Markdoc.Tag(result.tag, {
     id: result.id,
     'data-field': result.property ? toKebabCase(result.property) : result.property,
     'data-rune': runeName,
     typeof: schemaOrgType,
-    class: result.class
-  }, Array.isArray(result.children) ? result.children : [result.children]);
+    class: result.class,
+    ...(Object.keys(fields).length > 0 ? { 'data-rune-fields': JSON.stringify(fields) } : {}),
+  }, childArray);
 
   return tag;
 }

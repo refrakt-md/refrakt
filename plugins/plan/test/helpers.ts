@@ -39,3 +39,7 @@ export function findAllTags(node: any, predicate: (tag: Tag) => boolean): Tag[] 
 	}
 	return results;
 }
+
+export function fields(tag: any): Record<string, any> {
+	try { return JSON.parse(tag?.attributes?.['data-rune-fields'] ?? '{}'); } catch { return {}; }
+}

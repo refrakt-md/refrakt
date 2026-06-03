@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('milestone tag', () => {
 	it('should transform a basic milestone', () => {
@@ -22,11 +22,9 @@ describe('milestone tag', () => {
 {% /milestone %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'milestone');
-		const metas = findAllTags(tag!, t => t.name === 'meta');
-
-		expect(metas.find(m => m.attributes['data-field'] === 'name')!.attributes.content).toBe('v1.0');
-		expect(metas.find(m => m.attributes['data-field'] === 'target')!.attributes.content).toBe('2026-06-01');
-		expect(metas.find(m => m.attributes['data-field'] === 'status')!.attributes.content).toBe('planning');
+		expect(fields(tag).name).toBe('v1.0');
+		expect(fields(tag).target).toBe('2026-06-01');
+		expect(fields(tag).status).toBe('planning');
 	});
 
 	it('should work without optional fields', () => {
@@ -37,7 +35,6 @@ describe('milestone tag', () => {
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'milestone');
 		expect(tag).toBeDefined();
 
-		const metas = findAllTags(tag!, t => t.name === 'meta');
-		expect(metas.find(m => m.attributes['data-field'] === 'status')!.attributes.content).toBe('planning');
+		expect(fields(tag).status).toBe('planning');
 	});
 });

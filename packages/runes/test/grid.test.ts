@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag } from './helpers.js';
+import { parse, findTag, fields } from './helpers.js';
 
 describe('grid tag', () => {
   it('should transform a grid with sections divided by hr', () => {
@@ -48,13 +48,8 @@ Card three.
     const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
     expect(gridTag).toBeDefined();
 
-    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'mode');
-    expect(modeMeta).toBeDefined();
-    expect(modeMeta!.attributes.content).toBe('auto');
-
-    const minMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'min');
-    expect(minMeta).toBeDefined();
-    expect(minMeta!.attributes.content).toBe('280px');
+    expect(fields(gridTag).mode).toBe('auto');
+    expect(fields(gridTag).min).toBe('280px');
   });
 
   it('should not emit mode meta for default columns mode', () => {
@@ -67,8 +62,7 @@ More content.
 {% /grid %}`);
 
     const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'mode');
-    expect(modeMeta).toBeUndefined();
+    expect(fields(gridTag).mode).toBeUndefined();
   });
 
   it('should emit aspect meta when set', () => {
@@ -81,9 +75,7 @@ Cell two.
 {% /grid %}`);
 
     const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    const aspectMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'aspect');
-    expect(aspectMeta).toBeDefined();
-    expect(aspectMeta!.attributes.content).toBe('16/9');
+    expect(fields(gridTag).aspect).toBe('16/9');
   });
 
   it('should emit stack meta when set', () => {
@@ -96,9 +88,7 @@ Sidebar.
 {% /grid %}`);
 
     const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    const stackMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'stack');
-    expect(stackMeta).toBeDefined();
-    expect(stackMeta!.attributes.content).toBe('reverse');
+    expect(fields(gridTag).stack).toBe('reverse');
   });
 
   it('should emit masonry mode meta', () => {
@@ -115,9 +105,7 @@ Medium card.
 {% /grid %}`);
 
     const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'mode');
-    expect(modeMeta).toBeDefined();
-    expect(modeMeta!.attributes.content).toBe('masonry');
+    expect(fields(gridTag).mode).toBe('masonry');
   });
 
   it('should route layout="auto" deprecation to mode attribute', () => {
@@ -130,9 +118,7 @@ Card two.
 {% /grid %}`);
 
     const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    const modeMeta = findTag(gridTag!, t => t.name === 'meta' && t.attributes['data-field'] === 'mode');
-    expect(modeMeta).toBeDefined();
-    expect(modeMeta!.attributes.content).toBe('auto');
+    expect(fields(gridTag).mode).toBe('auto');
   });
 
   it('should route layout="2 1" deprecation to spans attribute', () => {

@@ -26,18 +26,10 @@ A three-day online event.
 {% /event %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'event');
-		const metas = findAllTags(tag!, t => t.name === 'meta');
-
-		const date = metas.find(m => m.attributes['data-field'] === 'date');
-		expect(date).toBeDefined();
-		expect(date!.attributes.content).toBe('2025-03-01');
-
-		const endDate = metas.find(m => m.attributes['data-field'] === 'end-date');
-		expect(endDate).toBeDefined();
-		expect(endDate!.attributes.content).toBe('2025-03-03');
-
-		const location = metas.find(m => m.attributes['data-field'] === 'location');
-		expect(location).toBeDefined();
-		expect(location!.attributes.content).toBe('Online');
+		// SPEC-082: field values live in the data-rune-fields bag.
+		const fields = JSON.parse(tag!.attributes['data-rune-fields'] as string);
+		expect(fields.date).toBe('2025-03-01');
+		expect(fields.endDate).toBe('2025-03-03');
+		expect(fields.location).toBe('Online');
 	});
 });

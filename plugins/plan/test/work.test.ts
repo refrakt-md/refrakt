@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('work tag', () => {
 	it('should transform a basic work item', () => {
@@ -29,14 +29,12 @@ Description here.
 {% /work %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'work');
-		const metas = findAllTags(tag!, t => t.name === 'meta');
-
-		expect(metas.find(m => m.attributes['data-field'] === 'id')!.attributes.content).toBe('RF-100');
-		expect(metas.find(m => m.attributes['data-field'] === 'status')!.attributes.content).toBe('in-progress');
-		expect(metas.find(m => m.attributes['data-field'] === 'priority')!.attributes.content).toBe('critical');
-		expect(metas.find(m => m.attributes['data-field'] === 'complexity')!.attributes.content).toBe('complex');
-		expect(metas.find(m => m.attributes['data-field'] === 'assignee')!.attributes.content).toBe('alice');
-		expect(metas.find(m => m.attributes['data-field'] === 'milestone')!.attributes.content).toBe('v1.0');
+		expect(fields(tag).id).toBe('RF-100');
+		expect(fields(tag).status).toBe('in-progress');
+		expect(fields(tag).priority).toBe('critical');
+		expect(fields(tag).complexity).toBe('complex');
+		expect(fields(tag).assignee).toBe('alice');
+		expect(fields(tag).milestone).toBe('v1.0');
 	});
 
 	it('should work with task alias', () => {
@@ -58,9 +56,7 @@ Description.
 {% /work %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'work');
-		const metas = findAllTags(tag!, t => t.name === 'meta');
-
-		expect(metas.find(m => m.attributes['data-field'] === 'source')!.attributes.content).toBe('SPEC-001,ADR-002');
+		expect(fields(tag).source).toBe('SPEC-001,ADR-002');
 	});
 
 	it('should default source to empty string when omitted', () => {
@@ -71,9 +67,7 @@ Description.
 {% /work %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'work');
-		const metas = findAllTags(tag!, t => t.name === 'meta');
-
-		expect(metas.find(m => m.attributes['data-field'] === 'source')!.attributes.content).toBe('');
+		expect(fields(tag).source).toBe('');
 	});
 
 	it('should handle sections with data-name', () => {

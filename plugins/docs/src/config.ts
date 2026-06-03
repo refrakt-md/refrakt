@@ -56,7 +56,13 @@ export const config: Record<string, RuneConfig> = {
 			eyebrow: { fields: ['kind', 'lang', { field: 'source', align: 'end' }], layout: 'bar' },
 			metadata: { fields: ['since', 'deprecated'], layout: 'definition-list' },
 		},
-		layout: { root: ['eyebrow', 'preamble', 'metadata', 'body'] },
+		// SPEC-081: the transform emits flat header slots; `layout` builds the
+		// preamble <header> (the `eyebrow` entry is the signature-bar block, not
+		// a header slot), so headline/blurb are individually addressable.
+		layout: {
+			root: ['eyebrow', 'preamble', 'metadata', 'body'],
+			preamble: { tag: 'header', children: ['headline', 'blurb', 'image'] },
+		},
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', body: 'none', kind: 'none', lang: 'none', since: 'none', deprecated: 'none', source: 'link' },
 	},

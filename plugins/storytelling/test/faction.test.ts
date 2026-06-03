@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('faction tag', () => {
 	it('should convert headings to faction sections', () => {
@@ -40,17 +40,9 @@ Content.
 {% /faction %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'faction');
-		const typeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'faction-type');
-		expect(typeMeta).toBeDefined();
-		expect(typeMeta!.attributes.content).toBe('knightly order');
-
-		const alignMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'alignment');
-		expect(alignMeta).toBeDefined();
-		expect(alignMeta!.attributes.content).toBe('lawful');
-
-		const sizeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'size');
-		expect(sizeMeta).toBeDefined();
-		expect(sizeMeta!.attributes.content).toBe('large');
+		expect(fields(tag).factionType).toBe('knightly order');
+		expect(fields(tag).alignment).toBe('lawful');
+		expect(fields(tag).size).toBe('large');
 	});
 
 	it('should handle compact mode without sections', () => {

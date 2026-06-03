@@ -28,6 +28,7 @@
  */
 
 import Markdoc from '@markdoc/markdoc';
+import { readField } from '@refrakt-md/transform';
 import type { EntityRegistry, PipelineContext, TransformedPage } from '@refrakt-md/types';
 import { DRAWER_TITLE_AUTO_MARKER } from './tags/drawer.js';
 
@@ -40,23 +41,6 @@ const HEADING_TAG_RE = /^h([1-6])$/;
 function readDataAttr(tag: InstanceType<typeof Tag>, key: string): string | undefined {
 	const v = (tag.attributes as Record<string, unknown> | undefined)?.[key];
 	return typeof v === 'string' ? v : undefined;
-}
-
-/** Read the `content` of a property meta tag (`<meta data-field="...">`)
- *  immediately under the drawer tag. The schema emits side/size/shortcut as
- *  meta tags; the identity-transform engine consumes them later and stamps
- *  them as `data-side` etc. on the wrapper. The register hook runs before
- *  the engine, so we have to read directly from the meta tags. */
-function readPropertyMeta(drawerTag: InstanceType<typeof Tag>, field: string): string | undefined {
-	for (const child of drawerTag.children ?? []) {
-		if (!Tag.isTag(child as never)) continue;
-		const c = child as InstanceType<typeof Tag>;
-		if (c.name !== 'meta') continue;
-		if ((c.attributes as Record<string, unknown> | undefined)?.['data-field'] !== field) continue;
-		const content = (c.attributes as Record<string, unknown> | undefined)?.['content'];
-		return typeof content === 'string' ? content : undefined;
-	}
-	return undefined;
 }
 
 /**
@@ -102,9 +86,12 @@ export function registerDrawers(
 			drawersOnPage.push({
 				id,
 				title: extractTitleText(tag),
-				side: readPropertyMeta(tag, 'side') ?? 'right',
-				size: readPropertyMeta(tag, 'size') ?? 'md',
-				shortcut: readPropertyMeta(tag, 'shortcut'),
+				// SPEC-082 (WORK-331): read field values from the data-rune-fields
+				// bag (bag-first, meta-fallback) — the schema no longer emits
+				// <meta data-field> children.
+				side: readField(tag as never, 'side') ?? 'right',
+				size: readField(tag as never, 'size') ?? 'md',
+				shortcut: readField(tag as never, 'shortcut'),
 			});
 		});
 
