@@ -80,7 +80,15 @@ Recipe: {
 
 ### Legacy `StructureEntry` fields
 
-Runes that haven't migrated to `metaFields` declare metadata inline on `StructureEntry` children (legacy path). The engine continues to render these through the existing slot-based assembly with the universal `.rf-badge` class applied automatically.
+`StructureEntry` children may still declare metadata inline via `metaType` /
+`sentimentMap` — the engine sets the matching `data-meta-*` attributes. Prefer
+`metaFields` for new runes; it's the supported projection path.
+
+> **Removed in v0.18.0 (WORK-313):** the `slots` array + slot-based assembly,
+> and the automatic universal `.rf-badge` class on meta-typed `StructureEntry`
+> children. A `StructureEntry` that should render as a chip must now set its own
+> `class` via `attrs`. The before/after `structure` assembly itself is
+> unchanged.
 
 | Field | Type | Description |
 |-------|------|-------------|

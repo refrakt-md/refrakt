@@ -34,11 +34,6 @@ export function formatConfig(runeTypeof: string, config: ThemeConfig): string {
 		lines.push(`  ${DIM}modifiers:${RESET}        ${DIM}none${RESET}`);
 	}
 
-	// Slots
-	if (runeConfig.slots && runeConfig.slots.length > 0) {
-		lines.push(`  ${DIM}slots:${RESET}            ${runeConfig.slots.join(' → ')}`);
-	}
-
 	// Structure
 	if (runeConfig.structure && Object.keys(runeConfig.structure).length > 0) {
 		const structs = Object.entries(runeConfig.structure)
@@ -46,7 +41,7 @@ export function formatConfig(runeTypeof: string, config: ThemeConfig): string {
 				const children = entry.children
 					? entry.children.map(c => typeof c === 'string' ? c : (c.ref ?? '?')).join(' + ')
 					: name;
-				const slot = entry.slot ? `slot:${entry.slot}` : (entry.before ? 'before' : 'after');
+				const slot = entry.before ? 'before' : 'after';
 				const repeat = entry.repeat ? ` ×${entry.repeat.count}` : '';
 				return `${name} → ${children} (${slot})${repeat}`;
 			})
@@ -185,7 +180,6 @@ export function buildJsonOutput(opts: {
 			rootAttributes: opts.config.rootAttributes ?? {},
 			staticModifiers: opts.config.staticModifiers ?? [],
 			styles: opts.config.styles ?? {},
-			...(opts.config.slots ? { slots: opts.config.slots } : {}),
 			...(opts.config.childDensity ? { childDensity: opts.config.childDensity } : {}),
 			...(opts.config.projection ? { projection: opts.config.projection } : {}),
 		} : null,

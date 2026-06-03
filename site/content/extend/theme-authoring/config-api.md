@@ -348,21 +348,6 @@ Comparison: {
 }
 ```
 
-### slots
-
-Ordered slot names for structure assembly. When present, structure entries are assigned to slots and rendered in slot order, enabling predictable output regardless of config declaration order.
-
-```typescript
-Recipe: {
-  block: 'recipe',
-  slots: ['meta', 'media', 'content'],
-  structure: {
-    meta: { tag: 'div', slot: 'meta', order: 0, ... },
-    media: { tag: 'div', slot: 'media', order: 1, ... },
-  },
-}
-```
-
 ### Advanced modifier options
 
 Modifiers support additional fields beyond `source` and `default`:
@@ -444,10 +429,6 @@ interface StructureEntry {
   metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id';
   metaRank?: 'primary' | 'secondary';
   sentimentMap?: Record<string, 'positive' | 'negative' | 'caution' | 'neutral'>;
-
-  // Slot assignment
-  slot?: string;             // Assign to a named slot (see RuneConfig.slots)
-  order?: number;            // Sort order within the slot
 
   // Repetition
   repeat?: {                 // Generate N copies of this element

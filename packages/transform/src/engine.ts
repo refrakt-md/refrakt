@@ -49,7 +49,7 @@ export function createTransform(config: ThemeConfig) {
 		const dataRune = tree.attributes?.['data-rune'];
 		const configKey = dataRune ? runeKeyMap.get(dataRune) : undefined;
 		if (configKey) {
-			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, runes, runeKeyMap, identityTransform, configKey, parentRune);
+			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, runes, runeKeyMap, identityTransform, parentRune);
 		}
 
 		// Detect checkbox markers on list items
@@ -104,7 +104,6 @@ function transformRune(
 	allRunes: Record<string, RuneConfig>,
 	runeKeyMap: Map<string, string>,
 	recurse: (node: RendererNode, parentRune?: string) => RendererNode,
-	runeName: string,
 	parentRune?: string
 ): SerializedTag {
 	const block = `${prefix}-${config.block}`;
@@ -380,17 +379,11 @@ function transformRune(
 
 	// 5. SPEC-080: block-and-layout assembly (metaFields + blocks + layout).
 	//    Projects named metadata blocks and places them into the transform
-	//    tree per `layout`. Takes precedence over the legacy `slots +
-	//    structure` shim (removed in WORK-313).
+	//    tree per `layout`. The legacy `slots + structure` shim was removed in
+	//    WORK-313; the `structure`-only before/after path below survives for
+	//    non-meta-projecting runes that just inject icons or badges.
 	if (config.blocks || config.layout) {
 		children = assembleWithBlocks(config, block, children, modifierValues);
-	} else if (config.slots && config.structure) {
-		// Legacy slots + structure path — emit one-time migration warning if
-		// the rune uses the v0.16 slot vocabulary (header-primary etc.).
-		if (hasLegacySlotNames(config.slots)) {
-			warnLegacySlots(runeName);
-		}
-		children = assembleWithSlots(config.slots, config.structure, children, config.contentWrapper, modifierValues, icons);
 	} else if (config.structure) {
 		// Legacy before/after assembly
 		const prepend: RendererNode[] = [];
@@ -648,77 +641,6 @@ function annotateSequence(children: RendererNode[], sequence: string, direction?
 	}
 }
 
-/** Assemble children using named slots.
- *  Iterates slots in declared order, collecting structure entries per slot sorted by order,
- *  and places content children at the 'content' slot. */
-function assembleWithSlots(
-	slots: string[],
-	structure: Record<string, StructureEntry>,
-	contentChildren: RendererNode[],
-	contentWrapper: { tag: string; ref: string } | undefined,
-	modifierValues: Record<string, string>,
-	icons: Record<string, Record<string, string>>,
-): RendererNode[] {
-	// Determine the first and last non-content slots for before/after mapping
-	const nonContentSlots = slots.filter(s => s !== 'content');
-	const firstSlot = nonContentSlots[0];
-	const lastSlot = nonContentSlots[nonContentSlots.length - 1];
-
-	// Build all structure elements and assign to slots
-	type SlotEntry = { element: RendererNode; order: number };
-	const slotMap = new Map<string, SlotEntry[]>();
-	for (const slot of slots) {
-		slotMap.set(slot, []);
-	}
-
-	for (const [name, entry] of Object.entries(structure)) {
-		const element = buildStructureElement(entry, name, modifierValues, icons);
-		if (!element) continue;
-
-		// Determine slot assignment: explicit slot > before mapping > last slot
-		let targetSlot: string;
-		if (entry.slot) {
-			targetSlot = entry.slot;
-		} else if (entry.before && firstSlot) {
-			targetSlot = firstSlot;
-		} else if (lastSlot) {
-			targetSlot = lastSlot;
-		} else {
-			// Fallback: place before content if before=true, after otherwise
-			targetSlot = entry.before ? (firstSlot ?? slots[0]) : (lastSlot ?? slots[slots.length - 1]);
-		}
-
-		const bucket = slotMap.get(targetSlot);
-		if (bucket) {
-			bucket.push({ element, order: entry.order ?? 0 });
-		}
-	}
-
-	// Sort entries within each slot by order
-	for (const entries of slotMap.values()) {
-		entries.sort((a, b) => a.order - b.order);
-	}
-
-	// Assemble in slot order
-	const result: RendererNode[] = [];
-	for (const slot of slots) {
-		if (slot === 'content') {
-			if (contentWrapper) {
-				result.push(makeTag(contentWrapper.tag, { 'data-name': contentWrapper.ref }, contentChildren));
-			} else {
-				result.push(...contentChildren);
-			}
-		} else {
-			const entries = slotMap.get(slot) ?? [];
-			for (const { element } of entries) {
-				result.push(element);
-			}
-		}
-	}
-
-	return result;
-}
-
 /** Find and remove a child by data-name from a flat children array.
  *  Returns the removed element and the updated array, or null if not found.
  *
@@ -924,13 +846,6 @@ function buildStructureElement(
 	// Metadata dimension attributes — additive semantic markers for generic theme styling
 	if (entry.metaType) {
 		baseAttrs['data-meta-type'] = entry.metaType;
-		// SPEC-079: legacy `slots + structure` configs get the universal
-		// `.rf-badge` class on every meta-typed structure entry so the
-		// chip-look rides along without needing the new zone dispatcher.
-		// Layout primitives in the new zone path emit `.rf-badge`
-		// independently via buildChip().
-		const existingClass = baseAttrs.class || '';
-		baseAttrs.class = existingClass ? `rf-badge ${existingClass}` : 'rf-badge';
 	}
 	if (entry.sentimentMap && entry.metaText) {
 		const rawValue = modifierValues[entry.metaText];
@@ -986,28 +901,6 @@ function buildStructureElement(
 }
 
 // ─── Field resolution + value rendering ─────────────────────────────────
-
-/** One-time warning tracker — emits the migration hint once per rune
- *  name per process. */
-const LEGACY_SLOT_WARNED = new Set<string>();
-const LEGACY_SLOT_NAMES = new Set<string>(['header-primary', 'header-secondary', 'preamble', 'content']);
-
-function hasLegacySlotNames(slots: string[]): boolean {
-	return slots.some(s => LEGACY_SLOT_NAMES.has(s));
-}
-
-function warnLegacySlots(runeName: string): void {
-	if (LEGACY_SLOT_WARNED.has(runeName)) return;
-	LEGACY_SLOT_WARNED.add(runeName);
-	// Use console.warn — engine has no logger infra.
-	// eslint-disable-next-line no-console
-	console.warn(
-		`[refrakt] Rune \`${runeName}\` uses legacy \`slots\` + \`structure\` config. ` +
-		`Migrate to the SPEC-080 \`metaFields\` + \`blocks\` + \`layout\` model. ` +
-		`Legacy configs continue to render via the backwards-compat shim ` +
-		`(removed in WORK-313).`,
-	);
-}
 
 /** A field resolved against the modifier values — ready for layout rendering. */
 interface ResolvedField {

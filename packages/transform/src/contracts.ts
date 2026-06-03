@@ -41,8 +41,6 @@ export interface RuneContract {
 	}>;
 	inlineStyles?: Record<string, string | { prop: string; template?: string; transform?: (value: string) => string }>;
 	childOrder: string[];
-	/** Named slot ordering (when declared) */
-	slots?: string[];
 	/** Child density imposed on nested runes */
 	childDensity?: 'compact' | 'minimal';
 	/** Projection declarations for structural reshaping */
@@ -210,11 +208,6 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 	// Child order
 	contract.childOrder = computeChildOrder(config);
 
-	// Slots
-	if (config.slots) {
-		contract.slots = config.slots;
-	}
-
 	// Child density
 	if (config.childDensity) {
 		contract.childDensity = config.childDensity;
@@ -270,9 +263,7 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 				if (!knownNames.has(source)) {
 					warnings.push(`projection.relocate source "${source}" is unknown`);
 				}
-				// Target can be a data-name or a slot name
-				const isSlotTarget = config.slots?.includes(def.into);
-				if (!knownNames.has(def.into) && !isSlotTarget) {
+				if (!knownNames.has(def.into)) {
 					warnings.push(`projection.relocate target "${def.into}" is unknown`);
 				}
 			}
@@ -355,55 +346,6 @@ function computeChildOrder(config: RuneConfig): string[] {
 		const rootEntry = config.layout?.root;
 		const root = Array.isArray(rootEntry) ? rootEntry : rootEntry?.children;
 		return root && root.length > 0 ? [...root, '{content}'] : ['{content}'];
-	}
-
-	// Slot-based ordering
-	if (config.slots && config.structure) {
-		const order: string[] = [];
-		const nonContentSlots = config.slots.filter(s => s !== 'content');
-		const firstSlot = nonContentSlots[0];
-		const lastSlot = nonContentSlots[nonContentSlots.length - 1];
-
-		// Build slot → entries map
-		const slotEntries = new Map<string, Array<{ name: string; order: number }>>();
-		for (const slot of config.slots) {
-			slotEntries.set(slot, []);
-		}
-
-		for (const [key, entry] of Object.entries(config.structure)) {
-			const ref = entry.ref ?? key;
-			let targetSlot: string;
-			if (entry.slot) {
-				targetSlot = entry.slot;
-			} else if (entry.before && firstSlot) {
-				targetSlot = firstSlot;
-			} else if (lastSlot) {
-				targetSlot = lastSlot;
-			} else {
-				targetSlot = entry.before ? (firstSlot ?? config.slots[0]) : (lastSlot ?? config.slots[config.slots.length - 1]);
-			}
-			const bucket = slotEntries.get(targetSlot);
-			if (bucket) {
-				bucket.push({ name: ref, order: entry.order ?? 0 });
-			}
-		}
-
-		for (const slot of config.slots) {
-			if (slot === 'content') {
-				if (config.contentWrapper) {
-					order.push(`{content:${config.contentWrapper.ref}}`);
-				} else {
-					order.push('{content}');
-				}
-			} else {
-				const entries = slotEntries.get(slot) ?? [];
-				entries.sort((a, b) => a.order - b.order);
-				for (const { name } of entries) {
-					order.push(name);
-				}
-			}
-		}
-		return order;
 	}
 
 	// Legacy before/after ordering

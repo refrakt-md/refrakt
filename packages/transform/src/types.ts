@@ -150,15 +150,6 @@ export interface RuneConfig {
 	 *  Produces classes like: rf-callout--in-hero */
 	contextModifiers?: Record<string, string>;
 
-	/** Ordered slot names for structure assembly. When declared, the engine
-	 *  assembles children by iterating slots in order instead of binary before/after.
-	 *  The special 'content' slot is where content children are placed.
-	 *
-	 *  Legacy field — superseded by the SPEC-080 `metaFields` + `blocks` +
-	 *  `layout` model. No first-party rune declares it; the backwards-compat
-	 *  shim is removed in WORK-313. */
-	slots?: string[];
-
 	/** Structural overrides — additional elements to inject (keyed by data-name).
 	 *  Legacy field — superseded by SPEC-080 `metaFields` + `blocks`. No
 	 *  first-party rune declares it; removed in WORK-313. */
@@ -330,10 +321,6 @@ export interface StructureEntry {
 	children?: (string | StructureEntry)[];
 	/** Insert before existing children */
 	before?: boolean;
-	/** Which slot this entry occupies (used when RuneConfig.slots is declared) */
-	slot?: string;
-	/** Ordering within a slot (default: 0, lower numbers first) */
-	order?: number;
 	/** Generate N copies of a template element. Used for star ratings, progress dots, etc. */
 	repeat?: {
 		/** Modifier name that provides the total count */

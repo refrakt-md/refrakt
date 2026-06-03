@@ -6,54 +6,6 @@ function baseConfig(runes: ThemeConfig['runes']): ThemeConfig {
 	return { prefix: 'rf', tokenPrefix: '--rf', icons: {}, runes };
 }
 
-describe('contracts: slots', () => {
-	it('includes slots in contract', () => {
-		const config = baseConfig({
-			Card: {
-				block: 'card',
-				slots: ['eyebrow', 'header', 'content', 'footer'],
-				structure: {
-					eyebrow: { tag: 'div', slot: 'eyebrow' },
-					header: { tag: 'div', slot: 'header' },
-					footer: { tag: 'div', slot: 'footer' },
-				},
-			},
-		});
-		const contract = generateStructureContract(config);
-		expect(contract.runes.Card.slots).toEqual(['eyebrow', 'header', 'content', 'footer']);
-	});
-
-	it('childOrder reflects slot ordering', () => {
-		const config = baseConfig({
-			Card: {
-				block: 'card',
-				slots: ['header', 'content', 'footer'],
-				structure: {
-					header: { tag: 'div', slot: 'header' },
-					footer: { tag: 'div', slot: 'footer' },
-				},
-			},
-		});
-		const contract = generateStructureContract(config);
-		expect(contract.runes.Card.childOrder).toEqual(['header', '{content}', 'footer']);
-	});
-
-	it('childOrder with contentWrapper in slots', () => {
-		const config = baseConfig({
-			Card: {
-				block: 'card',
-				slots: ['header', 'content'],
-				contentWrapper: { tag: 'div', ref: 'body' },
-				structure: {
-					header: { tag: 'div', slot: 'header' },
-				},
-			},
-		});
-		const contract = generateStructureContract(config);
-		expect(contract.runes.Card.childOrder).toEqual(['header', '{content:body}']);
-	});
-});
-
 describe('contracts: childDensity', () => {
 	it('includes childDensity in contract', () => {
 		const config = baseConfig({
@@ -230,28 +182,6 @@ describe('contracts: projection', () => {
 		expect(contract.runes.Test.warnings).toContain(
 			'projection.relocate target "nonexistent" is unknown'
 		);
-	});
-
-	it('allows relocate into a valid slot name (only the deprecation warning)', () => {
-		const config = baseConfig({
-			Test: {
-				block: 'test',
-				slots: ['header', 'content'],
-				structure: {
-					icon: { tag: 'span', slot: 'content' },
-				},
-				projection: {
-					relocate: {
-						icon: { into: 'header' },
-					},
-				},
-			},
-		});
-		const contract = generateStructureContract(config);
-		// No *reference* warnings — but relocate is deprecated, so that warning stands.
-		expect(contract.runes.Test.warnings).toEqual([
-			'projection.relocate is deprecated — place the slot directly in the `layout` tree instead',
-		]);
 	});
 
 	it('deprecates projection.group (subsumed by a layout tag-entry)', () => {
