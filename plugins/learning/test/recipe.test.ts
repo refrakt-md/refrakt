@@ -108,9 +108,10 @@ A recipe with a photo.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
-		// Should still have content zone
-		const content = findTag(tag!, t => t.attributes['data-name'] === 'content');
-		expect(content).toBeDefined();
+		// SPEC-081: content slots are emitted flat (the engine's layout groups
+		// them into the content column).
+		const ingredients = findTag(tag!, t => t.attributes['data-name'] === 'ingredients');
+		expect(ingredients).toBeDefined();
 
 		// Layout defaults to stacked
 		const metas = findAllTags(tag!, t => t.name === 'meta');
@@ -202,18 +203,15 @@ A delightful pasta recipe.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
-		// Header wrapper should exist
-		const header = findTag(tag!, t => t.name === 'header');
-		expect(header).toBeDefined();
-
-		// Should contain the eyebrow paragraph, heading, and blurb paragraph
-		const eyebrow = findTag(header!, t => t.name === 'p' && t.attributes['data-name'] === 'eyebrow');
+		// SPEC-081: header fields are emitted flat (data-name); the engine's
+		// `layout` wraps them in the preamble header.
+		const eyebrow = findTag(tag!, t => t.name === 'p' && t.attributes['data-name'] === 'eyebrow');
 		expect(eyebrow).toBeDefined();
 
-		const headline = findTag(header!, t => /^h[1-6]$/.test(t.name));
+		const headline = findTag(tag!, t => /^h[1-6]$/.test(t.name) && t.attributes['data-name'] === 'headline');
 		expect(headline).toBeDefined();
 
-		const blurb = findTag(header!, t => t.name === 'p' && t.attributes['data-name'] === 'blurb');
+		const blurb = findTag(tag!, t => t.name === 'p' && t.attributes['data-name'] === 'blurb');
 		expect(blurb).toBeDefined();
 	});
 

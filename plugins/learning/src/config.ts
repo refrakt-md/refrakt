@@ -73,8 +73,13 @@ export const config: Record<string, RuneConfig> = {
 		},
 		// Recipe hand-assembles content + media columns for its split layout;
 		// the metadata def-list nests inside the content column, below the
-		// header (root stays [media, content] as the transform emits it).
-		layout: { content: ['preamble', 'metadata'] },
+		// SPEC-081: the transform emits flat slots; `layout` builds the skeleton —
+		// the content column wraps the preamble header + metadata + body slots.
+		layout: {
+			root: ['media', 'content'],
+			content: { tag: 'div', children: ['preamble', 'metadata', 'ingredients', 'steps', 'tips'] },
+			preamble: { tag: 'header', children: ['eyebrow', 'headline', 'blurb'] },
+		},
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', ingredient: 'inline', step: 'inline', media: 'image' },
 	},

@@ -1,4 +1,4 @@
-{% work id="WORK-325" status="ready" priority="medium" complexity="complex" source="SPEC-081" tags="runes,plugins,transform,migration,layout" milestone="v0.18.0" %}
+{% work id="WORK-325" status="in-progress" priority="medium" complexity="complex" source="SPEC-081" tags="runes,plugins,transform,migration,layout" milestone="v0.18.0" %}
 
 # Flatten rune transforms to flat-emit + declarative grouping
 
