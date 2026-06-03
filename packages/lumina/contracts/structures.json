@@ -2932,6 +2932,7 @@
 			"root": ".rf-howto",
 			"dataRune": "how-to",
 			"childOrder": [
+				"content",
 				"{content}"
 			],
 			"modifiers": {

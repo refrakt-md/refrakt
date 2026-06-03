@@ -69,19 +69,14 @@ export const howto = createContentModelSchema({
 		const toolsList = new Tag('ul', {}, tools);
 		const stepsList = new Tag('ol', {}, steps);
 
-		// Wrap header + body in a content column (like recipe) so the
-		// projected metadata def-list nests inside it via `layout: { content:
-		// [...] }` and the `.rf-howto__content` step styling applies.
-		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
-		const bodyChildren: any[] = [];
-		if (tools.length > 0) bodyChildren.push(toolsList);
-		bodyChildren.push(stepsList);
-		const mainContent = new RenderableNodeCursor([...headerContent, ...bodyChildren]).wrap('div');
-
+		// SPEC-081: emit flat `data-name` slots — the `layout` config groups them
+		// into the content column + preamble header.
 		const children: any[] = [
 			estimatedTimeMeta,
 			difficultyMeta,
-			mainContent.next(),
+			...header.toArray(),
+			...(tools.length > 0 ? [toolsList] : []),
+			stepsList,
 		];
 
 		return createComponentRenderable({ rune: 'how-to', schemaOrgType: 'HowTo',
@@ -95,7 +90,6 @@ export const howto = createContentModelSchema({
 				...sectionProps,
 				tools: toolsList,
 				steps: stepsList,
-				content: mainContent,
 			},
 			schema: {
 				name: sectionProps.headline,
