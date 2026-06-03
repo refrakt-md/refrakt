@@ -47,9 +47,11 @@ export const diagram = createContentModelSchema({
 		const containerDiv = new Tag('div', {}, containerChildren);
 		children.push(containerDiv);
 
-		// Hidden source for the web component to read.
+		// Canonical source for the web component to read. A `<template>` is inert
+		// (never rendered, never highlighted/decorated), keeping the renderer's
+		// data channel cleanly separate from the presentational `<pre>` fallback.
 		if (source) {
-			children.push(new Tag('div', { 'data-content': 'source', style: 'display:none' }, [source]));
+			children.push(new Tag('template', { 'data-content': 'source' }, [source]));
 		}
 
 		const node = createComponentRenderable({ rune: 'diagram',
