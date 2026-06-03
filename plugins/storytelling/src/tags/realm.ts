@@ -73,23 +73,24 @@ export const realm = createContentModelSchema({
 		// Extract scene image (shared helper)
 		const { sceneDiv, sceneImgTag, extraDescription } = extractScene(resolved.scene, config);
 
-		// Title lives in a header at the top of the content column (recipe
-		// pattern), so the projected metadata def-list nests below it via
-		// `layout: { content: [...] }` and the split sees only media + content.
-		const headerEl = new Tag('header', {}, [nameTag]);
-		const { mainContent, sections, hasSections } = buildStoryContent(
-			extraDescription, resolved.description, sectionNodes, 'RealmSection', config, headerEl,
+		// SPEC-081: emit flat `data-name` slots — the `layout` config builds the
+		// content column (preamble header + metadata + body + sections) and the
+		// split sees only scene (media) + content.
+		const { bodyDiv, sectionsContainer, sections, hasSections } = buildStoryContent(
+			extraDescription, resolved.description, sectionNodes, 'RealmSection', config,
 		);
 
-		// Build children array: media (scene) + content column only.
-		// Scene first so it sits on top in stacked / media-position="top".
+		// Build children array. Scene first so it sits on top in stacked /
+		// media-position="top".
 		const children: any[] = [];
 		if (sceneDiv) children.push(sceneDiv.next());
 		children.push(
 			realmTypeMeta, scaleMeta, tagsMeta, parentMeta,
 			...layoutChildren,
 		);
-		children.push(mainContent.next());
+		children.push(nameTag);
+		if (bodyDiv) children.push(bodyDiv.next());
+		if (sectionsContainer) children.push(sectionsContainer.next());
 
 		// SEO schema
 		const schemaMap: Record<string, any> = {
@@ -118,8 +119,8 @@ export const realm = createContentModelSchema({
 			refs: {
 				name: nameTag,
 				...(sceneDiv ? { scene: sceneDiv } : {}),
-				content: mainContent,
-				...(hasSections ? { sections: sections.wrap('div') } : {}),
+				...(bodyDiv ? { body: bodyDiv } : {}),
+				...(sectionsContainer ? { sections: sectionsContainer } : {}),
 			},
 			schema: schemaMap,
 			children,

@@ -65,12 +65,19 @@ export const config: Record<string, RuneConfig> = {
 			scale: { metaType: 'category', label: 'Scale', condition: 'scale' },
 		},
 		// Facts render as a definition-list nested in the content column below
-		// the title (recipe pattern) — no separate eyebrow zone.
+		// the title — no separate eyebrow zone.
 		blocks: {
 			metadata: { fields: ['realmType', 'scale'], layout: 'definition-list' },
 		},
-		layout: { content: ['preamble', 'metadata'] },
-		autoLabel: { scene: 'scene', header: 'preamble' },
+		// SPEC-081: the transform emits flat slots; `layout` builds the skeleton.
+		// The split sees scene (media) + content; the content column wraps the
+		// preamble header, metadata def-list, body prose, and sections.
+		layout: {
+			root: ['scene', 'content'],
+			content: { tag: 'div', children: ['preamble', 'metadata', 'body', 'sections'] },
+			preamble: { tag: 'header', children: ['name'] },
+		},
+		autoLabel: { scene: 'scene' },
 		editHints: { name: 'inline', scene: 'image', body: 'none', sections: 'none' },
 	},
 	RealmSection: { block: 'realm-section', parent: 'Realm', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
@@ -125,12 +132,19 @@ export const config: Record<string, RuneConfig> = {
 			size: { metaType: 'quantity', label: 'Size', condition: 'size' },
 		},
 		// All facts render as a definition-list nested in the content column
-		// below the title (recipe pattern) — no separate eyebrow zone.
+		// below the title — no separate eyebrow zone.
 		blocks: {
 			metadata: { fields: ['factionType', 'alignment', 'size'], layout: 'definition-list' },
 		},
-		layout: { content: ['preamble', 'metadata'] },
-		autoLabel: { scene: 'scene', header: 'preamble' },
+		// SPEC-081: the transform emits flat slots; `layout` builds the skeleton.
+		// The split sees scene (media) + content; the content column wraps the
+		// preamble header, metadata def-list, body prose, and sections.
+		layout: {
+			root: ['scene', 'content'],
+			content: { tag: 'div', children: ['preamble', 'metadata', 'body', 'sections'] },
+			preamble: { tag: 'header', children: ['name'] },
+		},
+		autoLabel: { scene: 'scene' },
 		editHints: { name: 'inline', body: 'none', sections: 'none' },
 	},
 	FactionSection: { block: 'faction-section', parent: 'Faction', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
