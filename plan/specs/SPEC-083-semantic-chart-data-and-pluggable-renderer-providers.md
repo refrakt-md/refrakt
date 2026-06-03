@@ -76,6 +76,28 @@ building it before a second real renderer exists is a YAGNI trap.
   as a self-contained `renderSvg(data, container, opts)` function so the future
   provider extraction is lift-and-shift.
 
+### Data sourcing — the `<table>` is the single source of truth
+
+- `rf-chart` parses the `<table>` **in place** on connect (`thead th` → headers,
+  `tbody` cells → rows) into a `ChartData` object and hands *that* to
+  `renderSvg(...)`. There is **no second copy of the data** — no `<template>`, no
+  serialized JSON. Re-introducing a blob would walk back the exact sin this spec
+  removes (data-in-`<meta>`, table discarded) and create two representations that
+  can drift.
+- **Why this differs from `diagram`** (which deliberately keeps a separate inert
+  `<template>` for its source): a diagram's source is whitespace-sensitive *free
+  text* in a `<pre>` that future highlighting could corrupt via `textContent`. A
+  table is *structured and individually addressable* (each datum is its own
+  `<td>`, read by position) — there is no "highlighting mangles the stream"
+  failure mode, so no wholesale duplicate is warranted.
+- **One robustness hook, reserved (not built now):** the table's narrower risk is
+  display-formatting of numeric cells (a future `1,200` / `$1.2k` would break
+  `parseFloat(textContent)`). The clean guard is an *optional per-cell*
+  `data-value` for when display ≠ canonical (`<td data-value="1200">1,200</td>`),
+  with the element reading `cell.dataset.value ?? cell.textContent`. Today cells
+  carry raw authored values, so it is unused — it just keeps the table canonical
+  instead of forcing a parallel channel if formatting ever lands.
+
 ## Provider model (deferred — WORK-334, when a second renderer is needed)
 
 When a real second renderer appears, introduce the abstraction below. It is

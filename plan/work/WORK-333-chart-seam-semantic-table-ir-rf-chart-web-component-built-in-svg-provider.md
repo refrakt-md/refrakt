@@ -27,6 +27,11 @@ that JSON to hand-build a static `<svg>` baked into `coreConfig`. See
   `sandbox` / `diagram`) parses the `<table>` once and draws the svg. The
   `<table>` stays in the DOM (visually-hidden) after a successful render for
   screen readers.
+- [ ] **The `<table>` is the single source of truth** — `rf-chart` parses it in
+  place (`thead th` → headers, `tbody` cells → rows); **no `<template>` / JSON
+  copy.** Cells are read `dataset.value ?? textContent` (the `data-value` hook is
+  reserved for future display-formatting; not emitted now). See SPEC-083 "Data
+  sourcing".
 - [ ] The SVG drawing is a self-contained `renderSvg(data, container, opts)`
   function (so a future provider registry is a lift-and-shift, not a rewrite) —
   but **no registry / `ChartProvider` contract is built here**.
