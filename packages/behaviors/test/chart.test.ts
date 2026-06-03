@@ -48,6 +48,24 @@ describe('rf-chart element', () => {
 		expect(el.querySelectorAll('.rf-chart__legend-item').length).toBe(2);
 	});
 
+	it('is idempotent — re-connecting does not stack a second svg/title/legend', () => {
+		document.body.innerHTML =
+			`<rf-chart data-type="line">${table(
+				'<tr><td>Q1</td><td>10</td><td>5</td></tr>',
+				'<tr><th>Quarter</th><th>Sales</th><th>Profit</th></tr>',
+				'Growth',
+			)}</rf-chart>`;
+		const el = document.querySelector('rf-chart') as HTMLElement & { connectedCallback(): void };
+
+		// Simulate a second connection (e.g. hydration / reparenting).
+		el.connectedCallback();
+
+		expect(el.querySelectorAll('.rf-chart__rendered').length).toBe(1);
+		expect(el.querySelectorAll('svg').length).toBe(1);
+		expect(el.querySelectorAll('.rf-chart__title').length).toBe(1);
+		expect(el.querySelectorAll('.rf-chart__legend').length).toBe(1);
+	});
+
 	it('does nothing when there is no data', () => {
 		document.body.innerHTML = `<rf-chart data-type="bar">${table('')}</rf-chart>`;
 		const el = document.querySelector('rf-chart')!;

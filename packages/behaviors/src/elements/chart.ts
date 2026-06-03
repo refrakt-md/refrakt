@@ -120,6 +120,10 @@ function renderSvg(data: ChartData, container: HTMLElement, opts: { type: string
 
 export class RfChart extends SafeHTMLElement {
 	connectedCallback() {
+		// Idempotent: connectedCallback fires on every (re)connection (hydration,
+		// reparenting). Only enhance once — otherwise the svg/title/legend stack up.
+		if (this.querySelector('.rf-chart__rendered')) return;
+
 		const table = this.querySelector('table');
 		if (!table) return;
 		const data = parseTable(table);
