@@ -1,5 +1,5 @@
 import type { ThemeConfig, SerializedTag, RendererNode } from '@refrakt-md/transform';
-import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta, resolveGap, ratioToFr, resolveOffset, resolveValign, parsePlacement } from '@refrakt-md/transform';
+import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta, readField, resolveGap, ratioToFr, resolveOffset, resolveValign, parsePlacement } from '@refrakt-md/transform';
 import type { PluginPipelineHooks, TransformedPage, EntityRegistry, AggregatedData, PipelineContext } from '@refrakt-md/types';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
@@ -159,12 +159,12 @@ export const coreConfig: ThemeConfig = {
 			block: 'embed',
 			defaultDensity: 'compact',
 			editHints: { fallback: 'none' },
-			postTransform(node) {
+			postTransform(node, { fields }) {
 				const block = node.attributes.class?.split(' ')[0] || 'rf-embed';
-				const embedUrl = readMeta(node, 'embedUrl') || readMeta(node, 'url') || '';
-				const title = readMeta(node, 'title') || 'Embedded content';
-				const aspect = readMeta(node, 'aspect') || '16:9';
-				const provider = readMeta(node, 'provider') || '';
+				const embedUrl = readField(node, 'embedUrl', fields) || readField(node, 'url', fields) || '';
+				const title = readField(node, 'title', fields) || 'Embedded content';
+				const aspect = readField(node, 'aspect', fields) || '16:9';
+				const provider = readField(node, 'provider', fields) || '';
 
 				const [w, h] = aspect.split(':').map(Number);
 				const paddingPercent = h && w ? (h / w) * 100 : 56.25;
@@ -419,10 +419,10 @@ export const coreConfig: ThemeConfig = {
 			block: 'chart',
 			defaultDensity: 'compact',
 			editHints: { data: 'none' },
-			postTransform(node) {
+			postTransform(node, { fields }) {
 				const block = node.attributes.class?.split(' ')[0] || 'rf-chart';
-				const chartType = readMeta(node, 'type') || 'bar';
-				const title = readMeta(node, 'title') || '';
+				const chartType = readField(node, 'type', fields) || 'bar';
+				const title = readField(node, 'title', fields) || '';
 				const dataJson = findByDataName(node, 'data')?.attributes?.content || '{}';
 
 				let chartData: { headers: string[]; rows: string[][] } = { headers: [], rows: [] };
@@ -676,10 +676,10 @@ export const coreConfig: ThemeConfig = {
 			block: 'diagram',
 			defaultDensity: 'compact',
 			editHints: { source: 'code' },
-			postTransform(node) {
+			postTransform(node, { fields }) {
 				const block = node.attributes.class?.split(' ')[0] || 'rf-diagram';
-				const language = readMeta(node, 'language') || 'mermaid';
-				const title = readMeta(node, 'title') || '';
+				const language = readField(node, 'language', fields) || 'mermaid';
+				const title = readField(node, 'title', fields) || '';
 				const sourceMeta = findByDataName(node, 'source');
 				const source = sourceMeta?.attributes?.content || '';
 
@@ -713,17 +713,17 @@ export const coreConfig: ThemeConfig = {
 			block: 'sandbox',
 			defaultDensity: 'compact',
 			editHints: { source: 'code' },
-			postTransform(node) {
-				// Read meta values
-				const content = readMeta(node, 'content') || '';
-				const framework = readMeta(node, 'framework') || '';
-				const dependencies = readMeta(node, 'dependencies') || '';
-				const label = readMeta(node, 'label') || '';
-				const height = readMeta(node, 'height') || 'auto';
-				const designTokens = readMeta(node, 'design-tokens') || '';
-				const securityMode = readMeta(node, 'security-mode') || 'trusted';
-				const allowJs = readMeta(node, 'allow-js') || 'true';
-				const sandboxOrigin = readMeta(node, 'sandbox-origin') || '';
+			postTransform(node, { fields }) {
+				// Read field values (bag-first; the camelCase keys match the bag).
+				const content = readField(node, 'content', fields) || '';
+				const framework = readField(node, 'framework', fields) || '';
+				const dependencies = readField(node, 'dependencies', fields) || '';
+				const label = readField(node, 'label', fields) || '';
+				const height = readField(node, 'height', fields) || 'auto';
+				const designTokens = readField(node, 'designTokens', fields) || '';
+				const securityMode = readField(node, 'securityMode', fields) || 'trusted';
+				const allowJs = readField(node, 'allowJs', fields) || 'true';
+				const sandboxOrigin = readField(node, 'sandboxOrigin', fields) || '';
 
 				// Keep non-meta children (fallback pre) and extract source panels
 				const fallbackChildren: typeof node.children = [];
@@ -2184,23 +2184,12 @@ function resolveBlogPosts(
 	const result = mapBlogTags(renderable, (tag) => {
 		if (tag.attributes['data-rune'] !== 'blog') return tag;
 
-		const folderMeta = tag.children.find(
-			(c: unknown) => Tag.isTag(c) && c.attributes['data-field'] === 'folder',
-		);
-		const sortMeta = tag.children.find(
-			(c: unknown) => Tag.isTag(c) && c.attributes['data-field'] === 'sort',
-		);
-		const filterMeta = tag.children.find(
-			(c: unknown) => Tag.isTag(c) && c.attributes['data-field'] === 'filter',
-		);
-		const limitMeta = tag.children.find(
-			(c: unknown) => Tag.isTag(c) && c.attributes['data-field'] === 'limit',
-		);
-
-		const folder = Tag.isTag(folderMeta) ? (folderMeta.attributes.content as string) : '';
-		const sort = Tag.isTag(sortMeta) ? (sortMeta.attributes.content as string) : 'date-desc';
-		const filterStr = Tag.isTag(filterMeta) ? (filterMeta.attributes.content as string) : '';
-		const limitStr = Tag.isTag(limitMeta) ? (limitMeta.attributes.content as string) : '';
+		// SPEC-082: read field values from the bag (bag-first, meta-fallback).
+		// The cross-page tree still carries the `data-rune-fields` attribute.
+		const folder = readField(tag as never, 'folder') ?? '';
+		const sort = readField(tag as never, 'sort') || 'date-desc';
+		const filterStr = readField(tag as never, 'filter') ?? '';
+		const limitStr = readField(tag as never, 'limit') ?? '';
 		const limit = limitStr ? parseInt(limitStr, 10) : undefined;
 
 		if (!folder) {

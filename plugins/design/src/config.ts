@@ -1,5 +1,5 @@
 import type { RuneConfig, SerializedTag, RendererNode } from '@refrakt-md/transform';
-import { isTag, makeTag, renderToHtml, readMeta } from '@refrakt-md/transform';
+import { isTag, makeTag, renderToHtml, readMeta, readField } from '@refrakt-md/transform';
 
 export const config: Record<string, RuneConfig> = {
 	Swatch: {
@@ -103,13 +103,13 @@ export const config: Record<string, RuneConfig> = {
 			fit: { source: 'meta', default: 'auto', noBemClass: true },
 		},
 		editHints: { viewport: 'none' },
-		postTransform(node) {
+		postTransform(node, { fields }) {
 			const block = node.attributes.class?.split(' ')[0] || 'rf-mockup';
-			const device = readMeta(node, 'device') || node.attributes['data-device'] || 'browser';
-			const statusBar = readMeta(node, 'statusBar') !== 'false';
-			const url = readMeta(node, 'url') || '';
-			const label = readMeta(node, 'label') || '';
-			const scale = readMeta(node, 'scale') || '';
+			const device = readField(node, 'device', fields) || node.attributes['data-device'] || 'browser';
+			const statusBar = readField(node, 'statusBar', fields) !== 'false';
+			const url = readField(node, 'url', fields) || '';
+			const label = readField(node, 'label', fields) || '';
+			const scale = readField(node, 'scale', fields) || '';
 
 			// Device categories
 			const mobileDevices = ['iphone-15', 'iphone-se', 'pixel', 'phone'];

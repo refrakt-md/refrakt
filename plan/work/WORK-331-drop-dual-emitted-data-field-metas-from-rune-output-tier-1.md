@@ -76,4 +76,37 @@ css-coverage / seo failures — output is provably unchanged.
   its high-value slice.
 - `WORK-332` — Tier 2: remove the now-dead engine machinery (depends on this).
 
+## Progress
+
+**Step 1 done — bag-first reroute (output-neutral hardening).** Implementing
+the drop surfaced that 8 runes' hooks read field *values* from the metas and
+break in production (not caught by tests, which use hand-built meta fixtures).
+The disciplined sequence is to move every consumer onto the bag *first*, while
+the metas remain as a fallback — so the eventual drop only removes a dead path.
+
+Landed:
+
+- The engine now threads the parsed `data-rune-fields` bag into the
+  `postTransform` context (`context.fields`) — it previously stripped the bag
+  attribute from the result before `postTransform` ran, so engine-`postTransform`
+  hooks had no access to it.
+- Rerouted to bag-first `readField(node, name, context.fields)` (meta-fallback
+  retained): **embed, chart, diagram, sandbox** (core), **mockup** (design),
+  **comparison** table-level fields (marketing). Cross-page **blog**
+  (folder/sort/filter/limit) reroutes to `readField(tag, name)` (the bag
+  attribute is present on the pre-engine tree).
+- Output-neutral: full suite green (3075) with the metas still emitted.
+
+Remaining for the drop (pending decision):
+
+- Stop emitting the population-1 metas (`createComponentRenderable`).
+- Migrate the ~120 pre-engine-meta test assertions + the hand-built pipeline
+  fixtures (e.g. `blog-pipeline`'s `createBlogTag`) to the bag, so they validate
+  the real path.
+- **Nested-node gap:** a column's own bag is stripped before the *parent's*
+  `postTransform` runs, so `comparison`'s `highlighted` (read off a column) still
+  rides its meta. The drop must thread child fields another way (e.g. the
+  comparison transform lifting `highlighted` into the table-level bag).
+- Population-2 leaks (`toc/ordered`); docs note that `data-field` is internal.
+
 {% /work %}

@@ -313,6 +313,11 @@ export interface RuneConfig {
 	postTransform?: (node: SerializedTag, context: {
 		modifiers: Record<string, string>;
 		parentType?: string;
+		/** The parsed SPEC-082 `data-rune-fields` bag for this node. The engine
+		 *  strips the bag attribute from the result before `postTransform` runs,
+		 *  so a hook that needs non-modifier field values reads them here (or via
+		 *  `readField(node, name, context.fields)` for bag-first + meta-fallback). */
+		fields: Record<string, unknown>;
 	}) => SerializedTag;
 }
 

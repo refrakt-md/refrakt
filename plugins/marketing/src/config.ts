@@ -1,5 +1,5 @@
 import type { RuneConfig, SerializedTag, RendererNode } from '@refrakt-md/transform';
-import { isTag, makeTag, readMeta, resolveGap, ratioToFr, resolveValign } from '@refrakt-md/transform';
+import { isTag, makeTag, readMeta, readField, resolveGap, ratioToFr, resolveValign } from '@refrakt-md/transform';
 
 // ─── Comparison postTransform helpers ───
 
@@ -313,12 +313,12 @@ export const config: Record<string, RuneConfig> = {
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', verdict: 'footer' },
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' },
-		postTransform(node) {
+		postTransform(node, { fields }) {
 			const block = 'rf-comparison';
-			const layout = readMeta(node, 'layout') || 'table';
-			const verdict = readMeta(node, 'verdict') || '';
-			const labelsPosition = readMeta(node, 'labels') || 'left';
-			const rowLabelsJson = readMeta(node, 'rowLabels') || '[]';
+			const layout = readField(node, 'layout', fields) || 'table';
+			const verdict = readField(node, 'verdict', fields) || '';
+			const labelsPosition = readField(node, 'labels', fields) || 'left';
+			const rowLabelsJson = readField(node, 'rowLabels', fields) || '[]';
 			let rowLabels: string[] = [];
 			try { rowLabels = JSON.parse(rowLabelsJson); } catch { /* fallback */ }
 
@@ -334,6 +334,10 @@ export const config: Record<string, RuneConfig> = {
 			// Extract structured data from each column
 			const columnData: ComparisonColData[] = columns.map(col => ({
 				name: readPropText(col, 'name'),
+				// NOTE: a nested column's own `data-rune-fields` bag is stripped by
+				// the engine before this runs, so `highlighted` still reads the
+				// column's meta (a future meta-drop must thread child fields some
+				// other way — see WORK-331).
 				highlighted: readLocalMeta(col, 'highlighted') === 'true',
 				rows: collectByRune(col.children, 'comparison-row'),
 			}));

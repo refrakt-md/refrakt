@@ -510,11 +510,14 @@ function transformRune(
 		children: filteredChildren,
 	};
 
-	// 9. Programmatic escape hatch — runs after all declarative processing
+	// 9. Programmatic escape hatch — runs after all declarative processing.
+	// `fields` is the parsed bag (the bag attribute was stripped from `result`
+	// above), so a hook can read non-modifier field values without the metas.
 	if (config.postTransform) {
 		return config.postTransform(result, {
 			modifiers: modifierValues,
 			parentType: parentRune,
+			fields,
 		});
 	}
 
