@@ -7,9 +7,9 @@ audit that flags declared-but-unstyled context modifiers and nesting-contract
 violations.
 
 ## Acceptance Criteria
-- [ ] A "Composability patterns" page under `site/content/extend/rune-authoring/` documents: open containers vs strict list parents, the `parent`/`allowedParents` contract, when to use a context modifier, and worked nesting examples.
+- [ ] A "Composability patterns" page under `site/content/extend/rune-authoring/` documents: the open-world principle (dependency asymmetry), open containers vs strict `requiresParent` children, name-agnostic slot styling, when to use a context modifier, and worked nesting examples.
 - [ ] `refrakt inspect`/audit reports context modifiers that lack CSS coverage.
-- [ ] The audit reports nesting-contract violations (constrained child outside allowed parent) for a given content tree.
+- [ ] The audit reports `requiresParent` violations (a child outside its self-declared required parent) for a given content tree.
 - [ ] Audit output documented in the tooling docs.
 
 ## Approach
