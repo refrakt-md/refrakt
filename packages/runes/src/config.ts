@@ -381,126 +381,14 @@ export const coreConfig: ThemeConfig = {
 		Chart: {
 			block: 'chart',
 			defaultDensity: 'compact',
-			editHints: { data: 'none' },
-			postTransform(node, { fields }) {
-				const block = node.attributes.class?.split(' ')[0] || 'rf-chart';
-				const chartType = readField(node, 'type', fields) || 'bar';
-				const title = readField(node, 'title', fields) || '';
-				const dataJson = findByDataName(node, 'data')?.attributes?.content || '{}';
-
-				let chartData: { headers: string[]; rows: string[][] } = { headers: [], rows: [] };
-				try { chartData = JSON.parse(dataJson); } catch { /* fallback */ }
-
-				const colors = [
-					'var(--rf-color-info)', 'var(--rf-color-success)',
-					'var(--rf-color-warning)', 'var(--rf-color-danger)',
-					'#7c3aed', '#0891b2',
-				];
-
-				const svgW = 600, svgH = 300;
-				const pad = { top: 30, right: 20, bottom: 40, left: 50 };
-				const cw = svgW - pad.left - pad.right;
-				const ch = svgH - pad.top - pad.bottom;
-
-				const labels = chartData.rows.map(r => r[0] || '');
-				const series = chartData.headers.slice(1);
-				const values = chartData.rows.map(r => r.slice(1).map(v => parseFloat(v) || 0));
-				const maxVal = Math.max(...values.flat(), 1);
-
-				const bgw = cw / Math.max(labels.length, 1);
-				const bw = bgw / Math.max(series.length + 1, 2);
-
-				// Build SVG children
-				const svgChildren: SerializedTag[] = [];
-
-				// Axes
-				svgChildren.push(makeTag('line', {
-					x1: String(pad.left), y1: String(pad.top),
-					x2: String(pad.left), y2: String(svgH - pad.bottom),
-					stroke: 'var(--rf-color-border)', 'stroke-width': '1',
-				}, []));
-				svgChildren.push(makeTag('line', {
-					x1: String(pad.left), y1: String(svgH - pad.bottom),
-					x2: String(svgW - pad.right), y2: String(svgH - pad.bottom),
-					stroke: 'var(--rf-color-border)', 'stroke-width': '1',
-				}, []));
-
-				if (chartType === 'bar') {
-					for (let i = 0; i < labels.length; i++) {
-						for (let si = 0; si < series.length; si++) {
-							const h = (values[i][si] / maxVal) * ch;
-							svgChildren.push(makeTag('rect', {
-								x: String(pad.left + i * bgw + si * bw + bw * 0.25),
-								y: String(pad.top + ch - h),
-								width: String(bw * 0.75),
-								height: String(h),
-								style: `fill: ${colors[si % colors.length]}`,
-								rx: '2',
-							}, []));
-						}
-						svgChildren.push(makeTag('text', {
-							x: String(pad.left + i * bgw + bgw / 2),
-							y: String(svgH - pad.bottom + 20),
-							'text-anchor': 'middle', 'font-size': '12',
-							fill: 'var(--rf-color-muted)',
-						}, [labels[i]]));
-					}
-				} else if (chartType === 'line') {
-					for (let si = 0; si < series.length; si++) {
-						const pts = labels.map((_, i) =>
-							`${pad.left + i * bgw + bgw / 2},${pad.top + ch - (values[i][si] / maxVal) * ch}`
-						).join(' ');
-						svgChildren.push(makeTag('polyline', {
-							points: pts, fill: 'none',
-							style: `stroke: ${colors[si % colors.length]}`,
-							'stroke-width': '2',
-						}, []));
-						for (let i = 0; i < labels.length; i++) {
-							svgChildren.push(makeTag('circle', {
-								cx: String(pad.left + i * bgw + bgw / 2),
-								cy: String(pad.top + ch - (values[i][si] / maxVal) * ch),
-								r: '4',
-								style: `fill: ${colors[si % colors.length]}`,
-							}, []));
-						}
-					}
-					for (let i = 0; i < labels.length; i++) {
-						svgChildren.push(makeTag('text', {
-							x: String(pad.left + i * bgw + bgw / 2),
-							y: String(svgH - pad.bottom + 20),
-							'text-anchor': 'middle', 'font-size': '12',
-							fill: 'var(--rf-color-muted)',
-						}, [labels[i]]));
-					}
-				}
-
-				const children: (SerializedTag | string)[] = [];
-				if (title) {
-					children.push(makeTag('figcaption', { class: `${block}__title` }, [title]));
-				}
-				children.push(makeTag('div', { class: `${block}__container` }, [
-					makeTag('svg', {
-						viewBox: `0 0 ${svgW} ${svgH}`,
-						class: `${block}__svg`,
-					}, svgChildren),
-				]));
-
-				// Legend
-				if (series.length > 1) {
-					const legendItems = series.map((name, i) =>
-						makeTag('span', { class: `${block}__legend-item` }, [
-							makeTag('span', {
-								class: `${block}__legend-color`,
-								style: `background: ${colors[i % colors.length]};`,
-							}, []),
-							name,
-						])
-					);
-					children.push(makeTag('div', { class: `${block}__legend` }, legendItems));
-				}
-
-				return { ...node, children };
+			// SPEC-083: the transform emits the rf-chart element wrapping the data
+			// `<table>`; `type` / `stacked` are bag-only modifiers (→ data-type /
+			// data-stacked) the web component reads. No postTransform.
+			modifiers: {
+				type: { source: 'meta', default: 'bar', noBemClass: true },
+				stacked: { source: 'meta', noBemClass: true },
 			},
+			editHints: { data: 'none' },
 		},
 
 		// ─── Text formatting & layout runes ───

@@ -754,7 +754,18 @@
 			"dataRune": "chart",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"type": {
+					"source": "meta",
+					"default": "bar",
+					"dataAttribute": "data-type"
+				},
+				"stacked": {
+					"source": "meta",
+					"dataAttribute": "data-stacked"
+				}
+			}
 		},
 		"PullQuote": {
 			"block": "pullquote",

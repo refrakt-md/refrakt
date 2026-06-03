@@ -2,66 +2,20 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
-import { walkTag } from '../util.js';
 
 const chartType = ['bar', 'line', 'pie', 'area'] as const;
 
-/**
- * Extract table data from rendered Markdoc table tags.
- * Returns { headers: string[], rows: string[][] }
- */
-function extractTableData(children: any[]): { headers: string[], rows: string[][] } {
-	const headers: string[] = [];
-	const rows: string[][] = [];
-
-	for (const child of children) {
-		if (!Markdoc.Tag.isTag(child)) continue;
-
-		// Unwrap rf-table-wrapper div if present
-		let tableNode = child;
-		if (child.name === 'div' && child.attributes.class === 'rf-table-wrapper') {
-			const inner = child.children.find((c: any) => Markdoc.Tag.isTag(c) && c.name === 'table');
-			if (inner && Markdoc.Tag.isTag(inner)) tableNode = inner;
-		}
-
-		if (tableNode.name === 'table') {
-			for (const tableChild of tableNode.children) {
-				if (!Markdoc.Tag.isTag(tableChild)) continue;
-
-				if (tableChild.name === 'thead') {
-					for (const tr of tableChild.children) {
-						if (!Markdoc.Tag.isTag(tr) || tr.name !== 'tr') continue;
-						for (const th of tr.children) {
-							if (Markdoc.Tag.isTag(th)) {
-								const text = Array.from(walkTag(th))
-									.filter(n => typeof n === 'string')
-									.join('');
-								headers.push(text.trim());
-							}
-						}
-					}
-				}
-
-				if (tableChild.name === 'tbody') {
-					for (const tr of tableChild.children) {
-						if (!Markdoc.Tag.isTag(tr) || tr.name !== 'tr') continue;
-						const row: string[] = [];
-						for (const td of tr.children) {
-							if (Markdoc.Tag.isTag(td)) {
-								const text = Array.from(walkTag(td))
-									.filter(n => typeof n === 'string')
-									.join('');
-								row.push(text.trim());
-							}
-						}
-						rows.push(row);
-					}
-				}
-			}
+/** Find the rendered data `<table>` (possibly inside a table wrapper). */
+function findTable(nodes: RenderableTreeNode[]): InstanceType<typeof Tag> | undefined {
+	for (const n of nodes) {
+		if (!Markdoc.Tag.isTag(n)) continue;
+		if (n.name === 'table') return n;
+		if (n.name === 'div') {
+			const inner = n.children.find(c => Markdoc.Tag.isTag(c) && c.name === 'table');
+			if (inner && Markdoc.Tag.isTag(inner)) return inner;
 		}
 	}
-
-	return { headers, rows };
+	return undefined;
 }
 
 export const chart = createContentModelSchema({
@@ -79,25 +33,34 @@ export const chart = createContentModelSchema({
 	transform(resolved, attrs, config) {
 		const children = Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[];
 
-		const typeMeta = new Tag('meta', { content: attrs.type ?? 'bar' });
-		const titleMeta = new Tag('meta', { content: attrs.title ?? '' });
-		const stackedMeta = new Tag('meta', { content: String(attrs.stacked ?? false) });
+		const type = attrs.type ?? 'bar';
+		const title = attrs.title ?? '';
+		const stacked = attrs.stacked ?? false;
 
-		// Extract table data and serialize as JSON
-		const tableData = extractTableData(children);
-		const dataMeta = new Tag('meta', { content: JSON.stringify(tableData) });
+		// SPEC-083: the authored `<table>` is the single source of truth — the no-JS
+		// fallback AND the data the rf-chart web component parses. No JSON-in-meta.
+		const table = findTable(children);
+		const emitted: RenderableTreeNode[] = table ? [table] : children;
+		if (table) {
+			table.attributes['data-name'] = 'data';
+			if (title) table.children = [new Tag('caption', {}, [title]), ...table.children];
+		}
 
-		return createComponentRenderable({ rune: 'chart',
+		// type / stacked ride the bag (→ data-type / data-stacked for the client);
+		// title lives in the table's <caption>, not a field-meta.
+		const typeMeta = new Tag('meta', { content: type });
+		const stackedMeta = new Tag('meta', { content: String(stacked) });
+
+		const node = createComponentRenderable({ rune: 'chart',
 			tag: 'figure',
 			properties: {
 				type: typeMeta,
-				title: titleMeta,
 				stacked: stackedMeta,
 			},
-			refs: {
-				data: dataMeta,
-			},
-			children: [typeMeta, titleMeta, stackedMeta, dataMeta],
+			children: emitted,
 		});
+		// Emit as the rf-chart custom element; the web component enhances the table.
+		node.name = 'rf-chart';
+		return node;
 	},
 });
