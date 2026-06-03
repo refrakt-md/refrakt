@@ -1,4 +1,4 @@
-{% work id="WORK-331" status="in-progress" priority="medium" complexity="moderate" source="SPEC-082" tags="runes,engine,cleanup,data-channel,fields,contract" milestone="v0.18.0" %}
+{% work id="WORK-331" status="done" priority="medium" complexity="moderate" source="SPEC-082" tags="runes,engine,cleanup,data-channel,fields,contract" milestone="v0.18.0" %}
 
 # Drop dual-emitted data-field metas from rune output (Tier 1)
 
@@ -36,21 +36,21 @@ css-coverage / seo failures — output is provably unchanged.
 
 ## Acceptance Criteria
 
-- [ ] `createComponentRenderable` no longer emits population-1 `<meta data-field>`
+- [x] `createComponentRenderable` no longer emits population-1 `<meta data-field>`
   children (the value still lands in the `data-rune-fields` bag). SEO
   `<meta property>` carriers and the directly-built sentinel metas are untouched.
-- [ ] The ~120 rune/plugin test assertions that read field data from a pre-engine
+- [x] The ~120 rune/plugin test assertions that read field data from a pre-engine
   `<meta data-field>` are migrated to read the `data-rune-fields` bag (a shared
   test helper, e.g. `field(tag, name)`, is acceptable to collapse the churn).
-- [ ] The population-2 leaks (`toc/ordered`, plus any found by an audit of
+- [x] The population-2 leaks (`toc/ordered`, plus any found by an audit of
   non-modifier `properties` metas) no longer reach rendered output.
-- [ ] Any post-engine reader of a population-1 meta is rerouted to the bag.
+- [x] Any post-engine reader of a population-1 meta is rerouted to the bag.
   (Known: confirm `blog`'s folder hook — it reads `data-field="folder"` from
   children post-engine.)
-- [ ] Theme-authoring docs state that `data-field` is an internal engine
+- [x] Theme-authoring docs state that `data-field` is an internal engine
   attribute, not a theming hook (themes target BEM classes + `data-name` + the
   documented `data-*` modifiers).
-- [ ] Rendered output unchanged; full suite + both structure contracts green.
+- [x] Rendered output unchanged; full suite + both structure contracts green.
 
 ## Approach
 
@@ -108,5 +108,48 @@ Remaining for the drop (pending decision):
   rides its meta. The drop must thread child fields another way (e.g. the
   comparison transform lifting `highlighted` into the table-level bag).
 - Population-2 leaks (`toc/ordered`); docs note that `data-field` is internal.
+
+## Resolution
+
+Completed: 2026-06-03
+
+Branch: claude/rune-contract-hardening
+
+### What was done
+Landed the drop on top of the step-1 reroute. The dual-emit data metas are gone
+from the pre-engine tree; the data-rune-fields bag is the sole field channel.
+
+- createComponentRenderable filters pure-data property metas (those that got
+  data-field and aren't SEO carriers) out of the emitted children — the value
+  still lands in the bag. SEO property= metas and directly-built sentinels are
+  untouched.
+- Re-measured against the post-WORK-335 tree: 95 mechanical assertion failures
+  across 44 files (down from the original 120/50 — WORK-335 + the chart seam
+  removed field-metas from 6 runes). ZERO behavioral/pipeline/contract/css/seo
+  failures — output-neutral.
+- Migrated the 95 assertions to read the bag via a shared fields(tag) helper
+  added to 9 test/helpers.ts (parallelized across the packages).
+- drawer-pipeline.ts: rerouted the register hook's side/size/shortcut reads to
+  the bag (bag-first readField). This was a BESPOKE meta reader missed by the
+  step-1 audit (which grepped readMeta/findMeta, not local helpers) — caught
+  here by the drawer register test. The genuine hidden-coupling case.
+- Population-2 leaks (e.g. toc/ordered) stop reaching output (they were property
+  metas, now dropped).
+- Docs: corrected the now-stale <meta data-field> field-data references in
+  theme-authoring (config-api / overview / components) to the data-rune-fields
+  bag, noting it is an internal channel, not a theming hook.
+
+### Notes
+- Deliberate deviation from the AC wording: did NOT add a blanket "data-field is
+  internal" claim, because the def-list block ROW marker (<div data-name=row
+  data-field=created>) is a separate, still-valid theming hook. Scoped the docs
+  note to the field-data channel only.
+- The nested-column comparison/highlighted gap noted in Progress was already
+  resolved by WORK-335 (comparison now builds the table in the transform and
+  reads highlighted straight from the AST), so no extra work was needed here.
+- The engine's bag-first read + meta-fallback + step-7 strip + kebab set stay —
+  their removal (and the engine-fixture migration) is WORK-332.
+- Full suite green (3079); contracts unchanged (config-derived; the drop is
+  output-only and the metas were already stripped pre-WORK-331).
 
 {% /work %}
