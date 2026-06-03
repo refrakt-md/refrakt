@@ -80,20 +80,14 @@ export const character = createContentModelSchema({
 		const sectionsContainer = hasSections ? sections.wrap('div') : undefined;
 		const body = !hasSections ? sectionNodes.wrap('div') : undefined;
 
-		// Title lives in a header at the top of the content column, so the
-		// projected role/status def-list nests below it via `layout: { content:
-		// [...] }`. The portrait stays a floated avatar sibling (character chrome).
-		const headerEl = new Tag('header', {}, [nameTag]);
-		const mainContent = new RenderableNodeCursor([
-			headerEl,
-			hasSections ? sectionsContainer!.next() : body!.next(),
-		]).wrap('div');
-
-		// Portrait first so it floats and the content wraps around it.
+		// SPEC-081: emit flat `data-name` slots — the `layout` config builds the
+		// content column + preamble header. The portrait stays a floated avatar
+		// sibling (character chrome) placed at the article root.
 		const children: any[] = [];
 		if (portraitDiv) children.push(portraitDiv.next());
 		children.push(roleMeta, statusMeta, aliasesMeta, tagsMeta);
-		children.push(mainContent.next());
+		children.push(nameTag);
+		children.push(hasSections ? sectionsContainer!.next() : body!.next());
 
 		const schemaMap = {
 			name: nameTag,
@@ -113,7 +107,6 @@ export const character = createContentModelSchema({
 			refs: {
 				name: nameTag,
 				...(portraitDiv ? { portrait: portraitDiv } : {}),
-				content: mainContent,
 				...(hasSections ? { sections: sectionsContainer! } : { body: body! }),
 			},
 			schema: schemaMap,

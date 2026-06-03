@@ -26,8 +26,14 @@ export const config: Record<string, RuneConfig> = {
 		blocks: {
 			metadata: { fields: ['role', 'status'], layout: 'definition-list' },
 		},
-		layout: { content: ['preamble', 'metadata'] },
-		autoLabel: { header: 'preamble' },
+		// SPEC-081: the transform emits flat slots; `layout` builds the skeleton.
+		// The content column wraps the preamble header + metadata + sections; the
+		// portrait stays a floated avatar sibling at the article root.
+		layout: {
+			root: ['portrait', 'content'],
+			content: { tag: 'div', children: ['preamble', 'metadata', 'sections', 'body'] },
+			preamble: { tag: 'header', children: ['name'] },
+		},
 		editHints: { name: 'inline', portrait: 'image', body: 'none', sections: 'none' },
 	},
 	CharacterSection: { block: 'character-section', parent: 'Character', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },

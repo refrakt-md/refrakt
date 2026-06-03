@@ -1917,6 +1917,8 @@
 			"root": ".rf-character",
 			"dataRune": "character",
 			"childOrder": [
+				"portrait",
+				"content",
 				"{content}"
 			],
 			"modifiers": {
@@ -1953,11 +1955,6 @@
 						"role",
 						"status"
 					]
-				},
-				"preamble": {
-					"tag": "header",
-					"selector": ".rf-character__preamble",
-					"source": "autoLabel"
 				}
 			}
 		},
