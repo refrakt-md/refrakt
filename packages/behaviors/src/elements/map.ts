@@ -81,19 +81,20 @@ export class RfMap extends SafeHTMLElement {
 		if (!pinsContainer) return result;
 
 		for (const li of pinsContainer.querySelectorAll<HTMLElement>('li[data-rune="map-pin"]')) {
-			const readMeta = (prop: string) =>
-				li.querySelector<HTMLMetaElement>(`meta[data-field="${prop}"]`)?.content || '';
+			// Pin coordinates/metadata ride durable `data-*` attributes on the
+			// <li> (set by the identity transform from the field bag); name and
+			// description are visible `data-name` spans.
 			const readSpan = (prop: string) =>
-				li.querySelector<HTMLElement>(`span[data-field="${prop}"]`)?.textContent || '';
+				li.querySelector<HTMLElement>(`[data-name="${prop}"]`)?.textContent || '';
 
 			result.push({
 				name: readSpan('name'),
 				description: readSpan('description'),
-				lat: parseFloat(readMeta('lat')) || 0,
-				lng: parseFloat(readMeta('lng')) || 0,
-				address: readMeta('address'),
-				url: readMeta('url'),
-				group: readMeta('group'),
+				lat: parseFloat(li.dataset.lat || '') || 0,
+				lng: parseFloat(li.dataset.lng || '') || 0,
+				address: li.dataset.address || '',
+				url: li.dataset.url || '',
+				group: li.dataset.group || '',
 			});
 		}
 		return result;

@@ -85,5 +85,20 @@ export const config: Record<string, RuneConfig> = {
 		},
 		contentWrapper: { tag: 'div', ref: 'container' },
 	},
-	MapPin: { block: 'map-pin', parent: 'Map', editHints: { name: 'inline', description: 'inline' } },
+	MapPin: {
+		block: 'map-pin',
+		parent: 'Map',
+		editHints: { name: 'inline', description: 'inline' },
+		// Pin coordinates and metadata are read at runtime by the <rf-map> web
+		// component. They ride the SPEC-082 field bag through the transform, but
+		// the bag is stripped from output — so surface them as durable `data-*`
+		// attributes on the <li> (noBemClass: pure data, no BEM modifier class).
+		modifiers: {
+			lat: { source: 'meta', noBemClass: true },
+			lng: { source: 'meta', noBemClass: true },
+			address: { source: 'meta', noBemClass: true },
+			url: { source: 'meta', noBemClass: true },
+			group: { source: 'meta', noBemClass: true },
+		},
+	},
 };

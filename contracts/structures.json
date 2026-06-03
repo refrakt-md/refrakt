@@ -2686,7 +2686,29 @@
 			"parent": "Map",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"lat": {
+					"source": "meta",
+					"dataAttribute": "data-lat"
+				},
+				"lng": {
+					"source": "meta",
+					"dataAttribute": "data-lng"
+				},
+				"address": {
+					"source": "meta",
+					"dataAttribute": "data-address"
+				},
+				"url": {
+					"source": "meta",
+					"dataAttribute": "data-url"
+				},
+				"group": {
+					"source": "meta",
+					"dataAttribute": "data-group"
+				}
+			}
 		},
 		"Cast": {
 			"block": "cast",
