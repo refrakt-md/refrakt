@@ -373,4 +373,89 @@ describe('SPEC-080 block-and-layout assembly', () => {
 			expect(out.attributes['data-hint-type']).toBe('note'); // modifier default
 		});
 	});
+
+	describe('SPEC-081 recursive layout — wrapper creation', () => {
+		const cfg: RuneConfig = {
+			block: 'recipe',
+			layout: {
+				root: ['media', 'content'],
+				media: { tag: 'div', children: ['cover'] },
+				content: { tag: 'div', children: ['preamble', 'body'] },
+				preamble: { tag: 'header', attrs: { 'data-section': 'preamble' }, children: ['headline', 'blurb'] },
+			},
+		};
+		const transform = createTransform(baseConfig({ Recipe: cfg }));
+		const run = () => asTag(transform(makeTag('article', { 'data-rune': 'recipe' }, [
+			makeTag('img', { 'data-name': 'cover' }, []),
+			makeTag('h1', { 'data-name': 'headline' }, ['Title']),
+			makeTag('p', { 'data-name': 'blurb' }, ['Blurb']),
+			makeTag('ul', { 'data-name': 'body' }, ['x']),
+			makeTag('meta', { content: 'leftover' }, []),
+		])));
+
+		it('creates wrappers (tag entries) and nests flat slots per the layout tree', () => {
+			const out = run();
+			const media = findByName(out, 'media')!;
+			expect(media.name).toBe('div');
+			expect(media.attributes.class).toContain('rf-recipe__media'); // BEM applied to created wrappers
+			expect(directNames(media)).toEqual(['cover']);
+
+			const content = findByName(out, 'content')!;
+			expect(content.name).toBe('div');
+			expect(directNames(content)).toEqual(['preamble', 'body']);
+
+			const preamble = findByName(out, 'preamble')!;
+			expect(preamble.name).toBe('header');
+			expect(preamble.attributes['data-section']).toBe('preamble'); // attrs applied
+			expect(directNames(preamble)).toEqual(['headline', 'blurb']);
+		});
+
+		it('appends unlisted slots at root (never drops content)', () => {
+			const out = run();
+			// the unnamed leftover meta is neither consumed nor dropped
+			const leftover = out.children.filter(c => isT(c) && c.name === 'meta');
+			expect(leftover.length).toBe(1);
+			// consumed slots are gone from root (pulled into wrappers)
+			expect(directNames(out).filter(Boolean)).toEqual(['media', 'content']);
+		});
+
+		it('places a slot referenced twice only once (diamond)', () => {
+			const dia: RuneConfig = {
+				block: 'x',
+				layout: { root: ['a', 'b'], a: { tag: 'div', children: ['shared'] }, b: { tag: 'div', children: ['shared'] } },
+			};
+			const t = createTransform(baseConfig({ X: dia }));
+			const out = asTag(t(makeTag('section', { 'data-rune': 'x' }, [makeTag('span', { 'data-name': 'shared' }, ['s'])])));
+			expect(findByName(findByName(out, 'a')!, 'shared')).toBeDefined();
+			expect(findByName(findByName(out, 'b')!, 'shared')).toBeUndefined();
+		});
+
+		it('honours projection.hide after layout assembly (explicit drop)', () => {
+			const cfg: RuneConfig = {
+				block: 'z',
+				layout: { root: ['keep'] },        // 'drop' is unlisted → would append…
+				projection: { hide: ['drop'] },    // …but hide removes it
+			};
+			const t = createTransform(baseConfig({ Z: cfg }));
+			const out = asTag(t(makeTag('section', { 'data-rune': 'z' }, [
+				makeTag('div', { 'data-name': 'keep' }, ['k']),
+				makeTag('div', { 'data-name': 'drop' }, ['d']),
+			])));
+			expect(findByName(out, 'keep')).toBeDefined();
+			expect(findByName(out, 'drop')).toBeUndefined();
+		});
+
+		it('breaks layout reference cycles without hanging', () => {
+			const cyc: RuneConfig = {
+				block: 'y',
+				layout: { root: ['a'], a: { tag: 'div', children: ['b'] }, b: { tag: 'div', children: ['a'] } },
+			};
+			const t = createTransform(baseConfig({ Y: cyc }));
+			const out = asTag(t(makeTag('section', { 'data-rune': 'y' }, [])));
+			const a = findByName(out, 'a')!;
+			const b = findByName(a, 'b')!;
+			expect(b).toBeDefined();
+			expect(findByName(b, 'a')).toBeUndefined(); // cycle back to 'a' skipped
+		});
+	});
 });

@@ -1,5 +1,5 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
-import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, MetaField, BlockDef } from './types.js';
+import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, MetaField, BlockDef, LayoutEntry } from './types.js';
 import { isTag, makeTag, readMeta, toKebabCase } from './helpers.js';
 
 /** The 6 tint colour tokens */
@@ -1254,54 +1254,123 @@ function assembleWithBlocks(
 
 	// No `layout` → render the transform tree verbatim (no projection).
 	if (Object.keys(layout).length === 0) return contentChildren;
+	const ctx: LayoutCtx = { layout, renderBlock };
 
-	// Compose the rune root first (reserved `root` key), then named containers.
-	let result = layout.root
-		? composeContainer(contentChildren, layout.root, renderBlock)
-		: contentChildren;
-
-	for (const [key, order] of Object.entries(layout)) {
-		if (key === 'root') continue;
-		result = updateContainerByName(result, key, children =>
-			composeContainer(children, order, renderBlock),
+	// `root` present → resolve the whole skeleton recursively, pulling flat
+	// transform slots into (possibly created) containers; unlisted slots append.
+	const rootEntry = layout.root;
+	if (rootEntry) {
+		const rootOrder = Array.isArray(rootEntry) ? rootEntry : rootEntry.children;
+		const byName = mapDataNames(contentChildren);
+		const consumed = new Set<string>();
+		const placed = placeNames(rootOrder, byName, consumed, ctx, ['root']);
+		const rest = contentChildren.filter(c =>
+			!(isTag(c) && c.attributes['data-name'] && consumed.has(c.attributes['data-name'])),
 		);
+		return [...placed, ...rest];
+	}
+
+	// No `root` → reorder existing containers in place (backward-compatible:
+	// the transform built the container; the engine reorders / injects into it).
+	let result = contentChildren;
+	for (const [key, entry] of Object.entries(layout)) {
+		const childOrder = Array.isArray(entry) ? entry : entry.children;
+		result = updateContainerByName(result, key, children => {
+			const byName = mapDataNames(children);
+			const consumed = new Set<string>();
+			const placed = placeNames(childOrder, byName, consumed, ctx, [key]);
+			const rest = children.filter(c =>
+				!(isTag(c) && c.attributes['data-name'] && consumed.has(c.attributes['data-name'])),
+			);
+			return [...placed, ...rest];
+		});
 	}
 	return result;
 }
 
-/** Reorder + inject blocks within one container's children per an ordered
- *  list of block names. Transform children are placed by `data-name` where
- *  the list names them; projected blocks are rendered in place; names absent
- *  from both are skipped; transform children the list didn't name append in
- *  their original order (never dropped). */
-function composeContainer(
-	children: RendererNode[],
-	order: string[],
-	renderBlock: (name: string) => SerializedTag | null,
-): RendererNode[] {
-	const byName = new Map<string, RendererNode>();
-	for (const c of children) {
-		if (isTag(c) && c.attributes['data-name']) byName.set(c.attributes['data-name'], c);
-	}
-	const named = new Set(order);
+interface LayoutCtx {
+	layout: Record<string, LayoutEntry>;
+	renderBlock: (name: string) => SerializedTag | null;
+}
 
-	const result: RendererNode[] = [];
-	for (const name of order) {
-		const existing = byName.get(name);
-		if (existing) {
-			result.push(existing);
-		} else {
-			const projected = renderBlock(name);
-			if (projected) result.push(projected);
-		}
-	}
-	// Append unlisted transform children (incl. meta tags / untagged nodes).
+const LAYOUT_CYCLE_WARNED = new Set<string>();
+function warnLayoutCycle(name: string): void {
+	if (LAYOUT_CYCLE_WARNED.has(name)) return;
+	LAYOUT_CYCLE_WARNED.add(name);
+	// eslint-disable-next-line no-console
+	console.warn(`[refrakt] layout reference cycle at "${name}" — skipping to break the loop.`);
+}
+
+/** Map a child array to a `data-name` → node index (tags carrying a data-name). */
+function mapDataNames(children: RendererNode[]): Map<string, SerializedTag> {
+	const m = new Map<string, SerializedTag>();
 	for (const c of children) {
-		const dn = isTag(c) ? c.attributes['data-name'] : undefined;
-		if (dn && named.has(dn)) continue;
-		result.push(c);
+		if (isTag(c) && c.attributes['data-name']) m.set(c.attributes['data-name'], c);
 	}
-	return result;
+	return m;
+}
+
+/** Resolve an ordered list of names into nodes, pulling from `byName` and
+ *  recording consumed names. Each name resolves, in order:
+ *   1. a `layout` entry with a `tag` → create a wrapper element and recurse
+ *      (its children pull from the same flat pool);
+ *   2. a `layout` entry without a `tag` → reorder the existing container of that
+ *      name in place;
+ *   3. a projected block;
+ *   4. a transform node carrying that `data-name`;
+ *   5. otherwise skip.
+ *  A name is placed at most once (diamond); reference cycles warn and skip. */
+function placeNames(
+	order: string[],
+	byName: Map<string, SerializedTag>,
+	consumed: Set<string>,
+	ctx: LayoutCtx,
+	ancestors: string[],
+): RendererNode[] {
+	const out: RendererNode[] = [];
+	for (const name of order) {
+		if (consumed.has(name)) continue;
+		if (ancestors.includes(name)) { warnLayoutCycle(name); continue; }
+
+		const entry = ctx.layout[name];
+
+		// 1. layout entry with a tag → create a wrapper, recurse into the pool
+		if (entry && !Array.isArray(entry) && entry.tag) {
+			consumed.add(name);
+			const kids = placeNames(entry.children, byName, consumed, ctx, [...ancestors, name]);
+			out.push(makeTag(entry.tag, { 'data-name': name, ...(entry.attrs ?? {}) }, kids));
+			continue;
+		}
+
+		// 2. layout entry without a tag → reorder the existing container in place
+		if (entry) {
+			const existing = byName.get(name);
+			if (existing) {
+				consumed.add(name);
+				const childOrder = Array.isArray(entry) ? entry : entry.children;
+				const innerByName = mapDataNames(existing.children);
+				const innerConsumed = new Set<string>();
+				const innerPlaced = placeNames(childOrder, innerByName, innerConsumed, ctx, [...ancestors, name]);
+				const innerRest = existing.children.filter(c =>
+					!(isTag(c) && c.attributes['data-name'] && innerConsumed.has(c.attributes['data-name'])),
+				);
+				out.push({ ...existing, children: [...innerPlaced, ...innerRest] });
+				continue;
+			}
+			// no existing container — fall through to block / node
+		}
+
+		// 3. projected block
+		const block = ctx.renderBlock(name);
+		if (block) { consumed.add(name); out.push(block); continue; }
+
+		// 4. transform node by data-name
+		const node = byName.get(name);
+		if (node) { consumed.add(name); out.push(node); continue; }
+
+		// 5. unresolved → skip
+	}
+	return out;
 }
 
 /** Immutably replace the children of the first descendant carrying

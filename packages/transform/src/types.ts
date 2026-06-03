@@ -26,6 +26,17 @@ export interface BlockDef {
 	wrap?: boolean;
 }
 
+/** SPEC-081 layout entry — one container's declaration within `layout`.
+ *  - A bare `string[]` orders an *existing* container's children (the
+ *    transform built the container; the engine reorders / injects into it).
+ *  - `{ tag, children }` *creates* a wrapper element (`<tag data-name=key>`)
+ *    and fills it with the resolved children, pulled from the flat transform
+ *    slots. `attrs` adds literal attributes to the created wrapper.
+ *  An object without `tag` behaves like the bare-array form (order existing). */
+export type LayoutEntry =
+	| string[]
+	| { tag?: string; children: string[]; attrs?: Record<string, string> };
+
 /** Pure data manifest entry for a meta-bearing field. Describes the
  *  field's domain semantics (type, sentiment, label) independent
  *  of which layout primitive renders it. The same field can appear as
@@ -179,8 +190,12 @@ export interface RuneConfig {
 	 *  Projected (`blocks`) entries appear ONLY where named here — no
 	 *  canonical/default placement. Transform-built children a list doesn't
 	 *  name are appended in transform order (rune content is never dropped).
-	 *  Omitting `layout` renders the transform tree verbatim, no projection. */
-	layout?: Record<string, string[]>;
+	 *  Omitting `layout` renders the transform tree verbatim, no projection.
+	 *
+	 *  Each value is a {@link LayoutEntry}: a bare `string[]` orders an existing
+	 *  container, while `{ tag, children }` *creates* a wrapper element and
+	 *  fills it from the flat transform slots (SPEC-081 declarative assembly). */
+	layout?: Record<string, LayoutEntry>;
 
 	/** Auto-label children by tag name → data-name. E.g., { summary: 'header' } */
 	autoLabel?: Record<string, string>;

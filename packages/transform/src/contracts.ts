@@ -323,7 +323,8 @@ function computeChildOrder(config: RuneConfig): string[] {
 	// unlisted transform children append after, marked by `{content}`.
 	// Without a `root` key the transform tree renders verbatim.
 	if (config.blocks || config.layout) {
-		const root = config.layout?.root;
+		const rootEntry = config.layout?.root;
+		const root = Array.isArray(rootEntry) ? rootEntry : rootEntry?.children;
 		return root && root.length > 0 ? [...root, '{content}'] : ['{content}'];
 	}
 
