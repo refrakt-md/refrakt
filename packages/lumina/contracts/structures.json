@@ -1696,31 +1696,12 @@
 			"childOrder": [
 				"{content}"
 			],
-			"elements": {
-				"preamble": {
-					"tag": "header",
-					"selector": ".rf-comparison__preamble",
-					"source": "autoLabel"
-				},
-				"eyebrow": {
-					"tag": "eyebrow",
-					"selector": ".rf-comparison__eyebrow",
-					"source": "autoLabel"
-				},
-				"headline": {
-					"tag": "headline",
-					"selector": ".rf-comparison__headline",
-					"source": "autoLabel"
-				},
-				"blurb": {
-					"tag": "blurb",
-					"selector": ".rf-comparison__blurb",
-					"source": "autoLabel"
-				},
-				"image": {
-					"tag": "image",
-					"selector": ".rf-comparison__image",
-					"source": "autoLabel"
+			"modifiers": {
+				"layout": {
+					"source": "meta",
+					"default": "table",
+					"classPattern": ".rf-comparison--{value}",
+					"dataAttribute": "data-layout"
 				}
 			}
 		},

@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes, headingsToList, pageSectionProperties } from '@refrakt-md/runes';
+import { createComponentRenderable, createContentModelSchema, asNodes, headingsToList } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 
 // Extract plain text from an AST node by walking all text children
@@ -282,6 +282,110 @@ function convertComparisonChildren(nodes: unknown[], attributes: Record<string, 
 
 export { comparisonRow, comparisonColumn };
 
+// ─── Table / cards builders (SPEC-081: structure lives in the transform) ───
+// Classes are hard-coded `rf-comparison*` to preserve the existing output
+// byte-for-byte (comparison was never theme-prefix-aware). Compound element-
+// modifier classes (`__cell--highlighted`, …) are likewise preserved as-is.
+
+interface RowData { label: string; rowType: string; body: RenderableTreeNode[]; }
+interface ColData { name: string; highlighted: boolean; rows: RowData[]; }
+
+function buildComparisonTable(columns: ColData[], rowLabels: string[], labelsPosition: string): InstanceType<typeof Tag> {
+	const headerCells: RenderableTreeNode[] = [];
+	if (labelsPosition !== 'hidden') headerCells.push(new Tag('th', { class: 'rf-comparison__label-col' }, []));
+	for (const col of columns) {
+		const thChildren: RenderableTreeNode[] = [col.name];
+		if (col.highlighted) thChildren.push(new Tag('span', { class: 'rf-comparison__recommended-badge' }, ['Recommended']));
+		headerCells.push(new Tag('th', col.highlighted ? { class: 'rf-comparison__col-header--highlighted' } : {}, thChildren));
+	}
+	const thead = new Tag('thead', {}, [new Tag('tr', {}, headerCells)]);
+
+	const bodyRows: RenderableTreeNode[] = [];
+	for (let i = 0; i < rowLabels.length; i++) {
+		const cells: RenderableTreeNode[] = [];
+		if (labelsPosition !== 'hidden') cells.push(new Tag('th', { class: 'rf-comparison__row-label', scope: 'row' }, [rowLabels[i]]));
+		for (const col of columns) {
+			const row = col.rows[i];
+			const rType = row ? row.rowType : 'empty';
+			const body = row ? row.body : [];
+
+			let cellCls = 'rf-comparison__cell';
+			if (col.highlighted) cellCls += ' rf-comparison__cell--highlighted';
+			if (rType === 'empty') cellCls += ' rf-comparison__cell--empty';
+
+			const cellChildren: RenderableTreeNode[] = [];
+			if (rType === 'check') {
+				cellChildren.push(new Tag('span', { class: 'rf-comparison__row-icon rf-comparison__row-icon--check', 'aria-label': 'Supported' }, ['✓']));
+			} else if (rType === 'cross') {
+				cellChildren.push(new Tag('span', { class: 'rf-comparison__row-icon rf-comparison__row-icon--cross', 'aria-label': 'Not supported' }, ['✗']));
+			} else if (rType === 'negative' && body.length) {
+				cellChildren.push(new Tag('span', { class: 'rf-comparison__negative' }, body));
+			} else if (rType === 'empty') {
+				cellChildren.push(new Tag('span', { class: 'rf-comparison__cell--empty', 'aria-label': 'Not applicable' }, ['—']));
+			} else if (rType === 'callout' && body.length) {
+				cellChildren.push(new Tag('span', { class: 'rf-comparison__callout-badge' }, body));
+			} else if (body.length) {
+				cellChildren.push(...body);
+			}
+
+			cells.push(new Tag('td', { class: cellCls }, cellChildren));
+		}
+		bodyRows.push(new Tag('tr', {}, cells));
+	}
+	const tbody = new Tag('tbody', {}, bodyRows);
+
+	return new Tag('div', { class: 'rf-comparison__table-wrapper' }, [
+		new Tag('table', { class: 'rf-comparison__table' }, [thead, tbody]),
+	]);
+}
+
+function buildComparisonCards(columns: ColData[]): InstanceType<typeof Tag> {
+	const cards = columns.map(col => {
+		const cardCls = col.highlighted ? 'rf-comparison-card rf-comparison-card--highlighted' : 'rf-comparison-card';
+		const cardChildren: RenderableTreeNode[] = [];
+		if (col.highlighted) cardChildren.push(new Tag('div', { class: 'rf-comparison-card__badge' }, ['Recommended']));
+		cardChildren.push(new Tag('h3', { class: 'rf-comparison-card__name' }, [col.name]));
+
+		const rowItems: RenderableTreeNode[] = [];
+		for (const row of col.rows) {
+			const rType = row.rowType || 'text';
+			if (rType === 'empty') continue;
+			const label = row.label;
+			const body = row.body;
+
+			let liCls = 'rf-comparison-card__row';
+			if (rType === 'negative') liCls += ' rf-comparison-card__row--negative';
+			if (rType === 'callout') liCls += ' rf-comparison-card__row--callout';
+
+			const liChildren: RenderableTreeNode[] = [];
+			if (rType === 'check') {
+				liChildren.push(new Tag('span', { class: 'rf-comparison__row-icon rf-comparison__row-icon--check', 'aria-label': 'Supported' }, ['✓']));
+				if (label) liChildren.push(new Tag('strong', {}, [label]));
+				liChildren.push(...body);
+			} else if (rType === 'cross') {
+				liChildren.push(new Tag('span', { class: 'rf-comparison__row-icon rf-comparison__row-icon--cross', 'aria-label': 'Not supported' }, ['✗']));
+				if (label) liChildren.push(new Tag('strong', {}, [label]));
+				liChildren.push(...body);
+			} else if (rType === 'negative') {
+				if (label) liChildren.push(new Tag('strong', {}, [label]));
+				if (body.length) liChildren.push(new Tag('span', { class: 'rf-comparison__negative' }, body));
+			} else if (rType === 'callout') {
+				liChildren.push(new Tag('div', { class: 'rf-comparison__callout-badge' }, body));
+			} else {
+				if (label) liChildren.push(new Tag('strong', {}, [label]));
+				liChildren.push(...body);
+			}
+
+			rowItems.push(new Tag('li', { class: liCls }, liChildren));
+		}
+
+		cardChildren.push(new Tag('ul', { class: 'rf-comparison-card__rows' }, rowItems));
+		return new Tag('div', { class: cardCls }, cardChildren);
+	});
+
+	return new Tag('div', { class: 'rf-comparison__cards' }, cards);
+}
+
 export const comparison = createContentModelSchema({
 	attributes: {
 		title: { type: String, required: false, description: 'Heading displayed above the comparison table' },
@@ -301,68 +405,53 @@ export const comparison = createContentModelSchema({
 	transform(resolved, attrs, config) {
 		const allChildren = asNodes(resolved.children);
 
-		// Extract the synthetic meta node carrying master labels
+		// SPEC-081: build the table/cards here from the parsed column/row AST tags
+		// (which already carry name / highlighted / rowType / body) — no
+		// intermediate column renderables, no postTransform.
 		let masterLabels: string[] = [];
-		const contentChildren: Node[] = [];
+		const columnAst: Node[] = [];
 		for (const child of allChildren) {
 			if (child.type === 'tag' && (child as any).tag === '__comparison-meta') {
 				masterLabels = JSON.parse(child.attributes._masterLabels || '[]');
-			} else {
-				contentChildren.push(child);
-			}
-		}
-
-		// Separate header content from column tag nodes
-		const headerAst: Node[] = [];
-		const columnAst: Node[] = [];
-		for (const child of contentChildren) {
-			if (child.type === 'tag' && (child as any).tag === 'comparison-column') {
+			} else if (child.type === 'tag' && (child as any).tag === 'comparison-column') {
 				columnAst.push(child);
-			} else if (child.type === 'heading' || child.type === 'paragraph') {
-				headerAst.push(child);
 			}
 		}
 
-		const header = new RenderableNodeCursor(
-			Markdoc.transform(headerAst, config) as RenderableTreeNode[],
-		);
-		const columnStream = new RenderableNodeCursor(
-			Markdoc.transform(columnAst, config) as RenderableTreeNode[],
-		);
+		const layout = (attrs.layout as string) ?? 'table';
+		const labelsPosition = (attrs.labels as string) ?? 'left';
+		const verdict = (attrs.verdict as string) ?? '';
+		const title = (attrs.title as string) ?? '';
 
-		const layoutMeta = new Tag('meta', { content: attrs.layout ?? 'table' });
-		const labelsMeta = new Tag('meta', { content: attrs.labels ?? 'left' });
-		const collapseMeta = new Tag('meta', { content: String(attrs.collapse ?? true) });
-		const verdictMeta = new Tag('meta', { content: attrs.verdict ?? '' });
-		const highlightedMeta = new Tag('meta', { content: attrs.highlighted ?? '' });
-		const rowLabelsMeta = new Tag('meta', { content: JSON.stringify(masterLabels) });
+		const columns: ColData[] = columnAst.map(colTag => ({
+			name: (colTag.attributes.name as string) ?? '',
+			highlighted: colTag.attributes.highlighted === 'true',
+			rows: colTag.children
+				.filter(c => c.type === 'tag' && (c as any).tag === 'comparison-row')
+				.map(rowTag => ({
+					label: (rowTag.attributes.label as string) ?? '',
+					rowType: (rowTag.attributes.rowType as string) ?? 'text',
+					body: Markdoc.transform(rowTag.children, config) as RenderableTreeNode[],
+				})),
+		}));
 
-		const columnItems = columnStream.tag('div').typeof('ComparisonColumn');
-		const grid = columnItems.wrap('div');
+		// `layout` rides the bag (→ the `rf-comparison--{layout}` modifier class).
+		const layoutMeta = new Tag('meta', { content: layout });
 
-		const titleTag = attrs.title ? new Tag('h2', {}, [attrs.title]) : undefined;
+		const children: RenderableTreeNode[] = [];
+		if (title) children.push(new Tag('h2', { class: 'rf-comparison__title' }, [title]));
+		children.push(layout === 'cards'
+			? buildComparisonCards(columns)
+			: buildComparisonTable(columns, masterLabels, labelsPosition));
+		if (verdict) children.push(new Tag('p', { class: 'rf-comparison__verdict' }, [verdict]));
 
 		return createComponentRenderable({ rune: 'comparison',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
 				layout: layoutMeta,
-				labels: labelsMeta,
-				collapse: collapseMeta,
-				verdict: verdictMeta,
-				highlighted: highlightedMeta,
-				rowLabels: rowLabelsMeta,
-				column: columnItems,
 			},
-			refs: {
-				...pageSectionProperties(header),
-				grid: grid.tag('div'),
-			},
-			children: [
-				...(titleTag ? [titleTag] : []),
-				layoutMeta, labelsMeta, collapseMeta, verdictMeta, highlightedMeta, rowLabelsMeta,
-				grid.next(),
-			],
+			children,
 		});
 	},
 });
