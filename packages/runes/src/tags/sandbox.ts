@@ -3,7 +3,7 @@ import type { Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import type { ResolvedSecurityPolicy } from '@refrakt-md/types';
 import { createComponentRenderable, createContentModelSchema, sanitizeSandboxContent } from '../lib/index.js';
-import { assembleFromDirectory, mergeContent, type SandboxSourcePanel } from '../sandbox-sources.js';
+import { assembleFromDirectory, mergeContent } from '../sandbox-sources.js';
 
 /** Strip common leading whitespace from all lines. */
 function dedent(text: string): string {
@@ -70,7 +70,6 @@ export const sandbox = createContentModelSchema({
 		const dependencies = attrs.dependencies ?? '';
 		const label = attrs.label ?? '';
 		const height = attrs.height;
-		const context = attrs.context ?? 'default';
 
 		let rawContent = '';
 		let sourcePanels: SourcePanel[] = [];
@@ -122,63 +121,46 @@ export const sandbox = createContentModelSchema({
 			?? { trust: 'trusted', allowJs: true, sandboxOrigin: undefined };
 		const sanitisedContent = sanitizeSandboxContent(rawContent, policy);
 
-		const contentMeta = new Tag('meta', { content: sanitisedContent });
-		const securityModeMeta = new Tag('meta', { content: policy.trust });
-		const allowJsMeta = new Tag('meta', { content: policy.allowJs ? 'true' : 'false' });
-		const sandboxOriginMeta = policy.sandboxOrigin ? new Tag('meta', { content: policy.sandboxOrigin }) : undefined;
-		const frameworkMeta = new Tag('meta', { content: framework });
-		const dependenciesMeta = new Tag('meta', { content: dependencies });
-		const labelMeta = label ? new Tag('meta', { content: label }) : undefined;
-		const heightMeta = new Tag('meta', { content: height != null ? String(height) : 'auto' });
-		const contextMeta = new Tag('meta', { content: context });
+		// SPEC-081: build the rf-sandbox element + its SSR fallback / source
+		// templates here (deterministic from the parsed content + security
+		// policy), not in a postTransform.
 
-		// Static fallback: render content as a pre/code block for SSR.
-		// Use the sanitised form so the SSR fallback never serializes
-		// would-be-executable content into the page.
+		// Static SSR fallback — sanitised so the page never serializes
+		// would-be-executable content; lives in an inert <template>.
 		const fallbackPre = sanitisedContent ? new Tag('pre', { 'data-language': 'html' }, [
 			new Tag('code', { 'data-language': 'html' }, [sanitisedContent])
 		]) : undefined;
 
-		// Source panels for server-side syntax highlighting
-		const panelNodes = sourcePanels.map(panel => {
-			const pre = new Tag('pre', { 'data-language': panel.language }, [
-				new Tag('code', { 'data-language': panel.language }, [panel.content])
-			]);
-			return new Tag('meta', {
-				'data-field': 'source-panel',
-				'data-label': panel.label,
-				...(panel.origin ? { 'data-origin': panel.origin } : {}),
-			}, [pre]);
-		});
+		// Directory-mode source origins → a labelled list the client uses to
+		// title the source panels (the panels themselves are built client-side).
+		const sourceOrigins = sourcePanels
+			.filter(p => p.origin)
+			.map(p => `${p.label}\t${p.origin}`);
 
-		const childNodes = [
-			contentMeta,
-			frameworkMeta,
-			dependenciesMeta,
-			...(labelMeta ? [labelMeta] : []),
-			heightMeta,
-			contextMeta,
-			securityModeMeta,
-			allowJsMeta,
-			...(sandboxOriginMeta ? [sandboxOriginMeta] : []),
-			...(fallbackPre ? [fallbackPre] : []),
-			...panelNodes,
-		];
+		const children: InstanceType<typeof Tag>[] = [];
+		if (fallbackPre) {
+			children.push(new Tag('template', { 'data-content': 'fallback' }, [fallbackPre]));
+		}
+		children.push(new Tag('template', { 'data-content': 'source' }, [sanitisedContent]));
 
-		return createComponentRenderable({ rune: 'sandbox',
+		const el = createComponentRenderable({ rune: 'sandbox',
 			tag: 'div',
-			properties: {
-				content: contentMeta,
-				framework: frameworkMeta,
-				dependencies: dependenciesMeta,
-				...(labelMeta ? { label: labelMeta } : {}),
-				height: heightMeta,
-				context: contextMeta,
-				securityMode: securityModeMeta,
-				allowJs: allowJsMeta,
-				...(sandboxOriginMeta ? { sandboxOrigin: sandboxOriginMeta } : {}),
-			},
-			children: childNodes,
+			children,
 		});
+		// Emit as the rf-sandbox custom element; the renderer reads its config off
+		// these data-* attributes (no field-metas).
+		el.name = 'rf-sandbox';
+		Object.assign(el.attributes, {
+			'data-source-content': sanitisedContent,
+			...(framework ? { 'data-framework': framework } : {}),
+			...(dependencies ? { 'data-dependencies': dependencies } : {}),
+			...(label ? { 'data-label': label } : {}),
+			'data-height': height != null ? String(height) : 'auto',
+			...(sourceOrigins.length > 0 ? { 'data-source-origins': sourceOrigins.join('\n') } : {}),
+			'data-security-mode': policy.trust,
+			'data-allow-js': policy.allowJs ? 'true' : 'false',
+			...(policy.sandboxOrigin ? { 'data-sandbox-origin': policy.sandboxOrigin } : {}),
+		});
+		return el;
 	},
 });

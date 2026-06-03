@@ -652,64 +652,6 @@ export const coreConfig: ThemeConfig = {
 			block: 'sandbox',
 			defaultDensity: 'compact',
 			editHints: { source: 'code' },
-			postTransform(node, { fields }) {
-				// Read field values (bag-first; the camelCase keys match the bag).
-				const content = readField(node, 'content', fields) || '';
-				const framework = readField(node, 'framework', fields) || '';
-				const dependencies = readField(node, 'dependencies', fields) || '';
-				const label = readField(node, 'label', fields) || '';
-				const height = readField(node, 'height', fields) || 'auto';
-				const designTokens = readField(node, 'designTokens', fields) || '';
-				const securityMode = readField(node, 'securityMode', fields) || 'trusted';
-				const allowJs = readField(node, 'allowJs', fields) || 'true';
-				const sandboxOrigin = readField(node, 'sandboxOrigin', fields) || '';
-
-				// Keep non-meta children (fallback pre) and extract source panels
-				const fallbackChildren: typeof node.children = [];
-				const sourcePanelOrigins: string[] = [];
-				for (const child of node.children) {
-					if (!isTag(child)) { fallbackChildren.push(child); continue; }
-					if (child.name === 'meta') {
-						// Collect origin data from source panels
-						if (child.attributes?.['data-field'] === 'source-panel' && child.attributes?.['data-origin']) {
-							sourcePanelOrigins.push(`${child.attributes['data-label'] || ''}\t${child.attributes['data-origin']}`);
-						}
-						continue;
-					}
-					fallbackChildren.push(child);
-				}
-
-				// Wrap fallback and source in <template> tags (inert/invisible).
-				// Using <template> instead of <div> avoids HTML parser issues:
-				// when <rf-sandbox> is inside <p>, block elements like <pre> or
-				// <div> cause <p> to auto-close, pushing children out of the
-				// custom element. <template> is parsed but never rendered.
-				const children = [
-					...(fallbackChildren.length > 0
-						? [makeTag('template', { 'data-content': 'fallback' }, fallbackChildren)]
-						: []),
-					makeTag('template', { 'data-content': 'source' }, [content]),
-				];
-
-				return {
-					...node,
-					name: 'rf-sandbox',
-					attributes: {
-						...node.attributes,
-						'data-source-content': content,
-						...(framework ? { 'data-framework': framework } : {}),
-						...(dependencies ? { 'data-dependencies': dependencies } : {}),
-						...(label ? { 'data-label': label } : {}),
-						'data-height': height,
-						...(designTokens ? { 'data-design-tokens': designTokens } : {}),
-						...(sourcePanelOrigins.length > 0 ? { 'data-source-origins': sourcePanelOrigins.join('\n') } : {}),
-						'data-security-mode': securityMode,
-						'data-allow-js': allowJs,
-						...(sandboxOrigin ? { 'data-sandbox-origin': sandboxOrigin } : {}),
-					},
-					children,
-				};
-			},
 		},
 	},
 };

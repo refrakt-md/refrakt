@@ -73,45 +73,37 @@ describe('sanitizeSandboxContent', () => {
 describe('sandbox rune — security policy meta tags', () => {
 	const policyVar = (p: ResolvedSecurityPolicy) => ({ __securityPolicy: p });
 
-	it('emits security-mode=trusted by default (no policy variable)', () => {
+	// SPEC-081: the policy now rides the rf-sandbox element's data-* attributes.
+	it('emits data-security-mode=trusted by default (no policy variable)', () => {
 		const result = parse(`{% sandbox %}\n<div>hi</div>\n{% /sandbox %}`);
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const securityMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'security-mode');
-		expect(securityMeta!.attributes.content).toBe('trusted');
-		const allowJsMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'allow-js');
-		expect(allowJsMeta!.attributes.content).toBe('true');
+		expect(sandbox!.attributes['data-security-mode']).toBe('trusted');
+		expect(sandbox!.attributes['data-allow-js']).toBe('true');
 	});
 
-	it('emits security-mode=untrusted and allow-js=false in strict mode', () => {
+	it('emits data-security-mode=untrusted and data-allow-js=false in strict mode', () => {
 		const result = parse(
 			`{% sandbox %}\n<div>hi</div><script>evil()</script>\n{% /sandbox %}`,
 			policyVar(strict),
 		);
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const securityMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'security-mode');
-		expect(securityMeta!.attributes.content).toBe('untrusted');
-		const allowJsMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'allow-js');
-		expect(allowJsMeta!.attributes.content).toBe('false');
+		expect(sandbox!.attributes['data-security-mode']).toBe('untrusted');
+		expect(sandbox!.attributes['data-allow-js']).toBe('false');
 	});
 
-	it('sanitises content meta in strict mode but keeps source panels intact', () => {
+	it('sanitises data-source-content in strict mode', () => {
 		const result = parse(
 			`{% sandbox %}\n<div data-source="HTML"><button onclick="evil()">x</button></div>\n<script data-source="JavaScript">alert(1)</script>\n{% /sandbox %}`,
 			policyVar(strict),
 		);
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const contentMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'content');
+		const content = sandbox!.attributes['data-source-content'] as string;
 		// Sanitised: scripts and on-handlers gone
-		expect(contentMeta!.attributes.content).not.toContain('<script');
-		expect(contentMeta!.attributes.content).not.toContain('onclick');
-		expect(contentMeta!.attributes.content).not.toContain('alert(1)');
+		expect(content).not.toContain('<script');
+		expect(content).not.toContain('onclick');
+		expect(content).not.toContain('alert(1)');
 		// HTML structure kept
-		expect(contentMeta!.attributes.content).toContain('<button');
+		expect(content).toContain('<button');
 	});
 
 	it('preserves content unchanged in trusted mode', () => {
@@ -120,11 +112,10 @@ describe('sandbox rune — security policy meta tags', () => {
 			policyVar(trusted),
 		);
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const contentMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'content');
-		expect(contentMeta!.attributes.content).toContain('onclick');
-		expect(contentMeta!.attributes.content).toContain('<script>');
-		expect(contentMeta!.attributes.content).toContain('console.log(1)');
+		const content = sandbox!.attributes['data-source-content'] as string;
+		expect(content).toContain('onclick');
+		expect(content).toContain('<script>');
+		expect(content).toContain('console.log(1)');
 	});
 
 	it('preserves content in untrusted+allowJs mode (Tier 2 — JS allowed, iframe hardened by client)', () => {
@@ -133,36 +124,28 @@ describe('sandbox rune — security policy meta tags', () => {
 			policyVar(allowJs),
 		);
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const contentMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'content');
 		// allowJs=true means content passes through; client-side meta-CSP +
 		// dropped allow-same-origin do the work.
-		expect(contentMeta!.attributes.content).toContain('onclick');
-		const allowJsMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'allow-js');
-		expect(allowJsMeta!.attributes.content).toBe('true');
+		expect(sandbox!.attributes['data-source-content']).toContain('onclick');
+		expect(sandbox!.attributes['data-allow-js']).toBe('true');
 	});
 
-	it('emits sandbox-origin meta when policy specifies one (Tier 3)', () => {
+	it('emits data-sandbox-origin when policy specifies one (Tier 3)', () => {
 		const result = parse(
 			`{% sandbox %}\n<div>x</div>\n{% /sandbox %}`,
 			policyVar(tier3),
 		);
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const originMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'sandbox-origin');
-		expect(originMeta!.attributes.content).toBe('https://sandbox.example.com');
+		expect(sandbox!.attributes['data-sandbox-origin']).toBe('https://sandbox.example.com');
 	});
 
-	it('does not emit sandbox-origin meta when origin is unset', () => {
+	it('does not emit data-sandbox-origin when origin is unset', () => {
 		const result = parse(
 			`{% sandbox %}\n<div>x</div>\n{% /sandbox %}`,
 			policyVar(strict),
 		);
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const originMeta = findTag(sandbox!, t =>
-			t.name === 'meta' && t.attributes['data-field'] === 'sandbox-origin');
-		expect(originMeta).toBeUndefined();
+		expect(sandbox!.attributes['data-sandbox-origin']).toBeUndefined();
 	});
 
 	it('SSR fallback pre uses the sanitised content in strict mode', () => {
