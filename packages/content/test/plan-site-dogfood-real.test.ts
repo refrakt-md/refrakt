@@ -64,6 +64,12 @@ describe('refrakt plan site dogfood (SPEC-071 / WORK-272)', () => {
 		}
 	});
 
+	// Heavy real-file integration build: reads the whole plan/ tree and runs the
+	// full content pipeline (~5s in isolation, right at the 5s default). Under
+	// vitest's parallel worker pool the CPU contention tips it past the default
+	// timeout — a starvation timeout, not a hang or a race (WORK-330). Give it
+	// generous headroom so the full suite is deterministic; a genuine hang would
+	// still fail well within this bound.
 	it('builds a browsable plan site from refrakt\'s real plan/ via entityRoutes + collection', async () => {
 		const planSite = readPlanSiteConfig();
 		// configure() registers the plan: file-root and primes the plugin's
@@ -118,5 +124,5 @@ describe('refrakt plan site dogfood (SPEC-071 / WORK-272)', () => {
 			(w) => w.severity === 'error' && w.phase !== 'register',
 		);
 		expect(errors, errors.map((e) => `${e.phase}/${e.pluginName}: ${e.message}`).join('\n')).toEqual([]);
-	});
+	}, 30_000);
 });

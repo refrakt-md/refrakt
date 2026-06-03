@@ -1,4 +1,4 @@
-{% work id="WORK-330" status="ready" priority="low" complexity="simple" tags="testing,flake,ci,content,dogfood" milestone="v0.18.0" %}
+{% work id="WORK-330" status="in-progress" priority="low" complexity="simple" tags="testing,flake,ci,content,dogfood" milestone="v0.18.0" %}
 
 # Stabilize the plan-site dogfood test under parallel load
 
