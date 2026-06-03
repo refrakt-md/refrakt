@@ -17,7 +17,7 @@ npm create refrakt
 
 ---
 
-{% codegroup overflow="wrap" %}
+{% codegroup overflow="wrap" title="index.md" %}
 {% snippet path=$file.path lines="5-23" lang="markdoc" /%}
 {% /codegroup %}
 {% /hero %}

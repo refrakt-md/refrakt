@@ -9,7 +9,8 @@ describe('map tag', () => {
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'map');
 		expect(tag).toBeDefined();
-		expect(tag!.name).toBe('div');
+		// SPEC-081: the transform now emits the rf-map custom element directly.
+		expect(tag!.name).toBe('rf-map');
 	});
 
 	it('should create MapPin children from list items', () => {

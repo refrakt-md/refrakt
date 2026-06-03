@@ -196,7 +196,7 @@ export const map = createContentModelSchema({
 		const pins = body.tag('li').typeof('MapPin');
 		const pinsList = new Tag('ol', {}, pins.toArray());
 
-		return createComponentRenderable({ rune: 'map', schemaOrgType: 'Place',
+		const node = createComponentRenderable({ rune: 'map', schemaOrgType: 'Place',
 			tag: 'div',
 			properties: {
 				zoom: zoomMeta,
@@ -212,5 +212,8 @@ export const map = createContentModelSchema({
 			refs: { pins: pinsList },
 			children: [zoomMeta, centerMeta, variantMeta, heightMeta, providerMeta, interactiveMeta, routeMeta, clusterMeta, pinsList],
 		});
+		// Emit as the rf-map custom element (the web component upgrades it).
+		node.name = 'rf-map';
+		return node;
 	},
 });

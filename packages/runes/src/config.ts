@@ -91,12 +91,13 @@ export const coreConfig: ThemeConfig = {
 			},
 			layout: { root: ['topbar'] },
 			sections: { topbar: 'header' },
+			// Opt in to the highlight transform's `theme.code.colorScheme` cascade
+			// (topbar + tab chrome flip with the inner code). Static flag → declared
+			// via rootAttributes rather than a postTransform. The `data-code-host`
+			// consumer reads it truthily, so `"true"` is equivalent to the old
+			// valueless boolean.
+			rootAttributes: { 'data-code-host': 'true' },
 			editHints: { panel: 'code' },
-			postTransform(node) {
-				// Opt in to the highlight transform's `theme.code.colorScheme`
-				// cascade so the topbar + tab chrome flip with the inner code.
-				return { ...node, attributes: { ...node.attributes, 'data-code-host': true } };
-			},
 		},
 		PageSection: { block: 'page-section' },
 		TableOfContents: { block: 'toc' },

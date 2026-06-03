@@ -84,10 +84,6 @@ export const config: Record<string, RuneConfig> = {
 			apiKey: { source: 'meta', noBemClass: true },
 		},
 		contentWrapper: { tag: 'div', ref: 'container' },
-		postTransform(node) {
-			// Change element name to web component
-			return { ...node, name: 'rf-map' };
-		},
 	},
 	MapPin: { block: 'map-pin', parent: 'Map', editHints: { name: 'inline', description: 'inline' } },
 };
