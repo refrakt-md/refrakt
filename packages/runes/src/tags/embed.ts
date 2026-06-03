@@ -97,38 +97,59 @@ export const embed = createContentModelSchema({
 	transform(resolved, attrs, config) {
 		const url = attrs.url ?? '';
 		const detected = detectProvider(url);
-		const resolvedType = attrs.type || detected.type;
+		const aspect = attrs.aspect ?? '16:9';
+		const iframeTitle = (attrs.title as string) || 'Embedded content';
 
+		// SPEC-081: build the structure here (it is deterministic from authored
+		// data — provider/embed-url are derived above), not in a postTransform.
+		const [w, h] = aspect.split(':').map(Number);
+		const paddingPercent = h && w ? (h / w) * 100 : 56.25;
+
+		// SEO carriers (schema channel — render inline as RDFa, empties dropped).
 		const urlMeta = new Tag('meta', { content: url });
-		const typeMeta = new Tag('meta', { content: resolvedType });
-		const aspectMeta = new Tag('meta', { content: attrs.aspect ?? '16:9' });
 		const titleMeta = new Tag('meta', { content: attrs.title ?? '' });
 		const embedUrlMeta = new Tag('meta', { content: detected.embedUrl });
+
+		// `provider` rides the bag only (→ `data-provider` via the modifier);
+		// no field-meta is emitted.
 		const providerMeta = new Tag('meta', { content: detected.provider });
 
 		const fallback = new RenderableNodeCursor(
 			Markdoc.transform(asNodes(resolved.fallback), config) as RenderableTreeNode[],
 		).wrap('div');
+		const fallbackDiv = fallback.tag('div');
+
+		const children: any[] = [urlMeta, titleMeta, embedUrlMeta];
+		let wrapperDiv: InstanceType<typeof Tag> | undefined;
+		if (detected.embedUrl) {
+			const iframe = new Tag('iframe', {
+				src: detected.embedUrl,
+				title: iframeTitle,
+				frameborder: '0',
+				allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
+				allowfullscreen: '',
+				loading: 'lazy',
+			}, []);
+			wrapperDiv = new Tag('div', { style: `padding-bottom: ${paddingPercent}%` }, [iframe]);
+			children.push(wrapperDiv);
+		}
+		children.push(fallback.next());
 
 		return createComponentRenderable({ rune: 'embed', schemaOrgType: 'VideoObject',
 			tag: 'figure',
 			properties: {
-				url: urlMeta,
-				type: typeMeta,
-				aspect: aspectMeta,
-				title: titleMeta,
-				embedUrl: embedUrlMeta,
 				provider: providerMeta,
 			},
 			refs: {
-				fallback: fallback.tag('div'),
+				...(wrapperDiv ? { wrapper: wrapperDiv } : {}),
+				fallback: fallbackDiv,
 			},
 			schema: {
 				name: titleMeta,
 				contentUrl: urlMeta,
 				embedUrl: embedUrlMeta,
 			},
-			children: [urlMeta, typeMeta, aspectMeta, titleMeta, embedUrlMeta, providerMeta, fallback.next()],
+			children,
 		});
 	},
 });

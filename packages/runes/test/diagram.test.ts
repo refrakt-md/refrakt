@@ -13,10 +13,11 @@ graph TD
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diagram');
 		expect(tag).toBeDefined();
-		expect(tag!.name).toBe('figure');
+		// SPEC-081: the transform emits the rf-diagram custom element directly.
+		expect(tag!.name).toBe('rf-diagram');
 	});
 
-	it('should pass language and title as meta', () => {
+	it('should carry language in the bag and render the title as a figcaption', () => {
 		const result = parse(`{% diagram language="mermaid" title="Architecture" %}
 \`\`\`mermaid
 graph LR
@@ -25,18 +26,18 @@ graph LR
 {% /diagram %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diagram');
-		const metas = findAllTags(tag!, t => t.name === 'meta');
 
-		const language = metas.find(m => m.attributes['data-field'] === 'language');
-		expect(language).toBeDefined();
-		expect(language!.attributes.content).toBe('mermaid');
+		// SPEC-082: language rides the data-rune-fields bag (→ data-language).
+		const fields = JSON.parse(tag!.attributes['data-rune-fields'] as string);
+		expect(fields.language).toBe('mermaid');
 
-		const title = metas.find(m => m.attributes['data-field'] === 'title');
+		// SPEC-081: title is built as a figcaption, not a meta.
+		const title = findTag(tag!, t => t.name === 'figcaption' && t.attributes['data-name'] === 'title');
 		expect(title).toBeDefined();
-		expect(title!.attributes.content).toBe('Architecture');
+		expect(title!.children).toContain('Architecture');
 	});
 
-	it('should extract source code into refs', () => {
+	it('should render the source into a pre/code block', () => {
 		const result = parse(`{% diagram %}
 \`\`\`mermaid
 graph TD
@@ -45,8 +46,8 @@ graph TD
 {% /diagram %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diagram');
-		const source = findTag(tag!, t => t.name === 'meta' && t.attributes['data-name'] === 'source');
+		const source = findTag(tag!, t => t.name === 'pre' && t.attributes['data-name'] === 'source');
 		expect(source).toBeDefined();
-		expect(source!.attributes.content).toContain('graph TD');
+		expect(JSON.stringify(source)).toContain('graph TD');
 	});
 });

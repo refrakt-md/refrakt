@@ -284,7 +284,14 @@
 			"dataRune": "embed",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"provider": {
+					"source": "meta",
+					"default": "generic",
+					"dataAttribute": "data-provider"
+				}
+			}
 		},
 		"Breadcrumb": {
 			"block": "breadcrumb",
@@ -1122,7 +1129,14 @@
 			"dataRune": "diagram",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"modifiers": {
+				"language": {
+					"source": "meta",
+					"default": "mermaid",
+					"dataAttribute": "data-language"
+				}
+			}
 		},
 		"Tint": {
 			"block": "tint",

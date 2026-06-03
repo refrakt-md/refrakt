@@ -158,50 +158,13 @@ export const coreConfig: ThemeConfig = {
 		Embed: {
 			block: 'embed',
 			defaultDensity: 'compact',
-			editHints: { fallback: 'none' },
-			postTransform(node, { fields }) {
-				const block = node.attributes.class?.split(' ')[0] || 'rf-embed';
-				const embedUrl = readField(node, 'embedUrl', fields) || readField(node, 'url', fields) || '';
-				const title = readField(node, 'title', fields) || 'Embedded content';
-				const aspect = readField(node, 'aspect', fields) || '16:9';
-				const provider = readField(node, 'provider', fields) || '';
-
-				const [w, h] = aspect.split(':').map(Number);
-				const paddingPercent = h && w ? (h / w) * 100 : 56.25;
-
-				// Filter out consumed meta tags
-				const contentChildren = node.children.filter(child => {
-					if (!isTag(child) || child.name !== 'meta') return true;
-					const prop = child.attributes['data-field'];
-					return !['embedUrl', 'url', 'title', 'aspect', 'provider', 'type'].includes(prop);
-				});
-
-				const children: (SerializedTag | string)[] = [];
-				if (embedUrl) {
-					children.push(
-						makeTag('div', { class: `${block}__wrapper`, style: `padding-bottom: ${paddingPercent}%` }, [
-							makeTag('iframe', {
-								src: embedUrl,
-								title,
-								frameborder: '0',
-								allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
-								allowfullscreen: '',
-								loading: 'lazy',
-							}, []),
-						])
-					);
-				}
-				children.push(makeTag('div', { class: `${block}__fallback` }, contentChildren));
-
-				return {
-					...node,
-					attributes: {
-						...node.attributes,
-						...(provider ? { 'data-provider': provider } : {}),
-					},
-					children,
-				};
+			// SPEC-081: the rune transform builds the wrapper/iframe/fallback
+			// structure directly; `provider` is a bag-only modifier that surfaces
+			// as `data-provider`. No postTransform.
+			modifiers: {
+				provider: { source: 'meta', default: 'generic', noBemClass: true },
 			},
+			editHints: { fallback: 'none' },
 		},
 		Breadcrumb: {
 			block: 'breadcrumb',
@@ -676,34 +639,10 @@ export const coreConfig: ThemeConfig = {
 			block: 'diagram',
 			defaultDensity: 'compact',
 			editHints: { source: 'code' },
-			postTransform(node, { fields }) {
-				const block = node.attributes.class?.split(' ')[0] || 'rf-diagram';
-				const language = readField(node, 'language', fields) || 'mermaid';
-				const title = readField(node, 'title', fields) || '';
-				const sourceMeta = findByDataName(node, 'source');
-				const source = sourceMeta?.attributes?.content || '';
-
-				// Build fallback HTML (visible in SSR, replaced by web component)
-				const children: (SerializedTag | string)[] = [];
-				if (title) {
-					children.push(makeTag('figcaption', { class: `${block}__title` }, [title]));
-				}
-				const containerChildren: (SerializedTag | string)[] = source
-					? [makeTag('pre', { class: `${block}__source` }, [makeTag('code', {}, [source])])]
-					: [];
-				children.push(makeTag('div', { class: `${block}__container` }, containerChildren));
-
-				// Hidden source for web component to read
-				if (source) {
-					children.push(makeTag('div', { 'data-content': 'source', style: 'display:none' }, [source]));
-				}
-
-				return {
-					...node,
-					name: 'rf-diagram',
-					attributes: { ...node.attributes, 'data-language': language },
-					children,
-				};
+			// SPEC-081: the rune transform emits the `rf-diagram` element + SSR
+			// fallback; `language` is a bag-only modifier (→ data-language).
+			modifiers: {
+				language: { source: 'meta', default: 'mermaid', noBemClass: true },
 			},
 		},
 		Tint: { block: 'tint', parent: '*' },

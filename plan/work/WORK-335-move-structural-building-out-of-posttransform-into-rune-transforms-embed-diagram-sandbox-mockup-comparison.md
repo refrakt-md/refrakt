@@ -1,4 +1,4 @@
-{% work id="WORK-335" status="ready" priority="medium" complexity="complex" source="SPEC-081" tags="runes,engine,postTransform,computation-boundary,cleanup" %}
+{% work id="WORK-335" status="in-progress" priority="medium" complexity="complex" source="SPEC-081" tags="runes,engine,postTransform,computation-boundary,cleanup" %}
 
 # Move structural building out of postTransform into rune transforms (embed/diagram/sandbox/mockup/comparison)
 
