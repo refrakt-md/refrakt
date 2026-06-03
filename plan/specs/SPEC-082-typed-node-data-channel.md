@@ -153,16 +153,27 @@ stays invariant until step 4.
    parity and deciding the SEO metas' HTML presence. *Required before the drop —
    otherwise dropping the conflated metas breaks JSON-LD, and the kebab/strip
    machinery can't be removed while they still rely on it.*
-5. **Drop the metas; delete the cruft.** [`WORK-323`] Schemas stop emitting
-   `<meta data-field>` data carriers; the engine drops the legacy meta read, the
-   meta-strip filter, and the kebab-matching set — keeping only the single
-   reserved-key parse + strip. SEO `property` metas (now independent) untouched.
+5. **~~Drop the metas; delete the cruft.~~ [`WORK-323` — DESCOPED]** Stopping
+   the schema emission + removing the engine read / strip / kebab proved
+   high-cost, low-value: the pure-data metas are *already* stripped from rendered
+   output (step-7 removes modifier metas), so dropping them changes no HTML; and
+   the engine's `<meta data-field>` modifier-input is a load-bearing contract
+   exercised by ~123 rune/engine test fixtures (the bag was added as a dual-read,
+   not a replacement of the input form). So the legacy channel is retained as a
+   redundant, stripped-from-output, **fallback input**, and the read / strip /
+   kebab stay to support it.
 6. **(Optional) Promote to a first-class `fields` field** via `serialize()`,
    if a typed top-level slot earns the serialize / boundary edits. This is the
    only step that would touch the serialize boundary; defer until proven worth
    it.
 
-Steps 1–5 need zero adapter work and are individually shippable and reversible.
+The data-channel migration is **functionally complete at step 4**: the typed
+`data-rune-fields` bag is the source of truth, every reader (engine + SEO +
+plugin `register()` hooks) prefers it, and the SEO channel is independent.
+Steps 1–4 need zero adapter work and are individually shippable and reversible.
+A future full excision (drop the metas + remove the read/strip/kebab) would mean
+migrating the ~123 test fixtures' input style (metas → `data-rune-fields`) for a
+smaller serialized payload + a single representation — not pursued now.
 
 ## Non-goals
 
