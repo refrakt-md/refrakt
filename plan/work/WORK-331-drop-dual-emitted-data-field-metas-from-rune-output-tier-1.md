@@ -1,4 +1,4 @@
-{% work id="WORK-331" status="ready" priority="medium" complexity="moderate" source="SPEC-082" tags="runes,engine,cleanup,data-channel,fields,contract" %}
+{% work id="WORK-331" status="in-progress" priority="medium" complexity="moderate" source="SPEC-082" tags="runes,engine,cleanup,data-channel,fields,contract" milestone="v0.18.0" %}
 
 # Drop dual-emitted data-field metas from rune output (Tier 1)
 
