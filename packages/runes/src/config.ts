@@ -20,58 +20,6 @@ import { resolveCollections } from './collection-resolve.js';
 import { resolveRelationships } from './relationships-resolve.js';
 import { resolveAggregates } from './aggregate-resolve.js';
 
-// ─── Budget postTransform helpers ───
-
-const BUDGET_CURRENCY_SYMBOLS: Record<string, string> = {
-	USD: '$', EUR: '€', GBP: '£', JPY: '¥', CNY: '¥',
-	AUD: 'A$', CAD: 'C$', CHF: 'CHF ', SEK: 'kr', NOK: 'kr', DKK: 'kr',
-	INR: '₹', KRW: '₩', BRL: 'R$', MXN: 'MX$', ZAR: 'R',
-};
-
-function formatBudgetAmount(amount: number, symbol: string): string {
-	const parts = (amount % 1 === 0 ? String(amount) : amount.toFixed(2)).split('.');
-	parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-	return symbol + parts.join('.');
-}
-
-function parseBudgetDays(duration: string): number {
-	let days = 0;
-	const dayMatch = duration.match(/(\d+)\s*day/i);
-	const weekMatch = duration.match(/(\d+)\s*week/i);
-	const monthMatch = duration.match(/(\d+)\s*month/i);
-	if (dayMatch) days += parseInt(dayMatch[1]);
-	if (weekMatch) days += parseInt(weekMatch[1]) * 7;
-	if (monthMatch) days += parseInt(monthMatch[1]) * 30;
-	if (days === 0) {
-		const num = parseInt(duration);
-		if (!isNaN(num)) days = num;
-	}
-	return days;
-}
-
-function parseBudgetAmount(str: string): number {
-	const cleaned = str.replace(/[€$£¥₹₩\s]/g, '').replace(/,/g, '');
-	const range = cleaned.match(/^([\d.]+)\s*[-–]\s*([\d.]+)/);
-	if (range) return (parseFloat(range[1]) + parseFloat(range[2])) / 2;
-	const num = parseFloat(cleaned);
-	return isNaN(num) ? 0 : num;
-}
-
-/** Recursively find all nodes with a specific data-rune attribute */
-function collectByRune(children: RendererNode[], typeName: string): SerializedTag[] {
-	const results: SerializedTag[] = [];
-	for (const c of children) {
-		if (isTag(c)) {
-			if (c.attributes?.['data-rune'] === typeName) {
-				results.push(c);
-			} else {
-				results.push(...collectByRune(c.children, typeName));
-			}
-		}
-	}
-	return results;
-}
-
 /** Read text content from a property span child */
 function readPropText(node: SerializedTag, prop: string): string {
 	for (const c of node.children) {
@@ -303,64 +251,12 @@ export const coreConfig: ThemeConfig = {
 			blocks: {
 				meta: { fields: ['duration', { field: 'currency', align: 'end' }], layout: 'bar' },
 			},
-			layout: { root: ['meta', 'preamble'] },
-			postTransform(node) {
-				const block = 'rf-budget';
-				const catBlock = 'rf-budget-category';
-
-				// Read from data-* attributes (set by engine after consuming meta tags)
-				const currency = node.attributes['data-currency'] || 'USD';
-				const duration = node.attributes['data-duration'] || '';
-				const showPerDay = node.attributes['data-show-per-day'] !== 'false';
-
-				const symbol = BUDGET_CURRENCY_SYMBOLS[currency.toUpperCase()] || currency + ' ';
-
-				// Find all BudgetCategory children and compute totals
-				const categories = collectByRune(node.children, 'budget-category');
-				let grandTotal = 0;
-
-				for (const cat of categories) {
-					// Read from data attributes set by engine from label/subtotal modifiers
-					const label = cat.attributes['data-label'] || '';
-					const subtotalStr = cat.attributes['data-subtotal'] || '0';
-					const subtotal = parseFloat(subtotalStr) || 0;
-					grandTotal += subtotal;
-
-					// Inject category header with label and formatted subtotal
-					const catHeader = makeTag('div', { class: `${catBlock}__header` }, [
-						makeTag('span', { class: `${catBlock}__label` }, [label]),
-						makeTag('span', { class: `${catBlock}__subtotal` }, [formatBudgetAmount(subtotal, symbol)]),
-					]);
-					cat.children.unshift(catHeader);
-				}
-
-				// Build footer with totals
-				const footerChildren: (SerializedTag | string)[] = [
-					makeTag('div', { class: `${block}__total` }, [
-						makeTag('span', { class: `${block}__total-label` }, ['Total']),
-						makeTag('span', { class: `${block}__total-amount` }, [formatBudgetAmount(grandTotal, symbol)]),
-					]),
-				];
-
-				if (duration && showPerDay) {
-					const days = parseBudgetDays(duration);
-					if (days > 0) {
-						const perDay = grandTotal / days;
-						footerChildren.push(
-							makeTag('div', { class: `${block}__per-day` }, [
-								makeTag('span', { class: `${block}__per-day-label` }, ['Per day']),
-								makeTag('span', { class: `${block}__per-day-amount` }, [formatBudgetAmount(perDay, symbol)]),
-							])
-						);
-					}
-				}
-
-				const footer = makeTag('div', { class: `${block}__footer` }, footerChildren);
-
-				return {
-					...node,
-					children: [...node.children, footer],
-				};
+			// SPEC-081: the transform emits flat header slots and derives the
+			// totals (footer + category headers built there); `layout` builds the
+			// preamble <header>, and the categories / footer append after it.
+			layout: {
+				root: ['meta', 'preamble'],
+				preamble: { tag: 'header', children: ['headline', 'blurb', 'image'] },
 			},
 		},
 		BudgetCategory: {

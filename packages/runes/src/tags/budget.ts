@@ -18,6 +18,49 @@ function parseAmount(str: string): number {
 	return isNaN(num) ? 0 : num;
 }
 
+// ─── Total derivation + currency formatting ───
+// SPEC-081 computation boundary: budget totals are a theme-invariant fact
+// about the content, so they are derived here (the rune transform), not in a
+// presentation postTransform. Currency formatting is deterministic from the
+// authored amounts, so it rides along.
+
+const BUDGET_CURRENCY_SYMBOLS: Record<string, string> = {
+	USD: '$', EUR: '€', GBP: '£', JPY: '¥', CNY: '¥',
+	AUD: 'A$', CAD: 'C$', CHF: 'CHF ', SEK: 'kr', NOK: 'kr', DKK: 'kr',
+	INR: '₹', KRW: '₩', BRL: 'R$', MXN: 'MX$', ZAR: 'R',
+};
+
+function formatBudgetAmount(amount: number, symbol: string): string {
+	const parts = (amount % 1 === 0 ? String(amount) : amount.toFixed(2)).split('.');
+	parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+	return symbol + parts.join('.');
+}
+
+function parseBudgetDays(duration: string): number {
+	let days = 0;
+	const dayMatch = duration.match(/(\d+)\s*day/i);
+	const weekMatch = duration.match(/(\d+)\s*week/i);
+	const monthMatch = duration.match(/(\d+)\s*month/i);
+	if (dayMatch) days += parseInt(dayMatch[1]);
+	if (weekMatch) days += parseInt(weekMatch[1]) * 7;
+	if (monthMatch) days += parseInt(monthMatch[1]) * 30;
+	if (days === 0) {
+		const num = parseInt(duration);
+		if (!isNaN(num)) days = num;
+	}
+	return days;
+}
+
+/** Read a budget-category's `data-field` meta value from its children. */
+function readCategoryField(cat: Markdoc.Tag, field: string): string {
+	for (const child of cat.children) {
+		if (Markdoc.Tag.isTag(child) && child.attributes['data-field'] === field) {
+			return String(child.attributes.content ?? '');
+		}
+	}
+	return '';
+}
+
 // ─── Heading estimate parsing ───
 
 const ESTIMATE_SUFFIX_PATTERN = /^(.+?)\s*\((?:estimate|est\.?)\)\s*$/i;
@@ -248,22 +291,72 @@ export const budget = createContentModelSchema({
 
 		const sectionProps = pageSectionProperties(header);
 
-		const currencyMeta = new Tag('meta', { content: attrs.currency ?? 'USD' });
-		const durationMeta = new Tag('meta', { content: attrs.duration ?? '' });
-		const showPerDayMeta = new Tag('meta', { content: String(attrs.showPerDay ?? true) });
-		const variantMeta = new Tag('meta', { content: attrs.variant ?? 'detailed' });
+		const currency = (attrs.currency as string) ?? 'USD';
+		const duration = (attrs.duration as string) ?? '';
+		const showPerDay = (attrs.showPerDay as boolean) ?? true;
+		const variant = (attrs.variant as string) ?? 'detailed';
+		const symbol = BUDGET_CURRENCY_SYMBOLS[currency.toUpperCase()] || currency + ' ';
 
+		const currencyMeta = new Tag('meta', { content: currency });
+		const durationMeta = new Tag('meta', { content: duration });
+		const showPerDayMeta = new Tag('meta', { content: String(showPerDay) });
+		const variantMeta = new Tag('meta', { content: variant });
+
+		// Derive totals in the transform (SPEC-081 computation boundary) and
+		// inject each category's header (label + formatted subtotal). Subtotals
+		// were already computed per-category; the grand total sums them.
 		const categories = body.tag('div').typeof('BudgetCategory');
-		const categoriesDiv = new Tag('div', {}, categories.toArray());
+		const catNodes = categories.toArray();
+		let grandTotal = 0;
+		for (const cat of catNodes) {
+			if (!Markdoc.Tag.isTag(cat)) continue;
+			const label = readCategoryField(cat, 'label');
+			const subtotal = parseFloat(readCategoryField(cat, 'subtotal')) || 0;
+			grandTotal += subtotal;
 
-		const hasPreamble = header.count() > 0;
-		const preambleTag = hasPreamble ? new Tag('header', {}, header.toArray()) : undefined;
+			const catHeader = new Tag('div', { class: 'rf-budget-category__header' }, [
+				new Tag('span', { class: 'rf-budget-category__label' }, [label]),
+				new Tag('span', { class: 'rf-budget-category__subtotal' }, [formatBudgetAmount(subtotal, symbol)]),
+			]);
+			cat.children = [catHeader, ...cat.children];
+		}
+		const categoriesDiv = new Tag('div', {}, catNodes);
 
+		// Per-day breakdown.
+		const days = duration ? parseBudgetDays(duration) : 0;
+		const hasPerDay = !!duration && showPerDay && days > 0;
+		const perDay = hasPerDay ? grandTotal / days : 0;
+
+		// Footer — transform-built so it reproduces the previous postTransform
+		// output exactly (carries its own class, no data-name; appends last).
+		const footerChildren: any[] = [
+			new Tag('div', { class: 'rf-budget__total' }, [
+				new Tag('span', { class: 'rf-budget__total-label' }, ['Total']),
+				new Tag('span', { class: 'rf-budget__total-amount' }, [formatBudgetAmount(grandTotal, symbol)]),
+			]),
+		];
+		if (hasPerDay) {
+			footerChildren.push(new Tag('div', { class: 'rf-budget__per-day' }, [
+				new Tag('span', { class: 'rf-budget__per-day-label' }, ['Per day']),
+				new Tag('span', { class: 'rf-budget__per-day-amount' }, [formatBudgetAmount(perDay, symbol)]),
+			]));
+		}
+		const footerDiv = new Tag('div', { class: 'rf-budget__footer' }, footerChildren);
+
+		// Derived totals → the `fields` bag (semantic data the cross-page
+		// pipeline can read). Bag-only: referenced as properties but kept out of
+		// `children`, so they never render as stray metas.
+		const totalMeta = new Tag('meta', { content: String(grandTotal) });
+		const perDayMeta = new Tag('meta', { content: String(perDay) });
+
+		// SPEC-081: emit flat header slots — `layout` builds the preamble
+		// <header>; the categories and footer append after it.
 		const children: any[] = [
 			currencyMeta, durationMeta,
 			showPerDayMeta, variantMeta,
-			...(preambleTag ? [preambleTag] : []),
+			...header.toArray(),
 			categoriesDiv,
+			footerDiv,
 		];
 
 		return createComponentRenderable({ rune: 'budget', schemaOrgType: 'ItemList',
@@ -275,9 +368,10 @@ export const budget = createContentModelSchema({
 				showPerDay: showPerDayMeta,
 				variant: variantMeta,
 				category: categories,
+				total: totalMeta,
+				...(hasPerDay ? { perDay: perDayMeta } : {}),
 			},
 			refs: {
-				...(preambleTag ? { preamble: preambleTag } : {}),
 				...sectionProps,
 				categories: categoriesDiv,
 			},

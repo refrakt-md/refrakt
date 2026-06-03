@@ -1,4 +1,4 @@
-{% work id="WORK-326" status="ready" priority="medium" complexity="moderate" source="SPEC-081" tags="runes,transform,budget,computation,fields" milestone="v0.18.0" %}
+{% work id="WORK-326" status="in-progress" priority="medium" complexity="moderate" source="SPEC-081" tags="runes,transform,budget,computation,fields" milestone="v0.18.0" %}
 
 # Move semantic derivation out of postTransform (budget totals)
 
