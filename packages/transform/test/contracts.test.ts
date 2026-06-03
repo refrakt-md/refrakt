@@ -72,6 +72,69 @@ describe('contracts: childDensity', () => {
 	});
 });
 
+describe('contracts: layout wrappers (SPEC-081)', () => {
+	it('surfaces a layout tag-entry as a created wrapper element with child membership', () => {
+		const config = baseConfig({
+			Recipe: {
+				block: 'recipe',
+				blocks: { metadata: { fields: ['prepTime'], layout: 'definition-list' } },
+				layout: {
+					root: ['media', 'content'],
+					content: { tag: 'div', children: ['preamble', 'metadata', 'ingredients'] },
+					preamble: { tag: 'header', children: ['headline', 'blurb'] },
+				},
+			},
+		});
+		const contract = generateStructureContract(config);
+		const els = contract.runes.Recipe.elements!;
+
+		expect(els.content.source).toBe('layout');
+		expect(els.content.tag).toBe('div');
+		expect(els.content.selector).toBe('.rf-recipe__content');
+		expect(els.content.children).toEqual(['preamble', 'metadata', 'ingredients']);
+
+		expect(els.preamble.source).toBe('layout');
+		expect(els.preamble.tag).toBe('header');
+		expect(els.preamble.children).toEqual(['headline', 'blurb']);
+	});
+
+	it('carries wrapper attrs and ignores root / tagless / bare-array entries', () => {
+		const config = baseConfig({
+			Box: {
+				block: 'box',
+				layout: {
+					root: ['shell'],
+					shell: { tag: 'div', children: ['inner'], attrs: { role: 'group' } },
+					inner: ['a', 'b'],           // tagless → reorders, no element
+				},
+			},
+		});
+		const contract = generateStructureContract(config);
+		const els = contract.runes.Box.elements!;
+
+		expect(els.shell.attrs).toEqual({ role: 'group' });
+		expect(els.root).toBeUndefined();          // root is the rune's own element
+		expect(els.inner).toBeUndefined();          // bare array → no created wrapper
+	});
+
+	it('a created wrapper supersedes a same-named autoLabel stub', () => {
+		const config = baseConfig({
+			Card: {
+				block: 'card',
+				autoLabel: { header: 'preamble' },
+				layout: {
+					root: ['preamble'],
+					preamble: { tag: 'header', children: ['headline'] },
+				},
+			},
+		});
+		const contract = generateStructureContract(config);
+		const preamble = contract.runes.Card.elements!.preamble;
+		expect(preamble.source).toBe('layout');
+		expect(preamble.children).toEqual(['headline']);
+	});
+});
+
 describe('contracts: projection', () => {
 	it('includes projection declarations', () => {
 		const config = baseConfig({
@@ -169,7 +232,7 @@ describe('contracts: projection', () => {
 		);
 	});
 
-	it('allows relocate into a valid slot name', () => {
+	it('allows relocate into a valid slot name (only the deprecation warning)', () => {
 		const config = baseConfig({
 			Test: {
 				block: 'test',
@@ -185,7 +248,36 @@ describe('contracts: projection', () => {
 			},
 		});
 		const contract = generateStructureContract(config);
-		expect(contract.runes.Test.warnings).toBeUndefined();
+		// No *reference* warnings — but relocate is deprecated, so that warning stands.
+		expect(contract.runes.Test.warnings).toEqual([
+			'projection.relocate is deprecated — place the slot directly in the `layout` tree instead',
+		]);
+	});
+
+	it('deprecates projection.group (subsumed by a layout tag-entry)', () => {
+		const config = baseConfig({
+			Card: {
+				block: 'card',
+				structure: { icon: { tag: 'span', before: true } },
+				projection: { group: { chrome: { tag: 'div', members: ['icon'] } } },
+			},
+		});
+		const contract = generateStructureContract(config);
+		expect(contract.runes.Card.warnings).toContain(
+			'projection.group is deprecated — use a `layout` tag-entry (a wrapper that groups its children) instead'
+		);
+	});
+
+	it('does not deprecate projection.hide (retained for reshaping unowned trees)', () => {
+		const config = baseConfig({
+			Card: {
+				block: 'card',
+				autoLabel: { span: 'badge' },
+				projection: { hide: ['badge'] },
+			},
+		});
+		const contract = generateStructureContract(config);
+		expect(contract.runes.Card.warnings).toBeUndefined();
 	});
 });
 

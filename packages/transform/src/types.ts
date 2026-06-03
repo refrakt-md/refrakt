@@ -272,11 +272,21 @@ export interface RuneConfig {
 
 	/** Declarative structural reshaping of the output tree.
 	 *  Runs after BEM class application (Phase 6) but before meta tag filtering (Phase 7).
-	 *  Operates on `data-name` addresses. Execution order: hide → group → relocate. */
+	 *  Operates on `data-name` addresses. Execution order: hide → group → relocate.
+	 *
+	 *  SPEC-081 drew the boundary: `layout` is a rune/theme declaring its *own*
+	 *  intended structure (a tag-entry creates a wrapper, a named slot is placed
+	 *  wherever it appears); `projection` is post-hoc surgery on a tree you do
+	 *  *not* own — a theme bending a third-party rune's output by `data-name`.
+	 *  `hide` (explicit drop) and reshaping-unowned-trees are the retained role;
+	 *  `group` and `relocate` are deprecated, subsumed by recursive `layout`. */
 	projection?: {
 		/** Remove elements matching these data-name values from the children array entirely */
 		hide?: string[];
-		/** Collect elements by data-name, wrap in a new container, place at first member's position */
+		/** @deprecated SPEC-081 — use a `layout` tag-entry instead (a wrapper that
+		 *  creates a container *is* a group). Retained only for reshaping trees a
+		 *  theme does not own; new runes should declare structure via `layout`.
+		 *  Collect elements by data-name, wrap in a new container, place at first member's position. */
 		group?: Record<string, {
 			/** Container element tag */
 			tag: string;
@@ -285,7 +295,10 @@ export interface RuneConfig {
 			/** Optional slot assignment for the group container */
 			slot?: string;
 		}>;
-		/** Move elements by data-name into another element or slot */
+		/** @deprecated SPEC-081 — place the slot directly in the `layout` tree
+		 *  instead (you put a slot wherever you name it; no separate move op).
+		 *  Retained only for reshaping trees a theme does not own.
+		 *  Move elements by data-name into another element or slot. */
 		relocate?: Record<string, {
 			/** Target data-name or slot name */
 			into: string;

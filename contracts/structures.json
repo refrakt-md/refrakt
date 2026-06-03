@@ -425,6 +425,16 @@
 						"duration",
 						"currency"
 					]
+				},
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-budget__preamble",
+					"source": "layout",
+					"children": [
+						"headline",
+						"blurb",
+						"image"
+					]
 				}
 			}
 		},
@@ -1831,7 +1841,12 @@
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-symbol__preamble",
-					"source": "autoLabel"
+					"source": "layout",
+					"children": [
+						"headline",
+						"blurb",
+						"image"
+					]
 				},
 				"headline": {
 					"tag": "headline",
@@ -1955,6 +1970,25 @@
 						"role",
 						"status"
 					]
+				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-character__content",
+					"source": "layout",
+					"children": [
+						"preamble",
+						"metadata",
+						"sections",
+						"body"
+					]
+				},
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-character__preamble",
+					"source": "layout",
+					"children": [
+						"name"
+					]
 				}
 			}
 		},
@@ -2046,6 +2080,25 @@
 					"tag": "scene",
 					"selector": ".rf-realm__scene",
 					"source": "autoLabel"
+				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-realm__content",
+					"source": "layout",
+					"children": [
+						"preamble",
+						"metadata",
+						"body",
+						"sections"
+					]
+				},
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-realm__preamble",
+					"source": "layout",
+					"children": [
+						"name"
+					]
 				}
 			},
 			"inlineStyles": {
@@ -2188,6 +2241,25 @@
 					"tag": "scene",
 					"selector": ".rf-faction__scene",
 					"source": "autoLabel"
+				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-faction__content",
+					"source": "layout",
+					"children": [
+						"preamble",
+						"metadata",
+						"body",
+						"sections"
+					]
+				},
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-faction__preamble",
+					"source": "layout",
+					"children": [
+						"name"
+					]
 				}
 			},
 			"inlineStyles": {
@@ -2416,7 +2488,13 @@
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-event__preamble",
-					"source": "autoLabel"
+					"source": "layout",
+					"children": [
+						"eyebrow",
+						"headline",
+						"blurb",
+						"image"
+					]
 				},
 				"eyebrow": {
 					"tag": "eyebrow",
@@ -2953,7 +3031,13 @@
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-howto__preamble",
-					"source": "autoLabel"
+					"source": "layout",
+					"children": [
+						"eyebrow",
+						"headline",
+						"blurb",
+						"image"
+					]
 				},
 				"eyebrow": {
 					"tag": "eyebrow",
@@ -2974,6 +3058,17 @@
 					"tag": "image",
 					"selector": ".rf-howto__image",
 					"source": "autoLabel"
+				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-howto__content",
+					"source": "layout",
+					"children": [
+						"preamble",
+						"metadata",
+						"tools",
+						"steps"
+					]
 				}
 			}
 		},
@@ -3047,7 +3142,12 @@
 				"preamble": {
 					"tag": "header",
 					"selector": ".rf-recipe__preamble",
-					"source": "autoLabel"
+					"source": "layout",
+					"children": [
+						"eyebrow",
+						"headline",
+						"blurb"
+					]
 				},
 				"eyebrow": {
 					"tag": "eyebrow",
@@ -3073,6 +3173,18 @@
 					"tag": "media",
 					"selector": ".rf-recipe__media",
 					"source": "autoLabel"
+				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-recipe__content",
+					"source": "layout",
+					"children": [
+						"preamble",
+						"metadata",
+						"ingredients",
+						"steps",
+						"tips"
+					]
 				}
 			},
 			"inlineStyles": {
@@ -3175,6 +3287,28 @@
 					"tag": "media",
 					"selector": ".rf-playlist__media",
 					"source": "autoLabel"
+				},
+				"content": {
+					"tag": "div",
+					"selector": ".rf-playlist__content",
+					"source": "layout",
+					"children": [
+						"eyebrow",
+						"preamble",
+						"player",
+						"tracks",
+						"body"
+					]
+				},
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-playlist__preamble",
+					"source": "layout",
+					"children": [
+						"headline",
+						"blurb",
+						"image"
+					]
 				}
 			},
 			"inlineStyles": {

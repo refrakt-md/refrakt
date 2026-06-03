@@ -1,4 +1,4 @@
-{% work id="WORK-327" status="ready" priority="low" complexity="moderate" source="SPEC-081" tags="contracts,docs,cleanup,layout,projection" milestone="v0.18.0" %}
+{% work id="WORK-327" status="in-progress" priority="low" complexity="moderate" source="SPEC-081" tags="contracts,docs,cleanup,layout,projection" milestone="v0.18.0" %}
 
 # Surface grouped skeleton in contracts; deprecate projection.group/relocate
 

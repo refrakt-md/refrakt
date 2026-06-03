@@ -1,6 +1,6 @@
 ---
 title: Blocks & layout
-description: Plugins declare a metaFields data manifest, project named metadata blocks from it, and place every child explicitly via the layout map. SPEC-080.
+description: Plugins declare a metaFields data manifest, project named metadata blocks from it, and assemble the whole skeleton via the recursive layout tree. SPEC-080 / SPEC-081.
 ---
 
 # Blocks & layout
@@ -15,9 +15,11 @@ whole picture:
 2. **`blocks`** — named metadata blocks projected *from* `metaFields`.
    Each block picks which fields it contains and one layout primitive
    (`bar` or `definition-list`).
-3. **`layout`** — the projected tree. A map from container `data-name`
-   to the ordered list of child names it should contain. This is the
-   only thing that decides *where* anything renders.
+3. **`layout`** — the recursive skeleton tree. A map keyed by container
+   name; an entry either *creates* a wrapper element or *orders* an
+   existing one. This is the only thing that decides *where* anything
+   renders, and (SPEC-081) it builds the preamble / content / media
+   grouping that runes used to hand-assemble in TypeScript.
 
 The shape a field renders as (chip vs. bare text, link, rating widget,
 icon) is intrinsic to the field's `metaType` and decorations — it does
@@ -84,33 +86,74 @@ blocks: {
 }
 ```
 
-## layout — explicit placement
+## layout — the recursive skeleton
 
-`layout` is the projected tree: a map from a container's `data-name` to
-the ordered list of child names that container should hold. The
-reserved key `'root'` addresses the rune's top-level children.
+`layout` is the skeleton tree. It is keyed by container name; the
+reserved key `'root'` is the entry point — the rune's own element, which
+already exists. Each entry is a **`LayoutEntry`**:
 
 ```typescript
-layout: { root: ['eyebrow', 'metadata', 'body'] }
+type LayoutEntry =
+  | string[]                                              // order children; create no wrapper
+  | { tag?: string; children: string[]; attrs?: Record<string, string> };
+
+layout?: Record<string, LayoutEntry>;
 ```
 
-Semantics:
+The two forms divide the two jobs SPEC-081 separates — the transform
+*labels* slots (semantics), `layout` *nests* them (presentation):
 
-- **Projected block names** render in place where listed (the key is
-  the block name from `blocks`).
-- **Transform-built children** matched by `data-name` are reordered
-  into the listed position.
-- **Names absent from both** blocks and transform children are skipped.
-- **Unlisted transform children** are appended after the listed ones,
-  in transform order — rune content is never dropped.
-- **Omitting `layout` entirely** renders the transform tree verbatim
-  (no projection).
-- **`data-name="root"` is reserved** and is never a valid block name.
+- **An entry with a `tag`** *creates* a wrapper element. Its key becomes
+  the wrapper's `data-name` (→ `.rf-{block}__{key}` via the BEM pass, and
+  a `data-section` via the `sections` map). `attrs` adds static
+  attributes. The transform never builds this wrapper — `layout` does.
+- **An entry without a `tag`** (or a bare array) *orders an existing
+  container* of that name in place — the transform built the container;
+  `layout` reorders / injects into it.
 
-A non-`root` key projects into a *nested* container. The container must
-exist in the transform tree (it carries that `data-name`); its listed
-children — projected blocks and reordered transform children — are
-placed inside it.
+### Name resolution
+
+Each child name in a `children` list (or `root`) resolves, in order:
+
+1. a `layout` entry **with a `tag`** → create the wrapper and recurse
+   (its children pull from the same flat slot pool);
+2. a `layout` entry **without a `tag`** → reorder the existing container
+   of that name;
+3. a **projected block** (a `blocks` entry) → project the metadata block;
+4. a **transform-emitted node** carrying that `data-name` → place it;
+5. otherwise → skip.
+
+Each slot is placed **at most once** (diamond references resolve to the
+first placement); a reference cycle (`a → b → a`) warns and skips to
+break the loop. **Unlisted transform children** append after the listed
+ones, in transform order — rune content is never dropped. **Omitting
+`layout` entirely** renders the transform tree verbatim.
+
+### Flat emit + declarative grouping
+
+The idiom (SPEC-081): the transform emits a **flat bag of `data-name`
+slots** — `headline`, `blurb`, `eyebrow`, `media`, `ingredients`, … — and
+`layout` composes them into the nested skeleton. The recipe content +
+media split, fully declarative:
+
+```typescript
+layout: {
+  root: ['media', 'content'],
+  content: { tag: 'div', children: ['preamble', 'metadata', 'ingredients', 'steps', 'tips'] },
+  preamble: { tag: 'header', children: ['eyebrow', 'headline', 'blurb'] },
+}
+```
+
+`root` places the `media` slot and creates the `content` column; `content`
+creates the column `<div>` and fills it with the preamble header, the
+projected `metadata` block, and the body slots; `preamble` creates the
+`<header>` and fills it with the page-section header slots. None of these
+wrappers exist in the transform output — `layout` builds them all.
+
+> A `tag`-entry **subsumes `projection.group`** (a wrapper that creates a
+> container *is* a group) and **`projection.relocate`** (you place a slot
+> wherever you name it — no separate move op). Both are deprecated; see
+> [Projection](#projection-reshaping-unowned-trees).
 
 ## Intrinsic field render shape
 
@@ -238,11 +281,16 @@ metaFields: {
   currency: { metaType: 'category', condition: 'currency' },
 },
 blocks: { meta: { fields: ['duration', { field: 'currency', align: 'end' }], layout: 'bar' } },
-layout: { root: ['meta', 'preamble'] },
+layout: {
+  root: ['meta', 'preamble'],
+  preamble: { tag: 'header', children: ['headline', 'blurb', 'image'] },
+},
 ```
 
 `currency` is pushed to the right edge of the bar; the `meta` block
-renders above the rune's `preamble` content.
+renders above the rune's `preamble` header. The transform's categories
+and footer aren't named in `layout`, so they append after — content is
+never dropped.
 
 ### Event — labelled def-list plus a bar-wrapped CTA link
 
@@ -257,25 +305,35 @@ blocks: {
   metadata: { fields: ['date', 'endDate', 'location'], layout: 'definition-list' },
   register: { fields: ['register'], layout: 'bar' },
 },
-layout: { root: ['eyebrow', 'headline', 'blurb', 'metadata', 'body', 'register'] },
+layout: {
+  root: ['preamble', 'metadata', 'body', 'register'],
+  preamble: { tag: 'header', children: ['eyebrow', 'headline', 'blurb', 'image'] },
+},
 ```
 
-`root` orders the projected blocks (`metadata`, `register`) interleaved
-with transform children matched by `data-name` (`eyebrow`, `headline`,
-`blurb`, `body`). The `register` field renders as a link (`href`), so it
-appears as bare link text inside its bar — no chip.
+`root` orders the preamble wrapper, the projected blocks (`metadata`,
+`register`), and the `body` slot. The `preamble` entry *creates* the
+`<header>` and fills it with the flat header slots — so `headline` /
+`blurb` are addressable by name instead of being buried in a hand-built
+wrapper (the bug SPEC-081 fixes). The `register` field renders as a link
+(`href`), so it appears as bare link text inside its bar — no chip.
 
-### Character / Recipe — projecting a block into a nested container
+### Character / Recipe — creating a content column + preamble
 
 ```typescript
 blocks: { metadata: { fields: ['role', 'status'], layout: 'definition-list' } },
-layout: { content: ['preamble', 'metadata'] },
+layout: {
+  root: ['portrait', 'content'],
+  content: { tag: 'div', children: ['preamble', 'metadata', 'sections'] },
+  preamble: { tag: 'header', children: ['name'] },
+},
 ```
 
-The rune's transform pre-builds a `content` column wrapper
-(`data-name="content"`). The `layout` key `content` (not `root`) places
-children *inside* that wrapper: the authored `preamble` first, then the
-projected `metadata` def-list after it.
+The transform emits flat slots only. `root` places the `portrait` slot
+and creates the `content` column; the `content` entry creates the column
+`<div>` and fills it with the preamble header, the projected `metadata`
+def-list, and the `sections` slot; `preamble` creates the `<header>`
+around the title. No wrapper is pre-built in the transform.
 
 ## Theme overrides
 
@@ -295,15 +353,37 @@ Character: {
   blocks: {
     metadata: { fields: ['role', 'status', 'faction'], layout: 'bar' },
   },
-  // Reorder one container without restating root
+  // Reshape one container without restating root (restate the wrapper
+  // entry so its `tag` is preserved)
   layout: {
-    content: ['metadata', 'preamble'],
+    content: { tag: 'div', children: ['metadata', 'preamble', 'sections'] },
   },
 }
 ```
 
 Each inner key is merged onto the rune's existing map, so unrelated
-fields, blocks, and containers are inherited unchanged.
+fields, blocks, and containers are inherited unchanged. A `layout` entry
+is replaced as a whole, so restate its `tag` when overriding a
+wrapper-creating container.
+
+## Projection — reshaping unowned trees
+
+`projection` reshapes the output tree by `data-name` *after* assembly. It
+is the escape hatch for bending a tree a theme does **not** own — a theme
+adjusting a third-party rune's output without that rune declaring
+`layout`. The boundary (SPEC-081): `layout` is a rune/theme declaring its
+*own* intended structure; `projection` is post-hoc surgery on someone
+else's.
+
+- **`hide`** — drop elements by `data-name` (the default is
+  append-not-drop, so removal is explicit). **Retained.**
+- **`group`** — *deprecated.* A wrapper that creates a container *is* a
+  group; use a `layout` tag-entry instead.
+- **`relocate`** — *deprecated.* You place a slot wherever you name it in
+  the `layout` tree; there is no separate move op.
+
+The contract generator emits a deprecation warning for `group` /
+`relocate`, and they carry `@deprecated` JSDoc.
 
 ## Contracts
 
@@ -320,7 +400,22 @@ element:
 }
 ```
 
-`tag` is `div` for a `bar` block and `dl` for a `definition-list`. The
-rune's `childOrder` is computed from `layout.root` (the listed names)
+`tag` is `div` for a `bar` block and `dl` for a `definition-list`.
+
+It also surfaces every **`layout`-created wrapper** (SPEC-081) — the whole
+declarative skeleton, not just projected blocks. A `tag`-entry becomes an
+element carrying its child membership:
+
+```json
+{
+  "tag": "header",
+  "selector": ".rf-recipe__preamble",
+  "source": "layout",
+  "children": ["eyebrow", "headline", "blurb"]
+}
+```
+
+The rune's `childOrder` is computed from `layout.root` (the listed names)
 followed by a `{content}` sentinel that stands in for the appended,
-unlisted transform children.
+unlisted transform children; the per-wrapper `children` lists describe
+the nested membership below that.

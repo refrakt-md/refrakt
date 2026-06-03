@@ -34,6 +34,10 @@ export interface RuneContract {
 		layout?: string;
 		/** For `source: 'block'` — the field names projected into the block. */
 		fields?: string[];
+		/** For `source: 'layout'` — the ordered child membership of a created wrapper. */
+		children?: string[];
+		/** For `source: 'layout'` — extra static attributes set on the wrapper. */
+		attrs?: Record<string, string>;
 	}>;
 	inlineStyles?: Record<string, string | { prop: string; template?: string; transform?: (value: string) => string }>;
 	childOrder: string[];
@@ -172,6 +176,25 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 		}
 	}
 
+	// SPEC-081 layout-created wrappers — a `layout` entry with a `tag` creates a
+	// wrapper element (`.rf-{block}__{key}`); its `children` list is the ordered
+	// membership. Surfaces the whole declarative skeleton, not just projected
+	// metadata blocks. (Tagless / bare-array entries reorder an existing
+	// container and create no element.) Emitted last so a created wrapper
+	// supersedes any same-named autoLabel/structure stub.
+	if (config.layout) {
+		for (const [key, entry] of Object.entries(config.layout)) {
+			if (key === 'root' || Array.isArray(entry) || !entry.tag) continue;
+			elements[key] = {
+				tag: entry.tag,
+				selector: `.${block}__${key}`,
+				source: 'layout',
+				children: entry.children,
+				...(entry.attrs ? { attrs: entry.attrs } : {}),
+			};
+		}
+	}
+
 	if (Object.keys(elements).length > 0) {
 		contract.elements = elements;
 	}
@@ -214,6 +237,9 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 			}
 		}
 		if (config.projection.group) {
+			// SPEC-081: `projection.group` is subsumed by a `layout` tag-entry
+			// (a wrapper that creates a container is exactly a group). Deprecated.
+			warnings.push('projection.group is deprecated — use a `layout` tag-entry (a wrapper that groups its children) instead');
 			contract.projection.group = {};
 			for (const [key, def] of Object.entries(config.projection.group)) {
 				contract.projection.group[key] = { tag: def.tag, members: def.members };
@@ -232,6 +258,9 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 			}
 		}
 		if (config.projection.relocate) {
+			// SPEC-081: `projection.relocate` is subsumed by `layout` — you place a
+			// slot wherever you name it in the layout tree (no separate move op).
+			warnings.push('projection.relocate is deprecated — place the slot directly in the `layout` tree instead');
 			contract.projection.relocate = {};
 			for (const [source, def] of Object.entries(config.projection.relocate)) {
 				contract.projection.relocate[source] = {
