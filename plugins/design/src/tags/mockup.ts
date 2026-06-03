@@ -24,7 +24,7 @@ export const mockup = createContentModelSchema({
 		],
 	},
 	transform(resolved, attrs, config) {
-		const children = new RenderableNodeCursor(
+		const body = new RenderableNodeCursor(
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		);
 
@@ -36,42 +36,89 @@ export const mockup = createContentModelSchema({
 		const scale = attrs.scale ?? 1;
 		const fit = attrs.fit ?? 'auto';
 
+		// device / color / fit ride the bag only (→ the engine's modifiers set the
+		// classes + data-* attrs). No field-metas in the tree.
 		const deviceMeta = new Tag('meta', { content: device });
 		const colorMeta = new Tag('meta', { content: color });
-		const statusBarMeta = new Tag('meta', { content: String(statusBar) });
-		const labelMeta = label ? new Tag('meta', { content: label }) : undefined;
-		const urlMeta = url ? new Tag('meta', { content: url }) : undefined;
-		const scaleMeta = scale !== 1 ? new Tag('meta', { content: String(scale) }) : undefined;
-		const fitMeta = fit !== 'auto' ? new Tag('meta', { content: fit }) : undefined;
+		const fitMeta = new Tag('meta', { content: fit });
 
-		const viewport = children.wrap('div');
+		// SPEC-081: build the device-frame chrome here (deterministic from the
+		// `device` value), not in a postTransform. Element classes come from
+		// `data-name` (engine applies prefix-correct BEM); variants are `data-*`
+		// attributes (`data-notch`, `data-light`) per the repo convention.
+		const viewport = body.wrap('div').next() as InstanceType<typeof Tag>;
+		viewport.attributes['data-name'] = 'viewport';
 
-		const childNodes = [
-			deviceMeta,
-			colorMeta,
-			statusBarMeta,
-			...(labelMeta ? [labelMeta] : []),
-			...(urlMeta ? [urlMeta] : []),
-			...(scaleMeta ? [scaleMeta] : []),
-			...(fitMeta ? [fitMeta] : []),
-			viewport.next(),
+		const mobileDevices = ['iphone-15', 'iphone-se', 'pixel', 'phone'];
+		const tabletDevices = ['ipad', 'tablet'];
+		const isMobile = mobileDevices.includes(device);
+		const isTablet = tabletDevices.includes(device);
+		const isBrowser = device === 'browser' || device === 'browser-dark';
+		const isMacbook = device === 'macbook';
+
+		const notchStyle: Record<string, string> = { 'iphone-15': 'dynamic-island', 'iphone-se': 'classic', pixel: 'punch-hole' };
+
+		const frameChildren: InstanceType<typeof Tag>[] = [];
+		if (isMobile || isTablet) {
+			const bezelChildren: InstanceType<typeof Tag>[] = [];
+			if (isMobile && notchStyle[device]) {
+				bezelChildren.push(new Tag('div', { 'data-name': 'notch', 'data-notch': notchStyle[device] }, []));
+			}
+			if (isMobile && statusBar) {
+				bezelChildren.push(new Tag('div', { 'data-name': 'status-bar' }, [
+					new Tag('span', { 'data-name': 'status-time' }, ['9:41']),
+					new Tag('span', { 'data-name': 'status-icons' }, []),
+				]));
+			}
+			bezelChildren.push(viewport);
+			if (isMobile) bezelChildren.push(new Tag('div', { 'data-name': 'home-indicator' }, []));
+			frameChildren.push(new Tag('div', { 'data-name': 'bezel' }, bezelChildren));
+		} else if (isBrowser || isMacbook) {
+			const titleBarChildren: InstanceType<typeof Tag>[] = [
+				new Tag('div', { 'data-name': 'traffic-lights' }, [
+					new Tag('span', { 'data-name': 'traffic-light', 'data-light': 'close' }, []),
+					new Tag('span', { 'data-name': 'traffic-light', 'data-light': 'minimize' }, []),
+					new Tag('span', { 'data-name': 'traffic-light', 'data-light': 'maximize' }, []),
+				]),
+			];
+			if (isBrowser) {
+				titleBarChildren.push(new Tag('div', { 'data-name': 'address-bar' },
+					url ? [new Tag('span', { 'data-name': 'url' }, [url])] : []));
+			}
+			frameChildren.push(new Tag('div', { 'data-name': 'title-bar' }, titleBarChildren));
+			frameChildren.push(viewport);
+			if (isMacbook) {
+				frameChildren.push(new Tag('div', { 'data-name': 'keyboard' }, [
+					new Tag('div', { 'data-name': 'trackpad' }, []),
+				]));
+			}
+		} else if (device === 'watch') {
+			frameChildren.push(new Tag('div', { 'data-name': 'bezel' }, [viewport]));
+		} else {
+			frameChildren.push(viewport);
+		}
+
+		const children: InstanceType<typeof Tag>[] = [
+			new Tag('div', { 'data-name': 'frame' }, frameChildren),
 		];
+		if (label) children.push(new Tag('div', { 'data-name': 'label' }, [label]));
 
-		return createComponentRenderable({ rune: 'mockup',
+		const node = createComponentRenderable({ rune: 'mockup',
 			tag: 'div',
 			properties: {
 				device: deviceMeta,
 				color: colorMeta,
-				statusBar: statusBarMeta,
-				...(labelMeta ? { label: labelMeta } : {}),
-				...(urlMeta ? { url: urlMeta } : {}),
-				...(scaleMeta ? { scale: scaleMeta } : {}),
-				...(fitMeta ? { fit: fitMeta } : {}),
+				fit: fitMeta,
 			},
-			refs: {
-				viewport: viewport.tag('div'),
-			},
-			children: childNodes,
+			children,
 		});
+
+		// Scale as a CSS custom property (only when non-default, matching the
+		// previous behaviour exactly).
+		if (scale && scale !== 1) {
+			const existing = node.attributes.style ? `${node.attributes.style}; ` : '';
+			node.attributes.style = `${existing}--mockup-scale: ${scale}`;
+		}
+		return node;
 	},
 });
