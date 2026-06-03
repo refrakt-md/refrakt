@@ -124,6 +124,10 @@ dialog.rf-drawer .rf-drawer__header {
 	align-items: center;
 	justify-content: space-between;
 	gap: var(--rf-spacing-md);
+	/* Reset the generous `[data-section="header"]` bottom margin (3rem) — the
+	 * dialog chrome spaces the header from the body via the body's own
+	 * padding, so the section default would push the body off-screen. */
+	margin: 0;
 	padding: var(--rf-spacing-md) var(--rf-spacing-lg);
 	border-bottom: 1px solid var(--rf-drawer-border);
 	background: var(--rf-drawer-bg);

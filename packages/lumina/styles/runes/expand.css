@@ -23,15 +23,13 @@
 	margin: var(--rf-spacing-md) 0;
 }
 
-/* Peer-document mode — subtle top + bottom rule, no background, no
- * rounded corners. Reads as "set-aside material" without competing
- * visually with the host content. Authors who want a stronger
- * treatment can override `.rf-expand[data-outline-scope]` in their
- * theme. */
+/* Peer-document mode — no background, no rounded corners, no rules.
+ * Reads as "set-aside material" through spacing alone, without competing
+ * visually with the host content. Authors who want a stronger treatment
+ * (rules, background, etc.) can override `.rf-expand[data-outline-scope]`
+ * in their theme. */
 .rf-expand[data-outline-scope] {
 	padding: var(--rf-spacing-md) 0;
-	border-top: 1px solid var(--rf-color-border);
-	border-bottom: 1px solid var(--rf-color-border);
 }
 
 /* Tone down embedded headings so the host outline keeps visual primacy.
