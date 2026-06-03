@@ -1,4 +1,4 @@
-{% work id="WORK-296" status="ready" priority="medium" complexity="moderate" source="SPEC-076" tags="aggregate,plan,plan-progress,sugar" milestone="v0.18.0" %}
+{% work id="WORK-296" status="ready" priority="medium" complexity="moderate" source="SPEC-076" tags="aggregate,plan,plan-progress,sugar" milestone="v0.19.0" %}
 
 # Decompose plan-progress as sugar over aggregate
 
