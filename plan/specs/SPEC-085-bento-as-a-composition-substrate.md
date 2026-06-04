@@ -50,6 +50,28 @@ media beside the body for wide cells). The default is **derived from cell size**
 small cells stack media on top; large/full cells place it prominently / beside —
 and the explicit attribute overrides.
 
+## Signature compositions (drive the design + the docs)
+
+Two compositions define the bento "feel" and are first-class demo targets — both
+already have partial infrastructure:
+
+- **`showcase` bleed in a cell.** The cell media zone is a **clipping container**
+  (`overflow: hidden`), so a `showcase` guest (wrapping an image/mockup/sandbox)
+  can bleed/offset to show a *partial, peeking* view — the classic bento
+  screenshot-in-the-corner look. `showcase` already declares a
+  `bento-cell → in-bento-cell` context modifier, and `showcase.css` already keeps
+  the bleed clipped inside bento cells (vs `overflow: visible` elsewhere); this
+  just needs the cell's clipping media zone (WORK-345) and end-to-end
+  verification.
+- **`tint` per cell.** A `{% tint %}` first child (or `tint-mode` attribute) gives
+  an individual cell its own background + text colour, so a grid can be
+  multi-coloured. `tint` is `parent: '*'` and paints via zero-specificity
+  `:where()`, so it works *provided the cell does not hard-set its own
+  background* — the cell must defer its background to the tint-bridged token.
+
+These are requirements on the cell structure, not just demos: **the media zone
+clips, and the cell background is tint-deferrable.**
+
 ## Non-goals
 
 - Mixing heading-sugar and explicit cells in a single grid.

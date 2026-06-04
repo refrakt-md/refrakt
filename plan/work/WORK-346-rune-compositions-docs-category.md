@@ -21,6 +21,10 @@ set being made first-class this milestone.
 - swatch / palette / typography / spacing in card → design-token card
 - timeline in feature → roadmap feature
 
+### Bento signature compositions (SPEC-085)
+- showcase bleed in a bento cell → screenshot/mockup peeking out of a tile
+- tinted bento cells → multi-coloured grid (per-cell `tint` / `tint-mode`)
+
 ## Acceptance Criteria
 - [ ] A new "Compositions" category exists under `site/content/` with its own index/landing page explaining the media-zone model (containers adapt the slot; guests are open).
 - [ ] Each Family A pattern is its own page: authored Markdown + rendered `preview` + the mechanism note.

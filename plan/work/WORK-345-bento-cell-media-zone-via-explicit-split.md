@@ -14,7 +14,9 @@ bento-specific media CSS.
 - [ ] The cell carries `data-media-position` (default `top`) on the same contract as `card`, ready for WORK-348 to drive placement.
 - [ ] The existing icon-as-visual path keeps working; the docstring's image/emoji-as-visual claim is reconciled with the code under the new zone model.
 - [ ] Heading-driven cells map cleanly onto the zones (heading → headline, content → body, `---` → media); cells without a `---` are unchanged (back-compat).
-- [ ] Tests cover: a cell with a `---` media split, a guest sized in the media zone, and a legacy `---`-less cell.
+- [ ] The media zone is a **clipping container** (`overflow: hidden`) so a `showcase` guest can bleed to a partial view; the existing `showcase--in-bento-cell` modifier + `showcase.css` clipping work end-to-end (SPEC-085 signature composition).
+- [ ] The cell background is **tint-deferrable** (the cell does not hard-set a background that would defeat `tint`), so a per-cell `{% tint %}` / `tint-mode` paints background + text.
+- [ ] Tests cover: a cell with a `---` media split, a guest sized in the media zone, a legacy `---`-less cell, a `showcase` bleed clipped to a cell, and a tinted cell.
 
 ## Approach
 Reuse `card`'s split logic so the two stay in lockstep. Because cells are
