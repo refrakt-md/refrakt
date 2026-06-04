@@ -73,6 +73,15 @@ way to make a `map` (or anything) sit cleanly in a `card` media slot — the
 container adapts the zone, not the specific guest. A rune that wants *special*
 adaptation still opts in via its own `contextModifiers`.
 
+**Media zones are a first-class container contract.** A container that hosts
+visual guests exposes a media zone via the shared `---`-split convention (as
+`card` does): the first part is `data-section="media"`, the rest is body. Every
+such zone is styled by the one name-agnostic selector, so guests compose
+identically across containers. Containers that lack a zone but should host visuals
+get one introduced (e.g. `bento-cell` — {% ref "WORK-345" /%}); the selector
+itself and the verified guests are {% ref "WORK-339" /%}, and the resulting
+patterns are catalogued in {% ref "WORK-346" /%}.
+
 ### Capabilities — the future cross-ecosystem generalization
 
 Concrete rune *names* cover every real case today (all strict children co-ship
@@ -121,6 +130,6 @@ ships first; capabilities are a later, additive layer.
 - Engine context propagation: `packages/transform/src/engine.ts`
 - Context modifier + `parent` declarations: `packages/runes/src/config.ts`, `plugins/marketing/src/config.ts`, `plugins/design/src/config.ts`
 - Coverage carve-outs: `packages/lumina/test/css-coverage.test.ts`
-- Realised by {% ref "WORK-336" /%}, {% ref "WORK-337" /%}, {% ref "WORK-338" /%}, {% ref "WORK-339" /%}
+- Realised by {% ref "WORK-336" /%}, {% ref "WORK-337" /%}, {% ref "WORK-338" /%}, {% ref "WORK-339" /%}, {% ref "WORK-345" /%}, {% ref "WORK-346" /%}
 
 {% /spec %}
