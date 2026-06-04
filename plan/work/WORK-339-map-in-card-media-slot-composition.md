@@ -19,12 +19,12 @@ selector**, rather than per-pair styling. `map`-in-`card` is the proof case.
 Add the baseline adaptation in the section-dimension / container CSS so any direct
 child of a media zone is constrained. Verify the web-component guests (`map`,
 `sandbox`) honour the zone box. Bento needs a media zone *introduced* first — that
-is its own item ({% ref "WORK-345" /%}) — so this item targets the containers that
+is its own item (WORK-345) — so this item targets the containers that
 already have one.
 
 ## References
 - `packages/lumina/styles/dimensions/sections.css` (`[data-section="media"]`), `card.css`, `feature`/`hero` media
 - `plugins/places/src/config.ts`, `packages/lumina/styles/runes/map.css`
-- Open-world styling rule: {% ref "SPEC-084" /%}; catalogued in {% ref "WORK-346" /%}
+- Open-world styling rule: {% ref "SPEC-084" /%}; catalogued in WORK-346
 
 {% /work %}

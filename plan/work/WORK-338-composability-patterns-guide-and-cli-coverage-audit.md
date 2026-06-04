@@ -4,7 +4,7 @@
 
 The *authoring-facing* half of SPEC-084: a contract guide for rune authors plus a
 CLI audit. (The end-user *catalog* of concrete compositions lives separately in
-the "Compositions" docs category, {% ref "WORK-346" /%} — this item is the
+the "Compositions" docs category, WORK-346 — this item is the
 "how the contract works" reference, not the recipe book.)
 
 ## Acceptance Criteria
@@ -12,7 +12,7 @@ the "Compositions" docs category, {% ref "WORK-346" /%} — this item is the
 - [ ] `refrakt inspect`/audit reports context modifiers that lack CSS coverage.
 - [ ] The audit reports `requiresParent` violations (a child outside its self-declared required parent) for a given content tree.
 - [ ] Audit output documented in the tooling docs.
-- [ ] The authoring guide cross-links to the "Compositions" catalog ({% ref "WORK-346" /%}).
+- [ ] The authoring guide cross-links to the "Compositions" catalog (WORK-346).
 
 ## Approach
 Extend the existing inspect/audit tooling (`packages/cli`) — it already derives
@@ -22,6 +22,6 @@ patterns live in the compositions category.
 
 ## References
 - `packages/cli` (inspect/audit), `site/content/extend/rune-authoring/`
-- Depends on {% ref "SPEC-084" /%}; complements {% ref "WORK-337" /%}; pairs with {% ref "WORK-346" /%}
+- Depends on {% ref "SPEC-084" /%}; complements {% ref "WORK-337" /%}; pairs with WORK-346
 
 {% /work %}
