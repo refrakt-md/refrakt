@@ -51,6 +51,6 @@ generator, tests, and docs honest so the vocabulary can't silently drift again.
 - Tokens: `packages/lumina/tokens/base.css`, `dark.css`; defaults in `packages/lumina/src/config.ts`
 - Presets: `packages/lumina/src/presets/*`; generator: `packages/transform/src/token-stylesheet.ts`
 - Tests: `packages/lumina/test/token-config-coverage.test.ts`, `*-preset.test.ts`
-- Pairs with {% ref "WORK-341" /%} (dark parity)
+- Pairs with WORK-341 (dark parity)
 
 {% /work %}
