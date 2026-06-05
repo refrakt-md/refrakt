@@ -77,6 +77,11 @@ export function formatConfig(runeTypeof: string, config: ThemeConfig): string {
 		lines.push(`  ${DIM}contentWrapper:${RESET}   ${DIM}none${RESET}`);
 	}
 
+	// Composability: hard nesting requirement (SPEC-084)
+	if (runeConfig.requiresParent) {
+		lines.push(`  ${DIM}requiresParent:${RESET}   ${runeConfig.requiresParent}  ${DIM}(validated; warns/errors if nested elsewhere)${RESET}`);
+	}
+
 	// Context modifiers
 	if (runeConfig.contextModifiers && Object.keys(runeConfig.contextModifiers).length > 0) {
 		const ctx = Object.entries(runeConfig.contextModifiers)
