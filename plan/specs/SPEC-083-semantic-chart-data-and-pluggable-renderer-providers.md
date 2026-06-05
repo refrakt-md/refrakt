@@ -144,6 +144,32 @@ When a real second renderer appears, introduce the abstraction below. It is
   adapts to any theme regardless of provider; keep the `<table>` visually-hidden
   after render (chart + SR-readable data table).
 
+## Theming contract — the provider-facing interface ({% ref "WORK-353" /%})
+
+Theming must be **provider-agnostic**, because a canvas provider (chart.js) can't
+be CSS-styled and a d3 provider draws its own DOM. So the contract is a set of
+**`--rf-chart-*` custom properties** (the theme's vocabulary) that *every provider
+reads and translates* into its rendering — not CSS rules written against our SVG's
+internals.
+
+**Hard rule: every themeable aspect is backed by a `--rf-chart-*` custom property;
+there are no CSS-only knobs.** The SVG provider *consumes* the props
+(`fill: var(--rf-chart-series-1)`, geometry via `getComputedStyle`); a canvas
+provider reads the same props via `getComputedStyle` and maps them to its options;
+a d3 provider applies them to its scales/attrs. One vocabulary, per-provider
+translation.
+
+The surface: a **categorical palette** (`--rf-chart-series-1…N`, distinct from the
+semantic status tokens), **geometry** (bar thickness/ratio/gap/radius, point
+radius, line width), and **typography/grid**. Plus a **sentiment colouring mode**:
+when data cells carry `data-meta-sentiment` (the metadata dimension), bars map
+`sentiment → semantic token` — provider-agnostic intent, provider-specific
+application. The contract is a *common floor* (on-brand under any provider);
+provider superpowers (chart.js animations, d3 scales) are out of contract.
+
+`WORK-353` defines this surface and ships the **SVG reference implementation**;
+any provider added under `WORK-334` must honor it.
+
 ## Open decisions (small, scoping)
 
 - **No-JS posture (default).** Default to table-only fallback (client renders the
@@ -180,8 +206,11 @@ output representation is itself a variable.
 
 - `WORK-333` — the seam: semantic `<table>` IR + `rf-chart` web component +
   built-in SVG provider; chart stops emitting JSON-in-meta and uses no
-  `postTransform`.
+  `postTransform`. *(done — v0.18.0)*
+- `WORK-353` — the **theming contract** (`--rf-chart-*` custom-property surface +
+  sentiment mode) + SVG reference implementation; the provider-facing interface
+  any future renderer must honor.
 - `WORK-334` — the provider-selection model + any additional providers (blocked
-  on the open questions above).
+  on the open questions above); each provider must honor the `WORK-353` contract.
 
 {% /spec %}
