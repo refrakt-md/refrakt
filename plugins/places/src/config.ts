@@ -53,14 +53,14 @@ export const config: Record<string, RuneConfig> = {
 	},
 	ItineraryDay: {
 		block: 'itinerary-day',
-		parent: 'Itinerary',
+		parent: 'Itinerary', requiresParent: 'Itinerary',
 		sequence: 'connected',
 		autoLabel: { label: 'header' },
 		editHints: { header: 'inline', stops: 'none' },
 	},
 	ItineraryStop: {
 		block: 'itinerary-stop',
-		parent: 'Itinerary',
+		parent: 'Itinerary', requiresParent: 'Itinerary',
 		modifiers: {
 			activity: { source: 'meta' },
 			duration: { source: 'meta' },
@@ -87,7 +87,7 @@ export const config: Record<string, RuneConfig> = {
 	},
 	MapPin: {
 		block: 'map-pin',
-		parent: 'Map',
+		parent: 'Map', requiresParent: 'Map',
 		editHints: { name: 'inline', description: 'inline' },
 		// Pin coordinates and metadata are read at runtime by the <rf-map> web
 		// component. They ride the SPEC-082 field bag through the transform, but

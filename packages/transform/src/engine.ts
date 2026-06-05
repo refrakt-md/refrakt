@@ -109,6 +109,16 @@ function transformRune(
 	const block = `${prefix}-${config.block}`;
 	const dataRune = tag.attributes?.['data-rune'];
 
+	// SPEC-084 (WORK-337) — validate the self-declared hard nesting requirement.
+	// A rune that opts in via `requiresParent` must have that parent as its
+	// nearest ancestor rune; otherwise its output is broken/meaningless.
+	if (config.requiresParent && config.requiresParent !== '*') {
+		const requiredRune = toKebabCase(config.requiresParent);
+		if (parentRune !== requiredRune) {
+			warnRequiresParent(dataRune ?? config.block, config.requiresParent, parentRune);
+		}
+	}
+
 	// SPEC-082 (WORK-322): the typed field-data channel. The engine reads
 	// modifier / metaField values from `data-rune-fields` (preferred), falling
 	// back per-field to the legacy `<meta data-field>` children. Both channels
@@ -1195,6 +1205,28 @@ function warnLayoutCycle(name: string): void {
 	LAYOUT_CYCLE_WARNED.add(name);
 	// eslint-disable-next-line no-console
 	console.warn(`[refrakt] layout reference cycle at "${name}" — skipping to break the loop.`);
+}
+
+/** SPEC-084 (WORK-337) — runes whose output is structurally meaningless without
+ *  their parent (kebab `data-rune`). A misplacement of these is an *error*; any
+ *  other `requiresParent` violation is a *warning* (renders, but off-contract). */
+const STRUCTURAL_CHILDREN = new Set<string>([
+	'accordion-item', 'tab', 'tab-panel', 'breadcrumb-item', 'juxtapose-panel',
+	'bento-cell', 'definition', 'step', 'tier', 'map-pin',
+	'itinerary-day', 'itinerary-stop',
+]);
+const REQUIRES_PARENT_WARNED = new Set<string>();
+/** Report a `requiresParent` violation once per (rune, actual-parent). */
+function warnRequiresParent(rune: string, required: string, actual: string | undefined): void {
+	const key = `${rune}<${actual ?? ''}`;
+	if (REQUIRES_PARENT_WARNED.has(key)) return;
+	REQUIRES_PARENT_WARNED.add(key);
+	const where = actual ? `nested directly in \`${actual}\`` : 'at the top level';
+	const msg = `[refrakt] \`${rune}\` requires parent \`${toKebabCase(required)}\` — found ${where}.`;
+	// eslint-disable-next-line no-console
+	if (STRUCTURAL_CHILDREN.has(rune)) console.error(msg);
+	// eslint-disable-next-line no-console
+	else console.warn(msg);
 }
 
 /** Map a child array to a `data-name` → node index (tags carrying a data-name). */
