@@ -24,6 +24,7 @@ set being made first-class this milestone.
 ### Bento signature compositions (SPEC-085)
 - showcase bleed in a bento cell → screenshot/mockup peeking out of a tile
 - tinted bento cells → multi-coloured grid (per-cell `tint` / `tint-mode`)
+- phone `mockup` in a tall bento tile → centered + auto-scaled out of the box (uniform row tracks + the media-zone container context); `showcase` variant for the capped-at-bottom bleed. Verify mobile collapse keeps it centered with side margins.
 
 ## Acceptance Criteria
 - [ ] A new "Compositions" category exists under `site/content/` with its own index/landing page explaining the media-zone model (containers adapt the slot; guests are open).

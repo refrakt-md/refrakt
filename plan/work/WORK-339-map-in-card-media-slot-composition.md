@@ -10,6 +10,8 @@ selector**, rather than per-pair styling. `map`-in-`card` is the proof case.
 
 ## Acceptance Criteria
 - [ ] A name-agnostic media-zone selector (e.g. `[data-section="media"] > .rf-*`) constrains any direct visual child to the zone: fills width, respects the container's radius/overflow, sensible max-height.
+- [ ] The guest is constrained on **both axes** — `max-height: 100%` + the zone clips — so a tall guest (e.g. a phone `mockup`) **scales/clips to fit the cell rather than ballooning its height/row**.
+- [ ] The media zone **establishes a container-query context** (`container-type: inline-size`) so intrinsically responsive guests resolve their own scaling — e.g. `mockup`'s `cqi`-based auto-downscale + `margin-inline: auto` centering works inside a cell with no wrapper.
 - [ ] Proven across `card`, `feature`, and `hero` media zones with at least three guests verified: **map**, **chart**, **gallery**.
 - [ ] `map` specifically renders cleanly in a `card` media slot — `<rf-map>` initializes, leaflet honours the zone's dimensions, no-JS pin-list fallback still renders.
 - [ ] No guest-specific `--in-card` modifier is introduced for the baseline; a guest only opts into its own `contextModifiers` if it needs more than the generic fit.

@@ -10,6 +10,7 @@ vocabulary: a 6-column default, proportional `size` presets, and precise
 - [ ] **`columns` defaults to 6** for both authoring modes (author-overridable); the mode-dependent `tiered`=4 / `span`=6 split and the `sizing="span"` parent mode are removed.
 - [ ] **`size` presets resolve as proportions of the column count** (small ⅓, medium ½, large ⅔ × 2 rows, full = all → 2/3/4/6 @ 6 cols), so they hold their ratio at any `columns`.
 - [ ] **`cols` / `rows`** map to `grid-column: span` / `grid-row: span` and override `size` per-axis when present.
+- [ ] **Uniform row tracks.** The grid sets `grid-auto-rows: var(--rf-bento-row-height)` (a fixed, themeable height — **not** tied to column width, which would explode vertically on collapse). Row spans (`rows` / `large`) are therefore meaningful, and a tall guest is bounded by the track (it scales/clips via WORK-339) rather than ballooning the whole row. Row height may vary per breakpoint but is never coupled to the column width.
 - [ ] **Tiered sugar** maps auto-detected relative heading depth → size preset: base → large (4×2), base+1 → medium (3×1), base+2+ → small (2×1). Deep headings do not get distinct row spans.
 - [ ] `media-position` is author-controllable per cell (`top | bottom | start | end`) with a **size-derived default** (small → media top/stacked; large/full → prominent / beside).
 - [ ] An optional **`href`** makes a whole cell a link (mirrors `card`), with correct focus/hover affordances and accessible markup.
