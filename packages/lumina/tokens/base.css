@@ -48,7 +48,13 @@
 	 * status-coloured (which would compete with diff's add/remove channel
 	 * and the semantic palette above). `*-rail` is the optional left-edge
 	 * border colour; falls back to the primary accent via the consuming
-	 * CSS for themes that don't override it. */
+	 * CSS for themes that don't override it.
+	 *
+	 * WORK-341 — these three (and `--rf-color-primary-bg` above) are
+	 * **intentionally shared**: each derives from a mode-aware token
+	 * (`text` / `primary` / `muted`), so they track dark mode automatically
+	 * and deliberately have no dark.css override (a fixed dark value would
+	 * break the derivation). */
 	--rf-color-line-highlight: color-mix(in srgb, var(--rf-color-text) 6%, transparent);
 	--rf-color-line-highlight-rail: var(--rf-color-primary, var(--rf-color-text));
 	/* Gutter colour for `pre[data-linenumbers]` line counter. Defers to
