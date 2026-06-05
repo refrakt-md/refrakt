@@ -1,26 +1,29 @@
 {% work id="WORK-348" status="draft" priority="medium" complexity="moderate" source="SPEC-085" milestone="v0.19.0" tags="bento,marketing,lumina" %}
 
-# Bento size-derived media placement and link tiles
+# Bento sizing model, size-derived media placement, and link tiles
 
-Complete the bento foundation: per-cell media placement with sensible defaults,
-and clickable tiles for dashboards. Builds on the cell zone contract
-({% ref "WORK-345" /%}).
+Land SPEC-085's sizing model and the placement/link affordances. One grid, one
+vocabulary: a 6-column default, proportional `size` presets, and precise
+`cols`/`rows`.
 
 ## Acceptance Criteria
-- [ ] `media-position` is author-controllable per cell (`top | bottom | start | end`; start/end place media beside the body on wide cells), driving `data-media-position`.
-- [ ] The default `media-position` is **derived from cell size**: small cells stack media on top; large/full cells place it prominently / beside. Explicit attribute overrides.
-- [ ] An optional `href` makes a whole cell a link (mirrors `card`), with correct focus/hover affordances and accessible markup.
-- [ ] CSS keys placement off `data-media-position` + the cell `size` data attribute, reusing the shared split rules where possible.
-- [ ] Tests / examples cover each placement value and a link tile; a dashboard example and a marketing example both render (compositions docs).
+- [ ] **`columns` defaults to 6** for both authoring modes (author-overridable); the mode-dependent `tiered`=4 / `span`=6 split and the `sizing="span"` parent mode are removed.
+- [ ] **`size` presets resolve as proportions of the column count** (small ⅓, medium ½, large ⅔ × 2 rows, full = all → 2/3/4/6 @ 6 cols), so they hold their ratio at any `columns`.
+- [ ] **`cols` / `rows`** map to `grid-column: span` / `grid-row: span` and override `size` per-axis when present.
+- [ ] **Tiered sugar** maps auto-detected relative heading depth → size preset: base → large (4×2), base+1 → medium (3×1), base+2+ → small (2×1). Deep headings do not get distinct row spans.
+- [ ] `media-position` is author-controllable per cell (`top | bottom | start | end`) with a **size-derived default** (small → media top/stacked; large/full → prominent / beside).
+- [ ] An optional **`href`** makes a whole cell a link (mirrors `card`), with correct focus/hover affordances and accessible markup.
+- [ ] CSS keys placement off `data-media-position` + the resolved spans, reusing the shared `split.css` / card media rules where possible.
+- [ ] Tests / examples cover: the 6-col default, each `size` preset proportion, `cols`/`rows` overrides, the tiered depth→size mapping, each media-position value, and a link tile. Existing heading-sugar bentos keep their proportions (verify).
 
 ## Approach
-Add the `media-position` and `href` attributes to the cell schema; emit
-`data-media-position` (size-derived default) and the link wrapper on the cell
-root. Lean on the existing `split.css` / card media rules so bento and card share
-placement behavior.
+Resolve `size`/`cols`/`rows` to grid spans in the cell transform/CSS (custom
+properties keyed off the cell `size`/span data). Lean on `split.css` / card media
+rules for placement so bento and card share behavior. Verify the canonical
+`bento.md` and any other usages still read well at the new 6-col default.
 
 ## References
-- `plugins/marketing/src/tags/bento.ts`, `plugins/marketing/src/config.ts`
+- `plugins/marketing/src/tags/bento.ts`, `plugins/marketing/src/config.ts`, `packages/lumina/styles/runes/bento.css`
 - `card` `href` + `data-media-position`; `split.css`
 - Substrate {% ref "SPEC-085" /%}; cell zones {% ref "WORK-345" /%}
 
