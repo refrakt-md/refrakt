@@ -28,7 +28,6 @@ const UNSTYLED_BLOCKS = new Set([
 ]);
 
 const KNOWN_MISSING_SELECTORS = new Set([
-	'.rf-hero--in-feature',  // context modifier not yet styled
 	// pageSectionAutoLabel selectors — preamble + intro elements inherited from section system
 	'.rf-testimonial__quote',
 	'.rf-comparison__preamble', '.rf-comparison__eyebrow', '.rf-comparison__headline', '.rf-comparison__blurb', '.rf-comparison__image',

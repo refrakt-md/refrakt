@@ -29,7 +29,6 @@ export const config: Record<string, RuneConfig> = {
 			valign: { prop: '--split-valign', transform: resolveValign },
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
-		contextModifiers: { 'feature': 'in-feature' },
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'hero' },
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },

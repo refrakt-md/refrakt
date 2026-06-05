@@ -1224,12 +1224,6 @@
 					"dataAttribute": "data-collapse"
 				}
 			},
-			"contextModifiers": {
-				"feature": {
-					"suffix": "in-feature",
-					"selector": ".rf-hero--in-feature"
-				}
-			},
 			"elements": {
 				"preamble": {
 					"tag": "header",
