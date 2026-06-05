@@ -21,7 +21,7 @@
 	font-weight: 500;
 }
 .rf-swatch__value {
-	color: var(--rf-color-text-muted, #6b7280);
+	color: var(--rf-color-muted);
 	font-size: 0.75em;
 	font-family: var(--rf-font-mono, monospace);
 	vertical-align: middle;

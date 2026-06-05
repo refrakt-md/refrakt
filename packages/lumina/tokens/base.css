@@ -11,19 +11,6 @@
 	--rf-font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 	--rf-font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, 'Cascadia Code', monospace;
 
-	/* Primary scale — warm-neutral axis, near-bg → near-text */
-	--rf-color-primary-50: #fbfaf7;
-	--rf-color-primary-100: #f5f4f1;
-	--rf-color-primary-200: #ecebe8;
-	--rf-color-primary-300: #e2e0dd;
-	--rf-color-primary-400: #bfbab2;
-	--rf-color-primary-500: #94908a;
-	--rf-color-primary-600: #76716a;
-	--rf-color-primary-700: #5a564f;
-	--rf-color-primary-800: #3a342d;
-	--rf-color-primary-900: #2a2622;
-	--rf-color-primary-950: #1c1a17;
-
 	/* Core palette */
 	--rf-color-text: #1c1a17;
 	--rf-color-muted: #6b6661;
@@ -31,6 +18,9 @@
 	--rf-color-bg: #f5f4f1;
 	--rf-color-primary: #1c1a17;
 	--rf-color-primary-hover: #3a342d;
+	/* Derived subtle primary wash — tracks `primary` in both modes. */
+	--rf-color-primary-bg: color-mix(in oklch, var(--rf-color-primary) 10%, transparent);
+	--rf-color-on-primary: #ffffff;
 
 	/* Surfaces */
 	--rf-color-surface: #fbfaf7;
@@ -58,7 +48,13 @@
 	 * status-coloured (which would compete with diff's add/remove channel
 	 * and the semantic palette above). `*-rail` is the optional left-edge
 	 * border colour; falls back to the primary accent via the consuming
-	 * CSS for themes that don't override it. */
+	 * CSS for themes that don't override it.
+	 *
+	 * WORK-341 — these three (and `--rf-color-primary-bg` above) are
+	 * **intentionally shared**: each derives from a mode-aware token
+	 * (`text` / `primary` / `muted`), so they track dark mode automatically
+	 * and deliberately have no dark.css override (a fixed dark value would
+	 * break the derivation). */
 	--rf-color-line-highlight: color-mix(in srgb, var(--rf-color-text) 6%, transparent);
 	--rf-color-line-highlight-rail: var(--rf-color-primary, var(--rf-color-text));
 	/* Gutter colour for `pre[data-linenumbers]` line counter. Defers to

@@ -101,8 +101,8 @@ describe('luminaTokens coverage vs hand-authored CSS', () => {
 		const must = [
 			'--rf-font-sans',
 			'--rf-font-mono',
-			'--rf-color-primary-500',
-			'--rf-color-primary-950',
+			'--rf-color-primary',
+			'--rf-color-primary-bg',
 			'--rf-color-bg',
 			'--rf-color-text',
 			'--rf-color-surface',           // base → no suffix per contract rule

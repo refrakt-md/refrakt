@@ -9,7 +9,7 @@
 .rf-bond > span[property="to"] {
 	font-weight: 600;
 	font-size: 1rem;
-	color: var(--rf-color-heading);
+	color: var(--rf-color-text);
 	white-space: nowrap;
 }
 .rf-bond__connector {

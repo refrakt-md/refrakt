@@ -63,17 +63,17 @@ export const luminaConfig = mergeThemeConfig(baseConfig, {
 				border: 'var(--rf-color-info-border)',
 			},
 			dark: {
-				bg: 'var(--rf-color-primary-950)',
-				text: 'var(--rf-color-primary-300)',
+				bg: '#1c1a17',
+				text: '#e2e0dd',
 				primary: 'var(--rf-color-primary)',
-				border: 'var(--rf-color-primary-700)',
+				border: '#5a564f',
 			},
 		},
 		dark: {
 			lockMode: 'dark',
 			dark: {
-				bg: 'var(--rf-color-primary-700)',
-				text: 'var(--rf-color-primary-50)',
+				bg: '#5a564f',
+				text: '#fbfaf7',
 				primary: 'var(--rf-color-danger)',
 			},
 		},

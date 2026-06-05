@@ -30,24 +30,13 @@ export const luminaTokens: ThemeTokensConfig = {
 		bg: '#f5f4f1',
 		primary: '#1c1a17',
 		'primary-hover': '#3a342d',
-
-		// Warm-neutral axis from near-bg to near-text, eleven hand-picked stops.
-		// Several stops intentionally overlap with semantic tokens (surface.base,
-		// border, primary-hover, text) — that's normal; palette steps double as
-		// the implementations of the named tokens at their lightness level.
-		'primary-scale': {
-			'50': '#fbfaf7',
-			'100': '#f5f4f1',
-			'200': '#ecebe8',
-			'300': '#e2e0dd',
-			'400': '#bfbab2',
-			'500': '#94908a',
-			'600': '#76716a',
-			'700': '#5a564f',
-			'800': '#3a342d',
-			'900': '#2a2622',
-			'950': '#1c1a17',
-		},
+		// Derived subtle primary wash — completes the {semantic}-bg family.
+		// color-mix off `primary` so it tracks any preset/config override in
+		// both modes (no per-preset value, no dark override needed).
+		'primary-bg': 'color-mix(in oklch, var(--rf-color-primary) 10%, transparent)',
+		// Foreground for text/icons sitting on a `primary` fill. Flips per mode
+		// because base `primary` is dark in light mode and light in dark mode.
+		'on-primary': '#ffffff',
 
 		surface: {
 			base: '#fbfaf7',
@@ -144,6 +133,7 @@ export const luminaTokens: ThemeTokensConfig = {
 				bg: '#1a1a17',
 				primary: '#f6f4ef',
 				'primary-hover': '#d4cfc5',
+				'on-primary': '#1a1a17',
 
 				surface: {
 					base: '#211f1c',

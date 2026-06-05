@@ -36,21 +36,6 @@ const tideline: ThemeTokensConfig = {
 		primary: '#457b9d',
 		'primary-hover': '#376585',
 
-		// Cerulean → frosted blue scale, preserved from pre-v0.14.0 Lumina.
-		'primary-scale': {
-			'50': '#f0f6f9',
-			'100': '#dcebf0',
-			'200': '#b8d6e2',
-			'300': '#a8dadc',
-			'400': '#70b4c0',
-			'500': '#457b9d',
-			'600': '#376585',
-			'700': '#1d3557',
-			'800': '#182c4a',
-			'900': '#12213a',
-			'950': '#0c162a',
-		},
-
 		surface: {
 			base: '#fffbf2',
 			hover: '#fdf0d5',

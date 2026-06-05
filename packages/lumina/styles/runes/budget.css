@@ -86,7 +86,7 @@
 	gap: 1rem;
 }
 .rf-budget-line-item + .rf-budget-line-item {
-	border-top: 1px solid var(--rf-color-border-light, var(--rf-color-border));
+	border-top: 1px solid var(--rf-color-border);
 }
 .rf-budget-line-item__description {
 	font-size: 0.875rem;

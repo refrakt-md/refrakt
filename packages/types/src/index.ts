@@ -15,7 +15,6 @@ export type {
   ThemeTokensConfig,
   ThemeTokensModeOverlay,
   SentimentTokens,
-  PrimaryScale,
   SyntaxTokens,
   DeepPartial,
 } from './token-contract.js';

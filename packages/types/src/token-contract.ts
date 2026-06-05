@@ -52,9 +52,13 @@ export interface TokenContract {
 		primary: string;
 		/** Primary colour on hover/active. */
 		'primary-hover': string;
-		/** Primary colour scale (50→950) for hover/active layering and
-		 *  rune-internal contrast steps that don't introduce a hue. */
-		'primary-scale': PrimaryScale;
+		/** Subtle primary-tinted background wash — the `primary` member of the
+		 *  `{semantic}-bg` family. Derive it (`color-mix` off `primary`) so it
+		 *  tracks any override in both modes. */
+		'primary-bg': string;
+		/** Foreground (text/icons) for content sitting on a `primary` fill.
+		 *  Flips per mode when `primary` does. */
+		'on-primary': string;
 
 		/** Layered surfaces above the page background. `base` is the default
 		 *  card / panel surface; `raised` is the most elevated layer. */
@@ -150,21 +154,6 @@ export interface SentimentTokens {
 	base: string;
 	bg: string;
 	border: string;
-}
-
-/** Eleven-stop colour scale, near-bg → near-text. */
-export interface PrimaryScale {
-	'50': string;
-	'100': string;
-	'200': string;
-	'300': string;
-	'400': string;
-	'500': string;
-	'600': string;
-	'700': string;
-	'800': string;
-	'900': string;
-	'950': string;
 }
 
 /** Syntax-highlighting roles. Variables and ordinary identifiers fall through

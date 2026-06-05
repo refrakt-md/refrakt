@@ -45,7 +45,7 @@ button[data-state="inactive"] {
 /* ─── Selected: user selection highlight ──────────────────────────── */
 
 [data-state="selected"] {
-	background: color-mix(in oklch, var(--rf-color-primary) 10%, transparent);
+	background: var(--rf-color-primary-bg);
 	outline: 2px solid var(--rf-color-primary);
 }
 

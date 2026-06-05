@@ -106,7 +106,7 @@
 	width: 1.5rem;
 	height: 1.5rem;
 	margin-bottom: 0.5rem;
-	color: var(--rf-color-accent);
+	color: var(--rf-color-primary);
 }
 .rf-feature__feature-item dd {
 	margin: 0;

@@ -172,20 +172,16 @@ Create `tokens/base.css` with your visual language:
   --rf-font-sans: 'Your Font', system-ui, sans-serif;
   --rf-font-mono: 'Your Mono Font', monospace;
 
-  /* Primary color scale */
-  --rf-color-primary-50: #faf5ff;
-  --rf-color-primary-100: #f3e8ff;
-  --rf-color-primary-500: #a855f7;
-  --rf-color-primary-600: #9333ea;
-  --rf-color-primary-900: #581c87;
-
   /* Core palette */
   --rf-color-text: #1a1a2e;
   --rf-color-muted: #64748b;
   --rf-color-border: #e2e8f0;
   --rf-color-bg: #ffffff;
-  --rf-color-primary: var(--rf-color-primary-500);
-  --rf-color-primary-hover: var(--rf-color-primary-600);
+  --rf-color-primary: #a855f7;
+  --rf-color-primary-hover: #9333ea;
+  /* The primary family: a derived wash + the on-primary foreground. */
+  --rf-color-primary-bg: color-mix(in oklch, var(--rf-color-primary) 10%, transparent);
+  --rf-color-on-primary: #ffffff;
 
   /* Surfaces */
   --rf-color-surface: #f8fafc;
