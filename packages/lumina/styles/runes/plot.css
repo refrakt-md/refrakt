@@ -8,7 +8,7 @@
 	font-size: 1.5rem;
 	font-weight: 700;
 	margin-bottom: 0.5rem;
-	color: var(--rf-color-heading);
+	color: var(--rf-color-text);
 }
 
 /* Description */
@@ -48,7 +48,7 @@
 .rf-beat > span[data-field="label"] {
 	font-weight: 600;
 	font-size: 1rem;
-	color: var(--rf-color-heading);
+	color: var(--rf-color-text);
 }
 .rf-beat__body {
 	margin-top: 0.25rem;

@@ -219,18 +219,17 @@ Tokens are defined in a CSS file (e.g., `tokens/base.css`) on the `:root` select
 **Color palette:**
 ```css
 :root {
-  /* Primary scale */
-  --rf-color-primary-50: #f0f9ff;
-  --rf-color-primary-500: #0ea5e9;
-  --rf-color-primary-900: #0c4a6e;
-
   /* Core palette */
   --rf-color-text: #1a1a2e;
   --rf-color-muted: #64748b;
   --rf-color-border: #e2e8f0;
   --rf-color-bg: #ffffff;
-  --rf-color-primary: var(--rf-color-primary-500);
-  --rf-color-primary-hover: var(--rf-color-primary-600);
+  --rf-color-primary: #0ea5e9;
+  --rf-color-primary-hover: #0284c7;
+  /* `primary-bg` (subtle wash) and `on-primary` (text on a primary fill)
+   * complete the primary family. Derive `primary-bg` so it tracks `primary`. */
+  --rf-color-primary-bg: color-mix(in oklch, var(--rf-color-primary) 10%, transparent);
+  --rf-color-on-primary: #ffffff;
 }
 ```
 

@@ -145,8 +145,8 @@
 	color: var(--rf-color-muted);
 }
 .rf-search-result__excerpt mark {
-	background: var(--rf-color-primary-100);
-	color: var(--rf-color-primary-700);
+	background: var(--rf-color-primary-bg);
+	color: var(--rf-color-text);
 	border-radius: 2px;
 	padding: 0 1px;
 }

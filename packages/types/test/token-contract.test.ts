@@ -4,7 +4,6 @@ import type {
 	PartialTokenContract,
 	ThemeTokensConfig,
 	SentimentTokens,
-	PrimaryScale,
 	SyntaxTokens,
 } from '../src/token-contract.js';
 
@@ -22,19 +21,8 @@ describe('TokenContract', () => {
 				bg: '#f6f4ef',
 				primary: '#1c1a17',
 				'primary-hover': '#3a342d',
-				'primary-scale': {
-					'50': '#fcfaf6',
-					'100': '#f6f4ef',
-					'200': '#efece5',
-					'300': '#e8e5df',
-					'400': '#94908a',
-					'500': '#6b6661',
-					'600': '#4f4a45',
-					'700': '#3a342d',
-					'800': '#2a2622',
-					'900': '#1f1d1a',
-					'950': '#1c1a17',
-				},
+				'primary-bg': 'color-mix(in oklch, var(--rf-color-primary) 10%, transparent)',
+				'on-primary': '#ffffff',
 				surface: {
 					base: '#fcfaf6',
 					hover: '#efece5',
@@ -205,25 +193,6 @@ describe('SentimentTokens', () => {
 			border: '#c5d2e0',
 		};
 		expectTypeOf(sentiment).toMatchTypeOf<SentimentTokens>();
-	});
-});
-
-describe('PrimaryScale', () => {
-	it('requires all eleven stops', () => {
-		const scale: PrimaryScale = {
-			'50': '#f6f4ef',
-			'100': '#efece5',
-			'200': '#e8e5df',
-			'300': '#d4cfc5',
-			'400': '#94908a',
-			'500': '#6b6661',
-			'600': '#4f4a45',
-			'700': '#3a342d',
-			'800': '#2a2622',
-			'900': '#1f1d1a',
-			'950': '#1c1a17',
-		};
-		expectTypeOf(scale).toMatchTypeOf<PrimaryScale>();
 	});
 });
 

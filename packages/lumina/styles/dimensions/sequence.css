@@ -63,7 +63,7 @@
 	height: 0.75rem;
 	border-radius: 50%;
 	background: var(--rf-color-primary);
-	border: 2px solid var(--rf-color-background);
+	border: 2px solid var(--rf-color-bg);
 	box-shadow: 0 0 0 2px var(--rf-color-primary);
 }
 

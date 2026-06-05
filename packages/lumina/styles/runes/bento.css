@@ -73,12 +73,12 @@
 .rf-bento-cell__icon svg {
 	width: 1.5rem;
 	height: 1.5rem;
-	color: var(--rf-color-accent);
+	color: var(--rf-color-primary);
 }
 .rf-bento-cell__icon .rf-icon {
 	width: 1.5rem;
 	height: 1.5rem;
-	color: var(--rf-color-accent);
+	color: var(--rf-color-primary);
 }
 .rf-bento-cell__title {
 	font-size: 1.125rem;

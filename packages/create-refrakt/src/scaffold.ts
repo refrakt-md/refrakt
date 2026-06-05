@@ -724,20 +724,16 @@ function generateThemeBaseTokens(): string {
 \t--rf-font-sans: system-ui, -apple-system, sans-serif;
 \t--rf-font-mono: ui-monospace, 'SFMono-Regular', monospace;
 
-\t/* Primary color scale */
-\t--rf-color-primary-50: #f0f9ff;
-\t--rf-color-primary-100: #e0f2fe;
-\t--rf-color-primary-500: #3b82f6;
-\t--rf-color-primary-600: #2563eb;
-\t--rf-color-primary-900: #1e3a5f;
-
 \t/* Core palette */
 \t--rf-color-text: #1a1a2e;
 \t--rf-color-muted: #64748b;
 \t--rf-color-border: #e2e8f0;
 \t--rf-color-bg: #ffffff;
-\t--rf-color-primary: var(--rf-color-primary-500);
-\t--rf-color-primary-hover: var(--rf-color-primary-600);
+\t--rf-color-primary: #3b82f6;
+\t--rf-color-primary-hover: #2563eb;
+\t/* primary-bg (subtle wash, derived) + on-primary (text on a primary fill) */
+\t--rf-color-primary-bg: color-mix(in oklch, var(--rf-color-primary) 10%, transparent);
+\t--rf-color-on-primary: #ffffff;
 
 \t/* Surfaces */
 \t--rf-color-surface: #f8fafc;

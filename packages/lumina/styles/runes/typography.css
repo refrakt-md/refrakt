@@ -11,7 +11,7 @@
 }
 .rf-typography__specimen {
 	border-radius: var(--rf-radius-lg, 12px);
-	padding: 1.5rem;
+	padding: 0;
 }
 .rf-typography__specimen-header {
 	display: flex;
@@ -26,14 +26,14 @@
 	font-weight: 600;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
-	color: var(--rf-color-primary, #0ea5e9);
-	background: var(--rf-color-primary-bg, rgba(14, 165, 233, 0.1));
+	color: var(--rf-color-muted);
+	background: var(--rf-color-surface-raised);
 	padding: 0.125rem 0.5rem;
 	border-radius: var(--rf-radius-sm, 4px);
 }
 .rf-typography__specimen-family {
 	font-size: 0.9rem;
-	color: var(--rf-color-text-muted, #6b7280);
+	color: var(--rf-color-muted);
 }
 .rf-typography__sizes {
 	display: flex;
@@ -54,7 +54,7 @@
 	flex-shrink: 0;
 	font-size: 0.7rem;
 	font-family: var(--rf-font-mono, monospace);
-	color: var(--rf-color-text-muted, #6b7280);
+	color: var(--rf-color-muted);
 	min-width: 3rem;
 	text-align: right;
 }
@@ -73,7 +73,7 @@
 .rf-typography__weight-label {
 	font-size: 0.7rem;
 	font-family: var(--rf-font-mono, monospace);
-	color: var(--rf-color-text-muted, #6b7280);
+	color: var(--rf-color-muted);
 }
 .rf-typography__charset {
 	margin-top: 1rem;
@@ -83,7 +83,7 @@
 	line-height: 1.8;
 	letter-spacing: 0.05em;
 	word-break: break-all;
-	color: var(--rf-color-text-muted, #6b7280);
+	color: var(--rf-color-muted);
 }
 
 /* Context-aware: no outer border when inside design-context (parent already has one) */

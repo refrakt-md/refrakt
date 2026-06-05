@@ -15,7 +15,7 @@
 	font-weight: 600;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
-	color: var(--rf-color-text-muted, #6b7280);
+	color: var(--rf-color-muted);
 	margin-bottom: 0.75rem;
 }
 
@@ -32,7 +32,7 @@
 }
 .rf-spacing__scale-bar {
 	height: 1.25rem;
-	background: var(--rf-color-primary, #0ea5e9);
+	background: var(--rf-color-primary);
 	border-radius: var(--rf-radius-sm, 4px);
 	opacity: 0.8;
 	min-width: 4px;
@@ -45,7 +45,7 @@
 	flex-shrink: 0;
 }
 .rf-spacing__scale-multiplier {
-	color: var(--rf-color-text-muted, #6b7280);
+	color: var(--rf-color-muted);
 	margin-left: 0.25rem;
 }
 
@@ -75,7 +75,7 @@
 .rf-spacing__radius-value {
 	font-size: 0.7rem;
 	font-family: var(--rf-font-mono, monospace);
-	color: var(--rf-color-text-muted, #6b7280);
+	color: var(--rf-color-muted);
 }
 
 /* Shadows — sample cards */

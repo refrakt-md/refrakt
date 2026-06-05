@@ -32,11 +32,8 @@ const TOKEN_CONTRACT_SHAPE: Record<string, ContractNode> = {
 		bg: 'leaf',
 		primary: 'leaf',
 		'primary-hover': 'leaf',
-		'primary-scale': {
-			'50': 'leaf', '100': 'leaf', '200': 'leaf', '300': 'leaf', '400': 'leaf',
-			'500': 'leaf', '600': 'leaf', '700': 'leaf', '800': 'leaf', '900': 'leaf',
-			'950': 'leaf',
-		},
+		'primary-bg': 'leaf',
+		'on-primary': 'leaf',
 		surface: {
 			base: 'leaf', hover: 'leaf', active: 'leaf', raised: 'leaf',
 		},

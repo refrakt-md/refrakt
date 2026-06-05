@@ -40,9 +40,9 @@
 }
 
 .rf-on-this-page__item[data-active] {
-	border-left-color: var(--rf-color-primary, #0ea5e9);
+	border-left-color: var(--rf-color-primary);
 }
 
 .rf-on-this-page__item[data-active] a {
-	color: var(--rf-color-primary, #0ea5e9);
+	color: var(--rf-color-primary);
 }

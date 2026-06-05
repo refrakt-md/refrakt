@@ -182,7 +182,7 @@ Themes can style cross-references by entity type using BEM modifier classes:
 .rf-xref--page { /* plain link */ }
 .rf-xref--unresolved {
   text-decoration: underline dashed;
-  color: var(--rf-color-text-muted);
+  color: var(--rf-color-muted);
   cursor: help;
 }
 ```

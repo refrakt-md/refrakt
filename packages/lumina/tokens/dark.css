@@ -13,6 +13,7 @@
 	--rf-color-bg: #1a1a17;
 	--rf-color-primary: #f6f4ef;
 	--rf-color-primary-hover: #d4cfc5;
+	--rf-color-on-primary: #1a1a17;
 
 	--rf-color-surface: #211f1c;
 	--rf-color-surface-hover: #2a2825;
@@ -72,6 +73,7 @@
 		--rf-color-bg: #1a1a17;
 		--rf-color-primary: #f6f4ef;
 		--rf-color-primary-hover: #d4cfc5;
+	--rf-color-on-primary: #1a1a17;
 
 		--rf-color-surface: #211f1c;
 		--rf-color-surface-hover: #2a2825;

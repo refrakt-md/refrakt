@@ -14,7 +14,7 @@
 	display: inline-block;
 	padding: 0.5rem 1rem;
 	background: var(--rf-color-primary);
-	color: #fff;
+	color: var(--rf-color-on-primary);
 	border-radius: var(--rf-radius-md);
 	font-weight: 500;
 	font-size: 0.875rem;

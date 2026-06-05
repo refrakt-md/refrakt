@@ -15,7 +15,7 @@
 	font-weight: 600;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
-	color: var(--rf-color-text-muted, #6b7280);
+	color: var(--rf-color-muted);
 	margin-bottom: 0.75rem;
 }
 .rf-palette__grid {
@@ -49,12 +49,12 @@
 .rf-palette__swatch-value {
 	font-family: var(--rf-font-mono, monospace);
 	font-size: 0.75rem;
-	color: var(--rf-color-text-muted, #6b7280);
+	color: var(--rf-color-muted);
 }
 .rf-palette__swatch-contrast {
 	font-family: var(--rf-font-mono, monospace);
 	font-size: 0.7rem;
-	color: var(--rf-color-text-muted, #6b7280);
+	color: var(--rf-color-muted);
 }
 .rf-palette__swatch-a11y {
 	display: flex;

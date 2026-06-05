@@ -23,6 +23,6 @@
 /* Unresolved reference */
 .rf-xref--unresolved {
 	text-decoration: underline dashed;
-	color: var(--rf-color-text-muted);
+	color: var(--rf-color-muted);
 	cursor: help;
 }

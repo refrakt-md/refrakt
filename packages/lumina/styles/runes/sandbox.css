@@ -33,7 +33,7 @@
 	font-size: 0.8125rem;
 	line-height: 1.25rem;
 	font-weight: 600;
-	color: var(--rf-color-warning-fg, #78350f);
+	color: var(--rf-color-warning);
 	background: var(--rf-color-warning-bg, #fef3c7);
 	border-bottom: 1px solid var(--rf-color-warning, #b45309);
 }
