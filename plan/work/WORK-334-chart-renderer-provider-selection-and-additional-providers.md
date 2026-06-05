@@ -42,9 +42,12 @@ speculatively is the YAGNI trap SPEC-083 warns against.
   posture decision lands that way).
 - [ ] Docs; full suite green.
 
+- [ ] Every provider added here **honors the WORK-353 theming contract** — it reads the `--rf-chart-*` custom properties (palette, geometry, typography/grid) and applies the sentiment colouring convention, so charts stay on-brand regardless of renderer.
+
 ## Dependencies
 
 - {% ref "WORK-333" /%} — the single-provider seam this generalizes.
+- WORK-353 — the theming contract every provider must implement.
 
 ## References
 
