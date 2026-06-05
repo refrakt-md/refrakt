@@ -68,6 +68,34 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--rf-color-text); }
 
+/* ─── Keyboard focus (WORK-352) ─────────────────────────────────────
+ * A uniform, token-driven focus ring on every interactive element, at
+ * zero specificity (`:where`) so a rune's own `:focus-visible` overrides
+ * it. An outline (not box-shadow) follows border-radius and never shifts
+ * layout; `outline-color` uses `primary`, so it is visible in both modes. */
+:where(
+	a[href], button, input, select, textarea, summary,
+	[tabindex]:not([tabindex="-1"]),
+	[role="button"], [role="tab"], [role="link"], [role="menuitem"], [role="menuitemradio"]
+):focus-visible {
+	outline: 2px solid var(--rf-color-primary);
+	outline-offset: 2px;
+}
+
+/* ─── Reduced motion (WORK-352) ─────────────────────────────────────
+ * Honour the user's motion preference across every animated rune
+ * (chart, reveal, juxtapose, accordion, drawer, …) in one place. Uses a
+ * near-zero duration rather than `none` so animation/transition end
+ * events still fire for behaviours that await them. */
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
 h1, h2, h3, h4, h5, h6 {
 	line-height: 1.25;
 	margin-top: 2em;
