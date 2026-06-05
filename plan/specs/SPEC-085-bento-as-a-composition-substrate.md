@@ -118,6 +118,20 @@ media beside the body for wide cells). The default is **derived from cell size**
 small cells stack media on top; large/full cells place it prominently / beside —
 and the explicit attribute overrides.
 
+## Responsive collapse
+
+Collapse is **author-controlled at the grid level**, mirroring `split`:
+`collapse="sm | md | lg | never"` sets the breakpoint at which the grid drops to a
+single stacked column (sensible default), replacing the current hard-coded
+`!important` collapse. Between full grid and stacked, the column count steps down
+progressively and every span **auto-caps via `min(span, current-columns)`**, so
+wide cells degrade gracefully at each step with no per-cell config — and a tied
+row height is rejected precisely because it explodes vertically as columns reduce.
+
+Per-cell breakpoint control is intentionally *not* a per-cell `collapse` trigger
+(cells collapsing at different breakpoints go ragged); the coherent primitive,
+deferred to {% ref "WORK-354" /%}, is **responsive spans** (`cols="4 lg:2 sm:full"`).
+
 ## Signature compositions (drive the design + the docs)
 
 Two compositions define the bento "feel" and are first-class demo targets — both
