@@ -1,84 +1,36 @@
-/* Bento */
-.rf-bento__preamble {
-	flex-direction: column;
-	align-items: flex-start;
-	gap: 0.25rem;
-	margin-bottom: 1.5rem;
-}
-.rf-bento__eyebrow {
-	font-size: 0.8125rem;
-	font-weight: 600;
-	letter-spacing: 0.05em;
-	text-transform: uppercase;
-	color: var(--rf-color-primary);
-	margin: 0 0 0.5rem;
-}
-.rf-bento__eyebrow:has(a) {
-	display: inline-block;
-	position: relative;
-	padding: 0.25rem 0.875rem;
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-full);
-	color: var(--rf-color-text);
-	font-weight: 400;
-	text-transform: none;
-	letter-spacing: 0;
-	transition: border-color 150ms ease;
-}
-.rf-bento__eyebrow:has(a):hover { border-color: var(--rf-color-muted); }
-.rf-bento__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: 600; text-decoration: none; }
-.rf-bento__eyebrow:has(a) a::before { content: ''; position: absolute; inset: 0; border-radius: inherit; }
-.rf-bento__headline {
-	margin-top: 0;
-}
-.rf-bento__blurb {
-	color: var(--rf-color-muted);
-	margin-bottom: 0;
-}
-.rf-bento__image {
-	margin-bottom: 1rem;
-}
+/* Bento — a grid of cells, each a card-in-a-grid-track (SPEC-085). */
 .rf-bento__grid {
 	display: grid;
 	grid-template-columns: repeat(var(--bento-columns, 4), 1fr);
 	gap: var(--bento-gap, 1rem);
 }
+
+/* The cell. `:where()` keeps the background at zero specificity so a per-cell
+ * `{% tint %}` can repaint it (tint-deferrable). */
+:where(.rf-bento-cell) {
+	background: var(--rf-color-surface);
+}
 .rf-bento-cell {
 	border-radius: var(--rf-radius-md);
 	padding: 1.25rem;
-	background: var(--rf-color-surface);
 	overflow: hidden;
+	position: relative; /* anchor for the stretched link */
 }
-.rf-bento-cell--full {
-	grid-column: 1 / -1;
+
+/* Size presets (tile footprint). */
+.rf-bento-cell--full { grid-column: 1 / -1; }
+.rf-bento-cell--large { grid-column: span 2; grid-row: span 2; }
+.rf-bento-cell--medium { grid-column: span 2; }
+.rf-bento-cell--small { grid-column: span 1; }
+.rf-bento-cell--span { grid-column: span var(--cell-span, 1); }
+
+/* Zones. Media sits above the content by default (data-media-position="top");
+ * the WORK-339 media-zone selector sizes/clips any guest — no per-guest CSS. */
+.rf-bento-cell__content {
+	display: block;
 }
-.rf-bento-cell--large {
-	grid-column: span 2;
-	grid-row: span 2;
-}
-.rf-bento-cell--medium {
-	grid-column: span 2;
-}
-.rf-bento-cell--small {
-	grid-column: span 1;
-}
-/* Span mode: heading level determines column span via CSS variable */
-.rf-bento-cell--span {
-	grid-column: span var(--cell-span, 1);
-}
-.rf-bento-cell__icon {
-	margin-bottom: 0.75rem;
-	line-height: 0;
-}
-.rf-bento-cell__icon svg {
-	width: 1.5rem;
-	height: 1.5rem;
-	color: var(--rf-color-primary);
-}
-.rf-bento-cell__icon .rf-icon {
-	width: 1.5rem;
-	height: 1.5rem;
-	color: var(--rf-color-primary);
+.rf-bento-cell__media {
+	margin-bottom: 0.875rem;
 }
 .rf-bento-cell__title {
 	font-size: 1.125rem;
@@ -87,29 +39,39 @@
 }
 .rf-bento-cell__body > span[property],
 .rf-bento-cell__body > meta { display: none; }
+.rf-bento-cell__body > :first-child { margin-top: 0; }
 .rf-bento-cell__body p:last-child { margin-bottom: 0; }
-.rf-bento-cell img {
+.rf-bento-cell__footer {
+	margin-top: 0.75rem;
+	padding-top: 0.5rem;
+	border-top: 1px solid var(--rf-color-border);
+	font-size: 0.8125em;
+	color: var(--rf-color-muted);
+}
+/* A bare image in the body (not a media zone) still fills the width. */
+.rf-bento-cell__body img {
 	width: 100%;
 	height: auto;
 	border-radius: var(--rf-radius-sm);
 	margin-bottom: 0.75rem;
 }
-/* Remove padding on bleed edges when showcase bleeds inside a cell */
+
+/* Whole-cell link — stretched overlay; nested links stay clickable. */
+.rf-bento-cell__link { position: absolute; inset: 0; z-index: 0; }
+.rf-bento-cell a:not(.rf-bento-cell__link) { position: relative; z-index: 1; }
+
+/* Drop padding on bleed edges when a showcase bleeds (clipped to a peek by
+ * the media-zone overflow). */
 .rf-bento-cell:has(.rf-showcase[data-bleed="bottom"]),
 .rf-bento-cell:has(.rf-showcase[data-bleed="both"]),
-.rf-bento-cell:has(.rf-showcase[data-bleed="bottom-end"]) {
-	padding-bottom: 0;
-}
+.rf-bento-cell:has(.rf-showcase[data-bleed="bottom-end"]) { padding-bottom: 0; }
 .rf-bento-cell:has(.rf-showcase[data-bleed="end"]),
 .rf-bento-cell:has(.rf-showcase[data-bleed="bottom-end"]),
-.rf-bento-cell:has(.rf-showcase[data-bleed="top-end"]) {
-	padding-inline-end: 0;
-}
+.rf-bento-cell:has(.rf-showcase[data-bleed="top-end"]) { padding-inline-end: 0; }
 .rf-bento-cell:has(.rf-showcase[data-bleed="top"]),
 .rf-bento-cell:has(.rf-showcase[data-bleed="both"]),
-.rf-bento-cell:has(.rf-showcase[data-bleed="top-end"]) {
-	padding-top: 0;
-}
+.rf-bento-cell:has(.rf-showcase[data-bleed="top-end"]) { padding-top: 0; }
+
 @media (max-width: 768px) {
 	.rf-bento__grid { grid-template-columns: repeat(2, 1fr) !important; }
 	.rf-bento-cell--full { grid-column: 1 / -1; }

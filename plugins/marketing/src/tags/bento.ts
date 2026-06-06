@@ -1,123 +1,150 @@
 import Markdoc from '@markdoc/markdoc';
-import type { Node, Tag as TagType, RenderableTreeNode } from '@markdoc/markdoc';
+import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, RenderableNodeCursor, pageSectionProperties, asNodes } from '@refrakt-md/runes';
+import { createComponentRenderable, createContentModelSchema, RenderableNodeCursor, asNodes } from '@refrakt-md/runes';
 
-/** Check if a node is a paragraph containing an icon tag. */
-function isIconParagraph(node: Node): boolean {
-	if (node.type !== 'paragraph') return false;
-	return Array.from(node.walk()).some(c => c.type === 'tag' && c.tag === 'icon');
+/** Uniform outline level for every cell title — cells are siblings in the grid,
+ *  so their titles share one heading level (and one visual size), regardless of
+ *  the input heading level (which only drives tile size). */
+const CELL_TITLE_LEVEL = 3;
+
+/** Split a node list on top-level `hr` (`---`) into zones. */
+function splitZones(nodes: Node[]): Node[][] {
+	const zones: Node[][] = [[]];
+	for (const n of nodes) {
+		if (n.type === 'hr') zones.push([]);
+		else zones[zones.length - 1].push(n);
+	}
+	return zones;
 }
 
-/** Split children into icon paragraphs and body content. */
-function splitBentoCellChildren(nodes: unknown[]): unknown[] {
-	// Pass through — splitting happens in transform
-	return nodes as Node[];
+/** Map hr-delimited zones to media / body / footer by count, mirroring `card`:
+ *  1 → body; 2 → media + body; 3+ → media + body… + footer. */
+function zoneRoles(zones: Node[][]): { media: Node[]; body: Node[]; footer: Node[] } {
+	if (zones.length === 1) return { media: [], body: zones[0], footer: [] };
+	if (zones.length === 2) return { media: zones[0], body: zones[1], footer: [] };
+	return { media: zones[0], footer: zones[zones.length - 1], body: zones.slice(1, -1).flat() };
 }
 
 export const bentoCell = createContentModelSchema({
 	attributes: {
-		name: { type: String, required: false },
 		size: { type: String, required: false },
 		span: { type: String, required: false },
+		mediaPosition: { type: String, required: false },
+		href: { type: String, required: false },
 	},
 	contentModel: {
-		type: 'custom',
-		processChildren: splitBentoCellChildren,
-		description: 'A bento cell: optional leading image, icon rune, or emoji-only paragraph becomes the cell\'s visual element. Remaining content (headings, paragraphs, lists) becomes the cell body, rendered below or beside the visual depending on the cell\'s size.',
+		type: 'sequence',
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
-		const allChildren = asNodes(resolved.children);
+		const all = asNodes(resolved.body);
 
-		// Split into icon paragraphs and body content
-		const iconNodes: Node[] = [];
-		const bodyNodes: Node[] = [];
-		for (const node of allChildren) {
-			if (isIconParagraph(node)) {
-				iconNodes.push(node);
-			} else {
-				bodyNodes.push(node);
-			}
+		// The leading heading (the cell's generating heading, or an author-written
+		// one) is the title — rendered at a uniform level, not the input level.
+		let titleNode: Node | undefined;
+		let rest = all;
+		if (all[0]?.type === 'heading') {
+			titleNode = all[0];
+			titleNode.attributes = { ...titleNode.attributes, level: CELL_TITLE_LEVEL };
+			rest = all.slice(1);
 		}
 
-		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
-		const sizeMeta = new Tag('meta', { content: attrs.size ?? 'small' });
+		// The remainder splits on `---` into media / body / footer, like card.
+		const { media, body, footer } = zoneRoles(splitZones(rest));
 
-		// Transform icon paragraphs, extracting just the icon tag
-		const iconRendered: RenderableTreeNode[] = [];
-		for (const node of iconNodes) {
-			const iconTag = Array.from(node.walk()).find(n => n.type === 'tag' && n.tag === 'icon');
-			if (iconTag) {
-				iconRendered.push(Markdoc.transform(iconTag, config) as RenderableTreeNode);
-			} else {
-				iconRendered.push(Markdoc.transform(node, config) as RenderableTreeNode);
-			}
-		}
-		const iconContent = new RenderableNodeCursor(iconRendered);
+		const children: RenderableTreeNode[] = [];
+		const refs: Record<string, any> = {};
+		const properties: Record<string, any> = {};
 
-		const body = new RenderableNodeCursor(
-			Markdoc.transform(bodyNodes, config) as RenderableTreeNode[],
-		).wrap('div');
-		const hasIcon = iconContent.count() > 0;
-
-		const properties: Record<string, any> = { name: nameTag, size: sizeMeta };
-		const refs: Record<string, RenderableNodeCursor<TagType>> = { body: body.tag('div') };
-		const children: any[] = [];
-
-		if (hasIcon) {
-			const iconWrapper = iconContent.wrap('div');
-			properties.iconSource = iconContent.tags('svg', 'span');
-			refs.icon = iconWrapper;
-			children.push(iconWrapper.next());
-		}
-
-		children.push(nameTag, sizeMeta);
-
+		// size / span ride as field-bag properties (drive the grid; see WORK-348).
+		const sizeMeta = new Tag('meta', { content: attrs.size ?? 'medium' });
+		properties.size = sizeMeta;
+		children.push(sizeMeta);
 		if (attrs.span) {
-			const spanMeta = new Tag('meta', { content: attrs.span });
+			const spanMeta = new Tag('meta', { content: String(attrs.span) });
 			properties.span = spanMeta;
 			children.push(spanMeta);
 		}
 
-		children.push(body.next());
+		// Media zone — clipped/sized by the shared media-zone selector (WORK-339);
+		// no bento-specific per-guest CSS.
+		if (media.length > 0) {
+			const mediaInner = new RenderableNodeCursor(
+				Markdoc.transform(media, config) as RenderableTreeNode[],
+			).toArray() as RenderableTreeNode[];
+			const mediaDiv = new Tag('div', { 'data-section': 'media', 'data-name': 'media' }, mediaInner);
+			refs.media = mediaDiv;
+			children.push(mediaDiv);
+		}
 
-		return createComponentRenderable({ rune: 'bento-cell',
+		// Content zone — title + body (+ footer). One wrapper so the layout can
+		// place media beside / above it (WORK-348).
+		const contentInner: RenderableTreeNode[] = [];
+		let titleTag: InstanceType<typeof Tag> | undefined;
+		if (titleNode) {
+			const t = new RenderableNodeCursor(
+				Markdoc.transform([titleNode], config) as RenderableTreeNode[],
+			).toArray()[0];
+			if (Markdoc.Tag.isTag(t)) { titleTag = t; contentInner.push(t); }
+		}
+		const bodyInner = new RenderableNodeCursor(
+			Markdoc.transform(body, config) as RenderableTreeNode[],
+		).toArray() as RenderableTreeNode[];
+		const bodyDiv = new Tag('div', { 'data-name': 'body' }, bodyInner);
+		contentInner.push(bodyDiv);
+
+		let footerTag: InstanceType<typeof Tag> | undefined;
+		if (footer.length > 0) {
+			const footerInner = new RenderableNodeCursor(
+				Markdoc.transform(footer, config) as RenderableTreeNode[],
+			).toArray() as RenderableTreeNode[];
+			footerTag = new Tag('footer', { 'data-name': 'footer' }, footerInner);
+			contentInner.push(footerTag);
+		}
+
+		const contentDiv = new Tag('div', { 'data-name': 'content' }, contentInner);
+		refs.content = contentDiv;
+		if (titleTag) refs.title = titleTag;
+		refs.body = bodyDiv;
+		if (footerTag) refs.footer = footerTag;
+		children.push(contentDiv);
+
+		// Whole-cell link (stretched overlay; nested links stay clickable).
+		const href = String(attrs.href ?? '');
+		let linkTag: InstanceType<typeof Tag> | undefined;
+		if (href) {
+			linkTag = new Tag('a', { 'data-name': 'link', href, 'aria-hidden': 'true', tabindex: '-1' }, []);
+			refs.link = linkTag;
+			children.push(linkTag);
+		}
+
+		const node = createComponentRenderable({
+			rune: 'bento-cell',
 			tag: 'div',
 			properties,
 			refs,
 			children,
 		});
+		// Author-controlled media placement (default top); the cell is the
+		// same `data-media-position` contract as card.
+		(node as any).attributes = { ...(node as any).attributes, 'data-media-position': attrs.mediaPosition ?? 'top' };
+		return node;
 	},
 });
 
 function tieredSize(headingLevel: number, level: number): string {
 	const diff = level - headingLevel;
-	if (headingLevel === 1) {
-		if (diff === 0) return 'full';
-		if (diff === 1) return 'large';
-		if (diff === 2) return 'medium';
-		return 'small';
-	}
 	if (diff === 0) return 'large';
 	if (diff === 1) return 'medium';
 	return 'small';
 }
 
-function spanForLevel(level: number, columns: number): number {
-	return Math.max(1, Math.min(columns, columns + 1 - level));
-}
-
-function convertHeadings(
-	nodes: Node[],
-	headingLevel: number,
-	sizing: string,
-	columns: number,
-): Node[] {
-	const baseLevel = headingLevel;
-	const isSpanMode = sizing === 'span';
-	// In span mode, default to 6 columns (matches 6 heading levels)
-	const effectiveColumns = isSpanMode && columns === 4 ? 6 : columns;
-
+/** Convert headings into bento-cell tags. The heading *level* sets tile size
+ *  (tiered); the heading itself becomes the cell title (kept, prepended to the
+ *  cell content). Content before the first heading is returned as-is — bento is
+ *  a grid primitive, not a page-section, so there is no preamble chrome. */
+function convertHeadings(nodes: Node[], baseLevel: number): Node[] {
 	const preamble: Node[] = [];
 	const cells: Node[] = [];
 	let currentHeading: Node | null = null;
@@ -127,27 +154,15 @@ function convertHeadings(
 	const flush = () => {
 		if (currentHeading) {
 			const level = currentHeading.attributes?.level ?? baseLevel;
-			const name = Array.from(currentHeading.walk())
-				.filter(n => n.type === 'text')
-				.map(t => t.attributes.content).join(' ');
-
-			const iconTag = Array.from(currentHeading.walk()).find(n => n.type === 'tag' && n.tag === 'icon');
-			const cellChildren = iconTag
-				? [new Ast.Node('paragraph', {}, [iconTag]), ...currentChildren]
-				: [...currentChildren];
-
-			if (isSpanMode) {
-				const spanValue = spanForLevel(level, effectiveColumns);
-				cells.push(new Ast.Node('tag', { name, size: 'span', span: String(spanValue) }, cellChildren, 'bento-cell'));
-			} else {
-				const size = tieredSize(baseLevel, level);
-				cells.push(new Ast.Node('tag', { name, size }, cellChildren, 'bento-cell'));
-			}
+			const size = tieredSize(baseLevel, level);
+			// Keep the heading as the cell title (the cell normalizes its level).
+			const cellChildren = [currentHeading, ...currentChildren];
+			cells.push(new Ast.Node('tag', { size }, cellChildren, 'bento-cell'));
 		}
 	};
 
 	for (const node of nodes) {
-		if (node.type === 'heading' && node.attributes.level >= baseLevel) {
+		if (node.type === 'heading' && (node.attributes.level ?? baseLevel) >= baseLevel) {
 			seenFirstCellHeading = true;
 			flush();
 			currentHeading = node;
@@ -167,64 +182,50 @@ export const bento = createContentModelSchema({
 	attributes: {
 		gap: { type: String, required: false, description: 'Space between grid cells (CSS length value)' },
 		columns: { type: Number, required: false, description: 'Number of columns in the bento grid' },
-		sizing: { type: String, required: false, matches: ['tiered', 'span'], description: 'Cell sizing mode: tiered assigns sizes by heading depth, span sets column span' },
 	},
-	contentModel: (attrs) => ({
+	contentModel: {
 		type: 'custom' as const,
-		processChildren: (nodes) => convertHeadings(
-			nodes as Node[],
-			2,
-			attrs.sizing ?? 'tiered',
-			attrs.columns ?? 4,
-		),
-		description: 'Converts headings to bento grid cells with size based on heading level. Supports tiered sizing (large/medium/small) and span mode (column span based on level).',
-	}),
+		processChildren: (nodes) => convertHeadings(nodes as Node[], 2),
+		description: 'Converts headings into bento grid cells (tile size from heading depth). A grid primitive — no page-section preamble. Explicit {% bento-cell %} authoring is supported.',
+	},
 	transform(resolved, attrs, config) {
 		const allChildren = asNodes(resolved.children);
 
-		// Separate header content (pre-heading paragraphs) from cell tag nodes
-		const headerAst: Node[] = [];
+		// Cells (bento-cell tags) vs any stray pre-grid content.
+		const leadAst: Node[] = [];
 		const cellAst: Node[] = [];
 		for (const child of allChildren) {
-			if (child.type === 'tag' && (child as any).tag === 'bento-cell') {
-				cellAst.push(child);
-			} else {
-				headerAst.push(child);
-			}
+			if (child.type === 'tag' && (child as any).tag === 'bento-cell') cellAst.push(child);
+			else leadAst.push(child);
 		}
 
-		const header = new RenderableNodeCursor(
-			Markdoc.transform(headerAst, config) as RenderableTreeNode[],
+		const lead = new RenderableNodeCursor(
+			Markdoc.transform(leadAst, config) as RenderableTreeNode[],
 		);
 		const cellStream = new RenderableNodeCursor(
 			Markdoc.transform(cellAst, config) as RenderableTreeNode[],
 		);
 
-		const sizing = (attrs.sizing as string) ?? 'tiered';
 		const columns = (attrs.columns as number) ?? 4;
-		const effectiveColumns = sizing === 'span' && columns === 4 ? 6 : columns;
-
 		const gapMeta = new Tag('meta', { content: (attrs.gap as string) ?? '1rem' });
-		const columnsMeta = new Tag('meta', { content: String(effectiveColumns) });
-		const sizingMeta = new Tag('meta', { content: sizing });
+		const columnsMeta = new Tag('meta', { content: String(columns) });
 
 		const cells = cellStream.tag('div').typeof('BentoCell');
 		const grid = cells.wrap('div');
 
-		const children = header.count() > 0
-			? [header.wrap('header').next(), gapMeta, columnsMeta, sizingMeta, grid.next()]
-			: [gapMeta, columnsMeta, sizingMeta, grid.next()];
+		const children: RenderableTreeNode[] = [gapMeta, columnsMeta];
+		if (lead.count() > 0) children.push(...lead.toArray() as RenderableTreeNode[]);
+		children.push(grid.next());
 
-		return createComponentRenderable({ rune: 'bento',
+		return createComponentRenderable({
+			rune: 'bento',
 			tag: 'section',
-			property: 'contentSection',
 			properties: {
 				gap: gapMeta,
 				columns: columnsMeta,
-				sizing: sizingMeta,
 				cell: cells,
 			},
-			refs: { ...pageSectionProperties(header), grid },
+			refs: { grid },
 			children,
 		});
 	},

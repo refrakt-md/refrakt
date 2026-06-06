@@ -1332,39 +1332,6 @@
 					"default": "1rem",
 					"classPattern": ".rf-bento--{value}",
 					"dataAttribute": "data-gap"
-				},
-				"sizing": {
-					"source": "meta",
-					"default": "tiered",
-					"classPattern": ".rf-bento--{value}",
-					"dataAttribute": "data-sizing"
-				}
-			},
-			"elements": {
-				"preamble": {
-					"tag": "header",
-					"selector": ".rf-bento__preamble",
-					"source": "autoLabel"
-				},
-				"eyebrow": {
-					"tag": "eyebrow",
-					"selector": ".rf-bento__eyebrow",
-					"source": "autoLabel"
-				},
-				"headline": {
-					"tag": "headline",
-					"selector": ".rf-bento__headline",
-					"source": "autoLabel"
-				},
-				"blurb": {
-					"tag": "blurb",
-					"selector": ".rf-bento__blurb",
-					"source": "autoLabel"
-				},
-				"image": {
-					"tag": "image",
-					"selector": ".rf-bento__image",
-					"source": "autoLabel"
 				}
 			},
 			"inlineStyles": {
@@ -1391,13 +1358,6 @@
 				"span": {
 					"source": "meta",
 					"dataAttribute": "data-span"
-				}
-			},
-			"elements": {
-				"title": {
-					"tag": "name",
-					"selector": ".rf-bento-cell__title",
-					"source": "autoLabel"
 				}
 			},
 			"inlineStyles": {

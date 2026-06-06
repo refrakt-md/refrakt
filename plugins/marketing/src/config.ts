@@ -39,18 +39,14 @@ export const config: Record<string, RuneConfig> = {
 		block: 'bento',
 		defaultDensity: 'full',
 		childDensity: 'compact',
-		sections: { preamble: 'preamble', headline: 'title', blurb: 'description' },
 		modifiers: {
 			columns: { source: 'meta', default: '4' },
 			gap: { source: 'meta', default: '1rem' },
-			sizing: { source: 'meta', default: 'tiered' },
 		},
 		styles: {
 			columns: '--bento-columns',
 			gap: '--bento-gap',
 		},
-		autoLabel: pageSectionAutoLabel,
-		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' },
 	},
 	BentoCell: {
 		block: 'bento-cell',
@@ -62,8 +58,7 @@ export const config: Record<string, RuneConfig> = {
 		styles: {
 			span: '--cell-span',
 		},
-		autoLabel: { name: 'title' },
-		editHints: { title: 'inline', icon: 'icon' },
+		editHints: { title: 'inline' },
 	},
 	Feature: {
 		block: 'feature',

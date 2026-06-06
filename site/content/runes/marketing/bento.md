@@ -43,7 +43,6 @@ Another small cell sits neatly in the grid.
 |-----------|------|---------|-------------|
 | `columns` | `number` | `4` | Number of grid columns |
 | `gap` | `string` | `1rem` | Grid gap |
-| `sizing` | `string` | `tiered` | Size mode: `tiered` (named sizes) or `span` (heading level = column span) |
 
 ## Cell sizes
 
@@ -55,56 +54,7 @@ In tiered mode, heading levels map to cell sizes:
 | h3 | `medium` | 2 columns |
 | h4+ | `small` | 1 column |
 
-## Span mode
-
-Set `sizing="span"` to map heading levels directly to column spans. The column span is the inverse of the heading level: h1 spans the most columns, h6 spans 1. Defaults to a 6-column grid so every heading level gets a distinct span.
-
-| Heading | Span (6-col grid) |
-|---------|--------------------|
-| h1 | 6 columns |
-| h2 | 5 columns |
-| h3 | 4 columns |
-| h4 | 3 columns |
-| h5 | 2 columns |
-| h6 | 1 column |
-
-The formula is `columns + 1 - level`, clamped to `[1, columns]`. Custom column counts adjust the spans proportionally.
-
-{% preview source=true %}
-
-{% bento sizing="span" %}
-# Hero Feature
-
-Stretches across all 6 columns.
-
-## Key Highlight
-
-Five columns of prominence.
-
-### Section
-
-Four columns wide.
-
-#### Detail
-
-Three columns.
-
-##### Note
-
-Two columns.
-
-###### Tag
-
-One column.
-{% /bento %}
-
-{% /preview %}
-
-## Section header
-
-Bento supports an optional eyebrow, headline, and blurb above the section above the grid. Place a short paragraph or heading before the main content to use them. See [Page sections](/extend/rune-authoring/page-sections) for the full syntax.
-
-### Common attributes
+## Common attributes
 
 All block runes share these attributes for layout and theming.
 
