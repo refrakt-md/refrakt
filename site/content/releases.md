@@ -6,7 +6,21 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.18.0
+## v0.19.0
+
+- Composability foundation (SPEC-084) — v0.19.0 batch B.
+- **Media-zone guest adaptation.** Replaced Lumina's name-enumerated media allow-list with one **name-agnostic** rule: any visual rune dropped into a `[data-section="media"]` slot is sized, clipped, rounded, and given a container-query context (so intrinsically responsive guests like `mockup` auto-scale). Guests that manage their own bleed (`preview`, `juxtapose`, a bleeding `showcase`) self-declare an opt-out. Covers `card`/`feature`/`hero`/`recipe` with one rule.
+- **`requiresParent` nesting validation.** New self-declared `RuneConfig.requiresParent` (distinct from the advisory `parent`). The identity transform validates it at build time — a rune that opts in must have the named parent as its nearest ancestor rune, else it's reported: an **error** for structurally-meaningless children (accordion-item, tab, step, tier, map-pin, …), a **warning** otherwise. Opt-in, so standalone-capable runes (`track`) are never flagged. No container-side allow-list.
+- **Context-modifier audit.** Removed the one nonsensical pairing (Hero `→ in-feature`); every remaining context modifier has CSS coverage. `refrakt inspect --audit` reports context-modifier coverage, and `inspect` now surfaces a rune's `requiresParent`.
+- **Docs.** A new composability authoring guide documents the open-world contract.
+- Lumina polish: token hygiene, dark parity, theme-aware chrome, and a11y (v0.19.0 batch A).
+- **Token hygiene.** Reconciled seven phantom colour tokens that were painting stale literal fallbacks (the out-of-place blue and cold-gray muted text): `text-muted`→`muted`, `heading`→`text`, `accent`→`primary`, `background`→`bg`, `border-light`→`border`, `warning-fg`→`warning`. Added a derived `--rf-color-primary-bg` (tracks `primary` in both modes) and a mode-flipped `--rf-color-on-primary` (fixes invisible white text on the light dark-mode primary).
+- **Breaking (theme authors):** the misnamed `--rf-color-primary-50…950` ramp and the `PrimaryScale` type are **removed** — it was a warm-neutral scale mislabelled "primary" with almost no consumers. Set `--rf-color-primary` directly; `primary-bg` derives from it.
+- **Dark parity.** Verified every absolute token has a dark override; the remaining four are intentionally shared (derived from mode-aware tokens), now annotated.
+- **Theme-aware chrome.** Branded `::selection`, token-driven scrollbars, and `color-scheme` per mode so native chrome (including the main scrollbar) follows the theme.
+- **Accessibility.** A uniform `:focus-visible` ring across all interactive elements and a global `prefers-reduced-motion` reset.
+
+## v0.18.0 - June 3, 2026
 
 - Remove the legacy `slots` + `structure` assembly shim from the identity transform engine (SPEC-079 phase 3).
 - **Breaking for third-party themes/plugins that still declare `RuneConfig.slots`.** Every first-party rune migrated to the SPEC-080 `metaFields` + `blocks` + `layout` model across v0.17.0, and the deprecation warning shipped for a full minor release. This release removes:
