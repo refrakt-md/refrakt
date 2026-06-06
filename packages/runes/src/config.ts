@@ -49,7 +49,7 @@ export const coreConfig: ThemeConfig = {
 		// ─── Simple runes (block name only, engine adds BEM classes) ───
 
 		Accordion: { block: 'accordion', defaultDensity: 'full', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
-		AccordionItem: { block: 'accordion-item', parent: 'Accordion', rootAttributes: { 'data-state': 'closed' }, autoLabel: { name: 'header' }, editHints: { header: 'inline', body: 'none' } },
+		AccordionItem: { block: 'accordion-item', parent: 'Accordion', requiresParent: 'Accordion', rootAttributes: { 'data-state': 'closed' }, autoLabel: { name: 'header' }, editHints: { header: 'inline', body: 'none' } },
 		Details: { block: 'details', autoLabel: { summary: 'summary' }, editHints: { summary: 'inline', body: 'none' } },
 		Grid: {
 			block: 'grid',
@@ -178,7 +178,7 @@ export const coreConfig: ThemeConfig = {
 				separator: { prop: '--separator', template: '"{}"' },
 			},
 		},
-		BreadcrumbItem: { block: 'breadcrumb-item', parent: 'Breadcrumb' },
+		BreadcrumbItem: { block: 'breadcrumb-item', parent: 'Breadcrumb', requiresParent: 'Breadcrumb' },
 		Blog: {
 			block: 'blog',
 			defaultDensity: 'full',
@@ -462,8 +462,8 @@ export const coreConfig: ThemeConfig = {
 		// ─── Interactive runes (still get BEM classes, components add behavior) ───
 
 		TabGroup: { block: 'tabs', defaultDensity: 'full', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
-		Tab: { block: 'tab', parent: 'TabGroup', rootAttributes: { 'data-state': 'inactive' }, editHints: { name: 'inline' } },
-		TabPanel: { block: 'tab-panel', parent: 'TabGroup', rootAttributes: { 'data-state': 'inactive' } },
+		Tab: { block: 'tab', parent: 'TabGroup', requiresParent: 'TabGroup', rootAttributes: { 'data-state': 'inactive' }, editHints: { name: 'inline' } },
+		TabPanel: { block: 'tab-panel', parent: 'TabGroup', requiresParent: 'TabGroup', rootAttributes: { 'data-state': 'inactive' } },
 		DataTable: {
 			block: 'datatable',
 			defaultDensity: 'compact',
@@ -523,7 +523,7 @@ export const coreConfig: ThemeConfig = {
 			},
 			editHints: { panels: 'none' },
 		},
-		JuxtaposePanel: { block: 'juxtapose-panel', parent: 'Juxtapose', rootAttributes: { 'data-state': 'inactive' }, editHints: { body: 'none' } },
+		JuxtaposePanel: { block: 'juxtapose-panel', parent: 'Juxtapose', requiresParent: 'Juxtapose', rootAttributes: { 'data-state': 'inactive' }, editHints: { body: 'none' } },
 		Diagram: {
 			block: 'diagram',
 			defaultDensity: 'compact',

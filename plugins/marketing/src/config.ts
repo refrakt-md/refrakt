@@ -29,7 +29,6 @@ export const config: Record<string, RuneConfig> = {
 			valign: { prop: '--split-valign', transform: resolveValign },
 			gap: { prop: '--split-gap', transform: resolveGap },
 		},
-		contextModifiers: { 'feature': 'in-feature' },
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'hero' },
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
@@ -55,7 +54,7 @@ export const config: Record<string, RuneConfig> = {
 	},
 	BentoCell: {
 		block: 'bento-cell',
-		parent: 'Bento',
+		parent: 'Bento', requiresParent: 'Bento',
 		modifiers: {
 			size: { source: 'meta', default: 'medium' },
 			span: { source: 'meta', noBemClass: true },
@@ -89,11 +88,11 @@ export const config: Record<string, RuneConfig> = {
 		autoLabel: { ...pageSectionAutoLabel, dl: 'definitions' },
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', title: 'inline', description: 'inline', icon: 'icon' },
 	},
-	Definition: { block: 'definition', parent: 'Feature' },
+	Definition: { block: 'definition', parent: 'Feature', requiresParent: 'Feature' },
 	Steps: { block: 'steps', defaultDensity: 'full', sequence: 'numbered', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 	Step: {
 		block: 'step',
-		parent: 'Steps',
+		parent: 'Steps', requiresParent: 'Steps',
 		modifiers: {
 			layout: { source: 'meta', default: 'stacked' },
 			ratio: { source: 'meta', default: '1 1', noBemClass: true },
@@ -110,8 +109,8 @@ export const config: Record<string, RuneConfig> = {
 		editHints: { content: 'none', media: 'image' },
 	},
 	Pricing: { block: 'pricing', defaultDensity: 'full', defaultWidth: 'full', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
-	Tier: { block: 'tier', parent: 'Pricing', editHints: { name: 'inline', price: 'inline' } },
-	FeaturedTier: { block: 'tier', parent: 'Pricing', staticModifiers: ['featured'], editHints: { name: 'inline', price: 'inline' } },
+	Tier: { block: 'tier', parent: 'Pricing', requiresParent: 'Pricing', editHints: { name: 'inline', price: 'inline' } },
+	FeaturedTier: { block: 'tier', parent: 'Pricing', requiresParent: 'Pricing', staticModifiers: ['featured'], editHints: { name: 'inline', price: 'inline' } },
 	Testimonial: {
 		block: 'testimonial',
 		defaultDensity: 'compact',

@@ -124,8 +124,18 @@ export interface RuneConfig {
 	block: string;
 
 	/** Parent rune typeof name for grouping in editors.
-	 *  E.g., BentoCell sets parent: 'Bento' so they appear as one group. */
+	 *  E.g., BentoCell sets parent: 'Bento' so they appear as one group.
+	 *  Advisory only — a rune may declare a typical `parent` yet still be valid
+	 *  standalone (e.g. `track`). Use `requiresParent` for a hard constraint. */
 	parent?: string;
+
+	/** SPEC-084 — self-declared hard nesting requirement: this rune is only
+	 *  meaningful inside the named parent rune (PascalCase typeof). The engine
+	 *  validates it (warning by default; error for the structurally-meaningless
+	 *  set) when the rune appears without that parent as its nearest ancestor
+	 *  rune. Open-world: a rune is validated only if it opts in here — there is
+	 *  no container-side allow-list. */
+	requiresParent?: string;
 
 	/** Modifier sources — maps modifier name to where to read it from */
 	modifiers?: Record<string, {

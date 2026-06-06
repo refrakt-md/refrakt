@@ -43,34 +43,49 @@
 
 /* ─── Media zone base styles ──────────────────────────────────────── */
 
-/* Clip overflow + round corners when the media zone holds media-like
-   content: an image, or a self-contained block rune that wants the same
-   "fills the slot" treatment (codegroup, snippet, chart, sandbox). Anything
-   else keeps overflow visible so interactive bleed effects (preview,
-   juxtapose) still work. Add new rune-typed media here when they should
-   participate in the same chrome. */
-[data-section="media"]:where(
-  :has(> img),
-  :has(> [data-rune="code-group"]),
-  :has(> [data-rune="snippet"]),
-  :has(> [data-rune="chart"]),
-  :has(> [data-rune="sandbox"])
-) {
-  border-radius: var(--rf-radius-lg);
+/* Media-zone guest adaptation (WORK-339 / SPEC-084). The container adapts the
+   slot name-agnostically: any visual guest fills the zone, and the zone clips,
+   rounds, and becomes a container-query context — so a tall guest scales/clips
+   instead of ballooning, and intrinsically responsive guests (e.g. `mockup`'s
+   `cqi` auto-scale) resolve against the slot. Guests that manage their own
+   bleed / interactive chrome (preview, juxtapose, an explicitly-bleeding
+   showcase) self-declare an opt-out below so their displacement isn't clipped. */
+[data-section="media"] {
+  container-type: inline-size;
   overflow: hidden;
+  border-radius: var(--rf-radius-lg);
 }
-[data-section="media"] > :where(
-  img,
-  [data-rune="code-group"],
-  [data-rune="snippet"],
-  [data-rune="chart"],
-  [data-rune="sandbox"]
-) {
+[data-section="media"] > * {
   display: block;
   width: 100%;
-  height: auto;
-  border-radius: var(--rf-radius-lg);
+  max-height: 100%;
+  border-radius: inherit;
   margin: 0;
+}
+[data-section="media"] > :is(img, video) {
+  height: 100%;
+  object-fit: cover;
+}
+[data-section="media"]:is(
+  :has(> [data-rune="preview"]),
+  :has(> [data-rune="juxtapose"]),
+  :has(> .rf-showcase[data-bleed]:not(.rf-showcase--in-bento-cell))
+) {
+  overflow: visible;
+  container-type: normal;
+  border-radius: 0;
+}
+/* …and let those self-managing guests keep their intrinsic width/sizing: the
+   generic `width: 100%` above would defeat a negative-margin breakout (e.g.
+   `preview--in-feature` bleeding to the viewport edge on mobile). */
+[data-section="media"]:is(
+  :has(> [data-rune="preview"]),
+  :has(> [data-rune="juxtapose"]),
+  :has(> .rf-showcase[data-bleed]:not(.rf-showcase--in-bento-cell))
+) > * {
+  width: auto;
+  max-height: none;
+  border-radius: 0;
 }
 
 /* Split layout images get subtle depth. Block runes carry their own visual

@@ -20,6 +20,7 @@ tint-lock: false
 - rune-authoring/authoring-overview
 - rune-authoring/content-models
 - rune-authoring/output-contract
+- rune-authoring/composability
 - rune-authoring/patterns
 - rune-authoring/partials
 - rune-authoring/page-sections
