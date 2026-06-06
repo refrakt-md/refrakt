@@ -100,9 +100,11 @@
 	margin: 0;
 }
 
-/* Media zone — domain-specific overrides (base styles in split.css) */
+/* Media zone — base sizing/clip come from the shared [data-section="media"]
+ * rule in split.css. The image matches the recipe card radius (--rf-radius-md)
+ * so it never reads as more rounded than the card it sits in. */
 .rf-recipe__media img {
-	border-radius: var(--rf-radius-lg);
+	border-radius: var(--rf-radius-md);
 }
 
 /* Metadata — prep / cook / serves / difficulty are short, symmetric facts,

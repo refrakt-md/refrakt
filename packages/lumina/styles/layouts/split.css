@@ -53,7 +53,9 @@
 [data-section="media"] {
   container-type: inline-size;
   overflow: hidden;
-  border-radius: var(--rf-radius-lg);
+  /* Match the card-family container radius (--rf-radius-md) so media (images,
+     etc.) never reads as more rounded than the card it sits in. */
+  border-radius: var(--rf-radius-md);
 }
 [data-section="media"] > * {
   display: block;

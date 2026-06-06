@@ -57,17 +57,21 @@ A cell's content splits on a top-level `---` into **media / body / footer** zone
 {% preview source=true %}
 
 {% bento columns=6 %}
-## Config tile
+### Coral reef
 
-{% codegroup %}
-```yaml title="refrakt.config.ts"
-theme: '@refrakt-md/lumina'
-```
-{% /codegroup %}
+![A coral reef teeming with life](https://assets.refrakt.md/figure-coral-reef.jpg)
 
 ---
 
-The fenced block above sits in the cell's media zone; this paragraph is the body.
+Teeming with life beneath turquoise waters — the image fills the cell's media zone.
+
+### Hot springs
+
+![Volcanic hot springs](https://assets.refrakt.md/figure-hot-springs.jpg)
+
+---
+
+Steam rising from the Icelandic highlands.
 {% /bento %}
 
 {% /preview %}
