@@ -40,8 +40,9 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		childDensity: 'compact',
 		modifiers: {
-			columns: { source: 'meta', default: '4' },
-			gap: { source: 'meta', default: '1rem' },
+			columns: { source: 'meta', default: '6', noBemClass: true },
+			gap: { source: 'meta', default: '1rem', noBemClass: true },
+			collapse: { source: 'meta', noBemClass: true },
 		},
 		styles: {
 			columns: '--bento-columns',
@@ -52,11 +53,13 @@ export const config: Record<string, RuneConfig> = {
 		block: 'bento-cell',
 		parent: 'Bento', requiresParent: 'Bento',
 		modifiers: {
-			size: { source: 'meta', default: 'medium' },
-			span: { source: 'meta', noBemClass: true },
+			size: { source: 'meta', default: 'medium', noBemClass: true },
+			cols: { source: 'meta', noBemClass: true },
+			rows: { source: 'meta', noBemClass: true },
 		},
 		styles: {
-			span: '--cell-span',
+			cols: '--cell-cols',
+			rows: '--cell-rows',
 		},
 		editHints: { title: 'inline' },
 	},

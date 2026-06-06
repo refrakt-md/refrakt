@@ -24,15 +24,15 @@ content
     const tag = bentoOf(`{% bento %}
 ## Large
 
-Large content.
+L.
 
 ### Medium
 
-Medium content.
+M.
 
 #### Small
 
-Small content.
+S.
 {% /bento %}`);
     const cells = cellsOf(tag!);
     expect(cells.length).toBe(3);
@@ -54,14 +54,44 @@ Body text.
     expect(JSON.stringify(title)).toContain('My Tile');
   });
 
+  it('size presets resolve to proportional cols/rows on the default 6-col grid', () => {
+    const tag = bentoOf(`{% bento %}
+## Large
+
+L.
+
+### Medium
+
+M.
+
+#### Small
+
+S.
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    // large = ⅔×2, medium = ½, small = ⅓  →  4/3/2 @ 6 cols
+    expect(fields(cells[0]).cols).toBe('4');
+    expect(fields(cells[0]).rows).toBe('2');
+    expect(fields(cells[1]).cols).toBe('3');
+    expect(fields(cells[2]).cols).toBe('2');
+  });
+
+  it('presets stay proportional at a non-default column count', () => {
+    const tag = bentoOf(`{% bento columns=12 %}
+## Large
+
+L.
+{% /bento %}`);
+    expect(fields(cellsOf(tag!)[0]).cols).toBe('8'); // ⅔ of 12
+  });
+
   it('cell content lands in a data-name=body zone', () => {
     const tag = bentoOf(`{% bento %}
 ## T
 
 Hello body.
 {% /bento %}`);
-    const cell = cellsOf(tag!)[0];
-    const body = findTag(cell, t => t.attributes?.['data-name'] === 'body');
+    const body = findTag(cellsOf(tag!)[0], t => t.attributes?.['data-name'] === 'body');
     expect(body).toBeDefined();
     expect(JSON.stringify(body)).toContain('Hello body');
   });
@@ -74,21 +104,26 @@ Hello body.
 
 ---
 
-Caption under the media.
+Caption.
 {% /bento %}`);
-    const cell = cellsOf(tag!)[0];
-    const media = findTag(cell, t => t.attributes?.['data-section'] === 'media');
+    const media = findTag(cellsOf(tag!)[0], t => t.attributes?.['data-section'] === 'media');
     expect(media).toBeDefined();
     expect(findTag(media!, t => t.name === 'img')).toBeDefined();
   });
 
-  it('cells carry data-media-position (default top)', () => {
+  it('media-position default is size-derived (small → top, large → start)', () => {
     const tag = bentoOf(`{% bento %}
-## T
+## Large
 
-x
+L.
+
+#### Small
+
+S.
 {% /bento %}`);
-    expect(cellsOf(tag!)[0].attributes['data-media-position']).toBe('top');
+    const cells = cellsOf(tag!);
+    expect(cells[0].attributes['data-media-position']).toBe('start'); // large
+    expect(cells[1].attributes['data-media-position']).toBe('top');   // small
   });
 
   it('a trailing `---` zone becomes a footer', () => {
@@ -105,7 +140,16 @@ main body
 
 footer meta
 {% /bento %}`);
-    const cell = cellsOf(tag!)[0];
-    expect(findTag(cell, t => t.name === 'footer' && t.attributes?.['data-name'] === 'footer')).toBeDefined();
+    expect(findTag(cellsOf(tag!)[0], t => t.name === 'footer' && t.attributes?.['data-name'] === 'footer')).toBeDefined();
+  });
+
+  it('the grid carries the columns + collapse contract', () => {
+    const tag = bentoOf(`{% bento columns=6 collapse="lg" %}
+## A
+
+x
+{% /bento %}`);
+    expect(fields(tag).columns).toBe('6');
+    expect(fields(tag).collapse).toBe('lg');
   });
 });

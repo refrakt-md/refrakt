@@ -1,8 +1,24 @@
 /* Bento — a grid of cells, each a card-in-a-grid-track (SPEC-085). */
 .rf-bento__grid {
+	/* Effective column count: the author's `--bento-columns` (default 6),
+	 * progressively reduced at breakpoints below. A CSS variable (not the inline
+	 * `--bento-columns`) so the media queries can override it without !important. */
+	--bento-cols-effective: var(--bento-columns, 6);
 	display: grid;
-	grid-template-columns: repeat(var(--bento-columns, 4), 1fr);
+	grid-template-columns: repeat(var(--bento-cols-effective), 1fr);
+	/* Uniform fixed row tracks — never tied to column width (which would explode
+	 * vertically on collapse). Makes row spans meaningful and bounds tall guests
+	 * instead of letting them balloon a row. */
+	grid-auto-rows: var(--rf-bento-row-height, 12rem);
 	gap: var(--bento-gap, 1rem);
+}
+
+/* Cell footprint: resolved `cols`/`rows` spans, auto-capped to the effective
+ * column count so a wide cell never overflows the (reduced) grid. */
+.rf-bento-cell {
+	grid-column: span min(var(--cell-cols, 1), var(--bento-cols-effective, 6));
+	grid-row: span var(--cell-rows, 1);
+	min-width: 0;
 }
 
 /* The cell. `:where()` keeps the background at zero specificity so a per-cell
@@ -15,40 +31,46 @@
 	padding: 1.25rem;
 	overflow: hidden;
 	position: relative; /* anchor for the stretched link */
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
 }
 
-/* Size presets (tile footprint). */
-.rf-bento-cell--full { grid-column: 1 / -1; }
-.rf-bento-cell--large { grid-column: span 2; grid-row: span 2; }
-.rf-bento-cell--medium { grid-column: span 2; }
-.rf-bento-cell--small { grid-column: span 1; }
-.rf-bento-cell--span { grid-column: span var(--cell-span, 1); }
+/* Media placement (data-media-position): top stacks media above content (the
+ * default flow order); bottom flips it; start/end place media beside the body. */
+.rf-bento-cell[data-media-position="bottom"] { flex-direction: column-reverse; }
+.rf-bento-cell[data-media-position="start"] { flex-direction: row; align-items: stretch; }
+.rf-bento-cell[data-media-position="end"] { flex-direction: row-reverse; align-items: stretch; }
+.rf-bento-cell[data-media-position="start"] > .rf-bento-cell__media,
+.rf-bento-cell[data-media-position="end"] > .rf-bento-cell__media {
+	flex: 0 0 42%;
+	margin-bottom: 0;
+	align-self: stretch;
+}
+.rf-bento-cell[data-media-position="start"] > .rf-bento-cell__content,
+.rf-bento-cell[data-media-position="end"] > .rf-bento-cell__content { flex: 1; min-width: 0; }
 
-/* Zones. Media sits above the content by default (data-media-position="top");
- * the WORK-339 media-zone selector sizes/clips any guest — no per-guest CSS. */
-.rf-bento-cell__content {
-	display: block;
-}
-.rf-bento-cell__media {
-	margin-bottom: 0.875rem;
-}
+/* Zones. The WORK-339 media-zone selector sizes/clips any guest — no per-guest
+ * CSS here. */
+.rf-bento-cell__media { margin-bottom: 0.875rem; }
+.rf-bento-cell__content { display: flex; flex-direction: column; min-height: 0; }
 .rf-bento-cell__title {
 	font-size: 1.125rem;
 	font-weight: 600;
 	margin: 0 0 0.5rem;
 }
+.rf-bento-cell__body { min-height: 0; }
 .rf-bento-cell__body > span[property],
 .rf-bento-cell__body > meta { display: none; }
 .rf-bento-cell__body > :first-child { margin-top: 0; }
 .rf-bento-cell__body p:last-child { margin-bottom: 0; }
 .rf-bento-cell__footer {
-	margin-top: 0.75rem;
+	margin-top: auto;
 	padding-top: 0.5rem;
 	border-top: 1px solid var(--rf-color-border);
 	font-size: 0.8125em;
 	color: var(--rf-color-muted);
 }
-/* A bare image in the body (not a media zone) still fills the width. */
 .rf-bento-cell__body img {
 	width: 100%;
 	height: auto;
@@ -61,7 +83,7 @@
 .rf-bento-cell a:not(.rf-bento-cell__link) { position: relative; z-index: 1; }
 
 /* Drop padding on bleed edges when a showcase bleeds (clipped to a peek by
- * the media-zone overflow). */
+ * the media-zone + cell overflow). */
 .rf-bento-cell:has(.rf-showcase[data-bleed="bottom"]),
 .rf-bento-cell:has(.rf-showcase[data-bleed="both"]),
 .rf-bento-cell:has(.rf-showcase[data-bleed="bottom-end"]) { padding-bottom: 0; }
@@ -72,17 +94,16 @@
 .rf-bento-cell:has(.rf-showcase[data-bleed="both"]),
 .rf-bento-cell:has(.rf-showcase[data-bleed="top-end"]) { padding-top: 0; }
 
-@media (max-width: 768px) {
-	.rf-bento__grid { grid-template-columns: repeat(2, 1fr) !important; }
-	.rf-bento-cell--full { grid-column: 1 / -1; }
-	.rf-bento-cell--large { grid-column: span 2; grid-row: span 1; }
-	.rf-bento-cell--medium { grid-column: span 2; }
-	.rf-bento-cell--span { grid-column: span min(var(--cell-span, 1), 2); }
-}
-@media (max-width: 480px) {
-	.rf-bento__grid { grid-template-columns: 1fr !important; }
-	.rf-bento-cell--full,
-	.rf-bento-cell--large,
-	.rf-bento-cell--medium,
-	.rf-bento-cell--span { grid-column: span 1; }
-}
+/* ─── Progressive reduction ─── the column count steps down; span auto-cap
+ * (above) keeps wide cells in bounds at each step. */
+@media (max-width: 1024px) { .rf-bento__grid { --bento-cols-effective: min(var(--bento-columns, 6), 4); } }
+@media (max-width: 768px)  { .rf-bento__grid { --bento-cols-effective: min(var(--bento-columns, 6), 3); } }
+@media (max-width: 600px)  { .rf-bento__grid { --bento-cols-effective: min(var(--bento-columns, 6), 2); } }
+
+/* ─── Author-controlled final collapse (mirrors split's `collapse`) ───
+ * The grid drops to a single stacked column at the chosen breakpoint; the
+ * default (no `collapse`) collapses at the narrowest step. */
+@media (max-width: 640px)  { .rf-bento[data-collapse="sm"] .rf-bento__grid { --bento-cols-effective: 1; } }
+@media (max-width: 768px)  { .rf-bento[data-collapse="md"] .rf-bento__grid { --bento-cols-effective: 1; } }
+@media (max-width: 1024px) { .rf-bento[data-collapse="lg"] .rf-bento__grid { --bento-cols-effective: 1; } }
+@media (max-width: 480px)  { .rf-bento:not([data-collapse="never"]) .rf-bento__grid { --bento-cols-effective: 1; } }

@@ -29,8 +29,9 @@ function zoneRoles(zones: Node[][]): { media: Node[]; body: Node[]; footer: Node
 export const bentoCell = createContentModelSchema({
 	attributes: {
 		size: { type: String, required: false },
-		span: { type: String, required: false },
-		mediaPosition: { type: String, required: false },
+		cols: { type: String, required: false },
+		rows: { type: String, required: false },
+		mediaPosition: { type: String, required: false, matches: ['top', 'bottom', 'start', 'end'] },
 		href: { type: String, required: false },
 	},
 	contentModel: {
@@ -57,15 +58,22 @@ export const bentoCell = createContentModelSchema({
 		const refs: Record<string, any> = {};
 		const properties: Record<string, any> = {};
 
-		// size / span ride as field-bag properties (drive the grid; see WORK-348).
-		const sizeMeta = new Tag('meta', { content: attrs.size ?? 'medium' });
+		// size (preset name → data-size) + the resolved grid spans. Explicit
+		// `cols`/`rows` (e.g. from an author or a non-default grid) override the
+		// preset; otherwise fall back to the medium preset spans.
+		const size = attrs.size ?? 'medium';
+		const sizeMeta = new Tag('meta', { content: size });
 		properties.size = sizeMeta;
 		children.push(sizeMeta);
-		if (attrs.span) {
-			const spanMeta = new Tag('meta', { content: String(attrs.span) });
-			properties.span = spanMeta;
-			children.push(spanMeta);
-		}
+
+		const fallback = presetSpans(size, 6);
+		const cols = attrs.cols ? String(attrs.cols) : String(fallback.cols);
+		const rows = attrs.rows ? String(attrs.rows) : String(fallback.rows);
+		const colsMeta = new Tag('meta', { content: cols });
+		const rowsMeta = new Tag('meta', { content: rows });
+		properties.cols = colsMeta;
+		properties.rows = rowsMeta;
+		children.push(colsMeta, rowsMeta);
 
 		// Media zone — clipped/sized by the shared media-zone selector (WORK-339);
 		// no bento-specific per-guest CSS.
@@ -126,9 +134,10 @@ export const bentoCell = createContentModelSchema({
 			refs,
 			children,
 		});
-		// Author-controlled media placement (default top); the cell is the
-		// same `data-media-position` contract as card.
-		(node as any).attributes = { ...(node as any).attributes, 'data-media-position': attrs.mediaPosition ?? 'top' };
+		// Author-controlled media placement, with a size-derived default: large/
+		// full cells place media beside the body; smaller cells stack it on top.
+		const defaultPosition = (size === 'large' || size === 'full') ? 'start' : 'top';
+		(node as any).attributes = { ...(node as any).attributes, 'data-media-position': attrs.mediaPosition ?? defaultPosition };
 		return node;
 	},
 });
@@ -140,11 +149,25 @@ function tieredSize(headingLevel: number, level: number): string {
 	return 'small';
 }
 
+/** Resolve a size preset to (cols, rows) spans, **proportional to the column
+ *  count** so a preset holds its ratio at any `columns` (small ⅓, medium ½,
+ *  large ⅔ × 2 rows, full = all → 2/3/4/6 @ 6 cols). */
+function presetSpans(size: string, columns: number): { cols: number; rows: number } {
+	const clamp = (n: number) => Math.max(1, Math.min(columns, Math.round(n)));
+	switch (size) {
+		case 'full': return { cols: columns, rows: 1 };
+		case 'large': return { cols: clamp((columns * 2) / 3), rows: 2 };
+		case 'medium': return { cols: clamp(columns / 2), rows: 1 };
+		case 'small':
+		default: return { cols: clamp(columns / 3), rows: 1 };
+	}
+}
+
 /** Convert headings into bento-cell tags. The heading *level* sets tile size
- *  (tiered); the heading itself becomes the cell title (kept, prepended to the
- *  cell content). Content before the first heading is returned as-is — bento is
- *  a grid primitive, not a page-section, so there is no preamble chrome. */
-function convertHeadings(nodes: Node[], baseLevel: number): Node[] {
+ *  (tiered → a size preset → proportional `cols`/`rows`); the heading itself
+ *  becomes the cell title. Content before the first heading is returned as-is —
+ *  bento is a grid primitive, not a page-section, so there is no preamble. */
+function convertHeadings(nodes: Node[], baseLevel: number, columns: number): Node[] {
 	const preamble: Node[] = [];
 	const cells: Node[] = [];
 	let currentHeading: Node | null = null;
@@ -155,9 +178,9 @@ function convertHeadings(nodes: Node[], baseLevel: number): Node[] {
 		if (currentHeading) {
 			const level = currentHeading.attributes?.level ?? baseLevel;
 			const size = tieredSize(baseLevel, level);
-			// Keep the heading as the cell title (the cell normalizes its level).
+			const { cols, rows } = presetSpans(size, columns);
 			const cellChildren = [currentHeading, ...currentChildren];
-			cells.push(new Ast.Node('tag', { size }, cellChildren, 'bento-cell'));
+			cells.push(new Ast.Node('tag', { size, cols: String(cols), rows: String(rows) }, cellChildren, 'bento-cell'));
 		}
 	};
 
@@ -178,16 +201,19 @@ function convertHeadings(nodes: Node[], baseLevel: number): Node[] {
 	return [...preamble, ...cells];
 }
 
+export { presetSpans };
+
 export const bento = createContentModelSchema({
 	attributes: {
 		gap: { type: String, required: false, description: 'Space between grid cells (CSS length value)' },
-		columns: { type: Number, required: false, description: 'Number of columns in the bento grid' },
+		columns: { type: Number, required: false, description: 'Number of columns in the bento grid (default 6)' },
+		collapse: { type: String, required: false, matches: ['sm', 'md', 'lg', 'never'], description: 'Breakpoint at which the grid drops to a single stacked column' },
 	},
-	contentModel: {
+	contentModel: (attrs) => ({
 		type: 'custom' as const,
-		processChildren: (nodes) => convertHeadings(nodes as Node[], 2),
-		description: 'Converts headings into bento grid cells (tile size from heading depth). A grid primitive — no page-section preamble. Explicit {% bento-cell %} authoring is supported.',
-	},
+		processChildren: (nodes: unknown[]) => convertHeadings(nodes as Node[], 2, (attrs.columns as number) ?? 6),
+		description: 'Converts headings into bento grid cells (tile size from heading depth → proportional cols/rows). A grid primitive — no page-section preamble. Explicit {% bento-cell %} authoring is supported.',
+	}),
 	transform(resolved, attrs, config) {
 		const allChildren = asNodes(resolved.children);
 
@@ -206,14 +232,15 @@ export const bento = createContentModelSchema({
 			Markdoc.transform(cellAst, config) as RenderableTreeNode[],
 		);
 
-		const columns = (attrs.columns as number) ?? 4;
+		const columns = (attrs.columns as number) ?? 6;
 		const gapMeta = new Tag('meta', { content: (attrs.gap as string) ?? '1rem' });
 		const columnsMeta = new Tag('meta', { content: String(columns) });
+		const collapseMeta = new Tag('meta', { content: (attrs.collapse as string) ?? '' });
 
 		const cells = cellStream.tag('div').typeof('BentoCell');
 		const grid = cells.wrap('div');
 
-		const children: RenderableTreeNode[] = [gapMeta, columnsMeta];
+		const children: RenderableTreeNode[] = [gapMeta, columnsMeta, collapseMeta];
 		if (lead.count() > 0) children.push(...lead.toArray() as RenderableTreeNode[]);
 		children.push(grid.next());
 
@@ -223,6 +250,7 @@ export const bento = createContentModelSchema({
 			properties: {
 				gap: gapMeta,
 				columns: columnsMeta,
+				collapse: collapseMeta,
 				cell: cells,
 			},
 			refs: { grid },
