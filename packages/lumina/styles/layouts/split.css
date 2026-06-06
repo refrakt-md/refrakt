@@ -132,28 +132,16 @@
   }
 
   /* ─── Content-first collapse (data-media-position="top") ────────── */
-  /* Media hoists above preamble as full-bleed card header. Bento cells carry
-     data-media-position too but run their own collapse (rounded, inset media
-     banner), so they're excluded from this split-only full-bleed. */
-  [data-media-position="top"]:not(.rf-bento-cell) > [data-section="media"],
+  /* Media hoists above the preamble, staying inset within the card padding and
+     fully rounded (the media radius tier) — the same framed look it has on
+     desktop, not a full-bleed square banner. The grid row gap spaces it from
+     the content below. */
+  [data-media-position="top"] > [data-section="media"],
   [data-media-position="top"][data-layout="split"] > [data-section="media"],
   [data-media-position="top"][data-layout="split-reverse"] > [data-section="media"] {
     order: -1;
     grid-column: auto;
     grid-row: auto;
-    width: calc(100% + 2 * var(--rune-padding, var(--rf-spacing-md)));
-    margin: calc(-1 * var(--rune-padding, var(--rf-spacing-md)));
-    margin-bottom: var(--rune-padding, var(--rf-spacing-md));
-    border-radius: 0;
-  }
-  [data-media-position="top"]:not(.rf-bento-cell) > [data-section="media"] > :where(
-    img,
-    [data-rune="code-group"],
-    [data-rune="snippet"],
-    [data-rune="chart"],
-    [data-rune="sandbox"]
-  ) {
-    border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
   }
 
   /* Stacked layout also needs flex context for order to work */
@@ -172,19 +160,6 @@
     order: -1;
     grid-column: auto;
     grid-row: auto;
-    width: calc(100% + 2 * var(--rune-padding, var(--rf-spacing-md)));
-    margin: calc(-1 * var(--rune-padding, var(--rf-spacing-md)));
-    margin-bottom: var(--rune-padding, var(--rf-spacing-md));
-    border-radius: 0;
-  }
-  [data-media-position="top"][data-collapse="sm"] > [data-section="media"] > :where(
-    img,
-    [data-rune="code-group"],
-    [data-rune="snippet"],
-    [data-rune="chart"],
-    [data-rune="sandbox"]
-  ) {
-    border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
   }
   /* Reset grid placement on collapse for header/content */
   [data-media-position="top"][data-collapse="sm"] > [data-section="header"],
@@ -201,19 +176,6 @@
     order: -1;
     grid-column: auto;
     grid-row: auto;
-    width: calc(100% + 2 * var(--rune-padding, var(--rf-spacing-md)));
-    margin: calc(-1 * var(--rune-padding, var(--rf-spacing-md)));
-    margin-bottom: var(--rune-padding, var(--rf-spacing-md));
-    border-radius: 0;
-  }
-  [data-media-position="top"][data-collapse="md"] > [data-section="media"] > :where(
-    img,
-    [data-rune="code-group"],
-    [data-rune="snippet"],
-    [data-rune="chart"],
-    [data-rune="sandbox"]
-  ) {
-    border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
   }
   [data-media-position="top"][data-collapse="md"] > [data-section="header"],
   [data-media-position="top"][data-collapse="md"] > [data-name="content"] {
@@ -229,19 +191,6 @@
     order: -1;
     grid-column: auto;
     grid-row: auto;
-    width: calc(100% + 2 * var(--rune-padding, var(--rf-spacing-md)));
-    margin: calc(-1 * var(--rune-padding, var(--rf-spacing-md)));
-    margin-bottom: var(--rune-padding, var(--rf-spacing-md));
-    border-radius: 0;
-  }
-  [data-media-position="top"][data-collapse="lg"] > [data-section="media"] > :where(
-    img,
-    [data-rune="code-group"],
-    [data-rune="snippet"],
-    [data-rune="chart"],
-    [data-rune="sandbox"]
-  ) {
-    border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
   }
   [data-media-position="top"][data-collapse="lg"] > [data-section="header"],
   [data-media-position="top"][data-collapse="lg"] > [data-name="content"] {
