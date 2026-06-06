@@ -6,10 +6,12 @@
 	--bento-cols-effective: var(--bento-columns, 6);
 	display: grid;
 	grid-template-columns: repeat(var(--bento-cols-effective), 1fr);
-	/* Uniform fixed row tracks — never tied to column width (which would explode
-	 * vertically on collapse). Makes row spans meaningful and bounds tall guests
-	 * instead of letting them balloon a row. */
-	grid-auto-rows: var(--rf-bento-row-height, 12rem);
+	/* Uniform fixed row tracks in grid mode — never tied to column width (which
+	 * would explode vertically on collapse). Makes row spans meaningful and bounds
+	 * tall guests instead of letting them balloon a row. When the grid collapses to
+	 * a single column it becomes a STACK, and `--bento-row-track` is flipped to
+	 * `auto` (below) so cells size to their content and text is never clipped. */
+	grid-auto-rows: var(--bento-row-track, var(--rf-bento-row-height, 12rem));
 	gap: var(--bento-gap, 1rem);
 }
 
@@ -53,7 +55,20 @@
 /* Zones. The WORK-339 media-zone selector sizes/clips any guest — no per-guest
  * CSS here. */
 .rf-bento-cell__media { margin-bottom: 0.875rem; }
-.rf-bento-cell__content { display: flex; flex-direction: column; min-height: 0; }
+/* Text-first: the body keeps its natural height and is never squeezed out by
+ * media. In a fixed grid track the media zone (top/bottom) absorbs the leftover
+ * height and crops (cover); once collapsed to a stack it becomes an aspect-ratio
+ * banner (below). `--bento-media-aspect` is the knob SPEC-086's `frame-aspect`
+ * will drive; `--bento-media-anchor` picks which slice shows when cropped (e.g.
+ * `top` to peek the top of a tall guest like a phone mockup). */
+.rf-bento-cell__content { display: flex; flex-direction: column; min-height: 0; flex: 0 0 auto; }
+.rf-bento-cell[data-media-position="top"] > .rf-bento-cell__media,
+.rf-bento-cell[data-media-position="bottom"] > .rf-bento-cell__media {
+	flex: 1 1 auto;
+	min-height: 0;
+	aspect-ratio: var(--bento-media-aspect, 16 / 9);
+}
+.rf-bento-cell__media > :is(img, video) { object-position: var(--bento-media-anchor, center); }
 .rf-bento-cell__title {
 	font-size: 1.125rem;
 	font-weight: 600;
@@ -101,9 +116,32 @@
 @media (max-width: 600px)  { .rf-bento__grid { --bento-cols-effective: min(var(--bento-columns, 6), 2); } }
 
 /* ─── Author-controlled final collapse (mirrors split's `collapse`) ───
- * The grid drops to a single stacked column at the chosen breakpoint; the
- * default (no `collapse`) collapses at the narrowest step. */
-@media (max-width: 640px)  { .rf-bento[data-collapse="sm"] .rf-bento__grid { --bento-cols-effective: 1; } }
-@media (max-width: 768px)  { .rf-bento[data-collapse="md"] .rf-bento__grid { --bento-cols-effective: 1; } }
-@media (max-width: 1024px) { .rf-bento[data-collapse="lg"] .rf-bento__grid { --bento-cols-effective: 1; } }
-@media (max-width: 480px)  { .rf-bento:not([data-collapse="never"]) .rf-bento__grid { --bento-cols-effective: 1; } }
+ * The grid drops to a single column at the chosen breakpoint; the default (no
+ * `collapse`) collapses at the narrowest step. At one column it is a STACK, not
+ * a grid: `--bento-row-track: auto` lets cells size to content (text flows in
+ * full), and every cell stacks media-over-text with the media as an aspect-ratio
+ * banner — so a `start`/`end` (beside) large cell reflows to media-on-top too. */
+@media (max-width: 640px) {
+	.rf-bento[data-collapse="sm"] .rf-bento__grid { --bento-cols-effective: 1; --bento-row-track: auto; }
+	.rf-bento[data-collapse="sm"] .rf-bento-cell[data-media-position] { flex-direction: column; }
+	.rf-bento[data-collapse="sm"] .rf-bento-cell[data-media-position] > .rf-bento-cell__media { flex: 0 0 auto; aspect-ratio: var(--bento-media-aspect, 16 / 9); }
+	.rf-bento[data-collapse="sm"] .rf-bento-cell[data-media-position] > .rf-bento-cell__content { flex: 0 0 auto; }
+}
+@media (max-width: 768px) {
+	.rf-bento[data-collapse="md"] .rf-bento__grid { --bento-cols-effective: 1; --bento-row-track: auto; }
+	.rf-bento[data-collapse="md"] .rf-bento-cell[data-media-position] { flex-direction: column; }
+	.rf-bento[data-collapse="md"] .rf-bento-cell[data-media-position] > .rf-bento-cell__media { flex: 0 0 auto; aspect-ratio: var(--bento-media-aspect, 16 / 9); }
+	.rf-bento[data-collapse="md"] .rf-bento-cell[data-media-position] > .rf-bento-cell__content { flex: 0 0 auto; }
+}
+@media (max-width: 1024px) {
+	.rf-bento[data-collapse="lg"] .rf-bento__grid { --bento-cols-effective: 1; --bento-row-track: auto; }
+	.rf-bento[data-collapse="lg"] .rf-bento-cell[data-media-position] { flex-direction: column; }
+	.rf-bento[data-collapse="lg"] .rf-bento-cell[data-media-position] > .rf-bento-cell__media { flex: 0 0 auto; aspect-ratio: var(--bento-media-aspect, 16 / 9); }
+	.rf-bento[data-collapse="lg"] .rf-bento-cell[data-media-position] > .rf-bento-cell__content { flex: 0 0 auto; }
+}
+@media (max-width: 480px) {
+	.rf-bento:not([data-collapse="never"]) .rf-bento__grid { --bento-cols-effective: 1; --bento-row-track: auto; }
+	.rf-bento:not([data-collapse="never"]) .rf-bento-cell[data-media-position] { flex-direction: column; }
+	.rf-bento:not([data-collapse="never"]) .rf-bento-cell[data-media-position] > .rf-bento-cell__media { flex: 0 0 auto; aspect-ratio: var(--bento-media-aspect, 16 / 9); }
+	.rf-bento:not([data-collapse="never"]) .rf-bento-cell[data-media-position] > .rf-bento-cell__content { flex: 0 0 auto; }
+}
