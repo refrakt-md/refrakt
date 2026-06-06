@@ -109,11 +109,25 @@
 .rf-bento-cell:has(.rf-showcase[data-bleed="both"]),
 .rf-bento-cell:has(.rf-showcase[data-bleed="top-end"]) { padding-top: 0; }
 
-/* ─── Progressive reduction ─── the column count steps down; span auto-cap
- * (above) keeps wide cells in bounds at each step. */
+/* ─── Progressive reduction ─── an EVEN column ladder (6 → 4 → 2 → 1) so halves
+ * always tile; the odd 3-col step is skipped (a `small` can't pair in 3 cols).
+ * Span auto-cap (above) keeps wide cells in bounds at each step. */
 @media (max-width: 1024px) { .rf-bento__grid { --bento-cols-effective: min(var(--bento-columns, 6), 4); } }
-@media (max-width: 768px)  { .rf-bento__grid { --bento-cols-effective: min(var(--bento-columns, 6), 3); } }
-@media (max-width: 600px)  { .rf-bento__grid { --bento-cols-effective: min(var(--bento-columns, 6), 2); } }
+
+/* Landscape phone and down: a 2-up stack, not a shrunken grid. Auto row tracks
+ * (cells size to content, so wide cells never crop media to a thin strip),
+ * media reflows to an aspect-ratio banner above full-height text, and `small`
+ * cells take half a row so two sit side by side while medium/large/full headings
+ * span the full width. The data-collapse rules below still override to one column
+ * where the author asks. */
+@media (max-width: 768px) {
+	.rf-bento__grid { --bento-cols-effective: min(var(--bento-columns, 6), 2); --bento-row-track: auto; }
+	.rf-bento-cell { grid-row: span 1; }
+	.rf-bento-cell[data-size="small"] { grid-column: span 1; }
+	.rf-bento-cell[data-media-position] { flex-direction: column; }
+	.rf-bento-cell[data-media-position] > .rf-bento-cell__media { flex: 0 0 auto; aspect-ratio: var(--bento-media-aspect, 16 / 9); }
+	.rf-bento-cell[data-media-position] > .rf-bento-cell__content { flex: 0 0 auto; }
+}
 
 /* ─── Author-controlled final collapse (mirrors split's `collapse`) ───
  * The grid drops to a single column at the chosen breakpoint; the default (no
