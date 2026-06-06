@@ -148,7 +148,7 @@ export const luminaTokens: ThemeTokensConfig = {
 				success: { base: '#7eb398', bg: '#1a2a1f', border: '#2a4a35' },
 
 				code: {
-					bg: '#222220',
+					bg: '#1e1c19',
 					text: '#f6f4ef',
 					'inline-bg': '#2b2b29',
 				},

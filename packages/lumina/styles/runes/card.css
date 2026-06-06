@@ -14,7 +14,8 @@
 	background: var(--rf-color-surface);
 }
 
-.rf-card:hover {
+/* Only a linked card (stretched `.rf-card__link` present) reacts to hover. */
+.rf-card:has(.rf-card__link):hover {
 	background: var(--rf-color-surface-hover);
 }
 

@@ -94,7 +94,7 @@
    container's top/left/right edges, leaving a small consistent margin (figure
    style) instead of being inset by the full body padding. The bleed is the
    container padding minus that small margin (clamped at 0 for already-tight
-   containers); the bottom keeps its normal gap to the content. Self-managing
+   containers); the bottom keeps a generous gap to the content. Self-managing
    guests (preview/juxtapose/bleeding showcase) opt out via their own breakout. */
 [data-media-position="top"] > [data-section="media"]:not(:is(
   :has(> [data-rune="preview"]),
@@ -107,6 +107,14 @@
   width: calc(100% + 2 * var(--media-bleed));
   margin-top: calc(-1 * var(--media-bleed));
   margin-inline: calc(-1 * var(--media-bleed));
+  margin-bottom: var(--rf-spacing-md);
+}
+
+/* A code-group dropped into a media zone uses the media radius tier so its
+   border and corners line up with the zone's clip instead of the larger
+   container radius it gets as a standalone inset surface. */
+[data-section="media"] .rf-codegroup {
+  border-radius: var(--rf-radius-media);
 }
 
 /* Split layout images get subtle depth. Block runes carry their own visual
