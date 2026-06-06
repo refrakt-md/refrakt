@@ -42,7 +42,7 @@
 .rf-howto,
 .rf-form {
 	background: var(--rf-color-surface);
-	border-radius: var(--rf-radius-md);
+	border-radius: var(--rf-radius-container);
 	padding: var(--rune-padding, var(--rf-spacing-md));
 }
 
@@ -86,6 +86,6 @@
 .rf-figure,
 .rf-reveal {
 	background: var(--rf-color-surface);
-	border-radius: var(--rf-radius-md);
+	border-radius: var(--rf-radius-container);
 	padding: var(--rune-padding, var(--rf-spacing-md));
 }

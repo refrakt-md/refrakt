@@ -10,7 +10,7 @@
 .rf-card {
 	position: relative; /* anchor for the stretched link + media bleed */
 	padding: var(--rune-padding, var(--rf-spacing-md));
-	border-radius: var(--rf-radius-md);
+	border-radius: var(--rf-radius-container);
 	background: var(--rf-color-surface);
 }
 

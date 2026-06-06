@@ -88,7 +88,7 @@
 }
 .rf-feature__feature-item {
 	padding: 1.75rem;
-	border-radius: var(--rf-radius-md);
+	border-radius: var(--rf-radius-container);
 	background: var(--rf-color-surface);
 }
 .rf-feature__feature-item dt {

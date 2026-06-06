@@ -101,10 +101,10 @@
 }
 
 /* Media zone — base sizing/clip come from the shared [data-section="media"]
- * rule in split.css. The image matches the recipe card radius (--rf-radius-md)
- * so it never reads as more rounded than the card it sits in. */
+ * rule in split.css. The image uses the media radius tier so it reads as a
+ * guest nested inside the (larger-radius) recipe card. */
 .rf-recipe__media img {
-	border-radius: var(--rf-radius-md);
+	border-radius: var(--rf-radius-media);
 }
 
 /* Metadata — prep / cook / serves / difficulty are short, symmetric facts,

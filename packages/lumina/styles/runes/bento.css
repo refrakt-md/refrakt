@@ -29,7 +29,7 @@
 	background: var(--rf-color-surface);
 }
 .rf-bento-cell {
-	border-radius: var(--rf-radius-md);
+	border-radius: var(--rf-radius-container);
 	padding: 1.25rem;
 	overflow: hidden;
 	position: relative; /* anchor for the stretched link */
