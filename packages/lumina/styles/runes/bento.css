@@ -34,6 +34,7 @@
 	 * hardcodes its padding rather than using --rune-padding). */
 	--container-padding: 1.25rem;
 	padding: var(--container-padding);
+	border: 1px solid var(--rf-color-border);
 	overflow: hidden;
 	position: relative; /* anchor for the stretched link */
 	display: flex;

@@ -1,16 +1,17 @@
 /* card — generic content card (SPEC-070).
  *
- * Borderless (no outline) but with a soft surface fill — the surface + the
- * structure (media split, footer separator) carry the card, no border needed.
- * The media|content split + responsive collapse + mobile full-bleed media
- * header come from the shared layouts/split.css (keyed off data-layout /
- * data-section="media" / data-name="content" / data-media-position).
+ * A soft surface fill plus a subtle border; the surface + border + structure
+ * (media split, footer separator) carry the card. The media|content split +
+ * responsive collapse + inset media banner come from the shared
+ * layouts/split.css (keyed off data-layout / data-section="media" /
+ * data-name="content" / data-media-position).
  */
 
 .rf-card {
 	position: relative; /* anchor for the stretched link + media bleed */
 	padding: var(--rune-padding, var(--rf-spacing-md));
 	border-radius: var(--rf-radius-container);
+	border: 1px solid var(--rf-color-border);
 	background: var(--rf-color-surface);
 }
 
