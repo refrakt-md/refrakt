@@ -132,8 +132,10 @@
   }
 
   /* ─── Content-first collapse (data-media-position="top") ────────── */
-  /* Media hoists above preamble as full-bleed card header */
-  [data-media-position="top"] > [data-section="media"],
+  /* Media hoists above preamble as full-bleed card header. Bento cells carry
+     data-media-position too but run their own collapse (rounded, inset media
+     banner), so they're excluded from this split-only full-bleed. */
+  [data-media-position="top"]:not(.rf-bento-cell) > [data-section="media"],
   [data-media-position="top"][data-layout="split"] > [data-section="media"],
   [data-media-position="top"][data-layout="split-reverse"] > [data-section="media"] {
     order: -1;
@@ -144,7 +146,7 @@
     margin-bottom: var(--rune-padding, var(--rf-spacing-md));
     border-radius: 0;
   }
-  [data-media-position="top"] > [data-section="media"] > :where(
+  [data-media-position="top"]:not(.rf-bento-cell) > [data-section="media"] > :where(
     img,
     [data-rune="code-group"],
     [data-rune="snippet"],
