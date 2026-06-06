@@ -29,8 +29,8 @@ function zoneRoles(zones: Node[][]): { media: Node[]; body: Node[]; footer: Node
 export const bentoCell = createContentModelSchema({
 	attributes: {
 		size: { type: String, required: false },
-		cols: { type: String, required: false },
-		rows: { type: String, required: false },
+		cols: { type: Number, required: false },
+		rows: { type: Number, required: false },
 		'media-position': { type: String, required: false, matches: ['top', 'bottom', 'start', 'end'] },
 		href: { type: String, required: false },
 	},
@@ -180,7 +180,7 @@ function convertHeadings(nodes: Node[], baseLevel: number, columns: number): Nod
 			const size = tieredSize(baseLevel, level);
 			const { cols, rows } = presetSpans(size, columns);
 			const cellChildren = [currentHeading, ...currentChildren];
-			cells.push(new Ast.Node('tag', { size, cols: String(cols), rows: String(rows) }, cellChildren, 'bento-cell'));
+			cells.push(new Ast.Node('tag', { size, cols, rows }, cellChildren, 'bento-cell'));
 		}
 	};
 

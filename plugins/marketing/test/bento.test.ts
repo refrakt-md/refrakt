@@ -155,7 +155,7 @@ x
 
   it("explicit {% bento-cell %} cells short-circuit heading conversion (cols/rows/href/media-position)", () => {
     const tag = bentoOf(`{% bento columns=6 %}
-{% bento-cell cols="3" rows="2" media-position="end" href="/x" %}
+{% bento-cell cols=3 rows=2 media-position="end" href="/x" %}
 ## Explicit
 
 Body.
