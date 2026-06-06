@@ -90,6 +90,25 @@
   border-radius: 0;
 }
 
+/* Media banner bleed — when media sits on top (stacked), it reaches toward the
+   container's top/left/right edges, leaving a small consistent margin (figure
+   style) instead of being inset by the full body padding. The bleed is the
+   container padding minus that small margin (clamped at 0 for already-tight
+   containers); the bottom keeps its normal gap to the content. Self-managing
+   guests (preview/juxtapose/bleeding showcase) opt out via their own breakout. */
+[data-media-position="top"] > [data-section="media"]:not(:is(
+  :has(> [data-rune="preview"]),
+  :has(> [data-rune="juxtapose"]),
+  :has(> .rf-showcase[data-bleed]:not(.rf-showcase--in-bento-cell))
+)) {
+  --media-bleed: max(0px, calc(
+    var(--container-padding, var(--rune-padding, var(--rf-spacing-md))) - var(--rf-media-margin, var(--rf-spacing-sm))
+  ));
+  width: calc(100% + 2 * var(--media-bleed));
+  margin-top: calc(-1 * var(--media-bleed));
+  margin-inline: calc(-1 * var(--media-bleed));
+}
+
 /* Split layout images get subtle depth. Block runes carry their own visual
    weight (topbars, frames) so the shadow is image-only. */
 [data-layout="split"] > [data-section="media"] > img,

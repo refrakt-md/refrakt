@@ -74,6 +74,9 @@
 	 * per-instance. */
 	--rf-radius-container: var(--rf-radius-lg);
 	--rf-radius-media: var(--rf-radius-md);
+	/* Small margin a top media banner leaves to the container's top/left/right
+	 * edges as it bleeds out past the body padding (figure-style framing). */
+	--rf-media-margin: var(--rf-spacing-sm);
 
 	/* Spacing */
 	--rf-spacing-xs: 0.25rem;

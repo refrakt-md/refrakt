@@ -13,3 +13,8 @@ Two-tier surface rounding + inset media on mobile.
 - Media in a `data-media-position="top"` container no longer becomes a full-bleed
   square banner when the layout collapses on mobile — it stays inset within the
   card padding and fully rounded, matching its desktop framed look.
+- Top media now bleeds out past the body padding to a small, consistent margin
+  on its top/left/right edges (new `--rf-media-margin`, defaulting to
+  `--rf-spacing-sm`), figure-style, so the image isn't over-inset in containers
+  with generous padding (e.g. bento cells). The `figure` image drops its
+  box-shadow to match the unshadowed media elsewhere.

@@ -30,7 +30,10 @@
 }
 .rf-bento-cell {
 	border-radius: var(--rf-radius-container);
-	padding: 1.25rem;
+	/* Expose the cell padding so the media banner can bleed against it (the cell
+	 * hardcodes its padding rather than using --rune-padding). */
+	--container-padding: 1.25rem;
+	padding: var(--container-padding);
 	overflow: hidden;
 	position: relative; /* anchor for the stretched link */
 	display: flex;
@@ -112,7 +115,12 @@
 /* ─── Progressive reduction ─── an EVEN column ladder (6 → 4 → 2 → 1) so halves
  * always tile; the odd 3-col step is skipped (a `small` can't pair in 3 cols).
  * Span auto-cap (above) keeps wide cells in bounds at each step. */
-@media (max-width: 1024px) { .rf-bento__grid { --bento-cols-effective: min(var(--bento-columns, 6), 4); } }
+@media (max-width: 1024px) {
+	.rf-bento__grid { --bento-cols-effective: min(var(--bento-columns, 6), 4); }
+	/* medium drops to a half (2 of 4) so two pair per row instead of leaving a
+	 * 1-col gap; large/full stay full-width, small stays a half. */
+	.rf-bento-cell[data-size="medium"] { grid-column: span min(2, var(--bento-cols-effective)); }
+}
 
 /* Landscape phone and down: a 2-up stack, not a shrunken grid. Auto row tracks
  * (cells size to content, so wide cells never crop media to a thin strip),

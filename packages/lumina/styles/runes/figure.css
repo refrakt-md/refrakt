@@ -3,7 +3,6 @@
 	max-width: 100%;
 	height: auto;
 	border-radius: var(--rf-radius-media);
-	box-shadow: var(--rf-shadow-sm);
 }
 .rf-figure figcaption {
 	margin-top: 0.625rem;
