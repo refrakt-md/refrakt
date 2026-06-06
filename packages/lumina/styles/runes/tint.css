@@ -56,11 +56,11 @@
 	background-color: var(--rf-color-bg);
 
 	--cs-bg: #1a1a17;
-	--cs-surface: #211f1c;
+	--cs-surface: #1f1f1c;
 	--cs-text: #f6f4ef;
 	--cs-muted: #94908a;
 	--cs-accent: #f6f4ef;
-	--cs-border: #2a2825;
+	--cs-border: #282825;
 
 	--rf-color-bg: var(--cs-bg);
 	--rf-color-surface: var(--cs-surface);
@@ -70,9 +70,9 @@
 	--rf-color-border: var(--cs-border);
 
 	--rf-color-primary-hover: #d4cfc5;
-	--rf-color-surface-hover: #2a2825;
-	--rf-color-surface-active: #353330;
-	--rf-color-surface-raised: #292723;
+	--rf-color-surface-hover: #282825;
+	--rf-color-surface-active: #333330;
+	--rf-color-surface-raised: #272723;
 
 	--rf-color-info: #9bb4c7;
 	--rf-color-info-bg: #1f2530;
@@ -87,7 +87,7 @@
 	--rf-color-success-bg: #1a2a1f;
 	--rf-color-success-border: #2a4a35;
 
-	--rf-color-code-bg: #222220;
+	--rf-color-code-bg: #1c1c19;
 	--rf-color-code-text: #f6f4ef;
 	--rf-color-code-inline-bg: #2b2b29;
 	--rf-color-inline-code-bg: #2b2b29;
@@ -101,7 +101,7 @@
 	--rf-syntax-variable: #f6f4ef;
 
 	--rf-syntax-foreground: #f6f4ef;
-	--rf-syntax-background: #222220;
+	--rf-syntax-background: #1c1c19;
 	--rf-syntax-token-keyword: #7eb6bc;
 	--rf-syntax-token-string: #c79a9a;
 	--rf-syntax-token-string-expression: #c79a9a;
