@@ -152,4 +152,40 @@ x
     expect(fields(tag).columns).toBe('6');
     expect(fields(tag).collapse).toBe('lg');
   });
+
+  it("explicit {% bento-cell %} cells short-circuit heading conversion (cols/rows/href/media-position)", () => {
+    const tag = bentoOf(`{% bento columns=6 %}
+{% bento-cell cols="3" rows="2" media-position="end" href="/x" %}
+## Explicit
+
+Body.
+{% /bento-cell %}
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(cells.length).toBe(1);
+    const c = cells[0];
+    expect(fields(c).cols).toBe("3");
+    expect(fields(c).rows).toBe("2");
+    expect(c.attributes["data-media-position"]).toBe("end");
+    expect(findTag(c, t => t.name === "a" && t.attributes?.["data-name"] === "link")).toBeDefined();
+    expect(findTag(c, t => t.attributes?.["data-name"] === "title")?.name).toBe("h3");
+  });
+
+  it("explicit mode wins: headings alongside explicit cells are ignored", () => {
+    const tag = bentoOf(`{% bento %}
+## Ignored Heading
+
+loose text
+
+{% bento-cell size="small" %}
+## Real
+
+x
+{% /bento-cell %}
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(cells.length).toBe(1);
+    expect(JSON.stringify(cells[0])).toContain("Real");
+    expect(JSON.stringify(cells[0])).not.toContain("Ignored Heading");
+  });
 });

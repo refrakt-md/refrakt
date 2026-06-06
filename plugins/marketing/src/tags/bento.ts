@@ -31,7 +31,7 @@ export const bentoCell = createContentModelSchema({
 		size: { type: String, required: false },
 		cols: { type: String, required: false },
 		rows: { type: String, required: false },
-		mediaPosition: { type: String, required: false, matches: ['top', 'bottom', 'start', 'end'] },
+		'media-position': { type: String, required: false, matches: ['top', 'bottom', 'start', 'end'] },
 		href: { type: String, required: false },
 	},
 	contentModel: {
@@ -137,7 +137,7 @@ export const bentoCell = createContentModelSchema({
 		// Author-controlled media placement, with a size-derived default: large/
 		// full cells place media beside the body; smaller cells stack it on top.
 		const defaultPosition = (size === 'large' || size === 'full') ? 'start' : 'top';
-		(node as any).attributes = { ...(node as any).attributes, 'data-media-position': attrs.mediaPosition ?? defaultPosition };
+		(node as any).attributes = { ...(node as any).attributes, 'data-media-position': attrs['media-position'] ?? defaultPosition };
 		return node;
 	},
 });
@@ -211,8 +211,16 @@ export const bento = createContentModelSchema({
 	},
 	contentModel: (attrs) => ({
 		type: 'custom' as const,
-		processChildren: (nodes: unknown[]) => convertHeadings(nodes as Node[], 2, (attrs.columns as number) ?? 6),
-		description: 'Converts headings into bento grid cells (tile size from heading depth → proportional cols/rows). A grid primitive — no page-section preamble. Explicit {% bento-cell %} authoring is supported.',
+		processChildren: (nodes: unknown[]) => {
+			const ns = nodes as Node[];
+			// Two front doors (no mixing): if the grid contains explicit
+			// `{% bento-cell %}` tags, use them directly and short-circuit heading
+			// conversion (headings/loose content are ignored — explicit wins).
+			const hasExplicit = ns.some(n => n.type === 'tag' && (n as any).tag === 'bento-cell');
+			if (hasExplicit) return ns.filter(n => n.type === 'tag' && (n as any).tag === 'bento-cell');
+			return convertHeadings(ns, 2, (attrs.columns as number) ?? 6);
+		},
+		description: 'A grid of cells. Heading sugar (each heading → a cell, tile size from depth) OR explicit {% bento-cell %} cells (full control). A grid primitive — no page-section preamble.',
 	}),
 	transform(resolved, attrs, config) {
 		const allChildren = asNodes(resolved.children);
