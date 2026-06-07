@@ -23,6 +23,18 @@
 .rf-bento[data-row-height="lg"] { --bento-row-height: 16rem; }
 .rf-bento[data-row-height="xl"] { --bento-row-height: 20rem; }
 
+/* Author content-height presets — pin each cell's text area to a fixed height so
+ * cells line up vertically in grid mode (the media zone absorbs the remaining
+ * track height). On mobile the stack's content rules reset flex to auto, so the
+ * text area becomes natural height again and the overflow clip no longer bites. */
+.rf-bento[data-content-height="sm"] { --bento-content-height: 3rem; }
+.rf-bento[data-content-height="md"] { --bento-content-height: 5rem; }
+.rf-bento[data-content-height="lg"] { --bento-content-height: 7rem; }
+.rf-bento[data-content-height] .rf-bento-cell__content {
+	flex: 0 0 var(--bento-content-height);
+	overflow: hidden;
+}
+
 /* Cell footprint: resolved `cols`/`rows` spans, auto-capped to the effective
  * column count so a wide cell never overflows the (reduced) grid. */
 .rf-bento-cell {

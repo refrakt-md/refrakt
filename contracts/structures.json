@@ -1335,6 +1335,10 @@
 					"source": "meta",
 					"dataAttribute": "data-row-height"
 				},
+				"content-height": {
+					"source": "meta",
+					"dataAttribute": "data-content-height"
+				},
 				"collapse": {
 					"source": "meta",
 					"dataAttribute": "data-collapse"

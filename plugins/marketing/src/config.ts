@@ -43,6 +43,7 @@ export const config: Record<string, RuneConfig> = {
 			columns: { source: 'meta', default: '6', noBemClass: true },
 			gap: { source: 'meta', default: '1rem', noBemClass: true },
 			'row-height': { source: 'meta', noBemClass: true },
+			'content-height': { source: 'meta', noBemClass: true },
 			collapse: { source: 'meta', noBemClass: true },
 		},
 		styles: {
