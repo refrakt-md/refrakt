@@ -207,6 +207,7 @@ export const bento = createContentModelSchema({
 	attributes: {
 		gap: { type: String, required: false, description: 'Space between grid cells (CSS length value)' },
 		columns: { type: Number, required: false, description: 'Number of columns in the bento grid (default 6)' },
+		'row-height': { type: String, required: false, matches: ['sm', 'md', 'lg', 'xl'], description: 'Uniform grid row track height: sm, md (default), lg, or xl' },
 		collapse: { type: String, required: false, matches: ['sm', 'md', 'lg', 'never'], description: 'Breakpoint at which the grid drops to a single stacked column' },
 	},
 	contentModel: (attrs) => ({
@@ -243,12 +244,13 @@ export const bento = createContentModelSchema({
 		const columns = (attrs.columns as number) ?? 6;
 		const gapMeta = new Tag('meta', { content: (attrs.gap as string) ?? '1rem' });
 		const columnsMeta = new Tag('meta', { content: String(columns) });
+		const rowHeightMeta = new Tag('meta', { content: (attrs['row-height'] as string) ?? '' });
 		const collapseMeta = new Tag('meta', { content: (attrs.collapse as string) ?? '' });
 
 		const cells = cellStream.tag('div').typeof('BentoCell');
 		const grid = cells.wrap('div');
 
-		const children: RenderableTreeNode[] = [gapMeta, columnsMeta, collapseMeta];
+		const children: RenderableTreeNode[] = [gapMeta, columnsMeta, rowHeightMeta, collapseMeta];
 		if (lead.count() > 0) children.push(...lead.toArray() as RenderableTreeNode[]);
 		children.push(grid.next());
 
@@ -258,6 +260,7 @@ export const bento = createContentModelSchema({
 			properties: {
 				gap: gapMeta,
 				columns: columnsMeta,
+				'row-height': rowHeightMeta,
 				collapse: collapseMeta,
 				cell: cells,
 			},

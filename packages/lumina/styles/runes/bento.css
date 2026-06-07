@@ -10,10 +10,18 @@
 	 * would explode vertically on collapse). Makes row spans meaningful and bounds
 	 * tall guests instead of letting them balloon a row. When the grid collapses to
 	 * a single column it becomes a STACK, and `--bento-row-track` is flipped to
-	 * `auto` (below) so cells size to their content and text is never clipped. */
-	grid-auto-rows: var(--bento-row-track, var(--rf-bento-row-height, 12rem));
+	 * `auto` (below) so cells size to their content and text is never clipped.
+	 * `--bento-row-height` is the author's `row-height` preset (below); it falls
+	 * back to the theme default `--rf-bento-row-height`. */
+	grid-auto-rows: var(--bento-row-track, var(--bento-row-height, var(--rf-bento-row-height, 12rem)));
 	gap: var(--bento-gap, 1rem);
 }
+
+/* Author row-height presets — the uniform grid row track height (grid mode). */
+.rf-bento[data-row-height="sm"] { --bento-row-height: 8rem; }
+.rf-bento[data-row-height="md"] { --bento-row-height: 12rem; }
+.rf-bento[data-row-height="lg"] { --bento-row-height: 16rem; }
+.rf-bento[data-row-height="xl"] { --bento-row-height: 20rem; }
 
 /* Cell footprint: resolved `cols`/`rows` spans, auto-capped to the effective
  * column count so a wide cell never overflows the (reduced) grid. */

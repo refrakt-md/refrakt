@@ -1331,6 +1331,10 @@
 					"default": "1rem",
 					"dataAttribute": "data-gap"
 				},
+				"row-height": {
+					"source": "meta",
+					"dataAttribute": "data-row-height"
+				},
 				"collapse": {
 					"source": "meta",
 					"dataAttribute": "data-collapse"
