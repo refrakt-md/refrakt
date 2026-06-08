@@ -90,7 +90,12 @@ wash (`dark`/`light`) and an ad-hoc legibility gradient (`overlay="linear-gradie
 Split them into two structured facets:
 
 - **`overlay`** — a flat wash, constrained to a **structured vocabulary**: `none | dark | light` plus an optional token reference + opacity (`overlay="primary"`, `overlay-opacity`).
-- **`scrim`** — a structured, **directional, token-driven gradient in the overlay slot** (over the image, beneath content) for text legibility — the poster-card / cover-image case ({% ref "SPEC-087" /%} boundary: full-surface image-behind-text is `bg`, not a media-slot overlay). `scrim="bottom"` (direction from the same bounded set as `bg-gradient`) plus `scrim-strength="sm|md|lg"`; colours from tokens (a neutral darken/lighten by default). This is the **structured replacement** for the raw `overlay="linear-gradient(…)"` scrim.
+- **`scrim`** — a structured, token-driven **legibility treatment** behind overlaid text, in two flavours:
+  - `scrim-type="gradient"` (default) — a directional, token-coloured darken/lighten gradient; `scrim="bottom"` (direction from the same bounded set as `bg-gradient`) + `scrim-strength="sm|md|lg"`.
+  - `scrim-type="frost"` — `backdrop-filter: blur()` + a translucent tint; **colour-adaptive** (the blur samples the image's colours), the iOS-materials look. `scrim-blur="none|sm|md|lg"`.
+  - `scrim-tone="dark|light"` — whether it darkens (for light text) or lightens (for dark text). Auto-tone (image-luminance detection) isn't feasible at build without processing the image bytes, so `tone` is **explicit** (or theme-defaulted), not magic — `frost` gets the *colour adaptation* for free but still needs the light/dark decision.
+
+  The scrim **targets either surface** via the {% ref "SPEC-087" /%} self/media routing: the `bg` overlay layer (a decorative backdrop), or the **media well** when text overlays a media guest in `cover` mode ({% ref "SPEC-089" /%}). It is the **structured replacement** for the raw `overlay="linear-gradient(…)"` scrim.
 - **Deprecate** the unvalidated raw-string `overlay` passthrough: keep it working for one minor with a build warning pointing to `scrim` (gradient overlays) or `overlay`/`style` (flat/exotic), then remove — mirroring SPEC-086's deprecation-alias approach. The deprecation is **gated on `scrim` shipping**, so no use case (notably the legibility scrim) loses its path.
 
 ## Acceptance Criteria
@@ -100,7 +105,7 @@ Split them into two structured facets:
 - [ ] Gradients exist in **two positions** — a **fill** (base bg layer, reuses `--bg-image`) and a **scrim** (overlay layer); the fill composes beneath the scrim, a `substrate` pattern ({% ref "SPEC-087" /%}), and with the `tint`/inset fill.
 - [ ] `BgPresetDefinition.style` is documented as an intentional, last-resort escape hatch with a stated contract (raw CSS on the bg layer, bypasses tokens, author owns portability), valid in both theme config and project config (`refrakt.config.json`); project `backgrounds` merge over theme `backgrounds`.
 - [ ] A build-time soft warning flags a raw gradient/background in `style` or `overlay` that a structured facet covers, pointing to the facet.
-- [ ] `overlay` (flat wash) is constrained to `none|dark|light` (+ optional token reference / opacity), and a structured **`scrim`** facet provides a directional, token-driven gradient overlay (`scrim="bottom"` + `scrim-strength`) for legibility over images — the structured replacement for raw `overlay="linear-gradient(…)"`.
+- [ ] `overlay` (flat wash) is constrained to `none|dark|light` (+ optional token reference / opacity), and a structured **`scrim`** facet provides legibility behind overlaid text via `scrim-type` (`gradient` default | `frost` = `backdrop-filter` blur + tint), `scrim-strength`, `scrim-blur`, and `scrim-tone` (`dark|light`, explicit — no build-time auto-detection), targeting the `bg` overlay or the media well (SPEC-087 routing; `cover` mode {% ref "SPEC-089" /%}) — the structured replacement for raw `overlay="linear-gradient(…)"`.
 - [ ] The unvalidated raw-string `overlay` passthrough is deprecated with a build warning for one minor, then removed (migration to `scrim`/`overlay`/`style`); the deprecation is **gated on `scrim` shipping** so no use case loses its path.
 - [ ] The `bg` reference docs document gradients (facets + presets), the escape hatch (contract + config home), and the `overlay` change; cross-linked with {% ref "SPEC-087" /%} (surface-fill layering) and {% ref "SPEC-086" /%}.
 
@@ -108,13 +113,14 @@ Split them into two structured facets:
 
 1. **Gradient facet + structured preset field** — `BgPresetDefinition.gradient`, inline facets, engine resolution (token-name stops → `var(--rf-color-*)`, → `--bg-image`), `bg.css`.
 2. **Formalize the escape hatch** — document the `style` contract; add/confirm project-config (`refrakt.config.json`) `backgrounds` home and merge-over-theme semantics.
-3. **`overlay` + `scrim` + deprecation path** — flat-wash `overlay` vocabulary; structured directional `scrim` gradient overlay (the legibility replacement); raw-string passthrough warns then removed (gated on `scrim`); migration notes.
+3. **`overlay` + `scrim` + deprecation path** — flat-wash `overlay` vocabulary; structured `scrim` (`type` gradient/frost, `strength`, `blur`, `tone`) targeting the bg overlay or the media well (SPEC-087 routing); raw-string passthrough warns then removed (gated on `scrim`); migration notes.
 4. **Soft-lint** — flag raw CSS in `style`/`overlay` that a structured facet now covers.
 5. **Docs** — `bg` reference (gradients + escape hatch + overlay), cross-links.
 
 ## References
 
 - Surface-fill layering + sibling specs: {% ref "SPEC-087" /%} (substrate/inset; the gradient seam is noted in its §4), {% ref "SPEC-086" /%} (chrome; named-scale convention, deprecation-alias pattern).
+- Cover-mode scrim (media-surface target) + content placement: {% ref "SPEC-089" /%}.
 - Current `bg`: `BgPresetDefinition` in `packages/transform/src/types.ts`; bg resolution + `overlay` passthrough in `packages/transform/src/engine.ts`; rune schema in `packages/runes/src/tags/bg.ts`; CSS in `packages/lumina/styles/runes/bg.css`; public docs `site/content/runes/bg.md`.
 - Preset `extends` machinery shared with `tint`/`frame`: `packages/transform/src/merge.ts`.
 
