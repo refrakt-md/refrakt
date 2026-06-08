@@ -17,7 +17,7 @@ Describe a faction with sections that break down its structure.
 
 {% preview source=true %}
 
-{% faction name="The Silver Order" type="knightly order" alignment="lawful" size="large" layout="split" %}
+{% faction name="The Silver Order" type="knightly order" alignment="lawful" size="large" media-position="start" %}
 ![The Silver Order](https://assets.refrakt.md/faction-the-silver-order.png)
 
 A prestigious order of knights sworn to protect the realm.
@@ -63,6 +63,17 @@ An underground network of spies and thieves operating across the port cities.
 | `alignment` | `string` | — | Alignment descriptor (e.g. `lawful`, `chaotic`, `neutral`) |
 | `size` | `string` | — | Size or scope descriptor (e.g. `small`, `medium`, `large`) |
 | `tags` | `string` | — | Comma-separated metadata tags |
+
+### Layout attributes
+
+A faction's `scene` field (the image at the top of each section) is the media zone; `media-position` controls where it sits relative to the content. Beside layouts (`start`/`end`) collapse to a stack at narrow widths.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `media-position` | `string` | `top` | Where the scene sits: `top`, `bottom`, `start` (left), `end` (right) |
+| `media-ratio` | `string` | — | Scene's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
+| `valign` | `string` | — | Cross-axis alignment when scene is beside content: `top`, `center`, `bottom`, `stretch` |
+| `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
 
 ### Common attributes
 

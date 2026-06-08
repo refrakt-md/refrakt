@@ -20,24 +20,25 @@
 	padding: max(0px, calc(var(--rune-padding, var(--rf-spacing-md)) - var(--rf-faction-edge)));
 }
 
-/* Direct grid properties (column-gap / row-gap) rather than overriding
- * `--split-gap`: the split layout transform emits `--split-gap` inline even when
- * the author doesn't set the gap attribute, so a CSS-variable override would
- * lose to inline-style specificity. */
-.rf-faction[data-layout="split"],
-.rf-faction[data-layout="split-reverse"] {
+/* Direct grid properties (column-gap / row-gap) win via selector specificity
+ * over the shared media-position layout vars. */
+.rf-faction[data-media-position="start"],
+.rf-faction[data-media-position="end"] {
 	column-gap: var(--rf-faction-split-gap);
 	row-gap: var(--rf-faction-media-gap);
 }
 
-/* Stacked layout — split / split-reverse are handled by shared split.css */
-.rf-faction[data-layout="stacked"] {
+/* Stacked layouts — beside layouts handled by shared split.css */
+.rf-faction[data-media-position="top"] {
 	display: flex;
 	flex-direction: column;
 }
 
-.rf-faction[data-layout="stacked"] > .rf-faction__scene {
+.rf-faction[data-media-position="top"] > .rf-faction__scene {
 	margin-bottom: var(--rf-faction-media-gap);
+}
+.rf-faction[data-media-position="bottom"] > .rf-faction__scene {
+	margin-top: var(--rf-faction-media-gap);
 }
 
 /* Content */

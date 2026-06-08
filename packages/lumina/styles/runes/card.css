@@ -50,17 +50,22 @@
  * those vars as inline styles even when the author doesn't set the matching
  * attributes, so a CSS-variable override loses to inline-style specificity.
  * Direct grid properties win via selector specificity and stay in our control. */
-.rf-card[data-layout="split"],
-.rf-card[data-layout="split-reverse"] {
+.rf-card[data-media-position="start"],
+.rf-card[data-media-position="end"] {
 	column-gap: var(--rf-card-split-gap);
 	row-gap: var(--rf-card-media-gap);
 	align-items: stretch;
 }
 
-/* Stacked layout: explicit gap between the media banner and the content zone
- * (replaces the figure-style margin-bottom from the bleed model). */
-.rf-card[data-layout="stacked"] > [data-section="media"] {
+/* Stacked layouts (top / bottom): explicit gap between the media banner and
+ * the content zone (replaces the figure-style margin-bottom from the bleed
+ * model). For `bottom`, column-reverse already flips the visual order, so the
+ * gap still reads as the space between the two zones. */
+.rf-card[data-media-position="top"] > [data-section="media"] {
 	margin-bottom: var(--rf-card-media-gap);
+}
+.rf-card[data-media-position="bottom"] > [data-section="media"] {
+	margin-top: var(--rf-card-media-gap);
 }
 
 /* Only a linked card (stretched `.rf-card__link` present) reacts to hover. */

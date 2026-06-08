@@ -2,7 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Ast, Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, SplitLayoutModel, nameHelper as name, pageSectionProperties, asNodes } from '@refrakt-md/runes';
+import { createComponentRenderable, createContentModelSchema, SplitLayoutModel, buildLayoutMetas, nameHelper as name, pageSectionProperties, asNodes } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 
 export const step = createContentModelSchema({
@@ -10,16 +10,19 @@ export const step = createContentModelSchema({
   contentModel: {
     type: 'delimited',
     delimiter: 'hr',
+    // Media-first body shape: `media --- content`. `content` is the primary
+    // zone so a step without an `---` block lands its whole body in content.
     zones: [
       {
-        name: 'main',
+        name: 'media',
         type: 'sequence',
         fields: [
           { name: 'content', match: 'any', optional: true, greedy: true },
         ],
       },
       {
-        name: 'side',
+        name: 'content',
+        primary: true,
         type: 'sequence',
         fields: [
           { name: 'content', match: 'any', optional: true, greedy: true },
@@ -28,37 +31,24 @@ export const step = createContentModelSchema({
     ],
   },
   transform(resolved, attrs, config) {
-    const mainZone = (resolved.main ?? {}) as ResolvedContent;
-    const sideZone = (resolved.side ?? {}) as ResolvedContent;
+    const contentZone = (resolved.content ?? {}) as ResolvedContent;
+    const mediaZone = (resolved.media ?? {}) as ResolvedContent;
 
     const main = new RenderableNodeCursor(
-      Markdoc.transform(asNodes(mainZone.content), config) as RenderableTreeNode[],
+      Markdoc.transform(asNodes(contentZone.content), config) as RenderableTreeNode[],
     );
     const side = new RenderableNodeCursor(
-      Markdoc.transform(asNodes(sideZone.content), config) as RenderableTreeNode[],
+      Markdoc.transform(asNodes(mediaZone.content), config) as RenderableTreeNode[],
     );
 
     const mainContent = main.wrap('div');
     const sideContent = side.wrap('div');
 
-    const layout = (attrs.layout as string) || 'stacked';
-    const ratio = (attrs.ratio as string) || '1 1';
-    const valign = (attrs.valign as string) || 'top';
-    const gap = (attrs.gap as string) || 'default';
-    const collapse = attrs.collapse as string | undefined;
-
-    const layoutMeta = new Tag('meta', { content: layout });
-    const ratioMeta = layout !== 'stacked' ? new Tag('meta', { content: ratio }) : undefined;
-    const valignMeta = layout !== 'stacked' ? new Tag('meta', { content: valign }) : undefined;
-    const gapMeta = gap !== 'default' ? new Tag('meta', { content: gap }) : undefined;
-    const collapseMeta = collapse ? new Tag('meta', { content: collapse }) : undefined;
+    const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
+    const { mediaPosition: mediaPositionMeta, mediaRatio: mediaRatioMeta, valign: valignMeta, collapse: collapseMeta } = layoutMetas;
 
     const children = [
-      layoutMeta,
-      ...(ratioMeta ? [ratioMeta] : []),
-      ...(valignMeta ? [valignMeta] : []),
-      ...(gapMeta ? [gapMeta] : []),
-      ...(collapseMeta ? [collapseMeta] : []),
+      ...layoutChildren,
       mainContent.next(),
       ...(side.toArray().length > 0 ? [sideContent.next()] : []),
     ];
@@ -67,10 +57,9 @@ export const step = createContentModelSchema({
       tag: 'li',
       properties: {
         name: name(main),
-        layout: layoutMeta,
-        ratio: ratioMeta,
+        'media-position': mediaPositionMeta,
+        'media-ratio': mediaRatioMeta,
         valign: valignMeta,
-        gap: gapMeta,
         collapse: collapseMeta,
       },
       refs: {
@@ -79,13 +68,6 @@ export const step = createContentModelSchema({
       },
       children,
     });
-  },
-  deprecations: {
-    split: {
-      newName: 'layout',
-      transform: (val, attrs) => val ? (attrs.mirror ? 'split-reverse' : 'split') : undefined,
-    },
-    mirror: { newName: '_consumed' },
   },
 });
 

@@ -20,9 +20,19 @@ export const playlist = createContentModelSchema({
 	contentModel: {
 		type: 'delimited',
 		delimiter: 'hr',
+		// Media-first body shape: `media --- content`. `content` is the primary
+		// zone so a playlist without an `---` cover lands its whole body in content.
 		zones: [
 			{
+				name: 'media',
+				type: 'sequence',
+				fields: [
+					{ name: 'media', match: 'any', optional: true, greedy: true },
+				],
+			},
+			{
 				name: 'content',
+				primary: true,
 				type: 'sequence',
 				fields: [
 					{ name: 'headline', match: 'heading', optional: false,
@@ -63,13 +73,6 @@ export const playlist = createContentModelSchema({
 						},
 					},
 					{ name: 'body', match: 'any', optional: true, greedy: true },
-				],
-			},
-			{
-				name: 'media',
-				type: 'sequence',
-				fields: [
-					{ name: 'media', match: 'any', optional: true, greedy: true },
 				],
 			},
 		],
@@ -165,7 +168,7 @@ export const playlist = createContentModelSchema({
 
 		// Layout meta tags
 		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
-		const { layout: layoutMeta, ratio: ratioMeta, valign: valignMeta, gap: gapMeta, collapse: collapseMeta } = layoutMetas;
+		const { mediaPosition: mediaPositionMeta, mediaRatio: mediaRatioMeta, valign: valignMeta, collapse: collapseMeta } = layoutMetas;
 
 		// Meta tags for identity transform modifiers
 		const typeMeta = new Tag('meta', { content: playlistTypeValue });
@@ -222,10 +225,9 @@ export const playlist = createContentModelSchema({
 			property: 'contentSection',
 			properties: {
 				type: typeMeta,
-				layout: layoutMeta,
-				ratio: ratioMeta,
+				'media-position': mediaPositionMeta,
+				'media-ratio': mediaRatioMeta,
 				valign: valignMeta,
-				gap: gapMeta,
 				collapse: collapseMeta,
 				...(artistMeta ? { artist: artistMeta } : {}),
 				...(idMeta ? { id: idMeta } : {}),

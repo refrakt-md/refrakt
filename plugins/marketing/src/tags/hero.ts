@@ -2,7 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, RenderableNodeCursor, SplitLayoutModel, linkItem, pageSectionProperties } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, linkItem, pageSectionProperties } from '@refrakt-md/runes';
 
 export const hero = createContentModelSchema({
 	base: SplitLayoutModel,
@@ -12,22 +12,25 @@ export const hero = createContentModelSchema({
 	contentModel: {
 		type: 'delimited',
 		delimiter: 'hr',
+		// Media-first body shape: `media --- content`. `content` is the primary
+		// zone so a hero without an `---` image lands its whole body in content.
 		zones: [
 			{
+				name: 'media',
+				type: 'sequence',
+				fields: [
+					{ name: 'media', match: 'any', optional: true, greedy: true },
+				],
+			},
+			{
 				name: 'content',
+				primary: true,
 				type: 'sequence',
 				fields: [
 					{ name: 'eyebrow', match: 'paragraph', optional: true },
 					{ name: 'headline', match: 'heading', optional: false },
 					{ name: 'blurb', match: 'paragraph', optional: true },
 					{ name: 'actions', match: 'list|fence', optional: true, greedy: true },
-				],
-			},
-			{
-				name: 'media',
-				type: 'sequence',
-				fields: [
-					{ name: 'media', match: 'any', optional: true, greedy: true },
 				],
 			},
 		],
@@ -81,21 +84,11 @@ export const hero = createContentModelSchema({
 			Markdoc.transform(mediaAstNodes, config) as RenderableTreeNode[],
 		);
 
-		// Layout attribute defaults
+		// Layout meta tags (shared with every media+content rune)
 		const align = (attrs.align as string) || 'center';
-		const layout = (attrs.layout as string) || 'stacked';
-		const ratio = (attrs.ratio as string) || '1 1';
-		const valign = (attrs.valign as string) || 'top';
-		const gap = (attrs.gap as string) || 'default';
-		const collapse = attrs.collapse as string | undefined;
-
-		// Create meta tags for identity transform
 		const alignMeta = new Tag('meta', { content: align });
-		const layoutMeta = new Tag('meta', { content: layout });
-		const ratioMeta = layout !== 'stacked' ? new Tag('meta', { content: ratio }) : undefined;
-		const valignMeta = layout !== 'stacked' ? new Tag('meta', { content: valign }) : undefined;
-		const gapMeta = gap !== 'default' ? new Tag('meta', { content: gap }) : undefined;
-		const collapseMeta = collapse ? new Tag('meta', { content: collapse }) : undefined;
+		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
+		const { mediaPosition: mediaPositionMeta, mediaRatio: mediaRatioMeta, valign: valignMeta, collapse: collapseMeta } = layoutMetas;
 
 		// Structural wrapping
 		const actionsDiv = actions.wrap('div');
@@ -111,10 +104,9 @@ export const hero = createContentModelSchema({
 			property: 'contentSection',
 			properties: {
 				align: alignMeta,
-				layout: layoutMeta,
-				ratio: ratioMeta,
+				'media-position': mediaPositionMeta,
+				'media-ratio': mediaRatioMeta,
 				valign: valignMeta,
-				gap: gapMeta,
 				collapse: collapseMeta,
 			},
 			refs: {
@@ -127,11 +119,7 @@ export const hero = createContentModelSchema({
 			},
 			children: [
 				alignMeta,
-				layoutMeta,
-				...(ratioMeta ? [ratioMeta] : []),
-				...(valignMeta ? [valignMeta] : []),
-				...(gapMeta ? [gapMeta] : []),
-				...(collapseMeta ? [collapseMeta] : []),
+				...layoutChildren,
 				mainContent.next(),
 				...(side.toArray().length > 0 ? [mediaDiv.next()] : []),
 			],

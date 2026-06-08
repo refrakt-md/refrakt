@@ -66,23 +66,24 @@
 	gap: 1.5rem;
 	margin: 0;
 }
-/* Split layout: override defaults when in split mode */
-.rf-feature[data-layout="split"] .rf-feature__content,
-.rf-feature[data-layout="split-reverse"] .rf-feature__content {
+/* Beside layouts (media on start/end): override defaults so definitions stack
+ * in a single column inside the content track instead of tiling as a grid. */
+.rf-feature[data-media-position="start"] .rf-feature__content,
+.rf-feature[data-media-position="end"] .rf-feature__content {
 	display: block;
 }
-.rf-feature[data-layout="split"] .rf-feature__preamble,
-.rf-feature[data-layout="split-reverse"] .rf-feature__preamble,
-.rf-feature[data-layout="split"] h2,
-.rf-feature[data-layout="split-reverse"] h2 {
+.rf-feature[data-media-position="start"] .rf-feature__preamble,
+.rf-feature[data-media-position="end"] .rf-feature__preamble,
+.rf-feature[data-media-position="start"] h2,
+.rf-feature[data-media-position="end"] h2 {
 	text-align: left;
 }
-.rf-feature[data-layout="split"] .rf-feature__definitions,
-.rf-feature[data-layout="split-reverse"] .rf-feature__definitions {
+.rf-feature[data-media-position="start"] .rf-feature__definitions,
+.rf-feature[data-media-position="end"] .rf-feature__definitions {
 	display: block;
 }
-.rf-feature[data-layout="split"] .rf-feature__feature-item,
-.rf-feature[data-layout="split-reverse"] .rf-feature__feature-item {
+.rf-feature[data-media-position="start"] .rf-feature__feature-item,
+.rf-feature[data-media-position="end"] .rf-feature__feature-item {
 	background: none;
 	padding: 0.75rem 0;
 }

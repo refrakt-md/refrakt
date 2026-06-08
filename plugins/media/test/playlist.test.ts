@@ -91,15 +91,15 @@ describe('playlist rune', () => {
 		expect(artist!.children).toContain('Pink Floyd');
 	});
 
-	it('should support cover image in media zone', () => {
+	it('should support cover image in media zone (media-first source)', () => {
 		const result = parse(`{% playlist %}
-# Album
-
-- **Track** (3:00)
+![Cover](/images/cover.jpg)
 
 ---
 
-![Cover](/images/cover.jpg)
+# Album
+
+- **Track** (3:00)
 {% /playlist %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'playlist');

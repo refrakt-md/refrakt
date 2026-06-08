@@ -71,16 +71,22 @@ Semantic runes transform your Markdown into structured, accessible content.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `align` | `string` | `center` | Content alignment: `left`, `center`, or `right` |
-| `layout` | `string` | `stacked` | Layout mode: `stacked`, `split`, or `split-reverse` |
-| `ratio` | `string` | `1 1` | Column width ratio in split layout (e.g., `2 1`, `1 2`) |
-| `valign` | `string` | `top` | Vertical alignment in split layout: `top`, `center`, or `bottom` |
-| `gap` | `string` | `default` | Gap between columns: `none`, `tight`, `default`, or `loose` |
-| `collapse` | `string` | — | Collapse to single column at breakpoint: `sm`, `md`, `lg`, or `never` |
+| `align` | `string` | `center` | Horizontal alignment of headline + body text: `left`, `center`, `right` |
 
 ## Section header
 
 Hero supports an optional eyebrow, headline, and blurb above the headline and description. Place a short paragraph or heading before the main content to use them. See [Page sections](/extend/rune-authoring/page-sections) for the full syntax.
+
+### Layout attributes
+
+The body splits on `---` into **media → content** zones (media-first in source). `media-position` controls visual placement independently of source order — a landing-page hero typically uses `media-position="end"` to put the screenshot on the right.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `media-position` | `string` | `top` | Where the media sits: `top`, `bottom`, `start` (left), `end` (right) |
+| `media-ratio` | `string` | — | Media's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
+| `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
+| `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
 
 ### Common attributes
 

@@ -29,7 +29,7 @@ The body divides on `---` (a horizontal rule) into up to three zones — here al
 
 {% preview source=true %}
 
-{% card href="/runes/learning/recipe" layout="split" %}
+{% card href="/runes/learning/recipe" media-position="start" %}
 ![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
 
 ---
@@ -89,15 +89,17 @@ Read the five-minute guide.
 {% /card %}
 ```
 
-## Layout
+## Layout attributes
 
-`card` reuses the shared split layout. By default the media zone sits beside the body on wide screens (collapsing to a full-bleed header on narrow screens). The `SplitLayoutModel` attributes are accepted to tune it:
+`card` shares the media+content layout vocabulary with `bento-cell` and every other media-bearing rune. The body splits on `---` into **media → body → footer** (media-first, in source order); `media-position` decides where the media sits visually, independently of source order.
 
-| Attribute | Values | Description |
-|-----------|--------|-------------|
-| `href` | string | Optional whole-card link target. |
-| `layout` | `stacked` \| `split` \| `split-reverse` | Media/body arrangement on wide screens. |
-| `collapse` | `sm` \| `md` \| `lg` \| `never` | Breakpoint at which a split collapses to stacked. |
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `media-position` | `string` | `top` | Where the media sits: `top`, `bottom`, `start` (left), or `end` (right) |
+| `media-ratio` | `string` | — | Media zone's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
+| `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
+| `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
+| `href` | `string` | — | Optional whole-card link target |
 
 ## Feeding a card from a collection
 
@@ -119,7 +121,7 @@ In a `grid`, every card in a row shares the height of the tallest one, and the b
 ## Output contract
 
 ```html
-<div class="rf-card" data-rune="card" data-layout="stacked" data-media-position="top">
+<div class="rf-card" data-rune="card" data-media-position="top">
   <div data-section="media" data-name="media">…</div>
   <div data-name="content">
     <div data-name="body">

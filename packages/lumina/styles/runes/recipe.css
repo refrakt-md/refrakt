@@ -18,18 +18,20 @@
 	padding: max(0px, calc(var(--rune-padding, var(--rf-spacing-md)) - var(--rf-recipe-edge)));
 }
 
-/* Direct grid properties (column-gap / row-gap) rather than overriding
- * `--split-gap`: the split layout transform emits `--split-gap` inline even when
- * the author doesn't set the gap attribute, so a CSS-variable override would
- * lose to inline-style specificity. */
-.rf-recipe[data-layout="split"],
-.rf-recipe[data-layout="split-reverse"] {
+/* Direct grid properties (column-gap / row-gap) rather than overriding shared
+ * media-position layout vars — the per-rune rules win via selector specificity
+ * and stay in our control regardless of inline styles. */
+.rf-recipe[data-media-position="start"],
+.rf-recipe[data-media-position="end"] {
 	column-gap: var(--rf-recipe-split-gap);
 	row-gap: var(--rf-recipe-media-gap);
 }
 
-.rf-recipe[data-layout="stacked"] > [data-section="media"] {
+.rf-recipe[data-media-position="top"] > [data-section="media"] {
 	margin-bottom: var(--rf-recipe-media-gap);
+}
+.rf-recipe[data-media-position="bottom"] > [data-section="media"] {
+	margin-top: var(--rf-recipe-media-gap);
 }
 
 .rf-recipe .rf-recipe__eyebrow {

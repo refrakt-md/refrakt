@@ -17,18 +17,19 @@
 	padding: max(0px, calc(var(--rune-padding, var(--rf-spacing-md)) - var(--rf-playlist-edge)));
 }
 
-/* Direct grid properties (column-gap / row-gap) rather than overriding
- * `--split-gap`: the split layout transform emits `--split-gap` inline even when
- * the author doesn't set the gap attribute, so a CSS-variable override would
- * lose to inline-style specificity. */
-.rf-playlist[data-layout="split"],
-.rf-playlist[data-layout="split-reverse"] {
+/* Direct grid properties (column-gap / row-gap) win via selector specificity
+ * over the shared media-position layout vars. */
+.rf-playlist[data-media-position="start"],
+.rf-playlist[data-media-position="end"] {
 	column-gap: var(--rf-playlist-split-gap);
 	row-gap: var(--rf-playlist-media-gap);
 }
 
-.rf-playlist[data-layout="stacked"] > [data-section="media"] {
+.rf-playlist[data-media-position="top"] > [data-section="media"] {
 	margin-bottom: var(--rf-playlist-media-gap);
+}
+.rf-playlist[data-media-position="bottom"] > [data-section="media"] {
+	margin-top: var(--rf-playlist-media-gap);
 }
 
 /* Inner header (headline + description) inside content */

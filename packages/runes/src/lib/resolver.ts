@@ -234,12 +234,22 @@ export function resolveDelimited(
 		};
 	}
 
-	// Named zones: each group maps to a declared zone by index
+	// Named zones: each group maps to a declared zone by index, with one
+	// exception — if there's a single group AND a `primary` zone is declared,
+	// the group goes to the primary zone instead of zone 0. This lets a
+	// `[media, content]` schema treat a single-block body (no `---`) as
+	// content rather than media, matching authoring intuition.
 	const result: ResolvedContent = {};
 	if (model.zones) {
+		const primaryIdx = groups.length === 1 ? model.zones.findIndex(z => z.primary) : -1;
 		for (let i = 0; i < model.zones.length; i++) {
 			const zone = model.zones[i];
-			const group = i < groups.length ? groups[i] : [];
+			let group: Node[];
+			if (primaryIdx >= 0) {
+				group = i === primaryIdx ? groups[0] : [];
+			} else {
+				group = i < groups.length ? groups[i] : [];
+			}
 			result[zone.name] = resolveSequence(group, zone.fields);
 		}
 	}

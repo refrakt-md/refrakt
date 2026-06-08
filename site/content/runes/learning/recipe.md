@@ -51,6 +51,17 @@ A rich and creamy Italian pasta dish.
 
 Recipe supports an optional eyebrow, headline, and blurb above the section above ingredients and method. Place a short paragraph or heading before the main content to use them. See [Page sections](/extend/rune-authoring/page-sections) for the full syntax.
 
+### Layout attributes
+
+The body splits on `---` into **media → content → footer** zones (media-first in source). `media-position` controls visual placement independently of source order.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `media-position` | `string` | `top` | Where the media sits: `top`, `bottom`, `start` (left), `end` (right) |
+| `media-ratio` | `string` | — | Media's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
+| `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
+| `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
+
 ### Common attributes
 
 All block runes share these attributes for layout and theming.

@@ -60,27 +60,13 @@ Refrakt gives you the building blocks to ship structured content sites without f
 
 {% /preview %}
 
-## Split layout
+## Media on the right (`end`)
 
-Use `layout="split"` to place definitions alongside a media column — an image, code block, or any other content. A horizontal rule (`---`) separates the two sections.
+Use `media-position="end"` to place definitions alongside a media column — an image, code block, or any other content. A horizontal rule (`---`) separates the **media** block (first) from the **content** block (second).
 
 {% preview source=true %}
 
-{% feature layout="split" %}
-why Refrakt
-
-## Built for versatility
-
-- **Zero config**
-
-  Drop Markdown files into your content directory. Routing, layouts, and type generation happen automatically.
-
-- **Framework agnostic**
-
-  The identity transform is pure data. Render with Svelte, React, or anything else.
-
----
-
+{% feature media-position="end" %}
 {% codegroup %}
 ```yaml title="refrakt.config.ts"
 export default {
@@ -99,34 +85,31 @@ title: Home
 {% /hero %}
 ```
 {% /codegroup %}
+
+---
+
+why Refrakt
+
+## Built for versatility
+
+- **Zero config**
+
+  Drop Markdown files into your content directory. Routing, layouts, and type generation happen automatically.
+
+- **Framework agnostic**
+
+  The identity transform is pure data. Render with Svelte, React, or anything else.
 {% /feature %}
 
 {% /preview %}
 
-## Split reversed
+## Media on the left (`start`)
 
-Use `layout="split-reverse"` to swap the column order — media on the left, definitions on the right.
+Use `media-position="start"` to swap the column order — media on the left, definitions on the right.
 
 {% preview source=true %}
 
-{% feature layout="split-reverse" %}
-pipeline
-## How it works
-
-- **Parse**
-
-  Markdoc turns your Markdown into an AST.
-
-- **Transform**
-
-  Rune schemas reinterpret the AST nodes based on context.
-
-- **Render**
-
-  The identity transform adds BEM classes and structural elements. Your theme takes it from there.
-
----
-
+{% feature media-position="start" %}
 {% codegroup %}
 ```ts title="transform.ts"
 const ast = Markdoc.parse(content);
@@ -144,6 +127,23 @@ const tree = Markdoc.transform(ast, {
 </section>
 ```
 {% /codegroup %}
+
+---
+
+pipeline
+## How it works
+
+- **Parse**
+
+  Markdoc turns your Markdown into an AST.
+
+- **Transform**
+
+  Rune schemas reinterpret the AST nodes based on context.
+
+- **Render**
+
+  The identity transform adds BEM classes and structural elements. Your theme takes it from there.
 {% /feature %}
 
 {% /preview %}
@@ -152,16 +152,22 @@ const tree = Markdoc.transform(ast, {
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `layout` | `string` | `stacked` | Layout mode: `stacked`, `split`, or `split-reverse` |
-| `align` | `string` | `center` | Content alignment: `left`, `center`, or `right` |
-| `ratio` | `string` | `1 1` | Column width ratio in split layout (e.g., `2 1`, `1 2`) |
-| `valign` | `string` | `top` | Vertical alignment in split layout: `top`, `center`, or `bottom` |
-| `gap` | `string` | `default` | Gap between columns: `none`, `tight`, `default`, or `loose` |
-| `collapse` | `string` | — | Collapse to single column at breakpoint: `sm`, `md`, `lg`, or `never` |
+| `align` | `string` | `center` | Horizontal alignment of headline + body text: `left`, `center`, `right` |
 
 ## Section header
 
 Feature supports an optional eyebrow, headline, and blurb above the section above feature items. Place a short paragraph or heading before the main content to use them. See [Page sections](/extend/rune-authoring/page-sections) for the full syntax.
+
+### Layout attributes
+
+The body splits on `---` into **media → content** zones (media-first in source). `media-position` controls visual placement independently of source order. In beside layouts (`start`/`end`), the definitions stack vertically inside the content column; in `top`/`bottom`, they tile as a grid.
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `media-position` | `string` | `top` | Where the media sits: `top`, `bottom`, `start` (left), `end` (right) |
+| `media-ratio` | `string` | — | Media's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
+| `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
+| `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
 
 ### Common attributes
 

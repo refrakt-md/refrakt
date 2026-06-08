@@ -3,7 +3,7 @@ import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
-import { SplitLayoutModel, buildLayoutMetas, extractMediaImage } from './common.js';
+import { SplitLayoutModel, buildLayoutMetas, splitMediaBodyFooter, extractMediaImage } from './common.js';
 
 /**
  * `card` (SPEC-070) — a generic, self-contained content card.
@@ -37,27 +37,10 @@ export const card = createContentModelSchema({
 		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
-		// Split the body nodes on `hr` (`---`) into zones.
-		const nodes = asNodes(resolved.body);
-		const zones: Node[][] = [[]];
-		for (const n of nodes) {
-			if (n.type === 'hr') zones.push([]);
-			else zones[zones.length - 1].push(n);
-		}
-
-		let mediaNodes: Node[] = [];
-		let bodyNodes: Node[] = [];
-		let footerNodes: Node[] = [];
-		if (zones.length === 1) {
-			bodyNodes = zones[0];
-		} else if (zones.length === 2) {
-			mediaNodes = zones[0];
-			bodyNodes = zones[1];
-		} else {
-			mediaNodes = zones[0];
-			footerNodes = zones[zones.length - 1];
-			bodyNodes = zones.slice(1, -1).flat();
-		}
+		// Split the body on `---` into media / body / footer zones. The shared
+		// helper enforces the canonical media-first body shape (1 group = body,
+		// 2 = media + body, 3+ = media + body + footer).
+		const { media: mediaNodes, body: bodyNodes, footer: footerNodes } = splitMediaBodyFooter(asNodes(resolved.body));
 
 		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
 
@@ -142,7 +125,7 @@ export const card = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'card',
 			tag: 'div',
-			properties: { layout: layoutMetas.layout },
+			properties: { 'media-position': layoutMetas.mediaPosition },
 			refs,
 			children,
 		});
