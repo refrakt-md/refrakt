@@ -70,8 +70,16 @@ Branch: `claude/v0.19-bento`
 - `.changeset/bento-levels.md`.
 
 ### Notes
-- Base level is now auto-detected per SPEC-085/ADR-013, replacing the hardcoded h2 — only changes grids starting deeper than h2 (toward the spec).
 - `levels` is build-time only (no data attribute / CSS) → no structure-contract change.
 - Ladder rungs are absolute against `columns` (no proportional entries), per ADR-013; proportional rungs remain a forward-compatible follow-up.
+
+### Amendment (2026-06-08): absolute heading level
+The depth model shipped as **absolute heading level**, not the auto-detected
+relative depth described in the original Notes and acceptance criteria above:
+`#`→full, `##`→large, `###`→medium, `####`+→small, and `levels` rungs indexed by
+absolute level (rung 0 = `#`/h1), clamped to the last rung. This supersedes the
+"auto-detected base / relative heading depth" wording in the criteria and the
+(now removed) auto-detect Notes bullet. Rationale and full detail: {% ref "ADR-013" /%}
+("Amendment"). Tests and docs were updated to match.
 
 {% /work %}

@@ -2,6 +2,34 @@
 
 # Bento `levels` — an author-defined heading→footprint ladder
 
+## Amendment (2026-06-08): absolute heading level, not relative depth
+
+During implementation this decision's depth model was **reversed**: heading sugar
+now keys off the **absolute heading level**, not relative depth from an
+auto-detected base. The "relative heading depth (0 = shallowest, auto-detected
+base)" language throughout the sections below is **superseded**, as is the claim
+that "the absolute-vs-relative question dissolves" — it was *resolved*, in favour
+of absolute.
+
+**Shipped behaviour:**
+- **Tiered sizing** is a fixed level→size map: `#`→`full`, `##`→`large`,
+  `###`→`medium`, `####`+→`small`. Every heading becomes a cell (including `#`).
+- **`levels` rungs are indexed by absolute heading level** — rung 0 = `#`/h1,
+  rung 1 = `##`/h2, rung 2 = `###`/h3, … — clamped to the last rung.
+  `levels="6,5,4,3,2,1"` still revives span mode; the mapping is level→rung-index
+  rather than depth-from-shallowest.
+
+**Why the reversal:** absolute is *local and predictable* — a given heading level
+always yields the same tile, independent of its siblings. Auto-detection made a
+cell's size depend on what *other* headings happened to be in the grid (add a
+shallower heading and every other cell resizes), which is surprising to author and
+brittle under edits. The cost the original feared — "a grid that starts at h3 gets
+large cells" — is instead embraced as the honest, predictable rule (`###` is
+always `medium`), and `full` (h1) is now reachable from headings.
+
+The rejected-alternatives analysis below still stands (faithful formula,
+proportional ladder, proportional entries); only the depth-indexing basis changed.
+
 ## Context
 
 A heading carries one signal: ordinal depth (`h2 > h3 > h4` — prominence, one
