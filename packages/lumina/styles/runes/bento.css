@@ -33,9 +33,9 @@
  *     (flex:1) absorbs the rest of the cell width.
  * The cascade is pure CSS variable inheritance — grid sets the var on the
  * section, a cell redeclares it on itself. */
-.rf-bento[data-content-height="sm"], .rf-bento-cell[data-content-height="sm"] { --cell-content-height: 3rem; }
-.rf-bento[data-content-height="md"], .rf-bento-cell[data-content-height="md"] { --cell-content-height: 5rem; }
-.rf-bento[data-content-height="lg"], .rf-bento-cell[data-content-height="lg"] { --cell-content-height: 7rem; }
+.rf-bento[data-content-height="sm"], .rf-bento-cell[data-content-height="sm"] { --cell-content-height: 3rem; --cell-content-overflow: hidden; }
+.rf-bento[data-content-height="md"], .rf-bento-cell[data-content-height="md"] { --cell-content-height: 5rem; --cell-content-overflow: hidden; }
+.rf-bento[data-content-height="lg"], .rf-bento-cell[data-content-height="lg"] { --cell-content-height: 7rem; --cell-content-overflow: hidden; }
 
 .rf-bento[data-media-ratio="1/3"], .rf-bento-cell[data-media-ratio="1/3"] { --cell-media-ratio: 33.333%; }
 .rf-bento[data-media-ratio="2/5"], .rf-bento-cell[data-media-ratio="2/5"] { --cell-media-ratio: 40%; }
@@ -46,12 +46,15 @@
 /* content-height pins the text area on COLUMN cells only (top/bottom — and
  * no-media cells, which default to `top`). Positive selectors keep this at the
  * same specificity as the mobile/collapse stack resets below, so those still win
- * and the text area returns to natural height when stacked. `overflow:hidden`
- * is inert until the basis actually constrains (auto = natural height). */
+ * and the text area returns to natural height when stacked. Both the basis and
+ * the clip are gated on content-height being set (via the cascading vars): when
+ * unset they fall back to `auto` / `visible`, so the content zone keeps its
+ * default overflow and a bleeding showcase (negative margins) still reaches the
+ * cell edge. The clip only engages when you actually pin the height. */
 .rf-bento-cell[data-media-position="top"] > .rf-bento-cell__content,
 .rf-bento-cell[data-media-position="bottom"] > .rf-bento-cell__content {
 	flex-basis: var(--cell-content-height, auto);
-	overflow: hidden;
+	overflow: var(--cell-content-overflow, visible);
 }
 
 /* Cell footprint: resolved `cols`/`rows` spans, auto-capped to the effective
