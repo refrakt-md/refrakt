@@ -225,12 +225,6 @@ export const config: Record<string, RuneConfig> = {
 			sort: { source: 'meta', noBemClass: true },
 		},
 	},
-	PlanProgress: {
-		block: 'plan-progress',
-		modifiers: {
-			show: { source: 'meta', noBemClass: true },
-		},
-	},
 	PlanActivity: {
 		block: 'plan-activity',
 		modifiers: {

@@ -3,7 +3,6 @@ import { readField as readNodeField } from '@refrakt-md/transform';
 import type { PluginPipelineHooks, EntityRegistration } from '@refrakt-md/types';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { PLAN_PROGRESS_SENTINEL } from './tags/plan-progress.js';
 import { PLAN_HISTORY_SENTINEL } from './tags/plan-history.js';
 import { parseFilter, matchesFilter } from './filter.js';
 import { execSync } from 'node:child_process';
@@ -620,11 +619,12 @@ export const planPipelineHooks: PluginPipelineHooks = {
 			// they're picked up by the core `resolveCollections` postProcess —
 			// no plan-side branch needed.
 
-			// Handle plan-progress sentinel
-			if (tag.attributes['data-rune'] === 'plan-progress' && hasSentinel(tag, PLAN_PROGRESS_SENTINEL)) {
-				modified = true;
-				return resolvePlanProgress(tag, planData);
-			}
+			// plan-progress is now thin sugar over `aggregate` (WORK-296): its
+			// schema emits a `data-rune="aggregate"` renderable with
+			// AGGREGATE_SENTINEL, resolved by the core `resolveAggregates`
+			// postProcess — no plan-side branch, like backlog / decision-log /
+			// plan-activity over `collection`.
+
 			// Handle plan-history sentinel
 			if (tag.attributes['data-rune'] === 'plan-history' && hasSentinel(tag, PLAN_HISTORY_SENTINEL)) {
 				modified = true;
@@ -637,8 +637,7 @@ export const planPipelineHooks: PluginPipelineHooks = {
 			// the `entityRoutes` render-template level (WORK-280 / WORK-281)
 			// using the generic `relationships` + `plan-history` + `collection`
 			// + `progress` runes. The plugin's postProcess now only resolves
-			// its own rune sentinels (backlog / decision-log / plan-progress /
-			// plan-activity / plan-history) — no more renderable mutation
+			// its own rune sentinels (plan-history) — no more renderable mutation
 			// targeting other runes.
 			return tag;
 		});
@@ -647,92 +646,6 @@ export const planPipelineHooks: PluginPipelineHooks = {
 		return { ...page, renderable: newRenderable as typeof page.renderable };
 	},
 };
-
-
-// --- Status labels for display ---
-const STATUS_LABELS: Record<string, string[]> = {
-	work: ['done', 'in-progress', 'review', 'ready', 'blocked', 'draft', 'pending'],
-	bug: ['fixed', 'in-progress', 'confirmed', 'reported', 'wontfix', 'duplicate'],
-	spec: ['accepted', 'review', 'draft', 'superseded', 'deprecated'],
-	decision: ['accepted', 'proposed', 'superseded', 'deprecated'],
-	milestone: ['complete', 'active', 'planning'],
-};
-
-const TYPE_LABELS: Record<string, string> = {
-	work: 'work items',
-	bug: 'bugs',
-	spec: 'specs',
-	decision: 'decisions',
-	milestone: 'milestones',
-};
-
-function resolvePlanProgress(tag: InstanceType<typeof Tag>, data: PlanAggregatedData): InstanceType<typeof Tag> {
-	const show = readField(tag, 'show') || 'all';
-
-	const typeMap: Record<string, EntityRegistration[]> = {
-		work: data.workEntities,
-		bug: data.bugEntities,
-		spec: data.specEntities,
-		decision: data.decisionEntities,
-		milestone: data.milestoneEntities,
-	};
-
-	const types = show === 'all' ? Object.keys(typeMap) : show.split(',').map(s => s.trim());
-	const rows: any[] = [];
-
-	for (const type of types) {
-		const entities = typeMap[type];
-		if (!entities || entities.length === 0) continue;
-
-		const statusCounts = new Map<string, number>();
-		for (const e of entities) {
-			const status = String(e.data.status ?? 'unknown');
-			statusCounts.set(status, (statusCounts.get(status) ?? 0) + 1);
-		}
-
-		// Build status count spans in canonical order
-		const statusOrder = STATUS_LABELS[type] ?? [];
-		const countSpans: any[] = [];
-		for (const status of statusOrder) {
-			const count = statusCounts.get(status);
-			if (!count) continue;
-			countSpans.push(new Tag('span', {
-				class: 'rf-plan-progress__count',
-				'data-status': status,
-			}, [`${count} ${status}`]));
-		}
-		// Include any statuses not in the canonical list
-		for (const [status, count] of statusCounts) {
-			if (statusOrder.includes(status)) continue;
-			countSpans.push(new Tag('span', {
-				class: 'rf-plan-progress__count',
-				'data-status': status,
-			}, [`${count} ${status}`]));
-		}
-
-		const label = TYPE_LABELS[type] ?? type;
-		const row = new Tag('div', {
-			class: 'rf-plan-progress__row',
-			'data-type': type,
-		}, [
-			new Tag('span', { class: 'rf-plan-progress__label' }, [`${entities.length} ${label}`]),
-			new Tag('span', { class: 'rf-plan-progress__counts' }, countSpans),
-		]);
-		rows.push(row);
-	}
-
-	const itemsDiv = new Tag('div', { 'data-name': 'items' }, rows);
-
-	const newChildren = tag.children.filter(
-		(c: unknown) => !(Markdoc.Tag.isTag(c) && (
-			c.attributes['data-field'] === PLAN_PROGRESS_SENTINEL ||
-			c.attributes['data-name'] === 'items'
-		)),
-	);
-	newChildren.push(itemsDiv);
-
-	return new Tag(tag.name, tag.attributes, newChildren as any[]);
-}
 
 
 // ─── Plan History Resolution ───
