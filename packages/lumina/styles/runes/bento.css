@@ -72,10 +72,12 @@
 }
 .rf-bento-cell {
 	border-radius: var(--rf-radius-container);
-	/* Expose the cell padding so the media banner can bleed against it (the cell
-	 * hardcodes its padding rather than using --rune-padding). */
+	/* The cell hugs its media with only a thin edge margin; the content zone adds
+	 * the remaining inset back (below), so copy still sits at the full padding
+	 * while media — and a media banner — sits close to the cell border. */
 	--container-padding: 1.25rem;
-	padding: var(--container-padding);
+	--bento-cell-edge: 0.5rem;
+	padding: var(--bento-cell-edge);
 	border: 1px solid var(--rf-color-border);
 	overflow: hidden;
 	position: relative; /* anchor for the stretched link */
@@ -100,14 +102,23 @@
 
 /* Zones. The WORK-339 media-zone selector sizes/clips any guest — no per-guest
  * CSS here. */
-.rf-bento-cell__media { margin-bottom: 0.875rem; }
+.rf-bento-cell__media { margin-bottom: 0; }
 /* Text-first: the body keeps its natural height and is never squeezed out by
  * media. In a fixed grid track the media zone (top/bottom) absorbs the leftover
  * height and crops (cover); once collapsed to a stack it becomes an aspect-ratio
  * banner (below). `--bento-media-aspect` is the knob SPEC-086's `frame-aspect`
  * will drive; `--bento-media-anchor` picks which slice shows when cropped (e.g.
  * `top` to peek the top of a tall guest like a phone mockup). */
-.rf-bento-cell__content { display: flex; flex-direction: column; min-height: 0; flex: 0 0 auto; }
+/* Add the remaining inset back on top of the cell's thin edge, so text sits at
+ * the full `--container-padding`. The top inset doubles as the gap between media
+ * and copy (media zone carries no margin of its own). */
+.rf-bento-cell__content {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	flex: 0 0 auto;
+	padding: calc(var(--container-padding) - var(--bento-cell-edge));
+}
 .rf-bento-cell[data-media-position="top"] > .rf-bento-cell__media,
 .rf-bento-cell[data-media-position="bottom"] > .rf-bento-cell__media {
 	flex: 1 1 auto;
