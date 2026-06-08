@@ -1,0 +1,22 @@
+/* plan-progress (SPEC-076 / WORK-296) — a stack of per-type blocks, each a type
+ * heading + an `aggregate` composition (progress bar + status badges). The bar
+ * and badge-row chrome come from the `progress` / `aggregate` / `badge` runes;
+ * this file only lays out the per-type grouping. */
+.rf-plan-progress {
+	display: flex;
+	flex-direction: column;
+	gap: var(--rf-spacing-lg, 2rem);
+}
+.rf-plan-progress__group {
+	display: flex;
+	flex-direction: column;
+	gap: var(--rf-spacing-sm, 0.75rem);
+}
+.rf-plan-progress__heading {
+	margin: 0;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--rf-color-muted);
+}
