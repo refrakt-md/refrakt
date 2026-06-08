@@ -85,6 +85,8 @@
 .rf-feature[data-media-position="start"] .rf-feature__feature-item,
 .rf-feature[data-media-position="end"] .rf-feature__feature-item {
 	background: none;
+	border: none;
+	border-radius: 0;
 	padding: 0.75rem 0;
 }
 .rf-feature__feature-item {
