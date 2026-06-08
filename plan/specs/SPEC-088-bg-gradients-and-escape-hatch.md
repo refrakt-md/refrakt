@@ -36,11 +36,14 @@ bounded escape that travels with the **content/project**, not the theme.
 
 ## Design
 
-### 1. `bg` gradient — token-driven, structured
+### 1. `bg` gradient fill — token-driven, structured
 
-A gradient fill is a `background-image: linear-gradient(…)` (and `radial`/`conic`)
-generated from **token references**, never raw colours — so the theme/`tint` still own
-the actual colours and gradients track the active theme.
+Gradients appear in **two positions** on the bg layer, both token-driven: the **fill**
+(the base layer, this section — a gradient backdrop replacing/augmenting the image) and
+the **scrim** (a gradient in the overlay layer for legibility over an image, §3). Both
+generate `background-image: linear-gradient(…)` (and `radial`/`conic`) from **token
+references**, never raw colours — so the theme/`tint` still own the actual colours and
+gradients track the active theme.
 
 - **Inline facets** (portable):
   - `bg-gradient` — direction, a bounded named set (`to-t|to-b|to-l|to-r|to-tr|to-br|to-bl|to-tl`), consistent with the named-scale convention (no raw angles — that's the escape hatch's job, per {% ref "SPEC-086" /%}'s offset-scale decision).
@@ -58,7 +61,7 @@ the actual colours and gradients track the active theme.
   ```
 
   Applied via `bg="brand-fade"`; resolves to `linear-gradient(<direction>, var(--rf-color-<stop>)…)`.
-- **Layering.** A gradient occupies the bg layer slot — it composes *beneath* a `substrate` pattern ({% ref "SPEC-087" /%}: gradient backdrop + dot overlay) and over/with the `tint`/inset fill. Engine emits `--bg-image: linear-gradient(…)` reusing the existing `--bg-image` plumbing in `bg.css`.
+- **Layering.** A fill gradient occupies the **base** bg layer slot — it composes *beneath* a scrim (§3), a `substrate` pattern ({% ref "SPEC-087" /%}: gradient backdrop + dot overlay), and over/with the `tint`/inset fill. Engine emits `--bg-image: linear-gradient(…)` reusing the existing `--bg-image` plumbing in `bg.css`.
 
 ### 2. The escape hatch, formalized
 
@@ -80,30 +83,32 @@ a stated contract:
   in `style` (or `overlay`) that a structured facet now covers, pointing to the facet —
   keeping the escape hatch honest without forbidding it.
 
-### 3. `overlay` reconciled
+### 3. `overlay` and `scrim` reconciled
 
-- Constrain `overlay` to a **structured vocabulary**: `none | dark | light` plus an
-  optional token reference + opacity (`overlay="primary"`, `overlay-opacity`), routing
-  gradient/colour overlays through the gradient facet or the `style` escape hatch.
-- **Deprecate** the unvalidated raw-string passthrough: keep it working for one minor
-  with a build warning that points to the gradient facet / escape hatch, then remove —
-  mirroring SPEC-086's deprecation-alias approach.
+The overlay layer serves two jobs today, conflated behind one unvalidated string: a flat
+wash (`dark`/`light`) and an ad-hoc legibility gradient (`overlay="linear-gradient(…)"`).
+Split them into two structured facets:
+
+- **`overlay`** — a flat wash, constrained to a **structured vocabulary**: `none | dark | light` plus an optional token reference + opacity (`overlay="primary"`, `overlay-opacity`).
+- **`scrim`** — a structured, **directional, token-driven gradient in the overlay slot** (over the image, beneath content) for text legibility — the poster-card / cover-image case ({% ref "SPEC-087" /%} boundary: full-surface image-behind-text is `bg`, not a media-slot overlay). `scrim="bottom"` (direction from the same bounded set as `bg-gradient`) plus `scrim-strength="sm|md|lg"`; colours from tokens (a neutral darken/lighten by default). This is the **structured replacement** for the raw `overlay="linear-gradient(…)"` scrim.
+- **Deprecate** the unvalidated raw-string `overlay` passthrough: keep it working for one minor with a build warning pointing to `scrim` (gradient overlays) or `overlay`/`style` (flat/exotic), then remove — mirroring SPEC-086's deprecation-alias approach. The deprecation is **gated on `scrim` shipping**, so no use case (notably the legibility scrim) loses its path.
 
 ## Acceptance Criteria
 
 - [ ] `bg` supports a token-driven gradient via inline facets `bg-gradient` (bounded direction set), `bg-from|to|via` (semantic token references → `var(--rf-color-*)`), `bg-gradient-type` (`linear|radial|conic`); colours stay token-owned so gradients track the theme/`tint`.
 - [ ] Named gradient presets are defined **structurally** on `BgPresetDefinition.gradient` (type + direction + token-name stops), not via the raw `style` map; `bg="name"` applies one; `extends` resolution works as for other presets.
-- [ ] A gradient occupies the bg layer slot and composes beneath a `substrate` pattern ({% ref "SPEC-087" /%}) and with the `tint`/inset fill (reuses `--bg-image`).
+- [ ] Gradients exist in **two positions** — a **fill** (base bg layer, reuses `--bg-image`) and a **scrim** (overlay layer); the fill composes beneath the scrim, a `substrate` pattern ({% ref "SPEC-087" /%}), and with the `tint`/inset fill.
 - [ ] `BgPresetDefinition.style` is documented as an intentional, last-resort escape hatch with a stated contract (raw CSS on the bg layer, bypasses tokens, author owns portability), valid in both theme config and project config (`refrakt.config.json`); project `backgrounds` merge over theme `backgrounds`.
 - [ ] A build-time soft warning flags a raw gradient/background in `style` or `overlay` that a structured facet covers, pointing to the facet.
-- [ ] `overlay` is constrained to `none|dark|light` (+ optional token reference / opacity); the unvalidated raw-string passthrough is deprecated with a build warning for one minor, then removed, with a documented migration.
+- [ ] `overlay` (flat wash) is constrained to `none|dark|light` (+ optional token reference / opacity), and a structured **`scrim`** facet provides a directional, token-driven gradient overlay (`scrim="bottom"` + `scrim-strength`) for legibility over images — the structured replacement for raw `overlay="linear-gradient(…)"`.
+- [ ] The unvalidated raw-string `overlay` passthrough is deprecated with a build warning for one minor, then removed (migration to `scrim`/`overlay`/`style`); the deprecation is **gated on `scrim` shipping** so no use case loses its path.
 - [ ] The `bg` reference docs document gradients (facets + presets), the escape hatch (contract + config home), and the `overlay` change; cross-linked with {% ref "SPEC-087" /%} (surface-fill layering) and {% ref "SPEC-086" /%}.
 
 ## Work breakdown (provisional)
 
 1. **Gradient facet + structured preset field** — `BgPresetDefinition.gradient`, inline facets, engine resolution (token-name stops → `var(--rf-color-*)`, → `--bg-image`), `bg.css`.
 2. **Formalize the escape hatch** — document the `style` contract; add/confirm project-config (`refrakt.config.json`) `backgrounds` home and merge-over-theme semantics.
-3. **Constrain `overlay` + deprecation path** — structured vocabulary, raw-string passthrough warns then removed; migration notes.
+3. **`overlay` + `scrim` + deprecation path** — flat-wash `overlay` vocabulary; structured directional `scrim` gradient overlay (the legibility replacement); raw-string passthrough warns then removed (gated on `scrim`); migration notes.
 4. **Soft-lint** — flag raw CSS in `style`/`overlay` that a structured facet now covers.
 5. **Docs** — `bg` reference (gradients + escape hatch + overlay), cross-links.
 

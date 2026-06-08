@@ -130,6 +130,7 @@ Three owners, distinct responsibilities:
 - `tint` may later want the same self/media-well targeting (to colour a card's well independently). This spec defines the addressable media-well surface **once** and wires `substrate` + the inset fill to it; media-targeted `tint` is a follow-on (the inset-fill default already covers the common "well recedes" case).
 - `bg` is unchanged; `substrate` composes above a `bg` layer (pattern over photo) when both are present.
 - **Gradient fills are `bg`'s domain, not substrate's.** A smooth colour gradient is a token-driven `background-image` (`linear-gradient` with stops from `--rf-color-*`), occupying the same layer slot as a `bg` photo and composing *beneath* a substrate pattern (gradient backdrop + dot overlay). Spec'd separately in {% ref "SPEC-088" /%} (`bg` gradients + formalized escape hatch); noted here only to mark the seam.
+- **Full-surface image-behind-text is `bg`, not a media-slot overlay.** The media slot hosts a guest *alongside* content (a bounded, non-overlapping region); `bg` is the layer *behind* all content. So a poster/cover card — an image covering the surface with text over it and a legibility gradient — is `bg` + `scrim` ({% ref "SPEC-088" /%}), never a media slot rendered in overlay. The media-slot layout stays non-overlapping by contract; the overlay capability lives in `bg`. (A theme may offer a named `poster` card variant as sugar over this, but owns only the styling, not the capability.)
 
 ### Case studies
 
