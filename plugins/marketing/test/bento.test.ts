@@ -188,4 +188,39 @@ x
     expect(JSON.stringify(cells[0])).toContain("Real");
     expect(JSON.stringify(cells[0])).not.toContain("Ignored Heading");
   });
+
+  it("grid-level content-height + media-ratio land on the bento contract", () => {
+    const tag = bentoOf(`{% bento content-height="md" media-ratio="1/3" %}
+## A
+
+x
+{% /bento %}`);
+    expect(fields(tag)["content-height"]).toBe("md");
+    expect(fields(tag)["media-ratio"]).toBe("1/3");
+  });
+
+  it("per-cell content-height / media-ratio override the grid default", () => {
+    const tag = bentoOf(`{% bento content-height="sm" %}
+{% bento-cell content-height="lg" media-ratio="1/2" %}
+## Cell
+
+body
+{% /bento-cell %}
+{% /bento %}`);
+    const cell = cellsOf(tag!)[0];
+    expect(fields(cell)["content-height"]).toBe("lg");
+    expect(fields(cell)["media-ratio"]).toBe("1/2");
+    expect(fields(tag)["content-height"]).toBe("sm"); // grid keeps its own default
+  });
+
+  it("unset content-height / media-ratio are empty (cell inherits the grid/theme default)", () => {
+    const tag = bentoOf(`{% bento %}
+## A
+
+x
+{% /bento %}`);
+    expect(fields(tag)["content-height"]).toBe("");
+    expect(fields(tag)["media-ratio"]).toBe("");
+    expect(fields(cellsOf(tag!)[0])["media-ratio"]).toBe("");
+  });
 });

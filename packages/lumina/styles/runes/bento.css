@@ -23,15 +23,34 @@
 .rf-bento[data-row-height="lg"] { --bento-row-height: 16rem; }
 .rf-bento[data-row-height="xl"] { --bento-row-height: 20rem; }
 
-/* Author content-height presets — pin each cell's text area to a fixed height so
- * cells line up vertically in grid mode (the media zone absorbs the remaining
- * track height). On mobile the stack's content rules reset flex to auto, so the
- * text area becomes natural height again and the overflow clip no longer bites. */
-.rf-bento[data-content-height="sm"] { --bento-content-height: 3rem; }
-.rf-bento[data-content-height="md"] { --bento-content-height: 5rem; }
-.rf-bento[data-content-height="lg"] { --bento-content-height: 7rem; }
-.rf-bento[data-content-height] .rf-bento-cell__content {
-	flex: 0 0 var(--bento-content-height);
+/* content-height / media-ratio — perpendicular text-zone knobs, each settable as
+ * a GRID default (on .rf-bento, inherited by every cell) or a per-CELL override
+ * (on .rf-bento-cell, shadowing the inherited value). A cell is either a column
+ * cell or a beside cell, so the two never collide:
+ *   • column cells (top/bottom/no-media): `content-height` pins the TEXT height;
+ *     the media zone (flex:1) absorbs the rest of the row track.
+ *   • beside cells (start/end): `media-ratio` pins the MEDIA width; the content
+ *     (flex:1) absorbs the rest of the cell width.
+ * The cascade is pure CSS variable inheritance — grid sets the var on the
+ * section, a cell redeclares it on itself. */
+.rf-bento[data-content-height="sm"], .rf-bento-cell[data-content-height="sm"] { --cell-content-height: 3rem; }
+.rf-bento[data-content-height="md"], .rf-bento-cell[data-content-height="md"] { --cell-content-height: 5rem; }
+.rf-bento[data-content-height="lg"], .rf-bento-cell[data-content-height="lg"] { --cell-content-height: 7rem; }
+
+.rf-bento[data-media-ratio="1/3"], .rf-bento-cell[data-media-ratio="1/3"] { --cell-media-ratio: 33.333%; }
+.rf-bento[data-media-ratio="2/5"], .rf-bento-cell[data-media-ratio="2/5"] { --cell-media-ratio: 40%; }
+.rf-bento[data-media-ratio="1/2"], .rf-bento-cell[data-media-ratio="1/2"] { --cell-media-ratio: 50%; }
+.rf-bento[data-media-ratio="3/5"], .rf-bento-cell[data-media-ratio="3/5"] { --cell-media-ratio: 60%; }
+.rf-bento[data-media-ratio="2/3"], .rf-bento-cell[data-media-ratio="2/3"] { --cell-media-ratio: 66.667%; }
+
+/* content-height pins the text area on COLUMN cells only (top/bottom — and
+ * no-media cells, which default to `top`). Positive selectors keep this at the
+ * same specificity as the mobile/collapse stack resets below, so those still win
+ * and the text area returns to natural height when stacked. `overflow:hidden`
+ * is inert until the basis actually constrains (auto = natural height). */
+.rf-bento-cell[data-media-position="top"] > .rf-bento-cell__content,
+.rf-bento-cell[data-media-position="bottom"] > .rf-bento-cell__content {
+	flex-basis: var(--cell-content-height, auto);
 	overflow: hidden;
 }
 
@@ -69,7 +88,7 @@
 .rf-bento-cell[data-media-position="end"] { flex-direction: row-reverse; align-items: stretch; }
 .rf-bento-cell[data-media-position="start"] > .rf-bento-cell__media,
 .rf-bento-cell[data-media-position="end"] > .rf-bento-cell__media {
-	flex: 0 0 42%;
+	flex: 0 0 var(--cell-media-ratio, 42%);
 	margin-bottom: 0;
 	align-self: stretch;
 }

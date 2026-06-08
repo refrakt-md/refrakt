@@ -1339,6 +1339,10 @@
 					"source": "meta",
 					"dataAttribute": "data-content-height"
 				},
+				"media-ratio": {
+					"source": "meta",
+					"dataAttribute": "data-media-ratio"
+				},
 				"collapse": {
 					"source": "meta",
 					"dataAttribute": "data-collapse"
@@ -1371,6 +1375,14 @@
 				"rows": {
 					"source": "meta",
 					"dataAttribute": "data-rows"
+				},
+				"content-height": {
+					"source": "meta",
+					"dataAttribute": "data-content-height"
+				},
+				"media-ratio": {
+					"source": "meta",
+					"dataAttribute": "data-media-ratio"
 				}
 			},
 			"inlineStyles": {

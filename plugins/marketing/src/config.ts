@@ -44,6 +44,7 @@ export const config: Record<string, RuneConfig> = {
 			gap: { source: 'meta', default: '1rem', noBemClass: true },
 			'row-height': { source: 'meta', noBemClass: true },
 			'content-height': { source: 'meta', noBemClass: true },
+			'media-ratio': { source: 'meta', noBemClass: true },
 			collapse: { source: 'meta', noBemClass: true },
 		},
 		styles: {
@@ -58,6 +59,8 @@ export const config: Record<string, RuneConfig> = {
 			size: { source: 'meta', default: 'medium', noBemClass: true },
 			cols: { source: 'meta', noBemClass: true },
 			rows: { source: 'meta', noBemClass: true },
+			'content-height': { source: 'meta', noBemClass: true },
+			'media-ratio': { source: 'meta', noBemClass: true },
 		},
 		styles: {
 			cols: '--cell-cols',

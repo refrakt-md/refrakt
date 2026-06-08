@@ -32,6 +32,8 @@ export const bentoCell = createContentModelSchema({
 		cols: { type: Number, required: false },
 		rows: { type: Number, required: false },
 		'media-position': { type: String, required: false, matches: ['top', 'bottom', 'start', 'end'] },
+		'content-height': { type: String, required: false, matches: ['sm', 'md', 'lg'], description: 'Override the grid content-height for this cell (column cells): pin its text area to sm/md/lg' },
+		'media-ratio': { type: String, required: false, matches: ['1/3', '2/5', '1/2', '3/5', '2/3'], description: 'Override the grid media-ratio for this cell (beside cells): the media zone\'s share of the cell width' },
 		href: { type: String, required: false },
 	},
 	contentModel: {
@@ -74,6 +76,15 @@ export const bentoCell = createContentModelSchema({
 		properties.cols = colsMeta;
 		properties.rows = rowsMeta;
 		children.push(colsMeta, rowsMeta);
+
+		// Per-cell overrides of the grid's content-height / media-ratio defaults.
+		// Empty when unset → the cell inherits the grid-level var (or the theme
+		// fallback). content-height applies to column cells, media-ratio to beside.
+		const contentHeightMeta = new Tag('meta', { content: (attrs['content-height'] as string) ?? '' });
+		const mediaRatioMeta = new Tag('meta', { content: (attrs['media-ratio'] as string) ?? '' });
+		properties['content-height'] = contentHeightMeta;
+		properties['media-ratio'] = mediaRatioMeta;
+		children.push(contentHeightMeta, mediaRatioMeta);
 
 		// Media zone — clipped/sized by the shared media-zone selector (WORK-339);
 		// no bento-specific per-guest CSS.
@@ -208,7 +219,8 @@ export const bento = createContentModelSchema({
 		gap: { type: String, required: false, description: 'Space between grid cells (CSS length value)' },
 		columns: { type: Number, required: false, description: 'Number of columns in the bento grid (default 6)' },
 		'row-height': { type: String, required: false, matches: ['sm', 'md', 'lg', 'xl'], description: 'Uniform grid row track height: sm, md (default), lg, or xl' },
-		'content-height': { type: String, required: false, matches: ['sm', 'md', 'lg'], description: 'Pin each cell\'s text area to a fixed height (sm/md/lg) so cells align vertically in grid mode; reverts to natural height on mobile' },
+		'content-height': { type: String, required: false, matches: ['sm', 'md', 'lg'], description: 'Grid default: pin each column cell\'s text area to a fixed height (sm/md/lg) so cells align vertically; per-cell overridable; reverts to natural height on mobile' },
+		'media-ratio': { type: String, required: false, matches: ['1/3', '2/5', '1/2', '3/5', '2/3'], description: 'Grid default for beside (start/end) cells: the media zone\'s share of the cell width; per-cell overridable' },
 		collapse: { type: String, required: false, matches: ['sm', 'md', 'lg', 'never'], description: 'Breakpoint at which the grid drops to a single stacked column' },
 	},
 	contentModel: (attrs) => ({
@@ -247,12 +259,13 @@ export const bento = createContentModelSchema({
 		const columnsMeta = new Tag('meta', { content: String(columns) });
 		const rowHeightMeta = new Tag('meta', { content: (attrs['row-height'] as string) ?? '' });
 		const contentHeightMeta = new Tag('meta', { content: (attrs['content-height'] as string) ?? '' });
+		const mediaRatioMeta = new Tag('meta', { content: (attrs['media-ratio'] as string) ?? '' });
 		const collapseMeta = new Tag('meta', { content: (attrs.collapse as string) ?? '' });
 
 		const cells = cellStream.tag('div').typeof('BentoCell');
 		const grid = cells.wrap('div');
 
-		const children: RenderableTreeNode[] = [gapMeta, columnsMeta, rowHeightMeta, contentHeightMeta, collapseMeta];
+		const children: RenderableTreeNode[] = [gapMeta, columnsMeta, rowHeightMeta, contentHeightMeta, mediaRatioMeta, collapseMeta];
 		if (lead.count() > 0) children.push(...lead.toArray() as RenderableTreeNode[]);
 		children.push(grid.next());
 
@@ -264,6 +277,7 @@ export const bento = createContentModelSchema({
 				columns: columnsMeta,
 				'row-height': rowHeightMeta,
 				'content-height': contentHeightMeta,
+				'media-ratio': mediaRatioMeta,
 				collapse: collapseMeta,
 				cell: cells,
 			},
