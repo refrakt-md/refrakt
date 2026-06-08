@@ -176,6 +176,7 @@ aliases so the major can land later).
 - Preset template: `bg` pipeline — `packages/transform/src/engine.ts` (bg resolution), `BgPresetDefinition`/`ThemeConfig` in `packages/transform/src/types.ts`, `extends` resolution in `packages/transform/src/merge.ts`, `packages/lumina/styles/runes/bg.css`.
 - Universal attributes: `packages/runes/src/attribute-presets.ts` (`UNIVERSAL_ATTRIBUTE_NAMES`).
 - Surface to decorate: media-zone contract {% ref "WORK-339" /%}; composability validation philosophy {% ref "SPEC-084" /%}.
+- Surface *fill* sibling (the other half of the surface model — colour/pattern/inset, not chrome): {% ref "SPEC-087" /%}.
 - Current chrome to absorb: `packages/runes/src/tags/showcase.ts`, `Showcase` config in `packages/runes/src/config.ts`, `packages/lumina/styles/runes/showcase.css`, media rules in `packages/lumina/styles/layouts/split.css`.
 
 {% /spec %}
