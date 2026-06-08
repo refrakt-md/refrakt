@@ -1,5 +1,5 @@
 import type { RuneConfig } from '@refrakt-md/transform';
-import { ratioToFr, resolveValign, resolveGap } from '@refrakt-md/transform';
+import { resolveValign } from '@refrakt-md/transform';
 
 const pageSectionAutoLabel = {
 	header: 'preamble',
@@ -47,22 +47,18 @@ export const config: Record<string, RuneConfig> = {
 		sequence: 'numbered',
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'cover' },
-		rootAttributes: { 'data-media-position': 'top' },
 		modifiers: {
-			layout: { source: 'meta', default: 'stacked' },
+			'media-position': { source: 'meta', default: 'top', noBemClass: true },
 			prepTime: { source: 'meta', noBemClass: true },
 			cookTime: { source: 'meta', noBemClass: true },
 			servings: { source: 'meta', noBemClass: true },
 			difficulty: { source: 'meta', default: 'medium' },
-			ratio: { source: 'meta', default: '1 1', noBemClass: true },
-			valign: { source: 'meta', default: 'top', noBemClass: true },
-			gap: { source: 'meta', default: 'default', noBemClass: true },
+			'media-ratio': { source: 'meta', noBemClass: true },
+			valign: { source: 'meta', noBemClass: true },
 			collapse: { source: 'meta', noBemClass: true },
 		},
 		styles: {
-			ratio: { prop: '--split-ratio', transform: ratioToFr },
 			valign: { prop: '--split-valign', transform: resolveValign },
-			gap: { prop: '--split-gap', transform: resolveGap },
 		},
 		metaFields: {
 			prepTime: { metaType: 'temporal', label: 'Prep', condition: 'prepTime', transform: 'duration' },

@@ -1,5 +1,5 @@
 import type { RuneConfig } from '@refrakt-md/transform';
-import { ratioToFr, resolveValign, resolveGap } from '@refrakt-md/transform';
+import { resolveValign } from '@refrakt-md/transform';
 
 export const config: Record<string, RuneConfig> = {
 	Character: {
@@ -43,22 +43,18 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		sections: { preamble: 'preamble', name: 'title', scene: 'media' },
 		mediaSlots: { scene: 'cover' },
-		rootAttributes: { 'data-media-position': 'top' },
 		modifiers: {
 			realmType: { source: 'meta', default: 'place' },
 			scale: { source: 'meta' },
 			tags: { source: 'meta' },
 			parent: { source: 'meta' },
-			layout: { source: 'meta', default: 'stacked' },
-			ratio: { source: 'meta', default: '1 1', noBemClass: true },
-			valign: { source: 'meta', default: 'top', noBemClass: true },
-			gap: { source: 'meta', default: 'default', noBemClass: true },
+			'media-position': { source: 'meta', default: 'top', noBemClass: true },
+			'media-ratio': { source: 'meta', noBemClass: true },
+			valign: { source: 'meta', noBemClass: true },
 			collapse: { source: 'meta', noBemClass: true },
 		},
 		styles: {
-			ratio: { prop: '--split-ratio', transform: ratioToFr },
 			valign: { prop: '--split-valign', transform: resolveValign },
-			gap: { prop: '--split-gap', transform: resolveGap },
 		},
 		metaFields: {
 			realmType: { metaType: 'category', label: 'Type' },
@@ -106,22 +102,18 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		sections: { preamble: 'preamble', name: 'title', scene: 'media' },
 		mediaSlots: { scene: 'cover' },
-		rootAttributes: { 'data-media-position': 'top' },
 		modifiers: {
 			factionType: { source: 'meta' },
 			alignment: { source: 'meta' },
 			size: { source: 'meta' },
 			tags: { source: 'meta' },
-			layout: { source: 'meta', default: 'stacked' },
-			ratio: { source: 'meta', default: '1 1', noBemClass: true },
-			valign: { source: 'meta', default: 'top', noBemClass: true },
-			gap: { source: 'meta', default: 'default', noBemClass: true },
+			'media-position': { source: 'meta', default: 'top', noBemClass: true },
+			'media-ratio': { source: 'meta', noBemClass: true },
+			valign: { source: 'meta', noBemClass: true },
 			collapse: { source: 'meta', noBemClass: true },
 		},
 		styles: {
-			ratio: { prop: '--split-ratio', transform: ratioToFr },
 			valign: { prop: '--split-valign', transform: resolveValign },
-			gap: { prop: '--split-gap', transform: resolveGap },
 		},
 		metaFields: {
 			factionType: { metaType: 'category', label: 'Type', condition: 'factionType' },

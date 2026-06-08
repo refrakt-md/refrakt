@@ -4,6 +4,17 @@
  * Padding scales with density via --rune-padding custom property.
  * ────────────────────────────────────────────────────────────────────── */
 
+/* Semantic surface/media aliases over the raw token scale (these reference
+ * tokens rather than holding raw values, so they live in the styles layer, not
+ * the generated token contract). Outer surfaces round at --rf-radius-container;
+ * media guests nested inside them round at the smaller --rf-radius-media so they
+ * never read as more rounded than their container. SPEC-086's `frame` will
+ * override these per-instance. */
+:root {
+	--rf-radius-container: var(--rf-radius-lg);
+	--rf-radius-media: var(--rf-radius-md);
+}
+
 /* ─── Rune Spacing ────────────────────────────────────────────────── */
 /* Only top-level runes get vertical margin; child runes (nav items,
    accordion items, grid cells, etc.) inherit spacing from their parent.
@@ -42,7 +53,8 @@
 .rf-howto,
 .rf-form {
 	background: var(--rf-color-surface);
-	border-radius: var(--rf-radius-md);
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-container);
 	padding: var(--rune-padding, var(--rf-spacing-md));
 }
 
@@ -86,6 +98,7 @@
 .rf-figure,
 .rf-reveal {
 	background: var(--rf-color-surface);
-	border-radius: var(--rf-radius-md);
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-container);
 	padding: var(--rune-padding, var(--rf-spacing-md));
 }

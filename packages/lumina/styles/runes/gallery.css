@@ -1,7 +1,18 @@
-/* Gallery — Multi-image container with grid/carousel/masonry layout */
+/* Gallery — Multi-image container with grid/carousel/masonry layout.
+ *
+ * Thin-edge tile mosaic: a gallery is media all the way down (every child is an
+ * image), so the outer padding is treated as a frame margin and locked to the
+ * same value as the inter-item gap — outer = inter = a single visual rhythm.
+ * Both are theme tokens (`--rf-gallery-edge` / `--rf-gallery-gap`), not author
+ * attributes; the `gap` attribute was removed because aesthetic spacing is the
+ * theme's concern. `columns` stays an author attribute — that's content density,
+ * not aesthetics. */
 .rf-gallery {
 	position: relative;
 	margin: 0;
+	--rf-gallery-edge: 0.5rem;
+	--rf-gallery-gap: 0.5rem;
+	padding: var(--rf-gallery-edge);
 }
 
 /* Layout modifier classes */
@@ -13,7 +24,7 @@
 .rf-gallery__items {
 	display: grid;
 	grid-template-columns: repeat(var(--gallery-columns, 3), 1fr);
-	gap: var(--gallery-gap, var(--rf-spacing-md));
+	gap: var(--rf-gallery-gap);
 }
 
 /* Individual gallery items */
@@ -85,16 +96,36 @@
 .rf-gallery__nav:hover {
 	opacity: 1;
 }
+/* Inset the carousel nav buttons from the image edge by the same 0.5rem the
+ * gallery uses as its thin-edge frame, so the buttons overlap onto the image
+ * slightly rather than sitting flush against it. The gallery's outer padding
+ * already inserts 0.5rem between gallery border and image, so the total offset
+ * from the gallery border is `edge + 0.5rem` = 1rem. */
 .rf-gallery__nav--prev {
-	left: 0.5rem;
+	left: calc(var(--rf-gallery-edge) + 0.5rem);
 }
 .rf-gallery__nav--next {
-	right: 0.5rem;
+	right: calc(var(--rf-gallery-edge) + 0.5rem);
 }
 
-/* Masonry layout (CSS progressive enhancement) */
+/* Masonry layout — CSS multi-column flow gives true variable-height masonry in
+ * every browser. (`grid-template-rows: masonry` is Firefox-only behind a flag
+ * and silently falls back to uniform-height grid rows everywhere else, which is
+ * why heights used to only vary in the collapsed single-column case.) Items
+ * flow top-to-bottom inside each column, then move to the next column. */
 .rf-gallery[data-layout="masonry"] .rf-gallery__items {
-	grid-template-rows: masonry;
+	display: block;
+	column-count: var(--gallery-columns, 3);
+	column-gap: var(--rf-gallery-gap);
+}
+.rf-gallery[data-layout="masonry"] .rf-gallery__item {
+	break-inside: avoid;
+	margin-bottom: var(--rf-gallery-gap);
+}
+/* In masonry the row height isn't pinned, so let each image take its natural
+ * height (grid mode keeps `height: 100%` for uniform tiles). */
+.rf-gallery[data-layout="masonry"] .rf-gallery__item img {
+	height: auto;
 }
 
 /* Lightbox cursor hint */
@@ -157,11 +188,11 @@
 	right: 1rem;
 }
 
-/* Responsive: reset custom columns/gap and collapse on small screens */
+/* Responsive: collapse columns on small screens. (Gap is theme-locked at all
+ * widths — no override needed.) */
 @media (max-width: 768px) {
 	.rf-gallery {
 		--gallery-columns: 2 !important;
-		--gallery-gap: var(--rf-spacing-md) !important;
 	}
 	.rf-gallery[data-layout="carousel"] .rf-gallery__item {
 		flex-basis: 80%;

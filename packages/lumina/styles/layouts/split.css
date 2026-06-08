@@ -1,59 +1,92 @@
-/* Shared split layout — used by Feature, Hero, Step, and any rune with data-layout */
+/* Shared media + content layout — used by card, recipe, hero, feature, step,
+ * realm, faction, playlist (anything that uses the `splitLayoutAttributes`
+ * preset). Same vocabulary as `bento-cell`:
+ *   • `data-media-position="top"`    — media above content (default, block flow)
+ *   • `data-media-position="bottom"` — media below content (flex column-reverse)
+ *   • `data-media-position="start"`  — media beside content on the left  (grid)
+ *   • `data-media-position="end"`    — media beside content on the right (grid)
+ *
+ * Body source order is always media-first (the `splitMediaBodyFooter` helper
+ * splits `media --- content` zones in that order); the position dial decides
+ * the visual order independently. */
 
-[data-layout="split"],
-[data-layout="split-reverse"] {
+/* ─── Beside layouts (start / end): two-column grid ─────────────────── */
+
+[data-media-position="start"],
+[data-media-position="end"] {
   display: grid;
-  grid-template-columns: var(--split-ratio, 1fr 1fr);
+  grid-template-columns: var(--media-share, 50%) 1fr;
   align-items: var(--split-valign, start);
-  column-gap: var(--split-gap, var(--rf-spacing-lg));
 }
 
-[data-layout="split-reverse"] > [data-name="content"] { order: 2; }
-[data-layout="split-reverse"] > [data-name="media"] { order: 1; }
+/* "end" flips the grid so media lands in column 2 (right) instead of column 1.
+ * Source order is media-first, so we re-place media via grid-column. */
+[data-media-position="end"] {
+  grid-template-columns: 1fr var(--media-share, 50%);
+}
+[data-media-position="end"] > [data-section="media"],
+[data-media-position="end"] > [data-name="media"] { grid-column: 2; }
+[data-media-position="end"] > [data-name="content"] { grid-column: 1; }
+
+/* `media-ratio` → media's share of the row width (shared across runes; mirrors
+ * the bento-cell scale at `bento.css:50-54`). When unset, columns fall back to
+ * the 50% default on `--media-share`. */
+[data-media-ratio="1/3"] { --media-share: 33.333%; }
+[data-media-ratio="2/5"] { --media-share: 40%; }
+[data-media-ratio="1/2"] { --media-share: 50%; }
+[data-media-ratio="3/5"] { --media-share: 60%; }
+[data-media-ratio="2/3"] { --media-share: 66.667%; }
 
 /* Grid so children can use justify-self/align-self (default: stretch) */
-[data-layout="split"] > [data-name="media"],
-[data-layout="split-reverse"] > [data-name="media"],
-[data-layout="split"] > [data-section="media"],
-[data-layout="split-reverse"] > [data-section="media"] {
+[data-media-position="start"] > [data-name="media"],
+[data-media-position="end"] > [data-name="media"],
+[data-media-position="start"] > [data-section="media"],
+[data-media-position="end"] > [data-section="media"] {
   display: grid;
 }
 
-/* ─── 3-section grid placement (header + content + media) ─────────── */
-/* Only applies when a data-section="header" child exists (3-section runes).
-   2-section runes (e.g. Feature with display:contents on content) use the
-   default 2-column flow from the base grid above. */
+/* ─── Stacked layouts (top / bottom) ────────────────────────────────── */
 
-/* Split: header + content in col 1, media in col 2 spanning both rows */
-[data-layout="split"]:has(> [data-section="header"]) > [data-section="header"] { grid-column: 1; grid-row: 1; }
-[data-layout="split"]:has(> [data-section="header"]) > [data-name="content"]   { grid-column: 1; grid-row: 2; }
-[data-layout="split"]:has(> [data-section="header"]) > [data-section="media"]   { grid-column: 2; grid-row: 1 / 3; }
+/* "bottom" puts content on top, media at the bottom. Source order is media-
+ * first, so column-reverse flips it visually without changing the DOM. */
+[data-media-position="bottom"] {
+  display: flex;
+  flex-direction: column-reverse;
+}
 
-/* Split-reverse: media in col 1 spanning both rows, header + content in col 2 */
-[data-layout="split-reverse"]:has(> [data-section="header"]) > [data-section="header"] { grid-column: 2; grid-row: 1; }
-[data-layout="split-reverse"]:has(> [data-section="header"]) > [data-name="content"]   { grid-column: 2; grid-row: 2; }
-[data-layout="split-reverse"]:has(> [data-section="header"]) > [data-section="media"]   { grid-column: 1; grid-row: 1 / 3; }
+/* ─── 3-section grid placement (header + content + media) ───────────── */
+/* Applies only when a `data-section="header"` child exists. 2-section runes
+ * (e.g. hero, feature with the header rolled into content) fall through to
+ * the simple 2-column flow above. */
 
-/* Reset margin on media zone in 3-section split layouts (header + content + media).
-   2-section runes (e.g. Hero) retain their per-rune media margins. */
-[data-layout="split"]:has(> [data-section="header"]) > [data-section="media"],
-[data-layout="split-reverse"]:has(> [data-section="header"]) > [data-section="media"] {
+[data-media-position="start"]:has(> [data-section="header"]) > [data-section="header"] { grid-column: 1; grid-row: 1; }
+[data-media-position="start"]:has(> [data-section="header"]) > [data-name="content"]   { grid-column: 1; grid-row: 2; }
+[data-media-position="start"]:has(> [data-section="header"]) > [data-section="media"]  { grid-column: 2; grid-row: 1 / 3; }
+
+[data-media-position="end"]:has(> [data-section="header"]) > [data-section="header"] { grid-column: 2; grid-row: 1; }
+[data-media-position="end"]:has(> [data-section="header"]) > [data-name="content"]   { grid-column: 2; grid-row: 2; }
+[data-media-position="end"]:has(> [data-section="header"]) > [data-section="media"]  { grid-column: 1; grid-row: 1 / 3; }
+
+[data-media-position="start"]:has(> [data-section="header"]) > [data-section="media"],
+[data-media-position="end"]:has(> [data-section="header"]) > [data-section="media"] {
   margin: 0;
 }
 
 /* ─── Media zone base styles ──────────────────────────────────────── */
 
-/* Media-zone guest adaptation (WORK-339 / SPEC-084). The container adapts the
-   slot name-agnostically: any visual guest fills the zone, and the zone clips,
-   rounds, and becomes a container-query context — so a tall guest scales/clips
-   instead of ballooning, and intrinsically responsive guests (e.g. `mockup`'s
-   `cqi` auto-scale) resolve against the slot. Guests that manage their own
-   bleed / interactive chrome (preview, juxtapose, an explicitly-bleeding
-   showcase) self-declare an opt-out below so their displacement isn't clipped. */
+/* Media-zone guest adaptation (WORK-339 / SPEC-084). Any visual guest fills the
+ * zone, and the zone clips, rounds, and becomes a container-query context — so
+ * a tall guest scales/clips instead of ballooning, and intrinsically responsive
+ * guests (e.g. `mockup`'s `cqi` auto-scale) resolve against the slot. Guests
+ * that manage their own bleed / interactive chrome (preview, juxtapose, an
+ * explicitly-bleeding showcase) self-declare an opt-out below so their
+ * displacement isn't clipped. */
 [data-section="media"] {
   container-type: inline-size;
   overflow: hidden;
-  border-radius: var(--rf-radius-lg);
+  /* Media guests use the smaller media radius tier so they never read as more
+   * rounded than the (larger-radius) container they sit in. */
+  border-radius: var(--rf-radius-media);
 }
 [data-section="media"] > * {
   display: block;
@@ -76,8 +109,8 @@
   border-radius: 0;
 }
 /* …and let those self-managing guests keep their intrinsic width/sizing: the
-   generic `width: 100%` above would defeat a negative-margin breakout (e.g.
-   `preview--in-feature` bleeding to the viewport edge on mobile). */
+ * generic `width: 100%` above would defeat a negative-margin breakout (e.g.
+ * `preview--in-feature` bleeding to the viewport edge on mobile). */
 [data-section="media"]:is(
   :has(> [data-rune="preview"]),
   :has(> [data-rune="juxtapose"]),
@@ -88,159 +121,62 @@
   border-radius: 0;
 }
 
-/* Split layout images get subtle depth. Block runes carry their own visual
-   weight (topbars, frames) so the shadow is image-only. */
-[data-layout="split"] > [data-section="media"] > img,
-[data-layout="split-reverse"] > [data-section="media"] > img {
+/* (Figure-style media bleed used to live here — a negative-margin breakout that
+ * extended a top-position media banner past the container padding to leave a
+ * small consistent figure margin. Every consumer (card / recipe / realm /
+ * faction / playlist / bento-cell) moved to the thin-edge inset model — outer
+ * padding is a thin edge, the content zone fills the remaining inset — which
+ * achieves the same visual without the negative-margin hack. The rule was
+ * removed once it had no remaining matches; reintroduce a positive opt-in if
+ * a new rune ever wants figure bleed.) */
+
+/* A code-group dropped into a media zone uses the media radius tier so its
+ * border and corners line up with the zone's clip instead of the larger
+ * container radius it gets as a standalone inset surface. */
+[data-section="media"] .rf-codegroup {
+  border-radius: var(--rf-radius-media);
+}
+
+/* Beside-layout images get subtle depth. Block runes carry their own visual
+ * weight (topbars, frames) so the shadow is image-only. */
+[data-media-position="start"] > [data-section="media"] > img,
+[data-media-position="end"] > [data-section="media"] > img {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* ─── Collapse breakpoints ────────────────────────────────────────── */
+/* ─── Collapse breakpoints ────────────────────────────────────────────
+ * Beside (start/end) layouts drop to a single column at the chosen breakpoint;
+ * the source-order (media-first) carries through, so media ends up on top of
+ * content after the collapse. `top` / `bottom` are already stacked and unchanged
+ * by collapse (their orientation is preserved). */
 
 @media (max-width: 640px) {
-  [data-layout^="split"][data-collapse="sm"] { grid-template-columns: 1fr; }
-  [data-layout^="split"][data-collapse="sm"] > * { order: unset; }
-}
-
-@media (max-width: 768px) {
-  [data-layout^="split"][data-collapse="md"] { grid-template-columns: 1fr; }
-  [data-layout^="split"][data-collapse="md"] > * { order: unset; }
-}
-
-@media (max-width: 1024px) {
-  [data-layout^="split"][data-collapse="lg"] { grid-template-columns: 1fr; }
-  [data-layout^="split"][data-collapse="lg"] > * { order: unset; }
-}
-
-/* ─── Default mobile collapse for split layouts ───────────────────── */
-/* Runes without an explicit data-collapse always collapse at sm */
-
-@media (max-width: 640px) {
-  [data-layout^="split"]:not([data-collapse]) {
+  :is([data-media-position="start"], [data-media-position="end"])[data-collapse="sm"],
+  :is([data-media-position="start"], [data-media-position="end"]):not([data-collapse]) {
     grid-template-columns: 1fr;
   }
-  [data-layout^="split"]:not([data-collapse]) > [data-section="header"],
-  [data-layout^="split"]:not([data-collapse]) > [data-name="content"],
-  [data-layout^="split"]:not([data-collapse]) > [data-section="media"] {
-    grid-column: auto;
-    grid-row: auto;
-  }
-  [data-layout^="split"]:not([data-collapse]) > * {
-    order: unset;
-  }
-
-  /* ─── Content-first collapse (data-media-position="top") ────────── */
-  /* Media hoists above preamble as full-bleed card header */
-  [data-media-position="top"] > [data-section="media"],
-  [data-media-position="top"][data-layout="split"] > [data-section="media"],
-  [data-media-position="top"][data-layout="split-reverse"] > [data-section="media"] {
-    order: -1;
-    grid-column: auto;
-    grid-row: auto;
-    width: calc(100% + 2 * var(--rune-padding, var(--rf-spacing-md)));
-    margin: calc(-1 * var(--rune-padding, var(--rf-spacing-md)));
-    margin-bottom: var(--rune-padding, var(--rf-spacing-md));
-    border-radius: 0;
-  }
-  [data-media-position="top"] > [data-section="media"] > :where(
-    img,
-    [data-rune="code-group"],
-    [data-rune="snippet"],
-    [data-rune="chart"],
-    [data-rune="sandbox"]
-  ) {
-    border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
-  }
-
-  /* Stacked layout also needs flex context for order to work */
-  [data-media-position="top"][data-layout="stacked"] {
-    display: flex;
-    flex-direction: column;
-  }
-}
-
-/* ─── Explicit collapse breakpoint + content-first ────────────────── */
-
-@media (max-width: 640px) {
-  [data-media-position="top"][data-collapse="sm"] > [data-section="media"],
-  [data-media-position="top"][data-collapse="sm"][data-layout="split"] > [data-section="media"],
-  [data-media-position="top"][data-collapse="sm"][data-layout="split-reverse"] > [data-section="media"] {
-    order: -1;
-    grid-column: auto;
-    grid-row: auto;
-    width: calc(100% + 2 * var(--rune-padding, var(--rf-spacing-md)));
-    margin: calc(-1 * var(--rune-padding, var(--rf-spacing-md)));
-    margin-bottom: var(--rune-padding, var(--rf-spacing-md));
-    border-radius: 0;
-  }
-  [data-media-position="top"][data-collapse="sm"] > [data-section="media"] > :where(
-    img,
-    [data-rune="code-group"],
-    [data-rune="snippet"],
-    [data-rune="chart"],
-    [data-rune="sandbox"]
-  ) {
-    border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
-  }
-  /* Reset grid placement on collapse for header/content */
-  [data-media-position="top"][data-collapse="sm"] > [data-section="header"],
-  [data-media-position="top"][data-collapse="sm"] > [data-name="content"] {
+  :is([data-media-position="start"], [data-media-position="end"])[data-collapse="sm"] > *,
+  :is([data-media-position="start"], [data-media-position="end"]):not([data-collapse]) > * {
     grid-column: auto;
     grid-row: auto;
   }
 }
 
 @media (max-width: 768px) {
-  [data-media-position="top"][data-collapse="md"] > [data-section="media"],
-  [data-media-position="top"][data-collapse="md"][data-layout="split"] > [data-section="media"],
-  [data-media-position="top"][data-collapse="md"][data-layout="split-reverse"] > [data-section="media"] {
-    order: -1;
-    grid-column: auto;
-    grid-row: auto;
-    width: calc(100% + 2 * var(--rune-padding, var(--rf-spacing-md)));
-    margin: calc(-1 * var(--rune-padding, var(--rf-spacing-md)));
-    margin-bottom: var(--rune-padding, var(--rf-spacing-md));
-    border-radius: 0;
+  :is([data-media-position="start"], [data-media-position="end"])[data-collapse="md"] {
+    grid-template-columns: 1fr;
   }
-  [data-media-position="top"][data-collapse="md"] > [data-section="media"] > :where(
-    img,
-    [data-rune="code-group"],
-    [data-rune="snippet"],
-    [data-rune="chart"],
-    [data-rune="sandbox"]
-  ) {
-    border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
-  }
-  [data-media-position="top"][data-collapse="md"] > [data-section="header"],
-  [data-media-position="top"][data-collapse="md"] > [data-name="content"] {
+  :is([data-media-position="start"], [data-media-position="end"])[data-collapse="md"] > * {
     grid-column: auto;
     grid-row: auto;
   }
 }
 
 @media (max-width: 1024px) {
-  [data-media-position="top"][data-collapse="lg"] > [data-section="media"],
-  [data-media-position="top"][data-collapse="lg"][data-layout="split"] > [data-section="media"],
-  [data-media-position="top"][data-collapse="lg"][data-layout="split-reverse"] > [data-section="media"] {
-    order: -1;
-    grid-column: auto;
-    grid-row: auto;
-    width: calc(100% + 2 * var(--rune-padding, var(--rf-spacing-md)));
-    margin: calc(-1 * var(--rune-padding, var(--rf-spacing-md)));
-    margin-bottom: var(--rune-padding, var(--rf-spacing-md));
-    border-radius: 0;
+  :is([data-media-position="start"], [data-media-position="end"])[data-collapse="lg"] {
+    grid-template-columns: 1fr;
   }
-  [data-media-position="top"][data-collapse="lg"] > [data-section="media"] > :where(
-    img,
-    [data-rune="code-group"],
-    [data-rune="snippet"],
-    [data-rune="chart"],
-    [data-rune="sandbox"]
-  ) {
-    border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
-  }
-  [data-media-position="top"][data-collapse="lg"] > [data-section="header"],
-  [data-media-position="top"][data-collapse="lg"] > [data-name="content"] {
+  :is([data-media-position="start"], [data-media-position="end"])[data-collapse="lg"] > * {
     grid-column: auto;
     grid-row: auto;
   }

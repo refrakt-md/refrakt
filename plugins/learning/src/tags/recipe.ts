@@ -17,24 +17,27 @@ export const recipe = createContentModelSchema({
 	contentModel: {
 		type: 'delimited',
 		delimiter: 'hr',
+		// Media-first body shape: `media --- content`. `content` is the primary
+		// zone so a recipe without an `---` image lands its whole body in content.
 		zones: [
-			{
-				name: 'content',
-				type: 'sequence',
-				fields: [
-					{ name: 'eyebrow', match: 'paragraph', optional: true },
-					{ name: 'headline', match: 'heading', optional: true },
-					{ name: 'blurb', match: 'paragraph', optional: true },
-						{ name: 'ingredients', match: 'list:unordered', optional: true, template: '- Ingredient' },
-					{ name: 'steps', match: 'list:ordered', optional: true, template: '1. Step' },
-					{ name: 'tips', match: 'blockquote', greedy: true, optional: true },
-				],
-			},
 			{
 				name: 'media',
 				type: 'sequence',
 				fields: [
 					{ name: 'media', match: 'any', optional: true, greedy: true },
+				],
+			},
+			{
+				name: 'content',
+				primary: true,
+				type: 'sequence',
+				fields: [
+					{ name: 'eyebrow', match: 'paragraph', optional: true },
+					{ name: 'headline', match: 'heading', optional: true },
+					{ name: 'blurb', match: 'paragraph', optional: true },
+					{ name: 'ingredients', match: 'list:unordered', optional: true, template: '- Ingredient' },
+					{ name: 'steps', match: 'list:ordered', optional: true, template: '1. Step' },
+					{ name: 'tips', match: 'blockquote', greedy: true, optional: true },
 				],
 			},
 		],
@@ -115,7 +118,7 @@ export const recipe = createContentModelSchema({
 
 		// Layout meta tags
 		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
-		const { layout: layoutMeta, ratio: ratioMeta, valign: valignMeta, gap: gapMeta, collapse: collapseMeta } = layoutMetas;
+		const { mediaPosition: mediaPositionMeta, mediaRatio: mediaRatioMeta, valign: valignMeta, collapse: collapseMeta } = layoutMetas;
 
 		// Structural wrapping
 		const sectionProps = pageSectionProperties(header);
@@ -158,10 +161,9 @@ export const recipe = createContentModelSchema({
 				cookTime: cookTimeMeta,
 				servings: servingsMeta,
 				difficulty: difficultyMeta,
-				layout: layoutMeta,
-				ratio: ratioMeta,
+				'media-position': mediaPositionMeta,
+				'media-ratio': mediaRatioMeta,
 				valign: valignMeta,
-				gap: gapMeta,
 				collapse: collapseMeta,
 			},
 			refs: {

@@ -207,30 +207,30 @@ Just text content.
 		expect(fields(hero).align).toBe('center');
 	});
 
-	it('passes layout meta for split layout', () => {
-		const result = parse(`{% hero layout="split" %}
-# Split Hero
+	it('passes media-position meta when media is beside the content', () => {
+		const result = parse(`{% hero media-position="end" %}
+![Side image](/images/side.png)
 
 ---
 
-![Side image](/images/side.png)
+# Split Hero
 {% /hero %}`);
 
 		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
-		expect(fields(hero).layout).toBe('split');
+		expect(fields(hero)['media-position']).toBe('end');
 	});
 
-	it('includes ratio and valign metas for split layout', () => {
-		const result = parse(`{% hero layout="split" ratio="2 1" valign="center" %}
-# Split Hero
+	it('includes media-ratio and valign metas for beside layouts', () => {
+		const result = parse(`{% hero media-position="end" media-ratio="2/3" valign="center" %}
+![Side](/images/side.png)
 
 ---
 
-![Side](/images/side.png)
+# Split Hero
 {% /hero %}`);
 
 		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
-		expect(fields(hero).ratio).toBe('2 1');
+		expect(fields(hero)['media-ratio']).toBe('2/3');
 		expect(fields(hero).valign).toBe('center');
 	});
 
@@ -288,7 +288,11 @@ Description.
 	// -----------------------------------------------------------------
 
 	it('handles a complete hero with all fields populated', () => {
-		const result = parse(`{% hero align="center" layout="split" %}
+		const result = parse(`{% hero align="center" media-position="end" %}
+![Platform screenshot](/images/hero.png)
+
+---
+
 Introducing the Platform
 
 # Build Something Amazing
@@ -297,10 +301,6 @@ The modern way to create documentation sites.
 
 - [Get Started](/start)
 - [View Docs](/docs)
-
----
-
-![Platform screenshot](/images/hero.png)
 {% /hero %}`);
 
 		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
@@ -321,6 +321,6 @@ The modern way to create documentation sites.
 		expect(img).toBeDefined();
 
 		// Layout metas
-		expect(fields(hero).layout).toBe('split');
+		expect(fields(hero)['media-position']).toBe('end');
 	});
 });

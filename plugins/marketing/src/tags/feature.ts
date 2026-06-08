@@ -2,7 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag, Ast } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, SplitLayoutModel, pageSectionProperties } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, pageSectionProperties } from '@refrakt-md/runes';
 
 /** Check if a paragraph node contains an image, icon tag, or strong element. */
 function isTermParagraph(node: Node): boolean {
@@ -97,22 +97,25 @@ export const feature = createContentModelSchema({
 	contentModel: {
 		type: 'delimited',
 		delimiter: 'hr',
+		// Media-first body shape: `media --- content`. `content` is the primary
+		// zone so a feature without an `---` block lands its whole body in content.
 		zones: [
 			{
+				name: 'media',
+				type: 'sequence',
+				fields: [
+					{ name: 'media', match: 'any', optional: true, greedy: true },
+				],
+			},
+			{
 				name: 'content',
+				primary: true,
 				type: 'sequence',
 				fields: [
 					{ name: 'eyebrow', match: 'paragraph', optional: true },
 					{ name: 'headline', match: 'heading', optional: true },
 					{ name: 'blurb', match: 'paragraph', optional: true },
 					{ name: 'definitions', match: 'list', optional: true, greedy: true, template: '- **Title**\n\n  Description' },
-				],
-			},
-			{
-				name: 'media',
-				type: 'sequence',
-				fields: [
-					{ name: 'media', match: 'any', optional: true, greedy: true },
 				],
 			},
 		],
@@ -131,6 +134,8 @@ export const feature = createContentModelSchema({
 		);
 
 		// Transform definitions with custom node overrides
+		const mediaPosition = (attrs['media-position'] as string) || 'top';
+		const beside = mediaPosition === 'start' || mediaPosition === 'end';
 		const defConfig = {
 			...config,
 			nodes: {
@@ -142,8 +147,9 @@ export const feature = createContentModelSchema({
 				},
 				list: {
 					transform(node: Node, innerConfig: Record<string, any>) {
-						const layout = (attrs.layout as string) || 'stacked';
-						return new Tag('dl', layout !== 'stacked' ? {} : { 'data-layout': 'grid', 'data-columns': node.children.length }, node.transformChildren(innerConfig));
+						// When media is beside the body, definitions stack vertically; when
+						// media is stacked above/below, definitions tile as a grid.
+						return new Tag('dl', beside ? {} : { 'data-layout': 'grid', 'data-columns': node.children.length }, node.transformChildren(innerConfig));
 					},
 				},
 			},
@@ -157,30 +163,17 @@ export const feature = createContentModelSchema({
 		);
 
 		const align = (attrs.align as string) || 'center';
-		const layout = (attrs.layout as string) || 'stacked';
-		const ratio = (attrs.ratio as string) || '1 1';
-		const valign = (attrs.valign as string) || 'top';
-		const gap = (attrs.gap as string) || 'default';
-		const collapse = attrs.collapse as string | undefined;
-
-		const layoutMeta = new Tag('meta', { content: layout });
 		const alignMeta = new Tag('meta', { content: align });
-		const ratioMeta = layout !== 'stacked' ? new Tag('meta', { content: ratio }) : undefined;
-		const valignMeta = layout !== 'stacked' ? new Tag('meta', { content: valign }) : undefined;
-		const gapMeta = gap !== 'default' ? new Tag('meta', { content: gap }) : undefined;
-		const collapseMeta = collapse ? new Tag('meta', { content: collapse }) : undefined;
+		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
+		const { mediaPosition: mediaPositionMeta, mediaRatio: mediaRatioMeta, valign: valignMeta, collapse: collapseMeta } = layoutMetas;
 
 		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
 		const mainContent = new RenderableNodeCursor([...headerContent, ...definitions.toArray()]).wrap('div');
 		const mediaContent = side.wrap('div');
 
 		const children = [
-			layoutMeta,
 			alignMeta,
-			...(ratioMeta ? [ratioMeta] : []),
-			...(valignMeta ? [valignMeta] : []),
-			...(gapMeta ? [gapMeta] : []),
-			...(collapseMeta ? [collapseMeta] : []),
+			...layoutChildren,
 			mainContent.next(),
 			...(side.toArray().length > 0 ? [mediaContent.next()] : []),
 		];
@@ -189,11 +182,10 @@ export const feature = createContentModelSchema({
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
-				layout: layoutMeta,
+				'media-position': mediaPositionMeta,
 				align: alignMeta,
-				ratio: ratioMeta,
+				'media-ratio': mediaRatioMeta,
 				valign: valignMeta,
-				gap: gapMeta,
 				collapse: collapseMeta,
 			},
 			refs: {
@@ -206,11 +198,6 @@ export const feature = createContentModelSchema({
 		});
 	},
 	deprecations: {
-		split: {
-			newName: 'layout',
-			transform: (val: any, attrs: Record<string, any>) => val ? (attrs.mirror ? 'split-reverse' : 'split') : undefined,
-		},
-		mirror: { newName: '_consumed' },
 		justify: { newName: 'align' },
 	},
 });

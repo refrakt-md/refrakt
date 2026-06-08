@@ -68,7 +68,7 @@ export const realm = createContentModelSchema({
 
 		// Layout meta tags
 		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
-		const { layout: layoutMeta, ratio: ratioMeta, valign: valignMeta, gap: gapMeta, collapse: collapseMeta } = layoutMetas;
+		const { mediaPosition: mediaPositionMeta, mediaRatio: mediaRatioMeta, valign: valignMeta, collapse: collapseMeta } = layoutMetas;
 
 		// Extract scene image (shared helper)
 		const { sceneDiv, sceneImgTag, extraDescription } = extractScene(resolved.scene, config);
@@ -109,10 +109,9 @@ export const realm = createContentModelSchema({
 				scale: scaleMeta,
 				tags: tagsMeta,
 				parent: parentMeta,
-				layout: layoutMeta,
-				ratio: ratioMeta,
+				'media-position': mediaPositionMeta,
+				'media-ratio': mediaRatioMeta,
 				valign: valignMeta,
-				gap: gapMeta,
 				collapse: collapseMeta,
 				...(hasSections ? { section: sections } : {}),
 			},

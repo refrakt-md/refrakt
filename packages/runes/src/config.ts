@@ -145,15 +145,20 @@ export const coreConfig: ThemeConfig = {
 			block: 'progress',
 			modifiers: { sentiment: { source: 'meta' } },
 		},
-		/* card — generic content card. The `layout` meta drives the shared
-		 * split layout (split.css, data-attribute-keyed); data-media-position
-		 * hoists the media to a full-bleed header on mobile. Named parts
+		/* card — generic content card. The shared `media-position` modifier
+		 * places the media zone above, below, or beside the content; `media-ratio`
+		 * controls media's share of the row in beside layouts. Named parts
 		 * (media/content/body/footer/link) get rf-card__* from data-name. */
 		Card: {
 			block: 'card',
-			rootAttributes: { 'data-media-position': 'top' },
 			modifiers: {
-				layout: { source: 'meta', default: 'stacked' },
+				'media-position': { source: 'meta', default: 'top', noBemClass: true },
+				'media-ratio': { source: 'meta', noBemClass: true },
+				valign: { source: 'meta', noBemClass: true },
+				collapse: { source: 'meta', noBemClass: true },
+			},
+			styles: {
+				valign: { prop: '--split-valign', transform: resolveValign },
 			},
 		},
 		Embed: {
@@ -282,12 +287,10 @@ export const coreConfig: ThemeConfig = {
 			modifiers: {
 				layout: { source: 'meta', default: 'grid' },
 				lightbox: { source: 'meta', default: 'true', noBemClass: true },
-				gap: { source: 'meta', default: 'default', noBemClass: true },
 				columns: { source: 'meta', noBemClass: true },
 			},
 			styles: {
 				columns: '--gallery-columns',
-				gap: { prop: '--gallery-gap', transform: resolveGap },
 			},
 			editHints: { items: 'none' },
 		},

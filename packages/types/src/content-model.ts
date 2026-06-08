@@ -71,6 +71,14 @@ export interface SequenceModel {
 /** A named zone within a delimited model. */
 export interface DelimitedZone extends SequenceModel {
 	name: string;
+	/**
+	 * Mark this zone as the fallback when fewer groups than zones are present.
+	 * Typical use: a media+content schema declares zones as `[media, content]`
+	 * with `content` flagged `primary`, so a single-group body (no `---`) lands
+	 * in `content` rather than `media`. Without a primary, single-group input
+	 * falls through to the conventional first-zone-wins behavior.
+	 */
+	primary?: boolean;
 }
 
 // ---------------------------------------------------------------------------

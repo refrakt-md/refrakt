@@ -1,5 +1,5 @@
 import type { RuneConfig, SerializedTag } from '@refrakt-md/transform';
-import { isTag, makeTag, readMeta, resolveGap, ratioToFr, resolveValign } from '@refrakt-md/transform';
+import { isTag, makeTag, readMeta, resolveValign } from '@refrakt-md/transform';
 
 // ─── RuneConfig entries ───
 
@@ -17,17 +17,14 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultWidth: 'full',
 		modifiers: {
-			layout: { source: 'meta', default: 'stacked' },
+			'media-position': { source: 'meta', default: 'top', noBemClass: true },
 			align: { source: 'meta', default: 'center' },
-			ratio: { source: 'meta', default: '1 1', noBemClass: true },
-			valign: { source: 'meta', default: 'top', noBemClass: true },
-			gap: { source: 'meta', default: 'default', noBemClass: true },
+			'media-ratio': { source: 'meta', noBemClass: true },
+			valign: { source: 'meta', noBemClass: true },
 			collapse: { source: 'meta', noBemClass: true },
 		},
 		styles: {
-			ratio: { prop: '--split-ratio', transform: ratioToFr },
 			valign: { prop: '--split-valign', transform: resolveValign },
-			gap: { prop: '--split-gap', transform: resolveGap },
 		},
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'hero' },
@@ -39,31 +36,34 @@ export const config: Record<string, RuneConfig> = {
 		block: 'bento',
 		defaultDensity: 'full',
 		childDensity: 'compact',
-		sections: { preamble: 'preamble', headline: 'title', blurb: 'description' },
 		modifiers: {
-			columns: { source: 'meta', default: '4' },
-			gap: { source: 'meta', default: '1rem' },
-			sizing: { source: 'meta', default: 'tiered' },
+			columns: { source: 'meta', default: '6', noBemClass: true },
+			gap: { source: 'meta', default: '1rem', noBemClass: true },
+			'row-height': { source: 'meta', noBemClass: true },
+			'content-height': { source: 'meta', noBemClass: true },
+			'media-ratio': { source: 'meta', noBemClass: true },
+			collapse: { source: 'meta', noBemClass: true },
 		},
 		styles: {
 			columns: '--bento-columns',
 			gap: '--bento-gap',
 		},
-		autoLabel: pageSectionAutoLabel,
-		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' },
 	},
 	BentoCell: {
 		block: 'bento-cell',
 		parent: 'Bento', requiresParent: 'Bento',
 		modifiers: {
-			size: { source: 'meta', default: 'medium' },
-			span: { source: 'meta', noBemClass: true },
+			size: { source: 'meta', default: 'medium', noBemClass: true },
+			cols: { source: 'meta', noBemClass: true },
+			rows: { source: 'meta', noBemClass: true },
+			'content-height': { source: 'meta', noBemClass: true },
+			'media-ratio': { source: 'meta', noBemClass: true },
 		},
 		styles: {
-			span: '--cell-span',
+			cols: '--cell-cols',
+			rows: '--cell-rows',
 		},
-		autoLabel: { name: 'title' },
-		editHints: { title: 'inline', icon: 'icon' },
+		editHints: { title: 'inline' },
 	},
 	Feature: {
 		block: 'feature',
@@ -72,17 +72,14 @@ export const config: Record<string, RuneConfig> = {
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'cover' },
 		modifiers: {
-			layout: { source: 'meta', default: 'stacked' },
+			'media-position': { source: 'meta', default: 'top', noBemClass: true },
 			align: { source: 'meta', default: 'center' },
-			ratio: { source: 'meta', default: '1 1', noBemClass: true },
-			valign: { source: 'meta', default: 'top', noBemClass: true },
-			gap: { source: 'meta', default: 'default', noBemClass: true },
+			'media-ratio': { source: 'meta', noBemClass: true },
+			valign: { source: 'meta', noBemClass: true },
 			collapse: { source: 'meta', noBemClass: true },
 		},
 		styles: {
-			ratio: { prop: '--split-ratio', transform: ratioToFr },
 			valign: { prop: '--split-valign', transform: resolveValign },
-			gap: { prop: '--split-gap', transform: resolveGap },
 		},
 		contextModifiers: { 'hero': 'in-hero', 'grid': 'in-grid' },
 		autoLabel: { ...pageSectionAutoLabel, dl: 'definitions' },
@@ -94,16 +91,13 @@ export const config: Record<string, RuneConfig> = {
 		block: 'step',
 		parent: 'Steps', requiresParent: 'Steps',
 		modifiers: {
-			layout: { source: 'meta', default: 'stacked' },
-			ratio: { source: 'meta', default: '1 1', noBemClass: true },
-			valign: { source: 'meta', default: 'top', noBemClass: true },
-			gap: { source: 'meta', default: 'default', noBemClass: true },
+			'media-position': { source: 'meta', default: 'top', noBemClass: true },
+			'media-ratio': { source: 'meta', noBemClass: true },
+			valign: { source: 'meta', noBemClass: true },
 			collapse: { source: 'meta', noBemClass: true },
 		},
 		styles: {
-			ratio: { prop: '--split-ratio', transform: ratioToFr },
 			valign: { prop: '--split-valign', transform: resolveValign },
-			gap: { prop: '--split-gap', transform: resolveGap },
 		},
 		mediaSlots: { media: 'cover' },
 		editHints: { content: 'none', media: 'image' },

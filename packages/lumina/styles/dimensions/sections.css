@@ -73,5 +73,8 @@
 /* ─── Media: visual content ───────────────────────────────────────── */
 
 [data-section="media"] {
-	margin: var(--rf-spacing-sm) 0;
+	/* Media zones manage their own spacing via their layout (split gap, cell
+	 * padding, flow margins); a blanket block margin here misaligns media in
+	 * flex/beside layouts, so keep it neutral. */
+	margin: 0;
 }

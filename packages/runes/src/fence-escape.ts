@@ -22,7 +22,13 @@ export function escapeFenceTags(markdown: string): string {
 
   for (const line of lines) {
     if (fenceChar === null) {
-      const match = line.match(/^(`{3,}|~{3,})(\w*)\s*$/);
+      // A fence opener is 3+ backticks/tildes followed by an optional info
+      // string (language + attributes, e.g. ```yaml title="config.ts"). Per
+      // CommonMark a backtick info string may not contain backticks; a tilde
+      // one may. Matching the full info string — not just a bare `\w*` word —
+      // keeps fence tracking in sync so `{% %}` after a titled fence aren't
+      // mis-escaped.
+      const match = line.match(/^(`{3,})([^`]*)$/) ?? line.match(/^(~{3,})(.*)$/);
       if (match) {
         fenceChar = match[1][0];
         fenceLen = match[1].length;

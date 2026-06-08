@@ -129,17 +129,17 @@ export const luminaTokens: ThemeTokensConfig = {
 			color: {
 				text: '#f6f4ef',
 				muted: '#94908a',
-				border: '#2a2825',
+				border: '#282825',
 				bg: '#1a1a17',
 				primary: '#f6f4ef',
 				'primary-hover': '#d4cfc5',
 				'on-primary': '#1a1a17',
 
 				surface: {
-					base: '#211f1c',
-					hover: '#2a2825',
-					active: '#353330',
-					raised: '#292723',
+					base: '#1f1f1c',
+					hover: '#282825',
+					active: '#333330',
+					raised: '#272723',
 				},
 
 				info: { base: '#9bb4c7', bg: '#1f2530', border: '#3d4655' },
@@ -148,7 +148,7 @@ export const luminaTokens: ThemeTokensConfig = {
 				success: { base: '#7eb398', bg: '#1a2a1f', border: '#2a4a35' },
 
 				code: {
-					bg: '#222220',
+					bg: '#1c1c19',
 					text: '#f6f4ef',
 					'inline-bg': '#2b2b29',
 				},

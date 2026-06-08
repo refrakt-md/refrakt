@@ -1,5 +1,37 @@
 /* Playlist */
 
+/* Thin-edge inset model (matches `.rf-card` / `.rf-recipe`): card outer padding
+ * is a thin edge, the content column adds the remaining inset back so text sits
+ * at the full `--rune-padding` without negative-margin bleed. Like recipe, no
+ * `align-items: stretch` — the cover is a square album image (aspect-ratio: 1
+ * on `__media img` below), and stretching the cell would just produce empty
+ * card padding around it. */
+.rf-playlist {
+	--rf-playlist-edge: 0.5rem;
+	--rf-playlist-media-gap: var(--rf-spacing-lg);
+	--rf-playlist-split-gap: var(--rf-spacing-sm);
+	padding: var(--rf-playlist-edge);
+}
+
+.rf-playlist__content {
+	padding: max(0px, calc(var(--rune-padding, var(--rf-spacing-md)) - var(--rf-playlist-edge)));
+}
+
+/* Direct grid properties (column-gap / row-gap) win via selector specificity
+ * over the shared media-position layout vars. */
+.rf-playlist[data-media-position="start"],
+.rf-playlist[data-media-position="end"] {
+	column-gap: var(--rf-playlist-split-gap);
+	row-gap: var(--rf-playlist-media-gap);
+}
+
+.rf-playlist[data-media-position="top"] > [data-section="media"] {
+	margin-bottom: var(--rf-playlist-media-gap);
+}
+.rf-playlist[data-media-position="bottom"] > [data-section="media"] {
+	margin-top: var(--rf-playlist-media-gap);
+}
+
 /* Inner header (headline + description) inside content */
 .rf-playlist__content > .rf-playlist__header {
 	flex-direction: column;

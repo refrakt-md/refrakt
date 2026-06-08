@@ -65,8 +65,12 @@ A classic Italian pasta dish.
 		expect(steps).toBeDefined();
 	});
 
-	it('should support split layout with media zone', () => {
-		const result = parse(`{% recipe prepTime="PT15M" layout="split" %}
+	it('should support media beside the content (media-first source)', () => {
+		const result = parse(`{% recipe prepTime="PT15M" media-position="end" %}
+![Photo](./photo.jpg)
+
+---
+
 # Split Recipe
 
 A recipe with a photo.
@@ -74,17 +78,13 @@ A recipe with a photo.
 - ingredient one
 
 1. step one
-
----
-
-![Photo](./photo.jpg)
 {% /recipe %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
-		// Layout field
-		expect(fields(tag).layout).toBe('split');
+		// media-position field
+		expect(fields(tag)['media-position']).toBe('end');
 
 		// Media zone should have an image
 		const media = findTag(tag!, t => t.attributes['data-name'] === 'media');
@@ -93,7 +93,7 @@ A recipe with a photo.
 		expect(img).toBeDefined();
 	});
 
-	it('should work without media zone (stacked default)', () => {
+	it('should work without media zone (media-position default top)', () => {
 		const result = parse(`{% recipe %}
 # No Media Recipe
 
@@ -106,12 +106,14 @@ A recipe with a photo.
 		expect(tag).toBeDefined();
 
 		// SPEC-081: content slots are emitted flat (the engine's layout groups
-		// them into the content column).
+		// them into the content column). The `primary: true` flag on the content
+		// zone routes single-block bodies (no `---`) into content rather than
+		// media — so a recipe without an image still surfaces ingredients.
 		const ingredients = findTag(tag!, t => t.attributes['data-name'] === 'ingredients');
 		expect(ingredients).toBeDefined();
 
-		// Layout defaults to stacked
-		expect(fields(tag).layout).toBe('stacked');
+		// media-position defaults to top
+		expect(fields(tag)['media-position']).toBe('top');
 	});
 
 	it('should handle recipe with only ingredients', () => {

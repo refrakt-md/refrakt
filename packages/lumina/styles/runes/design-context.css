@@ -10,12 +10,14 @@
 	gap: 1.5rem;
 }
 
-/* Children inside design-context: remove card styling */
-.rf-palette--in-design-context,
-.rf-typography--in-design-context,
-.rf-spacing--in-design-context,
-.rf-swatch--in-design-context {
+/* Children inside design-context: remove card styling so the outer
+ * design-context surface is the only visible frame. Structural selector
+ * (`> [data-rune]` inside the sections wrapper) catches every direct rune
+ * child, not just the four design-system runes — so dropping a future rune
+ * into a design-context will Just Work without a per-rune CSS update. */
+.rf-design-context__sections > [data-rune] {
 	background: none;
+	border: none;
 	border-radius: 0;
 	padding: 0;
 }

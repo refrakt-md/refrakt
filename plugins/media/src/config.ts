@@ -1,5 +1,5 @@
 import type { RuneConfig } from '@refrakt-md/transform';
-import { ratioToFr, resolveValign, resolveGap } from '@refrakt-md/transform';
+import { resolveValign } from '@refrakt-md/transform';
 
 export const config: Record<string, RuneConfig> = {
 	Playlist: {
@@ -8,22 +8,18 @@ export const config: Record<string, RuneConfig> = {
 		sequence: 'numbered',
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'cover' },
-		rootAttributes: { 'data-media-position': 'top' },
 		modifiers: {
 			type: { source: 'meta', default: 'album' },
-			layout: { source: 'meta', default: 'stacked' },
-			ratio: { source: 'meta', default: '1 1', noBemClass: true },
-			valign: { source: 'meta', default: 'top', noBemClass: true },
-			gap: { source: 'meta', default: 'default', noBemClass: true },
+			'media-position': { source: 'meta', default: 'top', noBemClass: true },
+			'media-ratio': { source: 'meta', noBemClass: true },
+			valign: { source: 'meta', noBemClass: true },
 			collapse: { source: 'meta', noBemClass: true },
 			artist: { source: 'meta', noBemClass: true },
 			hasPlayer: { source: 'meta', noBemClass: true },
 			id: { source: 'meta', noBemClass: true },
 		},
 		styles: {
-			ratio: { prop: '--split-ratio', transform: ratioToFr },
 			valign: { prop: '--split-valign', transform: resolveValign },
-			gap: { prop: '--split-gap', transform: resolveGap },
 		},
 		metaFields: {
 			type: { metaType: 'category' },

@@ -127,4 +127,36 @@ describe('luminaTokens coverage vs hand-authored CSS', () => {
 			expect(generatedBaseDecls.has(name), `missing ${name} in generated base block`).toBe(true);
 		}
 	});
+
+	// tint.css re-declares the palette under [data-color-scheme="dark"|"light"]
+	// (the scoped scheme override used by preview/tint-mode/sandbox), a hand-kept
+	// copy the other coverage above does not reach. Catch value drift on every
+	// --rf-* key it shares with the canonical token CSS.
+	it('keeps tint.css [data-color-scheme] overrides in sync with the token CSS', () => {
+		const tintCss = readFileSync(resolve(here, '..', 'styles', 'runes', 'tint.css'), 'utf-8');
+		const baseDecls = extractDeclarations(baseCss);
+		const darkThemeDecls = extractDeclarations(extractBlock(darkCss, /\[data-theme="dark"\]\s*\{/));
+		const tintDark = extractDeclarations(extractBlock(tintCss, /\[data-color-scheme="dark"\]\s*\{/));
+		const tintLight = extractDeclarations(extractBlock(tintCss, /\[data-color-scheme="light"\]\s*\{/));
+
+		// tint routes some tokens through a one-hop alias (--rf-color-surface:
+		// var(--cs-surface)); resolve that single indirection from the block's own
+		// --cs-* declarations before comparing to the canonical literal.
+		const resolveVar = (value: string, decls: Map<string, string>): string => {
+			const m = value.match(/^var\(\s*(--[A-Za-z0-9-]+)\s*\)$/);
+			return m ? decls.get(m[1]) ?? value : value;
+		};
+		const drift: { name: string; block: string; tint: string; canonical: string }[] = [];
+		const check = (decls: Map<string, string>, canonical: Map<string, string>, block: string) => {
+			for (const [name, raw] of decls) {
+				if (!name.startsWith('--rf-')) continue;
+				const value = resolveVar(raw, decls);
+				const want = canonical.get(name);
+				if (want !== undefined && want !== value) drift.push({ name, block, tint: value, canonical: want });
+			}
+		};
+		check(tintDark, darkThemeDecls, 'dark');
+		check(tintLight, baseDecls, 'light');
+		expect(drift, `tint.css scheme overrides drifted: ${JSON.stringify(drift, null, 2)}`).toEqual([]);
+	});
 });

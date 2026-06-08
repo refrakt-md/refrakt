@@ -55,17 +55,16 @@ Verify everything works with `npm test`.
 
 {% /preview %}
 
-### Step attributes
+### Step layout attributes
 
-Individual steps (list items or heading-delimited blocks) accept these layout attributes.
+Individual steps (heading-delimited blocks) accept the shared media+content layout vocabulary — the body splits on `---` into **media → content** zones (media-first in source); `media-position` controls visual placement.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `layout` | `string` | `stacked` | Layout mode: `stacked`, `split`, or `split-reverse` |
-| `ratio` | `string` | `1 1` | Column width ratio in split layout (e.g., `2 1`, `1 2`) |
-| `valign` | `string` | `top` | Vertical alignment in split layout: `top`, `center`, or `bottom` |
-| `gap` | `string` | `default` | Gap between columns: `none`, `tight`, `default`, or `loose` |
-| `collapse` | `string` | — | Collapse to single column at breakpoint: `sm`, `md`, `lg`, or `never` |
+| `media-position` | `string` | `top` | Where the media sits: `top`, `bottom`, `start` (left), `end` (right) |
+| `media-ratio` | `string` | — | Media's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
+| `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
+| `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
 
 ## Section header
 

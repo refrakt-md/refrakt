@@ -2,8 +2,7 @@
 .rf-figure img {
 	max-width: 100%;
 	height: auto;
-	border-radius: var(--rf-radius-md);
-	box-shadow: var(--rf-shadow-sm);
+	border-radius: var(--rf-radius-media);
 }
 .rf-figure figcaption {
 	margin-top: 0.625rem;

@@ -270,11 +270,27 @@
 				"{content}"
 			],
 			"modifiers": {
-				"layout": {
+				"media-position": {
 					"source": "meta",
-					"default": "stacked",
-					"classPattern": ".rf-card--{value}",
-					"dataAttribute": "data-layout"
+					"default": "top",
+					"dataAttribute": "data-media-position"
+				},
+				"media-ratio": {
+					"source": "meta",
+					"dataAttribute": "data-media-ratio"
+				},
+				"valign": {
+					"source": "meta",
+					"dataAttribute": "data-valign"
+				},
+				"collapse": {
+					"source": "meta",
+					"dataAttribute": "data-collapse"
+				}
+			},
+			"inlineStyles": {
+				"valign": {
+					"prop": "--split-valign"
 				}
 			}
 		},
@@ -584,21 +600,13 @@
 					"default": "true",
 					"dataAttribute": "data-lightbox"
 				},
-				"gap": {
-					"source": "meta",
-					"default": "default",
-					"dataAttribute": "data-gap"
-				},
 				"columns": {
 					"source": "meta",
 					"dataAttribute": "data-columns"
 				}
 			},
 			"inlineStyles": {
-				"columns": "--gallery-columns",
-				"gap": {
-					"prop": "--gallery-gap"
-				}
+				"columns": "--gallery-columns"
 			},
 			"childDensity": "compact"
 		},
@@ -1192,11 +1200,10 @@
 				"{content}"
 			],
 			"modifiers": {
-				"layout": {
+				"media-position": {
 					"source": "meta",
-					"default": "stacked",
-					"classPattern": ".rf-hero--{value}",
-					"dataAttribute": "data-layout"
+					"default": "top",
+					"dataAttribute": "data-media-position"
 				},
 				"align": {
 					"source": "meta",
@@ -1204,20 +1211,13 @@
 					"classPattern": ".rf-hero--{value}",
 					"dataAttribute": "data-align"
 				},
-				"ratio": {
+				"media-ratio": {
 					"source": "meta",
-					"default": "1 1",
-					"dataAttribute": "data-ratio"
+					"dataAttribute": "data-media-ratio"
 				},
 				"valign": {
 					"source": "meta",
-					"default": "top",
 					"dataAttribute": "data-valign"
-				},
-				"gap": {
-					"source": "meta",
-					"default": "default",
-					"dataAttribute": "data-gap"
 				},
 				"collapse": {
 					"source": "meta",
@@ -1257,14 +1257,8 @@
 				}
 			},
 			"inlineStyles": {
-				"ratio": {
-					"prop": "--split-ratio"
-				},
 				"valign": {
 					"prop": "--split-valign"
-				},
-				"gap": {
-					"prop": "--split-gap"
 				}
 			}
 		},
@@ -1323,48 +1317,29 @@
 			"modifiers": {
 				"columns": {
 					"source": "meta",
-					"default": "4",
-					"classPattern": ".rf-bento--{value}",
+					"default": "6",
 					"dataAttribute": "data-columns"
 				},
 				"gap": {
 					"source": "meta",
 					"default": "1rem",
-					"classPattern": ".rf-bento--{value}",
 					"dataAttribute": "data-gap"
 				},
-				"sizing": {
+				"row-height": {
 					"source": "meta",
-					"default": "tiered",
-					"classPattern": ".rf-bento--{value}",
-					"dataAttribute": "data-sizing"
-				}
-			},
-			"elements": {
-				"preamble": {
-					"tag": "header",
-					"selector": ".rf-bento__preamble",
-					"source": "autoLabel"
+					"dataAttribute": "data-row-height"
 				},
-				"eyebrow": {
-					"tag": "eyebrow",
-					"selector": ".rf-bento__eyebrow",
-					"source": "autoLabel"
+				"content-height": {
+					"source": "meta",
+					"dataAttribute": "data-content-height"
 				},
-				"headline": {
-					"tag": "headline",
-					"selector": ".rf-bento__headline",
-					"source": "autoLabel"
+				"media-ratio": {
+					"source": "meta",
+					"dataAttribute": "data-media-ratio"
 				},
-				"blurb": {
-					"tag": "blurb",
-					"selector": ".rf-bento__blurb",
-					"source": "autoLabel"
-				},
-				"image": {
-					"tag": "image",
-					"selector": ".rf-bento__image",
-					"source": "autoLabel"
+				"collapse": {
+					"source": "meta",
+					"dataAttribute": "data-collapse"
 				}
 			},
 			"inlineStyles": {
@@ -1385,23 +1360,28 @@
 				"size": {
 					"source": "meta",
 					"default": "medium",
-					"classPattern": ".rf-bento-cell--{value}",
 					"dataAttribute": "data-size"
 				},
-				"span": {
+				"cols": {
 					"source": "meta",
-					"dataAttribute": "data-span"
-				}
-			},
-			"elements": {
-				"title": {
-					"tag": "name",
-					"selector": ".rf-bento-cell__title",
-					"source": "autoLabel"
+					"dataAttribute": "data-cols"
+				},
+				"rows": {
+					"source": "meta",
+					"dataAttribute": "data-rows"
+				},
+				"content-height": {
+					"source": "meta",
+					"dataAttribute": "data-content-height"
+				},
+				"media-ratio": {
+					"source": "meta",
+					"dataAttribute": "data-media-ratio"
 				}
 			},
 			"inlineStyles": {
-				"span": "--cell-span"
+				"cols": "--cell-cols",
+				"rows": "--cell-rows"
 			}
 		},
 		"Feature": {
@@ -1412,11 +1392,10 @@
 				"{content}"
 			],
 			"modifiers": {
-				"layout": {
+				"media-position": {
 					"source": "meta",
-					"default": "stacked",
-					"classPattern": ".rf-feature--{value}",
-					"dataAttribute": "data-layout"
+					"default": "top",
+					"dataAttribute": "data-media-position"
 				},
 				"align": {
 					"source": "meta",
@@ -1424,20 +1403,13 @@
 					"classPattern": ".rf-feature--{value}",
 					"dataAttribute": "data-align"
 				},
-				"ratio": {
+				"media-ratio": {
 					"source": "meta",
-					"default": "1 1",
-					"dataAttribute": "data-ratio"
+					"dataAttribute": "data-media-ratio"
 				},
 				"valign": {
 					"source": "meta",
-					"default": "top",
 					"dataAttribute": "data-valign"
-				},
-				"gap": {
-					"source": "meta",
-					"default": "default",
-					"dataAttribute": "data-gap"
 				},
 				"collapse": {
 					"source": "meta",
@@ -1487,14 +1459,8 @@
 				}
 			},
 			"inlineStyles": {
-				"ratio": {
-					"prop": "--split-ratio"
-				},
 				"valign": {
 					"prop": "--split-valign"
-				},
-				"gap": {
-					"prop": "--split-gap"
 				}
 			}
 		},
@@ -1551,26 +1517,18 @@
 				"{content}"
 			],
 			"modifiers": {
-				"layout": {
+				"media-position": {
 					"source": "meta",
-					"default": "stacked",
-					"classPattern": ".rf-step--{value}",
-					"dataAttribute": "data-layout"
+					"default": "top",
+					"dataAttribute": "data-media-position"
 				},
-				"ratio": {
+				"media-ratio": {
 					"source": "meta",
-					"default": "1 1",
-					"dataAttribute": "data-ratio"
+					"dataAttribute": "data-media-ratio"
 				},
 				"valign": {
 					"source": "meta",
-					"default": "top",
 					"dataAttribute": "data-valign"
-				},
-				"gap": {
-					"source": "meta",
-					"default": "default",
-					"dataAttribute": "data-gap"
 				},
 				"collapse": {
 					"source": "meta",
@@ -1578,14 +1536,8 @@
 				}
 			},
 			"inlineStyles": {
-				"ratio": {
-					"prop": "--split-ratio"
-				},
 				"valign": {
 					"prop": "--split-valign"
-				},
-				"gap": {
-					"prop": "--split-gap"
 				}
 			}
 		},
@@ -2039,26 +1991,18 @@
 					"classPattern": ".rf-realm--{value}",
 					"dataAttribute": "data-parent"
 				},
-				"layout": {
+				"media-position": {
 					"source": "meta",
-					"default": "stacked",
-					"classPattern": ".rf-realm--{value}",
-					"dataAttribute": "data-layout"
+					"default": "top",
+					"dataAttribute": "data-media-position"
 				},
-				"ratio": {
+				"media-ratio": {
 					"source": "meta",
-					"default": "1 1",
-					"dataAttribute": "data-ratio"
+					"dataAttribute": "data-media-ratio"
 				},
 				"valign": {
 					"source": "meta",
-					"default": "top",
 					"dataAttribute": "data-valign"
-				},
-				"gap": {
-					"source": "meta",
-					"default": "default",
-					"dataAttribute": "data-gap"
 				},
 				"collapse": {
 					"source": "meta",
@@ -2102,14 +2046,8 @@
 				}
 			},
 			"inlineStyles": {
-				"ratio": {
-					"prop": "--split-ratio"
-				},
 				"valign": {
 					"prop": "--split-valign"
-				},
-				"gap": {
-					"prop": "--split-gap"
 				}
 			}
 		},
@@ -2199,26 +2137,18 @@
 					"classPattern": ".rf-faction--{value}",
 					"dataAttribute": "data-tags"
 				},
-				"layout": {
+				"media-position": {
 					"source": "meta",
-					"default": "stacked",
-					"classPattern": ".rf-faction--{value}",
-					"dataAttribute": "data-layout"
+					"default": "top",
+					"dataAttribute": "data-media-position"
 				},
-				"ratio": {
+				"media-ratio": {
 					"source": "meta",
-					"default": "1 1",
-					"dataAttribute": "data-ratio"
+					"dataAttribute": "data-media-ratio"
 				},
 				"valign": {
 					"source": "meta",
-					"default": "top",
 					"dataAttribute": "data-valign"
-				},
-				"gap": {
-					"source": "meta",
-					"default": "default",
-					"dataAttribute": "data-gap"
 				},
 				"collapse": {
 					"source": "meta",
@@ -2263,14 +2193,8 @@
 				}
 			},
 			"inlineStyles": {
-				"ratio": {
-					"prop": "--split-ratio"
-				},
 				"valign": {
 					"prop": "--split-valign"
-				},
-				"gap": {
-					"prop": "--split-gap"
 				}
 			}
 		},
@@ -3104,11 +3028,10 @@
 				"{content}"
 			],
 			"modifiers": {
-				"layout": {
+				"media-position": {
 					"source": "meta",
-					"default": "stacked",
-					"classPattern": ".rf-recipe--{value}",
-					"dataAttribute": "data-layout"
+					"default": "top",
+					"dataAttribute": "data-media-position"
 				},
 				"prepTime": {
 					"source": "meta",
@@ -3128,20 +3051,13 @@
 					"classPattern": ".rf-recipe--{value}",
 					"dataAttribute": "data-difficulty"
 				},
-				"ratio": {
+				"media-ratio": {
 					"source": "meta",
-					"default": "1 1",
-					"dataAttribute": "data-ratio"
+					"dataAttribute": "data-media-ratio"
 				},
 				"valign": {
 					"source": "meta",
-					"default": "top",
 					"dataAttribute": "data-valign"
-				},
-				"gap": {
-					"source": "meta",
-					"default": "default",
-					"dataAttribute": "data-gap"
 				},
 				"collapse": {
 					"source": "meta",
@@ -3210,14 +3126,8 @@
 				}
 			},
 			"inlineStyles": {
-				"ratio": {
-					"prop": "--split-ratio"
-				},
 				"valign": {
 					"prop": "--split-valign"
-				},
-				"gap": {
-					"prop": "--split-gap"
 				}
 			}
 		},
@@ -3246,26 +3156,18 @@
 					"classPattern": ".rf-playlist--{value}",
 					"dataAttribute": "data-type"
 				},
-				"layout": {
+				"media-position": {
 					"source": "meta",
-					"default": "stacked",
-					"classPattern": ".rf-playlist--{value}",
-					"dataAttribute": "data-layout"
+					"default": "top",
+					"dataAttribute": "data-media-position"
 				},
-				"ratio": {
+				"media-ratio": {
 					"source": "meta",
-					"default": "1 1",
-					"dataAttribute": "data-ratio"
+					"dataAttribute": "data-media-ratio"
 				},
 				"valign": {
 					"source": "meta",
-					"default": "top",
 					"dataAttribute": "data-valign"
-				},
-				"gap": {
-					"source": "meta",
-					"default": "default",
-					"dataAttribute": "data-gap"
 				},
 				"collapse": {
 					"source": "meta",
@@ -3334,14 +3236,8 @@
 				}
 			},
 			"inlineStyles": {
-				"ratio": {
-					"prop": "--split-ratio"
-				},
 				"valign": {
 					"prop": "--split-valign"
-				},
-				"gap": {
-					"prop": "--split-gap"
 				}
 			}
 		},

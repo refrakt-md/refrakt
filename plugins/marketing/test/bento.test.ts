@@ -1,250 +1,438 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { parse, findTag, findAllTags, fields } from './helpers.js';
 
+const bentoOf = (src: string) => {
+  const result = parse(src);
+  return findTag(result as any, t => t.attributes['data-rune'] === 'bento');
+};
+const cellsOf = (tag: any) => findAllTags(tag, (t: any) => t.attributes['data-rune'] === 'bento-cell');
+
 describe('bento tag', () => {
-  it('should create a Bento component from headings', () => {
-    const result = parse(`{% bento %}
-## Large Cell
+  it('renders as a section (grid primitive, not a page section)', () => {
+    const tag = bentoOf(`{% bento %}
+## A
 
-Content for large cell.
-
-### Medium Cell
-
-Content for medium cell.
+content
 {% /bento %}`);
-
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
     expect(tag).toBeDefined();
     expect(tag!.name).toBe('section');
+    expect(findTag(tag!, t => t.attributes?.['data-name'] === 'headline')).toBeUndefined();
+    expect(findTag(tag!, t => t.attributes?.['data-name'] === 'eyebrow')).toBeUndefined();
   });
 
-  it('should create BentoCell children with size inference', () => {
-    const result = parse(`{% bento %}
+  it('every heading becomes a cell; size comes from absolute heading level', () => {
+    const tag = bentoOf(`{% bento %}
+# Full
+
+F.
+
 ## Large
 
-Large content.
+L.
 
 ### Medium
 
-Medium content.
+M.
 
 #### Small
 
-Small content.
+S.
 {% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(cells.length).toBe(4);
+    expect(fields(cells[0]).size).toBe('full');
+    expect(fields(cells[1]).size).toBe('large');
+    expect(fields(cells[2]).size).toBe('medium');
+    expect(fields(cells[3]).size).toBe('small');
+  });
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
-    expect(cells.length).toBe(3);
+  it('size is absolute: a grid of only h3 cells gets medium (not large via auto-detect)', () => {
+    const tag = bentoOf(`{% bento %}
+### Only
 
-    // h2 = large, h3 = medium, h4 = small
-    expect(fields(cells[0]).size).toBe('large');
+x
+
+### Two
+
+y
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(fields(cells[0]).size).toBe('medium');
+    expect(fields(cells[0]).cols).toBe('3');
+    expect(fields(cells[0]).rows).toBe('1');
     expect(fields(cells[1]).size).toBe('medium');
-    expect(fields(cells[2]).size).toBe('small');
   });
 
-  it('should pass columns attribute as meta', () => {
-    const result = parse(`{% bento columns=3 %}
-## Cell One
+  it('the cell title is a uniform-level heading (h3) carrying data-name=title', () => {
+    const tag = bentoOf(`{% bento %}
+## My Tile
 
-Content.
+Body text.
 {% /bento %}`);
-
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    expect(fields(tag).columns).toBe('3');
+    const cell = cellsOf(tag!)[0];
+    const title = findTag(cell, t => t.attributes?.['data-name'] === 'title');
+    expect(title).toBeDefined();
+    expect(title!.name).toBe('h3');
+    expect(JSON.stringify(title)).toContain('My Tile');
   });
 
-  it('should map h2 to large, h3 to medium, h4 to small', () => {
-    const result = parse(`{% bento %}
+  it('size presets resolve to proportional cols/rows on the default 6-col grid', () => {
+    const tag = bentoOf(`{% bento %}
 ## Large
 
-Content.
+L.
 
 ### Medium
 
-Content.
+M.
 
 #### Small
 
-Content.
+S.
 {% /bento %}`);
-
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
-
-    expect(fields(cells[0]).size).toBe('large');
-    expect(fields(cells[1]).size).toBe('medium');
-    expect(fields(cells[2]).size).toBe('small');
+    const cells = cellsOf(tag!);
+    // large = ⅔×2, medium = ½, small = ⅓  →  4/3/2 @ 6 cols
+    expect(fields(cells[0]).cols).toBe('4');
+    expect(fields(cells[0]).rows).toBe('2');
+    expect(fields(cells[1]).cols).toBe('3');
+    expect(fields(cells[2]).cols).toBe('2');
   });
 
-  it('should produce span values in span mode with default columns=6', () => {
-    const result = parse(`{% bento sizing="span" %}
-## Full Width
+  it('presets stay proportional at a non-default column count', () => {
+    const tag = bentoOf(`{% bento columns=12 %}
+## Large
 
-Spans 6 columns.
-
-### Wide
-
-Spans 5 columns.
-
-#### Medium
-
-Spans 4 columns.
-
-##### Narrow
-
-Spans 3 columns.
-
-###### Small
-
-Spans 2 columns.
+L.
 {% /bento %}`);
-
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
-    expect(cells.length).toBe(5);
-
-    // All cells should have size='span'
-    for (const cell of cells) {
-      expect(fields(cell).size).toBe('span');
-    }
-
-    // Span values: h2→5, h3→4, h4→3, h5→2, h6→1
-    expect(fields(cells[0]).span).toBe('5');
-    expect(fields(cells[1]).span).toBe('4');
-    expect(fields(cells[2]).span).toBe('3');
-    expect(fields(cells[3]).span).toBe('2');
-    expect(fields(cells[4]).span).toBe('1');
+    expect(fields(cellsOf(tag!)[0]).cols).toBe('8'); // ⅔ of 12
   });
 
-  it('should use effective columns=6 in span mode when columns not set', () => {
-    const result = parse(`{% bento sizing="span" %}
-## Wide
+  it('cell content lands in a data-name=body zone', () => {
+    const tag = bentoOf(`{% bento %}
+## T
 
-Content.
+Hello body.
 {% /bento %}`);
-
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    // Default columns=4 should become 6 in span mode
-    expect(fields(tag).columns).toBe('6');
-  });
-
-  it('should respect explicit columns in span mode', () => {
-    const result = parse(`{% bento sizing="span" columns=8 %}
-## Wide
-
-Spans 8 columns.
-
-### Medium
-
-Spans 7 columns.
-{% /bento %}`);
-
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
-
-    expect(fields(cells[0]).span).toBe('7');
-    expect(fields(cells[1]).span).toBe('6');
-  });
-
-  it('should extract icon from heading into a separate icon element', () => {
-    const result = parse(`{% bento %}
-## {% icon name="rocket" /%} Fast
-
-Performance content.
-
-## {% icon name="shield" /%} Secure
-
-Security content.
-{% /bento %}`);
-
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    expect(tag).toBeDefined();
-
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
-    expect(cells.length).toBe(2);
-
-    // Each cell should have an icon wrapper with data-name="icon"
-    for (const cell of cells) {
-      const iconWrapper = findTag(cell, t => t.attributes?.['data-name'] === 'icon');
-      expect(iconWrapper).toBeDefined();
-      // Icon falls back to span.rf-icon when __icons not configured
-      const iconSpan = findTag(iconWrapper!, t => t.attributes?.class === 'rf-icon');
-      expect(iconSpan).toBeDefined();
-    }
-  });
-
-  it('should extract icon from heading with resolved SVG when __icons provided', () => {
-    const result = parse(`{% bento %}
-## {% icon name="rocket" /%} Launch
-
-Content here.
-{% /bento %}`, {
-      __icons: { global: { rocket: '<svg viewBox="0 0 24 24"><path d="M1 1"/></svg>' } },
-    });
-
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
-    expect(cells.length).toBe(1);
-
-    const iconWrapper = findTag(cells[0], t => t.attributes?.['data-name'] === 'icon');
-    expect(iconWrapper).toBeDefined();
-    // Should contain an SVG element
-    const svg = findTag(iconWrapper!, t => t.name === 'svg');
-    expect(svg).toBeDefined();
-  });
-
-  it('should not create icon wrapper when heading has no icon', () => {
-    const result = parse(`{% bento %}
-## Plain Cell
-
-No icon here.
-{% /bento %}`);
-
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
-    expect(cells.length).toBe(1);
-
-    const iconWrapper = findTag(cells[0], t => t.attributes?.['data-name'] === 'icon');
-    expect(iconWrapper).toBeUndefined();
-  });
-
-  it('should not duplicate icon in the body when heading has an icon', () => {
-    const result = parse(`{% bento %}
-## {% icon name="rocket" /%} Fast
-
-Performance content.
-{% /bento %}`);
-
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
-    expect(cells.length).toBe(1);
-
-    // Icon should exist in the icon wrapper
-    const iconWrapper = findTag(cells[0], t => t.attributes?.['data-name'] === 'icon');
-    expect(iconWrapper).toBeDefined();
-
-    // Icon should NOT exist inside the body
-    const body = findTag(cells[0], t => t.attributes?.['data-name'] === 'body');
+    const body = findTag(cellsOf(tag!)[0], t => t.attributes?.['data-name'] === 'body');
     expect(body).toBeDefined();
-    const iconInBody = findTag(body!, t => t.attributes?.class === 'rf-icon' || t.name === 'svg');
-    expect(iconInBody).toBeUndefined();
+    expect(JSON.stringify(body)).toContain('Hello body');
   });
 
-  it('should preserve cell name text when icon is present', () => {
-    const result = parse(`{% bento %}
-## {% icon name="rocket" /%} Fast Performance
+  it('a `---` in a cell creates a media zone (data-section=media)', () => {
+    const tag = bentoOf(`{% bento %}
+## Tile
 
-Content.
+![pic](https://example.com/x.png)
+
+---
+
+Caption.
 {% /bento %}`);
+    const media = findTag(cellsOf(tag!)[0], t => t.attributes?.['data-section'] === 'media');
+    expect(media).toBeDefined();
+    expect(findTag(media!, t => t.name === 'img')).toBeDefined();
+  });
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bento');
-    const cells = findAllTags(tag!, t => t.attributes['data-rune'] === 'bento-cell');
+  it('media-position default is size-derived (small → top, large → start)', () => {
+    const tag = bentoOf(`{% bento %}
+## Large
+
+L.
+
+#### Small
+
+S.
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(cells[0].attributes['data-media-position']).toBe('start'); // large
+    expect(cells[1].attributes['data-media-position']).toBe('top');   // small
+  });
+
+  it('a trailing `---` zone becomes a footer', () => {
+    const tag = bentoOf(`{% bento %}
+## T
+
+![m](https://example.com/m.png)
+
+---
+
+main body
+
+---
+
+footer meta
+{% /bento %}`);
+    expect(findTag(cellsOf(tag!)[0], t => t.name === 'footer' && t.attributes?.['data-name'] === 'footer')).toBeDefined();
+  });
+
+  it('the grid carries the columns + collapse contract', () => {
+    const tag = bentoOf(`{% bento columns=6 collapse="lg" %}
+## A
+
+x
+{% /bento %}`);
+    expect(fields(tag).columns).toBe('6');
+    expect(fields(tag).collapse).toBe('lg');
+  });
+
+  it("explicit {% bento-cell %} cells short-circuit heading conversion (cols/rows/href/media-position)", () => {
+    const tag = bentoOf(`{% bento columns=6 %}
+{% bento-cell cols=3 rows=2 media-position="end" href="/x" %}
+## Explicit
+
+Body.
+{% /bento-cell %}
+{% /bento %}`);
+    const cells = cellsOf(tag!);
     expect(cells.length).toBe(1);
+    const c = cells[0];
+    expect(fields(c).cols).toBe("3");
+    expect(fields(c).rows).toBe("2");
+    expect(c.attributes["data-media-position"]).toBe("end");
+    expect(findTag(c, t => t.name === "a" && t.attributes?.["data-name"] === "link")).toBeDefined();
+    expect(findTag(c, t => t.attributes?.["data-name"] === "title")?.name).toBe("h3");
+  });
 
-    // The name property should contain the heading text (without the icon)
-    const nameTag = findTag(cells[0], t => t.attributes?.['data-field'] === 'name');
-    expect(nameTag).toBeDefined();
-    expect(nameTag!.children.join('').trim()).toBe('Fast Performance');
+  it("explicit mode wins: headings alongside explicit cells are ignored", () => {
+    const tag = bentoOf(`{% bento %}
+## Ignored Heading
+
+loose text
+
+{% bento-cell size="small" %}
+## Real
+
+x
+{% /bento-cell %}
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(cells.length).toBe(1);
+    expect(JSON.stringify(cells[0])).toContain("Real");
+    expect(JSON.stringify(cells[0])).not.toContain("Ignored Heading");
+  });
+
+  it('levels: a width-only ladder ("6,5,4,3,2,1") sets cols by heading level, rows=1 (revives span mode)', () => {
+    const tag = bentoOf(`{% bento levels="6,5,4,3,2,1" %}
+# A
+
+a
+
+## B
+
+b
+
+### C
+
+c
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(fields(cells[0]).cols).toBe('6'); // h1 = rung 0
+    expect(fields(cells[0]).rows).toBe('1');
+    expect(fields(cells[1]).cols).toBe('5'); // h2 = rung 1
+    expect(fields(cells[2]).cols).toBe('4'); // h3 = rung 2
+    expect(fields(cells[2]).rows).toBe('1');
+  });
+
+  it('levels: a "WxH" rung sets both cols and rows (varied-height feed)', () => {
+    const tag = bentoOf(`{% bento levels="6x1,6x2,6x3" %}
+# A
+
+a
+
+## B
+
+b
+
+### C
+
+c
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(fields(cells[0]).rows).toBe('1'); // h1 = rung 0
+    expect(fields(cells[1]).rows).toBe('2'); // h2 = rung 1
+    expect(fields(cells[2]).cols).toBe('6'); // h3 = rung 2
+    expect(fields(cells[2]).rows).toBe('3');
+  });
+
+  it('levels: heading levels beyond the ladder clamp to the last rung', () => {
+    const tag = bentoOf(`{% bento levels="6,3" %}
+# A
+
+a
+
+## B
+
+b
+
+### C
+
+c
+
+#### D
+
+d
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(fields(cells[0]).cols).toBe('6'); // h1 = rung 0
+    expect(fields(cells[1]).cols).toBe('3'); // h2 = rung 1
+    expect(fields(cells[2]).cols).toBe('3'); // h3 clamps to last
+    expect(fields(cells[3]).cols).toBe('3'); // h4 clamps to last
+  });
+
+  it('levels: rung index is absolute to heading level (not relative to the shallowest heading in the grid)', () => {
+    const tag = bentoOf(`{% bento levels="6,3,2" %}
+### A
+
+a
+
+#### B
+
+b
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(fields(cells[0]).cols).toBe('2'); // h3 = rung 2, not "shallowest = rung 0"
+    expect(fields(cells[1]).cols).toBe('2'); // h4 clamps to last (rung 2)
+  });
+
+  it('levels: ladder cells carry a neutral size so size-based collapse never clobbers them', () => {
+    const tag = bentoOf(`{% bento levels="6,3,2" %}
+## A
+
+a
+{% /bento %}`);
+    const cell = cellsOf(tag!)[0];
+    expect(fields(cell).size).toBe('');
+    expect(cell.attributes['data-media-position']).toBe('top'); // neutral size → top, not start
+  });
+
+  it('levels: explicit {% bento-cell %} grids ignore the ladder (cells keep their own spans)', () => {
+    const tag = bentoOf(`{% bento levels="6,5,4" %}
+{% bento-cell cols=2 rows=1 %}
+## Explicit
+
+x
+{% /bento-cell %}
+{% /bento %}`);
+    const cell = cellsOf(tag!)[0];
+    expect(fields(cell).cols).toBe('2'); // the cell's own cols, not ladder rung 0 (6)
+    expect(fields(cell).rows).toBe('1');
+  });
+
+  it('levels: a malformed rung warns and is skipped; valid rungs still apply', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const tag = bentoOf(`{% bento levels="6,oops,2" %}
+# A
+
+a
+
+## B
+
+b
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(fields(cells[0]).cols).toBe('6'); // h1 = rung 0
+    expect(fields(cells[1]).cols).toBe('2'); // "oops" dropped → rung 1 is "2"
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('oops'));
+    warn.mockRestore();
+  });
+
+  it('omitting levels leaves tiered sizing unchanged', () => {
+    const tag = bentoOf(`{% bento %}
+## A
+
+a
+
+### B
+
+b
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(fields(cells[0]).size).toBe('large');
+    expect(fields(cells[0]).cols).toBe('4');
+    expect(fields(cells[1]).size).toBe('medium');
+  });
+
+  it('grid-level media-position is the default for every cell, overriding the size-derived one', () => {
+    const tag = bentoOf(`{% bento media-position="top" %}
+## Large
+
+L.
+
+#### Small
+
+S.
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(cells[0].attributes['data-media-position']).toBe('top'); // large would be 'start' by default
+    expect(cells[1].attributes['data-media-position']).toBe('top');
+  });
+
+  it('a cell\'s own media-position still wins over the grid default (explicit cells)', () => {
+    const tag = bentoOf(`{% bento media-position="top" %}
+{% bento-cell size="large" %}
+## A
+
+a
+{% /bento-cell %}
+
+{% bento-cell size="large" media-position="end" %}
+## B
+
+b
+{% /bento-cell %}
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(cells[0].attributes['data-media-position']).toBe('top'); // inherits grid default
+    expect(cells[1].attributes['data-media-position']).toBe('end'); // own value wins
+  });
+
+  it('without a grid media-position, the size-derived default is unchanged', () => {
+    const tag = bentoOf(`{% bento %}
+## Large
+
+L.
+
+#### Small
+
+S.
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(cells[0].attributes['data-media-position']).toBe('start'); // large
+    expect(cells[1].attributes['data-media-position']).toBe('top');   // small
+  });
+
+  it("grid-level content-height + media-ratio land on the bento contract", () => {
+    const tag = bentoOf(`{% bento content-height="md" media-ratio="1/3" %}
+## A
+
+x
+{% /bento %}`);
+    expect(fields(tag)["content-height"]).toBe("md");
+    expect(fields(tag)["media-ratio"]).toBe("1/3");
+  });
+
+  it("per-cell content-height / media-ratio override the grid default", () => {
+    const tag = bentoOf(`{% bento content-height="sm" %}
+{% bento-cell content-height="lg" media-ratio="1/2" %}
+## Cell
+
+body
+{% /bento-cell %}
+{% /bento %}`);
+    const cell = cellsOf(tag!)[0];
+    expect(fields(cell)["content-height"]).toBe("lg");
+    expect(fields(cell)["media-ratio"]).toBe("1/2");
+    expect(fields(tag)["content-height"]).toBe("sm"); // grid keeps its own default
+  });
+
+  it("unset content-height / media-ratio are empty (cell inherits the grid/theme default)", () => {
+    const tag = bentoOf(`{% bento %}
+## A
+
+x
+{% /bento %}`);
+    expect(fields(tag)["content-height"]).toBe("");
+    expect(fields(tag)["media-ratio"]).toBe("");
+    expect(fields(cellsOf(tag!)[0])["media-ratio"]).toBe("");
   });
 });
