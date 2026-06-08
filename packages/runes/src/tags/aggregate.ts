@@ -29,6 +29,9 @@ export const aggregate = createContentModelSchema({
 		sort: { type: String, required: false, default: '', description: 'Sort groups by `key`, `count`, `value`, or `percent` (prefix `-` for descending). Honors SPEC-072 domain-aware ordering when the group field has one.' },
 		limit: { type: String, required: false, default: '', description: 'Cap the number of groups (after sort).' },
 		empty: { type: String, required: false, default: '', description: 'Fallback text shown when the query matches no entities (self-closing form; body form uses a fallback zone). Absent → render nothing.' },
+		layout: { type: String, required: false, default: '', matches: ['chart'], description: 'Render mode. Default: inline integer (no body) or body-zoned template. `chart` draws the grouped counts as an SVG via the `chart` rune\'s pipeline instead of a body.' },
+		'chart-type': { type: String, required: false, default: 'bar', matches: ['bar', 'line', 'area', 'pie'], description: 'Chart visualization type when layout="chart" (default bar).' },
+		'chart-title': { type: String, required: false, default: '', description: 'Title for the chart (rendered as the data table caption) when layout="chart".' },
 	},
 	deferBody: true,
 	contentModel: { type: 'sequence', fields: [] },
@@ -36,6 +39,7 @@ export const aggregate = createContentModelSchema({
 		const meta = (field: string, content: string) => new Tag('meta', { 'data-field': field, content });
 		const bodySource = readDeferredBody(attrs) ?? '';
 		const hasBody = bodySource.length > 0;
+		const layout = String(attrs.layout ?? '');
 
 		const metas = [
 			meta('aggregate-type', String(attrs.type ?? '')),
@@ -45,15 +49,18 @@ export const aggregate = createContentModelSchema({
 			meta('aggregate-sort', String(attrs.sort ?? '')),
 			meta('aggregate-limit', String(attrs.limit ?? '')),
 			meta('aggregate-empty', String(attrs.empty ?? '')),
+			meta('aggregate-layout', layout),
+			meta('aggregate-chart-type', String(attrs['chart-type'] ?? 'bar')),
+			meta('aggregate-chart-title', String(attrs['chart-title'] ?? '')),
 			meta(AGGREGATE_SENTINEL, 'true'),
 		];
 		if (bodySource) metas.push(meta('aggregate-body', bodySource));
 
-		// Self-closing form must be inline-safe (no <section> mid-prose), so the
-		// outer tag is a span when there's no body. Body form is a <section>.
+		// Self-closing inline form is a span (no <section> mid-prose); the body and
+		// chart forms are block-level (the resolver swaps chart for an <rf-chart>).
 		return createComponentRenderable({
 			rune: 'aggregate',
-			tag: hasBody ? 'section' : 'span',
+			tag: hasBody || layout === 'chart' ? 'section' : 'span',
 			properties: {},
 			children: metas,
 		});

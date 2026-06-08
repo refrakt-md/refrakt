@@ -121,6 +121,23 @@ Omit `group` and the body renders **once** with the totals projection on `$item`
 
 In the per-group template, `$item.shown` is the post-`limit` group count — the same number in every iteration.
 
+## Chart layout — `layout="chart"`
+
+Add `layout="chart"` and the grouped counts render as a chart instead of a body — `aggregate` builds the data and hands it to the [`chart`](/runes/chart) rune's pipeline (an SVG, with a no-JS `<table>` fallback). One bar (or point) per group, in the same domain-aware order:
+
+{% preview source=true %}
+
+{% aggregate type="work" group="status" layout="chart" chart-title="Work by status" /%}
+
+{% /preview %}
+
+- **`chart-type`** — `bar` (default), `line`, `area`, or `pie`.
+- **`chart-title`** — rendered as the chart caption.
+- Add a **`value`** sub-filter to chart a second series (the achieved count per group) beside the totals.
+- An empty query renders the `empty` fallback, never a broken chart.
+
+No body is needed — `aggregate` supplies the data table. Chart appearance (palette, geometry, sentiment colouring) comes from the chart rune's `--rf-chart-*` theming contract.
+
 ## Empty state
 
 When the primary set is empty:

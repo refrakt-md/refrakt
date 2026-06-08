@@ -17,6 +17,7 @@ import {
 	buildOrdering, splitBodyZones, renderItemTemplate, groupEntities,
 } from './collection-helpers.js';
 import { AGGREGATE_SENTINEL } from './tags/aggregate.js';
+import { humanize } from './functions.js';
 
 const { Tag } = Markdoc;
 type TagNode = InstanceType<typeof Tag>;
@@ -49,6 +50,9 @@ interface AggregateQuery {
 	limit?: number;
 	bodySource: string;
 	empty: string;
+	layout: string;
+	chartType: string;
+	chartTitle: string;
 }
 
 function readQuery(tag: TagNode): AggregateQuery {
@@ -63,7 +67,47 @@ function readQuery(tag: TagNode): AggregateQuery {
 		limit: limitRaw && Number.isFinite(limitNum) && limitNum > 0 ? Math.floor(limitNum) : undefined,
 		bodySource: metaContent(tag, 'aggregate-body'),
 		empty: metaContent(tag, 'aggregate-empty'),
+		layout: metaContent(tag, 'aggregate-layout'),
+		chartType: metaContent(tag, 'aggregate-chart-type') || 'bar',
+		chartTitle: metaContent(tag, 'aggregate-chart-title'),
 	};
+}
+
+/** Build the `chart` rune's final rendered form (an `<rf-chart>` wrapping an
+ *  authored data `<table data-name="data">`) from the ordered groups — one row
+ *  per group (label = humanized key, value = count, + a value series when a
+ *  `value` sub-filter is set). The web component upgrades the table to an SVG;
+ *  the table is the no-JS fallback (SPEC-083). */
+function buildChart(
+	groups: Array<[string, EntityRegistration[]]>,
+	q: AggregateQuery,
+	valueParsed: ParsedFieldMatch | null,
+): TagNode {
+	const td = (v: string) => new Tag('td', {}, [v]);
+	const th = (v: string) => new Tag('th', {}, [v]);
+
+	const headers = [humanize(q.group || 'group'), 'Count'];
+	if (valueParsed) headers.push('Value');
+	const headRow = new Tag('tr', {}, headers.map(th));
+
+	const bodyRows = groups.map(([key, members]) => {
+		const cells = [td(humanize(key)), td(String(members.length))];
+		if (valueParsed) cells.push(td(String(countValue(members, valueParsed))));
+		return new Tag('tr', {}, cells);
+	});
+
+	const tableChildren: RenderableTreeNode[] = [];
+	if (q.chartTitle) tableChildren.push(new Tag('caption', {}, [q.chartTitle]));
+	tableChildren.push(new Tag('thead', {}, [headRow]));
+	tableChildren.push(new Tag('tbody', {}, bodyRows));
+
+	const table = new Tag('table', { 'data-name': 'data' }, tableChildren);
+	return new Tag('rf-chart', {
+		class: 'rf-chart',
+		'data-rune': 'chart',
+		'data-type': q.chartType,
+		'data-stacked': 'false',
+	}, [table]);
 }
 
 function percentOf(value: number, count: number): number {
@@ -147,6 +191,20 @@ function resolveOne(
 	// Without a `value` attribute, the in-context "achievement" is the count
 	// itself — so percent reads as 100 (a full bar, semantically vacuous).
 	const percentTotal = q.value ? percentOf(valueTotal, countTotal) : 100;
+
+	// Chart layout (SPEC-076 / WORK-349) — draw the grouped counts as an SVG via
+	// the chart pipeline (the table is the no-JS fallback). Empty query → the
+	// `empty` fallback, never a broken chart. Axis order honors the same
+	// domain-aware grouping/sort the body-zoned form uses.
+	if (q.layout === 'chart') {
+		if (countTotal === 0) {
+			return new Tag('div', { 'data-name': 'empty', class: 'rf-aggregate__empty' }, q.empty ? [q.empty] : []);
+		}
+		let groups = [...groupEntities(entities, q.group, ordering).entries()];
+		groups = sortGroups(groups, q.sort, q.group, ordering, valueParsed);
+		if (q.limit !== undefined && groups.length > q.limit) groups = groups.slice(0, q.limit);
+		return buildChart(groups, q, valueParsed);
+	}
 
 	// No-body form → inline integer. The engine has already added
 	// `class="rf-aggregate"` to the wrapper span; we just stamp the count and
