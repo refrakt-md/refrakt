@@ -1,5 +1,37 @@
 /* Recipe — editorial cookbook aesthetic */
 
+/* Thin-edge inset model (matches `.rf-card`): card outer padding is a thin edge,
+ * the content column adds the remaining inset back so text sits at the full
+ * `--rune-padding` without negative-margin bleed. Unlike `card`, the split
+ * layout keeps `align-items: start` (no `--split-valign: stretch`) — recipe
+ * content can be very tall (ingredients + many steps + tips), so stretching the
+ * media to match would crop the image hard. The image keeps its natural ratio
+ * and any leftover height in the media column sits as quiet card padding. */
+.rf-recipe {
+	--rf-recipe-edge: 0.5rem;
+	--rf-recipe-media-gap: var(--rf-spacing-lg);
+	--rf-recipe-split-gap: var(--rf-spacing-sm);
+	padding: var(--rf-recipe-edge);
+}
+
+.rf-recipe__content {
+	padding: max(0px, calc(var(--rune-padding, var(--rf-spacing-md)) - var(--rf-recipe-edge)));
+}
+
+/* Direct grid properties (column-gap / row-gap) rather than overriding
+ * `--split-gap`: the split layout transform emits `--split-gap` inline even when
+ * the author doesn't set the gap attribute, so a CSS-variable override would
+ * lose to inline-style specificity. */
+.rf-recipe[data-layout="split"],
+.rf-recipe[data-layout="split-reverse"] {
+	column-gap: var(--rf-recipe-split-gap);
+	row-gap: var(--rf-recipe-media-gap);
+}
+
+.rf-recipe[data-layout="stacked"] > [data-section="media"] {
+	margin-bottom: var(--rf-recipe-media-gap);
+}
+
 .rf-recipe .rf-recipe__eyebrow {
 	font-size: 0.8rem;
 	font-weight: 600;

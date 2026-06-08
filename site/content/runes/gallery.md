@@ -41,11 +41,11 @@ Horizontal scrolling with snap points and prev/next navigation.
 
 ## Masonry layout
 
-Variable-height items arranged in a masonry grid (CSS progressive enhancement).
+Variable-height items arranged in CSS multi-column flow — each image keeps its natural aspect ratio and stacks down its column.
 
 {% preview source=true %}
 
-{% gallery layout="masonry" columns=4 %}
+{% gallery layout="masonry" columns=2 %}
 ![Tall waterfall](https://picsum.photos/seed/waterfall/600/800)
 ![Wide panorama](https://picsum.photos/seed/panorama/800/400)
 ![Square garden](https://picsum.photos/seed/garden/500/500)
@@ -67,13 +67,13 @@ Disable the click-to-enlarge overlay.
 
 {% /preview %}
 
-## Custom columns and gap
+## Custom columns
 
-Control the number of columns and spacing between items.
+Choose how many columns the grid uses — that's the one knob authors control for layout density. Spacing between items is theme-locked to keep the tile mosaic consistent across galleries; override `--rf-gallery-gap` (or `--rf-gallery-edge` for the outer frame) at the theme level if you need to retune.
 
 {% preview source=true %}
 
-{% gallery columns=2 gap="loose" caption="Vacation highlights" %}
+{% gallery columns=2 caption="Vacation highlights" %}
 ![Sandy beach](https://picsum.photos/seed/beach/600/400)
 ![Golden sunset](https://picsum.photos/seed/sunset/600/400)
 ![Local market](https://picsum.photos/seed/market/600/400)
@@ -89,7 +89,6 @@ Control the number of columns and spacing between items.
 | `layout` | `string` | `grid` | One of `grid`, `carousel`, `masonry` |
 | `columns` | `number` | `3` | Number of columns in the grid |
 | `lightbox` | `boolean` | `true` | Enable click-to-enlarge image overlay |
-| `gap` | `string` | `default` | Spacing between items: `none`, `tight`, `default`, `loose` |
 | `caption` | `string` | — | Caption text displayed below the gallery |
 
 ### Common attributes

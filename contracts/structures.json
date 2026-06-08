@@ -584,21 +584,13 @@
 					"default": "true",
 					"dataAttribute": "data-lightbox"
 				},
-				"gap": {
-					"source": "meta",
-					"default": "default",
-					"dataAttribute": "data-gap"
-				},
 				"columns": {
 					"source": "meta",
 					"dataAttribute": "data-columns"
 				}
 			},
 			"inlineStyles": {
-				"columns": "--gallery-columns",
-				"gap": {
-					"prop": "--gallery-gap"
-				}
+				"columns": "--gallery-columns"
 			},
 			"childDensity": "compact"
 		},

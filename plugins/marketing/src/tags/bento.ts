@@ -32,7 +32,7 @@ export const bentoCell = createContentModelSchema({
 		cols: { type: Number, required: false },
 		rows: { type: Number, required: false },
 		'media-position': { type: String, required: false, matches: ['top', 'bottom', 'start', 'end'] },
-		'content-height': { type: String, required: false, matches: ['sm', 'md', 'lg'], description: 'Override the grid content-height for this cell (column cells): pin its text area to sm/md/lg' },
+		'content-height': { type: String, required: false, matches: ['sm', 'md', 'lg', 'xl'], description: 'Override the grid content-height for this cell (column cells): pin its text area to sm/md/lg/xl' },
 		'media-ratio': { type: String, required: false, matches: ['1/3', '2/5', '1/2', '3/5', '2/3'], description: 'Override the grid media-ratio for this cell (beside cells): the media zone\'s share of the cell width' },
 		href: { type: String, required: false },
 	},
@@ -153,10 +153,15 @@ export const bentoCell = createContentModelSchema({
 	},
 });
 
-function tieredSize(headingLevel: number, level: number): string {
-	const diff = level - headingLevel;
-	if (diff === 0) return 'large';
-	if (diff === 1) return 'medium';
+/** Heading level → size preset. Absolute (no auto-detected base): every input
+ *  level maps to the same tile size everywhere, so `### Coral` is always a
+ *  medium 3 × 1 tile regardless of what else is in the grid. h1 is a full-width
+ *  banner; h5+ clamps to small. (Input level is purely a sizing dial — every
+ *  cell title still renders at CELL_TITLE_LEVEL in the DOM.) */
+function tieredSize(level: number): string {
+	if (level === 1) return 'full';
+	if (level === 2) return 'large';
+	if (level === 3) return 'medium';
 	return 'small';
 }
 
@@ -194,19 +199,15 @@ function parseLevels(spec: string): { cols: number; rows: number }[] {
 }
 
 /** Convert headings into bento-cell tags. The heading *level* sets the tile
- *  footprint — by default tiered (depth → size preset → proportional `cols`/
- *  `rows`); with a `levels` ladder, depth indexes an explicit `cols`/`rows`
- *  rung (ADR-013). Depth is measured from the **auto-detected base** (the
- *  shallowest heading present), so the shallowest is always tier 0 / rung 0
- *  whether the grid starts at h2 or deeper. The heading itself becomes the cell
- *  title; content before the first heading is returned as-is (bento is a grid
- *  primitive, not a page-section — no preamble semantics). */
+ *  footprint via an **absolute** mapping — h1 = full, h2 = large, h3 = medium,
+ *  h4+ = small — so `### Coral` always means medium regardless of context. With
+ *  a `levels` ladder, level - 1 is the rung index (rung 0 = h1, rung 1 = h2, …),
+ *  clamped to the last rung. The heading itself becomes the cell title; content
+ *  before the first heading is returned as-is (bento is a grid primitive, not a
+ *  page-section — no preamble semantics). */
 function convertHeadings(nodes: Node[], columns: number, ladder: { cols: number; rows: number }[] | null, gridPos?: string): Node[] {
 	const preamble: Node[] = [];
 	const cells: Node[] = [];
-
-	const headingLevels = nodes.filter(n => n.type === 'heading').map(n => (n.attributes.level as number) ?? 2);
-	const baseLevel = headingLevels.length ? Math.min(...headingLevels) : 2;
 
 	let currentHeading: Node | null = null;
 	let currentChildren: Node[] = [];
@@ -214,26 +215,27 @@ function convertHeadings(nodes: Node[], columns: number, ladder: { cols: number;
 
 	const flush = () => {
 		if (!currentHeading) return;
-		const level = (currentHeading.attributes?.level as number) ?? baseLevel;
+		const level = (currentHeading.attributes?.level as number) ?? 2;
 		const cellChildren = [currentHeading, ...currentChildren];
 		const posAttr = gridPos ? { 'media-position': gridPos } : {};
 		if (ladder && ladder.length > 0) {
-			// Explicit ladder footprint, indexed by relative depth (clamped to the
-			// last rung). No tiered preset → neutral `size` (empty), so the cell
-			// keeps its author-defined width: the size-based responsive collapse
-			// rules don't target it, while the span auto-cap still applies.
-			const depth = Math.max(0, level - baseLevel);
-			const { cols, rows } = ladder[Math.min(depth, ladder.length - 1)];
+			// Explicit ladder footprint, indexed by absolute heading level
+			// (rung 0 = h1; clamped to the last rung). No tiered preset → neutral
+			// `size` (empty), so the cell keeps its author-defined width: the
+			// size-based responsive collapse rules don't target it, while the span
+			// auto-cap still applies.
+			const rungIndex = Math.max(0, level - 1);
+			const { cols, rows } = ladder[Math.min(rungIndex, ladder.length - 1)];
 			cells.push(new Ast.Node('tag', { size: '', cols, rows, ...posAttr }, cellChildren, 'bento-cell'));
 		} else {
-			const size = tieredSize(baseLevel, level);
+			const size = tieredSize(level);
 			const { cols, rows } = presetSpans(size, columns);
 			cells.push(new Ast.Node('tag', { size, cols, rows, ...posAttr }, cellChildren, 'bento-cell'));
 		}
 	};
 
 	for (const node of nodes) {
-		if (node.type === 'heading' && ((node.attributes.level as number) ?? baseLevel) >= baseLevel) {
+		if (node.type === 'heading') {
 			seenFirstCellHeading = true;
 			flush();
 			currentHeading = node;
@@ -255,12 +257,12 @@ export const bento = createContentModelSchema({
 	attributes: {
 		gap: { type: String, required: false, description: 'Space between grid cells (CSS length value)' },
 		columns: { type: Number, required: false, description: 'Number of columns in the bento grid (default 6)' },
-		levels: { type: String, required: false, description: 'Heading-sugar footprint ladder, indexed by relative heading depth: comma-separated rungs, each a column count "W" (× 1 row) or a footprint "WxH" (e.g. "6,5,4,3,2,1" or "4x2,3x1,2x1"). Omit for tiered sizing. Ignored for explicit-cell grids.' },
+		levels: { type: String, required: false, description: 'Heading-sugar footprint ladder, indexed by absolute heading level (rung 0 = h1, rung 1 = h2, …): comma-separated rungs, each a column count "W" (× 1 row) or a footprint "WxH" (e.g. "6,5,4,3,2,1" or "4x2,3x1,2x1"). Depths beyond the last rung clamp to it. Omit for tiered sizing. Ignored for explicit-cell grids.' },
 		'row-height': { type: String, required: false, matches: ['sm', 'md', 'lg', 'xl'], description: 'Uniform grid row track height: sm, md (default), lg, or xl' },
-		'content-height': { type: String, required: false, matches: ['sm', 'md', 'lg'], description: 'Grid default: pin each column cell\'s text area to a fixed height (sm/md/lg) so cells align vertically; per-cell overridable; reverts to natural height on mobile' },
+		'content-height': { type: String, required: false, matches: ['sm', 'md', 'lg', 'xl'], description: 'Grid default: pin each column cell\'s text area to a fixed height (sm/md/lg/xl) so cells align vertically; per-cell overridable; reverts to natural height on mobile' },
 		'media-ratio': { type: String, required: false, matches: ['1/3', '2/5', '1/2', '3/5', '2/3'], description: 'Grid default for beside (start/end) cells: the media zone\'s share of the cell width; per-cell overridable' },
 		'media-position': { type: String, required: false, matches: ['top', 'bottom', 'start', 'end'], description: 'Grid default media placement for every cell (overrides the per-cell size-derived default); a cell\'s own media-position still wins' },
-		collapse: { type: String, required: false, matches: ['sm', 'md', 'lg', 'never'], description: 'Breakpoint at which the grid drops to a single stacked column' },
+		collapse: { type: String, required: false, matches: ['sm', 'md', 'lg', 'never'], description: 'Binary collapse breakpoint: above it the grid renders as authored, below it cells stack into a single column with auto row tracks. Default sm (640px). `never` to disable.' },
 	},
 	contentModel: (attrs) => ({
 		type: 'custom' as const,

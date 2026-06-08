@@ -90,25 +90,14 @@
   border-radius: 0;
 }
 
-/* Media banner bleed — when media sits on top (stacked), it reaches toward the
-   container's top/left/right edges, leaving a small consistent margin (figure
-   style) instead of being inset by the full body padding. The bleed is the
-   container padding minus that small margin (clamped at 0 for already-tight
-   containers); the bottom keeps a generous gap to the content. Self-managing
-   guests (preview/juxtapose/bleeding showcase) opt out via their own breakout. */
-[data-media-position="top"] > [data-section="media"]:not(:is(
-  :has(> [data-rune="preview"]),
-  :has(> [data-rune="juxtapose"]),
-  :has(> .rf-showcase[data-bleed]:not(.rf-showcase--in-bento-cell))
-)) {
-  --media-bleed: max(0px, calc(
-    var(--container-padding, var(--rune-padding, var(--rf-spacing-md))) - var(--rf-media-margin, var(--rf-spacing-sm))
-  ));
-  width: calc(100% + 2 * var(--media-bleed));
-  margin-top: calc(-1 * var(--media-bleed));
-  margin-inline: calc(-1 * var(--media-bleed));
-  margin-bottom: var(--rf-spacing-md);
-}
+/* (Figure-style media bleed used to live here — a negative-margin breakout that
+ * extended a top-position media banner past the container padding to leave a
+ * small consistent figure margin. Every consumer (card / recipe / realm /
+ * faction / playlist / bento-cell) has since moved to the thin-edge inset model
+ * — outer padding is a thin edge, the content zone fills the remaining inset —
+ * which achieves the same visual without the negative-margin hack. The rule
+ * was removed once it had no remaining matches; reintroduce a positive opt-in
+ * if a new rune ever wants figure bleed.) */
 
 /* A code-group dropped into a media zone uses the media radius tier so its
    border and corners line up with the zone's clip instead of the larger

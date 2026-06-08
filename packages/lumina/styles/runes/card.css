@@ -8,11 +8,59 @@
  */
 
 .rf-card {
-	position: relative; /* anchor for the stretched link + media bleed */
-	padding: var(--rune-padding, var(--rf-spacing-md));
+	position: relative; /* anchor for the stretched link */
+	/* Thin-edge inset model (matches `bento-cell`): the card hugs its media with
+	 * only a small edge margin, and the content zone adds the remaining inset
+	 * back below — so text still sits at the full `--rune-padding` while media
+	 * sits close to the card border, with no negative-margin bleed.
+	 *   • `--rf-card-edge`        — fixed thin outer padding.
+	 *   • `--rf-card-media-gap`   — generous gap when media stacks above/below
+	 *                                content (stacked layout, or split collapsed
+	 *                                to one column on mobile).
+	 *   • `--rf-card-split-gap`   — tight gap when media sits beside content,
+	 *                                so the card reads as a unified surface
+	 *                                rather than two loosely-related panels. */
+	--rf-card-edge: 0.5rem;
+	--rf-card-media-gap: var(--rf-spacing-lg);
+	--rf-card-split-gap: var(--rf-spacing-sm);
+	padding: var(--rf-card-edge);
 	border-radius: var(--rf-radius-container);
 	border: 1px solid var(--rf-color-border);
 	background: var(--rf-color-surface);
+}
+
+/* Content zone fills the remaining inset so total text padding still equals
+ * `--rune-padding`. `max(0, …)` keeps dense+ (rune-padding < edge) safe — at
+ * tighter densities the edge becomes the floor. */
+.rf-card__content {
+	padding: max(0px, calc(var(--rune-padding, var(--rf-spacing-md)) - var(--rf-card-edge)));
+}
+
+/* Split layout: tight column-gap when media sits beside content. `row-gap`
+ * stays at the larger media-gap so the collapse step (split grid → single
+ * column) automatically picks up the generous stacked spacing instead of
+ * inheriting the tight beside-gap. (2-section cards have only one grid row in
+ * the uncollapsed state, so row-gap is dormant until collapse.) `stretch`
+ * lets the media zone match the content's height — the image inside uses
+ * `object-fit: cover` so it re-crops rather than letterboxing when content
+ * is taller than the media's natural aspect ratio.
+ *
+ * We set `column-gap` / `row-gap` / `align-items` directly rather than override
+ * `--split-gap` / `--split-valign`: the shared split layout transform emits
+ * those vars as inline styles even when the author doesn't set the matching
+ * attributes, so a CSS-variable override loses to inline-style specificity.
+ * Direct grid properties win via selector specificity and stay in our control. */
+.rf-card[data-layout="split"],
+.rf-card[data-layout="split-reverse"] {
+	column-gap: var(--rf-card-split-gap);
+	row-gap: var(--rf-card-media-gap);
+	align-items: stretch;
+}
+
+/* Stacked layout: explicit gap between the media banner and the content zone
+ * (replaces the figure-style margin-bottom from the bleed model). */
+.rf-card[data-layout="stacked"] > [data-section="media"] {
+	margin-bottom: var(--rf-card-media-gap);
 }
 
 /* Only a linked card (stretched `.rf-card__link` present) reacts to hover. */

@@ -4,15 +4,40 @@
  * "preamble"), and dimensions/metadata.css ([data-zone-layout]). This file
  * only carries faction-specific chrome. */
 
+/* Thin-edge inset model (matches `.rf-card` / `.rf-recipe`): card outer padding
+ * is a thin edge, the content column adds the remaining inset back so text sits
+ * at the full `--rune-padding` without negative-margin bleed. Like recipe, no
+ * `--split-valign: stretch` — faction content can be long (multiple sections),
+ * so we let the scene keep its natural aspect ratio rather than cover-cropping. */
+.rf-faction {
+	--rf-faction-edge: 0.5rem;
+	--rf-faction-media-gap: var(--rf-spacing-lg);
+	--rf-faction-split-gap: var(--rf-spacing-sm);
+	padding: var(--rf-faction-edge);
+}
+
+.rf-faction__content {
+	padding: max(0px, calc(var(--rune-padding, var(--rf-spacing-md)) - var(--rf-faction-edge)));
+}
+
+/* Direct grid properties (column-gap / row-gap) rather than overriding
+ * `--split-gap`: the split layout transform emits `--split-gap` inline even when
+ * the author doesn't set the gap attribute, so a CSS-variable override would
+ * lose to inline-style specificity. */
+.rf-faction[data-layout="split"],
+.rf-faction[data-layout="split-reverse"] {
+	column-gap: var(--rf-faction-split-gap);
+	row-gap: var(--rf-faction-media-gap);
+}
+
 /* Stacked layout — split / split-reverse are handled by shared split.css */
 .rf-faction[data-layout="stacked"] {
 	display: flex;
 	flex-direction: column;
 }
 
-/* Scene image — base styles deferred to shared [data-section="media"] in split.css */
-.rf-faction__scene {
-	margin-bottom: var(--rf-spacing-md);
+.rf-faction[data-layout="stacked"] > .rf-faction__scene {
+	margin-bottom: var(--rf-faction-media-gap);
 }
 
 /* Content */

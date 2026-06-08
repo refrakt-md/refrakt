@@ -8,14 +8,11 @@
  * tokens rather than holding raw values, so they live in the styles layer, not
  * the generated token contract). Outer surfaces round at --rf-radius-container;
  * media guests nested inside them round at the smaller --rf-radius-media so they
- * never read as more rounded than their container. --rf-media-margin is the
- * small gap a top media banner leaves to the container's top/left/right edges as
- * it bleeds past the body padding (figure-style framing). SPEC-086's `frame`
- * will override these per-instance. */
+ * never read as more rounded than their container. SPEC-086's `frame` will
+ * override these per-instance. */
 :root {
 	--rf-radius-container: var(--rf-radius-lg);
 	--rf-radius-media: var(--rf-radius-md);
-	--rf-media-margin: var(--rf-spacing-sm);
 }
 
 /* ─── Rune Spacing ────────────────────────────────────────────────── */

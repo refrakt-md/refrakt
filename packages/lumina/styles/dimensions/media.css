@@ -20,7 +20,7 @@
 [data-media="cover"] {
 	width: 100%;
 	object-fit: cover;
-	border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
+	border-radius: var(--rf-radius-md);
 }
 
 /* ─── Thumbnail: small fixed preview ──────────────────────────────── */
