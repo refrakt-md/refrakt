@@ -1,4 +1,4 @@
-{% work id="WORK-356" status="draft" priority="medium" complexity="moderate" source="ADR-013" tags="bento, authoring, marketing, sugar" %}
+{% work id="WORK-356" status="in-progress" priority="medium" complexity="moderate" source="ADR-013" tags="bento, authoring, marketing, sugar" %}
 
 # Bento `levels` — heading→footprint ladder
 
@@ -39,14 +39,14 @@ marinate before implementation.
 
 ## Acceptance Criteria
 
-- [ ] `bento` accepts a `levels` attribute; omitting it leaves tiered behavior byte-for-byte unchanged.
-- [ ] `levels="6,5,4,3,2,1"` reproduces the removed span mode (uniform height, width by heading depth) at `columns=6`.
-- [ ] Bare-integer rungs map to `cols=W, rows=1`; `WxH` rungs map to `cols=W, rows=H`.
-- [ ] Rungs are indexed by relative heading depth from the auto-detected base; depths beyond the ladder clamp to the last rung.
-- [ ] Explicit `{% bento-cell %}` grids ignore `levels`.
-- [ ] Malformed `levels` entries produce a clear authoring warning, not a crash.
-- [ ] `levels` composes correctly with `columns`, `row-height`, and `content-height`.
-- [ ] Marketing tests cover: width-only ladder, `WxH` ladder, clamping, and the omitted-default-unchanged case.
+- [x] `bento` accepts a `levels` attribute; omitting it leaves tiered behavior byte-for-byte unchanged.
+- [x] `levels="6,5,4,3,2,1"` reproduces the removed span mode (uniform height, width by heading depth) at `columns=6`.
+- [x] Bare-integer rungs map to `cols=W, rows=1`; `WxH` rungs map to `cols=W, rows=H`.
+- [x] Rungs are indexed by relative heading depth from the auto-detected base; depths beyond the ladder clamp to the last rung.
+- [x] Explicit `{% bento-cell %}` grids ignore `levels`.
+- [x] Malformed `levels` entries produce a clear authoring warning, not a crash.
+- [x] `levels` composes correctly with `columns`, `row-height`, and `content-height`.
+- [x] Marketing tests cover: width-only ladder, `WxH` ladder, clamping, and the omitted-default-unchanged case.
 - [ ] Bento authoring docs document `levels`, with the `levels="6,5,4,3,2,1"` uniform-width recipe called out.
 
 ## Context

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 const bentoOf = (src: string) => {
@@ -187,6 +187,147 @@ x
     expect(cells.length).toBe(1);
     expect(JSON.stringify(cells[0])).toContain("Real");
     expect(JSON.stringify(cells[0])).not.toContain("Ignored Heading");
+  });
+
+  it('levels: a width-only ladder ("6,5,4,3,2,1") sets cols by depth, rows=1 (revives span mode)', () => {
+    const tag = bentoOf(`{% bento levels="6,5,4,3,2,1" %}
+## A
+
+a
+
+### B
+
+b
+
+#### C
+
+c
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(fields(cells[0]).cols).toBe('6'); // h2 = rung 0
+    expect(fields(cells[0]).rows).toBe('1');
+    expect(fields(cells[1]).cols).toBe('5'); // h3 = rung 1
+    expect(fields(cells[2]).cols).toBe('4'); // h4 = rung 2
+    expect(fields(cells[2]).rows).toBe('1');
+  });
+
+  it('levels: a "WxH" rung sets both cols and rows (varied-height feed)', () => {
+    const tag = bentoOf(`{% bento levels="6x1,6x2,6x3" %}
+## A
+
+a
+
+### B
+
+b
+
+#### C
+
+c
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(fields(cells[0]).rows).toBe('1');
+    expect(fields(cells[1]).rows).toBe('2');
+    expect(fields(cells[2]).cols).toBe('6');
+    expect(fields(cells[2]).rows).toBe('3');
+  });
+
+  it('levels: depths beyond the ladder clamp to the last rung', () => {
+    const tag = bentoOf(`{% bento levels="6,3" %}
+## A
+
+a
+
+### B
+
+b
+
+#### C
+
+c
+
+##### D
+
+d
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(fields(cells[0]).cols).toBe('6'); // rung 0
+    expect(fields(cells[1]).cols).toBe('3'); // rung 1
+    expect(fields(cells[2]).cols).toBe('3'); // clamps to last
+    expect(fields(cells[3]).cols).toBe('3'); // clamps to last
+  });
+
+  it('levels: depth is relative to the auto-detected base (grid starting at h3)', () => {
+    const tag = bentoOf(`{% bento levels="6,3,2" %}
+### A
+
+a
+
+#### B
+
+b
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(fields(cells[0]).cols).toBe('6'); // shallowest (h3) = rung 0
+    expect(fields(cells[1]).cols).toBe('3'); // h4 = rung 1
+  });
+
+  it('levels: ladder cells carry a neutral size so size-based collapse never clobbers them', () => {
+    const tag = bentoOf(`{% bento levels="6,3,2" %}
+## A
+
+a
+{% /bento %}`);
+    const cell = cellsOf(tag!)[0];
+    expect(fields(cell).size).toBe('');
+    expect(cell.attributes['data-media-position']).toBe('top'); // neutral size → top, not start
+  });
+
+  it('levels: explicit {% bento-cell %} grids ignore the ladder (cells keep their own spans)', () => {
+    const tag = bentoOf(`{% bento levels="6,5,4" %}
+{% bento-cell cols=2 rows=1 %}
+## Explicit
+
+x
+{% /bento-cell %}
+{% /bento %}`);
+    const cell = cellsOf(tag!)[0];
+    expect(fields(cell).cols).toBe('2'); // the cell's own cols, not ladder rung 0 (6)
+    expect(fields(cell).rows).toBe('1');
+  });
+
+  it('levels: a malformed rung warns and is skipped; valid rungs still apply', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const tag = bentoOf(`{% bento levels="6,oops,2" %}
+## A
+
+a
+
+### B
+
+b
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(fields(cells[0]).cols).toBe('6'); // rung 0
+    expect(fields(cells[1]).cols).toBe('2'); // "oops" dropped → rung 1 is "2"
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('oops'));
+    warn.mockRestore();
+  });
+
+  it('omitting levels leaves tiered sizing unchanged', () => {
+    const tag = bentoOf(`{% bento %}
+## A
+
+a
+
+### B
+
+b
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(fields(cells[0]).size).toBe('large');
+    expect(fields(cells[0]).cols).toBe('4');
+    expect(fields(cells[1]).size).toBe('medium');
   });
 
   it("grid-level content-height + media-ratio land on the bento contract", () => {

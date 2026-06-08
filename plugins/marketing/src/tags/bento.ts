@@ -174,29 +174,65 @@ function presetSpans(size: string, columns: number): { cols: number; rows: numbe
 	}
 }
 
-/** Convert headings into bento-cell tags. The heading *level* sets tile size
- *  (tiered → a size preset → proportional `cols`/`rows`); the heading itself
- *  becomes the cell title. Content before the first heading is returned as-is —
- *  bento is a grid primitive, not a page-section, so there is no preamble. */
-function convertHeadings(nodes: Node[], baseLevel: number, columns: number): Node[] {
+/** Parse a `levels` ladder ("6,5,4,3,2,1" or "4x2,3x1,2x1") into per-depth
+ *  footprints: a bare `W` → W cols × 1 row; `WxH` → W cols × H rows. Malformed
+ *  rungs are dropped with a warning; an all-malformed spec yields an empty ladder
+ *  (the caller then falls back to tiered sizing). */
+function parseLevels(spec: string): { cols: number; rows: number }[] {
+	const rungs: { cols: number; rows: number }[] = [];
+	for (const raw of spec.split(',')) {
+		const entry = raw.trim();
+		if (!entry) continue;
+		const m = entry.match(/^(\d+)(?:x(\d+))?$/i);
+		if (!m) {
+			console.warn(`[bento] Ignoring malformed levels rung "${entry}" — expected a column count like "4" or a footprint like "4x2".`);
+			continue;
+		}
+		rungs.push({ cols: parseInt(m[1], 10), rows: m[2] ? parseInt(m[2], 10) : 1 });
+	}
+	return rungs;
+}
+
+/** Convert headings into bento-cell tags. The heading *level* sets the tile
+ *  footprint — by default tiered (depth → size preset → proportional `cols`/
+ *  `rows`); with a `levels` ladder, depth indexes an explicit `cols`/`rows`
+ *  rung (ADR-013). Depth is measured from the **auto-detected base** (the
+ *  shallowest heading present), so the shallowest is always tier 0 / rung 0
+ *  whether the grid starts at h2 or deeper. The heading itself becomes the cell
+ *  title; content before the first heading is returned as-is (bento is a grid
+ *  primitive, not a page-section — no preamble semantics). */
+function convertHeadings(nodes: Node[], columns: number, ladder: { cols: number; rows: number }[] | null): Node[] {
 	const preamble: Node[] = [];
 	const cells: Node[] = [];
+
+	const headingLevels = nodes.filter(n => n.type === 'heading').map(n => (n.attributes.level as number) ?? 2);
+	const baseLevel = headingLevels.length ? Math.min(...headingLevels) : 2;
+
 	let currentHeading: Node | null = null;
 	let currentChildren: Node[] = [];
 	let seenFirstCellHeading = false;
 
 	const flush = () => {
-		if (currentHeading) {
-			const level = currentHeading.attributes?.level ?? baseLevel;
+		if (!currentHeading) return;
+		const level = (currentHeading.attributes?.level as number) ?? baseLevel;
+		const cellChildren = [currentHeading, ...currentChildren];
+		if (ladder && ladder.length > 0) {
+			// Explicit ladder footprint, indexed by relative depth (clamped to the
+			// last rung). No tiered preset → neutral `size` (empty), so the cell
+			// keeps its author-defined width: the size-based responsive collapse
+			// rules don't target it, while the span auto-cap still applies.
+			const depth = Math.max(0, level - baseLevel);
+			const { cols, rows } = ladder[Math.min(depth, ladder.length - 1)];
+			cells.push(new Ast.Node('tag', { size: '', cols, rows }, cellChildren, 'bento-cell'));
+		} else {
 			const size = tieredSize(baseLevel, level);
 			const { cols, rows } = presetSpans(size, columns);
-			const cellChildren = [currentHeading, ...currentChildren];
 			cells.push(new Ast.Node('tag', { size, cols, rows }, cellChildren, 'bento-cell'));
 		}
 	};
 
 	for (const node of nodes) {
-		if (node.type === 'heading' && (node.attributes.level ?? baseLevel) >= baseLevel) {
+		if (node.type === 'heading' && ((node.attributes.level as number) ?? baseLevel) >= baseLevel) {
 			seenFirstCellHeading = true;
 			flush();
 			currentHeading = node;
@@ -218,6 +254,7 @@ export const bento = createContentModelSchema({
 	attributes: {
 		gap: { type: String, required: false, description: 'Space between grid cells (CSS length value)' },
 		columns: { type: Number, required: false, description: 'Number of columns in the bento grid (default 6)' },
+		levels: { type: String, required: false, description: 'Heading-sugar footprint ladder, indexed by relative heading depth: comma-separated rungs, each a column count "W" (× 1 row) or a footprint "WxH" (e.g. "6,5,4,3,2,1" or "4x2,3x1,2x1"). Omit for tiered sizing. Ignored for explicit-cell grids.' },
 		'row-height': { type: String, required: false, matches: ['sm', 'md', 'lg', 'xl'], description: 'Uniform grid row track height: sm, md (default), lg, or xl' },
 		'content-height': { type: String, required: false, matches: ['sm', 'md', 'lg'], description: 'Grid default: pin each column cell\'s text area to a fixed height (sm/md/lg) so cells align vertically; per-cell overridable; reverts to natural height on mobile' },
 		'media-ratio': { type: String, required: false, matches: ['1/3', '2/5', '1/2', '3/5', '2/3'], description: 'Grid default for beside (start/end) cells: the media zone\'s share of the cell width; per-cell overridable' },
@@ -232,7 +269,8 @@ export const bento = createContentModelSchema({
 			// conversion (headings/loose content are ignored — explicit wins).
 			const hasExplicit = ns.some(n => n.type === 'tag' && (n as any).tag === 'bento-cell');
 			if (hasExplicit) return ns.filter(n => n.type === 'tag' && (n as any).tag === 'bento-cell');
-			return convertHeadings(ns, 2, (attrs.columns as number) ?? 6);
+			const ladder = attrs.levels ? parseLevels(attrs.levels as string) : null;
+			return convertHeadings(ns, (attrs.columns as number) ?? 6, ladder);
 		},
 		description: 'A grid of cells. Heading sugar (each heading → a cell, tile size from depth) OR explicit {% bento-cell %} cells (full control). A grid primitive — no page-section preamble.',
 	}),
