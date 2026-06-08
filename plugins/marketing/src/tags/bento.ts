@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, RenderableNodeCursor, asNodes } from '@refrakt-md/runes';
+import { createComponentRenderable, createContentModelSchema, RenderableNodeCursor, asNodes, unwrapParagraphImages } from '@refrakt-md/runes';
 
 /** Uniform outline level for every cell title — cells are siblings in the grid,
  *  so their titles share one heading level (and one visual size), regardless of
@@ -89,9 +89,9 @@ export const bentoCell = createContentModelSchema({
 		// Media zone — clipped/sized by the shared media-zone selector (WORK-339);
 		// no bento-specific per-guest CSS.
 		if (media.length > 0) {
-			const mediaInner = new RenderableNodeCursor(
+			const mediaInner = unwrapParagraphImages(new RenderableNodeCursor(
 				Markdoc.transform(media, config) as RenderableTreeNode[],
-			).toArray() as RenderableTreeNode[];
+			).toArray() as RenderableTreeNode[]);
 			const mediaDiv = new Tag('div', { 'data-section': 'media', 'data-name': 'media' }, mediaInner);
 			refs.media = mediaDiv;
 			children.push(mediaDiv);
@@ -107,9 +107,9 @@ export const bentoCell = createContentModelSchema({
 			).toArray()[0];
 			if (Markdoc.Tag.isTag(t)) { titleTag = t; contentInner.push(t); }
 		}
-		const bodyInner = new RenderableNodeCursor(
+		const bodyInner = unwrapParagraphImages(new RenderableNodeCursor(
 			Markdoc.transform(body, config) as RenderableTreeNode[],
-		).toArray() as RenderableTreeNode[];
+		).toArray() as RenderableTreeNode[]);
 		const bodyDiv = new Tag('div', { 'data-name': 'body' }, bodyInner);
 		contentInner.push(bodyDiv);
 

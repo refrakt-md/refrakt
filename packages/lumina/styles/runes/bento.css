@@ -1,4 +1,14 @@
 /* Bento — a grid of cells, each a card-in-a-grid-track (SPEC-085). */
+
+/* The grid responds to its OWN width, not the viewport, so it reduces columns and
+ * stacks correctly inside any container — a doc preview, a sidebar, a narrow page
+ * track — not just at viewport breakpoints. The progressive-reduction and collapse
+ * rules below are `@container rf-bento` queries against this. */
+.rf-bento {
+	container-type: inline-size;
+	container-name: rf-bento;
+}
+
 .rf-bento__grid {
 	/* Effective column count: the author's `--bento-columns` (default 6),
 	 * progressively reduced at breakpoints below. A CSS variable (not the inline
@@ -169,7 +179,7 @@
 /* ─── Progressive reduction ─── an EVEN column ladder (6 → 4 → 2 → 1) so halves
  * always tile; the odd 3-col step is skipped (a `small` can't pair in 3 cols).
  * Span auto-cap (above) keeps wide cells in bounds at each step. */
-@media (max-width: 1024px) {
+@container rf-bento (max-width: 1024px) {
 	.rf-bento__grid { --bento-cols-effective: min(var(--bento-columns, 6), 4); }
 	/* medium drops to a half (2 of 4) so two pair per row instead of leaving a
 	 * 1-col gap; large/full stay full-width, small stays a half. */
@@ -182,7 +192,7 @@
  * cells take half a row so two sit side by side while medium/large/full headings
  * span the full width. The data-collapse rules below still override to one column
  * where the author asks. */
-@media (max-width: 768px) {
+@container rf-bento (max-width: 768px) {
 	.rf-bento__grid { --bento-cols-effective: min(var(--bento-columns, 6), 2); --bento-row-track: auto; }
 	.rf-bento-cell { grid-row: span 1; }
 	.rf-bento-cell[data-size="small"] { grid-column: span 1; }
@@ -197,25 +207,25 @@
  * a grid: `--bento-row-track: auto` lets cells size to content (text flows in
  * full), and every cell stacks media-over-text with the media as an aspect-ratio
  * banner — so a `start`/`end` (beside) large cell reflows to media-on-top too. */
-@media (max-width: 640px) {
+@container rf-bento (max-width: 640px) {
 	.rf-bento[data-collapse="sm"] .rf-bento__grid { --bento-cols-effective: 1; --bento-row-track: auto; }
 	.rf-bento[data-collapse="sm"] .rf-bento-cell[data-media-position] { flex-direction: column; }
 	.rf-bento[data-collapse="sm"] .rf-bento-cell[data-media-position] > .rf-bento-cell__media { flex: 0 0 auto; aspect-ratio: var(--bento-media-aspect, 16 / 9); }
 	.rf-bento[data-collapse="sm"] .rf-bento-cell[data-media-position] > .rf-bento-cell__content { flex: 0 0 auto; }
 }
-@media (max-width: 768px) {
+@container rf-bento (max-width: 768px) {
 	.rf-bento[data-collapse="md"] .rf-bento__grid { --bento-cols-effective: 1; --bento-row-track: auto; }
 	.rf-bento[data-collapse="md"] .rf-bento-cell[data-media-position] { flex-direction: column; }
 	.rf-bento[data-collapse="md"] .rf-bento-cell[data-media-position] > .rf-bento-cell__media { flex: 0 0 auto; aspect-ratio: var(--bento-media-aspect, 16 / 9); }
 	.rf-bento[data-collapse="md"] .rf-bento-cell[data-media-position] > .rf-bento-cell__content { flex: 0 0 auto; }
 }
-@media (max-width: 1024px) {
+@container rf-bento (max-width: 1024px) {
 	.rf-bento[data-collapse="lg"] .rf-bento__grid { --bento-cols-effective: 1; --bento-row-track: auto; }
 	.rf-bento[data-collapse="lg"] .rf-bento-cell[data-media-position] { flex-direction: column; }
 	.rf-bento[data-collapse="lg"] .rf-bento-cell[data-media-position] > .rf-bento-cell__media { flex: 0 0 auto; aspect-ratio: var(--bento-media-aspect, 16 / 9); margin-bottom: var(--rf-spacing-md); }
 	.rf-bento[data-collapse="lg"] .rf-bento-cell[data-media-position] > .rf-bento-cell__content { flex: 0 0 auto; }
 }
-@media (max-width: 480px) {
+@container rf-bento (max-width: 480px) {
 	.rf-bento:not([data-collapse="never"]) .rf-bento__grid { --bento-cols-effective: 1; --bento-row-track: auto; }
 	.rf-bento:not([data-collapse="never"]) .rf-bento-cell[data-media-position] { flex-direction: column; }
 	.rf-bento:not([data-collapse="never"]) .rf-bento-cell[data-media-position] > .rf-bento-cell__media { flex: 0 0 auto; aspect-ratio: var(--bento-media-aspect, 16 / 9); }
