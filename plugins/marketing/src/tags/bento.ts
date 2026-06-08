@@ -201,7 +201,7 @@ function parseLevels(spec: string): { cols: number; rows: number }[] {
  *  whether the grid starts at h2 or deeper. The heading itself becomes the cell
  *  title; content before the first heading is returned as-is (bento is a grid
  *  primitive, not a page-section — no preamble semantics). */
-function convertHeadings(nodes: Node[], columns: number, ladder: { cols: number; rows: number }[] | null): Node[] {
+function convertHeadings(nodes: Node[], columns: number, ladder: { cols: number; rows: number }[] | null, gridPos?: string): Node[] {
 	const preamble: Node[] = [];
 	const cells: Node[] = [];
 
@@ -216,6 +216,7 @@ function convertHeadings(nodes: Node[], columns: number, ladder: { cols: number;
 		if (!currentHeading) return;
 		const level = (currentHeading.attributes?.level as number) ?? baseLevel;
 		const cellChildren = [currentHeading, ...currentChildren];
+		const posAttr = gridPos ? { 'media-position': gridPos } : {};
 		if (ladder && ladder.length > 0) {
 			// Explicit ladder footprint, indexed by relative depth (clamped to the
 			// last rung). No tiered preset → neutral `size` (empty), so the cell
@@ -223,11 +224,11 @@ function convertHeadings(nodes: Node[], columns: number, ladder: { cols: number;
 			// rules don't target it, while the span auto-cap still applies.
 			const depth = Math.max(0, level - baseLevel);
 			const { cols, rows } = ladder[Math.min(depth, ladder.length - 1)];
-			cells.push(new Ast.Node('tag', { size: '', cols, rows }, cellChildren, 'bento-cell'));
+			cells.push(new Ast.Node('tag', { size: '', cols, rows, ...posAttr }, cellChildren, 'bento-cell'));
 		} else {
 			const size = tieredSize(baseLevel, level);
 			const { cols, rows } = presetSpans(size, columns);
-			cells.push(new Ast.Node('tag', { size, cols, rows }, cellChildren, 'bento-cell'));
+			cells.push(new Ast.Node('tag', { size, cols, rows, ...posAttr }, cellChildren, 'bento-cell'));
 		}
 	};
 
@@ -258,19 +259,32 @@ export const bento = createContentModelSchema({
 		'row-height': { type: String, required: false, matches: ['sm', 'md', 'lg', 'xl'], description: 'Uniform grid row track height: sm, md (default), lg, or xl' },
 		'content-height': { type: String, required: false, matches: ['sm', 'md', 'lg'], description: 'Grid default: pin each column cell\'s text area to a fixed height (sm/md/lg) so cells align vertically; per-cell overridable; reverts to natural height on mobile' },
 		'media-ratio': { type: String, required: false, matches: ['1/3', '2/5', '1/2', '3/5', '2/3'], description: 'Grid default for beside (start/end) cells: the media zone\'s share of the cell width; per-cell overridable' },
+		'media-position': { type: String, required: false, matches: ['top', 'bottom', 'start', 'end'], description: 'Grid default media placement for every cell (overrides the per-cell size-derived default); a cell\'s own media-position still wins' },
 		collapse: { type: String, required: false, matches: ['sm', 'md', 'lg', 'never'], description: 'Breakpoint at which the grid drops to a single stacked column' },
 	},
 	contentModel: (attrs) => ({
 		type: 'custom' as const,
 		processChildren: (nodes: unknown[]) => {
 			const ns = nodes as Node[];
+			// Grid-level media-position is the default for cells that don't set
+			// their own (generated or explicit); a cell's own value still wins, and
+			// without a grid default each cell keeps its size-derived default.
+			const gridPos = attrs['media-position'] as string | undefined;
 			// Two front doors (no mixing): if the grid contains explicit
 			// `{% bento-cell %}` tags, use them directly and short-circuit heading
 			// conversion (headings/loose content are ignored — explicit wins).
 			const hasExplicit = ns.some(n => n.type === 'tag' && (n as any).tag === 'bento-cell');
-			if (hasExplicit) return ns.filter(n => n.type === 'tag' && (n as any).tag === 'bento-cell');
+			if (hasExplicit) {
+				const cells = ns.filter(n => n.type === 'tag' && (n as any).tag === 'bento-cell');
+				if (gridPos) for (const cell of cells) {
+					if (cell.attributes?.['media-position'] === undefined) {
+						cell.attributes = { ...cell.attributes, 'media-position': gridPos };
+					}
+				}
+				return cells;
+			}
 			const ladder = attrs.levels ? parseLevels(attrs.levels as string) : null;
-			return convertHeadings(ns, (attrs.columns as number) ?? 6, ladder);
+			return convertHeadings(ns, (attrs.columns as number) ?? 6, ladder, gridPos);
 		},
 		description: 'A grid of cells. Heading sugar (each heading → a cell, tile size from depth) OR explicit {% bento-cell %} cells (full control). A grid primitive — no page-section preamble.',
 	}),

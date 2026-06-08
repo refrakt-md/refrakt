@@ -134,7 +134,7 @@ Footer note.          <!-- footer -->
 {% /bento-cell %}
 ```
 
-`media-position` controls where the media sits relative to the body (`top | bottom | start | end`), with a size-derived default — large/full cells place media **beside** the body, smaller cells stack it **on top**.
+`media-position` controls where the media sits relative to the body (`top | bottom | start | end`), with a size-derived default — large/full cells place media **beside** the body, smaller cells stack it **on top**. Set it on the `bento` to default every cell at once (heading-sugar grids included); a cell's own `media-position` still wins.
 
 ## Aligning cells
 
@@ -229,6 +229,7 @@ Between the full grid and a single stacked column, the column count steps down a
 | `row-height` | `string` | `md` | Uniform row track height: `sm`, `md`, `lg`, or `xl` |
 | `content-height` | `string` | — | Grid default — pin column cells' text height: `sm`, `md`, or `lg` |
 | `media-ratio` | `string` | — | Grid default — media's share of a beside cell's width: `1/3`, `2/5`, `1/2`, `3/5`, or `2/3` |
+| `media-position` | `string` | size-derived | Grid default media placement for every cell: `top`, `bottom`, `start`, or `end`. A cell's own `media-position` wins |
 | `collapse` | `string` | — | Breakpoint to stack into one column: `sm`, `md`, `lg`, or `never` |
 
 ### `bento-cell`

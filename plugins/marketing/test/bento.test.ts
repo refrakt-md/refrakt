@@ -330,6 +330,55 @@ b
     expect(fields(cells[1]).size).toBe('medium');
   });
 
+  it('grid-level media-position is the default for every cell, overriding the size-derived one', () => {
+    const tag = bentoOf(`{% bento media-position="top" %}
+## Large
+
+L.
+
+#### Small
+
+S.
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(cells[0].attributes['data-media-position']).toBe('top'); // large would be 'start' by default
+    expect(cells[1].attributes['data-media-position']).toBe('top');
+  });
+
+  it('a cell\'s own media-position still wins over the grid default (explicit cells)', () => {
+    const tag = bentoOf(`{% bento media-position="top" %}
+{% bento-cell size="large" %}
+## A
+
+a
+{% /bento-cell %}
+
+{% bento-cell size="large" media-position="end" %}
+## B
+
+b
+{% /bento-cell %}
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(cells[0].attributes['data-media-position']).toBe('top'); // inherits grid default
+    expect(cells[1].attributes['data-media-position']).toBe('end'); // own value wins
+  });
+
+  it('without a grid media-position, the size-derived default is unchanged', () => {
+    const tag = bentoOf(`{% bento %}
+## Large
+
+L.
+
+#### Small
+
+S.
+{% /bento %}`);
+    const cells = cellsOf(tag!);
+    expect(cells[0].attributes['data-media-position']).toBe('start'); // large
+    expect(cells[1].attributes['data-media-position']).toBe('top');   // small
+  });
+
   it("grid-level content-height + media-ratio land on the bento contract", () => {
     const tag = bentoOf(`{% bento content-height="md" media-ratio="1/3" %}
 ## A
