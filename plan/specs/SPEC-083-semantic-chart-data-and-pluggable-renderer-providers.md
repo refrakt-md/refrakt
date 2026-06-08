@@ -170,6 +170,26 @@ provider superpowers (chart.js animations, d3 scales) are out of contract.
 `WORK-353` defines this surface and ships the **SVG reference implementation**;
 any provider added under `WORK-334` must honor it.
 
+### Shipped surface (WORK-353)
+
+Lumina ships the defaults on `.rf-chart` in `chart.css`; the SVG renderer reads
+paint via CSS (tagged elements) and geometry via `getComputedStyle`:
+
+| Group | Properties |
+|-------|-----------|
+| Palette | `--rf-chart-series-1 … -6` (categorical; **not** the status tokens) |
+| Geometry | `--rf-chart-bar-ratio`, `--rf-chart-bar-thickness`, `--rf-chart-bar-gap`, `--rf-chart-bar-radius`, `--rf-chart-point-radius`, `--rf-chart-line-width` |
+| Typography / grid | `--rf-chart-label-size`, `--rf-chart-label-color`, `--rf-chart-grid-color`, `--rf-chart-grid-width` |
+
+The SVG renderer emits only **tagged** elements — `.rf-chart__bar` / `__point` /
+`__line` / `__axis` / `__label`, each with a `data-series` index and, when a data
+cell carries it, a `data-meta-sentiment`. `chart.css` paints them from the props;
+`data-meta-sentiment` selectors map `positive→success`, `negative→danger`,
+`caution→warning`, `neutral→muted`, overriding the series palette. No palette or
+dimension is hardcoded in the renderer, so a theme retones a chart by setting
+`--rf-chart-*` alone, and a future canvas/d3 provider reads the identical
+vocabulary.
+
 ## Open decisions (small, scoping)
 
 - **No-JS posture (default).** Default to table-only fallback (client renders the

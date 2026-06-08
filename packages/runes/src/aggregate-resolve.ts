@@ -102,9 +102,15 @@ function buildChart(
 	tableChildren.push(new Tag('tbody', {}, bodyRows));
 
 	const table = new Tag('table', { 'data-name': 'data' }, tableChildren);
+	// Emit the `chart` rune's pre-engine shape: `data-rune` + the type/stacked
+	// field channel. The identity transform runs over post-processed runes too, so
+	// it adds `.rf-chart` and sets `data-type` from the field — this keeps a
+	// non-bar `chart-type` (the engine would otherwise reset it to the default)
+	// and avoids a doubled class. `data-type` is also set directly so the
+	// pre-render tree is already correct.
 	return new Tag('rf-chart', {
-		class: 'rf-chart',
 		'data-rune': 'chart',
+		'data-rune-fields': JSON.stringify({ type: q.chartType, stacked: 'false' }),
 		'data-type': q.chartType,
 		'data-stacked': 'false',
 	}, [table]);

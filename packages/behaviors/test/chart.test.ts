@@ -12,6 +12,17 @@ beforeEach(() => {
 const table = (rows: string, head = '<tr><th>Month</th><th>Revenue</th></tr>', caption = '') =>
 	`<table data-name="data">${caption ? `<caption>${caption}</caption>` : ''}<thead>${head}</thead><tbody>${rows}</tbody></table>`;
 
+/** Mount a chart with optional inline `--rf-chart-*` overrides set *before*
+ *  connection, so `readGeometry`'s getComputedStyle picks them up. */
+function mount(opts: { type?: string; head?: string; rows: string; caption?: string; props?: Record<string, string> }): HTMLElement {
+	const el = document.createElement('rf-chart');
+	el.setAttribute('data-type', opts.type ?? 'bar');
+	for (const [k, v] of Object.entries(opts.props ?? {})) el.style.setProperty(k, v);
+	el.innerHTML = table(opts.rows, opts.head, opts.caption);
+	document.body.appendChild(el);
+	return el;
+}
+
 describe('rf-chart element', () => {
 	it('renders an svg from the table and visually-hides the table (kept for SR)', () => {
 		document.body.innerHTML =
@@ -71,5 +82,56 @@ describe('rf-chart element', () => {
 		const el = document.querySelector('rf-chart')!;
 		expect(el.querySelector('svg')).toBeNull();
 		expect(el.hasAttribute('data-rendered')).toBe(false);
+	});
+});
+
+describe('rf-chart theming contract (WORK-353)', () => {
+	it('tags bars with a class + data-series and sets no inline fill/style (CSS paints them)', () => {
+		const el = mount({ rows: '<tr><td>Jan</td><td>100</td></tr>' });
+		const rect = el.querySelector('rect')!;
+		expect(rect.getAttribute('class')).toBe('rf-chart__bar');
+		expect(rect.getAttribute('data-series')).toBe('0');
+		expect(rect.getAttribute('fill')).toBeNull();
+		expect(rect.getAttribute('style')).toBeNull();
+	});
+
+	it('rotates data-series across series on bars and legend swatches', () => {
+		const el = mount({ head: '<tr><th>Q</th><th>A</th><th>B</th></tr>', rows: '<tr><td>Q1</td><td>5</td><td>9</td></tr>' });
+		expect([...el.querySelectorAll('rect')].map((r) => r.getAttribute('data-series'))).toEqual(['0', '1']);
+		const swatches = [...el.querySelectorAll('.rf-chart__legend-color')];
+		expect(swatches.map((s) => (s as HTMLElement).dataset.series)).toEqual(['0', '1']);
+		expect(swatches[0].getAttribute('style')).toBeNull(); // no inline background
+	});
+
+	it('reads bar thickness from --rf-chart-bar-thickness (default cap 48, overridable)', () => {
+		const def = mount({ rows: '<tr><td>Jan</td><td>100</td></tr>' });
+		expect(Number(def.querySelector('rect')!.getAttribute('width'))).toBeCloseTo(48, 0);
+		const thin = mount({ rows: '<tr><td>Jan</td><td>100</td></tr>', props: { '--rf-chart-bar-thickness': '20px' } });
+		expect(Number(thin.querySelector('rect')!.getAttribute('width'))).toBeCloseTo(20, 0);
+	});
+
+	it('reads point radius from --rf-chart-point-radius', () => {
+		const el = mount({ type: 'line', rows: '<tr><td>Q1</td><td>10</td></tr>', props: { '--rf-chart-point-radius': '7px' } });
+		expect(el.querySelector('circle')!.getAttribute('r')).toBe('7');
+	});
+
+	it('sentiment mode: a value cell\'s data-meta-sentiment tags its bar for semantic colour', () => {
+		const el = mount({ rows: '<tr><td>done</td><td data-meta-sentiment="positive">5</td></tr><tr><td>blocked</td><td data-meta-sentiment="negative">2</td></tr>' });
+		const rects = [...el.querySelectorAll('rect')];
+		expect(rects[0].getAttribute('data-meta-sentiment')).toBe('positive');
+		expect(rects[1].getAttribute('data-meta-sentiment')).toBe('negative');
+	});
+
+	it('sentiment on the label cell applies to the whole row', () => {
+		const el = mount({ rows: '<tr><td data-meta-sentiment="caution">review</td><td>3</td></tr>' });
+		expect(el.querySelector('rect')!.getAttribute('data-meta-sentiment')).toBe('caution');
+	});
+
+	it('axis + label elements are tagged for CSS paint (no inline stroke/fill)', () => {
+		const el = mount({ rows: '<tr><td>Jan</td><td>100</td></tr>' });
+		const axes = [...el.querySelectorAll('.rf-chart__axis')];
+		expect(axes.length).toBe(2);
+		expect(axes[0].getAttribute('stroke')).toBeNull();
+		expect(el.querySelector('.rf-chart__label')!.getAttribute('fill')).toBeNull();
 	});
 });
