@@ -129,7 +129,7 @@ Three owners, distinct responsibilities:
 - The *solid* inset/darker fill is firmly **`tint`'s** job (a surface-colour token); `substrate` is strictly the **pattern** layer above the fill. Single-purpose primitives.
 - `tint` may later want the same self/media-well targeting (to colour a card's well independently). This spec defines the addressable media-well surface **once** and wires `substrate` + the inset fill to it; media-targeted `tint` is a follow-on (the inset-fill default already covers the common "well recedes" case).
 - `bg` is unchanged; `substrate` composes above a `bg` layer (pattern over photo) when both are present.
-- **Gradient fills are `bg`'s domain, not substrate's.** A smooth colour gradient is a token-driven `background-image` (`linear-gradient` with stops from `--rf-color-*`), occupying the same layer slot as a `bg` photo and composing *beneath* a substrate pattern (gradient backdrop + dot overlay). Spec'd separately as a `bg` enhancement; noted here only to mark the seam.
+- **Gradient fills are `bg`'s domain, not substrate's.** A smooth colour gradient is a token-driven `background-image` (`linear-gradient` with stops from `--rf-color-*`), occupying the same layer slot as a `bg` photo and composing *beneath* a substrate pattern (gradient backdrop + dot overlay). Spec'd separately in {% ref "SPEC-088" /%} (`bg` gradients + formalized escape hatch); noted here only to mark the seam.
 
 ### Case studies
 
