@@ -20,7 +20,9 @@ import { createContentModelSchema, createComponentRenderable, AGGREGATE_SENTINEL
  *
  * Type set defaults to `work,bug` (widen via `type=` or the legacy `show=`;
  * `show="all"` is the full plan set). `milestone=` lowers to `filter="milestone:…"`.
- * Per-status badge *colour* is deferred (WORK-357) — badges render neutral.
+ * Badges colour by `sentiment=$item.sentiment` — `aggregate` projects each
+ * status's sentiment from the plan config's `metaFields.status.sentimentMap`
+ * (WORK-357), so `done`/`fixed`/`accepted` read positive, `blocked` negative.
  */
 
 interface TypeProgress { label: string; achieved: string; achievedLabel: string }
@@ -37,7 +39,7 @@ const TYPE_PROGRESS: Record<string, TypeProgress> = {
 const bodyFor = (achievedLabel: string) =>
 	`{% progress value=$item.value max=$item.count %}${achievedLabel}{% /progress %}
 ---
-{% badge type="status" %}{% $item.count %} {% humanize($item.key) %}{% /badge %}
+{% badge type="status" sentiment=$item.sentiment %}{% $item.count %} {% humanize($item.key) %}{% /badge %}
 ---
 No items yet.
 `;

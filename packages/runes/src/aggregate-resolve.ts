@@ -82,6 +82,7 @@ function buildChart(
 	groups: Array<[string, EntityRegistration[]]>,
 	q: AggregateQuery,
 	valueParsed: ParsedFieldMatch | null,
+	sentiments: CollectionEmbedConfig['sentiments'],
 ): TagNode {
 	const td = (v: string) => new Tag('td', {}, [v]);
 	const th = (v: string) => new Tag('th', {}, [v]);
@@ -91,7 +92,13 @@ function buildChart(
 	const headRow = new Tag('tr', {}, headers.map(th));
 
 	const bodyRows = groups.map(([key, members]) => {
-		const cells = [td(humanize(key)), td(String(members.length))];
+		// Tag the label cell with the group sentiment — the chart behaviour reads
+		// it (label-cell fallback) so the bar/point colours by semantic token.
+		const sentiment = groupSentiment(sentiments, members, q.group, key);
+		const label = sentiment
+			? new Tag('td', { 'data-meta-sentiment': sentiment }, [humanize(key)])
+			: td(humanize(key));
+		const cells = [label, td(String(members.length))];
 		if (valueParsed) cells.push(td(String(countValue(members, valueParsed))));
 		return new Tag('tr', {}, cells);
 	});
@@ -124,6 +131,19 @@ function percentOf(value: number, count: number): number {
 function countValue(entities: EntityRegistration[], valueParsed: ParsedFieldMatch | null): number {
 	if (!valueParsed) return entities.length;
 	return entities.filter((e) => matchesFieldMatch(e as MatchableEntity, valueParsed)).length;
+}
+
+/** The sentiment for a group, looked up from the embed config's
+ *  `(type → field → value → sentiment)` maps (WORK-357). The group's type is its
+ *  first member's; an unmapped `(type, field, value)` yields `''`. */
+function groupSentiment(
+	sentiments: CollectionEmbedConfig['sentiments'],
+	members: EntityRegistration[],
+	field: string,
+	value: string,
+): string {
+	const type = members[0]?.type ?? '';
+	return sentiments?.[type]?.[field]?.[value] ?? '';
 }
 
 /** Sort groups by a projection field (`key` | `count` | `value` | `percent`),
@@ -209,7 +229,7 @@ function resolveOne(
 		let groups = [...groupEntities(entities, q.group, ordering).entries()];
 		groups = sortGroups(groups, q.sort, q.group, ordering, valueParsed);
 		if (q.limit !== undefined && groups.length > q.limit) groups = groups.slice(0, q.limit);
-		return buildChart(groups, q, valueParsed);
+		return buildChart(groups, q, valueParsed, embedConfig?.sentiments);
 	}
 
 	// No-body form → inline integer. The engine has already added
@@ -276,6 +296,7 @@ function resolveOne(
 					percent: groupPercent,
 					total: countTotal,
 					shown,
+					sentiment: groupSentiment(embedConfig?.sentiments, members, q.group, key),
 				},
 			};
 			const kids = renderItemTemplate(tmpl, embedConfig, vars);

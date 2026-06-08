@@ -93,7 +93,10 @@ describe('plan-progress resolves to per-type bars + status badges', () => {
 	};
 	const resolved = (() => {
 		const transformed = Markdoc.transform(Markdoc.parse('{% plan-progress /%}'), { tags, nodes, functions, variables: {} } as never);
-		return resolveAggregates(transformed, '/p/', reg, { tags, nodes, functions } as any, ctx);
+		// Sentiments are derived from the plan config's metaFields.sentimentMap in
+		// production (site.ts); supply the relevant slice here (WORK-357).
+		const sentiments = { work: { status: { done: 'positive', ready: 'neutral' } }, bug: { status: { fixed: 'positive', confirmed: 'caution' } } };
+		return resolveAggregates(transformed, '/p/', reg, { tags, nodes, functions, sentiments } as any, ctx);
 	})();
 
 	it('renders one labelled progress bar per type (Work→Done 2/3, Bugs→Fixed 1/2)', () => {
@@ -111,6 +114,8 @@ describe('plan-progress resolves to per-type bars + status badges', () => {
 		expect(badges.length).toBe(2); // done, ready
 		expect(badges.every(b => b.attributes?.['data-meta-type'] === 'status')).toBe(true);
 		expect(textOf(badges.find(b => textOf(b).includes('Done')))).toContain('2');
+		// WORK-357: badges colour by the projected sentiment (done → positive).
+		expect(badges.find(b => textOf(b).includes('Done'))?.attributes?.['data-meta-sentiment']).toBe('positive');
 	});
 
 	it('keeps the type heading above each block', () => {

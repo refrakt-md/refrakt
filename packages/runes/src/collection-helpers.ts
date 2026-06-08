@@ -61,6 +61,11 @@ export interface CollectionEmbedConfig {
 	 *  used when presentation order differs from a rune's declaration order.
 	 *  Defaults are otherwise derived from each rune's attribute `matches`. */
 	orderings?: Record<string, Record<string, string[]>>;
+	/** `(type → field → value → sentiment)` maps (SPEC-076 / WORK-357), derived
+	 *  from each rune's `metaFields.*.sentimentMap`. `aggregate` projects the
+	 *  matched sentiment onto `$item.sentiment` so a per-group badge/bar can
+	 *  colour by it with no per-call config. */
+	sentiments?: Record<string, Record<string, Record<string, string>>>;
 }
 
 /** Resolves a domain-aware order for an enum field, keyed by `(type, field)`
