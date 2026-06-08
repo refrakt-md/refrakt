@@ -1,4 +1,4 @@
-{% work id="WORK-356" status="in-progress" priority="medium" complexity="moderate" source="ADR-013" tags="bento, authoring, marketing, sugar" %}
+{% work id="WORK-356" status="done" priority="medium" complexity="moderate" source="ADR-013" tags="bento, authoring, marketing, sugar" %}
 
 # Bento `levels` — heading→footprint ladder
 
@@ -47,7 +47,7 @@ marinate before implementation.
 - [x] Malformed `levels` entries produce a clear authoring warning, not a crash.
 - [x] `levels` composes correctly with `columns`, `row-height`, and `content-height`.
 - [x] Marketing tests cover: width-only ladder, `WxH` ladder, clamping, and the omitted-default-unchanged case.
-- [ ] Bento authoring docs document `levels`, with the `levels="6,5,4,3,2,1"` uniform-width recipe called out.
+- [x] Bento authoring docs document `levels`, with the `levels="6,5,4,3,2,1"` uniform-width recipe called out.
 
 ## Context
 
@@ -56,5 +56,22 @@ marinate before implementation.
   `tiers` ladder, proportional entries in `levels`).
 - Related: {% ref "WORK-354" /%} (responsive per-cell spans) and the bento
   collapse model — orthogonal; `levels` governs initial sizing, not breakpoints.
+
+## Resolution
+
+Completed: 2026-06-08
+
+Branch: `claude/v0.19-bento`
+
+### What was done
+- `plugins/marketing/src/tags/bento.ts`: added the `levels` attribute + `parseLevels()`; rewrote `convertHeadings()` to index an explicit footprint ladder by relative depth (clamping to the last rung), with the base level auto-detected (shallowest heading) and shared by the tiered and ladder paths. Ladder cells carry a neutral empty `size` so the size-based responsive collapse leaves their explicit width intact (the span auto-cap still applies).
+- `plugins/marketing/test/bento.test.ts`: 8 new tests — width-only ladder (span-mode revival), `WxH` feed, clamping, auto-detected base, neutral size, explicit-cells-ignore-`levels`, malformed-rung warning, tiered-unchanged.
+- `site/content/runes/marketing/bento.md`: new "Custom ladders" section documenting `levels` with the `6,5,4,3,2,1` uniform-width recipe + the varied-height feed; new "Aligning cells" section for the `content-height`/`media-ratio` pair; documented the previously-undocumented `row-height`; updated both attribute tables and the heading-sugar base-level description.
+- `.changeset/bento-levels.md`.
+
+### Notes
+- Base level is now auto-detected per SPEC-085/ADR-013, replacing the hardcoded h2 — only changes grids starting deeper than h2 (toward the spec).
+- `levels` is build-time only (no data attribute / CSS) → no structure-contract change.
+- Ladder rungs are absolute against `columns` (no proportional entries), per ADR-013; proportional rungs remain a forward-compatible follow-up.
 
 {% /work %}
