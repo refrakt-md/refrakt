@@ -142,10 +142,12 @@ export function entityIdentifier(e: EntityRegistration): string {
 
 /** The `$item` projection bound inside a per-item template. `opts.mixed` marks a
  *  heterogeneous set (drives a type chip); `opts.sentiments` maps the entity's
- *  status to a sentiment so a status badge can colour (WORK-357). */
+ *  status to a sentiment so a status badge can colour (WORK-357); `opts.group` /
+ *  `opts.groupCount` expose the item's group context in a grouped collection
+ *  (WORK-344). */
 export function projectItem(
 	e: EntityRegistration,
-	opts?: { mixed?: boolean; sentiments?: CollectionEmbedConfig['sentiments'] },
+	opts?: { mixed?: boolean; sentiments?: CollectionEmbedConfig['sentiments']; group?: string; groupCount?: number },
 ) {
 	const status = (e.data as Record<string, unknown>)?.status as string | undefined;
 	const sentiment = status ? (opts?.sentiments?.[e.type]?.status?.[status] ?? '') : '';
@@ -157,6 +159,8 @@ export function projectItem(
 		data: e.data,
 		sentiment,
 		mixed: opts?.mixed ?? false,
+		group: opts?.group ?? '',
+		groupCount: opts?.groupCount ?? 0,
 	};
 }
 

@@ -123,7 +123,7 @@ function renderHeadingTable(
 	embedConfig: CollectionEmbedConfig | undefined,
 	ctx: PipelineContext,
 	pageUrl: string,
-	itemOpts?: { mixed?: boolean; sentiments?: CollectionEmbedConfig['sentiments'] },
+	itemOpts?: { mixed?: boolean; sentiments?: CollectionEmbedConfig['sentiments']; group?: string; groupCount?: number },
 ): TagNode {
 	const columns = splitColumns(bodySource, ctx, pageUrl);
 	if (!embedConfig) {
@@ -162,7 +162,7 @@ function renderBody(
 	embedConfig: CollectionEmbedConfig | undefined,
 	ctx: PipelineContext,
 	pageUrl: string,
-	itemOpts?: { mixed?: boolean; sentiments?: CollectionEmbedConfig['sentiments'] },
+	itemOpts?: { mixed?: boolean; sentiments?: CollectionEmbedConfig['sentiments']; group?: string; groupCount?: number },
 ): RenderableTreeNode[] {
 	if (!embedConfig) {
 		ctx.error('collection — body template present but no embedConfig threaded through the pipeline', pageUrl);
@@ -176,19 +176,26 @@ function renderBody(
 	});
 }
 
-function renderGroupOrFlat(entities: EntityRegistration[], q: CollectionQuery, ordering: Ordering, renderItems: (es: EntityRegistration[]) => RenderableTreeNode[]): RenderableTreeNode[] {
+function renderGroupOrFlat(
+	entities: EntityRegistration[],
+	q: CollectionQuery,
+	ordering: Ordering,
+	renderItems: (es: EntityRegistration[], groupInfo?: { group: string; groupCount: number }) => RenderableTreeNode[],
+): RenderableTreeNode[] {
 	if (!q.group) return renderItems(entities);
 	const groups = groupEntities(entities, q.group, ordering);
+	// WORK-344 — expose the item's group key + size on $item so a grouped
+	// collection's per-item template can render group context inline.
 	if (q.groupDisplay === 'accordion') {
 		return renderGroupAccordion(
-			[...groups].map(([name, es]) => ({ key: name, label: name, count: es.length, nodes: renderItems(es) })),
+			[...groups].map(([name, es]) => ({ key: name, label: name, count: es.length, nodes: renderItems(es, { group: name, groupCount: es.length }) })),
 		);
 	}
 	const out: RenderableTreeNode[] = [];
 	for (const [name, es] of groups) {
 		out.push(new Tag('div', { class: 'rf-collection__group', 'data-group': name }, [
 			new Tag('h3', { class: 'rf-collection__group-title' }, [name]),
-			...renderItems(es),
+			...renderItems(es, { group: name, groupCount: es.length }),
 		]));
 	}
 	return out;
@@ -244,9 +251,9 @@ function resolveOne(
 	let children: RenderableTreeNode[];
 	if (q.layout === 'table' && tmpl) {
 		// Heading-delimited column templates (WORK-264).
-		children = renderGroupOrFlat(entities, q, ordering, (es) => [renderHeadingTable(es, tmpl, embedConfig, ctx, pageUrl, itemOpts)]);
+		children = renderGroupOrFlat(entities, q, ordering, (es, gi) => [renderHeadingTable(es, tmpl, embedConfig, ctx, pageUrl, { ...itemOpts, ...gi })]);
 	} else if (tmpl) {
-		children = renderGroupOrFlat(entities, q, ordering, (es) => renderBody(es, tmpl, embedConfig, ctx, pageUrl, itemOpts));
+		children = renderGroupOrFlat(entities, q, ordering, (es, gi) => renderBody(es, tmpl, embedConfig, ctx, pageUrl, { ...itemOpts, ...gi }));
 	} else if (q.layout === 'table') {
 		children = renderGroupOrFlat(entities, q, ordering, (es) => [renderTable(es, q)]);
 	} else {
