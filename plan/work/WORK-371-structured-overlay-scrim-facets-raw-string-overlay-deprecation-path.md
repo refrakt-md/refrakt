@@ -7,6 +7,7 @@ Split the conflated `overlay` string into a structured flat-wash `overlay` and a
 ## Acceptance Criteria
 - [ ] `overlay` is constrained to `none|dark|light` (+ optional token reference / opacity).
 - [ ] A structured `scrim` facet provides legibility behind overlaid text via `scrim-type` (`gradient` default | `frost`), `scrim-strength`, `scrim-blur`, `scrim-tone` (`dark|light`, explicit), targeting the bg overlay or the media well (SPEC-087 routing).
+- [ ] `scrim-tone` sets the overlaid content's **foreground polarity** (text/muted tokens), not just the wash — a `dark` scrim yields light text — so text colour follows the scrim, not the base surface.
 - [ ] The unvalidated raw-string `overlay` passthrough is deprecated with a build warning for one minor then removed, gated on `scrim` shipping.
 
 ## Approach
