@@ -27,7 +27,7 @@ inferring it. Two vocabularies, two surfaces:
 | Vocabulary  | Targets the rune's… | Carries                                   | Valid where                     |
 |-------------|---------------------|-------------------------------------------|---------------------------------|
 | `elevation` | **self** surface    | shadow (z-height, `box-shadow`)           | universal — anything can float  |
-| `frame`     | **media** surface   | aspect · bleed · offset · place · shadow  | runes that declare a frame target |
+| `frame`     | **media** surface   | aspect · displace · offset · oversize · place · anchor · shadow | runes that declare a frame target |
 
 ```
 {% card elevation="md" frame="screenshot" %}
@@ -72,22 +72,28 @@ This also unifies the three runes that motivated the design:
 - New theme-config registry `frames`, structurally parallel to `backgrounds`:
   ```ts
   interface FramePresetDefinition {
-    aspect?: string;   // "16/9", "1/1"
-    bleed?: string;    // none | top | bottom | both | end | bottom-end | top-end
-    offset?: string;   // bleed distance, CSS length
-    place?: string;    // left|center|right × top|bottom
-    shadow?: string;   // none|sm|md|lg — rendered as drop-shadow (silhouette)
-    extends?: string;  // layer onto a base preset (same `extends` resolution as bg/tint)
+    aspect?: string;    // "16/9", "1/1"
+    displace?: string;  // edge/corner the guest moves toward: top | bottom | end | bottom-end | top-end
+    offset?: string;    // displacement distance — named scale: none | sm | md | lg | xl
+    oversize?: string;  // how far the guest exceeds its slot (scale factor / min-size); clipped guests only
+    place?: string;     // guest-box alignment in the slot: left|center|right × top|bottom
+    anchor?: string;    // crop focal point when the guest is cut (object-position)
+    shadow?: string;    // none|sm|md|lg — rendered as drop-shadow (silhouette)
+    extends?: string;   // layer onto a base preset (same `extends` resolution as bg/tint)
   }
   ```
+  Note there is **no `clip` facet** — whether a displaced guest spills or is cut
+  is owned by the host surface, not the frame (§4).
   ```jsonc
   "frames": {
     "screenshot": { "shadow": "lg", "aspect": "16/9" },
-    "hero-peek":  { "extends": "screenshot", "bleed": "bottom", "offset": "3rem" }
+    "hero-peek":  { "extends": "screenshot", "displace": "bottom", "offset": "lg" },
+    "code-peek":  { "displace": "bottom-end", "offset": "md", "oversize": "1.4", "anchor": "top left" }
   }
   ```
-- Applied via `frame="screenshot"`, with **inline facet overrides** mirroring `bg`'s inline overrides: `frame-aspect`, `frame-bleed`, `frame-offset`, `frame-place`, `frame-shadow`. Inline values override the named preset's facets; a preset is optional (facets work standalone).
-- Engine pipeline reuses the `bg` machinery (`packages/transform/src/engine.ts` bg resolution, `BgPresetDefinition`, `merge.ts` `extends` resolution): read meta → look up `frames` → resolve `extends` → emit `data-aspect`, `data-bleed`, `data-frame-shadow`, and `--frame-offset` / `--frame-place-*` custom properties onto the **frame-target element**.
+- Applied via `frame="screenshot"`, with **inline facet overrides** mirroring `bg`'s inline overrides: `frame-aspect`, `frame-displace`, `frame-offset`, `frame-oversize`, `frame-place`, `frame-anchor`, `frame-shadow`. Inline values override the named preset's facets; a preset is optional (facets work standalone).
+- `offset` is a **named scale** (`none | sm | md | lg | xl`), not a raw length — the existing `resolveOffset` preset map (`sm|md|lg` → `--rf-spacing-*`) is completed (`xl`, `none`) and its raw-value fallthrough closed so an unknown value warns rather than passing through. This matches `frame-shadow`/`elevation` (also `none|sm|md|lg`), keeping the frame facet family on one vocabulary.
+- Engine pipeline reuses the `bg` machinery (`packages/transform/src/engine.ts` bg resolution, `BgPresetDefinition`, `merge.ts` `extends` resolution): read meta → look up `frames` → resolve `extends` → emit `data-displace`, `data-frame-shadow`, and `--frame-offset` / `--frame-oversize` / `--frame-place-*` / `--frame-anchor` custom properties onto the **frame-target element**.
 
 ### 3. `frameTarget` — the unambiguity backbone
 
@@ -97,29 +103,56 @@ This also unifies the three runes that motivated the design:
 - `frame` is universally *accepted* but validated against `frameTarget`: applied on a rune with no frame target → **build warning** (not a silent guess), consistent with the composability-contract validation philosophy (SPEC-084).
 - The frame chrome lands on the resolved surface: the `[data-section="media"]` zone (reusing the WORK-339 media-zone contract — it already clips, rounds, and is a container-query context) or the rune root for `self`.
 
-### 4. Relational `bleed` is spec'd as context-relative
+### 4. Clip is host-owned; displacement is guest-owned
 
-`bleed`/`offset` only mean something relative to a **clipping ancestor**, so the
-spec states this explicitly rather than pretending it is symmetric with the
-intrinsic facets:
+`displace`/`offset`/`oversize` move and size the guest, but **whether the result
+spills into view or is cut belongs to the media surface, not the guest**. The host
+declares its clip contract; the *same* displaced guest reads as a **bleed** in a
+non-clipping host and a **peek** in a clipping one — so the author writes one
+intent and the context decides how it renders:
 
-- `bleed` overflows the nearest clipping context: the card edge, a bento cell (clipped to a peek — existing `--in-bento-cell` behaviour), or the page/section when standalone.
-- `offset` is the displacement distance; bleed collapses on mobile (existing showcase behaviour).
-- This is the one facet that keeps `showcase`-as-wrapper meaningful for standalone breakout, because a bare markdown image has no attribute surface to carry it and no host rune to push it onto.
+- **Clipping hosts** (`card` / `bento-cell` / `figure` media wells): `overflow: hidden`, keeping the rounded clip and the container-query context. A displaced, oversized guest is cropped — a window onto something larger, and the slice shown shifts with the slot width (the media zone is already a container-query context). `anchor` picks the focal point.
+- **Breakout hosts** (`showcase` as `frameTarget: 'self'`, or a standalone section/page): `overflow: visible`. The displaced guest spills past the edge and may overlap neighbours (its silhouette `shadow` and z-index apply).
+
+This is already how the engine behaves — a `showcase[bleed]` inside a bento cell
+stays clipped via the `--in-bento-cell` opt-out (`split.css`) while the same
+showcase standalone breaks out. The amendment makes it explicit and generalises
+that one-off: clip is a property of the **host surface contract**, not a guest
+attribute. Authors choose breakout by choosing a breakout host (§2's framing of
+`showcase`), and a host may *honour* a guest's requested edge (the `hero-peek`
+preset bleeding a card's media out the bottom) — but the decision stays with the
+host. `offset` collapses on mobile regardless of host (existing showcase
+behaviour).
+
+Because clipping hosts normalise guests to `width: 100%` (the WORK-339 media-zone
+rule), an **oversized** guest must opt out of that normalisation to exceed the
+slot — folding `frame` guests into the existing `preview` / `juxtapose` /
+`showcase` opt-out list in `split.css` rather than inventing a new mechanism.
+
+**Full-bleed is a `width` concern, not a `displace` one — don't conflate the two
+breakout mechanisms:**
+
+- **Page-level full-bleed = `width`.** The page layout makes the article a named-line grid (`packages/lumina/styles/layouts/default.css`): `[full-start] … [content-start] min(--rf-content-max, …) [content-end] … [full-end]`. Every article child defaults to `grid-column: content` (the prose measure); `width="wide"` / `width="full"` simply place it in a wider track. The block is **allocated** the track — it never overflows, so there are **no clipping ancestors to fight** and the host-owned-clip question above does not apply. This is the canonical way for a top-level block to span the section/viewport.
+- **Local / nested breakout = `displace` (this section).** The negative-margin spill past a *component* host (out of a card, a cover, a showcase), and the only place host-owned clip is relevant.
+
+So `showcase`/`figure` is the **attribute-surface wrapper** that lets a bare markdown image carry `width="full"` (top-level) or `displace`/`frame` (nested) — not a distinct breakout primitive. A bare image has no attribute surface, so you wrap it; what it wraps *into* is the width grid (top-level) or `displace` (nested).
+
+**Limitation:** the width tracks live on direct article children (`.rf-page-content > article > *`), so `width="full"` reaches the viewport **only from the top level of the page flow**. From inside a nested context (a multi-column rune, a card, a blockquote, the docs body), the article tracks are unavailable, so breakout there is the fragile `displace` negative-margin path and requires every ancestor to be non-clipping.
 
 ### 5. Migration (breaking)
 
 `showcase`'s bespoke attributes become `frame` facets. Provide deprecated
 aliases for one minor release with a build warning, then remove:
 
-| Old (`showcase`)      | New                                  |
-|-----------------------|--------------------------------------|
-| `shadow="soft"`       | `frame-shadow="sm"`                  |
-| `shadow="hard"`       | `frame-shadow="md"`                  |
-| `shadow="elevated"`   | `frame-shadow="lg"`                  |
-| `bleed=` / `offset=`  | `frame-bleed=` / `frame-offset=`     |
-| `aspect=`             | `frame-aspect=`                      |
-| `place=`              | `frame-place=`                       |
+| Old (`showcase`)        | New                                                            |
+|-------------------------|----------------------------------------------------------------|
+| `shadow="soft"`         | `frame-shadow="sm"`                                            |
+| `shadow="hard"`         | `frame-shadow="md"`                                            |
+| `shadow="elevated"`     | `frame-shadow="lg"`                                            |
+| `bleed=`                | `frame-displace=`                                              |
+| `offset="<length>"`     | `frame-offset="sm\|md\|lg\|xl"` (named scale; raw lengths warn and are dropped) |
+| `aspect=`               | `frame-aspect=`                                                |
+| `place=`                | `frame-place=`                                                 |
 
 Changesets: `@refrakt-md/runes` + `@refrakt-md/lumina` (minor for `elevation` /
 `frames`; the showcase attribute rename is the breaking part — gated behind
@@ -129,19 +162,23 @@ aliases so the major can land later).
 
 - [ ] `elevation` is a universal attribute (`none|sm|md|lg`) on all block runes, backed by a `--rf-shadow-*` token scale; `figure`/`codegroup`/`card` reference the scale instead of bespoke shadow values.
 - [ ] A `frames` preset registry exists in theme config, structurally parallel to `backgrounds`, with `extends` resolution shared with `bg`/`tint`.
-- [ ] `frame="preset"` applies a named preset; inline `frame-aspect|bleed|offset|place|shadow` override individual facets and work without a preset.
+- [ ] `frame="preset"` applies a named preset; inline `frame-aspect|displace|offset|oversize|place|anchor|shadow` override individual facets and work without a preset.
+- [ ] `offset` is a named scale (`none|sm|md|lg|xl`) backed by `--rf-spacing-*` tokens; the `resolveOffset` raw-length fallthrough is closed so unknown values warn rather than passing through (matching `frame-shadow`/`elevation`).
 - [ ] `RuneConfig.frameTarget` (`'media' | 'self'`, defaulting to `'media'` when a media section exists) routes frame chrome to the correct surface; `card` → media zone, `figure`/`showcase` → self.
 - [ ] `frame` on a rune with no frame target emits a build warning rather than applying ambiguously.
 - [ ] The frame shadow facet renders as `drop-shadow` (silhouette); `elevation` renders as `box-shadow` (box) — they never collide on the same surface.
-- [ ] `bleed`/`offset` are documented as context-relative (clip against nearest clipping ancestor; peek in a bento cell; collapse on mobile).
-- [ ] `showcase` is re-expressed as `frameTarget: 'self'` consuming `frame`; its old `shadow|bleed|offset|aspect|place` attributes are deprecated aliases (warn) per the migration table, with breakout `bleed` retained as its distinct value.
+- [ ] **Clip is host-owned, not a guest attribute**: clipping hosts (`card`/`bento-cell`/`figure`) crop a displaced/oversized guest (peek, keeping the container-query context + `anchor` focal point); breakout hosts (`showcase`-self, section/page) let it spill (bleed). The `--in-bento-cell` one-off is generalised to this contract; `offset` collapses on mobile.
+- [ ] **Page-level full-bleed is a `width` concern** (the article named-line grid's `content|wide|full` tracks), distinct from `displace`/host-owned-clip (the local/nested breakout); `showcase`/`figure` is the attribute-surface wrapper carrying `width` (top-level) or `displace` (nested), not a separate primitive; `width="full"` reaches the viewport only from the top level (nested breakout is the fragile `displace` path).
+- [ ] An `oversize`d guest opts out of the media-zone `width: 100%` normalisation (folded into the existing `preview`/`juxtapose`/`showcase` opt-out in `split.css`) so it can exceed and be clipped by the slot.
+- [ ] `frame` facets reconcile with bento's existing media vars rather than duplicating them: `frame-aspect` drives `--bento-media-aspect`, `frame-anchor` drives `--bento-media-anchor`, and a grid-level `frame` default cascades to cells (mirroring `media-position`/`content-height`), since heading-sugar cells have no per-cell attribute surface.
+- [ ] `showcase` is re-expressed as `frameTarget: 'self'` consuming `frame`; its old `shadow|bleed|offset|aspect|place` attributes are deprecated aliases (warn) per the migration table (`bleed` → `frame-displace`, raw-length `offset` → scale), with breakout retained as its distinct value.
 - [ ] Card/figure/showcase/bento reference docs and a theme-authoring "frames" section document the surface model (`elevation` = self, `frame` = media) and the preset registry.
 
 ## Work breakdown (provisional)
 
 1. **`elevation` + `--rf-shadow-*` scale** — universal attribute, token scale, migrate existing shadows.
-2. **`frames` registry + `frame` attribute + inline overrides** — types + engine, modelled on `bg`.
-3. **`frameTarget` routing** — config field, media-zone vs self binding, build-time validation; move aspect/bleed/offset/place CSS into a shared frame layer.
+2. **`frames` registry + `frame` attribute + inline overrides** — types + engine, modelled on `bg`; complete the `offset` named scale and close the `resolveOffset` fallthrough.
+3. **`frameTarget` routing + host-owned clip** — config field, media-zone vs self binding, build-time validation; the host surface declares its clip (overflow) contract and the `oversize` opt-out; move aspect/displace/offset/oversize/place/anchor CSS into a shared frame layer; reconcile with bento's `--bento-media-aspect`/`--bento-media-anchor` and the grid→cell frame-default cascade.
 4. **Collapse `showcase` into the frame model** — `frameTarget: 'self'`, deprecated aliases, migration, breakout `bleed` retained.
 5. **Docs** — surface-model authoring page + card/figure/showcase/bento reference updates + theme-authoring `frames` section.
 
@@ -150,6 +187,7 @@ aliases so the major can land later).
 - Preset template: `bg` pipeline — `packages/transform/src/engine.ts` (bg resolution), `BgPresetDefinition`/`ThemeConfig` in `packages/transform/src/types.ts`, `extends` resolution in `packages/transform/src/merge.ts`, `packages/lumina/styles/runes/bg.css`.
 - Universal attributes: `packages/runes/src/attribute-presets.ts` (`UNIVERSAL_ATTRIBUTE_NAMES`).
 - Surface to decorate: media-zone contract {% ref "WORK-339" /%}; composability validation philosophy {% ref "SPEC-084" /%}.
+- Surface *fill* sibling (the other half of the surface model — colour/pattern/inset, not chrome): {% ref "SPEC-087" /%}.
 - Current chrome to absorb: `packages/runes/src/tags/showcase.ts`, `Showcase` config in `packages/runes/src/config.ts`, `packages/lumina/styles/runes/showcase.css`, media rules in `packages/lumina/styles/layouts/split.css`.
 
 {% /spec %}
