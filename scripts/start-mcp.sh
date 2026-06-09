@@ -12,12 +12,22 @@
 
 set -euo pipefail
 
-VERSION="0.11.2"
+PROJECT_DIR="$PWD"
+
+# Derive the version from the workspace's own @refrakt-md/mcp package.json so
+# this script auto-tracks every release instead of drifting behind a hardcoded
+# literal. All @refrakt-md/* packages are versioned together (Changesets fixed
+# mode), so the workspace version matches the registry tarball we npx below.
+VERSION="$(node -p "require('$PROJECT_DIR/packages/mcp/package.json').version" 2>/dev/null || true)"
+if [ -z "$VERSION" ]; then
+	echo "start-mcp.sh: could not resolve @refrakt-md/mcp version from packages/mcp/package.json" >&2
+	exit 1
+fi
+
 PLUGINS=(
 	"@refrakt-md/plan@${VERSION}"
 )
 
-PROJECT_DIR="$PWD"
 CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/refrakt-mcp/${VERSION}"
 
 needs_install=0
