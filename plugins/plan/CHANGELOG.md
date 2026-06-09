@@ -1,5 +1,56 @@
 # @refrakt-md/plan
 
+## 0.19.0
+
+### Minor Changes
+
+- 6f30052: Modernize `backlog` to compose over the `bar` rune (SPEC-084 / WORK-342). Its
+  default item is now a `card` whose top strip is a `bar` — the identifier on the
+  left, a sentiment-coloured status `badge` on the right, title below — built from a
+  **universal projection** that works for every plan type. New `layout` attribute
+  (`cards` default · `list` · `table`) is forwarded to `collection`. A type chip
+  appears only for a mixed set; a single-type backlog also surfaces that type's key
+  field (work→priority, bug→severity). The `$item` projection gains `identifier`
+  (`id || name`, so milestones slot in), `sentiment`, and `mixed`, shared by every
+  collection/aggregate rollup.
+- 2e56ab6: Decompose `plan-progress` into sugar over the `aggregate` rune (SPEC-076). It now
+  composes **one aggregate per entity type** — a type heading ("Work", "Specs", …)
+  above a progress bar labelled with that type's achieved status ("Done",
+  "Accepted", …) plus a per-status badge row — resolved by the shared
+  `resolveAggregates`. Mixing types under a single ratio was misleading (work `done`
+  and bug `fixed` measure different things). Plan defaults are baked in
+  (`type="work,bug"`, achieved-status per type, `group="status"`, `milestone=`
+  scoping); the bespoke plan-side render path is removed. A bare `{% plan-progress /%}`
+  scopes to `work,bug`; widen with `type=`/`show=`. (Per-status badge colour is
+  deferred — see WORK-357.)
+
+### Patch Changes
+
+- 9cb55f3: Per-group sentiment projection in `aggregate` (SPEC-076 / WORK-357). `aggregate`
+  now projects `$item.sentiment` onto the per-group template (and tags chart data
+  cells with `data-meta-sentiment`), looked up from a `(type → field → value →
+sentiment)` map threaded through `embedConfig`. The map is derived automatically
+  from each rune's existing `metaFields.*.sentimentMap` (keyed by entity type) — no
+  new registration. This lights up the deferred colour from WORK-296/353: plan
+  status badges and roadmap charts now read green-done / red-blocked with no
+  per-call config. `plan-progress` badges colour via `sentiment=$item.sentiment`.
+- Updated dependencies [97522a0]
+- Updated dependencies [9cb55f3]
+- Updated dependencies [6f30052]
+- Updated dependencies [fd484bc]
+- Updated dependencies [e4e5f5c]
+- Updated dependencies [2f2b04f]
+- Updated dependencies [5c92e0b]
+- Updated dependencies [61e15c9]
+- Updated dependencies [0375d22]
+  - @refrakt-md/runes@0.19.0
+  - @refrakt-md/content@0.19.0
+  - @refrakt-md/behaviors@0.19.0
+  - @refrakt-md/transform@0.19.0
+  - @refrakt-md/types@0.19.0
+  - @refrakt-md/html@0.19.0
+  - @refrakt-md/highlight@0.19.0
+
 ## 0.18.0
 
 ### Patch Changes

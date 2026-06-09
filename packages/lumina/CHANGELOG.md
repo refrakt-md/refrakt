@@ -1,5 +1,168 @@
 # @refrakt-md/lumina
 
+## 0.19.0
+
+### Minor Changes
+
+- 8f21415: Add a pair of opt-in text-zone knobs to `bento`, settable as a grid-level default
+  or a per-cell override (cell wins; the grid default is the only lever for
+  heading-sugar grids):
+
+  - **`content-height`** (`sm` | `md` | `lg` → 3 / 5 / 7rem) — pins the text area on
+    **column cells** (top/bottom media) so they line up vertically; the media zone
+    absorbs the remaining row-track height.
+  - **`media-ratio`** (`1/3` | `2/5` | `1/2` | `3/5` | `2/3`) — pins the media zone's
+    share of the width on **beside cells** (start/end media); the content absorbs
+    the rest.
+
+  The two act on perpendicular axes (a cell is either a column cell or a beside
+  cell), so they never collide. Both default to the existing behavior (natural text
+  height / 42% media split) and revert to natural height on the mobile stack.
+
+- e36d7e1: Add a `row-height` attribute to the `bento` rune (`sm` | `md` | `lg` | `xl`) for
+  control over the uniform grid row-track height in grid mode (8 / 12 / 16 / 20rem;
+  `md` matches the previous default). Falls back to the theme's
+  `--rf-bento-row-height` when unset, and is overridden by the stack's auto rows on
+  mobile.
+- e1398da: Bento substrate (SPEC-085) — v0.19.0 batch C.
+
+  - **Bento is a grid primitive, not a page-section.** Dropped the eyebrow/title/blurb preamble; every heading is now a cell. A titled bento is a composition (wrap it in `feature`/section). Content before the first heading renders as loose content above the grid.
+  - **Cell adopts card's zone contract.** A `bento-cell`'s content splits on a top-level `---` into `media` / body / footer zones (`data-section`), mirroring `card`. The media zone is clipped/sized by the name-agnostic WORK-339 selector (no bento-specific per-guest CSS) so a `showcase` bleed peeks. The cell background is tint-deferrable, and the leading heading becomes a uniform-level `<h3>` title contributing to the outline.
+  - **Proportional sizing model.** A 6-column default for both authoring modes; `size` presets resolve as fractions of the column count (small ⅓, medium ½, large ⅔ × 2 rows, full = all), and `cols` / `rows` give precise per-axis spans that override the preset. Uniform fixed row tracks (`grid-auto-rows: var(--rf-bento-row-height)`, never column-tied). Author-controlled `collapse="sm|md|lg|never"` plus automatic progressive column reduction with `min(span, current-columns)` auto-capping.
+  - **Size-derived media placement + link tiles.** `media-position` (`top|bottom|start|end`) is author-controllable per cell with a size-derived default (large/full → beside, smaller → on top); an optional `href` makes a whole cell a link.
+  - **Explicit `{% bento-cell %}` authoring.** A bento whose children include `bento-cell` tags uses them directly — full per-tile control (the dashboard case) — short-circuiting heading conversion (explicit wins, no mixing). The legacy `span` attribute is removed (subsumed by `cols`). `cols` / `rows` author as unquoted numbers (`cols=4 rows=2`), matching `columns`.
+  - Rewrote the bento rune reference docs for the new substrate.
+  - **Even column ladder + landscape 2-up.** Reduction now steps 6 → 4 → 2 → 1, skipping the odd 3-col step where a `small` cell can't pair. On tablets (`≤1024`) `medium` cells drop to a half so two pair per row. At `≤768` the grid is a 2-up auto-row stack: `small` cells take half a row (two pair up), medium/large/full span full width, and media reflows to an aspect-ratio banner so wide cells no longer crop their image to a thin strip.
+  - **Collapse is a stack, not a shrunken grid.** At a single column the fixed row track is dropped (`grid-auto-rows: auto`) so cells size to their content and text is never clipped; media reflows to an aspect-ratio banner (`--bento-media-aspect`, default 16/9) on top. Cells are text-first in grid mode too — the body keeps its height and the media zone absorbs the leftover track and crops.
+
+- e4e5f5c: Chart theming contract (SPEC-083 / WORK-353): the `rf-chart` SVG renderer no
+  longer hardcodes its palette or geometry. Every paint + geometry value is now an
+  `--rf-chart-*` custom property Lumina ships on `.rf-chart` — a dedicated
+  categorical series palette (distinct from the semantic status tokens), bar/point/
+  line geometry, and typography/grid. The renderer emits only tagged elements
+  (`.rf-chart__bar[data-series]`, `__point`, `__line`, `__axis`, `__label`) that
+  `chart.css` paints from the props, and reads layout geometry via `getComputedStyle`
+  — so a theme retones a chart by setting `--rf-chart-*` alone, and a future canvas/
+  d3 provider reads the same vocabulary. Adds a **sentiment colouring** mode: data
+  cells carrying `data-meta-sentiment` colour by the semantic token
+  (positive→success, negative→danger, caution→warning, neutral→muted).
+
+  Also fixes `aggregate layout="chart"` to emit the chart rune's field channel, so a
+  non-bar `chart-type` survives the identity transform and the `.rf-chart` class
+  isn't doubled.
+
+- 5c92e0b: Composability foundation (SPEC-084) — v0.19.0 batch B.
+
+  - **Media-zone guest adaptation.** Replaced Lumina's name-enumerated media allow-list with one **name-agnostic** rule: any visual rune dropped into a `[data-section="media"]` slot is sized, clipped, rounded, and given a container-query context (so intrinsically responsive guests like `mockup` auto-scale). Guests that manage their own bleed (`preview`, `juxtapose`, a bleeding `showcase`) self-declare an opt-out. Covers `card`/`feature`/`hero`/`recipe` with one rule.
+  - **`requiresParent` nesting validation.** New self-declared `RuneConfig.requiresParent` (distinct from the advisory `parent`). The identity transform validates it at build time — a rune that opts in must have the named parent as its nearest ancestor rune, else it's reported: an **error** for structurally-meaningless children (accordion-item, tab, step, tier, map-pin, …), a **warning** otherwise. Opt-in, so standalone-capable runes (`track`) are never flagged. No container-side allow-list.
+  - **Context-modifier audit.** Removed the one nonsensical pairing (Hero `→ in-feature`); every remaining context modifier has CSS coverage. `refrakt inspect --audit` reports context-modifier coverage, and `inspect` now surfaces a rune's `requiresParent`.
+  - **Docs.** A new composability authoring guide documents the open-world contract.
+
+- 0375d22: Lumina polish: token hygiene, dark parity, theme-aware chrome, and a11y (v0.19.0 batch A).
+
+  - **Token hygiene.** Reconciled seven phantom colour tokens that were painting stale literal fallbacks (the out-of-place blue and cold-gray muted text): `text-muted`→`muted`, `heading`→`text`, `accent`→`primary`, `background`→`bg`, `border-light`→`border`, `warning-fg`→`warning`. Added a derived `--rf-color-primary-bg` (tracks `primary` in both modes) and a mode-flipped `--rf-color-on-primary` (fixes invisible white text on the light dark-mode primary).
+  - **Breaking (theme authors):** the misnamed `--rf-color-primary-50…950` ramp and the `PrimaryScale` type are **removed** — it was a warm-neutral scale mislabelled "primary" with almost no consumers. Set `--rf-color-primary` directly; `primary-bg` derives from it.
+  - **Dark parity.** Verified every absolute token has a dark override; the remaining four are intentionally shared (derived from mode-aware tokens), now annotated.
+  - **Theme-aware chrome.** Branded `::selection`, token-driven scrollbars, and `color-scheme` per mode so native chrome (including the main scrollbar) follows the theme.
+  - **Accessibility.** A uniform `:focus-visible` ring across all interactive elements and a global `prefers-reduced-motion` reset.
+
+- 5ab3f74: Two-tier surface rounding + inset media on mobile.
+
+  - New semantic radius tokens: `--rf-radius-container` (→ `lg`, 16px) for outer
+    surfaces and `--rf-radius-media` (→ `md`, 10px) for media guests nested inside
+    them. Cards, the card/inset surface groups, feature items and bento cells move
+    to the container tier; the shared `[data-section="media"]` zone and figure /
+    recipe images move to the media tier, so a guest never reads as more rounded
+    than its container. SPEC-086's `frame` will override these per-instance.
+  - Media in a `data-media-position="top"` container no longer becomes a full-bleed
+    square banner when the layout collapses on mobile — it stays inset within the
+    card padding and fully rounded, matching its desktop framed look.
+  - Top media now bleeds out past the body padding to a small, consistent margin
+    on its top/left/right edges (new `--rf-media-margin`, defaulting to
+    `--rf-spacing-sm`), figure-style, so the image isn't over-inset in containers
+    with generous padding (e.g. bento cells). The `figure` image drops its
+    box-shadow to match the unshadowed media elsewhere.
+
+### Patch Changes
+
+- e351aed: Bento media/responsive fixes:
+
+  - **Container-query responsiveness** — the bento grid is now a query container
+    (`container-type: inline-size`) and its progressive-reduction/collapse rules use
+    `@container` instead of `@media`, so it reduces columns and stacks based on its
+    own width. Grids in doc previews, sidebars, or narrow tracks now break correctly
+    instead of only at viewport breakpoints.
+  - **Unwrap paragraph-wrapped images** — images in a bento cell's media (and body)
+    zone are unwrapped from their `<p>`, so the media zone holds a bare `<img>` and
+    layouts size it directly.
+  - **Neutralize the global media-zone block margin** — `[data-section="media"]` no
+    longer applies a `var(--rf-spacing-sm)` top/bottom margin that misaligned media
+    in flex/beside layouts; media spacing now comes from each layout. Affects all
+    media zones (card, recipe, realm, faction, split, bento).
+
+- 42df9b2: Surface/media polish:
+
+  - More generous vertical spacing (`--rf-spacing-md`) between a top media banner
+    and the content below it, in card/recipe/bento and on mobile stacks.
+  - A `code-group` nested in a media zone now rounds at the media radius tier so
+    its border lines up with the zone's clip instead of the larger container
+    radius.
+  - Dark-mode code background was a near-neutral grey that clashed with the warm
+    `surface`; it's been warmed to the surface hue (`#1e1c19`, also applied to the
+    derived `--rf-syntax-background`).
+  - A `card` with no `href` no longer shows a hover background — the hover is now
+    gated on the presence of the stretched card link.
+  - The semantic `--rf-radius-container` / `--rf-radius-media` / `--rf-media-margin`
+    aliases moved from the generated token contract into the styles layer (they
+    reference the scale rather than holding raw values).
+
+- 941ded8: Unify the media-zone corner radius with the card radius. Media slots
+  (`[data-section="media"]`, shared by card, recipe, bento cell, feature, hero,
+  realm, faction) rounded at `--rf-radius-lg` while their containers round at
+  `--rf-radius-md`, so images looked more rounded than the card holding them.
+  The media zone now uses `--rf-radius-md`, and recipe's redundant `lg` image
+  override is removed (figure was already `md`).
+- 2e56ab6: Decompose `plan-progress` into sugar over the `aggregate` rune (SPEC-076). It now
+  composes **one aggregate per entity type** — a type heading ("Work", "Specs", …)
+  above a progress bar labelled with that type's achieved status ("Done",
+  "Accepted", …) plus a per-status badge row — resolved by the shared
+  `resolveAggregates`. Mixing types under a single ratio was misleading (work `done`
+  and bug `fixed` measure different things). Plan defaults are baked in
+  (`type="work,bug"`, achieved-status per type, `group="status"`, `milestone=`
+  scoping); the bespoke plan-side render path is removed. A bare `{% plan-progress /%}`
+  scopes to `work,bug`; widen with `type=`/`show=`. (Per-status badge colour is
+  deferred — see WORK-357.)
+- db53138: Surface containers (card, the card/inset surface groups, feature items, bento
+  cells) now carry a subtle 1px border in addition to their surface fill, pairing
+  with the inset media framing.
+
+  The dark neutral surface family was browner than the rest of the palette: the
+  page background and inline-code background are warm-grays (R=G) but `surface`,
+  its hover/active/raised steps, `border`, and `code-bg` carried a red lift
+  (R>G ≈ 36° hue). That red lift is removed so the whole dark neutral ladder shares
+  one warm-gray character (kept warm via a blue deficit, just no longer brown), and
+  `code-bg` / `--rf-syntax-background` follow it.
+
+- c04c4f1: Fix dark surface staying brown in a scoped scheme override (e.g. a preview rune
+  toggled to dark, or a sandbox). `tint.css` re-declares the palette under
+  `[data-color-scheme="dark"]` — a hand-kept third copy that the token coverage
+  test didn't reach — and it still held the pre-de-brown surface/border/code
+  values. Synced it to the neutralized palette, and added a coverage test that
+  checks every `--rf-*` key tint.css's `[data-color-scheme]` overrides share with
+  the canonical token CSS, so this copy can't silently drift again.
+- Updated dependencies [97522a0]
+- Updated dependencies [9cb55f3]
+- Updated dependencies [6f30052]
+- Updated dependencies [fd484bc]
+- Updated dependencies [e4e5f5c]
+- Updated dependencies [2f2b04f]
+- Updated dependencies [5c92e0b]
+- Updated dependencies [61e15c9]
+- Updated dependencies [0375d22]
+  - @refrakt-md/runes@0.19.0
+  - @refrakt-md/transform@0.19.0
+  - @refrakt-md/types@0.19.0
+
 ## 0.18.0
 
 ### Patch Changes

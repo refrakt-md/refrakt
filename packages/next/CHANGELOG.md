@@ -1,5 +1,18 @@
 # @refrakt-md/next
 
+## 0.19.0
+
+### Patch Changes
+
+- Updated dependencies [9cb55f3]
+- Updated dependencies [e4e5f5c]
+- Updated dependencies [5c92e0b]
+- Updated dependencies [0375d22]
+  - @refrakt-md/content@0.19.0
+  - @refrakt-md/behaviors@0.19.0
+  - @refrakt-md/transform@0.19.0
+  - @refrakt-md/types@0.19.0
+
 ## 0.18.0
 
 ### Patch Changes
