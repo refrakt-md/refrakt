@@ -99,6 +99,20 @@ add or override a rune's variants, consistent with "themes restructure via confi
 theme could, for example, give its `card` a `media-position="cover"` variant the base
 theme doesn't ship.
 
+### 7. Consumer prerequisite — the flat-slot model
+
+A variant restructures by merging a `layout` delta over base and re-running the engine's
+flat-slot assembly. That requires the consuming rune to be on the {% ref "SPEC-081" /%}
+model: it must **emit flat `data-name` slots** in its transform and carry a **base
+`layout`** for the delta to override. A rune that pre-assembles its structure in the
+transform has no loose slots to regroup and no base layout to merge into — **variants
+cannot reach it.**
+
+Status of the cover consumers:
+
+- **`recipe`** — already on the model (flat slots + `layout` config). Ready.
+- **`card` / `bento-cell`** — **not yet**: both build their `media`/`content` wrappers in the transform (`card.ts:56,98–109`; `bento.ts`) and have no `layout` config. They must be **migrated first** — strip the `contentDiv`/`mediaDiv` assembly, emit `media` + `eyebrow`/`title` + `body` + `footer` as flat `data-name` slots, and move the grouping into a base `layout` (mirroring `recipe`). Only then can cover ({% ref "SPEC-089" /%}) be a variant on them.
+
 ## Implications
 
 - **Structure contracts become per-variant.** A rune now has N structures (one per active variant). `refrakt contracts` / `structures.json` and the CSS-coverage tests must enumerate variants.
@@ -114,6 +128,7 @@ theme doesn't ship.
 - [ ] `compoundVariants` is documented as a reserved future extension, not implemented.
 - [ ] Themes can add/override a rune's variants via `mergeThemeConfig`.
 - [ ] `refrakt contracts` / `structures.json` enumerate per-variant structures and CSS-coverage covers them; `refrakt inspect` renders a variant by passing the selecting modifier value.
+- [ ] Variant consumers are on the {% ref "SPEC-081" /%} flat-slot + base-`layout` model; **`card` and `bento-cell` (which pre-assemble structure in their transforms) are migrated to it as a prerequisite**, while `recipe` already qualifies.
 - [ ] `feature`'s grid/stack conditional is migrated from its transform to a `media-position` variant; `recipe`/`card` cover ({% ref "SPEC-089" /%}) is a variant consumer.
 
 ## Work breakdown (provisional)
@@ -121,7 +136,7 @@ theme doesn't ship.
 1. **Type + validation** — `variants` on `RuneConfig`; axis-must-be-a-declared-modifier validation.
 2. **Per-instance resolution + merge** — resolve modifier values, merge matching deltas over base (`mergeThemeConfig`) ahead of assembly.
 3. **Tooling** — per-variant structure contracts + coverage; `inspect` variant selection via modifier attributes.
-4. **Migrate consumers** — `feature` grid/stack → variant; wire `recipe`/`card` cover variants (with {% ref "SPEC-089" /%}).
+4. **Migrate consumers** — **first** migrate `card`/`bento-cell` to the flat-slot + base-`layout` model (prerequisite, §7); then `feature` grid/stack → variant and wire `recipe`/`card`/`bento-cell` cover variants (with {% ref "SPEC-089" /%}).
 5. **Docs** — theme-authoring "variants" section.
 
 ## References

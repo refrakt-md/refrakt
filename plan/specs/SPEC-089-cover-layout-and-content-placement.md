@@ -37,6 +37,12 @@ variant only swaps *which static structure* the engine assembles. This is what l
 content-heavy rune like `recipe` regroup its flat slots for cover (header into the band,
 body into the flow) without conditional code in its transform — see the cover scope below.
 
+**Consumer prerequisite.** Cover-as-variant requires the rune to be on the
+{% ref "SPEC-081" /%} flat-slot + base-`layout` model. `recipe` is ready today;
+**`card` and `bento-cell` pre-assemble their `media`/`content` wrappers in the transform
+and must be migrated first** ({% ref "SPEC-091" /%} §7) before they can host the cover
+variant.
+
 ## Design
 
 ### 1. `media-position="cover"`
@@ -78,6 +84,7 @@ Cover and `bg`-only cards both raise "what sets the height," resolved by one pre
 - [ ] `media-position` gains `cover`: the media well fills the rune interior (thin-edge frame + `--rf-radius-media` preserved) and content overlays it; switching a card from `top`/`bottom`/`start`/`end` to `cover` is a one-attribute change on the same content.
 - [ ] **Cover scope** (`full` | `header`, rune-declared, override-able) bounds the overlay region: `full` overlays all content (display tiles); `header` overlays the title band and **flows the body below** (content-heavy runes like `recipe`) — content beyond the cover region always flows, never overlays.
 - [ ] `cover` is realized as a `media-position` engine **variant** ({% ref "SPEC-091" /%}) supplying the cover *structure* (e.g. recipe's `media + header` band + `body` flow); the transform stays flat, CSS positions, and there is **no overlay primitive** in the layout config.
+- [ ] Cover on `card`/`bento-cell` is **gated** on migrating them to the {% ref "SPEC-081" /%} flat-slot + base-`layout` model ({% ref "SPEC-091" /%} §7); `recipe` is ready today.
 - [ ] Height authority follows **external grid track → media aspect → default portrait**: a `cover` `bento-cell` defers to its grid row track (no new bento aspect knob; reuses the existing track-wins / aspect-fallback cascade), while a standalone `cover` card uses the media aspect (`frame-aspect`, default portrait) or the card height knob — so neither collapses.
 - [ ] `cover` supersedes `content-height`/`media-ratio` (there is no media-vs-content split in cover).
 - [ ] `content-place` positions the overlay: 2-axis logical (`start|center|end` × `start|center|end`), default `end`; active only in `cover` mode and a build warning otherwise.
