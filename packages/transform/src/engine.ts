@@ -625,6 +625,14 @@ function transformRune(
 			}
 			scrimAttrs.style = scrimStyle.join('; ');
 			bgChildren.push(makeTag('div', scrimAttrs));
+
+			// Foreground polarity (SPEC-088): the overlaid content's text/muted
+			// follow the scrim, not the base surface — a dark scrim yields light
+			// text. Reuse the colour-scheme lever (`data-color-scheme`), which
+			// flips the full palette; an explicit tint scheme still wins.
+			if (!tintDataAttrs['data-color-scheme']) {
+				bgDataAttrs['data-color-scheme'] = scrimTone;
+			}
 		}
 
 		bgElement = makeTag('div', bgAttrs, bgChildren);

@@ -63,3 +63,17 @@ describe('SPEC-088 scrim', () => {
 		expect(leaked).toBe(false);
 	});
 });
+
+describe('SPEC-088 scrim foreground polarity', () => {
+	const meta2 = (f: string, c: string) => makeTag('meta', { 'data-field': f, content: c }, []);
+	it('a dark scrim flips the host colour-scheme so overlaid text goes light', () => {
+		const t = createTransform(config);
+		const r = asTag(t(makeTag('section', { 'data-rune': 'hero' }, [meta2('scrim', 'bottom')])));
+		expect(r.attributes['data-color-scheme']).toBe('dark');
+	});
+	it('a light scrim flips to the light scheme (dark text)', () => {
+		const t = createTransform(config);
+		const r = asTag(t(makeTag('section', { 'data-rune': 'hero' }, [meta2('scrim', 'top'), meta2('scrim-tone', 'light')])));
+		expect(r.attributes['data-color-scheme']).toBe('light');
+	});
+});
