@@ -29,6 +29,16 @@ Steam rising from volcanic hot springs in the Icelandic highlands.
 {% /figure %}
 {% /preview %}
 
+## Elevation & frame
+
+A figure *is* a frame around its image, so it sets `frameTarget: "self"` ([surface-chrome model](/extend/theme-authoring/surface-chrome)): `frame` chrome lands on the figure itself. `elevation` floats the figure as a box (`box-shadow`); `frame-shadow` is the image's silhouette `drop-shadow`; `frame-aspect` crops it to a ratio.
+
+{% preview source=true %}
+{% figure elevation="lg" frame-aspect="4/3" caption="Framed at 4/3 with a lifted figure" %}
+![Coral reef](https://assets.refrakt.md/figure-coral-reef.jpg)
+{% /figure %}
+{% /preview %}
+
 ### Attributes
 
 | Attribute | Type | Default | Description |
@@ -36,6 +46,8 @@ Steam rising from volcanic hot springs in the Icelandic highlands.
 | `caption` | `string` | — | Caption text (falls back to first paragraph) |
 | `size` | `string` | — | One of `small`, `medium`, `large`, `full` |
 | `align` | `string` | — | One of `left`, `center`, `right` |
+| `elevation` | `string` | — | Self-surface `box-shadow`: `none`, `sm`, `md`, `lg` |
+| `frame-*` | `string` | — | Media-surface chrome (aspect, shadow, …) — see [surface chrome](/extend/theme-authoring/surface-chrome) |
 
 ### Common attributes
 
