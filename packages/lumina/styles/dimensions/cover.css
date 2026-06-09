@@ -134,8 +134,7 @@
 [data-media-position="cover"] [data-name="content"][data-color-scheme],
 [data-cover-scope="header"] > [data-name="cover-band"][data-color-scheme] {
 	background-color: transparent;
-	/* Muted text (blurb, footer) needs far more contrast over a photo than it
-	 * does on a flat surface — pull it most of the way to the foreground colour
-	 * so it stays legible against the scrimmed media. */
-	--rf-color-muted: color-mix(in oklab, var(--rf-color-text) 72%, var(--rf-color-muted));
+	/* Muted text (the blurb) is barely legible over a photo, so on the overlay it
+	 * reads at full foreground strength — the same colour as the headline. */
+	--rf-color-muted: var(--rf-color-text);
 }
