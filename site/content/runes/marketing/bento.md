@@ -141,6 +141,23 @@ Footer note.          <!-- footer -->
 
 `media-position` controls where the media sits relative to the body (`top | bottom | start | end`), with a size-derived default — large/full cells place media **beside** the body, smaller cells stack it **on top**. Set it on the `bento` to default every cell at once (heading-sugar grids included); a cell's own `media-position` still wins.
 
+## Frame & elevation
+
+A bento cell exposes the same two surfaces as `card` ([surface-chrome model](/extend/theme-authoring/surface-chrome)): `elevation` floats the cell box (`box-shadow`), and `frame` chrome decorates the cell's media zone (aspect, crop anchor, silhouette shadow, oversize). `frame-aspect` and `frame-anchor` feed bento's existing media knobs (`--bento-media-aspect` / `--bento-media-anchor`) rather than a parallel mechanism.
+
+Because heading-sugar cells have no per-cell attribute surface, a **grid-level `frame`** (preset + facets) on the `bento` cascades to every cell as a default — mirroring `media-position`; a cell's own `frame-*` still wins. The grid itself never claims frame chrome (it has no media surface).
+
+{% preview source=true %}
+
+{% bento columns=6 frame-aspect="16/9" frame-anchor="center" %}
+# Coral reef
+![A coral reef](https://assets.refrakt.md/figure-coral-reef.jpg)
+# Hot springs
+![Volcanic hot springs](https://assets.refrakt.md/figure-hot-springs.jpg)
+{% /bento %}
+
+{% /preview %}
+
 ## Aligning cells
 
 Two optional knobs keep a grid visually tidy. They act on perpendicular axes — a cell is either a *column* cell (media stacked top/bottom) or a *beside* cell (media start/end), so the two never overlap — and each can be set as a **grid-wide default** or **overridden per cell**. The grid default is the only lever heading-sugar grids have, since their cells are generated.
@@ -237,6 +254,7 @@ Choose `collapse` to match the narrowest width your authored grid can comfortabl
 | `content-height` | `string` | — | Grid default — pin column cells' text height: `sm`, `md`, `lg`, or `xl` |
 | `media-ratio` | `string` | — | Grid default — media's share of a beside cell's width: `1/3`, `2/5`, `1/2`, `3/5`, or `2/3` |
 | `media-position` | `string` | size-derived | Grid default media placement for every cell: `top`, `bottom`, `start`, or `end`. A cell's own `media-position` wins |
+| `frame` / `frame-*` | `string` | — | Grid default frame chrome cascaded to every cell's media zone (SPEC-086); a cell's own `frame-*` wins. See [surface chrome](/extend/theme-authoring/surface-chrome) |
 | `collapse` | `string` | `sm` | Binary stack breakpoint: `sm` (640px), `md` (768px), `lg` (1024px), or `never` |
 
 ### `bento-cell`
@@ -250,6 +268,7 @@ Choose `collapse` to match the narrowest width your authored grid can comfortabl
 | `content-height` | `string` | grid default | Override the grid `content-height` for this cell: `sm`, `md`, `lg`, or `xl` |
 | `media-ratio` | `string` | grid default | Override the grid `media-ratio` for this cell: `1/3`, `2/5`, `1/2`, `3/5`, or `2/3` |
 | `href` | `string` | — | Makes the whole cell a link |
+| `frame` / `frame-*` | `string` | grid default | Frame chrome on the cell's media zone (aspect, anchor, shadow, …) — see [surface chrome](/extend/theme-authoring/surface-chrome) |
 
 ## Common attributes
 
@@ -257,6 +276,7 @@ All block runes share these attributes for layout and theming.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
+| `elevation` | `string` | — | Self-surface `box-shadow`: `none`, `sm`, `md`, `lg` |
 | `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
 | `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
 | `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |

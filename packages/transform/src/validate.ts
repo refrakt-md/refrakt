@@ -127,6 +127,11 @@ function validateRuneConfig(
 		}
 	}
 
+	// frameTarget (SPEC-086)
+	if (rune.frameTarget !== undefined && rune.frameTarget !== 'media' && rune.frameTarget !== 'self') {
+		errors.push({ path: `${prefix}.frameTarget`, message: 'Must be "media" or "self"' });
+	}
+
 	// contextModifiers
 	if (rune.contextModifiers !== undefined) {
 		if (typeof rune.contextModifiers !== 'object' || rune.contextModifiers === null || Array.isArray(rune.contextModifiers)) {

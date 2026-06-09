@@ -34,6 +34,7 @@
 @import './styles/dimensions/state.css';
 @import './styles/dimensions/media.css';
 @import './styles/dimensions/surfaces.css';
+@import './styles/dimensions/frame.css';
 @import './styles/dimensions/checklist.css';
 @import './styles/dimensions/sequence.css';
 

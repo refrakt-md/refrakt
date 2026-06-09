@@ -18,3 +18,12 @@
 [data-rune][data-inset="tight"]   { padding-inline: var(--rf-inset-tight, 1rem); }
 [data-rune][data-inset="loose"]   { padding-inline: var(--rf-inset-loose, 4rem); }
 [data-rune][data-inset="breathe"] { padding-inline: var(--rf-inset-breathe, 8rem); }
+
+/* ── Elevation — drop shadow (box-shadow) ──────────────────────────────
+ * Universal `elevation` attribute (SPEC-086). Maps to the shared --rf-shadow-*
+ * token scale; `none` explicitly flattens a rune's default shadow. */
+
+[data-rune][data-elevation="none"] { box-shadow: var(--rf-shadow-none); }
+[data-rune][data-elevation="sm"]   { box-shadow: var(--rf-shadow-sm); }
+[data-rune][data-elevation="md"]   { box-shadow: var(--rf-shadow-md); }
+[data-rune][data-elevation="lg"]   { box-shadow: var(--rf-shadow-lg); }

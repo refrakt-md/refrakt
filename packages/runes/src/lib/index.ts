@@ -43,7 +43,20 @@ const universalAttributes: Record<string, SchemaAttribute> = {
   'width': { type: String, required: false, matches: ['compact', 'narrow', 'content', 'wide', 'full'], description: 'Maximum width constraint for this block' },
   'spacing': { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'], description: 'Vertical spacing above and below this block' },
   'inset': { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'], description: 'Inner padding of this block' },
+  'elevation': { type: String, required: false, matches: ['none', 'sm', 'md', 'lg'], description: 'Drop shadow (box-shadow) elevation for this block' },
+  // SPEC-086 — frame: media-surface chrome preset + inline facet overrides.
+  'frame': { type: String, required: false, description: 'Named frame preset presenting this block\'s media surface' },
+  'frame-aspect': { type: String, required: false, description: 'Aspect ratio of the framed media, e.g. "16/9"' },
+  'frame-displace': { type: String, required: false, matches: ['top', 'bottom', 'end', 'bottom-end', 'top-end'], description: 'Edge/corner the framed guest moves toward' },
+  'frame-offset': { type: String, required: false, matches: ['none', 'sm', 'md', 'lg', 'xl'], description: 'Displacement distance (named scale)' },
+  'frame-oversize': { type: String, required: false, description: 'How far the guest exceeds its slot (scale factor)' },
+  'frame-place': { type: String, required: false, description: 'Guest-box alignment in the slot (e.g. "left top")' },
+  'frame-anchor': { type: String, required: false, description: 'Crop focal point when the guest is cut (object-position)' },
+  'frame-shadow': { type: String, required: false, matches: ['none', 'sm', 'md', 'lg'], description: 'Silhouette drop-shadow strength for the framed media' },
 };
+
+/** SPEC-086 frame facet attribute names (excluding the `frame` preset key). */
+const FRAME_FACET_NAMES = ['frame-aspect', 'frame-displace', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-shadow'] as const;
 
 // ---------------------------------------------------------------------------
 // Tint / bg injection helpers (Model-free versions)
@@ -113,6 +126,29 @@ function injectBgMetasFrom(result: RenderableTreeNodes, ctx: TintBgContext): Ren
     metas.push(new Markdoc.Tag('meta', { 'data-field': 'bg-preset', content: ctx.bg }));
   }
 
+  if (metas.length === 0) return result;
+  result.children = [...result.children, ...metas];
+  return result;
+}
+
+/** SPEC-086 — surface the `frame` preset + `frame-*` facet attributes as
+ *  `<meta data-field>` tags so the engine reads them via the same meta channel
+ *  as `bg`, then routes the chrome to the rune's frame-target element. */
+function injectFrameMetas(result: RenderableTreeNodes, attrs: Record<string, any>): RenderableTreeNodes {
+  if (!Markdoc.Tag.isTag(result)) return result;
+  const has = (name: string) => result.children.some(
+    c => Markdoc.Tag.isTag(c) && c.name === 'meta' && c.attributes['data-field'] === name,
+  );
+  const metas: Tag[] = [];
+  if (attrs.frame && !has('frame')) {
+    metas.push(new Markdoc.Tag('meta', { 'data-field': 'frame', content: String(attrs.frame) }));
+  }
+  for (const name of FRAME_FACET_NAMES) {
+    const value = attrs[name];
+    if (value != null && value !== '' && !has(name)) {
+      metas.push(new Markdoc.Tag('meta', { 'data-field': name, content: String(value) }));
+    }
+  }
   if (metas.length === 0) return result;
   result.children = [...result.children, ...metas];
   return result;
@@ -250,9 +286,10 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
         if (attrs.width) output.attributes.width = attrs.width;
         if (attrs.spacing) output.attributes.spacing = attrs.spacing;
         if (attrs.inset) output.attributes.inset = attrs.inset;
+        if (attrs.elevation) output.attributes.elevation = attrs.elevation;
       }
 
-      return output;
+      return injectFrameMetas(output, attrs);
     },
   };
 

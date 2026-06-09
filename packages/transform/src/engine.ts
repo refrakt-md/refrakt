@@ -1,6 +1,6 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
-import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, MetaField, BlockDef, LayoutEntry } from './types.js';
-import { isTag, makeTag, readMeta, toKebabCase } from './helpers.js';
+import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, FramePresetDefinition, MetaField, BlockDef, LayoutEntry } from './types.js';
+import { isTag, makeTag, readMeta, toKebabCase, resolveOffset, parsePlacement } from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
 
 /** The 6 tint colour tokens */
@@ -36,7 +36,7 @@ const transforms: Record<string, (v: string) => string> = {
  * - Recurses into children for nested runes
  */
 export function createTransform(config: ThemeConfig) {
-	const { prefix, runes, icons = {}, tints = {}, backgrounds = {} } = config;
+	const { prefix, runes, icons = {}, tints = {}, backgrounds = {}, frames = {} } = config;
 
 	// Build lowercase → config-key map for case-insensitive rune lookup
 	const runeKeyMap = new Map(Object.keys(runes).map(k => [toKebabCase(k), k]));
@@ -50,7 +50,7 @@ export function createTransform(config: ThemeConfig) {
 		const dataRune = tree.attributes?.['data-rune'];
 		const configKey = dataRune ? runeKeyMap.get(dataRune) : undefined;
 		if (configKey) {
-			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, runes, runeKeyMap, identityTransform, parentRune);
+			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, frames, runes, runeKeyMap, identityTransform, parentRune);
 		}
 
 		// Detect checkbox markers on list items
@@ -122,6 +122,100 @@ function resolveVariantConfig(
 	return effective;
 }
 
+/** Resolved frame chrome — the data attributes + style custom-properties to
+ *  land on the frame-target element, plus the meta fields to consume. */
+interface FrameChrome {
+	dataAttrs: Record<string, string>;
+	styleParts: string[];
+	metaProps: Set<string>;
+}
+
+const FRAME_FACET_META = ['frame-aspect', 'frame-displace', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-shadow'] as const;
+
+/** SPEC-086 — read the `frame` preset + `frame-*` facet metas, resolve the
+ *  preset (one `extends` level) and inline overrides, and emit the chrome
+ *  contract (data-displace / data-frame-shadow / --frame-* custom props).
+ *  Returns null when no frame meta is present. */
+function resolveFrameChrome(tag: SerializedTag, frames: Record<string, FramePresetDefinition>): FrameChrome | null {
+	const metaProps = new Set<string>();
+	const read = (field: string): string | undefined => {
+		const v = readMeta(tag, field);
+		if (v !== undefined && v !== null) metaProps.add(field);
+		return v ?? undefined;
+	};
+
+	const presetName = read('frame');
+	let facets: FramePresetDefinition = {};
+	if (presetName && frames[presetName]) {
+		let preset = frames[presetName];
+		if (preset.extends && frames[preset.extends]) {
+			preset = { ...frames[preset.extends], ...preset };
+		}
+		facets = { ...preset };
+		delete facets.extends;
+	}
+
+	const inline: Record<string, string | undefined> = {
+		aspect: read('frame-aspect'),
+		displace: read('frame-displace'),
+		offset: read('frame-offset'),
+		oversize: read('frame-oversize'),
+		place: read('frame-place'),
+		anchor: read('frame-anchor'),
+		shadow: read('frame-shadow'),
+	};
+	for (const [k, v] of Object.entries(inline)) {
+		if (v !== undefined) (facets as Record<string, string>)[k] = v;
+	}
+
+	if (metaProps.size === 0) return null;
+
+	const dataAttrs: Record<string, string> = {};
+	const styleParts: string[] = [];
+	if (presetName) dataAttrs['data-frame'] = presetName;
+	if (facets.displace) dataAttrs['data-displace'] = facets.displace;
+	if (facets.shadow) dataAttrs['data-frame-shadow'] = facets.shadow;
+	if (facets.aspect) styleParts.push(`--frame-aspect: ${facets.aspect}`);
+	if (facets.offset) styleParts.push(`--frame-offset: ${resolveOffset(facets.offset)}`);
+	if (facets.oversize) styleParts.push(`--frame-oversize: ${facets.oversize}`);
+	if (facets.anchor) styleParts.push(`--frame-anchor: ${facets.anchor}`);
+	if (facets.place) {
+		const { x, y } = parsePlacement(facets.place);
+		styleParts.push(`--frame-place-x: ${x}`, `--frame-place-y: ${y}`);
+	}
+
+	return { dataAttrs, styleParts, metaProps };
+}
+
+/** Merge chrome data attributes + style custom props onto a tag in place. */
+function applyChromeToTag(tag: SerializedTag, dataAttrs: Record<string, string>, styleParts: string[]): void {
+	tag.attributes = { ...tag.attributes, ...dataAttrs };
+	if (styleParts.length) {
+		const existing = tag.attributes.style ? String(tag.attributes.style) : '';
+		tag.attributes.style = existing ? `${existing}; ${styleParts.join('; ')}` : styleParts.join('; ');
+	}
+}
+
+/** Find the first `[data-section="media"]` element in a children tree. */
+function findMediaZone(nodes: RendererNode[]): SerializedTag | undefined {
+	for (const node of nodes) {
+		if (!isTag(node)) continue;
+		if (node.attributes?.['data-section'] === 'media') return node;
+		const found = node.children ? findMediaZone(node.children) : undefined;
+		if (found) return found;
+	}
+	return undefined;
+}
+
+const FRAME_NO_TARGET_WARNED = new Set<string>();
+/** Warn once when `frame` is used on a rune with no resolvable frame target. */
+function warnFrameNoTarget(rune: string): void {
+	if (FRAME_NO_TARGET_WARNED.has(rune)) return;
+	FRAME_NO_TARGET_WARNED.add(rune);
+	// eslint-disable-next-line no-console
+	console.warn(`[refrakt] \`frame\` on \`${rune}\` has no frame target — set \`frameTarget\` or give the rune a media section. Frame chrome ignored.`);
+}
+
 /** Apply BEM classes and structural enhancements to a rune tag */
 function transformRune(
 	tag: SerializedTag,
@@ -130,6 +224,7 @@ function transformRune(
 	icons: Record<string, Record<string, string>>,
 	tints: Record<string, TintDefinition>,
 	backgrounds: Record<string, BgPresetDefinition>,
+	frames: Record<string, FramePresetDefinition>,
 	allRunes: Record<string, RuneConfig>,
 	runeKeyMap: Map<string, string>,
 	recurse: (node: RendererNode, parentRune?: string) => RendererNode,
@@ -302,6 +397,13 @@ function transformRune(
 		modifierValues['inset'] = insetValue;
 		modifierClasses.push(`${block}--inset-${insetValue}`);
 	}
+	// elevation — universal box-shadow attribute. Emits data-elevation (incl.
+	// "none" so an author can explicitly flatten a default shadow); CSS maps it
+	// to box-shadow: var(--rf-shadow-{level}). No BEM class — styled by attr.
+	const elevationValue = tag.attributes?.elevation;
+	if (elevationValue) {
+		modifierValues['elevation'] = elevationValue;
+	}
 
 	// 1f. Background processing — read bg-* meta tags and build background layer
 	const bgMetaProps = new Set<string>();
@@ -398,6 +500,19 @@ function transformRune(
 		bgMetaProps.add('bg-fixed');
 	}
 
+	// 1g. Frame chrome (SPEC-086) — resolve the frame preset + facets and decide
+	// which surface they decorate. `self` lands on the rune root; `media` lands
+	// on the [data-section="media"] zone (applied after assembly, below).
+	const frameChrome = resolveFrameChrome(tag, frames);
+	const frameMetaProps = new Set<string>(frameChrome?.metaProps ?? []);
+	let frameTargetKind: 'media' | 'self' | null = null;
+	if (frameChrome) {
+		const hasMediaSection = config.sections ? Object.values(config.sections).includes('media') : false;
+		frameTargetKind = config.frameTarget ?? (hasMediaSection ? 'media' : null);
+		if (!frameTargetKind) warnFrameNoTarget(dataRune ?? config.block);
+	}
+	const frameRootDataAttrs = frameChrome && frameTargetKind === 'self' ? frameChrome.dataAttrs : {};
+
 	// 2. Store modifier values as data attributes (so components can read them even after meta removal)
 	const modDataAttrs: Record<string, string> = {};
 	for (const [name, value] of Object.entries(modifierValues)) {
@@ -471,6 +586,17 @@ function transformRune(
 		enhancedChildren = applyProjection(enhancedChildren, config.projection, block, config.sections, config.mediaSlots);
 	}
 
+	// 6c. Frame chrome → media surface (SPEC-086). `self`-target chrome is merged
+	// onto the root below; `media`-target chrome lands on the media zone here.
+	if (frameChrome && frameTargetKind === 'media') {
+		const mediaZone = findMediaZone(enhancedChildren);
+		if (mediaZone) {
+			applyChromeToTag(mediaZone, frameChrome.dataAttrs, frameChrome.styleParts);
+		} else {
+			warnFrameNoTarget(dataRune ?? config.block);
+		}
+	}
+
 	// 7. Remove consumed meta tags (modifiers + tint)
 	// Build a Set of kebab-cased modifier keys since data-field values are now kebab-case
 	// but config.modifiers keys are camelCase
@@ -485,6 +611,7 @@ function transformRune(
 		if (consumedModifierFields?.has(prop)) return false;
 		if (tintMetaProps.has(prop)) return false;
 		if (bgMetaProps.has(prop)) return false;
+		if (frameMetaProps.has(prop)) return false;
 		return true;
 	});
 
@@ -515,6 +642,10 @@ function transformRune(
 		}
 	}
 	styleParts.push(...tintStyleParts);
+	// Frame chrome on the self surface contributes its custom props to the root.
+	if (frameChrome && frameTargetKind === 'self') {
+		styleParts.push(...frameChrome.styleParts);
+	}
 	if (styleParts.length) {
 		inlineStyle = inlineStyle
 			? `${inlineStyle}; ${styleParts.join('; ')}`
@@ -524,7 +655,7 @@ function transformRune(
 	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead).
 	// `data-rune-fields` (SPEC-082) is the internal field-data channel — strip it from output so
 	// the dual-emit in WORK-321 stays output-neutral; the engine begins *reading* it in WORK-322.
-	const { width: _w, spacing: _s, inset: _i, density: _d, 'data-rune': _dr, 'data-rune-fields': _drf, ...rawPassAttrs } = tag.attributes;
+	const { width: _w, spacing: _s, inset: _i, elevation: _e, density: _d, 'data-rune': _dr, 'data-rune-fields': _drf, ...rawPassAttrs } = tag.attributes;
 	// Strip consumed attribute-source modifier names (expressed via data-* / BEM)
 	const passAttrs = attrModifierNames.length > 0
 		? Object.fromEntries(Object.entries(rawPassAttrs).filter(([k]) => !attrModifierNames.includes(k)))
@@ -537,6 +668,7 @@ function transformRune(
 			...modDataAttrs,
 			...tintDataAttrs,
 			...bgDataAttrs,
+			...frameRootDataAttrs,
 			class: bemClass,
 			'data-rune': dataRune,
 			'data-density': resolvedDensity,

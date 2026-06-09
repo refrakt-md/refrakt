@@ -1,0 +1,54 @@
+/* Frame chrome (SPEC-086) — media-surface presentation.
+ *
+ * The engine lands the frame contract on the frame-target element: a rune's
+ * `[data-section="media"]` zone (frameTarget: 'media') or the rune's own root
+ * (frameTarget: 'self', e.g. figure/showcase). These selectors are intentionally
+ * surface-agnostic — they match wherever the chrome is emitted.
+ *
+ *   data-frame              — applied preset name (marker)
+ *   data-frame-shadow       — silhouette drop-shadow (none|sm|md|lg)
+ *   data-displace           — edge/corner the guest moves toward
+ *   --frame-aspect          — aspect-ratio of the framed media
+ *   --frame-offset          — displacement distance (resolved spacing token)
+ *   --frame-oversize        — scale factor by which the guest exceeds its slot
+ *   --frame-anchor          — crop focal point (object-position)
+ *   --frame-place-x / -y    — guest-box alignment within its slot
+ *
+ * Clip is host-owned: a clipping host (card/bento-cell/figure media well) crops a
+ * displaced/oversized guest into a *peek*; a breakout host (showcase-self, a
+ * section/page) lets it *spill*. `elevation` (box-shadow on the self surface) and
+ * `frame-shadow` (drop-shadow silhouette here) never collide — different property,
+ * different surface. */
+
+/* ── Silhouette drop-shadow ──────────────────────────────────────────── */
+[data-frame-shadow="none"] { filter: none; }
+[data-frame-shadow="sm"]   { filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.10)); }
+[data-frame-shadow="md"]   { filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.25)); }
+[data-frame-shadow="lg"]   { filter: drop-shadow(0 12px 40px rgba(0, 0, 0, 0.20)); }
+
+/* ── Aspect ratio ────────────────────────────────────────────────────── */
+[style*="--frame-aspect"] { aspect-ratio: var(--frame-aspect); }
+
+/* ── Crop anchor — focal point when the guest is cut ─────────────────── */
+[style*="--frame-anchor"] > :is(img, video) { object-position: var(--frame-anchor); }
+
+/* ── Placement of the framed box within its slot ─────────────────────── */
+[style*="--frame-place-x"] { justify-self: var(--frame-place-x, auto); align-self: var(--frame-place-y, auto); }
+
+/* ── Oversize — guest exceeds its slot (clipping hosts crop it) ──────── */
+[style*="--frame-oversize"] > :is(img, video) { width: calc(100% * var(--frame-oversize, 1)); max-width: none; }
+
+/* ── Displacement (bleed / peek) — move the guest toward an edge/corner.
+ * The host decides whether it spills or is cropped; this only moves it. ─ */
+[data-displace] { position: relative; z-index: 1; }
+[data-displace="top"]        { margin-top: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
+[data-displace="bottom"]     { margin-bottom: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
+[data-displace="both"]       { margin-block: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
+[data-displace="end"]        { margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
+[data-displace="bottom-end"] { margin-bottom: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
+[data-displace="top-end"]    { margin-top: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
+
+/* Collapse displacement on mobile, regardless of host. */
+@media (max-width: 768px) {
+	[data-displace] { margin: 0; }
+}

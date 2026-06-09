@@ -15,7 +15,9 @@ describe('showcase tag', () => {
 		expect(viewport).toBeDefined();
 	});
 
-	it('should emit shadow meta when not none', () => {
+	// SPEC-086: showcase's bespoke attributes are deprecated aliases that map to
+	// `frame-*` facets (frameTarget: 'self'); shadow values remap soft→sm etc.
+	it('maps deprecated shadow to a frame-shadow facet', () => {
 		const result = parse(`{% showcase shadow="elevated" %}
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
@@ -23,34 +25,34 @@ describe('showcase tag', () => {
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 
-		expect(fields(tag).shadow).toBe('elevated');
+		expect(fields(tag)['frame-shadow']).toBe('lg');
 	});
 
-	it('should emit bleed meta when not none', () => {
+	it('maps deprecated bleed to a frame-displace facet', () => {
 		const result = parse(`{% showcase bleed="top" %}
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
-		expect(fields(tag).bleed).toBe('top');
+		expect(fields(tag)['frame-displace']).toBe('top');
 	});
 
-	it('should emit offset meta when set', () => {
+	it('maps deprecated offset to a frame-offset facet', () => {
 		const result = parse(`{% showcase offset="lg" %}
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
-		expect(fields(tag).offset).toBe('lg');
+		expect(fields(tag)['frame-offset']).toBe('lg');
 	});
 
-	it('should emit aspect meta when set', () => {
+	it('maps deprecated aspect to a frame-aspect facet', () => {
 		const result = parse(`{% showcase aspect="16/9" %}
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
-		expect(fields(tag).aspect).toBe('16/9');
+		expect(fields(tag)['frame-aspect']).toBe('16/9');
 	});
 
 	it('should not emit meta tags for default values', () => {
@@ -61,11 +63,11 @@ describe('showcase tag', () => {
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 
-		expect(fields(tag).shadow).toBeUndefined();
-		expect(fields(tag).bleed).toBeUndefined();
+		expect(fields(tag)['frame-shadow']).toBeUndefined();
+		expect(fields(tag)['frame-displace']).toBeUndefined();
 	});
 
-	it('should emit multiple meta tags for combined attributes', () => {
+	it('maps multiple deprecated attributes to frame facets', () => {
 		const result = parse(`{% showcase shadow="soft" bleed="both" offset="md" aspect="4/3" %}
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
@@ -73,9 +75,9 @@ describe('showcase tag', () => {
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 
-		expect(fields(tag).shadow).toBe('soft');
-		expect(fields(tag).bleed).toBe('both');
-		expect(fields(tag).offset).toBe('md');
-		expect(fields(tag).aspect).toBe('4/3');
+		expect(fields(tag)['frame-shadow']).toBe('sm');
+		expect(fields(tag)['frame-displace']).toBe('both');
+		expect(fields(tag)['frame-offset']).toBe('md');
+		expect(fields(tag)['frame-aspect']).toBe('4/3');
 	});
 });

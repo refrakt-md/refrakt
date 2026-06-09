@@ -135,6 +135,7 @@ export interface TokenContract {
 
 	/** Drop-shadow tokens for elevation. */
 	shadow: {
+		none: string;
 		xs: string;
 		sm: string;
 		md: string;
