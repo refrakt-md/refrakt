@@ -27,6 +27,9 @@
 	--rf-color-surface-hover: #ecebe8;
 	--rf-color-surface-active: #e2e0dd;
 	--rf-color-surface-raised: #ffffff;
+	/* SPEC-087 — mix amount for the derived inset surface (computed at use-site
+	 * via color-mix so it tracks a tinted --rf-color-surface). Not a colour. */
+	--rf-surface-inset-shift: 5%;
 
 	/* Semantic — muted earthy band per SPEC-051 */
 	--rf-color-info: #34547a;

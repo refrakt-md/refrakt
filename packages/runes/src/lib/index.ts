@@ -53,10 +53,19 @@ const universalAttributes: Record<string, SchemaAttribute> = {
   'frame-place': { type: String, required: false, description: 'Guest-box alignment in the slot (e.g. "left top")' },
   'frame-anchor': { type: String, required: false, description: 'Crop focal point when the guest is cut (object-position)' },
   'frame-shadow': { type: String, required: false, matches: ['none', 'sm', 'md', 'lg'], description: 'Silhouette drop-shadow strength for the framed media' },
+  // SPEC-087 — substrate: generated surface pattern + inline facet overrides.
+  'substrate': { type: String, required: false, matches: ['dots', 'grid', 'lines', 'cross', 'checker', 'none'], description: 'Generated surface pattern' },
+  'substrate-size': { type: String, required: false, matches: ['sm', 'md', 'lg'], description: 'Pattern cell size' },
+  'substrate-opacity': { type: String, required: false, matches: ['sm', 'md', 'lg'], description: 'Pattern ink strength' },
+  'substrate-fill': { type: String, required: false, matches: ['inherit', 'inset'], description: 'Surface fill the pattern sits on (full colour stays with tint)' },
+  'substrate-target': { type: String, required: false, matches: ['self', 'media'], description: 'Which surface the pattern fills (overrides the rune/theme default)' },
 };
 
 /** SPEC-086 frame facet attribute names (excluding the `frame` preset key). */
 const FRAME_FACET_NAMES = ['frame-aspect', 'frame-displace', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-shadow'] as const;
+
+/** SPEC-087 substrate facet attribute names (excluding the `substrate` enum key). */
+const SUBSTRATE_FACET_NAMES = ['substrate-size', 'substrate-opacity', 'substrate-fill', 'substrate-target'] as const;
 
 // ---------------------------------------------------------------------------
 // Tint / bg injection helpers (Model-free versions)
@@ -144,6 +153,28 @@ function injectFrameMetas(result: RenderableTreeNodes, attrs: Record<string, any
     metas.push(new Markdoc.Tag('meta', { 'data-field': 'frame', content: String(attrs.frame) }));
   }
   for (const name of FRAME_FACET_NAMES) {
+    const value = attrs[name];
+    if (value != null && value !== '' && !has(name)) {
+      metas.push(new Markdoc.Tag('meta', { 'data-field': name, content: String(value) }));
+    }
+  }
+  if (metas.length === 0) return result;
+  result.children = [...result.children, ...metas];
+  return result;
+}
+
+/** SPEC-087 — surface the `substrate` pattern + `substrate-*` facets as
+ *  `<meta data-field>` tags so the engine reads and routes them like `frame`. */
+function injectSubstrateMetas(result: RenderableTreeNodes, attrs: Record<string, any>): RenderableTreeNodes {
+  if (!Markdoc.Tag.isTag(result)) return result;
+  const has = (name: string) => result.children.some(
+    c => Markdoc.Tag.isTag(c) && c.name === 'meta' && c.attributes['data-field'] === name,
+  );
+  const metas: Tag[] = [];
+  if (attrs.substrate && !has('substrate')) {
+    metas.push(new Markdoc.Tag('meta', { 'data-field': 'substrate', content: String(attrs.substrate) }));
+  }
+  for (const name of SUBSTRATE_FACET_NAMES) {
     const value = attrs[name];
     if (value != null && value !== '' && !has(name)) {
       metas.push(new Markdoc.Tag('meta', { 'data-field': name, content: String(value) }));
@@ -289,7 +320,7 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
         if (attrs.elevation) output.attributes.elevation = attrs.elevation;
       }
 
-      return injectFrameMetas(output, attrs);
+      return injectSubstrateMetas(injectFrameMetas(output, attrs), attrs);
     },
   };
 

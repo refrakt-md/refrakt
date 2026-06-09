@@ -216,6 +216,53 @@ function warnFrameNoTarget(rune: string): void {
 	console.warn(`[refrakt] \`frame\` on \`${rune}\` has no frame target — set \`frameTarget\` or give the rune a media section. Frame chrome ignored.`);
 }
 
+/** Resolved substrate fill — the markers + custom props for the target surface. */
+interface SubstrateChrome {
+	dataAttrs: Record<string, string>;
+	styleParts: string[];
+	metaProps: Set<string>;
+	/** Per-instance `substrate-target` override (`self` | `media`), if any. */
+	targetOverride?: string;
+}
+
+const SUBSTRATE_CELL: Record<string, string> = { sm: '12px', md: '16px', lg: '24px' };
+const SUBSTRATE_OPACITY: Record<string, string> = { sm: '0.25', md: '0.5', lg: '0.85' };
+
+/** SPEC-087 — read the `substrate` pattern + `substrate-*` facet metas and emit
+ *  the markers-only contract: `data-substrate` (+ `data-substrate-fill`) and the
+ *  `--substrate-*` custom props. CSS draws the pattern. Returns null when no
+ *  substrate is present. */
+function resolveSubstrate(tag: SerializedTag): SubstrateChrome | null {
+	const metaProps = new Set<string>();
+	const read = (field: string): string | undefined => {
+		const v = readMeta(tag, field);
+		if (v !== undefined && v !== null) metaProps.add(field);
+		return v ?? undefined;
+	};
+	const pattern = read('substrate');
+	const size = read('substrate-size');
+	const opacity = read('substrate-opacity');
+	const fill = read('substrate-fill');
+	const targetOverride = read('substrate-target');
+
+	if (!pattern) return null; // facets are meaningless without a pattern
+	const dataAttrs: Record<string, string> = { 'data-substrate': pattern };
+	if (fill) dataAttrs['data-substrate-fill'] = fill;
+	const styleParts: string[] = [];
+	if (size && SUBSTRATE_CELL[size]) styleParts.push(`--substrate-cell: ${SUBSTRATE_CELL[size]}`);
+	if (opacity && SUBSTRATE_OPACITY[opacity]) styleParts.push(`--substrate-opacity: ${SUBSTRATE_OPACITY[opacity]}`);
+	return { dataAttrs, styleParts, metaProps, targetOverride };
+}
+
+const SUBSTRATE_NO_MEDIA_WARNED = new Set<string>();
+/** Warn once when `substrate-target="media"` targets a rune with no media section. */
+function warnSubstrateNoMedia(rune: string): void {
+	if (SUBSTRATE_NO_MEDIA_WARNED.has(rune)) return;
+	SUBSTRATE_NO_MEDIA_WARNED.add(rune);
+	// eslint-disable-next-line no-console
+	console.warn(`[refrakt] \`substrate-target="media"\` on \`${rune}\` has no media section — substrate ignored.`);
+}
+
 /** Apply BEM classes and structural enhancements to a rune tag */
 function transformRune(
 	tag: SerializedTag,
@@ -513,6 +560,25 @@ function transformRune(
 	}
 	const frameRootDataAttrs = frameChrome && frameTargetKind === 'self' ? frameChrome.dataAttrs : {};
 
+	// 1h. Substrate fill (SPEC-087) — a generated pattern. Defaults to the self
+	// surface (a background is "behind everything"); the media well is opted into
+	// via `substrate-target="media"`. A per-instance override always wins.
+	const substrateChrome = resolveSubstrate(tag);
+	const substrateMetaProps = new Set<string>(substrateChrome?.metaProps ?? []);
+	let substrateTargetKind: 'media' | 'self' | null = null;
+	if (substrateChrome) {
+		const hasMediaSection = config.sections ? Object.values(config.sections).includes('media') : false;
+		const override = substrateChrome.targetOverride;
+		substrateTargetKind = (override === 'self' || override === 'media')
+			? override
+			: (config.substrateTarget ?? 'self');
+		if (substrateTargetKind === 'media' && !hasMediaSection) {
+			warnSubstrateNoMedia(dataRune ?? config.block);
+			substrateTargetKind = null;
+		}
+	}
+	const substrateRootDataAttrs = substrateChrome && substrateTargetKind === 'self' ? substrateChrome.dataAttrs : {};
+
 	// 2. Store modifier values as data attributes (so components can read them even after meta removal)
 	const modDataAttrs: Record<string, string> = {};
 	for (const [name, value] of Object.entries(modifierValues)) {
@@ -596,6 +662,14 @@ function transformRune(
 			warnFrameNoTarget(dataRune ?? config.block);
 		}
 	}
+	if (substrateChrome && substrateTargetKind === 'media') {
+		const mediaZone = findMediaZone(enhancedChildren);
+		if (mediaZone) {
+			applyChromeToTag(mediaZone, substrateChrome.dataAttrs, substrateChrome.styleParts);
+		} else {
+			warnSubstrateNoMedia(dataRune ?? config.block);
+		}
+	}
 
 	// 7. Remove consumed meta tags (modifiers + tint)
 	// Build a Set of kebab-cased modifier keys since data-field values are now kebab-case
@@ -612,6 +686,7 @@ function transformRune(
 		if (tintMetaProps.has(prop)) return false;
 		if (bgMetaProps.has(prop)) return false;
 		if (frameMetaProps.has(prop)) return false;
+		if (substrateMetaProps.has(prop)) return false;
 		return true;
 	});
 
@@ -646,6 +721,10 @@ function transformRune(
 	if (frameChrome && frameTargetKind === 'self') {
 		styleParts.push(...frameChrome.styleParts);
 	}
+	// Substrate on the self surface likewise.
+	if (substrateChrome && substrateTargetKind === 'self') {
+		styleParts.push(...substrateChrome.styleParts);
+	}
 	if (styleParts.length) {
 		inlineStyle = inlineStyle
 			? `${inlineStyle}; ${styleParts.join('; ')}`
@@ -669,6 +748,7 @@ function transformRune(
 			...tintDataAttrs,
 			...bgDataAttrs,
 			...frameRootDataAttrs,
+			...substrateRootDataAttrs,
 			class: bemClass,
 			'data-rune': dataRune,
 			'data-density': resolvedDensity,

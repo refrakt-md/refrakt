@@ -1,0 +1,67 @@
+/* Substrate (SPEC-087) — generated surface pattern.
+ *
+ * The token-driven gradient recipes that realise each pattern ship here in the
+ * always-included base layer (not a theme's swappable CSS), so "dots = dots on
+ * every theme" is a guarantee: themes retune the `--substrate-*` token hooks
+ * (ink colour, cell size), they don't redefine a pattern's geometry. Patterns
+ * are pure CSS — no image assets, crisp at any zoom. The engine emits markers
+ * only (`data-substrate` + `--substrate-*`); CSS does the drawing.
+ *
+ * The pattern is a `background-image` over the surface `background-color`; the
+ * gradient's `transparent` gaps reveal whatever fill sits beneath (tint/inset).
+ * `--substrate-ink` resolves from `--rf-color-border` (tint-bridged), so the
+ * pattern recolours with the surface. */
+
+[data-substrate]:not([data-substrate="none"]) {
+	--substrate-cell: 16px;
+	--substrate-opacity: 0.5;
+	--substrate-ink: color-mix(in oklab, var(--rf-color-border) calc(var(--substrate-opacity) * 100%), transparent);
+	background-repeat: repeat;
+}
+
+/* dots — one tiled radial-gradient */
+[data-substrate="dots"] {
+	background-image: radial-gradient(var(--substrate-ink) var(--substrate-dot, 1.5px), transparent 0);
+	background-size: var(--substrate-cell) var(--substrate-cell);
+}
+
+/* grid — two tiled linear-gradients */
+[data-substrate="grid"] {
+	background-image:
+		linear-gradient(var(--substrate-ink) 1px, transparent 1px),
+		linear-gradient(90deg, var(--substrate-ink) 1px, transparent 1px);
+	background-size: var(--substrate-cell) var(--substrate-cell);
+}
+
+/* lines — diagonal hatching */
+[data-substrate="lines"] {
+	background-image: repeating-linear-gradient(45deg, var(--substrate-ink) 0 1px, transparent 1px var(--substrate-cell));
+}
+
+/* cross — plus marks on a grid (two short gradients per cell) */
+[data-substrate="cross"] {
+	background-image:
+		linear-gradient(var(--substrate-ink) 1px, transparent 1px),
+		linear-gradient(90deg, var(--substrate-ink) 1px, transparent 1px);
+	background-size: var(--substrate-cell) var(--substrate-cell);
+	background-position: center;
+	-webkit-mask-image: radial-gradient(circle at center, #000 0 2px, transparent 2px);
+	-webkit-mask-size: var(--substrate-cell) var(--substrate-cell);
+	mask-image: radial-gradient(circle at center, #000 0 2px, transparent 2px);
+	mask-size: var(--substrate-cell) var(--substrate-cell);
+}
+
+/* checker — alternating filled cells */
+[data-substrate="checker"] {
+	background-image:
+		conic-gradient(var(--substrate-ink) 0 25%, transparent 0 50%, var(--substrate-ink) 0 75%, transparent 0);
+	background-size: var(--substrate-cell) var(--substrate-cell);
+}
+
+[data-substrate="none"] { background-image: none; }
+
+/* substrate-fill="inset" — paint the pattern over the recessed inset fill
+ * (SPEC-087 inset surface) instead of the inherited surface colour. */
+[data-substrate][data-substrate-fill="inset"] {
+	background-color: color-mix(in oklch, var(--rf-color-surface), black var(--rf-surface-inset-shift));
+}

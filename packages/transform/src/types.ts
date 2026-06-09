@@ -232,6 +232,13 @@ export interface RuneConfig {
 	 *  `frame` — otherwise `frame` emits a build warning. */
 	frameTarget?: 'media' | 'self';
 
+	/** SPEC-087 — which surface a `substrate` pattern fills by default. Unlike
+	 *  `frameTarget`, fill defaults to `'self'` (the whole rune) because "a
+	 *  background" means "behind everything"; the media well is an addressable
+	 *  inner surface opted into via `substrate-target="media"`. Theme-overridable;
+	 *  a per-instance `substrate-target` always wins. */
+	substrateTarget?: 'media' | 'self';
+
 	/** Auto-label children by tag name → data-name. E.g., { summary: 'header' } */
 	autoLabel?: Record<string, string>;
 
