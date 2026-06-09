@@ -77,6 +77,25 @@ export function validateThemeConfig(config: unknown): ValidationResult {
 		}
 	}
 
+	// backgrounds — SPEC-088 soft-lint: a raw gradient in the `style` escape hatch
+	// that the structured `gradient` facet now covers. Warns (the escape hatch is
+	// intentional & still valid), pointing at the portable, token-driven path.
+	if (obj.backgrounds !== undefined && typeof obj.backgrounds === 'object' && obj.backgrounds !== null && !Array.isArray(obj.backgrounds)) {
+		for (const [name, preset] of Object.entries(obj.backgrounds as Record<string, unknown>)) {
+			if (typeof preset !== 'object' || preset === null) continue;
+			const style = (preset as Record<string, unknown>).style;
+			if (typeof style !== 'object' || style === null) continue;
+			for (const [prop, value] of Object.entries(style as Record<string, unknown>)) {
+				if (typeof value === 'string' && /gradient\(/i.test(value)) {
+					warnings.push({
+						path: `backgrounds.${name}.style.${prop}`,
+						message: 'Raw gradient in the `style` escape hatch — prefer the structured, token-driven `gradient` field (portable, theme-tracking). Raw CSS bypasses the token system.',
+					});
+				}
+			}
+		}
+	}
+
 	return { valid: errors.length === 0, errors, warnings };
 }
 

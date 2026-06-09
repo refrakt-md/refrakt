@@ -57,6 +57,13 @@ export async function computeUsedCssBlocks(
 		usedBlocks.add('tint');
 	}
 
+	// Bg (SPEC-088) is likewise driven by universal attributes (`bg`, `bg-gradient`,
+	// `scrim`, …) that raise a bg/overlay/scrim layer on any host rune — not by a
+	// `data-rune="bg"`. Always include its layer CSS when the theme ships it.
+	if (existsSync(join(stylesDir, 'bg.css'))) {
+		usedBlocks.add('bg');
+	}
+
 	return { usedBlocks, stylesDir };
 }
 

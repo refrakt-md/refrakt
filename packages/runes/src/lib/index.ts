@@ -59,7 +59,25 @@ const universalAttributes: Record<string, SchemaAttribute> = {
   'substrate-opacity': { type: String, required: false, matches: ['sm', 'md', 'lg'], description: 'Pattern ink strength' },
   'substrate-fill': { type: String, required: false, matches: ['inherit', 'inset'], description: 'Surface fill the pattern sits on (full colour stays with tint)' },
   'substrate-target': { type: String, required: false, matches: ['self', 'media'], description: 'Which surface the pattern fills (overrides the rune/theme default)' },
+  // SPEC-088 — bg gradient fill facets (token-driven; colours stay token-owned).
+  'bg-gradient': { type: String, required: false, matches: ['to-t', 'to-b', 'to-l', 'to-r', 'to-tr', 'to-br', 'to-bl', 'to-tl'], description: 'Gradient direction (bounded named set)' },
+  'bg-from': { type: String, required: false, description: 'Gradient start colour — a semantic token name (→ var(--rf-color-*))' },
+  'bg-to': { type: String, required: false, description: 'Gradient end colour — a semantic token name' },
+  'bg-via': { type: String, required: false, description: 'Optional middle gradient stop — a semantic token name' },
+  'bg-gradient-type': { type: String, required: false, matches: ['linear', 'radial', 'conic'], description: 'Gradient type' },
+  // SPEC-088 — structured scrim (legibility treatment behind overlaid text).
+  'scrim': { type: String, required: false, matches: ['top', 'bottom', 'left', 'right'], description: 'Scrim direction (heaviest edge); presence turns the scrim on' },
+  'scrim-type': { type: String, required: false, matches: ['gradient', 'frost'], description: 'Scrim treatment: gradient (default) or frost (backdrop blur)' },
+  'scrim-strength': { type: String, required: false, matches: ['sm', 'md', 'lg'], description: 'Gradient scrim strength' },
+  'scrim-blur': { type: String, required: false, matches: ['none', 'sm', 'md', 'lg'], description: 'Frost scrim blur amount' },
+  'scrim-tone': { type: String, required: false, matches: ['dark', 'light'], description: 'Whether the scrim darkens (for light text) or lightens (for dark text)' },
 };
+
+/** SPEC-088 bg gradient + scrim facet attribute names (host-level). */
+const BG_GRADIENT_FACET_NAMES = [
+  'bg-gradient', 'bg-from', 'bg-to', 'bg-via', 'bg-gradient-type',
+  'scrim', 'scrim-type', 'scrim-strength', 'scrim-blur', 'scrim-tone',
+] as const;
 
 /** SPEC-086 frame facet attribute names (excluding the `frame` preset key). */
 const FRAME_FACET_NAMES = ['frame-aspect', 'frame-displace', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-shadow'] as const;
@@ -153,6 +171,25 @@ function injectFrameMetas(result: RenderableTreeNodes, attrs: Record<string, any
     metas.push(new Markdoc.Tag('meta', { 'data-field': 'frame', content: String(attrs.frame) }));
   }
   for (const name of FRAME_FACET_NAMES) {
+    const value = attrs[name];
+    if (value != null && value !== '' && !has(name)) {
+      metas.push(new Markdoc.Tag('meta', { 'data-field': name, content: String(value) }));
+    }
+  }
+  if (metas.length === 0) return result;
+  result.children = [...result.children, ...metas];
+  return result;
+}
+
+/** SPEC-088 — surface the `bg-*` gradient facets as `<meta data-field>` tags so
+ *  the engine's bg resolution reads them (host-level, no `{% bg %}` child needed). */
+function injectBgFacetMetas(result: RenderableTreeNodes, attrs: Record<string, any>): RenderableTreeNodes {
+  if (!Markdoc.Tag.isTag(result)) return result;
+  const has = (name: string) => result.children.some(
+    c => Markdoc.Tag.isTag(c) && c.name === 'meta' && c.attributes['data-field'] === name,
+  );
+  const metas: Tag[] = [];
+  for (const name of BG_GRADIENT_FACET_NAMES) {
     const value = attrs[name];
     if (value != null && value !== '' && !has(name)) {
       metas.push(new Markdoc.Tag('meta', { 'data-field': name, content: String(value) }));
@@ -320,7 +357,7 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
         if (attrs.elevation) output.attributes.elevation = attrs.elevation;
       }
 
-      return injectSubstrateMetas(injectFrameMetas(output, attrs), attrs);
+      return injectBgFacetMetas(injectSubstrateMetas(injectFrameMetas(output, attrs), attrs), attrs);
     },
   };
 
