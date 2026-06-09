@@ -88,6 +88,11 @@ export function initRuneBehaviors(
 		// Skip if a theme framework has claimed this element
 		if (isFrameworkManaged(el)) return;
 
+		// SPEC-090 — a presentational media guest (demoted under a whole-tile link,
+		// or a cover backdrop) is not enhanced: it renders its static fallback and
+		// stays non-interactive (the engine also sets pointer-events:none on it).
+		if (el.closest('[data-guest-posture="presentational"]')) return;
+
 		// Apply filters
 		if (options?.only && !options.only.includes(rune)) return;
 		if (options?.exclude && options.exclude.includes(rune)) return;

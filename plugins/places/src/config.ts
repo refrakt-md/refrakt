@@ -70,6 +70,7 @@ export const config: Record<string, RuneConfig> = {
 	},
 	Map: {
 		block: 'map',
+		interactive: true,
 		defaultDensity: 'compact',
 		editHints: { pins: 'none' },
 		modifiers: {

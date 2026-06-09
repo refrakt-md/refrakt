@@ -100,6 +100,42 @@ requires a capability (`tab-container`) and any container that `provides` it
 satisfies the requirement, by capability rather than name. Named `requiresParent`
 ships first.
 
+## Media-guest interaction posture
+
+A rune dropped into another rune's **media slot** (a `card`, `bento-cell`,
+`recipe`, … media zone) is a *guest*. Guests are **presentational by default** —
+"media slot" means display, so interactivity is the exception. Interactivity is
+an explicit guest capability: the behaviour-driven runes (`codegroup`, `tabs`,
+`datatable`, `form`, `map`, `sandbox`, `juxtapose`) declare `interactive: true`
+in their config, and the engine reads it.
+
+The governing rule: **an interactive guest is mutually exclusive with a clickable
+container.** When the container is itself an interaction target, the guest yields:
+
+- **`href` wins.** A `card`/`bento-cell` with `href` is one stretched whole-tile
+  link; its media guest is demoted — the engine marks the media zone
+  `data-guest-posture="presentational"`, which sets `pointer-events: none` (so
+  clicks fall through to the link, no dead zones) and tells the behaviours layer
+  to skip enhancement, so the guest renders its **static fallback** instead of
+  live controls. Chosen over the inverse because a linked tile is the more common
+  intent and the safer a11y default — one unambiguous target, no nested
+  interactive-in-a-link.
+- **Cover is always a backdrop.** In [`media-position="cover"`](/runes/card#cover-mode)
+  the guest sits behind the content overlay, so it is `pointer-events: none`
+  regardless of `href` — you don't pan the map behind the title.
+- **Scoped to the media guest only.** The demotion never touches authored content
+  controls — a "Follow" button or inline link in the body/footer (the lifted
+  `z-index` layer above the stretched link) stays fully interactive.
+- **A plain container hosts guests normally.** A `card`/`bento-cell` *without*
+  `href` (and not `cover`) is the one configuration where a media guest is
+  interactive.
+
+An interactive guest in a *linked* tile emits a build warning — *"interactive
+guest in a linked tile — its controls are inert; drop `href` or the
+interactivity"* — but still renders presentationally; the warning is
+informative, not fatal. Interactive full-bleed widgets with their own overlaid
+UI (an app dashboard) are explicitly out of scope for a content card.
+
 ## Tooling
 
 `refrakt inspect <rune>` surfaces a rune's composability contract — its

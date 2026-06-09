@@ -76,6 +76,7 @@ export const coreConfig: ThemeConfig = {
 		},
 		CodeGroup: {
 			block: 'codegroup',
+			interactive: true,
 			defaultDensity: 'compact',
 			modifiers: { title: { source: 'meta', noBemClass: true }, overflow: { source: 'meta', default: 'scroll' } },
 			// The window chrome (three dots) is pure decoration — drawn in CSS
@@ -474,11 +475,12 @@ export const coreConfig: ThemeConfig = {
 
 		// ─── Interactive runes (still get BEM classes, components add behavior) ───
 
-		TabGroup: { block: 'tabs', defaultDensity: 'full', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+		TabGroup: { block: 'tabs', interactive: true, defaultDensity: 'full', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 		Tab: { block: 'tab', parent: 'TabGroup', requiresParent: 'TabGroup', rootAttributes: { 'data-state': 'inactive' }, editHints: { name: 'inline' } },
 		TabPanel: { block: 'tab-panel', parent: 'TabGroup', requiresParent: 'TabGroup', rootAttributes: { 'data-state': 'inactive' } },
 		DataTable: {
 			block: 'datatable',
+			interactive: true,
 			defaultDensity: 'compact',
 			sections: { table: 'body' },
 			modifiers: {
@@ -491,6 +493,7 @@ export const coreConfig: ThemeConfig = {
 		},
 		Form: {
 			block: 'form',
+			interactive: true,
 			defaultDensity: 'full',
 			sections: { body: 'body' },
 			modifiers: {
@@ -523,6 +526,7 @@ export const coreConfig: ThemeConfig = {
 		RevealStep: { block: 'reveal-step', parent: 'Reveal', rootAttributes: { 'data-state': 'closed' }, editHints: { body: 'none' } },
 		Juxtapose: {
 			block: 'juxtapose',
+			interactive: true,
 			defaultDensity: 'compact',
 			modifiers: {
 				variant: { source: 'meta', default: 'slider' },
@@ -552,6 +556,7 @@ export const coreConfig: ThemeConfig = {
 		Region: { block: 'region', parent: 'Layout' },
 		Sandbox: {
 			block: 'sandbox',
+			interactive: true,
 			defaultDensity: 'compact',
 			editHints: { source: 'code' },
 		},

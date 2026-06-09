@@ -218,6 +218,44 @@ function findByName(nodes: RendererNode[], name: string): SerializedTag | undefi
 	return undefined;
 }
 
+/** SPEC-090 — find the first descendant rune flagged `interactive` (a
+ *  behaviour-driven guest). Returns its `data-rune` name, or undefined. */
+function findInteractiveGuest(
+	node: SerializedTag,
+	allRunes: Record<string, RuneConfig>,
+	runeKeyMap: Map<string, string>,
+): string | undefined {
+	const scan = (n: RendererNode): string | undefined => {
+		if (!isTag(n)) return undefined;
+		const rune = n.attributes?.['data-rune'];
+		if (rune) {
+			const key = runeKeyMap.get(rune);
+			if (key && allRunes[key]?.interactive) return rune;
+		}
+		for (const c of n.children ?? []) {
+			const hit = scan(c);
+			if (hit) return hit;
+		}
+		return undefined;
+	};
+	for (const c of node.children ?? []) {
+		const hit = scan(c);
+		if (hit) return hit;
+	}
+	return undefined;
+}
+
+const INTERACTIVE_GUEST_WARNED = new Set<string>();
+/** SPEC-090 — warn once when an interactive guest sits in a linked tile (its
+ *  controls are inert under the whole-tile link). Informative, not fatal. */
+function warnInteractiveGuestInLink(container: string, guest: string): void {
+	const key = `${container}:${guest}`;
+	if (INTERACTIVE_GUEST_WARNED.has(key)) return;
+	INTERACTIVE_GUEST_WARNED.add(key);
+	// eslint-disable-next-line no-console
+	console.warn(`[refrakt] interactive guest \`${guest}\` in a linked \`${container}\` — its controls are inert under the whole-tile link. Drop \`href\` or the interactivity.`);
+}
+
 const FRAME_NO_TARGET_WARNED = new Set<string>();
 /** Warn once when `frame` is used on a rune with no resolvable frame target. */
 function warnFrameNoTarget(rune: string): void {
@@ -828,6 +866,28 @@ function transformRune(
 			applyChromeToTag(mediaZone, substrateChrome.dataAttrs, substrateChrome.styleParts);
 		} else {
 			warnSubstrateNoMedia(dataRune ?? config.block);
+		}
+	}
+
+	// 6d. Media-guest interaction posture (SPEC-090). A media guest is
+	// presentational by default. When the container is itself an interaction
+	// target — a stretched whole-tile `href` link (a `link` child) — or the guest
+	// is a `cover` backdrop, the media zone is made non-interactive
+	// (`data-guest-posture="presentational"` → `pointer-events: none` in CSS, and
+	// the behaviours layer skips enhancement) so the tile links reliably / the
+	// overlay owns interaction. Scoped to the media zone only, so content-overlay
+	// controls (body/footer links & buttons) stay interactive. A genuinely
+	// interactive guest in a *linked* tile also warns (cover full-bleed widgets
+	// are out of scope, so they're silently inert).
+	const hasLink = !!findByName(enhancedChildren, 'link');
+	if (hasLink || isCover) {
+		const mediaZone = findMediaZone(enhancedChildren);
+		if (mediaZone) {
+			mediaZone.attributes = { ...mediaZone.attributes, 'data-guest-posture': 'presentational' };
+			if (hasLink) {
+				const guest = findInteractiveGuest(mediaZone, allRunes, runeKeyMap);
+				if (guest) warnInteractiveGuestInLink(dataRune ?? config.block, guest);
+			}
 		}
 	}
 

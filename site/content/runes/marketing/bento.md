@@ -104,6 +104,8 @@ A few rules:
 
 A cell's content splits on a top-level `---` into **media / body / footer** zones, exactly like `card`. The media zone clips and sizes its guest, so any visual rune (chart, map, gallery, mockup, `showcase`) drops in and adapts automatically.
 
+A media guest is **presentational** by default. In a cell with `href` (a stretched whole-tile link), an interactive guest — a `codegroup`, a live `map` — is demoted to its static fallback and made `pointer-events: none` so the whole cell links reliably (and a build warning fires); body/footer controls stay clickable. A non-linked cell hosts interactive guests normally. See the [interaction-posture contract](/extend/rune-authoring/composability#media-guest-interaction-posture).
+
 {% preview source=true %}
 
 {% bento columns=6 %}

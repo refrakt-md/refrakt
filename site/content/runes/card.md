@@ -89,6 +89,19 @@ Read the five-minute guide.
 {% /card %}
 ```
 
+### Media guests in a linked card
+
+A linked card is **one** interaction target, so its media guest is
+presentational. An interactive guest in the media zone — a `codegroup`, `tabs`,
+a live `map` — is demoted: its controls go `pointer-events: none` (clicks fall
+through to the card link) and it renders its static fallback rather than live
+chrome. The demotion is scoped to the media zone only — a button or link in the
+body/footer stays clickable. Authoring an interactive guest in a linked card
+emits a build warning; drop `href` or the interactivity. In [cover mode](#cover-mode)
+the media is always an inert backdrop, linked or not. See the [interaction-posture
+contract](/extend/rune-authoring/composability#media-guest-interaction-posture)
+for the full model.
+
 ## Layout attributes
 
 `card` shares the media+content layout vocabulary with `bento-cell` and every other media-bearing rune. The body splits on `---` into **media → body → footer** (media-first, in source order); `media-position` decides where the media sits visually, independently of source order.
