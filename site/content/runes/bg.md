@@ -29,9 +29,23 @@ Use a looping video as the background.
 {% /hero %}
 ```
 
+## Gradient fill
+
+A token-driven gradient is the most common generated backdrop (heroes, CTAs). Set it inline with `gradient` (direction), `from`/`to` (and optional `via`) — **semantic token names**, resolved to `var(--rf-color-*)` so the gradient tracks the theme/`tint` — and `gradient-type` (`linear` default, `radial`, `conic`). A gradient raises the bg layer with no image needed.
+
+```markdoc
+{% hero %}
+{% bg gradient="to-b" from="primary" to="surface" %}
+# Gradient hero
+A two-stop linear gradient, top to bottom, from token colours.
+{% /hero %}
+```
+
+Directions are a bounded set: `to-t`, `to-b`, `to-l`, `to-r`, `to-tr`, `to-br`, `to-bl`, `to-tl` (no raw angles — that's the escape hatch's job). These also work as host-level facets (`bg-gradient`, `bg-from`/`bg-to`/`bg-via`, `bg-gradient-type`) without a `{% bg %}` child, and a theme can register a named gradient preset (`bg="brand-fade"`).
+
 ## Overlay
 
-Add a colour overlay on top of the background to improve text readability.
+A flat colour wash over the background, for legibility. `dark` / `light` are presets; a **token name** (e.g. `overlay="primary"`) washes with `var(--rf-color-primary)` at `overlay-opacity`.
 
 ```markdoc
 {% hero %}
@@ -40,6 +54,24 @@ Add a colour overlay on top of the background to improve text readability.
 The dark overlay ensures text remains legible over the image.
 {% /hero %}
 ```
+
+{% hint type="warning" %}
+A **raw-CSS** `overlay` (e.g. `overlay="linear-gradient(…)"`) is deprecated — it emits a build warning and will be removed. Use `scrim` for a legibility gradient, or `overlay="dark|light|<token>"` for a flat wash.
+{% /hint %}
+
+## Scrim
+
+A structured legibility treatment behind overlaid text — richer than a flat overlay. `scrim` sets the heavy edge (`top`/`bottom`/`left`/`right`); `scrim-type` is `gradient` (default, a directional darken/lighten) or `frost` (a `backdrop-filter` blur + tint); `scrim-tone` (`dark`/`light`) picks whether it darkens (for light text) or lightens (for dark text).
+
+```markdoc
+{% hero %}
+{% bg src="/images/photo.jpg" scrim="bottom" scrim-strength="lg" %}
+# Legible over the photo
+A bottom-weighted gradient scrim keeps the heading readable.
+{% /hero %}
+```
+
+`scrim-strength` (`sm`/`md`/`lg`) tunes the gradient; `scrim-blur` (`sm`/`md`/`lg`) tunes frost. In `cover` mode the same scrim targets the media well (see [card](/runes/card)).
 
 ## Blur
 
@@ -93,9 +125,38 @@ Dark overlay, heavy blur, top-aligned, and slightly transparent.
 |-----------|------|---------|-------------|
 | `src` | `string` | — | URL of the background image |
 | `video` | `string` | — | URL of the background video |
-| `overlay` | `string` | `none` | Overlay effect: `none`, `dark`, `light` |
+| `gradient` | `string` | — | Gradient direction (bounded set: `to-t`…`to-tl`) |
+| `from` / `to` / `via` | `string` | — | Gradient stops — **semantic token names** (→ `var(--rf-color-*)`) |
+| `gradient-type` | `string` | `linear` | `linear`, `radial`, or `conic` |
+| `overlay` | `string` | `none` | Flat wash: `none`, `dark`, `light`, or a token name (raw CSS deprecated) |
+| `overlay-opacity` | `string` | — | Opacity of a token-coloured overlay wash |
+| `scrim` | `string` | — | Legibility scrim heavy edge: `top`, `bottom`, `left`, `right` |
+| `scrim-type` | `string` | `gradient` | `gradient` or `frost` (backdrop blur) |
+| `scrim-strength` / `scrim-blur` | `string` | `md` | Gradient strength / frost blur: `sm`, `md`, `lg` |
+| `scrim-tone` | `string` | `dark` | `dark` (darken for light text) or `light` |
 | `blur` | `string` | `none` | Blur strength: `none`, `sm`, `md`, or `lg` |
 | `position` | `string` | `center` | CSS background-position value (e.g., `top`, `bottom left`) |
 | `fit` | `string` | `cover` | Image fit mode: `cover` or `contain` |
 | `opacity` | `string` | `1` | Background opacity (e.g., `0.5`) |
 | `fixed` | `boolean` | `false` | Fixed/parallax background effect |
+
+## Named presets & the escape hatch
+
+A theme or project registers named `bg` presets (applied with `bg="name"`). A preset's gradient is **structured** and token-driven:
+
+```jsonc
+// refrakt.config.json (project) or theme config → backgrounds
+"backgrounds": {
+  "brand-fade": { "gradient": { "type": "linear", "direction": "to-br", "stops": ["primary", "surface"] } }
+}
+```
+
+For the genuine long tail (animations, exotic effects) a preset may carry a raw-CSS **escape hatch**, `style` — a last resort that **bypasses the token system** (you own cross-theme behaviour and portability):
+
+```jsonc
+"backgrounds": {
+  "aurora": { "style": { "background": "conic-gradient(/* … hand-tuned … */)" } }
+}
+```
+
+Backgrounds are valid in **theme** config and **project** config (`refrakt.config.json`); project `backgrounds` merge over theme `backgrounds` by name. A build-time soft warning flags a raw gradient in `style` that the structured `gradient` field now covers.
