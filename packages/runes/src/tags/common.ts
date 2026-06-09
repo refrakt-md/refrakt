@@ -18,7 +18,7 @@ export const SplitablePageSectionModel = undefined;
  * media). The old `gap` attribute was dropped — each rune curates its own
  * inter-zone spacing via theme tokens. */
 export const splitLayoutAttributes: Record<string, SchemaAttribute> = {
-  'media-position': { type: String, required: false, matches: ['top', 'bottom', 'start', 'end'], description: 'Where the media zone sits relative to the content: above (top), below (bottom), or beside (start/end)' },
+  'media-position': { type: String, required: false, matches: ['top', 'bottom', 'start', 'end', 'cover'], description: 'Where the media zone sits relative to the content: above (top), below (bottom), or beside (start/end)' },
   'media-ratio': { type: String, required: false, matches: ['1/3', '2/5', '1/2', '3/5', '2/3'], description: 'Media zone’s share of the row width when media is beside content (start/end)' },
   valign: { type: String, required: false, matches: ['top', 'center', 'bottom', 'stretch'], description: 'Cross-axis alignment when media is beside content (start/end); applies to the shorter zone' },
   collapse: { type: String, required: false, matches: ['sm', 'md', 'lg', 'never'], description: 'Breakpoint at which side-by-side layouts collapse to a single stacked column' },

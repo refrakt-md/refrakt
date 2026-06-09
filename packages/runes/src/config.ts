@@ -156,6 +156,10 @@ export const coreConfig: ThemeConfig = {
 				'media-ratio': { source: 'meta', noBemClass: true },
 				valign: { source: 'meta', noBemClass: true },
 				collapse: { source: 'meta', noBemClass: true },
+				// SPEC-089 — cover-mode overlay anchor + intrinsic height/aspect.
+				'content-place': { source: 'meta', noBemClass: true },
+				height: { source: 'meta', noBemClass: true },
+				aspect: { source: 'meta', noBemClass: true },
 			},
 			sections: { media: 'media' },
 			// SPEC-081/091: the transform emits flat slots; `layout` builds the
@@ -166,8 +170,16 @@ export const coreConfig: ThemeConfig = {
 				root: ['media', 'content'],
 				content: { tag: 'div', children: ['eyebrow', 'body', 'footer'] },
 			},
+			// SPEC-089 — `media-position="cover"` is a config variant (full scope:
+			// the media well fills the card interior and all content overlays it).
+			variants: {
+				'media-position': {
+					cover: { staticModifiers: ['cover'], rootAttributes: { 'data-cover-scope': 'full' } },
+				},
+			},
 			styles: {
 				valign: { prop: '--split-valign', transform: resolveValign },
+				aspect: 'aspect-ratio',
 			},
 		},
 		Embed: {

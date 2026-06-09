@@ -31,6 +31,13 @@ export const card = createContentModelSchema({
 	base: SplitLayoutModel,
 	attributes: {
 		href: { type: String, required: false, default: '', description: 'Optional link target; makes the whole card clickable.' },
+		// SPEC-089 — cover mode (`media-position="cover"`, from splitLayoutAttributes)
+		// overlays content on a media well. `content-place` anchors the overlaid box
+		// ("block inline", e.g. "end start", or "auto" to adapt on orientation);
+		// `height` / `aspect` give a cover/bg-only card its intrinsic shape.
+		'content-place': { type: String, required: false, description: 'Cover overlay anchor: "<block> <inline>" (e.g. "end start") or "auto"' },
+		height: { type: String, required: false, matches: ['sm', 'md', 'lg', 'xl'], description: 'Intrinsic card height (named scale) for cover / bg-only cards' },
+		aspect: { type: String, required: false, description: 'Intrinsic card aspect ratio (e.g. "16/9", "3/4") for cover / bg-only cards' },
 	},
 	contentModel: {
 		type: 'sequence',
@@ -44,7 +51,21 @@ export const card = createContentModelSchema({
 
 		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
 
+		// SPEC-089 cover knobs — emit as meta tags only when set; the engine reads
+		// them as fields (content-place → overlay anchor vars; height/aspect →
+		// intrinsic shape). They live in the children tree so the field channel
+		// finds them, and are marked via `properties` below.
+		const contentPlace = attrs['content-place'] as string | undefined;
+		const height = attrs.height as string | undefined;
+		const aspect = attrs.aspect as string | undefined;
+		const contentPlaceMeta = contentPlace ? new Tag('meta', { content: contentPlace }) : undefined;
+		const heightMeta = height ? new Tag('meta', { content: height }) : undefined;
+		const aspectMeta = aspect ? new Tag('meta', { content: aspect }) : undefined;
+
 		const children: RenderableTreeNode[] = [...layoutChildren];
+		if (contentPlaceMeta) children.push(contentPlaceMeta);
+		if (heightMeta) children.push(heightMeta);
+		if (aspectMeta) children.push(aspectMeta);
 
 		// Media zone — unwrap a bare image; otherwise render arbitrary content.
 		if (mediaNodes.length > 0) {
@@ -130,7 +151,12 @@ export const card = createContentModelSchema({
 		return createComponentRenderable({
 			rune: 'card',
 			tag: 'div',
-			properties: { 'media-position': layoutMetas.mediaPosition },
+			properties: {
+				'media-position': layoutMetas.mediaPosition,
+				'content-place': contentPlaceMeta,
+				height: heightMeta,
+				aspect: aspectMeta,
+			},
 			refs,
 			children,
 		});

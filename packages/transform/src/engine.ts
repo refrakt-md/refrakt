@@ -288,6 +288,21 @@ const SCRIM_STRENGTH: Record<string, string> = { sm: '0.3', md: '0.55', lg: '0.8
 /** A bare token reference (`primary`, `surface`, …) vs raw CSS (`rgba(…)`, `#…`). */
 const TOKEN_REF = /^[a-z][a-z0-9-]*$/;
 
+/** SPEC-089 — explicit cover-scrim edge → CSS gradient direction (the heaviest
+ *  edge is where the named edge sits). Overrides the content-place default. */
+const COVER_SCRIM_DIR: Record<string, string> = {
+	top: 'to top', bottom: 'to bottom', left: 'to left', right: 'to right',
+};
+
+const CONTENT_PLACE_WARNED = new Set<string>();
+/** Warn once when `content-place` is set outside cover mode (it's inert there). */
+function warnContentPlaceOutsideCover(rune: string): void {
+	if (CONTENT_PLACE_WARNED.has(rune)) return;
+	CONTENT_PLACE_WARNED.add(rune);
+	// eslint-disable-next-line no-console
+	console.warn(`[refrakt] \`content-place\` on \`${rune}\` is only active in \`media-position="cover"\` — it anchors the overlay, and there's no overlay outside cover. Ignored.`);
+}
+
 const RAW_OVERLAY_WARNED = new Set<string>();
 /** Warn once when `overlay` carries raw CSS (deprecated — use a token wash or `scrim`). */
 function warnRawOverlay(rune: string): void {
@@ -528,7 +543,7 @@ function transformRune(
 	const scrimDir = readMeta(tag, 'scrim');
 	const bgOverlay = readMeta(tag, 'bg-overlay');
 
-	if (bgPreset || bgSrc || bgVideo || bgGradient || scrimDir || bgOverlay) {
+	if (bgPreset || bgSrc || bgVideo || bgGradient || (scrimDir && scrimDir !== 'none') || bgOverlay) {
 		// Resolve preset styles (Tier 1 — CSS-only presets)
 		let presetStyles: Record<string, string> = {};
 		if (bgPreset && backgrounds[bgPreset]) {
@@ -608,7 +623,7 @@ function transformRune(
 
 		// scrim — a structured legibility treatment (SPEC-088). On the bg overlay
 		// layer here; cover mode (SPEC-089) routes the same facet to the media well.
-		if (scrimDir) {
+		if (scrimDir && scrimDir !== 'none') {
 			const scrimType = readMeta(tag, 'scrim-type') ?? 'gradient';
 			const scrimTone = readMeta(tag, 'scrim-tone') ?? 'dark';
 			const scrimAttrs: Record<string, string> = {
@@ -834,6 +849,48 @@ function transformRune(
 		}
 	}
 	styleParts.push(...tintStyleParts);
+	// SPEC-089 content-place — the cover overlay anchor. 2-axis logical
+	// (block × inline); `auto` is left to the container query in CSS. Active only
+	// in cover mode; warns otherwise (it's inert outside an overlay).
+	const contentPlace = modifierValues['content-place'];
+	const isCover = modifierValues['media-position'] === 'cover';
+	if (contentPlace) {
+		if (!isCover) {
+			warnContentPlaceOutsideCover(dataRune ?? config.block);
+		} else if (contentPlace !== 'auto') {
+			const [blockAxis, inlineAxis] = contentPlace.trim().split(/\s+/);
+			if (blockAxis) styleParts.push(`--cover-place-block: ${blockAxis}`);
+			if (inlineAxis) styleParts.push(`--cover-place-inline: ${inlineAxis}`);
+			// The default scrim weights toward the content edge: content at the top
+			// flips the scrim; the default (content at bottom) keeps `to top`.
+			if (blockAxis === 'start') styleParts.push('--cover-scrim-dir: to bottom');
+		}
+	}
+	// SPEC-089 — cover foreground + default-scrim opt-out. The overlaid content
+	// reads against the darkened media, so default the cover region to a dark
+	// colour-scheme (light text) unless a tint/scrim already set one; `scrim="none"`
+	// disables the default scrim (signalled to CSS on the host).
+	if (isCover) {
+		const coverScrim = readMeta(tag, 'scrim');
+		if (coverScrim === 'none') {
+			bgDataAttrs['data-scrim'] = 'none';
+		}
+		// Foreground polarity follows `scrim-tone` (a dark scrim wants light text
+		// → a dark scheme; a light scrim wants dark text → a light scheme). Full
+		// scope = the whole rune overlays the media, so the scheme belongs on the
+		// root. Header scope only overlays the cover-band (the variant layout
+		// carries the scheme there, via its `attrs`), so the body below stays on
+		// the page palette — don't flip the root. An explicit tint/scheme wins.
+		const coverScope = config.rootAttributes?.['data-cover-scope'];
+		if (coverScrim !== 'none' && coverScope !== 'header'
+			&& !bgDataAttrs['data-color-scheme'] && !tintDataAttrs['data-color-scheme']) {
+			bgDataAttrs['data-color-scheme'] = readMeta(tag, 'scrim-tone') ?? 'dark';
+		}
+		// An explicit scrim direction pins the default-scrim gradient, overriding
+		// the content-place-derived direction set above.
+		const dir = COVER_SCRIM_DIR[coverScrim ?? ''];
+		if (dir) styleParts.push(`--cover-scrim-dir: ${dir}`);
+	}
 	// Frame chrome on the self surface contributes its custom props to the root.
 	if (frameChrome && frameTargetKind === 'self') {
 		styleParts.push(...frameChrome.styleParts);

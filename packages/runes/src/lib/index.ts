@@ -66,7 +66,7 @@ const universalAttributes: Record<string, SchemaAttribute> = {
   'bg-via': { type: String, required: false, description: 'Optional middle gradient stop — a semantic token name' },
   'bg-gradient-type': { type: String, required: false, matches: ['linear', 'radial', 'conic'], description: 'Gradient type' },
   // SPEC-088 — structured scrim (legibility treatment behind overlaid text).
-  'scrim': { type: String, required: false, matches: ['top', 'bottom', 'left', 'right'], description: 'Scrim direction (heaviest edge); presence turns the scrim on' },
+  'scrim': { type: String, required: false, matches: ['top', 'bottom', 'left', 'right', 'none'], description: 'Scrim direction (heaviest edge); presence turns the scrim on, "none" opts out of the default cover scrim' },
   'scrim-type': { type: String, required: false, matches: ['gradient', 'frost'], description: 'Scrim treatment: gradient (default) or frost (backdrop blur)' },
   'scrim-strength': { type: String, required: false, matches: ['sm', 'md', 'lg'], description: 'Gradient scrim strength' },
   'scrim-blur': { type: String, required: false, matches: ['none', 'sm', 'md', 'lg'], description: 'Frost scrim blur amount' },

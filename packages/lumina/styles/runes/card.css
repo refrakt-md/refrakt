@@ -125,6 +125,19 @@
 	flex: 1;
 }
 
+/* Height knob (SPEC-089) — a named intrinsic-height scale for cover / bg-only
+ * cards that have no natural content height to fill. `aspect` (→ aspect-ratio,
+ * emitted inline by the engine) is the proportional alternative; `height` is the
+ * absolute one. Both are authority overrides: they win over the cover variant's
+ * default media aspect because they sit on the card root with a real value, and
+ * over an external grid track only when the card isn't being stretched by one.
+ * For cover cards the grid stack (cover.css) fills this box; for bg-only cards
+ * the min-height simply gives the surface a poster shape. */
+.rf-card[data-height="sm"] { min-height: 12rem; }
+.rf-card[data-height="md"] { min-height: 18rem; }
+.rf-card[data-height="lg"] { min-height: 26rem; }
+.rf-card[data-height="xl"] { min-height: 34rem; }
+
 /* Whole-card stretched link — covers the card; real links in body/footer
  * sit above it via position:relative. */
 .rf-card__link {
