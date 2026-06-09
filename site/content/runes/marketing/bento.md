@@ -145,15 +145,19 @@ Footer note.          <!-- footer -->
 
 A bento cell exposes the same two surfaces as `card` ([surface-chrome model](/extend/theme-authoring/surface-chrome)): `elevation` floats the cell box (`box-shadow`), and `frame` chrome decorates the cell's media zone (aspect, crop anchor, silhouette shadow, oversize). `frame-aspect` and `frame-anchor` feed bento's existing media knobs (`--bento-media-aspect` / `--bento-media-anchor`) rather than a parallel mechanism.
 
-Because heading-sugar cells have no per-cell attribute surface, a **grid-level `frame`** (preset + facets) on the `bento` cascades to every cell as a default — mirroring `media-position`; a cell's own `frame-*` still wins. The grid itself never claims frame chrome (it has no media surface).
+Because heading-sugar cells have no per-cell attribute surface, **grid-level `frame`** (preset + facets) **and `elevation`** on the `bento` cascade to every cell as a default — mirroring `media-position`; a cell's own value still wins. The grid never takes this chrome itself (the cells are the visual cards) — so `{% bento elevation="md" %}` lifts each cell, not the grid box.
 
 {% preview source=true %}
 
-{% bento columns=6 frame-aspect="16/9" frame-anchor="center" %}
+{% bento columns=6 elevation="sm" frame-aspect="16/9" frame-anchor="center" %}
 # Coral reef
 ![A coral reef](https://assets.refrakt.md/figure-coral-reef.jpg)
+---
+Teeming with life beneath turquoise waters.
 # Hot springs
 ![Volcanic hot springs](https://assets.refrakt.md/figure-hot-springs.jpg)
+---
+Steam rising from the Icelandic highlands.
 {% /bento %}
 
 {% /preview %}
@@ -255,6 +259,7 @@ Choose `collapse` to match the narrowest width your authored grid can comfortabl
 | `media-ratio` | `string` | — | Grid default — media's share of a beside cell's width: `1/3`, `2/5`, `1/2`, `3/5`, or `2/3` |
 | `media-position` | `string` | size-derived | Grid default media placement for every cell: `top`, `bottom`, `start`, or `end`. A cell's own `media-position` wins |
 | `frame` / `frame-*` | `string` | — | Grid default frame chrome cascaded to every cell's media zone (SPEC-086); a cell's own `frame-*` wins. See [surface chrome](/extend/theme-authoring/surface-chrome) |
+| `elevation` | `string` | — | Cascades to every cell's `box-shadow` (`none`/`sm`/`md`/`lg`) — lifts the cells, not the grid box; a cell's own `elevation` wins |
 | `collapse` | `string` | `sm` | Binary stack breakpoint: `sm` (640px), `md` (768px), `lg` (1024px), or `never` |
 
 ### `bento-cell`
@@ -276,7 +281,6 @@ All block runes share these attributes for layout and theming.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `elevation` | `string` | — | Self-surface `box-shadow`: `none`, `sm`, `md`, `lg` |
 | `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
 | `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
 | `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
