@@ -67,6 +67,7 @@ variant.
 - **Targets the media surface.** In `cover` the text overlays the media well, so the scrim is a legibility treatment over the *media* surface — using the {% ref "SPEC-087" /%} self/media targeting (the bg-layer scrim and the media-well scrim are the same facet on different surfaces).
 - **Direction follows `content-place`** by default (the scrim belongs where the text is); independently overridable. The scrim **region tracks the content area** (it grows with the content and re-anchors when `content-place` moves) — frost's panel *is* the content box; a gradient's falloff anchors to the content edge, not a fixed band.
 - The scrim *facet* itself — `type` (`gradient`/`frost`), `strength`, `blur`, `tone` — is defined in {% ref "SPEC-088" /%}; `cover` mode only turns it on and binds its direction to `content-place`.
+- **Text colour follows the scrim, not the surface.** The overlaid content contrasts with the scrim, not the card's base surface, so `scrim-tone` also sets the overlay's **foreground tint** (a *scoped* tint of the cover region): a `dark` scrim yields light text on a light card automatically — no manual colour, and no separate custom preset for the common case. In `header` scope this is **scoped to the band**; the flowing body keeps the base-surface text. An explicit `tint` on the cover content is the override for a *bespoke* overlay colour (e.g. a brand-coloured title).
 
 ### 4. Height authority
 
@@ -90,6 +91,7 @@ Cover and `bg`-only cards both raise "what sets the height," resolved by one pre
 - [ ] `content-place` positions the overlay: 2-axis logical (`start|center|end` × `start|center|end`), default `end`; active only in `cover` mode and a build warning otherwise.
 - [ ] `content-place="auto"` (the cover default) adapts to the rune's container-query orientation (portrait → `block-end`, landscape → `inline-start`); an explicit value pins it.
 - [ ] A default scrim is applied in `cover` mode, targeting the **media** surface (SPEC-087 routing), its direction following `content-place` and independently overridable (`scrim="none"` disables); the scrim region tracks the content area.
+- [ ] The cover overlay's **foreground colour follows `scrim-tone`** (a scoped tint of the cover region — light text on a darkened light card by default; scoped to the band in `header` scope, body keeps base-surface text); an explicit `tint` overrides for a bespoke overlay colour.
 - [ ] A card intrinsic-height knob (named-scale `height` + `aspect`) preserves height for `bg`-only cards (no in-flow media); documented as the standalone analog of bento row-spans.
 - [ ] Docs: the `card` reference documents `cover` mode, `content-place`, the cover scrim default, and card height; cross-linked with {% ref "SPEC-087" /%}, {% ref "SPEC-088" /%}, {% ref "SPEC-086" /%}.
 
