@@ -5,7 +5,7 @@ description: Complete reference for ThemeConfig, RuneConfig, and StructureEntry 
 
 # Theme Config API
 
-Theme configuration is declarative. Instead of writing transform logic, you describe what each rune should produce — which BEM block it maps to, what modifiers it reads, what structural elements to inject — and the identity transform engine handles the rest.
+Theme configuration is declarative. Instead of writing transform logic, you describe what each rune should produce — which BEM block it maps to, what modifiers it reads, how it projects metadata (`metaFields`/`blocks`) and assembles its structure (`layout`) — and the identity transform engine handles the rest.
 
 ## ThemeConfig
 
@@ -105,11 +105,90 @@ FeaturedTier: { block: 'tier', staticModifiers: ['featured'] }
 // → class="rf-tier rf-tier--featured"
 ```
 
-### structure
+### metaFields
 
-Injects new HTML elements into the rune's output — headers, icons, badges, labels. This is the most powerful declarative feature.
+A pure-data manifest of the rune's meta-bearing fields — domain semantics only (type, label, sentiment, optional rich rendering). Blocks reference these fields by name; the engine resolves them against modifier values and renders them. This is the SPEC-080 replacement for hand-built metadata in `structure`.
 
-Each entry is keyed by name and defines a `StructureEntry`:
+```typescript
+metaFields: {
+  difficulty: {
+    metaType: 'category',
+    label: 'Difficulty',
+    condition: 'difficulty',
+    sentimentMap: { easy: 'positive', medium: 'neutral', hard: 'caution' },
+  },
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `metaType` | Visual shape — `'status'`/`'category'`/`'tag'` render as chips; `'id'`/`'quantity'`/`'temporal'`/`'code'` render bare. Also drives typography (monospace for `id`/`code`, tabular-nums for `quantity`/`temporal`) |
+| `label` | Human-readable label — the `<dt>` in a def-list, the in-chip label in a bar |
+| `sentimentMap` | Maps the resolved value to a sentiment colour (`positive`/`negative`/`caution`/`neutral`) |
+| `condition` / `renderWhenEmpty` | Render only when the named modifier is truthy (or merely present) |
+| `href` / `rating` / `icon` | Rich renderings — link, rating widget, leading icon |
+| `splitOn` / `transform` / `tag` | Delimited collection → one chip per item; value transform (`duration`/`uppercase`/`capitalize`); element tag override |
+
+See [Blocks & layout](/extend/theme-authoring/blocks-and-layout) for the full field reference.
+
+### blocks
+
+Named metadata blocks projected from `metaFields`. Each block is a flat list of fields rendered by a layout primitive — `bar` (horizontal flex row) or `definition-list` (`<dl>` of labelled pairs). Render shape (chip vs bare) is intrinsic to each field's `metaType`, not the block's layout.
+
+```typescript
+blocks: {
+  metadata: { fields: ['prepTime', 'cookTime', 'servings', 'difficulty'], layout: 'definition-list' },
+  eyebrow: { fields: ['plotType', { field: 'structure', align: 'end' }], layout: 'bar' },
+}
+```
+
+A field may be given as `{ field, align }` to push it to the row end (`bar` only). A block becomes an addressable element (`.rf-{block}__{name}`) placed via `layout`.
+
+### layout
+
+The recursive skeleton (SPEC-081). The transform emits **flat `data-name` slots**; `layout` declares how they are grouped and ordered. Keyed by a container's `data-name`, or the reserved `'root'` for the rune's top-level children.
+
+```typescript
+layout: {
+  root: ['media', 'content'],
+  content: { tag: 'div', children: ['eyebrow', 'body', 'footer'] },
+  preamble: { tag: 'header', children: ['eyebrow', 'headline', 'blurb'] },
+}
+```
+
+Each value is a `LayoutEntry`:
+
+- a bare `string[]` **orders** an existing container's children;
+- `{ tag, children, attrs? }` **creates** a wrapper element (`<tag data-name=key>`) and fills it from the flat transform slots.
+
+Projected `blocks` and transform slots a list doesn't name are appended in transform order — rune content is never dropped. See [Blocks & layout](/extend/theme-authoring/blocks-and-layout) for name resolution and worked examples.
+
+### variants
+
+Modifier-keyed config deltas (SPEC-091): a rune's *structure* can vary by a modifier without branching in the transform. The outer key is a declared modifier (the axis), the inner key one of its values, and the payload a partial `RuneConfig` merged over base — in declaration order — before assembly.
+
+```typescript
+variants: {
+  'media-position': {
+    cover: {
+      layout: {
+        root: ['cover-band', 'body'],
+        'cover-band': { tag: 'div', children: ['media', 'preamble'] },
+      },
+    },
+  },
+}
+```
+
+Selection rides the modifier system — the modifier's own `default` picks the active value, so there is no separate condition language and no `defaultVariants`. A delta may override assembly/decoration fields (`layout`, `structure`, `styles`, `contentWrapper`, `staticModifiers`, `autoLabel`, `editHints`) but **not** identity fields (`block`, `modifiers`, `sections`); every axis must be a declared modifier. Both invariants are checked at config load. Requires the rune to be on the flat-slot + base-`layout` model. See the variants section in [Blocks & layout](/extend/theme-authoring/blocks-and-layout).
+
+### structure (legacy)
+
+{% hint type="warning" %}
+`structure` is a **legacy** field, superseded by `metaFields` + `blocks` + `layout` above. No first-party rune declares it — the engine keeps a back-compat branch only for injecting icons/badges into runes that don't project metadata. New runes should use the block-and-layout model. The [StructureEntry](#structureentry) API below documents the legacy injection shape.
+{% /hint %}
+
+It injects new HTML elements into a rune's output — headers, icons, badges — keyed by name, each defining a `StructureEntry`:
 
 ```typescript
 structure: {
@@ -123,8 +202,6 @@ structure: {
   },
 }
 ```
-
-This injects a header div before the rune's content, containing an icon span and a title span. See [StructureEntry](#structureentry) below for the full API.
 
 ### contentWrapper
 
@@ -276,10 +353,18 @@ See [Dimensions](/extend/theme-authoring/dimensions#sequence) for CSS patterns.
 
 ### parent
 
-Groups a rune under a parent rune in the block editor palette. Does not affect rendering.
+Groups a rune under a parent rune in the block editor palette. Advisory only — a rune may declare a typical `parent` yet still be valid standalone. Does not affect rendering.
 
 ```typescript
 AccordionItem: { block: 'accordion-item', parent: 'Accordion' }
+```
+
+### requiresParent
+
+A hard nesting requirement (SPEC-084): the rune is only meaningful inside the named parent (PascalCase `typeName`). Unlike `parent` (an advisory editor grouping), this is **validated** — the engine warns when the rune appears without that parent as its nearest ancestor rune.
+
+```typescript
+BreadcrumbItem: { block: 'breadcrumb-item', parent: 'Breadcrumb', requiresParent: 'Breadcrumb' }
 ```
 
 ### defaultWidth
@@ -335,18 +420,19 @@ Sandbox: { block: 'sandbox', rootAttributes: { 'data-interactive': 'true' } }
 
 ### projection
 
-Declarative tree reshaping — hide, group, or relocate children before structural injection. This is an advanced feature for runes that need to rearrange their content tree.
+Declarative tree reshaping by `data-name`, applied *after* assembly. Per SPEC-081 it is the escape hatch for bending a tree a theme does **not** own (a third-party rune's output); a rune declaring its *own* structure should use `layout` instead.
 
 ```typescript
 Comparison: {
   block: 'comparison',
   projection: {
-    hide: ['meta'],
-    group: { name: 'items', match: 'ComparisonItem' },
-    relocate: { target: 'header', ref: 'title' },
+    hide: ['meta'],   // drop elements by data-name (the only retained op)
   },
 }
 ```
+
+- **`hide`** — drop elements by `data-name`. **Retained.**
+- **`group`** (`{ tag, members, slot? }`) and **`relocate`** (`{ into, position? }`) — **deprecated**: a `layout` tag-entry *is* a group, and you place a slot wherever you name it in the `layout` tree. The contract generator emits a deprecation warning for both.
 
 ### Advanced modifier options
 
@@ -392,6 +478,7 @@ The `ctx` object contains:
 |----------|------|-------------|
 | `modifiers` | `Record<string, string>` | All resolved modifier values |
 | `parentType` | `string \| undefined` | The parent rune's `data-rune` value (kebab-case), if nested |
+| `fields` | `Record<string, unknown>` | The parsed SPEC-082 `data-rune-fields` bag — for non-modifier field values (the engine strips the bag attribute before `postTransform` runs) |
 
 {% hint type="warning" %}
 Use declarative config first. `postTransform` is for edge cases that truly can't be expressed with modifiers, structure, or styles. It makes the config harder to analyze statically — the [inspect and audit tools](/docs/cli/inspect) can't introspect programmatic transforms.
@@ -399,7 +486,7 @@ Use declarative config first. `postTransform` is for edge cases that truly can't
 
 ## StructureEntry
 
-Defines an element to inject into the rune's output via the `structure` config.
+Defines an element injected into a rune's output via the **legacy** `structure` config (see [structure (legacy)](#structure-legacy)). New runes project metadata with `metaFields` + `blocks` instead; this API is documented for the back-compat injection path.
 
 ```typescript
 interface StructureEntry {
@@ -427,17 +514,19 @@ interface StructureEntry {
 
   // Metadata dimensions (see Dimensions page)
   metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id';
-  metaRank?: 'primary' | 'secondary';
   sentimentMap?: Record<string, 'positive' | 'negative' | 'caution' | 'neutral'>;
 
-  // Repetition
-  repeat?: {                 // Generate N copies of this element
-    count: { fromModifier: string };  // Modifier providing the count
-    filled?: { fromModifier: string }; // Modifier providing how many are "filled"
+  // Repetition — generate copies of a template element
+  repeat?: {
+    count: string;            // Modifier name providing the total count
+    max?: number;             // Cap to prevent runaway generation (default 10)
+    filled?: string;          // Modifier name for how many are "filled"
+    element: StructureEntry;  // Template for each generated element
+    filledElement?: StructureEntry;  // Optional template for filled elements
   };
 
-  // Attributes
-  attrs?: Record<string, string | { fromModifier: string }>;
+  // Attributes — literal strings, or references to a modifier / page data
+  attrs?: Record<string, string | { fromModifier: string } | { fromPageData: string }>;
 }
 ```
 
@@ -517,14 +606,15 @@ The `attrs` field sets attributes on the injected element. Values can be literal
 
 ### Repeated elements
 
-The `repeat` field generates multiple copies of a structure element — useful for star ratings, progress dots, and similar patterns.
+The `repeat` field generates multiple copies of a template `element` — useful for star ratings, progress dots, and similar patterns. `count` and `filled` are **modifier names**.
 
 ```typescript
 {
-  tag: 'span', ref: 'star',
+  tag: 'div', ref: 'rating',
   repeat: {
-    count: { fromModifier: 'maxRating' },
-    filled: { fromModifier: 'rating' },
+    count: 'maxRating',   // modifier holding the total
+    filled: 'rating',     // modifier holding how many are filled
+    element: { tag: 'span', ref: 'star' },
   },
 }
 // With maxRating=5, rating=3:
@@ -555,31 +645,30 @@ The `label` field emits a separate `<span data-meta-label>` child element before
 
 ```typescript
 { tag: 'span', ref: 'meta-item', metaText: 'prepTime',
-  label: 'Prep:', metaType: 'temporal', metaRank: 'primary' }
+  label: 'Prep:', metaType: 'temporal' }
 ```
 
 Set `labelHidden: true` to make the label visually hidden but accessible to screen readers (sr-only pattern). Use this for values that are self-explanatory, like ID badges.
 
 ### Metadata dimensions
 
-Three fields enable generic cross-rune badge styling. When present, the engine emits `data-meta-*` attributes on the generated element. Themes style these attributes generically instead of writing per-rune badge CSS.
+Two fields enable generic cross-rune badge styling. When present, the engine emits `data-meta-*` attributes on the generated element. Themes style these attributes generically instead of writing per-rune badge CSS.
 
 | Field | Attribute emitted | Description |
 |-------|-------------------|-------------|
 | `metaType` | `data-meta-type` | Visual shape — `'status'`, `'category'`, `'quantity'`, `'temporal'`, `'tag'`, `'id'` |
-| `metaRank` | `data-meta-rank` | Prominence — `'primary'` (full size) or `'secondary'` (smaller, faded) |
 | `sentimentMap` | `data-meta-sentiment` | Maps modifier values to colors — `'positive'`, `'negative'`, `'caution'`, `'neutral'` |
 
 ```typescript
 { tag: 'span', ref: 'badge', metaText: 'difficulty',
-  metaType: 'category', metaRank: 'primary',
+  metaType: 'category',
   sentimentMap: { easy: 'positive', medium: 'neutral', hard: 'caution' } }
 ```
 
 When `difficulty="easy"`, the engine emits:
 
 ```html
-<span data-meta-type="category" data-meta-rank="primary"
+<span data-meta-type="category"
       data-meta-sentiment="positive" data-difficulty="easy">
   easy
 </span>
@@ -627,10 +716,10 @@ Merge behavior:
 | `prefix` | Override replaces base |
 | `tokenPrefix` | Override replaces base |
 | `icons` | Shallow merge by group (override groups replace base groups) |
-| `runes` | Per-rune shallow merge (override fields replace base fields for that rune) |
+| `runes` | Per-rune merge: most fields replace, but `metaFields`, `blocks`, `layout`, and `variants` merge **by inner key** |
 
 {% hint type="note" %}
-Per-rune merge is **shallow** — if you override `modifiers` for a rune, you replace the entire `modifiers` object, not individual entries within it. This is intentional: it keeps the merge behavior predictable and avoids deep-merge surprises.
+Per-rune merge is **shallow for most fields** — overriding `modifiers` replaces the entire `modifiers` object, not individual entries. The block-and-layout fields are the exception: `metaFields`, `blocks`, `layout`, and `variants` merge **by inner key**, so a theme can re-point a single field, swap one block's primitive, reshape one container, or add one variant without restating the whole map. When overriding a wrapper-creating `layout` entry, restate its `tag` (the entry is replaced as a whole).
 {% /hint %}
 
 ## Real-world examples
@@ -666,42 +755,40 @@ Hint: {
 
 ### Complex rune: Recipe
 
-Multiple modifiers, conditional structure, content wrapper, text transforms, and metadata dimensions.
+The current block-and-layout model: a `metaFields` manifest, a projected `blocks` metadata def-list, and a `layout` skeleton that assembles flat slots into a media + content split. (This is the actual `@refrakt-md/learning` config, trimmed.)
 
 ```typescript
 Recipe: {
   block: 'recipe',
-  contentWrapper: { tag: 'div', ref: 'content' },
   defaultDensity: 'full',
-  sections: { meta: 'header', title: 'title', content: 'body' },
+  sequence: 'numbered',
+  sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
+  mediaSlots: { media: 'cover' },
   modifiers: {
-    prepTime: { source: 'meta' },
-    cookTime: { source: 'meta' },
-    servings: { source: 'meta' },
+    'media-position': { source: 'meta', default: 'top', noBemClass: true },
+    prepTime: { source: 'meta', noBemClass: true },
+    cookTime: { source: 'meta', noBemClass: true },
+    servings: { source: 'meta', noBemClass: true },
     difficulty: { source: 'meta', default: 'medium' },
   },
-  structure: {
-    meta: {
-      tag: 'div', before: true,
-      conditionAny: ['prepTime', 'cookTime', 'servings', 'difficulty'],
-      children: [
-        { tag: 'span', ref: 'meta-item', metaText: 'prepTime',
-          transform: 'duration', label: 'Prep:', condition: 'prepTime',
-          metaType: 'temporal', metaRank: 'primary' },
-        { tag: 'span', ref: 'meta-item', metaText: 'cookTime',
-          transform: 'duration', label: 'Cook:', condition: 'cookTime',
-          metaType: 'temporal', metaRank: 'primary' },
-        { tag: 'span', ref: 'meta-item', metaText: 'servings',
-          label: 'Serves:', condition: 'servings',
-          metaType: 'quantity', metaRank: 'primary' },
-        { tag: 'span', ref: 'badge', metaText: 'difficulty',
-          condition: 'difficulty',
-          metaType: 'category', metaRank: 'primary',
-          sentimentMap: { easy: 'positive', medium: 'neutral', hard: 'caution' } },
-      ],
+  metaFields: {
+    prepTime: { metaType: 'temporal', label: 'Prep', condition: 'prepTime', transform: 'duration' },
+    cookTime: { metaType: 'temporal', label: 'Cook', condition: 'cookTime', transform: 'duration' },
+    servings: { metaType: 'quantity', label: 'Serves', condition: 'servings' },
+    difficulty: {
+      metaType: 'category', label: 'Difficulty', condition: 'difficulty',
+      sentimentMap: { easy: 'positive', medium: 'neutral', hard: 'caution' },
     },
+  },
+  blocks: {
+    metadata: { fields: ['prepTime', 'cookTime', 'servings', 'difficulty'], layout: 'definition-list' },
+  },
+  layout: {
+    root: ['media', 'content'],
+    content: { tag: 'div', children: ['preamble', 'metadata', 'ingredients', 'steps', 'tips'] },
+    preamble: { tag: 'header', children: ['eyebrow', 'headline', 'blurb'] },
   },
 }
 ```
 
-The `metaType`, `metaRank`, and `sentimentMap` fields enable generic badge styling — no rune-specific CSS needed for these badges. The `sections` map and `defaultDensity` enable generic layout and density-responsive behavior. See [Dimensions](/extend/theme-authoring/dimensions) for the full system.
+`metaFields` declares the facts once; the `metadata` block projects them as a labelled def-list; `layout` nests that block in the content column under the header, beside the media. The `metaType`/`sentimentMap` fields drive generic badge styling — no rune-specific CSS. See [Blocks & layout](/extend/theme-authoring/blocks-and-layout) and [Dimensions](/extend/theme-authoring/dimensions) for the full system.

@@ -1,6 +1,7 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, MetaField, BlockDef, LayoutEntry } from './types.js';
 import { isTag, makeTag, readMeta, toKebabCase } from './helpers.js';
+import { mergeRuneConfig } from './merge.js';
 
 /** The 6 tint colour tokens */
 /** Tint token names per SPEC-053 vocabulary alignment. Each maps to a
@@ -93,6 +94,34 @@ function readField(
 	return readMeta(tag, name, def);
 }
 
+/** SPEC-091 — resolve modifier-keyed config variants for one rune instance.
+ *  For each variant axis (a declared modifier name) the engine resolves the
+ *  instance's value the same way the modifier loop does (field/attribute +
+ *  `default`), and merges any matching `variants[axis][value]` delta over the
+ *  base config — in `variants` declaration order — before any structure is
+ *  read. Returns the effective config; a rune with no variants is untouched. */
+function resolveVariantConfig(
+	config: RuneConfig,
+	tag: SerializedTag,
+	fields: Record<string, unknown>,
+): RuneConfig {
+	if (!config.variants) return config;
+	let effective = config;
+	for (const [axis, byValue] of Object.entries(config.variants)) {
+		const mod = config.modifiers?.[axis];
+		// Axes are validated to be declared modifiers at config load; stay
+		// defensive at runtime and skip an axis with no modifier source.
+		if (!mod) continue;
+		const value = mod.source === 'attribute'
+			? (tag.attributes[axis] ?? mod.default)
+			: readField(tag, fields, axis, mod.default);
+		if (value && byValue[value]) {
+			effective = mergeRuneConfig(effective, byValue[value]);
+		}
+	}
+	return effective;
+}
+
 /** Apply BEM classes and structural enhancements to a rune tag */
 function transformRune(
 	tag: SerializedTag,
@@ -124,6 +153,10 @@ function transformRune(
 	// back per-field to the legacy `<meta data-field>` children. Both channels
 	// carry the same values (WORK-321 dual-emit), so output is unchanged.
 	const fields = parseFields(tag.attributes['data-rune-fields']);
+
+	// SPEC-091 — apply modifier-keyed config variants before anything reads the
+	// config, so the rest of the transform sees the variant-merged structure.
+	config = resolveVariantConfig(config, tag, fields);
 
 	// 1. Read modifiers from the field channel, collecting resolved values
 	const modifierClasses: string[] = [];

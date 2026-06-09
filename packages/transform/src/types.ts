@@ -198,6 +198,32 @@ export interface RuneConfig {
 	 *  fills it from the flat transform slots (SPEC-081 declarative assembly). */
 	layout?: Record<string, LayoutEntry>;
 
+	/** SPEC-091 — modifier-keyed config deltas (engine config variants).
+	 *  The outer key is a declared **modifier name** (the variant *axis*); the
+	 *  inner key is one of that modifier's **values**; the payload is a partial
+	 *  `RuneConfig` merged over the base config when an instance resolves that
+	 *  axis to that value.
+	 *
+	 *  Selection rides the modifier system: per instance the engine resolves
+	 *  each axis's modifier value (with its `default`) and merges
+	 *  `variants[axis][value]` over base — in `variants` **declaration order** —
+	 *  *before* layout assembly, reusing `mergeThemeConfig`'s by-key semantics
+	 *  (a delta's `layout.root` replaces the array; new wrapper keys are added;
+	 *  base keys the variant no longer references simply go unused). There is no
+	 *  separate predicate language and no `defaultVariants` — the modifier's own
+	 *  `default` already provides the active value.
+	 *
+	 *  A delta may override **assembly / decoration** fields (`layout`,
+	 *  `structure`, `styles`, `contentWrapper`, `staticModifiers`, `autoLabel`,
+	 *  `editHints`, …) but **not identity** fields (`block`, the `modifiers`
+	 *  axis definitions, `sections` keys) — a variant restructures/redecorates a
+	 *  rune, it cannot redefine it. Every axis must be a declared `modifiers`
+	 *  entry; both invariants are checked at config load.
+	 *
+	 *  `compoundVariants` (cross-axis deltas) is a reserved future extension,
+	 *  intentionally not implemented. */
+	variants?: Record<string, Record<string, Partial<RuneConfig>>>;
+
 	/** Auto-label children by tag name → data-name. E.g., { summary: 'header' } */
 	autoLabel?: Record<string, string>;
 

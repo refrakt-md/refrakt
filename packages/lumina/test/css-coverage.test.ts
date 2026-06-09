@@ -138,11 +138,8 @@ function collectStructureRefs(entry: StructureEntry, key: string): string[] {
 	return refs;
 }
 
-/** Compute expected selectors for a rune from its config */
-function expectedSelectors(prefix: string, config: RuneConfig): string[] {
-	const block = `${prefix}-${config.block}`;
-	const selectors: string[] = [`.${block}`];
-
+/** Collect the BEM selectors a single (base or variant-delta) config contributes. */
+function collectConfigSelectors(block: string, config: Partial<RuneConfig>, selectors: string[]): void {
 	// Context modifier selectors
 	if (config.contextModifiers) {
 		for (const suffix of Object.values(config.contextModifiers)) {
@@ -176,6 +173,26 @@ function expectedSelectors(prefix: string, config: RuneConfig): string[] {
 	if (config.autoLabel) {
 		for (const label of Object.values(config.autoLabel)) {
 			selectors.push(`.${block}__${label}`);
+		}
+	}
+}
+
+/** Compute expected selectors for a rune from its config.
+ *  SPEC-091 — folds in selectors introduced by each variant delta (a variant's
+ *  own static/context modifiers and structural elements share the rune's block),
+ *  so per-variant structures are covered too. */
+function expectedSelectors(prefix: string, config: RuneConfig): string[] {
+	const block = `${prefix}-${config.block}`;
+	const selectors: string[] = [`.${block}`];
+
+	collectConfigSelectors(block, config, selectors);
+
+	// Per-variant deltas (SPEC-091) — same block, additional selectors.
+	if (config.variants) {
+		for (const byValue of Object.values(config.variants)) {
+			for (const delta of Object.values(byValue)) {
+				collectConfigSelectors(block, delta, selectors);
+			}
 		}
 	}
 

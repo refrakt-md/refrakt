@@ -69,9 +69,11 @@ export const card = createContentModelSchema({
 			mainBodyNodes = bodyNodes.slice(1);
 		}
 
-		// Content zone (body + optional footer) — one grid child so the split
-		// layout puts media | content; footer sits at the bottom of content.
-		const bodyInner: RenderableTreeNode[] = [];
+		// SPEC-081/091 flat-slot model: the transform emits flat `data-name` slots
+		// (media · eyebrow · body · footer · link); the engine's `layout` config
+		// groups eyebrow/body/footer into the `content` wrapper and places it
+		// beside media. This is what lets cover ({% ref "SPEC-089" /%}) be a
+		// `media-position` variant on card.
 		let eyebrowTag: InstanceType<typeof Tag> | undefined;
 		if (eyebrowNode) {
 			const eyebrowCursor = new RenderableNodeCursor(
@@ -80,7 +82,6 @@ export const card = createContentModelSchema({
 			const first = eyebrowCursor.toArray()[0];
 			if (Markdoc.Tag.isTag(first)) {
 				eyebrowTag = first;
-				bodyInner.push(eyebrowTag);
 			}
 		}
 		const bodyCursor = new RenderableNodeCursor(
@@ -95,21 +96,24 @@ export const card = createContentModelSchema({
 		const titleTag = bodyRendered.find(
 			(n): n is InstanceType<typeof Tag> => Markdoc.Tag.isTag(n) && /^h[1-6]$/.test(n.name),
 		);
-		bodyInner.push(...bodyRendered);
-		const bodyDiv = new Tag('div', { 'data-name': 'body' }, bodyInner);
-		const contentChildren: RenderableTreeNode[] = [bodyDiv];
+		const bodyDiv = new Tag('div', { 'data-name': 'body' }, bodyRendered);
+
 		let footerTag: InstanceType<typeof Tag> | undefined;
 		if (footerNodes.length > 0) {
 			const footerCursor = new RenderableNodeCursor(
 				Markdoc.transform(footerNodes, config) as RenderableTreeNode[],
 			);
 			footerTag = new Tag('footer', { 'data-name': 'footer' }, footerCursor.toArray() as RenderableTreeNode[]);
-			contentChildren.push(footerTag);
 		}
-		const contentDiv = new Tag('div', { 'data-name': 'content' }, contentChildren);
-		children.push(contentDiv);
+
+		// Flat slots, in order. The engine's layout assembly wraps
+		// eyebrow/body/footer into `content`.
+		if (eyebrowTag) children.push(eyebrowTag);
+		children.push(bodyDiv);
+		if (footerTag) children.push(footerTag);
 
 		// Whole-card link as a stretched overlay (keeps nested links valid).
+		// Unlisted in `layout`, so it stays a direct child of the card root.
 		let linkTag: InstanceType<typeof Tag> | undefined;
 		const href = String(attrs.href ?? '');
 		if (href) {
@@ -117,7 +121,7 @@ export const card = createContentModelSchema({
 			children.push(linkTag);
 		}
 
-		const refs: Record<string, InstanceType<typeof Tag>> = { content: contentDiv, body: bodyDiv };
+		const refs: Record<string, InstanceType<typeof Tag>> = { body: bodyDiv };
 		if (titleTag) refs.title = titleTag;
 		if (eyebrowTag) refs.eyebrow = eyebrowTag;
 		if (footerTag) refs.footer = footerTag;

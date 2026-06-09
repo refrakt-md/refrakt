@@ -59,6 +59,15 @@ export const config: Record<string, RuneConfig> = {
 			'content-height': { source: 'meta', noBemClass: true },
 			'media-ratio': { source: 'meta', noBemClass: true },
 		},
+		sections: { media: 'media' },
+		// SPEC-081/091: the transform emits flat slots; `layout` builds the
+		// skeleton — media beside/above a `content` wrapper grouping title/body/
+		// footer. A base `layout` is the prerequisite for the cover variant
+		// ({% ref "SPEC-089" /%}).
+		layout: {
+			root: ['media', 'content'],
+			content: { tag: 'div', children: ['title', 'body', 'footer'] },
+		},
 		styles: {
 			cols: '--cell-cols',
 			rows: '--cell-rows',
@@ -77,6 +86,16 @@ export const config: Record<string, RuneConfig> = {
 			'media-ratio': { source: 'meta', noBemClass: true },
 			valign: { source: 'meta', noBemClass: true },
 			collapse: { source: 'meta', noBemClass: true },
+		},
+		// SPEC-091: the grid-vs-stack of the definitions list is a config variant
+		// keyed on media-position, replacing the old transform branch. Stacked
+		// media (top/bottom, the default) tiles definitions as a grid; beside
+		// media (start/end) leaves them stacked in the content column.
+		variants: {
+			'media-position': {
+				top: { staticModifiers: ['definitions-grid'] },
+				bottom: { staticModifiers: ['definitions-grid'] },
+			},
 		},
 		styles: {
 			valign: { prop: '--split-valign', transform: resolveValign },

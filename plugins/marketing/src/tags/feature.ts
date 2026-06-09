@@ -133,9 +133,11 @@ export const feature = createContentModelSchema({
 			Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[],
 		);
 
-		// Transform definitions with custom node overrides
-		const mediaPosition = (attrs['media-position'] as string) || 'top';
-		const beside = mediaPosition === 'start' || mediaPosition === 'end';
+		// Transform definitions with custom node overrides. The output is flat:
+		// always a `<dl>` carrying the item count. Whether the definitions tile as
+		// a grid (media stacked) or stack in a column (media beside) is no longer
+		// branched here — it's a `media-position` engine variant (SPEC-091) that
+		// toggles the `--definitions-grid` modifier class, styled by CSS.
 		const defConfig = {
 			...config,
 			nodes: {
@@ -147,9 +149,7 @@ export const feature = createContentModelSchema({
 				},
 				list: {
 					transform(node: Node, innerConfig: Record<string, any>) {
-						// When media is beside the body, definitions stack vertically; when
-						// media is stacked above/below, definitions tile as a grid.
-						return new Tag('dl', beside ? {} : { 'data-layout': 'grid', 'data-columns': node.children.length }, node.transformChildren(innerConfig));
+						return new Tag('dl', { 'data-columns': node.children.length }, node.transformChildren(innerConfig));
 					},
 				},
 			},
