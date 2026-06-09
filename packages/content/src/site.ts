@@ -240,6 +240,23 @@ async function processContentTree(
       orderings[type] = { ...(orderings[type] ?? {}), ...fields };
     }
   }
+  // SPEC-076 / WORK-357 — derive `(type, field, value) → sentiment` from each
+  // rune's `metaFields.*.sentimentMap` (keyed by the rune's `block` = entity
+  // type), so `aggregate` can project `$item.sentiment` for sentiment-coloured
+  // breakdowns. No duplication: the same maps that colour entity badges.
+  const sentiments: Record<string, Record<string, Record<string, string>>> = {};
+  for (const pkg of opts.plugins ?? []) {
+    for (const cfg of Object.values(pkg.theme?.runes ?? {})) {
+      const type = (cfg as { block?: string }).block;
+      const metaFields = (cfg as { metaFields?: Record<string, { sentimentMap?: Record<string, string> }> }).metaFields;
+      if (!type || !metaFields) continue;
+      for (const [field, fieldCfg] of Object.entries(metaFields)) {
+        if (!fieldCfg?.sentimentMap) continue;
+        sentiments[type] = sentiments[type] ?? {};
+        sentiments[type][field] = { ...(sentiments[type][field] ?? {}), ...fieldCfg.sentimentMap };
+      }
+    }
+  }
   const coreHooksOptions = {
     xrefPatterns: opts.xrefPatterns,
     repoUrl: opts.repoUrl,
@@ -249,6 +266,7 @@ async function processContentTree(
       nodes: nodes as Record<string, unknown>,
       functions: functions as Record<string, unknown>,
       orderings,
+      sentiments,
       // Pass parsed partials so `{% partial file="…" /%}` inside a collection
       // body template (or an expand-resolved entity body) resolves the same
       // way it would inside a top-level page. Without this, partial nodes in

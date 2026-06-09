@@ -1,4 +1,4 @@
-{% work id="WORK-356" status="done" priority="medium" complexity="moderate" source="ADR-013" tags="bento, authoring, marketing, sugar" %}
+{% work id="WORK-356" status="done" priority="medium" complexity="moderate" source="ADR-013" tags="bento, authoring, marketing, sugar" milestone="v0.19.0" %}
 
 # Bento `levels` — heading→footprint ladder
 

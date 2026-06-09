@@ -295,4 +295,115 @@ describe('aggregate rune (SPEC-076)', () => {
 			expect(root.attributes['data-aggregate']).toBe('breakdown');
 		});
 	});
+
+	describe('chart layout (WORK-349)', () => {
+		it('renders grouped counts as an rf-chart wrapping a data table', () => {
+			const reg = registry([
+				work('W-1', { status: 'done' }),
+				work('W-2', { status: 'done' }),
+				work('W-3', { status: 'ready' }),
+			]);
+			const out = render('{% aggregate type="work" group="status" layout="chart" /%}', reg);
+			const charts = findAll(out, (t) => t.name === 'rf-chart');
+			expect(charts.length).toBe(1);
+			expect(charts[0].attributes['data-type']).toBe('bar');
+			const table = findAll(charts[0], (t) => t.name === 'table' && t.attributes['data-name'] === 'data');
+			expect(table.length).toBe(1);
+			expect(findAll(table[0], (t) => t.name === 'th').map(textOf)).toEqual(['Status', 'Count']);
+			const rows = findAll(table[0], (t) => t.name === 'tr')
+				.filter((tr) => findAll(tr, (t) => t.name === 'td').length > 0)
+				.map((r) => findAll(r, (t) => t.name === 'td').map(textOf));
+			expect(rows).toContainEqual(['Done', '2']);
+			expect(rows).toContainEqual(['Ready', '1']);
+		});
+
+		it('chart-type + chart-title ride through (data-type + caption)', () => {
+			const reg = registry([work('W-1', { status: 'done' })]);
+			const out = render('{% aggregate type="work" group="status" layout="chart" chart-type="line" chart-title="Status" /%}', reg);
+			const chart = findAll(out, (t) => t.name === 'rf-chart')[0];
+			expect(chart.attributes['data-type']).toBe('line');
+			expect(textOf(findAll(chart, (t) => t.name === 'caption')[0])).toBe('Status');
+		});
+
+		it('a value sub-filter adds a Value series (achieved per group)', () => {
+			const reg = registry([
+				work('W-1', { status: 'done' }),
+				work('W-2', { status: 'done' }),
+				work('W-3', { status: 'ready' }),
+			]);
+			const out = render('{% aggregate type="work" value="status:done" group="status" layout="chart" /%}', reg);
+			const table = findAll(out, (t) => t.name === 'table')[0];
+			expect(findAll(table, (t) => t.name === 'th').map(textOf)).toEqual(['Status', 'Count', 'Value']);
+			const rows = findAll(table, (t) => t.name === 'tr')
+				.filter((tr) => findAll(tr, (t) => t.name === 'td').length > 0)
+				.map((r) => findAll(r, (t) => t.name === 'td').map(textOf));
+			expect(rows).toContainEqual(['Done', '2', '2']);
+			expect(rows).toContainEqual(['Ready', '1', '0']);
+		});
+
+		it('honors domain-aware axis ordering', () => {
+			const reg = registry([
+				work('W-1', { status: 'done' }),
+				work('W-2', { status: 'todo' }),
+				work('W-3', { status: 'doing' }),
+			]);
+			const embed: CollectionEmbedConfig = {
+				tags: tags as never,
+				nodes: nodes as never,
+				orderings: { work: { status: ['todo', 'doing', 'done'] } },
+			};
+			const out = render('{% aggregate type="work" group="status" layout="chart" /%}', reg, embed);
+			const tbody = findAll(out, (t) => t.name === 'tbody')[0];
+			const rowLabels = findAll(tbody, (t) => t.name === 'tr').map((r) => textOf(findAll(r, (t) => t.name === 'td')[0]));
+			expect(rowLabels).toEqual(['Todo', 'Doing', 'Done']);
+		});
+
+		it('empty query renders the empty fallback, not a broken chart', () => {
+			const reg = registry([]);
+			const out = render('{% aggregate type="work" group="status" layout="chart" empty="No work yet" /%}', reg);
+			expect(findAll(out, (t) => t.name === 'rf-chart').length).toBe(0);
+			expect(cls(out, 'rf-aggregate__empty').length).toBe(1);
+			expect(textOf(cls(out, 'rf-aggregate__empty')[0])).toContain('No work yet');
+		});
+	});
+
+	describe('sentiment projection (WORK-357)', () => {
+		const sentiEmbed: CollectionEmbedConfig = {
+			tags: tags as never,
+			nodes: nodes as never,
+			sentiments: { work: { status: { done: 'positive', blocked: 'negative' } } },
+		};
+
+		it('projects $item.sentiment onto the per-group template from the sentiments map', () => {
+			const reg = registry([work('W-1', { status: 'done' }), work('W-2', { status: 'blocked' })]);
+			const out = render(
+				'{% aggregate type="work" group="status" %}\n---\n[{% $item.key %}={% $item.sentiment %}]\n{% /aggregate %}',
+				reg,
+				sentiEmbed,
+			);
+			const txt = textOf(out);
+			expect(txt).toContain('[done=positive]');
+			expect(txt).toContain('[blocked=negative]');
+		});
+
+		it('an unmapped (type,field,value) yields an empty sentiment', () => {
+			const reg = registry([work('W-1', { status: 'ready' })]);
+			const out = render(
+				'{% aggregate type="work" group="status" %}\n---\n[{% $item.key %}={% $item.sentiment %}]\n{% /aggregate %}',
+				reg,
+				sentiEmbed,
+			);
+			expect(textOf(out)).toContain('[ready=]');
+		});
+
+		it('chart layout tags the label cell with data-meta-sentiment', () => {
+			const reg = registry([work('W-1', { status: 'done' }), work('W-2', { status: 'blocked' })]);
+			const out = render('{% aggregate type="work" group="status" layout="chart" /%}', reg, sentiEmbed);
+			const tbody = findAll(out, (t) => t.name === 'tbody')[0];
+			const labelSentiments = findAll(tbody, (t) => t.name === 'tr')
+				.map((r) => findAll(r, (t) => t.name === 'td')[0]?.attributes['data-meta-sentiment']);
+			expect(labelSentiments).toContain('positive');
+			expect(labelSentiments).toContain('negative');
+		});
+	});
 });

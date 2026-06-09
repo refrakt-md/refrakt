@@ -227,9 +227,6 @@ export const config: Record<string, RuneConfig> = {
 	},
 	PlanProgress: {
 		block: 'plan-progress',
-		modifiers: {
-			show: { source: 'meta', noBemClass: true },
-		},
 	},
 	PlanActivity: {
 		block: 'plan-activity',

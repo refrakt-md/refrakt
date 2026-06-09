@@ -330,6 +330,28 @@ For runes with multiple variant colors, define scoped custom properties and over
 
 This pattern keeps the base styles clean — you define the layout once using the scoped properties, then each variant only overrides the property values.
 
+### Theming charts (`--rf-chart-*`)
+
+Charts use a **provider-agnostic theming contract** (SPEC-083): the `rf-chart` renderer holds no palette or dimensions of its own — every paint and geometry value is an `--rf-chart-*` custom property that Lumina ships on `.rf-chart`. Retone one chart (or all of them) by overriding the props alone, with no renderer or selector changes — and a future canvas/d3 provider reads the same vocabulary.
+
+| Group | Properties |
+|-------|------------|
+| Series palette | `--rf-chart-series-1 … -6` (categorical — deliberately distinct from the status tokens) |
+| Geometry | `--rf-chart-bar-ratio`, `--rf-chart-bar-thickness`, `--rf-chart-bar-gap`, `--rf-chart-bar-radius`, `--rf-chart-point-radius`, `--rf-chart-line-width` |
+| Typography / grid | `--rf-chart-label-size`, `--rf-chart-label-color`, `--rf-chart-grid-color`, `--rf-chart-grid-width` |
+
+```css
+/* A theme with thicker, brand-coloured bars — props only, no selectors. */
+.rf-chart {
+  --rf-chart-series-1: var(--rf-color-primary);
+  --rf-chart-series-2: var(--rf-color-accent);
+  --rf-chart-bar-thickness: 64px;
+  --rf-chart-bar-radius: 6px;
+}
+```
+
+**Sentiment colouring.** When a chart's data cells carry `data-meta-sentiment`, bars and points are coloured by the semantic token (`positive→success`, `negative→danger`, `caution→warning`, `neutral→muted`) instead of the rotating palette — so a status breakdown reads green-done / red-blocked with no per-chart config.
+
 ## Dark mode
 
 Dark mode is implemented via CSS custom properties, overridden in a dark mode context. Lumina supports both explicit attribute toggle and system preference:

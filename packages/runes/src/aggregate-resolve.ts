@@ -17,6 +17,7 @@ import {
 	buildOrdering, splitBodyZones, renderItemTemplate, groupEntities,
 } from './collection-helpers.js';
 import { AGGREGATE_SENTINEL } from './tags/aggregate.js';
+import { humanize } from './functions.js';
 
 const { Tag } = Markdoc;
 type TagNode = InstanceType<typeof Tag>;
@@ -49,6 +50,9 @@ interface AggregateQuery {
 	limit?: number;
 	bodySource: string;
 	empty: string;
+	layout: string;
+	chartType: string;
+	chartTitle: string;
 }
 
 function readQuery(tag: TagNode): AggregateQuery {
@@ -63,7 +67,60 @@ function readQuery(tag: TagNode): AggregateQuery {
 		limit: limitRaw && Number.isFinite(limitNum) && limitNum > 0 ? Math.floor(limitNum) : undefined,
 		bodySource: metaContent(tag, 'aggregate-body'),
 		empty: metaContent(tag, 'aggregate-empty'),
+		layout: metaContent(tag, 'aggregate-layout'),
+		chartType: metaContent(tag, 'aggregate-chart-type') || 'bar',
+		chartTitle: metaContent(tag, 'aggregate-chart-title'),
 	};
+}
+
+/** Build the `chart` rune's final rendered form (an `<rf-chart>` wrapping an
+ *  authored data `<table data-name="data">`) from the ordered groups — one row
+ *  per group (label = humanized key, value = count, + a value series when a
+ *  `value` sub-filter is set). The web component upgrades the table to an SVG;
+ *  the table is the no-JS fallback (SPEC-083). */
+function buildChart(
+	groups: Array<[string, EntityRegistration[]]>,
+	q: AggregateQuery,
+	valueParsed: ParsedFieldMatch | null,
+	sentiments: CollectionEmbedConfig['sentiments'],
+): TagNode {
+	const td = (v: string) => new Tag('td', {}, [v]);
+	const th = (v: string) => new Tag('th', {}, [v]);
+
+	const headers = [humanize(q.group || 'group'), 'Count'];
+	if (valueParsed) headers.push('Value');
+	const headRow = new Tag('tr', {}, headers.map(th));
+
+	const bodyRows = groups.map(([key, members]) => {
+		// Tag the label cell with the group sentiment — the chart behaviour reads
+		// it (label-cell fallback) so the bar/point colours by semantic token.
+		const sentiment = groupSentiment(sentiments, members, q.group, key);
+		const label = sentiment
+			? new Tag('td', { 'data-meta-sentiment': sentiment }, [humanize(key)])
+			: td(humanize(key));
+		const cells = [label, td(String(members.length))];
+		if (valueParsed) cells.push(td(String(countValue(members, valueParsed))));
+		return new Tag('tr', {}, cells);
+	});
+
+	const tableChildren: RenderableTreeNode[] = [];
+	if (q.chartTitle) tableChildren.push(new Tag('caption', {}, [q.chartTitle]));
+	tableChildren.push(new Tag('thead', {}, [headRow]));
+	tableChildren.push(new Tag('tbody', {}, bodyRows));
+
+	const table = new Tag('table', { 'data-name': 'data' }, tableChildren);
+	// Emit the `chart` rune's pre-engine shape: `data-rune` + the type/stacked
+	// field channel. The identity transform runs over post-processed runes too, so
+	// it adds `.rf-chart` and sets `data-type` from the field — this keeps a
+	// non-bar `chart-type` (the engine would otherwise reset it to the default)
+	// and avoids a doubled class. `data-type` is also set directly so the
+	// pre-render tree is already correct.
+	return new Tag('rf-chart', {
+		'data-rune': 'chart',
+		'data-rune-fields': JSON.stringify({ type: q.chartType, stacked: 'false' }),
+		'data-type': q.chartType,
+		'data-stacked': 'false',
+	}, [table]);
 }
 
 function percentOf(value: number, count: number): number {
@@ -74,6 +131,19 @@ function percentOf(value: number, count: number): number {
 function countValue(entities: EntityRegistration[], valueParsed: ParsedFieldMatch | null): number {
 	if (!valueParsed) return entities.length;
 	return entities.filter((e) => matchesFieldMatch(e as MatchableEntity, valueParsed)).length;
+}
+
+/** The sentiment for a group, looked up from the embed config's
+ *  `(type → field → value → sentiment)` maps (WORK-357). The group's type is its
+ *  first member's; an unmapped `(type, field, value)` yields `''`. */
+function groupSentiment(
+	sentiments: CollectionEmbedConfig['sentiments'],
+	members: EntityRegistration[],
+	field: string,
+	value: string,
+): string {
+	const type = members[0]?.type ?? '';
+	return sentiments?.[type]?.[field]?.[value] ?? '';
 }
 
 /** Sort groups by a projection field (`key` | `count` | `value` | `percent`),
@@ -148,6 +218,20 @@ function resolveOne(
 	// itself — so percent reads as 100 (a full bar, semantically vacuous).
 	const percentTotal = q.value ? percentOf(valueTotal, countTotal) : 100;
 
+	// Chart layout (SPEC-076 / WORK-349) — draw the grouped counts as an SVG via
+	// the chart pipeline (the table is the no-JS fallback). Empty query → the
+	// `empty` fallback, never a broken chart. Axis order honors the same
+	// domain-aware grouping/sort the body-zoned form uses.
+	if (q.layout === 'chart') {
+		if (countTotal === 0) {
+			return new Tag('div', { 'data-name': 'empty', class: 'rf-aggregate__empty' }, q.empty ? [q.empty] : []);
+		}
+		let groups = [...groupEntities(entities, q.group, ordering).entries()];
+		groups = sortGroups(groups, q.sort, q.group, ordering, valueParsed);
+		if (q.limit !== undefined && groups.length > q.limit) groups = groups.slice(0, q.limit);
+		return buildChart(groups, q, valueParsed, embedConfig?.sentiments);
+	}
+
 	// No-body form → inline integer. The engine has already added
 	// `class="rf-aggregate"` to the wrapper span; we just stamp the count and
 	// swap children for the digit.
@@ -212,6 +296,7 @@ function resolveOne(
 					percent: groupPercent,
 					total: countTotal,
 					shown,
+					sentiment: groupSentiment(embedConfig?.sentiments, members, q.group, key),
 				},
 			};
 			const kids = renderItemTemplate(tmpl, embedConfig, vars);

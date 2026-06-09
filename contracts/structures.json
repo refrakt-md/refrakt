@@ -1200,10 +1200,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"media-position": {
+				"layout": {
 					"source": "meta",
-					"default": "top",
-					"dataAttribute": "data-media-position"
+					"default": "stacked",
+					"classPattern": ".rf-hero--{value}",
+					"dataAttribute": "data-layout"
 				},
 				"align": {
 					"source": "meta",
@@ -1211,13 +1212,20 @@
 					"classPattern": ".rf-hero--{value}",
 					"dataAttribute": "data-align"
 				},
-				"media-ratio": {
+				"ratio": {
 					"source": "meta",
-					"dataAttribute": "data-media-ratio"
+					"default": "1 1",
+					"dataAttribute": "data-ratio"
 				},
 				"valign": {
 					"source": "meta",
+					"default": "top",
 					"dataAttribute": "data-valign"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
 				},
 				"collapse": {
 					"source": "meta",
@@ -1257,8 +1265,14 @@
 				}
 			},
 			"inlineStyles": {
+				"ratio": {
+					"prop": "--split-ratio"
+				},
 				"valign": {
 					"prop": "--split-valign"
+				},
+				"gap": {
+					"prop": "--split-gap"
 				}
 			}
 		},
@@ -1392,10 +1406,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"media-position": {
+				"layout": {
 					"source": "meta",
-					"default": "top",
-					"dataAttribute": "data-media-position"
+					"default": "stacked",
+					"classPattern": ".rf-feature--{value}",
+					"dataAttribute": "data-layout"
 				},
 				"align": {
 					"source": "meta",
@@ -1403,13 +1418,20 @@
 					"classPattern": ".rf-feature--{value}",
 					"dataAttribute": "data-align"
 				},
-				"media-ratio": {
+				"ratio": {
 					"source": "meta",
-					"dataAttribute": "data-media-ratio"
+					"default": "1 1",
+					"dataAttribute": "data-ratio"
 				},
 				"valign": {
 					"source": "meta",
+					"default": "top",
 					"dataAttribute": "data-valign"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
 				},
 				"collapse": {
 					"source": "meta",
@@ -1459,8 +1481,14 @@
 				}
 			},
 			"inlineStyles": {
+				"ratio": {
+					"prop": "--split-ratio"
+				},
 				"valign": {
 					"prop": "--split-valign"
+				},
+				"gap": {
+					"prop": "--split-gap"
 				}
 			}
 		},
@@ -1517,18 +1545,26 @@
 				"{content}"
 			],
 			"modifiers": {
-				"media-position": {
+				"layout": {
 					"source": "meta",
-					"default": "top",
-					"dataAttribute": "data-media-position"
+					"default": "stacked",
+					"classPattern": ".rf-step--{value}",
+					"dataAttribute": "data-layout"
 				},
-				"media-ratio": {
+				"ratio": {
 					"source": "meta",
-					"dataAttribute": "data-media-ratio"
+					"default": "1 1",
+					"dataAttribute": "data-ratio"
 				},
 				"valign": {
 					"source": "meta",
+					"default": "top",
 					"dataAttribute": "data-valign"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
 				},
 				"collapse": {
 					"source": "meta",
@@ -1536,8 +1572,14 @@
 				}
 			},
 			"inlineStyles": {
+				"ratio": {
+					"prop": "--split-ratio"
+				},
 				"valign": {
 					"prop": "--split-valign"
+				},
+				"gap": {
+					"prop": "--split-gap"
 				}
 			}
 		},
@@ -1991,18 +2033,26 @@
 					"classPattern": ".rf-realm--{value}",
 					"dataAttribute": "data-parent"
 				},
-				"media-position": {
+				"layout": {
 					"source": "meta",
-					"default": "top",
-					"dataAttribute": "data-media-position"
+					"default": "stacked",
+					"classPattern": ".rf-realm--{value}",
+					"dataAttribute": "data-layout"
 				},
-				"media-ratio": {
+				"ratio": {
 					"source": "meta",
-					"dataAttribute": "data-media-ratio"
+					"default": "1 1",
+					"dataAttribute": "data-ratio"
 				},
 				"valign": {
 					"source": "meta",
+					"default": "top",
 					"dataAttribute": "data-valign"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
 				},
 				"collapse": {
 					"source": "meta",
@@ -2046,8 +2096,14 @@
 				}
 			},
 			"inlineStyles": {
+				"ratio": {
+					"prop": "--split-ratio"
+				},
 				"valign": {
 					"prop": "--split-valign"
+				},
+				"gap": {
+					"prop": "--split-gap"
 				}
 			}
 		},
@@ -2137,18 +2193,26 @@
 					"classPattern": ".rf-faction--{value}",
 					"dataAttribute": "data-tags"
 				},
-				"media-position": {
+				"layout": {
 					"source": "meta",
-					"default": "top",
-					"dataAttribute": "data-media-position"
+					"default": "stacked",
+					"classPattern": ".rf-faction--{value}",
+					"dataAttribute": "data-layout"
 				},
-				"media-ratio": {
+				"ratio": {
 					"source": "meta",
-					"dataAttribute": "data-media-ratio"
+					"default": "1 1",
+					"dataAttribute": "data-ratio"
 				},
 				"valign": {
 					"source": "meta",
+					"default": "top",
 					"dataAttribute": "data-valign"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
 				},
 				"collapse": {
 					"source": "meta",
@@ -2193,8 +2257,14 @@
 				}
 			},
 			"inlineStyles": {
+				"ratio": {
+					"prop": "--split-ratio"
+				},
 				"valign": {
 					"prop": "--split-valign"
+				},
+				"gap": {
+					"prop": "--split-gap"
 				}
 			}
 		},
@@ -3028,10 +3098,11 @@
 				"{content}"
 			],
 			"modifiers": {
-				"media-position": {
+				"layout": {
 					"source": "meta",
-					"default": "top",
-					"dataAttribute": "data-media-position"
+					"default": "stacked",
+					"classPattern": ".rf-recipe--{value}",
+					"dataAttribute": "data-layout"
 				},
 				"prepTime": {
 					"source": "meta",
@@ -3051,13 +3122,20 @@
 					"classPattern": ".rf-recipe--{value}",
 					"dataAttribute": "data-difficulty"
 				},
-				"media-ratio": {
+				"ratio": {
 					"source": "meta",
-					"dataAttribute": "data-media-ratio"
+					"default": "1 1",
+					"dataAttribute": "data-ratio"
 				},
 				"valign": {
 					"source": "meta",
+					"default": "top",
 					"dataAttribute": "data-valign"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
 				},
 				"collapse": {
 					"source": "meta",
@@ -3126,8 +3204,14 @@
 				}
 			},
 			"inlineStyles": {
+				"ratio": {
+					"prop": "--split-ratio"
+				},
 				"valign": {
 					"prop": "--split-valign"
+				},
+				"gap": {
+					"prop": "--split-gap"
 				}
 			}
 		},
@@ -3156,18 +3240,26 @@
 					"classPattern": ".rf-playlist--{value}",
 					"dataAttribute": "data-type"
 				},
-				"media-position": {
+				"layout": {
 					"source": "meta",
-					"default": "top",
-					"dataAttribute": "data-media-position"
+					"default": "stacked",
+					"classPattern": ".rf-playlist--{value}",
+					"dataAttribute": "data-layout"
 				},
-				"media-ratio": {
+				"ratio": {
 					"source": "meta",
-					"dataAttribute": "data-media-ratio"
+					"default": "1 1",
+					"dataAttribute": "data-ratio"
 				},
 				"valign": {
 					"source": "meta",
+					"default": "top",
 					"dataAttribute": "data-valign"
+				},
+				"gap": {
+					"source": "meta",
+					"default": "default",
+					"dataAttribute": "data-gap"
 				},
 				"collapse": {
 					"source": "meta",
@@ -3236,8 +3328,14 @@
 				}
 			},
 			"inlineStyles": {
+				"ratio": {
+					"prop": "--split-ratio"
+				},
 				"valign": {
 					"prop": "--split-valign"
+				},
+				"gap": {
+					"prop": "--split-gap"
 				}
 			}
 		},
@@ -3754,13 +3852,7 @@
 			"dataRune": "plan-progress",
 			"childOrder": [
 				"{content}"
-			],
-			"modifiers": {
-				"show": {
-					"source": "meta",
-					"dataAttribute": "data-show"
-				}
-			}
+			]
 		},
 		"PlanActivity": {
 			"block": "plan-activity",
