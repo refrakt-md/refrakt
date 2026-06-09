@@ -1,5 +1,72 @@
 # @refrakt-md/runes
 
+## 0.19.0
+
+### Minor Changes
+
+- 97522a0: Add `layout="chart"` to the `aggregate` rune (SPEC-076 chart layout): grouped
+  counts render as a chart — one bar/point per group — by emitting the `chart`
+  rune's `<rf-chart>` + `data-name="data"` table pipeline (SVG with a no-JS table
+  fallback). `chart-type` (`bar` default / `line` / `area` / `pie`) and
+  `chart-title` are configurable; a `value` sub-filter adds a second series; the
+  axis honors domain-aware group ordering; an empty query renders the `empty`
+  fallback rather than a broken chart.
+- 9cb55f3: Per-group sentiment projection in `aggregate` (SPEC-076 / WORK-357). `aggregate`
+  now projects `$item.sentiment` onto the per-group template (and tags chart data
+  cells with `data-meta-sentiment`), looked up from a `(type → field → value →
+sentiment)` map threaded through `embedConfig`. The map is derived automatically
+  from each rune's existing `metaFields.*.sentimentMap` (keyed by entity type) — no
+  new registration. This lights up the deferred colour from WORK-296/353: plan
+  status badges and roadmap charts now read green-done / red-blocked with no
+  per-call config. `plan-progress` badges colour via `sentiment=$item.sentiment`.
+- 6f30052: Modernize `backlog` to compose over the `bar` rune (SPEC-084 / WORK-342). Its
+  default item is now a `card` whose top strip is a `bar` — the identifier on the
+  left, a sentiment-coloured status `badge` on the right, title below — built from a
+  **universal projection** that works for every plan type. New `layout` attribute
+  (`cards` default · `list` · `table`) is forwarded to `collection`. A type chip
+  appears only for a mixed set; a single-type backlog also surfaces that type's key
+  field (work→priority, bug→severity). The `$item` projection gains `identifier`
+  (`id || name`, so milestones slot in), `sentiment`, and `mixed`, shared by every
+  collection/aggregate rollup.
+- 2f2b04f: Expose group metadata on `$item` in a grouped `collection` (SPEC-070 / WORK-344):
+  the per-item template can now read `$item.group` (its group key) and
+  `$item.groupCount` (the group's size), so a grouped collection can render group
+  context inline without dropping to `aggregate`. Ungrouped collections are
+  unaffected (`group` empty, `groupCount` 0).
+
+### Patch Changes
+
+- fd484bc: `card` now recognizes its title as the first _heading_ in the body rather than
+  only the first child, so a composed header (e.g. a `{% bar %}` strip before the
+  title) no longer leaves the title carrying a prose-sized top margin. Fixes the
+  gap between a bar header and the title in `backlog` cards.
+- e4e5f5c: Chart theming contract (SPEC-083 / WORK-353): the `rf-chart` SVG renderer no
+  longer hardcodes its palette or geometry. Every paint + geometry value is now an
+  `--rf-chart-*` custom property Lumina ships on `.rf-chart` — a dedicated
+  categorical series palette (distinct from the semantic status tokens), bar/point/
+  line geometry, and typography/grid. The renderer emits only tagged elements
+  (`.rf-chart__bar[data-series]`, `__point`, `__line`, `__axis`, `__label`) that
+  `chart.css` paints from the props, and reads layout geometry via `getComputedStyle`
+  — so a theme retones a chart by setting `--rf-chart-*` alone, and a future canvas/
+  d3 provider reads the same vocabulary. Adds a **sentiment colouring** mode: data
+  cells carrying `data-meta-sentiment` colour by the semantic token
+  (positive→success, negative→danger, caution→warning, neutral→muted).
+
+  Also fixes `aggregate layout="chart"` to emit the chart rune's field channel, so a
+  non-bar `chart-type` survives the identity transform and the `.rf-chart` class
+  isn't doubled.
+
+- 61e15c9: Fix `escapeFenceTags` desyncing on code fences with info strings. A
+  titled/attributed fence (e.g. ` ```yaml title="config.ts" `) was not
+  recognised as a fence opener, so fence tracking lost sync and `{% %}` tags
+  following the fence were wrongly escaped — corrupting document structure
+  (for instance a `{% /codegroup %}` after a titled fence leaking as literal
+  text). The opener now matches the full info string.
+- Updated dependencies [5c92e0b]
+- Updated dependencies [0375d22]
+  - @refrakt-md/transform@0.19.0
+  - @refrakt-md/types@0.19.0
+
 ## 0.18.0
 
 ### Patch Changes

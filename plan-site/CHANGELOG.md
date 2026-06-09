@@ -1,5 +1,37 @@
 # plan-site
 
+## 0.0.6
+
+### Patch Changes
+
+- Updated dependencies [97522a0]
+- Updated dependencies [9cb55f3]
+- Updated dependencies [6f30052]
+- Updated dependencies [e351aed]
+- Updated dependencies [8f21415]
+- Updated dependencies [e36d7e1]
+- Updated dependencies [e1398da]
+- Updated dependencies [fd484bc]
+- Updated dependencies [e4e5f5c]
+- Updated dependencies [2f2b04f]
+- Updated dependencies [5c92e0b]
+- Updated dependencies [61e15c9]
+- Updated dependencies [42df9b2]
+- Updated dependencies [0375d22]
+- Updated dependencies [941ded8]
+- Updated dependencies [2e56ab6]
+- Updated dependencies [5ab3f74]
+- Updated dependencies [db53138]
+- Updated dependencies [c04c4f1]
+  - @refrakt-md/runes@0.19.0
+  - @refrakt-md/content@0.19.0
+  - @refrakt-md/plan@0.19.0
+  - @refrakt-md/lumina@0.19.0
+  - @refrakt-md/types@0.19.0
+  - @refrakt-md/sveltekit@0.19.0
+  - @refrakt-md/svelte@0.19.0
+  - @refrakt-md/highlight@0.19.0
+
 ## 0.0.5
 
 ### Patch Changes
