@@ -1,4 +1,4 @@
-{% work id="WORK-342" status="ready" priority="medium" complexity="moderate" source="SPEC-021" milestone="v0.19.0" tags="plan,aggregation,composability,runes" %}
+{% work id="WORK-342" status="in-progress" priority="medium" complexity="moderate" source="SPEC-021" milestone="v0.19.0" tags="plan,aggregation,composability,runes" %}
 
 # Modernize plan card-sugars to compose with the bar rune
 
