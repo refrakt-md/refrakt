@@ -1,4 +1,4 @@
-{% work id="WORK-365" status="ready" priority="medium" complexity="moderate" source="SPEC-086" tags="chrome, runes, lumina, docs, migration" milestone="v0.20.0" %}
+{% work id="WORK-365" status="in-progress" priority="medium" complexity="moderate" source="SPEC-086" tags="chrome, runes, lumina, docs, migration" milestone="v0.20.0" %}
 
 # Collapse showcase into the frame model with deprecated aliases + docs
 

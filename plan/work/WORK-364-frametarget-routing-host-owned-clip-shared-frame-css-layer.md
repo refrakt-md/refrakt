@@ -1,4 +1,4 @@
-{% work id="WORK-364" status="ready" priority="high" complexity="complex" source="SPEC-086" tags="chrome, runes, engine, lumina" milestone="v0.20.0" %}
+{% work id="WORK-364" status="in-progress" priority="high" complexity="complex" source="SPEC-086" tags="chrome, runes, engine, lumina" milestone="v0.20.0" %}
 
 # frameTarget routing + host-owned clip + shared frame CSS layer
 
