@@ -88,12 +88,13 @@ export const card = createContentModelSchema({
 		);
 		const bodyRendered = bodyCursor.toArray() as RenderableTreeNode[];
 		// The body's leading heading is the card title — give it a hook so it can
-		// sit tight under an eyebrow instead of carrying default prose top margin.
-		let titleTag: InstanceType<typeof Tag> | undefined;
-		const firstBody = bodyRendered[0];
-		if (Markdoc.Tag.isTag(firstBody) && /^h[1-6]$/.test(firstBody.name)) {
-			titleTag = firstBody;
-		}
+		// sit tight under an eyebrow (or a leading `bar` strip) instead of carrying
+		// default prose top margin. Find the first heading rather than only
+		// position 0, so a composed header (e.g. a `{% bar %}` before the title)
+		// doesn't leave the title with a prose-sized gap.
+		const titleTag = bodyRendered.find(
+			(n): n is InstanceType<typeof Tag> => Markdoc.Tag.isTag(n) && /^h[1-6]$/.test(n.name),
+		);
 		bodyInner.push(...bodyRendered);
 		const bodyDiv = new Tag('div', { 'data-name': 'body' }, bodyInner);
 		const contentChildren: RenderableTreeNode[] = [bodyDiv];
