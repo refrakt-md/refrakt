@@ -84,6 +84,7 @@ Cover and `bg`-only cards both raise "what sets the height," resolved by one pre
 - Surface fill + bg/media-slot boundary (revised by this spec): {% ref "SPEC-087" /%} §4; self/media surface targeting.
 - Scrim facet (`type`/`strength`/`blur`/`tone`): {% ref "SPEC-088" /%}.
 - Media aspect / `frame-aspect`: {% ref "SPEC-086" /%}.
+- Cover guest interaction posture (the inert backdrop): {% ref "SPEC-090" /%}.
 - Media-zone contract + container-query context: {% ref "WORK-339" /%}; bento row-spans / `row-height`: {% ref "SPEC-085" /%}.
 - Card thin-edge + media radius: `packages/lumina/styles/runes/card.css` (`--rf-card-edge`, `--rf-radius-media`); bento layout: `packages/lumina/styles/runes/bento.css`.
 
