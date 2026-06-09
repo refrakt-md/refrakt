@@ -329,7 +329,7 @@ describe('describeRune — attribute tiers', () => {
 		expect(out).toContain('Inherited from the `split layout` preset — Layout controls for runes that can render stacked or split.');
 		expect(out).toContain('  - layout: "stacked" | "split" (optional)');
 		expect(out).toContain('  - ratio: string (optional)');
-		expect(out).toContain('Universal attributes (available on every rune): tint, tint-mode, bg, width, spacing, inset.');
+		expect(out).toContain('Universal attributes (available on every rune): tint, tint-mode, bg, width, spacing, inset, elevation.');
 		// Universal attrs should not be listed under Attributes:
 		expect(out).not.toMatch(/Attributes:[\s\S]*- tint:/);
 	});

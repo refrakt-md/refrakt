@@ -43,6 +43,7 @@ const universalAttributes: Record<string, SchemaAttribute> = {
   'width': { type: String, required: false, matches: ['compact', 'narrow', 'content', 'wide', 'full'], description: 'Maximum width constraint for this block' },
   'spacing': { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'], description: 'Vertical spacing above and below this block' },
   'inset': { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'], description: 'Inner padding of this block' },
+  'elevation': { type: String, required: false, matches: ['none', 'sm', 'md', 'lg'], description: 'Drop shadow (box-shadow) elevation for this block' },
 };
 
 // ---------------------------------------------------------------------------
@@ -250,6 +251,7 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
         if (attrs.width) output.attributes.width = attrs.width;
         if (attrs.spacing) output.attributes.spacing = attrs.spacing;
         if (attrs.inset) output.attributes.inset = attrs.inset;
+        if (attrs.elevation) output.attributes.elevation = attrs.elevation;
       }
 
       return output;

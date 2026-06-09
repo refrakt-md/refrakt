@@ -302,6 +302,13 @@ function transformRune(
 		modifierValues['inset'] = insetValue;
 		modifierClasses.push(`${block}--inset-${insetValue}`);
 	}
+	// elevation — universal box-shadow attribute. Emits data-elevation (incl.
+	// "none" so an author can explicitly flatten a default shadow); CSS maps it
+	// to box-shadow: var(--rf-shadow-{level}). No BEM class — styled by attr.
+	const elevationValue = tag.attributes?.elevation;
+	if (elevationValue) {
+		modifierValues['elevation'] = elevationValue;
+	}
 
 	// 1f. Background processing — read bg-* meta tags and build background layer
 	const bgMetaProps = new Set<string>();
