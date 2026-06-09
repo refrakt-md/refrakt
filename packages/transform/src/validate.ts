@@ -211,6 +211,39 @@ function validateRuneConfig(
 			}
 		}
 	}
+
+	// variants (SPEC-091) — modifier-keyed config deltas. Every axis must be a
+	// declared modifier (selection rides the modifier system), and a delta may
+	// not override identity fields (it restructures a rune, never redefines it).
+	if (rune.variants !== undefined) {
+		if (typeof rune.variants !== 'object' || rune.variants === null || Array.isArray(rune.variants)) {
+			errors.push({ path: `${prefix}.variants`, message: 'Must be an object' });
+		} else {
+			// Identity fields a variant delta may not touch.
+			const IDENTITY_FIELDS = ['block', 'modifiers', 'sections', 'variants'];
+			for (const [axis, byValue] of Object.entries(rune.variants as Record<string, unknown>)) {
+				if (!modifierNames.has(axis)) {
+					errors.push({ path: `${prefix}.variants.${axis}`, message: `Variant axis "${axis}" must be a declared modifier` });
+				}
+				if (typeof byValue !== 'object' || byValue === null || Array.isArray(byValue)) {
+					errors.push({ path: `${prefix}.variants.${axis}`, message: 'Must be an object mapping modifier values to config deltas' });
+					continue;
+				}
+				for (const [value, delta] of Object.entries(byValue as Record<string, unknown>)) {
+					const deltaPath = `${prefix}.variants.${axis}.${value}`;
+					if (typeof delta !== 'object' || delta === null || Array.isArray(delta)) {
+						errors.push({ path: deltaPath, message: 'Must be a partial RuneConfig object' });
+						continue;
+					}
+					for (const field of IDENTITY_FIELDS) {
+						if (field in (delta as Record<string, unknown>)) {
+							errors.push({ path: `${deltaPath}.${field}`, message: `Variant deltas may not override the identity field "${field}"` });
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 function validateStructureEntry(

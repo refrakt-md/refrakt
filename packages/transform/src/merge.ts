@@ -59,7 +59,7 @@ export function mergeThemeConfig(
  * theme can override a single field, block, or container's order without
  * restating the full plugin map.
  */
-function mergeRuneConfig(
+export function mergeRuneConfig(
 	base: RuneConfig | undefined,
 	override: Partial<RuneConfig>,
 ): RuneConfig {
@@ -83,6 +83,20 @@ function mergeRuneConfig(
 
 	if (base.layout || override.layout) {
 		merged.layout = { ...base.layout, ...override.layout };
+	}
+
+	// SPEC-091 — variants merge by axis, then by value. A theme adds new axes
+	// or overrides individual axis/value deltas without restating the rune's
+	// full variant map. (The engine reuses this same merge to apply a selected
+	// delta over base at transform time.)
+	if (base.variants || override.variants) {
+		const variants: Record<string, Record<string, Partial<RuneConfig>>> = { ...base.variants };
+		if (override.variants) {
+			for (const [axis, byValue] of Object.entries(override.variants)) {
+				variants[axis] = { ...variants[axis], ...byValue };
+			}
+		}
+		merged.variants = variants;
 	}
 
 	return merged;
