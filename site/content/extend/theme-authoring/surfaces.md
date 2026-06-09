@@ -53,13 +53,13 @@ Page-level full-bleed is a `width` concern (the article named-line grid's `conte
 
 ## The inset surface
 
-The recessed inset fill is computed **at use-site** from the in-scope surface, so it tracks `tint` automatically:
+The recessed inset fill is derived **at use-site** from the in-scope surface, so it tracks `tint` automatically. It lowers only the lightness via relative-color syntax — keeping the surface's chroma and hue exactly, so the recess stays the same temperature (mixing toward `black` would drag the low chroma toward grey and read colder):
 
 ```css
-background: color-mix(in oklch, var(--rf-color-surface), black var(--rf-surface-inset-shift));
+background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
 ```
 
-`--rf-surface-inset-shift` is a **mix amount**, not a colour (`5%` light / `8%` dark, tunable). There is deliberately **no precomputed inset-*colour* token** — a static one would freeze to the untinted `:root` surface and wouldn't track tint. It writes `background-color` only, so insets **don't compound** under nesting; `--rf-surface-inset-shift: 0` disables it per rune. Default consumers: the media wells of `card`/`bento-cell`/`recipe`/`realm`/`faction`/`playlist`, and the `chart`/`diagram` self surface (the standalone "darker surface").
+`--rf-surface-inset-shift` is a **lightness delta** (an OKLCH `L` amount, not a colour): `0.04` light / `0.06` dark (dark dips a touch deeper), tunable. There is deliberately **no precomputed inset-*colour* token** — a static one would freeze to the untinted `:root` surface and wouldn't track tint. It writes `background-color` only, so insets **don't compound** under nesting; `--rf-surface-inset-shift: 0` disables it per rune. Default consumers: the media wells of `card`/`bento-cell`/`recipe`/`realm`/`faction`/`playlist`, and the `chart`/`diagram` self surface (the standalone "darker surface").
 
 ## substrate ownership
 

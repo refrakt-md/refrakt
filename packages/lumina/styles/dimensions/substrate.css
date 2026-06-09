@@ -78,7 +78,7 @@
 /* substrate-fill="inset" — paint the pattern over the recessed inset fill
  * (SPEC-087 inset surface) instead of the inherited surface colour. */
 [data-substrate][data-substrate-fill="inset"] {
-	background-color: color-mix(in oklch, var(--rf-color-surface), black var(--rf-surface-inset-shift));
+	background-color: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
 }
 
 /* Dark mode — the border ink sits close to the dark surface, so patterns need

@@ -19,7 +19,7 @@
 	--rf-color-surface-hover: #282825;
 	--rf-color-surface-active: #333330;
 	--rf-color-surface-raised: #272723;
-	--rf-surface-inset-shift: 8%;
+	--rf-surface-inset-shift: 0.06;
 
 	--rf-color-info: #9bb4c7;
 	--rf-color-info-bg: #1f2530;
@@ -80,7 +80,7 @@
 		--rf-color-surface-hover: #282825;
 		--rf-color-surface-active: #333330;
 		--rf-color-surface-raised: #272723;
-	--rf-surface-inset-shift: 8%;
+	--rf-surface-inset-shift: 0.06;
 
 		--rf-color-info: #9bb4c7;
 		--rf-color-info-bg: #1f2530;
