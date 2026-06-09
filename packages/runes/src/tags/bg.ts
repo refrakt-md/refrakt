@@ -14,7 +14,8 @@ export const bg: Schema = {
 		preset: { type: String, required: false, description: 'Named background preset from the theme' },
 		src: { type: String, required: false, description: 'URL of the background image' },
 		video: { type: String, required: false, description: 'URL of a background video' },
-		overlay: { type: String, required: false, description: 'Color overlay applied on top of the background' },
+		overlay: { type: String, required: false, description: 'Flat wash over the background: none | dark | light | a token name (raw CSS is deprecated)' },
+		'overlay-opacity': { type: String, required: false, description: 'Opacity of a token-coloured overlay wash (0 to 1)' },
 		gradient: { type: String, required: false, matches: ['to-t', 'to-b', 'to-l', 'to-r', 'to-tr', 'to-br', 'to-bl', 'to-tl'], description: 'Gradient direction (token-driven fill)' },
 		from: { type: String, required: false, description: 'Gradient start colour — semantic token name' },
 		to: { type: String, required: false, description: 'Gradient end colour — semantic token name' },
@@ -42,6 +43,9 @@ export const bg: Schema = {
 		}
 		if (attrs.overlay && attrs.overlay !== 'none') {
 			metas.push(new Tag('meta', { 'data-field': 'bg-overlay', content: attrs.overlay }));
+		}
+		if (attrs['overlay-opacity']) {
+			metas.push(new Tag('meta', { 'data-field': 'bg-overlay-opacity', content: attrs['overlay-opacity'] }));
 		}
 		// SPEC-088 — gradient facets (directive form: `gradient`/`from`/`to`/`via`/
 		// `gradient-type` → the `bg-*` metas the engine resolves).

@@ -51,3 +51,27 @@
 [data-name="bg-overlay"][data-bg-overlay="light"] {
 	background: rgba(255, 255, 255, 0.6);
 }
+
+/* Scrim (SPEC-088) — a structured legibility treatment behind overlaid text.
+ * gradient: a directional darken/lighten; frost: a backdrop blur + tint.
+ * `tone` picks the colour, `dir` the heavy edge; strength/blur come inline. */
+[data-name="scrim"] {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 1;
+}
+[data-name="scrim"][data-scrim-tone="dark"]  { --scrim-color: 0 0 0; }
+[data-name="scrim"][data-scrim-tone="light"] { --scrim-color: 255 255 255; }
+[data-name="scrim"][data-scrim-dir="top"]    { --scrim-grad-dir: to top; }
+[data-name="scrim"][data-scrim-dir="bottom"] { --scrim-grad-dir: to bottom; }
+[data-name="scrim"][data-scrim-dir="left"]   { --scrim-grad-dir: to left; }
+[data-name="scrim"][data-scrim-dir="right"]  { --scrim-grad-dir: to right; }
+[data-name="scrim"][data-scrim="gradient"] {
+	background-image: linear-gradient(var(--scrim-grad-dir, to top), transparent, rgb(var(--scrim-color, 0 0 0) / var(--scrim-strength, 0.55)));
+}
+[data-name="scrim"][data-scrim="frost"] {
+	-webkit-backdrop-filter: blur(var(--scrim-blur, 8px));
+	backdrop-filter: blur(var(--scrim-blur, 8px));
+	background: rgb(var(--scrim-color, 0 0 0) / 0.18);
+}

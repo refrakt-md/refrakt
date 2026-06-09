@@ -85,4 +85,9 @@ export const UNIVERSAL_ATTRIBUTE_NAMES: ReadonlySet<string> = new Set([
 	'bg-to',
 	'bg-via',
 	'bg-gradient-type',
+	'scrim',
+	'scrim-type',
+	'scrim-strength',
+	'scrim-blur',
+	'scrim-tone',
 ]);

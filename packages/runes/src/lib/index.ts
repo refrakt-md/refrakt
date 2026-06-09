@@ -65,10 +65,19 @@ const universalAttributes: Record<string, SchemaAttribute> = {
   'bg-to': { type: String, required: false, description: 'Gradient end colour — a semantic token name' },
   'bg-via': { type: String, required: false, description: 'Optional middle gradient stop — a semantic token name' },
   'bg-gradient-type': { type: String, required: false, matches: ['linear', 'radial', 'conic'], description: 'Gradient type' },
+  // SPEC-088 — structured scrim (legibility treatment behind overlaid text).
+  'scrim': { type: String, required: false, matches: ['top', 'bottom', 'left', 'right'], description: 'Scrim direction (heaviest edge); presence turns the scrim on' },
+  'scrim-type': { type: String, required: false, matches: ['gradient', 'frost'], description: 'Scrim treatment: gradient (default) or frost (backdrop blur)' },
+  'scrim-strength': { type: String, required: false, matches: ['sm', 'md', 'lg'], description: 'Gradient scrim strength' },
+  'scrim-blur': { type: String, required: false, matches: ['none', 'sm', 'md', 'lg'], description: 'Frost scrim blur amount' },
+  'scrim-tone': { type: String, required: false, matches: ['dark', 'light'], description: 'Whether the scrim darkens (for light text) or lightens (for dark text)' },
 };
 
-/** SPEC-088 bg gradient facet attribute names. */
-const BG_GRADIENT_FACET_NAMES = ['bg-gradient', 'bg-from', 'bg-to', 'bg-via', 'bg-gradient-type'] as const;
+/** SPEC-088 bg gradient + scrim facet attribute names (host-level). */
+const BG_GRADIENT_FACET_NAMES = [
+  'bg-gradient', 'bg-from', 'bg-to', 'bg-via', 'bg-gradient-type',
+  'scrim', 'scrim-type', 'scrim-strength', 'scrim-blur', 'scrim-tone',
+] as const;
 
 /** SPEC-086 frame facet attribute names (excluding the `frame` preset key). */
 const FRAME_FACET_NAMES = ['frame-aspect', 'frame-displace', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-shadow'] as const;

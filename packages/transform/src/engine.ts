@@ -282,6 +282,21 @@ function buildBgGradient(opts: { type?: string; direction?: string; stops: (stri
 	return `linear-gradient(${dir}, ${stops.join(', ')})`;
 }
 
+/** SPEC-088 — gradient scrim strength (alpha of the tone colour). */
+const SCRIM_STRENGTH: Record<string, string> = { sm: '0.3', md: '0.55', lg: '0.8' };
+
+/** A bare token reference (`primary`, `surface`, …) vs raw CSS (`rgba(…)`, `#…`). */
+const TOKEN_REF = /^[a-z][a-z0-9-]*$/;
+
+const RAW_OVERLAY_WARNED = new Set<string>();
+/** Warn once when `overlay` carries raw CSS (deprecated — use a token wash or `scrim`). */
+function warnRawOverlay(rune: string): void {
+	if (RAW_OVERLAY_WARNED.has(rune)) return;
+	RAW_OVERLAY_WARNED.add(rune);
+	// eslint-disable-next-line no-console
+	console.warn(`[refrakt] raw-CSS \`overlay\` on \`${rune}\` is deprecated (SPEC-088) — use \`overlay="dark|light|<token>"\` for a flat wash or \`scrim\` for a legibility gradient. The raw passthrough will be removed in a future minor.`);
+}
+
 /** Apply BEM classes and structural enhancements to a rune tag */
 function transformRune(
 	tag: SerializedTag,
@@ -508,7 +523,12 @@ function transformRune(
 		bgGradient = buildBgGradient(presetGradient);
 	}
 
-	if (bgPreset || bgSrc || bgVideo || bgGradient) {
+	// A scrim or a flat overlay can stand alone (a wash over the rune's own
+	// content), so they also raise the bg/overlay layer.
+	const scrimDir = readMeta(tag, 'scrim');
+	const bgOverlay = readMeta(tag, 'bg-overlay');
+
+	if (bgPreset || bgSrc || bgVideo || bgGradient || scrimDir || bgOverlay) {
 		// Resolve preset styles (Tier 1 — CSS-only presets)
 		let presetStyles: Record<string, string> = {};
 		if (bgPreset && backgrounds[bgPreset]) {
@@ -525,7 +545,6 @@ function transformRune(
 			}
 		}
 
-		const bgOverlay = readMeta(tag, 'bg-overlay');
 		const bgBlur = readMeta(tag, 'bg-blur');
 		const bgPosition = readMeta(tag, 'bg-position');
 		const bgFit = readMeta(tag, 'bg-fit');
@@ -568,14 +587,44 @@ function transformRune(
 			}));
 		}
 
+		// overlay — a flat wash (SPEC-088 structured vocabulary): dark | light | a
+		// token reference (+ overlay-opacity). Raw CSS still works but warns.
 		if (bgOverlay) {
+			const bgOverlayOpacity = readMeta(tag, 'bg-overlay-opacity');
 			const overlayAttrs: Record<string, string> = { 'data-name': 'bg-overlay' };
 			if (bgOverlay === 'dark' || bgOverlay === 'light') {
 				overlayAttrs['data-bg-overlay'] = bgOverlay;
+				if (bgOverlayOpacity) overlayAttrs.style = `opacity: ${bgOverlayOpacity}`;
+			} else if (TOKEN_REF.test(bgOverlay)) {
+				const parts = [`background: var(--rf-color-${bgOverlay})`];
+				if (bgOverlayOpacity) parts.push(`opacity: ${bgOverlayOpacity}`);
+				overlayAttrs.style = parts.join('; ');
 			} else {
+				warnRawOverlay(dataRune ?? config.block);
 				overlayAttrs.style = `background: ${bgOverlay}`;
 			}
 			bgChildren.push(makeTag('div', overlayAttrs));
+		}
+
+		// scrim — a structured legibility treatment (SPEC-088). On the bg overlay
+		// layer here; cover mode (SPEC-089) routes the same facet to the media well.
+		if (scrimDir) {
+			const scrimType = readMeta(tag, 'scrim-type') ?? 'gradient';
+			const scrimTone = readMeta(tag, 'scrim-tone') ?? 'dark';
+			const scrimAttrs: Record<string, string> = {
+				'data-name': 'scrim', 'data-scrim': scrimType,
+				'data-scrim-tone': scrimTone, 'data-scrim-dir': scrimDir,
+			};
+			const scrimStyle: string[] = [];
+			if (scrimType === 'frost') {
+				const scrimBlur = readMeta(tag, 'scrim-blur') ?? 'md';
+				scrimStyle.push(`--scrim-blur: ${BLUR_PRESETS[scrimBlur] ?? BLUR_PRESETS.md}`);
+			} else {
+				const scrimStrength = readMeta(tag, 'scrim-strength') ?? 'md';
+				scrimStyle.push(`--scrim-strength: ${SCRIM_STRENGTH[scrimStrength] ?? SCRIM_STRENGTH.md}`);
+			}
+			scrimAttrs.style = scrimStyle.join('; ');
+			bgChildren.push(makeTag('div', scrimAttrs));
 		}
 
 		bgElement = makeTag('div', bgAttrs, bgChildren);
@@ -599,6 +648,12 @@ function transformRune(
 		bgMetaProps.add('bg-via');
 		bgMetaProps.add('bg-to');
 		bgMetaProps.add('bg-gradient-type');
+		bgMetaProps.add('bg-overlay-opacity');
+		bgMetaProps.add('scrim');
+		bgMetaProps.add('scrim-type');
+		bgMetaProps.add('scrim-strength');
+		bgMetaProps.add('scrim-blur');
+		bgMetaProps.add('scrim-tone');
 	}
 
 	// 1g. Frame chrome (SPEC-086) — resolve the frame preset + facets and decide
