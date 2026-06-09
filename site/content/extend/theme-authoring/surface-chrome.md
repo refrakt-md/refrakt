@@ -31,11 +31,19 @@ Body copy.
 
 `elevation` is a [universal attribute](/extend/theme-authoring/config-api) (`none | sm | md | lg`) available on every block rune. The engine emits `data-elevation`; CSS maps it to `box-shadow: var(--rf-shadow-{level})` against the shared `--rf-shadow-*` token scale. `elevation="none"` explicitly flattens a rune's default shadow.
 
-```
-{% figure elevation="lg" %}
-![Hero](hero.png)
-{% /figure %}
-```
+{% preview source=true %}
+
+{% card elevation="sm" %}
+### `elevation="sm"`
+A lightly lifted card.
+{% /card %}
+
+{% card elevation="lg" %}
+### `elevation="lg"`
+A more pronounced float — same `box-shadow` scale, higher z-height.
+{% /card %}
+
+{% /preview %}
 
 ## frame — media-surface preset
 
@@ -63,6 +71,29 @@ Apply a preset with `frame="screenshot"`, and override individual facets inline 
 | shadow | `frame-shadow` | `none \| sm \| md \| lg` — rendered as a silhouette `drop-shadow` |
 
 `offset` is a **named scale** (not a raw length): an unknown value warns and collapses to `none`, keeping the frame facet family on one vocabulary alongside `frame-shadow`/`elevation`.
+
+A `figure` is `frameTarget: 'self'`, so its `frame-*` facets land on the figure itself:
+
+{% preview source=true %}
+
+{% figure frame-shadow="lg" frame-aspect="16/9" %}
+![Framed media](https://picsum.photos/seed/framechrome/800/450)
+{% /figure %}
+
+{% /preview %}
+
+On a `card` (`frameTarget: 'media'`) the same facets decorate the media zone instead, while `elevation` floats the card box:
+
+{% preview source=true %}
+
+{% card elevation="md" frame-aspect="16/9" frame-anchor="center" %}
+![Cover](https://picsum.photos/seed/cardframe/800/450)
+---
+### Two surfaces
+`elevation` floats the card; `frame-*` presents the image in its media zone.
+{% /card %}
+
+{% /preview %}
 
 ## frameTarget — the unambiguity backbone
 
