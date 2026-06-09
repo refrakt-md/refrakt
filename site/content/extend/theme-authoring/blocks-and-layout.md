@@ -366,6 +366,82 @@ fields, blocks, and containers are inherited unchanged. A `layout` entry
 is replaced as a whole, so restate its `tag` when overriding a
 wrapper-creating container.
 
+## variants — modifier-keyed config deltas (SPEC-091)
+
+Some runes need their **structure** to vary by a modifier: a `feature`
+tiles its definitions as a grid when media is stacked but stacks them in a
+column when media is beside; a `card` in `media-position="cover"` regroups
+`media + header` into an overlay band with the body flowing below. The
+transform is flat/semantic (it never branches structure) and CSS can
+reposition but not *restructure*, so this gap is filled by **engine config
+variants**: modifier-keyed config deltas merged over the base config per
+instance.
+
+```typescript
+// on RuneConfig
+variants?: Record<string /* modifier (axis) */, Record<string /* value */, Partial<RuneConfig>>>;
+```
+
+The outer key is a **declared modifier name** (the axis); the inner key is
+a modifier **value**; the payload is a **partial `RuneConfig`** merged over
+base. A `recipe`'s cover variant:
+
+```typescript
+variants: {
+  'media-position': {
+    cover: {
+      layout: {
+        root: ['cover-band', 'body'],
+        'cover-band': { tag: 'div', children: ['media', 'preamble'] },
+        body:         { tag: 'div', children: ['metadata', 'ingredients', 'steps', 'tips'] },
+      },
+    },
+  },
+},
+```
+
+**Selection rides the modifier system.** Per instance the engine resolves
+each axis's modifier value (with its `default`) and merges
+`variants[axis][value]` over base — in `variants` **declaration order** —
+*before* layout assembly. There is **no separate condition language** and
+**no `defaultVariants`**: the modifier's own `default` already determines
+the active value. The merge reuses the same by-key semantics as a theme
+override (a delta's `layout.root` replaces the array; new wrapper keys are
+added; base keys the variant no longer references simply go unused), and
+the layout assembler itself is unchanged — variants only choose *which*
+static config it is fed.
+
+**What a delta may override.** A delta restructures/redecorates a rune; it
+cannot redefine it. It may set the assembly/decoration fields (`layout`,
+`structure`, `styles`, `contentWrapper`, `staticModifiers`, `autoLabel`,
+`editHints`, …) but **not identity** fields (`block`, the `modifiers` axis
+definitions, `sections`). Every axis must be a **declared modifier** —
+both invariants are checked at config load (a missing modifier or an
+identity-field override is a config error).
+
+**Themes extend variants.** `variants` is part of `RuneConfig`, so
+`mergeThemeConfig` merges it like any other field — a theme can add a new
+axis or override a single axis/value delta. For example a theme can give
+its `card` a `media-position="cover"` variant the base theme doesn't ship.
+
+**Consumer prerequisite — the flat-slot model.** Because a variant
+restructures by merging a `layout` delta and re-running flat-slot
+assembly, the rune must emit flat `data-name` slots and carry a base
+`layout` for the delta to override (see *layout — the recursive skeleton*
+above). A rune that pre-assembles its structure in the transform has no
+loose slots to regroup and no base layout to merge into — variants cannot
+reach it. (`card`, `bento-cell`, and `recipe` are all on the flat-slot
+model.)
+
+**`compoundVariants`** (cross-axis deltas) is a reserved future extension,
+intentionally not implemented.
+
+**Tooling.** `refrakt contracts` enumerates a per-variant structure under
+each rune's `variants[axis][value]` (the base merged with the delta), and
+the CSS-coverage derivation folds in selectors a variant introduces.
+`refrakt inspect <rune> --<modifier>=<value>` renders a variant by passing
+the selecting modifier value — no new flag needed.
+
 ## Projection — reshaping unowned trees
 
 `projection` reshapes the output tree by `data-name` *after* assembly. It

@@ -97,21 +97,22 @@ export const bentoCell = createContentModelSchema({
 			children.push(mediaDiv);
 		}
 
-		// Content zone — title + body (+ footer). One wrapper so the layout can
-		// place media beside / above it (WORK-348).
-		const contentInner: RenderableTreeNode[] = [];
+		// SPEC-081/091 flat-slot model: emit flat `data-name` slots (media · title ·
+		// body · footer · link); the engine's `layout` config groups title/body/
+		// footer into the `content` wrapper and places it beside / above media
+		// (WORK-348). A base `layout` is the prerequisite for the cover variant
+		// ({% ref "SPEC-089" /%}).
 		let titleTag: InstanceType<typeof Tag> | undefined;
 		if (titleNode) {
 			const t = new RenderableNodeCursor(
 				Markdoc.transform([titleNode], config) as RenderableTreeNode[],
 			).toArray()[0];
-			if (Markdoc.Tag.isTag(t)) { titleTag = t; contentInner.push(t); }
+			if (Markdoc.Tag.isTag(t)) { titleTag = t; }
 		}
 		const bodyInner = unwrapParagraphImages(new RenderableNodeCursor(
 			Markdoc.transform(body, config) as RenderableTreeNode[],
 		).toArray() as RenderableTreeNode[]);
 		const bodyDiv = new Tag('div', { 'data-name': 'body' }, bodyInner);
-		contentInner.push(bodyDiv);
 
 		let footerTag: InstanceType<typeof Tag> | undefined;
 		if (footer.length > 0) {
@@ -119,15 +120,14 @@ export const bentoCell = createContentModelSchema({
 				Markdoc.transform(footer, config) as RenderableTreeNode[],
 			).toArray() as RenderableTreeNode[];
 			footerTag = new Tag('footer', { 'data-name': 'footer' }, footerInner);
-			contentInner.push(footerTag);
 		}
 
-		const contentDiv = new Tag('div', { 'data-name': 'content' }, contentInner);
-		refs.content = contentDiv;
-		if (titleTag) refs.title = titleTag;
+		// Flat slots, in order. The engine's layout assembly wraps title/body/
+		// footer into `content`.
+		if (titleTag) { refs.title = titleTag; children.push(titleTag); }
 		refs.body = bodyDiv;
-		if (footerTag) refs.footer = footerTag;
-		children.push(contentDiv);
+		children.push(bodyDiv);
+		if (footerTag) { refs.footer = footerTag; children.push(footerTag); }
 
 		// Whole-cell link (stretched overlay; nested links stay clickable).
 		const href = String(attrs.href ?? '');

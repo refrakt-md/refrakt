@@ -157,6 +157,15 @@ export const coreConfig: ThemeConfig = {
 				valign: { source: 'meta', noBemClass: true },
 				collapse: { source: 'meta', noBemClass: true },
 			},
+			sections: { media: 'media' },
+			// SPEC-081/091: the transform emits flat slots; `layout` builds the
+			// skeleton — media beside a `content` wrapper grouping eyebrow/body/
+			// footer. A base `layout` is the prerequisite for the cover variant
+			// ({% ref "SPEC-089" /%}).
+			layout: {
+				root: ['media', 'content'],
+				content: { tag: 'div', children: ['eyebrow', 'body', 'footer'] },
+			},
 			styles: {
 				valign: { prop: '--split-valign', transform: resolveValign },
 			},
