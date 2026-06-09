@@ -81,6 +81,16 @@ Filters combine with AND logic. Multiple values for the same field combine with 
 
 {% /preview %}
 
+## Table layout
+
+`layout="table"` renders the universal projection as columns — *Identifier · Type · Status · Title* — handy for a dense, mixed-type view:
+
+{% preview source=true %}
+
+{% backlog show="all" layout="table" sort="status" limit=8 /%}
+
+{% /preview %}
+
 ### Attributes
 
 | Attribute | Type | Default | Description |
@@ -88,19 +98,15 @@ Filters combine with AND logic. Multiple values for the same field combine with 
 | `filter` | `string` | — | Space-separated `field:value` pairs. Same-field values are OR'd; different fields are AND'd. Fields: `status`, `priority`, `severity`, `assignee`, `milestone`, `complexity`, `tags` |
 | `sort` | `string` | `priority` | Sort field: `priority`, `status`, `id`, `assignee`, `complexity`, `milestone`, `date` |
 | `group` | `string` | — | Group by field: `status`, `priority`, `assignee`, `milestone`, `type`, `tags` |
-| `show` | `string` | `all` | Entity types to include: `all`, `work`, `bug`, `spec`, `decision`, `milestone`. Note: `all` includes work and bug only (for backward compatibility) — other types must be requested explicitly |
+| `show` | `string` | `all` | Entity types to include: `all`, `work`, `bug`, `spec`, `decision`, `milestone`. `all` is work + bug; other types must be requested explicitly |
+| `layout` | `string` | `cards` | Item layout: `cards` (default), `list`, or `table`. Forwarded to the underlying `collection`. |
 | `limit` | `number` | — | Cap the number of entities rendered. Applied after sort, before group — "top N" semantics. Unset renders the full filtered set. |
 
 ### Output structure
 
-Each entity renders as a card (`article.rf-backlog__card`) containing:
+Backlog is thin sugar over [`collection`](/runes/collection): each entity renders through a **universal projection** that works for every plan type by construction.
 
-- ID badge
-- Status badge (color-coded via `[data-status]`)
-- Priority badge (work items only)
-- Complexity badge (work items, when not "unknown")
-- Severity badge (bugs only)
-- Milestone badge (when assigned)
-- Title
+- **Cards / list** (default) — each item is a [`card`](/runes/card) whose top strip is a [`bar`](/runes/bar): the **identifier** (`id`, or `name` for milestones) on the left, a sentiment-coloured **status** [`badge`](/runes/badge) on the right, the title below. When the set spans more than one type (and isn't grouped by type), a small **type chip** appears beside the identifier — omitted for a single-type backlog, so there's no noise.
+- **Table** — *Identifier · Type · Status · Title* columns.
 
-When `group` is set, cards are wrapped in groups with a heading showing the group value.
+When scoped to a single type, a card also surfaces that type's key field — `work` shows **priority**, `bug` shows **severity** — since the set is homogeneous. A mixed set stays universal (no ragged per-row columns); for richer per-type detail, author your own `collection` body. When `group` is set, items are wrapped in groups headed by the group value.

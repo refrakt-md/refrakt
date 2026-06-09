@@ -123,6 +123,7 @@ function renderHeadingTable(
 	embedConfig: CollectionEmbedConfig | undefined,
 	ctx: PipelineContext,
 	pageUrl: string,
+	itemOpts?: { mixed?: boolean; sentiments?: CollectionEmbedConfig['sentiments'] },
 ): TagNode {
 	const columns = splitColumns(bodySource, ctx, pageUrl);
 	if (!embedConfig) {
@@ -131,7 +132,7 @@ function renderHeadingTable(
 	}
 	const thead = new Tag('thead', {}, [new Tag('tr', {}, columns.map((c) => new Tag('th', {}, [c.label])))]);
 	const rows = entities.map((e) => {
-		const item = projectItem(e);
+		const item = projectItem(e, itemOpts);
 		const cells = columns.map((c) => {
 			const out = transformDeferredTemplate(c.cellSource, embedConfig as never, { item });
 			const kids = Array.isArray(out) ? out : [out];
@@ -161,13 +162,14 @@ function renderBody(
 	embedConfig: CollectionEmbedConfig | undefined,
 	ctx: PipelineContext,
 	pageUrl: string,
+	itemOpts?: { mixed?: boolean; sentiments?: CollectionEmbedConfig['sentiments'] },
 ): RenderableTreeNode[] {
 	if (!embedConfig) {
 		ctx.error('collection — body template present but no embedConfig threaded through the pipeline', pageUrl);
 		return [];
 	}
 	return entities.map((e) => {
-		const item = projectItem(e);
+		const item = projectItem(e, itemOpts);
 		const out = transformDeferredTemplate(bodySource, embedConfig as never, { item });
 		const children = Array.isArray(out) ? out : [out];
 		return new Tag('div', { class: 'rf-collection__item', 'data-entity-id': e.id, 'data-block': '' }, children as RenderableTreeNode[]);
@@ -220,6 +222,12 @@ function resolveOne(
 	const tmpl = zones.template;
 	const attrs = { ...tag.attributes, 'data-type': q.types.join(','), 'data-layout': q.layout };
 
+	// Universal-projection support (WORK-342): a set is "mixed" when it spans more
+	// than one entity type AND isn't grouped by type (each type-group is already
+	// homogeneous). A body's `{% if $item.mixed %}` shows a type chip only then.
+	const mixed = new Set(entities.map((e) => e.type)).size > 1 && q.group !== 'type';
+	const itemOpts = { mixed, sentiments: embedConfig?.sentiments };
+
 	// Empty state (SPEC-072 Cap 5): fallback zone, else the `empty` attribute,
 	// else nothing. No preamble when empty.
 	if (entities.length === 0) {
@@ -236,9 +244,9 @@ function resolveOne(
 	let children: RenderableTreeNode[];
 	if (q.layout === 'table' && tmpl) {
 		// Heading-delimited column templates (WORK-264).
-		children = renderGroupOrFlat(entities, q, ordering, (es) => [renderHeadingTable(es, tmpl, embedConfig, ctx, pageUrl)]);
+		children = renderGroupOrFlat(entities, q, ordering, (es) => [renderHeadingTable(es, tmpl, embedConfig, ctx, pageUrl, itemOpts)]);
 	} else if (tmpl) {
-		children = renderGroupOrFlat(entities, q, ordering, (es) => renderBody(es, tmpl, embedConfig, ctx, pageUrl));
+		children = renderGroupOrFlat(entities, q, ordering, (es) => renderBody(es, tmpl, embedConfig, ctx, pageUrl, itemOpts));
 	} else if (q.layout === 'table') {
 		children = renderGroupOrFlat(entities, q, ordering, (es) => [renderTable(es, q)]);
 	} else {
