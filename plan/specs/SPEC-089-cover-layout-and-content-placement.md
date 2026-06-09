@@ -1,8 +1,8 @@
 {% spec id="SPEC-089" status="draft" tags="surfaces,runes,engine,lumina,layout,dx" %}
 
-# Card cover layout: `media-position="cover"`, content placement, and intrinsic height
+# Cover layout for media+content runes: `media-position="cover"`, content placement, and intrinsic height
 
-A media+content rune (`card`, `bento-cell`) normally lays its media and content in
+A media+content rune (`card`, `bento-cell`, `recipe`, …) normally lays its media and content in
 **separate, non-overlapping tracks** — `media-position="top|bottom|start|end"`. This
 spec adds a `cover` layout mode where the **media fills the rune's interior and the
 content overlays it** — the poster / cover card — preserving the thin-edge frame and
@@ -28,13 +28,26 @@ behind content, it is `bg`.** Two reasons `cover` beats `bg` for the media case:
 - **Framing reuse** — the thin-edge inset (`--rf-card-edge`) + `--rf-radius-media` already produce the framed look on a normal card; `cover` just lets the media well span the full interior. `bg` is edge-to-edge and out of flow.
 - **Height for free** — the media is **in-flow**, so its aspect-ratio defines the card's height (no shrink). A `bg` is `position: absolute` and contributes no height (see §4).
 
+### Realized as an engine variant ({% ref "SPEC-091" /%})
+
+`cover` is not bespoke layout code — it is a **`media-position` config variant**: a config
+delta keyed on `media-position: cover`, merged over the rune's base config to supply the
+cover *structure*. The transform stays flat/semantic, CSS does the positioning, and the
+variant only swaps *which static structure* the engine assembles. This is what lets a
+content-heavy rune like `recipe` regroup its flat slots for cover (header into the band,
+body into the flow) without conditional code in its transform — see the cover scope below.
+
 ## Design
 
 ### 1. `media-position="cover"`
 
 - The media well spans the rune's full interior (inside the thin edge, with `--rf-radius-media`); the content block is positioned **over** it (not in a separate track).
 - Height comes from the media's aspect-ratio — `frame-aspect` ({% ref "SPEC-086" /%}) or the card height/aspect knob (§4) — with a **sensible portrait default** (e.g. `3/4`) so the tall look works with zero config.
-- Applies to media+content runes (`card`, `bento-cell`). `bento-cell` already gets height from grid row-spans; the standalone card relies on §4.
+- Applies to any media+content rune (`card`, `bento-cell`, `recipe`, …). `bento-cell` gets height from grid row-spans; a standalone card relies on §4.
+- **Cover scope — `full` vs `header`.** The media backdrop covers a *region*; content **within** that region overlays, content **beyond** it flows below. The region is declared by rune anatomy (override-able):
+  - **`full`** (display tiles — `card`, `bento-cell`): the region is the whole rune, so *all* content overlays. Short content by nature (the profile card).
+  - **`header`** (content-heavy runes — `recipe`, `howto`): the region is the **header band** (title + short meta). The header overlays a cover photo band; the long body (ingredients, steps) **flows below in normal layout** — the familiar recipe-hero.
+- **Long content is handled by flowing it, never burying it.** Overlay is always bounded to the cover region; content beyond it flows below — so a recipe's body never overlays the photo (which would crop the image to a sliver behind a wall of text). This is why `header` scope exists, and why `header`-scope cover regroups `media + header` into a band and the body into a flow region (the {% ref "SPEC-091" /%} variant).
 
 ### 2. `content-place` — the overlay anchor
 
@@ -63,6 +76,8 @@ Cover and `bg`-only cards both raise "what sets the height," resolved by one pre
 ## Acceptance Criteria
 
 - [ ] `media-position` gains `cover`: the media well fills the rune interior (thin-edge frame + `--rf-radius-media` preserved) and content overlays it; switching a card from `top`/`bottom`/`start`/`end` to `cover` is a one-attribute change on the same content.
+- [ ] **Cover scope** (`full` | `header`, rune-declared, override-able) bounds the overlay region: `full` overlays all content (display tiles); `header` overlays the title band and **flows the body below** (content-heavy runes like `recipe`) — content beyond the cover region always flows, never overlays.
+- [ ] `cover` is realized as a `media-position` engine **variant** ({% ref "SPEC-091" /%}) supplying the cover *structure* (e.g. recipe's `media + header` band + `body` flow); the transform stays flat, CSS positions, and there is **no overlay primitive** in the layout config.
 - [ ] Height authority follows **external grid track → media aspect → default portrait**: a `cover` `bento-cell` defers to its grid row track (no new bento aspect knob; reuses the existing track-wins / aspect-fallback cascade), while a standalone `cover` card uses the media aspect (`frame-aspect`, default portrait) or the card height knob — so neither collapses.
 - [ ] `cover` supersedes `content-height`/`media-ratio` (there is no media-vs-content split in cover).
 - [ ] `content-place` positions the overlay: 2-axis logical (`start|center|end` × `start|center|end`), default `end`; active only in `cover` mode and a build warning otherwise.
@@ -73,7 +88,7 @@ Cover and `bg`-only cards both raise "what sets the height," resolved by one pre
 
 ## Work breakdown (provisional)
 
-1. **`cover` layout + height authority** — media fills interior (reuse `--rf-card-edge` / `--rf-radius-media`), content overlay; precedence grid track (bento) → media aspect (card, default portrait); `cover` supersedes `content-height`/`media-ratio`.
+1. **`cover` layout + height authority** — media fills interior (reuse `--rf-card-edge` / `--rf-radius-media`), content overlay; precedence grid track (bento) → media aspect (card, default portrait); `cover` supersedes `content-height`/`media-ratio`. Realized as a `media-position` variant ({% ref "SPEC-091" /%}): `full`-scope (card/bento-cell) and `header`-scope (recipe — `media+header` band + `body` flow) variant configs.
 2. **`content-place`** — logical 2-axis mapping to `justify`/`align`; orientation-adaptive `auto` via container query; warn outside `cover`.
 3. **Cover scrim default** — media-surface target, follows `content-place`, region tracks content; consumes the {% ref "SPEC-088" /%} scrim facet.
 4. **Card intrinsic height/aspect knob** — named-scale `height` + `aspect`.
@@ -81,6 +96,7 @@ Cover and `bg`-only cards both raise "what sets the height," resolved by one pre
 
 ## References
 
+- Engine mechanism (cover is realized as a config variant): {% ref "SPEC-091" /%}.
 - Surface fill + bg/media-slot boundary (revised by this spec): {% ref "SPEC-087" /%} §4; self/media surface targeting.
 - Scrim facet (`type`/`strength`/`blur`/`tone`): {% ref "SPEC-088" /%}.
 - Media aspect / `frame-aspect`: {% ref "SPEC-086" /%}.
