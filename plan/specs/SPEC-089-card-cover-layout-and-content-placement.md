@@ -49,15 +49,22 @@ behind content, it is `bg`.** Two reasons `cover` beats `bg` for the media case:
 - **Direction follows `content-place`** by default (the scrim belongs where the text is); independently overridable. The scrim **region tracks the content area** (it grows with the content and re-anchors when `content-place` moves) — frost's panel *is* the content box; a gradient's falloff anchors to the content edge, not a fixed band.
 - The scrim *facet* itself — `type` (`gradient`/`frost`), `strength`, `blur`, `tone` — is defined in {% ref "SPEC-088" /%}; `cover` mode only turns it on and binds its direction to `content-place`.
 
-### 4. Intrinsic height
+### 4. Height authority
 
-- **Cover cards** — solved by §1: in-flow media + aspect-ratio (default portrait), no collapse.
-- **`bg`-only cards** (decorative backdrop, no media guest) — `bg` is `position: absolute; inset: 0`, out of flow, so the card **collapses to content height**. Add a card intrinsic-height knob: a named-scale `height` (`sm|md|lg|xl`) and/or an `aspect` attribute. This is the **standalone analog of bento's row-spans** — a `bento-cell` takes its height from the grid track, but a standalone `card` has no grid to lean on and needs its own intrinsic height.
+Cover and `bg`-only cards both raise "what sets the height," resolved by one precedence:
+**external grid track → media aspect → default portrait.**
+
+- **Bento cell, grid mode** — the grid row track wins (`grid-auto-rows`); a `cover` cell's media fills the track-sized cell and `object-fit: cover` crops, content overlays. No aspect is consulted, and **no new bento media-aspect knob is needed** — `cover` reuses bento's existing track-wins / aspect-fallback cascade (the internal `--bento-media-aspect`, default `16/9`, already governs only the collapsed/stack path; SPEC-086's `frame-aspect` may later feed it).
+- **Bento cell, collapsed/stack** — no grid track, so it falls back to the `--bento-media-aspect` banner, like a card.
+- **Standalone card, cover** — no grid to impose height, so height comes from the media aspect-ratio (`frame-aspect`, default portrait) or the card height knob below. This is the gap bento does not have.
+- **`bg`-only card** (decorative backdrop, no in-flow media) — `bg` is `position: absolute; inset: 0`, out of flow, so the card **collapses to content height**. Add a card intrinsic-height knob: a named-scale `height` (`sm|md|lg|xl`) and/or an `aspect` attribute — the **standalone analog of bento's row-spans**.
+- **`cover` supersedes the split knobs** — with no media-vs-content split, a bento cell's `content-height` / `media-ratio` (which govern that split in `top/bottom/start/end`) are moot under `cover`.
 
 ## Acceptance Criteria
 
 - [ ] `media-position` gains `cover`: the media well fills the rune interior (thin-edge frame + `--rf-radius-media` preserved) and content overlays it; switching a card from `top`/`bottom`/`start`/`end` to `cover` is a one-attribute change on the same content.
-- [ ] In `cover` mode height comes from the media aspect-ratio (`frame-aspect`, default portrait), so the rune does not collapse; the media is in-flow and content overlays it.
+- [ ] Height authority follows **external grid track → media aspect → default portrait**: a `cover` `bento-cell` defers to its grid row track (no new bento aspect knob; reuses the existing track-wins / aspect-fallback cascade), while a standalone `cover` card uses the media aspect (`frame-aspect`, default portrait) or the card height knob — so neither collapses.
+- [ ] `cover` supersedes `content-height`/`media-ratio` (there is no media-vs-content split in cover).
 - [ ] `content-place` positions the overlay: 2-axis logical (`start|center|end` × `start|center|end`), default `end`; active only in `cover` mode and a build warning otherwise.
 - [ ] `content-place="auto"` (the cover default) adapts to the rune's container-query orientation (portrait → `block-end`, landscape → `inline-start`); an explicit value pins it.
 - [ ] A default scrim is applied in `cover` mode, targeting the **media** surface (SPEC-087 routing), its direction following `content-place` and independently overridable (`scrim="none"` disables); the scrim region tracks the content area.
@@ -66,7 +73,7 @@ behind content, it is `bg`.** Two reasons `cover` beats `bg` for the media case:
 
 ## Work breakdown (provisional)
 
-1. **`cover` layout** — media fills interior (reuse `--rf-card-edge` / `--rf-radius-media`), content overlay; default portrait aspect.
+1. **`cover` layout + height authority** — media fills interior (reuse `--rf-card-edge` / `--rf-radius-media`), content overlay; precedence grid track (bento) → media aspect (card, default portrait); `cover` supersedes `content-height`/`media-ratio`.
 2. **`content-place`** — logical 2-axis mapping to `justify`/`align`; orientation-adaptive `auto` via container query; warn outside `cover`.
 3. **Cover scrim default** — media-surface target, follows `content-place`, region tracks content; consumes the {% ref "SPEC-088" /%} scrim facet.
 4. **Card intrinsic height/aspect knob** — named-scale `height` + `aspect`.
