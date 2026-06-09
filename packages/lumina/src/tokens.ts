@@ -180,6 +180,8 @@ export const luminaTokens: ThemeTokensConfig = {
 			// above by the generator.
 			extra: {
 				'rf-color-inline-code-bg': '#2b2b29',
+				// SPEC-087 — inset surfaces dip a touch deeper in dark mode.
+				'rf-surface-inset-shift': '0.06',
 			},
 		},
 	},
@@ -196,5 +198,8 @@ export const luminaTokens: ThemeTokensConfig = {
 	 *  them here. */
 	extra: {
 		'rf-color-inline-code-bg': '#e6e5e3',
+		// SPEC-087 — lightness delta for the derived inset surface (a tint-tracking
+		// recessed fill applied at use-site via relative-color). Per-mode tunable.
+		'rf-surface-inset-shift': '0.04',
 	},
 };

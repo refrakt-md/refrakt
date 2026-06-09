@@ -14,6 +14,7 @@ tint-lock: false
 ## Rune Catalog
 
 - rune-catalog
+- surfaces
 
 ## Content
 

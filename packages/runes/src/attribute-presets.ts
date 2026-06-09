@@ -75,4 +75,9 @@ export const UNIVERSAL_ATTRIBUTE_NAMES: ReadonlySet<string> = new Set([
 	'frame-place',
 	'frame-anchor',
 	'frame-shadow',
+	'substrate',
+	'substrate-size',
+	'substrate-opacity',
+	'substrate-fill',
+	'substrate-target',
 ]);

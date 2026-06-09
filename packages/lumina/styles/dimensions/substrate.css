@@ -1,0 +1,101 @@
+/* Substrate (SPEC-087) — generated surface pattern.
+ *
+ * The token-driven gradient recipes that realise each pattern ship here in the
+ * always-included base layer (not a theme's swappable CSS), so "dots = dots on
+ * every theme" is a guarantee: themes retune the `--substrate-*` token hooks
+ * (ink colour, cell size), they don't redefine a pattern's geometry. Patterns
+ * are pure CSS — no image assets, crisp at any zoom. The engine emits markers
+ * only (`data-substrate` + `--substrate-*`); CSS does the drawing.
+ *
+ * The pattern is a `background-image` over the surface `background-color`; the
+ * gradient's `transparent` gaps reveal whatever fill sits beneath (tint/inset).
+ * `--substrate-ink` resolves from `--rf-color-border` (tint-bridged), so the
+ * pattern recolours with the surface.
+ *
+ * Runes set their surface with the `background` *shorthand* (e.g.
+ * `.rf-card { background: var(--rf-color-surface) }`), which resets
+ * `background-image`/`-size`/`-position` and loads *after* this base layer. So
+ * the actual `background-*` longhands live here on the higher-specificity
+ * `[data-substrate]:not(…)` selector (0,2,0 — beats a rune's `.rf-*`, 0,1,0),
+ * and each pattern only feeds custom properties (which never collide with a
+ * rune's background). The rune's `background-color` still shows through. */
+
+[data-substrate]:not([data-substrate="none"]) {
+	--substrate-cell: 16px;
+	--substrate-opacity: 0.5;
+	/* `--substrate-boost` (per-pattern) and `--substrate-mode-boost` (light/dark)
+	 * are intentionally NOT set here — only referenced with a `1` fallback — so a
+	 * lower-specificity pattern rule or an inherited dark-mode rule can drive them
+	 * without losing to this (0,2,0) base. The product is clamped to 100% by
+	 * color-mix. */
+	--substrate-ink: color-mix(in oklab, var(--rf-color-border) calc(var(--substrate-opacity) * var(--substrate-boost, 1) * var(--substrate-mode-boost, 1) * 100%), transparent);
+	background-image: var(--substrate-image);
+	background-size: var(--substrate-tile, var(--substrate-cell) var(--substrate-cell));
+	background-position: var(--substrate-pos, 0 0);
+	background-repeat: repeat;
+}
+
+/* dots — one tiled radial-gradient. A small dot reads fainter than a 1px line,
+ * so dots get a per-pattern ink boost. */
+[data-substrate="dots"] {
+	--substrate-image: radial-gradient(var(--substrate-ink) var(--substrate-dot, 1.5px), transparent 0);
+	--substrate-boost: 1.4;
+}
+
+/* grid — two tiled linear-gradients */
+[data-substrate="grid"] {
+	--substrate-image:
+		linear-gradient(var(--substrate-ink) 1px, transparent 1px),
+		linear-gradient(90deg, var(--substrate-ink) 1px, transparent 1px);
+}
+
+/* lines — diagonal hatching (the repeating gradient owns its own spacing) */
+[data-substrate="lines"] {
+	--substrate-image: repeating-linear-gradient(45deg, var(--substrate-ink) 0 1px, transparent 1px var(--substrate-cell));
+	--substrate-tile: auto;
+}
+
+/* cross — plus marks on a grid (a grid masked down to short ticks at each node) */
+[data-substrate="cross"] {
+	--substrate-image:
+		linear-gradient(var(--substrate-ink) 1px, transparent 1px),
+		linear-gradient(90deg, var(--substrate-ink) 1px, transparent 1px);
+	--substrate-pos: center;
+	-webkit-mask-image: radial-gradient(circle at center, #000 0 2px, transparent 2px);
+	-webkit-mask-size: var(--substrate-cell) var(--substrate-cell);
+	mask-image: radial-gradient(circle at center, #000 0 2px, transparent 2px);
+	mask-size: var(--substrate-cell) var(--substrate-cell);
+}
+
+/* checker — alternating filled cells */
+[data-substrate="checker"] {
+	--substrate-image:
+		conic-gradient(var(--substrate-ink) 0 25%, transparent 0 50%, var(--substrate-ink) 0 75%, transparent 0);
+}
+
+[data-substrate="none"] { background-image: none; }
+
+/* substrate-fill="inset" — paint the pattern over the recessed inset fill
+ * (SPEC-087 inset surface) instead of the inherited surface colour. */
+[data-substrate][data-substrate-fill="inset"] {
+	background-color: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
+}
+
+/* Dark mode — the border ink sits close to the dark surface, so patterns need
+ * more presence across the board (dots compound their per-pattern boost on top,
+ * landing near full strength). Set the multiplier on the dark root so it
+ * inherits into every substrate element; mirrors how dark.css triggers dark. */
+[data-theme="dark"],
+[data-color-scheme="dark"] {
+	--substrate-mode-boost: 1.6;
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		--substrate-mode-boost: 1.6;
+	}
+}
+/* A tint-locked light subtree resets to the light intensity (nearest ancestor
+ * wins via inheritance), even when nested inside dark mode. */
+[data-color-scheme="light"] {
+	--substrate-mode-boost: 1;
+}

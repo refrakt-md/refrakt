@@ -102,3 +102,23 @@
 	border-radius: var(--rf-radius-container);
 	padding: var(--rune-padding, var(--rf-spacing-md));
 }
+
+/* ─── Inset surface (SPEC-087) — tint-tracking recessed fill ──────────
+ * Derived at use-site via relative-color (lower L, keep C+H) so it recomputes from a tinted
+ * `--rf-color-surface` automatically (a static inset-colour token would
+ * freeze to the untinted :root). Writes `background` only — never re-bases
+ * `--rf-color-surface` — so insets don't compound under nesting; depth is
+ * conveyed by border/elevation. `--rf-surface-inset-shift: 0` flushes it. */
+
+/* chart / diagram self surface: the standalone "darker surface". */
+.rf-chart,
+.rf-diagram {
+	background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
+}
+
+/* Media wells of media-bearing runes: a recessed sub-surface that tracks the
+ * (possibly tinted) container colour — invisible under a full-bleed guest,
+ * visible in the gaps (transparent, displaced, or absent guest). */
+:is(.rf-card, .rf-bento-cell, .rf-recipe, .rf-realm, .rf-faction, .rf-playlist) [data-section="media"] {
+	background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
+}

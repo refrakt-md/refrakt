@@ -132,6 +132,11 @@ function validateRuneConfig(
 		errors.push({ path: `${prefix}.frameTarget`, message: 'Must be "media" or "self"' });
 	}
 
+	// substrateTarget (SPEC-087)
+	if (rune.substrateTarget !== undefined && rune.substrateTarget !== 'media' && rune.substrateTarget !== 'self') {
+		errors.push({ path: `${prefix}.substrateTarget`, message: 'Must be "media" or "self"' });
+	}
+
 	// contextModifiers
 	if (rune.contextModifiers !== undefined) {
 		if (typeof rune.contextModifiers !== 'object' || rune.contextModifiers === null || Array.isArray(rune.contextModifiers)) {

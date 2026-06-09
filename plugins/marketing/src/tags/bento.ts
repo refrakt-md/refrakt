@@ -272,18 +272,19 @@ export const bento = createContentModelSchema({
 			// their own (generated or explicit); a cell's own value still wins, and
 			// without a grid default each cell keeps its size-derived default.
 			const gridPos = attrs['media-position'] as string | undefined;
-			// SPEC-086 — a grid-level `frame` (preset + facets) is the default for
-			// cells that don't set their own, since heading-sugar cells have no
-			// per-cell attribute surface. Mirrors the media-position cascade. The
-			// grid itself never claims frame chrome (it has no media surface), so
-			// the frame attrs are consumed here and stripped from the grid.
-			const FRAME_CASCADE = ['frame', 'frame-aspect', 'frame-displace', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-shadow'];
+			// SPEC-086/087 — grid-level surface chrome (`frame` preset + facets,
+			// and `elevation`) is the default for cells that don't set their own,
+			// since heading-sugar cells have no per-cell attribute surface. Mirrors
+			// the media-position cascade. The grid itself never claims this chrome
+			// (cells are the visual cards), so the attrs are consumed here and
+			// stripped from the grid. A cell's own value still wins.
+			const GRID_CASCADE = ['frame', 'frame-aspect', 'frame-displace', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-shadow', 'elevation'];
 			const gridFrame: Record<string, string> = {};
-			for (const k of FRAME_CASCADE) {
+			for (const k of GRID_CASCADE) {
 				const v = attrs[k];
 				if (v != null && v !== '') gridFrame[k] = String(v);
 			}
-			const stripGridFrame = () => { for (const k of FRAME_CASCADE) delete (attrs as Record<string, unknown>)[k]; };
+			const stripGridFrame = () => { for (const k of GRID_CASCADE) delete (attrs as Record<string, unknown>)[k]; };
 			// Two front doors (no mixing): if the grid contains explicit
 			// `{% bento-cell %}` tags, use them directly and short-circuit heading
 			// conversion (headings/loose content are ignored — explicit wins).
