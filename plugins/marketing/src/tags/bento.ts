@@ -205,7 +205,7 @@ function parseLevels(spec: string): { cols: number; rows: number }[] {
  *  clamped to the last rung. The heading itself becomes the cell title; content
  *  before the first heading is returned as-is (bento is a grid primitive, not a
  *  page-section — no preamble semantics). */
-function convertHeadings(nodes: Node[], columns: number, ladder: { cols: number; rows: number }[] | null, gridPos?: string): Node[] {
+function convertHeadings(nodes: Node[], columns: number, ladder: { cols: number; rows: number }[] | null, gridPos?: string, gridFrame?: Record<string, string>): Node[] {
 	const preamble: Node[] = [];
 	const cells: Node[] = [];
 
@@ -217,7 +217,7 @@ function convertHeadings(nodes: Node[], columns: number, ladder: { cols: number;
 		if (!currentHeading) return;
 		const level = (currentHeading.attributes?.level as number) ?? 2;
 		const cellChildren = [currentHeading, ...currentChildren];
-		const posAttr = gridPos ? { 'media-position': gridPos } : {};
+		const posAttr = { ...(gridPos ? { 'media-position': gridPos } : {}), ...(gridFrame ?? {}) };
 		if (ladder && ladder.length > 0) {
 			// Explicit ladder footprint, indexed by absolute heading level
 			// (rung 0 = h1; clamped to the last rung). No tiered preset → neutral
@@ -272,21 +272,39 @@ export const bento = createContentModelSchema({
 			// their own (generated or explicit); a cell's own value still wins, and
 			// without a grid default each cell keeps its size-derived default.
 			const gridPos = attrs['media-position'] as string | undefined;
+			// SPEC-086 — a grid-level `frame` (preset + facets) is the default for
+			// cells that don't set their own, since heading-sugar cells have no
+			// per-cell attribute surface. Mirrors the media-position cascade. The
+			// grid itself never claims frame chrome (it has no media surface), so
+			// the frame attrs are consumed here and stripped from the grid.
+			const FRAME_CASCADE = ['frame', 'frame-aspect', 'frame-displace', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-shadow'];
+			const gridFrame: Record<string, string> = {};
+			for (const k of FRAME_CASCADE) {
+				const v = attrs[k];
+				if (v != null && v !== '') gridFrame[k] = String(v);
+			}
+			const stripGridFrame = () => { for (const k of FRAME_CASCADE) delete (attrs as Record<string, unknown>)[k]; };
 			// Two front doors (no mixing): if the grid contains explicit
 			// `{% bento-cell %}` tags, use them directly and short-circuit heading
 			// conversion (headings/loose content are ignored — explicit wins).
 			const hasExplicit = ns.some(n => n.type === 'tag' && (n as any).tag === 'bento-cell');
 			if (hasExplicit) {
 				const cells = ns.filter(n => n.type === 'tag' && (n as any).tag === 'bento-cell');
-				if (gridPos) for (const cell of cells) {
-					if (cell.attributes?.['media-position'] === undefined) {
+				for (const cell of cells) {
+					if (gridPos && cell.attributes?.['media-position'] === undefined) {
 						cell.attributes = { ...cell.attributes, 'media-position': gridPos };
 					}
+					for (const [k, v] of Object.entries(gridFrame)) {
+						if (cell.attributes?.[k] === undefined) cell.attributes = { ...cell.attributes, [k]: v };
+					}
 				}
+				stripGridFrame();
 				return cells;
 			}
 			const ladder = attrs.levels ? parseLevels(attrs.levels as string) : null;
-			return convertHeadings(ns, (attrs.columns as number) ?? 6, ladder, gridPos);
+			const cells = convertHeadings(ns, (attrs.columns as number) ?? 6, ladder, gridPos, gridFrame);
+			stripGridFrame();
+			return cells;
 		},
 		description: 'A grid of cells. Heading sugar (each heading → a cell, tile size from depth) OR explicit {% bento-cell %} cells (full control). A grid primitive — no page-section preamble.',
 	}),

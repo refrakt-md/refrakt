@@ -142,6 +142,11 @@
 	aspect-ratio: var(--bento-media-aspect, 16 / 9);
 }
 .rf-bento-cell__media > :is(img, video) { object-position: var(--bento-media-anchor, center); }
+/* SPEC-086 — reconcile `frame` facets with bento's existing media vars rather
+ * than duplicating them: frame-aspect/anchor (landed on the media zone by the
+ * engine) feed the knobs bento already consumes (incl. the collapse path). */
+.rf-bento-cell__media[style*="--frame-aspect"] { --bento-media-aspect: var(--frame-aspect); }
+.rf-bento-cell__media[style*="--frame-anchor"] { --bento-media-anchor: var(--frame-anchor); }
 .rf-bento-cell__title {
 	font-size: 1.125rem;
 	font-weight: 600;
