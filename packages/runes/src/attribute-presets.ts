@@ -80,4 +80,9 @@ export const UNIVERSAL_ATTRIBUTE_NAMES: ReadonlySet<string> = new Set([
 	'substrate-opacity',
 	'substrate-fill',
 	'substrate-target',
+	'bg-gradient',
+	'bg-from',
+	'bg-to',
+	'bg-via',
+	'bg-gradient-type',
 ]);

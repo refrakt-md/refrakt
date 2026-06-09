@@ -15,6 +15,11 @@ export const bg: Schema = {
 		src: { type: String, required: false, description: 'URL of the background image' },
 		video: { type: String, required: false, description: 'URL of a background video' },
 		overlay: { type: String, required: false, description: 'Color overlay applied on top of the background' },
+		gradient: { type: String, required: false, matches: ['to-t', 'to-b', 'to-l', 'to-r', 'to-tr', 'to-br', 'to-bl', 'to-tl'], description: 'Gradient direction (token-driven fill)' },
+		from: { type: String, required: false, description: 'Gradient start colour — semantic token name' },
+		to: { type: String, required: false, description: 'Gradient end colour — semantic token name' },
+		via: { type: String, required: false, description: 'Optional middle gradient stop — semantic token name' },
+		'gradient-type': { type: String, required: false, matches: ['linear', 'radial', 'conic'], description: 'Gradient type: linear (default), radial, conic' },
 		blur: { type: String, required: false, matches: ['none', 'sm', 'md', 'lg'], description: 'Blur intensity applied to the background' },
 		position: { type: String, required: false, description: 'CSS background-position value' },
 		fit: { type: String, required: false, matches: ['cover', 'contain'], description: 'How the background image fills its container' },
@@ -38,6 +43,13 @@ export const bg: Schema = {
 		if (attrs.overlay && attrs.overlay !== 'none') {
 			metas.push(new Tag('meta', { 'data-field': 'bg-overlay', content: attrs.overlay }));
 		}
+		// SPEC-088 — gradient facets (directive form: `gradient`/`from`/`to`/`via`/
+		// `gradient-type` → the `bg-*` metas the engine resolves).
+		if (attrs.gradient) metas.push(new Tag('meta', { 'data-field': 'bg-gradient', content: attrs.gradient }));
+		if (attrs.from) metas.push(new Tag('meta', { 'data-field': 'bg-from', content: attrs.from }));
+		if (attrs.to) metas.push(new Tag('meta', { 'data-field': 'bg-to', content: attrs.to }));
+		if (attrs.via) metas.push(new Tag('meta', { 'data-field': 'bg-via', content: attrs.via }));
+		if (attrs['gradient-type']) metas.push(new Tag('meta', { 'data-field': 'bg-gradient-type', content: attrs['gradient-type'] }));
 		if (attrs.blur && attrs.blur !== 'none') {
 			metas.push(new Tag('meta', { 'data-field': 'bg-blur', content: attrs.blur }));
 		}

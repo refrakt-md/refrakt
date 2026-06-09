@@ -487,6 +487,12 @@ export interface BgPresetDefinition {
 	style?: Record<string, string>;
 	/** Default params for render function (Tier 2 — structural presets) */
 	params?: Record<string, string>;
+	/** SPEC-088 — structured token-driven gradient fill. `stops` are **token
+	 *  names** (e.g. `["primary", "surface"]`), resolved to `var(--rf-color-*)`;
+	 *  `direction` is a bounded named set (`to-t|to-b|to-l|to-r|to-tr|…`);
+	 *  `type` is `linear` (default) | `radial` | `conic`. Lives here — not the
+	 *  raw `style` map — so a named brand gradient stays token-driven & portable. */
+	gradient?: { type?: string; direction?: string; stops: string[] };
 	/** Base preset to extend (e.g., "extends": "particles" to customize a package preset) */
 	extends?: string;
 }

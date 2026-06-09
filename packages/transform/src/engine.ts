@@ -263,6 +263,25 @@ function warnSubstrateNoMedia(rune: string): void {
 	console.warn(`[refrakt] \`substrate-target="media"\` on \`${rune}\` has no media section — substrate ignored.`);
 }
 
+const BG_GRADIENT_DIRECTIONS: Record<string, string> = {
+	'to-t': 'to top', 'to-b': 'to bottom', 'to-l': 'to left', 'to-r': 'to right',
+	'to-tr': 'to top right', 'to-br': 'to bottom right', 'to-bl': 'to bottom left', 'to-tl': 'to top left',
+};
+
+/** SPEC-088 — build a token-driven `bg` gradient. `stops` are semantic token
+ *  names resolved to `var(--rf-color-*)` (colours stay token-owned); `direction`
+ *  is a bounded named set; `type` is linear (default) | radial | conic. Returns
+ *  null when there are fewer than two stops. */
+function buildBgGradient(opts: { type?: string; direction?: string; stops: (string | undefined)[] }): string | null {
+	const stops = opts.stops.filter((s): s is string => !!s).map(name => `var(--rf-color-${name})`);
+	if (stops.length < 2) return null;
+	const type = opts.type ?? 'linear';
+	if (type === 'radial') return `radial-gradient(${stops.join(', ')})`;
+	if (type === 'conic') return `conic-gradient(${stops.join(', ')})`;
+	const dir = BG_GRADIENT_DIRECTIONS[opts.direction ?? 'to-b'] ?? 'to bottom';
+	return `linear-gradient(${dir}, ${stops.join(', ')})`;
+}
+
 /** Apply BEM classes and structural enhancements to a rune tag */
 function transformRune(
 	tag: SerializedTag,
@@ -461,7 +480,35 @@ function transformRune(
 	const bgSrc = readMeta(tag, 'bg-src');
 	const bgVideo = readMeta(tag, 'bg-video');
 
-	if (bgPreset || bgSrc || bgVideo) {
+	// SPEC-088 — token-driven gradient fill (inline facets override a preset's
+	// structured `gradient`). Built before the trigger so a gradient-only bg
+	// (no image/video/preset-style) still raises the bg layer.
+	const bgGradientDir = readMeta(tag, 'bg-gradient');
+	const bgFrom = readMeta(tag, 'bg-from');
+	const bgVia = readMeta(tag, 'bg-via');
+	const bgTo = readMeta(tag, 'bg-to');
+	const bgGradientType = readMeta(tag, 'bg-gradient-type');
+	let presetGradient: { type?: string; direction?: string; stops: string[] } | undefined;
+	if (bgPreset && backgrounds[bgPreset]) {
+		let p = backgrounds[bgPreset];
+		if (p.extends && backgrounds[p.extends]) p = { ...backgrounds[p.extends], ...p };
+		presetGradient = p.gradient;
+	}
+	let bgGradient: string | null = null;
+	if (bgGradientDir || bgFrom || bgVia || bgTo || bgGradientType) {
+		// Inline facets override individual facets of the preset; stops fall back
+		// to the preset's when the author didn't supply at least two inline.
+		const inlineStops = [bgFrom, bgVia, bgTo].filter((s): s is string => !!s);
+		bgGradient = buildBgGradient({
+			type: bgGradientType ?? presetGradient?.type,
+			direction: bgGradientDir ?? presetGradient?.direction,
+			stops: inlineStops.length >= 2 ? inlineStops : (presetGradient?.stops ?? inlineStops),
+		});
+	} else if (presetGradient) {
+		bgGradient = buildBgGradient(presetGradient);
+	}
+
+	if (bgPreset || bgSrc || bgVideo || bgGradient) {
 		// Resolve preset styles (Tier 1 — CSS-only presets)
 		let presetStyles: Record<string, string> = {};
 		if (bgPreset && backgrounds[bgPreset]) {
@@ -493,7 +540,9 @@ function transformRune(
 		for (const [prop, value] of Object.entries(presetStyles)) {
 			bgStyleParts.push(`${prop}: ${value}`);
 		}
+		// Image takes the base layer when present; otherwise the gradient fills it.
 		if (bgSrc) bgStyleParts.push(`--bg-image: url(${bgSrc})`);
+		else if (bgGradient) bgStyleParts.push(`--bg-image: ${bgGradient}`);
 		if (bgPosition) bgStyleParts.push(`--bg-position: ${bgPosition}`);
 		if (bgBlur) bgStyleParts.push(`--bg-blur: ${BLUR_PRESETS[bgBlur] ?? bgBlur}`);
 		if (bgFit) bgStyleParts.push(`--bg-fit: ${bgFit}`);
@@ -545,6 +594,11 @@ function transformRune(
 		bgMetaProps.add('bg-fit');
 		bgMetaProps.add('bg-opacity');
 		bgMetaProps.add('bg-fixed');
+		bgMetaProps.add('bg-gradient');
+		bgMetaProps.add('bg-from');
+		bgMetaProps.add('bg-via');
+		bgMetaProps.add('bg-to');
+		bgMetaProps.add('bg-gradient-type');
 	}
 
 	// 1g. Frame chrome (SPEC-086) — resolve the frame preset + facets and decide
