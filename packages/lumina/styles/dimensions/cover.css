@@ -37,6 +37,14 @@
 	isolation: isolate;
 	container-type: size;
 }
+/* On narrow screens a 16/9 band is too short to seat the preamble over the
+ * scrim, so default it to a taller (≥1:1) poster shape. An explicit
+ * `frame-aspect` still wins. */
+@media (max-width: 40rem) {
+	[data-cover-scope="header"] > [data-name="cover-band"] {
+		aspect-ratio: var(--frame-aspect, 4 / 5);
+	}
+}
 [data-cover-scope="header"] > [data-name="cover-band"] > [data-section="media"],
 [data-cover-scope="header"] > [data-name="cover-band"] > [data-name="preamble"] {
 	grid-area: 1 / 1;
@@ -65,20 +73,21 @@
 	padding: var(--rune-padding, var(--rf-spacing-md));
 }
 
-/* ── auto / unset — adapt on the rune's own orientation ───────────────
+/* ── auto / unset placement ───────────────────────────────────────────
  * `auto` is the cover default, so an unset content-place behaves the same as an
- * explicit `auto`: the overlay adapts to the cover region's orientation
- * (portrait → block-end caption band; landscape → inline-start side panel). An
- * explicit value (e.g. "center center") sets the `--cover-place-*` vars on the
- * base rule above and does NOT match here, so it pins regardless of orientation. */
+ * explicit `auto`. A header band is always a caption strip — the preamble sits at
+ * the block-end over the scrim regardless of the band's orientation. A full-scope
+ * overlay adapts to the cover region's orientation (portrait → block-end caption;
+ * landscape → inline-start side panel). An explicit value (e.g. "center center")
+ * sets the `--cover-place-*` vars on the base rule above and does NOT match here,
+ * so it pins regardless of orientation. */
 [data-media-position="cover"]:not([data-cover-scope="header"]):is([data-content-place="auto"], :not([data-content-place])) > [data-name="content"],
 [data-cover-scope="header"]:is([data-content-place="auto"], :not([data-content-place])) > [data-name="cover-band"] > [data-name="preamble"] {
 	align-self: end;
 	justify-self: stretch;
 }
 @container (min-aspect-ratio: 1 / 1) {
-	[data-media-position="cover"]:not([data-cover-scope="header"]):is([data-content-place="auto"], :not([data-content-place])) > [data-name="content"],
-	[data-cover-scope="header"]:is([data-content-place="auto"], :not([data-content-place])) > [data-name="cover-band"] > [data-name="preamble"] {
+	[data-media-position="cover"]:not([data-cover-scope="header"]):is([data-content-place="auto"], :not([data-content-place])) > [data-name="content"] {
 		align-self: center;
 		justify-self: start;
 	}
@@ -125,4 +134,8 @@
 [data-media-position="cover"] [data-name="content"][data-color-scheme],
 [data-cover-scope="header"] > [data-name="cover-band"][data-color-scheme] {
 	background-color: transparent;
+	/* Muted text (blurb, footer) needs far more contrast over a photo than it
+	 * does on a flat surface — pull it most of the way to the foreground colour
+	 * so it stays legible against the scrimmed media. */
+	--rf-color-muted: color-mix(in oklab, var(--rf-color-text) 72%, var(--rf-color-muted));
 }

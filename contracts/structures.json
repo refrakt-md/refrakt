@@ -3396,7 +3396,7 @@
 						"dataRune": "recipe",
 						"childOrder": [
 							"cover-band",
-							"body",
+							"content",
 							"{content}"
 						],
 						"modifiers": {
@@ -3499,7 +3499,6 @@
 								"selector": ".rf-recipe__content",
 								"source": "layout",
 								"children": [
-									"preamble",
 									"metadata",
 									"ingredients",
 									"steps",
@@ -3517,17 +3516,6 @@
 								"attrs": {
 									"data-color-scheme": "dark"
 								}
-							},
-							"body": {
-								"tag": "div",
-								"selector": ".rf-recipe__body",
-								"source": "layout",
-								"children": [
-									"metadata",
-									"ingredients",
-									"steps",
-									"tips"
-								]
 							}
 						},
 						"inlineStyles": {

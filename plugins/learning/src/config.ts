@@ -91,12 +91,15 @@ export const config: Record<string, RuneConfig> = {
 					staticModifiers: ['cover'],
 					rootAttributes: { 'data-cover-scope': 'header' },
 					layout: {
-						root: ['cover-band', 'body'],
+						root: ['cover-band', 'content'],
 						// The cover-band carries the dark colour-scheme so the overlaid
 						// preamble reads light against the scrimmed media — scoped to the
 						// band, leaving the body below on the page palette (SPEC-089).
 						'cover-band': { tag: 'div', attrs: { 'data-color-scheme': 'dark' }, children: ['media', 'preamble'] },
-						body: { tag: 'div', children: ['metadata', 'ingredients', 'steps', 'tips'] },
+						// Keep the body wrapper named `content` so it reuses the recipe
+						// content-column CSS (padding, section gap, ingredient/step/tip
+						// styling); only the preamble lifts out into the band.
+						content: { tag: 'div', children: ['metadata', 'ingredients', 'steps', 'tips'] },
 					},
 				},
 			},
