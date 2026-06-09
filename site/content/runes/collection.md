@@ -115,11 +115,18 @@ Status: {% $item.data.status %} · Priority: {% $item.data.priority %}
 | Field | Always present? | Notes |
 |-------|-----------------|-------|
 | `$item.id` | yes | the entity id |
+| `$item.identifier` | yes | `id`, or `name` for name-keyed types (e.g. milestones) — a universal identifier |
 | `$item.type` | yes | the entity type |
 | `$item.url` | yes | resolved URL (`sourceUrl ?? data.url`); empty string, never undefined, when there's no on-site URL |
 | `$item.data.*` | type-specific | the entity's payload. A missing field renders nothing (no warning) |
+| `$item.sentiment` | when mapped | the entity's status sentiment (`positive` / `negative` / `caution` / `neutral`), e.g. to colour a `badge`; empty when unmapped |
+| `$item.mixed` | yes | `true` when the set spans more than one type (and isn't grouped by type) — useful for a conditional type chip |
+| `$item.group` | grouped only | the item's group key (the value of the `group` field); empty when ungrouped |
+| `$item.groupCount` | grouped only | the number of items in this item's group; `0` when ungrouped |
 
 Payload fields are accessed under `.data` (e.g. `$item.data.title`) — there's no hoisting to `$item.title`, so a payload field can never shadow `id`/`type`/`url`.
+
+`$item.group` / `$item.groupCount` let a grouped collection's per-item template render group context inline (e.g. `{% if $item.groupCount %}{% $item.group %} ({% $item.groupCount %}){% /if %}`) without dropping to `aggregate`.
 
 ### Cards are plain runes
 

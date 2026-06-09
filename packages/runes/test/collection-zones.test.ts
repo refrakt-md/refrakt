@@ -164,3 +164,42 @@ describe('collection deferred-template <article> unwrap', () => {
 		for (const td of tds) expect(findAll(td, (t) => t.name === 'article')).toHaveLength(0);
 	});
 });
+
+describe('grouped collection exposes group context on $item (WORK-344)', () => {
+	const textOf = (n: unknown): string => {
+		let out = '';
+		const walk = (x: unknown) => {
+			if (x == null) return;
+			if (typeof x === 'string' || typeof x === 'number') { out += String(x); return; }
+			if (Array.isArray(x)) return x.forEach(walk);
+			if (Markdoc.Tag.isTag(x as never)) ((x as InstanceType<typeof Markdoc.Tag>).children ?? []).forEach(walk);
+		};
+		walk(n);
+		return out;
+	};
+
+	it('binds $item.group (key) and $item.groupCount (size) per item', () => {
+		const r = registry([
+			work('W-1', { title: 'A', status: 'done' }),
+			work('W-2', { title: 'B', status: 'done' }),
+			work('W-3', { title: 'C', status: 'ready' }),
+		]);
+		const out = render('{% collection type="work" group="status" %}\n[{% $item.data.title %}:{% $item.group %}:{% $item.groupCount %}]\n{% /collection %}', r);
+		const txt = textOf(out);
+		expect(txt).toContain('[A:done:2]');
+		expect(txt).toContain('[B:done:2]');
+		expect(txt).toContain('[C:ready:1]');
+	});
+
+	it('ungrouped collections leave group empty / count 0', () => {
+		const r = registry([work('W-1', { title: 'A', status: 'done' })]);
+		const out = render('{% collection type="work" %}\n[{% $item.group %}:{% $item.groupCount %}]\n{% /collection %}', r);
+		expect(textOf(out)).toContain('[:0]');
+	});
+
+	it('group context is available in the accordion display too', () => {
+		const r = registry([work('W-1', { title: 'A', status: 'done' }), work('W-2', { title: 'B', status: 'done' })]);
+		const out = render('{% collection type="work" group="status" group-display="accordion" %}\n[{% $item.group %}={% $item.groupCount %}]\n{% /collection %}', r);
+		expect(textOf(out)).toContain('[done=2]');
+	});
+});

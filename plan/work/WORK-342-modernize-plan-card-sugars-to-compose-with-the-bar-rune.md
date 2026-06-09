@@ -1,4 +1,4 @@
-{% work id="WORK-342" status="ready" priority="medium" complexity="moderate" source="SPEC-021" milestone="v0.19.0" tags="plan,aggregation,composability,runes" %}
+{% work id="WORK-342" status="done" priority="medium" complexity="moderate" source="SPEC-021" milestone="v0.19.0" tags="plan,aggregation,composability,runes" %}
 
 # Modernize plan card-sugars to compose with the bar rune
 
@@ -38,14 +38,14 @@ automatically. Arbitrary heterogeneous queries remain the job of raw
 `collection`.
 
 ## Acceptance Criteria
-- [ ] `backlog`'s default item body is a `card` with a `bar` header (identifier left, status badge right); body retains title/description.
-- [ ] `backlog` accepts a `layout` attribute (`cards` default, `table`, `list`) forwarded to `collection`.
-- [ ] A shared **identifier** projection (`id || name`) is introduced so milestones slot into the universal shape; reusable by `collection`/`aggregate`.
-- [ ] When the set is mixed, a type chip (cards) / Type column (table) appears; when single-type, it is omitted.
-- [ ] Single-type or `group="type"` queries may project type-specific fields; mixed sets fall back to the universal three.
-- [ ] Default scope remains `work,bug`; widening to other types renders via universal projection.
-- [ ] `decision-log` / `plan-activity` adopt the `bar`-header card where it improves them; bespoke CSS that the composition replaces is dropped.
-- [ ] Tests cover: default actionable cards, `layout="table"`, a mixed-type set (universal projection + type indicator), a single-type set (no type indicator), and an author override.
+- [x] `backlog`'s default item body is a `card` with a `bar` header (identifier left, status badge right); body retains title/description.
+- [x] `backlog` accepts a `layout` attribute (`cards` default, `table`, `list`) forwarded to `collection`.
+- [x] A shared **identifier** projection (`id || name`) is introduced so milestones slot into the universal shape; reusable by `collection`/`aggregate`.
+- [x] When the set is mixed, a type chip (cards) / Type column (table) appears; when single-type, it is omitted.
+- [x] Single-type or `group="type"` queries may project type-specific fields; mixed sets fall back to the universal three.
+- [x] Default scope remains `work,bug`; widening to other types renders via universal projection.
+- [x] `decision-log` / `plan-activity` adopt the `bar`-header card where it improves them; bespoke CSS that the composition replaces is dropped.
+- [x] Tests cover: default actionable cards, `layout="table"`, a mixed-type set (universal projection + type indicator), a single-type set (no type indicator), and an author override.
 
 ## Approach
 Keep `collection` as the query engine; only the default body source changes. The
@@ -60,5 +60,23 @@ collection/aggregate field machinery so all rollups share it.
 - `bar` rune + `packages/lumina/styles/runes/bar.css`; `card` header zone
 - `packages/runes/src/collection-resolve.ts` (layout + field projection)
 - Relates to {% ref "WORK-296" /%}, {% ref "WORK-343" /%}; composes per {% ref "SPEC-084" /%}
+
+## Resolution
+
+Completed: 2026-06-09
+
+Branch: `claude/v0.19.0-rollups-2`
+
+### What was done
+- `packages/runes/src/collection-helpers.ts`: `entityIdentifier(e)` = `id || name`; `projectItem(e, opts)` gains `identifier`, `sentiment` (per-entity status sentiment, WORK-357), and `mixed`.
+- `packages/runes/src/collection-resolve.ts`: compute `mixed` (set spans >1 type AND not grouped by type) and thread `{ mixed, sentiments }` into `renderBody`/`renderHeadingTable` → `projectItem`.
+- `plugins/plan/src/tags/backlog.ts`: composed default bodies — a `card` whose top strip is a `bar` (identifier + a `{% if $item.mixed %}` type chip, left; sentiment-coloured status `badge`, right) for cards/list, and a heading-column body (Identifier · Type · Status · Title) for table; new `layout` attribute (`cards` default) forwarded to collection. A single-type backlog also surfaces its key field (work→priority, bug→severity) gated on the value.
+- `plugins/plan/test/backlog.test.ts`: 8 tests (lowering of the default/table bodies + layout/show; end-to-end card+bar+coloured-badge, mixed→type-chip vs single→none, table columns + milestone `name` identifier).
+- `site/content/runes/plan/backlog.md`: rewrote the stale "Output structure" + added `layout` + a table example.
+
+### Notes
+- Verified in the site build: 43 backlog cards each render a bar header + a sentiment-coloured status badge; a single-type bug backlog surfaces severity; the table example renders Identifier/Type/Status/Title with a milestone's `name` as its identifier.
+- Type-specific richness is keyed off an explicit single-type `show` (the query is known at transform time). A `group="type"` query stays universal (the group heading conveys the type); per-group type-specific fields would need body conditionals — a possible follow-up.
+- `decision-log` / `plan-activity` were evaluated and **deliberately left as tables** (they read well that way) — no bar-header card, no CSS to drop.
 
 {% /work %}

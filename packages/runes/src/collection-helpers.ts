@@ -134,9 +134,34 @@ export function titleLink(e: EntityRegistration, block: string): TagNode {
 		: new Tag('span', { class: cls }, [label]);
 }
 
-/** The `$item` projection bound inside a per-item template. */
-export function projectItem(e: EntityRegistration) {
-	return { id: e.id, type: e.type, url: entityUrl(e), data: e.data };
+/** Normalised entity identifier — `id`, or `name` for types that key on a name
+ *  (e.g. milestones). Shared so every rollup projects one universal field. */
+export function entityIdentifier(e: EntityRegistration): string {
+	return e.id || String((e.data as Record<string, unknown>)?.name ?? '');
+}
+
+/** The `$item` projection bound inside a per-item template. `opts.mixed` marks a
+ *  heterogeneous set (drives a type chip); `opts.sentiments` maps the entity's
+ *  status to a sentiment so a status badge can colour (WORK-357); `opts.group` /
+ *  `opts.groupCount` expose the item's group context in a grouped collection
+ *  (WORK-344). */
+export function projectItem(
+	e: EntityRegistration,
+	opts?: { mixed?: boolean; sentiments?: CollectionEmbedConfig['sentiments']; group?: string; groupCount?: number },
+) {
+	const status = (e.data as Record<string, unknown>)?.status as string | undefined;
+	const sentiment = status ? (opts?.sentiments?.[e.type]?.status?.[status] ?? '') : '';
+	return {
+		id: e.id,
+		identifier: entityIdentifier(e),
+		type: e.type,
+		url: entityUrl(e),
+		data: e.data,
+		sentiment,
+		mixed: opts?.mixed ?? false,
+		group: opts?.group ?? '',
+		groupCount: opts?.groupCount ?? 0,
+	};
 }
 
 /** Sort entities by a `sort` expression (`field`, `-field`, `field-desc`).
