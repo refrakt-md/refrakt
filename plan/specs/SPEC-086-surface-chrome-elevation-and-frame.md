@@ -129,6 +129,16 @@ rule), an **oversized** guest must opt out of that normalisation to exceed the
 slot — folding `frame` guests into the existing `preview` / `juxtapose` /
 `showcase` opt-out list in `split.css` rather than inventing a new mechanism.
 
+**Full-bleed is a `width` concern, not a `displace` one — don't conflate the two
+breakout mechanisms:**
+
+- **Page-level full-bleed = `width`.** The page layout makes the article a named-line grid (`packages/lumina/styles/layouts/default.css`): `[full-start] … [content-start] min(--rf-content-max, …) [content-end] … [full-end]`. Every article child defaults to `grid-column: content` (the prose measure); `width="wide"` / `width="full"` simply place it in a wider track. The block is **allocated** the track — it never overflows, so there are **no clipping ancestors to fight** and the host-owned-clip question above does not apply. This is the canonical way for a top-level block to span the section/viewport.
+- **Local / nested breakout = `displace` (this section).** The negative-margin spill past a *component* host (out of a card, a cover, a showcase), and the only place host-owned clip is relevant.
+
+So `showcase`/`figure` is the **attribute-surface wrapper** that lets a bare markdown image carry `width="full"` (top-level) or `displace`/`frame` (nested) — not a distinct breakout primitive. A bare image has no attribute surface, so you wrap it; what it wraps *into* is the width grid (top-level) or `displace` (nested).
+
+**Limitation:** the width tracks live on direct article children (`.rf-page-content > article > *`), so `width="full"` reaches the viewport **only from the top level of the page flow**. From inside a nested context (a multi-column rune, a card, a blockquote, the docs body), the article tracks are unavailable, so breakout there is the fragile `displace` negative-margin path and requires every ancestor to be non-clipping.
+
 ### 5. Migration (breaking)
 
 `showcase`'s bespoke attributes become `frame` facets. Provide deprecated
@@ -158,6 +168,7 @@ aliases so the major can land later).
 - [ ] `frame` on a rune with no frame target emits a build warning rather than applying ambiguously.
 - [ ] The frame shadow facet renders as `drop-shadow` (silhouette); `elevation` renders as `box-shadow` (box) — they never collide on the same surface.
 - [ ] **Clip is host-owned, not a guest attribute**: clipping hosts (`card`/`bento-cell`/`figure`) crop a displaced/oversized guest (peek, keeping the container-query context + `anchor` focal point); breakout hosts (`showcase`-self, section/page) let it spill (bleed). The `--in-bento-cell` one-off is generalised to this contract; `offset` collapses on mobile.
+- [ ] **Page-level full-bleed is a `width` concern** (the article named-line grid's `content|wide|full` tracks), distinct from `displace`/host-owned-clip (the local/nested breakout); `showcase`/`figure` is the attribute-surface wrapper carrying `width` (top-level) or `displace` (nested), not a separate primitive; `width="full"` reaches the viewport only from the top level (nested breakout is the fragile `displace` path).
 - [ ] An `oversize`d guest opts out of the media-zone `width: 100%` normalisation (folded into the existing `preview`/`juxtapose`/`showcase` opt-out in `split.css`) so it can exceed and be clipped by the slot.
 - [ ] `frame` facets reconcile with bento's existing media vars rather than duplicating them: `frame-aspect` drives `--bento-media-aspect`, `frame-anchor` drives `--bento-media-anchor`, and a grid-level `frame` default cascades to cells (mirroring `media-position`/`content-height`), since heading-sugar cells have no per-cell attribute surface.
 - [ ] `showcase` is re-expressed as `frameTarget: 'self'` consuming `frame`; its old `shadow|bleed|offset|aspect|place` attributes are deprecated aliases (warn) per the migration table (`bleed` → `frame-displace`, raw-length `offset` → scale), with breakout retained as its distinct value.
