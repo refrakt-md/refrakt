@@ -13,6 +13,10 @@ export const recipe = createContentModelSchema({
 		cookTime: { type: String, required: false, default: '', description: 'Active cooking or baking time (e.g. "45 min")' },
 		servings: { type: Number, required: false, description: 'Number of portions the recipe yields' },
 		difficulty: { type: String, required: false, matches: difficultyType.slice(), default: 'medium', description: 'Skill level: easy, medium, or hard' },
+		// SPEC-089 — cover mode (`media-position="cover"`, from splitLayoutAttributes)
+		// regroups the preamble header over the media (header scope). `content-place`
+		// anchors that overlaid preamble: "<block> <inline>" (e.g. "end start") or "auto".
+		'content-place': { type: String, required: false, description: 'Cover overlay anchor: "<block> <inline>" (e.g. "end start") or "auto"' },
 	},
 	contentModel: {
 		type: 'delimited',
@@ -120,6 +124,10 @@ export const recipe = createContentModelSchema({
 		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
 		const { mediaPosition: mediaPositionMeta, mediaRatio: mediaRatioMeta, valign: valignMeta, collapse: collapseMeta } = layoutMetas;
 
+		// SPEC-089 cover anchor — emit only when set; the engine reads it as a field.
+		const contentPlace = attrs['content-place'] as string | undefined;
+		const contentPlaceMeta = contentPlace ? new Tag('meta', { content: contentPlace }) : undefined;
+
 		// Structural wrapping
 		const sectionProps = pageSectionProperties(header);
 		const ingredientsList = new Tag('ul', {}, ingredients);
@@ -146,6 +154,7 @@ export const recipe = createContentModelSchema({
 			servingsMeta,
 			difficultyMeta,
 			...layoutChildren,
+			...(contentPlaceMeta ? [contentPlaceMeta] : []),
 			...(hasMedia ? [mediaDiv.next()] : []),
 			...header.toArray(),
 			ingredientsList,
@@ -165,6 +174,7 @@ export const recipe = createContentModelSchema({
 				'media-ratio': mediaRatioMeta,
 				valign: valignMeta,
 				collapse: collapseMeta,
+				'content-place': contentPlaceMeta,
 			},
 			refs: {
 				...sectionProps,

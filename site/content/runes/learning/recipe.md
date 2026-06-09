@@ -57,10 +57,11 @@ The body splits on `---` into **media → content → footer** zones (media-firs
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `media-position` | `string` | `top` | Where the media sits: `top`, `bottom`, `start` (left), `end` (right) |
+| `media-position` | `string` | `top` | Where the media sits: `top`, `bottom`, `start` (left), `end` (right), or `cover` (poster header — see below) |
 | `media-ratio` | `string` | — | Media's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
 | `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
 | `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
+| `content-place` | `string` | `auto` | **Cover only.** Where the overlaid header anchors: `<block> <inline>` (each `start`/`center`/`end`), or `auto` |
 
 ### Common attributes
 
@@ -74,3 +75,34 @@ All block runes share these attributes for layout and theming.
 | `tint` | `string` | — | Named colour tint from theme configuration |
 | `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
 | `bg` | `string` | — | Named background preset from theme configuration |
+
+## Cover mode
+
+`media-position="cover"` turns the recipe into a poster: the title block (eyebrow, headline, blurb) overlays the media as a header, and the ingredients, steps, and tips flow below on the page palette. Recipe uses **header scope** — only the preamble sits on the image, never the long body — so it's the same one-attribute switch as on `card`, scoped to the part that belongs on the photo.
+
+{% preview source=true %}
+
+{% recipe prepTime="PT5M" servings=1 difficulty="easy" media-position="cover" scrim-type="frost" scrim-blur="md" %}
+![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
+
+---
+
+A cocktail classic
+
+## Tequila Sunrise
+
+A layered showstopper that transitions from deep orange to golden yellow — like watching the sun come up in a glass.
+
+- 60ml tequila
+- 120ml fresh orange juice
+- 15ml grenadine
+- Orange slice and cherry for garnish
+
+1. Fill a tall glass with ice and pour in the tequila and orange juice. Stir gently.
+2. Slowly pour grenadine over the back of a spoon so it sinks to the bottom.
+3. Let the layers settle, then garnish with an orange slice and a cherry.
+{% /recipe %}
+
+{% /preview %}
+
+The cover scrim, `content-place` anchor, and `scrim-type="frost"` work exactly as on [`card`](/runes/card#cover-mode) — here the frosted band reads behind the title while the metadata and method below stay on the normal surface. Only the overlaid header flips to a light foreground; the body keeps the page palette.

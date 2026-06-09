@@ -95,10 +95,13 @@ Read the five-minute guide.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `media-position` | `string` | `top` | Where the media sits: `top`, `bottom`, `start` (left), or `end` (right) |
+| `media-position` | `string` | `top` | Where the media sits: `top`, `bottom`, `start` (left), `end` (right), or `cover` (media fills the card, content overlays — see below) |
 | `media-ratio` | `string` | — | Media zone's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
 | `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
 | `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
+| `content-place` | `string` | `auto` | **Cover only.** Where the overlaid content anchors: `<block> <inline>` (each `start`/`center`/`end`), or `auto` to adapt to orientation |
+| `height` | `string` | — | Intrinsic card height (named scale `sm`/`md`/`lg`/`xl`) — gives a cover or `bg`-only card a poster shape |
+| `aspect` | `string` | — | Intrinsic card aspect ratio (e.g. `16/9`, `3/4`) — the proportional alternative to `height` |
 | `href` | `string` | — | Optional whole-card link target |
 
 ## Elevation & frame
@@ -117,6 +120,41 @@ A card exposes two decorable surfaces ([surface model](/runes/surfaces)): the **
 {% /preview %}
 
 `elevation` floats the card box (`none`/`sm`/`md`/`lg`); `frame` (or a named preset from theme/project config) decorates the media zone. Because the media zone is a clipping host, a displaced or `oversize`d guest is cropped into a peek — `frame-anchor` picks the focal point. See [surfaces](/runes/surfaces) for the full facet list.
+
+## Cover mode
+
+`media-position="cover"` is the poster layout: the media well fills the card interior and the body overlays it. It's a one-attribute switch from `top`/`bottom`/`start`/`end` — the same content, restacked. The media stays a media guest, so the thin edge and `--rf-radius-media` are preserved; nothing else about the card changes.
+
+{% preview source=true %}
+
+{% card href="/runes/learning/recipe" media-position="cover" scrim-type="frost" scrim-blur="md" height="lg" %}
+![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
+
+---
+
+Brunch classic
+
+### Tequila Sunrise
+A bright, layered cocktail — five minutes, no shaker.
+{% /card %}
+
+{% /preview %}
+
+A cover card has no natural height (there's no side-by-side content to set it), so give it one with `height` (the named scale `sm`/`md`/`lg`/`xl`) or `aspect` (e.g. `aspect="3/4"`). When the card sits in an external grid track (a `bento` cell, a `collection` row), the track wins; otherwise `height`/`aspect` set the shape, falling back to a portrait default. `height`/`aspect` are also the standalone analog of a bento row-span for a `bg`-only card — a card with no media at all, just a [background fill](/runes/bg), needs an intrinsic height to show.
+
+### Placing the overlay — `content-place`
+
+`content-place` anchors the overlaid content. It's a two-axis logical value — `<block> <inline>`, each `start` / `center` / `end` — mapping to `align`/`justify`. The default, `auto`, adapts to the card's own orientation via a container query: a portrait card drops the content to the block end (a caption band), a landscape card pulls it to the inline start (a side panel). Pin it with an explicit value, e.g. `content-place="center center"` for a centred hero.
+
+`content-place` is inert outside cover mode — there's no overlay to anchor — and the engine warns if you set it on a non-cover card.
+
+### The cover scrim
+
+Overlaying text on an arbitrary photo is a legibility footgun, so cover mode turns on a default [scrim](/runes/bg#scrim) on the media surface — a gradient weighted toward the content edge (it follows `content-place`, and you can pin it with an explicit `scrim="top|bottom|left|right"`). The example above instead uses the **frost** treatment (`scrim-type="frost"`, with `scrim-blur` on the `none`/`sm`/`md`/`lg` scale): a frosted-glass blur banded behind the text rather than a gradient. Either way the scrim is masked to the content edge so it never blurs or darkens the whole image, and the foreground reads against the darkened media automatically (`scrim-tone` controls the polarity — a dark scrim yields light text). Opt out with `scrim="none"`, or set a [`tint`](/runes/surfaces) for a bespoke overlay colour.
+
+The scheme is scoped to the overlaid text, not the whole card: the card's own surface — the padded edge framing the media well — keeps the page palette (light in light mode, dark in dark mode), while only the text sitting on the image flips to stay legible.
+
+In a `recipe`, cover mode uses **header scope**: only the title block overlays the image (a poster header), and the ingredients/steps flow below on the page palette — the same `media-position="cover"` switch, scoped to the part that should sit on the image.
 
 ## Feeding a card from a collection
 
@@ -154,6 +192,8 @@ In a `grid`, every card in a row shares the height of the tallest one, and the b
 ```
 
 The media / content split, responsive collapse, and mobile full-bleed media header all come from the shared `layouts/split.css` (keyed off `data-layout` / `data-section="media"` / `data-media-position`), so `card` ships only its box chrome.
+
+In **cover mode** the root carries `data-media-position="cover"` plus `data-cover-scope="full"` (and `rf-card--cover`); `content-place` emits `data-content-place` and the `--cover-place-block`/`--cover-place-inline` custom properties, `height` emits `data-height`, and `aspect` an inline `aspect-ratio`. The default scrim is added unless `scrim="none"` or a `tint` opts out; `scrim-type="frost"` adds `data-scrim-type`/`data-scrim-blur` (the scrim renders on the media well's `::after`, never the self-surface bg layer). The overlay foreground scheme (`data-color-scheme`) lands on the `[data-name="content"]` overlay — not the root — so the card box surface keeps the page palette.
 
 ## See also
 

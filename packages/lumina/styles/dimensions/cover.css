@@ -1,0 +1,140 @@
+/* Cover layout (SPEC-089) — `media-position="cover"`.
+ *
+ * The media well fills the rune interior and the content overlays it (the poster
+ * / cover card). The media stays a media guest — the thin-edge frame and
+ * `--rf-radius-media` are preserved — with content floated on top via grid
+ * stacking (media + content share one grid cell). No overlay primitive in the
+ * layout config; the variant supplies the structure (SPEC-091), CSS positions.
+ *
+ * Height authority: an external grid track (bento) wins; else the media aspect
+ * (`frame-aspect`, default portrait); a card height/aspect knob overrides via the
+ * cascade. Cover supersedes the media-vs-content split knobs (content-height /
+ * media-ratio), which have no meaning when there is no split. */
+
+/* ── full scope — the whole content overlays the media well ──────────── */
+[data-media-position="cover"]:not([data-cover-scope="header"]) {
+	display: grid;
+	grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+	aspect-ratio: var(--frame-aspect, var(--cover-aspect, 3 / 4));
+	container-type: size;
+	overflow: hidden;
+	isolation: isolate;
+}
+[data-media-position="cover"]:not([data-cover-scope="header"]) > [data-section="media"],
+[data-media-position="cover"]:not([data-cover-scope="header"]) > [data-name="content"] {
+	grid-area: 1 / 1;
+	margin: 0;
+	min-width: 0;
+}
+
+/* ── header scope — only the cover-band overlays; body flows below ────── */
+[data-cover-scope="header"] > [data-name="cover-band"] {
+	display: grid;
+	grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+	aspect-ratio: var(--frame-aspect, 16 / 9);
+	border-radius: var(--rf-radius-media);
+	overflow: hidden;
+	isolation: isolate;
+	container-type: size;
+}
+/* On narrow screens a 16/9 band is too short to seat the preamble over the
+ * scrim, so default it to a taller (≥1:1) poster shape. An explicit
+ * `frame-aspect` still wins. */
+@media (max-width: 40rem) {
+	[data-cover-scope="header"] > [data-name="cover-band"] {
+		aspect-ratio: var(--frame-aspect, 4 / 5);
+	}
+}
+[data-cover-scope="header"] > [data-name="cover-band"] > [data-section="media"],
+[data-cover-scope="header"] > [data-name="cover-band"] > [data-name="preamble"] {
+	grid-area: 1 / 1;
+	margin: 0;
+}
+
+/* ── shared: the media well fills, the overlaid box positions ─────────── */
+[data-media-position="cover"] [data-section="media"] {
+	position: relative;
+	height: 100%;
+	border-radius: var(--rf-radius-media);
+	overflow: hidden;
+}
+[data-media-position="cover"] [data-section="media"] > :is(img, video) {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+/* The overlaid box (full: content; header: preamble) anchors via content-place. */
+[data-media-position="cover"]:not([data-cover-scope="header"]) > [data-name="content"],
+[data-cover-scope="header"] > [data-name="cover-band"] > [data-name="preamble"] {
+	position: relative;
+	z-index: 1;
+	align-self: var(--cover-place-block, end);
+	justify-self: var(--cover-place-inline, stretch);
+	padding: var(--rune-padding, var(--rf-spacing-md));
+}
+
+/* ── auto / unset placement ───────────────────────────────────────────
+ * `auto` is the cover default, so an unset content-place behaves the same as an
+ * explicit `auto`. A header band is always a caption strip — the preamble sits at
+ * the block-end over the scrim regardless of the band's orientation. A full-scope
+ * overlay adapts to the cover region's orientation (portrait → block-end caption;
+ * landscape → inline-start side panel). An explicit value (e.g. "center center")
+ * sets the `--cover-place-*` vars on the base rule above and does NOT match here,
+ * so it pins regardless of orientation. */
+[data-media-position="cover"]:not([data-cover-scope="header"]):is([data-content-place="auto"], :not([data-content-place])) > [data-name="content"],
+[data-cover-scope="header"]:is([data-content-place="auto"], :not([data-content-place])) > [data-name="cover-band"] > [data-name="preamble"] {
+	align-self: end;
+	justify-self: stretch;
+}
+@container (min-aspect-ratio: 1 / 1) {
+	[data-media-position="cover"]:not([data-cover-scope="header"]):is([data-content-place="auto"], :not([data-content-place])) > [data-name="content"] {
+		align-self: center;
+		justify-self: start;
+	}
+}
+
+/* ── default cover scrim (SPEC-088 scrim, on the media surface) ────────
+ * Overlaying text on an arbitrary image without a scrim is a legibility footgun,
+ * so cover applies a default gradient scrim weighted toward the content edge.
+ * `scrim="none"` opts out. The overlaid foreground is set light by the engine
+ * (data-color-scheme) so text reads against the darkened media. */
+[data-media-position="cover"]:not([data-scrim="none"]) [data-section="media"]::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background-image: linear-gradient(var(--cover-scrim-dir, to top), rgb(0 0 0 / 0.55), transparent 62%);
+}
+
+/* Frost treatment (`scrim-type="frost"`) — a frosted-glass blur over the media
+ * instead of a gradient. `scrim-blur` (named scale) sets the blur radius; the
+ * tint follows the cover scheme (a dark scheme → a dark frost for light text).
+ * The frost is masked to the content edge (following `--cover-scrim-dir`, default
+ * bottom) so it reads as a band behind the text, not a blur over the whole image. */
+[data-media-position="cover"][data-scrim-blur="none"] { --cover-scrim-blur: 0px; }
+[data-media-position="cover"][data-scrim-blur="sm"]   { --cover-scrim-blur: 4px; }
+[data-media-position="cover"][data-scrim-blur="md"]   { --cover-scrim-blur: 8px; }
+[data-media-position="cover"][data-scrim-blur="lg"]   { --cover-scrim-blur: 16px; }
+[data-media-position="cover"][data-scrim-type="frost"]:not([data-scrim="none"]) [data-section="media"]::after {
+	background-image: none;
+	background-color: rgb(0 0 0 / 0.18);
+	-webkit-backdrop-filter: blur(var(--cover-scrim-blur, 8px));
+	backdrop-filter: blur(var(--cover-scrim-blur, 8px));
+	-webkit-mask-image: linear-gradient(var(--cover-scrim-dir, to top), #000 30%, transparent 72%);
+	mask-image: linear-gradient(var(--cover-scrim-dir, to top), #000 30%, transparent 72%);
+}
+[data-media-position="cover"][data-scrim-type="frost"][data-color-scheme="light"]:not([data-scrim="none"]) [data-section="media"]::after {
+	background-color: rgb(255 255 255 / 0.25);
+}
+
+/* The overlay carries the cover colour-scheme (set by the engine) so its text
+ * reads against the darkened media. The standalone `[data-color-scheme]` rule
+ * also paints a `background-color`; null it out here so the overlay stays
+ * see-through over the media (the scrim, not a solid box, does the legibility). */
+[data-media-position="cover"] [data-name="content"][data-color-scheme],
+[data-cover-scope="header"] > [data-name="cover-band"][data-color-scheme] {
+	background-color: transparent;
+	/* Muted text (the blurb) is barely legible over a photo, so on the overlay it
+	 * reads at full foreground strength — the same colour as the headline. */
+	--rf-color-muted: var(--rf-color-text);
+}

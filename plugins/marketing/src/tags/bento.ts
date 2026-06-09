@@ -31,7 +31,7 @@ export const bentoCell = createContentModelSchema({
 		size: { type: String, required: false },
 		cols: { type: Number, required: false },
 		rows: { type: Number, required: false },
-		'media-position': { type: String, required: false, matches: ['top', 'bottom', 'start', 'end'] },
+		'media-position': { type: String, required: false, matches: ['top', 'bottom', 'start', 'end', 'cover'] },
 		'content-height': { type: String, required: false, matches: ['sm', 'md', 'lg', 'xl'], description: 'Override the grid content-height for this cell (column cells): pin its text area to sm/md/lg/xl' },
 		'media-ratio': { type: String, required: false, matches: ['1/3', '2/5', '1/2', '3/5', '2/3'], description: 'Override the grid media-ratio for this cell (beside cells): the media zone\'s share of the cell width' },
 		href: { type: String, required: false },
@@ -261,7 +261,7 @@ export const bento = createContentModelSchema({
 		'row-height': { type: String, required: false, matches: ['sm', 'md', 'lg', 'xl'], description: 'Uniform grid row track height: sm, md (default), lg, or xl' },
 		'content-height': { type: String, required: false, matches: ['sm', 'md', 'lg', 'xl'], description: 'Grid default: pin each column cell\'s text area to a fixed height (sm/md/lg/xl) so cells align vertically; per-cell overridable; reverts to natural height on mobile' },
 		'media-ratio': { type: String, required: false, matches: ['1/3', '2/5', '1/2', '3/5', '2/3'], description: 'Grid default for beside (start/end) cells: the media zone\'s share of the cell width; per-cell overridable' },
-		'media-position': { type: String, required: false, matches: ['top', 'bottom', 'start', 'end'], description: 'Grid default media placement for every cell (overrides the per-cell size-derived default); a cell\'s own media-position still wins' },
+		'media-position': { type: String, required: false, matches: ['top', 'bottom', 'start', 'end', 'cover'], description: 'Grid default media placement for every cell (overrides the per-cell size-derived default); a cell\'s own media-position still wins' },
 		collapse: { type: String, required: false, matches: ['sm', 'md', 'lg', 'never'], description: 'Binary collapse breakpoint: above it the grid renders as authored, below it cells stack into a single column with auto row tracks. Default sm (640px). `never` to disable.' },
 	},
 	contentModel: (attrs) => ({

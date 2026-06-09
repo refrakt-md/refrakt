@@ -288,6 +288,18 @@
 				"collapse": {
 					"source": "meta",
 					"dataAttribute": "data-collapse"
+				},
+				"content-place": {
+					"source": "meta",
+					"dataAttribute": "data-content-place"
+				},
+				"height": {
+					"source": "meta",
+					"dataAttribute": "data-height"
+				},
+				"aspect": {
+					"source": "meta",
+					"dataAttribute": "data-aspect"
 				}
 			},
 			"elements": {
@@ -305,6 +317,76 @@
 			"inlineStyles": {
 				"valign": {
 					"prop": "--split-valign"
+				},
+				"aspect": "aspect-ratio"
+			},
+			"variants": {
+				"media-position": {
+					"cover": {
+						"block": "card",
+						"root": ".rf-card",
+						"dataRune": "card",
+						"childOrder": [
+							"media",
+							"content",
+							"{content}"
+						],
+						"modifiers": {
+							"media-position": {
+								"source": "meta",
+								"default": "top",
+								"dataAttribute": "data-media-position"
+							},
+							"media-ratio": {
+								"source": "meta",
+								"dataAttribute": "data-media-ratio"
+							},
+							"valign": {
+								"source": "meta",
+								"dataAttribute": "data-valign"
+							},
+							"collapse": {
+								"source": "meta",
+								"dataAttribute": "data-collapse"
+							},
+							"content-place": {
+								"source": "meta",
+								"dataAttribute": "data-content-place"
+							},
+							"height": {
+								"source": "meta",
+								"dataAttribute": "data-height"
+							},
+							"aspect": {
+								"source": "meta",
+								"dataAttribute": "data-aspect"
+							}
+						},
+						"staticModifiers": [
+							{
+								"name": "cover",
+								"selector": ".rf-card--cover"
+							}
+						],
+						"elements": {
+							"content": {
+								"tag": "div",
+								"selector": ".rf-card__content",
+								"source": "layout",
+								"children": [
+									"eyebrow",
+									"body",
+									"footer"
+								]
+							}
+						},
+						"inlineStyles": {
+							"valign": {
+								"prop": "--split-valign"
+							},
+							"aspect": "aspect-ratio"
+						}
+					}
 				}
 			}
 		},
@@ -3234,6 +3316,10 @@
 				"collapse": {
 					"source": "meta",
 					"dataAttribute": "data-collapse"
+				},
+				"content-place": {
+					"source": "meta",
+					"dataAttribute": "data-content-place"
 				}
 			},
 			"elements": {
@@ -3300,6 +3386,144 @@
 			"inlineStyles": {
 				"valign": {
 					"prop": "--split-valign"
+				}
+			},
+			"variants": {
+				"media-position": {
+					"cover": {
+						"block": "recipe",
+						"root": ".rf-recipe",
+						"dataRune": "recipe",
+						"childOrder": [
+							"cover-band",
+							"content",
+							"{content}"
+						],
+						"modifiers": {
+							"media-position": {
+								"source": "meta",
+								"default": "top",
+								"dataAttribute": "data-media-position"
+							},
+							"prepTime": {
+								"source": "meta",
+								"dataAttribute": "data-prep-time"
+							},
+							"cookTime": {
+								"source": "meta",
+								"dataAttribute": "data-cook-time"
+							},
+							"servings": {
+								"source": "meta",
+								"dataAttribute": "data-servings"
+							},
+							"difficulty": {
+								"source": "meta",
+								"default": "medium",
+								"classPattern": ".rf-recipe--{value}",
+								"dataAttribute": "data-difficulty"
+							},
+							"media-ratio": {
+								"source": "meta",
+								"dataAttribute": "data-media-ratio"
+							},
+							"valign": {
+								"source": "meta",
+								"dataAttribute": "data-valign"
+							},
+							"collapse": {
+								"source": "meta",
+								"dataAttribute": "data-collapse"
+							},
+							"content-place": {
+								"source": "meta",
+								"dataAttribute": "data-content-place"
+							}
+						},
+						"staticModifiers": [
+							{
+								"name": "cover",
+								"selector": ".rf-recipe--cover"
+							}
+						],
+						"elements": {
+							"metadata": {
+								"tag": "dl",
+								"selector": ".rf-recipe__metadata",
+								"source": "block",
+								"layout": "definition-list",
+								"fields": [
+									"prepTime",
+									"cookTime",
+									"servings",
+									"difficulty"
+								]
+							},
+							"preamble": {
+								"tag": "header",
+								"selector": ".rf-recipe__preamble",
+								"source": "layout",
+								"children": [
+									"eyebrow",
+									"headline",
+									"blurb"
+								]
+							},
+							"eyebrow": {
+								"tag": "eyebrow",
+								"selector": ".rf-recipe__eyebrow",
+								"source": "autoLabel"
+							},
+							"headline": {
+								"tag": "headline",
+								"selector": ".rf-recipe__headline",
+								"source": "autoLabel"
+							},
+							"blurb": {
+								"tag": "blurb",
+								"selector": ".rf-recipe__blurb",
+								"source": "autoLabel"
+							},
+							"image": {
+								"tag": "image",
+								"selector": ".rf-recipe__image",
+								"source": "autoLabel"
+							},
+							"media": {
+								"tag": "media",
+								"selector": ".rf-recipe__media",
+								"source": "autoLabel"
+							},
+							"content": {
+								"tag": "div",
+								"selector": ".rf-recipe__content",
+								"source": "layout",
+								"children": [
+									"metadata",
+									"ingredients",
+									"steps",
+									"tips"
+								]
+							},
+							"cover-band": {
+								"tag": "div",
+								"selector": ".rf-recipe__cover-band",
+								"source": "layout",
+								"children": [
+									"media",
+									"preamble"
+								],
+								"attrs": {
+									"data-color-scheme": "dark"
+								}
+							}
+						},
+						"inlineStyles": {
+							"valign": {
+								"prop": "--split-valign"
+							}
+						}
+					}
 				}
 			}
 		},

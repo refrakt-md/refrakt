@@ -68,6 +68,10 @@ export const config: Record<string, RuneConfig> = {
 			root: ['media', 'content'],
 			content: { tag: 'div', children: ['title', 'body', 'footer'] },
 		},
+		// SPEC-089 — cover (full scope) works via the shared cover layer keyed on
+		// `data-media-position="cover"` (set by bento.ts), so no variant is needed
+		// here (media-position is not an engine modifier on the cell); height comes
+		// from the grid row track.
 		styles: {
 			cols: '--cell-cols',
 			rows: '--cell-rows',
