@@ -7,6 +7,19 @@ import { RenderableNodeCursor } from '../lib/renderable.js';
 const shadowValues = ['none', 'soft', 'hard', 'elevated'] as const;
 const bleedValues = ['none', 'top', 'bottom', 'both', 'end', 'bottom-end', 'top-end'] as const;
 
+/** SPEC-086 — showcase collapses into the frame model (`frameTarget: 'self'`).
+ *  Its bespoke attributes are deprecated aliases for `frame-*` facets; map them
+ *  and warn once, retaining breakout (`bleed` → `frame-displace` on a breakout
+ *  host) as showcase's distinct value. */
+const SHADOW_TO_FRAME: Record<string, string> = { soft: 'sm', hard: 'md', elevated: 'lg' };
+const SHOWCASE_DEPRECATED_WARNED = new Set<string>();
+function warnShowcaseDeprecated(attr: string, replacement: string): void {
+	if (SHOWCASE_DEPRECATED_WARNED.has(attr)) return;
+	SHOWCASE_DEPRECATED_WARNED.add(attr);
+	// eslint-disable-next-line no-console
+	console.warn(`[refrakt] showcase \`${attr}\` is deprecated (SPEC-086) — use \`${replacement}\`. The alias will be removed in a future minor.`);
+}
+
 export const showcase = createContentModelSchema({
 	attributes: {
 		shadow: { type: String, required: false, matches: shadowValues.slice(), description: 'Shadow style around the showcase content' },
@@ -38,35 +51,34 @@ export const showcase = createContentModelSchema({
 
 		const properties: Record<string, any> = {};
 		const childNodes: any[] = [];
+		// Emit a frame facet meta the engine routes to the showcase root
+		// (frameTarget: 'self'). Routed through `properties` so it rides both the
+		// SPEC-082 field bag and the meta channel the engine reads.
+		const frameMeta = (field: string, value: string) => {
+			const meta = new Tag('meta', { content: value });
+			properties[field] = meta;
+			childNodes.push(meta);
+		};
 
 		if (shadow && shadow !== 'none') {
-			const meta = new Tag('meta', { content: shadow });
-			properties.shadow = meta;
-			childNodes.push(meta);
+			warnShowcaseDeprecated('shadow', 'frame-shadow');
+			frameMeta('frame-shadow', SHADOW_TO_FRAME[shadow] ?? shadow);
 		}
-
 		if (bleed && bleed !== 'none') {
-			const meta = new Tag('meta', { content: bleed });
-			properties.bleed = meta;
-			childNodes.push(meta);
+			warnShowcaseDeprecated('bleed', 'frame-displace');
+			frameMeta('frame-displace', bleed);
 		}
-
 		if (offset) {
-			const meta = new Tag('meta', { content: offset });
-			properties.offset = meta;
-			childNodes.push(meta);
+			warnShowcaseDeprecated('offset', 'frame-offset');
+			frameMeta('frame-offset', offset);
 		}
-
 		if (aspect) {
-			const meta = new Tag('meta', { content: aspect });
-			properties.aspect = meta;
-			childNodes.push(meta);
+			warnShowcaseDeprecated('aspect', 'frame-aspect');
+			frameMeta('frame-aspect', aspect);
 		}
-
 		if (place) {
-			const meta = new Tag('meta', { content: place });
-			properties.place = meta;
-			childNodes.push(meta);
+			warnShowcaseDeprecated('place', 'frame-place');
+			frameMeta('frame-place', place);
 		}
 
 		const viewport = new Tag('div', {}, children.toArray());

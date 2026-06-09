@@ -1,5 +1,5 @@
 import type { ThemeConfig, SerializedTag, RendererNode } from '@refrakt-md/transform';
-import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta, readField, resolveGap, ratioToFr, resolveOffset, resolveValign, parsePlacement } from '@refrakt-md/transform';
+import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta, readField, resolveGap, ratioToFr, resolveValign } from '@refrakt-md/transform';
 import type { PluginPipelineHooks, TransformedPage, EntityRegistry, AggregatedData, PipelineContext } from '@refrakt-md/types';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
@@ -282,6 +282,9 @@ export const coreConfig: ThemeConfig = {
 		Figure: {
 			block: 'figure',
 			defaultDensity: 'compact',
+			// SPEC-086 — a figure *is* a frame around its image, so `frame` chrome
+			// targets the figure's own root (its body is the media).
+			frameTarget: 'self',
 			modifiers: {
 				size: { source: 'meta', default: 'default' },
 				align: { source: 'meta', default: 'center' },
@@ -446,29 +449,15 @@ export const coreConfig: ThemeConfig = {
 			defaultDensity: 'compact',
 			childDensity: 'compact',
 			sections: { viewport: 'body' },
-			modifiers: {
-				shadow: { source: 'meta', default: 'none' },
-				bleed: { source: 'meta', default: 'none' },
-				aspect: { source: 'meta', noBemClass: true },
-				offset: { source: 'meta', noBemClass: true },
-				place: { source: 'meta', noBemClass: true },
-			},
+			// SPEC-086 — showcase is the degenerate `frameTarget: 'self'` case: its
+			// body *is* the media, so `frame` chrome lands on its own root. Its old
+			// shadow/bleed/aspect/offset/place attributes are deprecated aliases for
+			// `frame-*` facets (mapped + warned in showcase.ts); breakout (a
+			// displaced guest spilling past a clipping ancestor) is its distinct
+			// value, retained via the host-owned-clip CSS.
+			frameTarget: 'self',
 			contextModifiers: { 'bento-cell': 'in-bento-cell' },
-			styles: {
-				offset: { prop: '--showcase-offset', transform: resolveOffset },
-				aspect: '--showcase-aspect',
-			},
 			editHints: { viewport: 'none' },
-			postTransform(node, context) {
-				const placeValue = context.modifiers['place'];
-				if (placeValue) {
-					const { x, y } = parsePlacement(placeValue);
-					const existing = node.attributes.style || '';
-					const placeParts = `--place-x: ${x}; --place-y: ${y}`;
-					node.attributes.style = existing ? `${existing}; ${placeParts}` : placeParts;
-				}
-				return node;
-			},
 		},
 
 		// ─── Interactive runes (still get BEM classes, components add behavior) ───

@@ -224,6 +224,14 @@ export interface RuneConfig {
 	 *  intentionally not implemented. */
 	variants?: Record<string, Record<string, Partial<RuneConfig>>>;
 
+	/** SPEC-086 — which surface `frame` chrome (aspect/displace/offset/oversize/
+	 *  place/anchor/shadow) decorates. `'media'` targets the rune's
+	 *  `[data-section="media"]` zone; `'self'` targets the rune's own root
+	 *  (figure/showcase, whose body *is* the media). Defaults to `'media'` when
+	 *  the rune declares a media section, else `'self'` is required to accept
+	 *  `frame` — otherwise `frame` emits a build warning. */
+	frameTarget?: 'media' | 'self';
+
 	/** Auto-label children by tag name → data-name. E.g., { summary: 'header' } */
 	autoLabel?: Record<string, string>;
 
@@ -476,6 +484,31 @@ export interface BgPresetDefinition {
 	extends?: string;
 }
 
+// ─── Frame Preset Types (SPEC-086) ───────────────────────────────────
+
+/** Named frame preset definition in theme config — the chrome that presents a
+ *  rune's *media* surface (or its self surface when `frameTarget: 'self'`).
+ *  Structurally parallel to {@link BgPresetDefinition}; facets are applied to
+ *  the frame-target element and may be overridden inline via `frame-*` attrs. */
+export interface FramePresetDefinition {
+	/** Aspect ratio of the framed media, e.g. "16/9" | "1/1". */
+	aspect?: string;
+	/** Edge/corner the guest moves toward: top | bottom | end | bottom-end | top-end. */
+	displace?: string;
+	/** Displacement distance — named scale: none | sm | md | lg | xl. */
+	offset?: string;
+	/** How far the guest exceeds its slot (scale factor / min-size); clipped guests only. */
+	oversize?: string;
+	/** Guest-box alignment in the slot: left|center|right × top|bottom. */
+	place?: string;
+	/** Crop focal point when the guest is cut (object-position). */
+	anchor?: string;
+	/** Silhouette drop-shadow strength: none | sm | md | lg. */
+	shadow?: string;
+	/** Layer onto a base preset (same `extends` resolution as bg/tint). */
+	extends?: string;
+}
+
 /** Top-level theme configuration */
 export interface ThemeConfig {
 	/** BEM prefix. E.g., 'rf' → .rf-hint */
@@ -495,6 +528,9 @@ export interface ThemeConfig {
 
 	/** Named background preset definitions for section-level backgrounds */
 	backgrounds?: Record<string, BgPresetDefinition>;
+
+	/** Named frame preset definitions (SPEC-086) — media-surface chrome. */
+	frames?: Record<string, FramePresetDefinition>;
 }
 
 // ─── Layout Transform Types ───────────────────────────────────────────

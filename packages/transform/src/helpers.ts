@@ -157,16 +157,25 @@ export function ratioToFr(value: string): string {
 	return value.split(/\s+/).map(n => `${n}fr`).join(' ');
 }
 
-/** Named offset presets → CSS spacing token values */
+/** Named offset presets → CSS spacing token values (SPEC-086 named scale). */
 const OFFSET_PRESETS: Record<string, string> = {
+	none: '0',
 	sm: 'var(--rf-spacing-sm)',
 	md: 'var(--rf-spacing-md)',
 	lg: 'var(--rf-spacing-lg)',
+	xl: 'var(--rf-spacing-xl)',
 };
 
-/** Resolve an offset preset name to its CSS value. Raw CSS values pass through. */
+/** Resolve an offset preset name to its CSS value. SPEC-086 closed the raw-value
+ *  fallthrough: `offset` is a named scale (none|sm|md|lg|xl), so an unknown value
+ *  warns and collapses to `none` rather than passing a raw length through. */
 export function resolveOffset(value: string): string {
-	return OFFSET_PRESETS[value] ?? value;
+	const resolved = OFFSET_PRESETS[value];
+	if (resolved === undefined) {
+		console.warn(`[refrakt] Unknown offset "${value}" — expected one of ${Object.keys(OFFSET_PRESETS).join(', ')}. Falling back to "none".`);
+		return OFFSET_PRESETS.none;
+	}
+	return resolved;
 }
 
 /** Map spatial valign values (top/center/bottom) to CSS align-items values */

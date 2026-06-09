@@ -876,43 +876,11 @@
 			"childOrder": [
 				"{content}"
 			],
-			"modifiers": {
-				"shadow": {
-					"source": "meta",
-					"default": "none",
-					"classPattern": ".rf-showcase--{value}",
-					"dataAttribute": "data-shadow"
-				},
-				"bleed": {
-					"source": "meta",
-					"default": "none",
-					"classPattern": ".rf-showcase--{value}",
-					"dataAttribute": "data-bleed"
-				},
-				"aspect": {
-					"source": "meta",
-					"dataAttribute": "data-aspect"
-				},
-				"offset": {
-					"source": "meta",
-					"dataAttribute": "data-offset"
-				},
-				"place": {
-					"source": "meta",
-					"dataAttribute": "data-place"
-				}
-			},
 			"contextModifiers": {
 				"bento-cell": {
 					"suffix": "in-bento-cell",
 					"selector": ".rf-showcase--in-bento-cell"
 				}
-			},
-			"inlineStyles": {
-				"offset": {
-					"prop": "--showcase-offset"
-				},
-				"aspect": "--showcase-aspect"
 			},
 			"childDensity": "compact"
 		},

@@ -1,4 +1,4 @@
-import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, TintTokens, BgPresetDefinition, BlockDef } from './types.js';
+import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, TintTokens, BgPresetDefinition, FramePresetDefinition, BlockDef } from './types.js';
 import type { ThemeTokensConfig } from '@refrakt-md/types';
 
 export interface ThemeConfigOverrides {
@@ -8,6 +8,7 @@ export interface ThemeConfigOverrides {
 	runes?: Record<string, Partial<RuneConfig>>;
 	tints?: Record<string, TintDefinition>;
 	backgrounds?: Record<string, BgPresetDefinition>;
+	frames?: Record<string, FramePresetDefinition>;
 }
 
 /** Deep-merge a base theme config with theme-specific overrides.
@@ -48,6 +49,7 @@ export function mergeThemeConfig(
 		runes: mergedRunes,
 		tints: resolvedTints,
 		backgrounds: { ...base.backgrounds, ...overrides.backgrounds },
+		frames: { ...base.frames, ...overrides.frames },
 	};
 }
 

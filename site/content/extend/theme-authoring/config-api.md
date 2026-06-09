@@ -26,6 +26,7 @@ interface ThemeConfig {
 | `tokenPrefix` | Convention for CSS custom property naming. Used by documentation and tooling, not the engine itself |
 | `icons` | SVG strings organized by group and variant. Structural groups (e.g., `hint`) are used by `StructureEntry.icon` config to inject icons into rune headers. The `global` group is used by the `{% icon %}` content rune to resolve author-chosen icons by name |
 | `runes` | Maps each rune's `typeName` (PascalCase, e.g. `Hint`) to its transform configuration. The engine matches the kebab-cased key against the `data-rune` attribute on the tag |
+| `tints` / `backgrounds` / `frames` | Named preset registries — colour tints, `bg` layers, and `frame` media-surface chrome (SPEC-086). All share the same `extends` resolution. See [Surface chrome](/extend/theme-authoring/surface-chrome) for `frames`. |
 
 ## RuneConfig
 
@@ -357,6 +358,14 @@ Groups a rune under a parent rune in the block editor palette. Advisory only —
 
 ```typescript
 AccordionItem: { block: 'accordion-item', parent: 'Accordion' }
+```
+
+### frameTarget
+
+SPEC-086 — which surface `frame` chrome decorates: `'media'` (the `[data-section="media"]` zone) or `'self'` (the rune root, for runes whose body *is* the media, like `figure`/`showcase`). Defaults to `'media'` when the rune declares a media section; `frame` on a rune with no resolvable target emits a build warning. See [Surface chrome](/extend/theme-authoring/surface-chrome).
+
+```typescript
+Figure: { block: 'figure', frameTarget: 'self' }
 ```
 
 ### requiresParent
