@@ -18,6 +18,7 @@ const config: ThemeConfig = {
 				height: { source: 'meta', noBemClass: true },
 			},
 			sections: { media: 'media' },
+			layout: { root: ['media', 'content'], content: { tag: 'div', children: [] } },
 			variants: { 'media-position': { cover: { staticModifiers: ['cover'], rootAttributes: { 'data-cover-scope': 'full' } } } },
 		},
 		// Mirrors the recipe header-scope cover variant: the band carries the dark
@@ -93,17 +94,19 @@ describe('SPEC-089 cover variant', () => {
 		expect(r.attributes['data-cover-scope']).toBeUndefined();
 	});
 
-	it('full-scope cover defaults the root to a dark scheme (light overlay text)', () => {
+	it('full-scope cover flips the content overlay (not the root) to a dark scheme', () => {
 		const t = createTransform(config);
 		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover')])));
-		expect(r.attributes['data-color-scheme']).toBe('dark');
+		// Card box surface stays on the page palette; only the overlay text flips.
+		expect(r.attributes['data-color-scheme']).toBeUndefined();
+		expect(findByName(r, 'content')?.attributes['data-color-scheme']).toBe('dark');
 	});
 
-	it('scrim="none" opts out of the default cover scrim and the dark scheme', () => {
+	it('scrim="none" opts out of the default cover scrim and the overlay scheme', () => {
 		const t = createTransform(config);
 		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), meta('scrim', 'none')])));
 		expect(r.attributes['data-scrim']).toBe('none');
-		expect(r.attributes['data-color-scheme']).toBeUndefined();
+		expect(findByName(r, 'content')?.attributes['data-color-scheme']).toBeUndefined();
 	});
 
 	it('header-scope cover flips only the cover-band, not the rune root', () => {
@@ -130,10 +133,10 @@ describe('SPEC-089 cover variant', () => {
 		expect(r.attributes['data-scrim']).toBeUndefined();
 	});
 
-	it('scrim-tone="light" flips the cover foreground to a light scheme', () => {
+	it('scrim-tone="light" flips the cover overlay to a light scheme', () => {
 		const t = createTransform(config);
 		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), meta('scrim-tone', 'light')])));
-		expect(r.attributes['data-color-scheme']).toBe('light');
+		expect(findByName(r, 'content')?.attributes['data-color-scheme']).toBe('light');
 	});
 
 	it('scrim-type="frost" routes a frosted treatment to the cover host (no bg layer)', () => {

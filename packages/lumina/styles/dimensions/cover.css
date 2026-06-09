@@ -99,7 +99,9 @@
 
 /* Frost treatment (`scrim-type="frost"`) — a frosted-glass blur over the media
  * instead of a gradient. `scrim-blur` (named scale) sets the blur radius; the
- * tint follows the cover scheme (a dark scheme → a dark frost for light text). */
+ * tint follows the cover scheme (a dark scheme → a dark frost for light text).
+ * The frost is masked to the content edge (following `--cover-scrim-dir`, default
+ * bottom) so it reads as a band behind the text, not a blur over the whole image. */
 [data-media-position="cover"][data-scrim-blur="none"] { --cover-scrim-blur: 0px; }
 [data-media-position="cover"][data-scrim-blur="sm"]   { --cover-scrim-blur: 4px; }
 [data-media-position="cover"][data-scrim-blur="md"]   { --cover-scrim-blur: 8px; }
@@ -109,7 +111,18 @@
 	background-color: rgb(0 0 0 / 0.18);
 	-webkit-backdrop-filter: blur(var(--cover-scrim-blur, 8px));
 	backdrop-filter: blur(var(--cover-scrim-blur, 8px));
+	-webkit-mask-image: linear-gradient(var(--cover-scrim-dir, to top), #000 30%, transparent 72%);
+	mask-image: linear-gradient(var(--cover-scrim-dir, to top), #000 30%, transparent 72%);
 }
 [data-media-position="cover"][data-scrim-type="frost"][data-color-scheme="light"]:not([data-scrim="none"]) [data-section="media"]::after {
 	background-color: rgb(255 255 255 / 0.25);
+}
+
+/* The overlay carries the cover colour-scheme (set by the engine) so its text
+ * reads against the darkened media. The standalone `[data-color-scheme]` rule
+ * also paints a `background-color`; null it out here so the overlay stays
+ * see-through over the media (the scrim, not a solid box, does the legibility). */
+[data-media-position="cover"] [data-name="content"][data-color-scheme],
+[data-cover-scope="header"] > [data-name="cover-band"][data-color-scheme] {
+	background-color: transparent;
 }

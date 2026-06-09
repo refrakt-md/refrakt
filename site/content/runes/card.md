@@ -127,7 +127,7 @@ A card exposes two decorable surfaces ([surface model](/runes/surfaces)): the **
 
 {% preview source=true %}
 
-{% card href="/runes/learning/recipe" media-position="cover" height="lg" %}
+{% card href="/runes/learning/recipe" media-position="cover" scrim-type="frost" scrim-blur="md" height="lg" %}
 ![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
 
 ---
@@ -150,24 +150,9 @@ A cover card has no natural height (there's no side-by-side content to set it), 
 
 ### The cover scrim
 
-Overlaying text on an arbitrary photo is a legibility footgun, so cover mode turns on a default [scrim](/runes/bg#scrim) on the media surface — a gradient weighted toward the content edge (it follows `content-place`, and you can pin it with an explicit `scrim="top|bottom|left|right"`). The overlaid foreground is set to read against the darkened media automatically (`scrim-tone` controls the polarity — a dark scrim yields light text). Opt out with `scrim="none"`, or set a [`tint`](/runes/surfaces) for a bespoke overlay colour.
+Overlaying text on an arbitrary photo is a legibility footgun, so cover mode turns on a default [scrim](/runes/bg#scrim) on the media surface — a gradient weighted toward the content edge (it follows `content-place`, and you can pin it with an explicit `scrim="top|bottom|left|right"`). The example above instead uses the **frost** treatment (`scrim-type="frost"`, with `scrim-blur` on the `none`/`sm`/`md`/`lg` scale): a frosted-glass blur banded behind the text rather than a gradient. Either way the scrim is masked to the content edge so it never blurs or darkens the whole image, and the foreground reads against the darkened media automatically (`scrim-tone` controls the polarity — a dark scrim yields light text). Opt out with `scrim="none"`, or set a [`tint`](/runes/surfaces) for a bespoke overlay colour.
 
-For a frosted-glass poster, swap the gradient for a blur with `scrim-type="frost"` (the `frost` treatment from the [scrim facet](/runes/bg#scrim)); `scrim-blur` sets the radius (`none`/`sm`/`md`/`lg`):
-
-{% preview source=true %}
-
-{% card media-position="cover" scrim-type="frost" scrim-blur="md" height="lg" %}
-![Mountain lake at dusk](https://picsum.photos/seed/cardfrost/800/1000)
-
----
-
-Field notes
-
-### Still water
-A frosted scrim blurs the photo behind the text, so the caption reads anywhere on the image.
-{% /card %}
-
-{% /preview %}
+The scheme is scoped to the overlaid text, not the whole card: the card's own surface — the padded edge framing the media well — keeps the page palette (light in light mode, dark in dark mode), while only the text sitting on the image flips to stay legible.
 
 In a `recipe`, cover mode uses **header scope**: only the title block overlays the image (a poster header), and the ingredients/steps flow below on the page palette — the same `media-position="cover"` switch, scoped to the part that should sit on the image.
 
@@ -208,7 +193,7 @@ In a `grid`, every card in a row shares the height of the tallest one, and the b
 
 The media / content split, responsive collapse, and mobile full-bleed media header all come from the shared `layouts/split.css` (keyed off `data-layout` / `data-section="media"` / `data-media-position`), so `card` ships only its box chrome.
 
-In **cover mode** the root carries `data-media-position="cover"` plus `data-cover-scope="full"` (and `rf-card--cover`); `content-place` emits `data-content-place` and the `--cover-place-block`/`--cover-place-inline` custom properties, `height` emits `data-height`, and `aspect` an inline `aspect-ratio`. The default scrim and overlay foreground (`data-color-scheme`) are added by the engine unless `scrim="none"` or a `tint` opts out; `scrim-type="frost"` adds `data-scrim-type`/`data-scrim-blur` (the scrim renders on the media well's `::after`, never the self-surface bg layer).
+In **cover mode** the root carries `data-media-position="cover"` plus `data-cover-scope="full"` (and `rf-card--cover`); `content-place` emits `data-content-place` and the `--cover-place-block`/`--cover-place-inline` custom properties, `height` emits `data-height`, and `aspect` an inline `aspect-ratio`. The default scrim is added unless `scrim="none"` or a `tint` opts out; `scrim-type="frost"` adds `data-scrim-type`/`data-scrim-blur` (the scrim renders on the media well's `::after`, never the self-surface bg layer). The overlay foreground scheme (`data-color-scheme`) lands on the `[data-name="content"]` overlay — not the root — so the card box surface keeps the page palette.
 
 ## See also
 

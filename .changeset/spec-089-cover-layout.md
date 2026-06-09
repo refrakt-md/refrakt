@@ -19,7 +19,10 @@ scrim facet), weighted toward the content edge and following `content-place`
 unless an explicit `scrim="top|bottom|left|right"` pins it; `scrim="none"` opts
 out. `scrim-type="frost"` swaps the gradient for a frosted-glass blur (`scrim-blur`
 scale) — in cover mode the scrim renders on the media well, never the
-self-surface bg layer. The overlay foreground follows `scrim-tone` (a dark scrim
-yields light text), scoped to the band in header scope. Adds a card intrinsic-height knob
+self-surface bg layer, masked to the content edge so it never covers the whole
+image. The overlay foreground follows `scrim-tone` (a dark scrim yields light
+text) and is scoped to the overlay (`[data-name="content"]` in full scope, the
+cover-band in header scope), so the card's own surface keeps the page palette
+(light in light mode) while only the text on the media flips. Adds a card intrinsic-height knob
 (`height` named scale + `aspect`) for cover / `bg`-only cards, and documents
 cover mode in the card reference.

@@ -207,6 +207,17 @@ function findMediaZone(nodes: RendererNode[]): SerializedTag | undefined {
 	return undefined;
 }
 
+/** Find the first descendant tag carrying `data-name === name`. */
+function findByName(nodes: RendererNode[], name: string): SerializedTag | undefined {
+	for (const node of nodes) {
+		if (!isTag(node)) continue;
+		if (node.attributes?.['data-name'] === name) return node;
+		const found = node.children ? findByName(node.children, name) : undefined;
+		if (found) return found;
+	}
+	return undefined;
+}
+
 const FRAME_NO_TARGET_WARNED = new Set<string>();
 /** Warn once when `frame` is used on a rune with no resolvable frame target. */
 function warnFrameNoTarget(rune: string): void {
@@ -903,15 +914,19 @@ function transformRune(
 			}
 		}
 		// Foreground polarity follows `scrim-tone` (a dark scrim wants light text
-		// → a dark scheme; a light scrim wants dark text → a light scheme). Full
-		// scope = the whole rune overlays the media, so the scheme belongs on the
-		// root. Header scope only overlays the cover-band (the variant layout
-		// carries the scheme there, via its `attrs`), so the body below stays on
-		// the page palette — don't flip the root. An explicit tint/scheme wins.
+		// → a dark scheme; a light scrim wants dark text → a light scheme). The
+		// scheme is scoped to the *overlay*, not the rune root, so the card's own
+		// surface (the padded edge around the media well) keeps the page palette —
+		// only the text sitting on the darkened media flips. Full scope flips the
+		// `content` overlay; header scope flips the cover-band (the variant layout
+		// carries the scheme via its `attrs`). An explicit tint/scheme wins.
 		const coverScope = config.rootAttributes?.['data-cover-scope'];
 		if (coverScrim !== 'none' && coverScope !== 'header'
 			&& !bgDataAttrs['data-color-scheme'] && !tintDataAttrs['data-color-scheme']) {
-			bgDataAttrs['data-color-scheme'] = readMeta(tag, 'scrim-tone') ?? 'dark';
+			const overlay = findByName(filteredChildren, 'content');
+			if (overlay) {
+				overlay.attributes = { ...overlay.attributes, 'data-color-scheme': readMeta(tag, 'scrim-tone') ?? 'dark' };
+			}
 		}
 		// An explicit scrim direction pins the default-scrim gradient, overriding
 		// the content-place-derived direction set above.
