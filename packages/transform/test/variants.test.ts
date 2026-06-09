@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { createTransform } from '../src/engine.js';
 import { mergeRuneConfig } from '../src/merge.js';
 import { validateThemeConfig } from '../src/validate.js';
+import { generateStructureContract } from '../src/contracts.js';
 import { makeTag } from '../src/helpers.js';
 import type { ThemeConfig, RuneConfig } from '../src/types.js';
 import type { SerializedTag } from '@refrakt-md/types';
@@ -168,5 +169,38 @@ describe('SPEC-091 engine config variants — validation', () => {
 		});
 		expect(res.valid).toBe(false);
 		expect(res.errors.some((e) => /identity field "block"/.test(e.message))).toBe(true);
+	});
+});
+
+// ─── Contracts: per-variant structures are enumerated ─────────────────
+
+describe('SPEC-091 engine config variants — contracts', () => {
+	it('enumerates a per-variant contract for each axis/value', () => {
+		const contract = generateStructureContract({
+			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			runes: {
+				Card: {
+					block: 'card',
+					modifiers: { mode: { source: 'meta', default: 'plain', noBemClass: true } },
+					layout: { root: ['media', 'content'] },
+					variants: {
+						mode: {
+							cover: {
+								staticModifiers: ['cover'],
+								layout: { root: ['band'], band: { tag: 'div', children: ['media', 'content'] } },
+							},
+						},
+					},
+				},
+			},
+		});
+		const card = contract.runes.Card;
+		expect(card.variants).toBeTruthy();
+		const cover = card.variants!.mode.cover;
+		// The variant contract reflects the merged structure (new wrapper + modifier).
+		expect(cover.staticModifiers?.some((m) => m.selector === '.rf-card--cover')).toBe(true);
+		expect(cover.elements?.band?.selector).toBe('.rf-card__band');
+		// Sub-contracts do not re-expand variants.
+		expect(cover.variants).toBeUndefined();
 	});
 });

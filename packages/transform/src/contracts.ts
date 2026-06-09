@@ -1,5 +1,6 @@
 import type { ThemeConfig, RuneConfig, StructureEntry } from './types.js';
 import { toKebabCase } from './helpers.js';
+import { mergeRuneConfig } from './merge.js';
 
 /** Structure contract for a single rune */
 export interface RuneContract {
@@ -51,6 +52,11 @@ export interface RuneContract {
 	};
 	/** Warnings about invalid projection references */
 	warnings?: string[];
+	/** SPEC-091 — per-variant structures. Keyed by variant axis → value, each
+	 *  entry is the full contract the engine produces when that axis resolves to
+	 *  that value (base config merged with the variant delta). Present only for
+	 *  runes that declare `variants`. */
+	variants?: Record<string, Record<string, RuneContract>>;
 }
 
 /** Top-level structure contract document */
@@ -84,7 +90,7 @@ export function generateStructureContract(config: ThemeConfig): StructureContrac
 	};
 }
 
-function generateRuneContract(runeName: string, config: RuneConfig, prefix: string): RuneContract {
+function generateRuneContract(runeName: string, config: RuneConfig, prefix: string, expandVariants = true): RuneContract {
 	const block = `${prefix}-${config.block}`;
 	const contract: RuneContract = {
 		block: config.block,
@@ -272,6 +278,23 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 		if (warnings.length > 0) {
 			contract.warnings = warnings;
 		}
+	}
+
+	// SPEC-091 — enumerate per-variant structures. Each variant axis/value
+	// produces a full contract for the base config merged with that delta, so
+	// `structures.json` and the CSS-coverage tooling can cover every structure a
+	// rune emits. Sub-contracts are generated with `expandVariants: false` to
+	// avoid re-expanding a retained `variants` map.
+	if (expandVariants && config.variants) {
+		const variants: Record<string, Record<string, RuneContract>> = {};
+		for (const [axis, byValue] of Object.entries(config.variants)) {
+			variants[axis] = {};
+			for (const [value, delta] of Object.entries(byValue)) {
+				const merged = mergeRuneConfig(config, delta);
+				variants[axis][value] = generateRuneContract(runeName, merged, prefix, false);
+			}
+		}
+		contract.variants = variants;
 	}
 
 	return contract;
