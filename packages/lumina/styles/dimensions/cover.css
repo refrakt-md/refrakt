@@ -96,3 +96,20 @@
 	pointer-events: none;
 	background-image: linear-gradient(var(--cover-scrim-dir, to top), rgb(0 0 0 / 0.55), transparent 62%);
 }
+
+/* Frost treatment (`scrim-type="frost"`) — a frosted-glass blur over the media
+ * instead of a gradient. `scrim-blur` (named scale) sets the blur radius; the
+ * tint follows the cover scheme (a dark scheme → a dark frost for light text). */
+[data-media-position="cover"][data-scrim-blur="none"] { --cover-scrim-blur: 0px; }
+[data-media-position="cover"][data-scrim-blur="sm"]   { --cover-scrim-blur: 4px; }
+[data-media-position="cover"][data-scrim-blur="md"]   { --cover-scrim-blur: 8px; }
+[data-media-position="cover"][data-scrim-blur="lg"]   { --cover-scrim-blur: 16px; }
+[data-media-position="cover"][data-scrim-type="frost"]:not([data-scrim="none"]) [data-section="media"]::after {
+	background-image: none;
+	background-color: rgb(0 0 0 / 0.18);
+	-webkit-backdrop-filter: blur(var(--cover-scrim-blur, 8px));
+	backdrop-filter: blur(var(--cover-scrim-blur, 8px));
+}
+[data-media-position="cover"][data-scrim-type="frost"][data-color-scheme="light"]:not([data-scrim="none"]) [data-section="media"]::after {
+	background-color: rgb(255 255 255 / 0.25);
+}

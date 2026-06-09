@@ -388,6 +388,10 @@ function transformRune(
 		modifierClasses.push(`${block}--${config.contextModifiers[parentRune]}`);
 	}
 
+	// SPEC-089 — cover mode reroutes the scrim facet to the media well (below),
+	// so it must be known before the bg layer (self surface) decides to claim it.
+	const isCover = modifierValues['media-position'] === 'cover';
+
 	// 1c. Static modifiers — always-applied BEM modifier suffixes
 	if (config.staticModifiers) {
 		for (const mod of config.staticModifiers) {
@@ -543,7 +547,10 @@ function transformRune(
 	const scrimDir = readMeta(tag, 'scrim');
 	const bgOverlay = readMeta(tag, 'bg-overlay');
 
-	if (bgPreset || bgSrc || bgVideo || bgGradient || (scrimDir && scrimDir !== 'none') || bgOverlay) {
+	// In cover mode the scrim belongs to the media well (handled below), not the
+	// self-surface bg layer — so it alone doesn't raise the bg layer here.
+	const bgScrim = scrimDir && scrimDir !== 'none' && !isCover;
+	if (bgPreset || bgSrc || bgVideo || bgGradient || bgScrim || bgOverlay) {
 		// Resolve preset styles (Tier 1 — CSS-only presets)
 		let presetStyles: Record<string, string> = {};
 		if (bgPreset && backgrounds[bgPreset]) {
@@ -623,7 +630,7 @@ function transformRune(
 
 		// scrim — a structured legibility treatment (SPEC-088). On the bg overlay
 		// layer here; cover mode (SPEC-089) routes the same facet to the media well.
-		if (scrimDir && scrimDir !== 'none') {
+		if (bgScrim) {
 			const scrimType = readMeta(tag, 'scrim-type') ?? 'gradient';
 			const scrimTone = readMeta(tag, 'scrim-tone') ?? 'dark';
 			const scrimAttrs: Record<string, string> = {
@@ -675,6 +682,16 @@ function transformRune(
 		bgMetaProps.add('scrim');
 		bgMetaProps.add('scrim-type');
 		bgMetaProps.add('scrim-strength');
+		bgMetaProps.add('scrim-blur');
+		bgMetaProps.add('scrim-tone');
+	}
+
+	// SPEC-089 — in cover mode the scrim facet is consumed by the media well
+	// (section 8), even when the bg layer above didn't run; mark its metas
+	// consumed now so the strip pass (section 7) doesn't leak them to output.
+	if (isCover) {
+		bgMetaProps.add('scrim');
+		bgMetaProps.add('scrim-type');
 		bgMetaProps.add('scrim-blur');
 		bgMetaProps.add('scrim-tone');
 	}
@@ -853,7 +870,6 @@ function transformRune(
 	// (block × inline); `auto` is left to the container query in CSS. Active only
 	// in cover mode; warns otherwise (it's inert outside an overlay).
 	const contentPlace = modifierValues['content-place'];
-	const isCover = modifierValues['media-position'] === 'cover';
 	if (contentPlace) {
 		if (!isCover) {
 			warnContentPlaceOutsideCover(dataRune ?? config.block);
@@ -874,6 +890,17 @@ function transformRune(
 		const coverScrim = readMeta(tag, 'scrim');
 		if (coverScrim === 'none') {
 			bgDataAttrs['data-scrim'] = 'none';
+		}
+		// Scrim treatment: gradient (default) or frost (a frosted-glass blur over
+		// the media). Both render on the media well's `::after` (cover.css); the
+		// type + blur amount ride on the host as data attrs.
+		const coverScrimType = readMeta(tag, 'scrim-type');
+		if (coverScrimType && coverScrim !== 'none') {
+			bgDataAttrs['data-scrim-type'] = coverScrimType;
+			if (coverScrimType === 'frost') {
+				const coverScrimBlur = readMeta(tag, 'scrim-blur');
+				if (coverScrimBlur) bgDataAttrs['data-scrim-blur'] = coverScrimBlur;
+			}
 		}
 		// Foreground polarity follows `scrim-tone` (a dark scrim wants light text
 		// → a dark scheme; a light scrim wants dark text → a light scheme). Full

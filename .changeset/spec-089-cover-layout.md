@@ -17,7 +17,9 @@ behaviour when unset — adapts to the cover region's container-query orientatio
 Cover turns on a default scrim on the media surface (consuming the SPEC-088
 scrim facet), weighted toward the content edge and following `content-place`
 unless an explicit `scrim="top|bottom|left|right"` pins it; `scrim="none"` opts
-out. The overlay foreground follows `scrim-tone` (a dark scrim yields light
-text), scoped to the band in header scope. Adds a card intrinsic-height knob
+out. `scrim-type="frost"` swaps the gradient for a frosted-glass blur (`scrim-blur`
+scale) — in cover mode the scrim renders on the media well, never the
+self-surface bg layer. The overlay foreground follows `scrim-tone` (a dark scrim
+yields light text), scoped to the band in header scope. Adds a card intrinsic-height knob
 (`height` named scale + `aspect`) for cover / `bg`-only cards, and documents
 cover mode in the card reference.

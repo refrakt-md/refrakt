@@ -135,4 +135,16 @@ describe('SPEC-089 cover variant', () => {
 		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), meta('scrim-tone', 'light')])));
 		expect(r.attributes['data-color-scheme']).toBe('light');
 	});
+
+	it('scrim-type="frost" routes a frosted treatment to the cover host (no bg layer)', () => {
+		const t = createTransform(config);
+		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), meta('scrim-type', 'frost'), meta('scrim-blur', 'md')])));
+		expect(r.attributes['data-scrim-type']).toBe('frost');
+		expect(r.attributes['data-scrim-blur']).toBe('md');
+		// The scrim stays on the media well (cover.css), not the self-surface bg layer.
+		expect(r.attributes.class).not.toContain('--has-bg');
+		// The SPEC-088 scrim metas are consumed, not leaked as stray <meta> tags.
+		const leaked = (r.children ?? []).filter((c: any) => c?.name === 'meta' && /^scrim/.test(c.attributes?.['data-field'] ?? ''));
+		expect(leaked).toHaveLength(0);
+	});
 });
