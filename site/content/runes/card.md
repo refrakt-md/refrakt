@@ -103,7 +103,7 @@ Read the five-minute guide.
 
 ## Elevation & frame
 
-A card exposes two decorable surfaces ([surface-chrome model](/extend/theme-authoring/surface-chrome)): the **self** surface (the card box) takes `elevation` — a `box-shadow` that floats the whole tile — and the **media** surface (the `[data-section="media"]` zone) takes `frame` chrome: aspect, crop anchor, a silhouette `drop-shadow`, displacement, and oversize. The two never collide — `elevation` is the card's z-shadow, `frame-shadow` is the photo's silhouette.
+A card exposes two decorable surfaces ([surface model](/runes/surfaces)): the **self** surface (the card box) takes `elevation` — a `box-shadow` that floats the whole tile — and the **media** surface (the `[data-section="media"]` zone) takes `frame` chrome: aspect, crop anchor, a silhouette `drop-shadow`, displacement, and oversize. The two never collide — `elevation` is the card's z-shadow, `frame-shadow` is the photo's silhouette.
 
 {% preview source=true %}
 
@@ -116,7 +116,7 @@ A card exposes two decorable surfaces ([surface-chrome model](/extend/theme-auth
 
 {% /preview %}
 
-`elevation` floats the card box (`none`/`sm`/`md`/`lg`); `frame` (or a named preset from theme/project config) decorates the media zone. Because the media zone is a clipping host, a displaced or `oversize`d guest is cropped into a peek — `frame-anchor` picks the focal point. See [surface chrome](/extend/theme-authoring/surface-chrome) for the full facet list.
+`elevation` floats the card box (`none`/`sm`/`md`/`lg`); `frame` (or a named preset from theme/project config) decorates the media zone. Because the media zone is a clipping host, a displaced or `oversize`d guest is cropped into a peek — `frame-anchor` picks the focal point. See [surfaces](/runes/surfaces) for the full facet list.
 
 ## Feeding a card from a collection
 

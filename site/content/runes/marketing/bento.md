@@ -143,7 +143,7 @@ Footer note.          <!-- footer -->
 
 ## Frame & elevation
 
-A bento cell exposes the same two surfaces as `card` ([surface-chrome model](/extend/theme-authoring/surface-chrome)): `elevation` floats the cell box (`box-shadow`), and `frame` chrome decorates the cell's media zone (aspect, crop anchor, silhouette shadow, oversize). `frame-aspect` and `frame-anchor` feed bento's existing media knobs (`--bento-media-aspect` / `--bento-media-anchor`) rather than a parallel mechanism.
+A bento cell exposes the same two surfaces as `card` ([surface model](/runes/surfaces)): `elevation` floats the cell box (`box-shadow`), and `frame` chrome decorates the cell's media zone (aspect, crop anchor, silhouette shadow, oversize). `frame-aspect` and `frame-anchor` feed bento's existing media knobs (`--bento-media-aspect` / `--bento-media-anchor`) rather than a parallel mechanism.
 
 Because heading-sugar cells have no per-cell attribute surface, **grid-level `frame`** (preset + facets) **and `elevation`** on the `bento` cascade to every cell as a default — mirroring `media-position`; a cell's own value still wins. The grid never takes this chrome itself (the cells are the visual cards) — so `{% bento elevation="md" %}` lifts each cell, not the grid box.
 
@@ -258,7 +258,7 @@ Choose `collapse` to match the narrowest width your authored grid can comfortabl
 | `content-height` | `string` | — | Grid default — pin column cells' text height: `sm`, `md`, `lg`, or `xl` |
 | `media-ratio` | `string` | — | Grid default — media's share of a beside cell's width: `1/3`, `2/5`, `1/2`, `3/5`, or `2/3` |
 | `media-position` | `string` | size-derived | Grid default media placement for every cell: `top`, `bottom`, `start`, or `end`. A cell's own `media-position` wins |
-| `frame` / `frame-*` | `string` | — | Grid default frame chrome cascaded to every cell's media zone (SPEC-086); a cell's own `frame-*` wins. See [surface chrome](/extend/theme-authoring/surface-chrome) |
+| `frame` / `frame-*` | `string` | — | Grid default frame chrome cascaded to every cell's media zone (SPEC-086); a cell's own `frame-*` wins. See [surfaces](/runes/surfaces) |
 | `elevation` | `string` | — | Cascades to every cell's `box-shadow` (`none`/`sm`/`md`/`lg`) — lifts the cells, not the grid box; a cell's own `elevation` wins |
 | `collapse` | `string` | `sm` | Binary stack breakpoint: `sm` (640px), `md` (768px), `lg` (1024px), or `never` |
 
@@ -273,7 +273,7 @@ Choose `collapse` to match the narrowest width your authored grid can comfortabl
 | `content-height` | `string` | grid default | Override the grid `content-height` for this cell: `sm`, `md`, `lg`, or `xl` |
 | `media-ratio` | `string` | grid default | Override the grid `media-ratio` for this cell: `1/3`, `2/5`, `1/2`, `3/5`, or `2/3` |
 | `href` | `string` | — | Makes the whole cell a link |
-| `frame` / `frame-*` | `string` | grid default | Frame chrome on the cell's media zone (aspect, anchor, shadow, …) — see [surface chrome](/extend/theme-authoring/surface-chrome) |
+| `frame` / `frame-*` | `string` | grid default | Frame chrome on the cell's media zone (aspect, anchor, shadow, …) — see [surfaces](/runes/surfaces) |
 
 ## Common attributes
 
