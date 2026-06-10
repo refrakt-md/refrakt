@@ -38,17 +38,45 @@
 /* ── Oversize — guest exceeds its slot (clipping hosts crop it) ──────── */
 [style*="--frame-oversize"] > :is(img, video) { width: calc(100% * var(--frame-oversize, 1)); max-width: none; }
 
-/* ── Displacement (bleed / peek) — move the guest toward an edge/corner.
- * The host decides whether it spills or is cropped; this only moves it. ─ */
-[data-displace] { position: relative; z-index: 1; }
-[data-displace="top"]        { margin-top: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
-[data-displace="bottom"]     { margin-bottom: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
-[data-displace="both"]       { margin-block: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
-[data-displace="end"]        { margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
-[data-displace="bottom-end"] { margin-bottom: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
-[data-displace="top-end"]    { margin-top: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
+/* ── Displacement (peek / spill) — move the guest toward an edge/corner.
+ * The host decides whether the guest is cropped or spills; this only moves it.
+ * Two cases, distinguished by where the engine landed `data-displace`:
+ *
+ *   1. Media-target frame (`frameTarget: 'media'`, e.g. card / bento-cell /
+ *      figure media well). `data-displace` lands on the media zone wrapper
+ *      (`[data-section="media"]`), but the wrapper itself is the *host* and
+ *      already has `overflow: hidden`. We translate the inner guest with
+ *      `transform: translate(...)` so the zone clips the peek at its own edge,
+ *      not at the outer card/cell edge. The wrapper stays put — the card's
+ *      layout is unchanged.
+ *
+ *   2. Self-target frame (`frameTarget: 'self'`, e.g. showcase, where the rune
+ *      root is the host). `data-displace` lands on the root, and the root's
+ *      parent (a page section, the page itself) is the clip-or-spill decider.
+ *      We push the root with negative margins so it can spill past its
+ *      parent's edge for a true breakout. */
+
+/* — Case 1: media-zone displace → translate the inner guest, zone clips. */
+[data-section="media"][data-displace] > :is(img, video, [data-rune]) {
+	transform: translate(var(--displace-x, 0), var(--displace-y, 0));
+}
+[data-section="media"][data-displace="top"]        { --displace-y: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
+[data-section="media"][data-displace="bottom"]     { --displace-y: var(--frame-offset, var(--rf-spacing-lg)); }
+[data-section="media"][data-displace="end"]        { --displace-x: var(--frame-offset, var(--rf-spacing-lg)); }
+[data-section="media"][data-displace="top-end"]    { --displace-x: var(--frame-offset, var(--rf-spacing-lg)); --displace-y: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
+[data-section="media"][data-displace="bottom-end"] { --displace-x: var(--frame-offset, var(--rf-spacing-lg)); --displace-y: var(--frame-offset, var(--rf-spacing-lg)); }
+
+/* — Case 2: self-target (showcase, etc.) → root moves; parent decides. */
+[data-displace]:not([data-section="media"]) { position: relative; z-index: 1; }
+[data-displace="top"]:not([data-section="media"])        { margin-top: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
+[data-displace="bottom"]:not([data-section="media"])     { margin-bottom: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
+[data-displace="both"]:not([data-section="media"])       { margin-block: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
+[data-displace="end"]:not([data-section="media"])        { margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
+[data-displace="bottom-end"]:not([data-section="media"]) { margin-bottom: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
+[data-displace="top-end"]:not([data-section="media"])    { margin-top: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
 
 /* Collapse displacement on mobile, regardless of host. */
 @media (max-width: 768px) {
-	[data-displace] { margin: 0; }
+	[data-displace]:not([data-section="media"]) { margin: 0; }
+	[data-section="media"][data-displace] > :is(img, video, [data-rune]) { transform: none; }
 }
