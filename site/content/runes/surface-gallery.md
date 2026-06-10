@@ -80,8 +80,8 @@ Three fill layers paint the surface itself. **`tint`** recolours a rune to a nam
 
 {% preview source=true %}
 
-{% card tint="dracula" %}
-### `tint="dracula"`
+{% card tint="catppuccin" %}
+### `tint="catppuccin"`
 The card adopts the named palette — surface, border, and text in one move.
 {% /card %}
 
