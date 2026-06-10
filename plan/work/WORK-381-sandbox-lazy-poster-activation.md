@@ -4,10 +4,10 @@
 
 `sandbox` is **eager** today: the iframe is created and its dependencies load on
 page render (it has a `height` knob but no deferral). That's fine for a small demo,
-but a heavy sandbox — a three.js scene ({% ref "WORK-382" /%}), a large framework
-demo — on a perf-sensitive page like the site index costs a chunk of load time we
-deliberately avoided ({% ref "WORK-350" /%} and {% ref "WORK-380" /%} both limited
-live iframes "to keep the landing page fast").
+but a heavy sandbox — a three.js scene (WORK-382), a large framework demo — on a
+perf-sensitive page like the site index costs a chunk of load time we deliberately
+avoided (WORK-350 and WORK-380 both limited live iframes "to keep the landing page
+fast").
 
 Add a **deferred-activation** capability so a heavy sandbox can headline a page
 without the load-time hit — useful for *any* heavy sandbox, not just three.js.
@@ -39,6 +39,6 @@ without the load-time hit — useful for *any* heavy sandbox, not just three.js.
 - `packages/runes/src/tags/sandbox.ts` (has `height`; add `activation`/`poster`)
 - `packages/runes/src/config.ts` (`Sandbox` — `interactive: true`)
 - `packages/behaviors/src/behaviors/` (deferred-mount behaviour); `runes/sandbox.md`
-- Consumers: {% ref "WORK-382" /%} (three.js scene), {% ref "WORK-350" /%} (index anchor cell)
+- Consumers (no dependency — these depend on this item): WORK-382 (three.js scene), WORK-350 (index anchor cell)
 
 {% /work %}

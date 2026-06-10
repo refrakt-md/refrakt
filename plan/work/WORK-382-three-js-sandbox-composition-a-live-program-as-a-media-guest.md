@@ -21,7 +21,7 @@ green.
 - **Reusable snippet** so both the catalogue and (later) the index can use it.
 - **`prefers-reduced-motion`:** render a single static frame, no RAF loop.
 - **Static poster fallback** so a blocked/failed CDN degrades to an image rather
-  than an empty frame (and pairs with {% ref "WORK-381" /%} for the lazy index use).
+  than an empty frame (and pairs with WORK-381 for the lazy index use).
 - A **catalogue pattern page** (`runes/compositions/sandbox-in-card.md`) presenting
   it as a media guest in a card, with the mechanism note: a `sandbox` is
   `interactive`, so in a plain card it's live; in a linked or cover card it's
@@ -35,12 +35,12 @@ green.
 
 ## Notes
 - **Catalogue use is eager** (the page isn't perf-critical). Headlining the scene
-  as the **index** anchor cell is gated on {% ref "WORK-381" /%} (lazy/poster
-  activation) and lives in {% ref "WORK-350" /%}.
+  as the **index** anchor cell is gated on WORK-381 (lazy/poster activation) and
+  lives in WORK-350 — those depend on this item, not the reverse.
 
 ## References
 - `runes/sandbox.md` (`dependencies`, inline module scripts, `height`)
-- {% ref "WORK-346" /%} (compositions catalogue), {% ref "WORK-381" /%} (lazy activation), {% ref "WORK-350" /%} (index anchor)
+- Depends on {% ref "WORK-346" /%} (compositions catalogue). Related (downstream): WORK-381 (lazy activation), WORK-350 (index anchor)
 - Interaction posture: `/extend/rune-authoring/composability#media-guest-interaction-posture`
 
 {% /work %}
