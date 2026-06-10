@@ -137,7 +137,7 @@ The full fill vocabulary lives in [tint](/runes/tint), [bg](/runes/bg), and [sur
 
 {% preview source=true %}
 
-{% card href="/runes/learning/recipe" media-position="cover" scrim-type="frost" scrim-blur="md" height="lg" %}
+{% card href="/runes/learning/recipe" media-position="cover" height="lg" %}
 ![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
 
 ---
@@ -154,7 +154,7 @@ A bright, layered cocktail — five minutes, no shaker.
 ---
 
 ### Centred hero
-`content-place="center center"` pins the overlay; the default gradient scrim follows it.
+`content-place="center center"` pins the overlay; the gradient scrim follows as a centred radial spot.
 {% /card %}
 
 {% /preview %}
