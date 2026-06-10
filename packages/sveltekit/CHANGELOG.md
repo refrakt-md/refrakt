@@ -1,5 +1,13 @@
 # @refrakt-md/sveltekit
 
+## 0.20.0
+
+### Patch Changes
+
+- Updated dependencies [8faa272]
+  - @refrakt-md/types@0.20.0
+  - @refrakt-md/content@0.20.0
+
 ## 0.19.0
 
 ### Patch Changes

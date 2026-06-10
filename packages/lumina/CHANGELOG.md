@@ -1,5 +1,84 @@
 # @refrakt-md/lumina
 
+## 0.20.0
+
+### Minor Changes
+
+- 8faa272: SPEC-086 surface chrome. Adds a universal `elevation` attribute (self-surface
+  `box-shadow` on the `--rf-shadow-*` scale), a `frames` preset registry with the
+  `frame` attribute and inline `frame-*` facets (modelled on `bg`), `RuneConfig.frameTarget`
+  routing (media zone vs self) with a build warning when unresolved, and a shared
+  frame CSS layer (silhouette drop-shadow, displacement/peek, oversize, place,
+  anchor). `showcase` collapses into the frame model as `frameTarget: 'self'`; its
+  `shadow`/`bleed`/`offset`/`aspect`/`place` attributes are deprecated aliases for
+  `frame-*` facets (warn for one minor, then removed), with breakout retained. The
+  `offset` named scale is completed (`none|sm|md|lg|xl`) and its raw-length
+  fallthrough closed.
+- 702732b: SPEC-087 surface fills. Adds a tint-tracking inset surface (the
+  `--rf-surface-inset-shift` mix amount + a use-site `color-mix` recipe applied to
+  media wells and `chart`/`diagram`), and `substrate` — a generated surface
+  pattern with a fixed engine enum (`dots|grid|lines|cross|checker|none`), inline
+  `substrate-size`/`opacity`/`fill` facets, a shared always-included gradient
+  recipe stylesheet, and `RuneConfig.substrateTarget` routing (default `self`,
+  per-instance `substrate-target` override, build warning when targeting a missing
+  media section).
+- 3952770: SPEC-088 bg gradients & scrim. Adds a token-driven `bg` gradient fill (inline
+  `bg-gradient`/`bg-from`/`bg-to`/`bg-via`/`bg-gradient-type` facets with semantic
+  token stops, and a structured `BgPresetDefinition.gradient` preset), a structured
+  `scrim` legibility facet (`gradient`/`frost`, strength/blur/tone — tone also flips
+  the overlaid foreground), and a constrained flat `overlay` vocabulary
+  (`dark`/`light`/token + opacity). The raw-string `overlay` passthrough is
+  deprecated (warns) now that `scrim` ships, the `style` escape hatch is documented
+  with a stated contract (valid in theme & project config; project merges over
+  theme), and a build-time soft-lint flags raw gradients that the structured facet
+  covers. `bg.css` is force-included since `bg` is now a universal-attribute feature.
+- 32a3b52: SPEC-089 cover layout. Adds `media-position="cover"` as a `media-position`
+  engine variant (SPEC-091): the media well fills the rune interior and content
+  overlays it, with a one-attribute switch from `top|bottom|start|end`. Two
+  rune-declared scopes — `full` (card: the whole box overlays) and `header`
+  (recipe: only the title band overlays, body flows below) — bound the overlay
+  region; there is no overlay primitive in the layout config. Adds `content-place`,
+  a 2-axis logical overlay anchor (`<block> <inline>`, mapping to `align`/`justify`)
+  active only in cover mode (warns otherwise), whose `auto` default — also the
+  behaviour when unset — adapts to the cover region's container-query orientation.
+  Cover turns on a default scrim on the media surface (consuming the SPEC-088
+  scrim facet), weighted toward the content edge and following `content-place`
+  unless an explicit `scrim="top|bottom|left|right"` pins it; `scrim="none"` opts
+  out. `scrim-type="frost"` swaps the gradient for a frosted-glass blur (`scrim-blur`
+  scale) — in cover mode the scrim renders on the media well, never the
+  self-surface bg layer, masked to the content edge so it never covers the whole
+  image. The overlay foreground follows `scrim-tone` (a dark scrim yields light
+  text) and is scoped to the overlay (`[data-name="content"]` in full scope, the
+  cover-band in header scope), so the card's own surface keeps the page palette
+  (light in light mode) while only the text on the media flips. Adds a card intrinsic-height knob
+  (`height` named scale + `aspect`) for cover / `bg`-only cards, and documents
+  cover mode in the card reference.
+- 2d6dad9: SPEC-090 media-guest interaction posture. A rune in another rune's media slot is
+  a presentational guest by default; interactivity is now an explicit capability —
+  `RuneConfig.interactive`, set on the behaviour-driven runes (`codegroup`, `tabs`,
+  `datatable`, `form`, `map`, `sandbox`, `juxtapose`). When the container is itself
+  an interaction target — a `card`/`bento-cell` with a stretched whole-tile `href`
+  — or the guest is a `cover` backdrop (SPEC-089), the engine marks the media zone
+  `data-guest-posture="presentational"`: it goes `pointer-events: none` (so clicks
+  fall through to the link / the overlay owns interaction) and the behaviours layer
+  skips enhancement, so the guest renders its static fallback (the demoted
+  `codegroup`/`tabs` tab strip is hidden so panels read as plain stacked content).
+  The demotion is scoped to the media zone only — content-overlay controls
+  (body/footer links & buttons) stay interactive. An interactive guest in a linked
+  tile emits an informative (non-fatal) build warning. A container without `href`
+  (and not `cover`) hosts interactive guests normally.
+
+### Patch Changes
+
+- Updated dependencies [8faa272]
+- Updated dependencies [702732b]
+- Updated dependencies [3952770]
+- Updated dependencies [32a3b52]
+- Updated dependencies [2d6dad9]
+  - @refrakt-md/runes@0.20.0
+  - @refrakt-md/transform@0.20.0
+  - @refrakt-md/types@0.20.0
+
 ## 0.19.0
 
 ### Minor Changes
