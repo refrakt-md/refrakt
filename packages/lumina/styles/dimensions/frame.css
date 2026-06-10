@@ -20,11 +20,31 @@
  * `frame-shadow` (drop-shadow silhouette here) never collide — different property,
  * different surface. */
 
-/* ── Silhouette drop-shadow ──────────────────────────────────────────── */
-[data-frame-shadow="none"] { filter: none; }
-[data-frame-shadow="sm"]   { filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.10)); }
-[data-frame-shadow="md"]   { filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.25)); }
-[data-frame-shadow="lg"]   { filter: drop-shadow(0 12px 40px rgba(0, 0, 0, 0.20)); }
+/* ── Silhouette drop-shadow ────────────────────────────────────────────
+ * Same media-target / self-target split as `frame-displace`. Media-target
+ * frames land `data-frame-shadow` on the media zone wrapper, but the shadow
+ * should ride the inner guest so it (a) shifts with `frame-displace` and
+ * (b) actually casts onto exposed slot interior when the guest is inset
+ * from the wrapper. Self-target frames (showcase, figure) keep the filter
+ * on the root itself, where it traces the rune's own painted silhouette. */
+[data-frame-shadow="none"] { --frame-shadow: none; }
+[data-frame-shadow="sm"]   { --frame-shadow: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.10)); }
+[data-frame-shadow="md"]   { --frame-shadow: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.25)); }
+[data-frame-shadow="lg"]   { --frame-shadow: drop-shadow(0 12px 40px rgba(0, 0, 0, 0.20)); }
+
+/* Self-target — figure, showcase, anything else where the rune root is the
+ * frame target. The filter applies to the painted root. */
+[data-frame-shadow]:not([data-section="media"]) {
+	filter: var(--frame-shadow);
+}
+
+/* Media-target — card, bento-cell, recipe, etc. The filter rides the inner
+ * guest so a displaced image's shadow falls into the slot's exposed
+ * interior (clipped at the slot's `overflow: hidden` boundary like any
+ * other in-slot content). */
+[data-section="media"][data-frame-shadow] > :is(img, video, [data-rune]) {
+	filter: var(--frame-shadow);
+}
 
 /* ── Aspect ratio ────────────────────────────────────────────────────── */
 [style*="--frame-aspect"] { aspect-ratio: var(--frame-aspect); }

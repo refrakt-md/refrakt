@@ -16,7 +16,7 @@ Everything here is one or two attributes on an ordinary rune. Nothing is a bespo
 
 ## Chrome — shadow and frame
 
-A surface carries two independent shadows that never collide. `elevation` is the **box** shadow that floats the whole tile; `frame-shadow` is the **media** shadow that traces the silhouette of the image inside it. One lifts the card, the other lifts the photo:
+A surface decorates on two layers. The **self** layer is the whole tile — `elevation` lifts it as a box shadow. The **media** layer is the framed image inside — `frame-*` attributes shape it (`frame-aspect`), anchor the crop (`frame-anchor`), displace it past the slot (`frame-displace`), and shadow it (`frame-shadow`). The two never collide — they paint on different surfaces:
 
 {% preview source=true %}
 
@@ -25,8 +25,8 @@ A surface carries two independent shadows that never collide. `elevation` is the
 A box shadow on the card's **self** surface — the whole tile floats.
 {% /card %}
 
-{% figure frame-shadow="lg" frame-aspect="16/9" %}
-![A framed silhouette](https://picsum.photos/seed/gallerysilhouette/800/450)
+{% figure frame-aspect="16/9" caption="`frame-aspect` sets the framed media's shape; the image fills it via `object-fit: cover`." %}
+![A framed image](https://picsum.photos/seed/gallerysilhouette/800/450)
 {% /figure %}
 
 {% /preview %}
@@ -63,11 +63,11 @@ Highest z-height.
 `frame-aspect` sets the shape; `frame-anchor` picks the focal point of the crop.
 {% /card %}
 
-{% card frame-aspect="16/9" frame-displace="top-end" frame-offset="md" frame-oversize="1.15" %}
-![A displaced peek](https://picsum.photos/seed/gallerypeek/800/600)
+{% card frame-aspect="16/9" frame-displace="top-end" frame-offset="md" frame-oversize="1.15" frame-shadow="md" %}
+![A displaced peek with silhouette shadow](https://picsum.photos/seed/gallerypeek/800/600)
 ---
-### Displaced peek
-`frame-displace` + `frame-oversize` push the guest past its slot; the host clips it to a peek.
+### Displaced peek + silhouette shadow
+`frame-displace` + `frame-oversize` push the guest past its slot; the host clips it to a peek, and `frame-shadow` traces the cropped silhouette — not the card.
 {% /card %}
 
 {% /preview %}
