@@ -19,22 +19,22 @@ A container's leading zone (before the first `---`) is its **media zone**. The m
 ### Code-sample card
 A `codegroup` in a card → a titled, tabbed snippet.
 {% /card %}
-
+---
 {% card href="/runes/compositions/chart-in-card" %}
 ### Metric card
 A `chart` in a card → a single titled metric.
 {% /card %}
-
+---
 {% card href="/runes/compositions/map-in-card" %}
 ### Location card
 A `map` in a card → a pinned place.
 {% /card %}
-
+---
 {% card href="/runes/compositions/diagram-in-card" %}
 ### Architecture card
 A `diagram` in a card → a captioned diagram.
 {% /card %}
-
+---
 {% card href="/runes/compositions/chart-in-bento" %}
 ### Dashboard grid
 The same `chart` guest, repeated across `bento` cells.
