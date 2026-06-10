@@ -122,5 +122,6 @@ Dots over the recessed inset fill — a touch deeper, still tint-tracking.
 
 ## See also
 
+- [Surface gallery](/runes/surface-gallery) — the whole model on one page: chrome, fills, cover layouts, and posture shown together
 - [tint](/runes/tint) · [bg](/runes/bg) — the colour and image fill layers
 - [Surface model](/extend/theme-authoring/surfaces) — the theme-side configuration: `frame`/`bg` preset registries, `frameTarget`/`substrateTarget` routing, the inset token, host-owned clip, and the substrate ownership split

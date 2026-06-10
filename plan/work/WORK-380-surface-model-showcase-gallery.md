@@ -1,4 +1,4 @@
-{% work id="WORK-380" status="ready" priority="medium" complexity="moderate" source="SPEC-086" tags="docs,showcase,site,surfaces" milestone="v0.20.1" %}
+{% work id="WORK-380" status="in-progress" priority="medium" complexity="moderate" source="SPEC-086" tags="docs,showcase,site,surfaces" milestone="v0.20.1" %}
 
 # Surface-model showcase gallery
 
