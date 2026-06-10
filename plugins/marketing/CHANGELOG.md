@@ -1,5 +1,25 @@
 # @refrakt-md/marketing
 
+## 0.20.0
+
+### Minor Changes
+
+- fd82b91: Bento: a grid-level `elevation` now cascades to cells (joining the `frame`
+  cascade) so `{% bento elevation="md" %}` lifts each cell rather than the grid
+  box; a cell's own `elevation` still wins. Fixes the bento reference page's
+  frame/elevation example (the images needed an `---` to land in the media zone).
+
+### Patch Changes
+
+- Updated dependencies [8faa272]
+- Updated dependencies [702732b]
+- Updated dependencies [3952770]
+- Updated dependencies [32a3b52]
+- Updated dependencies [2d6dad9]
+  - @refrakt-md/runes@0.20.0
+  - @refrakt-md/transform@0.20.0
+  - @refrakt-md/types@0.20.0
+
 ## 0.19.0
 
 ### Minor Changes
