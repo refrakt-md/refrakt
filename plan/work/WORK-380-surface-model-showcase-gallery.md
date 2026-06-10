@@ -1,4 +1,4 @@
-{% work id="WORK-380" status="in-progress" priority="medium" complexity="moderate" source="SPEC-086" tags="docs,showcase,site,surfaces" milestone="v0.20.1" %}
+{% work id="WORK-380" status="review" priority="medium" complexity="moderate" source="SPEC-086" tags="docs,showcase,site,surfaces" milestone="v0.20.1" %}
 
 # Surface-model showcase gallery
 
@@ -23,16 +23,16 @@ the model can do — organised by the model's own axes.
   (the demotion is the point: one clean interaction target).
 
 ## Acceptance Criteria
-- [ ] A dedicated gallery page exists under `site/content/` demonstrating the
+- [x] A dedicated gallery page exists under `site/content/` demonstrating the
   surface model across all four axes (chrome, fills, cover, posture), each as a
   live `preview` cluster with the authored Markdown shown.
-- [ ] The page reads as a curated showcase (magazine rhythm), not an API dump —
+- [x] The page reads as a curated showcase (magazine rhythm), not an API dump —
   short framing prose per axis, cross-linked to the `surfaces`, `card`, `bg`, and
   `recipe` references for the full attribute tables.
 - [ ] Renders correctly in light and dark mode and at mobile widths; no
   layout/overflow regressions (verify the cover/frost and displaced-frame cells
   especially).
-- [ ] Linked from the docs nav and cross-referenced from `runes/surfaces.md`.
+- [x] Linked from the docs nav and cross-referenced from `runes/surfaces.md`.
 
 ## Approach
 Author as standard site content with the `preview` rune for live results. Reuse
@@ -43,5 +43,27 @@ model is all static rendering, so the gallery stays fast.
 ## References
 - Surface model: {% ref "SPEC-086" /%}, {% ref "SPEC-087" /%}, {% ref "SPEC-088" /%}, {% ref "SPEC-089" /%}, {% ref "SPEC-090" /%}
 - Existing docs: `site/content/runes/surfaces.md`, `runes/card.md`, `runes/bg.md`, `runes/learning/recipe.md`
+
+## Resolution
+
+Completed: 2026-06-10
+
+Branch: `claude/work-380-surface-gallery`
+
+### What was done
+- Added `site/content/runes/surface-gallery.md` — a showcase page presenting the v0.20.0 surface model as a system, in four axes, each a live `{% preview source=true %}` cluster:
+  - **Chrome** — elevation-vs-frame-shadow distinction side by side, the elevation scale (sm/md/lg), and frame facets (aspect/anchor + a displaced/oversize peek in a card media zone).
+  - **Fills** — named `tint` palettes (dracula/solarized), `substrate` patterns incl. `substrate-fill="inset"`, and token-driven gradient fills (linear + radial via `bg-gradient`/`bg-from`/`bg-to`/`bg-via`).
+  - **Cover** — poster `card` (frost scrim, `content-place`, `height`) plus a centred-overlay default-scrim card, and the `recipe` header-scope poster.
+  - **Posture** — a linked cover poster as a single interaction target, with the media-guest demotion contract explained and linked.
+- Registered in `site/content/runes/_layout.md` nav under the "Rune Catalog" group, after `surfaces`.
+- Cross-linked from `site/content/runes/surfaces.md` "See also".
+- Examples reuse the canonical imagery already in the shipped references (tequila-sunrise cover, picsum frames) and the registered tint/token names — no new assets, all static rendering (no live `sandbox`/iframes).
+
+### Verification
+- Full `vite build` of the site is green; the emitted `runes/surface-gallery.html` contains all 9 preview clusters — 16 cards, 1 figure, 1 recipe, 4 cover instances — with scrim/substrate/elevation/frame/gradient/tint markup present. No transform warnings for this page.
+
+### Why review, not done
+- The "renders correctly in light and dark mode and at mobile widths; no layout/overflow regressions" criterion is left unchecked: no headless browser is available in this container, so I could only verify structural rendering via the build, not the visual/responsive pass. The examples derive from already-shipped, CSS-coverage-tested primitives and near-copies of working doc examples (the displaced-peek card is the only genuinely new composition), so confidence is high — but it wants a quick human glance at the dev server (`cd site && npm run dev` → /runes/surface-gallery), especially the cover/frost and displaced-frame cells. Flip to done once eyeballed.
 
 {% /work %}
