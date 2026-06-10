@@ -46,13 +46,13 @@ More Family-A guests — `gallery`, `embed`, `audio`/`playlist`, design `swatch`
 
 ## Surface compositions
 
-A second axis composes the **surface treatment** of the container itself — the chrome and fills around or under the guest. These are demonstrated live, as a system, in the [surface gallery](/runes/surface-gallery):
+A second axis composes the **surface treatment** of the container itself — the chrome and fills around or under the guest. These are demonstrated live, as a system, on the [surfaces](/runes/surfaces) page:
 
 - **Cover poster** — `media-position="cover"` overlays content on full-bleed media with a legibility scrim ([card → cover](/runes/card#cover-mode)).
 - **Recipe poster** — the same cover switch in header scope ([recipe → cover](/runes/learning/recipe#cover-mode)).
-- **Framed media** — `frame` facets: aspect, crop `anchor`, silhouette `frame-shadow`, displaced/`oversize` peek ([surfaces](/runes/surfaces#frame--present-the-media)).
+- **Framed media** — `frame` facets: aspect, crop `anchor`, silhouette `frame-shadow`, displaced/`oversize` peek ([surfaces](/runes/surfaces#chrome--shadow-and-frame)).
 - **Elevation vs frame-shadow** — the two non-colliding shadows ([surfaces](/runes/surfaces)).
-- **Tint & substrate** — recoloured or patterned surface fills ([tint](/runes/tint), [surfaces](/runes/surfaces#substrate--a-generated-pattern)).
+- **Tint & substrate** — recoloured or patterned surface fills ([tint](/runes/tint), [surfaces](/runes/surfaces#fills--colour-pattern-gradient)).
 - **Gradient fill** — token-driven `bg` gradients behind content ([bg](/runes/bg#gradient-fill)).
 
 ## Other families
@@ -62,4 +62,4 @@ Families B–E from the composability investigation (registry-fed lists, interac
 ## See also
 
 - [Composability contract](/extend/rune-authoring/composability) — the open-world model behind every pattern here.
-- [Surface gallery](/runes/surface-gallery) — the surface-treatment axis, shown as a system.
+- [Surfaces](/runes/surfaces) — the surface-treatment axis, shown as a system.
