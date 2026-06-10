@@ -15,7 +15,6 @@ tint-lock: false
 
 - rune-catalog
 - surfaces
-- surface-gallery
 
 ## Content
 
