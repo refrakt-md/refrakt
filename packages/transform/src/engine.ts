@@ -957,8 +957,15 @@ function transformRune(
 			if (blockAxis === 'start') {
 				styleParts.push('--cover-scrim-dir: to bottom');
 			} else if (blockAxis === 'center') {
-				styleParts.push('--cover-scrim-image: radial-gradient(ellipse at center, rgb(0 0 0 / 0.55), transparent 62%)');
-				styleParts.push('--cover-scrim-mask: radial-gradient(ellipse at center, #000 30%, transparent 72%)');
+				// `farthest-side` extent makes 100% radius land on the box's edges
+				// instead of the (much further) corners — without this, the default
+				// `farthest-corner` shape leaves the outer ~30% of width on a wide
+				// aspect (e.g. 16:9) entirely outside the gradient, so text near the
+				// left/right edges gets no scrim coverage. The dark also stays
+				// solid out to 40% radius (matching the linear's `0%, 62%` visual
+				// weight without the dramatic falloff radial gives at the corners).
+				styleParts.push('--cover-scrim-image: radial-gradient(ellipse farthest-side at center, rgb(0 0 0 / 0.55) 40%, transparent 100%)');
+				styleParts.push('--cover-scrim-mask: radial-gradient(ellipse farthest-side at center, #000 50%, transparent 100%)');
 			}
 		}
 	}
