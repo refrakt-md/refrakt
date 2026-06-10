@@ -137,6 +137,13 @@ export interface RuneConfig {
 	 *  no container-side allow-list. */
 	requiresParent?: string;
 
+	/** SPEC-090 — interaction capability. A rune is presentational by default;
+	 *  this flags the behaviour-driven (interactive) guests (codegroup, tabs,
+	 *  datatable, form, map, sandbox, juxtapose, or any guest that declares it).
+	 *  The engine reads it to decide whether a media guest in a linked tile needs
+	 *  the interaction-posture build warning. */
+	interactive?: boolean;
+
 	/** Modifier sources — maps modifier name to where to read it from */
 	modifiers?: Record<string, {
 		/** Where to read the modifier value */
