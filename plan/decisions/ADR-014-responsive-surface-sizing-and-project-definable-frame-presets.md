@@ -83,10 +83,15 @@ Adopt a coherent model with the following parts:
    - **Extent** — a media-zone height knob (working name `media-height`), bounded
      with overflow handling (scroll for code, fade/clip otherwise). For content
      guests.
-   These are mutually exclusive on a given surface; setting both warns, extent
-   wins. The extent knob is lifted into the **shared media-layout vocabulary**
-   (alongside `media-position`/`media-ratio`, shared by `card`/`bento-cell`/
-   `recipe`), generalising bento's `content-height` rather than reinventing it.
+   `frame-aspect` and `media-height` both size the **media** zone, so they are
+   mutually exclusive — setting both warns, extent wins. `media-height` is lifted
+   into the **shared media-layout vocabulary** (alongside `media-position`/
+   `media-ratio`, shared by `card`/`bento-cell`/`recipe`). It generalises the
+   *extent pattern* bento pioneered with `content-height` (a named height +
+   overflow), but as a distinct, **zone-named sibling**, not a replacement:
+   `media-height` sizes the media zone, `content-height` caps the body zone — one
+   height knob per zone. How the two zones (plus `frame-aspect` and the outer
+   track) interact is the **Sizing precedence** model below.
 
 2. **Responsiveness lives in the named token/preset layer, resolved against the
    container — never as per-breakpoint values in content.** Named scales become
@@ -129,6 +134,55 @@ Adopt a coherent model with the following parts:
      named `height`/`media-height` clamps, the generalised `media-height` extent
      knob, and guest `mediaFit` defaults.
 
+## Sizing precedence
+
+Multiple height knobs can apply to one surface — `frame-aspect` and `media-height`
+on the media zone, `content-height` on the body zone, and an outer track in
+bento. Rather than treat them as rival peers, the model is an explicit
+precedence ladder with **one authoritative height knob per zone** and a declared
+fill priority, so they compose instead of fight.
+
+**The ladder (outer wins):**
+
+1. **The outer envelope is the hard clamp.** A bento `row-height`/row-span, or a
+   card's own `height`/`aspect` in cover mode, bounds the cell. Nothing inside may
+   force it taller — overflow is clipped/scrolled, never spilled (the same
+   host-owned-clip principle the frame model uses). Where there is no envelope (a
+   card in prose), the cell height is intrinsic: media + body + footer stack.
+
+2. **One height intent per zone.**
+   - **Media zone:** `frame-aspect` **XOR** `media-height` (extent wins, warn).
+   - **Body zone:** `content-height` is a **max-height cap, not a size claim** —
+     it bounds the text and scrolls/clips the rest; it never reserves a fixed
+     slice that `media-height` must subtract from. This is the key move that stops
+     the two zones reading as rivals.
+
+3. **Fill priority — the explicit zone is fixed, the other flexes.**
+   - `media-height` only → media fixed, body flexes (capped by `content-height`).
+   - `content-height` only → body fixed (capped), media flexes to fill.
+   - **Both set** → both fixed; if they exceed the track, the body scrolls
+     (`content-height` already implies overflow) and the engine **warns**; if
+     there is slack, **the media zone absorbs it** (media is the visual hero, and
+     this keeps the body pinned at its requested cap).
+
+**Disjoint authority (tracked vs untracked).** This makes `media-height` and
+`content-height` primary in *different* contexts, which is what dissolves the
+apparent bento conflict:
+
+- **Tracked (bento cell):** the track-native tools are primary — `row-height`/span
+  (envelope), `content-height` (body cap), `frame-aspect` + size-derived placement
+  (media shape). `media-height` here is a **clamped request**
+  (`min(media-height, available)`); if it cannot be honored it warns and the body
+  absorbs the difference.
+- **Untracked (a card in prose):** no envelope, so `media-height` is the
+  authoritative media sizer — the motivating codegroup-in-card case.
+
+**Enforcement.** The transform engine surfaces the conflicting/over-constrained
+cases as build warnings — `frame-aspect` + `media-height` together, and
+`media-height` that cannot be honored within a track — the same way it already
+warns for an interactive guest in a linked tile. Conflicts appear at build, not
+as silent mis-renders.
+
 ## Rationale
 
 - **Container, not viewport, is the only correct axis for a composable surface.**
@@ -148,6 +202,13 @@ Adopt a coherent model with the following parts:
   mechanism can usually approximate anyway.
 - **Phasing** lets the cheap, high-value win (config-definable static frames)
   land immediately without waiting on the `@container` codegen.
+- **One height knob per zone + a fill priority dissolves the apparent conflict.**
+  The risk was a three-way fight between `media-height`, `content-height`, and
+  `frame-aspect` in a bento cell. Naming the precedence — outer envelope clamps,
+  one height intent per zone, `content-height` is a cap (not a size claim), the
+  explicit zone is fixed and the other flexes — means the only true collision is
+  two knobs on the *same* zone (`frame-aspect`/`media-height`), which is already
+  exclusive. The rest compose.
 
 ## Consequences
 
@@ -162,6 +223,12 @@ Adopt a coherent model with the following parts:
 - **A new guest capability** (`mediaFit`) must be threaded through core and
   plugin rune configs; guests that set neither inherit a sensible default by
   kind.
+- **`content-height` is reframed (not redefined) as a body-zone max-height cap**
+  rather than a fixed size contributor. This matches its current implementation
+  (`--cell-content-height` + `overflow: hidden`), and the precedence ladder must
+  be implemented in the shared media-layout CSS (`split`/bento) and validated by
+  the engine — the body zone flexes to the remainder, media absorbs slack, the
+  outer track clamps, and over-constrained cells warn.
 - **`FramePresetDefinition.aspect` grows** from `string` to `string | <container-
   keyed map>`; the scalar form stays valid (Phase 1 compatible).
 - **Docs updates:** `runes/surfaces.md`, `runes/bg.md`, theme-authoring
