@@ -9,7 +9,7 @@ A `{% map %}` in a card's media zone is a location card: the map fills the media
 
 {% preview source=true %}
 
-{% card %}
+{% card frame-aspect="3/2" %}
 {% map zoom="13" center="48.8566, 2.3522" %}
 - **Louvre Museum** - *World's largest art museum* - 48.8606, 2.3376
 - **Notre-Dame** - *Medieval cathedral* - 48.8530, 2.3499

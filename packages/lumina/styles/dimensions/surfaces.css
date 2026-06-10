@@ -127,6 +127,15 @@
 	background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
 }
 
+/* …but when they're a media-zone guest the slot already provides the recessed
+ * surface (border, radius, inset fill), so the inner chrome would just stack
+ * as double-chrome. Drop it; keep padding so axis labels / SVG keep breathing
+ * room. */
+[data-section="media"] > :is(.rf-chart, .rf-diagram) {
+	background: transparent;
+	border: 0;
+}
+
 /* Media wells of media-bearing runes: a recessed sub-surface that tracks the
  * (possibly tinted) container colour — invisible under a full-bleed guest,
  * visible in the gaps (transparent, displaced, or absent guest). */
