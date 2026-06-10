@@ -103,6 +103,13 @@
 	position: absolute;
 	inset: 0;
 	pointer-events: none;
+	/* `inherit` matches the media zone's `--rf-radius-media`, so a frost scrim's
+	 * `backdrop-filter` region clips at the same rounded corners — `overflow:
+	 * hidden` on the media zone doesn't reliably clip backdrop-filter past the
+	 * rounded edge in WebKit, so the pseudo carries its own radius. (The
+	 * gradient variant doesn't strictly need this, but it's harmless and keeps
+	 * the two scrim variants visually congruent.) */
+	border-radius: inherit;
 	background-image: linear-gradient(var(--cover-scrim-dir, to top), rgb(0 0 0 / 0.55), transparent 62%);
 }
 
