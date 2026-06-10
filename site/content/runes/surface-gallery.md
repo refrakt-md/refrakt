@@ -190,22 +190,24 @@ The cover scrim, `content-place`, and `scrim-type` are documented on [card → c
 
 ## Posture — one interaction target
 
-When a surface is itself a link (`href`), it becomes a single interaction target. In cover mode the media is always an inert backdrop — there are no controls to compete with the card link, so the whole poster is cleanly clickable:
+When a surface is itself a link (`href`), it becomes a single interaction target. Any normally-interactive guest in the media zone — a `tabs`, a live `map`, a `codegroup` — is **demoted** to presentational so the click always lands on the card. The map below would normally pan and zoom on its own; inside this linked cover card its controls are silent, and the whole poster reads as one clickable surface:
 
 {% preview source=true %}
 
-{% card href="/runes/card" media-position="cover" scrim-type="frost" scrim-blur="md" height="md" %}
-![A clickable poster](https://picsum.photos/seed/galleryposture/800/600)
+{% card href="/runes/places/map" media-position="cover" height="md" %}
+{% map zoom="12" center="48.8566, 2.3522" %}
+- **Paris** - *Demoted to a backdrop* - 48.8566, 2.3522
+{% /map %}
 
 ---
 
-### A linked poster
-The entire surface is the link target — nothing inside competes for the click.
+### A linked poster, with a live guest
+The map below would normally pan and zoom; inside a linked card its controls go silent, so the whole surface stays a single click target.
 {% /card %}
 
 {% /preview %}
 
-The same principle holds outside cover mode: an *interactive* guest dropped into a linked card's media zone (a `tabs`, a live `map`, a `codegroup`) is **demoted** to presentational — its controls stop receiving pointer events and it renders its static fallback, so the click always lands on the card. A button or link in the body or footer stays live. The full model is the [media-guest interaction posture](/extend/rune-authoring/composability#media-guest-interaction-posture) contract.
+The same principle holds outside cover mode — a button or link in the body or footer of a linked card stays live, only the **media-zone** guest is demoted. The full model is the [media-guest interaction posture](/extend/rune-authoring/composability#media-guest-interaction-posture) contract.
 
 ## See also
 
