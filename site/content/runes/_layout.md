@@ -16,6 +16,15 @@ tint-lock: false
 - rune-catalog
 - surfaces
 
+## Compositions
+
+- compositions
+- compositions/codegroup-in-card
+- compositions/chart-in-card
+- compositions/map-in-card
+- compositions/diagram-in-card
+- compositions/chart-in-bento
+
 ## Content
 
 - hint
