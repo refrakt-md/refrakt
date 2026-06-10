@@ -1,11 +1,16 @@
 /* Background — Directive rune for background images, video, overlays, blur */
 
-/* Background layer — absolute positioned behind content */
+/* Background layer — absolute positioned behind content. `border-radius:
+ * inherit` rounds the gradient/image to whatever shape the parent surface has,
+ * so a card / bento-cell / any rounded host clips the bg to its own corners
+ * without needing `overflow: hidden` (though hosts with thin-edge padding
+ * still need it so the bg can't poke past the rounded outer edge). */
 [data-name="bg"] {
 	position: absolute;
 	inset: 0;
 	z-index: 0;
 	overflow: hidden;
+	border-radius: inherit;
 	background-image: var(--bg-image);
 	background-size: var(--bg-fit, cover);
 	background-position: var(--bg-position, center);
@@ -22,8 +27,14 @@
 [data-name="bg"][data-bg-fixed] {
 	background-attachment: fixed;
 }
-/* Content above background — any sibling of bg layer gets z-index */
-.rf-has-bg > :not([data-name="bg"]) {
+/* Content above background — any sibling of the bg layer gets `z-index: 1`
+ * so it stacks over the `data-name="bg"` layer (which sits at `z-index: 0`).
+ * Keyed off the `data-bg` attribute the engine emits on the bg-owning rune
+ * (`engine.ts` → `bgDataAttrs['data-bg'] = ''`), not the per-block BEM
+ * modifier class `rf-<block>--has-bg` — the attribute is rune-agnostic so
+ * one rule covers card, bento-cell, hero, feature, and anything else that
+ * raises a bg layer. */
+[data-bg] > :not([data-name="bg"]) {
 	position: relative;
 	z-index: 1;
 }

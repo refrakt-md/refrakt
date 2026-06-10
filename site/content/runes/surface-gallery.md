@@ -122,9 +122,9 @@ Pattern over a recessed, tint-tracking fill.
 A two-stop linear gradient from token colours — no image needed.
 {% /card %}
 
-{% card height="md" bg-gradient="to-t" bg-from="surface" bg-via="primary" bg-to="info" gradient-type="radial" %}
+{% card height="md" bg-gradient="to-t" bg-from="surface" bg-via="primary" bg-to="info" bg-gradient-type="radial" %}
 ### Radial, three stops
-`gradient-type="radial"` with a `via` middle stop.
+`bg-gradient-type="radial"` with a `via` middle stop.
 {% /card %}
 
 {% /preview %}
