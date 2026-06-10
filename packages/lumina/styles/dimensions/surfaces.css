@@ -103,6 +103,17 @@
 	padding: var(--rune-padding, var(--rf-spacing-md));
 }
 
+/* ─── Media slot inherits the surface border ─────────────────────────
+ * When a surface-bearing rune wraps a `[data-section="media"]` slot, the slot
+ * shares the surface's 1px border so the framed media reads as part of the
+ * same surface rather than a separate inner box. Scoped via `:where()` for
+ * zero specificity — per-rune CSS can still override if a particular surface
+ * wants a different chrome (e.g. character's circular portrait avoids this
+ * because it's not a `[data-section="media"]` slot). */
+:where(.rf-card, .rf-bento-cell, .rf-recipe, .rf-realm, .rf-faction, .rf-playlist) [data-section="media"] {
+	border: 1px solid var(--rf-color-border);
+}
+
 /* ─── Inset surface (SPEC-087) — tint-tracking recessed fill ──────────
  * Derived at use-site via relative-color (lower L, keep C+H) so it recomputes from a tinted
  * `--rf-color-surface` automatically (a static inset-colour token would

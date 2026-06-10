@@ -948,9 +948,25 @@ function transformRune(
 			const [blockAxis, inlineAxis] = contentPlace.trim().split(/\s+/);
 			if (blockAxis) styleParts.push(`--cover-place-block: ${blockAxis}`);
 			if (inlineAxis) styleParts.push(`--cover-place-inline: ${inlineAxis}`);
-			// The default scrim weights toward the content edge: content at the top
-			// flips the scrim; the default (content at bottom) keeps `to top`.
-			if (blockAxis === 'start') styleParts.push('--cover-scrim-dir: to bottom');
+			// Scrim follows the content edge. The default linear gradient handles
+			// `start` (flip to `to bottom`) and `end` (the default `to top`). For
+			// `center` a linear gradient can't centre a band, so emit a radial
+			// scrim (and a radial mask for the frost variant) keyed off the same
+			// percentage stops as the linear default — cover.css falls through
+			// to the linear gradient via `var()` defaults when these aren't set.
+			if (blockAxis === 'start') {
+				styleParts.push('--cover-scrim-dir: to bottom');
+			} else if (blockAxis === 'center') {
+				// `farthest-side` extent makes 100% radius land on the box's edges
+				// instead of the (much further) corners — without this, the default
+				// `farthest-corner` shape leaves the outer ~30% of width on a wide
+				// aspect (e.g. 16:9) entirely outside the gradient, so text near the
+				// left/right edges gets no scrim coverage. The dark also stays
+				// solid out to 40% radius (matching the linear's `0%, 62%` visual
+				// weight without the dramatic falloff radial gives at the corners).
+				styleParts.push('--cover-scrim-image: radial-gradient(ellipse farthest-side at center, rgb(0 0 0 / 0.55) 40%, transparent 100%)');
+				styleParts.push('--cover-scrim-mask: radial-gradient(ellipse farthest-side at center, #000 50%, transparent 100%)');
+			}
 		}
 	}
 	// SPEC-089 — cover foreground + default-scrim opt-out. The overlaid content

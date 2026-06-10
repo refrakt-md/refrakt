@@ -22,6 +22,13 @@
 	width: 100%;
 	position: relative;
 	background: var(--rf-color-surface, #f8f9fa);
+	/* Establish a stacking context so Leaflet's internal pane z-indices
+	 * (tile-pane 200, overlay-pane 400, marker-pane 600, popup-pane 700,
+	 * etc.) stay contained instead of escaping past siblings — otherwise
+	 * a map dropped into a cover card's media slot punches through the
+	 * cover scrim (z-index auto) and overlaid content (z-index 1).
+	 * `position: relative` alone is not enough; `isolation: isolate` is. */
+	isolation: isolate;
 }
 
 /* Fallback list shown while Leaflet loads */
@@ -78,6 +85,28 @@
 .rf-map meta,
 .rf-map span[property] {
 	display: none;
+}
+
+/* ── Map as a media guest ──
+ * When dropped into a `[data-section="media"]` slot (e.g. a card or
+ * bento-cell in cover mode), the map yields its standalone presentation to
+ * the slot: no outer margin or padding (map is in the Banner surface group
+ * which gives it vertical `--rune-padding`; see `surfaces.css`), no rounding
+ * (the slot already clips), and the Leaflet container stretches to fill the
+ * slot height instead of capping at the per-size pixel height. The fallback
+ * list (rendered before Leaflet hydrates) drops its outer padding too so it
+ * doesn't bleed past the slot edge during the brief flash before tiles load. */
+[data-section="media"] > .rf-map {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+	border-radius: inherit;
+}
+[data-section="media"] > .rf-map > .rf-map__container {
+	height: 100%;
+}
+[data-section="media"] .rf-map__fallback {
+	padding: 0.75rem 1rem;
 }
 
 /* Leaflet popup overrides to match theme */

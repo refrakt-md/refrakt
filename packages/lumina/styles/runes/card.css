@@ -27,6 +27,13 @@
 	border-radius: var(--rf-radius-container);
 	border: 1px solid var(--rf-color-border);
 	background: var(--rf-color-surface);
+	/* Clip non-media content (substrate patterns, bg gradient/image layers) to
+	 * the card's rounded outer corners. The displaced-peek case is unaffected:
+	 * `frame-displace` translates the guest *inside* the media zone, which has
+	 * its own `overflow: hidden`, so no peek ever crosses this boundary.
+	 * `box-shadow` from `elevation` paints outside the element box and is
+	 * unaffected by `overflow`. */
+	overflow: hidden;
 }
 
 /* Content zone fills the remaining inset so total text padding still equals

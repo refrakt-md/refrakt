@@ -1,8 +1,22 @@
 /* Figure */
 .rf-figure img {
+	display: block;
 	max-width: 100%;
 	height: auto;
+	margin-inline: auto;
 	border-radius: var(--rf-radius-media);
+}
+
+/* When `frame-aspect` sets an explicit surface shape, the image fills the
+ * shape rather than sitting at its natural size with whitespace on the
+ * inline-end. `object-fit: cover` crops only if the natural aspect doesn't
+ * match — and `frame-anchor` already picks the focal point of that crop
+ * (the same contract as a card's media slot). */
+.rf-figure[style*="--frame-aspect"] img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	margin: 0;
 }
 .rf-figure figcaption {
 	margin-top: 0.625rem;

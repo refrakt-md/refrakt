@@ -103,14 +103,27 @@
 	position: absolute;
 	inset: 0;
 	pointer-events: none;
-	background-image: linear-gradient(var(--cover-scrim-dir, to top), rgb(0 0 0 / 0.55), transparent 62%);
+	/* `inherit` matches the media zone's `--rf-radius-media`, so a frost scrim's
+	 * `backdrop-filter` region clips at the same rounded corners — `overflow:
+	 * hidden` on the media zone doesn't reliably clip backdrop-filter past the
+	 * rounded edge in WebKit, so the pseudo carries its own radius. (The
+	 * gradient variant doesn't strictly need this, but it's harmless and keeps
+	 * the two scrim variants visually congruent.) */
+	border-radius: inherit;
+	/* The scrim shape is `--cover-scrim-image` (custom property override) when
+	 * the engine emits one — for `content-place="center …"` it emits a radial
+	 * ellipse so the dark falls under the centred overlay. For the directional
+	 * cases (`start`/`end` block-axis) the engine sets `--cover-scrim-dir` and
+	 * the linear fallback resolves to the right edge. */
+	background-image: var(--cover-scrim-image, linear-gradient(var(--cover-scrim-dir, to top), rgb(0 0 0 / 0.55), transparent 62%));
 }
 
 /* Frost treatment (`scrim-type="frost"`) — a frosted-glass blur over the media
  * instead of a gradient. `scrim-blur` (named scale) sets the blur radius; the
  * tint follows the cover scheme (a dark scheme → a dark frost for light text).
  * The frost is masked to the content edge (following `--cover-scrim-dir`, default
- * bottom) so it reads as a band behind the text, not a blur over the whole image. */
+ * bottom) so it reads as a band behind the text, not a blur over the whole
+ * image. `--cover-scrim-mask` is the radial equivalent for centred content. */
 [data-media-position="cover"][data-scrim-blur="none"] { --cover-scrim-blur: 0px; }
 [data-media-position="cover"][data-scrim-blur="sm"]   { --cover-scrim-blur: 4px; }
 [data-media-position="cover"][data-scrim-blur="md"]   { --cover-scrim-blur: 8px; }
@@ -120,8 +133,8 @@
 	background-color: rgb(0 0 0 / 0.18);
 	-webkit-backdrop-filter: blur(var(--cover-scrim-blur, 8px));
 	backdrop-filter: blur(var(--cover-scrim-blur, 8px));
-	-webkit-mask-image: linear-gradient(var(--cover-scrim-dir, to top), #000 30%, transparent 72%);
-	mask-image: linear-gradient(var(--cover-scrim-dir, to top), #000 30%, transparent 72%);
+	-webkit-mask-image: var(--cover-scrim-mask, linear-gradient(var(--cover-scrim-dir, to top), #000 30%, transparent 72%));
+	mask-image: var(--cover-scrim-mask, linear-gradient(var(--cover-scrim-dir, to top), #000 30%, transparent 72%));
 }
 [data-media-position="cover"][data-scrim-type="frost"][data-color-scheme="light"]:not([data-scrim="none"]) [data-section="media"]::after {
 	background-color: rgb(255 255 255 / 0.25);

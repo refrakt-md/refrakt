@@ -55,16 +55,23 @@
 	--substrate-tile: auto;
 }
 
-/* cross — plus marks on a grid (a grid masked down to short ticks at each node) */
+/* cross — plus marks at the centre of each cell, drawn as two perpendicular
+ * thin ellipses (no `mask` — an element-level `mask` would clip the rune's
+ * own text content along with the pattern, which is what we don't want). A
+ * small plus reads fainter than a 1px line at the same ink opacity, so the
+ * pattern carries its own ink boost — same idea as dots.
+ *
+ * The stop syntax mirrors dots: `ink <r>, transparent 0` produces a sharp-
+ * edged shape filled with ink (the explicit length on ink, plus `0` after
+ * transparent for a zero-length transition, beats the `ink 100%, transparent
+ * 100%` form which some renderers collapse to nothing). Ellipse radii at
+ * 1px (rather than sub-pixel 0.5px) so the stroke survives DPR rounding. */
 [data-substrate="cross"] {
 	--substrate-image:
-		linear-gradient(var(--substrate-ink) 1px, transparent 1px),
-		linear-gradient(90deg, var(--substrate-ink) 1px, transparent 1px);
+		radial-gradient(ellipse 3px 1px at center, var(--substrate-ink) 100%, transparent 0),
+		radial-gradient(ellipse 1px 3px at center, var(--substrate-ink) 100%, transparent 0);
 	--substrate-pos: center;
-	-webkit-mask-image: radial-gradient(circle at center, #000 0 2px, transparent 2px);
-	-webkit-mask-size: var(--substrate-cell) var(--substrate-cell);
-	mask-image: radial-gradient(circle at center, #000 0 2px, transparent 2px);
-	mask-size: var(--substrate-cell) var(--substrate-cell);
+	--substrate-boost: 1.6;
 }
 
 /* checker — alternating filled cells */
