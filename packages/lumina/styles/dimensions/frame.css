@@ -56,7 +56,10 @@
 [style*="--frame-place-x"] { justify-self: var(--frame-place-x, auto); align-self: var(--frame-place-y, auto); }
 
 /* ── Oversize — guest exceeds its slot (clipping hosts crop it) ──────── */
-[style*="--frame-oversize"] > :is(img, video) { width: calc(100% * var(--frame-oversize, 1)); max-width: none; }
+/* `[data-rune]` extends the rule to nested rune guests (codegroup, mockup,
+ * chart, etc.), so frame chrome stays guest-agnostic — the same selector
+ * pattern the displace rule uses. */
+[style*="--frame-oversize"] > :is(img, video, [data-rune]) { width: calc(100% * var(--frame-oversize, 1)); max-width: none; }
 
 /* ── Displacement (peek / spill) — move the guest toward an edge/corner.
  * The host decides whether the guest is cropped or spills; this only moves it.

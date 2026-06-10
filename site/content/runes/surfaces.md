@@ -250,6 +250,49 @@ The map below would normally pan and zoom; inside a linked card its controls go 
 
 The same principle holds outside cover mode — a button or link in the body or footer of a linked card stays live, only the **media-zone** guest is demoted. The full model is the [media-guest interaction posture](/extend/rune-authoring/composability#media-guest-interaction-posture) contract.
 
+## Composition
+
+All the dials compose. The frame vocabulary doesn't know or care that its guest is an image — drop a `codegroup` into the media slot and the same `frame-displace` / `frame-oversize` work. `substrate-target="media"` routes the cross pattern to the media well, and the displaced guest reveals it in the top-left strip the codegroup no longer covers:
+
+{% preview source=true %}
+
+{% card frame-aspect="3/2" frame-displace="bottom-end" frame-offset="md" frame-oversize="1.15" substrate="cross" substrate-target="media" %}
+{% codegroup title="refrakt.config.ts" %}
+```ts
+import { defineConfig } from '@refrakt-md/cli';
+import marketing from '@refrakt-md/marketing';
+import learning from '@refrakt-md/learning';
+import storytelling from '@refrakt-md/storytelling';
+
+export default defineConfig({
+  content: './content',
+  theme: '@refrakt-md/lumina',
+  plugins: [
+    marketing(),
+    learning(),
+    storytelling(),
+  ],
+  surfaces: {
+    card: {
+      elevation: 'md',
+      frame: { aspect: '16/9' },
+    },
+    figure: {
+      frame: { shadow: 'lg', anchor: 'top' },
+    },
+  },
+});
+```
+{% /codegroup %}
+
+---
+
+### Codegroup over a substrate
+The codegroup oversizes and displaces toward the bottom-right; the cross substrate fills the media slot beneath and shows through the strip the codegroup no longer covers.
+{% /card %}
+
+{% /preview %}
+
 ## See also
 
 - [tint](/runes/tint) · [bg](/runes/bg) — the colour and image/gradient fill layers.
