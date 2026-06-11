@@ -198,25 +198,46 @@ is theme-agnostic and works for every future theme for free. It complements — 
 replace — `inspect --audit` and `contracts --check`: audit proves a selector *has* CSS, the
 gallery proves the rune *looks right*.
 
+**Two subject classes, not one.** Runes are only half a theme's surface; page **layouts** (the
+`LayoutConfig` chrome — header, nav, sidebar, TOC, mobile panel, footer) are the other half,
+and on the editorial/magazine briefs they carry as much of the theme's identity as the runes.
+The generator therefore produces two artifact classes:
+
+- **Rune gallery** — the dense per-variant surface above (per-rune clips).
+- **Layout fixtures** — a few representative sample pages rendered through each `LayoutConfig`
+  via `renderPage`, shot whole. These are harder to fixture than runes in three ways: they need
+  a **synthetic multi-page context** so computed chrome (breadcrumb, TOC, nav tree, prev/next
+  from the aggregate phase) populates; they are **responsive**, so each is shot at
+  mobile/tablet/desktop to catch sidebar collapse and the mobile panel; and some chrome is
+  **interactive** (mobile menu, theme toggle) — default pre-enhancement state is the baseline,
+  with a couple of enhanced states (e.g. mobile menu open) an optional follow-on needing the
+  client bundle. Cover the existing layouts (`default`, `docs`, `blog-article`, `plan`) from
+  the start; new layouts (§7) ship with their fixtures, same as a new rune ships with its CSS.
+
 A theme scaffold (`create-refrakt theme`) is a separate, **deferred** deliverable: it only
 drops in per-theme *glue* (manifest, adapter glue, the harness config + npm script + baseline
 dir — see §5). The gallery generator and harness ship as shared tooling independent of it.
 
 #### 5. Visual-regression harness — shared, with thin per-theme glue
 
-Playwright photographs the generated gallery into **per-theme golden baselines** (per rune,
-per mode), committed and image-diffed on every PR. This closes the AI iteration loop (change
-tokens → diff screenshots → iterate) and — critically — makes the §3 extraction **provable**:
-capture Lumina's baseline before the skeleton/skin split, extract, re-shoot, and the diff
-**must be empty**; a non-empty diff is the exact list of declarations that leaked. It also
-retroactively guards the shipped surface model.
+Playwright photographs both generated subjects — the rune gallery (per rune, per mode) and the
+layout fixtures (per layout, per viewport) — into **per-theme golden baselines**, committed and
+image-diffed on every PR. This closes the AI iteration loop (change tokens → diff screenshots →
+iterate) and — critically — makes the §3 extraction **provable**: capture Lumina's baseline
+before the skeleton/skin split, extract, re-shoot, and the diff **must be empty**; a non-empty
+diff is the exact list of declarations that leaked. The extraction touches layout chrome CSS
+(~10 files in `styles/layouts/`) as much as rune CSS, so **layout coverage is what makes the
+guarantee hold for page chrome, not just content blocks** — without it the extraction is blind
+exactly where editorial themes differ most. It also retroactively guards the shipped surface
+model.
 
 Architecture:
 
 - The reusable logic — Playwright config and the "load artifact → await `document.fonts.ready`
-  → disable animation → snapshot per-`data-gallery-cell` clip" test — lives **once** (a shared
-  harness package / config), not copy-pasted per theme. Per-rune element clips (not full-page)
-  so a diff localises to the rune that changed.
+  → disable animation → snapshot" test — lives **once** (a shared harness package / config),
+  not copy-pasted per theme. The rune gallery uses per-`data-gallery-cell` element clips (not
+  full-page) so a diff localises to the rune that changed; layout fixtures are shot whole, once
+  per viewport, since the chrome *is* the subject.
 - Each theme contributes only **glue**: a `playwright.config.ts` extending the shared one, the
   committed baselines (e.g. `packages/lumina/gallery/__screenshots__/`), and an npm script.
   Baselines refresh via `--update-snapshots`.
@@ -263,7 +284,8 @@ then actually render in it.
 A first-class theme→layout registration contract (replacing the `undefined as any` pattern
 the docs currently show) plus additional layout primitives for the new briefs: section/issue
 fronts, multi-column editorial bodies, and card-grid landings. This is what actually unlocks
-magazine/business themes beyond recolouring.
+magazine/business themes beyond recolouring. Each new layout ships with its harness fixture
+(§4/§5) — a layout is a visual deliverable like a rune, and is covered the same way.
 
 #### 8. Surface as engine-emitted config (and the classification criterion)
 
@@ -317,7 +339,9 @@ beyond documenting them alongside surface as the two theme-tunable rune-level de
 - **Generated token CSS changes the authoring loop.** Contributors edit `tokens.ts`, not
   CSS; docs and any contributor muscle memory update accordingly.
 - **The skeleton/skin split is the riskiest extraction** and should be spiked before being
-  committed to wholesale — it determines the public shape every future theme depends on.
+  committed to wholesale — it determines the public shape every future theme depends on. It
+  touches **layout chrome CSS** (`styles/layouts/*`) as well as rune CSS, so the harness must
+  cover both rune and layout subjects for the "diff must be empty" guarantee to mean anything.
 - **Tier 1 gates the rest.** Tiers 2 and 3 are valuable independently but assume a tokenized,
   generated, skeleton-backed foundation; sequencing them before Tier 1 would bake the current
   entanglement into the tooling.
@@ -329,8 +353,9 @@ beyond documenting them alongside surface as the two theme-tunable rune-level de
 - [ ] `tokens/base.css` and `tokens/dark.css` are generated from `tokens.ts` via `generateThemeStylesheet` at build time; the hand-maintained mirror and its coverage test are retired.
 - [ ] A skeleton/skin spike (one card-surface rune + `hint` + one dimension file, split then re-skinned with a deliberately un-Lumina editorial look) is completed first and sets the per-declaration cut line and packaging decision.
 - [ ] A theme-agnostic skeleton layer is extracted using the correctness-not-taste criterion, delivered via cascade layers (`@layer skeleton, skin`) with loader-guaranteed layer order, and is consumable by a new theme independent of Lumina's aesthetic.
-- [ ] A CLI command generates a self-contained static gallery artifact (via the HTML adapter's `renderPage`, reusing the `inspect` pipeline) covering every rune across its variant matrix, deterministically (fixed content, loaded fonts, no animation), with a stable per-variant clip anchor.
-- [ ] A shared Playwright harness photographs the gallery into per-theme, per-mode golden baselines (per-rune clips), runs in a pinned CI container, and a theme wires it in with thin glue only (config + baselines + script).
+- [ ] A CLI command generates self-contained static artifacts (via the HTML adapter's `renderPage`, reusing the `inspect` pipeline) for two subjects — the rune gallery (every rune across its variant matrix, with per-variant clip anchors) and layout fixtures (each `LayoutConfig` over a synthetic multi-page context) — deterministically (fixed content, loaded fonts, no animation).
+- [ ] The existing layouts (`default`, `docs`, `blog-article`, `plan`) have baseline coverage, shot per viewport (mobile/tablet/desktop) in default chrome state; new layouts (§7) ship with their fixtures.
+- [ ] A shared Playwright harness photographs both subjects into per-theme golden baselines (rune-gallery per-cell clips per mode; layout fixtures whole-page per viewport), runs in a pinned CI container, and a theme wires it in with thin glue only (config + baselines + script).
 - [ ] Distribution: the gallery generator ships in the public CLI (no browser dependency, usable by theme *and* site authors); the harness ships as a separately-installed opt-in package so Playwright/browser binaries never enter the core install path.
 - [ ] A theme scaffold (`create-refrakt theme`) — deferred — emits a buildable starter that drops in the per-theme harness glue and skeleton/token wiring.
 - [ ] A theme can declare its fonts such that the adapter loads them, decoupled from the consuming site's HTML head.
@@ -343,8 +368,8 @@ beyond documenting them alongside surface as the two theme-tunable rune-level de
 2. **Lumina type refactor** — replace hardcoded `font-size`/weights/leading with tokens; keep coverage + contracts green.
 3. **Token CSS generation** — wire `generateThemeStylesheet` into Lumina's build; retire the hand-maintained mirror + coverage test.
 4. **Skeleton/skin split** — (a) spike on one rune + `hint` + one dimension file to fix the correctness-not-taste cut line, cascade-layer strategy, and packaging; (b) extract the skeleton wholesale under `@layer skeleton`; (c) re-point Lumina's skin at it; couple with the `data-surface` engine change (§8) and icon-from-config so embedded data-URIs leave CSS.
-5. **Gallery generator** — CLI command extending the `inspect` pipeline + HTML-adapter `renderPage` to emit a deterministic static all-runes/all-variants artifact with per-cell anchors.
-6. **Visual-regression harness** — shared Playwright config + per-rune snapshot test; per-theme glue (config + baselines + script); pinned CI container. (Theme scaffold `create-refrakt theme` is deferred.)
+5. **Gallery generator** — CLI command extending the `inspect` pipeline + HTML-adapter `renderPage` to emit two deterministic static artifacts: the all-runes/all-variants rune gallery (per-cell anchors) and layout fixtures (each `LayoutConfig` over a synthetic multi-page context).
+6. **Visual-regression harness** — shared Playwright config + snapshot tests (per-cell rune clips; whole-page layout shots per viewport); per-theme glue (config + baselines + script); pinned CI container. (Theme scaffold `create-refrakt theme` is deferred.)
 7. **Theme font loading** — manifest/contract field + adapter injection.
 8. **Layout registration + primitives** — clean theme layout contract; editorial/section-front + card-grid layouts.
 9. **Surface as engine config** — add a rune→surface mapping to config, emit `data-surface`, default in skeleton + theme-overridable; replace Lumina's surface rune-name lists with `[data-surface]`; document the classification criterion and the reserved prose candidate.
