@@ -7,7 +7,7 @@
 {% nav %}
 ## Docs
 
-- getting-started
+- docs/getting-started
 
 {% /nav %}
 {% /region %}
