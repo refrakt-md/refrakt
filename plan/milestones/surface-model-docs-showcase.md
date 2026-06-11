@@ -20,21 +20,15 @@ No new runtime features.
   zone runs a program" flex) plus an ES-module-from-CDN example on the `sandbox`
   reference page.
 
-## Moved to v0.21.0
+## Moved out
 
-The remaining items are really **registry / sandbox-integration** material, so they
-move to {% ref "WORK-350" /%} and {% ref "WORK-381" /%}'s new home, the v0.21.0
-milestone (registry-driven composition and sandbox integration):
+The remaining items aren't surface-model work, so they move to their own milestones:
 
-- {% ref "WORK-350" /%} — the index bento showcase (held pending its content; v0.21.0
-  gives it registry-fed cells worth showing).
-- {% ref "WORK-381" /%} — sandbox lazy/poster activation (the prerequisite for heavy
-  live cells / data-bound visualizations).
-
-## Still open (unassigned candidate)
-
-- {% ref "WORK-293" /%} — ship the client-behaviors bundle in the `@refrakt-md/html`
-  scaffold (carried from v0.18.0). Unrelated to either the surface model or the
-  registry work — a standing backlog item to re-home or schedule on its own.
+- {% ref "WORK-350" /%} (index bento) and {% ref "WORK-381" /%} (sandbox lazy/poster)
+  → **v0.21.0** (registry-driven composition and sandbox integration) — the index
+  bento was held pending content, which v0.21.0's registry-fed cells supply.
+- {% ref "WORK-293" /%} (ship the client-behaviors bundle in `@refrakt-md/html`)
+  → **v0.20.2** (HTML scaffold client runtime) — an unrelated backlog tail carried
+  from v0.18.0, now in its own focused patch.
 
 {% /milestone %}
