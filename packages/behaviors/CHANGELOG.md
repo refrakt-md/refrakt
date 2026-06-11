@@ -1,5 +1,11 @@
 # @refrakt-md/behaviors
 
+## 0.20.1
+
+### Patch Changes
+
+- 7a6aaf5: `diagram` now renders after SPA navigation and re-renders when the colour scheme changes, so diagrams stay correct across client-side route changes and theme toggles.
+
 ## 0.20.0
 
 ### Minor Changes
