@@ -1,4 +1,4 @@
-{% work id="WORK-382" status="ready" priority="medium" complexity="moderate" source="SPEC-084" tags="docs,compositions,sandbox,showcase,threejs" milestone="v0.20.1" %}
+{% work id="WORK-382" status="review" priority="medium" complexity="moderate" source="SPEC-084" tags="docs,compositions,sandbox,showcase,threejs" milestone="v0.20.1" %}
 
 # three.js sandbox composition — a live program as a media guest
 
@@ -28,9 +28,9 @@ green.
   demoted to a presentational backdrop (the interaction-posture contract).
 
 ## Acceptance Criteria
-- [ ] A reusable three.js `sandbox` snippet renders a small scene client-side; the static `vite build` stays green (no SSR/WebGL execution at build time).
-- [ ] A compositions catalogue page (`sandbox-in-card`) presents it as a media guest — authored Markdown + live `preview` + the mechanism/interaction-posture note — and is wired into the compositions nav + landing index.
-- [ ] The scene honours `prefers-reduced-motion` (static frame, no spin) and pins the three.js version; a poster fallback covers a blocked CDN.
+- [x] A reusable three.js `sandbox` snippet renders a small scene client-side; the static `vite build` stays green (no SSR/WebGL execution at build time).
+- [x] A compositions catalogue page (`sandbox-in-card`) presents it as a media guest — authored Markdown + live `preview` + the mechanism/interaction-posture note — and is wired into the compositions nav + landing index.
+- [x] The scene honours `prefers-reduced-motion` (static frame, no spin) and pins the three.js version; a poster fallback covers a blocked CDN.
 - [ ] Catalogue use renders correctly in light and dark mode and at mobile widths (eager load is acceptable here — the catalogue page is not perf-critical).
 
 ## Notes
@@ -42,5 +42,24 @@ green.
 - `runes/sandbox.md` (`dependencies`, inline module scripts, `height`)
 - Depends on {% ref "WORK-346" /%} (compositions catalogue). Related (downstream): WORK-381 (lazy activation), WORK-350 (index anchor)
 - Interaction posture: `/extend/rune-authoring/composability#media-guest-interaction-posture`
+
+## Resolution
+
+Completed: 2026-06-11
+
+Branch: `claude/work-382-threejs-sandbox`
+
+### What was done
+- Added `site/examples/threejs-scene/index.html` — a small, self-contained three.js scene: a lit, slowly-rotating icosahedron with edge overlay, version-pinned import (`three@0.160.0` from jsdelivr ESM), `prefers-reduced-motion` → a single static frame, dark-aware colours (reads the sandbox's `html.dark` class), responsive resize, and a try/catch poster fallback if the CDN/WebGL is unavailable.
+- Added a **"Live program"** example to `runes/media-guests.md` (under *Device & presentation*): a `{% sandbox src="threejs-scene" height=360 /%}` in a plain card, with the mechanism + interaction-posture note (live in a plain card; demoted in a linked/cover card).
+
+### Deliverable shape (adapted)
+- Criterion 2 named a `compositions/sandbox-in-card` page wired into the "compositions nav + landing index". That structure no longer exists — the compositions catalogue was consolidated into the single `media-guests` page (the IA reorg). So the scene ships as the "Live program" section of `media-guests` instead, which is in the Essentials nav. Same intent, current shape.
+
+### Verification
+- `vite build` green; the scene HTML is embedded as the sandbox's `data-content` (the iframe + three.js run client-side only — no SSR/WebGL at build), media-guests now has 10 preview clusters / 6 sandboxes, no error markers.
+
+### Why review, not done
+- The criterion-4 visual pass (the actual WebGL render in light/dark/mobile) can't be verified headlessly here — no browser. The scene is dark-aware and responsive by construction and the build is clean, but it wants a glance at `cd site && npm run dev` → /runes/media-guests (the "Live program" cell): confirm it animates, the reduced-motion still frame, and the dark-mode colours. Flip to done once eyeballed.
 
 {% /work %}

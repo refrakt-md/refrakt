@@ -1,0 +1,86 @@
+<style>
+  html, body { height: 100%; }
+  body { background: #f5f4f1; }
+  html.dark body, body.dark { background: #1a1a17; }
+  #scene { display: block; width: 100%; height: 100%; }
+  #fallback {
+    display: none; height: 100%;
+    align-items: center; justify-content: center;
+    padding: 1.5rem; box-sizing: border-box;
+    font: 14px/1.5 system-ui, -apple-system, sans-serif;
+    color: #6b6661; text-align: center;
+  }
+  html.dark #fallback, body.dark #fallback { color: #94908a; }
+</style>
+
+<canvas id="scene"></canvas>
+<div id="fallback">A live 3D preview renders here — it needs network access to load three.js from a CDN.</div>
+
+<script type="module">
+  const dark =
+    document.documentElement.classList.contains('dark') ||
+    document.body.classList.contains('dark');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  try {
+    // Version-pinned so the demo is reproducible.
+    const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+
+    const canvas = document.getElementById('scene');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.set(0, 0, 4.2);
+
+    const geometry = new THREE.IcosahedronGeometry(1.3, 0);
+    const material = new THREE.MeshStandardMaterial({
+      color: dark ? 0xe8788f : 0xe15f80,
+      metalness: 0.3,
+      roughness: 0.4,
+      flatShading: true,
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    const edges = new THREE.LineSegments(
+      new THREE.EdgesGeometry(geometry),
+      new THREE.LineBasicMaterial({ color: dark ? 0xf6f4ef : 0x1c1a17, transparent: true, opacity: 0.18 }),
+    );
+    mesh.add(edges);
+
+    const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(3, 4, 5);
+    const rim = new THREE.DirectionalLight(dark ? 0x88aaff : 0xffd9a8, 1.1); rim.position.set(-4, -2, -3);
+    scene.add(key, rim, new THREE.AmbientLight(0xffffff, dark ? 0.5 : 0.85));
+
+    function resize() {
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      if (!w || !h) return;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    if (reduce) {
+      // Reduced motion: hold a single, pleasant static frame.
+      mesh.rotation.set(0.5, 0.7, 0);
+      renderer.render(scene, camera);
+    } else {
+      let t = 0;
+      (function loop() {
+        t += 0.01;
+        mesh.rotation.x = t * 0.55;
+        mesh.rotation.y = t;
+        renderer.render(scene, camera);
+        requestAnimationFrame(loop);
+      })();
+    }
+  } catch (err) {
+    // CDN unreachable / WebGL unavailable → graceful poster fallback.
+    document.getElementById('scene').style.display = 'none';
+    document.getElementById('fallback').style.display = 'flex';
+  }
+</script>
