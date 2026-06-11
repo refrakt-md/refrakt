@@ -1,4 +1,4 @@
-{% work id="WORK-381" status="ready" priority="medium" complexity="moderate" tags="sandbox,behaviors,performance,showcase" milestone="v0.20.1" %}
+{% work id="WORK-381" status="ready" priority="medium" complexity="moderate" tags="sandbox,behaviors,performance,showcase" milestone="v0.21.0" %}
 
 # Sandbox lazy/poster activation
 
