@@ -210,7 +210,7 @@ Here a `data-shape="tree"` binding feeds this site's own rune-section page tree 
 
 `data-shape="graph"` projects the queried entities as **nodes** and walks their [relationship edges](/runes/relationships) into a node-link payload — `window.RF_DATA = { shape: "graph", nodes, edges }`, where each edge is `{ from, to, kind }`. Only edges whose *both* endpoints are in the selection are kept, so the graph is closed: ready for a node-link or force-directed layout.
 
-Here a single `data="type:spec type:work type:decision type:milestone" data-shape="graph"` binding feeds this project's **own plan** — every spec, work item, decision, and milestone, wired by their SPEC-072 relationships — to a three.js force-directed graph. Specs, decisions, and milestones glow brightest; work items cluster around the specs they implement. Drag to rotate, hover for a title, click a node to open its [plan-site](https://plan.refrakt.md) page. Like the star-map, it's a heavy scene, so it mounts on `activation="visible"`:
+Here a single `data="type:spec type:work type:decision type:milestone" data-shape="graph"` binding feeds this project's **own plan** — every spec, work item, decision, and milestone, wired by their SPEC-072 relationships — to a three.js force-directed graph. Specs, decisions, and milestones glow brightest; work items cluster around the specs they implement. Drag to rotate, hover a node for its title and status. Like the star-map, it's a heavy scene, so it mounts on `activation="visible"`:
 
 {% sandbox data="type:spec type:work type:decision type:milestone" data-shape="graph" data-fields="title,status" data-limit=600 activation="visible" height=520 %}
 <style>
@@ -260,11 +260,6 @@ Here a single `data="type:spec type:work type:decision type:milestone" data-shap
   // Deterministic 0..1 hash — keeps the initial layout stable across renders.
   const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return ((h >>> 0) % 100000) / 100000; };
 
-  // Plan entities have no page on this site, so nodes link to the plan site.
-  const PLAN = 'https://plan.refrakt.md';
-  const ROUTE = { spec: 'specs', work: 'work', decision: 'decisions', milestone: 'milestones' };
-  const nodeUrl = (n) => n.url || (ROUTE[n.type] ? PLAN + '/' + ROUTE[n.type] + '/' + encodeURIComponent(n.id) + '/' : null);
-
   const TYPE = {
     spec:      { color: 0x6ea8fe, r: 0.55, emissive: 0.7 },
     decision:  { color: 0xffd166, r: 0.52, emissive: 0.7 },
@@ -284,7 +279,7 @@ Here a single `data="type:spec type:work type:decision type:milestone" data-shap
     const nodes = DATA.nodes.map((n) => {
       const th = hash(n.id) * 6.283, ph = Math.acos(2 * hash(n.id + '~') - 1), rr = 6 + hash(n.id + '#') * 6;
       const rec = {
-        id: n.id, type: n.type, url: nodeUrl(n),
+        id: n.id, type: n.type,
         title: (n.data && n.data.title) || n.id,
         status: n.data && n.data.status,
         pos: new THREE.Vector3(rr * Math.sin(ph) * Math.cos(th), rr * Math.cos(ph), rr * Math.sin(ph) * Math.sin(th)),
@@ -406,13 +401,9 @@ Here a single `data="type:spec type:work type:decision type:milestone" data-shap
         const rec = hovered.userData.rec;
         tip.innerHTML = '<b>' + rec.id + '</b> ' + rec.title + (rec.status ? ' · ' + rec.status : '');
         tip.style.left = e.clientX + 'px'; tip.style.top = e.clientY + 'px'; tip.style.opacity = '1';
-        canvas.style.cursor = 'pointer';
-      } else { tip.style.opacity = '0'; canvas.style.cursor = dragging ? 'grabbing' : 'grab'; }
+      } else { tip.style.opacity = '0'; }
+      canvas.style.cursor = dragging ? 'grabbing' : 'grab';
     }
-    canvas.addEventListener('click', (e) => {
-      const url = pick(e)?.userData?.rec?.url;
-      if (url) { try { window.top.location.href = url; } catch { window.open(url, '_top'); } }
-    });
 
     // Under reduced motion the layout is static (no auto-spin); drag still works.
     function frame() {
@@ -432,7 +423,7 @@ Here a single `data="type:spec type:work type:decision type:milestone" data-shap
 
 {% /sandbox %}
 
-The accessible fallback — the same plan, as an honest, navigable list. The full interactive plan (with per-entity relationships) lives at [plan.refrakt.md](https://plan.refrakt.md); the currently actionable work:
+The accessible fallback — the same plan, as an honest list. The currently actionable work:
 
 {% collection type="work" filter="status:ready" sort="priority" group="priority" limit=12 layout="list" /%}
 
