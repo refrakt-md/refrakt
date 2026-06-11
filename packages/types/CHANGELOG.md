@@ -1,5 +1,7 @@
 # @refrakt-md/types
 
+## 0.20.1
+
 ## 0.20.0
 
 ### Minor Changes

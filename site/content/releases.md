@@ -6,7 +6,17 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.20.0
+## v0.20.1
+
+- `diagram` now renders after SPA navigation and re-renders when the colour scheme changes, so diagrams stay correct across client-side route changes and theme toggles.
+- Surface model fixes, found and fixed while building the surface documentation:
+- **Cover scrims** now clip to the media zone's rounded corners; a centred `content-place` emits a radial scrim (`farthest-side`) that reaches the box edges instead of leaving the sides of a wide aspect uncovered; dark-tint scrim support.
+- **Frame** — displaced / oversized peeks clip correctly at the media zone and carry across the mobile breakpoint; `frame-shadow` rides the guest's silhouette on a `figure`.
+- **Substrate** — the `cross` pattern redraws crisply at any device-pixel-ratio; `substrate-target="media"` routing.
+- **Media-zone guests** (chart, diagram, map) drop their own double chrome and inherit the slot surface; a `map` card gains a slot aspect.
+- **`bg`** stacks content above the background layer and clips to the rounded surface.
+
+## v0.20.0 - June 10, 2026
 
 - SPEC-090 media-guest interaction posture. A rune in another rune's media slot is a presentational guest by default; interactivity is now an explicit capability — `RuneConfig.interactive`, set on the behaviour-driven runes (`codegroup`, `tabs`, `datatable`, `form`, `map`, `sandbox`, `juxtapose`). When the container is itself an interaction target — a `card`/`bento-cell` with a stretched whole-tile `href` — or the guest is a `cover` backdrop (SPEC-089), the engine marks the media zone `data-guest-posture="presentational"`: it goes `pointer-events: none` (so clicks fall through to the link / the overlay owns interaction) and the behaviours layer skips enhancement, so the guest renders its static fallback (the demoted `codegroup`/`tabs` tab strip is hidden so panels read as plain stacked content). The demotion is scoped to the media zone only — content-overlay controls (body/footer links & buttons) stay interactive. An interactive guest in a linked tile emits an informative (non-fatal) build warning. A container without `href` (and not `cover`) hosts interactive guests normally.
 - SPEC-086 surface chrome. Adds a universal `elevation` attribute (self-surface `box-shadow` on the `--rf-shadow-*` scale), a `frames` preset registry with the `frame` attribute and inline `frame-*` facets (modelled on `bg`), `RuneConfig.frameTarget` routing (media zone vs self) with a build warning when unresolved, and a shared frame CSS layer (silhouette drop-shadow, displacement/peek, oversize, place, anchor). `showcase` collapses into the frame model as `frameTarget: 'self'`; its `shadow`/`bleed`/`offset`/`aspect`/`place` attributes are deprecated aliases for `frame-*` facets (warn for one minor, then removed), with breakout retained. The `offset` named scale is completed (`none|sm|md|lg|xl`) and its raw-length fallthrough closed.
@@ -242,7 +252,7 @@ description: Release history for refrakt.md
 - **Tint-mode override fix on preset-extending tints.** When a tint extended a preset module path (e.g. `tint="nord"` → `extends: '@refrakt-md/lumina/presets/nord'`), only the build-time scoped tint stylesheet knew about the preset and emitted `--rf-color-*` directly under `[data-tint="nord"]`. The runtime engine never saw the projected chrome accents because `presetMap` wasn't plumbed through `mergeThemeConfig` → `resolveTintExtends`, so no inline `--tint-*` styles were emitted on tinted elements — `tint.css`'s `[data-color-scheme][data-tint]` selectors collapsed to the colour scheme's neutral defaults regardless of the preset. `presetMap` now threads from the SvelteKit loader path through `assembleThemeConfig` and `mergeThemeConfig` into `resolveTintExtends`, so preset chrome accents land in `TintTokens` shape and the engine emits them as inline `--tint-*` styles. The static scoped tint stylesheet keeps emitting `--rf-color-*`; inline styles override on the same element exactly as `token-stylesheet.ts` already anticipated.
 - **`jsonc` added to pre-loaded highlighter languages.** Config snippets across the preset doc pages (and other refrakt docs) use ` ```jsonc ` to fence JSON-with-comments. `jsonc` was intentional but not in Shiki's `DEFAULT_LANGS`, so the highlighter silently fell back to plain text. One-line add — Shiki ships `jsonc` as a bundled language.
 
-## v0.14.1
+## v0.14.1 - May 20, 2026
 
 - Syntax token contract extension (SPEC-056) + diff/compare restyle + mobile and nav polish.
 - **SPEC-056: tiered `SyntaxTokens` contract.** `SyntaxTokens` widens from 7 required + 2 optional roles to 7 required + 9 optional. The new optional roles (`type`, `property`, `parameter`, `tag`, `attribute`, `operator`, `number`, `regex`, `decorator`) let preset authors faithfully carry palettes that split distinctions the core collapses (Nord's Frost variants, Tokyo Night, Catppuccin, etc.) while the core stays minimal. Each optional role emits a `var()` fallback chain in the generated CSS, so a preset that doesn't set an optional role still renders correctly — it just shares colour with its documented fallback (`type` → `function`, `property` → `variable`, `tag` → `keyword`, and so on).

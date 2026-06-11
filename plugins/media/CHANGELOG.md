@@ -1,5 +1,14 @@
 # @refrakt-md/media
 
+## 0.20.1
+
+### Patch Changes
+
+- Updated dependencies [7a6aaf5]
+  - @refrakt-md/transform@0.20.1
+  - @refrakt-md/runes@0.20.1
+  - @refrakt-md/types@0.20.1
+
 ## 0.20.0
 
 ### Patch Changes
