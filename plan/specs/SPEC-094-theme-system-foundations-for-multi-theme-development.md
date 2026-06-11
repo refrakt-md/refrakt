@@ -226,6 +226,29 @@ Architecture:
 
 No screenshot testing exists in the repo today, so this is greenfield.
 
+##### Distribution (§4 + §5)
+
+The gallery and harness are **public theme-dev tooling**, not internal-only — the spec's
+"quick to build with AI assistance" promise only holds if external (community) theme authors
+get the same instrument. They sit beside the toolchain refrakt already publishes (`inspect
+--audit`, `contracts`, `scaffold-css`). They split into two distribution shapes on purpose:
+
+- **Gallery generator → in the published CLI, for everyone.** It only renders HTML through the
+  adapter (no browser), so it ships in `@refrakt-md/cli` and runs wherever `refrakt` is
+  installed. It serves two audiences: **theme authors** (their development surface) and **site
+  authors** (`refrakt gallery` previews how *their* configured theme + token overrides +
+  community plugins render every rune — a QA win even with no screenshots).
+- **Visual-regression harness → a separately-installed, opt-in package** (e.g.
+  `@refrakt-md/gallery-harness`). Hard constraint: Playwright pulls browser binaries, so it
+  **must not** be in the core CLI / runtime install path — no site author running `npm install`
+  should transitively download Chromium. The lightweight generator is always available; the
+  heavyweight harness is added only by repos that want screenshot testing. `create-refrakt
+  theme` scaffolds the per-theme glue against it.
+
+External baselines track the rune catalogue, which evolves — adding/changing a rune requires
+a community theme to regenerate (`--update-snapshots`). Same churn we carry internally; it
+needs to be a documented, smooth step, not a surprise.
+
 #### 6. Themes own their fonts
 
 Add a font-loading declaration to the manifest/token layer that the adapter injects
@@ -308,6 +331,7 @@ beyond documenting them alongside surface as the two theme-tunable rune-level de
 - [ ] A theme-agnostic skeleton layer is extracted using the correctness-not-taste criterion, delivered via cascade layers (`@layer skeleton, skin`) with loader-guaranteed layer order, and is consumable by a new theme independent of Lumina's aesthetic.
 - [ ] A CLI command generates a self-contained static gallery artifact (via the HTML adapter's `renderPage`, reusing the `inspect` pipeline) covering every rune across its variant matrix, deterministically (fixed content, loaded fonts, no animation), with a stable per-variant clip anchor.
 - [ ] A shared Playwright harness photographs the gallery into per-theme, per-mode golden baselines (per-rune clips), runs in a pinned CI container, and a theme wires it in with thin glue only (config + baselines + script).
+- [ ] Distribution: the gallery generator ships in the public CLI (no browser dependency, usable by theme *and* site authors); the harness ships as a separately-installed opt-in package so Playwright/browser binaries never enter the core install path.
 - [ ] A theme scaffold (`create-refrakt theme`) — deferred — emits a buildable starter that drops in the per-theme harness glue and skeleton/token wiring.
 - [ ] A theme can declare its fonts such that the adapter loads them, decoupled from the consuming site's HTML head.
 - [ ] A first-class theme→layout registration contract exists (no `undefined as any`), plus layout primitives for editorial/section-front and card-grid briefs.
