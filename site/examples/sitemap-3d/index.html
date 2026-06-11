@@ -1,0 +1,197 @@
+<style>
+  html, body { height: 100%; margin: 0; }
+  body { background: #f5f4f1; }
+  html.dark body, body.dark { background: #1a1a17; }
+  #c { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
+  #c:active { cursor: grabbing; }
+  #tip {
+    position: fixed; left: 0; top: 0; pointer-events: none; z-index: 2;
+    padding: 2px 8px; border-radius: 6px; opacity: 0;
+    font: 12px/1.4 system-ui, -apple-system, sans-serif;
+    background: #1c1a17; color: #f6f4ef; white-space: nowrap;
+    transform: translate(-50%, -150%); transition: opacity .12s;
+  }
+  #fallback {
+    display: none; height: 100%; box-sizing: border-box; padding: 1.5rem;
+    align-items: center; justify-content: center; text-align: center;
+    font: 14px/1.5 system-ui, -apple-system, sans-serif; color: #6b6661;
+  }
+  html.dark #fallback, body.dark #fallback { color: #94908a; }
+</style>
+
+<canvas id="c"></canvas>
+<div id="tip"></div>
+<div id="fallback">A 3D sitemap renders here from the live page registry — it needs WebGL and JavaScript. The page list below is the accessible equivalent.</div>
+
+<script type="module">
+  const dark = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const canvas = document.getElementById('c');
+  const tip = document.getElementById('tip');
+
+  function showFallback() {
+    canvas.style.display = 'none';
+    document.getElementById('fallback').style.display = 'flex';
+  }
+
+  try {
+    const DATA = window.RF_DATA;
+    if (!DATA || DATA.shape !== 'tree' || !Array.isArray(DATA.tree) || DATA.tree.length === 0) {
+      throw new Error('no tree data');
+    }
+    const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+
+    // ── Radial tree layout: depth → radius, leaves spread by angle ─────────
+    const RING = 2.0;
+    const nodes = [];           // { url, title, depth, pos }
+    const edges = [];           // [aPos, bPos]
+    let leafCursor = 0;
+    let totalLeaves = 0;
+    const countLeaves = (n) => (n.children && n.children.length)
+      ? (n.children.reduce((s, c) => s + countLeaves(c), 0)) : 1;
+    DATA.tree.forEach((r) => { totalLeaves += countLeaves(r); });
+
+    function place(node, depth, parentPos) {
+      const kids = node.children || [];
+      let angle;
+      if (kids.length === 0) {
+        angle = (leafCursor++ / Math.max(totalLeaves, 1)) * Math.PI * 2;
+      } else {
+        const childAngles = kids.map((k) => place(k, depth + 1, null).__angle);
+        angle = childAngles.reduce((a, b) => a + b, 0) / childAngles.length;
+      }
+      const r = depth * RING;
+      const pos = new THREE.Vector3(
+        Math.cos(angle) * r,
+        (depth - 1) * 0.5,            // gentle vertical lift per depth
+        Math.sin(angle) * r,
+      );
+      const rec = { url: node.url, title: (node.data && node.data.title) || node.url, depth, pos, __angle: angle };
+      nodes.push(rec);
+      // connect edges now that children positions exist
+      for (const k of kids) {
+        const childRec = nodes.find((x) => x.url === k.url);
+        if (childRec) edges.push([pos, childRec.pos]);
+      }
+      if (parentPos) edges.push([parentPos, pos]);
+      return rec;
+    }
+    DATA.tree.forEach((root, i) => {
+      leafCursor = i === 0 ? 0 : leafCursor;
+      place(root, root.children && root.children.length ? 0 : 0, null);
+    });
+
+    // ── Scene ──────────────────────────────────────────────────────────────
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200);
+
+    const group = new THREE.Group();
+    scene.add(group);
+
+    const accent = dark ? 0xe8788f : 0xe15f80;
+    const sphereGeo = new THREE.SphereGeometry(0.28, 16, 16);
+    const meshes = [];
+    for (const n of nodes) {
+      const hue = Math.min(n.depth * 0.08, 0.5);
+      const mat = new THREE.MeshStandardMaterial({
+        color: n.depth === 0 ? accent : new THREE.Color().setHSL(0.95 - hue, 0.5, dark ? 0.62 : 0.55),
+        roughness: 0.45, metalness: 0.1,
+      });
+      const m = new THREE.Mesh(sphereGeo, mat);
+      m.position.copy(n.pos);
+      m.scale.setScalar(n.depth === 0 ? 1.6 : 1);
+      m.userData = n;
+      group.add(m);
+      meshes.push(m);
+    }
+    if (edges.length) {
+      const positions = new Float32Array(edges.length * 6);
+      edges.forEach(([a, b], i) => { a.toArray(positions, i * 6); b.toArray(positions, i * 6 + 3); });
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      group.add(new THREE.LineSegments(geo, new THREE.LineBasicMaterial({
+        color: dark ? 0xf6f4ef : 0x1c1a17, transparent: true, opacity: 0.16,
+      })));
+    }
+
+    scene.add(new THREE.AmbientLight(0xffffff, dark ? 0.6 : 0.9));
+    const key = new THREE.DirectionalLight(0xffffff, 2); key.position.set(4, 6, 5); scene.add(key);
+
+    // Frame the camera to the graph's bounds.
+    const box = new THREE.Box3().setFromObject(group);
+    const sphere = box.getBoundingSphere(new THREE.Sphere());
+    const dist = sphere.radius / Math.sin((camera.fov / 2) * Math.PI / 180) * 1.25;
+    const target = sphere.center.clone();
+
+    function resize() {
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      if (!w || !h) return;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h; camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // ── Controls: drag to rotate, gentle auto-spin (off for reduced motion) ──
+    let rotX = 0.35, rotY = 0.4, dragging = false, lx = 0, ly = 0;
+    canvas.addEventListener('pointerdown', (e) => { dragging = true; lx = e.clientX; ly = e.clientY; canvas.setPointerCapture(e.pointerId); });
+    canvas.addEventListener('pointerup', (e) => { dragging = false; canvas.releasePointerCapture?.(e.pointerId); });
+    canvas.addEventListener('pointermove', (e) => {
+      if (dragging) {
+        rotY += (e.clientX - lx) * 0.005; rotX += (e.clientY - ly) * 0.005;
+        rotX = Math.max(-1.2, Math.min(1.2, rotX));
+        lx = e.clientX; ly = e.clientY;
+      }
+      hover(e);
+    });
+
+    // ── Hover tooltip + click-to-navigate via raycasting ─────────────────────
+    const ray = new THREE.Raycaster();
+    const ndc = new THREE.Vector2();
+    let hovered = null;
+    function pick(e) {
+      const rect = canvas.getBoundingClientRect();
+      ndc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      ndc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      ray.setFromCamera(ndc, camera);
+      return ray.intersectObjects(meshes, false)[0]?.object ?? null;
+    }
+    function hover(e) {
+      const hit = pick(e);
+      if (hit !== hovered) {
+        if (hovered) hovered.scale.multiplyScalar(0.8);
+        hovered = hit;
+        if (hovered) hovered.scale.multiplyScalar(1.25);
+      }
+      if (hovered) {
+        tip.textContent = hovered.userData.title;
+        tip.style.left = e.clientX + 'px'; tip.style.top = e.clientY + 'px'; tip.style.opacity = '1';
+        canvas.style.cursor = 'pointer';
+      } else {
+        tip.style.opacity = '0'; canvas.style.cursor = dragging ? 'grabbing' : 'grab';
+      }
+    }
+    canvas.addEventListener('click', (e) => {
+      const hit = pick(e);
+      if (hit?.userData?.url) {
+        try { window.top.location.href = hit.userData.url; }
+        catch { window.open(hit.userData.url, '_top'); }
+      }
+    });
+
+    function frame() {
+      if (!reduce && !dragging) rotY += 0.0025;
+      group.rotation.set(rotX, rotY, 0);
+      const eye = new THREE.Vector3(0, 0, dist).applyEuler(new THREE.Euler(0, 0, 0));
+      camera.position.set(target.x, target.y + dist * 0.15, target.z + dist);
+      camera.lookAt(target);
+      renderer.render(scene, camera);
+      if (!reduce) requestAnimationFrame(frame);
+    }
+    frame();           // reduced motion → renders one static frame
+  } catch (err) {
+    showFallback();
+  }
+</script>
