@@ -73,6 +73,7 @@ export { DEFERRED_BODY_ATTR, captureDeferredBodies, readDeferredBody, transformD
 export { resolveCollections } from './collection-resolve.js';
 export { resolveRelationships } from './relationships-resolve.js';
 export { resolveAggregates } from './aggregate-resolve.js';
+export { resolveDataBindings } from './data-resolve.js';
 export { resolveFileRefs } from './file-ref-resolve.js';
 export { FILE_REF_SENTINEL } from './tags/file-ref.js';
 export { resolveXrefPreviews } from './xref-preview-resolve.js';
