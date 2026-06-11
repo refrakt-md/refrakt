@@ -11,7 +11,7 @@ The container's leading zone (before the first `---`) is its **media zone**, and
 
 ## Visual data guests
 
-A chart, diagram, or map needs no wrapper — the slot sizes it, a title and note sit below the `---`.
+A chart, diagram, or map needs no wrapper — the slot sizes it; a title sits below the `---`, or overlays it in a cover poster.
 
 ### Metric card
 
@@ -65,20 +65,19 @@ Four stages, content to output.
 
 ### Location card
 
-A `{% map %}` fills the media well with its pins. Because this card has no `href`, the map stays **interactive** — pan and zoom work (see *Interactive guests & posture*, below).
+A `{% map %}` as a cover poster: it fills the card and a title overlays it. This card is a *linked cover*, so the map is an inert backdrop — the whole poster is one click target (see *Interactive guests & posture*, below). Drop the same map into a plain card and it pans and zooms.
 
 {% preview source=true %}
 
-{% card frame-aspect="3/2" %}
-{% map zoom="13" center="48.8566, 2.3522" %}
-- **Louvre Museum** - *World's largest art museum* - 48.8606, 2.3376
-- **Notre-Dame** - *Medieval cathedral* - 48.8530, 2.3499
+{% card href="/runes/places/map" media-position="cover" height="md" %}
+{% map zoom="12" center="48.8566, 2.3522" %}
+- **Paris** - *Demoted to a backdrop* - 48.8566, 2.3522
 {% /map %}
 
 ---
 
-### Île de la Cité
-Two landmarks on the Seine.
+### A linked location poster
+The map would normally pan and zoom; inside a linked cover card its controls go silent, so the whole surface stays a single click target.
 {% /card %}
 
 {% /preview %}
@@ -131,24 +130,43 @@ Trending up week over week.
 
 ### Code-sample card
 
-A `{% codegroup %}` in the media zone is a tabbed snippet up top, a title and blurb below. With no `href` the tabs stay interactive.
+A `{% codegroup %}` in the media zone is a tabbed snippet with a title below — here dressed with a displaced frame over a `substrate` fill (the chrome itself is documented in [Surfaces](/runes/surfaces#chrome--shadow-and-frame)). With no `href` the tabs stay interactive.
 
 {% preview source=true %}
 
-{% card %}
-{% codegroup %}
-```js
-export const sum = (a, b) => a + b;
-```
-```py
-def sum(a, b): return a + b
+{% card frame-aspect="3/2" frame-displace="bottom-end" frame-offset="md" frame-oversize="1.15" substrate="cross" substrate-target="media" %}
+{% codegroup title="refrakt.config.ts" %}
+```ts
+import { defineConfig } from '@refrakt-md/cli';
+import marketing from '@refrakt-md/marketing';
+import learning from '@refrakt-md/learning';
+import storytelling from '@refrakt-md/storytelling';
+
+export default defineConfig({
+  content: './content',
+  theme: '@refrakt-md/lumina',
+  plugins: [
+    marketing(),
+    learning(),
+    storytelling(),
+  ],
+  surfaces: {
+    card: {
+      elevation: 'md',
+      frame: { aspect: '16/9' },
+    },
+    figure: {
+      frame: { shadow: 'lg', anchor: 'top' },
+    },
+  },
+});
 ```
 {% /codegroup %}
 
 ---
 
-### Tiny utilities
-A starter kit of one-liners.
+### Codegroup over a substrate
+The codegroup oversizes and displaces toward the bottom-right; the cross substrate fills the media slot beneath and shows through the strip the codegroup no longer covers.
 {% /card %}
 
 {% /preview %}
@@ -258,9 +276,9 @@ The sandbox sources live in [`site/examples/`](/runes/sandbox#examples-directory
 
 Most guests are presentational, but some are interactive — a `map`, a `codegroup`, a `juxtapose`, a `sandbox`. Whether they stay live depends on the host:
 
-- In a **plain** card or cell (no `href`, not cover), an interactive guest stays fully interactive — the map pans, the slider drags, the tabs switch. Every live example above relies on this.
+- In a **plain** card or cell (no `href`, not cover), an interactive guest stays fully interactive — the slider drags, the tabs switch, a map pans. The Code-sample, Comparison, and Mockup examples above all rely on this.
 - A **linked** card (`href`) is one click target, so its media guest is **demoted** to a static fallback (`pointer-events: none`) and the click lands on the card.
-- In **cover** mode the guest is always an inert backdrop.
+- In **cover** mode the guest is always an inert backdrop — the Location poster above is exactly this: a linked cover whose map is demoted.
 
 The demotion is scoped to the media zone only — a button or link in the body/footer stays live. The full model is the [media-guest interaction posture](/extend/rune-authoring/composability#media-guest-interaction-posture) contract.
 
