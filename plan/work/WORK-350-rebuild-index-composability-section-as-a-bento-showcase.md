@@ -14,7 +14,7 @@ surface vocabulary too — so the grid demonstrates *both* composition axes (a
 guest in a media zone, and the surface treatment around it).
 
 ## Proposed cells (tune during build)
-- **Anchor (large):** the existing `juxtapose` of two `sandbox`es (light/dark profile card) — the only live iframes.
+- **Anchor (large):** a **live three.js `sandbox`** — a small WebGL scene as the marquee "the media zone runs a *program*" cell ({% ref "WORK-382" /%}), lazily activated with a poster ({% ref "WORK-381" /%}) so it costs nothing until in view. (Fallback option: the existing `juxtapose` of two light/dark profile `sandbox`es.)
 - **Cover poster (tall):** a `media-position="cover"` card with a frost scrim (the tequila-sunrise treatment) — the marquee surface-model cell (SPEC-089).
 - **Plan chart:** `{% aggregate type="work,bug,spec,decision,milestone" group="status" layout="chart" %}` — our **own roadmap**, live ({% ref "WORK-349" /%}).
 - **Map:** a 2-pin `map` in a cell.
@@ -29,7 +29,7 @@ guest in a media zone, and the surface treatment around it).
 - [ ] One tile charts the real plan roadmap via `aggregate layout="chart"` ({% ref "WORK-349" /%}).
 - [ ] At least one tile uses showcase bleed and at least two use per-cell tint (the SPEC-085 signature compositions).
 - [ ] At least one tile uses the surface model — a cover poster cell (and/or framed media / substrate / gradient) — so the showcase reflects the v0.20.0 vocabulary (SPEC-086–089).
-- [ ] Live `sandbox` iframes are limited (anchor cell only; the showcase tile uses a static image) to keep the landing page fast.
+- [ ] Live `sandbox` iframes are limited (anchor cell only; the showcase tile uses a static image) to keep the landing page fast — and the anchor three.js cell is **lazily activated with a poster** ({% ref "WORK-381" /%}) so it adds no load-time cost until scrolled into view.
 - [ ] The section renders correctly in light and dark mode and at mobile widths; no layout/overflow regressions.
 - [ ] The grid is referenced as the hero example from the Compositions category ({% ref "WORK-346" /%}).
 
@@ -43,6 +43,7 @@ whole composition/bento workstream.
 - Bento substrate: {% ref "WORK-345" /%}, {% ref "WORK-347" /%}, {% ref "WORK-348" /%}
 - Media-zone selector: {% ref "WORK-339" /%}
 - Plan chart: {% ref "WORK-349" /%}
+- Three.js anchor cell: {% ref "WORK-382" /%} (the scene) + {% ref "WORK-381" /%} (lazy/poster activation, so it's free until in view)
 
 ## References
 - `site/content/index.md` (current `feature`/`juxtapose` composability section)
