@@ -218,6 +218,19 @@ function findByName(nodes: RendererNode[], name: string): SerializedTag | undefi
 	return undefined;
 }
 
+/** SPEC-101 — collect every `rf-sandbox` element in a subtree (cover-backdrop
+ *  handling: auto-fill + activation validation). */
+function findSandboxes(node: SerializedTag): SerializedTag[] {
+	const out: SerializedTag[] = [];
+	const scan = (n: RendererNode): void => {
+		if (!isTag(n)) return;
+		if (n.name === 'rf-sandbox') out.push(n);
+		for (const c of n.children ?? []) scan(c);
+	};
+	scan(node);
+	return out;
+}
+
 /** SPEC-090 — find the first descendant rune flagged `interactive` (a
  *  behaviour-driven guest). Returns its `data-rune` name, or undefined. */
 function findInteractiveGuest(
@@ -887,6 +900,17 @@ function transformRune(
 			if (hasLink) {
 				const guest = findInteractiveGuest(mediaZone, allRunes, runeKeyMap);
 				if (guest) warnInteractiveGuestInLink(dataRune ?? config.block, guest);
+			}
+			// SPEC-101 — a sandbox serving as the cover backdrop fills the well:
+			// switch an auto-height sandbox to `fill` (the element pins the iframe
+			// to 100% and skips resize negotiation). An explicit numeric height is
+			// the author's call and is left alone.
+			if (isCover) {
+				for (const sandbox of findSandboxes(mediaZone)) {
+					if ((sandbox.attributes?.['data-height'] ?? 'auto') === 'auto') {
+						sandbox.attributes = { ...sandbox.attributes, 'data-height': 'fill' };
+					}
+				}
 			}
 		}
 	}

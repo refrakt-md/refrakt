@@ -63,6 +63,24 @@
 	height: 100%;
 	object-fit: cover;
 }
+/* SPEC-101 — non-img/video guests (a sandbox, an embed) fill the well too.
+ * They can't be object-fit-cropped, so they get the well's box outright;
+ * display:block covers undefined custom elements (inline by default). */
+[data-media-position="cover"] [data-section="media"] > :not(img, video) {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+/* A backdrop sandbox sits flush in the well — the well's own radius/overflow
+ * does the clipping. The iframe height is pinned inline by the element in
+ * `fill` mode; this carries the fixed-height case visually until then. */
+[data-media-position="cover"] [data-section="media"] .rf-sandbox {
+	margin: 0;
+	border-radius: 0;
+}
+[data-media-position="cover"] [data-section="media"] .rf-sandbox iframe {
+	height: 100%;
+}
 /* The overlaid box (full: content; header: preamble) anchors via content-place. */
 [data-media-position="cover"]:not([data-cover-scope="header"]) > [data-name="content"],
 [data-cover-scope="header"] > [data-name="cover-band"] > [data-name="preamble"] {

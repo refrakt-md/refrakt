@@ -151,3 +151,42 @@ describe('SPEC-089 cover variant', () => {
 		expect(leaked).toHaveLength(0);
 	});
 });
+
+describe('SPEC-101 cover sandbox backdrop', () => {
+	const findSandbox = (node: any): any => {
+		if (!node || typeof node !== 'object') return undefined;
+		if (node.name === 'rf-sandbox') return node;
+		for (const c of node.children ?? []) {
+			const hit = findSandbox(c);
+			if (hit) return hit;
+		}
+		return undefined;
+	};
+
+	it('auto-fills an auto-height sandbox serving as the cover backdrop', () => {
+		const t = createTransform(config);
+		const media = makeTag('div', { 'data-name': 'media' }, [
+			makeTag('rf-sandbox', { 'data-height': 'auto' }, []),
+		]);
+		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), media])));
+		expect(findSandbox(r)?.attributes['data-height']).toBe('fill');
+	});
+
+	it('leaves an explicit numeric sandbox height alone under cover', () => {
+		const t = createTransform(config);
+		const media = makeTag('div', { 'data-name': 'media' }, [
+			makeTag('rf-sandbox', { 'data-height': '360' }, []),
+		]);
+		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), media])));
+		expect(findSandbox(r)?.attributes['data-height']).toBe('360');
+	});
+
+	it('does not touch sandbox height outside cover', () => {
+		const t = createTransform(config);
+		const media = makeTag('div', { 'data-name': 'media' }, [
+			makeTag('rf-sandbox', { 'data-height': 'auto' }, []),
+		]);
+		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'top'), media])));
+		expect(findSandbox(r)?.attributes['data-height']).toBe('auto');
+	});
+});

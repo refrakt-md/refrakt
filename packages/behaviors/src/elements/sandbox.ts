@@ -155,7 +155,10 @@ export class RfSandbox extends SafeHTMLElement {
 
 		const poster = document.createElement('div');
 		poster.className = 'rf-sandbox__poster';
-		if (this._heightAttr !== 'auto') {
+		if (this._heightAttr === 'fill') {
+			// SPEC-101: in a host-owned well the poster fills too.
+			poster.style.height = '100%';
+		} else if (this._heightAttr !== 'auto') {
 			poster.style.height = `${parseInt(this._heightAttr, 10)}px`;
 		}
 
@@ -256,7 +259,12 @@ export class RfSandbox extends SafeHTMLElement {
 		this.iframe.title = this._label;
 		this.iframe.setAttribute('frameborder', '0');
 		this.iframe.loading = 'lazy';
-		this.iframe.style.cssText = `width: 100%; border: none; height: ${currentHeight || (this._heightAttr !== 'auto' ? parseInt(this._heightAttr) + 'px' : '150px')};`;
+		// SPEC-101 `fill`: the host owns the height (a cover media well) — pin the
+		// iframe to 100% (ignoring any preserved height from a rebuild) and never
+		// negotiate it via resize messages.
+		const height = this._heightAttr === 'fill' ? '100%'
+			: currentHeight || (this._heightAttr !== 'auto' ? parseInt(this._heightAttr) + 'px' : '150px');
+		this.iframe.style.cssText = `width: 100%; border: none; height: ${height};`;
 
 		// Untrusted-mode UX affordance: a persistent visual marker above the
 		// iframe so visitors can see the content runs in a sandbox they

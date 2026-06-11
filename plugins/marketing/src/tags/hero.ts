@@ -2,7 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, linkItem, pageSectionProperties } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, linkItem, pageSectionProperties, extractMediaImage } from '@refrakt-md/runes';
 
 export const hero = createContentModelSchema({
 	base: SplitLayoutModel,
@@ -111,7 +111,12 @@ export const hero = createContentModelSchema({
 			...headerContent,
 			...(actions.count() > 0 ? [actionsDiv.next()] : []),
 		]).wrap('div');
-		const mediaDiv = side.wrap('div');
+		// SPEC-101 — in cover mode unwrap a bare `<p><img></p>` to a direct `img`
+		// child so the shared cover fill rules (`> img` object-fit) apply. Scoped
+		// to cover so non-cover hero markup stays byte-identical.
+		const isCover = attrs['media-position'] === 'cover';
+		const coverImg = isCover ? extractMediaImage(side) : undefined;
+		const mediaDiv = (coverImg ? new RenderableNodeCursor([coverImg]) : side).wrap('div');
 
 		return createComponentRenderable({ rune: 'hero',
 			tag: 'section',
