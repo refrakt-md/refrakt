@@ -289,6 +289,8 @@ In a plain card the scene animates; a linked or cover card would demote it to a 
 
 {% /preview %}
 
+The cover demotion is also a feature in its own right: put a sandbox in a `media-position="cover"` media zone and the running scene becomes a full-bleed **animated background** with the content overlaid — see [the animated hero backdrop](/runes/marketing/hero#animated-background--a-live-program-as-the-backdrop).
+
 ## Interactive guests & posture
 
 Most guests are presentational, but some are interactive — a `map`, a `codegroup`, a `juxtapose`, a `sandbox`. Whether they stay live depends on the host:

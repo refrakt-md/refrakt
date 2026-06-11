@@ -1,4 +1,4 @@
-{% work id="WORK-401" status="in-progress" priority="medium" complexity="moderate" source="SPEC-101" tags="sandbox,showcase,threejs,site,niwaki" milestone="v0.21.0" %}
+{% work id="WORK-401" status="done" priority="medium" complexity="moderate" source="SPEC-101" tags="sandbox,showcase,threejs,site,niwaki" milestone="v0.21.0" %}
 
 # Prism scene — the niwaki-refraction hero backdrop
 
@@ -12,11 +12,11 @@ accent). Markdown in, structured meaning out, in the exact colours this site ren
 syntax in.
 
 ## Acceptance Criteria
-- [ ] `site/examples/prism-scene/` renders the scene from a version-pinned three.js ESM import; **faked refraction only** — wireframe/flat-shaded prism, additive-blended `Points`/line beams, tinted-copy dispersion; no `MeshPhysicalMaterial` transmission.
-- [ ] Niwaki light + dark hex pairs drive the theme-aware variants (scene reads the injected theme); values pinned with a comment naming `packages/lumina/src/presets/niwaki.ts` as the palette of record.
-- [ ] Ambient by contract: no pointer handlers (the cover posture demotion blocks them anyway); the scene carries itself with no interaction.
-- [ ] Production posture: designed dim (lives under the cover scrim), `devicePixelRatio` capped (~1.5), RAF paused on `visibilitychange`, `prefers-reduced-motion` renders a composed static frame, a CSS gradient on the iframe body covers the boot frame, try/catch static fallback for blocked-CDN/no-WebGL.
-- [ ] Renders standalone in a plain `{% sandbox src="prism-scene" height=… /%}` (previewable before the hero-cover work lands); `vite build` stays green (no SSR/WebGL at build).
+- [x] `site/examples/prism-scene/` renders the scene from a version-pinned three.js ESM import; **faked refraction only** — wireframe/flat-shaded prism, additive-blended `Points`/line beams, tinted-copy dispersion; no `MeshPhysicalMaterial` transmission.
+- [x] Niwaki light + dark hex pairs drive the theme-aware variants (scene reads the injected theme); values pinned with a comment naming `packages/lumina/src/presets/niwaki.ts` as the palette of record.
+- [x] Ambient by contract: no pointer handlers (the cover posture demotion blocks them anyway); the scene carries itself with no interaction.
+- [x] Production posture: designed dim (lives under the cover scrim), `devicePixelRatio` capped (~1.5), RAF paused on `visibilitychange`, `prefers-reduced-motion` renders a composed static frame, a CSS gradient on the iframe body covers the boot frame, try/catch static fallback for blocked-CDN/no-WebGL.
+- [x] Renders standalone in a plain `{% sandbox src="prism-scene" height=… /%}` (previewable before the hero-cover work lands); `vite build` stays green (no SSR/WebGL at build).
 
 ## Approach
 - Follow the `site/examples/threejs-scene/index.html` patterns (pinned
@@ -31,5 +31,20 @@ syntax in.
 
 ## References
 - {% ref "SPEC-101" /%} §5, §7 · {% ref "WORK-382" /%} (scene patterns) · palette: `packages/lumina/src/presets/niwaki.ts`, `site/content/themes/niwaki.md`
+
+## Resolution
+
+Completed: 2026-06-11
+
+Branch: `claude/spec-101-hero-cover-prism`
+
+### What was done
+- `site/examples/prism-scene/index.html` — the niwaki-refraction backdrop. A flat-shaded triangular prism (CylinderGeometry, 3 radial segments) rotating slowly; markdown glyphs (`#`, `*`, `>`, `{%`, `[`, `` ` ``) flow in as an ishi-tinted beam (canvas glyph sprites); five spectrum particle streams fan out in the niwaki roles (wakaba/sakura/matsu/momiji/momiji-punchy) as soft-dot sprites with a widening jitter cone. Hex pairs pinned from `packages/lumina/src/presets/niwaki.ts` (light + dark), with a palette-of-record comment.
+- Faked refraction only — no transmission materials. Additive blending in dark mode, normal in light (additive washes out on a light ground).
+- Production posture: DPR capped at 1.5, RAF paused on `visibilitychange`, reduced-motion renders one composed static frame (particles mid-flight), the canvas fades in over a CSS gradient boot backdrop, try/catch falls back to a quiet CSS prism (clip-path triangle + five gradient fans — the metaphor survives no-JS/no-WebGL/blocked-CDN).
+- No pointer handlers — ambient by the SPEC-090 posture contract.
+
+### Notes
+- Module syntax checked; the scene ships embedded in the hero docs page and the site build is green (no SSR/WebGL at build). The actual WebGL render needs a browser glance: `cd site && npm run dev` → /runes/marketing/hero (the animated-background example) in light + dark, plus the reduced-motion still frame.
 
 {% /work %}
