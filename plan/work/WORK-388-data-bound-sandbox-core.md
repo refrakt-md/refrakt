@@ -1,4 +1,4 @@
-{% work id="WORK-388" status="review" priority="high" complexity="complex" source="SPEC-093" milestone="v0.21.0" tags="registry,sandbox,pipeline,behaviors" %}
+{% work id="WORK-388" status="done" priority="high" complexity="complex" source="SPEC-093" milestone="v0.21.0" tags="registry,sandbox,pipeline,behaviors" %}
 
 # Data-bound sandbox core
 
