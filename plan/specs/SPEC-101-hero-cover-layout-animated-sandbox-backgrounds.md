@@ -143,9 +143,19 @@ CSS-tuning item, not new machinery.
 - **The showcase scene is a new `site/examples/prism-scene/`** (decided; replaces the
   earlier idea of reusing the generic `threejs-scene` icosahedron). Concept — the
   brand metaphor, literally: a slowly rotating prism with a thin stream of markdown
-  glyph particles (`#`, `*`, `>`, `{%`) entering one face as a faint white beam, and
-  fanned **spectrum streams in the Lumina palette** leaving the other — markdown in,
+  glyph particles (`#`, `*`, `>`, `{%`) entering one face as a faint beam, and fanned
+  **spectrum streams in the Niwaki palette** leaving the other — markdown in,
   structured meaning out.
+- **The spectrum is Niwaki** (decided) — the site's own syntax preset
+  (`packages/lumina/src/presets/niwaki.ts`), which tightens the metaphor: the prism
+  refracts raw markdown into *the colours this site renders syntax in*. The incoming
+  beam/glyphs are tinted **ishi** (stone — the comment/punctuation grey:
+  undifferentiated input); the outgoing streams are the chromatic roles — **wakaba**
+  (keyword green), **sakura** (function pink), **matsu** (pine — link/constant),
+  **momiji** (string peach, with the punchy string-expression orange as an accent).
+  The preset defines light/dark pairs, which directly supplies the scene's
+  theme-aware variants; the scene pins the hex values with a comment pointing at the
+  preset source as the palette of record.
 - **Faked refraction, not real.** `MeshPhysicalMaterial` transmission/dispersion is
   far too expensive for a hero backdrop. The prism is wireframe/flat-shaded; the beam
   and spectrum are additive-blended `Points`/line geometry; dispersion is cheap
@@ -175,7 +185,7 @@ CSS-tuning item, not new machinery.
 - [ ] A non-eager (`activation="visible"|"click"`) sandbox in a cover media zone produces a build warning naming the conflict (inert backdrop vs. activation affordance).
 - [ ] Overlay legibility verified in light + dark: gradient headline, blurb, actions, eyebrow pill against the default scrim (fixes applied where they fail).
 - [ ] `prefers-reduced-motion` end-to-end: the shipped background example renders a static frame; no Run-control dead end (eager mounts regardless, the scene self-stills).
-- [ ] The prism scene ships as `site/examples/prism-scene/` per §7: faked refraction (no transmission materials), glyph stream → Lumina-palette spectrum, ambient (no pointer input), dim-under-scrim, capped DPR, visibility-pause, reduced-motion static frame, theme-aware.
+- [ ] The prism scene ships as `site/examples/prism-scene/` per §7: faked refraction (no transmission materials), ishi-tinted glyph stream → Niwaki spectrum (wakaba/sakura/matsu/momiji, light+dark pairs from the preset), ambient (no pointer input), dim-under-scrim, capped DPR, visibility-pause, reduced-motion static frame, theme-aware.
 - [ ] Docs: hero reference cover section with an image-cover example and the animated prism background example, including the perf/motion authoring contract; sandbox reference documents `height="fill"`; `media-guests.md` cross-links.
 - [ ] Contracts regenerated (`refrakt contracts --check` green) and CSS coverage tests pass for the new `rf-hero--cover` selectors.
 
@@ -196,5 +206,6 @@ CSS-tuning item, not new machinery.
 - Deferred activation / poster (the affordance that's wrong for backdrops): {% ref "WORK-381" /%}.
 - Sandbox element height/auto-resize mechanics: `packages/behaviors/src/elements/sandbox.ts`; sandbox CSS `packages/lumina/styles/runes/sandbox.css`.
 - Hero anatomy + current CSS: `plugins/marketing/src/tags/hero.ts`, `plugins/marketing/src/config.ts`, `packages/lumina/styles/runes/hero.css`.
+- Niwaki palette (the prism spectrum, palette of record): `packages/lumina/src/presets/niwaki.ts`; preset doc `site/content/themes/niwaki.md`.
 
 {% /spec %}
