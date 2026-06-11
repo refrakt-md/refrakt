@@ -525,6 +525,15 @@ export const coreConfig: ThemeConfig = {
 			editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', steps: 'none' },
 		},
 		RevealStep: { block: 'reveal-step', parent: 'Reveal', rootAttributes: { 'data-state': 'closed' }, editHints: { body: 'none' } },
+		Section: {
+			block: 'section',
+			modifiers: {
+				align: { source: 'meta', default: 'start' },
+			},
+			sections: { preamble: 'preamble', headline: 'title', blurb: 'description' },
+			autoLabel: pageSectionAutoLabel,
+			editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', body: 'none' },
+		},
 		Juxtapose: {
 			block: 'juxtapose',
 			interactive: true,

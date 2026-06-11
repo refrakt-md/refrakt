@@ -1162,6 +1162,49 @@
 				"{content}"
 			]
 		},
+		"Section": {
+			"block": "section",
+			"root": ".rf-section",
+			"dataRune": "section",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"align": {
+					"source": "meta",
+					"default": "start",
+					"classPattern": ".rf-section--{value}",
+					"dataAttribute": "data-align"
+				}
+			},
+			"elements": {
+				"preamble": {
+					"tag": "header",
+					"selector": ".rf-section__preamble",
+					"source": "autoLabel"
+				},
+				"eyebrow": {
+					"tag": "eyebrow",
+					"selector": ".rf-section__eyebrow",
+					"source": "autoLabel"
+				},
+				"headline": {
+					"tag": "headline",
+					"selector": ".rf-section__headline",
+					"source": "autoLabel"
+				},
+				"blurb": {
+					"tag": "blurb",
+					"selector": ".rf-section__blurb",
+					"source": "autoLabel"
+				},
+				"image": {
+					"tag": "image",
+					"selector": ".rf-section__image",
+					"source": "autoLabel"
+				}
+			}
+		},
 		"Juxtapose": {
 			"block": "juxtapose",
 			"root": ".rf-juxtapose",

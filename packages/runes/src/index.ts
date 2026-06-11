@@ -30,6 +30,7 @@ import { diagram } from './tags/diagram.js';
 import { sidenote } from './tags/sidenote.js';
 import { conversation, conversationMessage } from './tags/conversation.js';
 import { reveal, revealStep } from './tags/reveal.js';
+import { section } from './tags/section.js';
 import { juxtapose } from './tags/juxtapose.js';
 import { annotate, annotateNote } from './tags/annotate.js';
 import { form, formField } from './tags/form.js';
@@ -459,6 +460,14 @@ export const runes = {
     schema: revealStep,
     description: 'Individual step within a reveal sequence',
     typeName: 'RevealStep',
+  }),
+  section: defineRune({
+    name: 'section',
+    schema: section,
+    description: 'A generic page section: an eyebrow/headline/blurb header above arbitrary body content',
+    typeName: 'Section',
+    category: 'Layout',
+    snippet: ['{% section %}', 'Eyebrow', '', '## ${1:Section title}', '', '${2:A short supporting blurb.}', '', '${3:Body content — a bento, cards, anything.}', '{% /section %}'],
   }),
   juxtapose: defineRune({
     name: 'juxtapose',
