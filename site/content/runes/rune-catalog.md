@@ -13,11 +13,11 @@ There are currently {% aggregate type="rune" /%} documented runes. Here's how th
 
 {% aggregate type="rune" group="plugin" layout="chart" chart-type="bar" chart-title="Runes per plugin" /%}
 
-## All runes by category
+## Core runes
 
-Core runes ship built-in with `@refrakt-md/runes`; the rest come from official packages (see below). Each category maps to one source — core's functional groups (Content, Registry, Layout, Code & Data, Site) plus one group per plugin.
+These ship built-in with `@refrakt-md/runes` — no install needed. They cover universal content primitives, the entity registry, layout, code/data display, and site structure, grouped by what they do.
 
-{% collection type="rune" group="category" sort="title" layout="table" %}
+{% collection type="rune" filter="plugin:core" group="category" sort="title" layout="table" %}
 ## Rune
 {% link href=$item.url %}{% $item.data.title %}{% /link %}
 
@@ -40,3 +40,13 @@ Official rune packages are maintained by the refrakt team and styled by the Lumi
 - [@refrakt-md/media](/runes/media)
 - [@refrakt-md/plan](/runes/plan)
 {% /nav %}
+
+Their runes, grouped by package (anything not shipped by core — so a third-party plugin's documented runes join here automatically):
+
+{% collection type="rune" filter="plugin:/^(?!core)/" group="category" sort="title" layout="table" %}
+## Rune
+{% link href=$item.url %}{% $item.data.title %}{% /link %}
+
+## Description
+{% $item.data.description %}
+{% /collection %}
