@@ -106,6 +106,16 @@
 ) {
   overflow: visible;
   container-type: normal;
+}
+/* `preview` (negative-margin breakout) and a displaced `showcase` (peek
+ * spill) want the slot fully de-chromed so the bleed reads as edge-to-edge.
+ * Juxtapose just opted out of the clip — it still wants to read as part of
+ * the card surface, so it keeps the slot's rounded corners (juxtapose's
+ * own `__panels` chrome is dropped instead; see surfaces.css). */
+[data-section="media"]:is(
+  :has(> [data-rune="preview"]),
+  :has(> .rf-showcase[data-displace]:not(.rf-showcase--in-bento-cell))
+) {
   border-radius: 0;
 }
 /* …and let those self-managing guests keep their intrinsic width/sizing: the

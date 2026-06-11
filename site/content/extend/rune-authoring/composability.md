@@ -12,7 +12,7 @@ one that holds up in an **open plugin ecosystem** where third parties add runes
 neither side knows about.
 
 This is the *how it works* reference. For a catalogue of concrete, ready-to-copy
-compositions, see the **Compositions** catalogue (added by the bento/compositions work, WORK-346).
+patterns, see [**Media guests**](/runes/media-guests).
 
 ## The governing principle: dependency asymmetry
 
@@ -151,5 +151,5 @@ above with the rune and its actual parent context.
 
 ## See also
 
-- **Compositions** — the catalogue of concrete composition patterns (forthcoming; WORK-346).
+- [**Media guests**](/runes/media-guests) — the catalogue of media-zone composition patterns.
 - [Patterns & Best Practices](/extend/rune-authoring/patterns) — child-item rune patterns.

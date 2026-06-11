@@ -11,10 +11,11 @@ tint-lock: false
 - [Themes](/themes/themes-catalog)
 - [Planning](/plan)
 
-## Rune Catalog
+## Essentials
 
 - rune-catalog
 - surfaces
+- media-guests
 
 ## Content
 

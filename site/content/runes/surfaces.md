@@ -229,69 +229,9 @@ A layered showstopper that transitions from deep orange to golden yellow.
 
 The cover scrim, `content-place`, and `scrim-type` are documented on [card → cover mode](/runes/card#cover-mode).
 
-## Posture — one interaction target
-
-When a surface is itself a link (`href`), it becomes a single interaction target. Any normally-interactive guest in the media zone — a `tabs`, a live `map`, a `codegroup` — is **demoted** to presentational so the click always lands on the card. The map below would normally pan and zoom on its own; inside this linked cover card its controls are silent, and the whole poster reads as one clickable surface:
-
-{% preview source=true %}
-
-{% card href="/runes/places/map" media-position="cover" height="md" %}
-{% map zoom="12" center="48.8566, 2.3522" %}
-- **Paris** - *Demoted to a backdrop* - 48.8566, 2.3522
-{% /map %}
-
----
-
-### A linked poster, with a live guest
-The map below would normally pan and zoom; inside a linked card its controls go silent, so the whole surface stays a single click target.
-{% /card %}
-
-{% /preview %}
-
-The same principle holds outside cover mode — a button or link in the body or footer of a linked card stays live, only the **media-zone** guest is demoted. The full model is the [media-guest interaction posture](/extend/rune-authoring/composability#media-guest-interaction-posture) contract.
-
 ## Composition
 
-All the dials compose. The frame vocabulary doesn't know or care that its guest is an image — drop a `codegroup` into the media slot and the same `frame-displace` / `frame-oversize` work. `substrate-target="media"` routes the cross pattern to the media well, and the displaced guest reveals it in the top-left strip the codegroup no longer covers:
-
-{% preview source=true %}
-
-{% card frame-aspect="3/2" frame-displace="bottom-end" frame-offset="md" frame-oversize="1.15" substrate="cross" substrate-target="media" %}
-{% codegroup title="refrakt.config.ts" %}
-```ts
-import { defineConfig } from '@refrakt-md/cli';
-import marketing from '@refrakt-md/marketing';
-import learning from '@refrakt-md/learning';
-import storytelling from '@refrakt-md/storytelling';
-
-export default defineConfig({
-  content: './content',
-  theme: '@refrakt-md/lumina',
-  plugins: [
-    marketing(),
-    learning(),
-    storytelling(),
-  ],
-  surfaces: {
-    card: {
-      elevation: 'md',
-      frame: { aspect: '16/9' },
-    },
-    figure: {
-      frame: { shadow: 'lg', anchor: 'top' },
-    },
-  },
-});
-```
-{% /codegroup %}
-
----
-
-### Codegroup over a substrate
-The codegroup oversizes and displaces toward the bottom-right; the cross substrate fills the media slot beneath and shows through the strip the codegroup no longer covers.
-{% /card %}
-
-{% /preview %}
+Every dial here composes with a *media guest*, not just an image — a `codegroup`, `chart`, or `map` in a card's media zone takes the same `frame`, `substrate`, and cover treatments. Those patterns (including a displaced codegroup over a substrate, and a linked cover poster whose guest is demoted to a backdrop) live in [Media guests](/runes/media-guests); the demotion rule is the [interaction-posture](/extend/rune-authoring/composability#media-guest-interaction-posture) contract.
 
 ## See also
 

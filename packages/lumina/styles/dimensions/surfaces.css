@@ -127,6 +127,28 @@
 	background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
 }
 
+/* …but when they're a media-zone guest the slot already provides the recessed
+ * surface (border, radius, inset fill), so the inner chrome would just stack
+ * as double-chrome. Drop it; keep padding so axis labels / SVG keep breathing
+ * room. */
+[data-section="media"] > :is(.rf-chart, .rf-diagram) {
+	background: transparent;
+	border: 0;
+}
+
+/* Same treatment for `juxtapose` as a media guest — its `__panels` container
+ * has its own border + background + rounded corners (juxtapose stands alone
+ * outside a card), but inside a card slot they double up with the slot's own
+ * chrome. Drop the inner chrome; round to match the slot's media radius so the
+ * comparison reads as part of the card surface. The slot's overflow:visible
+ * and container-type:normal still come from `split.css` (juxtapose manages
+ * its own clip inside `__panels`). */
+[data-section="media"] > .rf-juxtapose .rf-juxtapose__panels {
+	background: transparent;
+	border: 0;
+	border-radius: var(--rf-radius-media);
+}
+
 /* Media wells of media-bearing runes: a recessed sub-surface that tracks the
  * (possibly tinted) container colour — invisible under a full-bleed guest,
  * visible in the gaps (transparent, displaced, or absent guest). */
