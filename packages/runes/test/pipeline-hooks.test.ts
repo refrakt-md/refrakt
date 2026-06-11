@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { describe, it, expect } from 'vitest';
 import { corePipelineHooks } from '../src/config.js';
+import { matchesFilterExpr } from '../src/field-match.js';
 import { EntityRegistryImpl } from '../../content/src/registry.js';
 import type { TransformedPage } from '@refrakt-md/types';
 
@@ -67,6 +68,59 @@ describe('corePipelineHooks.register', () => {
 		expect(headings).toHaveLength(2);
 		expect(registry.getById('heading', '/docs/#introduction')).toBeDefined();
 		expect(registry.getById('heading', '/docs/#setup')).toBeDefined();
+	});
+
+	it('passes page frontmatter through to entity data, minus reserved keys (SPEC-092 L1)', () => {
+		const registry = new EntityRegistryImpl();
+		const { ctx } = makeCtx();
+
+		const page = {
+			url: '/guides/intro/',
+			title: 'Intro', // the normalised/curated title
+			headings: [],
+			renderable: null,
+			frontmatter: {
+				title: 'Raw Title', // must NOT win — curated page.title does
+				tags: ['guide', 'beginner'],
+				author: 'Ada',
+				image: '/og.png',
+				category: 'Guides', // custom field
+				status: 'beta',     // custom field
+				// reserved routing/render-control keys — must be excluded:
+				layout: 'docs',
+				tint: 'warm',
+				'tint-mode': 'dark',
+				'tint-lock': true,
+				slug: 'intro-override',
+				redirect: '/elsewhere/',
+			},
+		} as unknown as TransformedPage;
+
+		corePipelineHooks.register!([page], registry, ctx);
+		const data = registry.getById('page', '/guides/intro/')!.data;
+
+		// passthrough — queryable by collection/aggregate
+		expect(data.tags).toEqual(['guide', 'beginner']); // arrays pass through
+		expect(data.author).toBe('Ada');
+		expect(data.image).toBe('/og.png');
+		expect(data.category).toBe('Guides');
+		expect(data.status).toBe('beta');
+
+		// curated fields win over raw frontmatter
+		expect(data.title).toBe('Intro');
+
+		// reserved keys are excluded from queryable data
+		for (const k of ['layout', 'tint', 'tint-mode', 'tint-lock', 'slug', 'redirect']) {
+			expect(data[k]).toBeUndefined();
+		}
+
+		// the entity is filterable by the shared field-match grammar — the same
+		// path collection/aggregate use, with no resolver change
+		const entity = registry.getById('page', '/guides/intro/')!;
+		expect(matchesFilterExpr(entity, 'tags:guide')).toBe(true);          // array member
+		expect(matchesFilterExpr(entity, 'category:Guides status:beta')).toBe(true); // AND
+		expect(matchesFilterExpr(entity, 'tags:missing')).toBe(false);
+		expect(matchesFilterExpr(entity, 'layout:docs')).toBe(false);        // reserved → not indexed
 	});
 });
 

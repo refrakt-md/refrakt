@@ -2110,6 +2110,19 @@ export interface CorePipelineHooksOptions {
  * configured. The content-loader bootstrap passes compiled
  * {@link CompiledXrefPattern}s when `refrakt.config.json#/xrefs` is set.
  */
+/**
+ * Frontmatter keys that control routing/rendering rather than describing the
+ * page; excluded from the `page` entity's queryable `data` (SPEC-092 Layer 1) so
+ * they don't pollute `collection`/`aggregate` queries. Everything else passes
+ * through, so a query can filter/group pages by `tags`, `author`, `image`, or
+ * any custom field.
+ */
+const RESERVED_PAGE_FRONTMATTER = new Set([
+	'layout', 'tint', 'tint-mode', 'tint-lock', 'slug', 'redirect',
+	// entity-declaration keys (SPEC-092 Layer 2) — meta, not queryable content
+	'type', 'id',
+]);
+
 export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): PluginPipelineHooks {
 	const xrefPatterns = opts.xrefPatterns ?? [];
 	const embedConfig = opts.embedConfig;
@@ -2131,11 +2144,21 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 				);
 			}
 
+			// SPEC-092 Layer 1 — pass page frontmatter through to the entity's
+			// queryable `data` (minus the routing/render-control keys above). The
+			// curated fields below are normalised and win over any raw same-named
+			// frontmatter value.
+			const passthrough: Record<string, unknown> = {};
+			for (const [k, val] of Object.entries(page.frontmatter)) {
+				if (!RESERVED_PAGE_FRONTMATTER.has(k)) passthrough[k] = val;
+			}
+
 			registry.register({
 				type: 'page',
 				id: page.url,
 				sourceUrl: page.url,
 				data: {
+					...passthrough,
 					title: page.title,
 					url: page.url,
 					parentUrl,

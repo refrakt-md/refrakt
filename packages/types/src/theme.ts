@@ -313,6 +313,11 @@ export interface RouteRule {
 	pattern: string;
 	/** Name of the layout to use (key in manifest.layouts) */
 	layout: string;
+	/** Register pages matching this pattern as registry entities of this type,
+	 *  in addition to their `page` registration (SPEC-092). A page's own
+	 *  frontmatter `type` overrides the rule. Lets a project type a whole section
+	 *  by convention (e.g. `runes/**` → `rune`) without per-page frontmatter. */
+	entity?: string;
 }
 
 export interface ComponentDefinition {
