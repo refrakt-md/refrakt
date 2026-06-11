@@ -25,7 +25,7 @@ Completed: 2026-06-11
 Branch: `claude/work-389-3d-sitemap`.
 
 ### What was done
-- `site/examples/sitemap-3d/index.html` — a three.js scene that reads `window.RF_DATA.tree`, lays the pages out as a radial tree (depth → radius, leaves spread by angle), renders nodes + edges, supports drag-to-rotate + gentle auto-spin, hover tooltips, and **click-to-navigate** (`window.top.location` → the node's URL). Dark-aware, pinned `three@0.160.0`, `prefers-reduced-motion` → one static frame, try/catch → the accessible fallback.
+- `site/examples/sitemap-3d/index.html` — a three.js scene that reads `window.RF_DATA.tree` and renders the pages as **nested star systems**: top-level sections sit on a golden-angle galaxy disc (a flat radial tree piled all 60 roots at the origin — this spreads them), each page **orbits its parent** as a little planetary system, nested by URL depth. Orbital motion (reduced-motion → frozen), a distant starfield, emissive glow + star twinkle, drag-to-rotate + gentle auto-spin, hover tooltips, and **click-to-navigate** (`window.top.location` → the node's URL). Space-dark in both themes, pinned `three@0.160.0`, try/catch → the accessible fallback.
 - `runes/sandbox.md` gains a **"Data binding — window.RF_DATA"** section: documents `data` / `data-shape` / `data-fields` / `data-limit`, the live 3D sitemap of the rune section (`data="type:page url:/runes/*" data-shape="tree"`), and an authored `{% collection %}` fallback over the same query.
 - **Bug fix (in WORK-388's `data-resolve.ts`, surfaced here):** page `url`s have no trailing slash but `parentUrl`s do, so `toTree` never nested. Added `stripSlash` normalization; the unit test now uses the real convention and asserts nesting.
 

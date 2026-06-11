@@ -169,7 +169,7 @@ A sandbox can be **fed data from your registry**. Set a `data` query — the sam
 | `data-fields` | Comma-separated data fields to project (keeps the payload lean) |
 | `data-limit` | Max records (default 500; over → truncated with a build warning) |
 
-Here a `data-shape="tree"` binding feeds this site's own rune-section page tree to a three.js scene — a live, navigable **3D sitemap** (drag to rotate, click a node to open it):
+Here a `data-shape="tree"` binding feeds this site's own rune-section page tree to a three.js scene — a live, navigable **3D star-map**: each section is a star and its pages orbit it as a little planetary system, nested by URL depth (drag to rotate, click a node to open it):
 
 {% preview source=true %}
 
