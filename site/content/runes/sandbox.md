@@ -202,9 +202,7 @@ Here a `data-shape="tree"` binding feeds this site's own rune-section page tree 
 
 {% /preview %}
 
-**Always pair a data-bound visualization with an accessible fallback** — the 3D view is progressive enhancement, not the only representation. The *same* query as an honest, navigable list (what no-JS, no-WebGL, and screen readers get):
-
-{% collection type="page" filter="url:/runes/*" sort="url" layout="list" /%}
+**Always pair a data-bound visualization with an accessible fallback** — the 3D view is progressive enhancement, not the only representation. Author a `{% collection %}` (or `{% aggregate %}`) running the same query in the sandbox's fallback slot so no-JS, no-WebGL, and screen-reader users still get the data as an honest list. (The fallbacks for the sandboxes on this page are omitted to keep it short.)
 
 ### `data-shape="graph"` — nodes and edges
 
@@ -422,10 +420,6 @@ Here a single `data="type:spec type:work type:decision type:milestone" data-shap
 </script>
 
 {% /sandbox %}
-
-The accessible fallback — the same plan, as an honest list. The currently actionable work:
-
-{% collection type="work" filter="status:ready" sort="priority" group="priority" limit=12 layout="list" /%}
 
 ## Source code panels with data-source
 

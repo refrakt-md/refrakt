@@ -121,4 +121,29 @@ Hosted on the **main site** (refrakt.md), not the plan site. The main site loads
 - `relationships` is a per-entity rune (`of=$item.id`), so a single whole-graph "relationships list" isn't one rune call. The honest fallback is therefore an entity `{% collection %}` (ready work).
 - The live WebGL render needs a browser, so it isn't headlessly checkable — the data is proven end-to-end and the layout math was validated for on-screen node size. Confirmed rendering in a browser at /runes/sandbox (the "Data binding" section).
 
+
+---
+
+Completed: 2026-06-11
+
+Branch: `claude/work-390-relationship-graph` (off main).
+
+### What was done
+- **Engine** (`packages/runes/src/data-resolve.ts`): added the third payload shape. `data-shape="graph"` projects the queried entities as nodes and collects their SPEC-072 edges via `registry.getRelated` into a closed node-link graph — `{ shape:'graph', nodes, edges }`, each edge `{ from, to, kind }`, kept only when both endpoints are in the selection. New `toGraph()` helper; guards the optional `getRelated`.
+- **Schema** (`packages/runes/src/tags/sandbox.ts`): `data-shape` description now lists `graph`.
+- **Showcase** (`site/content/runes/sandbox.md`, the data-binding section, beside the 3D star-map): a `{% sandbox data="type:spec type:work type:decision type:milestone" data-shape="graph" data-fields="title,status" data-limit=600 activation="visible" %}` rendering an inline three.js force-directed graph (Fruchterman–Reingold up front, layout normalised to a fixed radius so nodes read at any count, then drag-rotate + gentle auto-spin). Nodes coloured/sized by type; hover shows id/title/status.
+- **Tests** (`data-resolve.test.ts`): two graph cases — nodes + edges projection, and the closed-graph drop of edges to nodes outside the selection. Changeset: `@refrakt-md/runes` minor.
+
+### Placement / navigation note
+Hosted on the **main site** (refrakt.md), not the plan site. The main site loads `@refrakt-md/plan` and scans `plan/` unconditionally, so the registry has all entities + relate() edges (the build resolves 528 nodes / 2694 edges; the ~10 over the 518 real entities are doc-example entities authored in the rune docs). Nodes are **hover-only** (no click-navigation): the main site has no plan `entityRoutes`, and the plan site (plan.refrakt.md) is not deployed, so there is currently no real destination to link to.
+
+### Accessible fallback
+The data-bound sandbox still emits its inline-content SSR fallback (satisfying the resolver's fallback check, no warning). The rune-docs page only *mentions* that pairing a data-bound visualization with an authored `{% collection %}`/`{% aggregate %}` fallback is good practice rather than rendering one — rendering the full plan as a list made the doc page too long. A real project would author the visible fallback.
+
+### Verification
+- Graph payload resolves end-to-end in the `site` build: 528 nodes (93 spec / 393 work / 20 decision / 22 milestone), 2694 edges; under the 600 cap (no truncation); `data-fields="title,status"` trims the payload. Both data-bound sandboxes on the page (tree sitemap + graph) coexist and render. 775/775 runes tests pass.
+
+### Notes
+- The live WebGL render needs a browser, so it isn't headlessly checkable — the data is proven end-to-end and the layout math was validated for on-screen node size. Confirmed rendering in a browser at /runes/sandbox (the "Data binding" section).
+
 {% /work %}
