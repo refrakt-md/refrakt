@@ -16,6 +16,7 @@ import { resolveTintCascade, type ResolvedTintCascade } from './tint-cascade.js'
 import { NavTree } from './navigation.js';
 import { runPipeline, type HookSet } from './pipeline.js';
 import { createEntityRoutesHooks } from './entity-routes.js';
+import { createPageEntityHooks } from './page-entities.js';
 import { getGitTimestamps, resolveTimestamps, type FileTimestamps } from './timestamps.js';
 import { readFileRoots, type FileRoots } from './file-roots.js';
 
@@ -294,6 +295,15 @@ async function processContentTree(
       const node = parsedPartials?.[name];
       return node ? Markdoc.format(node) : undefined;
     }),
+  });
+
+  // SPEC-092 — register pages that declare a `type` (frontmatter) or match a
+  // `routeRules` `entity` rule as typed registry entities, in addition to their
+  // `page` registration. Runs after `__core__` so it can reuse the page entity's
+  // reserved-filtered data. No-op unless such a page/rule exists.
+  hookSets.push({
+    pluginName: '__page-entities__',
+    hooks: createPageEntityHooks(opts.siteConfig),
   });
 
   // Per-page preprocess context — file-system + project-root shared with the

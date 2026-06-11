@@ -2119,6 +2119,8 @@ export interface CorePipelineHooksOptions {
  */
 const RESERVED_PAGE_FRONTMATTER = new Set([
 	'layout', 'tint', 'tint-mode', 'tint-lock', 'slug', 'redirect',
+	// entity-declaration keys (SPEC-092 Layer 2) — meta, not queryable content
+	'type', 'id',
 ]);
 
 export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): PluginPipelineHooks {
