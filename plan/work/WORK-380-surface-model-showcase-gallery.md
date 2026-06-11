@@ -66,4 +66,11 @@ Branch: `claude/work-380-surface-gallery`
 ### Why review, not done
 - The "renders correctly in light and dark mode and at mobile widths; no layout/overflow regressions" criterion is left unchecked: no headless browser is available in this container, so I could only verify structural rendering via the build, not the visual/responsive pass. The examples derive from already-shipped, CSS-coverage-tested primitives and near-copies of working doc examples (the displaced-peek card is the only genuinely new composition), so confidence is high — but it wants a quick human glance at the dev server (`cd site && npm run dev` → /runes/surface-gallery), especially the cover/frost and displaced-frame cells. Flip to done once eyeballed.
 
-{% /work %}
+## Update — delivered via surfaces.md (no separate gallery page)
+The standalone `surface-gallery.md` was dropped; the gallery was folded into the
+rewritten **`surfaces.md`** ("the surface model on one page" — chrome / fills /
+cover / posture, with the reference tables inline). The deliverable therefore
+shipped in a different shape than the criteria describe (which name a separate
+gallery page). The work is effectively complete via `surfaces.md`; flip to done
+once the `surfaces.md` visual pass is confirmed locally.
+

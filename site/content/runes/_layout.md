@@ -11,21 +11,11 @@ tint-lock: false
 - [Themes](/themes/themes-catalog)
 - [Planning](/plan)
 
-## Rune Catalog
+## Essentials
 
 - rune-catalog
 - surfaces
-
-## Compositions
-
-- compositions
-- compositions/codegroup-in-card
-- compositions/chart-in-card
-- compositions/map-in-card
-- compositions/diagram-in-card
-- compositions/chart-in-bento
-- compositions/mockup
-- compositions/juxtapose-in-card
+- media-guests
 
 ## Content
 

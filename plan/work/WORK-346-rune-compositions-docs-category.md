@@ -78,4 +78,16 @@ Branch: `claude/work-346-compositions-docs` (stacked on `claude/work-380-surface
 - **Visual pass pending** (same as WORK-380): no headless browser in this container, so the 5 new `preview` clusters are build-verified structurally but not eyeballed in light/dark/mobile. Worth a glance when running the dev server — `map-in-card` (interactive guest, live), `chart-in-bento` (cell media sizing / row-track alignment), and `diagram-in-card` (SVG fit) especially.
 - **Curated starter, not the full Family A** — criterion 2 ("each Family A pattern is its own page") is intentionally left unchecked: 5 of the ~10 Family-A patterns ship now (the doc-grounded ones); the rest — `gallery`, `embed`, `audio`/`playlist`, design `swatch`/`palette`, `timeline` — are listed on the landing page and join the catalogue as they're verified. Decide at review whether to finish the remaining patterns here or split them into a follow-up item.
 
-{% /work %}
+## Update — consolidated into "Media guests" (IA reorg)
+The page-per-pattern "Compositions" category was reorganised into a single
+consolidated **Media guests** page (`runes/media-guests.md`) under a renamed
+**Essentials** nav group (was "Rune Catalog"). The 7 pattern pages + landing were
+merged into one sectioned page (visual data guests / code & comparison / device &
+presentation / interactive guests & posture); the separate `compositions/`
+directory and the "Compositions" nav group were removed. Surface-treatment
+patterns (the former "family D") now live only in `surfaces.md` and are
+cross-linked, not duplicated; "Media guests" scopes this page to media-zone guests
+so registry-fed and layout-signature recipes become their own concept-named
+sibling pages later. Rationale: removing the duplication that was forming between
+the surface docs and the composition docs.
+

@@ -31,7 +31,7 @@ guest in a media zone, and the surface treatment around it).
 - [ ] At least one tile uses the surface model — a cover poster cell (and/or framed media / substrate / gradient) — so the showcase reflects the v0.20.0 vocabulary (SPEC-086–089).
 - [ ] Live `sandbox` iframes are limited (anchor cell only; the showcase tile uses a static image) to keep the landing page fast.
 - [ ] The section renders correctly in light and dark mode and at mobile widths; no layout/overflow regressions.
-- [ ] The grid is referenced as the hero example from the Compositions category ({% ref "WORK-346" /%}).
+- [ ] The grid is referenced as the hero example from the Media guests page ({% ref "WORK-346" /%}).
 
 ## Approach
 Author as site content in `site/content/index.md`, replacing the current
