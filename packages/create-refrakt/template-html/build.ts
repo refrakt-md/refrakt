@@ -159,6 +159,19 @@ async function build() {
 				dest: path.join(outDir, 'styles', 'runes', `${block}.css`),
 			});
 		}
+		// Ship the layout chrome (header, theme-toggle, search, mobile,
+		// on-this-page). These aren't per-rune blocks, so the rune-usage
+		// tree-shaking above never includes them — without this the controls
+		// (theme-toggle, search trigger) render unstyled. Missing files are
+		// skipped by the existsSync guard in the copy loop below.
+		const layoutsDir = path.join(path.dirname(stylesDir), 'layouts');
+		for (const chrome of ['default', 'theme-toggle', 'search', 'mobile', 'on-this-page']) {
+			stylesheets.push(`/styles/layouts/${chrome}.css`);
+			blocksToCopy.push({
+				src: path.join(layoutsDir, `${chrome}.css`),
+				dest: path.join(outDir, 'styles', 'layouts', `${chrome}.css`),
+			});
+		}
 	} catch (err) {
 		console.warn(
 			`Tree-shaking skipped (${(err as Error).message}); shipping full theme barrel.`,
@@ -207,6 +220,9 @@ async function build() {
 			},
 			{
 				stylesheets,
+				// Load the bundled client runtime (see the esbuild step below)
+				// so interactive runes and the theme-toggle work. WORK-293.
+				scripts: ['/client.js'],
 				// Order matters: highlight CSS first, site-tokens CSS second so
 				// site-level `--rf-*` overrides resolve last in the cascade.
 				headExtra:
@@ -254,7 +270,23 @@ async function build() {
 		}
 	}
 
-	console.log(`Built ${count} pages to ${outDir}/`);
+	// Bundle the client runtime → build/client.js. esbuild resolves
+	// `@refrakt-md/html/client` and its `@refrakt-md/behaviors` import into a
+	// single classic script that `renderFullPage` loads on every page (above).
+	// Without this, a static html site has no interactivity. WORK-293.
+	const esbuild = await import('esbuild');
+	await esbuild.build({
+		entryPoints: [path.resolve('client.ts')],
+		bundle: true,
+		format: 'iife',
+		minify: true,
+		platform: 'browser',
+		target: 'es2020',
+		outfile: path.join(outDir, 'client.js'),
+		logLevel: 'silent',
+	});
+
+	console.log(`Built ${count} pages to ${outDir}/ (+ client.js)`);
 }
 
 build().catch(err => {
