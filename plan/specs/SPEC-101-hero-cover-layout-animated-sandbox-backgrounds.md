@@ -1,4 +1,4 @@
-{% spec id="SPEC-101" status="draft" tags="layout,lumina,marketing,sandbox,engine,docs,showcase" %}
+{% spec id="SPEC-101" status="accepted" tags="layout,lumina,marketing,sandbox,engine,docs,showcase" %}
 
 # Hero cover layout — animated sandbox backgrounds
 
@@ -189,13 +189,15 @@ CSS-tuning item, not new machinery.
 - [ ] Docs: hero reference cover section with an image-cover example and the animated prism background example, including the perf/motion authoring contract; sandbox reference documents `height="fill"`; `media-guests.md` cross-links.
 - [ ] Contracts regenerated (`refrakt contracts --check` green) and CSS coverage tests pass for the new `rf-hero--cover` selectors.
 
-## Work breakdown (provisional)
+## Work breakdown
 
-1. **Hero cover variant + Lumina CSS** — config variant + knobs; padding rerouting; band height default; legibility pass (§1–§3, §6).
-2. **Guest fill** — cover-scoped fill CSS + sandbox `height="fill"` mode + transform auto-fill for cover guests (§4).
-3. **Activation warning** — non-eager sandbox under cover (§5).
-4. **Prism scene + docs** — build `site/examples/prism-scene/`; hero cover section, animated-background example, sandbox `fill` docs, cross-links (§7).
-5. **Contracts + tests** — regenerate structures, CSS coverage, schema tests for the new attrs.
+Scheduled into **v0.21.0** (contracts/tests folded into each item's criteria):
+
+1. {% ref "WORK-398" /%} — **hero as a cover host**: config variant + knobs, padding rerouting, band height default, legibility pass (§1–§3, §6).
+2. {% ref "WORK-399" /%} — **cover guest fill**: cover-scoped fill CSS + sandbox `height="fill"` mode + transform auto-fill for cover guests (§4).
+3. {% ref "WORK-400" /%} — **activation warning**: non-eager sandbox under cover (§5).
+4. {% ref "WORK-401" /%} — **prism scene**: `site/examples/prism-scene/` (§7).
+5. {% ref "WORK-402" /%} — **docs**: hero cover section, animated-background example, sandbox `fill` docs, cross-links (§7).
 
 ## References
 

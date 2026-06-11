@@ -20,9 +20,17 @@ targets grow from HTML and SVG to *bring-your-own-renderer*.
   renders it — the third render target after `collection` (HTML) and `aggregate`
   (SVG). Mandatory progressive-enhancement fallback. Showcase: a 3D sitemap from the
   `pageTree`, a relationship graph from SPEC-072 edges. (Decision: {% ref "ADR-017" /%}.)
+- {% ref "SPEC-101" /%} — **hero cover layout + animated sandbox backgrounds.**
+  Make `hero` a first-class `media-position="cover"` host and let a sandbox guest
+  fill the cover well — a live three.js scene as a full-bleed, inert (SPEC-090)
+  animated hero backdrop. Showcase: the **prism scene** — markdown glyphs refracting
+  into the Niwaki syntax palette.
 
 These pair deliberately: SPEC-092 makes the data rich enough (runes, tags,
-relationships) for SPEC-093's visualizations to be worth building.
+relationships) for SPEC-093's visualizations to be worth building. SPEC-101 extends
+the same thread from *sandbox as a render target* to *sandbox as a layout surface* —
+the milestone's three.js material (WORK-381's activation, WORK-382's scene patterns,
+the SPEC-093 showcases) graduates into hero composition.
 
 ## Carried in from v0.20.1
 
@@ -56,7 +64,15 @@ relationships) for SPEC-093's visualizations to be worth building.
 - {% ref "WORK-389" /%} — the **3D sitemap** showcase (the launch demo; tree from `pageTree`).
 - {% ref "WORK-390" /%} — the **plan relationship-graph** showcase (graph shape over SPEC-072 edges, already populated).
 
-**Sequencing:** {% ref "WORK-381" /%} (lazy/poster) lands early — both showcases are heavy WebGL and lazy-mount. The two spec tracks run in parallel; the SPEC-093 showcases depend only on `pageTree` / plan edges that exist today, not on the SPEC-092 entity work. {% ref "WORK-350" /%} (index bento) consumes the registry aggregates + a data-bound viz once they exist.
+**SPEC-101 — hero cover + animated backgrounds:**
+
+- {% ref "WORK-398" /%} — hero as a cover host (variant, height authority, padding, legibility).
+- {% ref "WORK-399" /%} — cover guest fill + sandbox `height="fill"` (benefits card/bento covers too).
+- {% ref "WORK-400" /%} — build warning: non-eager sandbox under cover (fast-follow).
+- {% ref "WORK-401" /%} — the **prism scene** (niwaki-refraction backdrop; independently buildable).
+- {% ref "WORK-402" /%} — docs: hero cover reference + the animated prism background showcase (capstone; depends on 398/399/401).
+
+**Sequencing:** {% ref "WORK-381" /%} (lazy/poster) lands early — both showcases are heavy WebGL and lazy-mount. The two spec tracks run in parallel; the SPEC-093 showcases depend only on `pageTree` / plan edges that exist today, not on the SPEC-092 entity work. {% ref "WORK-350" /%} (index bento) consumes the registry aggregates + a data-bound viz once they exist. The SPEC-101 track is parallel too: {% ref "WORK-398" /%}/{% ref "WORK-399" /%}/{% ref "WORK-401" /%} are mutually independent, converging only in {% ref "WORK-402" /%}.
 
 ## Deferred (needs its own discussion)
 
