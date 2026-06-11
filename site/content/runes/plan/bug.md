@@ -1,6 +1,10 @@
 ---
 title: Bug
 description: Bug report with structured reproduction steps and severity tracking
+category: Plan
+plugin: plan
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

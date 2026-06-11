@@ -1,6 +1,10 @@
 ---
 title: Showcase
 description: Present visual content with frame chrome — shadow, displacement (bleed), offset, and aspect ratio
+category: Layout
+plugin: core
+status: stable
+type: rune
 ---
 
 # Showcase

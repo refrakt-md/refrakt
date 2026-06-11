@@ -2,6 +2,10 @@
 title: Pagination
 description: Sequential prev/next links for ordered docs and tutorials
 icon: arrow-right
+category: Site
+plugin: core
+status: stable
+type: rune
 ---
 
 # Pagination

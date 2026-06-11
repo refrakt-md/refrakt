@@ -1,6 +1,10 @@
 ---
 title: Audio
 description: Audio player with optional waveform and chapter markers
+category: Media
+plugin: media
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

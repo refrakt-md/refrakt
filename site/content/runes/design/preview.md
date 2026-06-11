@@ -1,6 +1,10 @@
 ---
 title: Preview
 description: Component showcase with theme toggle and responsive viewports
+category: Design
+plugin: design
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

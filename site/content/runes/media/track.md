@@ -1,6 +1,10 @@
 ---
 title: Track
 description: Standalone track or recording with metadata
+category: Media
+plugin: media
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

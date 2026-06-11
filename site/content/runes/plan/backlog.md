@@ -1,6 +1,10 @@
 ---
 title: Backlog
 description: Aggregation view of plan entities with filtering, sorting, and grouping
+category: Plan
+plugin: plan
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

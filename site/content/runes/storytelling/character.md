@@ -1,6 +1,10 @@
 ---
 title: Character
 description: Rich character profiles with sections for backstory, abilities, and more
+category: Storytelling
+plugin: storytelling
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

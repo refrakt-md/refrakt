@@ -1,6 +1,10 @@
 ---
 title: Plan Activity
 description: Recent activity feed sorted by file modification time
+category: Plan
+plugin: plan
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

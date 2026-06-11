@@ -1,6 +1,10 @@
 ---
 title: Plot
 description: Story arcs and quest trackers with progress markers
+category: Storytelling
+plugin: storytelling
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

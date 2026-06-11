@@ -1,6 +1,10 @@
 ---
 title: Storyboard
 description: Comic and storyboard layouts from images and captions
+category: Storytelling
+plugin: storytelling
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

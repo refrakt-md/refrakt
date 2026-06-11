@@ -1,6 +1,10 @@
 ---
 title: Symbol
 description: Code construct documentation for functions, classes, interfaces, enums, and type aliases
+category: Docs
+plugin: docs
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

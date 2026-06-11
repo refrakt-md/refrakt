@@ -1,6 +1,10 @@
 ---
 title: Feature
 description: Feature showcases with name, description, and optional icons
+category: Marketing
+plugin: marketing
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

@@ -1,6 +1,10 @@
 ---
 title: PullQuote
 description: Editorial pull quotes with alignment and style variants
+category: Content
+plugin: core
+status: stable
+type: rune
 ---
 
 # PullQuote

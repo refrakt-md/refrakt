@@ -1,6 +1,10 @@
 ---
 title: Juxtapose
 description: Interactive side-by-side comparison with slider, toggle, fade, and auto modes
+category: Layout
+plugin: core
+status: stable
+type: rune
 ---
 
 # Juxtapose

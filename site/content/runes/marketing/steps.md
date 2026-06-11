@@ -1,6 +1,10 @@
 ---
 title: Steps
 description: Step-by-step instructions with numbered indicators
+category: Marketing
+plugin: marketing
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

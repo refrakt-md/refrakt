@@ -1,6 +1,10 @@
 ---
 title: Spec
 description: Specification document with status tracking, versioning, and cross-referencing
+category: Plan
+plugin: plan
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

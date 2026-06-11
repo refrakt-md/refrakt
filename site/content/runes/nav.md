@@ -1,6 +1,10 @@
 ---
 title: Nav
 description: One navigation primitive for sidebars, header menubars, footer columns, and section landings
+category: Site
+plugin: core
+status: stable
+type: rune
 ---
 
 # Nav

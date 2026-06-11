@@ -1,6 +1,10 @@
 ---
 title: Drawer
 description: Addressable modal panel — declared once, opened from any xref on the page
+category: Layout
+plugin: core
+status: stable
+type: rune
 ---
 
 # Drawer

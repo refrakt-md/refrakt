@@ -1,6 +1,10 @@
 ---
 title: Pricing
 description: Pricing tables with tier comparison
+category: Marketing
+plugin: marketing
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

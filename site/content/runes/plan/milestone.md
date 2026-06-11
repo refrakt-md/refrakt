@@ -1,6 +1,10 @@
 ---
 title: Milestone
 description: Named release target with scope, goals, and status tracking
+category: Plan
+plugin: plan
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

@@ -1,6 +1,10 @@
 ---
 title: Decision
 description: Architecture decision record capturing context, options, rationale, and consequences
+category: Plan
+plugin: plan
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

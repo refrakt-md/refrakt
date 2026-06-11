@@ -1,6 +1,10 @@
 ---
 title: Breadcrumb
 description: Navigation breadcrumbs showing page hierarchy
+category: Site
+plugin: core
+status: stable
+type: rune
 ---
 
 # Breadcrumb

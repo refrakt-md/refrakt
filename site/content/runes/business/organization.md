@@ -1,6 +1,10 @@
 ---
 title: Organization
 description: Structured business or organization information
+category: Business
+plugin: business
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

@@ -1,6 +1,10 @@
 ---
 title: Snippet
 description: Embed a project file as a syntax-highlighted code block — composes inside codegroup, diff, and any future fence-consuming container
+category: "Code & Data"
+plugin: core
+status: stable
+type: rune
 ---
 
 # Snippet

@@ -1,6 +1,10 @@
 ---
 title: Swatch
 description: Inline color chip for referencing colors in prose
+category: Design
+plugin: design
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

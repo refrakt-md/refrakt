@@ -1,6 +1,10 @@
 ---
 title: Budget
 description: Structured budgets with categories, line items, and totals
+category: "Code & Data"
+plugin: core
+status: stable
+type: rune
 ---
 
 # Budget

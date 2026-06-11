@@ -1,6 +1,10 @@
 ---
 title: HowTo
 description: Step-by-step how-to guide with tools and instructions
+category: Learning
+plugin: learning
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

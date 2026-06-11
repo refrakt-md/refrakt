@@ -1,6 +1,10 @@
 ---
 title: Figure
 description: Enhanced images with captions, sizing, and alignment
+category: Content
+plugin: core
+status: stable
+type: rune
 ---
 
 # Figure

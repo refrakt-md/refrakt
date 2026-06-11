@@ -1,6 +1,10 @@
 ---
 title: Form
 description: Accessible HTML forms from Markdown with smart field type inference
+category: "Code & Data"
+plugin: core
+status: stable
+type: rune
 ---
 
 # Form

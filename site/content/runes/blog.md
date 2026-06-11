@@ -1,6 +1,10 @@
 ---
 title: Blog
 description: Display a list of blog posts from a content folder with sorting, filtering, and layout options
+category: Site
+plugin: core
+status: stable
+type: rune
 ---
 
 # Blog

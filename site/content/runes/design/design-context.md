@@ -1,6 +1,10 @@
 ---
 title: Design Context
 description: Unified design token card composing palette, typography, and spacing runes with cross-page sandbox injection
+category: Design
+plugin: design
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

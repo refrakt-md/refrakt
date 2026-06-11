@@ -1,6 +1,10 @@
 ---
 title: Plan Progress
 description: Per-type completion bars and status breakdowns from the plan registry
+category: Plan
+plugin: plan
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

@@ -1,6 +1,10 @@
 ---
 title: Aggregate
 description: Project numbers from the registry — counts and per-group breakdowns — the number-projecting counterpart to collection and relationships, with field-match queries and a sub-filter that drives progress-bar ratios
+category: Registry
+plugin: core
+status: stable
+type: rune
 ---
 
 # Aggregate

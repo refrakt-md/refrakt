@@ -1,6 +1,10 @@
 ---
 title: Changelog
 description: Version history with release notes
+category: Docs
+plugin: docs
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

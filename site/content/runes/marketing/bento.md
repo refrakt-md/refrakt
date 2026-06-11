@@ -1,6 +1,10 @@
 ---
 title: Bento
 description: Magazine-style bento grid of cells — heading depth sizes each tile, or author cells explicitly for full control
+category: Marketing
+plugin: marketing
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

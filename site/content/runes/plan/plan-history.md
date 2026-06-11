@@ -1,6 +1,10 @@
 ---
 title: Plan History
 description: Git-native entity history timeline showing lifecycle events derived from commits
+category: Plan
+plugin: plan
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

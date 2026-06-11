@@ -1,6 +1,10 @@
 ---
 title: Decision Log
 description: Chronological view of architecture decision records
+category: Plan
+plugin: plan
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}
