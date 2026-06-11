@@ -1,0 +1,70 @@
+/* Section — a generic page section: an eyebrow/headline/blurb header above
+   arbitrary body content. Header styling mirrors the shared page-section look
+   (reveal/feature); the body is content-agnostic and full width. */
+.rf-section {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+/* Header */
+.rf-section__preamble {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	max-width: var(--rf-measure, 65ch);
+	margin: 0;
+}
+.rf-section__eyebrow {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--rf-color-primary);
+	margin: 0;
+}
+.rf-section__eyebrow:has(a) {
+	display: inline-block;
+	position: relative;
+	padding: 0.25rem 0.875rem;
+	border: 1px solid var(--rf-color-border);
+	border-radius: var(--rf-radius-full);
+	color: var(--rf-color-text);
+	font-weight: 400;
+	text-transform: none;
+	letter-spacing: 0;
+	transition: border-color 150ms ease;
+}
+.rf-section__eyebrow:has(a):hover { border-color: var(--rf-color-muted); }
+.rf-section__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: 600; text-decoration: none; }
+.rf-section__eyebrow:has(a) a::before { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+.rf-section__headline {
+	margin: 0;
+}
+.rf-section__blurb {
+	color: var(--rf-color-muted);
+	margin: 0;
+}
+.rf-section__image {
+	margin: 0;
+	border-radius: var(--rf-radius-md);
+	max-width: 100%;
+	height: auto;
+}
+
+/* Body — content-agnostic; fills the section width regardless of header align. */
+.rf-section__body {
+	width: 100%;
+}
+
+/* Header alignment (the body stays full width). */
+.rf-section[data-align="center"] .rf-section__preamble {
+	align-items: center;
+	text-align: center;
+	margin-inline: auto;
+}
+.rf-section[data-align="end"] .rf-section__preamble {
+	align-items: flex-end;
+	text-align: end;
+	margin-inline-start: auto;
+}
