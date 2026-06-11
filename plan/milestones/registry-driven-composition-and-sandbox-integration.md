@@ -1,4 +1,4 @@
-{% milestone name="v0.21.0" status="planning" %}
+{% milestone name="v0.21.0" status="active" %}
 
 # v0.21.0 — Registry-driven composition and sandbox integration
 
@@ -40,10 +40,30 @@ relationships) for SPEC-093's visualizations to be worth building.
 - {% ref "ADR-016" /%} — frontmatter-declared registry entities (open-world rationale).
 - {% ref "ADR-017" /%} — data-bound sandboxes (third render target; mandatory fallback).
 
-## Notes
+## Work breakdown
 
-- Implementation work items for SPEC-092 and SPEC-093 are to be scoped when the
-  milestone opens (e.g. SPEC-092 Layer 1 — frontmatter indexing — is a small first
-  strike that proves the loop with a live `aggregate` over rune pages).
+**SPEC-092 — frontmatter entities** (each layer independently shippable):
+
+- {% ref "WORK-383" /%} — frontmatter indexing on the `page` entity (Layer 1, the first strike).
+- {% ref "WORK-384" /%} — typed page entities (`type`/`id` + a `routeRules` `entity` field).
+- {% ref "WORK-385" /%} — rune-page metadata backfill (script; fixed `status` vocabulary).
+- {% ref "WORK-386" /%} — the **generated rune catalogue** + index stats (the SPEC-092 showcase).
+- {% ref "WORK-387" /%} — rune-doc drift guardrail (fast-follow).
+
+**SPEC-093 — data-bound sandbox** (independent track; `flat`/`tree` need no SPEC-092):
+
+- {% ref "WORK-388" /%} — the data-bound sandbox **core** (binding → resolve → `RF_DATA` inject → authored fallback; `flat`/`tree`).
+- {% ref "WORK-389" /%} — the **3D sitemap** showcase (the launch demo; tree from `pageTree`).
+- {% ref "WORK-390" /%} — the **plan relationship-graph** showcase (graph shape over SPEC-072 edges, already populated).
+
+**Sequencing:** {% ref "WORK-381" /%} (lazy/poster) lands early — both showcases are heavy WebGL and lazy-mount. The two spec tracks run in parallel; the SPEC-093 showcases depend only on `pageTree` / plan edges that exist today, not on the SPEC-092 entity work. {% ref "WORK-350" /%} (index bento) consumes the registry aggregates + a data-bound viz once they exist.
+
+## Deferred (needs its own discussion)
+
+- **Sentiment-coloured nav badges from `status`.** {% ref "WORK-385" /%} lands a
+  fixed `status` vocabulary (`stable | beta | experimental | deprecated`) on rune
+  pages *specifically so* the nav could later show a beta/experimental badge. That
+  badge is a new nav feature with its own design questions (which surfaces, colour
+  semantics, a11y) — out of scope here; the data is built forward-compatibly.
 
 {% /milestone %}
