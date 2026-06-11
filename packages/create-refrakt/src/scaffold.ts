@@ -203,6 +203,7 @@ function generateHtmlPackageJson(projectName: string, theme: string): string {
 			serve: 'npx serve build',
 		},
 		dependencies: {
+			'@refrakt-md/behaviors': v,
 			'@refrakt-md/content': v,
 			'@refrakt-md/highlight': v,
 			'@refrakt-md/html': v,
@@ -214,6 +215,7 @@ function generateHtmlPackageJson(projectName: string, theme: string): string {
 			'@markdoc/markdoc': '^0.4.0',
 		},
 		devDependencies: {
+			'esbuild': '^0.25.0',
 			'tsx': '^4.0.0',
 			'typescript': '^5.4.0',
 		},
