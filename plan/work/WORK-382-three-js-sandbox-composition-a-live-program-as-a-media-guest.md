@@ -1,4 +1,4 @@
-{% work id="WORK-382" status="review" priority="medium" complexity="moderate" source="SPEC-084" tags="docs,compositions,sandbox,showcase,threejs" milestone="v0.20.1" %}
+{% work id="WORK-382" status="done" priority="medium" complexity="moderate" source="SPEC-084" tags="docs,compositions,sandbox,showcase,threejs" milestone="v0.20.1" %}
 
 # three.js sandbox composition — a live program as a media guest
 
@@ -31,7 +31,7 @@ green.
 - [x] A reusable three.js `sandbox` snippet renders a small scene client-side; the static `vite build` stays green (no SSR/WebGL execution at build time).
 - [x] A compositions catalogue page (`sandbox-in-card`) presents it as a media guest — authored Markdown + live `preview` + the mechanism/interaction-posture note — and is wired into the compositions nav + landing index.
 - [x] The scene honours `prefers-reduced-motion` (static frame, no spin) and pins the three.js version; a poster fallback covers a blocked CDN.
-- [ ] Catalogue use renders correctly in light and dark mode and at mobile widths (eager load is acceptable here — the catalogue page is not perf-critical).
+- [x] Catalogue use renders correctly in light and dark mode and at mobile widths (eager load is acceptable here — the catalogue page is not perf-critical).
 
 ## Notes
 - **Catalogue use is eager** (the page isn't perf-critical). Headlining the scene
