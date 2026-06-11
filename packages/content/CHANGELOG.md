@@ -1,5 +1,14 @@
 # @refrakt-md/content
 
+## 0.20.2
+
+### Patch Changes
+
+- @refrakt-md/highlight@0.20.2
+- @refrakt-md/runes@0.20.2
+- @refrakt-md/transform@0.20.2
+- @refrakt-md/types@0.20.2
+
 ## 0.20.1
 
 ### Patch Changes
