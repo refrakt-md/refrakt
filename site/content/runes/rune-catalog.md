@@ -17,13 +17,7 @@ There are currently {% aggregate type="rune" /%} documented runes. Here's how th
 
 Core runes ship built-in with `@refrakt-md/runes`; the rest come from official packages (see below). Each category maps to one source — core's functional groups (Content, Registry, Layout, Code & Data, Site) plus one group per plugin.
 
-{% collection type="rune" group="category" sort="title" layout="table" %}
-## Rune
-[{% $item.data.title %}]({% $item.url %})
-
-## Description
-{% $item.data.description %}
-{% /collection %}
+{% collection type="rune" group="category" sort="title" layout="table" fields="description" /%}
 
 ## Official packages
 

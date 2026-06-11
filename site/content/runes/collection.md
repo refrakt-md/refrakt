@@ -153,7 +153,7 @@ In `table` layout, an empty body uses the `fields` shorthand. For labels, format
 ```markdoc
 {% collection type="product" layout="table" sort="price" %}
 ## Product
-[{% $item.data.title %}]({% $item.url %})
+**{% $item.data.title %}** — {% $item.data.sku %}
 
 ## Price
 {% currency($item.data.price, $item.data.currency) %}
@@ -164,6 +164,8 @@ In `table` layout, an empty body uses the `fields` shorthand. For labels, format
 ```
 
 Collection owns the `<table>` and header row; each `<td>` is the cell template rendered per entity. Column headings are static labels — `$item` belongs in the cell body, not the heading.
+
+> **Linked title?** Markdoc can't interpolate a variable into a link *destination* — `[{% $item.data.title %}]({% $item.url %})` renders as literal text, since the markdown link parser needs a static href. For a linked title column use the `fields` shorthand instead (its auto-generated **Title** column links each entity to its URL), or switch to a `grid` of `{% card href=$item.url %}` items. Heading-delimited columns are for static-label, formatted cells.
 
 ## Formatter functions
 
