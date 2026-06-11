@@ -47,6 +47,9 @@ export class RfSandbox extends SafeHTMLElement {
 	private _heightAttr = 'auto';
 	private _tokens: DesignTokens | null = null;
 	private _localScheme: 'light' | 'dark' | null = null;
+	// SPEC-093 — JSON payload from a data binding, exposed to the iframe as
+	// window.RF_DATA. Empty for a non-data-bound sandbox.
+	private _rfData = '';
 	// Security state derived from data-* attributes set by the schema transform.
 	// `_untrusted` drops `allow-same-origin` from the iframe sandbox attribute and
 	// (when JS is allowed) injects a meta-CSP into srcdoc. `_sandboxOrigin`, when
@@ -58,6 +61,7 @@ export class RfSandbox extends SafeHTMLElement {
 
 	connectedCallback() {
 		this._content = this.dataset.sourceContent || readHiddenContent(this, 'source');
+		this._rfData = this.dataset.rfRecords || '';
 		this._framework = this.dataset.framework || '';
 		this._dependencies = this.dataset.dependencies || '';
 		this._label = this.dataset.label || 'Sandbox';
@@ -168,7 +172,7 @@ export class RfSandbox extends SafeHTMLElement {
 			window.addEventListener('message', onReady);
 		} else {
 			// Tier 1/2: srcdoc with optional meta-CSP injected for untrusted mode.
-			this.iframe.srcdoc = this.buildSrcdoc(this._content, this._framework, this._dependencies, this._tokens, theme);
+			this.iframe.srcdoc = this.buildSrcdoc(this._content, this._framework, this._dependencies, this._tokens, theme, this._rfData);
 		}
 
 		this.iframe.title = this._label;
@@ -220,8 +224,15 @@ export class RfSandbox extends SafeHTMLElement {
 		this.buildIframe(theme);
 	}
 
-	private buildSrcdoc(content: string, framework: string, dependencies: string, tokens: DesignTokens | null, theme?: string): string {
+	private buildSrcdoc(content: string, framework: string, dependencies: string, tokens: DesignTokens | null, theme?: string, rfData?: string): string {
 		const depTags = this.buildDependencyTags(framework, dependencies, tokens);
+
+		// SPEC-093 — expose a data binding's payload to the iframe as a frozen
+		// window.RF_DATA, before any author script runs. Carried as inert JSON
+		// (escape `</` so the payload can't break out of the script element).
+		const rfDataScript = rfData
+			? `<script type="application/json" id="rf-data">${rfData.replace(/<\//g, '<\\/')}</script>\n<script>window.RF_DATA = Object.freeze(JSON.parse(document.getElementById('rf-data').textContent));<\/script>`
+			: '';
 		theme = theme || RfContext.theme;
 
 		// Apply theme on BOTH <html> and <body>. Mobile WebKit may not
@@ -256,7 +267,7 @@ ${depTags}
   body { margin: 0; font-family: system-ui, -apple-system, sans-serif; color-scheme: light dark; overflow: hidden; }
   body.dark, body[data-theme="dark"] { color-scheme: dark; }
 </style>
-</head>
+${rfDataScript ? rfDataScript + '\n' : ''}</head>
 <body${bodyClass}${bodyDataTheme}>
 ${renderedContent}
 <script>

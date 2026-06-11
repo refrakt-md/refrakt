@@ -19,6 +19,7 @@ import { resolveExpands } from './expand-pipeline.js';
 import { resolveCollections } from './collection-resolve.js';
 import { resolveRelationships } from './relationships-resolve.js';
 import { resolveAggregates } from './aggregate-resolve.js';
+import { resolveDataBindings } from './data-resolve.js';
 
 /** Read text content from a property span child */
 function readPropText(node: SerializedTag, prop: string): string {
@@ -2391,6 +2392,10 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			coreData.embedConfig,
 			ctx,
 		);
+
+		// SPEC-093 — data-bound sandboxes: evaluate the bound query against the
+		// registry and inject the JSON for the iframe to expose as window.RF_DATA.
+		renderable = resolveDataBindings(renderable, coreData.registry, ctx, page.url);
 
 		renderable = resolveXrefs(
 			renderable,

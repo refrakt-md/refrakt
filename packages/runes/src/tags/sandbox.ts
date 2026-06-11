@@ -59,6 +59,12 @@ export const sandbox = createContentModelSchema({
 		label: { type: String, required: false, description: 'Label displayed above the sandbox' },
 		height: { type: Number, required: false, description: 'Height of the sandbox iframe in pixels' },
 		context: { type: String, required: false, description: 'Shared context scope for multiple sandboxes' },
+		// SPEC-093 — data binding: resolve a registry query at build time and
+		// expose it to the iframe as `window.RF_DATA`.
+		data: { type: String, required: false, description: 'Registry query (SPEC-070 field-match, e.g. "type:page") bound into the iframe as window.RF_DATA' },
+		'data-fields': { type: String, required: false, description: 'Comma-separated entity data fields to project into the payload' },
+		'data-shape': { type: String, required: false, description: 'Payload shape: flat (default) | tree (nest by parentUrl)' },
+		'data-limit': { type: Number, required: false, description: 'Max records in the payload (default 500)' },
 	},
 	contentModel: {
 		type: 'sequence',
@@ -70,6 +76,10 @@ export const sandbox = createContentModelSchema({
 		const dependencies = attrs.dependencies ?? '';
 		const label = attrs.label ?? '';
 		const height = attrs.height;
+		const dataQuery = attrs.data ?? '';
+		const dataFields = attrs['data-fields'] ?? '';
+		const dataShape = attrs['data-shape'] ?? '';
+		const dataLimit = attrs['data-limit'];
 
 		let rawContent = '';
 		let sourcePanels: SourcePanel[] = [];
@@ -160,6 +170,13 @@ export const sandbox = createContentModelSchema({
 			'data-security-mode': policy.trust,
 			'data-allow-js': policy.allowJs ? 'true' : 'false',
 			...(policy.sandboxOrigin ? { 'data-sandbox-origin': policy.sandboxOrigin } : {}),
+			// SPEC-093 — the query for the postProcess data resolver to evaluate.
+			...(dataQuery ? {
+				'data-rf-query': dataQuery,
+				...(dataFields ? { 'data-rf-fields': dataFields } : {}),
+				...(dataShape ? { 'data-rf-shape': dataShape } : {}),
+				...(dataLimit != null ? { 'data-rf-limit': String(dataLimit) } : {}),
+			} : {}),
 		});
 		return el;
 	},
