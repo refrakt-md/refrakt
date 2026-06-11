@@ -190,3 +190,36 @@ describe('SPEC-101 cover sandbox backdrop', () => {
 		expect(findSandbox(r)?.attributes['data-height']).toBe('auto');
 	});
 });
+
+describe('SPEC-101 non-eager sandbox under cover warns', () => {
+	it('activation="visible"|"click" on a cover backdrop sandbox warns; eager does not', () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const t = createTransform(config);
+
+		const covered = (attrs: Record<string, string>) =>
+			makeTag('div', { 'data-rune': 'card' }, [
+				meta('media-position', 'cover'),
+				makeTag('div', { 'data-name': 'media' }, [makeTag('rf-sandbox', attrs, [])]),
+			]);
+
+		t(covered({ 'data-activation': 'visible' }));
+		expect(warn).toHaveBeenCalledWith(expect.stringContaining('cover backdrop'));
+		warn.mockClear();
+
+		t(covered({ 'data-activation': 'click' }));
+		expect(warn).toHaveBeenCalledWith(expect.stringContaining('cover backdrop'));
+		warn.mockClear();
+
+		// Eager (no data-activation) under cover: silent.
+		t(covered({}));
+		expect(warn).not.toHaveBeenCalled();
+
+		// Non-eager outside cover: silent (the WORK-381 paths are untouched).
+		t(makeTag('div', { 'data-rune': 'card' }, [
+			meta('media-position', 'top'),
+			makeTag('div', { 'data-name': 'media' }, [makeTag('rf-sandbox', { 'data-activation': 'visible' }, [])]),
+		]));
+		expect(warn).not.toHaveBeenCalled();
+		warn.mockRestore();
+	});
+});

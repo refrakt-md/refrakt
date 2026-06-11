@@ -1,4 +1,4 @@
-{% work id="WORK-400" status="ready" priority="low" complexity="simple" source="SPEC-101" tags="sandbox,engine,validation,cover" milestone="v0.21.0" %}
+{% work id="WORK-400" status="in-progress" priority="low" complexity="simple" source="SPEC-101" tags="sandbox,engine,validation,cover" milestone="v0.21.0" %}
 
 # Build warning for non-eager sandbox in a cover media zone
 
