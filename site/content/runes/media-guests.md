@@ -272,6 +272,23 @@ The same metrics stacked as a single column.
 
 The sandbox sources live in [`site/examples/`](/runes/sandbox#examples-directory) — Tailwind `dark:` variants flow with the preview's theme toggle, which rebuilds each iframe with the new scheme baked into its srcdoc.
 
+### Live program
+
+The media zone holds a *running program* just as readily as an image. A `{% sandbox %}` is a media guest, so a live three.js scene drops into a card and animates in place — three.js imported straight from a CDN inside the sandbox, no build step and no plugin. It honours `prefers-reduced-motion` (holding a single static frame) and falls back to a poster if the CDN is unreachable.
+
+{% preview source=true %}
+
+{% card %}
+{% sandbox src="threejs-scene" height=360 /%}
+
+---
+
+### A live WebGL scene
+In a plain card the scene animates; a linked or cover card would demote it to a still backdrop, like any other interactive guest.
+{% /card %}
+
+{% /preview %}
+
 ## Interactive guests & posture
 
 Most guests are presentational, but some are interactive — a `map`, a `codegroup`, a `juxtapose`, a `sandbox`. Whether they stay live depends on the host:

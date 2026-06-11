@@ -116,6 +116,48 @@ Scripts run inside the sandboxed iframe, fully isolated from the host page.
 {% /sandbox %}
 {% /preview %}
 
+## ES modules from a CDN
+
+Because scripts run for real, you can `import` an ES module straight from a CDN inside a `<script type="module">` — no bundler, no install. Here a version-pinned three.js draws a spinning cube:
+
+{% preview source=true %}
+{% sandbox height=300 %}
+<style>html,body{height:100%;margin:0}canvas{display:block;width:100%;height:100%}</style>
+<canvas id="c"></canvas>
+<script type="module">
+  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+  const canvas = document.getElementById('c');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+  camera.position.z = 3;
+  const cube = new THREE.Mesh(
+    new THREE.BoxGeometry(1.4, 1.4, 1.4),
+    new THREE.MeshStandardMaterial({ color: 0xe15f80, flatShading: true }),
+  );
+  scene.add(cube);
+  const light = new THREE.DirectionalLight(0xffffff, 3);
+  light.position.set(2, 3, 4);
+  scene.add(light, new THREE.AmbientLight(0xffffff, 0.6));
+  function resize() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  (function loop() {
+    cube.rotation.x += 0.01;
+    cube.rotation.y += 0.013;
+    renderer.render(scene, camera);
+    requestAnimationFrame(loop);
+  })();
+</script>
+{% /sandbox %}
+{% /preview %}
+
+Pin the version for reproducibility; for production also honour `prefers-reduced-motion` and provide a fallback — see the polished [three.js scene in Media guests](/runes/media-guests#live-program).
+
 ## Source code panels with data-source
 
 When used inside a preview with `source=true`, you can mark elements with `data-source` to control what appears in the source tab. Unmarked elements (scaffolding, wrappers) are excluded from the source view but still render in the preview.
