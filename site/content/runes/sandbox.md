@@ -158,6 +158,27 @@ Because scripts run for real, you can `import` an ES module straight from a CDN 
 
 Pin the version for reproducibility; for production also honour `prefers-reduced-motion` and provide a fallback — see the polished [three.js scene in Media guests](/runes/media-guests#live-program).
 
+## Deferred activation — keep heavy sandboxes off the critical path
+
+A sandbox is **eager** by default: its iframe and every dependency download as the page renders. That's fine for a small demo, but a heavy scene — a three.js render, a large framework playground — shouldn't tax a perf-sensitive page (a landing page, a long article) before the visitor has even scrolled to it.
+
+Set `activation` to defer the mount. The sandbox shows a `poster` (and an explicit **Run** control) in the iframe's place; nothing downloads until it activates:
+
+- **`visible`** — mounts when scrolled into view (via `IntersectionObserver`). Best for below-the-fold scenes.
+- **`click`** — mounts only when the visitor presses the control. Best for the heaviest cases.
+
+```markdoc
+{% sandbox activation="visible" poster="/img/scene-poster.png" height=400 %}
+<canvas id="c"></canvas>
+<script type="module">
+  import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+  // … heavy scene; nothing here loads until the sandbox scrolls into view
+</script>
+{% /sandbox %}
+```
+
+Under `prefers-reduced-motion`, a non-eager sandbox does **not** auto-activate even in `visible` mode — the poster and Run control stay, so motion-sensitive visitors opt in deliberately. Eager sandboxes are unaffected.
+
 ## Data binding — `window.RF_DATA`
 
 A sandbox can be **fed data from your registry**. Set a `data` query — the same field-match grammar [`collection`](/runes/collection) uses — and the build resolves it, serializes the result, and exposes it to the iframe as a frozen `window.RF_DATA`. Your code renders *anything* from your own content: the registry's third render target, after `collection` (HTML) and `aggregate` (SVG) — bring your own renderer.
@@ -169,11 +190,11 @@ A sandbox can be **fed data from your registry**. Set a `data` query — the sam
 | `data-fields` | Comma-separated data fields to project (keeps the payload lean) |
 | `data-limit` | Max records (default 500; over → truncated with a build warning) |
 
-Here a `data-shape="tree"` binding feeds this site's own rune-section page tree to a three.js scene — a live, navigable **3D star-map**: each section is a star and its pages orbit it as a little planetary system, nested by URL depth (drag to rotate, click a node to open it):
+Here a `data-shape="tree"` binding feeds this site's own rune-section page tree to a three.js scene — a live, navigable **3D star-map**: each section is a star and its pages orbit it as a little planetary system, nested by URL depth (drag to rotate, click a node to open it). It's a heavy WebGL scene, so it's set `activation="visible"` — the scene (and three.js) only loads once you scroll it into view:
 
 {% preview source=true %}
 
-{% sandbox src="sitemap-3d" data="type:page url:/runes/*" data-shape="tree" height=440 /%}
+{% sandbox src="sitemap-3d" data="type:page url:/runes/*" data-shape="tree" activation="visible" height=440 /%}
 
 {% /preview %}
 
@@ -379,6 +400,8 @@ If the named directory does not exist, the sandbox displays an error message in 
 | `label` | `string` | — | Label for the sandbox (used when inside compare) |
 | `height` | `number` | auto | Fixed height in pixels (auto-sizes by default) |
 | `context` | `string` | `default` | Name of the design context scope to inject tokens from |
+| `activation` | `string` | `eager` | When to mount the iframe: `eager`, `visible` (on scroll-in), or `click` |
+| `poster` | `string` | — | Image URL shown in the iframe's place until a non-eager sandbox activates |
 
 ### Common attributes
 

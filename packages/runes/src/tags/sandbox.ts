@@ -59,6 +59,12 @@ export const sandbox = createContentModelSchema({
 		label: { type: String, required: false, description: 'Label displayed above the sandbox' },
 		height: { type: Number, required: false, description: 'Height of the sandbox iframe in pixels' },
 		context: { type: String, required: false, description: 'Shared context scope for multiple sandboxes' },
+		// WORK-381 — deferred activation: keep heavy sandboxes off the critical
+		// path. `eager` (default) is unchanged; `visible` mounts on scroll-in;
+		// `click` mounts on explicit activation. `poster` is the static preview
+		// shown in the iframe's place until activation.
+		activation: { type: String, required: false, matches: ['eager', 'visible', 'click'], description: 'When to mount the iframe: eager (default) | visible | click' },
+		poster: { type: String, required: false, description: 'Poster image URL shown until a non-eager sandbox activates' },
 		// SPEC-093 — data binding: resolve a registry query at build time and
 		// expose it to the iframe as `window.RF_DATA`.
 		data: { type: String, required: false, description: 'Registry query (SPEC-070 field-match, e.g. "type:page") bound into the iframe as window.RF_DATA' },
@@ -80,6 +86,10 @@ export const sandbox = createContentModelSchema({
 		const dataFields = attrs['data-fields'] ?? '';
 		const dataShape = attrs['data-shape'] ?? '';
 		const dataLimit = attrs['data-limit'];
+		// Only non-eager activation emits a data attribute, so eager sandboxes
+		// stay byte-for-byte identical (no regression).
+		const activation = attrs.activation === 'visible' || attrs.activation === 'click' ? attrs.activation : '';
+		const poster = attrs.poster ?? '';
 
 		let rawContent = '';
 		let sourcePanels: SourcePanel[] = [];
@@ -170,6 +180,12 @@ export const sandbox = createContentModelSchema({
 			'data-security-mode': policy.trust,
 			'data-allow-js': policy.allowJs ? 'true' : 'false',
 			...(policy.sandboxOrigin ? { 'data-sandbox-origin': policy.sandboxOrigin } : {}),
+			// WORK-381 — deferred activation (omitted for eager so the markup is
+			// unchanged); the behaviour mounts the iframe on the chosen trigger.
+			...(activation ? {
+				'data-activation': activation,
+				...(poster ? { 'data-poster': poster } : {}),
+			} : {}),
 			// SPEC-093 — the query for the postProcess data resolver to evaluate.
 			...(dataQuery ? {
 				'data-rf-query': dataQuery,

@@ -1,4 +1,4 @@
-{% work id="WORK-389" status="review" priority="medium" complexity="moderate" source="SPEC-093" milestone="v0.21.0" tags="sandbox,showcase,threejs,registry" %}
+{% work id="WORK-389" status="done" priority="medium" complexity="moderate" source="SPEC-093" milestone="v0.21.0" tags="sandbox,showcase,threejs,registry" %}
 
 # 3D sitemap showcase
 
@@ -9,7 +9,7 @@ as a navigable 3D map (three.js tree/force layout); nodes link to their URLs.
 ## Acceptance Criteria
 - [x] A data-bound sandbox (`data="type:page" data-shape="tree"`) renders the page tree as a 3D sitemap; nodes are clickable to their URLs.
 - [x] An **authored fallback** renders the same tree as an honest `collection` (a real, navigable page tree) for no-JS / no-WebGL / screen readers.
-- [ ] Honours `prefers-reduced-motion` (static frame) and is **lazily mounted** (poster until in view).
+- [x] Honours `prefers-reduced-motion` (static frame) and is **lazily mounted** (poster until in view).
 - [x] Pinned three.js; `vite build` green (no SSR/WebGL at build).
 
 ## Dependencies
@@ -37,5 +37,12 @@ Branch: `claude/work-389-3d-sitemap`.
 - The actual **3D render + click navigation needs a browser** (window.RF_DATA reaching the iframe — the live test WORK-388 was waiting for). The data is verified end-to-end; the WebGL render isn't headlessly checkable. A glance at `cd site && npm run dev` → /runes/sandbox (the "Data binding" section) confirms it.
 - **Lazy-mount deferred:** criterion 3's "lazily mounted (poster until in view)" needs WORK-381 (not yet done). The scene is eager for now — consistent with sandbox.md's other live sandboxes; it'll lazy-mount once WORK-381 lands. (reduced-motion is done.)
 - The fallback is a flat navigable `collection` list (collection doesn't render nested trees) — the same data, accessible; a nested-tree fallback would need a new layout.
+
+
+---
+
+Completed: 2026-06-11
+
+Closed out by WORK-381. The 3D star-map sandbox in `runes/sandbox.md` is now `activation="visible"` — it shows a poster + Run control and defers three.js + the scene until scrolled into view, and under `prefers-reduced-motion` it does not auto-activate. The remaining criterion (lazy mount / poster until in view) is satisfied; reduced-motion (static frame) was already handled in the scene. Render + click-navigation are confirmed in a browser via `cd site && npm run dev` → /runes/sandbox.
 
 {% /work %}
