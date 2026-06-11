@@ -201,12 +201,49 @@ the docs currently show) plus additional layout primitives for the new briefs: s
 fronts, multi-column editorial bodies, and card-grid landings. This is what actually unlocks
 magazine/business themes beyond recolouring.
 
-#### 8. Standardize surface & density defaults
+#### 8. Surface as engine-emitted config (and the classification criterion)
 
-The "surface" dimension (card / banner / inline / inset) is theme-only and hand-encoded as
-CSS selector groupings in Lumina, so every theme re-derives "which of 100+ runes is a card."
-Codify a default surface/density mapping (documented config or a shared default) a new theme
-inherits and *restyles*, rather than re-decides.
+The "surface" dimension (card / banner / inline / inset) is the **lone holdout** in an
+otherwise-consistent design. The engine already emits every other cross-rune classification
+from config as a `data-*` attribute — `data-meta-type`, `data-zone-layout`, `data-density`,
+`data-section`, `data-media`, `data-sequence`, `data-state`, plus `defaultWidth` and the
+frame/substrate/elevation machinery ({% ref "SPEC-086" /%}, {% ref "SPEC-087" /%}). Surface
+never got an attribute, so it fell back to **rune-name selector lists** — and a grep confirms
+`styles/dimensions/surfaces.css` is the *only* cross-rune file in Lumina that enumerates rune
+names (49 standalone `.rf-*,` selector lines across its four buckets, plus two nested
+`:where(.rf-card, …)` media-chrome lists). Every theme therefore re-derives "which of 100+
+runes is a card."
+
+Move the rune→surface assignment into engine config and **emit `data-surface`**, exactly like
+the other dimensions: a base default mapping ships in the skeleton, and a theme overrides it
+through `mergeThemeConfig` (a magazine might make `testimonial` a banner, not a card). Skins
+then target `[data-surface="card"]` instead of enumerating runes, and the two `:where`/`:is`
+media lists collapse to attribute selectors. This is the engine-side half of the §3 split —
+the rune→bucket *assignment* is config; the bucket→treatment is skin.
+
+**The criterion this establishes** (so future axes are judged, not accreted): a concern
+belongs in engine config — as a config-driven `data-*` attribute — only when **(a)** it is a
+classification into a small **closed set of buckets** (not a continuous value), **(b)** the
+bucket→treatment is skin but the **rune→bucket assignment is a design call a theme would
+plausibly vary**, and **(c)** CSS cannot express it without enumerating rune names. If an
+existing attribute already carries it, or it is author-controlled / continuous, it is a
+**modifier or token**, not a new axis. Resist redundant axes: `emphasis`/`prominence` overlaps
+surface (banner = loud, inline = quiet); tone overlaps tints; chrome overlaps frame/substrate;
+width and elevation are already config. Each axis carries combinatorial cost (per-variant
+contracts, CSS-coverage, author surface), so the bar is "closes a gap that currently forces
+rune-name enumeration."
+
+**Reserved candidate — a prose/reading classification.** Not built here, but flagged because
+the editorial briefs will want it: which runes' bodies are long-form **editorial prose**
+(article body, `pullquote`, `lore`, `blockquote`) versus UI text (a `card` body, a `nav`) is
+today implicit in `[data-section="body"]` line-height plus scattered per-rune CSS — there is
+no attribute to hang an editorial reading treatment on (measure, paragraph rhythm, drop-cap
+eligibility, styled first paragraph). It passes the criterion above, but may be better modeled
+as a refinement of `data-section` (e.g. a `prose` body role) than a new top-level axis; the
+shape is deferred to whenever an editorial theme first needs it.
+
+Density defaults (`defaultDensity`) are already config and overridable — no change needed
+beyond documenting them alongside surface as the two theme-tunable rune-level defaults.
 
 ## Implications
 
@@ -232,7 +269,7 @@ inherits and *restyles*, rather than re-decides.
 - [ ] Visual-regression (screenshot) testing runs against the gallery page with per-theme golden baselines, wired into CI.
 - [ ] A theme can declare its fonts such that the adapter loads them, decoupled from the consuming site's HTML head.
 - [ ] A first-class theme→layout registration contract exists (no `undefined as any`), plus layout primitives for editorial/section-front and card-grid briefs.
-- [ ] A default surface/density mapping is codified so a new theme inherits sane assignments and only restyles them.
+- [ ] The engine emits `data-surface` from a config-driven rune→surface mapping (default in the skeleton, overridable per theme via `mergeThemeConfig`); Lumina's rune-name surface lists are replaced by `[data-surface]` selectors. The classification criterion (closed buckets / theme-variable assignment / not expressible without rune-name enumeration) is documented, and `defaultDensity` is documented alongside as the other tunable rune-level default.
 
 ## Work breakdown (provisional)
 
@@ -244,7 +281,7 @@ inherits and *restyles*, rather than re-decides.
 6. **Visual regression** — Playwright baselines against the gallery; CI wiring.
 7. **Theme font loading** — manifest/contract field + adapter injection.
 8. **Layout registration + primitives** — clean theme layout contract; editorial/section-front + card-grid layouts.
-9. **Surface/density defaults** — codify and document the default mapping.
+9. **Surface as engine config** — add a rune→surface mapping to config, emit `data-surface`, default in skeleton + theme-overridable; replace Lumina's surface rune-name lists with `[data-surface]`; document the classification criterion and the reserved prose candidate.
 10. **Docs** — theme-authoring updates across tokens, generation, skeleton, scaffold, fonts, layouts.
 
 ## References
