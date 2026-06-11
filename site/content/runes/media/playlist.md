@@ -1,6 +1,10 @@
 ---
 title: Playlist
 description: Curated playlist with track listing for albums, podcasts, audiobooks, and mixes
+category: Media
+plugin: media
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

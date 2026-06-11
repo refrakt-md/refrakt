@@ -1,6 +1,10 @@
 ---
 title: Palette
 description: Color swatch grid with optional WCAG contrast and accessibility info
+category: Design
+plugin: design
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

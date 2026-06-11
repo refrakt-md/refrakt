@@ -1,6 +1,10 @@
 ---
 title: Itinerary
 description: Day-by-day travel itineraries with timed stops and locations
+category: Places
+plugin: places
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

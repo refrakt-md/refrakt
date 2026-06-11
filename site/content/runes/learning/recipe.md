@@ -1,6 +1,10 @@
 ---
 title: Recipe
 description: Structured recipe with ingredients, steps, and chef tips
+category: Learning
+plugin: learning
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

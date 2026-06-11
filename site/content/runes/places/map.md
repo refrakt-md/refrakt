@@ -1,6 +1,10 @@
 ---
 title: Map
 description: Interactive map visualization from Markdown lists of locations
+category: Places
+plugin: places
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

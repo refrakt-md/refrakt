@@ -1,6 +1,10 @@
 ---
 title: Compare
 description: Side-by-side code comparison panels
+category: "Code & Data"
+plugin: core
+status: stable
+type: rune
 ---
 
 # Compare

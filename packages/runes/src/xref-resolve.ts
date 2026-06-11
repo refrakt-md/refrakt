@@ -206,13 +206,21 @@ function resolvePlaceholder(
 		if (nameMatches.length === 1) {
 			entity = nameMatches[0];
 		} else if (nameMatches.length > 1) {
-			const matchList = nameMatches
-				.map(e => `${e.type} "${(e.data.title as string) || (e.data.name as string) || e.id}" on ${e.sourceUrl ?? '(no URL)'}`)
-				.join(', ');
-			rc.ctx.warn(
-				`xref "${id}" on ${rc.pageUrl} — matches ${nameMatches.length} entities (${matchList}). Add type hint to disambiguate.`,
-				rc.pageUrl,
-			);
+			// A doc page registered under more than one type — e.g. SPEC-092's
+			// typed page entities, where /runes/<x> is both a `page` and a `rune`
+			// of the same name — shares a single URL across the matches, so the
+			// ambiguity is immaterial: every candidate links to the same place.
+			// Only warn when the destinations actually diverge.
+			const distinctHrefs = new Set(nameMatches.map(e => resolveEntityHref(e) ?? e.sourceUrl ?? ''));
+			if (distinctHrefs.size > 1) {
+				const matchList = nameMatches
+					.map(e => `${e.type} "${(e.data.title as string) || (e.data.name as string) || e.id}" on ${e.sourceUrl ?? '(no URL)'}`)
+					.join(', ');
+				rc.ctx.warn(
+					`xref "${id}" on ${rc.pageUrl} — matches ${nameMatches.length} entities (${matchList}). Add type hint to disambiguate.`,
+					rc.pageUrl,
+				);
+			}
 			entity = nameMatches[0];
 		}
 	}

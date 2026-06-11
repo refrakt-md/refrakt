@@ -1,6 +1,10 @@
 ---
 title: Spacing
 description: Spacing scale, border radius, and shadow token display
+category: Design
+plugin: design
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

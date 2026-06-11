@@ -1,6 +1,10 @@
 ---
 title: Diagram
 description: Mermaid diagram rendering from code blocks
+category: "Code & Data"
+plugin: core
+status: stable
+type: rune
 ---
 
 # Diagram

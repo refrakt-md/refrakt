@@ -1,6 +1,10 @@
 ---
 title: Layout & Region
 description: Structural runes for defining page layouts and named content regions
+category: Site
+plugin: core
+status: stable
+type: rune
 ---
 
 # Layout & Region

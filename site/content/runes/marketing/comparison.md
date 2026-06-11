@@ -1,6 +1,10 @@
 ---
 title: Comparison
 description: Product and feature comparison matrices from Markdown
+category: Marketing
+plugin: marketing
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

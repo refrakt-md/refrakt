@@ -1,6 +1,10 @@
 ---
 title: Embed
 description: Embed external content like videos, tweets, and code demos
+category: Content
+plugin: core
+status: stable
+type: rune
 ---
 
 # Embed

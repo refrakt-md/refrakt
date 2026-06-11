@@ -1,6 +1,10 @@
 ---
 title: Event
 description: Event information with date, location, and agenda
+category: Places
+plugin: places
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

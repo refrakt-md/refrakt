@@ -1,6 +1,10 @@
 ---
 title: Accordion
 description: Collapsible accordion sections for FAQ-style content
+category: Layout
+plugin: core
+status: stable
+type: rune
 ---
 
 # Accordion

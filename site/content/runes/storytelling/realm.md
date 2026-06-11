@@ -1,6 +1,10 @@
 ---
 title: Realm
 description: Location profiles for worldbuilding with geography and notable features
+category: Storytelling
+plugin: storytelling
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

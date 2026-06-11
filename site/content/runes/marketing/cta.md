@@ -1,6 +1,10 @@
 ---
 title: CTA
 description: Focused call-to-action blocks with headlines, descriptions, and action buttons
+category: Marketing
+plugin: marketing
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

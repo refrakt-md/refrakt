@@ -1,6 +1,10 @@
 ---
 title: Work
 description: Work item with acceptance criteria, references, and implementation tracking
+category: Plan
+plugin: plan
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

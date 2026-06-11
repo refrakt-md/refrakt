@@ -1,6 +1,10 @@
 ---
 title: Bond
 description: Relationship connections between characters or entities
+category: Storytelling
+plugin: storytelling
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

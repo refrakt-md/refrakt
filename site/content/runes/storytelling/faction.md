@@ -1,6 +1,10 @@
 ---
 title: Faction
 description: Organizations and groups with ranks, holdings, and alignment
+category: Storytelling
+plugin: storytelling
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

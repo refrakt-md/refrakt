@@ -1,6 +1,10 @@
 ---
 title: Tabs
 description: Tabbed content panels with heading-based tab labels
+category: Layout
+plugin: core
+status: stable
+type: rune
 ---
 
 # Tabs

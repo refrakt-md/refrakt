@@ -1,6 +1,10 @@
 ---
 title: Hint
 description: Callouts and admonitions for supplementary information
+category: Content
+plugin: core
+status: stable
+type: rune
 ---
 
 # Hint

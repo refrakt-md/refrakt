@@ -1,6 +1,10 @@
 ---
 title: Reveal
 description: Progressive disclosure where content appears step by step
+category: Content
+plugin: core
+status: stable
+type: rune
 ---
 
 # Reveal

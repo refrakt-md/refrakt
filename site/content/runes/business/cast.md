@@ -1,6 +1,10 @@
 ---
 title: Cast / Team
 description: People directory for team pages and speaker lineups
+category: Business
+plugin: business
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

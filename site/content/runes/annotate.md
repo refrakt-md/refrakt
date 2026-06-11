@@ -1,6 +1,10 @@
 ---
 title: Annotate
 description: Content with margin annotations and notes
+category: Content
+plugin: core
+status: stable
+type: rune
 ---
 
 # Annotate

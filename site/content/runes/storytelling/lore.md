@@ -1,6 +1,10 @@
 ---
 title: Lore
 description: In-world knowledge entries for myths, prophecies, and historical records
+category: Storytelling
+plugin: storytelling
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

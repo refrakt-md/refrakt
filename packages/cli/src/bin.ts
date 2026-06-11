@@ -142,6 +142,7 @@ Reference Subcommands:
 Reference Options:
   --format <fmt>           Output format: markdown (default), json
   --config <dir>           Project root containing refrakt.config.json
+  --site <name>            Site to use from refrakt.config.json (multi-site projects)
   --no-example             Omit the example block (reference <name>)
   --plugin <name>          Filter by plugin (reference list)
   --output, -o <path>      Output file (reference dump; default: AGENTS.md)
@@ -843,6 +844,7 @@ Examples:
 function parseReferenceArgs(remaining: string[], accept: Set<string>): {
 	format: 'markdown' | 'json';
 	configDir?: string;
+	site?: string;
 	noExample: boolean;
 	packageFilter?: string;
 	output?: string;
@@ -851,6 +853,7 @@ function parseReferenceArgs(remaining: string[], accept: Set<string>): {
 } {
 	let format: 'markdown' | 'json' = 'markdown';
 	let configDir: string | undefined;
+	let site: string | undefined;
 	let noExample = false;
 	let packageFilter: string | undefined;
 	let output: string | undefined;
@@ -876,6 +879,8 @@ function parseReferenceArgs(remaining: string[], accept: Set<string>): {
 			format = v;
 		} else if (arg === '--config') {
 			configDir = requireValue('--config', remaining[++i]);
+		} else if (arg === '--site') {
+			site = requireValue('--site', remaining[++i]);
 		} else if (arg === '--no-example' && accept.has('--no-example')) {
 			noExample = true;
 		} else if ((arg === '--plugin' || arg === '--package') && accept.has('--plugin')) {
@@ -895,11 +900,11 @@ function parseReferenceArgs(remaining: string[], accept: Set<string>): {
 		}
 	}
 
-	return { format, configDir, noExample, packageFilter, output, section, check };
+	return { format, configDir, site, noExample, packageFilter, output, section, check };
 }
 
 function runReferenceName(name: string, remaining: string[]): void {
-	const { format, configDir, noExample } = parseReferenceArgs(
+	const { format, configDir, site, noExample } = parseReferenceArgs(
 		remaining,
 		new Set(['--no-example']),
 	);
@@ -909,7 +914,7 @@ function runReferenceName(name: string, remaining: string[]): void {
 		import('@refrakt-md/runes'),
 		import('@refrakt-md/transform'),
 	]).then(async ([{ referenceNameCommand }, runesModule, { assembleThemeConfig }]) => {
-		const ctx = await buildReferenceContext(runesModule, assembleThemeConfig, configDir);
+		const ctx = await buildReferenceContext(runesModule, assembleThemeConfig, configDir, site);
 		const result = referenceNameCommand(ctx, { name, format, noExample });
 		if (result.exitCode === 0) {
 			console.log(result.output);
@@ -924,7 +929,7 @@ function runReferenceName(name: string, remaining: string[]): void {
 }
 
 function runReferenceList(remaining: string[]): void {
-	const { format, configDir, packageFilter } = parseReferenceArgs(
+	const { format, configDir, site, packageFilter } = parseReferenceArgs(
 		remaining,
 		new Set(['--plugin']),
 	);
@@ -934,7 +939,7 @@ function runReferenceList(remaining: string[]): void {
 		import('@refrakt-md/runes'),
 		import('@refrakt-md/transform'),
 	]).then(async ([{ referenceListCommand }, runesModule, { assembleThemeConfig }]) => {
-		const ctx = await buildReferenceContext(runesModule, assembleThemeConfig, configDir);
+		const ctx = await buildReferenceContext(runesModule, assembleThemeConfig, configDir, site);
 		const result = referenceListCommand(ctx, { packageFilter, format });
 		if (result.exitCode === 0) {
 			console.log(result.output);
@@ -949,7 +954,7 @@ function runReferenceList(remaining: string[]): void {
 }
 
 function runReferenceDump(remaining: string[]): void {
-	const { format, configDir, output, section, check } = parseReferenceArgs(
+	const { format, configDir, site, output, section, check } = parseReferenceArgs(
 		remaining,
 		new Set(['--output', '--section', '--check']),
 	);
@@ -959,7 +964,7 @@ function runReferenceDump(remaining: string[]): void {
 		import('@refrakt-md/runes'),
 		import('@refrakt-md/transform'),
 	]).then(async ([{ referenceDumpCommand }, runesModule, { assembleThemeConfig }]) => {
-		const ctx = await buildReferenceContext(runesModule, assembleThemeConfig, configDir);
+		const ctx = await buildReferenceContext(runesModule, assembleThemeConfig, configDir, site);
 		const result = referenceDumpCommand(ctx, {
 			output: output ?? 'AGENTS.md',
 			format,
@@ -986,6 +991,7 @@ async function buildReferenceContext(
 	runesModule: typeof import('@refrakt-md/runes'),
 	assembleThemeConfig: typeof import('@refrakt-md/transform').assembleThemeConfig,
 	configDir?: string,
+	site?: string,
 ): Promise<import('@refrakt-md/runes').ReferenceContext> {
 	const { runes: coreRunes, loadPlugin, mergePlugins, applyAliases, loadLocalRunes } = runesModule;
 
@@ -1002,11 +1008,24 @@ async function buildReferenceContext(
 		const { config } = loadRefraktConfigFile(configDir);
 		const coreRuneNames = new Set(Object.keys(coreRunes));
 
-		if (config.plugins && config.plugins.length > 0) {
+		// Resolve the site's plugins. Multi-site configs nest plugins under
+		// `sites.<name>`, so read `config.plugins` only for the flat/single-site
+		// shape; otherwise resolve the named (or lone) site like loadMergedConfig.
+		let scopedPlugins = config.plugins as string[] | undefined;
+		let scopedRunes = config.runes;
+		const hasSites = config.sites && Object.keys(config.sites).length > 0;
+		if (hasSites || site !== undefined) {
+			const { resolveSite } = await import('@refrakt-md/transform/node');
+			const resolved = resolveSite(config, site);
+			scopedPlugins = resolved.site.plugins;
+			scopedRunes = resolved.site.runes;
+		}
+
+		if (scopedPlugins && scopedPlugins.length > 0) {
 			const loadedPackages = await Promise.all(
-				config.plugins.map((name: string) => loadPlugin(name))
+				scopedPlugins.map((name: string) => loadPlugin(name))
 			);
-			const merged = mergePlugins(loadedPackages, coreRuneNames, config.runes?.prefer);
+			const merged = mergePlugins(loadedPackages, coreRuneNames, scopedRunes?.prefer);
 
 			const runeToNpm: Record<string, string> = {};
 			for (const loaded of loadedPackages) {
@@ -1030,14 +1049,14 @@ async function buildReferenceContext(
 				provenance: merged.provenance,
 			});
 
-			if (config.runes?.aliases && Object.keys(config.runes.aliases).length > 0) {
+			if (scopedRunes?.aliases && Object.keys(scopedRunes.aliases).length > 0) {
 				const tags = runesModule.runeTagMap(allRunes);
-				applyAliases(allRunes, tags, config.runes.aliases, merged.provenance);
+				applyAliases(allRunes, tags, scopedRunes.aliases, merged.provenance);
 			}
 		}
 
-		if (config.runes?.local && Object.keys(config.runes.local).length > 0) {
-			const local = await loadLocalRunes(config.runes.local, process.cwd());
+		if (scopedRunes?.local && Object.keys(scopedRunes.local).length > 0) {
+			const local = await loadLocalRunes(scopedRunes.local, process.cwd());
 			for (const [name, rune] of Object.entries(local.runes)) {
 				allRunes[name] = rune;
 				source[name] = 'local';

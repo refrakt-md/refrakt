@@ -1,6 +1,10 @@
 ---
 title: Hero
 description: Full-width intro sections for landing pages with background support and action buttons
+category: Marketing
+plugin: marketing
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

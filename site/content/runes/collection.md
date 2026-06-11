@@ -1,6 +1,10 @@
 ---
 title: Collection
 description: Render a list, grid, or table of registry entities — the plural counterpart to ref and expand, with filtering, sorting, grouping, and per-item templates
+category: Registry
+plugin: core
+status: stable
+type: rune
 ---
 
 # Collection

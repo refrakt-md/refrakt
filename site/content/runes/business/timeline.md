@@ -1,6 +1,10 @@
 ---
 title: Timeline
 description: Chronological events displayed as a timeline
+category: Business
+plugin: business
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

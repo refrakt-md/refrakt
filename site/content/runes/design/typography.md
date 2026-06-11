@@ -1,6 +1,10 @@
 ---
 title: Typography
 description: Font specimen display with live Google Fonts loading
+category: Design
+plugin: design
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

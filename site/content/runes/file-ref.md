@@ -1,6 +1,10 @@
 ---
 title: File-ref
 description: Path-based inline references to project files — third member of the Registry family beside xref (one entity) and expand (one entity inlined), with optional drawer preview
+category: Registry
+plugin: core
+status: stable
+type: rune
 ---
 
 # File-ref

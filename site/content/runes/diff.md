@@ -1,6 +1,10 @@
 ---
 title: Diff
 description: Side-by-side or unified diff view between two code blocks
+category: "Code & Data"
+plugin: core
+status: stable
+type: rune
 ---
 
 # Diff

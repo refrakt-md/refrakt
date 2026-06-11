@@ -1,6 +1,10 @@
 ---
 title: Testimonial
 description: Customer testimonials and reviews
+category: Marketing
+plugin: marketing
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}

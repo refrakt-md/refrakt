@@ -1,6 +1,10 @@
 ---
 title: Card
 description: A generic, self-contained content card — optional media, body, and footer zones, with an optional whole-card link
+category: Content
+plugin: core
+status: stable
+type: rune
 ---
 
 # Card

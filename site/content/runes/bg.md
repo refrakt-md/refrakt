@@ -1,6 +1,10 @@
 ---
 title: Background
 description: Add background images, video, and overlays to any section rune
+category: Layout
+plugin: core
+status: stable
+type: rune
 ---
 
 # Background

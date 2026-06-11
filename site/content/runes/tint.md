@@ -1,6 +1,10 @@
 ---
 title: Tint
 description: Section-level colour overrides via CSS custom properties
+category: Layout
+plugin: core
+status: stable
+type: rune
 ---
 
 # Tint

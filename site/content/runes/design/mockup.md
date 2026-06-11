@@ -1,6 +1,10 @@
 ---
 title: Mockup
 description: Wrap content in realistic device frames for phones, tablets, browsers, and laptops
+category: Design
+plugin: design
+status: stable
+type: rune
 ---
 
 # Mockup

@@ -1,6 +1,10 @@
 ---
 title: Table of Contents
 description: Auto-generated table of contents from page headings
+category: Site
+plugin: core
+status: stable
+type: rune
 ---
 
 # Table of Contents

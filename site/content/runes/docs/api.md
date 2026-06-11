@@ -1,6 +1,10 @@
 ---
 title: API
 description: API endpoint documentation with method, path, and parameters
+category: Docs
+plugin: docs
+status: stable
+type: rune
 ---
 
 {% hint type="note" %}
