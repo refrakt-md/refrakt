@@ -138,13 +138,30 @@ buttons), and the eyebrow pill against the scrim in light and dark mode. The
 mechanism is the existing `data-color-scheme` token flip; this is a verification +
 CSS-tuning item, not new machinery.
 
-### 7. Docs + showcase
+### 7. Docs + showcase — the prism scene
 
+- **The showcase scene is a new `site/examples/prism-scene/`** (decided; replaces the
+  earlier idea of reusing the generic `threejs-scene` icosahedron). Concept — the
+  brand metaphor, literally: a slowly rotating prism with a thin stream of markdown
+  glyph particles (`#`, `*`, `>`, `{%`) entering one face as a faint white beam, and
+  fanned **spectrum streams in the Lumina palette** leaving the other — markdown in,
+  structured meaning out.
+- **Faked refraction, not real.** `MeshPhysicalMaterial` transmission/dispersion is
+  far too expensive for a hero backdrop. The prism is wireframe/flat-shaded; the beam
+  and spectrum are additive-blended `Points`/line geometry; dispersion is cheap
+  tinted-copy offsets. Looks like refraction, costs like a particle demo.
+- **Ambient by contract.** The SPEC-090 demotion means the iframe never receives
+  pointer events, so the scene must carry itself with no interaction (no
+  cursor-parallax; host→iframe event forwarding is explicitly out of scope here).
+- **Production posture baked into the scene:** designed dim (it lives *under* the
+  scrim), `devicePixelRatio` capped (~1.5), RAF paused on `visibilitychange`,
+  reduced-motion renders a composed static frame, a CSS gradient on the iframe body
+  covers the boot frame, theme-aware light/dark variants via the injected theme.
 - The `hero` reference page gains a **cover** section: a plain image-cover hero
-  (one-attribute change from a normal hero), then the headline composition — an
-  **animated three.js background** via `{% sandbox src="threejs-scene" /%}` in the
-  media zone, with the mechanism note (cover + posture demotion + fill) and the
-  motion/perf guidance from §5.
+  (one-attribute change from a normal hero), then the headline composition — the
+  prism scene via `{% sandbox src="prism-scene" /%}` in the media zone, with the
+  mechanism note (cover + posture demotion + fill) and the motion/perf guidance
+  from §5.
 - `media-guests.md` cross-links the pattern from the "Live program" section.
 - The sandbox reference documents `height="fill"`.
 
@@ -158,7 +175,8 @@ CSS-tuning item, not new machinery.
 - [ ] A non-eager (`activation="visible"|"click"`) sandbox in a cover media zone produces a build warning naming the conflict (inert backdrop vs. activation affordance).
 - [ ] Overlay legibility verified in light + dark: gradient headline, blurb, actions, eyebrow pill against the default scrim (fixes applied where they fail).
 - [ ] `prefers-reduced-motion` end-to-end: the shipped background example renders a static frame; no Run-control dead end (eager mounts regardless, the scene self-stills).
-- [ ] Docs: hero reference cover section with an image-cover example and the animated three.js background example (reusing `site/examples/threejs-scene`), including the perf/motion authoring contract; sandbox reference documents `height="fill"`; `media-guests.md` cross-links.
+- [ ] The prism scene ships as `site/examples/prism-scene/` per §7: faked refraction (no transmission materials), glyph stream → Lumina-palette spectrum, ambient (no pointer input), dim-under-scrim, capped DPR, visibility-pause, reduced-motion static frame, theme-aware.
+- [ ] Docs: hero reference cover section with an image-cover example and the animated prism background example, including the perf/motion authoring contract; sandbox reference documents `height="fill"`; `media-guests.md` cross-links.
 - [ ] Contracts regenerated (`refrakt contracts --check` green) and CSS coverage tests pass for the new `rf-hero--cover` selectors.
 
 ## Work breakdown (provisional)
@@ -166,7 +184,7 @@ CSS-tuning item, not new machinery.
 1. **Hero cover variant + Lumina CSS** — config variant + knobs; padding rerouting; band height default; legibility pass (§1–§3, §6).
 2. **Guest fill** — cover-scoped fill CSS + sandbox `height="fill"` mode + transform auto-fill for cover guests (§4).
 3. **Activation warning** — non-eager sandbox under cover (§5).
-4. **Docs + showcase** — hero cover section, animated-background example, sandbox `fill` docs, cross-links (§7).
+4. **Prism scene + docs** — build `site/examples/prism-scene/`; hero cover section, animated-background example, sandbox `fill` docs, cross-links (§7).
 5. **Contracts + tests** — regenerate structures, CSS coverage, schema tests for the new attrs.
 
 ## References
