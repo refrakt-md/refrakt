@@ -24,6 +24,8 @@ tint-lock: false
 - compositions/map-in-card
 - compositions/diagram-in-card
 - compositions/chart-in-bento
+- compositions/mockup
+- compositions/juxtapose-in-card
 
 ## Content
 

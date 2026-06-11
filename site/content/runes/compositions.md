@@ -39,6 +39,16 @@ A `diagram` in a card → a captioned diagram.
 ### Dashboard grid
 The same `chart` guest, repeated across `bento` cells.
 {% /card %}
+---
+{% card href="/runes/compositions/mockup" %}
+### Mockup as a media guest
+A `mockup` + `sandbox` in a card, or a bento of devices — same guest, different shape.
+{% /card %}
+---
+{% card href="/runes/compositions/juxtapose-in-card" %}
+### Comparison card
+A `juxtapose` in a card → a draggable before/after with a title below.
+{% /card %}
 
 {% /grid %}
 
