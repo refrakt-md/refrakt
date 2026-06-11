@@ -1,4 +1,4 @@
-{% work id="WORK-401" status="ready" priority="medium" complexity="moderate" source="SPEC-101" tags="sandbox,showcase,threejs,site,niwaki" milestone="v0.21.0" %}
+{% work id="WORK-401" status="in-progress" priority="medium" complexity="moderate" source="SPEC-101" tags="sandbox,showcase,threejs,site,niwaki" milestone="v0.21.0" %}
 
 # Prism scene — the niwaki-refraction hero backdrop
 

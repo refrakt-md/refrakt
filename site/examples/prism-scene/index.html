@@ -1,0 +1,249 @@
+<style>
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  /* Boot backdrop — the scene fades in over this, so the first paint looks
+     designed even before three.js arrives (and remains if it never does). */
+  body { background: radial-gradient(120% 90% at 50% 42%, #f7f6f2 0%, #eceae3 100%); }
+  html.dark body, body.dark { background: radial-gradient(120% 90% at 50% 42%, #17171a 0%, #0d0d10 100%); }
+  #scene { display: block; width: 100%; height: 100%; opacity: 0; transition: opacity 0.8s ease; }
+  #scene.on { opacity: 1; }
+  /* No-JS / no-WebGL / blocked-CDN fallback: a quiet CSS prism keeps the
+     metaphor without competing with hero content overlaid on the backdrop. */
+  #fallback { display: none; position: relative; height: 100%; }
+  #fallback.on { display: block; }
+  #fallback .tri {
+    position: absolute; left: 50%; top: 50%;
+    width: 9rem; height: 8rem; transform: translate(-50%, -58%);
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    background: linear-gradient(rgb(138 133 125 / 0.22), rgb(138 133 125 / 0.06));
+  }
+  html.dark #fallback .tri, body.dark #fallback .tri {
+    background: linear-gradient(rgb(125 112 98 / 0.30), rgb(125 112 98 / 0.08));
+  }
+  #fallback .fan {
+    position: absolute; left: calc(50% + 3rem); top: calc(50% - 0.5rem);
+    width: 32%; height: 3px; border-radius: 2px;
+    transform-origin: left center; opacity: 0.3;
+    background: linear-gradient(90deg, var(--c), transparent);
+  }
+</style>
+
+<canvas id="scene"></canvas>
+<div id="fallback" aria-hidden="true">
+  <div class="tri"></div>
+  <div class="fan" style="--c:#5e7d2a; transform: rotate(-16deg)"></div>
+  <div class="fan" style="--c:#b54a6b; transform: rotate(-8deg)"></div>
+  <div class="fan" style="--c:#3d6b3d; transform: rotate(0deg)"></div>
+  <div class="fan" style="--c:#a8521c; transform: rotate(8deg)"></div>
+  <div class="fan" style="--c:#c54a14; transform: rotate(16deg)"></div>
+</div>
+
+<script type="module">
+  // ── The prism (SPEC-101 / WORK-401) ────────────────────────────────────
+  // Markdown in, structured meaning out: a stream of markdown glyphs enters a
+  // slowly rotating prism as an undifferentiated ishi-grey beam and leaves as
+  // spectrum streams in the site's own syntax colours. Faked refraction — a
+  // flat-shaded prism, additive/normal-blended particle streams — no
+  // transmission materials. Ambient by contract: the cover posture demotion
+  // blocks pointer events, so the scene carries itself with no interaction.
+
+  // Palette of record: packages/lumina/src/presets/niwaki.ts (light/dark pairs).
+  const NIWAKI = {
+    light: {
+      ishi: 0x8a857d,
+      streams: [0x5e7d2a, 0xb54a6b, 0x3d6b3d, 0xa8521c, 0xc54a14], // wakaba sakura matsu momiji momiji-punchy
+      edge: 0x1c1a17, face: 0x8a857d,
+      edgeOpacity: 0.22, faceOpacity: 0.05, streamOpacity: 0.55, beamOpacity: 0.45,
+      additive: false, // additive blending washes out on a light ground
+    },
+    dark: {
+      ishi: 0x7d7062,
+      streams: [0xb3d475, 0xf591a6, 0x8ab589, 0xeba073, 0xfa9a61],
+      edge: 0xf6f4ef, face: 0xb8b4c4,
+      edgeOpacity: 0.28, faceOpacity: 0.05, streamOpacity: 0.8, beamOpacity: 0.6,
+      additive: true,
+    },
+  };
+
+  const dark =
+    document.documentElement.classList.contains('dark') ||
+    document.body.classList.contains('dark');
+  const P = dark ? NIWAKI.dark : NIWAKI.light;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const canvas = document.getElementById('scene');
+  const showFallback = () => {
+    canvas.style.display = 'none';
+    document.getElementById('fallback').classList.add('on');
+  };
+
+  try {
+    // Version-pinned for reproducibility.
+    const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    // Backdrop budget: cap the pixel ratio — the scrim sits over us anyway.
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+    camera.position.set(0, 0.1, 9);
+
+    // ── Prism: triangular cross-section facing the camera ──
+    const prism = new THREE.Group();
+    const prismGeo = new THREE.CylinderGeometry(1.5, 1.5, 2.4, 3, 1);
+    prismGeo.rotateX(Math.PI / 2); // axis toward the camera → triangle silhouette
+    const faces = new THREE.Mesh(
+      prismGeo,
+      new THREE.MeshBasicMaterial({ color: P.face, transparent: true, opacity: P.faceOpacity, depthWrite: false }),
+    );
+    const edges = new THREE.LineSegments(
+      new THREE.EdgesGeometry(prismGeo),
+      new THREE.LineBasicMaterial({ color: P.edge, transparent: true, opacity: P.edgeOpacity }),
+    );
+    prism.add(faces, edges);
+    scene.add(prism);
+
+    // ── Sprite textures ──
+    // Markdown glyphs for the incoming beam; a soft dot for the refracted light
+    // (the glyphs dissolve into structured colour — that's the metaphor).
+    function glyphTexture(glyph) {
+      const c = document.createElement('canvas');
+      c.width = c.height = 64;
+      const g = c.getContext('2d');
+      g.font = '600 38px ui-monospace, SFMono-Regular, Menlo, monospace';
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillStyle = '#fff';
+      g.fillText(glyph, 32, 34);
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+    function dotTexture() {
+      const c = document.createElement('canvas');
+      c.width = c.height = 64;
+      const g = c.getContext('2d');
+      const grad = g.createRadialGradient(32, 32, 0, 32, 32, 30);
+      grad.addColorStop(0, 'rgba(255,255,255,1)');
+      grad.addColorStop(0.4, 'rgba(255,255,255,0.55)');
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = grad;
+      g.fillRect(0, 0, 64, 64);
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+
+    // ── Particle streams ──
+    // Each stream is a Points cloud flowing `from` → `to`; progress wraps. The
+    // jitter cone widens with progress so streams read as light, not wires.
+    const blending = P.additive ? THREE.AdditiveBlending : THREE.NormalBlending;
+    const streams = [];
+    function makeStream({ from, to, color, count, size, texture, opacity, spread }) {
+      const pos = new Float32Array(count * 3);
+      const t = new Float32Array(count);
+      const jx = new Float32Array(count);
+      const jy = new Float32Array(count);
+      for (let i = 0; i < count; i++) {
+        t[i] = Math.random();
+        jx[i] = (Math.random() - 0.5) * 2;
+        jy[i] = (Math.random() - 0.5) * 2;
+      }
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      const mat = new THREE.PointsMaterial({
+        color, size, map: texture, transparent: true, opacity,
+        blending, depthWrite: false, sizeAttenuation: true,
+      });
+      const points = new THREE.Points(geo, mat);
+      scene.add(points);
+      const stream = {
+        step(dt) {
+          for (let i = 0; i < count; i++) {
+            t[i] += dt * (0.12 + 0.06 * jx[i] * jx[i]);
+            if (t[i] > 1) t[i] -= 1;
+            const k = t[i];
+            const w = spread * k; // cone widens along the ray
+            pos[i * 3]     = from.x + (to.x - from.x) * k + jx[i] * w * 0.3;
+            pos[i * 3 + 1] = from.y + (to.y - from.y) * k + jy[i] * w;
+            pos[i * 3 + 2] = from.z + (to.z - from.z) * k;
+          }
+          geo.attributes.position.needsUpdate = true;
+        },
+      };
+      streams.push(stream);
+      return stream;
+    }
+
+    const V = (x, y, z) => new THREE.Vector3(x, y, z);
+    const entry = V(-0.9, 0.15, 0.6);  // beam meets the prism's left face
+    const exit = V(0.9, -0.05, 0.6);   // spectrum leaves the right face
+
+    // Incoming beam: ishi-tinted markdown glyphs, single shallow angle.
+    const GLYPHS = ['#', '*', '>', '{%', '[', '`'];
+    for (const glyph of GLYPHS) {
+      makeStream({
+        from: V(-7.5, 1.1, 0.4), to: entry,
+        color: P.ishi, count: 14, size: 0.34,
+        texture: glyphTexture(glyph), opacity: P.beamOpacity, spread: 0.12,
+      });
+    }
+
+    // Refracted spectrum: one stream per niwaki syntax role, fanning right.
+    const dot = dotTexture();
+    P.streams.forEach((color, i) => {
+      const angle = (i - (P.streams.length - 1) / 2) * 0.16; // fan of ±0.32 rad
+      makeStream({
+        from: exit,
+        to: V(8, exit.y + Math.tan(angle) * 7.5, 0.2),
+        color, count: 60, size: 0.16,
+        texture: dot, opacity: P.streamOpacity, spread: 0.3,
+      });
+    });
+
+    function resize() {
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      if (!w || !h) return;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    canvas.classList.add('on');
+
+    if (reduce) {
+      // Reduced motion: one composed static frame — particles mid-flight, the
+      // prism at a pleasant angle. No RAF loop.
+      prism.rotation.z = 0.18;
+      for (const s of streams) s.step(0);
+      renderer.render(scene, camera);
+    } else {
+      // The RAF loop pauses with the tab — a backdrop must not drain a
+      // backgrounded battery.
+      let raf = 0;
+      let last = performance.now();
+      function loop(now) {
+        const dt = Math.min((now - last) / 1000, 0.05);
+        last = now;
+        prism.rotation.z += dt * 0.1;
+        for (const s of streams) s.step(dt);
+        renderer.render(scene, camera);
+        raf = requestAnimationFrame(loop);
+      }
+      raf = requestAnimationFrame(loop);
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          cancelAnimationFrame(raf);
+          raf = 0;
+        } else if (!raf) {
+          last = performance.now();
+          raf = requestAnimationFrame(loop);
+        }
+      });
+    }
+  } catch (err) {
+    // CDN unreachable / WebGL unavailable → the quiet CSS prism.
+    showFallback();
+  }
+</script>
