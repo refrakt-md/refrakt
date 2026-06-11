@@ -1,5 +1,18 @@
 # plan-site
 
+## 0.0.9
+
+### Patch Changes
+
+- @refrakt-md/content@0.20.2
+- @refrakt-md/highlight@0.20.2
+- @refrakt-md/lumina@0.20.2
+- @refrakt-md/runes@0.20.2
+- @refrakt-md/svelte@0.20.2
+- @refrakt-md/sveltekit@0.20.2
+- @refrakt-md/types@0.20.2
+- @refrakt-md/plan@0.20.2
+
 ## 0.0.8
 
 ### Patch Changes

@@ -6,7 +6,12 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.20.1
+## v0.20.2
+
+- The `@refrakt-md/html` scaffold now ships a working client runtime. `template-html`'s build bundles `initPage()` (from `@refrakt-md/html/client` + `@refrakt-md/behaviors`) to `build/client.js` via esbuild and loads it on every page, and it ships the layout-chrome CSS (header, theme-toggle, search, mobile, on-this-page). Scaffolded static HTML sites now have working interactive runes (tabs, accordion, drawer, search) and a functioning, styled theme-toggle — previously all inert.
+- Also fixes a nav-slug error in the `template-html` starter content (`_layout.md` linked `getting-started` instead of `docs/getting-started`), so a freshly scaffolded html site now builds with zero errors.
+
+## v0.20.1 - June 11, 2026
 
 - `diagram` now renders after SPA navigation and re-renders when the colour scheme changes, so diagrams stay correct across client-side route changes and theme toggles.
 - Surface model fixes, found and fixed while building the surface documentation:
