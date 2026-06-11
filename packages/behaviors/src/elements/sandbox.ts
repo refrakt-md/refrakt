@@ -39,6 +39,14 @@ export class RfSandbox extends SafeHTMLElement {
 	private messageHandler: ((e: MessageEvent) => void) | null = null;
 	private themeCleanup: (() => void) | null = null;
 	private ancestorObserver: MutationObserver | null = null;
+	// WORK-381 — deferred activation. `_activation` is eager (mount now), visible
+	// (mount on scroll-in) or click (mount on user action). The iframe and its
+	// dependencies are not created until `activate()` runs, so a non-eager
+	// sandbox downloads nothing early.
+	private _activation: 'eager' | 'visible' | 'click' = 'eager';
+	private _poster = '';
+	private _activated = false;
+	private _io: IntersectionObserver | null = null;
 	// Cached values for iframe rebuild on theme change
 	private _content = '';
 	private _framework = '';
@@ -69,22 +77,45 @@ export class RfSandbox extends SafeHTMLElement {
 		this._untrusted = this.dataset.securityMode === 'untrusted';
 		this._allowJs = this.dataset.allowJs !== 'false';
 		this._sandboxOrigin = this.dataset.sandboxOrigin || '';
+		const activation = this.dataset.activation;
+		this._activation = activation === 'visible' || activation === 'click' ? activation : 'eager';
+		this._poster = this.dataset.poster || '';
 
 		// data-color-scheme is set by tint-mode and locks the sandbox to a
 		// specific colour scheme, overriding the global RfContext.theme.
 		this._localScheme = this.getAttribute('data-color-scheme') as 'light' | 'dark' | null;
 
-		// Also check ancestors for data-color-scheme (e.g. preview canvas wrapper).
-		const ancestorScheme = !this._localScheme
-			? (this.closest('[data-color-scheme]') as HTMLElement | null)?.getAttribute('data-color-scheme') as 'light' | 'dark' | null
-			: null;
-
-		const effectiveTheme = this._localScheme || ancestorScheme || RfContext.theme;
-
 		const tokensAttr = this.dataset.designTokens;
 		this._tokens = tokensAttr ? JSON.parse(tokensAttr) : RfContext.designTokens;
 
-		this.buildIframe(effectiveTheme);
+		// Non-eager sandboxes show a poster and defer the iframe (and all its
+		// dependency downloads) until activated — nothing loads early.
+		if (this._activation !== 'eager') {
+			this.renderPoster();
+			return;
+		}
+
+		this.activate();
+	}
+
+	/** Resolve the colour scheme: tint-mode lock → nearest ancestor override →
+	 *  global theme. Recomputed at activation time so a deferred sandbox picks up
+	 *  the current theme. */
+	private effectiveTheme(): 'light' | 'dark' | string {
+		const ancestorScheme = !this._localScheme
+			? (this.closest('[data-color-scheme]') as HTMLElement | null)?.getAttribute('data-color-scheme') as 'light' | 'dark' | null
+			: null;
+		return this._localScheme || ancestorScheme || RfContext.theme;
+	}
+
+	/** Build the iframe and wire theme synchronisation. Idempotent — the first
+	 *  call (eager on connect, or on the activation trigger) does the work. */
+	private activate() {
+		if (this._activated) return;
+		this._activated = true;
+		if (this._io) { this._io.disconnect(); this._io = null; }
+
+		this.buildIframe(this.effectiveTheme());
 
 		if (!this._localScheme) {
 			// Subscribe to global theme changes, but only apply when no
@@ -114,6 +145,49 @@ export class RfSandbox extends SafeHTMLElement {
 		}
 	}
 
+	/** WORK-381 — render the poster + an explicit activation control in the
+	 *  iframe's place. For `visible` (and when motion is allowed) an
+	 *  IntersectionObserver mounts the iframe on scroll-in; `click` and
+	 *  reduced-motion users always mount via the control, so motion-sensitive
+	 *  visitors opt in. */
+	private renderPoster() {
+		const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		const poster = document.createElement('div');
+		poster.className = 'rf-sandbox__poster';
+		if (this._heightAttr !== 'auto') {
+			poster.style.height = `${parseInt(this._heightAttr, 10)}px`;
+		}
+
+		if (this._poster) {
+			const img = document.createElement('img');
+			img.className = 'rf-sandbox__poster-image';
+			img.src = this._poster;
+			img.alt = '';
+			img.loading = 'lazy';
+			poster.appendChild(img);
+		}
+
+		const button = document.createElement('button');
+		button.type = 'button';
+		button.className = 'rf-sandbox__activate';
+		button.textContent = `Run ${this._label}`;
+		button.setAttribute('aria-label', `Run ${this._label} sandbox`);
+		button.addEventListener('click', () => this.activate(), { once: true });
+		poster.appendChild(button);
+
+		this.replaceChildren(poster);
+
+		// `visible`: auto-mount when scrolled into view — unless the visitor
+		// prefers reduced motion, in which case they activate explicitly.
+		if (this._activation === 'visible' && !reduce && typeof IntersectionObserver !== 'undefined') {
+			this._io = new IntersectionObserver((entries) => {
+				if (entries.some((e) => e.isIntersecting)) this.activate();
+			}, { rootMargin: '200px' });
+			this._io.observe(this);
+		}
+	}
+
 	disconnectedCallback() {
 		if (this.messageHandler) {
 			window.removeEventListener('message', this.messageHandler);
@@ -126,6 +200,10 @@ export class RfSandbox extends SafeHTMLElement {
 		if (this.ancestorObserver) {
 			this.ancestorObserver.disconnect();
 			this.ancestorObserver = null;
+		}
+		if (this._io) {
+			this._io.disconnect();
+			this._io = null;
 		}
 		this.iframe = null;
 	}
@@ -221,6 +299,7 @@ export class RfSandbox extends SafeHTMLElement {
 	 *  sandbox theme. Rebuilds the iframe with the theme baked in. */
 	setTheme(theme: string) {
 		if (this._localScheme) return; // tint-mode locked, ignore
+		if (!this._activated) return; // deferred + not yet mounted — nothing to retheme
 		this.buildIframe(theme);
 	}
 
