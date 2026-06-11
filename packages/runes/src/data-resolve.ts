@@ -4,7 +4,7 @@
  * Runs in the postProcess phase. Finds sandboxes that carry a `data-rf-query`
  * (set by the sandbox schema from the `data` attribute), evaluates the query
  * against the entity registry using the shared field-match grammar, projects +
- * shapes the result (`flat` | `tree`), caps the payload, and injects it as an
+ * shapes the result (`flat` | `tree` | `graph`), caps the payload, and injects it as an
  * inline `<script type="application/json" data-rf-records>` child. The behaviours
  * layer reads that and exposes it to the iframe as `window.RF_DATA`.
  */
@@ -32,6 +32,14 @@ interface ProjectedRecord {
 
 interface TreeNode extends ProjectedRecord {
 	children: TreeNode[];
+}
+
+/** A directed edge in the `graph` shape: source/target are record ids, `kind`
+ *  is the SPEC-072 relationship kind. */
+interface GraphEdge {
+	from: string;
+	to: string;
+	kind: string;
 }
 
 interface DataQuery {
@@ -86,6 +94,23 @@ function toTree(records: ProjectedRecord[]): TreeNode[] {
 	return roots;
 }
 
+/** Collect the SPEC-072 edges among a set of records into a node-link graph.
+ *  Nodes are the projected records; edges come from `registry.getRelated` and
+ *  are kept only when **both** endpoints are in the record set, so the graph is
+ *  closed (no dangling edges to entities the query didn't select). Edges to the
+ *  same `(from, to, kind)` are already deduped by the registry. */
+function toGraph(records: ProjectedRecord[], registry: Readonly<EntityRegistry>): GraphEdge[] {
+	if (!registry.getRelated) return [];
+	const nodeIds = new Set(records.map((r) => r.id));
+	const edges: GraphEdge[] = [];
+	for (const r of records) {
+		for (const e of registry.getRelated(r.id)) {
+			if (nodeIds.has(e.toId)) edges.push({ from: e.fromId, to: e.toId, kind: e.kind });
+		}
+	}
+	return edges;
+}
+
 /** True when the sandbox ships a static SSR fallback (`<template data-content="fallback">`). */
 function hasStaticFallback(tag: TagNode): boolean {
 	return (tag.children ?? []).some(
@@ -136,7 +161,9 @@ function resolveOne(
 
 	const payload = q.shape === 'tree'
 		? { shape: 'tree', tree: toTree(records) }
-		: { shape: 'flat', records };
+		: q.shape === 'graph'
+			? { shape: 'graph', nodes: records, edges: toGraph(records, registry) }
+			: { shape: 'flat', records };
 
 	// Carry the JSON on a data attribute — the same proven rail the design-token
 	// injection uses (cross-adapter safe). The behaviour reads `data-rf-records`

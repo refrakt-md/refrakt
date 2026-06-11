@@ -69,7 +69,7 @@ export const sandbox = createContentModelSchema({
 		// expose it to the iframe as `window.RF_DATA`.
 		data: { type: String, required: false, description: 'Registry query (SPEC-070 field-match, e.g. "type:page") bound into the iframe as window.RF_DATA' },
 		'data-fields': { type: String, required: false, description: 'Comma-separated entity data fields to project into the payload' },
-		'data-shape': { type: String, required: false, description: 'Payload shape: flat (default) | tree (nest by parentUrl)' },
+		'data-shape': { type: String, required: false, description: 'Payload shape: flat (default) | tree (nest by parentUrl) | graph (nodes + SPEC-072 edges)' },
 		'data-limit': { type: Number, required: false, description: 'Max records in the payload (default 500)' },
 	},
 	contentModel: {
