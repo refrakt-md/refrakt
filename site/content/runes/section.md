@@ -11,7 +11,7 @@ type: rune
 
 A generic page section: a short **header** — eyebrow, headline, blurb (and an optional image) — above an **arbitrary body**. Use it to introduce any content block with a title and intro, especially primitives that have no header of their own like [`bento`](/runes/marketing/bento), a grid of [cards](/runes/card), or a [collection](/runes/collection).
 
-It reads the same header slots as [`feature`](/runes/feature), [`hero`](/runes/hero), and [`reveal`](/runes/reveal) — no extra tags. The first paragraph is the eyebrow, the first heading the headline, the next paragraph the blurb; everything after is the body.
+It reads the same header slots as [`feature`](/runes/marketing/feature), [`hero`](/runes/marketing/hero), and [`reveal`](/runes/reveal) — no extra tags. The first paragraph is the eyebrow, the first heading the headline, the next paragraph the blurb; everything after is the body.
 
 ## Basic usage
 
