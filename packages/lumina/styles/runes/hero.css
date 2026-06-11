@@ -190,6 +190,67 @@
 	margin: 0;
 }
 
+/* ── Cover mode (SPEC-101) — `media-position="cover"` ───────────────────
+ * The shared cover layer (dimensions/cover.css) does the grid stacking, the
+ * default scrim, and the overlay anchoring; these rules supply the hero-band
+ * specifics. This file imports after cover.css, so equal-specificity rules
+ * here win. */
+
+/* The section's generous padding moves to the overlaid content — on the root
+ * it would inset the media well (the backdrop must be flush with the band). */
+.rf-hero--cover {
+	padding: 0;
+}
+.rf-hero--cover > [data-name="content"] {
+	--rune-padding: 7rem 2rem 6.5rem;
+}
+
+/* Band height authority: a hero is a full-width band, not a portrait tile.
+ * Override the shared 3/4 cover default with a wide aspect via the
+ * --cover-aspect hook (an explicit `aspect` knob lands as an inline style and
+ * wins; `frame-aspect` wins via the var chain), plus a viewport-aware floor so
+ * narrow screens don't get a letterbox sliver. */
+.rf-hero--cover {
+	--cover-aspect: 21 / 9;
+	min-height: clamp(22rem, 55vh, 40rem);
+}
+
+/* Named height scale (`height="sm…xl"`): an explicit band height replaces the
+ * aspect as the authority (`--cover-aspect: auto` releases the shared rule). */
+.rf-hero--cover[data-height="sm"] { --cover-aspect: auto; min-height: 20rem; }
+.rf-hero--cover[data-height="md"] { --cover-aspect: auto; min-height: 28rem; }
+.rf-hero--cover[data-height="lg"] { --cover-aspect: auto; min-height: 36rem; }
+.rf-hero--cover[data-height="xl"] { --cover-aspect: auto; min-height: 44rem; }
+
+/* A full-bleed band sits flush — no media radius on the well. */
+.rf-hero--cover > [data-section="media"] {
+	border-radius: 0;
+}
+
+/* Legibility over the scrim: the primary action hard-codes white text above,
+ * which inverts to white-on-near-white once the cover scheme flips
+ * --rf-color-primary on the dark overlay. Use the scheme's tokens instead. */
+.rf-hero--cover li:first-child a {
+	color: var(--rf-color-on-accent, var(--rf-color-bg));
+}
+
+/* Centre-band default: a hero overlay reads as a centred band, not the
+ * cover-card caption strip — seat it mid-well unless the author anchors it
+ * with an explicit `content-place`. */
+.rf-hero--cover[data-media-position="cover"]:is([data-content-place="auto"], :not([data-content-place])) > [data-name="content"] {
+	align-self: center;
+	justify-self: stretch;
+}
+
+/* The default cover scrim is edge-weighted (a caption-strip treatment); under
+ * the centred band it would leave the headline on undarkened media. With no
+ * explicit `content-place`, darken the well evenly (slightly bottom-weighted).
+ * An explicit `content-place` re-enters the shared content-edge scrim contract,
+ * and `scrim="none"` still opts out. */
+.rf-hero--cover:is([data-content-place="auto"], :not([data-content-place])):not([data-scrim="none"]) > [data-section="media"]::after {
+	background-image: var(--cover-scrim-image, linear-gradient(rgb(0 0 0 / 0.45), rgb(0 0 0 / 0.35) 50%, rgb(0 0 0 / 0.55)));
+}
+
 /* Mobile: stack actions full-width so the code block and button line up */
 @media (max-width: 640px) {
 	.rf-hero__actions {

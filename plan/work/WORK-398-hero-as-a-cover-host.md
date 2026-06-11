@@ -1,4 +1,4 @@
-{% work id="WORK-398" status="ready" priority="high" complexity="moderate" source="SPEC-101" tags="hero,marketing,lumina,layout,engine" milestone="v0.21.0" %}
+{% work id="WORK-398" status="in-progress" priority="high" complexity="moderate" source="SPEC-101" tags="hero,marketing,lumina,layout,engine" milestone="v0.21.0" %}
 
 # Hero as a cover host
 

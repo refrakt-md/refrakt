@@ -22,9 +22,23 @@ export const config: Record<string, RuneConfig> = {
 			'media-ratio': { source: 'meta', noBemClass: true },
 			valign: { source: 'meta', noBemClass: true },
 			collapse: { source: 'meta', noBemClass: true },
+			// SPEC-101 — cover-mode knobs, same grammar as Card (SPEC-089).
+			'content-place': { source: 'meta', noBemClass: true },
+			height: { source: 'meta', noBemClass: true },
+			aspect: { source: 'meta', noBemClass: true },
+		},
+		// SPEC-101 — `media-position="cover"` reuses the shared full-scope cover
+		// layer (SPEC-089): the media well fills the section interior and the
+		// content overlays it. The variant supplies the scope attribute + a hero
+		// modifier class for the band-specific CSS (padding rerouting, height).
+		variants: {
+			'media-position': {
+				cover: { staticModifiers: ['cover'], rootAttributes: { 'data-cover-scope': 'full' } },
+			},
 		},
 		styles: {
 			valign: { prop: '--split-valign', transform: resolveValign },
+			aspect: 'aspect-ratio',
 		},
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'hero' },
