@@ -87,14 +87,86 @@ becomes impossible rather than merely caught. New themes get this for free.
 
 #### 3. Separate skeleton (structure) from skin (aesthetic)
 
-Extract a theme-agnostic structural layer — layout geometry and the *behaviour* of the
-universal dimensions (flex/grid arrangement, density truncation, sequence connectors,
-section anatomy) — out of `packages/lumina` into a shippable base a theme imports. A theme
-then owns only the **skin**: colour, type, radius, shadow, ornament, and surface treatment.
-This is the largest single lever for "fast **and** distinctive": theme #2 starts from a
-working, neutral skeleton and writes only what makes it different. (Exact packaging —
-a `@refrakt-md/skeleton` package vs. a genuinely neutral `base.css` export — to be settled
-in implementation.)
+This is the largest single lever for "fast **and** distinctive" — and the riskiest piece
+of the spec, because it defines a public contract every future theme depends on. The goal:
+ship a theme-agnostic **skeleton** a theme imports, so theme #2 starts from a working,
+neutral base and writes only the **skin** that makes it different.
+
+**The naïve cut does not work.** Lumina's CSS is already informally layered — dimension CSS
+(`styles/dimensions/*`), surface assignment (`styles/dimensions/surfaces.css`), and per-rune
+CSS (`styles/runes/*`) — so the obvious move is "ship the dimension + surface layers as the
+skeleton, let each theme write per-rune CSS." But structure and aesthetics are braided
+together *inside individual rules*, in every layer. `dimensions/sections.css` bills itself
+as generic, yet:
+
+```css
+[data-section="header"] {
+  display: flex; flex-wrap: wrap; align-items: center;  /* neutral */
+  gap: 0.5rem; margin-bottom: 3rem;                      /* Lumina's taste */
+}
+[data-section="title"] {
+  font-size: 1.5rem; font-weight: 700; line-height: 1.2; /* Lumina's voice */
+}
+[data-section="footer"] {
+  display: flex; gap: var(--rf-spacing-sm);
+  border-top: 1px solid var(--rf-color-border);          /* the *decision* to draw a rule */
+}
+```
+
+A magazine theme wants a serif display title, no footer rule, a centred preamble — so even
+"structural" properties (`flex-direction: column` on a preamble, the footer border) are
+partly a Lumina opinion. **The cut is at the property level, not the file or selector
+level.** There is no file to move; every declaration must be classified.
+
+**The decidable criterion: correctness, not "structure".** "Is this structural?" is too
+fuzzy — `gap`, `margin`, `border-top` can be either. The sharper test:
+
+- **Skeleton = correctness.** Declarations a rune would *break* without, regardless of
+  visual identity: `[data-state="closed"] { display: none }`, sequence-connector
+  positioning scaffolds, the icon-mask *mechanism*, the grid/flex scaffolding the dimension
+  contract relies on, accessibility (`:focus-visible`, sr-only). Small; themes rarely touch
+  it.
+- **Skin = anything a different theme would plausibly want different.** Every number,
+  colour, and layout *opinion* — expressed as a token where a value suffices (Tier 1
+  typography does most of this), or as overridable theme CSS where it is structural-taste
+  (the footer rule, preamble direction, title scale).
+
+**Two complications push the split beyond CSS into the engine:**
+
+- *Some "CSS" is really data.* `surfaces.css` opens with a 25-selector list enumerating
+  "which runes are cards", then applies the card treatment. The treatment is skin; the
+  *list* is configuration in a CSS costume. A theme should not re-type it to restyle cards.
+  This wants the engine to emit a `data-surface="card"` attribute (Tier 3 §8) so skins
+  target `[data-surface="card"]` — an engine change, not a CSS reshuffle.
+- *Load-bearing mechanisms carry aesthetic parameters.* The relative-colour inset derivation
+  (`oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h)`) and
+  mask-based icon recolouring are mechanisms a theme benefits from inheriting, but each
+  bakes in a parameter that is aesthetic (the *shift amount*, *which* SVG — currently a
+  data-URI hardcoded in `hint.css` rather than driven from the icon config). The skeleton
+  keeps the mechanism; the parameter becomes a token or config value.
+
+**Approach — hybrid, chosen against the distinctiveness/speed tradeoff:**
+
+| Archetype | Skeleton holds | Distinctiveness | Per-theme effort |
+|-----------|----------------|-----------------|------------------|
+| Tokenize-only | All selectors + geometry, every value a `var()` | Low — inherits Lumina's geometry | Lowest |
+| **Cascade layers** (chosen) | Correctness + behaviour; skin layer overrides | Medium–high | Medium |
+| Headless | Only correctness | Highest | Highest (≈ from scratch) |
+
+Tokenize-only fails "stand out from Lumina" (a magazine inherits its section geometry and
+spacing rhythm); headless reintroduces the rebuild cost the dimension layer exists to avoid.
+The hybrid uses CSS cascade layers (`@layer skeleton, skin`) so a theme's skin reliably wins
+without specificity wars — which also means the virtual-module loader's import order must
+guarantee layer order.
+
+**De-risk by spike, not by argument.** The boundary is a per-declaration design call; settle
+it empirically. Take one card-surface rune + `hint` + one dimension file, perform the split,
+then build a deliberately un-Lumina skin on top (serif editorial: large display titles, no
+footer rules, centred preambles, a different inset feel). Wherever Lumina's opinion leaks
+into the editorial look, that declaration belongs in skin. This converges on the real cut
+line in a day or two and yields the template for the full pass. The spike **gates** the
+wholesale extraction. (Exact packaging — a `@refrakt-md/skeleton` package vs. a neutral
+`base.css` export — is settled by the spike.)
 
 ### Tier 2 — Velocity & safety
 
@@ -154,7 +226,8 @@ inherits and *restyles*, rather than re-decides.
 - [ ] `TokenContract` gains a typographic system — type scale, line-heights, font-weights, letter-spacing, and a display/heading family slot — with the documented `--rf-*` mapping.
 - [ ] Lumina's rune CSS consumes the typographic tokens; the count of hardcoded `font-size` literals in `packages/lumina/styles` drops to near-zero, with CSS-coverage and contracts checks green.
 - [ ] `tokens/base.css` and `tokens/dark.css` are generated from `tokens.ts` via `generateThemeStylesheet` at build time; the hand-maintained mirror and its coverage test are retired.
-- [ ] A theme-agnostic skeleton layer (dimension behaviour + structural geometry) is extracted from `packages/lumina` and consumable by a new theme independent of Lumina's aesthetic.
+- [ ] A skeleton/skin spike (one card-surface rune + `hint` + one dimension file, split then re-skinned with a deliberately un-Lumina editorial look) is completed first and sets the per-declaration cut line and packaging decision.
+- [ ] A theme-agnostic skeleton layer is extracted using the correctness-not-taste criterion, delivered via cascade layers (`@layer skeleton, skin`) with loader-guaranteed layer order, and is consumable by a new theme independent of Lumina's aesthetic.
 - [ ] A theme scaffold generator emits a buildable starter theme including a kitchen-sink gallery route covering every rune and variant.
 - [ ] Visual-regression (screenshot) testing runs against the gallery page with per-theme golden baselines, wired into CI.
 - [ ] A theme can declare its fonts such that the adapter loads them, decoupled from the consuming site's HTML head.
@@ -166,7 +239,7 @@ inherits and *restyles*, rather than re-decides.
 1. **Typography tokens** — extend `TokenContract`; map to `--rf-*`; update token-merge/validate and the stylesheet generator.
 2. **Lumina type refactor** — replace hardcoded `font-size`/weights/leading with tokens; keep coverage + contracts green.
 3. **Token CSS generation** — wire `generateThemeStylesheet` into Lumina's build; retire the hand-maintained mirror + coverage test.
-4. **Skeleton/skin split** — spike, then extract the structural/dimension layer into a shippable base; re-point Lumina at it.
+4. **Skeleton/skin split** — (a) spike on one rune + `hint` + one dimension file to fix the correctness-not-taste cut line, cascade-layer strategy, and packaging; (b) extract the skeleton wholesale under `@layer skeleton`; (c) re-point Lumina's skin at it; couple with the `data-surface` engine change (§8) and icon-from-config so embedded data-URIs leave CSS.
 5. **Theme scaffold + gallery** — `create-refrakt theme`; gallery route generator.
 6. **Visual regression** — Playwright baselines against the gallery; CI wiring.
 7. **Theme font loading** — manifest/contract field + adapter injection.
