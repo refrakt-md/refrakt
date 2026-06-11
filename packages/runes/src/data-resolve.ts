@@ -66,13 +66,19 @@ function projectEntity(e: EntityRegistration, fields: string[]): ProjectedRecord
 	return { id: e.id, type: e.type, url, data: projected };
 }
 
+/** Strip a trailing slash (except the root "/") so the no-trailing-slash `url`
+ *  and the trailing-slash `parentUrl` conventions match when building the tree. */
+function stripSlash(u: string): string {
+	return u.length > 1 && u.endsWith('/') ? u.slice(0, -1) : u;
+}
+
 /** Nest flat records into a forest keyed by each record's `data.parentUrl`. */
 function toTree(records: ProjectedRecord[]): TreeNode[] {
 	const byUrl = new Map<string, TreeNode>();
-	for (const r of records) byUrl.set(r.url, { ...r, children: [] });
+	for (const r of records) byUrl.set(stripSlash(r.url), { ...r, children: [] });
 	const roots: TreeNode[] = [];
 	for (const node of byUrl.values()) {
-		const parentUrl = String((node.data.parentUrl ?? '') as string);
+		const parentUrl = stripSlash(String((node.data.parentUrl ?? '') as string));
 		const parent = parentUrl ? byUrl.get(parentUrl) : undefined;
 		if (parent && parent !== node) parent.children.push(node);
 		else roots.push(node);

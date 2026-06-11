@@ -28,10 +28,11 @@ function carrierJson(resolved: any): any {
 
 function registryWithPages() {
 	const r = new EntityRegistryImpl();
+	// Real registry convention: `url` has no trailing slash, `parentUrl` has one.
 	r.register({ type: 'page', id: '/', sourceUrl: '/', data: { url: '/', title: 'Home', parentUrl: '', tags: ['root'] } });
-	r.register({ type: 'page', id: '/docs/', sourceUrl: '/docs/', data: { url: '/docs/', title: 'Docs', parentUrl: '/' } });
-	r.register({ type: 'page', id: '/docs/a/', sourceUrl: '/docs/a/', data: { url: '/docs/a/', title: 'A', parentUrl: '/docs/' } });
-	r.register({ type: 'page', id: '/blog/', sourceUrl: '/blog/', data: { url: '/blog/', title: 'Blog', parentUrl: '/' } });
+	r.register({ type: 'page', id: '/docs', sourceUrl: '/docs', data: { url: '/docs', title: 'Docs', parentUrl: '/' } });
+	r.register({ type: 'page', id: '/docs/a', sourceUrl: '/docs/a', data: { url: '/docs/a', title: 'A', parentUrl: '/docs/' } });
+	r.register({ type: 'page', id: '/blog', sourceUrl: '/blog', data: { url: '/blog', title: 'Blog', parentUrl: '/' } });
 	return r;
 }
 
@@ -51,11 +52,12 @@ describe('resolveDataBindings (SPEC-093 core)', () => {
 		const out = resolveDataBindings(sandbox('type:page', { shape: 'tree', fallback: true }), registryWithPages(), ctx, '/x/');
 		const payload = carrierJson(out);
 		expect(payload.shape).toBe('tree');
+		// Nests correctly despite url (no slash) vs parentUrl (trailing slash).
 		expect(payload.tree).toHaveLength(1);
 		expect(payload.tree[0].url).toBe('/');
-		expect(payload.tree[0].children.map((c: any) => c.url).sort()).toEqual(['/blog/', '/docs/']);
-		const docs = payload.tree[0].children.find((c: any) => c.url === '/docs/');
-		expect(docs.children.map((c: any) => c.url)).toEqual(['/docs/a/']);
+		expect(payload.tree[0].children.map((c: any) => c.url).sort()).toEqual(['/blog', '/docs']);
+		const docs = payload.tree[0].children.find((c: any) => c.url === '/docs');
+		expect(docs.children.map((c: any) => c.url)).toEqual(['/docs/a']);
 	});
 
 	it('projects only data-fields when set', () => {

@@ -158,6 +158,29 @@ Because scripts run for real, you can `import` an ES module straight from a CDN 
 
 Pin the version for reproducibility; for production also honour `prefers-reduced-motion` and provide a fallback — see the polished [three.js scene in Media guests](/runes/media-guests#live-program).
 
+## Data binding — `window.RF_DATA`
+
+A sandbox can be **fed data from your registry**. Set a `data` query — the same field-match grammar [`collection`](/runes/collection) uses — and the build resolves it, serializes the result, and exposes it to the iframe as a frozen `window.RF_DATA`. Your code renders *anything* from your own content: the registry's third render target, after `collection` (HTML) and `aggregate` (SVG) — bring your own renderer.
+
+| Attribute | Effect |
+|-----------|--------|
+| `data` | A registry query, e.g. `type:page` or `type:work status:done` |
+| `data-shape` | `flat` (default — a record array) or `tree` (nested by `parentUrl`) |
+| `data-fields` | Comma-separated data fields to project (keeps the payload lean) |
+| `data-limit` | Max records (default 500; over → truncated with a build warning) |
+
+Here a `data-shape="tree"` binding feeds this site's own rune-section page tree to a three.js scene — a live, navigable **3D star-map**: each section is a star and its pages orbit it as a little planetary system, nested by URL depth (drag to rotate, click a node to open it):
+
+{% preview source=true %}
+
+{% sandbox src="sitemap-3d" data="type:page url:/runes/*" data-shape="tree" height=440 /%}
+
+{% /preview %}
+
+**Always pair a data-bound visualization with an accessible fallback** — the 3D view is progressive enhancement, not the only representation. The *same* query as an honest, navigable list (what no-JS, no-WebGL, and screen readers get):
+
+{% collection type="page" filter="url:/runes/*" sort="url" layout="list" /%}
+
 ## Source code panels with data-source
 
 When used inside a preview with `source=true`, you can mark elements with `data-source` to control what appears in the source tab. Unmarked elements (scaffolding, wrappers) are excluded from the source view but still render in the preview.
