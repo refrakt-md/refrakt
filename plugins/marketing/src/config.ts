@@ -17,7 +17,10 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultWidth: 'full',
 		modifiers: {
-			'media-position': { source: 'meta', default: 'top', noBemClass: true },
+			// BUG-001: content-first DOM, so the truthful stacked default is
+			// `bottom` (media beneath the text); Lumina counters the shared
+			// media-first stacked rules for these runes.
+			'media-position': { source: 'meta', default: 'bottom', noBemClass: true },
 			align: { source: 'meta', default: 'center' },
 			'media-ratio': { source: 'meta', noBemClass: true },
 			valign: { source: 'meta', noBemClass: true },
@@ -99,7 +102,10 @@ export const config: Record<string, RuneConfig> = {
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'cover' },
 		modifiers: {
-			'media-position': { source: 'meta', default: 'top', noBemClass: true },
+			// BUG-001: content-first DOM, so the truthful stacked default is
+			// `bottom` (media beneath the text); Lumina counters the shared
+			// media-first stacked rules for these runes.
+			'media-position': { source: 'meta', default: 'bottom', noBemClass: true },
 			align: { source: 'meta', default: 'center' },
 			'media-ratio': { source: 'meta', noBemClass: true },
 			valign: { source: 'meta', noBemClass: true },
@@ -128,7 +134,10 @@ export const config: Record<string, RuneConfig> = {
 		block: 'step',
 		parent: 'Steps', requiresParent: 'Steps',
 		modifiers: {
-			'media-position': { source: 'meta', default: 'top', noBemClass: true },
+			// BUG-001: content-first DOM, so the truthful stacked default is
+			// `bottom` (media beneath the text); Lumina counters the shared
+			// media-first stacked rules for these runes.
+			'media-position': { source: 'meta', default: 'bottom', noBemClass: true },
 			'media-ratio': { source: 'meta', noBemClass: true },
 			valign: { source: 'meta', noBemClass: true },
 			collapse: { source: 'meta', noBemClass: true },
