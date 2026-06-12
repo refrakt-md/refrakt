@@ -8,15 +8,15 @@
  * treatment; this rule only owns the spacing below the row. */
 .rf-testimonial__rating {
 	margin-bottom: 0.75rem;
-	font-size: 1.1rem;
+	font-size: var(--rf-text-lg);
 }
 .rf-testimonial blockquote {
 	border: none;
 	padding: 0;
 	margin: 0 0 1rem;
-	font-size: 1.05rem;
+	font-size: var(--rf-text);
 	font-style: italic;
-	line-height: 1.7;
+	line-height: var(--rf-leading-relaxed);
 	color: var(--rf-color-text);
 	background: none;
 	border-radius: 0;
@@ -29,15 +29,15 @@
 }
 .rf-testimonial__author-name {
 	display: block;
-	font-weight: 700;
+	font-weight: var(--rf-weight-bold);
 	font-style: normal;
-	font-size: 0.925rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-text);
 }
 .rf-testimonial__author-role {
 	display: block;
 	margin-top: 0.125rem;
-	font-size: 0.85rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 }
 .rf-testimonial img {

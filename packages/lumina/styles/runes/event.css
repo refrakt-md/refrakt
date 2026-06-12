@@ -16,8 +16,8 @@
 	background: var(--rf-color-primary);
 	color: var(--rf-color-on-primary);
 	border-radius: var(--rf-radius-md);
-	font-weight: 500;
-	font-size: 0.875rem;
+	font-weight: var(--rf-weight-medium);
+	font-size: var(--rf-text-sm);
 	text-decoration: none;
 }
 .rf-event__register a:hover {

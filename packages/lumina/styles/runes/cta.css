@@ -15,9 +15,9 @@
 }
 /* Higher specificity needed to override .rf-cta p (0,1,1) */
 .rf-cta .rf-cta__eyebrow {
-	font-size: 0.875rem;
-	font-weight: 600;
-	letter-spacing: 0.05em;
+	font-size: var(--rf-text-sm);
+	font-weight: var(--rf-weight-semibold);
+	letter-spacing: var(--rf-tracking-wider);
 	text-transform: uppercase;
 	color: var(--rf-color-primary);
 	margin: 0 0 0.75rem;
@@ -31,9 +31,9 @@
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-full);
 	color: var(--rf-color-text);
-	font-weight: 400;
+	font-weight: var(--rf-weight-normal);
 	text-transform: none;
-	letter-spacing: 0;
+	letter-spacing: var(--rf-tracking-normal);
 	transition: border-color 150ms ease;
 }
 .rf-cta .rf-cta__eyebrow:has(a):hover {
@@ -41,7 +41,7 @@
 }
 .rf-cta .rf-cta__eyebrow:has(a) a {
 	color: var(--rf-color-primary);
-	font-weight: 600;
+	font-weight: var(--rf-weight-semibold);
 	text-decoration: none;
 }
 .rf-cta .rf-cta__eyebrow:has(a) a::before {
@@ -57,12 +57,12 @@
 .rf-cta h2,
 .rf-cta h3,
 .rf-cta__headline {
-	font-size: 2.5rem;
-	font-weight: 750;
-	letter-spacing: -0.03em;
+	font-size: var(--rf-text-4xl);
+	font-weight: var(--rf-weight-bold);
+	letter-spacing: var(--rf-tracking-tight);
 	margin-bottom: 0.75rem;
 	margin-top: 0;
-	line-height: 1.15;
+	line-height: var(--rf-leading-tight);
 	background: linear-gradient(135deg, var(--rf-color-text) 0%, var(--rf-color-muted) 100%);
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
@@ -71,11 +71,11 @@
 /* Higher specificity needed to override .rf-cta p (0,1,1) */
 .rf-cta p,
 .rf-cta .rf-cta__blurb {
-	font-size: 1.15rem;
+	font-size: var(--rf-text-lg);
 	color: var(--rf-color-muted);
 	max-width: 540px;
 	margin: 0 auto 2rem;
-	line-height: 1.65;
+	line-height: var(--rf-leading-relaxed);
 }
 .rf-cta ul {
 	display: flex;
@@ -97,8 +97,8 @@
 	padding: 0.625rem 1.5rem;
 	border-radius: var(--rf-radius-sm);
 	text-decoration: none;
-	font-weight: 600;
-	font-size: 0.925rem;
+	font-weight: var(--rf-weight-semibold);
+	font-size: var(--rf-text-sm);
 	transition: all 200ms ease;
 }
 .rf-cta li:first-child a {

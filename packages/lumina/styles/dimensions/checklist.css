@@ -40,7 +40,7 @@
 
 [data-checked="active"] {
 	color: var(--rf-color-primary);
-	font-weight: 600;
+	font-weight: var(--rf-weight-semibold);
 }
 
 /* Skipped — muted with strikethrough */

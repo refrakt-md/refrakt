@@ -39,9 +39,9 @@
 .rf-expand[data-outline-scope] :is(h1, h2, h3, h4, h5, h6):first-child {
 	margin-top: 0;
 }
-.rf-expand[data-outline-scope] h1 { font-size: 1.5rem; }
-.rf-expand[data-outline-scope] h2 { font-size: 1.25rem; }
-.rf-expand[data-outline-scope] h3 { font-size: 1.1rem; }
+.rf-expand[data-outline-scope] h1 { font-size: var(--rf-text-2xl); }
+.rf-expand[data-outline-scope] h2 { font-size: var(--rf-text-xl); }
+.rf-expand[data-outline-scope] h3 { font-size: var(--rf-text-lg); }
 
 .rf-expand > :first-child { margin-top: 0; }
 .rf-expand > :last-child { margin-bottom: 0; }
@@ -49,7 +49,7 @@
 .rf-expand__canonical-link {
 	display: inline-block;
 	margin-top: var(--rf-spacing-sm);
-	font-size: 0.875rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-primary);
 	text-decoration: none;
 }
@@ -67,6 +67,6 @@
 	background: var(--rf-color-danger-bg);
 	color: var(--rf-color-danger);
 	font-family: var(--rf-font-mono);
-	font-size: 0.875rem;
+	font-size: var(--rf-text-sm);
 	border-radius: 0 var(--rf-radius-sm) var(--rf-radius-sm) 0;
 }

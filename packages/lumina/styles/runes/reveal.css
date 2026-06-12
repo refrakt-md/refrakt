@@ -3,9 +3,9 @@
 	margin-bottom: 1.5rem;
 }
 .rf-reveal__eyebrow {
-	font-size: 0.8125rem;
-	font-weight: 600;
-	letter-spacing: 0.05em;
+	font-size: var(--rf-text-sm);
+	font-weight: var(--rf-weight-semibold);
+	letter-spacing: var(--rf-tracking-wider);
 	text-transform: uppercase;
 	color: var(--rf-color-primary);
 	margin: 0 0 0.5rem;
@@ -17,13 +17,13 @@
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-full);
 	color: var(--rf-color-text);
-	font-weight: 400;
+	font-weight: var(--rf-weight-normal);
 	text-transform: none;
-	letter-spacing: 0;
+	letter-spacing: var(--rf-tracking-normal);
 	transition: border-color 150ms ease;
 }
 .rf-reveal__eyebrow:has(a):hover { border-color: var(--rf-color-muted); }
-.rf-reveal__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: 600; text-decoration: none; }
+.rf-reveal__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: var(--rf-weight-semibold); text-decoration: none; }
 .rf-reveal__eyebrow:has(a) a::before { content: ''; position: absolute; inset: 0; border-radius: inherit; }
 .rf-reveal__headline {
 	margin-top: 0;
@@ -59,8 +59,8 @@
 	border-bottom: 1px solid var(--rf-color-border);
 }
 .rf-reveal-step__title {
-	font-size: 1.125rem;
-	font-weight: 600;
+	font-size: var(--rf-text-lg);
+	font-weight: var(--rf-weight-semibold);
 	margin: 0 0 0.5rem;
 }
 .rf-reveal-step__body > span[property],
@@ -77,8 +77,8 @@
 	border-radius: var(--rf-radius-md);
 	background: var(--rf-color-surface);
 	color: var(--rf-color-text);
-	font-size: 0.875rem;
-	font-weight: 500;
+	font-size: var(--rf-text-sm);
+	font-weight: var(--rf-weight-medium);
 	cursor: pointer;
 	transition: background 0.15s;
 }

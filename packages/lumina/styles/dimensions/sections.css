@@ -33,9 +33,9 @@
  * through nested densities AND beat per-rune title sizes. */
 [data-section="title"] {
 	font-family: var(--rf-font-sans);
-	font-size: var(--rf-title-size, 1.5rem);
-	font-weight: 700;
-	line-height: 1.2;
+	font-size: var(--rf-title-size, var(--rf-text-2xl));
+	font-weight: var(--rf-weight-bold);
+	line-height: var(--rf-leading-tight);
 	color: var(--rf-color-text);
 	margin: 0;
 }
@@ -43,8 +43,8 @@
 /* ─── Description: secondary text ─────────────────────────────────── */
 
 [data-section="description"] {
-	font-size: 1rem;
-	line-height: 1.5;
+	font-size: var(--rf-text);
+	line-height: var(--rf-leading-normal);
 	color: var(--rf-color-muted);
 	margin: var(--rf-spacing-xs) 0 var(--rf-spacing-md);
 }
@@ -52,7 +52,7 @@
 /* ─── Body: main content ──────────────────────────────────────────── */
 
 [data-section="body"] {
-	line-height: 1.6;
+	line-height: var(--rf-leading-relaxed);
 	color: var(--rf-color-text);
 }
 

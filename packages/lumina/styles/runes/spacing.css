@@ -1,7 +1,7 @@
 /* Spacing — spacing scale, radii, and shadow display */
 .rf-spacing__title {
-	font-size: 1.125rem;
-	font-weight: 600;
+	font-size: var(--rf-text-lg);
+	font-weight: var(--rf-weight-semibold);
 	margin-bottom: 1rem;
 }
 .rf-spacing__section {
@@ -11,10 +11,10 @@
 	margin-bottom: 0;
 }
 .rf-spacing__section-title {
-	font-size: 0.8rem;
-	font-weight: 600;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-semibold);
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
+	letter-spacing: var(--rf-tracking-wider);
 	color: var(--rf-color-muted);
 	margin-bottom: 0.75rem;
 }
@@ -38,7 +38,7 @@
 	min-width: 4px;
 }
 .rf-spacing__scale-label {
-	font-size: 0.75rem;
+	font-size: var(--rf-text-xs);
 	font-family: var(--rf-font-mono, monospace);
 	color: var(--rf-color-text, #1a1a2e);
 	white-space: nowrap;
@@ -69,11 +69,11 @@
 	background: var(--rf-color-surface-raised, #f9fafb);
 }
 .rf-spacing__radius-label {
-	font-weight: 500;
-	font-size: 0.8rem;
+	font-weight: var(--rf-weight-medium);
+	font-size: var(--rf-text-xs);
 }
 .rf-spacing__radius-value {
-	font-size: 0.7rem;
+	font-size: var(--rf-text-xs);
 	font-family: var(--rf-font-mono, monospace);
 	color: var(--rf-color-muted);
 }
@@ -97,8 +97,8 @@
 	border-radius: var(--rf-radius-md, 8px);
 }
 .rf-spacing__shadow-label {
-	font-weight: 500;
-	font-size: 0.8rem;
+	font-weight: var(--rf-weight-medium);
+	font-size: var(--rf-text-xs);
 }
 
 /* Context-aware: no outer margin when inside design-context */

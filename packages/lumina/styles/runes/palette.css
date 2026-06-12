@@ -1,7 +1,7 @@
 /* Palette — color swatch grid */
 .rf-palette__title {
-	font-size: 1.125rem;
-	font-weight: 600;
+	font-size: var(--rf-text-lg);
+	font-weight: var(--rf-weight-semibold);
 	margin-bottom: 1rem;
 }
 .rf-palette__group {
@@ -11,10 +11,10 @@
 	margin-bottom: 0;
 }
 .rf-palette__group-title {
-	font-size: 0.8rem;
-	font-weight: 600;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-semibold);
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
+	letter-spacing: var(--rf-tracking-wider);
 	color: var(--rf-color-muted);
 	margin-bottom: 0.75rem;
 }
@@ -43,24 +43,24 @@
 	border: 1px solid rgba(0, 0, 0, 0.08);
 }
 .rf-palette__swatch-name {
-	font-weight: 500;
-	font-size: 0.875rem;
+	font-weight: var(--rf-weight-medium);
+	font-size: var(--rf-text-sm);
 }
 .rf-palette__swatch-value {
 	font-family: var(--rf-font-mono, monospace);
-	font-size: 0.75rem;
+	font-size: var(--rf-text-xs);
 	color: var(--rf-color-muted);
 }
 .rf-palette__swatch-contrast {
 	font-family: var(--rf-font-mono, monospace);
-	font-size: 0.7rem;
+	font-size: var(--rf-text-xs);
 	color: var(--rf-color-muted);
 }
 .rf-palette__swatch-a11y {
 	display: flex;
 	gap: 0.5rem;
-	font-size: 0.7rem;
-	font-weight: 500;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-medium);
 }
 .rf-palette__swatch-a11y--pass {
 	color: var(--rf-color-success, #10b981);
@@ -83,12 +83,12 @@
 	align-items: flex-end;
 	justify-content: center;
 	min-height: 4rem;
-	font-size: 0.625rem;
+	font-size: var(--rf-text-xs);
 	font-family: var(--rf-font-mono, monospace);
 }
 .rf-palette__scale + .rf-palette__swatch-name {
 	margin-top: 0.25rem;
-	font-size: 0.8rem;
+	font-size: var(--rf-text-xs);
 }
 
 /* Context-aware: no outer margin when inside design-context */

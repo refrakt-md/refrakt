@@ -20,8 +20,8 @@
 .rf-bug__metadata [data-field="assignee"] dd .rf-badge::before { content: '@'; }
 
 .rf-bug__body {
-	font-size: 0.925rem;
-	line-height: 1.65;
+	font-size: var(--rf-text-sm);
+	line-height: var(--rf-leading-relaxed);
 }
 .rf-bug__body > section {
 	margin-top: 1rem;

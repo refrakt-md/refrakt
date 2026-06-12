@@ -30,21 +30,21 @@
 }
 .rf-cast-member__name {
 	display: block;
-	font-weight: 600;
-	font-size: 1rem;
+	font-weight: var(--rf-weight-semibold);
+	font-size: var(--rf-text);
 	color: var(--rf-color-text);
 }
 .rf-cast-member__role {
 	display: block;
-	font-size: 0.875rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 	margin-top: 0.125rem;
 }
 .rf-cast-member__body {
 	margin-top: 0.75rem;
-	font-size: 0.875rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
-	line-height: 1.5;
+	line-height: var(--rf-leading-normal);
 }
 .rf-cast-member__body:empty { display: none; }
 .rf-cast-member img {

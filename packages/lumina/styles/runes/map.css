@@ -36,7 +36,7 @@
 	padding: 1.5rem;
 	margin: 0;
 	list-style: decimal inside;
-	font-size: 0.925rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 }
 
@@ -73,7 +73,7 @@
 
 .rf-map-pin__group {
 	display: inline-block;
-	font-size: 0.75rem;
+	font-size: var(--rf-text-xs);
 	padding: 0.1rem 0.5rem;
 	border-radius: var(--rf-radius-sm, 0.25rem);
 	background: var(--rf-color-surface, #f0f0f0);
@@ -113,18 +113,18 @@
 .rf-map .leaflet-popup-content-wrapper {
 	border-radius: var(--rf-radius-md, 0.5rem);
 	font-family: var(--rf-font-sans, inherit);
-	font-size: 0.875rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-text);
 }
 
 .rf-map .leaflet-popup-content {
 	margin: 0.75rem 1rem;
-	line-height: 1.5;
+	line-height: var(--rf-leading-normal);
 }
 
 .rf-map .leaflet-popup-content strong {
 	display: block;
-	font-size: 0.95rem;
+	font-size: var(--rf-text);
 	margin-bottom: 0.25rem;
 }
 
@@ -134,7 +134,7 @@
 
 .rf-map .leaflet-popup-content small {
 	color: var(--rf-color-muted);
-	font-size: 0.8rem;
+	font-size: var(--rf-text-xs);
 }
 
 .rf-map .leaflet-popup-content a {

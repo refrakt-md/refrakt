@@ -61,10 +61,10 @@ section.rf-drawer .rf-drawer__header {
 
 section.rf-drawer .rf-drawer__title {
 	margin: 0;
-	font-size: 1.05rem;
-	font-weight: 600;
+	font-size: var(--rf-text);
+	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-primary);
-	letter-spacing: 0.01em;
+	letter-spacing: var(--rf-tracking-normal);
 }
 
 section.rf-drawer .rf-drawer__body > :first-child { margin-top: 0; }
@@ -77,7 +77,7 @@ section.rf-drawer .rf-drawer__footer {
 	margin-top: var(--rf-spacing-md);
 	padding-top: var(--rf-spacing-sm);
 	border-top: 1px solid var(--rf-drawer-border);
-	font-size: 0.875rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 }
 section.rf-drawer .rf-drawer__footer > :first-child { margin-top: 0; }
@@ -134,8 +134,8 @@ dialog.rf-drawer .rf-drawer__header {
 }
 dialog.rf-drawer .rf-drawer__title {
 	margin: 0;
-	font-size: 1.05rem;
-	font-weight: 600;
+	font-size: var(--rf-text);
+	font-weight: var(--rf-weight-semibold);
 }
 
 dialog.rf-drawer .rf-drawer__close {
@@ -145,7 +145,7 @@ dialog.rf-drawer .rf-drawer__close {
 	cursor: pointer;
 	color: var(--rf-color-muted);
 	padding: var(--rf-spacing-xs) var(--rf-spacing-sm);
-	font-size: 1.25rem;
+	font-size: var(--rf-text-xl);
 	line-height: 1;
 	border-radius: var(--rf-radius-sm);
 	flex-shrink: 0;
@@ -170,7 +170,7 @@ dialog.rf-drawer .rf-drawer__footer {
 	padding: var(--rf-spacing-sm) var(--rf-spacing-lg);
 	border-top: 1px solid var(--rf-drawer-border);
 	background: var(--rf-drawer-bg);
-	font-size: 0.875rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 }
 dialog.rf-drawer .rf-drawer__footer > :first-child { margin-top: 0; }

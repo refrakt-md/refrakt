@@ -22,7 +22,7 @@
 [data-meta-type="id"],
 [data-meta-type="code"] {
 	font-family: var(--rf-font-mono, monospace);
-	font-size: var(--meta-font-size, 0.8125rem);
+	font-size: var(--meta-font-size, var(--rf-text-sm));
 }
 
 /* IDs read as primary-coloured references wherever they appear (eyebrow
@@ -30,7 +30,7 @@
  * not a per-layout one. `code` (e.g. API paths) stays neutral monospace. */
 [data-meta-type="id"] {
 	color: var(--rf-color-primary);
-	font-weight: 500;
+	font-weight: var(--rf-weight-medium);
 }
 
 [data-meta-type="quantity"] {
@@ -123,14 +123,14 @@
 }
 
 [data-zone-layout="definition-list"] dt {
-	font-size: 0.75rem;
-	font-weight: 500;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-medium);
 	color: var(--rf-color-muted);
 }
 
 [data-zone-layout="definition-list"] dd {
 	margin: 0;
-	font-size: 0.875rem;
+	font-size: var(--rf-text-sm);
 }
 
 /* Multi-value dd (fields with `splitOn`) renders a row of chips
@@ -145,7 +145,7 @@
 
 /* Label element within a chip — thin, muted; pairs visually with the value */
 [data-meta-label] {
-	font-weight: 400;
+	font-weight: var(--rf-weight-normal);
 	opacity: 0.65;
 }
 

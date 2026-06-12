@@ -9,14 +9,14 @@
 
 [data-density="full"] {
 	--rune-padding: var(--rf-spacing-md);
-	--rf-title-size: 1.5rem;
+	--rf-title-size: var(--rf-text-2xl);
 }
 
 /* ─── Compact: truncated descriptions, tight spacing ──────────────── */
 
 [data-density="compact"] {
 	--rune-padding: var(--rf-spacing-sm);
-	--rf-title-size: 1.25rem;
+	--rf-title-size: var(--rf-text-xl);
 }
 
 [data-density="compact"] [data-section="description"] {
@@ -34,7 +34,7 @@
 
 [data-density="minimal"] {
 	--rune-padding: var(--rf-spacing-xs);
-	--rf-title-size: 1rem;
+	--rf-title-size: var(--rf-text);
 }
 
 [data-density="minimal"] [data-section="description"] {

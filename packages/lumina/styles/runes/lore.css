@@ -16,8 +16,8 @@
 }
 .rf-lore > span[property="title"] {
 	display: block;
-	font-size: 1.5rem;
-	font-weight: 700;
+	font-size: var(--rf-text-2xl);
+	font-weight: var(--rf-weight-bold);
 	margin-bottom: 0.5rem;
 	color: var(--rf-color-text);
 }
@@ -36,8 +36,8 @@
 	padding: 0.5rem 1rem;
 	background: var(--rf-color-bg);
 	border-radius: var(--rf-radius-md);
-	font-size: 0.875rem;
-	font-weight: 500;
+	font-size: var(--rf-text-sm);
+	font-weight: var(--rf-weight-medium);
 	color: var(--rf-color-muted);
 	cursor: pointer;
 	z-index: 1;

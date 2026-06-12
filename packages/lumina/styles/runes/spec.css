@@ -18,8 +18,8 @@
 }
 
 .rf-spec__body {
-	font-size: 0.925rem;
-	line-height: 1.65;
+	font-size: var(--rf-text-sm);
+	line-height: var(--rf-leading-relaxed);
 }
 .rf-spec__body blockquote {
 	border-left: 3px solid var(--rf-color-border);

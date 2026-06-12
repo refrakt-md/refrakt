@@ -45,9 +45,9 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 0.5rem;
-	font-weight: 600;
-	font-size: 1.2rem;
-	letter-spacing: -0.02em;
+	font-weight: var(--rf-weight-semibold);
+	font-size: var(--rf-text-xl);
+	letter-spacing: var(--rf-tracking-tight);
 }
 .rf-docs-header img,
 .rf-docs-header p:first-child a > .rf-icon {
@@ -60,7 +60,7 @@
 	color: currentColor;
 }
 .rf-docs-header__inner p ~ p {
-	font-size: 0.85rem;
+	font-size: var(--rf-text-sm);
 }
 .rf-docs-header__inner p ~ p a {
 	margin-left: 1.5rem;
@@ -215,7 +215,7 @@ html:has(.rf-docs-header) {
 	color: var(--rf-color-text);
 }
 .rf-docs-toolbar__breadcrumb {
-	font-size: 0.8rem;
+	font-size: var(--rf-text-xs);
 	color: var(--rf-color-muted);
 	/* `flex: 1 1 0` (basis 0, not auto) so the breadcrumb shrinks against
 	 * the available space rather than starting at its full content width —
@@ -237,7 +237,7 @@ html:has(.rf-docs-header) {
 }
 .rf-docs-breadcrumb-page {
 	color: var(--rf-color-text);
-	font-weight: 500;
+	font-weight: var(--rf-weight-medium);
 }
 
 /* ---- Hide TOC on medium screens ---- */

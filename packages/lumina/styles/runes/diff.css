@@ -15,14 +15,14 @@
 	overflow-x: auto;
 	overflow-y: hidden;
 	overscroll-behavior-x: contain;
-	font-size: 0.875rem;
+	font-size: var(--rf-text-sm);
 	background: var(--rf-color-code-bg);
 }
 .rf-diff__header {
 	padding: 0.5rem 1rem;
 	font-family: var(--rf-font-sans);
-	font-size: 0.75rem;
-	font-weight: 600;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-muted);
 	background: var(--rf-color-surface);
 	border-bottom: 1px solid var(--rf-color-border);
@@ -52,8 +52,8 @@
 	overflow-x: auto;
 	overscroll-behavior-x: contain;
 	font-family: var(--rf-font-mono);
-	font-size: 0.8125rem;
-	line-height: 1.6;
+	font-size: var(--rf-text-sm);
+	line-height: var(--rf-leading-relaxed);
 }
 
 /* WORK-304 — inner rows wrapper, sized as `display: grid; min-width:
@@ -118,7 +118,7 @@
 	width: 2.5em;
 	min-height: 1.6em;
 	text-align: right;
-	font-size: 0.75rem;
+	font-size: var(--rf-text-xs);
 	font-variant-numeric: tabular-nums;
 	user-select: none;
 	color: var(--rf-color-muted);

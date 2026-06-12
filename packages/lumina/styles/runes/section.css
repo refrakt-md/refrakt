@@ -16,9 +16,9 @@
 	margin: 0;
 }
 .rf-section__eyebrow {
-	font-size: 0.8125rem;
-	font-weight: 600;
-	letter-spacing: 0.05em;
+	font-size: var(--rf-text-sm);
+	font-weight: var(--rf-weight-semibold);
+	letter-spacing: var(--rf-tracking-wider);
 	text-transform: uppercase;
 	color: var(--rf-color-primary);
 	margin: 0;
@@ -30,13 +30,13 @@
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-full);
 	color: var(--rf-color-text);
-	font-weight: 400;
+	font-weight: var(--rf-weight-normal);
 	text-transform: none;
-	letter-spacing: 0;
+	letter-spacing: var(--rf-tracking-normal);
 	transition: border-color 150ms ease;
 }
 .rf-section__eyebrow:has(a):hover { border-color: var(--rf-color-muted); }
-.rf-section__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: 600; text-decoration: none; }
+.rf-section__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: var(--rf-weight-semibold); text-decoration: none; }
 .rf-section__eyebrow:has(a) a::before { content: ''; position: absolute; inset: 0; border-radius: inherit; }
 .rf-section__headline {
 	margin: 0;

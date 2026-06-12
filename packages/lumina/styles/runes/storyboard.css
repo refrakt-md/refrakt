@@ -28,7 +28,7 @@
 }
 .rf-storyboard--comic .rf-storyboard-panel__body p {
 	font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
-	font-size: 0.9375rem;
+	font-size: var(--rf-text);
 	text-align: center;
 	margin: 0.5rem 0 0;
 }
@@ -40,7 +40,7 @@
 	border-radius: 2px;
 }
 .rf-storyboard--polaroid .rf-storyboard-panel__body p {
-	font-size: 0.8125rem;
+	font-size: var(--rf-text-sm);
 	text-align: center;
 	color: var(--rf-color-muted);
 	margin: 0.5rem 0 0;

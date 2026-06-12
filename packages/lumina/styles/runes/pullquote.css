@@ -3,10 +3,10 @@
 	margin: 2rem 0;
 	padding: 1.5rem 2rem;
 	border: none;
-	font-size: 1.375rem;
+	font-size: var(--rf-text-xl);
 	font-style: italic;
-	font-weight: 500;
-	line-height: 1.5;
+	font-weight: var(--rf-weight-medium);
+	line-height: var(--rf-leading-normal);
 	color: var(--rf-color-text);
 	background: none;
 	border-radius: 0;
@@ -17,9 +17,10 @@
 	position: absolute;
 	top: -0.25rem;
 	left: 0;
+	/* Decorative oversized quote glyph — a display one-off above the type scale. */
 	font-size: 4rem;
 	font-style: normal;
-	font-weight: 700;
+	font-weight: var(--rf-weight-bold);
 	line-height: 1;
 	color: var(--rf-color-primary);
 	opacity: 0.4;
@@ -89,7 +90,7 @@
 	border-bottom: 2px solid var(--rf-color-border);
 	padding: 1.75rem 0;
 	font-family: Georgia, 'Times New Roman', serif;
-	letter-spacing: 0.01em;
+	letter-spacing: var(--rf-tracking-normal);
 }
 .rf-pullquote--editorial::before {
 	display: none;

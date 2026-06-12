@@ -15,8 +15,8 @@
 	border: none;
 	background: color-mix(in srgb, var(--meta-color, var(--rf-color-muted)) 10%, transparent);
 	color: var(--meta-color, var(--rf-color-muted));
-	font-size: 0.75rem;
-	font-weight: 500;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-medium);
 	padding: 0.125rem 0.5rem;
 	border-radius: var(--rf-radius-sm);
 	white-space: nowrap;
