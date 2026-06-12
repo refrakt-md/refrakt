@@ -3,9 +3,10 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * Visual-regression config for the gallery harness. Deterministic by design:
  * a single pinned Chromium project, disabled animations/caret, and a
- * platform-free snapshot path (baselines are captured in the pinned CI
- * container — `mcr.microsoft.com/playwright` — so the platform suffix would
- * only add noise). `globalSetup` generates the gallery artifacts first.
+ * platform-free snapshot path. Baselines under `__screenshots__/` are
+ * **ephemeral and gitignored** (capture-then-compare / compare-against-base) —
+ * not committed golden PNGs — so capture them in the pinned container
+ * (`mcr.microsoft.com/playwright`). `globalSetup` generates the gallery first.
  */
 export default defineConfig({
 	testDir: './tests',
