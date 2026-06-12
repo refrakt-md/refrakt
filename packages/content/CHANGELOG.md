@@ -1,5 +1,26 @@
 # @refrakt-md/content
 
+## 0.21.0
+
+### Minor Changes
+
+- 7d89f23: Pages can now register as **typed registry entities** (SPEC-092 Layers 2 & 3). A page that sets a frontmatter `type` (and optional `id`) is registered as that entity type in addition to its `page` entity, reusing the page's reserved-filtered data; `id` defaults to the page URL. A new `routeRules` `entity` field types a whole section by convention (e.g. `{ "pattern": "runes/**", "entity": "rune" }`) without per-page frontmatter — a page's own `type` overrides the rule. Duplicate `(type, id)` registrations warn. This lets `collection`/`aggregate` query content by domain type (e.g. `collection type="rune"`), and it's the complement of `entityRoutes` (entity → page). Works across all adapters.
+
+### Patch Changes
+
+- Updated dependencies [92c8f1b]
+- Updated dependencies [b8d9396]
+- Updated dependencies [cf0489f]
+- Updated dependencies [27124ea]
+- Updated dependencies [8939b35]
+- Updated dependencies [69b4d9c]
+- Updated dependencies [2f6332d]
+- Updated dependencies [ad780ca]
+  - @refrakt-md/runes@0.21.0
+  - @refrakt-md/transform@0.21.0
+  - @refrakt-md/highlight@0.21.0
+  - @refrakt-md/types@0.21.0
+
 ## 0.20.2
 
 ### Patch Changes

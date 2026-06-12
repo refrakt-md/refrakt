@@ -1,5 +1,16 @@
 # @refrakt-md/svelte
 
+## 0.21.0
+
+### Patch Changes
+
+- Updated dependencies [92c8f1b]
+- Updated dependencies [27124ea]
+- Updated dependencies [2f6332d]
+  - @refrakt-md/behaviors@0.21.0
+  - @refrakt-md/transform@0.21.0
+  - @refrakt-md/types@0.21.0
+
 ## 0.20.2
 
 ### Patch Changes

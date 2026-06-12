@@ -15,7 +15,7 @@ import { planPipelineHooks } from './pipeline.js';
 export const plan: Plugin = {
 	name: 'plan',
 	displayName: 'Plan',
-	version: '0.20.2',
+	version: '0.21.0',
 	runes: {
 		'spec': {
 			transform: spec,

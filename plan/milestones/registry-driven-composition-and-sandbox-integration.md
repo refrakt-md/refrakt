@@ -1,4 +1,4 @@
-{% milestone name="v0.21.0" status="active" %}
+{% milestone name="v0.21.0" status="complete" %}
 
 # v0.21.0 — Registry-driven composition and sandbox integration
 
@@ -37,11 +37,12 @@ the SPEC-093 showcases) graduates into hero composition.
 - {% ref "WORK-381" /%} — **sandbox lazy/poster activation.** Deferred mount + poster
   for heavy sandboxes. Now a first-class dependency of the data-bound visualizations
   (heavy WebGL on a content page must lazy-load) as well as the index anchor.
-- {% ref "WORK-350" /%} — **index bento showcase.** The capstone landing-page grid;
-  fits here because its live cells are exactly this milestone's material — the plan
-  `aggregate` (registry), the three.js anchor (sandbox), and — once SPEC-092/093
-  land — a "runes by plugin" stat and a registry-fed visualization. Held in v0.20.1
-  pending its content; this milestone gives it that content.
+- {% ref "WORK-350" /%} — **index bento showcase** — *deferred out at closeout*
+  (unscheduled). Carried in from v0.20.1 pending its content; the ingredients now
+  all exist (registry aggregates, data-bound viz, lazy activation, and SPEC-101's
+  animated hero backdrop — which may reshape what the index bento needs to carry),
+  but the editorial decision of what belongs on the landing page isn't ready, and
+  the release shouldn't gate on it.
 
 ## Decisions
 
@@ -72,7 +73,16 @@ the SPEC-093 showcases) graduates into hero composition.
 - {% ref "WORK-401" /%} — the **waves scene** (niwaki-tinted wireframe backdrop; independently buildable).
 - {% ref "WORK-402" /%} — docs: hero cover reference + the animated background showcase (capstone; depends on 398/399/401).
 
-**Sequencing:** {% ref "WORK-381" /%} (lazy/poster) lands early — both showcases are heavy WebGL and lazy-mount. The two spec tracks run in parallel; the SPEC-093 showcases depend only on `pageTree` / plan edges that exist today, not on the SPEC-092 entity work. {% ref "WORK-350" /%} (index bento) consumes the registry aggregates + a data-bound viz once they exist. The SPEC-101 track is parallel too: {% ref "WORK-398" /%}/{% ref "WORK-399" /%}/{% ref "WORK-401" /%} are mutually independent, converging only in {% ref "WORK-402" /%}.
+**Sequencing:** {% ref "WORK-381" /%} (lazy/poster) lands early — both showcases are heavy WebGL and lazy-mount. The two spec tracks run in parallel; the SPEC-093 showcases depend only on `pageTree` / plan edges that exist today, not on the SPEC-092 entity work. The SPEC-101 track is parallel too: {% ref "WORK-398" /%}/{% ref "WORK-399" /%}/{% ref "WORK-401" /%} are mutually independent, converging only in {% ref "WORK-402" /%}.
+
+## Closeout (2026-06-12)
+
+All scheduled work shipped except {% ref "WORK-350" /%} (deferred, above). The
+SPEC-101 track also landed three unplanned items surfaced in review:
+{% ref "WORK-403" /%} (nested-density title sizing — full-density runes in
+compact previews keep their real title size) and {% ref "BUG-001" /%}
+(hero/feature/step stacked `media-position` labels were inverted; defaults are
+now a truthful `bottom` with zero visual change). Released as **v0.21.0**.
 
 ## Deferred (needs its own discussion)
 
