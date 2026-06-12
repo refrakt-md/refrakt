@@ -1309,7 +1309,7 @@
 			"modifiers": {
 				"media-position": {
 					"source": "meta",
-					"default": "top",
+					"default": "bottom",
 					"dataAttribute": "data-media-position"
 				},
 				"align": {
@@ -1393,7 +1393,7 @@
 						"modifiers": {
 							"media-position": {
 								"source": "meta",
-								"default": "top",
+								"default": "bottom",
 								"dataAttribute": "data-media-position"
 							},
 							"align": {
@@ -1621,7 +1621,7 @@
 			"modifiers": {
 				"media-position": {
 					"source": "meta",
-					"default": "top",
+					"default": "bottom",
 					"dataAttribute": "data-media-position"
 				},
 				"align": {
@@ -1702,7 +1702,7 @@
 						"modifiers": {
 							"media-position": {
 								"source": "meta",
-								"default": "top",
+								"default": "bottom",
 								"dataAttribute": "data-media-position"
 							},
 							"align": {
@@ -1788,7 +1788,7 @@
 						"modifiers": {
 							"media-position": {
 								"source": "meta",
-								"default": "top",
+								"default": "bottom",
 								"dataAttribute": "data-media-position"
 							},
 							"align": {
@@ -1922,7 +1922,7 @@
 			"modifiers": {
 				"media-position": {
 					"source": "meta",
-					"default": "top",
+					"default": "bottom",
 					"dataAttribute": "data-media-position"
 				},
 				"media-ratio": {

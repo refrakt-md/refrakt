@@ -164,7 +164,9 @@ export const feature = createContentModelSchema({
 
 		const align = (attrs.align as string) || 'center';
 		const alignMeta = new Tag('meta', { content: align });
-		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
+		// Content-first DOM (header/definitions before media) → the truthful
+		// default placement is `bottom`, mirroring hero (BUG-001).
+		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas({ ...attrs, 'media-position': attrs['media-position'] ?? 'bottom' });
 		const { mediaPosition: mediaPositionMeta, mediaRatio: mediaRatioMeta, valign: valignMeta, collapse: collapseMeta } = layoutMetas;
 
 		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];

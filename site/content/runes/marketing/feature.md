@@ -168,7 +168,7 @@ The body splits on `---` into **media → content** zones (media-first in source
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `media-position` | `string` | `top` | Where the media sits: `top`, `bottom`, `start` (left), `end` (right) |
+| `media-position` | `string` | `bottom` | Where the media sits: `top`, `bottom` (the default — media beneath the text), `start` (left), `end` (right) |
 | `media-ratio` | `string` | — | Media's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
 | `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
 | `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |

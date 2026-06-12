@@ -86,8 +86,16 @@ describe('SPEC-101 hero cover', () => {
 		const r = identity(coverHero.replace(' media-position="cover"', ''));
 		expect(r.attributes.class).not.toContain('rf-hero--cover');
 		expect(r.attributes['data-cover-scope']).toBeUndefined();
-		expect(r.attributes['data-media-position']).toBe('top');
+		// BUG-001: hero's DOM is content-first, so the truthful default is bottom.
+		expect(r.attributes['data-media-position']).toBe('bottom');
 		const media = findByAttr(r, 'data-section', 'media');
 		expect(media?.attributes['data-guest-posture']).toBeUndefined();
+	});
+
+	it('stacked labels are truthful (BUG-001): explicit top/bottom pass through', () => {
+		const top = identity(coverHero.replace('media-position="cover"', 'media-position="top"'));
+		expect(top.attributes['data-media-position']).toBe('top');
+		const bottom = identity(coverHero.replace('media-position="cover"', 'media-position="bottom"'));
+		expect(bottom.attributes['data-media-position']).toBe('bottom');
 	});
 });
