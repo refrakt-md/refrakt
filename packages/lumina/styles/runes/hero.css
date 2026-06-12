@@ -211,15 +211,7 @@
  * winning min-height back into *width* on narrow screens (a 22rem-tall 21/9
  * band computes ~820px wide on a 375px phone — the band marches off-screen).
  * `--cover-aspect: auto` releases the shared 3/4 tile default; an explicit
- * `aspect` knob still lands as an inline style and owns the shape.
- *
- * The shared layer's `container-type: size` is load-bearing here: the cover
- * grid's `minmax(0, 1fr)` row only fills the band when the band's height is
- * definite, and with the aspect released, size containment is what makes
- * `min-height` definite. Without it the row collapses to the overlay's
- * content height and the backdrop covers only a top strip. The trade — the
- * band is a bounded region and content taller than it clips — is the cover
- * contract (short overlay content), softened by the mobile padding below. */
+ * `aspect` knob still lands as an inline style and owns the shape. */
 .rf-hero--cover {
 	--cover-aspect: auto;
 	min-height: clamp(22rem, 55vh, 40rem);
@@ -228,6 +220,15 @@
  * ratio-vs-min-height transfer can't reintroduce the overflow. */
 .rf-hero--cover[data-aspect] {
 	min-height: 0;
+}
+
+/* The shared cover layer applies `container-type: size` (size containment) for
+ * its orientation query — under it the band cannot grow with its content, so
+ * tall content clips at min-height. The hero band doesn't use the orientation
+ * query (the centred-band default below covers `auto` placement), so release
+ * the containment and let the band stretch to fit. */
+.rf-hero--cover[data-media-position="cover"][data-cover-scope="full"] {
+	container-type: normal;
 }
 
 /* Named height scale (`height="sm…xl"`): an explicit band height. */
