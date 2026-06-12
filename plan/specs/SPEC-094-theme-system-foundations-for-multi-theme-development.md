@@ -1,4 +1,4 @@
-{% spec id="SPEC-094" status="draft" tags="theme,tokens,typography,css,dx,architecture" %}
+{% spec id="SPEC-094" status="accepted" tags="theme,tokens,typography,css,dx,architecture" %}
 
 # Theme system foundations for multi-theme development
 

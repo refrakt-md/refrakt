@@ -24,6 +24,21 @@ const TOKEN_CONTRACT_SHAPE: Record<string, ContractNode> = {
 	font: {
 		sans: 'leaf',
 		mono: 'leaf',
+		display: 'leaf',
+	},
+	// SPEC-094 — typographic scale, weights, line-heights, tracking.
+	text: {
+		xs: 'leaf', sm: 'leaf', base: 'leaf', lg: 'leaf', xl: 'leaf',
+		'2xl': 'leaf', '3xl': 'leaf', '4xl': 'leaf',
+	},
+	weight: {
+		light: 'leaf', normal: 'leaf', medium: 'leaf', semibold: 'leaf', bold: 'leaf',
+	},
+	leading: {
+		tight: 'leaf', snug: 'leaf', normal: 'leaf', relaxed: 'leaf', loose: 'leaf',
+	},
+	tracking: {
+		tight: 'leaf', normal: 'leaf', wide: 'leaf', wider: 'leaf',
 	},
 	color: {
 		text: 'leaf',

@@ -101,6 +101,13 @@ describe('luminaTokens coverage vs hand-authored CSS', () => {
 		const must = [
 			'--rf-font-sans',
 			'--rf-font-mono',
+			'--rf-font-display',            // SPEC-094 — heading/display family
+			'--rf-text',                    // text.base → no suffix per contract rule
+			'--rf-text-sm',
+			'--rf-text-2xl',
+			'--rf-weight-semibold',
+			'--rf-leading-normal',
+			'--rf-tracking-wide',
 			'--rf-color-primary',
 			'--rf-color-primary-bg',
 			'--rf-color-bg',

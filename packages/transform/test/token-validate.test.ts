@@ -21,6 +21,24 @@ describe('validateThemeTokensConfig', () => {
 		expect(r.valid).toBe(true);
 	});
 
+	it('accepts the SPEC-094 typographic namespaces', () => {
+		const r = validateThemeTokensConfig({
+			font: { display: "'Fraunces', serif" },
+			text: { xs: '0.75rem', base: '1rem', '4xl': '2.5rem' },
+			weight: { normal: '400', bold: '700' },
+			leading: { tight: '1.2', normal: '1.5' },
+			tracking: { normal: '0', wide: '0.03em' },
+		});
+		expect(r.valid).toBe(true);
+	});
+
+	it('rejects a typo in the type scale', () => {
+		const r = validateThemeTokensConfig({ text: { xxl: '2rem' } });
+		expect(r.valid).toBe(false);
+		expect(r.errors[0].path).toBe('text.xxl');
+		expect(r.errors[0].message).toContain("unknown token key 'xxl'");
+	});
+
 	it('rejects unknown top-level namespace', () => {
 		const r = validateThemeTokensConfig({ nonsense: { foo: 'bar' } });
 		expect(r.valid).toBe(false);

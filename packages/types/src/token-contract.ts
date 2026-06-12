@@ -24,16 +24,75 @@
  *   matching the existing variable name)*
  * - `syntax.keyword` → `--rf-syntax-keyword`
  * - `radius.md` → `--rf-radius-md`
+ * - `text.base` → `--rf-text` *(base segment dropped)*
+ * - `text.lg` → `--rf-text-lg`
+ * - `weight.semibold` → `--rf-weight-semibold`
+ * - `leading.normal` → `--rf-leading-normal`
+ * - `tracking.wide` → `--rf-tracking-wide`
+ * - `font.display` → `--rf-font-display`
  */
 export interface TokenContract {
-	/** Typography tokens. The `serif` slot is reserved for a future SPEC-048
-	 *  amendment per SPEC-051; today the contract carries only sans and mono. */
+	/** Font-family tokens. The numeric type *scale*, weights, line-heights, and
+	 *  tracking live in the sibling `text` / `weight` / `leading` / `tracking`
+	 *  namespaces (SPEC-094); this namespace carries only the families. */
 	font: {
 		/** Primary text family used for body and most UI. Includes its full
 		 *  fallback stack — e.g. `"'Inter', system-ui, -apple-system, sans-serif"`. */
 		sans: string;
 		/** Monospace family used for code blocks and inline code. */
 		mono: string;
+		/** Display / heading family. Carries a theme's headline voice and is the
+		 *  primary lever an editorial or magazine theme uses to read unlike a
+		 *  product/docs theme. May be a serif, a high-contrast sans, or simply
+		 *  match `sans` for a unified neutral theme. Includes its fallback stack. */
+		display: string;
+	};
+
+	/** Modular type scale (SPEC-094). Step keys follow the familiar
+	 *  `xs … 4xl` convention; `base` is the body anchor and — per the
+	 *  CSS-variable mapping rule — drops its segment, so `text.base` is
+	 *  `--rf-text` and `text.lg` is `--rf-text-lg`. Values are sizes
+	 *  (`rem`/`em`/`px`); a theme can derive them from a base size + ratio or
+	 *  set each step explicitly. */
+	text: {
+		xs: string;
+		sm: string;
+		base: string;
+		lg: string;
+		xl: string;
+		'2xl': string;
+		'3xl': string;
+		'4xl': string;
+	};
+
+	/** Font-weight tokens (SPEC-094). Numeric CSS weights; a theme maps the
+	 *  named steps onto whatever weights its families ship. */
+	weight: {
+		light: string;
+		normal: string;
+		medium: string;
+		semibold: string;
+		bold: string;
+	};
+
+	/** Line-height tokens (SPEC-094). Unitless multipliers from `tight`
+	 *  (headings) to `loose` (airy body). `normal` is the default body leading. */
+	leading: {
+		tight: string;
+		snug: string;
+		normal: string;
+		relaxed: string;
+		loose: string;
+	};
+
+	/** Letter-spacing / tracking tokens (SPEC-094). `em`-relative so they
+	 *  track font size; `normal` is `0`, negative values tighten large display
+	 *  type, positive values open up small uppercase eyebrows. */
+	tracking: {
+		tight: string;
+		normal: string;
+		wide: string;
+		wider: string;
 	};
 
 	/** Colour tokens. */
