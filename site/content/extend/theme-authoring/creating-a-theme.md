@@ -164,7 +164,17 @@ If you change the `prefix` (e.g., from `'rf'` to `'mt'`), all your CSS selectors
 
 ### Define design tokens
 
-Create `tokens/base.css` with your visual language:
+You can hand-author the token CSS, or — recommended — author a typed
+`ThemeTokensConfig` in TypeScript and **generate** the CSS from it with
+`generateThemeStylesheet` (from `@refrakt-md/transform`). The reference theme,
+Lumina, does the latter: `src/tokens.ts` is the single source of truth, and a
+build step (`scripts/generate-tokens.mjs`) writes `tokens/base.css` +
+`tokens/dark.css`, with a drift test failing CI if the committed CSS diverges.
+This keeps values in one place, type-checked against the `TokenContract`, and
+emits the per-mode/`data-color-scheme`/`prefers-color-scheme` selectors and the
+derived Shiki syntax aliases for you.
+
+Either way, the token CSS defines your visual language. Hand-authored:
 
 ```css
 :root {

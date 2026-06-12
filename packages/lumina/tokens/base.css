@@ -1,18 +1,10 @@
-/* Lumina Theme — Design Tokens (Light Mode)
- *
- * Source of truth: packages/lumina/src/tokens.ts (`luminaTokens` export).
- * This file mirrors that export verbatim — a coverage test in
- * `packages/lumina/test/token-config-coverage.test.ts` keeps them in
- * lockstep; drift fails CI. Edit `tokens.ts` and update both, or run
- * a future build script that regenerates this file. */
+/* GENERATED from src/tokens.ts by scripts/generate-tokens.mjs — do not edit by hand.
+ * Edit the `luminaTokens` source and rebuild; a drift test guards this file. */
 
-:root {
-	/* Typography */
+:root, [data-color-scheme="light"] {
 	--rf-font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 	--rf-font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, 'Cascadia Code', monospace;
 	--rf-font-display: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-
-	/* SPEC-094 — type scale (base anchor 1rem; ~1.2 modular). */
 	--rf-text-xs: 0.75rem;
 	--rf-text-sm: 0.875rem;
 	--rf-text: 1rem;
@@ -21,48 +13,32 @@
 	--rf-text-2xl: 1.5rem;
 	--rf-text-3xl: 1.875rem;
 	--rf-text-4xl: 2.5rem;
-
-	/* SPEC-094 — font weights. */
 	--rf-weight-light: 300;
 	--rf-weight-normal: 400;
 	--rf-weight-medium: 500;
 	--rf-weight-semibold: 600;
 	--rf-weight-bold: 700;
-
-	/* SPEC-094 — line heights (unitless). */
 	--rf-leading-tight: 1.2;
 	--rf-leading-snug: 1.35;
 	--rf-leading-normal: 1.5;
 	--rf-leading-relaxed: 1.65;
 	--rf-leading-loose: 2;
-
-	/* SPEC-094 — letter spacing / tracking. */
 	--rf-tracking-tight: -0.01em;
 	--rf-tracking-normal: 0;
 	--rf-tracking-wide: 0.03em;
 	--rf-tracking-wider: 0.06em;
-
-	/* Core palette */
 	--rf-color-text: #1c1a17;
 	--rf-color-muted: #6b6661;
 	--rf-color-border: #e2e0dd;
 	--rf-color-bg: #f5f4f1;
 	--rf-color-primary: #1c1a17;
 	--rf-color-primary-hover: #3a342d;
-	/* Derived subtle primary wash — tracks `primary` in both modes. */
 	--rf-color-primary-bg: color-mix(in oklch, var(--rf-color-primary) 10%, transparent);
 	--rf-color-on-primary: #ffffff;
-
-	/* Surfaces */
 	--rf-color-surface: #fbfaf7;
 	--rf-color-surface-hover: #ecebe8;
 	--rf-color-surface-active: #e2e0dd;
 	--rf-color-surface-raised: #ffffff;
-	/* SPEC-087 — lightness delta for the derived inset surface (applied at use-site
-	 * via relative-color — lower L, keep C+H — so it tracks a tinted --rf-color-surface). */
-	--rf-surface-inset-shift: 0.04;
-
-	/* Semantic — muted earthy band per SPEC-051 */
 	--rf-color-info: #34547a;
 	--rf-color-info-bg: #e8edf4;
 	--rf-color-info-border: #c5d2e0;
@@ -75,70 +51,35 @@
 	--rf-color-success: #2d6a3e;
 	--rf-color-success-bg: #e0eee4;
 	--rf-color-success-border: #b8d4be;
-
-	/* WORK-304 — neutral tint for line highlight (the third
-	 * `[data-line-status]` value that snippet / codegroup / diff share).
-	 * Subtle surface tint so highlighted rows read as emphasized but not
-	 * status-coloured (which would compete with diff's add/remove channel
-	 * and the semantic palette above). `*-rail` is the optional left-edge
-	 * border colour; falls back to the primary accent via the consuming
-	 * CSS for themes that don't override it.
-	 *
-	 * WORK-341 — these three (and `--rf-color-primary-bg` above) are
-	 * **intentionally shared**: each derives from a mode-aware token
-	 * (`text` / `primary` / `muted`), so they track dark mode automatically
-	 * and deliberately have no dark.css override (a fixed dark value would
-	 * break the derivation). */
+	--rf-color-code-bg: #ebeae8;
+	--rf-color-code-text: #1c1a17;
+	--rf-color-code-inline-bg: #e6e5e3;
 	--rf-color-line-highlight: color-mix(in srgb, var(--rf-color-text) 6%, transparent);
 	--rf-color-line-highlight-rail: var(--rf-color-primary, var(--rf-color-text));
-	/* Gutter colour for `pre[data-linenumbers]` line counter. Defers to
-	 * the existing muted text token by default; themes can pin a
-	 * dedicated hue without overriding muted. */
 	--rf-color-line-number: var(--rf-color-muted);
-
-	/* Radii */
 	--rf-radius-sm: 6px;
 	--rf-radius-md: 10px;
 	--rf-radius-lg: 16px;
 	--rf-radius-full: 9999px;
-
-	/* Spacing */
 	--rf-spacing-xs: 0.25rem;
 	--rf-spacing-sm: 0.5rem;
 	--rf-spacing-md: 1.5rem;
 	--rf-spacing-lg: 2rem;
 	--rf-spacing-xl: 3rem;
 	--rf-spacing-2xl: 4rem;
-
-	/* Section spacing */
 	--rf-spacing-section: 4rem;
 	--rf-spacing-section-tight: 1.5rem;
 	--rf-spacing-section-loose: 6rem;
 	--rf-spacing-section-breathe: 8rem;
-
-	/* Inset (horizontal padding) */
 	--rf-inset-flush: 0;
 	--rf-inset-tight: 1rem;
 	--rf-inset-loose: 4rem;
 	--rf-inset-breathe: 8rem;
-
-	/* Shadows */
 	--rf-shadow-none: none;
 	--rf-shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
 	--rf-shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
 	--rf-shadow-md: 0 4px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
 	--rf-shadow-lg: 0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
-
-	/* Code block */
-	--rf-color-code-bg: #ebeae8;
-	--rf-color-code-text: #1c1a17;
-	--rf-color-code-inline-bg: #e6e5e3;
-	/* Legacy alias — same value, kept for downstream CSS that reads the
-	 * older variable name. Will be removed once the rename is documented
-	 * widely enough that it's safe to drop. */
-	--rf-color-inline-code-bg: #e6e5e3;
-
-	/* Syntax — the quiet spectrum walk */
 	--rf-syntax-keyword: #2a5c63;
 	--rf-syntax-function: #4a3b6e;
 	--rf-syntax-string: #8a3a3a;
@@ -146,19 +87,24 @@
 	--rf-syntax-comment: #8a857d;
 	--rf-syntax-punctuation: #6b6661;
 	--rf-syntax-variable: #1c1a17;
-
-	/* Shiki aliases — Shiki's CSS-variables theme emits `--rf-syntax-token-*`
-	 * with `token-` hardcoded inside its theme builder. We bridge by emitting
-	 * literal hex values matching the contract surface above. */
-	--rf-syntax-foreground: #1c1a17;
-	--rf-syntax-background: #ebeae8;
 	--rf-syntax-token-keyword: #2a5c63;
+	--rf-syntax-token-tag: #2a5c63;
+	--rf-syntax-token-function: #4a3b6e;
+	--rf-syntax-token-link: #4a3b6e;
+	--rf-syntax-token-type: #4a3b6e;
+	--rf-syntax-token-attribute: #4a3b6e;
 	--rf-syntax-token-string: #8a3a3a;
 	--rf-syntax-token-string-expression: #8a3a3a;
+	--rf-syntax-token-regex: #8a3a3a;
 	--rf-syntax-token-constant: #876327;
+	--rf-syntax-token-number: #876327;
 	--rf-syntax-token-comment: #8a857d;
-	--rf-syntax-token-function: #4a3b6e;
-	--rf-syntax-token-parameter: #1c1a17;
 	--rf-syntax-token-punctuation: #6b6661;
-	--rf-syntax-token-link: #4a3b6e;
+	--rf-syntax-token-operator: #6b6661;
+	--rf-syntax-token-parameter: #1c1a17;
+	--rf-syntax-token-property: #1c1a17;
+	--rf-syntax-foreground: #1c1a17;
+	--rf-syntax-background: #ebeae8;
+	--rf-color-inline-code-bg: #e6e5e3;
+	--rf-surface-inset-shift: 0.04;
 }
