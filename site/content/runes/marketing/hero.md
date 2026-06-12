@@ -102,18 +102,18 @@ The band's height comes from `height` (named scale) or `aspect` (a ratio); with 
 
 ### Animated background — a live program as the backdrop
 
-The media zone holds *any* [media guest](/runes/media-guests) — including a running [sandbox](/runes/sandbox). Drop a three.js scene in the media zone and the hero gets an **animated background**: the sandbox becomes an inert presentational backdrop (no pointer events, no focus stops), the content overlays it, and the scrim keeps the text legible. This is the prism scene — markdown glyphs refracting into the site's own [niwaki](/themes/niwaki) syntax colours:
+The media zone holds *any* [media guest](/runes/media-guests) — including a running [sandbox](/runes/sandbox). Drop a three.js scene in the media zone and the hero gets an **animated background**: the sandbox becomes an inert presentational backdrop (no pointer events, no focus stops), the content overlays it, and the scrim keeps the text legible. Here a wireframe terrain rolls in slow swells, its crests picking up the site's own [niwaki](/themes/niwaki) accent colours:
 
 {% preview source=true %}
 
 {% hero media-position="cover" height="lg" %}
-{% sandbox src="prism-scene" /%}
+{% sandbox src="wireframe-waves" /%}
 
 ---
 
 # Markdown in, meaning out
 
-Plain text refracts into structured, semantic pages.
+Plain text becomes structured, semantic pages.
 
 - [See how it works](/docs/getting-started)
 {% /hero %}
@@ -126,7 +126,7 @@ Plain text refracts into structured, semantic pages.
 
 - **Eager only.** `activation="visible"` or `"click"` contradicts an inert backdrop — the Run control would be unreachable — and produces a build warning. The cost lands on first paint, so keep the scene lean.
 - **Design dim.** The scene sits *under* the scrim; darker than feels right in isolation is right.
-- **Respect motion.** Render a single static frame under `prefers-reduced-motion` (the prism scene does).
+- **Respect motion.** Render a single static frame under `prefers-reduced-motion` (the waves scene does).
 - **Cap the budget.** Pin the dependency version, cap `devicePixelRatio`, pause the animation loop when the tab is hidden, and put a CSS gradient behind the canvas so the boot frame looks designed. Ship a static fallback for no-WebGL / blocked-CDN visitors.
 
 ### Cover attributes

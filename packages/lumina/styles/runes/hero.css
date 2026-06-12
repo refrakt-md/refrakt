@@ -206,21 +206,44 @@
 }
 
 /* Band height authority: a hero is a full-width band, not a portrait tile.
- * Override the shared 3/4 cover default with a wide aspect via the
- * --cover-aspect hook (an explicit `aspect` knob lands as an inline style and
- * wins; `frame-aspect` wins via the var chain), plus a viewport-aware floor so
- * narrow screens don't get a letterbox sliver. */
+ * Height comes from a viewport-aware floor — deliberately NOT a default
+ * aspect-ratio: with `aspect-ratio` + `min-height`, the ratio transfers a
+ * winning min-height back into *width* on narrow screens (a 22rem-tall 21/9
+ * band computes ~820px wide on a 375px phone — the band marches off-screen).
+ * `--cover-aspect: auto` releases the shared 3/4 tile default; an explicit
+ * `aspect` knob still lands as an inline style and owns the shape. */
 .rf-hero--cover {
-	--cover-aspect: 21 / 9;
+	--cover-aspect: auto;
 	min-height: clamp(22rem, 55vh, 40rem);
 }
+/* An explicit aspect owns the shape — drop the floor so the same
+ * ratio-vs-min-height transfer can't reintroduce the overflow. */
+.rf-hero--cover[data-aspect] {
+	min-height: 0;
+}
 
-/* Named height scale (`height="sm…xl"`): an explicit band height replaces the
- * aspect as the authority (`--cover-aspect: auto` releases the shared rule). */
-.rf-hero--cover[data-height="sm"] { --cover-aspect: auto; min-height: 20rem; }
-.rf-hero--cover[data-height="md"] { --cover-aspect: auto; min-height: 28rem; }
-.rf-hero--cover[data-height="lg"] { --cover-aspect: auto; min-height: 36rem; }
-.rf-hero--cover[data-height="xl"] { --cover-aspect: auto; min-height: 44rem; }
+/* The shared cover layer applies `container-type: size` (size containment) for
+ * its orientation query — under it the band cannot grow with its content, so
+ * tall content clips at min-height. The hero band doesn't use the orientation
+ * query (the centred-band default below covers `auto` placement), so release
+ * the containment and let the band stretch to fit. */
+.rf-hero--cover[data-media-position="cover"][data-cover-scope="full"] {
+	container-type: normal;
+}
+
+/* Named height scale (`height="sm…xl"`): an explicit band height. */
+.rf-hero--cover[data-height="sm"] { min-height: 20rem; }
+.rf-hero--cover[data-height="md"] { min-height: 28rem; }
+.rf-hero--cover[data-height="lg"] { min-height: 36rem; }
+.rf-hero--cover[data-height="xl"] { min-height: 44rem; }
+
+/* Mobile: the desktop overlay padding (7rem bands) would eat most of the well
+ * on a phone — tighten it so the content fits the band. */
+@media (max-width: 640px) {
+	.rf-hero--cover > [data-name="content"] {
+		--rune-padding: 3.5rem 1.25rem 3rem;
+	}
+}
 
 /* A full-bleed band sits flush — no media radius on the well. */
 .rf-hero--cover > [data-section="media"] {

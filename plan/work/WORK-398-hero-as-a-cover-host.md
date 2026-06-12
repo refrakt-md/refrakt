@@ -48,4 +48,19 @@ Branch: `claude/spec-101-hero-cover-prism`
 - The engine side (scrim, foreground flip, posture) keyed on the modifier value and fired for hero without changes — this item was purely the hero-side delta, as SPEC-101 predicted.
 - Legibility was verified by construction (the `data-color-scheme` token flip + the one fix found by inspection) and in the built page markup; a browser eyeball of /runes/marketing/hero in light/dark is still worthwhile.
 
+
+---
+
+Completed: 2026-06-12
+
+### Follow-up fix (mobile overflow)
+The 21/9 default `--cover-aspect` + `min-height` combination transferred a winning
+min-height back into *width* on narrow screens (aspect-ratio size transfer), pushing
+the band ~2× off-screen on phones. The band default is now `--cover-aspect: auto` +
+the viewport floor only; an explicit `aspect` knob drops the floor
+(`[data-aspect] { min-height: 0 }`) so it can't reintroduce the transfer. Also:
+cover containment released for hero (`container-type: normal` — the band grows with
+content instead of clipping at min-height) and the overlay padding tightens on
+mobile (3.5rem/1.25rem under 640px).
+
 {% /work %}

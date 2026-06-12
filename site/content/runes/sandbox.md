@@ -167,7 +167,7 @@ Pin the version for reproducibility; for production also honour `prefers-reduced
 `height` normally takes pixels (or auto-sizes to the content). Set `height="fill"` when a **host element owns the height** — the iframe is pinned to `100%` of the host and the auto-resize negotiation is disabled. The flagship case is a sandbox serving as a [cover backdrop](/runes/marketing/hero#animated-background--a-live-program-as-the-backdrop) (a hero or card with `media-position="cover"`): there the engine applies `fill` automatically, so you only need it explicitly for custom fixed-height containers.
 
 ```markdoc
-{% sandbox src="prism-scene" height="fill" /%}
+{% sandbox src="wireframe-waves" height="fill" /%}
 ```
 
 ## Deferred activation — keep heavy sandboxes off the critical path

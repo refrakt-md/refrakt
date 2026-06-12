@@ -9,12 +9,14 @@
 
 [data-density="full"] {
 	--rune-padding: var(--rf-spacing-md);
+	--rf-title-size: 1.5rem;
 }
 
 /* ─── Compact: truncated descriptions, tight spacing ──────────────── */
 
 [data-density="compact"] {
 	--rune-padding: var(--rf-spacing-sm);
+	--rf-title-size: 1.25rem;
 }
 
 [data-density="compact"] [data-section="description"] {
@@ -32,6 +34,7 @@
 
 [data-density="minimal"] {
 	--rune-padding: var(--rf-spacing-xs);
+	--rf-title-size: 1rem;
 }
 
 [data-density="minimal"] [data-section="description"] {

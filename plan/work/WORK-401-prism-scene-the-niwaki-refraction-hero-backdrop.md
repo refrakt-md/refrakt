@@ -47,4 +47,19 @@ Branch: `claude/spec-101-hero-cover-prism`
 ### Notes
 - Module syntax checked; the scene ships embedded in the hero docs page and the site build is green (no SSR/WebGL at build). The actual WebGL render needs a browser glance: `cd site && npm run dev` → /runes/marketing/hero (the animated-background example) in light + dark, plus the reduced-motion still frame.
 
+
+---
+
+Completed: 2026-06-12
+
+### Superseded in review — wireframe waves
+The prism scene shipped, worked, and was pulled on review: too experimental for the
+flagship example (user call). Replaced by `site/examples/wireframe-waves/` — the
+SPEC-101 "safe classic": a vertex-displaced wireframe plane rolling in slow
+sine-sum swells, ishi-stone base with matsu (light) / wakaba (dark) crest tints,
+fog fading the far edge into the CSS backdrop. The full production posture carries
+over unchanged (pinned three.js, DPR cap 1.5, visibilitychange pause, reduced-motion
+static frame, fade-in over the boot gradient, CSS horizon-lines fallback, no pointer
+handlers). `site/examples/prism-scene/` removed; docs and records updated.
+
 {% /work %}
