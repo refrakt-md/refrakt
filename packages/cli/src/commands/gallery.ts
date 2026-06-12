@@ -2,7 +2,8 @@ import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import type { Rune } from '@refrakt-md/runes';
-import type { ThemeConfig } from '@refrakt-md/transform';
+import type { ThemeConfig, RuneConfig } from '@refrakt-md/transform';
+import { toKebabCase } from '@refrakt-md/transform';
 import { getFixture, hasFixture } from '../lib/fixtures.js';
 import { discoverVariants } from '../lib/variants.js';
 import { flattenCssImports, renderGalleryDocument, type GalleryCell } from '../lib/gallery.js';
@@ -33,8 +34,31 @@ export async function galleryCommand(options: GalleryOptions, deps: InspectDeps)
 	// Stable rune order for deterministic output.
 	const runes = Object.values(deps.runes).sort((a, b) => a.name.localeCompare(b.name));
 
+	// Resolve config the way the identity transform does: by kebab-casing the
+	// config key to match the rune. Plugin runes have no `typeName` (loadPlugin
+	// doesn't set one), so a typeName-only lookup drops every plugin rune
+	// (BUG-002). The match is also looser than `name === kebab(key)` because a
+	// rune's CLI name can differ from its `data-rune` / config key (e.g. `cta` →
+	// `call-to-action`/`CallToAction`, `howto` → `how-to`/`HowTo`), so we try the
+	// name, its aliases, and a separator-insensitive form.
+	const configByRune = new Map<string, RuneConfig>();
+	for (const [key, cfg] of Object.entries(config.runes)) {
+		const kebab = toKebabCase(key);
+		configByRune.set(kebab, cfg);
+		configByRune.set(kebab.replace(/-/g, ''), cfg);
+	}
+	const resolveConfig = (rune: Rune): RuneConfig | undefined => {
+		if (rune.typeName && config.runes[rune.typeName]) return config.runes[rune.typeName];
+		const keys = [rune.name, ...(rune.aliases ?? [])].flatMap(k => [k, k.replace(/-/g, '')]);
+		for (const k of keys) {
+			const cfg = configByRune.get(k);
+			if (cfg) return cfg;
+		}
+		return undefined;
+	};
+
 	for (const rune of runes) {
-		const runeConfig = rune.typeName ? config.runes[rune.typeName] : undefined;
+		const runeConfig = resolveConfig(rune);
 		if (!runeConfig) continue; // component-only rune, no identity-transform config
 		if (runeConfig.requiresParent) continue; // child rune — not standalone-renderable
 		// Child runes declare a specific `parent` (e.g. budget-line-item → Budget);
