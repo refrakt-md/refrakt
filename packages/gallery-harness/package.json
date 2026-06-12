@@ -1,0 +1,16 @@
+{
+  "name": "@refrakt-md/gallery-harness",
+  "version": "0.21.0",
+  "private": true,
+  "description": "Visual-regression harness for the refrakt gallery — Playwright screenshots of rune cells + layout fixtures, with per-theme golden baselines. Opt-in; not part of the runtime/CLI install path.",
+  "type": "module",
+  "scripts": {
+    "gallery": "node ../cli/dist/bin.js gallery --site main --out .artifacts",
+    "test": "playwright test",
+    "update": "playwright test --update-snapshots",
+    "install-browser": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.60.0"
+  }
+}

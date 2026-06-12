@@ -19,8 +19,8 @@ screenshot testing exists in the repo today; this is greenfield.
 
 - [ ] A shared harness snapshots both subjects (rune clips per mode; layout pages per viewport) into committed per-theme baselines.
 - [ ] Lumina has baseline coverage for all runes and the four existing layouts; the suite runs in CI in a pinned container.
-- [ ] A second theme could adopt it with config + baselines + script only (no logic copy).
-- [ ] The harness ships as an opt-in package; the core CLI / runtime install pulls no browser binaries.
+- [x] A second theme could adopt it with config + baselines + script only (no logic copy).
+- [x] The harness ships as an opt-in package; the core CLI / runtime install pulls no browser binaries.
 
 ## Dependencies
 
