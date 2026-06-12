@@ -80,7 +80,8 @@
     "assets"
   ],
   "scripts": {
-    "build": "tsc"
+    "build": "tsc && node scripts/generate-tokens.mjs",
+    "generate-tokens": "node scripts/generate-tokens.mjs"
   },
   "dependencies": {
     "@refrakt-md/runes": "0.21.0",

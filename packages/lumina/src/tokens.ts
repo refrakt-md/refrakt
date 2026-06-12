@@ -6,9 +6,11 @@ import type { ThemeTokensConfig } from '@refrakt-md/types';
  * "quiet spectrum walk" syntax palette (teal / violet / rust / ochre /
  * sage), and the four muted-earthy status colours.
  *
- * This is the *source of truth* for Lumina's runtime CSS values; the
- * hand-authored `tokens/base.css` and `tokens/dark.css` mirror it
- * verbatim and a coverage test keeps the two in lockstep.
+ * This is the *source of truth* for Lumina's runtime CSS values. The
+ * `tokens/base.css` and `tokens/dark.css` files are **generated** from this
+ * export by `scripts/generate-tokens.mjs` (run as part of the package build via
+ * `generateThemeStylesheet`); a drift test (`test/token-generation.test.ts`)
+ * fails CI if the committed CSS diverges. Edit this file, never the CSS.
  *
  * Sites that want the previous cream-and-navy appearance opt into the
  * `tideline` preset shipping alongside this default (see
