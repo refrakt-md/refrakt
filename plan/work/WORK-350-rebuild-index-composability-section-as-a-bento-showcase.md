@@ -1,4 +1,4 @@
-{% work id="WORK-350" status="ready" priority="medium" complexity="moderate" source="SPEC-085" milestone="v0.21.0" tags="site,bento,composability,demo,capstone" %}
+{% work id="WORK-350" status="ready" priority="medium" complexity="moderate" source="SPEC-085" tags="site,bento,composability,demo,capstone" %}
 
 # Rebuild index composability section as a bento showcase
 
