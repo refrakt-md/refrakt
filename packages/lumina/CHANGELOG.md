@@ -1,5 +1,27 @@
 # @refrakt-md/lumina
 
+## 0.21.0
+
+### Minor Changes
+
+- 27124ea: **Hero cover layout + animated sandbox backgrounds** (SPEC-101). `hero` is now a first-class `media-position="cover"` host: the media well fills the section interior and the headline/blurb/actions overlay it, with the cover knobs (`content-place`, `height`, `aspect`), a band-appropriate height authority (a viewport-relative floor instead of the 3/4 tile default), root padding rerouted to the overlay, and a centred-band overlay default with an even scrim. Any non-`img`/`video` media guest now fills a cover well; `sandbox` gains `height="fill"` (iframe pinned to 100%, auto-resize negotiation disabled), applied automatically when a sandbox is a cover backdrop — so a live three.js scene drops into a hero as a full-bleed, inert animated background. A non-eager (`activation="visible"|"click"`) sandbox under cover warns at build time (the Run affordance is unreachable on an inert backdrop). Ships with the wireframe-waves showcase (`site/examples/wireframe-waves/`) — a displaced wireframe terrain whose crests pick up the niwaki palette. Also fixes nested-density title sizing: `[data-section="title"]` now sizes via `--rf-title-size` (set per density root), so a full-density rune inside a compact host (a hero in a `preview`) keeps its real title size. And fixes inverted stacked media labels (BUG-001): hero/feature/step have content-first DOM, so the shared media-first stacked CSS rendered `top` at the bottom and vice versa — their default is now a truthful `bottom` (zero visual change for existing content) and explicit `top`/`bottom` render where they say.
+- 2f6332d: **Deferred sandbox activation** (WORK-381) — keep heavy sandboxes off the critical path. `{% sandbox %}` gains `activation` (`eager` default | `visible` | `click`) and a `poster` image URL. A non-eager sandbox shows the poster and an explicit **Run** control in the iframe's place and defers iframe creation _and_ every dependency download until activated — `visible` mounts on scroll-in (`IntersectionObserver`), `click` mounts on user action. Under `prefers-reduced-motion` a non-eager sandbox never auto-activates: the poster and control stay so motion-sensitive visitors opt in. Eager sandboxes are unchanged (no markup or behaviour regression). The site's 3D star-map sitemap now loads only when scrolled into view.
+- ad780ca: **`section` rune** — a generic page section: the shared eyebrow → headline → blurb (+ image) header above **arbitrary body content**. Unlike `feature`/`hero`/`reveal`, it doesn't bake in a specific body layout, so it can introduce header-less primitives like [`bento`](https://refrakt.md/runes/marketing/bento) with a title and intro. Every header slot is optional (body-only renders just the body); `align` (`start`|`center`|`end`) positions the header while the body spans the section.
+
+### Patch Changes
+
+- Updated dependencies [92c8f1b]
+- Updated dependencies [b8d9396]
+- Updated dependencies [cf0489f]
+- Updated dependencies [27124ea]
+- Updated dependencies [8939b35]
+- Updated dependencies [69b4d9c]
+- Updated dependencies [2f6332d]
+- Updated dependencies [ad780ca]
+  - @refrakt-md/runes@0.21.0
+  - @refrakt-md/transform@0.21.0
+  - @refrakt-md/types@0.21.0
+
 ## 0.20.2
 
 ### Patch Changes
