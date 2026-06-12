@@ -4,11 +4,15 @@
      designed even before three.js arrives (and remains if it never does). */
   body { background: linear-gradient(rgb(247 246 242) 0%, rgb(236 234 227) 100%); }
   html.dark body, body.dark { background: linear-gradient(rgb(20 20 23) 0%, rgb(13 13 16) 100%); }
-  #scene { display: block; width: 100%; height: 100%; opacity: 0; transition: opacity 0.8s ease; }
+  /* Pinned to the iframe viewport, NOT height: 100% — directory-mode sandbox
+     content ships inside a plain wrapper div (auto height), which breaks a
+     percentage-height chain: the canvas would collapse to its attribute
+     height and render as a fixed-size strip at the top of the band. */
+  #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 0.8s ease; }
   #scene.on { opacity: 1; }
   /* No-JS / no-WebGL / blocked-CDN fallback: a few soft horizon lines keep
      the wave suggestion without competing with overlaid hero content. */
-  #fallback { display: none; position: relative; height: 100%; overflow: hidden; }
+  #fallback { display: none; position: fixed; inset: 0; overflow: hidden; }
   #fallback.on { display: block; }
   #fallback i {
     position: absolute; left: -5%; right: -5%; height: 2px; display: block;

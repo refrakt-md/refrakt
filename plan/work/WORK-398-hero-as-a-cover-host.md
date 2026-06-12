@@ -63,4 +63,17 @@ cover containment released for hero (`container-type: normal` — the band grows
 content instead of clipping at min-height) and the overlay padding tightens on
 mobile (3.5rem/1.25rem under 640px).
 
+
+---
+
+Completed: 2026-06-12
+
+### Follow-up 3 — follow-up 2 reverted
+Reverted in review: empirically the cover grid's 1fr row does stretch to the
+min-height'd band (browsers resolve it against the box's used height), so the
+containment was not load-bearing — and restoring it made the band ignore content
+height, cropping the image-cover example's overlay. `container-type: normal`
+stands (the band grows with content). The backdrop-strip symptom that motivated
+follow-up 2 was actually inside the iframe document — see WORK-401's note.
+
 {% /work %}

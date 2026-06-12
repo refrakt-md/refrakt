@@ -62,4 +62,19 @@ over unchanged (pinned three.js, DPR cap 1.5, visibilitychange pause, reduced-mo
 static frame, fade-in over the boot gradient, CSS horizon-lines fallback, no pointer
 handlers). `site/examples/prism-scene/` removed; docs and records updated.
 
+
+---
+
+Completed: 2026-06-12
+
+### Fix — canvas pinned to the iframe viewport
+The "wireframe cut off at the bottom / fixed aspect" report: directory-mode
+sandbox assembly wraps the example's HTML in a plain `<div data-source="HTML">`
+(attribute stripped in the iframe, the wrapper stays). That auto-height div sits
+between `body` and the canvas, so the canvas's `height: 100%` resolved to auto
+and collapsed to its attribute height — a fixed-size strip at the top of the
+band. The canvas (and the CSS fallback) are now `position: fixed; inset: 0` —
+pinned to the iframe viewport, immune to wrapper structure. The hero docs
+authoring contract gained a bullet documenting the pattern.
+
 {% /work %}

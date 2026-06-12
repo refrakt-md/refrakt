@@ -128,6 +128,7 @@ Plain text becomes structured, semantic pages.
 - **Design dim.** The scene sits *under* the scrim; darker than feels right in isolation is right.
 - **Respect motion.** Render a single static frame under `prefers-reduced-motion` (the waves scene does).
 - **Cap the budget.** Pin the dependency version, cap `devicePixelRatio`, pause the animation loop when the tab is hidden, and put a CSS gradient behind the canvas so the boot frame looks designed. Ship a static fallback for no-WebGL / blocked-CDN visitors.
+- **Pin the canvas to the viewport.** Size it with `position: fixed; inset: 0` rather than a `height: 100%` chain — sandbox content renders inside a plain wrapper element with auto height, which breaks percentage heights and leaves the canvas as a fixed-size strip.
 
 ### Cover attributes
 
