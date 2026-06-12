@@ -80,6 +80,14 @@ body.rf-gallery {
 	margin: 0 0 1.5rem;
 }
 .rf-gallery__cell { margin: 0 0 2rem; }
+.rf-gallery__gap {
+	font-family: var(--rf-font-mono, monospace);
+	font-size: 0.75rem;
+	color: var(--rf-color-muted, #999);
+	border: 1px dashed var(--rf-color-border, #ccc);
+	border-radius: var(--rf-radius-sm, 4px);
+	padding: 0.75rem 1rem;
+}
 .rf-gallery__cell-label {
 	display: block;
 	font-family: var(--rf-font-mono, monospace);

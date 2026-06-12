@@ -11,6 +11,12 @@ import { RUNE_EXAMPLES } from '@refrakt-md/runes';
 /** Built-in fixture strings, keyed by rune name. Generated from fixtures/*.md. */
 export const fixtures: Record<string, string> = RUNE_EXAMPLES;
 
+/** Whether a rune has a real fixture (plugin fixture or the unified manifest),
+ *  i.e. `getFixture` would return authored content rather than the stub. */
+export function hasFixture(runeName: string, packageFixtures?: Record<string, string>): boolean {
+	return Boolean(packageFixtures?.[runeName] ?? fixtures[runeName]);
+}
+
 /** Get a fixture for a rune, with optional attribute overrides applied to the source */
 export function getFixture(runeName: string, attrOverrides?: Record<string, string>): string {
 	const source = fixtures[runeName];
