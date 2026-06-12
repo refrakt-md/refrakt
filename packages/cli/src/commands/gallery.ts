@@ -68,12 +68,13 @@ export async function galleryCommand(options: GalleryOptions, deps: InspectDeps)
 	}
 
 	const themeCss = loadThemeCss(options.theme);
+	const behaviorScript = await bundleBehaviors();
 
 	mkdirSync(options.outDir, { recursive: true });
 	const themeName = options.theme.replace(/^@[^/]+\//, '').replace(/[@/]/g, '-');
 
 	for (const mode of ['light', 'dark'] as const) {
-		const doc = renderGalleryDocument({ mode, themeCss, cells });
+		const doc = renderGalleryDocument({ mode, themeCss, cells, behaviorScript });
 		const file = resolve(options.outDir, `${themeName}.${mode}.html`);
 		writeFileSync(file, doc);
 		console.log(`Wrote ${file}`);
@@ -157,6 +158,41 @@ function renderCell(
 	const serialized = deps.serializeTree(transformed);
 	const tree = transform(serialized);
 	return deps.renderToHtml(tree, { pretty: false });
+}
+
+/**
+ * Bundle the HTML adapter's `initPage` (which registers the rune web components
+ * and wires behaviors) into a browser IIFE via esbuild, so interactive /
+ * lifecycle runes (tabs, diagram, chart, nav) enhance/render when the gallery
+ * is opened or screenshotted. Mirrors `create-refrakt`'s `template-html` client
+ * bundle. Returns `undefined` (with a warning) if bundling isn't possible, so
+ * the gallery degrades gracefully to its static form.
+ */
+async function bundleBehaviors(): Promise<string | undefined> {
+	try {
+		const esbuild = await import('esbuild');
+		const entry = [
+			"import { initPage } from '@refrakt-md/html/client';",
+			'const run = () => { initPage(); };',
+			"if (document.readyState !== 'loading') run();",
+			"else document.addEventListener('DOMContentLoaded', run);",
+		].join('\n');
+		const result = await esbuild.build({
+			stdin: { contents: entry, resolveDir: process.cwd(), loader: 'ts' },
+			bundle: true,
+			format: 'iife',
+			platform: 'browser',
+			target: 'es2020',
+			minify: true,
+			write: false,
+		});
+		const out = result.outputFiles?.[0]?.text;
+		if (!out) throw new Error('esbuild produced no output');
+		return out;
+	} catch (err) {
+		console.warn(`Behaviors not bundled (gallery will be static): ${(err as Error).message}`);
+		return undefined;
+	}
 }
 
 /** Resolve and flatten the theme package's entry CSS into a self-contained

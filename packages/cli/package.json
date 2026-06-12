@@ -38,8 +38,10 @@
     "@markdoc/markdoc": "0.4.0",
     "@refrakt-md/ai": "0.21.0",
     "@refrakt-md/editor": "0.21.0",
+    "@refrakt-md/html": "0.21.0",
     "@refrakt-md/runes": "0.21.0",
     "@refrakt-md/transform": "0.21.0",
+    "esbuild": "^0.27.5",
     "postcss": "^8.4.0"
   }
 }
