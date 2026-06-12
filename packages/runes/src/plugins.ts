@@ -479,7 +479,10 @@ export async function discoverPluginFixtures(npmPackageName: string): Promise<Re
 		for (const file of files) {
 			if (!file.endsWith('.md')) continue;
 			const runeName = file.slice(0, -3);
-			const content = readFileSync(join(fixturesDir, file), 'utf-8');
+			const raw = readFileSync(join(fixturesDir, file), 'utf-8');
+			// Strip a leading YAML frontmatter block (SPEC-102) so it never leaks
+			// into rendered content; bare fixtures (no frontmatter) are unaffected.
+			const content = raw.replace(/^---\n[\s\S]*?\n---\n?/, '');
 			if (content.trim()) {
 				fixtures[runeName] = content;
 			}

@@ -9,6 +9,7 @@ runes shown standalone.
 
 ## Scope
 
+- **Frontmatter fields** (carried over from {% ref "WORK-411" /%}, which established the format + stripping): parse + validate the `role` / `attributes` / `demonstrates` / `notes` fields and support `<rune>.<scenario>.md` scenarios, so the richer manifest and the gallery's variant selection can use them.
 - Author `canonical`-role fixtures for the runes that lack one (the ~25 stub runes: `badge`, `bar`, `card`, `blog`, `gallery`, `progress`, `drawer`, `expand`, `collection`, `conversation`, `juxtapose`, `tint`, `section`, `aggregate`, `annotate`, `file-ref`, `relationships`, `reveal`, `bg`, …), with sensible `attributes` and `notes`.
 - Add `attributes` annotations to existing fixtures so the gallery's variant matrix renders representative content (not just an added bare attribute).
 - Where a rune's structural variants need distinct content (e.g. `card` with/without cover media), add named-scenario files.
