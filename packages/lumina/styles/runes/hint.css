@@ -46,14 +46,14 @@
 	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 11.08V12a10 10 0 1 1-5.93-9.14'/%3E%3Cpolyline points='22 4 12 14.01 9 11.01'/%3E%3C/svg%3E");
 }
 .rf-hint__header [data-meta-value] {
-	font-weight: 600;
+	font-weight: var(--rf-weight-semibold);
 	text-transform: capitalize;
-	font-size: 0.8rem;
-	letter-spacing: 0.03em;
+	font-size: var(--rf-text-xs);
+	letter-spacing: var(--rf-tracking-wide);
 }
 .rf-hint__body {
-	font-size: 0.925rem;
-	line-height: 1.65;
+	font-size: var(--rf-text-sm);
+	line-height: var(--rf-leading-relaxed);
 }
 .rf-hint__body p:last-child {
 	margin-bottom: 0;
@@ -78,7 +78,7 @@
 	margin: 1rem 0 0;
 	padding: 0.625rem 1rem;
 	border-radius: var(--rf-radius-sm);
-	font-size: 0.875rem;
+	font-size: var(--rf-text-sm);
 }
 .rf-hint--in-hero .rf-hint__header {
 	margin-bottom: 0.25rem;
@@ -88,5 +88,5 @@
 .rf-hint--in-feature {
 	margin: 0.75rem 0 0;
 	padding: 0.5rem 0.875rem;
-	font-size: 0.85rem;
+	font-size: var(--rf-text-sm);
 }

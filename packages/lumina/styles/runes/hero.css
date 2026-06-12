@@ -13,9 +13,9 @@
 }
 /* Higher specificity needed to override .rf-hero p (0,1,1) */
 .rf-hero .rf-hero__eyebrow {
-	font-size: 0.875rem;
-	font-weight: 600;
-	letter-spacing: 0.05em;
+	font-size: var(--rf-text-sm);
+	font-weight: var(--rf-weight-semibold);
+	letter-spacing: var(--rf-tracking-wider);
 	text-transform: uppercase;
 	color: var(--rf-color-primary);
 	margin: 0 0 1rem;
@@ -29,9 +29,9 @@
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-full);
 	color: var(--rf-color-text);
-	font-weight: 400;
+	font-weight: var(--rf-weight-normal);
 	text-transform: none;
-	letter-spacing: 0;
+	letter-spacing: var(--rf-tracking-normal);
 	transition: border-color 150ms ease;
 }
 .rf-hero .rf-hero__eyebrow:has(a):hover {
@@ -39,7 +39,7 @@
 }
 .rf-hero .rf-hero__eyebrow:has(a) a {
 	color: var(--rf-color-primary);
-	font-weight: 600;
+	font-weight: var(--rf-weight-semibold);
 	text-decoration: none;
 }
 .rf-hero .rf-hero__eyebrow:has(a) a::before {
@@ -93,7 +93,7 @@
 .rf-hero__actions pre {
 	margin: 0;
 	padding: 0.7rem 1.75rem;
-	font-size: 0.95rem;
+	font-size: var(--rf-text);
 	border-radius: var(--rf-radius-sm);
 	background: var(--rf-color-code-bg);
 	color: var(--rf-color-code-text);
@@ -102,10 +102,11 @@
 }
 .rf-hero h1,
 .rf-hero__headline {
+	/* Hero display headline — a one-off above the --rf-text scale's top step. */
 	font-size: 3.25rem;
-	font-weight: 800;
-	letter-spacing: -0.035em;
-	line-height: 1.1;
+	font-weight: var(--rf-weight-bold);
+	letter-spacing: var(--rf-tracking-tight);
+	line-height: var(--rf-leading-tight);
 	margin: 0 0 1rem;
 	background: linear-gradient(135deg, var(--rf-color-text) 0%, var(--rf-color-muted) 100%);
 	-webkit-background-clip: text;
@@ -115,8 +116,8 @@
 /* Higher specificity needed to override .rf-hero p (0,1,1) */
 .rf-hero p,
 .rf-hero .rf-hero__blurb {
-	font-size: 1.2rem;
-	line-height: 1.65;
+	font-size: var(--rf-text-xl);
+	line-height: var(--rf-leading-relaxed);
 	color: var(--rf-color-muted);
 	margin: 0 0 2rem;
 	max-width: 40rem;
@@ -152,8 +153,8 @@
 	padding: 0.7rem 1.75rem;
 	border-radius: var(--rf-radius-sm);
 	text-decoration: none;
-	font-weight: 600;
-	font-size: 0.95rem;
+	font-weight: var(--rf-weight-semibold);
+	font-size: var(--rf-text);
 	transition: all 200ms ease;
 }
 .rf-hero li:first-child a {

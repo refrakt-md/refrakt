@@ -9,9 +9,9 @@
 	margin-bottom: 1.5rem;
 }
 .rf-feature__eyebrow {
-	font-size: 0.8125rem;
-	font-weight: 600;
-	letter-spacing: 0.05em;
+	font-size: var(--rf-text-sm);
+	font-weight: var(--rf-weight-semibold);
+	letter-spacing: var(--rf-tracking-wider);
 	text-transform: uppercase;
 	color: var(--rf-color-primary);
 	margin: 0 0 0.5rem;
@@ -23,13 +23,13 @@
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-full);
 	color: var(--rf-color-text);
-	font-weight: 400;
+	font-weight: var(--rf-weight-normal);
 	text-transform: none;
-	letter-spacing: 0;
+	letter-spacing: var(--rf-tracking-normal);
 	transition: border-color 150ms ease;
 }
 .rf-feature__eyebrow:has(a):hover { border-color: var(--rf-color-muted); }
-.rf-feature__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: 600; text-decoration: none; }
+.rf-feature__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: var(--rf-weight-semibold); text-decoration: none; }
 .rf-feature__eyebrow:has(a) a::before { content: ''; position: absolute; inset: 0; border-radius: inherit; }
 .rf-feature__headline {
 	margin-top: 0;
@@ -97,10 +97,10 @@
 	background: var(--rf-color-surface);
 }
 .rf-feature__feature-item dt {
-	font-weight: 650;
-	font-size: 1.125rem;
+	font-weight: var(--rf-weight-semibold);
+	font-size: var(--rf-text-lg);
 	margin-bottom: 0.75rem;
-	letter-spacing: -0.01em;
+	letter-spacing: var(--rf-tracking-tight);
 	color: var(--rf-color-text);
 }
 .rf-feature__feature-item dt:has(> .rf-icon) {
@@ -116,8 +116,8 @@
 .rf-feature__feature-item dd {
 	margin: 0;
 	color: var(--rf-color-muted);
-	font-size: 0.9rem;
-	line-height: 1.65;
+	font-size: var(--rf-text-sm);
+	line-height: var(--rf-leading-relaxed);
 }
 
 /* Context-aware: feature inside a hero — no top padding, tighter spacing */

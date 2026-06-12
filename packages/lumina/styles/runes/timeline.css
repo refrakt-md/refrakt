@@ -15,22 +15,22 @@
 }
 .rf-timeline-entry > time {
 	display: block;
-	font-size: 0.8rem;
-	font-weight: 600;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-primary);
-	letter-spacing: 0.02em;
+	letter-spacing: var(--rf-tracking-wide);
 	margin-bottom: 0.25rem;
 }
 .rf-timeline-entry > span {
 	display: block;
-	font-size: 1.05rem;
-	font-weight: 700;
+	font-size: var(--rf-text);
+	font-weight: var(--rf-weight-bold);
 	color: var(--rf-color-text);
 	margin-bottom: 0.5rem;
 }
 .rf-timeline-entry__body {
-	font-size: 0.925rem;
-	line-height: 1.65;
+	font-size: var(--rf-text-sm);
+	line-height: var(--rf-leading-relaxed);
 	color: var(--rf-color-muted);
 }
 .rf-timeline-entry__body p:last-child {

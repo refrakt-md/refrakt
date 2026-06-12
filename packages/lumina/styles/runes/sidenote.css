@@ -1,8 +1,8 @@
 /* Sidenote */
 .rf-sidenote {
 	margin: 1rem 0;
-	font-size: 0.875rem;
-	line-height: 1.6;
+	font-size: var(--rf-text-sm);
+	line-height: var(--rf-leading-relaxed);
 }
 .rf-sidenote--sidenote {
 	border-left: 3px solid var(--rf-color-primary);

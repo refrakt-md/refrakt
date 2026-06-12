@@ -20,7 +20,7 @@
 	border: none;
 }
 .rf-embed__fallback {
-	font-size: 0.85rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 	margin-top: 0.5rem;
 }

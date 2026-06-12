@@ -30,9 +30,9 @@
 .rf-sandbox__untrusted-banner {
 	display: block;
 	padding: 0.5rem 0.75rem;
-	font-size: 0.8125rem;
+	font-size: var(--rf-text-sm);
 	line-height: 1.25rem;
-	font-weight: 600;
+	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-warning);
 	background: var(--rf-color-warning-bg, #fef3c7);
 	border-bottom: 1px solid var(--rf-color-warning, #b45309);
@@ -65,7 +65,7 @@
 	gap: 0.5ch;
 	padding: 0.5rem 1rem;
 	font: inherit;
-	font-weight: 600;
+	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-on-accent, #fff);
 	background: var(--rf-color-accent, #2563eb);
 	border: none;

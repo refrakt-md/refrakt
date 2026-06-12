@@ -12,8 +12,8 @@
 .rf-comparison__title {
 	text-align: center;
 	margin: 0 0 1.5rem;
-	font-size: 1.5rem;
-	font-weight: 700;
+	font-size: var(--rf-text-2xl);
+	font-weight: var(--rf-weight-bold);
 	color: var(--rf-color-text);
 }
 .rf-comparison > meta,
@@ -28,7 +28,7 @@
 .rf-comparison__table {
 	width: 100%;
 	border-collapse: collapse;
-	font-size: 0.9375rem;
+	font-size: var(--rf-text);
 }
 .rf-comparison__table thead {
 	position: sticky;
@@ -43,8 +43,8 @@
 }
 .rf-comparison__table thead th {
 	background: var(--rf-color-bg);
-	font-weight: 700;
-	font-size: 1rem;
+	font-weight: var(--rf-weight-bold);
+	font-size: var(--rf-text);
 	color: var(--rf-color-text);
 	border-bottom: 2px solid var(--rf-color-border);
 	vertical-align: bottom;
@@ -55,10 +55,10 @@
 }
 .rf-comparison__recommended-badge {
 	display: block;
-	font-size: 0.6875rem;
-	font-weight: 600;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-semibold);
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
+	letter-spacing: var(--rf-tracking-wider);
 	color: var(--rf-color-primary);
 	margin-top: 0.25rem;
 }
@@ -67,7 +67,7 @@
 	white-space: nowrap;
 }
 .rf-comparison__row-label {
-	font-weight: 600;
+	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-text);
 	white-space: nowrap;
 	background: var(--rf-color-bg);
@@ -79,7 +79,7 @@
 .rf-comparison__cell--highlighted {
 	background: color-mix(in srgb, var(--rf-color-primary) 3%, transparent);
 }
-.rf-comparison__cell p { margin: 0; font-size: 0.875rem; }
+.rf-comparison__cell p { margin: 0; font-size: var(--rf-text-sm); }
 .rf-comparison__cell strong { display: none; }
 .rf-comparison__cell em {
 	font-style: italic;
@@ -90,8 +90,8 @@
 }
 /* Row icons */
 .rf-comparison__row-icon {
-	font-weight: 700;
-	font-size: 1.125rem;
+	font-weight: var(--rf-weight-bold);
+	font-size: var(--rf-text-lg);
 }
 .rf-comparison__row-icon--check {
 	color: var(--rf-color-success);
@@ -113,8 +113,8 @@
 	display: inline-block;
 	background: color-mix(in srgb, var(--rf-color-primary) 10%, transparent);
 	color: var(--rf-color-primary);
-	font-size: 0.75rem;
-	font-weight: 600;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-semibold);
 	padding: 0.125rem 0.5rem;
 	border-radius: 999px;
 }
@@ -149,18 +149,18 @@
 	transform: translateX(-50%);
 	background: var(--rf-color-primary);
 	color: white;
-	font-size: 0.6875rem;
-	font-weight: 700;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-bold);
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
+	letter-spacing: var(--rf-tracking-wider);
 	padding: 0.125rem 0.75rem;
 	border-radius: 999px;
 	white-space: nowrap;
 }
 .rf-comparison-card__name {
 	margin: 0 0 1rem;
-	font-size: 1.125rem;
-	font-weight: 700;
+	font-size: var(--rf-text-lg);
+	font-weight: var(--rf-weight-bold);
 	color: var(--rf-color-text);
 }
 .rf-comparison-card__rows {
@@ -170,7 +170,7 @@
 }
 .rf-comparison-card__row {
 	padding: 0.5rem 0;
-	font-size: 0.875rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 	border-bottom: 1px solid var(--rf-color-border);
 	display: flex;
@@ -188,7 +188,7 @@
 /* Verdict */
 .rf-comparison__verdict {
 	text-align: center;
-	font-size: 0.9375rem;
+	font-size: var(--rf-text);
 	color: var(--rf-color-muted);
 	font-style: italic;
 	margin: 1.5rem auto 0;
@@ -205,7 +205,7 @@
 @media (max-width: 640px) {
 	.rf-comparison__cards { grid-template-columns: 1fr; }
 	.rf-comparison-card--highlighted { transform: none; }
-	.rf-comparison__table { font-size: 0.8125rem; }
+	.rf-comparison__table { font-size: var(--rf-text-sm); }
 	.rf-comparison__table th,
 	.rf-comparison__table td { padding: 0.5rem 0.625rem; }
 }

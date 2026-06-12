@@ -6,8 +6,8 @@
 	align-items: center;
 	gap: 0.5rem;
 	padding: 0.75rem 0;
-	font-weight: 600;
-	font-size: 0.925rem;
+	font-weight: var(--rf-weight-semibold);
+	font-size: var(--rf-text-sm);
 	cursor: pointer;
 	user-select: none;
 	list-style: none;
@@ -30,8 +30,8 @@
 }
 .rf-details__body {
 	padding: 0 0 1rem;
-	font-size: 0.925rem;
-	line-height: 1.65;
+	font-size: var(--rf-text-sm);
+	line-height: var(--rf-leading-relaxed);
 }
 .rf-details__body p:last-child {
 	margin-bottom: 0;

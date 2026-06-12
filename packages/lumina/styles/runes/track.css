@@ -16,7 +16,7 @@
 .rf-track::before {
 	content: counter(track);
 	min-width: 1.5rem;
-	font-size: 0.8rem;
+	font-size: var(--rf-text-xs);
 	color: var(--rf-color-primary);
 	text-align: right;
 	flex-shrink: 0;
@@ -25,8 +25,8 @@
 /* Track name — primary text, takes remaining space */
 .rf-track__track-name {
 	flex: 1;
-	font-size: 0.9375rem;
-	font-weight: 500;
+	font-size: var(--rf-text);
+	font-weight: var(--rf-weight-medium);
 	color: var(--rf-color-text);
 	min-width: 0;
 	overflow: hidden;
@@ -36,7 +36,7 @@
 
 /* Artist — secondary text with dot separator */
 .rf-track__track-artist {
-	font-size: 0.8125rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 	flex-shrink: 0;
 }
@@ -48,7 +48,7 @@
 
 /* Duration — pushed right, tabular nums */
 .rf-track__track-duration {
-	font-size: 0.8125rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 	font-variant-numeric: tabular-nums;
 	flex-shrink: 0;
@@ -59,7 +59,7 @@
 
 /* Meta (date etc.) — dot separator */
 .rf-track__track-meta {
-	font-size: 0.75rem;
+	font-size: var(--rf-text-xs);
 	color: var(--rf-color-muted);
 	flex-shrink: 0;
 }
@@ -72,9 +72,9 @@
 /* Description — full width below the row */
 .rf-track__track-description {
 	flex-basis: 100%;
-	font-size: 0.8125rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
-	line-height: 1.5;
+	line-height: var(--rf-leading-normal);
 	padding-top: 0.5rem;
 }
 .rf-track__track-description p {
@@ -93,7 +93,7 @@
 	list-style: none;
 	padding: 0.5rem 0 0;
 	margin: 0;
-	font-size: 0.8125rem;
+	font-size: var(--rf-text-sm);
 }
 .rf-track [data-name="lyrics"] li {
 	padding: 0.125rem 0;
@@ -109,7 +109,7 @@
 }
 .rf-track [data-name="chapter-name"] {
 	color: var(--rf-color-text);
-	font-weight: 500;
+	font-weight: var(--rf-weight-medium);
 }
 .rf-track [data-name="chapter-time"] {
 	color: var(--rf-color-muted);

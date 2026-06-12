@@ -1,6 +1,6 @@
 /* Breadcrumb */
 .rf-breadcrumb {
-	font-size: 0.85rem;
+	font-size: var(--rf-text-sm);
 	margin: 0 0 1.5rem;
 }
 .rf-breadcrumb__items {
@@ -42,5 +42,5 @@
 }
 .rf-breadcrumb li:last-child span {
 	color: var(--rf-color-text);
-	font-weight: 500;
+	font-weight: var(--rf-weight-medium);
 }

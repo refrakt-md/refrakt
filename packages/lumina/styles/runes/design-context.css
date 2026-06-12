@@ -1,7 +1,7 @@
 /* Design Context — unified token card wrapper */
 .rf-design-context__title {
-	font-size: 1.25rem;
-	font-weight: 700;
+	font-size: var(--rf-text-xl);
+	font-weight: var(--rf-weight-bold);
 	margin-bottom: 1rem;
 }
 .rf-design-context__sections {

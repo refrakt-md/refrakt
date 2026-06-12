@@ -36,7 +36,7 @@
 /* Compact variant */
 .rf-form--compact {
 	gap: 0.75rem;
-	font-size: 0.875rem;
+	font-size: var(--rf-text-sm);
 }
 .rf-form--compact .rf-form__body {
 	gap: 0.75rem;
@@ -45,7 +45,7 @@
 .rf-form--compact textarea,
 .rf-form--compact select {
 	padding: 0.375rem 0.625rem;
-	font-size: 0.8125rem;
+	font-size: var(--rf-text-sm);
 }
 /* Field */
 .rf-form-field {
@@ -54,8 +54,8 @@
 	gap: 0.375rem;
 }
 .rf-form-field label {
-	font-size: 0.875rem;
-	font-weight: 600;
+	font-size: var(--rf-text-sm);
+	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-text);
 }
 .rf-form-field__required {
@@ -68,7 +68,7 @@
 	padding: 0.5rem 0.75rem;
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-md);
-	font-size: 0.9375rem;
+	font-size: var(--rf-text);
 	font-family: inherit;
 	color: var(--rf-color-text);
 	background: var(--rf-color-bg);
@@ -94,8 +94,8 @@
 	margin: 0.5rem 0 0;
 }
 .rf-form-fieldset legend {
-	font-size: 1.0625rem;
-	font-weight: 700;
+	font-size: var(--rf-text-lg);
+	font-weight: var(--rf-weight-bold);
 	color: var(--rf-color-text);
 	padding: 0;
 	margin-bottom: 0.75rem;
@@ -106,8 +106,8 @@
 	padding: 0;
 }
 .rf-form-choice-group legend {
-	font-size: 0.875rem;
-	font-weight: 600;
+	font-size: var(--rf-text-sm);
+	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-text);
 	padding: 0;
 	margin-bottom: 0.5rem;
@@ -118,7 +118,7 @@
 	gap: 0.5rem;
 	padding: 0.375rem 0;
 	cursor: pointer;
-	font-size: 0.9375rem;
+	font-size: var(--rf-text);
 }
 .rf-form-choice input {
 	width: auto;
@@ -132,8 +132,8 @@
 	color: white;
 	border: none;
 	border-radius: var(--rf-radius-md);
-	font-size: 0.9375rem;
-	font-weight: 600;
+	font-size: var(--rf-text);
+	font-weight: var(--rf-weight-semibold);
 	cursor: pointer;
 	transition: background 0.15s;
 	align-self: flex-start;
@@ -146,13 +146,13 @@
 }
 /* Help & description */
 .rf-form__help {
-	font-size: 0.8125rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 	font-style: italic;
 	margin: 0;
 }
 .rf-form__text {
-	font-size: 0.9375rem;
+	font-size: var(--rf-text);
 	color: var(--rf-color-muted);
 	margin: 0;
 }
@@ -166,8 +166,8 @@
 .rf-form__status {
 	padding: 0.75rem 1rem;
 	border-radius: var(--rf-radius-md);
-	font-size: 0.875rem;
-	font-weight: 500;
+	font-size: var(--rf-text-sm);
+	font-weight: var(--rf-weight-medium);
 }
 .rf-form__status--submitting {
 	background: var(--rf-color-surface);

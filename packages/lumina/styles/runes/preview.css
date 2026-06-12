@@ -12,11 +12,11 @@
 	min-height: 2rem;
 }
 .rf-preview__title {
-	font-size: 0.75rem;
-	font-weight: 600;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-muted);
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
+	letter-spacing: var(--rf-tracking-wider);
 }
 
 /* Controls container (view toggle + theme toggle) */
@@ -116,7 +116,7 @@
 	position: absolute;
 	top: 0.25rem;
 	right: 0.5rem;
-	font-size: 0.625rem;
+	font-size: var(--rf-text-xs);
 	color: var(--rf-color-muted);
 	font-variant-numeric: tabular-nums;
 	pointer-events: none;
@@ -149,8 +149,8 @@
 	border: none;
 	background: transparent;
 	color: var(--rf-color-muted);
-	font-size: 0.75rem;
-	font-weight: 500;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-medium);
 	cursor: pointer;
 	border-bottom: 2px solid transparent;
 	transition: color 150ms ease, border-color 150ms ease;

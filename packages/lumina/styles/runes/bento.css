@@ -148,8 +148,8 @@
 .rf-bento-cell__media[style*="--frame-aspect"] { --bento-media-aspect: var(--frame-aspect); }
 .rf-bento-cell__media[style*="--frame-anchor"] { --bento-media-anchor: var(--frame-anchor); }
 .rf-bento-cell__title {
-	font-size: 1.125rem;
-	font-weight: 600;
+	font-size: var(--rf-text-lg);
+	font-weight: var(--rf-weight-semibold);
 	margin: 0 0 0.5rem;
 }
 .rf-bento-cell__body { min-height: 0; }

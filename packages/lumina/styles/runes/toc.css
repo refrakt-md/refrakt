@@ -6,11 +6,11 @@
 	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
 }
 .rf-toc__list {
-	font-weight: 650;
+	font-weight: var(--rf-weight-semibold);
 	margin-bottom: 0.75rem;
-	font-size: 0.7rem;
+	font-size: var(--rf-text-xs);
 	text-transform: uppercase;
-	letter-spacing: 0.06em;
+	letter-spacing: var(--rf-tracking-wider);
 	color: var(--rf-color-muted);
 }
 .rf-toc ul,
@@ -31,7 +31,7 @@
 .rf-toc a {
 	color: var(--rf-color-text);
 	text-decoration: none;
-	font-size: 0.85rem;
+	font-size: var(--rf-text-sm);
 	display: inline-block;
 	padding: 0.2rem 0;
 	transition: color 150ms ease;

@@ -27,8 +27,8 @@
 	padding: 0.25rem 0.75rem;
 	background: rgba(0, 0, 0, 0.6);
 	color: white;
-	font-size: 0.75rem;
-	font-weight: 600;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-semibold);
 	border-radius: var(--rf-radius-sm);
 	pointer-events: none;
 }
@@ -105,7 +105,7 @@
 
 .rf-juxtapose__divider-handle::before {
 	content: '\2194';  /* ↔ */
-	font-size: 1rem;
+	font-size: var(--rf-text);
 	color: var(--rf-color-muted);
 	line-height: 1;
 }
@@ -137,8 +137,8 @@
 	border-radius: var(--rf-radius-full);
 	background: transparent;
 	color: var(--rf-color-muted);
-	font-size: 0.75rem;
-	font-weight: 500;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-medium);
 	cursor: pointer;
 	transition: background 150ms ease, color 150ms ease;
 }

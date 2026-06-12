@@ -31,9 +31,9 @@
 }
 .rf-header h1, .rf-header h2, .rf-header h3 {
 	margin: 0;
-	font-size: 1.2rem;
-	font-weight: 600;
-	letter-spacing: -0.02em;
+	font-size: var(--rf-text-xl);
+	font-weight: var(--rf-weight-semibold);
+	letter-spacing: var(--rf-tracking-tight);
 	line-height: 1;
 }
 .rf-header a {
@@ -48,9 +48,9 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 0.5rem;
-	font-weight: 600;
-	font-size: 1.2rem;
-	letter-spacing: -0.02em;
+	font-weight: var(--rf-weight-semibold);
+	font-size: var(--rf-text-xl);
+	letter-spacing: var(--rf-tracking-tight);
 }
 .rf-header img,
 .rf-header p:first-child a > .rf-icon {
@@ -66,7 +66,7 @@
 	color: currentColor;
 }
 .rf-header__inner p ~ p {
-	font-size: 0.85rem;
+	font-size: var(--rf-text-sm);
 }
 .rf-header__inner p ~ p a {
 	margin-left: 1.5rem;
@@ -234,7 +234,7 @@
 	border-top: 1px solid var(--rf-color-border);
 	background: var(--rf-color-bg);
 	color: var(--rf-color-muted);
-	font-size: 0.875rem;
+	font-size: var(--rf-text-sm);
 }
 .rf-footer > * {
 	width: 100%;
@@ -242,6 +242,6 @@
 }
 .rf-footer p {
 	margin: 1.5rem 0 0;
-	font-size: 0.8rem;
+	font-size: var(--rf-text-xs);
 	color: var(--rf-color-muted);
 }

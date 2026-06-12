@@ -2,7 +2,7 @@
 
 .rf-plan-ref {
 	font-family: var(--rf-font-mono, ui-monospace, monospace);
-	font-size: 0.8125rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-info, #339af0);
 	text-decoration: none;
 	border-bottom: 1px dashed var(--rf-color-info, #339af0);

@@ -93,8 +93,8 @@
 
 .rf-mockup__label {
 	text-align: center;
-	font-size: 0.75rem;
-	font-weight: 500;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-medium);
 	color: var(--rf-color-muted);
 	margin-top: 0.75rem;
 }
@@ -154,8 +154,8 @@
 	justify-content: space-between;
 	padding: 0 1.5rem;
 	height: 44px;
-	font-size: 0.75rem;
-	font-weight: 600;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-text);
 	background: var(--rf-color-bg);
 	position: relative;
@@ -168,8 +168,8 @@
 
 .rf-mockup__status-icons::after {
 	content: '\25CF\25CF\25CF \25AE 100%';
-	font-size: 0.625rem;
-	letter-spacing: 0.05em;
+	font-size: var(--rf-text-xs);
+	letter-spacing: var(--rf-tracking-wider);
 	color: var(--rf-color-muted);
 }
 
@@ -382,7 +382,7 @@
 }
 
 .rf-mockup__url {
-	font-size: 0.75rem;
+	font-size: var(--rf-text-xs);
 	font-family: var(--rf-font-sans);
 	color: var(--mockup-chrome-text);
 	white-space: nowrap;

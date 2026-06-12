@@ -14,9 +14,9 @@
 }
 .rf-plan-progress__heading {
 	margin: 0;
-	font-size: 0.8125rem;
-	font-weight: 600;
+	font-size: var(--rf-text-sm);
+	font-weight: var(--rf-weight-semibold);
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
+	letter-spacing: var(--rf-tracking-wider);
 	color: var(--rf-color-muted);
 }

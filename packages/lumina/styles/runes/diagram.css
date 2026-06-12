@@ -7,8 +7,8 @@
 	overflow: hidden;
 }
 .rf-diagram__title {
-	font-weight: 600;
-	font-size: 1rem;
+	font-weight: var(--rf-weight-semibold);
+	font-size: var(--rf-text);
 	margin-bottom: 1rem;
 }
 .rf-diagram__container {
@@ -22,7 +22,7 @@
 }
 .rf-diagram__source {
 	text-align: left;
-	font-size: 0.875rem;
+	font-size: var(--rf-text-sm);
 	margin: 0;
 }
 

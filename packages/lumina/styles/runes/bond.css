@@ -7,8 +7,8 @@
 }
 .rf-bond > span[property="from"],
 .rf-bond > span[property="to"] {
-	font-weight: 600;
-	font-size: 1rem;
+	font-weight: var(--rf-weight-semibold);
+	font-size: var(--rf-text);
 	color: var(--rf-color-text);
 	white-space: nowrap;
 }
@@ -44,7 +44,7 @@
 }
 .rf-bond__body {
 	width: 100%;
-	font-size: 0.875rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 }
 

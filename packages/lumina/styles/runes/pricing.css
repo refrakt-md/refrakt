@@ -15,9 +15,9 @@
 	margin-top: 0;
 }
 .rf-pricing__eyebrow {
-	font-size: 0.8125rem;
-	font-weight: 600;
-	letter-spacing: 0.05em;
+	font-size: var(--rf-text-sm);
+	font-weight: var(--rf-weight-semibold);
+	letter-spacing: var(--rf-tracking-wider);
 	text-transform: uppercase;
 	color: var(--rf-color-primary);
 	margin: 0 0 0.5rem;
@@ -29,13 +29,13 @@
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-full);
 	color: var(--rf-color-text);
-	font-weight: 400;
+	font-weight: var(--rf-weight-normal);
 	text-transform: none;
-	letter-spacing: 0;
+	letter-spacing: var(--rf-tracking-normal);
 	transition: border-color 150ms ease;
 }
 .rf-pricing__eyebrow:has(a):hover { border-color: var(--rf-color-muted); }
-.rf-pricing__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: 600; text-decoration: none; }
+.rf-pricing__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: var(--rf-weight-semibold); text-decoration: none; }
 .rf-pricing__eyebrow:has(a) a::before { content: ''; position: absolute; inset: 0; border-radius: inherit; }
 .rf-pricing__blurb {
 	color: var(--rf-color-muted);
@@ -78,17 +78,17 @@
 }
 .rf-tier h1[property="name"] {
 	margin: 0 0 0.5rem;
-	font-size: 1.1rem;
-	font-weight: 600;
+	font-size: var(--rf-text-lg);
+	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-muted);
 }
 .rf-tier p[property="price"] {
-	font-size: 2.5rem;
-	font-weight: 700;
-	letter-spacing: -0.03em;
+	font-size: var(--rf-text-4xl);
+	font-weight: var(--rf-weight-bold);
+	letter-spacing: var(--rf-tracking-tight);
 	color: var(--rf-color-text);
 	margin-bottom: 1.5rem;
-	line-height: 1.1;
+	line-height: var(--rf-leading-tight);
 }
 .rf-tier__body {
 	flex: 1;
@@ -100,22 +100,22 @@
 }
 .rf-tier__body li {
 	padding: 0.375rem 0;
-	font-size: 0.9rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 }
 .rf-tier__body li::before {
 	content: '\2713';
 	margin-right: 0.5rem;
 	color: var(--rf-color-success);
-	font-weight: 600;
+	font-weight: var(--rf-weight-semibold);
 }
 .rf-tier__body a {
 	display: block;
 	text-align: center;
 	padding: 0.625rem 1.5rem;
 	border-radius: var(--rf-radius-sm);
-	font-weight: 600;
-	font-size: 0.9rem;
+	font-weight: var(--rf-weight-semibold);
+	font-size: var(--rf-text-sm);
 	text-decoration: none;
 	transition: background-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
 	margin-top: auto;

@@ -44,9 +44,9 @@
 }
 .rf-playlist__content > .rf-playlist__header p {
 	margin: 0;
-	font-size: 0.925rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
-	line-height: 1.5;
+	line-height: var(--rf-leading-normal);
 }
 
 /* Tracks list wrapper */
@@ -85,7 +85,7 @@
 	width: auto;
 	height: auto;
 	min-width: 1.5rem;
-	font-size: 0.8rem;
+	font-size: var(--rf-text-xs);
 	font-variant-numeric: tabular-nums;
 	color: var(--rf-color-muted);
 	background: none;
@@ -97,8 +97,8 @@
 /* Track name */
 .rf-playlist__tracks [data-name="track-name"] {
 	flex: 1;
-	font-size: 0.9375rem;
-	font-weight: 500;
+	font-size: var(--rf-text);
+	font-weight: var(--rf-weight-medium);
 	color: var(--rf-color-text);
 	min-width: 0;
 	overflow: hidden;
@@ -108,7 +108,7 @@
 
 /* Track artist */
 .rf-playlist__tracks [data-name="track-artist"] {
-	font-size: 0.8125rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 	flex-shrink: 0;
 }
@@ -120,7 +120,7 @@
 
 /* Track duration — pushed right */
 .rf-playlist__tracks [data-name="track-duration"] {
-	font-size: 0.8125rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 	font-variant-numeric: tabular-nums;
 	flex-shrink: 0;
@@ -131,7 +131,7 @@
 
 /* Track meta (date etc.) */
 .rf-playlist__tracks [data-name="track-meta"] {
-	font-size: 0.75rem;
+	font-size: var(--rf-text-xs);
 	color: var(--rf-color-muted);
 	flex-shrink: 0;
 }

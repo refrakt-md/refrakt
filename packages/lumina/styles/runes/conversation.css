@@ -24,8 +24,8 @@
 	align-items: flex-end;
 }
 .rf-conversation-message__speaker {
-	font-size: 0.75rem;
-	font-weight: 600;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-muted);
 	margin-bottom: 0.25rem;
 	padding: 0 0.75rem;
@@ -33,8 +33,8 @@
 .rf-conversation-message__body {
 	padding: 0.75rem 1rem;
 	border-radius: 1rem;
-	font-size: 0.9375rem;
-	line-height: 1.5;
+	font-size: var(--rf-text);
+	line-height: var(--rf-leading-normal);
 }
 .rf-conversation-message--left .rf-conversation-message__body {
 	background: var(--rf-color-surface);

@@ -7,7 +7,7 @@
 .rf-textblock--dropcap .rf-textblock__body > p:first-child::first-letter {
 	float: left;
 	font-size: 3.5em;
-	font-weight: 700;
+	font-weight: var(--rf-weight-bold);
 	line-height: 0.8;
 	padding-right: 0.1em;
 	margin-top: 0.05em;
@@ -17,9 +17,9 @@
 
 /* Lead paragraph — emphasized opening text */
 .rf-textblock--lead .rf-textblock__body > p:first-child {
-	font-size: 1.25rem;
-	line-height: 1.6;
-	font-weight: 400;
+	font-size: var(--rf-text-xl);
+	line-height: var(--rf-leading-relaxed);
+	font-weight: var(--rf-weight-normal);
 	color: var(--rf-color-text);
 }
 

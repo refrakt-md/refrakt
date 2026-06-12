@@ -42,7 +42,7 @@
 /* Filename title — the topbar bar's lone `code` field. */
 .rf-codegroup__topbar [data-meta-type="code"] {
 	margin-left: 0.5rem;
-	font-size: 0.8rem;
+	font-size: var(--rf-text-xs);
 	font-weight: normal;
 	color: var(--rf-color-muted);
 }
@@ -61,7 +61,7 @@
 .rf-codegroup__tab {
 	flex: 0 0 auto;
 	padding: 0.5rem 1rem;
-	font-size: 0.8rem;
+	font-size: var(--rf-text-xs);
 	font-family: var(--rf-font-mono);
 	color: var(--rf-color-muted);
 	background: none;
@@ -95,7 +95,7 @@
 }
 .rf-codegroup code {
 	font-family: var(--rf-font-mono);
-	font-size: 0.85rem;
+	font-size: var(--rf-text-sm);
 }
 /* Overflow modes */
 .rf-codegroup[data-overflow="wrap"] pre {

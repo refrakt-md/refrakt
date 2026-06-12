@@ -1,14 +1,14 @@
 /* On This Page — TOC sidebar navigation */
 
 .rf-on-this-page {
-	font-size: 0.8rem;
+	font-size: var(--rf-text-xs);
 }
 
 .rf-on-this-page__title {
-	font-size: 0.7rem;
-	font-weight: 600;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-semibold);
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
+	letter-spacing: var(--rf-tracking-wider);
 	color: var(--rf-color-muted, #64748b);
 	margin: 0 0 0.75rem;
 }
@@ -32,7 +32,7 @@
 	padding: 0.25rem 0.75rem;
 	color: var(--rf-color-muted, #64748b);
 	text-decoration: none;
-	line-height: 1.4;
+	line-height: var(--rf-leading-snug);
 }
 
 .rf-on-this-page__item a:hover {

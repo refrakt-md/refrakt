@@ -48,13 +48,13 @@
 	padding: 0.5rem 0.75rem;
 	background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
 	color: white;
-	font-size: 0.825rem;
+	font-size: var(--rf-text-sm);
 }
 
 /* Gallery caption */
 .rf-gallery > figcaption {
 	margin-top: 0.625rem;
-	font-size: 0.825rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 	text-align: center;
 	font-style: italic;
@@ -89,7 +89,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 1.25rem;
+	font-size: var(--rf-text-xl);
 	opacity: 0.8;
 	transition: opacity 0.2s;
 }
@@ -159,7 +159,7 @@
 	border: none;
 	background: rgba(255, 255, 255, 0.15);
 	color: white;
-	font-size: 1.5rem;
+	font-size: var(--rf-text-2xl);
 	cursor: pointer;
 	display: flex;
 	align-items: center;
@@ -175,7 +175,7 @@
 	border: none;
 	background: rgba(255, 255, 255, 0.15);
 	color: white;
-	font-size: 1.5rem;
+	font-size: var(--rf-text-2xl);
 	cursor: pointer;
 	display: flex;
 	align-items: center;

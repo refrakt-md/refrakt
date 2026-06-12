@@ -18,7 +18,7 @@
 	flex-shrink: 0;
 }
 .rf-swatch__label {
-	font-weight: 500;
+	font-weight: var(--rf-weight-medium);
 }
 .rf-swatch__value {
 	color: var(--rf-color-muted);

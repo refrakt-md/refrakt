@@ -68,8 +68,8 @@
 .rf-mobile-panel .rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link {
 	display: block;
 	padding: 0;
-	font-size: 1.5rem;
-	font-weight: 700;
+	font-size: var(--rf-text-2xl);
+	font-weight: var(--rf-weight-bold);
 	color: var(--rf-color-text);
 	text-decoration: none;
 	background: transparent;

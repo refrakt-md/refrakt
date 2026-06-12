@@ -28,7 +28,7 @@
 	border-radius: var(--rf-radius-md);
 	color: var(--rf-color-text);
 	text-decoration: none;
-	font-size: 0.9rem;
+	font-size: var(--rf-text-sm);
 	transition: border-color 150ms ease, background-color 150ms ease;
 	flex: 1 1 0;
 	min-width: 0;
@@ -55,13 +55,13 @@
 
 .rf-pagination [data-name="marker"] {
 	color: var(--rf-color-muted);
-	font-weight: 400;
-	font-size: 1.1rem;
+	font-weight: var(--rf-weight-normal);
+	font-size: var(--rf-text-lg);
 	line-height: 1;
 }
 
 .rf-pagination [data-name="label"] {
-	font-weight: 500;
+	font-weight: var(--rf-weight-medium);
 }
 
 /* The pagination rune emits prev as `<marker> <label>` but next as
@@ -80,6 +80,6 @@
 	.rf-pagination__next {
 		padding: 0.625rem 0.875rem;
 		max-width: calc(50% - 0.25rem);
-		font-size: 0.85rem;
+		font-size: var(--rf-text-sm);
 	}
 }

@@ -79,7 +79,7 @@
 	margin: 0 0 var(--rf-spacing-sm);
 	font-size: 0.875em;
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
+	letter-spacing: var(--rf-tracking-wider);
 	color: var(--rf-color-muted);
 }
 
@@ -118,7 +118,7 @@
 }
 
 .rf-relationships__title {
-	font-weight: 600;
+	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-text);
 	text-decoration: none;
 }

@@ -1,9 +1,9 @@
 /* Organization */
 .rf-organization__type {
-	font-size: 0.75rem;
-	font-weight: 400;
+	font-size: var(--rf-text-xs);
+	font-weight: var(--rf-weight-normal);
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
+	letter-spacing: var(--rf-tracking-wider);
 	color: var(--rf-color-muted);
 	opacity: 0.6;
 	margin-bottom: 0.5rem;

@@ -20,7 +20,7 @@
 }
 .rf-figure figcaption {
 	margin-top: 0.625rem;
-	font-size: 0.825rem;
+	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 	text-align: center;
 	font-style: italic;
