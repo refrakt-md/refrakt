@@ -100,6 +100,60 @@ body.rf-gallery {
 }
 `.trim();
 
+/** Determinism reset for layout fixtures (no gallery chrome — the layout *is*
+ *  the page). Kills animation/transition/caret so screenshots are stable. */
+const LAYOUT_RESET_CSS = `
+*, *::before, *::after {
+	animation-duration: 0s !important;
+	animation-delay: 0s !important;
+	transition-duration: 0s !important;
+	transition-delay: 0s !important;
+	caret-color: transparent !important;
+	scroll-behavior: auto !important;
+}
+body { margin: 0; background: var(--rf-color-bg); color: var(--rf-color-text); font-family: var(--rf-font-sans, sans-serif); }
+`.trim();
+
+export interface LayoutDocumentOptions {
+	mode: 'light' | 'dark';
+	themeCss: string;
+	/** The layout's rendered HTML (from `layoutTransform` → `renderToHtml`). */
+	bodyHtml: string;
+	/** Layout name, for the document title. */
+	name: string;
+	fontLinks?: string;
+	behaviorScript?: string;
+}
+
+/**
+ * Render a standalone full-page document for a layout fixture — the layout's
+ * own chrome *is* the page (no gallery cell grid), so the harness can shoot it
+ * whole-page at multiple viewports.
+ */
+export function renderLayoutDocument(opts: LayoutDocumentOptions): string {
+	const { mode, themeCss, bodyHtml, name, fontLinks = DEFAULT_FONT_LINKS, behaviorScript } = opts;
+	const htmlAttr = mode === 'dark' ? ' data-theme="dark"' : '';
+	const tail = behaviorScript
+		? `<script type="application/json" id="rf-context">{"pages":[],"currentUrl":"/"}</script>\n<script>${behaviorScript}</script>\n`
+		: '';
+	return `<!DOCTYPE html>
+<html lang="en"${htmlAttr}>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>refrakt layout — ${name} (${mode})</title>
+${fontLinks}
+<style>${themeCss}</style>
+<style>${LAYOUT_RESET_CSS}</style>
+</head>
+<body>
+${bodyHtml}
+${tail}</body>
+</html>
+`;
+}
+
 function escapeHtml(s: string): string {
 	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }

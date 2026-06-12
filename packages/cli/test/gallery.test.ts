@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { flattenCssImports, renderGalleryDocument, type GalleryCell } from '../src/lib/gallery.js';
+import { flattenCssImports, renderGalleryDocument, renderLayoutDocument, type GalleryCell } from '../src/lib/gallery.js';
 
 describe('flattenCssImports', () => {
 	let dir: string;
@@ -69,6 +69,23 @@ describe('renderGalleryDocument', () => {
 	it('is deterministic for the same input', () => {
 		const a = renderGalleryDocument({ mode: 'light', themeCss: ':root{}', cells });
 		const b = renderGalleryDocument({ mode: 'light', themeCss: ':root{}', cells });
+		expect(a).toBe(b);
+	});
+});
+
+describe('renderLayoutDocument', () => {
+	it('wraps the layout body as a standalone page (no gallery chrome)', () => {
+		const doc = renderLayoutDocument({ mode: 'light', themeCss: ':root{}', name: 'docs', bodyHtml: '<div class="rf-layout-docs">x</div>' });
+		expect(doc).toContain('<div class="rf-layout-docs">x</div>');
+		expect(doc).toContain('<title>refrakt layout — docs (light)</title>');
+		expect(doc).not.toContain('rf-gallery');
+		expect(doc).toContain('body { margin: 0;');
+	});
+
+	it('sets the dark attribute and is deterministic', () => {
+		expect(renderLayoutDocument({ mode: 'dark', themeCss: '', name: 'plan', bodyHtml: '<main/>' })).toContain('<html lang="en" data-theme="dark">');
+		const a = renderLayoutDocument({ mode: 'light', themeCss: ':root{}', name: 'docs', bodyHtml: '<main/>' });
+		const b = renderLayoutDocument({ mode: 'light', themeCss: ':root{}', name: 'docs', bodyHtml: '<main/>' });
 		expect(a).toBe(b);
 	});
 });
