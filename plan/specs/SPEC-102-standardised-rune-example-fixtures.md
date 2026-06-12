@@ -1,4 +1,4 @@
-{% spec id="SPEC-102" status="draft" tags="fixtures,examples,dx,ai,editor,tooling,docs" %}
+{% spec id="SPEC-102" status="accepted" tags="fixtures,examples,dx,ai,editor,tooling,docs" %}
 
 # Standardised rune example fixtures
 

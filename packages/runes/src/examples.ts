@@ -1,240 +1,35 @@
-/** Hand-crafted usage examples for each author-facing rune */
+// GENERATED from fixtures/*.md by scripts/generate-examples.mjs — do not edit by hand.
+// Edit the fixture .md files and rebuild; a drift test guards this file.
+
+/** Generated example Markdoc snippets, keyed by rune name. Source: fixtures/*.md. */
 export const RUNE_EXAMPLES: Record<string, string> = {
-	hint: `{% hint type="note" %}
-This is a helpful note for your readers.
-{% /hint %}`,
-
-	grid: `{% grid %}
-Column one content.
-
----
-
-Column two content.
-
----
-
-Column three content.
-{% /grid %}`,
-
-	tabs: `{% tabs %}
-## npm
-
-\`\`\`shell
-npm install @refrakt-md/runes
-\`\`\`
-
-## yarn
-
-\`\`\`shell
-yarn add @refrakt-md/runes
-\`\`\`
-{% /tabs %}`,
-
-	codegroup: `{% codegroup %}
-\`\`\`js
-console.log('Hello');
-\`\`\`
-
-\`\`\`python
-print('Hello')
-\`\`\`
-{% /codegroup %}`,
-
-	nav: `{% nav %}
-## Getting Started
-- getting-started
-- installation
-
-## Guides
-- theming
-- deployment
-{% /nav %}`,
-
-	layout: `{% layout %}
-{% region name="header" %}
-# Site Title
-{% /region %}
-
-{% region name="nav" %}
-{% nav %}
-- getting-started
-- runes
-{% /nav %}
-{% /region %}
-{% /layout %}`,
-
-	region: `{% region name="nav" %}
-{% nav %}
-- page-one
-- page-two
-{% /nav %}
-{% /region %}`,
-
-	details: `{% details summary="How does billing work?" %}
-We bill monthly on the date you signed up. You can cancel anytime
-from your account settings.
-{% /details %}`,
-
-	figure: `{% figure size="large" align="center" caption="Dashboard overview" %}
-![Dashboard](/images/dashboard.png)
-{% /figure %}`,
-
-	accordion: `{% accordion %}
-## What is refrakt.md?
-
-A content framework that extends Markdown with semantic runes.
-
-## How do I install it?
-
-Run \`npm install @refrakt-md/runes\` to get started.
-
-## Is it free?
-
-Yes, refrakt.md is open source and free to use.
-{% /accordion %}`,
-
-	toc: `{% toc depth=3 %}{% /toc %}`,
-
-	breadcrumb: `{% breadcrumb %}
-- [Home](/)
-- [Docs](/docs)
-- [Runes](/docs/runes)
-- Hero
-{% /breadcrumb %}`,
-
-	compare: `{% compare %}
-\`\`\`javascript
-// Before
-const x = 1;
-const y = 2;
-\`\`\`
-
-\`\`\`javascript
-// After
-const [x, y] = [1, 2];
-\`\`\`
-{% /compare %}`,
-
-	embed: `{% embed url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" %}
-Watch the video for a full walkthrough.
-{% /embed %}`,
-
-	datatable: `{% datatable sortable="Name,Price" searchable=true pageSize=10 %}
-| Name | Price | Category | Stock |
-|------|-------|----------|-------|
-| Widget A | $9.99 | Tools | 150 |
-| Widget B | $14.99 | Tools | 85 |
-| Gadget X | $24.99 | Electronics | 42 |
-{% /datatable %}`,
-
-	diff: `{% diff mode="unified" language="javascript" %}
-\`\`\`javascript
-function getData() {
-  return fetch('/api')
-    .then(res => res.json())
-    .then(data => data);
-}
-\`\`\`
-
-\`\`\`javascript
-async function getData() {
-  const res = await fetch('/api');
-  return res.json();
-}
-\`\`\`
-{% /diff %}`,
-
-	chart: `{% chart type="bar" title="Monthly Revenue" %}
-| Month | Revenue | Expenses |
-|-------|---------|----------|
-| Jan   | 4200    | 3100     |
-| Feb   | 5100    | 3400     |
-| Mar   | 4800    | 3200     |
-| Apr   | 6200    | 3800     |
-{% /chart %}`,
-
-	diagram: `{% diagram language="mermaid" title="User Flow" %}
-\`\`\`mermaid
-graph TD
-  A[Visit Site] --> B{Logged In?}
-  B -->|Yes| C[Dashboard]
-  B -->|No| D[Login Page]
-  D --> E[Sign Up]
-  D --> F[Sign In]
-  F --> C
-  E --> C
-\`\`\`
-{% /diagram %}`,
-
-	sidenote: `{% sidenote %}
-This is a margin note that provides additional context
-without interrupting the main flow of the text.
-{% /sidenote %}`,
-
-	sandbox: `{% sandbox framework="tailwind" %}
-<div class="flex items-center gap-4 p-6 bg-white rounded-xl shadow-lg max-w-sm">
-  <img src="https://i.pravatar.cc/80" alt="Avatar" class="w-16 h-16 rounded-full" />
-  <div>
-    <h3 class="text-lg font-semibold text-gray-900">Jane Doe</h3>
-    <p class="text-sm text-gray-500">Product Designer</p>
-  </div>
-</div>
-{% /sandbox %}`,
-
-	form: `{% form action="/api/contact" method="POST" success="Thanks! We'll be in touch." %}
-# Contact Us
-
-- Name (required)
-- Email (required, placeholder: "you@example.com")
-- Company (optional)
-
-> What are you interested in?
-- Product demo
-- Partnership
-- Support
-- Other
-
-- Message (required)
-
-**Send Message**
-{% /form %}`,
-
-	budget: `{% budget title="Tokyo Trip" currency="JPY" duration="5 days" %}
-## Accommodation
-
-- Hotel in Shinjuku: ¥15000
-- Ryokan in Hakone: ¥25000
-
-## Transportation
-
-- Japan Rail Pass (7-day): ¥29650
-- Airport transfer: ¥3000
-
-## Food & Dining
-
-- Daily meals: ¥5000
-- Sushi experience: ¥8000
-{% /budget %}`,
-
-	pullquote: `{% pullquote align="center" variant="accent" %}
-> Design is not just what it looks like and feels like. Design is how it works.
-{% /pullquote %}`,
-
-	textblock: `{% textblock dropcap=true columns=2 %}
-The invention of the printing press in the 15th century revolutionized the spread of information across Europe. Before Gutenberg, books were painstakingly copied by hand, making them rare and expensive.
-
-With movable type, ideas could be reproduced quickly and cheaply. This democratization of knowledge helped fuel the Renaissance, the Reformation, and the Scientific Revolution.
-{% /textblock %}`,
-
-	mediatext: `{% mediatext align="left" ratio="1:1" %}
-![Mountain landscape](https://picsum.photos/seed/mountain/600/400)
-
-The valley stretches out below, carved by millennia of glacial movement. In spring, wildflowers carpet the meadows in brilliant color, attracting hikers and photographers from around the world.
-{% /mediatext %}`,
-
-	showcase: `{% showcase shadow="soft" %}
-![Product screenshot](https://picsum.photos/seed/showcase/800/500)
-{% /showcase %}`,
-
-	icon: `{% icon name="check" /%}`,
+	"accordion": "{% accordion %}\n## What is refrakt.md?\n\nA content framework that extends Markdown with semantic runes.\n\n## How do I install it?\n\nRun `npm install @refrakt-md/runes` to get started.\n\n## Is it free?\n\nYes, refrakt.md is open source and free to use.\n{% /accordion %}",
+	"breadcrumb": "{% breadcrumb %}\n- [Home](/)\n- [Docs](/docs)\n- [Runes](/docs/runes)\n- Hero\n{% /breadcrumb %}",
+	"budget": "{% budget title=\"Tokyo Trip\" currency=\"JPY\" duration=\"5 days\" %}\n## Accommodation\n\n- Hotel in Shinjuku: ¥15000\n- Ryokan in Hakone: ¥25000\n\n## Transportation\n\n- Japan Rail Pass (7-day): ¥29650\n- Airport transfer: ¥3000\n\n## Food & Dining\n\n- Daily meals: ¥5000\n- Sushi experience: ¥8000\n{% /budget %}",
+	"chart": "{% chart type=\"bar\" title=\"Monthly Revenue\" %}\n| Month | Revenue | Expenses |\n|-------|---------|----------|\n| Jan   | 4200    | 3100     |\n| Feb   | 5100    | 3400     |\n| Mar   | 4800    | 3200     |\n| Apr   | 6200    | 3800     |\n{% /chart %}",
+	"codegroup": "{% codegroup %}\n```js\nconsole.log('Hello');\n```\n\n```python\nprint('Hello')\n```\n{% /codegroup %}",
+	"compare": "{% compare %}\n```javascript\n// Before\nconst x = 1;\nconst y = 2;\n```\n\n```javascript\n// After\nconst [x, y] = [1, 2];\n```\n{% /compare %}",
+	"conversation": "{% conversation %}\n> **Alice** — Have you tried the new inspect command?\n\n> **Bob** — Yes! It shows exactly what HTML the identity transform produces. No more guessing which selectors to target.\n\n> **Alice** — The variant expansion is my favorite part. You can see every modifier value at once.\n{% /conversation %}",
+	"datatable": "{% datatable sortable=\"Name,Price\" searchable=true pageSize=10 %}\n| Name | Price | Category | Stock |\n|------|-------|----------|-------|\n| Widget A | $9.99 | Tools | 150 |\n| Widget B | $14.99 | Tools | 85 |\n| Gadget X | $24.99 | Electronics | 42 |\n{% /datatable %}",
+	"details": "{% details summary=\"How does billing work?\" %}\nWe bill monthly on the date you signed up. You can cancel anytime\nfrom your account settings.\n{% /details %}",
+	"diagram": "{% diagram language=\"mermaid\" title=\"User Flow\" %}\n```mermaid\ngraph TD\n  A[Visit Site] --> B{Logged In?}\n  B -->|Yes| C[Dashboard]\n  B -->|No| D[Login Page]\n  D --> E[Sign Up]\n  D --> F[Sign In]\n  F --> C\n  E --> C\n```\n{% /diagram %}",
+	"diff": "{% diff mode=\"unified\" language=\"javascript\" %}\n```javascript\nfunction getData() {\n  return fetch('/api')\n    .then(res => res.json())\n    .then(data => data);\n}\n```\n\n```javascript\nasync function getData() {\n  const res = await fetch('/api');\n  return res.json();\n}\n```\n{% /diff %}",
+	"embed": "{% embed url=\"https://www.youtube.com/watch?v=dQw4w9WgXcQ\" %}\nWatch the video for a full walkthrough.\n{% /embed %}",
+	"figure": "{% figure size=\"large\" align=\"center\" caption=\"Dashboard overview\" %}\n![Dashboard](/images/dashboard.png)\n{% /figure %}",
+	"form": "{% form action=\"/api/contact\" method=\"POST\" success=\"Thanks! We'll be in touch.\" %}\n# Contact Us\n\n- Name (required)\n- Email (required, placeholder: \"you@example.com\")\n- Company (optional)\n\n> What are you interested in?\n- Product demo\n- Partnership\n- Support\n- Other\n\n- Message (required)\n\n**Send Message**\n{% /form %}",
+	"grid": "{% grid %}\nColumn one content.\n\n---\n\nColumn two content.\n\n---\n\nColumn three content.\n{% /grid %}",
+	"hint": "{% hint type=\"note\" %}\nThis is a helpful note for your readers.\n{% /hint %}",
+	"icon": "{% icon name=\"check\" /%}",
+	"layout": "{% layout %}\n{% region name=\"header\" %}\n# Site Title\n{% /region %}\n\n{% region name=\"nav\" %}\n{% nav %}\n- getting-started\n- runes\n{% /nav %}\n{% /region %}\n{% /layout %}",
+	"mediatext": "{% mediatext align=\"left\" ratio=\"1:1\" %}\n![Mountain landscape](https://picsum.photos/seed/mountain/600/400)\n\nThe valley stretches out below, carved by millennia of glacial movement. In spring, wildflowers carpet the meadows in brilliant color, attracting hikers and photographers from around the world.\n{% /mediatext %}",
+	"nav": "{% nav %}\n## Getting Started\n- getting-started\n- installation\n\n## Guides\n- theming\n- deployment\n{% /nav %}",
+	"pagination": "{% pagination prev=\"install\" next=\"configuration\" /%}",
+	"pullquote": "{% pullquote align=\"center\" variant=\"accent\" %}\n> Design is not just what it looks like and feels like. Design is how it works.\n{% /pullquote %}",
+	"region": "{% region name=\"nav\" %}\n{% nav %}\n- page-one\n- page-two\n{% /nav %}\n{% /region %}",
+	"sandbox": "{% sandbox framework=\"tailwind\" %}\n<div class=\"flex items-center gap-4 p-6 bg-white rounded-xl shadow-lg max-w-sm\">\n  <img src=\"https://i.pravatar.cc/80\" alt=\"Avatar\" class=\"w-16 h-16 rounded-full\" />\n  <div>\n    <h3 class=\"text-lg font-semibold text-gray-900\">Jane Doe</h3>\n    <p class=\"text-sm text-gray-500\">Product Designer</p>\n  </div>\n</div>\n{% /sandbox %}",
+	"showcase": "{% showcase shadow=\"soft\" %}\n![Product screenshot](https://picsum.photos/seed/showcase/800/500)\n{% /showcase %}",
+	"sidenote": "{% sidenote %}\nThis is a margin note that provides additional context\nwithout interrupting the main flow of the text.\n{% /sidenote %}",
+	"tabs": "{% tabs %}\n## npm\n\n```shell\nnpm install @refrakt-md/runes\n```\n\n## yarn\n\n```shell\nyarn add @refrakt-md/runes\n```\n{% /tabs %}",
+	"textblock": "{% textblock dropcap=true columns=2 %}\nThe invention of the printing press in the 15th century revolutionized the spread of information across Europe. Before Gutenberg, books were painstakingly copied by hand, making them rare and expensive.\n\nWith movable type, ideas could be reproduced quickly and cheaply. This democratization of knowledge helped fuel the Renaissance, the Reformation, and the Scientific Revolution.\n{% /textblock %}",
+	"toc": "{% toc depth=3 %}{% /toc %}",
 };
