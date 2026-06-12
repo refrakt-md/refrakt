@@ -11,3 +11,4 @@ plans/
 .plan-history-cache.json
 .claude/*
 !.claude/settings.json
+.gallery/

@@ -12,6 +12,8 @@ if (!command || command === '--help' || command === '-h') {
 	runWrite(args.slice(1));
 } else if (command === 'inspect') {
 	runInspect(args.slice(1));
+} else if (command === 'gallery') {
+	runGallery(args.slice(1));
 } else if (command === 'contracts') {
 	runContracts(args.slice(1));
 } else if (command === 'scaffold-css') {
@@ -48,6 +50,7 @@ Usage: refrakt <command> [options]
 Commands:
   write <prompt>       Generate a Markdown content file using AI
   inspect <rune>       Show identity transform output for a rune
+  gallery [options]    Generate a static all-runes gallery (light + dark)
   contracts [options]  Generate structure contracts from theme config
   scaffold-css         Generate CSS stub files for all runes
   validate             Validate theme config and manifest
@@ -82,6 +85,11 @@ Provider auto-detection:
   2. GOOGLE_API_KEY env var → Gemini Flash
   3. OLLAMA_HOST env var → Ollama
   4. Default → Ollama at localhost:11434
+
+Gallery Options:
+  --theme <package>        Theme package whose CSS is inlined (default: @refrakt-md/lumina)
+  --out, -d <dir>          Output directory (default: .gallery)
+  --site <name>            Site to use from refrakt.config.json (multi-site projects)
 
 Contracts Options:
   --output, -o <path>      Write contracts to a file (default: stdout)
@@ -432,6 +440,58 @@ function runInspect(inspectArgs: string[]): void {
 
 		return inspectCommand(
 			{ runeName, list, json, audit, auditMeta, auditDimensions, showInterface, all, cssDir, theme, items, flags },
+			{ Markdoc, runes: merged.runes, tags: merged.tags, nodes, serializeTree, extractHeadings, createTransform, renderToHtml, extractSelectors, baseConfig: merged.config, packageFixtures: merged.fixtures },
+		);
+	}).catch((err) => {
+		console.error(`\nError: ${(err as Error).message}`);
+		process.exit(1);
+	});
+}
+
+function runGallery(galleryArgs: string[]): void {
+	let theme = '@refrakt-md/lumina';
+	let outDir = '.gallery';
+	let site: string | undefined;
+
+	for (let i = 0; i < galleryArgs.length; i++) {
+		const arg = galleryArgs[i];
+		if (arg === '--theme') {
+			theme = galleryArgs[++i];
+			if (!theme) { console.error('Error: --theme requires a value'); process.exit(1); }
+		} else if (arg === '--out' || arg === '--output-dir' || arg === '-d') {
+			outDir = galleryArgs[++i];
+			if (!outDir) { console.error('Error: --out requires a directory path'); process.exit(1); }
+		} else if (arg === '--site') {
+			site = galleryArgs[++i];
+			if (!site) { console.error('Error: --site requires a name'); process.exit(1); }
+		} else if (arg === '--help' || arg === '-h') {
+			printUsage();
+			process.exit(0);
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"\n`);
+			printUsage();
+			process.exit(1);
+		}
+	}
+
+	Promise.all([
+		import('./commands/gallery.js'),
+		import('@refrakt-md/runes'),
+		import('@refrakt-md/transform'),
+		import('@markdoc/markdoc'),
+	]).then(async ([
+		{ galleryCommand },
+		runesModule,
+		{ createTransform, renderToHtml, extractSelectors, assembleThemeConfig },
+		markdocModule,
+	]) => {
+		const { nodes, serializeTree, extractHeadings } = runesModule;
+		const Markdoc = markdocModule.default ?? markdocModule;
+
+		const merged = await loadMergedConfig(runesModule, assembleThemeConfig, undefined, site);
+
+		return galleryCommand(
+			{ theme, outDir },
 			{ Markdoc, runes: merged.runes, tags: merged.tags, nodes, serializeTree, extractHeadings, createTransform, renderToHtml, extractSelectors, baseConfig: merged.config, packageFixtures: merged.fixtures },
 		);
 	}).catch((err) => {
