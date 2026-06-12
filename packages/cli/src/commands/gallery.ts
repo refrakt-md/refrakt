@@ -2,11 +2,11 @@ import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import type { Rune } from '@refrakt-md/runes';
-import type { ThemeConfig, RuneConfig } from '@refrakt-md/transform';
-import { toKebabCase } from '@refrakt-md/transform';
+import type { ThemeConfig, RuneConfig, LayoutConfig, LayoutPageData } from '@refrakt-md/transform';
+import { toKebabCase, layoutTransform, defaultLayout, docsLayout, blogArticleLayout, planLayout } from '@refrakt-md/transform';
 import { getFixture, hasFixture } from '../lib/fixtures.js';
 import { discoverVariants } from '../lib/variants.js';
-import { flattenCssImports, renderGalleryDocument, type GalleryCell } from '../lib/gallery.js';
+import { flattenCssImports, renderGalleryDocument, renderLayoutDocument, type GalleryCell } from '../lib/gallery.js';
 import type { InspectDeps } from './inspect.js';
 
 export interface GalleryOptions {
@@ -104,6 +104,35 @@ export async function galleryCommand(options: GalleryOptions, deps: InspectDeps)
 		console.log(`Wrote ${file}`);
 	}
 
+	// Layout fixtures — the second subject class. Each built-in LayoutConfig is
+	// rendered over one synthetic multi-page context so the chrome (header, nav,
+	// breadcrumb, TOC, sidebar, footer, prev/next) populates. Emitted as
+	// standalone full-page documents (no gallery chrome) so the harness shoots
+	// each whole-page at multiple viewports.
+	const page = buildSyntheticPage(transform, deps);
+	const layouts: Record<string, LayoutConfig> = {
+		'default': defaultLayout,
+		docs: docsLayout,
+		'blog-article': blogArticleLayout,
+		plan: planLayout,
+	};
+	for (const [name, layout] of Object.entries(layouts)) {
+		let bodyHtml: string;
+		try {
+			const tree = layoutTransform(layout, { ...page, frontmatter: { ...page.frontmatter, layout: name } }, 'rf');
+			bodyHtml = deps.renderToHtml(tree, { pretty: false });
+		} catch (err) {
+			console.warn(`Layout "${name}" skipped: ${(err as Error).message}`);
+			continue;
+		}
+		for (const mode of ['light', 'dark'] as const) {
+			const doc = renderLayoutDocument({ mode, themeCss, behaviorScript, name, bodyHtml });
+			const file = resolve(options.outDir, `${themeName}.layout-${name}.${mode}.html`);
+			writeFileSync(file, doc);
+		}
+	}
+	console.log(`Layouts: ${Object.keys(layouts).length} fixtures (× light/dark).`);
+
 	const runeCount = new Set(cells.map(c => c.rune)).size;
 	console.log(`Gallery: ${runeCount} runes, ${cells.length} variant cells.`);
 	if (missing.length > 0) {
@@ -158,13 +187,10 @@ function variantMatrix(rune: Rune): { variant: string; flags: Record<string, str
 
 /** Run the parse → transform → serialize → identity-transform pipeline for one
  *  variant, returning rendered HTML. Mirrors `inspect`'s `runPipeline`. */
-function renderCell(
-	transform: (tree: any) => any,
-	rune: Rune,
-	flags: Record<string, string>,
-	deps: InspectDeps,
-): string {
-	const source = deps.packageFixtures?.[rune.name] ?? getFixture(rune.name, flags);
+/** Run the parse → transform → serialize → identity-transform pipeline on a
+ *  Markdoc source string, returning the rendered tree (pre-`renderToHtml`).
+ *  Shared by rune cells and layout-fixture content/regions. */
+function sourceToTree(source: string, transform: (tree: any) => any, deps: InspectDeps): any {
 	const ast = deps.Markdoc.parse(source);
 	const headings = deps.extractHeadings(ast);
 	const transformed = deps.Markdoc.transform(ast, {
@@ -180,8 +206,82 @@ function renderCell(
 		},
 	});
 	const serialized = deps.serializeTree(transformed);
-	const tree = transform(serialized);
-	return deps.renderToHtml(tree, { pretty: false });
+	return transform(serialized);
+}
+
+function renderCell(
+	transform: (tree: any) => any,
+	rune: Rune,
+	flags: Record<string, string>,
+	deps: InspectDeps,
+): string {
+	const source = deps.packageFixtures?.[rune.name] ?? getFixture(rune.name, flags);
+	return deps.renderToHtml(sourceToTree(source, transform, deps), { pretty: false });
+}
+
+/** A representative article body for layout fixtures — headings (for the TOC) +
+ *  prose + a rune, so the reading column has real content. */
+const LAYOUT_MAIN_SOURCE = `# Building a theme
+
+A representative paragraph of body copy so the layout's reading column has real text
+to flow — demonstrating measure, rhythm, and how chrome frames content.
+
+## Getting started
+
+{% hint type="note" %}
+A note inside the article body, to show how a rune sits within page chrome.
+{% /hint %}
+
+Body copy under the first section, long enough to give the column some height.
+
+## Configuration
+
+A second section so the on-this-page table of contents has more than one entry.
+
+## Deployment
+
+Closing section with a final paragraph of copy.
+`;
+
+/** Build one synthetic multi-page context shared across all layout fixtures, so
+ *  computed chrome (breadcrumb, TOC, nav tree, prev/next) and regions populate. */
+function buildSyntheticPage(transform: (tree: any) => any, deps: InspectDeps): LayoutPageData {
+	const tree = (src: string) => sourceToTree(src, transform, deps);
+	const region = (name: string, src: string) => ({ name, mode: 'replace', content: [tree(src)] });
+
+	return {
+		renderable: tree(LAYOUT_MAIN_SOURCE),
+		title: 'Building a theme',
+		url: '/docs/building-a-theme',
+		regions: {
+			header: region('header', '[Docs](/docs) · [Blog](/blog) · [Reference](/docs/api)'),
+			nav: region('nav', deps.packageFixtures?.nav ?? getFixture('nav')),
+			footer: region('footer', 'Footer — [Docs](/docs) · [GitHub](https://github.com)'),
+			sidebar: region('sidebar', '### Related\n- [Tokens](/docs/tokens)\n- [Layouts](/docs/layouts)'),
+			pagination: region('pagination', deps.packageFixtures?.pagination ?? getFixture('pagination')),
+		},
+		pages: [
+			{ url: '/docs/intro', title: 'Introduction', draft: false },
+			{ url: '/docs/install', title: 'Installation', draft: false },
+			{ url: '/docs/building-a-theme', title: 'Building a theme', draft: false },
+			{ url: '/docs/configuration', title: 'Configuration', draft: false },
+			{ url: '/docs/api', title: 'Reference', draft: false },
+			{ url: '/blog/launch', title: 'Launch post', draft: false, date: '2026-01-15', author: 'Jane Doe' },
+		],
+		frontmatter: {
+			title: 'Building a theme',
+			description: 'A representative page exercising the layout chrome.',
+			date: '2026-01-15',
+			author: 'Jane Doe',
+			tags: ['guide', 'theme'],
+		},
+		headings: [
+			{ level: 1, text: 'Building a theme', id: 'building-a-theme' },
+			{ level: 2, text: 'Getting started', id: 'getting-started' },
+			{ level: 2, text: 'Configuration', id: 'configuration' },
+			{ level: 2, text: 'Deployment', id: 'deployment' },
+		],
+	};
 }
 
 /**
