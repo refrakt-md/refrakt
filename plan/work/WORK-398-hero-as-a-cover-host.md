@@ -63,4 +63,22 @@ cover containment released for hero (`container-type: normal` — the band grows
 content instead of clipping at min-height) and the overlay padding tightens on
 mobile (3.5rem/1.25rem under 640px).
 
+
+---
+
+Completed: 2026-06-12
+
+### Follow-up fix 2 (backdrop covering only a top strip)
+The previous follow-up traded away too much: releasing the shared
+`container-type: size` (so the band could grow with content) also removed the last
+source of height *definiteness* — and the cover grid's `minmax(0, 1fr)` row only
+fills a definite-height container. With aspect already `auto` (the mobile fix) and
+containment released, the row collapsed to the overlay's content height and the
+backdrop (well + filled iframe) covered only a top strip of the band. The shared
+size containment is restored and documented as load-bearing: with the aspect
+released, it is what makes `min-height` definite so the row, the well, and a
+`fill` sandbox span the full band. The trade — content taller than the band clips —
+is the cover contract (bounded region, short overlay content), softened by the
+mobile overlay-padding reduction.
+
 {% /work %}
