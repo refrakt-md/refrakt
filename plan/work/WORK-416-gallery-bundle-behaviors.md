@@ -26,7 +26,7 @@ runes show their enhanced (representative) state.
 - [x] Bundling failures degrade gracefully to the static gallery with a warning.
 - [x] Verified: the bundle is produced and inlined; `<rf-diagram>`/`<rf-chart>`/`<rf-nav>` cells carry the init script. (Visual confirmation that they draw is the WORK-409 harness's job.)
 
-## Implications for {% ref "WORK-409" /%}
+## Implications for WORK-409
 
 Including JS reshapes the harness's determinism: it must **wait for behaviors to settle**
 before screenshotting, and **exclude the network-dependent runes** (`map` tiles, `sandbox`
@@ -54,7 +54,7 @@ Branch: `claude/work-416-gallery-behaviors` (atop WORK-412).
 - 126 CLI tests green (incl. the 8 gallery tests, unchanged — `behaviorScript` is optional).
 
 ### Notes
-- Visual confirmation that the lifecycle runes draw is the {% ref "WORK-409" /%} harness's job (it runs a real browser). WORK-409's determinism note updated: wait for settle + exclude network runes (`map`, `sandbox`).
+- Visual confirmation that the lifecycle runes draw is the WORK-409 harness's job (it runs a real browser). WORK-409's determinism note updated: wait for settle + exclude network runes (`map`, `sandbox`).
 - Always-on per decision; `esbuild`/`@refrakt-md/html` are now CLI deps so it's reliably available, with a graceful static fallback if bundling ever fails.
 
 {% /work %}
