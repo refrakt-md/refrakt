@@ -25,6 +25,7 @@ screenshot testing exists in the repo today; this is greenfield.
 ## Dependencies
 
 - Requires {% ref "WORK-407" /%} and {% ref "WORK-408" /%} (the subjects to photograph).
+- The gallery now inlines behaviors ({% ref "WORK-416" /%}), so the harness must **wait for behaviors to settle** before shooting and **exclude the network-dependent runes** (`map` tiles, `sandbox` external iframe/CDN) from deterministic baselines (stub/skip). Synchronous runes (PE runes, `diagram`, `chart`, `nav`) baseline fine after settle.
 
 ## References
 

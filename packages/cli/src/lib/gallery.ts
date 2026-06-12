@@ -38,6 +38,9 @@ export interface GalleryDocumentOptions {
 	cells: GalleryCell[];
 	/** Optional override for the font `<link>` tags injected into `<head>`. */
 	fontLinks?: string;
+	/** Optional bundled behaviors IIFE, inlined before `</body>` so interactive /
+	 *  lifecycle runes (tabs, diagram, chart, nav) enhance/render. */
+	behaviorScript?: string;
 }
 
 /** Default web-font links — tactically Lumina's families (WORK-407 defers the
@@ -80,6 +83,14 @@ body.rf-gallery {
 	margin: 0 0 1.5rem;
 }
 .rf-gallery__cell { margin: 0 0 2rem; }
+.rf-gallery__gap {
+	font-family: var(--rf-font-mono, monospace);
+	font-size: 0.75rem;
+	color: var(--rf-color-muted, #999);
+	border: 1px dashed var(--rf-color-border, #ccc);
+	border-radius: var(--rf-radius-sm, 4px);
+	padding: 0.75rem 1rem;
+}
 .rf-gallery__cell-label {
 	display: block;
 	font-family: var(--rf-font-mono, monospace);
@@ -99,7 +110,7 @@ function escapeHtml(s: string): string {
  * anchor so the harness ({% WORK-409 %}) can clip per variant.
  */
 export function renderGalleryDocument(opts: GalleryDocumentOptions): string {
-	const { mode, themeCss, cells, fontLinks = DEFAULT_FONT_LINKS } = opts;
+	const { mode, themeCss, cells, fontLinks = DEFAULT_FONT_LINKS, behaviorScript } = opts;
 
 	// Group cells by rune, preserving insertion order.
 	const byRune = new Map<string, GalleryCell[]>();
@@ -141,7 +152,7 @@ ${fontLinks}
 <div class="rf-gallery__inner">
 ${sections.join('\n')}
 </div>
-</body>
+${behaviorScript ? `<script type="application/json" id="rf-context">{"pages":[],"currentUrl":"/"}</script>\n<script>${behaviorScript}</script>\n` : ''}</body>
 </html>
 `;
 }
