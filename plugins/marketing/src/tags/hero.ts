@@ -89,10 +89,14 @@ export const hero = createContentModelSchema({
 			Markdoc.transform(mediaAstNodes, config) as RenderableTreeNode[],
 		);
 
-		// Layout meta tags (shared with every media+content rune)
+		// Layout meta tags (shared with every media+content rune). Hero deviates
+		// from the shared `top` default: its DOM is content-first (headline before
+		// media — the right reading order for the classic text-over-media hero),
+		// so the truthful default placement is `bottom` (BUG-001). Lumina counters
+		// the media-first stacked rules for hero accordingly.
 		const align = (attrs.align as string) || 'center';
 		const alignMeta = new Tag('meta', { content: align });
-		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
+		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas({ ...attrs, 'media-position': attrs['media-position'] ?? 'bottom' });
 		const { mediaPosition: mediaPositionMeta, mediaRatio: mediaRatioMeta, valign: valignMeta, collapse: collapseMeta } = layoutMetas;
 
 		// SPEC-101 cover knobs — emitted only when set, same as card (SPEC-089).
