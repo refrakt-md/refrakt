@@ -211,10 +211,45 @@ Tokens are defined in a CSS file (e.g., `tokens/base.css`) on the `:root` select
 **Typography:**
 ```css
 :root {
+  /* Families. `display` is the heading voice — the primary lever an editorial
+   * or magazine theme uses to read unlike a product/docs theme. It may match
+   * `sans` for a unified neutral theme. */
   --rf-font-sans: 'Inter', system-ui, sans-serif;
   --rf-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --rf-font-display: 'Inter', system-ui, sans-serif;
+
+  /* Type scale — `--rf-text` is the body anchor (the `base` step drops its
+   * segment per the variable-mapping rule); the rest step up and down. */
+  --rf-text-xs: 0.75rem;
+  --rf-text-sm: 0.875rem;
+  --rf-text: 1rem;
+  --rf-text-lg: 1.125rem;
+  --rf-text-xl: 1.25rem;
+  --rf-text-2xl: 1.5rem;
+  --rf-text-3xl: 1.875rem;
+  --rf-text-4xl: 2.5rem;
+
+  /* Weights, line-heights, tracking. */
+  --rf-weight-light: 300;
+  --rf-weight-normal: 400;
+  --rf-weight-medium: 500;
+  --rf-weight-semibold: 600;
+  --rf-weight-bold: 700;
+
+  --rf-leading-tight: 1.2;
+  --rf-leading-snug: 1.35;
+  --rf-leading-normal: 1.5;
+  --rf-leading-relaxed: 1.65;
+  --rf-leading-loose: 2;
+
+  --rf-tracking-tight: -0.01em;
+  --rf-tracking-normal: 0;
+  --rf-tracking-wide: 0.03em;
+  --rf-tracking-wider: 0.06em;
 }
 ```
+
+Because the scale, weights, line-heights, and tracking are tokens, a theme can recast its entire typographic voice — a dramatic serif display scale for a magazine, a tight technical scale for docs — by overriding these values, without touching per-rune CSS.
 
 **Color palette:**
 ```css

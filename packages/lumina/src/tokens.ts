@@ -21,6 +21,47 @@ export const luminaTokens: ThemeTokensConfig = {
 	font: {
 		sans: "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
 		mono: "'JetBrains Mono', 'Fira Code', ui-monospace, 'Cascadia Code', monospace",
+		// Lumina is a unified-neutral theme: its headings use the same sans as
+		// body. The slot exists so an editorial theme can swap in a serif/display
+		// family without touching rune CSS.
+		display: "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+	},
+
+	// SPEC-094 — typographic scale. A roughly-1.2 modular scale anchored at a
+	// 1rem body. Nothing consumes these yet (WORK-405 migrates Lumina's
+	// hardcoded sizes onto them); values match Lumina's current type feel.
+	text: {
+		xs: '0.75rem',
+		sm: '0.875rem',
+		base: '1rem',
+		lg: '1.125rem',
+		xl: '1.25rem',
+		'2xl': '1.5rem',
+		'3xl': '1.875rem',
+		'4xl': '2.5rem',
+	},
+
+	weight: {
+		light: '300',
+		normal: '400',
+		medium: '500',
+		semibold: '600',
+		bold: '700',
+	},
+
+	leading: {
+		tight: '1.2',
+		snug: '1.35',
+		normal: '1.5',
+		relaxed: '1.65',
+		loose: '2',
+	},
+
+	tracking: {
+		tight: '-0.01em',
+		normal: '0',
+		wide: '0.03em',
+		wider: '0.06em',
 	},
 
 	color: {
