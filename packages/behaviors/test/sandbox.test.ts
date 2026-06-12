@@ -96,3 +96,39 @@ describe('rf-sandbox deferred activation (WORK-381)', () => {
 		expect(el.querySelector('.rf-sandbox__poster')).toBeNull();
 	});
 });
+
+describe('rf-sandbox fill height mode (SPEC-101)', () => {
+	it('fill pins the iframe to 100% height', () => {
+		const el = mount({ 'data-height': 'fill' });
+		const iframe = el.querySelector('iframe') as HTMLIFrameElement;
+		expect(iframe).toBeTruthy();
+		expect(iframe.style.height).toBe('100%');
+	});
+
+	it('fill ignores resize messages — the host owns the height', () => {
+		const el = mount({ 'data-height': 'fill' });
+		const iframe = el.querySelector('iframe') as HTMLIFrameElement;
+		window.dispatchEvent(new MessageEvent('message', {
+			data: { type: 'rf-sandbox-resize', height: 432 },
+		}));
+		expect(iframe.style.height).toBe('100%');
+	});
+
+	it('auto (default) starts at the 150px floor pending resize negotiation', () => {
+		const el = mount({});
+		const iframe = el.querySelector('iframe') as HTMLIFrameElement;
+		expect(iframe.style.height).toBe('150px');
+	});
+
+	it('fill poster fills the host instead of the 150px floor', () => {
+		const el = mount({ 'data-activation': 'click', 'data-height': 'fill' });
+		const poster = el.querySelector('.rf-sandbox__poster') as HTMLElement;
+		expect(poster.style.height).toBe('100%');
+	});
+
+	it('fixed numeric height is untouched by fill handling', () => {
+		const el = mount({ 'data-height': '320' });
+		const iframe = el.querySelector('iframe') as HTMLIFrameElement;
+		expect(iframe.style.height).toBe('320px');
+	});
+});

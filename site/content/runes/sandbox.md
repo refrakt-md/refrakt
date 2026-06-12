@@ -162,6 +162,14 @@ Because scripts run for real, you can `import` an ES module straight from a CDN 
 
 Pin the version for reproducibility; for production also honour `prefers-reduced-motion` and provide a fallback — see the polished [three.js scene in Media guests](/runes/media-guests#live-program).
 
+## Host-owned height — `height="fill"`
+
+`height` normally takes pixels (or auto-sizes to the content). Set `height="fill"` when a **host element owns the height** — the iframe is pinned to `100%` of the host and the auto-resize negotiation is disabled. The flagship case is a sandbox serving as a [cover backdrop](/runes/marketing/hero#animated-background--a-live-program-as-the-backdrop) (a hero or card with `media-position="cover"`): there the engine applies `fill` automatically, so you only need it explicitly for custom fixed-height containers.
+
+```markdoc
+{% sandbox src="wireframe-waves" height="fill" /%}
+```
+
 ## Deferred activation — keep heavy sandboxes off the critical path
 
 A sandbox is **eager** by default: its iframe and every dependency download as the page renders. That's fine for a small demo, but a heavy scene — a three.js render, a large framework playground — shouldn't tax a perf-sensitive page (a landing page, a long article) before the visitor has even scrolled to it.
@@ -617,7 +625,7 @@ If the named directory does not exist, the sandbox displays an error message in 
 | `framework` | `string` | — | Framework preset to load: `tailwind`, `bootstrap`, `bulma`, `pico` |
 | `dependencies` | `string` | — | Comma-separated URLs of scripts/stylesheets to load |
 | `label` | `string` | — | Label for the sandbox (used when inside compare) |
-| `height` | `number` | auto | Fixed height in pixels (auto-sizes by default) |
+| `height` | `number \| string` | auto | Fixed height in pixels, or `"fill"` to fill the host's height (auto-sizes by default) |
 | `context` | `string` | `default` | Name of the design context scope to inject tokens from |
 | `activation` | `string` | `eager` | When to mount the iframe: `eager`, `visible` (on scroll-in), or `click` |
 | `poster` | `string` | — | Image URL shown in the iframe's place until a non-eager sandbox activates |

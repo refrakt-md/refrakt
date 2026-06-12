@@ -23,8 +23,8 @@ targets grow from HTML and SVG to *bring-your-own-renderer*.
 - {% ref "SPEC-101" /%} — **hero cover layout + animated sandbox backgrounds.**
   Make `hero` a first-class `media-position="cover"` host and let a sandbox guest
   fill the cover well — a live three.js scene as a full-bleed, inert (SPEC-090)
-  animated hero backdrop. Showcase: the **prism scene** — markdown glyphs refracting
-  into the Niwaki syntax palette.
+  animated hero backdrop. Showcase: **wireframe waves** — a displaced wireframe
+  terrain in niwaki tints.
 
 These pair deliberately: SPEC-092 makes the data rich enough (runes, tags,
 relationships) for SPEC-093's visualizations to be worth building. SPEC-101 extends
@@ -69,8 +69,8 @@ the SPEC-093 showcases) graduates into hero composition.
 - {% ref "WORK-398" /%} — hero as a cover host (variant, height authority, padding, legibility).
 - {% ref "WORK-399" /%} — cover guest fill + sandbox `height="fill"` (benefits card/bento covers too).
 - {% ref "WORK-400" /%} — build warning: non-eager sandbox under cover (fast-follow).
-- {% ref "WORK-401" /%} — the **prism scene** (niwaki-refraction backdrop; independently buildable).
-- {% ref "WORK-402" /%} — docs: hero cover reference + the animated prism background showcase (capstone; depends on 398/399/401).
+- {% ref "WORK-401" /%} — the **waves scene** (niwaki-tinted wireframe backdrop; independently buildable).
+- {% ref "WORK-402" /%} — docs: hero cover reference + the animated background showcase (capstone; depends on 398/399/401).
 
 **Sequencing:** {% ref "WORK-381" /%} (lazy/poster) lands early — both showcases are heavy WebGL and lazy-mount. The two spec tracks run in parallel; the SPEC-093 showcases depend only on `pageTree` / plan edges that exist today, not on the SPEC-092 entity work. {% ref "WORK-350" /%} (index bento) consumes the registry aggregates + a data-bound viz once they exist. The SPEC-101 track is parallel too: {% ref "WORK-398" /%}/{% ref "WORK-399" /%}/{% ref "WORK-401" /%} are mutually independent, converging only in {% ref "WORK-402" /%}.
 

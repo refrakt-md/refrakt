@@ -1329,6 +1329,18 @@
 				"collapse": {
 					"source": "meta",
 					"dataAttribute": "data-collapse"
+				},
+				"content-place": {
+					"source": "meta",
+					"dataAttribute": "data-content-place"
+				},
+				"height": {
+					"source": "meta",
+					"dataAttribute": "data-height"
+				},
+				"aspect": {
+					"source": "meta",
+					"dataAttribute": "data-aspect"
 				}
 			},
 			"elements": {
@@ -1366,6 +1378,100 @@
 			"inlineStyles": {
 				"valign": {
 					"prop": "--split-valign"
+				},
+				"aspect": "aspect-ratio"
+			},
+			"variants": {
+				"media-position": {
+					"cover": {
+						"block": "hero",
+						"root": ".rf-hero",
+						"dataRune": "hero",
+						"childOrder": [
+							"{content}"
+						],
+						"modifiers": {
+							"media-position": {
+								"source": "meta",
+								"default": "top",
+								"dataAttribute": "data-media-position"
+							},
+							"align": {
+								"source": "meta",
+								"default": "center",
+								"classPattern": ".rf-hero--{value}",
+								"dataAttribute": "data-align"
+							},
+							"media-ratio": {
+								"source": "meta",
+								"dataAttribute": "data-media-ratio"
+							},
+							"valign": {
+								"source": "meta",
+								"dataAttribute": "data-valign"
+							},
+							"collapse": {
+								"source": "meta",
+								"dataAttribute": "data-collapse"
+							},
+							"content-place": {
+								"source": "meta",
+								"dataAttribute": "data-content-place"
+							},
+							"height": {
+								"source": "meta",
+								"dataAttribute": "data-height"
+							},
+							"aspect": {
+								"source": "meta",
+								"dataAttribute": "data-aspect"
+							}
+						},
+						"staticModifiers": [
+							{
+								"name": "cover",
+								"selector": ".rf-hero--cover"
+							}
+						],
+						"elements": {
+							"preamble": {
+								"tag": "header",
+								"selector": ".rf-hero__preamble",
+								"source": "autoLabel"
+							},
+							"eyebrow": {
+								"tag": "eyebrow",
+								"selector": ".rf-hero__eyebrow",
+								"source": "autoLabel"
+							},
+							"headline": {
+								"tag": "headline",
+								"selector": ".rf-hero__headline",
+								"source": "autoLabel"
+							},
+							"blurb": {
+								"tag": "blurb",
+								"selector": ".rf-hero__blurb",
+								"source": "autoLabel"
+							},
+							"image": {
+								"tag": "image",
+								"selector": ".rf-hero__image",
+								"source": "autoLabel"
+							},
+							"media": {
+								"tag": "media",
+								"selector": ".rf-hero__media",
+								"source": "autoLabel"
+							}
+						},
+						"inlineStyles": {
+							"valign": {
+								"prop": "--split-valign"
+							},
+							"aspect": "aspect-ratio"
+						}
+					}
 				}
 			}
 		},

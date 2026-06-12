@@ -190,6 +190,90 @@
 	margin: 0;
 }
 
+/* ── Cover mode (SPEC-101) — `media-position="cover"` ───────────────────
+ * The shared cover layer (dimensions/cover.css) does the grid stacking, the
+ * default scrim, and the overlay anchoring; these rules supply the hero-band
+ * specifics. This file imports after cover.css, so equal-specificity rules
+ * here win. */
+
+/* The section's generous padding moves to the overlaid content — on the root
+ * it would inset the media well (the backdrop must be flush with the band). */
+.rf-hero--cover {
+	padding: 0;
+}
+.rf-hero--cover > [data-name="content"] {
+	--rune-padding: 7rem 2rem 6.5rem;
+}
+
+/* Band height authority: a hero is a full-width band, not a portrait tile.
+ * Height comes from a viewport-aware floor — deliberately NOT a default
+ * aspect-ratio: with `aspect-ratio` + `min-height`, the ratio transfers a
+ * winning min-height back into *width* on narrow screens (a 22rem-tall 21/9
+ * band computes ~820px wide on a 375px phone — the band marches off-screen).
+ * `--cover-aspect: auto` releases the shared 3/4 tile default; an explicit
+ * `aspect` knob still lands as an inline style and owns the shape. */
+.rf-hero--cover {
+	--cover-aspect: auto;
+	min-height: clamp(22rem, 55vh, 40rem);
+}
+/* An explicit aspect owns the shape — drop the floor so the same
+ * ratio-vs-min-height transfer can't reintroduce the overflow. */
+.rf-hero--cover[data-aspect] {
+	min-height: 0;
+}
+
+/* The shared cover layer applies `container-type: size` (size containment) for
+ * its orientation query — under it the band cannot grow with its content, so
+ * tall content clips at min-height. The hero band doesn't use the orientation
+ * query (the centred-band default below covers `auto` placement), so release
+ * the containment and let the band stretch to fit. */
+.rf-hero--cover[data-media-position="cover"][data-cover-scope="full"] {
+	container-type: normal;
+}
+
+/* Named height scale (`height="sm…xl"`): an explicit band height. */
+.rf-hero--cover[data-height="sm"] { min-height: 20rem; }
+.rf-hero--cover[data-height="md"] { min-height: 28rem; }
+.rf-hero--cover[data-height="lg"] { min-height: 36rem; }
+.rf-hero--cover[data-height="xl"] { min-height: 44rem; }
+
+/* Mobile: the desktop overlay padding (7rem bands) would eat most of the well
+ * on a phone — tighten it so the content fits the band. */
+@media (max-width: 640px) {
+	.rf-hero--cover > [data-name="content"] {
+		--rune-padding: 3.5rem 1.25rem 3rem;
+	}
+}
+
+/* A full-bleed band sits flush — no media radius on the well. */
+.rf-hero--cover > [data-section="media"] {
+	border-radius: 0;
+}
+
+/* Legibility over the scrim: the primary action hard-codes white text above,
+ * which inverts to white-on-near-white once the cover scheme flips
+ * --rf-color-primary on the dark overlay. Use the scheme's tokens instead. */
+.rf-hero--cover li:first-child a {
+	color: var(--rf-color-on-accent, var(--rf-color-bg));
+}
+
+/* Centre-band default: a hero overlay reads as a centred band, not the
+ * cover-card caption strip — seat it mid-well unless the author anchors it
+ * with an explicit `content-place`. */
+.rf-hero--cover[data-media-position="cover"]:is([data-content-place="auto"], :not([data-content-place])) > [data-name="content"] {
+	align-self: center;
+	justify-self: stretch;
+}
+
+/* The default cover scrim is edge-weighted (a caption-strip treatment); under
+ * the centred band it would leave the headline on undarkened media. With no
+ * explicit `content-place`, darken the well evenly (slightly bottom-weighted).
+ * An explicit `content-place` re-enters the shared content-edge scrim contract,
+ * and `scrim="none"` still opts out. */
+.rf-hero--cover:is([data-content-place="auto"], :not([data-content-place])):not([data-scrim="none"]) > [data-section="media"]::after {
+	background-image: var(--cover-scrim-image, linear-gradient(rgb(0 0 0 / 0.45), rgb(0 0 0 / 0.35) 50%, rgb(0 0 0 / 0.55)));
+}
+
 /* Mobile: stack actions full-width so the code block and button line up */
 @media (max-width: 640px) {
 	.rf-hero__actions {

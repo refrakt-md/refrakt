@@ -55,6 +55,24 @@ describe('sandbox tag', () => {
 		expect(sandbox!.attributes['data-height']).toBe('400');
 	});
 
+	it('should accept height="fill" (SPEC-101 host-owned height)', () => {
+		const result = parse(`{% sandbox height="fill" %}
+<p>Content</p>
+{% /sandbox %}`);
+
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		expect(sandbox!.attributes['data-height']).toBe('fill');
+	});
+
+	it('should treat an unrecognised height string as auto', () => {
+		const result = parse(`{% sandbox height="banana" %}
+<p>Content</p>
+{% /sandbox %}`);
+
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		expect(sandbox!.attributes['data-height']).toBe('auto');
+	});
+
 	it('should include a static fallback pre/code for SSR (in a template)', () => {
 		const result = parse(`{% sandbox %}
 <div>Hello World</div>

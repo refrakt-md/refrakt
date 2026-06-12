@@ -1,0 +1,166 @@
+<style>
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  /* Boot backdrop — the scene fades in over this, so the first paint looks
+     designed even before three.js arrives (and remains if it never does). */
+  body { background: linear-gradient(rgb(247 246 242) 0%, rgb(236 234 227) 100%); }
+  html.dark body, body.dark { background: linear-gradient(rgb(20 20 23) 0%, rgb(13 13 16) 100%); }
+  /* Pinned to the iframe viewport, NOT height: 100% — directory-mode sandbox
+     content ships inside a plain wrapper div (auto height), which breaks a
+     percentage-height chain: the canvas would collapse to its attribute
+     height and render as a fixed-size strip at the top of the band. */
+  #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 0.8s ease; }
+  #scene.on { opacity: 1; }
+  /* No-JS / no-WebGL / blocked-CDN fallback: a few soft horizon lines keep
+     the wave suggestion without competing with overlaid hero content. */
+  #fallback { display: none; position: fixed; inset: 0; overflow: hidden; }
+  #fallback.on { display: block; }
+  #fallback i {
+    position: absolute; left: -5%; right: -5%; height: 2px; display: block;
+    background: linear-gradient(90deg, transparent, var(--c), transparent);
+    border-radius: 2px;
+  }
+</style>
+
+<canvas id="scene"></canvas>
+<div id="fallback" aria-hidden="true">
+  <i style="--c:rgb(138 133 125 / 0.30); top: 58%"></i>
+  <i style="--c:rgb(138 133 125 / 0.22); top: 66%; transform: scaleX(0.92)"></i>
+  <i style="--c:rgb(61 107 61 / 0.20); top: 74%; transform: scaleX(0.96)"></i>
+  <i style="--c:rgb(138 133 125 / 0.16); top: 82%"></i>
+</div>
+
+<script type="module">
+  // ── Wireframe waves (SPEC-101 / WORK-401) ──────────────────────────────
+  // The hero backdrop: a vertex-displaced wireframe plane rolling in slow
+  // swells — karesansui by way of a vector terrain. Crests pick up a niwaki
+  // accent over the stone base. Ambient by contract: the cover posture
+  // demotion blocks pointer events, so the scene carries itself with no
+  // interaction.
+
+  // Palette of record: packages/lumina/src/presets/niwaki.ts (light/dark pairs).
+  // Base = ishi (stone); crest accent = matsu (light) / wakaba (dark).
+  const NIWAKI = {
+    light: { base: 0x8a857d, crest: 0x3d6b3d, fog: 0xeceae3, opacity: 0.5 },
+    dark:  { base: 0x7d7062, crest: 0xb3d475, fog: 0x101013, opacity: 0.55 },
+  };
+
+  const dark =
+    document.documentElement.classList.contains('dark') ||
+    document.body.classList.contains('dark');
+  const P = dark ? NIWAKI.dark : NIWAKI.light;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const canvas = document.getElementById('scene');
+  const showFallback = () => {
+    canvas.style.display = 'none';
+    document.getElementById('fallback').classList.add('on');
+  };
+
+  try {
+    // Version-pinned for reproducibility.
+    const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    // Backdrop budget: cap the pixel ratio — the scrim sits over us anyway.
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+
+    const scene = new THREE.Scene();
+    // Fog fades the far edge into the CSS backdrop, so the grid has a horizon
+    // instead of a hard geometric edge.
+    scene.fog = new THREE.Fog(P.fog, 9, 26);
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.set(0, 2.4, 9.5);
+    camera.lookAt(0, 0.2, 0);
+
+    // ── The displaced plane ──
+    const SEG_X = 88, SEG_Y = 46;
+    const geo = new THREE.PlaneGeometry(38, 22, SEG_X, SEG_Y);
+    geo.rotateX(-Math.PI / 2);
+    const count = geo.attributes.position.count;
+    const colors = new Float32Array(count * 3);
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    const base = new THREE.Color(P.base);
+    const crest = new THREE.Color(P.crest);
+    const tmp = new THREE.Color();
+
+    const mat = new THREE.MeshBasicMaterial({
+      wireframe: true, vertexColors: true,
+      transparent: true, opacity: P.opacity,
+      fog: true, depthWrite: false,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.y = -0.6;
+    scene.add(mesh);
+
+    // Swell: a few travelling sines at different scales — cheap, organic, no
+    // noise library. Amplitude stays modest; this is a ground, not a storm.
+    const AMP = 0.9;
+    function heightAt(x, z, t) {
+      return AMP * (
+        0.45 * Math.sin(x * 0.32 + t * 0.50) * Math.cos(z * 0.28 + t * 0.32)
+        + 0.30 * Math.sin((x + z) * 0.18 - t * 0.40)
+        + 0.15 * Math.sin(x * 0.85 + t * 0.90) * Math.sin(z * 0.55 - t * 0.55)
+      );
+    }
+    function displace(t) {
+      const pos = geo.attributes.position;
+      for (let i = 0; i < count; i++) {
+        const x = pos.getX(i), z = pos.getZ(i);
+        const h = heightAt(x, z, t);
+        pos.setY(i, h);
+        // Crest tint: 0 at the troughs, accent at the peaks.
+        const k = Math.min(Math.max((h / AMP + 1) / 2, 0), 1);
+        tmp.copy(base).lerp(crest, k * k); // square biases the accent to true crests
+        colors[i * 3] = tmp.r;
+        colors[i * 3 + 1] = tmp.g;
+        colors[i * 3 + 2] = tmp.b;
+      }
+      pos.needsUpdate = true;
+      geo.attributes.color.needsUpdate = true;
+    }
+
+    function resize() {
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      if (!w || !h) return;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    canvas.classList.add('on');
+
+    if (reduce) {
+      // Reduced motion: one composed static frame — a mid-swell moment.
+      displace(2.4);
+      renderer.render(scene, camera);
+    } else {
+      // The RAF loop pauses with the tab — a backdrop must not drain a
+      // backgrounded battery.
+      let raf = 0;
+      let t = 0;
+      let last = performance.now();
+      function loop(now) {
+        const dt = Math.min((now - last) / 1000, 0.05);
+        last = now;
+        t += dt;
+        displace(t);
+        renderer.render(scene, camera);
+        raf = requestAnimationFrame(loop);
+      }
+      raf = requestAnimationFrame(loop);
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          cancelAnimationFrame(raf);
+          raf = 0;
+        } else if (!raf) {
+          last = performance.now();
+          raf = requestAnimationFrame(loop);
+        }
+      });
+    }
+  } catch (err) {
+    // CDN unreachable / WebGL unavailable → the quiet CSS horizon.
+    showFallback();
+  }
+</script>

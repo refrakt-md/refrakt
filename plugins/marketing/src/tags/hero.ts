@@ -2,12 +2,17 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, linkItem, pageSectionProperties } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, linkItem, pageSectionProperties, extractMediaImage } from '@refrakt-md/runes';
 
 export const hero = createContentModelSchema({
 	base: SplitLayoutModel,
 	attributes: {
 		align: { type: String, required: false, matches: ['left', 'center', 'right'], description: 'Horizontal alignment of headline and body text' },
+		// SPEC-101 — cover-mode knobs (`media-position="cover"` overlays the
+		// content on a full-bleed media well). Same grammar as `card` (SPEC-089).
+		'content-place': { type: String, required: false, description: 'Cover overlay anchor: "<block> <inline>" (e.g. "end start") or "auto"' },
+		height: { type: String, required: false, matches: ['sm', 'md', 'lg', 'xl'], description: 'Intrinsic hero band height (named scale) for cover mode' },
+		aspect: { type: String, required: false, description: 'Intrinsic hero aspect ratio (e.g. "21/9", "16/9") for cover mode' },
 	},
 	contentModel: {
 		type: 'delimited',
@@ -90,6 +95,15 @@ export const hero = createContentModelSchema({
 		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
 		const { mediaPosition: mediaPositionMeta, mediaRatio: mediaRatioMeta, valign: valignMeta, collapse: collapseMeta } = layoutMetas;
 
+		// SPEC-101 cover knobs — emitted only when set, same as card (SPEC-089).
+		const contentPlace = attrs['content-place'] as string | undefined;
+		const heightAttr = attrs.height as string | undefined;
+		const aspect = attrs.aspect as string | undefined;
+		const contentPlaceMeta = contentPlace ? new Tag('meta', { content: contentPlace }) : undefined;
+		const heightMeta = heightAttr ? new Tag('meta', { content: heightAttr }) : undefined;
+		const aspectMeta = aspect ? new Tag('meta', { content: aspect }) : undefined;
+		const coverMetas = [contentPlaceMeta, heightMeta, aspectMeta].filter(Boolean) as InstanceType<typeof Tag>[];
+
 		// Structural wrapping
 		const actionsDiv = actions.wrap('div');
 		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
@@ -97,7 +111,12 @@ export const hero = createContentModelSchema({
 			...headerContent,
 			...(actions.count() > 0 ? [actionsDiv.next()] : []),
 		]).wrap('div');
-		const mediaDiv = side.wrap('div');
+		// SPEC-101 — in cover mode unwrap a bare `<p><img></p>` to a direct `img`
+		// child so the shared cover fill rules (`> img` object-fit) apply. Scoped
+		// to cover so non-cover hero markup stays byte-identical.
+		const isCover = attrs['media-position'] === 'cover';
+		const coverImg = isCover ? extractMediaImage(side) : undefined;
+		const mediaDiv = (coverImg ? new RenderableNodeCursor([coverImg]) : side).wrap('div');
 
 		return createComponentRenderable({ rune: 'hero',
 			tag: 'section',
@@ -108,6 +127,9 @@ export const hero = createContentModelSchema({
 				'media-ratio': mediaRatioMeta,
 				valign: valignMeta,
 				collapse: collapseMeta,
+				'content-place': contentPlaceMeta,
+				height: heightMeta,
+				aspect: aspectMeta,
 			},
 			refs: {
 				...pageSectionProperties(header),
@@ -120,6 +142,7 @@ export const hero = createContentModelSchema({
 			children: [
 				alignMeta,
 				...layoutChildren,
+				...coverMetas,
 				mainContent.next(),
 				...(side.toArray().length > 0 ? [mediaDiv.next()] : []),
 			],

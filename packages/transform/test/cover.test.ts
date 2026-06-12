@@ -151,3 +151,75 @@ describe('SPEC-089 cover variant', () => {
 		expect(leaked).toHaveLength(0);
 	});
 });
+
+describe('SPEC-101 cover sandbox backdrop', () => {
+	const findSandbox = (node: any): any => {
+		if (!node || typeof node !== 'object') return undefined;
+		if (node.name === 'rf-sandbox') return node;
+		for (const c of node.children ?? []) {
+			const hit = findSandbox(c);
+			if (hit) return hit;
+		}
+		return undefined;
+	};
+
+	it('auto-fills an auto-height sandbox serving as the cover backdrop', () => {
+		const t = createTransform(config);
+		const media = makeTag('div', { 'data-name': 'media' }, [
+			makeTag('rf-sandbox', { 'data-height': 'auto' }, []),
+		]);
+		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), media])));
+		expect(findSandbox(r)?.attributes['data-height']).toBe('fill');
+	});
+
+	it('leaves an explicit numeric sandbox height alone under cover', () => {
+		const t = createTransform(config);
+		const media = makeTag('div', { 'data-name': 'media' }, [
+			makeTag('rf-sandbox', { 'data-height': '360' }, []),
+		]);
+		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), media])));
+		expect(findSandbox(r)?.attributes['data-height']).toBe('360');
+	});
+
+	it('does not touch sandbox height outside cover', () => {
+		const t = createTransform(config);
+		const media = makeTag('div', { 'data-name': 'media' }, [
+			makeTag('rf-sandbox', { 'data-height': 'auto' }, []),
+		]);
+		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'top'), media])));
+		expect(findSandbox(r)?.attributes['data-height']).toBe('auto');
+	});
+});
+
+describe('SPEC-101 non-eager sandbox under cover warns', () => {
+	it('activation="visible"|"click" on a cover backdrop sandbox warns; eager does not', () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const t = createTransform(config);
+
+		const covered = (attrs: Record<string, string>) =>
+			makeTag('div', { 'data-rune': 'card' }, [
+				meta('media-position', 'cover'),
+				makeTag('div', { 'data-name': 'media' }, [makeTag('rf-sandbox', attrs, [])]),
+			]);
+
+		t(covered({ 'data-activation': 'visible' }));
+		expect(warn).toHaveBeenCalledWith(expect.stringContaining('cover backdrop'));
+		warn.mockClear();
+
+		t(covered({ 'data-activation': 'click' }));
+		expect(warn).toHaveBeenCalledWith(expect.stringContaining('cover backdrop'));
+		warn.mockClear();
+
+		// Eager (no data-activation) under cover: silent.
+		t(covered({}));
+		expect(warn).not.toHaveBeenCalled();
+
+		// Non-eager outside cover: silent (the WORK-381 paths are untouched).
+		t(makeTag('div', { 'data-rune': 'card' }, [
+			meta('media-position', 'top'),
+			makeTag('div', { 'data-name': 'media' }, [makeTag('rf-sandbox', { 'data-activation': 'visible' }, [])]),
+		]));
+		expect(warn).not.toHaveBeenCalled();
+		warn.mockRestore();
+	});
+});

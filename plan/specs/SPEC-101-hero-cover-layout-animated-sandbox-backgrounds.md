@@ -138,28 +138,22 @@ buttons), and the eyebrow pill against the scrim in light and dark mode. The
 mechanism is the existing `data-color-scheme` token flip; this is a verification +
 CSS-tuning item, not new machinery.
 
-### 7. Docs + showcase — the prism scene
+### 7. Docs + showcase — the wireframe-waves scene
 
-- **The showcase scene is a new `site/examples/prism-scene/`** (decided; replaces the
-  earlier idea of reusing the generic `threejs-scene` icosahedron). Concept — the
-  brand metaphor, literally: a slowly rotating prism with a thin stream of markdown
-  glyph particles (`#`, `*`, `>`, `{%`) entering one face as a faint beam, and fanned
-  **spectrum streams in the Niwaki palette** leaving the other — markdown in,
-  structured meaning out.
-- **The spectrum is Niwaki** (decided) — the site's own syntax preset
-  (`packages/lumina/src/presets/niwaki.ts`), which tightens the metaphor: the prism
-  refracts raw markdown into *the colours this site renders syntax in*. The incoming
-  beam/glyphs are tinted **ishi** (stone — the comment/punctuation grey:
-  undifferentiated input); the outgoing streams are the chromatic roles — **wakaba**
-  (keyword green), **sakura** (function pink), **matsu** (pine — link/constant),
-  **momiji** (string peach, with the punchy string-expression orange as an accent).
-  The preset defines light/dark pairs, which directly supplies the scene's
-  theme-aware variants; the scene pins the hex values with a comment pointing at the
-  preset source as the palette of record.
-- **Faked refraction, not real.** `MeshPhysicalMaterial` transmission/dispersion is
-  far too expensive for a hero backdrop. The prism is wireframe/flat-shaded; the beam
-  and spectrum are additive-blended `Points`/line geometry; dispersion is cheap
-  tinted-copy offsets. Looks like refraction, costs like a particle demo.
+- **The showcase scene is `site/examples/wireframe-waves/`** (decided): a
+  vertex-displaced wireframe plane rolling in slow swells — the "safe classic"
+  terrain backdrop, tinted from the **Niwaki** palette
+  (`packages/lumina/src/presets/niwaki.ts`, the palette of record): an **ishi**
+  (stone) base with crests picking up **matsu** (pine, light mode) / **wakaba**
+  (young leaf, dark mode). The preset's light/dark pairs supply the theme-aware
+  variants; the scene pins the hex values with a comment naming the preset source.
+- **Decision history:** a prism scene (markdown glyphs refracting into the niwaki
+  spectrum) was built first and pulled in review — too experimental for the
+  flagship example. The waves keep the niwaki tie and the entire production
+  posture, with none of the visual risk.
+- **Cheap by construction.** A sum of travelling sines displaces the plane CPU-side
+  (no noise library, no shaders to maintain); wireframe rendering with vertex
+  colours; fog fades the far edge into the CSS backdrop.
 - **Ambient by contract.** The SPEC-090 demotion means the iframe never receives
   pointer events, so the scene must carry itself with no interaction (no
   cursor-parallax; host→iframe event forwarding is explicitly out of scope here).
@@ -169,7 +163,7 @@ CSS-tuning item, not new machinery.
   covers the boot frame, theme-aware light/dark variants via the injected theme.
 - The `hero` reference page gains a **cover** section: a plain image-cover hero
   (one-attribute change from a normal hero), then the headline composition — the
-  prism scene via `{% sandbox src="prism-scene" /%}` in the media zone, with the
+  waves scene via `{% sandbox src="wireframe-waves" /%}` in the media zone, with the
   mechanism note (cover + posture demotion + fill) and the motion/perf guidance
   from §5.
 - `media-guests.md` cross-links the pattern from the "Live program" section.
@@ -185,8 +179,8 @@ CSS-tuning item, not new machinery.
 - [ ] A non-eager (`activation="visible"|"click"`) sandbox in a cover media zone produces a build warning naming the conflict (inert backdrop vs. activation affordance).
 - [ ] Overlay legibility verified in light + dark: gradient headline, blurb, actions, eyebrow pill against the default scrim (fixes applied where they fail).
 - [ ] `prefers-reduced-motion` end-to-end: the shipped background example renders a static frame; no Run-control dead end (eager mounts regardless, the scene self-stills).
-- [ ] The prism scene ships as `site/examples/prism-scene/` per §7: faked refraction (no transmission materials), ishi-tinted glyph stream → Niwaki spectrum (wakaba/sakura/matsu/momiji, light+dark pairs from the preset), ambient (no pointer input), dim-under-scrim, capped DPR, visibility-pause, reduced-motion static frame, theme-aware.
-- [ ] Docs: hero reference cover section with an image-cover example and the animated prism background example, including the perf/motion authoring contract; sandbox reference documents `height="fill"`; `media-guests.md` cross-links.
+- [ ] The waves scene ships as `site/examples/wireframe-waves/` per §7: displaced wireframe plane, niwaki tints (ishi base, matsu/wakaba crests, light+dark pairs from the preset), ambient (no pointer input), dim-under-scrim, capped DPR, visibility-pause, reduced-motion static frame, theme-aware.
+- [ ] Docs: hero reference cover section with an image-cover example and the animated waves background example, including the perf/motion authoring contract; sandbox reference documents `height="fill"`; `media-guests.md` cross-links.
 - [ ] Contracts regenerated (`refrakt contracts --check` green) and CSS coverage tests pass for the new `rf-hero--cover` selectors.
 
 ## Work breakdown
@@ -196,7 +190,7 @@ Scheduled into **v0.21.0** (contracts/tests folded into each item's criteria):
 1. {% ref "WORK-398" /%} — **hero as a cover host**: config variant + knobs, padding rerouting, band height default, legibility pass (§1–§3, §6).
 2. {% ref "WORK-399" /%} — **cover guest fill**: cover-scoped fill CSS + sandbox `height="fill"` mode + transform auto-fill for cover guests (§4).
 3. {% ref "WORK-400" /%} — **activation warning**: non-eager sandbox under cover (§5).
-4. {% ref "WORK-401" /%} — **prism scene**: `site/examples/prism-scene/` (§7).
+4. {% ref "WORK-401" /%} — **showcase scene**: `site/examples/wireframe-waves/` (§7; a prism scene was built first and pulled in review).
 5. {% ref "WORK-402" /%} — **docs**: hero cover section, animated-background example, sandbox `fill` docs, cross-links (§7).
 
 ## References
@@ -208,6 +202,6 @@ Scheduled into **v0.21.0** (contracts/tests folded into each item's criteria):
 - Deferred activation / poster (the affordance that's wrong for backdrops): {% ref "WORK-381" /%}.
 - Sandbox element height/auto-resize mechanics: `packages/behaviors/src/elements/sandbox.ts`; sandbox CSS `packages/lumina/styles/runes/sandbox.css`.
 - Hero anatomy + current CSS: `plugins/marketing/src/tags/hero.ts`, `plugins/marketing/src/config.ts`, `packages/lumina/styles/runes/hero.css`.
-- Niwaki palette (the prism spectrum, palette of record): `packages/lumina/src/presets/niwaki.ts`; preset doc `site/content/themes/niwaki.md`.
+- Niwaki palette (the scene tints, palette of record): `packages/lumina/src/presets/niwaki.ts`; preset doc `site/content/themes/niwaki.md`.
 
 {% /spec %}

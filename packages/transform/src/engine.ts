@@ -218,6 +218,19 @@ function findByName(nodes: RendererNode[], name: string): SerializedTag | undefi
 	return undefined;
 }
 
+/** SPEC-101 — collect every `rf-sandbox` element in a subtree (cover-backdrop
+ *  handling: auto-fill + activation validation). */
+function findSandboxes(node: SerializedTag): SerializedTag[] {
+	const out: SerializedTag[] = [];
+	const scan = (n: RendererNode): void => {
+		if (!isTag(n)) return;
+		if (n.name === 'rf-sandbox') out.push(n);
+		for (const c of n.children ?? []) scan(c);
+	};
+	scan(node);
+	return out;
+}
+
 /** SPEC-090 — find the first descendant rune flagged `interactive` (a
  *  behaviour-driven guest). Returns its `data-rune` name, or undefined. */
 function findInteractiveGuest(
@@ -254,6 +267,19 @@ function warnInteractiveGuestInLink(container: string, guest: string): void {
 	INTERACTIVE_GUEST_WARNED.add(key);
 	// eslint-disable-next-line no-console
 	console.warn(`[refrakt] interactive guest \`${guest}\` in a linked \`${container}\` — its controls are inert under the whole-tile link. Drop \`href\` or the interactivity.`);
+}
+
+const COVER_SANDBOX_ACTIVATION_WARNED = new Set<string>();
+
+/** SPEC-101 — warn once when a non-eager sandbox serves as a cover backdrop:
+ *  the posture demotion makes the backdrop inert, so `visible` is a no-op
+ *  above the fold and `click`'s Run control is unreachable. Informative. */
+function warnNonEagerCoverSandbox(container: string, activation: string): void {
+	const key = `${container}:${activation}`;
+	if (COVER_SANDBOX_ACTIVATION_WARNED.has(key)) return;
+	COVER_SANDBOX_ACTIVATION_WARNED.add(key);
+	// eslint-disable-next-line no-console
+	console.warn(`[refrakt] \`activation="${activation}"\` on a sandbox serving as a \`${container}\` cover backdrop — the backdrop is inert (pointer-events: none), so the poster/Run affordance is unreachable. Drop \`activation\` (eager is the background mode).`);
 }
 
 const FRAME_NO_TARGET_WARNED = new Set<string>();
@@ -887,6 +913,22 @@ function transformRune(
 			if (hasLink) {
 				const guest = findInteractiveGuest(mediaZone, allRunes, runeKeyMap);
 				if (guest) warnInteractiveGuestInLink(dataRune ?? config.block, guest);
+			}
+			// SPEC-101 — a sandbox serving as the cover backdrop fills the well:
+			// switch an auto-height sandbox to `fill` (the element pins the iframe
+			// to 100% and skips resize negotiation). An explicit numeric height is
+			// the author's call and is left alone. Non-eager activation contradicts
+			// an inert backdrop (the Run control is unreachable) — warn.
+			if (isCover) {
+				for (const sandbox of findSandboxes(mediaZone)) {
+					if ((sandbox.attributes?.['data-height'] ?? 'auto') === 'auto') {
+						sandbox.attributes = { ...sandbox.attributes, 'data-height': 'fill' };
+					}
+					const activation = sandbox.attributes?.['data-activation'];
+					if (activation === 'visible' || activation === 'click') {
+						warnNonEagerCoverSandbox(dataRune ?? config.block, String(activation));
+					}
+				}
 			}
 		}
 	}

@@ -77,6 +77,69 @@ Semantic runes transform your Markdown into structured, accessible content.
 |-----------|------|---------|-------------|
 | `align` | `string` | `center` | Horizontal alignment of headline + body text: `left`, `center`, `right` |
 
+## Cover — content over a full-bleed backdrop
+
+`media-position="cover"` turns the media zone into a full-bleed backdrop: the media fills the section interior and the headline, blurb, and actions overlay it. A legibility scrim and a light-on-dark foreground are applied automatically — it's a one-attribute switch on the same content.
+
+{% preview source=true %}
+
+{% hero media-position="cover" %}
+![Mountain valley at dusk](https://assets.refrakt.md/media-text-valley.jpg)
+
+---
+
+# Documentation that reads like it was designed
+
+Semantic runes turn plain Markdown into structured pages.
+
+- [Get started](/docs/getting-started)
+- [Explore the runes](/runes/rune-catalog)
+{% /hero %}
+
+{% /preview %}
+
+The band's height comes from `height` (named scale) or `aspect` (a ratio); with neither, a wide default aspect with a viewport floor applies. `content-place` anchors the overlay — by default the content sits as a centred band.
+
+### Animated background — a live program as the backdrop
+
+The media zone holds *any* [media guest](/runes/media-guests) — including a running [sandbox](/runes/sandbox). Drop a three.js scene in the media zone and the hero gets an **animated background**: the sandbox becomes an inert presentational backdrop (no pointer events, no focus stops), the content overlays it, and the scrim keeps the text legible. Here a wireframe terrain rolls in slow swells, its crests picking up the site's own [niwaki](/themes/niwaki) accent colours:
+
+{% preview source=true %}
+
+{% hero media-position="cover" height="lg" %}
+{% sandbox src="wireframe-waves" /%}
+
+---
+
+# Markdown in, meaning out
+
+Plain text becomes structured, semantic pages.
+
+- [See how it works](/docs/getting-started)
+{% /hero %}
+
+{% /preview %}
+
+**The mechanism:** the cover layout stacks the content over the media well; the [interaction-posture contract](/extend/rune-authoring/composability#media-guest-interaction-posture) demotes any cover guest to `presentational`; and the sandbox automatically switches to `height="fill"` so the iframe fills the band. No sandbox-side configuration is needed.
+
+**The authoring contract for an animated backdrop:**
+
+- **Eager only.** `activation="visible"` or `"click"` contradicts an inert backdrop — the Run control would be unreachable — and produces a build warning. The cost lands on first paint, so keep the scene lean.
+- **Design dim.** The scene sits *under* the scrim; darker than feels right in isolation is right.
+- **Respect motion.** Render a single static frame under `prefers-reduced-motion` (the waves scene does).
+- **Cap the budget.** Pin the dependency version, cap `devicePixelRatio`, pause the animation loop when the tab is hidden, and put a CSS gradient behind the canvas so the boot frame looks designed. Ship a static fallback for no-WebGL / blocked-CDN visitors.
+- **Pin the canvas to the viewport.** Size it with `position: fixed; inset: 0` rather than a `height: 100%` chain — sandbox content renders inside a plain wrapper element with auto height, which breaks percentage heights and leaves the canvas as a fixed-size strip.
+
+### Cover attributes
+
+| Attribute | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `content-place` | `string` | `auto` | Overlay anchor: `"<block> <inline>"` (e.g. `"end start"`), or `auto` — a centred band |
+| `height` | `string` | — | Band height (named scale): `sm`, `md`, `lg`, `xl` |
+| `aspect` | `string` | — | Band aspect ratio (e.g. `"21/9"`); without `height`/`aspect`, a wide default with a viewport floor applies |
+| `scrim` | `string` | on | Scrim edge (`top`, `bottom`, `left`, `right`) or `none` to opt out |
+| `scrim-type` | `string` | `gradient` | Scrim treatment: `gradient` or `frost` (with `scrim-blur`: `none`, `sm`, `md`, `lg`) |
+
 ## Section header
 
 Hero supports an optional eyebrow, headline, and blurb above the headline and description. Place a short paragraph or heading before the main content to use them. See [Page sections](/extend/rune-authoring/page-sections) for the full syntax.
@@ -87,7 +150,7 @@ The body splits on `---` into **media → content** zones (media-first in source
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `media-position` | `string` | `top` | Where the media sits: `top`, `bottom`, `start` (left), `end` (right) |
+| `media-position` | `string` | `top` | Where the media sits: `top`, `bottom`, `start` (left), `end` (right), or `cover` (full-bleed backdrop — see [Cover](#cover--content-over-a-full-bleed-backdrop)) |
 | `media-ratio` | `string` | — | Media's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
 | `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
 | `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |

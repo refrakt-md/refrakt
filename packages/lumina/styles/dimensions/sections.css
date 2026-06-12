@@ -25,22 +25,19 @@
 
 /* ─── Title: primary heading ──────────────────────────────────────── */
 
+/* The size rides --rf-title-size (set per density root in density.css) so a
+ * nested rune's own density re-declares it — a full-density hero inside a
+ * compact preview keeps its full-size title — and a rune's own title CSS
+ * (e.g. .rf-hero__headline) outranks the bare attribute selector. The old
+ * `[data-density="compact"] [data-section="title"]` descendant rule leaked
+ * through nested densities AND beat per-rune title sizes. */
 [data-section="title"] {
 	font-family: var(--rf-font-sans);
-	font-size: 1.5rem;
+	font-size: var(--rf-title-size, 1.5rem);
 	font-weight: 700;
 	line-height: 1.2;
 	color: var(--rf-color-text);
 	margin: 0;
-}
-
-/* Scale title with density */
-[data-density="compact"] [data-section="title"] {
-	font-size: 1.25rem;
-}
-
-[data-density="minimal"] [data-section="title"] {
-	font-size: 1rem;
 }
 
 /* ─── Description: secondary text ─────────────────────────────────── */

@@ -57,7 +57,10 @@ export const sandbox = createContentModelSchema({
 		framework: { type: String, required: false, description: 'JavaScript framework for the sandbox' },
 		dependencies: { type: String, required: false, description: 'Comma-separated npm packages to include' },
 		label: { type: String, required: false, description: 'Label displayed above the sandbox' },
-		height: { type: Number, required: false, description: 'Height of the sandbox iframe in pixels' },
+		// SPEC-101 — `fill` pins the iframe to the host's height (100%) and
+		// disables auto-resize negotiation; the engine sets it automatically when
+		// the sandbox is a cover media zone's backdrop.
+		height: { type: [Number, String], required: false, description: 'Height of the sandbox iframe: pixels, "fill" (host owns height), or auto' },
 		context: { type: String, required: false, description: 'Shared context scope for multiple sandboxes' },
 		// WORK-381 — deferred activation: keep heavy sandboxes off the critical
 		// path. `eager` (default) is unchanged; `visible` mounts on scroll-in;
@@ -175,7 +178,10 @@ export const sandbox = createContentModelSchema({
 			...(framework ? { 'data-framework': framework } : {}),
 			...(dependencies ? { 'data-dependencies': dependencies } : {}),
 			...(label ? { 'data-label': label } : {}),
-			'data-height': height != null ? String(height) : 'auto',
+			// Numeric → px sizing, `fill` → host-owned height, anything else → auto.
+			'data-height': typeof height === 'number' ? String(height)
+				: height === 'fill' ? 'fill'
+				: typeof height === 'string' && /^\d+$/.test(height) ? height : 'auto',
 			...(sourceOrigins.length > 0 ? { 'data-source-origins': sourceOrigins.join('\n') } : {}),
 			'data-security-mode': policy.trust,
 			'data-allow-js': policy.allowJs ? 'true' : 'false',
