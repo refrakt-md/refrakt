@@ -44,3 +44,23 @@ export const RUNE_EXAMPLES: Record<string, string> = {
 	"textblock": "{% textblock dropcap=true columns=2 %}\nThe invention of the printing press in the 15th century revolutionized the spread of information across Europe. Before Gutenberg, books were painstakingly copied by hand, making them rare and expensive.\n\nWith movable type, ideas could be reproduced quickly and cheaply. This democratization of knowledge helped fuel the Renaissance, the Reformation, and the Scientific Revolution.\n{% /textblock %}",
 	"toc": "{% toc depth=3 %}{% /toc %}",
 };
+
+/** Curation metadata (`role` / `notes`) for fixtures that declare it. Source: fixtures/*.md. */
+export interface RuneFixtureMeta {
+	role?: string;
+	notes?: string;
+}
+
+export const RUNE_FIXTURE_META: Record<string, RuneFixtureMeta> = {
+	"annotate": {"role":"canonical"},
+	"badge": {"role":"canonical","notes":"Inline rune — embed within prose, never as a standalone block (a block paragraph inside the inline span renders invalid)."},
+	"bar": {"role":"canonical"},
+	"card": {"role":"canonical"},
+	"deflist": {"role":"canonical"},
+	"drawer": {"role":"canonical"},
+	"gallery": {"role":"canonical"},
+	"juxtapose": {"role":"canonical"},
+	"progress": {"role":"canonical"},
+	"reveal": {"role":"canonical"},
+	"section": {"role":"canonical"},
+};
