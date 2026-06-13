@@ -2,6 +2,7 @@ import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
 import { resolve, join, relative, dirname } from 'path';
 import type { CliPlugin, Plugin, PluginRune } from '@refrakt-md/types';
 import { validateThemeConfig, type ValidationResult, type ValidationError, type ValidationWarning } from '@refrakt-md/transform';
+import { parseFixture, type FixtureRole } from '@refrakt-md/runes';
 import { discoverPlugins } from '../lib/plugins.js';
 
 export interface PluginValidateOptions {
@@ -164,18 +165,37 @@ async function validatePlugin(pluginDir: string): Promise<PluginValidationResult
 		}
 	}
 
-	// Step 8: Check fixture coverage
-	const runesWithFixtures = Object.entries(pkg.runes)
-		.filter(([, entry]) => entry.fixture)
-		.map(([name]) => name);
+	// Step 8: Check fixture coverage + role coverage (SPEC-102 / WORK-414).
+	// Fixtures come from two sources: an inline `fixture` string on the rune
+	// entry (implicitly canonical) and standardised files in the plugin's
+	// fixtures/ directory (whose frontmatter carries an explicit `role`).
+	const fileFixtureRoles = readFileFixtureRoles(pluginDir, warnings);
+	const hasAnyFixture = (name: string, entry: PluginRune) =>
+		Boolean(entry.fixture) || (fileFixtureRoles.get(name)?.size ?? 0) > 0;
+	const hasCanonical = (name: string, entry: PluginRune) =>
+		Boolean(entry.fixture) || fileFixtureRoles.get(name)?.has('canonical') === true;
+
 	const runesWithoutFixtures = Object.entries(pkg.runes)
-		.filter(([, entry]) => !entry.fixture && !isChildRune(entry))
+		.filter(([name, entry]) => !isChildRune(entry) && !hasAnyFixture(name, entry))
 		.map(([name]) => name);
 
 	if (runesWithoutFixtures.length > 0) {
 		warnings.push({
 			path: 'fixtures',
 			message: `${runesWithoutFixtures.length} non-child rune(s) without fixtures: ${runesWithoutFixtures.join(', ')}. Fixtures improve the inspect command experience.`,
+		});
+	}
+
+	// Runes that have some fixture but no `canonical` one — the role consumers
+	// (gallery structural coverage, inspect) select by.
+	const runesWithoutCanonical = Object.entries(pkg.runes)
+		.filter(([name, entry]) => !isChildRune(entry) && hasAnyFixture(name, entry) && !hasCanonical(name, entry))
+		.map(([name]) => name);
+
+	if (runesWithoutCanonical.length > 0) {
+		warnings.push({
+			path: 'fixtures.role',
+			message: `${runesWithoutCanonical.length} rune(s) with no \`canonical\` fixture: ${runesWithoutCanonical.join(', ')}. Add a \`<rune>.md\` (or \`role: canonical\`) fixture for structural coverage.`,
 		});
 	}
 
@@ -433,6 +453,40 @@ function validatePluginAttribute(
 			errors.push({ path: `${path}.matches`, message: 'Must be an array' });
 		}
 	}
+}
+
+/**
+ * Read the plugin's standardised file fixtures (SPEC-102) and map each rune to
+ * the set of roles its fixtures declare. A fixture without an explicit `role`
+ * defaults to `canonical` (`<rune>.md` is the canonical scenario). A malformed
+ * fixture is surfaced as a warning rather than aborting validation.
+ */
+function readFileFixtureRoles(
+	pluginDir: string,
+	warnings: ValidationWarning[],
+): Map<string, Set<FixtureRole>> {
+	const roles = new Map<string, Set<FixtureRole>>();
+	const fixturesDir = join(pluginDir, 'fixtures');
+	if (!existsSync(fixturesDir)) return roles;
+
+	for (const file of readdirSync(fixturesDir).sort()) {
+		if (!file.endsWith('.md')) continue;
+		const raw = readFileSync(join(fixturesDir, file), 'utf-8');
+		if (!raw.trim()) continue;
+		try {
+			const fx = parseFixture(raw, file);
+			const role = fx.frontmatter.role ?? 'canonical';
+			if (!roles.has(fx.rune)) roles.set(fx.rune, new Set());
+			roles.get(fx.rune)!.add(role);
+		} catch (err) {
+			warnings.push({
+				path: `fixtures/${file}`,
+				message: err instanceof Error ? err.message : String(err),
+			});
+		}
+	}
+
+	return roles;
 }
 
 /** Check if a rune entry is likely a child/internal rune (no need for fixture) */

@@ -74,6 +74,14 @@ export { resolveIcon, splitIconName } from './lib/icon-resolve.js';
 export type { IconResolveOptions, ResolvedIcon } from './lib/icon-resolve.js';
 export { placeholderSvg, PLACEHOLDER_SHAPES, DEFAULT_PLACEHOLDER_SHAPE } from './lib/placeholder.js';
 export type { PlaceholderOptions } from './lib/placeholder.js';
+export {
+	FIXTURE_ROLES,
+	splitFixture,
+	parseFixtureFilename,
+	validateFixtureFrontmatter,
+	parseFixture,
+} from './fixtures.js';
+export type { FixtureRole, FixtureFrontmatter, ParsedFixture, FixtureIssue } from './fixtures.js';
 export { parseFieldMatch, matchesFieldMatch, matchesFilterExpr, resolveEntityField } from './field-match.js';
 export type { MatchableEntity, FieldMatchClause, ParsedFieldMatch } from './field-match.js';
 export { DEFERRED_BODY_ATTR, captureDeferredBodies, readDeferredBody, transformDeferredTemplate } from './deferred-body.js';
@@ -151,7 +159,7 @@ export {
 	UNIVERSAL_ATTRIBUTE_NAMES,
 } from './attribute-presets.js';
 export type { AttributePresetMetadata } from './attribute-presets.js';
-export { loadPlugin, mergePlugins, applyAliases, loadLocalRunes, discoverPluginFixtures, assertFileRootNamespaceAllowed } from './plugins.js';
+export { loadPlugin, mergePlugins, applyAliases, loadLocalRunes, discoverPluginFixtures, discoverPluginFixtureManifest, assertFileRootNamespaceAllowed } from './plugins.js';
 export type { LoadedPlugin, MergedPluginResult } from './plugins.js';
 export { coreConfig, baseConfig, corePipelineHooks, createCorePipelineHooks, resolveCoreSentinels, type PageTreeNode, type CorePipelineHooksOptions } from './config.js';
 export { BREADCRUMB_AUTO_SENTINEL } from './tags/breadcrumb.js';

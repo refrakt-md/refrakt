@@ -31,6 +31,7 @@ tint-lock: false
 
 - plugin-authoring/authoring
 - plugin-authoring/extending-core
+- plugin-authoring/fixtures
 - plugin-authoring/pipeline
 
 ## Theme authoring
