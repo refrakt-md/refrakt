@@ -103,6 +103,24 @@ stagger interval — so a "calm" theme and a "punchy" theme differ purely by ret
 tokens, like spacing/radius scales. Choreography across named parts (`__content`/`__media`
 offset) lives here too.
 
+**One global stylesheet, not per-rune edits.** The dimension covers every section rune
+without touching any rune's own CSS, because it keys on *generic* hooks, not structure:
+
+- **Root entrance** keys on `[data-reveal][data-in-view]` on the rune root — no knowledge
+  of internals, so `fade`/`slide`/`scale`/`blur` work for all section runes from one rule.
+- **Stagger** targets the *index marker the engine stamps* — `[data-stagger][data-in-view]
+  [style*="--rf-reveal-index"]` — **not** a structural `> *`. The "which children cascade"
+  decision lives in each rune's **config** (the child enumeration that stamps the index),
+  so the CSS never needs per-rune wrapper-depth knowledge.
+- **Transform composition (the critical rule).** Lumina already uses `transform` in ~48
+  files (hover-lifts on `card`/`cta`/`feature`/`pricing`, `frame` displacement, drawer/nav
+  slides). Reveal therefore animates the **individual `translate`/`scale` properties**,
+  **never** the `transform` shorthand — so a reveal `translate` *composes with* an existing
+  `transform: scale(…)` hover instead of clobbering it. This is what lets the dimension
+  stay global rather than auditing and patching every rune that already transforms.
+- **Per-part choreography** (`__content`/`__media` offset) is **opt-in theme polish** on
+  top of the working global default — never a per-rune requirement.
+
 ### 5. Layer 3 — the `reveal` behaviour (the trigger)
 
 A tiny `IntersectionObserver` behaviour (joining tabs/accordion/datatable/form):
@@ -144,6 +162,14 @@ opt-in.
   `data-reveal` × `data-in-view`; the theme owns duration/easing/distance/scale/stagger as
   tokens, and may choreograph across a rune's named parts (sync or offset) without author
   input.
+- [ ] **Global coverage, not per-rune:** the dimension covers all section runes from one
+  stylesheet — root entrance keys on `[data-reveal][data-in-view]`, stagger on the engine's
+  `--rf-reveal-index` marker (not a structural `> *`); no rune's own CSS file gains a motion
+  block for the baseline (per-part choreography is opt-in).
+- [ ] **Transform composition:** reveal animates the individual `translate`/`scale`
+  properties, never the `transform` shorthand, so it composes with the ~48 Lumina files that
+  already use `transform` (hover-lifts, `frame` displacement, drawer/nav) instead of
+  clobbering them; verified against at least one hover-transform rune (`card`/`cta`).
 - [ ] An `IntersectionObserver` `reveal` behaviour sets `data-in-view` on first
   intersection and unobserves; under `prefers-reduced-motion` it marks all in-view
   immediately.
@@ -177,7 +203,9 @@ opt-in.
 1. **Engine facet** (§3) — shared `reveal`/`stagger` modifier, `data-reveal`/`data-stagger`,
    `--rf-reveal-index` child enumeration; `matches` validation.
 2. **Motion dimension CSS + tokens** (§4) — `dimensions/motion.css`, per-character
-   keyframes/transitions, motion tokens, stagger delay.
+   keyframes/transitions, motion tokens, stagger delay; **global hooks only** (generic
+   attrs + `--rf-reveal-index` marker) and **individual `translate`/`scale` properties**
+   so it composes with existing rune `transform`s — no per-rune motion CSS.
 3. **`reveal` behaviour + enhancement gating** (§5–§6) — IO observer, `data-in-view`,
    root `data-animate` boot flag, reduced-motion path.
 4. **Docs + showcase** (§7) — theme-authoring motion-dimension page, author `reveal`
