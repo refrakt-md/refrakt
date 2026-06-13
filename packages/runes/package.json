@@ -36,7 +36,8 @@
     "reflect-metadata": "^0.2.0",
     "fast-xml-parser": "4.5.1",
     "path-browserify": "1.0.1",
-    "iso8601-duration": "2.1.2"
+    "iso8601-duration": "2.1.2",
+    "yaml": "2.8.2"
   },
   "devDependencies": {
     "@types/path-browserify": "1.0.3"

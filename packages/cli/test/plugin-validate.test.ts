@@ -20,6 +20,12 @@ function writeModule(dir: string, relPath: string, content: string): void {
 	writeFileSync(fullPath, content);
 }
 
+function writeFixture(dir: string, filename: string, content: string): void {
+	const fixturesDir = join(dir, 'fixtures');
+	mkdirSync(fixturesDir, { recursive: true });
+	writeFileSync(join(fixturesDir, filename), content);
+}
+
 describe('plugin-validate', () => {
 	let tempDir: string;
 
@@ -307,6 +313,70 @@ describe('plugin-validate', () => {
 		const output = logs.join('\n');
 		const result = JSON.parse(output);
 		expect(result.errors.some((e: any) => e.path.includes('block'))).toBe(true);
+
+		exitMock.mockRestore();
+		logMock.mockRestore();
+	});
+
+	it('warns when a rune has fixtures but none is canonical (role coverage)', async () => {
+		writePkgJson(tempDir, {
+			name: '@test/role-cov',
+			version: '1.0.0',
+			main: 'src/index.js',
+		});
+		writeModule(tempDir, 'src/index.js', `
+			export default {
+				name: 'role-cov',
+				version: '1.0.0',
+				runes: {
+					'widget': { transform: { attributes: {} }, description: 'A widget' },
+				},
+			};
+		`);
+		// Only a non-canonical file fixture for widget.
+		writeFixture(tempDir, 'widget.rich.md', '---\nrole: rich\n---\n{% widget %}x{% /widget %}');
+
+		const { pluginValidateCommand } = await import('../src/commands/plugin-validate.js');
+		const exitMock = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit'); });
+		const logs: string[] = [];
+		const logMock = vi.spyOn(console, 'log').mockImplementation((...a) => { logs.push(a.join(' ')); });
+		try { await pluginValidateCommand({ pluginDir: tempDir, json: true }); } catch { /* may exit */ }
+		const result = JSON.parse(logs.join('\n'));
+
+		expect(result.warnings.some((w: any) => w.path === 'fixtures.role')).toBe(true);
+		// It has a fixture, so it must NOT be flagged as "without fixtures".
+		expect(result.warnings.some((w: any) => w.path === 'fixtures')).toBe(false);
+
+		exitMock.mockRestore();
+		logMock.mockRestore();
+	});
+
+	it('accepts a bare <rune>.md file fixture as canonical coverage', async () => {
+		writePkgJson(tempDir, {
+			name: '@test/role-ok',
+			version: '1.0.0',
+			main: 'src/index.js',
+		});
+		writeModule(tempDir, 'src/index.js', `
+			export default {
+				name: 'role-ok',
+				version: '1.0.0',
+				runes: {
+					'widget': { transform: { attributes: {} }, description: 'A widget' },
+				},
+			};
+		`);
+		writeFixture(tempDir, 'widget.md', '{% widget %}x{% /widget %}');
+
+		const { pluginValidateCommand } = await import('../src/commands/plugin-validate.js');
+		const exitMock = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit'); });
+		const logs: string[] = [];
+		const logMock = vi.spyOn(console, 'log').mockImplementation((...a) => { logs.push(a.join(' ')); });
+		try { await pluginValidateCommand({ pluginDir: tempDir, json: true }); } catch { /* may exit */ }
+		const result = JSON.parse(logs.join('\n'));
+
+		expect(result.warnings.some((w: any) => w.path === 'fixtures')).toBe(false);
+		expect(result.warnings.some((w: any) => w.path === 'fixtures.role')).toBe(false);
 
 		exitMock.mockRestore();
 		logMock.mockRestore();

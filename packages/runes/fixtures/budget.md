@@ -2,7 +2,9 @@
 rune: budget
 ---
 
-{% budget title="Tokyo Trip" currency="JPY" duration="5 days" %}
+{% budget currency="JPY" duration="5 days" %}
+# Tokyo Trip
+
 ## Accommodation
 
 - Hotel in Shinjuku: ¥15000

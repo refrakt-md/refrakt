@@ -451,20 +451,25 @@ export async function loadLocalRunes(
 }
 
 /**
- * Discover file-based fixtures from an installed plugin's fixtures/ directory.
+ * Discover and parse every fixture in an installed plugin's fixtures/
+ * directory (SPEC-102). Each `<rune>.md` / `<rune>.<scenario>.md` file is
+ * parsed into a {@link ParsedFixture} (frontmatter validated, body stripped).
  *
- * Looks for .md files in the package's fixtures/ directory. Each file's name
- * (without extension) becomes the fixture key (rune name).
- *
- * Returns a map of rune name → fixture content string.
+ * Returns an empty array when the package isn't resolvable or has no fixtures/
+ * directory. A fixture whose frontmatter fails schema validation throws from
+ * `parseFixture` — callers that want resilience can wrap individual files; the
+ * CI corpus check (WORK-414) relies on the throw to fail loudly.
  */
-export async function discoverPluginFixtures(npmPackageName: string): Promise<Record<string, string>> {
-	const fixtures: Record<string, string> = {};
+export async function discoverPluginFixtureManifest(
+	npmPackageName: string,
+): Promise<import('./fixtures.js').ParsedFixture[]> {
+	const manifest: import('./fixtures.js').ParsedFixture[] = [];
 
 	try {
 		const { createRequire } = await import('node:module');
 		const { existsSync, readFileSync, readdirSync } = await import('node:fs');
 		const { dirname, join } = await import('node:path');
+		const { parseFixture } = await import('./fixtures.js');
 
 		const require = createRequire(import.meta.url);
 		const pkgJsonPath = require.resolve(`${npmPackageName}/package.json`);
@@ -472,23 +477,38 @@ export async function discoverPluginFixtures(npmPackageName: string): Promise<Re
 		const fixturesDir = join(pkgDir, 'fixtures');
 
 		if (!existsSync(fixturesDir)) {
-			return fixtures;
+			return manifest;
 		}
 
-		const files = readdirSync(fixturesDir);
-		for (const file of files) {
+		for (const file of readdirSync(fixturesDir).sort()) {
 			if (!file.endsWith('.md')) continue;
-			const runeName = file.slice(0, -3);
 			const raw = readFileSync(join(fixturesDir, file), 'utf-8');
-			// Strip a leading YAML frontmatter block (SPEC-102) so it never leaks
-			// into rendered content; bare fixtures (no frontmatter) are unaffected.
-			const content = raw.replace(/^---\n[\s\S]*?\n---\n?/, '');
-			if (content.trim()) {
-				fixtures[runeName] = content;
-			}
+			if (!raw.trim()) continue;
+			manifest.push(parseFixture(raw, file));
 		}
 	} catch {
 		// Plugin not resolvable via require (e.g., workspace link) — skip file fixtures
+	}
+
+	return manifest;
+}
+
+/**
+ * Discover file-based fixtures from an installed plugin's fixtures/ directory.
+ *
+ * Returns a map of rune name → canonical fixture body (frontmatter stripped).
+ * When a rune ships multiple scenarios, the `canonical` scenario wins (falling
+ * back to the first parsed). Backward-compatible with bare `<rune>.md` files.
+ */
+export async function discoverPluginFixtures(npmPackageName: string): Promise<Record<string, string>> {
+	const fixtures: Record<string, string> = {};
+
+	for (const fx of await discoverPluginFixtureManifest(npmPackageName)) {
+		if (!fx.body) continue;
+		// Prefer the canonical scenario; otherwise take the first one we see.
+		if (fx.scenario === 'canonical' || !(fx.rune in fixtures)) {
+			fixtures[fx.rune] = fx.body;
+		}
 	}
 
 	return fixtures;
