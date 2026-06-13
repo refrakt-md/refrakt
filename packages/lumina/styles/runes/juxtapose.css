@@ -43,7 +43,7 @@
 .rf-juxtapose-panel__body {
 	/* Content fills the panel */
 }
-.rf-juxtapose-panel__body img {
+.rf-juxtapose-panel__body :is(img, .rf-placeholder) {
 	display: block;
 	width: 100%;
 	height: auto;

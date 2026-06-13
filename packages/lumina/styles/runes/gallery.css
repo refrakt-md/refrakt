@@ -34,7 +34,7 @@
 	border-radius: var(--rf-radius-md);
 	margin: 0;
 }
-.rf-gallery__item img {
+.rf-gallery__item :is(img, .rf-placeholder) {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
@@ -124,7 +124,7 @@
 }
 /* In masonry the row height isn't pinned, so let each image take its natural
  * height (grid mode keeps `height: 100%` for uniform tiles). */
-.rf-gallery[data-layout="masonry"] .rf-gallery__item img {
+.rf-gallery[data-layout="masonry"] .rf-gallery__item :is(img, .rf-placeholder) {
 	height: auto;
 }
 

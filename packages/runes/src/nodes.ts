@@ -3,6 +3,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { Schema } from '@markdoc/markdoc';
 import * as xml from 'fast-xml-parser';
 import { unescapeFenceContent } from './fence-escape.js';
+import { resolveImageScheme } from './lib/image-schemes.js';
 
 const { dirname, join, isAbsolute } = pb;
 const { Tag } = Markdoc;
@@ -242,6 +243,24 @@ export const image: Schema = {
   },
   transform(node, config) {
     const attr = node.transformAttributes(config);
+
+    // SPEC-106 — custom URL-scheme sugar in the image `src`
+    // (`placeholder:portrait`, `icon:github`). Resolve to an inline renderable
+    // before any path handling or the `<img>` fallback. Bare paths, absolute
+    // URLs, and unregistered schemes return null and fall through unchanged.
+    const resolved = resolveImageScheme(node.attributes.src, {
+      alt: typeof attr.alt === 'string' ? attr.alt : undefined,
+      title: typeof attr.title === 'string' ? attr.title : undefined,
+      property: typeof attr.property === 'string' ? attr.property : undefined,
+      config,
+    });
+    if (resolved) {
+      if (attr.property) {
+        resolved.attributes['data-field'] = attr.property;
+      }
+      return resolved;
+    }
+
     const svgFiles: TargetFile[] = config.variables?.svg || [];
 
     let src = node.attributes.src;

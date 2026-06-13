@@ -72,6 +72,24 @@ Use the `size` attribute to override the icon's dimensions.
 
 {% /preview %}
 
+## Inline shorthand (`icon:`)
+
+In prose, an icon often reads most naturally as an inline image. The
+`icon:<name>` image scheme is the shorthand for this rune — `![Star](icon:star)`
+resolves the same name from the same registry:
+
+{% preview source=true %}
+
+Give a project a ![star](icon:star) star, or read the ![docs](icon:book-open) docs.
+
+{% /preview %}
+
+The image `alt` becomes the accessible label. Group syntax works too
+(`icon:hint/warning`). Reach for the `{% icon %}` rune when you need a `size`
+override or a standalone icon; reach for `icon:` for an icon mid-sentence. See
+[Image schemes](/runes/image-schemes) for the full picture, including the
+`placeholder:` scheme.
+
 ## Available icons
 
 Lumina ships ~80 curated icons from [Lucide](https://lucide.dev) (MIT licensed), organized by category:
