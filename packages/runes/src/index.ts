@@ -117,7 +117,8 @@ export type { HeadingInfo } from './util.js';
 export { extractSeo, collectJsonLd, textContent } from './seo.js';
 export type { PageSeo, OgMeta } from './seo.js';
 export { serialize, serializeTree } from './serialize.js';
-export { RUNE_EXAMPLES } from './examples.js';
+export { RUNE_EXAMPLES, RUNE_FIXTURE_META } from './examples.js';
+export type { RuneFixtureMeta } from './examples.js';
 export {
 	describeRune,
 	renderContentModel,
