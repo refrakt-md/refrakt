@@ -42,7 +42,7 @@
  * guest so a displaced image's shadow falls into the slot's exposed
  * interior (clipped at the slot's `overflow: hidden` boundary like any
  * other in-slot content). */
-[data-section="media"][data-frame-shadow] > :is(img, video, [data-rune]) {
+[data-section="media"][data-frame-shadow] > :is(img, video, .rf-placeholder, [data-rune]) {
 	filter: var(--frame-shadow);
 }
 
@@ -50,7 +50,7 @@
 [style*="--frame-aspect"] { aspect-ratio: var(--frame-aspect); }
 
 /* ── Crop anchor — focal point when the guest is cut ─────────────────── */
-[style*="--frame-anchor"] > :is(img, video) { object-position: var(--frame-anchor); }
+[style*="--frame-anchor"] > :is(img, video, .rf-placeholder) { object-position: var(--frame-anchor); }
 
 /* ── Placement of the framed box within its slot ─────────────────────── */
 [style*="--frame-place-x"] { justify-self: var(--frame-place-x, auto); align-self: var(--frame-place-y, auto); }
@@ -59,7 +59,7 @@
 /* `[data-rune]` extends the rule to nested rune guests (codegroup, mockup,
  * chart, etc.), so frame chrome stays guest-agnostic — the same selector
  * pattern the displace rule uses. */
-[style*="--frame-oversize"] > :is(img, video, [data-rune]) { width: calc(100% * var(--frame-oversize, 1)); max-width: none; }
+[style*="--frame-oversize"] > :is(img, video, .rf-placeholder, [data-rune]) { width: calc(100% * var(--frame-oversize, 1)); max-width: none; }
 
 /* ── Displacement (peek / spill) — move the guest toward an edge/corner.
  * The host decides whether the guest is cropped or spills; this only moves it.
@@ -80,7 +80,7 @@
  *      parent's edge for a true breakout. */
 
 /* — Case 1: media-zone displace → translate the inner guest, zone clips. */
-[data-section="media"][data-displace] > :is(img, video, [data-rune]) {
+[data-section="media"][data-displace] > :is(img, video, .rf-placeholder, [data-rune]) {
 	transform: translate(var(--displace-x, 0), var(--displace-y, 0));
 }
 [data-section="media"][data-displace="top"]        { --displace-y: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }

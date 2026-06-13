@@ -1,7 +1,5 @@
-import Markdoc from '@markdoc/markdoc';
 import type { Config, Node, Schema } from '@markdoc/markdoc';
-const { Tag } = Markdoc;
-import { parseSvgToTags } from '../lib/svg.js';
+import { resolveIcon } from '../lib/icon-resolve.js';
 
 /**
  * Icon rune — self-closing tag that resolves an icon name to an inline SVG.
@@ -21,33 +19,8 @@ export const icon: Schema = {
 		const name = node.attributes.name as string;
 		const size = node.attributes.size as string | undefined;
 
-		// Parse name into group + icon name
-		let group = 'global';
-		let iconName = name;
-		const slashIndex = name.indexOf('/');
-		if (slashIndex !== -1) {
-			group = name.substring(0, slashIndex);
-			iconName = name.substring(slashIndex + 1);
-		}
-
-		// Look up the SVG string from the icon registry
-		const icons = config.variables?.__icons as Record<string, Record<string, string>> | undefined;
-		const svgString = icons?.[group]?.[iconName];
-
-		if (svgString) {
-			const tag = parseSvgToTags(svgString, name);
-			if (size) {
-				tag.attributes.width = size;
-				tag.attributes.height = size;
-			}
-			return tag;
-		}
-
-		// Graceful fallback — empty span placeholder
-		const attrs: Record<string, string> = { class: 'rf-icon', 'data-icon': name };
-		if (size) {
-			attrs.style = `width:${size};height:${size}`;
-		}
-		return new Tag('span', attrs);
+		// Shared with the `icon:` image-src scheme — same registry, same lookup.
+		// The rune stays silent on misses (returns the graceful fallback span).
+		return resolveIcon(name, config, { size }).tag;
 	},
 };

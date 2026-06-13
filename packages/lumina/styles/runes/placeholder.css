@@ -1,0 +1,16 @@
+/* Placeholder — generated inline SVG from the `placeholder:<shape>` image-src
+ * scheme (SPEC-106). The SVG carries its own viewBox aspect and tints itself
+ * with theme tokens (surface / muted / border), so it tracks the active tint
+ * and dark mode for free. These rules just make it behave like a responsive
+ * replaced element wherever a real `<img>` would have gone. */
+.rf-placeholder {
+	display: block;
+	width: 100%;
+	height: auto;
+	border-radius: var(--rf-radius-media);
+}
+
+/* Avatar shape reads as round. */
+.rf-placeholder[data-shape="avatar"] {
+	border-radius: 50%;
+}

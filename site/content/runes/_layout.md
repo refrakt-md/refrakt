@@ -32,6 +32,7 @@ tint-lock: false
 - card
 - progress
 - icon
+- image-schemes
 - badge
 - bar
 - deflist

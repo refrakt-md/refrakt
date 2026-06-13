@@ -24,7 +24,7 @@
 }
 
 /* Media container */
-.rf-mediatext__media img {
+.rf-mediatext__media :is(img, .rf-placeholder) {
 	max-width: 100%;
 	height: auto;
 	border-radius: var(--rf-radius-md);
