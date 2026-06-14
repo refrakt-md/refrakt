@@ -40,7 +40,7 @@
 	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 }
-.rf-testimonial img {
+.rf-testimonial :is(img, .rf-placeholder) {
 	width: 48px;
 	height: 48px;
 	border-radius: 50%;

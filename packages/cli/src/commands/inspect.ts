@@ -3,7 +3,7 @@ import type { ThemeConfig } from '@refrakt-md/transform';
 
 import { extractComponentInterface, fromKebabCase, isTag } from '@refrakt-md/transform';
 import type { SerializedTag } from '@refrakt-md/types';
-import { getFixture } from '../lib/fixtures.js';
+import { getFixture, applyFixtureOverrides } from '../lib/fixtures.js';
 import { discoverVariants } from '../lib/variants.js';
 import {
 	parseCssFile,
@@ -333,7 +333,8 @@ function runPipeline(
 	flags: Record<string, string>,
 	deps: InspectDeps,
 ): { tree: any; source: string } {
-	const source = deps.packageFixtures?.[rune.name] ?? getFixture(rune.name, flags);
+	const base = deps.packageFixtures?.[rune.name];
+	const source = base !== undefined ? applyFixtureOverrides(base, rune.name, flags) : getFixture(rune.name, flags);
 	const ast = deps.Markdoc.parse(source);
 	const headings = deps.extractHeadings(ast);
 
@@ -444,7 +445,8 @@ function showComponentInterface(
 	deps: InspectDeps,
 ): void {
 	// Run the pipeline to get the serialized (pre-identity-transform) tree
-	const source = deps.packageFixtures?.[rune.name] ?? getFixture(rune.name, options.flags);
+	const base = deps.packageFixtures?.[rune.name];
+	const source = base !== undefined ? applyFixtureOverrides(base, rune.name, options.flags) : getFixture(rune.name, options.flags);
 	const ast = deps.Markdoc.parse(source);
 	const headings = deps.extractHeadings(ast);
 

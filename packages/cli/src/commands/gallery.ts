@@ -4,7 +4,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import type { Rune } from '@refrakt-md/runes';
 import type { ThemeConfig, RuneConfig, LayoutConfig, LayoutPageData } from '@refrakt-md/transform';
 import { toKebabCase, layoutTransform, defaultLayout, docsLayout, blogArticleLayout, planLayout } from '@refrakt-md/transform';
-import { getFixture, hasFixture } from '../lib/fixtures.js';
+import { getFixture, hasFixture, applyFixtureOverrides } from '../lib/fixtures.js';
 import { discoverVariants } from '../lib/variants.js';
 import { flattenCssImports, renderGalleryDocument, renderLayoutDocument, type GalleryCell } from '../lib/gallery.js';
 import type { InspectDeps } from './inspect.js';
@@ -222,7 +222,10 @@ function renderCell(
 	flags: Record<string, string>,
 	deps: InspectDeps,
 ): string {
-	const source = deps.packageFixtures?.[rune.name] ?? getFixture(rune.name, flags);
+	const base = deps.packageFixtures?.[rune.name];
+	const source = base !== undefined
+		? applyFixtureOverrides(base, rune.name, flags)
+		: getFixture(rune.name, flags);
 	return deps.renderToHtml(sourceToTree(source, transform, deps), { pretty: false });
 }
 

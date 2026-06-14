@@ -25,11 +25,17 @@ export function getFixture(runeName: string, attrOverrides?: Record<string, stri
 		return `{% ${runeName} %}\nSample content for the ${runeName} rune.\n{% /${runeName} %}`;
 	}
 
+	return applyFixtureOverrides(source, runeName, attrOverrides);
+}
+
+/** Apply attribute overrides to an arbitrary fixture source (e.g. a plugin
+ *  fixture). Returns the source unchanged when there are no overrides. Shared by
+ *  `getFixture` and the inspect/gallery variant matrices so plugin fixtures get
+ *  the same variant expansion as core ones. */
+export function applyFixtureOverrides(source: string, runeName: string, attrOverrides?: Record<string, string>): string {
 	if (!attrOverrides || Object.keys(attrOverrides).length === 0) {
 		return source;
 	}
-
-	// Apply attribute overrides by modifying the opening tag
 	return applyOverrides(source, runeName, attrOverrides);
 }
 
