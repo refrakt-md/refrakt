@@ -36,7 +36,7 @@ export const learning: Plugin = {
       category: 'Semantic',
       snippet: ['{% recipe prepTime="${1:15m}" cookTime="${2:30m}" servings=${3:4} difficulty="${4|easy,medium,hard|}" %}', '# ${5:Recipe Name}', '', '- ${6:Ingredient one}', '- ${7:Ingredient two}', '', '1. ${8:Step one}', '2. ${9:Step two}', '{% /recipe %}'],
       fixture: `{% recipe prepTime="PT15M" cookTime="PT30M" servings="4" difficulty="medium" media-position="end" %}
-![Classic Margherita Pizza](./pizza.jpg)
+![Classic Margherita Pizza](placeholder:cover)
 
 ---
 

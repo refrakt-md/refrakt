@@ -4,7 +4,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import type { Rune } from '@refrakt-md/runes';
 import type { ThemeConfig, RuneConfig, LayoutConfig, LayoutPageData } from '@refrakt-md/transform';
 import { toKebabCase, layoutTransform, defaultLayout, docsLayout, blogArticleLayout, planLayout } from '@refrakt-md/transform';
-import { getFixture, hasFixture } from '../lib/fixtures.js';
+import { getFixture, hasFixture, applyFixtureOverrides } from '../lib/fixtures.js';
 import { discoverVariants } from '../lib/variants.js';
 import { flattenCssImports, renderGalleryDocument, renderLayoutDocument, type GalleryCell } from '../lib/gallery.js';
 import type { InspectDeps } from './inspect.js';
@@ -75,7 +75,14 @@ export async function galleryCommand(options: GalleryOptions, deps: InspectDeps)
 		}
 
 		const seenHtml = new Set<string>();
-		for (const { variant, flags } of variantMatrix(rune)) {
+		// A fixture that demonstrates several instances of the rune inline (e.g.
+		// badge showing every sentiment in one sentence) can't be meaningfully
+		// variant-expanded: attribute injection only rewrites the first tag,
+		// producing redundant near-identical cells. Render those once.
+		const baseSource = deps.packageFixtures?.[rune.name] ?? getFixture(rune.name, {});
+		const ownTagCount = (baseSource.match(new RegExp(`\\{%\\s*${rune.name}\\b`, 'g')) ?? []).length;
+		const matrix = ownTagCount > 1 ? [{ variant: 'default', flags: {} }] : variantMatrix(rune);
+		for (const { variant, flags } of matrix) {
 			try {
 				const html = renderCell(transform, rune, flags, deps);
 				if (seenHtml.has(html)) continue; // dedupe variants that render identically
@@ -215,7 +222,10 @@ function renderCell(
 	flags: Record<string, string>,
 	deps: InspectDeps,
 ): string {
-	const source = deps.packageFixtures?.[rune.name] ?? getFixture(rune.name, flags);
+	const base = deps.packageFixtures?.[rune.name];
+	const source = base !== undefined
+		? applyFixtureOverrides(base, rune.name, flags)
+		: getFixture(rune.name, flags);
 	return deps.renderToHtml(sourceToTree(source, transform, deps), { pretty: false });
 }
 

@@ -17,9 +17,9 @@ export const business: Plugin = {
       category: 'Semantic',
       snippet: ['{% cast %}', '- ${1:Name} - ${2:Role}', '- ${3:Name} - ${4:Role}', '{% /cast %}'],
       fixture: `{% cast %}
-- **Alice Chen** — Lead Engineer
-- **Bob Martinez** — Product Designer
-- **Carol Kim** — Engineering Manager
+- ![Alice Chen](placeholder:avatar) **Alice Chen** — Lead Engineer
+- ![Bob Martinez](placeholder:avatar) **Bob Martinez** — Product Designer
+- ![Carol Kim](placeholder:avatar) **Carol Kim** — Engineering Manager
 {% /cast %}`,
     },
     'cast-member': {

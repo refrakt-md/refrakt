@@ -3,6 +3,7 @@ import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
+import { isMediaNode } from './common.js';
 
 const sizeValues = ['small', 'medium', 'large', 'full'] as const;
 const alignValues = ['left', 'center', 'right'] as const;
@@ -24,12 +25,14 @@ export const figure = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		);
 
-		const imgs = children.flatten().tag('img').toArray();
+		// Media is an <img> or a scheme-resolved <svg> (placeholder:/icon:) — both
+		// count as the figure's image (SPEC-106).
+		const imgs = children.flatten().toArray().filter(n => isMediaNode(n)) as InstanceType<typeof Tag>[];
 
-		// For caption fallback, skip paragraphs that only contain an image
+		// For caption fallback, skip paragraphs that only contain a media node
 		const textParagraphs = children.tag('p').toArray().filter(p => {
 			const kids = (p.children || []).filter((c: any) => Markdoc.Tag.isTag(c));
-			return !(kids.length === 1 && kids[0].name === 'img');
+			return !(kids.length === 1 && isMediaNode(kids[0]));
 		});
 
 		const captionContent = attrs.caption || undefined;

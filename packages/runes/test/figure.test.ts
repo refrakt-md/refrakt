@@ -41,4 +41,18 @@ A beautiful sunset over the ocean.
 		expect(fields(fig).size).toBe('large');
 		expect(fields(fig).align).toBe('center');
 	});
+
+	// SPEC-106 regression — a `placeholder:`/`icon:` scheme src resolves to an
+	// inline <svg>, not <img>; the figure must still keep it as its media.
+	it('keeps a scheme-resolved <svg> placeholder as the figure media', () => {
+		const result = parse(`{% figure caption="Dashboard overview" %}
+![Dashboard](placeholder:cover)
+{% /figure %}`);
+
+		const fig = findTag(result as any, t => t.attributes['data-rune'] === 'figure');
+		expect(fig).toBeDefined();
+		const svg = findTag(fig!, t => t.name === 'svg' && /rf-placeholder/.test(String(t.attributes.class)));
+		expect(svg).toBeDefined();
+		expect(svg!.attributes['data-shape']).toBe('cover');
+	});
 });

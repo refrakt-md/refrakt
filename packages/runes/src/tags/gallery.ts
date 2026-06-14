@@ -3,6 +3,7 @@ import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
+import { isMediaNode } from './common.js';
 
 const layoutValues = ['grid', 'carousel', 'masonry'] as const;
 
@@ -29,9 +30,11 @@ export const gallery = createContentModelSchema({
 		const lightbox = attrs.lightbox ?? true;
 		const caption = attrs.caption ?? '';
 
-		const images = children.flatten().tag('img').toArray();
+		// An image is an <img> or a scheme-resolved <svg> (placeholder:/icon:).
+		const images = children.flatten().toArray().filter(n => isMediaNode(n)) as InstanceType<typeof Tag>[];
 		const items = images.map(img => {
-			const alt = img.attributes?.alt || '';
+			// scheme svgs carry the label as aria-label rather than alt.
+			const alt = img.attributes?.alt || img.attributes?.['aria-label'] || '';
 			const itemChildren: any[] = [img];
 			if (alt) {
 				itemChildren.push(new Tag('figcaption', {}, [alt]));

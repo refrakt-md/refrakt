@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, isMediaNode } from '@refrakt-md/runes';
 
 const variantType = ['card', 'inline', 'quote'] as const;
 
@@ -55,12 +55,13 @@ export const testimonial = createContentModelSchema({
 						}
 					}
 				}
-			} else if (node.name === 'img' || (node.name === 'p' && (node as any).children.some((c: any) => Tag.isTag(c) && c.name === 'img'))) {
-				// Extract image (could be direct or wrapped in p)
-				if (node.name === 'img') {
+			} else if (isMediaNode(node) || (node.name === 'p' && (node as any).children.some((c: any) => isMediaNode(c)))) {
+				// Extract the avatar — an <img> or a scheme-resolved <svg>
+				// (placeholder:/icon:), direct or wrapped in a paragraph (SPEC-106).
+				if (isMediaNode(node)) {
 					avatarTag = node;
 				} else {
-					avatarTag = (node as any).children.find((c: any) => Tag.isTag(c) && c.name === 'img');
+					avatarTag = (node as any).children.find((c: any) => isMediaNode(c));
 				}
 			}
 		}
