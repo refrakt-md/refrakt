@@ -9,7 +9,7 @@ export const RUNE_EXAMPLES: Record<string, string> = {
 	"bar": "{% bar %}\nWORK-051\n---\n{% badge sentiment=\"positive\" %}done{% /badge %}\n{% /bar %}",
 	"breadcrumb": "{% breadcrumb %}\n- [Home](/)\n- [Docs](/docs)\n- [Runes](/docs/runes)\n- Hero\n{% /breadcrumb %}",
 	"budget": "{% budget currency=\"JPY\" duration=\"5 days\" %}\n# Tokyo Trip\n\n## Accommodation\n\n- Hotel in Shinjuku: ¥15000\n- Ryokan in Hakone: ¥25000\n\n## Transportation\n\n- Japan Rail Pass (7-day): ¥29650\n- Airport transfer: ¥3000\n\n## Food & Dining\n\n- Daily meals: ¥5000\n- Sushi experience: ¥8000\n{% /budget %}",
-	"card": "{% card %}\n## Generic content card\nA bordered surface with a body and an optional footer — a plain presentational component you can drop into prose or feed from a collection template.\n{% /card %}",
+	"card": "{% card %}\n![Card preview](placeholder:cover)\n\n---\n\n## Generic content card\nA bordered surface with a media zone, a body, and an optional footer — a plain presentational component you can drop into prose or feed from a collection template.\n{% /card %}",
 	"chart": "{% chart type=\"bar\" title=\"Monthly Revenue\" %}\n| Month | Revenue | Expenses |\n|-------|---------|----------|\n| Jan   | 4200    | 3100     |\n| Feb   | 5100    | 3400     |\n| Mar   | 4800    | 3200     |\n| Apr   | 6200    | 3800     |\n{% /chart %}",
 	"codegroup": "{% codegroup %}\n```js\nconsole.log('Hello');\n```\n\n```python\nprint('Hello')\n```\n{% /codegroup %}",
 	"compare": "{% compare %}\n```javascript\n// Before\nconst x = 1;\nconst y = 2;\n```\n\n```javascript\n// After\nconst [x, y] = [1, 2];\n```\n{% /compare %}",

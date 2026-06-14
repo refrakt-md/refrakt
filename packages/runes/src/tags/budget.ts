@@ -51,12 +51,16 @@ function parseBudgetDays(duration: string): number {
 	return days;
 }
 
-/** Read a budget-category's `data-field` meta value from its children. */
+/** Read a budget-category's field value from its `data-rune-fields` bag.
+ *  `createComponentRenderable` moves pure-data metas (label, subtotal) into the
+ *  JSON field bag and drops them from the children, so the parent reads the bag
+ *  rather than scanning for child metas (which no longer exist). */
 function readCategoryField(cat: Markdoc.Tag, field: string): string {
-	for (const child of cat.children) {
-		if (Markdoc.Tag.isTag(child) && child.attributes['data-field'] === field) {
-			return String(child.attributes.content ?? '');
-		}
+	try {
+		const bag = JSON.parse(String(cat.attributes['data-rune-fields'] ?? '{}'));
+		if (bag[field] !== undefined && bag[field] !== null) return String(bag[field]);
+	} catch {
+		// Malformed/absent bag — fall through to empty.
 	}
 	return '';
 }

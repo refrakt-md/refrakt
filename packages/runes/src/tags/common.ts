@@ -150,16 +150,39 @@ export function splitMediaBodyFooter(nodes: Node[]): { media: Node[]; body: Node
  *
  * @returns The first `<img>` Tag found, or `undefined` if none exists.
  */
+/**
+ * A scheme-resolved media node — the inline `<svg>` produced by the
+ * `placeholder:` / `icon:` image-src schemes (SPEC-106), identified by its
+ * `rf-placeholder` / `rf-icon` class. These replace the `<img>` element, so
+ * media-consuming runes must recognise them alongside real images.
+ */
+export function isSchemeMediaNode(node: RenderableTreeNode): boolean {
+  return (
+    Markdoc.Tag.isTag(node) &&
+    node.name === 'svg' &&
+    /\b(rf-placeholder|rf-icon)\b/.test(String(node.attributes?.class ?? ''))
+  );
+}
+
+/** Any media leaf a rune treats as its image slot: `<img>`, `<video>`, or a
+ *  scheme-resolved media `<svg>`. */
+export function isMediaNode(node: RenderableTreeNode): boolean {
+  return (
+    Markdoc.Tag.isTag(node) &&
+    (node.name === 'img' || node.name === 'video' || isSchemeMediaNode(node))
+  );
+}
+
 export function extractMediaImage(cursor: RenderableNodeCursor): Tag | undefined {
   for (const node of cursor.toArray()) {
-    if (Markdoc.Tag.isTag(node) && node.name === 'img') {
-      return node;
+    if (isMediaNode(node)) {
+      return node as Tag;
     }
     if (Markdoc.Tag.isTag(node) && node.name === 'p') {
-      const img = node.children.find(
-        (c: any) => Markdoc.Tag.isTag(c) && c.name === 'img',
+      const media = node.children.find(
+        (c: any) => isMediaNode(c),
       ) as Tag | undefined;
-      if (img) return img;
+      if (media) return media;
     }
   }
   return undefined;
@@ -180,7 +203,7 @@ export function unwrapParagraphImages(nodes: RenderableTreeNode[]): RenderableTr
       node.name === 'p' &&
       node.children.length === 1 &&
       Markdoc.Tag.isTag(node.children[0]) &&
-      (node.children[0].name === 'img' || node.children[0].attributes?.['data-rune'])
+      (node.children[0].name === 'img' || node.children[0].attributes?.['data-rune'] || isSchemeMediaNode(node.children[0]))
     ) {
       return node.children[0];
     }

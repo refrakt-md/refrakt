@@ -75,7 +75,14 @@ export async function galleryCommand(options: GalleryOptions, deps: InspectDeps)
 		}
 
 		const seenHtml = new Set<string>();
-		for (const { variant, flags } of variantMatrix(rune)) {
+		// A fixture that demonstrates several instances of the rune inline (e.g.
+		// badge showing every sentiment in one sentence) can't be meaningfully
+		// variant-expanded: attribute injection only rewrites the first tag,
+		// producing redundant near-identical cells. Render those once.
+		const baseSource = deps.packageFixtures?.[rune.name] ?? getFixture(rune.name, {});
+		const ownTagCount = (baseSource.match(new RegExp(`\\{%\\s*${rune.name}\\b`, 'g')) ?? []).length;
+		const matrix = ownTagCount > 1 ? [{ variant: 'default', flags: {} }] : variantMatrix(rune);
+		for (const { variant, flags } of matrix) {
 			try {
 				const html = renderCell(transform, rune, flags, deps);
 				if (seenHtml.has(html)) continue; // dedupe variants that render identically

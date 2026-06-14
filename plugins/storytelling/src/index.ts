@@ -45,7 +45,7 @@ Raised in the shadow of the Ashen Spire, Veshra discovered her gift for necroman
       category: 'Semantic',
       snippet: ['{% realm name="${1:Name}" type="${2:sanctuary}" %}', '${3:Description of the location.}', '{% /realm %}'],
       fixture: `{% realm name="Rivendell" type="sanctuary" scale="settlement" parent="Eriador" %}
-![Scene](/images/rivendell.jpg)
+![Scene](placeholder:wide)
 
 The Last Homely House East of the Sea.
 

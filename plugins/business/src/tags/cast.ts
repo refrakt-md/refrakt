@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes, pageSectionProperties } from '@refrakt-md/runes';
+import { createComponentRenderable, createContentModelSchema, asNodes, pageSectionProperties, resolveImageScheme } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 
 const layoutType = ['grid', 'list'] as const;
@@ -27,10 +27,13 @@ export const castMember = createContentModelSchema({
 
 		const children: any[] = [];
 
-		// Create portrait image from attribute (extracted by item model or set explicitly)
+		// Create portrait image from attribute (extracted by item model or set
+		// explicitly). A `placeholder:`/`icon:` scheme src resolves to an inline
+		// <svg>; anything else is a normal <img> (SPEC-106).
 		let portraitTag: Markdoc.Tag | undefined;
 		if (attrs.image) {
-			portraitTag = new Tag('img', { src: attrs.image, alt: attrs.name ?? '' });
+			const resolved = resolveImageScheme(attrs.image as string, { alt: attrs.name ?? '', config });
+			portraitTag = resolved ?? new Tag('img', { src: attrs.image, alt: attrs.name ?? '' });
 			children.push(portraitTag);
 		}
 

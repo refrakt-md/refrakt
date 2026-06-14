@@ -49,19 +49,30 @@ A compelling description of what you're offering.
       snippet: ['{% bento columns=${1:3} %}', '# ${2:Large Cell}', '', '${3:Content}', '', '## ${4:Medium Cell}', '', '${5:Content}', '', '## ${6:Another Cell}', '', '${7:Content}', '{% /bento %}'],
       fixture: `{% bento %}
 # Main Feature
+![Showcase](placeholder:cover)
+---
 The primary showcase area with plenty of room for a detailed description.
 
 ## Secondary Feature
+![Highlight](placeholder:square)
+---
 A supporting feature with moderate space.
 
-## Another Feature
-More supporting content.
+#### Compact One
+A compact 2×1 cell.
 
-### Small Detail
-A compact cell.
+#### Compact Two
+Another compact 2×1 cell.
 
-### Small Detail
-Another compact cell.
+### Detail Left
+![Detail](placeholder:wide)
+---
+A medium tile that fills the lower-left.
+
+### Detail Right
+![Detail](placeholder:wide)
+---
+A medium tile that fills the lower-right.
 {% /bento %}`,
     },
     'bento-cell': {
@@ -155,7 +166,7 @@ Select the plan that best fits your needs.
 
 **Sarah Chen** — Head of Developer Experience at Acme Corp
 
-![](/avatars/sarah.jpg)
+![Sarah Chen](placeholder:avatar)
 {% /testimonial %}`,
     },
     'comparison': {
