@@ -8,8 +8,10 @@ Paint the {% ref "SPEC-107" /%} axes in Lumina and **retire the rune-name lists*
 ## Scope
 
 - Map each `data-elevation` rung to a chrome bundle (fill / border / radius / shadow) via
-  low-specificity attribute selectors; map each `data-prominence` value to a header type
-  register (using the v0.22.0 type tokens).
+  low-specificity attribute selectors — the rung's shadow is the rune surface's *resting*
+  `box-shadow` depth, kept distinct from `frame-shadow`'s per-guest `drop-shadow`
+  ({% ref "SPEC-107" /%} §1); map each `data-prominence` value to a header type register
+  (using the v0.22.0 type tokens).
 - Set Lumina's per-rune `defaultElevation` / `defaultProminence` (and `defaultWidth` where a
   rune was a `banner`) so today's appearance is preserved: card-bucket runes → `raised`/`flat`,
   inline → `flush`, inset → `sunken`, banner → `flush` + `width: full`.
