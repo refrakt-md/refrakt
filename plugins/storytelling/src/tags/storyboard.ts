@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes } from '@refrakt-md/runes';
+import { createComponentRenderable, createContentModelSchema, asNodes, isMediaNode } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 
 const variantType = ['comic', 'clean', 'polaroid'] as const;
@@ -18,7 +18,8 @@ export const storyboardPanel = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		);
 
-		const image = children.tag('img').limit(1);
+		// The panel image is an <img> or a scheme-resolved <svg> (placeholder:/icon:).
+		const image = (children.flatten().toArray().filter(n => isMediaNode(n)) as InstanceType<typeof Tag>[]).slice(0, 1);
 		const caption = children.tag('p').limit(1);
 		const body = children.wrap('div');
 

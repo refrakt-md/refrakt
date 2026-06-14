@@ -3,13 +3,22 @@ rune: grid
 ---
 
 {% grid %}
-Column one content.
+{% card %}
+## Fast
+Ships static HTML with zero client runtime.
+{% /card %}
 
 ---
 
-Column two content.
+{% card %}
+## Flexible
+Swap themes instantly — the same content renders differently.
+{% /card %}
 
 ---
 
-Column three content.
+{% card %}
+## Portable
+Your content stays plain, portable Markdown.
+{% /card %}
 {% /grid %}

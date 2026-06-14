@@ -146,13 +146,13 @@ a deep mutual respect.
       category: 'Semantic',
       snippet: ['{% storyboard %}', '![${1:Panel 1}](${2:/path/to/image1.png})', '', '${3:Caption for panel 1}', '', '![${4:Panel 2}](${5:/path/to/image2.png})', '', '${6:Caption for panel 2}', '{% /storyboard %}'],
       fixture: `{% storyboard variant="clean" columns="3" %}
-![Panel 1](/images/panel1.jpg)
+![Panel 1](placeholder:cover)
 The hero surveys the landscape from atop the hill.
 
-![Panel 2](/images/panel2.jpg)
+![Panel 2](placeholder:cover)
 A distant rumble echoes across the valley.
 
-![Panel 3](/images/panel3.jpg)
+![Panel 3](placeholder:cover)
 The journey begins.
 {% /storyboard %}`,
     },

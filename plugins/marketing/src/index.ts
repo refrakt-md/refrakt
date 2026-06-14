@@ -175,14 +175,14 @@ Select the plan that best fits your needs.
       description: 'Product/feature comparison matrix where headings become columns and bold labels align rows across columns',
       category: 'Section',
       snippet: ['{% comparison layout="${1:table}" %}', '## ${2:Option A}', '', '- **${4:Feature}**: ${5:Value}', '', '## ${3:Option B}', '', '- **${4:Feature}**: ${6:Value}', '{% /comparison %}'],
-      fixture: `{% comparison %}
-# React
+      fixture: `{% comparison highlighted="Svelte" %}
+## React
 - **Learning Curve** — Moderate
 - **Bundle Size** — ~40kb
 - **Reactivity** — Virtual DOM
 - ~~Server Components~~ — Experimental
 
-# Svelte
+## Svelte
 - **Learning Curve** — Easy
 - **Bundle Size** — ~5kb
 - **Reactivity** — Compile-time
