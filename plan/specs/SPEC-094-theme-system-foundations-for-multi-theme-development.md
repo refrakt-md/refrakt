@@ -289,6 +289,14 @@ magazine/business themes beyond recolouring. Each new layout ships with its harn
 
 #### 8. Surface as engine-emitted config (and the classification criterion)
 
+> **Amended by {% ref "SPEC-107" /%}.** This section's *intent* stands — retire the
+> rune-name selector lists and emit the rune→treatment assignment from theme-overridable
+> config — but its *vocabulary* is superseded. SPEC-107 decomposes the single `surface`
+> enum into an ordered `elevation` depth ladder (chrome), `width` (bleed, layout-realized),
+> and a page-section-family `prominence` axis, and revisits the prominence deferral below
+> with the decomposition rationale. Read §8 for the criterion and the goal; read SPEC-107
+> for the axis set and the `elevation` migration.
+
 The "surface" dimension (card / banner / inline / inset) is the **lone holdout** in an
 otherwise-consistent design. The engine already emits every other cross-rune classification
 from config as a `data-*` attribute — `data-meta-type`, `data-zone-layout`, `data-density`,

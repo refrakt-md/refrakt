@@ -16,12 +16,16 @@ shadow-only `none/sm/md/lg` scale. The foundation the rest of the milestone buil
 - Ship a deprecation alias mapping old → new (`none`→`flat`, `sm`→`raised`, `md`→`raised`,
   `lg`→`floating`) that resolves + warns (the {% ref "SPEC-086" /%} alias pattern). `none`
   maps to `flat`, never `flush`.
+- Honor the `elevation` ↔ `frame-shadow` boundary ({% ref "SPEC-107" /%} §1): `elevation` is
+  the rune surface's `box-shadow` depth; leave `frame-shadow`'s own `none/sm/md/lg` scale
+  untouched (separate axis, not renamed or migrated).
 
 ## Acceptance Criteria
 
 - [ ] `elevation` accepts `sunken | flush | flat | raised | floating` (+ optional `overlay`) and the engine emits `data-elevation="<value>"`.
 - [ ] `defaultElevation` is read from theme `RuneConfig` and applied when the author sets no value; per-instance values win.
 - [ ] Old values (`none/sm/md/lg`) resolve via a deprecation alias with a dev warning; `none`→`flat` (not `flush`); tests cover the mapping.
+- [ ] `frame-shadow`'s `none/sm/md/lg` scale is left untouched; only the rune-surface `elevation` scale migrates.
 - [ ] Unit tests cover value emission, the per-rune default, and the alias.
 
 ## Dependencies

@@ -60,12 +60,48 @@ The engine emits `data-elevation`; skins target `[data-elevation="raised"]` inst
 enumerating rune names. Whether `raised` is borderless-with-shadow or bordered-flat is the
 skin's interpretation, not the axis's contract.
 
-### 2. `width` owns the bleed (existing axis)
+**Relationship to `frame-shadow` ({% ref "SPEC-086" /%}).** Lift already partly lives in the
+frame system: `data-frame-shadow` paints a per-instance `drop-shadow()` filter (its own
+`none|sm|md|lg` scale) on framed guests. The two are distinct and both kept — the boundary
+must be written down or they will drift:
+
+- **`elevation` owns the rune surface's *resting depth*** — the `box-shadow` on the rune's
+  own surface (does this card sit flat, or float?).
+- **`frame-shadow` owns *per-guest* media drop-shadows** — e.g. a displaced image peeking
+  out of a card's media well.
+
+`frame-shadow` keeps its own `none/sm/md/lg` scale and is **not** renamed by this spec; only
+the rune-surface `elevation` scale migrates. The single depth ladder deliberately collapses
+(chrome-presence × lift) to one line; where an author needs an off-diagonal a ladder can't
+express — a borderless element that still casts a shadow — that is a `frame`/`frame-shadow`
+concern, not an elevation rung.
+
+### 2. `width` — the layout axis (interpreter is the layout, not the skin)
 
 §8's `banner` was a **width** decision wearing a surface label. It moves to the existing,
 already-config `width` axis: a full-bleed section is `width: full` (which `cta` already
 defaults to). `elevation` never carries width; this keeps the depth ladder from rotting
 back into a grab-bag.
+
+But `width` is a **different kind of axis** from elevation/prominence, and the spec is
+explicit about it. Elevation and prominence are **surface** axes — self-contained rune
+chrome the *skin* interprets; a card looks like a card in any layout. `width` is a
+**rune↔layout contract**: the rune (or its default) declares *intent* via `data-width`, and
+the **layout** owns what that intent means. Today `layouts/default.css` and
+`layouts/docs.css` interpret the same `data-width="wide"`/`"full"` value *differently* (docs
+maps it onto a named `wide` grid track — a preview breaks out of the docs reading column
+because its `defaultWidth: 'wide'` meets that track, with no author involvement). A layout
+with no wide track simply renders `full` at container width; nothing breaks.
+
+So the model is **two layers**:
+
+- **Surface axes** — `elevation`, `prominence` — author-overridable intent, *skin*-interpreted.
+- **Layout axis** — `width` — author-overridable intent, *layout*-interpreted; its per-rune
+  `defaultWidth` is an intent the layout may reinterpret.
+
+`hero = flush + full + display` therefore deliberately spans both layers. All three are
+author-overridable with per-rune defaults; what differs is **who realizes the value** — the
+skin for elevation/prominence, the layout for width.
 
 ### 3. `prominence` — header emphasis (page-section **family**, not universal)
 
@@ -89,6 +125,25 @@ the attribute (the schema rejects it with a clear message). Within the family, t
 still owns the degree — it may under-emphasize or effectively ignore `display` where its
 house style says a giant title is wrong. This is the principled middle between a
 hand-maintained allowlist and a universal-but-mostly-no-op axis.
+
+**Why an independent axis, not derived.** Two cheaper-looking alternatives were considered
+and rejected, both because the off-diagonal combinations are mainstream rather than edge
+cases:
+
+- *Derive prominence from chrome + width* ("a flush full-bleed section just renders a big
+  title") couples the axes and forbids a **prominent card** or a **quiet flush strip**.
+- *Derive width from prominence* ("`display` ⇒ full-bleed") forbids the **editorial article
+  header** — a display-scale headline over a body held to a readable measure (`display`
+  prominence **+** `narrow`/`contained` width), the signature move of the very editorial /
+  magazine themes this epic targets — and the reverse, a **wide but quiet** full-bleed image
+  strip.
+
+The loud↔wide correlation is real, but it belongs in **per-rune defaults** (a theme may
+default `hero` to `{ width: full, prominence: display }`), never in a derivation rule —
+defaults stay overridable, derivation forbids the exceptions. General principle:
+**correlated axes are defaulted together, never derived from each other, whenever their
+off-diagonal combinations are real.** For prominence × width they are not just real, they
+are the editorial brief, so the axes stay independent.
 
 ### 4. Per-rune defaults via theme `RuneConfig`
 
@@ -131,7 +186,9 @@ Mechanism mirrors {% ref "SPEC-086" /%}'s deprecation alias (`shadow` → `frame
 console-warn) and the rune-schema `deprecations: { newName, transform }` field: ship an
 alias map that resolves + warns the old values for one minor, then remove. A
 `refrakt`-side codemod rewrites authored `elevation="none|sm|md|lg"` in content; the
-template/site content and docs are migrated in the same work.
+template/site content and docs are migrated in the same work. Only the rune-surface
+`elevation` scale is migrated — `frame-shadow`'s identically-named `none/sm/md/lg` scale is
+a separate axis (§1) and is left untouched.
 
 ## Relationship to SPEC-094 §8 (what this amends)
 
@@ -164,7 +221,8 @@ template/site content and docs are migrated in the same work.
 
 - [ ] `elevation` is a universal axis with the ordered set `sunken | flush | flat | raised | floating` (+ optional `overlay`), emitted as `data-elevation`; skins target the attribute, not rune-name lists.
 - [ ] Today's `elevation` values (`none/sm/md/lg`) are migrated per the mapping, with a deprecation alias (warns) and a content codemod; `none` maps to `flat`, never `flush`.
-- [ ] `width: full` carries full-bleed; the `banner` surface bucket is removed in favor of it.
+- [ ] `width: full` carries full-bleed; the `banner` surface bucket is removed in favor of it. `width` stays author-overridable but is realized by the **layout** (named tracks), not the skin.
+- [ ] The `elevation` ↔ `frame-shadow` boundary holds: `elevation` sets the rune surface's `box-shadow` depth; `frame-shadow` ({% ref "SPEC-086" /%}) keeps its own scale for per-guest media drop-shadows and is not renamed or migrated.
 - [ ] `prominence` (`quiet | normal | prominent | display`) is available only on page-section-header runes (schema rejects it elsewhere) and emitted as `data-prominence`; the skin owns magnitude.
 - [ ] Per-rune `defaultElevation` / `defaultProminence` live in theme `RuneConfig`; the static `surfaces.css` rune-name lists are retired in favor of `[data-elevation]` / `[data-prominence]`.
 - [ ] A `recipe` renders as a bordered card by default and as a full-bleed large-title hero via `elevation="flush" width="full" prominence="display"` — verified in the gallery (light + dark).
