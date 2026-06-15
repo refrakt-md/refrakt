@@ -1,4 +1,4 @@
-{% work id="WORK-430" status="ready" priority="medium" complexity="moderate" source="SPEC-104" milestone="v0.23.0" tags="surfaces,bg,sandbox,docs,showcase" %}
+{% work id="WORK-430" status="ready" priority="medium" complexity="moderate" source="SPEC-104" milestone="v0.24.0" tags="surfaces,bg,sandbox,docs,showcase" %}
 
 # `bg` sandbox guest — docs + showcase
 

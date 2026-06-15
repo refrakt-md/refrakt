@@ -1,4 +1,4 @@
-{% work id="WORK-432" status="ready" priority="high" complexity="moderate" source="SPEC-105" milestone="v0.23.0" tags="motion,animation,lumina,css,tokens,dimensions" %}
+{% work id="WORK-432" status="ready" priority="high" complexity="moderate" source="SPEC-105" milestone="v0.24.0" tags="motion,animation,lumina,css,tokens,dimensions" %}
 
 # Motion dimension CSS + tokens
 

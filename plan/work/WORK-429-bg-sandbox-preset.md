@@ -1,4 +1,4 @@
-{% work id="WORK-429" status="ready" priority="high" complexity="complex" source="SPEC-104" milestone="v0.23.0" tags="surfaces,bg,sandbox,transform,config,preset" %}
+{% work id="WORK-429" status="ready" priority="high" complexity="complex" source="SPEC-104" milestone="v0.24.0" tags="surfaces,bg,sandbox,transform,config,preset" %}
 
 # `sandbox` bg preset (transform-resolved)
 

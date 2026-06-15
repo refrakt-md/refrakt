@@ -1,4 +1,4 @@
-{% work id="WORK-434" status="ready" priority="medium" complexity="moderate" source="SPEC-105" milestone="v0.23.0" tags="motion,animation,docs,showcase,theme" %}
+{% work id="WORK-434" status="ready" priority="medium" complexity="moderate" source="SPEC-105" milestone="v0.24.0" tags="motion,animation,docs,showcase,theme" %}
 
 # Motion dimension — docs + showcase
 

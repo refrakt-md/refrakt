@@ -1,4 +1,4 @@
-{% work id="WORK-431" status="ready" priority="high" complexity="moderate" source="SPEC-105" milestone="v0.23.0" tags="motion,animation,engine,transform,runes" %}
+{% work id="WORK-431" status="ready" priority="high" complexity="moderate" source="SPEC-105" milestone="v0.24.0" tags="motion,animation,engine,transform,runes" %}
 
 # `reveal`/`stagger` engine facet
 
@@ -17,9 +17,9 @@ look here.
   `--rf-reveal-index` (0,1,2,…) on each enumerated child (reuse the existing numbered-sequence
   child enumeration). Stagger is a silent no-op on single-child runes.
 - **Index marker contract** — children carry the index as the global stagger hook
-  ({% ref "WORK-432" /%} targets `[style*="--rf-reveal-index"]`, not `> *`), so "which children
+  (WORK-432 targets `[style*="--rf-reveal-index"]`, not `> *`), so "which children
   cascade" is decided here in config, never in CSS.
-- Intent only: no keyframes, durations, or transforms in this item (those are {% ref "WORK-432" /%}).
+- Intent only: no keyframes, durations, or transforms in this item (those are WORK-432).
 
 ## Acceptance Criteria
 
@@ -29,7 +29,7 @@ look here.
 
 ## Dependencies
 
-- None — the {% ref "SPEC-105" /%} gate. {% ref "WORK-432" /%} and {% ref "WORK-433" /%} consume these attributes.
+- None — the {% ref "SPEC-105" /%} gate. WORK-432 and WORK-433 consume these attributes.
 
 ## References
 
