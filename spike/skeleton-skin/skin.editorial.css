@@ -1,0 +1,67 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * SKIN — "Editorial" re-skin, WORK-410 spike slice
+ *
+ * A deliberately un-Lumina look over the SAME skeleton: serif display, flat
+ * paper surfaces (no shadow, square corners, hairline rules), centred
+ * preambles, no footer rule, a roomier inset. The purpose is to surface where
+ * Lumina's opinion has leaked into the skeleton — anything this skin can't
+ * reach without fighting structure is a mis-classified declaration.
+ *
+ * Note the selectors are the SAME low-specificity single-class/attribute
+ * selectors Lumina uses. They win over `@layer skeleton` purely by layer
+ * order (skin is declared last) — no specificity bumps, no `!important`.
+ * Swap this file for skin.lumina.css in layers.css to compare.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+@layer skin {
+	:root {
+		--rf-radius-container: 0px;          /* square, not rounded */
+		--rf-radius-media: 0px;
+		--rune-padding: 2rem;                /* roomier editorial inset */
+		--editorial-serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+	}
+
+	/* ── Surface treatment: flat paper, hairline frame, no lift ── */
+	[data-elevation="raised"],
+	[data-elevation="flat"] {
+		background: var(--rf-color-surface);
+		border: 1px solid var(--rf-color-border);
+		border-radius: 0;
+		padding: var(--rune-padding);
+		box-shadow: none;                    /* editorial is flat — no float */
+	}
+	[data-elevation="sunken"] {
+		background: transparent;
+		border: 0;
+		border-block-start: 3px double var(--rf-color-border);  /* a printed rule, not a well */
+		border-radius: 0;
+		padding-block: var(--rune-padding);
+	}
+	[data-elevation="flush"] { padding-block: var(--rune-padding); }
+	[data-elevation] [data-section="media"] { border: 0; background: transparent; }
+
+	/* ── card: editorial aesthetics ── */
+	.rf-card:has(.rf-card__link):hover { background: transparent; }
+	.rf-card__title { font-family: var(--editorial-serif); font-size: 2rem; line-height: 1.1; }
+	.rf-card__eyebrow {
+		font-family: var(--editorial-serif);
+		font-style: italic;
+		font-size: var(--rf-text-sm);
+		letter-spacing: normal;
+		text-transform: none;
+		color: var(--rf-color-muted);
+		text-align: center;          /* centred preamble */
+	}
+	.rf-card__footer { border-top: 0; font-size: var(--rf-text-sm); color: var(--rf-color-muted); font-style: italic; }
+
+	/* ── hint: a quiet marginal note, ruled not filled ── */
+	.rf-hint {
+		--hint-color: var(--rf-color-text);
+		background: transparent;
+		border-inline-start: 2px solid var(--rf-color-border);
+		border-radius: 0;
+	}
+	.rf-hint__header { color: var(--hint-color); font-family: var(--editorial-serif); font-variant: small-caps; }
+	.rf-hint__header [data-icon-group="hint"]::before { background-color: var(--hint-color); }
+	.rf-hint__body { font-family: var(--editorial-serif); font-size: var(--rf-text-base); line-height: var(--rf-leading-relaxed); }
+}

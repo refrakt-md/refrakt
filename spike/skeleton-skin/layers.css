@@ -1,0 +1,17 @@
+/* WORK-410 spike — layer order entry point.
+ *
+ * The single line that makes the whole split work: it fixes the cascade order
+ * up front, so skeleton and skin can be authored in any source order / loaded
+ * by separate packages and the skin still wins where they overlap — with
+ * low-specificity selectors and zero `!important`.
+ *
+ * Layer ORDER is established here; layer CONTENTS arrive via the imports
+ * (and could arrive from different packages — see FINDINGS §2 packaging). To
+ * re-skin, swap the second import for skin.editorial.css — nothing else
+ * changes.
+ */
+@layer skeleton, skin;
+
+@import url("skeleton.css") layer(skeleton);
+@import url("skin.lumina.css");      /* self-declares @layer skin */
+/* @import url("skin.editorial.css");   ← swap in to compare */

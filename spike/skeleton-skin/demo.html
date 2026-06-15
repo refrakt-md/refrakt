@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WORK-410 — skeleton/skin spike</title>
+<!--
+  Open this file twice, toggling the import in layers.css between
+  skin.lumina.css and skin.editorial.css, to see the SAME markup (same
+  skeleton) re-skinned. The minimal tokens below stand in for Lumina's token
+  layer so the slice renders standalone.
+-->
+<style>
+:root {
+	--rf-color-surface: #fff; --rf-color-surface-hover: #f6f6f4; --rf-color-border: #e2e2dd;
+	--rf-color-text: #1a1a1a; --rf-color-muted: #6b6b66; --rf-color-primary: #b4502a;
+	--rf-color-info: #2a6fb4; --rf-color-warning: #b4862a; --rf-color-danger: #b42a2a; --rf-color-success: #2a8f4f;
+	--rf-spacing-sm: 0.75rem; --rf-spacing-md: 1.25rem; --rf-spacing-lg: 2rem;
+	--rf-radius-md: 8px; --rf-radius-lg: 14px;
+	--rf-text-xs: 0.75rem; --rf-text-sm: 0.875rem; --rf-text-base: 1rem;
+	--rf-weight-semibold: 600; --rf-tracking-wide: 0.02em; --rf-tracking-wider: 0.06em;
+	--rf-leading-relaxed: 1.6;
+	--rf-hint-icon: none;
+	font-family: system-ui, sans-serif; color: var(--rf-color-text); line-height: 1.5;
+	max-width: 52rem; margin: 3rem auto; padding: 0 1.5rem;
+}
+</style>
+<link rel="stylesheet" href="layers.css">
+</head>
+<body>
+
+<!-- card-surface rune; data-elevation previews SPEC-107 (engine emits it via WORK-423) -->
+<article class="rf-card" data-elevation="raised" data-layout="stacked">
+	<div class="rf-card__content">
+		<p class="rf-card__eyebrow">Field notes</p>
+		<h3 class="rf-card__title">A generic content card</h3>
+		<div class="rf-card__body"><p>A bordered surface with a body and an optional footer.</p></div>
+		<footer class="rf-card__footer">Updated June 2026</footer>
+	</div>
+</article>
+
+<!-- inline rune; flat surface -->
+<aside class="rf-hint rf-hint--warning" data-elevation="flat">
+	<div class="rf-hint__header"><span><span data-icon-group="hint" data-icon="warning"></span><span data-meta-value>warning</span></span></div>
+	<div class="rf-hint__body"><p>The same structural skeleton renders under either skin — only the skin layer changed.</p></div>
+</aside>
+
+</body>
+</html>
