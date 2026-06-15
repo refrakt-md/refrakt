@@ -1,11 +1,24 @@
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { createRequire } from 'node:module';
+
+const requireFrom = createRequire(import.meta.url);
 
 /**
- * Recursively inline `@import './x.css';` statements into a single CSS string so
- * the gallery is self-contained (no path/serving concerns, deterministic for
- * screenshots). Only *relative* imports are inlined; any `url(...)`/remote
- * import is left untouched. A `seen` set guards against import cycles.
+ * Recursively inline `@import` statements into a single CSS string so the gallery
+ * is self-contained (no path/serving concerns, deterministic for screenshots).
+ *
+ * Handles three forms so the skeleton/skin split (SPEC-094 §3) renders faithfully:
+ *  - relative imports (`@import './x.css';`) — inlined from disk;
+ *  - bare package specifiers (`@import '@refrakt-md/skeleton';`) — resolved via
+ *    node (the package's CSS `.` export) and inlined, so the shared structural
+ *    layer is part of the gallery;
+ *  - layered imports (`@import './x.css' layer(skeleton);`) — inlined and wrapped
+ *    in `@layer <name> { … }` so the cascade-layer ordering survives flattening
+ *    (otherwise layered structure inlines as unlayered and would beat the skin).
+ *
+ * A `seen` set guards against import cycles; genuinely-remote imports (web fonts)
+ * are left untouched.
  */
 export function flattenCssImports(entryPath: string, seen: Set<string> = new Set()): string {
 	const abs = resolve(entryPath);
@@ -15,10 +28,23 @@ export function flattenCssImports(entryPath: string, seen: Set<string> = new Set
 	const dir = dirname(abs);
 	const css = readFileSync(abs, 'utf-8');
 
-	return css.replace(/@import\s+(?:url\()?['"]([^'"]+)['"]\)?\s*;/g, (match, importPath: string) => {
-		if (!importPath.startsWith('.')) return match; // leave remote imports as-is
-		return flattenCssImports(resolve(dir, importPath), seen);
-	});
+	return css.replace(
+		/@import\s+(?:url\()?['"]([^'"]+)['"]\)?\s*(?:layer\(([^)]*)\))?\s*;/g,
+		(match, importPath: string, layerName: string | undefined) => {
+			let resolved: string;
+			if (importPath.startsWith('.')) {
+				resolved = resolve(dir, importPath);
+			} else {
+				try {
+					resolved = requireFrom.resolve(importPath);
+				} catch {
+					return match; // leave unresolvable/remote imports as-is
+				}
+			}
+			const inlined = flattenCssImports(resolved, seen);
+			return layerName !== undefined ? `@layer ${layerName.trim()} {\n${inlined}\n}` : inlined;
+		},
+	);
 }
 
 /** One rendered rune variant in the gallery. */

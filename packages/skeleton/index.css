@@ -12,14 +12,17 @@
  * `z-index` / `overflow`, gap and margin resets, the media↔content split geometry,
  * the stretched-link mechanism. It references design tokens by name
  * (`var(--rune-padding)`) but never sets their values, colour, border, radius,
- * shadow, or font — those are skin. The per-rune re-bucketing that fills this
- * layer lands in WORK-438; until then it is intentionally empty and themes ship
- * their structure unlayered (which wins over an empty skeleton, so output is
- * unchanged). */
+ * shadow, or font — those are skin. The per-file re-bucketing (WORK-438) moves
+ * Lumina's structure here group by group; each structure file is imported with
+ * `layer(skeleton)` so the raw files need no `@layer` wrapper of their own. */
 @layer skeleton, skin;
 
-@layer skeleton {
-	/* Filled by the per-file re-bucketing (WORK-438). Intentionally empty here —
-	 * WORK-436 stands up the layer order, the package, and the loader wiring; the
-	 * structural declarations move in during the re-bucketing pass. */
-}
+/* ── Dimension structure (WORK-438, group b) ──
+ * Note: guest-posture stays unlayered in Lumina for now. Its contextual
+ * `display:none` on a demoted guest's tab strip must beat the rune's own
+ * unlayered `.rf-tabs__tabs { display:flex }`; an unlayered rule beats any
+ * layered one regardless of specificity, so guest-posture can only move here
+ * once tabs/codegroup *structure* is also layered (the rune group). Moving it
+ * early would resurface the inert tab strip on presentational media guests. */
+@import './styles/dimensions/state.css' layer(skeleton);
+@import './styles/dimensions/media.css' layer(skeleton);

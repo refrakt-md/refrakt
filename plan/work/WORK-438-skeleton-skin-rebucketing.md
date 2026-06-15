@@ -1,4 +1,4 @@
-{% work id="WORK-438" status="pending" priority="high" complexity="complex" source="SPEC-094" milestone="v0.23.0" tags="theme,skeleton-skin,css,lumina,refactor" %}
+{% work id="WORK-438" status="in-progress" priority="high" complexity="complex" source="SPEC-094" milestone="v0.23.0" tags="theme,skeleton-skin,css,lumina,refactor" %}
 
 # Skeleton/skin re-bucketing of the Lumina CSS
 

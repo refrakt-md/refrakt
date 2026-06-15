@@ -1,0 +1,38 @@
+/* Media Slots Dimension — structure layer.
+ * Slot sizing and fit (the geometry a media slot breaks without); the rounded
+ * corners are skin. */
+
+[data-media="portrait"] {
+	aspect-ratio: 1 / 1;
+	object-fit: cover;
+	width: var(--media-portrait-size, 5rem);
+	height: var(--media-portrait-size, 5rem);
+}
+[data-media="cover"] {
+	width: 100%;
+	object-fit: cover;
+}
+[data-media="thumbnail"] {
+	width: var(--media-thumbnail-size, 3rem);
+	height: var(--media-thumbnail-size, 3rem);
+	object-fit: cover;
+	flex-shrink: 0;
+}
+[data-media="hero"] {
+	width: 100%;
+	object-fit: cover;
+}
+[data-media="icon"] {
+	width: var(--media-icon-size, 2rem);
+	height: var(--media-icon-size, 2rem);
+	object-fit: contain;
+	flex-shrink: 0;
+}
+
+/* Density × media — sizing + visibility */
+[data-density="compact"] [data-media="portrait"] {
+	--media-portrait-size: 3rem;
+}
+[data-density="minimal"] [data-media] {
+	display: none;
+}

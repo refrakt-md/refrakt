@@ -25,7 +25,8 @@
   },
   "files": [
     "dist",
-    "index.css"
+    "index.css",
+    "styles"
   ],
   "dependencies": {
     "@refrakt-md/types": "0.22.0"
