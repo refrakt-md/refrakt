@@ -102,6 +102,11 @@ export function loadVirtualModule(
 
 	if (id === `${RESOLVED_PREFIX}tokens`) {
 		const lines: string[] = [];
+		// The `@layer skeleton, skin;` order declaration must be emitted before any
+		// layer content (SPEC-094 §3 / WORK-436). Importing the skeleton entry first
+		// guarantees that, loader-agnostically — layer contents may then load in any
+		// order and a theme's `@layer skin` still wins over `@layer skeleton`.
+		lines.push(`import '@refrakt-md/skeleton';`);
 		if (buildCtx.isBuild && buildCtx.usedCssBlocks) {
 			lines.push(`import '${theme}/base.css';`);
 			for (const block of [...buildCtx.usedCssBlocks].sort()) {

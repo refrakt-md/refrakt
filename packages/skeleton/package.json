@@ -1,0 +1,36 @@
+{
+  "name": "@refrakt-md/skeleton",
+  "description": "The structural cascade layer + layer-order contract every refrakt theme builds on — ships `@layer skeleton` and the `@layer skeleton, skin;` order declaration, plus the token-name contract",
+  "version": "0.22.0",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/refrakt-md/refrakt.git",
+    "directory": "packages/skeleton"
+  },
+  "bugs": "https://github.com/refrakt-md/refrakt/issues",
+  "homepage": "https://github.com/refrakt-md/refrakt",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./index.css",
+    "./contract": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "index.css"
+  ],
+  "dependencies": {
+    "@refrakt-md/types": "0.22.0"
+  },
+  "scripts": {
+    "build": "tsc"
+  }
+}
