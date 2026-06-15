@@ -17,6 +17,10 @@ Paint the {% ref "SPEC-107" /%} axes in Lumina and **retire the rune-name lists*
   inline → `flush`, inset → `sunken`, banner → `flush` + `width: full`.
 - Replace the four `surfaces.css` rune-name buckets (and the two nested `:where(.rf-card, …)`
   media-chrome lists) with `[data-elevation]` / `[data-prominence]` selectors.
+- **Seam with WORK-438:** this produces the *attribute-keyed* `surfaces.css` (the content
+  transform — rune-names → `[data-elevation]`). It does **not** introduce `@layer`s; the
+  skeleton/skin layering of that file belongs to the re-bucketing (WORK-438), which consumes
+  this output. 425 hands 438 an already-attribute-keyed file.
 
 ## Acceptance Criteria
 

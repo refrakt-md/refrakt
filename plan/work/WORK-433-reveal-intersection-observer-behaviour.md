@@ -1,4 +1,4 @@
-{% work id="WORK-433" status="ready" priority="high" complexity="moderate" source="SPEC-105" milestone="v0.23.0" tags="motion,animation,behaviors,a11y,progressive-enhancement" %}
+{% work id="WORK-433" status="ready" priority="high" complexity="moderate" source="SPEC-105" milestone="v0.24.0" tags="motion,animation,behaviors,a11y,progressive-enhancement" %}
 
 # `reveal` IntersectionObserver behaviour + enhancement gating
 

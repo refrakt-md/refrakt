@@ -15,6 +15,10 @@ aesthetics stay in Lumina's skin. Mechanical and low-risk per declaration, but l
   assignment (handled by {% ref "WORK-423" /%} surface + {% ref "WORK-437" /%} icons).
 - Move structure into `@layer skeleton` (the {% ref "WORK-436" /%} package); keep aesthetics in
   Lumina's `@layer skin`, low-specificity, no `!important`.
+- **Seam with WORK-425:** `surfaces.css` arrives **already attribute-keyed** from
+  {% ref "WORK-425" /%} (rune-names → `[data-elevation]`). 438 only assigns its declarations to
+  layers (its treatments → skin); it does **not** re-derive the surface mapping. This file is
+  where the surface-axis and skeleton/skin threads meet.
 - Sequence by file group so it parallelizes and stays reviewable: **(a) rune CSS** (92 files),
   **(b) dimension CSS** (12 files), **(c) layout CSS** (10 files). Split into sub-items per group
   if scheduling needs it.
@@ -29,7 +33,7 @@ aesthetics stay in Lumina's skin. Mechanical and low-risk per declaration, but l
 
 ## Dependencies
 
-- Requires {% ref "WORK-435" /%} (spacing tokens — the gate) and {% ref "WORK-436" /%} (the skeleton package + layer infra); composes with {% ref "WORK-423" /%} (surface treatment moves to skin) and {% ref "WORK-437" /%} (icons).
+- Requires {% ref "WORK-435" /%} (spacing tokens — the gate) and {% ref "WORK-436" /%} (the skeleton package + layer infra); for `surfaces.css`, follows {% ref "WORK-425" /%} (which hands over the attribute-keyed file); composes with the surface treatment ({% ref "WORK-423" /%}) and icons ({% ref "WORK-437" /%}). Validated by the proof skin (WORK-440).
 
 ## References
 

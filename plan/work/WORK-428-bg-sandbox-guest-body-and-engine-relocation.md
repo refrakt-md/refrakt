@@ -1,4 +1,4 @@
-{% work id="WORK-428" status="ready" priority="high" complexity="complex" source="SPEC-104" milestone="v0.23.0" tags="surfaces,bg,sandbox,engine,transform,lumina" %}
+{% work id="WORK-428" status="ready" priority="high" complexity="complex" source="SPEC-104" milestone="v0.24.0" tags="surfaces,bg,sandbox,engine,transform,lumina" %}
 
 # `bg` guest body + engine relocation + bare-surface guardrail
 
@@ -25,7 +25,7 @@ this establishes.
 
 ## Dependencies
 
-- None within the milestone — this is the {% ref "SPEC-104" /%} gate. {% ref "WORK-429" /%} (preset) and {% ref "WORK-430" /%} (docs) depend on the `data-bg-guest` contract here.
+- None within the milestone — this is the {% ref "SPEC-104" /%} gate. WORK-429 (preset) and WORK-430 (docs) depend on the `data-bg-guest` contract here.
 
 ## References
 
