@@ -31,6 +31,14 @@ function resolveElevation(value: unknown): string | undefined {
 	return value;
 }
 
+/** SPEC-107 — `prominence` (header emphasis) is a *family* axis: it scales a
+ *  rune's page-section header, so it's only meaningful on runes that have one.
+ *  A rune "has a header" when its `sections` map includes a header-ish role. */
+const HEADER_SECTION_ROLES = new Set(['header', 'preamble', 'title', 'description']);
+function hasPageSectionHeader(sections: Record<string, string> | undefined): boolean {
+	return !!sections && Object.values(sections).some(role => HEADER_SECTION_ROLES.has(role));
+}
+
 /** Pure text transforms for metaText values */
 const transforms: Record<string, (v: string) => string> = {
 	duration(iso: string): string {
@@ -602,6 +610,21 @@ function transformRune(
 		modifierValues['elevation'] = elevationValue;
 	}
 
+	// prominence — header-emphasis axis (SPEC-107), gated to the page-section-
+	// header family. Author attr or the rune's `defaultProminence`; emits
+	// data-prominence (the skin maps it to a type register). On a rune with no
+	// page-section header, prominence has nothing to scale, so it's ignored with
+	// a dev warning rather than silently honoured.
+	const prominenceValue = tag.attributes?.prominence ?? config.defaultProminence;
+	if (prominenceValue) {
+		if (hasPageSectionHeader(config.sections)) {
+			modifierValues['prominence'] = String(prominenceValue);
+		} else {
+			const runeName = tag.attributes?.['data-rune'] ?? block;
+			console.warn(`[refrakt] prominence is not supported on "${runeName}" — it applies only to runes with a page-section header. Ignored.`);
+		}
+	}
+
 	// 1f. Background processing — read bg-* meta tags and build background layer
 	const bgMetaProps = new Set<string>();
 	const bgDataAttrs: Record<string, string> = {};
@@ -1090,7 +1113,7 @@ function transformRune(
 	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead).
 	// `data-rune-fields` (SPEC-082) is the internal field-data channel — strip it from output so
 	// the dual-emit in WORK-321 stays output-neutral; the engine begins *reading* it in WORK-322.
-	const { width: _w, spacing: _s, inset: _i, elevation: _e, density: _d, 'data-rune': _dr, 'data-rune-fields': _drf, ...rawPassAttrs } = tag.attributes;
+	const { width: _w, spacing: _s, inset: _i, elevation: _e, prominence: _p, density: _d, 'data-rune': _dr, 'data-rune-fields': _drf, ...rawPassAttrs } = tag.attributes;
 	// Strip consumed attribute-source modifier names (expressed via data-* / BEM)
 	const passAttrs = attrModifierNames.length > 0
 		? Object.fromEntries(Object.entries(rawPassAttrs).filter(([k]) => !attrModifierNames.includes(k)))
