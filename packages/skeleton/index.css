@@ -35,3 +35,5 @@
 @import './styles/dimensions/media.css' layer(skeleton);
 @import './styles/dimensions/cover.css' layer(skeleton);
 @import './styles/dimensions/metadata.css' layer(skeleton);
+@import './styles/dimensions/checklist.css' layer(skeleton);
+@import './styles/dimensions/sequence.css' layer(skeleton);
