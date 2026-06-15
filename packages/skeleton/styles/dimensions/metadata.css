@@ -1,0 +1,66 @@
+/* metadata — structure. The zone-layout primitives (bar, definition-list) and the
+ * visually-hidden label mechanism. [data-zone-layout] is layout-uncontested (no
+ * layout file targets it), and a rune overriding these resolves correctly (skin
+ * beats skeleton). Spacing values (gap / padding / rhythm margins), borders,
+ * radius, colour, type, and the rating glyph stay skin (Lumina's
+ * dimensions/metadata.css). */
+
+/* Rating — star-row is an inline flex row (the glyph + colours are skin). */
+[data-meta-type="rating"] { display: inline-flex; }
+
+/* ── Layout: bar (SPEC-080) ──
+ * Horizontal flex row of fields; wraps by default (`data-wrap="false"` keeps it
+ * on one line); a field tagged `data-align="end"` (and everything after it) is
+ * pushed to the right edge. */
+[data-zone-layout="bar"] {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+}
+[data-zone-layout="bar"][data-wrap="false"] { flex-wrap: nowrap; }
+[data-zone-layout="bar"] [data-align="end"] { margin-left: auto; }
+
+/* ── Layout: definition-list ──
+ * Each row stacks dt over dd; rows flow into auto-fit columns that collapse to a
+ * single column on narrow containers without a media-query step. */
+[data-zone-layout="definition-list"] {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+}
+[data-zone-layout="definition-list"] > [data-name="row"] {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+[data-zone-layout="definition-list"] dd { margin: 0; }
+/* Multi-value dd (fields with `splitOn`) renders a row of chips inside the cell. */
+[data-zone-layout="definition-list"] dd[data-multi-value] {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+/* Visually hidden labels — accessible to screen readers only (the sr-only clip
+ * mechanism; the box collapse + clip are correctness, not taste). */
+[data-meta-label-hidden] {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* ── Mobile: definition-list falls back to a label-left / value-right grid via
+ * `display: contents` on each row (drops the per-item box). ── */
+@media (max-width: 48rem) {
+	[data-zone-layout="definition-list"] {
+		grid-template-columns: max-content 1fr;
+		align-items: baseline;
+	}
+	[data-zone-layout="definition-list"] > [data-name="row"] {
+		display: contents;
+	}
+}
