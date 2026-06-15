@@ -1,0 +1,31 @@
+/* hint — structure. Header layout, the icon-glyph box mechanism (the mask box +
+ * which registry glyph fills it), and the body zone reset. Surface treatment
+ * (fill/radius/padding), the variant colours, and type are skin (Lumina's
+ * styles/runes/hint.css). The glyph *shapes* come from the icon registry as
+ * --rf-icon-hint-* mask custom properties (SPEC-094 §8 / WORK-437). */
+
+.rf-hint__header { margin-bottom: var(--rf-spacing-xs); }
+
+/* The lone hintType field renders icon + label in one inline-flex span. */
+.rf-hint__header > span {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--rf-spacing-xs);
+}
+.rf-hint__header [data-icon-group="hint"] { display: block; }
+.rf-hint__header [data-icon-group="hint"]::before {
+	content: '';
+	display: block;
+	width: 1.25rem;
+	height: 1.25rem;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+}
+[data-icon-group="hint"][data-icon="note"]::before { -webkit-mask-image: var(--rf-icon-hint-note); mask-image: var(--rf-icon-hint-note); }
+[data-icon-group="hint"][data-icon="warning"]::before { -webkit-mask-image: var(--rf-icon-hint-warning); mask-image: var(--rf-icon-hint-warning); }
+[data-icon-group="hint"][data-icon="caution"]::before { -webkit-mask-image: var(--rf-icon-hint-caution); mask-image: var(--rf-icon-hint-caution); }
+[data-icon-group="hint"][data-icon="check"]::before { -webkit-mask-image: var(--rf-icon-hint-check); mask-image: var(--rf-icon-hint-check); }
+
+.rf-hint__body p:last-child { margin-bottom: 0; }

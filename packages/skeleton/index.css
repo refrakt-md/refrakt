@@ -17,12 +17,18 @@
  * `layer(skeleton)` so the raw files need no `@layer` wrapper of their own. */
 @layer skeleton, skin;
 
-/* ── Dimension structure (WORK-438, group b) ──
- * Note: guest-posture stays unlayered in Lumina for now. Its contextual
- * `display:none` on a demoted guest's tab strip must beat the rune's own
- * unlayered `.rf-tabs__tabs { display:flex }`; an unlayered rule beats any
- * layered one regardless of specificity, so guest-posture can only move here
- * once tabs/codegroup *structure* is also layered (the rune group). Moving it
- * early would resurface the inert tab strip on presentational media guests. */
+/* Structure is promoted out of Lumina's @layer skin into @layer skeleton group by
+ * group (WORK-438, Phase 2). Foundation loads first (lowest-specificity base
+ * element rules), then dimensions, then per-rune structure — so higher-specificity
+ * rune resets can cancel the base rhythm within the same layer. */
+
+/* ── Foundation ── */
+@import './styles/global.css' layer(skeleton);
+
+/* ── Dimension structure ── */
 @import './styles/dimensions/state.css' layer(skeleton);
 @import './styles/dimensions/media.css' layer(skeleton);
+
+/* ── Rune structure ── */
+@import './styles/runes/card.css' layer(skeleton);
+@import './styles/runes/hint.css' layer(skeleton);

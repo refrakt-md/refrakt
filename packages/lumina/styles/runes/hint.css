@@ -1,5 +1,9 @@
 @layer skin {
-/* Hint */
+/* hint — skin. Surface treatment (neutral fill, radius, padding), the variant
+ * colour that drives the icon + title, and type. Structure (header layout, the
+ * icon-glyph box mechanism, body zone reset) lives in @refrakt-md/skeleton
+ * (styles/runes/hint.css). */
+
 .rf-hint {
 	--hint-color: var(--rf-color-info);
 	padding: var(--rf-spacing-snug) var(--rf-spacing-cozy);
@@ -7,47 +11,10 @@
 	background: var(--rf-color-surface);
 }
 .rf-hint__header {
-	margin-bottom: var(--rf-spacing-xs);
 	color: var(--hint-color);
 }
-/* The lone `hintType` field renders icon + label in one inline-flex span. */
-.rf-hint__header > span {
-	display: inline-flex;
-	align-items: center;
-	gap: var(--rf-spacing-xs);
-}
-.rf-hint__header [data-icon-group="hint"] {
-	display: block;
-}
 .rf-hint__header [data-icon-group="hint"]::before {
-	content: '';
-	display: block;
-	width: 1.25rem;
-	height: 1.25rem;
 	background-color: var(--hint-color);
-	-webkit-mask-size: contain;
-	mask-size: contain;
-	-webkit-mask-repeat: no-repeat;
-	mask-repeat: no-repeat;
-}
-/* Glyphs come from the theme icon registry (config.icons.hint), surfaced as
- * `--rf-icon-hint-*` mask custom properties by the token generator — not
- * embedded here (SPEC-094 §8 / WORK-437). A theme re-glyphs by editing config. */
-[data-icon-group="hint"][data-icon="note"]::before {
-	-webkit-mask-image: var(--rf-icon-hint-note);
-	mask-image: var(--rf-icon-hint-note);
-}
-[data-icon-group="hint"][data-icon="warning"]::before {
-	-webkit-mask-image: var(--rf-icon-hint-warning);
-	mask-image: var(--rf-icon-hint-warning);
-}
-[data-icon-group="hint"][data-icon="caution"]::before {
-	-webkit-mask-image: var(--rf-icon-hint-caution);
-	mask-image: var(--rf-icon-hint-caution);
-}
-[data-icon-group="hint"][data-icon="check"]::before {
-	-webkit-mask-image: var(--rf-icon-hint-check);
-	mask-image: var(--rf-icon-hint-check);
 }
 .rf-hint__header [data-meta-value] {
 	font-weight: var(--rf-weight-semibold);
@@ -59,9 +26,7 @@
 	font-size: var(--rf-text-sm);
 	line-height: var(--rf-leading-relaxed);
 }
-.rf-hint__body p:last-child {
-	margin-bottom: 0;
-}
+
 /* Per-variant colour drives the icon and title only — surface stays
    neutral so the hint reads as a quiet panel, not a saturated banner. */
 .rf-hint--note {
