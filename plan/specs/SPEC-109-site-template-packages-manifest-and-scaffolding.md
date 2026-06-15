@@ -139,7 +139,7 @@ neutral theme is the minimal case; a fully-composed bundle is the same field set
 ### 3. Scaffold-copy semantics (not a live dependency)
 
 Templates are **copied into the project at scaffold time** and become the author's to edit;
-they are not served from `node_modules`. Rationale:
+they are not served from `node_modules` (decided in ADR-021). Rationale:
 
 - Content is meant to be rewritten. A live dependency you are supposed to edit is a
   contradiction, and "update the template" becomes an unwinnable merge against changed content.
@@ -158,6 +158,7 @@ breaking a template before an author hits it.
 
 ### 4. Dual-mode asset resolution
 
+The resolution model and its tradeoffs are decided in ADR-020; this section summarizes it.
 Example content needs images without shipping binaries or looking broken. The image-scheme
 registry is already pluggable — `registerImageScheme(scheme, resolver)`, last-registration-wins
 (`packages/runes/src/lib/image-schemes.ts`). That makes two resolution modes over *identical*
@@ -256,6 +257,8 @@ one in-repo template is explicitly out of scope here.
   `PLACEHOLDER_SHAPES`).
 - Theme system foundations (gallery/harness, fonts, layouts): {% ref "SPEC-094" /%}.
 - Framework-agnostic theme packages: ADR-009.
+- Scaffold-copy vs. live-dependency decision: ADR-021.
+- Dual-mode asset resolution decision: ADR-020.
 - Shared install robustness (tarball, registries, multi-site, templates): {% ref "SPEC-110" /%}.
 
 {% /spec %}
