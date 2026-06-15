@@ -1,0 +1,91 @@
+/* cover — structure (SPEC-089). The grid-overlay layout: the media well and the
+ * content box share one grid cell, the well fills and crops its guest, and the
+ * overlaid box positions over it (content-place). Mutually exclusive with the
+ * media|content split (media-position=cover vs start/end/top/bottom), so it never
+ * contends with layouts/split.css. The scrim, radii, and the overlay's surface
+ * padding are skin (Lumina's dimensions/cover.css). */
+
+/* ── full scope — the whole content overlays the media well ── */
+[data-media-position="cover"]:not([data-cover-scope="header"]) {
+	display: grid;
+	grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+	aspect-ratio: var(--frame-aspect, var(--cover-aspect, 3 / 4));
+	container-type: size;
+	overflow: hidden;
+	isolation: isolate;
+}
+[data-media-position="cover"]:not([data-cover-scope="header"]) > [data-section="media"],
+[data-media-position="cover"]:not([data-cover-scope="header"]) > [data-name="content"] {
+	grid-area: 1 / 1;
+	margin: 0;
+	min-width: 0;
+}
+
+/* ── header scope — only the cover band overlays; body flows below ── */
+[data-cover-scope="header"] > [data-name="cover-band"] {
+	display: grid;
+	grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+	aspect-ratio: var(--frame-aspect, 16 / 9);
+	overflow: hidden;
+	isolation: isolate;
+	container-type: size;
+}
+/* On narrow screens a 16/9 band is too short to seat the preamble over the
+ * scrim, so default it to a taller (≥1:1) poster shape; explicit frame-aspect
+ * still wins. */
+@media (max-width: 40rem) {
+	[data-cover-scope="header"] > [data-name="cover-band"] {
+		aspect-ratio: var(--frame-aspect, 4 / 5);
+	}
+}
+[data-cover-scope="header"] > [data-name="cover-band"] > [data-section="media"],
+[data-cover-scope="header"] > [data-name="cover-band"] > [data-name="preamble"] {
+	grid-area: 1 / 1;
+	margin: 0;
+}
+
+/* ── shared: the media well fills, the overlaid box positions ── */
+[data-media-position="cover"] [data-section="media"] {
+	position: relative;
+	height: 100%;
+	overflow: hidden;
+}
+[data-media-position="cover"] [data-section="media"] > :is(img, video) {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+/* SPEC-101 — non-img/video guests (a sandbox, an embed) fill the well too. */
+[data-media-position="cover"] [data-section="media"] > :not(img, video) {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+[data-media-position="cover"] [data-section="media"] .rf-sandbox {
+	margin: 0;
+}
+[data-media-position="cover"] [data-section="media"] .rf-sandbox iframe {
+	height: 100%;
+}
+
+/* The overlaid box (full: content; header: preamble) anchors via content-place. */
+[data-media-position="cover"]:not([data-cover-scope="header"]) > [data-name="content"],
+[data-cover-scope="header"] > [data-name="cover-band"] > [data-name="preamble"] {
+	position: relative;
+	z-index: 1;
+	align-self: var(--cover-place-block, end);
+	justify-self: var(--cover-place-inline, stretch);
+}
+
+/* ── auto / unset placement — adapts to the cover region's orientation ── */
+[data-media-position="cover"]:not([data-cover-scope="header"]):is([data-content-place="auto"], :not([data-content-place])) > [data-name="content"],
+[data-cover-scope="header"]:is([data-content-place="auto"], :not([data-content-place])) > [data-name="cover-band"] > [data-name="preamble"] {
+	align-self: end;
+	justify-self: stretch;
+}
+@container (min-aspect-ratio: 1 / 1) {
+	[data-media-position="cover"]:not([data-cover-scope="header"]):is([data-content-place="auto"], :not([data-content-place])) > [data-name="content"] {
+		align-self: center;
+		justify-self: start;
+	}
+}
