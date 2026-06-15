@@ -10,6 +10,27 @@ import { mergeRuneConfig } from './merge.js';
  *  mapping table. */
 const TINT_TOKENS = ['bg', 'surface', 'text', 'muted', 'primary', 'border'] as const;
 
+/** SPEC-107 — `elevation` is the chrome/depth axis: an ordered ladder
+ *  (sunken|flush|flat|raised|floating|overlay). The old shadow-only scale
+ *  (none|sm|md|lg) is a deprecated alias, resolved with a dev warning. Note
+ *  `none` meant "keep the surface, drop the shadow" → `flat`, NOT `flush`
+ *  (which strips the surface). `frame-shadow` keeps its own none/sm/md/lg
+ *  scale and is unaffected — this only touches the rune-surface `elevation`. */
+const ELEVATION_VALUES = ['sunken', 'flush', 'flat', 'raised', 'floating', 'overlay'] as const;
+const ELEVATION_ALIAS: Record<string, string> = { none: 'flat', sm: 'raised', md: 'raised', lg: 'floating' };
+
+/** Resolve an authored/default `elevation` value: pass through ladder values,
+ *  map deprecated ones (with a warning). Returns undefined for falsy input. */
+function resolveElevation(value: unknown): string | undefined {
+	if (typeof value !== 'string' || value === '') return undefined;
+	if (ELEVATION_ALIAS[value]) {
+		const mapped = ELEVATION_ALIAS[value];
+		console.warn(`[refrakt] elevation="${value}" is deprecated (SPEC-107) — use "${mapped}". The alias will be removed in a future minor.`);
+		return mapped;
+	}
+	return value;
+}
+
 /** Pure text transforms for metaText values */
 const transforms: Record<string, (v: string) => string> = {
 	duration(iso: string): string {
@@ -572,10 +593,11 @@ function transformRune(
 		modifierValues['inset'] = insetValue;
 		modifierClasses.push(`${block}--inset-${insetValue}`);
 	}
-	// elevation — universal box-shadow attribute. Emits data-elevation (incl.
-	// "none" so an author can explicitly flatten a default shadow); CSS maps it
-	// to box-shadow: var(--rf-shadow-{level}). No BEM class — styled by attr.
-	const elevationValue = tag.attributes?.elevation;
+	// elevation — universal chrome/depth axis (SPEC-107). Author attr or the
+	// rune's `defaultElevation`; deprecated shadow-scale values are aliased with
+	// a warning. Emits data-elevation; the skin maps each rung to a chrome
+	// bundle. No BEM class — styled by attribute.
+	const elevationValue = resolveElevation(tag.attributes?.elevation ?? config.defaultElevation);
 	if (elevationValue) {
 		modifierValues['elevation'] = elevationValue;
 	}
