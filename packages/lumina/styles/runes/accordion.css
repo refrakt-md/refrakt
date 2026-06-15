@@ -1,3 +1,4 @@
+@layer skin {
 /* Accordion */
 /* No wrapping border / radius — the only chrome is the divider between items. */
 .rf-accordion {}
@@ -131,4 +132,6 @@
 	display: flex;
 	flex-direction: column;
 	gap: var(--rf-spacing-sm);
+}
+
 }

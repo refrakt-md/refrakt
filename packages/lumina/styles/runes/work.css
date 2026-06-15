@@ -1,3 +1,4 @@
+@layer skin {
 /* Work */
 
 /* SPEC-080: eyebrow / metadata / tags are projected blocks placed at the
@@ -44,3 +45,5 @@
 [data-complexity="moderate"] .rf-work__metadata [data-field="complexity"] dd::after { content: '  ●●●'; }
 [data-complexity="complex"]  .rf-work__metadata [data-field="complexity"] dd::after { content: '  ●●●●'; }
 [data-complexity="unknown"]  .rf-work__metadata [data-field="complexity"] dd::after { content: '  ?'; }
+
+}

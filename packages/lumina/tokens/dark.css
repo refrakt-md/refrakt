@@ -1,3 +1,4 @@
+@layer skin {
 /* GENERATED from src/tokens.ts by scripts/generate-tokens.mjs — do not edit by hand.
  * Edit the `luminaTokens` source and rebuild; a drift test guards this file. */
 
@@ -121,4 +122,6 @@
 	--rf-color-inline-code-bg: #2b2b29;
 	--rf-surface-inset-shift: 0.06;
 	}
+}
+
 }

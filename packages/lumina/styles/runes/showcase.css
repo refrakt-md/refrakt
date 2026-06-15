@@ -1,3 +1,4 @@
+@layer skin {
 /* Showcase — `frameTarget: 'self'` media wrapper (SPEC-086). Shadow, aspect,
  * displacement, place, and crop anchor are now the shared `frame` chrome
  * (dimensions/frame.css), landing on the showcase root. This file keeps only
@@ -35,4 +36,6 @@
 		margin-bottom: 0;
 		margin-inline-end: 0;
 	}
+}
+
 }

@@ -1,3 +1,4 @@
+@layer skin {
 /* Figure */
 .rf-figure :is(img, .rf-placeholder) {
 	display: block;
@@ -32,3 +33,5 @@
 .rf-figure--left { margin-right: auto; }
 .rf-figure--center { margin-left: auto; margin-right: auto; }
 .rf-figure--right { margin-left: auto; }
+
+}

@@ -1,3 +1,4 @@
+@layer skin {
 /* On This Page — TOC sidebar navigation */
 
 .rf-on-this-page {
@@ -45,4 +46,6 @@
 
 .rf-on-this-page__item[data-active] a {
 	color: var(--rf-color-primary);
+}
+
 }

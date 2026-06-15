@@ -1,3 +1,4 @@
+@layer skin {
 /* Budget */
 
 /* Duration + currency meta row — flex/gap from the shared
@@ -154,4 +155,6 @@
 }
 [data-variant="summary"] .rf-budget-category__header {
 	margin-bottom: 0;
+}
+
 }

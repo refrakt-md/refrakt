@@ -1,3 +1,4 @@
+@layer skin {
 /* Default layout */
 .rf-header {
 	position: sticky;
@@ -244,4 +245,6 @@
 	margin: 1.5rem 0 0;
 	font-size: var(--rf-text-xs);
 	color: var(--rf-color-muted);
+}
+
 }

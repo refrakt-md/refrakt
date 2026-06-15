@@ -1,3 +1,4 @@
+@layer skin {
 /* Plan cross-reference links */
 
 .rf-plan-ref {
@@ -24,3 +25,5 @@
 .rf-plan-ref[data-type="bug"]::before { content: '\1F41B'; }
 .rf-plan-ref[data-type="decision"]::before { content: '\2696\FE0F'; }
 .rf-plan-ref[data-type="milestone"]::before { content: '\1F3AF'; }
+
+}

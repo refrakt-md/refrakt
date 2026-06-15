@@ -1,3 +1,4 @@
+@layer skin {
 /* Breadcrumb */
 .rf-breadcrumb {
 	font-size: var(--rf-text-sm);
@@ -43,4 +44,6 @@
 .rf-breadcrumb li:last-child span {
 	color: var(--rf-color-text);
 	font-weight: var(--rf-weight-medium);
+}
+
 }

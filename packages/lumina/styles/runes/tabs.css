@@ -1,3 +1,4 @@
+@layer skin {
 /* Tabs */
 .rf-tabs__preamble {
 	margin-bottom: 1.5rem;
@@ -85,4 +86,6 @@
 }
 .rf-tab-panel pre {
 	margin: 0;
+}
+
 }

@@ -1,3 +1,4 @@
+@layer skin {
 /* Placeholder — generated inline SVG from the `placeholder:<shape>` image-src
  * scheme (SPEC-106). The SVG carries its own viewBox aspect and tints itself
  * with theme tokens (surface / muted / border), so it tracks the active tint
@@ -13,4 +14,6 @@
 /* Avatar shape reads as round. */
 .rf-placeholder[data-shape="avatar"] {
 	border-radius: 50%;
+}
+
 }

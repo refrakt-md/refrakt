@@ -1,3 +1,4 @@
+@layer skin {
 /* Drawer — addressable modal panel (SPEC-060).
  *
  * Two visual modes ride on the same `.rf-drawer` element:
@@ -362,4 +363,6 @@ dialog.rf-drawer[data-side="bottom"][data-size="md"] {
 dialog.rf-drawer[data-side="top"][data-size="lg"],
 dialog.rf-drawer[data-side="bottom"][data-size="lg"] {
 	height: var(--rf-drawer-size-lg);
+}
+
 }

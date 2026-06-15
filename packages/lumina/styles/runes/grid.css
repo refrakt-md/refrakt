@@ -1,3 +1,4 @@
+@layer skin {
 /* Grid */
 .rf-grid [data-layout="grid"] {
 	display: grid;
@@ -59,4 +60,6 @@
 }
 @media (max-width: 1024px) {
 	.rf-grid[data-collapse="lg"] [data-layout="grid"] { grid-template-columns: 1fr; }
+}
+
 }

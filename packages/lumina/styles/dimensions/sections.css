@@ -1,3 +1,4 @@
+@layer skin {
 /* ─── Section Anatomy Dimension ─────────────────────────────────────────
  * Generic layout and typography for the 6 standard section roles.
  * Every rune that declares `sections` in its config gets these for free.
@@ -74,4 +75,6 @@
 	 * padding, flow margins); a blanket block margin here misaligns media in
 	 * flex/beside layouts, so keep it neutral. */
 	margin: 0;
+}
+
 }

@@ -1,3 +1,4 @@
+@layer skin {
 /* Itinerary */
 .rf-itinerary {
 	margin: 2rem 0;
@@ -170,4 +171,6 @@
 }
 .rf-itinerary--compact .rf-itinerary-stop__time::after {
 	content: ' — ';
+}
+
 }

@@ -1,3 +1,4 @@
+@layer skin {
 /* === Sequential Items: universal ordered item styling === */
 
 /* Numbered — counter circle to the left of each item */
@@ -126,4 +127,6 @@
 	border-left: none;
 	padding-left: 0;
 	margin-left: 0;
+}
+
 }

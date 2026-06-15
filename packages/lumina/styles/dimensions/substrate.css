@@ -1,3 +1,4 @@
+@layer skin {
 /* Substrate (SPEC-087) — generated surface pattern.
  *
  * The token-driven gradient recipes that realise each pattern ship here in the
@@ -105,4 +106,6 @@
  * wins via inheritance), even when nested inside dark mode. */
 [data-color-scheme="light"] {
 	--substrate-mode-boost: 1;
+}
+
 }

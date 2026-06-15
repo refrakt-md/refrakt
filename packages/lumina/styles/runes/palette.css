@@ -1,3 +1,4 @@
+@layer skin {
 /* Palette — color swatch grid */
 .rf-palette__title {
 	font-size: var(--rf-text-lg);
@@ -94,4 +95,6 @@
 /* Context-aware: no outer margin when inside design-context */
 .rf-palette--in-design-context {
 	margin: 0;
+}
+
 }

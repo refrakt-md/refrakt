@@ -1,3 +1,4 @@
+@layer skin {
 /* Collection — list / grid / table / cards of registry entities (SPEC-070).
  *
  * The block is layout-agnostic; the `data-layout` attribute on the wrapper
@@ -163,4 +164,6 @@
  * cells don't want paragraph spacing. */
 .rf-collection__table td p {
 	margin: 0;
+}
+
 }

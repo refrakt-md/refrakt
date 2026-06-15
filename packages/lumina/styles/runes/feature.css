@@ -1,3 +1,4 @@
+@layer skin {
 /* Feature */
 .rf-feature {
 	padding: 2.5rem 0 2rem;
@@ -143,4 +144,6 @@
 .rf-feature[data-media-position="top"] {
 	display: flex;
 	flex-direction: column-reverse;
+}
+
 }

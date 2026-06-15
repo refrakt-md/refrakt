@@ -1,3 +1,4 @@
+@layer skin {
 /* Frame chrome (SPEC-086) — media-surface presentation.
  *
  * The engine lands the frame contract on the frame-target element: a rune's
@@ -102,3 +103,5 @@
  * clipped by the zone's `overflow: hidden` regardless of width, so the peek
  * reads consistently from desktop to mobile. For self-target (showcase) the
  * negative-margin spill stays on too — that's the intended breakout. */
+
+}

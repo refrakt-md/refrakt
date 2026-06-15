@@ -1,3 +1,4 @@
+@layer skin {
 /* Decision */
 
 /* SPEC-079: eyebrow + metadata zone names replace header-primary /
@@ -27,4 +28,6 @@
 }
 .rf-decision__body > section:first-child {
 	margin-top: 0.75rem;
+}
+
 }

@@ -1,3 +1,4 @@
+@layer skin {
 /* Lumina Theme — Global Base Styles */
 
 /* Reset */
@@ -206,3 +207,5 @@ meta {
 	display: none;
 }
 
+
+}

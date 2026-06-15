@@ -1,3 +1,4 @@
+@layer skin {
 /* Swatch — inline color chip */
 .rf-swatch {
 	display: inline-flex;
@@ -25,4 +26,6 @@
 	font-size: 0.75em;
 	font-family: var(--rf-font-mono, monospace);
 	vertical-align: middle;
+}
+
 }

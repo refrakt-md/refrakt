@@ -1,3 +1,4 @@
+@layer skin {
 /* Code block wrapper — the rf-codeblock div comes from the Markdoc fence node
    schema at build time. Inside codegroup the margin is removed by
    .rf-codegroup .rf-codeblock. */
@@ -113,4 +114,6 @@
 .rf-codeblock pre code .line[data-line-status="highlight"] {
 	background: var(--rf-color-line-highlight);
 	border-left-color: var(--rf-color-line-highlight-rail);
+}
+
 }

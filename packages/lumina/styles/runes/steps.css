@@ -1,3 +1,4 @@
+@layer skin {
 /* Steps */
 .rf-steps {
 	counter-reset: step;
@@ -112,4 +113,6 @@
 .rf-step[data-media-position="top"] {
 	display: flex;
 	flex-direction: column-reverse;
+}
+
 }

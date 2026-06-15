@@ -1,3 +1,4 @@
+@layer skin {
 /* DataTable */
 .rf-datatable__toolbar {
 	display: flex;
@@ -102,4 +103,6 @@
 .rf-datatable__page-info {
 	font-size: var(--rf-text-xs);
 	color: var(--rf-color-muted);
+}
+
 }

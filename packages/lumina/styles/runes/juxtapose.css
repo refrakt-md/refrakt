@@ -1,3 +1,4 @@
+@layer skin {
 /* Juxtapose — interactive comparison between two panels */
 
 /* ─── Variant modifiers (for static/no-JS layout) ─── */
@@ -172,4 +173,6 @@
 	background: transparent;
 	border: 0;
 	border-radius: var(--rf-radius-media);
+}
+
 }

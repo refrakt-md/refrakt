@@ -1,3 +1,4 @@
+@layer skin {
 /* Version Switcher — page-level version dropdown */
 
 .rf-version-switcher {
@@ -42,4 +43,6 @@
 	outline: none;
 	border-color: var(--rf-color-primary);
 	box-shadow: 0 0 0 2px var(--rf-color-primary-bg);
+}
+
 }

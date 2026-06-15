@@ -1,3 +1,4 @@
+@layer skin {
 /* Typography — font specimen display */
 .rf-typography__title {
 	font-size: var(--rf-text-lg);
@@ -97,4 +98,6 @@
 }
 .rf-typography--in-design-context .rf-typography__specimen + .rf-typography__specimen {
 	padding-top: 1.5rem;
+}
+
 }

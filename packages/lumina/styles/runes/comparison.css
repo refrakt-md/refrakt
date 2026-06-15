@@ -1,3 +1,4 @@
+@layer skin {
 /* Comparison */
 .rf-comparison {
 	margin: 2rem 0;
@@ -208,4 +209,6 @@
 	.rf-comparison__table { font-size: var(--rf-text-sm); }
 	.rf-comparison__table th,
 	.rf-comparison__table td { padding: 0.5rem 0.625rem; }
+}
+
 }

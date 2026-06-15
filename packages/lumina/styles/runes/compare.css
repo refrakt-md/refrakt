@@ -1,3 +1,4 @@
+@layer skin {
 /* Compare */
 .rf-compare {
 	border: 1px solid var(--rf-color-border);
@@ -49,4 +50,6 @@
 	margin: 0;
 	border: none;
 	border-radius: 0;
+}
+
 }

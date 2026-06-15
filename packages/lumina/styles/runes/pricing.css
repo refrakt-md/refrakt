@@ -1,3 +1,4 @@
+@layer skin {
 /* Pricing */
 .rf-pricing {
 	padding: 2rem 0;
@@ -141,4 +142,6 @@
 }
 .rf-tier__body p:has(a) {
 	margin-bottom: 0;
+}
+
 }

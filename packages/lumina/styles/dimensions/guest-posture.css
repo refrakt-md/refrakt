@@ -1,3 +1,4 @@
+@layer skin {
 /* Media-guest interaction posture (SPEC-090).
  *
  * A media-slot guest is presentational by default. When its container is itself
@@ -24,4 +25,6 @@
  * JS-injected — datatable toolbars, map controls — simply never appear.) */
 [data-section="media"][data-guest-posture="presentational"] :is(.rf-tabs__tabs, .rf-codegroup__tabs) {
 	display: none;
+}
+
 }

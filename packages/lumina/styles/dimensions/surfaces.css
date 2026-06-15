@@ -1,3 +1,4 @@
+@layer skin {
 /* ─── Surface Assignments (SPEC-107) ───────────────────────────────────
  * Surface chrome is selected by the `data-elevation` depth-ladder axis, not by
  * rune name. Each rung maps to a chrome bundle (fill / border / radius /
@@ -111,4 +112,6 @@
 [data-section="media"] > [data-elevation="sunken"] {
 	background: transparent;
 	border: 0;
+}
+
 }

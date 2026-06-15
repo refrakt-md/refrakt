@@ -1,3 +1,4 @@
+@layer skin {
 /* Code Group
  *
  * Chrome (the wrapper + topbar + tabs) uses `--rf-color-surface` so it
@@ -118,4 +119,6 @@
 }
 .rf-codegroup[data-overflow="hide"] pre {
 	overflow-x: hidden;
+}
+
 }

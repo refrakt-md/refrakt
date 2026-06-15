@@ -1,3 +1,4 @@
+@layer skin {
 /* Search trigger button */
 .rf-search-trigger {
 	display: inline-flex;
@@ -210,4 +211,6 @@
 	.rf-search-dialog__footer {
 		display: none;
 	}
+}
+
 }

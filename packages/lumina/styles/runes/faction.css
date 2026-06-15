@@ -1,3 +1,4 @@
+@layer skin {
 /* Faction — split/stacked geometry, the title, and the metadata def-list all
  * come from the shared layers: layouts/split.css ([data-layout] +
  * [data-section="media"]), dimensions/sections.css ([data-section="title"] /
@@ -68,4 +69,6 @@
 .rf-faction-section__body ul,
 .rf-faction-section__body ol {
 	padding-left: 1.5rem;
+}
+
 }

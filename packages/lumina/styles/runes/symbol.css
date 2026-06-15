@@ -1,3 +1,4 @@
+@layer skin {
 /* Symbol */
 
 /* SPEC-080: signature bar (kind/lang chips + source link). Geometry +
@@ -123,4 +124,6 @@
 }
 .rf-symbol-member blockquote::before {
 	content: none;
+}
+
 }

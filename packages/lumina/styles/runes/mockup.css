@@ -1,3 +1,4 @@
+@layer skin {
 /* Mockup — Device frame chrome around content */
 
 .rf-mockup {
@@ -535,4 +536,6 @@
 	.rf-mockup--light .rf-mockup__address-bar {
 		background: rgba(0, 0, 0, 0.15);
 	}
+}
+
 }

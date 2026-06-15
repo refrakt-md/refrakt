@@ -1,3 +1,4 @@
+@layer skin {
 /* Gallery — Multi-image container with grid/carousel/masonry layout.
  *
  * Thin-edge tile mosaic: a gallery is media all the way down (every child is an
@@ -205,4 +206,6 @@
 	.rf-gallery[data-layout="carousel"] .rf-gallery__item {
 		flex-basis: 100%;
 	}
+}
+
 }

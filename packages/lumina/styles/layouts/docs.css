@@ -1,3 +1,4 @@
+@layer skin {
 /* Docs layout */
 
 /* ---- Fixed header ---- */
@@ -287,4 +288,6 @@ html:has(.rf-docs-header) {
 		--rf-content-padding: 1.5rem;
 		--rf-docs-wide-inset: 1.5rem;
 	}
+}
+
 }

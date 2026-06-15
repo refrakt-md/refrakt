@@ -1,3 +1,4 @@
+@layer skin {
 /* Bond */
 .rf-bond {
 	display: flex;
@@ -71,4 +72,6 @@
 }
 .rf-bond[data-status="broken"] {
 	opacity: 0.6;
+}
+
 }

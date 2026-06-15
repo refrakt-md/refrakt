@@ -1,3 +1,4 @@
+@layer skin {
 /* Tint Rune — Colour Token Bridge
  *
  * Maps --tint-* custom properties (set by the identity transform) to
@@ -246,4 +247,6 @@
 	--rf-color-muted: var(--tint-muted, var(--cs-muted));
 	--rf-color-primary: var(--tint-primary, var(--cs-accent));
 	--rf-color-border: var(--tint-border, var(--cs-border));
+}
+
 }

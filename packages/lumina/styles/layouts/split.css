@@ -1,3 +1,4 @@
+@layer skin {
 /* Shared media + content layout — used by card, recipe, hero, feature, step,
  * realm, faction, playlist (anything that uses the `splitLayoutAttributes`
  * preset). Same vocabulary as `bento-cell`:
@@ -190,4 +191,6 @@
     grid-column: auto;
     grid-row: auto;
   }
+}
+
 }

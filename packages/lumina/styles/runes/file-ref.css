@@ -1,3 +1,4 @@
+@layer skin {
 /* file-ref — path-based inline reference to a project file (SPEC-078).
  *
  * Renders as `<span class="rf-file-ref"><a>label</a></span>` in prose
@@ -28,4 +29,6 @@
 
 .rf-file-ref > a:hover {
 	text-decoration-thickness: 2px;
+}
+
 }

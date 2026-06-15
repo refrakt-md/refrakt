@@ -1,3 +1,4 @@
+@layer skin {
 /* Universal Rune Attributes — spacing & inset
  *
  * Compound attribute selectors [data-rune][data-*] give specificity (0,2,0):
@@ -23,3 +24,5 @@
  * / resting shadow) — is mapped by value in dimensions/surfaces.css. The old
  * SPEC-086 shadow scale (none/sm/md/lg) is superseded; the engine maps those
  * deprecated aliases onto the ladder before they reach the DOM. */
+
+}

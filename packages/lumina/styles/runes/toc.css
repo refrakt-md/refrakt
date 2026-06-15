@@ -1,3 +1,4 @@
+@layer skin {
 /* Table of Contents */
 .rf-toc {
 	padding: 1.25rem 1.5rem;
@@ -39,4 +40,6 @@
 .rf-toc a:hover {
 	color: var(--rf-color-primary);
 	text-decoration: none;
+}
+
 }

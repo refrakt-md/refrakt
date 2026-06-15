@@ -1,3 +1,4 @@
+@layer skin {
 /* Reveal */
 .rf-reveal__preamble {
 	margin-bottom: 1.5rem;
@@ -85,4 +86,6 @@
 .rf-reveal__next:hover,
 .rf-reveal__reset:hover {
 	background: var(--rf-color-border);
+}
+
 }

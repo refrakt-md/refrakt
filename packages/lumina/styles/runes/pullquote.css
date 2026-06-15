@@ -1,3 +1,4 @@
+@layer skin {
 /* PullQuote */
 .rf-pullquote {
 	margin: 2rem 0;
@@ -120,4 +121,6 @@
 	.rf-pullquote--center {
 		max-width: 100%;
 	}
+}
+
 }

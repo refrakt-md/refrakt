@@ -1,3 +1,4 @@
+@layer skin {
 /* Form */
 .rf-form {
 	display: flex;
@@ -182,4 +183,6 @@
 	background: color-mix(in srgb, var(--rf-color-danger) 10%, transparent);
 	color: var(--rf-color-danger);
 	border: 1px solid color-mix(in srgb, var(--rf-color-danger) 25%, transparent);
+}
+
 }
