@@ -1,0 +1,109 @@
+/* sequence — structure. The counter mechanism + list resets, item gutters, the
+ * numbered counter-circle box placement, and the connected-timeline geometry
+ * (item position/gutter, marker box). The connector *lines* are borders (skin),
+ * as are the marker fill / radius / shadow / colour / type — those live in
+ * Lumina's dimensions/sequence.css. [data-sequence] is uncontested by layouts and
+ * sections, so the split is behavior-preserving. */
+
+/* Numbered — counter circle to the left of each item */
+[data-sequence="numbered"] {
+	counter-reset: sequence;
+	list-style: none;
+	padding-left: 0;
+}
+
+[data-sequence="numbered"] > li {
+	counter-increment: sequence;
+	position: relative;
+	padding-left: 2.25rem;
+}
+
+[data-sequence="numbered"] > li::before {
+	content: counter(sequence);
+	position: absolute;
+	left: 0;
+	top: 0.625rem;
+	width: 1.5rem;
+	height: 1.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Connected vertical — line with dots */
+[data-sequence="connected"] {
+	list-style: none;
+	padding-left: 0;
+}
+
+[data-sequence="connected"] > li {
+	position: relative;
+	padding-left: 2rem;
+	padding-bottom: 2rem;
+	margin-left: 0.375rem;
+}
+
+[data-sequence="connected"] > li:last-child {
+	padding-bottom: 0;
+}
+
+[data-sequence="connected"] > li::before {
+	content: '';
+	position: absolute;
+	left: -0.4375rem;
+	top: 0.25rem;
+	width: 0.75rem;
+	height: 0.75rem;
+}
+
+/* Connected horizontal — line with dots */
+[data-sequence="connected"][data-sequence-direction="horizontal"] {
+	display: flex;
+	overflow-x: auto;
+}
+
+[data-sequence="connected"][data-sequence-direction="horizontal"] > li {
+	position: relative;
+	min-width: 12rem;
+	padding-top: 1.5rem;
+	padding-left: 0;
+	padding-bottom: 0;
+	margin-left: 0;
+}
+
+[data-sequence="connected"][data-sequence-direction="horizontal"] > li::before {
+	left: 0.5rem;
+	top: -0.4375rem;
+}
+
+/* Plain — no indicators, just ordered semantics */
+[data-sequence="plain"] {
+	list-style: none;
+	padding-left: 0;
+}
+
+/* === Density interaction === */
+
+/* Compact: smaller circles, tighter spacing */
+[data-density="compact"] [data-sequence="numbered"] > li {
+	padding-left: 1.75rem;
+}
+
+[data-density="compact"] [data-sequence="numbered"] > li::before {
+	width: 1.25rem;
+	height: 1.25rem;
+}
+
+[data-density="compact"] [data-sequence="connected"] > li {
+	padding-bottom: 1rem;
+}
+
+/* Minimal: no indicators, collapsed list */
+[data-density="minimal"] [data-sequence] > li::before {
+	display: none;
+}
+
+[data-density="minimal"] [data-sequence="connected"] > li {
+	padding-left: 0;
+	margin-left: 0;
+}
