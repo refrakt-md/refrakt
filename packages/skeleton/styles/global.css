@@ -1,0 +1,37 @@
+/* Global base — structure (SPEC-094 §3 / WORK-438). Box model, the consumed-meta
+ * hide, prose/heading/list/table rhythm, and the responsive-image + scroll
+ * mechanisms a page breaks without. Typography, colour, chrome
+ * (scrollbars/selection/focus/reduced-motion), and the surface treatment of
+ * code/pre/tables are skin (Lumina's styles/global.css).
+ *
+ * The prose rhythm (heading/paragraph/list margins) lives here, not in skin, so a
+ * rune's structural zone resets (`__title { margin-top:0 }`,
+ * `__body > :last-child { margin-bottom:0 }`) — also skeleton — can cancel it by
+ * specificity within the same layer. In skin it would beat those resets
+ * regardless of specificity, opening gaps at zone edges. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body { margin: 0; }
+
+/* Consumed meta tags never render. */
+meta { display: none; }
+
+/* Heading + paragraph vertical rhythm. */
+h1, h2, h3, h4, h5, h6 { margin-top: 2em; margin-bottom: 0.5em; }
+p { margin-top: 0; margin-bottom: 1rem; }
+hr { margin: 2rem 0; }
+
+/* Lists — indent + rhythm (rune list resets override these in-layer). */
+ul, ol { padding-left: 1.5rem; margin-top: 0; margin-bottom: 1rem; }
+li { margin-bottom: 0.25rem; }
+li > p { margin-bottom: 0.5rem; }
+
+/* Responsive image constraint. */
+img { max-width: 100%; height: auto; }
+
+/* Code block scroll + rhythm (its surface treatment is skin). */
+pre { overflow-x: auto; margin: 1.5rem 0; }
+
+/* Table layout + rhythm (cell treatment is skin). */
+table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }

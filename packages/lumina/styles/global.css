@@ -1,10 +1,11 @@
 @layer skin {
-/* Lumina Theme — Global Base Styles */
-
-/* Reset */
-*, *::before, *::after {
-	box-sizing: border-box;
-}
+/* Lumina Theme — Global Base Styles (skin).
+ *
+ * Structure (box model, zone resets, prose/heading/list/table rhythm, the
+ * responsive-image + scroll mechanisms) lives in @refrakt-md/skeleton
+ * (styles/global.css) per SPEC-094 §3 / WORK-438. What remains here is skin:
+ * typography, colour, native chrome, and the surface treatment of code/pre/
+ * tables. */
 
 html {
 	font-family: var(--rf-font-sans);
@@ -25,18 +26,12 @@ html {
 	text-size-adjust: 100%;
 }
 
-body {
-	margin: 0;
-}
-
 /* ─── Theme-aware browser chrome (WORK-351) ─────────────────────────
  * Make native chrome — scrollbars, form controls, the main viewport
  * scrollbar — follow the active theme instead of always rendering in
  * the OS default scheme. */
 
-/* `color-scheme` so the UA paints native widgets/scrollbars per mode.
- * Mirrors the dark-token selectors (explicit toggle + system preference
- * unless forced light). */
+/* `color-scheme` so the UA paints native widgets/scrollbars per mode. */
 :root { color-scheme: light; }
 [data-theme="dark"] { color-scheme: dark; }
 @media (prefers-color-scheme: dark) {
@@ -99,8 +94,6 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
 	line-height: var(--rf-leading-tight);
-	margin-top: 2em;
-	margin-bottom: 0.5em;
 	font-weight: var(--rf-weight-semibold);
 	letter-spacing: var(--rf-tracking-tight);
 }
@@ -109,11 +102,6 @@ h1 { font-size: var(--rf-text-3xl); font-weight: var(--rf-weight-bold); letter-s
 h2 { font-size: var(--rf-text-2xl); }
 h3 { font-size: var(--rf-text-xl); }
 h4 { font-size: var(--rf-text); }
-
-p {
-	margin-top: 0;
-	margin-bottom: 1rem;
-}
 
 a {
 	color: var(--rf-color-primary);
@@ -141,8 +129,6 @@ pre {
 	color: var(--rf-color-code-text);
 	padding: 1.25rem 1.5rem;
 	border-radius: var(--rf-radius-md);
-	overflow-x: auto;
-	margin: 1.5rem 0;
 	font-size: var(--rf-text-sm);
 	line-height: var(--rf-leading-relaxed);
 	border: 1px solid var(--rf-color-border);
@@ -155,35 +141,12 @@ pre code {
 	border-radius: 0;
 }
 
-img {
-	max-width: 100%;
-	height: auto;
-}
-
 hr {
 	border: none;
 	border-top: 1px solid var(--rf-color-border);
-	margin: 2rem 0;
-}
-
-ul, ol {
-	padding-left: 1.5rem;
-	margin-top: 0;
-	margin-bottom: 1rem;
-}
-
-li {
-	margin-bottom: 0.25rem;
-}
-
-li > p {
-	margin-bottom: 0.5rem;
 }
 
 table {
-	width: 100%;
-	border-collapse: collapse;
-	margin: 1.5rem 0;
 	font-size: var(--rf-text-sm);
 }
 
@@ -202,10 +165,5 @@ td {
 	padding: 0.625rem 1rem;
 	border-bottom: 1px solid var(--rf-color-border);
 }
-
-meta {
-	display: none;
-}
-
 
 }
