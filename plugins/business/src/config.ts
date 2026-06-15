@@ -27,6 +27,7 @@ export const config: Record<string, RuneConfig> = {
 	Organization: {
 		block: 'organization',
 		defaultDensity: 'full',
+		defaultElevation: 'flat',
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', body: 'body' },
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', body: 'none' },
@@ -34,6 +35,7 @@ export const config: Record<string, RuneConfig> = {
 	Timeline: {
 		block: 'timeline',
 		defaultDensity: 'full',
+		defaultElevation: 'flat',
 		sequence: 'connected',
 		sequenceDirection: { fromModifier: 'direction', default: 'vertical' },
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description' },

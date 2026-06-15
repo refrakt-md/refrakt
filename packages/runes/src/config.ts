@@ -51,7 +51,7 @@ export const coreConfig: ThemeConfig = {
 
 		Accordion: { block: 'accordion', defaultDensity: 'full', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 		AccordionItem: { block: 'accordion-item', parent: 'Accordion', requiresParent: 'Accordion', rootAttributes: { 'data-state': 'closed' }, autoLabel: { name: 'header' }, editHints: { header: 'inline', body: 'none' } },
-		Details: { block: 'details', autoLabel: { summary: 'summary' }, editHints: { summary: 'inline', body: 'none' } },
+		Details: { block: 'details', defaultElevation: 'flush', autoLabel: { summary: 'summary' }, editHints: { summary: 'inline', body: 'none' } },
 		Grid: {
 			block: 'grid',
 			defaultDensity: 'full',
@@ -79,6 +79,7 @@ export const coreConfig: ThemeConfig = {
 			block: 'codegroup',
 			interactive: true,
 			defaultDensity: 'compact',
+			defaultElevation: 'flat',
 			modifiers: { title: { source: 'meta', noBemClass: true }, overflow: { source: 'meta', default: 'scroll' } },
 			// The window chrome (three dots) is pure decoration — drawn in CSS
 			// on `.rf-codegroup__topbar`. The only metadata is the optional
@@ -102,7 +103,7 @@ export const coreConfig: ThemeConfig = {
 			editHints: { panel: 'code' },
 		},
 		PageSection: { block: 'page-section' },
-		TableOfContents: { block: 'toc' },
+		TableOfContents: { block: 'toc', defaultElevation: 'flush' },
 		/* Snippet doesn't have a normal schema transform — its preprocess
 		 * hook replaces the tag with a `fence` node, and the standalone
 		 * wrap step adds `<figure class="rf-snippet">` post-transform.
@@ -187,6 +188,7 @@ export const coreConfig: ThemeConfig = {
 		Embed: {
 			block: 'embed',
 			defaultDensity: 'compact',
+			defaultElevation: 'flat',
 			// SPEC-081: the rune transform builds the wrapper/iframe/fallback
 			// structure directly; `provider` is a bag-only modifier that surfaces
 			// as `data-provider`. No postTransform.
@@ -198,6 +200,7 @@ export const coreConfig: ThemeConfig = {
 		Breadcrumb: {
 			block: 'breadcrumb',
 			defaultDensity: 'minimal',
+			defaultElevation: 'flush',
 			editHints: { items: 'none' },
 			modifiers: {
 				separator: { source: 'meta', default: '/', noBemClass: true },
@@ -225,6 +228,7 @@ export const coreConfig: ThemeConfig = {
 		Budget: {
 			block: 'budget',
 			defaultDensity: 'full',
+			defaultElevation: 'flat',
 			sections: { preamble: 'preamble', headline: 'title', footer: 'footer' },
 			editHints: { headline: 'inline' },
 			modifiers: {
@@ -268,6 +272,7 @@ export const coreConfig: ThemeConfig = {
 		Hint: {
 			block: 'hint',
 			defaultDensity: 'compact',
+			defaultElevation: 'flush',
 			modifiers: { hintType: { source: 'meta', default: 'note' } },
 			contextModifiers: { 'hero': 'in-hero', 'feature': 'in-feature' },
 			sections: { header: 'header' },
@@ -296,6 +301,7 @@ export const coreConfig: ThemeConfig = {
 		Figure: {
 			block: 'figure',
 			defaultDensity: 'compact',
+			defaultElevation: 'flat',
 			// SPEC-086 — a figure *is* a frame around its image, so `frame` chrome
 			// targets the figure's own root (its body is the media).
 			frameTarget: 'self',
@@ -309,6 +315,7 @@ export const coreConfig: ThemeConfig = {
 		Gallery: {
 			block: 'gallery',
 			defaultDensity: 'full',
+			defaultElevation: 'flat',
 			childDensity: 'compact',
 			modifiers: {
 				layout: { source: 'meta', default: 'grid' },
@@ -323,6 +330,7 @@ export const coreConfig: ThemeConfig = {
 		Sidenote: {
 			block: 'sidenote',
 			defaultDensity: 'full',
+			defaultElevation: 'flush',
 			modifiers: { variant: { source: 'meta', default: 'sidenote' } },
 			sections: { body: 'body' },
 			editHints: { body: 'inline' },
@@ -333,7 +341,7 @@ export const coreConfig: ThemeConfig = {
 			modifiers: { layout: { source: 'meta', default: 'side-by-side' } },
 			editHints: { panels: 'none' },
 		},
-		Conversation: { block: 'conversation', defaultDensity: 'compact', editHints: { messages: 'none' } },
+		Conversation: { block: 'conversation', defaultDensity: 'compact', defaultElevation: 'flush', editHints: { messages: 'none' } },
 		ConversationMessage: {
 			block: 'conversation-message',
 			parent: 'Conversation',
@@ -343,6 +351,7 @@ export const coreConfig: ThemeConfig = {
 		Annotate: {
 			block: 'annotate',
 			defaultDensity: 'full',
+			defaultElevation: 'flush',
 			modifiers: { variant: { source: 'meta', default: 'margin' } },
 			sections: { body: 'body' },
 			editHints: { body: 'none', notes: 'none' },
@@ -351,6 +360,7 @@ export const coreConfig: ThemeConfig = {
 		Nav: {
 			block: 'nav',
 			defaultDensity: 'compact',
+			defaultElevation: 'flush',
 			modifiers: {
 				layout: { source: 'attribute' },
 			},
@@ -411,6 +421,7 @@ export const coreConfig: ThemeConfig = {
 		Chart: {
 			block: 'chart',
 			defaultDensity: 'compact',
+			defaultElevation: 'sunken',
 			// SPEC-083: the transform emits the rf-chart element wrapping the data
 			// `<table>`; `type` / `stacked` are bag-only modifiers (→ data-type /
 			// data-stacked) the web component reads. No postTransform.
@@ -426,6 +437,7 @@ export const coreConfig: ThemeConfig = {
 		PullQuote: {
 			block: 'pullquote',
 			defaultDensity: 'compact',
+			defaultElevation: 'flush',
 			modifiers: {
 				align: { source: 'meta', default: 'center' },
 				variant: { source: 'meta', default: 'default' },
@@ -436,6 +448,7 @@ export const coreConfig: ThemeConfig = {
 		TextBlock: {
 			block: 'textblock',
 			defaultDensity: 'full',
+			defaultElevation: 'flush',
 			modifiers: {
 				dropcap: { source: 'meta' },
 				columns: { source: 'meta' },
@@ -483,6 +496,7 @@ export const coreConfig: ThemeConfig = {
 			block: 'datatable',
 			interactive: true,
 			defaultDensity: 'compact',
+			defaultElevation: 'flush',
 			sections: { table: 'body' },
 			modifiers: {
 				searchable: { source: 'meta', default: 'false' },
@@ -496,6 +510,7 @@ export const coreConfig: ThemeConfig = {
 			block: 'form',
 			interactive: true,
 			defaultDensity: 'full',
+			defaultElevation: 'flat',
 			sections: { body: 'body' },
 			modifiers: {
 				variant: { source: 'meta', default: 'stacked' },
@@ -517,6 +532,7 @@ export const coreConfig: ThemeConfig = {
 		Reveal: {
 			block: 'reveal',
 			defaultDensity: 'full',
+			defaultElevation: 'flat',
 			modifiers: {
 				mode: { source: 'meta', default: 'click' },
 			},
@@ -554,6 +570,7 @@ export const coreConfig: ThemeConfig = {
 		Diagram: {
 			block: 'diagram',
 			defaultDensity: 'compact',
+			defaultElevation: 'sunken',
 			editHints: { source: 'code' },
 			// SPEC-081: the rune transform emits the `rf-diagram` element + SSR
 			// fallback; `language` is a bag-only modifier (→ data-language).

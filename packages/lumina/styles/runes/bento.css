@@ -102,6 +102,15 @@
 	min-height: 0;
 }
 
+/* Media slot shares the cell surface chrome (1px border + recessed well). Lives
+ * here (not dimensions/surfaces.css) because bento-cell is a hand-rolled surface
+ * outside the `data-elevation` axis; `:where()` keeps it overridable per-cell,
+ * matching the elevation rule. */
+:where(.rf-bento-cell) [data-section="media"] {
+	border: 1px solid var(--rf-color-border);
+	background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
+}
+
 /* Media placement (data-media-position): top stacks media above content (the
  * default flow order); bottom flips it; start/end place media beside the body. */
 .rf-bento-cell[data-media-position="bottom"] { flex-direction: column-reverse; }

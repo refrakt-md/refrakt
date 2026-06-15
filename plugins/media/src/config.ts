@@ -5,6 +5,7 @@ export const config: Record<string, RuneConfig> = {
 	Playlist: {
 		block: 'playlist',
 		defaultDensity: 'full',
+		defaultElevation: 'flat',
 		sequence: 'numbered',
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'cover' },
@@ -44,7 +45,7 @@ export const config: Record<string, RuneConfig> = {
 		},
 		editHints: { headline: 'inline', blurb: 'inline', preamble: 'none', tracks: 'none', player: 'none' },
 	},
-	Track: { block: 'track', parent: 'Playlist', editHints: { 'track-name': 'inline', 'track-artist': 'inline', 'track-description': 'inline', 'track-duration': 'none', 'track-meta': 'none' } },
+	Track: { block: 'track', parent: 'Playlist', defaultElevation: 'flat', editHints: { 'track-name': 'inline', 'track-artist': 'inline', 'track-description': 'inline', 'track-duration': 'none', 'track-meta': 'none' } },
 	Audio: {
 		block: 'audio',
 		defaultDensity: 'compact',

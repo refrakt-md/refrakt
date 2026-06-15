@@ -5,11 +5,13 @@ export const config: Record<string, RuneConfig> = {
 	Swatch: {
 		block: 'swatch',
 		defaultDensity: 'minimal',
+		defaultElevation: 'flat',
 		editHints: { chip: 'none', value: 'none' },
 	},
 	Palette: {
 		block: 'palette',
 		defaultDensity: 'full',
+		defaultElevation: 'flat',
 		sections: { title: 'title' },
 		modifiers: {
 			title: { source: 'meta' },
@@ -23,6 +25,7 @@ export const config: Record<string, RuneConfig> = {
 	Typography: {
 		block: 'typography',
 		defaultDensity: 'full',
+		defaultElevation: 'flat',
 		sections: { title: 'title' },
 		modifiers: {
 			title: { source: 'meta' },
@@ -36,6 +39,7 @@ export const config: Record<string, RuneConfig> = {
 	Spacing: {
 		block: 'spacing',
 		defaultDensity: 'full',
+		defaultElevation: 'flat',
 		sections: { title: 'title' },
 		modifiers: {
 			title: { source: 'meta' },
@@ -46,6 +50,7 @@ export const config: Record<string, RuneConfig> = {
 	DesignContext: {
 		block: 'design-context',
 		defaultDensity: 'full',
+		defaultElevation: 'flat',
 		sections: { title: 'title' },
 		modifiers: {
 			titleText: { source: 'meta' },
@@ -96,6 +101,7 @@ export const config: Record<string, RuneConfig> = {
 	Mockup: {
 		block: 'mockup',
 		defaultDensity: 'compact',
+		defaultElevation: 'flat',
 		mediaSlots: { viewport: 'hero' },
 		modifiers: {
 			device: { source: 'meta', default: 'browser' },

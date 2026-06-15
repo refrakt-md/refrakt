@@ -16,6 +16,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'hero',
 		defaultDensity: 'full',
 		defaultWidth: 'full',
+		defaultElevation: 'flush',
 		modifiers: {
 			// BUG-001: content-first DOM, so the truthful stacked default is
 			// `bottom` (media beneath the text); Lumina counters the shared
@@ -48,10 +49,11 @@ export const config: Record<string, RuneConfig> = {
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code', media: 'image' },
 	},
-	CallToAction: { block: 'cta', defaultDensity: 'full', defaultWidth: 'full', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code' } },
+	CallToAction: { block: 'cta', defaultDensity: 'full', defaultWidth: 'full', defaultElevation: 'flush', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code' } },
 	Bento: {
 		block: 'bento',
 		defaultDensity: 'full',
+		defaultElevation: 'flush',
 		childDensity: 'compact',
 		modifiers: {
 			columns: { source: 'meta', default: '6', noBemClass: true },
@@ -99,6 +101,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'feature',
 		defaultDensity: 'full',
 		defaultWidth: 'full',
+		defaultElevation: 'flush',
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'cover' },
 		modifiers: {
@@ -129,7 +132,7 @@ export const config: Record<string, RuneConfig> = {
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', title: 'inline', description: 'inline', icon: 'icon' },
 	},
 	Definition: { block: 'definition', parent: 'Feature', requiresParent: 'Feature' },
-	Steps: { block: 'steps', defaultDensity: 'full', sequence: 'numbered', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+	Steps: { block: 'steps', defaultDensity: 'full', defaultElevation: 'flush', sequence: 'numbered', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 	Step: {
 		block: 'step',
 		parent: 'Steps', requiresParent: 'Steps',
@@ -154,6 +157,7 @@ export const config: Record<string, RuneConfig> = {
 	Testimonial: {
 		block: 'testimonial',
 		defaultDensity: 'compact',
+		defaultElevation: 'flat',
 		sections: { avatar: 'media' },
 		mediaSlots: { avatar: 'portrait' },
 		modifiers: {
