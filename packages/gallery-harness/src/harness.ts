@@ -63,9 +63,12 @@ export function registerGalleryTests(artifacts: GalleryArtifacts): void {
 	const { theme } = artifacts;
 
 	// Rune gallery — per-cell element clips, per mode. A diff localises to the
-	// rune that changed.
+	// rune that changed. One sweep test per mode (rather than per-cell) avoids
+	// reloading the gallery page hundreds of times; the per-cell screenshot
+	// names still localise diffs in the report.
 	for (const mode of ['light', 'dark'] as const) {
 		test(`${theme} · runes (${mode})`, async ({ page }) => {
+			test.setTimeout(5 * 60_000);
 			await page.goto(pathToFileURL(artifacts.runeGallery[mode]).href);
 			await settle(page);
 			const cells = page.locator('[data-gallery-cell]');
@@ -74,6 +77,11 @@ export function registerGalleryTests(artifacts: GalleryArtifacts): void {
 				const cell = cells.nth(i);
 				const rune = (await cell.getAttribute('data-rune')) ?? '';
 				if (exclude.has(rune)) continue;
+				// Skip cells with no visible box (e.g. `drawer` renders as a
+				// closed `<dialog>` — `display: none`, nothing to shoot, and
+				// `toHaveScreenshot` cannot stabilise on a zero-area element).
+				const box = await cell.boundingBox();
+				if (!box || box.width === 0 || box.height === 0) continue;
 				const anchor = (await cell.getAttribute('data-gallery-cell')) ?? `cell-${i}`;
 				await expect(cell).toHaveScreenshot(`${theme}/runes/${mode}/${anchor}.png`);
 			}
