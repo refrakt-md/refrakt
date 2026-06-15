@@ -1,4 +1,4 @@
-{% work id="WORK-428" status="ready" priority="high" complexity="complex" source="SPEC-094" milestone="v0.23.0" tags="theme,tokens,spacing,css,skeleton-skin" %}
+{% work id="WORK-435" status="ready" priority="high" complexity="complex" source="SPEC-094" milestone="v0.23.0" tags="theme,tokens,spacing,css,skeleton-skin" %}
 
 # Spacing token contract + Lumina refactor
 
@@ -27,7 +27,7 @@ restating structure. **The gate for the re-bucketing.**
 
 ## Dependencies
 
-- Builds on the token-contract work ({% ref "WORK-404" /%}/{% ref "WORK-405" /%}/{% ref "WORK-406" /%}). Gates the re-bucketing (WORK-431).
+- Builds on the token-contract work ({% ref "WORK-404" /%}/{% ref "WORK-405" /%}/{% ref "WORK-406" /%}). Gates the re-bucketing (WORK-438).
 
 ## References
 

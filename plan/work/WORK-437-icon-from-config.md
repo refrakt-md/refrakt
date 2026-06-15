@@ -1,4 +1,4 @@
-{% work id="WORK-430" status="ready" priority="medium" complexity="simple" source="SPEC-094" milestone="v0.23.0" tags="theme,icons,css,skeleton-skin,config" %}
+{% work id="WORK-437" status="ready" priority="medium" complexity="simple" source="SPEC-094" milestone="v0.23.0" tags="theme,icons,css,skeleton-skin,config" %}
 
 # Icon-from-config: lift embedded data-URI glyphs out of CSS
 

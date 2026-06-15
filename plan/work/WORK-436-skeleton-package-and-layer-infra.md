@@ -1,4 +1,4 @@
-{% work id="WORK-429" status="ready" priority="high" complexity="moderate" source="SPEC-094" milestone="v0.23.0" tags="theme,skeleton-skin,packaging,cascade-layers,sveltekit" %}
+{% work id="WORK-436" status="ready" priority="high" complexity="moderate" source="SPEC-094" milestone="v0.23.0" tags="theme,skeleton-skin,packaging,cascade-layers,sveltekit" %}
 
 # `@refrakt-md/skeleton` package + `@layer` infrastructure
 
@@ -26,7 +26,7 @@ fills.
 
 ## Dependencies
 
-- Follows {% ref "WORK-410" /%} (packaging decision + layer-order mechanism). Pairs with the re-bucketing (WORK-431), which fills the layers.
+- Follows {% ref "WORK-410" /%} (packaging decision + layer-order mechanism). Pairs with the re-bucketing (WORK-438), which fills the layers.
 
 ## References
 

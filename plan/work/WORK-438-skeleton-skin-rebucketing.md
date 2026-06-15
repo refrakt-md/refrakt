@@ -1,4 +1,4 @@
-{% work id="WORK-431" status="pending" priority="high" complexity="complex" source="SPEC-094" milestone="v0.23.0" tags="theme,skeleton-skin,css,lumina,refactor" %}
+{% work id="WORK-438" status="pending" priority="high" complexity="complex" source="SPEC-094" milestone="v0.23.0" tags="theme,skeleton-skin,css,lumina,refactor" %}
 
 # Skeleton/skin re-bucketing of the Lumina CSS
 
@@ -12,8 +12,8 @@ aesthetics stay in Lumina's skin. Mechanical and low-risk per declaration, but l
 - Apply the spike's **cut-line rule** declaration-by-declaration: skeleton = correctness
   (layout/position/overflow/z-index, zone resets, interaction mechanisms, token-referencing
   structure); skin = colour/border/radius/shadow/font + token *values*; content = assets +
-  assignment (handled by {% ref "WORK-423" /%} surface + {% ref "WORK-430" /%} icons).
-- Move structure into `@layer skeleton` (the {% ref "WORK-429" /%} package); keep aesthetics in
+  assignment (handled by {% ref "WORK-423" /%} surface + {% ref "WORK-437" /%} icons).
+- Move structure into `@layer skeleton` (the {% ref "WORK-436" /%} package); keep aesthetics in
   Lumina's `@layer skin`, low-specificity, no `!important`.
 - Sequence by file group so it parallelizes and stays reviewable: **(a) rune CSS** (92 files),
   **(b) dimension CSS** (12 files), **(c) layout CSS** (10 files). Split into sub-items per group
@@ -29,7 +29,7 @@ aesthetics stay in Lumina's skin. Mechanical and low-risk per declaration, but l
 
 ## Dependencies
 
-- Requires {% ref "WORK-428" /%} (spacing tokens — the gate) and {% ref "WORK-429" /%} (the skeleton package + layer infra); composes with {% ref "WORK-423" /%} (surface treatment moves to skin) and {% ref "WORK-430" /%} (icons).
+- Requires {% ref "WORK-435" /%} (spacing tokens — the gate) and {% ref "WORK-436" /%} (the skeleton package + layer infra); composes with {% ref "WORK-423" /%} (surface treatment moves to skin) and {% ref "WORK-437" /%} (icons).
 
 ## References
 
