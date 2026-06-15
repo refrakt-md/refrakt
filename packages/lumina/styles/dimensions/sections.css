@@ -1,37 +1,26 @@
 @layer skin {
-/* ─── Section Anatomy Dimension ─────────────────────────────────────────
- * Generic layout and typography for the 6 standard section roles.
- * Every rune that declares `sections` in its config gets these for free.
- *
- * Includes density × section interactions (title scaling, hiding).
+/* ─── Section Anatomy Dimension — skin ──────────────────────────────────
+ * Zone rhythm (margins, gaps, padding), typography, and borders for the 6
+ * standard section roles. The flex zone *containers* (header / preamble /
+ * footer) live in @refrakt-md/skeleton (dimensions/sections.css). Rhythm stays
+ * here so rune zone overrides resolve against it by source order.
  * ────────────────────────────────────────────────────────────────────── */
 
 /* ─── Header: chrome metadata row (badges, status, icons) ────────── */
-
 [data-section="header"] {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
 	gap: 0.5rem;
 	margin-bottom: 3rem;
 }
 
 /* ─── Preamble: intro section (eyebrow, headline, blurb) ─────────── */
-
 [data-section="preamble"] {
-	display: flex;
-	flex-direction: column;
 	gap: 0.25rem;
 }
 
 /* ─── Title: primary heading ──────────────────────────────────────── */
-
 /* The size rides --rf-title-size (set per density root in density.css) so a
- * nested rune's own density re-declares it — a full-density hero inside a
- * compact preview keeps its full-size title — and a rune's own title CSS
- * (e.g. .rf-hero__headline) outranks the bare attribute selector. The old
- * `[data-density="compact"] [data-section="title"]` descendant rule leaked
- * through nested densities AND beat per-rune title sizes. */
+ * nested rune's own density re-declares it, and a rune's own title CSS
+ * (e.g. .rf-hero__headline) outranks the bare attribute selector. */
 [data-section="title"] {
 	font-family: var(--rf-font-sans);
 	font-size: var(--rf-title-size, var(--rf-text-2xl));
@@ -42,7 +31,6 @@
 }
 
 /* ─── Description: secondary text ─────────────────────────────────── */
-
 [data-section="description"] {
 	font-size: var(--rf-text);
 	line-height: var(--rf-leading-normal);
@@ -51,17 +39,13 @@
 }
 
 /* ─── Body: main content ──────────────────────────────────────────── */
-
 [data-section="body"] {
 	line-height: var(--rf-leading-relaxed);
 	color: var(--rf-color-text);
 }
 
 /* ─── Footer: actions and links ───────────────────────────────────── */
-
 [data-section="footer"] {
-	display: flex;
-	flex-wrap: wrap;
 	gap: var(--rf-spacing-sm);
 	margin-top: var(--rf-spacing-md);
 	padding-top: var(--rf-spacing-sm);
@@ -69,7 +53,6 @@
 }
 
 /* ─── Media: visual content ───────────────────────────────────────── */
-
 [data-section="media"] {
 	/* Media zones manage their own spacing via their layout (split gap, cell
 	 * padding, flow margins); a blanket block margin here misaligns media in

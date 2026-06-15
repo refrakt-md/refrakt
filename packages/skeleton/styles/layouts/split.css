@@ -1,0 +1,127 @@
+/* split — structure. The shared media|content layout used by card, recipe, hero,
+ * feature, step, realm, faction, playlist (the `splitLayoutAttributes` preset):
+ * the start/end two-column grid, the top/bottom stack, the 3-section grid
+ * placement, the media-zone fill/clip mechanism, and the responsive collapse.
+ *
+ * Mutually exclusive with cover (media-position=cover). The media radius tier, the
+ * beside-image depth shadow, and the codegroup radius alignment are skin (Lumina's
+ * layouts/split.css). Zone rhythm (sections.css margins) is skin too, so a rune's
+ * zone overrides still resolve by source order against it. */
+
+/* ─── Beside layouts (start / end): two-column grid ─── */
+[data-media-position="start"],
+[data-media-position="end"] {
+	display: grid;
+	grid-template-columns: var(--media-share, 50%) 1fr;
+	align-items: var(--split-valign, start);
+}
+/* "end" flips the grid so media lands in column 2 (source order is media-first). */
+[data-media-position="end"] {
+	grid-template-columns: 1fr var(--media-share, 50%);
+}
+[data-media-position="end"] > [data-section="media"],
+[data-media-position="end"] > [data-name="media"] { grid-column: 2; }
+[data-media-position="end"] > [data-name="content"] { grid-column: 1; }
+
+/* `media-ratio` → media's share of the row width. */
+[data-media-ratio="1/3"] { --media-share: 33.333%; }
+[data-media-ratio="2/5"] { --media-share: 40%; }
+[data-media-ratio="1/2"] { --media-share: 50%; }
+[data-media-ratio="3/5"] { --media-share: 60%; }
+[data-media-ratio="2/3"] { --media-share: 66.667%; }
+
+/* Grid so children can use justify-self/align-self (default: stretch). */
+[data-media-position="start"] > [data-name="media"],
+[data-media-position="end"] > [data-name="media"],
+[data-media-position="start"] > [data-section="media"],
+[data-media-position="end"] > [data-section="media"] {
+	display: grid;
+}
+
+/* ─── Stacked layouts (top / bottom) ─── */
+/* "bottom" puts content on top, media at the bottom; column-reverse flips the
+ * media-first source order visually without changing the DOM. */
+[data-media-position="bottom"] {
+	display: flex;
+	flex-direction: column-reverse;
+}
+
+/* ─── 3-section grid placement (header + content + media) ─── */
+[data-media-position="start"]:has(> [data-section="header"]) > [data-section="header"] { grid-column: 1; grid-row: 1; }
+[data-media-position="start"]:has(> [data-section="header"]) > [data-name="content"]   { grid-column: 1; grid-row: 2; }
+[data-media-position="start"]:has(> [data-section="header"]) > [data-section="media"]  { grid-column: 2; grid-row: 1 / 3; }
+
+[data-media-position="end"]:has(> [data-section="header"]) > [data-section="header"] { grid-column: 2; grid-row: 1; }
+[data-media-position="end"]:has(> [data-section="header"]) > [data-name="content"]   { grid-column: 2; grid-row: 2; }
+[data-media-position="end"]:has(> [data-section="header"]) > [data-section="media"]  { grid-column: 1; grid-row: 1 / 3; }
+
+[data-media-position="start"]:has(> [data-section="header"]) > [data-section="media"],
+[data-media-position="end"]:has(> [data-section="header"]) > [data-section="media"] {
+	margin: 0;
+}
+
+/* ─── Media zone base — fill + clip + container-query context ─── */
+[data-section="media"] {
+	container-type: inline-size;
+	overflow: hidden;
+}
+[data-section="media"] > * {
+	display: block;
+	width: 100%;
+	max-height: 100%;
+	margin: 0;
+}
+[data-section="media"] > :is(img, video) {
+	height: 100%;
+	object-fit: cover;
+}
+/* Guests that manage their own bleed / interactive chrome opt out of the clip. */
+[data-section="media"]:is(
+	:has(> [data-rune="preview"]),
+	:has(> [data-rune="juxtapose"]),
+	:has(> .rf-showcase[data-displace]:not(.rf-showcase--in-bento-cell))
+) {
+	overflow: visible;
+	container-type: normal;
+}
+/* …and keep their intrinsic width/sizing (the generic width:100% would defeat a
+ * negative-margin breakout). */
+[data-section="media"]:is(
+	:has(> [data-rune="preview"]),
+	:has(> [data-rune="juxtapose"]),
+	:has(> .rf-showcase[data-displace]:not(.rf-showcase--in-bento-cell))
+) > * {
+	width: auto;
+	max-height: none;
+}
+
+/* ─── Collapse breakpoints — beside layouts drop to one column ─── */
+@media (max-width: 640px) {
+	:is([data-media-position="start"], [data-media-position="end"])[data-collapse="sm"],
+	:is([data-media-position="start"], [data-media-position="end"]):not([data-collapse]) {
+		grid-template-columns: 1fr;
+	}
+	:is([data-media-position="start"], [data-media-position="end"])[data-collapse="sm"] > *,
+	:is([data-media-position="start"], [data-media-position="end"]):not([data-collapse]) > * {
+		grid-column: auto;
+		grid-row: auto;
+	}
+}
+@media (max-width: 768px) {
+	:is([data-media-position="start"], [data-media-position="end"])[data-collapse="md"] {
+		grid-template-columns: 1fr;
+	}
+	:is([data-media-position="start"], [data-media-position="end"])[data-collapse="md"] > * {
+		grid-column: auto;
+		grid-row: auto;
+	}
+}
+@media (max-width: 1024px) {
+	:is([data-media-position="start"], [data-media-position="end"])[data-collapse="lg"] {
+		grid-template-columns: 1fr;
+	}
+	:is([data-media-position="start"], [data-media-position="end"])[data-collapse="lg"] > * {
+		grid-column: auto;
+		grid-row: auto;
+	}
+}
