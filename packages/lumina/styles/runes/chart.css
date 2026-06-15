@@ -1,3 +1,4 @@
+@layer skin {
 /* Chart */
 .rf-chart {
 	/* ─── Theming contract (SPEC-083 / WORK-353) ───
@@ -130,3 +131,5 @@
 .rf-chart__legend-color[data-series="3"] { background: var(--rf-chart-series-4); }
 .rf-chart__legend-color[data-series="4"] { background: var(--rf-chart-series-5); }
 .rf-chart__legend-color[data-series="5"] { background: var(--rf-chart-series-6); }
+
+}

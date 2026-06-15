@@ -1,3 +1,4 @@
+@layer skin {
 /* TextBlock */
 .rf-textblock__body {
 	display: block;
@@ -58,4 +59,6 @@
 	.rf-textblock[data-columns="4"] .rf-textblock__body {
 		column-count: 1;
 	}
+}
+
 }

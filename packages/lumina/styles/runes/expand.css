@@ -1,3 +1,4 @@
+@layer skin {
 /* Expand — inline-substitution of a registered entity (SPEC-066).
  *
  * The wrapper is intentionally minimal — the embedded rune (plan rune,
@@ -69,4 +70,6 @@
 	font-family: var(--rf-font-mono);
 	font-size: var(--rf-text-sm);
 	border-radius: 0 var(--rf-radius-sm) var(--rf-radius-sm) 0;
+}
+
 }

@@ -1,3 +1,4 @@
+@layer skin {
 /* Playlist */
 
 /* Thin-edge inset model (matches `.rf-card` / `.rf-recipe`): card outer padding
@@ -159,4 +160,6 @@
 	.rf-playlist__tracks [data-name="track-meta"] {
 		display: none;
 	}
+}
+
 }

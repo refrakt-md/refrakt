@@ -1,3 +1,4 @@
+@layer skin {
 /* Plot */
 .rf-plot {
 	display: flex;
@@ -114,4 +115,6 @@
 .rf-beat--abandoned::before {
 	background: var(--rf-color-muted);
 	box-shadow: 0 0 0 2px var(--rf-color-muted);
+}
+
 }

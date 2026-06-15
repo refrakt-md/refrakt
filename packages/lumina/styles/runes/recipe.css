@@ -1,3 +1,4 @@
+@layer skin {
 /* Recipe — editorial cookbook aesthetic */
 
 /* Thin-edge inset model (matches `.rf-card`): card outer padding is a thin edge,
@@ -160,3 +161,5 @@
 	}
 }
 
+
+}

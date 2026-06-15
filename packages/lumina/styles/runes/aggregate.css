@@ -1,3 +1,4 @@
+@layer skin {
 /* Aggregate — counts and per-group breakdowns from the registry (SPEC-076).
  *
  * Two modes share the same block class. The no-body inline form is a `<span>`
@@ -72,4 +73,6 @@
 }
 .rf-aggregate__group[data-block] > :last-child {
 	margin-bottom: 0;
+}
+
 }

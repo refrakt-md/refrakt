@@ -1,3 +1,4 @@
+@layer skin {
 /* Lore */
 .rf-lore {
 	position: relative;
@@ -41,4 +42,6 @@
 	color: var(--rf-color-muted);
 	cursor: pointer;
 	z-index: 1;
+}
+
 }

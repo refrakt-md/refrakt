@@ -1,3 +1,4 @@
+@layer skin {
 /* Conversation */
 .rf-conversation {
 	display: flex;
@@ -56,3 +57,5 @@
 .rf-conversation-message > meta[data-field] { display: none; }
 .rf-conversation-message__body > span[data-field],
 .rf-conversation-message__body > meta { display: none; }
+
+}

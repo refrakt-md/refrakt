@@ -1,3 +1,4 @@
+@layer skin {
 /* plan-progress (SPEC-076 / WORK-296) — a stack of per-type blocks, each a type
  * heading + an `aggregate` composition (progress bar + status badges). The bar
  * and badge-row chrome come from the `progress` / `aggregate` / `badge` runes;
@@ -19,4 +20,6 @@
 	text-transform: uppercase;
 	letter-spacing: var(--rf-tracking-wider);
 	color: var(--rf-color-muted);
+}
+
 }

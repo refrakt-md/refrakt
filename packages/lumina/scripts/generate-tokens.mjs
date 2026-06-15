@@ -61,9 +61,15 @@ export function renderTokenCss() {
 	// theme icon registry, after the value tokens. Light-only — masks are
 	// monochrome (tinted by `background-color`), so they need no dark variant.
 	const iconCss = iconMaskTokenCss(luminaConfig.icons);
+	// SPEC-094 §3 / WORK-438 — tokens are skin (design-token *values*). Emit them
+	// inside `@layer skin` so the whole theme is layered uniformly; otherwise the
+	// generated (unlayered) tokens would beat skin `:root` overrides (e.g. the
+	// surface radius aliases) regardless of source order.
+	const wrap = body => `@layer skin {\n${body}\n}\n`;
+	const baseBody = iconCss ? `${HEADER}\n${base}\n${iconCss}` : `${HEADER}\n${base}`;
 	return {
-		base: iconCss ? `${HEADER}\n${base}\n${iconCss}` : `${HEADER}\n${base}`,
-		dark: `${HEADER}\n${dark}`,
+		base: wrap(baseBody),
+		dark: wrap(`${HEADER}\n${dark}`),
 	};
 }
 

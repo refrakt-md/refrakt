@@ -1,3 +1,4 @@
+@layer skin {
 /* Sidenote */
 .rf-sidenote {
 	margin: 1rem 0;
@@ -26,3 +27,5 @@
 }
 .rf-sidenote__body p { margin: 0; }
 .rf-sidenote__body p + p { margin-top: 0.5rem; }
+
+}

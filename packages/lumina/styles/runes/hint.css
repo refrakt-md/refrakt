@@ -1,3 +1,4 @@
+@layer skin {
 /* Hint */
 .rf-hint {
 	--hint-color: var(--rf-color-info);
@@ -92,4 +93,6 @@
 	margin: var(--rf-spacing-snug) 0 0;
 	padding: var(--rf-spacing-sm) var(--rf-spacing-snug);
 	font-size: var(--rf-text-sm);
+}
+
 }

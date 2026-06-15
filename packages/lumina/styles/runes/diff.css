@@ -1,3 +1,4 @@
+@layer skin {
 /* Diff */
 .rf-diff {
 	border: 1px solid var(--rf-color-border);
@@ -151,4 +152,6 @@
 	 * box, so without this the flex item collapses below the parent's
 	 * min-height and rows visually drift in the split-mode grid. */
 	min-height: 1.6em;
+}
+
 }

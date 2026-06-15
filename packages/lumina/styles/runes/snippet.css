@@ -1,3 +1,4 @@
+@layer skin {
 /* Snippet — file embedded as a code block.
  *
  * The standalone form is a `<figure class="rf-snippet">` wrapping the
@@ -24,4 +25,6 @@
 	margin-inline-start: 0;
 	margin-inline-end: 0;
 	padding: 0;
+}
+
 }

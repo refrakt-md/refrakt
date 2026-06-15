@@ -1,3 +1,4 @@
+@layer skin {
 /* Badge rune — standalone inline chip.
  *
  * The universal chip primitive emitted by `{% badge %}` AND by every
@@ -20,4 +21,6 @@
 	padding: 0.125rem 0.5rem;
 	border-radius: var(--rf-radius-sm);
 	white-space: nowrap;
+}
+
 }

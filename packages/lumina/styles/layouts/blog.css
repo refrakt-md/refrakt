@@ -1,3 +1,4 @@
+@layer skin {
 /* Blog layout */
 
 /* The blog header chrome is taller (1.125rem padding + 2rem logo), so
@@ -289,4 +290,6 @@
 		border-top: 1px solid var(--rf-color-border);
 		padding-top: 1.5rem;
 	}
+}
+
 }

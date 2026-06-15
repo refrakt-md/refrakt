@@ -1,3 +1,4 @@
+@layer skin {
 /* Plan History — vertical timeline (mirrors .rf-timeline--vertical) */
 
 .rf-plan-history {
@@ -194,4 +195,6 @@ a.rf-plan-history__hash:hover {
 	.rf-plan-history__change {
 		flex-wrap: wrap;
 	}
+}
+
 }

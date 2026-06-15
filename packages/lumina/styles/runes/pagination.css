@@ -1,3 +1,4 @@
+@layer skin {
 /* Pagination — prev/next links at the foot of sequential pages.
  *
  * Each box stacks the directional marker above the label so the two
@@ -82,4 +83,6 @@
 		max-width: calc(50% - 0.25rem);
 		font-size: var(--rf-text-sm);
 	}
+}
+
 }

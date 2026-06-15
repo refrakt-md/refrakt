@@ -1,3 +1,4 @@
+@layer skin {
 /* Storyboard */
 .rf-storyboard__panels {
 	display: grid;
@@ -59,4 +60,6 @@
 }
 @media (max-width: 480px) {
 	.rf-storyboard__panels { grid-template-columns: 1fr !important; }
+}
+
 }

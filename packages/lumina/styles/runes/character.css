@@ -1,3 +1,4 @@
+@layer skin {
 /* Character — the title and the role/status def-list come from the shared
  * dimensions (sections + metadata); only the floated portrait avatar is
  * character-specific chrome. Unlike faction/realm, character is not a split
@@ -51,4 +52,6 @@
 .rf-character-section__body ul,
 .rf-character-section__body ol {
 	padding-left: 1.5rem;
+}
+
 }

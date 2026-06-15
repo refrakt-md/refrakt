@@ -1,3 +1,4 @@
+@layer skin {
 /* Table wrapper */
 .rf-table-wrapper {
 	overflow-x: auto;
@@ -33,4 +34,6 @@
 .rf-table-wrapper th code,
 .rf-table-wrapper td code {
 	font-size: 1em;
+}
+
 }

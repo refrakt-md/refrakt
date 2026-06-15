@@ -1,3 +1,4 @@
+@layer skin {
 /* === Checklist: universal checkbox item styling === */
 
 /* All checklist items get left padding for the indicator */
@@ -78,4 +79,6 @@
 	display: inline-block;
 	width: 1rem;
 	height: 1rem;
+}
+
 }

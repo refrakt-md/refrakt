@@ -1,3 +1,4 @@
+@layer skin {
 /* Blockquote */
 blockquote {
 	position: relative;
@@ -23,4 +24,6 @@ blockquote::before {
 }
 blockquote p:last-child {
 	margin-bottom: 0;
+}
+
 }

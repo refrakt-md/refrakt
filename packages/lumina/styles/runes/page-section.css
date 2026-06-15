@@ -1,3 +1,4 @@
+@layer skin {
 /* PageSection */
 .rf-page-section {
 	padding: 3rem 0;
@@ -18,4 +19,6 @@
 		grid-template-columns: 1fr;
 		gap: 1.5rem;
 	}
+}
+
 }

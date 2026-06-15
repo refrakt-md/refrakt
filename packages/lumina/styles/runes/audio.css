@@ -1,3 +1,4 @@
+@layer skin {
 /* Audio */
 .rf-audio rf-audio {
 	display: block;
@@ -188,4 +189,6 @@
 }
 .rf-track--active .rf-track__track-name {
 	color: var(--rf-color-primary);
+}
+
 }

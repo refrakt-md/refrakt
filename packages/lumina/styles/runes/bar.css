@@ -1,3 +1,4 @@
+@layer skin {
 /* Bar rune — composable handle for the SPEC-080 `bar` layout.
  *
  * Geometry comes from `[data-zone-layout="bar"]` in
@@ -7,4 +8,6 @@
 
 .rf-bar {
 	margin: 0.5rem 0;
+}
+
 }

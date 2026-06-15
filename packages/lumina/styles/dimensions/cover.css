@@ -1,3 +1,4 @@
+@layer skin {
 /* Cover layout (SPEC-089) — `media-position="cover"`.
  *
  * The media well fills the rune interior and the content overlays it (the poster
@@ -168,4 +169,6 @@
 	/* Muted text (the blurb) is barely legible over a photo, so on the overlay it
 	 * reads at full foreground strength — the same colour as the headline. */
 	--rf-color-muted: var(--rf-color-text);
+}
+
 }

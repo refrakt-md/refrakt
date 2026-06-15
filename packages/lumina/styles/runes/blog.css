@@ -1,3 +1,4 @@
+@layer skin {
 /* Blog — post listing with filtering and sorting */
 .rf-blog {
 	padding: 2rem 0;
@@ -91,4 +92,6 @@
 .rf-blog--compact .rf-blog__post time {
 	font-size: var(--rf-text-xs);
 	margin-bottom: 0.25rem;
+}
+
 }

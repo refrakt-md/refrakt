@@ -1,3 +1,4 @@
+@layer skin {
 /* Track */
 .rf-track {
 	display: flex;
@@ -125,4 +126,6 @@
 	.rf-track__track-meta {
 		display: none;
 	}
+}
+
 }

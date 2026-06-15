@@ -1,3 +1,4 @@
+@layer skin {
 /* Embed */
 .rf-embed {
 	margin: 0;
@@ -29,4 +30,6 @@
 }
 .rf-embed__fallback:empty {
 	display: none;
+}
+
 }

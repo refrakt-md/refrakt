@@ -1,3 +1,4 @@
+@layer skin {
 /* Background — Directive rune for background images, video, overlays, blur */
 
 /* Background layer — absolute positioned behind content. `border-radius:
@@ -85,4 +86,6 @@
 	-webkit-backdrop-filter: blur(var(--scrim-blur, 8px));
 	backdrop-filter: blur(var(--scrim-blur, 8px));
 	background: rgb(var(--scrim-color, 0 0 0) / 0.18);
+}
+
 }

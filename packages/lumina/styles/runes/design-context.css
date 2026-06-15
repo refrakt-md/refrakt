@@ -1,3 +1,4 @@
+@layer skin {
 /* Design Context — unified token card wrapper */
 .rf-design-context__title {
 	font-size: var(--rf-text-xl);
@@ -20,4 +21,6 @@
 	border: none;
 	border-radius: 0;
 	padding: 0;
+}
+
 }

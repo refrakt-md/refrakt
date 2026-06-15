@@ -1,3 +1,4 @@
+@layer skin {
 /* Preview — Component showcase with theme toggle and width control */
 .rf-preview {
 	margin: 2rem 0;
@@ -186,4 +187,6 @@
 	.rf-preview--in-feature .rf-preview__toolbar {
 		padding-inline: var(--rf-content-gutter, 1.5rem);
 	}
+}
+
 }

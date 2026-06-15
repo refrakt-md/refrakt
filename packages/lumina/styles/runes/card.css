@@ -1,3 +1,4 @@
+@layer skin {
 /* card — generic content card (SPEC-070).
  *
  * A soft surface fill plus a subtle border; the surface + border + structure
@@ -164,4 +165,6 @@
 .rf-card a:not(.rf-card__link) {
 	position: relative;
 	z-index: 1;
+}
+
 }

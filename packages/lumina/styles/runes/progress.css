@@ -1,3 +1,4 @@
+@layer skin {
 /* progress — generic completion bar (SPEC-072 / WORK-285).
  *
  * Presentational: the fill width is driven by the `--rf-progress` custom
@@ -47,3 +48,5 @@
 .rf-progress--positive .rf-progress__fill { background: var(--rf-color-success); }
 .rf-progress--caution .rf-progress__fill { background: var(--rf-color-warning); }
 .rf-progress--negative .rf-progress__fill { background: var(--rf-color-danger); }
+
+}

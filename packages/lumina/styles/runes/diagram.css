@@ -1,3 +1,4 @@
+@layer skin {
 /* Diagram */
 .rf-diagram {
 	display: block;
@@ -37,4 +38,6 @@
 .rf-diagram__container .marker {
 	fill: var(--rf-color-muted) !important;
 	stroke: var(--rf-color-muted) !important;
+}
+
 }

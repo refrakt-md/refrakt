@@ -1,3 +1,4 @@
+@layer skin {
 /* Section — a generic page section: an eyebrow/headline/blurb header above
    arbitrary body content. Header styling mirrors the shared page-section look
    (reveal/feature); the body is content-agnostic and full width. */
@@ -67,4 +68,6 @@
 	align-items: flex-end;
 	text-align: end;
 	margin-inline-start: auto;
+}
+
 }

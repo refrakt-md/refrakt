@@ -1,3 +1,4 @@
+@layer skin {
 /* Api */
 
 /* SPEC-080: the endpoint header is a projected `eyebrow` bar (method + path
@@ -23,4 +24,6 @@
 }
 .rf-api__body blockquote::before {
 	content: none;
+}
+
 }

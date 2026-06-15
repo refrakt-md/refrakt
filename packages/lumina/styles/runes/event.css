@@ -1,3 +1,4 @@
+@layer skin {
 /* Event */
 
 /* When/where def-list — geometry from the shared `[data-zone-layout=
@@ -36,4 +37,6 @@
 }
 .rf-event__body a:hover {
 	color: var(--rf-color-primary-hover);
+}
+
 }

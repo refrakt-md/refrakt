@@ -1,3 +1,4 @@
+@layer skin {
 /* Sandbox — Isolated HTML/CSS/JS rendering via iframe */
 .rf-sandbox {
 	border-radius: var(--rf-radius-md);
@@ -86,4 +87,6 @@
 .rf-sandbox__activate:focus-visible {
 	outline: 2px solid var(--rf-color-accent, #2563eb);
 	outline-offset: 2px;
+}
+
 }

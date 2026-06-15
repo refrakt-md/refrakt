@@ -1,3 +1,4 @@
+@layer skin {
 /* Spacing — spacing scale, radii, and shadow display */
 .rf-spacing__title {
 	font-size: var(--rf-text-lg);
@@ -104,4 +105,6 @@
 /* Context-aware: no outer margin when inside design-context */
 .rf-spacing--in-design-context {
 	margin: 0;
+}
+
 }

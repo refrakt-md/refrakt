@@ -1,3 +1,4 @@
+@layer skin {
 /* Relationships — an entity's graph edges, grouped by kind (SPEC-072).
  *
  * Generic over kind: the rune emits `data-kind` on each item and a humanized
@@ -129,4 +130,6 @@
 .rf-relationships__field {
 	font-size: 0.875em;
 	color: var(--rf-color-muted);
+}
+
 }

@@ -1,3 +1,4 @@
+@layer skin {
 /* Testimonial */
 .rf-testimonial {
 	border-radius: var(--rf-radius-lg);
@@ -46,4 +47,6 @@
 	border-radius: 50%;
 	object-fit: cover;
 	margin-top: 0.75rem;
+}
+
 }
