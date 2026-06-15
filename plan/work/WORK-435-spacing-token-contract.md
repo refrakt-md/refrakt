@@ -1,4 +1,4 @@
-{% work id="WORK-435" status="ready" priority="high" complexity="complex" source="SPEC-094" milestone="v0.23.0" tags="theme,tokens,spacing,css,skeleton-skin" %}
+{% work id="WORK-435" status="done" priority="high" complexity="complex" source="SPEC-094" milestone="v0.23.0" tags="theme,tokens,spacing,css,skeleton-skin" %}
 
 # Spacing token contract + Lumina refactor
 
@@ -21,9 +21,9 @@ restating structure. **The gate for the re-bucketing.**
 
 ## Acceptance Criteria
 
-- [ ] The token contract defines a spacing scale (+ needed facets) with typed `--rf-*` tokens, generated into Lumina's token CSS.
-- [ ] Lumina's hardcoded spacing magnitudes are refactored onto the tokens with no visual change (CSS-coverage + contracts green).
-- [ ] An audit confirms no stray hardcoded spacing remains in the slice the re-bucketing will touch first (card / hint / surfaces), and a documented residue list for the rest.
+- [x] The token contract defines a spacing scale (+ needed facets) with typed `--rf-*` tokens, generated into Lumina's token CSS.
+- [x] Lumina's hardcoded spacing magnitudes are refactored onto the tokens with no visual change (CSS-coverage + contracts green).
+- [x] An audit confirms no stray hardcoded spacing remains in the slice the re-bucketing will touch first (card / hint / surfaces), and a documented residue list for the rest.
 
 ## Dependencies
 
@@ -32,5 +32,21 @@ restating structure. **The gate for the re-bucketing.**
 ## References
 
 - {% ref "SPEC-094" /%} (Tier 1 tokens) · {% ref "WORK-410" /%} FINDINGS §1/§7 (the prerequisite) · `packages/types/src/token-contract.ts`.
+
+## Resolution
+
+Completed: 2026-06-15
+
+Branch: `claude/v023-batch1-foundations` (Batch 1). Approach per review: **densify + rationalize**, scoped to the **slice + residue list**.
+
+### What was done
+- Densified the spacing scale: added `snug` (0.75rem) + `cozy` (1rem) to the token contract (`packages/types/src/token-contract.ts`) and Lumina (`packages/lumina/src/tokens.ts`), filling the empty `sm`(0.5)→`md`(1.5) component-padding band. Generated → `--rf-spacing-snug` / `--rf-spacing-cozy`.
+- Tokenized the slice (`card.css`, `hint.css`, `surfaces.css`) onto the scale, rationalizing hand-tuned values (0.375→xs, 0.625→sm, 0.875→snug, 1.25→cozy; exact for 0.5/0.75/1/1.5). Nudges ≤4px (mostly ≤2px). No stray spacing literals remain in the slice.
+- Residue inventory written to `spike/skeleton-skin/spacing-residue.md` for WORK-438: **~726 literals across 93 files**, with the rationalization map + heaviest offenders (nav 50, blog 33, …). WORK-438 folds spacing tokenization into each file's re-bucketing pass.
+
+### Notes
+- The rationalization is a deliberate sub-2px-to-4px nudge (review-approved), **not** strictly pixel-identical, and is not verifiable here — the WORK-409 harness needs a browser. Confirm via capture-then-compare when a browser env is available.
+- css-coverage (176) + the full transform/lumina suites (778) green.
+- Non-spacing literals (icon glyph sizes, font-size/line-height) left as-is — typography is a separate token concern.
 
 {% /work %}

@@ -279,6 +279,19 @@ export interface RuneConfig {
 	 *  or automatically by rendering context (grid → compact, list → minimal). */
 	defaultDensity?: 'full' | 'compact' | 'minimal';
 
+	/** Default surface elevation — the chrome/depth axis (SPEC-107). An ordered
+	 *  ladder from recessed through on-plane to lifted; surface *presence* is the
+	 *  low end. The engine emits `data-elevation`; the skin maps each rung to a
+	 *  chrome bundle (fill/border/radius/shadow). Author `elevation=` and the
+	 *  region/context cascade override. Supersedes the static surface groups. */
+	defaultElevation?: 'sunken' | 'flush' | 'flat' | 'raised' | 'floating' | 'overlay';
+
+	/** Default header prominence (SPEC-107) — only meaningful on runes with a
+	 *  page-section header (the `sections` preamble/title/description cluster).
+	 *  The engine emits `data-prominence`; the skin maps it to a type register.
+	 *  Author `prominence=` overrides. */
+	defaultProminence?: 'quiet' | 'normal' | 'prominent' | 'display';
+
 	/** Maps structural ref names to standard section roles.
 	 *  The identity transform emits `data-section` on elements whose
 	 *  `data-name` matches a key in this map, enabling generic theme styling.

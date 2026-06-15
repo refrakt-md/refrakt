@@ -22,7 +22,7 @@
    so they sit flush with the surrounding header/footer container. */
 
 [data-rune]:not([data-rune] [data-rune]):not(:where([data-layout="menubar"], [data-layout="columns"])) {
-	margin: 1.5rem 0;
+	margin: var(--rf-spacing-md) 0;
 }
 
 /* ─── Card: elevated container ────────────────────────────────────── */
