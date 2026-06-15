@@ -1,0 +1,25 @@
+/* @refrakt-md/skeleton — the cascade-layer contract every refrakt theme builds on.
+ *
+ * This single line is the keystone of the skeleton/skin split (SPEC-094 §3): it
+ * declares the layer order up front, so once it loads first, layer *contents* may
+ * arrive in any source order or from any package and a theme's `@layer skin` still
+ * wins where it overlaps `@layer skeleton` — with ordinary single-class/attribute
+ * selectors and zero `!important`. The SvelteKit loader's only obligation is to
+ * import this entry before any layer content (WORK-436 / WORK-410 §3).
+ *
+ * The `skeleton` layer is the framework-agnostic *structure* layer: the rules a
+ * rune breaks without — `display` / `grid-*` / `flex-*` / `position` / `inset` /
+ * `z-index` / `overflow`, gap and margin resets, the media↔content split geometry,
+ * the stretched-link mechanism. It references design tokens by name
+ * (`var(--rune-padding)`) but never sets their values, colour, border, radius,
+ * shadow, or font — those are skin. The per-rune re-bucketing that fills this
+ * layer lands in WORK-438; until then it is intentionally empty and themes ship
+ * their structure unlayered (which wins over an empty skeleton, so output is
+ * unchanged). */
+@layer skeleton, skin;
+
+@layer skeleton {
+	/* Filled by the per-file re-bucketing (WORK-438). Intentionally empty here —
+	 * WORK-436 stands up the layer order, the package, and the loader wiring; the
+	 * structural declarations move in during the re-bucketing pass. */
+}

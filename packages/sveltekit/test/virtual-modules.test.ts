@@ -69,6 +69,32 @@ describe('loadVirtualModule', () => {
 		expect(result).toContain("import 'virtual:refrakt/site-tokens.css';");
 	});
 
+	// WORK-436 / SPEC-094 §3 — the `@layer skeleton, skin;` order declaration must
+	// be emitted before any layer content; importing the skeleton entry first
+	// guarantees it loader-agnostically. The skeleton import must precede the
+	// theme CSS in both dev and build modes.
+	it('imports @refrakt-md/skeleton before the theme CSS (dev mode)', () => {
+		const result = loadVirtualModule('\0virtual:refrakt/tokens', config)!;
+		const skeletonAt = result.indexOf("import '@refrakt-md/skeleton';");
+		const themeAt = result.indexOf("import '@refrakt-md/lumina';");
+		expect(skeletonAt).toBeGreaterThanOrEqual(0);
+		expect(themeAt).toBeGreaterThan(skeletonAt);
+	});
+
+	it('imports @refrakt-md/skeleton before any tree-shaken theme CSS (build mode)', () => {
+		const result = loadVirtualModule('\0virtual:refrakt/tokens', config, {
+			isBuild: true,
+			resolvedRoot: '',
+			usedCssBlocks: new Set(['card', 'hint']),
+		})!;
+		const skeletonAt = result.indexOf("import '@refrakt-md/skeleton';");
+		const baseAt = result.indexOf("import '@refrakt-md/lumina/base.css';");
+		const runeAt = result.indexOf("import '@refrakt-md/lumina/styles/runes/card.css';");
+		expect(skeletonAt).toBeGreaterThanOrEqual(0);
+		expect(baseAt).toBeGreaterThan(skeletonAt);
+		expect(runeAt).toBeGreaterThan(skeletonAt);
+	});
+
 	it('generates config export', () => {
 		const result = loadVirtualModule('\0virtual:refrakt/config', config);
 		expect(result).toContain('export default');

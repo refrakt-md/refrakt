@@ -1,5 +1,12 @@
 /* Lumina Theme Identity — CSS Barrel */
 
+/* Cascade-layer contract — must load first so the `@layer skeleton, skin;` order
+ * declaration is emitted before any layer content (SPEC-094 §3 / WORK-436).
+ * Lumina's own CSS below is currently unlayered, which keeps it winning over the
+ * (empty) skeleton layer — the per-file `@layer skin` re-bucketing lands in
+ * WORK-438. */
+@import '@refrakt-md/skeleton';
+
 /* Design Tokens */
 @import './tokens/base.css';
 @import './tokens/dark.css';
