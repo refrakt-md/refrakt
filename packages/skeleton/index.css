@@ -18,9 +18,14 @@
 @layer skeleton, skin;
 
 /* Structure is promoted out of Lumina's @layer skin into @layer skeleton group by
- * group (WORK-438, Phase 2). Foundation loads first (lowest-specificity base
- * element rules), then dimensions, then per-rune structure — so higher-specificity
- * rune resets can cancel the base rhythm within the same layer. */
+ * group (WORK-438, Phase 2), strictly bottom-up: the base layers first (global),
+ * then the dimension/layout layers, and only then the runes — because a rune's
+ * structural margins/gaps deliberately override the dimension and layout rules by
+ * source order, and that win only survives the layer split once those layers are
+ * also in @layer skeleton. (A skin rule beats any skeleton rule regardless of
+ * specificity, so promoting a rune ahead of the dimension it overrides hands the
+ * win to the still-skin dimension — e.g. sections.css `[data-section="header"]
+ * { margin-bottom: 3rem }` would beat a rune header's tighter margin.) */
 
 /* ── Foundation ── */
 @import './styles/global.css' layer(skeleton);
@@ -28,7 +33,3 @@
 /* ── Dimension structure ── */
 @import './styles/dimensions/state.css' layer(skeleton);
 @import './styles/dimensions/media.css' layer(skeleton);
-
-/* ── Rune structure ── */
-@import './styles/runes/card.css' layer(skeleton);
-@import './styles/runes/hint.css' layer(skeleton);
