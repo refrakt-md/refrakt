@@ -1,4 +1,4 @@
-{% work id="WORK-417" status="ready" priority="high" complexity="complex" source="SPEC-103" tags="runes,data,csv,json,pipeline,preprocess,chart,datatable" milestone="v0.22.0" %}
+{% work id="WORK-417" status="ready" priority="high" complexity="complex" source="SPEC-103" tags="runes,data,csv,json,pipeline,preprocess,chart,datatable" %}
 
 # `data` rune preprocessor + CSV/JSON adapters
 
