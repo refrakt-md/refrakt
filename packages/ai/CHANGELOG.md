@@ -1,5 +1,11 @@
 # @refrakt-md/ai
 
+## 0.22.0
+
+### Minor Changes
+
+- f27a573: **AI `write` mode draws fixtures as few-shot exemplars** (SPEC-102) — the write-mode prompt's hardcoded "Example structure" stub is replaced by the fixture corpus: fixtures explicitly tagged `role: canonical`/`rich` (with their authoring `notes`) are surfaced as in-context exemplars, so generated content reflects idiomatic, well-formed rune usage. The set grows automatically as the corpus is annotated. Prompt-time retrieval only — no training or fine-tuning pipeline.
+
 ## 0.21.0
 
 ## 0.20.2

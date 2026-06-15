@@ -1,5 +1,17 @@
 # @refrakt-md/marketing
 
+## 0.22.0
+
+### Patch Changes
+
+- Updated dependencies [f27a573]
+- Updated dependencies [f27a573]
+- Updated dependencies [f27a573]
+- Updated dependencies [f27a573]
+  - @refrakt-md/runes@0.22.0
+  - @refrakt-md/types@0.22.0
+  - @refrakt-md/transform@0.22.0
+
 ## 0.21.0
 
 ### Minor Changes
