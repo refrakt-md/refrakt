@@ -6,17 +6,13 @@
 
 .rf-card {
 	position: relative; /* anchor for the stretched link */
-	/* Thin-edge inset model (matches bento-cell): card hugs its media with a
-	 * small edge; the content zone adds the remaining inset back below. */
-	--rf-card-edge: var(--rf-spacing-sm);
-	--rf-card-media-gap: var(--rf-spacing-lg);
-	--rf-card-split-gap: var(--rf-spacing-sm);
-	padding: var(--rf-card-edge);
 	overflow: hidden; /* clip non-media layers to the rounded box */
 }
 
 /* Content zone fills the remaining inset so total text padding still equals
- * --rune-padding; max(0, …) keeps tight densities (rune-padding < edge) safe. */
+ * --rune-padding; max(0, …) keeps tight densities (rune-padding < edge) safe.
+ * --rf-card-edge is defined alongside the root padding in Lumina's skin (it
+ * competes with the surface-elevation padding, which is also skin). */
 .rf-card__content {
 	padding: max(0px, calc(var(--rune-padding, var(--rf-spacing-md)) - var(--rf-card-edge)));
 }
