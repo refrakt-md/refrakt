@@ -1,0 +1,80 @@
+/* ─────────────────────────────────────────────────────────────────────────
+ * SKIN — Lumina, WORK-410 spike slice
+ *
+ * Cut-line rule: a declaration is SKIN when a different theme would plausibly
+ * want it different and the rune does NOT break without it — colour, border
+ * style/presence, radius, shadow, fill, and the *values* of spacing/type
+ * tokens. Skin lives in `@layer skin`, which is ordered AFTER skeleton, so
+ * every rule here can stay low-specificity (single class / attribute) and
+ * still win over skeleton where they touch the same property. No `!important`.
+ *
+ * Surface treatment is keyed off `[data-elevation]` — a preview of SPEC-107.
+ * Today surfaces.css enumerates 49 rune-name selectors across 4 buckets; under
+ * SPEC-107/WORK-423 the engine emits `data-elevation` from per-rune config and
+ * these four rules replace the whole list. The demo sets the attribute by hand.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+@layer skin {
+	:root {
+		--rf-radius-container: var(--rf-radius-lg);
+		--rf-radius-media: var(--rf-radius-md);
+	}
+
+	/* ── Surface treatment by elevation (replaces the rune-name buckets) ── */
+	[data-elevation="raised"],
+	[data-elevation="flat"] {
+		background: var(--rf-color-surface);
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-container);
+		padding: var(--rune-padding, var(--rf-spacing-md));
+	}
+	[data-elevation="raised"] { box-shadow: var(--rf-shadow-sm, 0 1px 3px rgb(0 0 0 / 0.08)); }
+	[data-elevation="sunken"] {
+		background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift, 0.03)) c h);
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-container);
+		padding: var(--rune-padding, var(--rf-spacing-md));
+	}
+	[data-elevation="flush"] { padding-block: var(--rune-padding, var(--rf-spacing-sm)); }
+	/* media wells share the surface border + recessed fill */
+	[data-elevation="raised"] [data-section="media"],
+	[data-elevation="flat"] [data-section="media"] {
+		border: 1px solid var(--rf-color-border);
+		background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift, 0.03)) c h);
+	}
+
+	/* ── card: aesthetics ── */
+	.rf-card:has(.rf-card__link):hover { background: var(--rf-color-surface-hover); }
+	.rf-card__eyebrow {
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-semibold);
+		letter-spacing: var(--rf-tracking-wider);
+		text-transform: uppercase;
+		color: var(--rf-color-primary);
+	}
+	.rf-card__footer {
+		border-top: 1px solid var(--rf-color-border);
+		font-size: 0.8125em;
+		color: var(--rf-color-muted);
+	}
+
+	/* ── hint: aesthetics ── */
+	.rf-hint {
+		--hint-color: var(--rf-color-info);
+		background: var(--rf-color-surface);
+		border-radius: var(--rf-radius-md);
+	}
+	.rf-hint--note    { --hint-color: var(--rf-color-info); }
+	.rf-hint--warning { --hint-color: var(--rf-color-warning); }
+	.rf-hint--caution { --hint-color: var(--rf-color-danger); }
+	.rf-hint--check   { --hint-color: var(--rf-color-success); }
+	.rf-hint__header { color: var(--hint-color); }
+	.rf-hint__header [data-icon-group="hint"]::before { background-color: var(--hint-color); }
+	.rf-hint__header [data-meta-value] {
+		font-weight: var(--rf-weight-semibold);
+		text-transform: capitalize;
+		font-size: var(--rf-text-xs);
+		letter-spacing: var(--rf-tracking-wide);
+	}
+	.rf-hint__body { font-size: var(--rf-text-sm); line-height: var(--rf-leading-relaxed); }
+}
