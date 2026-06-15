@@ -43,7 +43,11 @@ const universalAttributes: Record<string, SchemaAttribute> = {
   'width': { type: String, required: false, matches: ['compact', 'narrow', 'content', 'wide', 'full'], description: 'Maximum width constraint for this block' },
   'spacing': { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'], description: 'Vertical spacing above and below this block' },
   'inset': { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'], description: 'Inner padding of this block' },
-  'elevation': { type: String, required: false, matches: ['none', 'sm', 'md', 'lg'], description: 'Drop shadow (box-shadow) elevation for this block' },
+  // SPEC-107 — `elevation` is a depth ladder. The legacy shadow-scale values
+  // (none/sm/md/lg) stay in `matches` so authored content still validates during
+  // the deprecation window; the engine maps them onto the ladder with a warning.
+  'elevation': { type: String, required: false, matches: ['sunken', 'flush', 'flat', 'raised', 'floating', 'overlay', 'none', 'sm', 'md', 'lg'], description: 'Surface depth on the SPEC-107 ladder (sunken→overlay); none/sm/md/lg are deprecated aliases' },
+  'prominence': { type: String, required: false, matches: ['quiet', 'normal', 'prominent', 'display'], description: 'Section-header emphasis (only on page-section-header family runes)' },
   // SPEC-086 — frame: media-surface chrome preset + inline facet overrides.
   'frame': { type: String, required: false, description: 'Named frame preset presenting this block\'s media surface' },
   'frame-aspect': { type: String, required: false, description: 'Aspect ratio of the framed media, e.g. "16/9"' },
@@ -349,12 +353,13 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
       };
       const output = injectBgMetasFrom(injectTintMetasFrom(result, tintBgCtx), tintBgCtx);
 
-      // Forward universal layout attributes
+      // Forward universal layout/surface attributes
       if (Markdoc.Tag.isTag(output)) {
         if (attrs.width) output.attributes.width = attrs.width;
         if (attrs.spacing) output.attributes.spacing = attrs.spacing;
         if (attrs.inset) output.attributes.inset = attrs.inset;
         if (attrs.elevation) output.attributes.elevation = attrs.elevation;
+        if (attrs.prominence) output.attributes.prominence = attrs.prominence;
       }
 
       return injectBgFacetMetas(injectSubstrateMetas(injectFrameMetas(output, attrs), attrs), attrs);

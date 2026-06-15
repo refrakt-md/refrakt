@@ -165,7 +165,7 @@ function gapMarker(rune: string): string {
  *  semantic variants. Matched by exact name or these prefixes. */
 const UNIVERSAL_AXIS_PREFIXES = ['bg', 'substrate', 'frame', 'scrim', 'tint'];
 const UNIVERSAL_AXES = new Set([
-	'width', 'spacing', 'inset', 'elevation', 'density',
+	'width', 'spacing', 'inset', 'elevation', 'prominence', 'density',
 	'cover', 'media-position', 'posture', 'guest-posture',
 ]);
 

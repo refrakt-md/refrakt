@@ -26,6 +26,8 @@ if (!command || command === '--help' || command === '-h') {
 	runPluginsCommand(args.slice(1));
 } else if (command === 'config') {
 	runConfigCommand(args.slice(1));
+} else if (command === 'migrate') {
+	runMigrateCommand(args.slice(1));
 } else if (command === 'extract') {
 	// Deprecated: extract has moved to the docs plugin
 	console.error('Warning: `refrakt extract` is deprecated. Use `refrakt docs extract` instead.\n');
@@ -59,6 +61,7 @@ Commands:
   reference <subcommand>  Emit rune syntax reference for authors and AI agents
   plugins <subcommand> Manage installed plugins (list, validate)
   config <subcommand>  Manage refrakt.config.json (migrate)
+  migrate <codemod>    Run a content codemod (elevation)
 
 Write Options:
   --output, -o <path>      Write output to a single file
@@ -165,6 +168,7 @@ import { discoverPlugins, type DiscoveredPlugin } from './lib/plugins.js';
 import { closestMatch } from './lib/levenshtein.js';
 import { runPluginsCommand, appendPluginsToHelp } from './commands/plugins.js';
 import { runConfigCommand } from './commands/config.js';
+import { runMigrateCommand } from './commands/migrate.js';
 
 /** Cached discovery for the lifetime of the CLI invocation. Implemented as a
  *  function declaration with a property cache so the symbol is fully hoisted —

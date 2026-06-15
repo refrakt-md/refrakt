@@ -151,11 +151,11 @@ Footer note.          <!-- footer -->
 
 A bento cell exposes the same two surfaces as `card` ([surface model](/runes/surfaces)): `elevation` floats the cell box (`box-shadow`), and `frame` chrome decorates the cell's media zone (aspect, crop anchor, silhouette shadow, oversize). `frame-aspect` and `frame-anchor` feed bento's existing media knobs (`--bento-media-aspect` / `--bento-media-anchor`) rather than a parallel mechanism.
 
-Because heading-sugar cells have no per-cell attribute surface, **grid-level `frame`** (preset + facets) **and `elevation`** on the `bento` cascade to every cell as a default — mirroring `media-position`; a cell's own value still wins. The grid never takes this chrome itself (the cells are the visual cards) — so `{% bento elevation="md" %}` lifts each cell, not the grid box.
+Because heading-sugar cells have no per-cell attribute surface, **grid-level `frame`** (preset + facets) **and `elevation`** on the `bento` cascade to every cell as a default — mirroring `media-position`; a cell's own value still wins. The grid never takes this chrome itself (the cells are the visual cards) — so `{% bento elevation="raised" %}` lifts each cell, not the grid box.
 
 {% preview source=true %}
 
-{% bento columns=6 elevation="sm" frame-aspect="16/9" frame-anchor="center" %}
+{% bento columns=6 elevation="raised" frame-aspect="16/9" frame-anchor="center" %}
 # Coral reef
 ![A coral reef](https://assets.refrakt.md/figure-coral-reef.jpg)
 ---

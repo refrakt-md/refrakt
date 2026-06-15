@@ -9,58 +9,88 @@ Every block rune exposes one or two decorable **surfaces**, and a small, univers
 
 | Attribute | Surface | What it does |
 |-----------|---------|--------------|
-| `elevation` | self | a `box-shadow` that floats the box |
+| `elevation` | self | the depth of the box — recessed, flat, or lifted on a shadow |
+| `prominence` | self | the weight of a section header — quiet up to display size |
+| `width` | layout | how wide the rune sits in the page — contained to full-bleed |
 | `frame` / `frame-*` | media | present the media — aspect, crop, silhouette shadow, displacement |
 | `substrate` / `substrate-*` | self (default) | a generated pattern (dots, grid, …) |
 | `tint` | colour | recolour the surface (see [tint](/runes/tint)) |
 | `bg` | image | an image/video layer behind content (see [bg](/runes/bg)) |
 
-The page walks the model along its four axes:
+The page walks the model along its four editorial axes:
 
-- **Chrome** — the shadows and framing that lift a surface off the page.
+- **Chrome** — the depth, header weight, and framing that shape a surface.
 - **Fills** — the colour, pattern, and gradient layers that paint it.
 - **Cover** — the poster layout, where content overlays the media.
 - **Posture** — how a clickable surface treats the guests inside it.
 
 Everything here is one or two attributes on an ordinary rune. Nothing is a bespoke component.
 
-## Chrome — shadow and frame
+## Chrome — the surface axes and the frame
 
-A surface decorates on two layers. The **self** layer is the whole tile — `elevation` lifts it as a box shadow. The **media** layer is the framed image inside — `frame-*` attributes shape it (`frame-aspect`), anchor the crop (`frame-anchor`), displace it past the slot (`frame-displace`), and shadow it (`frame-shadow`). `elevation` and `frame-shadow` are the same physical property (a shadow) on different surfaces, so they carry two names and never collide:
+Three independent axes shape a rune's **self** surface, and one set of facets shapes its **media**. Two of the three — `elevation` and `prominence` — are *surface* axes: they change how the box itself reads. The third, `width`, is a *layout* axis: it changes how wide the box sits in the page. All three compose freely, so the same content rune reads as a contained card *or* a full-bleed hero with no rune fork — `{% recipe elevation="flush" width="full" prominence="display" %}` (see [the worked example](#card-vs-hero) below).
+
+### `elevation` — the depth ladder
+
+`elevation` is a depth ladder, from recessed to lifted:
+
+| Rung | Surface |
+|------|---------|
+| `sunken` | recessed — a darker, inset fill (charts, diagrams) |
+| `flush` | no boundary — sits flat on the page (hints, nav, banners) |
+| `flat` | a bordered surface, no shadow — the card baseline |
+| `raised` | `flat` plus a small resting shadow |
+| `floating` | a larger lift |
+| `overlay` | the highest z-height (menus, popovers) |
+
+Each rune ships a sensible default — a `card` is `flat`, a `hint` is `flush`, a `chart` is `sunken` — so you only set `elevation` to deviate.
 
 {% preview source=true %}
 
-{% card elevation="lg" %}
-### `elevation="lg"`
-A box shadow on the card's **self** surface — the whole tile floats.
+{% card elevation="flat" %}
+### `flat`
+A bordered surface, no shadow — the default card.
 {% /card %}
 
-{% figure frame-aspect="16/9" caption="`frame-aspect` sets the framed media's shape; the image fills it via `object-fit: cover`." %}
-![A framed image](https://picsum.photos/seed/gallerysilhouette/800/450)
-{% /figure %}
+{% card elevation="raised" %}
+### `raised`
+Lifted on a small resting shadow.
+{% /card %}
+
+{% card elevation="floating" %}
+### `floating`
+A clear float — higher z-height.
+{% /card %}
 
 {% /preview %}
 
-`elevation` runs a named scale — `none | sm | md | lg` — on every block rune. `elevation="none"` flattens a rune's default shadow.
+> The old `elevation="none|sm|md|lg"` shadow scale is superseded. The deprecated values still resolve — `none`→`flat`, `sm`/`md`→`raised`, `lg`→`floating` — with a build warning; run `refrakt migrate elevation <path>` to update authored content. The codemod touches the `elevation` attribute only: `frame-shadow` reuses the identical `none/sm/md/lg` values on the media surface and is left untouched.
+
+### `prominence` — the section-header family
+
+`prominence` scales the weight of a rune's **section header** — its title type size — without touching the rest of the surface. It applies only to runes that carry a page-section header (a title/preamble), running `quiet → normal → prominent → display`. `normal` is the rune's density default; the steps re-point the title size up or down:
 
 {% preview source=true %}
 
-{% card elevation="sm" %}
-### `sm`
-Barely lifted.
-{% /card %}
+{% section prominence="quiet" %}
+## Quiet
+A smaller title — recedes into a dense list.
+{% /section %}
 
-{% card elevation="md" %}
-### `md`
-A clear float.
-{% /card %}
-
-{% card elevation="lg" %}
-### `lg`
-Highest z-height.
-{% /card %}
+{% section prominence="display" %}
+## Display
+A hero-scale title.
+{% /section %}
 
 {% /preview %}
+
+### `width` — the layout axis
+
+`width` is not a surface treatment — it sets how wide the rune sits in the page measure: `compact | narrow | (default) | wide | full`. Because it is a *layout* axis, it composes with any `elevation`: a `flush` rune at `width="full"` becomes an edge-to-edge band, while a `flat` card at `width="wide"` breaks gently out of the text column.
+
+### `frame` — the media surface
+
+`elevation` and `frame-shadow` are the same physical property (a shadow) on different surfaces, so they carry two names and never collide: `elevation` lifts the **self** surface (the whole tile); `frame-shadow` traces the **media** guest's silhouette.
 
 `frame` decorates the **media** surface. Apply a named preset (`frame="screenshot"`) or set facets inline — they also work without a preset.
 
@@ -78,7 +108,7 @@ On a `figure` or `showcase` the frame lands on the rune itself; on a `card` or `
 
 {% preview source=true %}
 
-{% card elevation="md" frame-aspect="16/9" frame-anchor="top" %}
+{% card elevation="raised" frame-aspect="16/9" frame-anchor="top" %}
 ![Framed, top-anchored crop](https://picsum.photos/seed/galleryframe/800/600)
 ---
 ### Framed media
@@ -95,6 +125,60 @@ On a `figure` or `showcase` the frame lands on the rune itself; on a `card` or `
 {% /preview %}
 
 Whether a displaced or oversized guest spills out or is cropped into a peek is decided by the **host**, not the guest — see [host-owned clip](/extend/theme-authoring/surfaces#host-owned-clip).
+
+## Card vs hero
+
+The axes earn their keep when one content rune does two jobs. A `recipe` is a bordered card by default — `elevation="flat"` (its config default), contained width, a density-sized title:
+
+{% preview source=true %}
+
+{% recipe prepTime="PT5M" servings=1 difficulty="easy" %}
+![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
+
+---
+
+A cocktail classic
+
+## Tequila Sunrise
+
+A layered showstopper that runs from deep orange to golden yellow.
+
+- 60ml tequila
+- 120ml fresh orange juice
+- 15ml grenadine
+
+1. Fill a tall glass with ice; pour in tequila and orange juice.
+2. Pour grenadine over the back of a spoon so it sinks.
+{% /recipe %}
+
+{% /preview %}
+
+Set three attributes and the *same* recipe becomes a full-bleed hero — `elevation="flush"` drops the card chrome, `width="full"` takes it edge-to-edge, `prominence="display"` scales the title up. No rune fork, no duplicated content — the switch is composition, not configuration:
+
+{% preview source=true %}
+
+{% recipe prepTime="PT5M" servings=1 difficulty="easy" elevation="flush" width="full" prominence="display" %}
+![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
+
+---
+
+A cocktail classic
+
+## Tequila Sunrise
+
+A layered showstopper that runs from deep orange to golden yellow.
+
+- 60ml tequila
+- 120ml fresh orange juice
+- 15ml grenadine
+
+1. Fill a tall glass with ice; pour in tequila and orange juice.
+2. Pour grenadine over the back of a spoon so it sinks.
+{% /recipe %}
+
+{% /preview %}
+
+The same three attributes turn any page-section-header rune into a hero — a `playlist`, a `howto`, a `section`. For a poster layout where the content overlays the image instead of stacking below it, reach for [cover mode](#cover--the-poster-layout) below.
 
 ## Fills — colour, pattern, gradient
 

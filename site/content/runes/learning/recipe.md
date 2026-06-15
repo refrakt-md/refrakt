@@ -110,3 +110,32 @@ A layered showstopper that transitions from deep orange to golden yellow — lik
 {% /preview %}
 
 The cover scrim, `content-place` anchor, and `scrim-type="frost"` work exactly as on [`card`](/runes/card#cover-mode) — here the frosted band reads behind the title while the metadata and method below stay on the normal surface. Only the overlaid header flips to a light foreground; the body keeps the page palette.
+
+## Card vs hero
+
+A recipe is a bordered card by default. The same recipe becomes a full-bleed hero by composing the three surface axes — `elevation="flush"` drops the card chrome, `width="full"` takes it edge-to-edge, and `prominence="display"` scales the title up — with no rune fork:
+
+{% preview source=true %}
+
+{% recipe prepTime="PT5M" servings=1 difficulty="easy" elevation="flush" width="full" prominence="display" %}
+![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
+
+---
+
+A cocktail classic
+
+## Tequila Sunrise
+
+A layered showstopper that runs from deep orange to golden yellow.
+
+- 60ml tequila
+- 120ml fresh orange juice
+- 15ml grenadine
+
+1. Fill a tall glass with ice; pour in tequila and orange juice.
+2. Pour grenadine over the back of a spoon so it sinks.
+{% /recipe %}
+
+{% /preview %}
+
+This differs from [cover mode](#cover-mode) above: cover overlays the title *on* the image (a poster), while the hero stacks a display-size title above an edge-to-edge image. Both are one-line switches on the same content. See [Surfaces → Card vs hero](/runes/surfaces#card-vs-hero) for the full axis reference.
