@@ -1,7 +1,10 @@
-/* ─── Surface Assignments ──────────────────────────────────────────────
- * Groups runes into 4 surface types: card, inline, banner, inset.
- * Each surface defines container treatment (background, padding, radius).
- * Padding scales with density via --rune-padding custom property.
+/* ─── Surface Assignments (SPEC-107) ───────────────────────────────────
+ * Surface chrome is selected by the `data-elevation` depth-ladder axis, not by
+ * rune name. Each rung maps to a chrome bundle (fill / border / radius /
+ * padding / resting shadow); `data-prominence` maps the page-section-header
+ * family to a title type register. Per-rune defaults (`defaultElevation` /
+ * `defaultProminence`) live in each rune's config, so today's appearance is
+ * preserved while a theme can re-point any rune to a different rung.
  * ────────────────────────────────────────────────────────────────────── */
 
 /* Semantic surface/media aliases over the raw token scale (these reference
@@ -25,133 +28,87 @@
 	margin: var(--rf-spacing-md) 0;
 }
 
-/* ─── Card: elevated container ────────────────────────────────────── */
+/* ─── Elevation: depth-ladder chrome ──────────────────────────────────
+ * `flat` and the shadow rungs (`raised` / `floating` / `overlay`) carry a
+ * surface: fill, border, radius, and container padding. `sunken` adds the same
+ * chrome but recesses its fill below the page. `flush` has no surface boundary
+ * — it only reserves vertical rhythm. The shadow rungs layer a *resting*
+ * box-shadow on top of the flat chrome (kept distinct from `frame-shadow`'s
+ * per-guest drop-shadow, SPEC-107 §1). */
 
-.rf-recipe,
-.rf-character,
-.rf-testimonial,
-.rf-event,
-.rf-realm,
-.rf-faction,
-.rf-lore,
-.rf-plot,
-.rf-bond,
-.rf-playlist,
-.rf-track,
-.rf-budget,
-.rf-organization,
-.rf-timeline,
-.rf-swatch,
-.rf-palette,
-.rf-typography,
-.rf-spacing,
-.rf-design-context,
-.rf-itinerary,
-.rf-symbol,
-.rf-changelog,
-.rf-api,
-.rf-howto,
-.rf-form {
+[data-elevation="flat"],
+[data-elevation="sunken"],
+[data-elevation="raised"],
+[data-elevation="floating"],
+[data-elevation="overlay"] {
 	background: var(--rf-color-surface);
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-container);
 	padding: var(--rune-padding, var(--rf-spacing-md));
 }
 
-/* ─── Inline: no visual boundary ──────────────────────────────────── */
-
-.rf-hint,
-.rf-details,
-.rf-sidenote,
-.rf-conversation,
-.rf-annotate,
-.rf-xref,
-.rf-pullquote,
-.rf-textblock,
-.rf-nav,
-.rf-breadcrumb,
-.rf-toc,
-.rf-datatable {
-	padding: var(--rune-padding, var(--rf-spacing-sm)) 0;
-}
-
-/* ─── Banner: full-width strip ────────────────────────────────────── */
-
-.rf-hero,
-.rf-cta,
-.rf-feature,
-.rf-steps,
-.rf-bento,
-.rf-storyboard,
-.rf-map {
-	padding: var(--rune-padding, var(--rf-spacing-xl)) 0;
-}
-
-/* ─── Inset: recessed container ───────────────────────────────────── */
-
-.rf-codegroup,
-.rf-mockup,
-.rf-diagram,
-.rf-chart,
-.rf-embed,
-.rf-gallery,
-.rf-figure,
-.rf-reveal {
-	background: var(--rf-color-surface);
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-container);
-	padding: var(--rune-padding, var(--rf-spacing-md));
-}
-
-/* ─── Media slot inherits the surface border ─────────────────────────
- * When a surface-bearing rune wraps a `[data-section="media"]` slot, the slot
- * shares the surface's 1px border so the framed media reads as part of the
- * same surface rather than a separate inner box. Scoped via `:where()` for
- * zero specificity — per-rune CSS can still override if a particular surface
- * wants a different chrome (e.g. character's circular portrait avoids this
- * because it's not a `[data-section="media"]` slot). */
-:where(.rf-card, .rf-bento-cell, .rf-recipe, .rf-realm, .rf-faction, .rf-playlist) [data-section="media"] {
-	border: 1px solid var(--rf-color-border);
-}
-
-/* ─── Inset surface (SPEC-087) — tint-tracking recessed fill ──────────
- * Derived at use-site via relative-color (lower L, keep C+H) so it recomputes from a tinted
- * `--rf-color-surface` automatically (a static inset-colour token would
+/* Sunken — the recessed "darker surface" (e.g. chart / diagram). Derived at
+ * use-site via relative-color (lower L, keep C+H) so it recomputes from a
+ * tinted `--rf-color-surface` automatically (a static inset-colour token would
  * freeze to the untinted :root). Writes `background` only — never re-bases
  * `--rf-color-surface` — so insets don't compound under nesting; depth is
- * conveyed by border/elevation. `--rf-surface-inset-shift: 0` flushes it. */
-
-/* chart / diagram self surface: the standalone "darker surface". */
-.rf-chart,
-.rf-diagram {
+ * conveyed by border + the darker fill. `--rf-surface-inset-shift: 0` flushes
+ * it back to the surface colour. */
+[data-elevation="sunken"] {
 	background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
 }
 
-/* …but when they're a media-zone guest the slot already provides the recessed
- * surface (border, radius, inset fill), so the inner chrome would just stack
- * as double-chrome. Drop it; keep padding so axis labels / SVG keep breathing
- * room. */
-[data-section="media"] > :is(.rf-chart, .rf-diagram) {
-	background: transparent;
-	border: 0;
+/* Resting-shadow rungs — depth above the flat surface. */
+[data-elevation="raised"] {
+	box-shadow: var(--rf-shadow-sm);
+}
+[data-elevation="floating"] {
+	box-shadow: var(--rf-shadow-md);
+}
+[data-elevation="overlay"] {
+	box-shadow: var(--rf-shadow-lg);
 }
 
-/* Same treatment for `juxtapose` as a media guest — its `__panels` container
- * has its own border + background + rounded corners (juxtapose stands alone
- * outside a card), but inside a card slot they double up with the slot's own
- * chrome. Drop the inner chrome; round to match the slot's media radius so the
- * comparison reads as part of the card surface. The slot's overflow:visible
- * and container-type:normal still come from `split.css` (juxtapose manages
- * its own clip inside `__panels`). */
-[data-section="media"] > .rf-juxtapose .rf-juxtapose__panels {
-	background: transparent;
-	border: 0;
-	border-radius: var(--rf-radius-media);
+/* Flush — no surface boundary; only vertical rhythm (density-aware via
+ * --rune-padding). Replaces the old inline/banner padding buckets; banner runes
+ * that want a more generous band declare their own `padding-block`. */
+[data-elevation="flush"] {
+	padding-block: var(--rune-padding, var(--rf-spacing-sm));
 }
 
-/* Media wells of media-bearing runes: a recessed sub-surface that tracks the
- * (possibly tinted) container colour — invisible under a full-bleed guest,
- * visible in the gaps (transparent, displaced, or absent guest). */
-:is(.rf-card, .rf-bento-cell, .rf-recipe, .rf-realm, .rf-faction, .rf-playlist) [data-section="media"] {
+/* ─── Prominence: page-section-header type register ───────────────────
+ * `data-prominence` re-points the section title size for page-section-header
+ * family runes (the engine only emits it where a header role exists). `normal`
+ * is the density default; the other steps layer on top, cascading down to
+ * [data-section="title"] via --rf-title-size — the same mechanism density uses,
+ * so a nested rune's own density/prominence re-declares it. */
+[data-prominence="quiet"] {
+	--rf-title-size: var(--rf-text-xl);
+}
+[data-prominence="prominent"] {
+	--rf-title-size: var(--rf-text-3xl);
+}
+[data-prominence="display"] {
+	--rf-title-size: var(--rf-text-4xl);
+}
+
+/* ─── Media slot shares the surface chrome ───────────────────────────
+ * When a `flat` surface wraps a cover `[data-section="media"]` slot, the slot
+ * shares the surface's 1px border and a recessed well fill so the framed media
+ * reads as part of the same surface. Scoped via `:where()` for zero specificity
+ * so per-rune CSS can override. Floated-avatar portraits (`[data-media="portrait"]`,
+ * e.g. character / testimonial) opt out — they manage their own circular chrome.
+ * The hand-rolled `card` / `bento-cell` surfaces (which sit outside the
+ * elevation axis) carry the same media chrome from their own CSS files. */
+:where([data-elevation="flat"]) [data-section="media"]:not([data-media="portrait"]) {
+	border: 1px solid var(--rf-color-border);
 	background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
+}
+
+/* …but a sunken surface used as a media-zone guest already sits inside the
+ * slot's recessed well, so its own chrome would just double up. Drop it; keep
+ * padding so axis labels / SVG keep breathing room. */
+[data-section="media"] > [data-elevation="sunken"] {
+	background: transparent;
+	border: 0;
 }

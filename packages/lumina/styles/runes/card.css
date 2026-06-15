@@ -36,6 +36,15 @@
 	overflow: hidden;
 }
 
+/* Media slot shares the card surface chrome (1px border + recessed well) so the
+ * framed media reads as part of the card. Lives here (not dimensions/surfaces.css)
+ * because card is a hand-rolled surface outside the `data-elevation` axis;
+ * `:where()` keeps it overridable per-instance, matching the elevation rule. */
+:where(.rf-card) [data-section="media"] {
+	border: 1px solid var(--rf-color-border);
+	background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
+}
+
 /* Content zone fills the remaining inset so total text padding still equals
  * `--rune-padding`. `max(0, …)` keeps dense+ (rune-padding < edge) safe — at
  * tighter densities the edge becomes the floor. */

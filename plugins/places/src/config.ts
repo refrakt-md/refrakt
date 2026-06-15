@@ -12,6 +12,7 @@ export const config: Record<string, RuneConfig> = {
 	Event: {
 		block: 'event',
 		defaultDensity: 'full',
+		defaultElevation: 'flat',
 		sections: { headline: 'title', blurb: 'description', body: 'body' },
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', body: 'none', date: 'none', endDate: 'none', location: 'none', register: 'link' },
@@ -43,6 +44,7 @@ export const config: Record<string, RuneConfig> = {
 	Itinerary: {
 		block: 'itinerary',
 		defaultDensity: 'full',
+		defaultElevation: 'flat',
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description' },
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', days: 'none' },
@@ -72,6 +74,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'map',
 		interactive: true,
 		defaultDensity: 'compact',
+		defaultElevation: 'flush',
 		editHints: { pins: 'none' },
 		modifiers: {
 			variant: { source: 'meta', default: 'street' },

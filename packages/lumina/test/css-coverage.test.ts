@@ -310,8 +310,19 @@ describe('Lumina CSS coverage', () => {
 	describe('coverage summary', () => {
 		it('overall block coverage meets threshold', () => {
 			const allBlocks = [...new Set(Object.values(runes).map(c => c.block))];
-			const styledBlocks = allBlocks.filter(block => allCssSelectors.has(`.${prefix}-${block}`));
-			const unstyledBlocks = allBlocks.filter(block => !allCssSelectors.has(`.${prefix}-${block}`));
+			// SPEC-107 — surface runes carry their chrome from the `data-elevation` /
+			// `data-prominence` attribute rules in surfaces.css (not a bare
+			// `.rf-{block}` rule). A block with a per-rune surface default is styled
+			// by the axis dimension, so count it as covered.
+			const surfaceAxisBlocks = new Set(
+				Object.values(runes)
+					.filter(c => c.defaultElevation || c.defaultProminence)
+					.map(c => c.block),
+			);
+			const isStyled = (block: string) =>
+				allCssSelectors.has(`.${prefix}-${block}`) || surfaceAxisBlocks.has(block);
+			const styledBlocks = allBlocks.filter(isStyled);
+			const unstyledBlocks = allBlocks.filter(block => !isStyled(block));
 			const pct = Math.round((styledBlocks.length / allBlocks.length) * 100);
 
 			// Log for visibility

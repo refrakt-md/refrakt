@@ -5,6 +5,7 @@ export const config: Record<string, RuneConfig> = {
 	Character: {
 		block: 'character',
 		defaultDensity: 'full',
+		defaultElevation: 'flat',
 		sections: { preamble: 'preamble', name: 'title', portrait: 'media' },
 		mediaSlots: { portrait: 'portrait' },
 		modifiers: {
@@ -41,6 +42,7 @@ export const config: Record<string, RuneConfig> = {
 	Realm: {
 		block: 'realm',
 		defaultDensity: 'full',
+		defaultElevation: 'flat',
 		sections: { preamble: 'preamble', name: 'title', scene: 'media' },
 		mediaSlots: { scene: 'cover' },
 		modifiers: {
@@ -81,6 +83,7 @@ export const config: Record<string, RuneConfig> = {
 	Lore: {
 		block: 'lore',
 		defaultDensity: 'full',
+		defaultElevation: 'flat',
 		sections: { title: 'title', body: 'body' },
 		modifiers: {
 			category: { source: 'meta' },
@@ -100,6 +103,7 @@ export const config: Record<string, RuneConfig> = {
 	Faction: {
 		block: 'faction',
 		defaultDensity: 'full',
+		defaultElevation: 'flat',
 		sections: { preamble: 'preamble', name: 'title', scene: 'media' },
 		mediaSlots: { scene: 'cover' },
 		modifiers: {
@@ -144,6 +148,7 @@ export const config: Record<string, RuneConfig> = {
 	Plot: {
 		block: 'plot',
 		defaultDensity: 'full',
+		defaultElevation: 'flat',
 		sections: { title: 'title' },
 		modifiers: {
 			plotType: { source: 'meta', default: 'arc' },
@@ -199,6 +204,7 @@ export const config: Record<string, RuneConfig> = {
 	Bond: {
 		block: 'bond',
 		defaultDensity: 'full',
+		defaultElevation: 'flat',
 		sections: { body: 'body' },
 		modifiers: {
 			bondType: { source: 'meta' },
@@ -211,6 +217,7 @@ export const config: Record<string, RuneConfig> = {
 	Storyboard: {
 		block: 'storyboard',
 		defaultDensity: 'full',
+		defaultElevation: 'flush',
 		modifiers: {
 			variant: { source: 'meta', default: 'clean' },
 			columns: { source: 'meta', default: '3' },

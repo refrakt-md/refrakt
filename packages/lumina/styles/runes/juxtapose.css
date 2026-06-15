@@ -159,3 +159,17 @@
 	cursor: pointer;
 }
 
+
+/* ─── Juxtapose as a media-zone guest ─────────────────────────────────
+ * The `__panels` container has its own border + background + rounded corners
+ * (juxtapose stands alone outside a card), but inside a `[data-section="media"]`
+ * slot they double up with the slot's own chrome. Drop the inner chrome; round
+ * to match the slot's media radius so the comparison reads as part of the card
+ * surface. The slot's overflow:visible and container-type:normal still come from
+ * `split.css` (juxtapose manages its own clip inside `__panels`). Moved here from
+ * dimensions/surfaces.css so that file stays rune-name-free (SPEC-107). */
+[data-section="media"] > .rf-juxtapose .rf-juxtapose__panels {
+	background: transparent;
+	border: 0;
+	border-radius: var(--rf-radius-media);
+}

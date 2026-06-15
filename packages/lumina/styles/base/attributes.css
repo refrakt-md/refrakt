@@ -19,11 +19,7 @@
 [data-rune][data-inset="loose"]   { padding-inline: var(--rf-inset-loose, 4rem); }
 [data-rune][data-inset="breathe"] { padding-inline: var(--rf-inset-breathe, 8rem); }
 
-/* ── Elevation — drop shadow (box-shadow) ──────────────────────────────
- * Universal `elevation` attribute (SPEC-086). Maps to the shared --rf-shadow-*
- * token scale; `none` explicitly flattens a rune's default shadow. */
-
-[data-rune][data-elevation="none"] { box-shadow: var(--rf-shadow-none); }
-[data-rune][data-elevation="sm"]   { box-shadow: var(--rf-shadow-sm); }
-[data-rune][data-elevation="md"]   { box-shadow: var(--rf-shadow-md); }
-[data-rune][data-elevation="lg"]   { box-shadow: var(--rf-shadow-lg); }
+/* The `elevation` axis (SPEC-107) — depth-ladder chrome (fill / border / radius
+ * / resting shadow) — is mapped by value in dimensions/surfaces.css. The old
+ * SPEC-086 shadow scale (none/sm/md/lg) is superseded; the engine maps those
+ * deprecated aliases onto the ladder before they reach the DOM. */
