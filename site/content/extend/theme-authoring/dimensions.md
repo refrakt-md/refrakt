@@ -458,32 +458,34 @@ Set by behavior scripts at runtime, not by rune config. The engine doesn't emit 
 
 ### Surface
 
-Surface is theme-only — runes don't declare their surface type. Which runes render as cards, banners, or inline elements is a visual design decision that belongs to the theme.
+Surface chrome is theme-only — runes don't hard-code their look. Each rune declares a default *position* on the surface axes via its config (`defaultElevation` / `defaultProminence`), and the theme maps each axis value to CSS. Authors override per-instance (`elevation="raised"`); a theme can re-point a rune's default via `mergeThemeConfig` (SPEC-107).
 
-Lumina groups runes into four surface types:
+Lumina styles the **`elevation`** depth ladder by attribute — no rune-name lists:
 
-| Surface | Treatment | Example runes |
-|---------|-----------|---------------|
-| **Card** | Background, radius, padding | recipe, character, event, api, howto |
-| **Inline** | No visual boundary, vertical padding only | hint, details, sidenote, nav, breadcrumb |
-| **Banner** | Full-width padding | hero, cta, feature, steps, bento |
-| **Inset** | Background, radius, padding | codegroup, mockup, diagram, chart, gallery |
+| Rung | Treatment | Example defaults |
+|------|-----------|------------------|
+| `flat` | fill, border, radius, padding | recipe, character, api, codegroup |
+| `sunken` | `flat` + a recessed (darker) fill | chart, diagram |
+| `flush` | no boundary; vertical padding only | hint, nav, breadcrumb, hero, bento |
+| `raised` / `floating` / `overlay` | `flat` + a resting `box-shadow` | (opt-in) |
 
 ```css
-/* Card surface */
-.rf-recipe, .rf-character, .rf-event, .rf-api, .rf-howto {
+/* Surface chrome by elevation rung — not by rune name */
+[data-elevation="flat"], [data-elevation="sunken"] {
   background: var(--rf-color-surface);
-  border-radius: var(--rf-radius-md);
+  border: 1px solid var(--rf-color-border);
+  border-radius: var(--rf-radius-container);
   padding: var(--rune-padding, var(--rf-spacing-md));
 }
-
-/* Inline surface */
-.rf-hint, .rf-details, .rf-sidenote, .rf-nav {
-  padding: var(--rune-padding, var(--rf-spacing-sm)) 0;
+[data-elevation="sunken"] {
+  background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
+}
+[data-elevation="flush"] {
+  padding-block: var(--rune-padding, var(--rf-spacing-sm));
 }
 ```
 
-All surfaces consume the `--rune-padding` variable set by the density dimension, so padding automatically scales when density changes.
+All surfaces consume the `--rune-padding` variable set by the density dimension, so padding automatically scales when density changes. The second surface axis, **`prominence`**, re-points the section-header title size (`quiet|normal|prominent|display`); **`width`** (`compact|narrow|wide|full`) is a *layout* axis — page bleed, not chrome. See [Surfaces](/runes/surfaces) for the author reference and [Surface model](/extend/theme-authoring/surfaces) for the config side.
 
 ---
 

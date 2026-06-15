@@ -11,11 +11,12 @@ Refrakt's surface system gives every rune up to two decorable surfaces — **sel
 
 | Vocabulary | Targets | Carries |
 |------------|---------|---------|
-| `elevation` | self | `box-shadow` (z-height) |
+| `elevation` | self | depth ladder: `sunken · flush · flat · raised · floating · overlay` (fill, border, resting `box-shadow`) |
+| `prominence` | self | section-header family: `quiet · normal · prominent · display` (title type size) |
 | `frame` | media | aspect · displace · offset · oversize · place · anchor · shadow (`drop-shadow`) |
 | `substrate` / inset / `tint` / `bg` | fill | pattern, colour, image |
 
-`elevation` (box-shadow on self) and `frame-shadow` (drop-shadow silhouette on media) never collide — different property, different surface.
+`elevation` (the self surface's depth — fill, border, resting `box-shadow`) and `frame-shadow` (drop-shadow silhouette on media) never collide — different property, different surface. A rune's resting rung comes from its config `defaultElevation` / `defaultProminence`; an author overrides per-instance, a theme overrides per-rune via `mergeThemeConfig`. The values are styled by attribute (`[data-elevation]` / `[data-prominence]`) — no BEM modifier class. (`width` is the third axis but a *layout* concern, not a surface one — see below.)
 
 ## frame & background preset registries
 

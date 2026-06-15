@@ -127,7 +127,7 @@ A card exposes two decorable surfaces ([surface model](/runes/surfaces)): the **
 
 {% preview source=true %}
 
-{% card elevation="md" frame-aspect="16/9" frame-anchor="top left" %}
+{% card elevation="raised" frame-aspect="16/9" frame-anchor="top left" %}
 ![Dashboard](https://picsum.photos/seed/carddash/800/450)
 ---
 ### Framed media
