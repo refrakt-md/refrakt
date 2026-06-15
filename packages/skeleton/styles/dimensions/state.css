@@ -1,0 +1,28 @@
+/* Interactive State Dimension — structure layer.
+ * The visibility/interaction mechanisms a stateful rune breaks without:
+ * collapse, panel switching, and disabled pointer suppression. The aesthetic
+ * state treatments (active/inactive indicators, selection highlight, dim,
+ * expand animation) live in the skin. */
+
+/* Open/closed collapse */
+[data-state="closed"] > [class*="__body"],
+[data-state="closed"] > [class*="__content"] {
+	display: none;
+}
+[data-state="open"] > [class*="__body"],
+[data-state="open"] > [class*="__content"] {
+	display: block;
+}
+
+/* Tab/toggle panel switching */
+[role="tabpanel"][data-state="inactive"] {
+	display: none;
+}
+[role="tabpanel"][data-state="active"] {
+	display: block;
+}
+
+/* Disabled — non-interactive (the dim is skin) */
+[data-state="disabled"] {
+	pointer-events: none;
+}

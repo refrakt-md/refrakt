@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync } from 'fs';
+import { readFileSync, readdirSync, existsSync } from 'fs';
 import { join } from 'path';
 import postcss from 'postcss';
 import { baseConfig } from '@refrakt-md/runes';
@@ -79,11 +79,16 @@ const KNOWN_MISSING_SELECTORS = new Set([
 
 const CSS_DIR = join(__dirname, '..', 'styles', 'runes');
 const DIMENSIONS_DIR = join(__dirname, '..', 'styles', 'dimensions');
+// SPEC-094 §3 / WORK-438 — structural CSS is re-bucketed into @refrakt-md/skeleton.
+// Coverage must scan both homes so a selector moved to the skeleton's structure
+// layer still counts as styled.
+const SKELETON_DIMENSIONS_DIR = join(__dirname, '..', '..', 'skeleton', 'styles', 'dimensions');
+const dimensionDirs = [DIMENSIONS_DIR, SKELETON_DIMENSIONS_DIR].filter(d => existsSync(d));
 
 /** Parse all CSS files and collect every .rf-* class selector */
 function parseAllCssSelectors(): Set<string> {
 	const selectors = new Set<string>();
-	const dirs = [CSS_DIR, DIMENSIONS_DIR];
+	const dirs = [CSS_DIR, ...dimensionDirs];
 
 	for (const dir of dirs) {
 		const files = readdirSync(dir).filter(f => f.endsWith('.css'));
@@ -105,19 +110,19 @@ function parseAllCssSelectors(): Set<string> {
 /** Parse all CSS files in the dimensions directory and collect attribute selectors */
 function parseDimensionSelectors(): Set<string> {
 	const selectors = new Set<string>();
-	if (!readdirSync(DIMENSIONS_DIR, { withFileTypes: true }).length) return selectors;
-
-	const files = readdirSync(DIMENSIONS_DIR).filter(f => f.endsWith('.css'));
-	for (const file of files) {
-		const css = readFileSync(join(DIMENSIONS_DIR, file), 'utf-8');
-		const root = postcss.parse(css);
-		root.walkRules(rule => {
-			// Match data-meta-*, data-checked, data-sequence, and data-sequence-direction selectors
-			const matches = rule.selector.matchAll(/\[data-(?:meta-[\w-]+|checked|sequence(?:-direction)?)(?:="[\w-]+")?]/g);
-			for (const m of matches) {
-				selectors.add(m[0]);
-			}
-		});
+	for (const dir of dimensionDirs) {
+		const files = readdirSync(dir).filter(f => f.endsWith('.css'));
+		for (const file of files) {
+			const css = readFileSync(join(dir, file), 'utf-8');
+			const root = postcss.parse(css);
+			root.walkRules(rule => {
+				// Match data-meta-*, data-checked, data-sequence, and data-sequence-direction selectors
+				const matches = rule.selector.matchAll(/\[data-(?:meta-[\w-]+|checked|sequence(?:-direction)?)(?:="[\w-]+")?]/g);
+				for (const m of matches) {
+					selectors.add(m[0]);
+				}
+			});
+		}
 	}
 	return selectors;
 }

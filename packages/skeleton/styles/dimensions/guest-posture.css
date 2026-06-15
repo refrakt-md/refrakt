@@ -1,0 +1,13 @@
+/* Media-guest interaction posture (SPEC-090) — structure layer.
+ *
+ * Wholly structural: a presentational media guest must be non-interactive at the
+ * pointer level so a linked tile's stretched link receives the click, and the
+ * inert tab strip of a demoted tabbed guest must be hidden so its static
+ * fallback reads. The rune breaks (links misfire, dead controls) without these. */
+[data-section="media"][data-guest-posture="presentational"] {
+	pointer-events: none;
+}
+
+[data-section="media"][data-guest-posture="presentational"] :is(.rf-tabs__tabs, .rf-codegroup__tabs) {
+	display: none;
+}
