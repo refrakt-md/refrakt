@@ -1,5 +1,24 @@
 # @refrakt-md/cli
 
+## 0.22.0
+
+### Minor Changes
+
+- f27a573: **Standardised rune-fixture corpus + CI validation** (SPEC-102) — rune examples now live as annotated Markdown fixtures (`fixtures/*.md`) with validated YAML frontmatter (`role`, `attributes`, `demonstrates`, `notes`) and `<rune>.<scenario>.md` scenarios; `RUNE_EXAMPLES` is generated from them. A CI test parses, schema-validates, and transforms every fixture in the corpus (rejecting unknown keys / wrong types and any parse/transform error), and `refrakt plugins validate` now reports role coverage — e.g. a rune that has fixtures but no `canonical` one. One source of truth for the inspect command, the gallery, docs, and AI few-shot, with an authoring guide for content authors.
+- f27a573: **`refrakt gallery` + an opt-in visual-regression harness** (SPEC-094) — a new `gallery` command renders every rune across its variants (light + dark) plus the four layout fixtures over a synthetic multi-page context to static, deterministic HTML — the safety net (and AI-iteration surface) for theme work. The companion `@refrakt-md/gallery-harness` package (opt-in; the only Playwright/browser dependency in the repo, deliberately kept out of the core CLI and runtime install path) screenshots the gallery's rune-cell clips and layout pages and diffs them against an ephemeral, gitignored baseline — for restyle before/after and inert-refactor (skeleton/skin) proofs.
+
+### Patch Changes
+
+- Updated dependencies [f27a573]
+- Updated dependencies [f27a573]
+- Updated dependencies [f27a573]
+- Updated dependencies [f27a573]
+  - @refrakt-md/ai@0.22.0
+  - @refrakt-md/runes@0.22.0
+  - @refrakt-md/transform@0.22.0
+  - @refrakt-md/editor@0.22.0
+  - @refrakt-md/html@0.22.0
+
 ## 0.21.0
 
 ### Minor Changes

@@ -1,5 +1,22 @@
 # @refrakt-md/lumina
 
+## 0.22.0
+
+### Minor Changes
+
+- f27a573: **Image-src scheme sugar** (SPEC-106) — standard Markdown image syntax now resolves two custom URL schemes to inline SVG at transform time. `![Portrait](placeholder:portrait)` emits a deterministic, theme-token-tinted placeholder (shapes: `cover`/`wide`/`banner`/`square`/`portrait`/`thumbnail`/`avatar`), and `![GitHub](icon:github)` inlines a named icon from the theme's icon set — the same source the `{% icon %}` rune uses, with `alt` as the accessible label. Unknown schemes, relative paths, and absolute URLs pass through to `<img>` unchanged, and the scheme set is a small registry a plugin can extend. Authors can draft image-heavy pages before the assets exist and swap in real paths later. The image-consuming runes (`figure`, `gallery`, `juxtapose`, `mediatext`, `showcase`, `card`, `cast`, `recipe`, `realm`, `testimonial`, `storyboard`) now accept scheme-resolved `<svg>` media, not just `<img>`.
+- f27a573: **Tokenized typography** (SPEC-094) — the token contract gains a full type system: a modular type scale, line-heights, font-weights, letter-spacing, and a display family, as typed `--rf-*` tokens. Lumina's ~351 hardcoded `font-size` declarations are refactored onto the tokens with no visual change, and the token CSS is now generated from `tokens.ts` rather than hand-maintained against a coverage test. Typography is the single largest visual differentiator between a product/docs theme and an editorial one, so this makes it themeable by overriding tokens instead of forking rune CSS — the foundation for themes beyond Lumina.
+
+### Patch Changes
+
+- Updated dependencies [f27a573]
+- Updated dependencies [f27a573]
+- Updated dependencies [f27a573]
+- Updated dependencies [f27a573]
+  - @refrakt-md/runes@0.22.0
+  - @refrakt-md/types@0.22.0
+  - @refrakt-md/transform@0.22.0
+
 ## 0.21.0
 
 ### Minor Changes

@@ -1,5 +1,19 @@
 # @refrakt-md/runes
 
+## 0.22.0
+
+### Minor Changes
+
+- f27a573: **AI `write` mode draws fixtures as few-shot exemplars** (SPEC-102) — the write-mode prompt's hardcoded "Example structure" stub is replaced by the fixture corpus: fixtures explicitly tagged `role: canonical`/`rich` (with their authoring `notes`) are surfaced as in-context exemplars, so generated content reflects idiomatic, well-formed rune usage. The set grows automatically as the corpus is annotated. Prompt-time retrieval only — no training or fine-tuning pipeline.
+- f27a573: **Standardised rune-fixture corpus + CI validation** (SPEC-102) — rune examples now live as annotated Markdown fixtures (`fixtures/*.md`) with validated YAML frontmatter (`role`, `attributes`, `demonstrates`, `notes`) and `<rune>.<scenario>.md` scenarios; `RUNE_EXAMPLES` is generated from them. A CI test parses, schema-validates, and transforms every fixture in the corpus (rejecting unknown keys / wrong types and any parse/transform error), and `refrakt plugins validate` now reports role coverage — e.g. a rune that has fixtures but no `canonical` one. One source of truth for the inspect command, the gallery, docs, and AI few-shot, with an authoring guide for content authors.
+- f27a573: **Image-src scheme sugar** (SPEC-106) — standard Markdown image syntax now resolves two custom URL schemes to inline SVG at transform time. `![Portrait](placeholder:portrait)` emits a deterministic, theme-token-tinted placeholder (shapes: `cover`/`wide`/`banner`/`square`/`portrait`/`thumbnail`/`avatar`), and `![GitHub](icon:github)` inlines a named icon from the theme's icon set — the same source the `{% icon %}` rune uses, with `alt` as the accessible label. Unknown schemes, relative paths, and absolute URLs pass through to `<img>` unchanged, and the scheme set is a small registry a plugin can extend. Authors can draft image-heavy pages before the assets exist and swap in real paths later. The image-consuming runes (`figure`, `gallery`, `juxtapose`, `mediatext`, `showcase`, `card`, `cast`, `recipe`, `realm`, `testimonial`, `storyboard`) now accept scheme-resolved `<svg>` media, not just `<img>`.
+
+### Patch Changes
+
+- Updated dependencies [f27a573]
+  - @refrakt-md/types@0.22.0
+  - @refrakt-md/transform@0.22.0
+
 ## 0.21.0
 
 ### Minor Changes

@@ -1,5 +1,21 @@
 # @refrakt-md/plan
 
+## 0.22.0
+
+### Patch Changes
+
+- Updated dependencies [f27a573]
+- Updated dependencies [f27a573]
+- Updated dependencies [f27a573]
+- Updated dependencies [f27a573]
+  - @refrakt-md/runes@0.22.0
+  - @refrakt-md/types@0.22.0
+  - @refrakt-md/transform@0.22.0
+  - @refrakt-md/content@0.22.0
+  - @refrakt-md/highlight@0.22.0
+  - @refrakt-md/html@0.22.0
+  - @refrakt-md/behaviors@0.22.0
+
 ## 0.21.0
 
 ### Patch Changes
