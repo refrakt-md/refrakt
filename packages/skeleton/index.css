@@ -33,3 +33,4 @@
 /* ── Dimension structure ── */
 @import './styles/dimensions/state.css' layer(skeleton);
 @import './styles/dimensions/media.css' layer(skeleton);
+@import './styles/dimensions/cover.css' layer(skeleton);
