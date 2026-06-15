@@ -20,7 +20,7 @@
 	 *   • `--rf-card-split-gap`   — tight gap when media sits beside content,
 	 *                                so the card reads as a unified surface
 	 *                                rather than two loosely-related panels. */
-	--rf-card-edge: 0.5rem;
+	--rf-card-edge: var(--rf-spacing-sm);
 	--rf-card-media-gap: var(--rf-spacing-lg);
 	--rf-card-split-gap: var(--rf-spacing-sm);
 	padding: var(--rf-card-edge);
@@ -91,7 +91,7 @@
 	letter-spacing: var(--rf-tracking-wider);
 	text-transform: uppercase;
 	color: var(--rf-color-primary);
-	margin: 0 0 0.375rem;
+	margin: 0 0 var(--rf-spacing-xs);
 }
 
 /* The body's leading heading is the card title; drop its prose top margin so it

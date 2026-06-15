@@ -170,6 +170,11 @@ export interface TokenContract {
 	spacing: {
 		xs: string;
 		sm: string;
+		/** Component-padding band (SPEC-094 densification, WORK-435) — fills the
+		 *  gap between `sm` (0.5rem) and `md` (1.5rem) that component paddings and
+		 *  gaps fall into. `snug` ≈ 0.75rem, `cozy` ≈ 1rem. */
+		snug: string;
+		cozy: string;
 		md: string;
 		lg: string;
 		xl: string;
