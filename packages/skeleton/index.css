@@ -17,7 +17,12 @@
  * `layer(skeleton)` so the raw files need no `@layer` wrapper of their own. */
 @layer skeleton, skin;
 
-/* ── Dimension structure (WORK-438, group b) ── */
-@import './styles/dimensions/guest-posture.css' layer(skeleton);
+/* ── Dimension structure (WORK-438, group b) ──
+ * Note: guest-posture stays unlayered in Lumina for now. Its contextual
+ * `display:none` on a demoted guest's tab strip must beat the rune's own
+ * unlayered `.rf-tabs__tabs { display:flex }`; an unlayered rule beats any
+ * layered one regardless of specificity, so guest-posture can only move here
+ * once tabs/codegroup *structure* is also layered (the rune group). Moving it
+ * early would resurface the inert tab strip on presentational media guests. */
 @import './styles/dimensions/state.css' layer(skeleton);
 @import './styles/dimensions/media.css' layer(skeleton);
