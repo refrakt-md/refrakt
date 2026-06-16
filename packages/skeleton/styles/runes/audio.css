@@ -1,0 +1,70 @@
+/* audio — structure. The web-component block, the player flex column, the info/
+ * controls flex, the name ellipsis clip, the play-button box (size + centring), the
+ * play-icon size, the time min-width, the progress track box + bar fill, the
+ * waveform box, the waveform-mode progress hide, the chapters list reset, and the
+ * chapter row flex. Surface, colours, radii, borders, type, and focus chrome are
+ * skin. */
+.rf-audio rf-audio { display: block; }
+.rf-audio-player {
+	display: flex;
+	flex-direction: column;
+}
+.rf-audio-player__info {
+	display: flex;
+	flex-direction: column;
+}
+.rf-audio-player__name {
+	overflow: hidden;
+}
+.rf-audio-player__controls {
+	display: flex;
+	align-items: center;
+}
+.rf-audio-player__play {
+	flex-shrink: 0;
+	width: 2.25rem;
+	height: 2.25rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.rf-audio-player__play svg {
+	width: 1rem;
+	height: 1rem;
+}
+.rf-audio-player__time {
+	min-width: 2.5rem;
+}
+.rf-audio-player__progress {
+	flex: 1;
+	height: 6px;
+	position: relative;
+	overflow: hidden;
+}
+.rf-audio-player__progress-bar {
+	height: 100%;
+	width: 0%;
+	pointer-events: none;
+}
+.rf-audio-player__waveform {
+	width: 100%;
+	min-height: 48px;
+	overflow: hidden;
+}
+.rf-audio[data-waveform="true"] .rf-audio-player__controls .rf-audio-player__progress {
+	display: none;
+}
+.rf-audio-player__chapters {
+	list-style: none;
+}
+.rf-audio-player__chapter {
+	display: flex;
+	width: 100%;
+	align-items: center;
+}
+.rf-audio-player__chapter-name {
+	flex: 1;
+}
+.rf-audio-player__chapter-time {
+	flex-shrink: 0;
+}

@@ -116,3 +116,7 @@
 @import './styles/runes/event.css' layer(skeleton);
 @import './styles/runes/map.css' layer(skeleton);
 @import './styles/runes/itinerary.css' layer(skeleton);
+/* ── Plugin: media ── */
+@import './styles/runes/playlist.css' layer(skeleton);
+@import './styles/runes/track.css' layer(skeleton);
+@import './styles/runes/audio.css' layer(skeleton);

@@ -1,12 +1,9 @@
 @layer skin {
 /* Track */
 .rf-track {
-	display: flex;
-	align-items: center;
 	gap: 0.75rem;
 	padding: 0.75rem 1.25rem;
 	transition: background 0.15s ease;
-	counter-increment: track;
 }
 .rf-track + .rf-track {
 	border-top: 1px solid var(--rf-color-border);
@@ -15,22 +12,16 @@
 	background: color-mix(in srgb, var(--rf-color-border) 15%, transparent);
 }
 .rf-track::before {
-	content: counter(track);
-	min-width: 1.5rem;
 	font-size: var(--rf-text-xs);
 	color: var(--rf-color-primary);
 	text-align: right;
-	flex-shrink: 0;
 }
 
 /* Track name — primary text, takes remaining space */
 .rf-track__track-name {
-	flex: 1;
 	font-size: var(--rf-text);
 	font-weight: var(--rf-weight-medium);
 	color: var(--rf-color-text);
-	min-width: 0;
-	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
@@ -39,7 +30,6 @@
 .rf-track__track-artist {
 	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
-	flex-shrink: 0;
 }
 .rf-track__track-artist::before {
 	content: '\00b7';
@@ -52,9 +42,6 @@
 	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 	font-variant-numeric: tabular-nums;
-	flex-shrink: 0;
-	margin-left: auto;
-	min-width: 3rem;
 	text-align: right;
 }
 
@@ -62,7 +49,6 @@
 .rf-track__track-meta {
 	font-size: var(--rf-text-xs);
 	color: var(--rf-color-muted);
-	flex-shrink: 0;
 }
 .rf-track__track-meta::before {
 	content: '\00b7';
@@ -72,7 +58,6 @@
 
 /* Description — full width below the row */
 .rf-track__track-description {
-	flex-basis: 100%;
 	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 	line-height: var(--rf-leading-normal);
@@ -82,16 +67,9 @@
 	margin: 0;
 }
 
-/* Wrap when description is present */
-.rf-track:has(.rf-track__track-description) {
-	flex-wrap: wrap;
-}
-
 /* Cue points (lyrics / chapters) */
 .rf-track [data-name="lyrics"],
 .rf-track [data-name="chapters"] {
-	flex-basis: 100%;
-	list-style: none;
 	padding: 0.5rem 0 0;
 	margin: 0;
 	font-size: var(--rf-text-sm);
@@ -104,7 +82,6 @@
 	margin: 0;
 }
 .rf-track [data-name="chapters"] li {
-	display: flex;
 	gap: 0.75rem;
 	padding: 0.25rem 0;
 }
@@ -115,17 +92,8 @@
 .rf-track [data-name="chapter-time"] {
 	color: var(--rf-color-muted);
 	font-variant-numeric: tabular-nums;
-	margin-left: auto;
 }
 
 /* Hide secondary columns on narrow screens */
-@media (max-width: 480px) {
-	.rf-track__track-artist {
-		display: none;
-	}
-	.rf-track__track-meta {
-		display: none;
-	}
-}
 
 }

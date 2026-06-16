@@ -35,8 +35,6 @@
 
 /* Inner header (headline + description) inside content */
 .rf-playlist__content > .rf-playlist__header {
-	flex-direction: column;
-	align-items: flex-start;
 	gap: 0.25rem;
 	margin-bottom: 1rem;
 }
@@ -52,28 +50,18 @@
 
 /* Tracks list wrapper */
 .rf-playlist__tracks {
-	list-style: none;
 	padding: 0;
 	margin: 0;
-	counter-reset: track;
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-md);
-	overflow: hidden;
 }
 
 /* Track items — override sequence dimension's absolute positioning */
 .rf-playlist__tracks > li {
-	display: flex;
-	align-items: baseline;
 	gap: 0.75rem;
 	padding: 0.75rem 1.25rem;
 	padding-left: 1.25rem;
-	position: static;
 	transition: background 0.15s ease;
-}
-/* Hide meta elements from flex layout */
-.rf-playlist__tracks > li > meta {
-	display: none;
 }
 .rf-playlist__tracks > li + li {
 	border-top: 1px solid var(--rf-color-border);
@@ -82,27 +70,19 @@
 	background: color-mix(in srgb, var(--rf-color-border) 15%, transparent);
 }
 .rf-playlist__tracks > li::before {
-	position: static;
-	width: auto;
-	height: auto;
-	min-width: 1.5rem;
 	font-size: var(--rf-text-xs);
 	font-variant-numeric: tabular-nums;
 	color: var(--rf-color-muted);
 	background: none;
 	border-radius: 0;
 	text-align: right;
-	flex-shrink: 0;
 }
 
 /* Track name */
 .rf-playlist__tracks [data-name="track-name"] {
-	flex: 1;
 	font-size: var(--rf-text);
 	font-weight: var(--rf-weight-medium);
 	color: var(--rf-color-text);
-	min-width: 0;
-	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
@@ -111,7 +91,6 @@
 .rf-playlist__tracks [data-name="track-artist"] {
 	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
-	flex-shrink: 0;
 }
 .rf-playlist__tracks [data-name="track-artist"]::before {
 	content: '\00b7';
@@ -124,9 +103,6 @@
 	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 	font-variant-numeric: tabular-nums;
-	flex-shrink: 0;
-	margin-left: auto;
-	min-width: 3rem;
 	text-align: right;
 }
 
@@ -134,7 +110,6 @@
 .rf-playlist__tracks [data-name="track-meta"] {
 	font-size: var(--rf-text-xs);
 	color: var(--rf-color-muted);
-	flex-shrink: 0;
 }
 .rf-playlist__tracks [data-name="track-meta"]::before {
 	content: '\00b7';
@@ -148,18 +123,6 @@
 	margin-top: 0.5rem;
 }
 
-/* Media zone — domain-specific cover art overrides (base styles in split.css) */
-.rf-playlist__media img {
-	aspect-ratio: 1;
-	object-fit: cover;
-}
-
 /* Hide secondary columns on narrow screens */
-@media (max-width: 480px) {
-	.rf-playlist__tracks [data-name="track-artist"],
-	.rf-playlist__tracks [data-name="track-meta"] {
-		display: none;
-	}
-}
 
 }
