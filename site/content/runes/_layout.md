@@ -15,6 +15,7 @@ tint-lock: false
 
 - rune-catalog
 - surfaces
+- motion
 - media-guests
 
 ## Content
