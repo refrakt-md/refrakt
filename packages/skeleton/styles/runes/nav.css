@@ -1,0 +1,258 @@
+/* nav — structure. The layout systems behind each nav mode — sidebar list reset +
+ * link box, collapsible group disclosure, the menubar flex bar + dropdown
+ * show/hide mechanism, the columns/cards grids, the strip flex, and the responsive
+ * reflows. Type, colour, spacing, borders, radii, the dropdown chrome, and the
+ * chevron glyph stay skin (Lumina's styles/runes/nav.css). */
+
+.rf-nav ul { list-style: none; }
+.rf-nav-item__link { display: block; }
+
+/* Inline-badge items sit on one row. */
+.rf-nav-item:has(> .rf-badge[data-name="badge"]) {
+	display: flex;
+	align-items: center;
+}
+.rf-nav-item:has(> .rf-badge[data-name="badge"]) > .rf-nav-item__link {
+	flex: 0 1 auto;
+	min-width: 0;
+}
+
+/* ── Collapsible groups ── */
+.rf-nav--collapsible .rf-nav-group h2,
+.rf-nav--collapsible .rf-nav-group h3 {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+.rf-nav--collapsible .rf-nav-group h2::after,
+.rf-nav--collapsible .rf-nav-group h3::after {
+	content: '';
+	width: 0.5rem;
+	height: 0.5rem;
+	transform: rotate(45deg);
+}
+.rf-nav--collapsible .rf-nav-group > .rf-nav-group__panel,
+.rf-nav--collapsible .rf-nav-group > ul,
+.rf-nav--collapsible .rf-nav-group > ol {
+	overflow: hidden;
+}
+.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] > .rf-nav-group__panel,
+.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] > ul,
+.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] > ol {
+	height: 0;
+}
+.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] h2::after,
+.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] h3::after {
+	transform: rotate(-45deg);
+}
+
+/* ── Menubar layout ── */
+.rf-nav--menubar > .rf-nav__top-level > ul,
+.rf-nav--menubar > .rf-nav__top-level ul {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.rf-nav--menubar > .rf-nav__top-level .rf-nav-item__link {
+	display: inline-block;
+}
+.rf-nav--menubar .rf-nav-group {
+	position: relative;
+	display: inline-block;
+}
+.rf-nav--menubar .rf-nav-group > .rf-nav-group__panel {
+	display: block;
+	position: absolute;
+	top: 100%;
+	right: 0;
+	left: auto;
+	min-width: 14rem;
+	z-index: 50;
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transform: translateY(-4px);
+}
+.rf-nav--menubar .rf-nav-group:hover > .rf-nav-group__panel,
+.rf-nav--menubar .rf-nav-group:focus-within > .rf-nav-group__panel,
+.rf-nav--menubar .rf-nav-group[data-open="true"] > .rf-nav-group__panel {
+	opacity: 1;
+	visibility: visible;
+	pointer-events: auto;
+	transform: translateY(0);
+}
+.rf-nav--menubar .rf-nav-group__panel ul { list-style: none; }
+.rf-nav--menubar .rf-nav-group__panel > ul > li > .rf-nav-item__link {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+}
+.rf-nav--menubar > nav,
+.rf-nav--menubar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.rf-nav--menubar [data-name="trigger"] {
+	display: none;
+}
+
+@media (max-width: 768px) {
+	.rf-nav--menubar [data-name="trigger"] {
+		display: none;
+	}
+	.rf-nav--menubar {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.rf-nav--menubar > .rf-nav__top-level,
+	.rf-nav--menubar > .rf-nav-group {
+		display: block;
+		width: 100%;
+	}
+	.rf-nav--menubar > .rf-nav__top-level > ul {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.rf-nav--menubar > .rf-nav__top-level .rf-nav-item__link {
+		display: block;
+	}
+	.rf-nav--menubar .rf-nav-group {
+		position: static;
+		display: block;
+	}
+	.rf-nav--menubar .rf-nav-group > .rf-nav-group__panel {
+		position: static;
+		display: block;
+		min-width: 0;
+		opacity: 1;
+		visibility: visible;
+		pointer-events: auto;
+		transform: none;
+	}
+}
+
+/* ── Columns layout ── */
+.rf-nav--columns {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+}
+.rf-nav--columns .rf-nav__top-level {
+	grid-column: 1 / -1;
+}
+
+@media (max-width: 600px) {
+	.rf-nav--columns {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* ── Cards layout ── */
+.rf-nav--cards > .rf-nav__top-level > ul,
+.rf-nav--cards > ul {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+	list-style: none;
+}
+.rf-nav--cards .rf-nav-group > ul {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+}
+.rf-nav--cards .rf-nav-item__link {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+.rf-nav--cards .rf-nav-item__icon {
+	width: 1.5rem;
+	height: 1.5rem;
+}
+
+@media (max-width: 500px) {
+	.rf-nav--cards > ul,
+	.rf-nav--cards > .rf-nav__top-level > ul,
+	.rf-nav--cards .rf-nav-group > ul {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* ── Per-item description (any layout) ── */
+.rf-nav-item__description {
+	display: block;
+}
+
+/* ── Rich menubar panels ── */
+.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav-group__intro),
+.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav-group__footer),
+.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav) {
+	min-width: 20rem;
+	max-width: 36rem;
+}
+.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav--columns > div[data-name="column"]) {
+	min-width: 36rem;
+	max-width: 56rem;
+}
+.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link {
+	display: block;
+}
+
+/* ── Multi-section columns ── */
+.rf-nav--columns .rf-nav-group__column,
+.rf-nav--columns .rf-nav__column,
+.rf-nav--columns > div[data-name="column"] {
+	display: flex;
+	flex-direction: column;
+}
+.rf-nav--columns:has(> div[data-name="column"]) {
+	display: grid;
+	grid-template-columns: unset;
+	grid-auto-flow: column;
+	grid-auto-columns: minmax(14rem, 1fr);
+}
+@media (max-width: 900px) {
+	.rf-nav--columns:has(> div[data-name="column"]) {
+		grid-auto-flow: row;
+		grid-auto-columns: unset;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+@media (max-width: 600px) {
+	.rf-nav--columns:has(> div[data-name="column"]) {
+		grid-auto-flow: row;
+		grid-auto-columns: unset;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+/* ── Strip layout ── */
+.rf-nav--strip {
+	display: flex;
+	flex-wrap: wrap;
+}
+.rf-nav--strip ul {
+	display: flex;
+	flex-wrap: wrap;
+	list-style: none;
+}
+.rf-nav--strip .rf-nav-item__link {
+	display: inline-block;
+}
+
+/* ── Mobile menubar: nested columns collapse ── */
+@media (max-width: 768px) {
+	.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns {
+		grid-auto-flow: row;
+		grid-auto-columns: unset;
+		grid-template-columns: 1fr;
+	}
+	.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__description {
+		display: none;
+	}
+	.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav-group__intro),
+	.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav-group__footer),
+	.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav),
+	.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav--columns > div[data-name="column"]) {
+		min-width: 0;
+		max-width: 100%;
+	}
+}

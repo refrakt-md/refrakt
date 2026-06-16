@@ -20,9 +20,6 @@
  */
 
 .rf-drawer {
-	--rf-drawer-size-sm: 22rem;
-	--rf-drawer-size-md: 36rem;
-	--rf-drawer-size-lg: 52rem;
 	--rf-drawer-bg: var(--rf-color-surface);
 	--rf-drawer-fg: var(--rf-color-text);
 	--rf-drawer-border: var(--rf-color-border);
@@ -31,13 +28,6 @@
 	--rf-drawer-radius: var(--rf-radius-md);
 	--rf-drawer-anim-duration: 220ms;
 	--rf-drawer-anim-ease: cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-/* ─── Body-scroll lock while any drawer is open ────────────────── */
-
-html.rf-drawer-open,
-html.rf-drawer-open body {
-	overflow: hidden;
 }
 
 /* ─── No-JS / in-flow mode ─────────────────────────────────────── */
@@ -53,9 +43,6 @@ section.rf-drawer {
 }
 
 section.rf-drawer .rf-drawer__header {
-	display: flex;
-	align-items: baseline;
-	justify-content: space-between;
 	gap: var(--rf-spacing-sm);
 	margin-bottom: var(--rf-spacing-sm);
 }
@@ -74,7 +61,6 @@ section.rf-drawer .rf-drawer__body > :last-child { margin-bottom: 0; }
 /* In-flow footer — small text, top divider, mirrors the dialog-mode look so
  * authors get the same chrome whether JS is enhancing or not. */
 section.rf-drawer .rf-drawer__footer {
-	display: block;
 	margin-top: var(--rf-spacing-md);
 	padding-top: var(--rf-spacing-sm);
 	border-top: 1px solid var(--rf-drawer-border);
@@ -92,7 +78,6 @@ section.rf-drawer .rf-drawer__footer > :last-child { margin-bottom: 0; }
  * closed dialogs, so the closed dialog renders visibly as an empty box
  * positioned by the side `inset` rules. */
 dialog.rf-drawer {
-	box-sizing: border-box;
 	background: var(--rf-drawer-bg);
 	color: var(--rf-drawer-fg);
 	border: 1px solid var(--rf-drawer-border);
@@ -100,18 +85,6 @@ dialog.rf-drawer {
 	box-shadow: var(--rf-drawer-shadow);
 	padding: 0;
 	margin: 0;
-	overflow: hidden;
-	max-width: calc(100vw - 2 * var(--rf-drawer-gutter));
-	max-height: calc(100vh - 2 * var(--rf-drawer-gutter));
-}
-
-/* Flex column layout only when the dialog is actually open. The header
- * and footer pin via `flex: 0 0 auto`; the body scrolls via `flex: 1 1
- * auto; overflow-y: auto`. The dialog's `max-height` cap on the dialog
- * provides the scroll context. */
-dialog.rf-drawer[open] {
-	display: flex;
-	flex-direction: column;
 }
 
 dialog.rf-drawer::backdrop {
@@ -120,10 +93,6 @@ dialog.rf-drawer::backdrop {
 }
 
 dialog.rf-drawer .rf-drawer__header {
-	flex: 0 0 auto;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
 	gap: var(--rf-spacing-md);
 	/* Reset the generous `[data-section="header"]` bottom margin (3rem) — the
 	 * dialog chrome spaces the header from the body via the body's own
@@ -149,7 +118,6 @@ dialog.rf-drawer .rf-drawer__close {
 	font-size: var(--rf-text-xl);
 	line-height: 1;
 	border-radius: var(--rf-radius-sm);
-	flex-shrink: 0;
 }
 dialog.rf-drawer .rf-drawer__close:hover {
 	color: var(--rf-color-text);
@@ -157,17 +125,13 @@ dialog.rf-drawer .rf-drawer__close:hover {
 }
 
 dialog.rf-drawer .rf-drawer__body {
-	flex: 1 1 auto;
-	overflow-y: auto;
 	padding: var(--rf-spacing-md) var(--rf-spacing-lg);
-	min-height: 0;
 }
 
 /* Dialog footer — small text, top divider, pinned at bottom via flex.
  * Stays visible regardless of body scroll depth so links like "View
  * source on GitHub →" (the SPEC-078 use case) are always one tap away. */
 dialog.rf-drawer .rf-drawer__footer {
-	flex: 0 0 auto;
 	padding: var(--rf-spacing-sm) var(--rf-spacing-lg);
 	border-top: 1px solid var(--rf-drawer-border);
 	background: var(--rf-drawer-bg);
@@ -192,38 +156,11 @@ dialog.rf-drawer .rf-drawer__body > :last-child,
 dialog.rf-drawer .rf-drawer__body > :last-child > :last-child {
 	margin-bottom: 0;
 }
-
-/* ─── Side modifiers ───────────────────────────────────────────────
- *
- * Each side anchors the dialog with `inset`. The slide-in animation is
- * a keyframes animation triggered by `[open]` — picked over
- * `@starting-style` because keyframes have broader browser support
- * (everywhere `<dialog>` works) and a clearer source-of-truth: the
- * starting/ending frames are spelled out, no cascade-interaction
- * footguns. The matching backdrop fade is a separate animation.
- */
-
-dialog.rf-drawer[data-side="right"] {
-	inset:
-		var(--rf-drawer-gutter)
-		var(--rf-drawer-gutter)
-		var(--rf-drawer-gutter)
-		auto;
-	height: auto;
-}
 dialog.rf-drawer[data-side="right"][open]:not([data-state="closing"]) {
 	animation: rf-drawer-slide-in-right var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
 }
 dialog.rf-drawer[data-side="right"][data-state="closing"] {
 	animation: rf-drawer-slide-out-right var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease) forwards;
-}
-dialog.rf-drawer[data-side="left"] {
-	inset:
-		var(--rf-drawer-gutter)
-		auto
-		var(--rf-drawer-gutter)
-		var(--rf-drawer-gutter);
-	height: auto;
 }
 dialog.rf-drawer[data-side="left"][open]:not([data-state="closing"]) {
 	animation: rf-drawer-slide-in-left var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
@@ -231,27 +168,11 @@ dialog.rf-drawer[data-side="left"][open]:not([data-state="closing"]) {
 dialog.rf-drawer[data-side="left"][data-state="closing"] {
 	animation: rf-drawer-slide-out-left var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease) forwards;
 }
-dialog.rf-drawer[data-side="top"] {
-	inset:
-		var(--rf-drawer-gutter)
-		var(--rf-drawer-gutter)
-		auto
-		var(--rf-drawer-gutter);
-	width: auto;
-}
 dialog.rf-drawer[data-side="top"][open]:not([data-state="closing"]) {
 	animation: rf-drawer-slide-in-top var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
 }
 dialog.rf-drawer[data-side="top"][data-state="closing"] {
 	animation: rf-drawer-slide-out-top var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease) forwards;
-}
-dialog.rf-drawer[data-side="bottom"] {
-	inset:
-		auto
-		var(--rf-drawer-gutter)
-		var(--rf-drawer-gutter)
-		var(--rf-drawer-gutter);
-	width: auto;
 }
 dialog.rf-drawer[data-side="bottom"][open]:not([data-state="closing"]) {
 	animation: rf-drawer-slide-in-bottom var(--rf-drawer-anim-duration) var(--rf-drawer-anim-ease);
@@ -335,34 +256,6 @@ dialog.rf-drawer[data-state="closing"]::backdrop {
 	dialog.rf-drawer .rf-drawer__footer {
 		padding: 0.75rem 1rem;
 	}
-}
-
-/* ─── Size modifiers (only meaningful in dialog mode) ─────────── */
-
-dialog.rf-drawer[data-side="right"][data-size="sm"],
-dialog.rf-drawer[data-side="left"][data-size="sm"] {
-	width: var(--rf-drawer-size-sm);
-}
-dialog.rf-drawer[data-side="right"][data-size="md"],
-dialog.rf-drawer[data-side="left"][data-size="md"] {
-	width: var(--rf-drawer-size-md);
-}
-dialog.rf-drawer[data-side="right"][data-size="lg"],
-dialog.rf-drawer[data-side="left"][data-size="lg"] {
-	width: var(--rf-drawer-size-lg);
-}
-
-dialog.rf-drawer[data-side="top"][data-size="sm"],
-dialog.rf-drawer[data-side="bottom"][data-size="sm"] {
-	height: var(--rf-drawer-size-sm);
-}
-dialog.rf-drawer[data-side="top"][data-size="md"],
-dialog.rf-drawer[data-side="bottom"][data-size="md"] {
-	height: var(--rf-drawer-size-md);
-}
-dialog.rf-drawer[data-side="top"][data-size="lg"],
-dialog.rf-drawer[data-side="bottom"][data-size="lg"] {
-	height: var(--rf-drawer-size-lg);
 }
 
 }

@@ -4,7 +4,6 @@
 	padding: 0.5rem 0;
 }
 .rf-nav ul {
-	list-style: none;
 	padding: 0;
 	margin: 0;
 }
@@ -36,7 +35,6 @@
 	font-weight: var(--rf-weight-semibold);
 }
 .rf-nav-item__link {
-	display: block;
 	padding: 0.375rem 0.75rem;
 	border-radius: var(--rf-radius-sm);
 	color: var(--rf-color-text);
@@ -73,23 +71,14 @@
  * instead of wrapping to the next line — the link's `display: block` would
  * otherwise eat the full row. */
 .rf-nav-item:has(> .rf-badge[data-name="badge"]) {
-	display: flex;
-	align-items: center;
 	gap: 0.375rem;
 	padding: 0;
-}
-.rf-nav-item:has(> .rf-badge[data-name="badge"]) > .rf-nav-item__link {
-	flex: 0 1 auto;
-	min-width: 0;
 }
 
 /* ─── Collapsible groups (vertical sidebar) ───────────────────────────── */
 
 .rf-nav--collapsible .rf-nav-group h2,
 .rf-nav--collapsible .rf-nav-group h3 {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
 	cursor: pointer;
 	user-select: none;
 	border-radius: var(--rf-radius-sm);
@@ -105,12 +94,8 @@
 }
 .rf-nav--collapsible .rf-nav-group h2::after,
 .rf-nav--collapsible .rf-nav-group h3::after {
-	content: '';
-	width: 0.5rem;
-	height: 0.5rem;
 	border-right: 1.5px solid currentColor;
 	border-bottom: 1.5px solid currentColor;
-	transform: rotate(45deg);
 	transition: transform 200ms ease;
 	margin-right: 0.25rem;
 }
@@ -120,17 +105,7 @@
 .rf-nav--collapsible .rf-nav-group > .rf-nav-group__panel,
 .rf-nav--collapsible .rf-nav-group > ul,
 .rf-nav--collapsible .rf-nav-group > ol {
-	overflow: hidden;
 	transition: height 200ms ease;
-}
-.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] > .rf-nav-group__panel,
-.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] > ul,
-.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] > ol {
-	height: 0;
-}
-.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] h2::after,
-.rf-nav--collapsible .rf-nav-group[data-collapsed="true"] h3::after {
-	transform: rotate(-45deg);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -156,10 +131,7 @@
 }
 .rf-nav--menubar > .rf-nav__top-level > ul,
 .rf-nav--menubar > .rf-nav__top-level ul {
-	display: flex;
-	flex-wrap: wrap;
 	gap: 0.25rem;
-	align-items: center;
 	margin: 0;
 }
 .rf-nav--menubar > .rf-nav__top-level li {
@@ -167,7 +139,6 @@
 	margin: 0;
 }
 .rf-nav--menubar > .rf-nav__top-level .rf-nav-item__link {
-	display: inline-block;
 	padding: 0.375rem 0.75rem;
 	font-weight: var(--rf-weight-medium);
 	font-size: var(--rf-text-sm);
@@ -181,8 +152,6 @@
 }
 .rf-nav--menubar .rf-nav-group {
 	margin: 0;
-	position: relative;
-	display: inline-block;
 }
 .rf-nav--menubar .rf-nav-group h2,
 .rf-nav--menubar .rf-nav-group h3 {
@@ -211,35 +180,15 @@
  * wrapper so the rule works equally well for simple <ul> dropdowns and
  * rich panels containing nested navs / intro / footer slots. */
 .rf-nav--menubar .rf-nav-group > .rf-nav-group__panel {
-	display: block;
-	position: absolute;
-	top: 100%;
-	right: 0;
-	left: auto;
-	min-width: 14rem;
 	padding: 0.5rem;
 	background: var(--rf-color-bg);
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-md);
 	box-shadow: var(--rf-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.08));
-	z-index: 50;
-	opacity: 0;
-	visibility: hidden;
-	pointer-events: none;
-	transform: translateY(-4px);
 	transition: opacity 150ms ease, visibility 150ms ease, transform 150ms ease;
-}
-.rf-nav--menubar .rf-nav-group:hover > .rf-nav-group__panel,
-.rf-nav--menubar .rf-nav-group:focus-within > .rf-nav-group__panel,
-.rf-nav--menubar .rf-nav-group[data-open="true"] > .rf-nav-group__panel {
-	opacity: 1;
-	visibility: visible;
-	pointer-events: auto;
-	transform: translateY(0);
 }
 /* Inside the panel, lists render naturally (no extra positioning). */
 .rf-nav--menubar .rf-nav-group__panel ul {
-	list-style: none;
 	padding: 0;
 	margin: 0;
 }
@@ -251,9 +200,6 @@
  * `> ul > li > a` so it only catches flat panels — nested columns navs
  * (which sit inside `.rf-nav--columns`) keep their own item styling. */
 .rf-nav--menubar .rf-nav-group__panel > ul > li > .rf-nav-item__link {
-	display: block;
-	width: 100%;
-	box-sizing: border-box;
 	padding: 0.5rem 0.75rem;
 }
 .rf-nav--menubar .rf-nav-group .rf-nav-item__link {
@@ -262,44 +208,20 @@
 }
 .rf-nav--menubar > nav,
 .rf-nav--menubar {
-	display: flex;
-	flex-wrap: wrap;
 	gap: 0.25rem;
-	align-items: center;
-}
-.rf-nav--menubar [data-name="trigger"] {
-	display: none;
 }
 
 @media (max-width: 768px) {
-	/* Mobile: render the menubar as a flat vertical side-nav. No hamburger
-	   trigger, no click-to-expand groups — category headings render as plain
-	   headings with their items always visible. */
-	.rf-nav--menubar [data-name="trigger"] {
-		display: none;
-	}
 	.rf-nav--menubar {
-		flex-direction: column;
-		align-items: stretch;
 		gap: 0;
 	}
-	.rf-nav--menubar > .rf-nav__top-level,
-	.rf-nav--menubar > .rf-nav-group {
-		display: block;
-		width: 100%;
-	}
 	.rf-nav--menubar > .rf-nav__top-level > ul {
-		flex-direction: column;
-		align-items: stretch;
 		gap: 0;
 	}
 	.rf-nav--menubar > .rf-nav__top-level .rf-nav-item__link {
-		display: block;
 		padding: 0.5rem 0.75rem;
 	}
 	.rf-nav--menubar .rf-nav-group {
-		position: static;
-		display: block;
 		margin: 1rem 0 0;
 	}
 	.rf-nav--menubar .rf-nav-group h2,
@@ -321,30 +243,20 @@
 		color: var(--rf-color-muted);
 	}
 	.rf-nav--menubar .rf-nav-group > .rf-nav-group__panel {
-		position: static;
-		display: block;
-		min-width: 0;
 		padding: 0;
 		background: transparent;
 		border: 0;
 		box-shadow: none;
-		opacity: 1;
-		visibility: visible;
-		pointer-events: auto;
-		transform: none;
 	}
 }
 
 /* ─── Columns layout (footer) ─────────────────────────────────────────── */
 
 .rf-nav--columns {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
 	gap: 2rem;
 	padding: 1.5rem 0;
 }
 .rf-nav--columns .rf-nav__top-level {
-	grid-column: 1 / -1;
 	padding-bottom: 1rem;
 	margin-bottom: 0;
 	border-bottom: 0;
@@ -380,7 +292,6 @@
 		/* Keep two columns on mobile. `minmax(0, 1fr)` lets columns shrink
 		 * below their min-content width so long link labels don't push the
 		 * grid wider than the viewport and trigger horizontal scroll. */
-		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 1.25rem 1.5rem;
 	}
 	.rf-nav--columns .rf-nav-item__link {
@@ -400,10 +311,7 @@
 }
 .rf-nav--cards > .rf-nav__top-level > ul,
 .rf-nav--cards > ul {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
 	gap: 1rem;
-	list-style: none;
 	padding: 0;
 	margin: 0;
 }
@@ -417,8 +325,6 @@
 	margin-bottom: 1rem;
 }
 .rf-nav--cards .rf-nav-group > ul {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
 	gap: 1rem;
 }
 .rf-nav--cards .rf-nav-item {
@@ -427,8 +333,6 @@
 	font-size: inherit;
 }
 .rf-nav--cards .rf-nav-item__link {
-	display: flex;
-	flex-direction: column;
 	gap: 0.5rem;
 	padding: 1.25rem;
 	background: var(--rf-color-surface, var(--rf-color-bg));
@@ -437,7 +341,6 @@
 	color: var(--rf-color-text);
 	text-decoration: none;
 	transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
-	height: 100%;
 }
 .rf-nav--cards .rf-nav-item__link:hover {
 	border-color: var(--rf-color-primary);
@@ -446,8 +349,6 @@
 	box-shadow: var(--rf-shadow-sm, 0 2px 6px rgba(0, 0, 0, 0.05));
 }
 .rf-nav--cards .rf-nav-item__icon {
-	width: 1.5rem;
-	height: 1.5rem;
 	color: var(--rf-color-primary);
 	margin-bottom: 0.25rem;
 }
@@ -462,18 +363,9 @@
 	line-height: var(--rf-leading-normal);
 }
 
-@media (max-width: 500px) {
-	.rf-nav--cards > ul,
-	.rf-nav--cards > .rf-nav__top-level > ul,
-	.rf-nav--cards .rf-nav-group > ul {
-		grid-template-columns: 1fr;
-	}
-}
-
 /* ─── Per-item description (SPEC-054, any layout) ─────────────────────── */
 
 .rf-nav-item__description {
-	display: block;
 	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 	line-height: var(--rf-leading-snug);
@@ -481,24 +373,6 @@
 }
 
 /* ─── Menubar group slots (SPEC-054 rich panel content) ──────────────── */
-
-/* Rich menubar panels: when the panel contains intro / nested nav / footer
- * blocks, it auto-sizes to fit content rather than the narrow flat dropdown
- * default. */
-.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav-group__intro),
-.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav-group__footer),
-.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav) {
-	min-width: 20rem;
-	max-width: 36rem;
-}
-
-/* When the panel contains a nested columns nav with explicit column wrappers,
- * widen the cap so each column has room for a one-line description rather
- * than wrapping to three or four. */
-.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav--columns > div[data-name="column"]) {
-	min-width: 36rem;
-	max-width: 56rem;
-}
 
 /* Nested columns nav inside a menubar panel: render as a distinct surface
  * card so the column grid reads as a grouped block rather than bleeding
@@ -522,7 +396,6 @@
 	padding: 0;
 }
 .rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link {
-	display: block;
 	padding: 0.75rem;
 	color: var(--rf-color-text);
 	font-weight: var(--rf-weight-medium);
@@ -589,60 +462,30 @@
 .rf-nav--columns .rf-nav-group__column,
 .rf-nav--columns .rf-nav__column,
 .rf-nav--columns > div[data-name="column"] {
-	display: flex;
-	flex-direction: column;
 	gap: 1.25rem;
-}
-
-/* Multi-section columns mode: when the author has placed explicit `---`
- * dividers, the structure already declares the column count. Use
- * grid-auto-flow:column so each `data-name="column"` wrapper becomes its own
- * track — this expands the container to fit the tracks rather than
- * collapsing to one column when the container is narrow (e.g. nested inside
- * a menubar panel at its min-width). */
-.rf-nav--columns:has(> div[data-name="column"]) {
-	display: grid;
-	grid-template-columns: unset;
-	grid-auto-flow: column;
-	grid-auto-columns: minmax(14rem, 1fr);
 }
 
 /* Stepped collapse: at four columns × 14rem min + gaps the grid needs ~62rem
  * of width, so below ~900px the explicit-column flow would overflow. Step
  * down to a 2×N grid before going single-column at the narrowest breakpoint. */
-@media (max-width: 900px) {
-	.rf-nav--columns:has(> div[data-name="column"]) {
-		grid-auto-flow: row;
-		grid-auto-columns: unset;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-	}
-}
 
 @media (max-width: 600px) {
 	.rf-nav--columns:has(> div[data-name="column"]) {
-		grid-auto-flow: row;
-		grid-auto-columns: unset;
 		/* Keep two columns on mobile. `minmax(0, 1fr)` lets columns shrink
 		 * below their min-content width so long link labels don't push the
 		 * grid wider than the viewport and trigger horizontal scroll. */
-		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 }
 
 /* ─── Strip layout (SPEC-054 compact secondary nav) ───────────────────── */
 
 .rf-nav--strip {
-	display: flex;
-	flex-wrap: wrap;
 	gap: 0.5rem 1rem;
 	padding: 0.5rem 0;
 	font-size: var(--rf-text-sm);
 }
 .rf-nav--strip ul {
-	display: flex;
-	flex-wrap: wrap;
 	gap: 0.5rem 1rem;
-	list-style: none;
 	padding: 0;
 	margin: 0;
 }
@@ -650,7 +493,6 @@
 	padding: 0;
 }
 .rf-nav--strip .rf-nav-item__link {
-	display: inline-block;
 	padding: 0.25rem 0;
 	color: var(--rf-color-muted);
 	font-size: var(--rf-text-sm);
@@ -687,9 +529,6 @@
 		background: transparent;
 		border: 0;
 		border-radius: 0;
-		grid-auto-flow: row;
-		grid-auto-columns: unset;
-		grid-template-columns: 1fr;
 	}
 	/* Tighter padding + bolder weight matches the visual rhythm of the
 	 * regular flat menubar group items above. Hover swaps to a text-colour
@@ -702,23 +541,6 @@
 	.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link:hover {
 		background: transparent;
 		color: var(--rf-color-primary);
-	}
-	/* Descriptions are space-eaters in a vertical drawer — hide them and let
-	 * the link title carry the line on its own. */
-	.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__description {
-		display: none;
-	}
-	/* Rich-panel min-widths (20rem / 36rem) above aren't viewport-gated and
-	 * would push the drawer wider than the mobile viewport. The drawer
-	 * renders the menubar as a flat vertical list, so no min-width is
-	 * needed — clamp to fit. Placed after the rich-panel rules so source
-	 * order wins the cascade at equal specificity. */
-	.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav-group__intro),
-	.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav-group__footer),
-	.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav),
-	.rf-nav--menubar .rf-nav-group__panel:has(.rf-nav--columns > div[data-name="column"]) {
-		min-width: 0;
-		max-width: 100%;
 	}
 }
 

@@ -1,0 +1,144 @@
+/* mockup — structure. The generic device-frame layout primitives: the root sizing
+ * + container context, the fit-mode scaling, the frame/viewport/bezel layout, and
+ * the positioning/flex of the shared chrome parts (notch, status bar, home
+ * indicator, title bar, traffic lights, address bar, keyboard, trackpad). The
+ * per-device dimensions + frame chrome (border/radius/bezel colours/glyphs) and
+ * the device-specific overrides are skin (Lumina's styles/runes/mockup.css) — a
+ * cohesive "device skin" that overrides this generic layout by specificity/order. */
+
+.rf-mockup {
+	display: block;
+	width: 100%;
+	container-type: inline-size;
+}
+.rf-showcase[data-place] .rf-mockup {
+	width: auto;
+	max-width: 100%;
+	container-type: normal;
+}
+.rf-showcase[data-place] .rf-mockup__frame {
+	zoom: var(--mockup-scale, 1);
+}
+
+/* Fit mode: none (native pixel size + scale transform). */
+.rf-mockup[data-fit="none"] {
+	display: inline-block;
+	width: auto;
+	container-type: normal;
+}
+.rf-mockup[data-fit="none"] .rf-mockup__frame {
+	zoom: normal;
+	transform: scale(var(--mockup-scale, 1));
+	transform-origin: top center;
+	margin-inline: 0;
+}
+.rf-mockup[data-fit="none"].rf-mockup--browser,
+.rf-mockup[data-fit="none"].rf-mockup--browser-dark {
+	display: block;
+}
+
+.rf-mockup__frame {
+	position: relative;
+	margin-inline: auto;
+	zoom: calc(var(--mockup-scale, 1) * min(1, tan(atan2(100cqi, var(--mockup-device-width, 100cqi)))));
+}
+
+.rf-mockup__viewport {
+	overflow: auto;
+}
+.rf-mockup__viewport img {
+	display: block;
+}
+
+.rf-mockup__bezel {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+/* Notch positioning (per-device size + colour is skin; iPhone SE re-anchors it). */
+.rf-mockup__notch {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 2;
+}
+.rf-mockup__notch[data-notch="dynamic-island"] {
+	width: 120px;
+	height: 34px;
+	top: 12px;
+}
+.rf-mockup__notch[data-notch="classic"] {
+	width: 150px;
+	height: 28px;
+	top: 0;
+}
+.rf-mockup__notch[data-notch="punch-hole"] {
+	width: 12px;
+	height: 12px;
+	top: 16px;
+}
+
+.rf-mockup__status-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 44px;
+	position: relative;
+	z-index: 1;
+}
+
+.rf-mockup__home-indicator {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 32px;
+}
+.rf-mockup__home-indicator::after {
+	content: '';
+	display: block;
+	width: 134px;
+	height: 5px;
+}
+
+.rf-mockup__title-bar {
+	display: flex;
+	align-items: center;
+	min-height: 2.5rem;
+}
+
+.rf-mockup__traffic-lights {
+	display: flex;
+	flex-shrink: 0;
+}
+.rf-mockup__traffic-light {
+	display: block;
+	width: 12px;
+	height: 12px;
+}
+
+.rf-mockup__address-bar {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	max-width: 60%;
+	min-height: 1.75rem;
+}
+.rf-mockup__url {
+	overflow: hidden;
+}
+
+.rf-mockup__keyboard {
+	display: flex;
+	justify-content: center;
+}
+.rf-mockup__trackpad {
+	width: 40%;
+	height: 6px;
+}
+
+/* Context: centred in a grid cell. */
+.rf-grid .rf-mockup {
+	justify-self: center;
+}
