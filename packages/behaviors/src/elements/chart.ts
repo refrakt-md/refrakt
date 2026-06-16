@@ -116,11 +116,10 @@ function formatTick(v: number): string {
 /** Standalone svg renderer — a future `ChartProvider.render` lifts this verbatim.
  *  Emits only tagged elements (class + data-series + optional data-meta-sentiment);
  *  all colour/stroke/font is painted by chart.css from the contract props. */
-function renderSvg(data: ChartData, container: HTMLElement, host: HTMLElement, opts: { type: string; tickCount: number; tickStep?: number }): void {
-	const svgW = 600, svgH = 300;
-	const pad = { top: 30, right: 20, bottom: 40, left: 50 };
-	const cw = svgW - pad.left - pad.right;
-	const ch = svgH - pad.top - pad.bottom;
+function renderSvg(data: ChartData, container: HTMLElement, host: HTMLElement, opts: { type: string; tickCount: number; tickStep?: number; labelAngle: number | 'auto' }): void {
+	const svgW = 600;
+	const padTop = 30, padLeft = 50, padRight = 20;
+	const cw = svgW - padLeft - padRight;
 	const g = readGeometry(host);
 
 	const labels = data.rows.map((r) => r[0] || '');
@@ -131,6 +130,25 @@ function renderSvg(data: ChartData, container: HTMLElement, host: HTMLElement, o
 	// The chart top snaps to the highest tick so the topmost label is round.
 	const maxVal = ticks[ticks.length - 1];
 	const bgw = cw / Math.max(labels.length, 1);
+
+	// X-axis label angle — `auto` rotates to -45° when the longest label wouldn't
+	// fit horizontally in its slot. `pad.bottom` grows to accommodate the diagonal
+	// projection (sin(angle) × estimated label width) so labels don't get clipped.
+	const labelSize = 12;
+	const charW = labelSize * 0.6;
+	const maxLabelLen = labels.length ? Math.max(...labels.map((l) => l.length)) : 0;
+	const estLabelW = maxLabelLen * charW;
+	const labelAngle = opts.labelAngle === 'auto'
+		? (estLabelW > bgw * 0.95 ? -45 : 0)
+		: opts.labelAngle;
+	const labelExtent = labelAngle === 0
+		? labelSize + 8
+		: Math.abs(Math.sin((labelAngle * Math.PI) / 180)) * estLabelW + labelSize;
+	const padBottom = 10 + labelExtent;
+	const chBase = 230;
+	const ch = chBase;
+	const svgH = padTop + chBase + padBottom;
+	const pad = { top: padTop, right: padRight, bottom: padBottom, left: padLeft };
 
 	const svg = svgEl('svg', { viewBox: `0 0 ${svgW} ${svgH}`, class: 'rf-chart__svg' });
 
@@ -233,12 +251,22 @@ function renderSvg(data: ChartData, container: HTMLElement, host: HTMLElement, o
 		}
 	}
 
-	// Category labels (painted via `.rf-chart__label`).
+	// Category labels (painted via `.rf-chart__label`). When rotated, anchor at the
+	// end so the label's right edge sits at the tick and rotates down-left; when
+	// horizontal, centre under the tick.
+	const axisY = svgH - pad.bottom;
 	for (let i = 0; i < labels.length; i++) {
-		svg.appendChild(svgEl('text', {
-			x: pad.left + i * bgw + bgw / 2, y: svgH - pad.bottom + 20,
-			'text-anchor': 'middle', class: 'rf-chart__label',
-		}, labels[i]));
+		const tickX = pad.left + i * bgw + bgw / 2;
+		const attrs: Record<string, string | number> = {
+			x: tickX,
+			y: labelAngle === 0 ? axisY + 20 : axisY + 14,
+			'text-anchor': labelAngle === 0 ? 'middle' : 'end',
+			class: 'rf-chart__label',
+		};
+		if (labelAngle !== 0) {
+			attrs.transform = `rotate(${labelAngle} ${tickX} ${axisY + 14})`;
+		}
+		svg.appendChild(svgEl('text', attrs, labels[i]));
 	}
 
 	container.replaceChildren(svg);
@@ -257,11 +285,15 @@ export class RfChart extends SafeHTMLElement {
 
 		const title = table.querySelector('caption')?.textContent?.trim() ?? '';
 		const type = this.dataset.type || 'bar';
-		// `data-tick-count` / `data-tick-step` ride the rune bag; dataset
-		// converts kebab → camel so they read as `tickCount` / `tickStep`.
+		// `data-tick-count` / `data-tick-step` / `data-label-angle` ride the rune
+		// bag; dataset converts kebab → camel so they read as camelCase keys.
 		const tickCount = parseInt(this.dataset.tickCount || '5', 10);
 		const tickStepRaw = this.dataset.tickStep;
 		const tickStep = tickStepRaw ? parseFloat(tickStepRaw) : undefined;
+		const labelAngleRaw = this.dataset.labelAngle ?? 'auto';
+		const labelAngle: number | 'auto' = labelAngleRaw === 'auto'
+			? 'auto'
+			: (Number.isFinite(parseFloat(labelAngleRaw)) ? parseFloat(labelAngleRaw) : 'auto');
 
 		const rendered = document.createElement('div');
 		rendered.className = 'rf-chart__rendered';
@@ -276,7 +308,7 @@ export class RfChart extends SafeHTMLElement {
 		const container = document.createElement('div');
 		container.className = 'rf-chart__container';
 		rendered.appendChild(container);
-		renderSvg(data, container, this, { type, tickCount, tickStep });
+		renderSvg(data, container, this, { type, tickCount, tickStep, labelAngle });
 
 		// Legend (one swatch per series, when there's more than one). The swatch
 		// colour comes from chart.css via `data-series` — no inline paint.

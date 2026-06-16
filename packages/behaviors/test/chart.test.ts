@@ -178,6 +178,49 @@ describe('rf-chart theming contract (WORK-353)', () => {
 		expect(stops.some((s) => s.getAttribute('data-position') === 'bottom')).toBe(true);
 	});
 
+	it('auto-rotates X-axis labels to -45° when slots are too narrow for horizontal', () => {
+		// 12 months × full names → bgw ≈ 44px while max label ≈ 9×7≈63px > slot.
+		const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+		const rows = months.map((m) => `<tr><td>${m}</td><td>${Math.floor(Math.random() * 100)}</td></tr>`).join('');
+		const el = mount({ rows });
+		const labelEls = [...el.querySelectorAll('.rf-chart__label')];
+		expect(labelEls.length).toBe(12);
+		// Every label carries a rotate(-45 …) transform when auto-rotation kicks in.
+		expect(labelEls[0].getAttribute('transform')).toMatch(/^rotate\(-45 /);
+		expect(labelEls[0].getAttribute('text-anchor')).toBe('end');
+	});
+
+	it('keeps X-axis labels horizontal when slots are wide enough', () => {
+		// 3 short labels in 530px slot → plenty of room.
+		const el = mount({ rows: '<tr><td>Q1</td><td>10</td></tr><tr><td>Q2</td><td>20</td></tr><tr><td>Q3</td><td>30</td></tr>' });
+		const labelEls = [...el.querySelectorAll('.rf-chart__label')];
+		expect(labelEls[0].getAttribute('transform')).toBeNull();
+		expect(labelEls[0].getAttribute('text-anchor')).toBe('middle');
+	});
+
+	it('honours an explicit data-label-angle override', () => {
+		const el = document.createElement('rf-chart');
+		el.setAttribute('data-type', 'bar');
+		el.setAttribute('data-label-angle', '-90');
+		el.innerHTML = table('<tr><td>Q1</td><td>10</td></tr>');
+		document.body.appendChild(el);
+		const lbl = el.querySelector('.rf-chart__label')!;
+		expect(lbl.getAttribute('transform')).toMatch(/^rotate\(-90 /);
+		expect(lbl.getAttribute('text-anchor')).toBe('end');
+	});
+
+	it('forces horizontal labels with data-label-angle="0" even when crowded', () => {
+		const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+		const rows = months.map((m) => `<tr><td>${m}</td><td>50</td></tr>`).join('');
+		const el = document.createElement('rf-chart');
+		el.setAttribute('data-type', 'bar');
+		el.setAttribute('data-label-angle', '0');
+		el.innerHTML = table(rows);
+		document.body.appendChild(el);
+		const lbl = el.querySelector('.rf-chart__label')!;
+		expect(lbl.getAttribute('transform')).toBeNull();
+	});
+
 	it('honours data-tick-count as an approximate target', () => {
 		// count=2 → step ~50 for max 100 → ticks [0, 50, 100].
 		const el = document.createElement('rf-chart');

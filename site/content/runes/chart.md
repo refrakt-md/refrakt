@@ -34,13 +34,21 @@ Use `type="line"` for trend data.
 
 {% preview source=true %}
 
-{% chart type="line" title="User Growth" %}
-| Quarter | Users |
-|---------|-------|
-| Q1 2024 | 1000  |
-| Q2 2024 | 2500  |
-| Q3 2024 | 5000  |
-| Q4 2024 | 8500  |
+{% chart type="line" title="Monthly Active Users" %}
+| Month     | Users |
+|-----------|-------|
+| January   | 1000  |
+| February  | 1240  |
+| March     | 1580  |
+| April     | 1820  |
+| May       | 2100  |
+| June      | 1950  |
+| July      | 1880  |
+| August    | 2240  |
+| September | 2680  |
+| October   | 3120  |
+| November  | 2890  |
+| December  | 3540  |
 {% /chart %}
 
 {% /preview %}
@@ -54,6 +62,7 @@ Use `type="line"` for trend data.
 | `stacked` | `boolean` | `false` | Stack series values |
 | `tick-count` | `number` | `5` | Approximate number of Y-axis ticks (auto picks "nice" round steps) |
 | `tick-step` | `number` | — | Explicit unit-span between Y-axis ticks. Overrides `tick-count` |
+| `label-angle` | `string` | `auto` | X-axis label rotation: `auto` rotates -45° when slots are crowded, `0` forces horizontal, or any explicit degree (e.g. `"-45"`, `"-90"`) |
 
 ### Common attributes
 

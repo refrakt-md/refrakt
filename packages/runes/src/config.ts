@@ -431,6 +431,7 @@ export const coreConfig: ThemeConfig = {
 				stacked: { source: 'meta', noBemClass: true },
 				'tick-count': { source: 'meta', noBemClass: true },
 				'tick-step': { source: 'meta', noBemClass: true },
+				'label-angle': { source: 'meta', noBemClass: true },
 			},
 			editHints: { data: 'none' },
 		},
