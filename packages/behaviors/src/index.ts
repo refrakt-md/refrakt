@@ -8,6 +8,7 @@ import { revealBehavior } from './behaviors/reveal.js';
 import { datatableBehavior } from './behaviors/datatable.js';
 import { formBehavior } from './behaviors/form.js';
 import { previewBehavior } from './behaviors/preview.js';
+import { mockupBehavior } from './behaviors/mockup.js';
 import { scrollspyBehavior } from './behaviors/scrollspy.js';
 import { scrollRevealBehavior } from './behaviors/scroll-reveal.js';
 import { versionSwitcherBehavior } from './behaviors/version-switcher.js';
@@ -40,6 +41,7 @@ const behaviors: Record<string, BehaviorFn> = {
 	'data-table': datatableBehavior,
 	form: formBehavior,
 	preview: previewBehavior,
+	mockup: mockupBehavior,
 	gallery: galleryBehavior,
 	juxtapose: juxtaposeBehavior,
 	nav: navBehavior,

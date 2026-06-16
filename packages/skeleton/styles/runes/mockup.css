@@ -44,29 +44,29 @@
 }
 
 /* Media guest: fill the slot. The slot, not the device, sets the size here, so
- * the device scales (up or down) to span the slot's inline extent; the cell's
- * fixed height + overflow then clips the over-tall device at the bottom.
+ * the device scales (up or down) so its width matches the slot's; the cell's
+ * fixed height + overflow then crops any vertical overflow (a tall phone peeks,
+ * a wide laptop fits whole).
  *
- * This uses `transform: scale()` rather than the base rule's `zoom`, and that's
- * load-bearing, not stylistic. The scale factor is derived from container-query
- * units (`100cqi` ÷ the device's fixed width). With `zoom`, iOS WebKit
- * re-resolves `cqi` in the zoomed coordinate space — the zoomed frame feeds its
- * own size back into the container it's measured against, so the factor diverges
- * and the device balloons to a cropped strip (the bug doesn't hit the browser
- * frame, whose factor is `cqi ÷ cqi` = 1, immune by construction). `transform`
- * doesn't participate in layout, so `cqi` resolves once against the stable slot
- * width and can't feed back — fixing iOS while staying identical on Blink.
+ * The scale factor is `slotWidth ÷ deviceWidth`, but it is *not* computed here:
+ * deriving it from container-query units mis-resolves on iOS WebKit (under
+ * `zoom` the device balloons; even under `transform` `cqi` resolves to the wrong
+ * size). The `mockup` behavior measures the slot in JS — deterministic across
+ * engines — and publishes the factor as `--mockup-fit-scale`; centering and the
+ * clip stay here. Without JS the factor defaults to 1 (native size), which
+ * degrades gracefully. `transform` (not `zoom`) so it never feeds back into the
+ * container's measured size.
  *
- * `transform` keeps the native layout box, so `left` re-centers it for any
- * slot/device width (the box is left-aligned at native width; the offset shifts
- * its centre onto the slot's), and `top center` anchors the device's top so the
- * clip eats the bottom. `fit="none"` opts out (its own transform path above);
- * standalone mockups keep the capped base zoom (a phone shouldn't fill a column). */
+ * `left` re-centers the native layout box for any slot/device width (the box is
+ * left-aligned at native width; the offset shifts its centre onto the slot's),
+ * and `transform-origin: top center` anchors the device's top so the clip eats
+ * the bottom. `fit="none"` opts out (its own transform path above); standalone
+ * mockups keep the capped base zoom (a phone shouldn't fill a column). */
 [data-section="media"] > .rf-mockup:not([data-fit="none"]) .rf-mockup__frame {
 	zoom: normal;
 	margin-inline: 0;
 	left: calc((100% - var(--mockup-device-width, 100%)) / 2);
-	transform: scale(calc(var(--mockup-scale, 1) * tan(atan2(100cqi, var(--mockup-device-width, 100cqi)))));
+	transform: scale(calc(var(--mockup-scale, 1) * var(--mockup-fit-scale, 1)));
 	transform-origin: top center;
 }
 
