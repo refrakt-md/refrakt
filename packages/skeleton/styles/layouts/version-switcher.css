@@ -1,0 +1,10 @@
+/* version-switcher — structure. The inline-flex row and the native-appearance reset
+ * on the select. Spacing, type, borders, the arrow glyph, and focus chrome are skin. */
+.rf-version-switcher {
+	display: inline-flex;
+	align-items: center;
+}
+.rf-version-switcher__select {
+	appearance: none;
+	-webkit-appearance: none;
+}

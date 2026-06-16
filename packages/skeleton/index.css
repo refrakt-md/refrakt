@@ -42,6 +42,15 @@
 
 /* ── Layout structure ── */
 @import './styles/layouts/split.css' layer(skeleton);
+@import './styles/layouts/default.css' layer(skeleton);
+@import './styles/layouts/docs.css' layer(skeleton);
+@import './styles/layouts/blog.css' layer(skeleton);
+@import './styles/layouts/mobile.css' layer(skeleton);
+@import './styles/layouts/on-this-page.css' layer(skeleton);
+@import './styles/layouts/search.css' layer(skeleton);
+@import './styles/layouts/theme-toggle.css' layer(skeleton);
+@import './styles/layouts/version-switcher.css' layer(skeleton);
+@import './styles/layouts/plan.css' layer(skeleton);
 
 /* ── Rune structure ── */
 @import './styles/runes/card.css' layer(skeleton);

@@ -1,0 +1,80 @@
+/* search — structure. The trigger inline-flex + icon box, the kbd box, the dialog
+ * modal positioning + open flex column, the header/footer flex, the input flex, the
+ * body scroll, the result/excerpt blocks, the native-clear hide, and the mobile
+ * full-screen dialog + footer hide. Surface chrome, borders, radii, type, and
+ * padding are skin. */
+.rf-search-trigger {
+	display: inline-flex;
+	align-items: center;
+	flex-shrink: 0;
+}
+.rf-search-trigger svg {
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+}
+.rf-search-trigger__label { pointer-events: none; }
+.rf-search-trigger__kbd {
+	display: inline-flex;
+	align-items: center;
+}
+.rf-search-dialog {
+	position: fixed;
+	top: 15vh;
+	left: 50%;
+	transform: translateX(-50%);
+	width: min(560px, calc(100vw - 2rem));
+	max-height: 70vh;
+	overflow: hidden;
+}
+.rf-search-dialog[open] {
+	display: flex;
+	flex-direction: column;
+}
+.rf-search-dialog__header {
+	display: flex;
+	align-items: center;
+}
+.rf-search-dialog__icon { flex-shrink: 0; }
+.rf-search-dialog__input { flex: 1; }
+.rf-search-dialog__input::-webkit-search-cancel-button { display: none; }
+.rf-search-dialog__esc {
+	display: inline-flex;
+	align-items: center;
+	flex-shrink: 0;
+}
+.rf-search-dialog__body {
+	flex: 1;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+.rf-search-result { display: block; }
+.rf-search-result__title { display: block; }
+.rf-search-result__excerpt { display: block; }
+.rf-search-dialog__footer {
+	display: flex;
+	align-items: center;
+}
+.rf-search-dialog__footer kbd {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 1.25rem;
+}
+@media (max-width: 768px) {
+	.rf-search-trigger__label,
+	.rf-search-trigger__kbd { display: none; }
+	.rf-search-dialog[open] {
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		transform: none;
+		width: 100%;
+		height: 100vh;
+		height: 100dvh;
+		max-height: 100vh;
+		max-height: 100dvh;
+	}
+	.rf-search-dialog__footer { display: none; }
+}

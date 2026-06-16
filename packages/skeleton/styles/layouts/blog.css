@@ -1,0 +1,38 @@
+/* blog layout — structure. The sticky header bar + order + brand box, the layout
+ * container width cap, the has-sidebar grid, the index/article width caps, the empty
+ * hide, the posts flex, the card block, the meta/tags flex rows, the sticky sidebar
+ * + list reset, and the responsive grid/sidebar reflow. Header height var, colours,
+ * borders, type, padding, and gaps are skin. */
+.rf-blog-header { position: sticky; top: 0; z-index: 100; }
+.rf-blog-header__inner { display: flex; align-items: center; }
+.rf-blog-header__inner .rf-search-trigger { margin-left: auto; }
+.rf-blog-header__inner p ~ p { order: 1; }
+.rf-blog-header__inner .rf-mobile-menu-btn { order: 2; }
+.rf-blog-header a { display: inline-block; }
+.rf-blog-header p:first-child a { display: inline-flex; align-items: center; }
+.rf-blog-header img,
+.rf-blog-header p:first-child a > .rf-icon { height: 2rem; width: 2rem; }
+.rf-blog-header p:first-child a > .rf-icon { display: inline-block; }
+.rf-blog-header__inner p ~ p a svg { width: 1.1rem; height: 1.1rem; }
+.rf-blog { max-width: 72rem; margin: 0 auto; }
+.rf-blog--has-sidebar {
+	display: grid;
+	grid-template-columns: 1fr 16rem;
+	align-items: start;
+}
+.rf-blog-index { max-width: 42rem; }
+.rf-blog-index__body:empty { display: none; }
+.rf-blog-index__posts { display: flex; flex-direction: column; }
+.rf-blog-card { display: block; }
+.rf-blog-card__meta { display: flex; align-items: center; }
+.rf-blog-card__tags { display: flex; flex-wrap: wrap; }
+.rf-blog-article { max-width: 42rem; }
+.rf-blog-article__meta { display: flex; align-items: center; }
+.rf-blog-article__tags { display: flex; flex-wrap: wrap; }
+.rf-blog-sidebar { position: sticky; top: 2.5rem; }
+.rf-blog-sidebar ul { list-style: none; }
+@media (max-width: 768px) {
+	.rf-blog-header__inner p ~ p { display: none; }
+	.rf-blog--has-sidebar { grid-template-columns: 1fr; }
+	.rf-blog-sidebar { position: static; }
+}
