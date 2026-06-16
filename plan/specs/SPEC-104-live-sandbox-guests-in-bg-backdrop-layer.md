@@ -1,4 +1,4 @@
-{% spec id="SPEC-104" status="draft" source="SPEC-088" tags="surfaces,runes,engine,bg,sandbox,lumina,layout,media" %}
+{% spec id="SPEC-104" status="accepted" source="SPEC-088" tags="surfaces,runes,engine,bg,sandbox,lumina,layout,media" %}
 
 # Live sandbox guests in the `bg` backdrop layer
 
@@ -70,7 +70,8 @@ body** holding a single media guest:
 - bg **transforms its body normally** (so the genuine sandbox rune runs, with full file
   resolution + sanitisation), then tags the rendered guest `data-bg-guest`, forces
   `height="fill"` (the {% ref "SPEC-101" /%} host-owned-height mode — iframe `height:100%`,
-  no auto-resize negotiation), and marks it presentational.
+  no auto-resize negotiation), and gives it the **backdrop posture** (§2 — force-mounted
+  but non-interactive).
 - bg emits that tagged element **alongside its existing `bg-*` metas**, exactly as the
   unwrapped metas land among the host's children today.
 
@@ -80,10 +81,19 @@ When `engine.ts` §1f raises the bg layer, it additionally **collects any `data-
 descendant** of the host and pushes it into the bg `<div>`'s children — layered **above**
 the `--bg-image` boot frame and **below** the overlay/scrim, a structural sibling of the
 `bg-video` branch. The guest is marked consumed so it is **not** also rendered in the
-content flow. The {% ref "SPEC-090" /%} demotion (`data-guest-posture="presentational"`,
-`pointer-events: none`, behaviours skip enhancement) applies because it is in the bg
-layer — a bg sandbox is inert by definition. No sandbox logic moves into the engine; bg
-never has to understand sandboxes; the host rune never has to know either.
+content flow.
+
+**Backdrop posture — mounted but inert (not {% ref "SPEC-090" /%} `presentational`).** A bg
+sandbox must still *run* — a visualiser whose iframe never mounts is a blank backdrop — so
+it cannot take SPEC-090's `presentational` posture, which makes the enhancement layer
+**skip** the guest entirely (`initRuneBehaviors` bails on any
+`[data-guest-posture="presentational"]` descendant, leaving the static fallback). The bg
+guest instead takes a distinct **`data-guest-posture="backdrop"`**: the enhancement layer
+**does** mount it — and forces **eager** activation regardless of the author's `activation`
+mode, so the scene boots without a user gesture — while the posture suppresses *interaction*
+only: `pointer-events: none`, no user-facing controls/poster, removed from the tab order.
+The contract is "enhance, then make inert," not "don't enhance." No sandbox logic moves into
+the engine; bg never has to understand sandboxes; the host rune never has to know either.
 
 ### 3. Bare-surface guardrail
 
@@ -133,9 +143,9 @@ interface BgPresetDefinition {
   to a rendered guest at transform time.
 - **The preset is sugar over the §1 body**, not a parallel system: the body is the
   primitive, the preset is a named shorthand the expander turns into it.
-- **Forced behaviours are not author-set.** `height: fill`, presentational posture, and
-  eager activation come from the bg-guest mechanism; the preset describes only *what the
-  scene is* (`src`/`framework`/`dependencies`). A preset may **also** carry a
+- **Forced behaviours are not author-set.** `height: fill`, the backdrop posture (§2 —
+  mounted but inert), and forced eager activation come from the bg-guest mechanism; the
+  preset describes only *what the scene is* (`src`/`framework`/`dependencies`). A preset may **also** carry a
   `gradient`/`style` for the boot frame (§4) — both land in the same `data-name="bg"` div.
 - **Config home: project config.** A scene is *content* (its files live in the project,
   e.g. `site/examples/midnight-waves/`), so a sandbox preset belongs in
@@ -172,21 +182,48 @@ DRY reuse splits along two axes:
   the expander may build the bundle once and clone per page (an optimisation only the
   named path affords).
 
+### 7. Reduced motion & performance
+
+A live `sandbox` backdrop is an always-running animation behind every page that carries it
+(it spreads by layout cascade, §6), so it must be gated like any other motion — consistent
+with the {% ref "SPEC-105" /%} reduced-motion baseline rather than a one-off.
+
+- **Reduced motion → boot frame only.** Under `prefers-reduced-motion: reduce`, the live
+  scene is **not mounted**; the §4 boot frame (the preset/inline `gradient`/`image` still)
+  stands in as the complete, static representation. This reuses the backdrop posture's
+  forced-activation switch — the enhancement layer simply declines to mount the scene under
+  reduced motion, exactly as it marks reveals in-view immediately ({% ref "SPEC-105" /%}).
+- **Off-screen / hidden → suspended.** The backdrop pauses (or tears down) its render loop
+  when scrolled off-screen or on a hidden tab, so a long article isn't driving a 3-D scene
+  the reader can't see. The boot frame remains painted underneath, so suspension is
+  invisible.
+- **No-JS / crawler** already get the boot frame (the scene only exists once enhanced),
+  matching the SPEC-105 "static page is always complete" rule.
+
 ## Acceptance Criteria
 
-- [ ] `bg` accepts an optional, constrained body holding one presentational guest
-  (`sandbox`); bg transforms it (real sandbox rune — file resolution + sanitisation),
-  tags it `data-bg-guest`, and forces `height="fill"` + presentational posture.
+- [ ] `bg` accepts an optional, constrained body holding one bare guest (`sandbox`); bg
+  transforms it (real sandbox rune — file resolution + sanitisation), tags it
+  `data-bg-guest`, and forces `height="fill"` + the backdrop posture.
 - [ ] The engine (§1f) relocates a `data-bg-guest` element into the `data-name="bg"`
   layer — above the `--bg-image` boot frame, below overlay/scrim, sibling to `bg-video` —
-  and marks it consumed so it does not render in content flow; {% ref "SPEC-090" /%}
-  `presentational` demotion applies.
+  and marks it consumed so it does not render in content flow.
+- [ ] **Backdrop posture (§2):** the bg guest gets `data-guest-posture="backdrop"` — the
+  enhancement layer **mounts** it and forces **eager** activation (the scene runs), while
+  suppressing interaction only (`pointer-events: none`, no controls, out of tab order). It
+  is explicitly *not* SPEC-090 `presentational` (which would skip enhancement and leave a
+  dead backdrop); a test covers that a backdrop guest mounts while a presentational one does
+  not.
 - [ ] A chromed content rune (`video`/`audio`/`figure`) in the bg body produces a build
   warning redirecting to the media-guest slot or `bg video="…"`; bare image/video
   backdrops keep their existing `bg src=`/`video=` attribute path (unchanged).
 - [ ] Boot frame composes: a preset/inline `gradient`/`image` paints behind the guest;
   `overlay`/`scrim` above it; a host's positioned image still flows to `og:image` /
   structured-data `image`.
+- [ ] **Reduced motion & performance (§7):** under `prefers-reduced-motion: reduce` the
+  live scene is not mounted and the boot frame stands in; the backdrop suspends its render
+  loop when off-screen / on a hidden tab; no-JS/crawler render the boot frame. Consistent
+  with the {% ref "SPEC-105" /%} reduced-motion baseline.
 - [ ] `BgPresetDefinition` gains a `sandbox` descriptor (`src`/`framework`/`dependencies`),
   resolved at **transform time** by an expansion step that injects the §1 body guest —
   not in the identity engine; `bg="name"` reaches author-parity with a gradient preset.
@@ -210,25 +247,28 @@ DRY reuse splits along two axes:
 - **A first-party (non-sandbox) canvas backdrop** — a built-in visualizer component that
   shares the AudioContext without an iframe is a distinct, later option; here the guest is
   an author-editable `sandbox`.
-- **Generalising the guest body to arbitrary content** — one presentational guest only,
+- **Generalising the guest body to arbitrary content** — one bare guest only (a `sandbox`),
   gated by the §3 guardrail.
 
 ## Work breakdown (provisional)
 
-1. **bg guest body + engine relocation + guardrail** (§1–§4) — bg body, `data-bg-guest`
-   tagging + `fill`/posture, engine §1f relocation, bare-surface validation, boot-frame
-   layering.
+1. **bg guest body + engine relocation + guardrail** (§1–§4, §7) — bg body, `data-bg-guest`
+   tagging + `fill`, the **backdrop posture** (mounted-but-inert + forced eager) and the
+   reduced-motion/off-screen gating, engine §1f relocation, bare-surface validation,
+   boot-frame layering.
 2. **`sandbox` bg preset** (§5) — `BgPresetDefinition.sandbox`, the transform-time
    expansion step (sandbox readers), schema + project-config home, memoisation.
-3. **Docs + showcase** (§6) — `bg` reference, `refrakt.config.json` example, the
-   music-blog backdrop pattern cross-linked to {% ref "SPEC-006" /%}.
+3. **Docs + showcase** (§6) — `bg` reference, `refrakt.config.json` example. **The
+   music-blog *audio-reactive* showcase is deferred until the {% ref "SPEC-006" /%} audio
+   bridge is built** (it is accepted but not yet implemented); a static/non-reactive live
+   backdrop is demonstrable from item 1 alone, and the reactive showcase lands with SPEC-006.
 
 ## References
 
 - {% ref "SPEC-088" /%} — `bg` gradients + escape hatch; `BgPresetDefinition`, engine §1f resolution (`engine.ts`), `tags/bg.ts`, `bg.css`.
 - {% ref "SPEC-087" /%} — surface-fill model; the subject-media-vs-ambiance boundary (§4) this builds on.
 - {% ref "SPEC-089" /%} — cover layout (why cover consumes the single media zone); the subject/ambiance line.
-- {% ref "SPEC-090" /%} — media-guest interaction posture: the `presentational` demotion a bg guest inherits.
+- {% ref "SPEC-090" /%} — media-guest interaction posture; the bg guest defines a sibling **`backdrop`** posture (mounted-but-inert), distinct from `presentational` (not enhanced) — see §2.
 - {% ref "SPEC-101" /%} — sandbox as a cover media guest (prior art): `height="fill"` host-owned height, the boot-frame guidance, production posture; `packages/behaviors/src/elements/sandbox.ts`.
 - {% ref "SPEC-006" /%} — the audio↔sandbox bridge (`audio.onFrame`/`onTrackChange`, streaming lifecycle) the backdrop subscribes to.
 - {% ref "WORK-018" /%} — the `video` rune's player chrome (why it is a subject, not a backdrop).
