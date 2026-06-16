@@ -1,0 +1,23 @@
+/* plot — structure. The column stack, the name block, the beats list reset, the
+ * beat positioning + dot box placement (incl. the linear connector dot offset and
+ * the linear label block). Dot colours, connector borders, type, and spacing are
+ * skin. */
+.rf-plot { display: flex; flex-direction: column; }
+.rf-plot > span[property="name"] { display: block; }
+.rf-plot ol { list-style: none; }
+.rf-beat { position: relative; }
+.rf-beat::before {
+	content: '';
+	position: absolute;
+	left: 0.375rem;
+	top: 1rem;
+	width: 0.75rem;
+	height: 0.75rem;
+}
+.rf-plot--linear .rf-beat::before {
+	left: -0.4375rem;
+	top: 0.125rem;
+}
+.rf-plot--linear .rf-beat > span[data-field="label"] {
+	display: block;
+}

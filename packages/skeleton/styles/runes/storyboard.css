@@ -1,0 +1,22 @@
+/* storyboard — structure. The panels grid (+ responsive column counts), the
+ * panel clip for the clean/comic styles, the panel image fill, and the metadata
+ * hide. Borders, radii, the comic tilt, polaroid chrome, type, and gaps are skin. */
+.rf-storyboard__panels {
+	display: grid;
+	grid-template-columns: repeat(var(--sb-columns, 3), 1fr);
+}
+.rf-storyboard--clean .rf-storyboard-panel { overflow: hidden; }
+.rf-storyboard--comic .rf-storyboard-panel { overflow: hidden; }
+.rf-storyboard-panel img {
+	width: 100%;
+	height: auto;
+	display: block;
+}
+.rf-storyboard-panel__body > span[property],
+.rf-storyboard-panel__body > meta { display: none; }
+@media (max-width: 768px) {
+	.rf-storyboard__panels { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 480px) {
+	.rf-storyboard__panels { grid-template-columns: 1fr !important; }
+}

@@ -82,3 +82,11 @@
 @import './styles/runes/drawer.css' layer(skeleton);
 @import './styles/runes/nav.css' layer(skeleton);
 @import './styles/runes/mockup.css' layer(skeleton);
+/* ── Plugin: storytelling ── */
+@import './styles/runes/character.css' layer(skeleton);
+@import './styles/runes/realm.css' layer(skeleton);
+@import './styles/runes/faction.css' layer(skeleton);
+@import './styles/runes/lore.css' layer(skeleton);
+@import './styles/runes/plot.css' layer(skeleton);
+@import './styles/runes/bond.css' layer(skeleton);
+@import './styles/runes/storyboard.css' layer(skeleton);

@@ -1,0 +1,12 @@
+/* lore — structure. The relative root (spoiler-overlay anchor), the title block,
+ * and the spoiler-overlay positioning. The blur effect, overlay chrome, glyph, and
+ * type stay skin. */
+.rf-lore { position: relative; }
+.rf-lore > span[property="title"] { display: block; }
+.rf-lore--spoiler::after {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 1;
+}

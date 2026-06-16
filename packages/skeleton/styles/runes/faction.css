@@ -1,0 +1,13 @@
+/* faction — structure (mirrors realm). The stacked-top flex flip, the sections flex
+ * column, and the section-name block. Inset padding + gaps + chrome stay skin. */
+.rf-faction[data-media-position="top"] {
+	display: flex;
+	flex-direction: column;
+}
+.rf-faction__sections {
+	display: flex;
+	flex-direction: column;
+}
+.rf-faction-section__name {
+	display: block;
+}

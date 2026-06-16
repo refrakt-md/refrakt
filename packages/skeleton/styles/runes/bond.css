@@ -1,0 +1,36 @@
+/* bond — structure. The flex row, the connector flex, the arrow rail box (display +
+ * size + relative), and the arrowhead pseudo positioning (both directions). The
+ * rail/arrowhead colours (drawn via borders), status tints, and type are skin. */
+.rf-bond {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.rf-bond__connector {
+	display: flex;
+	align-items: center;
+	flex-shrink: 0;
+}
+.rf-bond__arrow {
+	display: inline-block;
+	width: 2rem;
+	height: 2px;
+	position: relative;
+}
+.rf-bond__arrow::after {
+	content: '';
+	position: absolute;
+	right: -1px;
+	top: 50%;
+	transform: translateY(-50%);
+}
+.rf-bond[data-bidirectional="true"] .rf-bond__arrow::before {
+	content: '';
+	position: absolute;
+	left: -1px;
+	top: 50%;
+	transform: translateY(-50%);
+}
+.rf-bond__body {
+	width: 100%;
+}
