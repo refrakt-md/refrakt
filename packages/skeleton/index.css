@@ -38,6 +38,7 @@
 @import './styles/dimensions/sections.css' layer(skeleton);
 @import './styles/dimensions/checklist.css' layer(skeleton);
 @import './styles/dimensions/sequence.css' layer(skeleton);
+@import './styles/dimensions/guest-posture.css' layer(skeleton);
 
 /* ── Layout structure ── */
 @import './styles/layouts/split.css' layer(skeleton);
@@ -55,3 +56,5 @@
 @import './styles/runes/comparison.css' layer(skeleton);
 @import './styles/runes/symbol.css' layer(skeleton);
 @import './styles/runes/changelog.css' layer(skeleton);
+@import './styles/runes/tabs.css' layer(skeleton);
+@import './styles/runes/codegroup.css' layer(skeleton);

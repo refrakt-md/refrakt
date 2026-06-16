@@ -1,5 +1,6 @@
 @layer skin {
-/* Tabs */
+/* Tabs — skin. The eyebrow stretched-link, the scrollable tab strip, and the tab
+ * flex live in @refrakt-md/skeleton (styles/runes/tabs.css). */
 .rf-tabs__preamble {
 	margin-bottom: 1.5rem;
 }
@@ -12,8 +13,6 @@
 	margin: 0 0 0.5rem;
 }
 .rf-tabs__eyebrow:has(a) {
-	display: inline-block;
-	position: relative;
 	padding: 0.25rem 0.875rem;
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-full);
@@ -25,7 +24,7 @@
 }
 .rf-tabs__eyebrow:has(a):hover { border-color: var(--rf-color-muted); }
 .rf-tabs__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: var(--rf-weight-semibold); text-decoration: none; }
-.rf-tabs__eyebrow:has(a) a::before { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+.rf-tabs__eyebrow:has(a) a::before { border-radius: inherit; }
 .rf-tabs__headline {
 	margin-top: 0;
 }
@@ -39,11 +38,7 @@
 
 /* Tab bar — clean bottom line, no background */
 .rf-tabs__tabs {
-	display: flex;
 	border-bottom: 1px solid var(--rf-color-border);
-	overflow-x: auto;
-	overflow-y: hidden;
-	-webkit-overflow-scrolling: touch;
 }
 .rf-tabs__panels {
 	padding: 0;
@@ -52,7 +47,6 @@
 
 /* Tab buttons */
 .rf-tab {
-	flex: 0 0 auto;
 	padding: 0.625rem 1.25rem;
 	font-size: var(--rf-text-sm);
 	font-weight: var(--rf-weight-medium);

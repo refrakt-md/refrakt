@@ -1,22 +1,22 @@
 @layer skin {
-/* Code Group
+/* Code Group — skin.
  *
  * Chrome (the wrapper + topbar + tabs) uses `--rf-color-surface` so it
  * reads against the page in both light and dark modes. The code areas
- * themselves inherit `--rf-color-code-bg` from the global `pre` rule, so
- * code stays on its own background even when the surrounding chrome
- * flips with the page mode. */
+ * themselves inherit `--rf-color-code-bg` from the global `pre` rule.
+ *
+ * The wrapper clip, topbar flex, list reset, the scrollable tab strip, and the
+ * tab flex live in @refrakt-md/skeleton (styles/runes/codegroup.css). The pre/code
+ * rules stay here in skin: they deliberately override elements/code.css by source
+ * order (the `data-overflow="wrap"` reset especially). */
 .rf-codegroup {
 	border: 1px solid var(--rf-color-border);
-	overflow: hidden;
 	background: var(--rf-color-surface);
 	color: var(--rf-color-text);
 	box-shadow: var(--rf-shadow-md);
 	padding: 0;
 }
 .rf-codegroup__topbar {
-	display: flex;
-	align-items: center;
 	gap: 0.375rem;
 	padding: 0.75rem 1rem;
 	background: transparent;
@@ -25,9 +25,7 @@
 }
 /* Window chrome — three traffic-light dots painted as gradients on one
  * pseudo-element. The element reserves real width (three 10px dots, 1rem
- * apart) so the flex row spaces the title clear of the dots — box-shadow
- * dots take no layout space and overlapped the title. Pure decoration, so
- * it lives entirely in CSS (no markup). */
+ * apart) so the flex row spaces the title clear of the dots. Pure decoration. */
 .rf-codegroup__topbar::before {
 	content: '';
 	flex: 0 0 auto;
@@ -48,19 +46,14 @@
 	color: var(--rf-color-muted);
 }
 .rf-codegroup ul {
-	list-style: none;
 	padding: 0;
 	margin: 0;
 }
 .rf-codegroup__tabs {
-	display: flex;
 	background: transparent;
 	border-bottom: 1px solid var(--rf-color-border);
-	overflow-x: auto;
-	overflow-y: hidden;
 }
 .rf-codegroup__tab {
-	flex: 0 0 auto;
 	padding: 0.5rem 1rem;
 	font-size: var(--rf-text-xs);
 	font-family: var(--rf-font-mono);
@@ -105,14 +98,10 @@
 	overflow-x: hidden;
 }
 /* WORK-304 — the standalone codeblock CSS at `elements/code.css`
- * sets `display: grid; min-width: max-content` on `pre code` so
- * row tints + line numbers extend across the horizontal scroll
- * region. That sizing actively prevents wrapping (the code track
- * is locked at max-content). Inside `overflow="wrap"` codegroups
- * we WANT wrapping, so revert the code element back to a plain
- * block with no min-width constraint. Lines stay block-flow so
- * Shiki's `<span class="line">` children wrap with the pre's
- * `white-space: pre-wrap`. */
+ * sets `display: grid; min-width: max-content` on `pre code`. Inside
+ * `overflow="wrap"` codegroups we WANT wrapping, so revert the code element
+ * back to a plain block with no min-width constraint. This must stay skin —
+ * it overrides elements/code.css (also skin) by source order + specificity. */
 .rf-codegroup[data-overflow="wrap"] pre code {
 	display: block;
 	min-width: 0;
