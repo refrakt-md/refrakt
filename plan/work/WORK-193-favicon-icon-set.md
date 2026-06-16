@@ -1,4 +1,4 @@
-{% work id="WORK-193" status="done" priority="medium" complexity="small" tags="branding, logo, favicon" source="SPEC-050" milestone="v0.14.0" %}
+{% work id="WORK-193" status="done" priority="medium" complexity="simple" tags="branding, logo, favicon" source="SPEC-050" milestone="v0.14.0" %}
 
 # Favicon and app icon set
 

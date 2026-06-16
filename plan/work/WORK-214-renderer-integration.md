@@ -1,4 +1,4 @@
-{% work id="WORK-214" status="done" priority="high" complexity="medium" tags="ssr, renderer, tint, cascade" source="SPEC-052" milestone="v0.14.0" %}
+{% work id="WORK-214" status="done" priority="high" complexity="moderate" tags="ssr, renderer, tint, cascade" source="SPEC-052" milestone="v0.14.0" %}
 
 # Renderer integration + pre-paint script
 

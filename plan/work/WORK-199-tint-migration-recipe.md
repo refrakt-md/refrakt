@@ -1,4 +1,4 @@
-{% work id="WORK-199" status="done" priority="low" complexity="small" tags="tint, docs, migration" source="SPEC-053" milestone="v0.14.0" %}
+{% work id="WORK-199" status="done" priority="low" complexity="simple" tags="tint, docs, migration" source="SPEC-053" milestone="v0.14.0" %}
 
 # Document the tint migration recipe
 

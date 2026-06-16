@@ -1,4 +1,4 @@
-{% work id="WORK-229" status="done" priority="medium" complexity="small" tags="lumina, presets, gruvbox, syntax-highlighting" source="SPEC-057" milestone="v0.14.2" %}
+{% work id="WORK-229" status="done" priority="medium" complexity="simple" tags="lumina, presets, gruvbox, syntax-highlighting" source="SPEC-057" milestone="v0.14.2" %}
 
 # Gruvbox preset module + doc page
 

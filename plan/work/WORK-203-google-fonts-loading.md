@@ -1,4 +1,4 @@
-{% work id="WORK-203" status="done" priority="medium" complexity="small" tags="lumina, fonts, typography" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-203" status="done" priority="medium" complexity="simple" tags="lumina, fonts, typography" source="SPEC-051" milestone="v0.14.0" %}
 
 # Configure Google Fonts loading
 

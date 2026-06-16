@@ -1,4 +1,4 @@
-{% work id="WORK-191" status="done" priority="high" complexity="medium" tags="lumina, tokens, migration" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-191" status="done" priority="high" complexity="moderate" tags="lumina, tokens, migration" source="SPEC-048" milestone="v0.14.0" %}
 
 # Migrate existing Lumina tokens to the new contract
 

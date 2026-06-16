@@ -1,4 +1,4 @@
-{% work id="WORK-227" status="done" priority="high" complexity="small" tags="lumina, presets, tokyo-night, syntax-highlighting" source="SPEC-057" milestone="v0.14.2" %}
+{% work id="WORK-227" status="done" priority="high" complexity="simple" tags="lumina, presets, tokyo-night, syntax-highlighting" source="SPEC-057" milestone="v0.14.2" %}
 
 # Tokyo Night preset module + doc page
 

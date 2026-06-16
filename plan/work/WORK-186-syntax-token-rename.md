@@ -1,4 +1,4 @@
-{% work id="WORK-186" status="done" priority="high" complexity="small" tags="syntax-highlighting, tokens, shiki, breaking-change" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-186" status="done" priority="high" complexity="simple" tags="syntax-highlighting, tokens, shiki, breaking-change" source="SPEC-048" milestone="v0.14.0" %}
 
 # Highlighter token rename: --shiki-* → --rf-syntax-*
 

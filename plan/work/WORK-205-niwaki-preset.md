@@ -1,4 +1,4 @@
-{% work id="WORK-205" status="done" priority="high" complexity="small" tags="lumina, presets, niwaki, syntax-highlighting" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-205" status="done" priority="high" complexity="simple" tags="lumina, presets, niwaki, syntax-highlighting" source="SPEC-051" milestone="v0.14.0" %}
 
 # Niwaki preset module
 

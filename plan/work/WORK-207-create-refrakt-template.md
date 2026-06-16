@@ -1,4 +1,4 @@
-{% work id="WORK-207" status="done" priority="medium" complexity="small" tags="create-refrakt, scaffolding, presets" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-207" status="done" priority="medium" complexity="simple" tags="create-refrakt, scaffolding, presets" source="SPEC-051" milestone="v0.14.0" %}
 
 # create-refrakt template + post-init preset surfaces
 

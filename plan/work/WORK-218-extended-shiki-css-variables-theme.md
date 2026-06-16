@@ -1,4 +1,4 @@
-{% work id="WORK-218" status="done" priority="high" complexity="medium" tags="highlight, shiki, syntax-highlighting" source="SPEC-056" milestone="v0.14.1" %}
+{% work id="WORK-218" status="done" priority="high" complexity="moderate" tags="highlight, shiki, syntax-highlighting" source="SPEC-056" milestone="v0.14.1" %}
 
 # Extended Shiki css-variables theme in `@refrakt-md/highlight`
 

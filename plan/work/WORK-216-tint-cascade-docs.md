@@ -1,4 +1,4 @@
-{% work id="WORK-216" status="done" priority="low" complexity="small" tags="docs, cascade, tint, design-runes" source="SPEC-052" milestone="v0.14.0" %}
+{% work id="WORK-216" status="done" priority="low" complexity="simple" tags="docs, cascade, tint, design-runes" source="SPEC-052" milestone="v0.14.0" %}
 
 # /docs/themes/tint-cascade documentation page
 

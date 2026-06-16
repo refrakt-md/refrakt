@@ -1,4 +1,4 @@
-{% spec id="SPEC-067" status="placeholder" tags="docs, site, marketing, intro" %}
+{% spec id="SPEC-067" status="draft" tags="docs, site, marketing, intro" %}
 
 # "See it in action" — site-as-showcase introduction article cluster
 

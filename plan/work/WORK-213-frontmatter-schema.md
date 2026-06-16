@@ -1,4 +1,4 @@
-{% work id="WORK-213" status="done" priority="high" complexity="small" tags="frontmatter, schema, validation, tint" source="SPEC-052" milestone="v0.14.0" %}
+{% work id="WORK-213" status="done" priority="high" complexity="simple" tags="frontmatter, schema, validation, tint" source="SPEC-052" milestone="v0.14.0" %}
 
 # Frontmatter schema extension (tint, tint-mode, tint-lock)
 

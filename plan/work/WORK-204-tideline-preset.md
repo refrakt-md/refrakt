@@ -1,4 +1,4 @@
-{% work id="WORK-204" status="done" priority="high" complexity="medium" tags="lumina, presets, tideline" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-204" status="done" priority="high" complexity="moderate" tags="lumina, presets, tideline" source="SPEC-051" milestone="v0.14.0" %}
 
 # Tideline preset module
 

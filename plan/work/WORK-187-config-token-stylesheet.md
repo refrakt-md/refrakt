@@ -1,4 +1,4 @@
-{% work id="WORK-187" status="done" priority="high" complexity="medium" tags="config, tokens, build" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-187" status="done" priority="high" complexity="moderate" tags="config, tokens, build" source="SPEC-048" milestone="v0.14.0" %}
 
 # Config-driven token stylesheet generation
 

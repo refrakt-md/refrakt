@@ -1,4 +1,4 @@
-{% work id="WORK-183" status="done" priority="medium" complexity="small" tags="docs, site, nav, pagination" source="SPEC-046, SPEC-047" milestone="v0.13.0" %}
+{% work id="WORK-183" status="done" priority="medium" complexity="simple" tags="docs, site, nav, pagination" source="SPEC-046, SPEC-047" milestone="v0.13.0" %}
 
 # Site reference docs for new nav layouts and the pagination rune
 

@@ -1,4 +1,4 @@
-{% work id="WORK-197" status="done" priority="high" complexity="small" tags="tint, css, engine, breaking-change" source="SPEC-053" milestone="v0.14.0" %}
+{% work id="WORK-197" status="done" priority="high" complexity="simple" tags="tint, css, engine, breaking-change" source="SPEC-053" milestone="v0.14.0" %}
 
 # Engine + tint.css rename to new --tint-* property names
 

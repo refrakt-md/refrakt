@@ -1,4 +1,4 @@
-{% work id="WORK-192" status="done" priority="medium" complexity="small" tags="branding, logo, svg" source="SPEC-050" milestone="v0.14.0" %}
+{% work id="WORK-192" status="done" priority="medium" complexity="simple" tags="branding, logo, svg" source="SPEC-050" milestone="v0.14.0" %}
 
 # Author the canonical prism SVG asset
 

@@ -1,4 +1,4 @@
-{% work id="WORK-206" status="done" priority="medium" complexity="small" tags="site, presets, niwaki, dogfood" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-206" status="done" priority="medium" complexity="simple" tags="site, presets, niwaki, dogfood" source="SPEC-051" milestone="v0.14.0" %}
 
 # Refrakt site adopts presets: ["niwaki"]
 

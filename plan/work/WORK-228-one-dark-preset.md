@@ -1,4 +1,4 @@
-{% work id="WORK-228" status="done" priority="medium" complexity="small" tags="lumina, presets, one-dark, syntax-highlighting" source="SPEC-057" milestone="v0.14.2" %}
+{% work id="WORK-228" status="done" priority="medium" complexity="simple" tags="lumina, presets, one-dark, syntax-highlighting" source="SPEC-057" milestone="v0.14.2" %}
 
 # One Dark preset module + doc page
 

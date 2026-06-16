@@ -1,4 +1,4 @@
-{% work id="WORK-226" status="done" priority="high" complexity="small" tags="lumina, presets, catppuccin, syntax-highlighting" source="SPEC-057" milestone="v0.14.2" %}
+{% work id="WORK-226" status="done" priority="high" complexity="simple" tags="lumina, presets, catppuccin, syntax-highlighting" source="SPEC-057" milestone="v0.14.2" %}
 
 # Catppuccin preset module + doc page
 

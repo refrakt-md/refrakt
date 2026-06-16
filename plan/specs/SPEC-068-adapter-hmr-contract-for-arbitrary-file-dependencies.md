@@ -1,4 +1,4 @@
-{% spec id="SPEC-068" status="placeholder" tags="pipeline, adapters, hmr, dx" %}
+{% spec id="SPEC-068" status="draft" tags="pipeline, adapters, hmr, dx" %}
 
 # Adapter HMR contract for arbitrary file dependencies
 

@@ -1,4 +1,4 @@
-{% work id="WORK-201" status="done" priority="high" complexity="medium" tags="lumina, palette, syntax-highlighting, neutral-default" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-201" status="done" priority="high" complexity="moderate" tags="lumina, palette, syntax-highlighting, neutral-default" source="SPEC-051" milestone="v0.14.0" %}
 
 # Syntax highlighting palette (five hues + comment + punctuation)
 
