@@ -52,6 +52,8 @@ Use `type="line"` for trend data.
 | `type` | `string` | `bar` | Chart type: `bar`, `line`, `pie`, or `area` |
 | `title` | `string` | — | Chart title |
 | `stacked` | `boolean` | `false` | Stack series values |
+| `tick-count` | `number` | `5` | Approximate number of Y-axis ticks (auto picks "nice" round steps) |
+| `tick-step` | `number` | — | Explicit unit-span between Y-axis ticks. Overrides `tick-count` |
 
 ### Common attributes
 

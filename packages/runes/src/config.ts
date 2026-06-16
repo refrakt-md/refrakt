@@ -423,11 +423,14 @@ export const coreConfig: ThemeConfig = {
 			defaultDensity: 'compact',
 			defaultElevation: 'sunken',
 			// SPEC-083: the transform emits the rf-chart element wrapping the data
-			// `<table>`; `type` / `stacked` are bag-only modifiers (→ data-type /
-			// data-stacked) the web component reads. No postTransform.
+			// `<table>`; `type` / `stacked` / `tick-count` / `tick-step` are bag-only
+			// modifiers (→ data-type / data-stacked / data-tick-count / data-tick-step)
+			// the web component reads. No postTransform.
 			modifiers: {
 				type: { source: 'meta', default: 'bar', noBemClass: true },
 				stacked: { source: 'meta', noBemClass: true },
+				'tick-count': { source: 'meta', noBemClass: true },
+				'tick-step': { source: 'meta', noBemClass: true },
 			},
 			editHints: { data: 'none' },
 		},

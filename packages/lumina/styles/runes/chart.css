@@ -11,21 +11,34 @@
 	--rf-chart-series-5: #a855f7;
 	--rf-chart-series-6: #ec4899;
 	--rf-chart-bar-ratio: 0.75;
-	--rf-chart-bar-thickness: 48px;
+	--rf-chart-bar-thickness: 20px;
 	--rf-chart-bar-gap: 0.15;
-	--rf-chart-bar-radius: 2px;
+	--rf-chart-bar-cluster-gap: 4px;
+	--rf-chart-bar-radius: var(--rf-radius-md);
 	--rf-chart-point-radius: 4px;
 	--rf-chart-line-width: 2px;
 	--rf-chart-label-size: 12px;
 	--rf-chart-label-color: var(--rf-color-muted);
 	--rf-chart-grid-color: var(--rf-color-border);
+	--rf-chart-grid-dash-color: var(--rf-color-muted);
 	--rf-chart-grid-width: 1px;
+	--rf-chart-grid-dash: 3 3;
 	border-radius: var(--rf-radius-lg);
 	padding: 1.5rem;
 	margin: 0;
 }
 .rf-chart__axis { stroke: var(--rf-chart-grid-color); stroke-width: var(--rf-chart-grid-width); }
+/* Dotted horizontal grid lines behind the data — text-tier muted colour so the
+ * scale is legible at a glance. Opacity still keeps them quieter than the data,
+ * which stays the figure-ground emphasis. */
+.rf-chart__grid {
+	stroke: var(--rf-chart-grid-dash-color);
+	stroke-width: var(--rf-chart-grid-width);
+	stroke-dasharray: var(--rf-chart-grid-dash);
+	opacity: 0.2;
+}
 .rf-chart__label { fill: var(--rf-chart-label-color); font-size: var(--rf-chart-label-size); }
+.rf-chart__tick-label { fill: var(--rf-chart-label-color); font-size: var(--rf-chart-label-size); }
 .rf-chart__bar { rx: var(--rf-chart-bar-radius); fill: var(--rf-chart-series-1); }
 .rf-chart__point { fill: var(--rf-chart-series-1); }
 .rf-chart__line { fill: none; stroke: var(--rf-chart-series-1); stroke-width: var(--rf-chart-line-width); }

@@ -40,8 +40,10 @@ describe('rf-chart element', () => {
 	});
 
 	it('reads data-value over textContent for formatted cells', () => {
+		// `data-tick-step="1200"` pins the top tick at 1200 so this test isolates
+		// the data-value-over-textContent behaviour from the nice-tick snapping.
 		document.body.innerHTML =
-			`<rf-chart data-type="bar">${table('<tr><td>Jan</td><td data-value="1200">1,200</td></tr>')}</rf-chart>`;
+			`<rf-chart data-type="bar" data-tick-step="1200">${table('<tr><td>Jan</td><td data-value="1200">1,200</td></tr>')}</rf-chart>`;
 		const el = document.querySelector('rf-chart')!;
 		const rect = el.querySelector('rect')!;
 		// 1200 is the only/max value → full-height bar (ch = 230).
@@ -103,11 +105,11 @@ describe('rf-chart theming contract (WORK-353)', () => {
 		expect(swatches[0].getAttribute('style')).toBeNull(); // no inline background
 	});
 
-	it('reads bar thickness from --rf-chart-bar-thickness (default cap 48, overridable)', () => {
+	it('reads bar thickness from --rf-chart-bar-thickness (default cap 20, overridable)', () => {
 		const def = mount({ rows: '<tr><td>Jan</td><td>100</td></tr>' });
-		expect(Number(def.querySelector('rect')!.getAttribute('width'))).toBeCloseTo(48, 0);
-		const thin = mount({ rows: '<tr><td>Jan</td><td>100</td></tr>', props: { '--rf-chart-bar-thickness': '20px' } });
-		expect(Number(thin.querySelector('rect')!.getAttribute('width'))).toBeCloseTo(20, 0);
+		expect(Number(def.querySelector('rect')!.getAttribute('width'))).toBeCloseTo(20, 0);
+		const wide = mount({ rows: '<tr><td>Jan</td><td>100</td></tr>', props: { '--rf-chart-bar-thickness': '48px' } });
+		expect(Number(wide.querySelector('rect')!.getAttribute('width'))).toBeCloseTo(48, 0);
 	});
 
 	it('reads point radius from --rf-chart-point-radius', () => {
@@ -133,5 +135,39 @@ describe('rf-chart theming contract (WORK-353)', () => {
 		expect(axes.length).toBe(2);
 		expect(axes[0].getAttribute('stroke')).toBeNull();
 		expect(el.querySelector('.rf-chart__label')!.getAttribute('fill')).toBeNull();
+	});
+
+	it('renders Y-axis tick labels with nice-round values and dotted grid lines', () => {
+		// Max value 80 → niceTicks picks step 20 → ticks [0, 20, 40, 60, 80].
+		const el = mount({ rows: '<tr><td>Jan</td><td>80</td></tr>' });
+		const tickLabels = [...el.querySelectorAll('.rf-chart__tick-label')];
+		const tickValues = tickLabels.map((t) => t.textContent).join(',');
+		expect(tickValues).toBe('0,20,40,60,80');
+		// One grid line per non-zero tick (the zero line is covered by the x-axis).
+		expect(el.querySelectorAll('.rf-chart__grid').length).toBe(4);
+	});
+
+	it('honours data-tick-step to pin the unit-span between ticks', () => {
+		// step=25 → ticks land at [0, 25, 50, 75, 100] for a max of 80.
+		const el = document.createElement('rf-chart');
+		el.setAttribute('data-type', 'bar');
+		el.setAttribute('data-tick-step', '25');
+		el.innerHTML = table('<tr><td>Jan</td><td>80</td></tr>');
+		document.body.appendChild(el);
+		const tickValues = [...el.querySelectorAll('.rf-chart__tick-label')]
+			.map((t) => t.textContent).join(',');
+		expect(tickValues).toBe('0,25,50,75,100');
+	});
+
+	it('honours data-tick-count as an approximate target', () => {
+		// count=2 → step ~50 for max 100 → ticks [0, 50, 100].
+		const el = document.createElement('rf-chart');
+		el.setAttribute('data-type', 'bar');
+		el.setAttribute('data-tick-count', '2');
+		el.innerHTML = table('<tr><td>Jan</td><td>100</td></tr>');
+		document.body.appendChild(el);
+		const tickValues = [...el.querySelectorAll('.rf-chart__tick-label')]
+			.map((t) => t.textContent).join(',');
+		expect(tickValues).toBe('0,50,100');
 	});
 });

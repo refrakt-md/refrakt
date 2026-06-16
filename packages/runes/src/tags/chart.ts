@@ -23,6 +23,8 @@ export const chart = createContentModelSchema({
 		type: { type: String, required: false, matches: chartType.slice(), description: 'Chart visualization type' },
 		title: { type: String, required: false, description: 'Title displayed above the chart' },
 		stacked: { type: Boolean, required: false, description: 'Stack data series instead of grouping' },
+		'tick-count': { type: Number, required: false, description: 'Approximate number of Y-axis ticks (default 5). Ignored when tick-step is set.' },
+		'tick-step': { type: Number, required: false, description: 'Explicit unit-span between Y-axis ticks (e.g. 10, 0.5). Overrides tick-count.' },
 	},
 	contentModel: {
 		type: 'sequence',
@@ -36,6 +38,8 @@ export const chart = createContentModelSchema({
 		const type = attrs.type ?? 'bar';
 		const title = attrs.title ?? '';
 		const stacked = attrs.stacked ?? false;
+		const tickCount = attrs['tick-count'];
+		const tickStep = attrs['tick-step'];
 
 		// SPEC-083: the authored `<table>` is the single source of truth — the no-JS
 		// fallback AND the data the rf-chart web component parses. No JSON-in-meta.
@@ -46,16 +50,21 @@ export const chart = createContentModelSchema({
 			if (title) table.children = [new Tag('caption', {}, [title]), ...table.children];
 		}
 
-		// type / stacked ride the bag (→ data-type / data-stacked for the client);
-		// title lives in the table's <caption>, not a field-meta.
+		// type / stacked / tick-count / tick-step ride the bag (→ data-type /
+		// data-stacked / data-tick-count / data-tick-step) for the client; title
+		// lives in the table's <caption>, not a field-meta.
 		const typeMeta = new Tag('meta', { content: type });
 		const stackedMeta = new Tag('meta', { content: String(stacked) });
+		const tickCountMeta = tickCount != null ? new Tag('meta', { content: String(tickCount) }) : undefined;
+		const tickStepMeta = tickStep != null ? new Tag('meta', { content: String(tickStep) }) : undefined;
 
 		const node = createComponentRenderable({ rune: 'chart',
 			tag: 'figure',
 			properties: {
 				type: typeMeta,
 				stacked: stackedMeta,
+				...(tickCountMeta ? { 'tick-count': tickCountMeta } : {}),
+				...(tickStepMeta ? { 'tick-step': tickStepMeta } : {}),
 			},
 			children: emitted,
 		});
