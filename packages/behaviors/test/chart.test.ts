@@ -105,9 +105,9 @@ describe('rf-chart theming contract (WORK-353)', () => {
 		expect(swatches[0].getAttribute('style')).toBeNull(); // no inline background
 	});
 
-	it('reads bar thickness from --rf-chart-bar-thickness (default cap 20, overridable)', () => {
+	it('reads bar thickness from --rf-chart-bar-thickness (default cap 12, overridable)', () => {
 		const def = mount({ rows: '<tr><td>Jan</td><td>100</td></tr>' });
-		expect(Number(def.querySelector('rect')!.getAttribute('width'))).toBeCloseTo(20, 0);
+		expect(Number(def.querySelector('rect')!.getAttribute('width'))).toBeCloseTo(12, 0);
 		const wide = mount({ rows: '<tr><td>Jan</td><td>100</td></tr>', props: { '--rf-chart-bar-thickness': '48px' } });
 		expect(Number(wide.querySelector('rect')!.getAttribute('width'))).toBeCloseTo(48, 0);
 	});

@@ -34,7 +34,7 @@ const SVGNS = 'http://www.w3.org/2000/svg';
 const SERIES_COUNT = 6;
 
 /** Geometry defaults — mirror the `--rf-chart-*` values shipped in chart.css. */
-const GEOM_DEFAULTS = { barRatio: 0.75, barThickness: 20, barGap: 0.15, barClusterGap: 4, pointRadius: 4 };
+const GEOM_DEFAULTS = { barRatio: 0.75, barThickness: 12, barGap: 0.15, barClusterGap: 4, pointRadius: 4 };
 
 function cellValue(cell: HTMLTableCellElement): string {
 	return (cell.dataset.value ?? cell.textContent ?? '').trim();

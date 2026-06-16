@@ -11,10 +11,10 @@
 	--rf-chart-series-5: #a855f7;
 	--rf-chart-series-6: #ec4899;
 	--rf-chart-bar-ratio: 0.75;
-	--rf-chart-bar-thickness: 20px;
+	--rf-chart-bar-thickness: 12px;
 	--rf-chart-bar-gap: 0.15;
 	--rf-chart-bar-cluster-gap: 4px;
-	--rf-chart-bar-radius: var(--rf-radius-md);
+	--rf-chart-bar-radius: var(--rf-radius-sm);
 	--rf-chart-point-radius: 4px;
 	--rf-chart-line-width: 2px;
 	--rf-chart-label-size: 12px;
