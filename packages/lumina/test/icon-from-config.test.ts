@@ -7,6 +7,7 @@ import { iconMaskTokenCss } from '../scripts/generate-tokens.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const read = (p: string) => readFileSync(resolve(here, '..', p), 'utf-8');
+const readSkeleton = (p: string) => readFileSync(resolve(here, '..', '..', 'skeleton', p), 'utf-8');
 
 describe('icon-from-config (SPEC-094 §8 / WORK-437)', () => {
 	it('surfaces config glyphs as --rf-icon-<group>-<name> mask custom properties', () => {
@@ -43,11 +44,15 @@ describe('icon-from-config (SPEC-094 §8 / WORK-437)', () => {
 	});
 
 	it('leaves no embedded data-URI glyphs in hint/accordion CSS', () => {
-		expect(read('styles/runes/hint.css')).not.toMatch(/data:image\/svg\+xml/);
-		expect(read('styles/runes/accordion.css')).not.toMatch(/data:image\/svg\+xml/);
+		// hint's glyph-mask wiring is structure → @refrakt-md/skeleton (WORK-438);
+		// accordion isn't split yet, so it still lives in Lumina's skin.
+		const hintCss = readSkeleton('styles/runes/hint.css');
+		const accordionCss = read('styles/runes/accordion.css');
+		expect(hintCss).not.toMatch(/data:image\/svg\+xml/);
+		expect(accordionCss).not.toMatch(/data:image\/svg\+xml/);
 		// …and they read the registry-fed custom properties instead.
-		expect(read('styles/runes/hint.css')).toContain('var(--rf-icon-hint-note)');
-		expect(read('styles/runes/accordion.css')).toContain('var(--rf-icon-accordion-chevron)');
+		expect(hintCss).toContain('var(--rf-icon-hint-note)');
+		expect(accordionCss).toContain('var(--rf-icon-accordion-chevron)');
 	});
 
 	it('ships the generated icon tokens in the committed base.css', () => {
