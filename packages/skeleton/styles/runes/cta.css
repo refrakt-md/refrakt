@@ -1,0 +1,46 @@
+/* cta — structure. The preamble layout + stretched-link eyebrow, the action-button
+ * flex row + its mobile stack, list resets. All spacing, type, the headline
+ * gradient, surface chrome, and colour stay skin (Lumina's styles/runes/cta.css). */
+
+.rf-cta__preamble {
+	flex-direction: column;
+	align-items: center;
+}
+
+/* Linked eyebrow → pill with a stretched link (chrome is skin). */
+.rf-cta .rf-cta__eyebrow:has(a) {
+	display: inline-block;
+	position: relative;
+}
+.rf-cta .rf-cta__eyebrow:has(a) a::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+}
+
+/* Action-button row. */
+.rf-cta ul {
+	display: flex;
+	justify-content: center;
+	flex-wrap: wrap;
+	list-style: none;
+}
+.rf-cta li a,
+.rf-cta nav a {
+	display: inline-flex;
+	align-items: center;
+}
+
+/* Mobile: stack action buttons full-width so multi-button CTAs line up. */
+@media (max-width: 640px) {
+	.rf-cta ul {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.rf-cta li a,
+	.rf-cta nav a {
+		justify-content: center;
+		width: 100%;
+		box-sizing: border-box;
+	}
+}

@@ -1,11 +1,7 @@
 @layer skin {
-/* Steps */
-.rf-steps {
-	counter-reset: step;
-}
+/* Steps — skin. The counter mechanism, step item layout, badge box placement, and
+ * media-position flip live in @refrakt-md/skeleton (styles/runes/steps.css). */
 .rf-steps__preamble {
-	flex-direction: column;
-	align-items: flex-start;
 	gap: 0.25rem;
 	margin-bottom: 1.5rem;
 }
@@ -18,8 +14,6 @@
 	margin: 0 0 0.5rem;
 }
 .rf-steps__eyebrow:has(a) {
-	display: inline-block;
-	position: relative;
 	padding: 0.25rem 0.875rem;
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-full);
@@ -31,7 +25,7 @@
 }
 .rf-steps__eyebrow:has(a):hover { border-color: var(--rf-color-muted); }
 .rf-steps__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: var(--rf-weight-semibold); text-decoration: none; }
-.rf-steps__eyebrow:has(a) a::before { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+.rf-steps__eyebrow:has(a) a::before { border-radius: inherit; }
 .rf-steps__headline {
 	margin-top: 0;
 }
@@ -43,36 +37,21 @@
 	margin-bottom: 1rem;
 }
 .rf-steps ol {
-	list-style: none;
 	padding-left: 0;
 	margin: 0;
-}
-.rf-step__content {
-	display: contents;
 }
 
 /* Individual step — borderless, matching recipe */
 .rf-step {
-	counter-increment: step;
-	position: relative;
 	padding: 0.625rem 0 0.625rem 2.25rem;
 }
 .rf-step + .rf-step {
 	border-top: 1px solid var(--rf-color-border);
 }
 .rf-step::before {
-	content: counter(step);
-	position: absolute;
-	left: 0;
-	top: 0.625rem;
-	width: 1.5rem;
-	height: 1.5rem;
 	background: var(--rf-color-surface);
 	color: var(--rf-color-primary);
 	border-radius: var(--rf-radius-full);
-	display: flex;
-	align-items: center;
-	justify-content: center;
 	font-weight: var(--rf-weight-bold);
 	font-size: var(--rf-text-xs);
 	font-variant-numeric: tabular-nums;
@@ -84,7 +63,6 @@
 .rf-step h5,
 .rf-step h6,
 .rf-step strong {
-	display: block;
 	margin-top: 0;
 	margin-bottom: 0.375rem;
 }
@@ -100,19 +78,6 @@
 }
 .rf-step__media {
 	border-radius: var(--rf-radius-md);
-	overflow: hidden;
-}
-
-/* BUG-001 — content-first DOM inverts the shared media-first stacked contract
- * (layouts/split.css): counter it so the labels are truthful. `bottom` (the
- * default) is plain block flow — media after the content, the historical
- * look; an explicit `top` flips the visual order without touching the DOM. */
-.rf-step[data-media-position="bottom"] {
-	display: block;
-}
-.rf-step[data-media-position="top"] {
-	display: flex;
-	flex-direction: column-reverse;
 }
 
 }

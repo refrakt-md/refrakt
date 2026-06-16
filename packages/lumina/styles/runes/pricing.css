@@ -1,12 +1,11 @@
 @layer skin {
-/* Pricing */
+/* Pricing — skin. The tiers grid, tier flex-column, eyebrow stretched-link, and
+ * list resets live in @refrakt-md/skeleton (styles/runes/pricing.css). */
 .rf-pricing {
 	padding: 2rem 0;
 }
 .rf-pricing > header,
 .rf-pricing__preamble {
-	flex-direction: column;
-	align-items: flex-start;
 	gap: 0.25rem;
 	text-align: center;
 	margin-bottom: 2rem;
@@ -24,8 +23,6 @@
 	margin: 0 0 0.5rem;
 }
 .rf-pricing__eyebrow:has(a) {
-	display: inline-block;
-	position: relative;
 	padding: 0.25rem 0.875rem;
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-full);
@@ -37,7 +34,7 @@
 }
 .rf-pricing__eyebrow:has(a):hover { border-color: var(--rf-color-muted); }
 .rf-pricing__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: var(--rf-weight-semibold); text-decoration: none; }
-.rf-pricing__eyebrow:has(a) a::before { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+.rf-pricing__eyebrow:has(a) a::before { border-radius: inherit; }
 .rf-pricing__blurb {
 	color: var(--rf-color-muted);
 	margin-bottom: 0;
@@ -45,19 +42,9 @@
 .rf-pricing__image {
 	margin-bottom: 1rem;
 }
-.rf-pricing__tiers {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-	gap: 1.5rem;
-	list-style: none;
-	padding: 0;
-	margin: 0;
-}
+.rf-pricing__tiers,
 .rf-pricing > ul[data-layout="grid"] {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 	gap: 1.5rem;
-	list-style: none;
 	padding: 0;
 	margin: 0;
 }
@@ -66,8 +53,6 @@
 	border-radius: var(--rf-radius-md);
 	padding: 2rem;
 	background: var(--rf-color-bg);
-	display: flex;
-	flex-direction: column;
 	transition: box-shadow 200ms ease;
 }
 .rf-tier:hover {
@@ -91,11 +76,7 @@
 	margin-bottom: 1.5rem;
 	line-height: var(--rf-leading-tight);
 }
-.rf-tier__body {
-	flex: 1;
-}
 .rf-tier__body ul {
-	list-style: none;
 	padding-left: 0;
 	margin: 0 0 1.5rem;
 }
@@ -111,7 +92,6 @@
 	font-weight: var(--rf-weight-semibold);
 }
 .rf-tier__body a {
-	display: block;
 	text-align: center;
 	padding: 0.625rem 1.5rem;
 	border-radius: var(--rf-radius-sm);
@@ -119,7 +99,6 @@
 	font-size: var(--rf-text-sm);
 	text-decoration: none;
 	transition: background-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
-	margin-top: auto;
 }
 .rf-tier:not(.rf-tier--featured) a {
 	background: var(--rf-color-surface);
