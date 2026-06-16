@@ -43,6 +43,17 @@
 	zoom: calc(var(--mockup-scale, 1) * min(1, tan(atan2(100cqi, var(--mockup-device-width, 100cqi)))));
 }
 
+/* Media guest: the slot defines the size, so the device fills its inline extent
+ * (scaling up past native too) instead of capping at native and stranding a
+ * narrow device as a thin strip in a wide slot. Dropping the `min(1, …)` cap is
+ * what lets a phone span the slot width; the slot's aspect ratio then clips the
+ * over-tall device at the bottom. Standalone mockups keep the cap (a phone
+ * shouldn't blow up to fill an article column). `fit="none"` opts out — it owns
+ * its own native-size + transform path above. */
+[data-section="media"] > .rf-mockup:not([data-fit="none"]) .rf-mockup__frame {
+	zoom: calc(var(--mockup-scale, 1) * tan(atan2(100cqi, var(--mockup-device-width, 100cqi))));
+}
+
 .rf-mockup__viewport {
 	overflow: auto;
 }
