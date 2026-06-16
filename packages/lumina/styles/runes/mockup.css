@@ -414,6 +414,18 @@
 	margin: 0;
 }
 
+/* ── Mockup as a media guest ──
+ * In a card / bento-cell media zone the mockup sits in the recessed well. Its
+ * `flush` elevation gives it vertical breathing room (padding-block) but leaves
+ * it hugging the well's sides; add matching inline padding so the inset reads
+ * even on all four edges. Because `.rf-mockup` is the size container, the inline
+ * padding also narrows `100cqi`, so the frame's fit-to-width zoom scales the
+ * device down to fit the padded box — a tall phone then clips at the bottom
+ * (the well's aspect ratio can't contain its height), which is expected. */
+[data-section="media"] > .rf-mockup {
+	padding-inline: var(--rune-padding, var(--rf-spacing-sm));
+}
+
 /* ═══════════════════════════════════════
    DARK MODE
    ═══════════════════════════════════════ */
