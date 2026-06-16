@@ -49,6 +49,7 @@
  * tabs/codegroup structure it depends on (WORK-438). */
 @import './styles/dimensions/checklist.css';
 @import './styles/dimensions/sequence.css';
+@import './styles/dimensions/motion.css';
 
 /* Runes */
 @import './styles/runes/accordion.css';
