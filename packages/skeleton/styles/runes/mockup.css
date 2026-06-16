@@ -43,6 +43,33 @@
 	zoom: calc(var(--mockup-scale, 1) * min(1, tan(atan2(100cqi, var(--mockup-device-width, 100cqi)))));
 }
 
+/* Media guest: fill the slot. The slot, not the device, sets the size here, so
+ * the device scales (up or down) so its width matches the slot's; the cell's
+ * fixed height + overflow then crops any vertical overflow (a tall phone peeks,
+ * a wide laptop fits whole).
+ *
+ * The scale factor is `slotWidth ÷ deviceWidth`, but it is *not* computed here:
+ * deriving it from container-query units mis-resolves on iOS WebKit (under
+ * `zoom` the device balloons; even under `transform` `cqi` resolves to the wrong
+ * size). The `mockup` behavior measures the slot in JS — deterministic across
+ * engines — and publishes the factor as `--mockup-fit-scale`; centering and the
+ * clip stay here. Without JS the factor defaults to 1 (native size), which
+ * degrades gracefully. `transform` (not `zoom`) so it never feeds back into the
+ * container's measured size.
+ *
+ * `left` re-centers the native layout box for any slot/device width (the box is
+ * left-aligned at native width; the offset shifts its centre onto the slot's),
+ * and `transform-origin: top center` anchors the device's top so the clip eats
+ * the bottom. `fit="none"` opts out (its own transform path above); standalone
+ * mockups keep the capped base zoom (a phone shouldn't fill a column). */
+[data-section="media"] > .rf-mockup:not([data-fit="none"]) .rf-mockup__frame {
+	zoom: normal;
+	margin-inline: 0;
+	left: calc((100% - var(--mockup-device-width, 100%)) / 2);
+	transform: scale(calc(var(--mockup-scale, 1) * var(--mockup-fit-scale, 1)));
+	transform-origin: top center;
+}
+
 .rf-mockup__viewport {
 	overflow: auto;
 }
