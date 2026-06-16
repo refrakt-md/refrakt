@@ -1,13 +1,12 @@
 @layer skin {
-/* DataTable */
+/* DataTable — skin. The toolbar/pagination flex + input width live in
+ * @refrakt-md/skeleton (styles/runes/datatable.css). The table overflow/width
+ * overrides stay here — they override the table element wrapper by source order. */
 .rf-datatable__toolbar {
-	display: flex;
-	justify-content: flex-end;
 	padding: 0.5rem 0.75rem;
 	background: var(--rf-color-surface);
 }
 .rf-datatable__input {
-	width: 14rem;
 	padding: 0.35rem 0.625rem;
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-sm);
@@ -74,9 +73,6 @@
 	background: var(--rf-color-surface-hover);
 }
 .rf-datatable__pagination {
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
 	gap: 0.75rem;
 	padding: 0.5rem 0.75rem;
 	background: var(--rf-color-surface);

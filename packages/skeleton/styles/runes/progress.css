@@ -1,0 +1,22 @@
+/* progress — structure. The label/value flex row (+ value auto-push), the track
+ * box (full-row basis + fixed height + clip), and the fill box. Colours, radii,
+ * type, gaps, and the fill transition are skin (Lumina's styles/runes/progress.css). */
+
+.rf-progress {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+}
+.rf-progress__value {
+	margin-left: auto;
+}
+.rf-progress__track {
+	flex-basis: 100%;
+	height: 0.5rem;
+	overflow: hidden;
+}
+.rf-progress__fill {
+	display: block;
+	height: 100%;
+	width: var(--rf-progress, 0%);
+}

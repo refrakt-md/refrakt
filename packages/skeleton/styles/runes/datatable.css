@@ -1,0 +1,17 @@
+/* datatable — structure. The toolbar + pagination flex rows and the search-input
+ * width. The table chrome, type, borders, and the table overflow/width overrides
+ * (which override the table element wrapper by source order) stay skin (Lumina's
+ * styles/runes/datatable.css). */
+
+.rf-datatable__toolbar {
+	display: flex;
+	justify-content: flex-end;
+}
+.rf-datatable__input {
+	width: 14rem;
+}
+.rf-datatable__pagination {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+}

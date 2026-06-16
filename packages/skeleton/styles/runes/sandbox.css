@@ -1,0 +1,30 @@
+/* sandbox — structure. The iframe clip + fill, and the banner / poster / activate
+ * layout (positioning, flex, sizing). Radii, surface, borders, type, and the play
+ * glyph stay skin (Lumina's styles/runes/sandbox.css). */
+
+.rf-sandbox { overflow: hidden; }
+.rf-sandbox iframe {
+	display: block;
+	width: 100%;
+}
+.rf-sandbox__untrusted-banner { display: block; }
+.rf-sandbox__poster {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 150px;
+}
+.rf-sandbox__poster-image {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.rf-sandbox__activate {
+	position: relative;
+	z-index: 1;
+	display: inline-flex;
+	align-items: center;
+}

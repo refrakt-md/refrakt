@@ -69,3 +69,8 @@
 @import './styles/runes/figure.css' layer(skeleton);
 @import './styles/runes/embed.css' layer(skeleton);
 @import './styles/runes/collection.css' layer(skeleton);
+@import './styles/runes/datatable.css' layer(skeleton);
+@import './styles/runes/sandbox.css' layer(skeleton);
+@import './styles/runes/conversation.css' layer(skeleton);
+@import './styles/runes/progress.css' layer(skeleton);
+@import './styles/runes/diagram.css' layer(skeleton);

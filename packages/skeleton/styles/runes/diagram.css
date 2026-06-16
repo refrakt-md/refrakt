@@ -1,0 +1,17 @@
+/* diagram — structure. The block + clip, the centered scrollable container, and
+ * the responsive SVG. Surface chrome, padding, type, text-align, and the Mermaid
+ * SVG colour overrides are skin (Lumina's styles/runes/diagram.css). */
+
+.rf-diagram {
+	display: block;
+	overflow: hidden;
+}
+.rf-diagram__container {
+	display: flex;
+	justify-content: center;
+	overflow-x: auto;
+}
+.rf-diagram__container svg {
+	max-width: 100%;
+	height: auto;
+}
