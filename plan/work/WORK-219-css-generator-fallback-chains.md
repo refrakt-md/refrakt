@@ -1,4 +1,4 @@
-{% work id="WORK-219" status="done" priority="high" complexity="small" tags="tokens, css-generation, syntax-highlighting" source="SPEC-056" milestone="v0.14.1" %}
+{% work id="WORK-219" status="done" priority="high" complexity="simple" tags="tokens, css-generation, syntax-highlighting" source="SPEC-056" milestone="v0.14.1" %}
 
 # CSS generator fallback chains for optional syntax roles
 

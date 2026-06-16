@@ -1,4 +1,4 @@
-{% work id="WORK-185" status="done" priority="high" complexity="medium" tags="types, tokens, foundation" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-185" status="done" priority="high" complexity="moderate" tags="types, tokens, foundation" source="SPEC-048" milestone="v0.14.0" %}
 
 # Typed token contract in @refrakt-md/types
 

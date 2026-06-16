@@ -1,4 +1,4 @@
-{% work id="WORK-194" status="done" priority="medium" complexity="small" tags="branding, site, header" source="SPEC-050" milestone="v0.14.0" %}
+{% work id="WORK-194" status="done" priority="medium" complexity="simple" tags="branding, site, header" source="SPEC-050" milestone="v0.14.0" %}
 
 # Replace brand mark on the refrakt site
 

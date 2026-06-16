@@ -1,4 +1,4 @@
-{% work id="WORK-221" status="done" priority="medium" complexity="small" tags="docs, lumina, presets, nord" source="SPEC-056" milestone="v0.14.1" %}
+{% work id="WORK-221" status="done" priority="medium" complexity="simple" tags="docs, lumina, presets, nord" source="SPEC-056" milestone="v0.14.1" %}
 
 # Nord preset documentation page
 

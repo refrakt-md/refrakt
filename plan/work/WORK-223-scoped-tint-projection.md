@@ -1,4 +1,4 @@
-{% work id="WORK-223" status="done" priority="high" complexity="medium" tags="tint, presets, tokens, css-generation" source="SPEC-056" milestone="v0.14.1" %}
+{% work id="WORK-223" status="done" priority="high" complexity="moderate" tags="tint, presets, tokens, css-generation" source="SPEC-056" milestone="v0.14.1" %}
 
 # Scoped tint projection from preset modules
 

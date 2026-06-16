@@ -1,4 +1,4 @@
-{% work id="WORK-196" status="done" priority="high" complexity="small" tags="tint, merge, config" source="SPEC-053" milestone="v0.14.0" %}
+{% work id="WORK-196" status="done" priority="high" complexity="simple" tags="tint, merge, config" source="SPEC-053" milestone="v0.14.0" %}
 
 # mergeThemeConfig extends support + remove deprecated RefraktConfig.tints
 

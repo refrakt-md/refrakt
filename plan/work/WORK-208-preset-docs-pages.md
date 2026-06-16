@@ -1,4 +1,4 @@
-{% work id="WORK-208" status="done" priority="medium" complexity="medium" tags="docs, presets, design-runes, dogfood" source="SPEC-051, SPEC-053" milestone="v0.14.0" %}
+{% work id="WORK-208" status="done" priority="medium" complexity="moderate" tags="docs, presets, design-runes, dogfood" source="SPEC-051, SPEC-053" milestone="v0.14.0" %}
 
 # Preset documentation pages with design-plugin runes
 

@@ -1,4 +1,4 @@
-{% work id="WORK-184" status="done" priority="medium" complexity="small" tags="site, layout, nav, pagination, dogfood" source="SPEC-046, SPEC-047" milestone="v0.13.0" %}
+{% work id="WORK-184" status="done" priority="medium" complexity="simple" tags="site, layout, nav, pagination, dogfood" source="SPEC-046, SPEC-047" milestone="v0.13.0" %}
 
 # Adopt new nav layouts and pagination across refrakt.md
 

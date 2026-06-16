@@ -1,4 +1,4 @@
-{% work id="WORK-215" status="done" priority="medium" complexity="small" tags="site, cascade, tint, dogfood" source="SPEC-052" milestone="v0.14.0" %}
+{% work id="WORK-215" status="done" priority="medium" complexity="simple" tags="site, cascade, tint, dogfood" source="SPEC-052" milestone="v0.14.0" %}
 
 # Refrakt site adopts the tint cascade
 

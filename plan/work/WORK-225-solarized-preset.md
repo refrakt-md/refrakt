@@ -1,4 +1,4 @@
-{% work id="WORK-225" status="done" priority="high" complexity="small" tags="lumina, presets, solarized, syntax-highlighting" source="SPEC-057" milestone="v0.14.2" %}
+{% work id="WORK-225" status="done" priority="high" complexity="simple" tags="lumina, presets, solarized, syntax-highlighting" source="SPEC-057" milestone="v0.14.2" %}
 
 # Solarized preset module + doc page
 

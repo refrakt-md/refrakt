@@ -1,4 +1,4 @@
-{% work id="WORK-212" status="done" priority="high" complexity="medium" tags="cascade, content, tint" source="SPEC-052" milestone="v0.14.0" %}
+{% work id="WORK-212" status="done" priority="high" complexity="moderate" tags="cascade, content, tint" source="SPEC-052" milestone="v0.14.0" %}
 
 # Cascade resolution function in @refrakt-md/content
 

@@ -1,4 +1,4 @@
-{% work id="WORK-200" status="done" priority="high" complexity="medium" tags="lumina, palette, tokens, neutral-default" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-200" status="done" priority="high" complexity="moderate" tags="lumina, palette, tokens, neutral-default" source="SPEC-051" milestone="v0.14.0" %}
 
 # Neutral default body palette (light + dark)
 

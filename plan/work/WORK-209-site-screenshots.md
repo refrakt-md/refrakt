@@ -1,4 +1,4 @@
-{% work id="WORK-209" status="done" priority="low" complexity="small" tags="docs, screenshots, marketing" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-209" status="done" priority="low" complexity="simple" tags="docs, screenshots, marketing" source="SPEC-051" milestone="v0.14.0" %}
 
 # Site screenshots refreshed against new appearance
 

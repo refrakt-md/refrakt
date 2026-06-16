@@ -1,4 +1,4 @@
-{% work id="WORK-210" status="done" priority="low" complexity="small" tags="docs, migration, presets" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-210" status="done" priority="low" complexity="simple" tags="docs, migration, presets" source="SPEC-051" milestone="v0.14.0" %}
 
 # v0.14.0 migration note for palette and fonts
 

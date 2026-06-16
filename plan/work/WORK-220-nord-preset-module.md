@@ -1,4 +1,4 @@
-{% work id="WORK-220" status="done" priority="high" complexity="small" tags="lumina, presets, nord, syntax-highlighting" source="SPEC-056" milestone="v0.14.1" %}
+{% work id="WORK-220" status="done" priority="high" complexity="simple" tags="lumina, presets, nord, syntax-highlighting" source="SPEC-056" milestone="v0.14.1" %}
 
 # Nord preset module
 

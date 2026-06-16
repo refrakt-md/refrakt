@@ -1,4 +1,4 @@
-{% work id="WORK-211" status="done" priority="high" complexity="medium" tags="lumina, theme-toggle, ui, prerequisite" source="SPEC-052" milestone="v0.14.0" %}
+{% work id="WORK-211" status="done" priority="high" complexity="moderate" tags="lumina, theme-toggle, ui, prerequisite" source="SPEC-052" milestone="v0.14.0" %}
 
 # Add theme toggle to Lumina
 

@@ -1,4 +1,4 @@
-{% work id="WORK-198" status="done" priority="high" complexity="small" tags="tint, lumina, plugins, migration" source="SPEC-053" milestone="v0.14.0" %}
+{% work id="WORK-198" status="done" priority="high" complexity="simple" tags="tint, lumina, plugins, migration" source="SPEC-053" milestone="v0.14.0" %}
 
 # Migrate Lumina and plugin tint configs
 

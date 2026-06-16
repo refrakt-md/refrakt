@@ -1,4 +1,4 @@
-{% work id="WORK-202" status="done" priority="high" complexity="medium" tags="lumina, palette, status, neutral-default" source="SPEC-051" milestone="v0.14.0" %}
+{% work id="WORK-202" status="done" priority="high" complexity="moderate" tags="lumina, palette, status, neutral-default" source="SPEC-051" milestone="v0.14.0" %}
 
 # Status palette (4 sentiments × 3 tokens × 2 modes)
 

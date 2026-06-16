@@ -1,4 +1,4 @@
-{% work id="WORK-195" status="done" priority="high" complexity="small" tags="tint, types, breaking-change" source="SPEC-053" milestone="v0.14.0" %}
+{% work id="WORK-195" status="done" priority="high" complexity="simple" tags="tint, types, breaking-change" source="SPEC-053" milestone="v0.14.0" %}
 
 # Update TintTokens / TintDefinition types
 

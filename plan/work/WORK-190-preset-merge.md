@@ -1,4 +1,4 @@
-{% work id="WORK-190" status="done" priority="high" complexity="medium" tags="presets, config, merge" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-190" status="done" priority="high" complexity="moderate" tags="presets, config, merge" source="SPEC-048" milestone="v0.14.0" %}
 
 # Preset loading and merge order
 

@@ -1,4 +1,4 @@
-{% work id="WORK-217" status="done" priority="high" complexity="small" tags="types, tokens, syntax-highlighting, contract" source="SPEC-056" milestone="v0.14.1" %}
+{% work id="WORK-217" status="done" priority="high" complexity="simple" tags="types, tokens, syntax-highlighting, contract" source="SPEC-056" milestone="v0.14.1" %}
 
 # Extend `SyntaxTokens` interface with optional roles
 

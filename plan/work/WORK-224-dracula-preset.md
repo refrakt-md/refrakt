@@ -1,4 +1,4 @@
-{% work id="WORK-224" status="done" priority="high" complexity="small" tags="lumina, presets, dracula, syntax-highlighting" source="SPEC-057" milestone="v0.14.2" %}
+{% work id="WORK-224" status="done" priority="high" complexity="simple" tags="lumina, presets, dracula, syntax-highlighting" source="SPEC-057" milestone="v0.14.2" %}
 
 # Dracula preset module + doc page
 

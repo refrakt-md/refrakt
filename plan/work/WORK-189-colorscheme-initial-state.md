@@ -1,4 +1,4 @@
-{% work id="WORK-189" status="done" priority="medium" complexity="small" tags="dark-mode, ssr, config" source="SPEC-048" milestone="v0.14.0" %}
+{% work id="WORK-189" status="done" priority="medium" complexity="simple" tags="dark-mode, ssr, config" source="SPEC-048" milestone="v0.14.0" %}
 
 # theme.colorScheme initial state field
 
