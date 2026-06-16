@@ -1,8 +1,4 @@
 @layer skin {
-/* Lore */
-.rf-lore {
-	position: relative;
-}
 
 /* Content */
 .rf-lore__content {
@@ -16,7 +12,6 @@
 	font-style: italic;
 }
 .rf-lore > span[property="title"] {
-	display: block;
 	font-size: var(--rf-text-2xl);
 	font-weight: var(--rf-weight-bold);
 	margin-bottom: 0.5rem;
@@ -30,10 +25,6 @@
 }
 .rf-lore--spoiler::after {
 	content: 'Contains spoilers \2014 click to reveal';
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
 	padding: 0.5rem 1rem;
 	background: var(--rf-color-bg);
 	border-radius: var(--rf-radius-md);
@@ -41,7 +32,6 @@
 	font-weight: var(--rf-weight-medium);
 	color: var(--rf-color-muted);
 	cursor: pointer;
-	z-index: 1;
 }
 
 }

@@ -1,0 +1,14 @@
+/* realm — structure. The stacked-top flex flip, the sections flex column, and the
+ * section-name block. The thin-edge inset padding + split gaps (which compete with
+ * the surface/split layers, like card) plus all chrome stay skin. */
+.rf-realm[data-media-position="top"] {
+	display: flex;
+	flex-direction: column;
+}
+.rf-realm__sections {
+	display: flex;
+	flex-direction: column;
+}
+.rf-realm-section__name {
+	display: block;
+}

@@ -29,12 +29,6 @@
 	row-gap: var(--rf-realm-media-gap);
 }
 
-/* Stacked layouts — beside layouts handled by shared split.css */
-.rf-realm[data-media-position="top"] {
-	display: flex;
-	flex-direction: column;
-}
-
 .rf-realm[data-media-position="top"] > .rf-realm__scene {
 	margin-bottom: var(--rf-realm-media-gap);
 }
@@ -44,8 +38,6 @@
 
 /* Content */
 .rf-realm__sections {
-	display: flex;
-	flex-direction: column;
 	gap: 1rem;
 }
 .rf-realm__content ul,
@@ -59,7 +51,6 @@
 	border-top: 1px solid var(--rf-color-border);
 }
 .rf-realm-section__name {
-	display: block;
 	font-size: var(--rf-text-xl);
 	font-weight: var(--rf-weight-bold);
 	line-height: var(--rf-leading-snug);
