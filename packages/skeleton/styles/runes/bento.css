@@ -1,0 +1,118 @@
+/* bento — structure. The container-query grid system: the grid track + cell
+ * spans, the cell flex layout + media placement, the row/content sizing knobs,
+ * the collapse queries, the stretched link, and metadata hiding. The cell surface
+ * chrome, spacing vars (padding/edge/gap), type, and the media-well chrome stay
+ * skin (Lumina's styles/runes/bento.css). bento-cell is a hand-rolled surface
+ * outside the data-elevation axis, so its padding has no surfaces competitor. */
+
+.rf-bento {
+	container-type: inline-size;
+	container-name: rf-bento;
+}
+
+.rf-bento__grid {
+	--bento-cols-effective: var(--bento-columns, 6);
+	display: grid;
+	grid-template-columns: repeat(var(--bento-cols-effective), 1fr);
+	grid-auto-rows: var(--bento-row-track, var(--bento-row-height, var(--rf-bento-row-height, 24rem)));
+}
+
+/* Author row-height presets — the uniform grid row track height (grid mode). */
+.rf-bento[data-row-height="sm"] { --bento-row-height: 16rem; }
+.rf-bento[data-row-height="md"] { --bento-row-height: 24rem; }
+.rf-bento[data-row-height="lg"] { --bento-row-height: 32rem; }
+.rf-bento[data-row-height="xl"] { --bento-row-height: 40rem; }
+
+/* content-height / media-ratio — perpendicular text-zone sizing knobs. */
+.rf-bento[data-content-height="sm"], .rf-bento-cell[data-content-height="sm"] { --cell-content-height: 6rem; --cell-content-overflow: hidden; }
+.rf-bento[data-content-height="md"], .rf-bento-cell[data-content-height="md"] { --cell-content-height: 10rem; --cell-content-overflow: hidden; }
+.rf-bento[data-content-height="lg"], .rf-bento-cell[data-content-height="lg"] { --cell-content-height: 14rem; --cell-content-overflow: hidden; }
+.rf-bento[data-content-height="xl"], .rf-bento-cell[data-content-height="xl"] { --cell-content-height: 18rem; --cell-content-overflow: hidden; }
+
+.rf-bento[data-media-ratio="1/3"], .rf-bento-cell[data-media-ratio="1/3"] { --cell-media-ratio: 33.333%; }
+.rf-bento[data-media-ratio="2/5"], .rf-bento-cell[data-media-ratio="2/5"] { --cell-media-ratio: 40%; }
+.rf-bento[data-media-ratio="1/2"], .rf-bento-cell[data-media-ratio="1/2"] { --cell-media-ratio: 50%; }
+.rf-bento[data-media-ratio="3/5"], .rf-bento-cell[data-media-ratio="3/5"] { --cell-media-ratio: 60%; }
+.rf-bento[data-media-ratio="2/3"], .rf-bento-cell[data-media-ratio="2/3"] { --cell-media-ratio: 66.667%; }
+
+.rf-bento-cell[data-media-position="top"] > .rf-bento-cell__content,
+.rf-bento-cell[data-media-position="bottom"] > .rf-bento-cell__content {
+	flex-basis: var(--cell-content-height, auto);
+	overflow: var(--cell-content-overflow, visible);
+}
+
+/* Cell footprint: resolved cols/rows spans, auto-capped to the effective columns. */
+.rf-bento-cell {
+	grid-column: span min(var(--cell-cols, 1), var(--bento-cols-effective, 6));
+	grid-row: span var(--cell-rows, 1);
+	min-width: 0;
+}
+
+/* The cell flex container (surface chrome + spacing are skin). */
+.rf-bento-cell {
+	overflow: hidden;
+	position: relative; /* anchor for the stretched link */
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+
+/* Media placement (data-media-position). */
+.rf-bento-cell[data-media-position="bottom"] { flex-direction: column-reverse; }
+.rf-bento-cell[data-media-position="start"] { flex-direction: row; align-items: stretch; }
+.rf-bento-cell[data-media-position="end"] { flex-direction: row-reverse; align-items: stretch; }
+.rf-bento-cell[data-media-position="start"] > .rf-bento-cell__media,
+.rf-bento-cell[data-media-position="end"] > .rf-bento-cell__media {
+	flex: 0 0 var(--cell-media-ratio, 42%);
+	align-self: stretch;
+}
+.rf-bento-cell[data-media-position="start"] > .rf-bento-cell__content,
+.rf-bento-cell[data-media-position="end"] > .rf-bento-cell__content { flex: 1; min-width: 0; }
+
+.rf-bento-cell__content {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	flex: 0 0 auto;
+}
+.rf-bento-cell[data-media-position="top"] > .rf-bento-cell__media,
+.rf-bento-cell[data-media-position="bottom"] > .rf-bento-cell__media {
+	flex: 1 1 auto;
+	min-height: 0;
+	aspect-ratio: var(--bento-media-aspect, 16 / 9);
+}
+.rf-bento-cell__media > :is(img, video) { object-position: var(--bento-media-anchor, center); }
+.rf-bento-cell__media[style*="--frame-aspect"] { --bento-media-aspect: var(--frame-aspect); }
+.rf-bento-cell__media[style*="--frame-anchor"] { --bento-media-anchor: var(--frame-anchor); }
+.rf-bento-cell__body { min-height: 0; }
+.rf-bento-cell__body > span[property],
+.rf-bento-cell__body > meta { display: none; }
+.rf-bento-cell__footer { margin-top: auto; }
+.rf-bento-cell__body img { width: 100%; height: auto; }
+
+/* Whole-cell link — stretched overlay; nested links stay clickable. */
+.rf-bento-cell__link { position: absolute; inset: 0; z-index: 0; }
+.rf-bento-cell a:not(.rf-bento-cell__link) { position: relative; z-index: 1; }
+
+/* ─── Binary collapse — single stacked column with auto rows below breakpoint. ─── */
+@container rf-bento (max-width: 640px) {
+	:is(.rf-bento[data-collapse="sm"], .rf-bento[data-collapse=""]) .rf-bento__grid { --bento-cols-effective: 1; --bento-row-track: auto; }
+	:is(.rf-bento[data-collapse="sm"], .rf-bento[data-collapse=""]) .rf-bento-cell[data-media-position="start"],
+	:is(.rf-bento[data-collapse="sm"], .rf-bento[data-collapse=""]) .rf-bento-cell[data-media-position="end"] { flex-direction: column; }
+	:is(.rf-bento[data-collapse="sm"], .rf-bento[data-collapse=""]) .rf-bento-cell[data-media-position] > .rf-bento-cell__media { flex: 0 0 auto; aspect-ratio: var(--bento-media-aspect, 16 / 9); }
+	:is(.rf-bento[data-collapse="sm"], .rf-bento[data-collapse=""]) .rf-bento-cell[data-media-position] > .rf-bento-cell__content { flex: 0 0 auto; }
+}
+@container rf-bento (max-width: 768px) {
+	.rf-bento[data-collapse="md"] .rf-bento__grid { --bento-cols-effective: 1; --bento-row-track: auto; }
+	.rf-bento[data-collapse="md"] .rf-bento-cell[data-media-position="start"],
+	.rf-bento[data-collapse="md"] .rf-bento-cell[data-media-position="end"] { flex-direction: column; }
+	.rf-bento[data-collapse="md"] .rf-bento-cell[data-media-position] > .rf-bento-cell__media { flex: 0 0 auto; aspect-ratio: var(--bento-media-aspect, 16 / 9); }
+	.rf-bento[data-collapse="md"] .rf-bento-cell[data-media-position] > .rf-bento-cell__content { flex: 0 0 auto; }
+}
+@container rf-bento (max-width: 1024px) {
+	.rf-bento[data-collapse="lg"] .rf-bento__grid { --bento-cols-effective: 1; --bento-row-track: auto; }
+	.rf-bento[data-collapse="lg"] .rf-bento-cell[data-media-position="start"],
+	.rf-bento[data-collapse="lg"] .rf-bento-cell[data-media-position="end"] { flex-direction: column; }
+	.rf-bento[data-collapse="lg"] .rf-bento-cell[data-media-position] > .rf-bento-cell__media { flex: 0 0 auto; aspect-ratio: var(--bento-media-aspect, 16 / 9); }
+	.rf-bento[data-collapse="lg"] .rf-bento-cell[data-media-position] > .rf-bento-cell__content { flex: 0 0 auto; }
+}
