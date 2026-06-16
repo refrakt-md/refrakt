@@ -1,5 +1,26 @@
 # @refrakt-md/behaviors
 
+## 0.24.0
+
+### Minor Changes
+
+- dd2d955: **Live sandbox guests in the `bg` backdrop layer (SPEC-104).** A surface can now carry **both** an animated backdrop **and** a positioned subject media — the visualiser is the `bg`, the image/code/embed stays an in-flow media guest, so they stop competing for the single media zone.
+
+  - `bg` gains an optional body holding one bare `sandbox`: it's transformed normally (the real rune runs, with file resolution + sanitisation), tagged `data-bg-guest`, and the engine relocates it into the bg layer (a sibling of `bg-video`, above the boot frame, below overlay/scrim). A chromed guest (`video`/`audio`/`figure`) is rejected with a build warning.
+  - A new **backdrop posture** (`data-guest-posture="backdrop"`): the guest is mounted and running but pointer-inert; the sandbox is forced to `height="fill"` + eager activation, **not** mounted under `prefers-reduced-motion` (the boot frame stands in), and suspended off-screen / on a hidden tab.
+  - A **named `sandbox` bg preset** (`BgPresetDefinition.sandbox`, project-level `backgrounds` config) applies a reusable scene by name (`bg="midnight-waves"`) like any other preset, resolved at transform time and memoised per scene.
+
+- dd2d955: **Scroll-reveal motion — a token-driven entrance dimension (SPEC-105).** Sections can now animate in as they scroll into view. The author declares _intent_ with two universal attributes; the theme owns the choreography; a behaviour owns the timing — JS = when, CSS = how.
+
+  - **`reveal`** — a closed entrance vocabulary on every block rune: `none` (default), `fade`, `slide`, `scale`, `blur`. An unknown value is a build error.
+  - **`stagger`** — cascades a multi-child block's items in (feature/bento/steps/pricing/playlist); a silent no-op on single-child runes. The engine stamps `--rf-reveal-index` on the cascade items.
+  - **The motion dimension** (`dimensions/motion.css` + `--rf-reveal-*` physics tokens) renders each character keyed on `data-reveal` × `data-in-view`, from one stylesheet covering all section runes. It animates the individual `translate`/`scale` properties (never the `transform` shorthand) so it composes with existing rune transforms. The physics are a first-class token group, retunable site-wide via `refrakt.config.json` `theme.tokens.reveal.*`.
+  - **An IntersectionObserver behaviour** flips `data-in-view` on first intersection. Opt-in and enhancement-gated: SSR/no-JS/crawler and `prefers-reduced-motion` render the fully-visible final state — nothing is hidden behind JS.
+
+### Patch Changes
+
+- dd2d955: **Fix: `mockup` as a media guest renders correctly (incl. iOS Safari).** A mockup placed in a rune's media zone (cards, bento) now fills its slot instead of capping at its native size, and is inset from the media-zone sides. The upscale is gated to fine-pointer / wide slots, scaled with `transform` rather than `zoom`, and its fill factor is measured in JS (a new `mockup` behaviour) rather than `cqi` — fixing the sizing on iOS Safari.
+
 ## 0.23.0
 
 ## 0.22.0

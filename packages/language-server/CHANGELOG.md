@@ -1,5 +1,14 @@
 # @refrakt-md/language-server
 
+## 0.24.0
+
+### Patch Changes
+
+- Updated dependencies [dd2d955]
+- Updated dependencies [dd2d955]
+  - @refrakt-md/runes@0.24.0
+  - @refrakt-md/transform@0.24.0
+
 ## 0.23.0
 
 ### Patch Changes
