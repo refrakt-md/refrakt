@@ -1,0 +1,39 @@
+/* pagination — structure. The prev/next flex row, each box as an equal-width flex
+ * column (flex/min-width/max-width), the prev/next cross-axis alignment + the next
+ * auto-push, and the marker flex order. Spacing, borders, radius, type, and colour
+ * are skin (Lumina's styles/runes/pagination.css). */
+
+.rf-pagination {
+	display: flex;
+	align-items: stretch;
+}
+
+.rf-pagination__prev,
+.rf-pagination__next {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 0;
+	min-width: 0;
+	max-width: calc(50% - 0.5rem);
+}
+
+.rf-pagination__prev {
+	align-items: flex-start;
+}
+
+.rf-pagination__next {
+	align-items: flex-end;
+	margin-left: auto;
+}
+
+/* The next box emits `<label> <marker>`; force the marker to the top to match prev. */
+.rf-pagination__next [data-name="marker"] {
+	order: -1;
+}
+
+@media (max-width: 768px) {
+	.rf-pagination__prev,
+	.rf-pagination__next {
+		max-width: calc(50% - 0.25rem);
+	}
+}

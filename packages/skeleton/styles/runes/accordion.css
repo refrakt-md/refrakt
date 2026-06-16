@@ -1,0 +1,55 @@
+/* accordion — structure. The eyebrow stretched-link, the items passthrough, the
+ * item-header flex + native-marker hide + chevron box/glyph/open-rotate mechanism,
+ * the title/count flex, and the ::details-content collapse mechanism. Type,
+ * borders, spacing, the chevron tint, transitions, and prose are skin (Lumina's
+ * styles/runes/accordion.css). The chevron glyph is the registry mask
+ * --rf-icon-accordion-chevron (SPEC-094 §8 / WORK-437). */
+
+.rf-accordion__eyebrow:has(a) {
+	display: inline-block;
+	position: relative;
+}
+.rf-accordion__eyebrow:has(a) a::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+}
+.rf-accordion__items { display: contents; }
+
+.rf-accordion-item__header {
+	display: flex;
+	align-items: center;
+	list-style: none;
+}
+.rf-accordion-item__header::-webkit-details-marker { display: none; }
+.rf-accordion-item__header::marker { display: none; content: ''; }
+.rf-accordion-item__header::before {
+	content: '';
+	flex-shrink: 0;
+	width: 0.75rem;
+	height: 0.75rem;
+	mask-size: contain;
+	mask-repeat: no-repeat;
+	mask-position: center;
+	-webkit-mask-image: var(--rf-icon-accordion-chevron);
+	mask-image: var(--rf-icon-accordion-chevron);
+}
+.rf-accordion-item[open] .rf-accordion-item__header::before {
+	transform: rotate(90deg);
+}
+.rf-accordion-item__title { flex: 1; min-width: 0; }
+.rf-accordion-item__count { flex-shrink: 0; }
+
+/* Collapse / expand mechanism. */
+.rf-accordion-item { interpolate-size: allow-keywords; }
+.rf-accordion-item::details-content {
+	block-size: 0;
+	overflow: hidden;
+}
+.rf-accordion-item[open]::details-content { block-size: auto; }
+
+/* Block-content panels switch to a flex column (gap is skin). */
+.rf-accordion-item__body:has([data-block]) {
+	display: flex;
+	flex-direction: column;
+}

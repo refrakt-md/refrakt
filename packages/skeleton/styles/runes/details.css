@@ -1,0 +1,19 @@
+/* details — structure. The summary flex + native-marker hide, the disclosure
+ * marker box (push + flex-shrink) and its open-rotate, and the list reset. Type,
+ * spacing, colour, the marker glyph, and transitions are skin (Lumina's
+ * styles/runes/details.css). */
+
+.rf-details__summary {
+	display: flex;
+	align-items: center;
+	list-style: none;
+}
+.rf-details__summary::-webkit-details-marker { display: none; }
+.rf-details__summary::marker { display: none; content: ''; }
+.rf-details__summary::after {
+	flex-shrink: 0;
+	margin-left: auto;
+}
+.rf-details[open] .rf-details__summary::after {
+	transform: rotate(90deg);
+}

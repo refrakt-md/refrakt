@@ -1,5 +1,6 @@
 @layer skin {
-/* Table of Contents */
+/* Table of Contents — skin. The list reset + the inline-block link live in
+ * @refrakt-md/skeleton (styles/runes/toc.css). */
 .rf-toc {
 	padding: 1.25rem 1.5rem;
 	border-left: 3px solid var(--rf-color-primary);
@@ -16,7 +17,6 @@
 }
 .rf-toc ul,
 .rf-toc ol {
-	list-style: none;
 	padding-left: 0;
 	margin: 0;
 }
@@ -33,7 +33,6 @@
 	color: var(--rf-color-text);
 	text-decoration: none;
 	font-size: var(--rf-text-sm);
-	display: inline-block;
 	padding: 0.2rem 0;
 	transition: color 150ms ease;
 }

@@ -1,33 +1,22 @@
 @layer skin {
-/* Details */
-.rf-details {
-}
+/* Details — skin. The summary flex, marker hide, disclosure-marker push, and the
+ * open-rotate live in @refrakt-md/skeleton (styles/runes/details.css). */
 .rf-details__summary {
-	display: flex;
-	align-items: center;
 	gap: 0.5rem;
 	padding: 0.75rem 0;
 	font-weight: var(--rf-weight-semibold);
 	font-size: var(--rf-text-sm);
 	cursor: pointer;
 	user-select: none;
-	list-style: none;
 	transition: background-color 200ms ease;
 }
-.rf-details__summary::-webkit-details-marker { display: none; }
-.rf-details__summary::marker { display: none; content: ''; }
 .rf-details__summary:hover {
 	color: var(--rf-color-primary);
 }
 .rf-details__summary::after {
 	content: '▸';
-	flex-shrink: 0;
-	margin-left: auto;
 	color: var(--rf-color-muted);
 	transition: transform 200ms ease;
-}
-.rf-details[open] .rf-details__summary::after {
-	transform: rotate(90deg);
 }
 .rf-details__body {
 	padding: 0 0 1rem;

@@ -1,28 +1,14 @@
 @layer skin {
-/* Pagination — prev/next links at the foot of sequential pages.
- *
- * Each box stacks the directional marker above the label so the two
- * controls stay compact enough to sit side-by-side on mobile. Equal
- * heights are guaranteed by the container's `align-items: stretch`, so
- * if one label wraps to multiple lines the other box grows to match.
- *
- * Boxes are capped at ~50% width via `flex: 1 1 0` + `max-width`, with
- * `margin-left: auto` on `__next` so it stays right-aligned even when
- * `__prev` isn't rendered (first page in a sequence). */
-
+/* Pagination — skin. The flex row + box flex sizing + alignment + marker order
+ * live in @refrakt-md/skeleton (styles/runes/pagination.css). */
 .rf-pagination {
-	display: flex;
-	align-items: stretch;
 	gap: 1rem;
 	margin: 3rem 0 1.5rem;
 	padding-top: 1.5rem;
 	border-top: 1px solid var(--rf-color-border);
 }
-
 .rf-pagination__prev,
 .rf-pagination__next {
-	display: flex;
-	flex-direction: column;
 	gap: 0.375rem;
 	padding: 0.75rem 1rem;
 	border: 1px solid var(--rf-color-border);
@@ -31,48 +17,28 @@
 	text-decoration: none;
 	font-size: var(--rf-text-sm);
 	transition: border-color 150ms ease, background-color 150ms ease;
-	flex: 1 1 0;
-	min-width: 0;
-	max-width: calc(50% - 0.5rem);
 }
-
 .rf-pagination__prev {
-	align-items: flex-start;
 	text-align: left;
 }
-
 .rf-pagination__next {
-	align-items: flex-end;
 	text-align: right;
-	margin-left: auto;
 }
-
 .rf-pagination__prev:hover,
 .rf-pagination__next:hover {
 	border-color: var(--rf-color-primary);
 	background: var(--rf-color-surface, var(--rf-color-bg));
 	text-decoration: none;
 }
-
 .rf-pagination [data-name="marker"] {
 	color: var(--rf-color-muted);
 	font-weight: var(--rf-weight-normal);
 	font-size: var(--rf-text-lg);
 	line-height: 1;
 }
-
 .rf-pagination [data-name="label"] {
 	font-weight: var(--rf-weight-medium);
 }
-
-/* The pagination rune emits prev as `<marker> <label>` but next as
-   `<label> <marker>` (an artefact of the original row layout where the
-   arrow flanked the outer edge). With our vertical stack this puts the
-   next arrow at the bottom of its box. Force it to the top to match prev. */
-.rf-pagination__next [data-name="marker"] {
-	order: -1;
-}
-
 @media (max-width: 768px) {
 	.rf-pagination {
 		gap: 0.5rem;
@@ -80,7 +46,6 @@
 	.rf-pagination__prev,
 	.rf-pagination__next {
 		padding: 0.625rem 0.875rem;
-		max-width: calc(50% - 0.25rem);
 		font-size: var(--rf-text-sm);
 	}
 }
