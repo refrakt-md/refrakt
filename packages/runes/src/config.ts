@@ -272,7 +272,7 @@ export const coreConfig: ThemeConfig = {
 		Hint: {
 			block: 'hint',
 			defaultDensity: 'compact',
-			defaultElevation: 'flush',
+			defaultElevation: 'sunken',
 			modifiers: { hintType: { source: 'meta', default: 'note' } },
 			contextModifiers: { 'hero': 'in-hero', 'feature': 'in-feature' },
 			sections: { header: 'header' },

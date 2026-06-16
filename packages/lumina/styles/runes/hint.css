@@ -1,13 +1,12 @@
 @layer skin {
-/* Hint — skin. Surface treatment (neutral fill, radius, padding), the variant
- * colour that drives the icon + title, the header→body margin, the body reset,
- * the header gap, and type. The header layout + icon-glyph box mechanism live in
+/* Hint — skin. The sunken surface chrome (fill, border, radius) comes from
+ * dimensions/surfaces.css via defaultElevation: 'sunken'; only the bespoke
+ * padding stays here so the icon+title+body breathes wider than --rune-padding
+ * at compact density. The header layout + icon-glyph box mechanism live in
  * @refrakt-md/skeleton (styles/runes/hint.css). */
 .rf-hint {
 	--hint-color: var(--rf-color-info);
 	padding: var(--rf-spacing-snug) var(--rf-spacing-cozy);
-	border-radius: var(--rf-radius-md);
-	background: var(--rf-color-surface);
 }
 .rf-hint__header {
 	margin-bottom: var(--rf-spacing-xs);
