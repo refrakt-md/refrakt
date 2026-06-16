@@ -1,0 +1,40 @@
+/* recipe — structure. The content flex column, the steps list reset + counter, the
+ * step item counter + positioning, the step-number box placement/centring, and the
+ * metadata dense-tile grid (+ mobile). The thin-edge inset padding + split gaps,
+ * the ingredients list chrome, the step-number glyph + chrome, tip callouts, media
+ * radius, and type stay skin. */
+.rf-recipe__content {
+	display: flex;
+	flex-direction: column;
+}
+.rf-recipe__content ol {
+	list-style: none;
+	counter-reset: recipe-step;
+}
+.rf-recipe__content ol > li {
+	counter-increment: recipe-step;
+	position: relative;
+}
+.rf-recipe__content ol > li::before {
+	content: counter(recipe-step);
+	position: absolute;
+	left: 0;
+	top: 0.625rem;
+	width: 1.5rem;
+	height: 1.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.rf-recipe__metadata {
+	grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+}
+@media (max-width: 48rem) {
+	.rf-recipe__metadata {
+		grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+		align-items: normal;
+	}
+	.rf-recipe__metadata > [data-name="row"] {
+		display: flex;
+	}
+}

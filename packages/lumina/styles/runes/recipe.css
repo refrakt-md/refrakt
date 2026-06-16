@@ -58,8 +58,6 @@
 
 /* Content wrapper */
 .rf-recipe__content {
-	display: flex;
-	flex-direction: column;
 	gap: 1.75rem;
 }
 
@@ -84,29 +82,16 @@
 .rf-recipe__content ol {
 	padding-left: 0;
 	margin: 0;
-	list-style: none;
-	counter-reset: recipe-step;
 }
 .rf-recipe__content ol > li {
-	counter-increment: recipe-step;
 	padding: 0.625rem 0;
 	padding-left: 2.25rem;
-	position: relative;
 	line-height: var(--rf-leading-relaxed);
 }
 .rf-recipe__content ol > li + li {
 	border-top: 1px solid var(--rf-color-border);
 }
 .rf-recipe__content ol > li::before {
-	content: counter(recipe-step);
-	position: absolute;
-	left: 0;
-	top: 0.625rem;
-	width: 1.5rem;
-	height: 1.5rem;
-	display: flex;
-	align-items: center;
-	justify-content: center;
 	font-size: var(--rf-text-xs);
 	font-weight: var(--rf-weight-bold);
 	color: var(--rf-color-primary);
@@ -141,23 +126,11 @@
 .rf-recipe__media img {
 	border-radius: var(--rf-radius-media);
 }
-
-/* Metadata — prep / cook / serves / difficulty are short, symmetric facts,
- * so keep the def-list a dense tile grid at every width (a smaller column
- * min than the 8rem default) instead of the shared mobile label/value list. */
-.rf-recipe__metadata {
-	grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
-}
 @media (max-width: 48rem) {
 	.rf-recipe__metadata {
-		grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
 		gap: 0.75rem;
-		align-items: normal;
 		padding: 0;
 		border: none;
-	}
-	.rf-recipe__metadata > [data-name="row"] {
-		display: flex;
 	}
 }
 
