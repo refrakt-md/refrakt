@@ -38,12 +38,12 @@ The theme owns the physics as tokens. A "calm" theme and a "punchy" theme differ
 
 | Token | Default | Controls |
 |-------|---------|----------|
-| `--rf-reveal-duration` | `0.5s` | entrance duration |
+| `--rf-reveal-duration` | `0.9s` | entrance duration |
 | `--rf-reveal-easing` | `cubic-bezier(0.16, 1, 0.3, 1)` | entrance easing |
-| `--rf-reveal-distance` | `1rem` | `slide` travel |
-| `--rf-reveal-scale-start` | `0.96` | `scale` entrance start |
+| `--rf-reveal-distance` | `1.5rem` | `slide` travel |
+| `--rf-reveal-scale-start` | `0.94` | `scale` entrance start |
 | `--rf-reveal-blur` | `8px` | `blur` entrance start (set `0` to downgrade to `fade`) |
-| `--rf-reveal-stagger` | `80ms` | per-child cascade interval |
+| `--rf-reveal-stagger` | `140ms` | per-child cascade interval |
 
 ## How the dimension CSS works
 
