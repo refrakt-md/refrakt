@@ -41,7 +41,7 @@
 		"highlight": { "$ref": "#/definitions/HighlightConfig" },
 		"icons": { "type": "object", "additionalProperties": { "type": "string" } },
 		"tints": { "type": "object", "additionalProperties": { "type": "object" } },
-		"backgrounds": { "type": "object", "additionalProperties": { "type": "object" } },
+		"backgrounds": { "type": "object", "description": "Named bg presets (keyed by name). Each is a BgPresetDefinition: `style` and/or token-driven `gradient` (engine-resolved), `extends` a base preset, and/or `sandbox` ({ src, framework?, dependencies? }) for a live sandbox backdrop resolved at transform time (SPEC-104). `sandbox` presets are project-level content.", "additionalProperties": { "type": "object" } },
 		"sandbox": {
 			"type": "object",
 			"properties": { "examplesDir": { "type": "string" } },
@@ -103,7 +103,7 @@
 					"items": { "type": "string" }
 				},
 				"tints": { "type": "object", "additionalProperties": { "type": "object" } },
-				"backgrounds": { "type": "object", "additionalProperties": { "type": "object" } },
+				"backgrounds": { "type": "object", "description": "Named bg presets (keyed by name). Each is a BgPresetDefinition: `style` and/or token-driven `gradient` (engine-resolved), `extends` a base preset, and/or `sandbox` ({ src, framework?, dependencies? }) for a live sandbox backdrop resolved at transform time (SPEC-104). `sandbox` presets are project-level content.", "additionalProperties": { "type": "object" } },
 				"sandbox": {
 					"type": "object",
 					"properties": { "examplesDir": { "type": "string" } },
