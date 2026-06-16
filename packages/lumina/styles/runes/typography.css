@@ -6,8 +6,6 @@
 	margin-bottom: 1rem;
 }
 .rf-typography__specimens {
-	display: flex;
-	flex-direction: column;
 	gap: 2rem;
 }
 .rf-typography__specimen {
@@ -15,8 +13,6 @@
 	padding: 0;
 }
 .rf-typography__specimen-header {
-	display: flex;
-	align-items: baseline;
 	gap: 0.75rem;
 	margin-bottom: 1.25rem;
 	padding-bottom: 0.75rem;
@@ -37,38 +33,27 @@
 	color: var(--rf-color-muted);
 }
 .rf-typography__sizes {
-	display: flex;
-	flex-direction: column;
 	gap: 0.5rem;
 	margin-bottom: 1rem;
 }
 .rf-typography__size-sample {
-	display: flex;
-	align-items: baseline;
 	gap: 1rem;
 	line-height: var(--rf-leading-snug);
-	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 .rf-typography__size-label {
-	flex-shrink: 0;
 	font-size: var(--rf-text-xs);
 	font-family: var(--rf-font-mono, monospace);
 	color: var(--rf-color-muted);
-	min-width: 3rem;
 	text-align: right;
 }
 .rf-typography__weights {
-	display: flex;
 	gap: 1.5rem;
-	flex-wrap: wrap;
 	padding-top: 1rem;
 	border-top: 1px solid var(--rf-color-border, #e5e7eb);
 }
 .rf-typography__weight-sample {
-	display: flex;
-	flex-direction: column;
 	gap: 0.25rem;
 }
 .rf-typography__weight-label {

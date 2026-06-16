@@ -6,8 +6,6 @@
 	margin-bottom: 1rem;
 }
 .rf-design-context__sections {
-	display: flex;
-	flex-direction: column;
 	gap: 1.5rem;
 }
 

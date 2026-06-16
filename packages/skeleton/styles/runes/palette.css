@@ -1,0 +1,33 @@
+/* palette — structure. The swatch grid (+ mobile cap), the swatch flex column, the
+ * swatch-colour height, the a11y flex, and the neutral-scale flex strip + stops.
+ * Radii, borders, gaps, and type are skin. */
+.rf-palette__grid {
+	display: grid;
+	grid-template-columns: repeat(var(--rf-palette-cols, 4), 1fr);
+}
+@media (max-width: 768px) {
+	.rf-palette__grid {
+		grid-template-columns: repeat(min(var(--rf-palette-cols, 4), 3), 1fr);
+	}
+}
+.rf-palette__swatch {
+	display: flex;
+	flex-direction: column;
+}
+.rf-palette__swatch-color {
+	height: 5rem;
+}
+.rf-palette__swatch-a11y {
+	display: flex;
+}
+.rf-palette__scale {
+	display: flex;
+	overflow: hidden;
+}
+.rf-palette__scale-stop {
+	flex: 1;
+	display: flex;
+	align-items: flex-end;
+	justify-content: center;
+	min-height: 4rem;
+}

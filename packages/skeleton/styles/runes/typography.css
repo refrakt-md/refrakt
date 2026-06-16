@@ -1,0 +1,33 @@
+/* typography — structure. The specimens flex column, the specimen-header flex, the
+ * sizes flex column, the size-sample flex + ellipsis clip, the size-label sizing,
+ * the weights flex-wrap, and the weight-sample flex column. Borders, radii,
+ * padding, and type are skin. */
+.rf-typography__specimens {
+	display: flex;
+	flex-direction: column;
+}
+.rf-typography__specimen-header {
+	display: flex;
+	align-items: baseline;
+}
+.rf-typography__sizes {
+	display: flex;
+	flex-direction: column;
+}
+.rf-typography__size-sample {
+	display: flex;
+	align-items: baseline;
+	overflow: hidden;
+}
+.rf-typography__size-label {
+	flex-shrink: 0;
+	min-width: 3rem;
+}
+.rf-typography__weights {
+	display: flex;
+	flex-wrap: wrap;
+}
+.rf-typography__weight-sample {
+	display: flex;
+	flex-direction: column;
+}
