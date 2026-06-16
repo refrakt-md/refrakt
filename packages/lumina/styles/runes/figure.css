@@ -1,23 +1,8 @@
 @layer skin {
-/* Figure */
+/* Figure — skin. The image box, frame-aspect fill, size max-widths, and alignment
+ * auto-margins live in @refrakt-md/skeleton (styles/runes/figure.css). */
 .rf-figure :is(img, .rf-placeholder) {
-	display: block;
-	max-width: 100%;
-	height: auto;
-	margin-inline: auto;
 	border-radius: var(--rf-radius-media);
-}
-
-/* When `frame-aspect` sets an explicit surface shape, the image fills the
- * shape rather than sitting at its natural size with whitespace on the
- * inline-end. `object-fit: cover` crops only if the natural aspect doesn't
- * match — and `frame-anchor` already picks the focal point of that crop
- * (the same contract as a card's media slot). */
-.rf-figure[style*="--frame-aspect"] :is(img, .rf-placeholder) {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	margin: 0;
 }
 .rf-figure figcaption {
 	margin-top: 0.625rem;
@@ -26,12 +11,5 @@
 	text-align: center;
 	font-style: italic;
 }
-.rf-figure--small { max-width: 320px; }
-.rf-figure--medium { max-width: 640px; }
-.rf-figure--large { max-width: 960px; }
-.rf-figure--full { max-width: 100%; }
-.rf-figure--left { margin-right: auto; }
-.rf-figure--center { margin-left: auto; margin-right: auto; }
-.rf-figure--right { margin-left: auto; }
 
 }

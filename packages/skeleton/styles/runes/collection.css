@@ -1,0 +1,51 @@
+/* collection — structure. The list/grid arrangement (items flex/grid, grouped-grid
+ * passthrough, uniform-height item flex, the grid group + title span), the card
+ * flex column, and the block-content item display reset. Spacing, gaps, card
+ * chrome, type, and the table cell treatment are skin (Lumina's
+ * styles/runes/collection.css). The table width/border-collapse stays skin (the
+ * same value-identical contention with the table element + global table as
+ * comparison). */
+
+.rf-collection__items {
+	display: flex;
+	flex-direction: column;
+}
+.rf-collection[data-layout='grid'] .rf-collection__items {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+	align-items: stretch;
+}
+.rf-collection[data-layout='grid'] .rf-collection__item {
+	display: flex;
+}
+.rf-collection[data-layout='grid'] .rf-collection__item > * {
+	flex: 1;
+	min-width: 0;
+}
+.rf-collection[data-layout='grid'] .rf-collection__items:has(.rf-collection__group),
+.rf-collection[data-layout='grid'] .rf-collection__items:has(.rf-accordion) {
+	display: flex;
+	flex-direction: column;
+}
+.rf-collection[data-layout='grid'] .rf-collection__group {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+	align-items: stretch;
+}
+.rf-collection[data-layout='grid'] .rf-collection__group-title {
+	grid-column: 1 / -1;
+}
+.rf-collection__item {
+	min-width: 0;
+}
+.rf-collection__card {
+	display: flex;
+	flex-direction: column;
+}
+.rf-collection__group {
+	display: flex;
+	flex-direction: column;
+}
+.rf-collection__item[data-block] {
+	display: block;
+}
