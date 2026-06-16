@@ -1,5 +1,21 @@
 # @refrakt-md/plan
 
+## 0.24.0
+
+### Patch Changes
+
+- acc9474: **Fix: `plan create` now validates enum attributes at write time.** `plan update` rejected invalid `status`/`priority`/`complexity`/`severity` values, but `plan create` passed any `attrs` straight into the scaffolded file unchecked — so a stray `complexity="small"` (or `status="todo"`) landed silently and only surfaced later as a `plan validate` error. `create` (and the `plan.create` MCP tool) now run the same validation as `update`, rejecting unknown attributes and out-of-vocabulary enum values with a message listing the valid set, before any file is written. The vocabularies (`VALID_STATUS`, `VALID_PRIORITY`, `VALID_COMPLEXITY`, `VALID_SEVERITY`, allowed-attr lists) are consolidated into a single shared `enums` module so `create`, `update`, and `validate` can no longer drift apart, and the `plan.create` MCP schema documents the accepted enum values.
+- Updated dependencies [dd2d955]
+- Updated dependencies [dd2d955]
+- Updated dependencies [dd2d955]
+  - @refrakt-md/runes@0.24.0
+  - @refrakt-md/transform@0.24.0
+  - @refrakt-md/content@0.24.0
+  - @refrakt-md/behaviors@0.24.0
+  - @refrakt-md/types@0.24.0
+  - @refrakt-md/highlight@0.24.0
+  - @refrakt-md/html@0.24.0
+
 ## 0.23.0
 
 ### Patch Changes

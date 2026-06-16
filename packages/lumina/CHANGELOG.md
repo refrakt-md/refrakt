@@ -1,5 +1,30 @@
 # @refrakt-md/lumina
 
+## 0.24.0
+
+### Minor Changes
+
+- dd2d955: **Scroll-reveal motion — a token-driven entrance dimension (SPEC-105).** Sections can now animate in as they scroll into view. The author declares _intent_ with two universal attributes; the theme owns the choreography; a behaviour owns the timing — JS = when, CSS = how.
+
+  - **`reveal`** — a closed entrance vocabulary on every block rune: `none` (default), `fade`, `slide`, `scale`, `blur`. An unknown value is a build error.
+  - **`stagger`** — cascades a multi-child block's items in (feature/bento/steps/pricing/playlist); a silent no-op on single-child runes. The engine stamps `--rf-reveal-index` on the cascade items.
+  - **The motion dimension** (`dimensions/motion.css` + `--rf-reveal-*` physics tokens) renders each character keyed on `data-reveal` × `data-in-view`, from one stylesheet covering all section runes. It animates the individual `translate`/`scale` properties (never the `transform` shorthand) so it composes with existing rune transforms. The physics are a first-class token group, retunable site-wide via `refrakt.config.json` `theme.tokens.reveal.*`.
+  - **An IntersectionObserver behaviour** flips `data-in-view` on first intersection. Opt-in and enhancement-gated: SSR/no-JS/crawler and `prefers-reduced-motion` render the fully-visible final state — nothing is hidden behind JS.
+
+### Patch Changes
+
+- c64e5c9: **Fix: structure contracts were missing the plan plugin (and recent chart modifiers).** The committed `structures.json` (both the repo-level copy and Lumina's shipped `./contracts` export) had drifted from the generator — the drift guard regenerated from a `fullConfig` that omitted `@refrakt-md/plan`, so 11 plan runes (`spec`/`work`/`bug`/`decision`/`milestone` + the plan UI runes) and the `chart` `tick-count`/`tick-step`/`label-angle` modifiers were absent from the published contract. The contract now covers all 9 official plugins (131 runes); the drift test includes the plan plugin and additionally guards the repo-level copy so the two committed files can't diverge again.
+- d77cd41: **Fix: `preview` no longer bleeds to the viewport edge inside a `feature` (default layout).** The WORK-438 skeleton/skin split promoted the in-feature breakout `.rf-preview--in-feature { margin-inline: calc(-1 * var(--rf-content-gutter)) }` into `@layer skeleton`, where it lost to Lumina's skin rule `.rf-preview { margin: 2rem 0 }` (skin beats skeleton regardless of specificity), nullifying the breakout. The bleed is moved back to `@layer skin`, where it again wins over the base margin by specificity and fires together with the canvas border-radius reset at the `@container (max-width: 1280px)` breakpoint. Docs-layout previews were unaffected (they bleed via the canvas de-chrome, not the in-feature root margin).
+- dd2d955: **Fix: `mockup` as a media guest renders correctly (incl. iOS Safari).** A mockup placed in a rune's media zone (cards, bento) now fills its slot instead of capping at its native size, and is inset from the media-zone sides. The upscale is gated to fine-pointer / wide slots, scaled with `transform` rather than `zoom`, and its fill factor is measured in JS (a new `mockup` behaviour) rather than `cqi` — fixing the sizing on iOS Safari.
+- Updated dependencies [d77cd41]
+- Updated dependencies [dd2d955]
+- Updated dependencies [dd2d955]
+- Updated dependencies [dd2d955]
+  - @refrakt-md/skeleton@0.24.0
+  - @refrakt-md/runes@0.24.0
+  - @refrakt-md/transform@0.24.0
+  - @refrakt-md/types@0.24.0
+
 ## 0.23.0
 
 ### Minor Changes
