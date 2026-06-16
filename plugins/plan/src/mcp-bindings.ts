@@ -141,7 +141,10 @@ export const createSchema: JSONSchema7 = {
 		attrs: {
 			type: 'object',
 			additionalProperties: { type: 'string' },
-			description: 'Additional attributes (status, priority, milestone, etc).',
+			description:
+				'Additional attributes. Enum-valued fields are validated and rejected if invalid: ' +
+				'priority (critical, high, medium, low), complexity (trivial, simple, moderate, complex, unknown), ' +
+				'bug severity (critical, major, minor, cosmetic). Also status (per type), milestone, source, tags, assignee.',
 		},
 	},
 	additionalProperties: false,

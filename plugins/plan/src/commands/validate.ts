@@ -2,20 +2,17 @@ import { readFileSync } from 'fs';
 import { basename, join } from 'path';
 import { scanPlanFiles } from '../scanner.js';
 import type { PlanEntity, PlanRuneType } from '../types.js';
+import { VALID_STATUS, VALID_PRIORITY, VALID_COMPLEXITY, VALID_SEVERITY } from './enums.js';
 
-// --- Valid attribute values per type ---
+// --- Valid attribute values per type (sets derived from the shared vocabularies) ---
 
-const VALID_STATUSES: Record<string, Set<string>> = {
-	spec: new Set(['draft', 'review', 'accepted', 'superseded', 'deprecated']),
-	work: new Set(['draft', 'ready', 'in-progress', 'review', 'done', 'blocked', 'pending']),
-	bug: new Set(['reported', 'confirmed', 'in-progress', 'fixed', 'wontfix', 'duplicate']),
-	decision: new Set(['proposed', 'accepted', 'superseded', 'deprecated']),
-	milestone: new Set(['planning', 'active', 'complete']),
-};
+const VALID_STATUSES: Record<string, Set<string>> = Object.fromEntries(
+	Object.entries(VALID_STATUS).map(([type, values]) => [type, new Set(values)]),
+);
 
-const VALID_PRIORITIES = new Set(['critical', 'high', 'medium', 'low']);
-const VALID_SEVERITIES = new Set(['critical', 'major', 'minor', 'cosmetic']);
-const VALID_COMPLEXITIES = new Set(['trivial', 'simple', 'moderate', 'complex', 'unknown']);
+const VALID_PRIORITIES = new Set(VALID_PRIORITY);
+const VALID_SEVERITIES = new Set(VALID_SEVERITY);
+const VALID_COMPLEXITIES = new Set(VALID_COMPLEXITY);
 
 const DONE_STATUSES = new Set(['done', 'fixed']);
 
