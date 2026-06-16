@@ -45,3 +45,6 @@
 /* ── Rune structure ── */
 @import './styles/runes/card.css' layer(skeleton);
 @import './styles/runes/hint.css' layer(skeleton);
+@import './styles/runes/steps.css' layer(skeleton);
+@import './styles/runes/pricing.css' layer(skeleton);
+@import './styles/runes/cta.css' layer(skeleton);

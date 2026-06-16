@@ -1,5 +1,6 @@
 @layer skin {
-/* Call to Action */
+/* Call to Action — skin. The preamble/eyebrow/button-row layout + mobile stack
+ * live in @refrakt-md/skeleton (styles/runes/cta.css). */
 .rf-cta {
 	padding: 3.5rem 2rem 3rem;
 }
@@ -9,8 +10,6 @@
 	text-align: center;
 }
 .rf-cta__preamble {
-	flex-direction: column;
-	align-items: center;
 	gap: 0.25rem;
 	margin-bottom: 1.5rem;
 }
@@ -26,8 +25,6 @@
 }
 /* Pill-badge variant when eyebrow contains a link */
 .rf-cta .rf-cta__eyebrow:has(a) {
-	display: inline-block;
-	position: relative;
 	padding: 0.25rem 0.875rem;
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-full);
@@ -46,9 +43,6 @@
 	text-decoration: none;
 }
 .rf-cta .rf-cta__eyebrow:has(a) a::before {
-	content: '';
-	position: absolute;
-	inset: 0;
 	border-radius: inherit;
 }
 .rf-cta__image {
@@ -79,11 +73,7 @@
 	line-height: var(--rf-leading-relaxed);
 }
 .rf-cta ul {
-	display: flex;
 	gap: 0.75rem;
-	justify-content: center;
-	flex-wrap: wrap;
-	list-style: none;
 	padding: 0;
 	margin: 0;
 }
@@ -93,8 +83,6 @@
 }
 .rf-cta li a,
 .rf-cta nav a {
-	display: inline-flex;
-	align-items: center;
 	padding: 0.625rem 1.5rem;
 	border-radius: var(--rf-radius-sm);
 	text-decoration: none;
@@ -142,20 +130,6 @@
 .rf-cta--in-pricing p {
 	margin: 0 0 1rem;
 	max-width: none;
-}
-
-/* Mobile: stack action buttons full-width so multi-button CTAs line up */
-@media (max-width: 640px) {
-	.rf-cta ul {
-		flex-direction: column;
-		align-items: stretch;
-	}
-	.rf-cta li a,
-	.rf-cta nav a {
-		justify-content: center;
-		width: 100%;
-		box-sizing: border-box;
-	}
 }
 
 }

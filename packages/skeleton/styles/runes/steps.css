@@ -1,0 +1,65 @@
+/* steps — structure. The step counter mechanism, the step item positioning, the
+ * counter-badge box placement, the preamble/eyebrow layout + stretched-link, list
+ * resets, and the media-position flip. All spacing, type, surface, and the badge
+ * chrome stay skin (Lumina's styles/runes/steps.css). */
+
+.rf-steps { counter-reset: step; }
+
+.rf-steps__preamble {
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+/* Linked eyebrow → pill with a stretched link (chrome is skin). */
+.rf-steps__eyebrow:has(a) {
+	display: inline-block;
+	position: relative;
+}
+.rf-steps__eyebrow:has(a) a::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+}
+
+.rf-steps ol { list-style: none; }
+
+.rf-step__content { display: contents; }
+
+.rf-step {
+	counter-increment: step;
+	position: relative;
+}
+
+.rf-step::before {
+	content: counter(step);
+	position: absolute;
+	left: 0;
+	top: 0.625rem;
+	width: 1.5rem;
+	height: 1.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.rf-step h1,
+.rf-step h2,
+.rf-step h3,
+.rf-step h4,
+.rf-step h5,
+.rf-step h6,
+.rf-step strong {
+	display: block;
+}
+
+.rf-step__media { overflow: hidden; }
+
+/* BUG-001 — content-first DOM inverts the shared media-first stacked contract
+ * (layouts/split.css): counter it so the labels are truthful. */
+.rf-step[data-media-position="bottom"] {
+	display: block;
+}
+.rf-step[data-media-position="top"] {
+	display: flex;
+	flex-direction: column-reverse;
+}

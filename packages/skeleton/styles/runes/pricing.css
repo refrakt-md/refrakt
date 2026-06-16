@@ -1,0 +1,40 @@
+/* pricing — structure. The tiers grid, the tier flex-column (so CTAs drop to a
+ * common baseline via margin-top:auto), the preamble/eyebrow layout +
+ * stretched-link, and list resets. All spacing, type, surface chrome, colour, and
+ * shadow stay skin (Lumina's styles/runes/pricing.css). */
+
+.rf-pricing > header,
+.rf-pricing__preamble {
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+/* Linked eyebrow → pill with a stretched link (chrome is skin). */
+.rf-pricing__eyebrow:has(a) {
+	display: inline-block;
+	position: relative;
+}
+.rf-pricing__eyebrow:has(a) a::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+}
+
+.rf-pricing__tiers,
+.rf-pricing > ul[data-layout="grid"] {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	list-style: none;
+}
+
+.rf-tier {
+	display: flex;
+	flex-direction: column;
+}
+
+.rf-tier__body { flex: 1; }
+.rf-tier__body ul { list-style: none; }
+.rf-tier__body a {
+	display: block;
+	margin-top: auto;
+}
