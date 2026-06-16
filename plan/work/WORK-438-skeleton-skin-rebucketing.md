@@ -1,4 +1,4 @@
-{% work id="WORK-438" status="in-progress" priority="high" complexity="complex" source="SPEC-094" milestone="v0.23.0" tags="theme,skeleton-skin,css,lumina,refactor" %}
+{% work id="WORK-438" status="done" priority="high" complexity="complex" source="SPEC-094" milestone="v0.23.0" tags="theme,skeleton-skin,css,lumina,refactor" %}
 
 # Skeleton/skin re-bucketing of the Lumina CSS
 
@@ -27,9 +27,9 @@ aesthetics stay in Lumina's skin. Mechanical and low-risk per declaration, but l
 
 ## Acceptance Criteria
 
-- [ ] Lumina's rune + dimension + layout CSS is bucketed into `@layer skeleton` (in the package) and `@layer skin`, following the spike's cut-line rule; no `!important`, low-specificity skin.
-- [ ] No rendered change for unchanged content (CSS-coverage + structure contracts green; gallery/visual diff clean where the harness can run).
-- [ ] Skeleton carries no colour/border/radius/shadow/font or token *values*; skin carries no structural layout the rune breaks without.
+- [x] Lumina's rune + dimension + layout CSS is bucketed into `@layer skeleton` (in the package) and `@layer skin`, following the spike's cut-line rule; no `!important`, low-specificity skin.
+- [x] No rendered change for unchanged content (CSS-coverage + structure contracts green; gallery/visual diff clean where the harness can run).
+- [x] Skeleton carries no colour/border/radius/shadow/font or token *values*; skin carries no structural layout the rune breaks without.
 
 ## Dependencies
 
@@ -38,5 +38,27 @@ aesthetics stay in Lumina's skin. Mechanical and low-risk per declaration, but l
 ## References
 
 - {% ref "SPEC-094" /%} §3 · {% ref "WORK-410" /%} FINDINGS (cut-line rule + scope estimate) · `packages/lumina/styles/`.
+
+## Resolution
+
+Completed: 2026-06-16
+
+Branch series: claude/v023-skin-baseline → …-skeleton-foundation → …-section-cluster → …-runes-* (marketing/docs/core/visual/large) → …-runes-{storytelling,business,places,media,learning,design,plan} → …-skeleton-layouts.
+
+### What was done
+Re-bucketed all of Lumina's CSS into @layer skeleton (structure, shipped in @refrakt-md/skeleton) + @layer skin (aesthetics, in Lumina), per the WORK-410 cut-line, in ~20 reviewable increments:
+- **Skin baseline** first (everything wrapped in @layer skin) so the split was behavior-preserving from a single layer.
+- **Bottom-up promotion**: foundation (global.css) → dimensions (cover, metadata, sections, checklist, sequence) → layouts (split + the 9 page-shell layouts) → guest-posture → every rune (core + all 7 plugin families: marketing, docs, storytelling, business, places, media, learning, design, plan).
+- Cut-line: skeleton = display/grid/flex/position/inset/z-index/overflow/sizing/zone-resets/disclosure+collapse mechanisms/sr-only/object-fit/counter; skin = colour/border/radius/shadow/font + spacing values + glyphs + token values.
+- 6 runes confirmed all-skin (api, badge, bar, sidenote, snippet, tint) + 5 plan runes (spec/work/bug/decision/plan-ref); guest-posture moved whole to skeleton (retiring its long-standing deferral once tabs/codegroup structure landed).
+
+### Notes / decisions
+- Two real regressions caught via preview (elevated-card double-padding; hint 3rem header gap) taught the key rule: a rune declaration that overrides a still-skin dimension by source order must stay skin until that dimension promotes — so spacing/rhythm largely stayed skin while pure layout moved.
+- Large files (nav 449, drawer, mockup, the layouts) used a derive script: hand-write the skeleton picks, derive skin = original − skeleton, guaranteeing skin ∪ skeleton == original.
+- Every increment guarded by a normalized declaration-set diff (byte-identical to origin, @media/@container/comma-selector aware), CSS-coverage (93%), structure contracts (131 runes), full build, and 640 tests.
+- Fixed a build break where base.css (the no-runes entry) still imported the deleted guest-posture.css.
+
+### Outstanding (→ WORK-440)
+AC2's harness pixel-diff was not run during increments (browser unavailable in this env; chromium download blocked). WORK-440's proof skin + gallery pixel-diff is the final visual confirmation that the whole rebucketing was render-preserving.
 
 {% /work %}
