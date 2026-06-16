@@ -4,13 +4,9 @@
  * and badge-row chrome come from the `progress` / `aggregate` / `badge` runes;
  * this file only lays out the per-type grouping. */
 .rf-plan-progress {
-	display: flex;
-	flex-direction: column;
 	gap: var(--rf-spacing-lg, 2rem);
 }
 .rf-plan-progress__group {
-	display: flex;
-	flex-direction: column;
 	gap: var(--rf-spacing-sm, 0.75rem);
 }
 .rf-plan-progress__heading {

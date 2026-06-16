@@ -1,0 +1,10 @@
+/* plan-progress — structure. The per-type block stack + group flex columns. The
+ * heading type and gaps are skin. */
+.rf-plan-progress {
+	display: flex;
+	flex-direction: column;
+}
+.rf-plan-progress__group {
+	display: flex;
+	flex-direction: column;
+}
