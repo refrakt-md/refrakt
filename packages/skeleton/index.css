@@ -123,3 +123,10 @@
 /* ── Plugin: learning ── */
 @import './styles/runes/howto.css' layer(skeleton);
 @import './styles/runes/recipe.css' layer(skeleton);
+/* ── Plugin: design ── */
+@import './styles/runes/swatch.css' layer(skeleton);
+@import './styles/runes/palette.css' layer(skeleton);
+@import './styles/runes/typography.css' layer(skeleton);
+@import './styles/runes/spacing.css' layer(skeleton);
+@import './styles/runes/design-context.css' layer(skeleton);
+@import './styles/runes/preview.css' layer(skeleton);

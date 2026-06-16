@@ -1,0 +1,45 @@
+/* preview — structure. The toolbar/controls/toggle flex rows + toggle-button box,
+ * the canvas clip, the viewport-frame positioning + the constrained auto-centre,
+ * the viewport-label placement, the source-tabs flex, and the in-feature breakout.
+ * Surface chrome, radii, borders, type, padding, and text-align are skin. */
+.rf-preview__toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	min-height: 2rem;
+}
+.rf-preview__controls {
+	display: flex;
+	align-items: center;
+}
+.rf-preview__view-toggle { display: flex; }
+.rf-preview__toggle { display: flex; }
+.rf-preview__toggle-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.625rem;
+	height: 1.625rem;
+}
+.rf-preview__canvas { overflow: hidden; }
+.rf-preview__viewport-toggle { display: flex; }
+.rf-preview__viewport-frame {
+	position: relative;
+	overflow: hidden;
+}
+.rf-preview__viewport-frame--constrained {
+	margin: 0 auto;
+}
+.rf-preview__viewport-label {
+	position: absolute;
+	top: 0.25rem;
+	right: 0.5rem;
+	pointer-events: none;
+	z-index: 1;
+}
+.rf-preview__source-tabs { display: flex; }
+@container (max-width: 1280px) {
+	.rf-preview--in-feature {
+		margin-inline: calc(-1 * var(--rf-content-gutter, 1.5rem));
+	}
+}

@@ -1,0 +1,6 @@
+/* design-context — structure. The sections flex column. The title type and the
+ * child card-reset chrome are skin. */
+.rf-design-context__sections {
+	display: flex;
+	flex-direction: column;
+}

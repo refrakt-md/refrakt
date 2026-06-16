@@ -1,0 +1,12 @@
+/* swatch — structure. The inline-flex chip row and the colour-chip box. Borders,
+ * radii, gap, padding, and type are skin. */
+.rf-swatch {
+	display: inline-flex;
+	align-items: center;
+}
+.rf-swatch__chip {
+	display: inline-block;
+	width: 0.875em;
+	height: 0.875em;
+	flex-shrink: 0;
+}

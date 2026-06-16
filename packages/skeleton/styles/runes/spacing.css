@@ -1,0 +1,45 @@
+/* spacing — structure. The scale flex column + item flex, the scale-bar sizing, the
+ * scale-label flex-shrink, the radii/shadows flex-wrap rows + item columns, and the
+ * radius/shadow sample sizing. Colours, radii, borders, gaps, and type are skin. */
+.rf-spacing__scale {
+	display: flex;
+	flex-direction: column;
+}
+.rf-spacing__scale-item {
+	display: flex;
+	align-items: center;
+}
+.rf-spacing__scale-bar {
+	height: 1.25rem;
+	min-width: 4px;
+}
+.rf-spacing__scale-label {
+	flex-shrink: 0;
+}
+.rf-spacing__radii {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+}
+.rf-spacing__radius-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.rf-spacing__radius-sample {
+	width: 3.5rem;
+	height: 3.5rem;
+}
+.rf-spacing__shadows {
+	display: flex;
+	flex-wrap: wrap;
+}
+.rf-spacing__shadow-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.rf-spacing__shadow-sample {
+	width: 5rem;
+	height: 3.5rem;
+}
