@@ -29,8 +29,6 @@
 
 /* Categories */
 .rf-budget__categories {
-	display: flex;
-	flex-direction: column;
 	gap: 1.5rem;
 }
 
@@ -43,9 +41,6 @@
 	padding-left: 1rem;
 }
 .rf-budget-category__header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
 	margin-bottom: 0.5rem;
 }
 .rf-budget-category--estimate .rf-budget-category__subtotal::before {
@@ -73,16 +68,12 @@
 	white-space: nowrap;
 }
 .rf-budget-category__line-items {
-	list-style: none;
 	padding: 0;
 	margin: 0;
 }
 
 /* Budget Line Item */
 .rf-budget-line-item {
-	display: flex;
-	justify-content: space-between;
-	align-items: baseline;
 	padding: 0.3125rem 0;
 	gap: 1rem;
 }
@@ -92,8 +83,6 @@
 .rf-budget-line-item__description {
 	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
-	flex: 1;
-	min-width: 0;
 }
 .rf-budget-line-item__amount {
 	font-size: var(--rf-text-sm);
@@ -108,14 +97,9 @@
 	margin-top: 1.5rem;
 	padding-top: 1rem;
 	border-top: 2px solid var(--rf-color-text);
-	display: flex;
-	flex-direction: column;
 	gap: 0.5rem;
 }
 .rf-budget__total {
-	display: flex;
-	justify-content: space-between;
-	align-items: baseline;
 	gap: 1rem;
 }
 .rf-budget__total-label {
@@ -131,15 +115,11 @@
 	font-variant-numeric: tabular-nums;
 }
 .rf-budget__per-day {
-	display: flex;
-	justify-content: space-between;
-	align-items: baseline;
 	gap: 1rem;
 }
 .rf-budget__per-day-label {
 	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
-	min-width: 0;
 }
 .rf-budget__per-day-amount {
 	font-size: var(--rf-text);
@@ -147,11 +127,6 @@
 	color: var(--rf-color-muted);
 	white-space: nowrap;
 	font-variant-numeric: tabular-nums;
-}
-
-/* Summary style — hide line items, show only category headers */
-[data-variant="summary"] .rf-budget-category__line-items {
-	display: none;
 }
 [data-variant="summary"] .rf-budget-category__header {
 	margin-bottom: 0;

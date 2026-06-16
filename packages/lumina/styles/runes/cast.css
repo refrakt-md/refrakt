@@ -3,22 +3,17 @@
 
 /* Members list — base */
 .rf-cast__members {
-	list-style: none;
 	padding: 0;
 	margin: 0;
 }
 
 /* Grid layout (default) */
 .rf-cast--grid .rf-cast__members {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 	gap: 1rem;
 }
 
 /* List layout */
 .rf-cast--list .rf-cast__members {
-	display: flex;
-	flex-direction: column;
 	gap: 0.75rem;
 }
 
@@ -30,13 +25,11 @@
 	text-align: center;
 }
 .rf-cast-member__name {
-	display: block;
 	font-weight: var(--rf-weight-semibold);
 	font-size: var(--rf-text);
 	color: var(--rf-color-text);
 }
 .rf-cast-member__role {
-	display: block;
 	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 	margin-top: 0.125rem;
@@ -47,33 +40,22 @@
 	color: var(--rf-color-muted);
 	line-height: var(--rf-leading-normal);
 }
-.rf-cast-member__body:empty { display: none; }
 .rf-cast-member img {
-	width: 80px;
-	height: 80px;
 	border-radius: var(--rf-radius-full);
-	object-fit: cover;
 	margin: 0 auto 0.75rem;
-	display: block;
 }
 
 /* List layout — horizontal member cards */
 .rf-cast--list .rf-cast-member {
-	display: flex;
-	align-items: center;
 	gap: 1rem;
 	text-align: left;
 	padding: 0.75rem 1rem;
 }
 .rf-cast--list .rf-cast-member img {
-	width: 48px;
-	height: 48px;
 	margin: 0;
-	flex-shrink: 0;
 }
 .rf-cast--list .rf-cast-member__body {
 	margin-top: 0;
-	flex: 1;
 }
 
 }

@@ -1,0 +1,31 @@
+/* timeline — structure. The list reset, entry positioning, date/title block
+ * display, the marker box placement (vertical + horizontal), the horizontal flex
+ * scroll, and the horizontal entry min-width. Connector borders, marker chrome,
+ * type, and spacing are skin. */
+.rf-timeline ol { list-style: none; }
+.rf-timeline-entry { position: relative; }
+.rf-timeline-entry > time { display: block; }
+.rf-timeline-entry > span { display: block; }
+.rf-timeline--vertical .rf-timeline-entry::before {
+	content: '';
+	position: absolute;
+	left: -0.4375rem;
+	top: 0.25rem;
+	width: 0.75rem;
+	height: 0.75rem;
+}
+.rf-timeline--horizontal ol {
+	display: flex;
+	overflow-x: auto;
+}
+.rf-timeline--horizontal .rf-timeline-entry {
+	min-width: 12rem;
+}
+.rf-timeline--horizontal .rf-timeline-entry::before {
+	content: '';
+	position: absolute;
+	top: -0.4375rem;
+	left: 0.5rem;
+	width: 0.75rem;
+	height: 0.75rem;
+}
