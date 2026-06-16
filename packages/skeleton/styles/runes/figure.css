@@ -1,0 +1,23 @@
+/* figure — structure. The image box (block + responsive max-width + centering),
+ * the frame-aspect fill, the named size max-widths, and the alignment auto-margins.
+ * The image radius and the caption type are skin (Lumina's styles/runes/figure.css). */
+
+.rf-figure :is(img, .rf-placeholder) {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	margin-inline: auto;
+}
+.rf-figure[style*="--frame-aspect"] :is(img, .rf-placeholder) {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	margin: 0;
+}
+.rf-figure--small { max-width: 320px; }
+.rf-figure--medium { max-width: 640px; }
+.rf-figure--large { max-width: 960px; }
+.rf-figure--full { max-width: 100%; }
+.rf-figure--left { margin-right: auto; }
+.rf-figure--center { margin-left: auto; margin-right: auto; }
+.rf-figure--right { margin-left: auto; }

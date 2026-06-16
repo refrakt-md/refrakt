@@ -65,3 +65,7 @@
 @import './styles/runes/pagination.css' layer(skeleton);
 @import './styles/runes/reveal.css' layer(skeleton);
 @import './styles/runes/expand.css' layer(skeleton);
+@import './styles/runes/grid.css' layer(skeleton);
+@import './styles/runes/figure.css' layer(skeleton);
+@import './styles/runes/embed.css' layer(skeleton);
+@import './styles/runes/collection.css' layer(skeleton);
