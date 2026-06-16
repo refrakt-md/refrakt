@@ -1,0 +1,118 @@
+/* drawer — structure (SPEC-060). The scroll-lock, the in-flow header/footer flex,
+ * the dialog box model + flex column layout, the per-side inset positioning, and
+ * the size presets. Surface chrome (bg/fg/border/radius/shadow vars), the in-flow
+ * callout treatment, padding, the backdrop, and the slide animations + keyframes
+ * stay skin (Lumina's styles/runes/drawer.css) — the animation has no cross-layer
+ * competitor, so it lives with the motion-tuning vars. */
+
+.rf-drawer {
+	--rf-drawer-size-sm: 22rem;
+	--rf-drawer-size-md: 36rem;
+	--rf-drawer-size-lg: 52rem;
+}
+
+/* Body-scroll lock while any drawer is open. */
+html.rf-drawer-open,
+html.rf-drawer-open body {
+	overflow: hidden;
+}
+
+/* In-flow header/footer layout. */
+section.rf-drawer .rf-drawer__header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+}
+section.rf-drawer .rf-drawer__footer {
+	display: block;
+}
+
+/* Dialog box model + flex column (display:flex scoped to [open] so the closed
+ * dialog keeps the UA display:none). */
+dialog.rf-drawer {
+	box-sizing: border-box;
+	overflow: hidden;
+	max-width: calc(100vw - 2 * var(--rf-drawer-gutter));
+	max-height: calc(100vh - 2 * var(--rf-drawer-gutter));
+}
+dialog.rf-drawer[open] {
+	display: flex;
+	flex-direction: column;
+}
+dialog.rf-drawer .rf-drawer__header {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+dialog.rf-drawer .rf-drawer__close {
+	flex-shrink: 0;
+}
+dialog.rf-drawer .rf-drawer__body {
+	flex: 1 1 auto;
+	overflow-y: auto;
+	min-height: 0;
+}
+dialog.rf-drawer .rf-drawer__footer {
+	flex: 0 0 auto;
+}
+
+/* Per-side inset positioning. */
+dialog.rf-drawer[data-side="right"] {
+	inset:
+		var(--rf-drawer-gutter)
+		var(--rf-drawer-gutter)
+		var(--rf-drawer-gutter)
+		auto;
+	height: auto;
+}
+dialog.rf-drawer[data-side="left"] {
+	inset:
+		var(--rf-drawer-gutter)
+		auto
+		var(--rf-drawer-gutter)
+		var(--rf-drawer-gutter);
+	height: auto;
+}
+dialog.rf-drawer[data-side="top"] {
+	inset:
+		var(--rf-drawer-gutter)
+		var(--rf-drawer-gutter)
+		auto
+		var(--rf-drawer-gutter);
+	width: auto;
+}
+dialog.rf-drawer[data-side="bottom"] {
+	inset:
+		auto
+		var(--rf-drawer-gutter)
+		var(--rf-drawer-gutter)
+		var(--rf-drawer-gutter);
+	width: auto;
+}
+
+/* Size presets (dialog mode). */
+dialog.rf-drawer[data-side="right"][data-size="sm"],
+dialog.rf-drawer[data-side="left"][data-size="sm"] {
+	width: var(--rf-drawer-size-sm);
+}
+dialog.rf-drawer[data-side="right"][data-size="md"],
+dialog.rf-drawer[data-side="left"][data-size="md"] {
+	width: var(--rf-drawer-size-md);
+}
+dialog.rf-drawer[data-side="right"][data-size="lg"],
+dialog.rf-drawer[data-side="left"][data-size="lg"] {
+	width: var(--rf-drawer-size-lg);
+}
+dialog.rf-drawer[data-side="top"][data-size="sm"],
+dialog.rf-drawer[data-side="bottom"][data-size="sm"] {
+	height: var(--rf-drawer-size-sm);
+}
+dialog.rf-drawer[data-side="top"][data-size="md"],
+dialog.rf-drawer[data-side="bottom"][data-size="md"] {
+	height: var(--rf-drawer-size-md);
+}
+dialog.rf-drawer[data-side="top"][data-size="lg"],
+dialog.rf-drawer[data-side="bottom"][data-size="lg"] {
+	height: var(--rf-drawer-size-lg);
+}
