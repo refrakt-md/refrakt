@@ -1,5 +1,7 @@
 @layer skin {
-/* Symbol */
+/* Symbol — skin. The list display resets live in @refrakt-md/skeleton
+ * (styles/runes/symbol.css); the signature-bar geometry comes from the shared
+ * [data-zone-layout="bar"]. */
 
 /* SPEC-080: signature bar (kind/lang chips + source link). Geometry +
  * the source link's right-push come from [data-zone-layout="bar"]; the
@@ -31,7 +33,6 @@
 	margin: 1rem 0;
 }
 .rf-symbol__body > div > ul {
-	list-style: none;
 	padding-left: 0;
 	margin: 1rem 0;
 }
@@ -46,7 +47,6 @@
 .rf-symbol__body > div > ul > li > ul {
 	margin-top: 0.375rem;
 	padding-left: 1.25rem;
-	list-style: none;
 }
 .rf-symbol__body > div > ul > li > ul > li {
 	padding: 0.25rem 0;
@@ -107,7 +107,6 @@
 	margin: 0.75rem 0;
 }
 .rf-symbol-member ul {
-	list-style: none;
 	padding-left: 0;
 	margin: 0.75rem 0;
 }

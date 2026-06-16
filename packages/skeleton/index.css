@@ -53,3 +53,5 @@
 @import './styles/runes/testimonial.css' layer(skeleton);
 @import './styles/runes/bento.css' layer(skeleton);
 @import './styles/runes/comparison.css' layer(skeleton);
+@import './styles/runes/symbol.css' layer(skeleton);
+@import './styles/runes/changelog.css' layer(skeleton);

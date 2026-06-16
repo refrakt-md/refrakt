@@ -1,10 +1,8 @@
 @layer skin {
-/* Changelog */
+/* Changelog — skin. The display:contents passthroughs + the date/badge displays
+ * live in @refrakt-md/skeleton (styles/runes/changelog.css). */
 .rf-changelog {
 	margin: 2rem 0;
-}
-.rf-changelog__releases {
-	display: contents;
 }
 .rf-changelog-release {
 	padding: 1.5rem 0;
@@ -13,9 +11,6 @@
 .rf-changelog-release:last-child {
 	border-bottom: none;
 }
-.rf-changelog-release__body {
-	display: contents;
-}
 .rf-changelog-release h3 {
 	font-size: var(--rf-text-xl);
 	font-weight: var(--rf-weight-bold);
@@ -23,7 +18,6 @@
 	color: var(--rf-color-text);
 }
 .rf-changelog-release time {
-	display: block;
 	font-size: var(--rf-text-xs);
 	color: var(--rf-color-muted);
 	margin-bottom: 0.75rem;
@@ -38,7 +32,6 @@
 	margin-bottom: 0.25rem;
 }
 .rf-changelog-release strong {
-	display: inline-block;
 	font-size: var(--rf-text-xs);
 	font-weight: var(--rf-weight-bold);
 	text-transform: uppercase;

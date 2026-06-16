@@ -1,0 +1,8 @@
+/* symbol — structure. Only the list display resets on the symbol-body and member
+ * lists. The signature-bar geometry comes from the shared [data-zone-layout="bar"]
+ * (already skeleton); everything else here — bar padding, doc-prose spacing,
+ * borders, type, the blockquote reset — is skin (Lumina's styles/runes/symbol.css). */
+
+.rf-symbol__body > div > ul { list-style: none; }
+.rf-symbol__body > div > ul > li > ul { list-style: none; }
+.rf-symbol-member ul { list-style: none; }

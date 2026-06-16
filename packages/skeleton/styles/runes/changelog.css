@@ -1,0 +1,9 @@
+/* changelog — structure. The display:contents passthroughs (the releases list and
+ * each release body project their children into the flow) and the block date /
+ * inline-block badge displays. Spacing, borders, type, and colour are skin
+ * (Lumina's styles/runes/changelog.css). */
+
+.rf-changelog__releases { display: contents; }
+.rf-changelog-release__body { display: contents; }
+.rf-changelog-release time { display: block; }
+.rf-changelog-release strong { display: inline-block; }
