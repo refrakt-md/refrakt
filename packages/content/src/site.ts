@@ -360,6 +360,10 @@ async function processContentTree(
       __sandboxDirExists: sandbox.exists,
       __sandboxExamplesDir: opts.sandboxExamplesDir,
       __securityPolicy: resolvedSecurity,
+      // SPEC-104 §5 — the project's bg preset registry, so `bg="name"` can expand
+      // a `sandbox`-typed preset into a backdrop guest at transform time (where
+      // the sandbox readers live). Sandbox presets are project-level config.
+      __backgrounds: (opts.siteConfig as { backgrounds?: Record<string, unknown> } | undefined)?.backgrounds,
     };
 
     // SPEC-062 preprocess phase — runs after variables are computed (so

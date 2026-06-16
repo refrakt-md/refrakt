@@ -140,6 +140,64 @@ function injectTintMetasFrom(result: RenderableTreeNodes, ctx: TintBgContext): R
   return result;
 }
 
+/** A `sandbox`-typed bg preset descriptor (SPEC-104 §5 — a sibling of `BgPresetDefinition`). */
+interface BgSandboxPreset {
+  src: string;
+  framework?: string;
+  dependencies?: string;
+}
+
+/** Recursively find the rendered `rf-sandbox` element in a transformed tree. */
+function findRfSandbox(node: RenderableTreeNodes): Tag | undefined {
+  const nodes = Array.isArray(node) ? node : [node];
+  for (const n of nodes) {
+    if (!Markdoc.Tag.isTag(n)) continue;
+    if (n.name === 'rf-sandbox') return n;
+    const nested = findRfSandbox(n.children as RenderableTreeNodes);
+    if (nested) return nested;
+  }
+  return undefined;
+}
+
+/** Tag a rendered sandbox as the bg backdrop guest (matches the WORK-428 body path). */
+function asBackdropGuest(sandbox: Tag): Tag {
+  return new Markdoc.Tag(sandbox.name, {
+    ...sandbox.attributes,
+    'data-bg-guest': '',
+    'data-guest-posture': 'backdrop',
+    'data-height': 'fill',
+    'data-activation': 'eager',
+  }, sandbox.children);
+}
+
+// SPEC-104 §5 — memoise an assembled scene per config + descriptor: a named
+// scene's source is byte-identical across pages, so the (file-reading) sandbox
+// transform runs once and each page gets a fresh clone. Keyed by the Markdoc
+// config so a new build/site starts a fresh cache (no cross-build staleness).
+const presetGuestCache = new WeakMap<object, Map<string, Tag>>();
+
+/** SPEC-104 §5 — expand a `sandbox`-typed bg preset into the WORK-428
+ *  `data-bg-guest` body. Runs at transform time (the sandbox readers live on
+ *  `config.variables`), producing the same element the engine relocates. */
+function expandSandboxPreset(preset: BgSandboxPreset, config: Config, registry: object): Tag | undefined {
+  const key = `${preset.src} ${preset.framework ?? ''} ${preset.dependencies ?? ''}`;
+  let cache = presetGuestCache.get(registry);
+  if (!cache) { cache = new Map(); presetGuestCache.set(registry, cache); }
+  const cached = cache.get(key);
+  if (cached) return asBackdropGuest(cached);
+
+  const attrs: Record<string, unknown> = { src: preset.src };
+  if (preset.framework) attrs.framework = preset.framework;
+  if (preset.dependencies) attrs.dependencies = preset.dependencies;
+  // Synthesise the `{% sandbox %}` and run the real rune (file resolution +
+  // sanitisation via the config readers) — the preset is sugar over the body.
+  const node = new Markdoc.Ast.Node('tag', attrs, [], 'sandbox');
+  const sandbox = findRfSandbox(Markdoc.transform(node, config));
+  if (!sandbox) return undefined;
+  cache.set(key, sandbox);
+  return asBackdropGuest(sandbox);
+}
+
 function injectBgMetasFrom(result: RenderableTreeNodes, ctx: TintBgContext): RenderableTreeNodes {
   if (!Markdoc.Tag.isTag(result)) return result;
 
@@ -165,6 +223,26 @@ function injectBgMetasFrom(result: RenderableTreeNodes, ctx: TintBgContext): Ren
   );
   if (ctx.bg && !hasPresetMeta) {
     metas.push(new Markdoc.Tag('meta', { 'data-field': 'bg-preset', content: ctx.bg }));
+  }
+
+  // SPEC-104 §5 — `bg="name"` where the named preset is `sandbox`-typed expands
+  // to a live backdrop guest, the same as an inline `{% bg %}{% sandbox %}` body.
+  // Only when no body guest was authored (an explicit body wins).
+  if (ctx.bg && guests.length === 0) {
+    const backgrounds = ctx.config?.variables?.__backgrounds as Record<string, { sandbox?: BgSandboxPreset; extends?: string }> | undefined;
+    const preset = backgrounds?.[ctx.bg];
+    if (preset && backgrounds) {
+      // Resolve `extends` (single level, mirroring the engine's preset chain) so a
+      // sandbox preset can build on a base scene; the preset's own fields win.
+      const base = preset.extends ? backgrounds[preset.extends] : undefined;
+      const sandbox = preset.sandbox || base?.sandbox
+        ? { ...base?.sandbox, ...preset.sandbox } as BgSandboxPreset
+        : undefined;
+      if (sandbox?.src) {
+        const guest = expandSandboxPreset(sandbox, ctx.config, backgrounds);
+        if (guest) guests.push(guest);
+      }
+    }
   }
 
   if (metas.length === 0 && guests.length === 0) return result;

@@ -520,6 +520,13 @@ export interface BgPresetDefinition {
 	 *  `type` is `linear` (default) | `radial` | `conic`. Lives here — not the
 	 *  raw `style` map — so a named brand gradient stays token-driven & portable. */
 	gradient?: { type?: string; direction?: string; stops: string[] };
+	/** SPEC-104 — a live sandbox backdrop, resolved at **transform time** (the
+	 *  identity engine has no file access). A `sandbox`-typed preset expands into
+	 *  the WORK-428 `data-bg-guest` body: `bg="name"` becomes a `{% sandbox %}`
+	 *  rendered into the bg layer. Describes only the scene; `height: fill`, the
+	 *  backdrop posture and eager activation come from the bg-guest mechanism. May
+	 *  coexist with `gradient`/`style` (the boot frame behind the live scene). */
+	sandbox?: { src: string; framework?: string; dependencies?: string };
 	/** Base preset to extend (e.g., "extends": "particles" to customize a package preset) */
 	extends?: string;
 }
