@@ -1,0 +1,219 @@
+@layer skin {
+/* Proof-skin aesthetics — editorial. Single-class/attribute selectors only; wins
+ * over @layer skeleton purely by layer order (no !important, no specificity wars).
+ * Leans on the shared layers — global elements, the elevation surface axis, the
+ * section zones, and the metadata chips — so most runes pick up the editorial look
+ * without per-rune CSS; card/hint/hero/cta are skinned bespoke (the showcased ones). */
+
+/* ─── Global elements ─── */
+html {
+	font-family: var(--rf-font-sans);
+	color: var(--rf-color-text);
+	background: var(--rf-color-bg);
+	line-height: var(--rf-leading-relaxed);
+}
+::selection { background: color-mix(in oklch, var(--rf-color-primary) 20%, transparent); }
+h1, h2, h3, h4, h5, h6 {
+	font-family: var(--rf-font-display);
+	font-weight: var(--rf-weight-bold);
+	line-height: var(--rf-leading-tight);
+	letter-spacing: var(--rf-tracking-tight);
+}
+a { color: var(--rf-color-primary); text-decoration: underline; text-underline-offset: 0.15em; }
+a:hover { color: var(--rf-color-primary-hover); }
+strong { font-weight: var(--rf-weight-bold); }
+code {
+	font-family: var(--rf-font-mono);
+	font-size: 0.9em;
+	background: var(--rf-color-inline-code-bg);
+	padding: 0.1rem 0.35rem;
+}
+pre {
+	background: var(--rf-color-code-bg);
+	color: var(--rf-color-code-text);
+	padding: 1.25rem 1.5rem;
+	font-size: var(--rf-text-sm);
+	line-height: var(--rf-leading-relaxed);
+	border: 1px solid var(--rf-color-border);
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+hr { border: none; border-top: 1px solid var(--rf-color-border); }
+table { font-size: var(--rf-text-sm); }
+th {
+	text-align: left;
+	font-family: var(--rf-font-display);
+	font-weight: var(--rf-weight-bold);
+	padding: 0.5rem 0.75rem;
+	border-bottom: 2px solid var(--rf-color-border);
+}
+td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--rf-color-border); }
+blockquote {
+	border-left: 3px double var(--rf-color-border);
+	padding: 0.25rem 0 0.25rem 1rem;
+	font-style: italic;
+	color: var(--rf-color-muted);
+}
+
+/* ─── Elevation surfaces — flat paper, hairline frame, square, no lift ─── */
+[data-elevation="flat"],
+[data-elevation="raised"],
+[data-elevation="floating"],
+[data-elevation="overlay"] {
+	background: var(--rf-color-surface);
+	border: 1px solid var(--rf-color-border);
+	padding: var(--rune-padding, var(--rf-spacing-md));
+}
+[data-elevation="sunken"] {
+	background: transparent;
+	border: 0;
+	border-block-start: 3px double var(--rf-color-border);
+	padding-block: var(--rune-padding, var(--rf-spacing-md));
+}
+[data-elevation="flush"] { padding-block: var(--rune-padding, var(--rf-spacing-sm)); }
+:where([data-elevation="flat"]) [data-section="media"]:not([data-media="portrait"]) {
+	border: 1px solid var(--rf-color-border);
+	background: transparent;
+}
+
+/* ─── Section zones ─── */
+[data-section="title"] {
+	font-family: var(--rf-font-display);
+	font-size: var(--rf-title-size, var(--rf-text-2xl));
+	font-weight: var(--rf-weight-bold);
+	line-height: var(--rf-leading-tight);
+	color: var(--rf-color-text);
+}
+[data-section="header"] { gap: 0.5rem; margin-bottom: 2rem; }
+[data-section="preamble"] { gap: 0.25rem; }
+[data-section="description"] { color: var(--rf-color-muted); font-style: italic; }
+[data-section="body"] { color: var(--rf-color-text); }
+[data-section="footer"] {
+	gap: var(--rf-spacing-sm);
+	margin-top: var(--rf-spacing-md);
+	padding-top: var(--rf-spacing-sm);
+	border-top: 1px solid var(--rf-color-border);
+}
+
+/* ─── Metadata — hairline chips, ruled def-lists ─── */
+[data-meta-sentiment="positive"] { --meta-color: var(--rf-color-success); }
+[data-meta-sentiment="negative"] { --meta-color: var(--rf-color-danger); }
+[data-meta-sentiment="caution"]  { --meta-color: var(--rf-color-warning); }
+[data-meta-sentiment="neutral"]  { --meta-color: var(--rf-color-muted); }
+.rf-badge {
+	background: transparent;
+	border: 1px solid var(--meta-color, var(--rf-color-border));
+	color: var(--meta-color, var(--rf-color-muted));
+	font-size: var(--rf-text-xs);
+	font-family: var(--rf-font-sans);
+	letter-spacing: var(--rf-tracking-wide);
+	padding: 0.05rem 0.5rem;
+}
+[data-zone-layout="bar"] { gap: 0.5rem; }
+[data-zone-layout="definition-list"] { gap: 0.75rem; margin: 1.25rem 0; }
+[data-zone-layout="definition-list"] > [data-name="row"] {
+	gap: 0.125rem;
+	padding: 0.5rem 0.75rem;
+	border: 1px solid var(--rf-color-border);
+}
+[data-zone-layout="definition-list"] dt {
+	font-size: var(--rf-text-xs);
+	text-transform: uppercase;
+	letter-spacing: var(--rf-tracking-wider);
+	color: var(--rf-color-muted);
+}
+[data-zone-layout="definition-list"] dd { font-size: var(--rf-text-sm); }
+[data-meta-type="rating"] span::before { content: '\2605'; }
+[data-meta-type="rating"] span[data-filled="true"] { color: var(--rf-color-primary); }
+[data-meta-type="rating"] span[data-filled="false"] { color: var(--rf-color-border); }
+
+/* ─── Checklist + sequence markers (ink, square) ─── */
+[data-checked]::before {
+	border: 1.5px solid var(--rf-color-border);
+	background: transparent;
+}
+[data-checked="checked"]::before,
+[data-checked="active"]::before { background: var(--rf-color-primary); border-color: var(--rf-color-primary); }
+[data-checked="checked"] { color: var(--rf-color-muted); }
+[data-sequence="numbered"] > li::before {
+	font-family: var(--rf-font-display);
+	font-weight: var(--rf-weight-bold);
+	color: var(--rf-color-primary);
+	background: transparent;
+	border: 1px solid var(--rf-color-border);
+}
+[data-sequence="connected"] > li { border-left: 1px solid var(--rf-color-border); }
+[data-sequence="connected"] > li::before { background: var(--rf-color-primary); border: 2px solid var(--rf-color-bg); }
+
+/* ─── card — editorial ─── */
+.rf-card {
+	background: var(--rf-color-surface);
+	border: 1px solid var(--rf-color-border);
+	padding: var(--rf-spacing-sm);
+	--rf-card-edge: var(--rf-spacing-sm);
+	--rf-card-media-gap: var(--rf-spacing-lg);
+	--rf-card-split-gap: var(--rf-spacing-sm);
+}
+.rf-card__content { padding: max(0px, calc(var(--rune-padding, var(--rf-spacing-md)) - var(--rf-card-edge))); }
+.rf-card:has(.rf-card__link):hover { background: var(--rf-color-surface-hover); }
+.rf-card__title { font-family: var(--rf-font-display); }
+.rf-card__eyebrow {
+	font-family: var(--rf-font-display);
+	font-style: italic;
+	font-size: var(--rf-text-sm);
+	letter-spacing: normal;
+	text-transform: none;
+	color: var(--rf-color-muted);
+}
+.rf-card__footer { border-top: 1px solid var(--rf-color-border); font-size: var(--rf-text-sm); color: var(--rf-color-muted); font-style: italic; }
+
+/* ─── hint — a ruled marginal note, not a filled panel ─── */
+.rf-hint {
+	--hint-color: var(--rf-color-text);
+	background: transparent;
+	border-inline-start: 2px solid var(--rf-color-primary);
+	padding: var(--rf-spacing-snug) var(--rf-spacing-cozy);
+}
+.rf-hint__header { color: var(--hint-color); font-family: var(--rf-font-display); font-variant: small-caps; letter-spacing: var(--rf-tracking-wide); }
+.rf-hint__header > span { gap: var(--rf-spacing-xs); }
+.rf-hint__header [data-icon-group="hint"]::before { background-color: var(--hint-color); }
+.rf-hint__body { font-size: var(--rf-text-sm); line-height: var(--rf-leading-relaxed); }
+.rf-hint--warning { --hint-color: var(--rf-color-warning); }
+.rf-hint--caution { --hint-color: var(--rf-color-danger); }
+.rf-hint--check { --hint-color: var(--rf-color-success); }
+
+/* ─── hero — serif masthead, no gradient ─── */
+.rf-hero { padding: 5rem 2rem 4rem; }
+.rf-hero h1, .rf-hero__headline {
+	font-family: var(--rf-font-display);
+	font-size: var(--rf-text-4xl);
+	font-weight: var(--rf-weight-bold);
+	line-height: var(--rf-leading-tight);
+	color: var(--rf-color-text);
+	margin: 0 0 1rem;
+}
+.rf-hero p, .rf-hero__blurb { font-size: var(--rf-text-xl); color: var(--rf-color-muted); font-style: italic; max-width: 40rem; margin: 0 0 2rem; }
+.rf-hero__actions { gap: 0.75rem; }
+.rf-hero li a, .rf-hero nav a {
+	padding: 0.6rem 1.5rem;
+	font-family: var(--rf-font-sans);
+	font-size: var(--rf-text-sm);
+	text-decoration: none;
+}
+.rf-hero li:first-child a { background: var(--rf-color-primary); color: var(--rf-color-on-primary); }
+.rf-hero li:not(:first-child) a { border: 1px solid var(--rf-color-border); color: var(--rf-color-text); }
+
+/* ─── cta — flat editorial ─── */
+.rf-cta { padding: 3rem 2rem; }
+.rf-cta h1, .rf-cta h2, .rf-cta h3, .rf-cta__headline {
+	font-family: var(--rf-font-display);
+	font-size: var(--rf-text-4xl);
+	color: var(--rf-color-text);
+	margin: 0 0 0.75rem;
+}
+.rf-cta p, .rf-cta__blurb { font-size: var(--rf-text-lg); color: var(--rf-color-muted); font-style: italic; max-width: 540px; margin: 0 auto 2rem; }
+.rf-cta ul { gap: 0.75rem; }
+.rf-cta li a, .rf-cta nav a { padding: 0.6rem 1.5rem; text-decoration: none; font-family: var(--rf-font-sans); font-size: var(--rf-text-sm); }
+.rf-cta li:first-child a { background: var(--rf-color-primary); color: var(--rf-color-on-primary); }
+.rf-cta li:not(:first-child) a { border: 1px solid var(--rf-color-border); color: var(--rf-color-text); }
+
+}

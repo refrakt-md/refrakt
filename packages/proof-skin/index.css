@@ -1,0 +1,14 @@
+/* @refrakt-md/proof-skin — WORK-440 validation artifact (NOT a shipped theme).
+ *
+ * A thin, deliberately un-Lumina "editorial" skin layered over the framework's
+ * structure. It imports @refrakt-md/skeleton for ALL layout/structure, then
+ * provides its own design tokens + @layer skin aesthetics — and nothing else.
+ * If anything here needed an edit to @refrakt-md/skeleton to render correctly,
+ * that declaration is mis-classified and belongs back in WORK-438.
+ *
+ * Load order: skeleton first (it declares `@layer skeleton, skin;`), then the
+ * proof's tokens + skin (both self-declare `@layer skin`, winning over skeleton
+ * by layer order with plain single-class/attribute selectors — no !important). */
+@import '@refrakt-md/skeleton';
+@import './tokens.css';
+@import './skin.css';
