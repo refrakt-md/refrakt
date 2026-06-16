@@ -1,0 +1,49 @@
+/* relationships — structure (mirrors collection). The items flex/grid arrangement,
+ * grid item flex + grouped-grid passthrough + grid group/title span, the base group
+ * flex, the item flex/block reset, and the card flex column. Gaps, margins, card
+ * chrome, and type are skin. */
+.rf-relationships__items {
+	display: flex;
+	flex-direction: column;
+}
+.rf-relationships[data-layout='grid'] .rf-relationships__items {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+	align-items: stretch;
+}
+.rf-relationships[data-layout='grid'] .rf-relationships__item {
+	display: flex;
+}
+.rf-relationships[data-layout='grid'] .rf-relationships__item > * {
+	flex: 1;
+	min-width: 0;
+}
+.rf-relationships[data-layout='grid'] .rf-relationships__items:has(.rf-relationships__group),
+.rf-relationships[data-layout='grid'] .rf-relationships__items:has(.rf-accordion) {
+	display: flex;
+	flex-direction: column;
+}
+.rf-relationships[data-layout='grid'] .rf-relationships__group {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+	align-items: stretch;
+}
+.rf-relationships[data-layout='grid'] .rf-relationships__group-title {
+	grid-column: 1 / -1;
+}
+.rf-relationships__group {
+	display: flex;
+	flex-direction: column;
+}
+.rf-relationships__item {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+}
+.rf-relationships__item[data-block] {
+	display: block;
+}
+.rf-relationships__card {
+	display: flex;
+	flex-direction: column;
+}

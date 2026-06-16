@@ -1,0 +1,13 @@
+/* aggregate — structure. The items stack / grouped wrap-row and the group min-width.
+ * Margins, the inline-count type, and the empty state are skin. */
+.rf-aggregate__items {
+	display: flex;
+	flex-direction: column;
+}
+.rf-aggregate__items:has(.rf-aggregate__group) {
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+.rf-aggregate__group {
+	min-width: 0;
+}

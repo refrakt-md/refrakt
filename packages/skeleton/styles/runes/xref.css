@@ -1,0 +1,5 @@
+/* xref — structure. The external-indicator pseudo display box; the glyph + colour
+ * + unresolved treatment are skin. */
+.rf-xref--external::after {
+	display: inline-block;
+}

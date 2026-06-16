@@ -22,8 +22,6 @@
 	max-width: 640px;
 }
 .rf-blog__posts {
-	display: flex;
-	flex-direction: column;
 	gap: 1.5rem;
 }
 .rf-blog__post {
@@ -49,7 +47,6 @@
 	color: var(--rf-color-primary);
 }
 .rf-blog__post time {
-	display: inline-block;
 	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 	margin-bottom: 0.5rem;
@@ -63,8 +60,6 @@
 
 /* Grid layout */
 .rf-blog--grid .rf-blog__posts {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 	gap: 1.25rem;
 }
 

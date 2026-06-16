@@ -1,0 +1,7 @@
+/* placeholder — structure. The responsive replaced-element box. Radii (incl. the
+ * avatar round) are skin. */
+.rf-placeholder {
+	display: block;
+	width: 100%;
+	height: auto;
+}

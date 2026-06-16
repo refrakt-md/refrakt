@@ -14,7 +14,6 @@
 }
 .rf-xref--external::after {
 	content: '\2197'; /* ↗ */
-	display: inline-block;
 	margin-inline-start: 0.15em;
 	font-size: 0.85em;
 	vertical-align: 0.05em;

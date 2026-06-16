@@ -1,38 +1,15 @@
 @layer skin {
 /* Form */
 .rf-form {
-	display: flex;
-	flex-direction: column;
 	gap: 1.25rem;
 	max-width: none;
 }
 .rf-form__body {
-	display: flex;
-	flex-direction: column;
 	gap: 1.25rem;
-}
-.rf-form meta { display: none; }
-/* Honeypot */
-.rf-form__hp {
-	position: absolute;
-	left: -9999px;
-	opacity: 0;
-	height: 0;
-	overflow: hidden;
 }
 /* Inline variant */
 .rf-form--inline .rf-form__body {
-	flex-direction: row;
-	flex-wrap: wrap;
-	align-items: flex-end;
 	gap: 0.75rem;
-}
-.rf-form--inline .rf-form-field {
-	flex: 1;
-	min-width: 10rem;
-}
-.rf-form--inline .rf-form__submit {
-	align-self: flex-end;
 }
 /* Compact variant */
 .rf-form--compact {
@@ -50,8 +27,6 @@
 }
 /* Field */
 .rf-form-field {
-	display: flex;
-	flex-direction: column;
 	gap: 0.375rem;
 }
 .rf-form-field label {
@@ -74,8 +49,6 @@
 	color: var(--rf-color-text);
 	background: var(--rf-color-bg);
 	transition: border-color 0.15s, box-shadow 0.15s;
-	width: 100%;
-	box-sizing: border-box;
 }
 .rf-form-field input:focus,
 .rf-form-field textarea:focus,
@@ -86,7 +59,6 @@
 }
 .rf-form-field textarea {
 	resize: vertical;
-	min-height: 6rem;
 }
 /* Fieldset */
 .rf-form-fieldset {
@@ -114,15 +86,12 @@
 	margin-bottom: 0.5rem;
 }
 .rf-form-choice {
-	display: flex;
-	align-items: center;
 	gap: 0.5rem;
 	padding: 0.375rem 0;
 	cursor: pointer;
 	font-size: var(--rf-text);
 }
 .rf-form-choice input {
-	width: auto;
 	margin: 0;
 	accent-color: var(--rf-color-primary);
 }
@@ -137,7 +106,6 @@
 	font-weight: var(--rf-weight-semibold);
 	cursor: pointer;
 	transition: background 0.15s;
-	align-self: flex-start;
 }
 .rf-form__submit:hover {
 	background: color-mix(in srgb, var(--rf-color-primary) 85%, black);

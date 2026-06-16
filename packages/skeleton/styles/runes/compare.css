@@ -1,0 +1,19 @@
+/* compare — structure. The wrapper clip, the side-by-side grid / stacked flex
+ * panels, the panel min-width + scroll, and the label block. Borders, header/label
+ * chrome, and code resets are skin. */
+.rf-compare { overflow: hidden; }
+.rf-compare--side-by-side .rf-compare__panels {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+.rf-compare--stacked .rf-compare__panels {
+	display: flex;
+	flex-direction: column;
+}
+.rf-compare [data-panel] {
+	min-width: 0;
+	overflow: auto;
+}
+.rf-compare [data-label] {
+	display: block;
+}

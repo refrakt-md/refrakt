@@ -1,0 +1,36 @@
+/* section — structure. The column stack, the preamble flex + eyebrow stretched-
+ * link, the responsive image box, the full-width body, and the header alignment
+ * (align-items + auto-margins). Type, gaps, max-width, radii, and text-align are
+ * skin. */
+.rf-section {
+	display: flex;
+	flex-direction: column;
+}
+.rf-section__preamble {
+	display: flex;
+	flex-direction: column;
+}
+.rf-section__eyebrow:has(a) {
+	display: inline-block;
+	position: relative;
+}
+.rf-section__eyebrow:has(a) a::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+}
+.rf-section__image {
+	max-width: 100%;
+	height: auto;
+}
+.rf-section__body {
+	width: 100%;
+}
+.rf-section[data-align="center"] .rf-section__preamble {
+	align-items: center;
+	margin-inline: auto;
+}
+.rf-section[data-align="end"] .rf-section__preamble {
+	align-items: flex-end;
+	margin-inline-start: auto;
+}

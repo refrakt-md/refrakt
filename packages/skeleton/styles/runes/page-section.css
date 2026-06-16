@@ -1,0 +1,12 @@
+/* page-section — structure. The split two-column grid (+ mobile collapse). Padding,
+ * heading resets, and the gap are skin. */
+.rf-page-section--split {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	align-items: start;
+}
+@media (max-width: 768px) {
+	.rf-page-section--split {
+		grid-template-columns: 1fr;
+	}
+}

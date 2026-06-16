@@ -1,0 +1,13 @@
+/* blog — structure. The posts flex stack, the date block, and the grid layout. The
+ * post surface chrome, type, and gaps are skin. */
+.rf-blog__posts {
+	display: flex;
+	flex-direction: column;
+}
+.rf-blog__post time {
+	display: inline-block;
+}
+.rf-blog--grid .rf-blog__posts {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}

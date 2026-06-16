@@ -1,0 +1,29 @@
+/* bg — structure. The background/overlay/scrim layer placement (absolute fill +
+ * z-index + clip), the content-above-bg stacking, and the video fill. The images,
+ * gradients, blur/opacity, overlay tints, and scrim paint are skin. */
+[data-name="bg"] {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	overflow: hidden;
+}
+[data-bg] > :not([data-name="bg"]) {
+	position: relative;
+	z-index: 1;
+}
+[data-name="bg-video"] {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: var(--bg-position, center);
+}
+[data-name="bg-overlay"] {
+	position: absolute;
+	inset: 0;
+}
+[data-name="scrim"] {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 1;
+}

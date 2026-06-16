@@ -90,3 +90,20 @@
 @import './styles/runes/plot.css' layer(skeleton);
 @import './styles/runes/bond.css' layer(skeleton);
 @import './styles/runes/storyboard.css' layer(skeleton);
+
+/* ── Remaining core runes ── */
+@import './styles/runes/aggregate.css' layer(skeleton);
+@import './styles/runes/bg.css' layer(skeleton);
+@import './styles/runes/blog.css' layer(skeleton);
+@import './styles/runes/compare.css' layer(skeleton);
+@import './styles/runes/file-ref.css' layer(skeleton);
+@import './styles/runes/form.css' layer(skeleton);
+@import './styles/runes/mediatext.css' layer(skeleton);
+@import './styles/runes/page-section.css' layer(skeleton);
+@import './styles/runes/placeholder.css' layer(skeleton);
+@import './styles/runes/pullquote.css' layer(skeleton);
+@import './styles/runes/relationships.css' layer(skeleton);
+@import './styles/runes/section.css' layer(skeleton);
+@import './styles/runes/showcase.css' layer(skeleton);
+@import './styles/runes/textblock.css' layer(skeleton);
+@import './styles/runes/xref.css' layer(skeleton);

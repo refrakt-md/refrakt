@@ -1,0 +1,55 @@
+/* form — structure. The form/body flex columns, the meta + honeypot hide, the
+ * inline-variant flex + field sizing + submit align, the field flex, the control
+ * full-width box, the textarea min-height, the choice flex, and the submit
+ * self-align. Type, borders, backgrounds, padding, and focus chrome are skin. */
+.rf-form {
+	display: flex;
+	flex-direction: column;
+}
+.rf-form__body {
+	display: flex;
+	flex-direction: column;
+}
+.rf-form meta { display: none; }
+.rf-form__hp {
+	position: absolute;
+	left: -9999px;
+	opacity: 0;
+	height: 0;
+	overflow: hidden;
+}
+.rf-form--inline .rf-form__body {
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: flex-end;
+}
+.rf-form--inline .rf-form-field {
+	flex: 1;
+	min-width: 10rem;
+}
+.rf-form--inline .rf-form__submit {
+	align-self: flex-end;
+}
+.rf-form-field {
+	display: flex;
+	flex-direction: column;
+}
+.rf-form-field input,
+.rf-form-field textarea,
+.rf-form-field select {
+	width: 100%;
+	box-sizing: border-box;
+}
+.rf-form-field textarea {
+	min-height: 6rem;
+}
+.rf-form-choice {
+	display: flex;
+	align-items: center;
+}
+.rf-form-choice input {
+	width: auto;
+}
+.rf-form__submit {
+	align-self: flex-start;
+}
