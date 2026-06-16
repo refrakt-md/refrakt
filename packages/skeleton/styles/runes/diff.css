@@ -1,0 +1,40 @@
+/* diff — structure. The horizontal-scroll container, the sticky header pin, the
+ * split-panel grid, the rows max-content grid, the line flex + gutter sizing.
+ * Borders, radii, code background, the line-status tints, and type stay skin
+ * (Lumina's styles/runes/diff.css). */
+
+.rf-diff {
+	overflow-x: auto;
+	overflow-y: hidden;
+	overscroll-behavior-x: contain;
+}
+.rf-diff__header {
+	position: sticky;
+	left: 0;
+}
+.rf-diff__split-container {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	min-width: 40rem;
+}
+.rf-diff__code {
+	overflow-x: auto;
+	overscroll-behavior-x: contain;
+}
+.rf-diff__rows {
+	display: grid;
+	min-width: max-content;
+}
+.rf-diff__line {
+	display: flex;
+	min-height: 1.6em;
+}
+.rf-diff__gutter-num {
+	flex-shrink: 0;
+	width: 2.5em;
+	min-height: 1.6em;
+}
+.rf-diff__line-content {
+	flex: 1 0 auto;
+	min-height: 1.6em;
+}

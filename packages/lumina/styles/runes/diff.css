@@ -1,21 +1,9 @@
 @layer skin {
-/* Diff */
+/* Diff — skin. The scroll container, sticky header, split grid, rows grid, line
+ * flex + gutter sizing live in @refrakt-md/skeleton (styles/runes/diff.css). */
 .rf-diff {
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-lg);
-	/* WORK-304 — horizontal scroll lives on `.rf-diff` itself, not on
-	 * `.rf-diff__split-container`. On mobile the split-container's
-	 * `min-width: 40rem` makes it wider than the viewport; previously
-	 * `.rf-diff { overflow: hidden }` clipped the right panel and the
-	 * touch scroll had nowhere to land. Moving the scroll affordance
-	 * up one level lets users swipe the entire diff sideways to
-	 * reveal the off-screen panel; the border-radius still clips the
-	 * children at the rounded corners because `overflow-x: auto` is
-	 * non-visible. `overflow-y: hidden` keeps the vertical clip for
-	 * the rounded top/bottom. */
-	overflow-x: auto;
-	overflow-y: hidden;
-	overscroll-behavior-x: contain;
 	font-size: var(--rf-text-sm);
 	background: var(--rf-color-code-bg);
 }
@@ -27,19 +15,6 @@
 	color: var(--rf-color-muted);
 	background: var(--rf-color-surface);
 	border-bottom: 1px solid var(--rf-color-border);
-	/* `.rf-diff` is the horizontal scroll container (so mobile users
-	 * can swipe to reveal the off-screen split panel). Without
-	 * sticky, the header would scroll horizontally along with the
-	 * content and the filename label would slide off-screen.
-	 * `position: sticky; left: 0` pins the header to the visible left
-	 * edge of the scroll viewport at all scroll positions. WORK-304. */
-	position: sticky;
-	left: 0;
-}
-.rf-diff__split-container {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	min-width: 40rem;
 }
 .rf-diff__split-container .rf-diff__panel:first-child {
 	border-right: 1px solid var(--rf-color-border);
@@ -50,53 +25,11 @@
 	border: none;
 	border-radius: 0;
 	background: var(--rf-color-code-bg);
-	overflow-x: auto;
-	overscroll-behavior-x: contain;
 	font-family: var(--rf-font-mono);
 	font-size: var(--rf-text-sm);
 	line-height: var(--rf-leading-relaxed);
 }
-
-/* WORK-304 — inner rows wrapper, sized as `display: grid; min-width:
- * max-content` so every `.rf-diff__line` (grid item) spans the
- * widest line's intrinsic width. The pre is the scroll container
- * (`overflow-x: auto`); this wrapper is what actually expands past
- * the pre's visible width when a line overflows, triggering the
- * pre's scroll and keeping the row tint (+/-/highlight) contiguous
- * across the full scroll region. Mirrors the
- * `pre code { display: grid; min-width: max-content }` pattern in
- * the standalone codeblock at `elements/code.css`. */
-.rf-diff__rows {
-	display: grid;
-	min-width: max-content;
-}
-/* WORK-304 — annotated line primitive. Three states share one row
- * shape (`add`, `remove`, `highlight`); only the tint token and the
- * gutter rail colour change. The same selector form is reused by the
- * standalone code block for `data-line-status="highlight"` via the
- * `.rf-codeblock` rules below.
- *
- * `display: block` + inline-block children (not `display: flex`) for
- * the line container so the line's intrinsic max-content is the
- * unambiguous sum of children's intrinsic widths — flex container
- * max-content was being clipped by the flex-basis / flex-grow /
- * flex-shrink combination depending on browser, leaving the row
- * tint cut off at the text width when the user scrolled
- * horizontally. `white-space: nowrap` keeps the inline-block
- * children on a single row (the children themselves preserve their
- * own `white-space: pre` for the code). `min-width: max-content`
- * keeps the line at least as wide as its content (full row tint
- * when content overflows the visible viewport); default width =
- * 100% of pre keeps it filling the visible width on short rows. */
 .rf-diff__line {
-	/* `display: flex` for internal layout (gutters + content side
-	 * by side). The line's WIDTH is determined by the parent grid
-	 * track (`.rf-diff__code`'s `grid-template-columns:
-	 * minmax(100%, max-content)`), not by the flex sizing here —
-	 * so the row tint covers the full grid column regardless of
-	 * how flex sizing would have resolved. */
-	display: flex;
-	min-height: 1.6em;
 	border-left: 3px solid transparent;
 }
 .rf-diff__line[data-line-status="equal"]  { background: transparent; }
@@ -114,20 +47,13 @@
 }
 .rf-diff__line[data-line-status="empty"]  { background: transparent; }
 .rf-diff__gutter-num {
-	flex-shrink: 0;
 	padding: 0 0.5rem;
-	width: 2.5em;
-	min-height: 1.6em;
 	text-align: right;
 	font-size: var(--rf-text-xs);
 	font-variant-numeric: tabular-nums;
 	user-select: none;
 	color: var(--rf-color-muted);
 }
-/* Change-type colour drives the directional cue — no more +/- prefix.
- * Remove lines colour the before-number; add lines colour the after-number.
- * The opposite side renders empty (no number) which itself signals "nothing
- * here on this side". */
 .rf-diff__line[data-line-status="remove"] .rf-diff__gutter-num[data-side="before"] {
 	color: var(--rf-color-danger);
 }
@@ -138,20 +64,8 @@
 	margin: 0;
 }
 .rf-diff__line-content {
-	/* `flex: 1 0 auto` so line-content contributes its
-	 * `white-space: pre` text width to the line's intrinsic
-	 * max-content (which the parent grid track reads from); grow:1
-	 * lets it fill any free space in the row beyond the gutters
-	 * when the grid track is wider than the line's natural size
-	 * (short content / wide visible viewport). WORK-304. */
-	flex: 1 0 auto;
 	white-space: pre;
 	padding-right: 1rem;
-	/* Pin the row to 1.6em even when the text is empty — the highlighted
-	 * span for an empty input has no inline content to establish a line
-	 * box, so without this the flex item collapses below the parent's
-	 * min-height and rows visually drift in the split-mode grid. */
-	min-height: 1.6em;
 }
 
 }

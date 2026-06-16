@@ -1,136 +1,58 @@
 @layer skin {
-/* Juxtapose — interactive comparison between two panels */
-
-/* ─── Variant modifiers (for static/no-JS layout) ─── */
-.rf-juxtapose--slider,
-.rf-juxtapose--auto,
-.rf-juxtapose--fade,
-.rf-juxtapose--toggle {
-	/* shared base — no additional styling needed */
-}
-
-/* ─── Panels container ─── */
+/* Juxtapose — skin. The panel clip/positioning, label placement, media fill, slider
+ * divider/handle positioning, toggle-bar flex, and meta/label hides live in
+ * @refrakt-md/skeleton (styles/runes/juxtapose.css). */
 .rf-juxtapose__panels {
 	border-radius: var(--rf-radius-md);
-	overflow: hidden;
 	border: 1px solid var(--rf-color-border);
 	background: var(--rf-color-surface);
 }
-
-/* ─── Panel ─── */
-.rf-juxtapose-panel {
-	position: relative;
-	overflow: hidden;
-}
 .rf-juxtapose-panel__name {
-	position: absolute;
-	bottom: 0.5rem;
 	padding: 0.25rem 0.75rem;
 	background: rgba(0, 0, 0, 0.6);
 	color: white;
 	font-size: var(--rf-text-xs);
 	font-weight: var(--rf-weight-semibold);
 	border-radius: var(--rf-radius-sm);
-	pointer-events: none;
 }
-/* First panel: label bottom-left */
-.rf-juxtapose-panel:first-child .rf-juxtapose-panel__name {
-	left: 0.5rem;
-}
-/* Second panel: label bottom-right */
-.rf-juxtapose-panel:last-child .rf-juxtapose-panel__name {
-	right: 0.5rem;
-}
-.rf-juxtapose-panel__body {
-	/* Content fills the panel */
-}
-.rf-juxtapose-panel__body :is(img, .rf-placeholder) {
-	display: block;
-	width: 100%;
-	height: auto;
-	object-fit: cover;
-}
-
-/* Hide meta tags inside panels */
-.rf-juxtapose-panel > meta { display: none; }
-
-/* ─── Toggle variant: labels only on buttons, not in panels ─── */
-.rf-juxtapose--toggle .rf-juxtapose-panel__name {
-	display: none;
-}
-
-/* ─── Slider divider (injected by behavior) ─── */
 .rf-juxtapose__divider {
-	position: absolute;
-	z-index: 10;
 	cursor: col-resize;
-	touch-action: none;
 }
-
-/* Vertical orientation (left/right split) — default */
 .rf-juxtapose:not([data-orientation="horizontal"]) .rf-juxtapose__divider {
-	top: 0;
-	bottom: 0;
-	width: 3px;
-	transform: translateX(-50%);
 	background: var(--rf-color-bg, #fff);
 	box-shadow: var(--rf-shadow-sm);
 }
-
-/* Horizontal orientation (top/bottom split) */
 .rf-juxtapose[data-orientation="horizontal"] .rf-juxtapose__divider {
-	left: 0;
-	right: 0;
-	height: 3px;
-	transform: translateY(-50%);
 	background: var(--rf-color-bg, #fff);
 	box-shadow: var(--rf-shadow-sm);
 	cursor: row-resize;
 }
-
 .rf-juxtapose__divider-handle {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	width: 2.5rem;
-	height: 2.5rem;
 	border-radius: var(--rf-radius-full);
 	background: var(--rf-color-bg, #fff);
 	border: 2px solid var(--rf-color-border);
 	box-shadow: var(--rf-shadow-md);
-	display: flex;
-	align-items: center;
-	justify-content: center;
 }
-
 .rf-juxtapose__divider-handle::before {
-	content: '\2194';  /* ↔ */
+	content: '\2194';
 	font-size: var(--rf-text);
 	color: var(--rf-color-muted);
 	line-height: 1;
 }
-
 .rf-juxtapose[data-orientation="horizontal"] .rf-juxtapose__divider-handle::before {
-	content: '\2195';  /* ↕ */
+	content: '\2195';
 }
-
 .rf-juxtapose__divider:focus-visible {
 	outline: 2px solid var(--rf-color-primary);
 	outline-offset: 2px;
 }
-
-/* ─── Toggle bar (injected by behavior) ─── */
 .rf-juxtapose__toggle-bar {
-	display: flex;
 	gap: 0.125rem;
 	padding: 0.125rem;
 	margin-bottom: 0.75rem;
 	background: var(--rf-color-surface-active);
 	border-radius: var(--rf-radius-full);
-	width: fit-content;
 }
-
 .rf-juxtapose__toggle-btn,
 .rf-juxtapose__toggle-btn[data-state] {
 	padding: 0.25rem 0.75rem;
@@ -143,32 +65,18 @@
 	cursor: pointer;
 	transition: background 150ms ease, color 150ms ease;
 }
-
 .rf-juxtapose__toggle-btn:hover {
 	color: var(--rf-color-text);
 }
-
 .rf-juxtapose__toggle-btn--active,
 .rf-juxtapose__toggle-btn[data-state="active"] {
 	background: var(--rf-color-bg);
 	color: var(--rf-color-text);
 	box-shadow: var(--rf-shadow-xs);
 }
-
-/* ─── Fade variant cursor hint ─── */
 .rf-juxtapose--fade .rf-juxtapose__panels {
 	cursor: pointer;
 }
-
-
-/* ─── Juxtapose as a media-zone guest ─────────────────────────────────
- * The `__panels` container has its own border + background + rounded corners
- * (juxtapose stands alone outside a card), but inside a `[data-section="media"]`
- * slot they double up with the slot's own chrome. Drop the inner chrome; round
- * to match the slot's media radius so the comparison reads as part of the card
- * surface. The slot's overflow:visible and container-type:normal still come from
- * `split.css` (juxtapose manages its own clip inside `__panels`). Moved here from
- * dimensions/surfaces.css so that file stays rune-name-free (SPEC-107). */
 [data-section="media"] > .rf-juxtapose .rf-juxtapose__panels {
 	background: transparent;
 	border: 0;

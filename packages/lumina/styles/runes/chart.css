@@ -1,51 +1,34 @@
 @layer skin {
-/* Chart */
+/* Chart — skin. The chart block, responsive SVG/container, legend flex, swatch box,
+ * and the sr-only rendered data table live in @refrakt-md/skeleton
+ * (styles/runes/chart.css). What remains is the --rf-chart-* theming contract, SVG
+ * paint, palette rotation, data-table chrome, and type. */
 .rf-chart {
-	/* ─── Theming contract (SPEC-083 / WORK-353) ───
-	 * Every paint + geometry value the renderer uses is one of these
-	 * `--rf-chart-*` properties; a theme overrides any of them (here, on a tint
-	 * scope, or inline) with no renderer or selector changes. A non-CSS provider
-	 * (canvas) reads the same props via getComputedStyle. */
-
-	/* Series palette — a dedicated categorical palette, deliberately distinct
-	 * from the semantic status tokens (those are reserved for sentiment mode). */
 	--rf-chart-series-1: #6366f1;
 	--rf-chart-series-2: #06b6d4;
 	--rf-chart-series-3: #22c55e;
 	--rf-chart-series-4: #f59e0b;
 	--rf-chart-series-5: #a855f7;
 	--rf-chart-series-6: #ec4899;
-
-	/* Geometry (layout values the renderer reads via getComputedStyle). */
-	--rf-chart-bar-ratio: 0.75;        /* bar width as a fraction of its slot */
-	--rf-chart-bar-thickness: 48px;    /* max bar width cap */
-	--rf-chart-bar-gap: 0.15;          /* slot fraction reserved as inter-group gap */
+	--rf-chart-bar-ratio: 0.75;
+	--rf-chart-bar-thickness: 48px;
+	--rf-chart-bar-gap: 0.15;
 	--rf-chart-bar-radius: 2px;
 	--rf-chart-point-radius: 4px;
 	--rf-chart-line-width: 2px;
-
-	/* Typography / grid (paint values applied by CSS below). */
 	--rf-chart-label-size: 12px;
 	--rf-chart-label-color: var(--rf-color-muted);
 	--rf-chart-grid-color: var(--rf-color-border);
 	--rf-chart-grid-width: 1px;
-
-	display: block;
 	border-radius: var(--rf-radius-lg);
 	padding: 1.5rem;
 	margin: 0;
 }
-
-/* ─── SVG paint — driven entirely by the contract (the renderer sets no inline
- * fill/stroke; it only tags elements with a class + data-series + optional
- * data-meta-sentiment). ─── */
 .rf-chart__axis { stroke: var(--rf-chart-grid-color); stroke-width: var(--rf-chart-grid-width); }
 .rf-chart__label { fill: var(--rf-chart-label-color); font-size: var(--rf-chart-label-size); }
 .rf-chart__bar { rx: var(--rf-chart-bar-radius); fill: var(--rf-chart-series-1); }
 .rf-chart__point { fill: var(--rf-chart-series-1); }
 .rf-chart__line { fill: none; stroke: var(--rf-chart-series-1); stroke-width: var(--rf-chart-line-width); }
-
-/* Series palette rotation (data-series 0 is the default above). */
 .rf-chart__bar[data-series="1"], .rf-chart__point[data-series="1"] { fill: var(--rf-chart-series-2); }
 .rf-chart__bar[data-series="2"], .rf-chart__point[data-series="2"] { fill: var(--rf-chart-series-3); }
 .rf-chart__bar[data-series="3"], .rf-chart__point[data-series="3"] { fill: var(--rf-chart-series-4); }
@@ -56,11 +39,6 @@
 .rf-chart__line[data-series="3"] { stroke: var(--rf-chart-series-4); }
 .rf-chart__line[data-series="4"] { stroke: var(--rf-chart-series-5); }
 .rf-chart__line[data-series="5"] { stroke: var(--rf-chart-series-6); }
-
-/* Sentiment colouring — a data cell carrying `data-meta-sentiment` overrides the
- * rotating palette with the semantic token (the roadmap chart renders green-done
- * / red-blocked with no per-chart config). After the palette so it wins at equal
- * specificity. */
 .rf-chart__bar[data-meta-sentiment="positive"], .rf-chart__point[data-meta-sentiment="positive"] { fill: var(--rf-color-success); }
 .rf-chart__bar[data-meta-sentiment="negative"], .rf-chart__point[data-meta-sentiment="negative"] { fill: var(--rf-color-danger); }
 .rf-chart__bar[data-meta-sentiment="caution"],  .rf-chart__point[data-meta-sentiment="caution"]  { fill: var(--rf-color-warning); }
@@ -69,10 +47,6 @@
 .rf-chart__line[data-meta-sentiment="negative"] { stroke: var(--rf-color-danger); }
 .rf-chart__line[data-meta-sentiment="caution"]  { stroke: var(--rf-color-warning); }
 .rf-chart__line[data-meta-sentiment="neutral"]  { stroke: var(--rf-color-muted); }
-
-/* Data table — the no-JS / screen-reader source of truth. Visible as the
- * fallback; visually-hidden (but kept for assistive tech) once rf-chart has
- * rendered the svg. */
 .rf-chart__data {
 	width: 100%;
 	border-collapse: collapse;
@@ -88,41 +62,22 @@
 	padding: 0.375rem 0.625rem;
 	text-align: left;
 }
-.rf-chart[data-rendered] .rf-chart__data {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border: 0;
-}
 .rf-chart__title {
 	font-weight: var(--rf-weight-semibold);
 	font-size: var(--rf-text);
 	margin-bottom: 1rem;
 	text-align: center;
 }
-.rf-chart__container { width: 100%; }
-.rf-chart__svg { width: 100%; height: auto; }
 .rf-chart__legend {
-	display: flex;
-	justify-content: center;
 	gap: 1rem;
 	margin-top: 1rem;
 }
 .rf-chart__legend-item {
-	display: flex;
-	align-items: center;
 	gap: 0.375rem;
 	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 }
 .rf-chart__legend-color {
-	width: 12px;
-	height: 12px;
 	border-radius: 2px;
 	background: var(--rf-chart-series-1);
 }

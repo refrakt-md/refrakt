@@ -1,0 +1,32 @@
+/* chart — structure. The chart block, the responsive SVG + container, the legend
+ * flex, the legend-swatch box, and the sr-only data table once rendered. The
+ * --rf-chart-* theming contract (palette + geometry values), all SVG paint, the
+ * data-table chrome, and type stay skin (Lumina's styles/runes/chart.css). */
+
+.rf-chart { display: block; }
+.rf-chart__container { width: 100%; }
+.rf-chart__svg { width: 100%; height: auto; }
+.rf-chart__legend {
+	display: flex;
+	justify-content: center;
+}
+.rf-chart__legend-item {
+	display: flex;
+	align-items: center;
+}
+.rf-chart__legend-color {
+	width: 12px;
+	height: 12px;
+}
+/* Rendered: the data table becomes the sr-only source of truth. */
+.rf-chart[data-rendered] .rf-chart__data {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}

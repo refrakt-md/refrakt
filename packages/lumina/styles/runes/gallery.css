@@ -1,58 +1,25 @@
 @layer skin {
-/* Gallery — Multi-image container with grid/carousel/masonry layout.
- *
- * Thin-edge tile mosaic: a gallery is media all the way down (every child is an
- * image), so the outer padding is treated as a frame margin and locked to the
- * same value as the inter-item gap — outer = inter = a single visual rhythm.
- * Both are theme tokens (`--rf-gallery-edge` / `--rf-gallery-gap`), not author
- * attributes; the `gap` attribute was removed because aesthetic spacing is the
- * theme's concern. `columns` stays an author attribute — that's content density,
- * not aesthetics. */
+/* Gallery — skin. The grid/carousel/masonry layouts, item/lightbox/nav positioning,
+ * and responsive columns live in @refrakt-md/skeleton (styles/runes/gallery.css). */
 .rf-gallery {
-	position: relative;
 	margin: 0;
 	--rf-gallery-edge: 0.5rem;
 	--rf-gallery-gap: 0.5rem;
 	padding: var(--rf-gallery-edge);
 }
-
-/* Layout modifier classes */
-.rf-gallery--grid {}
-.rf-gallery--carousel {}
-.rf-gallery--masonry {}
-
-/* Items container — grid layout by default */
 .rf-gallery__items {
-	display: grid;
-	grid-template-columns: repeat(var(--gallery-columns, 3), 1fr);
 	gap: var(--rf-gallery-gap);
 }
-
-/* Individual gallery items */
 .rf-gallery__item {
-	position: relative;
-	overflow: hidden;
 	border-radius: var(--rf-radius-md);
 	margin: 0;
 }
-.rf-gallery__item :is(img, .rf-placeholder) {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	display: block;
-}
 .rf-gallery__item figcaption {
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	right: 0;
 	padding: 0.5rem 0.75rem;
 	background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
 	color: white;
 	font-size: var(--rf-text-sm);
 }
-
-/* Gallery caption */
 .rf-gallery > figcaption {
 	margin-top: 0.625rem;
 	font-size: var(--rf-text-sm);
@@ -60,36 +27,13 @@
 	text-align: center;
 	font-style: italic;
 }
-
-/* Carousel layout */
-.rf-gallery[data-layout="carousel"] .rf-gallery__items {
-	display: flex;
-	overflow-x: auto;
-	scroll-snap-type: x mandatory;
-	-webkit-overflow-scrolling: touch;
-}
-.rf-gallery[data-layout="carousel"] .rf-gallery__item {
-	flex: 0 0 calc(100% / var(--gallery-columns, 3));
-	scroll-snap-align: start;
-}
-
-/* Carousel nav buttons */
 .rf-gallery__nav {
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	z-index: 2;
-	width: 2.5rem;
-	height: 2.5rem;
 	border-radius: 50%;
 	border: none;
 	background: var(--rf-color-surface);
 	color: var(--rf-color-text);
 	box-shadow: var(--rf-shadow-md);
 	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
 	font-size: var(--rf-text-xl);
 	opacity: 0.8;
 	transition: opacity 0.2s;
@@ -97,115 +41,36 @@
 .rf-gallery__nav:hover {
 	opacity: 1;
 }
-/* Inset the carousel nav buttons from the image edge by the same 0.5rem the
- * gallery uses as its thin-edge frame, so the buttons overlap onto the image
- * slightly rather than sitting flush against it. The gallery's outer padding
- * already inserts 0.5rem between gallery border and image, so the total offset
- * from the gallery border is `edge + 0.5rem` = 1rem. */
-.rf-gallery__nav--prev {
-	left: calc(var(--rf-gallery-edge) + 0.5rem);
-}
-.rf-gallery__nav--next {
-	right: calc(var(--rf-gallery-edge) + 0.5rem);
-}
-
-/* Masonry layout — CSS multi-column flow gives true variable-height masonry in
- * every browser. (`grid-template-rows: masonry` is Firefox-only behind a flag
- * and silently falls back to uniform-height grid rows everywhere else, which is
- * why heights used to only vary in the collapsed single-column case.) Items
- * flow top-to-bottom inside each column, then move to the next column. */
 .rf-gallery[data-layout="masonry"] .rf-gallery__items {
-	display: block;
-	column-count: var(--gallery-columns, 3);
 	column-gap: var(--rf-gallery-gap);
 }
 .rf-gallery[data-layout="masonry"] .rf-gallery__item {
-	break-inside: avoid;
 	margin-bottom: var(--rf-gallery-gap);
 }
-/* In masonry the row height isn't pinned, so let each image take its natural
- * height (grid mode keeps `height: 100%` for uniform tiles). */
-.rf-gallery[data-layout="masonry"] .rf-gallery__item :is(img, .rf-placeholder) {
-	height: auto;
-}
-
-/* Lightbox cursor hint */
 .rf-gallery[data-lightbox="true"] .rf-gallery__item {
 	cursor: zoom-in;
 }
-
-/* Lightbox overlay */
 .rf-gallery__lightbox {
-	position: fixed;
-	inset: 0;
-	z-index: 9999;
 	background: rgba(0, 0, 0, 0.9);
-	display: flex;
-	align-items: center;
-	justify-content: center;
 }
 .rf-gallery__lightbox img {
-	max-width: 90vw;
-	max-height: 90vh;
-	object-fit: contain;
 	border-radius: var(--rf-radius-md);
 }
 .rf-gallery__lightbox-close {
-	position: absolute;
-	top: 1rem;
-	right: 1rem;
-	width: 2.5rem;
-	height: 2.5rem;
 	border-radius: 50%;
 	border: none;
 	background: rgba(255, 255, 255, 0.15);
 	color: white;
 	font-size: var(--rf-text-2xl);
 	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
 }
 .rf-gallery__lightbox-nav {
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	width: 3rem;
-	height: 3rem;
 	border-radius: 50%;
 	border: none;
 	background: rgba(255, 255, 255, 0.15);
 	color: white;
 	font-size: var(--rf-text-2xl);
 	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-.rf-gallery__lightbox-nav--prev {
-	left: 1rem;
-}
-.rf-gallery__lightbox-nav--next {
-	right: 1rem;
-}
-
-/* Responsive: collapse columns on small screens. (Gap is theme-locked at all
- * widths — no override needed.) */
-@media (max-width: 768px) {
-	.rf-gallery {
-		--gallery-columns: 2 !important;
-	}
-	.rf-gallery[data-layout="carousel"] .rf-gallery__item {
-		flex-basis: 80%;
-	}
-}
-@media (max-width: 480px) {
-	.rf-gallery {
-		--gallery-columns: 1 !important;
-	}
-	.rf-gallery[data-layout="carousel"] .rf-gallery__item {
-		flex-basis: 100%;
-	}
 }
 
 }
