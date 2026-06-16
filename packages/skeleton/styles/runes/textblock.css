@@ -1,0 +1,25 @@
+/* textblock — structure. The body block, the drop-cap float, and the multi-column
+ * counts (+ responsive). The drop-cap/lead type, column gap/rule, and text-align
+ * are skin. */
+.rf-textblock__body {
+	display: block;
+}
+.rf-textblock--dropcap .rf-textblock__body > p:first-child::first-letter {
+	float: left;
+}
+.rf-textblock[data-columns="2"] .rf-textblock__body { column-count: 2; }
+.rf-textblock[data-columns="3"] .rf-textblock__body { column-count: 3; }
+.rf-textblock[data-columns="4"] .rf-textblock__body { column-count: 4; }
+@media (max-width: 768px) {
+	.rf-textblock[data-columns="3"] .rf-textblock__body,
+	.rf-textblock[data-columns="4"] .rf-textblock__body {
+		column-count: 2;
+	}
+}
+@media (max-width: 480px) {
+	.rf-textblock[data-columns="2"] .rf-textblock__body,
+	.rf-textblock[data-columns="3"] .rf-textblock__body,
+	.rf-textblock[data-columns="4"] .rf-textblock__body {
+		column-count: 1;
+	}
+}

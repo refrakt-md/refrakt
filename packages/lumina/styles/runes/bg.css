@@ -7,10 +7,6 @@
  * without needing `overflow: hidden` (though hosts with thin-edge padding
  * still need it so the bg can't poke past the rounded outer edge). */
 [data-name="bg"] {
-	position: absolute;
-	inset: 0;
-	z-index: 0;
-	overflow: hidden;
 	border-radius: inherit;
 	background-image: var(--bg-image);
 	background-size: var(--bg-fit, cover);
@@ -28,50 +24,17 @@
 [data-name="bg"][data-bg-fixed] {
 	background-attachment: fixed;
 }
-/* Content above background — any sibling of the bg layer gets `z-index: 1`
- * so it stacks over the `data-name="bg"` layer (which sits at `z-index: 0`).
- * Keyed off the `data-bg` attribute the engine emits on the bg-owning rune
- * (`engine.ts` → `bgDataAttrs['data-bg'] = ''`), not the per-block BEM
- * modifier class `rf-<block>--has-bg` — the attribute is rune-agnostic so
- * one rule covers card, bento-cell, hero, feature, and anything else that
- * raises a bg layer. */
-[data-bg] > :not([data-name="bg"]) {
-	position: relative;
-	z-index: 1;
-}
-/* Video background */
-[data-name="bg-video"] {
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	object-position: var(--bg-position, center);
-}
 [data-name="bg-video"][style*="--bg-blur"] {
 	filter: blur(var(--bg-blur));
 }
 [data-name="bg-video"][style*="--bg-opacity"] {
 	opacity: var(--bg-opacity);
 }
-/* Overlay */
-[data-name="bg-overlay"] {
-	position: absolute;
-	inset: 0;
-}
 [data-name="bg-overlay"][data-bg-overlay="dark"] {
 	background: rgba(0, 0, 0, 0.5);
 }
 [data-name="bg-overlay"][data-bg-overlay="light"] {
 	background: rgba(255, 255, 255, 0.6);
-}
-
-/* Scrim (SPEC-088) — a structured legibility treatment behind overlaid text.
- * gradient: a directional darken/lighten; frost: a backdrop blur + tint.
- * `tone` picks the colour, `dir` the heavy edge; strength/blur come inline. */
-[data-name="scrim"] {
-	position: absolute;
-	inset: 0;
-	pointer-events: none;
-	z-index: 1;
 }
 [data-name="scrim"][data-scrim-tone="dark"]  { --scrim-color: 0 0 0; }
 [data-name="scrim"][data-scrim-tone="light"] { --scrim-color: 255 255 255; }

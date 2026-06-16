@@ -44,14 +44,10 @@
  * body). With groups, switch to a wrapping inline row so per-group renders
  * (badges, pills, …) flow across the page. */
 .rf-aggregate__items {
-	display: flex;
-	flex-direction: column;
 	gap: var(--rf-spacing-sm);
 	margin-top: var(--rf-spacing-sm);
 }
 .rf-aggregate__items:has(.rf-aggregate__group) {
-	flex-direction: row;
-	flex-wrap: wrap;
 	gap: var(--rf-spacing-xs) var(--rf-spacing-sm);
 }
 
@@ -60,14 +56,6 @@
  * empty. */
 .rf-aggregate__items > :first-child { margin-top: 0; }
 .rf-aggregate__items > :last-child { margin-bottom: 0; }
-
-/* Per-group block — wraps one render of the template. `data-block` is set
- * by the resolver so we trim its outer block margins (the items-row `gap`
- * governs inter-group spacing) — same pattern collection / relationships
- * use for `__item[data-block]`. */
-.rf-aggregate__group {
-	min-width: 0;
-}
 .rf-aggregate__group[data-block] > :first-child {
 	margin-top: 0;
 }

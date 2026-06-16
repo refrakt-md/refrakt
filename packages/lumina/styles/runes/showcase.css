@@ -1,24 +1,4 @@
 @layer skin {
-/* Showcase — `frameTarget: 'self'` media wrapper (SPEC-086). Shadow, aspect,
- * displacement, place, and crop anchor are now the shared `frame` chrome
- * (dimensions/frame.css), landing on the showcase root. This file keeps only
- * showcase's structural rules and its distinct value: breakout. */
-.rf-showcase {
-	position: relative;
-}
-.rf-showcase__viewport {
-	position: relative;
-}
-/* Breakout — a displaced showcase spills past a non-clipping ancestor; clipping
- * hosts (e.g. bento cells) keep it cropped (host-owned clip). */
-:has(> .rf-showcase[data-displace]:not(.rf-showcase--in-bento-cell)) {
-	overflow: visible;
-}
-/* Bento cell context — showcase fills remaining space */
-.rf-showcase--in-bento-cell {
-	flex: 1;
-	min-height: 0;
-}
 /* Spacing — vertical margin around the showcase */
 .rf-showcase[data-spacing="flush"]   { margin-top: 0; margin-bottom: 0; }
 .rf-showcase[data-spacing="tight"]   { margin-top: var(--rf-spacing-section-tight, 1.5rem); margin-bottom: var(--rf-spacing-section-tight, 1.5rem); }

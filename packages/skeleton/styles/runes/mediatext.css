@@ -1,0 +1,37 @@
+/* mediatext — structure. The grid layout + ratios, the right-order swap, the media
+ * image box, the wrap-mode media widths + floats + clearfix (and the responsive
+ * collapse). Gaps, radii, and body margins are skin. */
+.rf-mediatext:not([data-wrap="true"]) {
+	display: grid;
+	align-items: start;
+}
+.rf-mediatext[data-ratio="1:1"]:not([data-wrap="true"]) { grid-template-columns: 1fr 1fr; }
+.rf-mediatext[data-ratio="1:2"]:not([data-wrap="true"]) { grid-template-columns: 1fr 2fr; }
+.rf-mediatext[data-ratio="2:1"]:not([data-wrap="true"]) { grid-template-columns: 2fr 1fr; }
+.rf-mediatext--right:not([data-wrap="true"]) .rf-mediatext__media { order: 1; }
+.rf-mediatext__media :is(img, .rf-placeholder) {
+	max-width: 100%;
+	height: auto;
+}
+.rf-mediatext[data-ratio="1:1"][data-wrap="true"] .rf-mediatext__media { max-width: 50%; }
+.rf-mediatext[data-ratio="1:2"][data-wrap="true"] .rf-mediatext__media { max-width: 33.333%; }
+.rf-mediatext[data-ratio="2:1"][data-wrap="true"] .rf-mediatext__media { max-width: 66.666%; }
+.rf-mediatext--left[data-wrap="true"] .rf-mediatext__media { float: left; }
+.rf-mediatext--right[data-wrap="true"] .rf-mediatext__media { float: right; }
+.rf-mediatext[data-wrap="true"]::after {
+	content: '';
+	display: table;
+	clear: both;
+}
+@media (max-width: 768px) {
+	.rf-mediatext:not([data-wrap="true"]) {
+		grid-template-columns: 1fr !important;
+	}
+	.rf-mediatext--right:not([data-wrap="true"]) .rf-mediatext__media {
+		order: 0;
+	}
+	.rf-mediatext[data-wrap="true"] .rf-mediatext__media {
+		float: none;
+		max-width: 100%;
+	}
+}

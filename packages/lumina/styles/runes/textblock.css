@@ -1,12 +1,7 @@
 @layer skin {
-/* TextBlock */
-.rf-textblock__body {
-	display: block;
-}
 
 /* Drop cap — decorative first letter */
 .rf-textblock--dropcap .rf-textblock__body > p:first-child::first-letter {
-	float: left;
 	font-size: 3.5em;
 	font-weight: var(--rf-weight-bold);
 	line-height: 0.8;
@@ -26,17 +21,14 @@
 
 /* Multi-column text flow */
 .rf-textblock[data-columns="2"] .rf-textblock__body {
-	column-count: 2;
 	column-gap: 2rem;
 	column-rule: 1px solid var(--rf-color-border);
 }
 .rf-textblock[data-columns="3"] .rf-textblock__body {
-	column-count: 3;
 	column-gap: 2rem;
 	column-rule: 1px solid var(--rf-color-border);
 }
 .rf-textblock[data-columns="4"] .rf-textblock__body {
-	column-count: 4;
 	column-gap: 2rem;
 	column-rule: 1px solid var(--rf-color-border);
 }
@@ -47,18 +39,5 @@
 .rf-textblock--justify .rf-textblock__body { text-align: justify; }
 
 /* Responsive — columns collapse on smaller screens */
-@media (max-width: 768px) {
-	.rf-textblock[data-columns="3"] .rf-textblock__body,
-	.rf-textblock[data-columns="4"] .rf-textblock__body {
-		column-count: 2;
-	}
-}
-@media (max-width: 480px) {
-	.rf-textblock[data-columns="2"] .rf-textblock__body,
-	.rf-textblock[data-columns="3"] .rf-textblock__body,
-	.rf-textblock[data-columns="4"] .rf-textblock__body {
-		column-count: 1;
-	}
-}
 
 }

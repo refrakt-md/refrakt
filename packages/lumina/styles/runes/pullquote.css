@@ -11,13 +11,9 @@
 	color: var(--rf-color-text);
 	background: none;
 	border-radius: 0;
-	position: relative;
 }
 .rf-pullquote::before {
 	content: '\201C';
-	position: absolute;
-	top: -0.25rem;
-	left: 0;
 	/* Decorative oversized quote glyph — a display one-off above the type scale. */
 	font-size: 4rem;
 	font-style: normal;
@@ -37,40 +33,23 @@
 .rf-pullquote--center {
 	text-align: center;
 	max-width: 80%;
-	margin-left: auto;
-	margin-right: auto;
-}
-.rf-pullquote--center::before {
-	left: 50%;
-	transform: translateX(-50%);
 }
 .rf-pullquote--left {
 	text-align: left;
 	border-left: 2px solid var(--rf-color-primary);
 	padding-left: 1.5rem;
 }
-.rf-pullquote--left::before {
-	display: none;
-}
 .rf-pullquote--right {
 	text-align: right;
 	border-right: 2px solid var(--rf-color-primary);
 	padding-right: 1.5rem;
-	margin-left: auto;
-}
-.rf-pullquote--right::before {
-	display: none;
 }
 
 /* Float modes — left/right pull quotes can float for text wrapping */
 .rf-pullquote[data-align="left"] {
-	float: left;
-	width: 40%;
 	margin: 0.5rem 2rem 1rem 0;
 }
 .rf-pullquote[data-align="right"] {
-	float: right;
-	width: 40%;
 	margin: 0.5rem 0 1rem 2rem;
 }
 
@@ -93,9 +72,6 @@
 	font-family: Georgia, 'Times New Roman', serif;
 	letter-spacing: var(--rf-tracking-normal);
 }
-.rf-pullquote--editorial::before {
-	display: none;
-}
 
 /* Reset inner blockquote — global blockquote styles shouldn't apply here */
 .rf-pullquote blockquote {
@@ -114,8 +90,6 @@
 @media (max-width: 768px) {
 	.rf-pullquote[data-align="left"],
 	.rf-pullquote[data-align="right"] {
-		float: none;
-		width: 100%;
 		margin: 1.5rem 0;
 	}
 	.rf-pullquote--center {

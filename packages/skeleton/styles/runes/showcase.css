@@ -1,0 +1,12 @@
+/* showcase — structure. The relative root + viewport (frame anchors), the breakout
+ * overflow on a non-clipping host, and the bento-cell fill. The spacing/inset axes
+ * (margins/padding values) and the mobile bleed reset are skin. */
+.rf-showcase { position: relative; }
+.rf-showcase__viewport { position: relative; }
+:has(> .rf-showcase[data-displace]:not(.rf-showcase--in-bento-cell)) {
+	overflow: visible;
+}
+.rf-showcase--in-bento-cell {
+	flex: 1;
+	min-height: 0;
+}

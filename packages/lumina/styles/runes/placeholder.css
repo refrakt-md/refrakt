@@ -5,9 +5,6 @@
  * and dark mode for free. These rules just make it behave like a responsive
  * replaced element wherever a real `<img>` would have gone. */
 .rf-placeholder {
-	display: block;
-	width: 100%;
-	height: auto;
 	border-radius: var(--rf-radius-media);
 }
 

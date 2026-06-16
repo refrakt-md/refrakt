@@ -8,15 +8,11 @@
 	margin-top: 0;
 }
 .rf-page-section--split {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
 	gap: 3rem;
-	align-items: start;
 }
 
 @media (max-width: 768px) {
 	.rf-page-section--split {
-		grid-template-columns: 1fr;
 		gap: 1.5rem;
 	}
 }
