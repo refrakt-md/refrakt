@@ -140,6 +140,42 @@ Plain text becomes structured, semantic pages.
 | `scrim` | `string` | on | Scrim edge (`top`, `bottom`, `left`, `right`) or `none` to opt out |
 | `scrim-type` | `string` | `gradient` | Scrim treatment: `gradient` or `frost` (with `scrim-blur`: `none`, `sm`, `md`, `lg`) |
 
+### Backdrop *and* a subject — a live `bg` behind positioned media
+
+Cover (above) turns the **single media zone** into the backdrop, so the hero can't *also* carry a positioned subject. When you want both — an animated backdrop **and** a framed code sample or screenshot — put the live scene in the [`bg`](/runes/bg) layer instead, leaving the media zone free for the subject. The `bg` body takes one bare [sandbox](/runes/sandbox): it renders full-bleed *behind* the content (out of flow, inert), while the media guest stays in flow, framed and placed by `media-position`. The visualiser is the **ambiance**; the code sample is the **subject** — they stop competing for one slot.
+
+{% preview source=true %}
+
+{% hero media-position="end" tint-mode="dark" collapse="md" %}
+{% bg overlay="dark" overlay-opacity="0.4" %}
+{% sandbox src="wireframe-waves" /%}
+{% /bg %}
+{% codegroup %}
+```shell
+npm create refrakt@latest
+```
+```js
+import { defineConfig } from '@refrakt-md/sveltekit';
+
+export default defineConfig({
+  plugins: ['@refrakt-md/marketing'],
+});
+```
+{% /codegroup %}
+
+---
+
+# Backdrop and subject, at once
+
+The wireframe terrain is a `bg` sandbox; the install snippet is the positioned media guest. One surface, two media intents.
+
+- [How surfaces compose](/runes/surfaces)
+{% /hero %}
+
+{% /preview %}
+
+The backdrop sandbox is forced to `height="fill"` and the **backdrop posture** — mounted and running, but pointer-inert, not mounted under `prefers-reduced-motion` (the [boot frame](/runes/bg) stands in), and suspended off-screen. The still subject media remains the crawlable / share representation. See [`bg`](/runes/bg) and [media guests](/runes/media-guests) for the full model.
+
 ## Section header
 
 Hero supports an optional eyebrow, headline, and blurb above the headline and description. Place a short paragraph or heading before the main content to use them. See [Page sections](/extend/rune-authoring/page-sections) for the full syntax.
