@@ -1,0 +1,31 @@
+/* milestone — structure. The backlog tab strip (scrollable flex) + tab flex, and
+ * the aggregate-progress flex + bar box + fill. The eyebrow/title/metadata/body
+ * spacing, tab chrome, and bar colours are skin. */
+.rf-milestone__tabs {
+	display: flex;
+	overflow-x: auto;
+	overflow-y: hidden;
+	-webkit-overflow-scrolling: touch;
+}
+.rf-milestone__tab {
+	flex: 0 0 auto;
+}
+.rf-milestone__progress {
+	display: flex;
+	flex-direction: column;
+}
+.rf-milestone__progress-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+}
+.rf-milestone__progress-bar {
+	height: 0.375rem;
+	overflow: hidden;
+}
+.rf-milestone__progress-bar::after {
+	content: '';
+	display: block;
+	height: 100%;
+	width: var(--rf-progress, 0%);
+}

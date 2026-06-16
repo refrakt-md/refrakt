@@ -1,0 +1,38 @@
+/* plan-history — structure (mirrors the vertical timeline). The events list reset,
+ * event positioning + marker box placement (+ responsive), the inline date, the
+ * change/entity-summary flex, the criteria list reset, the commit-message block,
+ * and the mobile change wrap. Connector borders, marker chrome, badges, and type
+ * are skin. */
+.rf-plan-history__events { list-style: none; }
+.rf-plan-history__event { position: relative; }
+.rf-plan-history__event::before {
+	content: '';
+	position: absolute;
+	left: -0.4375rem;
+	top: 0.25rem;
+	width: 0.75rem;
+	height: 0.75rem;
+}
+.rf-plan-history__date { display: inline; }
+.rf-plan-history__change {
+	display: flex;
+	align-items: center;
+}
+.rf-plan-history__criteria { list-style: none; }
+.rf-plan-history--global .rf-plan-history__commit-message {
+	display: block;
+}
+.rf-plan-history--global .rf-plan-history__entity-summary {
+	display: flex;
+	align-items: baseline;
+}
+@media (max-width: 640px) {
+	.rf-plan-history__event::before {
+		width: 0.625rem;
+		height: 0.625rem;
+		left: -0.375rem;
+	}
+	.rf-plan-history__change {
+		flex-wrap: wrap;
+	}
+}
