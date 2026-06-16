@@ -1,0 +1,130 @@
+/* hero — structure. The relative root (scrim/overlay anchor), the preamble +
+ * eyebrow stretched-link, the actions/button flex rows and their alignment via
+ * auto-margins + the mobile stack, the media-position flip, the responsive image
+ * box, and the cover-band height/containment authority (which wins over the
+ * shared cover layer by specificity). All spacing, type, the headline gradient,
+ * surface chrome, scrim, radii, and text-align stay skin (Lumina's
+ * styles/runes/hero.css). */
+
+.rf-hero { position: relative; }
+
+.rf-hero__preamble {
+	flex-direction: column;
+	align-items: center;
+}
+
+/* Linked eyebrow → pill with a stretched link (chrome is skin). */
+.rf-hero .rf-hero__eyebrow:has(a) {
+	display: inline-block;
+	position: relative;
+}
+.rf-hero .rf-hero__eyebrow:has(a) a::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+}
+
+.rf-hero__actions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	margin: 0 auto;
+}
+
+/* Alignment — auto-margins + flex alignment position the preamble/actions. */
+.rf-hero[data-align="center"] .rf-hero__actions {
+	margin: 0 auto;
+	justify-content: center;
+}
+.rf-hero[data-align="left"] .rf-hero__preamble {
+	align-items: flex-start;
+}
+.rf-hero[data-align="left"] .rf-hero__actions {
+	margin: 0;
+}
+.rf-hero[data-align="right"] .rf-hero__preamble {
+	align-items: flex-end;
+}
+.rf-hero[data-align="right"] .rf-hero__actions {
+	margin: 0 0 0 auto;
+}
+.rf-hero[data-align="center"] > p,
+.rf-hero[data-align="center"] .rf-hero__blurb {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.rf-hero ul,
+.rf-hero nav {
+	display: flex;
+	flex-wrap: wrap;
+	list-style: none;
+}
+.rf-hero[data-align="center"] ul,
+.rf-hero[data-align="center"] nav {
+	justify-content: center;
+}
+.rf-hero li a,
+.rf-hero nav a {
+	display: inline-flex;
+	align-items: center;
+}
+
+/* BUG-001 — content-first DOM inverts the shared media-first stacked contract. */
+.rf-hero[data-media-position="bottom"] {
+	display: block;
+}
+.rf-hero[data-media-position="top"] {
+	display: flex;
+	flex-direction: column-reverse;
+}
+.rf-hero__media img {
+	display: block;
+	width: 100%;
+	height: auto;
+}
+
+/* ── Cover mode (SPEC-101) — band height + containment authority. These win over
+ * the shared cover layer (dimensions/cover.css) by selector specificity. ── */
+.rf-hero--cover {
+	--cover-aspect: auto;
+	min-height: clamp(22rem, 55vh, 40rem);
+}
+.rf-hero--cover[data-aspect] {
+	min-height: 0;
+}
+.rf-hero--cover[data-media-position="cover"][data-cover-scope="full"] {
+	container-type: normal;
+}
+.rf-hero--cover[data-height="sm"] { min-height: 20rem; }
+.rf-hero--cover[data-height="md"] { min-height: 28rem; }
+.rf-hero--cover[data-height="lg"] { min-height: 36rem; }
+.rf-hero--cover[data-height="xl"] { min-height: 44rem; }
+/* Centre-band default: seat the overlay mid-well unless anchored. */
+.rf-hero--cover[data-media-position="cover"]:is([data-content-place="auto"], :not([data-content-place])) > [data-name="content"] {
+	align-self: center;
+	justify-self: stretch;
+}
+
+/* Mobile: stack actions full-width so the code block and button line up. */
+@media (max-width: 640px) {
+	.rf-hero__actions {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.rf-hero__actions pre {
+		width: 100%;
+		box-sizing: border-box;
+	}
+	.rf-hero ul,
+	.rf-hero nav {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.rf-hero li a,
+	.rf-hero nav a {
+		justify-content: center;
+		width: 100%;
+		box-sizing: border-box;
+	}
+}

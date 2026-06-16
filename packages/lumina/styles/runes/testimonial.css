@@ -1,5 +1,6 @@
 @layer skin {
-/* Testimonial */
+/* Testimonial — skin. The author block display + avatar box (size/crop) live in
+ * @refrakt-md/skeleton (styles/runes/testimonial.css). */
 .rf-testimonial {
 	border-radius: var(--rf-radius-lg);
 	padding: 1.75rem 2rem;
@@ -29,23 +30,18 @@
 	margin: 0;
 }
 .rf-testimonial__author-name {
-	display: block;
 	font-weight: var(--rf-weight-bold);
 	font-style: normal;
 	font-size: var(--rf-text-sm);
 	color: var(--rf-color-text);
 }
 .rf-testimonial__author-role {
-	display: block;
 	margin-top: 0.125rem;
 	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 }
 .rf-testimonial :is(img, .rf-placeholder) {
-	width: 48px;
-	height: 48px;
 	border-radius: 50%;
-	object-fit: cover;
 	margin-top: 0.75rem;
 }
 

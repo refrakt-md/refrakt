@@ -1,0 +1,13 @@
+/* testimonial — structure. The author name/role block display and the fixed
+ * avatar box (size + crop). Surface, type, the quote treatment, the blockquote
+ * `::before` reset, and the avatar radius/margin stay skin (Lumina's
+ * styles/runes/testimonial.css) — the `blockquote::before { display:none }` reset
+ * must stay skin to override elements/blockquote.css by source order. */
+
+.rf-testimonial__author-name { display: block; }
+.rf-testimonial__author-role { display: block; }
+.rf-testimonial :is(img, .rf-placeholder) {
+	width: 48px;
+	height: 48px;
+	object-fit: cover;
+}

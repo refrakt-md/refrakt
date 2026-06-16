@@ -1,11 +1,10 @@
 @layer skin {
-/* Feature */
+/* Feature — skin. The preamble/eyebrow/content/definitions-grid/icon layout and
+ * the media-position flip live in @refrakt-md/skeleton (styles/runes/feature.css). */
 .rf-feature {
 	padding: 2.5rem 0 2rem;
 }
 .rf-feature__preamble {
-	flex-direction: column;
-	align-items: flex-start;
 	gap: 0.25rem;
 	margin-bottom: 1.5rem;
 }
@@ -18,8 +17,6 @@
 	margin: 0 0 0.5rem;
 }
 .rf-feature__eyebrow:has(a) {
-	display: inline-block;
-	position: relative;
 	padding: 0.25rem 0.875rem;
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-full);
@@ -31,7 +28,7 @@
 }
 .rf-feature__eyebrow:has(a):hover { border-color: var(--rf-color-muted); }
 .rf-feature__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: var(--rf-weight-semibold); text-decoration: none; }
-.rf-feature__eyebrow:has(a) a::before { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+.rf-feature__eyebrow:has(a) a::before { border-radius: inherit; }
 .rf-feature__headline {
 	margin-top: 0;
 }
@@ -42,9 +39,6 @@
 }
 .rf-feature__image {
 	margin-bottom: 1rem;
-}
-.rf-feature__content {
-	display: contents;
 }
 .rf-feature h2 {
 	margin-bottom: 2rem;
@@ -64,20 +58,13 @@
 /* Definitions stack in a single column by default; the `--definitions-grid`
  * modifier (SPEC-091 media-position variant: top/bottom) tiles them as a grid. */
 .rf-feature__definitions {
-	display: block;
 	margin: 0;
 }
 .rf-feature--definitions-grid .rf-feature__definitions {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(max(240px, calc((100% - 3rem) / 3)), 1fr));
 	gap: 1.5rem;
 }
 /* Beside layouts (media on start/end): definitions stay stacked (no grid
  * modifier) inside the content track. */
-.rf-feature[data-media-position="start"] .rf-feature__content,
-.rf-feature[data-media-position="end"] .rf-feature__content {
-	display: block;
-}
 .rf-feature[data-media-position="start"] .rf-feature__preamble,
 .rf-feature[data-media-position="end"] .rf-feature__preamble,
 .rf-feature[data-media-position="start"] h2,
@@ -104,13 +91,7 @@
 	letter-spacing: var(--rf-tracking-tight);
 	color: var(--rf-color-text);
 }
-.rf-feature__feature-item dt:has(> .rf-icon) {
-	display: flex;
-	flex-direction: column;
-}
 .rf-feature__feature-item dt > .rf-icon {
-	width: 1.5rem;
-	height: 1.5rem;
 	margin-bottom: 0.5rem;
 	color: var(--rf-color-primary);
 }
@@ -132,18 +113,6 @@
 /* Context-aware: feature inside a grid — remove outer padding */
 .rf-feature--in-grid {
 	padding: 0;
-}
-
-/* BUG-001 — content-first DOM inverts the shared media-first stacked contract
- * (layouts/split.css): counter it so the labels are truthful. `bottom` (the
- * default) is plain block flow — media after the content, the historical
- * look; an explicit `top` flips the visual order without touching the DOM. */
-.rf-feature[data-media-position="bottom"] {
-	display: block;
-}
-.rf-feature[data-media-position="top"] {
-	display: flex;
-	flex-direction: column-reverse;
 }
 
 }
