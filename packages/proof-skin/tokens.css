@@ -1,0 +1,173 @@
+@layer skin {
+/* Proof-skin design tokens — a complete re-valuing of the --rf-* contract in a
+ * deliberately editorial register: serif throughout, square corners (0 radius),
+ * warm cream paper, a single deep-red accent, and flat surfaces (no shadow). The
+ * point is maximal divergence from Lumina using token VALUES only — same names,
+ * same contract, different look. */
+
+:root, [data-color-scheme="light"] {
+	/* Type — serif display + body, monospace for code. */
+	--rf-font-sans: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif;
+	--rf-font-mono: 'Courier New', 'Courier', ui-monospace, monospace;
+	--rf-font-display: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+	--rf-text-xs: 0.75rem;
+	--rf-text-sm: 0.875rem;
+	--rf-text: 1.0625rem;
+	--rf-text-lg: 1.1875rem;
+	--rf-text-xl: 1.375rem;
+	--rf-text-2xl: 1.75rem;
+	--rf-text-3xl: 2.25rem;
+	--rf-text-4xl: 3rem;
+	--rf-weight-light: 300;
+	--rf-weight-normal: 400;
+	--rf-weight-medium: 500;
+	--rf-weight-semibold: 600;
+	--rf-weight-bold: 700;
+	--rf-leading-tight: 1.15;
+	--rf-leading-snug: 1.3;
+	--rf-leading-normal: 1.5;
+	--rf-leading-relaxed: 1.7;
+	--rf-leading-loose: 2;
+	--rf-tracking-tight: 0;
+	--rf-tracking-normal: 0;
+	--rf-tracking-wide: 0.04em;
+	--rf-tracking-wider: 0.12em;
+	/* Colour — warm cream paper, ink text, a single deep-red accent. */
+	--rf-color-text: #211b14;
+	--rf-color-muted: #6f6554;
+	--rf-color-border: #d8cdb8;
+	--rf-color-bg: #f4eee2;
+	--rf-color-primary: #8a2b2b;
+	--rf-color-primary-hover: #6a1f1f;
+	--rf-color-primary-bg: color-mix(in oklch, var(--rf-color-primary) 10%, transparent);
+	--rf-color-on-primary: #fbf7ef;
+	--rf-color-on-accent: #fbf7ef;
+	--rf-color-surface: #fbf7ee;
+	--rf-color-surface-hover: #efe7d6;
+	--rf-color-surface-active: #e6dcc6;
+	--rf-color-surface-raised: #ffffff;
+	--rf-color-info: #3a5a78;
+	--rf-color-info-bg: #e7edf3;
+	--rf-color-info-border: #c2d0dd;
+	--rf-color-warning: #8a5a18;
+	--rf-color-warning-bg: #f3e8d4;
+	--rf-color-warning-border: #ddc59c;
+	--rf-color-danger: #8a2b2b;
+	--rf-color-danger-bg: #f3dede;
+	--rf-color-danger-border: #ddb4b4;
+	--rf-color-success: #3a6a44;
+	--rf-color-success-bg: #e2ece2;
+	--rf-color-success-border: #b9d2bb;
+	--rf-color-code-bg: #efe7d6;
+	--rf-color-code-text: #211b14;
+	--rf-color-code-inline-bg: #e9e0cd;
+	--rf-color-inline-code-bg: #e9e0cd;
+	--rf-color-line-highlight: color-mix(in srgb, var(--rf-color-primary) 8%, transparent);
+	--rf-color-line-highlight-rail: var(--rf-color-primary);
+	--rf-color-line-number: var(--rf-color-muted);
+	/* Shape — square, editorial. */
+	--rf-radius-sm: 0px;
+	--rf-radius-md: 0px;
+	--rf-radius-lg: 0px;
+	--rf-radius-full: 0px;
+	--rf-radius-container: 0px;
+	--rf-radius-media: 0px;
+	/* Spacing — slightly roomier editorial rhythm. */
+	--rf-spacing-xs: 0.25rem;
+	--rf-spacing-sm: 0.5rem;
+	--rf-spacing-snug: 0.75rem;
+	--rf-spacing-cozy: 1rem;
+	--rf-spacing-md: 1.5rem;
+	--rf-spacing-lg: 2rem;
+	--rf-spacing-xl: 3rem;
+	--rf-spacing-2xl: 4rem;
+	--rf-spacing-section: 4.5rem;
+	--rf-spacing-section-tight: 1.5rem;
+	--rf-spacing-section-loose: 7rem;
+	--rf-spacing-section-breathe: 10rem;
+	--rf-inset-flush: 0;
+	--rf-inset-tight: 1rem;
+	--rf-inset-loose: 4rem;
+	--rf-inset-breathe: 8rem;
+	/* Layout dimensions — the fallback-less tokens the skeleton requires every
+	 * theme to fill (content column + drawer/gallery gutters). Editorial register:
+	 * a narrower measure for a single reading column, flush gallery edges. */
+	--rf-content-max: 68rem;
+	--rf-content-gutter: 2rem;
+	--rf-drawer-gutter: var(--rf-spacing-sm);
+	--rf-gallery-edge: 0px;
+	/* Surface — flat: no shadows, no inset well. */
+	--rf-shadow-none: none;
+	--rf-shadow-xs: none;
+	--rf-shadow-sm: none;
+	--rf-shadow-md: none;
+	--rf-shadow-lg: none;
+	--rf-surface-inset-shift: 0;
+	/* Code syntax — muted editorial ink. */
+	--rf-syntax-keyword: #8a2b2b;
+	--rf-syntax-function: #3a5a78;
+	--rf-syntax-string: #3a6a44;
+	--rf-syntax-constant: #8a5a18;
+	--rf-syntax-comment: #9a8f7a;
+	--rf-syntax-punctuation: #6f6554;
+	--rf-syntax-variable: #211b14;
+	--rf-syntax-token-keyword: #8a2b2b;
+	--rf-syntax-token-tag: #8a2b2b;
+	--rf-syntax-token-function: #3a5a78;
+	--rf-syntax-token-link: #3a5a78;
+	--rf-syntax-token-type: #3a5a78;
+	--rf-syntax-token-attribute: #3a5a78;
+	--rf-syntax-token-string: #3a6a44;
+	--rf-syntax-token-string-expression: #3a6a44;
+	--rf-syntax-token-regex: #3a6a44;
+	--rf-syntax-token-constant: #8a5a18;
+	--rf-syntax-token-number: #8a5a18;
+	--rf-syntax-token-comment: #9a8f7a;
+	--rf-syntax-token-punctuation: #6f6554;
+	--rf-syntax-token-operator: #6f6554;
+	--rf-syntax-token-parameter: #211b14;
+	--rf-syntax-token-property: #211b14;
+	--rf-syntax-foreground: #211b14;
+	--rf-syntax-background: #efe7d6;
+}
+
+/* Dark editorial — ink paper. Mirrors the dark-mode token contract (the tint
+ * rune + media query trigger [data-theme="dark"] / [data-color-scheme="dark"]). */
+[data-theme="dark"],
+[data-color-scheme="dark"] {
+	--rf-color-text: #ece3d2;
+	--rf-color-muted: #9a8f7a;
+	--rf-color-border: #3a342a;
+	--rf-color-bg: #1a1610;
+	--rf-color-primary: #d98a8a;
+	--rf-color-primary-hover: #e6a3a3;
+	--rf-color-on-primary: #1a1610;
+	--rf-color-on-accent: #1a1610;
+	--rf-color-surface: #221d16;
+	--rf-color-surface-hover: #2c261d;
+	--rf-color-surface-active: #352e23;
+	--rf-color-surface-raised: #261f17;
+	--rf-color-code-bg: #221d16;
+	--rf-color-code-text: #ece3d2;
+	--rf-color-code-inline-bg: #2c261d;
+	--rf-color-inline-code-bg: #2c261d;
+	--rf-color-info: #8fb0cc;
+	--rf-color-warning: #d4a868;
+	--rf-color-danger: #d98a8a;
+	--rf-color-success: #84b894;
+	--rf-syntax-foreground: #ece3d2;
+	--rf-syntax-background: #221d16;
+}
+
+/* Hint + accordion glyphs — reuse the framework's registry masks (glyph shapes
+ * are content, surfaced as --rf-icon-* mask custom properties; a proof skin need
+ * not re-draw them). */
+:root {
+--rf-icon-hint-note: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%2210%22%2F%3E%3Cline%20x1%3D%2212%22%20y1%3D%2216%22%20x2%3D%2212%22%20y2%3D%2212%22%2F%3E%3Cline%20x1%3D%2212%22%20y1%3D%228%22%20x2%3D%2212.01%22%20y2%3D%228%22%2F%3E%3C%2Fsvg%3E");
+	--rf-icon-hint-warning: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M10.29%203.86L1.82%2018a2%202%200%200%200%201.71%203h16.94a2%202%200%200%200%201.71-3L13.71%203.86a2%202%200%200%200-3.42%200z%22%2F%3E%3Cline%20x1%3D%2212%22%20y1%3D%229%22%20x2%3D%2212%22%20y2%3D%2213%22%2F%3E%3Cline%20x1%3D%2212%22%20y1%3D%2217%22%20x2%3D%2212.01%22%20y2%3D%2217%22%2F%3E%3C%2Fsvg%3E");
+	--rf-icon-hint-caution: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%2210%22%2F%3E%3Cline%20x1%3D%2215%22%20y1%3D%229%22%20x2%3D%229%22%20y2%3D%2215%22%2F%3E%3Cline%20x1%3D%229%22%20y1%3D%229%22%20x2%3D%2215%22%20y2%3D%2215%22%2F%3E%3C%2Fsvg%3E");
+	--rf-icon-hint-check: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M22%2011.08V12a10%2010%200%201%201-5.93-9.14%22%2F%3E%3Cpolyline%20points%3D%2222%204%2012%2014.01%209%2011.01%22%2F%3E%3C%2Fsvg%3E");
+	--rf-icon-accordion-chevron: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%229%2018%2015%2012%209%206%22%2F%3E%3C%2Fsvg%3E");
+}
+
+}
