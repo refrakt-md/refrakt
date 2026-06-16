@@ -40,3 +40,8 @@
  * loader before base.css), so it has no skin remainder to import here (WORK-438). */
 @import './styles/dimensions/checklist.css';
 @import './styles/dimensions/sequence.css';
+/* Motion is a universal dimension (keys on [data-reveal]/[data-animate], not a
+ * rune block), so it must live in this no-runes base entry — the one the
+ * production loader imports. In index.css only, motion ships in dev (full
+ * barrel) but vanishes from builds (base.css + tree-shaken rune blocks). */
+@import './styles/dimensions/motion.css';
