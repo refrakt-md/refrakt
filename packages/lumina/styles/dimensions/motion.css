@@ -54,8 +54,7 @@
 			filter    var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out);
 	}
 
-	/* Pre-entrance (hidden) — until the unit's trigger fires. Reverting to the
-	 * default visible state when `data-in-view` lands is what plays the entrance. */
+	/* Pre-entrance (hidden) — until the unit's trigger fires. */
 	[data-animate] :where(
 		[data-reveal]:not([data-reveal="none"]):not([data-stagger]):not([data-in-view]),
 		[data-stagger]:not([data-reveal="none"]):not([data-in-view]) [style*="--rf-reveal-index"]
@@ -64,6 +63,21 @@
 		translate: var(--reveal-x) var(--reveal-y);
 		scale: var(--reveal-scale);
 		filter: blur(var(--reveal-blur));
+	}
+
+	/* Revealed (resting) — explicit IDENTITY values, never the `none` default.
+	 * This is what makes the entrance interpolate in WebKit: Safari does not
+	 * transition `translate`/`scale`/`filter` to-or-from `none`, so reverting to
+	 * the default would snap (no motion on iOS) — only opacity would animate.
+	 * Transitioning between two explicit values animates everywhere. */
+	[data-animate] :where(
+		[data-reveal]:not([data-reveal="none"]):not([data-stagger])[data-in-view],
+		[data-stagger][data-in-view] [style*="--rf-reveal-index"]
+	) {
+		opacity: 1;
+		translate: 0 0;
+		scale: 1;
+		filter: blur(0);
 	}
 
 	/* Stagger — each child's entrance offset from the container's single in-view
@@ -78,6 +92,9 @@
 	 * a theme adds or drops this freely. */
 	[data-animate] [data-reveal="slide"]:not([data-stagger]):not([data-in-view]) > * > [data-section="media"] {
 		translate: 0 calc(var(--rf-reveal-distance, 1.5rem) * 1.5);
+	}
+	[data-animate] [data-reveal="slide"]:not([data-stagger])[data-in-view] > * > [data-section="media"] {
+		translate: 0 0;  /* explicit identity end-state — see the WebKit note above */
 	}
 	[data-animate] [data-reveal="slide"]:not([data-stagger]) > * > [data-section="media"] {
 		transition: translate var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out);
