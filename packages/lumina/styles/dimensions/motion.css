@@ -16,26 +16,22 @@
  * in-view immediately. */
 
 @layer skin {
-	/* Physics tokens — the theme's to retune; the only knobs a calm vs punchy
-	 * theme turns. (Dimension-scoped, like state.css's animation values.) */
-	:root {
-		--rf-reveal-duration: 1.3s;
-		--rf-reveal-easing: cubic-bezier(0.16, 1, 0.3, 1);
-		--rf-reveal-distance: 2rem;     /* `slide` travel */
-		--rf-reveal-scale-start: 0.94;  /* `scale` entrance start */
-		--rf-reveal-blur: 8px;          /* `blur` entrance start */
-		--rf-reveal-stagger: 220ms;     /* per-child cascade interval */
-	}
+	/* Physics tokens (`--rf-reveal-duration` / `-easing` / `-distance` /
+	 * `-scale-start` / `-blur` / `-stagger`) are part of the theme TokenContract
+	 * (SPEC-105), defined in `src/tokens.ts` and emitted into `tokens/base.css`.
+	 * A site retunes the feel via `refrakt.config.json` `theme.tokens.reveal.*`;
+	 * this file only *consumes* them. The fallbacks below keep motion sensible if a
+	 * theme ships this stylesheet without the reveal token group. */
 
 	/* Per-character offsets — set on the `[data-reveal]` container and inherited by
 	 * staggered children, so the single hidden-state block below covers every
 	 * character. `none` carries no offsets (it never animates). */
 	[data-reveal="fade"]  { --reveal-x: 0; --reveal-y: 0;                      --reveal-scale: 1;                       --reveal-blur: 0; }
-	[data-reveal="slide"] { --reveal-x: 0; --reveal-y: var(--rf-reveal-distance); --reveal-scale: 1;                    --reveal-blur: 0; }
-	[data-reveal="scale"] { --reveal-x: 0; --reveal-y: 0;                      --reveal-scale: var(--rf-reveal-scale-start); --reveal-blur: 0; }
+	[data-reveal="slide"] { --reveal-x: 0; --reveal-y: var(--rf-reveal-distance, 1.5rem); --reveal-scale: 1;             --reveal-blur: 0; }
+	[data-reveal="scale"] { --reveal-x: 0; --reveal-y: 0;                      --reveal-scale: var(--rf-reveal-scale-start, 0.95); --reveal-blur: 0; }
 	/* `blur` is focus-led; it animates `filter` (not compositor-cheap), so a theme
 	 * or low-power path may downgrade it to `fade` by zeroing the blur token. */
-	[data-reveal="blur"]  { --reveal-x: 0; --reveal-y: 0;                      --reveal-scale: 1;                       --reveal-blur: var(--rf-reveal-blur); }
+	[data-reveal="blur"]  { --reveal-x: 0; --reveal-y: 0;                      --reveal-scale: 1;                       --reveal-blur: var(--rf-reveal-blur, 8px); }
 
 	/* The animated unit:
 	 *   • non-staggered → the `[data-reveal]` element itself,
@@ -52,10 +48,10 @@
 		[data-stagger]:not([data-reveal="none"]) [style*="--rf-reveal-index"]
 	) {
 		transition:
-			opacity   var(--rf-reveal-duration) var(--rf-reveal-easing),
-			translate var(--rf-reveal-duration) var(--rf-reveal-easing),
-			scale     var(--rf-reveal-duration) var(--rf-reveal-easing),
-			filter    var(--rf-reveal-duration) var(--rf-reveal-easing);
+			opacity   var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out),
+			translate var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out),
+			scale     var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out),
+			filter    var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out);
 	}
 
 	/* Pre-entrance (hidden) — until the unit's trigger fires. Reverting to the
@@ -73,7 +69,7 @@
 	/* Stagger — each child's entrance offset from the container's single in-view
 	 * trigger by its engine-stamped index against the interval token. */
 	[data-animate] [data-stagger][data-in-view] [style*="--rf-reveal-index"] {
-		transition-delay: calc(var(--rf-reveal-index) * var(--rf-reveal-stagger));
+		transition-delay: calc(var(--rf-reveal-index) * var(--rf-reveal-stagger, 140ms));
 	}
 
 	/* Per-part choreography (opt-in polish, not required): on a non-staggered
@@ -81,9 +77,9 @@
 	 * two-part entrance. Demonstrated on the named anatomy the theme already styles;
 	 * a theme adds or drops this freely. */
 	[data-animate] [data-reveal="slide"]:not([data-stagger]):not([data-in-view]) > * > [data-section="media"] {
-		translate: 0 calc(var(--rf-reveal-distance) * 1.5);
+		translate: 0 calc(var(--rf-reveal-distance, 1.5rem) * 1.5);
 	}
 	[data-animate] [data-reveal="slide"]:not([data-stagger]) > * > [data-section="media"] {
-		transition: translate var(--rf-reveal-duration) var(--rf-reveal-easing);
+		transition: translate var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out);
 	}
 }

@@ -84,6 +84,11 @@ const TOKEN_CONTRACT_SHAPE: Record<string, ContractNode> = {
 		// and string→string-expression auto-derive defaults.
 		link: 'leaf', 'string-expression': 'leaf',
 	},
+	// SPEC-105 — scroll-reveal motion physics (optional group).
+	reveal: {
+		duration: 'leaf', easing: 'leaf', distance: 'leaf',
+		'scale-start': 'leaf', blur: 'leaf', stagger: 'leaf',
+	},
 };
 
 /** A single validation problem found in a config. */

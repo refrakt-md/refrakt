@@ -45,6 +45,22 @@ The theme owns the physics as tokens. A "calm" theme and a "punchy" theme differ
 | `--rf-reveal-blur` | `8px` | `blur` entrance start (set `0` to downgrade to `fade`) |
 | `--rf-reveal-stagger` | `220ms` | per-child cascade interval |
 
+These are part of the theme's **token contract** (the `reveal` group), so they layer like any other token: a theme sets them in its token source, and a **site retunes the feel in `refrakt.config.json`** — no CSS, no theme fork — exactly as it would `color` or `radius`:
+
+```jsonc
+// refrakt.config.json → sites.<site>.theme
+{
+  "theme": {
+    "package": "@refrakt-md/lumina",
+    "tokens": {
+      "reveal": { "duration": "1.6s", "stagger": "260ms" }
+    }
+  }
+}
+```
+
+The override is validated against the contract at build time (an unknown key like `reveal.speed` fails the build). This is the only sanctioned way to change the *physics* site-wide — note it's a **project/theme** decision, never a per-section author one (a content author still only picks the *character*: `reveal="fade"`).
+
 ## How the dimension CSS works
 
 The stylesheet keys on **generic hooks**, never a rune's structure, so it covers core, community, and custom runes from one place.

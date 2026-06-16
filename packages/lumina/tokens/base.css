@@ -90,6 +90,12 @@
 	--rf-syntax-comment: #8a857d;
 	--rf-syntax-punctuation: #6b6661;
 	--rf-syntax-variable: #1c1a17;
+	--rf-reveal-duration: 1.3s;
+	--rf-reveal-easing: cubic-bezier(0.16, 1, 0.3, 1);
+	--rf-reveal-distance: 2rem;
+	--rf-reveal-scale-start: 0.94;
+	--rf-reveal-blur: 8px;
+	--rf-reveal-stagger: 220ms;
 	--rf-syntax-token-keyword: #2a5c63;
 	--rf-syntax-token-tag: #2a5c63;
 	--rf-syntax-token-function: #4a3b6e;
