@@ -3,7 +3,7 @@
 # Media Runes — Specification
 
 Playlist, track, and audio rune content models, compact format, and player integration
-Related: Unbuilt Runes Spec, Sandbox Futures (audio visualisation synergy)
+Related: Unbuilt Runes Spec, Sandbox Futures (audio visualisation synergy), {% ref "SPEC-104" /%} (bg-layer backdrop sandboxes subscribe to this bridge)
 
 ---
 
@@ -936,6 +936,12 @@ audio.onTrackChange((event) => {
 ```
 
 This lets the sandbox reset its visual state (clear particles, reset colours, update displayed metadata) when the track changes rather than discovering the change from a frame where `track` suddenly has a new value.
+
+### Backdrop subscribers ({% ref "SPEC-104" /%})
+
+A subscribing sandbox need not be a co-located media guest. {% ref "SPEC-104" /%} lets a `sandbox` run as a **bg-layer backdrop** — a full-bleed visualiser behind a page's content, in the `backdrop` posture (mounted and running, but `pointer-events: none` and non-interactive). Such a backdrop is an ordinary bridge subscriber: it lives in its own iframe, so the same `postMessage` frame stream and `audio.onFrame` / `onTrackChange` API reach it unchanged — the bridge is transport-agnostic about *where* the iframe sits.
+
+The difference is binding. A co-located guest names its data with `source="…"`; a bg backdrop is typically a **named scene** applied across pages via the layout cascade ({% ref "SPEC-104" /%} §5–§6), so it has no per-page `source`. The page's own `audio`/`playlist` player is the producer, and the layout-shared backdrop is the consumer — one named scene reacting to each post's mixtape. The producer-side contract is identical (analyse, stream while playing + subscribed, disconnect when no listeners); only the subscriber-discovery side must accept a bg-layer iframe that wasn't bound by an explicit `source`. The bridge itself is unchanged.
 
 ---
 
