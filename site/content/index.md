@@ -2,7 +2,7 @@
 title: refrakt.md
 description: A content framework built on Markdoc with 100+ semantic runes
 ---
-{% hero align="left" spacing="tight" media-position="end" collapse="lg" %}
+{% hero align="left" spacing="tight" media-position="end" collapse="lg" reveal="fade" %}
 {% codegroup overflow="wrap" title="index.md" %}
 {% snippet path=$file.path lines="5-23" lang="markdoc" /%}
 {% /codegroup %}
@@ -22,7 +22,7 @@ npm create refrakt
 - [Get Started](/docs/getting-started)
 {% /hero %}
 
-{% feature align="left" spacing="loose" %}
+{% feature align="left" spacing="loose" reveal="slide" stagger=true %}
 The framework
 ## Why refrakt.md?
 
@@ -53,7 +53,7 @@ Markdown is powerful but limited. Runes extend it with semantic structure — wi
   Runes transform at the Markdoc level, producing a generic tag tree. Your content stays decoupled from presentation — adapters for SvelteKit, Astro, Next.js, Nuxt, Eleventy, and plain HTML.
 {% /feature %}
 
-{% feature media-position="end" align="left" media-ratio="1/2" valign="center" collapse="md" spacing="flush" %}
+{% feature media-position="end" align="left" media-ratio="1/2" valign="center" collapse="md" spacing="flush" reveal="scale" %}
 {% juxtapose %}
 
 {% sandbox src="profile-card" framework="tailwind" tint-mode="light" %}{% /sandbox %}
@@ -71,7 +71,7 @@ Composable by design
 The `sandbox` rune renders code fences as live previews in isolated iframes. Drop two of them inside a `juxtapose` and you get an interactive light-vs-dark comparison — no custom code. Each rune handles its own job while combining into something greater than the parts.
 {% /feature %}
 
-{% feature align="left" %}
+{% feature align="left" reveal="fade" %}
 {% preview source=true width="content" %}
 {% recipe prepTime="PT5M" servings=1 difficulty="easy" media-position="start" collapse="md" %}
 ![A tequila sunrise cocktail](https://assets.refrakt.md/tequila-sunrise.png)
@@ -103,7 +103,7 @@ Built-in SEO
 Every rune can emit Schema.org JSON-LD automatically. Write a `recipe` in Markdown — headings, lists, paragraphs — and the framework extracts Recipe schema, ingredient lists, and step instructions without any manual wiring.
 {% /feature %}
 
-{% feature spacing="tight" tint-mode="auto" align="left" %}
+{% feature spacing="tight" tint-mode="auto" align="left" reveal="slide" stagger=true %}
 9 packages, 100+ runes
 ## A rune for every domain
 
@@ -147,13 +147,13 @@ Core ships with essentials like `hint`, `tabs`, and `accordion`. Community packa
   `spec`, `work`, `bug`, `decision`, `milestone`
 {% /feature %}
 
-{% testimonial variant="quote" spacing="breathe" width="content" %}
+{% testimonial variant="quote" spacing="breathe" width="content" reveal="blur" %}
 > Once you see content through the refrakt lens, plain Markdown starts feeling like it's leaving so much on the table.
 
 **Claude Opus** — AI, Anthropic
 {% /testimonial %}
 
-{% cta spacing="breathe" %}
+{% cta spacing="breathe" reveal="fade" %}
 
 ## Ready to get started?
 
