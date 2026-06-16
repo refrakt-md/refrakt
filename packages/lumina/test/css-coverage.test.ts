@@ -83,12 +83,15 @@ const DIMENSIONS_DIR = join(__dirname, '..', 'styles', 'dimensions');
 // Coverage must scan both homes so a selector moved to the skeleton's structure
 // layer still counts as styled.
 const SKELETON_DIMENSIONS_DIR = join(__dirname, '..', '..', 'skeleton', 'styles', 'dimensions');
+const SKELETON_RUNES_DIR = join(__dirname, '..', '..', 'skeleton', 'styles', 'runes');
 const dimensionDirs = [DIMENSIONS_DIR, SKELETON_DIMENSIONS_DIR].filter(d => existsSync(d));
+// Per-rune structure promoted to the skeleton package counts toward block coverage.
+const runeDirs = [CSS_DIR, SKELETON_RUNES_DIR].filter(d => existsSync(d));
 
 /** Parse all CSS files and collect every .rf-* class selector */
 function parseAllCssSelectors(): Set<string> {
 	const selectors = new Set<string>();
-	const dirs = [CSS_DIR, ...dimensionDirs];
+	const dirs = [...runeDirs, ...dimensionDirs];
 
 	for (const dir of dirs) {
 		const files = readdirSync(dir).filter(f => f.endsWith('.css'));

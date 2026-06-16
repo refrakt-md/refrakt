@@ -41,3 +41,7 @@
 
 /* ── Layout structure ── */
 @import './styles/layouts/split.css' layer(skeleton);
+
+/* ── Rune structure ── */
+@import './styles/runes/card.css' layer(skeleton);
+@import './styles/runes/hint.css' layer(skeleton);
