@@ -1,4 +1,4 @@
-{% work id="WORK-431" status="ready" priority="high" complexity="moderate" source="SPEC-105" milestone="v0.24.0" tags="motion,animation,engine,transform,runes" %}
+{% work id="WORK-431" status="in-progress" priority="high" complexity="moderate" source="SPEC-105" milestone="v0.24.0" tags="motion,animation,engine,transform,runes" %}
 
 # `reveal`/`stagger` engine facet
 
