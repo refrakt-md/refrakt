@@ -43,9 +43,13 @@
 .rf-playlist__tracks [data-name="track-meta"] {
 	flex-shrink: 0;
 }
-.rf-playlist__media img {
-	aspect-ratio: 1;
-	object-fit: cover;
+/* Cover aspect — defaults to square (album convention). Authors override via
+ * `frame-aspect="..."`; the engine lands `--frame-aspect` on the media zone
+ * (frameTarget defaults to 'media' since playlist has a media section), and
+ * the global `[data-section="media"] > :is(img, video)` rule already fills
+ * the zone with the image (height: 100%, object-fit: cover). */
+.rf-playlist > [data-section="media"] {
+	aspect-ratio: var(--frame-aspect, 1);
 }
 @media (max-width: 480px) {
 	.rf-playlist__tracks [data-name="track-artist"],
