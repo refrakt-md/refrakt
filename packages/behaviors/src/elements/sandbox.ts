@@ -47,6 +47,11 @@ export class RfSandbox extends SafeHTMLElement {
 	private _poster = '';
 	private _activated = false;
 	private _io: IntersectionObserver | null = null;
+	// SPEC-104 — bg-layer backdrop: mount on-screen, suspend off-screen / on a
+	// hidden tab, never mount under reduced motion (the bg boot frame stands in).
+	private _backdrop = false;
+	private _onScreen = false;
+	private _visHandler: (() => void) | null = null;
 	// Cached values for iframe rebuild on theme change
 	private _content = '';
 	private _framework = '';
@@ -88,6 +93,15 @@ export class RfSandbox extends SafeHTMLElement {
 		const tokensAttr = this.dataset.designTokens;
 		this._tokens = tokensAttr ? JSON.parse(tokensAttr) : RfContext.designTokens;
 
+		// SPEC-104 — a bg-layer backdrop overrides the activation modes: it mounts
+		// only while on-screen and suspends off-screen / on a hidden tab, and never
+		// mounts under reduced motion (the bg boot frame is the static stand-in).
+		this._backdrop = this.dataset.guestPosture === 'backdrop';
+		if (this._backdrop) {
+			this.initBackdrop();
+			return;
+		}
+
 		// Non-eager sandboxes show a poster and defer the iframe (and all its
 		// dependency downloads) until activated — nothing loads early.
 		if (this._activation !== 'eager') {
@@ -113,7 +127,9 @@ export class RfSandbox extends SafeHTMLElement {
 	private activate() {
 		if (this._activated) return;
 		this._activated = true;
-		if (this._io) { this._io.disconnect(); this._io = null; }
+		// A backdrop keeps its observer alive so it can suspend again off-screen;
+		// every other activation mode is one-shot and releases the observer.
+		if (this._io && !this._backdrop) { this._io.disconnect(); this._io = null; }
 
 		this.buildIframe(this.effectiveTheme());
 
@@ -191,6 +207,50 @@ export class RfSandbox extends SafeHTMLElement {
 		}
 	}
 
+	/** SPEC-104 — wire a bg-layer backdrop. Under reduced motion it never mounts
+	 *  (the bg boot frame is the complete static representation). Otherwise an
+	 *  IntersectionObserver mounts it on-screen and suspends it off-screen, and a
+	 *  visibilitychange listener suspends it on a hidden tab — so a long page never
+	 *  drives an unseen scene. */
+	private initBackdrop() {
+		const reduce = typeof matchMedia === 'function'
+			&& matchMedia('(prefers-reduced-motion: reduce)').matches;
+		if (reduce) return; // boot frame stands in — never mount the live scene
+
+		this._visHandler = () => {
+			if (document.hidden) this.suspend();
+			else if (this._onScreen) this.activate();
+		};
+		document.addEventListener('visibilitychange', this._visHandler);
+
+		if (typeof IntersectionObserver === 'undefined') {
+			this._onScreen = true;
+			this.activate();
+			return;
+		}
+		this._io = new IntersectionObserver((entries) => {
+			this._onScreen = entries.some((e) => e.isIntersecting);
+			if (this._onScreen && !document.hidden) this.activate();
+			else this.suspend();
+		}, { rootMargin: '200px' });
+		this._io.observe(this);
+	}
+
+	/** Tear the live scene down (off-screen / hidden tab) so it stops running. The
+	 *  observer + visibility listener stay wired so it re-mounts when it returns. */
+	private suspend() {
+		if (!this._activated) return;
+		if (this.messageHandler) {
+			window.removeEventListener('message', this.messageHandler);
+			this.messageHandler = null;
+		}
+		if (this.themeCleanup) { this.themeCleanup(); this.themeCleanup = null; }
+		if (this.ancestorObserver) { this.ancestorObserver.disconnect(); this.ancestorObserver = null; }
+		this.iframe?.remove();
+		this.iframe = null;
+		this._activated = false;
+	}
+
 	disconnectedCallback() {
 		if (this.messageHandler) {
 			window.removeEventListener('message', this.messageHandler);
@@ -207,6 +267,10 @@ export class RfSandbox extends SafeHTMLElement {
 		if (this._io) {
 			this._io.disconnect();
 			this._io = null;
+		}
+		if (this._visHandler) {
+			document.removeEventListener('visibilitychange', this._visHandler);
+			this._visHandler = null;
 		}
 		this.iframe = null;
 	}

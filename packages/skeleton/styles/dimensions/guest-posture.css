@@ -17,3 +17,11 @@
 [data-section="media"][data-guest-posture="presentational"] :is(.rf-tabs__tabs, .rf-codegroup__tabs) {
 	display: none;
 }
+
+/* SPEC-104 — a `backdrop` guest (a live sandbox in the bg layer) is inert at the
+ * pointer: decoration behind content, never an interaction target. Unlike
+ * `presentational`, the behaviours layer still mounts it (it must run) — this rule
+ * only suppresses interaction. */
+[data-guest-posture="backdrop"] {
+	pointer-events: none;
+}

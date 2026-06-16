@@ -17,6 +17,14 @@
 	object-fit: cover;
 	object-position: var(--bg-position, center);
 }
+/* SPEC-104 — a live sandbox backdrop fills the bg layer like bg-video, beneath
+ * the overlay/scrim appended after it (which stack above by source order). */
+[data-name="bg"] > [data-bg-guest] {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
 [data-name="bg-overlay"] {
 	position: absolute;
 	inset: 0;
