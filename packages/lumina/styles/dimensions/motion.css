@@ -19,12 +19,12 @@
 	/* Physics tokens — the theme's to retune; the only knobs a calm vs punchy
 	 * theme turns. (Dimension-scoped, like state.css's animation values.) */
 	:root {
-		--rf-reveal-duration: 0.9s;
+		--rf-reveal-duration: 1.3s;
 		--rf-reveal-easing: cubic-bezier(0.16, 1, 0.3, 1);
-		--rf-reveal-distance: 1.5rem;   /* `slide` travel */
+		--rf-reveal-distance: 2rem;     /* `slide` travel */
 		--rf-reveal-scale-start: 0.94;  /* `scale` entrance start */
 		--rf-reveal-blur: 8px;          /* `blur` entrance start */
-		--rf-reveal-stagger: 140ms;     /* per-child cascade interval */
+		--rf-reveal-stagger: 220ms;     /* per-child cascade interval */
 	}
 
 	/* Per-character offsets — set on the `[data-reveal]` container and inherited by
