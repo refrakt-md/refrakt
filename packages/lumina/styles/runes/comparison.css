@@ -1,14 +1,9 @@
 @layer skin {
-/* Comparison */
+/* Comparison — skin. The grid passthroughs, scroll/sticky geometry, cards grid,
+ * card flex + badge positioning, and metadata hiding live in @refrakt-md/skeleton
+ * (styles/runes/comparison.css). */
 .rf-comparison {
 	margin: 2rem 0;
-}
-.rf-comparison__grid {
-	display: contents;
-}
-.rf-comparison-column__body,
-.rf-comparison-row__body {
-	display: contents;
 }
 .rf-comparison__title {
 	text-align: center;
@@ -17,12 +12,8 @@
 	font-weight: var(--rf-weight-bold);
 	color: var(--rf-color-text);
 }
-.rf-comparison > meta,
-.rf-comparison > span[property] { display: none; }
 /* Table layout */
 .rf-comparison__table-wrapper {
-	overflow-x: auto;
-	-webkit-overflow-scrolling: touch;
 	margin: 0 -1rem;
 	padding: 0 1rem;
 }
@@ -30,11 +21,6 @@
 	width: 100%;
 	border-collapse: collapse;
 	font-size: var(--rf-text);
-}
-.rf-comparison__table thead {
-	position: sticky;
-	top: 0;
-	z-index: 1;
 }
 .rf-comparison__table th,
 .rf-comparison__table td {
@@ -55,7 +41,6 @@
 	border-bottom-color: var(--rf-color-primary);
 }
 .rf-comparison__recommended-badge {
-	display: block;
 	font-size: var(--rf-text-xs);
 	font-weight: var(--rf-weight-semibold);
 	text-transform: uppercase;
@@ -64,7 +49,6 @@
 	margin-top: 0.25rem;
 }
 .rf-comparison__label-col {
-	width: 1%;
 	white-space: nowrap;
 }
 .rf-comparison__row-label {
@@ -81,7 +65,6 @@
 	background: color-mix(in srgb, var(--rf-color-primary) 3%, transparent);
 }
 .rf-comparison__cell p { margin: 0; font-size: var(--rf-text-sm); }
-.rf-comparison__cell strong { display: none; }
 .rf-comparison__cell em {
 	font-style: italic;
 	color: var(--rf-color-muted);
@@ -111,7 +94,6 @@
 }
 /* Callout badge */
 .rf-comparison__callout-badge {
-	display: inline-block;
 	background: color-mix(in srgb, var(--rf-color-primary) 10%, transparent);
 	color: var(--rf-color-primary);
 	font-size: var(--rf-text-xs);
@@ -122,17 +104,13 @@
 .rf-comparison__callout-badge p { margin: 0; font-size: inherit; }
 /* Cards layout */
 .rf-comparison__cards {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 	gap: 1.5rem;
-	align-items: start;
 }
 .rf-comparison-card {
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-md);
 	padding: 1.5rem;
 	background: var(--rf-color-bg);
-	position: relative;
 	transition: box-shadow 200ms ease, transform 200ms ease;
 }
 .rf-comparison-card:hover {
@@ -144,10 +122,6 @@
 	transform: scale(1.02);
 }
 .rf-comparison-card__badge {
-	position: absolute;
-	top: -0.625rem;
-	left: 50%;
-	transform: translateX(-50%);
 	background: var(--rf-color-primary);
 	color: white;
 	font-size: var(--rf-text-xs);
@@ -165,7 +139,6 @@
 	color: var(--rf-color-text);
 }
 .rf-comparison-card__rows {
-	list-style: none;
 	padding: 0;
 	margin: 0;
 }
@@ -174,13 +147,11 @@
 	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 	border-bottom: 1px solid var(--rf-color-border);
-	display: flex;
-	align-items: baseline;
 	gap: 0.5rem;
 }
 .rf-comparison-card__row:last-child { border-bottom: none; }
 .rf-comparison-card__row strong { color: var(--rf-color-text); white-space: nowrap; }
-.rf-comparison-card__row p { margin: 0; display: inline; }
+.rf-comparison-card__row p { margin: 0; }
 .rf-comparison-card__row--negative { opacity: 0.7; }
 .rf-comparison-card__row--callout {
 	border-bottom: none;
@@ -204,7 +175,6 @@
 .rf-comparison-row { padding: 0.25rem 0; }
 /* Responsive */
 @media (max-width: 640px) {
-	.rf-comparison__cards { grid-template-columns: 1fr; }
 	.rf-comparison-card--highlighted { transform: none; }
 	.rf-comparison__table { font-size: var(--rf-text-sm); }
 	.rf-comparison__table th,

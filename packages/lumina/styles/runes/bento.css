@@ -1,80 +1,12 @@
 @layer skin {
-/* Bento — a grid of cells, each a card-in-a-grid-track (SPEC-085). */
-
-/* The grid responds to its OWN width, not the viewport, so it reduces columns and
- * stacks correctly inside any container — a doc preview, a sidebar, a narrow page
- * track — not just at viewport breakpoints. The progressive-reduction and collapse
- * rules below are `@container rf-bento` queries against this. */
-.rf-bento {
-	container-type: inline-size;
-	container-name: rf-bento;
-}
+/* Bento — skin. A grid of cells, each a card-in-a-grid-track (SPEC-085). The
+ * container-query grid system, cell flex layout, media placement, sizing knobs,
+ * collapse queries, and the stretched link live in @refrakt-md/skeleton
+ * (styles/runes/bento.css). What remains here is skin: the grid gap, the cell
+ * surface chrome + spacing vars, the media-well chrome, type, and bleed resets. */
 
 .rf-bento__grid {
-	/* Effective column count: the author's `--bento-columns` (default 6),
-	 * progressively reduced at breakpoints below. A CSS variable (not the inline
-	 * `--bento-columns`) so the media queries can override it without !important. */
-	--bento-cols-effective: var(--bento-columns, 6);
-	display: grid;
-	grid-template-columns: repeat(var(--bento-cols-effective), 1fr);
-	/* Uniform fixed row tracks in grid mode — never tied to column width (which
-	 * would explode vertically on collapse). Makes row spans meaningful and bounds
-	 * tall guests instead of letting them balloon a row. When the grid collapses to
-	 * a single column it becomes a STACK, and `--bento-row-track` is flipped to
-	 * `auto` (below) so cells size to their content and text is never clipped.
-	 * `--bento-row-height` is the author's `row-height` preset (below); it falls
-	 * back to the theme default `--rf-bento-row-height`. */
-	grid-auto-rows: var(--bento-row-track, var(--bento-row-height, var(--rf-bento-row-height, 24rem)));
 	gap: var(--bento-gap, 1rem);
-}
-
-/* Author row-height presets — the uniform grid row track height (grid mode). */
-.rf-bento[data-row-height="sm"] { --bento-row-height: 16rem; }
-.rf-bento[data-row-height="md"] { --bento-row-height: 24rem; }
-.rf-bento[data-row-height="lg"] { --bento-row-height: 32rem; }
-.rf-bento[data-row-height="xl"] { --bento-row-height: 40rem; }
-
-/* content-height / media-ratio — perpendicular text-zone knobs, each settable as
- * a GRID default (on .rf-bento, inherited by every cell) or a per-CELL override
- * (on .rf-bento-cell, shadowing the inherited value). A cell is either a column
- * cell or a beside cell, so the two never collide:
- *   • column cells (top/bottom/no-media): `content-height` pins the TEXT height;
- *     the media zone (flex:1) absorbs the rest of the row track.
- *   • beside cells (start/end): `media-ratio` pins the MEDIA width; the content
- *     (flex:1) absorbs the rest of the cell width.
- * The cascade is pure CSS variable inheritance — grid sets the var on the
- * section, a cell redeclares it on itself. */
-.rf-bento[data-content-height="sm"], .rf-bento-cell[data-content-height="sm"] { --cell-content-height: 6rem; --cell-content-overflow: hidden; }
-.rf-bento[data-content-height="md"], .rf-bento-cell[data-content-height="md"] { --cell-content-height: 10rem; --cell-content-overflow: hidden; }
-.rf-bento[data-content-height="lg"], .rf-bento-cell[data-content-height="lg"] { --cell-content-height: 14rem; --cell-content-overflow: hidden; }
-.rf-bento[data-content-height="xl"], .rf-bento-cell[data-content-height="xl"] { --cell-content-height: 18rem; --cell-content-overflow: hidden; }
-
-.rf-bento[data-media-ratio="1/3"], .rf-bento-cell[data-media-ratio="1/3"] { --cell-media-ratio: 33.333%; }
-.rf-bento[data-media-ratio="2/5"], .rf-bento-cell[data-media-ratio="2/5"] { --cell-media-ratio: 40%; }
-.rf-bento[data-media-ratio="1/2"], .rf-bento-cell[data-media-ratio="1/2"] { --cell-media-ratio: 50%; }
-.rf-bento[data-media-ratio="3/5"], .rf-bento-cell[data-media-ratio="3/5"] { --cell-media-ratio: 60%; }
-.rf-bento[data-media-ratio="2/3"], .rf-bento-cell[data-media-ratio="2/3"] { --cell-media-ratio: 66.667%; }
-
-/* content-height pins the text area on COLUMN cells only (top/bottom — and
- * no-media cells, which default to `top`). Positive selectors keep this at the
- * same specificity as the mobile/collapse stack resets below, so those still win
- * and the text area returns to natural height when stacked. Both the basis and
- * the clip are gated on content-height being set (via the cascading vars): when
- * unset they fall back to `auto` / `visible`, so the content zone keeps its
- * default overflow and a bleeding showcase (negative margins) still reaches the
- * cell edge. The clip only engages when you actually pin the height. */
-.rf-bento-cell[data-media-position="top"] > .rf-bento-cell__content,
-.rf-bento-cell[data-media-position="bottom"] > .rf-bento-cell__content {
-	flex-basis: var(--cell-content-height, auto);
-	overflow: var(--cell-content-overflow, visible);
-}
-
-/* Cell footprint: resolved `cols`/`rows` spans, auto-capped to the effective
- * column count so a wide cell never overflows the (reduced) grid. */
-.rf-bento-cell {
-	grid-column: span min(var(--cell-cols, 1), var(--bento-cols-effective, 6));
-	grid-row: span var(--cell-rows, 1);
-	min-width: 0;
 }
 
 /* The cell. `:where()` keeps the background at zero specificity so a per-cell
@@ -84,106 +16,51 @@
 }
 .rf-bento-cell {
 	border-radius: var(--rf-radius-container);
-	/* The cell hugs its media with only a thin edge margin; the content zone adds
-	 * the remaining inset back (below), so copy still sits at the full padding
-	 * while media — and a media banner — sits close to the cell border.
-	 * `--bento-media-gap` is the always-on space between media and content (in any
-	 * `data-media-position`), regardless of cell size; the flex gap handles both
-	 * column / column-reverse (top/bottom) and row / row-reverse (start/end). */
+	/* Thin-edge inset model: the cell hugs its media with a thin edge; the content
+	 * zone adds the remaining inset back (below). */
 	--container-padding: 1.25rem;
 	--bento-cell-edge: 0.5rem;
 	--bento-media-gap: var(--rf-spacing-md);
 	padding: var(--bento-cell-edge);
 	border: 1px solid var(--rf-color-border);
-	overflow: hidden;
-	position: relative; /* anchor for the stretched link */
-	display: flex;
-	flex-direction: column;
 	gap: var(--bento-media-gap);
-	min-height: 0;
 }
 
-/* Media slot shares the cell surface chrome (1px border + recessed well). Lives
- * here (not dimensions/surfaces.css) because bento-cell is a hand-rolled surface
- * outside the `data-elevation` axis; `:where()` keeps it overridable per-cell,
- * matching the elevation rule. */
+/* Media slot shares the cell surface chrome (1px border + recessed well). */
 :where(.rf-bento-cell) [data-section="media"] {
 	border: 1px solid var(--rf-color-border);
 	background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
 }
 
-/* Media placement (data-media-position): top stacks media above content (the
- * default flow order); bottom flips it; start/end place media beside the body. */
-.rf-bento-cell[data-media-position="bottom"] { flex-direction: column-reverse; }
-.rf-bento-cell[data-media-position="start"] { flex-direction: row; align-items: stretch; }
-.rf-bento-cell[data-media-position="end"] { flex-direction: row-reverse; align-items: stretch; }
 .rf-bento-cell[data-media-position="start"] > .rf-bento-cell__media,
 .rf-bento-cell[data-media-position="end"] > .rf-bento-cell__media {
-	flex: 0 0 var(--cell-media-ratio, 42%);
 	margin-bottom: 0;
-	align-self: stretch;
 }
-.rf-bento-cell[data-media-position="start"] > .rf-bento-cell__content,
-.rf-bento-cell[data-media-position="end"] > .rf-bento-cell__content { flex: 1; min-width: 0; }
 
-/* Zones. The WORK-339 media-zone selector sizes/clips any guest — no per-guest
- * CSS here. */
 .rf-bento-cell__media { margin-bottom: 0; }
-/* Text-first: the body keeps its natural height and is never squeezed out by
- * media. In a fixed grid track the media zone (top/bottom) absorbs the leftover
- * height and crops (cover); once collapsed to a stack it becomes an aspect-ratio
- * banner (below). `--bento-media-aspect` is the knob SPEC-086's `frame-aspect`
- * will drive; `--bento-media-anchor` picks which slice shows when cropped (e.g.
- * `top` to peek the top of a tall guest like a phone mockup). */
+
 /* Add the remaining inset back on top of the cell's thin edge, so text sits at
- * the full `--container-padding`. The top inset doubles as the gap between media
- * and copy (media zone carries no margin of its own). */
+ * the full `--container-padding`. */
 .rf-bento-cell__content {
-	display: flex;
-	flex-direction: column;
-	min-height: 0;
-	flex: 0 0 auto;
 	padding: calc(var(--container-padding) - var(--bento-cell-edge));
 }
-.rf-bento-cell[data-media-position="top"] > .rf-bento-cell__media,
-.rf-bento-cell[data-media-position="bottom"] > .rf-bento-cell__media {
-	flex: 1 1 auto;
-	min-height: 0;
-	aspect-ratio: var(--bento-media-aspect, 16 / 9);
-}
-.rf-bento-cell__media > :is(img, video) { object-position: var(--bento-media-anchor, center); }
-/* SPEC-086 — reconcile `frame` facets with bento's existing media vars rather
- * than duplicating them: frame-aspect/anchor (landed on the media zone by the
- * engine) feed the knobs bento already consumes (incl. the collapse path). */
-.rf-bento-cell__media[style*="--frame-aspect"] { --bento-media-aspect: var(--frame-aspect); }
-.rf-bento-cell__media[style*="--frame-anchor"] { --bento-media-anchor: var(--frame-anchor); }
 .rf-bento-cell__title {
 	font-size: var(--rf-text-lg);
 	font-weight: var(--rf-weight-semibold);
 	margin: 0 0 0.5rem;
 }
-.rf-bento-cell__body { min-height: 0; }
-.rf-bento-cell__body > span[property],
-.rf-bento-cell__body > meta { display: none; }
 .rf-bento-cell__body > :first-child { margin-top: 0; }
 .rf-bento-cell__body p:last-child { margin-bottom: 0; }
 .rf-bento-cell__footer {
-	margin-top: auto;
 	padding-top: 0.5rem;
 	border-top: 1px solid var(--rf-color-border);
 	font-size: 0.8125em;
 	color: var(--rf-color-muted);
 }
 .rf-bento-cell__body img {
-	width: 100%;
-	height: auto;
 	border-radius: var(--rf-radius-sm);
 	margin-bottom: 0.75rem;
 }
-
-/* Whole-cell link — stretched overlay; nested links stay clickable. */
-.rf-bento-cell__link { position: absolute; inset: 0; z-index: 0; }
-.rf-bento-cell a:not(.rf-bento-cell__link) { position: relative; z-index: 1; }
 
 /* Drop padding on bleed edges when a showcase bleeds (clipped to a peek by
  * the media-zone + cell overflow). */
@@ -196,37 +73,5 @@
 .rf-bento-cell:has(.rf-showcase[data-bleed="top"]),
 .rf-bento-cell:has(.rf-showcase[data-bleed="both"]),
 .rf-bento-cell:has(.rf-showcase[data-bleed="top-end"]) { padding-top: 0; }
-
-/* ─── Binary collapse ─── Above the chosen breakpoint, the grid renders exactly
- * as authored: `columns` and per-cell `cols`/`rows` are honored (span auto-cap
- * above still keeps wide cells inside the grid). Below it, the grid drops to a
- * single stacked column with auto row tracks (cells size to content, never
- * clipped). Default = `sm` (640px), so phones stack but tablet-portrait and up
- * keep the grid. Authors who want graceful column reduction between desktop and
- * stack can opt in via `collapse="gradual"` (not yet implemented). */
-@container rf-bento (max-width: 640px) {
-	/* `[data-collapse=""]` matches the unset (default) case — the engine emits
-	 * the attribute with an empty value when the author doesn't set it, so a bare
-	 * `:not([data-collapse])` wouldn't match. */
-	:is(.rf-bento[data-collapse="sm"], .rf-bento[data-collapse=""]) .rf-bento__grid { --bento-cols-effective: 1; --bento-row-track: auto; }
-	:is(.rf-bento[data-collapse="sm"], .rf-bento[data-collapse=""]) .rf-bento-cell[data-media-position="start"],
-	:is(.rf-bento[data-collapse="sm"], .rf-bento[data-collapse=""]) .rf-bento-cell[data-media-position="end"] { flex-direction: column; }
-	:is(.rf-bento[data-collapse="sm"], .rf-bento[data-collapse=""]) .rf-bento-cell[data-media-position] > .rf-bento-cell__media { flex: 0 0 auto; aspect-ratio: var(--bento-media-aspect, 16 / 9); }
-	:is(.rf-bento[data-collapse="sm"], .rf-bento[data-collapse=""]) .rf-bento-cell[data-media-position] > .rf-bento-cell__content { flex: 0 0 auto; }
-}
-@container rf-bento (max-width: 768px) {
-	.rf-bento[data-collapse="md"] .rf-bento__grid { --bento-cols-effective: 1; --bento-row-track: auto; }
-	.rf-bento[data-collapse="md"] .rf-bento-cell[data-media-position="start"],
-	.rf-bento[data-collapse="md"] .rf-bento-cell[data-media-position="end"] { flex-direction: column; }
-	.rf-bento[data-collapse="md"] .rf-bento-cell[data-media-position] > .rf-bento-cell__media { flex: 0 0 auto; aspect-ratio: var(--bento-media-aspect, 16 / 9); }
-	.rf-bento[data-collapse="md"] .rf-bento-cell[data-media-position] > .rf-bento-cell__content { flex: 0 0 auto; }
-}
-@container rf-bento (max-width: 1024px) {
-	.rf-bento[data-collapse="lg"] .rf-bento__grid { --bento-cols-effective: 1; --bento-row-track: auto; }
-	.rf-bento[data-collapse="lg"] .rf-bento-cell[data-media-position="start"],
-	.rf-bento[data-collapse="lg"] .rf-bento-cell[data-media-position="end"] { flex-direction: column; }
-	.rf-bento[data-collapse="lg"] .rf-bento-cell[data-media-position] > .rf-bento-cell__media { flex: 0 0 auto; aspect-ratio: var(--bento-media-aspect, 16 / 9); }
-	.rf-bento[data-collapse="lg"] .rf-bento-cell[data-media-position] > .rf-bento-cell__content { flex: 0 0 auto; }
-}
 
 }
