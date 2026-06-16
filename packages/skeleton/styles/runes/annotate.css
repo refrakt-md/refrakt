@@ -1,0 +1,55 @@
+/* annotate — structure. The body passthrough, the margin-note float, the inline /
+ * tooltip note display + the tooltip positioning + hover reveal, and the metadata
+ * hide. Type, colour, borders, spacing, and the `?` glyph stay skin (Lumina's
+ * styles/runes/annotate.css). */
+
+.rf-annotate__body { display: contents; }
+
+/* Margin style — float the note into the margin. */
+.rf-annotate--margin .rf-annotate-note {
+	float: right;
+	clear: right;
+	width: 40%;
+}
+
+/* Inline style */
+.rf-annotate--inline p { display: inline; }
+.rf-annotate--inline .rf-annotate-note {
+	display: inline-block;
+	vertical-align: baseline;
+}
+
+/* Tooltip style */
+.rf-annotate--tooltip .rf-annotate-note {
+	display: inline-block;
+	position: relative;
+	vertical-align: super;
+}
+.rf-annotate--tooltip .rf-annotate-note::before {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1rem;
+	height: 1rem;
+}
+.rf-annotate--tooltip .rf-annotate-note__body {
+	display: none;
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 16rem;
+	z-index: 10;
+}
+.rf-annotate--tooltip .rf-annotate-note:hover .rf-annotate-note__body {
+	display: block;
+}
+.rf-annotate-note__body > span[property],
+.rf-annotate-note__body > meta { display: none; }
+
+@media (max-width: 768px) {
+	.rf-annotate--margin .rf-annotate-note {
+		float: none;
+		width: 100%;
+	}
+}

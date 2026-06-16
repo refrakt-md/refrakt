@@ -1,0 +1,61 @@
+/* juxtapose — structure. The panel clip + relative positioning, the panel-label
+ * absolute placement, the media fill, the slider divider + handle positioning, the
+ * toggle-bar flex, and the meta/label hides. Radii, surface, chrome, glyphs, and
+ * the toggle-button styling stay skin (Lumina's styles/runes/juxtapose.css). */
+
+.rf-juxtapose__panels { overflow: hidden; }
+.rf-juxtapose-panel {
+	position: relative;
+	overflow: hidden;
+}
+.rf-juxtapose-panel__name {
+	position: absolute;
+	bottom: 0.5rem;
+	pointer-events: none;
+}
+.rf-juxtapose-panel:first-child .rf-juxtapose-panel__name { left: 0.5rem; }
+.rf-juxtapose-panel:last-child .rf-juxtapose-panel__name { right: 0.5rem; }
+.rf-juxtapose-panel__body :is(img, .rf-placeholder) {
+	display: block;
+	width: 100%;
+	height: auto;
+	object-fit: cover;
+}
+.rf-juxtapose-panel > meta { display: none; }
+.rf-juxtapose--toggle .rf-juxtapose-panel__name { display: none; }
+
+/* Slider divider (injected by behavior) */
+.rf-juxtapose__divider {
+	position: absolute;
+	z-index: 10;
+	touch-action: none;
+}
+.rf-juxtapose:not([data-orientation="horizontal"]) .rf-juxtapose__divider {
+	top: 0;
+	bottom: 0;
+	width: 3px;
+	transform: translateX(-50%);
+}
+.rf-juxtapose[data-orientation="horizontal"] .rf-juxtapose__divider {
+	left: 0;
+	right: 0;
+	height: 3px;
+	transform: translateY(-50%);
+}
+.rf-juxtapose__divider-handle {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 2.5rem;
+	height: 2.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Toggle bar (injected by behavior) */
+.rf-juxtapose__toggle-bar {
+	display: flex;
+	width: fit-content;
+}
