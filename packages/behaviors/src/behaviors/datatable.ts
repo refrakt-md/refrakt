@@ -16,8 +16,8 @@ interface RowData {
  * Reads configuration from data attributes set by the identity transform:
  * - `data-searchable`: "true" to enable search
  * - `data-sortable`: comma-separated column names
- * - `data-pagesize`: number of rows per page (0 = no pagination)
- * - `data-defaultsort`: column name to sort by initially
+ * - `data-page-size`: number of rows per page (0 = no pagination)
+ * - `data-default-sort`: column name to sort by initially
  */
 export function datatableBehavior(el: HTMLElement): CleanupFn {
 	const table = el.querySelector('table');
@@ -27,8 +27,8 @@ export function datatableBehavior(el: HTMLElement): CleanupFn {
 	const searchable = el.getAttribute('data-searchable') === 'true';
 	const sortableStr = el.getAttribute('data-sortable') || '';
 	const sortable = sortableStr.split(',').map((s) => s.trim()).filter(Boolean);
-	const pageSize = parseInt(el.getAttribute('data-pagesize') || '0', 10);
-	const defaultSort = el.getAttribute('data-defaultsort') || '';
+	const pageSize = parseInt(el.getAttribute('data-page-size') || '0', 10);
+	const defaultSort = el.getAttribute('data-default-sort') || '';
 
 	// Parse table structure
 	const thEls = Array.from(table.querySelectorAll('th'));

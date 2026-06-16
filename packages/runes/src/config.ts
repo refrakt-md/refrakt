@@ -496,7 +496,7 @@ export const coreConfig: ThemeConfig = {
 			block: 'datatable',
 			interactive: true,
 			defaultDensity: 'compact',
-			defaultElevation: 'flush',
+			defaultElevation: 'sunken',
 			sections: { table: 'body' },
 			modifiers: {
 				searchable: { source: 'meta', default: 'false' },

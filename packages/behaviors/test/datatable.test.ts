@@ -29,8 +29,8 @@ function createDataTable(opts?: {
 
 	if (opts?.searchable) el.setAttribute('data-searchable', 'true');
 	if (opts?.sortable) el.setAttribute('data-sortable', opts.sortable.join(','));
-	if (opts?.pageSize) el.setAttribute('data-pagesize', String(opts.pageSize));
-	if (opts?.defaultSort) el.setAttribute('data-defaultsort', opts.defaultSort);
+	if (opts?.pageSize) el.setAttribute('data-page-size', String(opts.pageSize));
+	if (opts?.defaultSort) el.setAttribute('data-default-sort', opts.defaultSort);
 
 	const rowsHtml = rows.map((r) =>
 		`<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`,

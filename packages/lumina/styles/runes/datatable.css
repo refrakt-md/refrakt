@@ -1,15 +1,21 @@
 @layer skin {
 /* DataTable — skin. The toolbar/pagination flex + input width live in
- * @refrakt-md/skeleton (styles/runes/datatable.css). The table overflow/width
- * overrides stay here — they override the table element wrapper by source order. */
+ * @refrakt-md/skeleton (styles/runes/datatable.css). The table chrome (header
+ * strip, cell padding, row borders, hover) stays here. */
+
+/* The sunken surface chrome (fill + border + container radius) stays, but the
+ * elevation padding is dropped: the toolbar, table, and pagination each carry
+ * their own rhythm and sit flush with the surface edge. */
+.rf-datatable {
+	padding: 0;
+}
 .rf-datatable__toolbar {
-	padding: 0.5rem 0.75rem;
-	background: var(--rf-color-surface);
+	padding: var(--rf-spacing-sm);
 }
 .rf-datatable__input {
-	padding: 0.35rem 0.625rem;
+	padding: var(--rf-spacing-snug);
 	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-sm);
+	border-radius: var(--rf-radius-media);
 	font-size: var(--rf-text-xs);
 	font-family: var(--rf-font-sans);
 	background: var(--rf-color-bg);
@@ -20,31 +26,12 @@
 	border-color: var(--rf-color-primary);
 	box-shadow: 0 0 0 2px color-mix(in srgb, var(--rf-color-primary) 15%, transparent);
 }
-.rf-datatable__content .rf-datatable__table {
-	border: none;
-	border-radius: 0;
-	margin: 0;
-	overflow: visible;
-}
-.rf-datatable__content .rf-datatable__table th {
-	background: var(--rf-color-surface);
-}
-.rf-datatable__content .rf-datatable__table th:first-child,
-.rf-datatable__content .rf-datatable__table th:last-child {
-	border-radius: 0;
-}
-.rf-datatable__content table {
+.rf-datatable__table {
 	width: 100%;
 	border-collapse: collapse;
 	margin: 0;
 }
-.rf-datatable__content .rf-table-wrapper {
-	margin: 0;
-	border: none;
-	border-radius: 0;
-	overflow: visible;
-}
-.rf-datatable__content th {
+.rf-datatable__table th {
 	text-align: left;
 	padding: 0.75rem 1rem;
 	font-size: var(--rf-text-xs);
@@ -52,30 +39,29 @@
 	text-transform: uppercase;
 	letter-spacing: var(--rf-tracking-wider);
 	color: var(--rf-color-muted);
-	background: var(--rf-color-surface);
 }
-.rf-datatable__content th[style*="cursor"]:hover {
+/* Sortable headers (the behavior sets inline cursor:pointer on them). */
+.rf-datatable__table th[style*="cursor"]:hover {
 	color: var(--rf-color-text);
 }
-.rf-datatable__content .sort-indicator {
+.rf-datatable__sort-indicator {
 	font-size: var(--rf-text-xs);
 	opacity: 0.7;
 }
-.rf-datatable__content td {
+.rf-datatable__table td {
 	padding: 0.75rem 1rem;
 	border-bottom: 1px solid var(--rf-color-border);
 	font-size: var(--rf-text-sm);
 }
-.rf-datatable__content tr:last-child td {
+.rf-datatable__table tr:last-child td {
 	border-bottom: none;
 }
-.rf-datatable__content tr:hover td {
+.rf-datatable__table tr:hover td {
 	background: var(--rf-color-surface-hover);
 }
 .rf-datatable__pagination {
 	gap: 0.75rem;
-	padding: 0.5rem 0.75rem;
-	background: var(--rf-color-surface);
+	padding: var(--rf-spacing-sm);
 }
 .rf-datatable__page-btn {
 	padding: 0.25rem 0.5rem;
