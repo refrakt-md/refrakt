@@ -135,6 +135,56 @@ describe('plan create', () => {
 	});
 });
 
+describe('plan create — attribute validation', () => {
+	it('rejects an invalid complexity at write time, listing valid values', () => {
+		expect(() => runCreate({
+			dir: TMP, type: 'work', id: 'WORK-001', title: 'Test',
+			attrs: { complexity: 'small' },
+		})).toThrow('Invalid complexity "small" for work rune. Valid: trivial, simple, moderate, complex, unknown');
+		// And nothing is written.
+		expect(existsSync(join(TMP, 'work', 'WORK-001-test.md'))).toBe(false);
+	});
+
+	it('rejects an invalid status', () => {
+		expect(() => runCreate({
+			dir: TMP, type: 'work', id: 'WORK-001', title: 'Test',
+			attrs: { status: 'todo' },
+		})).toThrow('Invalid status "todo" for work rune');
+	});
+
+	it('rejects an invalid bug severity', () => {
+		expect(() => runCreate({
+			dir: TMP, type: 'bug', id: 'BUG-001', title: 'Test',
+			attrs: { severity: 'huge' },
+		})).toThrow('Invalid severity "huge" for bug rune');
+	});
+
+	it('rejects an unknown attribute', () => {
+		expect(() => runCreate({
+			dir: TMP, type: 'work', id: 'WORK-001', title: 'Test',
+			attrs: { sevearity: 'major' },
+		})).toThrow('Unknown attribute "sevearity" for work rune');
+	});
+
+	it('rejects setting id via attrs', () => {
+		expect(() => runCreate({
+			dir: TMP, type: 'work', id: 'WORK-001', title: 'Test',
+			attrs: { id: 'WORK-999' },
+		})).toThrow('Cannot set the "id" attribute');
+	});
+
+	it('accepts valid enum attrs and writes them', () => {
+		const result = runCreate({
+			dir: TMP, type: 'work', id: 'WORK-001', title: 'Test',
+			attrs: { complexity: 'moderate', priority: 'high', status: 'ready' },
+		});
+		const content = readFileSync(result.file, 'utf-8');
+		expect(content).toContain('complexity="moderate"');
+		expect(content).toContain('priority="high"');
+		expect(content).toContain('status="ready"');
+	});
+});
+
 describe('auto-id', () => {
 	it('auto-assigns WORK-001 when no work items exist', () => {
 		const result = runCreate({ dir: TMP, type: 'work', title: 'Auto Task' });

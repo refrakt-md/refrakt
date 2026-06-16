@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { renderTemplate, VALID_TYPES, type PlanItemType } from './templates.js';
 import { nextId, idExists, isAutoIdType } from './next-id.js';
+import { assertValidAttrs } from './enums.js';
 
 export const EXIT_SUCCESS = 0;
 export const EXIT_ALREADY_EXISTS = 1;
@@ -49,6 +50,14 @@ export function runCreate(options: CreateOptions): CreateResult {
 		const err = new Error('--title is required') as any;
 		err.exitCode = EXIT_INVALID_ARGS;
 		throw err;
+	}
+
+	// Validate provided attributes the same way `plan update` does, so an invalid
+	// enum value (a stray complexity="small" or status="todo") fails here at write
+	// time instead of landing in the file and only surfacing later in
+	// `plan validate`. The scaffold's own defaults are always valid.
+	if (attrs) {
+		assertValidAttrs(type, attrs, EXIT_INVALID_ARGS);
 	}
 
 	// Auto-assign ID if not provided

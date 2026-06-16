@@ -2,44 +2,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import { resolve, join } from 'path';
 import { scanPlanFiles } from '../scanner.js';
 import type { PlanEntity, PlanRuneType } from '../types.js';
-
-// --- Valid attribute values by rune type ---
-
-const VALID_STATUS: Record<PlanRuneType, readonly string[]> = {
-	work: ['draft', 'ready', 'in-progress', 'review', 'done', 'blocked', 'pending'],
-	spec: ['draft', 'review', 'accepted', 'superseded', 'deprecated'],
-	bug: ['reported', 'confirmed', 'in-progress', 'fixed', 'wontfix', 'duplicate'],
-	decision: ['proposed', 'accepted', 'superseded', 'deprecated'],
-	milestone: ['planning', 'active', 'complete'],
-};
-
-const VALID_PRIORITY: readonly string[] = ['critical', 'high', 'medium', 'low'];
-const VALID_COMPLEXITY: readonly string[] = ['trivial', 'simple', 'moderate', 'complex', 'unknown'];
-const VALID_SEVERITY: readonly string[] = ['critical', 'major', 'minor', 'cosmetic'];
-
-/** Attributes with constrained value sets, by rune type */
-function getEnumAttrs(type: PlanRuneType): Record<string, readonly string[]> {
-	const attrs: Record<string, readonly string[]> = {
-		status: VALID_STATUS[type],
-	};
-	if (type === 'work') {
-		attrs.priority = VALID_PRIORITY;
-		attrs.complexity = VALID_COMPLEXITY;
-	}
-	if (type === 'bug') {
-		attrs.severity = VALID_SEVERITY;
-	}
-	return attrs;
-}
-
-/** Attributes allowed per rune type (all of them, not just enums) */
-const ALLOWED_ATTRS: Record<PlanRuneType, readonly string[]> = {
-	work: ['id', 'status', 'priority', 'complexity', 'assignee', 'milestone', 'source', 'tags'],
-	spec: ['id', 'status', 'version', 'supersedes', 'tags'],
-	bug: ['id', 'status', 'severity', 'assignee', 'milestone', 'source', 'tags'],
-	decision: ['id', 'status', 'date', 'supersedes', 'source', 'tags'],
-	milestone: ['name', 'status', 'target'],
-};
+import { getEnumAttrs, ALLOWED_ATTRS } from './enums.js';
 
 // --- Exit codes ---
 
