@@ -1,0 +1,19 @@
+/* Media-guest interaction posture (SPEC-090) — structure.
+ *
+ * A presentational media-slot guest is non-interactive at the pointer level (so a
+ * linked tile links reliably / a cover backdrop never steals interaction), and a
+ * demoted tabbed guest's static tab strip is hidden (the non-enhanced render is
+ * the fallback; the behaviours layer skips JS enhancement for it).
+ *
+ * This is wholly structural (pointer-events + a display reset), so it lives in the
+ * skeleton. It moves here only now that the tabs/codegroup tab-strip structure is
+ * also skeleton (same WORK-438 increment): the hide rule's specificity (0,3,0)
+ * beats `.rf-tabs__tabs { display:flex }` (0,1,0) in-layer. While the rune strip
+ * was unlayered/skin and this was skin, it relied on source order + specificity;
+ * promoting it earlier would have resurfaced the inert strip. */
+[data-section="media"][data-guest-posture="presentational"] {
+	pointer-events: none;
+}
+[data-section="media"][data-guest-posture="presentational"] :is(.rf-tabs__tabs, .rf-codegroup__tabs) {
+	display: none;
+}

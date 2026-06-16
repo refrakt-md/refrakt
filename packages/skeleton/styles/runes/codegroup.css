@@ -1,0 +1,25 @@
+/* codegroup — structure. The wrapper clip, the topbar flex, the list reset, the
+ * scrollable tab strip (display + overflow), and the tab-button flex. The strip's
+ * `display: flex` is what guest-posture's hide rule overrides. The surface chrome,
+ * the window-dot decoration, type, borders, and all pre/code treatment are skin
+ * (Lumina's styles/runes/codegroup.css) — the pre/code rules deliberately override
+ * elements/code.css by source order, so they must stay skin. */
+
+.rf-codegroup { overflow: hidden; }
+
+.rf-codegroup__topbar {
+	display: flex;
+	align-items: center;
+}
+
+.rf-codegroup ul { list-style: none; }
+
+.rf-codegroup__tabs {
+	display: flex;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+.rf-codegroup__tab {
+	flex: 0 0 auto;
+}

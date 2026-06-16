@@ -44,7 +44,9 @@
 @import './styles/dimensions/frame.css';
 @import './styles/dimensions/substrate.css';
 @import './styles/dimensions/cover.css';
-@import './styles/dimensions/guest-posture.css';
+/* guest-posture is wholly structural (pointer-events + a tab-strip display reset)
+ * → @refrakt-md/skeleton (dimensions/guest-posture.css), promoted with the
+ * tabs/codegroup structure it depends on (WORK-438). */
 @import './styles/dimensions/checklist.css';
 @import './styles/dimensions/sequence.css';
 

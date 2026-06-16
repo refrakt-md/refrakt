@@ -1,0 +1,28 @@
+/* tabs — structure. The eyebrow stretched-link, the scrollable tab strip (display
+ * + overflow), and the tab-button flex. The strip's `display: flex` is what
+ * guest-posture's hide rule overrides — now both skeleton, resolved by specificity.
+ * Type, colour, borders, spacing, and the active treatment are skin (Lumina's
+ * styles/runes/tabs.css). */
+
+.rf-tabs__eyebrow:has(a) {
+	display: inline-block;
+	position: relative;
+}
+.rf-tabs__eyebrow:has(a) a::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+}
+
+/* Tab bar — the scrollable strip. */
+.rf-tabs__tabs {
+	display: flex;
+	overflow-x: auto;
+	overflow-y: hidden;
+	-webkit-overflow-scrolling: touch;
+}
+
+/* Tab buttons — fixed-basis flex items. */
+.rf-tab {
+	flex: 0 0 auto;
+}
