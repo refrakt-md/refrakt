@@ -1,4 +1,4 @@
-{% spec id="SPEC-041" status="draft" version="0.1" tags="runes, diff, history, content" %}
+{% spec id="SPEC-112" status="draft" version="0.1" tags="runes, diff, history, content" %}
 
 # Rune Diff Format
 
