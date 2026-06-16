@@ -4,7 +4,6 @@
 .rf-map {
 	margin: 2rem 0;
 	border-radius: var(--rf-radius-lg, 0.75rem);
-	overflow: hidden;
 }
 
 /* Spacing variants */
@@ -13,15 +12,7 @@
 .rf-map--spacing-loose { margin: 3rem 0; }
 .rf-map--spacing-breathe { margin: 4rem 0; }
 
-/* Height variants */
-.rf-map--small .rf-map__container { height: 200px; }
-.rf-map--medium .rf-map__container { height: 400px; }
-.rf-map--large .rf-map__container { height: 600px; }
-.rf-map--full .rf-map__container { height: 80vh; min-height: 400px; }
-
 .rf-map__container {
-	width: 100%;
-	position: relative;
 	background: var(--rf-color-surface, #f8f9fa);
 	/* Establish a stacking context so Leaflet's internal pane z-indices
 	 * (tile-pane 200, overlay-pane 400, marker-pane 600, popup-pane 700,
@@ -29,14 +20,12 @@
 	 * a map dropped into a cover card's media slot punches through the
 	 * cover scrim (z-index auto) and overlaid content (z-index 1).
 	 * `position: relative` alone is not enough; `isolation: isolate` is. */
-	isolation: isolate;
 }
 
 /* Fallback list shown while Leaflet loads */
 .rf-map__fallback {
 	padding: 1.5rem;
 	margin: 0;
-	list-style: decimal inside;
 	font-size: var(--rf-text-sm);
 	color: var(--rf-color-muted);
 }
@@ -47,19 +36,6 @@
 
 .rf-map__fallback strong {
 	color: var(--rf-color-text);
-}
-
-/* Accessible text list (visible to screen readers, hidden visually) */
-.rf-map__pins {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border: 0;
 }
 
 /* MapPin in fallback / a11y list */
@@ -73,19 +49,12 @@
 }
 
 .rf-map-pin__group {
-	display: inline-block;
 	font-size: var(--rf-text-xs);
 	padding: 0.1rem 0.5rem;
 	border-radius: var(--rf-radius-sm, 0.25rem);
 	background: var(--rf-color-surface, #f0f0f0);
 	color: var(--rf-color-muted);
 	margin-left: 0.5rem;
-}
-
-/* Hide meta tags and property spans inside the map */
-.rf-map meta,
-.rf-map span[property] {
-	display: none;
 }
 
 /* ── Map as a media guest ──
@@ -100,11 +69,7 @@
 [data-section="media"] > .rf-map {
 	margin: 0;
 	padding: 0;
-	height: 100%;
 	border-radius: inherit;
-}
-[data-section="media"] > .rf-map > .rf-map__container {
-	height: 100%;
 }
 [data-section="media"] .rf-map__fallback {
 	padding: 0.75rem 1rem;
@@ -124,7 +89,6 @@
 }
 
 .rf-map .leaflet-popup-content strong {
-	display: block;
 	font-size: var(--rf-text);
 	margin-bottom: 0.25rem;
 }

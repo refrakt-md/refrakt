@@ -1,0 +1,5 @@
+/* event — structure. Only the register CTA's inline-block button box; the button
+ * chrome, the def-list top margin, body spacing, and links are skin. */
+.rf-event__register a {
+	display: inline-block;
+}
