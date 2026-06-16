@@ -167,6 +167,10 @@ const UNIVERSAL_AXIS_PREFIXES = ['bg', 'substrate', 'frame', 'scrim', 'tint'];
 const UNIVERSAL_AXES = new Set([
 	'width', 'spacing', 'inset', 'elevation', 'prominence', 'density',
 	'cover', 'media-position', 'posture', 'guest-posture',
+	// SPEC-105 motion facet — universal, and a static screenshot of a reveal
+	// variant is identical to the default (the cell renders the final state), so
+	// expanding them per-rune is pure noise. The motion docs showcase them once.
+	'reveal', 'stagger',
 ]);
 
 /** Cap on variant cells per rune, so a rune with a large own enum (e.g. icon

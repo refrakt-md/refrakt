@@ -211,6 +211,25 @@ export interface TokenContract {
 	 *  names. Per SPEC-048 the highlighter is an implementation detail behind
 	 *  the `--rf-syntax-*` contract. */
 	syntax: SyntaxTokens;
+
+	/** Scroll-reveal motion physics (SPEC-105). Optional — a theme with no
+	 *  motion dimension omits it. When present, the values drive
+	 *  `dimensions/motion.css`; a site retunes them via `refrakt.config.json`
+	 *  `theme.tokens.reveal.*`, the same path as colour/radius/spacing. */
+	reveal?: {
+		/** Entrance duration (e.g. `1.3s`). */
+		duration: string;
+		/** Entrance easing (a `<timing-function>`). */
+		easing: string;
+		/** `slide` travel distance (e.g. `2rem`). */
+		distance: string;
+		/** `scale` entrance start (e.g. `0.94`). */
+		'scale-start': string;
+		/** `blur` entrance start (e.g. `8px`; set `0` to downgrade to `fade`). */
+		blur: string;
+		/** Per-child cascade interval for `stagger` (e.g. `220ms`). */
+		stagger: string;
+	};
 }
 
 /** Three tokens per sentiment: saturated `base`, pale `bg`, complementary

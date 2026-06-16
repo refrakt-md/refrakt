@@ -9,6 +9,7 @@ import { datatableBehavior } from './behaviors/datatable.js';
 import { formBehavior } from './behaviors/form.js';
 import { previewBehavior } from './behaviors/preview.js';
 import { scrollspyBehavior } from './behaviors/scrollspy.js';
+import { scrollRevealBehavior } from './behaviors/scroll-reveal.js';
 import { versionSwitcherBehavior } from './behaviors/version-switcher.js';
 import { mobileMenuBehavior } from './behaviors/mobile-menu.js';
 import { searchBehavior } from './behaviors/search.js';
@@ -112,6 +113,12 @@ export function initRuneBehaviors(
 	const scrollspyCleanup = scrollspyBehavior(container);
 	cleanups.push(scrollspyCleanup);
 
+	// Scroll-reveal motion (SPEC-105) — sets the root data-animate gate +
+	// data-in-view as containers scroll in (not rune-specific; keys on the
+	// data-reveal attribute, not data-rune).
+	const scrollRevealCleanup = scrollRevealBehavior(container);
+	cleanups.push(scrollRevealCleanup);
+
 	// Version switcher for versioned pages (not rune-specific)
 	const versionSwitcherCleanup = versionSwitcherBehavior(container);
 	cleanups.push(versionSwitcherCleanup);
@@ -174,6 +181,7 @@ export { datatableBehavior } from './behaviors/datatable.js';
 export { formBehavior } from './behaviors/form.js';
 export { previewBehavior } from './behaviors/preview.js';
 export { scrollspyBehavior } from './behaviors/scrollspy.js';
+export { scrollRevealBehavior } from './behaviors/scroll-reveal.js';
 export { versionSwitcherBehavior } from './behaviors/version-switcher.js';
 export { mobileMenuBehavior } from './behaviors/mobile-menu.js';
 export { sectionNavBehavior } from './behaviors/section-nav.js';

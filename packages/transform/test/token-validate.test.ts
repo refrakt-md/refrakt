@@ -39,6 +39,23 @@ describe('validateThemeTokensConfig', () => {
 		expect(r.errors[0].message).toContain("unknown token key 'xxl'");
 	});
 
+	// SPEC-105 / WORK-442 — the reveal motion physics are a token group, so a
+	// site can retune them via refrakt.config.json theme.tokens.reveal.*.
+	it('accepts reveal motion-physics overrides', () => {
+		const r = validateThemeTokensConfig({
+			reveal: { duration: '1.6s', easing: 'ease-out', distance: '2.5rem', stagger: '260ms' },
+		});
+		expect(r.valid).toBe(true);
+		expect(r.errors).toEqual([]);
+	});
+
+	it('rejects an unknown reveal token key', () => {
+		const r = validateThemeTokensConfig({ reveal: { speed: '2s' } });
+		expect(r.valid).toBe(false);
+		expect(r.errors[0].path).toBe('reveal.speed');
+		expect(r.errors[0].message).toContain("unknown token key 'speed'");
+	});
+
 	it('rejects unknown top-level namespace', () => {
 		const r = validateThemeTokensConfig({ nonsense: { foo: 'bar' } });
 		expect(r.valid).toBe(false);

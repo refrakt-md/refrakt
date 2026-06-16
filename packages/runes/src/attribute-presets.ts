@@ -68,6 +68,8 @@ export const UNIVERSAL_ATTRIBUTE_NAMES: ReadonlySet<string> = new Set([
 	'inset',
 	'elevation',
 	'prominence',
+	'reveal',
+	'stagger',
 	'frame',
 	'frame-aspect',
 	'frame-displace',

@@ -1,0 +1,102 @@
+/* ─── Motion Dimension — skin (SPEC-105) ───────────────────────────────────
+ * Scroll-reveal entrance choreography. The split that keeps motion from leaking
+ * author concerns into theme concerns:
+ *   • Author declares *intent* — `data-reveal` / `data-stagger` (the engine, WORK-431).
+ *   • The behaviour owns *when* — `data-in-view` + the root `data-animate` gate (WORK-433).
+ *   • This file owns *how* — the physics, keyed on `data-reveal` × `data-in-view`.
+ *
+ * It covers every section rune from ONE stylesheet: it keys on the generic
+ * attributes + the `--rf-reveal-index` marker, never on a rune's structure, so no
+ * rune's own CSS gains a motion block. Motion is theme choreography (skin); the
+ * framework structure (@refrakt-md/skeleton) has none — a different theme ships its
+ * own motion.css. Retune calm↔punchy purely via the tokens below.
+ *
+ * Reduced motion is handled by the global reset (WORK-352, global.css), which
+ * neutralises transition/animation durations; the behaviour also marks everything
+ * in-view immediately. */
+
+@layer skin {
+	/* Physics tokens (`--rf-reveal-duration` / `-easing` / `-distance` /
+	 * `-scale-start` / `-blur` / `-stagger`) are part of the theme TokenContract
+	 * (SPEC-105), defined in `src/tokens.ts` and emitted into `tokens/base.css`.
+	 * A site retunes the feel via `refrakt.config.json` `theme.tokens.reveal.*`;
+	 * this file only *consumes* them. The fallbacks below keep motion sensible if a
+	 * theme ships this stylesheet without the reveal token group. */
+
+	/* Per-character offsets — set on the `[data-reveal]` container and inherited by
+	 * staggered children, so the single hidden-state block below covers every
+	 * character. `none` carries no offsets (it never animates). */
+	[data-reveal="fade"]  { --reveal-x: 0; --reveal-y: 0;                      --reveal-scale: 1;                       --reveal-blur: 0; }
+	[data-reveal="slide"] { --reveal-x: 0; --reveal-y: var(--rf-reveal-distance, 1.5rem); --reveal-scale: 1;             --reveal-blur: 0; }
+	[data-reveal="scale"] { --reveal-x: 0; --reveal-y: 0;                      --reveal-scale: var(--rf-reveal-scale-start, 0.95); --reveal-blur: 0; }
+	/* `blur` is focus-led; it animates `filter` (not compositor-cheap), so a theme
+	 * or low-power path may downgrade it to `fade` by zeroing the blur token. */
+	[data-reveal="blur"]  { --reveal-x: 0; --reveal-y: 0;                      --reveal-scale: 1;                       --reveal-blur: var(--rf-reveal-blur, 8px); }
+
+	/* The animated unit:
+	 *   • non-staggered → the `[data-reveal]` element itself,
+	 *   • staggered     → its indexed children (`[style*="--rf-reveal-index"]`).
+	 * Everything is gated under the root `[data-animate]` flag the behaviour sets on
+	 * boot — no JS → no flag → fully visible, nothing hidden (SSR-complete).
+	 *
+	 * CRITICAL: reveal animates the INDIVIDUAL `translate`/`scale` properties, never
+	 * the `transform` shorthand, so it composes with the rune transforms Lumina
+	 * already uses (hover-lifts on card/cta/feature, frame displacement, drawer/nav
+	 * slides) instead of clobbering them. */
+	[data-animate] :where(
+		[data-reveal]:not([data-reveal="none"]):not([data-stagger]),
+		[data-stagger]:not([data-reveal="none"]) [style*="--rf-reveal-index"]
+	) {
+		transition:
+			opacity   var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out),
+			translate var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out),
+			scale     var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out),
+			filter    var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out);
+	}
+
+	/* Pre-entrance (hidden) — until the unit's trigger fires. */
+	[data-animate] :where(
+		[data-reveal]:not([data-reveal="none"]):not([data-stagger]):not([data-in-view]),
+		[data-stagger]:not([data-reveal="none"]):not([data-in-view]) [style*="--rf-reveal-index"]
+	) {
+		opacity: 0;
+		translate: var(--reveal-x) var(--reveal-y);
+		scale: var(--reveal-scale);
+		filter: blur(var(--reveal-blur));
+	}
+
+	/* Revealed (resting) — explicit IDENTITY values, never the `none` default.
+	 * This is what makes the entrance interpolate in WebKit: Safari does not
+	 * transition `translate`/`scale`/`filter` to-or-from `none`, so reverting to
+	 * the default would snap (no motion on iOS) — only opacity would animate.
+	 * Transitioning between two explicit values animates everywhere. */
+	[data-animate] :where(
+		[data-reveal]:not([data-reveal="none"]):not([data-stagger])[data-in-view],
+		[data-stagger][data-in-view] [style*="--rf-reveal-index"]
+	) {
+		opacity: 1;
+		translate: 0 0;
+		scale: 1;
+		filter: blur(0);
+	}
+
+	/* Stagger — each child's entrance offset from the container's single in-view
+	 * trigger by its engine-stamped index against the interval token. */
+	[data-animate] [data-stagger][data-in-view] [style*="--rf-reveal-index"] {
+		transition-delay: calc(var(--rf-reveal-index) * var(--rf-reveal-stagger, 140ms));
+	}
+
+	/* Per-part choreography (opt-in polish, not required): on a non-staggered
+	 * sliding section, let the media arrive a beat behind the content for a subtle
+	 * two-part entrance. Demonstrated on the named anatomy the theme already styles;
+	 * a theme adds or drops this freely. */
+	[data-animate] [data-reveal="slide"]:not([data-stagger]):not([data-in-view]) > * > [data-section="media"] {
+		translate: 0 calc(var(--rf-reveal-distance, 1.5rem) * 1.5);
+	}
+	[data-animate] [data-reveal="slide"]:not([data-stagger])[data-in-view] > * > [data-section="media"] {
+		translate: 0 0;  /* explicit identity end-state — see the WebKit note above */
+	}
+	[data-animate] [data-reveal="slide"]:not([data-stagger]) > * > [data-section="media"] {
+		transition: translate var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out);
+	}
+}

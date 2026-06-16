@@ -7,6 +7,7 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
 		sequence: 'numbered',
+		staggerItems: 'track',
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'cover' },
 		modifiers: {

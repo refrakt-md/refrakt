@@ -22,6 +22,7 @@ Universal theming dimensions solve this. A handful of semantic data attributes d
 | **Checklist** | `data-checked` | `checked`, `unchecked`, `active`, `skipped` | Checkbox list items | `RuneConfig.checklist` |
 | **Sequence** | `data-sequence` | `numbered`, `connected`, `plain` | Ordered item indicators | `RuneConfig.sequence` |
 | **State** | `data-state` | `open`, `closed`, `active`, `inactive`, `selected`, `disabled` | Interactive states | Behavior scripts |
+| **Motion** | `data-reveal` × `data-in-view` | `none`, `fade`, `slide`, `scale`, `blur` (+ `data-stagger`) | Scroll-reveal entrance choreography ([its own page](/extend/theme-authoring/motion)) | universal `reveal` / `stagger` + behaviour |
 | **Surface** | (class-based) | `card`, `inline`, `banner`, `inset` | Container treatment | Theme only |
 
 The first three style metadata content. **Meta type** and **sentiment** describe the field itself; **zone layout** describes the geometric shape around groups of fields. The remaining dimensions style the rune's structure, content, and behavior.

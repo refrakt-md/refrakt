@@ -170,6 +170,18 @@ export const luminaTokens: ThemeTokensConfig = {
 		variable: '#1c1a17',    // tonal — same as color.text
 	},
 
+	// SPEC-105 — scroll-reveal motion physics. The single source of truth for the
+	// `--rf-reveal-*` tokens `dimensions/motion.css` reads; a site retunes the feel
+	// via `refrakt.config.json` `theme.tokens.reveal.*`. A gentle, unhurried default.
+	reveal: {
+		duration: '1.3s',
+		easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+		distance: '2rem',
+		'scale-start': '0.94',
+		blur: '8px',
+		stagger: '220ms',
+	},
+
 	modes: {
 		dark: {
 			color: {
