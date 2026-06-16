@@ -101,7 +101,7 @@ export const config: Record<string, RuneConfig> = {
 	Mockup: {
 		block: 'mockup',
 		defaultDensity: 'compact',
-		defaultElevation: 'flat',
+		defaultElevation: 'flush',
 		mediaSlots: { viewport: 'hero' },
 		modifiers: {
 			device: { source: 'meta', default: 'browser' },
