@@ -8,8 +8,6 @@
 .rf-sidenote--sidenote {
 	border-left: 3px solid var(--rf-color-primary);
 	padding: 0.75rem 1rem;
-	background: var(--rf-color-info-bg);
-	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
 	color: var(--rf-color-muted);
 }
 .rf-sidenote--footnote {
