@@ -15,6 +15,7 @@
 	--rf-chart-bar-gap: 0.15;
 	--rf-chart-bar-cluster-gap: 4px;
 	--rf-chart-bar-radius: var(--rf-radius-sm);
+	--rf-chart-area-opacity: 0.3;
 	--rf-chart-point-radius: 4px;
 	--rf-chart-line-width: 2px;
 	--rf-chart-label-size: 12px;
@@ -42,6 +43,16 @@
 .rf-chart__bar { rx: var(--rf-chart-bar-radius); fill: var(--rf-chart-series-1); }
 .rf-chart__point { fill: var(--rf-chart-series-1); }
 .rf-chart__line { fill: none; stroke: var(--rf-chart-series-1); stroke-width: var(--rf-chart-line-width); }
+/* Area-under-line gradient stops. The `--rf-chart-area-opacity` knob drives the
+ * top alpha; the bottom is always 0 so the gradient fades into the chart floor. */
+.rf-chart__area-stop { stop-color: var(--rf-chart-series-1); }
+.rf-chart__area-stop[data-series="1"] { stop-color: var(--rf-chart-series-2); }
+.rf-chart__area-stop[data-series="2"] { stop-color: var(--rf-chart-series-3); }
+.rf-chart__area-stop[data-series="3"] { stop-color: var(--rf-chart-series-4); }
+.rf-chart__area-stop[data-series="4"] { stop-color: var(--rf-chart-series-5); }
+.rf-chart__area-stop[data-series="5"] { stop-color: var(--rf-chart-series-6); }
+.rf-chart__area-stop[data-position="top"]    { stop-opacity: var(--rf-chart-area-opacity); }
+.rf-chart__area-stop[data-position="bottom"] { stop-opacity: 0; }
 .rf-chart__bar[data-series="1"], .rf-chart__point[data-series="1"] { fill: var(--rf-chart-series-2); }
 .rf-chart__bar[data-series="2"], .rf-chart__point[data-series="2"] { fill: var(--rf-chart-series-3); }
 .rf-chart__bar[data-series="3"], .rf-chart__point[data-series="3"] { fill: var(--rf-chart-series-4); }

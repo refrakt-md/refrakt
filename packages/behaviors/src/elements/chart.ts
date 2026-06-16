@@ -134,6 +134,25 @@ function renderSvg(data: ChartData, container: HTMLElement, host: HTMLElement, o
 
 	const svg = svgEl('svg', { viewBox: `0 0 ${svgW} ${svgH}`, class: 'rf-chart__svg' });
 
+	// Gradient defs for the line-chart area fade. One per series slot; the ID
+	// prefix is randomised so multiple charts on a page don't collide. The stops
+	// are tagged for CSS palette rotation (stop-color + stop-opacity come from
+	// chart.css), so the gradient reads the same theming contract as everything else.
+	const chartId = `rf-chart-${Math.random().toString(36).slice(2, 9)}`;
+	if (opts.type === 'line') {
+		const defs = svgEl('defs', {});
+		for (let si = 0; si < SERIES_COUNT; si++) {
+			const grad = svgEl('linearGradient', {
+				id: `${chartId}-area-${si}`,
+				x1: '0', y1: '0', x2: '0', y2: '1',
+			});
+			grad.appendChild(svgEl('stop', { offset: '0%', class: 'rf-chart__area-stop', 'data-series': si, 'data-position': 'top' }));
+			grad.appendChild(svgEl('stop', { offset: '100%', class: 'rf-chart__area-stop', 'data-series': si, 'data-position': 'bottom' }));
+			defs.appendChild(grad);
+		}
+		svg.appendChild(defs);
+	}
+
 	// Horizontal grid lines + Y-axis tick labels — render BEFORE the data so the
 	// bars/lines sit on top of the grid. Skip the zero line (the X axis covers it).
 	for (const t of ticks) {
@@ -159,10 +178,23 @@ function renderSvg(data: ChartData, container: HTMLElement, host: HTMLElement, o
 	};
 
 	if (opts.type === 'line') {
+		const baseY = pad.top + ch;
 		for (let si = 0; si < series.length; si++) {
 			const pts = labels.map((_, i) =>
 				`${pad.left + i * bgw + bgw / 2},${pad.top + ch - (values[i][si] / maxVal) * ch}`,
 			).join(' ');
+			// Area polygon: closes the line down to the baseline so the gradient
+			// fades from the line at the top to transparent at the chart floor.
+			// Rendered before the polyline so the line + points sit on top.
+			const firstX = pad.left + bgw / 2;
+			const lastX = pad.left + (labels.length - 1) * bgw + bgw / 2;
+			const areaPts = `${firstX},${baseY} ${pts} ${lastX},${baseY}`;
+			svg.appendChild(svgEl('polygon', {
+				points: areaPts,
+				class: 'rf-chart__area',
+				'data-series': si % SERIES_COUNT,
+				fill: `url(#${chartId}-area-${si % SERIES_COUNT})`,
+			}));
 			svg.appendChild(svgEl('polyline', { points: pts, class: 'rf-chart__line', 'data-series': si % SERIES_COUNT }));
 			for (let i = 0; i < labels.length; i++) {
 				const c = svgEl('circle', {

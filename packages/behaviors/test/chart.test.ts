@@ -159,6 +159,25 @@ describe('rf-chart theming contract (WORK-353)', () => {
 		expect(tickValues).toBe('0,25,50,75,100');
 	});
 
+	it('line charts render an area polygon under each line tagged for palette rotation', () => {
+		document.body.innerHTML =
+			`<rf-chart data-type="line">${table(
+				'<tr><td>Q1</td><td>10</td><td>5</td></tr><tr><td>Q2</td><td>20</td><td>8</td></tr>',
+				'<tr><th>Quarter</th><th>Sales</th><th>Profit</th></tr>',
+			)}</rf-chart>`;
+		const el = document.querySelector('rf-chart')!;
+		const areas = [...el.querySelectorAll('polygon.rf-chart__area')];
+		expect(areas.length).toBe(2);
+		expect(areas[0].getAttribute('data-series')).toBe('0');
+		expect(areas[1].getAttribute('data-series')).toBe('1');
+		// Gradient defs exist with stops tagged for palette + position rotation.
+		expect(el.querySelectorAll('linearGradient').length).toBe(6);
+		const stops = [...el.querySelectorAll('.rf-chart__area-stop')];
+		expect(stops.length).toBe(12);
+		expect(stops.some((s) => s.getAttribute('data-position') === 'top')).toBe(true);
+		expect(stops.some((s) => s.getAttribute('data-position') === 'bottom')).toBe(true);
+	});
+
 	it('honours data-tick-count as an approximate target', () => {
 		// count=2 → step ~50 for max 100 → ticks [0, 50, 100].
 		const el = document.createElement('rf-chart');
