@@ -43,6 +43,11 @@ export const datatable = createContentModelSchema({
 			tableTag = (inner && Tag.isTag(inner) ? inner : new Tag('table', {}, [])) as InstanceType<typeof Tag>;
 		}
 
+		// Wrap the table in a scroll container so wide tables overflow-x scroll
+		// on narrow screens. The behavior places the toolbar/pagination as
+		// siblings of this wrapper, keeping them outside the horizontal scroll.
+		const scrollDiv = new Tag('div', {}, [tableTag]);
+
 		return createComponentRenderable({ rune: 'data-table', schemaOrgType: 'Dataset',
 			tag: 'div',
 			properties: {
@@ -52,9 +57,10 @@ export const datatable = createContentModelSchema({
 				defaultSort: defaultSortMeta,
 			},
 			refs: {
+				scroll: scrollDiv,
 				table: tableTag,
 			},
-			children: [sortableMeta, searchableMeta, pageSizeMeta, defaultSortMeta, tableTag],
+			children: [sortableMeta, searchableMeta, pageSizeMeta, defaultSortMeta, scrollDiv],
 		});
 	},
 });

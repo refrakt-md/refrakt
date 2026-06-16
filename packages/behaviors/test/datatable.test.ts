@@ -37,10 +37,12 @@ function createDataTable(opts?: {
 	).join('');
 
 	el.innerHTML = `
-		<table>
-			<thead><tr><th>Name</th><th>Age</th><th>Dept</th></tr></thead>
-			<tbody>${rowsHtml}</tbody>
-		</table>
+		<div class="rf-datatable__scroll">
+			<table>
+				<thead><tr><th>Name</th><th>Age</th><th>Dept</th></tr></thead>
+				<tbody>${rowsHtml}</tbody>
+			</table>
+		</div>
 	`;
 
 	document.body.appendChild(el);

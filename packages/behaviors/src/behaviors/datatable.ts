@@ -23,6 +23,10 @@ export function datatableBehavior(el: HTMLElement): CleanupFn {
 	const table = el.querySelector('table');
 	if (!table) return () => {};
 
+	// The transform wraps the table in a scroll container; fall back to the
+	// table itself for backwards compat with older renders.
+	const anchor: Element = table.closest('.rf-datatable__scroll') ?? table;
+
 	// Read configuration from data attributes
 	const searchable = el.getAttribute('data-searchable') === 'true';
 	const sortableStr = el.getAttribute('data-sortable') || '';
@@ -66,7 +70,7 @@ export function datatableBehavior(el: HTMLElement): CleanupFn {
 		searchInput.className = 'rf-datatable__input';
 		toolbar.appendChild(searchInput);
 
-		table.before(toolbar);
+		anchor.before(toolbar);
 
 		const onInput = () => {
 			searchQuery = searchInput!.value;
@@ -129,7 +133,7 @@ export function datatableBehavior(el: HTMLElement): CleanupFn {
 		pagination.appendChild(pageInfo);
 		pagination.appendChild(nextBtn);
 
-		table.after(pagination);
+		anchor.after(pagination);
 
 		const onPrev = () => {
 			if (currentPage > 0) {
