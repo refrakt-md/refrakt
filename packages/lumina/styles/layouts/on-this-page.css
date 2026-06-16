@@ -15,7 +15,6 @@
 }
 
 .rf-on-this-page__list {
-	list-style: none;
 	margin: 0;
 	padding: 0;
 }
@@ -29,7 +28,6 @@
 }
 
 .rf-on-this-page__item a {
-	display: block;
 	padding: 0.25rem 0.75rem;
 	color: var(--rf-color-muted, #64748b);
 	text-decoration: none;

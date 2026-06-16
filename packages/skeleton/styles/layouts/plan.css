@@ -1,0 +1,103 @@
+/* plan layout — structure. The dashboard grid, the fixed sidebar box + content
+ * offset, the sidebar trigger/title/status flex + disclosure, the link blocks +
+ * flex sizing, the content flex/has-toc + sticky TOC, the sticky mobile toolbar, the
+ * section-nav dropdown positioning + open, and the responsive hides/reflows.
+ * Colours, borders, radii, type, padding, scrollbar chrome, and the disclosure
+ * glyph are skin. */
+.rf-plan-dashboard {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr));
+}
+.rf-plan-dashboard__section { min-width: 0; }
+.rf-plan-sidebar {
+	position: fixed;
+	inset-block: 0;
+	inset-inline-start: 0;
+	width: var(--plan-sidebar-width, 240px);
+	overflow-y: auto;
+}
+.rf-plan-sidebar__title {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+.rf-plan-sidebar__search-trigger {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+.rf-plan-sidebar__search-trigger svg { width: 16px; height: 16px; flex-shrink: 0; }
+.rf-plan-sidebar__status-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+}
+.rf-plan-sidebar__status-header::before { content: '\25B8'; display: inline-block; }
+.rf-plan-sidebar__status-header[aria-expanded="true"]::before { transform: rotate(90deg); }
+.rf-plan-sidebar__status-label { flex: 1; }
+.rf-plan-sidebar__status-count { min-width: 1.25rem; }
+.rf-plan-sidebar__status-items[hidden] { display: none; }
+.rf-plan-sidebar__link { display: block; }
+.rf-plan-sidebar__link--dashboard { display: flex; align-items: center; }
+.rf-plan-sidebar__dashboard-icon { flex-shrink: 0; }
+.rf-plan-sidebar__status-link { display: flex; align-items: center; justify-content: space-between; }
+.rf-plan-sidebar__blocker-icon { margin-left: auto; flex-shrink: 0; }
+.rf-plan-sidebar__link .rf-plan-sidebar__view-label { flex: 1; overflow: hidden; }
+.rf-plan-sidebar__link .rf-plan-sidebar__view-count { min-width: 1.25rem; }
+.rf-plan-sidebar__group[data-type="views"] .rf-plan-sidebar__link {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+.rf-plan-main { margin-inline-start: var(--plan-sidebar-width, 240px); }
+.rf-plan-main__inner--has-toc {
+	display: flex;
+	max-width: calc(60rem + 200px + 2rem);
+	margin: 0 auto;
+}
+.rf-plan-main__inner--has-toc .rf-plan-main__body { flex: 1; min-width: 0; max-width: 60rem; }
+.rf-plan-main__body { max-width: 60rem; margin: 0 auto; }
+.rf-plan-toc {
+	width: 200px;
+	flex-shrink: 0;
+	position: sticky;
+	top: var(--rf-spacing-lg, 1.5rem);
+	align-self: flex-start;
+	max-height: calc(100vh - var(--rf-spacing-xl, 2rem) * 2);
+	overflow-y: auto;
+}
+.rf-plan-toolbar {
+	display: none;
+	align-items: center;
+	position: sticky;
+	top: 0;
+	z-index: 100;
+}
+.rf-plan-toolbar__hamburger { flex-shrink: 0; }
+.rf-plan-toolbar__title { flex: 1; min-width: 0; }
+.rf-plan-toolbar__section-nav-toggle { flex-shrink: 0; }
+.rf-section-nav {
+	display: none;
+	position: absolute;
+	top: 100%;
+	right: 0.5rem;
+	min-width: 14rem;
+	z-index: 200;
+}
+.rf-section-nav[data-open] { display: block; }
+.rf-section-nav__list { list-style: none; }
+.rf-section-nav__link { display: block; }
+@media (max-width: 64rem) {
+	.rf-plan-toc { display: none; }
+	.rf-plan-main__inner--has-toc { display: block; }
+}
+@media (max-width: 48rem) {
+	html:has(.rf-plan-toolbar) { scroll-padding-top: 3.5rem; }
+	.rf-plan-toolbar { display: flex; }
+	.rf-plan-sidebar { display: none; }
+	.rf-mobile-panel .rf-plan-sidebar__search-trigger { display: none; }
+	.rf-layout-plan .rf-mobile-panel--nav { top: 3.0625rem; }
+	.rf-plan-main { margin-inline-start: 0; }
+	.rf-plan-dashboard { grid-template-columns: 1fr; }
+}

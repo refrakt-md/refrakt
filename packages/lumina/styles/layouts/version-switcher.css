@@ -2,8 +2,6 @@
 /* Version Switcher — page-level version dropdown */
 
 .rf-version-switcher {
-	display: inline-flex;
-	align-items: center;
 	gap: 0.5rem;
 	margin-bottom: 1.5rem;
 	font-size: var(--rf-text-sm);
@@ -18,8 +16,6 @@
 }
 
 .rf-version-switcher__select {
-	appearance: none;
-	-webkit-appearance: none;
 	background: var(--rf-color-surface);
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-sm, 0.25rem);

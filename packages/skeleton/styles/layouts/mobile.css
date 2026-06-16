@@ -1,0 +1,39 @@
+/* mobile — structure. The menu-button hide/show + icon-state swaps, the docked
+ * panel positioning + scroll, the panel-link block display, the panel open, and the
+ * mobile media-query reveal/hide of the button + inline nav + duplicated brand.
+ * Button/link chrome, padding, and type are skin. */
+.rf-mobile-menu-btn { display: none; }
+.rf-mobile-menu-btn__icon-close { display: none; }
+.rf-mobile-menu-btn[aria-expanded="true"] .rf-mobile-menu-btn__icon-open { display: none; }
+.rf-mobile-menu-btn[aria-expanded="true"] .rf-mobile-menu-btn__icon-close { display: inline; }
+.rf-mobile-panel {
+	display: none;
+	position: fixed;
+	top: var(--rf-header-height, 3.5rem);
+	right: 0;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	max-width: 100vw;
+	z-index: 99;
+	overflow-x: hidden;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+}
+.rf-mobile-panel__nav img { display: none; }
+.rf-mobile-panel__nav a,
+.rf-mobile-panel .rf-nav--menubar .rf-nav__top-level .rf-nav-item__link,
+.rf-mobile-panel .rf-nav--menubar .rf-nav-group .rf-nav-item__link,
+.rf-mobile-panel .rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link {
+	display: block;
+}
+.rf-mobile-panel[data-open] { display: block; }
+@media (max-width: 768px) {
+	.rf-mobile-menu-btn { display: block; }
+	.rf-header__inner > rf-nav,
+	.rf-docs-header__inner > rf-nav,
+	.rf-blog-header__inner > rf-nav {
+		display: none;
+	}
+	.rf-mobile-panel__nav > p:first-child { display: none; }
+}

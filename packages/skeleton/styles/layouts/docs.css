@@ -1,0 +1,82 @@
+/* docs layout — structure. Fixed header bar + order + brand box, the sidebar/content
+ * flex row, the sticky sidebar box + fixed-header clearance, the content flex +
+ * container + width-variant grid, the has-toc flex + sticky TOC, the scroll-padding
+ * offset, the mobile toolbar flex + breadcrumb ellipsis, and the responsive hides.
+ * Colours, borders, type, padding, scrollbar chrome, and content padding are skin. */
+.rf-docs-header { position: fixed; top: 0; left: 0; right: 0; z-index: 10; }
+.rf-docs-header__inner { display: flex; align-items: center; }
+.rf-docs-header__inner .rf-search-trigger { margin-left: auto; order: 1; }
+.rf-docs-header__inner > rf-nav { order: 3; }
+.rf-docs-header__inner p ~ p { order: 1; }
+.rf-docs-header__inner .rf-mobile-menu-btn { order: 3; }
+.rf-docs-header a { display: inline-block; }
+.rf-docs-header p:first-child a { display: inline-flex; align-items: center; }
+.rf-docs-header img,
+.rf-docs-header p:first-child a > .rf-icon { height: 2rem; width: 2rem; }
+.rf-docs-header p:first-child a > .rf-icon { display: inline-block; }
+.rf-docs-header__inner p ~ p a svg { width: 1.1rem; height: 1.1rem; }
+.rf-docs-body { display: flex; align-items: flex-start; }
+.rf-docs-sidebar {
+	position: sticky;
+	top: 3.125rem;
+	align-self: flex-start;
+	flex-shrink: 0;
+	width: 240px;
+	height: calc(100vh - 3.125rem);
+	overflow-y: auto;
+	z-index: 5;
+}
+html:has(.rf-docs-header) .rf-docs-sidebar { margin-top: 3.125rem; }
+.rf-docs-content {
+	flex: 1;
+	min-width: 0;
+	container-type: inline-size;
+}
+.rf-docs-content__inner { max-width: 60rem; margin: 0 auto; }
+.rf-docs-content__inner--has-toc {
+	display: flex;
+	max-width: calc(60rem + 220px + 6rem);
+}
+.rf-docs-content__inner--has-toc .rf-docs-content__body { flex: 1; min-width: 0; }
+.rf-docs-content__body > div > article {
+	display: grid;
+	grid-template-columns:
+		[wide-start] minmax(var(--rf-content-padding, 2.5rem), var(--rf-docs-wide-inset, 3rem))
+		[content-start] minmax(0, 1fr)
+		[content-end] minmax(var(--rf-content-padding, 2.5rem), var(--rf-docs-wide-inset, 3rem))
+		[wide-end];
+}
+.rf-docs-content__body > div > article > * { grid-column: content; }
+.rf-docs-content__body > div > article > [data-width="wide"],
+.rf-docs-content__body > div > article > [data-width="full"] { grid-column: wide; }
+.rf-docs-content__body > div > article > [data-width="compact"] { max-width: var(--rf-width-compact, 30rem); margin-inline: auto; }
+.rf-docs-content__body > div > article > [data-width="narrow"] { max-width: var(--rf-width-narrow, 40rem); margin-inline: auto; }
+.rf-docs-toc {
+	width: 220px;
+	flex-shrink: 0;
+	position: sticky;
+	top: 5.75rem;
+	align-self: flex-start;
+	max-height: calc(100vh - 5.75rem);
+	overflow-y: auto;
+}
+html:has(.rf-docs-header) { scroll-padding-top: 5rem; }
+.rf-docs-toolbar {
+	display: none;
+	align-items: center;
+	max-width: 100%;
+	overflow: hidden;
+}
+.rf-docs-toolbar__hamburger { flex-shrink: 0; }
+.rf-docs-toolbar__breadcrumb { flex: 1 1 0; min-width: 0; overflow: hidden; }
+@media (max-width: 1100px) {
+	.rf-docs-toc { display: none; }
+	.rf-docs-content__inner--has-toc { display: block; max-width: 60rem; }
+}
+@media (max-width: 768px) {
+	.rf-docs-header { position: sticky; top: 0; }
+	.rf-docs-header__inner p ~ p { display: none; }
+	.rf-docs-toolbar { display: flex; position: sticky; top: calc(3.5rem - 1px); z-index: 100; }
+	.rf-mobile-panel--nav { top: calc(6.25rem - 1px); }
+	.rf-docs-sidebar { display: none; }
+}

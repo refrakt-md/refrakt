@@ -3,7 +3,6 @@
 
 /* ---- Mobile menu button (hidden on desktop) ---- */
 .rf-mobile-menu-btn {
-	display: none;
 	background: none;
 	border: none;
 	padding: 0.25rem;
@@ -14,17 +13,6 @@
 .rf-mobile-menu-btn:hover {
 	color: var(--rf-color-text);
 }
-/* Dots/X toggle — the SVG has both icons stacked; we show one at a time
-   based on the button's aria-expanded state. */
-.rf-mobile-menu-btn__icon-close {
-	display: none;
-}
-.rf-mobile-menu-btn[aria-expanded="true"] .rf-mobile-menu-btn__icon-open {
-	display: none;
-}
-.rf-mobile-menu-btn[aria-expanded="true"] .rf-mobile-menu-btn__icon-close {
-	display: inline;
-}
 
 /* ---- Mobile panel — docks below the header ----
    The header height is fixed by --rf-header-height (default 3.5rem to
@@ -32,19 +20,7 @@
    line-box rounding). Layouts with a taller header set the variable on
    their layout root so the panel — a sibling of the header — inherits. */
 .rf-mobile-panel {
-	display: none;
-	position: fixed;
-	top: var(--rf-header-height, 3.5rem);
-	right: 0;
-	bottom: 0;
-	left: 0;
-	width: 100%;
-	max-width: 100vw;
-	z-index: 99;
 	background: var(--rf-color-bg, #fff);
-	overflow-x: hidden;
-	overflow-y: auto;
-	-webkit-overflow-scrolling: touch;
 }
 /* Layout-specific panels (e.g. the docs sidebar-nav panel that sits
    under the docs header *and* toolbar) override `top` in their own
@@ -55,9 +31,6 @@
 .rf-mobile-panel__nav p {
 	margin: 0;
 }
-.rf-mobile-panel__nav img {
-	display: none;
-}
 /* Panel items — top-level links and group items render uniformly. The
    selectors below need to beat nav.css's nested-columns mobile overrides
    ((0,4,0)) on equal source position (nav.css is imported later than
@@ -67,7 +40,6 @@
 .rf-mobile-panel .rf-nav--menubar .rf-nav__top-level .rf-nav-item__link,
 .rf-mobile-panel .rf-nav--menubar .rf-nav-group .rf-nav-item__link,
 .rf-mobile-panel .rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link {
-	display: block;
 	padding: 0;
 	font-size: var(--rf-text-2xl);
 	font-weight: var(--rf-weight-bold);
@@ -95,30 +67,6 @@
    min-width rules). */
 .rf-mobile-panel__body {
 	padding: 1rem 1.5rem;
-}
-
-/* Panel opens via data-open attribute (set by mobile-menu behavior) */
-.rf-mobile-panel[data-open] {
-	display: block;
-}
-
-@media (max-width: 768px) {
-	.rf-mobile-menu-btn {
-		display: block;
-	}
-	/* The inline menubar collapses behind the kebab on mobile — the
-	   .rf-mobile-panel duplicates the same nav and styles it as a flat
-	   vertical list (see nav.css's rf-nav--menubar mobile rules). */
-	.rf-header__inner > rf-nav,
-	.rf-docs-header__inner > rf-nav,
-	.rf-blog-header__inner > rf-nav {
-		display: none;
-	}
-	/* Hide the duplicated brand line inside the mobile panel — the header
-	   above the panel already shows it. */
-	.rf-mobile-panel__nav > p:first-child {
-		display: none;
-	}
 }
 
 }

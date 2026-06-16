@@ -1,0 +1,4 @@
+/* on-this-page — structure. The list reset + the block link box. Type, colours,
+ * indents, and the active rail are skin. */
+.rf-on-this-page__list { list-style: none; }
+.rf-on-this-page__item a { display: block; }

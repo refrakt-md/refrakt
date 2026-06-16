@@ -1,0 +1,26 @@
+/* theme-toggle — structure. The button box (inline-flex centring + size), the
+ * header order, the tint-lock hide, and the icon mask box. Borders, radii, colours,
+ * and the glyph masks are skin. */
+.rf-theme-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+}
+.rf-header__inner .rf-theme-toggle,
+.rf-docs-header__inner .rf-theme-toggle,
+.rf-blog-header__inner .rf-theme-toggle {
+	order: 2;
+}
+html[data-tint-lock="true"] .rf-theme-toggle {
+	display: none;
+}
+.rf-theme-toggle__icon {
+	display: inline-block;
+	width: 1rem;
+	height: 1rem;
+	mask-size: contain;
+	mask-repeat: no-repeat;
+	mask-position: center;
+}

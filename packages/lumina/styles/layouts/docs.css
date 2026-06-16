@@ -3,39 +3,18 @@
 
 /* ---- Fixed header ---- */
 .rf-docs-header {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	z-index: 10;
 	background: var(--rf-color-bg, #fff);
 	border-bottom: 1px solid var(--rf-color-border);
 }
 .rf-docs-header__inner {
-	display: flex;
-	align-items: center;
 	gap: 1rem;
 	padding: 0.625rem 1.5rem;
-}
-.rf-docs-header__inner .rf-search-trigger {
-	margin-left: auto;
-	order: 1;
-}
-.rf-docs-header__inner > rf-nav {
-	order: 3;
-}
-.rf-docs-header__inner p ~ p {
-	order: 1;
-}
-.rf-docs-header__inner .rf-mobile-menu-btn {
-	order: 3;
 }
 .rf-docs-header p {
 	margin: 0;
 	line-height: 1;
 }
 .rf-docs-header a {
-	display: inline-block;
 	color: inherit;
 	text-decoration: none;
 }
@@ -43,20 +22,12 @@
 	text-decoration: none;
 }
 .rf-docs-header p:first-child a {
-	display: inline-flex;
-	align-items: center;
 	gap: 0.5rem;
 	font-weight: var(--rf-weight-semibold);
 	font-size: var(--rf-text-xl);
 	letter-spacing: var(--rf-tracking-tight);
 }
-.rf-docs-header img,
 .rf-docs-header p:first-child a > .rf-icon {
-	height: 2rem;
-	width: 2rem;
-}
-.rf-docs-header p:first-child a > .rf-icon {
-	display: inline-block;
 	vertical-align: middle;
 	color: currentColor;
 }
@@ -71,44 +42,14 @@
 	color: var(--rf-color-text);
 }
 .rf-docs-header__inner p ~ p a svg {
-	width: 1.1rem;
-	height: 1.1rem;
 	vertical-align: -0.15em;
-}
-
-/* ---- Body wrapper: sidebar + content row ----
- * The `body` slot in docsLayout groups sidebar + main so `position: sticky`
- * on the sidebar has a containing block that ends *before* the footer.
- * When the user scrolls past the wrapper's bottom (i.e. when the footer
- * comes into view) sticky releases and the sidebar scrolls away with the
- * page rather than overlaying the footer. */
-.rf-docs-body {
-	display: flex;
-	align-items: flex-start;
 }
 
 /* ---- Sticky sidebar ---- */
 .rf-docs-sidebar {
-	position: sticky;
-	top: 3.125rem;
-	align-self: flex-start;
-	flex-shrink: 0;
-	width: 240px;
-	height: calc(100vh - 3.125rem);
-	overflow-y: auto;
 	padding: 1.5rem;
 	border-right: 1px solid var(--rf-color-border);
 	background: var(--rf-color-bg, #fff);
-	z-index: 5;
-}
-/* Match the sticky offset in the natural-flow position too. The fixed header
- * is out of flow so `.rf-docs-body` starts at viewport top; without this
- * margin, the sidebar's static position sits at Y=0 with its top 3.125rem
- * hidden under the header — visible only when the page scrolls enough for
- * sticky to activate. Scoped to `:has(.rf-docs-header)` so layouts without a
- * header don't gain an unwanted top gap. */
-html:has(.rf-docs-header) .rf-docs-sidebar {
-	margin-top: 3.125rem;
 }
 .rf-docs-sidebar::-webkit-scrollbar {
 	width: 0;
@@ -116,52 +57,14 @@ html:has(.rf-docs-header) .rf-docs-sidebar {
 
 /* ---- Content area ---- */
 .rf-docs-content {
-	flex: 1;
-	min-width: 0;
 	padding-top: 4.75rem;
 	padding-bottom: 4rem;
-	container-type: inline-size;
 }
 .rf-docs-content__inner {
-	max-width: 60rem;
-	margin: 0 auto;
 	--rf-content-padding: 2.5rem;
 }
 .rf-docs-content__inner--has-toc {
-	display: flex;
 	gap: 6rem;
-	max-width: calc(60rem + 220px + 6rem);
-}
-.rf-docs-content__inner--has-toc .rf-docs-content__body {
-	flex: 1;
-	min-width: 0;
-}
-
-/* Width-variant grid — mirrors default layout's 5-track grid,
-   simplified to 3 tracks (no full breakout in docs context).
-   The wide inset tracks also serve as the content gutter. */
-.rf-docs-content__body > div > article {
-	display: grid;
-	grid-template-columns:
-		[wide-start] minmax(var(--rf-content-padding, 2.5rem), var(--rf-docs-wide-inset, 3rem))
-		[content-start] minmax(0, 1fr)
-		[content-end] minmax(var(--rf-content-padding, 2.5rem), var(--rf-docs-wide-inset, 3rem))
-		[wide-end];
-}
-.rf-docs-content__body > div > article > * {
-	grid-column: content;
-}
-.rf-docs-content__body > div > article > [data-width="wide"],
-.rf-docs-content__body > div > article > [data-width="full"] {
-	grid-column: wide;
-}
-.rf-docs-content__body > div > article > [data-width="compact"] {
-	max-width: var(--rf-width-compact, 30rem);
-	margin-inline: auto;
-}
-.rf-docs-content__body > div > article > [data-width="narrow"] {
-	max-width: var(--rf-width-narrow, 40rem);
-	margin-inline: auto;
 }
 
 /* Pagination wrapper sits outside the article grid, so it gets its own
@@ -174,34 +77,18 @@ html:has(.rf-docs-header) .rf-docs-sidebar {
 
 /* ---- "On this page" sidebar ---- */
 .rf-docs-toc {
-	width: 220px;
-	flex-shrink: 0;
-	position: sticky;
-	top: 5.75rem;
-	align-self: flex-start;
-	max-height: calc(100vh - 5.75rem);
-	overflow-y: auto;
 	padding: 0 1.25rem;
 }
 .rf-docs-toc::-webkit-scrollbar {
 	width: 0;
 }
 
-/* ---- Fixed-header offset ---- */
-html:has(.rf-docs-header) {
-	scroll-padding-top: 5rem;
-}
-
 /* ---- Mobile toolbar (hidden on desktop) ---- */
 .rf-docs-toolbar {
-	display: none;
-	align-items: center;
 	gap: 0.75rem;
 	padding: 0.625rem 1rem;
 	border-bottom: 1px solid var(--rf-color-border);
 	background: var(--rf-color-bg, #fff);
-	max-width: 100%;
-	overflow: hidden;
 }
 .rf-docs-toolbar__hamburger {
 	background: none;
@@ -210,7 +97,6 @@ html:has(.rf-docs-header) {
 	cursor: pointer;
 	color: var(--rf-color-muted);
 	line-height: 0;
-	flex-shrink: 0;
 }
 .rf-docs-toolbar__hamburger:hover {
 	color: var(--rf-color-text);
@@ -223,9 +109,6 @@ html:has(.rf-docs-header) {
 	 * combined with `min-width: 0` this is what triggers ellipsis on long
 	 * titles. Without basis 0 a long page title overflows the toolbar and
 	 * forces horizontal page scroll on narrow viewports. */
-	flex: 1 1 0;
-	min-width: 0;
-	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
@@ -242,45 +125,9 @@ html:has(.rf-docs-header) {
 }
 
 /* ---- Hide TOC on medium screens ---- */
-@media (max-width: 1100px) {
-	.rf-docs-toc {
-		display: none;
-	}
-	.rf-docs-content__inner--has-toc {
-		display: block;
-		max-width: 60rem;
-	}
-}
 
 /* ---- Mobile overrides ---- */
 @media (max-width: 768px) {
-	.rf-docs-header {
-		position: sticky;
-		top: 0;
-	}
-	.rf-docs-header__inner p ~ p {
-		display: none;
-	}
-	/* The toolbar is sticky directly below the header so the hamburger —
-	   which doubles as the open/close trigger for the sidebar-nav panel —
-	   stays reachable while the panel is open or the page is scrolled.
-	   `top` is 1px less than the header height so the two bars overlap by
-	   a pixel — sub-pixel rounding during scroll can otherwise leave a
-	   hairline gap that lets page content shine through.
-	   z-index sits above the .rf-mobile-panel (99) so the hamburger
-	   stays clickable while the panel is open. */
-	.rf-docs-toolbar {
-		display: flex;
-		position: sticky;
-		top: calc(3.5rem - 1px);
-		z-index: 100;
-	}
-	.rf-mobile-panel--nav {
-		top: calc(6.25rem - 1px);
-	}
-	.rf-docs-sidebar {
-		display: none;
-	}
 	.rf-docs-content {
 		padding-top: 2rem;
 	}
