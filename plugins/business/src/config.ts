@@ -22,6 +22,7 @@ export const config: Record<string, RuneConfig> = {
 	CastMember: {
 		block: 'cast-member',
 		parent: 'Cast',
+		defaultElevation: 'flat',
 		editHints: { name: 'inline', role: 'inline', body: 'none' },
 	},
 	Organization: {

@@ -32,6 +32,23 @@ List items are parsed into name and role parts automatically.
 
 {% /preview %}
 
+## List layout
+
+Use `layout="list"` for a denser, single-column directory.
+
+{% preview source=true %}
+
+{% cast layout="list" %}
+- Alice Johnson - CEO
+  ![Alice Johnson](https://assets.refrakt.md/team-alice-johnson.png)
+- Bob Smith - CTO
+  ![Bob Smith](https://assets.refrakt.md/team-bob-smith.png)
+- Carol Williams - Head of Design
+- David Chen - Lead Engineer
+{% /cast %}
+
+{% /preview %}
+
 ## Explicit members
 
 Use `{% cast-member %}` tags for more control, including bios.

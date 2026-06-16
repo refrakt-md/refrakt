@@ -76,14 +76,18 @@ export const cast = createContentModelSchema({
 				emitTag: 'cast-member',
 				emitAttributes: { name: '$name', role: '$role', image: '$image' },
 			} as any,
+			{ name: 'items', match: 'tag', optional: true, greedy: true },
 		],
 	},
 	transform(resolved, attrs, config) {
 		const header = new RenderableNodeCursor(
 			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
 		);
+		// List-shorthand emits cast-member tags via the itemModel; explicit
+		// {% cast-member %} children come through `items`. Both feed the same list.
+		const allMembers = [...asNodes(resolved.members), ...asNodes(resolved.items)];
 		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.members), config) as RenderableTreeNode[],
+			Markdoc.transform(allMembers, config) as RenderableTreeNode[],
 		);
 
 		const layoutMeta = new Tag('meta', { content: attrs.layout ?? 'grid' });

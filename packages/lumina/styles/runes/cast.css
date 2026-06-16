@@ -17,11 +17,9 @@
 	gap: 0.75rem;
 }
 
-/* Member card — surface instead of border */
+/* Member card — surface chrome (fill, border, radius, padding) comes from
+ * dimensions/surfaces.css via defaultElevation: 'flat'. */
 .rf-cast-member {
-	background: var(--rf-color-surface);
-	border-radius: var(--rf-radius-md);
-	padding: 1.25rem;
 	text-align: center;
 }
 .rf-cast-member__name {
