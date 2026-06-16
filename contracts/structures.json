@@ -868,6 +868,18 @@
 				"stacked": {
 					"source": "meta",
 					"dataAttribute": "data-stacked"
+				},
+				"tick-count": {
+					"source": "meta",
+					"dataAttribute": "data-tick-count"
+				},
+				"tick-step": {
+					"source": "meta",
+					"dataAttribute": "data-tick-step"
+				},
+				"label-angle": {
+					"source": "meta",
+					"dataAttribute": "data-label-angle"
 				}
 			}
 		},
