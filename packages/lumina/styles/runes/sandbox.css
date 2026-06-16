@@ -1,35 +1,26 @@
 @layer skin {
-/* Sandbox — Isolated HTML/CSS/JS rendering via iframe */
+/* Sandbox — skin. The iframe clip/fill + banner/poster/activate layout live in
+ * @refrakt-md/skeleton (styles/runes/sandbox.css). */
 .rf-sandbox {
 	border-radius: var(--rf-radius-md);
-	overflow: hidden;
 }
-
 .rf-sandbox iframe {
-	display: block;
-	width: 100%;
 	border: none;
 }
-
 /* Static fallback (pre/code shown before hydration) */
 .rf-sandbox pre {
 	margin: 0;
 }
-
 /* When inside preview, remove sandbox margin */
 .rf-preview .rf-sandbox {
 	margin: 0;
 	border-radius: 0;
 }
-
-/* Untrusted-mode affordance: persistent banner the iframe can't suppress.
-   Rendered by the RfSandbox custom element when `data-security-mode="untrusted"`. */
+/* Untrusted-mode affordance. */
 .rf-sandbox[data-security-mode="untrusted"] {
 	border: 1px solid var(--rf-color-warning, #b45309);
 }
-
 .rf-sandbox__untrusted-banner {
-	display: block;
 	padding: 0.5rem 0.75rem;
 	font-size: var(--rf-text-sm);
 	line-height: 1.25rem;
@@ -38,31 +29,10 @@
 	background: var(--rf-color-warning-bg, #fef3c7);
 	border-bottom: 1px solid var(--rf-color-warning, #b45309);
 }
-
-/* Deferred activation (WORK-381): poster shown until a non-eager sandbox
-   mounts. Rendered by the RfSandbox custom element from `data-poster`. */
 .rf-sandbox__poster {
-	position: relative;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	min-height: 150px;
 	background: var(--rf-color-surface-2, var(--rf-color-surface, #f4f4f5));
 }
-
-.rf-sandbox__poster-image {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-}
-
 .rf-sandbox__activate {
-	position: relative;
-	z-index: 1;
-	display: inline-flex;
-	align-items: center;
 	gap: 0.5ch;
 	padding: 0.5rem 1rem;
 	font: inherit;
@@ -74,16 +44,13 @@
 	cursor: pointer;
 	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
 }
-
 .rf-sandbox__activate::before {
 	content: "▶";
 	font-size: 0.85em;
 }
-
 .rf-sandbox__activate:hover {
 	background: var(--rf-color-accent-hover, var(--rf-color-accent, #1d4ed8));
 }
-
 .rf-sandbox__activate:focus-visible {
 	outline: 2px solid var(--rf-color-accent, #2563eb);
 	outline-offset: 2px;

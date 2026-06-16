@@ -1,0 +1,29 @@
+/* conversation — structure. The column stack, the message bubble flex + width +
+ * side alignment, and the data-carrier hides. Bubble chrome, type, and gaps are
+ * skin (Lumina's styles/runes/conversation.css). */
+
+.rf-conversation {
+	display: flex;
+	flex-direction: column;
+}
+.rf-conversation__messages {
+	display: flex;
+	flex-direction: column;
+}
+.rf-conversation-message {
+	display: flex;
+	flex-direction: column;
+	max-width: 80%;
+}
+.rf-conversation-message--left {
+	align-self: flex-start;
+	align-items: flex-start;
+}
+.rf-conversation-message--right {
+	align-self: flex-end;
+	align-items: flex-end;
+}
+.rf-conversation-message > span[data-field="speaker"],
+.rf-conversation-message > meta[data-field] { display: none; }
+.rf-conversation-message__body > span[data-field],
+.rf-conversation-message__body > meta { display: none; }

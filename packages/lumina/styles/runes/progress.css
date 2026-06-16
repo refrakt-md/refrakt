@@ -1,50 +1,28 @@
 @layer skin {
-/* progress — generic completion bar (SPEC-072 / WORK-285).
- *
- * Presentational: the fill width is driven by the `--rf-progress` custom
- * property set on the root from the computed percent. Generalized from the
- * former plan milestone progress bar.
- */
-
+/* progress — skin. The flex row, value auto-push, track box, and fill box live in
+ * @refrakt-md/skeleton (styles/runes/progress.css). */
 .rf-progress {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: baseline;
 	gap: var(--rf-spacing-xs) var(--rf-spacing-sm);
 	margin: var(--rf-spacing-sm) 0;
 }
-
 .rf-progress__label {
 	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-text);
 }
-
 .rf-progress__value {
 	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-text);
-	margin-left: auto;
 }
-
 .rf-progress__track {
-	flex-basis: 100%;
-	height: 0.5rem;
 	border-radius: var(--rf-radius-pill, 999px);
 	background: var(--rf-color-surface-hover);
-	overflow: hidden;
 }
-
 .rf-progress__fill {
-	display: block;
-	height: 100%;
-	width: var(--rf-progress, 0%);
 	border-radius: inherit;
 	background: var(--rf-color-primary);
 	transition: width 0.3s ease;
 }
-
-/* Sentiment variants tint the fill; the neutral default uses the primary.
- * Token names follow the sentiment scheme in dimensions/metadata.css
- * (positive→success, caution→warning, negative→danger). */
+/* Sentiment variants tint the fill. */
 .rf-progress--positive .rf-progress__fill { background: var(--rf-color-success); }
 .rf-progress--caution .rf-progress__fill { background: var(--rf-color-warning); }
 .rf-progress--negative .rf-progress__fill { background: var(--rf-color-danger); }
