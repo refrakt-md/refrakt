@@ -645,6 +645,13 @@ function transformRune(
 	const bgDataAttrs: Record<string, string> = {};
 	let bgElement: SerializedTag | null = null;
 
+	// SPEC-104 — a `{% bg %}` body hoists a `data-bg-guest` element (a sandbox
+	// backdrop) into the host's children. Capture it so §1f relocates it into the
+	// bg layer (a sibling of the `bg-video` branch) and the flow drops it (below).
+	const bgGuestNode = (tag.children ?? []).find(
+		(c): c is SerializedTag => isTag(c) && (c as SerializedTag).attributes?.['data-bg-guest'] !== undefined,
+	) ?? null;
+
 	const bgPreset = readMeta(tag, 'bg-preset');
 	const bgSrc = readMeta(tag, 'bg-src');
 	const bgVideo = readMeta(tag, 'bg-video');
@@ -685,7 +692,7 @@ function transformRune(
 	// In cover mode the scrim belongs to the media well (handled below), not the
 	// self-surface bg layer — so it alone doesn't raise the bg layer here.
 	const bgScrim = scrimDir && scrimDir !== 'none' && !isCover;
-	if (bgPreset || bgSrc || bgVideo || bgGradient || bgScrim || bgOverlay) {
+	if (bgPreset || bgSrc || bgVideo || bgGradient || bgScrim || bgOverlay || bgGuestNode) {
 		// Resolve preset styles (Tier 1 — CSS-only presets)
 		let presetStyles: Record<string, string> = {};
 		if (bgPreset && backgrounds[bgPreset]) {
@@ -742,6 +749,14 @@ function transformRune(
 				src: bgVideo,
 				...(bgStyleParts.length ? { style: bgStyleParts.filter(s => !s.startsWith('--bg-image')).join('; ') } : {}),
 			}));
+		}
+
+		// SPEC-104 — relocate a live sandbox backdrop into the bg layer, a sibling of
+		// the `bg-video` branch: above the `--bg-image` boot frame, below the
+		// overlay/scrim appended after it. The guest arrived tagged + postured by the
+		// bg rune; the flow copy is dropped below (section 4).
+		if (bgGuestNode) {
+			bgChildren.push(bgGuestNode);
 		}
 
 		// overlay — a flat wash (SPEC-088 structured vocabulary): dark | light | a
@@ -880,7 +895,9 @@ function transformRune(
 	const bemClass = [block, ...modifierClasses, existingClass].filter(Boolean).join(' ');
 
 	// 4. Auto-label children by tag name or property attribute (recursive)
-	let children = tag.children;
+	// SPEC-104 — drop the bg guest from the flow: it was relocated into the bg
+	// layer (§1f) and must not also render among the host's content.
+	let children = bgGuestNode ? tag.children.filter(c => c !== bgGuestNode) : tag.children;
 	if (config.autoLabel) {
 		children = applyAutoLabel(children, config.autoLabel);
 	}

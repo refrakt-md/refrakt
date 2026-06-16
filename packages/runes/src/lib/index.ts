@@ -144,14 +144,18 @@ function injectBgMetasFrom(result: RenderableTreeNodes, ctx: TintBgContext): Ren
   if (!Markdoc.Tag.isTag(result)) return result;
 
   const metas: Tag[] = [];
+  // SPEC-104 — a `{% bg %}` body may render a `data-bg-guest` element (a sandbox
+  // backdrop). Hoist it to the host alongside the metas; the engine (§1f)
+  // relocates it into the bg layer.
+  const guests: Tag[] = [];
 
   if (ctx.bgNode) {
     const bgResult = Markdoc.transform(ctx.bgNode, ctx.config);
     if (Markdoc.Tag.isTag(bgResult)) {
       for (const child of bgResult.children) {
-        if (Markdoc.Tag.isTag(child) && child.name === 'meta') {
-          metas.push(child);
-        }
+        if (!Markdoc.Tag.isTag(child)) continue;
+        if (child.name === 'meta') metas.push(child);
+        else if (child.attributes['data-bg-guest'] !== undefined) guests.push(child);
       }
     }
   }
@@ -163,8 +167,8 @@ function injectBgMetasFrom(result: RenderableTreeNodes, ctx: TintBgContext): Ren
     metas.push(new Markdoc.Tag('meta', { 'data-field': 'bg-preset', content: ctx.bg }));
   }
 
-  if (metas.length === 0) return result;
-  result.children = [...result.children, ...metas];
+  if (metas.length === 0 && guests.length === 0) return result;
+  result.children = [...result.children, ...metas, ...guests];
   return result;
 }
 
