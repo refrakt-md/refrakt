@@ -1,8 +1,4 @@
 @layer skin {
-/* Audio */
-.rf-audio rf-audio {
-	display: block;
-}
 .rf-audio__description {
 	padding: 0.75rem 1rem;
 	font-size: var(--rf-text-sm);
@@ -20,22 +16,17 @@
 
 .rf-audio-player {
 	padding: 1rem 1.25rem;
-	display: flex;
-	flex-direction: column;
 	gap: 0.625rem;
 }
 
 /* Track info */
 .rf-audio-player__info {
-	display: flex;
-	flex-direction: column;
 	gap: 0.125rem;
 }
 .rf-audio-player__name {
 	font-size: var(--rf-text);
 	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-text);
-	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
@@ -46,24 +37,16 @@
 
 /* Controls row */
 .rf-audio-player__controls {
-	display: flex;
-	align-items: center;
 	gap: 0.625rem;
 }
 
 /* Play / pause button */
 .rf-audio-player__play {
-	flex-shrink: 0;
-	width: 2.25rem;
-	height: 2.25rem;
 	border-radius: var(--rf-radius-full, 9999px);
 	border: none;
 	background: var(--rf-color-primary);
 	color: var(--rf-color-on-primary);
 	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
 	transition: opacity 0.15s ease;
 	padding: 0;
 }
@@ -79,8 +62,6 @@
 	cursor: not-allowed;
 }
 .rf-audio-player__play svg {
-	width: 1rem;
-	height: 1rem;
 	fill: currentColor;
 }
 
@@ -89,7 +70,6 @@
 	font-size: var(--rf-text-xs);
 	font-variant-numeric: tabular-nums;
 	color: var(--rf-color-muted);
-	min-width: 2.5rem;
 	user-select: none;
 }
 .rf-audio-player__time--current {
@@ -101,51 +81,32 @@
 
 /* Progress bar */
 .rf-audio-player__progress {
-	flex: 1;
-	height: 6px;
 	background: var(--rf-color-surface-active, #e5e7eb);
 	border-radius: var(--rf-radius-full, 9999px);
 	cursor: pointer;
-	position: relative;
-	overflow: hidden;
 }
 .rf-audio-player__progress:focus-visible {
 	outline: 2px solid var(--rf-color-primary);
 	outline-offset: 2px;
 }
 .rf-audio-player__progress-bar {
-	height: 100%;
 	background: var(--rf-color-primary);
 	border-radius: var(--rf-radius-full, 9999px);
-	width: 0%;
 	transition: width 0.1s linear;
-	pointer-events: none;
 }
 
 /* Waveform container */
 .rf-audio-player__waveform {
-	width: 100%;
-	min-height: 48px;
 	border-radius: var(--rf-radius-sm, 4px);
-	overflow: hidden;
-}
-
-/* Hide standard progress bar when waveform is active */
-.rf-audio[data-waveform="true"] .rf-audio-player__controls .rf-audio-player__progress {
-	display: none;
 }
 
 /* Chapter list */
 .rf-audio-player__chapters {
-	list-style: none;
 	padding: 0;
 	margin: 0.75rem 0 0;
 	padding-top: 0;
 }
 .rf-audio-player__chapter {
-	display: flex;
-	width: 100%;
-	align-items: center;
 	gap: 0.75rem;
 	padding: 0.375rem 0.5rem;
 	border: none;
@@ -170,7 +131,6 @@
 	color: var(--rf-color-primary);
 }
 .rf-audio-player__chapter-name {
-	flex: 1;
 	font-size: var(--rf-text-sm);
 	font-weight: var(--rf-weight-medium);
 	color: var(--rf-color-text);
@@ -179,7 +139,6 @@
 	font-size: var(--rf-text-xs);
 	font-variant-numeric: tabular-nums;
 	color: var(--rf-color-muted);
-	flex-shrink: 0;
 }
 
 /* Active track highlight when connected to audio player */

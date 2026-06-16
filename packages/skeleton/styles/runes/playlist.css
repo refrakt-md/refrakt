@@ -1,0 +1,55 @@
+/* playlist — structure. The inner-header flex, the tracks list reset + counter +
+ * clip, the track-row flex (overriding the sequence dimension's absolute dot), the
+ * track-cell flex sizing + ellipsis overflow + duration auto-push, the meta hide,
+ * the cover aspect, and the narrow-screen column hides. The inset padding + split
+ * gaps + chrome + the track-number glyph stay skin. */
+.rf-playlist__content > .rf-playlist__header {
+	flex-direction: column;
+	align-items: flex-start;
+}
+.rf-playlist__tracks {
+	list-style: none;
+	counter-reset: track;
+	overflow: hidden;
+}
+.rf-playlist__tracks > li {
+	display: flex;
+	align-items: baseline;
+	position: static;
+}
+.rf-playlist__tracks > li > meta {
+	display: none;
+}
+.rf-playlist__tracks > li::before {
+	position: static;
+	width: auto;
+	height: auto;
+	min-width: 1.5rem;
+	flex-shrink: 0;
+}
+.rf-playlist__tracks [data-name="track-name"] {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+}
+.rf-playlist__tracks [data-name="track-artist"] {
+	flex-shrink: 0;
+}
+.rf-playlist__tracks [data-name="track-duration"] {
+	flex-shrink: 0;
+	margin-left: auto;
+	min-width: 3rem;
+}
+.rf-playlist__tracks [data-name="track-meta"] {
+	flex-shrink: 0;
+}
+.rf-playlist__media img {
+	aspect-ratio: 1;
+	object-fit: cover;
+}
+@media (max-width: 480px) {
+	.rf-playlist__tracks [data-name="track-artist"],
+	.rf-playlist__tracks [data-name="track-meta"] {
+		display: none;
+	}
+}

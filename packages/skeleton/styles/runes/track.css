@@ -1,0 +1,55 @@
+/* track — structure. The row flex + counter, the number box, the cell flex sizing
+ * + ellipsis overflow + duration auto-push, the description/cue full-row + wrap,
+ * the chapter row flex + time auto-push, and the narrow-screen hides. The
+ * number/separator glyphs, type, borders, and spacing stay skin. */
+.rf-track {
+	display: flex;
+	align-items: center;
+	counter-increment: track;
+}
+.rf-track::before {
+	content: counter(track);
+	min-width: 1.5rem;
+	flex-shrink: 0;
+}
+.rf-track__track-name {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+}
+.rf-track__track-artist {
+	flex-shrink: 0;
+}
+.rf-track__track-duration {
+	flex-shrink: 0;
+	margin-left: auto;
+	min-width: 3rem;
+}
+.rf-track__track-meta {
+	flex-shrink: 0;
+}
+.rf-track__track-description {
+	flex-basis: 100%;
+}
+.rf-track:has(.rf-track__track-description) {
+	flex-wrap: wrap;
+}
+.rf-track [data-name="lyrics"],
+.rf-track [data-name="chapters"] {
+	flex-basis: 100%;
+	list-style: none;
+}
+.rf-track [data-name="chapters"] li {
+	display: flex;
+}
+.rf-track [data-name="chapter-time"] {
+	margin-left: auto;
+}
+@media (max-width: 480px) {
+	.rf-track__track-artist {
+		display: none;
+	}
+	.rf-track__track-meta {
+		display: none;
+	}
+}
