@@ -1,0 +1,35 @@
+/* howto — structure. The steps list reset + counter, the step item counter +
+ * positioning, the step-number box placement/centring, and the metadata dense-tile
+ * grid (+ mobile). The surfaced tools list chrome, the step-number glyph + chrome,
+ * tip callouts, and type/spacing stay skin. */
+.rf-howto__content ol {
+	list-style: none;
+	counter-reset: howto-step;
+}
+.rf-howto__content ol > li {
+	counter-increment: howto-step;
+	position: relative;
+}
+.rf-howto__content ol > li::before {
+	content: counter(howto-step);
+	position: absolute;
+	left: 0;
+	top: 0.625rem;
+	width: 1.5rem;
+	height: 1.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.rf-howto__metadata {
+	grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+}
+@media (max-width: 48rem) {
+	.rf-howto__metadata {
+		grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+		align-items: normal;
+	}
+	.rf-howto__metadata > [data-name="row"] {
+		display: flex;
+	}
+}

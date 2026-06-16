@@ -120,3 +120,6 @@
 @import './styles/runes/playlist.css' layer(skeleton);
 @import './styles/runes/track.css' layer(skeleton);
 @import './styles/runes/audio.css' layer(skeleton);
+/* ── Plugin: learning ── */
+@import './styles/runes/howto.css' layer(skeleton);
+@import './styles/runes/recipe.css' layer(skeleton);
