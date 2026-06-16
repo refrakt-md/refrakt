@@ -868,6 +868,18 @@
 				"stacked": {
 					"source": "meta",
 					"dataAttribute": "data-stacked"
+				},
+				"tick-count": {
+					"source": "meta",
+					"dataAttribute": "data-tick-count"
+				},
+				"tick-step": {
+					"source": "meta",
+					"dataAttribute": "data-tick-step"
+				},
+				"label-angle": {
+					"source": "meta",
+					"dataAttribute": "data-label-angle"
 				}
 			}
 		},
@@ -3824,6 +3836,531 @@
 			"root": ".rf-track",
 			"dataRune": "music-recording",
 			"parent": "MusicPlaylist",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"Spec": {
+			"block": "spec",
+			"root": ".rf-spec",
+			"dataRune": "spec",
+			"childOrder": [
+				"eyebrow",
+				"title",
+				"blurb",
+				"metadata",
+				"tags",
+				"body",
+				"{content}"
+			],
+			"modifiers": {
+				"id": {
+					"source": "meta",
+					"classPattern": ".rf-spec--{value}",
+					"dataAttribute": "data-id"
+				},
+				"status": {
+					"source": "meta",
+					"default": "draft",
+					"classPattern": ".rf-spec--{value}",
+					"dataAttribute": "data-status"
+				},
+				"version": {
+					"source": "meta",
+					"classPattern": ".rf-spec--{value}",
+					"dataAttribute": "data-version"
+				},
+				"supersedes": {
+					"source": "meta",
+					"classPattern": ".rf-spec--{value}",
+					"dataAttribute": "data-supersedes"
+				},
+				"tags": {
+					"source": "meta",
+					"dataAttribute": "data-tags"
+				},
+				"created": {
+					"source": "meta",
+					"dataAttribute": "data-created"
+				},
+				"modified": {
+					"source": "meta",
+					"dataAttribute": "data-modified"
+				}
+			},
+			"elements": {
+				"eyebrow": {
+					"tag": "div",
+					"selector": ".rf-spec__eyebrow",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"id",
+						"status"
+					]
+				},
+				"metadata": {
+					"tag": "dl",
+					"selector": ".rf-spec__metadata",
+					"source": "block",
+					"layout": "definition-list",
+					"fields": [
+						"version",
+						"supersedes",
+						"created",
+						"modified"
+					]
+				},
+				"tags": {
+					"tag": "div",
+					"selector": ".rf-spec__tags",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"tags"
+					]
+				}
+			}
+		},
+		"Work": {
+			"block": "work",
+			"root": ".rf-work",
+			"dataRune": "work",
+			"childOrder": [
+				"eyebrow",
+				"title",
+				"blurb",
+				"metadata",
+				"tags",
+				"body",
+				"{content}"
+			],
+			"modifiers": {
+				"id": {
+					"source": "meta",
+					"classPattern": ".rf-work--{value}",
+					"dataAttribute": "data-id"
+				},
+				"status": {
+					"source": "meta",
+					"default": "draft",
+					"classPattern": ".rf-work--{value}",
+					"dataAttribute": "data-status"
+				},
+				"priority": {
+					"source": "meta",
+					"default": "medium",
+					"classPattern": ".rf-work--{value}",
+					"dataAttribute": "data-priority"
+				},
+				"complexity": {
+					"source": "meta",
+					"default": "unknown",
+					"classPattern": ".rf-work--{value}",
+					"dataAttribute": "data-complexity"
+				},
+				"assignee": {
+					"source": "meta",
+					"dataAttribute": "data-assignee"
+				},
+				"milestone": {
+					"source": "meta",
+					"dataAttribute": "data-milestone"
+				},
+				"source": {
+					"source": "meta",
+					"dataAttribute": "data-source"
+				},
+				"tags": {
+					"source": "meta",
+					"dataAttribute": "data-tags"
+				},
+				"created": {
+					"source": "meta",
+					"dataAttribute": "data-created"
+				},
+				"modified": {
+					"source": "meta",
+					"dataAttribute": "data-modified"
+				}
+			},
+			"elements": {
+				"eyebrow": {
+					"tag": "div",
+					"selector": ".rf-work__eyebrow",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"id",
+						"status"
+					]
+				},
+				"metadata": {
+					"tag": "dl",
+					"selector": ".rf-work__metadata",
+					"source": "block",
+					"layout": "definition-list",
+					"fields": [
+						"priority",
+						"complexity",
+						"assignee",
+						"milestone",
+						"source",
+						"created",
+						"modified"
+					]
+				},
+				"tags": {
+					"tag": "div",
+					"selector": ".rf-work__tags",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"tags"
+					]
+				}
+			}
+		},
+		"Bug": {
+			"block": "bug",
+			"root": ".rf-bug",
+			"dataRune": "bug",
+			"childOrder": [
+				"eyebrow",
+				"title",
+				"blurb",
+				"metadata",
+				"tags",
+				"body",
+				"{content}"
+			],
+			"modifiers": {
+				"id": {
+					"source": "meta",
+					"classPattern": ".rf-bug--{value}",
+					"dataAttribute": "data-id"
+				},
+				"status": {
+					"source": "meta",
+					"default": "reported",
+					"classPattern": ".rf-bug--{value}",
+					"dataAttribute": "data-status"
+				},
+				"severity": {
+					"source": "meta",
+					"default": "major",
+					"classPattern": ".rf-bug--{value}",
+					"dataAttribute": "data-severity"
+				},
+				"assignee": {
+					"source": "meta",
+					"dataAttribute": "data-assignee"
+				},
+				"milestone": {
+					"source": "meta",
+					"dataAttribute": "data-milestone"
+				},
+				"source": {
+					"source": "meta",
+					"dataAttribute": "data-source"
+				},
+				"tags": {
+					"source": "meta",
+					"dataAttribute": "data-tags"
+				},
+				"created": {
+					"source": "meta",
+					"dataAttribute": "data-created"
+				},
+				"modified": {
+					"source": "meta",
+					"dataAttribute": "data-modified"
+				}
+			},
+			"elements": {
+				"eyebrow": {
+					"tag": "div",
+					"selector": ".rf-bug__eyebrow",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"id",
+						"status"
+					]
+				},
+				"metadata": {
+					"tag": "dl",
+					"selector": ".rf-bug__metadata",
+					"source": "block",
+					"layout": "definition-list",
+					"fields": [
+						"severity",
+						"assignee",
+						"milestone",
+						"source",
+						"created",
+						"modified"
+					]
+				},
+				"tags": {
+					"tag": "div",
+					"selector": ".rf-bug__tags",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"tags"
+					]
+				}
+			}
+		},
+		"Decision": {
+			"block": "decision",
+			"root": ".rf-decision",
+			"dataRune": "decision",
+			"childOrder": [
+				"eyebrow",
+				"title",
+				"blurb",
+				"metadata",
+				"tags",
+				"body",
+				"{content}"
+			],
+			"modifiers": {
+				"id": {
+					"source": "meta",
+					"classPattern": ".rf-decision--{value}",
+					"dataAttribute": "data-id"
+				},
+				"status": {
+					"source": "meta",
+					"default": "proposed",
+					"classPattern": ".rf-decision--{value}",
+					"dataAttribute": "data-status"
+				},
+				"date": {
+					"source": "meta",
+					"dataAttribute": "data-date"
+				},
+				"supersedes": {
+					"source": "meta",
+					"dataAttribute": "data-supersedes"
+				},
+				"source": {
+					"source": "meta",
+					"dataAttribute": "data-source"
+				},
+				"tags": {
+					"source": "meta",
+					"dataAttribute": "data-tags"
+				},
+				"created": {
+					"source": "meta",
+					"dataAttribute": "data-created"
+				},
+				"modified": {
+					"source": "meta",
+					"dataAttribute": "data-modified"
+				}
+			},
+			"elements": {
+				"eyebrow": {
+					"tag": "div",
+					"selector": ".rf-decision__eyebrow",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"id",
+						"status"
+					]
+				},
+				"metadata": {
+					"tag": "dl",
+					"selector": ".rf-decision__metadata",
+					"source": "block",
+					"layout": "definition-list",
+					"fields": [
+						"date",
+						"supersedes",
+						"source",
+						"created",
+						"modified"
+					]
+				},
+				"tags": {
+					"tag": "div",
+					"selector": ".rf-decision__tags",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"tags"
+					]
+				}
+			}
+		},
+		"Milestone": {
+			"block": "milestone",
+			"root": ".rf-milestone",
+			"dataRune": "milestone",
+			"childOrder": [
+				"eyebrow",
+				"title",
+				"blurb",
+				"metadata",
+				"body",
+				"{content}"
+			],
+			"modifiers": {
+				"name": {
+					"source": "meta",
+					"classPattern": ".rf-milestone--{value}",
+					"dataAttribute": "data-name"
+				},
+				"status": {
+					"source": "meta",
+					"default": "planning",
+					"classPattern": ".rf-milestone--{value}",
+					"dataAttribute": "data-status"
+				},
+				"target": {
+					"source": "meta",
+					"dataAttribute": "data-target"
+				},
+				"created": {
+					"source": "meta",
+					"dataAttribute": "data-created"
+				},
+				"modified": {
+					"source": "meta",
+					"dataAttribute": "data-modified"
+				}
+			},
+			"elements": {
+				"eyebrow": {
+					"tag": "div",
+					"selector": ".rf-milestone__eyebrow",
+					"source": "block",
+					"layout": "bar",
+					"fields": [
+						"name",
+						"status"
+					]
+				},
+				"metadata": {
+					"tag": "dl",
+					"selector": ".rf-milestone__metadata",
+					"source": "block",
+					"layout": "definition-list",
+					"fields": [
+						"target",
+						"created",
+						"modified"
+					]
+				}
+			}
+		},
+		"Backlog": {
+			"block": "backlog",
+			"root": ".rf-backlog",
+			"dataRune": "backlog",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"filter": {
+					"source": "meta",
+					"dataAttribute": "data-filter"
+				},
+				"sort": {
+					"source": "meta",
+					"dataAttribute": "data-sort"
+				},
+				"group": {
+					"source": "meta",
+					"dataAttribute": "data-group"
+				},
+				"show": {
+					"source": "meta",
+					"dataAttribute": "data-show"
+				}
+			},
+			"childDensity": "minimal"
+		},
+		"DecisionLog": {
+			"block": "decision-log",
+			"root": ".rf-decision-log",
+			"dataRune": "decision-log",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"filter": {
+					"source": "meta",
+					"dataAttribute": "data-filter"
+				},
+				"sort": {
+					"source": "meta",
+					"dataAttribute": "data-sort"
+				}
+			},
+			"childDensity": "minimal"
+		},
+		"PlanProgress": {
+			"block": "plan-progress",
+			"root": ".rf-plan-progress",
+			"dataRune": "plan-progress",
+			"childOrder": [
+				"{content}"
+			]
+		},
+		"PlanActivity": {
+			"block": "plan-activity",
+			"root": ".rf-plan-activity",
+			"dataRune": "plan-activity",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"limit": {
+					"source": "meta",
+					"dataAttribute": "data-limit"
+				}
+			}
+		},
+		"PlanHistory": {
+			"block": "plan-history",
+			"root": ".rf-plan-history",
+			"dataRune": "plan-history",
+			"childOrder": [
+				"{content}"
+			],
+			"modifiers": {
+				"id": {
+					"source": "meta",
+					"dataAttribute": "data-id"
+				},
+				"limit": {
+					"source": "meta",
+					"dataAttribute": "data-limit"
+				},
+				"type": {
+					"source": "meta",
+					"dataAttribute": "data-type"
+				},
+				"since": {
+					"source": "meta",
+					"dataAttribute": "data-since"
+				},
+				"group": {
+					"source": "meta",
+					"dataAttribute": "data-group"
+				}
+			}
+		},
+		"PlanEntityTabs": {
+			"block": "plan-entity-tabs",
+			"root": ".rf-plan-entity-tabs",
+			"dataRune": "plan-entity-tabs",
 			"childOrder": [
 				"{content}"
 			]
