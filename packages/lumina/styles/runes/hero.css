@@ -1,14 +1,16 @@
 @layer skin {
-/* Hero */
+/* Hero — skin. The relative root, preamble/eyebrow/actions/button layout + their
+ * auto-margin alignment + mobile stack, the media-position flip, the responsive
+ * image box, and the cover-band height/containment authority live in
+ * @refrakt-md/skeleton (styles/runes/hero.css). What remains here is skin:
+ * spacing, type, the headline gradient, surface chrome, the scrim, radii, and
+ * text-align. */
 .rf-hero {
-	position: relative;
 	padding: 7rem 2rem 6.5rem;
 	background-size: cover;
 	background-position: center;
 }
 .rf-hero__preamble {
-	flex-direction: column;
-	align-items: center;
 	gap: 0.25rem;
 	margin-bottom: 2rem;
 }
@@ -24,8 +26,6 @@
 }
 /* Pill-badge variant when eyebrow contains a link */
 .rf-hero .rf-hero__eyebrow:has(a) {
-	display: inline-block;
-	position: relative;
 	padding: 0.25rem 0.875rem;
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-full);
@@ -44,9 +44,6 @@
 	text-decoration: none;
 }
 .rf-hero .rf-hero__eyebrow:has(a) a::before {
-	content: '';
-	position: absolute;
-	inset: 0;
 	border-radius: inherit;
 }
 .rf-hero__image {
@@ -54,42 +51,22 @@
 }
 .rf-hero__actions {
 	max-width: 720px;
-	margin: 0 auto;
-	display: flex;
-	align-items: center;
 	gap: 0.75rem;
-	flex-wrap: wrap;
 }
 .rf-hero[data-align="center"] .rf-hero__preamble,
 .rf-hero[data-align="center"] > h1,
 .rf-hero[data-align="center"] > p {
 	text-align: center;
 }
-.rf-hero[data-align="center"] .rf-hero__actions {
-	margin: 0 auto;
-	justify-content: center;
-}
 .rf-hero[data-align="left"] .rf-hero__preamble,
 .rf-hero[data-align="left"] > h1,
 .rf-hero[data-align="left"] > p {
 	text-align: left;
 }
-.rf-hero[data-align="left"] .rf-hero__preamble {
-	align-items: flex-start;
-}
-.rf-hero[data-align="left"] .rf-hero__actions {
-	margin: 0;
-}
 .rf-hero[data-align="right"] .rf-hero__preamble,
 .rf-hero[data-align="right"] > h1,
 .rf-hero[data-align="right"] > p {
 	text-align: right;
-}
-.rf-hero[data-align="right"] .rf-hero__preamble {
-	align-items: flex-end;
-}
-.rf-hero[data-align="right"] .rf-hero__actions {
-	margin: 0 0 0 auto;
 }
 .rf-hero__actions pre {
 	margin: 0;
@@ -126,22 +103,13 @@
 .rf-hero[data-align="center"] > p,
 .rf-hero[data-align="center"] .rf-hero__blurb {
 	max-width: 560px;
-	margin-left: auto;
-	margin-right: auto;
 	margin-bottom: 2rem;
 }
 .rf-hero ul,
 .rf-hero nav {
-	display: flex;
 	gap: 0.75rem;
-	flex-wrap: wrap;
-	list-style: none;
 	padding: 0;
 	margin: 0;
-}
-.rf-hero[data-align="center"] ul,
-.rf-hero[data-align="center"] nav {
-	justify-content: center;
 }
 .rf-hero li {
 	padding: 0;
@@ -149,8 +117,6 @@
 }
 .rf-hero li a,
 .rf-hero nav a {
-	display: inline-flex;
-	align-items: center;
 	padding: 0.7rem 1.75rem;
 	border-radius: var(--rf-radius-sm);
 	text-decoration: none;
@@ -183,78 +149,23 @@
 	margin-top: 3rem;
 	border-radius: var(--rf-radius-lg);
 }
-/* BUG-001 — hero DOM is content-first (headline before media: the right
- * reading order for the classic hero), inverting the shared media-first
- * stacked contract in layouts/split.css. Counter it so the labels are
- * truthful: `bottom` (the hero default) is plain block flow — media renders
- * after the content, exactly the historical look — and an explicit `top`
- * flips the visual order without touching the DOM. */
-.rf-hero[data-media-position="bottom"] {
-	display: block;
-}
-.rf-hero[data-media-position="top"] {
-	display: flex;
-	flex-direction: column-reverse;
-}
 .rf-hero[data-media-position="top"] > .rf-hero__media {
 	margin-top: 0;
 	margin-bottom: 3rem;
-}
-.rf-hero__media img {
-	display: block;
-	width: 100%;
-	height: auto;
 }
 .rf-hero__media pre {
 	margin: 0;
 }
 
-/* ── Cover mode (SPEC-101) — `media-position="cover"` ───────────────────
- * The shared cover layer (dimensions/cover.css) does the grid stacking, the
- * default scrim, and the overlay anchoring; these rules supply the hero-band
- * specifics. This file imports after cover.css, so equal-specificity rules
- * here win. */
-
-/* The section's generous padding moves to the overlaid content — on the root
- * it would inset the media well (the backdrop must be flush with the band). */
+/* ── Cover mode (SPEC-101) — skin (the height/containment authority is skeleton).
+ * The section's generous padding moves to the overlaid content — on the root it
+ * would inset the media well (the backdrop must be flush with the band). */
 .rf-hero--cover {
 	padding: 0;
 }
 .rf-hero--cover > [data-name="content"] {
 	--rune-padding: 7rem 2rem 6.5rem;
 }
-
-/* Band height authority: a hero is a full-width band, not a portrait tile.
- * Height comes from a viewport-aware floor — deliberately NOT a default
- * aspect-ratio: with `aspect-ratio` + `min-height`, the ratio transfers a
- * winning min-height back into *width* on narrow screens (a 22rem-tall 21/9
- * band computes ~820px wide on a 375px phone — the band marches off-screen).
- * `--cover-aspect: auto` releases the shared 3/4 tile default; an explicit
- * `aspect` knob still lands as an inline style and owns the shape. */
-.rf-hero--cover {
-	--cover-aspect: auto;
-	min-height: clamp(22rem, 55vh, 40rem);
-}
-/* An explicit aspect owns the shape — drop the floor so the same
- * ratio-vs-min-height transfer can't reintroduce the overflow. */
-.rf-hero--cover[data-aspect] {
-	min-height: 0;
-}
-
-/* The shared cover layer applies `container-type: size` (size containment) for
- * its orientation query — under it the band cannot grow with its content, so
- * tall content clips at min-height. The hero band doesn't use the orientation
- * query (the centred-band default below covers `auto` placement), so release
- * the containment and let the band stretch to fit. */
-.rf-hero--cover[data-media-position="cover"][data-cover-scope="full"] {
-	container-type: normal;
-}
-
-/* Named height scale (`height="sm…xl"`): an explicit band height. */
-.rf-hero--cover[data-height="sm"] { min-height: 20rem; }
-.rf-hero--cover[data-height="md"] { min-height: 28rem; }
-.rf-hero--cover[data-height="lg"] { min-height: 36rem; }
-.rf-hero--cover[data-height="xl"] { min-height: 44rem; }
 
 /* Mobile: the desktop overlay padding (7rem bands) would eat most of the well
  * on a phone — tighten it so the content fits the band. */
@@ -276,19 +187,9 @@
 	color: var(--rf-color-on-accent, var(--rf-color-bg));
 }
 
-/* Centre-band default: a hero overlay reads as a centred band, not the
- * cover-card caption strip — seat it mid-well unless the author anchors it
- * with an explicit `content-place`. */
-.rf-hero--cover[data-media-position="cover"]:is([data-content-place="auto"], :not([data-content-place])) > [data-name="content"] {
-	align-self: center;
-	justify-self: stretch;
-}
-
 /* The default cover scrim is edge-weighted (a caption-strip treatment); under
  * the centred band it would leave the headline on undarkened media. With no
- * explicit `content-place`, darken the well evenly (slightly bottom-weighted).
- * An explicit `content-place` re-enters the shared content-edge scrim contract,
- * and `scrim="none"` still opts out. */
+ * explicit `content-place`, darken the well evenly (slightly bottom-weighted). */
 .rf-hero--cover:is([data-content-place="auto"], :not([data-content-place])):not([data-scrim="none"]) > [data-section="media"]::after {
 	background-image: var(--cover-scrim-image, linear-gradient(rgb(0 0 0 / 0.45), rgb(0 0 0 / 0.35) 50%, rgb(0 0 0 / 0.55)));
 }
@@ -296,24 +197,7 @@
 /* Mobile: stack actions full-width so the code block and button line up */
 @media (max-width: 640px) {
 	.rf-hero__actions {
-		flex-direction: column;
-		align-items: stretch;
 		max-width: none;
-	}
-	.rf-hero__actions pre {
-		width: 100%;
-		box-sizing: border-box;
-	}
-	.rf-hero ul,
-	.rf-hero nav {
-		flex-direction: column;
-		align-items: stretch;
-	}
-	.rf-hero li a,
-	.rf-hero nav a {
-		justify-content: center;
-		width: 100%;
-		box-sizing: border-box;
 	}
 }
 

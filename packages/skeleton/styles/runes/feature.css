@@ -1,0 +1,56 @@
+/* feature — structure. The preamble flex + eyebrow stretched-link, the content
+ * display reset, the definitions grid, the feature-item icon stack, and the
+ * media-position flip. Spacing, type, surface chrome, alignment (text-align), and
+ * colour stay skin (Lumina's styles/runes/feature.css). */
+
+.rf-feature__preamble {
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.rf-feature__eyebrow:has(a) {
+	display: inline-block;
+	position: relative;
+}
+.rf-feature__eyebrow:has(a) a::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+}
+
+.rf-feature__content {
+	display: contents;
+}
+
+/* Definitions stack by default; the grid modifier tiles them. */
+.rf-feature__definitions {
+	display: block;
+}
+.rf-feature--definitions-grid .rf-feature__definitions {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(max(240px, calc((100% - 3rem) / 3)), 1fr));
+}
+
+/* Beside layouts: definitions stay stacked inside the content track. */
+.rf-feature[data-media-position="start"] .rf-feature__content,
+.rf-feature[data-media-position="end"] .rf-feature__content {
+	display: block;
+}
+
+.rf-feature__feature-item dt:has(> .rf-icon) {
+	display: flex;
+	flex-direction: column;
+}
+.rf-feature__feature-item dt > .rf-icon {
+	width: 1.5rem;
+	height: 1.5rem;
+}
+
+/* BUG-001 — content-first DOM inverts the shared media-first stacked contract. */
+.rf-feature[data-media-position="bottom"] {
+	display: block;
+}
+.rf-feature[data-media-position="top"] {
+	display: flex;
+	flex-direction: column-reverse;
+}
