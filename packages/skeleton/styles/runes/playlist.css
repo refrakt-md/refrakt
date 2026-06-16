@@ -47,8 +47,10 @@
  * `frame-aspect="..."`; the engine lands `--frame-aspect` on the media zone
  * (frameTarget defaults to 'media' since playlist has a media section), and
  * the global `[data-section="media"] > :is(img, video)` rule already fills
- * the zone with the image (height: 100%, object-fit: cover). */
-.rf-playlist > [data-section="media"] {
+ * the zone with the image (height: 100%, object-fit: cover). The media zone
+ * carries both `data-section="media"` and `data-name="media"`, so the canonical
+ * BEM element selector `.rf-playlist__media` targets the same node. */
+.rf-playlist__media {
 	aspect-ratio: var(--frame-aspect, 1);
 }
 @media (max-width: 480px) {
