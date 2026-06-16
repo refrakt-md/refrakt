@@ -1,0 +1,22 @@
+/* sections — structure. The zone containers that are flex layouts: the header
+ * chrome row, the preamble stack, the footer action row. The zone rhythm (margins,
+ * gaps, padding), type, borders, and the media-zone margin reset are skin (Lumina's
+ * dimensions/sections.css) — kept there so a rune's own zone overrides resolve
+ * against them by source order, and so the header→body rhythm a rune tightens
+ * (e.g. hint) stays a same-layer contest. */
+
+[data-section="header"] {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+[data-section="preamble"] {
+	display: flex;
+	flex-direction: column;
+}
+
+[data-section="footer"] {
+	display: flex;
+	flex-wrap: wrap;
+}
