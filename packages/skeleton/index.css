@@ -107,3 +107,8 @@
 @import './styles/runes/showcase.css' layer(skeleton);
 @import './styles/runes/textblock.css' layer(skeleton);
 @import './styles/runes/xref.css' layer(skeleton);
+/* ── Plugin: business ── */
+@import './styles/runes/cast.css' layer(skeleton);
+@import './styles/runes/organization.css' layer(skeleton);
+@import './styles/runes/timeline.css' layer(skeleton);
+@import './styles/runes/budget.css' layer(skeleton);

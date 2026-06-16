@@ -1,0 +1,33 @@
+/* cast — structure. The members list reset, grid/list arrangements, name/role
+ * block display, empty-body hide, the avatar box (size/crop/display), and the list
+ * variant flex. Surface chrome, type, radii, and margins are skin. */
+.rf-cast__members { list-style: none; }
+.rf-cast--grid .rf-cast__members {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+.rf-cast--list .rf-cast__members {
+	display: flex;
+	flex-direction: column;
+}
+.rf-cast-member__name { display: block; }
+.rf-cast-member__role { display: block; }
+.rf-cast-member__body:empty { display: none; }
+.rf-cast-member img {
+	width: 80px;
+	height: 80px;
+	object-fit: cover;
+	display: block;
+}
+.rf-cast--list .rf-cast-member {
+	display: flex;
+	align-items: center;
+}
+.rf-cast--list .rf-cast-member img {
+	width: 48px;
+	height: 48px;
+	flex-shrink: 0;
+}
+.rf-cast--list .rf-cast-member__body {
+	flex: 1;
+}

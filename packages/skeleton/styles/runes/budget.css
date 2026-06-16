@@ -1,0 +1,42 @@
+/* budget — structure. The categories stack, the category/line-item/total/per-day
+ * flex rows, the line-items list reset, description/per-day-label flex sizing, and
+ * the summary line-item hide. Type, borders, the est. badge, and spacing are skin. */
+.rf-budget__categories {
+	display: flex;
+	flex-direction: column;
+}
+.rf-budget-category__header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.rf-budget-category__line-items { list-style: none; }
+.rf-budget-line-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+}
+.rf-budget-line-item__description {
+	flex: 1;
+	min-width: 0;
+}
+.rf-budget__footer {
+	display: flex;
+	flex-direction: column;
+}
+.rf-budget__total {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+}
+.rf-budget__per-day {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+}
+.rf-budget__per-day-label {
+	min-width: 0;
+}
+[data-variant="summary"] .rf-budget-category__line-items {
+	display: none;
+}

@@ -4,18 +4,13 @@
 	margin: 2rem 0;
 }
 .rf-timeline ol {
-	list-style: none;
 	padding: 0;
 	margin: 0;
-}
-.rf-timeline-entry {
-	position: relative;
 }
 .rf-timeline-entry:last-child {
 	padding-bottom: 0;
 }
 .rf-timeline-entry > time {
-	display: block;
 	font-size: var(--rf-text-xs);
 	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-primary);
@@ -23,7 +18,6 @@
 	margin-bottom: 0.25rem;
 }
 .rf-timeline-entry > span {
-	display: block;
 	font-size: var(--rf-text);
 	font-weight: var(--rf-weight-bold);
 	color: var(--rf-color-text);
@@ -49,12 +43,6 @@
 	border-left-color: transparent;
 }
 .rf-timeline--vertical .rf-timeline-entry::before {
-	content: '';
-	position: absolute;
-	left: -0.4375rem;
-	top: 0.25rem;
-	width: 0.75rem;
-	height: 0.75rem;
 	border-radius: 50%;
 	background: var(--rf-color-primary);
 	border: 2px solid var(--rf-color-bg);
@@ -63,23 +51,14 @@
 
 /* Horizontal timeline */
 .rf-timeline--horizontal ol {
-	display: flex;
 	gap: 2rem;
-	overflow-x: auto;
 	padding: 2rem 0 1rem;
 }
 .rf-timeline--horizontal .rf-timeline-entry {
-	min-width: 12rem;
 	padding-top: 1.5rem;
 	border-top: 2px solid var(--rf-color-border);
 }
 .rf-timeline--horizontal .rf-timeline-entry::before {
-	content: '';
-	position: absolute;
-	top: -0.4375rem;
-	left: 0.5rem;
-	width: 0.75rem;
-	height: 0.75rem;
 	border-radius: 50%;
 	background: var(--rf-color-primary);
 	border: 2px solid var(--rf-color-bg);

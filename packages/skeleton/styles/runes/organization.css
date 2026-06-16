@@ -1,0 +1,6 @@
+/* organization — structure. Only the logo image sizing box; type, list indents,
+ * and link colour are skin. */
+.rf-organization__body img {
+	max-height: 80px;
+	width: auto;
+}
