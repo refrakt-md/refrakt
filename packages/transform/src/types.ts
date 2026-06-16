@@ -321,6 +321,13 @@ export interface RuneConfig {
 	 *  Only used when `sequence` is set. */
 	sequenceDirection?: { fromModifier: string; default?: string };
 
+	/** SPEC-105 — the cascade items the engine stamps with `--rf-reveal-index`
+	 *  (0,1,2,… in document order) when the author sets `stagger` on this rune.
+	 *  Matches a descendant's `data-field` or `data-name` (e.g. `'cell'`, `'tier'`,
+	 *  `'feature-item'`). Absent → `stagger` is a silent no-op (single-child runes
+	 *  like `hero`). "Which children cascade" is decided here in config, never in CSS. */
+	staggerItems?: string;
+
 	/** Maps ref names (data-name values) to media treatment types.
 	 *  The identity transform emits `data-media` on elements whose
 	 *  `data-name` matches a key in this map, enabling generic media styling.

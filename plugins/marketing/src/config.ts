@@ -55,6 +55,7 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultElevation: 'flush',
 		childDensity: 'compact',
+		staggerItems: 'cell',
 		modifiers: {
 			columns: { source: 'meta', default: '6', noBemClass: true },
 			gap: { source: 'meta', default: '1rem', noBemClass: true },
@@ -102,6 +103,7 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultWidth: 'full',
 		defaultElevation: 'flush',
+		staggerItems: 'feature-item',
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'cover' },
 		modifiers: {
@@ -132,7 +134,7 @@ export const config: Record<string, RuneConfig> = {
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', title: 'inline', description: 'inline', icon: 'icon' },
 	},
 	Definition: { block: 'definition', parent: 'Feature', requiresParent: 'Feature' },
-	Steps: { block: 'steps', defaultDensity: 'full', defaultElevation: 'flush', sequence: 'numbered', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+	Steps: { block: 'steps', defaultDensity: 'full', defaultElevation: 'flush', sequence: 'numbered', staggerItems: 'step', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 	Step: {
 		block: 'step',
 		parent: 'Steps', requiresParent: 'Steps',
@@ -151,7 +153,7 @@ export const config: Record<string, RuneConfig> = {
 		mediaSlots: { media: 'cover' },
 		editHints: { content: 'none', media: 'image' },
 	},
-	Pricing: { block: 'pricing', defaultDensity: 'full', defaultWidth: 'full', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+	Pricing: { block: 'pricing', defaultDensity: 'full', defaultWidth: 'full', staggerItems: 'tier', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 	Tier: { block: 'tier', parent: 'Pricing', requiresParent: 'Pricing', editHints: { name: 'inline', price: 'inline' } },
 	FeaturedTier: { block: 'tier', parent: 'Pricing', requiresParent: 'Pricing', staticModifiers: ['featured'], editHints: { name: 'inline', price: 'inline' } },
 	Testimonial: {

@@ -48,6 +48,12 @@ const universalAttributes: Record<string, SchemaAttribute> = {
   // the deprecation window; the engine maps them onto the ladder with a warning.
   'elevation': { type: String, required: false, matches: ['sunken', 'flush', 'flat', 'raised', 'floating', 'overlay', 'none', 'sm', 'md', 'lg'], description: 'Surface depth on the SPEC-107 ladder (sunken→overlay); none/sm/md/lg are deprecated aliases' },
   'prominence': { type: String, required: false, matches: ['quiet', 'normal', 'prominent', 'display'], description: 'Section-header emphasis (only on page-section-header family runes)' },
+  // SPEC-105 — scroll-reveal motion. `reveal` is a closed entrance vocabulary
+  // (author declares intent; the theme owns choreography, a behaviour owns
+  // timing); an unknown value is a build error via Markdoc `matches`. `stagger`
+  // cascades a multi-child block's items in — a silent no-op on single-child runes.
+  'reveal': { type: String, required: false, matches: ['none', 'fade', 'slide', 'scale', 'blur'], description: 'Scroll-reveal entrance character (none|fade|slide|scale|blur); the theme owns the choreography' },
+  'stagger': { type: Boolean, required: false, description: 'Cascade this block\'s items in as it reveals (no-op on single-child runes)' },
   // SPEC-086 — frame: media-surface chrome preset + inline facet overrides.
   'frame': { type: String, required: false, description: 'Named frame preset presenting this block\'s media surface' },
   'frame-aspect': { type: String, required: false, description: 'Aspect ratio of the framed media, e.g. "16/9"' },
@@ -360,6 +366,8 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
         if (attrs.inset) output.attributes.inset = attrs.inset;
         if (attrs.elevation) output.attributes.elevation = attrs.elevation;
         if (attrs.prominence) output.attributes.prominence = attrs.prominence;
+        if (attrs.reveal) output.attributes.reveal = attrs.reveal;
+        if (attrs.stagger) output.attributes.stagger = attrs.stagger;
       }
 
       return injectBgFacetMetas(injectSubstrateMetas(injectFrameMetas(output, attrs), attrs), attrs);

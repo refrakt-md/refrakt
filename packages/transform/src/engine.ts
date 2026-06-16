@@ -625,6 +625,21 @@ function transformRune(
 		}
 	}
 
+	// reveal / stagger — SPEC-105 motion facet. Pure intent → attributes: the
+	// author declares the entrance character (closed `reveal` vocabulary, validated
+	// at parse time by the schema's `matches`), the theme owns the choreography
+	// (WORK-432), a behaviour owns the timing (WORK-433). Universal opt-in like
+	// width/elevation — emits `data-reveal` (no BEM class; styled by attribute) and
+	// `data-stagger`, and stamps `--rf-reveal-index` on the cascade items below.
+	const revealValue = tag.attributes?.reveal;
+	if (revealValue) {
+		modifierValues['reveal'] = String(revealValue);
+	}
+	const staggerSet = Boolean(tag.attributes?.stagger);
+	if (staggerSet) {
+		modifierValues['stagger'] = '';
+	}
+
 	// 1f. Background processing — read bg-* meta tags and build background layer
 	const bgMetaProps = new Set<string>();
 	const bgDataAttrs: Record<string, string> = {};
@@ -1005,6 +1020,14 @@ function transformRune(
 		annotateSequence(filteredChildren, config.sequence, seqDirection);
 	}
 
+	// 7c. SPEC-105 stagger — stamp `--rf-reveal-index` (document order) on the
+	// rune's cascade items so the motion dimension can offset each child's entrance
+	// from the container's single in-view trigger. Only when the author set
+	// `stagger` and the rune declares its cascade items; otherwise a silent no-op.
+	if (staggerSet && config.staggerItems) {
+		stampStaggerIndex(filteredChildren, config.staggerItems, { n: 0 });
+	}
+
 	// 8. Build inline styles from styles config + tint tokens
 	let inlineStyle = tag.attributes.style || '';
 	const styleParts: string[] = [];
@@ -1113,7 +1136,7 @@ function transformRune(
 	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead).
 	// `data-rune-fields` (SPEC-082) is the internal field-data channel — strip it from output so
 	// the dual-emit in WORK-321 stays output-neutral; the engine begins *reading* it in WORK-322.
-	const { width: _w, spacing: _s, inset: _i, elevation: _e, prominence: _p, density: _d, 'data-rune': _dr, 'data-rune-fields': _drf, ...rawPassAttrs } = tag.attributes;
+	const { width: _w, spacing: _s, inset: _i, elevation: _e, prominence: _p, reveal: _rv, stagger: _st, density: _d, 'data-rune': _dr, 'data-rune-fields': _drf, ...rawPassAttrs } = tag.attributes;
 	// Strip consumed attribute-source modifier names (expressed via data-* / BEM)
 	const passAttrs = attrModifierNames.length > 0
 		? Object.fromEntries(Object.entries(rawPassAttrs).filter(([k]) => !attrModifierNames.includes(k)))
@@ -1271,6 +1294,33 @@ function annotateSequence(children: RendererNode[], sequence: string, direction?
 		} else if (child.children.length > 0) {
 			// Recurse into wrappers (contentWrapper, structural elements)
 			annotateSequence(child.children, sequence, direction);
+		}
+	}
+}
+
+/**
+ * Stamp `--rf-reveal-index: N` (0,1,2,… in document order) on a staggered
+ * container's cascade items — the elements whose `data-field` or `data-name`
+ * equals `itemName` (SPEC-105). Mutates the array in place, merging onto any
+ * existing inline style. A matched item is NOT descended into: a nested
+ * same-named cascade belongs to that child rune's own stagger pass.
+ */
+function stampStaggerIndex(children: RendererNode[], itemName: string, counter: { n: number }): void {
+	for (let i = 0; i < children.length; i++) {
+		const child = children[i];
+		if (!isTag(child)) continue;
+		const isItem = child.attributes?.['data-field'] === itemName
+			|| child.attributes?.['data-name'] === itemName;
+		if (isItem) {
+			const existing = child.attributes?.style ? String(child.attributes.style) : '';
+			const decl = `--rf-reveal-index: ${counter.n}`;
+			children[i] = {
+				...child,
+				attributes: { ...child.attributes, style: existing ? `${existing}; ${decl}` : decl },
+			};
+			counter.n++;
+		} else if (child.children.length > 0) {
+			stampStaggerIndex(child.children, itemName, counter);
 		}
 	}
 }
