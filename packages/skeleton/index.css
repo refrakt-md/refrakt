@@ -112,3 +112,7 @@
 @import './styles/runes/organization.css' layer(skeleton);
 @import './styles/runes/timeline.css' layer(skeleton);
 @import './styles/runes/budget.css' layer(skeleton);
+/* ── Plugin: places ── */
+@import './styles/runes/event.css' layer(skeleton);
+@import './styles/runes/map.css' layer(skeleton);
+@import './styles/runes/itinerary.css' layer(skeleton);

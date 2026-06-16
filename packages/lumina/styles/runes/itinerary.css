@@ -22,18 +22,13 @@
 	padding-bottom: 0.5rem;
 	border-bottom: 2px solid var(--rf-color-border);
 }
-.rf-itinerary-day__header:empty {
-	display: none;
-}
 .rf-itinerary-day ol {
-	list-style: none;
 	padding: 0;
 	margin: 0;
 }
 
 /* Stop */
 .rf-itinerary-stop {
-	position: relative;
 	padding-left: 2rem;
 	padding-bottom: 1.5rem;
 	border-left: 2px solid var(--rf-color-border);
@@ -44,12 +39,6 @@
 	padding-bottom: 0;
 }
 .rf-itinerary-stop::before {
-	content: '';
-	position: absolute;
-	left: -0.4375rem;
-	top: 0.25rem;
-	width: 0.75rem;
-	height: 0.75rem;
 	border-radius: 50%;
 	background: var(--rf-color-primary);
 	border: 2px solid var(--rf-color-bg);
@@ -58,7 +47,6 @@
 
 /* Stop time */
 .rf-itinerary-stop__time {
-	display: block;
 	font-size: var(--rf-text-xs);
 	font-weight: var(--rf-weight-semibold);
 	color: var(--rf-color-primary);
@@ -68,7 +56,6 @@
 
 /* Stop location */
 .rf-itinerary-stop__location {
-	display: block;
 	font-size: var(--rf-text);
 	font-weight: var(--rf-weight-bold);
 	color: var(--rf-color-text);
@@ -88,9 +75,6 @@
 /* Duration badge */
 .rf-itinerary-stop[data-duration]::after {
 	content: attr(data-duration);
-	position: absolute;
-	top: 0.15rem;
-	right: 0;
 	font-size: var(--rf-text-xs);
 	font-weight: var(--rf-weight-medium);
 	color: var(--rf-color-muted);
@@ -127,13 +111,10 @@
 
 /* Horizontal direction */
 .rf-itinerary--horizontal .rf-itinerary-day ol {
-	display: flex;
 	gap: 2rem;
-	overflow-x: auto;
 	padding: 2rem 0 1rem;
 }
 .rf-itinerary--horizontal .rf-itinerary-stop {
-	min-width: 14rem;
 	padding-left: 0;
 	padding-top: 1.5rem;
 	padding-bottom: 0;
@@ -144,29 +125,16 @@
 .rf-itinerary--horizontal .rf-itinerary-stop:last-child {
 	border-top-color: transparent;
 }
-.rf-itinerary--horizontal .rf-itinerary-stop::before {
-	left: 0.5rem;
-	top: -0.4375rem;
-}
 .rf-itinerary--horizontal .rf-itinerary-stop[data-duration]::after {
-	position: static;
-	display: inline-block;
 	margin-top: 0.5rem;
-}
-
-/* Compact style */
-.rf-itinerary--compact .rf-itinerary-stop__body {
-	display: none;
 }
 .rf-itinerary--compact .rf-itinerary-stop {
 	padding-bottom: 0.75rem;
 }
 .rf-itinerary--compact .rf-itinerary-stop__location {
-	display: inline;
 	font-size: var(--rf-text-sm);
 }
 .rf-itinerary--compact .rf-itinerary-stop__time {
-	display: inline;
 	margin-bottom: 0;
 }
 .rf-itinerary--compact .rf-itinerary-stop__time::after {

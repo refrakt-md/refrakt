@@ -1,0 +1,41 @@
+/* itinerary — structure. The empty-day-header hide, the stops list reset, stop
+ * positioning + marker box placement (vertical + horizontal), the time/location
+ * block display, the duration-badge placement, the horizontal flex-scroll + stop
+ * min-width, and the compact display toggles. Connector borders, marker chrome,
+ * the duration text, type, and spacing are skin. */
+.rf-itinerary-day__header:empty { display: none; }
+.rf-itinerary-day ol { list-style: none; }
+.rf-itinerary-stop { position: relative; }
+.rf-itinerary-stop::before {
+	content: '';
+	position: absolute;
+	left: -0.4375rem;
+	top: 0.25rem;
+	width: 0.75rem;
+	height: 0.75rem;
+}
+.rf-itinerary-stop__time { display: block; }
+.rf-itinerary-stop__location { display: block; }
+.rf-itinerary-stop[data-duration]::after {
+	position: absolute;
+	top: 0.15rem;
+	right: 0;
+}
+.rf-itinerary--horizontal .rf-itinerary-day ol {
+	display: flex;
+	overflow-x: auto;
+}
+.rf-itinerary--horizontal .rf-itinerary-stop {
+	min-width: 14rem;
+}
+.rf-itinerary--horizontal .rf-itinerary-stop::before {
+	left: 0.5rem;
+	top: -0.4375rem;
+}
+.rf-itinerary--horizontal .rf-itinerary-stop[data-duration]::after {
+	position: static;
+	display: inline-block;
+}
+.rf-itinerary--compact .rf-itinerary-stop__body { display: none; }
+.rf-itinerary--compact .rf-itinerary-stop__location { display: inline; }
+.rf-itinerary--compact .rf-itinerary-stop__time { display: inline; }

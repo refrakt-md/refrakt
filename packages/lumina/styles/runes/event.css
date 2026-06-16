@@ -12,7 +12,6 @@
 	margin-top: 1.5rem;
 }
 .rf-event__register a {
-	display: inline-block;
 	padding: 0.5rem 1rem;
 	background: var(--rf-color-primary);
 	color: var(--rf-color-on-primary);
