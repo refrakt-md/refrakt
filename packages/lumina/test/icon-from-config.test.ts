@@ -44,10 +44,9 @@ describe('icon-from-config (SPEC-094 §8 / WORK-437)', () => {
 	});
 
 	it('leaves no embedded data-URI glyphs in hint/accordion CSS', () => {
-		// hint's glyph-mask wiring is structure → @refrakt-md/skeleton (WORK-438);
-		// accordion isn't split yet, so it still lives in Lumina's skin.
+		// Both glyph-mask wirings are structure → @refrakt-md/skeleton (WORK-438).
 		const hintCss = readSkeleton('styles/runes/hint.css');
-		const accordionCss = read('styles/runes/accordion.css');
+		const accordionCss = readSkeleton('styles/runes/accordion.css');
 		expect(hintCss).not.toMatch(/data:image\/svg\+xml/);
 		expect(accordionCss).not.toMatch(/data:image\/svg\+xml/);
 		// …and they read the registry-fed custom properties instead.

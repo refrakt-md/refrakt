@@ -1,0 +1,16 @@
+/* breadcrumb — structure. The items/item display:contents passthroughs and the
+ * flex trail (the ol row + each li). Type, colour, gaps, and the separator glyph
+ * are skin (Lumina's styles/runes/breadcrumb.css). */
+
+.rf-breadcrumb__items { display: contents; }
+.rf-breadcrumb-item { display: contents; }
+.rf-breadcrumb ol {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	list-style: none;
+}
+.rf-breadcrumb li {
+	display: flex;
+	align-items: center;
+}

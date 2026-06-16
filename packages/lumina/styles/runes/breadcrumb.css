@@ -1,27 +1,16 @@
 @layer skin {
-/* Breadcrumb */
+/* Breadcrumb — skin. The contents passthroughs + the flex trail live in
+ * @refrakt-md/skeleton (styles/runes/breadcrumb.css). */
 .rf-breadcrumb {
 	font-size: var(--rf-text-sm);
 	margin: 0 0 1.5rem;
 }
-.rf-breadcrumb__items {
-	display: contents;
-}
-.rf-breadcrumb-item {
-	display: contents;
-}
 .rf-breadcrumb ol {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
 	gap: 0.25rem;
-	list-style: none;
 	padding: 0;
 	margin: 0;
 }
 .rf-breadcrumb li {
-	display: flex;
-	align-items: center;
 	gap: 0.25rem;
 	padding: 0;
 	margin: 0;

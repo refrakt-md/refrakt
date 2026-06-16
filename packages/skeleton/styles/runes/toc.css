@@ -1,0 +1,10 @@
+/* toc — structure. The list reset and the inline-block link box. The surface
+ * chrome, type, indents, and colour are skin (Lumina's styles/runes/toc.css). */
+
+.rf-toc ul,
+.rf-toc ol {
+	list-style: none;
+}
+.rf-toc a {
+	display: inline-block;
+}

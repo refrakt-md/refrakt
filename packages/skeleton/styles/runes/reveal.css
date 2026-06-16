@@ -1,0 +1,29 @@
+/* reveal — structure. The eyebrow stretched-link, the steps flex column, the
+ * hidden-step collapse (height/overflow), the metadata hide, and the control
+ * button flex. The animation (opacity/transform/transition), spacing, type,
+ * borders, and surface chrome are skin (Lumina's styles/runes/reveal.css). */
+
+.rf-reveal__eyebrow:has(a) {
+	display: inline-block;
+	position: relative;
+}
+.rf-reveal__eyebrow:has(a) a::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+}
+.rf-reveal__steps {
+	display: flex;
+	flex-direction: column;
+}
+.rf-reveal-step--hidden {
+	height: 0;
+	overflow: hidden;
+}
+.rf-reveal-step__body > span[property],
+.rf-reveal-step__body > meta { display: none; }
+.rf-reveal__next,
+.rf-reveal__reset {
+	display: inline-flex;
+	align-items: center;
+}

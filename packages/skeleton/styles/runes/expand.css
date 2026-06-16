@@ -1,0 +1,7 @@
+/* expand — structure. Only the inline-block canonical-link box; everything else
+ * (the peer-document treatment, heading scale, error chrome, spacing) is skin
+ * (Lumina's styles/runes/expand.css). */
+
+.rf-expand__canonical-link {
+	display: inline-block;
+}

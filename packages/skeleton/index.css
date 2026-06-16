@@ -58,3 +58,10 @@
 @import './styles/runes/changelog.css' layer(skeleton);
 @import './styles/runes/tabs.css' layer(skeleton);
 @import './styles/runes/codegroup.css' layer(skeleton);
+@import './styles/runes/accordion.css' layer(skeleton);
+@import './styles/runes/details.css' layer(skeleton);
+@import './styles/runes/breadcrumb.css' layer(skeleton);
+@import './styles/runes/toc.css' layer(skeleton);
+@import './styles/runes/pagination.css' layer(skeleton);
+@import './styles/runes/reveal.css' layer(skeleton);
+@import './styles/runes/expand.css' layer(skeleton);

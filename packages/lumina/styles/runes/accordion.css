@@ -1,7 +1,8 @@
 @layer skin {
-/* Accordion */
-/* No wrapping border / radius — the only chrome is the divider between items. */
-.rf-accordion {}
+/* Accordion — skin. The eyebrow stretched-link, items passthrough, header flex +
+ * chevron box/glyph/rotate mechanism, title/count flex, and the ::details-content
+ * collapse mechanism live in @refrakt-md/skeleton (styles/runes/accordion.css).
+ * No wrapping border / radius — the only chrome is the divider between items. */
 .rf-accordion__preamble {
 	margin-bottom: 1.5rem;
 }
@@ -14,8 +15,6 @@
 	margin: 0 0 0.5rem;
 }
 .rf-accordion__eyebrow:has(a) {
-	display: inline-block;
-	position: relative;
 	padding: 0.25rem 0.875rem;
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-full);
@@ -27,7 +26,7 @@
 }
 .rf-accordion__eyebrow:has(a):hover { border-color: var(--rf-color-muted); }
 .rf-accordion__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: var(--rf-weight-semibold); text-decoration: none; }
-.rf-accordion__eyebrow:has(a) a::before { content: ''; position: absolute; inset: 0; border-radius: inherit; }
+.rf-accordion__eyebrow:has(a) a::before { border-radius: inherit; }
 .rf-accordion__headline {
 	margin-top: 0;
 }
@@ -38,9 +37,6 @@
 .rf-accordion__image {
 	margin-bottom: 1rem;
 }
-.rf-accordion__items {
-	display: contents;
-}
 .rf-accordion-item {
 	border-bottom: 1px solid var(--rf-color-border);
 }
@@ -48,74 +44,33 @@
 	border-bottom: none;
 }
 .rf-accordion-item__header {
-	display: flex;
-	align-items: center;
 	gap: 0.5rem;
 	padding: 0.875rem 0rem;
 	font-weight: var(--rf-weight-semibold);
 	font-size: var(--rf-text);
 	cursor: pointer;
 	user-select: none;
-	list-style: none;
 }
-.rf-accordion-item__header::-webkit-details-marker { display: none; }
-.rf-accordion-item__header::marker { display: none; content: ''; }
-/* Chevron in front of the label — points right when collapsed, rotates 90°
- * to point down when expanded. SVG mask so the glyph is crisp at any size
- * and tints with the muted text color. */
+/* Chevron tint + rotate animation (the box + glyph + the open-rotate are
+ * skeleton). */
 .rf-accordion-item__header::before {
-	content: '';
-	flex-shrink: 0;
-	width: 0.75rem;
-	height: 0.75rem;
 	background: var(--rf-color-muted);
-	mask-size: contain;
-	mask-repeat: no-repeat;
-	mask-position: center;
-	/* Chevron glyph from the theme icon registry (config.icons.accordion.chevron),
-	 * surfaced as a mask custom property by the token generator — not embedded
-	 * here (SPEC-094 §8 / WORK-437). */
-	-webkit-mask-image: var(--rf-icon-accordion-chevron);
-	mask-image: var(--rf-icon-accordion-chevron);
 	transition: transform 200ms ease;
 }
-.rf-accordion-item[open] .rf-accordion-item__header::before {
-	transform: rotate(90deg);
-}
 .rf-accordion-item__title {
-	flex: 1;
-	min-width: 0;
+	/* flex sizing is skeleton */
 }
-/* Per-group count for collection/relationships group-display="accordion".
- * Inherits the header's font (weight + color) so the count reads as part
- * of the same label. The header's `gap` handles spacing — no margins needed. */
+/* Per-group count for collection/relationships group-display="accordion". */
 .rf-accordion-item__count {
-	flex-shrink: 0;
-}
-/* Animate the panel's collapse / expand. `::details-content` (the auto-generated
- * wrapper for non-summary content) + `interpolate-size: allow-keywords` lets the
- * height transition between 0 and auto. `transition-behavior: allow-discrete`
- * on `content-visibility` keeps the panel reachable during the open animation.
- * Browsers without `::details-content` support fall back to the native snap. */
-.rf-accordion-item {
-	interpolate-size: allow-keywords;
+	/* flex-shrink is skeleton */
 }
 .rf-accordion-item::details-content {
-	block-size: 0;
-	overflow: hidden;
 	transition: block-size 250ms ease, content-visibility 250ms allow-discrete;
-}
-.rf-accordion-item[open]::details-content {
-	block-size: auto;
 }
 .rf-accordion-item__body {
 	padding: 0 1.25rem 1rem;
 }
-/* Prose styles for the standalone accordion rune's bodies (paragraphs,
- * lists, etc.). Scoped to `:not(:has([data-block]))` so they don't bleed into
- * block-content children like cards inside a collection/relationships
- * `group-display="accordion"` panel, where the card's own typography
- * should govern. */
+/* Prose styles for the standalone accordion rune's bodies. */
 .rf-accordion-item__body:not(:has([data-block])) {
 	font-size: var(--rf-text-sm);
 	line-height: var(--rf-leading-relaxed);
@@ -124,13 +79,8 @@
 .rf-accordion-item__body p:last-child {
 	margin-bottom: 0;
 }
-/* Block-content children — collection / relationships mark their body-template
- * items `data-block`. A panel housing them (group-display="accordion") switches
- * to a flex column with the small gap so cards get the same spacing they'd have
- * under a heading-grouped layout. */
+/* Block-content panels get the small gap (the flex column is skeleton). */
 .rf-accordion-item__body:has([data-block]) {
-	display: flex;
-	flex-direction: column;
 	gap: var(--rf-spacing-sm);
 }
 
