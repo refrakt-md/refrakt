@@ -46,19 +46,20 @@
 /* Media guest: fill the slot. In a slot *wider* than the device the capped base
  * zoom would strand the device at native size as a thin centered strip, so lift
  * the cap to let it scale up and span the slot width; the slot's aspect ratio
- * then clips the over-tall device at the bottom. Gated behind a container width
- * above any phone (the only slots that need to scale *up* are wider than a
- * device), so it fires only in genuinely wide desktop slots. Narrow,
- * single-column (mobile) slots keep the capped base zoom — it already fits the
- * device by scaling *down*, and crucially keeps `zoom ≤ 1`: iOS Safari
- * mis-scales a `zoom > 1` built from container-query trig and blows the device
- * up. The 400px threshold sits above every phone's natural width (so a phone
- * only scales *up* in a slot genuinely wider than it) yet well above any phone
- * slot's content width (container queries measure the content box, which the
- * inline padding shrinks) — so single-column mobile slots never trip it.
- * `fit="none"` opts out (its own native-size + transform path above); standalone
- * mockups keep the cap (a phone shouldn't fill an article column). */
-@container (min-width: 400px) {
+ * then clips the over-tall device at the bottom.
+ *
+ * Gated to fine-pointer (desktop) devices. The cap can't simply be dropped
+ * everywhere: this `zoom` is derived from container-query units, and iOS WebKit
+ * re-resolves `cqi` in the zoomed coordinate space, so an *uncapped* zoom feeds
+ * back on itself and diverges — the device balloons to many times native, cropped
+ * to a thin centre strip. `min(1, …)` bounds that loop, which is why the capped
+ * base zoom is safe on phones. A container-width gate can't help (the container
+ * measurement is part of the same broken loop), but `pointer`/`hover` is a
+ * viewport media feature outside it: phones report `pointer: coarse` / no hover
+ * and keep the bounded base zoom, while desktop mice get the upscale (where the
+ * loop converges, as on Blink). `fit="none"` opts out (its own native-size +
+ * transform path above); standalone mockups keep the cap regardless. */
+@media (hover: hover) and (pointer: fine) {
 	[data-section="media"] > .rf-mockup:not([data-fit="none"]) .rf-mockup__frame {
 		zoom: calc(var(--mockup-scale, 1) * tan(atan2(100cqi, var(--mockup-device-width, 100cqi))));
 	}
