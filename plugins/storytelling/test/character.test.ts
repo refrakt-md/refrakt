@@ -74,4 +74,21 @@ Sells potions.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'character');
 		expect(tag).toBeDefined();
 	});
+
+	it('should capture a leading image as the portrait', () => {
+		const result = parse(`{% character name="Aria" %}
+![Aria](/aria.png)
+
+## Background
+
+Backstory text.
+{% /character %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'character');
+		expect(tag).toBeDefined();
+		// The portrait image is captured and sits bare (not lost, not <p>-wrapped).
+		const img = findTag(tag!, t => t.name === 'img');
+		expect(img).toBeDefined();
+		expect(img!.attributes.src).toBe('/aria.png');
+	});
 });

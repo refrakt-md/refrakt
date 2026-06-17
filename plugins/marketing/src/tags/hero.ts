@@ -2,7 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, linkItem, pageSectionProperties, extractMediaImage } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, linkItem, pageSectionProperties, extractMediaImage, unwrapParagraphImages } from '@refrakt-md/runes';
 
 export const hero = createContentModelSchema({
 	base: SplitLayoutModel,
@@ -81,12 +81,15 @@ export const hero = createContentModelSchema({
 			Markdoc.transform(actionAstNodes, actionConfig) as RenderableTreeNode[],
 		);
 
-		// Transform media AST nodes
+		// Transform media AST nodes. Markdoc wraps inline-level media (a bare image,
+		// or a single block rune like `{% sandbox %}`) in a `<p>`; unwrap those so
+		// the media zone holds the element directly — matching card / bento, and so
+		// the shared media-zone CSS targets the element, not a stray paragraph.
 		const mediaAstNodes = (
 			Array.isArray(mediaZone.media) ? mediaZone.media : []
 		) as Node[];
 		const side = new RenderableNodeCursor(
-			Markdoc.transform(mediaAstNodes, config) as RenderableTreeNode[],
+			unwrapParagraphImages(Markdoc.transform(mediaAstNodes, config) as RenderableTreeNode[]),
 		);
 
 		// Layout meta tags (shared with every media+content rune). Hero deviates

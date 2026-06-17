@@ -59,4 +59,21 @@ describe('feature tag', () => {
     const dd = findTag(firstDef, t => t.name === 'dd');
     expect(dd).toBeDefined();
   });
+
+  it('should unwrap a paragraph-wrapped image in the media zone', () => {
+    const result = parse(`{% feature %}
+![alt](/shot.png)
+
+---
+
+# Title
+
+Body text.
+{% /feature %}`);
+
+    const media = findTag(result as any, t => t.attributes['data-name'] === 'media');
+    expect(media).toBeDefined();
+    expect(media!.children.some((c: any) => c?.name === 'p')).toBe(false);
+    expect(findTag(media!, t => t.name === 'img')).toBeDefined();
+  });
 });

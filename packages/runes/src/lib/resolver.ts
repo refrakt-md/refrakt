@@ -109,8 +109,30 @@ export function matchesType(node: Node, match: string): boolean {
 		return node.type === 'tag' && (node as any).tag === tagName;
 	}
 
+	// A standalone image is parsed as `paragraph > inline > image`. Treat such a
+	// pure-image paragraph as an `image` so a field matching `image` (e.g. a
+	// character portrait) captures it — Markdown has no bare top-level image node.
+	if (match === 'image') return node.type === 'image' || imageInParagraph(node) !== null;
+
 	// Simple type match
 	return node.type === match;
+}
+
+/**
+ * Extract the lone image node from a paragraph that wraps only an image
+ * (`paragraph > inline > image`, ignoring surrounding whitespace/softbreaks).
+ * Returns `null` when the node is not such a paragraph — e.g. text mixed with
+ * an image, which is real prose and must stay a paragraph.
+ */
+export function imageInParagraph(node: Node): Node | null {
+	if (node.type !== 'paragraph') return null;
+	const inlineKids = (node.children ?? []).flatMap(c =>
+		c.type === 'inline' ? (c.children ?? []) : [c],
+	);
+	const meaningful = inlineKids.filter(
+		c => !(c.type === 'text' && String(c.attributes?.content ?? '').trim() === '') && c.type !== 'softbreak',
+	);
+	return meaningful.length === 1 && meaningful[0].type === 'image' ? meaningful[0] : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -139,18 +161,25 @@ export function resolveSequence(
 		const child = children[childIndex];
 
 		if (matchesType(child, field.match)) {
+			// A field matching exactly `image` should resolve to the bare image
+			// node, unwrapping the `paragraph > inline > image` Markdown produces.
+			// Scoped to the exact match so `heading|paragraph|image` header fields
+			// keep their paragraphs intact.
+			const unwrapImage = field.match === 'image'
+				? (n: Node): Node => imageInParagraph(n) ?? n
+				: (n: Node): Node => n;
 			if (field.greedy) {
 				const collected: Node[] = [];
 				while (
 					childIndex < children.length &&
 					matchesType(children[childIndex], field.match)
 				) {
-					collected.push(children[childIndex]);
+					collected.push(unwrapImage(children[childIndex]));
 					childIndex++;
 				}
 				result[field.name] = collected;
 			} else {
-				result[field.name] = child;
+				result[field.name] = unwrapImage(child);
 				childIndex++;
 			}
 

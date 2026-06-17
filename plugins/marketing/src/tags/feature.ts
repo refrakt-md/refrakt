@@ -2,7 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag, Ast } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, pageSectionProperties } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, pageSectionProperties, unwrapParagraphImages } from '@refrakt-md/runes';
 
 /** Check if a paragraph node contains an image, icon tag, or strong element. */
 function isTermParagraph(node: Node): boolean {
@@ -158,8 +158,11 @@ export const feature = createContentModelSchema({
 			Markdoc.transform(asNodes(contentZone.definitions), defConfig) as RenderableTreeNode[],
 		);
 
+		// Unwrap Markdoc's `<p>` around inline media (a bare image or a single
+		// block rune) so the media zone holds the element directly — matching
+		// hero / card / bento.
 		const side = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(mediaZone.media), config) as RenderableTreeNode[],
+			unwrapParagraphImages(Markdoc.transform(asNodes(mediaZone.media), config) as RenderableTreeNode[]),
 		);
 
 		const align = (attrs.align as string) || 'center';

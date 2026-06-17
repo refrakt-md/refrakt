@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, pageSectionProperties, unwrapParagraphImages } from '@refrakt-md/runes';
 
 const difficultyType = ['easy', 'medium', 'hard'] as const;
 
@@ -20,8 +20,10 @@ export const howto = createContentModelSchema({
 		fields: bodyFields,
 	},
 	transform(resolved, attrs, config) {
+		// Unwrap Markdoc's `<p>` around a leading image so it sits bare in the
+		// header (and so `pageSectionProperties`' top-level `img` lookup finds it).
 		const header = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
+			unwrapParagraphImages(Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[]),
 		);
 		const body = new RenderableNodeCursor(
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],

@@ -66,4 +66,23 @@ You will need these tools:
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'how-to');
 		expect(tag).toBeDefined();
 	});
+
+	it('should unwrap a paragraph-wrapped image in the header', () => {
+		const result = parse(`{% howto difficulty="easy" %}
+![hero](/hero.png)
+
+# Bake Bread
+
+1. Mix
+2. Bake
+{% /howto %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'how-to');
+		expect(tag).toBeDefined();
+		const wrapped = findAllTags(tag!, t => t.name === 'p').some(
+			p => p.children.some((c: any) => c?.name === 'img'),
+		);
+		expect(wrapped).toBe(false);
+		expect(findTag(tag!, t => t.name === 'img')).toBeDefined();
+	});
 });

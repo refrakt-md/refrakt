@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, resolveSequence, RenderableNodeCursor, pageSectionProperties, headingsToList } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, resolveSequence, RenderableNodeCursor, pageSectionProperties, headingsToList, unwrapParagraphImages } from '@refrakt-md/runes';
 
 // Kinds that use group/member heading structure
 const GROUP_KINDS = ['class', 'interface', 'module'];
@@ -132,8 +132,10 @@ export const symbol = createContentModelSchema({
 			bodyAstNodes = asNodes(resolved.body);
 		}
 
+		// Unwrap Markdoc's `<p>` around a leading image so it sits bare in the
+		// header (and so `pageSectionProperties`' top-level `img` lookup finds it).
 		const header = new RenderableNodeCursor(
-			Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[],
+			unwrapParagraphImages(Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[]),
 		);
 		const bodyStream = new RenderableNodeCursor(
 			Markdoc.transform(bodyAstNodes, config) as RenderableTreeNode[],
