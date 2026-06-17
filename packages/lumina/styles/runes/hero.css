@@ -149,6 +149,9 @@
 	margin-top: 3rem;
 	border-radius: var(--rf-radius-lg);
 }
+/* Rune-guest chrome handling (don't round a sandbox / codegroup / juxtapose) is
+ * the shared `data-guest-fit="bleed"` behaviour — see layouts/split.css. The
+ * hero only sets the image radius tier here. */
 .rf-hero[data-media-position="top"] > .rf-hero__media {
 	margin-top: 0;
 	margin-bottom: 3rem;

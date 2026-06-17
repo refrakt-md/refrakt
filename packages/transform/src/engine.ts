@@ -165,7 +165,7 @@ const FRAME_FACET_META = ['frame-aspect', 'frame-displace', 'frame-displace-mode
  *  preset (one `extends` level) and inline overrides, and emit the chrome
  *  contract (data-displace / data-frame-shadow / --frame-* custom props).
  *  Returns null when no frame meta is present. */
-function resolveFrameChrome(tag: SerializedTag, frames: Record<string, FramePresetDefinition>): FrameChrome | null {
+function resolveFrameChrome(tag: SerializedTag, frames: Record<string, FramePresetDefinition>, guestFit?: string): FrameChrome | null {
 	const metaProps = new Set<string>();
 	const read = (field: string): string | undefined => {
 		const v = readMeta(tag, field);
@@ -199,6 +199,15 @@ function resolveFrameChrome(tag: SerializedTag, frames: Record<string, FramePres
 	}
 
 	if (metaProps.size === 0) return null;
+
+	// A displaced guest defaults to its host's containment mode: a bleed host
+	// (guestFit: 'bleed', e.g. hero/feature) spills, a clip host crops to a peek.
+	// An explicit `frame-displace-mode=` still wins. This is the displace face of
+	// the same clip-vs-bleed axis as `data-guest-fit`, so a hero no longer needs
+	// `frame-displace-mode="bleed"` spelled out.
+	if (facets.displace && !(facets as Record<string, string>).displaceMode && guestFit === 'bleed') {
+		(facets as Record<string, string>).displaceMode = 'bleed';
+	}
 
 	const dataAttrs: Record<string, string> = {};
 	const styleParts: string[] = [];
@@ -879,7 +888,7 @@ function transformRune(
 	// 1g. Frame chrome (SPEC-086) — resolve the frame preset + facets and decide
 	// which surface they decorate. `self` lands on the rune root; `media` lands
 	// on the [data-section="media"] zone (applied after assembly, below).
-	const frameChrome = resolveFrameChrome(tag, frames);
+	const frameChrome = resolveFrameChrome(tag, frames, config.guestFit);
 	const frameMetaProps = new Set<string>(frameChrome?.metaProps ?? []);
 	let frameTargetKind: 'media' | 'self' | null = null;
 	if (frameChrome) {
@@ -975,12 +984,12 @@ function transformRune(
 	// 6. Apply BEM element classes, section anatomy, and media slots to data-name children, then recurse once
 	let enhancedChildren = children.map(child => {
 		if (!isTag(child)) return recurse(child, dataRune);
-		return recurse(applyBemClasses(child, block, config.sections, config.mediaSlots), dataRune);
+		return recurse(applyBemClasses(child, block, config.sections, config.mediaSlots, config.guestFit), dataRune);
 	});
 
 	// 6b. Projection pass — declarative structural reshaping (hide → group → relocate)
 	if (config.projection) {
-		enhancedChildren = applyProjection(enhancedChildren, config.projection, block, config.sections, config.mediaSlots);
+		enhancedChildren = applyProjection(enhancedChildren, config.projection, block, config.sections, config.mediaSlots, config.guestFit);
 	}
 
 	// 6c. Frame chrome → media surface (SPEC-086). `self`-target chrome is merged
@@ -1236,7 +1245,7 @@ function applyAutoLabel(children: RendererNode[], autoLabel: Record<string, stri
 
 /** Recursively apply BEM element classes, section anatomy, and media slots to data-name elements within a rune's children.
  *  Pure decoration — does not recurse into the transform pipeline. */
-function applyBemClasses(child: SerializedTag, block: string, sections?: Record<string, string>, mediaSlots?: Record<string, string>): SerializedTag {
+function applyBemClasses(child: SerializedTag, block: string, sections?: Record<string, string>, mediaSlots?: Record<string, string>, guestFit?: string): SerializedTag {
 	const dataName = child.attributes['data-name'];
 	if (dataName) {
 		const elementClass = `${block}__${dataName}`;
@@ -1244,7 +1253,7 @@ function applyBemClasses(child: SerializedTag, block: string, sections?: Record<
 		// Recursively apply BEM to nested data-name children (e.g., icon/title inside header)
 		const nestedChildren = child.children.map(c => {
 			if (!isTag(c)) return c;
-			return applyBemClasses(c, block, sections, mediaSlots);
+			return applyBemClasses(c, block, sections, mediaSlots, guestFit);
 		});
 		const sectionRole = sections?.[dataName];
 		const mediaSlot = mediaSlots?.[dataName];
@@ -1255,6 +1264,9 @@ function applyBemClasses(child: SerializedTag, block: string, sections?: Record<
 				class: [elementClass, childExistingClass].filter(Boolean).join(' '),
 				...(sectionRole ? { 'data-section': sectionRole } : {}),
 				...(mediaSlot ? { 'data-media': mediaSlot } : {}),
+				// The chrome/containment axis (SPEC-090 sibling) rides the media
+				// zone so the skin can frame or free a guest without rune-name CSS.
+				...(sectionRole === 'media' ? { 'data-guest-fit': guestFit ?? 'clip' } : {}),
 			},
 			children: nestedChildren,
 		};
@@ -1450,6 +1462,7 @@ function applyProjection(
 	block: string,
 	sections?: Record<string, string>,
 	mediaSlots?: Record<string, string>,
+	guestFit?: string,
 ): RendererNode[] {
 	let result = [...children];
 
@@ -1485,7 +1498,7 @@ function applyProjection(
 			if (collected.length > 0) {
 				// Create group wrapper with data-name and apply BEM classes
 				let wrapper = makeTag(groupDef.tag, { 'data-name': groupName }, collected);
-				wrapper = applyBemClasses(wrapper, block, sections, mediaSlots);
+				wrapper = applyBemClasses(wrapper, block, sections, mediaSlots, guestFit);
 				result.splice(firstIdx, 0, wrapper);
 			}
 		}
