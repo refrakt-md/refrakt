@@ -88,4 +88,47 @@ npm create refrakt
 		const linkItem = findTag(tag!, t => t.name === 'li' && t.attributes['data-name'] === 'action');
 		expect(linkItem).toBeDefined();
 	});
+
+	it('should unwrap a paragraph-wrapped image in the media zone', () => {
+		const result = parse(`{% hero %}
+![alt](/cover.png)
+
+---
+
+# Title
+
+Body text.
+{% /hero %}`);
+
+		const media = findTag(result as any, t => t.attributes['data-name'] === 'media');
+		expect(media).toBeDefined();
+		// The image is a direct child of the media zone — no stray <p> wrapper,
+		// matching card / bento.
+		expect(media!.children.some((c: any) => c?.name === 'p')).toBe(false);
+		const img = findTag(media!, t => t.name === 'img');
+		expect(img).toBeDefined();
+		expect(media!.children).toContain(img);
+	});
+
+	it('should keep a single block rune bare in the media zone (no <p> wrap)', () => {
+		const result = parse(`{% hero %}
+{% sandbox %}
+\`\`\`html
+<button>Hi</button>
+\`\`\`
+{% /sandbox %}
+
+---
+
+# Title
+
+Body text.
+{% /hero %}`);
+
+		const media = findTag(result as any, t => t.attributes['data-name'] === 'media');
+		expect(media).toBeDefined();
+		expect(media!.children.some((c: any) => c?.name === 'p')).toBe(false);
+		const sandbox = findTag(media!, t => t.attributes['data-rune'] === 'sandbox');
+		expect(sandbox).toBeDefined();
+	});
 });
