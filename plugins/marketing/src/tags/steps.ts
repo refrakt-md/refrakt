@@ -2,7 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Ast, Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, SplitLayoutModel, buildLayoutMetas, nameHelper as name, pageSectionProperties, asNodes } from '@refrakt-md/runes';
+import { createComponentRenderable, createContentModelSchema, SplitLayoutModel, buildLayoutMetas, nameHelper as name, pageSectionProperties, asNodes, unwrapParagraphImages } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 
 export const step = createContentModelSchema({
@@ -37,8 +37,10 @@ export const step = createContentModelSchema({
     const main = new RenderableNodeCursor(
       Markdoc.transform(asNodes(contentZone.content), config) as RenderableTreeNode[],
     );
+    // Unwrap Markdoc's `<p>` around inline media (a bare image or a single
+    // block rune) so the media zone holds the element directly — matching hero.
     const side = new RenderableNodeCursor(
-      Markdoc.transform(asNodes(mediaZone.content), config) as RenderableTreeNode[],
+      unwrapParagraphImages(Markdoc.transform(asNodes(mediaZone.content), config) as RenderableTreeNode[]),
     );
 
     const mainContent = main.wrap('div');

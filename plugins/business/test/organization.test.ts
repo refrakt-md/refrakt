@@ -38,4 +38,22 @@ Open Monday to Friday.
 		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'organization');
 		expect(tag).toBeDefined();
 	});
+
+	it('should unwrap a paragraph-wrapped logo image in the header', () => {
+		const result = parse(`{% organization name="Acme" %}
+![logo](/logo.png)
+
+# Acme Corp
+
+About us.
+{% /organization %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'organization');
+		expect(tag).toBeDefined();
+		const wrapped = findAllTags(tag!, t => t.name === 'p').some(
+			p => p.children.some((c: any) => c?.name === 'img'),
+		);
+		expect(wrapped).toBe(false);
+		expect(findTag(tag!, t => t.name === 'img')).toBeDefined();
+	});
 });

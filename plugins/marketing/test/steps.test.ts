@@ -67,4 +67,19 @@ Do the second thing.
     const stepItems = findAllTags(stepsTag!, t => t.attributes['data-rune'] === 'step');
     expect(stepItems.length).toBe(2);
   });
+
+  it('should unwrap a paragraph-wrapped image in a step media zone', () => {
+    const result = parse(`{% step %}
+![alt](/shot.png)
+
+---
+
+Do the thing.
+{% /step %}`);
+
+    const media = findTag(result as any, t => t.attributes['data-name'] === 'media');
+    expect(media).toBeDefined();
+    expect(media!.children.some((c: any) => c?.name === 'p')).toBe(false);
+    expect(findTag(media!, t => t.name === 'img')).toBeDefined();
+  });
 });

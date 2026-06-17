@@ -32,4 +32,23 @@ A three-day online event.
 		expect(fields.endDate).toBe('2025-03-03');
 		expect(fields.location).toBe('Online');
 	});
+
+	it('should unwrap a paragraph-wrapped banner image in the header', () => {
+		const result = parse(`{% event name="Launch" %}
+![banner](/banner.png)
+
+# Launch Party
+
+Details here.
+{% /event %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'event');
+		expect(tag).toBeDefined();
+		// The banner image sits bare in the header, not wrapped in a <p>.
+		const wrapped = findAllTags(tag!, t => t.name === 'p').some(
+			p => p.children.some((c: any) => c?.name === 'img'),
+		);
+		expect(wrapped).toBe(false);
+		expect(findTag(tag!, t => t.name === 'img')).toBeDefined();
+	});
 });
