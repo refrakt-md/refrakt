@@ -149,6 +149,20 @@
 	margin-top: 3rem;
 	border-radius: var(--rf-radius-lg);
 }
+/* Rune media guests keep their own edges in a bare section host. A hero has no
+ * framed media well (unlike card / bento-cell), so the section's rounded media
+ * clip would only mask a guest rune's own corners — a sandbox iframe, a
+ * codegroup, a juxtapose slider. Drop the radius for rune guests; image / video
+ * guests keep the rounded media tier above. (Framed hosts still merge a guest
+ * into their well — that one-surface read is intended there, so card / bento
+ * are untouched.) */
+.rf-hero__media:has(> [data-rune]) {
+	border-radius: 0;
+}
+.rf-hero__media:has(> [data-rune]) > [data-rune],
+.rf-hero__media:has(> [data-rune]) .rf-codegroup {
+	border-radius: 0;
+}
 .rf-hero[data-media-position="top"] > .rf-hero__media {
 	margin-top: 0;
 	margin-bottom: 3rem;
