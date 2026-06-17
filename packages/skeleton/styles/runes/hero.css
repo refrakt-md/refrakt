@@ -24,10 +24,10 @@
 	overflow: visible;
 	container-type: normal;
 }
-.rf-hero > [data-section="media"]:is([data-displace], :has(> [data-displace])) > * {
-	width: auto;
-	max-height: none;
-}
+/* Note: unlike the showcase/preview/juxtapose opt-outs in layouts/split.css,
+ * we deliberately keep the default `width: 100%` / `max-height: 100%` on the
+ * guest — a codegroup or sandbox in a hero should still fill the hero's
+ * width; the unclip is only about letting it overflow vertically. */
 
 .rf-hero__preamble {
 	flex-direction: column;

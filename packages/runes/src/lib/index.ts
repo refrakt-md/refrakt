@@ -58,7 +58,8 @@ const universalAttributes: Record<string, SchemaAttribute> = {
   'frame': { type: String, required: false, description: 'Named frame preset presenting this block\'s media surface' },
   'frame-aspect': { type: String, required: false, description: 'Aspect ratio of the framed media, e.g. "16/9"' },
   'frame-displace': { type: String, required: false, matches: ['top', 'bottom', 'end', 'bottom-end', 'top-end'], description: 'Edge/corner the framed guest moves toward' },
-  'frame-offset': { type: String, required: false, matches: ['none', 'sm', 'md', 'lg', 'xl'], description: 'Displacement distance (named scale)' },
+  'frame-displace-mode': { type: String, required: false, matches: ['peek', 'bleed'], description: 'How displacement renders: `peek` (default) translates the guest visually inside its frame target; `bleed` uses negative margin on the media zone so following layout pulls up — extends past a section like a hero without leaving a gap above' },
+  'frame-offset': { type: String, required: false, matches: ['none', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl'], description: 'Displacement distance (non-linear named scale: sm…xl ride the block-spacing tokens, 2xl/3xl/4xl step up to section-spacing for bleed-mode displacements that clear a section edge)' },
   'frame-oversize': { type: String, required: false, description: 'How far the guest exceeds its slot (scale factor)' },
   'frame-place': { type: String, required: false, description: 'Guest-box alignment in the slot (e.g. "left top")' },
   'frame-anchor': { type: String, required: false, description: 'Crop focal point when the guest is cut (object-position)' },
@@ -90,7 +91,7 @@ const BG_GRADIENT_FACET_NAMES = [
 ] as const;
 
 /** SPEC-086 frame facet attribute names (excluding the `frame` preset key). */
-const FRAME_FACET_NAMES = ['frame-aspect', 'frame-displace', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-shadow'] as const;
+const FRAME_FACET_NAMES = ['frame-aspect', 'frame-displace', 'frame-displace-mode', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-shadow'] as const;
 
 /** SPEC-087 substrate facet attribute names (excluding the `substrate` enum key). */
 const SUBSTRATE_FACET_NAMES = ['substrate-size', 'substrate-opacity', 'substrate-fill', 'substrate-target'] as const;

@@ -73,6 +73,7 @@ export const UNIVERSAL_ATTRIBUTE_NAMES: ReadonlySet<string> = new Set([
 	'frame',
 	'frame-aspect',
 	'frame-displace',
+	'frame-displace-mode',
 	'frame-offset',
 	'frame-oversize',
 	'frame-place',

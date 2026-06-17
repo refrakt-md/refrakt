@@ -159,7 +159,7 @@ interface FrameChrome {
 	metaProps: Set<string>;
 }
 
-const FRAME_FACET_META = ['frame-aspect', 'frame-displace', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-shadow'] as const;
+const FRAME_FACET_META = ['frame-aspect', 'frame-displace', 'frame-displace-mode', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-shadow'] as const;
 
 /** SPEC-086 — read the `frame` preset + `frame-*` facet metas, resolve the
  *  preset (one `extends` level) and inline overrides, and emit the chrome
@@ -187,6 +187,7 @@ function resolveFrameChrome(tag: SerializedTag, frames: Record<string, FramePres
 	const inline: Record<string, string | undefined> = {
 		aspect: read('frame-aspect'),
 		displace: read('frame-displace'),
+		displaceMode: read('frame-displace-mode'),
 		offset: read('frame-offset'),
 		oversize: read('frame-oversize'),
 		place: read('frame-place'),
@@ -203,6 +204,7 @@ function resolveFrameChrome(tag: SerializedTag, frames: Record<string, FramePres
 	const styleParts: string[] = [];
 	if (presetName) dataAttrs['data-frame'] = presetName;
 	if (facets.displace) dataAttrs['data-displace'] = facets.displace;
+	if ((facets as Record<string, string>).displaceMode) dataAttrs['data-displace-mode'] = (facets as Record<string, string>).displaceMode;
 	if (facets.shadow) dataAttrs['data-frame-shadow'] = facets.shadow;
 	if (facets.aspect) styleParts.push(`--frame-aspect: ${facets.aspect}`);
 	if (facets.offset) styleParts.push(`--frame-offset: ${resolveOffset(facets.offset)}`);

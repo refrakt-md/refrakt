@@ -157,13 +157,22 @@ export function ratioToFr(value: string): string {
 	return value.split(/\s+/).map(n => `${n}fr`).join(' ');
 }
 
-/** Named offset presets → CSS spacing token values (SPEC-086 named scale). */
+/** Named offset presets → CSS spacing token values (SPEC-086 named scale).
+ *
+ *  Non-linear ramp by design: `sm`–`xl` ride the block-spacing tokens (0.5rem
+ *  through 3rem — used for peek displacements inside a card or bento cell),
+ *  and `2xl`+ step up to the section-spacing tokens so `bleed`-mode
+ *  displacements can clear a section's padding-block (typically
+ *  `--rf-spacing-section` = 4rem) and still have visible overhang. */
 const OFFSET_PRESETS: Record<string, string> = {
 	none: '0',
-	sm: 'var(--rf-spacing-sm)',
-	md: 'var(--rf-spacing-md)',
-	lg: 'var(--rf-spacing-lg)',
-	xl: 'var(--rf-spacing-xl)',
+	sm: 'var(--rf-spacing-sm)',                  // 0.5rem
+	md: 'var(--rf-spacing-md)',                  // 1.5rem
+	lg: 'var(--rf-spacing-lg)',                  // 2rem
+	xl: 'var(--rf-spacing-xl)',                  // 3rem
+	'2xl': 'var(--rf-spacing-section)',          // 4rem — matches a tight section's padding-block
+	'3xl': 'var(--rf-spacing-section-loose)',    // 6rem — comfortably past a section edge
+	'4xl': 'var(--rf-spacing-section-breathe)',  // 8rem — definitive bleed past any section
 };
 
 /** Resolve an offset preset name to its CSS value. SPEC-086 closed the raw-value

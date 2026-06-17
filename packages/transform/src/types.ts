@@ -542,7 +542,12 @@ export interface FramePresetDefinition {
 	aspect?: string;
 	/** Edge/corner the guest moves toward: top | bottom | end | bottom-end | top-end. */
 	displace?: string;
-	/** Displacement distance — named scale: none | sm | md | lg | xl. */
+	/** How displacement renders: `peek` (default) translates the inner guest inside
+	 *  its frame target; `bleed` puts a negative margin on the media zone so
+	 *  following layout pulls up — used to extend a guest past a section host
+	 *  like a hero without leaving a gap above. */
+	displaceMode?: string;
+	/** Displacement distance — named scale: none | sm | md | lg | xl | 2xl | 3xl. */
 	offset?: string;
 	/** How far the guest exceeds its slot (scale factor / min-size); clipped guests only. */
 	oversize?: string;
