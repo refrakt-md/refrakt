@@ -8,6 +8,27 @@
 
 .rf-hero { position: relative; }
 
+/* Hero media zone bleeds: a hero is a section header, not a clip-host like
+ * card / bento-cell, so a displaced guest in its media zone should spill past
+ * the zone boundary instead of being cropped into a peek. Mirrors the existing
+ * `[data-rune="preview"]` / `[data-rune="juxtapose"]` / showcase-displace
+ * opt-outs in layouts/split.css — same intent, host-aware scope.
+ *
+ * Covers both routing paths of `frame-displace`:
+ *   1. host-on-media — `frame-displace` on the hero lands `data-displace` on
+ *      the media-zone wrapper itself (the host's frame target is its media).
+ *   2. self on a child — a media-zone child rune carrying its own
+ *      `frame-displace` ends up with `data-displace` on its root, so we still
+ *      need `:has(> [data-displace])` for that case. */
+.rf-hero > [data-section="media"]:is([data-displace], :has(> [data-displace])) {
+	overflow: visible;
+	container-type: normal;
+}
+.rf-hero > [data-section="media"]:is([data-displace], :has(> [data-displace])) > * {
+	width: auto;
+	max-height: none;
+}
+
 .rf-hero__preamble {
 	flex-direction: column;
 	align-items: center;
