@@ -28,7 +28,7 @@ The result: the data needed for a clean AI-assisted upgrade is scattered across 
 
 **Goals**
 
-- An agent working in a freshly upgraded project can ask the MCP server "what changed since version X" and get structured, version-bounded entries with breaking changes called out and codemods linked — entirely offline.
+- An agent working in a freshly upgraded project can ask refrakt — over MCP *or* the CLI — "what changed since version X" and get structured, version-bounded entries with breaking changes called out and codemods linked — entirely offline.
 - An agent can validate the project's `.md` content and `refrakt.config.json` against the installed version's schemas and get a structured list of errors, unknown runes, invalid attributes, and deprecated usage with the replacement.
 - An agent can run a single "scan this repo for migration work" operation that combines the two and returns concrete, per-file findings it can act on.
 - Everything works from the installed packages alone; nothing depends on network access, the docs site, or a checkout of the refrakt repo.
@@ -51,6 +51,8 @@ The result: the data needed for a clean AI-assisted upgrade is scattered across 
 **Validation reuses the live schemas, never a copy.** The validator runs `Markdoc.validate()` against the same tag/node config the transform pipeline uses. There is no second schema to keep in sync — if a rune's attributes change, validation tracks it automatically because it reads the same definitions.
 
 **The scanner orchestrates; it does not re-implement.** The migration scanner is a thin coordinator over the generic validator, the changelog/migration-guide data, the existing attribute-deprecation transforms, and the config migrator. Its job is to point at the right primitives and aggregate findings, not to encode migration logic of its own.
+
+**Every query capability is a CLI command first; MCP wraps it.** Agents fall back to the CLI when MCP is unavailable, so no migration capability may be MCP-only. Each read/query surface (changelog, migration guide, content validation, scan) is implemented as a CLI command with a `--json` mode, and the corresponding MCP tool shells out to it. This guarantees a single source of behaviour, keeps the two surfaces from drifting, and makes the whole feature usable in MCP-less environments.
 
 **Mechanical fixes are owned by the tool; judgement is owned by the agent.** Anything the schema can transform deterministically (a renamed attribute with a `transform` handler, a config-shape bump) the tool can apply. Anything requiring interpretation is reported with enough context for the agent to act, never silently rewritten.
 
@@ -188,10 +190,23 @@ Batch over a directory, summarise errors/warnings, exit non-zero on errors (matc
 
 Extend `refrakt.detect` / the `DetectionResult` (`packages/mcp/src/detect.ts`) to surface the installed refrakt version. The agent then knows the migration *target* automatically and only needs the *from* version (stated by the user, or detected — see Open Questions).
 
+### CLI surface
+
+The CLI command is the primitive; the MCP tools wrap it. Both read the same bundled artifact, so the two surfaces can never disagree.
+
+```bash
+refrakt changelog [--since <v>] [--until <v>] [--kind breaking] [--json]
+refrakt migration-guide --from <v> [--to <v>] [--json]
+```
+
+`--json` emits the structured `ChangelogRelease[]` / migration-plan shapes below; without it the command renders a readable summary. Because the changelog ships inside `@refrakt-md/cli`, these work in any environment where the CLI works — no MCP client required. This matters as the fallback path: an agent in an MCP-less environment (CI, a bare shell, a misconfigured client) can still run the complete migration flow. There is precedent — `refrakt reference` exists explicitly for authors and AI agents with a `--json` mode.
+
 ### Tools
 
-- **`refrakt.changelog`** — input `{ since?, until?, kind? }`, returns the filtered `ChangelogRelease[]` from the bundled artifact. `since`/`until` bound the version range; `kind` filters to e.g. `breaking`. No network.
-- **`refrakt.migration_guide`** — input `{ from, to? }` (`to` defaults to installed version). Returns an *ordered* migration plan: every breaking change between the two versions, oldest first, each with its prose and any `codemod` command to run. This is the agent's checklist for an upgrade.
+The MCP tools shell out to the CLI commands above via the established `invokeCli` pattern (`packages/mcp/src/tools/core.ts`):
+
+- **`refrakt.changelog`** — input `{ since?, until?, kind? }`, wraps `refrakt changelog --json`, returns the filtered `ChangelogRelease[]`. `since`/`until` bound the version range; `kind` filters to e.g. `breaking`. No network.
+- **`refrakt.migration_guide`** — input `{ from, to? }` (`to` defaults to installed version), wraps `refrakt migration-guide --json`. Returns an *ordered* migration plan: every breaking change between the two versions, oldest first, each with its prose and any `codemod` command to run. This is the agent's checklist for an upgrade.
 
 ### Resources
 
@@ -284,7 +299,11 @@ The migration scanner is deliberately thin: it composes the changelog artifact, 
 
 The tool applies only what the schemas can transform unambiguously — deprecated-attribute renames with `transform` handlers, the config-shape migration, registered codemods. Judgement-heavy changes are reported with full changelog context for the agent, never rewritten silently. This matches the existing engine behaviour (deprecation `transform` handlers already run deterministically) and keeps the blast radius of `--fix` predictable.
 
-### 5. A codemod registry replaces hard-coded codemods
+### 5. CLI and MCP are dual surfaces; the CLI is the primitive
+
+No migration capability is MCP-only. Agents routinely fall back to the CLI when an MCP client is missing or misconfigured, so every query surface — changelog, migration guide, content validation, scan — ships as a CLI command with a `--json` mode, and the MCP tool wraps it via `invokeCli`. Since the MCP tools already shell out to `@refrakt-md/cli` for almost everything, the CLI command is the cheaper, more fundamental unit to build, and there is precedent in `refrakt reference` (an agent-facing command with `--json`). This keeps a single source of behaviour and makes the full migration flow usable in CI and bare-shell environments.
+
+### 6. A codemod registry replaces hard-coded codemods
 
 `refrakt migrate` currently hard-codes `elevation`. A registry of codemods (name, applicable version range, runnable handler) is the connective tissue that lets the changelog artifact reference real commands and lets the scanner offer to run them. It also gives plugins a path to ship codemods for their own runes, paralleling how they ship CLI commands.
 
