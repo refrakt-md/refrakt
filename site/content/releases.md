@@ -6,7 +6,11 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.24.1
+## v0.24.2
+
+- Fix paragraph-wrapped media in media+content runes. Markdoc wraps inline media (a bare image, or a single block rune like `{% sandbox %}`) in a `<p>`; several runes passed their media/header zone through raw, so the media well held a stray paragraph instead of the element. `hero`, `feature`, `step`, `event`, `organization`, `symbol`, and `howto` now unwrap it, matching `card`/`bento`. Additionally, content-model fields matching `image` now capture standalone images (parsed by Markdoc as a paragraph), fixing the `character` portrait being silently dropped.
+
+## v0.24.1 - June 17, 2026
 
 - **Frame displacement gains a `bleed` mode and a longer offset ramp; bg gradients accept `transparent` and `name/alpha` stops; spacing-attribute overrides now win cleanly.**
 - **`frame-displace-mode="bleed"`** — a second rendering model for `frame-displace`. `peek` (default) keeps the existing `transform: translate()` behaviour where a displaced media guest is cropped by its zone — correct for card / bento-cell. `bleed` puts a negative margin on the media zone so following layout pulls up and the guest extends past the host's edge with no gap above — useful for a hero or cta whose media should overflow downward.
