@@ -36,6 +36,11 @@ function image(src = '/img.png') {
 	return node('image', { src });
 }
 
+/** A standalone image as Markdoc parses it: `paragraph > inline > image`. */
+function imageParagraph(src = '/img.png') {
+	return node('paragraph', {}, [node('inline', {}, [image(src)])]);
+}
+
 function blockquote(text = 'quote') {
 	return node('blockquote', {}, [paragraph(text)]);
 }
@@ -96,6 +101,16 @@ describe('matchesType', () => {
 		expect(matchesType(heading(2), 'heading:1|heading:2')).toBe(true);
 		expect(matchesType(heading(3), 'heading:1|heading:2')).toBe(false);
 	});
+
+	it('treats a pure-image paragraph as an image (standalone image markdown)', () => {
+		// `![alt](src)` on its own line parses as `paragraph > inline > image`.
+		expect(matchesType(imageParagraph(), 'image')).toBe(true);
+		// A paragraph with prose plus an image is real text — not an image match.
+		const mixed = node('paragraph', {}, [node('inline', {}, [node('text', { content: 'see ' }), image()])]);
+		expect(matchesType(mixed, 'image')).toBe(false);
+		// A plain paragraph is still not an image.
+		expect(matchesType(paragraph(), 'image')).toBe(false);
+	});
 });
 
 // ---------------------------------------------------------------------------
@@ -115,6 +130,31 @@ describe('resolveSequence', () => {
 		expect(result.eyebrow).toBe(children[0]);
 		expect(result.headline).toBe(children[1]);
 		expect(result.blurb).toBe(children[2]);
+	});
+
+	it('unwraps a paragraph-wrapped image for an `image` field', () => {
+		const children = [imageParagraph('/portrait.png'), heading(2, 'Background')];
+		const fields: ContentFieldDefinition[] = [
+			{ name: 'portrait', match: 'image', optional: true },
+		];
+
+		const result = resolveSequence(children, fields);
+		// Resolves to the bare image node, not the wrapping paragraph.
+		expect((result.portrait as any).type).toBe('image');
+		expect((result.portrait as any).attributes.src).toBe('/portrait.png');
+	});
+
+	it('keeps paragraphs intact for a `heading|paragraph|image` field', () => {
+		// Header fields that list `paragraph` alongside `image` should preserve
+		// the paragraph wrapper (full prose header), not unwrap it.
+		const children = [imageParagraph('/banner.png'), heading(1, 'Title')];
+		const fields: ContentFieldDefinition[] = [
+			{ name: 'header', match: 'heading|paragraph|image', greedy: true },
+		];
+
+		const result = resolveSequence(children, fields);
+		const header = result.header as any[];
+		expect(header[0].type).toBe('paragraph');
 	});
 
 	it('skips optional fields when no match', () => {
