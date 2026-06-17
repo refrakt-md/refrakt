@@ -39,3 +39,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
+
+      # Production site deploy is gated to actual releases. Cloudflare Pages
+      # still auto-builds previews for non-production branches via its Git
+      # integration; automatic production builds are disabled in the dashboard
+      # (Branch control) so this step is the only path to production.
+      - name: Deploy site to Cloudflare Pages (production)
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          npm run build -w site
+          npx wrangler@latest pages deploy site/build \
+            --project-name=refrakt \
+            --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
