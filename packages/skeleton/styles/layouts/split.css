@@ -76,12 +76,20 @@
 	object-fit: cover;
 }
 /* A bleed host (`data-guest-fit="bleed"`, e.g. hero / feature) is a section, not
- * a clip-host: a displaced guest in its media zone should spill past the zone
- * boundary instead of being cropped into a peek. Covers both `frame-displace`
- * routing paths — host-on-media (`data-displace` on the zone) and a child rune
- * carrying its own displace (`:has(> [data-displace])`). Unlike the per-guest
- * opt-outs below, the guest keeps `width: 100%` (it still fills the host width);
- * only the vertical spill is unclipped. */
+ * a clip-host — it never crops its rune guest. The guest keeps its own chrome,
+ * including a drop-shadow that falls in the corner gaps its own rounding leaves;
+ * the slot's `overflow: hidden` would clip that shadow into a hard darker corner.
+ * The container-query context stays (a `mockup` still sizes against the slot) —
+ * only the clip is lifted. Leaf images aren't `[data-rune]`, so an image guest
+ * stays clipped for the framed rounded-image look. */
+[data-section="media"][data-guest-fit="bleed"]:has(> [data-rune]) {
+	overflow: visible;
+}
+/* A *displaced* guest also drops the container-query context so its negative-
+ * margin breakout can escape the slot. Covers both `frame-displace` routing
+ * paths — host-on-media (`data-displace` on the zone) and a child rune carrying
+ * its own displace (`:has(> [data-displace])`). The guest keeps `width: 100%`
+ * (it still fills the host width); only the spill is unclipped. */
 [data-section="media"][data-guest-fit="bleed"]:is([data-displace], :has(> [data-displace])) {
 	overflow: visible;
 	container-type: normal;
