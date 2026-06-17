@@ -1,5 +1,19 @@
 # plan-site
 
+## 0.0.15
+
+### Patch Changes
+
+- Updated dependencies [8090b69]
+  - @refrakt-md/runes@0.24.2
+  - @refrakt-md/content@0.24.2
+  - @refrakt-md/lumina@0.24.2
+  - @refrakt-md/plan@0.24.2
+  - @refrakt-md/sveltekit@0.24.2
+  - @refrakt-md/highlight@0.24.2
+  - @refrakt-md/svelte@0.24.2
+  - @refrakt-md/types@0.24.2
+
 ## 0.0.14
 
 ### Patch Changes
