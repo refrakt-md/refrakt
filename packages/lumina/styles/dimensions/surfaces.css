@@ -25,7 +25,12 @@
    Layout-chrome navs (menubar in header, columns in footer) are excluded
    so they sit flush with the surrounding header/footer container. */
 
-[data-rune]:not([data-rune] [data-rune]):not(:where([data-layout="menubar"], [data-layout="columns"])) {
+/* `:where(...)` zeros the selector specificity so per-rune CSS, the
+ * `[data-rune][data-spacing="..."]` attribute rules, and per-instance overrides
+ * all win cleanly. Without `:where()` the `:not([data-rune] [data-rune])` clause
+ * inflates this default to (0,3,0) — beating the (0,2,0) spacing attribute and
+ * masking `spacing="flush"` on top-level runes like hero. */
+:where([data-rune]:not([data-rune] [data-rune]):not([data-layout="menubar"]):not([data-layout="columns"])) {
 	margin: var(--rf-spacing-md) 0;
 }
 

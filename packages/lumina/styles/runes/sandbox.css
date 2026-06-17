@@ -1,9 +1,6 @@
 @layer skin {
 /* Sandbox — skin. The iframe clip/fill + banner/poster/activate layout live in
  * @refrakt-md/skeleton (styles/runes/sandbox.css). */
-.rf-sandbox {
-	border-radius: var(--rf-radius-md);
-}
 .rf-sandbox iframe {
 	border: none;
 }
@@ -14,7 +11,6 @@
 /* When inside preview, remove sandbox margin */
 .rf-preview .rf-sandbox {
 	margin: 0;
-	border-radius: 0;
 }
 /* Untrusted-mode affordance. */
 .rf-sandbox[data-security-mode="untrusted"] {
