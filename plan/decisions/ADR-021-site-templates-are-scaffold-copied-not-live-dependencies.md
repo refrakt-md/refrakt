@@ -1,4 +1,4 @@
-{% decision id="ADR-021" status="proposed" date="2026-06-15" source="SPEC-109" tags="templates, scaffolding, distribution, architecture" %}
+{% decision id="ADR-021" status="accepted" date="2026-06-15" source="SPEC-109" tags="templates, scaffolding, distribution, architecture" %}
 
 # Site templates are scaffold-copied, not live dependencies
 

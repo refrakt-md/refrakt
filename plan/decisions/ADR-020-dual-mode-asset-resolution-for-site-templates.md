@@ -1,4 +1,4 @@
-{% decision id="ADR-020" status="proposed" date="2026-06-15" source="SPEC-109" tags="templates, assets, images, architecture, transform" %}
+{% decision id="ADR-020" status="accepted" date="2026-06-15" source="SPEC-109" tags="templates, assets, images, architecture, transform" %}
 
 # Dual-mode asset resolution for site templates
 
@@ -74,18 +74,20 @@ slot's aspect must be derivable from the content alone. Two candidate ref syntax
 - **B. Key-only ref** — `asset:<key>`, with shape looked up from a manifest copied into the
   scaffolded project.
 
-**Leaning toward A** (self-describing): it best satisfies SPEC-109's "downloaded site needs no
-extra files" goal and keeps distributed-mode resolution a pure function of the content. B is
-left open only if a compelling reason to centralize per-key metadata emerges. Final syntax is
-settled in the SPEC-109 work phase.
+**Decided: A** (self-describing) — `asset:<shape>/<key>` (e.g. `asset:cover/hero-main`). It is
+the only form that satisfies SPEC-109's "downloaded site needs no extra files" goal: the shape
+travels in the ref, so distributed-mode resolution is a pure function of the content with no
+manifest present. B (key-only) is rejected — looking shape up from a copied manifest is exactly
+what the no-manifest-needed requirement precludes, and it offers nothing a self-describing ref
+lacks. The asset manifest therefore carries only demo-mode data (`previewUrl`/`alt`), never the
+shape needed to render.
 
 ## Decision
 
 Adopt **Option 3**: a logical `asset:` image scheme with dual-mode resolution over identical
 content — generated placeholders when distributed, author-provided `previewUrl`s under an
 opt-in demo-build mode — implemented via the existing last-wins resolver registry. The ref is
-expected to be **self-describing for shape** (candidate A), with exact syntax finalized during
-implementation.
+**self-describing for shape** (candidate A): `asset:<shape>/<key>`.
 
 ## Rationale
 
@@ -108,12 +110,13 @@ preview pipeline or distribution channel.
   unchanged.
 - A build-mode flag (env or config) registers the demo-mode override resolver. It is inert for
   normal site builds.
-- `template.json` gains an asset manifest (`key → { shape?, previewUrl, alt? }`); only
-  `previewUrl`/`alt` are demo-only, and they are never written into a scaffolded project.
+- `template.json` gains an asset manifest (`key → { previewUrl, alt? }`); shape lives in the
+  ref, so the manifest holds only demo-only data, and it is never written into a scaffolded project.
 - Template content authoring uses `asset:` for imagery that should be swappable, reserving bare
   `placeholder:` for purely decorative shape fills where identity does not matter.
-- The exact `asset:` ref syntax (self-describing vs. key-only) is the one open detail, resolved
-  in the SPEC-109 work phase against the "zero extra files in a download" test.
+- The `asset:` ref is self-describing — `asset:<shape>/<key>` — so a downloaded site resolves
+  shape-correct placeholders with no manifest present; the manifest's `previewUrl`/`alt` are
+  demo-only and never scaffolded into a project.
 
 ## References
 
