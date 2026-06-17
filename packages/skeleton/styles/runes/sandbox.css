@@ -3,6 +3,13 @@
  * glyph stay skin (Lumina's styles/runes/sandbox.css). */
 
 .rf-sandbox { overflow: hidden; }
+/* `height="fill"` pins the iframe to 100% of its host (SPEC-101) — so the host
+ * itself needs to claim 100% of its container's height for the iframe's 100%
+ * to mean anything. Without this the iframe collapses to the 150px fallback
+ * because the auto-height host has no definite height to fill against. */
+.rf-sandbox[data-height="fill"] {
+	height: 100%;
+}
 .rf-sandbox iframe {
 	display: block;
 	width: 100%;

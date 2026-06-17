@@ -201,11 +201,11 @@ Drag the divider to flip between July and February.
 {% card %}
 {% juxtapose labels="Light, Dark" %}
 
-{% sandbox src="profile-card" framework="tailwind" tint-mode="light" /%}
+{% sandbox src="profile-card" framework="tailwind" tint-mode="light" height=460 /%}
 
 ---
 
-{% sandbox src="profile-card" framework="tailwind" tint-mode="dark" /%}
+{% sandbox src="profile-card" framework="tailwind" tint-mode="dark" height=460 /%}
 
 {% /juxtapose %}
 
@@ -278,8 +278,8 @@ The media zone holds a *running program* just as readily as an image. A `{% sand
 
 {% preview source=true %}
 
-{% card %}
-{% sandbox src="threejs-scene" height=360 /%}
+{% card frame-aspect="21/9" %}
+{% sandbox src="threejs-scene" height="fill" /%}
 
 ---
 

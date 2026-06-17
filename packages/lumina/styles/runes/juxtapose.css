@@ -3,7 +3,7 @@
  * divider/handle positioning, toggle-bar flex, and meta/label hides live in
  * @refrakt-md/skeleton (styles/runes/juxtapose.css). */
 .rf-juxtapose__panels {
-	border-radius: var(--rf-radius-md);
+	border-radius: var(--rf-radius-lg);
 	border: 1px solid var(--rf-color-border);
 	background: var(--rf-color-surface);
 }
