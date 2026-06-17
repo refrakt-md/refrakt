@@ -99,7 +99,8 @@ A hero-scale title.
 | `frame-aspect` | e.g. `16/9`, `1/1` | aspect ratio |
 | `frame-shadow` | `none\|sm\|md\|lg` | silhouette `drop-shadow` |
 | `frame-displace` | `top\|bottom\|end\|bottom-end\|top-end` | move the guest toward an edge |
-| `frame-offset` | `none\|sm\|md\|lg\|xl` | displacement distance (named scale) |
+| `frame-displace-mode` | `peek` (default) `\| bleed` | how the displacement renders — see below |
+| `frame-offset` | `none\|sm\|md\|lg\|xl\|2xl\|3xl\|4xl` | displacement distance (non-linear named scale: `sm`–`xl` ride block-spacing tokens, `2xl`–`4xl` ride section-spacing tokens) |
 | `frame-oversize` | scale factor | guest exceeds its slot (clipped) |
 | `frame-place` | `left top`, … | alignment within the slot |
 | `frame-anchor` | `object-position` | crop focal point |
@@ -125,6 +126,15 @@ On a `figure` or `showcase` the frame lands on the rune itself; on a `card` or `
 {% /preview %}
 
 Whether a displaced or oversized guest spills out or is cropped into a peek is decided by the **host**, not the guest — see [host-owned clip](/extend/theme-authoring/surfaces#host-owned-clip).
+
+### Peek vs bleed
+
+`frame-displace-mode` picks the rendering model:
+
+- **`peek`** (default) — translates the guest visually inside its frame target; the host's clip crops it into a partial reveal. Correct for `card`, `bento-cell`, and other contained wells.
+- **`bleed`** — puts a negative margin on the media zone instead, so following layout pulls up and the guest sits at its natural position while the host's edge moves above it. The guest extends past the host with no gap above. Use this on section-like hosts (`hero`, `cta`) where the guest is meant to overflow downward. The host needs to unclip its media zone for the spill to be visible — `hero` does this automatically when a displaced guest is present.
+
+The block-tier offsets (`sm`–`xl`, 0.5–3rem) suit `peek` granularity inside a card. The section-tier offsets (`2xl`–`4xl`, 4–8rem) are sized to clear a section's `padding-block` so a `bleed`-mode displacement actually overhangs the host edge.
 
 ## Card vs hero
 

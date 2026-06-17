@@ -31,7 +31,7 @@ A theme registers named `frame` presets in a `frames` registry, structurally par
 }
 ```
 
-`frame="screenshot"` applies a preset; inline `frame-*` facets override individual facets and work standalone. `frame-offset` is a **named scale** (`none|sm|md|lg|xl` → `--rf-spacing-*`); an unknown value warns and collapses to `none`, keeping the facet family on one vocabulary.
+`frame="screenshot"` applies a preset; inline `frame-*` facets override individual facets and work standalone. `frame-offset` is a **named scale** (`none|sm|md|lg|xl|2xl|3xl|4xl` → block-spacing for `sm`–`xl`, section-spacing for `2xl`–`4xl`); an unknown value warns and collapses to `none`, keeping the facet family on one vocabulary. `frame-displace-mode` picks the rendering model — `peek` (default, translate inside the frame target — for card / bento-cell) or `bleed` (negative margin on the media zone, so the guest extends past a section host like `hero` with no gap above).
 
 ## Routing — `frameTarget` & `substrateTarget`
 
@@ -81,7 +81,7 @@ Memorable named recipes (a pattern + facets bundle) are a deferred **project** c
 |------------------|-----|
 | `shadow="soft\|hard\|elevated"` | `frame-shadow="sm\|md\|lg"` |
 | `bleed=` | `frame-displace=` |
-| `offset="<length>"` | `frame-offset="sm\|md\|lg\|xl"` (named scale; raw lengths warn) |
+| `offset="<length>"` | `frame-offset="sm\|md\|lg\|xl\|2xl\|3xl\|4xl"` (named scale; raw lengths warn) |
 | `aspect=` | `frame-aspect=` |
 | `place=` | `frame-place=` |
 

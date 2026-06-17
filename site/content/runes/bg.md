@@ -47,6 +47,14 @@ A two-stop linear gradient, top to bottom, from token colours.
 
 Directions are a bounded set: `to-t`, `to-b`, `to-l`, `to-r`, `to-tr`, `to-br`, `to-bl`, `to-tl` (no raw angles — that's the escape hatch's job). These also work as host-level facets (`bg-gradient`, `bg-from`/`bg-to`/`bg-via`, `bg-gradient-type`) without a `{% bg %}` child, and a theme can register a named gradient preset (`bg="brand-fade"`).
 
+#### Stop shapes
+
+Each gradient stop accepts three forms:
+
+- **Token name** — `from="primary"` emits `var(--rf-color-primary)`, theme- and tint-aware.
+- **`transparent`** — the CSS keyword. `from="transparent" to="primary"` fades from clear to the theme colour without falling back to a raw-CSS preset.
+- **`name/alpha`** — Tailwind-style shorthand for a token at partial opacity. `to="primary/0.5"` (decimal) or `to="primary/50"` (percent) compiles to `color-mix(in srgb, var(--rf-color-primary) 50%, transparent)`. Useful for soft washes (`from="transparent" to="primary/0.3"`) that still track the theme's primary.
+
 ## Overlay
 
 A flat colour wash over the background, for legibility. `dark` / `light` are presets; a **token name** (e.g. `overlay="primary"`) washes with `var(--rf-color-primary)` at `overlay-opacity`.
