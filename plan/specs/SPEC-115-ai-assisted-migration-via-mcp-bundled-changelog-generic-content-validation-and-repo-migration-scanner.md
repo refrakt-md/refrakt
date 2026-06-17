@@ -259,7 +259,21 @@ interface MigrationFinding {
 
 ### Codemod registry (enabling work)
 
-For the scanner to map a breaking change to a runnable fix, codemods need to be discoverable rather than hard-coded. Today `refrakt migrate <name>` knows only `elevation`. A small registry — `{ name, appliesToVersions, description, run() }` entries the `migrate` command and the scanner both read — lets new codemods be added over time and lets the changelog artifact's `codemod` refs resolve to real, runnable commands. This is the connective tissue between Layers 1 and 4.
+For the scanner to map a breaking change to a runnable fix, codemods need to be discoverable rather than hard-coded. Today `refrakt migrate <name>` knows only `elevation`. A registry — `{ name, appliesToVersions, description, run() }` entries the `migrate` command and the scanner both read — lets new codemods be added over time and lets the changelog artifact's `codemod` refs resolve to real, runnable commands. This is the connective tissue between Layers 1 and 4.
+
+Two properties are load-bearing:
+
+- **Codemods are self-contained and outlive the schema.** A codemod does its rewrite without consulting the live rune schema (the existing `elevation` codemod is a self-contained regex). This is what lets a codemod survive a major release that *removes* the deprecated functionality it migrates — see "Deprecation transform / codemod lifecycle" below.
+- **The registry is cumulative.** Codemods are never deleted, only version-tagged via `appliesToVersions`. The newest package must be able to migrate from arbitrarily old versions, so it retains every codemod ever shipped. They are cheap (small functions), so retention is effectively free, and it is what makes "bundle in the installed package" deliver on "migrate from *any* older version."
+
+### Deprecation transform / codemod lifecycle
+
+A schema attribute-deprecation (`deprecations: { … transform }`) and a registered codemod are the **same migration logic at different stages of a deprecation's life**, not two unrelated mechanisms:
+
+1. **While deprecated** — the logic lives as a `deprecations.transform` in the rune schema. The engine runs it live and automatically (old content keeps working, upgraded at transform time), and Layer 2's validator reports it as a `deprecated-attribute` warning carrying the `replacement`.
+2. **At the major release that removes the alias** — the schema entry is deleted, so the live transform disappears. The same logic is **promoted into a standalone registered codemod**, keyed to the version range where migration became mandatory. Because codemods are self-contained, this one survives the removal and is still bundled by the new major.
+
+The consequence for validation: once the alias is gone from the schema, the validator can no longer emit `deprecated-attribute` with a replacement — it now reports the old syntax as a hard `invalid-attribute` / `unknown-rune` error with no hint. That is correct (it precisely flags content that must change), but the *fix* now comes from the registry rather than the schema. The scanner joins the two — pairing the validator's error against the registered codemod whose `appliesToVersions` covers the jump — so the end-to-end migration flow keeps working across a major boundary precisely *because* the codemod was decoupled from the deprecation.
 
 -----
 
@@ -278,6 +292,8 @@ Resolve these during breakdown into work items / decisions; they don't block the
 5. **Changelog classification fidelity.** Changesets `### Minor/Patch` sections don't always mean "non-breaking" in practice, and `### Major` is rare in 0.x. Should the generator trust the section heading, or also scan entry text for breaking-change markers? A misclassified breaking change is the worst failure mode for a migration tool.
 
 6. **Granularity of the scanner's content pass on large sites.** Validating every `.md` on a big site may be slow as an interactive MCP call. Does the scanner need incremental / changed-files-only modes, or is a one-shot full pass acceptable for the first cut?
+
+7. **Mechanics of promoting a deprecation transform into a codemod.** The lifecycle (Layer 4 → "Deprecation transform / codemod lifecycle") says the same logic moves from schema to registry at the removing major. Is that promotion manual (the author copies the transform into a registered codemod when deleting the deprecation), or can a deprecation declaration be authored once and *generate* both the live transform and the standalone codemod, so the two cannot diverge? The latter is more robust but needs the deprecation declaration to be expressible without a live-schema dependency.
 
 -----
 
@@ -306,5 +322,9 @@ No migration capability is MCP-only. Agents routinely fall back to the CLI when 
 ### 6. A codemod registry replaces hard-coded codemods
 
 `refrakt migrate` currently hard-codes `elevation`. A registry of codemods (name, applicable version range, runnable handler) is the connective tissue that lets the changelog artifact reference real commands and lets the scanner offer to run them. It also gives plugins a path to ship codemods for their own runes, paralleling how they ship CLI commands.
+
+### 7. Codemods are self-contained, cumulative, and outlive the deprecations they replace
+
+A codemod and a schema attribute-deprecation are the same migration logic at different stages: the deprecation runs live while the alias still exists; at the major release that removes the alias, the logic is promoted into a standalone registered codemod. For that to work, codemods must not depend on the live schema (so they survive the removal), and the registry must be cumulative — codemods are never deleted, only version-tagged — so the newest package can still migrate content authored against arbitrarily old versions. This is what keeps the migration flow working across major boundaries and is the reason a codemod cannot simply *be* a schema deprecation lookup. After removal, the validator downgrades the old syntax from a `deprecated-attribute` warning to a hard error; the scanner re-pairs that error with the registered codemod to keep the fix actionable.
 
 {% /spec %}
