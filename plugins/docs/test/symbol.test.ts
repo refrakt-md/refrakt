@@ -275,4 +275,22 @@ Some examples follow.
 		const groups = findAllTags(tag!, t => t.attributes['data-rune'] === 'symbol-group');
 		expect(groups.length).toBe(0);
 	});
+
+	it('should unwrap a paragraph-wrapped image in the header', () => {
+		const result = parse(`{% symbol kind="function" %}
+![diagram](/diagram.png)
+
+# parseConfig
+
+Parses the config.
+{% /symbol %}`);
+
+		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'symbol');
+		expect(tag).toBeDefined();
+		const wrapped = findAllTags(tag!, t => t.name === 'p').some(
+			p => p.children.some((c: any) => c?.name === 'img'),
+		);
+		expect(wrapped).toBe(false);
+		expect(findTag(tag!, t => t.name === 'img')).toBeDefined();
+	});
 });
