@@ -2,7 +2,8 @@
 title: refrakt.md
 description: A content framework built on Markdoc with 100+ semantic runes
 ---
-{% hero align="left" spacing="tight" media-position="end" collapse="lg" reveal="fade" %}
+{% hero align="left" spacing="flush" media-position="bottom" collapse="lg" reveal="fade" %}
+{% bg gradient="to-br" from="transparent" to="border/0.9" /%}
 {% codegroup overflow="wrap" title="index.md" %}
 {% snippet path=$file.path lines="5-23" lang="markdoc" /%}
 {% /codegroup %}

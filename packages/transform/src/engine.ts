@@ -376,8 +376,36 @@ const BG_GRADIENT_DIRECTIONS: Record<string, string> = {
  *  names resolved to `var(--rf-color-*)` (colours stay token-owned); `direction`
  *  is a bounded named set; `type` is linear (default) | radial | conic. Returns
  *  null when there are fewer than two stops. */
+/** Resolve a single gradient stop into a CSS colour expression.
+ *
+ *  Recognises three shapes:
+ *  - `transparent` (the CSS keyword) → emits `transparent` verbatim, so
+ *    `from="transparent" to="primary"` fades from clear to the theme colour.
+ *  - `name/alpha` (Tailwind-style) → emits a `color-mix(... %, transparent)`
+ *    wrapper so a token can be used at partial opacity. Alpha accepts a
+ *    decimal (`0.5`) or a percent (`50` or `50%`); values outside `[0, 1]`
+ *    after normalisation fall through to the plain token.
+ *  - Bare token name → `var(--rf-color-{name})` (the original behaviour).
+ */
+function resolveBgStop(stop: string): string {
+	if (stop === 'transparent') return 'transparent';
+	const slashIdx = stop.indexOf('/');
+	if (slashIdx > 0 && slashIdx < stop.length - 1) {
+		const name = stop.slice(0, slashIdx);
+		const alphaRaw = stop.slice(slashIdx + 1).replace(/%$/, '');
+		const alpha = parseFloat(alphaRaw);
+		if (Number.isFinite(alpha)) {
+			const fraction = alpha > 1 ? alpha / 100 : alpha;
+			if (fraction >= 0 && fraction <= 1) {
+				return `color-mix(in srgb, var(--rf-color-${name}) ${fraction * 100}%, transparent)`;
+			}
+		}
+	}
+	return `var(--rf-color-${stop})`;
+}
+
 function buildBgGradient(opts: { type?: string; direction?: string; stops: (string | undefined)[] }): string | null {
-	const stops = opts.stops.filter((s): s is string => !!s).map(name => `var(--rf-color-${name})`);
+	const stops = opts.stops.filter((s): s is string => !!s).map(resolveBgStop);
 	if (stops.length < 2) return null;
 	const type = opts.type ?? 'linear';
 	if (type === 'radial') return `radial-gradient(${stops.join(', ')})`;

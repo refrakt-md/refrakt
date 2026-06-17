@@ -63,4 +63,31 @@ describe('SPEC-088 bg gradient fill', () => {
 		// direction overridden to "to right", preset stops retained
 		expect(bg.attributes.style).toContain('linear-gradient(to right, var(--rf-color-primary), var(--rf-color-surface))');
 	});
+
+	it('accepts the `transparent` keyword as a stop', () => {
+		const transform = createTransform(config);
+		const tag = makeTag('section', { 'data-rune': 'hero' }, [
+			meta('bg-gradient', 'to-br'), meta('bg-from', 'transparent'), meta('bg-to', 'primary'),
+		]);
+		const bg = findBg(asTag(transform(tag)))!;
+		expect(bg.attributes.style).toContain('--bg-image: linear-gradient(to bottom right, transparent, var(--rf-color-primary))');
+	});
+
+	it('accepts `name/alpha` shorthand for partial-opacity stops (decimal)', () => {
+		const transform = createTransform(config);
+		const tag = makeTag('section', { 'data-rune': 'hero' }, [
+			meta('bg-from', 'transparent'), meta('bg-to', 'primary/0.5'),
+		]);
+		const bg = findBg(asTag(transform(tag)))!;
+		expect(bg.attributes.style).toContain('color-mix(in srgb, var(--rf-color-primary) 50%, transparent)');
+	});
+
+	it('accepts `name/N` shorthand as a percentage when N > 1', () => {
+		const transform = createTransform(config);
+		const tag = makeTag('section', { 'data-rune': 'hero' }, [
+			meta('bg-from', 'primary/25'), meta('bg-to', 'surface'),
+		]);
+		const bg = findBg(asTag(transform(tag)))!;
+		expect(bg.attributes.style).toContain('color-mix(in srgb, var(--rf-color-primary) 25%, transparent)');
+	});
 });
