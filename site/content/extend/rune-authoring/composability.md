@@ -136,6 +136,29 @@ interactivity"* — but still renders presentationally; the warning is
 informative, not fatal. Interactive full-bleed widgets with their own overlaid
 UI (an app dashboard) are explicitly out of scope for a content card.
 
+## Media-guest chrome (clip vs bleed)
+
+Interaction posture is one of *two* host axes. The other is **chrome** — does the
+host frame its guest, or leave it alone? A rune declares it with `guestFit`, and
+the engine emits `data-guest-fit` on the media zone (alongside `data-guest-posture`):
+
+- **`guestFit: 'clip'` (default) — a framed well.** `card`, `bento-cell`,
+  `recipe`, `playlist`: the guest is clipped to the slot and adopts the slot's
+  media radius, so a `chart`, `codegroup`, or `juxtapose` reads as one surface
+  with the recessed well.
+- **`guestFit: 'bleed'` — a bare section host.** `hero`, `feature`: there is no
+  framed well, so a *rune* guest keeps its own chrome (its `data-elevation`
+  radius, border, shadow) instead of being masked by the slot. Leaf media
+  (`img`/`video`/placeholder) still frames to the slot in both modes — an image
+  has no chrome of its own, so a bare hero image stays rounded.
+
+The two axes are orthogonal — a clip host can demote a guest to presentational,
+a bleed host can host a live one — which is why they are separate attributes
+rather than one. `guestFit` is the same clip-vs-bleed distinction that governs
+[`frame-displace-mode`](/runes/surfaces) (`peek` crops a displaced guest, `bleed`
+lets it spill), so a host's `guestFit` is the natural source for that mode's
+default.
+
 ## Tooling
 
 `refrakt inspect <rune>` surfaces a rune's composability contract — its

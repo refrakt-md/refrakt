@@ -40,18 +40,6 @@
 .rf-feature__image {
 	margin-bottom: 1rem;
 }
-/* Rune media guests keep their own edges in a bare section host. Like hero, a
- * feature has no framed media well, so the shared media radius would only mask
- * a guest rune's corners (sandbox, codegroup, juxtapose). Drop it for rune
- * guests; image / video guests keep the rounded media tier. Framed hosts
- * (card / bento-cell) still merge the guest into their well. */
-.rf-feature__media:has(> [data-rune]) {
-	border-radius: 0;
-}
-.rf-feature__media:has(> [data-rune]) > [data-rune],
-.rf-feature__media:has(> [data-rune]) .rf-codegroup {
-	border-radius: 0;
-}
 .rf-feature h2 {
 	margin-bottom: 2rem;
 }

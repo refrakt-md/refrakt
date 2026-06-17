@@ -17,6 +17,9 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultWidth: 'full',
 		defaultElevation: 'flush',
+		// A hero is a bare section host, not a framed well — a rune guest keeps
+		// its own chrome and may spill instead of being clipped/rounded.
+		guestFit: 'bleed',
 		modifiers: {
 			// BUG-001: content-first DOM, so the truthful stacked default is
 			// `bottom` (media beneath the text); Lumina counters the shared
@@ -103,6 +106,8 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultWidth: 'full',
 		defaultElevation: 'flush',
+		// Bare section host (see Hero) — rune guests keep their own chrome.
+		guestFit: 'bleed',
 		staggerItems: 'feature-item',
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'cover' },
