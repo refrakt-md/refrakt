@@ -4,7 +4,19 @@
  * The layout *structure* (start/end grid, top/bottom stack, 3-section placement,
  * the media-zone fill/clip mechanism, responsive collapse) lives in
  * @refrakt-md/skeleton (layouts/split.css). What remains here is skin: the media
- * radius tier, the beside-image depth shadow, and the codegroup radius alignment. */
+ * radius tier, the beside-image depth shadow, the codegroup radius alignment,
+ * and the default side-by-side spacing rhythm. */
+
+/* Default side-by-side spacing — applies to every rune using the split layout
+ * (hero, feature, step, realm, faction, etc.). Contained-chrome runes
+ * (card, recipe, bento-cell, playlist) override `column-gap` / `row-gap` with
+ * higher-specificity selectors to hug their internal media well; everything
+ * else inherits this comfortable default so columns don't sit flush. */
+[data-media-position="start"],
+[data-media-position="end"] {
+	column-gap: var(--rf-spacing-lg);
+	row-gap: var(--rf-spacing-lg);
+}
 
 /* Media guests use the smaller media radius tier so they never read as more
  * rounded than the (larger-radius) container they sit in. */
