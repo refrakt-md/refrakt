@@ -165,7 +165,7 @@ const FRAME_FACET_META = ['frame-aspect', 'frame-displace', 'frame-displace-mode
  *  preset (one `extends` level) and inline overrides, and emit the chrome
  *  contract (data-displace / data-frame-shadow / --frame-* custom props).
  *  Returns null when no frame meta is present. */
-function resolveFrameChrome(tag: SerializedTag, frames: Record<string, FramePresetDefinition>): FrameChrome | null {
+function resolveFrameChrome(tag: SerializedTag, frames: Record<string, FramePresetDefinition>, guestFit?: string): FrameChrome | null {
 	const metaProps = new Set<string>();
 	const read = (field: string): string | undefined => {
 		const v = readMeta(tag, field);
@@ -199,6 +199,15 @@ function resolveFrameChrome(tag: SerializedTag, frames: Record<string, FramePres
 	}
 
 	if (metaProps.size === 0) return null;
+
+	// A displaced guest defaults to its host's containment mode: a bleed host
+	// (guestFit: 'bleed', e.g. hero/feature) spills, a clip host crops to a peek.
+	// An explicit `frame-displace-mode=` still wins. This is the displace face of
+	// the same clip-vs-bleed axis as `data-guest-fit`, so a hero no longer needs
+	// `frame-displace-mode="bleed"` spelled out.
+	if (facets.displace && !(facets as Record<string, string>).displaceMode && guestFit === 'bleed') {
+		(facets as Record<string, string>).displaceMode = 'bleed';
+	}
 
 	const dataAttrs: Record<string, string> = {};
 	const styleParts: string[] = [];
@@ -879,7 +888,7 @@ function transformRune(
 	// 1g. Frame chrome (SPEC-086) — resolve the frame preset + facets and decide
 	// which surface they decorate. `self` lands on the rune root; `media` lands
 	// on the [data-section="media"] zone (applied after assembly, below).
-	const frameChrome = resolveFrameChrome(tag, frames);
+	const frameChrome = resolveFrameChrome(tag, frames, config.guestFit);
 	const frameMetaProps = new Set<string>(frameChrome?.metaProps ?? []);
 	let frameTargetKind: 'media' | 'self' | null = null;
 	if (frameChrome) {

@@ -154,10 +154,11 @@ the engine emits `data-guest-fit` on the media zone (alongside `data-guest-postu
 
 The two axes are orthogonal — a clip host can demote a guest to presentational,
 a bleed host can host a live one — which is why they are separate attributes
-rather than one. `guestFit` is the same clip-vs-bleed distinction that governs
-[`frame-displace-mode`](/runes/surfaces) (`peek` crops a displaced guest, `bleed`
-lets it spill), so a host's `guestFit` is the natural source for that mode's
-default.
+rather than one. `guestFit` is also the same clip-vs-bleed distinction that
+governs [`frame-displace-mode`](/runes/surfaces): a displaced guest defaults to
+`peek` (cropped to the slot) in a clip host and `bleed` (spills past the zone) in
+a bleed host, so a hero no longer needs `frame-displace-mode="bleed"` spelled
+out. An explicit `frame-displace-mode=` still overrides it.
 
 ## Tooling
 

@@ -75,7 +75,20 @@
 	height: 100%;
 	object-fit: cover;
 }
-/* Guests that manage their own bleed / interactive chrome opt out of the clip. */
+/* A bleed host (`data-guest-fit="bleed"`, e.g. hero / feature) is a section, not
+ * a clip-host: a displaced guest in its media zone should spill past the zone
+ * boundary instead of being cropped into a peek. Covers both `frame-displace`
+ * routing paths — host-on-media (`data-displace` on the zone) and a child rune
+ * carrying its own displace (`:has(> [data-displace])`). Unlike the per-guest
+ * opt-outs below, the guest keeps `width: 100%` (it still fills the host width);
+ * only the vertical spill is unclipped. */
+[data-section="media"][data-guest-fit="bleed"]:is([data-displace], :has(> [data-displace])) {
+	overflow: visible;
+	container-type: normal;
+}
+/* Guests that manage their own bleed / interactive chrome opt out of the clip —
+ * guest-intrinsic, so it holds in clip hosts too (a juxtapose in a card still
+ * sizes its slider to its own panels). */
 [data-section="media"]:is(
 	:has(> [data-rune="preview"]),
 	:has(> [data-rune="juxtapose"]),

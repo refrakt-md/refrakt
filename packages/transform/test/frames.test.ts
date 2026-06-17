@@ -13,7 +13,8 @@ const config: ThemeConfig = {
 		'hero-peek': { extends: 'screenshot', displace: 'bottom', offset: 'lg' },
 	},
 	runes: {
-		Card: { block: 'card', sections: { media: 'media' } }, // media target (default)
+		Card: { block: 'card', sections: { media: 'media' } }, // media target, clip host (default)
+		Hero: { block: 'hero', sections: { media: 'media' }, guestFit: 'bleed' }, // media target, bleed host
 		Figure: { block: 'figure', frameTarget: 'self' },
 		Plain: { block: 'plain' }, // no frame target
 	},
@@ -94,5 +95,33 @@ describe('SPEC-086 frame chrome', () => {
 			(c) => c?.name === 'meta' && c.attributes?.['data-field'] === 'frame',
 		);
 		expect(hasFrameMeta).toBe(false);
+	});
+
+	// SPEC-086 × guestFit — a displaced guest defaults to its host's containment.
+	it('defaults a displaced guest to bleed on a bleed host', () => {
+		const transform = createTransform(config);
+		const tag = makeTag('div', { 'data-rune': 'hero' }, [mediaChild(), frameMeta('frame-displace', 'bottom')]);
+		const media = findMedia(asTag(transform(tag)))!;
+		expect(media.attributes['data-displace']).toBe('bottom');
+		expect(media.attributes['data-displace-mode']).toBe('bleed');
+	});
+
+	it('leaves a clip host to the peek default (no displace-mode emitted)', () => {
+		const transform = createTransform(config);
+		const tag = makeTag('div', { 'data-rune': 'card' }, [mediaChild(), frameMeta('frame-displace', 'bottom')]);
+		const media = findMedia(asTag(transform(tag)))!;
+		expect(media.attributes['data-displace']).toBe('bottom');
+		expect(media.attributes['data-displace-mode']).toBeUndefined();
+	});
+
+	it('an explicit frame-displace-mode overrides the host default', () => {
+		const transform = createTransform(config);
+		const tag = makeTag('div', { 'data-rune': 'hero' }, [
+			mediaChild(),
+			frameMeta('frame-displace', 'bottom'),
+			frameMeta('frame-displace-mode', 'peek'),
+		]);
+		const media = findMedia(asTag(transform(tag)))!;
+		expect(media.attributes['data-displace-mode']).toBe('peek');
 	});
 });
