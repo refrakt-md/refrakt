@@ -1,5 +1,11 @@
 # @refrakt-md/proof-skin
 
+## 0.24.2
+
+### Patch Changes
+
+- @refrakt-md/skeleton@0.24.2
+
 ## 0.24.1
 
 ### Patch Changes

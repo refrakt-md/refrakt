@@ -1,5 +1,13 @@
 # @refrakt-md/svelte
 
+## 0.24.2
+
+### Patch Changes
+
+- @refrakt-md/behaviors@0.24.2
+- @refrakt-md/transform@0.24.2
+- @refrakt-md/types@0.24.2
+
 ## 0.24.1
 
 ### Patch Changes
