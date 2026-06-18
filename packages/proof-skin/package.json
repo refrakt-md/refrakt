@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/proof-skin",
   "description": "WORK-440 proof skin — a deliberately un-Lumina editorial skin over @refrakt-md/skeleton. A private validation artifact (never published): proves the skeleton is theme-agnostic (token values + @layer skin only, zero skeleton edits) and serves as the canonical 'theme built on the skeleton' reference.",
-  "version": "0.24.3",
+  "version": "0.24.4",
   "private": true,
   "type": "module",
   "license": "MIT",
@@ -14,6 +14,6 @@
     "skin.css"
   ],
   "dependencies": {
-    "@refrakt-md/skeleton": "0.24.3"
+    "@refrakt-md/skeleton": "0.24.4"
   }
 }

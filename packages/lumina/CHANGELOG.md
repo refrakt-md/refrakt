@@ -1,5 +1,25 @@
 # @refrakt-md/lumina
 
+## 0.24.4
+
+### Patch Changes
+
+- 876d858: `codegroup` and `diff` chrome now derives from the code surface instead of the page chrome. For both runes the wrapper fill, header/topbar, tabs, their text, and the internal separators are now derived from `--rf-color-code-bg` / `--rf-color-code-text` (the tokens a syntax preset owns) via `color-mix`, with only the outer frame (border + shadow) staying in the page world. Previously `codegroup`'s topbar/tabs and `diff`'s header used `--rf-color-surface`, so when the active preset gave the code surface a palette that diverged from the page — e.g. Nord's Polar Night code surface on an otherwise-neutral site — the light card chrome clashed with the dark code body. Both runes are now internally coherent with their own code body in light and dark modes.
+- fee0ec3: Add a `contentMeasure` axis so page sections keep their content readable when bled to the `wide` track. Previously `width="wide"` widened both a section's background _and_ its content, while `width="full"` widened only the background (content stayed anchored to the text measure) — an inconsistency for runes like `hero` and `feature`.
+
+  `RuneConfig.contentMeasure: 'anchored' | 'fill'` (default `fill`) is emitted as `data-content-measure`. `anchored` runes (hero, cta, feature) keep their content at the text measure at `width="wide"` so only the surface/gradient bleeds, matching `width="full"`. `fill` runes (card, table, bento) keep the "break gently out of the text column" behavior. `width="full"` still anchors content into a band for every rune, so composing any rune into a hero (`elevation="flush" width="full"`) is unchanged.
+
+- fd03404: Round the corners of a `sandbox` like other rich media guests. The iframe canvas is opaque (the behaviour writes `color-scheme` onto the srcdoc, so the browser paints a solid backdrop that `background: transparent` can't see through), so a rounded shape can only come from the embedding element clipping the iframe — but the sandbox owned no radius, so it rendered square (most visibly in a bleed host like a `hero`, where the slot no longer imposes its radius on guests).
+
+  The sandbox now owns a `border-radius` and lets the iframe inherit it, so skeleton's `overflow: hidden` clips the iframe to the rounded shape. It mirrors `codegroup`: `radius-container` standalone (and in a bleed host, keeping its own chrome), the smaller media tier when merged into a clip-host well (card/bento), and flush in a full-bleed cover/backdrop.
+
+- Updated dependencies [fee0ec3]
+- Updated dependencies [de974e1]
+  - @refrakt-md/transform@0.24.4
+  - @refrakt-md/runes@0.24.4
+  - @refrakt-md/skeleton@0.24.4
+  - @refrakt-md/types@0.24.4
+
 ## 0.24.3
 
 ### Patch Changes

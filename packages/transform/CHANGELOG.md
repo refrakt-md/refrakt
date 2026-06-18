@@ -1,5 +1,16 @@
 # @refrakt-md/transform
 
+## 0.24.4
+
+### Patch Changes
+
+- fee0ec3: Add a `contentMeasure` axis so page sections keep their content readable when bled to the `wide` track. Previously `width="wide"` widened both a section's background _and_ its content, while `width="full"` widened only the background (content stayed anchored to the text measure) — an inconsistency for runes like `hero` and `feature`.
+
+  `RuneConfig.contentMeasure: 'anchored' | 'fill'` (default `fill`) is emitted as `data-content-measure`. `anchored` runes (hero, cta, feature) keep their content at the text measure at `width="wide"` so only the surface/gradient bleeds, matching `width="full"`. `fill` runes (card, table, bento) keep the "break gently out of the text column" behavior. `width="full"` still anchors content into a band for every rune, so composing any rune into a hero (`elevation="flush" width="full"`) is unchanged.
+
+- de974e1: Fix `validateThemeTokensConfig` rejecting valid tokens because its internal `TOKEN_CONTRACT_SHAPE` had drifted from the `TokenContract` type. The validator was missing the SPEC-056 extended syntax roles (`type`, `property`, `parameter`, `tag`, `attribute`, `operator`, `number`, `regex`), the spacing densification band (`spacing.snug`, `spacing.cozy`), and `shadow.none`. As a result, an integrated preset like Nord — which sets the extended syntax roles when it's the _active_ preset — failed validation with "unknown token key" errors, even though those keys are part of the contract (scoped Nord _tints_ took a different code path and were unaffected). The validator shape now mirrors `SyntaxTokens` and the rest of `TokenContract`.
+  - @refrakt-md/types@0.24.4
+
 ## 0.24.3
 
 ### Patch Changes
