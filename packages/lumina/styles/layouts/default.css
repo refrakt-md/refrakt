@@ -62,6 +62,17 @@
 		calc((100% - var(--rf-content-max, 80rem)) / 2)
 	);
 }
+/* Page sections (data-content-measure="anchored") keep their content at the
+ * text measure when bled to the wide track — only the surface/background
+ * widens, matching how `full` reads as a band. The absolutely-positioned bg
+ * fills the padded box, so the inner padding restores content without pulling
+ * the bleed in. Runes without the flag fill the wide track (card breakout). */
+.rf-page-content > article > [data-content-measure="anchored"][data-width="wide"] {
+	padding-inline: max(
+		var(--rf-content-gutter, 1.5rem),
+		calc((100% - var(--rf-content-max, 80rem)) / 2)
+	);
+}
 /* Tinted sections also break out to full width */
 .rf-page-content > article > :is([data-tint], [data-color-scheme]):not([data-width]) {
 	padding-inline: max(

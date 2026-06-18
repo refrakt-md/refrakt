@@ -621,6 +621,13 @@ function transformRune(
 		modifierValues['width'] = widthValue;
 		modifierClasses.push(`${block}--${widthValue}`);
 	}
+	// Content-measure (layout axis): page-section runes anchor their content to
+	// the text measure when bled to the `wide` track — only the surface/bg
+	// widens. Emitted as a data attribute (no BEM class); the default (`fill`)
+	// lets content fill the wider track, so it's only emitted when anchored.
+	if (config.contentMeasure === 'anchored') {
+		modifierValues['content-measure'] = 'anchored';
+	}
 	const spacingValue = tag.attributes?.spacing;
 	if (spacingValue && spacingValue !== 'default') {
 		modifierValues['spacing'] = spacingValue;

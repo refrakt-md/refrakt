@@ -17,6 +17,9 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultWidth: 'full',
 		defaultElevation: 'flush',
+		// Page section: at width="wide" the gradient/media bleeds out but the
+		// headline/content stays at the text measure (as it already does at full).
+		contentMeasure: 'anchored',
 		modifiers: {
 			// BUG-001: content-first DOM, so the truthful stacked default is
 			// `bottom` (media beneath the text); Lumina counters the shared
@@ -49,7 +52,7 @@ export const config: Record<string, RuneConfig> = {
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code', media: 'image' },
 	},
-	CallToAction: { block: 'cta', defaultDensity: 'full', defaultWidth: 'full', defaultElevation: 'flush', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code' } },
+	CallToAction: { block: 'cta', defaultDensity: 'full', defaultWidth: 'full', defaultElevation: 'flush', contentMeasure: 'anchored', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code' } },
 	Bento: {
 		block: 'bento',
 		defaultDensity: 'full',
@@ -103,6 +106,8 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultWidth: 'full',
 		defaultElevation: 'flush',
+		// Page section: content stays at the text measure when bled to wide.
+		contentMeasure: 'anchored',
 		staggerItems: 'feature-item',
 		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
 		mediaSlots: { media: 'cover' },
