@@ -271,6 +271,20 @@ export interface RuneConfig {
 	 *  Omit or set to 'content' for standard content-width runes. */
 	defaultWidth?: 'content' | 'wide' | 'full';
 
+	/** How content sits when the rune bleeds wider than the text measure (the
+	 *  `width="wide"` tier). The engine emits `data-content-measure`.
+	 *
+	 *  - `'fill'` (default): content fills the wider track — a card "breaking
+	 *    gently out of the text column" (the breakout model).
+	 *  - `'anchored'`: content stays at the text measure and only the rune's
+	 *    surface/background bleeds out — the page-section model (hero, cta,
+	 *    feature), consistent with how `width="full"` already reads as a band.
+	 *
+	 *  `width="full"` always anchors content (a full-bleed band), regardless of
+	 *  this flag — so a `fill` rune still reads as a band at `full` and breaks
+	 *  out at `wide`. */
+	contentMeasure?: 'anchored' | 'fill';
+
 	/** Default density for this rune. Controls how much detail is shown.
 	 *  'full' — all sections visible, generous spacing (dedicated page)
 	 *  'compact' — descriptions truncated, secondary metadata hidden (grid cell, card)

@@ -88,6 +88,8 @@ A hero-scale title.
 
 `width` is not a surface treatment — it sets how wide the rune sits in the page measure: `compact | narrow | (default) | wide | full`. Because it is a *layout* axis, it composes with any `elevation`: a `flush` rune at `width="full"` becomes an edge-to-edge band, while a `flat` card at `width="wide"` breaks gently out of the text column.
 
+How the *content* sits when a rune bleeds wider than the text measure depends on the rune. **Page sections** (hero, cta, feature) are *anchored* — their content stays at the text measure and only the surface/background bleeds, so `width="wide"` widens the band while the headline stays readable, exactly as `width="full"` already does. **Content runes** (card, table, bento) *fill* the wider track — the breakout above. A theme sets this per rune with `contentMeasure: 'anchored' | 'fill'` (default `fill`). `width="full"` always anchors content into a band regardless, which is what lets any rune compose into a hero (`elevation="flush" width="full"`).
+
 ### `frame` — the media surface
 
 `elevation` and `frame-shadow` are the same physical property (a shadow) on different surfaces, so they carry two names and never collide: `elevation` lifts the **self** surface (the whole tile); `frame-shadow` traces the **media** guest's silhouette.
