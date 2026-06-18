@@ -64,9 +64,9 @@ Measured against the current `packages/create-refrakt` tree:
 
 ## Design
 
-The work divides into four pieces: the package format and manifest, the scaffold-time
-composition model, the dual-mode asset scheme, and the CLI surface. A small reference
-template (a test fixture, not a catalog) backs all four.
+The work divides into five pieces: the package format and manifest, the scaffold-time
+composition model, the dual-mode asset scheme, the CLI surface, and optional bundled
+sandboxes. A small reference template (a test fixture, not a catalog) backs all of them.
 
 ### 1. Two axes: framework × purpose
 
@@ -102,6 +102,7 @@ my-template/
   package.json        — name, version; deps: recommended theme + required plugins
   template.json       — the template manifest (see below)
   content/            — the content tree: .md pages + _layout.md cascade
+  sandboxes/          — optional sandbox program trees (html/css/js/glsl); scaffold-copied → site/examples/ (§7)
   assets/             — optional real assets (usually empty; prefer the asset scheme, §3)
 ```
 
@@ -126,7 +127,8 @@ The exact field set is settled in the work phase; the shape is:
     "entityRoutes": []
   },
   "previewUrl": "https://…",                     // optional: where a built demo is published
-  "assets": { /* asset manifest — see §3 */ }
+  "assets": { /* asset manifest — see §3 */ },
+  "sandboxes": { /* program-tree → project-dir mapping — see §7 */ }
 }
 ```
 
@@ -211,6 +213,43 @@ format; and it dogfoods the manifest. Keep it deliberately generic (a plain mult
 starter), so its presence implies a *format*, not a *content library*. Whether to grow beyond
 one in-repo template is explicitly out of scope here.
 
+### 7. Bundled sandboxes (runtime-bearing templates)
+
+Some templates only *sing* with a live program — a music blog whose playlist cover is a
+three.js audio visualizer ({% ref "SPEC-104" /%}), a data template with a chart sandbox. A
+template should be able to ship that working out of the box, so an author who picks "music
+blog" gets the visualizer, not a TODO to build their own.
+
+This costs almost nothing on top of §2–§3, because **a sandbox is not a build dependency.**
+Its runtime is CDN-loaded inside a sandboxed iframe at activation: the `framework` attribute
+maps to a CDN preset (tailwind/pico/bootstrap/bulma) and `dependencies` is a list of CDN URLs
+(three.js, etc.), with the iframe CSP derived from those URLs
+(`packages/behaviors/src/elements/sandbox.ts`). There is no `npm install`, no `node_modules`,
+no bundling — both the framework provider and the dependency URLs are inert declarative strings
+that travel inside the copied content/config for free.
+
+What a sandbox *does* carry is **program files** — `html`/`css`/`js`/`glsl` scanned at build
+time from a project directory (`assembleFromDirectory`, `packages/runes/src/sandbox-sources.ts`),
+e.g. `site/examples/midnight-waves/`. So bundling a sandbox reduces to two declarative
+extensions:
+
+- **A program-source tree.** The template package carries a sandbox source directory alongside
+  `content/` (e.g. `sandboxes/`), scaffold-copied into the project (→ `site/examples/…`) under
+  the same author-owned semantics as content (§3). The manifest's `sandboxes` field records
+  where each tree lands.
+- **`backgrounds` in the config fragment — only for the named-preset path.** A reusable backdrop
+  applied by name (`bg="midnight-waves"`) resolves through `refrakt.config.json →
+  sites.<site>.backgrounds` ({% ref "SPEC-104" /%}), so `configFragment` must be allowed to carry
+  `backgrounds`/`sites.<site>` keys. An *inline* `{% sandbox framework="three"
+  dependencies="…" %}` needs nothing beyond being ordinary content.
+
+The distinction this surfaces is **content-only vs. runtime-bearing** templates — not a
+*dependency* split (there is no install), but a capability one: a runtime-bearing template's
+hero only animates if the CDN is reachable and the CSP permits its origins, both of which are
+self-contained in the copied output. The in-repo reference template (§6) stays content-only and
+generic; a sandbox-bearing template (e.g. the music-blog visualizer) is a downstream artifact
+that proves the capability, not something shipped in-repo.
+
 ## Implications
 
 - **`create-refrakt` gains a composition step.** Scaffolding moves from "copy one framework
@@ -224,6 +263,9 @@ one in-repo template is explicitly out of scope here.
 - **No coupling to a distribution channel.** Templates resolve as bundled names, directories, or
   packages via the shared install surface ({% ref "SPEC-110" /%}); the format presumes nothing
   about where templates come from.
+- **Runtime-bearing templates are additive.** A template may bundle a sandbox program tree
+  (scaffold-copied) and `backgrounds` config (§7); this introduces no new dependency machinery —
+  the sandbox runtime stays CDN-loaded at activation — so content-only templates are unaffected.
 
 ## Acceptance Criteria
 
@@ -233,7 +275,8 @@ one in-repo template is explicitly out of scope here.
 - [ ] Templates are scaffold-copied (content owned by the author), while the recommended theme and required plugins are pinned as live dependencies of the new project.
 - [ ] An `asset:` logical-key image scheme renders shape-correct generated placeholders in distributed/scaffold mode (zero binary assets, no manifest required in the downloaded site) and resolves to author-provided `previewUrl`s under an opt-in demo-build mode via the last-wins resolver registry.
 - [ ] Exactly one in-repo reference template exists as a fixture/worked example and is scaffolded-and-built in CI (extended with the {% ref "SPEC-094" /%} visual-regression harness where applicable) to guard against rune-syntax drift.
-- [ ] Theme-authoring/scaffolding docs gain a template-authoring guide covering the manifest, the framework × purpose model, scaffold-copy semantics, and the `asset:` scheme.
+- [ ] The format supports **bundled sandboxes**: a template may carry a sandbox program-source tree that is scaffold-copied into the project (→ `site/examples/…`), and its `configFragment` may carry `backgrounds`/`sites.<site>` entries so a named bg-sandbox preset ({% ref "SPEC-104" /%}) resolves out of the box — introducing no build-time or npm dependency, since the sandbox runtime stays CDN-loaded at activation.
+- [ ] Theme-authoring/scaffolding docs gain a template-authoring guide covering the manifest, the framework × purpose model, scaffold-copy semantics, the `asset:` scheme, and bundling a sandbox.
 
 ## Open Questions
 
@@ -245,6 +288,12 @@ one in-repo template is explicitly out of scope here.
   `--theme`) when they conflict.
 - **Section/page templates.** Full-site only here; whether a "drop in a pricing page" granularity
   is a later refinement of the same format (a one-page template) is deferred.
+- **Out-of-the-box runtime for bundled sandboxes.** A bundled sandbox (§7) animates only if its
+  CDN dependencies are reachable and the iframe CSP permits them. Decide what "works out of the
+  box" promises — a documented runtime-network expectation, an optional self-hosted/vendored
+  dependency path, and whether CI's offline scaffold-build (no activation) suffices or a
+  live/visual check is required. Coordinates with {% ref "SPEC-104" /%} and the audio bridge
+  ({% ref "SPEC-006" /%}).
 
 ## References
 
@@ -256,6 +305,11 @@ one in-repo template is explicitly out of scope here.
   `resolveImageScheme`), `packages/runes/src/lib/placeholder.ts` (`placeholderSvg`,
   `PLACEHOLDER_SHAPES`).
 - Theme system foundations (gallery/harness, fonts, layouts): {% ref "SPEC-094" /%}.
+- Sandbox rune + runtime: `packages/runes/src/tags/sandbox.ts`, `packages/runes/src/sandbox-sources.ts`
+  (`assembleFromDirectory`), `packages/behaviors/src/elements/sandbox.ts` (CDN framework presets,
+  `data-dependencies`, iframe CSP).
+- Live sandbox guests + named sandbox presets in `backgrounds`: {% ref "SPEC-104" /%}.
+- Media runes / audio bridge (audio-visualisation synergy): {% ref "SPEC-006" /%}.
 - Framework-agnostic theme packages: ADR-009.
 - Scaffold-copy vs. live-dependency decision: ADR-021.
 - Dual-mode asset resolution decision: ADR-020.
