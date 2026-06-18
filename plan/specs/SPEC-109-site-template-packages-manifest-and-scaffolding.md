@@ -102,7 +102,7 @@ my-template/
   package.json        — name, version; deps: recommended theme + required plugins
   template.json       — the template manifest (see below)
   content/            — the content tree: .md pages + _layout.md cascade
-  sandboxes/          — optional sandbox program trees (html/css/js/glsl); scaffold-copied → site/examples/ (§7)
+  sandboxes/          — optional sandbox program trees (html/css/js/glsl); scaffold-copied into the project's sandbox dir (§7)
   assets/             — optional real assets (usually empty; prefer the asset scheme, §3)
 ```
 
@@ -229,14 +229,16 @@ no bundling — both the framework provider and the dependency URLs are inert de
 that travel inside the copied content/config for free.
 
 What a sandbox *does* carry is **program files** — `html`/`css`/`js`/`glsl` scanned at build
-time from a project directory (`assembleFromDirectory`, `packages/runes/src/sandbox-sources.ts`),
-e.g. `site/examples/midnight-waves/`. So bundling a sandbox reduces to two declarative
-extensions:
+time from the project's configured sandbox directory (`assembleFromDirectory`,
+`packages/runes/src/sandbox-sources.ts`; the directory is configurable via
+`sites.<site>.sandbox` — see ADR-022 on its naming). So bundling a sandbox reduces to two
+declarative extensions:
 
 - **A program-source tree.** The template package carries a sandbox source directory alongside
-  `content/` (e.g. `sandboxes/`), scaffold-copied into the project (→ `site/examples/…`) under
-  the same author-owned semantics as content (§3). The manifest's `sandboxes` field records
-  where each tree lands.
+  `content/` (the `sandboxes/` folder), scaffold-copied into the project's configured sandbox
+  directory under the same author-owned semantics as content (§3). The manifest's `sandboxes`
+  field records where each tree lands. (These programs are part of the site, not throwaway
+  demos; ADR-022 reconsiders the legacy `examples` naming of the runtime directory.)
 - **`backgrounds` in the config fragment — only for the named-preset path.** A reusable backdrop
   applied by name (`bg="midnight-waves"`) resolves through `refrakt.config.json →
   sites.<site>.backgrounds` ({% ref "SPEC-104" /%}), so `configFragment` must be allowed to carry
@@ -275,7 +277,7 @@ that proves the capability, not something shipped in-repo.
 - [ ] Templates are scaffold-copied (content owned by the author), while the recommended theme and required plugins are pinned as live dependencies of the new project.
 - [ ] An `asset:` logical-key image scheme renders shape-correct generated placeholders in distributed/scaffold mode (zero binary assets, no manifest required in the downloaded site) and resolves to author-provided `previewUrl`s under an opt-in demo-build mode via the last-wins resolver registry.
 - [ ] Exactly one in-repo reference template exists as a fixture/worked example and is scaffolded-and-built in CI (extended with the {% ref "SPEC-094" /%} visual-regression harness where applicable) to guard against rune-syntax drift.
-- [ ] The format supports **bundled sandboxes**: a template may carry a sandbox program-source tree that is scaffold-copied into the project (→ `site/examples/…`), and its `configFragment` may carry `backgrounds`/`sites.<site>` entries so a named bg-sandbox preset ({% ref "SPEC-104" /%}) resolves out of the box — introducing no build-time or npm dependency, since the sandbox runtime stays CDN-loaded at activation.
+- [ ] The format supports **bundled sandboxes**: a template may carry a sandbox program-source tree that is scaffold-copied into the project's configured sandbox directory, and its `configFragment` may carry `backgrounds`/`sites.<site>` entries so a named bg-sandbox preset ({% ref "SPEC-104" /%}) resolves out of the box — introducing no build-time or npm dependency, since the sandbox runtime stays CDN-loaded at activation.
 - [ ] Theme-authoring/scaffolding docs gain a template-authoring guide covering the manifest, the framework × purpose model, scaffold-copy semantics, the `asset:` scheme, and bundling a sandbox.
 
 ## Open Questions
@@ -310,6 +312,7 @@ that proves the capability, not something shipped in-repo.
   `data-dependencies`, iframe CSP).
 - Live sandbox guests + named sandbox presets in `backgrounds`: {% ref "SPEC-104" /%}.
 - Media runes / audio bridge (audio-visualisation synergy): {% ref "SPEC-006" /%}.
+- Sandbox directory naming (`examples` → `sandboxes`): ADR-022.
 - Framework-agnostic theme packages: ADR-009.
 - Scaffold-copy vs. live-dependency decision: ADR-021.
 - Dual-mode asset resolution decision: ADR-020.
