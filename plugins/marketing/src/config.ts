@@ -17,6 +17,9 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultWidth: 'full',
 		defaultElevation: 'flush',
+		// A hero is a bare section host, not a framed well — a rune guest keeps
+		// its own chrome and may spill instead of being clipped/rounded.
+		guestFit: 'bleed',
 		// Page section: at width="wide" the gradient/media bleeds out but the
 		// headline/content stays at the text measure (as it already does at full).
 		contentMeasure: 'anchored',
@@ -106,6 +109,8 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultWidth: 'full',
 		defaultElevation: 'flush',
+		// Bare section host (see Hero) — rune guests keep their own chrome.
+		guestFit: 'bleed',
 		// Page section: content stays at the text measure when bled to wide.
 		contentMeasure: 'anchored',
 		staggerItems: 'feature-item',

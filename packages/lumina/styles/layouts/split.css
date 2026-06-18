@@ -23,8 +23,32 @@
 [data-section="media"] {
 	border-radius: var(--rf-radius-media);
 }
-[data-section="media"] > * {
+
+/* `data-guest-fit` (emitted from rune config) is the chrome/containment axis:
+ *
+ *   clip  — a framed well (card, bento-cell, recipe, playlist). Every guest
+ *           adopts the slot radius so it reads as one surface with the well.
+ *   bleed — a bare section host (hero, feature). A *rune* guest keeps its own
+ *           chrome (its `data-elevation` radius, border, shadow) — the slot
+ *           would otherwise just mask a sandbox / codegroup / juxtapose's
+ *           corners. Leaf media still frames to the slot (an image has no
+ *           chrome of its own, so a bare hero image stays rounded).
+ *
+ * Absence of the attribute reads as `clip` (the historical default). */
+[data-section="media"]:not([data-guest-fit="bleed"]) > * {
 	border-radius: inherit;
+}
+[data-section="media"]:not([data-guest-fit="bleed"]) .rf-codegroup {
+	border-radius: var(--rf-radius-media);
+}
+
+/* Bleed host: leaf media adopts the slot radius; a rune guest does not, and the
+ * slot drops its own radius so its clip never rounds the guest's corners. */
+[data-section="media"][data-guest-fit="bleed"] > :is(img, video, svg, .rf-placeholder) {
+	border-radius: inherit;
+}
+[data-section="media"][data-guest-fit="bleed"]:has(> [data-rune]) {
+	border-radius: 0;
 }
 
 /* `preview` (negative-margin breakout) and a displaced `showcase` (peek spill)
@@ -42,12 +66,6 @@
 	:has(> .rf-showcase[data-displace]:not(.rf-showcase--in-bento-cell))
 ) > * {
 	border-radius: 0;
-}
-
-/* A code-group dropped into a media zone uses the media radius tier so its
- * border and corners line up with the zone's clip. */
-[data-section="media"] .rf-codegroup {
-	border-radius: var(--rf-radius-media);
 }
 
 /* Beside-layout images get subtle depth. Block runes carry their own visual

@@ -312,6 +312,22 @@ export interface RuneConfig {
 	 *  Roles: 'header' | 'preamble' | 'title' | 'description' | 'body' | 'footer' | 'media' */
 	sections?: Record<string, 'header' | 'preamble' | 'title' | 'description' | 'body' | 'footer' | 'media'>;
 
+	/** How this rune hosts a media-zone guest — the chrome/containment axis,
+	 *  orthogonal to interaction `guest-posture`. The engine emits `data-guest-fit`
+	 *  on the rune's `[data-section="media"]` zone; the skin keys off it.
+	 *
+	 *  - `'clip'` (default): a framed well — the guest is clipped to the slot and
+	 *    adopts the slot's media radius so it reads as one surface (card, bento-cell,
+	 *    recipe, playlist).
+	 *  - `'bleed'`: a bare section host with no framed well — a rune guest keeps its
+	 *    own chrome (its natural radius/border) and may spill past the zone instead
+	 *    of being cropped (hero, feature, step). Leaf media (img/video/placeholder)
+	 *    still frames to the slot in both modes.
+	 *
+	 *  Also seeds the default `frame-displace-mode` (clip → `peek`, bleed → `bleed`),
+	 *  which an explicit `frame-displace-mode=` still overrides. */
+	guestFit?: 'clip' | 'bleed';
+
 	/** Declares how named sections should be edited in the block editor.
 	 *  Keys are data-name values. Resolved at click time by the editor —
 	 *  no extra attributes in rendered HTML. */

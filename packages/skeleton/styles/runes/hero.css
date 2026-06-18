@@ -8,26 +8,9 @@
 
 .rf-hero { position: relative; }
 
-/* Hero media zone bleeds: a hero is a section header, not a clip-host like
- * card / bento-cell, so a displaced guest in its media zone should spill past
- * the zone boundary instead of being cropped into a peek. Mirrors the existing
- * `[data-rune="preview"]` / `[data-rune="juxtapose"]` / showcase-displace
- * opt-outs in layouts/split.css — same intent, host-aware scope.
- *
- * Covers both routing paths of `frame-displace`:
- *   1. host-on-media — `frame-displace` on the hero lands `data-displace` on
- *      the media-zone wrapper itself (the host's frame target is its media).
- *   2. self on a child — a media-zone child rune carrying its own
- *      `frame-displace` ends up with `data-displace` on its root, so we still
- *      need `:has(> [data-displace])` for that case. */
-.rf-hero > [data-section="media"]:is([data-displace], :has(> [data-displace])) {
-	overflow: visible;
-	container-type: normal;
-}
-/* Note: unlike the showcase/preview/juxtapose opt-outs in layouts/split.css,
- * we deliberately keep the default `width: 100%` / `max-height: 100%` on the
- * guest — a codegroup or sandbox in a hero should still fill the hero's
- * width; the unclip is only about letting it overflow vertically. */
+/* The hero media zone's displaced-guest spill is now the shared bleed-host rule
+ * (`[data-guest-fit="bleed"]` in layouts/split.css) — a hero declares
+ * `guestFit: 'bleed'`, so the host-specific override is no longer needed here. */
 
 .rf-hero__preamble {
 	flex-direction: column;
