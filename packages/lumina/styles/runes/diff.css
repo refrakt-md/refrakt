@@ -1,7 +1,20 @@
 @layer skin {
 /* Diff — skin. The scroll container, sticky header, split grid, rows grid, line
- * flex + gutter sizing live in @refrakt-md/skeleton (styles/runes/diff.css). */
+ * flex + gutter sizing live in @refrakt-md/skeleton (styles/runes/diff.css).
+ *
+ * Like codegroup, a diff is a code container: the header, the panel divider,
+ * and the gutter belong to the code surface, so they derive from
+ * `--rf-color-code-bg` / `--rf-color-code-text` (the tokens a syntax preset
+ * owns) via color-mix. This keeps the chrome coherent with the code body even
+ * when the active preset gives the code surface a palette that diverges from
+ * the page (e.g. Nord on a neutral site). Only the outer frame (border) stays
+ * in the page world. */
 .rf-diff {
+	/* Code-surface-derived chrome — legible against any --rf-color-code-bg. */
+	--rf-diff-chrome: color-mix(in srgb, var(--rf-color-code-text) 5%, var(--rf-color-code-bg));
+	--rf-diff-line: color-mix(in srgb, var(--rf-color-code-text) 14%, var(--rf-color-code-bg));
+	--rf-diff-muted: color-mix(in srgb, var(--rf-color-code-text) 55%, var(--rf-color-code-bg));
+
 	border: 1px solid var(--rf-color-border);
 	border-radius: var(--rf-radius-lg);
 	font-size: var(--rf-text-sm);
@@ -12,12 +25,12 @@
 	font-family: var(--rf-font-sans);
 	font-size: var(--rf-text-xs);
 	font-weight: var(--rf-weight-semibold);
-	color: var(--rf-color-muted);
-	background: var(--rf-color-surface);
-	border-bottom: 1px solid var(--rf-color-border);
+	color: var(--rf-diff-muted);
+	background: var(--rf-diff-chrome);
+	border-bottom: 1px solid var(--rf-diff-line);
 }
 .rf-diff__split-container .rf-diff__panel:first-child {
-	border-right: 1px solid var(--rf-color-border);
+	border-right: 1px solid var(--rf-diff-line);
 }
 .rf-diff__code {
 	margin: 0;
@@ -52,7 +65,7 @@
 	font-size: var(--rf-text-xs);
 	font-variant-numeric: tabular-nums;
 	user-select: none;
-	color: var(--rf-color-muted);
+	color: var(--rf-diff-muted);
 }
 .rf-diff__line[data-line-status="remove"] .rf-diff__gutter-num[data-side="before"] {
 	color: var(--rf-color-danger);
