@@ -1,6 +1,6 @@
 {
   "name": "@refrakt-md/gallery-harness",
-  "version": "0.24.3",
+  "version": "0.24.4",
   "private": true,
   "description": "Visual-regression harness for the refrakt gallery — Playwright screenshots of rune cells + layout fixtures, with per-theme golden baselines. Opt-in; not part of the runtime/CLI install path.",
   "type": "module",

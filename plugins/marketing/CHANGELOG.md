@@ -1,5 +1,19 @@
 # @refrakt-md/marketing
 
+## 0.24.4
+
+### Patch Changes
+
+- fee0ec3: Add a `contentMeasure` axis so page sections keep their content readable when bled to the `wide` track. Previously `width="wide"` widened both a section's background _and_ its content, while `width="full"` widened only the background (content stayed anchored to the text measure) — an inconsistency for runes like `hero` and `feature`.
+
+  `RuneConfig.contentMeasure: 'anchored' | 'fill'` (default `fill`) is emitted as `data-content-measure`. `anchored` runes (hero, cta, feature) keep their content at the text measure at `width="wide"` so only the surface/gradient bleeds, matching `width="full"`. `fill` runes (card, table, bento) keep the "break gently out of the text column" behavior. `width="full"` still anchors content into a band for every rune, so composing any rune into a hero (`elevation="flush" width="full"`) is unchanged.
+
+- Updated dependencies [fee0ec3]
+- Updated dependencies [de974e1]
+  - @refrakt-md/transform@0.24.4
+  - @refrakt-md/runes@0.24.4
+  - @refrakt-md/types@0.24.4
+
 ## 0.24.3
 
 ### Patch Changes
