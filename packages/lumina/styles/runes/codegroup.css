@@ -1,26 +1,42 @@
 @layer skin {
 /* Code Group — skin.
  *
- * Chrome (the wrapper + topbar + tabs) uses `--rf-color-surface` so it
- * reads against the page in both light and dark modes. The code areas
- * themselves inherit `--rf-color-code-bg` from the global `pre` rule.
+ * A codegroup is a *code container*: the topbar, tabs, and code body all
+ * belong to the code surface, not the page chrome. So the wrapper fill and
+ * its inner chrome derive from `--rf-color-code-bg` / `--rf-color-code-text`
+ * — the tokens a syntax preset (Nord, Dracula, …) owns. This keeps the whole
+ * component coherent with its code body even when the active preset gives the
+ * code surface a palette that diverges from the page (e.g. Nord's Polar Night
+ * code surface on an otherwise-neutral site). It also matches `diff`, whose
+ * body already fills from `--rf-color-code-bg`.
+ *
+ * Only the outer frame (border + shadow) stays in the page world so the
+ * component still reads as a card sitting on the page — same as diff's outer
+ * border. The chrome strip is a subtle elevation off the code surface, and
+ * the separators / text derive from the code tokens via color-mix so they
+ * stay legible against any code background in both light and dark modes.
  *
  * The wrapper clip, topbar flex, list reset, the scrollable tab strip, and the
  * tab flex live in @refrakt-md/skeleton (styles/runes/codegroup.css). The pre/code
  * rules stay here in skin: they deliberately override elements/code.css by source
  * order (the `data-overflow="wrap"` reset especially). */
 .rf-codegroup {
+	/* Code-surface-derived chrome — legible against any --rf-color-code-bg. */
+	--rf-codegroup-chrome: color-mix(in srgb, var(--rf-color-code-text) 5%, var(--rf-color-code-bg));
+	--rf-codegroup-line: color-mix(in srgb, var(--rf-color-code-text) 14%, var(--rf-color-code-bg));
+	--rf-codegroup-muted: color-mix(in srgb, var(--rf-color-code-text) 55%, var(--rf-color-code-bg));
+
 	border: 1px solid var(--rf-color-border);
-	background: var(--rf-color-surface);
-	color: var(--rf-color-text);
+	background: var(--rf-color-code-bg);
+	color: var(--rf-color-code-text);
 	box-shadow: var(--rf-shadow-md);
 	padding: 0;
 }
 .rf-codegroup__topbar {
 	gap: 0.375rem;
 	padding: 0.75rem 1rem;
-	background: transparent;
-	border-bottom: 1px solid var(--rf-color-border);
+	background: var(--rf-codegroup-chrome);
+	border-bottom: 1px solid var(--rf-codegroup-line);
 	margin-bottom: 0;
 }
 /* Window chrome — three traffic-light dots painted as gradients on one
@@ -43,21 +59,21 @@
 	margin-left: 0.5rem;
 	font-size: var(--rf-text-xs);
 	font-weight: normal;
-	color: var(--rf-color-muted);
+	color: var(--rf-codegroup-muted);
 }
 .rf-codegroup ul {
 	padding: 0;
 	margin: 0;
 }
 .rf-codegroup__tabs {
-	background: transparent;
-	border-bottom: 1px solid var(--rf-color-border);
+	background: var(--rf-codegroup-chrome);
+	border-bottom: 1px solid var(--rf-codegroup-line);
 }
 .rf-codegroup__tab {
 	padding: 0.5rem 1rem;
 	font-size: var(--rf-text-xs);
 	font-family: var(--rf-font-mono);
-	color: var(--rf-color-muted);
+	color: var(--rf-codegroup-muted);
 	background: none;
 	border: none;
 	border-bottom: 2px solid transparent;
@@ -67,15 +83,15 @@
 }
 .rf-codegroup__tab:hover,
 .rf-codegroup button[data-state="inactive"]:hover {
-	color: var(--rf-color-text);
+	color: var(--rf-color-code-text);
 }
 .rf-codegroup__tab--active,
 .rf-codegroup button[data-state="active"] {
-	color: var(--rf-color-text);
+	color: var(--rf-color-code-text);
 	border-bottom-color: var(--rf-color-primary);
 }
 .rf-codegroup button[data-state="inactive"] {
-	color: var(--rf-color-muted);
+	color: var(--rf-codegroup-muted);
 }
 .rf-codegroup .rf-codeblock {
 	margin: 0;

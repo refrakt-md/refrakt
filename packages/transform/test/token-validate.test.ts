@@ -39,6 +39,39 @@ describe('validateThemeTokensConfig', () => {
 		expect(r.errors[0].message).toContain("unknown token key 'xxl'");
 	});
 
+	// SPEC-056 — the extended syntax roles are part of the SyntaxTokens
+	// contract. An integrated preset (Nord, Dracula, …) sets them when used as
+	// the active preset, so the validator must accept them rather than reject
+	// them as unknown keys.
+	it('accepts the SPEC-056 extended syntax roles (Nord active-preset case)', () => {
+		const r = validateThemeTokensConfig({
+			syntax: {
+				keyword: '#5e81ac', function: '#88c0d0', type: '#8fbcbb',
+				string: '#a3be8c', constant: '#b48ead', comment: '#4c566a',
+				punctuation: '#4c566a', variable: '#2e3440',
+				number: '#d08770', regex: '#ebcb8b', tag: '#5e81ac',
+				attribute: '#8fbcbb', operator: '#81a1c1',
+				property: '#2e3440', parameter: '#2e3440',
+			},
+			modes: {
+				dark: {
+					syntax: { type: '#8fbcbb', tag: '#81a1c1', operator: '#81a1c1' },
+				},
+			},
+		});
+		expect(r.valid).toBe(true);
+		expect(r.errors).toEqual([]);
+	});
+
+	it('accepts the spacing densification band and shadow.none (SPEC-094 / contract sync)', () => {
+		const r = validateThemeTokensConfig({
+			spacing: { snug: '0.75rem', cozy: '1rem' },
+			shadow: { none: 'none', sm: '0 1px 2px rgba(0,0,0,0.05)' },
+		});
+		expect(r.valid).toBe(true);
+		expect(r.errors).toEqual([]);
+	});
+
 	// SPEC-105 / WORK-442 — the reveal motion physics are a token group, so a
 	// site can retune them via refrakt.config.json theme.tokens.reveal.*.
 	it('accepts reveal motion-physics overrides', () => {

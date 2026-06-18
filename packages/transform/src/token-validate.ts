@@ -68,21 +68,29 @@ const TOKEN_CONTRACT_SHAPE: Record<string, ContractNode> = {
 		sm: 'leaf', md: 'leaf', lg: 'leaf', full: 'leaf',
 	},
 	spacing: {
-		xs: 'leaf', sm: 'leaf', md: 'leaf', lg: 'leaf', xl: 'leaf', '2xl': 'leaf',
+		xs: 'leaf', sm: 'leaf', snug: 'leaf', cozy: 'leaf',
+		md: 'leaf', lg: 'leaf', xl: 'leaf', '2xl': 'leaf',
 		section: { base: 'leaf', tight: 'leaf', loose: 'leaf', breathe: 'leaf' },
 	},
 	inset: {
 		flush: 'leaf', tight: 'leaf', loose: 'leaf', breathe: 'leaf',
 	},
 	shadow: {
-		xs: 'leaf', sm: 'leaf', md: 'leaf', lg: 'leaf',
+		none: 'leaf', xs: 'leaf', sm: 'leaf', md: 'leaf', lg: 'leaf',
 	},
 	syntax: {
+		// Required core roles.
 		keyword: 'leaf', function: 'leaf', string: 'leaf', constant: 'leaf',
 		comment: 'leaf', punctuation: 'leaf', variable: 'leaf',
-		// Optional refinements — themes use these to break the function→link
+		// Optional, existing — themes use these to break the function→link
 		// and string→string-expression auto-derive defaults.
 		link: 'leaf', 'string-expression': 'leaf',
+		// Optional, extended (SPEC-056) — preset authors set these to carry
+		// palettes that intentionally split distinctions the core collapses
+		// (e.g. Nord's type≠function, distinct tag/attribute/operator/number/
+		// regex hues). Each falls back to a documented core role when unset.
+		type: 'leaf', property: 'leaf', parameter: 'leaf', tag: 'leaf',
+		attribute: 'leaf', operator: 'leaf', number: 'leaf', regex: 'leaf',
 	},
 	// SPEC-105 — scroll-reveal motion physics (optional group).
 	reveal: {
