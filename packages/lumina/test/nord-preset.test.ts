@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { generateThemeStylesheet, mergeThemeTokensConfigs } from '@refrakt-md/transform';
+import {
+	generateThemeStylesheet,
+	mergeThemeTokensConfigs,
+	validateThemeTokensConfig,
+} from '@refrakt-md/transform';
 import { luminaTokens } from '../src/tokens.js';
 import nord from '../src/presets/nord.js';
 import tideline from '../src/presets/tideline.js';
@@ -57,6 +61,16 @@ describe('Nord preset module — SPEC-056 validation case', () => {
 			expect(nord.syntax!.type).toBe('#8fbcbb'); // Frost nord7
 			expect(nord.syntax!.function).toBe('#88c0d0'); // Frost nord8
 			expect(nord.syntax!.type).not.toBe(nord.syntax!.function);
+		});
+
+		it('validates cleanly against the token contract as an active preset', () => {
+			// Regression: the token validator's contract shape once omitted the
+			// SPEC-056 extended syntax roles (type/tag/attribute/operator/number/
+			// regex), so validating Nord as the active preset rejected those keys
+			// as "unknown token key". The validator now mirrors SyntaxTokens.
+			const r = validateThemeTokensConfig(nord);
+			expect(r.errors).toEqual([]);
+			expect(r.valid).toBe(true);
 		});
 
 		it('sets color.code.* in both light and dark modes (canvas-claiming)', () => {
