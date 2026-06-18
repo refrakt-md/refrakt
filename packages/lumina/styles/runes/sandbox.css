@@ -1,8 +1,27 @@
 @layer skin {
 /* Sandbox — skin. The iframe clip/fill + banner/poster/activate layout live in
  * @refrakt-md/skeleton (styles/runes/sandbox.css). */
+
+/* The iframe canvas is opaque (the behaviour writes `color-scheme` onto the
+ * srcdoc `<html>`, so the UA paints a solid backdrop — `background: transparent`
+ * can't make it see-through). A rounded shape therefore can't come from inside
+ * the sandbox; the embedding element has to clip it. The sandbox owns its
+ * radius and skeleton's `overflow: hidden` does the clip; the iframe inherits
+ * the radius so the clip holds across browsers (the rounded-iframe corner case).
+ *
+ * Radius mirrors codegroup: `radius-container` standalone — and in a bleed host
+ * (hero/feature) where the guest keeps its own chrome — while a clip-host well
+ * rounds it to the smaller media tier via the shared `[data-section="media"]
+ * > *` rule. A full-bleed cover/backdrop sandbox sits flush. */
+.rf-sandbox {
+	border-radius: var(--rf-radius-container);
+}
+[data-media-position="cover"] .rf-sandbox {
+	border-radius: 0;
+}
 .rf-sandbox iframe {
 	border: none;
+	border-radius: inherit;
 }
 /* Static fallback (pre/code shown before hydration) */
 .rf-sandbox pre {
