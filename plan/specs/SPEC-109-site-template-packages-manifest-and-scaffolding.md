@@ -65,8 +65,9 @@ Measured against the current `packages/create-refrakt` tree:
 ## Design
 
 The work divides into five pieces: the package format and manifest, the scaffold-time
-composition model, the dual-mode asset scheme, the CLI surface, and optional bundled
-sandboxes. A small reference template (a test fixture, not a catalog) backs all of them.
+composition model, the asset-manifest seed (the general `asset:` scheme is {% ref "SPEC-115" /%}),
+the CLI surface, and optional bundled sandboxes. A small reference template (a test fixture, not
+a catalog) backs all of them.
 
 ### 1. Two axes: framework × purpose
 
@@ -127,7 +128,7 @@ The exact field set is settled in the work phase; the shape is:
     "entityRoutes": []
   },
   "previewUrl": "https://…",                     // optional: where a built demo is published
-  "assets": { /* asset manifest — see §3 */ },
+  "assets": { /* asset manifest — seeds the asset: config, see §4 + SPEC-115 */ },
   "sandboxes": { /* program-tree → project-dir mapping — see §7 */ }
 }
 ```
@@ -158,39 +159,28 @@ must be **scaffold-built in CI** — scaffold it, build it, assert no errors —
 with the visual-regression harness from {% ref "SPEC-094" /%}. This catches rune-syntax drift
 breaking a template before an author hits it.
 
-### 4. Dual-mode asset resolution
+### 4. Asset resolution (templates seed `asset:`, per {% ref "SPEC-115" /%})
 
-The resolution model and its tradeoffs are decided in ADR-020; this section summarizes it.
-Example content needs images without shipping binaries or looking broken. The image-scheme
-registry is already pluggable — `registerImageScheme(scheme, resolver)`, last-registration-wins
-(`packages/runes/src/lib/image-schemes.ts`). That makes two resolution modes over *identical*
-content nearly free:
+Purpose-built content needs images without shipping binaries or looking broken. refrakt handles
+this with the project-level **`asset:` scheme** specified in {% ref "SPEC-115" /%}: content
+references a logical key (`asset:cover/hero-main`) that resolves to a real `<img>` when the
+project configures a base URL, and to a shape-correct generated placeholder
+(`packages/runes/src/lib/placeholder.ts`) otherwise. Templates are a **consumer** of that
+mechanism, not a bespoke variant of it:
 
-- **Distributed/scaffold mode (default).** Content references logical image slots that resolve
-  to the built-in generated `placeholder:` SVGs (`packages/runes/src/lib/placeholder.ts`). Zero
-  binary assets, zero asset-licensing surface. This is exactly what the author downloads, and
-  it renders cleanly with no extra files.
-- **Demo-build mode (opt-in).** A build flag registers an override resolver that maps the *same*
-  slots to author-provided hosted image URLs, so a template author can publish a live, fully-
-  imaged preview of their template. Content is byte-identical between modes; only the resolver
-  differs.
+- A template's **asset manifest** (in `template.json`) is a **scaffold-time seed**: its keys,
+  shapes, and any author-published preview URLs merge into the new project's
+  `sites.<site>.assets` alongside the `configFragment` (§2).
+- The scaffolded site ships with **no base URL configured**, so every `asset:` reference renders a
+  generated placeholder — zero binary assets, zero licensing surface, nothing to strip. This is
+  exactly what the author downloads.
+- A template author publishes a fully-imaged **live preview** simply by building with a base URL
+  set ({% ref "SPEC-115" /%} §2). There is no separate demo-build flag; "demo mode" is just
+  "assets configured."
 
-The one wrinkle: `placeholder:` is keyed by *shape*, so it cannot tell two heroes apart or map
-them to distinct preview images. The fix is a **logical asset key** — content references an
-`asset:` slot carrying a stable key and its aspect shape; a template's **asset manifest**
-(in `template.json`) maps each key to a `previewUrl`. The exact ref syntax is an open decision
-(candidates: `asset:hero-main` with shape resolved from the manifest, vs. a self-describing
-`asset:cover/hero-main` so a downloaded site needs no manifest at all — see Open Questions).
-Either way:
-
-- In distributed mode the slot emits a shape-correct generated placeholder (delegating to
-  `placeholderSvg`); the `previewUrl` values are **not** part of the scaffolded output, so the
-  author's downloaded site is automatically placeholder-backed with nothing to strip.
-- In demo mode the override resolver reads `previewUrl` from the manifest and emits a real
-  `<img>`.
-
-How preview URLs are produced and hosted is an operational concern entirely outside this
-spec and the repo; the manifest only ever holds author-provided URLs.
+The ref syntax (self-describing `asset:<shape>/<key>` vs. key-only) and the resolution rule are
+owned by {% ref "SPEC-115" /%}; this spec only requires that a template can **seed** the asset
+config and that the placeholder default holds with nothing configured.
 
 ### 5. CLI surface
 
@@ -201,8 +191,8 @@ spec and the repo; the manifest only ever holds author-provided URLs.
   local directory, or a package identifier. Install/copy robustness (tarball, alternate
   registries, multi-site targeting) is shared with theme install and specified in
   {% ref "SPEC-110" /%}.
-- A demo-build flag (env or config) toggles asset demo mode (§4) for authors publishing a
-  preview. It is inert for normal builds.
+- Publishing a fully-imaged preview needs no special flag: an author builds with the project's
+  asset base URL configured ({% ref "SPEC-115" /%}); with none set, builds are placeholder-backed.
 
 ### 6. Reference template (test fixture)
 
@@ -257,8 +247,9 @@ that proves the capability, not something shipped in-repo.
 - **`create-refrakt` gains a composition step.** Scaffolding moves from "copy one framework
   starter + generate config" to "compose framework starter + template content + theme dep +
   merged config." The framework axis rename touches the bin's flag parsing and docs.
-- **A new image scheme + build mode.** `asset:` and the demo-mode resolver are additive to the
-  registry; no existing content changes. Distributed builds behave exactly as today.
+- **Templates seed the `asset:` config.** The asset manifest merges into `sites.<site>.assets`
+  ({% ref "SPEC-115" /%}); with nothing configured, scaffolded sites are placeholder-backed and
+  existing content is unaffected.
 - **Templates are CI-built artifacts.** Each first-party template is scaffolded and built in CI,
   reusing the {% ref "SPEC-094" /%} gallery/harness where possible, so rune-syntax drift can't
   silently rot a template.
@@ -275,16 +266,13 @@ that proves the capability, not something shipped in-repo.
 - [ ] A site-template package format is defined: a `template.json` manifest (name, title, description, category, `contentDir`, `requiredPlugins`, `recommendedTheme` as a `SiteThemeConfig`, `configFragment`, optional `previewUrl` + asset manifest) plus a `content/` tree.
 - [ ] Scaffolding composes three inputs — framework starter, site template, theme — copying the template's content and merging its framework-agnostic `configFragment` into the generated `refrakt.config.json`, with the framework `target` and dependency wiring injected by the scaffolder.
 - [ ] Templates are scaffold-copied (content owned by the author), while the recommended theme and required plugins are pinned as live dependencies of the new project.
-- [ ] An `asset:` logical-key image scheme renders shape-correct generated placeholders in distributed/scaffold mode (zero binary assets, no manifest required in the downloaded site) and resolves to author-provided `previewUrl`s under an opt-in demo-build mode via the last-wins resolver registry.
+- [ ] A template seeds the project's `asset:` configuration ({% ref "SPEC-115" /%}) at scaffold time from `template.json`; with nothing configured the scaffolded site renders shape-correct placeholders (zero binary assets, nothing to strip), and setting a base URL lights up real images with no demo-build flag.
 - [ ] Exactly one in-repo reference template exists as a fixture/worked example and is scaffolded-and-built in CI (extended with the {% ref "SPEC-094" /%} visual-regression harness where applicable) to guard against rune-syntax drift.
 - [ ] The format supports **bundled sandboxes**: a template may carry a sandbox program-source tree that is scaffold-copied into the project's configured sandbox directory, and its `configFragment` may carry `backgrounds`/`sites.<site>` entries so a named bg-sandbox preset ({% ref "SPEC-104" /%}) resolves out of the box — introducing no build-time or npm dependency, since the sandbox runtime stays CDN-loaded at activation.
 - [ ] Theme-authoring/scaffolding docs gain a template-authoring guide covering the manifest, the framework × purpose model, scaffold-copy semantics, the `asset:` scheme, and bundling a sandbox.
 
 ## Open Questions
 
-- **`asset:` ref syntax.** Self-describing (`asset:<shape>/<key>`, so a downloaded site needs no
-  manifest) vs. key-only (`asset:<key>`, shape resolved from a copied manifest). Settle in the
-  work phase against the "downloaded site needs zero extra files" goal.
 - **Config-fragment merge precedence.** How a template's `configFragment` composes with
   user-supplied flags and with the recommended-theme override (template default vs. explicit
   `--theme`) when they conflict.
@@ -303,6 +291,7 @@ that proves the capability, not something shipped in-repo.
   `generateRefraktConfig`), `packages/create-refrakt/src/bin.ts`, the `template-<framework>` dirs.
 - Theme manifest + site theme config: `packages/types/src/theme.ts` (`ThemeManifest`,
   `SiteThemeConfig`, `getThemePackage`).
+- Project asset resolution (the general `asset:` scheme this seeds): {% ref "SPEC-115" /%}.
 - Image schemes: `packages/runes/src/lib/image-schemes.ts` (`registerImageScheme`,
   `resolveImageScheme`), `packages/runes/src/lib/placeholder.ts` (`placeholderSvg`,
   `PLACEHOLDER_SHAPES`).
