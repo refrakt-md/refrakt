@@ -86,58 +86,77 @@ Scaffolding then **composes three inputs**:
 
 1. **Framework starter** — app shell, build files, base `package.json` (today's
    `template-<framework>` dirs). Supplies the adapter wiring.
-2. **Site template** — the content tree + a config fragment + manifest (this spec). Supplies
-   the *site*.
-3. **Theme** — the template's recommended theme, or a user override, pinned as a dependency.
+2. **Site template** — the content tree + a `SiteConfig` partial + manifest (this spec).
+   Supplies the *site*.
+3. **Theme** — the template's recommended theme (`site.theme`), or a user override, pinned as a
+   dependency.
 
-The template's config fragment is **framework-agnostic** (plugins, `routeRules`,
-`entityRoutes`, recommended theme); the scaffolder injects the framework-specific `target`
-and dependency wiring. This keeps a template installable across every adapter.
+The template's `site` config is **framework-agnostic** (`plugins`, `routeRules`, `entityRoutes`,
+`theme`, …); the scaffolder injects the framework-specific `target` and dependency wiring. This
+keeps a template installable across every adapter.
 
 ### 2. Template package format and manifest
 
-A site template is a package (or a directory) shaped as:
+A full-site template **is a site**, so installing it **adds a site**: its config payload is a
+`SiteConfig` (not a partial of the whole `RefraktConfig`), slotted under the target site key. A
+site template is a package (or a directory) shaped as:
 
 ```
 my-template/
-  package.json        — name, version; deps: recommended theme + required plugins
+  package.json        — template package metadata (may list the theme + plugins for its own CI build)
   template.json       — the template manifest (see below)
   content/            — the content tree: .md pages + _layout.md cascade
-  sandboxes/          — optional sandbox program trees (html/css/js/glsl); scaffold-copied into the project's sandbox dir (§7)
-  assets/             — optional real assets (usually empty; prefer the asset scheme, §3)
+  sandboxes/          — optional sandbox program trees (html/css/js/glsl); copied to site.sandbox.dir (§7)
+  assets/             — optional real assets (usually empty; prefer the asset scheme, §4)
 ```
 
 `template.json` is the descriptive contract the scaffolder and any catalog tooling read.
-The exact field set is settled in the work phase; the shape is:
+The exact field set is settled in the work phase; the shape is **metadata + a `site` partial**:
 
 ```jsonc
 {
+  // — metadata (catalog; never merged into config) —
   "name": "docs-starter",
   "title": "Documentation site",
   "description": "A multi-section docs site with sidebar nav, API reference, and changelog.",
   "category": "docs",
-  "contentDir": "./content",
-  "requiredPlugins": ["@refrakt-md/docs"],     // hard dependency — runes must resolve
-  "recommendedTheme": {                          // soft dependency — the designed look
-    "package": "@refrakt-md/lumina",
-    "presets": ["@refrakt-md/lumina/presets/tideline"]
-  },
-  "configFragment": {                            // merged into the generated refrakt.config
+  "previewUrl": "https://…",                      // optional: where a built demo is published
+
+  // — the site this template provides: a SiteConfig partial, merged in as a site —
+  "site": {
+    "contentDir": "site/content",                 // destination; the package's content/ copies here
+    "theme": {                                    // recommended look (SiteThemeConfig)
+      "package": "@refrakt-md/lumina",
+      "presets": ["@refrakt-md/lumina/presets/tideline"]
+    },
     "plugins": ["@refrakt-md/docs", "@refrakt-md/marketing"],
     "routeRules": [{ "pattern": "**", "layout": "docs" }],
-    "entityRoutes": []
-  },
-  "previewUrl": "https://…",                     // optional: where a built demo is published
-  "assets": { /* asset manifest — seeds the asset: config, see §4 + SPEC-115 */ },
-  "sandboxes": { /* program-tree → project-dir mapping — see §7 */ }
+    "entityRoutes": [],
+    "sandbox": { "dir": "site/sandboxes" },       // destination; the package's sandboxes/ copies here (§7, ADR-022)
+    "assets": { /* asset: config — seeds sites.<site>.assets, see §4 + SPEC-115 */ }
+  }
 }
 ```
 
-`recommendedTheme` reuses the `SiteThemeConfig` shape from `packages/types/src/theme.ts`
-(`{ package, presets, tokens, modes, colorScheme }`) so a template ships a **complete
-starting configuration** — a template + theme + preset + token overrides composed into one
-unit — without inventing a parallel type. A template with only `requiredPlugins` and a
-neutral theme is the minimal case; a fully-composed bundle is the same field set populated.
+`site` is a partial of `SiteConfig` (`packages/types/src/theme.ts`) — the **same per-site shape**
+`refrakt.config.json` uses (`contentDir`, `theme`, `plugins`, `routeRules`, `entityRoutes`,
+`backgrounds`, `sandbox`, `assets`, …). Consequences of "a template is a `SiteConfig`":
+
+- **Install = add a site.** The scaffolder slots `site` under the target key — `sites.default`
+  (or singular `site`) for a new project, `sites.<name>` for a multi-site add — deep-merged per
+  {% ref "SPEC-115" /%}'s rule. The new-project and new-site cases become the same operation.
+- **Project-level fields are structurally out of reach.** `plan`, `xrefs`, `fileRoots`, and root
+  `plugins` live on `RefraktConfig`, not `SiteConfig`, so a template cannot set them.
+- **Dependencies are derived, not declared.** `package.json` deps come from `site.plugins` +
+  `site.theme.package`, pinned by the scaffolder — no separate `requiredPlugins` field. `theme`
+  reuses `SiteThemeConfig`, so the template ships a complete look (theme + presets + token
+  overrides) without a parallel type. (Note `plugins` exists at both levels; a template uses the
+  per-site `site.plugins`, and the pinned deps keep discovery working.)
+- **`contentDir`/`sandbox.dir` are destinations**, not the package's source folders — the package
+  always ships `content/` and `sandboxes/`; these fields say where they land.
+
+The minimal template is just `site.contentDir` + `site.theme`; a fully-composed bundle populates
+the rest.
 
 ### 3. Scaffold-copy semantics (not a live dependency)
 
@@ -150,9 +169,10 @@ they are not served from `node_modules` (decided in ADR-021). Rationale:
   updates; templates are one-time copies.** A template's ongoing value is "more templates to
   start from," not "this content auto-updates."
 
-The hybrid that makes this ergonomic: a template **pins** its recommended theme and required
-plugins as real dependencies (installed into the new project) but **copies** only the content
-tree and the merged config fragment. Deps stay live and updatable; content is owned.
+The hybrid that makes this ergonomic: a template **pins** its theme and plugins — derived from
+its `site` config — as real dependencies (installed into the new project), but **copies** the
+content tree and any sandbox programs, and **merges** its `site` config into
+`refrakt.config.json`. Deps stay live and updatable; content is owned.
 
 Because templates are copies that reference evolving rune syntax, each first-party template
 must be **scaffold-built in CI** — scaffold it, build it, assert no errors — ideally extended
@@ -168,9 +188,9 @@ project configures a base URL, and to a shape-correct generated placeholder
 (`packages/runes/src/lib/placeholder.ts`) otherwise. Templates are a **consumer** of that
 mechanism, not a bespoke variant of it:
 
-- A template's **asset manifest** (in `template.json`) is a **scaffold-time seed**: its keys,
-  shapes, and any author-published preview URLs merge into the new project's
-  `sites.<site>.assets` alongside the `configFragment` (§2).
+- A template's **asset config** lives in its `site.assets` (§2) and is seeded into the new
+  project's `sites.<site>.assets` like any other `SiteConfig` field; shapes travel in content via
+  `@shape` ({% ref "SPEC-115" /%}).
 - The scaffolded site ships with **no base URL configured**, so every `asset:` reference renders a
   generated placeholder — zero binary assets, zero licensing surface, nothing to strip. This is
   exactly what the author downloads.
@@ -226,13 +246,13 @@ declarative extensions:
 
 - **A program-source tree.** The template package carries a sandbox source directory alongside
   `content/` (the `sandboxes/` folder), scaffold-copied into the project's configured sandbox
-  directory under the same author-owned semantics as content (§3). The manifest's `sandboxes`
-  field records where each tree lands. (These programs are part of the site, not throwaway
-  demos; ADR-022 reconsiders the legacy `examples` naming of the runtime directory.)
-- **`backgrounds` in the config fragment — only for the named-preset path.** A reusable backdrop
+  directory under the same author-owned semantics as content (§3). The package's `sandboxes/`
+  copies to `site.sandbox.dir`. (These programs are part of the site, not throwaway demos;
+  ADR-022 reconsiders the legacy `examples` naming of the runtime directory.)
+- **`backgrounds` in the `site` config — only for the named-preset path.** A reusable backdrop
   applied by name (`bg="midnight-waves"`) resolves through `refrakt.config.json →
-  sites.<site>.backgrounds` ({% ref "SPEC-104" /%}), so `configFragment` must be allowed to carry
-  `backgrounds`/`sites.<site>` keys. An *inline* `{% sandbox framework="three"
+  sites.<site>.backgrounds` ({% ref "SPEC-104" /%}); `backgrounds` is a `SiteConfig` field, so the
+  template's `site` carries it directly. An *inline* `{% sandbox framework="three"
   dependencies="…" %}` needs nothing beyond being ordinary content.
 
 The distinction this surfaces is **content-only vs. runtime-bearing** templates — not a
@@ -247,9 +267,9 @@ that proves the capability, not something shipped in-repo.
 - **`create-refrakt` gains a composition step.** Scaffolding moves from "copy one framework
   starter + generate config" to "compose framework starter + template content + theme dep +
   merged config." The framework axis rename touches the bin's flag parsing and docs.
-- **Templates seed the `asset:` config.** The asset manifest merges into `sites.<site>.assets`
-  ({% ref "SPEC-115" /%}); with nothing configured, scaffolded sites are placeholder-backed and
-  existing content is unaffected.
+- **Templates seed the `asset:` config.** The template's `site.assets` is seeded into
+  `sites.<site>.assets` ({% ref "SPEC-115" /%}); with nothing configured, scaffolded sites are
+  placeholder-backed and existing content is unaffected.
 - **Templates are CI-built artifacts.** Each first-party template is scaffolded and built in CI,
   reusing the {% ref "SPEC-094" /%} gallery/harness where possible, so rune-syntax drift can't
   silently rot a template.
@@ -263,21 +283,25 @@ that proves the capability, not something shipped in-repo.
 ## Acceptance Criteria
 
 - [ ] `create-refrakt` separates the framework axis (`--framework`) from the purpose axis (`--template`), with both defaulting to preserve current behaviour; the existing `--type`/`--target` plumbing is reconciled onto `--framework` and documented.
-- [ ] A site-template package format is defined: a `template.json` manifest (name, title, description, category, `contentDir`, `requiredPlugins`, `recommendedTheme` as a `SiteThemeConfig`, `configFragment`, optional `previewUrl` + asset manifest) plus a `content/` tree.
-- [ ] Scaffolding composes three inputs — framework starter, site template, theme — copying the template's content and merging its framework-agnostic `configFragment` into the generated `refrakt.config.json`, with the framework `target` and dependency wiring injected by the scaffolder.
-- [ ] Templates are scaffold-copied (content owned by the author), while the recommended theme and required plugins are pinned as live dependencies of the new project.
+- [ ] A site-template package format is defined: a `template.json` of catalog metadata (name, title, description, category, optional `previewUrl`) plus a `site` field that is a `SiteConfig` partial (`packages/types/src/theme.ts`), and the package ships `content/` (+ optional `sandboxes/`).
+- [ ] Installing a template **adds a site**: the scaffolder slots the manifest's `site` `SiteConfig` under the target site key (`sites.default`/singular `site` for a new project, `sites.<name>` for a multi-site add), deep-merged per {% ref "SPEC-115" /%}; it derives and pins `package.json` deps from `site.plugins` + `site.theme.package`, copies `content/`→`site.contentDir` and `sandboxes/`→`site.sandbox.dir`, and injects the framework `target`/wiring.
+- [ ] Full-site templates seed a **new project or new site** only — they do not overlay an existing site (that is the deferred section/page-template case).
+- [ ] Templates are scaffold-copied (content owned by the author), while the theme and plugins (derived from the `site` config) are pinned as live dependencies of the new project.
 - [ ] A template seeds the project's `asset:` configuration ({% ref "SPEC-115" /%}) at scaffold time from `template.json`; with nothing configured the scaffolded site renders shape-correct placeholders (zero binary assets, nothing to strip), and setting a base URL lights up real images with no demo-build flag.
 - [ ] Exactly one in-repo reference template exists as a fixture/worked example and is scaffolded-and-built in CI (extended with the {% ref "SPEC-094" /%} visual-regression harness where applicable) to guard against rune-syntax drift.
-- [ ] The format supports **bundled sandboxes**: a template may carry a sandbox program-source tree that is scaffold-copied into the project's configured sandbox directory, and its `configFragment` may carry `backgrounds`/`sites.<site>` entries so a named bg-sandbox preset ({% ref "SPEC-104" /%}) resolves out of the box — introducing no build-time or npm dependency, since the sandbox runtime stays CDN-loaded at activation.
+- [ ] The format supports **bundled sandboxes**: a template may carry a sandbox program-source tree that is scaffold-copied to `site.sandbox.dir`, and its `site` config may carry `backgrounds` entries so a named bg-sandbox preset ({% ref "SPEC-104" /%}) resolves out of the box — introducing no build-time or npm dependency, since the sandbox runtime stays CDN-loaded at activation.
 - [ ] Theme-authoring/scaffolding docs gain a template-authoring guide covering the manifest, the framework × purpose model, scaffold-copy semantics, the `asset:` scheme, and bundling a sandbox.
 
 ## Open Questions
 
-- **Config-fragment merge precedence.** How a template's `configFragment` composes with
-  user-supplied flags and with the recommended-theme override (template default vs. explicit
-  `--theme`) when they conflict.
-- **Section/page templates.** Full-site only here; whether a "drop in a pricing page" granularity
-  is a later refinement of the same format (a one-page template) is deferred.
+- **CLI override precedence.** When the author passes `--theme` (or other flags), it overrides the
+  template's `site.theme`; confirm "CLI > template `site` > theme defaults" and how presets/token
+  overlays compose. (Because full-site templates seed a *fresh* site, there is no template-vs-
+  existing-config merge here — that only arises for section/page templates, below.)
+- **Section/page templates.** Full-site only here; a "drop in a pricing page" granularity (a
+  partial template overlaid onto an *existing* site) is deferred. That case **owns the
+  merge-into-existing story** — per-field for scalars, per-key deep-merge for map fields like
+  `overrides`/`backgrounds`, author wins — which is therefore out of scope for v1.
 - **Out-of-the-box runtime for bundled sandboxes.** A bundled sandbox (§7) animates only if its
   CDN dependencies are reachable and the iframe CSP permits them. Decide what "works out of the
   box" promises — a documented runtime-network expectation, an optional self-hosted/vendored

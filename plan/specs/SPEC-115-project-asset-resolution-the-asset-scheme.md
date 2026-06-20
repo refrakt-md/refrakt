@@ -216,10 +216,18 @@ with this **forward-compatible** design recorded so the door is provably open:
   `roots`/`default` later breaks no v1 config. Per-root merge precedence is folded into the
   merge-precedence question below when this lands.
 
+## Merge precedence (decided)
+
+`sites.<site>.assets` follows the house rule already used for `backgrounds`/`sandbox` —
+**`theme < project`, last wins** — applied **per-field**, with the `overrides` map **deep-merged
+per key** (project wins on a key collision). A full-site template ({% ref "SPEC-109" /%}) seeds a
+**fresh** site, so there is no template-vs-existing-config merge in v1. Merging a *partial*
+template into an **existing** site (per-field scalars + per-key `overrides`, author wins) is the
+deferred **section/page-template** case, owned by {% ref "SPEC-109" /%}; when named roots land
+(above), `roots` deep-merge by root name under the same rule.
+
 ## Open Questions
 
-- **Merge precedence.** How template-seeded `assets` compose with author edits and with
-  theme-level defaults (mirror the `backgrounds` "project over theme, last wins" rule).
 - **Interaction with `placeholder:`.** Whether `asset:`'s fallback should literally delegate to
   the `placeholder:` resolver (shared code) or inline `placeholderSvg`.
 
