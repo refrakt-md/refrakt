@@ -186,11 +186,38 @@ configuration surface is data in `refrakt.config.json`, not code.
 - **No new binary-bundling path.** This does not change whether/how real assets ship in a
   template (SPEC-109 keeps the "prefer placeholders, real `assets/` rare" stance).
 
+## Deferred extensions (designed, not built)
+
+### Named roots / multiple hosts
+
+v1 ships a **single** root (`baseUrl`/`pattern`) plus `overrides`. Subfolders need no extra
+feature — keys carry `/` (`asset:photos/studio.jpg` → `{baseUrl}photos/studio.jpg`) — and a
+handful of off-host assets fit in `overrides`. The only thing one root can't express is several
+**distinct hosts** for different asset classes; that is deferred until a concrete need appears,
+with this **forward-compatible** design recorded so the door is provably open:
+
+```jsonc
+// future shape — additive; baseUrl/pattern become sugar for the default root
+"assets": {
+  "default": "img",
+  "roots": {
+    "img":   { "baseUrl": "https://cdn.example.com/img/" },
+    "brand": { "baseUrl": "https://assets.example.com/brand/" }
+  }
+}
+```
+
+- The **first key segment selects a root** — `asset:brand/logo.svg` → `brand`. A leading segment
+  is a root **only if it is a declared root name**; otherwise it is a path under the `default`
+  root (`asset:photos/studio.jpg` → default `img` → `…/img/photos/studio.jpg`). Root names are
+  author-defined, so collisions with folder names are the author's to avoid.
+- `@shape` is stripped first, then the root is resolved, then the remaining key is substituted.
+- It is **purely additive**: today's `baseUrl`/`pattern` is exactly "the default root," so adding
+  `roots`/`default` later breaks no v1 config. Per-root merge precedence is folded into the
+  merge-precedence question below when this lands.
+
 ## Open Questions
 
-- **Namespaces / multiple roots.** Whether a single `baseUrl` suffices or `asset:photos/…` vs.
-  `asset:icons/…` should resolve via distinct roots. Start with one root + overrides; revisit if
-  demand appears.
 - **Merge precedence.** How template-seeded `assets` compose with author edits and with
   theme-level defaults (mirror the `backgrounds` "project over theme, last wins" rule).
 - **Interaction with `placeholder:`.** Whether `asset:`'s fallback should literally delegate to
