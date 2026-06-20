@@ -163,7 +163,7 @@ breaking a template before an author hits it.
 
 Purpose-built content needs images without shipping binaries or looking broken. refrakt handles
 this with the project-level **`asset:` scheme** specified in {% ref "SPEC-115" /%}: content
-references a logical key (`asset:cover/hero-main`) that resolves to a real `<img>` when the
+references a logical key (`asset:hero-main.jpg@cover`) that resolves to a real `<img>` when the
 project configures a base URL, and to a shape-correct generated placeholder
 (`packages/runes/src/lib/placeholder.ts`) otherwise. Templates are a **consumer** of that
 mechanism, not a bespoke variant of it:
@@ -178,9 +178,9 @@ mechanism, not a bespoke variant of it:
   set ({% ref "SPEC-115" /%} §2). There is no separate demo-build flag; "demo mode" is just
   "assets configured."
 
-The ref syntax (self-describing `asset:<shape>/<key>` vs. key-only) and the resolution rule are
-owned by {% ref "SPEC-115" /%}; this spec only requires that a template can **seed** the asset
-config and that the placeholder default holds with nothing configured.
+The ref syntax (`asset:<key>[@<shape>]`) and the resolution rule are owned by
+{% ref "SPEC-115" /%}; this spec only requires that a template can **seed** the asset config and
+that the placeholder default holds with nothing configured.
 
 ### 5. CLI surface
 
