@@ -14,7 +14,9 @@ These are the unglamorous mechanics that decide whether installing a theme or te
 *anywhere other than the public npm registry* is smooth or a dead end. This spec hardens the
 shared install surface so a theme or template can be installed from a directory, a tarball, or
 an arbitrary registry, into single- or multi-site projects, with consistent name resolution and
-post-install validation.
+post-install validation. The same shared resolver also serves preset-pack install
+({% ref "SPEC-111" /%}), the third distributable — resolution is common; only the apply step
+differs per artifact (§4).
 
 This is packaging infrastructure only. It is explicitly **not** a licensing, entitlement, or
 access-control mechanism (see Non-Goals).
@@ -89,12 +91,17 @@ an explicit site key — and, for templates, to **create** a site entry rather t
 
 ### 4. Shared resolution, `kind`-keyed apply
 
-Themes and templates share *source resolution* (directory | tarball | registry name → a concrete
-package with a known name) but differ in *what happens next*. The apply step is keyed on the
-artifact and, for templates, on the manifest's `kind` ({% ref "SPEC-109" /%}):
+Themes, templates, and preset packs ({% ref "SPEC-111" /%}) share *source resolution* (directory |
+tarball | registry name → a concrete package with a known name) but differ in *what happens next*.
+The apply step is keyed on the artifact and, for templates, on the manifest's `kind`
+({% ref "SPEC-109" /%}):
 
 - **Theme** → add as a live dependency and point the **selected** site's `theme` field at it
   (today's path, hardened by §1–§3). `--site` selects an existing site (§3).
+- **Preset pack** ({% ref "SPEC-111" /%}) → the lightest apply: add as a live dependency and
+  validate its `presets.json`, optionally appending the chosen preset to `site.theme.presets`. No
+  scaffold-copy, no site creation, no `theme`-field change. Capability discovery is independent of
+  `kind` — a theme package may *also* be a preset pack.
 - **Template, `kind: "site"`** (full-site — v1) → resolve the same way, then **add a site**: write
   the manifest's `site` `SiteConfig` into `sites.<key>`, scaffold-copy `content/` →
   `site.contentDir` and `sandboxes/` → `site.sandbox.dir`, and derive + pin dependencies from
@@ -106,8 +113,8 @@ artifact and, for templates, on the manifest's `kind` ({% ref "SPEC-109" /%}):
   adding it later introduces no new resolution or config-write machinery.
 
 Factor the resolution step (source-type detection, name/version discovery, package-manager
-detection) into a shared helper that the theme command and the template install path both call, so
-the tarball/registry/multi-site improvements land once and benefit every apply-mode.
+detection) into a shared helper that the theme, template, and preset-pack install paths all call,
+so the tarball/registry/multi-site improvements land once and benefit every apply-mode.
 
 ### 5. Validation and listing
 
@@ -135,7 +142,7 @@ the tarball/registry/multi-site improvements land once and benefit every apply-m
 - [ ] `refrakt theme install <file>.tgz` resolves the package name/version from the tarball's `package/package.json` and completes the install + config update without falling back to "install from the unzipped directory."
 - [ ] Installing from an alternate/private registry works via package-manager `.npmrc`/scope configuration and an explicit `--registry <url>` passthrough; refrakt stores no credentials.
 - [ ] `--site <name>` disambiguates the target site, with existence rules per apply-mode: theme install (and deferred section templates) **select an existing** site (inferred when single, listed-and-exit when multiple without `--site`); full-site template install **names a new** site (collision with an existing site errors), defaulting to `sites.default` and rewriting a singular `site:` config to plural when a second site is added.
-- [ ] Source resolution (directory | tarball | registry name → known package) is factored into a shared helper used by both theme install and the {% ref "SPEC-109" /%} template install path; apply is keyed on artifact and template `kind` — theme → dependency + point `theme`; `kind: "site"` → add a site (`SiteConfig` write + scaffold-copy + derived deps).
+- [ ] Source resolution (directory | tarball | registry name → known package) is factored into a shared helper used by theme, template, and preset-pack ({% ref "SPEC-111" /%}) install; apply is keyed on artifact and template `kind` — theme → dependency + point `theme`; `kind: "site"` → add a site (`SiteConfig` write + scaffold-copy + derived deps); preset pack → dependency + validate `presets.json` + optional `site.theme.presets` append (no copy, no site).
 - [ ] The template apply-mode is keyed on the manifest `kind`: `kind: "site"` is implemented; `kind: "section"` (merge into an existing site) is reserved and forward-compatible (it reuses the same resolver, `SiteConfig` merge, and `--site` plumbing) but out of scope for v1.
 - [ ] Post-install validation covers both a theme's runtime exports and a template's `template.json` manifest (`kind`, metadata, and the `site` `SiteConfig` shape); `theme list` reports installed and active themes.
 - [ ] The Non-Goals (no licensing/entitlement/gating, no bundled catalog, no credential storage) are documented so the install path stays a neutral packaging mechanism.

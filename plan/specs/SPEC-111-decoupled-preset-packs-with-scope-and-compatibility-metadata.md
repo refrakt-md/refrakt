@@ -81,6 +81,15 @@ whose reason for existing is presets, not a theme.
 Lumina's in-package presets remain exported for backwards compatibility; the pack format is the
 forward path and does not require presets to live in a theme.
 
+**Packs are a capability a package *adds*, not a `kind` it *becomes*.** A package may provide
+several capabilities at once: Lumina is a theme that *also* ships a preset pack — it exports
+`./transform` (the theme contract) and nine `./presets/*`. So a `presets.json` sits alongside a
+theme's `ThemeManifest`/exports without conflict, and Lumina becomes a theme that additionally
+declares a preset pack — no migration of `ThemeManifest` and no single cross-artifact `kind`
+discriminator (which couldn't express "theme **and** preset pack" anyway). Distributable-unit
+discovery scans for each capability independently — theme contract, `template.json`
+({% ref "SPEC-109" /%}), `presets.json` — rather than reading one unified manifest.
+
 ### 2. Scope as a first-class, validated property
 
 Each preset declares a `scope`:
@@ -97,10 +106,20 @@ reason about a preset without parsing its values. It also aligns the pack metada
 existing tint-projection boundary — a `syntax` preset is exactly the class that projects cleanly as
 a scoped tint.
 
+**Two buckets, not more.** `syntax` | `palette` mirrors the engine's binary mood-vs-skeleton
+boundary (`filterScopeEligible`), and there is no consumer today for finer gradation (e.g.
+claims-code-surface-only vs. full-chrome). Finer sub-scopes are deferred; because `scope` is a
+string the validator checks against actual tokens, adding values later is additive — nothing
+breaks.
+
 ### 3. Compatibility metadata
 
-The pack manifest records, per preset: a stable `id`, a human `title`, the `scope`, and an optional
-`compatibleThemes` (or `tunedFor`) list. Sketch (final field set settled in the work phase):
+The pack manifest is a standalone **`presets.json`** file (parallel to `template.json`), and it
+records, per preset, a stable `id`, a human `title`, the `scope`, the `module` path, and an optional
+advisory `tunedFor` list. `scope` lives **in the manifest entry** — not as a module export — so
+discovery can list and filter without importing/transpiling every preset module; validation (§4)
+cross-checks the declared `scope` against the module's actual token namespaces, catching drift. The
+shape:
 
 ```jsonc
 {
@@ -120,8 +139,17 @@ Compatibility is **advisory**: absence means "universal," and applying a preset 
 express and surface recommended pairings, and so a theme can ship a curated collection that travels
 as metadata rather than as a hard packaging lock.
 
+Compatibility is recorded **on the preset** (`tunedFor` → themes): the preset author knows which
+canvas they tuned against. The inverse — a theme advertising recommended packs — is a derivable
+index, deferred; adding it later is additive and does not change the preset-side primitive.
+
 ### 4. Discovery and validation tooling
 
+- **Install rides the shared resolver ({% ref "SPEC-110" /%}).** A preset pack resolves from a
+  directory, tarball, or registry through the *same* helper as themes and templates; its *apply* is
+  the lightest of the three artifacts — add the dependency and validate `presets.json`, optionally
+  appending the chosen preset to `site.theme.presets`. No scaffold-copy, no site creation. It is the
+  third row in SPEC-110's `kind`-keyed apply table.
 - `refrakt theme presets list` — list presets resolvable from the project's installed packs and the
   active theme, filterable by `--scope` and by compatibility with the active theme (universal
   presets always shown; `palette` presets flagged when outside their `tunedFor` set).
@@ -154,22 +182,25 @@ viewed from two directions. This spec documents the dual role; no new mechanism 
 
 ## Acceptance Criteria
 
-- [ ] A preset-pack package format is defined: a package exporting one or more `ThemeTokensConfig` modules (unchanged data shape) plus a `presets.json` manifest, resolvable independently of any theme package.
-- [ ] Each preset declares a `scope` (`syntax` | `palette`); validation warns when a declared `syntax` preset sets chrome tokens, reusing the existing scope-eligibility classification.
-- [ ] The manifest records per-preset `id`, `title`, `scope`, and optional advisory `compatibleThemes`/`tunedFor`; absence means universal and applying a preset outside its set is never an error.
+- [ ] A preset-pack package format is defined: a package exporting one or more `ThemeTokensConfig` modules (unchanged data shape) plus a standalone `presets.json` manifest, resolvable independently of any theme package.
+- [ ] Packs are a *capability*, not a `kind`: a package may declare a `presets.json` alongside a theme contract / `template.json`, and Lumina (theme + 9 presets) is expressible as a theme that also declares a pack — no `ThemeManifest` change, no single cross-artifact `kind`. Distributable discovery scans for each capability independently.
+- [ ] Each preset declares a `scope` (`syntax` | `palette`) **in the manifest entry**; validation warns when a declared `syntax` preset sets chrome tokens, reusing the existing scope-eligibility classification.
+- [ ] The manifest records per-preset `id`, `title`, `scope`, `module`, and an optional advisory `tunedFor` (preset → themes); absence means universal and applying a preset outside its set is never an error.
+- [ ] Preset-pack install rides {% ref "SPEC-110" /%}'s shared resolver (directory | tarball | registry); apply adds the dependency, validates `presets.json`, and optionally appends the preset to `site.theme.presets` — no copy, no site creation.
 - [ ] `refrakt theme presets list` lists presets resolvable from installed packs + the active theme, filterable by `--scope` and by compatibility with the active theme.
 - [ ] Pack-manifest validation checks module resolvability, scope-vs-actual-tokens agreement, and `tunedFor` well-formedness, folded into the existing validation surface.
 - [ ] Lumina's existing presets remain exported and functional unchanged (back-compat), and are expressible in the new pack format without altering their data.
 - [ ] Docs cover the pack format, the `scope` vocabulary and its relationship to tint scope-eligibility, the dual preset/tint role, and compatibility semantics.
 
-## Open Questions
+## Deferred (forward-compatible)
 
-- **Manifest filename/shape.** `presets.json` vs. a field in `package.json` vs. a typed module
-  export; and whether `scope` lives in the manifest, on the preset module, or both.
-- **`palette` sub-scopes.** Whether `palette` needs finer gradation (e.g. claims-code-surface-only
-  vs. claims-full-chrome) or whether two buckets suffice.
-- **Compatibility direction.** Whether `tunedFor` lives on the preset (pointing at themes) or a
-  theme can also advertise recommended packs (pointing at presets), or both.
+Both are additive — adding them later changes no existing manifest or preset:
+
+- **Finer `palette` sub-scopes.** `syntax` | `palette` ships; a finer gradation
+  (claims-code-surface-only vs. full-chrome) waits for a concrete consumer. New `scope` string
+  values slot in without breaking validation (§2).
+- **Theme → pack advertising.** `tunedFor` (preset → themes) is the v1 primitive; the inverse index
+  (a theme recommending packs) is derivable and deferred (§3).
 
 ## References
 
