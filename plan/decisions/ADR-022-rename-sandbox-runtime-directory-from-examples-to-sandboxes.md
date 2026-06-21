@@ -86,6 +86,14 @@ teachable, and stops misfiling production code under a demo folder. Because the 
 configurable, a deprecated alias is cheap and removes any forced migration — the rename is an
 improvement projects adopt on their own schedule, not a break imposed on them.
 
+**`dir` stays nested under `sandbox`** rather than flattening to a top-level `sandboxDir` (which
+would parallel `contentDir`). `SiteConfig` nests multi-option *feature groups* (`highlight`,
+`runes`, `sandbox`) and keeps single-value settings flat (`contentDir`, `theme`, `baseUrl`).
+`sandbox` is a growth area — the bundled-sandbox work ({% ref "SPEC-104" /%}, {% ref "SPEC-109" /%})
+anticipates further keys such as a default framework, a CDN/CSP origin allowlist, or activation
+defaults — so the group is retained deliberately. The `contentDir`-vs-`sandbox.dir` asymmetry is
+intentional: content needs only a path; sandboxes are a namespace.
+
 ## Consequences
 
 - `packages/types/src/theme.ts` gains `sandbox.dir`; `sandbox.examplesDir` is marked

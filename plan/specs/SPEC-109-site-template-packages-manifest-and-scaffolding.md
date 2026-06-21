@@ -116,6 +116,7 @@ The exact field set is settled in the work phase; the shape is **metadata + a `s
 ```jsonc
 {
   // — metadata (catalog; never merged into config) —
+  "kind": "site",                                 // "site" (full-site, this spec). "section" is reserved (deferred)
   "name": "docs-starter",
   "title": "Documentation site",
   "description": "A multi-section docs site with sidebar nav, API reference, and changelog.",
@@ -157,6 +158,12 @@ The exact field set is settled in the work phase; the shape is **metadata + a `s
 
 The minimal template is just `site.contentDir` + `site.theme`; a fully-composed bundle populates
 the rest.
+
+**`kind` is the forward-compatibility hook.** The only value today is `site` (a full-site
+template, this spec); it defaults to `site` when omitted. A future **section/page** template
+(`kind: "section"`, deferred — see Open Questions) is purely additive: its payload is still a
+partial `SiteConfig`, but install *merges it into an existing site* rather than creating one.
+Reserving `kind` now means that later addition breaks no existing manifest.
 
 ### 3. Scaffold-copy semantics (not a live dependency)
 
@@ -299,9 +306,11 @@ that proves the capability, not something shipped in-repo.
   overlays compose. (Because full-site templates seed a *fresh* site, there is no template-vs-
   existing-config merge here — that only arises for section/page templates, below.)
 - **Section/page templates.** Full-site only here; a "drop in a pricing page" granularity (a
-  partial template overlaid onto an *existing* site) is deferred. That case **owns the
-  merge-into-existing story** — per-field for scalars, per-key deep-merge for map fields like
-  `overrides`/`backgrounds`, author wins — which is therefore out of scope for v1.
+  partial template overlaid onto an *existing* site) is deferred under the reserved
+  `kind: "section"` (§2). That case **owns the merge-into-existing story** — per-field for scalars,
+  per-key deep-merge for map fields like `overrides`/`backgrounds`, author wins — and the
+  install-side apply-mode ("merge into the `--site` you select" vs. full-site "name a new site"),
+  both kept forward-compatible by {% ref "SPEC-110" /%}. Out of scope for v1.
 - **Out-of-the-box runtime for bundled sandboxes.** A bundled sandbox (§7) animates only if its
   CDN dependencies are reachable and the iframe CSP permits them. Decide what "works out of the
   box" promises — a documented runtime-network expectation, an optional self-hosted/vendored
