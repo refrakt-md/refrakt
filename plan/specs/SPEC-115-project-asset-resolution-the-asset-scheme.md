@@ -89,8 +89,8 @@ stripped first; it never affects URL building):
 
 1. If `overrides[key]` exists → emit an `<img>` to that URL.
 2. Else if a `baseUrl`/`pattern` is configured → substitute and emit an `<img>`.
-3. Else → emit a **shape-correct generated placeholder** (`placeholderSvg`), using `@shape` (or the
-   default) per §3.
+3. Else → **delegate to the registered `placeholder:` resolver** for the `@shape` (or default)
+   shape, emitting the same generated placeholder (§3, §5).
 
 Bare paths and absolute URLs are unaffected — they never match the `asset:` scheme and fall
 through to `<img>` exactly as today, so authors mix `asset:` keys and literal `src`s freely.
@@ -167,11 +167,16 @@ reads `config.variables.__assets` (populated from `sites.<site>.assets`). Last-r
 is retained, so a plugin or a test can still override the scheme wholesale — but the *intended*
 configuration surface is data in `refrakt.config.json`, not code.
 
+The rule-3 fallback **resolves through the registered `placeholder:` scheme** rather than calling
+`placeholderSvg` directly. This keeps one placeholder code path, and means a theme or plugin that
+overrides `placeholder:` (last-registration-wins) automatically governs `asset:`'s fallbacks too —
+placeholders stay themeable in exactly one place.
+
 ## Acceptance Criteria
 
 - [ ] An `asset:<key>` image-src scheme is registered and resolves via project config in `sites.<site>.assets` (`baseUrl`/`pattern` + per-key `overrides`).
 - [ ] Resolution follows one rule: per-key override → pattern/baseUrl → shape-correct generated placeholder; bare paths and absolute URLs are untouched and still fall through to `<img>`.
-- [ ] With no asset config, `asset:` references render correct-shape placeholders (no broken images, no required manifest); with a `baseUrl` set, the same references render real `<img>`s — no build flag or second code path.
+- [ ] With no asset config, `asset:` references render correct-shape placeholders via the shared `placeholder:` resolver (no broken images, no required manifest); with a `baseUrl` set, the same references render real `<img>`s — no build flag or second code path.
 - [ ] Keys carry their own file extension; shape is an optional trailing `@<shape>` (orthogonal to the key path), parsed as "split on the last `@`, suffix is a shape only if it is a known placeholder shape"; absent, the placeholder fallback uses the default shape.
 - [ ] {% ref "SPEC-109" /%} templates seed `sites.<site>.assets` at scaffold time from `template.json`; SPEC-109's bespoke demo-build mode is removed in favour of "a `baseUrl` is set."
 - [ ] `refrakt.config.schema.json` documents `sites.<site>.assets`; authoring docs cover `asset:` for regular sites.
@@ -225,11 +230,6 @@ per key** (project wins on a key collision). A full-site template ({% ref "SPEC-
 template into an **existing** site (per-field scalars + per-key `overrides`, author wins) is the
 deferred **section/page-template** case, owned by {% ref "SPEC-109" /%}; when named roots land
 (above), `roots` deep-merge by root name under the same rule.
-
-## Open Questions
-
-- **Interaction with `placeholder:`.** Whether `asset:`'s fallback should literally delegate to
-  the `placeholder:` resolver (shared code) or inline `placeholderSvg`.
 
 ## References
 
