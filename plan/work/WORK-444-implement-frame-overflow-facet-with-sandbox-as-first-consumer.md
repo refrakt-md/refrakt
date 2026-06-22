@@ -60,6 +60,13 @@ reworking the held `bleed="crop"` PR (refrakt-md/refrakt#530).
 - **Guest-self route deferred** ({% ref "ADR-023" /%}) — host-set only for now.
 - **Generalisation deferred** — a shared `data-overflowing` signal for
   `codegroup`/`table`/`datatable` is follow-on work, not in this item.
+- **Bleed direction deferred** — v1 is **inline-end only**. Direction (via
+  `frame-anchor`'s inline keyword: start→end, end→start, center→both) is
+  {% ref "SPEC-116" /%} §4 follow-on. Keep v1's emitted `data-frame-overflow="bleed"`
+  forward-compatible (no rename when direction lands).
+- **Side-by-side bleed deferred** — v1's trigger is the **collapsed/stacked**
+  viewport only; bleeding the outer edge of a side-by-side media column
+  ({% ref "SPEC-116" /%} §4) is the heavier-geometry follow-on.
 
 ## References
 

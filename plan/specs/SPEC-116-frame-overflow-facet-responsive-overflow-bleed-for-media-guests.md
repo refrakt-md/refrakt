@@ -27,6 +27,11 @@ exceeds it:
   out to the screen and square those corners. The inline-start stays at the page
   measure, so the component is anchored and runs off the *end*.
 
+**v1 scope:** collapsed/stacked viewport, inline-end only. Anchor-driven bleed
+direction (§4) and side-by-side outer-edge bleed (§4) are designed here but
+**deferred** — the author surface (`frame-overflow="bleed"`) is chosen to absorb
+them without change.
+
 It sits beside the crop-adjacent frame facets — `frame-oversize` ("guest exceeds
 its slot"), `frame-anchor` ("crop focal point when the guest is cut"),
 `frame-displace`/`-mode` — and `clip|bleed` parallels CSS `overflow`, distinct
@@ -120,7 +125,40 @@ root. That is deferred ({% ref "ADR-023" /%}): it is additive, non-breaking, and
 pulls the rest of the frame chrome onto the guest, so it should be a deliberate
 later step if the host-set ergonomics bite.
 
-### 4. Sandbox as the first consumer
+### 4. Direction, `frame-anchor`, and side-by-side (deferred)
+
+`frame-overflow` and `frame-anchor` are complementary answers to "the guest does
+not fit": `frame-anchor` is the **focal point the frame keeps** (today
+`object-position` on an `object-fit: cover` image/video), and `frame-overflow` is
+**clip vs bleed** for a laid-out guest whose content overflows. They act on
+different guest kinds (a scaled image never "overflows"; a sandbox is not
+`object-fit`'d), so they do not compose on the same guest — but the *author
+intent* is shared, which sets up the deferred extensions below.
+
+The author surface is **`frame-overflow="bleed"`** and it is stable across these
+extensions — the engine derives direction; the attribute never changes.
+
+- **Bleed direction via `frame-anchor` (deferred).** In a stacked/collapsed
+  layout the bled edge is free, so `frame-anchor`'s *inline* keyword chooses the
+  **anchored** edge and the opposite bleeds: `start` (default) → bleed inline-end;
+  `end` → bleed inline-start; `center` → bleed **both**. This keeps `frame-anchor`
+  meaning one thing — "the focal point kept" — for both the `object-fit` crop and
+  the overflow bleed. v1 is **inline-end only** (i.e. `bleed` ≡ `bleed-end`); the
+  emitted `data-frame-overflow="bleed"` is forward-compatible (direction is added
+  later as a resolved edge without changing the author API).
+
+- **Side-by-side bleed (deferred).** In `media-position="start|end"` a too-wide
+  guest has an obvious target — the **outer** edge (the side away from content),
+  running off the page margin to the screen — and that direction is forced by
+  `media-position` (bleeding toward content would collide with it), overriding
+  `frame-anchor`. This is arguably the *more* dramatic case (the outer margin is
+  large on desktop), but it is more geometry (the media column must escape its
+  grid track and the page margin, interacting with `contentMeasure` anchoring), so
+  it is out of v1. v1's trigger is therefore the **collapsed/stacked** viewport
+  only; the general trigger is "content overflows **and** there is a bleedable
+  outer edge."
+
+### 5. Sandbox as the first consumer
 
 The held sandbox work becomes the first consumer: keep the overflow measurement +
 `nextBleedState` hysteresis + tests; drop the sandbox-only `bleed` attribute; have
@@ -131,7 +169,7 @@ layer. `codegroup`/`table` follow by adding their own `data-overflowing` signal.
 ## Acceptance Criteria
 
 - [ ] `frame-overflow` is a universal frame facet (`clip` default | `bleed`), accepted on every content-model schema and resolved by `resolveFrameChrome`, emitting `data-frame-overflow` on the frame target (the host `[data-section="media"]` zone).
-- [ ] A shared, guest-agnostic CSS rule bleeds `[data-frame-overflow="bleed"] > [data-overflowing]` on a narrow viewport: inline-end runs to the screen, inline-end corners square, inline-start stays at the page measure. No per-rune bleed CSS.
+- [ ] A shared, guest-agnostic CSS rule bleeds `[data-frame-overflow="bleed"] > [data-overflowing]` on a narrow viewport: inline-end runs to the screen, inline-end corners square, inline-start stays at the page measure. No per-rune bleed CSS. **v1 is inline-end only**; direction (§4) is deferred but the emitted attribute is forward-compatible.
 - [ ] A guest signals overflow at runtime by setting `data-overflowing` on itself; the guest reports the fact regardless of host policy, and the policy gates the effect.
 - [ ] `sandbox` is the first consumer: its behaviour sets `data-overflowing` from measured content width with hysteresis; the sandbox-only `bleed` attribute is removed (it never shipped).
 - [ ] On a clip host (`guestFit: 'clip'`) `frame-overflow="bleed"` is inert (the well clips) **and** emits a hard build warning naming the rune and pointing to a bleed host.
@@ -145,10 +183,12 @@ layer. `codegroup`/`table` follow by adding their own `data-overflowing` signal.
 3. **Sandbox first consumer** ({% ref "WORK-444" /%}) — behaviour sets `data-overflowing` unconditionally; drop the `bleed` attribute; keep measurement + hysteresis + tests.
 4. **Validation + docs** — contract/coverage; reference docs for the facet and the warning.
 5. **Generalisation (later)** — a shared overflow signal for `codegroup`/`table`/`datatable`; optional guest-self `frameTarget` route.
+6. **Bleed direction (later)** — derive the bled edge from `frame-anchor`'s inline keyword (`start` → end, `end` → start, `center` → both); CSS branches on a resolved edge. The `frame-overflow="bleed"` author API is unchanged.
+7. **Side-by-side bleed (later)** — bleed the outer edge (forced by `media-position`) when a too-wide guest sits beside content; the heavier-geometry case, verified on real devices.
 
 ## References
 
-- Frame chrome facets + `resolveFrameChrome`: {% ref "SPEC-086" /%}.
+- Frame chrome facets + `resolveFrameChrome`: {% ref "SPEC-086" /%}. `frame-anchor` (the focal-point-kept facet this unifies with for direction, §4) lives there too — today `object-position` for `object-fit` crops.
 - Clip/bleed host axis (`guestFit`) and the bleed-host `overflow: visible` for rune guests: the media-host chrome work (PR-merged) and {% ref "SPEC-090" /%} (sibling interaction axis).
 - Build-warning precedent: {% ref "SPEC-090" /%}, `warnFrameNoTarget` in `packages/transform/src/engine.ts`.
 - Decision record: {% ref "ADR-023" /%}.

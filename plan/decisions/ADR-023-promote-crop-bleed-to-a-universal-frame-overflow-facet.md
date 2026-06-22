@@ -66,6 +66,20 @@ Sub-decisions:
 - **Name: `frame-overflow`** (values `clip` | `bleed`). Parallels CSS `overflow`;
   kept distinct from `frame-displace-mode`'s `peek|bleed` (which moves the whole
   guest) and from `showcase`'s deprecated `bleed` alias.
+- **v1 is narrow; direction and side-by-side are deferred.** v1 ships the
+  collapsed/stacked, inline-end case only. Two extensions are *designed* but out
+  of v1:
+  - **Bleed direction reuses `frame-anchor`.** When built, `frame-anchor`'s inline
+    keyword chooses the anchored edge (`start` → bleed end, `end` → bleed start,
+    `center` → bleed both), so `frame-anchor` means one thing — "the focal point
+    kept" — across `object-fit` crop and overflow bleed. No new direction
+    vocabulary on `frame-overflow`.
+  - **Side-by-side bleeds the outer edge**, forced by `media-position`; deferred
+    for its heavier geometry (escaping the grid track + page margin, interacting
+    with `contentMeasure`).
+  The author surface `frame-overflow="bleed"` is **stable across both** — the
+  engine derives direction and edge; the attribute never changes — so the narrow
+  v1 does not paint us into a corner.
 
 ## Rationale
 
