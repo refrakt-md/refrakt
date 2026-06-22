@@ -170,6 +170,22 @@ Pin the version for reproducibility; for production also honour `prefers-reduced
 {% sandbox src="wireframe-waves" height="fill" /%}
 ```
 
+## Crop to the screen on mobile — `bleed="crop"`
+
+A fixed-width or naturally wide component doesn't shrink to a phone — it overflows the frame, and by default it's clipped at the rounded inset edge, which reads like a bug. `bleed="crop"` instead runs the sandbox's inline-end edge out to the screen on a narrow viewport, squaring those corners, so the component reads as **cropped by the screen** — a real component at its natural size, continuing off-frame.
+
+It's content-aware: the behaviour measures the rendered width and only bleeds when the component is actually too wide for the frame. A component that fits stays inset with rounded corners. It applies inside a section host (a `hero`/`feature` media zone, whose slot lets a guest bleed) and is anchored at the start edge, so the component runs off the *end*.
+
+```markdoc
+{% hero %}
+{% sandbox src="pricing-table" bleed="crop" /%}
+
+---
+
+# Our plans
+{% /hero %}
+```
+
 ## Deferred activation — keep heavy sandboxes off the critical path
 
 A sandbox is **eager** by default: its iframe and every dependency download as the page renders. That's fine for a small demo, but a heavy scene — a three.js render, a large framework playground — shouldn't tax a perf-sensitive page (a landing page, a long article) before the visitor has even scrolled to it.

@@ -34,6 +34,17 @@ const ROLE_FALLBACKS: Record<string, string> = {
  */
 import { SafeHTMLElement } from './ssr-safe.js';
 
+/** Crop-bleed hysteresis. Trip `bleeding` only when the content clearly overruns
+ *  the frame — by more than the bleed distance (~the content gutter) — and
+ *  release only when it fully fits again. Because the bleed widens the frame by
+ *  the gutter, a single threshold would oscillate in the borderline band; the
+ *  hysteresis absorbs it. `SET_PX` tracks `--rf-content-gutter` (1.5rem ≈ 24px) —
+ *  keep them in step. */
+export function nextBleedState(overflowPx: number, bleeding: boolean): boolean {
+	const SET_PX = 24;
+	return bleeding ? overflowPx > 0 : overflowPx > SET_PX;
+}
+
 export class RfSandbox extends SafeHTMLElement {
 	private iframe: HTMLIFrameElement | null = null;
 	private messageHandler: ((e: MessageEvent) => void) | null = null;
@@ -58,6 +69,11 @@ export class RfSandbox extends SafeHTMLElement {
 	private _dependencies = '';
 	private _label = 'Sandbox';
 	private _heightAttr = 'auto';
+	// `bleed="crop"` — when the rendered content is too wide for the frame on a
+	// narrow viewport, run the inline-end edge out to the screen (see CSS). The
+	// behaviour toggles `data-overflowing` based on measured overflow.
+	private _bleed = '';
+	private _bleeding = false;
 	private _tokens: DesignTokens | null = null;
 	private _localScheme: 'light' | 'dark' | null = null;
 	// SPEC-093 — JSON payload from a data binding, exposed to the iframe as
@@ -79,6 +95,7 @@ export class RfSandbox extends SafeHTMLElement {
 		this._dependencies = this.dataset.dependencies || '';
 		this._label = this.dataset.label || 'Sandbox';
 		this._heightAttr = this.dataset.height || 'auto';
+		this._bleed = this.dataset.bleed || '';
 		this._untrusted = this.dataset.securityMode === 'untrusted';
 		this._allowJs = this.dataset.allowJs !== 'false';
 		this._sandboxOrigin = this.dataset.sandboxOrigin || '';
@@ -336,15 +353,18 @@ export class RfSandbox extends SafeHTMLElement {
 		// so author code in the iframe can't suppress or restyle it.
 		const banner = this._untrusted ? this.buildUntrustedBanner() : null;
 
-		// Auto-sizing
+		// Auto-sizing + crop-bleed overflow detection. Both ride the iframe's
+		// `rf-sandbox-resize` message, so one handler serves either concern.
 		if (this.messageHandler) {
 			window.removeEventListener('message', this.messageHandler);
 		}
-		if (this._heightAttr === 'auto') {
+		const autoHeight = this._heightAttr === 'auto';
+		const cropBleed = this._bleed === 'crop';
+		if (autoHeight || cropBleed) {
 			this.messageHandler = (e: MessageEvent) => {
-				if (e.data?.type === 'rf-sandbox-resize' && e.source === this.iframe?.contentWindow) {
-					this.iframe!.style.height = e.data.height + 'px';
-				}
+				if (e.data?.type !== 'rf-sandbox-resize' || e.source !== this.iframe?.contentWindow) return;
+				if (autoHeight) this.iframe!.style.height = e.data.height + 'px';
+				if (cropBleed) this.updateBleed(e.data.scrollWidth);
 			};
 			window.addEventListener('message', this.messageHandler);
 		}
@@ -354,6 +374,16 @@ export class RfSandbox extends SafeHTMLElement {
 		} else {
 			this.replaceChildren(this.iframe);
 		}
+	}
+
+	/** `bleed="crop"`: toggle `data-overflowing` from the iframe's reported
+	 *  content width vs the frame, with hysteresis (see {@link nextBleedState})
+	 *  so the bleed — which widens the frame — can't oscillate. */
+	private updateBleed(scrollWidth: number): void {
+		if (!this.iframe || typeof scrollWidth !== 'number') return;
+		const overflow = scrollWidth - this.iframe.clientWidth;
+		this._bleeding = nextBleedState(overflow, this._bleeding);
+		this.toggleAttribute('data-overflowing', this._bleeding);
 	}
 
 	/** Build the untrusted-mode banner shown above the iframe. Styled via
@@ -423,7 +453,7 @@ ${rfDataScript ? rfDataScript + '\n' : ''}</head>
 ${renderedContent}
 <script>
   var ro = new ResizeObserver(function() {
-    parent.postMessage({ type: 'rf-sandbox-resize', height: document.body.scrollHeight }, '*');
+    parent.postMessage({ type: 'rf-sandbox-resize', height: document.body.scrollHeight, scrollWidth: document.body.scrollWidth }, '*');
   });
   ro.observe(document.body);
 <\/script>

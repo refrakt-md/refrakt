@@ -46,6 +46,24 @@ describe('sandbox tag', () => {
 		expect(sandbox!.attributes['data-height']).toBe('auto');
 	});
 
+	it('should emit data-bleed for bleed="crop"', () => {
+		const result = parse(`{% sandbox bleed="crop" %}
+<p>Content</p>
+{% /sandbox %}`);
+
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		expect(sandbox!.attributes['data-bleed']).toBe('crop');
+	});
+
+	it('should not emit data-bleed by default', () => {
+		const result = parse(`{% sandbox %}
+<p>Content</p>
+{% /sandbox %}`);
+
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		expect(sandbox!.attributes['data-bleed']).toBeUndefined();
+	});
+
 	it('should pass explicit height as a data attribute', () => {
 		const result = parse(`{% sandbox height=400 %}
 <p>Content</p>

@@ -23,6 +23,23 @@
 	border: none;
 	border-radius: inherit;
 }
+
+/* `bleed="crop"` — when the behaviour measures the rendered content as wider
+ * than the frame (`data-overflowing`) on a narrow/collapsed viewport, run the
+ * inline-end edge out to the screen so the component reads as cropped by the
+ * viewport rather than clipped at a rounded inset edge. The inline-start stays
+ * at the page measure (the component is anchored and runs off the end), and the
+ * inline-end corners square off. The extra width is the page gutter, so the edge
+ * lands on the screen; it relies on the host media zone being overflow-visible
+ * (a bleed host — hero/feature), which it already is for a rune guest. */
+@media (max-width: 640px) {
+	.rf-sandbox[data-bleed="crop"][data-overflowing] {
+		width: calc(100% + var(--rf-content-gutter, 1.5rem));
+		max-width: none;
+		border-start-end-radius: 0;
+		border-end-end-radius: 0;
+	}
+}
 /* Static fallback (pre/code shown before hydration) */
 .rf-sandbox pre {
 	margin: 0;
