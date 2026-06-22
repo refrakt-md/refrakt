@@ -41,6 +41,13 @@ any theme, but only *looks designed* under the ones it was authored against). Th
 asymmetry is the contract: **works with any theme, sings with its recommended theme.** It
 is a first-class fact in the manifest, not an accident.
 
+**Runes stay decoupled from themes.** A developer distributing custom runes *plus* a theme tuned
+for them ships **three separate packages**, not a theme that bundles runes: a **plugin** (the
+vocabulary — a theme cannot define runes; `ThemeManifest` has no rune surface), a **theme** (the
+skin, which recommends/depends on the plugin), and a **template** that wires both via
+`site.plugins` + `site.theme` (install derives and pins both deps, §2). Themes stay
+vocabulary-agnostic so content renders under any theme; the template is the turnkey bundle.
+
 ## Problem evidence
 
 Measured against the current `packages/create-refrakt` tree:
