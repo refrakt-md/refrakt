@@ -3,7 +3,9 @@
  * hide, the posts flex, the card block, the meta/tags flex rows, the sticky sidebar
  * + list reset, and the responsive grid/sidebar reflow. Header height var, colours,
  * borders, type, padding, and gaps are skin. */
-.rf-blog-header { position: sticky; top: 0; z-index: 100; }
+/* Height pinned to --rf-header-height so the docked mobile nav panel
+   (top: var(--rf-header-height)) lines up with the header bottom. */
+.rf-blog-header { position: sticky; top: 0; z-index: 100; height: var(--rf-header-height, 3.5rem); }
 .rf-blog-header__inner { display: flex; align-items: center; }
 .rf-blog-header__inner .rf-search-trigger { margin-left: auto; }
 .rf-blog-header__inner p ~ p { order: 1; }
