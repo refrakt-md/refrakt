@@ -1,0 +1,157 @@
+{% spec id="SPEC-116" status="draft" tags="composability,runes,engine,frame,media,behaviors,dx" %}
+
+# frame-overflow facet — responsive overflow-bleed for media guests
+
+A media guest whose rendered content is **wider than its frame** — a fixed-width
+component, a wide table, a dense dashboard — has nowhere to go on a phone. Today
+it is clipped at the frame's rounded inset edge, which reads like a bug, not
+intent. The desired affordance: on a narrow viewport, run the overflowing guest's
+inline-end out to the **screen** and square those corners, so the component reads
+as *cropped by the screen* — a real component at its natural size, continuing
+off-frame.
+
+The first implementation (a held sandbox PR) did this as a sandbox-only
+`bleed="crop"` attribute. This spec promotes it to a **universal `frame-overflow`
+facet** ({% ref "ADR-023" /%}) so every media guest can opt into it
+name-agnostically, mirroring the `frame-*` family it belongs to
+({% ref "SPEC-086" /%}).
+
+## Overview
+
+`frame-overflow: clip | bleed` — how a media frame handles a guest whose content
+exceeds it:
+
+- **`clip`** (default) — current behaviour: the guest is clipped at the rounded
+  inset edge of its frame.
+- **`bleed`** — on a narrow viewport, run the overflowing guest's inline-end edge
+  out to the screen and square those corners. The inline-start stays at the page
+  measure, so the component is anchored and runs off the *end*.
+
+It sits beside the crop-adjacent frame facets — `frame-oversize` ("guest exceeds
+its slot"), `frame-anchor` ("crop focal point when the guest is cut"),
+`frame-displace`/`-mode` — and `clip|bleed` parallels CSS `overflow`, distinct
+from `frame-displace-mode`'s `peek|bleed` (which moves the *whole* guest; this
+handles content *wider than* the frame).
+
+## Design
+
+### 1. Policy vs. signal — the core split
+
+The facet works by separating a build-time, guest-agnostic **policy** from a
+runtime, per-guest **signal**, which meet in one shared CSS rule.
+
+**Policy (declaration · build-time · guest-agnostic).** `frame-overflow` is a
+universal frame facet. `resolveFrameChrome` reads it and emits
+`data-frame-overflow="bleed"` on the **frame target** — the host's
+`[data-section="media"]` zone. It is the *slot's* policy ("I bleed an overflowing
+guest"), independent of what the guest is.
+
+**Signal (activation · runtime · per-guest).** The guest sets `data-overflowing`
+on itself when its rendered content exceeds the frame. Each guest type supplies
+this however it can:
+
+- `sandbox` → the iframe `ResizeObserver` bridge already reports height; it also
+  reports `scrollWidth`, and the behaviour toggles `data-overflowing` with the
+  `nextBleedState` hysteresis (the frame widens by the gutter when it bleeds, so a
+  single threshold would oscillate; the hysteresis absorbs it).
+- `codegroup` / `table` / `datatable` → CSS-detectable; a small shared
+  `ResizeObserver` (or a `scroll-state` container query when support lands) sets
+  the same flag.
+- a guest that cannot measure simply never sets the flag → no bleed, graceful.
+
+The guest reports a **fact** ("I overflow"); the host decides the **policy**. They
+are decoupled — a too-wide guest in a `clip` slot stays rounded-and-clipped, and
+the *same* guest in a `bleed` slot crops, with zero guest↔host coupling.
+
+**CSS (shared · guest-agnostic).** One rule in the frame/split layer covers every
+present and future guest:
+
+```css
+@media (max-width: 640px) {
+  [data-frame-overflow="bleed"] > [data-overflowing] {
+    width: calc(100% + var(--rf-content-gutter));
+    max-width: none;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+  }
+}
+```
+
+### 2. Gated by the clip/bleed host axis (`guestFit`)
+
+`frame-overflow="bleed"` can only *do* anything where the media zone is
+`overflow: visible` — which is exactly a **bleed host** (`guestFit: 'bleed'` →
+hero/feature, whose media zone we already made visible for rune guests). On a
+**clip host** (`guestFit: 'clip'` → card, bento-cell, recipe, playlist) the media
+zone's `overflow: hidden` and rounded clip neutralise the bleed: the guest stays
+clipped to the rounded well, the over-width is simply hidden, no scrollbar, no
+shift. So the facet is **self-limiting by construction** — it composes with
+`guestFit` without needing to know about it.
+
+Because a silent no-op is a footgun, the engine emits a **hard build warning**
+when `frame-overflow="bleed"` lands on a clip host:
+
+> `frame-overflow="bleed"` has no effect on `<rune>` — a clip host crops its media
+> guest. Use it on a bleed host (hero, feature), or drop it.
+
+This mirrors the existing frame / interaction-posture build warnings
+({% ref "SPEC-090" /%}, `warnFrameNoTarget`).
+
+### 3. Authoring
+
+Canonical is **host/slot-set**, consistent with the rest of `frame-*`:
+
+```markdoc
+{% hero frame-overflow="bleed" %}
+{% sandbox src="pricing-table" /%}
+
+---
+
+# Our plans
+{% /hero %}
+```
+
+The host's slot declares the policy; any overflowing guest in it bleeds. Default
+`clip` everywhere → no behaviour change.
+
+A **guest-self** route (`{% sandbox frame-overflow="bleed" /%}`) requires giving a
+measurable guest `frameTarget: 'self'` so it can carry frame facets on its own
+root. That is deferred ({% ref "ADR-023" /%}): it is additive, non-breaking, and
+pulls the rest of the frame chrome onto the guest, so it should be a deliberate
+later step if the host-set ergonomics bite.
+
+### 4. Sandbox as the first consumer
+
+The held sandbox work becomes the first consumer: keep the overflow measurement +
+`nextBleedState` hysteresis + tests; drop the sandbox-only `bleed` attribute; have
+the behaviour set `data-overflowing` unconditionally when overflowing (policy now
+lives on the host); move the bleed CSS from `sandbox.css` to the shared frame
+layer. `codegroup`/`table` follow by adding their own `data-overflowing` signal.
+
+## Acceptance Criteria
+
+- [ ] `frame-overflow` is a universal frame facet (`clip` default | `bleed`), accepted on every content-model schema and resolved by `resolveFrameChrome`, emitting `data-frame-overflow` on the frame target (the host `[data-section="media"]` zone).
+- [ ] A shared, guest-agnostic CSS rule bleeds `[data-frame-overflow="bleed"] > [data-overflowing]` on a narrow viewport: inline-end runs to the screen, inline-end corners square, inline-start stays at the page measure. No per-rune bleed CSS.
+- [ ] A guest signals overflow at runtime by setting `data-overflowing` on itself; the guest reports the fact regardless of host policy, and the policy gates the effect.
+- [ ] `sandbox` is the first consumer: its behaviour sets `data-overflowing` from measured content width with hysteresis; the sandbox-only `bleed` attribute is removed (it never shipped).
+- [ ] On a clip host (`guestFit: 'clip'`) `frame-overflow="bleed"` is inert (the well clips) **and** emits a hard build warning naming the rune and pointing to a bleed host.
+- [ ] Default (`clip` / unset) is byte-identical to today for every rune; the bleed is mobile-only and content-gated (a guest that fits stays inset and rounded).
+- [ ] Docs: `frame-overflow` in the Surfaces / frame reference; the runtime-gate model documented; the clip-host warning documented.
+
+## Work breakdown (provisional)
+
+1. **Facet plumbing** — `frame-overflow` into `UNIVERSAL_ATTRIBUTE_NAMES`, the frame-facet meta list, and `FramePresetDefinition`; `resolveFrameChrome` reads it and emits `data-frame-overflow`; the clip-host hard warning (gated on `config.guestFit`).
+2. **Shared CSS** — the bleed rule in the frame/split layer (skeleton structure + lumina skin); remove sandbox-specific bleed CSS.
+3. **Sandbox first consumer** ({% ref "WORK-444" /%}) — behaviour sets `data-overflowing` unconditionally; drop the `bleed` attribute; keep measurement + hysteresis + tests.
+4. **Validation + docs** — contract/coverage; reference docs for the facet and the warning.
+5. **Generalisation (later)** — a shared overflow signal for `codegroup`/`table`/`datatable`; optional guest-self `frameTarget` route.
+
+## References
+
+- Frame chrome facets + `resolveFrameChrome`: {% ref "SPEC-086" /%}.
+- Clip/bleed host axis (`guestFit`) and the bleed-host `overflow: visible` for rune guests: the media-host chrome work (PR-merged) and {% ref "SPEC-090" /%} (sibling interaction axis).
+- Build-warning precedent: {% ref "SPEC-090" /%}, `warnFrameNoTarget` in `packages/transform/src/engine.ts`.
+- Decision record: {% ref "ADR-023" /%}.
+- Held first-consumer PR: sandbox `bleed="crop"` (refrakt-md/refrakt#530) — to be reworked per this spec.
+
+{% /spec %}
