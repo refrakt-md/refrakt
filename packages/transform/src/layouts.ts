@@ -3,30 +3,35 @@ import type { LayoutConfig, LayoutStructureEntry } from './types.js';
 // ─── Search opt-out ───────────────────────────────────────────────────
 
 /**
- * Return a copy of a layouts map with the site-wide search chrome removed.
+ * Return a copy of a single layout with the site-wide search chrome removed.
  *
- * Adapters call this when a site sets `search: false` in refrakt.config.json.
- * For every layout it strips:
- *  - the `'search'` behavior, so the client behavior never initializes (no
- *    `[data-search-trigger]` wiring, no Cmd/Ctrl+K handler, no dialog), and
- *  - the `searchButton` chrome entry, so the trigger is never rendered — slots
- *    reference it via `chrome:searchButton`, which the layout transform simply
- *    skips when the entry is absent.
- *
- * Pure and non-mutating; the input layouts are left untouched.
+ * Strips the `'search'` behavior (so the client behavior never initializes —
+ * no `[data-search-trigger]` wiring, no Cmd/Ctrl+K handler, no dialog) and the
+ * `searchButton` chrome entry (so the trigger is never rendered; slots
+ * reference it via `chrome:searchButton`, which the layout transform skips when
+ * the entry is absent). Pure and non-mutating.
+ */
+export function withoutSearchLayout(layout: LayoutConfig): LayoutConfig {
+	const chrome = { ...(layout.chrome ?? {}) };
+	delete chrome.searchButton;
+	return {
+		...layout,
+		behaviors: layout.behaviors?.filter((b) => b !== 'search'),
+		chrome,
+	};
+}
+
+/**
+ * Map {@link withoutSearchLayout} over a layouts map. Adapters call this when a
+ * site sets `search: false` in refrakt.config.json to strip the search chrome
+ * from every layout at theme-assembly time. The input layouts are left intact.
  */
 export function withoutSearch(
 	layouts: Record<string, LayoutConfig>,
 ): Record<string, LayoutConfig> {
 	const result: Record<string, LayoutConfig> = {};
 	for (const [name, layout] of Object.entries(layouts)) {
-		const chrome = { ...(layout.chrome ?? {}) };
-		delete chrome.searchButton;
-		result[name] = {
-			...layout,
-			behaviors: layout.behaviors?.filter((b) => b !== 'search'),
-			chrome,
-		};
+		result[name] = withoutSearchLayout(layout);
 	}
 	return result;
 }

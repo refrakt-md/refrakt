@@ -16,7 +16,7 @@ interface RefraktContentProps extends RenderPageInput {
  * For component overrides (ADR-008), use the `Renderer` from `@refrakt-md/react`
  * directly with `page.renderable`.
  */
-export function RefraktContent({ theme, page, className }: RefraktContentProps): ReactNode {
-	const html = renderPage({ theme, page });
+export function RefraktContent({ theme, page, search, className }: RefraktContentProps): ReactNode {
+	const html = renderPage({ theme, page, search });
 	return createElement('div', { className, dangerouslySetInnerHTML: { __html: html } });
 }

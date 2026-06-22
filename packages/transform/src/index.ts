@@ -58,7 +58,7 @@ export { validateThemeTokensConfig, formatTokenValidationErrors } from './token-
 export type { TokenValidationError, TokenValidationResult } from './token-validate.js';
 
 // Layout configs
-export { defaultLayout, docsLayout, blogArticleLayout, planLayout, withoutSearch } from './layouts.js';
+export { defaultLayout, docsLayout, blogArticleLayout, planLayout, withoutSearch, withoutSearchLayout } from './layouts.js';
 
 // Provenance tracking
 export type { RuneProvenance } from './provenance.js';

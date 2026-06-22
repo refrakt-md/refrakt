@@ -1,6 +1,7 @@
 import type { RendererNode, SerializedTag, ThemeManifest } from '@refrakt-md/types';
 import type { LayoutConfig, LayoutPageData } from './types.js';
 import { layoutTransform } from './layout.js';
+import { withoutSearchLayout } from './layouts.js';
 import { renderToHtml } from './html.js';
 import { matchRouteRule } from './route-rules.js';
 
@@ -22,6 +23,10 @@ export interface AdapterTheme {
 export interface RenderPageInput {
 	theme: AdapterTheme;
 	page: LayoutPageData;
+	/** Whether to render the site-wide search UI (header button + Cmd/Ctrl+K
+	 *  dialog). Defaults to `true`. Pass `false` — sourced from
+	 *  `SiteConfig.search` — to strip the search chrome from this page. */
+	search?: boolean;
 }
 
 /**
@@ -31,12 +36,16 @@ export interface RenderPageInput {
  * and produces the final HTML string.
  */
 export function renderPage(input: RenderPageInput): string {
-	const { theme, page } = input;
+	const { theme, page, search } = input;
 	const layoutName = matchRouteRule(page.url, theme.manifest.routeRules ?? []);
-	const layoutConfig = theme.layouts[layoutName] ?? theme.layouts['default'];
+	let layoutConfig = theme.layouts[layoutName] ?? theme.layouts['default'];
 
 	if (!layoutConfig) {
 		return renderToHtml(page.renderable as RendererNode);
+	}
+
+	if (search === false) {
+		layoutConfig = withoutSearchLayout(layoutConfig);
 	}
 
 	const tree = layoutTransform(layoutConfig, page, 'rf');

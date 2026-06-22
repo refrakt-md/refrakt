@@ -105,11 +105,27 @@ initialized, so there's no empty "not available" dialog to stumble into.
 `search` defaults to `true`. Leaving it unset keeps the button — pair that with
 the Pagefind build step above to make it return results.
 
-{% hint type="note" %}
-The `search: false` opt-out is honored by the SvelteKit adapter today. Other
-adapters can apply the same stripping by passing their layouts through
-`withoutSearch()` from `@refrakt-md/transform` when assembling their theme.
-{% /hint %}
+### How the opt-out reaches each adapter
+
+The **SvelteKit** adapter wires this automatically: the Vite plugin reads
+`search` from `refrakt.config.json` and strips the search chrome from every
+layout when it assembles the theme. Nothing else to do.
+
+The other adapters are wired manually (you assemble the theme and render pages
+yourself), so they expose `search` as a passthrough you source from your config:
+
+| Adapter | How to pass it |
+|---------|----------------|
+| Astro | `<BaseLayout {theme} {page} search={config.search} />` |
+| Next.js | `<RefraktContent theme={theme} page={page} search={config.search} />` |
+| Nuxt | `renderPage({ theme, page, search: config.search })` |
+| Eleventy | `createDataFile({ theme, search: config.search, … })` |
+| HTML | `renderPage({ theme, page, search: config.search })` |
+
+Under the hood every adapter funnels through the same stripping helper
+(`withoutSearchLayout` / `withoutSearch`, exported from `@refrakt-md/transform`),
+so the result is identical: no trigger button, and the `search` behavior — `Cmd/Ctrl+K`
+included — is never initialized.
 
 ## Tuning what gets indexed
 
