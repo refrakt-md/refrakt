@@ -20,8 +20,11 @@ reworking the held `bleed="crop"` PR (refrakt-md/refrakt#530).
   `warnFrameNoTarget`.
 - **Shared CSS.** One guest-agnostic rule in the frame/split layer
   (`[data-frame-overflow="bleed"] > [data-overflowing]`, mobile breakpoint):
-  inline-end → screen, inline-end corners squared, inline-start anchored. Remove
-  the sandbox-specific bleed CSS.
+  inline-end → the **layout-owned boundary** (`--rf-bleed-room-end`, default page
+  gutter — never the raw viewport, {% ref "SPEC-116" /%} §5), inline-end corners
+  squared, inline-start anchored. Remove the sandbox-specific bleed CSS. v1 ships
+  the variable seam with the default; per-layout `--rf-bleed-room-*` values land
+  with the deferred desktop/side-by-side work.
 - **Sandbox first consumer (rework #530).** Keep the `scrollWidth` measurement on
   the `rf-sandbox-resize` bridge and the `nextBleedState` hysteresis + tests. Set
   `data-overflowing` **unconditionally** when overflowing (policy now lives on the
@@ -67,6 +70,10 @@ reworking the held `bleed="crop"` PR (refrakt-md/refrakt#530).
 - **Side-by-side bleed deferred** — v1's trigger is the **collapsed/stacked**
   viewport only; bleeding the outer edge of a side-by-side media column
   ({% ref "SPEC-116" /%} §4) is the heavier-geometry follow-on.
+- **Per-layout bleed boundary deferred** — v1 ships `--rf-bleed-room-*` with the
+  default (page gutter); the docs/chrome'd-layout values that cap the bleed at the
+  wide track ({% ref "SPEC-116" /%} §5) land with the desktop work. v1's ≤640px
+  trigger does not expose the collision (docs hides the sidebar/TOC by then).
 
 ## References
 

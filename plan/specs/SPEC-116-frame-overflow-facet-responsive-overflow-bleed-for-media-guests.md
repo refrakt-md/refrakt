@@ -74,7 +74,9 @@ present and future guest:
 ```css
 @media (max-width: 640px) {
   [data-frame-overflow="bleed"] > [data-overflowing] {
-    width: calc(100% + var(--rf-content-gutter));
+    /* extend to the LAYOUT's outer track edge, never the raw viewport —
+       see §5. `--rf-bleed-room-end` defaults to the page gutter. */
+    width: calc(100% + var(--rf-bleed-room-end, var(--rf-content-gutter)));
     max-width: none;
     border-start-end-radius: 0;
     border-end-end-radius: 0;
@@ -158,7 +160,31 @@ extensions — the engine derives direction; the attribute never changes.
   only; the general trigger is "content overflows **and** there is a bleedable
   outer edge."
 
-### 5. Sandbox as the first consumer
+### 5. Layout-aware bleed boundary — never the raw viewport
+
+The bleed extends to the **current layout's outermost content track**, not the
+literal viewport. The two stock layouts differ:
+
+- **Default layout** has a `full` track that *is* the viewport, so a bleed can
+  reach the screen edge.
+- **Docs layout** has its own grid (`[wide-start] … content … [wide-end]`) with
+  **no viewport track** — its widest track is `wide`, bounded inside the content
+  column between the sidebar and the TOC. A bleed to the raw viewport would slide
+  under the chrome; it must stop at the wide-track edge.
+
+So the bleed extends by a **layout-owned inset** (`--rf-bleed-room-{start,end}`,
+defaulting to the page gutter), set by each layout — to the full/viewport edge in
+the default layout, to the wide-track edge in docs and any chrome'd layout. This
+is the same boundary `width="full"` already honours (a full-width hero in docs
+spans the content row, not under the sidebar); the bleed honours it too.
+
+v1's collapsed trigger (≤640px) does not expose the collision — the docs layout
+hides the sidebar (≤768px) and TOC (≤1100px) before then, so the content row is
+already full-width. But v1 still expresses the bleed against the layout-owned
+variable (defaulting to the gutter) so the deferred desktop / side-by-side cases
+inherit a correct boundary instead of retrofitting one.
+
+### 6. Sandbox as the first consumer
 
 The held sandbox work becomes the first consumer: keep the overflow measurement +
 `nextBleedState` hysteresis + tests; drop the sandbox-only `bleed` attribute; have
@@ -173,6 +199,7 @@ layer. `codegroup`/`table` follow by adding their own `data-overflowing` signal.
 - [ ] A guest signals overflow at runtime by setting `data-overflowing` on itself; the guest reports the fact regardless of host policy, and the policy gates the effect.
 - [ ] `sandbox` is the first consumer: its behaviour sets `data-overflowing` from measured content width with hysteresis; the sandbox-only `bleed` attribute is removed (it never shipped).
 - [ ] On a clip host (`guestFit: 'clip'`) `frame-overflow="bleed"` is inert (the well clips) **and** emits a hard build warning naming the rune and pointing to a bleed host.
+- [ ] The bleed extends to a **layout-owned boundary** (`--rf-bleed-room-*`, default page gutter), never the raw viewport — capped at the content-row's outer track in chrome'd layouts (docs: the wide track inside the sidebar/TOC), matching the `width="full"` boundary. v1 uses the variable seam even though its collapsed trigger does not expose the collision.
 - [ ] Default (`clip` / unset) is byte-identical to today for every rune; the bleed is mobile-only and content-gated (a guest that fits stays inset and rounded).
 - [ ] Docs: `frame-overflow` in the Surfaces / frame reference; the runtime-gate model documented; the clip-host warning documented.
 
@@ -184,7 +211,7 @@ layer. `codegroup`/`table` follow by adding their own `data-overflowing` signal.
 4. **Validation + docs** — contract/coverage; reference docs for the facet and the warning.
 5. **Generalisation (later)** — a shared overflow signal for `codegroup`/`table`/`datatable`; optional guest-self `frameTarget` route.
 6. **Bleed direction (later)** — derive the bled edge from `frame-anchor`'s inline keyword (`start` → end, `end` → start, `center` → both); CSS branches on a resolved edge. The `frame-overflow="bleed"` author API is unchanged.
-7. **Side-by-side bleed (later)** — bleed the outer edge (forced by `media-position`) when a too-wide guest sits beside content; the heavier-geometry case, verified on real devices.
+7. **Side-by-side bleed (later)** — bleed the outer edge (forced by `media-position`) when a too-wide guest sits beside content; the heavier-geometry case, verified on real devices. Lands the per-layout `--rf-bleed-room-*` values (§5) — the desktop case where chrome'd layouts (docs) must cap at the wide track.
 
 ## References
 

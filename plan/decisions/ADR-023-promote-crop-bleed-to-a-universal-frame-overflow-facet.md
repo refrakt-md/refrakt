@@ -80,6 +80,14 @@ Sub-decisions:
   The author surface `frame-overflow="bleed"` is **stable across both** — the
   engine derives direction and edge; the attribute never changes — so the narrow
   v1 does not paint us into a corner.
+- **The bleed boundary is layout-owned, never the raw viewport.** A bleed extends
+  to the current layout's outermost content track — the viewport in the default
+  layout, but only the **wide track** (inside the sidebar/TOC) in the docs layout,
+  which has no viewport track. It is expressed as a layout-set inset
+  (`--rf-bleed-room-*`, default page gutter), the same boundary `width="full"`
+  honours. v1 adopts the variable seam even though its collapsed trigger (≤640px,
+  where docs chrome is already hidden) does not expose the collision — so the
+  deferred desktop / side-by-side / docs cases inherit a correct boundary.
 
 ## Rationale
 
