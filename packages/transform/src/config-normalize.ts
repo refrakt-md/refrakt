@@ -73,6 +73,7 @@ const SITE_FIELDS = [
 	'target',
 	'overrides',
 	'routeRules',
+	'search',
 	'highlight',
 	'icons',
 	'plugins',

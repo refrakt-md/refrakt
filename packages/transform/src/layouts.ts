@@ -1,5 +1,36 @@
 import type { LayoutConfig, LayoutStructureEntry } from './types.js';
 
+// ─── Search opt-out ───────────────────────────────────────────────────
+
+/**
+ * Return a copy of a layouts map with the site-wide search chrome removed.
+ *
+ * Adapters call this when a site sets `search: false` in refrakt.config.json.
+ * For every layout it strips:
+ *  - the `'search'` behavior, so the client behavior never initializes (no
+ *    `[data-search-trigger]` wiring, no Cmd/Ctrl+K handler, no dialog), and
+ *  - the `searchButton` chrome entry, so the trigger is never rendered — slots
+ *    reference it via `chrome:searchButton`, which the layout transform simply
+ *    skips when the entry is absent.
+ *
+ * Pure and non-mutating; the input layouts are left untouched.
+ */
+export function withoutSearch(
+	layouts: Record<string, LayoutConfig>,
+): Record<string, LayoutConfig> {
+	const result: Record<string, LayoutConfig> = {};
+	for (const [name, layout] of Object.entries(layouts)) {
+		const chrome = { ...(layout.chrome ?? {}) };
+		delete chrome.searchButton;
+		result[name] = {
+			...layout,
+			behaviors: layout.behaviors?.filter((b) => b !== 'search'),
+			chrome,
+		};
+	}
+	return result;
+}
+
 // ─── Shared SVG Icons ─────────────────────────────────────────────────
 
 const MENU_DOTS_SVG = '<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="4" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="16" r="1.5"/></svg>';

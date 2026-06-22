@@ -38,6 +38,7 @@
 			"type": "array",
 			"items": { "$ref": "#/definitions/RouteRule" }
 		},
+		"search": { "type": "boolean", "description": "Whether to render the site-wide search UI (header button + Cmd/Ctrl+K dialog, powered by Pagefind). Defaults to true. Set false to omit the search chrome entirely. Results require a Pagefind index built and served at /pagefind/ — see the Setting up search guide." },
 		"highlight": { "$ref": "#/definitions/HighlightConfig" },
 		"icons": { "type": "object", "additionalProperties": { "type": "string" } },
 		"tints": { "type": "object", "additionalProperties": { "type": "object" } },
@@ -95,6 +96,7 @@
 				},
 				"overrides": { "type": "object", "additionalProperties": { "type": "string" } },
 				"routeRules": { "type": "array", "items": { "$ref": "#/definitions/RouteRule" } },
+				"search": { "type": "boolean", "description": "Whether to render the site-wide search UI (header button + Cmd/Ctrl+K dialog, powered by Pagefind). Defaults to true. Set false to omit the search chrome entirely. Results require a Pagefind index built and served at /pagefind/ — see the Setting up search guide." },
 				"highlight": { "$ref": "#/definitions/HighlightConfig" },
 				"icons": { "type": "object", "additionalProperties": { "type": "string" } },
 				"plugins": {

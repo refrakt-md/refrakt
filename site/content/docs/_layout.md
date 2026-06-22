@@ -19,6 +19,7 @@ tint-lock: false
 - configuration/plugins
 - configuration/plan
 - configuration/sites
+- configuration/search
 - configuration/migration
 - configuration/schema
 - content
