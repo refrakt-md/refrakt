@@ -4,19 +4,22 @@
  * Layout chrome — a peer of the search trigger, placed in the header/toolbar.
  * The `theme-toggle` behavior cycles auto → light → dark and reflects the
  * current preference onto the button as `data-theme-pref`; the icon below
- * tracks that. Ported verbatim from the former `ThemeToggle.svelte` so the
- * look is unchanged, with the icon selector rekeyed from a swapped class to
- * the `data-theme-pref` attribute. */
+ * tracks that, with the icon selector keyed to the `data-theme-pref`
+ * attribute. Chrome (surface fill, full radius, muted colour, primary hover
+ * accent) is kept in sync with the search trigger so the two header buttons
+ * read as a matched set. */
 .rf-theme-toggle {
 	padding: 0;
 	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-md);
-	background: transparent;
-	color: var(--rf-color-text);
+	border-radius: var(--rf-radius-full);
+	background: var(--rf-color-surface);
+	color: var(--rf-color-muted);
 	cursor: pointer;
-	transition: background-color 120ms ease, border-color 120ms ease;
+	transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
 .rf-theme-toggle:hover {
+	border-color: var(--rf-color-primary);
+	color: var(--rf-color-text);
 	background: var(--rf-color-surface-hover);
 }
 .rf-theme-toggle:focus-visible {
