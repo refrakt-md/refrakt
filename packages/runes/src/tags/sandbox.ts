@@ -61,6 +61,12 @@ export const sandbox = createContentModelSchema({
 		// disables auto-resize negotiation; the engine sets it automatically when
 		// the sandbox is a cover media zone's backdrop.
 		height: { type: [Number, String], required: false, description: 'Height of the sandbox iframe: pixels, "fill" (host owns height), or auto' },
+		// When the rendered component is wider than the frame on a narrow/collapsed
+		// viewport, `bleed="crop"` runs the inline-end edge out to the screen so the
+		// component reads as cropped by the viewport instead of clipped at a rounded
+		// inset edge. Opt-in, and only takes effect when the content is actually too
+		// wide (the behaviour measures overflow).
+		bleed: { type: String, required: false, matches: ['crop'], description: 'Mobile overflow treatment: "crop" bleeds a too-wide component out to the screen edge' },
 		context: { type: String, required: false, description: 'Shared context scope for multiple sandboxes' },
 		// WORK-381 — deferred activation: keep heavy sandboxes off the critical
 		// path. `eager` (default) is unchanged; `visible` mounts on scroll-in;
@@ -85,6 +91,7 @@ export const sandbox = createContentModelSchema({
 		const dependencies = attrs.dependencies ?? '';
 		const label = attrs.label ?? '';
 		const height = attrs.height;
+		const bleed = attrs.bleed ?? '';
 		const dataQuery = attrs.data ?? '';
 		const dataFields = attrs['data-fields'] ?? '';
 		const dataShape = attrs['data-shape'] ?? '';
@@ -183,6 +190,7 @@ export const sandbox = createContentModelSchema({
 				: height === 'fill' ? 'fill'
 				: typeof height === 'string' && /^\d+$/.test(height) ? height : 'auto',
 			...(sourceOrigins.length > 0 ? { 'data-source-origins': sourceOrigins.join('\n') } : {}),
+			...(bleed ? { 'data-bleed': bleed } : {}),
 			'data-security-mode': policy.trust,
 			'data-allow-js': policy.allowJs ? 'true' : 'false',
 			...(policy.sandboxOrigin ? { 'data-sandbox-origin': policy.sandboxOrigin } : {}),
