@@ -10,11 +10,14 @@ interface Props {
 	page: LayoutPageData;
 	seo?: { jsonLd: object[]; og: { title?: string; description?: string; image?: string; type?: string; url?: string } };
 	lang?: string;
+	/** Whether to render the search UI. Defaults to true; pass false (from
+	 *  `SiteConfig.search`) to strip the search chrome. */
+	search?: boolean;
 }
 
-const { theme, page, seo, lang = 'en' } = Astro.props;
+const { theme, page, seo, lang = 'en', search } = Astro.props;
 
-const html = renderPage({ theme, page });
+const html = renderPage({ theme, page, search });
 const head = buildSeoHead({ title: page.title, description: undefined, frontmatter: page.frontmatter, seo });
 const needsBehaviors = hasInteractiveRunes(page.renderable);
 const contextData = JSON.stringify({ pages: page.pages, currentUrl: page.url });

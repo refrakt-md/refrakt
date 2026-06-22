@@ -108,6 +108,7 @@ A `SiteConfig` accepts these fields. Required fields are bold.
 |-------|------|-------------|
 | `plugins` | `string[]` | Plugins to merge into this site's `ThemeConfig`. |
 | `routeRules` | `RouteRule[]` | Route-to-layout mapping rules (first match wins). |
+| `search` | `boolean` | Whether to render the search UI (header button + `Cmd/Ctrl+K` dialog). Defaults to `true`. Set `false` to omit the search chrome entirely. Results require a [Pagefind index](/docs/configuration/search). |
 | `overrides` | `Record<string, string>` | Component overrides — `typeof` name → relative component path. |
 | `runes` | `RunesConfig` | Rune resolution: `prefer`, `aliases`, `local`. |
 | `highlight` | `HighlightConfig` | **Legacy.** Picks a Shiki built-in theme by name (or `{ light, dark }` pair) for fenced code blocks. The recommended modern approach is **`theme.presets`** with a Lumina syntax preset (`@refrakt-md/lumina/presets/nord`, `…/tideline`, etc.) plus **`theme.code.colorScheme`** to force light/dark code. Kept for back-compat; both mechanisms can coexist. |

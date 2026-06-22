@@ -49,6 +49,10 @@ export function createDataFile(config: {
 	security?: SecurityPolicy;
 	/** Markdoc variables available in content via `{% $name %}` syntax. */
 	variables?: Record<string, unknown>;
+	/** Whether to render the site-wide search UI (header button + Cmd/Ctrl+K
+	 *  dialog). Defaults to `true`. Source this from `SiteConfig.search` and
+	 *  pass `false` to strip the search chrome (the trigger + the behavior). */
+	search?: boolean;
 }): () => Promise<EleventyPageData[]> {
 	const {
 		theme,
@@ -57,6 +61,7 @@ export function createDataFile(config: {
 		seo: seoOptions,
 		security,
 		variables,
+		search,
 	} = config;
 
 	return async function loadRefrakt(): Promise<EleventyPageData[]> {
@@ -116,7 +121,7 @@ export function createDataFile(config: {
 				headings: page.headings,
 			};
 
-			const html = renderPage({ theme, page: pageData });
+			const html = renderPage({ theme, page: pageData, search });
 			const needsBehaviors = hasInteractiveRunes(page.renderable);
 
 			const seoData = extractSeoData({

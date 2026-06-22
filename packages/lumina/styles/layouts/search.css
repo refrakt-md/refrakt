@@ -137,7 +137,9 @@
 @media (max-width: 768px) {
 	.rf-search-trigger {
 		padding: 0.375rem;
-		border-radius: var(--rf-radius-sm);
+		/* Collapsed to an icon-only button — keep it fully rounded so it reads
+		 * as a circle matching the adjacent theme toggle, not a small square. */
+		border-radius: var(--rf-radius-full);
 	}
 	.rf-search-dialog[open] {
 		border-radius: 0;

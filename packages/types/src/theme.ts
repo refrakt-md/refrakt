@@ -89,6 +89,16 @@ export interface SiteConfig {
 	/** Declarative entity → page routes (SPEC-069). Each rule generates one page
 	 *  per registered entity matching `type` + optional `filter`. */
 	entityRoutes?: EntityRoute[];
+	/** Whether to render the site-wide search UI — the header search button
+	 *  plus the Cmd/Ctrl+K dialog, powered by Pagefind. Defaults to `true`.
+	 *
+	 *  Set to `false` to omit the search chrome entirely: the `search` client
+	 *  behavior is never initialized and the trigger button is not rendered in
+	 *  any layout. Leave it enabled (the default) to keep the button; note that
+	 *  results only appear once a Pagefind index has been built and served at
+	 *  `/pagefind/` — see the "Setting up search" guide. Until then the button
+	 *  opens to a graceful "Search is not available." message. */
+	search?: boolean;
 	/** Syntax highlighting options */
 	highlight?: {
 		theme?: string | { light: string; dark: string };
@@ -202,6 +212,8 @@ export interface RefraktConfig {
 	overrides?: Record<string, string>;
 	/** @deprecated Shorthand for `sites.default.routeRules` */
 	routeRules?: RouteRule[];
+	/** @deprecated Shorthand for `sites.default.search` */
+	search?: boolean;
 	/** @deprecated Shorthand for `sites.default.highlight` */
 	highlight?: {
 		theme?: string | { light: string; dark: string };

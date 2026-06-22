@@ -124,7 +124,10 @@ function generatePackageJson(projectName: string, theme: string): string {
 		type: 'module',
 		scripts: {
 			dev: 'vite dev',
-			build: 'vite build',
+			// Pagefind indexes the built HTML and writes build/pagefind/, served at
+			// /pagefind/ where the search behavior loads it. Search results are only
+			// available in a production build — the dev server has no index.
+			build: 'vite build && pagefind --site build',
 			preview: 'vite preview',
 			prepare: "svelte-kit sync || echo ''",
 			check: 'svelte-kit sync && svelte-check --tsconfig ./tsconfig.json',
@@ -146,6 +149,7 @@ function generatePackageJson(projectName: string, theme: string): string {
 			'@sveltejs/kit': '^2.50.0',
 			'@sveltejs/vite-plugin-svelte': '^6.0.0',
 			'@tailwindcss/vite': '^4.0.0',
+			'pagefind': '^1.3.0',
 			'svelte': '^5.0.0',
 			'svelte-check': '^4.0.0',
 			'tailwindcss': '^4.0.0',

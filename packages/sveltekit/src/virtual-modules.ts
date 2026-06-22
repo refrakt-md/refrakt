@@ -56,6 +56,12 @@ export function loadVirtualModule(
 			`import { elements as _elements } from '@refrakt-md/svelte';`,
 		];
 
+		// Search opt-out (config.search === false): strip the search behavior +
+		// trigger chrome from every layout at theme-assembly time.
+		if (config.search === false) {
+			lines.push(`import { withoutSearch as _withoutSearch } from '@refrakt-md/transform';`);
+		}
+
 		if (hasOverrides) {
 			const entries = Object.entries(overrides);
 			for (let i = 0; i < entries.length; i++) {
@@ -81,7 +87,7 @@ export function loadVirtualModule(
 			lines.push(`\t\tlogo: ${JSON.stringify(config.logo)},`);
 		}
 		lines.push('\t},');
-		lines.push('\tlayouts: _layouts,');
+		lines.push(`\tlayouts: ${config.search === false ? '_withoutSearch(_layouts)' : '_layouts'},`);
 
 		if (hasOverrides) {
 			const entries = Object.entries(overrides);
