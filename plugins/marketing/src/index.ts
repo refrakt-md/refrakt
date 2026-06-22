@@ -12,7 +12,7 @@ import { config } from './config.js';
 export const marketing: Plugin = {
   name: 'marketing',
   displayName: 'Marketing',
-  version: '0.24.4',
+  version: '0.24.5',
   runes: {
     'hero': {
       transform: hero,
