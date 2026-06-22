@@ -6,7 +6,11 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.24.4
+## v0.24.5
+
+- **Fixed the gap that could appear between a sticky header and the bar below it while scrolling.** Layout headers (`.rf-header`, `.rf-docs-header`, `.rf-blog-header`) now pin their height to `--rf-header-height` instead of being content-driven, so the sticky offsets that dock below them — the docs mobile toolbar and the mobile nav panel — line up exactly with the header bottom. Previously a header that rendered shorter than the assumed `3.5rem` left a strip where page content scrolled through between the two bars (and a taller one overlapped). The docs toolbar also hard-coded the `3.5rem` literal rather than reading the token, so layout overrides like the blog layout's `4.25rem` never reached it; all offsets now derive from `--rf-header-height`. Sites whose header needs to be taller should set `--rf-header-height` on their layout root.
+
+## v0.24.4 - June 18, 2026
 
 - `codegroup` and `diff` chrome now derives from the code surface instead of the page chrome. For both runes the wrapper fill, header/topbar, tabs, their text, and the internal separators are now derived from `--rf-color-code-bg` / `--rf-color-code-text` (the tokens a syntax preset owns) via `color-mix`, with only the outer frame (border + shadow) staying in the page world. Previously `codegroup`'s topbar/tabs and `diff`'s header used `--rf-color-surface`, so when the active preset gave the code surface a palette that diverged from the page — e.g. Nord's Polar Night code surface on an otherwise-neutral site — the light card chrome clashed with the dark code body. Both runes are now internally coherent with their own code body in light and dark modes.
 - Add a `contentMeasure` axis so page sections keep their content readable when bled to the `wide` track. Previously `width="wide"` widened both a section's background _and_ its content, while `width="full"` widened only the background (content stayed anchored to the text measure) — an inconsistency for runes like `hero` and `feature`.

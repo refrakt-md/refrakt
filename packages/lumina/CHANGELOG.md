@@ -1,5 +1,15 @@
 # @refrakt-md/lumina
 
+## 0.24.5
+
+### Patch Changes
+
+- Updated dependencies [c68d84f]
+  - @refrakt-md/skeleton@0.24.5
+  - @refrakt-md/runes@0.24.5
+  - @refrakt-md/transform@0.24.5
+  - @refrakt-md/types@0.24.5
+
 ## 0.24.4
 
 ### Patch Changes
