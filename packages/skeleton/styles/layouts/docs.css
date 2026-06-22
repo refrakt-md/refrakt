@@ -3,7 +3,11 @@
  * container + width-variant grid, the has-toc flex + sticky TOC, the scroll-padding
  * offset, the mobile toolbar flex + breadcrumb ellipsis, and the responsive hides.
  * Colours, borders, type, padding, scrollbar chrome, and content padding are skin. */
-.rf-docs-header { position: fixed; top: 0; left: 0; right: 0; z-index: 10; }
+/* Height is pinned to --rf-header-height (not content-driven) so the sticky
+   toolbar and the docked mobile nav panel can offset against a known value —
+   otherwise a header that renders shorter than the assumed height leaves a
+   gap the page content scrolls through, and a taller one overlaps. */
+.rf-docs-header { position: fixed; top: 0; left: 0; right: 0; z-index: 10; height: var(--rf-header-height, 3.5rem); }
 .rf-docs-header__inner { display: flex; align-items: center; }
 .rf-docs-header__inner .rf-search-trigger { margin-left: auto; order: 1; }
 .rf-docs-header__inner > rf-nav { order: 3; }
@@ -76,7 +80,8 @@ html:has(.rf-docs-header) { scroll-padding-top: 5rem; }
 @media (max-width: 768px) {
 	.rf-docs-header { position: sticky; top: 0; }
 	.rf-docs-header__inner p ~ p { display: none; }
-	.rf-docs-toolbar { display: flex; position: sticky; top: calc(3.5rem - 1px); z-index: 100; }
-	.rf-mobile-panel--nav { top: calc(6.25rem - 1px); }
+	.rf-docs-toolbar { display: flex; position: sticky; top: var(--rf-header-height, 3.5rem); z-index: 100; }
+	/* header height + ~2.75rem toolbar */
+	.rf-mobile-panel--nav { top: calc(var(--rf-header-height, 3.5rem) + 2.75rem); }
 	.rf-docs-sidebar { display: none; }
 }

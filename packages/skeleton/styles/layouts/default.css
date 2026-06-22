@@ -2,7 +2,10 @@
  * the named-track content grid + width-variant placement, the container context,
  * and the footer flex + width cap. Colours, borders, type, padding, and the section
  * rhythm/inset margins are skin (Lumina's layouts/default.css). */
-.rf-header { position: sticky; top: 0; z-index: 100; }
+/* Height pinned to --rf-header-height so the docked mobile nav panel
+   (top: var(--rf-header-height)) lines up exactly with the header bottom
+   regardless of brand/logo size. */
+.rf-header { position: sticky; top: 0; z-index: 100; height: var(--rf-header-height, 3.5rem); }
 .rf-header__inner { display: flex; align-items: center; }
 .rf-header__inner .rf-search-trigger { margin-left: auto; order: 1; }
 .rf-header__inner > rf-nav { order: 3; }
