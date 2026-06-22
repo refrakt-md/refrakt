@@ -128,6 +128,7 @@ The exact field set is settled in the work phase; the shape is **metadata + a `s
   "title": "Documentation site",
   "description": "A multi-section docs site with sidebar nav, API reference, and changelog.",
   "category": "docs",
+  "refrakt": ">=0.24 <0.26",                      // compatible refrakt range, validated at install (ADR-023)
   "previewUrl": "https://…",                      // optional: where a built demo is published
 
   // — the site this template provides: a SiteConfig partial, merged in as a site —
@@ -297,7 +298,7 @@ that proves the capability, not something shipped in-repo.
 ## Acceptance Criteria
 
 - [ ] `create-refrakt` separates the framework axis (`--framework`) from the purpose axis (`--template`), with both defaulting to preserve current behaviour; the existing `--type`/`--target` plumbing is reconciled onto `--framework` and documented.
-- [ ] A site-template package format is defined: a `template.json` of catalog metadata (name, title, description, category, optional `previewUrl`) plus a `site` field that is a `SiteConfig` partial (`packages/types/src/theme.ts`), and the package ships `content/` (+ optional `sandboxes/`).
+- [ ] A site-template package format is defined: a `template.json` of catalog metadata (name, title, description, category, a `refrakt` compatibility range per `ADR-023`, optional `previewUrl`) plus a `site` field that is a `SiteConfig` partial (`packages/types/src/theme.ts`), and the package ships `content/` (+ optional `sandboxes/`).
 - [ ] Installing a template **adds a site**: the scaffolder slots the manifest's `site` `SiteConfig` under the target site key (`sites.default`/singular `site` for a new project, `sites.<name>` for a multi-site add), deep-merged per {% ref "SPEC-115" /%}; it derives and pins `package.json` deps from `site.plugins` + `site.theme.package`, copies `content/`→`site.contentDir` and `sandboxes/`→`site.sandbox.dir`, and injects the framework `target`/wiring.
 - [ ] Full-site templates seed a **new project or new site** only — they do not overlay an existing site (that is the deferred section/page-template case).
 - [ ] Templates are scaffold-copied (content owned by the author), while the theme and plugins (derived from the `site` config) are pinned as live dependencies of the new project.

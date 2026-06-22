@@ -124,6 +124,7 @@ shape:
 ```jsonc
 {
   "name": "@example/midnight-presets",
+  "refrakt": ">=0.24 <0.26",            // compatible refrakt range, validated at install (ADR-023)
   "presets": [
     { "id": "midnight",  "title": "Midnight",  "scope": "palette",
       "module": "./src/midnight.js", "tunedFor": ["@refrakt-md/lumina"] },
@@ -182,7 +183,7 @@ viewed from two directions. This spec documents the dual role; no new mechanism 
 
 ## Acceptance Criteria
 
-- [ ] A preset-pack package format is defined: a package exporting one or more `ThemeTokensConfig` modules (unchanged data shape) plus a standalone `presets.json` manifest, resolvable independently of any theme package.
+- [ ] A preset-pack package format is defined: a package exporting one or more `ThemeTokensConfig` modules (unchanged data shape) plus a standalone `presets.json` manifest (carrying a `refrakt` compatibility range per `ADR-023`), resolvable independently of any theme package.
 - [ ] Packs are a *capability*, not a `kind`: a package may declare a `presets.json` alongside a theme contract / `template.json`, and Lumina (theme + 9 presets) is expressible as a theme that also declares a pack — no `ThemeManifest` change, no single cross-artifact `kind`. Distributable discovery scans for each capability independently.
 - [ ] Each preset declares a `scope` (`syntax` | `palette`) **in the manifest entry**; validation warns when a declared `syntax` preset sets chrome tokens, reusing the existing scope-eligibility classification.
 - [ ] The manifest records per-preset `id`, `title`, `scope`, `module`, and an optional advisory `tunedFor` (preset → themes); absence means universal and applying a preset outside its set is never an error.

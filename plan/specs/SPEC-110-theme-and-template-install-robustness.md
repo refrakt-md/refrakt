@@ -122,6 +122,11 @@ so the tarball/registry/multi-site improvements land once and benefit every appl
   exports (today's check) and a template's `template.json` manifest — its `kind`, the metadata
   fields, and the `site` `SiteConfig` shape (`site.plugins` resolvable, `site.theme` a valid
   `SiteThemeConfig`).
+- **Validate the `refrakt` compatibility range** (`ADR-023`). Each distributable manifest
+  (`template.json`, `presets.json`, `ThemeManifest`) declares a `refrakt` range; install checks it
+  against the project's refrakt version and refuses/warns on a mismatch with a clear message
+  ("needs refrakt ≥0.25, project has 0.24") rather than letting it surface as a build crash.
+  Extensions themselves resolve `@refrakt-md/*` via `peerDependencies` (ADR-023), not bundled deps.
 - Add `theme list` (installed themes discoverable from `node_modules` + the active one) to round
   out `theme info`. A parallel `template` listing is in scope as the template command surface lands.
 
@@ -145,6 +150,7 @@ so the tarball/registry/multi-site improvements land once and benefit every appl
 - [ ] Source resolution (directory | tarball | registry name → known package) is factored into a shared helper used by theme, template, and preset-pack ({% ref "SPEC-111" /%}) install; apply is keyed on artifact and template `kind` — theme → dependency + point `theme`; `kind: "site"` → add a site (`SiteConfig` write + scaffold-copy + derived deps); preset pack → dependency + validate `presets.json` + optional `site.theme.presets` append (no copy, no site).
 - [ ] The template apply-mode is keyed on the manifest `kind`: `kind: "site"` is implemented; `kind: "section"` (merge into an existing site) is reserved and forward-compatible (it reuses the same resolver, `SiteConfig` merge, and `--site` plumbing) but out of scope for v1.
 - [ ] Post-install validation covers both a theme's runtime exports and a template's `template.json` manifest (`kind`, metadata, and the `site` `SiteConfig` shape); `theme list` reports installed and active themes.
+- [ ] Install validates each distributable's `refrakt` compatibility range (`ADR-023`) against the project's refrakt version, failing with a clear message on mismatch; extensions resolve `@refrakt-md/*` via `peerDependencies`.
 - [ ] The Non-Goals (no licensing/entitlement/gating, no bundled catalog, no credential storage) are documented so the install path stays a neutral packaging mechanism.
 
 ## References
