@@ -759,13 +759,16 @@ function runTheme(themeArgs: string[]): void {
 Usage: refrakt theme <subcommand> [options]
 
 Subcommands:
-  install <source>   Install a theme (directory, .tgz, or npm package name)
-  info               Show current theme details
-  list               List installed themes and the active one
+  install <source>      Install a theme (directory, .tgz, or npm package name)
+  info                  Show current theme details
+  list                  List installed themes and the active one
+  presets list          List presets from installed packs + the active theme
+  presets validate      Validate installed preset-pack manifests
 
 Options:
   --site <name>      Target site key (multi-site projects)
   --registry <url>   Install from an alternate registry
+  --scope <s>        (presets list) filter by "syntax" | "palette"
 
 Examples:
   refrakt theme install ./my-theme
@@ -774,6 +777,61 @@ Examples:
   refrakt theme list
 `);
 		process.exit(subcommand ? 0 : 1);
+	}
+
+	// `theme presets <list|validate>` — preset-pack discovery/listing (SPEC-111 §4).
+	if (subcommand === 'presets') {
+		const action = themeArgs[1] ?? 'list';
+		let scope: string | undefined;
+		let pack: string | undefined;
+		let use: string | undefined;
+		let pSite: string | undefined;
+		let pRegistry: string | undefined;
+		const pPositional: string[] = [];
+		for (let i = 2; i < themeArgs.length; i++) {
+			const arg = themeArgs[i];
+			if (arg === '--scope') {
+				scope = themeArgs[++i];
+				if (scope !== 'syntax' && scope !== 'palette') {
+					console.error('Error: --scope must be "syntax" or "palette"');
+					process.exit(1);
+				}
+			} else if (arg === '--pack') {
+				pack = themeArgs[++i];
+			} else if (arg === '--use') {
+				use = themeArgs[++i];
+			} else if (arg === '--site') {
+				pSite = themeArgs[++i];
+			} else if (arg === '--registry') {
+				pRegistry = themeArgs[++i];
+			} else {
+				pPositional.push(arg!);
+			}
+		}
+		if (action === 'install') {
+			const source = pPositional[0];
+			if (!source) {
+				console.error('Error: Missing source\n');
+				console.error('Usage: refrakt theme presets install <dir | .tgz | package> [--use <id>] [--site <name>] [--registry <url>]');
+				process.exit(1);
+			}
+			import('./commands/presets.js').then(({ themePresetsInstallCommand }) =>
+				themePresetsInstallCommand({ source, use, site: pSite, registry: pRegistry }),
+			).catch((err) => { console.error(`\nError: ${(err as Error).message}`); process.exit(1); });
+		} else if (action === 'list') {
+			import('./commands/presets.js').then(({ themePresetsListCommand }) =>
+				themePresetsListCommand({ scope: scope as 'syntax' | 'palette' | undefined }),
+			).catch((err) => { console.error(`\nError: ${(err as Error).message}`); process.exit(1); });
+		} else if (action === 'validate') {
+			import('./commands/presets.js').then(({ themePresetsValidateCommand }) =>
+				themePresetsValidateCommand({ pack }),
+			).catch((err) => { console.error(`\nError: ${(err as Error).message}`); process.exit(1); });
+		} else {
+			console.error(`Error: Unknown "theme presets" action "${action}"\n`);
+			console.error('Available: list, validate, install');
+			process.exit(1);
+		}
+		return;
 	}
 
 	// Parse shared flags from the remaining args.
@@ -823,7 +881,7 @@ Examples:
 		});
 	} else {
 		console.error(`Error: Unknown theme subcommand "${subcommand}"\n`);
-		console.error('Available subcommands: install, info, list');
+		console.error('Available subcommands: install, info, list, presets');
 		process.exit(1);
 	}
 }

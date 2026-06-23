@@ -213,11 +213,12 @@ export async function themeListCommand(_options: ThemeListOptions): Promise<void
 function listPackageDirs(modulesDir: string): string[] {
 	if (!existsSync(modulesDir)) return [];
 	const out: string[] = [];
+	const isDir = (e: { isDirectory(): boolean; isSymbolicLink(): boolean }) => e.isDirectory() || e.isSymbolicLink();
 	for (const entry of readdirSync(modulesDir, { withFileTypes: true })) {
-		if (!entry.isDirectory()) continue;
+		if (!isDir(entry)) continue;
 		if (entry.name.startsWith('@')) {
 			for (const sub of readdirSync(resolve(modulesDir, entry.name), { withFileTypes: true })) {
-				if (sub.isDirectory()) out.push(`${entry.name}/${sub.name}`);
+				if (isDir(sub)) out.push(`${entry.name}/${sub.name}`);
 			}
 		} else if (!entry.name.startsWith('.')) {
 			out.push(entry.name);

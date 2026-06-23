@@ -22,6 +22,7 @@
       "default": "./dist/transform.js"
     },
     "./manifest": "./manifest.json",
+    "./presets.json": "./presets.json",
     "./contracts": "./contracts/structures.json",
     "./layouts": {
       "types": "./dist/layouts.d.ts",
@@ -75,6 +76,7 @@
     "styles",
     "contracts",
     "manifest.json",
+    "presets.json",
     "layouts",
     "svelte",
     "assets"

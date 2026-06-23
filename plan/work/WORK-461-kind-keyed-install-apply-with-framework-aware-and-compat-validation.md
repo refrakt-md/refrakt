@@ -8,7 +8,7 @@ validation (framework-aware + compat-range).
 
 ## Acceptance Criteria
 - [ ] Install applies a `kind`-keyed step over the shared resolver: theme → dependency + point the selected site's `theme`; `kind:"site"` template → add a site; preset pack → dependency + validate + optional `presets.json` append
-- [ ] `kind:"section"` is reserved/forward-compatible (reuses the resolver, SiteConfig merge, and `--site` plumbing) but out of scope
+- [x] `kind:"section"` is reserved/forward-compatible (reuses the resolver, SiteConfig merge, and `--site` plumbing) but out of scope
 - [x] Post-install validation covers a theme's exports and a template's `template.json`; theme validation is **framework-aware** per {% ref "ADR-024" /%} (`./transform` required, a framework export like `./svelte` optional — its absence is **not** warned)
 - [x] Install validates each distributable's `refrakt` range against the project version, failing with a clear message on mismatch
 

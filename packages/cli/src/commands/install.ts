@@ -175,6 +175,56 @@ export function detectFrameworkLayers(manifest: Record<string, unknown> | undefi
 	return layers;
 }
 
+// ─── Preset-pack validation (SPEC-111 §2–§4) ────────────────────────────────
+
+/** Chrome (skeleton) token keys a `syntax`-scoped preset must NOT set. A syntax
+ *  preset may touch only `syntax.*` and `color.code.*`; anything else under
+ *  `color` is chrome and makes it a `palette` preset (SPEC-111 §2). */
+export function presetChromeKeys(config: Record<string, unknown>): string[] {
+	const keys = new Set<string>();
+	const scanColor = (color: unknown, prefix: string) => {
+		if (!color || typeof color !== 'object') return;
+		for (const k of Object.keys(color as Record<string, unknown>)) {
+			if (k === 'code') continue; // code surface is syntax-adjacent, allowed
+			keys.add(`${prefix}color.${k}`);
+		}
+	};
+	scanColor((config as { color?: unknown }).color, '');
+	const modes = (config as { modes?: Record<string, { color?: unknown }> }).modes;
+	if (modes && typeof modes === 'object') {
+		for (const [mode, layer] of Object.entries(modes)) {
+			scanColor(layer?.color, `modes.${mode}.`);
+		}
+	}
+	return [...keys];
+}
+
+/** Validate one preset entry against its resolved token config (SPEC-111 §2–§4):
+ *  declared `syntax` that sets chrome → warning; malformed `tunedFor` → warning. */
+export function validatePresetEntry(
+	entry: { id?: unknown; scope?: unknown; module?: unknown; tunedFor?: unknown },
+	config: Record<string, unknown> | undefined,
+): { errors: string[]; warnings: string[] } {
+	const errors: string[] = [];
+	const warnings: string[] = [];
+	const id = typeof entry.id === 'string' ? entry.id : '(unnamed)';
+	if (entry.scope !== 'syntax' && entry.scope !== 'palette') {
+		errors.push(`preset "${id}" has an invalid scope "${String(entry.scope)}" (expected "syntax" | "palette")`);
+	}
+	if (entry.tunedFor !== undefined) {
+		if (!Array.isArray(entry.tunedFor) || (entry.tunedFor as unknown[]).some((t) => typeof t !== 'string')) {
+			warnings.push(`preset "${id}" has a malformed "tunedFor" (expected an array of theme package names)`);
+		}
+	}
+	if (config && entry.scope === 'syntax') {
+		const chrome = presetChromeKeys(config);
+		if (chrome.length > 0) {
+			warnings.push(`preset "${id}" is declared scope "syntax" but sets chrome tokens (${chrome.join(', ')}) — it is really a "palette" preset`);
+		}
+	}
+	return { errors, warnings };
+}
+
 // ─── Multi-site config helpers (SPEC-110 §3) ────────────────────────────────
 
 /** Enumerate the site keys declared by a config, in either shape. The singular

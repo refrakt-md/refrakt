@@ -8,6 +8,8 @@ import {
 	parsePackageName,
 	resolveSource,
 	readPackageJsonFromTarball,
+	presetChromeKeys,
+	validatePresetEntry,
 	resolveTargetSite,
 	setSiteTheme,
 	appendSitePreset,
@@ -121,6 +123,28 @@ describe('config mutation helpers', () => {
 		createSite(raw, 'blog', { contentDir: 'b', theme: 'x' } as never);
 		expect(raw.site).toBeUndefined();
 		expect(Object.keys(raw.sites!)).toEqual(['default', 'blog']);
+	});
+});
+
+describe('preset scope validation (SPEC-111 §2)', () => {
+	it('finds chrome keys, ignoring syntax + color.code', () => {
+		expect(presetChromeKeys({ syntax: { keyword: '#000' }, color: { code: { bg: '#111' } } })).toEqual([]);
+		expect(presetChromeKeys({ color: { bg: '#fff', primary: '#abc' } }).sort()).toEqual(['color.bg', 'color.primary']);
+		expect(presetChromeKeys({ modes: { dark: { color: { bg: '#000' } } } })).toEqual(['modes.dark.color.bg']);
+	});
+	it('warns when a declared syntax preset sets chrome', () => {
+		const r = validatePresetEntry({ id: 'ember', scope: 'syntax', module: './e.json' }, { color: { bg: '#fff' } });
+		expect(r.warnings.join(' ')).toMatch(/really a "palette" preset/);
+	});
+	it('passes a true syntax preset', () => {
+		const r = validatePresetEntry({ id: 'ember', scope: 'syntax', module: './e.json' }, { syntax: { keyword: '#000' } });
+		expect(r.warnings).toEqual([]);
+		expect(r.errors).toEqual([]);
+	});
+	it('errors on an invalid scope and warns on malformed tunedFor', () => {
+		const r = validatePresetEntry({ id: 'x', scope: 'bogus', tunedFor: 'nope' }, undefined);
+		expect(r.errors.length).toBe(1);
+		expect(r.warnings.length).toBe(1);
 	});
 });
 
