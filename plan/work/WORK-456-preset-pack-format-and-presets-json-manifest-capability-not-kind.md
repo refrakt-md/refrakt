@@ -19,7 +19,7 @@ per-capability. No engine/loader change here — the carrier + validation land i
 items (JSON carrier, scope/validation).
 
 ## Dependencies
-- {% ref "WORK-444" /%} — the `refrakt` range field
+- {% ref "WORK-465" /%} — the `refrakt` range field
 
 ## References
 - {% ref "SPEC-111" /%} §1, §3; `packages/lumina/src/presets/*`

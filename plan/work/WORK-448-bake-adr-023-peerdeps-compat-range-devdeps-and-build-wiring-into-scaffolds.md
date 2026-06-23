@@ -20,7 +20,7 @@ keyed by kind. Reuse the `refrakt` range util (the ADR-023 manifest-fields work 
 create-refrakt version source that the site scaffold already uses for version derivation.
 
 ## Dependencies
-- {% ref "WORK-444" /%} — the `refrakt` range field + checker
+- {% ref "WORK-465" /%} — the `refrakt` range field + checker
 - {% ref "WORK-447" /%} — the `--type` dispatch this hangs off
 
 ## References

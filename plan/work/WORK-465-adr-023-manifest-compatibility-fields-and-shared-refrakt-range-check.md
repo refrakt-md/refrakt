@@ -1,4 +1,4 @@
-{% work id="WORK-444" status="ready" priority="high" complexity="moderate" source="ADR-023" tags="distribution,versioning,types,manifest" milestone="v0.25.0" %}
+{% work id="WORK-465" status="ready" priority="high" complexity="moderate" source="ADR-023" tags="distribution,versioning,types,manifest" milestone="v0.25.0" %}
 
 # ADR-023 manifest compatibility fields and shared refrakt-range check
 

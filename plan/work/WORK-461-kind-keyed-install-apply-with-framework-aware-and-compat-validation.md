@@ -20,7 +20,7 @@ The theme, template, and preset apply-modes are implemented in their respective 
 this item owns the dispatch + validation layer.
 
 ## Dependencies
-- {% ref "WORK-444" /%} — compat range checker
+- {% ref "WORK-465" /%} — compat range checker
 - {% ref "WORK-445" /%} — shared resolver
 - {% ref "WORK-446" /%} — multi-site `--site` + config helpers
 

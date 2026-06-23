@@ -19,7 +19,7 @@ reusing `SiteConfig`. No runtime yet — this is the shared shape the apply step
 both consume.
 
 ## Dependencies
-- {% ref "WORK-444" /%} — the `refrakt` range field
+- {% ref "WORK-465" /%} — the `refrakt` range field
 
 ## References
 - {% ref "SPEC-109" /%} §2; `packages/types/src/theme.ts` (`SiteConfig`)
