@@ -761,39 +761,69 @@ Usage: refrakt theme <subcommand> [options]
 Subcommands:
   install <source>   Install a theme (directory, .tgz, or npm package name)
   info               Show current theme details
+  list               List installed themes and the active one
+
+Options:
+  --site <name>      Target site key (multi-site projects)
+  --registry <url>   Install from an alternate registry
 
 Examples:
   refrakt theme install ./my-theme
-  refrakt theme install @my-org/my-theme
-  refrakt theme info
+  refrakt theme install @my-org/my-theme --site docs
+  refrakt theme install ./my-theme-1.0.0.tgz
+  refrakt theme list
 `);
 		process.exit(subcommand ? 0 : 1);
 	}
 
+	// Parse shared flags from the remaining args.
+	let site: string | undefined;
+	let registry: string | undefined;
+	const positional: string[] = [];
+	for (let i = 1; i < themeArgs.length; i++) {
+		const arg = themeArgs[i];
+		if (arg === '--site') {
+			site = themeArgs[++i];
+			if (!site) { console.error('Error: --site requires a value'); process.exit(1); }
+		} else if (arg === '--registry') {
+			registry = themeArgs[++i];
+			if (!registry) { console.error('Error: --registry requires a value'); process.exit(1); }
+		} else {
+			positional.push(arg!);
+		}
+	}
+
 	if (subcommand === 'install') {
-		const source = themeArgs[1];
+		const source = positional[0];
 		if (!source) {
 			console.error('Error: Missing source argument\n');
-			console.error('Usage: refrakt theme install <directory | .tgz | package-name>');
+			console.error('Usage: refrakt theme install <directory | .tgz | package-name> [--site <name>] [--registry <url>]');
 			process.exit(1);
 		}
 
 		import('./commands/theme.js').then(({ themeInstallCommand }) => {
-			return themeInstallCommand({ source });
+			return themeInstallCommand({ source, site, registry });
 		}).catch((err) => {
 			console.error(`\nError: ${(err as Error).message}`);
 			process.exit(1);
 		});
 	} else if (subcommand === 'info') {
 		import('./commands/theme.js').then(({ themeInfoCommand }) => {
-			return themeInfoCommand({});
+			return themeInfoCommand({ site });
+		}).catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(1);
+		});
+	} else if (subcommand === 'list') {
+		import('./commands/theme.js').then(({ themeListCommand }) => {
+			return themeListCommand({});
 		}).catch((err) => {
 			console.error(`\nError: ${(err as Error).message}`);
 			process.exit(1);
 		});
 	} else {
 		console.error(`Error: Unknown theme subcommand "${subcommand}"\n`);
-		console.error('Available subcommands: install, info');
+		console.error('Available subcommands: install, info, list');
 		process.exit(1);
 	}
 }

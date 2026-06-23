@@ -1,4 +1,4 @@
-{% work id="WORK-461" status="ready" priority="high" complexity="moderate" source="SPEC-110" tags="install,validation,compat" milestone="v0.25.0" %}
+{% work id="WORK-461" status="in-progress" priority="high" complexity="moderate" source="SPEC-110" tags="install,validation,compat" milestone="v0.25.0" %}
 
 # kind-keyed install apply with framework-aware and compat validation
 
@@ -9,8 +9,8 @@ validation (framework-aware + compat-range).
 ## Acceptance Criteria
 - [ ] Install applies a `kind`-keyed step over the shared resolver: theme → dependency + point the selected site's `theme`; `kind:"site"` template → add a site; preset pack → dependency + validate + optional `presets.json` append
 - [ ] `kind:"section"` is reserved/forward-compatible (reuses the resolver, SiteConfig merge, and `--site` plumbing) but out of scope
-- [ ] Post-install validation covers a theme's exports and a template's `template.json`; theme validation is **framework-aware** per {% ref "ADR-024" /%} (`./transform` required, a framework export like `./svelte` optional — its absence is **not** warned)
-- [ ] Install validates each distributable's `refrakt` range against the project version, failing with a clear message on mismatch
+- [x] Post-install validation covers a theme's exports and a template's `template.json`; theme validation is **framework-aware** per {% ref "ADR-024" /%} (`./transform` required, a framework export like `./svelte` optional — its absence is **not** warned)
+- [x] Install validates each distributable's `refrakt` range against the project version, failing with a clear message on mismatch
 
 ## Approach
 Factor the apply step as a switch on artifact/kind in `packages/cli/src/commands/theme.ts`
