@@ -83,8 +83,12 @@ asked to remember the policy.
   {% ref "SPEC-110" /%}.
 - **No new distributable formats.** The formats are defined by {% ref "SPEC-109" /%} /
   {% ref "SPEC-111" /%} / `Plugin`; this spec only *generates* them.
-- **No theme-authoring change.** `--type theme` already exists; this spec adds the three missing
-  kinds and the ADR-023 peerDeps/compat wiring (which `theme` should also adopt).
+- **`--type theme` is realigned, not just re-wired.** It already exists, but it emits a
+  Svelte-coupled theme (a `svelte/` folder, `SvelteTheme` export, `target: 'svelte'`) that
+  doesn't match the framework-agnostic reference theme (Lumina). This spec adds the three missing
+  kinds, the ADR-023 peerDeps/compat wiring (which `theme` also adopts), and the
+  {% ref "ADR-024" /%} realignment: `--type theme` defaults to a **framework-agnostic** theme, with
+  the framework component layer opt-in via `--target`.
 - **No MCP surface.** The scaffolds stay CLI-only. `@refrakt-md/mcp` deliberately wraps only the
   *read/introspection* surface (`inspect`, `plugins_list`, `reference`, `contracts`, `detect`,
   `plan.*`) and excludes one-shot, interactive, filesystem-mutating commands — `refrakt write`,
@@ -99,7 +103,7 @@ asked to remember the policy.
 - [ ] The `plugin` scaffold emits a `Plugin` package with one example rune that builds and renders under the identity transform; `template` emits a `template.json` (`kind: "site"` + `site` SiteConfig + `refrakt` range) and a `content/` tree; `preset-pack` emits a `presets.json` + an example `syntax`-scoped `ThemeTokensConfig` module.
 - [ ] Every scaffolded extension declares `@refrakt-md/*` as `peerDependencies` with a minor range and a matching `refrakt` compatibility range in its manifest, pinned to the scaffolding `create-refrakt` version ({% ref "ADR-023" /%}); no exact ordinary deps on `@refrakt-md/*`.
 - [ ] Each scaffold includes build + manifest-validate scripts; the `template` scaffold includes the {% ref "SPEC-109" /%} scaffold-build CI hook.
-- [ ] `--type theme` is updated to the same peerDeps/compat-range convention.
+- [ ] `--type theme` is updated to the same peerDeps/compat-range convention, and defaults to a **framework-agnostic** theme per {% ref "ADR-024" /%} — mirroring the reference theme (tokens + `./transform` config + `./layouts` configs + manifest + per-rune CSS + `css-coverage` test), with no `svelte/`, `SvelteTheme`, or `target`; a `--target <framework>` flag opts into the framework component layer (adds `svelte/`, the `./svelte` export, and framework layout components).
 - [ ] Authoring docs cover producing each distributable via the scaffold.
 
 ## References

@@ -120,10 +120,15 @@ so the tarball/registry/multi-site improvements land once and benefit every appl
 
 ### 5. Validation and listing
 
-- Extend post-install validation to cover both artifact kinds: a theme's `./svelte`/`./transform`
-  exports (today's check) and a template's `template.json` manifest — its `kind`, the metadata
-  fields, and the `site` `SiteConfig` shape (`site.plugins` resolvable, `site.theme` a valid
-  `SiteThemeConfig`).
+- Extend post-install validation to cover both artifact kinds: a theme's exports and a template's
+  `template.json` manifest — its `kind`, the metadata fields, and the `site` `SiteConfig` shape
+  (`site.plugins` resolvable, `site.theme` a valid `SiteThemeConfig`).
+- **Make theme validation framework-aware** ({% ref "ADR-024" /%}). `./transform` is the required
+  theme contract; a **framework** export (`./svelte`, …) is **optional** — themes are
+  framework-agnostic by default and the reference theme ships no `./svelte`. So a missing framework
+  export is *normal*, not a warning (today's check wrongly warns "runtime rendering may fail" on its
+  absence). Validation may report *which* framework layer(s), if any, a theme provides, but must not
+  imply one is mandatory.
 - **Validate the `refrakt` compatibility range** (`ADR-023`). Each distributable manifest
   (`template.json`, `presets.json`, `ThemeManifest`) declares a `refrakt` range; install checks it
   against the project's refrakt version and refuses/warns on a mismatch with a clear message
@@ -151,7 +156,7 @@ so the tarball/registry/multi-site improvements land once and benefit every appl
 - [ ] `--site <name>` disambiguates the target site, with existence rules per apply-mode: theme install (and deferred section templates) **select an existing** site (inferred when single, listed-and-exit when multiple without `--site`); full-site template install **names a new** site (collision with an existing site errors), defaulting to `sites.default` and rewriting a singular `site:` config to plural when a second site is added.
 - [ ] Source resolution (directory | tarball | registry name → known package) is factored into a shared helper used by theme, template, and preset-pack ({% ref "SPEC-111" /%}) install; apply is keyed on artifact and template `kind` — theme → dependency + point `theme`; `kind: "site"` → add a site (`SiteConfig` write + scaffold-copy + derived deps); preset pack → dependency + validate `presets.json` + optional `site.theme.presets` append (no copy, no site).
 - [ ] The template apply-mode is keyed on the manifest `kind`: `kind: "site"` is implemented; `kind: "section"` (merge into an existing site) is reserved and forward-compatible (it reuses the same resolver, `SiteConfig` merge, and `--site` plumbing) but out of scope for v1.
-- [ ] Post-install validation covers both a theme's runtime exports and a template's `template.json` manifest (`kind`, metadata, and the `site` `SiteConfig` shape); `theme list` reports installed and active themes.
+- [ ] Post-install validation covers both a theme's exports and a template's `template.json` manifest (`kind`, metadata, and the `site` `SiteConfig` shape); theme validation is **framework-aware** per {% ref "ADR-024" /%} (`./transform` required, a framework export like `./svelte` optional — its absence is not warned); `theme list` reports installed and active themes.
 - [ ] Install validates each distributable's `refrakt` compatibility range (`ADR-023`) against the project's refrakt version, failing with a clear message on mismatch; extensions resolve `@refrakt-md/*` via `peerDependencies`.
 - [ ] The Non-Goals (no licensing/entitlement/gating, no bundled catalog, no credential storage) are documented so the install path stays a neutral packaging mechanism.
 
