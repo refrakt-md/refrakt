@@ -1,5 +1,17 @@
 # @refrakt-md/editor
 
+## 0.24.6
+
+### Patch Changes
+
+- Updated dependencies [c25b10b]
+- Updated dependencies [2ce7a17]
+  - @refrakt-md/runes@0.24.6
+  - @refrakt-md/transform@0.24.6
+  - @refrakt-md/types@0.24.6
+  - @refrakt-md/content@0.24.6
+  - @refrakt-md/highlight@0.24.6
+
 ## 0.24.5
 
 ### Patch Changes

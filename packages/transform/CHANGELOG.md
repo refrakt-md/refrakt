@@ -1,5 +1,40 @@
 # @refrakt-md/transform
 
+## 0.24.6
+
+### Patch Changes
+
+- c25b10b: Add the `frame-overflow: clip | bleed` media-frame facet (SPEC-116, WORK-444). A guest whose content is wider than its frame — a fixed-width or naturally wide component — is clipped at the rounded inset edge by default; `frame-overflow="bleed"` instead runs an overflowing guest's inline-end out to the layout edge on a narrow viewport and squares those corners, so it reads as cropped by the screen.
+
+  It's a universal frame facet (host/slot-set), resolved onto the media zone as `data-frame-overflow`, and gated by a runtime per-guest `data-overflowing` signal — the guest reports the fact (the `sandbox` measures its iframe with hysteresis), the host decides the policy. It's meaningful only on a bleed host (hero/feature); on a clip host (card/bento-cell) the media well crops the over-width, so it's a no-op and emits a build warning. The bleed reaches a layout-owned boundary (`--rf-bleed-room-end`, default the page gutter), never the raw viewport, so a chrome'd layout can cap it at the content row. v1 is collapsed-viewport, inline-end only; direction (via `frame-anchor`) and side-by-side are deferred.
+
+- 2ce7a17: Add a `search` opt-out and document search setup.
+
+  - New `SiteConfig.search` option (`refrakt.config.json`). Defaults to `true`;
+    set `false` to omit the search chrome entirely — no trigger button and the
+    `search` behavior (including `Cmd/Ctrl+K`) is never initialized.
+  - `@refrakt-md/transform` exports `withoutSearch(layouts)` /
+    `withoutSearchLayout(layout)` helpers and `renderPage` now accepts a `search`
+    flag. The opt-out is wired through every adapter: SvelteKit reads it from
+    config automatically (virtual theme module); Astro (`<BaseLayout search>`),
+    Next (`<RefraktContent search>`), Nuxt/HTML (`renderPage({ search })`), and
+    Eleventy (`createDataFile({ search })`) expose it as a passthrough sourced
+    from `SiteConfig.search`.
+  - `create-refrakt` SvelteKit scaffolds now wire Pagefind out of the box:
+    `pagefind` devDependency + a `vite build && pagefind --site build` build step,
+    so new projects get working search results instead of an empty
+    "Search is not available." dialog.
+  - New docs page "Setting up Search" covering how the Pagefind index is built and
+    served, the dev-vs-production gotcha, per-adapter build steps, and the
+    `search: false` opt-out.
+
+  Also unifies the two header buttons: the theme toggle now shares the search
+  trigger's chrome (surface fill, full radius, muted colour, primary hover), and
+  the collapsed mobile search trigger is fully rounded to match the toggle.
+
+- Updated dependencies [2ce7a17]
+  - @refrakt-md/types@0.24.6
+
 ## 0.24.5
 
 ### Patch Changes
