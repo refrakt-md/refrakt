@@ -41,6 +41,21 @@ any theme, but only *looks designed* under the ones it was authored against). Th
 asymmetry is the contract: **works with any theme, sings with its recommended theme.** It
 is a first-class fact in the manifest, not an accident.
 
+**Runes stay decoupled from themes.** A developer distributing custom runes *plus* a theme tuned
+for them ships **three separate packages**, not a theme that bundles runes: a **plugin** (the
+vocabulary — a theme cannot define runes; `ThemeManifest` has no rune surface), a **theme** (the
+skin, which recommends/depends on the plugin), and a **template** that wires both via
+`site.plugins` + `site.theme` (install derives and pins both deps, §2). Themes stay
+vocabulary-agnostic so content renders under any theme; the template is the turnkey bundle.
+
+**Layouts are the one place a template can over-couple.** A template's `site.routeRules` reference
+layout names. The **built-in** layouts — `default`, `docs`, `blog-article`, `plan`
+(`packages/transform/src/layouts.ts`) — resolve under *any* theme, so a template that sticks to
+them honours "works with any theme." A template that references a **theme-specific custom layout**
+silently hard-couples to that theme; such a template must treat that theme as a *required* pairing
+(not merely recommended) and say so. Prefer built-in/standard layouts unless the template is
+deliberately theme-bound.
+
 ## Problem evidence
 
 Measured against the current `packages/create-refrakt` tree:
@@ -105,8 +120,8 @@ site template is a package (or a directory) shaped as:
 my-template/
   package.json        — template package metadata (may list the theme + plugins for its own CI build)
   template.json       — the template manifest (see below)
-  content/            — the content tree: .md pages + _layout.md cascade
-  sandboxes/          — optional sandbox program trees (html/css/js/glsl); copied to site.sandbox.dir (§7)
+  content/            — the content tree: .md pages + _layout.md cascade (fixed source folder name)
+  sandboxes/          — optional sandbox program trees (html/css/js/glsl) (fixed source folder name, §7)
   assets/             — optional real assets (usually empty; prefer the asset scheme, §4)
 ```
 
@@ -121,11 +136,14 @@ The exact field set is settled in the work phase; the shape is **metadata + a `s
   "title": "Documentation site",
   "description": "A multi-section docs site with sidebar nav, API reference, and changelog.",
   "category": "docs",
+  "refrakt": ">=0.24 <0.26",                      // compatible refrakt range, validated at install (ADR-023)
   "previewUrl": "https://…",                      // optional: where a built demo is published
 
   // — the site this template provides: a SiteConfig partial, merged in as a site —
+  // NOTE: no `contentDir`/`sandbox.dir` here. The package ships fixed `content/` +
+  // `sandboxes/` source folders; their *destinations* are install-derived (below) and
+  // written into the resulting SiteConfig by the installer, not prescribed by the author.
   "site": {
-    "contentDir": "site/content",                 // destination; the package's content/ copies here
     "theme": {                                    // recommended look (SiteThemeConfig)
       "package": "@refrakt-md/lumina",
       "presets": ["@refrakt-md/lumina/presets/tideline"]
@@ -133,15 +151,15 @@ The exact field set is settled in the work phase; the shape is **metadata + a `s
     "plugins": ["@refrakt-md/docs", "@refrakt-md/marketing"],
     "routeRules": [{ "pattern": "**", "layout": "docs" }],
     "entityRoutes": [],
-    "sandbox": { "dir": "site/sandboxes" },       // destination; the package's sandboxes/ copies here (§7, ADR-022)
     "assets": { /* asset: config — seeds sites.<site>.assets, see §4 + SPEC-115 */ }
   }
 }
 ```
 
 `site` is a partial of `SiteConfig` (`packages/types/src/theme.ts`) — the **same per-site shape**
-`refrakt.config.json` uses (`contentDir`, `theme`, `plugins`, `routeRules`, `entityRoutes`,
-`backgrounds`, `sandbox`, `assets`, …). Consequences of "a template is a `SiteConfig`":
+`refrakt.config.json` uses (`theme`, `plugins`, `routeRules`, `entityRoutes`, `backgrounds`,
+`assets`, …), minus the two path fields a template cannot know (below). Consequences of "a template
+is a `SiteConfig`":
 
 - **Install = add a site.** The scaffolder slots `site` under the target key — `sites.default`
   (or singular `site`) for a new project, `sites.<name>` for a multi-site add — deep-merged per
@@ -153,11 +171,19 @@ The exact field set is settled in the work phase; the shape is **metadata + a `s
   reuses `SiteThemeConfig`, so the template ships a complete look (theme + presets + token
   overrides) without a parallel type. (Note `plugins` exists at both levels; a template uses the
   per-site `site.plugins`, and the pinned deps keep discovery working.)
-- **`contentDir`/`sandbox.dir` are destinations**, not the package's source folders — the package
-  always ships `content/` and `sandboxes/`; these fields say where they land.
+- **`contentDir`/`sandbox.dir` are install-derived, not author-set.** `SiteConfig.contentDir` is
+  *project-root-relative* and required (`theme.ts`), but a template is mounted under an arbitrary
+  site key (`sites.default` or `sites.<name>`) into a project whose content layout is set by the
+  **framework starter** (`content/` for html, `site/content/` for SvelteKit, …). An author cannot
+  know that prefix, and a hard-coded `site/content` would collide or misplace content on any
+  non-default key. So the package ships fixed **source folders** named `content/` and `sandboxes/`,
+  and the **installer composes the destination** from *(framework starter layout) × (target site
+  key)*, copies into it, and **writes the resolved `contentDir`/`sandbox.dir` into the produced
+  `SiteConfig`**. The manifest's `site` therefore omits both. (If an override is ever wanted it must
+  be *site-relative* — `"content"` — with the installer prefixing the site root; never a
+  project-root path.)
 
-The minimal template is just `site.contentDir` + `site.theme`; a fully-composed bundle populates
-the rest.
+The minimal template is just `content/` + `site.theme`; a fully-composed bundle populates the rest.
 
 **`kind` is the forward-compatibility hook.** The only value today is `site` (a full-site
 template, this spec); it defaults to `site` when omitted. A future **section/page** template
@@ -290,8 +316,8 @@ that proves the capability, not something shipped in-repo.
 ## Acceptance Criteria
 
 - [ ] `create-refrakt` separates the framework axis (`--framework`) from the purpose axis (`--template`), with both defaulting to preserve current behaviour; the existing `--type`/`--target` plumbing is reconciled onto `--framework` and documented.
-- [ ] A site-template package format is defined: a `template.json` of catalog metadata (name, title, description, category, optional `previewUrl`) plus a `site` field that is a `SiteConfig` partial (`packages/types/src/theme.ts`), and the package ships `content/` (+ optional `sandboxes/`).
-- [ ] Installing a template **adds a site**: the scaffolder slots the manifest's `site` `SiteConfig` under the target site key (`sites.default`/singular `site` for a new project, `sites.<name>` for a multi-site add), deep-merged per {% ref "SPEC-115" /%}; it derives and pins `package.json` deps from `site.plugins` + `site.theme.package`, copies `content/`→`site.contentDir` and `sandboxes/`→`site.sandbox.dir`, and injects the framework `target`/wiring.
+- [ ] A site-template package format is defined: a `template.json` of catalog metadata (name, title, description, category, a `refrakt` compatibility range per `ADR-023`, optional `previewUrl`) plus a `site` field that is a `SiteConfig` partial (`packages/types/src/theme.ts`) which **omits `contentDir`/`sandbox.dir`** (install-derived, not author-set), and the package ships fixed `content/` (+ optional `sandboxes/`) source folders.
+- [ ] Installing a template **adds a site**: the scaffolder slots the manifest's `site` `SiteConfig` under the target site key (`sites.default`/singular `site` for a new project, `sites.<name>` for a multi-site add), deep-merged per {% ref "SPEC-115" /%}; it derives and pins `package.json` deps from `site.plugins` + `site.theme.package`, derives the content/sandbox **destinations** from the framework starter layout and target site key, copies the package's `content/`/`sandboxes/` into them and writes the resolved `contentDir`/`sandbox.dir` into the produced `SiteConfig`, and injects the framework `target`/wiring.
 - [ ] Full-site templates seed a **new project or new site** only — they do not overlay an existing site (that is the deferred section/page-template case).
 - [ ] Templates are scaffold-copied (content owned by the author), while the theme and plugins (derived from the `site` config) are pinned as live dependencies of the new project.
 - [ ] A template seeds the project's `asset:` configuration ({% ref "SPEC-115" /%}) at scaffold time from `template.json`; with nothing configured the scaffolded site renders shape-correct placeholders (zero binary assets, nothing to strip), and setting a base URL lights up real images with no demo-build flag.
