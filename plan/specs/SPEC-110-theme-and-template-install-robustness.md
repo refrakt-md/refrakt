@@ -103,9 +103,11 @@ The apply step is keyed on the artifact and, for templates, on the manifest's `k
   scaffold-copy, no site creation, no `theme`-field change. Capability discovery is independent of
   `kind` — a theme package may *also* be a preset pack.
 - **Template, `kind: "site"`** (full-site — v1) → resolve the same way, then **add a site**: write
-  the manifest's `site` `SiteConfig` into `sites.<key>`, scaffold-copy `content/` →
-  `site.contentDir` and `sandboxes/` → `site.sandbox.dir`, and derive + pin dependencies from
-  `site.plugins` + `site.theme.package`. `--site` names a **new** site (§3).
+  the manifest's `site` `SiteConfig` into `sites.<key>`, derive the content/sandbox **destinations**
+  from the framework starter layout and target site key (the manifest does not carry them —
+  {% ref "SPEC-109" /%} §2), scaffold-copy the package's `content/`/`sandboxes/` into them and record
+  the resolved `contentDir`/`sandbox.dir` in the written `SiteConfig`, and derive + pin dependencies
+  from `site.plugins` + `site.theme.package`. `--site` names a **new** site (§3).
 - **Template, `kind: "section"`** (deferred) → resolve the same way, then **merge into an existing
   site**: overlay the content subtree and deep-merge the partial `SiteConfig` into the selected
   site per {% ref "SPEC-115" /%}'s precedence rule. `--site` selects an existing site. Out of scope
