@@ -1,4 +1,4 @@
-{% decision id="ADR-022" status="proposed" date="2026-06-18" source="SPEC-104" tags="sandbox, config, naming, dx, migration" %}
+{% decision id="ADR-022" status="accepted" date="2026-06-18" source="SPEC-104" tags="sandbox, config, naming, dx, migration" %}
 
 # Rename the sandbox runtime directory from `examples` to `sandboxes`
 

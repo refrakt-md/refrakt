@@ -1,4 +1,4 @@
-{% decision id="ADR-023" status="proposed" date="2026-06-18" source="SPEC-110" tags="versioning,compatibility,distribution,packaging,peerdeps,contracts" %}
+{% decision id="ADR-023" status="accepted" date="2026-06-18" source="SPEC-110" tags="versioning,compatibility,distribution,packaging,peerdeps,contracts" %}
 
 # Versioning and compatibility for distributed extensions
 
