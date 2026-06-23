@@ -49,8 +49,10 @@ plumbing that `theme` already uses). `site` remains the default; existing behavi
   theme and any required plugins via `site.theme`/`site.plugins`. Mirrors the in-repo reference
   template ({% ref "SPEC-109" /%} §6).
 - **`preset-pack`** — a `presets.json` (with a `refrakt` range + one example preset entry: `id`,
-  `title`, `scope`, `module`) + a `src/<preset>.ts` exporting a `ThemeTokensConfig`. Scaffolds a
-  `syntax`-scoped example by default (universal, the safest starting point).
+  `title`, `scope`, `module`) + a `src/<preset>.json` `ThemeTokensConfig` (the **declarative JSON
+  carrier**, default per {% ref "SPEC-111" /%} §6, with a `$schema` pointer). Scaffolds a
+  `syntax`-scoped example by default (universal, the safest starting point). Because JSON needs no
+  build, this is the one scaffold that is contract-valid with zero compile step.
 
 ### 3. ADR-023 compliance is baked in, not documented
 
@@ -75,8 +77,9 @@ asked to remember the policy.
   *peer*Dependencies (§3, ADR-023), but peers are not installed for the package in isolation — so
   the scaffold also seeds matching **`devDependencies`** (same ranges) so the author can actually
   build and preview. And every distributable's contract points at **built** artifacts, not source:
-  a theme's `./transform`/`./layouts` resolve to `dist/*.js`, a preset pack's `presets.json`
-  `module` points at `./src/<preset>.js`, a plugin's exports to compiled output. The scaffold wires
+  a theme's `./transform`/`./layouts` resolve to `dist/*.js`, a JS/TS-carrier preset's `module`
+  points at built JS (a JSON-carrier preset needs no build — {% ref "SPEC-111" /%} §6), a plugin's
+  exports to compiled output. The scaffold wires
   the build (tsconfig, `dist/` output, exports map) so those paths resolve immediately — a freshly
   scaffolded package passes its own manifest-validate, rather than only working after the author
   discovers it must build first.
@@ -111,10 +114,10 @@ asked to remember the policy.
 ## Acceptance Criteria
 
 - [ ] `create-refrakt --type plugin|template|preset-pack` scaffolds a publishable package skeleton for each, alongside the existing `site|theme|plan`; `site` stays the default.
-- [ ] The `plugin` scaffold emits a `Plugin` package with one example rune that builds and renders under the identity transform; `template` emits a `template.json` (`kind: "site"` + `site` SiteConfig + `refrakt` range) and a `content/` tree; `preset-pack` emits a `presets.json` + an example `syntax`-scoped `ThemeTokensConfig` module.
+- [ ] The `plugin` scaffold emits a `Plugin` package with one example rune that builds and renders under the identity transform; `template` emits a `template.json` (`kind: "site"` + `site` SiteConfig + `refrakt` range) and a `content/` tree; `preset-pack` emits a `presets.json` + an example `syntax`-scoped `ThemeTokensConfig` as declarative JSON (the default carrier, {% ref "SPEC-111" /%} §6).
 - [ ] Every scaffolded extension declares `@refrakt-md/*` as `peerDependencies` with a minor range and a matching `refrakt` compatibility range in its manifest, pinned to the scaffolding `create-refrakt` version ({% ref "ADR-023" /%}); no exact ordinary deps on `@refrakt-md/*`.
 - [ ] Each scaffold includes build + manifest-validate scripts; the `template` scaffold includes the {% ref "SPEC-109" /%} scaffold-build CI hook.
-- [ ] Every scaffolded package **builds and satisfies its own contract on day one** via `npm install && npm run build` with no hand-editing: the scaffold seeds matching `devDependencies` (so the peer-only `@refrakt-md/*` resolve for an isolated build) and wires the build so every contract path that points at built output (`./transform`/`./layouts` → `dist/*.js`, `presets.json` `module` → built JS, plugin exports → compiled output) resolves — a fresh scaffold passes its own manifest-validate.
+- [ ] Every scaffolded package **builds and satisfies its own contract on day one** via `npm install && npm run build` with no hand-editing: the scaffold seeds matching `devDependencies` (so the peer-only `@refrakt-md/*` resolve for an isolated build) and wires the build so every contract path that points at built output (`./transform`/`./layouts` → `dist/*.js`, a JS/TS-carrier preset's `module` → built JS, plugin exports → compiled output) resolves — a fresh scaffold passes its own manifest-validate. A JSON-carrier preset pack ({% ref "SPEC-111" /%} §6) is the degenerate case: contract-valid with no compile step at all.
 - [ ] `--type theme` is updated to the same peerDeps/compat-range convention, and defaults to a **framework-agnostic** theme per {% ref "ADR-024" /%} — mirroring the reference theme (tokens + `./transform` config + `./layouts` configs + manifest + per-rune CSS + `css-coverage` test), with no `svelte/`, `SvelteTheme`, or `target`; a `--target <framework>` flag opts into the framework component layer (adds `svelte/`, the `./svelte` export, and framework layout components).
 - [ ] Authoring docs cover producing each distributable via the scaffold.
 
