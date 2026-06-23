@@ -118,4 +118,26 @@
  * reads consistently from desktop to mobile. For self-target (showcase) the
  * negative-margin spill stays on too — that's the intended breakout. */
 
+/* ── frame-overflow="bleed" (SPEC-116) ───────────────────────────────────
+ * The host declares the policy (`data-frame-overflow="bleed"` on its media
+ * zone, a bleed host only); the guest signals the fact (`data-overflowing`,
+ * set by its runtime when its content is wider than the frame). When both
+ * hold on a narrow viewport, run the guest's inline-end out to the layout
+ * edge and square those corners, so an overflowing component reads as cropped
+ * by the screen instead of clipped at the rounded inset edge.
+ *
+ * The reach is a LAYOUT-OWNED inset (`--rf-bleed-room-end`, default the page
+ * gutter — never the raw viewport, so a chrome'd layout like docs can cap it
+ * at the content row). v1 is inline-end only; direction (via frame-anchor) and
+ * side-by-side are deferred. The host media zone is already `overflow: visible`
+ * for a rune guest (the bleed-host guestFit rule), so the guest can spill. */
+@media (max-width: 640px) {
+	[data-frame-overflow="bleed"] > [data-overflowing] {
+		width: calc(100% + var(--rf-bleed-room-end, var(--rf-content-gutter, 1.5rem)));
+		max-width: none;
+		border-start-end-radius: 0;
+		border-end-end-radius: 0;
+	}
+}
+
 }

@@ -159,7 +159,7 @@ interface FrameChrome {
 	metaProps: Set<string>;
 }
 
-const FRAME_FACET_META = ['frame-aspect', 'frame-displace', 'frame-displace-mode', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-shadow'] as const;
+const FRAME_FACET_META = ['frame-aspect', 'frame-displace', 'frame-displace-mode', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-overflow', 'frame-shadow'] as const;
 
 /** SPEC-086 — read the `frame` preset + `frame-*` facet metas, resolve the
  *  preset (one `extends` level) and inline overrides, and emit the chrome
@@ -192,6 +192,7 @@ function resolveFrameChrome(tag: SerializedTag, frames: Record<string, FramePres
 		oversize: read('frame-oversize'),
 		place: read('frame-place'),
 		anchor: read('frame-anchor'),
+		overflow: read('frame-overflow'),
 		shadow: read('frame-shadow'),
 	};
 	for (const [k, v] of Object.entries(inline)) {
@@ -215,6 +216,10 @@ function resolveFrameChrome(tag: SerializedTag, frames: Record<string, FramePres
 	if (facets.displace) dataAttrs['data-displace'] = facets.displace;
 	if ((facets as Record<string, string>).displaceMode) dataAttrs['data-displace-mode'] = (facets as Record<string, string>).displaceMode;
 	if (facets.shadow) dataAttrs['data-frame-shadow'] = facets.shadow;
+	// `frame-overflow="bleed"` — a content-overflow policy on the media frame.
+	// Only meaningful on a bleed host (the clip host's media well crops the
+	// over-width); the call site strips it + warns on a clip host.
+	if (facets.overflow === 'bleed') dataAttrs['data-frame-overflow'] = 'bleed';
 	if (facets.aspect) styleParts.push(`--frame-aspect: ${facets.aspect}`);
 	if (facets.offset) styleParts.push(`--frame-offset: ${resolveOffset(facets.offset)}`);
 	if (facets.oversize) styleParts.push(`--frame-oversize: ${facets.oversize}`);
@@ -329,6 +334,16 @@ function warnFrameNoTarget(rune: string): void {
 	FRAME_NO_TARGET_WARNED.add(rune);
 	// eslint-disable-next-line no-console
 	console.warn(`[refrakt] \`frame\` on \`${rune}\` has no frame target — set \`frameTarget\` or give the rune a media section. Frame chrome ignored.`);
+}
+
+const FRAME_OVERFLOW_CLIP_WARNED = new Set<string>();
+/** Warn once when `frame-overflow="bleed"` lands on a clip host — the media well
+ *  crops the over-width, so the bleed has no effect (SPEC-116). */
+function warnFrameOverflowClip(rune: string): void {
+	if (FRAME_OVERFLOW_CLIP_WARNED.has(rune)) return;
+	FRAME_OVERFLOW_CLIP_WARNED.add(rune);
+	// eslint-disable-next-line no-console
+	console.warn(`[refrakt] \`frame-overflow="bleed"\` has no effect on \`${rune}\` — a clip host crops its media guest. Use it on a bleed host (hero, feature), or drop it.`);
 }
 
 /** Resolved substrate fill — the markers + custom props for the target surface. */
@@ -902,6 +917,13 @@ function transformRune(
 		const hasMediaSection = config.sections ? Object.values(config.sections).includes('media') : false;
 		frameTargetKind = config.frameTarget ?? (hasMediaSection ? 'media' : null);
 		if (!frameTargetKind) warnFrameNoTarget(dataRune ?? config.block);
+		// SPEC-116 — `frame-overflow="bleed"` only does anything on a bleed host
+		// (the clip host's media well crops the over-width). On a clip host, strip
+		// the inert marker so output stays clean, and warn once.
+		if (frameChrome.dataAttrs['data-frame-overflow'] === 'bleed' && config.guestFit !== 'bleed') {
+			delete frameChrome.dataAttrs['data-frame-overflow'];
+			warnFrameOverflowClip(dataRune ?? config.block);
+		}
 	}
 	const frameRootDataAttrs = frameChrome && frameTargetKind === 'self' ? frameChrome.dataAttrs : {};
 

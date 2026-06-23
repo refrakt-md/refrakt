@@ -63,6 +63,7 @@ const universalAttributes: Record<string, SchemaAttribute> = {
   'frame-oversize': { type: String, required: false, description: 'How far the guest exceeds its slot (scale factor)' },
   'frame-place': { type: String, required: false, description: 'Guest-box alignment in the slot (e.g. "left top")' },
   'frame-anchor': { type: String, required: false, description: 'Crop focal point when the guest is cut (object-position)' },
+  'frame-overflow': { type: String, required: false, matches: ['clip', 'bleed'], description: 'How the frame handles a guest whose content is wider than it: `clip` (default) keeps it inside the rounded frame; `bleed` runs an overflowing guest out to the layout edge on a narrow viewport so it reads as cropped by the screen (a bleed host only — hero/feature)' },
   'frame-shadow': { type: String, required: false, matches: ['none', 'sm', 'md', 'lg'], description: 'Silhouette drop-shadow strength for the framed media' },
   // SPEC-087 — substrate: generated surface pattern + inline facet overrides.
   'substrate': { type: String, required: false, matches: ['dots', 'grid', 'lines', 'cross', 'checker', 'none'], description: 'Generated surface pattern' },
@@ -91,7 +92,7 @@ const BG_GRADIENT_FACET_NAMES = [
 ] as const;
 
 /** SPEC-086 frame facet attribute names (excluding the `frame` preset key). */
-const FRAME_FACET_NAMES = ['frame-aspect', 'frame-displace', 'frame-displace-mode', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-shadow'] as const;
+const FRAME_FACET_NAMES = ['frame-aspect', 'frame-displace', 'frame-displace-mode', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-overflow', 'frame-shadow'] as const;
 
 /** SPEC-087 substrate facet attribute names (excluding the `substrate` enum key). */
 const SUBSTRATE_FACET_NAMES = ['substrate-size', 'substrate-opacity', 'substrate-fill', 'substrate-target'] as const;
