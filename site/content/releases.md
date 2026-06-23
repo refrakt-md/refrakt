@@ -6,7 +6,19 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.24.5
+## v0.24.6
+
+- Add a `search` opt-out and document search setup.
+- New `SiteConfig.search` option (`refrakt.config.json`). Defaults to `true`;
+- `@refrakt-md/transform` exports `withoutSearch(layouts)` /
+- `create-refrakt` SvelteKit scaffolds now wire Pagefind out of the box:
+- New docs page "Setting up Search" covering how the Pagefind index is built and
+- set `false` to omit the search chrome entirely — no trigger button and the `search` behavior (including `Cmd/Ctrl+K`) is never initialized. `withoutSearchLayout(layout)` helpers and `renderPage` now accepts a `search` flag. The opt-out is wired through every adapter: SvelteKit reads it from config automatically (virtual theme module); Astro (`<BaseLayout search>`), Next (`<RefraktContent search>`), Nuxt/HTML (`renderPage({ search })`), and Eleventy (`createDataFile({ search })`) expose it as a passthrough sourced from `SiteConfig.search`. `pagefind` devDependency + a `vite build && pagefind --site build` build step, so new projects get working search results instead of an empty "Search is not available." dialog. served, the dev-vs-production gotcha, per-adapter build steps, and the `search: false` opt-out.
+- Also unifies the two header buttons: the theme toggle now shares the search trigger's chrome (surface fill, full radius, muted colour, primary hover), and the collapsed mobile search trigger is fully rounded to match the toggle.
+- Add the `frame-overflow: clip | bleed` media-frame facet (SPEC-116, WORK-444). A guest whose content is wider than its frame — a fixed-width or naturally wide component — is clipped at the rounded inset edge by default; `frame-overflow="bleed"` instead runs an overflowing guest's inline-end out to the layout edge on a narrow viewport and squares those corners, so it reads as cropped by the screen.
+- It's a universal frame facet (host/slot-set), resolved onto the media zone as `data-frame-overflow`, and gated by a runtime per-guest `data-overflowing` signal — the guest reports the fact (the `sandbox` measures its iframe with hysteresis), the host decides the policy. It's meaningful only on a bleed host (hero/feature); on a clip host (card/bento-cell) the media well crops the over-width, so it's a no-op and emits a build warning. The bleed reaches a layout-owned boundary (`--rf-bleed-room-end`, default the page gutter), never the raw viewport, so a chrome'd layout can cap it at the content row. v1 is collapsed-viewport, inline-end only; direction (via `frame-anchor`) and side-by-side are deferred.
+
+## v0.24.5 - June 22, 2026
 
 - **Fixed the gap that could appear between a sticky header and the bar below it while scrolling.** Layout headers (`.rf-header`, `.rf-docs-header`, `.rf-blog-header`) now pin their height to `--rf-header-height` instead of being content-driven, so the sticky offsets that dock below them — the docs mobile toolbar and the mobile nav panel — line up exactly with the header bottom. Previously a header that rendered shorter than the assumed `3.5rem` left a strip where page content scrolled through between the two bars (and a taller one overlapped). The docs toolbar also hard-coded the `3.5rem` literal rather than reading the token, so layout overrides like the blog layout's `4.25rem` never reached it; all offsets now derive from `--rf-header-height`. Sites whose header needs to be taller should set `--rf-header-height` on their layout root.
 
