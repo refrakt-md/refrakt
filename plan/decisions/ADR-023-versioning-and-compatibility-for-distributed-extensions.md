@@ -87,8 +87,9 @@ caret ranges apply.
 
 ## Consequences
 
-- Authoring docs and the `create-refrakt` extension scaffolds prescribe `peerDependencies` +
-  minor ranges for plugins/themes/template-packs/preset-packs.
+- Authoring docs and the `create-refrakt` extension scaffolds ({% ref "SPEC-116" /%}) prescribe
+  `peerDependencies` + minor ranges for plugins/themes/template-packs/preset-packs, so authors
+  start compliant rather than having to remember the policy.
 - `template.json` ({% ref "SPEC-109" /%}), `presets.json` ({% ref "SPEC-111" /%}), and
   `ThemeManifest` gain a `refrakt` range field; {% ref "SPEC-110" /%} install validates it against
   the project's refrakt version (warn or refuse) — a new post-install validation row.

@@ -48,6 +48,14 @@ skin, which recommends/depends on the plugin), and a **template** that wires bot
 `site.plugins` + `site.theme` (install derives and pins both deps, §2). Themes stay
 vocabulary-agnostic so content renders under any theme; the template is the turnkey bundle.
 
+**Layouts are the one place a template can over-couple.** A template's `site.routeRules` reference
+layout names. The **built-in** layouts — `default`, `docs`, `blog-article`, `plan`
+(`packages/transform/src/layouts.ts`) — resolve under *any* theme, so a template that sticks to
+them honours "works with any theme." A template that references a **theme-specific custom layout**
+silently hard-couples to that theme; such a template must treat that theme as a *required* pairing
+(not merely recommended) and say so. Prefer built-in/standard layouts unless the template is
+deliberately theme-bound.
+
 ## Problem evidence
 
 Measured against the current `packages/create-refrakt` tree:
