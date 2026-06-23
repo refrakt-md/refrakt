@@ -34,10 +34,15 @@ let flatShapeWarningEmitted = false;
  *  field is auto-migrated with a warning until v1.0. */
 let legacyPackagesWarningEmitted = false;
 
+/** Tracks the `sandbox.examplesDir` → `sandbox.dir` deprecation warning
+ *  (ADR-022), once per process. */
+let examplesDirWarningEmitted = false;
+
 /** Reset the once-per-process flags — only useful for tests. */
 export function __resetFlatShapeWarningForTests(): void {
 	flatShapeWarningEmitted = false;
 	legacyPackagesWarningEmitted = false;
+	examplesDirWarningEmitted = false;
 }
 
 /** A normalized refrakt config — `sites` is always populated, and the legacy
@@ -254,11 +259,19 @@ function absolutizeSitePaths(site: SiteConfig, configDir: string): SiteConfig {
 	if (typeof site.theme === 'string') {
 		result.theme = absolutizeIfRelative(site.theme, configDir);
 	}
-	if (site.sandbox?.examplesDir) {
-		result.sandbox = {
-			...site.sandbox,
-			examplesDir: absolutizeIfRelative(site.sandbox.examplesDir, configDir),
-		};
+	// Sandbox directory: `dir` is canonical (ADR-022); `examplesDir` is the
+	// deprecated alias, still accepted. Coalesce to an absolutized value and
+	// mirror it onto both fields so readers of either name keep working.
+	const sandboxDir = site.sandbox?.dir ?? site.sandbox?.examplesDir;
+	if (sandboxDir) {
+		if (site.sandbox?.examplesDir && !site.sandbox?.dir && !examplesDirWarningEmitted) {
+			examplesDirWarningEmitted = true;
+			console.warn(
+				'[refrakt] config "sandbox.examplesDir" is deprecated — rename it to "sandbox.dir" (ADR-022).',
+			);
+		}
+		const abs = absolutizeIfRelative(sandboxDir, configDir);
+		result.sandbox = { ...site.sandbox, dir: abs, examplesDir: abs };
 	}
 	if (site.overrides) {
 		const overrides: Record<string, string> = {};
