@@ -1,13 +1,13 @@
 ---
-"@refrakt-md/transform": minor
-"@refrakt-md/types": minor
-"@refrakt-md/sveltekit": minor
-"@refrakt-md/astro": minor
-"@refrakt-md/next": minor
-"@refrakt-md/nuxt": minor
-"@refrakt-md/eleventy": minor
-"@refrakt-md/html": minor
-"create-refrakt": minor
+"@refrakt-md/transform": patch
+"@refrakt-md/types": patch
+"@refrakt-md/sveltekit": patch
+"@refrakt-md/astro": patch
+"@refrakt-md/next": patch
+"@refrakt-md/nuxt": patch
+"@refrakt-md/eleventy": patch
+"@refrakt-md/html": patch
+"create-refrakt": patch
 ---
 
 Add a `search` opt-out and document search setup.
