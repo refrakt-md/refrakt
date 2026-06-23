@@ -85,6 +85,13 @@ asked to remember the policy.
   {% ref "SPEC-111" /%} / `Plugin`; this spec only *generates* them.
 - **No theme-authoring change.** `--type theme` already exists; this spec adds the three missing
   kinds and the ADR-023 peerDeps/compat wiring (which `theme` should also adopt).
+- **No MCP surface.** The scaffolds stay CLI-only. `@refrakt-md/mcp` deliberately wraps only the
+  *read/introspection* surface (`inspect`, `plugins_list`, `reference`, `contracts`, `detect`,
+  `plan.*`) and excludes one-shot, interactive, filesystem-mutating commands — `refrakt write`,
+  `refrakt edit`, `plan serve`/`build`. Scaffolding a package skeleton is the same category and
+  belongs with them, not in MCP. (The *read* surfaces other v0.25.0 specs add — listing
+  distributables, manifest validation — are a separate, legitimate MCP-parity question, out of
+  scope here.)
 
 ## Acceptance Criteria
 
