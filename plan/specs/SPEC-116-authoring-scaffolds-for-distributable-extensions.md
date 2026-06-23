@@ -1,4 +1,4 @@
-{% spec id="SPEC-116" status="draft" tags="create-refrakt,scaffolding,distribution,plugins,templates,presets,dx" %}
+{% spec id="SPEC-116" status="accepted" tags="create-refrakt,scaffolding,distribution,plugins,templates,presets,dx" %}
 
 # Authoring scaffolds for distributable extensions
 

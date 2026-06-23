@@ -1,4 +1,4 @@
-{% decision id="ADR-024" status="proposed" tags="themes,architecture,frameworks,scaffolding,distribution" source="SPEC-116" %}
+{% decision id="ADR-024" status="accepted" tags="themes,architecture,frameworks,scaffolding,distribution" source="SPEC-116" %}
 
 # Themes are framework-agnostic by default; the framework component layer is opt-in
 

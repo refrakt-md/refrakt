@@ -1,4 +1,4 @@
-{% spec id="SPEC-115" status="draft" tags="assets,images,config,authoring,runes,dx" %}
+{% spec id="SPEC-115" status="accepted" tags="assets,images,config,authoring,runes,dx" %}
 
 # Project asset resolution — the `asset:` scheme
 

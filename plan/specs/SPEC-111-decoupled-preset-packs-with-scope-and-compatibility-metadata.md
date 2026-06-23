@@ -1,4 +1,4 @@
-{% spec id="SPEC-111" status="draft" tags="presets,tokens,distribution,packaging,syntax,tints" %}
+{% spec id="SPEC-111" status="accepted" tags="presets,tokens,distribution,packaging,syntax,tints" %}
 
 # Decoupled preset packs with scope and compatibility metadata
 
