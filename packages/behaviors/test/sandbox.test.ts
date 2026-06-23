@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { RfSandbox } from '../src/elements/sandbox.js';
+import { RfSandbox, nextBleedState } from '../src/elements/sandbox.js';
 
 beforeEach(() => {
 	document.body.innerHTML = '';
@@ -130,5 +130,40 @@ describe('rf-sandbox fill height mode (SPEC-101)', () => {
 		const el = mount({ 'data-height': '320' });
 		const iframe = el.querySelector('iframe') as HTMLIFrameElement;
 		expect(iframe.style.height).toBe('320px');
+	});
+});
+
+describe('rf-sandbox overflow signal (SPEC-116)', () => {
+	it('nextBleedState trips only on a clear overrun', () => {
+		expect(nextBleedState(40, false)).toBe(true);
+		expect(nextBleedState(24, false)).toBe(false); // at the threshold, not over
+		expect(nextBleedState(10, false)).toBe(false); // inside the band
+	});
+
+	it('nextBleedState holds until the content fully fits (no oscillation)', () => {
+		// Once overflowing, the bled frame is wider so overflow shrinks — stay set.
+		expect(nextBleedState(10, true)).toBe(true);
+		expect(nextBleedState(1, true)).toBe(true);
+		expect(nextBleedState(0, true)).toBe(false);
+		expect(nextBleedState(-5, true)).toBe(false);
+	});
+
+	it('reflects content overflow to data-overflowing, unconditionally (no opt-in)', () => {
+		const el = mount({ 'data-height': '300' }); // no bleed/frame-overflow attr
+		const iframe = el.querySelector('iframe') as HTMLIFrameElement;
+		expect(iframe).toBeTruthy();
+		// jsdom doesn't lay out, so iframe.clientWidth is 0 — a positive scrollWidth
+		// reads as overflow, exercising the wiring end to end.
+		window.dispatchEvent(new MessageEvent('message', {
+			data: { type: 'rf-sandbox-resize', height: 300, scrollWidth: 900 },
+			source: iframe.contentWindow,
+		}));
+		expect(el.hasAttribute('data-overflowing')).toBe(true);
+
+		window.dispatchEvent(new MessageEvent('message', {
+			data: { type: 'rf-sandbox-resize', height: 300, scrollWidth: 0 },
+			source: iframe.contentWindow,
+		}));
+		expect(el.hasAttribute('data-overflowing')).toBe(false);
 	});
 });

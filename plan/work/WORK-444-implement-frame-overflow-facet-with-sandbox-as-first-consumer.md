@@ -1,4 +1,4 @@
-{% work id="WORK-444" status="ready" priority="medium" complexity="moderate" source="SPEC-116" tags="frame,media,engine,behaviors,lumina,skeleton,sandbox" %}
+{% work id="WORK-444" status="done" priority="medium" complexity="moderate" source="SPEC-116" tags="frame,media,engine,behaviors,lumina,skeleton,sandbox" %}
 
 # Implement frame-overflow facet with sandbox as first consumer
 
@@ -35,12 +35,12 @@ reworking the held `bleed="crop"` PR (refrakt-md/refrakt#530).
 
 ## Acceptance Criteria
 
-- [ ] `frame-overflow="bleed"` on a bleed host emits `data-frame-overflow="bleed"` on its `[data-section="media"]` zone; `clip`/unset emits nothing; resolved via `resolveFrameChrome`.
-- [ ] The shared CSS bleeds `[data-frame-overflow="bleed"] > [data-overflowing]` on a narrow viewport (inline-end to screen, inline-end corners squared, inline-start anchored); no per-rune bleed CSS remains.
-- [ ] The sandbox behaviour sets `data-overflowing` from measured content width with hysteresis, independent of host policy; the sandbox `bleed` attribute is removed.
-- [ ] `frame-overflow="bleed"` on a clip host (`guestFit: 'clip'`) is inert and emits a hard build warning naming the rune and a bleed host; covered by an engine test.
-- [ ] Default (`clip`/unset) output is byte-identical to today for every rune (regression-safe); a guest that fits stays inset and rounded.
-- [ ] Engine tests for facet emission + the clip-host warning; the sandbox detection/hysteresis tests carry over; docs updated.
+- [x] `frame-overflow="bleed"` on a bleed host emits `data-frame-overflow="bleed"` on its `[data-section="media"]` zone; `clip`/unset emits nothing; resolved via `resolveFrameChrome`.
+- [x] The shared CSS bleeds `[data-frame-overflow="bleed"] > [data-overflowing]` on a narrow viewport (inline-end to screen, inline-end corners squared, inline-start anchored); no per-rune bleed CSS remains.
+- [x] The sandbox behaviour sets `data-overflowing` from measured content width with hysteresis, independent of host policy; the sandbox `bleed` attribute is removed.
+- [x] `frame-overflow="bleed"` on a clip host (`guestFit: 'clip'`) is inert and emits a hard build warning naming the rune and a bleed host; covered by an engine test.
+- [x] Default (`clip`/unset) output is byte-identical to today for every rune (regression-safe); a guest that fits stays inset and rounded.
+- [x] Engine tests for facet emission + the clip-host warning; the sandbox detection/hysteresis tests carry over; docs updated.
 
 ## Approach
 
@@ -81,5 +81,23 @@ reworking the held `bleed="crop"` PR (refrakt-md/refrakt#530).
 - Frame facets / `resolveFrameChrome`: {% ref "SPEC-086" /%}.
 - Warning precedent: {% ref "SPEC-090" /%}.
 - Held PR to rework: refrakt-md/refrakt#530 (`packages/behaviors/src/elements/sandbox.ts` `nextBleedState` + measurement, `packages/runes/src/tags/sandbox.ts`, `packages/lumina/styles/runes/sandbox.css`).
+
+## Resolution
+
+Completed: 2026-06-23
+
+Branch: `claude/work-444-frame-overflow`
+
+### What was done
+- **Facet plumbing.** `frame-overflow` added as a universal frame attribute (`packages/runes/src/lib/index.ts` schema def + `FRAME_FACET_NAMES`; `packages/runes/src/attribute-presets.ts` `UNIVERSAL_ATTRIBUTE_NAMES`). `FramePresetDefinition.overflow` (`packages/transform/src/types.ts`). `resolveFrameChrome` reads `frame-overflow` and emits `data-frame-overflow="bleed"`; `FRAME_FACET_META` extended (`packages/transform/src/engine.ts`).
+- **Clip-host hard warning.** At the frame-resolution site, when `data-frame-overflow="bleed"` lands on a host whose `guestFit !== 'bleed'`, the marker is stripped (clean output) and `warnFrameOverflowClip` warns once.
+- **Shared CSS.** `[data-frame-overflow="bleed"] > [data-overflowing]` in `packages/lumina/styles/dimensions/frame.css` (mobile breakpoint): `width: calc(100% + var(--rf-bleed-room-end, var(--rf-content-gutter)))`, inline-end corners squared — a layout-owned boundary, not the raw viewport.
+- **Sandbox first consumer.** `packages/behaviors/src/elements/sandbox.ts`: the resize bridge also reports `scrollWidth`; `updateOverflow` toggles `data-overflowing` unconditionally (policy lives on the host) via the exported `nextBleedState` hysteresis. No sandbox `bleed` attribute was added.
+- **Tests.** Engine facet emission + clip-host warning (`frames.test.ts`); `nextBleedState` + the always-on detection (`behaviors/test/sandbox.test.ts`); reference snapshot updated for the new universal attr.
+- **Docs.** `frame-overflow` row + explainer in `site/content/runes/surfaces.md`.
+
+### Notes
+- v1 is collapsed-viewport, inline-end only. Direction (via `frame-anchor`), side-by-side outer-edge bleed, the per-layout `--rf-bleed-room-*` values, and generalising the `data-overflowing` signal to codegroup/table are deferred (SPEC-116 §4–5).
+- The bleed geometry (reach-to-screen + rounded-iframe corners) is unit-tested for detection but still wants a real mobile/Safari pass.
 
 {% /work %}

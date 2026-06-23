@@ -585,6 +585,10 @@ export interface FramePresetDefinition {
 	place?: string;
 	/** Crop focal point when the guest is cut (object-position). */
 	anchor?: string;
+	/** How the frame handles a guest whose content is wider than it: `clip`
+	 *  (default) keeps it inside the rounded frame; `bleed` runs an overflowing
+	 *  guest out to the layout edge on a narrow viewport (a bleed host only). */
+	overflow?: string;
 	/** Silhouette drop-shadow strength: none | sm | md | lg. */
 	shadow?: string;
 	/** Layer onto a base preset (same `extends` resolution as bg/tint). */

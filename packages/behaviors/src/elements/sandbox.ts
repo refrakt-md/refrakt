@@ -34,9 +34,23 @@ const ROLE_FALLBACKS: Record<string, string> = {
  */
 import { SafeHTMLElement } from './ssr-safe.js';
 
+/** Overflow-bleed hysteresis (SPEC-116). Trip `overflowing` only when the content
+ *  clearly overruns the frame — by more than the bleed distance (~the content
+ *  gutter) — and release only when it fully fits again. Because a bleed widens
+ *  the frame by the gutter, a single threshold would oscillate in the borderline
+ *  band; the hysteresis absorbs it. `SET_PX` tracks `--rf-content-gutter`
+ *  (1.5rem ≈ 24px) — keep them in step. */
+export function nextBleedState(overflowPx: number, overflowing: boolean): boolean {
+	const SET_PX = 24;
+	return overflowing ? overflowPx > 0 : overflowPx > SET_PX;
+}
+
 export class RfSandbox extends SafeHTMLElement {
 	private iframe: HTMLIFrameElement | null = null;
 	private messageHandler: ((e: MessageEvent) => void) | null = null;
+	// SPEC-116 — whether the content currently overruns the frame; reflected to
+	// `data-overflowing` for the host's `frame-overflow="bleed"` policy to act on.
+	private _overflowing = false;
 	private themeCleanup: (() => void) | null = null;
 	private ancestorObserver: MutationObserver | null = null;
 	// WORK-381 — deferred activation. `_activation` is eager (mount now), visible
@@ -336,24 +350,38 @@ export class RfSandbox extends SafeHTMLElement {
 		// so author code in the iframe can't suppress or restyle it.
 		const banner = this._untrusted ? this.buildUntrustedBanner() : null;
 
-		// Auto-sizing
+		// Auto-sizing + overflow signalling. Both ride the iframe's
+		// `rf-sandbox-resize` message. Overflow is reported unconditionally
+		// (SPEC-116): the guest signals the fact via `data-overflowing`; whether
+		// it bleeds is the host's policy (`frame-overflow="bleed"`), so the
+		// sandbox stays policy-agnostic. Auto-height applies only when sized auto.
 		if (this.messageHandler) {
 			window.removeEventListener('message', this.messageHandler);
 		}
-		if (this._heightAttr === 'auto') {
-			this.messageHandler = (e: MessageEvent) => {
-				if (e.data?.type === 'rf-sandbox-resize' && e.source === this.iframe?.contentWindow) {
-					this.iframe!.style.height = e.data.height + 'px';
-				}
-			};
-			window.addEventListener('message', this.messageHandler);
-		}
+		const autoHeight = this._heightAttr === 'auto';
+		this.messageHandler = (e: MessageEvent) => {
+			if (e.data?.type !== 'rf-sandbox-resize' || e.source !== this.iframe?.contentWindow) return;
+			if (autoHeight) this.iframe!.style.height = e.data.height + 'px';
+			this.updateOverflow(e.data.scrollWidth);
+		};
+		window.addEventListener('message', this.messageHandler);
 
 		if (banner) {
 			this.replaceChildren(banner, this.iframe);
 		} else {
 			this.replaceChildren(this.iframe);
 		}
+	}
+
+	/** SPEC-116 — reflect whether the iframe content overruns the frame to
+	 *  `data-overflowing`, with hysteresis ({@link nextBleedState}) so a host
+	 *  bleed — which widens the frame — can't oscillate. Reported regardless of
+	 *  host policy; the host's `frame-overflow="bleed"` decides what to do. */
+	private updateOverflow(scrollWidth: number): void {
+		if (!this.iframe || typeof scrollWidth !== 'number') return;
+		const overflow = scrollWidth - this.iframe.clientWidth;
+		this._overflowing = nextBleedState(overflow, this._overflowing);
+		this.toggleAttribute('data-overflowing', this._overflowing);
 	}
 
 	/** Build the untrusted-mode banner shown above the iframe. Styled via
@@ -423,7 +451,7 @@ ${rfDataScript ? rfDataScript + '\n' : ''}</head>
 ${renderedContent}
 <script>
   var ro = new ResizeObserver(function() {
-    parent.postMessage({ type: 'rf-sandbox-resize', height: document.body.scrollHeight }, '*');
+    parent.postMessage({ type: 'rf-sandbox-resize', height: document.body.scrollHeight, scrollWidth: document.body.scrollWidth }, '*');
   });
   ro.observe(document.body);
 <\/script>

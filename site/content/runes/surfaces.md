@@ -106,6 +106,7 @@ How the *content* sits when a rune bleeds wider than the text measure depends on
 | `frame-oversize` | scale factor | guest exceeds its slot (clipped) |
 | `frame-place` | `left top`, … | alignment within the slot |
 | `frame-anchor` | `object-position` | crop focal point |
+| `frame-overflow` | `clip` (default) `\| bleed` | a too-wide guest: clip inside the frame, or bleed to the screen — see below |
 
 On a `figure` or `showcase` the frame lands on the rune itself; on a `card` or `bento-cell` it lands on the media zone. Because a card's media zone is a clipping host, a displaced or oversized guest is cropped into a *peek* rather than spilling out:
 
@@ -137,6 +138,22 @@ Whether a displaced or oversized guest spills out or is cropped into a peek is d
 - **`bleed`** — puts a negative margin on the media zone instead, so following layout pulls up and the guest sits at its natural position while the host's edge moves above it. The guest extends past the host with no gap above. Use this on section-like hosts (`hero`, `cta`) where the guest is meant to overflow downward. The host needs to unclip its media zone for the spill to be visible — `hero` does this automatically when a displaced guest is present.
 
 The block-tier offsets (`sm`–`xl`, 0.5–3rem) suit `peek` granularity inside a card. The section-tier offsets (`2xl`–`4xl`, 4–8rem) are sized to clear a section's `padding-block` so a `bleed`-mode displacement actually overhangs the host edge.
+
+### `frame-overflow` — a too-wide guest
+
+`frame-displace` moves the *whole* guest; `frame-overflow` is about a guest whose *content* is wider than the frame — a fixed-width or naturally wide component (a sandbox, a wide table). By default (`clip`) it's clipped at the frame's rounded inset edge. `frame-overflow="bleed"` instead runs an overflowing guest's inline-end out to the layout edge on a narrow viewport and squares those corners, so the component reads as **cropped by the screen** — a real component at its natural size, continuing off-frame.
+
+It's content-aware and host-gated: the guest signals when its content actually overruns the frame (the `sandbox` measures its iframe), and the bleed only fires when it does — a guest that fits stays inset and rounded. Because the over-width can only escape a host that doesn't clip its media well, `frame-overflow="bleed"` is meaningful only on a **bleed host** (`hero`, `feature`); on a clip host (`card`, `bento-cell`) the well crops the over-width, so it's a no-op and emits a build warning. The bleed reaches the layout's edge, not the raw viewport — a chrome'd layout (docs) caps it at the content row, never under the sidebar/TOC.
+
+```markdoc
+{% hero frame-overflow="bleed" %}
+{% sandbox src="pricing-table" /%}
+
+---
+
+# Our plans
+{% /hero %}
+```
 
 ## Card vs hero
 

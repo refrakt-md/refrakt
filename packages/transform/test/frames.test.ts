@@ -124,4 +124,30 @@ describe('SPEC-086 frame chrome', () => {
 		const media = findMedia(asTag(transform(tag)))!;
 		expect(media.attributes['data-displace-mode']).toBe('peek');
 	});
+
+	// SPEC-116 — frame-overflow="bleed"
+	it('emits data-frame-overflow on a bleed host', () => {
+		const transform = createTransform(config);
+		const tag = makeTag('div', { 'data-rune': 'hero' }, [mediaChild(), frameMeta('frame-overflow', 'bleed')]);
+		const media = findMedia(asTag(transform(tag)))!;
+		expect(media.attributes['data-frame-overflow']).toBe('bleed');
+	});
+
+	it('strips frame-overflow and warns on a clip host', () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const transform = createTransform(config);
+		// Card is a clip host (no guestFit) — the well crops the over-width.
+		const tag = makeTag('div', { 'data-rune': 'card' }, [mediaChild(), frameMeta('frame-overflow', 'bleed')]);
+		const media = findMedia(asTag(transform(tag)))!;
+		expect(media.attributes['data-frame-overflow']).toBeUndefined();
+		expect(warn).toHaveBeenCalledWith(expect.stringContaining('no effect on `card`'));
+		warn.mockRestore();
+	});
+
+	it('clip (default) emits nothing', () => {
+		const transform = createTransform(config);
+		const tag = makeTag('div', { 'data-rune': 'hero' }, [mediaChild(), frameMeta('frame-overflow', 'clip')]);
+		const media = findMedia(asTag(transform(tag)))!;
+		expect(media.attributes['data-frame-overflow']).toBeUndefined();
+	});
 });
