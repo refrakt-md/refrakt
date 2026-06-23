@@ -273,8 +273,12 @@ export interface ThemeManifest {
 	name: string;
 	version: string;
 	description?: string;
-	/** Target framework this theme is built for (e.g. "svelte", "astro") */
-	target: string;
+	/** Compatible refrakt range, validated at install (ADR-023). Optional — a
+	 *  missing range is treated as universal/no-constraint. */
+	refrakt?: string;
+	/** @deprecated Target framework hint (e.g. "svelte"). Documentation-only —
+	 *  adapters do not gate on it (ADR-024). A framework-agnostic theme omits it. */
+	target?: string;
 	/** Relative path to CSS custom properties file */
 	designTokens: string;
 	/** Layout definitions keyed by name */
