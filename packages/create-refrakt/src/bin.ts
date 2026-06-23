@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { scaffold, scaffoldPlan, scaffoldPlanSite, scaffoldTheme } from './scaffold.js';
+import { scaffold, scaffoldPlan, scaffoldPlanSite, scaffoldTheme, scaffoldPresetPack } from './scaffold.js';
 import type { ScaffoldTarget } from './scaffold.js';
 import * as path from 'node:path';
 
@@ -17,7 +17,7 @@ const TARGET_LABELS: Record<ScaffoldTarget, string> = {
 	html: 'Static HTML',
 };
 
-type ProjectType = 'site' | 'theme' | 'plan';
+type ProjectType = 'site' | 'theme' | 'plan' | 'preset-pack';
 
 let projectName: string | undefined;
 let theme = '@refrakt-md/lumina';
@@ -37,8 +37,8 @@ for (let i = 0; i < args.length; i++) {
 		}
 	} else if (arg === '--type') {
 		const val = args[++i];
-		if (val !== 'site' && val !== 'theme' && val !== 'plan') {
-			console.error('Error: --type must be "site", "theme", or "plan"');
+		if (val !== 'site' && val !== 'theme' && val !== 'plan' && val !== 'preset-pack') {
+			console.error('Error: --type must be one of: site, theme, plan, preset-pack');
 			process.exit(1);
 		}
 		type = val;
@@ -91,7 +91,7 @@ function printUsage(): void {
 Usage: create-refrakt [name] [options]
 
 Options:
-  --type <site|theme|plan>     What to create (default: site)
+  --type <site|theme|plan|preset-pack>  What to create (default: site)
   --target <target>            Adapter target. Required for sites; optional for
                                plan (turns it into a runnable plan site).
                                Targets: ${VALID_TARGETS.join(', ')}
@@ -126,12 +126,12 @@ function validateFlagCombos(): void {
 			process.exit(1);
 		}
 	}
-	if (type === 'theme' && targetExplicit) {
-		console.error('Error: --target cannot be used with --type theme\n');
+	if ((type === 'theme' || type === 'preset-pack') && targetExplicit) {
+		console.error(`Error: --target cannot be used with --type ${type}\n`);
 		process.exit(1);
 	}
-	if (type !== 'theme' && scope) {
-		console.error('Error: --scope can only be used with --type theme\n');
+	if (type !== 'theme' && type !== 'preset-pack' && scope) {
+		console.error('Error: --scope can only be used with publishable packages (--type theme | preset-pack)\n');
 		process.exit(1);
 	}
 }
@@ -171,6 +171,7 @@ async function run(): Promise<void> {
 				options: [
 					{ value: 'site', label: 'Site', hint: 'full refrakt.md site with a framework adapter' },
 					{ value: 'theme', label: 'Theme', hint: 'publishable theme package' },
+					{ value: 'preset-pack', label: 'Preset pack', hint: 'distributable token presets (JSON)' },
 					{ value: 'plan', label: 'Planning only', hint: 'specs, work items, decisions, milestones' },
 				],
 			});
@@ -226,6 +227,8 @@ async function run(): Promise<void> {
 	try {
 		if (type === 'theme') {
 			scaffoldTheme({ themeName: projectName!, targetDir, scope });
+		} else if (type === 'preset-pack') {
+			scaffoldPresetPack({ packName: projectName!, targetDir, scope });
 		} else if (type === 'plan') {
 			if (targetExplicit) {
 				await scaffoldPlanSite({ projectName: projectName!, targetDir, target: target! });
@@ -258,6 +261,21 @@ Then use it in a site:
   }
 
 Run \`refrakt scaffold-css\` to generate CSS stubs for all runes.
+`);
+	} else if (type === 'preset-pack') {
+		console.log(`
+Done! Your refrakt.md preset pack is ready.
+
+Presets are declarative JSON — no build step. Next steps:
+
+  cd ${projectName}
+  npm install
+  npm run validate     # refrakt theme presets validate --pack .
+
+Add presets under src/*.json + an entry in presets.json, then publish.
+Install into a site with:
+
+  refrakt theme presets install ${scope ? `${scope}/${projectName}` : projectName} --use ember
 `);
 	} else if (type === 'plan') {
 		if (targetExplicit) {
