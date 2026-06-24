@@ -86,6 +86,11 @@ html:has(.rf-docs-header) { scroll-padding-top: 5rem; }
 	   toolbar, and the toolbar's higher z-index then covered the panel's first
 	   link. */
 	.rf-docs-toolbar { display: flex; position: sticky; top: var(--rf-header-height, 3.5rem); z-index: 100; height: var(--rf-docs-toolbar-height, 3.25rem); box-sizing: border-box; }
-	.rf-mobile-panel--nav { top: calc(var(--rf-header-height, 3.5rem) + var(--rf-docs-toolbar-height, 3.25rem)); }
+	/* Two classes (0,2,0) so this beats the base `.rf-mobile-panel { top }` rule
+	   in mobile.css — both live in @layer skeleton and mobile.css is imported
+	   later, so an equal-specificity single-class override would lose on source
+	   order and the panel would dock under the site header (hiding its first
+	   link behind the toolbar) instead of under the toolbar. */
+	.rf-mobile-panel.rf-mobile-panel--nav { top: calc(var(--rf-header-height, 3.5rem) + var(--rf-docs-toolbar-height, 3.25rem)); }
 	.rf-docs-sidebar { display: none; }
 }
