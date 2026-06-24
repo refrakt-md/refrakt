@@ -1,0 +1,84 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://refrakt.md/schemas/theme-tokens.json",
+	"title": "refrakt ThemeTokensConfig",
+	"description": "A theme/preset token-override config (SPEC-048 universal token contract). Used by refrakt.config.json theme.tokens and by preset modules. Every namespace is optional — a preset overrides only what it needs.",
+	"type": "object",
+	"additionalProperties": false,
+	"properties": {
+		"$schema": { "type": "string" },
+		"font": { "$ref": "#/$defs/stringMap" },
+		"text": { "$ref": "#/$defs/stringMap" },
+		"weight": { "$ref": "#/$defs/stringMap" },
+		"leading": { "$ref": "#/$defs/stringMap" },
+		"tracking": { "$ref": "#/$defs/stringMap" },
+		"color": { "$ref": "#/$defs/color" },
+		"radius": { "$ref": "#/$defs/stringMap" },
+		"spacing": { "$ref": "#/$defs/stringMap" },
+		"shadow": { "$ref": "#/$defs/stringMap" },
+		"syntax": { "$ref": "#/$defs/stringMap" },
+		"reveal": { "$ref": "#/$defs/stringMap" },
+		"modes": {
+			"type": "object",
+			"description": "Per-mode overlays (e.g. `dark`). Each is a partial token config.",
+			"additionalProperties": { "$ref": "#/$defs/modeOverlay" }
+		},
+		"extra": {
+			"type": "object",
+			"description": "Theme-specific tokens outside the universal contract; emitted as :root custom properties.",
+			"additionalProperties": { "type": "string" }
+		}
+	},
+	"$defs": {
+		"stringMap": {
+			"type": "object",
+			"additionalProperties": { "type": "string" }
+		},
+		"color": {
+			"type": "object",
+			"description": "Colour tokens. Scalar chrome keys (text, muted, border, bg, primary, …) plus nested `surface`, `code`, and sentiment groups.",
+			"properties": {
+				"text": { "type": "string" },
+				"muted": { "type": "string" },
+				"border": { "type": "string" },
+				"bg": { "type": "string" },
+				"primary": { "type": "string" },
+				"primary-hover": { "type": "string" },
+				"surface": { "$ref": "#/$defs/stringMap" },
+				"code": { "$ref": "#/$defs/stringMap" },
+				"info": { "$ref": "#/$defs/sentiment" },
+				"warning": { "$ref": "#/$defs/sentiment" },
+				"danger": { "$ref": "#/$defs/sentiment" },
+				"success": { "$ref": "#/$defs/sentiment" }
+			},
+			"additionalProperties": { "type": ["string", "object"] }
+		},
+		"sentiment": {
+			"type": "object",
+			"properties": {
+				"base": { "type": "string" },
+				"bg": { "type": "string" },
+				"border": { "type": "string" }
+			},
+			"additionalProperties": { "type": "string" }
+		},
+		"modeOverlay": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+				"font": { "$ref": "#/$defs/stringMap" },
+				"text": { "$ref": "#/$defs/stringMap" },
+				"weight": { "$ref": "#/$defs/stringMap" },
+				"leading": { "$ref": "#/$defs/stringMap" },
+				"tracking": { "$ref": "#/$defs/stringMap" },
+				"color": { "$ref": "#/$defs/color" },
+				"radius": { "$ref": "#/$defs/stringMap" },
+				"spacing": { "$ref": "#/$defs/stringMap" },
+				"shadow": { "$ref": "#/$defs/stringMap" },
+				"syntax": { "$ref": "#/$defs/stringMap" },
+				"reveal": { "$ref": "#/$defs/stringMap" },
+				"extra": { "$ref": "#/$defs/stringMap" }
+			}
+		}
+	}
+}

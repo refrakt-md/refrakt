@@ -25,11 +25,13 @@
       "types": "./dist/adapter-node.d.ts",
       "default": "./dist/adapter-node.js"
     },
-    "./refrakt.config.schema.json": "./refrakt.config.schema.json"
+    "./refrakt.config.schema.json": "./refrakt.config.schema.json",
+    "./theme-tokens.schema.json": "./theme-tokens.schema.json"
   },
   "files": [
     "dist",
-    "refrakt.config.schema.json"
+    "refrakt.config.schema.json",
+    "theme-tokens.schema.json"
   ],
   "scripts": {
     "build": "tsc"
@@ -37,5 +39,8 @@
   "dependencies": {
     "@markdoc/markdoc": "0.4.0",
     "@refrakt-md/types": "0.24.6"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.0"
   }
 }
