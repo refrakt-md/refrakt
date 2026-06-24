@@ -1,5 +1,13 @@
 # @refrakt-md/skeleton
 
+## 0.25.1
+
+### Patch Changes
+
+- 35d7658: Fix mobile docs layout where the secondary toolbar covered the top of the open side-nav panel, hiding its first link. The nav panel's `top` override had the same specificity as the base `.rf-mobile-panel` rule and lost on import order, so the panel docked under the site header instead of the toolbar. The override is now a two-class selector that wins regardless of order, and the toolbar is pinned to a known height the panel offsets against exactly.
+- 35d7658: Fix steps rune forcing `display: block` on every `<strong>`. The title rule was scoped to `.rf-step strong`, which caught all inline bold in step body text and broke it onto its own line. It now targets only the leading title bold (`.rf-step__content > p:first-child > strong:first-child`), so inline bold renders inline.
+  - @refrakt-md/types@0.25.1
+
 ## 0.25.0
 
 ### Patch Changes

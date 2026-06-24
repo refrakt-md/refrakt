@@ -6,7 +6,13 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.25.0
+## v0.25.1
+
+- Fix diagram rune silently failing when theme colors are non-hex. Mermaid only accepts hex colors, but `--rf-color-*` tokens defined as `oklch(...)`, `color-mix(...)`, named colors, or nested `var()` reached it unconverted. The `<rf-diagram>` element now resolves each token to hex at render time via the browser's own color engine before initializing mermaid.
+- Fix steps rune forcing `display: block` on every `<strong>`. The title rule was scoped to `.rf-step strong`, which caught all inline bold in step body text and broke it onto its own line. It now targets only the leading title bold (`.rf-step__content > p:first-child > strong:first-child`), so inline bold renders inline.
+- Fix mobile docs layout where the secondary toolbar covered the top of the open side-nav panel, hiding its first link. The nav panel's `top` override had the same specificity as the base `.rf-mobile-panel` rule and lost on import order, so the panel docked under the site header instead of the toolbar. The override is now a two-class selector that wins regardless of order, and the toolbar is pinned to a known height the panel offsets against exactly.
+
+## v0.25.0 - June 24, 2026
 
 - v0.25.0 — Distribution & onboarding
 - Make the refrakt stack distributable and cut the blank-page activation cost.
