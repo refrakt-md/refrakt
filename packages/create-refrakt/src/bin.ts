@@ -25,6 +25,7 @@ let type: ProjectType = 'site';
 let typeExplicit = false;
 let target: ScaffoldTarget | undefined;
 let targetExplicit = false;
+let themeLayer: 'svelte' | undefined;
 let scope: string | undefined;
 
 for (let i = 0; i < args.length; i++) {
@@ -44,13 +45,18 @@ for (let i = 0; i < args.length; i++) {
 		type = val;
 		typeExplicit = true;
 	} else if (arg === '--target') {
-		const val = args[++i] as ScaffoldTarget;
-		if (!VALID_TARGETS.includes(val)) {
-			console.error(`Error: --target must be one of: ${VALID_TARGETS.join(', ')}`);
+		const val = args[++i];
+		// `--target svelte` (with --type theme) opts into the framework component
+		// layer (ADR-024) — distinct from a site's adapter target.
+		if (val === 'svelte') {
+			themeLayer = 'svelte';
+		} else if (VALID_TARGETS.includes(val as ScaffoldTarget)) {
+			target = val as ScaffoldTarget;
+			targetExplicit = true;
+		} else {
+			console.error(`Error: --target must be one of: ${VALID_TARGETS.join(', ')} (sites), or "svelte" (theme component layer)`);
 			process.exit(1);
 		}
-		target = val;
-		targetExplicit = true;
 	} else if (arg === '--scope' || arg === '-s') {
 		scope = args[++i];
 		if (!scope) {
@@ -85,6 +91,11 @@ if (!typeExplicit && scope) {
 	type = 'theme';
 	typeExplicit = true;
 }
+// `--target svelte` is a theme-only flag; infer the theme type from it.
+if (!typeExplicit && themeLayer) {
+	type = 'theme';
+	typeExplicit = true;
+}
 
 function printUsage(): void {
 	console.log(`
@@ -92,9 +103,10 @@ Usage: create-refrakt [name] [options]
 
 Options:
   --type <site|theme|plan|preset-pack>  What to create (default: site)
-  --target <target>            Adapter target. Required for sites; optional for
-                               plan (turns it into a runnable plan site).
-                               Targets: ${VALID_TARGETS.join(', ')}
+  --target <target>            Sites: adapter (${VALID_TARGETS.join(', ')}); required.
+                               Plan: turns it into a runnable plan site.
+                               Theme: "svelte" opts into a component layer
+                               (default: framework-agnostic, ADR-024).
   --theme, -t <package>        Theme package to use (sites only, default: @refrakt-md/lumina)
   --scope, -s <scope>          npm scope for the package (themes only, e.g., @my-org)
   --help, -h                   Show this help message
@@ -126,8 +138,14 @@ function validateFlagCombos(): void {
 			process.exit(1);
 		}
 	}
+	// A site adapter target (--target sveltekit|astro|…) is invalid for packages.
 	if ((type === 'theme' || type === 'preset-pack') && targetExplicit) {
-		console.error(`Error: --target cannot be used with --type ${type}\n`);
+		console.error(`Error: a site adapter --target cannot be used with --type ${type}\n`);
+		process.exit(1);
+	}
+	// The theme component-layer flag (--target svelte) is theme-only.
+	if (themeLayer && type !== 'theme') {
+		console.error('Error: --target svelte (theme component layer) requires --type theme\n');
 		process.exit(1);
 	}
 	if (type !== 'theme' && type !== 'preset-pack' && scope) {
@@ -226,7 +244,7 @@ async function run(): Promise<void> {
 
 	try {
 		if (type === 'theme') {
-			scaffoldTheme({ themeName: projectName!, targetDir, scope });
+			scaffoldTheme({ themeName: projectName!, targetDir, scope, target: themeLayer });
 		} else if (type === 'preset-pack') {
 			scaffoldPresetPack({ packName: projectName!, targetDir, scope });
 		} else if (type === 'plan') {
@@ -245,7 +263,7 @@ async function run(): Promise<void> {
 
 	if (type === 'theme') {
 		console.log(`
-Done! Your refrakt.md theme package is ready.
+Done! Your ${themeLayer ? `${themeLayer}-targeted` : 'framework-agnostic'} refrakt.md theme package is ready.
 
 Next steps:
 
@@ -256,10 +274,12 @@ Next steps:
 Then use it in a site:
 
   {
-    "theme": "${scope ? `${scope}/${projectName}` : projectName}",
-    "target": "svelte"
+    "theme": "${scope ? `${scope}/${projectName}` : projectName}"
   }
-
+${themeLayer ? '' : `
+This theme is framework-agnostic — it renders under any adapter. To add a
+Svelte component layer, re-scaffold with \`--target svelte\`.
+`}
 Run \`refrakt scaffold-css\` to generate CSS stubs for all runes.
 `);
 	} else if (type === 'preset-pack') {

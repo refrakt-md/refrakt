@@ -524,10 +524,14 @@ export interface ThemeScaffoldOptions {
 	themeName: string;
 	targetDir: string;
 	scope?: string;
+	/** Opt into a framework-specific component layer (ADR-024). Only `'svelte'`
+	 *  is supported today. Omitted → a framework-agnostic theme (the default). */
+	target?: 'svelte';
 }
 
 export function scaffoldTheme(options: ThemeScaffoldOptions): void {
-	const { themeName, targetDir, scope } = options;
+	const { themeName, targetDir, scope, target } = options;
+	const svelte = target === 'svelte';
 
 	if (existsSync(targetDir)) {
 		throw new Error(`Directory "${targetDir}" already exists`);
@@ -535,131 +539,98 @@ export function scaffoldTheme(options: ThemeScaffoldOptions): void {
 
 	const pluginName = scope ? `${scope}/${themeName}` : themeName;
 
+	// Framework-agnostic core (ADR-024): tokens + transform config + layout
+	// configs + manifest + per-rune CSS + css-coverage test. Renders under any
+	// adapter. The Svelte component layer is opt-in (`--target svelte`).
 	mkdirSync(path.join(targetDir, 'src'), { recursive: true });
-	mkdirSync(path.join(targetDir, 'svelte', 'layouts'), { recursive: true });
 	mkdirSync(path.join(targetDir, 'tokens'), { recursive: true });
 	mkdirSync(path.join(targetDir, 'styles', 'runes'), { recursive: true });
 	mkdirSync(path.join(targetDir, 'test'), { recursive: true });
 	mkdirSync(path.join(targetDir, 'preview'), { recursive: true });
 
-	writeFileSync(
-		path.join(targetDir, 'package.json'),
-		generateThemePackageJson(pluginName),
-	);
+	writeFileSync(path.join(targetDir, 'package.json'), generateThemePackageJson(pluginName, svelte));
+	writeFileSync(path.join(targetDir, 'src', 'config.ts'), generateThemeConfig());
+	writeFileSync(path.join(targetDir, 'src', 'layouts.ts'), generateThemeLayouts());
+	writeFileSync(path.join(targetDir, 'manifest.json'), generateThemeManifest(pluginName));
+	writeFileSync(path.join(targetDir, 'index.css'), generateThemeIndexCss());
+	writeFileSync(path.join(targetDir, 'tokens', 'base.css'), generateThemeBaseTokens());
+	writeFileSync(path.join(targetDir, 'tokens', 'dark.css'), generateThemeDarkTokens());
+	writeFileSync(path.join(targetDir, 'styles', 'global.css'), generateThemeGlobalCss());
+	writeFileSync(path.join(targetDir, 'tsconfig.json'), generateThemeTsconfig());
+	writeFileSync(path.join(targetDir, 'test', 'css-coverage.test.ts'), generateThemeCssCoverageTest());
+	writeFileSync(path.join(targetDir, 'preview', 'kitchen-sink.md'), generateThemeKitchenSink());
+	writeFileSync(path.join(targetDir, 'base.css'), generateThemeBaseCss());
 
-	writeFileSync(
-		path.join(targetDir, 'src', 'config.ts'),
-		generateThemeConfig(),
-	);
-
-	writeFileSync(
-		path.join(targetDir, 'svelte', 'index.ts'),
-		generateThemeSvelteIndex(),
-	);
-
-	writeFileSync(
-		path.join(targetDir, 'manifest.json'),
-		generateThemeManifest(pluginName),
-	);
-
-	writeFileSync(
-		path.join(targetDir, 'index.css'),
-		generateThemeIndexCss(),
-	);
-
-	writeFileSync(
-		path.join(targetDir, 'tokens', 'base.css'),
-		generateThemeBaseTokens(),
-	);
-
-	writeFileSync(
-		path.join(targetDir, 'tokens', 'dark.css'),
-		generateThemeDarkTokens(),
-	);
-
-	writeFileSync(
-		path.join(targetDir, 'styles', 'global.css'),
-		generateThemeGlobalCss(),
-	);
-
-	writeFileSync(
-		path.join(targetDir, 'tsconfig.json'),
-		generateThemeTsconfig(),
-	);
-
-	writeFileSync(
-		path.join(targetDir, 'svelte', 'layouts', 'DefaultLayout.svelte'),
-		generateThemeDefaultLayout(),
-	);
-
-	writeFileSync(
-		path.join(targetDir, 'test', 'css-coverage.test.ts'),
-		generateThemeCssCoverageTest(),
-	);
-
-	writeFileSync(
-		path.join(targetDir, 'preview', 'kitchen-sink.md'),
-		generateThemeKitchenSink(),
-	);
-
-	writeFileSync(
-		path.join(targetDir, 'base.css'),
-		generateThemeBaseCss(),
-	);
-
-	writeFileSync(
-		path.join(targetDir, 'svelte', 'tokens.css'),
-		generateThemeTokensBridge(),
-	);
+	// Optional Svelte component layer (ADR-024) — additive override on top of the
+	// agnostic core, consumed only by the Svelte/SvelteKit adapter.
+	if (svelte) {
+		mkdirSync(path.join(targetDir, 'svelte', 'layouts'), { recursive: true });
+		writeFileSync(path.join(targetDir, 'svelte', 'index.ts'), generateThemeSvelteIndex());
+		writeFileSync(path.join(targetDir, 'svelte', 'layouts', 'DefaultLayout.svelte'), generateThemeDefaultLayout());
+		writeFileSync(path.join(targetDir, 'svelte', 'tokens.css'), generateThemeTokensBridge());
+	}
 }
 
-function generateThemePackageJson(pluginName: string): string {
+function generateThemePackageJson(pluginName: string, svelte: boolean): string {
+	const peer = refraktPeerRange();
+	const exports: Record<string, unknown> = {
+		'.': './index.css',
+		'./base.css': './base.css',
+		'./transform': { types: './dist/config.d.ts', default: './dist/config.js' },
+		'./layouts': { types: './dist/layouts.d.ts', default: './dist/layouts.js' },
+		'./manifest': './manifest.json',
+		'./styles/runes/*.css': './styles/runes/*.css',
+	};
+	const files = ['dist', 'base.css', 'index.css', 'tokens', 'styles', 'manifest.json'];
+	// ADR-023: @refrakt-md/* as peerDependencies (minor range), mirrored into
+	// devDependencies so the package builds in isolation.
+	const peers: Record<string, string> = {
+		'@refrakt-md/runes': peer,
+		'@refrakt-md/transform': peer,
+		'@refrakt-md/types': peer,
+	};
+	if (svelte) {
+		exports['./svelte'] = { svelte: './svelte/index.ts', default: './svelte/index.ts' };
+		exports['./svelte/tokens.css'] = './svelte/tokens.css';
+		files.push('svelte');
+		peers['@refrakt-md/svelte'] = peer;
+	}
 	const pkg = {
 		name: pluginName,
 		version: '0.1.0',
 		type: 'module',
 		main: 'dist/config.js',
 		types: 'dist/config.d.ts',
-		exports: {
-			'.': './index.css',
-			'./base.css': './base.css',
-			'./transform': {
-				types: './dist/config.d.ts',
-				default: './dist/config.js',
-			},
-			'./svelte': {
-				svelte: './svelte/index.ts',
-				default: './svelte/index.ts',
-			},
-			'./manifest': './manifest.json',
-			'./styles/runes/*.css': './styles/runes/*.css',
-			'./svelte/tokens.css': './svelte/tokens.css',
-		},
-		files: [
-			'dist',
-			'base.css',
-			'index.css',
-			'tokens',
-			'styles',
-			'manifest.json',
-			'svelte',
-		],
+		exports,
+		files,
 		scripts: {
 			build: 'tsc',
 			test: 'vitest run',
 		},
-		dependencies: {
-			'@refrakt-md/runes': `~${getRefraktVersion()}`,
-			'@refrakt-md/transform': `~${getRefraktVersion()}`,
-			'@refrakt-md/types': `~${getRefraktVersion()}`,
-			'@refrakt-md/svelte': `~${getRefraktVersion()}`,
-		},
+		peerDependencies: peers,
 		devDependencies: {
+			...peers,
 			vitest: '^3.0.0',
 			postcss: '^8.4.0',
 		},
 	};
 	return JSON.stringify(pkg, null, '\t') + '\n';
+}
+
+/** Framework-agnostic layout map (ADR-024) — re-exports the built-in layout
+ *  configs so the theme renders under any adapter. Mirrors the reference theme. */
+function generateThemeLayouts(): string {
+	return `import { defaultLayout, docsLayout, blogArticleLayout } from '@refrakt-md/transform';
+
+/** Layout name → LayoutConfig. Framework-agnostic: consumed by every adapter.
+ *  Add or override layouts here; a framework-specific component layer (if any)
+ *  lives under svelte/ and is opt-in. */
+export const layouts = {
+\tdefault: defaultLayout,
+\tdocs: docsLayout,
+\t'blog-article': blogArticleLayout,
+};
+`;
 }
 
 function generateThemeConfig(): string {
@@ -706,16 +677,18 @@ export { default as DefaultLayout } from './layouts/DefaultLayout.svelte';
 }
 
 function generateThemeManifest(pluginName: string): string {
+	// Framework-agnostic manifest (ADR-024): no `target`; layouts declare only
+	// their regions (the LayoutConfig lives in src/layouts.ts, consumed by every
+	// adapter). `refrakt` is the ADR-023 compatibility range.
 	const manifest = {
 		name: pluginName,
 		version: '0.1.0',
-		target: 'svelte',
+		refrakt: refraktPeerRange(),
 		designTokens: './tokens/base.css',
 		layouts: {
-			default: {
-				component: './svelte/layouts/DefaultLayout.svelte',
-				regions: ['content'],
-			},
+			default: { regions: ['header', 'footer'] },
+			docs: { regions: ['header', 'nav', 'sidebar', 'footer'] },
+			'blog-article': { regions: ['header', 'sidebar', 'footer'] },
 		},
 		components: {},
 		unsupportedRuneBehavior: 'passthrough',
