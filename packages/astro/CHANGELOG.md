@@ -1,5 +1,15 @@
 # @refrakt-md/astro
 
+## 0.25.1
+
+### Patch Changes
+
+- Updated dependencies [35d7658]
+  - @refrakt-md/behaviors@0.25.1
+  - @refrakt-md/content@0.25.1
+  - @refrakt-md/transform@0.25.1
+  - @refrakt-md/types@0.25.1
+
 ## 0.25.0
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @refrakt-md/behaviors
 
+## 0.25.1
+
+### Patch Changes
+
+- 35d7658: Fix diagram rune silently failing when theme colors are non-hex. Mermaid only accepts hex colors, but `--rf-color-*` tokens defined as `oklch(...)`, `color-mix(...)`, named colors, or nested `var()` reached it unconverted. The `<rf-diagram>` element now resolves each token to hex at render time via the browser's own color engine before initializing mermaid.
+
 ## 0.25.0
 
 ## 0.24.6

@@ -1,5 +1,13 @@
 # @refrakt-md/marketing
 
+## 0.25.1
+
+### Patch Changes
+
+- @refrakt-md/runes@0.25.1
+- @refrakt-md/transform@0.25.1
+- @refrakt-md/types@0.25.1
+
 ## 0.25.0
 
 ### Patch Changes
