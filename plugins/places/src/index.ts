@@ -7,7 +7,7 @@ import { config } from './config.js';
 export const places: Plugin = {
   name: 'places',
   displayName: 'Places',
-  version: '0.24.6',
+  version: '0.25.0',
   runes: {
     'event': {
       transform: event,

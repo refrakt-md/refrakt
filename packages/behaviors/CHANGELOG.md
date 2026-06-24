@@ -1,5 +1,7 @@
 # @refrakt-md/behaviors
 
+## 0.25.0
+
 ## 0.24.6
 
 ### Patch Changes
