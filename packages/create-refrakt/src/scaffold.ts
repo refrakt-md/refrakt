@@ -1473,3 +1473,209 @@ refrakt theme presets install ${fullName} --use ember
 `,
 	);
 }
+
+// ─── Plugin scaffold (SPEC-116 §2, ADR-023) ─────────────────────────────────
+
+export interface PluginScaffoldOptions {
+	pluginName: string;
+	targetDir: string;
+	scope?: string;
+}
+
+/** Convert a package name to a safe JS identifier for the Plugin export var. */
+function toIdentifier(name: string): string {
+	const camel = name.replace(/[^a-zA-Z0-9]+(.)/g, (_, c: string) => c.toUpperCase()).replace(/[^a-zA-Z0-9]/g, '');
+	return /^[a-zA-Z_]/.test(camel) ? camel : `plugin${camel.charAt(0).toUpperCase()}${camel.slice(1)}`;
+}
+
+/** Scaffold a **plugin** package (SPEC-116 §2): a `Plugin` with one example
+ *  rune (`callout`) that builds and renders under the identity transform, its
+ *  `theme.runes` config, a fixture, and ADR-023 peer/compat wiring. */
+export function scaffoldPlugin(options: PluginScaffoldOptions): void {
+	const { pluginName, targetDir, scope } = options;
+	if (existsSync(targetDir)) {
+		throw new Error(`Directory "${targetDir}" already exists`);
+	}
+	const fullName = scope ? `${scope}/${pluginName}` : pluginName;
+	const ident = toIdentifier(pluginName);
+	const peer = refraktPeerRange();
+
+	mkdirSync(path.join(targetDir, 'src', 'tags'), { recursive: true });
+	mkdirSync(path.join(targetDir, 'styles'), { recursive: true });
+
+	const pkg = {
+		name: fullName,
+		version: '0.1.0',
+		type: 'module',
+		main: 'dist/index.js',
+		types: 'dist/index.d.ts',
+		exports: {
+			'.': { types: './dist/index.d.ts', default: './dist/index.js' },
+			'./styles/*.css': './styles/*.css',
+		},
+		files: ['dist', 'styles'],
+		scripts: { build: 'tsc' },
+		// ADR-023: @refrakt-md/* as peers (resolve against the host site), mirrored
+		// to devDependencies so the package type-checks/builds in isolation.
+		peerDependencies: {
+			'@refrakt-md/runes': peer,
+			'@refrakt-md/transform': peer,
+			'@refrakt-md/types': peer,
+		},
+		dependencies: {
+			'@markdoc/markdoc': '^0.4.0',
+		},
+		devDependencies: {
+			'@refrakt-md/runes': peer,
+			'@refrakt-md/transform': peer,
+			'@refrakt-md/types': peer,
+			typescript: '^5.4.0',
+		},
+	};
+	writeFileSync(path.join(targetDir, 'package.json'), JSON.stringify(pkg, null, '\t') + '\n');
+
+	writeFileSync(path.join(targetDir, 'tsconfig.json'), JSON.stringify({
+		compilerOptions: {
+			target: 'ES2022', module: 'ES2022', moduleResolution: 'bundler',
+			declaration: true, outDir: 'dist', rootDir: 'src',
+			strict: true, esModuleInterop: true, skipLibCheck: true,
+			resolveJsonModule: true,
+		},
+		include: ['src'],
+	}, null, '\t') + '\n');
+
+	writeFileSync(path.join(targetDir, 'src', 'tags', 'callout.ts'), `import Markdoc from '@markdoc/markdoc';
+import type { RenderableTreeNode } from '@markdoc/markdoc';
+const { Tag } = Markdoc;
+import {
+\tcreateContentModelSchema,
+\tcreateComponentRenderable,
+\tasNodes,
+\tRenderableNodeCursor,
+} from '@refrakt-md/runes';
+
+/** Example rune: a titled callout/aside with a \`tone\` modifier. The list/heading
+ *  primitives are reinterpreted — here a heading-less body is wrapped and a
+ *  \`title\` attribute becomes the callout's header. Model your own runes on this. */
+export const callout = createContentModelSchema({
+\tattributes: {
+\t\ttitle: { type: String, required: false, description: 'Heading shown at the top of the callout.' },
+\t\ttone: { type: String, required: false, description: 'Visual tone, e.g. note | tip | warning.' },
+\t},
+\tcontentModel: {
+\t\ttype: 'sequence',
+\t\tfields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
+\t},
+\ttransform(resolved, attrs, config) {
+\t\tconst titleTag = new Tag('span', {}, [attrs.title ?? 'Note']);
+\t\tconst toneMeta = new Tag('meta', { content: String(attrs.tone ?? 'note') });
+\t\tconst body = new RenderableNodeCursor(
+\t\t\tMarkdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
+\t\t).wrap('div');
+
+\t\treturn createComponentRenderable({
+\t\t\trune: 'callout',
+\t\t\ttag: 'aside',
+\t\t\tproperty: 'description',
+\t\t\tproperties: { tone: toneMeta },
+\t\t\trefs: {
+\t\t\t\ttitle: titleTag,
+\t\t\t\tbody: body.tag('div'),
+\t\t\t},
+\t\t\tchildren: [titleTag, toneMeta, body.next()],
+\t\t});
+\t},
+});
+`);
+
+	writeFileSync(path.join(targetDir, 'src', 'config.ts'), `import type { RuneConfig } from '@refrakt-md/transform';
+
+/** Identity-transform config for this plugin's runes, keyed by PascalCase
+ *  typeName. The engine reads this to add BEM classes, modifiers, and structure. */
+export const config: Record<string, RuneConfig> = {
+\tCallout: {
+\t\tblock: 'callout',
+\t\t// \`tone\` reads the meta tag → adds .rf-callout--<tone> + [data-tone].
+\t\tmodifiers: {
+\t\t\ttone: { source: 'meta', default: 'note' },
+\t\t},
+\t\t// Named refs become .rf-callout__title / .rf-callout__body.
+\t\tautoLabel: { span: 'title', div: 'body' },
+\t},
+};
+`);
+
+	writeFileSync(path.join(targetDir, 'src', 'index.ts'), `import type { Plugin } from '@refrakt-md/types';
+import { callout } from './tags/callout.js';
+import { config } from './config.js';
+
+export const ${ident}: Plugin = {
+\tname: '${pluginName}',
+\tdisplayName: '${pluginName.charAt(0).toUpperCase() + pluginName.slice(1)}',
+\tversion: '0.1.0',
+\trunes: {
+\t\tcallout: {
+\t\t\ttransform: callout,
+\t\t\tdescription: 'A titled callout/aside with a tone modifier.',
+\t\t\tcategory: 'Semantic',
+\t\t\tsnippet: ['{% callout title="\${1:Heads up}" tone="\${2|note,tip,warning|}" %}', '\${3:Body text}', '{% /callout %}'],
+\t\t\tfixture: '{% callout title="Heads up" tone="tip" %}\\nThis is an example callout rune.\\n{% /callout %}',
+\t\t},
+\t},
+\ttheme: {
+\t\trunes: config as unknown as Record<string, Record<string, unknown>>,
+\t},
+};
+
+export default ${ident};
+`);
+
+	writeFileSync(path.join(targetDir, 'styles', 'callout.css'), `.rf-callout {
+\tdisplay: block;
+\tpadding: var(--rf-space-4, 1rem);
+\tborder-inline-start: 3px solid var(--rf-color-primary, #3b82f6);
+\tborder-radius: var(--rf-radius, 0.5rem);
+\tbackground: var(--rf-color-surface, #f8fafc);
+\tcolor: var(--rf-color-text, inherit);
+}
+
+.rf-callout__title {
+\tfont-weight: var(--rf-weight-semibold, 600);
+\tmargin-block-end: var(--rf-space-2, 0.5rem);
+}
+
+.rf-callout[data-tone='warning'] {
+\tborder-inline-start-color: var(--rf-color-warning, #f59e0b);
+}
+
+.rf-callout[data-tone='tip'] {
+\tborder-inline-start-color: var(--rf-color-success, #10b981);
+}
+`);
+
+	writeFileSync(path.join(targetDir, 'README.md'), `# ${fullName}
+
+A refrakt **plugin** — a package of custom runes (SPEC-116, plugin authoring guide).
+
+## What's here
+
+- \`src/tags/callout.ts\` — an example rune built with \`createContentModelSchema\`
+  + \`createComponentRenderable\`. It renders under the identity transform with no
+  framework code.
+- \`src/config.ts\` — the \`RuneConfig\` the engine reads (BEM block, modifiers).
+- \`styles/callout.css\` — per-rune CSS targeting the generated BEM selectors.
+- \`src/index.ts\` — the \`Plugin\` export wiring runes + theme config.
+
+## Develop
+
+\`\`\`bash
+npm install
+npm run build
+npx refrakt inspect callout    # see the emitted HTML/BEM
+\`\`\`
+
+## Use in a site
+
+Add \`"${fullName}"\` to a site's \`plugins\` in \`refrakt.config.json\`.
+`);
+}

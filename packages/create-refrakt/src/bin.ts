@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { scaffold, scaffoldPlan, scaffoldPlanSite, scaffoldTheme, scaffoldPresetPack } from './scaffold.js';
+import { scaffold, scaffoldPlan, scaffoldPlanSite, scaffoldTheme, scaffoldPresetPack, scaffoldPlugin } from './scaffold.js';
 import type { ScaffoldTarget } from './scaffold.js';
 import * as path from 'node:path';
 
@@ -17,7 +17,7 @@ const TARGET_LABELS: Record<ScaffoldTarget, string> = {
 	html: 'Static HTML',
 };
 
-type ProjectType = 'site' | 'theme' | 'plan' | 'preset-pack';
+type ProjectType = 'site' | 'theme' | 'plan' | 'preset-pack' | 'plugin';
 
 let projectName: string | undefined;
 let theme = '@refrakt-md/lumina';
@@ -38,8 +38,8 @@ for (let i = 0; i < args.length; i++) {
 		}
 	} else if (arg === '--type') {
 		const val = args[++i];
-		if (val !== 'site' && val !== 'theme' && val !== 'plan' && val !== 'preset-pack') {
-			console.error('Error: --type must be one of: site, theme, plan, preset-pack');
+		if (val !== 'site' && val !== 'theme' && val !== 'plan' && val !== 'preset-pack' && val !== 'plugin') {
+			console.error('Error: --type must be one of: site, theme, plan, preset-pack, plugin');
 			process.exit(1);
 		}
 		type = val;
@@ -121,6 +121,8 @@ Examples:
   npx create-refrakt my-site --theme @refrakt-md/aurora
   npx create-refrakt my-theme --type theme
   npx create-refrakt my-theme --type theme --scope @my-org
+  npx create-refrakt my-plugin --type plugin --scope @my-org
+  npx create-refrakt my-presets --type preset-pack
   npx create-refrakt my-plan --type plan
   npx create-refrakt my-plan --type plan --target sveltekit
 `);
@@ -139,7 +141,7 @@ function validateFlagCombos(): void {
 		}
 	}
 	// A site adapter target (--target sveltekit|astro|…) is invalid for packages.
-	if ((type === 'theme' || type === 'preset-pack') && targetExplicit) {
+	if ((type === 'theme' || type === 'preset-pack' || type === 'plugin') && targetExplicit) {
 		console.error(`Error: a site adapter --target cannot be used with --type ${type}\n`);
 		process.exit(1);
 	}
@@ -148,8 +150,8 @@ function validateFlagCombos(): void {
 		console.error('Error: --target svelte (theme component layer) requires --type theme\n');
 		process.exit(1);
 	}
-	if (type !== 'theme' && type !== 'preset-pack' && scope) {
-		console.error('Error: --scope can only be used with publishable packages (--type theme | preset-pack)\n');
+	if (type !== 'theme' && type !== 'preset-pack' && type !== 'plugin' && scope) {
+		console.error('Error: --scope can only be used with publishable packages (--type theme | preset-pack | plugin)\n');
 		process.exit(1);
 	}
 }
@@ -190,6 +192,7 @@ async function run(): Promise<void> {
 					{ value: 'site', label: 'Site', hint: 'full refrakt.md site with a framework adapter' },
 					{ value: 'theme', label: 'Theme', hint: 'publishable theme package' },
 					{ value: 'preset-pack', label: 'Preset pack', hint: 'distributable token presets (JSON)' },
+					{ value: 'plugin', label: 'Plugin', hint: 'custom runes package' },
 					{ value: 'plan', label: 'Planning only', hint: 'specs, work items, decisions, milestones' },
 				],
 			});
@@ -247,6 +250,8 @@ async function run(): Promise<void> {
 			scaffoldTheme({ themeName: projectName!, targetDir, scope, target: themeLayer });
 		} else if (type === 'preset-pack') {
 			scaffoldPresetPack({ packName: projectName!, targetDir, scope });
+		} else if (type === 'plugin') {
+			scaffoldPlugin({ pluginName: projectName!, targetDir, scope });
 		} else if (type === 'plan') {
 			if (targetExplicit) {
 				await scaffoldPlanSite({ projectName: projectName!, targetDir, target: target! });
@@ -296,6 +301,20 @@ Add presets under src/*.json + an entry in presets.json, then publish.
 Install into a site with:
 
   refrakt theme presets install ${scope ? `${scope}/${projectName}` : projectName} --use ember
+`);
+	} else if (type === 'plugin') {
+		console.log(`
+Done! Your refrakt.md plugin package is ready.
+
+Next steps:
+
+  cd ${projectName}
+  npm install
+  npm run build
+  npx refrakt inspect callout    # see the example rune's HTML/BEM
+
+Add runes under src/tags/*.ts + entries in src/index.ts, then use it in a site
+by adding "${scope ? `${scope}/${projectName}` : projectName}" to the site's plugins.
 `);
 	} else if (type === 'plan') {
 		if (targetExplicit) {
