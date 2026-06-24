@@ -22,6 +22,8 @@ if (!command || command === '--help' || command === '-h') {
 	runValidate(args.slice(1));
 } else if (command === 'theme') {
 	runTheme(args.slice(1));
+} else if (command === 'template') {
+	runTemplate(args.slice(1));
 } else if (command === 'plugins') {
 	runPluginsCommand(args.slice(1));
 } else if (command === 'config') {
@@ -749,6 +751,53 @@ function runValidate(validateArgs: string[]): void {
 		console.error(`\nError: ${(err as Error).message}`);
 		process.exit(1);
 	});
+}
+
+function runTemplate(tArgs: string[]): void {
+	const subcommand = tArgs[0];
+	if (!subcommand || subcommand === '--help' || subcommand === '-h') {
+		console.log(`
+Usage: refrakt template <subcommand> [options]
+
+Subcommands:
+  install <dir>      Add a full-site template as a new site (SPEC-109/110)
+
+Options:
+  --site <name>      New site key (must not collide; defaults to "default")
+
+Note: install resolves a local template directory. For a published or bundled
+template, scaffold a fresh project with: create-refrakt <name> --template <src>
+`);
+		process.exit(subcommand ? 0 : 1);
+	}
+
+	let site: string | undefined;
+	const positional: string[] = [];
+	for (let i = 1; i < tArgs.length; i++) {
+		const arg = tArgs[i];
+		if (arg === '--site') {
+			site = tArgs[++i];
+			if (!site) { console.error('Error: --site requires a value'); process.exit(1); }
+		} else {
+			positional.push(arg!);
+		}
+	}
+
+	if (subcommand === 'install') {
+		const source = positional[0];
+		if (!source) {
+			console.error('Error: Missing template directory\n');
+			console.error('Usage: refrakt template install <dir> [--site <name>]');
+			process.exit(1);
+		}
+		import('./commands/template.js').then(({ templateInstallCommand }) =>
+			templateInstallCommand({ source, site }),
+		).catch((err) => { console.error(`\nError: ${(err as Error).message}`); process.exit(1); });
+	} else {
+		console.error(`Error: Unknown template subcommand "${subcommand}"\n`);
+		console.error('Available subcommands: install');
+		process.exit(1);
+	}
 }
 
 function runTheme(themeArgs: string[]): void {

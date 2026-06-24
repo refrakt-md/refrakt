@@ -10,7 +10,7 @@ to `sandbox`/`dir`, with a backwards-compatible migration. The template specs
 - [x] `SiteConfig.sandbox.examplesDir` is renamed to `sandbox.dir` (type + readers/writers); the old name is accepted with a deprecation warning during a migration window
 - [x] `assembleFromDirectory` and the sandbox sources reader use the new field
 - [x] A migration note (and codemod where practical) updates existing configs
-- [ ] Docs and `{% sandbox %}` references use the new naming
+- [x] Docs and `{% sandbox %}` references use the new naming
 
 ## Approach
 Update `packages/types/src/theme.ts` (`SiteConfig.sandbox`) and

@@ -202,3 +202,20 @@ Your CSS targets these selectors:
 - [Creating a Theme](/extend/theme-authoring/creating-a-theme) — Step-by-step guide to building a custom theme
 - [Interactive Components](/extend/theme-authoring/components) — How interactivity works without framework components
 - [Layouts](/extend/theme-authoring/layouts) — Declarative page layout system with `LayoutConfig`
+
+## Framework-agnostic by default (ADR-024)
+
+`create-refrakt --type theme` scaffolds a **framework-agnostic** theme: design
+tokens, CSS, the identity-transform config (`./transform`), and layout *configs*
+(`./layouts`) — the shape the reference theme (Lumina) ships. It renders under
+every adapter; there is no `svelte/` folder and no `target`.
+
+A framework component layer is **opt-in** and additive:
+
+```bash
+npx create-refrakt my-theme --type theme --target svelte
+```
+
+`--target svelte` adds the `svelte/` component layer and the `./svelte` export
+for the cases that genuinely need component overrides. `./transform` is the
+theme contract; a framework export is optional, and its absence is normal.

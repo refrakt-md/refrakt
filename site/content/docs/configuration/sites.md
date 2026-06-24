@@ -115,7 +115,7 @@ A `SiteConfig` accepts these fields. Required fields are bold.
 | `icons` | `Record<string, string>` | Custom icon SVGs merged into the theme's global icon group. |
 | `tints` | `Record<string, object>` | Project-level tint presets. |
 | `backgrounds` | `Record<string, object>` | Project-level background presets. |
-| `sandbox` | `object` | `{ examplesDir }` — directory for `{% sandbox %}` examples. |
+| `sandbox` | `object` | `{ dir }` — directory of `{% sandbox %}` program sources. (`examplesDir` is the deprecated alias, still accepted with a warning — ADR-022.) |
 
 ### Theme object form
 
