@@ -25,7 +25,7 @@ describe('bin — flag validation', () => {
 	it('rejects unknown --type value', () => {
 		const r = run(['x', '--type', 'website']);
 		expect(r.status).toBe(1);
-		expect(r.stderr).toContain('--type must be "site", "theme", or "plan"');
+		expect(r.stderr).toContain('--type must be one of: site, theme, plan, preset-pack, plugin, template');
 	});
 
 	it('rejects --type plan with --theme', () => {
@@ -51,13 +51,13 @@ describe('bin — flag validation', () => {
 	it('rejects --scope on non-theme types', () => {
 		const r = run(['x', '--type', 'site', '--scope', '@my-org']);
 		expect(r.status).toBe(1);
-		expect(r.stderr).toContain('--scope can only be used with --type theme');
+		expect(r.stderr).toContain('--scope can only be used with publishable packages');
 	});
 
 	it('help mentions the plan type', () => {
 		const r = run(['--help']);
 		expect(r.status).toBe(0);
-		expect(r.stdout).toContain('--type <site|theme|plan>');
+		expect(r.stdout).toContain('--type <site|theme|plan|preset-pack|plugin|template>');
 		expect(r.stdout).toContain('--type plan');
 	});
 

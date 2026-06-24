@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { scaffold, scaffoldPlan, scaffoldPlanSite, scaffoldTheme, scaffoldPresetPack, scaffoldPlugin } from './scaffold.js';
+import { scaffold, scaffoldPlan, scaffoldPlanSite, scaffoldTheme, scaffoldPresetPack, scaffoldPlugin, scaffoldTemplate } from './scaffold.js';
 import type { ScaffoldTarget } from './scaffold.js';
 import * as path from 'node:path';
 
@@ -17,7 +17,7 @@ const TARGET_LABELS: Record<ScaffoldTarget, string> = {
 	html: 'Static HTML',
 };
 
-type ProjectType = 'site' | 'theme' | 'plan' | 'preset-pack' | 'plugin';
+type ProjectType = 'site' | 'theme' | 'plan' | 'preset-pack' | 'plugin' | 'template';
 
 let projectName: string | undefined;
 let theme = '@refrakt-md/lumina';
@@ -26,6 +26,7 @@ let typeExplicit = false;
 let target: ScaffoldTarget | undefined;
 let targetExplicit = false;
 let themeLayer: 'svelte' | undefined;
+let templateName: string | undefined;
 let scope: string | undefined;
 
 for (let i = 0; i < args.length; i++) {
@@ -38,23 +39,30 @@ for (let i = 0; i < args.length; i++) {
 		}
 	} else if (arg === '--type') {
 		const val = args[++i];
-		if (val !== 'site' && val !== 'theme' && val !== 'plan' && val !== 'preset-pack' && val !== 'plugin') {
-			console.error('Error: --type must be one of: site, theme, plan, preset-pack, plugin');
+		if (val !== 'site' && val !== 'theme' && val !== 'plan' && val !== 'preset-pack' && val !== 'plugin' && val !== 'template') {
+			console.error('Error: --type must be one of: site, theme, plan, preset-pack, plugin, template');
 			process.exit(1);
 		}
 		type = val;
 		typeExplicit = true;
-	} else if (arg === '--target') {
+	} else if (arg === '--target' || arg === '--framework') {
+		// `--framework` is the author-facing name for the adapter axis (SPEC-109 §1);
+		// `--target` is the legacy alias. `--target svelte` (with --type theme) is the
+		// ADR-024 component-layer opt-in, distinct from a site adapter.
 		const val = args[++i];
-		// `--target svelte` (with --type theme) opts into the framework component
-		// layer (ADR-024) — distinct from a site's adapter target.
-		if (val === 'svelte') {
+		if (val === 'svelte' && arg === '--target') {
 			themeLayer = 'svelte';
 		} else if (VALID_TARGETS.includes(val as ScaffoldTarget)) {
 			target = val as ScaffoldTarget;
 			targetExplicit = true;
 		} else {
-			console.error(`Error: --target must be one of: ${VALID_TARGETS.join(', ')} (sites), or "svelte" (theme component layer)`);
+			console.error(`Error: ${arg} must be one of: ${VALID_TARGETS.join(', ')}${arg === '--target' ? ', or "svelte" (theme component layer)' : ''}`);
+			process.exit(1);
+		}
+	} else if (arg === '--template') {
+		templateName = args[++i];
+		if (!templateName) {
+			console.error('Error: --template requires a value (bundled name or directory)');
 			process.exit(1);
 		}
 	} else if (arg === '--scope' || arg === '-s') {
@@ -102,7 +110,7 @@ function printUsage(): void {
 Usage: create-refrakt [name] [options]
 
 Options:
-  --type <site|theme|plan|preset-pack>  What to create (default: site)
+  --type <site|theme|plan|preset-pack|plugin|template>  What to create (default: site)
   --target <target>            Sites: adapter (${VALID_TARGETS.join(', ')}); required.
                                Plan: turns it into a runnable plan site.
                                Theme: "svelte" opts into a component layer
@@ -123,6 +131,8 @@ Examples:
   npx create-refrakt my-theme --type theme --scope @my-org
   npx create-refrakt my-plugin --type plugin --scope @my-org
   npx create-refrakt my-presets --type preset-pack
+  npx create-refrakt my-docs --framework svelte --template docs-starter
+  npx create-refrakt my-template --type template --scope @my-org
   npx create-refrakt my-plan --type plan
   npx create-refrakt my-plan --type plan --target sveltekit
 `);
@@ -141,7 +151,7 @@ function validateFlagCombos(): void {
 		}
 	}
 	// A site adapter target (--target sveltekit|astro|…) is invalid for packages.
-	if ((type === 'theme' || type === 'preset-pack' || type === 'plugin') && targetExplicit) {
+	if ((type === 'theme' || type === 'preset-pack' || type === 'plugin' || type === 'template') && targetExplicit) {
 		console.error(`Error: a site adapter --target cannot be used with --type ${type}\n`);
 		process.exit(1);
 	}
@@ -150,8 +160,14 @@ function validateFlagCombos(): void {
 		console.error('Error: --target svelte (theme component layer) requires --type theme\n');
 		process.exit(1);
 	}
-	if (type !== 'theme' && type !== 'preset-pack' && type !== 'plugin' && scope) {
-		console.error('Error: --scope can only be used with publishable packages (--type theme | preset-pack | plugin)\n');
+	if (type !== 'theme' && type !== 'preset-pack' && type !== 'plugin' && type !== 'template' && scope) {
+		console.error('Error: --scope can only be used with publishable packages (--type theme | preset-pack | plugin | template)\n');
+		process.exit(1);
+	}
+	// `--template` (consume) composes a template onto a *site*; `--type template`
+	// (author) scaffolds a template package — they don't combine.
+	if (templateName && type !== 'site') {
+		console.error('Error: --template can only be used with --type site\n');
 		process.exit(1);
 	}
 }
@@ -193,6 +209,7 @@ async function run(): Promise<void> {
 					{ value: 'theme', label: 'Theme', hint: 'publishable theme package' },
 					{ value: 'preset-pack', label: 'Preset pack', hint: 'distributable token presets (JSON)' },
 					{ value: 'plugin', label: 'Plugin', hint: 'custom runes package' },
+					{ value: 'template', label: 'Template', hint: 'distributable site template' },
 					{ value: 'plan', label: 'Planning only', hint: 'specs, work items, decisions, milestones' },
 				],
 			});
@@ -252,6 +269,8 @@ async function run(): Promise<void> {
 			scaffoldPresetPack({ packName: projectName!, targetDir, scope });
 		} else if (type === 'plugin') {
 			scaffoldPlugin({ pluginName: projectName!, targetDir, scope });
+		} else if (type === 'template') {
+			scaffoldTemplate({ templateName: projectName!, targetDir, scope });
 		} else if (type === 'plan') {
 			if (targetExplicit) {
 				await scaffoldPlanSite({ projectName: projectName!, targetDir, target: target! });
@@ -259,7 +278,7 @@ async function run(): Promise<void> {
 				scaffoldPlan({ projectName: projectName!, targetDir });
 			}
 		} else {
-			await scaffold({ projectName: projectName!, targetDir, theme, target });
+			await scaffold({ projectName: projectName!, targetDir, theme, target, template: templateName });
 		}
 	} catch (err) {
 		console.error(`\nError: ${(err as Error).message}`);
@@ -315,6 +334,14 @@ Next steps:
 
 Add runes under src/tags/*.ts + entries in src/index.ts, then use it in a site
 by adding "${scope ? `${scope}/${projectName}` : projectName}" to the site's plugins.
+`);
+	} else if (type === 'template') {
+		console.log(`
+Done! Your refrakt.md site-template package is ready.
+
+Edit template.json + content/, then publish. Consume it with:
+
+  npx create-refrakt my-site --framework svelte --template ${scope ? `${scope}/${projectName}` : projectName}
 `);
 	} else if (type === 'plan') {
 		if (targetExplicit) {
