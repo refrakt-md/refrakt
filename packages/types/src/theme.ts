@@ -114,8 +114,14 @@ export interface SiteConfig {
 	tints?: Record<string, Record<string, unknown>>;
 	/** Project-level background presets — merged after theme backgrounds (last wins) */
 	backgrounds?: Record<string, Record<string, unknown>>;
-	/** Sandbox configuration */
+	/** Sandbox configuration. The runtime program-source directory (SPEC-104). */
 	sandbox?: {
+		/** Directory of sandbox program sources, scanned at build time
+		 *  (ADR-022). Relative to the project root. */
+		dir?: string;
+		/** @deprecated Renamed to `dir` (ADR-022). Still accepted as input — the
+		 *  config normalizer coalesces it into `dir` and emits a deprecation
+		 *  warning — but will be removed in a future release. */
 		examplesDir?: string;
 	};
 	/** Base URL for canonical links and og:url */
@@ -224,6 +230,8 @@ export interface RefraktConfig {
 	backgrounds?: Record<string, Record<string, unknown>>;
 	/** @deprecated Shorthand for `sites.default.sandbox` */
 	sandbox?: {
+		dir?: string;
+		/** @deprecated Renamed to `dir` (ADR-022). */
 		examplesDir?: string;
 	};
 	/** @deprecated Shorthand for `sites.default.baseUrl` */
@@ -285,8 +293,12 @@ export interface ThemeManifest {
 	name: string;
 	version: string;
 	description?: string;
-	/** Target framework this theme is built for (e.g. "svelte", "astro") */
-	target: string;
+	/** Compatible refrakt range, validated at install (ADR-023). Optional — a
+	 *  missing range is treated as universal/no-constraint. */
+	refrakt?: string;
+	/** @deprecated Target framework hint (e.g. "svelte"). Documentation-only —
+	 *  adapters do not gate on it (ADR-024). A framework-agnostic theme omits it. */
+	target?: string;
 	/** Relative path to CSS custom properties file */
 	designTokens: string;
 	/** Layout definitions keyed by name */

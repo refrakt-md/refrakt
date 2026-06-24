@@ -162,8 +162,9 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 			try {
 				const contentPkg = '@refrakt-md/content';
 				const { loadContent, analyzeRuneUsage, formatPipelineSummary } = await import(contentPkg);
-				const sandboxExamplesDir = activeSite.sandbox?.examplesDir
-					? resolve(resolvedRoot, activeSite.sandbox.examplesDir)
+				const sandboxDirField = activeSite.sandbox?.dir ?? activeSite.sandbox?.examplesDir;
+				const sandboxExamplesDir = sandboxDirField
+					? resolve(resolvedRoot, sandboxDirField)
 					: undefined;
 
 				// Run each plugin's `configure` lifecycle hook before the
@@ -252,8 +253,9 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 		},
 
 		configureServer(server) {
-			const examplesDir = activeSite.sandbox?.examplesDir
-				? resolve(resolvedRoot, activeSite.sandbox.examplesDir)
+			const sandboxDirField = activeSite.sandbox?.dir ?? activeSite.sandbox?.examplesDir;
+			const examplesDir = sandboxDirField
+				? resolve(resolvedRoot, sandboxDirField)
 				: undefined;
 
 			// On .md changes, drop the cached Site so the next SSR pass rebuilds

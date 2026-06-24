@@ -25,6 +25,18 @@ describe('loadPreset', () => {
 		).rejects.toThrow(/has no default or named 'config' export/);
 	});
 
+	it('loads a declarative JSON preset (SPEC-111 §6)', async () => {
+		const config = await loadPreset('./fixtures/preset-syntax.json', { from: fixturesDir });
+		expect(config.syntax?.keyword).toBe('#2d5230');
+		expect(config.color?.primary).toBe('#7c3aed');
+	});
+
+	it('rejects a JSON preset that is not an object', async () => {
+		await expect(
+			loadPreset('./fixtures/preset-not-object.json', { from: fixturesDir }),
+		).rejects.toThrow(/not a ThemeTokensConfig object/);
+	});
+
 	it('throws a clear error when the specifier does not resolve', async () => {
 		await expect(
 			loadPreset('@refrakt-md/no-such-preset', { from: fixturesDir }),

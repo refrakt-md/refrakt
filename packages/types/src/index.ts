@@ -107,3 +107,16 @@ export type {
 // Security policy
 export type { SecurityPolicy, ResolvedSecurityPolicy } from './security.js';
 export { resolveSecurityPolicy } from './security.js';
+
+// Distributable-extension manifests (SPEC-109, SPEC-111, ADR-023)
+export type {
+	TemplateManifest,
+	TemplateSiteConfig,
+	PresetScope,
+	PresetEntry,
+	PresetPackManifest,
+} from './distribution.js';
+
+// Versioning & compatibility (ADR-023)
+export type { SemverParts, CompatResult } from './compat.js';
+export { parseVersion, satisfiesRange, checkRefraktCompat } from './compat.js';

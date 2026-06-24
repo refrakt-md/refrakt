@@ -23,6 +23,19 @@ function getRefraktSchemaVersion(): string {
 
 export type ScaffoldTarget = 'sveltekit' | 'html' | 'astro' | 'nuxt' | 'next' | 'eleventy';
 
+/** Minor-pinned peer range for `@refrakt-md/*` in scaffolded extensions
+ *  (ADR-023): `>=MAJOR.MINOR <MAJOR.(MINOR+1)`. */
+function refraktPeerRange(): string {
+	const [major, minor] = getRefraktVersion().split('.').map(Number);
+	return `>=${major}.${minor} <${major}.${(minor ?? 0) + 1}`;
+}
+
+/** URL of the published token-contract JSON Schema for the current minor
+ *  (WORK-458), referenced by scaffolded JSON presets via `$schema`. */
+function tokenSchemaUrl(): string {
+	return `https://refrakt.md/schemas/${getRefraktSchemaVersion()}/theme-tokens.json`;
+}
+
 export interface ScaffoldOptions {
 	projectName: string;
 	targetDir: string;
@@ -1371,4 +1384,119 @@ description: Release targets and their progress.
 
 {% collection type="milestone" sort="-name" /%}
 `;
+}
+
+// ─── Preset-pack scaffold (SPEC-116 §2, ADR-023) ────────────────────────────
+
+export interface PresetPackScaffoldOptions {
+	packName: string;
+	targetDir: string;
+	scope?: string;
+}
+
+/** Scaffold a declarative **preset pack** (SPEC-111 §6 JSON carrier). Because a
+ *  JSON preset needs no build, this package is contract-valid the moment it is
+ *  written (SPEC-116 §4) — no compile step. Ships a `presets.json` manifest, one
+ *  `syntax`-scoped example preset (the universal, safest default), and the
+ *  ADR-023 peer/compat wiring. */
+export function scaffoldPresetPack(options: PresetPackScaffoldOptions): void {
+	const { packName, targetDir, scope } = options;
+	if (existsSync(targetDir)) {
+		throw new Error(`Directory already exists: ${targetDir}`);
+	}
+	const fullName = scope ? `${scope}/${packName}` : packName;
+	const peer = refraktPeerRange();
+
+	mkdirSync(path.join(targetDir, 'src'), { recursive: true });
+
+	const pkg = {
+		name: fullName,
+		version: '0.1.0',
+		description: `${packName} — a refrakt preset pack`,
+		type: 'module',
+		// JSON carrier: no build output; presets are shipped as source.
+		exports: {
+			'./presets.json': './presets.json',
+			'./ember': './src/ember.json',
+		},
+		files: ['presets.json', 'src'],
+		scripts: {
+			// Validate the pack manifest against the installed refrakt CLI.
+			validate: 'refrakt theme presets validate --pack .',
+		},
+		// ADR-023: depend on @refrakt-md/* as peers (not bundled), with a matching
+		// devDependency so the pack can be validated/built in isolation.
+		peerDependencies: {
+			'@refrakt-md/types': peer,
+		},
+		devDependencies: {
+			'@refrakt-md/cli': peer,
+			'@refrakt-md/types': peer,
+		},
+	};
+	writeFileSync(path.join(targetDir, 'package.json'), JSON.stringify(pkg, null, '\t') + '\n');
+
+	const manifest = {
+		name: fullName,
+		// ADR-023 compatibility range, pinned to the scaffolding refrakt minor.
+		refrakt: peer,
+		presets: [
+			{
+				id: 'ember',
+				title: 'Ember',
+				scope: 'syntax',
+				module: './src/ember.json',
+			},
+		],
+	};
+	writeFileSync(path.join(targetDir, 'presets.json'), JSON.stringify(manifest, null, '\t') + '\n');
+
+	// Example preset — a `syntax`-scoped ThemeTokensConfig (universal). The
+	// `$schema` pointer drives editor validation/autocomplete (WORK-458).
+	const ember = {
+		$schema: tokenSchemaUrl(),
+		syntax: {
+			keyword: '#c2410c',
+			function: '#b45309',
+			string: '#3f6212',
+			number: '#9a3412',
+			comment: '#78716c',
+			type: '#92400e',
+			variable: '#1c1917',
+		},
+	};
+	writeFileSync(path.join(targetDir, 'src', 'ember.json'), JSON.stringify(ember, null, '\t') + '\n');
+
+	writeFileSync(
+		path.join(targetDir, 'README.md'),
+		`# ${fullName}
+
+A refrakt **preset pack** — a collection of \`ThemeTokensConfig\` presets shipped
+independently of any theme (SPEC-111).
+
+## Authoring
+
+Presets are declarative JSON (no build step). Add a \`.json\` file under \`src/\`
+and an entry in \`presets.json\`:
+
+- \`scope: "syntax"\` — recolours only code/syntax tokens; works under any theme.
+- \`scope: "palette"\` — also sets chrome tokens; tune it to a canvas and list the
+  theme(s) it was designed for under \`tunedFor\`.
+
+Each preset's \`$schema\` enables editor validation against the universal token
+contract.
+
+## Validate
+
+\`\`\`bash
+npm run validate   # refrakt theme presets validate --pack .
+\`\`\`
+
+## Use in a site
+
+\`\`\`bash
+refrakt theme presets install ${fullName} --use ember
+\`\`\`
+`,
+	);
 }

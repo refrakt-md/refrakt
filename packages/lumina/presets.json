@@ -1,0 +1,15 @@
+{
+	"name": "@refrakt-md/lumina",
+	"refrakt": ">=0.24 <0.26",
+	"presets": [
+		{ "id": "niwaki", "title": "Niwaki", "scope": "syntax", "module": "./dist/presets/niwaki.js" },
+		{ "id": "tideline", "title": "Tideline", "scope": "palette", "module": "./dist/presets/tideline.js", "tunedFor": ["@refrakt-md/lumina"] },
+		{ "id": "nord", "title": "Nord", "scope": "palette", "module": "./dist/presets/nord.js", "tunedFor": ["@refrakt-md/lumina"] },
+		{ "id": "dracula", "title": "Dracula", "scope": "palette", "module": "./dist/presets/dracula.js", "tunedFor": ["@refrakt-md/lumina"] },
+		{ "id": "solarized", "title": "Solarized", "scope": "palette", "module": "./dist/presets/solarized.js", "tunedFor": ["@refrakt-md/lumina"] },
+		{ "id": "catppuccin", "title": "Catppuccin", "scope": "palette", "module": "./dist/presets/catppuccin.js", "tunedFor": ["@refrakt-md/lumina"] },
+		{ "id": "gruvbox", "title": "Gruvbox", "scope": "palette", "module": "./dist/presets/gruvbox.js", "tunedFor": ["@refrakt-md/lumina"] },
+		{ "id": "one-dark", "title": "One Dark", "scope": "palette", "module": "./dist/presets/one-dark.js", "tunedFor": ["@refrakt-md/lumina"] },
+		{ "id": "tokyo-night", "title": "Tokyo Night", "scope": "palette", "module": "./dist/presets/tokyo-night.js", "tunedFor": ["@refrakt-md/lumina"] }
+	]
+}

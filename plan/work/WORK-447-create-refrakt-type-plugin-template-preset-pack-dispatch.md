@@ -1,4 +1,4 @@
-{% work id="WORK-447" status="ready" priority="high" complexity="simple" source="SPEC-116" tags="create-refrakt,scaffolding,cli" milestone="v0.25.0" %}
+{% work id="WORK-447" status="in-progress" priority="high" complexity="simple" source="SPEC-116" tags="create-refrakt,scaffolding,cli" milestone="v0.25.0" %}
 
 # create-refrakt --type plugin|template|preset-pack dispatch
 
@@ -10,8 +10,8 @@ items (plugin, theme, template, preset-pack).
 ## Acceptance Criteria
 - [ ] `--type` accepts `plugin`, `template`, `preset-pack` alongside `site|theme|plan`; `site` stays the default
 - [ ] Each new kind dispatches to its scaffolder; the existing `--scope` plumbing is reused for package naming
-- [ ] An invalid `--type` value errors with the full list of valid kinds
-- [ ] Existing `site`/`theme`/`plan` behaviour is unchanged
+- [x] An invalid `--type` value errors with the full list of valid kinds
+- [x] Existing `site`/`theme`/`plan` behaviour is unchanged
 
 ## Approach
 Update flag parsing + the dispatch table in `bin.ts`. Keep the scaffolder functions in

@@ -1,20 +1,22 @@
 import { createRequire } from 'node:module';
-import { pathToFileURL } from 'node:url';
+import { pathToFileURL, fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 import { resolve, isAbsolute } from 'node:path';
 import type { ThemeTokensConfig } from '@refrakt-md/types';
 
 /**
- * Resolve and load a preset module by specifier. Accepts:
- *   - Package paths: `@refrakt-md/lumina/presets/tideline`
- *   - Relative paths: `./presets/my-warm`
+ * Resolve and load a preset by specifier. A preset travels in one of two
+ * carrier formats (SPEC-111 §6):
+ *   - a declarative `.json` file (the default for new packs) — read + parsed
+ *   - a JS/TS module with a `default`/`config` export (Lumina's current form)
+ *
+ * Accepts the same specifier shapes for both:
+ *   - Package paths: `@refrakt-md/lumina/presets/tideline`, `@acme/presets/ember.json`
+ *   - Relative paths: `./presets/my-warm`, `./presets/ember.json`
  *   - Absolute paths: `/abs/path/to/preset.js`
  *
- * Expected exports (resolved in order):
- *   - `default`
- *   - `config`
- *
  * Throws if the specifier doesn't resolve, the module exports nothing, or
- * the resolved export is not a plain object.
+ * the resolved value is not a plain `ThemeTokensConfig` object.
  */
 export async function loadPreset(
 	specifier: string,
@@ -38,6 +40,25 @@ export async function loadPreset(
 				`preset '${specifier}' not found — check the package is installed and the export path is correct (${(err as Error).message})`,
 			);
 		}
+	}
+
+	// JSON carrier (SPEC-111 §6): read + parse rather than `import()`. The
+	// resolved value is a plain object, which satisfies the same guard below.
+	if (resolvedSpec.endsWith('.json')) {
+		let parsed: unknown;
+		try {
+			parsed = JSON.parse(readFileSync(fileURLToPath(resolvedSpec), 'utf-8'));
+		} catch (err) {
+			throw new Error(
+				`failed to load JSON preset '${specifier}': ${(err as Error).message}`,
+			);
+		}
+		if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+			throw new Error(
+				`preset '${specifier}' JSON is not a ThemeTokensConfig object`,
+			);
+		}
+		return parsed as ThemeTokensConfig;
 	}
 
 	let mod: Record<string, unknown>;
