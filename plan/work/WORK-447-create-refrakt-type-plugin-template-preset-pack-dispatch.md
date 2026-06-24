@@ -9,7 +9,7 @@ items (plugin, theme, template, preset-pack).
 
 ## Acceptance Criteria
 - [ ] `--type` accepts `plugin`, `template`, `preset-pack` alongside `site|theme|plan`; `site` stays the default
-- [ ] Each new kind dispatches to its scaffolder; the existing `--scope` plumbing is reused for package naming
+- [x] Each new kind dispatches to its scaffolder; the existing `--scope` plumbing is reused for package naming
 - [x] An invalid `--type` value errors with the full list of valid kinds
 - [x] Existing `site`/`theme`/`plan` behaviour is unchanged
 
