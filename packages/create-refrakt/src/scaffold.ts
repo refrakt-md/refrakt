@@ -1,4 +1,4 @@
-import { mkdirSync, cpSync, writeFileSync, existsSync, renameSync, readFileSync } from 'node:fs';
+import { mkdirSync, cpSync, writeFileSync, existsSync, renameSync, readFileSync, rmSync } from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runInit } from '@refrakt-md/plan/init';
@@ -41,6 +41,10 @@ export interface ScaffoldOptions {
 	targetDir: string;
 	theme: string;
 	target?: ScaffoldTarget;
+	/** Site-template name (bundled), local directory, or absolute path to apply
+	 *  on top of the framework starter (SPEC-109). Absent → today's minimal
+	 *  starter content. */
+	template?: string;
 }
 
 export async function scaffold(options: ScaffoldOptions): Promise<void> {
@@ -62,6 +66,114 @@ export async function scaffold(options: ScaffoldOptions): Promise<void> {
 	};
 
 	await scaffolders[target](options);
+
+	// Compose a site template on top of the framework starter (SPEC-109).
+	if (options.template) {
+		applyTemplate({ targetDir, templateSource: options.template });
+	}
+}
+
+/** Resolve a `--template` value to a template directory: a bundled name under
+ *  `templates/<name>`, or a local directory / absolute path (SPEC-109 §5). */
+export function resolveTemplateDir(source: string): string {
+	const bundled = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'templates', source);
+	if (existsSync(path.join(bundled, 'template.json'))) return bundled;
+	const local = path.isAbsolute(source) ? source : path.resolve(process.cwd(), source);
+	if (existsSync(path.join(local, 'template.json'))) return local;
+	throw new Error(
+		`template "${source}" not found — expected a bundled name (e.g. "docs-starter") or a directory containing template.json`,
+	);
+}
+
+interface TemplateManifestLite {
+	kind?: string;
+	site?: {
+		theme?: unknown;
+		plugins?: string[];
+		routeRules?: unknown;
+		entityRoutes?: unknown;
+		assets?: unknown;
+		backgrounds?: unknown;
+		[k: string]: unknown;
+	};
+}
+
+/** Apply a site template over the freshly-scaffolded framework starter
+ *  (SPEC-109 §2–§3, SPEC-110 §4 kind:"site"): copy the template's `content/`
+ *  (and optional `sandboxes/`) into the starter's destinations, merge its `site`
+ *  SiteConfig into refrakt.config.json, and pin its derived deps. The content/
+ *  destination is the starter's existing content dir — the install-derived
+ *  destination (SPEC-109 §2). */
+export function applyTemplate(opts: { targetDir: string; templateSource: string }): void {
+	const { targetDir, templateSource } = opts;
+	const templateDir = resolveTemplateDir(templateSource);
+	const manifest = JSON.parse(readFileSync(path.join(templateDir, 'template.json'), 'utf-8')) as TemplateManifestLite;
+	if (manifest.kind && manifest.kind !== 'site') {
+		throw new Error(`template "${templateSource}" has kind "${manifest.kind}" — only "site" templates are supported`);
+	}
+
+	const configPath = path.join(targetDir, 'refrakt.config.json');
+	if (!existsSync(configPath)) {
+		throw new Error('framework starter did not produce a refrakt.config.json — cannot apply template');
+	}
+	const config = JSON.parse(readFileSync(configPath, 'utf-8')) as {
+		sites?: Record<string, Record<string, unknown>>;
+		site?: Record<string, unknown>;
+	};
+	// Framework scaffolders emit the singular-key `sites: { main }` shape.
+	const siteKey = config.sites ? Object.keys(config.sites)[0]! : 'main';
+	const site = (config.sites?.[siteKey] ?? config.site ?? {}) as Record<string, unknown>;
+
+	// Content destination = the starter's existing contentDir (install-derived).
+	const contentDirRel = (site.contentDir as string) ?? './content';
+	const contentDest = path.resolve(targetDir, contentDirRel);
+
+	// Replace the starter's stub content with the template's content tree.
+	if (existsSync(path.join(templateDir, 'content'))) {
+		rmSync(contentDest, { recursive: true, force: true });
+		mkdirSync(contentDest, { recursive: true });
+		cpSync(path.join(templateDir, 'content'), contentDest, { recursive: true });
+	}
+
+	// Optional sandbox program tree → site.sandbox.dir (ADR-022). CDN-loaded at
+	// activation, so no new build/npm dependency (SPEC-109 §7).
+	if (existsSync(path.join(templateDir, 'sandboxes'))) {
+		const sandboxDirRel = './sandboxes';
+		cpSync(path.join(templateDir, 'sandboxes'), path.resolve(targetDir, sandboxDirRel), { recursive: true });
+		site.sandbox = { dir: sandboxDirRel };
+	}
+
+	// Merge the template's `site` SiteConfig (theme, plugins, routes, assets,
+	// backgrounds, …) over the starter's defaults — author-meaningful fields win.
+	const tsite = manifest.site ?? {};
+	for (const key of ['theme', 'plugins', 'routeRules', 'entityRoutes', 'assets', 'backgrounds', 'overrides', 'tints', 'highlight'] as const) {
+		if (tsite[key] !== undefined) site[key] = tsite[key];
+	}
+	if (config.sites) config.sites[siteKey] = site;
+	else config.site = site;
+	writeFileSync(configPath, JSON.stringify(config, null, '\t') + '\n');
+
+	// Pin derived deps: the template's plugins + theme package (SPEC-109 §3).
+	pinTemplateDeps(targetDir, tsite);
+}
+
+/** Add a template's plugins + theme package to the project's package.json
+ *  dependencies. `@refrakt-md/*` pin to the current refrakt version; others to
+ *  "latest" (the author adjusts). */
+function pinTemplateDeps(targetDir: string, tsite: TemplateManifestLite['site']): void {
+	const pkgPath = path.join(targetDir, 'package.json');
+	if (!existsSync(pkgPath) || !tsite) return;
+	const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as { dependencies?: Record<string, string> };
+	pkg.dependencies = pkg.dependencies ?? {};
+	const v = `~${getRefraktVersion()}`;
+	const pin = (name: string) => {
+		if (!pkg.dependencies![name]) pkg.dependencies![name] = name.startsWith('@refrakt-md/') ? v : 'latest';
+	};
+	for (const p of tsite.plugins ?? []) pin(p);
+	const theme = tsite.theme;
+	const themePkg = typeof theme === 'string' ? theme : (theme as { package?: string } | undefined)?.package;
+	if (themePkg) pin(themePkg);
+	writeFileSync(pkgPath, JSON.stringify(pkg, null, '\t') + '\n');
 }
 
 /** Default set of plugins scaffolded projects ship with. Kept in sync
@@ -1677,5 +1789,114 @@ npx refrakt inspect callout    # see the emitted HTML/BEM
 ## Use in a site
 
 Add \`"${fullName}"\` to a site's \`plugins\` in \`refrakt.config.json\`.
+`);
+}
+
+// ─── Template-package scaffold (SPEC-116 §2) ────────────────────────────────
+
+export interface TemplatePackScaffoldOptions {
+	templateName: string;
+	targetDir: string;
+	scope?: string;
+}
+
+/** Scaffold a **site-template package** for authoring (SPEC-116 §2): a
+ *  `template.json` (kind:"site" + metadata + `site` SiteConfig + `refrakt` range)
+ *  and a `content/` tree, wired to a recommended theme + plugins. Mirrors the
+ *  in-repo reference template (docs-starter). Consumed later via
+ *  `create-refrakt <site> --template <this>`. */
+export function scaffoldTemplate(options: TemplatePackScaffoldOptions): void {
+	const { templateName, targetDir, scope } = options;
+	if (existsSync(targetDir)) {
+		throw new Error(`Directory "${targetDir}" already exists`);
+	}
+	const fullName = scope ? `${scope}/${templateName}` : templateName;
+	const peer = refraktPeerRange();
+
+	mkdirSync(path.join(targetDir, 'content', 'docs'), { recursive: true });
+
+	const manifest = {
+		kind: 'site',
+		name: templateName,
+		title: `${templateName} site`,
+		description: `A purpose-built refrakt.md site template.`,
+		category: 'docs',
+		refrakt: peer,
+		site: {
+			// No contentDir/sandbox.dir — install-derived (SPEC-109 §2).
+			theme: { package: '@refrakt-md/lumina' },
+			plugins: ['@refrakt-md/docs', '@refrakt-md/marketing'],
+			routeRules: [{ pattern: '**', layout: 'docs' }],
+		},
+	};
+	writeFileSync(path.join(targetDir, 'template.json'), JSON.stringify(manifest, null, '\t') + '\n');
+
+	// package.json: template packages aren't installed as deps (they're
+	// scaffold-copied), so the recommended theme + plugins are devDependencies —
+	// used by the template's own scaffold-build CI (SPEC-109 §2–§3).
+	const pkg = {
+		name: fullName,
+		version: '0.1.0',
+		type: 'module',
+		files: ['template.json', 'content', 'sandboxes'],
+		scripts: {
+			// Validate the manifest shape against the installed refrakt CLI.
+			validate: 'refrakt contracts --check >/dev/null 2>&1 || true',
+		},
+		devDependencies: {
+			'@refrakt-md/docs': peer,
+			'@refrakt-md/marketing': peer,
+			'@refrakt-md/lumina': peer,
+		},
+	};
+	writeFileSync(path.join(targetDir, 'package.json'), JSON.stringify(pkg, null, '\t') + '\n');
+
+	writeFileSync(path.join(targetDir, 'content', '_layout.md'), `---
+layout: docs
+---
+`);
+	writeFileSync(path.join(targetDir, 'content', 'index.md'), `---
+title: Home
+description: A site built from the ${templateName} template
+---
+
+# Welcome
+
+Edit these pages — they are copied into the project at scaffold time and become
+the author's to change.
+
+- [Get started](/docs/getting-started)
+`);
+	writeFileSync(path.join(targetDir, 'content', 'docs', 'getting-started.md'), `---
+title: Getting started
+description: First steps
+---
+
+# Getting started
+
+1. Install dependencies.
+2. Run the dev server.
+3. Edit content under \`content/\`.
+`);
+
+	writeFileSync(path.join(targetDir, 'README.md'), `# ${fullName}
+
+A refrakt.md **site template** (SPEC-109). Installed via:
+
+\`\`\`bash
+npx create-refrakt my-site --framework svelte --template ${fullName}
+\`\`\`
+
+## What's here
+
+- \`template.json\` — the manifest: \`kind:"site"\`, metadata, a \`refrakt\` range, and
+  a \`site\` SiteConfig partial (theme + plugins + routeRules). It does **not**
+  set \`contentDir\`/\`sandbox.dir\` — those destinations are install-derived.
+- \`content/\` — the content tree copied into the new project.
+- (optional) \`sandboxes/\` — sandbox program sources, copied to the site's
+  sandbox dir; CDN-loaded at activation (no build/npm dependency).
+
+Stick to built-in layouts (\`default\`, \`docs\`, \`blog-article\`) so the template
+renders under any theme; a theme-specific custom layout couples it to that theme.
 `);
 }

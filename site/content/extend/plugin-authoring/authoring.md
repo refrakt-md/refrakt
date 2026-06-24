@@ -435,3 +435,15 @@ npx refrakt package validate
 Some commands don't fit MCP's request/response model — long-running servers, multi-file generators, interactive UIs. The MCP server has a built-in exclusion list for known cases (`plan.serve`, `plan.build`). External plugins can effectively opt out of MCP exposure by omitting `inputSchema` and `mcpHandler` — those commands appear with the generic schema and run via argv-shim, which works for some but is fragile for long-running ones.
 
 For commands that should never appear as MCP tools, future versions may add an explicit `mcpExposed: false` flag. For now, file an issue if your plugin needs the exclusion machinery.
+
+## Scaffolding a plugin
+
+```bash
+npx create-refrakt my-plugin --type plugin --scope @acme
+```
+
+This emits a `Plugin` package with one example rune (`callout`) built on
+`createContentModelSchema` + `createComponentRenderable`, its `theme.runes`
+config, per-rune CSS, and a fixture — it builds and renders under the identity
+transform out of the box. `@refrakt-md/*` are declared as `peerDependencies`
+(ADR-023), so the plugin resolves against the consuming site's refrakt.

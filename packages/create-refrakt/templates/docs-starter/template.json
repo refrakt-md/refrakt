@@ -1,0 +1,18 @@
+{
+	"kind": "site",
+	"name": "docs-starter",
+	"title": "Documentation site",
+	"description": "A multi-section documentation starter with sidebar nav and a getting-started guide. Works under any theme; uses the built-in docs layout.",
+	"category": "docs",
+	"refrakt": ">=0.24 <0.26",
+	"site": {
+		"theme": {
+			"package": "@refrakt-md/lumina",
+			"presets": ["@refrakt-md/lumina/presets/niwaki"]
+		},
+		"plugins": ["@refrakt-md/docs", "@refrakt-md/marketing"],
+		"routeRules": [
+			{ "pattern": "**", "layout": "docs" }
+		]
+	}
+}

@@ -1,4 +1,4 @@
-{% work id="WORK-447" status="in-progress" priority="high" complexity="simple" source="SPEC-116" tags="create-refrakt,scaffolding,cli" milestone="v0.25.0" %}
+{% work id="WORK-447" status="done" priority="high" complexity="simple" source="SPEC-116" tags="create-refrakt,scaffolding,cli" milestone="v0.25.0" %}
 
 # create-refrakt --type plugin|template|preset-pack dispatch
 
@@ -8,7 +8,7 @@ its own scaffolder. This is the thin CLI seam; the scaffolder bodies land in the
 items (plugin, theme, template, preset-pack).
 
 ## Acceptance Criteria
-- [ ] `--type` accepts `plugin`, `template`, `preset-pack` alongside `site|theme|plan`; `site` stays the default
+- [x] `--type` accepts `plugin`, `template`, `preset-pack` alongside `site|theme|plan`; `site` stays the default
 - [x] Each new kind dispatches to its scaffolder; the existing `--scope` plumbing is reused for package naming
 - [x] An invalid `--type` value errors with the full list of valid kinds
 - [x] Existing `site`/`theme`/`plan` behaviour is unchanged
@@ -20,5 +20,11 @@ Update flag parsing + the dispatch table in `bin.ts`. Keep the scaffolder functi
 ## References
 - {% ref "SPEC-116" /%} §1
 - `packages/create-refrakt/src/bin.ts`, `packages/create-refrakt/src/scaffold.ts`
+
+## Resolution
+
+Completed: 2026-06-24
+
+Branch: `claude/v0.25.0-impl-2/-3`. `create-refrakt --type` now accepts `site|theme|plan|preset-pack|plugin|template`, each dispatched to its scaffolder (`scaffoldPresetPack`/`scaffoldPlugin`/`scaffoldTheme`/`scaffoldTemplate`), with `--scope` plumbing and an updated error message + interactive options. Existing site/theme/plan behaviour preserved (verified by bin.test.ts).
 
 {% /work %}
