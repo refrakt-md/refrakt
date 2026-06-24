@@ -48,7 +48,10 @@
 .rf-step h4,
 .rf-step h5,
 .rf-step h6,
-.rf-step strong {
+/* A leading bold opening the step body acts as its title (list-based steps),
+ * so it blocks onto its own line. Scoped to the first inline `strong` of the
+ * first paragraph — inline bold elsewhere in the body must stay inline. */
+.rf-step__content > p:first-child > strong:first-child {
 	display: block;
 }
 

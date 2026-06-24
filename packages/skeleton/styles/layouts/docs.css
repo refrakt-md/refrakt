@@ -80,8 +80,12 @@ html:has(.rf-docs-header) { scroll-padding-top: 5rem; }
 @media (max-width: 768px) {
 	.rf-docs-header { position: sticky; top: 0; }
 	.rf-docs-header__inner p ~ p { display: none; }
-	.rf-docs-toolbar { display: flex; position: sticky; top: var(--rf-header-height, 3.5rem); z-index: 100; }
-	/* header height + ~2.75rem toolbar */
-	.rf-mobile-panel--nav { top: calc(var(--rf-header-height, 3.5rem) + 2.75rem); }
+	/* Pin the toolbar to a known height (border-box, so padding + border are
+	   included) so the docked nav panel can offset against it exactly. A
+	   content-driven height let the panel's hardcoded guess undershoot the real
+	   toolbar, and the toolbar's higher z-index then covered the panel's first
+	   link. */
+	.rf-docs-toolbar { display: flex; position: sticky; top: var(--rf-header-height, 3.5rem); z-index: 100; height: var(--rf-docs-toolbar-height, 3.25rem); box-sizing: border-box; }
+	.rf-mobile-panel--nav { top: calc(var(--rf-header-height, 3.5rem) + var(--rf-docs-toolbar-height, 3.25rem)); }
 	.rf-docs-sidebar { display: none; }
 }
