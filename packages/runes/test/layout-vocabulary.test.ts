@@ -2,10 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { LAYOUT, CANONICAL_LAYOUTS, layoutMatches } from '../src/layout-vocabulary.js';
 
 describe('canonical layout vocabulary (ADR-018)', () => {
-	it('seeds the canonical pool with grid and list', () => {
+	it('holds the canonical pool grid, list, and carousel', () => {
 		expect(LAYOUT.grid).toBe('grid');
 		expect(LAYOUT.list).toBe('list');
-		expect([...CANONICAL_LAYOUTS].sort()).toEqual(['grid', 'list']);
+		expect(LAYOUT.carousel).toBe('carousel');
+		expect([...CANONICAL_LAYOUTS].sort()).toEqual(['carousel', 'grid', 'list']);
 	});
 
 	it('composes canonical picks with rune-local literals', () => {

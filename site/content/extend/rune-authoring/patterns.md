@@ -183,18 +183,28 @@ If the values are `positive`/`caution`/`negative`, it's a **`sentiment`**, not a
 
 Many runes expose an arrangement axis through a `layout` string attribute. The attribute *name* is universal — every rune that arranges its children uses `layout`, never a synonym — but the *values* are governed by a **two-tier vocabulary** so a shared value means the same thing everywhere.
 
-- **Canonical tokens** carry a shared DOM/behavior contract: the same value implies the same emitted structure and behavior wherever it appears. The seed pool is `grid` and `list` (with `carousel` graduating in SPEC-100). Import them from the shared const so the spelling cannot drift and importing a token implies its contract:
+- **Canonical tokens** carry a shared DOM/behavior contract: the same value implies the same emitted structure and behavior wherever it appears. The pool is `grid`, `list`, and `carousel`. Import them from the shared const so the spelling cannot drift and importing a token implies its contract:
 
   ```typescript
   import { LAYOUT, layoutMatches } from '@refrakt-md/runes';
 
   // canonical picks + any rune-local literals
-  layout: { type: String, matches: layoutMatches([LAYOUT.grid, LAYOUT.list], 'masonry') }
+  layout: { type: String, matches: layoutMatches([LAYOUT.grid, LAYOUT.list, LAYOUT.carousel], 'masonry') }
   ```
 
 - **Local tokens** are arrangements unique to one rune with no shared machinery — `masonry` (variable-height media only), `table` (columnar data only). They stay declared inline *because* they don't generalise. **Local values are sanctioned, not a smell.**
 
 No rune must support every canonical token — pick the subset that makes sense and append local values.
+
+### The `carousel` contract
+
+`carousel` is a layout *mode*, not a wrapper rune: the same homogeneous items, arranged on a scroll-snap track with a progressive-enhancement behavior layer (the same shape as `tabs`/`accordion`). A rune opts in by accepting `LAYOUT.carousel` in its `matches` **and** emitting the shared DOM contract:
+
+- the host carries `data-layout="carousel"` (the engine's output for the `layout` modifier);
+- a **track** container marked `data-name="items"`;
+- **item** elements marked `data-name="item"`.
+
+A single block-agnostic behavior binds on `[data-layout="carousel"]` (not on any rune name) and adds prev/next nav buttons and keyboard scrolling; the CSS scroll-snap track is the baseline. Emit that shape and the behavior works with **zero per-rune behavior code** — adoption is config + contract + CSS. Scope your item queries to the track (`:scope >`) so nested `data-name="item"` elements that aren't slides aren't picked up.
 
 **Graduation rule:** a value enters the canonical pool when a **second** rune needs the same concept *with the same contract*. Until then it stays local. This guards both premature abstraction (a pool full of one-offs) and no abstraction (three runes reinventing the same concept). A private spelling of a canonical concept (e.g. `compare`'s `side-by-side`/`stacked`) is a defect to migrate — with deprecations — when that rune is next touched; a genuinely unique arrangement is a legitimate local value.
 

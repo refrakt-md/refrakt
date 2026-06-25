@@ -24,13 +24,21 @@
  * local literals — `layout: { type: String, matches: layoutMatches([LAYOUT.grid, LAYOUT.list], 'masonry') }`.
  * No rune is required to support every canonical token.
  *
- * The seed set is `grid` and `list`; `carousel` graduates in SPEC-100.
+ * The pool is `grid`, `list`, and `carousel`.
+ *
+ * **`carousel` contract (SPEC-100):** a host carrying `data-layout="carousel"`,
+ * a track container marked `data-name="items"`, and item elements marked
+ * `data-name="item"`. The shared progressive-enhancement behavior binds on
+ * `[data-layout="carousel"]` (block-agnostic) and adds prev/next nav + keyboard
+ * scrolling; the CSS scroll-snap track is the baseline. Any rune emitting that
+ * shape gets the behavior for free — no per-rune behavior code.
  */
 
 /** Canonical layout tokens. Each carries a shared DOM/behavior contract. */
 export const LAYOUT = {
 	grid: 'grid',
 	list: 'list',
+	carousel: 'carousel',
 } as const;
 
 /** Union of the canonical layout token values. */
