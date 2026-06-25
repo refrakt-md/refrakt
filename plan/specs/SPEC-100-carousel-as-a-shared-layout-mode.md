@@ -1,4 +1,4 @@
-{% spec id="SPEC-100" status="draft" tags="carousel,layout,behaviors,gallery,feature,runes" source="ADR-018" %}
+{% spec id="SPEC-100" status="accepted" tags="carousel,layout,behaviors,gallery,feature,runes" source="ADR-018" %}
 
 # Carousel as a shared layout mode
 
