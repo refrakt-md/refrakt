@@ -454,6 +454,11 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
         if (attrs.prominence) output.attributes.prominence = attrs.prominence;
         if (attrs.reveal) output.attributes.reveal = attrs.reveal;
         if (attrs.stagger) output.attributes.stagger = attrs.stagger;
+        // SPEC-108 reading register + drop cap. The engine reads these off the
+        // rune tag (resolveReading author input + the dropcap gate); forward them
+        // so an author `reading=`/`dropcap=` override actually reaches it.
+        if (attrs.reading) output.attributes.reading = attrs.reading;
+        if (attrs.dropcap) output.attributes.dropcap = attrs.dropcap;
       }
 
       return injectBgFacetMetas(injectSubstrateMetas(injectFrameMetas(output, attrs), attrs), attrs);

@@ -317,6 +317,49 @@ Hero: {
 }
 ```
 
+### Reading register (SPEC-108)
+
+A **reading register** classifies how a body's *running text* reads — a refinement of `data-section="body"`, emitted as `data-reading`. It's the body-text counterpart to the container axes (`elevation`/`width`/`prominence`): the author/layout/rune picks the register; **the theme owns the magnitude**.
+
+The vocabulary is small and ordered tightest-UI → most-editorial:
+
+| Value | Intent | Typical bodies |
+|-------|--------|----------------|
+| `fine` | Fine print — captions, footnotes, asides | figure caption, sidenote |
+| `ui` *(default)* | Interface text — terse, container-width | card body, nav, form help |
+| `prose` | Long-form reading — measure-capped, editorial rhythm, drop-cap eligible | article body, `pullquote`, `lore`, `textblock` |
+
+`ui` is the default, so unmarked content emits **no** `data-reading` and is byte-unchanged. The register resolves **author `reading=` ▸ rune `defaultReading` ▸ layout/region default ▸ `ui`** — the region default seeds only the bare body (the article markdown), so a `card` in a `blog-article` stays `ui` while the article paragraphs read `prose`.
+
+**measure is distinct from `width`.** `width` is the block's footprint in the layout track; `measure` (`--rf-measure`) caps the line length *inside* it — so a `width="full"` band can still hold text at a readable ~66ch. Style the register, not rune-name lists:
+
+```css
+[data-reading="prose"] {
+  max-width: var(--rf-measure, 66ch); /* the measure cap — independent of width */
+  line-height: var(--rf-leading-relaxed);
+}
+[data-reading="prose"] > p { margin-bottom: 1em; }
+[data-reading="fine"] { font-size: var(--rf-text-sm); color: var(--rf-color-muted); }
+```
+
+**Drop cap.** `dropcap` is a per-instance boolean honoured **only** on a prose body (the engine emits `data-dropcap` there and ignores it elsewhere). The theme owns the glyph:
+
+```css
+[data-reading="prose"][data-dropcap] > p:first-child::first-letter {
+  float: left;
+  font-size: 3.5em;
+  line-height: 0.8;
+}
+```
+
+Per-rune defaults live on `RuneConfig.defaultReading`; a layout's content-region default lives on its `content` slot's `reading`. The **editorial-header composition** — a full-bleed frame with contained, readable text — is the SPEC-107 × SPEC-108 payoff:
+
+```md
+{% recipe elevation="flush" width="full" prominence="display" reading="prose" %}
+```
+
+`width="full"` bleeds the frame, `prominence="display"` sizes the headline, and `reading="prose"` holds the body to measure underneath — the canonical magazine spread.
+
 ### Media slots
 
 Maps image and media elements to treatment types.

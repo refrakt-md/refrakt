@@ -47,6 +47,28 @@ Single column text.
 		expect(fields(tb).columns).toBeUndefined();
 	});
 
+	// SPEC-108: `reading` and `dropcap` are universal attributes the engine reads
+	// off the rune tag. The schema must FORWARD them onto the output tag (like
+	// width/elevation) or the author override is silently dropped — the unit
+	// tests in transform/reading.test.ts use synthetic tags and don't catch this.
+	it('should forward an author reading= override onto the rune tag', () => {
+		const result = parse(`{% textblock reading="fine" %}
+Some text.
+{% /textblock %}`);
+
+		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
+		expect(tb!.attributes.reading).toBe('fine');
+	});
+
+	it('should forward dropcap onto the rune tag', () => {
+		const result = parse(`{% textblock dropcap=true %}
+Some text.
+{% /textblock %}`);
+
+		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
+		expect(tb!.attributes.dropcap).toBe(true);
+	});
+
 	it('should emit align meta for non-default alignment', () => {
 		const result = parse(`{% textblock align="justify" %}
 Justified text.

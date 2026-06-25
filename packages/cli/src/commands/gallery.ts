@@ -98,6 +98,14 @@ export async function galleryCommand(options: GalleryOptions, deps: InspectDeps)
 		throw new Error('No runes rendered — is a theme/plugin config available?');
 	}
 
+	// Reading subject (SPEC-108) — `reading` is a universal axis the variant
+	// matrix skips, so it never auto-expands per rune. Render a long body at each
+	// register (fine/ui/prose) plus the editorial-header composition
+	// (`elevation=flush width=full prominence=display reading=prose`) as their own
+	// gallery group, so the measure-vs-width independence and the prose treatment
+	// are regression-guarded in light + dark.
+	for (const cell of readingCells(transform, deps)) cells.push(cell);
+
 	const themeCss = loadThemeCss(options.theme);
 	const behaviorScript = await bundleBehaviors();
 
@@ -171,6 +179,10 @@ const UNIVERSAL_AXES = new Set([
 	// variant is identical to the default (the cell renders the final state), so
 	// expanding them per-rune is pure noise. The motion docs showcase them once.
 	'reveal', 'stagger',
+	// SPEC-108 reading register + drop cap — universal editorial dimension,
+	// showcased once in the dedicated reading subject rather than expanded across
+	// every rune (which would add a fine/ui/prose × dropcap matrix to each).
+	'reading', 'dropcap',
 ]);
 
 /** Cap on variant cells per rune, so a rune with a large own enum (e.g. icon
@@ -231,6 +243,48 @@ function renderCell(
 		? applyFixtureOverrides(base, rune.name, flags)
 		: getFixture(rune.name, flags);
 	return deps.renderToHtml(sourceToTree(source, transform, deps), { pretty: false });
+}
+
+/** A representative long body for the reading subject — several paragraphs so
+ *  the measure cap, paragraph rhythm, and dropcap glyph are all visible. */
+const READING_BODY = `The invention of the printing press in the fifteenth century transformed the spread of information across Europe. Before Gutenberg, books were copied by hand — painstaking, error-prone work that made them rare and ruinously expensive.
+
+With movable type, ideas could be reproduced quickly and cheaply. This democratisation of knowledge helped fuel the Renaissance, the Reformation, and the Scientific Revolution that followed in its wake.
+
+Within a few decades presses had spread to every major city on the continent, and the sheer volume of printed material grew faster than any scribe could ever have matched.`;
+
+/** The reading-subject cells (SPEC-108): one long body per register, plus the
+ *  editorial-header composition (full-bleed band holding prose at a capped
+ *  measure). Emitted as a synthetic `reading` gallery group so they ride the
+ *  existing light/dark gallery documents and per-cell clipping. `textblock`
+ *  carries the body — it defaults to `prose`, so the `fine`/`ui` cells override
+ *  via `reading=`. */
+function readingCells(transform: (tree: any) => any, deps: InspectDeps): GalleryCell[] {
+	const subjects: { variant: string; open: string }[] = [
+		{ variant: 'fine', open: '{% textblock reading="fine" %}' },
+		{ variant: 'ui', open: '{% textblock reading="ui" %}' },
+		{ variant: 'prose', open: '{% textblock reading="prose" dropcap=true %}' },
+		{
+			// The editorial-header spread: a full-bleed, flush band whose prose body
+			// still reads at a capped measure — the measure-vs-width independence
+			// (`width=full` + `reading=prose`). `prominence` is a header-rune dial and
+			// a no-op on a bare body, so it's omitted here; the docs example carries
+			// the full composition on a header-bearing rune.
+			variant: 'editorial-header',
+			open: '{% textblock elevation="flush" width="full" reading="prose" dropcap=true %}',
+		},
+	];
+	const out: GalleryCell[] = [];
+	for (const { variant, open } of subjects) {
+		try {
+			const source = `${open}\n${READING_BODY}\n{% /textblock %}`;
+			const html = deps.renderToHtml(sourceToTree(source, transform, deps), { pretty: false });
+			out.push({ rune: 'reading', variant, html });
+		} catch {
+			// A theme without the textblock rune simply yields no reading subject.
+		}
+	}
+	return out;
 }
 
 /** A representative article body for layout fixtures — headings (for the TOC) +

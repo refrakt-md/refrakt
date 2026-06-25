@@ -12,6 +12,7 @@ Every block rune exposes one or two decorable **surfaces**, and a small, univers
 | `elevation` | self | the depth of the box — recessed, flat, or lifted on a shadow |
 | `prominence` | self | the weight of a section header — quiet up to display size |
 | `width` | layout | how wide the rune sits in the page — contained to full-bleed |
+| `reading` | text | how the body text reads — UI text vs long-form prose |
 | `frame` / `frame-*` | media | present the media — aspect, crop, silhouette shadow, displacement |
 | `substrate` / `substrate-*` | self (default) | a generated pattern (dots, grid, …) |
 | `tint` | colour | recolour the surface (see [tint](/runes/tint)) |
@@ -208,6 +209,32 @@ A layered showstopper that runs from deep orange to golden yellow.
 {% /preview %}
 
 The same three attributes turn any page-section-header rune into a hero — a `playlist`, a `howto`, a `section`. For a poster layout where the content overlays the image instead of stacking below it, reach for [cover mode](#cover--the-poster-layout) below.
+
+## Reading — how the body text reads
+
+Where `width` sets a rune's *footprint*, `reading` sets how its *running text* reads. It's one attribute with three registers:
+
+| `reading` | For | Treatment |
+|-----------|-----|-----------|
+| `fine` | captions, footnotes, asides | smaller, quieter |
+| `ui` *(default)* | cards, nav, form help — interface text | terse, full container width |
+| `prose` | articles, pullquotes, long-form | line length capped to a readable measure, editorial rhythm, drop-cap eligible |
+
+Most of the time you don't set it: editorial runes (`pullquote`, `lore`, `textblock`) are `prose` already, captions are `fine`, and a `blog-article` page reads its body as `prose` with **zero markup**. Set `reading=` only to override — e.g. force a `card`'s body to read as prose.
+
+**`reading` is independent of `width`.** A full-bleed band can still hold its text at a readable line length — the editorial-header spread:
+
+```md
+{% recipe elevation="flush" width="full" prominence="display" reading="prose" %}
+```
+
+**Drop cap.** On a prose body, add `dropcap` to enlarge the opening letter — the classic article opener. It's honoured only where the body reads as prose:
+
+```md
+{% textblock dropcap=true %}
+The invention of the printing press revolutionised the spread of information…
+{% /textblock %}
+```
 
 ## Fills — colour, pattern, gradient
 
