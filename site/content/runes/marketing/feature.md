@@ -164,7 +164,11 @@ When `layout` is unset it **derives from `media-position`** (stacked media → `
 {% preview source=true %}
 
 {% feature media-position="start" layout="grid" %}
-![diagram](/shot.png)
+{% codegroup %}
+```ts title="transform.ts"
+const tree = Markdoc.transform(ast, { tags, nodes });
+```
+{% /codegroup %}
 
 ---
 
