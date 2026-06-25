@@ -96,6 +96,44 @@ The work has two phases.
    contract + CSS, with **zero new behavior code**. Runes adopt incrementally; not
    all need to land in one change.
 
+### Design notes (pre-breakdown)
+
+Tracing the current behavior (`packages/behaviors/src/index.ts`,
+`packages/behaviors/src/behaviors/gallery.ts`) surfaces three decisions the
+phasing above leaves implicit. They are load-bearing for the "zero new behavior
+code per adoption" promise, so they are pinned here before breakdown.
+
+- **The binding is new dispatch plumbing, not a selector swap.** Today's behavior
+  dispatch is a **`data-rune`-keyed map** (`applyBehaviors` scans `[data-rune]` and
+  looks up the rune name); the only non-rune paths are the special-cased
+  `data-reveal` scan and the `data-layout-behaviors` scan. *Nothing* binds on an
+  arbitrary attribute like `[data-layout="carousel"]`. So "block-agnostic carousel"
+  requires a **new attribute-triggered dispatch path** — `applyBehaviors` scans
+  `[data-layout="carousel"]` independent of rune identity and mounts the shared
+  behavior once per host. This is the linchpin: without it, each adopter needs
+  registered behavior code and the config-only promise collapses. It is its own
+  foundational work item, ahead of any adoption.
+
+- **Keep gallery's `[data-name="items"]` / `[data-name="item"]` as the contract
+  tokens — do not rename.** The lightbox *also* queries `[data-name="item"]`
+  (`gallery.ts`), so keeping the names leaves gallery's lightbox and rendered markup
+  byte-stable (satisfying the migration AC most literally). The generic names are
+  safe because queries are scoped inside the `[data-layout="carousel"]` host; tighten
+  them to `:scope >` where possible (as `juxtapose` already does) so a rune can't
+  accidentally match nested `data-name="item"`s that aren't slides.
+
+- **Nav chrome mounts relative to the track, not the host root.** `setupCarousel`
+  currently does `el.appendChild(prevBtn)` — fine in `gallery` where the host ≈ the
+  track wrapper, wrong in a multi-region rune like `feature` (header + item band),
+  where appending to the rune root mispositions the buttons. The generalised behavior
+  must mount nav relative to the track/items container, not `el`.
+
+- **Prerequisite: {% ref "SPEC-099" /%} must land first.** This spec's "now trivial"
+  framing for `feature` assumes the `layout` axis + `data-layout` emission and the
+  `collapse` breakpoint already exist on `feature`. They do **not** yet (the rune has
+  no `layout` attribute today). {% ref "SPEC-099" /%} is a hard dependency and is
+  scheduled into the same milestone ahead of Phase B.
+
 ## Acceptance Criteria
 
 - [ ] `carousel` is added to the canonical layout const ({% ref "ADR-018" /%}) and
@@ -103,9 +141,15 @@ The work has two phases.
 - [ ] A documented shared carousel DOM contract exists (host `data-layout="carousel"`
   + agreed track/item `data-name`s); `gallery`'s existing output is migrated onto
   it without changing its rendered markup semantics.
+- [ ] A new attribute-triggered dispatch path mounts the carousel behavior on every
+  `[data-layout="carousel"]` host independent of rune identity (the current dispatch is
+  `data-rune`-keyed and cannot do this); adoption needs no per-rune behavior registration.
 - [ ] The carousel behavior is block-agnostic — bound on `[data-layout="carousel"]`,
-  not `[data-rune="gallery"]` — and uses shared `rf-carousel__*` (not
-  `rf-gallery__nav`) chrome. `gallery` consumes it and keeps its lightbox.
+  not `[data-rune="gallery"]` — mounts its nav chrome relative to the track/items
+  container (not the host root, so multi-region runes position correctly), and uses
+  shared `rf-carousel__*` (not `rf-gallery__nav`) chrome. `gallery` consumes it and
+  keeps its lightbox; its `[data-name="items"]`/`[data-name="item"]` tokens are reused
+  as the contract unchanged.
 - [ ] `feature` accepts `layout="carousel"`, emits the shared contract, and styles
   the track; an explicit desktop carousel shows the JS nav affordances.
 - [ ] Collapse-to-carousel works as a **CSS-only** arrangement flip at the
