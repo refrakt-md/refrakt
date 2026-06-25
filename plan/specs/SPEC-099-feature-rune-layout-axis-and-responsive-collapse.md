@@ -110,11 +110,42 @@ Because carousel is out of scope, the collapsed item form in this spec is always
 a single stacked column. The "collapse *to* a carousel" target is deferred to
 {% ref "SPEC-100" /%}, which builds on this `collapse` semantics.
 
+### 4. Design notes (pre-breakdown decisions)
+
+- **The media-derived default resolves in the transform, not via a config variant.**
+  §1's "default from `media-position` when unset" and §2's "remove the `variants`
+  block" pull against each other: a config variant cannot express "apply only if the
+  author didn't set `layout`," and a media-position variant emitting `data-layout`
+  would collide with the author's `layout` modifier. So the effective value is computed
+  in `feature.ts` — `effectiveLayout = attrs.layout ?? derive(mediaPosition)` (stacked →
+  `grid`, beside → `list`) — and emitted as a single `layout` meta. Author-override-beats
+  -default then falls out naturally and exactly one `data-layout` lands on the element.
+  Unlike `width`, `layout` is **always emitted** (both `grid` and `list` are styled), so
+  there is no default-suppression guard.
+
+- **Const ownership: SPEC-099 creates the canonical const seeded with `grid`/`list`.**
+  The ADR-018 canonical const does not exist yet and {% ref "ADR-018" /%} is still
+  `proposed`. As ADR-018's designated first consumer, this spec **creates** the shared
+  const (seed `grid`, `list`) that `feature` imports; {% ref "SPEC-100" /%} later adds
+  `carousel` to the same const. Accept ADR-018 alongside this work. This is an early,
+  foundational work item ahead of wiring `feature`'s `matches`.
+
+- **The grid reflow must key off the same `collapse` hook as the media split.** §3 reuses
+  the single `collapse` breakpoint for the CSS-only grid→column reflow. Confirm `collapse`
+  is emitted as a CSS-targetable hook (a `data-collapse`/container-query handle) that the
+  grid media query can share; if it currently only feeds `buildLayoutMetas` for the
+  media split, exposing that hook is part of this work.
+
 ## Acceptance Criteria
 
+- [ ] The {% ref "ADR-018" /%} canonical const is created (seed `grid`, `list`) in a
+  shared location rune schemas import; ADR-018 is accepted. `feature` is its first consumer.
 - [ ] `feature` accepts a `layout` attribute matching `grid | list`, with both
   values imported from the {% ref "ADR-018" /%} canonical const (no bespoke
   `columns` value).
+- [ ] The media-derived default is resolved in the transform (`attrs.layout ?? derive(media-position)`)
+  and emitted as a single `layout` meta — not via a config variant that would collide with the
+  author override; `layout` is always emitted (no default-suppression).
 - [ ] The engine emits `data-layout` from the `layout` modifier; `feature.css`
   keys grid-vs-stack arrangement off `[data-layout="grid"]` / `[data-layout="list"]`.
 - [ ] When `layout` is unset, it defaults from `media-position` (stacked → `grid`,
