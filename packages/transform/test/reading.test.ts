@@ -69,3 +69,17 @@ describe('data-reading emission (SPEC-108)', () => {
 		expect(findSection(rune('pullquote', { reading: 'bogus' }), 'body')?.attributes['data-reading']).toBe('prose');
 	});
 });
+
+describe('dropcap emission (SPEC-108)', () => {
+	it('emits data-dropcap on a prose body', () => {
+		expect(findSection(rune('pullquote', { dropcap: true }), 'body')?.attributes['data-dropcap']).toBe('true');
+	});
+	it('is dropped off-register (ui body) — gated to prose', () => {
+		expect(findSection(rune('card', { dropcap: true }), 'body')?.attributes['data-dropcap']).toBeUndefined();
+		// honoured once the author flips the card to prose
+		expect(findSection(rune('card', { dropcap: true, reading: 'prose' }), 'body')?.attributes['data-dropcap']).toBe('true');
+	});
+	it('is absent when not requested', () => {
+		expect(findSection(rune('pullquote'), 'body')?.attributes['data-dropcap']).toBeUndefined();
+	});
+});

@@ -1,0 +1,18 @@
+/* Reading register (SPEC-108) — structural treatment of body text, keyed on the
+ * `data-reading` refinement of `data-section="body"`. `prose` caps the line-length
+ * measure (distinct from the block's `width`) and sets running-text niceties; the
+ * default `ui` is unstyled here. The skin (Lumina) owns type, rhythm, and the
+ * drop-cap glyph. */
+[data-reading="prose"] {
+	max-width: var(--rf-measure, 66ch);
+	text-wrap: pretty;
+}
+[data-reading="prose"] > p {
+	hanging-punctuation: first last;
+}
+
+/* Drop cap — float the opening letter of a prose body. Gated on the prose register
+ * (the engine only emits `data-dropcap` there). */
+[data-reading="prose"][data-dropcap] > p:first-child::first-letter {
+	float: left;
+}

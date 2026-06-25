@@ -2,7 +2,7 @@ import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, FramePresetDefinition, MetaField, BlockDef, LayoutEntry } from './types.js';
 import { isTag, makeTag, readMeta, toKebabCase, resolveOffset, parsePlacement } from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
-import { resolveReading, DEFAULT_READING } from './reading.js';
+import { resolveReading, DEFAULT_READING, READING_CAPABILITIES } from './reading.js';
 
 /** The 6 tint colour tokens */
 /** Tint token names per SPEC-053 vocabulary alignment. Each maps to a
@@ -652,6 +652,17 @@ function transformRune(
 	// as `data-reading` on the rune's `[data-section="body"]` element; suppressed at
 	// the `ui` default so unmarked content stays byte-identical.
 	const readingValue = resolveReading({ authorAttr: tag.attributes?.reading, runeDefault: config.defaultReading });
+
+	// dropcap (SPEC-108) — a per-instance opt-in honoured only on a prose body
+	// (gated via READING_CAPABILITIES). Off-register it is dropped with a warn-once,
+	// so it never renders where it is meaningless. Emitted as `data-dropcap` on the
+	// same body section as `data-reading`; the theme owns the glyph.
+	const dropcapRequested = Boolean(tag.attributes?.dropcap);
+	const dropcapValue = dropcapRequested && READING_CAPABILITIES[readingValue]?.dropcap === true;
+	if (dropcapRequested && !dropcapValue) {
+		const runeName = tag.attributes?.['data-rune'] ?? block;
+		console.warn(`[refrakt] dropcap is honoured only on a prose body — ignored on "${runeName}" (reading="${readingValue}").`);
+	}
 	// Content-measure (layout axis): page-section runes anchor their content to
 	// the text measure when bled to the `wide` track — only the surface/bg
 	// widens. Emitted as a data attribute (no BEM class); the default (`fill`)
@@ -1020,12 +1031,12 @@ function transformRune(
 	// 6. Apply BEM element classes, section anatomy, and media slots to data-name children, then recurse once
 	let enhancedChildren = children.map(child => {
 		if (!isTag(child)) return recurse(child, dataRune);
-		return recurse(applyBemClasses(child, block, config.sections, config.mediaSlots, config.guestFit, readingValue), dataRune);
+		return recurse(applyBemClasses(child, block, config.sections, config.mediaSlots, config.guestFit, readingValue, dropcapValue), dataRune);
 	});
 
 	// 6b. Projection pass — declarative structural reshaping (hide → group → relocate)
 	if (config.projection) {
-		enhancedChildren = applyProjection(enhancedChildren, config.projection, block, config.sections, config.mediaSlots, config.guestFit, readingValue);
+		enhancedChildren = applyProjection(enhancedChildren, config.projection, block, config.sections, config.mediaSlots, config.guestFit, readingValue, dropcapValue);
 	}
 
 	// 6c. Frame chrome → media surface (SPEC-086). `self`-target chrome is merged
@@ -1281,7 +1292,7 @@ function applyAutoLabel(children: RendererNode[], autoLabel: Record<string, stri
 
 /** Recursively apply BEM element classes, section anatomy, and media slots to data-name elements within a rune's children.
  *  Pure decoration — does not recurse into the transform pipeline. */
-function applyBemClasses(child: SerializedTag, block: string, sections?: Record<string, string>, mediaSlots?: Record<string, string>, guestFit?: string, reading?: string): SerializedTag {
+function applyBemClasses(child: SerializedTag, block: string, sections?: Record<string, string>, mediaSlots?: Record<string, string>, guestFit?: string, reading?: string, dropcap?: boolean): SerializedTag {
 	const dataName = child.attributes['data-name'];
 	if (dataName) {
 		const elementClass = `${block}__${dataName}`;
@@ -1289,7 +1300,7 @@ function applyBemClasses(child: SerializedTag, block: string, sections?: Record<
 		// Recursively apply BEM to nested data-name children (e.g., icon/title inside header)
 		const nestedChildren = child.children.map(c => {
 			if (!isTag(c)) return c;
-			return applyBemClasses(c, block, sections, mediaSlots, guestFit, reading);
+			return applyBemClasses(c, block, sections, mediaSlots, guestFit, reading, dropcap);
 		});
 		const sectionRole = sections?.[dataName];
 		const mediaSlot = mediaSlots?.[dataName];
@@ -1302,6 +1313,7 @@ function applyBemClasses(child: SerializedTag, block: string, sections?: Record<
 				// SPEC-108: refine the body section with its reading register, suppressed
 				// at the `ui` default (so unmarked bodies stay byte-identical).
 				...(sectionRole === 'body' && reading && reading !== DEFAULT_READING ? { 'data-reading': reading } : {}),
+				...(sectionRole === 'body' && dropcap ? { 'data-dropcap': 'true' } : {}),
 				...(mediaSlot ? { 'data-media': mediaSlot } : {}),
 				// The chrome/containment axis (SPEC-090 sibling) rides the media
 				// zone so the skin can frame or free a guest without rune-name CSS.
@@ -1503,6 +1515,7 @@ function applyProjection(
 	mediaSlots?: Record<string, string>,
 	guestFit?: string,
 	reading?: string,
+	dropcap?: boolean,
 ): RendererNode[] {
 	let result = [...children];
 
@@ -1538,7 +1551,7 @@ function applyProjection(
 			if (collected.length > 0) {
 				// Create group wrapper with data-name and apply BEM classes
 				let wrapper = makeTag(groupDef.tag, { 'data-name': groupName }, collected);
-				wrapper = applyBemClasses(wrapper, block, sections, mediaSlots, guestFit, reading);
+				wrapper = applyBemClasses(wrapper, block, sections, mediaSlots, guestFit, reading, dropcap);
 				result.splice(firstIdx, 0, wrapper);
 			}
 		}

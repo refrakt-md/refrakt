@@ -1,0 +1,35 @@
+@layer skin {
+/* Reading register (SPEC-108) — Lumina's editorial treatment of `[data-reading]`.
+ * The measure cap + niceties are structural (skeleton); this is the type, rhythm,
+ * and drop-cap glyph. `ui` (the default) is left to the base body styling. */
+
+/* Prose — long-form reading. */
+[data-reading="prose"] {
+	line-height: var(--rf-leading-relaxed);
+}
+[data-reading="prose"] > p {
+	margin-bottom: 1em;
+}
+[data-reading="prose"] a {
+	text-underline-offset: 0.15em;
+}
+
+/* Drop-cap glyph — the theme owns the treatment; the author owns where (the
+ * `dropcap` opt-in, honoured only on a prose body). */
+[data-reading="prose"][data-dropcap] > p:first-child::first-letter {
+	font-size: 3.5em;
+	font-weight: var(--rf-weight-bold);
+	line-height: 0.8;
+	padding-right: 0.1em;
+	margin-top: 0.05em;
+	color: var(--rf-color-primary);
+	font-family: Georgia, 'Times New Roman', serif;
+}
+
+/* Fine print — captions, footnotes, asides: smaller and quieter. */
+[data-reading="fine"] {
+	font-size: var(--rf-text-sm);
+	line-height: var(--rf-leading-normal);
+	color: var(--rf-color-muted);
+}
+}

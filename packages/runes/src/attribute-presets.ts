@@ -65,6 +65,7 @@ export const UNIVERSAL_ATTRIBUTE_NAMES: ReadonlySet<string> = new Set([
 	'bg',
 	'width',
 	'reading',
+	'dropcap',
 	'spacing',
 	'inset',
 	'elevation',
