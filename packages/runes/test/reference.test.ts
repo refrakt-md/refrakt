@@ -329,7 +329,7 @@ describe('describeRune — attribute tiers', () => {
 		expect(out).toContain('Inherited from the `split layout` preset — Layout controls for runes that can render stacked or split.');
 		expect(out).toContain('  - layout: "stacked" | "split" (optional)');
 		expect(out).toContain('  - ratio: string (optional)');
-		expect(out).toContain('Universal attributes (available on every rune): tint, tint-mode, bg, width, spacing, inset, elevation, prominence, reveal, stagger, frame, frame-aspect, frame-displace, frame-displace-mode, frame-offset, frame-oversize, frame-place, frame-anchor, frame-overflow, frame-shadow, substrate, substrate-size, substrate-opacity, substrate-fill, substrate-target, bg-gradient, bg-from, bg-to, bg-via, bg-gradient-type, scrim, scrim-type, scrim-strength, scrim-blur, scrim-tone.');
+		expect(out).toContain('Universal attributes (available on every rune): tint, tint-mode, bg, width, reading, spacing, inset, elevation, prominence, reveal, stagger, frame, frame-aspect, frame-displace, frame-displace-mode, frame-offset, frame-oversize, frame-place, frame-anchor, frame-overflow, frame-shadow, substrate, substrate-size, substrate-opacity, substrate-fill, substrate-target, bg-gradient, bg-from, bg-to, bg-via, bg-gradient-type, scrim, scrim-type, scrim-strength, scrim-blur, scrim-tone.');
 		// Universal attrs should not be listed under Attributes:
 		expect(out).not.toMatch(/Attributes:[\s\S]*- tint:/);
 	});

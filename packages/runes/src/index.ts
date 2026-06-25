@@ -162,6 +162,8 @@ export {
 export type { AttributePresetMetadata } from './attribute-presets.js';
 export { LAYOUT, CANONICAL_LAYOUTS, layoutMatches } from './layout-vocabulary.js';
 export type { CanonicalLayout } from './layout-vocabulary.js';
+export { READING_REGISTERS, DEFAULT_READING, READING_CAPABILITIES, resolveReading, coerceRegister } from '@refrakt-md/transform';
+export type { ReadingRegister, ReadingResolutionInput } from '@refrakt-md/transform';
 export { loadPlugin, mergePlugins, applyAliases, loadLocalRunes, discoverPluginFixtures, discoverPluginFixtureManifest, assertFileRootNamespaceAllowed } from './plugins.js';
 export type { LoadedPlugin, MergedPluginResult } from './plugins.js';
 export { coreConfig, baseConfig, corePipelineHooks, createCorePipelineHooks, resolveCoreSentinels, type PageTreeNode, type CorePipelineHooksOptions } from './config.js';
