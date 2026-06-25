@@ -160,6 +160,8 @@ export {
 	UNIVERSAL_ATTRIBUTE_NAMES,
 } from './attribute-presets.js';
 export type { AttributePresetMetadata } from './attribute-presets.js';
+export { LAYOUT, CANONICAL_LAYOUTS, layoutMatches } from './layout-vocabulary.js';
+export type { CanonicalLayout } from './layout-vocabulary.js';
 export { loadPlugin, mergePlugins, applyAliases, loadLocalRunes, discoverPluginFixtures, discoverPluginFixtureManifest, assertFileRootNamespaceAllowed } from './plugins.js';
 export type { LoadedPlugin, MergedPluginResult } from './plugins.js';
 export { coreConfig, baseConfig, corePipelineHooks, createCorePipelineHooks, resolveCoreSentinels, type PageTreeNode, type CorePipelineHooksOptions } from './config.js';

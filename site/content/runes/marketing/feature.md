@@ -152,11 +152,53 @@ pipeline
 
 {% /preview %}
 
+## Item arrangement (`layout`)
+
+The `layout` axis controls how feature-items are arranged, independently of where the media sits:
+
+- `layout="grid"` — items tile as a grid.
+- `layout="list"` — items stack in a single column.
+
+When `layout` is unset it **derives from `media-position`** (stacked media → `grid`, beside media → `list`), so existing content is unchanged. Set it explicitly to override — including combinations the old coupling couldn't reach, like media beside content *with* a grid of items:
+
+{% preview source=true %}
+
+{% feature media-position="start" layout="grid" %}
+{% codegroup %}
+```ts title="transform.ts"
+const tree = Markdoc.transform(ast, { tags, nodes });
+```
+{% /codegroup %}
+
+---
+
+why Refrakt
+
+## Built for versatility
+
+- **Zero config**
+
+  Drop Markdown files into your content directory.
+
+- **Framework agnostic**
+
+  The identity transform is pure data — render with anything.
+
+- **Type-safe output**
+
+  Every rune produces validated content.
+{% /feature %}
+
+{% /preview %}
+
+A `grid` layout reflows to a single column below the `collapse` breakpoint (the same dial that collapses the media split — see below).
+
 ### Attributes
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `align` | `string` | `center` | Horizontal alignment of headline + body text: `left`, `center`, `right` |
+| `layout` | `string` | derived from `media-position` | Item arrangement: `grid` (tiled) or `list` (single column) |
 
 ## Section header
 
@@ -164,14 +206,14 @@ Feature supports an optional eyebrow, headline, and blurb above the section abov
 
 ### Layout attributes
 
-The body splits on `---` into **media → content** zones (media-first in source). `media-position` controls visual placement independently of source order. In beside layouts (`start`/`end`), the definitions stack vertically inside the content column; in `top`/`bottom`, they tile as a grid.
+The body splits on `---` into **media → content** zones (media-first in source). `media-position` controls visual placement independently of source order. Item arrangement (grid vs. single column) is the separate [`layout`](#item-arrangement-layout) axis — when unset it derives from `media-position` (stacked → grid, beside → list), but the two are independently controllable.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `media-position` | `string` | `bottom` | Where the media sits: `top`, `bottom` (the default — media beneath the text), `start` (left), `end` (right) |
 | `media-ratio` | `string` | — | Media's share of the row when beside content (`start`/`end`): `1/3`, `2/5`, `1/2`, `3/5`, `2/3` |
 | `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
-| `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
+| `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack **and** a `grid` of items reflows to one column: `sm`, `md`, `lg`, `never` |
 
 ### Common attributes
 

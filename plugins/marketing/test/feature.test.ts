@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parse, findTag, findAllTags } from './helpers.js';
+import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('feature tag', () => {
   it('should transform a feature section with heading-based definitions', () => {
@@ -75,5 +75,34 @@ Body text.
     expect(media).toBeDefined();
     expect(media!.children.some((c: any) => c?.name === 'p')).toBe(false);
     expect(findTag(media!, t => t.name === 'img')).toBeDefined();
+  });
+
+  // SPEC-099 — the `layout` item-arrangement axis. The schema transform records a
+  // single resolved `layout` field; the engine maps it to `data-layout`.
+  describe('layout axis (SPEC-099)', () => {
+    const layoutValue = (src: string): string | undefined => {
+      const result = parse(src);
+      const feature = findTag(result as any, t => t.attributes['data-rune'] === 'feature');
+      return fields(feature!).layout;
+    };
+
+    it('defaults to grid for stacked media (the default media-position)', () => {
+      expect(layoutValue(`{% feature %}\n## H\n\n- **A**\n\n  a\n{% /feature %}`)).toBe('grid');
+    });
+
+    it('derives list from beside media when layout is unset', () => {
+      expect(layoutValue(`{% feature media-position="start" %}\n## H\n\n- **A**\n\n  a\n{% /feature %}`)).toBe('list');
+    });
+
+    it('lets an explicit layout override the media-derived default', () => {
+      // beside media would derive `list`; explicit grid wins (axes independent)
+      expect(layoutValue(`{% feature media-position="start" layout="grid" %}\n## H\n\n- **A**\n\n  a\n{% /feature %}`)).toBe('grid');
+      // stacked media would derive `grid`; explicit list wins
+      expect(layoutValue(`{% feature media-position="bottom" layout="list" %}\n## H\n\n- **A**\n\n  a\n{% /feature %}`)).toBe('list');
+    });
+
+    it('always records a layout value (no suppression)', () => {
+      expect(layoutValue(`{% feature %}\n## H\n\n- **A**\n\n  a\n{% /feature %}`)).toBeDefined();
+    });
   });
 });

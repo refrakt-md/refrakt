@@ -22,13 +22,35 @@
 	display: contents;
 }
 
-/* Definitions stack by default; the grid modifier tiles them. */
-.rf-feature__definitions {
+/* Item arrangement is the `layout` axis (SPEC-099): `list` stacks the
+ * definitions in a single column, `grid` tiles them. Keyed off `[data-layout]`,
+ * decoupled from media placement. */
+.rf-feature[data-layout="list"] .rf-feature__definitions {
 	display: block;
 }
-.rf-feature--definitions-grid .rf-feature__definitions {
+.rf-feature[data-layout="grid"] .rf-feature__definitions {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(max(240px, calc((100% - 3rem) / 3)), 1fr));
+}
+/* Collapse-to-column (SPEC-099 §3): below the `collapse` breakpoint a `grid`
+ * arrangement reflows to a single column. CSS-only, sharing the media-split
+ * breakpoint hook (`data-collapse`; default sm/640px, mirroring split.css).
+ * `collapse="never"` opts out. */
+@media (max-width: 640px) {
+	.rf-feature[data-layout="grid"][data-collapse="sm"] .rf-feature__definitions,
+	.rf-feature[data-layout="grid"]:not([data-collapse]) .rf-feature__definitions {
+		grid-template-columns: 1fr;
+	}
+}
+@media (max-width: 768px) {
+	.rf-feature[data-layout="grid"][data-collapse="md"] .rf-feature__definitions {
+		grid-template-columns: 1fr;
+	}
+}
+@media (max-width: 1024px) {
+	.rf-feature[data-layout="grid"][data-collapse="lg"] .rf-feature__definitions {
+		grid-template-columns: 1fr;
+	}
 }
 
 /* Beside layouts: definitions stay stacked inside the content track. */

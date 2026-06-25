@@ -1,4 +1,4 @@
-{% work id="WORK-468" status="ready" priority="medium" complexity="moderate" source="SPEC-099" milestone="v0.26.0" tags="feature,layout,marketing,lumina,css" %}
+{% work id="WORK-468" status="done" priority="medium" complexity="moderate" source="SPEC-099" milestone="v0.26.0" tags="feature,layout,marketing,lumina,css" %}
 
 # Retire the `media-position → definitions-grid` coupling
 
@@ -20,10 +20,10 @@ onto `[data-layout]`. Per {% ref "SPEC-099" /%} §2.
 
 ## Acceptance Criteria
 
-- [ ] The `media-position` → `definitions-grid` variant and the `definitions-grid` modifier are removed from the `Feature` config and CSS.
-- [ ] `feature.css` keys grid-vs-stack arrangement off `[data-layout="grid"]` / `[data-layout="list"]`.
-- [ ] Existing feature content (no explicit `layout`) renders identically to before.
-- [ ] CSS-coverage tests pass for the new `[data-layout]` selectors; the `definitions-grid` selector is removed from coverage/`KNOWN_*` as appropriate.
+- [x] The `media-position` → `definitions-grid` variant and the `definitions-grid` modifier are removed from the `Feature` config and CSS.
+- [x] `feature.css` keys grid-vs-stack arrangement off `[data-layout="grid"]` / `[data-layout="list"]`.
+- [x] Existing feature content (no explicit `layout`) renders identically to before.
+- [x] CSS-coverage tests pass for the new `[data-layout]` selectors; the `definitions-grid` selector is removed from coverage/`KNOWN_*` as appropriate.
 
 ## Dependencies
 
@@ -33,5 +33,38 @@ onto `[data-layout]`. Per {% ref "SPEC-099" /%} §2.
 
 - Spec: {% ref "SPEC-099" /%} §2. SPEC-091 (the variant being retired).
 - `plugins/marketing/src/config.ts` (`Feature`, `variants`/`definitions-grid`), `packages/lumina/styles/runes/feature.css`.
+
+## Resolution
+
+Completed: 2026-06-25
+
+Branch: `claude/spec-099-feature-layout-axis`
+
+### What was done
+- `plugins/marketing/src/config.ts` — removed the SPEC-091 `media-position` → `definitions-grid` variant.
+- `packages/skeleton/styles/runes/feature.css` — grid arrangement (`display: grid` vs block) now keys off `[data-layout="grid"]` / `[data-layout="list"]`.
+- `packages/lumina/styles/runes/feature.css` — item chrome (carded tiles vs flat rows) now keys off `[data-layout]` instead of `[data-media-position]`.
+- `plugins/marketing/src/tags/feature.ts` — stale SPEC-091 comment updated.
+
+### Notes
+- Output unchanged for existing content (the media-derived default reproduces today's grid/stack); new combinations (media beside + grid, media top + list) are now reachable and styled correctly. CSS coverage green (176).
+- DEFERRED: the generated structure contracts still list `.rf-feature--definitions-grid`. Regen needs the project's canonical multi-site command — the CLAUDE.md `refrakt contracts -o ...` now errors on the multi-site config (and a `--site main` regen diverges from the committed artifact, which has feature 3×). Flagged for the maintainer rather than shipping a divergent artifact.
+
+
+---
+
+Completed: 2026-06-25
+
+Branch: `claude/spec-099-feature-layout-axis`
+
+### What was done
+- `plugins/marketing/src/config.ts` — removed the SPEC-091 `media-position` → `definitions-grid` variant.
+- `packages/skeleton/styles/runes/feature.css` — grid arrangement (`display: grid` vs block) now keys off `[data-layout="grid"]` / `[data-layout="list"]`.
+- `packages/lumina/styles/runes/feature.css` — item chrome (carded tiles vs flat rows) now keys off `[data-layout]` instead of `[data-media-position]`.
+- `plugins/marketing/src/tags/feature.ts` — stale SPEC-091 comment updated.
+- `contracts/structures.json` + `packages/lumina/contracts/structures.json` — regenerated via `refrakt contracts --site main`. Removing the variants block collapsed feature's per-variant entries (3×→1×) and dropped `.rf-feature--definitions-grid`. Guarded by `packages/lumina/test/contracts.test.ts` (green).
+
+### Notes
+- Output unchanged for existing content (the media-derived default reproduces today's grid/stack); new combinations (media beside + grid, media top + list) are now reachable and styled correctly. CSS coverage + contracts tests green.
 
 {% /work %}

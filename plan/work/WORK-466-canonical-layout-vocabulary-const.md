@@ -1,4 +1,4 @@
-{% work id="WORK-466" status="ready" priority="high" complexity="simple" source="ADR-018" milestone="v0.26.0" tags="layout,vocabulary,runes,architecture" %}
+{% work id="WORK-466" status="done" priority="high" complexity="simple" source="ADR-018" milestone="v0.26.0" tags="layout,vocabulary,runes,architecture" %}
 
 # Canonical layout vocabulary const (seed grid/list)
 
@@ -20,10 +20,10 @@ model and the first thing {% ref "SPEC-099" /%} and {% ref "SPEC-100" /%} both b
 
 ## Acceptance Criteria
 
-- [ ] A canonical-token const exists in a shared importable location, seeded with `grid` and `list`.
-- [ ] The const composes with local literals so a rune's `matches` is `canonical picks + local values`.
-- [ ] No existing rune's values or output change as a result of this item (ADR-018 ships zero behaviour change on its own).
-- [ ] The rune-authoring guide documents the canonical pool, the two-tier model, and the graduation rule.
+- [x] A canonical-token const exists in a shared importable location, seeded with `grid` and `list`.
+- [x] The const composes with local literals so a rune's `matches` is `canonical picks + local values`.
+- [x] No existing rune's values or output change as a result of this item (ADR-018 ships zero behaviour change on its own).
+- [x] The rune-authoring guide documents the canonical pool, the two-tier model, and the graduation rule.
 
 ## Dependencies
 
@@ -33,5 +33,21 @@ None. Foundational — the first work item; the feature layout axis and the caro
 
 - Decision: {% ref "ADR-018" /%} (canonical layout vocabulary, §4 single shared const, §5 lazy migration).
 - Consumers: {% ref "SPEC-099" /%} (first consumer — `grid`/`list`), {% ref "SPEC-100" /%} (adds `carousel`).
+
+## Resolution
+
+Completed: 2026-06-25
+
+Branch: `claude/work-466-canonical-layout-const`
+
+### What was done
+- **`packages/runes/src/layout-vocabulary.ts`** (new) — the canonical layout vocabulary const per ADR-018: `LAYOUT` (named tokens `{ grid, list }`), `CanonicalLayout` type, `CANONICAL_LAYOUTS` readonly array, and a `layoutMatches(canonical, ...local)` helper that returns a fresh array composing canonical picks with rune-local literals. Doc comment captures the two-tier model + graduation rule. Seed set is `grid`/`list`; `carousel` graduates in SPEC-100 (WORK-470).
+- **`packages/runes/src/index.ts`** — re-export `LAYOUT`, `CANONICAL_LAYOUTS`, `layoutMatches`, and the `CanonicalLayout` type from the package entry.
+- **`packages/runes/test/layout-vocabulary.test.ts`** (new) — locks the seed set, the canonical+local composition, subset support, and fresh-array-per-call.
+- **`site/content/extend/rune-authoring/patterns.md`** — new "Canonical layout vocabulary" section documenting the two-tier model, the graduation rule, the import/usage pattern, and that local values are sanctioned.
+
+### Notes
+- Purely additive — no existing rune was touched, so output is byte-unchanged (AC 3). Runes migrate to importing from the const lazily as they're revisited (ADR-018 §5); `feature` is the first consumer in WORK-467.
+- Full `packages/runes` suite green (864 tests, incl. the 4 new); `types`/`transform`/`runes` build clean. (The repo `build` script's `generate-examples` prestep needs `npm install` first in a fresh clone — unrelated to this change.)
 
 {% /work %}

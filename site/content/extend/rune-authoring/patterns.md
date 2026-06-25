@@ -179,6 +179,29 @@ If the values are `positive`/`caution`/`negative`, it's a **`sentiment`**, not a
 
 ---
 
+## Canonical layout vocabulary
+
+Many runes expose an arrangement axis through a `layout` string attribute. The attribute *name* is universal — every rune that arranges its children uses `layout`, never a synonym — but the *values* are governed by a **two-tier vocabulary** so a shared value means the same thing everywhere.
+
+- **Canonical tokens** carry a shared DOM/behavior contract: the same value implies the same emitted structure and behavior wherever it appears. The seed pool is `grid` and `list` (with `carousel` graduating in SPEC-100). Import them from the shared const so the spelling cannot drift and importing a token implies its contract:
+
+  ```typescript
+  import { LAYOUT, layoutMatches } from '@refrakt-md/runes';
+
+  // canonical picks + any rune-local literals
+  layout: { type: String, matches: layoutMatches([LAYOUT.grid, LAYOUT.list], 'masonry') }
+  ```
+
+- **Local tokens** are arrangements unique to one rune with no shared machinery — `masonry` (variable-height media only), `table` (columnar data only). They stay declared inline *because* they don't generalise. **Local values are sanctioned, not a smell.**
+
+No rune must support every canonical token — pick the subset that makes sense and append local values.
+
+**Graduation rule:** a value enters the canonical pool when a **second** rune needs the same concept *with the same contract*. Until then it stays local. This guards both premature abstraction (a pool full of one-offs) and no abstraction (three runes reinventing the same concept). A private spelling of a canonical concept (e.g. `compare`'s `side-by-side`/`stacked`) is a defect to migrate — with deprecations — when that rune is next touched; a genuinely unique arrangement is a legitimate local value.
+
+See {% ref "ADR-018" /%} for the full decision.
+
+---
+
 ## Don't hardcode structure in transform
 
 Rune schemas should produce **semantic output** — meta tags with values and content in named containers. The **engine config** should inject visual structure.
