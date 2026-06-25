@@ -23,6 +23,23 @@ We are not building that engine now. This ADR records **how to think about it**
 so that the {% ref "SPEC-113" /%}-era work is shaped to enable it cheaply,
 rather than forcing an expensive retrofit later.
 
+### Local dev HMR is the second beneficiary
+
+The hosted product is not the only consumer. The Vite adapters' content HMR has
+the *same* whole-corpus shape today. On any `.md` save, `setupContentHmr`
+(`packages/transform/src/content-hmr.ts`) calls `invalidateSite()` — which nulls
+the loader's single memoized `Promise<Site>` (`packages/content/src/loader.ts`;
+the cache is binary, no per-page granularity) — and sends a blanket
+`full-reload`. The next SSR request re-reads the entire content dir, re-parses
+and re-transforms every page, and re-runs register → aggregate → post-process
+over the whole corpus. So a single keystroke-save costs a full rebuild; it is the
+*local* analog of the hosted single-file-webhook case. An incremental engine
+therefore pays off **twice** — hosted rebuild latency *and* local dev DX — and
+unlocks a second-order HMR win: knowing the dirty cut lets the adapter send a
+**scoped** reload (only the routes whose output actually changed) instead of the
+blanket `full-reload` it is forced into today precisely *because* any edit can,
+in principle, move any other page's output.
+
 ### The dependency structure (read from the code)
 
 The pipeline already *is* a DAG; its phase boundaries are the edges.
