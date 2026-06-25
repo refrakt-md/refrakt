@@ -17,7 +17,7 @@ export const config: Record<string, RuneConfig> = {
 			layout: { source: 'meta', default: 'grid' },
 		},
 		autoLabel: pageSectionAutoLabel,
-		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', members: 'none' },
+		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', items: 'none' },
 	},
 	CastMember: {
 		block: 'cast-member',

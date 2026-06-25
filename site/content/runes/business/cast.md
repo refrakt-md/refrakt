@@ -71,7 +71,7 @@ Bob leads the engineering team.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `layout` | `string` | `grid` | Display layout: `grid` or `list` |
+| `layout` | `string` | `grid` | Display layout: `grid`, `list`, or `carousel` (a horizontal scroll-snap track with prev/next nav — the shared [carousel layout mode](/extend/rune-authoring/patterns#the-carousel-contract)) |
 
 ### Member attributes
 
