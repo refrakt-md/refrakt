@@ -1,11 +1,8 @@
-/* textblock — structure. The body block, the drop-cap float, and the multi-column
- * counts (+ responsive). The drop-cap/lead type, column gap/rule, and text-align
- * are skin. */
+/* textblock — structure. The body block and the multi-column counts (+
+ * responsive). Drop-cap is the universal SPEC-108 opt-in (dimensions/reading.css);
+ * lead type, column gap/rule, and text-align are skin. */
 .rf-textblock__body {
 	display: block;
-}
-.rf-textblock--dropcap .rf-textblock__body > p:first-child::first-letter {
-	float: left;
 }
 .rf-textblock[data-columns="2"] .rf-textblock__body { column-count: 2; }
 .rf-textblock[data-columns="3"] .rf-textblock__body { column-count: 3; }

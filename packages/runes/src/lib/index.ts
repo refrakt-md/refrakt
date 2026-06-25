@@ -42,6 +42,7 @@ const universalAttributes: Record<string, SchemaAttribute> = {
   'bg': { type: String, required: false, description: 'Background preset applied to this block' },
   'width': { type: String, required: false, matches: ['compact', 'narrow', 'content', 'wide', 'full'], description: 'Maximum width constraint for this block' },
   'reading': { type: String, required: false, matches: ['fine', 'ui', 'prose'], description: 'Reading register for this block’s body (SPEC-108): fine | ui | prose. The theme owns the editorial treatment.' },
+  'dropcap': { type: Boolean, required: false, description: 'Style the opening letter of a prose body as a drop cap (SPEC-108). Honoured only when the body reads as prose; ignored otherwise.' },
   'spacing': { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'], description: 'Vertical spacing above and below this block' },
   'inset': { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'], description: 'Inner padding of this block' },
   // SPEC-107 — `elevation` is a depth ladder. The legacy shadow-scale values

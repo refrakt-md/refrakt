@@ -13,16 +13,9 @@ Some lead text.
 		expect(fields(tb).lead).toBe('lead');
 	});
 
-	it('should emit dropcap meta with content "dropcap" not "true"', () => {
-		const result = parse(`{% textblock dropcap=true %}
-Some dropcap text.
-{% /textblock %}`);
-
-		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
-		expect(tb).toBeDefined();
-
-		expect(fields(tb).dropcap).toBe('dropcap');
-	});
+	// `dropcap` is now the universal SPEC-108 opt-in (prose-gated), handled by the
+	// engine on the body section's data-dropcap — no longer a textblock field. See
+	// packages/transform/test/reading.test.ts for its emission coverage.
 
 	it('should wrap body content in a single div', () => {
 		const result = parse(`{% textblock %}

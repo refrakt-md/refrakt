@@ -8,7 +8,6 @@ const alignValues = ['left', 'center', 'right', 'justify'] as const;
 
 export const textblock = createContentModelSchema({
 	attributes: {
-		dropcap: { type: Boolean, required: false, description: 'Style the first letter as a large drop cap' },
 		columns: { type: Number, required: false, description: 'Number of text columns' },
 		lead: { type: Boolean, required: false, description: 'Style the first paragraph as a lead' },
 		align: { type: String, required: false, matches: alignValues.slice(), description: 'Text alignment' },
@@ -24,19 +23,19 @@ export const textblock = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		);
 
-		const dropcap = attrs.dropcap ?? false;
+		// `dropcap` is now the universal SPEC-108 opt-in (gated on the prose register
+		// by the engine); textblock no longer declares it. `columns`/`lead`/`align`
+		// stay textblock-specific.
 		const columns = attrs.columns ?? 1;
 		const lead = attrs.lead ?? false;
 		const align = attrs.align ?? 'left';
 
-		const dropcapMeta = dropcap ? new Tag('meta', { content: 'dropcap' }) : undefined;
 		const columnsMeta = columns > 1 ? new Tag('meta', { content: String(columns) }) : undefined;
 		const leadMeta = lead ? new Tag('meta', { content: 'lead' }) : undefined;
 		const alignMeta = align !== 'left' ? new Tag('meta', { content: align }) : undefined;
 
 		const body = children.wrap('div');
 		const childNodes: any[] = [];
-		if (dropcapMeta) childNodes.push(dropcapMeta);
 		if (columnsMeta) childNodes.push(columnsMeta);
 		if (leadMeta) childNodes.push(leadMeta);
 		if (alignMeta) childNodes.push(alignMeta);
@@ -45,7 +44,6 @@ export const textblock = createContentModelSchema({
 		return createComponentRenderable({ rune: 'text-block',
 			tag: 'div',
 			properties: {
-				...(dropcapMeta ? { dropcap: dropcapMeta } : {}),
 				...(columnsMeta ? { columns: columnsMeta } : {}),
 				...(leadMeta ? { lead: leadMeta } : {}),
 				...(alignMeta ? { align: alignMeta } : {}),

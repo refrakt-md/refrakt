@@ -1,15 +1,8 @@
 @layer skin {
 
-/* Drop cap — decorative first letter */
-.rf-textblock--dropcap .rf-textblock__body > p:first-child::first-letter {
-	font-size: 3.5em;
-	font-weight: var(--rf-weight-bold);
-	line-height: 0.8;
-	padding-right: 0.1em;
-	margin-top: 0.05em;
-	color: var(--rf-color-primary);
-	font-family: Georgia, 'Times New Roman', serif;
-}
+/* Drop cap is now the universal SPEC-108 opt-in, styled on
+ * `[data-reading="prose"][data-dropcap]` (dimensions/reading.css); textblock's
+ * body reads as prose, so it inherits the treatment. */
 
 /* Lead paragraph — emphasized opening text */
 .rf-textblock--lead .rf-textblock__body > p:first-child {

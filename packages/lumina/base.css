@@ -30,6 +30,7 @@
 @import './styles/dimensions/metadata.css';
 @import './styles/dimensions/density.css';
 @import './styles/dimensions/sections.css';
+@import './styles/dimensions/reading.css';
 @import './styles/dimensions/state.css';
 @import './styles/dimensions/media.css';
 @import './styles/dimensions/surfaces.css';

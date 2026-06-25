@@ -457,7 +457,6 @@ export const coreConfig: ThemeConfig = {
 			defaultElevation: 'flush',
 			defaultReading: 'prose',
 			modifiers: {
-				dropcap: { source: 'meta' },
 				columns: { source: 'meta' },
 				lead: { source: 'meta' },
 				align: { source: 'meta', default: 'left' },

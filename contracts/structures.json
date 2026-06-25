@@ -913,11 +913,6 @@
 				"{content}"
 			],
 			"modifiers": {
-				"dropcap": {
-					"source": "meta",
-					"classPattern": ".rf-textblock--{value}",
-					"dataAttribute": "data-dropcap"
-				},
 				"columns": {
 					"source": "meta",
 					"classPattern": ".rf-textblock--{value}",
