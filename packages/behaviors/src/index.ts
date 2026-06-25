@@ -17,6 +17,7 @@ import { searchBehavior } from './behaviors/search.js';
 import { themeToggleBehavior } from './behaviors/theme-toggle.js';
 import { sectionNavBehavior } from './behaviors/section-nav.js';
 import { galleryBehavior } from './behaviors/gallery.js';
+import { carouselBehavior } from './behaviors/carousel.js';
 import { juxtaposeBehavior } from './behaviors/juxtapose.js';
 import { navCollapsibleBehavior } from './behaviors/nav-collapsible.js';
 import { navMenubarBehavior } from './behaviors/nav-menubar.js';
@@ -77,7 +78,9 @@ export function overrideBehavior(name: string, fn: BehaviorFn): void {
  * adopted by any rune through config + the shared DOM contract, with no per-rune
  * behavior code. Mounted by `initRuneBehaviors`.
  */
-const layoutModeBehaviors: Record<string, BehaviorFn> = {};
+const layoutModeBehaviors: Record<string, BehaviorFn> = {
+	carousel: carouselBehavior,
+};
 
 /**
  * Register block-agnostic behaviors keyed by `data-layout` value (e.g.
@@ -235,6 +238,7 @@ export { sectionNavBehavior } from './behaviors/section-nav.js';
 export { searchBehavior } from './behaviors/search.js';
 export { themeToggleBehavior } from './behaviors/theme-toggle.js';
 export { galleryBehavior } from './behaviors/gallery.js';
+export { carouselBehavior } from './behaviors/carousel.js';
 export { juxtaposeBehavior } from './behaviors/juxtapose.js';
 export { navCollapsibleBehavior } from './behaviors/nav-collapsible.js';
 export { navMenubarBehavior } from './behaviors/nav-menubar.js';

@@ -3,18 +3,13 @@ import type { CleanupFn } from '../types.js';
 /**
  * Gallery behavior for `[data-rune="gallery"]`.
  *
- * Provides two enhancements:
- * - Carousel: prev/next nav buttons for horizontal scrolling (when layout="carousel")
- * - Lightbox: fullscreen image overlay on click (when lightbox="true")
+ * Owns the lightbox (fullscreen image overlay on click, when `lightbox="true"`).
+ * Carousel is no longer gallery-specific — it is the shared `carousel` layout-mode
+ * behavior bound on `[data-layout="carousel"]` (SPEC-100), which gallery emits and
+ * therefore gets for free.
  */
 export function galleryBehavior(el: HTMLElement): CleanupFn {
 	const cleanups: Array<() => void> = [];
-
-	// Carousel navigation
-	if (el.getAttribute('data-layout') === 'carousel') {
-		const cleanup = setupCarousel(el);
-		if (cleanup) cleanups.push(cleanup);
-	}
 
 	// Lightbox
 	if (el.getAttribute('data-lightbox') === 'true') {
@@ -23,61 +18,6 @@ export function galleryBehavior(el: HTMLElement): CleanupFn {
 	}
 
 	return () => cleanups.forEach((fn) => fn());
-}
-
-// ─── Carousel ───
-
-function setupCarousel(el: HTMLElement): CleanupFn | void {
-	const itemsContainer = el.querySelector<HTMLElement>('[data-name="items"]');
-	if (!itemsContainer) return;
-
-	const items = Array.from(itemsContainer.querySelectorAll<HTMLElement>('[data-name="item"]'));
-	if (items.length === 0) return;
-
-	// Create nav buttons
-	const prevBtn = document.createElement('button');
-	prevBtn.className = 'rf-gallery__nav rf-gallery__nav--prev';
-	prevBtn.setAttribute('aria-label', 'Previous');
-	prevBtn.textContent = '\u2039';
-
-	const nextBtn = document.createElement('button');
-	nextBtn.className = 'rf-gallery__nav rf-gallery__nav--next';
-	nextBtn.setAttribute('aria-label', 'Next');
-	nextBtn.textContent = '\u203A';
-
-	el.appendChild(prevBtn);
-	el.appendChild(nextBtn);
-
-	function scrollByItem(direction: number) {
-		const firstItem = items[0];
-		if (!firstItem || !itemsContainer) return;
-		const itemWidth = firstItem.offsetWidth + parseFloat(getComputedStyle(itemsContainer).gap || '0');
-		itemsContainer.scrollBy({ left: direction * itemWidth, behavior: 'smooth' });
-	}
-
-	const onPrev = () => scrollByItem(-1);
-	const onNext = () => scrollByItem(1);
-
-	prevBtn.addEventListener('click', onPrev);
-	nextBtn.addEventListener('click', onNext);
-
-	// Keyboard navigation when gallery is focused
-	const onKeydown = (e: KeyboardEvent) => {
-		if (e.key === 'ArrowLeft') { e.preventDefault(); scrollByItem(-1); }
-		if (e.key === 'ArrowRight') { e.preventDefault(); scrollByItem(1); }
-	};
-
-	el.setAttribute('tabindex', '0');
-	el.addEventListener('keydown', onKeydown);
-
-	return () => {
-		prevBtn.removeEventListener('click', onPrev);
-		nextBtn.removeEventListener('click', onNext);
-		el.removeEventListener('keydown', onKeydown);
-		prevBtn.remove();
-		nextBtn.remove();
-		el.removeAttribute('tabindex');
-	};
 }
 
 // ─── Lightbox ───

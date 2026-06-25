@@ -1,0 +1,35 @@
+/* carousel — shared layout-mode structure (SPEC-100). Any rune that emits the
+ * carousel contract — host `[data-layout="carousel"]`, track `[data-name="items"]`,
+ * items `[data-name="item"]` — gets the scroll-snap track and nav positioning,
+ * with zero per-rune CSS. Nav chrome (colour/shape) is skin (Lumina's
+ * styles/runes/carousel.css). The block-agnostic behavior injects the
+ * `.rf-carousel__nav` buttons. */
+[data-layout="carousel"] [data-name="items"] {
+	display: flex;
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	-webkit-overflow-scrolling: touch;
+}
+[data-layout="carousel"] [data-name="item"] {
+	scroll-snap-align: start;
+}
+
+/* Nav buttons — positioned relative to the track's container (the behavior
+ * ensures it is a positioning context). */
+.rf-carousel__nav {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 2;
+	width: 2.5rem;
+	height: 2.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.rf-carousel__nav--prev {
+	left: 0.5rem;
+}
+.rf-carousel__nav--next {
+	right: 0.5rem;
+}

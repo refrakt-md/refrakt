@@ -1,0 +1,18 @@
+@layer skin {
+/* Carousel — shared nav chrome (SPEC-100). The track structure + nav positioning
+ * are skeleton (styles/runes/carousel.css); this is the skin (colour/shape). */
+.rf-carousel__nav {
+	border-radius: 50%;
+	border: none;
+	background: var(--rf-color-surface);
+	color: var(--rf-color-text);
+	box-shadow: var(--rf-shadow-md);
+	cursor: pointer;
+	font-size: var(--rf-text-xl);
+	opacity: 0.8;
+	transition: opacity 0.2s;
+}
+.rf-carousel__nav:hover {
+	opacity: 1;
+}
+}
