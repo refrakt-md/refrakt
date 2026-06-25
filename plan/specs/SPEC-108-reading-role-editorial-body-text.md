@@ -72,6 +72,33 @@ every prose block. So it stays an explicit per-instance boolean (generalising `t
 existing `dropcap` so any prose body can opt in). The theme owns the glyph treatment; the
 author owns where.
 
+**Decision — dropcap is prose-gated, not rune-gated.** `dropcap` is neither a truly global
+attribute (it is meaningless on a `nav`/`form`/`card` body) nor restricted to a hardcoded rune
+allowlist (which the register vocabulary exists to replace, and which could never reach the
+article body — the most important prose surface is not a rune). Instead it is honoured on **any
+body whose resolved reading register is `prose`** and is a no-op (ideally a dev-time warning)
+elsewhere. Mechanically it is plumbed centrally like the container axes rather than re-declared
+on each rune schema, but its *applicability* is gated dynamically on the resolved register, not
+on rune identity. The article-body case (a non-rune region) reaches dropcap by wrapping the
+opening passage in `textblock` — `textblock` becomes the canonical "opening passage" block, the
+region itself stays markup-free at `reading="prose"`. (A region-level "drop-cap the first
+paragraph" flag is a different, more magical feature and is explicitly out of scope here.)
+
+**Editor consequence — the toggle is register-derived, not listed.** A visual editor (e.g. the
+block editor) decides whether to surface a `dropcap` toggle by asking the *same* question the
+CSS asks (`[data-reading="prose"]`): does this block's body resolve to `reading="prose"`? It
+resolves the register from the three sources below (rune `defaultReading` + layout/region
+default + author override) — the same data the editor already reads from `RuneConfig` for
+`editHints` — and shows the toggle iff the effective register is `prose`. This carries no
+per-rune list (new prose-defaulting runes get the toggle for free), is correctly reactive
+(flipping a block to `reading="prose"` makes the toggle appear; back to `ui` removes it), and
+reaches the non-rune article body via the `textblock` wrapper under the identical rule. Two
+things must be exposed for this without duplicating engine logic: (a) the register resolution as
+shared/derivable data the editor can read, and (b) a small declarative capability mapping that
+`prose` is the register which enables the `dropcap` opt-in (rather than hardcoding the rule in
+the editor). Note this is a distinct affordance class from today's `editHints`, which maps
+`data-name` *sections* to edit modes and does not cover boolean attribute toggles.
+
 ### 4. Assignment is layout-aware (like `width`)
 
 Reading-role has the same two-source shape as `width` ({% ref "SPEC-107" /%} §2) — and the
@@ -124,7 +151,8 @@ governs the container, this governs the text inside it.
 - [ ] A `reading` role with the ordered set `fine | ui | prose` is emitted as `data-reading` refining `data-section="body"`; `ui` is the default and unmarked content is byte-unchanged.
 - [ ] `reading="prose"` drives a theme-owned editorial treatment in Lumina: capped measure (distinct from `width`), a paragraph style, lede eligibility, and running-text niceties — selected by `[data-reading="prose"]`, not rune-name lists.
 - [ ] Assignment resolves from layout/region default → per-rune `defaultReading` → author override; a `blog-article` content region defaults to `prose` and a `docs` region does not.
-- [ ] `dropcap` is a per-instance opt-in available on any `prose` body (generalised from `textblock`); the theme owns the glyph treatment.
+- [ ] `dropcap` is a per-instance opt-in available on any `prose` body (generalised from `textblock`); the theme owns the glyph treatment. It is gated on the resolved `prose` register (not a rune allowlist) and is a no-op elsewhere; the non-rune article body reaches it via a `textblock` wrapper.
+- [ ] A visual editor surfaces the `dropcap` toggle by deriving it from the resolved reading register (rune `defaultReading` + layout/region default + author override), not a per-rune list: the toggle appears iff the body resolves to `reading="prose"` and reacts to changing the register. The register resolution and a `prose → dropcap` capability mapping are exposed to the editor rather than hardcoded.
 - [ ] `measure` and `width` remain independent — a `width: full` block can hold `reading: prose` text at a capped measure (the editorial-header composition renders correctly in the gallery, light + dark).
 - [ ] Docs: a reading-role section in the surfaces / theme-authoring docs, and the `fine`/`ui`/`prose` registers documented for content authors.
 
@@ -132,8 +160,9 @@ governs the container, this governs the text inside it.
 
 1. **Engine** — `data-reading` emission refining `data-section`, the `fine | ui | prose` set, `defaultReading` in `RuneConfig`, and a layout/region default.
 2. **Per-rune + layout defaults** — assign editorial-body runes to `prose`, UI runes to `ui`, captions to `fine`; `blog-article` content region → `prose`.
-3. **Lumina interpretation** — measure, paragraph style, lede, drop-cap glyph, running-text niceties keyed off `[data-reading]`; generalise `textblock`'s `dropcap`.
-4. **Gallery + docs** — a prose subject in the gallery; a reading-role docs section; author-facing register reference.
+3. **Lumina interpretation** — measure, paragraph style, lede, drop-cap glyph, running-text niceties keyed off `[data-reading]`; generalise `textblock`'s `dropcap` to a prose-register-gated opt-in.
+4. **Editor affordance** — expose register resolution + a `prose → dropcap` capability mapping so the block editor derives the dropcap toggle from the resolved register rather than a per-rune list.
+5. **Gallery + docs** — a prose subject in the gallery; a reading-role docs section; author-facing register reference.
 
 ## References
 
