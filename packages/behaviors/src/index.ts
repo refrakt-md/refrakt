@@ -70,6 +70,34 @@ export function overrideBehavior(name: string, fn: BehaviorFn): void {
 }
 
 /**
+ * Map of `data-layout` value → block-agnostic behavior (SPEC-100).
+ *
+ * Unlike `behaviors` (keyed by `data-rune`), these bind on `[data-layout="<value>"]`
+ * regardless of the host's rune — so a *layout mode* such as `carousel` can be
+ * adopted by any rune through config + the shared DOM contract, with no per-rune
+ * behavior code. Mounted by `initRuneBehaviors`.
+ */
+const layoutModeBehaviors: Record<string, BehaviorFn> = {};
+
+/**
+ * Register block-agnostic behaviors keyed by `data-layout` value (e.g.
+ * `{ carousel: carouselBehavior }`). New entries are added; existing entries are
+ * NOT overwritten (mirrors {@link registerBehaviors}).
+ */
+export function registerLayoutModeBehaviors(additional: Record<string, BehaviorFn>): void {
+	for (const [name, fn] of Object.entries(additional)) {
+		if (!(name in layoutModeBehaviors)) {
+			layoutModeBehaviors[name] = fn;
+		}
+	}
+}
+
+/** Names of the `data-layout` values that have a registered layout-mode behavior. */
+export function getLayoutModeBehaviorNames(): Set<string> {
+	return new Set(Object.keys(layoutModeBehaviors));
+}
+
+/**
  * Scan a container for rune elements and attach interactive behaviors.
  *
  * Discovers elements with `data-rune` attributes, checks for theme-framework
@@ -101,6 +129,23 @@ export function initRuneBehaviors(
 		if (options?.exclude && options.exclude.includes(rune)) return;
 
 		const fn = behaviors[rune];
+		if (fn) {
+			const cleanup = fn(el);
+			if (cleanup) cleanups.push(cleanup);
+		}
+	});
+
+	// Attribute-triggered layout-mode behaviors (SPEC-100). Bound on
+	// `[data-layout="<value>"]` independent of `data-rune`, so a layout mode
+	// (e.g. carousel) works on any adopting rune with zero per-rune behavior code.
+	// A host may run both its rune behavior and a layout-mode behavior (e.g.
+	// gallery: lightbox + carousel) — these are distinct concerns, not a
+	// double-mount; each layout-mode behavior mounts at most once per host.
+	container.querySelectorAll<HTMLElement>('[data-layout]').forEach((el) => {
+		if (isFrameworkManaged(el)) return;
+		if (el.closest('[data-guest-posture="presentational"]')) return;
+		const layout = el.getAttribute('data-layout')!;
+		const fn = layoutModeBehaviors[layout];
 		if (fn) {
 			const cleanup = fn(el);
 			if (cleanup) cleanups.push(cleanup);
