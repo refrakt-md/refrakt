@@ -7,6 +7,7 @@ import type {
 	ComputedContent,
 } from './types.js';
 import { isTag, makeTag } from './helpers.js';
+import { DEFAULT_READING } from './reading.js';
 import { buildBreadcrumb, buildToc, buildPrevNext, buildVersionSwitcher } from './computed.js';
 
 /**
@@ -213,6 +214,12 @@ function resolveSlot(
 		for (const [key, val] of Object.entries(slot.attrs)) {
 			attrs[key] = val;
 		}
+	}
+	// SPEC-108: a content slot's reading default applies to the bare body (the
+	// region's top-level markdown, which is not a rune). Emitted as `data-reading`,
+	// suppressed at the `ui` default. The skin keys its prose treatment off it.
+	if (slot.reading && slot.reading !== DEFAULT_READING) {
+		attrs['data-reading'] = slot.reading;
 	}
 
 	return makeTag(slot.tag, attrs, finalChildren);

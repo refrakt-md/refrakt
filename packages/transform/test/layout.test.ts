@@ -598,3 +598,23 @@ describe('postTransform', () => {
 		expect(result.attributes['data-custom']).toBe('true');
 	});
 });
+
+// SPEC-108 — a content slot's reading default applies to the bare body.
+describe('content slot reading register', () => {
+	const bodySlot = (reading?: 'fine' | 'ui' | 'prose') =>
+		asTag(layoutTransform(
+			minimalConfig({ slots: { body: { tag: 'div', class: 'body', source: 'content', reading } } }),
+			makePage(),
+			'rf',
+		)).children[0] as SerializedTag;
+
+	it('emits data-reading from a prose content slot', () => {
+		expect(bodySlot('prose').attributes['data-reading']).toBe('prose');
+	});
+	it('suppresses data-reading at the ui default', () => {
+		expect(bodySlot('ui').attributes['data-reading']).toBeUndefined();
+	});
+	it('omits data-reading when the slot has no reading default', () => {
+		expect(bodySlot(undefined).attributes['data-reading']).toBeUndefined();
+	});
+});
