@@ -136,9 +136,8 @@ export const feature = createContentModelSchema({
 
 		// Transform definitions with custom node overrides. The output is flat:
 		// always a `<dl>` carrying the item count. Whether the definitions tile as
-		// a grid (media stacked) or stack in a column (media beside) is no longer
-		// branched here — it's a `media-position` engine variant (SPEC-091) that
-		// toggles the `--definitions-grid` modifier class, styled by CSS.
+		// a grid or stack in a column is the `layout` axis (SPEC-099), styled via
+		// `[data-layout]` — not branched here and no longer coupled to media.
 		const defConfig = {
 			...config,
 			nodes: {

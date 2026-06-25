@@ -130,16 +130,9 @@ export const config: Record<string, RuneConfig> = {
 			valign: { source: 'meta', noBemClass: true },
 			collapse: { source: 'meta', noBemClass: true },
 		},
-		// SPEC-091: the grid-vs-stack of the definitions list is a config variant
-		// keyed on media-position, replacing the old transform branch. Stacked
-		// media (top/bottom, the default) tiles definitions as a grid; beside
-		// media (start/end) leaves them stacked in the content column.
-		variants: {
-			'media-position': {
-				top: { staticModifiers: ['definitions-grid'] },
-				bottom: { staticModifiers: ['definitions-grid'] },
-			},
-		},
+		// SPEC-099: the grid-vs-stack of the definitions list is the `layout`
+		// axis, styled via `[data-layout]` — decoupled from `media-position`. The
+		// old media-position → `definitions-grid` variant (SPEC-091) is retired.
 		styles: {
 			valign: { prop: '--split-valign', transform: resolveValign },
 		},

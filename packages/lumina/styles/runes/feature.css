@@ -1,6 +1,7 @@
 @layer skin {
-/* Feature — skin. The preamble/eyebrow/content/definitions-grid/icon layout and
- * the media-position flip live in @refrakt-md/skeleton (styles/runes/feature.css). */
+/* Feature — skin. The preamble/eyebrow/content/definitions/icon layout, the
+ * `[data-layout]` arrangement, and the media-position flip live in
+ * @refrakt-md/skeleton (styles/runes/feature.css). */
 .rf-feature {
 	padding: 2.5rem 0 2rem;
 }
@@ -55,24 +56,23 @@
 .rf-feature[data-align="right"] h2 {
 	text-align: right;
 }
-/* Definitions stack in a single column by default; the `--definitions-grid`
- * modifier (SPEC-091 media-position variant: top/bottom) tiles them as a grid. */
+/* Definitions skin. Arrangement + item chrome follow the `layout` axis
+ * (SPEC-099): `grid` tiles carded items; `list` stacks flat rows. */
 .rf-feature__definitions {
 	margin: 0;
 }
-.rf-feature--definitions-grid .rf-feature__definitions {
+.rf-feature[data-layout="grid"] .rf-feature__definitions {
 	gap: 1.5rem;
 }
-/* Beside layouts (media on start/end): definitions stay stacked (no grid
- * modifier) inside the content track. */
+/* Beside layouts (media on start/end): left-align the heading/preamble. */
 .rf-feature[data-media-position="start"] .rf-feature__preamble,
 .rf-feature[data-media-position="end"] .rf-feature__preamble,
 .rf-feature[data-media-position="start"] h2,
 .rf-feature[data-media-position="end"] h2 {
 	text-align: left;
 }
-.rf-feature[data-media-position="start"] .rf-feature__feature-item,
-.rf-feature[data-media-position="end"] .rf-feature__feature-item {
+/* List arrangement: items are flat rows, not carded tiles. */
+.rf-feature[data-layout="list"] .rf-feature__feature-item {
 	background: none;
 	border: none;
 	border-radius: 0;
