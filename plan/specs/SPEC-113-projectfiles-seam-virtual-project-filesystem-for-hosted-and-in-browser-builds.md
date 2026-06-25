@@ -182,7 +182,8 @@ Non-goals).
   much of the pipeline re-runs. Per-file incremental rebuild (dependency tracking
   + invalidation) is a separate, future spec; the `ProjectFiles` seam is a
   *prerequisite* for it (it centralizes I/O so reads become recordable) but does
-  not deliver it.
+  not deliver it. See {% ref "ADR-025" /%} for the target architecture and the
+  one piece of groundwork this seam should carry (a recordable read wrapper).
 
 ## Acceptance Criteria
 
