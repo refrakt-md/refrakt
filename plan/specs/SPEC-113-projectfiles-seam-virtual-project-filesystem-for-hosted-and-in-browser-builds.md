@@ -1,4 +1,4 @@
-{% spec id="SPEC-113" status="draft" tags="content,runes,pipeline,hosted,security,architecture" %}
+{% spec id="SPEC-113" status="accepted" tags="content,runes,pipeline,hosted,security,architecture" %}
 
 # ProjectFiles seam — virtual project filesystem for hosted and in-browser builds
 

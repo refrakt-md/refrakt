@@ -1,4 +1,4 @@
-{% spec id="SPEC-103" status="draft" source="SPEC-062" tags="runes,data,chart,datatable,csv,json,sqlite,pipeline,preprocess,sandbox" %}
+{% spec id="SPEC-103" status="accepted" source="SPEC-062" tags="runes,data,chart,datatable,csv,json,sqlite,pipeline,preprocess,sandbox" %}
 
 # `data` rune — external tabular sources
 
