@@ -1,4 +1,4 @@
-{% work id="WORK-469" status="ready" priority="medium" complexity="moderate" source="SPEC-099" milestone="v0.26.0" tags="feature,layout,collapse,lumina,css,docs,tests" %}
+{% work id="WORK-469" status="done" priority="medium" complexity="moderate" source="SPEC-099" milestone="v0.26.0" tags="feature,layout,collapse,lumina,css,docs,tests" %}
 
 # Feature grid collapse reflow + tests + docs
 
@@ -20,10 +20,10 @@ viewports (CSS-only), and finish the spec's test + docs surface. Per {% ref "SPE
 
 ## Acceptance Criteria
 
-- [ ] Below the existing `collapse` breakpoint, a `grid` layout reflows to a single stacked column (CSS-only); no second collapse attribute is introduced.
-- [ ] The grid reflow keys off the same `collapse` hook as the media split (hook exposed if needed).
-- [ ] Tests cover: explicit `layout` overriding the media-derived default, independence of the two axes, and unchanged output when `layout` is unset.
-- [ ] `feature` rune docs document `layout` and the shared-`collapse` semantics with an example; the `media-position`-derived default is noted.
+- [x] Below the existing `collapse` breakpoint, a `grid` layout reflows to a single stacked column (CSS-only); no second collapse attribute is introduced.
+- [x] The grid reflow keys off the same `collapse` hook as the media split (hook exposed if needed).
+- [x] Tests cover: explicit `layout` overriding the media-derived default, independence of the two axes, and unchanged output when `layout` is unset.
+- [x] `feature` rune docs document `layout` and the shared-`collapse` semantics with an example; the `media-position`-derived default is noted.
 
 ## Dependencies
 
@@ -34,5 +34,18 @@ viewports (CSS-only), and finish the spec's test + docs surface. Per {% ref "SPE
 
 - Spec: {% ref "SPEC-099" /%} §3 (collapse reuse).
 - `packages/runes/src/tags/common.ts` (`collapse`, `buildLayoutMetas`), `packages/lumina/styles/runes/feature.css`.
+
+## Resolution
+
+Completed: 2026-06-25
+
+Branch: `claude/spec-099-feature-layout-axis`
+
+### What was done
+- `packages/skeleton/styles/runes/feature.css` — a `[data-layout="grid"]` arrangement reflows to a single column below the `collapse` breakpoint, mirroring `layouts/split.css` (sm/md/lg + default sm; `never` opts out). CSS-only, no new attribute or behavior.
+- `site/content/runes/marketing/feature.md` — documented the `layout` axis (with a media-beside + grid example) and the shared-`collapse` semantics; noted the media-derived default.
+
+### Notes
+- `collapse` was already emitted as the CSS-targetable `data-collapse` hook (consumed by split.css), so no new emission was needed. The override / axis-independence / unchanged-when-unset tests landed with WORK-467.
 
 {% /work %}

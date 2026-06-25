@@ -1,4 +1,4 @@
-{% work id="WORK-467" status="ready" priority="high" complexity="moderate" source="SPEC-099" milestone="v0.26.0" tags="feature,layout,marketing,runes,transform" %}
+{% work id="WORK-467" status="done" priority="high" complexity="moderate" source="SPEC-099" milestone="v0.26.0" tags="feature,layout,marketing,runes,transform" %}
 
 # Feature `layout` axis + transform-level default resolution
 
@@ -22,10 +22,10 @@ default never collide. Per {% ref "SPEC-099" /%} §1 + §4.
 
 ## Acceptance Criteria
 
-- [ ] `feature` accepts `layout` matching `grid | list`, both imported from the canonical const.
-- [ ] The engine emits a single `data-layout` from the resolved `layout` meta.
-- [ ] When `layout` is unset it derives from `media-position` (stacked → `grid`, beside → `list`); an explicit `layout` overrides that default.
-- [ ] Item arrangement and media placement are independently controllable (media beside content *and* `layout="grid"` is reachable).
+- [x] `feature` accepts `layout` matching `grid | list`, both imported from the canonical const.
+- [x] The engine emits a single `data-layout` from the resolved `layout` meta.
+- [x] When `layout` is unset it derives from `media-position` (stacked → `grid`, beside → `list`); an explicit `layout` overrides that default.
+- [x] Item arrangement and media placement are independently controllable (media beside content *and* `layout="grid"` is reachable).
 
 ## Dependencies
 
@@ -35,5 +35,19 @@ default never collide. Per {% ref "SPEC-099" /%} §1 + §4.
 
 - Spec: {% ref "SPEC-099" /%} §1 (`layout` axis), §4 (transform-level default resolution).
 - `plugins/marketing/src/tags/feature.ts`, `packages/runes/src/tags/common.ts` (`SplitLayoutModel`, `buildLayoutMetas`).
+
+## Resolution
+
+Completed: 2026-06-25
+
+Branch: `claude/spec-099-feature-layout-axis`
+
+### What was done
+- `plugins/marketing/src/tags/feature.ts` — added the `layout` attribute (grid|list via `layoutMatches([LAYOUT.grid, LAYOUT.list])`); resolve `effectiveLayout = attrs.layout ?? derive(media-position)` (stacked→grid, beside→list) in the transform and emit a single always-present `layout` meta.
+- `plugins/marketing/src/config.ts` — `layout` modifier (`source: 'meta', noBemClass: true`) so the meta maps to `data-layout`.
+- `plugins/marketing/test/feature.test.ts` — 4 tests: default grid, media-derived list, explicit override (both directions), always-present.
+
+### Notes
+- Author override and the media-derived default never collide because exactly one value is computed in the transform. Output unchanged for existing content; the CSS move + coupling removal is WORK-468.
 
 {% /work %}
