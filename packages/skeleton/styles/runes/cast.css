@@ -1,14 +1,20 @@
 /* cast — structure. The members list reset, grid/list arrangements, name/role
  * block display, empty-body hide, the avatar box (size/crop/display), and the list
  * variant flex. Surface chrome, type, radii, and margins are skin. */
-.rf-cast__members { list-style: none; }
-.rf-cast--grid .rf-cast__members {
+.rf-cast__items { list-style: none; }
+.rf-cast--grid .rf-cast__items {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
-.rf-cast--list .rf-cast__members {
+.rf-cast--list .rf-cast__items {
 	display: flex;
 	flex-direction: column;
+}
+/* SPEC-100: carousel arrangement reuses the shared track (styles/runes/carousel.css,
+ * keyed on [data-layout="carousel"] [data-name="items"]); cast only sets its
+ * per-slide width. */
+.rf-cast--carousel {
+	--rf-carousel-slide: clamp(200px, 40%, 280px);
 }
 .rf-cast-member__name { display: block; }
 .rf-cast-member__role { display: block; }

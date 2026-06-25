@@ -4,12 +4,12 @@ const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { isMediaNode } from './common.js';
-
-const layoutValues = ['grid', 'carousel', 'masonry'] as const;
+import { LAYOUT, layoutMatches } from '../layout-vocabulary.js';
 
 export const gallery = createContentModelSchema({
 	attributes: {
-		layout: { type: String, required: false, matches: layoutValues.slice(), description: 'Arrangement of images in the gallery' },
+		// `grid` + `carousel` from the canonical const (ADR-018); `masonry` stays local.
+		layout: { type: String, required: false, matches: layoutMatches([LAYOUT.grid, LAYOUT.carousel], 'masonry'), description: 'Arrangement of images in the gallery' },
 		columns: { type: Number, required: false, description: 'Number of columns in grid layout' },
 		lightbox: { type: Boolean, required: false, description: 'Allow clicking images to view full-size' },
 		caption: { type: String, required: false, description: 'Caption text displayed below the gallery' },

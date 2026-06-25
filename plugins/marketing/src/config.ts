@@ -125,6 +125,9 @@ export const config: Record<string, RuneConfig> = {
 			// `layout` meta (author value or media-derived default), so no config
 			// default is needed; styled via `[data-layout]`, not a BEM class.
 			layout: { source: 'meta', noBemClass: true },
+			// SPEC-100: collapsed form (stack | carousel) — emitted as data-collapse-to
+			// only when non-default; styled via the shared collapse-to-carousel CSS.
+			'collapse-to': { source: 'meta', noBemClass: true },
 			align: { source: 'meta', default: 'center' },
 			'media-ratio': { source: 'meta', noBemClass: true },
 			valign: { source: 'meta', noBemClass: true },
@@ -137,7 +140,10 @@ export const config: Record<string, RuneConfig> = {
 			valign: { prop: '--split-valign', transform: resolveValign },
 		},
 		contextModifiers: { 'hero': 'in-hero', 'grid': 'in-grid' },
-		autoLabel: { ...pageSectionAutoLabel, dl: 'definitions' },
+		// SPEC-100: the feature-items container is the carousel track — marked
+		// `data-name="items"` (the shared contract token) so `layout="carousel"`
+		// works with no per-rune behavior code.
+		autoLabel: { ...pageSectionAutoLabel, dl: 'items' },
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', title: 'inline', description: 'inline', icon: 'icon' },
 	},
 	Definition: { block: 'definition', parent: 'Feature', requiresParent: 'Feature' },

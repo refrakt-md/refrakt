@@ -27,20 +27,7 @@
 	text-align: center;
 	font-style: italic;
 }
-.rf-gallery__nav {
-	border-radius: 50%;
-	border: none;
-	background: var(--rf-color-surface);
-	color: var(--rf-color-text);
-	box-shadow: var(--rf-shadow-md);
-	cursor: pointer;
-	font-size: var(--rf-text-xl);
-	opacity: 0.8;
-	transition: opacity 0.2s;
-}
-.rf-gallery__nav:hover {
-	opacity: 1;
-}
+/* Carousel nav chrome is now the shared `.rf-carousel__nav` (styles/runes/carousel.css). */
 .rf-gallery[data-layout="masonry"] .rf-gallery__items {
 	column-gap: var(--rf-gallery-gap);
 }

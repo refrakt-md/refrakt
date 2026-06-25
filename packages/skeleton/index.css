@@ -84,6 +84,7 @@
 @import './styles/runes/progress.css' layer(skeleton);
 @import './styles/runes/diagram.css' layer(skeleton);
 @import './styles/runes/gallery.css' layer(skeleton);
+@import './styles/runes/carousel.css' layer(skeleton);
 @import './styles/runes/diff.css' layer(skeleton);
 @import './styles/runes/chart.css' layer(skeleton);
 @import './styles/runes/juxtapose.css' layer(skeleton);

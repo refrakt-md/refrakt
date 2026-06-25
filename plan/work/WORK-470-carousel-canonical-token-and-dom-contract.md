@@ -1,4 +1,4 @@
-{% work id="WORK-470" status="ready" priority="high" complexity="simple" source="SPEC-100" milestone="v0.26.0" tags="carousel,layout,contract,runes,docs" %}
+{% work id="WORK-470" status="done" priority="high" complexity="simple" source="SPEC-100" milestone="v0.26.0" tags="carousel,layout,contract,runes,docs" %}
 
 # Carousel canonical token + shared DOM contract
 
@@ -19,9 +19,9 @@ adopting rune emits. Per {% ref "SPEC-100" /%} Phase A.1–A.2 and {% ref "ADR-0
 
 ## Acceptance Criteria
 
-- [ ] `carousel` is added to the canonical layout const and importable by adopting runes.
-- [ ] A documented shared carousel DOM contract exists: host `data-layout="carousel"` + track `[data-name="items"]` + items `[data-name="item"]` (gallery's tokens reused unchanged).
-- [ ] The contract is documented once in rune-authoring, including the scoped-query expectation.
+- [x] `carousel` is added to the canonical layout const and importable by adopting runes.
+- [x] A documented shared carousel DOM contract exists: host `data-layout="carousel"` + track `[data-name="items"]` + items `[data-name="item"]` (gallery's tokens reused unchanged).
+- [x] The contract is documented once in rune-authoring, including the scoped-query expectation.
 
 ## Dependencies
 
@@ -31,5 +31,19 @@ adopting rune emits. Per {% ref "SPEC-100" /%} Phase A.1–A.2 and {% ref "ADR-0
 
 - Spec: {% ref "SPEC-100" /%} Phase A.1–A.2 + Design notes (keep `items`/`item`). Decision: {% ref "ADR-018" /%} (graduation rule).
 - `packages/runes/src/tags/gallery.ts`, `packages/runes/src/config.ts` (`Gallery`).
+
+## Resolution
+
+Completed: 2026-06-25
+
+Branch: `claude/spec-100-carousel-layout-mode`
+
+### What was done
+- `packages/runes/src/layout-vocabulary.ts` — added `LAYOUT.carousel` to the canonical pool; documented the carousel DOM/behavior contract (host `data-layout="carousel"`, track `data-name="items"`, items `data-name="item"`, block-agnostic behavior on `[data-layout="carousel"]`).
+- `packages/runes/test/layout-vocabulary.test.ts` — seed-set assertion now expects `carousel`.
+- `site/content/extend/rune-authoring/patterns.md` — new "The `carousel` contract" subsection documenting the shape, the zero-behavior-code adoption model, and the `:scope >` query expectation.
+
+### Notes
+- Token + contract only — `gallery` keeps its inline `layout` values for now (it migrates onto the const/contract in WORK-472). The behavior dispatch (WORK-471) and the lift-out-of-gallery (WORK-472) build on this.
 
 {% /work %}

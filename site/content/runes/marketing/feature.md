@@ -158,6 +158,7 @@ The `layout` axis controls how feature-items are arranged, independently of wher
 
 - `layout="grid"` — items tile as a grid.
 - `layout="list"` — items stack in a single column.
+- `layout="carousel"` — items lay out on a horizontal scroll-snap track with prev/next nav (the shared [carousel layout mode](/extend/rune-authoring/patterns#the-carousel-contract)), at every viewport.
 
 When `layout` is unset it **derives from `media-position`** (stacked media → `grid`, beside media → `list`), so existing content is unchanged. Set it explicitly to override — including combinations the old coupling couldn't reach, like media beside content *with* a grid of items:
 
@@ -198,7 +199,8 @@ A `grid` layout reflows to a single column below the `collapse` breakpoint (the 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `align` | `string` | `center` | Horizontal alignment of headline + body text: `left`, `center`, `right` |
-| `layout` | `string` | derived from `media-position` | Item arrangement: `grid` (tiled) or `list` (single column) |
+| `layout` | `string` | derived from `media-position` | Item arrangement: `grid` (tiled), `list` (single column), or `carousel` (scroll-snap track, all viewports) |
+| `collapse-to` | `string` | `stack` | Collapsed (mobile) form below the `collapse` breakpoint: `stack` or `carousel` (a swipe row). Use `layout="grid" collapse-to="carousel"` for grid-on-desktop, carousel-on-mobile. |
 
 ## Section header
 

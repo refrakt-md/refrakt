@@ -1,10 +1,8 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes, pageSectionProperties, resolveImageScheme } from '@refrakt-md/runes';
+import { createComponentRenderable, createContentModelSchema, asNodes, pageSectionProperties, resolveImageScheme, LAYOUT, layoutMatches } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
-
-const layoutType = ['grid', 'list'] as const;
 
 export const castMember = createContentModelSchema({
 	attributes: {
@@ -58,7 +56,8 @@ export const castMember = createContentModelSchema({
 
 export const cast = createContentModelSchema({
 	attributes: {
-		layout: { type: String, required: false, matches: layoutType.slice(), description: 'Visual arrangement of members: grid for cards, list for a compact roster.' },
+		// `grid`/`list`/`carousel` from the canonical const (ADR-018 / SPEC-100).
+		layout: { type: String, required: false, matches: layoutMatches([LAYOUT.grid, LAYOUT.list, LAYOUT.carousel]), description: 'Visual arrangement of members: grid (cards), list (compact roster), or carousel (scroll-snap track).' },
 	},
 	contentModel: {
 		type: 'sequence' as const,
@@ -108,7 +107,7 @@ export const cast = createContentModelSchema({
 				member: members,
 				layout: layoutMeta,
 			},
-			refs: { ...pageSectionProperties(header), members: membersList },
+			refs: { ...pageSectionProperties(header), items: membersList },
 			children,
 		});
 	},

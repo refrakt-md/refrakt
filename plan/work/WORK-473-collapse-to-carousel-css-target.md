@@ -1,4 +1,4 @@
-{% work id="WORK-473" status="ready" priority="medium" complexity="moderate" source="SPEC-100" milestone="v0.26.0" tags="carousel,collapse,layout,lumina,css" %}
+{% work id="WORK-473" status="done" priority="medium" complexity="moderate" source="SPEC-100" milestone="v0.26.0" tags="carousel,collapse,layout,lumina,css" %}
 
 # Collapse-to-carousel target (CSS-only)
 
@@ -21,10 +21,10 @@ Per {% ref "SPEC-100" /%} Phase A.4.
 
 ## Acceptance Criteria
 
-- [ ] A `collapse-to` dial (`stack | carousel`, default `stack`) selects the collapsed form, orthogonal to the `collapse` breakpoint; `layout="grid" collapse-to="carousel"` is grid above the breakpoint and a swipe row below.
-- [ ] Collapse-to-carousel works as a CSS-only arrangement flip at the `collapse` breakpoint.
-- [ ] No `matchMedia` mount/unmount in the behavior layer and no JS nav chrome mounted on the responsive collapse path.
-- [ ] The flip reuses the shared `collapse` hook (no new breakpoint attribute).
+- [x] A `collapse-to` dial (`stack | carousel`, default `stack`) selects the collapsed form, orthogonal to the `collapse` breakpoint; `layout="grid" collapse-to="carousel"` is grid above the breakpoint and a swipe row below.
+- [x] Collapse-to-carousel works as a CSS-only arrangement flip at the `collapse` breakpoint.
+- [x] No `matchMedia` mount/unmount in the behavior layer and no JS nav chrome mounted on the responsive collapse path.
+- [x] The flip reuses the shared `collapse` hook (no new breakpoint attribute).
 
 ## Dependencies
 
@@ -35,5 +35,19 @@ Per {% ref "SPEC-100" /%} Phase A.4.
 
 - Spec: {% ref "SPEC-100" /%} Phase A.4 + Non-goals (responsive path is CSS/touch-only).
 - {% ref "SPEC-099" /%} §3 (`collapse` semantics).
+
+## Resolution
+
+Completed: 2026-06-25
+
+Branch: `claude/spec-100-carousel-layout-mode`
+
+### What was done
+- `plugins/marketing/src/tags/feature.ts` — `collapse-to` attribute (`stack | carousel`), emitted as a `data-collapse-to` meta only when non-default.
+- `plugins/marketing/src/config.ts` — `collapse-to` modifier (noBemClass).
+- `packages/skeleton/styles/runes/carousel.css` — generic collapse-to-carousel: below the `collapse` breakpoint (sm/md/lg + default sm, mirroring split.css; `never` opts out), `[data-collapse-to="carousel"] [data-name="items"]` flips from grid/list to a scroll-snap row. CSS-only, shared `data-collapse` hook, no JS nav on the responsive path. Per-slide width via `--rf-carousel-slide`.
+
+### Notes
+- Orthogonal to the `collapse` breakpoint — not a second breakpoint (SPEC-099 ruled that out). Generic (keyed on the contract), so any adopting rune gets it. Moot under `layout="carousel"` (already a carousel at all widths).
 
 {% /work %}

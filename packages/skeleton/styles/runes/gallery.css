@@ -25,35 +25,11 @@
 	right: 0;
 }
 
-/* Carousel */
-.rf-gallery[data-layout="carousel"] .rf-gallery__items {
-	display: flex;
-	overflow-x: auto;
-	scroll-snap-type: x mandatory;
-	-webkit-overflow-scrolling: touch;
-}
+/* Carousel — the scroll-snap track mechanics and the nav buttons are the shared
+ * carousel layout mode (styles/runes/carousel.css, keyed on the contract);
+ * gallery only sets its column-based item width. */
 .rf-gallery[data-layout="carousel"] .rf-gallery__item {
 	flex: 0 0 calc(100% / var(--gallery-columns, 3));
-	scroll-snap-align: start;
-}
-
-/* Carousel nav buttons */
-.rf-gallery__nav {
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	z-index: 2;
-	width: 2.5rem;
-	height: 2.5rem;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-.rf-gallery__nav--prev {
-	left: calc(var(--rf-gallery-edge) + 0.5rem);
-}
-.rf-gallery__nav--next {
-	right: calc(var(--rf-gallery-edge) + 0.5rem);
 }
 
 /* Masonry */
