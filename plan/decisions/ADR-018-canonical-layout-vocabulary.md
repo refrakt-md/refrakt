@@ -1,4 +1,4 @@
-{% decision id="ADR-018" status="proposed" date="2026-06-11" tags="layout,runes,vocabulary,architecture,carousel" %}
+{% decision id="ADR-018" status="accepted" date="2026-06-11" tags="layout,runes,vocabulary,architecture,carousel" %}
 
 # Canonical layout vocabulary
 
