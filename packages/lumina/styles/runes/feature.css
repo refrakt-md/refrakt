@@ -58,10 +58,10 @@
 }
 /* Definitions skin. Arrangement + item chrome follow the `layout` axis
  * (SPEC-099): `grid` tiles carded items; `list` stacks flat rows. */
-.rf-feature__definitions {
+.rf-feature__items {
 	margin: 0;
 }
-.rf-feature[data-layout="grid"] .rf-feature__definitions {
+.rf-feature[data-layout="grid"] .rf-feature__items {
 	gap: 1.5rem;
 }
 /* Beside layouts (media on start/end): left-align the heading/preamble. */

@@ -1640,6 +1640,10 @@
 					"source": "meta",
 					"dataAttribute": "data-layout"
 				},
+				"collapse-to": {
+					"source": "meta",
+					"dataAttribute": "data-collapse-to"
+				},
 				"align": {
 					"source": "meta",
 					"default": "center",
@@ -1695,9 +1699,9 @@
 					"selector": ".rf-feature__image",
 					"source": "autoLabel"
 				},
-				"definitions": {
+				"items": {
 					"tag": "dl",
-					"selector": ".rf-feature__definitions",
+					"selector": ".rf-feature__items",
 					"source": "autoLabel"
 				}
 			},

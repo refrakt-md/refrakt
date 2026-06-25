@@ -105,4 +105,32 @@ Body text.
       expect(layoutValue(`{% feature %}\n## H\n\n- **A**\n\n  a\n{% /feature %}`)).toBeDefined();
     });
   });
+
+  // SPEC-100 — feature adopts the carousel layout mode + the collapse-to dial.
+  describe('carousel adoption (SPEC-100)', () => {
+    const featureOf = (src: string) => {
+      const result = parse(src);
+      return findTag(result as any, t => t.attributes['data-rune'] === 'feature')!;
+    };
+
+    it('accepts layout="carousel"', () => {
+      expect(fields(featureOf(`{% feature layout="carousel" %}\n## H\n\n- **A**\n\n  a\n{% /feature %}`)).layout).toBe('carousel');
+    });
+
+    it('renders feature items as slides inside the dl track', () => {
+      // The dl is labelled `data-name="items"` (the carousel track) by the engine
+      // autoLabel — asserted at the engine/contract level; here we confirm the
+      // slides (feature items) are the dl's children.
+      const feature = featureOf(`{% feature %}\n## H\n\n- **A**\n\n  a\n\n- **B**\n\n  b\n{% /feature %}`);
+      const dl = findTag(feature, t => t.name === 'dl');
+      expect(dl).toBeDefined();
+      const items = findAllTags(dl!, t => t.attributes['data-name'] === 'feature-item');
+      expect(items.length).toBe(2);
+    });
+
+    it('records collapse-to only when non-default', () => {
+      expect(fields(featureOf(`{% feature collapse-to="carousel" %}\n## H\n\n- **A**\n\n  a\n{% /feature %}`))['collapse-to']).toBe('carousel');
+      expect(fields(featureOf(`{% feature %}\n## H\n\n- **A**\n\n  a\n{% /feature %}`))['collapse-to']).toBeUndefined();
+    });
+  });
 });

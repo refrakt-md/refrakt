@@ -93,7 +93,8 @@ export const feature = createContentModelSchema({
 	base: SplitLayoutModel,
 	attributes: {
 		align: { type: String, required: false, matches: alignType.slice(), description: 'Horizontal alignment of headline and body text' },
-		layout: { type: String, required: false, matches: layoutMatches([LAYOUT.grid, LAYOUT.list]), description: 'Arrangement of feature-items: grid (tiled) or list (single column). Defaults from media-position when unset.' },
+		layout: { type: String, required: false, matches: layoutMatches([LAYOUT.grid, LAYOUT.list, LAYOUT.carousel]), description: 'Arrangement of feature-items: grid (tiled), list (single column), or carousel (scroll-snap track). Defaults from media-position when unset.' },
+		'collapse-to': { type: String, required: false, matches: ['stack', 'carousel'], description: 'Collapsed (mobile) form below the `collapse` breakpoint: stack (default) or carousel (a scroll-snap row).' },
 	},
 	contentModel: {
 		type: 'delimited',
@@ -184,6 +185,13 @@ export const feature = createContentModelSchema({
 		const effectiveLayout = (attrs.layout as string) ?? (stackedMedia ? LAYOUT.grid : LAYOUT.list);
 		const layoutMeta = new Tag('meta', { content: effectiveLayout });
 
+		// SPEC-100 §collapse-to: the collapsed *form* — `stack` (default) or
+		// `carousel` (a scroll-snap row below the `collapse` breakpoint). Emitted as
+		// `data-collapse-to` only when non-default; orthogonal to the `collapse`
+		// breakpoint. Moot when `layout="carousel"` (already a carousel at all widths).
+		const collapseTo = (attrs['collapse-to'] as string) ?? 'stack';
+		const collapseToMeta = collapseTo !== 'stack' ? new Tag('meta', { content: collapseTo }) : undefined;
+
 		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
 		const mainContent = new RenderableNodeCursor([...headerContent, ...definitions.toArray()]).wrap('div');
 		const mediaContent = side.wrap('div');
@@ -191,6 +199,7 @@ export const feature = createContentModelSchema({
 		const children = [
 			alignMeta,
 			layoutMeta,
+			...(collapseToMeta ? [collapseToMeta] : []),
 			...layoutChildren,
 			mainContent.next(),
 			...(side.toArray().length > 0 ? [mediaContent.next()] : []),
@@ -202,6 +211,7 @@ export const feature = createContentModelSchema({
 			properties: {
 				'media-position': mediaPositionMeta,
 				layout: layoutMeta,
+				...(collapseToMeta ? { 'collapse-to': collapseToMeta } : {}),
 				align: alignMeta,
 				'media-ratio': mediaRatioMeta,
 				valign: valignMeta,

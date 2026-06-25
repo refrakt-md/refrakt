@@ -10,9 +10,57 @@
 	scroll-snap-type: x mandatory;
 	-webkit-overflow-scrolling: touch;
 }
-/* Slides are the track's direct children (whatever the rune names them). */
+/* Slides are the track's direct children (whatever the rune names them). A rune
+ * may override the per-slide width via `--rf-carousel-slide`. */
 [data-layout="carousel"] [data-name="items"] > * {
 	scroll-snap-align: start;
+	flex: 0 0 var(--rf-carousel-slide, 80%);
+}
+
+/* Collapse-to-carousel (SPEC-100): a rune whose collapsed form is `carousel`
+ * (`collapse-to="carousel"`) flips its item band from grid/list to a scroll-snap
+ * row below the `collapse` breakpoint. CSS-only — no JS nav on the responsive
+ * path — and shares the `data-collapse` hook (default sm/640px; `never` opts out). */
+@media (max-width: 640px) {
+	[data-collapse-to="carousel"][data-collapse="sm"] [data-name="items"],
+	[data-collapse-to="carousel"]:not([data-collapse]) [data-name="items"] {
+		display: flex;
+		overflow-x: auto;
+		scroll-snap-type: x mandatory;
+		-webkit-overflow-scrolling: touch;
+		grid-template-columns: none;
+	}
+	[data-collapse-to="carousel"][data-collapse="sm"] [data-name="items"] > *,
+	[data-collapse-to="carousel"]:not([data-collapse]) [data-name="items"] > * {
+		scroll-snap-align: start;
+		flex: 0 0 var(--rf-carousel-slide, 80%);
+	}
+}
+@media (max-width: 768px) {
+	[data-collapse-to="carousel"][data-collapse="md"] [data-name="items"] {
+		display: flex;
+		overflow-x: auto;
+		scroll-snap-type: x mandatory;
+		-webkit-overflow-scrolling: touch;
+		grid-template-columns: none;
+	}
+	[data-collapse-to="carousel"][data-collapse="md"] [data-name="items"] > * {
+		scroll-snap-align: start;
+		flex: 0 0 var(--rf-carousel-slide, 80%);
+	}
+}
+@media (max-width: 1024px) {
+	[data-collapse-to="carousel"][data-collapse="lg"] [data-name="items"] {
+		display: flex;
+		overflow-x: auto;
+		scroll-snap-type: x mandatory;
+		-webkit-overflow-scrolling: touch;
+		grid-template-columns: none;
+	}
+	[data-collapse-to="carousel"][data-collapse="lg"] [data-name="items"] > * {
+		scroll-snap-align: start;
+		flex: 0 0 var(--rf-carousel-slide, 80%);
+	}
 }
 
 /* Nav buttons — positioned relative to the track's container (the behavior
