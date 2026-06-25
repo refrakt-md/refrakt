@@ -6,7 +6,9 @@ A preprocess-time rune that reads an **external tabular source** (CSV, JSON,
 NDJSON; SQLite later) and emits a Markdoc `table` AST node. Because `chart`
 ({% ref "SPEC-083" /%}) and `datatable` both already treat an authored `<table>`
 as their single source of truth, a table-emitting `data` rune feeds **both** —
-plus the bare page — with **zero changes to either host rune**. It is the
+plus the bare page — with **no structural changes to either host rune** (typing
+adds one small `data-value`-aware sort to `datatable`; see *Typing & the
+`data-value` channel*). It is the
 external-source sibling of {% ref "SPEC-062" /%} (`snippet`, which emits a
 `fence`) and the external-source complement to `aggregate`/{% ref "SPEC-093" /%}
 (which project the *internal* registry).
@@ -59,11 +61,15 @@ adapter — filtering, selection/rename, sorting, slicing, typing — is shared 
 identical regardless of source. Adding a new format is one adapter, no changes
 to the projection core or the host runes.
 
-The preprocess hook resolves `src` through the **same sandbox boundary as
-snippet** (`readSnippetFile`, bounded to project root; variable references in
-attributes resolve via `ctx.variables`, mirroring snippet). On any failure
-(sandbox escape, missing file, parse error) it emits a visible error node and
-keeps the build going — it never reaches a transform that throws.
+The preprocess hook resolves `src` through the project's sandboxed file access,
+bounded to project root; variable references in attributes resolve via
+`ctx.variables`, mirroring snippet. This read MUST go through the
+{% ref "SPEC-113" /%} `ProjectFiles` seam — a **whole-file** read, not snippet's
+line-sliced `readSnippetFile` — so `data` inherits containment and is
+hosted / fs-free from day one (see *Sequencing with SPEC-113*). On any failure
+(sandbox escape, missing file, parse error) it emits a visible in-page error
+node — an **error callout, not a malformed table** — and keeps the build going:
+it never reaches a transform that throws.
 
 ## The `data` rune — knobs
 
@@ -80,7 +86,7 @@ keeps the build going — it never reaches a transform that throws.
 | `where` | shared | Filter rows; reuse the SPEC-070 `field:value` grammar (consistency with `aggregate`/`collection`). |
 | `sort` | shared | `revenue` / `-revenue`. |
 | `limit` / `offset` | shared | Row slice (the `data` analogue of snippet's `lines=`). |
-| `numeric` / `text` | shared | Force column typing. Auto-infer by default (a column whose cells all parse as numbers becomes numeric). Critical: charts need real numbers for value axes; `datatable` needs them for correct sort. |
+| `numeric` / `text` | shared | Force column typing. Auto-infer by default (a column whose cells all parse as numbers becomes numeric). Typed columns emit a normalized `data-value` on each value cell (see *Typing & the `data-value` channel*) — that is what carries a clean number to `chart`'s renderer and `datatable`'s sort, independent of the human-formatted cell text. |
 
 ## JSON adapter specifics
 
@@ -126,6 +132,35 @@ downstream.
 {% /datatable %}
 ```
 
+## Typing & the `data-value` channel
+
+Structure composes for free; **typing does not**. A Markdoc `table` carries only
+text, and the two host runes have *unequal* native typing (verified in code):
+
+- `chart` already coerces value cells (`parseFloat`) and honours a per-cell
+  **`data-value`** override — `cellValue = cell.dataset.value ?? textContent`
+  (`packages/behaviors/src/elements/chart.ts`).
+- `datatable` sorts on cell **text** via `localeCompare(…, { numeric: true })`
+  (`packages/behaviors/src/behaviors/datatable.ts`) — natural-numeric collation,
+  but it reads no per-column type and no `data-value`.
+
+So `numeric`/`text` cannot be a pure structural transform. A column typed numeric
+emits a normalized **`data-value`** on each value cell (e.g. `"$1,200"` →
+`data-value="1200"`). `chart` consumes that unchanged. For `datatable`, correct
+sort of *human-formatted* numbers (currency, thousands separators, units)
+requires its sort comparator to **prefer `data-value` over `textContent`** — a
+small, additive change to the datatable behaviour, mirroring what `chart` already
+does. We take that change deliberately: a `data-value`-aware sort also fixes
+**hand-authored** tables, so it is a general improvement, not a `data`-specific
+hack.
+
+This narrows the "zero changes to host runes" claim to its true scope:
+**structure** needs zero changes (a table is a table); **typing** adds one
+universal cell-level channel (`data-value`) that `chart` already honours and
+`datatable` is extended once to honour. The emitted `<table>` stays the honest
+no-JS fallback either way — `data-value` is an enhancement attribute, invisible
+to a reader of the bare table.
+
 ## Composition + the build-time / runtime line
 
 `where`/`sort`/`columns` overlap conceptually with what `datatable` does at
@@ -156,21 +191,38 @@ passive: its path to a result set is a *query*, and rows arrive **pre-typed**
 Scoped behind the CSV/JSON tier; a future "SQL over CSV/JSON" (DuckDB-style) mode
 then becomes a small extension rather than a new concept.
 
+## Sequencing with SPEC-113
+
+`data`'s `src` read is exactly the kind of ad-hoc file access
+{% ref "SPEC-113" /%} consolidates behind `ProjectFiles`. Land 113's read
+contract first (or at least its interface) and build `data` against
+`ProjectFiles` directly — do **not** add a fresh `node:fs` / `readSnippetFile`
+consumer that 113 then has to migrate. This keeps `data` fs-free and
+hosted-ready from day one, which is the whole point of pairing the two threads in
+this milestone. If they must overlap, `data` may begin against the existing
+sandbox-hook shape and switch to `ProjectFiles` as 113 lands.
+
 ## Acceptance Criteria
 
-- [ ] A `{% data src=… /%}` rune resolves its source via the snippet sandbox
-  boundary (`readSnippetFile`, project-root bounded; `ctx.variables` resolution)
-  in a preprocess hook, and emits a Markdoc `table` AST node.
-- [ ] The emitted `<table>` is consumed unchanged by `chart` and `datatable`
-  (no edits to either host rune) and renders standalone on a bare page.
+- [ ] A `{% data src=… /%}` rune resolves its source via the {% ref "SPEC-113" /%}
+  `ProjectFiles` seam (project-root bounded, whole-file read; `ctx.variables`
+  resolution) in a preprocess hook, and emits a Markdoc `table` AST node.
+- [ ] The emitted `<table>` is consumed by `chart` and `datatable` with **no
+  structural changes** to either host rune, and renders standalone on a bare
+  page. Typed columns emit `data-value` on value cells; `chart` consumes it
+  unchanged, and `datatable`'s sort comparator is extended once to prefer
+  `data-value` over cell text (the only host-side change, and one that also
+  benefits hand-authored tables).
 - [ ] Format adapters for `csv`/`tsv`, `json`, and `ndjson` reduce their source
   to a shared `{ headers, rows }` shape; `format` is extension-inferred and
   overridable.
 - [ ] JSON adapter supports `root`, `orient` (`records`|`values`|`index`,
   with `records`/`values` auto-detected), `key-column`, and dotted column paths.
-- [ ] Shared projection (`where` via SPEC-070 grammar, `sort`, `columns` with
-  select/order/rename, `limit`/`offset`) and typing (`numeric`/`text` with
-  auto-inference) run identically across all adapters.
+- [ ] Shared projection (`where` reusing the SPEC-070 `parseFieldMatch` +
+  `matchValue` primitives with a row-shaped field resolver paralleling
+  `resolveEntityField`; `sort`; `columns` with select/order/rename;
+  `limit`/`offset`) and typing (`numeric`/`text` with auto-inference, emitting
+  `data-value`) run identically across all adapters.
 - [ ] Resolution failures emit a visible in-page error node and a build warning;
   the build continues (the rune never reaches the throwing transform).
 - [ ] Docs page for `data` with CSV + JSON examples, the chart/datatable
@@ -182,9 +234,15 @@ then becomes a small extension rather than a new concept.
 ## Non-goals
 
 - **Remote / live data** — no build-time URL fetch and no client-side fetch in
-  this spec; build-time local files only. A remote tier is a later, opt-in spec
-  (network reproducibility, caching, secrets).
-- **Modifying `chart`/`datatable`** — the whole point is that they need no changes.
+  this spec; build-time local files only. Note this is a *scoping* choice, not an
+  architectural limit: the `data` preprocessor runs in the already-async
+  preprocess phase, so a build-time fetch could `await` without any pipeline
+  change. A remote tier is deferred to its own opt-in spec for the reasons that
+  actually make it hard — network reproducibility, caching, secrets.
+- **Restructuring `chart`/`datatable`** — no *structural* changes: both consume
+  the emitted `<table>` as-is. The one exception is typing — `datatable`'s sort
+  comparator gains a `data-value` preference (additive, also fixes hand-authored
+  tables; see *Typing & the `data-value` channel*). `chart` needs no change.
 - **A query language of our own** — `where`/`sort` reuse the existing SPEC-070
   grammar; SQL belongs to the SQLite adapter, not the rune surface.
 - **SQLite implementation** — specified here, built in a dedicated follow-up.
@@ -194,7 +252,16 @@ then becomes a small extension rather than a new concept.
 - {% ref "SPEC-062" /%} — `snippet` preprocess pattern (sandboxed file → AST node) this extends; `packages/runes/src/snippet-pipeline.ts`, `lib/read-file.ts`.
 - {% ref "SPEC-083" /%} — `chart`: the authored `<table>` as single source of truth + no-JS fallback.
 - {% ref "SPEC-093" /%} — data-bound sandbox: the *internal* (registry) projection axis this complements.
-- SPEC-070 — the `field:value` query grammar reused by `where`.
-- `packages/runes/src/tags/{chart,datatable}.ts` — the unchanged host runes.
+- SPEC-070 — the `field:value` query grammar reused by `where`; shape-agnostic
+  primitives in `packages/runes/src/field-match.ts` (`parseFieldMatch`,
+  `matchValue`) reused as-is, with a row-shaped resolver paralleling
+  `resolveEntityField`.
+- {% ref "SPEC-113" /%} — the `ProjectFiles` seam `data`'s `src` read goes
+  through (see *Sequencing with SPEC-113*).
+- `packages/runes/src/tags/{chart,datatable}.ts` — the host runes (structure
+  unchanged; `datatable` gains a `data-value`-aware sort).
+- `packages/behaviors/src/elements/chart.ts` (`data-value` parsing) and
+  `packages/behaviors/src/behaviors/datatable.ts` (the sort comparator extended
+  to prefer `data-value`).
 
 {% /spec %}
