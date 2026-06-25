@@ -35,6 +35,8 @@ export { extractSelectors } from './selectors.js';
 
 // Theme config merging
 export { mergeThemeConfig, applyRuneExtensions } from './merge.js';
+export { READING_REGISTERS, DEFAULT_READING, READING_CAPABILITIES, resolveReading, coerceRegister } from './reading.js';
+export type { ReadingRegister, ReadingResolutionInput } from './reading.js';
 export type { ThemeConfigOverrides, RuneConfigExtension } from './merge.js';
 
 // GitHub source URL builder (SPEC-078) — used by file-ref to produce

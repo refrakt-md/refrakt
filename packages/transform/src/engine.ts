@@ -2,6 +2,7 @@ import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, FramePresetDefinition, MetaField, BlockDef, LayoutEntry } from './types.js';
 import { isTag, makeTag, readMeta, toKebabCase, resolveOffset, parsePlacement } from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
+import { resolveReading, DEFAULT_READING } from './reading.js';
 
 /** The 6 tint colour tokens */
 /** Tint token names per SPEC-053 vocabulary alignment. Each maps to a
@@ -645,6 +646,12 @@ function transformRune(
 		modifierValues['width'] = widthValue;
 		modifierClasses.push(`${block}--${widthValue}`);
 	}
+
+	// 1f-bis. Reading register (SPEC-108) — author `reading=` ▸ rune `defaultReading`
+	// ▸ `ui`. (The region default applies only to the bare body, not runes.) Emitted
+	// as `data-reading` on the rune's `[data-section="body"]` element; suppressed at
+	// the `ui` default so unmarked content stays byte-identical.
+	const readingValue = resolveReading({ authorAttr: tag.attributes?.reading, runeDefault: config.defaultReading });
 	// Content-measure (layout axis): page-section runes anchor their content to
 	// the text measure when bled to the `wide` track — only the surface/bg
 	// widens. Emitted as a data attribute (no BEM class); the default (`fill`)
@@ -1013,12 +1020,12 @@ function transformRune(
 	// 6. Apply BEM element classes, section anatomy, and media slots to data-name children, then recurse once
 	let enhancedChildren = children.map(child => {
 		if (!isTag(child)) return recurse(child, dataRune);
-		return recurse(applyBemClasses(child, block, config.sections, config.mediaSlots, config.guestFit), dataRune);
+		return recurse(applyBemClasses(child, block, config.sections, config.mediaSlots, config.guestFit, readingValue), dataRune);
 	});
 
 	// 6b. Projection pass — declarative structural reshaping (hide → group → relocate)
 	if (config.projection) {
-		enhancedChildren = applyProjection(enhancedChildren, config.projection, block, config.sections, config.mediaSlots, config.guestFit);
+		enhancedChildren = applyProjection(enhancedChildren, config.projection, block, config.sections, config.mediaSlots, config.guestFit, readingValue);
 	}
 
 	// 6c. Frame chrome → media surface (SPEC-086). `self`-target chrome is merged
@@ -1274,7 +1281,7 @@ function applyAutoLabel(children: RendererNode[], autoLabel: Record<string, stri
 
 /** Recursively apply BEM element classes, section anatomy, and media slots to data-name elements within a rune's children.
  *  Pure decoration — does not recurse into the transform pipeline. */
-function applyBemClasses(child: SerializedTag, block: string, sections?: Record<string, string>, mediaSlots?: Record<string, string>, guestFit?: string): SerializedTag {
+function applyBemClasses(child: SerializedTag, block: string, sections?: Record<string, string>, mediaSlots?: Record<string, string>, guestFit?: string, reading?: string): SerializedTag {
 	const dataName = child.attributes['data-name'];
 	if (dataName) {
 		const elementClass = `${block}__${dataName}`;
@@ -1282,7 +1289,7 @@ function applyBemClasses(child: SerializedTag, block: string, sections?: Record<
 		// Recursively apply BEM to nested data-name children (e.g., icon/title inside header)
 		const nestedChildren = child.children.map(c => {
 			if (!isTag(c)) return c;
-			return applyBemClasses(c, block, sections, mediaSlots, guestFit);
+			return applyBemClasses(c, block, sections, mediaSlots, guestFit, reading);
 		});
 		const sectionRole = sections?.[dataName];
 		const mediaSlot = mediaSlots?.[dataName];
@@ -1292,6 +1299,9 @@ function applyBemClasses(child: SerializedTag, block: string, sections?: Record<
 				...child.attributes,
 				class: [elementClass, childExistingClass].filter(Boolean).join(' '),
 				...(sectionRole ? { 'data-section': sectionRole } : {}),
+				// SPEC-108: refine the body section with its reading register, suppressed
+				// at the `ui` default (so unmarked bodies stay byte-identical).
+				...(sectionRole === 'body' && reading && reading !== DEFAULT_READING ? { 'data-reading': reading } : {}),
 				...(mediaSlot ? { 'data-media': mediaSlot } : {}),
 				// The chrome/containment axis (SPEC-090 sibling) rides the media
 				// zone so the skin can frame or free a guest without rune-name CSS.
@@ -1492,6 +1502,7 @@ function applyProjection(
 	sections?: Record<string, string>,
 	mediaSlots?: Record<string, string>,
 	guestFit?: string,
+	reading?: string,
 ): RendererNode[] {
 	let result = [...children];
 
@@ -1527,7 +1538,7 @@ function applyProjection(
 			if (collected.length > 0) {
 				// Create group wrapper with data-name and apply BEM classes
 				let wrapper = makeTag(groupDef.tag, { 'data-name': groupName }, collected);
-				wrapper = applyBemClasses(wrapper, block, sections, mediaSlots, guestFit);
+				wrapper = applyBemClasses(wrapper, block, sections, mediaSlots, guestFit, reading);
 				result.splice(firstIdx, 0, wrapper);
 			}
 		}

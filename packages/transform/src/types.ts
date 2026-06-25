@@ -1,4 +1,5 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
+import type { ReadingRegister } from './reading.js';
 
 // ─── SPEC-080: Layout primitive vocabulary ────────────────────────────
 
@@ -270,6 +271,13 @@ export interface RuneConfig {
 	 *  Runes like hero/feature/cta default to 'full' (full-bleed).
 	 *  Omit or set to 'content' for standard content-width runes. */
 	defaultWidth?: 'content' | 'wide' | 'full';
+
+	/** Default reading register (SPEC-108) for this rune's body — `fine | ui | prose`.
+	 *  Editorial-body runes (pullquote/lore/blockquote/textblock) default to `prose`,
+	 *  captions to `fine`; omit for UI runes (resolves to `ui`). The engine emits
+	 *  `data-reading` on the body section (refining `data-section="body"`), suppressed
+	 *  when the resolved register is `ui`. Author `reading=` overrides. */
+	defaultReading?: ReadingRegister;
 
 	/** How content sits when the rune bleeds wider than the text measure (the
 	 *  `width="wide"` tier). The engine emits `data-content-measure`.
@@ -682,6 +690,11 @@ export interface LayoutSlot {
 	 *  - 'clone:region:<name>' — deep-cloned copy of a region (for mobile panels)
 	 *  - 'chrome:<name>' — output of a named chrome entry */
 	source?: string;
+
+	/** Default reading register (SPEC-108) for the bare body of this slot — applies
+	 *  to the region's top-level markdown (the article body), which is not a rune.
+	 *  A `blog-article` content slot sets `prose`; a `docs` slot omits it. */
+	reading?: ReadingRegister;
 
 	/** Only render this slot if the source content is non-empty */
 	conditional?: boolean;

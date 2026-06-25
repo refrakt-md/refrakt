@@ -64,6 +64,7 @@ export const UNIVERSAL_ATTRIBUTE_NAMES: ReadonlySet<string> = new Set([
 	'tint-mode',
 	'bg',
 	'width',
+	'reading',
 	'spacing',
 	'inset',
 	'elevation',
