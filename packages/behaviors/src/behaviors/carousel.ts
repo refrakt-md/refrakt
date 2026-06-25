@@ -7,19 +7,22 @@ import type { CleanupFn } from '../types.js';
  * rune (dispatched via `registerLayoutModeBehaviors`). Enhances the shared
  * track/item contract —
  *
- *   host[data-layout="carousel"]  …  [data-name="items"] (track)  >  [data-name="item"] …
+ *   host[data-layout="carousel"]  …  [data-name="items"] (track)  >  <slide> …
  *
- * — with prev/next nav buttons and arrow-key scrolling. The CSS scroll-snap
- * track is the baseline; this adds the explicit-desktop affordances. Generalised
- * from gallery's original `setupCarousel`; gallery now consumes it.
+ * — with prev/next nav buttons and arrow-key scrolling. The slides are the
+ * track's direct element children (whatever a rune names them — gallery's
+ * `[data-name="item"]` figures, feature's definition items, …), so a rune adopts
+ * without renaming its items. The CSS scroll-snap track is the baseline; this
+ * adds the explicit-desktop affordances. Generalised from gallery's original
+ * `setupCarousel`; gallery now consumes it.
  */
 export function carouselBehavior(el: HTMLElement): CleanupFn | void {
 	const track = el.querySelector<HTMLElement>('[data-name="items"]');
 	if (!track) return;
 
-	// Scope to the track's direct children so nested `data-name="item"` elements
-	// (a rune's own item internals) aren't mistaken for slides.
-	const items = Array.from(track.querySelectorAll<HTMLElement>(':scope > [data-name="item"]'));
+	// Slides are the track's direct element children — the rune's own item marker
+	// is irrelevant, so adoption needs no renaming.
+	const items = Array.from(track.children) as HTMLElement[];
 	if (items.length === 0) return;
 
 	// Mount nav relative to the track's container, not the rune root — multi-region

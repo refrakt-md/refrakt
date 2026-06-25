@@ -202,9 +202,9 @@ No rune must support every canonical token — pick the subset that makes sense 
 
 - the host carries `data-layout="carousel"` (the engine's output for the `layout` modifier);
 - a **track** container marked `data-name="items"`;
-- **item** elements marked `data-name="item"`.
+- the **slides** are the track's direct element children — a rune keeps its own item marker (gallery's `data-name="item"` figures, feature's definition items, …), so adoption needs **no renaming**.
 
-A single block-agnostic behavior binds on `[data-layout="carousel"]` (not on any rune name) and adds prev/next nav buttons and keyboard scrolling; the CSS scroll-snap track is the baseline. Emit that shape and the behavior works with **zero per-rune behavior code** — adoption is config + contract + CSS. Scope your item queries to the track (`:scope >`) so nested `data-name="item"` elements that aren't slides aren't picked up.
+A single block-agnostic behavior binds on `[data-layout="carousel"]` (not on any rune name) and adds prev/next nav buttons and keyboard scrolling; the CSS scroll-snap track is the baseline. Emit that shape and the behavior works with **zero per-rune behavior code** — adoption is config + contract + CSS. Keep the track's direct children to just the slides (no stray non-slide elements inside `data-name="items"`).
 
 **Graduation rule:** a value enters the canonical pool when a **second** rune needs the same concept *with the same contract*. Until then it stays local. This guards both premature abstraction (a pool full of one-offs) and no abstraction (three runes reinventing the same concept). A private spelling of a canonical concept (e.g. `compare`'s `side-by-side`/`stacked`) is a defect to migrate — with deprecations — when that rune is next touched; a genuinely unique arrangement is a legitimate local value.
 

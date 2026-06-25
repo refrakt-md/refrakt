@@ -26,9 +26,10 @@
  *
  * The pool is `grid`, `list`, and `carousel`.
  *
- * **`carousel` contract (SPEC-100):** a host carrying `data-layout="carousel"`,
- * a track container marked `data-name="items"`, and item elements marked
- * `data-name="item"`. The shared progressive-enhancement behavior binds on
+ * **`carousel` contract (SPEC-100):** a host carrying `data-layout="carousel"`
+ * and a track container marked `data-name="items"` whose direct element children
+ * are the slides (a rune keeps its own item marker — no renaming needed). The
+ * shared progressive-enhancement behavior binds on
  * `[data-layout="carousel"]` (block-agnostic) and adds prev/next nav + keyboard
  * scrolling; the CSS scroll-snap track is the baseline. Any rune emitting that
  * shape gets the behavior for free — no per-rune behavior code.

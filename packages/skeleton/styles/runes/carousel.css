@@ -10,7 +10,8 @@
 	scroll-snap-type: x mandatory;
 	-webkit-overflow-scrolling: touch;
 }
-[data-layout="carousel"] [data-name="item"] {
+/* Slides are the track's direct children (whatever the rune names them). */
+[data-layout="carousel"] [data-name="items"] > * {
 	scroll-snap-align: start;
 }
 
