@@ -121,6 +121,10 @@ export const config: Record<string, RuneConfig> = {
 			// `bottom` (media beneath the text); Lumina counters the shared
 			// media-first stacked rules for these runes.
 			'media-position': { source: 'meta', default: 'bottom', noBemClass: true },
+			// SPEC-099: item arrangement axis. The transform always emits the
+			// `layout` meta (author value or media-derived default), so no config
+			// default is needed; styled via `[data-layout]`, not a BEM class.
+			layout: { source: 'meta', noBemClass: true },
 			align: { source: 'meta', default: 'center' },
 			'media-ratio': { source: 'meta', noBemClass: true },
 			valign: { source: 'meta', noBemClass: true },

@@ -2,7 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag, Ast } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, pageSectionProperties, unwrapParagraphImages } from '@refrakt-md/runes';
+import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, pageSectionProperties, unwrapParagraphImages, LAYOUT, layoutMatches } from '@refrakt-md/runes';
 
 /** Check if a paragraph node contains an image, icon tag, or strong element. */
 function isTermParagraph(node: Node): boolean {
@@ -93,6 +93,7 @@ export const feature = createContentModelSchema({
 	base: SplitLayoutModel,
 	attributes: {
 		align: { type: String, required: false, matches: alignType.slice(), description: 'Horizontal alignment of headline and body text' },
+		layout: { type: String, required: false, matches: layoutMatches([LAYOUT.grid, LAYOUT.list]), description: 'Arrangement of feature-items: grid (tiled) or list (single column). Defaults from media-position when unset.' },
 	},
 	contentModel: {
 		type: 'delimited',
@@ -169,8 +170,20 @@ export const feature = createContentModelSchema({
 		const alignMeta = new Tag('meta', { content: align });
 		// Content-first DOM (header/definitions before media) → the truthful
 		// default placement is `bottom`, mirroring hero (BUG-001).
-		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas({ ...attrs, 'media-position': attrs['media-position'] ?? 'bottom' });
+		const resolvedMediaPosition = (attrs['media-position'] as string) ?? 'bottom';
+		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas({ ...attrs, 'media-position': resolvedMediaPosition });
 		const { mediaPosition: mediaPositionMeta, mediaRatio: mediaRatioMeta, valign: valignMeta, collapse: collapseMeta } = layoutMetas;
+
+		// SPEC-099 §1/§4: item arrangement is its own `layout` axis (grid|list),
+		// independent of `media-position`. Resolve the effective value in the
+		// transform — author `layout=` wins, else derive from media placement
+		// (stacked media → grid, beside media → list) to preserve prior output.
+		// Emit a single always-present `layout` meta; the engine maps it to
+		// `data-layout`. Author override and the media-derived default never
+		// collide because exactly one value is computed here.
+		const stackedMedia = resolvedMediaPosition === 'top' || resolvedMediaPosition === 'bottom';
+		const effectiveLayout = (attrs.layout as string) ?? (stackedMedia ? LAYOUT.grid : LAYOUT.list);
+		const layoutMeta = new Tag('meta', { content: effectiveLayout });
 
 		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
 		const mainContent = new RenderableNodeCursor([...headerContent, ...definitions.toArray()]).wrap('div');
@@ -178,6 +191,7 @@ export const feature = createContentModelSchema({
 
 		const children = [
 			alignMeta,
+			layoutMeta,
 			...layoutChildren,
 			mainContent.next(),
 			...(side.toArray().length > 0 ? [mediaContent.next()] : []),
@@ -188,6 +202,7 @@ export const feature = createContentModelSchema({
 			property: 'contentSection',
 			properties: {
 				'media-position': mediaPositionMeta,
+				layout: layoutMeta,
 				align: alignMeta,
 				'media-ratio': mediaRatioMeta,
 				valign: valignMeta,
