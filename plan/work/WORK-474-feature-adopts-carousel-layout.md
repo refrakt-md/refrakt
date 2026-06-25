@@ -12,9 +12,11 @@ code. Per {% ref "SPEC-100" /%} Phase B.5.
   axis + `data-layout` emission exist ({% ref "WORK-467" /%}).
 - Map `feature`'s item container/items onto the shared contract (`[data-name="items"]` /
   `[data-name="item"]`) so the generalised behavior binds with no per-rune behavior code.
-- Add CSS for the carousel track on `feature`; wire the collapse-to-carousel option
-  ({% ref "WORK-473" /%}).
-- An explicit desktop `layout="carousel"` shows the JS nav affordances (via the shared behavior).
+- Add CSS for the carousel track on `feature`; wire the `collapse-to="carousel"` option
+  ({% ref "WORK-473" /%}) so `layout="grid" collapse-to="carousel"` gives grid-desktop /
+  swipe-row-mobile.
+- `layout="carousel"` is an all-viewport carousel (graceful degradation); an explicit desktop
+  carousel shows the JS nav affordances (via the shared behavior).
 
 ## Acceptance Criteria
 

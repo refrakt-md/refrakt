@@ -83,12 +83,41 @@ The work has two phases.
    the behavior layer; that complexity is only taken on if a concrete need for
    buttons on the collapsed mobile carousel later appears (a non-goal here).
 
+### Carousel scope: always-on vs collapse-to (decision)
+
+`layout="carousel"` and "grid on desktop → carousel on mobile" are **two distinct intents**
+and must not be the same switch — conflating them would leave no way to express a desktop
+carousel. They are kept orthogonal:
+
+- **`layout="carousel"` is an all-viewport carousel** — the carousel *is* the design, at every
+  width. It degrades gracefully: when the items fit their container it renders as a static row
+  and only engages scroll + the desktop JS nav on overflow (so a wide desktop with few items is
+  not a forced slider). It is a deliberate, explicit opt-in — never automatic — because an
+  auto-carousel on desktop carries discoverability/accessibility cost.
+- **"grid desktop → carousel mobile" is a separate composition**: a `grid`/`list` base layout
+  plus a new **`collapse-to`** dial — `collapse-to="stack | carousel"`, default `stack`. Below
+  the rune's existing `collapse` breakpoint the collapsed form is a scroll-snap row instead of a
+  stacked column (the CSS-only flip from A.4), with no JS nav on the responsive path.
+
+`collapse-to` is the **collapsed *form*** and is orthogonal to `collapse` (the *breakpoint*); it
+is therefore **not** the "second `layout-collapse` attribute" {% ref "SPEC-099" /%} ruled out
+(that was a second breakpoint). With `layout="carousel"`, `collapse-to` is moot (already a
+carousel at all widths). Canonical author surface:
+
+```md
+{% feature layout="grid" collapse="md" collapse-to="carousel" %}   <!-- grid above md, swipe row below -->
+{% feature layout="carousel" %}                                    <!-- carousel at every width -->
+```
+
+For `feature` specifically the responsive composition (`grid` + `collapse-to="carousel"`) is
+expected to be the common case; the always-on carousel is the rarer, deliberate one.
+
 ### Phase B — adopt across runes
 
 5. **`feature` first** — add `carousel` to its `layout` matches (now trivial: the
    axis and the `data-layout` emission exist from {% ref "SPEC-099" /%}; `feature`
    already emits a feature-item collection). Map its item container/items onto the
-   shared contract, add CSS for the track, and wire the collapse-to-carousel
+   shared contract, add CSS for the track, and wire the `collapse-to="carousel"`
    option.
 
 6. **Remaining candidates** — `testimonial`, `pricing`, `cast` (and any other
@@ -152,6 +181,12 @@ code per adoption" promise, so they are pinned here before breakdown.
   as the contract unchanged.
 - [ ] `feature` accepts `layout="carousel"`, emits the shared contract, and styles
   the track; an explicit desktop carousel shows the JS nav affordances.
+- [ ] `layout="carousel"` is an **all-viewport** carousel that degrades gracefully — it renders
+  as a static row when its items fit and engages scroll + nav only on overflow; it is never
+  applied automatically.
+- [ ] A `collapse-to` dial (`stack | carousel`, default `stack`) selects the collapsed *form*; it
+  is orthogonal to the `collapse` breakpoint (not a second breakpoint). `layout="grid"
+  collapse-to="carousel"` yields a grid above the breakpoint and a swipe row below.
 - [ ] Collapse-to-carousel works as a **CSS-only** arrangement flip at the
   {% ref "SPEC-099" /%} `collapse` breakpoint, with no `matchMedia` mount/unmount
   in the behavior layer and no JS nav chrome mounted on the responsive path.
