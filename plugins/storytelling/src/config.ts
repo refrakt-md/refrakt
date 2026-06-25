@@ -84,6 +84,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'lore',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
+		defaultReading: 'prose',
 		sections: { title: 'title', body: 'body' },
 		modifiers: {
 			category: { source: 'meta' },

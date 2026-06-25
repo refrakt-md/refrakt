@@ -527,6 +527,7 @@ export const blogArticleLayout: LayoutConfig = {
 							tag: 'div',
 							class: 'rf-blog-article__body',
 							source: 'content',
+							reading: 'prose',
 							attrs: { 'data-pagefind-body': '' },
 						},
 					],

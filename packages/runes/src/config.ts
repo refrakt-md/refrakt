@@ -331,6 +331,7 @@ export const coreConfig: ThemeConfig = {
 			block: 'sidenote',
 			defaultDensity: 'full',
 			defaultElevation: 'flush',
+			defaultReading: 'fine',
 			modifiers: { variant: { source: 'meta', default: 'sidenote' } },
 			sections: { body: 'body' },
 			editHints: { body: 'inline' },
@@ -442,6 +443,7 @@ export const coreConfig: ThemeConfig = {
 			block: 'pullquote',
 			defaultDensity: 'compact',
 			defaultElevation: 'flush',
+			defaultReading: 'prose',
 			modifiers: {
 				align: { source: 'meta', default: 'center' },
 				variant: { source: 'meta', default: 'default' },
@@ -453,6 +455,7 @@ export const coreConfig: ThemeConfig = {
 			block: 'textblock',
 			defaultDensity: 'full',
 			defaultElevation: 'flush',
+			defaultReading: 'prose',
 			modifiers: {
 				dropcap: { source: 'meta' },
 				columns: { source: 'meta' },
