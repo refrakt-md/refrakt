@@ -56,10 +56,19 @@ migration.
 An async `read(path): Promise<string>` provider threaded through the pipeline is
 the tempting shape — and the codebase has already declined it:
 `LoadContentFromTreeOptions.reader?: VirtualReader` is documented as *accepted
-but not plumbed*, because Markdoc's transform (and the preprocess phase) is
-**synchronous**. Making the pipeline async-capable is a large refactor with no
-payoff. The provider boundary belongs **in front of** the pipeline, at
-materialization time — not inside it.
+but not plumbed*. The precise reason matters. Markdoc's **transform** is
+synchronous, and the `sandbox` rune reads its `src` files *at transform time*
+(`__sandboxReadFile`, consumed inside `Markdoc.transform`) — that read genuinely
+cannot await. The **preprocess** phase, by contrast, is *already async*: hooks
+are awaited in `processContentTree`, so snippet / expand / file-ref / `data`
+resolve their files in an async context today. They are synchronous only because
+their reader (`read-file.ts`) calls `node:fs` synchronously — not because the
+phase forbids awaiting. So the irreducible sync surface is the **transform-time
+sandbox read**; the preprocess readers are kept sync for *uniformity* (one
+`ProjectFiles` shape for every consumer), not out of necessity. Either way,
+making the whole pipeline async-capable is a large refactor with no payoff: the
+provider boundary belongs **in front of** the pipeline, at materialization time
+— not inside it.
 
 ## Design
 
@@ -138,6 +147,25 @@ The GitHub specifics (App auth, tarball endpoint, webhook handling) belong to
 the hosted product's repo; this spec's deliverable is that **steps 3–4 are the
 entire integration surface** — no fs, no traversal surface, no async plumbing.
 
+**One map, the tree derived from it.** The materialized `Map` is the *single*
+surface the build reads from: the `ContentTree` is assembled from it by
+key-prefix filtering (the content dir), and `memoryProjectFiles(map)` serves
+every ad-hoc read (snippet / `data` / sandbox `src` / fileRoots) from the *same*
+map. There is one materialization surface, not two — which is what keeps an
+incremental refresh coherent.
+
+**Warm instances and incremental fetch.** Nothing in the contract requires
+re-fetching the whole tarball per change. A long-lived host may keep the map
+resident and, on a single-file webhook, fetch just that key and re-run
+`loadContentFromTree` over the updated map — the provider may back a
+**mutable/refreshable** map. The tradeoff is consistency: tarball-at-SHA is an
+atomic snapshot, whereas patching one key from a "file changed" event can
+straddle two commits if the underlying push touched siblings (renames,
+multi-file commits). Incremental fetch is a host-side materialization choice; the
+sync `ProjectFiles` boundary is indifferent to it. Note this buys cheaper
+*fetch*, not cheaper *build* — recompute stays whole-corpus regardless (see
+Non-goals).
+
 ### 5. Non-goals
 
 - **No async pipeline.** `VirtualReader` stays reserved/unused; if a future
@@ -147,6 +175,14 @@ entire integration surface** — no fs, no traversal surface, no async plumbing.
 - **No adapter changes.** The sveltekit/eleventy/next adapters remain fs-bound —
   they serve the self-hosted path; a hosted renderer consumes
   `@refrakt-md/content` + the renderer directly.
+- **No incremental rebuild.** Recompute is whole-corpus today — the cross-page
+  register → aggregate → post-process pipeline *and* the per-page
+  parse/transform loop re-run over the entire site on every build, and this spec
+  keeps it that way. A provider refresh changes which *bytes* are read, never how
+  much of the pipeline re-runs. Per-file incremental rebuild (dependency tracking
+  + invalidation) is a separate, future spec; the `ProjectFiles` seam is a
+  *prerequisite* for it (it centralizes I/O so reads become recordable) but does
+  not deliver it.
 
 ## Acceptance Criteria
 
