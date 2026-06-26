@@ -160,18 +160,11 @@ The `layout` axis controls how feature-items are arranged, independently of wher
 - `layout="list"` — items stack in a single column.
 - `layout="carousel"` — items lay out on a horizontal scroll-snap track with prev/next nav (the shared [carousel layout mode](/extend/rune-authoring/patterns#the-carousel-contract)), at every viewport.
 
-When `layout` is unset it **derives from `media-position`** (stacked media → `grid`, beside media → `list`), so existing content is unchanged. Set it explicitly to override — including combinations the old coupling couldn't reach, like media beside content *with* a grid of items:
+When `layout` is unset it **derives from `media-position`** (stacked media → `grid`, beside media → `list`), so existing content is unchanged. Set it explicitly to override. For example, `layout="carousel"` lays the feature-items out on a horizontal scroll-snap track with prev/next nav, at every viewport:
 
 {% preview source=true %}
 
-{% feature media-position="start" layout="grid" %}
-{% codegroup %}
-```ts title="transform.ts"
-const tree = Markdoc.transform(ast, { tags, nodes });
-```
-{% /codegroup %}
-
----
+{% feature layout="carousel" %}
 
 why Refrakt
 
@@ -188,11 +181,44 @@ why Refrakt
 - **Type-safe output**
 
   Every rune produces validated content.
+
+- **Incremental adoption**
+
+  Add runes to existing Markdown one block at a time.
 {% /feature %}
 
 {% /preview %}
 
-A `grid` layout reflows to a single column below the `collapse` breakpoint (the same dial that collapses the media split — see below).
+### Carousel on mobile only (`collapse-to`)
+
+A `grid` is great when the feature has room, but cramped on a phone. Add `collapse-to="carousel"` to make the *collapsed* form a swipeable scroll-snap row instead of a stack — a grid on desktop, a carousel on mobile. The breakpoint is the feature's **own width** (a container query), so it also flips when the feature sits in a narrow column. Switch the viewport selector to `mobile` to see it flip:
+
+{% preview source=true responsive="mobile,tablet,desktop" %}
+
+{% feature layout="grid" collapse-to="carousel" %}
+
+why Refrakt
+
+## Built for versatility
+
+- **Zero config**
+
+  Drop Markdown files into your content directory.
+
+- **Framework agnostic**
+
+  The identity transform is pure data — render with anything.
+
+- **Type-safe output**
+
+  Every rune produces validated content.
+
+- **Incremental adoption**
+
+  Add runes to existing Markdown one block at a time.
+{% /feature %}
+
+{% /preview %}
 
 ### Attributes
 
