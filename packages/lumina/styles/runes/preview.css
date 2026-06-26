@@ -16,7 +16,11 @@
 	letter-spacing: var(--rf-tracking-wider);
 }
 
-/* Controls container (view toggle + theme toggle) */
+/* Toolbar groups — view-mode toggle on the left, preview-only controls (viewport
+ * + theme) on the right. */
+.rf-preview__toolbar-left {
+	gap: 0.5rem;
+}
 .rf-preview__controls {
 	gap: 0.5rem;
 }

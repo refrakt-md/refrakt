@@ -8,9 +8,19 @@
 	justify-content: space-between;
 	min-height: 2rem;
 }
+.rf-preview__toolbar-left {
+	display: flex;
+	align-items: center;
+}
 .rf-preview__controls {
 	display: flex;
 	align-items: center;
+}
+/* Preview-only controls are hidden in code view (the canvas they tune isn't
+ * shown). The explicit display:flex above would defeat the [hidden] attribute,
+ * so restore display:none for the hidden state. */
+.rf-preview__controls[hidden] {
+	display: none;
 }
 .rf-preview__view-toggle { display: flex; }
 .rf-preview__toggle { display: flex; }

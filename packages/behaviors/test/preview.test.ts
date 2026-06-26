@@ -131,6 +131,39 @@ describe('previewBehavior', () => {
 			expect(canvas.hidden).toBe(false);
 		});
 
+		it('places the view toggle in the left toolbar group, apart from the controls', () => {
+			const el = createPreview({ hasSource: true, responsive: 'mobile,desktop' });
+			previewBehavior(el);
+
+			const left = el.querySelector('.rf-preview__toolbar-left')!;
+			expect(left.querySelector('.rf-preview__view-toggle')).not.toBeNull();
+			// The view toggle is NOT inside the (right) controls group.
+			const controls = el.querySelector('.rf-preview__controls')!;
+			expect(controls.querySelector('.rf-preview__view-toggle')).toBeNull();
+			// Preview-only controls live on the right.
+			expect(controls.querySelector('.rf-preview__viewport-toggle')).not.toBeNull();
+			expect(controls.querySelector('.rf-preview__toggle')).not.toBeNull();
+		});
+
+		it('hides the preview-only controls in code view, restores them in preview view', () => {
+			const el = createPreview({ hasSource: true, responsive: 'mobile,desktop' });
+			previewBehavior(el);
+
+			const controls = el.querySelector('.rf-preview__controls') as HTMLElement;
+			const viewToggle = el.querySelector('.rf-preview__view-toggle')!;
+			const [previewBtn, codeBtn] = viewToggle.querySelectorAll('button');
+
+			expect(controls.hidden).toBe(false);
+
+			codeBtn.click();
+			expect(controls.hidden).toBe(true);
+			// The view toggle itself stays visible so you can switch back.
+			expect((viewToggle as HTMLElement).hidden).toBe(false);
+
+			previewBtn.click();
+			expect(controls.hidden).toBe(false);
+		});
+
 		it('marks active view button', () => {
 			const el = createPreview({ hasSource: true });
 			previewBehavior(el);
