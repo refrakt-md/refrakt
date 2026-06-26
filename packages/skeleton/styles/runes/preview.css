@@ -32,6 +32,9 @@
 	height: 1.625rem;
 }
 .rf-preview__canvas { overflow: hidden; }
+/* Clip the source panel to its rounded corners (matching the canvas) — otherwise
+ * the code block's square fill bleeds past the rounded border at the bottom. */
+.rf-preview__source { overflow: hidden; }
 .rf-preview__viewport-toggle { display: flex; }
 .rf-preview__viewport-frame {
 	position: relative;
