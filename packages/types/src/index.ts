@@ -120,3 +120,8 @@ export type {
 // Versioning & compatibility (ADR-023)
 export type { SemverParts, CompatResult } from './compat.js';
 export { parseVersion, satisfiesRange, checkRefraktCompat } from './compat.js';
+
+// ProjectFiles seam (SPEC-113) — type-only here so the package root stays
+// free of `node:fs`. The providers live behind the `@refrakt-md/types/project-files`
+// subpath export.
+export type { ProjectFiles, ProjectFilesAccess } from './project-files.js';
