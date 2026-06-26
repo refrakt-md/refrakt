@@ -36,6 +36,14 @@
 .rf-preview__viewport-frame {
 	position: relative;
 	overflow: hidden;
+	/* The frame is a query container (WORK-490): container-query-driven layouts
+	 * inside the preview (e.g. split.css beside→stack, carousel collapse-to)
+	 * resolve against the constrained frame width, so the viewport selector
+	 * faithfully drives their breakpoints. Runes that establish a closer container
+	 * (carousel hosts) keep querying themselves; this only governs content with no
+	 * nearer container. The preview's own toolbar/canvas chrome sits outside the
+	 * frame, so its @container rules are unaffected. */
+	container-type: inline-size;
 }
 .rf-preview__viewport-frame--constrained {
 	margin: 0 auto;
