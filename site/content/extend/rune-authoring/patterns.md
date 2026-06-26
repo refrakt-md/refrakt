@@ -317,7 +317,7 @@ A rune's content model should include exactly what it **reinterprets** — conte
 
 A recipe blog post demonstrates the pattern — the rune is a **semantic island** within surrounding page content:
 
-```markdown
+```markdoc
 # My Summer in Tuscany
 
 That long story about grandma's kitchen

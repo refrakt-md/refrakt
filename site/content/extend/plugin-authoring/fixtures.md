@@ -26,7 +26,7 @@ scenarios.
 A fixture is the rune's Markdoc, optionally preceded by a YAML frontmatter
 block:
 
-```md
+```markdoc
 ---
 rune: recipe
 role: canonical

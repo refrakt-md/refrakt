@@ -354,7 +354,7 @@ The vocabulary is small and ordered tightest-UI → most-editorial:
 
 Per-rune defaults live on `RuneConfig.defaultReading`; a layout's content-region default lives on its `content` slot's `reading`. The **editorial-header composition** — a full-bleed frame with contained, readable text — is the SPEC-107 × SPEC-108 payoff:
 
-```md
+```markdoc
 {% recipe elevation="flush" width="full" prominence="display" reading="prose" %}
 ```
 

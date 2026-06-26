@@ -24,7 +24,7 @@ Many runes support an optional **section header** — a short combination of eye
 
 A single heading becomes the headline.
 
-```markdown
+```markdoc
 {% accordion %}
 ## Frequently asked questions
 
@@ -37,7 +37,7 @@ A content framework built on Markdoc.
 
 A paragraph placed **before** the first heading becomes the eyebrow. This is the recommended pattern for badge links and short category labels.
 
-```markdown
+```markdoc
 {% accordion %}
 [What's new →](#changelog)
 
@@ -48,7 +48,7 @@ A content framework built on Markdoc.
 {% /accordion %}
 ```
 
-```markdown
+```markdoc
 {% hero %}
 New in v2.0
 
@@ -62,7 +62,7 @@ A content framework for semantic Markdown.
 
 Two consecutive headings: the first becomes the eyebrow, the second becomes the headline.
 
-```markdown
+```markdoc
 {% hero %}
 ## What's new in v2
 
@@ -76,7 +76,7 @@ A content framework for semantic Markdown.
 
 A paragraph placed **after** the headline becomes the blurb.
 
-```markdown
+```markdoc
 {% accordion %}
 ## Frequently asked questions
 

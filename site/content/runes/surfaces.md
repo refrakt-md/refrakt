@@ -224,13 +224,13 @@ Most of the time you don't set it: editorial runes (`pullquote`, `lore`, `textbl
 
 **`reading` is independent of `width`.** A full-bleed band can still hold its text at a readable line length — the editorial-header spread:
 
-```md
+```markdoc
 {% recipe elevation="flush" width="full" prominence="display" reading="prose" %}
 ```
 
 **Drop cap.** On a prose body, add `dropcap` to enlarge the opening letter — the classic article opener. It's honoured only where the body reads as prose:
 
-```md
+```markdoc
 {% textblock dropcap=true %}
 The invention of the printing press revolutionised the spread of information…
 {% /textblock %}

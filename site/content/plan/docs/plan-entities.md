@@ -21,7 +21,7 @@ Specs are source-of-truth design documents. They describe *what* to build and *w
 | `supersedes` | ID of the spec this replaces |
 | `tags` | Comma-separated labels |
 
-```markdown
+```markdoc
 {% spec id="SPEC-001" status="draft" tags="auth, security" %}
 
 # Authentication System
@@ -67,7 +67,7 @@ Work items are discrete, implementable tasks. They're the primary unit of progre
 | Edge Cases | Exceptions, Corner Cases | Boundary conditions |
 | Verification | Test Cases, Tests | How to verify the work |
 
-```markdown
+```markdoc
 {% work id="WORK-001" status="ready" priority="high" source="SPEC-001" %}
 
 # Implement login flow
@@ -118,7 +118,7 @@ Bug reports for defects.
 | Actual | Actual Behaviour | What actually happens |
 | Environment | Env | Platform/version info |
 
-```markdown
+```markdoc
 {% bug id="BUG-001" status="confirmed" severity="major" %}
 
 # Login crashes on empty password
@@ -166,7 +166,7 @@ Architecture decision records (ADRs) capture design choices and their rationale.
 | Rationale | Reasoning | No |
 | Consequences | Impact, Trade-offs | No |
 
-```markdown
+```markdoc
 {% decision id="ADR-001" status="accepted" date="2026-03-15" source="SPEC-001" %}
 
 # Use JWT for authentication
@@ -208,7 +208,7 @@ Named release targets that group work items and track progress toward a goal.
 | `status` | Current status (default: `planning`) |
 | `target` | Target date (ISO 8601, aspirational) |
 
-```markdown
+```markdoc
 {% milestone name="v1.0.0" status="active" target="2026-06-01" %}
 
 # v1.0.0 — Initial Release
