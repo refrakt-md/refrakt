@@ -4,9 +4,10 @@
 	margin: 2rem 0;
 }
 
-/* Toolbar — transparent, controls float above the canvas */
+/* Toolbar — transparent, controls float above the canvas (flush to the canvas
+ * edges, no horizontal inset). */
 .rf-preview__toolbar {
-	padding: 0.25rem 0.25rem 0.5rem;
+	padding: 0.25rem 0 0.5rem;
 }
 .rf-preview__title {
 	font-size: var(--rf-text-xs);
@@ -16,7 +17,8 @@
 	letter-spacing: var(--rf-tracking-wider);
 }
 
-/* Controls container (view toggle + theme toggle) */
+/* Toolbar groups — view-mode toggle on the left, preview-only controls (viewport
+ * + theme) on the right. */
 .rf-preview__controls {
 	gap: 0.5rem;
 }

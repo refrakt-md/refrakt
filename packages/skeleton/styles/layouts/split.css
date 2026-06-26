@@ -117,7 +117,16 @@
 }
 
 /* ─── Collapse breakpoints — beside layouts drop to one column ─── */
-@media (max-width: 640px) {
+/* Container-query driven (WORK-490): the collapse responds to the rune's
+ * available width — its nearest query container — rather than the global
+ * viewport. That container is `.rf-page-content` on a page (content runes always
+ * render inside it; it is `container-type: inline-size`) and the `preview`
+ * viewport frame inside a preview, so a beside layout in a narrow column collapses
+ * when *that column* is tight, and the flip is faithfully simulable in the
+ * preview's viewport selector. The rule structure is unchanged from the prior
+ * `@media` form — only the query source moves from viewport to container. Shares
+ * the `data-collapse` hook (default sm/640px; `never` opts out). */
+@container (max-width: 640px) {
 	:is([data-media-position="start"], [data-media-position="end"])[data-collapse="sm"],
 	:is([data-media-position="start"], [data-media-position="end"]):not([data-collapse]) {
 		grid-template-columns: 1fr;
@@ -128,7 +137,7 @@
 		grid-row: auto;
 	}
 }
-@media (max-width: 768px) {
+@container (max-width: 768px) {
 	:is([data-media-position="start"], [data-media-position="end"])[data-collapse="md"] {
 		grid-template-columns: 1fr;
 	}
@@ -137,7 +146,7 @@
 		grid-row: auto;
 	}
 }
-@media (max-width: 1024px) {
+@container (max-width: 1024px) {
 	:is([data-media-position="start"], [data-media-position="end"])[data-collapse="lg"] {
 		grid-template-columns: 1fr;
 	}

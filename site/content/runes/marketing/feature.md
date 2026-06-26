@@ -19,7 +19,7 @@ Feature showcases. List items become feature definitions — bold text is the fe
 
 A feature grid with named items and descriptions.
 
-{% preview source=true %}
+{% preview source=true responsive="mobile,tablet,desktop" %}
 
 {% feature %}
 what you get
@@ -45,7 +45,7 @@ what you get
 
 Add a paragraph after the heading to introduce the feature set.
 
-{% preview source=true %}
+{% preview source=true responsive="mobile,tablet,desktop" %}
 
 {% feature %}
 what you get
@@ -68,7 +68,7 @@ Refrakt gives you the building blocks to ship structured content sites without f
 
 Use `media-position="end"` to place definitions alongside a media column — an image, code block, or any other content. A horizontal rule (`---`) separates the **media** block (first) from the **content** block (second).
 
-{% preview source=true %}
+{% preview source=true responsive="mobile,tablet,desktop" %}
 
 {% feature media-position="end" %}
 {% codegroup %}
@@ -111,7 +111,7 @@ why Refrakt
 
 Use `media-position="start"` to swap the column order — media on the left, definitions on the right.
 
-{% preview source=true %}
+{% preview source=true responsive="mobile,tablet,desktop" %}
 
 {% feature media-position="start" %}
 {% codegroup %}
@@ -162,7 +162,7 @@ The `layout` axis controls how feature-items are arranged, independently of wher
 
 When `layout` is unset it **derives from `media-position`** (stacked media → `grid`, beside media → `list`), so existing content is unchanged. Set it explicitly to override. For example, `layout="carousel"` lays the feature-items out on a horizontal scroll-snap track with prev/next nav, at every viewport:
 
-{% preview source=true %}
+{% preview source=true responsive="mobile,tablet,desktop" %}
 
 {% feature layout="carousel" %}
 

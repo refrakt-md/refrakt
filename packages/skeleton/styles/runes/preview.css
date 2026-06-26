@@ -8,9 +8,19 @@
 	justify-content: space-between;
 	min-height: 2rem;
 }
+.rf-preview__toolbar-left {
+	display: flex;
+	align-items: center;
+}
 .rf-preview__controls {
 	display: flex;
 	align-items: center;
+}
+/* Preview-only controls are hidden in code view (the canvas they tune isn't
+ * shown). The explicit display:flex above would defeat the [hidden] attribute,
+ * so restore display:none for the hidden state. */
+.rf-preview__controls[hidden] {
+	display: none;
 }
 .rf-preview__view-toggle { display: flex; }
 .rf-preview__toggle { display: flex; }
@@ -22,10 +32,21 @@
 	height: 1.625rem;
 }
 .rf-preview__canvas { overflow: hidden; }
+/* Clip the source panel to its rounded corners (matching the canvas) — otherwise
+ * the code block's square fill bleeds past the rounded border at the bottom. */
+.rf-preview__source { overflow: hidden; }
 .rf-preview__viewport-toggle { display: flex; }
 .rf-preview__viewport-frame {
 	position: relative;
 	overflow: hidden;
+	/* The frame is a query container (WORK-490): container-query-driven layouts
+	 * inside the preview (e.g. split.css beside→stack, carousel collapse-to)
+	 * resolve against the constrained frame width, so the viewport selector
+	 * faithfully drives their breakpoints. Runes that establish a closer container
+	 * (carousel hosts) keep querying themselves; this only governs content with no
+	 * nearer container. The preview's own toolbar/canvas chrome sits outside the
+	 * frame, so its @container rules are unaffected. */
+	container-type: inline-size;
 }
 .rf-preview__viewport-frame--constrained {
 	margin: 0 auto;

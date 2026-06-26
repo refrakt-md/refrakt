@@ -91,10 +91,19 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 	const toolbar = document.createElement('div');
 	toolbar.className = 'rf-preview__toolbar';
 
+	// Left group — the view-mode toggle (preview ⇄ code) lives here, kept visually
+	// apart from the preview-only controls on the right. The (optional) title sits
+	// alongside it.
+	const leftGroup = document.createElement('div');
+	leftGroup.className = 'rf-preview__toolbar-left';
+	toolbar.appendChild(leftGroup);
+
 	const titleEl = document.createElement('span');
 	titleEl.className = 'rf-preview__title';
-	toolbar.appendChild(titleEl);
+	leftGroup.appendChild(titleEl);
 
+	// Right group — preview-only controls (viewport + theme). Hidden in code view,
+	// where they'd act on a canvas that isn't shown.
 	const controls = document.createElement('div');
 	controls.className = 'rf-preview__controls';
 	toolbar.appendChild(controls);
@@ -120,7 +129,7 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 
 		viewToggle.appendChild(viewPreviewBtn);
 		viewToggle.appendChild(viewCodeBtn);
-		controls.appendChild(viewToggle);
+		leftGroup.appendChild(viewToggle);
 
 		const onPreview = () => { view = 'preview'; render(); };
 		const onCode = () => { view = 'code'; render(); };
@@ -286,6 +295,10 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 			sourcePanel.hidden = view !== 'code';
 		}
 		canvas.hidden = view === 'code' && hasSource;
+
+		// Preview-only controls (viewport + theme) tune the rendered canvas, so hide
+		// them in code view. State is retained and reapplied when switching back.
+		controls.hidden = view === 'code' && hasSource;
 
 		// Source tab toggle
 		if (sourceTabButtons) {
