@@ -17,11 +17,25 @@
 	flex: 0 0 var(--rf-carousel-slide, 80%);
 }
 
-/* Collapse-to-carousel (SPEC-100): a rune whose collapsed form is `carousel`
- * (`collapse-to="carousel"`) flips its item band from grid/list to a scroll-snap
- * row below the `collapse` breakpoint. CSS-only — no JS nav on the responsive
- * path — and shares the `data-collapse` hook (default sm/640px; `never` opts out). */
-@media (max-width: 640px) {
+/* Collapse-to-carousel (SPEC-100, WORK-489): a rune whose collapsed form is
+ * `carousel` (`collapse-to="carousel"`) flips its item band from grid/list to a
+ * scroll-snap row below the `collapse` breakpoint.
+ *
+ * Container-query driven: the host is its own query container, so the breakpoint
+ * is measured against the rune's OWN width — the space it actually occupies —
+ * not the global viewport. A `feature` bled to full width collapses on its full
+ * width; one sitting in a narrow column collapses on that column. As a bonus this
+ * makes the flip faithful inside the `preview` rune's viewport selector: the
+ * previewed host fills the constrained frame, so narrowing the frame shrinks the
+ * container and fires the breakpoint with no per-preview wiring.
+ *
+ * CSS-only — no JS nav on the responsive path — and shares the `data-collapse`
+ * hook (default sm/640px; `never` opts out). The `container-type` lands only on
+ * hosts that opted into `collapse-to="carousel"`, so the blast radius is narrow. */
+[data-collapse-to="carousel"] {
+	container-type: inline-size;
+}
+@container (max-width: 640px) {
 	[data-collapse-to="carousel"][data-collapse="sm"] [data-name="items"],
 	[data-collapse-to="carousel"]:not([data-collapse]) [data-name="items"] {
 		display: flex;
@@ -36,7 +50,7 @@
 		flex: 0 0 var(--rf-carousel-slide, 80%);
 	}
 }
-@media (max-width: 768px) {
+@container (max-width: 768px) {
 	[data-collapse-to="carousel"][data-collapse="md"] [data-name="items"] {
 		display: flex;
 		overflow-x: auto;
@@ -49,7 +63,7 @@
 		flex: 0 0 var(--rf-carousel-slide, 80%);
 	}
 }
-@media (max-width: 1024px) {
+@container (max-width: 1024px) {
 	[data-collapse-to="carousel"][data-collapse="lg"] [data-name="items"] {
 		display: flex;
 		overflow-x: auto;

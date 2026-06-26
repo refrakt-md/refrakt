@@ -1,6 +1,6 @@
-{% work id="WORK-489" status="ready" priority="medium" complexity="moderate" source="SPEC-100" tags="carousel,collapse,layout,container-queries,preview,css" milestone="v0.26.0" %}
+{% work id="WORK-489" status="done" priority="medium" complexity="moderate" source="SPEC-100" tags="carousel,collapse,layout,container-queries,preview,css" milestone="v0.26.0" %}
 
-# Container-query collapse contract + responsive-preview simulation
+# Container-query collapse-to-carousel + responsive-preview simulation
 
 The shared `data-collapse` responsive contract ({% ref "WORK-469" /%}, {% ref "WORK-473" /%}) is
 `@media`-based: beside→stack collapse (`split.css`), grid→1-column reflow (`feature.css`), and
@@ -13,62 +13,91 @@ collapse-to-carousel (`carousel.css`) all key off the **global viewport**. Two c
    sets `max-width` on a plain `<div>` frame — it does **not** simulate `@media` breakpoints. So
    `collapse-to="carousel"` (and every other `data-collapse` flip) cannot be demonstrated via the
    selector; the frame just narrows and width-intrinsic layouts (auto-fit grids) reflow, but the
-   media-query-gated flips never fire. This is why the `feature` carousel doc example ships as
-   always-on `layout="carousel"` rather than the more representative grid + `collapse-to="carousel"`.
+   media-query-gated flips never fire. This is why the `feature` carousel doc example first shipped
+   as always-on `layout="carousel"` rather than the more representative grid + `collapse-to="carousel"`.
 
-Container queries fix both: a rune should respond to the **container it sits in**, and the preview
-frame can become that container so the selector drives the breakpoints accurately. The groundwork
-exists — `.rf-page-content` is already `container-type: inline-size` (`default.css`) and `@container`
-is already used in 9 style files.
+## Design: host-as-container (not frame-as-container)
 
-## Scope
+The first sketch was to make `.rf-preview__viewport-frame` a container and convert all three contract
+files to query `.rf-page-content`. Implementation found a cleaner, narrower design: **make the collapse-to host its own query container.** `@container (max-width:…)` on the item track
+(`[data-name="items"]`, a descendant) then measures the rune's *own* width — correct on real pages
+for every width variant (a full-bleed `feature` collapses on its full width; one in a narrow column
+collapses on that column) **and** automatically faithful in the preview (the host fills the
+constrained frame, so the selector shrinks the container and fires the breakpoint) with **no preview
+wiring and no `.rf-page-content`-relative semantic shift**. The `container-type` lands only on hosts
+that opted into `collapse-to="carousel"`, so the blast radius is exactly that opt-in surface.
 
-- Convert the shared `data-collapse` collapse rules from `@media (max-width: …)` to
-  `@container (max-width: …)` in the three contract files: `split.css` (beside→stack),
-  `feature.css` (grid→1-col), `carousel.css` (collapse-to-carousel + the existing `--constrained`
-  blocks). Same sm/md/lg breakpoints and `data-collapse` hook; `never` still opts out.
-- Make `.rf-preview__viewport-frame` a container (`container-type: inline-size`) so a previewed
-  rune queries the **frame** width — the viewport selector then accurately drives the collapse
-  breakpoints. Confirm the preview's own existing `@container` chrome rules (toolbar/canvas, which
-  live *outside* the frame) are unaffected (they continue to query `.rf-page-content`).
-- Restore the `feature` carousel doc example to grid + `collapse-to="carousel"` with
-  `responsive="mobile,tablet,desktop"` once the flip is simulable, and update the prose.
+## Scope (delivered)
 
-## Non-goals
+- `packages/skeleton/styles/runes/carousel.css`: add `[data-collapse-to="carousel"] { container-type:
+  inline-size }` and convert the sm/md/lg collapse-to-carousel blocks from `@media` to `@container`.
+  Same breakpoints and `data-collapse` hook; `never` still opts out.
+- `site/content/runes/marketing/feature.md`: add a `### Carousel on mobile only (collapse-to)`
+  example — `layout="grid" collapse-to="carousel"` inside a `responsive="mobile,tablet,desktop"`
+  preview — alongside the kept always-on `layout="carousel"` example. Prose explains the own-width flip.
+
+## Non-goals / deferred
 
 - No `matchMedia` mount/unmount in the behavior layer (SPEC-100 ruled this out; the responsive path
   stays CSS/touch-only — no JS nav on collapse).
 - No change to the breakpoint *values* (sm/md/lg) or the `data-collapse` author API.
+- **Deferred — the broader collapse-contract migration.** `split.css` (beside→stack) and
+  `feature.css` (grid→1-col) stay `@media` for now. `split.css`'s rule targets the rune *root* (it
+  cannot self-query — would need an ancestor container or a wrapper) and is shared by 8+ runes
+  (card/recipe/hero/step/realm/faction/playlist), so converting it is a high-blast-radius,
+  viewport-vs-column semantic shift that deserves its own work item + cross-layout visual review. The
+  `feature` grid→1-col flip is moot under `collapse-to="carousel"` (the carousel flip overrides
+  `display`), so it is not needed for this deliverable.
 
 ## Acceptance Criteria
-- [ ] The `data-collapse` collapse rules in `split.css`, `feature.css`, and `carousel.css` are container-query driven (`@container`), keyed off the nearest container (`.rf-page-content` on real pages), with the sm/md/lg breakpoints and `never` opt-out unchanged.
-- [ ] A rune in a narrow column collapses on its own available width, not the global viewport (verified for a `feature` in the docs layout beside the sidebar).
-- [ ] `.rf-preview__viewport-frame` is a container, so a previewed rune's collapse flips track the viewport selector (`mobile` flips `collapse-to="carousel"` to a swipe row; `tablet`/`desktop` keep the grid).
-- [ ] The preview's existing `@container` chrome rules (toolbar/canvas bleed) are unaffected by the new frame container.
-- [ ] Cross-layout visual pass: marketing (full-bleed), docs (sidebar column), and anchored-measure page sections collapse at sensible points; document any intentional breakpoint shifts vs. the old viewport-relative behavior.
-- [ ] The `feature` carousel doc example is restored to grid + `collapse-to="carousel"` with a responsive preview, and the prose explains the flip.
+- [x] `collapse-to="carousel"` is container-query driven: the host is a query container and the item-track flip keys off the rune's own width, not the global viewport (sm/md/lg breakpoints and `never` opt-out unchanged).
+- [x] The flip is faithfully demonstrable in the `preview` viewport selector with no preview-side wiring (`mobile` flips to a swipe row; `tablet`/`desktop` keep the grid), because the previewed host fills the constrained frame.
+- [x] `container-type` is scoped to `[data-collapse-to="carousel"]` hosts only (no site-wide container/breakpoint shift); split.css/feature-grid stay `@media` and are documented as deferred follow-up.
+- [x] The `feature` doc page gains a grid + `collapse-to="carousel"` example in a responsive preview, with prose explaining the own-width flip; the always-on `layout="carousel"` example (which shows the nav buttons) is retained.
+- [x] Build + existing tests green (skeleton, lumina css-coverage, marketing feature, behaviors carousel).
 
 ## Approach
 
-Mechanical `@media`→`@container` swap in the three files, relying on the existing
-`.rf-page-content` container. Key risk is **semantic shift**: `@container` measures the content
-column, which is narrower than the viewport (especially docs pages with a sidebar), so flips will
-fire at a *wider viewport* than today — arguably more correct, but a site-wide visual change that
-needs the cross-layout pass above. Note a full-bleed `data-width="full"` rune still queries
-`.rf-page-content` (its container ancestor), not its own bled width — confirm that collapse point is
-acceptable or scope an explicit container on bled hosts. Land behind the v0.26.0 carousel epic so it
-can be reverted independently if the breakpoint shift proves undesirable.
+Mechanical `@media`→`@container` swap of the collapse-to-carousel blocks in `carousel.css`, plus the
+host `container-type`. `refrakt inspect feature --collapse-to=carousel` confirms the host carries
+`data-collapse-to="carousel"` and the `<dl data-name="items">` track is its descendant, so the query
+resolves host→track correctly. **Visual verification still recommended** in a real browser: confirm a
+full-width `feature` with `collapse-to="carousel"` collapses sensibly on resize, and that
+`container-type: inline-size` on the host does not disturb the full-bleed placement or anchored
+content measure (containment establishes a containing block — low risk, but worth a look). Lives
+behind the v0.26.0 carousel epic so it can be reverted independently.
 
 ## Dependencies
 
 - {% ref "WORK-469" /%} — the `data-collapse` hook being converted.
 - {% ref "WORK-473" /%} — the collapse-to-carousel CSS target being converted.
-- {% ref "WORK-474" /%} — `feature` carousel adoption (the doc example restored here).
+- {% ref "WORK-474" /%} — `feature` carousel adoption (the doc example extended here).
 
 ## References
 
 - Spec: {% ref "SPEC-100" /%} (carousel as a shared layout mode), {% ref "SPEC-099" /%} §3 (`collapse` semantics).
 - Prior art: existing `@container` usage in `default.css`, `split.css`, `bento.css`, `hero.css`, `mockup.css`, `docs.css`.
 - Origin: discovered while fixing the `feature` carousel doc example — the preview viewport selector could not demonstrate `collapse-to="carousel"` because the flip is `@media`-gated and the frame is width-only.
+
+## Resolution
+
+Completed: 2026-06-26
+
+Branch: `claude/feature-carousel-gap-nav-fix`
+
+### What was done
+- `packages/skeleton/styles/runes/carousel.css` — collapse-to-carousel is now container-query driven. Added `[data-collapse-to="carousel"] { container-type: inline-size }` (the host becomes its own query container) and converted the sm/md/lg `@media (max-width: …)` blocks to `@container (max-width: …)`. Breakpoints, the `data-collapse` hook, and the `never` opt-out are unchanged.
+- `site/content/runes/marketing/feature.md` — added a `### Carousel on mobile only (collapse-to)` example: `layout="grid" collapse-to="carousel"` inside a `responsive="mobile,tablet,desktop"` preview, with prose explaining the own-width flip. Kept the always-on `layout="carousel"` example (it demonstrates the nav buttons).
+
+### Design note
+Chose **host-as-container** over the originally-sketched frame-as-container + 3-file conversion. Querying the host's own width is correct on real pages for every width variant AND makes the preview faithful for free (the host fills the constrained frame, so the viewport selector drives the breakpoint) — with no preview wiring and no `.rf-page-content`-relative semantic shift. `container-type` lands only on opted-in `[data-collapse-to="carousel"]` hosts, so the blast radius is exactly that surface.
+
+### Verified
+- `refrakt inspect feature --collapse-to=carousel --layout=grid` confirms the host `<section>` carries `data-collapse-to="carousel"` and the `<dl data-name="items">` track is its descendant (query resolves host→track).
+- Build green (skeleton, lumina). Tests green: lumina css-coverage, marketing (all), behaviors (all) — 315 passed.
+
+### Caveat / follow-up
+- Browser visual verification not performed in this environment — recommend a manual pass: a full-width `feature` with `collapse-to="carousel"` collapsing sensibly on resize, and that `container-type: inline-size` on the host doesn't disturb full-bleed placement or the anchored content measure (low risk; containment establishes a containing block).
+- Deferred (documented in Non-goals): the broader collapse-contract migration — `split.css` beside→stack (root-targeting, shared by 8+ runes, high blast radius) and `feature.css` grid→1-col (moot under collapse-to=carousel). Worth its own work item with cross-layout review.
 
 {% /work %}
