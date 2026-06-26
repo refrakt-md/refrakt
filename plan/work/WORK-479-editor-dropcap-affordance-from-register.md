@@ -1,4 +1,4 @@
-{% work id="WORK-479" status="ready" priority="medium" complexity="moderate" source="SPEC-108" milestone="v0.26.0" tags="reading,prose,editor,dropcap" %}
+{% work id="WORK-479" status="in-progress" priority="medium" complexity="moderate" source="SPEC-108" milestone="v0.26.0" tags="reading,prose,editor,dropcap" %}
 
 # Editor dropcap affordance derived from the register
 
