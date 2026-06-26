@@ -1,4 +1,4 @@
-{% work id="WORK-481" status="ready" priority="medium" complexity="moderate" source="SPEC-100" tags="carousel,collapse,layout,container-queries,preview,css" milestone="v0.26.0" %}
+{% work id="WORK-489" status="ready" priority="medium" complexity="moderate" source="SPEC-100" tags="carousel,collapse,layout,container-queries,preview,css" milestone="v0.26.0" %}
 
 # Container-query collapse contract + responsive-preview simulation
 
