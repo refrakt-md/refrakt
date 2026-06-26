@@ -7,9 +7,9 @@ import { ContentTree, loadContent } from '@refrakt-md/content';
 import { parseFrontmatter, serializeFrontmatter } from '@refrakt-md/content';
 import type { HookSet } from '@refrakt-md/content';
 import { runes as allRunes, RUNE_EXAMPLES, corePipelineHooks, schemaContentModels, serializeContentModel } from '@refrakt-md/runes';
-import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
+import type { ThemeConfig, RendererNode, RuneConfig } from '@refrakt-md/transform';
 import type { RouteRule, Plugin, AggregatedData } from '@refrakt-md/types';
-import { createTransform } from '@refrakt-md/transform';
+import { createTransform, toKebabCase } from '@refrakt-md/transform';
 import { bundleCss } from './css.js';
 import { renderPreviewPage, renderPreviewContent, type PreviewPipelineOptions } from './preview.js';
 import { createHighlightTransform } from '@refrakt-md/highlight';
@@ -53,6 +53,7 @@ export interface EditorOptions {
 		attributes: Record<string, { type: string; required: boolean; values?: string[] }>;
 		example?: string;
 		contentModel?: object;
+		defaultReading?: string;
 	}>;
 }
 
@@ -842,6 +843,27 @@ function deriveChildRunes(config?: ThemeConfig): Set<string> {
 	return children;
 }
 
+/** Resolve a rune's `RuneConfig` from the assembled theme config, mirroring the
+ *  identity transform's lookup: PascalCase `typeName` for core runes, else the
+ *  kebab `name`/aliases (separator-insensitive) for plugin runes. Used to surface
+ *  config-derived metadata (e.g. `defaultReading`) the editor needs. */
+export function makeRuneConfigResolver(config?: ThemeConfig): (rune: { name: string; aliases?: string[]; typeName?: string }) => RuneConfig | undefined {
+	const byKebab = new Map<string, RuneConfig>();
+	for (const [key, cfg] of Object.entries(config?.runes ?? {})) {
+		const kebab = toKebabCase(key);
+		byKebab.set(kebab, cfg);
+		byKebab.set(kebab.replace(/-/g, ''), cfg);
+	}
+	return (rune) => {
+		if (rune.typeName && config?.runes?.[rune.typeName]) return config.runes[rune.typeName];
+		for (const k of [rune.name, ...(rune.aliases ?? [])]) {
+			const cfg = byKebab.get(k) ?? byKebab.get(k.replace(/-/g, ''));
+			if (cfg) return cfg;
+		}
+		return undefined;
+	};
+}
+
 let cachedRuneData: unknown[] | null = null;
 
 function handleGetRunes(
@@ -852,6 +874,7 @@ function handleGetRunes(
 	if (!cachedRuneData) {
 		cachedRuneData = [];
 		const childRunes = deriveChildRunes(themeConfig);
+		const resolveRuneConfig = makeRuneConfigResolver(themeConfig);
 		for (const rune of Object.values(allRunes)) {
 			if (childRunes.has(rune.name)) continue;
 
@@ -887,6 +910,10 @@ function handleGetRunes(
 			const rawModel = schemaContentModels.get(rune.schema);
 			const contentModel = rawModel ? serializeContentModel(rawModel) : undefined;
 
+			// The rune's reading register default (SPEC-108) — lets the editor derive
+			// register-gated affordances (e.g. the dropcap toggle) without a per-rune list.
+			const defaultReading = resolveRuneConfig(rune)?.defaultReading;
+
 			cachedRuneData.push({
 				name: rune.name,
 				aliases: rune.aliases,
@@ -897,12 +924,17 @@ function handleGetRunes(
 				example: RUNE_EXAMPLES[rune.name],
 				snippet: rune.snippet,
 				contentModel,
+				...(defaultReading ? { defaultReading } : {}),
 			});
 		}
 
 		// Append community runes from packages
 		if (communityRunes) {
 			for (const entry of communityRunes) {
+				// Surface the rune's reading default (SPEC-108) for the register-gated
+				// dropcap toggle, matching the catalog runes above.
+				const entryReading = resolveRuneConfig({ name: entry.name, aliases: entry.aliases })?.defaultReading;
+				if (entryReading && !entry.defaultReading) entry.defaultReading = entryReading;
 				// Inject preset names for universal attributes on community runes too
 				if (themeConfig?.tints && entry.attributes['tint'] && !entry.attributes['tint'].values) {
 					const names = Object.keys(themeConfig.tints);

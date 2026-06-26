@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { RuneInfo, RuneAttributeInfo } from '../api/client.js';
+	import { resolveReading, READING_CAPABILITIES, type ReadingRegister } from '@refrakt-md/transform';
 
 	interface Props {
 		runeInfo: RuneInfo;
@@ -11,6 +12,33 @@
 
 	/** Attributes that only apply when layout is split or split-reverse */
 	const SPLIT_ONLY_ATTRS = new Set(['ratio', 'align', 'gap', 'collapse']);
+
+	// ── Reading-register-gated affordances (SPEC-108) ───────────────
+	// Some universal attributes (e.g. `dropcap`) are eligible only at a particular
+	// reading register, not on a per-rune allowlist. The register-unlocked opt-ins
+	// are the keys of each READING_CAPABILITIES entry, so new capabilities gate for
+	// free. The toggle appears iff the block's *resolved* register enables it.
+	const CAPABILITY_ATTRS = new Set(
+		Object.values(READING_CAPABILITIES).flatMap(caps => Object.keys(caps))
+	);
+
+	// The block's effective register — author `reading=` ▸ rune default ▸ `ui`.
+	// (A region default seeds only the bare body, never a rune, so it's omitted
+	// here — matching the engine.) Reactive: flipping `reading=` re-resolves.
+	let resolvedReading = $derived(
+		resolveReading({
+			authorAttr: attributes['reading'],
+			runeDefault: runeInfo.defaultReading as ReadingRegister | undefined,
+		})
+	);
+
+	/** Hide a register-gated capability attribute unless the resolved register
+	 *  unlocks it (e.g. `dropcap` shows only when the body reads as `prose`). */
+	function isRegisterGated(name: string): boolean {
+		if (!CAPABILITY_ATTRS.has(name)) return false;
+		const caps = READING_CAPABILITIES[resolvedReading] as Record<string, boolean> | undefined;
+		return !caps?.[name];
+	}
 
 	function updateAttr(name: string, value: string) {
 		const next = { ...attributes };
@@ -38,7 +66,7 @@
 	/** All schema attributes, sorted with required first */
 	let sortedAttrs = $derived(
 		Object.entries(runeInfo.attributes)
-			.filter(([name]) => !isSplitOnly(name))
+			.filter(([name]) => !isSplitOnly(name) && !isRegisterGated(name))
 			.sort(([, a], [, b]) => (a.required === b.required ? 0 : a.required ? -1 : 1))
 	);
 

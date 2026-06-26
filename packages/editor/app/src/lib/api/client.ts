@@ -290,6 +290,9 @@ export interface RuneInfo {
 	example?: string;
 	snippet?: string[];
 	contentModel?: SerializedContentModel;
+	/** The rune's reading-register default (SPEC-108), if any — the editor derives
+	 *  register-gated affordances (e.g. the dropcap toggle) from it. */
+	defaultReading?: string;
 }
 
 export async function fetchRunes(): Promise<RuneInfo[]> {
