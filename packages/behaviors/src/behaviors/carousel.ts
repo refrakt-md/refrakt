@@ -53,7 +53,11 @@ export function carouselBehavior(el: HTMLElement): CleanupFn | void {
 	function scrollByItem(direction: number) {
 		const first = items[0];
 		if (!first) return;
-		const itemWidth = first.offsetWidth + parseFloat(getComputedStyle(track!).gap || '0');
+		// An unset flex `gap` computes to "normal" in real browsers (not ""), so the
+		// old `|| '0'` guard let `parseFloat("normal")` → NaN through, turning the
+		// scroll distance into NaN — a silent no-op. Fall back to 0 on any non-finite.
+		const gap = parseFloat(getComputedStyle(track!).columnGap);
+		const itemWidth = first.offsetWidth + (Number.isFinite(gap) ? gap : 0);
 		track!.scrollBy({ left: direction * itemWidth, behavior: 'smooth' });
 	}
 

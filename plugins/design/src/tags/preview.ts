@@ -86,7 +86,7 @@ export const preview = createContentModelSchema({
 		title: { type: String, required: false, description: 'Label shown in the preview card header.' },
 		theme: { type: String, required: false, matches: ['auto', 'light', 'dark'], description: 'Background theme for the preview viewport: auto follows the page, light/dark forces a mode.' },
 		source: { type: Boolean, required: false, description: 'Enable/disable showing the source code panel alongside the rendered preview.' },
-		responsive: { type: String, required: false, description: 'Comma-separated viewport widths (e.g. "375,768,1024") for responsive preview frames.' },
+		responsive: { type: String, required: false, description: 'Comma-separated viewport presets (e.g. "mobile,tablet,desktop") for responsive preview frames. Accepts mobile (375px), tablet (768px), and desktop (full); other values are ignored.' },
 	},
 	contentModel: {
 		type: 'custom',

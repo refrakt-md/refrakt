@@ -47,6 +47,26 @@ describe('carousel behavior (SPEC-100)', () => {
 		expect((track as unknown as { scrollBy: ReturnType<typeof vi.fn> }).scrollBy).toHaveBeenCalledTimes(2);
 	});
 
+	it('scrolls by a finite distance even when the track gap computes to "normal"', () => {
+		// Regression: an unset flex `gap` computes to "normal" in real browsers, so
+		// parseFloat would yield NaN and scrollBy({left: NaN}) was a silent no-op.
+		const { host, track } = makeCarousel();
+		const realGCS = window.getComputedStyle.bind(window);
+		const spy = vi.spyOn(window, 'getComputedStyle').mockImplementation((el: Element) => {
+			const style = realGCS(el);
+			if (el === track) Object.defineProperty(style, 'columnGap', { value: 'normal', configurable: true });
+			return style;
+		});
+
+		carouselBehavior(host);
+		host.querySelector<HTMLElement>('.rf-carousel__nav--next')!.click();
+
+		const scrollBy = (track as unknown as { scrollBy: ReturnType<typeof vi.fn> }).scrollBy;
+		expect(scrollBy).toHaveBeenCalledTimes(1);
+		expect(Number.isFinite(scrollBy.mock.calls[0][0].left)).toBe(true);
+		spy.mockRestore();
+	});
+
 	it('scrolls on ArrowLeft / ArrowRight when focused', () => {
 		const { host, track } = makeCarousel();
 		carouselBehavior(host);
