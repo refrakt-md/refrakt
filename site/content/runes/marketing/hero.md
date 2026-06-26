@@ -146,7 +146,7 @@ Cover (above) turns the **single media zone** into the backdrop, so the hero can
 
 {% preview source=true %}
 
-{% hero media-position="end" tint-mode="dark" collapse="md" %}
+{% hero media-position="end" tint-mode="dark" collapse="lg" %}
 {% bg overlay="dark" overlay-opacity="0.4" %}
 {% sandbox src="wireframe-waves" /%}
 {% /bg %}
