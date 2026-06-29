@@ -1,5 +1,16 @@
 # @refrakt-md/behaviors
 
+## 0.26.0
+
+### Minor Changes
+
+- 7988847: **Carousel is now a shared layout mode any rune can adopt, not a one-off.** `layout="carousel"` is a canonical layout token backed by a shared DOM contract (a `data-name="items"` track whose direct children are the slides) and an attribute-triggered behavior dispatch path: the carousel behavior enhances any block carrying `[data-layout="carousel"]`, lifted out of the gallery to be block-agnostic. A CSS-only `collapse-to` dial lets a grid/list collapse into a carousel at a breakpoint. `feature` (marketing) and `cast` (business) are the first adopters; the shared track + `collapse-to` contract is documented for further runes.
+
+### Patch Changes
+
+- decb8d5: **Fix the `feature` carousel layout: gap between slides and working prev/next buttons.** The shared carousel behavior computed its per-item scroll distance from `getComputedStyle(track).gap`, but an unset flex `gap` computes to the string `"normal"` in real browsers — `parseFloat("normal")` is `NaN`, so `scrollBy({ left: NaN })` was a silent no-op and the nav buttons did nothing. It now reads `columnGap` and falls back to `0` on any non-finite value. Lumina's `feature` styles also gained the missing `gap` on the `[data-layout="carousel"]` track (matching the existing `grid` gap), so carousel slides no longer butt together. Separately, the `preview` rune's `responsive` attribute description is corrected: it accepts viewport **presets** (`mobile`, `tablet`, `desktop`), not pixel widths.
+- 693cf13: **Preview toolbar: surface the view toggle separately and hide preview-only controls in code view.** The view-mode toggle (preview ⇄ code) now sits in its own group on the left of the toolbar, visually distinct from the controls that _tune_ the rendered preview. Those preview-only controls — the responsive viewport selector and the theme toggle — are hidden while the code view is active, since they act on a canvas that isn't shown. Their state is retained and reapplied when you switch back to the preview. Toolbar chrome is also tidied: the toolbar sits flush to the canvas edges (no horizontal inset), the left group has no inter-item gap, and the source/code panel is clipped to its rounded corners so the bottom corners round correctly (matching the canvas).
+
 ## 0.25.1
 
 ### Patch Changes

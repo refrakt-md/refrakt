@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/skeleton",
   "description": "The structural cascade layer + layer-order contract every refrakt theme builds on — ships `@layer skeleton` and the `@layer skeleton, skin;` order declaration, plus the token-name contract",
-  "version": "0.25.1",
+  "version": "0.26.0",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -29,7 +29,7 @@
     "styles"
   ],
   "dependencies": {
-    "@refrakt-md/types": "0.25.1"
+    "@refrakt-md/types": "0.26.0"
   },
   "scripts": {
     "build": "tsc"
