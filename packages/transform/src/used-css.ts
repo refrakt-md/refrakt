@@ -64,6 +64,16 @@ export async function computeUsedCssBlocks(
 		usedBlocks.add('bg');
 	}
 
+	// Carousel (SPEC-100) is a shared *layout mode* (`data-layout="carousel"`,
+	// `collapse-to="carousel"`) any rune can adopt — feature, cast, gallery — not a
+	// `data-rune="carousel"`, so it never surfaces in rune-type analysis. Its skin
+	// (the injected `.rf-carousel__nav` chrome) would otherwise be tree-shaken out
+	// of a production build, leaving the nav buttons unstyled. Always include it
+	// when the theme ships it, matching the tint/bg universal-axis handling above.
+	if (existsSync(join(stylesDir, 'carousel.css'))) {
+		usedBlocks.add('carousel');
+	}
+
 	return { usedBlocks, stylesDir };
 }
 
