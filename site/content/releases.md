@@ -6,7 +6,16 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.26.0
+## v0.27.0
+
+- ProjectFiles seam (SPEC-113) — a virtual project filesystem for hosted and in-browser builds.
+- Consolidates the ad-hoc `node:fs` seams at the pipeline edges into one injectable, synchronous `ProjectFiles` interface (`read`/`list`/`exists` over normalized POSIX project-root-relative keys, with containment as part of the contract). Ships `fsProjectFiles`, `memoryProjectFiles`, and `recordingProjectFiles` providers via `@refrakt-md/types/project-files`.
+- **Sandbox, snippet, expand, file-ref, fileRoots, and the plan scan** now read through the provider instead of calling `node:fs` directly. The previously-unguarded sandbox `src` directory join inherits containment, closing a path-traversal gap.
+- **`loadContentFromTree`** accepts `projectFiles` and `gitTimestamps`, and the new `ContentTree.fromContentMap` assembles a page corpus from a normalized key→content map — so a complete site can build from a pure in-memory `Map` with zero filesystem access (the hosted-renderer path).
+- Every consumer keeps an `fs` fallback, so self-hosted builds are unchanged; the only behavioural change is containment on previously-unguarded paths.
+- Docs: a new "Hosted & In-Memory Builds" guide covers the contract and the fetch-then-build materialization pattern.
+
+## v0.26.0 - June 30, 2026
 
 - **Carousel is now a shared layout mode any rune can adopt, not a one-off.** `layout="carousel"` is a canonical layout token backed by a shared DOM contract (a `data-name="items"` track whose direct children are the slides) and an attribute-triggered behavior dispatch path: the carousel behavior enhances any block carrying `[data-layout="carousel"]`, lifted out of the gallery to be block-agnostic. A CSS-only `collapse-to` dial lets a grid/list collapse into a carousel at a breakpoint. `feature` (marketing) and `cast` (business) are the first adopters; the shared track + `collapse-to` contract is documented for further runes.
 - **Fix the `feature` carousel layout: gap between slides and working prev/next buttons.** The shared carousel behavior computed its per-item scroll distance from `getComputedStyle(track).gap`, but an unset flex `gap` computes to the string `"normal"` in real browsers — `parseFloat("normal")` is `NaN`, so `scrollBy({ left: NaN })` was a silent no-op and the nav buttons did nothing. It now reads `columnGap` and falls back to `0` on any non-finite value. Lumina's `feature` styles also gained the missing `gap` on the `[data-layout="carousel"]` track (matching the existing `grid` gap), so carousel slides no longer butt together. Separately, the `preview` rune's `responsive` attribute description is corrected: it accepts viewport **presets** (`mobile`, `tablet`, `desktop`), not pixel widths.
