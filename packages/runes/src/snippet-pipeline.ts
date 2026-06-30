@@ -26,7 +26,7 @@
 
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
-import type { PreprocessContext, PreprocessPage, PipelineContext, TransformedPage, AggregatedData } from '@refrakt-md/types';
+import type { ProjectFiles, PreprocessContext, PreprocessPage, PipelineContext, TransformedPage, AggregatedData } from '@refrakt-md/types';
 import { readSnippetFile, SnippetSandboxError } from './lib/read-file.js';
 import { inferLanguage } from './lang-map.js';
 
@@ -70,14 +70,15 @@ export function preprocessSnippets(
 	page: PreprocessPage,
 	ctx: PreprocessContext,
 ): Node | void {
-	if (!ctx.projectRoot) {
-		// No project root configured — silently no-op. Snippet refs will fall
-		// through to the schema's transform, which throws a clear error.
+	if (!ctx.sandbox) {
+		// No file provider available (e.g. a tree-mode build that hasn't wired
+		// one yet) — silently no-op. Snippet refs fall through to the schema's
+		// transform, which throws a clear error.
 		return;
 	}
 
 	let mutated = false;
-	walkAndReplaceSnippets(ast, page, ctx, ctx.projectRoot, (didReplace) => {
+	walkAndReplaceSnippets(ast, page, ctx, ctx.sandbox, (didReplace) => {
 		if (didReplace) mutated = true;
 	});
 	return mutated ? ast : undefined;
@@ -87,7 +88,7 @@ function walkAndReplaceSnippets(
 	node: Node,
 	page: PreprocessPage,
 	ctx: PreprocessContext,
-	projectRoot: string,
+	files: ProjectFiles,
 	onReplaced: (replaced: boolean) => void,
 ): void {
 	if (!node.children) return;
@@ -101,13 +102,13 @@ function walkAndReplaceSnippets(
 			// produce an error fence so the snippet tag never reaches the
 			// schema's transform (which throws). The build keeps going and
 			// the failure is visible on the rendered page.
-			node.children[i] = resolveSnippetToFence(child, page, ctx, projectRoot);
+			node.children[i] = resolveSnippetToFence(child, page, ctx, files);
 			onReplaced(true);
 			// Don't recurse — replaced.
 			continue;
 		}
 
-		walkAndReplaceSnippets(child, page, ctx, projectRoot, onReplaced);
+		walkAndReplaceSnippets(child, page, ctx, files, onReplaced);
 	}
 }
 
@@ -130,7 +131,7 @@ function resolveSnippetToFence(
 	tag: Node,
 	page: PreprocessPage,
 	ctx: PreprocessContext,
-	projectRoot: string,
+	files: ProjectFiles,
 ): Node {
 	const pathAttr = resolveAttributeValue(tag.attributes.path, ctx.variables);
 	const lines = tag.attributes.lines !== undefined
@@ -157,8 +158,8 @@ function resolveSnippetToFence(
 	let result;
 	try {
 		result = readSnippetFile({
+			files,
 			pathAttr,
-			projectRoot,
 			lines: lines || undefined,
 			referencingPage: page.relativePath,
 		});

@@ -1,5 +1,7 @@
 /** Cross-page pipeline types */
 
+import type { ProjectFiles } from './project-files.js';
+
 /** A page heading (level, text, generated anchor id) */
 export interface PipelineHeadingInfo {
 	level: number;
@@ -171,6 +173,11 @@ export interface PluginConfigureOptions {
 	/** Absolute path to the directory containing `refrakt.config.json`.
 	 *  Useful for resolving config-relative paths (`plan.dir`, etc.). */
 	configDir: string;
+	/** The project's files (SPEC-113). A plugin that scans the project at
+	 *  configure time (e.g. the plan plugin reading `plan.dir`) reads through
+	 *  this provider so a hosted in-memory build stays fs-free. Undefined when
+	 *  no provider is wired — the plugin falls back to direct `fs`. */
+	projectFiles?: ProjectFiles;
 	/** Dynamically register a file-root namespace. Use this when the plugin's
 	 *  contribution depends on user config (e.g., the plan plugin registers
 	 *  `plan:` pointing at the user's `plan.dir`, which isn't knowable
@@ -192,14 +199,12 @@ export interface PreprocessContext extends PipelineContext {
 	 *  anchor; any preprocessor that resolves files relative to the project
 	 *  root reads it here. */
 	projectRoot?: string;
-	/** Sandbox file-reading helpers — same shape as the transform-time
-	 *  `__sandboxReadFile` family. Preprocess runs before the transform
-	 *  config exists, so the helpers are exposed here instead. */
-	sandbox?: {
-		read: (path: string) => string | null;
-		list: (path: string) => string[];
-		exists: (path: string) => boolean;
-	};
+	/** The project's files, as a {@link ProjectFiles} provider (SPEC-113).
+	 *  Preprocess runs before the transform config exists, so the same provider
+	 *  the transform-time sandbox reads through is exposed here for any
+	 *  file-reading preprocessor. Keys are normalized POSIX project-root-relative
+	 *  paths; containment is the provider's contract. */
+	sandbox?: ProjectFiles;
 	/** Markdoc variables that would otherwise be available to transforms
 	 *  via `config.variables`. Snippet's preprocess uses these to resolve
 	 *  attribute values that come in as Markdoc `Variable` nodes (e.g.

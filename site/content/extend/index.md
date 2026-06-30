@@ -28,6 +28,10 @@ This handbook is for developers extending refrakt — writing custom runes, buil
 
   Cross-page register / aggregate / post-process hooks. Build site-wide indexes from page content.
 
+- [Hosted & in-memory builds](/extend/plugin-authoring/hosted-builds)
+
+  The `ProjectFiles` seam and the fetch-then-build materialization pattern for rendering a repo with no local filesystem.
+
 - [Content variables](/extend/variables)
 
   The author-facing variable surface: `$frontmatter`, `$page`, `$file`, and the conventions that separate public variables from pipeline internals.

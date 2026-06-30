@@ -3,6 +3,7 @@ import Markdoc from '@markdoc/markdoc';
 import { tags, nodes } from '../src/index.js';
 import { resolveFileRefs } from '../src/file-ref-resolve.js';
 import { hoistPreviewDrawers, HOIST_DRAWER_SENTINEL, pathToSlug } from '../src/drawer-pipeline.js';
+import { fsProjectFiles } from '@refrakt-md/types/project-files';
 import type { PipelineContext } from '@refrakt-md/types';
 
 const { Tag } = Markdoc;
@@ -123,7 +124,7 @@ describe('file-ref rune (SPEC-078)', () => {
 			const { ctx } = makeCtx();
 			let resolved = resolveFileRefs(tree, '/p/', REPO, 'main', ctx);
 			// Use the actual project root so readSnippetFile finds a real file.
-			resolved = hoistPreviewDrawers(resolved, '/p/', undefined, process.cwd(), ctx);
+			resolved = hoistPreviewDrawers(resolved, '/p/', undefined, fsProjectFiles(process.cwd()), ctx);
 
 			// Hoisted drawer at the page root.
 			const drawers = findAll(resolved, t => t.attributes['data-rune'] === 'drawer');
@@ -149,7 +150,7 @@ describe('file-ref rune (SPEC-078)', () => {
 			const tree = render('{% file-ref path="package.json" preview="drawer" /%}');
 			const { ctx } = makeCtx();
 			let resolved = resolveFileRefs(tree, '/p/', undefined, undefined, ctx);
-			resolved = hoistPreviewDrawers(resolved, '/p/', undefined, process.cwd(), ctx);
+			resolved = hoistPreviewDrawers(resolved, '/p/', undefined, fsProjectFiles(process.cwd()), ctx);
 			const drawers = findAll(resolved, t => t.attributes['data-rune'] === 'drawer');
 			expect(drawers).toHaveLength(1);
 			const footers = findAll(drawers[0], t => t.name === 'footer');
@@ -170,7 +171,7 @@ describe('file-ref rune (SPEC-078)', () => {
 			const tree = render('{% file-ref path="../escape.ts" preview="drawer" /%}');
 			const { ctx, messages } = makeCtx();
 			let resolved = resolveFileRefs(tree, '/p/', REPO, 'main', ctx);
-			resolved = hoistPreviewDrawers(resolved, '/p/', undefined, process.cwd(), ctx);
+			resolved = hoistPreviewDrawers(resolved, '/p/', undefined, fsProjectFiles(process.cwd()), ctx);
 			expect(messages.filter(m => m.severity === 'error').length).toBeGreaterThan(0);
 		});
 
@@ -178,7 +179,7 @@ describe('file-ref rune (SPEC-078)', () => {
 			const tree = render('A {% file-ref path="package.json" preview="drawer" label="one" /%} and B {% file-ref path="package.json" preview="drawer" label="two" /%}.');
 			const { ctx } = makeCtx();
 			let resolved = resolveFileRefs(tree, '/p/', REPO, 'main', ctx);
-			resolved = hoistPreviewDrawers(resolved, '/p/', undefined, process.cwd(), ctx);
+			resolved = hoistPreviewDrawers(resolved, '/p/', undefined, fsProjectFiles(process.cwd()), ctx);
 			const drawers = findAll(resolved, t => t.attributes['data-rune'] === 'drawer');
 			expect(drawers).toHaveLength(1);
 			// Both inline anchors point at the same hoisted drawer.

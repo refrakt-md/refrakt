@@ -19,6 +19,7 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import type { ProjectFiles } from '@refrakt-md/types';
 import type { PartialFile } from './content-tree.js';
 
 export type FileRoots = Record<string, string>;
@@ -91,6 +92,16 @@ export function mergeFileRoots(
 	return { roots: merged, warnings };
 }
 
+/** Optional provider context for {@link readFileRoots} (SPEC-113). When a
+ *  provider is supplied and a root resolves to a key contained within
+ *  `projectRoot`, the root is scanned through the provider (so a hosted
+ *  in-memory build never touches disk); roots outside the project root — e.g.
+ *  plugin partial dirs in `node_modules` — fall back to direct `fs`. */
+export interface ReadFileRootsContext {
+	projectFiles?: ProjectFiles;
+	projectRoot?: string;
+}
+
 /**
  * Scan every registered file root, returning `namespace:filename` →
  * `PartialFile`.
@@ -100,9 +111,22 @@ export function mergeFileRoots(
  * recursively; subdirectory paths flow through as part of the filename
  * (`shared:legal/terms.md`).
  */
-export async function readFileRoots(roots: FileRoots): Promise<Map<string, PartialFile>> {
+export async function readFileRoots(
+	roots: FileRoots,
+	context: ReadFileRootsContext = {},
+): Promise<Map<string, PartialFile>> {
 	const map = new Map<string, PartialFile>();
 	for (const [namespace, absPath] of Object.entries(roots)) {
+		// SPEC-113 — prefer the provider when the root is contained within the
+		// project root (covers the hosted in-memory build); fall back to `fs`
+		// for roots outside it (plugin partials in node_modules) or when no
+		// provider was supplied.
+		const key = providerKeyFor(absPath, context);
+		if (context.projectFiles && key !== null) {
+			scanRootViaProvider(context.projectFiles, key, namespace, absPath, map);
+			continue;
+		}
+
 		let stat: fs.Stats;
 		try {
 			stat = await fs.promises.stat(absPath);
@@ -119,6 +143,49 @@ export async function readFileRoots(roots: FileRoots): Promise<Map<string, Parti
 		await scanRoot(absPath, absPath, namespace, map);
 	}
 	return map;
+}
+
+/** The project-relative POSIX key for an absolute root, or null when it falls
+ *  outside the project root (so the caller uses the fs fallback). */
+function providerKeyFor(absPath: string, context: ReadFileRootsContext): string | null {
+	if (!context.projectFiles || !context.projectRoot) return null;
+	const relative = path.relative(context.projectRoot, absPath).split(path.sep).join('/');
+	if (relative === '' || relative.startsWith('..') || path.isAbsolute(relative)) return null;
+	return relative;
+}
+
+/** Recursively scan a root through the provider, mirroring {@link scanRoot}'s
+ *  key shape. A child whose `read` returns content is a file; otherwise (a
+ *  directory) it is recursed into. */
+function scanRootViaProvider(
+	files: ProjectFiles,
+	rootKey: string,
+	namespace: string,
+	rootAbsPath: string,
+	map: Map<string, PartialFile>,
+): void {
+	if (!files.exists(rootKey)) {
+		throw new Error(`File root "${namespace}" — directory does not exist: ${rootAbsPath}`);
+	}
+	if (files.read(rootKey) !== null) {
+		throw new Error(`File root "${namespace}" — expected a directory, got a file: ${rootAbsPath}`);
+	}
+	const walk = (dirKey: string): void => {
+		for (const name of files.list(dirKey)) {
+			if (name.startsWith('.')) continue;
+			const childKey = `${dirKey}/${name}`;
+			const content = files.read(childKey);
+			if (content === null) {
+				// Not a regular file → treat as a directory and recurse.
+				walk(childKey);
+			} else if (name.endsWith('.md')) {
+				const relative = childKey.slice(rootKey.length + 1);
+				const key = `${namespace}:${relative}`;
+				map.set(key, { name: key, filePath: childKey, raw: content });
+			}
+		}
+	};
+	walk(rootKey);
 }
 
 async function scanRoot(

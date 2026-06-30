@@ -20,6 +20,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./project-files": {
+      "types": "./dist/project-files.d.ts",
+      "default": "./dist/project-files.js"
     }
   },
   "files": [

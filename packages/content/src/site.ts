@@ -1,12 +1,12 @@
-import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, relative, sep as pathSep, posix as pathPosix } from 'node:path';
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNodes, Schema } from '@markdoc/markdoc';
 import { tags, nodes, extractHeadings, firstH1, extractSeo, createCorePipelineHooks, escapeFenceTags, resolveCoreSentinels, captureDeferredBodies, functions } from '@refrakt-md/runes';
 import type { CompiledXrefPattern } from '@refrakt-md/runes';
 import type { PageSeo, HeadingInfo } from '@refrakt-md/runes';
-import type { Plugin, PipelineWarning, AggregatedData, SecurityPolicy, ContributedPage } from '@refrakt-md/types';
+import type { Plugin, PipelineWarning, AggregatedData, SecurityPolicy, ContributedPage, ProjectFiles } from '@refrakt-md/types';
 import { resolveSecurityPolicy } from '@refrakt-md/types';
+import { fsProjectFiles } from '@refrakt-md/types/project-files';
 import type { PipelineStats } from './pipeline.js';
 import { ContentTree, type PartialFile } from './content-tree.js';
 import { parseFrontmatter, Frontmatter } from './frontmatter.js';
@@ -55,24 +55,6 @@ export interface SitePage {
   tintCascade: ResolvedTintCascade;
   /** Provenance — file-backed by default, or contributed by a plugin (SPEC-069). */
   source?: { type: 'file' | 'contributed'; plugin?: string; ruleIndex?: number };
-}
-
-/** Synchronous file reader that returns null on failure. */
-function sandboxReadFile(p: string): string | null {
-  try { return readFileSync(p, 'utf-8'); }
-  catch { return null; }
-}
-
-/** Synchronous directory listing that returns empty array on failure. */
-function sandboxListDir(p: string): string[] {
-  try { return readdirSync(p); }
-  catch { return []; }
-}
-
-/** Check if a path is an existing directory. */
-function sandboxDirExists(p: string): boolean {
-  try { return statSync(p).isDirectory(); }
-  catch { return false; }
 }
 
 function transformContent(
@@ -137,13 +119,10 @@ function derivePageTitle(frontmatter: Frontmatter, ast: Node): string | undefine
   return firstH1(ast);
 }
 
-interface SandboxHooks {
-  read: (p: string) => string | null;
-  list: (p: string) => string[];
-  exists: (p: string) => boolean;
-}
-
-const nullSandboxHooks: SandboxHooks = {
+/** A `ProjectFiles` that denies every read — the default in tree/hosted mode
+ *  when the caller hasn't supplied a provider (sandbox `src` resolves to the
+ *  in-band "directory not found" message). */
+const nullProjectFiles: ProjectFiles = {
   read: () => null,
   list: () => [],
   exists: () => false,
@@ -157,7 +136,12 @@ interface ProcessContentTreeOptions {
   variables?: Record<string, unknown>;
   securityPolicy?: SecurityPolicy;
   gitTimestamps?: Map<string, FileTimestamps>;
-  sandbox?: SandboxHooks;
+  /** The project's files (SPEC-113). Sandbox example reads resolve through
+   *  this provider; containment is its contract. Defaults to a deny-all
+   *  provider when omitted. */
+  sandbox?: ProjectFiles;
+  /** Project-root-relative POSIX key of the sandbox examples directory.
+   *  Joined with a sandbox's `src` and resolved through {@link sandbox}. */
   sandboxExamplesDir?: string;
   /** Site-wide colour-scheme default seeding the per-page tint cascade. */
   colorScheme?: 'auto' | 'light' | 'dark';
@@ -193,7 +177,7 @@ async function processContentTree(
   const resolvedSecurity = resolveSecurityPolicy(opts.securityPolicy);
   const router = new Router(opts.basePath ?? '/');
   const pages: SitePage[] = [];
-  const sandbox = opts.sandbox ?? nullSandboxHooks;
+  const sandbox = opts.sandbox ?? nullProjectFiles;
   const gitTimestamps = opts.gitTimestamps ?? new Map<string, FileTimestamps>();
 
   // Pre-parse partials into Markdoc ASTs for the transform config. Two
@@ -206,7 +190,7 @@ async function processContentTree(
   //   merged by the loader bootstrap.
   const partialFiles = tree.partials();
   const namespacedPartials = opts.fileRoots && Object.keys(opts.fileRoots).length > 0
-    ? await readFileRoots(opts.fileRoots)
+    ? await readFileRoots(opts.fileRoots, { projectFiles: opts.sandbox, projectRoot: opts.projectRoot })
     : new Map<string, PartialFile>();
   let parsedPartials: Record<string, Node> | undefined;
   if (partialFiles.size > 0 || namespacedPartials.size > 0) {
@@ -274,6 +258,9 @@ async function processContentTree(
       // deferred templates silently render as empty `<article>` tags.
       partials: parsedPartials,
       projectRoot: opts.projectRoot,
+      // SPEC-113 — expand / file-ref read source files through the same
+      // provider as snippet (the sandbox provider on the options bag).
+      projectFiles: opts.sandbox,
     },
   };
   // Always thread embedConfig: collection (SPEC-070) and expand (SPEC-066) need
@@ -355,9 +342,7 @@ async function processContentTree(
         created: fileTimestamps.created,
         modified: fileTimestamps.modified,
       },
-      __sandboxReadFile: sandbox.read,
-      __sandboxListDir: sandbox.list,
-      __sandboxDirExists: sandbox.exists,
+      __sandboxFiles: sandbox,
       __sandboxExamplesDir: opts.sandboxExamplesDir,
       __securityPolicy: resolvedSecurity,
       // SPEC-104 §5 — the project's bg preset registry, so `bg="name"` can expand
@@ -432,9 +417,7 @@ async function processContentTree(
         draft: frontmatter.draft === true,
       },
       file: { path: relativePath, created: undefined, modified: undefined },
-      __sandboxReadFile: sandbox.read,
-      __sandboxListDir: sandbox.list,
-      __sandboxDirExists: sandbox.exists,
+      __sandboxFiles: sandbox,
       __sandboxExamplesDir: opts.sandboxExamplesDir,
       __securityPolicy: resolvedSecurity,
       // Per-contribution bound variables (e.g. entityRoutes binds `item`).
@@ -562,6 +545,11 @@ export async function loadContent(
   // know the real project root (the directory containing
   // `refrakt.config.json`) should pass it explicitly.
   const resolvedProjectRoot = projectRoot ?? resolve(dirPath, '..');
+  // SPEC-113 — one `ProjectFiles` rooted at the project, with containment as a
+  // contract. The sandbox examples directory becomes a project-relative key so
+  // the `examplesDir + '/' + src` join inherits that containment.
+  const projectFiles = fsProjectFiles(resolvedProjectRoot);
+  const examplesKey = posixRelativeFromRoot(resolvedProjectRoot, resolvedExamplesDir);
 
   return processContentTree(tree, {
     basePath,
@@ -571,12 +559,8 @@ export async function loadContent(
     variables,
     securityPolicy,
     gitTimestamps: getGitTimestamps(dirPath),
-    sandbox: {
-      read: sandboxReadFile,
-      list: sandboxListDir,
-      exists: sandboxDirExists,
-    },
-    sandboxExamplesDir: resolvedExamplesDir,
+    sandbox: projectFiles,
+    sandboxExamplesDir: examplesKey,
     projectRoot: resolvedProjectRoot,
     xrefPatterns,
     fileRoots,
@@ -634,6 +618,18 @@ export interface LoadContentFromTreeOptions {
    *  entityRoutes adapter can read `entityRoutes` and other site-scoped
    *  config. */
   siteConfig?: unknown;
+  /** The project's files (SPEC-113) — the provider every ad-hoc read (snippet,
+   *  sandbox `src`, fileRoots, plan scan) resolves through. A hosted host
+   *  materializes its repo into a `memoryProjectFiles(map)` and passes it here
+   *  for a fully fs-free build. Defaults to a deny-all provider. */
+  projectFiles?: ProjectFiles;
+  /** Per-page git timestamps (`relativePath → { created, modified }`). A remote
+   *  host supplies these from its source's history API; omitted means
+   *  frontmatter-only timestamps. */
+  gitTimestamps?: Map<string, FileTimestamps>;
+  /** Project-root-relative POSIX key of the sandbox examples directory, joined
+   *  with a sandbox's `src` and resolved through `projectFiles`. */
+  sandboxExamplesDir?: string;
 }
 
 /**
@@ -647,10 +643,11 @@ export interface LoadContentFromTreeOptions {
  *
  * Differences from `loadContent`:
  * - No directory read — accepts the tree directly.
- * - No git history — timestamps come from frontmatter only.
- * - No sandbox filesystem access — sandbox runes resolve to null/empty.
- *   (Provide `__sandboxReadFile` etc. via `variables` if your host has its own
- *   synchronous access strategy.)
+ * - No git history unless `gitTimestamps` is supplied — otherwise timestamps
+ *   come from frontmatter only.
+ * - Sandbox / snippet / fileRoots reads go through `projectFiles` (SPEC-113);
+ *   without it they resolve to null/empty, so a host that wants file-backed
+ *   runes passes a `memoryProjectFiles(map)` for a fully fs-free build.
  */
 export async function loadContentFromTree(
   tree: ContentTree,
@@ -673,5 +670,8 @@ export async function loadContentFromTree(
     repoBranch: options.repoBranch,
     fileRoots: options.fileRoots,
     siteConfig: options.siteConfig,
+    sandbox: options.projectFiles,
+    sandboxExamplesDir: options.sandboxExamplesDir,
+    gitTimestamps: options.gitTimestamps,
   });
 }

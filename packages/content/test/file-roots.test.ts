@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { memoryProjectFiles, fsProjectFiles } from '@refrakt-md/types/project-files';
 import {
 	resolveUserFileRoots,
 	mergeFileRoots,
@@ -148,6 +149,49 @@ describe('readFileRoots', () => {
 	it('returns an empty map when given no roots', async () => {
 		const result = await readFileRoots({});
 		expect(result.size).toBe(0);
+	});
+});
+
+describe('readFileRoots through a ProjectFiles provider (SPEC-113)', () => {
+	it('scans an in-project root through a pure in-memory provider (no fs)', async () => {
+		const files = memoryProjectFiles(new Map([
+			['site/shared/footer.md', '# Footer'],
+			['site/shared/legal/terms.md', '# Terms'],
+			['site/shared/readme.txt', 'ignored'],
+		]));
+		const result = await readFileRoots(
+			{ shared: '/project/site/shared' },
+			{ projectFiles: files, projectRoot: '/project' },
+		);
+		expect(result.has('shared:footer.md')).toBe(true);
+		expect(result.has('shared:legal/terms.md')).toBe(true);
+		expect(result.has('shared:readme.txt')).toBe(false);
+		expect(result.get('shared:footer.md')!.raw).toBe('# Footer');
+	});
+
+	it('throws when the provider has no such directory', async () => {
+		const files = memoryProjectFiles(new Map());
+		await expect(
+			readFileRoots({ ghost: '/project/missing' }, { projectFiles: files, projectRoot: '/project' }),
+		).rejects.toThrow(/does not exist/);
+	});
+
+	it('falls back to fs for a root outside the project root', async () => {
+		// `/elsewhere/shared` can't be a project-relative key under `/project`, so
+		// the provider is bypassed and the fs path runs (and throws — no such dir).
+		const files = memoryProjectFiles(new Map());
+		await expect(
+			readFileRoots({ shared: '/elsewhere/shared' }, { projectFiles: files, projectRoot: '/project' }),
+		).rejects.toThrow(/does not exist/);
+	});
+
+	it('matches the fs scan for the same in-project tree', async () => {
+		const map = new Map([['shared/a.md', '# A'], ['shared/nested/b.md', '# B']]);
+		const viaProvider = await readFileRoots(
+			{ shared: '/p/shared' },
+			{ projectFiles: memoryProjectFiles(map), projectRoot: '/p' },
+		);
+		expect([...viaProvider.keys()].sort()).toEqual(['shared:a.md', 'shared:nested/b.md']);
 	});
 });
 

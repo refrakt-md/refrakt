@@ -24,7 +24,7 @@
 
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
-import type { EntityRegistry, EntityRegistration, PipelineContext } from '@refrakt-md/types';
+import type { EntityRegistry, EntityRegistration, PipelineContext, ProjectFiles } from '@refrakt-md/types';
 import { EXPAND_PLACEHOLDER_MARKER } from './tags/expand.js';
 import { readWholeSandboxedFile, SnippetSandboxError } from './lib/read-file.js';
 import type { CompiledXrefPattern } from './xref-patterns.js';
@@ -39,6 +39,9 @@ export interface ExpandResolveContext {
 		tags: Record<string, unknown>;
 		nodes: Record<string, unknown>;
 		projectRoot?: string;
+		/** The project's files (SPEC-113) — expand reads embedded entities'
+		 *  source files through this provider instead of `node:fs`. */
+		projectFiles?: ProjectFiles;
 	};
 	ctx: PipelineContext;
 	/** Per-build source-file cache. Shared across calls within one build,
@@ -162,14 +165,14 @@ function resolveOnePlaceholder(
 	if (entity.embed) {
 		extracted = entity.embed();
 	} else {
-		const projectRoot = rc.embedConfig?.projectRoot;
-		if (!projectRoot) {
-			rc.ctx.error(`expand "${id}" — no project root configured (embedConfig.projectRoot is unset)`, rc.pageUrl);
-			return errorNode(id, 'no project root configured');
+		const files = rc.embedConfig?.projectFiles;
+		if (!files) {
+			rc.ctx.error(`expand "${id}" — no file provider configured (embedConfig.projectFiles is unset)`, rc.pageUrl);
+			return errorNode(id, 'no file provider configured');
 		}
 		let parsed: Node;
 		try {
-			parsed = parseSourceFile(entity.sourceFile!, projectRoot, rc.parseCache);
+			parsed = parseSourceFile(entity.sourceFile!, files, rc.parseCache);
 		} catch (err) {
 			const msg = err instanceof SnippetSandboxError ? err.message : (err as Error).message;
 			rc.ctx.error(`expand "${id}" — failed to read source file "${entity.sourceFile}": ${msg}`, rc.pageUrl);
@@ -316,18 +319,18 @@ function canonicalLinkDefault(entity: EntityRegistration): string {
 }
 
 /** Parse a source file, caching per build. The path is resolved through
- *  the same sandbox as snippet so absolute paths and traversal escapes
- *  are rejected. File-system access lives behind a helper in
- *  `lib/read-file.ts` so the `node:fs` import stays out of this module
- *  and Vite can tree-shake it from browser bundles. */
+ *  the `ProjectFiles` provider, which applies the same containment as
+ *  snippet (absolute / traversal / symlink-escape rejected). File-system
+ *  access lives entirely behind the provider so the `node:fs` import stays
+ *  out of this module and Vite can tree-shake it from browser bundles. */
 function parseSourceFile(
 	sourceFile: string,
-	projectRoot: string,
+	files: ProjectFiles,
 	cache: Map<string, Node>,
 ): Node {
 	const cached = cache.get(sourceFile);
 	if (cached) return cached;
-	const raw = readWholeSandboxedFile({ relativePath: sourceFile, projectRoot });
+	const raw = readWholeSandboxedFile({ files, relativePath: sourceFile });
 	const ast = Markdoc.parse(raw);
 	cache.set(sourceFile, ast);
 	return ast;

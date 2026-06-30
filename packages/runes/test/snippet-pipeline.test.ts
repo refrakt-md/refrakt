@@ -7,9 +7,12 @@ import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { tags, nodes, createCorePipelineHooks } from '../src/index.js';
 import { preprocessSnippets, wrapStandaloneSnippets } from '../src/snippet-pipeline.js';
+import { fsProjectFiles, memoryProjectFiles } from '@refrakt-md/types/project-files';
 import type { PreprocessContext, TransformedPage, AggregatedData, PipelineContext } from '@refrakt-md/types';
 
-/** Build a preprocess context that captures diagnostics into a list. */
+/** Build a preprocess context that captures diagnostics into a list. The
+ *  sandbox provider (SPEC-113) is rooted at `projectRoot`; snippet reads (and
+ *  containment) go through it. */
 function makePreprocessCtx(projectRoot: string): {
 	ctx: PreprocessContext;
 	warnings: Array<{ severity: string; message: string }>;
@@ -21,6 +24,7 @@ function makePreprocessCtx(projectRoot: string): {
 			warn: (m) => warnings.push({ severity: 'warning', message: m }),
 			error: (m) => warnings.push({ severity: 'error', message: m }),
 			projectRoot,
+			sandbox: fsProjectFiles(projectRoot),
 		},
 		warnings,
 	};
@@ -150,21 +154,25 @@ describe('snippet preprocess (SPEC-062)', () => {
 		// schema's `transform` never fires (it would throw and crash the build).
 		expect(ast.children[0].type).toBe('fence');
 		expect(ast.children[0].attributes['data-snippet-error']).toBeDefined();
-		expect(warnings.some(w => w.severity === 'error' && /absolute/.test(w.message))).toBe(true);
+		// Containment now lives in the provider (SPEC-113); a denied path comes
+		// back as the consolidated "cannot be resolved" error rather than a
+		// reason-specific message. The provider's own tests (WORK-481) cover the
+		// absolute / traversal / symlink distinctions.
+		expect(warnings.some(w => w.severity === 'error' && /cannot be resolved/.test(w.message))).toBe(true);
 	});
 
 	it('rejects traversal escapes with a build error', () => {
 		const ast = Markdoc.parse('{% snippet path="../../etc/passwd" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
-		expect(warnings.some(w => w.severity === 'error' && /escapes the project root/.test(w.message))).toBe(true);
+		expect(warnings.some(w => w.severity === 'error' && /cannot be resolved/.test(w.message))).toBe(true);
 	});
 
 	it('rejects missing files with a build error', () => {
 		const ast = Markdoc.parse('{% snippet path="ghost.ts" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
-		expect(warnings.some(w => w.severity === 'error' && /file not found/.test(w.message))).toBe(true);
+		expect(warnings.some(w => w.severity === 'error' && /cannot be resolved/.test(w.message))).toBe(true);
 	});
 
 	it('rejects directory paths with a build error', () => {
@@ -172,7 +180,9 @@ describe('snippet preprocess (SPEC-062)', () => {
 		const ast = Markdoc.parse('{% snippet path="subdir" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
-		expect(warnings.some(w => w.severity === 'error' && /must be a file/.test(w.message))).toBe(true);
+		// A directory is not a regular file → the provider returns null → the
+		// consolidated "cannot be resolved" error.
+		expect(warnings.some(w => w.severity === 'error' && /cannot be resolved/.test(w.message))).toBe(true);
 	});
 
 	it('rejects symlinks pointing outside the project root', () => {
@@ -182,7 +192,11 @@ describe('snippet preprocess (SPEC-062)', () => {
 		const ast = Markdoc.parse('{% snippet path="leak.ts" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
-		expect(warnings.some(w => w.severity === 'error' && /symlink/.test(w.message))).toBe(true);
+		// The provider's realpath check denies the symlink escape; the snippet
+		// surfaces it as the consolidated error and never reads the target.
+		const errored = warnings.some(w => w.severity === 'error' && /cannot be resolved/.test(w.message));
+		expect(errored).toBe(true);
+		expect(ast.children[0].attributes.content).not.toContain('const x = 1;');
 		rmSync(outside, { recursive: true, force: true });
 	});
 
@@ -231,6 +245,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 			warn: (m) => warnings.push({ severity: 'warning', message: m }),
 			error: (m) => warnings.push({ severity: 'error', message: m }),
 			projectRoot: tmpRoot,
+			sandbox: fsProjectFiles(tmpRoot),
 			variables: { file: { path: 'foo.ts' } },
 		};
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
@@ -249,6 +264,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 			warn: (m) => warnings.push({ severity: 'warning', message: m }),
 			error: (m) => warnings.push({ severity: 'error', message: m }),
 			projectRoot: tmpRoot,
+			sandbox: fsProjectFiles(tmpRoot),
 			variables: { /* no `missing` */ },
 		};
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
@@ -295,6 +311,50 @@ describe('snippet preprocess (SPEC-062)', () => {
 		expect(codegroup.tag).toBe('codegroup');
 		const fences = codegroup.children.filter((c: any) => c.type === 'fence');
 		expect(fences).toHaveLength(2);
+	});
+});
+
+// SPEC-113 / WORK-483 — a snippet must resolve from a pure in-memory provider
+// with no filesystem access at all (the hosted/in-browser build path).
+describe('snippet via memoryProjectFiles (SPEC-113, fs-free)', () => {
+	it('resolves a snippet from a pure in-memory provider (no fs access)', () => {
+		const files = memoryProjectFiles(new Map([
+			['src/foo.ts', 'const x = 1;\nconst y = 2;\nconst z = 3;\n'],
+		]));
+		const warnings: Array<{ severity: string; message: string }> = [];
+		const ctx: PreprocessContext = {
+			info: (m) => warnings.push({ severity: 'info', message: m }),
+			warn: (m) => warnings.push({ severity: 'warning', message: m }),
+			error: (m) => warnings.push({ severity: 'error', message: m }),
+			// projectRoot is informational here — the in-memory provider owns
+			// resolution, so no path on disk is ever touched.
+			projectRoot: '/virtual-project',
+			sandbox: files,
+		};
+		const ast = Markdoc.parse('{% snippet path="src/foo.ts" lines="1-2" /%}\n');
+		preprocessSnippets(ast, makePage('/page.md'), ctx);
+
+		expect(warnings.filter(w => w.severity === 'error')).toHaveLength(0);
+		expect(ast.children[0].type).toBe('fence');
+		expect(ast.children[0].attributes.content).toBe('const x = 1;\nconst y = 2;');
+		expect(ast.children[0].attributes.language).toBe('typescript');
+		expect(ast.children[0].attributes.source).toBe('src/foo.ts');
+	});
+
+	it('denies a root-escaping path in memory mode too (containment is the provider contract)', () => {
+		const files = memoryProjectFiles(new Map([['src/foo.ts', 'const x = 1;\n']]));
+		const warnings: Array<{ severity: string; message: string }> = [];
+		const ctx: PreprocessContext = {
+			info: (m) => warnings.push({ severity: 'info', message: m }),
+			warn: (m) => warnings.push({ severity: 'warning', message: m }),
+			error: (m) => warnings.push({ severity: 'error', message: m }),
+			projectRoot: '/virtual-project',
+			sandbox: files,
+		};
+		const ast = Markdoc.parse('{% snippet path="../../etc/passwd" /%}\n');
+		preprocessSnippets(ast, makePage('/page.md'), ctx);
+		expect(warnings.some(w => w.severity === 'error' && /cannot be resolved/.test(w.message))).toBe(true);
+		expect(ast.children[0].attributes['data-snippet-error']).toBeDefined();
 	});
 });
 
