@@ -1,5 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import Markdoc from '@markdoc/markdoc';
+import { memoryProjectFiles, recordingProjectFiles } from '@refrakt-md/types/project-files';
 import { tags, nodes } from '../src/index.js';
 
 function parseWith(src: string, variables: Record<string, unknown>) {
@@ -24,20 +25,19 @@ function findAll(node: any, pred: (t: any) => boolean, acc: any[] = []): any[] {
 	return acc;
 }
 
-/** Mock sandbox file readers for an external scene directory. */
+/** Mock sandbox source files for an external scene directory (SPEC-113 — a
+ *  `ProjectFiles` provider over project-relative keys). `reads` captures every
+ *  read key so the memoisation test can assert each scene file is read once. */
 function mockSandboxFs(files: Record<string, string>) {
-	const dirs = new Map<string, string[]>();
-	for (const path of Object.keys(files)) {
-		const dir = path.split('/').slice(0, -1).join('/');
-		const name = path.split('/').pop()!;
-		if (!dirs.has(dir)) dirs.set(dir, []);
-		dirs.get(dir)!.push(name);
-	}
+	const reads: string[] = [];
+	const provider = recordingProjectFiles(
+		memoryProjectFiles(new Map(Object.entries(files))),
+		(a) => { if (a.op === 'read') reads.push(a.key); },
+	);
 	return {
-		__sandboxReadFile: vi.fn((p: string): string | null => files[p] ?? null),
-		__sandboxListDir: (p: string): string[] => dirs.get(p) ?? [],
-		__sandboxDirExists: (p: string): boolean => dirs.has(p),
-		__sandboxExamplesDir: '/examples',
+		__sandboxFiles: provider,
+		__sandboxExamplesDir: 'examples',
+		reads,
 	};
 }
 
@@ -45,7 +45,7 @@ function mockSandboxFs(files: Record<string, string>) {
 // into the WORK-428 `data-bg-guest` body: `bg="name"` ≈ an inline sandbox body.
 describe('sandbox bg preset expansion (SPEC-104 §5)', () => {
 	it('expands `bg="name"` (sandbox preset) into a tagged backdrop guest', () => {
-		const fs = mockSandboxFs({ '/examples/midnight-waves/index.js': '// three.js scene' });
+		const fs = mockSandboxFs({ 'examples/midnight-waves/index.js': '// three.js scene' });
 		const out = parseWith('{% card bg="midnight-waves" %}\n# T\nbody\n{% /card %}', {
 			...fs,
 			__backgrounds: { 'midnight-waves': { sandbox: { src: 'midnight-waves', framework: 'three', dependencies: 'three' } } },
@@ -67,7 +67,7 @@ describe('sandbox bg preset expansion (SPEC-104 §5)', () => {
 	});
 
 	it('resolves a sandbox preset that `extends` a base scene (single level, own fields win)', () => {
-		const fs = mockSandboxFs({ '/examples/base-scene/index.js': '// base' });
+		const fs = mockSandboxFs({ 'examples/base-scene/index.js': '// base' });
 		const out = parseWith('{% card bg="derived" %}\n# T\n{% /card %}', {
 			...fs,
 			__backgrounds: {
@@ -81,7 +81,7 @@ describe('sandbox bg preset expansion (SPEC-104 §5)', () => {
 	});
 
 	it('memoises the assembled scene — the file readers run once across reuses (same config)', () => {
-		const fs = mockSandboxFs({ '/examples/waves/index.js': '// scene' });
+		const fs = mockSandboxFs({ 'examples/waves/index.js': '// scene' });
 		// Two hosts naming the same scene in one document → one shared config.
 		const out = parseWith(
 			'{% card bg="waves" %}\n# A\n{% /card %}\n\n{% card bg="waves" %}\n# B\n{% /card %}',
@@ -90,9 +90,9 @@ describe('sandbox bg preset expansion (SPEC-104 §5)', () => {
 		const guests = findAll(out, t => t.attributes?.['data-bg-guest'] !== undefined);
 		expect(guests.length).toBe(2); // both hosts get a backdrop
 		// …but the scene's source files were read only once (the second is a cache clone).
-		const reads = fs.__sandboxReadFile.mock.calls.filter(c => String(c[0]).startsWith('/examples/waves/'));
+		const reads = fs.reads.filter(key => key.startsWith('examples/waves/'));
 		expect(reads.length).toBeGreaterThan(0);
-		const uniqueReadPaths = new Set(reads.map(c => c[0]));
+		const uniqueReadPaths = new Set(reads);
 		// each scene file read at most once despite two consumers
 		expect(reads.length).toBe(uniqueReadPaths.size);
 	});

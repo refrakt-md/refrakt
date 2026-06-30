@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import type { ResolvedSecurityPolicy } from '@refrakt-md/types';
+import type { ProjectFiles, ResolvedSecurityPolicy } from '@refrakt-md/types';
 import { createComponentRenderable, createContentModelSchema, sanitizeSandboxContent } from '../lib/index.js';
 import { assembleFromDirectory, mergeContent } from '../sandbox-sources.js';
 
@@ -97,15 +97,26 @@ export const sandbox = createContentModelSchema({
 		let rawContent = '';
 		let sourcePanels: SourcePanel[] = [];
 
-		const readFile = config.variables?.__sandboxReadFile as ((p: string) => string | null) | undefined;
-		const listDir = config.variables?.__sandboxListDir as ((p: string) => string[]) | undefined;
-		const dirExists = config.variables?.__sandboxDirExists as ((p: string) => boolean) | undefined;
+		// SPEC-113 — sandbox example reads go through the injected `ProjectFiles`
+		// provider. `examplesDir` is a project-root-relative key; the join below
+		// produces another project-relative key the provider resolves *with
+		// containment*, so a `src="../…"` that escapes the project root is denied
+		// by the provider and surfaces the in-band "directory not found" error.
+		const projectFiles = config.variables?.__sandboxFiles as ProjectFiles | undefined;
 		const examplesDir = config.variables?.__sandboxExamplesDir as string | undefined;
 
-		if (src && readFile && listDir && examplesDir) {
+		if (src && projectFiles && examplesDir !== undefined) {
 			// Directory source mode
-			const dirPath = examplesDir.endsWith('/') ? examplesDir + src : examplesDir + '/' + src;
-			const result = assembleFromDirectory(dirPath, src, readFile, listDir, dirExists);
+			const dirPath = examplesDir
+				? (examplesDir.endsWith('/') ? examplesDir + src : examplesDir + '/' + src)
+				: src;
+			const result = assembleFromDirectory(
+				dirPath,
+				src,
+				(p) => projectFiles.read(p),
+				(p) => projectFiles.list(p),
+				(p) => projectFiles.exists(p),
+			);
 
 			// If there are fatal errors, render an error message instead
 			if (result.errors.length > 0) {

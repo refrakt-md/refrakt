@@ -1,4 +1,8 @@
 import { describe, it, expect } from 'vitest';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
+import { fsProjectFiles, memoryProjectFiles } from '@refrakt-md/types/project-files';
 import { parse, findTag } from './helpers.js';
 
 // SPEC-081: the sandbox transform emits the `rf-sandbox` custom element with its
@@ -142,30 +146,21 @@ describe('sandbox tag', () => {
 });
 
 describe('sandbox with src attribute', () => {
-	/** Create mock file system variables for sandbox external sources */
+	/** Create mock sandbox source files (SPEC-113 — a `ProjectFiles` provider
+	 *  over project-root-relative keys). The examples directory is the `examples`
+	 *  key; file keys live under it. */
 	function mockSandboxFs(files: Record<string, string>) {
-		const dirs = new Map<string, string[]>();
-		for (const path of Object.keys(files)) {
-			const parts = path.split('/');
-			const dir = parts.slice(0, -1).join('/');
-			const name = parts[parts.length - 1];
-			if (!dirs.has(dir)) dirs.set(dir, []);
-			dirs.get(dir)!.push(name);
-		}
-
 		return {
-			__sandboxReadFile: (p: string): string | null => files[p] ?? null,
-			__sandboxListDir: (p: string): string[] => dirs.get(p) ?? [],
-			__sandboxDirExists: (p: string): boolean => dirs.has(p),
-			__sandboxExamplesDir: '/examples',
+			__sandboxFiles: memoryProjectFiles(new Map(Object.entries(files))),
+			__sandboxExamplesDir: 'examples',
 		};
 	}
 
 	it('should load content from a directory', () => {
 		const vars = mockSandboxFs({
-			'/examples/login/index.html': '<form>Login</form>',
-			'/examples/login/style.css': '.form { padding: 1rem; }',
-			'/examples/login/script.js': 'console.log("hello");',
+			'examples/login/index.html': '<form>Login</form>',
+			'examples/login/style.css': '.form { padding: 1rem; }',
+			'examples/login/script.js': 'console.log("hello");',
 		});
 
 		const result = parse(`{% sandbox src="login" %}
@@ -181,8 +176,8 @@ describe('sandbox with src attribute', () => {
 
 	it('should expose source-file origins on data-source-origins', () => {
 		const vars = mockSandboxFs({
-			'/examples/card/index.html': '<div>Card</div>',
-			'/examples/card/style.css': '.card { border: 1px solid; }',
+			'examples/card/index.html': '<div>Card</div>',
+			'examples/card/style.css': '.card { border: 1px solid; }',
 		});
 
 		const result = parse(`{% sandbox src="card" %}
@@ -198,7 +193,7 @@ describe('sandbox with src attribute', () => {
 
 	it('should work with framework and other attributes', () => {
 		const vars = mockSandboxFs({
-			'/examples/demo/index.html': '<button>Click</button>',
+			'examples/demo/index.html': '<button>Click</button>',
 		});
 
 		const result = parse(`{% sandbox src="demo" framework="tailwind" %}
@@ -226,5 +221,65 @@ describe('sandbox with src attribute', () => {
 
 		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox!.attributes['data-source-content']).toContain('<p>Inline content</p>');
+	});
+});
+
+// SPEC-113 / WORK-482 — the `examplesDir + '/' + src` join used to be an
+// unguarded string concat, so `src="../…"` could climb out of the examples
+// directory (and the project) and read arbitrary files. Routing the join
+// through the `ProjectFiles` provider means a `src` that escapes the project
+// root is denied by the provider's containment and surfaces the in-band
+// "directory not found" message — in both providers.
+describe('sandbox src containment (SPEC-113)', () => {
+	function contentOf(result: unknown): string {
+		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		return (sandbox!.attributes['data-source-content'] as string) ?? '';
+	}
+
+	it('memoryProjectFiles: a root-escaping `src` resolves to the in-band error, not the file', () => {
+		// `secret/...` sits inside the project but outside `examples`; the escape
+		// attempt climbs past the root, which the provider denies outright.
+		const files = memoryProjectFiles(new Map([
+			['examples/ok/index.html', '<div>ok</div>'],
+			['secret/index.html', '<div>SECRET</div>'],
+		]));
+		const vars = { __sandboxFiles: files, __sandboxExamplesDir: 'examples' };
+
+		const escaped = contentOf(parse(`{% sandbox src="../../secret" %}\n{% /sandbox %}`, vars));
+		expect(escaped).toContain('not found');
+		expect(escaped).not.toContain('SECRET');
+
+		// Sanity: a well-formed `src` under examples still resolves.
+		const ok = contentOf(parse(`{% sandbox src="ok" %}\n{% /sandbox %}`, vars));
+		expect(ok).toContain('<div>ok</div>');
+	});
+
+	it('fsProjectFiles: a root-escaping `src` cannot read a file outside the project root', () => {
+		const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sandbox-root-'));
+		const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'sandbox-outside-'));
+		try {
+			fs.mkdirSync(path.join(root, 'examples', 'ok'), { recursive: true });
+			fs.writeFileSync(path.join(root, 'examples', 'ok', 'index.html'), '<div>ok</div>');
+			fs.writeFileSync(path.join(outside, 'index.html'), '<div>SECRET</div>');
+
+			const vars = {
+				__sandboxFiles: fsProjectFiles(root),
+				__sandboxExamplesDir: 'examples',
+			};
+
+			// `../../<outside>` from the examples dir climbs out of the project root.
+			const escaped = contentOf(parse(
+				`{% sandbox src="../../${path.basename(outside)}" %}\n{% /sandbox %}`,
+				vars,
+			));
+			expect(escaped).toContain('not found');
+			expect(escaped).not.toContain('SECRET');
+
+			const ok = contentOf(parse(`{% sandbox src="ok" %}\n{% /sandbox %}`, vars));
+			expect(ok).toContain('<div>ok</div>');
+		} finally {
+			fs.rmSync(root, { recursive: true, force: true });
+			fs.rmSync(outside, { recursive: true, force: true });
+		}
 	});
 });

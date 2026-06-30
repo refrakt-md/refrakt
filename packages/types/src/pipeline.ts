@@ -1,5 +1,7 @@
 /** Cross-page pipeline types */
 
+import type { ProjectFiles } from './project-files.js';
+
 /** A page heading (level, text, generated anchor id) */
 export interface PipelineHeadingInfo {
 	level: number;
@@ -192,14 +194,12 @@ export interface PreprocessContext extends PipelineContext {
 	 *  anchor; any preprocessor that resolves files relative to the project
 	 *  root reads it here. */
 	projectRoot?: string;
-	/** Sandbox file-reading helpers — same shape as the transform-time
-	 *  `__sandboxReadFile` family. Preprocess runs before the transform
-	 *  config exists, so the helpers are exposed here instead. */
-	sandbox?: {
-		read: (path: string) => string | null;
-		list: (path: string) => string[];
-		exists: (path: string) => boolean;
-	};
+	/** The project's files, as a {@link ProjectFiles} provider (SPEC-113).
+	 *  Preprocess runs before the transform config exists, so the same provider
+	 *  the transform-time sandbox reads through is exposed here for any
+	 *  file-reading preprocessor. Keys are normalized POSIX project-root-relative
+	 *  paths; containment is the provider's contract. */
+	sandbox?: ProjectFiles;
 	/** Markdoc variables that would otherwise be available to transforms
 	 *  via `config.variables`. Snippet's preprocess uses these to resolve
 	 *  attribute values that come in as Markdoc `Variable` nodes (e.g.
