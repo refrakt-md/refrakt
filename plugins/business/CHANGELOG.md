@@ -1,5 +1,21 @@
 # @refrakt-md/business
 
+## 0.26.0
+
+### Minor Changes
+
+- 7988847: **Carousel is now a shared layout mode any rune can adopt, not a one-off.** `layout="carousel"` is a canonical layout token backed by a shared DOM contract (a `data-name="items"` track whose direct children are the slides) and an attribute-triggered behavior dispatch path: the carousel behavior enhances any block carrying `[data-layout="carousel"]`, lifted out of the gallery to be block-agnostic. A CSS-only `collapse-to` dial lets a grid/list collapse into a carousel at a breakpoint. `feature` (marketing) and `cast` (business) are the first adopters; the shared track + `collapse-to` contract is documented for further runes.
+
+### Patch Changes
+
+- Updated dependencies [d6b7567]
+- Updated dependencies [7988847]
+- Updated dependencies [7988847]
+- Updated dependencies [7988847]
+  - @refrakt-md/transform@0.26.0
+  - @refrakt-md/runes@0.26.0
+  - @refrakt-md/types@0.26.0
+
 ## 0.25.1
 
 ### Patch Changes
