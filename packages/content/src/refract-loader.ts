@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import type { Plugin, SiteConfig, SecurityPolicy, RefraktConfig, XrefPattern } from '@refrakt-md/types';
 import { getThemePackage } from '@refrakt-md/types';
+import { fsProjectFiles } from '@refrakt-md/types/project-files';
 import { normalizeRefraktConfig, resolveSite, loadPresets } from '@refrakt-md/transform/node';
 import type { ThemeTokensConfig } from '@refrakt-md/types';
 import { compileXrefPatterns, type CompiledXrefPattern } from '@refrakt-md/runes';
@@ -246,6 +247,7 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 						config: rawConfig,
 						configDir,
 						registerFileRoot,
+						projectFiles: fsProjectFiles(configDir),
 					});
 				}
 			}
@@ -383,6 +385,7 @@ export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions)
 						config: site,
 						configDir: projectRoot ?? '',
 						registerFileRoot,
+						projectFiles: projectRoot ? fsProjectFiles(projectRoot) : undefined,
 					});
 				}
 			}

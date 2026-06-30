@@ -1,6 +1,6 @@
 import Markdoc, { type Node } from '@markdoc/markdoc';
 import { readField as readNodeField } from '@refrakt-md/transform';
-import type { PluginPipelineHooks, EntityRegistration } from '@refrakt-md/types';
+import type { PluginPipelineHooks, EntityRegistration, ProjectFiles } from '@refrakt-md/types';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { PLAN_HISTORY_SENTINEL } from './tags/plan-history.js';
@@ -159,6 +159,11 @@ let _planDir: string | undefined;
  *  {@link planPipelineHooks.configure} when running through refract-loader. */
 let _projectRoot: string | undefined;
 
+/** The project's files (SPEC-113). When set (by the configure hook), the
+ *  unconditional scan reads `plan.dir` through this provider instead of `fs`,
+ *  so a hosted in-memory build stays fs-free. Undefined → direct `fs`. */
+let _projectFiles: ProjectFiles | undefined;
+
 /** Set the plan directory path for the pipeline's aggregate() hook to consume */
 export function setPlanDir(dir: string): void {
 	_planDir = dir;
@@ -266,9 +271,21 @@ function walkFiles(dir: string, cb: (absPath: string) => void): void {
 function performUnconditionalScan(
 	planDir: string,
 	projectRoot: string | undefined,
+	projectFiles: ProjectFiles | undefined,
 	registry: { register: (e: EntityRegistration) => void; getById: (type: string, id: string) => EntityRegistration | undefined },
 	ctx: { info: (m: string) => void; warn: (m: string) => void; error: (m: string) => void },
 ): void {
+	// SPEC-113 — when a provider is wired and the plan dir is contained within
+	// the project root, scan it through the provider (fs-free, hosted-ready);
+	// otherwise fall back to direct `fs`.
+	if (projectFiles && projectRoot) {
+		const planKey = posixPath(path.relative(projectRoot, path.resolve(planDir)));
+		if (planKey !== '' && !planKey.startsWith('..') && !path.isAbsolute(planKey)) {
+			scanViaProvider(projectFiles, planKey, (sourceFile, raw) => processPlanFile(sourceFile, raw, undefined, registry, ctx));
+			return;
+		}
+	}
+
 	let absPlanDir: string;
 	try {
 		absPlanDir = path.resolve(planDir);
@@ -296,6 +313,47 @@ function performUnconditionalScan(
 			return;
 		}
 
+		let mtimeMs: number | undefined;
+		try {
+			mtimeMs = fs.statSync(absPath).mtimeMs;
+		} catch { /* ignore */ }
+
+		processPlanFile(sourceFile, raw, mtimeMs, registry, ctx);
+	});
+}
+
+/** Recursively walk a plan dir through the provider, invoking `onFile` for
+ *  every `.md` file with its project-relative key + content. A child whose
+ *  `read` returns content is a file; otherwise it's a directory to recurse. */
+function scanViaProvider(
+	files: ProjectFiles,
+	planKey: string,
+	onFile: (sourceFile: string, raw: string) => void,
+): void {
+	if (!files.exists(planKey) || files.read(planKey) !== null) return; // missing or not a directory
+	const walk = (dirKey: string): void => {
+		for (const name of files.list(dirKey)) {
+			if (name.startsWith('.')) continue;
+			const childKey = `${dirKey}/${name}`;
+			const content = files.read(childKey);
+			if (content === null) walk(childKey);
+			else if (childKey.endsWith('.md')) onFile(childKey, content);
+		}
+	};
+	walk(planKey);
+}
+
+/** Parse one plan source file and register its entity. Shared by the fs and
+ *  provider scan paths. `mtimeMs` backfills `data.modified` when present (the
+ *  provider path has no mtime — a remote host supplies timestamps elsewhere). */
+function processPlanFile(
+	sourceFile: string,
+	raw: string,
+	mtimeMs: number | undefined,
+	registry: { register: (e: EntityRegistration) => void; getById: (type: string, id: string) => EntityRegistration | undefined },
+	ctx: { info: (m: string) => void; warn: (m: string) => void; error: (m: string) => void },
+): void {
+	{
 		// Use the same scanner-core parser that the CLI uses — single source
 		// of truth for what counts as a parseable plan entity.
 		const entity = parseFileContent(raw, sourceFile);
@@ -370,11 +428,8 @@ function performUnconditionalScan(
 		// (via mtimeMap in commands/render-pipeline.ts), so this brings the
 		// standard refrakt pipeline to parity. Falls back silently if stat
 		// fails (e.g. file vanished mid-scan).
-		if (!data.modified) {
-			try {
-				const mtimeMs = fs.statSync(absPath).mtimeMs;
-				data.modified = new Date(mtimeMs).toISOString().slice(0, 10);
-			} catch { /* ignore */ }
+		if (!data.modified && mtimeMs !== undefined) {
+			data.modified = new Date(mtimeMs).toISOString().slice(0, 10);
 		}
 
 		// Count acceptance-criteria checkboxes for work + bug items so the
@@ -413,7 +468,7 @@ function performUnconditionalScan(
 			extract,
 			data,
 		});
-	});
+	}
 }
 
 export const planPipelineHooks: PluginPipelineHooks = {
@@ -421,6 +476,7 @@ export const planPipelineHooks: PluginPipelineHooks = {
 		const config = opts.config as { plan?: { dir?: string } } | null | undefined;
 		const planDirRelative = config?.plan?.dir;
 		_projectRoot = opts.configDir;
+		_projectFiles = opts.projectFiles;
 		if (planDirRelative) {
 			const absPlanDir = path.resolve(opts.configDir, planDirRelative);
 			_planDir = absPlanDir;
@@ -505,7 +561,7 @@ export const planPipelineHooks: PluginPipelineHooks = {
 		// expand (SPEC-066) can substitute their content inline. Silent
 		// no-op when plan.dir isn't configured or doesn't exist.
 		if (_planDir) {
-			performUnconditionalScan(_planDir, _projectRoot, registry, ctx);
+			performUnconditionalScan(_planDir, _projectRoot, _projectFiles, registry, ctx);
 		}
 
 		// SPEC-072 / WORK-281 — roll the criteria-checkbox progress per milestone

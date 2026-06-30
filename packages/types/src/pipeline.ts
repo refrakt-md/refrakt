@@ -173,6 +173,11 @@ export interface PluginConfigureOptions {
 	/** Absolute path to the directory containing `refrakt.config.json`.
 	 *  Useful for resolving config-relative paths (`plan.dir`, etc.). */
 	configDir: string;
+	/** The project's files (SPEC-113). A plugin that scans the project at
+	 *  configure time (e.g. the plan plugin reading `plan.dir`) reads through
+	 *  this provider so a hosted in-memory build stays fs-free. Undefined when
+	 *  no provider is wired — the plugin falls back to direct `fs`. */
+	projectFiles?: ProjectFiles;
 	/** Dynamically register a file-root namespace. Use this when the plugin's
 	 *  contribution depends on user config (e.g., the plan plugin registers
 	 *  `plan:` pointing at the user's `plan.dir`, which isn't knowable

@@ -3,6 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { EntityRegistration, EntityRegistry, PipelineContext } from '@refrakt-md/types';
+import { memoryProjectFiles } from '@refrakt-md/types/project-files';
 import { planPipelineHooks, setPlanDir, setProjectRoot } from '../src/pipeline.js';
 
 /**
@@ -270,5 +271,45 @@ describe('planPipelineHooks.configure', () => {
 			}),
 		).resolves.toBeUndefined();
 		expect(registered).toHaveLength(0);
+	});
+});
+
+// SPEC-113 / WORK-484 — when configure supplies a `ProjectFiles`, the
+// unconditional scan reads `plan.dir` through it (fs-free, hosted-ready).
+describe('planPipelineHooks unconditional scan via ProjectFiles (SPEC-113)', () => {
+	afterEach(async () => {
+		// Clear module state — configure with no provider resets `_projectFiles`.
+		await planPipelineHooks.configure!({ config: {}, configDir: '' });
+		setPlanDir('');
+		setProjectRoot('');
+	});
+
+	it('scans plan entities from a pure in-memory provider (no fs)', async () => {
+		const files = memoryProjectFiles(new Map([
+			['plan/specs/SPEC-400-auth.md', '{% spec id="SPEC-400" status="accepted" %}\n# Auth\n\nBody.\n{% /spec %}\n'],
+			['plan/work/WORK-400-impl.md', '{% work id="WORK-400" status="ready" %}\n# Impl\n{% /work %}\n'],
+			['plan/README.md', '# Plan\n\nNo rune here.\n'],
+		]));
+
+		await planPipelineHooks.configure!({
+			config: { plan: { dir: 'plan' } },
+			configDir: '/virtual',
+			projectFiles: files,
+		});
+
+		const { entries, registry } = makeRegistry();
+		const { ctx } = makeCtx();
+		planPipelineHooks.register!([], registry, ctx);
+
+		const spec = entries.find((e) => e.id === 'SPEC-400');
+		const work = entries.find((e) => e.id === 'WORK-400');
+		expect(spec).toBeDefined();
+		expect(spec!.type).toBe('spec');
+		expect(spec!.sourceFile).toBe('plan/specs/SPEC-400-auth.md');
+		expect(spec!.data.status).toBe('accepted');
+		expect(work).toBeDefined();
+		expect(work!.sourceFile).toBe('plan/work/WORK-400-impl.md');
+		// The README (no parseable rune) is skipped silently.
+		expect(entries).toHaveLength(2);
 	});
 });

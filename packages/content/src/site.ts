@@ -190,7 +190,7 @@ async function processContentTree(
   //   merged by the loader bootstrap.
   const partialFiles = tree.partials();
   const namespacedPartials = opts.fileRoots && Object.keys(opts.fileRoots).length > 0
-    ? await readFileRoots(opts.fileRoots)
+    ? await readFileRoots(opts.fileRoots, { projectFiles: opts.sandbox, projectRoot: opts.projectRoot })
     : new Map<string, PartialFile>();
   let parsedPartials: Record<string, Node> | undefined;
   if (partialFiles.size > 0 || namespacedPartials.size > 0) {
@@ -618,6 +618,18 @@ export interface LoadContentFromTreeOptions {
    *  entityRoutes adapter can read `entityRoutes` and other site-scoped
    *  config. */
   siteConfig?: unknown;
+  /** The project's files (SPEC-113) — the provider every ad-hoc read (snippet,
+   *  sandbox `src`, fileRoots, plan scan) resolves through. A hosted host
+   *  materializes its repo into a `memoryProjectFiles(map)` and passes it here
+   *  for a fully fs-free build. Defaults to a deny-all provider. */
+  projectFiles?: ProjectFiles;
+  /** Per-page git timestamps (`relativePath → { created, modified }`). A remote
+   *  host supplies these from its source's history API; omitted means
+   *  frontmatter-only timestamps. */
+  gitTimestamps?: Map<string, FileTimestamps>;
+  /** Project-root-relative POSIX key of the sandbox examples directory, joined
+   *  with a sandbox's `src` and resolved through `projectFiles`. */
+  sandboxExamplesDir?: string;
 }
 
 /**
@@ -631,11 +643,11 @@ export interface LoadContentFromTreeOptions {
  *
  * Differences from `loadContent`:
  * - No directory read — accepts the tree directly.
- * - No git history — timestamps come from frontmatter only.
- * - No sandbox filesystem access — sandbox runes resolve to null/empty.
- *   (Provide a `ProjectFiles` via `__sandboxFiles` in `variables` if your host
- *   has its own synchronous access strategy; a first-class `projectFiles`
- *   option is plumbed in WORK-484.)
+ * - No git history unless `gitTimestamps` is supplied — otherwise timestamps
+ *   come from frontmatter only.
+ * - Sandbox / snippet / fileRoots reads go through `projectFiles` (SPEC-113);
+ *   without it they resolve to null/empty, so a host that wants file-backed
+ *   runes passes a `memoryProjectFiles(map)` for a fully fs-free build.
  */
 export async function loadContentFromTree(
   tree: ContentTree,
@@ -658,5 +670,8 @@ export async function loadContentFromTree(
     repoBranch: options.repoBranch,
     fileRoots: options.fileRoots,
     siteConfig: options.siteConfig,
+    sandbox: options.projectFiles,
+    sandboxExamplesDir: options.sandboxExamplesDir,
+    gitTimestamps: options.gitTimestamps,
   });
 }

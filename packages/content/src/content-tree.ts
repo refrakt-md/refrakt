@@ -40,7 +40,9 @@ export interface ContentNode {
 export class ContentTree {
   private _partials: Map<string, PartialFile> | undefined;
 
-  constructor(public readonly root: ContentDirectory) {}
+  constructor(public readonly root: ContentDirectory, partials?: Map<string, PartialFile>) {
+    this._partials = partials;
+  }
 
   /** Recursively walk a content directory and build the tree */
   static async fromDirectory(dirPath: string): Promise<ContentTree> {
@@ -48,6 +50,68 @@ export class ContentTree {
     const tree = new ContentTree(root);
     tree._partials = await readPartials(dirPath);
     return tree;
+  }
+
+  /**
+   * Build a tree from a normalized in-memory file map (SPEC-113 §4) — no
+   * filesystem access. Keys are project-root-relative POSIX paths; everything
+   * under `contentDir` becomes the page corpus (`_layout.md` → a directory's
+   * layout, `_partials/…` at the content root → partials, other `.md` → pages).
+   * This is the assemble-tree-from-the-map step a hosted host runs after
+   * materializing its repo tarball into a `Map`.
+   */
+  static fromContentMap(
+    files: Map<string, string>,
+    opts: { contentDir: string },
+  ): ContentTree {
+    const contentDir = opts.contentDir.replace(/\/+$/, '');
+    const prefix = contentDir === '' ? '' : contentDir + '/';
+    const root: ContentDirectory = {
+      name: contentDir.split('/').pop() ?? '',
+      dirPath: contentDir,
+      pages: [],
+      children: [],
+    };
+    const partials = new Map<string, PartialFile>();
+
+    const ensureDir = (segments: string[]): ContentDirectory => {
+      let dir = root;
+      let acc = contentDir;
+      for (const seg of segments) {
+        acc = acc ? `${acc}/${seg}` : seg;
+        let child = dir.children.find((c) => c.name === seg);
+        if (!child) {
+          child = { name: seg, dirPath: acc, pages: [], children: [] };
+          dir.children.push(child);
+        }
+        dir = child;
+      }
+      return dir;
+    };
+
+    for (const [key, raw] of files) {
+      if (prefix && !key.startsWith(prefix)) continue;
+      const relative = prefix ? key.slice(prefix.length) : key;
+      if (relative === '') continue;
+      const segments = relative.split('/');
+
+      // `_partials/` at the content root → partials (matches `readPartials`).
+      if (segments[0] === '_partials') {
+        const name = segments.slice(1).join('/');
+        if (name.endsWith('.md')) partials.set(name, { name, filePath: key, raw });
+        continue;
+      }
+      if (!relative.endsWith('.md')) continue;
+
+      const fileName = segments[segments.length - 1];
+      const dir = ensureDir(segments.slice(0, -1));
+      const page: ContentPage = { filePath: key, relativePath: relative, raw };
+      if (fileName === '_layout.md') dir.layout = page;
+      else dir.pages.push(page);
+    }
+
+    sortDirectory(root);
+    return new ContentTree(root, partials);
   }
 
   /** All pages in the tree (depth-first) */
@@ -101,6 +165,14 @@ async function readDirectory(dirPath: string, rootPath: string): Promise<Content
   dir.children.sort((a, b) => a.name.localeCompare(b.name));
 
   return dir;
+}
+
+/** Recursively sort a directory's pages (by relativePath) and children (by
+ *  name), mirroring {@link readDirectory}'s deterministic ordering. */
+function sortDirectory(dir: ContentDirectory): void {
+  dir.pages.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
+  dir.children.sort((a, b) => a.name.localeCompare(b.name));
+  for (const child of dir.children) sortDirectory(child);
 }
 
 function* walkPages(dir: ContentDirectory): Generator<ContentPage> {
