@@ -33,6 +33,7 @@ tint-lock: false
 - plugin-authoring/extending-core
 - plugin-authoring/fixtures
 - plugin-authoring/pipeline
+- plugin-authoring/hosted-builds
 
 ## Theme authoring
 
