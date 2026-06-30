@@ -105,8 +105,10 @@ function globToRegExp(value: string): RegExp {
 const REGEX_LITERAL = /^\/(.+)\/([gimsuy]*)$/;
 const REGEX_METACHAR = /[\\^$.+?()[\]{}|]/;
 
-/** Does a single candidate string satisfy a clause value (operator chosen by value shape)? */
-function matchValue(candidate: string, value: string): boolean {
+/** Does a single candidate string satisfy a clause value (operator chosen by value shape)?
+ *  Exported so consumers with their own field resolver (e.g. the SPEC-103 `data`
+ *  rune's row-shaped resolver) reuse the exact exact/glob/regex semantics. */
+export function matchValue(candidate: string, value: string): boolean {
 	const m = value.match(REGEX_LITERAL);
 	if (m && (m[2].length > 0 || REGEX_METACHAR.test(m[1]))) {
 		try {

@@ -183,6 +183,14 @@
 				"{content}"
 			]
 		},
+		"Data": {
+			"block": "data",
+			"root": ".rf-data",
+			"dataRune": "data",
+			"childOrder": [
+				"{content}"
+			]
+		},
 		"Expand": {
 			"block": "expand",
 			"root": ".rf-expand",
