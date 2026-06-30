@@ -18,11 +18,15 @@ tint-lock: false
 - plan-overview
 - plan-workflow
 
+## Publishing
+
+- plan-site
+- plan-integrate
+
 ## Reference
 
 - plan-entities
 - plan-cli
-- plan-hub
 
 {% /nav %}
 {% /region %}

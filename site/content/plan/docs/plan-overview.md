@@ -1,13 +1,13 @@
 ---
 title: Plan Overview
-description: Structured project planning with specs, work items, decisions, and milestones — managed from the CLI and browsable on PlanHub
+description: Structured project planning with specs, work items, decisions, and milestones — managed from the CLI and publishable as a site
 ---
 
 # Plan
 
 Plan is a structured project planning system built into refrakt.md. It replaces issue trackers and project boards with version-controlled Markdoc files that live in your repository.
 
-Every plan entity — specs, work items, bugs, decisions, milestones — is a `.md` file in your `plan/` directory. The CLI manages these files, tracks acceptance criteria, resolves dependencies, and validates cross-references. [PlanHub](https://plan.refrakt.md) provides a web dashboard for browsing and sharing your roadmap.
+Every plan entity — specs, work items, bugs, decisions, milestones — is a `.md` file in your `plan/` directory. The CLI manages these files, tracks acceptance criteria, resolves dependencies, and validates cross-references. When you want to browse or share your roadmap, [publish it as a site](/plan/docs/plan-site) — a live local dashboard, a static export, or a deployable site you own.
 
 ## Why plan in the repo?
 
@@ -64,4 +64,5 @@ Files follow the `{ID}-{slug}.md` naming convention. IDs are auto-assigned when 
 - [Workflow](/plan/docs/plan-workflow) — learn the day-to-day create/next/update cycle
 - [Entities](/plan/docs/plan-entities) — deep dive into each entity type and its attributes
 - [CLI Reference](/plan/docs/plan-cli) — full command reference
-- [PlanHub](/plan/docs/plan-hub) — browse your plan on the web
+- [Publish a plan site](/plan/docs/plan-site) — browse locally or ship a standalone site
+- [Add plan to an existing site](/plan/docs/plan-integrate) — wire plan into a site you already have

@@ -1,6 +1,6 @@
 ---
 title: Plan — Project Planning in Your Repo
-description: Structured project planning with specs, work items, decisions, and milestones that live in your repository and sync to an interactive dashboard
+description: Structured project planning with specs, work items, decisions, and milestones that live in your repository and publish as a browsable site
 ---
 
 {% hero align="center" %}
@@ -14,7 +14,7 @@ npm create refrakt my-plan --type plan
 ```
 
 - [Get Started](/plan/docs/plan-overview)
-- [See a live dashboard](https://plan.refrakt.md/refrakt-md/refrakt)
+- [Publish your plan](/plan/docs/plan-site)
 
 {% /hero %}
 
@@ -48,9 +48,14 @@ npx refrakt plan update WORK-042 --status done --resolve "Implemented in PR #42"
 
 ---
 
-## Browse on PlanHub
+## Publish your plan
 
-Push your `plan/` directory to GitHub, then visit [plan.refrakt.md](https://plan.refrakt.md) and connect your repository. Your plan is rendered as an interactive dashboard with search, filtering, and cross-references.
+Browse it locally as you work, or ship it. `refrakt plan serve` opens a live dashboard; `refrakt plan build` exports a static site. Or scaffold a deployable site with `--target` and customize it like any refrakt project.
+
+```shell
+npx refrakt plan serve --open
+npm create refrakt my-plan --type plan --target sveltekit
+```
 
 {% /steps %}
 
@@ -76,9 +81,9 @@ Issue trackers live outside your code. Boards go stale. Status updates get lost 
 
   Work items declare dependencies. Specs link to decisions. `plan next` respects blockers, `plan validate` catches broken references.
 
-- {% icon name="globe" /%} **PlanHub dashboard**
+- {% icon name="globe" /%} **Publish as a site**
 
-  Push to GitHub, visit `plan.refrakt.md/{owner}/{repo}`. An interactive web view of your plan — no build step, no hosting.
+  Browse locally with `plan serve`, export a static site with `plan build`, or scaffold a deployable site you own and theme — no SaaS, no lock-in.
 
 - {% icon name="wifi-off" /%} **Works offline, zero lock-in**
 
