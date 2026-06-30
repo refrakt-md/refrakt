@@ -258,6 +258,9 @@ async function processContentTree(
       // deferred templates silently render as empty `<article>` tags.
       partials: parsedPartials,
       projectRoot: opts.projectRoot,
+      // SPEC-113 — expand / file-ref read source files through the same
+      // provider as snippet (the sandbox provider on the options bag).
+      projectFiles: opts.sandbox,
     },
   };
   // Always thread embedConfig: collection (SPEC-070) and expand (SPEC-066) need

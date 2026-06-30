@@ -7,6 +7,7 @@ import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { tags, nodes } from '../src/index.js';
 import { resolveExpands, __resetExpandCache } from '../src/expand-pipeline.js';
+import { fsProjectFiles } from '@refrakt-md/types/project-files';
 import { applyOutlineScopeWalkers } from '../src/outline-scope.js';
 import { EntityRegistryImpl } from '../../content/src/registry.js';
 import type { PipelineContext, EntityRegistration } from '@refrakt-md/types';
@@ -53,6 +54,7 @@ function embedConfig() {
 		tags: tags as Record<string, unknown>,
 		nodes: nodes as Record<string, unknown>,
 		projectRoot,
+		projectFiles: fsProjectFiles(projectRoot),
 	};
 }
 

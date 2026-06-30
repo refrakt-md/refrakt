@@ -1,24 +1,25 @@
 /**
- * Sandboxed file reader for the snippet rune (SPEC-062).
+ * Sandboxed file reader for the snippet rune (SPEC-062) and its siblings
+ * (expand SPEC-066, file-ref SPEC-078).
  *
- * Resolves a project-root-relative path, enforces the snippet sandbox
- * (absolute-path reject, traversal reject, symlink-escape reject,
- * existence + file-type check), and optionally slices by line range.
+ * Reads a project-root-relative path through an injected {@link ProjectFiles}
+ * provider (SPEC-113) and optionally slices it by line range. The provider
+ * owns containment — absolute-path reject, traversal reject, symlink-escape
+ * reject — so this module no longer re-implements it; a denied or missing
+ * read simply comes back as `null`. What stays here is the snippet-specific
+ * value-add: line-range parsing, slicing, clamp warnings, and the structured
+ * `SnippetSandboxError` the preprocess hook formats for the user.
  *
- * Pure synchronous I/O — runs at build time during the preprocess
- * phase. Errors are thrown as `Error` instances with structured messages
- * the preprocess hook formats for the user.
+ * No `node:fs` import — all I/O goes through the provider, which keeps the
+ * runes package tree-shakable for browser bundles.
  */
 
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+import type { ProjectFiles } from '@refrakt-md/types';
 
 /** Diagnostics from a single read. */
 export interface ReadFileResult {
 	/** Resolved file content (possibly sliced by `lines`). */
 	content: string;
-	/** Absolute resolved path. */
-	absolutePath: string;
 	/** Project-root-relative POSIX path — what `data-snippet-source` carries. */
 	relativePath: string;
 	/** Warnings the preprocess hook should surface (e.g., end-clamp). */
@@ -26,62 +27,15 @@ export interface ReadFileResult {
 }
 
 export interface ReadFileOptions {
+	/** The project's files, rooted at the project root. Reads go through this. */
+	files: ProjectFiles;
 	/** The author-supplied `path=` attribute value (project-root-relative). */
 	pathAttr: string;
-	/** Absolute path to the project root (the directory containing
-	 *  `refrakt.config.json`). The sandbox anchor. */
-	projectRoot: string;
 	/** Optional `lines=` attribute value (`"10-25"`, `"10-"`, `"-20"`, `"10"`). */
 	lines?: string;
 	/** Optional source-page context used in error messages
 	 *  ("Referenced from: docs/getting-started.md:42"). */
 	referencingPage?: string;
-}
-
-/** Convert host-OS file path to POSIX form (forward slashes). */
-function posixPath(p: string): string {
-	return path.sep === '/' ? p : p.split(path.sep).join('/');
-}
-
-/**
- * Validate a path attribute against the snippet sandbox rules.
- * Throws `SnippetSandboxError` on rejection; returns the absolute resolved
- * path on success.
- */
-export function resolveSnippetPath(pathAttr: string, projectRoot: string): string {
-	if (typeof pathAttr !== 'string' || pathAttr.length === 0) {
-		throw new SnippetSandboxError('snippet `path` attribute is required');
-	}
-	if (path.isAbsolute(pathAttr)) {
-		throw new SnippetSandboxError(
-			`snippet path "${pathAttr}" is absolute; project-root-relative paths only`,
-		);
-	}
-	const joined = path.resolve(projectRoot, pathAttr);
-	const normalized = path.normalize(joined);
-	const rootWithSep = projectRoot.endsWith(path.sep) ? projectRoot : projectRoot + path.sep;
-	if (!normalized.startsWith(rootWithSep) && normalized !== projectRoot) {
-		throw new SnippetSandboxError(
-			`snippet path "${pathAttr}" escapes the project root after normalization`,
-		);
-	}
-	// Symlink-escape check via realpath. Fails open if realpath errors
-	// (which mostly means the file doesn't exist — we'll surface that below).
-	try {
-		const real = fs.realpathSync(normalized);
-		if (!real.startsWith(rootWithSep) && real !== projectRoot) {
-			throw new SnippetSandboxError(
-				`snippet path "${pathAttr}" resolves through a symlink that escapes the project root`,
-			);
-		}
-	} catch (err) {
-		if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
-			throw err;
-		}
-		// File doesn't exist — let the stat check below produce the canonical
-		// "file not found" error with the resolved path in the message.
-	}
-	return normalized;
 }
 
 /** Range parsed from the `lines=` attribute. */
@@ -163,62 +117,44 @@ export function sliceContent(
 	return { sliced, warnings };
 }
 
-/** Read a snippet's source file with full sandbox enforcement + line slicing. */
+/** Read a snippet's source file through the provider, with line slicing. The
+ *  provider denies absolute / traversal / symlink-escape paths (and reports a
+ *  missing or non-file path) as `null`, which becomes a single in-band error. */
 export function readSnippetFile(opts: ReadFileOptions): ReadFileResult {
-	const absolutePath = resolveSnippetPath(opts.pathAttr, opts.projectRoot);
-
-	let stat: fs.Stats;
-	try {
-		stat = fs.statSync(absolutePath);
-	} catch {
+	const rawContent = opts.files.read(opts.pathAttr);
+	if (rawContent === null) {
 		const referenced = opts.referencingPage ? `\n\nReferenced from: ${opts.referencingPage}` : '';
 		throw new SnippetSandboxError(
-			`snippet path "${opts.pathAttr}" cannot be resolved.\n\nResolved to: ${absolutePath}\nReason: file not found${referenced}`,
-		);
-	}
-	if (!stat.isFile()) {
-		throw new SnippetSandboxError(
-			`snippet path "${opts.pathAttr}" must be a file (got ${stat.isDirectory() ? 'directory' : 'other'})`,
+			`snippet path "${opts.pathAttr}" cannot be resolved — the file is missing, not a regular file, or outside the project root.${referenced}`,
 		);
 	}
 
-	const rawContent = fs.readFileSync(absolutePath, 'utf-8');
 	const range = parseLineRange(opts.lines);
 	const { sliced, warnings } = sliceContent(rawContent, range);
 
-	const relativePath = posixPath(path.relative(opts.projectRoot, absolutePath));
-
 	return {
 		content: sliced,
-		absolutePath,
-		relativePath,
+		relativePath: opts.pathAttr,
 		warnings,
 	};
 }
 
 /**
- * Read a file's raw text content with the snippet sandbox applied.
- * Used by expand (SPEC-066) when it needs the whole file (no line
- * slicing) to parse as Markdoc. Lives here so the `node:fs` import
- * stays inside this Node-only helper module — expand-pipeline.ts
- * imports the function, not `fs` directly, which keeps the runes
- * package tree-shakable for browser bundles.
+ * Read a file's raw text content through the provider. Used by expand
+ * (SPEC-066) when it needs the whole file (no line slicing) to parse as
+ * Markdoc. The provider applies the same containment as snippet.
  */
 export function readWholeSandboxedFile(opts: {
+	files: ProjectFiles;
 	relativePath: string;
-	projectRoot: string;
 }): string {
-	const absolutePath = resolveSnippetPath(opts.relativePath, opts.projectRoot);
-	if (!fs.existsSync(absolutePath)) {
-		throw new SnippetSandboxError(`source file "${opts.relativePath}" does not exist`);
-	}
-	const stat = fs.statSync(absolutePath);
-	if (!stat.isFile()) {
+	const raw = opts.files.read(opts.relativePath);
+	if (raw === null) {
 		throw new SnippetSandboxError(
-			`source file "${opts.relativePath}" must be a regular file (got ${stat.isDirectory() ? 'directory' : 'other'})`,
+			`source file "${opts.relativePath}" cannot be resolved — it is missing, not a regular file, or outside the project root`,
 		);
 	}
-	return fs.readFileSync(absolutePath, 'utf-8');
+	return raw;
 }
 
 /** All sandbox-rejection cases throw this — the preprocess hook can catch and

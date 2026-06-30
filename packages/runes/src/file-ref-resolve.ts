@@ -196,9 +196,9 @@ function buildFileRefHoist(
 		);
 		return null;
 	}
-	if (!context.projectRoot) {
+	if (!context.projectFiles) {
 		context.ctx.error(
-			`file-ref hoist for "${filePath}" requires a project root in the pipeline; none was threaded through. Drawer body will be empty.`,
+			`file-ref hoist for "${filePath}" requires a file provider in the pipeline; none was threaded through. Drawer body will be empty.`,
 			context.pageUrl,
 		);
 		return null;
@@ -210,8 +210,8 @@ function buildFileRefHoist(
 	let lang = 'text';
 	try {
 		const result = readSnippetFile({
+			files: context.projectFiles,
 			pathAttr: filePath,
-			projectRoot: context.projectRoot,
 			lines: lines || undefined,
 			referencingPage: context.pageUrl,
 		});

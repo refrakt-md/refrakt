@@ -1,6 +1,6 @@
 import type { ThemeConfig, SerializedTag, RendererNode } from '@refrakt-md/transform';
 import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta, readField, resolveGap, ratioToFr, resolveValign } from '@refrakt-md/transform';
-import type { PluginPipelineHooks, TransformedPage, EntityRegistry, AggregatedData, PipelineContext } from '@refrakt-md/types';
+import type { PluginPipelineHooks, TransformedPage, EntityRegistry, AggregatedData, PipelineContext, ProjectFiles } from '@refrakt-md/types';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable } from './lib/index.js';
@@ -2132,6 +2132,9 @@ export interface CorePipelineHooksOptions {
 		 *  resolve the same way they do in top-level page transforms. */
 		partials?: Record<string, unknown>;
 		projectRoot?: string;
+		/** The project's files (SPEC-113) — expand / file-ref read source
+		 *  files through this provider. */
+		projectFiles?: ProjectFiles;
 	};
 }
 
@@ -2281,6 +2284,7 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 				functions?: Record<string, unknown>;
 				partials?: Record<string, unknown>;
 				projectRoot?: string;
+				projectFiles?: ProjectFiles;
 			};
 		} | undefined;
 
@@ -2377,7 +2381,7 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 			renderable,
 			page.url,
 			coreData.registry,
-			coreData.embedConfig?.projectRoot,
+			coreData.embedConfig?.projectFiles,
 			ctx,
 		);
 

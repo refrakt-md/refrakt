@@ -29,7 +29,7 @@
 
 import Markdoc from '@markdoc/markdoc';
 import { readField } from '@refrakt-md/transform';
-import type { EntityRegistry, PipelineContext, TransformedPage } from '@refrakt-md/types';
+import type { EntityRegistry, PipelineContext, TransformedPage, ProjectFiles } from '@refrakt-md/types';
 import { DRAWER_TITLE_AUTO_MARKER } from './tags/drawer.js';
 
 const { Tag } = Markdoc;
@@ -243,12 +243,15 @@ function walkAndRewriteTitles(
 export const HOIST_DRAWER_SENTINEL = 'hoist-drawer';
 
 /** Per-page context handed to source-specific hoist builders so they can
- *  read the entity registry (for xref), resolve file paths against the
- *  project root (for file-ref), or emit pipeline messages. */
+ *  read the entity registry (for xref), read source files through the
+ *  project's `ProjectFiles` provider (for file-ref), or emit pipeline
+ *  messages. */
 export interface HoistBuildContext {
 	pageUrl: string;
 	registry: Readonly<EntityRegistry> | undefined;
-	projectRoot: string | undefined;
+	/** The project's files (SPEC-113) — file-ref reads its preview source
+	 *  through this provider. Undefined when no provider is wired. */
+	projectFiles: ProjectFiles | undefined;
 	ctx: PipelineContext;
 }
 
@@ -315,7 +318,7 @@ export function hoistPreviewDrawers(
 	renderable: unknown,
 	pageUrl: string,
 	registry: Readonly<EntityRegistry> | undefined,
-	projectRoot: string | undefined,
+	projectFiles: ProjectFiles | undefined,
 	ctx: PipelineContext,
 ): unknown {
 	// First pass: collect author-declared drawer ids so collisions can
@@ -341,7 +344,7 @@ export function hoistPreviewDrawers(
 
 	// Third pass: build hoisted drawer sections via source-specific
 	// builders and append to the page renderable root.
-	const buildContext: HoistBuildContext = { pageUrl, registry, projectRoot, ctx };
+	const buildContext: HoistBuildContext = { pageUrl, registry, projectFiles, ctx };
 	const drawers: TagNode[] = [];
 	for (const payload of payloads.values()) {
 		const source = payload.source;
