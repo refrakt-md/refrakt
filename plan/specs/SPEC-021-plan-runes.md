@@ -51,9 +51,10 @@ Wraps a specification document, giving it status tracking, versioning, and entit
 |Attribute   |Type  |Required|Values                                                   |Description                         |
 |------------|------|--------|---------------------------------------------------------|------------------------------------|
 |`id`        |String|Yes     |—                                                        |Unique identifier (e.g., `SPEC-008`)|
-|`status`    |String|No      |`draft`, `review`, `accepted`, `superseded`, `deprecated`|Current status                      |
+|`status`    |String|No      |`draft`, `review`, `accepted`, `implemented`, `shipped`, `superseded`, `deprecated`|Current status                      |
 |`version`   |String|No      |—                                                        |Version (e.g., `1.0`, `1.2`)        |
 |`supersedes`|String|No      |—                                                        |ID of the spec this replaces        |
+|`released-in`|String|No     |—                                                        |Release version shipped in (semver); required when `status="shipped"`|
 |`tags`      |String|No      |—                                                        |Comma-separated labels              |
 
 **Content model:**
@@ -357,7 +358,7 @@ Architecture decision record. Captures the context, options considered, the deci
 |Attribute   |Type  |Required|Values                                            |Description                     |
 |------------|------|--------|--------------------------------------------------|--------------------------------|
 |`id`        |String|Yes     |—                                                 |Identifier (e.g., `ADR-007`)    |
-|`status`    |String|No      |`proposed`, `accepted`, `superseded`, `deprecated`|Decision status                 |
+|`status`    |String|No      |`proposed`, `accepted`, `rejected`, `superseded`, `deprecated`|Decision status                 |
 |`date`      |String|No      |—                                                 |Date decided (ISO 8601)         |
 |`supersedes`|String|No      |—                                                 |ID of the decision this replaces|
 |`source`    |String|No      |—                                                 |Comma-separated IDs of specs/entities this decision informs|
@@ -717,9 +718,9 @@ my-project/
 |`draft` / `reported` / `proposed` / `planning` / `pending`|Grey  |All                |
 |`ready` / `confirmed`                                |Blue  |work, bug          |
 |`in-progress` / `active` / `review`                  |Yellow|All                |
-|`done` / `fixed` / `complete` / `accepted`           |Green |All                |
+|`done` / `fixed` / `complete` / `accepted` / `implemented` / `shipped`|Green |All                |
 |`blocked`                                            |Red   |work               |
-|`cancelled` / `wontfix` / `duplicate` / `superseded` / `deprecated`|Muted |work, bug, spec, decision|
+|`cancelled` / `rejected` / `wontfix` / `duplicate` / `superseded` / `deprecated`|Muted |work, bug, spec, decision|
 
 `cancelled` and `superseded` are terminal work states, rendered muted alongside the other retirement states — they must never read as achievement.
 

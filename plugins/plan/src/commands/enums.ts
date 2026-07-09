@@ -11,10 +11,10 @@ import type { PlanRuneType } from '../types.js';
 
 /** Valid `status` values per rune type. */
 export const VALID_STATUS: Record<PlanRuneType, readonly string[]> = {
-	spec: ['draft', 'review', 'accepted', 'superseded', 'deprecated'],
+	spec: ['draft', 'review', 'accepted', 'implemented', 'shipped', 'superseded', 'deprecated'],
 	work: ['draft', 'ready', 'in-progress', 'review', 'done', 'blocked', 'pending', 'cancelled', 'superseded'],
 	bug: ['reported', 'confirmed', 'in-progress', 'fixed', 'wontfix', 'duplicate'],
-	decision: ['proposed', 'accepted', 'superseded', 'deprecated'],
+	decision: ['proposed', 'accepted', 'rejected', 'superseded', 'deprecated'],
 	milestone: ['planning', 'active', 'complete'],
 };
 
@@ -24,12 +24,18 @@ export const VALID_SEVERITY: readonly string[] = ['critical', 'major', 'minor', 
 
 /** Attributes allowed per rune type (all of them, not just the enum-valued ones). */
 export const ALLOWED_ATTRS: Record<PlanRuneType, readonly string[]> = {
-	work: ['id', 'status', 'priority', 'complexity', 'assignee', 'milestone', 'source', 'supersedes', 'tags'],
-	spec: ['id', 'status', 'version', 'supersedes', 'tags'],
-	bug: ['id', 'status', 'severity', 'assignee', 'milestone', 'source', 'tags'],
+	work: ['id', 'status', 'priority', 'complexity', 'assignee', 'milestone', 'source', 'supersedes', 'pr', 'tags'],
+	spec: ['id', 'status', 'version', 'supersedes', 'released-in', 'tags'],
+	bug: ['id', 'status', 'severity', 'assignee', 'milestone', 'source', 'pr', 'tags'],
 	decision: ['id', 'status', 'date', 'supersedes', 'source', 'tags'],
 	milestone: ['name', 'status', 'target'],
 };
+
+/** Matches a single PR reference: `<org>/<repo>#<number>`. */
+export const PR_REF_RE = /^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+#\d+$/;
+
+/** Matches a semver release tag, e.g. `v0.11.4` (leading `v` optional). */
+export const RELEASED_IN_RE = /^v?\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 
 // --- Derived lifecycle sets (SPEC-117) -----------------------------------
 //
@@ -46,10 +52,10 @@ export const ALLOWED_ATTRS: Record<PlanRuneType, readonly string[]> = {
  * through {@link isTerminal} instead of maintaining private sets.
  */
 export const TERMINAL_STATUSES: Record<PlanRuneType, ReadonlySet<string>> = {
-	spec: new Set(['accepted', 'superseded', 'deprecated']),
+	spec: new Set(['accepted', 'implemented', 'shipped', 'superseded', 'deprecated']),
 	work: new Set(['done', 'cancelled', 'superseded']),
 	bug: new Set(['fixed', 'wontfix', 'duplicate']),
-	decision: new Set(['accepted', 'superseded', 'deprecated']),
+	decision: new Set(['accepted', 'rejected', 'superseded', 'deprecated']),
 	milestone: new Set(['complete']),
 };
 
@@ -60,7 +66,7 @@ export const TERMINAL_STATUSES: Record<PlanRuneType, ReadonlySet<string>> = {
  * terminal but deliberately excluded: retiring is not completing.
  */
 export const ACHIEVING_STATUSES: Record<PlanRuneType, ReadonlySet<string>> = {
-	spec: new Set(['accepted']),
+	spec: new Set(['accepted', 'implemented', 'shipped']),
 	work: new Set(['done']),
 	bug: new Set(['fixed']),
 	decision: new Set(['accepted']),

@@ -321,7 +321,13 @@ When marking a work item done, always provide a `--resolve` summary unless the c
    ```
    Run this for EVERY criterion that was satisfied. Copy the criterion text exactly from the work item.
 
-2. **Mark the item as done with a `--resolve` summary**:
+2. **Set the `pr` attribute** on the work item (the structured source of truth for traceability — the `PR:` line in `--resolve` prose is legacy narrative only):
+   ```bash
+   npx refrakt plan update <id> --pr "refrakt-md/refrakt#<number>"
+   ```
+   Use the merged PR's `<org>/<repo>#<number>`. Multiple PRs are comma-separated. This powers the `plan status` PR rollups; skipping it leaves the spec→work→PR chain broken.
+
+3. **Mark the item as done with a `--resolve` summary**:
    ```bash
    npx refrakt plan update <id> --status done --resolve "$(cat <<'EOF'
    Branch: `claude/branch-name`
@@ -335,9 +341,19 @@ When marking a work item done, always provide a `--resolve` summary unless the c
    )"
    ```
 
-3. **Commit the updated work item file** along with your implementation changes.
+4. **Commit the updated work item file** along with your implementation changes.
 
-Never mark a work item done without checking off criteria first. Never skip the `--resolve` summary. These are the project's historical record of what was built and why.
+Never mark a work item done without checking off criteria first. Never skip the `--resolve` summary or the `pr` attribute. These are the project's historical record of what was built and why.
+
+### Spec lifecycle (accepted → implemented → shipped)
+
+Specs carry the "is it built, and can users install it?" state beyond `accepted`:
+
+- **`accepted`** — agreed to build it.
+- **`implemented`** — all linked work items are `done`; the code is in `main`. Flip manually once the last work item lands (`plan status` suggests this flip when every `implemented-by` work item is done).
+- **`shipped`** — released to users in an npm version. Flip after `npm run release`, paired with `released-in="vX.Y.Z"` (validate errors on a shipped spec with no `released-in`).
+
+ADRs gain a terminal **`rejected`** status — "considered and explicitly declined" — distinct from `superseded`/`deprecated` (which were once accepted). Record the reasoning in the ADR body rather than deleting it.
 
 Use `--format json` on any command for machine-readable output.
 

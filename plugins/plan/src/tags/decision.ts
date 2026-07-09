@@ -8,7 +8,7 @@ import { VALID_STATUS } from '../commands/enums.js';
 export const decision = createContentModelSchema({
 	attributes: {
 		id: { type: String, required: true, description: 'Identifier (e.g., "ADR-007").' },
-		status: { type: String, required: false, matches: [...VALID_STATUS.decision], description: 'Decision status: proposed, accepted, superseded, or deprecated.' },
+		status: { type: String, required: false, matches: [...VALID_STATUS.decision], description: 'Decision status: proposed, accepted, rejected, superseded, or deprecated.' },
 		date: { type: String, required: false, description: 'Date decided (ISO 8601).' },
 		supersedes: { type: String, required: false, description: 'ID of the decision this replaces.' },
 		source: { type: String, required: false, description: 'Comma-separated IDs of specs or other entities this decision informs.' },

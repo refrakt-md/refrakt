@@ -68,12 +68,28 @@ export interface Warning {
 	message: string;
 }
 
+/** SPEC-049 — per-spec traceability rollup: the work/bug items that implement
+ *  a spec, the deduped PRs across them, and whether the spec is ready to flip
+ *  to `implemented`. */
+export interface SpecRollup {
+	id: string;
+	title: string | undefined;
+	status: string;
+	/** IDs of work/bug items that `source` this spec. */
+	implementedBy: string[];
+	/** Unique PR references across those items (attribute wins over legacy `PR:` line). */
+	prs: string[];
+	/** True when the spec is `accepted`, has ≥1 linked item, and all are done/fixed. */
+	suggestImplemented: boolean;
+}
+
 export interface StatusResult {
 	milestone?: MilestoneProgress;
 	counts: Record<string, StatusCounts>;
 	blocked: BlockedItem[];
 	ready: ReadyItem[];
 	done: DoneItem[];
+	specRollups: SpecRollup[];
 	warnings: Warning[];
 }
 
@@ -200,6 +216,53 @@ function findWarnings(allEntities: PlanEntity[]): Warning[] {
 	return warnings;
 }
 
+/** Parse a work/bug item's PR references — the `pr` attribute takes precedence
+ *  over the legacy `PR:` resolution line (SPEC-049). Returns a de-duplicated
+ *  ordered list. */
+function prRefsFor(e: PlanEntity): string[] {
+	const attr = (e.attributes.pr || '').trim();
+	const raw = attr
+		? attr.split(',').map(s => s.trim()).filter(Boolean)
+		: (e.resolution?.pr ? e.resolution.pr.split(',').map(s => s.trim()).filter(Boolean) : []);
+	return [...new Set(raw)];
+}
+
+/** Whether a work/bug item's `source` list references the given spec ID. */
+function sourcesSpec(e: PlanEntity, specId: string): boolean {
+	return (e.attributes.source || '')
+		.split(',')
+		.map(s => s.trim())
+		.includes(specId);
+}
+
+function buildSpecRollups(specs: PlanEntity[], workAndBugs: PlanEntity[]): SpecRollup[] {
+	const rollups: SpecRollup[] = [];
+	for (const spec of specs) {
+		const specId = spec.attributes.id;
+		if (!specId) continue;
+
+		const linked = workAndBugs.filter(e => sourcesSpec(e, specId));
+		const prs = [...new Set(linked.flatMap(prRefsFor))];
+
+		const allDone = linked.length > 0 && linked.every(e => DONE_STATUSES.has(e.attributes.status || ''));
+		const suggestImplemented = spec.attributes.status === 'accepted' && allDone;
+
+		// Only surface a rollup for specs that actually have linked work or PRs —
+		// keeps the report focused.
+		if (linked.length === 0 && prs.length === 0) continue;
+
+		rollups.push({
+			id: specId,
+			title: spec.title,
+			status: spec.attributes.status || 'draft',
+			implementedBy: linked.map(e => e.attributes.id || '').filter(Boolean),
+			prs,
+			suggestImplemented,
+		});
+	}
+	return rollups;
+}
+
 function findMilestoneProgress(milestones: PlanEntity[], workItems: PlanEntity[], scopeName?: string): MilestoneProgress | undefined {
 	let milestone: PlanEntity | undefined;
 
@@ -252,7 +315,8 @@ export function runStatus(options: StatusOptions): StatusResult {
 	const blocked = findBlockedItems(workAndBugs, allEntities);
 	const ready = findReadyItems(workAndBugs, allEntities);
 	const done = findDoneItems(workAndBugs);
+	const specRollups = buildSpecRollups(specs, workAndBugs);
 	const warnings = findWarnings(allEntities);
 
-	return { milestone: milestoneProgress, counts, blocked, ready, done, warnings };
+	return { milestone: milestoneProgress, counts, blocked, ready, done, specRollups, warnings };
 }

@@ -1,7 +1,8 @@
 import { execFileSync } from 'child_process';
-import { existsSync, renameSync } from 'fs';
+import { existsSync, renameSync, readFileSync, writeFileSync } from 'fs';
 import { basename, dirname, join, resolve } from 'path';
 import { scanPlanFiles } from '../scanner.js';
+import { PR_REF_RE } from './enums.js';
 
 export const EXIT_SUCCESS = 0;
 export const EXIT_ERRORS = 1;
@@ -151,5 +152,220 @@ export function runMigrateFilenames(options: MigrateFilenamesOptions): MigrateFi
 		},
 		errors,
 		exitCode,
+	};
+}
+
+// ─── migrate pr-attrs (SPEC-049 / WORK-498) ───
+
+export interface MigratePrAttrsOptions {
+	dir: string;
+	apply?: boolean;
+	useGit?: boolean;
+}
+
+export interface PrResolution {
+	id: string;
+	file: string;
+	pr: string;
+}
+
+export interface PrUnresolved {
+	id: string;
+	file: string;
+	reason: string;
+}
+
+export interface MigratePrAttrsResult {
+	mode: 'dry-run' | 'apply';
+	scanned: number;
+	repoSlug: string | null;
+	resolved: PrResolution[];
+	applied: PrResolution[];
+	/** Ambiguous — status flip maps to more than one plausible PR merge. */
+	skipped: PrUnresolved[];
+	/** Direct-to-main / squash / lost history — no PR merge found. */
+	unresolved: PrUnresolved[];
+	exitCode: number;
+}
+
+/** Run a git command in `cwd`, returning trimmed stdout or null on failure. */
+function git(cwd: string, args: string[]): string | null {
+	try {
+		return execFileSync('git', args, { cwd, stdio: ['pipe', 'pipe', 'pipe'], encoding: 'utf8' }).trim();
+	} catch {
+		return null;
+	}
+}
+
+/** Parse `<org>/<repo>` from an origin remote URL (SSH or HTTPS). A GitHub slug
+ *  is always the final two path segments, so we take those — robust against
+ *  proxy/mirror URLs that prepend extra path segments. */
+function parseRepoSlug(cwd: string): string | null {
+	const url = git(cwd, ['remote', 'get-url', 'origin']);
+	if (!url) return null;
+	// Strip protocol/host (and any user@host:), keep the path.
+	let path = url
+		.replace(/^git@[^:]+:/, '')
+		.replace(/^[a-z]+:\/\/[^/]+\//, '')
+		.replace(/\.git$/, '');
+	const segments = path.split('/').filter(Boolean);
+	if (segments.length < 2) return null;
+	return segments.slice(-2).join('/');
+}
+
+/** True when `a` is an ancestor of `b` (exit-code check on merge-base). */
+function isAncestor(cwd: string, a: string, b: string): boolean {
+	try {
+		execFileSync('git', ['merge-base', '--is-ancestor', a, b], { cwd, stdio: 'pipe' });
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+const MERGE_PR_RE = /Merge pull request #(\d+)/;
+
+/**
+ * Resolve the PR number that landed a status flip for one file.
+ * - Finds the commits that added a `status="done"` / `status="fixed"` line.
+ * - Walks forward (ancestry-path) from the newest such commit to the first
+ *   reachable merge commit; if its subject is `Merge pull request #N`, that's
+ *   the PR.
+ * Returns `{ pr }` on success, `{ ambiguous }` when two distinct status flips
+ * map to different PRs, or `{ reason }` when nothing resolves.
+ */
+function resolvePrForFile(cwd: string, relFile: string, statusRe: string): { pr?: number; ambiguous?: boolean; reason?: string } {
+	// Commits (newest-first) whose diff touched a done/fixed status line.
+	const log = git(cwd, ['log', '--format=%H', `-G${statusRe}`, '--', relFile]);
+	if (log === null) return { reason: 'git log failed (not a repo or file untracked)' };
+	const commits = log.split('\n').map(s => s.trim()).filter(Boolean);
+	if (commits.length === 0) return { reason: 'no status-flip commit in history (direct edit / lost history)' };
+
+	const prForCommit = (commit: string): number | null => {
+		// Walk the merges that descend from `commit`, earliest first. The PR that
+		// actually landed the work is the one whose *topic branch* (second parent)
+		// contains the commit — this skips unrelated release/main merges that
+		// merely happen to come after it on the first-parent line.
+		const merges = git(cwd, ['log', '--merges', '--ancestry-path', '--reverse', '--format=%H%x09%P%x09%s', `${commit}..HEAD`]);
+		if (!merges) return null;
+		for (const line of merges.split('\n').filter(Boolean)) {
+			const [, parentStr = '', subject = ''] = line.split('\t');
+			const m = subject.match(MERGE_PR_RE);
+			if (!m) continue;
+			const parents = parentStr.trim().split(/\s+/);
+			const firstParent = parents[0];
+			const secondParent = parents[1];
+			if (!firstParent || !secondParent) continue;
+			// The merge that *introduced* `commit`: it's on the merged-in topic
+			// branch (second parent) but was NOT already on mainline before the
+			// merge (first parent). This skips release/main merges that merely
+			// come after the commit on the first-parent line.
+			if (isAncestor(cwd, commit, secondParent) && !isAncestor(cwd, commit, firstParent)) {
+				return Number(m[1]);
+			}
+		}
+		return null;
+	};
+
+	// Resolve every status-flip commit to its introducing PR. If they disagree
+	// (the item was flipped to done via more than one PR over its history), the
+	// mapping is ambiguous and we skip rather than guess (SPEC-049: accept
+	// manual cleanup over silent misattribution).
+	const prs = new Set<number>();
+	for (const c of commits) {
+		const pr = prForCommit(c);
+		if (pr !== null) prs.add(pr);
+	}
+	if (prs.size === 0) return { reason: 'no PR merge commit reachable (direct-to-main or squash-merge)' };
+	if (prs.size > 1) return { ambiguous: true };
+	return { pr: [...prs][0] };
+}
+
+/** Insert a `pr="…"` attribute into the rune opening tag of a file, after the
+ *  `id="…"` attribute. Returns the new content, or null if no tag was found. */
+function insertPrAttr(content: string, pr: string): string | null {
+	const lines = content.split('\n');
+	const idx = lines.findIndex(l => /^\{%\s+(work|bug)\s/.test(l) && /\sid=("|')/.test(l));
+	if (idx === -1) return null;
+	if (/\spr=("|')/.test(lines[idx])) return null; // already has one
+	lines[idx] = lines[idx].replace(/(\sid=(["'])[^"']*\2)/, `$1 pr="${pr}"`);
+	return lines.join('\n');
+}
+
+/**
+ * Backfill the `pr` attribute on legacy `done` work / `fixed` bug items by
+ * mining git merge-commit history. Dry-run by default; `--apply` writes files,
+ * `--git` uses `git add` after writing so the change is staged.
+ */
+export function runMigratePrAttrs(options: MigratePrAttrsOptions): MigratePrAttrsResult {
+	const { dir, apply = false, useGit = false } = options;
+	const cwd = resolve(dir);
+	const entities = scanPlanFiles(dir, { cache: false });
+
+	const repoSlug = parseRepoSlug(cwd);
+	const resolved: PrResolution[] = [];
+	const applied: PrResolution[] = [];
+	const skipped: PrUnresolved[] = [];
+	const unresolved: PrUnresolved[] = [];
+
+	// Candidates: done work / fixed bug items with no `pr` attribute yet.
+	const candidates = entities.filter(e =>
+		((e.type === 'work' && e.attributes.status === 'done') ||
+		 (e.type === 'bug' && e.attributes.status === 'fixed')) &&
+		!(e.attributes.pr && e.attributes.pr.trim()),
+	);
+
+	for (const e of candidates) {
+		const id = e.attributes.id || e.file;
+		if (!repoSlug) {
+			unresolved.push({ id, file: e.file, reason: 'no origin remote — cannot form <org>/<repo> slug' });
+			continue;
+		}
+
+		const statusRe = e.type === 'work' ? 'status\\s*=\\s*"done"' : 'status\\s*=\\s*"fixed"';
+		const res = resolvePrForFile(cwd, e.file, statusRe);
+
+		if (res.ambiguous) {
+			skipped.push({ id, file: e.file, reason: 'multiple status flips map to different PRs' });
+			continue;
+		}
+		if (res.pr === undefined) {
+			unresolved.push({ id, file: e.file, reason: res.reason ?? 'unresolved' });
+			continue;
+		}
+
+		const pr = `${repoSlug}#${res.pr}`;
+		if (!PR_REF_RE.test(pr)) {
+			unresolved.push({ id, file: e.file, reason: `resolved PR ref "${pr}" is malformed` });
+			continue;
+		}
+
+		const rec: PrResolution = { id, file: e.file, pr };
+		resolved.push(rec);
+
+		if (apply) {
+			const absPath = resolve(dir, e.file);
+			const content = readFileSync(absPath, 'utf8');
+			const updated = insertPrAttr(content, pr);
+			if (updated === null) {
+				unresolved.push({ id, file: e.file, reason: 'could not locate rune tag / already has pr' });
+				resolved.pop();
+				continue;
+			}
+			writeFileSync(absPath, updated);
+			if (useGit) git(cwd, ['add', e.file]);
+			applied.push(rec);
+		}
+	}
+
+	return {
+		mode: apply ? 'apply' : 'dry-run',
+		scanned: entities.length,
+		repoSlug,
+		resolved,
+		applied,
+		skipped,
+		unresolved,
+		exitCode: EXIT_SUCCESS,
 	};
 }

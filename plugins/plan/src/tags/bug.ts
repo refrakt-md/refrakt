@@ -13,6 +13,7 @@ export const bug = createContentModelSchema({
 		assignee: { type: String, required: false, description: 'Person or agent working on this.' },
 		milestone: { type: String, required: false, description: 'Milestone for the fix.' },
 		source: { type: String, required: false, description: 'Comma-separated IDs of specs or decisions this item implements.' },
+		pr: { type: String, required: false, description: 'Comma-separated PR references that fixed this bug (e.g. "refrakt-md/refrakt#142").' },
 		tags: { type: String, required: false, description: 'Comma-separated labels.' },
 		created: { type: String, required: false, description: 'Creation date (ISO 8601). Defaults to file creation date from git.' },
 		modified: { type: String, required: false, description: 'Last modified date (ISO 8601). Defaults to file modification date from git.' },
@@ -57,6 +58,7 @@ export const bug = createContentModelSchema({
 		const assigneeMeta = new Tag('meta', { content: attrs.assignee ?? '' });
 		const milestoneMeta = new Tag('meta', { content: attrs.milestone ?? '' });
 		const sourceMeta = new Tag('meta', { content: attrs.source ?? '' });
+		const prMeta = new Tag('meta', { content: attrs.pr ?? '' });
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 		const fileVars = config.variables?.file as { created?: string; modified?: string } | undefined;
 		const createdMeta = new Tag('meta', { content: attrs.created || fileVars?.created || '' });
@@ -78,6 +80,7 @@ export const bug = createContentModelSchema({
 				assignee: assigneeMeta,
 				milestone: milestoneMeta,
 				source: sourceMeta,
+				pr: prMeta,
 				tags: tagsMeta,
 				created: createdMeta,
 				modified: modifiedMeta,
@@ -87,7 +90,7 @@ export const bug = createContentModelSchema({
 				blurb,
 				body: bodyDiv,
 			},
-			children: [idMeta, statusMeta, severityMeta, assigneeMeta, milestoneMeta, sourceMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), ...(blurb ? [blurb] : []), bodyDiv],
+			children: [idMeta, statusMeta, severityMeta, assigneeMeta, milestoneMeta, sourceMeta, prMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), ...(blurb ? [blurb] : []), bodyDiv],
 		});
 	},
 });

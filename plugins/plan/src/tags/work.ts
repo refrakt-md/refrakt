@@ -15,6 +15,7 @@ export const work = createContentModelSchema({
 		milestone: { type: String, required: false, description: 'Milestone this belongs to.' },
 		source: { type: String, required: false, description: 'Comma-separated IDs of specs or decisions this item implements.' },
 		supersedes: { type: String, required: false, description: 'ID of the work item this replaces (set when status="superseded").' },
+		pr: { type: String, required: false, description: 'Comma-separated PR references that implemented this item (e.g. "refrakt-md/refrakt#142").' },
 		tags: { type: String, required: false, description: 'Comma-separated labels.' },
 		created: { type: String, required: false, description: 'Creation date (ISO 8601). Defaults to file creation date from git.' },
 		modified: { type: String, required: false, description: 'Last modified date (ISO 8601). Defaults to file modification date from git.' },
@@ -67,6 +68,7 @@ export const work = createContentModelSchema({
 		const milestoneMeta = new Tag('meta', { content: attrs.milestone ?? '' });
 		const sourceMeta = new Tag('meta', { content: attrs.source ?? '' });
 		const supersedesMeta = new Tag('meta', { content: attrs.supersedes ?? '' });
+		const prMeta = new Tag('meta', { content: attrs.pr ?? '' });
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 		const fileVars = config.variables?.file as { created?: string; modified?: string } | undefined;
 		const createdMeta = new Tag('meta', { content: attrs.created || fileVars?.created || '' });
@@ -91,6 +93,7 @@ export const work = createContentModelSchema({
 				milestone: milestoneMeta,
 				source: sourceMeta,
 				supersedes: supersedesMeta,
+				pr: prMeta,
 				tags: tagsMeta,
 				created: createdMeta,
 				modified: modifiedMeta,
@@ -100,7 +103,7 @@ export const work = createContentModelSchema({
 				blurb,
 				body: bodyDiv,
 			},
-			children: [idMeta, statusMeta, priorityMeta, complexityMeta, assigneeMeta, milestoneMeta, sourceMeta, supersedesMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), ...(blurb ? [blurb] : []), bodyDiv],
+			children: [idMeta, statusMeta, priorityMeta, complexityMeta, assigneeMeta, milestoneMeta, sourceMeta, supersedesMeta, prMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), ...(blurb ? [blurb] : []), bodyDiv],
 		});
 	},
 });

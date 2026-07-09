@@ -317,8 +317,8 @@ const TERMINAL_STATUSES = TERMINAL_STATUS_UNION;
 export const STATUS_ORDER: Record<string, number> = {
 	'in-progress': 0, confirmed: 1, review: 2, ready: 3, reported: 4,
 	active: 5, proposed: 6, planning: 7, draft: 8, pending: 9, blocked: 10,
-	done: 20, fixed: 21, accepted: 22, complete: 23,
-	superseded: 30, deprecated: 31, wontfix: 32, duplicate: 33, cancelled: 34,
+	done: 20, fixed: 21, accepted: 22, complete: 23, implemented: 24, shipped: 25,
+	superseded: 30, deprecated: 31, wontfix: 32, duplicate: 33, cancelled: 34, rejected: 35,
 };
 
 /** Human-readable status labels for group headers */
@@ -328,8 +328,9 @@ export const STATUS_LABELS_DISPLAY: Record<string, string> = {
 	active: 'Active', proposed: 'Proposed', planning: 'Planning', draft: 'Draft',
 	pending: 'Pending', blocked: 'Blocked',
 	done: 'Done', fixed: 'Fixed', accepted: 'Accepted', complete: 'Complete',
+	implemented: 'Implemented', shipped: 'Shipped',
 	superseded: 'Superseded', deprecated: 'Deprecated', wontfix: "Won't Fix", duplicate: 'Duplicate',
-	cancelled: 'Cancelled',
+	cancelled: 'Cancelled', rejected: 'Rejected',
 };
 
 /** Status ordering per entity type (for nav display). Terminal states sink to
@@ -337,8 +338,8 @@ export const STATUS_LABELS_DISPLAY: Record<string, string> = {
 export const STATUS_ORDER_BY_TYPE: Record<string, string[]> = {
 	work: ['in-progress', 'review', 'ready', 'blocked', 'draft', 'pending', 'done', 'cancelled', 'superseded'],
 	bug: ['in-progress', 'confirmed', 'reported', 'fixed', 'wontfix', 'duplicate'],
-	spec: ['review', 'draft', 'accepted', 'superseded', 'deprecated'],
-	decision: ['proposed', 'accepted', 'superseded', 'deprecated'],
+	spec: ['review', 'draft', 'accepted', 'implemented', 'shipped', 'superseded', 'deprecated'],
+	decision: ['proposed', 'accepted', 'rejected', 'superseded', 'deprecated'],
 	milestone: ['active', 'planning', 'complete'],
 };
 

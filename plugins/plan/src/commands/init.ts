@@ -94,10 +94,11 @@ If your MCP-aware editor or AI tool is registered with \`@refrakt-md/mcp\` (a pr
 2. Start working: \`refrakt plan update <id> --status in-progress\`
 3. Read referenced specs and decisions before implementing
 4. Check off criteria: \`refrakt plan update <id> --check "criterion text"\`
-5. Mark complete with resolution: \`refrakt plan update <id> --status done --resolve "summary of what was done"\`
-6. Check project status: \`refrakt plan status\`
+5. Link the PR: \`refrakt plan update <id> --pr "<org>/<repo>#<number>"\`
+6. Mark complete with resolution: \`refrakt plan update <id> --status done --resolve "summary of what was done"\`
+7. Check project status: \`refrakt plan status\`
 
-When marking a work item done, always provide a \`--resolve\` summary unless the change is trivial. This captures implementation context (files changed, decisions made, branch/PR) for future reference.
+When marking a work item done, always provide a \`--resolve\` summary unless the change is trivial, and set the \`pr\` attribute so \`plan status\` can roll up the spec → work → PR traceability chain. The \`pr\` attribute is the structured source of truth; a \`PR:\` line in the resolution prose is legacy narrative only.
 
 ## ID Conventions
 
@@ -113,11 +114,13 @@ IDs are auto-assigned when you omit \`--id\` from \`refrakt plan create\`.
 
 ## Valid Statuses
 
-- **spec**: \`draft\` → \`review\` → \`accepted\` → \`superseded\` | \`deprecated\`
+- **spec**: \`draft\` → \`review\` → \`accepted\` → \`implemented\` → \`shipped\` (also: \`superseded\`, \`deprecated\`)
 - **work**: \`draft\` → \`ready\` → \`in-progress\` → \`review\` → \`done\` (also: \`blocked\`, \`pending\`, \`cancelled\`, \`superseded\`)
 - **bug**: \`reported\` → \`confirmed\` → \`in-progress\` → \`fixed\` (also: \`wontfix\`, \`duplicate\`)
-- **decision**: \`proposed\` → \`accepted\` → \`superseded\` | \`deprecated\`
+- **decision**: \`proposed\` → \`accepted\` (also: \`rejected\`, \`superseded\`, \`deprecated\`)
 - **milestone**: \`planning\` → \`active\` → \`complete\`
+
+\`implemented\` means all linked work is done and the code is in \`main\`; \`shipped\` means it was released to users (pair it with \`released-in="vX.Y.Z"\`). \`rejected\` on a decision records "considered and declined".
 
 ### Retiring a work item
 

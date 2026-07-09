@@ -2,7 +2,7 @@ import { readFileSync } from 'fs';
 import { basename, join } from 'path';
 import { scanPlanFiles } from '../scanner.js';
 import type { PlanEntity, PlanRuneType } from '../types.js';
-import { VALID_STATUS, VALID_PRIORITY, VALID_COMPLEXITY, VALID_SEVERITY, DONE_STATUS_SET, isTerminal } from './enums.js';
+import { VALID_STATUS, VALID_PRIORITY, VALID_COMPLEXITY, VALID_SEVERITY, DONE_STATUS_SET, isTerminal, PR_REF_RE, RELEASED_IN_RE } from './enums.js';
 
 // --- Valid attribute values per type (sets derived from the shared vocabularies) ---
 
@@ -281,6 +281,59 @@ function checkResolutions(entities: PlanEntity[], dir: string): ValidationIssue[
 	return issues;
 }
 
+function checkPrAndRelease(entities: PlanEntity[]): ValidationIssue[] {
+	const issues: ValidationIssue[] = [];
+	for (const e of entities) {
+		const id = e.attributes.id || e.file;
+
+		// `pr` on work / bug — format is validated when set; a missing `pr` is
+		// NOT warned in v1 (SPEC-049: carrot before stick).
+		if (e.type === 'work' || e.type === 'bug') {
+			const pr = (e.attributes.pr || '').trim();
+			if (pr) {
+				for (const ref of pr.split(',').map(s => s.trim()).filter(Boolean)) {
+					if (!PR_REF_RE.test(ref)) {
+						issues.push({
+							severity: 'error',
+							type: 'invalid-pr',
+							source: id,
+							file: e.file,
+							target: ref,
+							message: `${id} has malformed pr "${ref}" — expected <org>/<repo>#<number>`,
+						});
+					}
+				}
+			}
+		}
+
+		// `released-in` on spec — required when shipped, format-checked when set.
+		if (e.type === 'spec') {
+			const releasedIn = (e.attributes['released-in'] || '').trim();
+			const status = e.attributes.status || '';
+			if (status === 'shipped' && !releasedIn) {
+				issues.push({
+					severity: 'error',
+					type: 'shipped-without-release',
+					source: id,
+					file: e.file,
+					message: `${id} is shipped but has no released-in="vX.Y.Z"`,
+				});
+			}
+			if (releasedIn && !RELEASED_IN_RE.test(releasedIn)) {
+				issues.push({
+					severity: 'error',
+					type: 'invalid-released-in',
+					source: id,
+					file: e.file,
+					target: releasedIn,
+					message: `${id} has malformed released-in "${releasedIn}" — expected semver (e.g. v0.11.4)`,
+				});
+			}
+		}
+	}
+	return issues;
+}
+
 function checkSupersedes(entities: PlanEntity[], knownIds: Set<string>): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
 	for (const e of entities) {
@@ -517,6 +570,7 @@ export function runValidate(options: ValidateOptions): ValidateResult {
 		...checkBrokenRefs(entities, knownIds),
 		...checkDuplicateIds(entities),
 		...checkInvalidAttributes(entities),
+		...checkPrAndRelease(entities),
 		...checkSupersedes(entities, knownIds),
 		...checkSourceRefs(entities, knownIds),
 		...checkMilestoneRefs(entities),

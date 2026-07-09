@@ -72,6 +72,7 @@ Migrate all runes from manual alignment classes to the new alignment system.
 | `milestone` | `string` | — | Milestone this belongs to |
 | `source` | `string` | — | Comma-separated IDs of specs or decisions this implements (e.g. `SPEC-001,ADR-002`) |
 | `supersedes` | `string` | — | ID of the work item this replaces (set when `status="superseded"`) |
+| `pr` | `string` | — | Comma-separated PR references that implemented this item, each `<org>/<repo>#<number>` (e.g. `refrakt-md/refrakt#142`). Powers the `plan status` traceability rollups |
 | `tags` | `string` | — | Comma-separated labels |
 
 ### Retiring a work item

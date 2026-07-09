@@ -22,9 +22,9 @@ const PLAN_RUNE_TYPES = new Set(['spec', 'work', 'bug', 'decision', 'milestone']
 
 /** Fields to extract from each rune type's property meta tags */
 const RUNE_FIELDS: Record<string, string[]> = {
-	spec: ['id', 'status', 'version', 'supersedes', 'tags', 'modified'],
-	work: ['id', 'status', 'priority', 'complexity', 'assignee', 'milestone', 'source', 'supersedes', 'tags', 'modified'],
-	bug: ['id', 'status', 'severity', 'assignee', 'milestone', 'source', 'tags', 'modified'],
+	spec: ['id', 'status', 'version', 'supersedes', 'released-in', 'tags', 'modified'],
+	work: ['id', 'status', 'priority', 'complexity', 'assignee', 'milestone', 'source', 'supersedes', 'pr', 'tags', 'modified'],
+	bug: ['id', 'status', 'severity', 'assignee', 'milestone', 'source', 'pr', 'tags', 'modified'],
 	decision: ['id', 'status', 'date', 'supersedes', 'source', 'tags', 'modified'],
 	milestone: ['name', 'status', 'target', 'modified'],
 };
