@@ -1,4 +1,4 @@
-{% work id="WORK-417" status="ready" priority="high" complexity="complex" source="SPEC-103" milestone="v0.27.0" tags="runes,data,csv,json,pipeline,preprocess,chart,datatable" %}
+{% work id="WORK-417" status="done" priority="high" complexity="complex" source="SPEC-103" milestone="v0.27.0" tags="runes,data,csv,json,pipeline,preprocess,chart,datatable" %}
 
 # `data` rune preprocessor + CSV/TSV adapter + projection core
 
@@ -21,12 +21,12 @@ emitted `<table>` with **no structural edits**.
 
 ## Acceptance Criteria
 
-- [ ] `{% data src="./x.csv" /%}` resolves via the {% ref "SPEC-113" /%} `ProjectFiles` seam in a preprocess hook and emits a Markdoc `table` node; `src` escaping the project root errors visibly (callout) without crashing the build.
-- [ ] The emitted `<table>` is consumed by `{% chart %}` (renders `<rf-chart>`) and `{% datatable %}` with **no structural edits** to `tags/chart.ts` or `tags/datatable.ts`, and renders standalone.
-- [ ] CSV/TSV adapter honors `delimiter` and `header` (false → synthesized `col1…`) to the `{ headers, rows }` contract; `format` is extension-inferred and overridable.
-- [ ] Shared `where`/`sort`/`columns`(select+order+rename)/`limit`/`offset` and `numeric`/`text` typing (auto-inference) run on the intermediate shape; typed-numeric columns emit `data-value` on value cells.
-- [ ] An unknown / parse-failing / empty source emits an in-page error callout + build warning and the build continues.
-- [ ] `refrakt inspect data` and the contracts generator read the schema; unit tests cover the CSV/TSV adapter, projection, typing inference + `data-value`, the `ProjectFiles` boundary, and chart/datatable composition.
+- [x] `{% data src="./x.csv" /%}` resolves via the {% ref "SPEC-113" /%} `ProjectFiles` seam in a preprocess hook and emits a Markdoc `table` node; `src` escaping the project root errors visibly (callout) without crashing the build.
+- [x] The emitted `<table>` is consumed by `{% chart %}` (renders `<rf-chart>`) and `{% datatable %}` with **no structural edits** to `tags/chart.ts` or `tags/datatable.ts`, and renders standalone.
+- [x] CSV/TSV adapter honors `delimiter` and `header` (false → synthesized `col1…`) to the `{ headers, rows }` contract; `format` is extension-inferred and overridable.
+- [x] Shared `where`/`sort`/`columns`(select+order+rename)/`limit`/`offset` and `numeric`/`text` typing (auto-inference) run on the intermediate shape; typed-numeric columns emit `data-value` on value cells.
+- [x] An unknown / parse-failing / empty source emits an in-page error callout + build warning and the build continues.
+- [x] `refrakt inspect data` and the contracts generator read the schema; unit tests cover the CSV/TSV adapter, projection, typing inference + `data-value`, the `ProjectFiles` boundary, and chart/datatable composition.
 
 ## Dependencies
 
@@ -40,5 +40,28 @@ emitted `<table>` with **no structural edits**.
 - {% ref "SPEC-062" /%} — snippet preprocess prior art: `packages/runes/src/snippet-pipeline.ts`, `corePipelineHooks` wiring in `config.ts`.
 - {% ref "SPEC-113" /%} — the `ProjectFiles` seam.
 - `packages/runes/src/tags/{chart,datatable}.ts` — host runes (structure unchanged); `packages/runes/src/field-match.ts` — reused `parseFieldMatch`/`matchValue`.
+
+## Resolution
+
+Completed: 2026-06-30
+
+Branch: `claude/spec-103-data-rune`
+
+### What was done
+The tier-1 spine of SPEC-103 — a preprocess-time `data` rune that reads an external CSV/TSV file and emits a Markdoc `table` node `chart`/`datatable` consume unchanged.
+- `data-adapters.ts` — dependency-free RFC-4180 delimited parser + CSV/TSV adapter to the `{ headers, rows }` contract (`delimiter`/`header` knobs, ragged-row padding); `inferFormat` (extension → format); `DataSourceError`.
+- `data-projection.ts` — shared, format-agnostic projection: `applyWhere` (reuses `parseFieldMatch` + the now-exported `matchValue` with a row resolver), `applySort` (`-` desc; numeric detection on formatted columns), `applyColumns` (select/order/rename, returns source mapping), `applyLimitOffset`, `applyTyping` (auto-infer numeric, `numeric`/`text` overrides by source **or** renamed name), `normalizeNumber` (`"$1,200"` → `1200`).
+- `data-emit.ts` — builds the Markdoc `table` AST node; numeric value cells carry `data-value`; the error path emits a `hint` callout (not a malformed table).
+- `data-pipeline.ts` — `preprocessData`: walk AST, resolve `{% data %}` `src` through `ctx.sandbox` (the SPEC-113 `ProjectFiles` seam, whole-file read, `ctx.variables` resolution), run adapter → projection → typing → emit; any failure → callout + `ctx.error`, build continues.
+- `tags/data.ts` — the rune schema (full SPEC-103 attribute surface; throwing transform, mirroring snippet).
+- `nodes.ts` + `index.ts` — a `td` node that forwards `data-value` (additive; hand-authored cells unchanged), registered in the `nodes` map.
+- `config.ts` — `Data: { block: 'data' }` engine entry; core `preprocess` now composes snippet then data over the same AST.
+- `index.ts` — `data` catalog entry (`defineRune`).
+
+### Notes
+- **No structural edits to `chart.ts` / `datatable.ts`** — they find the emitted `div.rf-table-wrapper > table` unchanged (tests confirm `rf-chart` / `data-table` composition and that `data-value` survives into the chart's table).
+- The `data-value` channel is delivered by extending the shared `td` node, so it also benefits hand-authored tables — exactly what the spec intends (and what WORK-487's datatable sort will read).
+- JSON/NDJSON adapters are stubbed to a clear in-page error (land in WORK-486); the projection/typing/emit core is shared and format-agnostic.
+- Tests: `data-rune.test.ts` (17 — end-to-end CSV/TSV, where/sort/columns/limit/typing/data-value, chart + datatable composition, error/containment paths) and `data-adapters.test.ts` (20 — RFC-4180 quoting edge cases, number normalization, inference). CSS-coverage: `data` added to UNSTYLED_BLOCKS (plain table, no own element). Contracts regenerated. `inspect --list` shows `data`; `inspect data` is at parity with `inspect snippet`. Full monorepo builds green; runes/content/plan/cli/lumina suites pass.
 
 {% /work %}

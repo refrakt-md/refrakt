@@ -1,4 +1,4 @@
-import { heading, paragraph, fence, list, item, em, strong, text, link, hardbreak, image, table } from './nodes.js';
+import { heading, paragraph, fence, list, item, em, strong, text, link, hardbreak, image, table, td } from './nodes.js';
 
 export { Page } from './documents/page.js';
 import { DocPage } from './documents/doc.js';
@@ -7,6 +7,7 @@ import { error } from './tags/error.js';
 import { grid } from './tags/grid.js';
 import { codegroup } from './tags/codegroup.js';
 import { snippet } from './tags/snippet.js';
+import { data } from './tags/data.js';
 import { hint } from './tags/hint.js';
 import { tab, tabs } from './tags/tabs.js';
 import { nav } from './tags/nav.js';
@@ -426,6 +427,14 @@ export const runes = {
     category: 'Code & Data',
     snippet: ['{% snippet path="${1:src/lib/foo.ts}" /%}'],
   }),
+  data: defineRune({
+    name: 'data',
+    schema: data,
+    description: 'Ingest an external tabular source (CSV/TSV/JSON/NDJSON) and emit a Markdown table. Composes inside chart and datatable, and renders standalone, via pre-resolve (SPEC-103).',
+    typeName: 'Data',
+    category: 'Code & Data',
+    snippet: ['{% data src="${1:data/revenue.csv}" /%}'],
+  }),
   chart: defineRune({
     name: 'chart',
     schema: chart,
@@ -715,5 +724,6 @@ export const nodes = {
   tbody: Markdoc.nodes.tbody,
   th: Markdoc.nodes.th,
   tr: Markdoc.nodes.tr,
+  td,
   error: Markdoc.nodes.error,
 }

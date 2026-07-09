@@ -185,6 +185,74 @@ describe('datatableBehavior', () => {
 		});
 	});
 
+	describe('data-value-aware sort (SPEC-103)', () => {
+		/** A table whose Revenue cells carry human-formatted text and an optional
+		 *  normalized `data-value` (as the `data` rune emits). */
+		function createTypedTable(
+			rows: Array<{ product: string; revenueText: string; revenueValue?: string }>,
+		): HTMLElement {
+			const el = document.createElement('div');
+			el.setAttribute('data-rune', 'datatable');
+			el.setAttribute('data-sortable', 'Revenue');
+			const rowsHtml = rows.map((r) => {
+				const rev = r.revenueValue !== undefined
+					? `<td data-value="${r.revenueValue}">${r.revenueText}</td>`
+					: `<td>${r.revenueText}</td>`;
+				return `<tr><td>${r.product}</td>${rev}</tr>`;
+			}).join('');
+			el.innerHTML = `<div class="rf-datatable__scroll"><table>
+				<thead><tr><th>Product</th><th>Revenue</th></tr></thead>
+				<tbody>${rowsHtml}</tbody></table></div>`;
+			document.body.appendChild(el);
+			return el;
+		}
+
+		const REV = [
+			{ product: 'Widget', revenueText: '$1,200', revenueValue: '1200' },
+			{ product: 'Gadget', revenueText: '$900', revenueValue: '900' },
+			{ product: 'Gizmo', revenueText: '$1,500', revenueValue: '1500' },
+		];
+
+		it('sorts a currency column by its data-value, not the formatted text', () => {
+			const el = createTypedTable(REV);
+			datatableBehavior(el);
+			el.querySelectorAll('th')[1].click(); // Revenue asc
+
+			const visible = getVisibleRows(el).map((r) => r.textContent);
+			expect(visible[0]).toContain('Gadget'); // 900
+			expect(visible[1]).toContain('Widget'); // 1200
+			expect(visible[2]).toContain('Gizmo'); // 1500
+		});
+
+		it('respects descending order on the data-value', () => {
+			const el = createTypedTable(REV);
+			datatableBehavior(el);
+			const th = el.querySelectorAll('th')[1];
+			th.click(); // asc
+			th.click(); // desc
+
+			const visible = getVisibleRows(el).map((r) => r.textContent);
+			expect(visible[0]).toContain('Gizmo'); // 1500
+			expect(visible[2]).toContain('Gadget'); // 900
+		});
+
+		it('falls back to natural-string collation when a column has no data-value (unchanged)', () => {
+			const el = createTypedTable([
+				{ product: 'A', revenueText: '10' },
+				{ product: 'B', revenueText: '2' },
+				{ product: 'C', revenueText: '1' },
+			]);
+			datatableBehavior(el);
+			el.querySelectorAll('th')[1].click();
+
+			// Natural numeric collation on text: 1, 2, 10 (not lexical 1, 10, 2).
+			const visible = getVisibleRows(el).map((r) => r.textContent);
+			expect(visible[0]).toContain('1');
+			expect(visible[1]).toContain('2');
+			expect(visible[2]).toContain('10');
+		});
+	});
+
 	describe('pagination', () => {
 		it('injects pagination controls when pageSize is set', () => {
 			const el = createDataTable({ pageSize: 2 });

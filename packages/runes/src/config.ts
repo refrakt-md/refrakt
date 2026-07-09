@@ -11,6 +11,7 @@ import { XREF_RUNE_MARKER } from './tags/xref.js';
 import { resolveXrefs } from './xref-resolve.js';
 import type { CompiledXrefPattern } from './xref-patterns.js';
 import { preprocessSnippets, wrapStandaloneSnippets } from './snippet-pipeline.js';
+import { preprocessData } from './data-pipeline.js';
 import { registerDrawers, resolveAutoDrawerTitleLevels, hoistPreviewDrawers } from './drawer-pipeline.js';
 import { resolveFileRefs } from './file-ref-resolve.js';
 import { resolveXrefPreviews } from './xref-preview-resolve.js';
@@ -111,6 +112,13 @@ export const coreConfig: ThemeConfig = {
 		 * entry in the theme config so `computeUsedCssBlocks` includes
 		 * `snippet.css` in CSS tree-shaking when the figure is rendered. */
 		Snippet: { block: 'snippet' },
+		/* Data, like Snippet, has no normal schema transform — its preprocess
+		 * hook replaces the `{% data %}` tag with a Markdoc `table` node before
+		 * the transform runs, so the engine never sees a `Data` tag. The entry
+		 * exists so the rune is known to inspect/contracts tooling; the emitted
+		 * table renders through the standard `table` node (no `data`-specific
+		 * block CSS). */
+		Data: { block: 'data' },
 		/* Expand emits a placeholder during transform; the postProcess hook
 		 * substitutes the entity content wrapped in `<section
 		 * class="rf-expand" data-rune="expand">`. Engine config provides the
@@ -2166,7 +2174,14 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 	const repoBranch = opts.repoBranch;
 
 	return {
-	preprocess: preprocessSnippets,
+	// Compose the core preprocess steps: snippet (→ fence) then data (→ table).
+	// Both mutate the AST in place, so a single pass over the same tree applies
+	// both; either mutating means the caller takes the returned AST.
+	preprocess(ast, page, ctx) {
+		const snippetChanged = preprocessSnippets(ast, page, ctx);
+		const dataChanged = preprocessData(ast, page, ctx);
+		return (snippetChanged || dataChanged) ? ast : undefined;
+	},
 
 	register(pages: readonly TransformedPage[], registry: EntityRegistry, ctx: PipelineContext): void {
 		for (const page of pages) {

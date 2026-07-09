@@ -2,7 +2,12 @@ import type { CleanupFn } from '../types.js';
 
 interface RowData {
 	el: HTMLTableRowElement;
+	/** Visible cell text — drives search/filter and the string-collation sort. */
 	cells: string[];
+	/** Per-cell `data-value` (or null when absent) — the typed sort key
+	 *  (SPEC-103). Set by the `data` rune's numeric typing and by hand-authored
+	 *  tables that want a formatted column to sort by a clean number. */
+	dataValues: (string | null)[];
 }
 
 /**
@@ -41,10 +46,14 @@ export function datatableBehavior(el: HTMLElement): CleanupFn {
 	const bodyRows = table.querySelectorAll('tbody tr');
 	const rows: RowData[] = Array.from(
 		bodyRows.length > 0 ? bodyRows : table.querySelectorAll('tr:not(:first-child)'),
-	).map((tr) => ({
-		el: tr as HTMLTableRowElement,
-		cells: Array.from(tr.querySelectorAll('td')).map((td) => td.textContent?.trim() || ''),
-	}));
+	).map((tr) => {
+		const tds = Array.from(tr.querySelectorAll('td'));
+		return {
+			el: tr as HTMLTableRowElement,
+			cells: tds.map((td) => td.textContent?.trim() || ''),
+			dataValues: tds.map((td) => td.getAttribute('data-value')),
+		};
+	});
 
 	// Save original row order for cleanup
 	const originalOrder = rows.map((r) => r.el);
@@ -165,12 +174,22 @@ export function datatableBehavior(el: HTMLElement): CleanupFn {
 			);
 		}
 
-		// Sort
+		// Sort. Prefer a cell's `data-value` when present and numeric (mirrors
+		// `chart`'s `dataset.value ?? textContent`), so human-formatted numbers
+		// (currency, thousands separators, units) sort by their real value. With
+		// no usable `data-value` the comparator falls back to the exact
+		// natural-string collation used before — so plain tables are unchanged.
 		if (sortColumn) {
 			const idx = headers.indexOf(sortColumn);
 			if (idx >= 0) {
 				filtered.sort((a, b) => {
-					const cmp = a.cells[idx].localeCompare(b.cells[idx], undefined, { numeric: true });
+					const av = a.dataValues[idx];
+					const bv = b.dataValues[idx];
+					const an = av !== null ? Number(av) : NaN;
+					const bn = bv !== null ? Number(bv) : NaN;
+					const cmp = (av !== null && bv !== null && !Number.isNaN(an) && !Number.isNaN(bn))
+						? an - bn
+						: a.cells[idx].localeCompare(b.cells[idx], undefined, { numeric: true });
 					return sortDirection === 'asc' ? cmp : -cmp;
 				});
 			}

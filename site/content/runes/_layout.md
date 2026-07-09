@@ -67,6 +67,7 @@ tint-lock: false
 - compare
 - diff
 - snippet
+- data
 - datatable
 - chart
 - diagram

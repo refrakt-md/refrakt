@@ -296,6 +296,22 @@ export const table: Schema = {
   }
 }
 
+/**
+ * `td` node — Markdoc's default, extended to forward a `data-value` attribute
+ * (SPEC-103). A typed-numeric `data` cell carries its normalized number on
+ * `data-value` (`"$1,200"` → `data-value="1200"`); `chart` reads it via
+ * `cell.dataset.value` and `datatable`'s sort prefers it over cell text. The
+ * attribute is absent on hand-authored cells, so existing tables are unchanged
+ * — `data-value` is a purely additive enhancement channel.
+ */
+export const td: Schema = {
+  ...Markdoc.nodes.td,
+  attributes: {
+    ...(Markdoc.nodes.td.attributes ?? {}),
+    'data-value': { type: String },
+  },
+};
+
 function jObjToTag(tagName: string, content: Record<string, any> | Record<string, any>[]): any {
   if (Array.isArray(content)) {
     return content.map(c => jObjToTag(tagName, c));

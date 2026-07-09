@@ -1,4 +1,4 @@
-{% work id="WORK-488" status="ready" priority="medium" complexity="simple" source="SPEC-103" milestone="v0.27.0" tags="runes,data,docs" %}
+{% work id="WORK-488" status="done" priority="medium" complexity="simple" source="SPEC-103" milestone="v0.27.0" tags="runes,data,docs" %}
 
 # `data` rune — docs page
 
@@ -15,9 +15,9 @@ authors reach for the right layer.
 
 ## Acceptance Criteria
 
-- [ ] A `data` docs page documents all knobs with CSV + JSON examples and the chart/datatable composition story.
-- [ ] The build-time-vs-runtime distinction (vs `datatable`) is explained.
-- [ ] SQLite is documented as a later adapter tier with its read-only / no-extension / no-`ATTACH` sandbox requirements (implementation deferred to its own work item).
+- [x] A `data` docs page documents all knobs with CSV + JSON examples and the chart/datatable composition story.
+- [x] The build-time-vs-runtime distinction (vs `datatable`) is explained.
+- [x] SQLite is documented as a later adapter tier with its read-only / no-extension / no-`ATTACH` sandbox requirements (implementation deferred to its own work item).
 
 ## Dependencies
 
@@ -26,5 +26,23 @@ authors reach for the right layer.
 ## References
 
 - {% ref "SPEC-103" /%} — knobs, worked examples, composition, SQLite later-tier.
+
+## Resolution
+
+Completed: 2026-07-09
+
+Branch: `claude/spec-103-data-rune`
+
+### What was done
+- New author-facing page `site/content/runes/data.md` (Code & Data), mirroring the snippet-page style:
+  - Live CSV examples (backed by a committed `site/examples/revenue.csv`): bare table, CSV → chart, CSV → searchable/sortable datatable — all rendered by the real build.
+  - Shaping section (`where`/`sort`/`columns`/`limit`/`offset`) with a live example; the typing + `data-value` channel explained (auto-inference, `numeric`/`text`, how chart + datatable honour it).
+  - JSON/NDJSON: `root`/`orient`/`key-column`/dotted paths + the SPEC-103 worked examples (nested JSON, object-map → datatable, NDJSON).
+  - Build-time-vs-runtime table drawing the `data` (bakes the no-JS table) vs `datatable` (runtime view) line.
+  - Format-inference table; the error-callout behaviour; the SQLite later-tier note with its read-only / no-extension / no-`ATTACH` sandbox requirements (deferred); grouped attributes reference (core / csv-tsv / json / shared); See-also cross-links (chart, datatable, snippet, hosted-builds/ProjectFiles).
+- Registered `data` in the runes nav (`runes/_layout.md`).
+
+### Notes
+- Verified with a full `vite build`: the `/runes/data` page renders live tables + a chart with `data-value` attributes present and zero error callouts.
 
 {% /work %}

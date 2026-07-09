@@ -25,6 +25,7 @@ const UNSTYLED_BLOCKS = new Set([
 	'region',            // structural rune — layout region container, no own visual
 	'definition',        // child of feature — styled inline within feature.css
 	'deflist',           // styled via shared [data-zone-layout="definition-list"] selectors
+	'data',              // preprocess rune (SPEC-103) — emits a plain `table` node; styled by the shared table CSS, no own `.rf-data` element
 ]);
 
 const KNOWN_MISSING_SELECTORS = new Set([
