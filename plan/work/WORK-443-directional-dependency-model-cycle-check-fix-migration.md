@@ -1,4 +1,4 @@
-{% work id="WORK-443" status="ready" priority="medium" complexity="moderate" source="SPEC-114" tags="plan,dependencies,validation,scanner" %}
+{% work id="WORK-443" status="ready" priority="medium" complexity="moderate" source="SPEC-114" tags="plan,dependencies,validation,scanner" milestone="v0.28.0" %}
 
 # Directional dependency model + cycle-check fix + migration
 
