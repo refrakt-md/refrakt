@@ -1,6 +1,7 @@
 import { readFileSync } from 'fs';
 import { basename, join } from 'path';
 import { scanPlanFiles } from '../scanner.js';
+import { buildBlockedByAdjacency } from '../scanner-core.js';
 import type { PlanEntity, PlanRuneType } from '../types.js';
 import { VALID_STATUS, VALID_PRIORITY, VALID_COMPLEXITY, VALID_SEVERITY, DONE_STATUS_SET, isTerminal, PR_REF_RE, RELEASED_IN_RE } from './enums.js';
 
@@ -154,9 +155,10 @@ function checkInvalidAttributes(entities: PlanEntity[]): ValidationIssue[] {
 function checkCircularDeps(entities: PlanEntity[], knownIds: Set<string>): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
 
-	// Build adjacency map: id -> set of referenced ids that are work/bug items
+	// Build adjacency from the typed, directed dependency edges (SPEC-114) —
+	// NOT the raw ref set. `A → B` means "A is blocked by B". A cycle here is a
+	// genuine logical deadlock, not a prose cross-reference.
 	const workBugIds = new Set<string>();
-	const adjMap = new Map<string, string[]>();
 	const entityById = new Map<string, PlanEntity>();
 
 	for (const e of entities) {
@@ -168,13 +170,11 @@ function checkCircularDeps(entities: PlanEntity[], knownIds: Set<string>): Valid
 		}
 	}
 
-	for (const e of entities) {
-		const id = e.attributes.id || e.attributes.name;
-		if (!id || (e.type !== 'work' && e.type !== 'bug')) continue;
-		const deps = e.refs.filter(r => workBugIds.has(r));
-		if (deps.length > 0) {
-			adjMap.set(id, deps);
-		}
+	const adjMap = new Map<string, string[]>();
+	for (const [from, tos] of buildBlockedByAdjacency(entities)) {
+		if (!workBugIds.has(from)) continue;
+		const deps = tos.filter(t => workBugIds.has(t));
+		if (deps.length > 0) adjMap.set(from, deps);
 	}
 
 	// DFS cycle detection

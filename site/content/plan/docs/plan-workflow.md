@@ -44,16 +44,25 @@ Plain-text bullet points without checkboxes are ignored by `--check` / `--unchec
 
 ## Declaring dependencies
 
-List dependencies in a `## Dependencies` section using entity ID references. Each dependency is a bullet point starting with the entity ID:
+Dependencies are **directed** and authored as H2 sections with entity ID references, one per bullet. Two canonical sections capture the two directions:
 
 ```markdown
-## Dependencies
+## Blocked by
 
 - WORK-003 — Auth API endpoint must exist
 - SPEC-001 — Auth spec must be accepted
+
+## Blocks
+
+- WORK-050 — the dashboard that consumes this endpoint
 ```
 
-The CLI resolves these references during `plan next` — an item is only actionable when all dependencies have reached a terminal status (`done` for work, `fixed` for bugs, `accepted` for specs/decisions, `complete` for milestones). `plan validate` catches broken references (IDs that don't match any entity).
+- **`Blocked by`** — this item waits for the referenced items (aliases: `Depends on`, `Requires`, `Deps`, `Needs`, and the deprecated `Dependencies`).
+- **`Blocks`** — the referenced items wait for this one (aliases: `Unblocks`, `Enables`, `Required by`).
+
+Both normalise into a single directed graph (`A → B` means "A is blocked by B"), so cycle detection means what it says. Only these sections create dependency edges — a `{% ref %}` in prose or under `## References` is informational and never blocks. During `plan next`, an item is actionable only when everything in its `Blocked by` section has reached a terminal-achieving status (`done` for work, `fixed` for bugs). `plan validate` reports a `circular-dependency` error only for a genuine directed deadlock, and catches broken references.
+
+Upgrading legacy content: `refrakt plan migrate dependencies --apply --git` renames `## Dependencies` headings to `## Blocked by` and flags — without rewriting — any entry whose prose reads like the reverse direction so you can move it to `## Blocks` by hand.
 
 ## Setting complexity
 
@@ -74,7 +83,7 @@ npx refrakt plan next
 
 This returns the highest-priority actionable item. An item is actionable when:
 - Its status is `ready` (work) or `confirmed` (bug)
-- All items listed in its `## Dependencies` section are complete
+- Every item in its `## Blocked by` section is complete
 
 Filter by milestone, tag, or assignee:
 

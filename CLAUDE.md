@@ -267,6 +267,15 @@ Plan files use `{ID}-{slug}.md` (e.g. `WORK-051-plan-validate-command.md`, `SPEC
 - `{% decision id="ADR-001" status="accepted" source="SPEC-001" %}` — architecture decision record (`source` links to spec it informs)
 - `{% milestone name="v0.5.0" status="active" %}` — release target
 
+### Declaring dependencies (`Blocked by` / `Blocks`)
+
+Work/bug dependencies are **directed** and authored as H2 sections, not attributes:
+
+- `## Blocked by` — this item waits for the referenced items (aliases: `Depends on`, `Requires`, `Deps`, `Needs`, and the deprecated `Dependencies`).
+- `## Blocks` — the referenced items wait for this one (aliases: `Unblocks`, `Enables`, `Required by`).
+
+Both normalise to a single directed graph (`A → B` = "A is blocked by B"), so `plan validate`'s cycle check only fires on genuine deadlocks — prose `{% ref %}` mentions and `## References` entries are **not** dependency edges. `plan next` only excludes an item while its `Blocked by` targets are unfinished. Run `refrakt plan migrate dependencies --apply --git` to upgrade legacy `## Dependencies` headings; it flags (but never auto-flips) entries whose prose reads like the reverse direction so you can move them to `## Blocks` by hand.
+
 ### Retiring a work item (`cancelled` vs `superseded` vs delete)
 
 When a work item is not going to ship, don't mark it `done` (that lies to every rollup and the milestone progress bar) and don't delete the file (that loses the reasoning trail). Use a terminal-but-non-achieving status instead:

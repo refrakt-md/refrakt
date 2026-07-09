@@ -146,6 +146,16 @@ export function setScannerDependencies(deps: Map<string, string[]>): void {
 	for (const [k, v] of deps) _scannerDependencies.set(k, v);
 }
 
+/** Append a directed dependency edge `from → to` ("from is blocked by to"),
+ *  deduping. Used by the unconditional scan to accumulate `Blocks` edges that
+ *  belong to an entity owned by a different file (SPEC-114). */
+function addScannerDep(from: string, to: string): void {
+	if (!from || !to || from === to) return;
+	if (!_scannerDependencies.has(from)) _scannerDependencies.set(from, []);
+	const list = _scannerDependencies.get(from)!;
+	if (!list.includes(to)) list.push(to);
+}
+
 /**
  * Module-level store for the plan directory path.
  * Set by render-pipeline.ts before aggregate() runs (CLI path) or by the
@@ -401,11 +411,14 @@ function processPlanFile(
 		const supersedesRef = String(entity.attributes.supersedes ?? '').trim();
 		if (supersedesRef && supersedesRef !== id) _supersedesReferences.set(id, supersedesRef);
 
-		const depRefs = (entity.scopedRefs ?? [])
-			.filter((r) => r.section === 'Dependencies')
-			.map((r) => r.id)
-			.filter((depId) => depId !== id);
-		if (depRefs.length > 0) _scannerDependencies.set(id, depRefs);
+		// Typed directed dependency edges (SPEC-114), normalised to "A blocked by
+		// B". A `blocks` edge on this item points the other way, so it is recorded
+		// against the *other* entity. Appended (not set) because a `blocks` edge
+		// contributes to an id owned by a different file.
+		for (const dep of entity.dependencies ?? []) {
+			if (dep.direction === 'blocked-by') addScannerDep(id, dep.id);
+			else addScannerDep(dep.id, id);
+		}
 
 		// Site-load registration wins if both paths produced the same entity.
 		const existing = registry.getById(runeType, id);

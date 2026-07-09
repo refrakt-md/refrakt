@@ -39,8 +39,8 @@ Term definition with explanation, examples, and related concepts. The building b
 6. Write tests in `runes/learning/test/tags/concept.test.ts`
 7. Create inspector fixture
 
-## Dependencies
+## Blocks
 
-- The `glossary` rune ({% ref "WORK-010" /%}) collects concept definitions and auto-links terms across the site
+- The `glossary` rune ({% ref "WORK-010" /%}) collects concept definitions and auto-links terms across the site — it depends on this rune existing first
 
 {% /work %}

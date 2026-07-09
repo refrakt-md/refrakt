@@ -22,7 +22,7 @@ import { runValidate, type ValidateOptions } from './commands/validate.js';
 import { runNextId, isAutoIdType, type AutoIdType } from './commands/next-id.js';
 import { runInit } from './commands/init.js';
 import { runHistory, type HistoryOptions } from './commands/history.js';
-import { runMigrateFilenames, runMigratePrAttrs } from './commands/migrate.js';
+import { runMigrateFilenames, runMigratePrAttrs, runMigrateDependencies } from './commands/migrate.js';
 import { resolvePlanDir } from './plan-config.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
 import { VALID_STATUS, VALID_PRIORITY, VALID_SEVERITY } from './commands/enums.js';
@@ -295,8 +295,8 @@ export const migrateSchema: JSONSchema7 = {
 	properties: {
 		subcommand: {
 			type: 'string',
-			enum: ['filenames', 'pr-attrs'],
-			description: '"filenames" normalizes plan filenames to the {ID}-{slug}.md scheme; "pr-attrs" backfills the pr attribute on legacy done/fixed items from git merge-commit history.',
+			enum: ['filenames', 'pr-attrs', 'dependencies'],
+			description: '"filenames" normalizes plan filenames to the {ID}-{slug}.md scheme; "pr-attrs" backfills the pr attribute from git merge-commit history; "dependencies" renames legacy "## Dependencies" headings to the directed "## Blocked by" and flags reverse-direction entries.',
 		},
 		dir: dirProp,
 		apply: { type: 'boolean', description: 'Write the migration. Default: false (dry run).' },
@@ -312,8 +312,11 @@ export async function migrateMcpHandler(input: unknown, ctx?: McpHandlerContext)
 	if (o.subcommand === 'pr-attrs') {
 		return runMigratePrAttrs({ dir, apply: Boolean(o.apply), useGit: Boolean(o.useGit) });
 	}
+	if (o.subcommand === 'dependencies') {
+		return runMigrateDependencies({ dir, apply: Boolean(o.apply), useGit: Boolean(o.useGit) });
+	}
 	if (o.subcommand !== 'filenames') {
-		throw new Error(`Unknown migrate subcommand "${String(o.subcommand)}". Valid: filenames, pr-attrs.`);
+		throw new Error(`Unknown migrate subcommand "${String(o.subcommand)}". Valid: filenames, pr-attrs, dependencies.`);
 	}
 	return runMigrateFilenames({ dir, apply: Boolean(o.apply), useGit: Boolean(o.useGit) });
 }

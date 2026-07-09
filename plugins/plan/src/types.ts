@@ -26,6 +26,19 @@ export interface ScopedRef {
 	section?: string;
 }
 
+/**
+ * A directed dependency edge derived from a `## Blocked by` / `## Blocks`
+ * section (SPEC-114). `blocked-by` means *this item waits for `id`*; `blocks`
+ * means *`id` waits for this item*. Normalising both to the canonical
+ * "A is blocked by B" orientation gives the dependency graph a single meaning.
+ */
+export interface DependencyEdge {
+	/** The referenced entity ID on the other end of the edge. */
+	id: string;
+	/** Direction relative to the entity that authored the section. */
+	direction: 'blocked-by' | 'blocks';
+}
+
 export interface PlanEntity {
 	/** File path relative to the scan directory */
 	file: string;
@@ -41,6 +54,10 @@ export interface PlanEntity {
 	refs: string[];
 	/** Section-scoped refs (refs tagged with the section they appear in) */
 	scopedRefs: ScopedRef[];
+	/** Typed, directed dependency edges derived from the `Blocked by` / `Blocks`
+	 *  sections only (SPEC-114). Prose / `References` / source-line refs are not
+	 *  included — they are not dependency edges. */
+	dependencies: DependencyEdge[];
 	/** Canonical names of known sections present in this entity */
 	knownSectionsPresent: string[];
 	/** Parsed resolution section, if present */

@@ -35,8 +35,11 @@ export const work = createContentModelSchema({
 			'Acceptance Criteria': {
 				alias: ['Criteria', 'AC', 'Done When'],
 			},
-			'Dependencies': {
-				alias: ['Deps', 'Depends On', 'Blocked By', 'Requires'],
+			'Blocked by': {
+				alias: ['Depends On', 'Requires', 'Deps', 'Needs', 'Dependencies'],
+			},
+			'Blocks': {
+				alias: ['Unblocks', 'Enables', 'Required By'],
 			},
 			'Approach': {
 				alias: ['Technical Notes', 'Implementation Notes', 'How'],

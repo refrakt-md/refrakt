@@ -80,27 +80,15 @@ export function runNext(options: NextOptions): NextResult {
 		return isActionable(e.type as PlanRuneType, status);
 	});
 
-	// Exclude items with unfinished dependencies.
-	// If the entity has scoped refs, only refs in the Dependencies section block.
-	// Otherwise, fall back to treating all refs as potential blockers (backward compat).
+	// Exclude items with unfinished dependencies. Only the typed `blocked-by`
+	// edges (from a `## Blocked by` section) block an item — prose refs no longer
+	// count (SPEC-114). `Blocks` edges point the other way and never block self.
 	candidates = candidates.filter(e => {
-		const hasDepsSection = (e.knownSectionsPresent ?? []).includes('Dependencies');
-		if (hasDepsSection) {
-			// Section-aware: only Dependencies refs block
-			for (const ref of e.scopedRefs) {
-				if (ref.section !== 'Dependencies') continue;
-				const refStatus = statusMap.get(ref.id);
-				if (refStatus !== undefined && !DONE_STATUSES.has(refStatus)) {
-					return false;
-				}
-			}
-		} else {
-			// Fallback: all refs treated as potential blockers (same as before)
-			for (const refId of e.refs) {
-				const refStatus = statusMap.get(refId);
-				if (refStatus !== undefined && !DONE_STATUSES.has(refStatus)) {
-					return false;
-				}
+		for (const dep of e.dependencies ?? []) {
+			if (dep.direction !== 'blocked-by') continue;
+			const refStatus = statusMap.get(dep.id);
+			if (refStatus !== undefined && !DONE_STATUSES.has(refStatus)) {
+				return false;
 			}
 		}
 		return true;

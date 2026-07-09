@@ -1,16 +1,23 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
 import { escapeFenceTags } from '@refrakt-md/runes';
-import type { PlanEntity, PlanRuneType, Criterion, Resolution, ScopedRef, FileSource } from './types.js';
+import type { PlanEntity, PlanRuneType, Criterion, Resolution, ScopedRef, DependencyEdge, FileSource } from './types.js';
 
 const PLAN_RUNE_TYPES = new Set<string>(['spec', 'work', 'bug', 'decision', 'milestone']);
 const REF_TAG_NAMES = new Set<string>(['ref', 'xref']);
+
+/** The two directed dependency sections (SPEC-114). `Blocked by` = this item
+ *  waits for the ref; `Blocks` = the ref waits for this item. `Dependencies`
+ *  is retained as a deprecated alias of `Blocked by` so legacy content parses. */
+export const BLOCKED_BY_SECTION = 'Blocked by';
+export const BLOCKS_SECTION = 'Blocks';
 
 /** Known sections per rune type: canonical name → lowercase aliases */
 const KNOWN_SECTIONS: Record<string, Record<string, string[]>> = {
 	work: {
 		'Acceptance Criteria': ['criteria', 'ac', 'done when'],
-		'Dependencies': ['deps', 'depends on', 'blocked by', 'requires'],
+		[BLOCKED_BY_SECTION]: ['depends on', 'requires', 'deps', 'needs', 'dependencies'],
+		[BLOCKS_SECTION]: ['unblocks', 'enables', 'required by'],
 		'Approach': ['technical notes', 'implementation notes', 'how'],
 		'References': ['refs', 'related', 'context'],
 		'Edge Cases': ['exceptions', 'corner cases'],
@@ -21,6 +28,8 @@ const KNOWN_SECTIONS: Record<string, Record<string, string[]>> = {
 		'Expected': ['expected behaviour'],
 		'Actual': ['actual behaviour'],
 		'Environment': ['env'],
+		[BLOCKED_BY_SECTION]: ['depends on', 'requires', 'deps', 'needs', 'dependencies'],
+		[BLOCKS_SECTION]: ['unblocks', 'enables', 'required by'],
 	},
 	decision: {
 		'Context': ['background'],
@@ -208,6 +217,51 @@ function extractScopedRefs(planTag: Node, runeType: string): { scopedRefs: Scope
 	return { scopedRefs: deduped, knownSectionsPresent };
 }
 
+/** Derive typed, directed dependency edges from section-scoped refs. Only refs
+ *  in the `Blocked by` / `Blocks` sections become edges (SPEC-114); everything
+ *  else — prose, `References`, the source line — is excluded. */
+function computeDependencies(scopedRefs: ScopedRef[]): DependencyEdge[] {
+	const edges: DependencyEdge[] = [];
+	const seen = new Set<string>();
+	for (const ref of scopedRefs) {
+		let direction: DependencyEdge['direction'] | undefined;
+		if (ref.section === BLOCKED_BY_SECTION) direction = 'blocked-by';
+		else if (ref.section === BLOCKS_SECTION) direction = 'blocks';
+		if (!direction) continue;
+		const key = `${ref.id}:${direction}`;
+		if (seen.has(key)) continue;
+		seen.add(key);
+		edges.push({ id: ref.id, direction });
+	}
+	return edges;
+}
+
+/**
+ * Build the canonical dependency adjacency from a set of entities: `id → ids it
+ * is blocked by` (i.e. must wait for). Both section directions normalise into
+ * this one orientation — a `Blocks` edge `E → D` is recorded as `D` blocked by
+ * `E`. This is the single source of truth the validator's cycle check and the
+ * pipeline's dependency rollups both consume (SPEC-114).
+ */
+export function buildBlockedByAdjacency(entities: PlanEntity[]): Map<string, string[]> {
+	const adj = new Map<string, string[]>();
+	const add = (from: string, to: string) => {
+		if (!from || !to || from === to) return;
+		if (!adj.has(from)) adj.set(from, []);
+		const list = adj.get(from)!;
+		if (!list.includes(to)) list.push(to);
+	};
+	for (const e of entities) {
+		const id = e.attributes.id || e.attributes.name;
+		if (!id) continue;
+		for (const dep of e.dependencies ?? []) {
+			if (dep.direction === 'blocked-by') add(id, dep.id); // id waits for dep.id
+			else add(dep.id, id); // id blocks dep.id → dep.id waits for id
+		}
+	}
+	return adj;
+}
+
 /** Parse plan content from a string and return PlanEntity if it contains a plan rune, or null */
 export function parseFileContent(source: string, relPath: string): PlanEntity | null {
 	const ast = Markdoc.parse(escapeFenceTags(source));
@@ -232,9 +286,10 @@ export function parseFileContent(source: string, relPath: string): PlanEntity | 
 
 	const refs = extractRefs(planTag);
 	const { scopedRefs, knownSectionsPresent } = extractScopedRefs(planTag, runeType);
+	const dependencies = computeDependencies(scopedRefs);
 	const resolution = extractResolution(source, startLine, endLine);
 
-	return { file: relPath, type: runeType, attributes, title, criteria, refs, scopedRefs, knownSectionsPresent, resolution };
+	return { file: relPath, type: runeType, attributes, title, criteria, refs, scopedRefs, dependencies, knownSectionsPresent, resolution };
 }
 
 /**

@@ -369,3 +369,106 @@ export function runMigratePrAttrs(options: MigratePrAttrsOptions): MigratePrAttr
 		exitCode: EXIT_SUCCESS,
 	};
 }
+
+// ─── migrate dependencies (SPEC-114 / WORK-443) ───
+
+export interface MigrateDependenciesOptions {
+	dir: string;
+	apply?: boolean;
+	useGit?: boolean;
+}
+
+export interface DependencyRename {
+	file: string;
+	line: number;
+}
+
+export interface DependencyReverseFlag {
+	file: string;
+	line: number;
+	text: string;
+	reason: string;
+}
+
+export interface MigrateDependenciesResult {
+	mode: 'dry-run' | 'apply';
+	scanned: number;
+	/** `## Dependencies` headings renamed (or that would be) to `## Blocked by`. */
+	renamed: DependencyRename[];
+	/** Entries whose prose suggests the *reverse* (`Blocks`) direction — reported
+	 *  for manual review, never auto-flipped. */
+	reverseFlags: DependencyReverseFlag[];
+	exitCode: number;
+}
+
+/** Phrases in a `## Dependencies` section that hint the edge actually runs the
+ *  other way (this item unblocks / is required by the ref) and should probably
+ *  move to a `## Blocks` section. Inference is advisory only. */
+const REVERSE_HINTS: Array<{ re: RegExp; reason: string }> = [
+	{ re: /collects?\s+from\s+me\b/i, reason: 'reads as "collects from me" — incoming, consider ## Blocks' },
+	{ re: /\bunblock(s|ed)?\b/i, reason: 'mentions "unblocks" — outgoing, consider ## Blocks' },
+	{ re: /\benables?\b/i, reason: 'mentions "enables" — outgoing, consider ## Blocks' },
+	{ re: /\brequired by\b/i, reason: 'reads as "required by" — incoming, consider ## Blocks' },
+];
+
+const DEPENDENCIES_HEADING_RE = /^(##\s+)Dependencies(\s*)$/i;
+
+/**
+ * Rename legacy `## Dependencies` headings to the canonical `## Blocked by`
+ * (SPEC-114), and flag entries whose prose suggests the reverse direction for a
+ * human to move to `## Blocks`. Dry-run by default; `--apply` writes files and
+ * `--git` stages them.
+ */
+export function runMigrateDependencies(options: MigrateDependenciesOptions): MigrateDependenciesResult {
+	const { dir, apply = false, useGit = false } = options;
+	const cwd = resolve(dir);
+	const entities = scanPlanFiles(dir, { cache: false });
+
+	const renamed: DependencyRename[] = [];
+	const reverseFlags: DependencyReverseFlag[] = [];
+
+	for (const entity of entities) {
+		if (entity.type !== 'work' && entity.type !== 'bug') continue;
+		const absPath = resolve(dir, entity.file);
+		let content: string;
+		try {
+			content = readFileSync(absPath, 'utf8');
+		} catch {
+			continue;
+		}
+		const lines = content.split('\n');
+		let changed = false;
+
+		for (let i = 0; i < lines.length; i++) {
+			const m = lines[i].match(DEPENDENCIES_HEADING_RE);
+			if (!m) continue;
+
+			renamed.push({ file: entity.file, line: i + 1 });
+			lines[i] = `${m[1]}Blocked by${m[2]}`;
+			changed = true;
+
+			// Scan the section body (until the next H2 or the closing tag) for
+			// reverse-direction prose, flagging lines that reference an entity ID.
+			for (let j = i + 1; j < lines.length; j++) {
+				if (/^##\s+/.test(lines[j]) || /^\{%\s+\//.test(lines[j])) break;
+				const hint = REVERSE_HINTS.find(h => h.re.test(lines[j]));
+				if (hint && /\b(WORK|BUG|SPEC|ADR)-\d+\b/.test(lines[j])) {
+					reverseFlags.push({ file: entity.file, line: j + 1, text: lines[j].trim(), reason: hint.reason });
+				}
+			}
+		}
+
+		if (changed && apply) {
+			writeFileSync(absPath, lines.join('\n'));
+			if (useGit) git(cwd, ['add', entity.file]);
+		}
+	}
+
+	return {
+		mode: apply ? 'apply' : 'dry-run',
+		scanned: entities.length,
+		renamed,
+		reverseFlags,
+		exitCode: EXIT_SUCCESS,
+	};
+}

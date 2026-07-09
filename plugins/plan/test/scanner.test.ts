@@ -257,9 +257,9 @@ describe('caching', () => {
 		expect(entities).toHaveLength(1);
 		expect(entities[0].attributes.id).toBe('WORK-001');
 
-		// Cache should only contain the remaining file
+		// Cache should only contain the remaining file (entries are version-wrapped)
 		const cache = JSON.parse(readFileSync(join(TMP, '.plan-cache.json'), 'utf8'));
-		expect(Object.keys(cache)).toEqual(['a.md']);
+		expect(Object.keys(cache.entries)).toEqual(['a.md']);
 	});
 
 	it('should re-parse files when mtime changes', () => {
@@ -406,8 +406,10 @@ describe('scoped refs and known sections', () => {
 {% /work %}`);
 
 		const [entity] = scanPlanFiles(TMP);
-		expect(entity.scopedRefs).toContainEqual({ id: 'WORK-002', section: 'Dependencies' });
+		// `## Dependencies` is a deprecated alias of the canonical `Blocked by` (SPEC-114).
+		expect(entity.scopedRefs).toContainEqual({ id: 'WORK-002', section: 'Blocked by' });
 		expect(entity.scopedRefs).toContainEqual({ id: 'SPEC-001', section: 'References' });
+		expect(entity.dependencies).toContainEqual({ id: 'WORK-002', direction: 'blocked-by' });
 	});
 
 	it('matches section aliases case-insensitively', () => {
@@ -424,8 +426,8 @@ describe('scoped refs and known sections', () => {
 {% /work %}`);
 
 		const [entity] = scanPlanFiles(TMP);
-		expect(entity.scopedRefs).toContainEqual({ id: 'WORK-002', section: 'Dependencies' });
-		expect(entity.knownSectionsPresent).toContain('Dependencies');
+		expect(entity.scopedRefs).toContainEqual({ id: 'WORK-002', section: 'Blocked by' });
+		expect(entity.knownSectionsPresent).toContain('Blocked by');
 		expect(entity.knownSectionsPresent).toContain('Acceptance Criteria');
 	});
 

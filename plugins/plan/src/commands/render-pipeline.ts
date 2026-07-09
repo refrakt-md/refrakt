@@ -14,6 +14,7 @@ import type { HighlightTransform } from '@refrakt-md/highlight';
 import { plan } from '../index.js';
 import { planPipelineHooks, setScannerDependencies, setPlanDir, type PlanAggregatedData } from '../pipeline.js';
 import { scanPlanFiles } from '../scanner.js';
+import { buildBlockedByAdjacency } from '../scanner-core.js';
 import { getGitTimestamps, getStatTimestamps, type FileTimestamps } from '@refrakt-md/content';
 import type { PlanEntity } from '../types.js';
 import { TERMINAL_STATUS_UNION, WORK_STATUS_DISPLAY_ORDER, BUG_STATUS_DISPLAY_ORDER } from './enums.js';
@@ -1192,18 +1193,9 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 	}
 
 	// 4. Run pipeline hooks: register → aggregate → postProcess
-	// Pass scanner dependency data (from ## Dependencies sections) to the pipeline
-	const depMap = new Map<string, string[]>();
-	for (const entity of allEntities) {
-		const entityId = entity.attributes.id || entity.attributes.name;
-		if (!entityId) continue;
-		// Guard: scopedRefs may be absent on entities loaded from stale cache
-		const scopedRefs = entity.scopedRefs ?? [];
-		const depRefs = scopedRefs
-			.filter(r => r.section === 'Dependencies')
-			.map(r => r.id);
-		if (depRefs.length > 0) depMap.set(entityId, depRefs);
-	}
+	// Pass scanner dependency data (typed `Blocked by` / `Blocks` edges,
+	// normalised to "A blocked by B") to the pipeline (SPEC-114).
+	const depMap = buildBlockedByAdjacency(allEntities);
 	setScannerDependencies(depMap);
 	setPlanDir(dir);
 

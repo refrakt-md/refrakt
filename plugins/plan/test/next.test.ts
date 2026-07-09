@@ -100,7 +100,7 @@ describe('plan next — dependency exclusion', () => {
 		writeMd('work/blocked.md', `{% work id="WORK-002" status="ready" priority="critical" %}
 # Blocked by WORK-001
 
-## References
+## Blocked by
 - {% ref "WORK-001" /%}
 {% /work %}`);
 		writeMd('work/free.md', `{% work id="WORK-003" status="ready" priority="low" %}
@@ -118,7 +118,7 @@ describe('plan next — dependency exclusion', () => {
 		writeMd('work/ready.md', `{% work id="WORK-002" status="ready" priority="high" %}
 # Ready with done dep
 
-## References
+## Blocked by
 - {% ref "WORK-001" /%}
 {% /work %}`);
 		const result = runNext({ dir: TMP });
@@ -209,7 +209,7 @@ describe('plan next — count', () => {
 });
 
 describe('plan next — section-aware blocking', () => {
-	it('only Dependencies refs block when Dependencies section exists', () => {
+	it('a ref in References never blocks — only directed edges do (SPEC-114)', () => {
 		writeMd('work/dep.md', `{% work id="WORK-001" status="in-progress" priority="high" %}
 # Still working
 {% /work %}`);
@@ -219,9 +219,24 @@ describe('plan next — section-aware blocking', () => {
 ## References
 - {% ref "WORK-001" /%}
 {% /work %}`);
-		// Without a Dependencies section, all refs block (backward compat)
+		// Prose / References refs are not dependency edges — WORK-002 is actionable.
 		const result1 = runNext({ dir: TMP, count: 5 });
-		expect(result1.items.map(i => i.id)).not.toContain('WORK-002');
+		expect(result1.items.map(i => i.id)).toContain('WORK-002');
+	});
+
+	it('a Blocks edge does not block the item that authored it', () => {
+		// WORK-002 "Blocks" WORK-001 — that makes WORK-001 wait, not WORK-002.
+		writeMd('work/dep.md', `{% work id="WORK-001" status="in-progress" priority="high" %}
+# Downstream
+{% /work %}`);
+		writeMd('work/upstream.md', `{% work id="WORK-002" status="ready" priority="high" %}
+# Upstream
+
+## Blocks
+- {% ref "WORK-001" /%}
+{% /work %}`);
+		const result = runNext({ dir: TMP, count: 5 });
+		expect(result.items.map(i => i.id)).toContain('WORK-002');
 	});
 
 	it('informational refs in References do not block when Dependencies section exists', () => {

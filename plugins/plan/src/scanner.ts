@@ -9,6 +9,11 @@ export { parseFileContent, scanPlanSources } from './scanner-core.js';
 
 const CACHE_FILENAME = '.plan-cache.json';
 
+// Bump whenever the cached `PlanEntity` shape changes so stale caches (which
+// would omit new fields like `dependencies`, SPEC-114) are discarded rather
+// than served. The on-disk file wraps the entry map with this version.
+const CACHE_VERSION = 2;
+
 /** Recursively collect all .md file paths under a directory */
 function collectMdFiles(dir: string): string[] {
 	const files: string[] = [];
@@ -30,20 +35,26 @@ export function parseFile(filePath: string, relPath: string): PlanEntity | null 
 	return parseFileContent(source, relPath);
 }
 
-/** Read the cache file, returning an empty cache if it doesn't exist or is invalid */
+/** Read the cache file, returning an empty cache if it's missing, corrupt, or
+ *  written by an older cache version (whose entities may lack current fields). */
 function readCache(dir: string): ScanCache {
 	const cachePath = join(dir, CACHE_FILENAME);
 	if (!existsSync(cachePath)) return {};
 	try {
-		return JSON.parse(readFileSync(cachePath, 'utf8'));
+		const parsed = JSON.parse(readFileSync(cachePath, 'utf8'));
+		if (parsed && typeof parsed === 'object' && parsed.version === CACHE_VERSION && parsed.entries) {
+			return parsed.entries as ScanCache;
+		}
+		return {};
 	} catch {
 		return {};
 	}
 }
 
-/** Write the cache file */
+/** Write the cache file, wrapped with the current cache version. */
 function writeCache(dir: string, cache: ScanCache): void {
-	writeFileSync(join(dir, CACHE_FILENAME), JSON.stringify(cache, null, '\t') + '\n');
+	const payload = { version: CACHE_VERSION, entries: cache };
+	writeFileSync(join(dir, CACHE_FILENAME), JSON.stringify(payload, null, '\t') + '\n');
 }
 
 /**

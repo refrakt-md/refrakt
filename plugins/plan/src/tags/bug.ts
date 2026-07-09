@@ -42,6 +42,12 @@ export const bug = createContentModelSchema({
 			'Environment': {
 				alias: ['Env'],
 			},
+			'Blocked by': {
+				alias: ['Depends On', 'Requires', 'Deps', 'Needs', 'Dependencies'],
+			},
+			'Blocks': {
+				alias: ['Unblocks', 'Enables', 'Required By'],
+			},
 		},
 	}),
 	transform(resolved, attrs, config) {

@@ -8,7 +8,7 @@ import { runValidate, EXIT_INVALID_ARGS as VALIDATE_INVALID_ARGS } from './comma
 import { runServe } from './commands/serve.js';
 import { runBuild } from './commands/build.js';
 import { runHistory } from './commands/history.js';
-import { runMigrateFilenames, runMigratePrAttrs, EXIT_INVALID_ARGS as MIGRATE_INVALID_ARGS } from './commands/migrate.js';
+import { runMigrateFilenames, runMigratePrAttrs, runMigrateDependencies, EXIT_INVALID_ARGS as MIGRATE_INVALID_ARGS } from './commands/migrate.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
 import { resolvePlanDir, scaffoldRefraktConfigForPlan } from './plan-config.js';
 import {
@@ -660,9 +660,9 @@ function handleHistory(args: string[]): void {
 
 function handleMigrate(args: string[]): void {
 	const sub = args[0];
-	if (sub !== 'filenames' && sub !== 'pr-attrs') {
-		console.error('Usage: refrakt plan migrate <filenames|pr-attrs> [--dir <path>] [--dry-run] [--apply] [--git] [--format json]');
-		console.error('Subcommands: filenames, pr-attrs');
+	if (sub !== 'filenames' && sub !== 'pr-attrs' && sub !== 'dependencies') {
+		console.error('Usage: refrakt plan migrate <filenames|pr-attrs|dependencies> [--dir <path>] [--dry-run] [--apply] [--git] [--format json]');
+		console.error('Subcommands: filenames, pr-attrs, dependencies');
 		process.exit(MIGRATE_INVALID_ARGS);
 	}
 
@@ -719,6 +719,29 @@ function handleMigrate(args: string[]): void {
 		if (!apply && rows.length > 0) {
 			const gitHint = useGit ? '' : ' (add --git to stage the edits)';
 			console.log(`\nDry run. Re-run with --apply to write the pr attributes${gitHint}.`);
+		}
+		process.exit(result.exitCode);
+		return;
+	}
+
+	if (sub === 'dependencies') {
+		const result = runMigrateDependencies({ dir, apply, useGit });
+		if (formatJson) {
+			console.log(JSON.stringify(result, null, 2));
+			process.exit(result.exitCode);
+			return;
+		}
+		console.log(`Scanned ${result.scanned} plan files in ${dir}/`);
+		const verb = apply ? 'Renamed' : 'Would rename';
+		console.log(`  ${verb} ${result.renamed.length} "## Dependencies" heading(s) → "## Blocked by":`);
+		for (const r of result.renamed) console.log(`    ${r.file}:${r.line}`);
+		if (result.reverseFlags.length > 0) {
+			console.log(`\n  ${result.reverseFlags.length} entry(ies) may belong under "## Blocks" — review manually (not auto-flipped):`);
+			for (const f of result.reverseFlags) console.log(`    ${f.file}:${f.line}  ${f.reason}\n      ${f.text}`);
+		}
+		if (!apply && result.renamed.length > 0) {
+			const gitHint = useGit ? '' : ' (add --git to stage the edits)';
+			console.log(`\nDry run. Re-run with --apply to rename the headings${gitHint}.`);
 		}
 		process.exit(result.exitCode);
 		return;
