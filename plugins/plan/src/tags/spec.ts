@@ -3,13 +3,12 @@ import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 import { stripHorizontalRules } from '../util.js';
-
-const statusValues = ['draft', 'review', 'accepted', 'superseded', 'deprecated'] as const;
+import { VALID_STATUS } from '../commands/enums.js';
 
 export const spec = createContentModelSchema({
 	attributes: {
 		id: { type: String, required: true, description: 'Unique identifier (e.g., "SPEC-008").' },
-		status: { type: String, required: false, matches: statusValues.slice(), description: 'Current status: draft, review, accepted, superseded, or deprecated.' },
+		status: { type: String, required: false, matches: [...VALID_STATUS.spec], description: 'Current status: draft, review, accepted, superseded, or deprecated.' },
 		version: { type: String, required: false, description: 'Spec version (e.g., "1.0", "1.2").' },
 		supersedes: { type: String, required: false, description: 'ID of the spec this replaces.' },
 		tags: { type: String, required: false, description: 'Comma-separated labels.' },

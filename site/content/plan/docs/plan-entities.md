@@ -43,7 +43,9 @@ Specs are freeform — use whatever section headings make sense for the design.
 
 Work items are discrete, implementable tasks. They're the primary unit of progress tracking.
 
-**Statuses:** `draft` → `ready` → `in-progress` → `review` → `done` (also: `blocked`, `pending`)
+**Statuses:** `draft` → `ready` → `in-progress` → `review` → `done` (also: `blocked`, `pending`, `cancelled`, `superseded`)
+
+`cancelled` and `superseded` are terminal retirement states — an item that will not ship. They are excluded from progress and `plan next`; `superseded` pairs with a `supersedes="WORK-xxx"` attribute pointing at the replacement.
 
 | Attribute | Description |
 |-----------|-------------|

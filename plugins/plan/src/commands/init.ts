@@ -114,10 +114,19 @@ IDs are auto-assigned when you omit \`--id\` from \`refrakt plan create\`.
 ## Valid Statuses
 
 - **spec**: \`draft\` → \`review\` → \`accepted\` → \`superseded\` | \`deprecated\`
-- **work**: \`draft\` → \`ready\` → \`in-progress\` → \`review\` → \`done\` (also: \`blocked\`)
+- **work**: \`draft\` → \`ready\` → \`in-progress\` → \`review\` → \`done\` (also: \`blocked\`, \`pending\`, \`cancelled\`, \`superseded\`)
 - **bug**: \`reported\` → \`confirmed\` → \`in-progress\` → \`fixed\` (also: \`wontfix\`, \`duplicate\`)
 - **decision**: \`proposed\` → \`accepted\` → \`superseded\` | \`deprecated\`
 - **milestone**: \`planning\` → \`active\` → \`complete\`
+
+### Retiring a work item
+
+Not every work item ships. Instead of deleting the file (which loses the reasoning trail) or marking it \`done\` (which lies to every rollup), use a terminal-but-not-achieving status:
+
+- **\`cancelled\`** — deliberately not going to happen; the work is no longer wanted. Record *why* in a \`## Resolution\`.
+- **\`superseded\`** — replaced by a different work item. Pair it with \`supersedes="WORK-xxx"\` pointing at the replacement.
+
+Both are excluded from \`plan next\`, from milestone progress, and from done counts — retiring is not completing. Delete a file only when it was created in error and has no history worth keeping.
 
 ## Creating Items
 

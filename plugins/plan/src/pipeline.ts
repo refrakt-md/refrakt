@@ -23,7 +23,7 @@ const PLAN_RUNE_TYPES = new Set(['spec', 'work', 'bug', 'decision', 'milestone']
 /** Fields to extract from each rune type's property meta tags */
 const RUNE_FIELDS: Record<string, string[]> = {
 	spec: ['id', 'status', 'version', 'supersedes', 'tags', 'modified'],
-	work: ['id', 'status', 'priority', 'complexity', 'assignee', 'milestone', 'source', 'tags', 'modified'],
+	work: ['id', 'status', 'priority', 'complexity', 'assignee', 'milestone', 'source', 'supersedes', 'tags', 'modified'],
 	bug: ['id', 'status', 'severity', 'assignee', 'milestone', 'source', 'tags', 'modified'],
 	decision: ['id', 'status', 'date', 'supersedes', 'source', 'tags', 'modified'],
 	milestone: ['name', 'status', 'target', 'modified'],
@@ -225,6 +225,13 @@ const _idReferences = new Map<string, Array<{ id: string; type: string }>>();
  */
 const _sourceReferences = new Map<string, Array<{ id: string; type: string }>>();
 
+/**
+ * Module-level store for `supersedes` references (from the supersedes= attribute
+ * on work / spec / decision items). Maps entityId → the ID it supersedes.
+ * Produces 'supersedes' / 'superseded-by' relationships (SPEC-117).
+ */
+const _supersedesReferences = new Map<string, string>();
+
 /** Map of plan rune type to canonical entity-type string. */
 const PLAN_RUNE_TYPE_BY_DIR: Record<string, string> = {
 	specs: 'spec',
@@ -391,6 +398,9 @@ function processPlanFile(
 		const sourceRefs = parseSourceIds(String(entity.attributes.source ?? '')).filter((r) => r.id !== id);
 		if (sourceRefs.length > 0) _sourceReferences.set(id, sourceRefs);
 
+		const supersedesRef = String(entity.attributes.supersedes ?? '').trim();
+		if (supersedesRef && supersedesRef !== id) _supersedesReferences.set(id, supersedesRef);
+
 		const depRefs = (entity.scopedRefs ?? [])
 			.filter((r) => r.section === 'Dependencies')
 			.map((r) => r.id)
@@ -492,6 +502,7 @@ export const planPipelineHooks: PluginPipelineHooks = {
 	register(pages, registry, ctx) {
 		_idReferences.clear();
 		_sourceReferences.clear();
+		_supersedesReferences.clear();
 		// `_scannerDependencies` is intentionally NOT cleared here — the bespoke
 		// `plan build` path seeds it via `setScannerDependencies()` *before*
 		// calling `register()` (see render-pipeline.ts). The standard-load path
@@ -542,6 +553,12 @@ export const planPipelineHooks: PluginPipelineHooks = {
 				const sourceRefs = parseSourceIds(sourceVal).filter(r => r.id !== entityId);
 				if (sourceRefs.length > 0) {
 					_sourceReferences.set(entityId, sourceRefs);
+				}
+
+				// Extract supersedes= reference (SPEC-117)
+				const supersedesVal = String(data.supersedes ?? '').trim();
+				if (supersedesVal && supersedesVal !== entityId) {
+					_supersedesReferences.set(entityId, supersedesVal);
 				}
 
 				registry.register({
@@ -606,6 +623,7 @@ export const planPipelineHooks: PluginPipelineHooks = {
 			_sourceReferences,
 			_scannerDependencies,
 			_idReferences,
+			_supersedesReferences,
 		);
 
 		// SPEC-072 / WORK-279 — contribute the (already bidirectional) plan edges

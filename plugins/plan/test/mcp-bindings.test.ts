@@ -61,6 +61,29 @@ describe('plan command schemas', () => {
 	it('create schema requires type and title', () => {
 		expect(createSchema.required).toEqual(expect.arrayContaining(['type', 'title']));
 	});
+
+	// --- WORK-491 / SPEC-117: MCP vocab must not drift from enums.ts ---
+
+	it('update schema status enum includes pending (drift regression guard)', () => {
+		// The MCP server previously hard-coded a status list that omitted
+		// `pending`, so `plan.update` rejected the valid pending work status.
+		const statusProp = (updateSchema.properties as any).status;
+		expect(statusProp.enum).toContain('pending');
+	});
+
+	it('update schema status enum includes the new terminal work states', () => {
+		const statusProp = (updateSchema.properties as any).status;
+		expect(statusProp.enum).toContain('cancelled');
+		expect(statusProp.enum).toContain('superseded');
+	});
+
+	it('update schema severity enum uses cosmetic, not trivial', () => {
+		// The MCP server previously listed `trivial` — which `plan validate`
+		// then flagged as invalid — instead of the canonical `cosmetic`.
+		const severityProp = (updateSchema.properties as any).severity;
+		expect(severityProp.enum).toContain('cosmetic');
+		expect(severityProp.enum).not.toContain('trivial');
+	});
 });
 
 describe('plan command mcpHandlers', () => {
@@ -92,6 +115,28 @@ describe('plan command mcpHandlers', () => {
 		expect(result.changes).toHaveLength(1);
 		expect(result.changes[0].field).toBe('status');
 		expect(result.changes[0].new).toBe('in-progress');
+	});
+
+	it('updateMcpHandler accepts the pending status (WORK-491)', async () => {
+		const result = (await updateMcpHandler({
+			id: 'WORK-001',
+			dir: tempDir,
+			status: 'pending',
+		})) as { changes: any[] };
+		expect(result.changes.find(c => c.field === 'status')?.new).toBe('pending');
+	});
+
+	it('updateMcpHandler accepts cosmetic bug severity (WORK-491)', async () => {
+		writeFileSync(
+			join(tempDir, 'BUG-001-example.md'),
+			`{% bug id="BUG-001" status="confirmed" severity="major" %}\n\n# Example bug\n\n## Steps to Reproduce\n1. Do a thing\n\n## Expected\nWorks.\n\n## Actual\nBroken.\n\n{% /bug %}\n`,
+		);
+		const result = (await updateMcpHandler({
+			id: 'BUG-001',
+			dir: tempDir,
+			severity: 'cosmetic',
+		})) as { changes: any[] };
+		expect(result.changes.find(c => c.field === 'severity')?.new).toBe('cosmetic');
 	});
 
 	it('updateMcpHandler accepts a check substring', async () => {

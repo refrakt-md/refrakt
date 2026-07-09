@@ -1,5 +1,6 @@
 import { scanPlanFiles } from '../scanner.js';
 import type { PlanEntity, PlanRuneType } from '../types.js';
+import { DONE_STATUS_SET, isActionable } from './enums.js';
 
 // --- Constants ---
 
@@ -10,12 +11,8 @@ const PRIORITY_ORDER: Record<string, number> = {
 	low: 3,
 };
 
-const DONE_STATUSES = new Set(['done', 'fixed']);
-
-const READY_STATUSES: Record<string, string[]> = {
-	work: ['ready'],
-	bug: ['confirmed'],
-};
+/** Cross-type "is this dependency / item complete" check (work→done, bug→fixed). */
+const DONE_STATUSES = DONE_STATUS_SET;
 
 // --- Exit codes ---
 
@@ -120,8 +117,7 @@ function findReadyItems(entities: PlanEntity[], allEntities: PlanEntity[]): Read
 
 	const ready: ReadyItem[] = [];
 	for (const e of entities) {
-		const statuses = READY_STATUSES[e.type];
-		if (!statuses || !statuses.includes(e.attributes.status || '')) continue;
+		if (!isActionable(e.type, e.attributes.status || '')) continue;
 
 		// Check dependencies are met
 		const depsUnmet = e.refs.some(ref => {

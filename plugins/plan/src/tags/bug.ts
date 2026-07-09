@@ -3,15 +3,13 @@ import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 import { buildSections } from '../util.js';
-
-const statusValues = ['reported', 'confirmed', 'in-progress', 'fixed', 'wontfix', 'duplicate'] as const;
-const severityValues = ['critical', 'major', 'minor', 'cosmetic'] as const;
+import { VALID_STATUS, VALID_SEVERITY } from '../commands/enums.js';
 
 export const bug = createContentModelSchema({
 	attributes: {
 		id: { type: String, required: true, description: 'Unique identifier.' },
-		status: { type: String, required: false, matches: statusValues.slice(), description: 'Current status: reported, confirmed, in-progress, fixed, wontfix, or duplicate.' },
-		severity: { type: String, required: false, matches: severityValues.slice(), description: 'Impact level: critical, major, minor, or cosmetic.' },
+		status: { type: String, required: false, matches: [...VALID_STATUS.bug], description: 'Current status: reported, confirmed, in-progress, fixed, wontfix, or duplicate.' },
+		severity: { type: String, required: false, matches: [...VALID_SEVERITY], description: 'Impact level: critical, major, minor, or cosmetic.' },
 		assignee: { type: String, required: false, description: 'Person or agent working on this.' },
 		milestone: { type: String, required: false, description: 'Milestone for the fix.' },
 		source: { type: String, required: false, description: 'Comma-separated IDs of specs or decisions this item implements.' },

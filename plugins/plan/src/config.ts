@@ -68,6 +68,7 @@ export const config: Record<string, RuneConfig> = {
 			assignee: { source: 'meta', noBemClass: true },
 			milestone: { source: 'meta', noBemClass: true },
 			source: { source: 'meta', noBemClass: true },
+			supersedes: { source: 'meta', noBemClass: true },
 			tags: { source: 'meta', noBemClass: true },
 			created: { source: 'meta', noBemClass: true },
 			modified: { source: 'meta', noBemClass: true },
@@ -76,7 +77,9 @@ export const config: Record<string, RuneConfig> = {
 			id: idField,
 			status: {
 				metaType: 'status',
-				sentimentMap: { draft: 'neutral', ready: 'neutral', 'in-progress': 'neutral', review: 'caution', done: 'positive', blocked: 'negative' },
+				// `cancelled` / `superseded` are terminal-but-retired: caution (muted),
+				// never positive — retiring is not completing (SPEC-117).
+				sentimentMap: { draft: 'neutral', ready: 'neutral', 'in-progress': 'neutral', review: 'caution', done: 'positive', blocked: 'negative', pending: 'neutral', cancelled: 'caution', superseded: 'caution' },
 			},
 			priority: {
 				metaType: 'category', label: 'Priority',
@@ -86,13 +89,14 @@ export const config: Record<string, RuneConfig> = {
 			assignee: tagField('Assignee', 'assignee'),
 			milestone: tagField('Milestone', 'milestone'),
 			source: { metaType: 'id', label: 'Source', condition: 'source' },
+			supersedes: { metaType: 'id', label: 'Supersedes', condition: 'supersedes' },
 			created: timeField('Created', 'created'),
 			modified: timeField('Modified', 'modified'),
 			tags: tagsField,
 		},
 		blocks: {
 			eyebrow: { fields: ['id', { field: 'status', align: 'end' }], layout: 'bar' },
-			metadata: { fields: ['priority', 'complexity', 'assignee', 'milestone', 'source', 'created', 'modified'], layout: 'definition-list' },
+			metadata: { fields: ['priority', 'complexity', 'assignee', 'milestone', 'source', 'supersedes', 'created', 'modified'], layout: 'definition-list' },
 			tags: { fields: ['tags'], layout: 'bar' },
 		},
 		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
@@ -122,7 +126,7 @@ export const config: Record<string, RuneConfig> = {
 			},
 			severity: {
 				metaType: 'category', label: 'Severity',
-				sentimentMap: { critical: 'negative', major: 'caution', minor: 'neutral', trivial: 'neutral' },
+				sentimentMap: { critical: 'negative', major: 'caution', minor: 'neutral', cosmetic: 'neutral' },
 			},
 			assignee: tagField('Assignee', 'assignee'),
 			milestone: tagField('Milestone', 'milestone'),

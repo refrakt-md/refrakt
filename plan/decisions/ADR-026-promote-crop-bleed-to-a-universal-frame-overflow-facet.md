@@ -1,4 +1,4 @@
-{% decision id="ADR-023" status="accepted" date="2026-06-22" source="SPEC-116" tags="frame,media,engine,composability,architecture,dx" %}
+{% decision id="ADR-026" status="accepted" date="2026-06-22" source="SPEC-116" tags="frame,media,engine,composability,architecture,dx" %}
 
 # Promote crop-bleed to a universal frame-overflow facet
 

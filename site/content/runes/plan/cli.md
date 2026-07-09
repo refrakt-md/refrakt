@@ -97,7 +97,7 @@ refrakt plan update WORK-042 --status done
 
 | Type | Statuses |
 |------|----------|
-| work | `draft`, `ready`, `in-progress`, `review`, `done`, `blocked` |
+| work | `draft`, `ready`, `in-progress`, `review`, `done`, `blocked`, `pending`, `cancelled`, `superseded` |
 | bug | `reported`, `confirmed`, `in-progress`, `fixed`, `wontfix`, `duplicate` |
 | spec | `draft`, `review`, `accepted`, `superseded`, `deprecated` |
 | decision | `proposed`, `accepted`, `superseded`, `deprecated` |

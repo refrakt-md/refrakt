@@ -87,7 +87,7 @@ caret ranges apply.
 
 ## Consequences
 
-- Authoring docs and the `create-refrakt` extension scaffolds ({% ref "SPEC-116" /%}) prescribe
+- Authoring docs and the `create-refrakt` extension scaffolds ({% ref "SPEC-118" /%}) prescribe
   `peerDependencies` + minor ranges for plugins/themes/template-packs/preset-packs, so authors
   start compliant rather than having to remember the policy.
 - `template.json` ({% ref "SPEC-109" /%}), `presets.json` ({% ref "SPEC-111" /%}), and

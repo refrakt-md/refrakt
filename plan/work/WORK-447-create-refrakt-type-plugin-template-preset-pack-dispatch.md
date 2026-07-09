@@ -1,9 +1,9 @@
-{% work id="WORK-447" status="done" priority="high" complexity="simple" source="SPEC-116" tags="create-refrakt,scaffolding,cli" milestone="v0.25.0" %}
+{% work id="WORK-447" status="done" priority="high" complexity="simple" source="SPEC-118" tags="create-refrakt,scaffolding,cli" milestone="v0.25.0" %}
 
 # create-refrakt --type plugin|template|preset-pack dispatch
 
 `create-refrakt --type` accepts only `site|theme|plan` (`packages/create-refrakt/src/bin.ts`).
-{% ref "SPEC-116" /%} §1 extends it with the three distributable kinds and dispatches each to
+{% ref "SPEC-118" /%} §1 extends it with the three distributable kinds and dispatches each to
 its own scaffolder. This is the thin CLI seam; the scaffolder bodies land in their own work
 items (plugin, theme, template, preset-pack).
 
@@ -18,7 +18,7 @@ Update flag parsing + the dispatch table in `bin.ts`. Keep the scaffolder functi
 `scaffold.ts` (or a `scaffolders/` split) so each kind's work item can land independently.
 
 ## References
-- {% ref "SPEC-116" /%} §1
+- {% ref "SPEC-118" /%} §1
 - `packages/create-refrakt/src/bin.ts`, `packages/create-refrakt/src/scaffold.ts`
 
 ## Resolution

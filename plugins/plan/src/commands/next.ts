@@ -1,5 +1,6 @@
 import { scanPlanFiles } from '../scanner.js';
-import type { PlanEntity } from '../types.js';
+import type { PlanEntity, PlanRuneType } from '../types.js';
+import { DONE_STATUS_SET, isActionable } from './enums.js';
 
 // --- Priority and complexity sort orders ---
 
@@ -18,14 +19,10 @@ const COMPLEXITY_ORDER: Record<string, number> = {
 	unknown: 4,
 };
 
-/** Statuses that indicate an entity's work is complete */
-const DONE_STATUSES = new Set(['done', 'fixed']);
-
-/** Statuses that indicate an item is actionable */
-const READY_STATUSES: Record<string, string[]> = {
-	work: ['ready'],
-	bug: ['confirmed'],
-};
+/** A dependency is satisfied once its work is complete (work→done, bug→fixed).
+ *  The status map doesn't carry entity type, so the shared work/bug completion
+ *  set is the right lens. */
+const DONE_STATUSES = DONE_STATUS_SET;
 
 // --- Exit codes ---
 
@@ -79,10 +76,8 @@ export function runNext(options: NextOptions): NextResult {
 
 	let candidates = entities.filter(e => {
 		if (!typeFilter.includes(e.type)) return false;
-		const readyStatuses = READY_STATUSES[e.type];
-		if (!readyStatuses) return false;
 		const status = e.attributes.status ?? '';
-		return readyStatuses.includes(status);
+		return isActionable(e.type as PlanRuneType, status);
 	});
 
 	// Exclude items with unfinished dependencies.

@@ -1,8 +1,8 @@
-{% work id="WORK-448" status="done" priority="high" complexity="moderate" source="SPEC-116" tags="create-refrakt,scaffolding,peerdeps,build" milestone="v0.25.0" %}
+{% work id="WORK-448" status="done" priority="high" complexity="moderate" source="SPEC-118" tags="create-refrakt,scaffolding,peerdeps,build" milestone="v0.25.0" %}
 
 # Bake ADR-023 peerDeps, compat range, devDeps and build wiring into scaffolds
 
-{% ref "ADR-023" /%} compliance and the day-one-build guarantee ({% ref "SPEC-116" /%} §3–§4)
+{% ref "ADR-023" /%} compliance and the day-one-build guarantee ({% ref "SPEC-118" /%} §3–§4)
 must be embodied by every scaffold so an author starts correct rather than remembering the
 policy. This is the shared scaffolding helper the per-kind scaffolders consume.
 
@@ -24,7 +24,7 @@ create-refrakt version source that the site scaffold already uses for version de
 - {% ref "WORK-447" /%} — the `--type` dispatch this hangs off
 
 ## References
-- {% ref "SPEC-116" /%} §3, §4; {% ref "ADR-023" /%}
+- {% ref "SPEC-118" /%} §3, §4; {% ref "ADR-023" /%}
 
 ## Resolution
 

@@ -1,8 +1,8 @@
-{% work id="WORK-464" status="done" priority="medium" complexity="simple" source="SPEC-116" tags="docs,authoring" milestone="v0.25.0" %}
+{% work id="WORK-464" status="done" priority="medium" complexity="simple" source="SPEC-118" tags="docs,authoring" milestone="v0.25.0" %}
 
 # Authoring docs for distributables (template, theme, plugin, preset-pack)
 
-The docs ACs across {% ref "SPEC-109" /%}, {% ref "SPEC-111" /%}, and {% ref "SPEC-116" /%} —
+The docs ACs across {% ref "SPEC-109" /%}, {% ref "SPEC-111" /%}, and {% ref "SPEC-118" /%} —
 authoring guides for each distributable, each `create-refrakt --type` kind with a worked
 example.
 
@@ -24,7 +24,7 @@ accurate.
 - {% ref "WORK-456" /%} — preset-pack format
 
 ## References
-- {% ref "SPEC-109" /%}; {% ref "SPEC-111" /%}; {% ref "SPEC-116" /%}; `site/content/extend/*`
+- {% ref "SPEC-109" /%}; {% ref "SPEC-111" /%}; {% ref "SPEC-118" /%}; `site/content/extend/*`
 
 ## Resolution
 

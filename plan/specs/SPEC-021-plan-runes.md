@@ -110,13 +110,16 @@ A discrete piece of implementation work. Not a user story — no "as a / I want 
 |Attribute   |Type  |Required|Values                                                      |Description                         |
 |------------|------|--------|------------------------------------------------------------|------------------------------------|
 |`id`        |String|Yes     |—                                                           |Unique identifier (e.g., `RF-142`)  |
-|`status`    |String|No      |`draft`, `ready`, `in-progress`, `review`, `done`, `blocked`|Current status                      |
+|`status`    |String|No      |`draft`, `ready`, `in-progress`, `review`, `done`, `blocked`, `pending`, `cancelled`, `superseded`|Current status                      |
 |`priority`  |String|No      |`critical`, `high`, `medium`, `low`                         |Priority level                      |
 |`complexity`|String|No      |`trivial`, `simple`, `moderate`, `complex`, `unknown`       |Complexity signal for prioritisation|
 |`assignee`  |String|No      |—                                                           |Person or agent working on this     |
 |`milestone` |String|No      |—                                                           |Milestone this belongs to           |
 |`source`    |String|No      |—                                                           |Comma-separated IDs of specs/decisions this implements|
+|`supersedes`|String|No      |—                                                           |ID of the work item this replaces (set when `status="superseded"`)|
 |`tags`      |String|No      |—                                                           |Comma-separated labels              |
+
+The two terminal-but-non-achieving statuses give a work item an honest way to be retired: `cancelled` (deliberately dropped) and `superseded` (replaced by another item, paired with `supersedes`). Both end the lifecycle without counting as completion — they are excluded from `plan next`, milestone progress numerators, and `plan-progress` achieved counts. `pending` marks an item parked before it is `ready` to be worked.
 
 **Content model:**
 
@@ -711,12 +714,14 @@ my-project/
 
 |Status                                               |Colour|Rune types         |
 |-----------------------------------------------------|------|-------------------|
-|`draft` / `reported` / `proposed` / `planning`       |Grey  |All                |
+|`draft` / `reported` / `proposed` / `planning` / `pending`|Grey  |All                |
 |`ready` / `confirmed`                                |Blue  |work, bug          |
 |`in-progress` / `active` / `review`                  |Yellow|All                |
 |`done` / `fixed` / `complete` / `accepted`           |Green |All                |
 |`blocked`                                            |Red   |work               |
-|`wontfix` / `duplicate` / `superseded` / `deprecated`|Muted |bug, spec, decision|
+|`cancelled` / `wontfix` / `duplicate` / `superseded` / `deprecated`|Muted |work, bug, spec, decision|
+
+`cancelled` and `superseded` are terminal work states, rendered muted alongside the other retirement states — they must never read as achievement.
 
 ### Complexity Badges
 

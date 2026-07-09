@@ -11,7 +11,7 @@ export interface EntityRelationship {
 	toId: string;
 	toType: string;
 	/** Relationship kind */
-	kind: 'blocks' | 'blocked-by' | 'depends-on' | 'dependency-of' | 'implements' | 'implemented-by' | 'informs' | 'informed-by' | 'related';
+	kind: 'blocks' | 'blocked-by' | 'depends-on' | 'dependency-of' | 'implements' | 'implemented-by' | 'informs' | 'informed-by' | 'supersedes' | 'superseded-by' | 'related';
 }
 
 /** Minimal entity shape needed for relationship building */
@@ -37,6 +37,7 @@ export function buildRelationships(
 	sourceReferences: Map<string, Array<{ id: string; type: string }>>,
 	scannerDependencies: Map<string, string[]>,
 	idReferences: Map<string, Array<{ id: string; type: string }>>,
+	supersedesReferences?: Map<string, string>,
 ): Map<string, EntityRelationship[]> {
 	const relationships = new Map<string, EntityRelationship[]>();
 
@@ -47,6 +48,32 @@ export function buildRelationships(
 
 	// Track IDs already linked via source= to avoid duplicate 'related' edges
 	const sourceLinked = new Set<string>();
+
+	// Track IDs linked via supersedes= so the text-based 'related' pass doesn't
+	// re-add a weaker edge between the same two entities.
+	const supersedesLinked = new Set<string>();
+
+	// Process supersedes= references → supersedes / superseded-by.
+	// `A supersedes B` means A replaces B; B is superseded-by A.
+	for (const [fromId, toId] of supersedesReferences ?? []) {
+		const fromEntity = entities.get(fromId);
+		const toEntity = entities.get(toId);
+		if (!fromEntity || !toEntity) continue;
+
+		supersedesLinked.add(`${fromId}→${toId}`);
+		supersedesLinked.add(`${toId}→${fromId}`);
+
+		addRel(fromId, {
+			fromId, fromType: fromEntity.type,
+			toId, toType: toEntity.type,
+			kind: 'supersedes',
+		});
+		addRel(toId, {
+			fromId: toId, fromType: toEntity.type,
+			toId: fromId, toType: fromEntity.type,
+			kind: 'superseded-by',
+		});
+	}
 
 	// Process structured source= references → implements / implemented-by (or informs / informed-by for decisions)
 	for (const [fromId, refs] of sourceReferences) {
@@ -117,9 +144,10 @@ export function buildRelationships(
 			const toEntity = entities.get(ref.id);
 			if (!toEntity) continue; // Reference to unknown entity — skip
 
-			// Skip if already linked via source= attribute or dependency
+			// Skip if already linked via source= attribute, dependency, or supersedes
 			if (sourceLinked.has(`${fromId}→${ref.id}`)) continue;
 			if (depLinked.has(`${fromId}→${ref.id}`)) continue;
+			if (supersedesLinked.has(`${fromId}→${ref.id}`)) continue;
 
 			// Determine relationship kind
 			// If entity A has status "blocked" and references entity B, A is "blocked-by" B

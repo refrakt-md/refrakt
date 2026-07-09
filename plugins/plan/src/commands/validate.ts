@@ -2,7 +2,7 @@ import { readFileSync } from 'fs';
 import { basename, join } from 'path';
 import { scanPlanFiles } from '../scanner.js';
 import type { PlanEntity, PlanRuneType } from '../types.js';
-import { VALID_STATUS, VALID_PRIORITY, VALID_COMPLEXITY, VALID_SEVERITY } from './enums.js';
+import { VALID_STATUS, VALID_PRIORITY, VALID_COMPLEXITY, VALID_SEVERITY, DONE_STATUS_SET, isTerminal } from './enums.js';
 
 // --- Valid attribute values per type (sets derived from the shared vocabularies) ---
 
@@ -14,7 +14,8 @@ const VALID_PRIORITIES = new Set(VALID_PRIORITY);
 const VALID_SEVERITIES = new Set(VALID_SEVERITY);
 const VALID_COMPLEXITIES = new Set(VALID_COMPLEXITY);
 
-const DONE_STATUSES = new Set(['done', 'fixed']);
+/** Cross-type "is this item's work complete" (work→done, bug→fixed). */
+const DONE_STATUSES = DONE_STATUS_SET;
 
 // --- Exit codes ---
 
@@ -227,6 +228,10 @@ function checkResolutions(entities: PlanEntity[], dir: string): ValidationIssue[
 		const id = e.attributes.id || e.attributes.name || e.file;
 		const status = e.attributes.status || '';
 		const isDone = DONE_STATUSES.has(status);
+		// A `## Resolution` is legitimate on any terminal item — a `cancelled`
+		// or `superseded` work item may record *why* it was retired, not just
+		// how it was completed (SPEC-117).
+		const isTerminalItem = isTerminal(e.type as PlanRuneType, status);
 		const hasResolution = e.resolution !== undefined;
 
 		// Done without resolution (info)
@@ -240,8 +245,10 @@ function checkResolutions(entities: PlanEntity[], dir: string): ValidationIssue[
 			});
 		}
 
-		// Resolution on non-terminal item (warning)
-		if (hasResolution && !isDone && (e.type === 'work' || e.type === 'bug')) {
+		// Resolution on a non-terminal item (warning). Terminal items —
+		// including the retired `cancelled` / `superseded` work states — may
+		// carry a Resolution explaining the outcome, so they are exempt.
+		if (hasResolution && !isTerminalItem && (e.type === 'work' || e.type === 'bug')) {
 			issues.push({
 				severity: 'warning',
 				type: 'resolution-not-done',
@@ -271,6 +278,40 @@ function checkResolutions(entities: PlanEntity[], dir: string): ValidationIssue[
 		}
 	}
 
+	return issues;
+}
+
+function checkSupersedes(entities: PlanEntity[], knownIds: Set<string>): ValidationIssue[] {
+	const issues: ValidationIssue[] = [];
+	for (const e of entities) {
+		if (e.type !== 'work') continue;
+		const id = e.attributes.id || e.file;
+		const status = e.attributes.status || '';
+		const supersedes = (e.attributes.supersedes || '').trim();
+
+		// A `superseded` work item should point at the item that replaced it.
+		if (status === 'superseded' && !supersedes) {
+			issues.push({
+				severity: 'warning',
+				type: 'superseded-without-target',
+				source: id,
+				file: e.file,
+				message: `${id} is superseded but has no supersedes="…" pointing at its replacement`,
+			});
+		}
+
+		// A set `supersedes` must resolve to a known entity.
+		if (supersedes && !knownIds.has(supersedes)) {
+			issues.push({
+				severity: 'warning',
+				type: 'broken-supersedes',
+				source: id,
+				file: e.file,
+				target: supersedes,
+				message: `${id} supersedes "${supersedes}" — entity not found`,
+			});
+		}
+	}
 	return issues;
 }
 
@@ -476,6 +517,7 @@ export function runValidate(options: ValidateOptions): ValidateResult {
 		...checkBrokenRefs(entities, knownIds),
 		...checkDuplicateIds(entities),
 		...checkInvalidAttributes(entities),
+		...checkSupersedes(entities, knownIds),
 		...checkSourceRefs(entities, knownIds),
 		...checkMilestoneRefs(entities),
 		...checkCircularDeps(entities, knownIds),

@@ -2,14 +2,13 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
-
-const statusValues = ['planning', 'active', 'complete'] as const;
+import { VALID_STATUS } from '../commands/enums.js';
 
 export const milestone = createContentModelSchema({
 	attributes: {
 		name: { type: String, required: true, description: 'Milestone name (e.g., "v0.5.0").' },
 		target: { type: String, required: false, description: 'Target date (aspirational, not a commitment).' },
-		status: { type: String, required: false, matches: statusValues.slice(), description: 'Current status: planning, active, or complete.' },
+		status: { type: String, required: false, matches: [...VALID_STATUS.milestone], description: 'Current status: planning, active, or complete.' },
 		created: { type: String, required: false, description: 'Creation date (ISO 8601). Defaults to file creation date from git.' },
 		modified: { type: String, required: false, description: 'Last modified date (ISO 8601). Defaults to file modification date from git.' },
 	},

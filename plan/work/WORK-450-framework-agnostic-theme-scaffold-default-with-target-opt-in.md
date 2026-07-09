@@ -1,4 +1,4 @@
-{% work id="WORK-450" status="done" priority="high" complexity="moderate" source="SPEC-116" tags="create-refrakt,scaffolding,themes,frameworks" milestone="v0.25.0" %}
+{% work id="WORK-450" status="done" priority="high" complexity="moderate" source="SPEC-118" tags="create-refrakt,scaffolding,themes,frameworks" milestone="v0.25.0" %}
 
 # Framework-agnostic theme scaffold default with --target opt-in
 
@@ -23,7 +23,7 @@ by default (mirroring `packages/lumina`), gating the `svelte/` layer behind `--t
 - {% ref "WORK-448" /%} — deps + build wiring
 
 ## References
-- {% ref "SPEC-116" /%}; {% ref "ADR-024" /%}
+- {% ref "SPEC-118" /%}; {% ref "ADR-024" /%}
 - `packages/create-refrakt/src/scaffold.ts`; `packages/lumina/package.json`
 
 ## Resolution

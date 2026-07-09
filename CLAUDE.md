@@ -267,6 +267,15 @@ Plan files use `{ID}-{slug}.md` (e.g. `WORK-051-plan-validate-command.md`, `SPEC
 - `{% decision id="ADR-001" status="accepted" source="SPEC-001" %}` — architecture decision record (`source` links to spec it informs)
 - `{% milestone name="v0.5.0" status="active" %}` — release target
 
+### Retiring a work item (`cancelled` vs `superseded` vs delete)
+
+When a work item is not going to ship, don't mark it `done` (that lies to every rollup and the milestone progress bar) and don't delete the file (that loses the reasoning trail). Use a terminal-but-non-achieving status instead:
+
+- **`cancelled`** — deliberately not going to happen; the work is no longer wanted. Record why in the body / `## Resolution`.
+- **`superseded`** — replaced by a different work item. Pair it with `supersedes="WORK-xxx"` pointing at the replacement (validate warns if it's missing).
+
+Both are terminal and excluded from `plan next`, milestone progress numerators, and `plan-progress` achieved counts — retiring is not completing. A `## Resolution` on a `cancelled`/`superseded` item is allowed (it explains the retirement) and no longer triggers the `resolution-not-done` warning. Delete a file only when it was created in error and has no history worth preserving.
+
 ### Workflow
 
 ```bash

@@ -25,6 +25,7 @@ import { runHistory, type HistoryOptions } from './commands/history.js';
 import { runMigrateFilenames } from './commands/migrate.js';
 import { resolvePlanDir } from './plan-config.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
+import { VALID_STATUS, VALID_PRIORITY, VALID_SEVERITY } from './commands/enums.js';
 
 /** Common `dir` field used by every plan command. */
 const dirProp: JSONSchema7 = {
@@ -38,9 +39,15 @@ const formatProp: JSONSchema7 = {
 	description: 'Output format. Default: text.',
 };
 
-const STATUS_VALUES = ['draft', 'ready', 'in-progress', 'review', 'done', 'blocked'] as const;
-const PRIORITY_VALUES = ['critical', 'high', 'medium', 'low'] as const;
-const SEVERITY_VALUES = ['critical', 'major', 'minor', 'trivial'] as const;
+// Status is a flat union of every type's valid statuses (deduped). A single
+// enum keeps the JSON Schema simple for MCP clients; per-type correctness is
+// enforced server-side by `assertValidAttrs` / `runUpdate` via `enums.ts`
+// (SPEC-117 recommendation). Deriving from `enums.ts` means the MCP surface
+// can never drift from the canonical vocab again (the bug WORK-127 / SPEC-037
+// fixed once and the MCP server later regressed).
+const STATUS_VALUES = [...new Set(Object.values(VALID_STATUS).flat())] as readonly string[];
+const PRIORITY_VALUES = [...VALID_PRIORITY] as readonly string[];
+const SEVERITY_VALUES = [...VALID_SEVERITY] as readonly string[];
 const TYPE_VALUES = [...VALID_TYPES] as readonly string[];
 
 /** Normalize the `dir` field on incoming MCP input — falling back to the same
