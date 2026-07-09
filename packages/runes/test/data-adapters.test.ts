@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseDelimited, delimitedAdapter, inferFormat, DataSourceError } from '../src/data-adapters.js';
+import { parseDelimited, delimitedAdapter, jsonAdapter, ndjsonAdapter, inferFormat, DataSourceError } from '../src/data-adapters.js';
 import { normalizeNumber, applyTyping, applySort } from '../src/data-projection.js';
 
 describe('parseDelimited (RFC 4180)', () => {
@@ -66,6 +66,79 @@ describe('inferFormat', () => {
 		expect(inferFormat('x.jsonl')).toBe('ndjson');
 		expect(inferFormat('x.dat')).toBeNull();
 		expect(inferFormat('noext')).toBeNull();
+	});
+});
+
+describe('jsonAdapter', () => {
+	it('records (auto-detected): keys become headers', () => {
+		const out = jsonAdapter('[{"name":"A","revenue":10},{"name":"B","revenue":20}]');
+		expect(out).toEqual({ headers: ['name', 'revenue'], rows: [['A', '10'], ['B', '20']] });
+	});
+	it('unions keys across records (missing → empty)', () => {
+		const out = jsonAdapter('[{"a":1},{"a":2,"b":3}]');
+		expect(out.headers).toEqual(['a', 'b']);
+		expect(out.rows).toEqual([['1', ''], ['2', '3']]);
+	});
+	it('resolves `root` (dotted path) to a nested array', () => {
+		const out = jsonAdapter('{"data":{"results":[{"x":1}]}}', { root: 'data.results' });
+		expect(out).toEqual({ headers: ['x'], rows: [['1']] });
+	});
+	it('resolves `root` as a JSON Pointer', () => {
+		const out = jsonAdapter('{"data":{"results":[{"x":1}]}}', { root: '/data/results' });
+		expect(out.rows).toEqual([['1']]);
+	});
+	it('flattens nested objects into dotted headers', () => {
+		const out = jsonAdapter('[{"product":"W","geo":{"country":"FR"}}]');
+		expect(out.headers).toEqual(['product', 'geo.country']);
+		expect(out.rows).toEqual([['W', 'FR']]);
+	});
+	it('values orient: first inner array is the header row', () => {
+		const out = jsonAdapter('[["name","revenue"],["A",10],["B",20]]');
+		expect(out).toEqual({ headers: ['name', 'revenue'], rows: [['A', '10'], ['B', '20']] });
+	});
+	it('auto-detects values orient when element[0] is an array', () => {
+		const out = jsonAdapter('[["h1","h2"],["a","b"]]');
+		expect(out.headers).toEqual(['h1', 'h2']);
+	});
+	it('index orient: object map with a synthesized key column', () => {
+		const out = jsonAdapter('{"us":{"pop":9},"fr":{"pop":6}}', { orient: 'index', keyColumn: 'code' });
+		expect(out.headers).toEqual(['code', 'pop']);
+		expect(out.rows).toEqual([['us', '9'], ['fr', '6']]);
+	});
+	it('index key column defaults to `key`', () => {
+		const out = jsonAdapter('{"a":{"v":1}}', { orient: 'index' });
+		expect(out.headers[0]).toBe('key');
+	});
+	it('errors on an object map without orient=index', () => {
+		expect(() => jsonAdapter('{"a":{"v":1}}')).toThrow(/orient="index"/);
+	});
+	it('errors on invalid JSON', () => {
+		expect(() => jsonAdapter('{not json')).toThrow(DataSourceError);
+	});
+	it('errors on an unresolvable root', () => {
+		expect(() => jsonAdapter('{"a":1}', { root: 'x.y' })).toThrow(/root path/);
+	});
+	it('comma-joins array leaf values', () => {
+		const out = jsonAdapter('[{"tags":["a","b"]}]');
+		expect(out.rows).toEqual([['a, b']]);
+	});
+});
+
+describe('ndjsonAdapter', () => {
+	it('parses line-delimited records, unioning keys', () => {
+		const out = ndjsonAdapter('{"a":1}\n{"a":2,"b":3}\n');
+		expect(out.headers).toEqual(['a', 'b']);
+		expect(out.rows).toEqual([['1', ''], ['2', '3']]);
+	});
+	it('ignores blank lines', () => {
+		const out = ndjsonAdapter('{"a":1}\n\n{"a":2}\n');
+		expect(out.rows).toEqual([['1'], ['2']]);
+	});
+	it('errors (with the line number) on a malformed record', () => {
+		expect(() => ndjsonAdapter('{"a":1}\n{bad}\n')).toThrow(/line 2/);
+	});
+	it('errors on an empty source', () => {
+		expect(() => ndjsonAdapter('\n\n')).toThrow(DataSourceError);
 	});
 });
 

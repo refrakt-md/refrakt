@@ -18,6 +18,8 @@ import type { Node } from '@markdoc/markdoc';
 import type { ProjectFiles, PreprocessContext, PreprocessPage } from '@refrakt-md/types';
 import {
 	delimitedAdapter,
+	jsonAdapter,
+	ndjsonAdapter,
 	inferFormat,
 	DataSourceError,
 	type DataTable,
@@ -171,11 +173,16 @@ function runAdapter(
 				delimiter: resolveString(a.delimiter, ctx.variables) || undefined,
 				header: a.header === undefined ? undefined : a.header !== false,
 			});
-		case 'json':
+		case 'json': {
+			const orient = resolveString(a.orient, ctx.variables);
+			return jsonAdapter(raw, {
+				root: resolveString(a.root, ctx.variables) || undefined,
+				orient: orient ? (orient as 'records' | 'values' | 'index') : undefined,
+				keyColumn: resolveString(a['key-column'], ctx.variables) || undefined,
+			});
+		}
 		case 'ndjson':
-			throw new DataSourceError(
-				`the ${format} adapter is not available yet (lands in WORK-486); use format="csv" or "tsv"`,
-			);
+			return ndjsonAdapter(raw);
 		default:
 			throw new DataSourceError(`unsupported format "${format}"`);
 	}

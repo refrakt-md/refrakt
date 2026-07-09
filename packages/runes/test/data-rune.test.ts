@@ -123,6 +123,75 @@ describe('data rune — CSV → table (SPEC-103)', () => {
 	});
 });
 
+describe('data rune — JSON / NDJSON (SPEC-103, WORK-486)', () => {
+	const API_JSON = JSON.stringify({
+		data: {
+			results: [
+				{ product: 'W', geo: { country: 'FR' }, units: '1,200', region: 'EMEA' },
+				{ product: 'X', geo: { country: 'US' }, units: '900', region: 'AMER' },
+				{ product: 'Y', geo: { country: 'DE' }, units: '1,500', region: 'EMEA' },
+			],
+		},
+	});
+
+	it('reads nested JSON via root + dotted columns, filtered/sorted/typed', () => {
+		const { rendered } = runData(
+			'{% data src="api.json" root="data.results" where="region:EMEA" columns="product as Product, geo.country as Country, units as Units" numeric="units" sort="-units" /%}',
+			{ 'api.json': API_JSON },
+		);
+		const table = findTable(rendered);
+		expect(cellsOf(table, 'th').map(textOf)).toEqual(['Product', 'Country', 'Units']);
+		// EMEA rows only (W, Y), sorted -units → Y(1500) then W(1200).
+		const products = cellsOf(table, 'td').filter((_t, i) => i % 3 === 0).map(textOf);
+		expect(products).toEqual(['Y', 'W']);
+		const countries = cellsOf(table, 'td').filter((_t, i) => i % 3 === 1).map(textOf);
+		expect(countries).toEqual(['DE', 'FR']);
+		// units typed numeric → data-value on the formatted values.
+		const unitCells = cellsOf(table, 'td').filter((_t, i) => i % 3 === 2);
+		expect(unitCells.map((t) => t.attributes['data-value'])).toEqual(['1500', '1200']);
+	});
+
+	it('reads an object-map JSON via orient=index + key-column into datatable', () => {
+		const INV = JSON.stringify({ ABC: { name: 'Widget', stock: 5 }, DEF: { name: 'Gadget', stock: 9 } });
+		const { rendered } = runData(
+			'{% datatable %}\n{% data src="inv.json" orient="index" key-column="sku" columns="sku as SKU, name as Item, stock as Stock" numeric="stock" /%}\n{% /datatable %}',
+			{ 'inv.json': INV },
+		);
+		const table = findTable(rendered);
+		expect(cellsOf(table, 'th').map(textOf)).toEqual(['SKU', 'Item', 'Stock']);
+		const skus = cellsOf(table, 'td').filter((_t, i) => i % 3 === 0).map(textOf);
+		expect(skus).toEqual(['ABC', 'DEF']);
+		expect(findTag(rendered, (t) => t.attributes?.['data-rune'] === 'data-table')).toBeDefined();
+	});
+
+	it('reads NDJSON records', () => {
+		const { rendered } = runData('{% data src="d.ndjson" /%}', {
+			'd.ndjson': '{"name":"A","qty":1}\n{"name":"B","qty":2}\n',
+		});
+		const table = findTable(rendered);
+		expect(cellsOf(table, 'th').map(textOf)).toEqual(['name', 'qty']);
+		expect(cellsOf(table, 'td').map(textOf)).toEqual(['A', '1', 'B', '2']);
+	});
+
+	it('feeds an object-map JSON into chart (numeric column carries data-value)', () => {
+		const POP = JSON.stringify({ us: { pop: '9' }, fr: { pop: '6' } });
+		const { rendered } = runData(
+			'{% chart type="bar" %}\n{% data src="pop.json" orient="index" key-column="country" numeric="pop" /%}\n{% /chart %}',
+			{ 'pop.json': POP },
+		);
+		expect(findTag(rendered, (t) => t.name === 'rf-chart')).toBeDefined();
+		const popCells = cellsOf(findTable(rendered), 'td').filter((_t, i) => i % 2 === 1);
+		expect(popCells.map((t) => t.attributes['data-value'])).toEqual(['9', '6']);
+	});
+
+	it('surfaces invalid JSON as an error callout', () => {
+		const { rendered, warnings } = runData('{% data src="bad.json" /%}', { 'bad.json': '{not json' });
+		expect(findTable(rendered)).toBeUndefined();
+		expect(findTag(rendered, (t) => t.attributes?.['data-rune'] === 'hint')).toBeDefined();
+		expect(warnings.some((w) => w.severity === 'error' && /invalid JSON/.test(w.message))).toBe(true);
+	});
+});
+
 describe('data rune — composition with host runes (SPEC-103)', () => {
 	it('feeds `chart` with no structural edits (renders rf-chart around the table)', () => {
 		const { rendered } = runData(
