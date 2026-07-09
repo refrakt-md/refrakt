@@ -1,4 +1,4 @@
-{% spec id="SPEC-114" status="draft" tags="plan,dependencies,validation,scanner,dx,model" %}
+{% spec id="SPEC-114" status="accepted" tags="plan,dependencies,validation,scanner,dx,model" %}
 
 # Directional dependency model for plan items
 
