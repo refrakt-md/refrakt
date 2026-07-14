@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/transform",
   "description": "Identity transform engine for refrakt.md themes — BEM classes, structural injection, meta consumption",
-  "version": "0.27.0",
+  "version": "0.28.0",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@markdoc/markdoc": "0.4.0",
-    "@refrakt-md/types": "0.27.0"
+    "@refrakt-md/types": "0.28.0"
   },
   "devDependencies": {
     "ajv": "^8.17.0"

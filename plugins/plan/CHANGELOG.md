@@ -1,5 +1,48 @@
 # @refrakt-md/plan
 
+## 0.28.0
+
+### Minor Changes
+
+- 0063b66: Give plan dependencies a direction so cycle detection means what it says (SPEC-114).
+
+  - **Directed sections** — `work` and `bug` gain canonical `## Blocked by` (this item waits for the ref) and `## Blocks` (the ref waits for this item) sections, each with aliases. `## Dependencies` is retained as a deprecated alias of `Blocked by`, so legacy content keeps parsing.
+  - **Typed edges** — `PlanEntity` carries a directed `dependencies` array derived _only_ from those sections. Prose `{% ref %}` mentions, `## References`, and the source line are no longer dependency edges.
+  - **Meaningful cycle detection** — `checkCircularDeps` builds its graph from the typed edges (normalised to "A is blocked by B"), not the raw ref set. This clears the 88 false-positive `circular-dependency` errors that any two items mentioning each other used to produce, while a genuine directed deadlock is still caught. `plan next` and the pipeline dependency rollups consume the same typed edges — one source of truth.
+  - **`refrakt plan migrate dependencies`** — renames legacy `## Dependencies` headings to `## Blocked by` (dry-run by default; `--apply`/`--git`) and flags — without auto-flipping — entries whose prose reads like the reverse direction, for manual review.
+  - **Docs** — CLAUDE.md and the plan workflow docs describe the directed model, the section aliases, and the migration.
+
+  The scan cache is versioned so upgrading discards a stale cache whose entities predate the typed `dependencies` field.
+
+- 47ae0d7: Close the spec → work → PR traceability loop (SPEC-049).
+
+  - **Spec lifecycle** — specs gain `implemented` (code in `main`) and `shipped` (released to npm) statuses beyond `accepted`, plus a `released-in="vX.Y.Z"` attribute. `plan validate` errors on a `shipped` spec that lacks `released-in`.
+  - **ADR `rejected`** — decisions gain a terminal `rejected` status for "considered and explicitly declined", distinct from `superseded`/`deprecated`.
+  - **First-class `pr` attribute** — `work` and `bug` accept a multi-valued `pr` (`<org>/<repo>#<number>`). `plan validate` errors on malformed values but does not warn on a missing `pr` (carrot before stick). The legacy `PR:` resolution line is still parsed as a fallback; the attribute wins.
+  - **`plan status` traceability rollups** — a per-spec PR rollup (deduped across `implemented-by` work) and an `implemented`-flip suggestion when every linked work item of an `accepted` spec is `done`. Exposed in `--format json`.
+  - **`refrakt plan migrate pr-attrs`** — backfills the `pr` attribute on legacy `done` work / `fixed` bug items by mining git merge-commit history (dry-run by default; `--apply`/`--git`). It attributes a commit to the PR whose topic branch actually introduced it, skips items whose history is ambiguous, and reports unresolved items without touching them.
+  - **Docs** — CLAUDE.md's completion checklist gains a standalone `pr` step; the `plan init` template, SPEC-021, and the site plan docs describe the new statuses, the `pr` attribute, and the `accepted → implemented → shipped` lifecycle.
+
+- 81896e6: Consolidate the plan status vocabulary and add terminal work states (SPEC-117).
+
+  `plugins/plan/src/commands/enums.ts` is now the single source of truth for status/severity/priority/complexity vocabularies. Consumers (rune schemas, MCP input schemas, `next`/`status`/`validate`, the renderer, and `theme.orderings`) import from it instead of re-declaring value lists, and an exhaustiveness test fails CI if a canonical status ever lacks a sentiment-map or ordering entry.
+
+  - **New terminal work states** — `cancelled` (deliberately dropped) and `superseded` (replaced, paired with a new `supersedes="WORK-xxx"` attribute). Both are terminal but non-achieving: excluded from `plan next`, milestone progress numerators, and `plan-progress` achieved counts. `superseded` produces a `supersedes` / `superseded-by` relationship edge.
+  - **Derived lifecycle helpers** — `TERMINAL_STATUSES`, `ACHIEVING_STATUSES`, `ACTIONABLE_STATUSES` and `isTerminal` / `isAchieving` / `isActionable`, so every consumer asks the same lifecycle question the same way.
+  - **Validation** — `plan validate` warns on a `superseded` work item without `supersedes` (or with an unresolvable one), and no longer warns about a `## Resolution` on a `cancelled` / `superseded` item (terminal items may record why they were retired).
+  - **Drift fixes** — the MCP `plan.update` tool now accepts `pending` (work) and `cosmetic` (bug severity) and rejects `trivial`, because its enums derive from `enums.ts` rather than a hand-maintained copy that had drifted (a regression of the WORK-127 / SPEC-037 fix).
+
+### Patch Changes
+
+- Updated dependencies [816b0d1]
+  - @refrakt-md/runes@0.28.0
+  - @refrakt-md/behaviors@0.28.0
+  - @refrakt-md/content@0.28.0
+  - @refrakt-md/html@0.28.0
+  - @refrakt-md/highlight@0.28.0
+  - @refrakt-md/transform@0.28.0
+  - @refrakt-md/types@0.28.0
+
 ## 0.27.0
 
 ### Minor Changes
