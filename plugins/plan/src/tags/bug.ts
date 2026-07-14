@@ -3,18 +3,17 @@ import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 import { buildSections } from '../util.js';
-
-const statusValues = ['reported', 'confirmed', 'in-progress', 'fixed', 'wontfix', 'duplicate'] as const;
-const severityValues = ['critical', 'major', 'minor', 'cosmetic'] as const;
+import { VALID_STATUS, VALID_SEVERITY } from '../commands/enums.js';
 
 export const bug = createContentModelSchema({
 	attributes: {
 		id: { type: String, required: true, description: 'Unique identifier.' },
-		status: { type: String, required: false, matches: statusValues.slice(), description: 'Current status: reported, confirmed, in-progress, fixed, wontfix, or duplicate.' },
-		severity: { type: String, required: false, matches: severityValues.slice(), description: 'Impact level: critical, major, minor, or cosmetic.' },
+		status: { type: String, required: false, matches: [...VALID_STATUS.bug], description: 'Current status: reported, confirmed, in-progress, fixed, wontfix, or duplicate.' },
+		severity: { type: String, required: false, matches: [...VALID_SEVERITY], description: 'Impact level: critical, major, minor, or cosmetic.' },
 		assignee: { type: String, required: false, description: 'Person or agent working on this.' },
 		milestone: { type: String, required: false, description: 'Milestone for the fix.' },
 		source: { type: String, required: false, description: 'Comma-separated IDs of specs or decisions this item implements.' },
+		pr: { type: String, required: false, description: 'Comma-separated PR references that fixed this bug (e.g. "refrakt-md/refrakt#142").' },
 		tags: { type: String, required: false, description: 'Comma-separated labels.' },
 		created: { type: String, required: false, description: 'Creation date (ISO 8601). Defaults to file creation date from git.' },
 		modified: { type: String, required: false, description: 'Last modified date (ISO 8601). Defaults to file modification date from git.' },
@@ -43,6 +42,12 @@ export const bug = createContentModelSchema({
 			'Environment': {
 				alias: ['Env'],
 			},
+			'Blocked by': {
+				alias: ['Depends On', 'Requires', 'Deps', 'Needs', 'Dependencies'],
+			},
+			'Blocks': {
+				alias: ['Unblocks', 'Enables', 'Required By'],
+			},
 		},
 	}),
 	transform(resolved, attrs, config) {
@@ -59,6 +64,7 @@ export const bug = createContentModelSchema({
 		const assigneeMeta = new Tag('meta', { content: attrs.assignee ?? '' });
 		const milestoneMeta = new Tag('meta', { content: attrs.milestone ?? '' });
 		const sourceMeta = new Tag('meta', { content: attrs.source ?? '' });
+		const prMeta = new Tag('meta', { content: attrs.pr ?? '' });
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 		const fileVars = config.variables?.file as { created?: string; modified?: string } | undefined;
 		const createdMeta = new Tag('meta', { content: attrs.created || fileVars?.created || '' });
@@ -80,6 +86,7 @@ export const bug = createContentModelSchema({
 				assignee: assigneeMeta,
 				milestone: milestoneMeta,
 				source: sourceMeta,
+				pr: prMeta,
 				tags: tagsMeta,
 				created: createdMeta,
 				modified: modifiedMeta,
@@ -89,7 +96,7 @@ export const bug = createContentModelSchema({
 				blurb,
 				body: bodyDiv,
 			},
-			children: [idMeta, statusMeta, severityMeta, assigneeMeta, milestoneMeta, sourceMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), ...(blurb ? [blurb] : []), bodyDiv],
+			children: [idMeta, statusMeta, severityMeta, assigneeMeta, milestoneMeta, sourceMeta, prMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), ...(blurb ? [blurb] : []), bodyDiv],
 		});
 	},
 });

@@ -11,6 +11,7 @@ import { planActivity } from './tags/plan-activity.js';
 import { planHistory } from './tags/plan-history.js';
 import { config } from './config.js';
 import { planPipelineHooks } from './pipeline.js';
+import { WORK_STATUS_DISPLAY_ORDER, BUG_STATUS_DISPLAY_ORDER } from './commands/enums.js';
 
 export const plan: Plugin = {
 	name: 'plan',
@@ -134,8 +135,8 @@ Custom properties cascade naturally without JavaScript.
 		// from each rune's lifecycle `matches`. priority/severity fall out of
 		// `matches` automatically and need no override.
 		orderings: {
-			work: { status: ['blocked', 'in-progress', 'review', 'ready', 'pending', 'draft', 'done'] },
-			bug: { status: ['in-progress', 'confirmed', 'reported', 'fixed', 'wontfix', 'duplicate'] },
+			work: { status: [...WORK_STATUS_DISPLAY_ORDER] },
+			bug: { status: [...BUG_STATUS_DISPLAY_ORDER] },
 		},
 	},
 	pipeline: planPipelineHooks,

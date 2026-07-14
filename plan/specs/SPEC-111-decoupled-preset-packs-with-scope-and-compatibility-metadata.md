@@ -182,7 +182,7 @@ computation. The `.ts` form buys only author-time typing. So a preset can be car
   `ThemeTokensConfig`. This satisfies the loader's existing "resolved export must be a plain
   object" guard exactly — JSON *is* a plain object. Lumina's `.ts` presets keep working unchanged.
 - **No build step.** A JSON preset is publishable and `presets.json`-valid the moment it is
-  written — it neutralises the day-one-build concern ({% ref "SPEC-116" /%}) for preset packs:
+  written — it neutralises the day-one-build concern ({% ref "SPEC-118" /%}) for preset packs:
   there is nothing to compile, and `module` paths point at the `.json` files directly rather than
   at built output.
 - **Schema-driven authoring + editor surface.** The universal token contract ({% ref "SPEC-048" /%})
@@ -215,8 +215,8 @@ palette *generation* belongs in a tool that emits JSON, not in the format.
 ## Acceptance Criteria
 
 - [ ] A preset-pack package format is defined: a package shipping one or more `ThemeTokensConfig` presets (unchanged data shape) plus a standalone `presets.json` manifest (carrying a `refrakt` compatibility range per `ADR-023`), resolvable independently of any theme package.
-- [ ] Presets are **carrier-agnostic**: the loader resolves a preset entry whose `module` is a `.json` file (read + `JSON.parse`, the default for new packs) *or* a JS/TS module (`default`/`config` export, Lumina's current form), yielding the same `ThemeTokensConfig` and satisfying the existing plain-object guard. A JSON preset requires **no build step** — its `module` points at the `.json` directly, neutralising the {% ref "SPEC-116" /%} day-one-build concern for preset packs.
-- [ ] A **JSON Schema** derived from the universal token contract ({% ref "SPEC-048" /%}) is published so JSON presets (`"$schema": "…"`) get editor validation/autocomplete; `--type preset-pack` ({% ref "SPEC-116" /%}) scaffolds a JSON preset by default.
+- [ ] Presets are **carrier-agnostic**: the loader resolves a preset entry whose `module` is a `.json` file (read + `JSON.parse`, the default for new packs) *or* a JS/TS module (`default`/`config` export, Lumina's current form), yielding the same `ThemeTokensConfig` and satisfying the existing plain-object guard. A JSON preset requires **no build step** — its `module` points at the `.json` directly, neutralising the {% ref "SPEC-118" /%} day-one-build concern for preset packs.
+- [ ] A **JSON Schema** derived from the universal token contract ({% ref "SPEC-048" /%}) is published so JSON presets (`"$schema": "…"`) get editor validation/autocomplete; `--type preset-pack` ({% ref "SPEC-118" /%}) scaffolds a JSON preset by default.
 - [ ] Packs are a *capability*, not a `kind`: a package may declare a `presets.json` alongside a theme contract / `template.json`, and Lumina (theme + 9 presets) is expressible as a theme that also declares a pack — no `ThemeManifest` change, no single cross-artifact `kind`. Distributable discovery scans for each capability independently.
 - [ ] Each preset declares a `scope` (`syntax` | `palette`) **in the manifest entry**; validation warns when a declared `syntax` preset sets chrome tokens, reusing the existing scope-eligibility classification.
 - [ ] The manifest records per-preset `id`, `title`, `scope`, `module`, and an optional advisory `tunedFor` (preset → themes); absence means universal and applying a preset outside its set is never an error.

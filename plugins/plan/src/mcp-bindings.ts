@@ -22,9 +22,10 @@ import { runValidate, type ValidateOptions } from './commands/validate.js';
 import { runNextId, isAutoIdType, type AutoIdType } from './commands/next-id.js';
 import { runInit } from './commands/init.js';
 import { runHistory, type HistoryOptions } from './commands/history.js';
-import { runMigrateFilenames } from './commands/migrate.js';
+import { runMigrateFilenames, runMigratePrAttrs, runMigrateDependencies } from './commands/migrate.js';
 import { resolvePlanDir } from './plan-config.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
+import { VALID_STATUS, VALID_PRIORITY, VALID_SEVERITY } from './commands/enums.js';
 
 /** Common `dir` field used by every plan command. */
 const dirProp: JSONSchema7 = {
@@ -38,9 +39,15 @@ const formatProp: JSONSchema7 = {
 	description: 'Output format. Default: text.',
 };
 
-const STATUS_VALUES = ['draft', 'ready', 'in-progress', 'review', 'done', 'blocked'] as const;
-const PRIORITY_VALUES = ['critical', 'high', 'medium', 'low'] as const;
-const SEVERITY_VALUES = ['critical', 'major', 'minor', 'trivial'] as const;
+// Status is a flat union of every type's valid statuses (deduped). A single
+// enum keeps the JSON Schema simple for MCP clients; per-type correctness is
+// enforced server-side by `assertValidAttrs` / `runUpdate` via `enums.ts`
+// (SPEC-117 recommendation). Deriving from `enums.ts` means the MCP surface
+// can never drift from the canonical vocab again (the bug WORK-127 / SPEC-037
+// fixed once and the MCP server later regressed).
+const STATUS_VALUES = [...new Set(Object.values(VALID_STATUS).flat())] as readonly string[];
+const PRIORITY_VALUES = [...VALID_PRIORITY] as readonly string[];
+const SEVERITY_VALUES = [...VALID_SEVERITY] as readonly string[];
 const TYPE_VALUES = [...VALID_TYPES] as readonly string[];
 
 /** Normalize the `dir` field on incoming MCP input — falling back to the same
@@ -96,6 +103,9 @@ export const updateSchema: JSONSchema7 = {
 		severity: { type: 'string', enum: [...SEVERITY_VALUES] },
 		assignee: { type: 'string' },
 		milestone: { type: 'string' },
+		supersedes: { type: 'string', description: 'ID of the item this replaces (work/spec/decision).' },
+		pr: { type: 'string', description: 'Comma-separated PR references (<org>/<repo>#<number>) on work/bug items.' },
+		'released-in': { type: 'string', description: 'Release version a shipped spec landed in (semver, e.g. v0.11.4).' },
 		check: { type: 'string', description: 'Acceptance-criterion text to mark complete (substring match).' },
 		uncheck: { type: 'string', description: 'Acceptance-criterion text to mark incomplete (substring match).' },
 		resolve: { type: 'string', description: 'Resolution summary text appended at the bottom of the entity.' },
@@ -112,7 +122,7 @@ export const updateSchema: JSONSchema7 = {
 export async function updateMcpHandler(input: unknown, ctx?: McpHandlerContext): Promise<unknown> {
 	const o = input as Record<string, unknown>;
 	const attrs: Record<string, string> = { ...((o.attrs as Record<string, string>) ?? {}) };
-	for (const key of ['status', 'priority', 'severity', 'assignee', 'milestone']) {
+	for (const key of ['status', 'priority', 'severity', 'assignee', 'milestone', 'supersedes', 'pr', 'released-in']) {
 		if (typeof o[key] === 'string') attrs[key] = o[key] as string;
 	}
 	const opts: UpdateOptions = {
@@ -285,12 +295,12 @@ export const migrateSchema: JSONSchema7 = {
 	properties: {
 		subcommand: {
 			type: 'string',
-			enum: ['filenames'],
-			description: 'Migration subcommand. Currently only "filenames" is supported.',
+			enum: ['filenames', 'pr-attrs', 'dependencies'],
+			description: '"filenames" normalizes plan filenames to the {ID}-{slug}.md scheme; "pr-attrs" backfills the pr attribute from git merge-commit history; "dependencies" renames legacy "## Dependencies" headings to the directed "## Blocked by" and flags reverse-direction entries.',
 		},
 		dir: dirProp,
 		apply: { type: 'boolean', description: 'Write the migration. Default: false (dry run).' },
-		useGit: { type: 'boolean', description: 'Use git mv for renames. Default: false.' },
+		useGit: { type: 'boolean', description: 'For filenames: use git mv. For pr-attrs: git add the edited files. Default: false.' },
 	},
 	required: ['subcommand'],
 	additionalProperties: false,
@@ -298,14 +308,17 @@ export const migrateSchema: JSONSchema7 = {
 
 export async function migrateMcpHandler(input: unknown, ctx?: McpHandlerContext): Promise<unknown> {
 	const o = input as Record<string, unknown>;
-	if (o.subcommand !== 'filenames') {
-		throw new Error(`Unknown migrate subcommand "${String(o.subcommand)}". Valid: filenames.`);
+	const dir = resolveDir(o as { dir?: unknown }, ctx);
+	if (o.subcommand === 'pr-attrs') {
+		return runMigratePrAttrs({ dir, apply: Boolean(o.apply), useGit: Boolean(o.useGit) });
 	}
-	return runMigrateFilenames({
-		dir: resolveDir(o as { dir?: unknown }, ctx),
-		apply: Boolean(o.apply),
-		useGit: Boolean(o.useGit),
-	});
+	if (o.subcommand === 'dependencies') {
+		return runMigrateDependencies({ dir, apply: Boolean(o.apply), useGit: Boolean(o.useGit) });
+	}
+	if (o.subcommand !== 'filenames') {
+		throw new Error(`Unknown migrate subcommand "${String(o.subcommand)}". Valid: filenames, pr-attrs, dependencies.`);
+	}
+	return runMigrateFilenames({ dir, apply: Boolean(o.apply), useGit: Boolean(o.useGit) });
 }
 
 // --- serve / build are intentionally not exposed via MCP -----------------

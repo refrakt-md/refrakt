@@ -191,9 +191,11 @@ describe('validate — milestone references', () => {
 });
 
 describe('validate — circular dependencies', () => {
-	it('detects circular dependency between two items', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="ready" %}\n# A\n\n{% ref "WORK-002" /%}\n{% /work %}');
-		writeMd('work/b.md', '{% work id="WORK-002" status="ready" %}\n# B\n\n{% ref "WORK-001" /%}\n{% /work %}');
+	// SPEC-114: cycles are detected on the directed `Blocked by` / `Blocks`
+	// edges, not on prose refs.
+	it('detects a circular dependency between two items via Blocked by', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="ready" %}\n# A\n\n## Blocked by\n- {% ref "WORK-002" /%}\n{% /work %}');
+		writeMd('work/b.md', '{% work id="WORK-002" status="ready" %}\n# B\n\n## Blocked by\n- {% ref "WORK-001" /%}\n{% /work %}');
 		const result = runValidate({ dir: TMP });
 		const circular = result.issues.filter(i => i.type === 'circular-dependency');
 		expect(circular).toHaveLength(1);
@@ -201,17 +203,26 @@ describe('validate — circular dependencies', () => {
 		expect(circular[0].message).toContain('Circular dependency');
 	});
 
-	it('detects three-way circular dependency', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="ready" %}\n# A\n\n{% ref "WORK-002" /%}\n{% /work %}');
-		writeMd('work/b.md', '{% work id="WORK-002" status="ready" %}\n# B\n\n{% ref "WORK-003" /%}\n{% /work %}');
-		writeMd('work/c.md', '{% work id="WORK-003" status="ready" %}\n# C\n\n{% ref "WORK-001" /%}\n{% /work %}');
+	it('detects a three-way circular dependency', () => {
+		writeMd('work/a.md', '{% work id="WORK-001" status="ready" %}\n# A\n\n## Blocked by\n- {% ref "WORK-002" /%}\n{% /work %}');
+		writeMd('work/b.md', '{% work id="WORK-002" status="ready" %}\n# B\n\n## Blocked by\n- {% ref "WORK-003" /%}\n{% /work %}');
+		writeMd('work/c.md', '{% work id="WORK-003" status="ready" %}\n# C\n\n## Blocked by\n- {% ref "WORK-001" /%}\n{% /work %}');
 		const result = runValidate({ dir: TMP });
 		const circular = result.issues.filter(i => i.type === 'circular-dependency');
 		expect(circular.length).toBeGreaterThanOrEqual(1);
 	});
 
+	it('does NOT flag a prose cross-reference as a cycle (SPEC-114)', () => {
+		// Two items that merely mention each other in the body — no directed
+		// dependency sections — must not be a cycle.
+		writeMd('work/a.md', '{% work id="WORK-001" status="ready" %}\n# A\n\nRelated to {% ref "WORK-002" /%}.\n{% /work %}');
+		writeMd('work/b.md', '{% work id="WORK-002" status="ready" %}\n# B\n\nRelated to {% ref "WORK-001" /%}.\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		expect(result.issues.filter(i => i.type === 'circular-dependency')).toHaveLength(0);
+	});
+
 	it('does not flag acyclic dependencies', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="ready" %}\n# A\n\n{% ref "WORK-002" /%}\n{% /work %}');
+		writeMd('work/a.md', '{% work id="WORK-001" status="ready" %}\n# A\n\n## Blocked by\n- {% ref "WORK-002" /%}\n{% /work %}');
 		writeMd('work/b.md', '{% work id="WORK-002" status="done" %}\n# B\n{% /work %}');
 		const result = runValidate({ dir: TMP });
 		const circular = result.issues.filter(i => i.type === 'circular-dependency');

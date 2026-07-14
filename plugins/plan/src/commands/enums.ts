@@ -1,16 +1,20 @@
 import type { PlanRuneType } from '../types.js';
 
 // Single source of truth for the constrained attribute vocabularies shared by
-// `plan create`, `plan update`, and `plan validate`. Keeping these in one place
-// means a value accepted at create time is the same value validate considers
-// legal — the three commands can never drift apart.
+// `plan create`, `plan update`, `plan validate`, the MCP input schemas, the
+// renderer, and the rune schemas. Every consumer imports from here rather than
+// re-declaring the value lists — a value accepted at create time is the same
+// value validate considers legal, and adding one status can never leave a
+// consumer behind (SPEC-117). Sets that carry extra structure — terminal-ness,
+// achievement, actionability — are declared below and covered by an
+// exhaustiveness test so drift becomes a build failure, not a latent bug.
 
 /** Valid `status` values per rune type. */
 export const VALID_STATUS: Record<PlanRuneType, readonly string[]> = {
-	spec: ['draft', 'review', 'accepted', 'superseded', 'deprecated'],
-	work: ['draft', 'ready', 'in-progress', 'review', 'done', 'blocked', 'pending'],
+	spec: ['draft', 'review', 'accepted', 'implemented', 'shipped', 'superseded', 'deprecated'],
+	work: ['draft', 'ready', 'in-progress', 'review', 'done', 'blocked', 'pending', 'cancelled', 'superseded'],
 	bug: ['reported', 'confirmed', 'in-progress', 'fixed', 'wontfix', 'duplicate'],
-	decision: ['proposed', 'accepted', 'superseded', 'deprecated'],
+	decision: ['proposed', 'accepted', 'rejected', 'superseded', 'deprecated'],
 	milestone: ['planning', 'active', 'complete'],
 };
 
@@ -20,12 +24,112 @@ export const VALID_SEVERITY: readonly string[] = ['critical', 'major', 'minor', 
 
 /** Attributes allowed per rune type (all of them, not just the enum-valued ones). */
 export const ALLOWED_ATTRS: Record<PlanRuneType, readonly string[]> = {
-	work: ['id', 'status', 'priority', 'complexity', 'assignee', 'milestone', 'source', 'tags'],
-	spec: ['id', 'status', 'version', 'supersedes', 'tags'],
-	bug: ['id', 'status', 'severity', 'assignee', 'milestone', 'source', 'tags'],
+	work: ['id', 'status', 'priority', 'complexity', 'assignee', 'milestone', 'source', 'supersedes', 'pr', 'tags'],
+	spec: ['id', 'status', 'version', 'supersedes', 'released-in', 'tags'],
+	bug: ['id', 'status', 'severity', 'assignee', 'milestone', 'source', 'pr', 'tags'],
 	decision: ['id', 'status', 'date', 'supersedes', 'source', 'tags'],
 	milestone: ['name', 'status', 'target'],
 };
+
+/** Matches a single PR reference: `<org>/<repo>#<number>`. */
+export const PR_REF_RE = /^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+#\d+$/;
+
+/** Matches a semver release tag, e.g. `v0.11.4` (leading `v` optional). */
+export const RELEASED_IN_RE = /^v?\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
+
+// --- Derived lifecycle sets (SPEC-117) -----------------------------------
+//
+// These carry structure beyond membership (which statuses *end* a lifecycle,
+// which of those *count as success*, which are *actionable*), so they can't be
+// pure derivations of VALID_STATUS. They are keyed off the canonical list and
+// an exhaustiveness test asserts every terminal/achieving value is a real
+// member of VALID_STATUS — so a typo or a removed status fails CI.
+
+/**
+ * Statuses that end an entity's lifecycle. A terminal item is finished /
+ * resolved / not-actionable, whether that ending was success or retirement.
+ * `next`, `status`, `validate`, and the renderer all ask "is this terminal?"
+ * through {@link isTerminal} instead of maintaining private sets.
+ */
+export const TERMINAL_STATUSES: Record<PlanRuneType, ReadonlySet<string>> = {
+	spec: new Set(['accepted', 'implemented', 'shipped', 'superseded', 'deprecated']),
+	work: new Set(['done', 'cancelled', 'superseded']),
+	bug: new Set(['fixed', 'wontfix', 'duplicate']),
+	decision: new Set(['accepted', 'rejected', 'superseded', 'deprecated']),
+	milestone: new Set(['complete']),
+};
+
+/**
+ * The terminal subset that counts as *achievement* — the work actually got
+ * done. Drives milestone progress numerators and `plan-progress` counts.
+ * Retirement states (`cancelled` / `superseded` / `wontfix` / `duplicate`) are
+ * terminal but deliberately excluded: retiring is not completing.
+ */
+export const ACHIEVING_STATUSES: Record<PlanRuneType, ReadonlySet<string>> = {
+	spec: new Set(['accepted', 'implemented', 'shipped']),
+	work: new Set(['done']),
+	bug: new Set(['fixed']),
+	decision: new Set(['accepted']),
+	milestone: new Set(['complete']),
+};
+
+/** Statuses `plan next` draws from — items ready to be picked up. */
+export const ACTIONABLE_STATUSES: Record<PlanRuneType, ReadonlySet<string>> = {
+	spec: new Set<string>(),
+	work: new Set(['ready']),
+	bug: new Set(['confirmed']),
+	decision: new Set<string>(),
+	milestone: new Set<string>(),
+};
+
+/** True when `status` ends `type`'s lifecycle (done, retired, or otherwise). */
+export function isTerminal(type: PlanRuneType, status: string): boolean {
+	return TERMINAL_STATUSES[type]?.has(status) ?? false;
+}
+
+/** True when `status` counts as successful completion for `type`. */
+export function isAchieving(type: PlanRuneType, status: string): boolean {
+	return ACHIEVING_STATUSES[type]?.has(status) ?? false;
+}
+
+/** True when `status` makes a `type` item actionable (`plan next` fodder). */
+export function isActionable(type: PlanRuneType, status: string): boolean {
+	return ACTIONABLE_STATUSES[type]?.has(status) ?? false;
+}
+
+/**
+ * Work/bug completion statuses — the cross-type "is this dependency satisfied /
+ * is this work item done" check used by `next`, `status`, and `validate`.
+ * Equals the old hand-written `{done, fixed}` set, now derived from the
+ * canonical achieving sets. Scoped to work + bug deliberately: a spec or
+ * milestone reference is not a work dependency and never counted as "done" for
+ * this check, even though `accepted` / `complete` are achieving for their types.
+ */
+export const DONE_STATUS_SET: ReadonlySet<string> = new Set([
+	...ACHIEVING_STATUSES.work,
+	...ACHIEVING_STATUSES.bug,
+]);
+
+/** Union of every terminal status across all types — for cross-type
+ *  "is this resolved / collapse it in the sidebar" checks. */
+export const TERMINAL_STATUS_UNION: ReadonlySet<string> = new Set(
+	Object.values(TERMINAL_STATUSES).flatMap(s => [...s]),
+);
+
+/**
+ * Dashboard "actionable-first" status display order (SPEC-072). Diverges from
+ * each rune's lifecycle order — blocked/in-progress bubble to the top, terminal
+ * states sink to the tail. Shared by the plugin's `theme.orderings` and the
+ * bespoke `plan build` render-pipeline so collection/aggregate groups land in
+ * the same order on both paths. Covers every canonical status so no group is
+ * left unsorted.
+ */
+export const WORK_STATUS_DISPLAY_ORDER: readonly string[] = [
+	'blocked', 'in-progress', 'review', 'ready', 'pending', 'draft', 'done', 'cancelled', 'superseded',
+];
+export const BUG_STATUS_DISPLAY_ORDER: readonly string[] = [
+	'in-progress', 'confirmed', 'reported', 'fixed', 'wontfix', 'duplicate',
+];
 
 /** Attributes with constrained value sets, by rune type. */
 export function getEnumAttrs(type: PlanRuneType): Record<string, readonly string[]> {

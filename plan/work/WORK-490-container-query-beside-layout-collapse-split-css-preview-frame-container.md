@@ -1,4 +1,4 @@
-{% work id="WORK-490" status="review" priority="medium" complexity="moderate" source="SPEC-100" tags="split,collapse,layout,container-queries,preview,css" milestone="v0.26.0" %}
+{% work id="WORK-490" status="done" priority="medium" complexity="moderate" source="SPEC-100" tags="split,collapse,layout,container-queries,preview,css" milestone="v0.26.0" %}
 
 # Container-query beside-layout collapse (split.css) + preview frame container
 

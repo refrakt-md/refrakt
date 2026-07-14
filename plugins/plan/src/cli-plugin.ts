@@ -8,7 +8,7 @@ import { runValidate, EXIT_INVALID_ARGS as VALIDATE_INVALID_ARGS } from './comma
 import { runServe } from './commands/serve.js';
 import { runBuild } from './commands/build.js';
 import { runHistory } from './commands/history.js';
-import { runMigrateFilenames, EXIT_INVALID_ARGS as MIGRATE_INVALID_ARGS } from './commands/migrate.js';
+import { runMigrateFilenames, runMigratePrAttrs, runMigrateDependencies, EXIT_INVALID_ARGS as MIGRATE_INVALID_ARGS } from './commands/migrate.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
 import { resolvePlanDir, scaffoldRefraktConfigForPlan } from './plan-config.js';
 import {
@@ -583,6 +583,25 @@ function handleStatus(args: string[]): void {
 		console.log();
 	}
 
+	// Traceability — specs ready to flip + PRs per spec (SPEC-049)
+	const flipSuggestions = result.specRollups.filter(r => r.suggestImplemented);
+	if (flipSuggestions.length > 0) {
+		console.log('  Ready to mark implemented (all linked work done):');
+		for (const r of flipSuggestions) {
+			console.log(`    ${r.id}  ${r.title ?? '(untitled)'}  → refrakt plan update ${r.id} --status implemented`);
+		}
+		console.log();
+	}
+
+	const withPrs = result.specRollups.filter(r => r.prs.length > 0);
+	if (withPrs.length > 0) {
+		console.log('  PRs by spec:');
+		for (const r of withPrs) {
+			console.log(`    ${r.id}  ${r.prs.join(', ')}`);
+		}
+		console.log();
+	}
+
 	// Warnings
 	if (result.warnings.length > 0) {
 		console.log('  Warnings:');
@@ -641,9 +660,9 @@ function handleHistory(args: string[]): void {
 
 function handleMigrate(args: string[]): void {
 	const sub = args[0];
-	if (sub !== 'filenames') {
-		console.error('Usage: refrakt plan migrate filenames [--dir <path>] [--dry-run] [--apply] [--git] [--format json]');
-		console.error('Subcommands: filenames');
+	if (sub !== 'filenames' && sub !== 'pr-attrs' && sub !== 'dependencies') {
+		console.error('Usage: refrakt plan migrate <filenames|pr-attrs|dependencies> [--dir <path>] [--dry-run] [--apply] [--git] [--format json]');
+		console.error('Subcommands: filenames, pr-attrs, dependencies');
 		process.exit(MIGRATE_INVALID_ARGS);
 	}
 
@@ -675,6 +694,57 @@ function handleMigrate(args: string[]): void {
 	if (apply && dryRun) {
 		console.error('Error: --apply and --dry-run are mutually exclusive');
 		process.exit(MIGRATE_INVALID_ARGS);
+	}
+
+	if (sub === 'pr-attrs') {
+		const result = runMigratePrAttrs({ dir, apply, useGit });
+		if (formatJson) {
+			console.log(JSON.stringify(result, null, 2));
+			process.exit(result.exitCode);
+			return;
+		}
+		console.log(`Scanned ${result.scanned} plan files in ${dir}/  (repo: ${result.repoSlug ?? 'unknown'})`);
+		const verb = apply ? 'Backfilled' : 'Would backfill';
+		const rows = apply ? result.applied : result.resolved;
+		console.log(`  ${verb} pr on ${rows.length} item(s)${apply ? '' : ''}:`);
+		for (const r of rows) console.log(`    ${r.id}  →  pr="${r.pr}"`);
+		if (result.skipped.length > 0) {
+			console.log(`  Skipped ${result.skipped.length} (ambiguous):`);
+			for (const s of result.skipped) console.log(`    ${s.id}  ${s.reason}`);
+		}
+		if (result.unresolved.length > 0) {
+			console.log(`  Unresolved ${result.unresolved.length}:`);
+			for (const u of result.unresolved) console.log(`    ${u.id}  ${u.reason}`);
+		}
+		if (!apply && rows.length > 0) {
+			const gitHint = useGit ? '' : ' (add --git to stage the edits)';
+			console.log(`\nDry run. Re-run with --apply to write the pr attributes${gitHint}.`);
+		}
+		process.exit(result.exitCode);
+		return;
+	}
+
+	if (sub === 'dependencies') {
+		const result = runMigrateDependencies({ dir, apply, useGit });
+		if (formatJson) {
+			console.log(JSON.stringify(result, null, 2));
+			process.exit(result.exitCode);
+			return;
+		}
+		console.log(`Scanned ${result.scanned} plan files in ${dir}/`);
+		const verb = apply ? 'Renamed' : 'Would rename';
+		console.log(`  ${verb} ${result.renamed.length} "## Dependencies" heading(s) → "## Blocked by":`);
+		for (const r of result.renamed) console.log(`    ${r.file}:${r.line}`);
+		if (result.reverseFlags.length > 0) {
+			console.log(`\n  ${result.reverseFlags.length} entry(ies) may belong under "## Blocks" — review manually (not auto-flipped):`);
+			for (const f of result.reverseFlags) console.log(`    ${f.file}:${f.line}  ${f.reason}\n      ${f.text}`);
+		}
+		if (!apply && result.renamed.length > 0) {
+			const gitHint = useGit ? '' : ' (add --git to stage the edits)';
+			console.log(`\nDry run. Re-run with --apply to rename the headings${gitHint}.`);
+		}
+		process.exit(result.exitCode);
+		return;
 	}
 
 	const result = runMigrateFilenames({ dir, apply, useGit });

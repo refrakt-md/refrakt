@@ -76,6 +76,7 @@ Build crashes with undefined reference error.
 | `assignee` | `string` | — | Person or agent working on this |
 | `milestone` | `string` | — | Milestone for the fix |
 | `source` | `string` | — | Comma-separated IDs of specs or decisions this relates to (e.g. `SPEC-001`) |
+| `pr` | `string` | — | Comma-separated PR references that fixed this bug, each `<org>/<repo>#<number>` |
 | `tags` | `string` | — | Comma-separated labels |
 | `created` | `string` | `$file.created` | Creation date (ISO 8601). Auto-populated from git history |
 | `modified` | `string` | `$file.modified` | Last modified date (ISO 8601). Auto-populated from git history |

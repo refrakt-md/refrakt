@@ -3,20 +3,19 @@ import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 import { slugify, buildSections } from '../util.js';
-
-const statusValues = ['draft', 'ready', 'in-progress', 'review', 'done', 'blocked', 'pending'] as const;
-const priorityValues = ['critical', 'high', 'medium', 'low'] as const;
-const complexityValues = ['trivial', 'simple', 'moderate', 'complex', 'unknown'] as const;
+import { VALID_STATUS, VALID_PRIORITY, VALID_COMPLEXITY } from '../commands/enums.js';
 
 export const work = createContentModelSchema({
 	attributes: {
 		id: { type: String, required: true, description: 'Unique identifier (e.g., "RF-142").' },
-		status: { type: String, required: false, matches: statusValues.slice(), description: 'Current status: draft, ready, in-progress, review, done, or blocked.' },
-		priority: { type: String, required: false, matches: priorityValues.slice(), description: 'Priority level: critical, high, medium, or low.' },
-		complexity: { type: String, required: false, matches: complexityValues.slice(), description: 'Complexity signal: trivial, simple, moderate, complex, or unknown.' },
+		status: { type: String, required: false, matches: [...VALID_STATUS.work], description: 'Current status: draft, ready, in-progress, review, done, blocked, pending, cancelled, or superseded.' },
+		priority: { type: String, required: false, matches: [...VALID_PRIORITY], description: 'Priority level: critical, high, medium, or low.' },
+		complexity: { type: String, required: false, matches: [...VALID_COMPLEXITY], description: 'Complexity signal: trivial, simple, moderate, complex, or unknown.' },
 		assignee: { type: String, required: false, description: 'Person or agent working on this.' },
 		milestone: { type: String, required: false, description: 'Milestone this belongs to.' },
 		source: { type: String, required: false, description: 'Comma-separated IDs of specs or decisions this item implements.' },
+		supersedes: { type: String, required: false, description: 'ID of the work item this replaces (set when status="superseded").' },
+		pr: { type: String, required: false, description: 'Comma-separated PR references that implemented this item (e.g. "refrakt-md/refrakt#142").' },
 		tags: { type: String, required: false, description: 'Comma-separated labels.' },
 		created: { type: String, required: false, description: 'Creation date (ISO 8601). Defaults to file creation date from git.' },
 		modified: { type: String, required: false, description: 'Last modified date (ISO 8601). Defaults to file modification date from git.' },
@@ -36,8 +35,11 @@ export const work = createContentModelSchema({
 			'Acceptance Criteria': {
 				alias: ['Criteria', 'AC', 'Done When'],
 			},
-			'Dependencies': {
-				alias: ['Deps', 'Depends On', 'Blocked By', 'Requires'],
+			'Blocked by': {
+				alias: ['Depends On', 'Requires', 'Deps', 'Needs', 'Dependencies'],
+			},
+			'Blocks': {
+				alias: ['Unblocks', 'Enables', 'Required By'],
 			},
 			'Approach': {
 				alias: ['Technical Notes', 'Implementation Notes', 'How'],
@@ -68,6 +70,8 @@ export const work = createContentModelSchema({
 		const assigneeMeta = new Tag('meta', { content: attrs.assignee ?? '' });
 		const milestoneMeta = new Tag('meta', { content: attrs.milestone ?? '' });
 		const sourceMeta = new Tag('meta', { content: attrs.source ?? '' });
+		const supersedesMeta = new Tag('meta', { content: attrs.supersedes ?? '' });
+		const prMeta = new Tag('meta', { content: attrs.pr ?? '' });
 		const tagsMeta = new Tag('meta', { content: attrs.tags ?? '' });
 		const fileVars = config.variables?.file as { created?: string; modified?: string } | undefined;
 		const createdMeta = new Tag('meta', { content: attrs.created || fileVars?.created || '' });
@@ -91,6 +95,8 @@ export const work = createContentModelSchema({
 				assignee: assigneeMeta,
 				milestone: milestoneMeta,
 				source: sourceMeta,
+				supersedes: supersedesMeta,
+				pr: prMeta,
 				tags: tagsMeta,
 				created: createdMeta,
 				modified: modifiedMeta,
@@ -100,7 +106,7 @@ export const work = createContentModelSchema({
 				blurb,
 				body: bodyDiv,
 			},
-			children: [idMeta, statusMeta, priorityMeta, complexityMeta, assigneeMeta, milestoneMeta, sourceMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), ...(blurb ? [blurb] : []), bodyDiv],
+			children: [idMeta, statusMeta, priorityMeta, complexityMeta, assigneeMeta, milestoneMeta, sourceMeta, supersedesMeta, prMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), ...(blurb ? [blurb] : []), bodyDiv],
 		});
 	},
 });

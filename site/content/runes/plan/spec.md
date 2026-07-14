@@ -74,10 +74,18 @@ This specification has been superseded. See the current token system specificati
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `id` | `string` | — | Unique identifier, e.g. `SPEC-008` (required) |
-| `status` | `string` | `draft` | Current status: `draft`, `review`, `accepted`, `superseded`, `deprecated` |
+| `status` | `string` | `draft` | Current status: `draft`, `review`, `accepted`, `implemented`, `shipped`, `superseded`, `deprecated` |
 | `version` | `string` | — | Spec version, e.g. `1.0`, `1.2` |
 | `supersedes` | `string` | — | ID of the spec this replaces |
+| `released-in` | `string` | — | Release version this spec shipped in (semver, e.g. `v0.11.4`). Required when `status="shipped"` |
 | `tags` | `string` | — | Comma-separated labels |
+
+### Lifecycle: accepted → implemented → shipped
+
+`accepted` means the team agreed to build the spec. Two further states close the loop between agreement and availability:
+
+- **`implemented`** — every work item that `source`s this spec is `done` and the code is in `main`. `refrakt plan status` suggests this flip once all linked work is done.
+- **`shipped`** — released to users in an npm version. Pair it with `released-in="vX.Y.Z"`; `plan validate` errors on a shipped spec that lacks it.
 | `created` | `string` | `$file.created` | Creation date (ISO 8601). Auto-populated from git history |
 | `modified` | `string` | `$file.modified` | Last modified date (ISO 8601). Auto-populated from git history |
 

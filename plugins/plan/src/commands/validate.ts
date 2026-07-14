@@ -1,8 +1,9 @@
 import { readFileSync } from 'fs';
 import { basename, join } from 'path';
 import { scanPlanFiles } from '../scanner.js';
+import { buildBlockedByAdjacency } from '../scanner-core.js';
 import type { PlanEntity, PlanRuneType } from '../types.js';
-import { VALID_STATUS, VALID_PRIORITY, VALID_COMPLEXITY, VALID_SEVERITY } from './enums.js';
+import { VALID_STATUS, VALID_PRIORITY, VALID_COMPLEXITY, VALID_SEVERITY, DONE_STATUS_SET, isTerminal, PR_REF_RE, RELEASED_IN_RE } from './enums.js';
 
 // --- Valid attribute values per type (sets derived from the shared vocabularies) ---
 
@@ -14,7 +15,8 @@ const VALID_PRIORITIES = new Set(VALID_PRIORITY);
 const VALID_SEVERITIES = new Set(VALID_SEVERITY);
 const VALID_COMPLEXITIES = new Set(VALID_COMPLEXITY);
 
-const DONE_STATUSES = new Set(['done', 'fixed']);
+/** Cross-type "is this item's work complete" (work→done, bug→fixed). */
+const DONE_STATUSES = DONE_STATUS_SET;
 
 // --- Exit codes ---
 
@@ -153,9 +155,10 @@ function checkInvalidAttributes(entities: PlanEntity[]): ValidationIssue[] {
 function checkCircularDeps(entities: PlanEntity[], knownIds: Set<string>): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
 
-	// Build adjacency map: id -> set of referenced ids that are work/bug items
+	// Build adjacency from the typed, directed dependency edges (SPEC-114) —
+	// NOT the raw ref set. `A → B` means "A is blocked by B". A cycle here is a
+	// genuine logical deadlock, not a prose cross-reference.
 	const workBugIds = new Set<string>();
-	const adjMap = new Map<string, string[]>();
 	const entityById = new Map<string, PlanEntity>();
 
 	for (const e of entities) {
@@ -167,13 +170,11 @@ function checkCircularDeps(entities: PlanEntity[], knownIds: Set<string>): Valid
 		}
 	}
 
-	for (const e of entities) {
-		const id = e.attributes.id || e.attributes.name;
-		if (!id || (e.type !== 'work' && e.type !== 'bug')) continue;
-		const deps = e.refs.filter(r => workBugIds.has(r));
-		if (deps.length > 0) {
-			adjMap.set(id, deps);
-		}
+	const adjMap = new Map<string, string[]>();
+	for (const [from, tos] of buildBlockedByAdjacency(entities)) {
+		if (!workBugIds.has(from)) continue;
+		const deps = tos.filter(t => workBugIds.has(t));
+		if (deps.length > 0) adjMap.set(from, deps);
 	}
 
 	// DFS cycle detection
@@ -227,6 +228,10 @@ function checkResolutions(entities: PlanEntity[], dir: string): ValidationIssue[
 		const id = e.attributes.id || e.attributes.name || e.file;
 		const status = e.attributes.status || '';
 		const isDone = DONE_STATUSES.has(status);
+		// A `## Resolution` is legitimate on any terminal item — a `cancelled`
+		// or `superseded` work item may record *why* it was retired, not just
+		// how it was completed (SPEC-117).
+		const isTerminalItem = isTerminal(e.type as PlanRuneType, status);
 		const hasResolution = e.resolution !== undefined;
 
 		// Done without resolution (info)
@@ -240,8 +245,10 @@ function checkResolutions(entities: PlanEntity[], dir: string): ValidationIssue[
 			});
 		}
 
-		// Resolution on non-terminal item (warning)
-		if (hasResolution && !isDone && (e.type === 'work' || e.type === 'bug')) {
+		// Resolution on a non-terminal item (warning). Terminal items —
+		// including the retired `cancelled` / `superseded` work states — may
+		// carry a Resolution explaining the outcome, so they are exempt.
+		if (hasResolution && !isTerminalItem && (e.type === 'work' || e.type === 'bug')) {
 			issues.push({
 				severity: 'warning',
 				type: 'resolution-not-done',
@@ -271,6 +278,93 @@ function checkResolutions(entities: PlanEntity[], dir: string): ValidationIssue[
 		}
 	}
 
+	return issues;
+}
+
+function checkPrAndRelease(entities: PlanEntity[]): ValidationIssue[] {
+	const issues: ValidationIssue[] = [];
+	for (const e of entities) {
+		const id = e.attributes.id || e.file;
+
+		// `pr` on work / bug — format is validated when set; a missing `pr` is
+		// NOT warned in v1 (SPEC-049: carrot before stick).
+		if (e.type === 'work' || e.type === 'bug') {
+			const pr = (e.attributes.pr || '').trim();
+			if (pr) {
+				for (const ref of pr.split(',').map(s => s.trim()).filter(Boolean)) {
+					if (!PR_REF_RE.test(ref)) {
+						issues.push({
+							severity: 'error',
+							type: 'invalid-pr',
+							source: id,
+							file: e.file,
+							target: ref,
+							message: `${id} has malformed pr "${ref}" — expected <org>/<repo>#<number>`,
+						});
+					}
+				}
+			}
+		}
+
+		// `released-in` on spec — required when shipped, format-checked when set.
+		if (e.type === 'spec') {
+			const releasedIn = (e.attributes['released-in'] || '').trim();
+			const status = e.attributes.status || '';
+			if (status === 'shipped' && !releasedIn) {
+				issues.push({
+					severity: 'error',
+					type: 'shipped-without-release',
+					source: id,
+					file: e.file,
+					message: `${id} is shipped but has no released-in="vX.Y.Z"`,
+				});
+			}
+			if (releasedIn && !RELEASED_IN_RE.test(releasedIn)) {
+				issues.push({
+					severity: 'error',
+					type: 'invalid-released-in',
+					source: id,
+					file: e.file,
+					target: releasedIn,
+					message: `${id} has malformed released-in "${releasedIn}" — expected semver (e.g. v0.11.4)`,
+				});
+			}
+		}
+	}
+	return issues;
+}
+
+function checkSupersedes(entities: PlanEntity[], knownIds: Set<string>): ValidationIssue[] {
+	const issues: ValidationIssue[] = [];
+	for (const e of entities) {
+		if (e.type !== 'work') continue;
+		const id = e.attributes.id || e.file;
+		const status = e.attributes.status || '';
+		const supersedes = (e.attributes.supersedes || '').trim();
+
+		// A `superseded` work item should point at the item that replaced it.
+		if (status === 'superseded' && !supersedes) {
+			issues.push({
+				severity: 'warning',
+				type: 'superseded-without-target',
+				source: id,
+				file: e.file,
+				message: `${id} is superseded but has no supersedes="…" pointing at its replacement`,
+			});
+		}
+
+		// A set `supersedes` must resolve to a known entity.
+		if (supersedes && !knownIds.has(supersedes)) {
+			issues.push({
+				severity: 'warning',
+				type: 'broken-supersedes',
+				source: id,
+				file: e.file,
+				target: supersedes,
+				message: `${id} supersedes "${supersedes}" — entity not found`,
+			});
+		}
+	}
 	return issues;
 }
 
@@ -476,6 +570,8 @@ export function runValidate(options: ValidateOptions): ValidateResult {
 		...checkBrokenRefs(entities, knownIds),
 		...checkDuplicateIds(entities),
 		...checkInvalidAttributes(entities),
+		...checkPrAndRelease(entities),
+		...checkSupersedes(entities, knownIds),
 		...checkSourceRefs(entities, knownIds),
 		...checkMilestoneRefs(entities),
 		...checkCircularDeps(entities, knownIds),

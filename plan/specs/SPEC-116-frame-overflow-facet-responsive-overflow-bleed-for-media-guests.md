@@ -12,7 +12,7 @@ off-frame.
 
 The first implementation (a held sandbox PR) did this as a sandbox-only
 `bleed="crop"` attribute. This spec promotes it to a **universal `frame-overflow`
-facet** ({% ref "ADR-023" /%}) so every media guest can opt into it
+facet** ({% ref "ADR-026" /%}) so every media guest can opt into it
 name-agnostically, mirroring the `frame-*` family it belongs to
 ({% ref "SPEC-086" /%}).
 
@@ -123,7 +123,7 @@ The host's slot declares the policy; any overflowing guest in it bleeds. Default
 
 A **guest-self** route (`{% sandbox frame-overflow="bleed" /%}`) requires giving a
 measurable guest `frameTarget: 'self'` so it can carry frame facets on its own
-root. That is deferred ({% ref "ADR-023" /%}): it is additive, non-breaking, and
+root. That is deferred ({% ref "ADR-026" /%}): it is additive, non-breaking, and
 pulls the rest of the frame chrome onto the guest, so it should be a deliberate
 later step if the host-set ergonomics bite.
 
@@ -218,7 +218,7 @@ layer. `codegroup`/`table` follow by adding their own `data-overflowing` signal.
 - Frame chrome facets + `resolveFrameChrome`: {% ref "SPEC-086" /%}. `frame-anchor` (the focal-point-kept facet this unifies with for direction, §4) lives there too — today `object-position` for `object-fit` crops.
 - Clip/bleed host axis (`guestFit`) and the bleed-host `overflow: visible` for rune guests: the media-host chrome work (PR-merged) and {% ref "SPEC-090" /%} (sibling interaction axis).
 - Build-warning precedent: {% ref "SPEC-090" /%}, `warnFrameNoTarget` in `packages/transform/src/engine.ts`.
-- Decision record: {% ref "ADR-023" /%}.
+- Decision record: {% ref "ADR-026" /%}.
 - Held first-consumer PR: sandbox `bleed="crop"` (refrakt-md/refrakt#530) — to be reworked per this spec.
 
 {% /spec %}

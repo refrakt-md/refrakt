@@ -1,5 +1,6 @@
 import { scanPlanFiles } from '../scanner.js';
-import type { PlanEntity } from '../types.js';
+import type { PlanEntity, PlanRuneType } from '../types.js';
+import { DONE_STATUS_SET, isActionable } from './enums.js';
 
 // --- Priority and complexity sort orders ---
 
@@ -18,14 +19,10 @@ const COMPLEXITY_ORDER: Record<string, number> = {
 	unknown: 4,
 };
 
-/** Statuses that indicate an entity's work is complete */
-const DONE_STATUSES = new Set(['done', 'fixed']);
-
-/** Statuses that indicate an item is actionable */
-const READY_STATUSES: Record<string, string[]> = {
-	work: ['ready'],
-	bug: ['confirmed'],
-};
+/** A dependency is satisfied once its work is complete (work→done, bug→fixed).
+ *  The status map doesn't carry entity type, so the shared work/bug completion
+ *  set is the right lens. */
+const DONE_STATUSES = DONE_STATUS_SET;
 
 // --- Exit codes ---
 
@@ -79,33 +76,19 @@ export function runNext(options: NextOptions): NextResult {
 
 	let candidates = entities.filter(e => {
 		if (!typeFilter.includes(e.type)) return false;
-		const readyStatuses = READY_STATUSES[e.type];
-		if (!readyStatuses) return false;
 		const status = e.attributes.status ?? '';
-		return readyStatuses.includes(status);
+		return isActionable(e.type as PlanRuneType, status);
 	});
 
-	// Exclude items with unfinished dependencies.
-	// If the entity has scoped refs, only refs in the Dependencies section block.
-	// Otherwise, fall back to treating all refs as potential blockers (backward compat).
+	// Exclude items with unfinished dependencies. Only the typed `blocked-by`
+	// edges (from a `## Blocked by` section) block an item — prose refs no longer
+	// count (SPEC-114). `Blocks` edges point the other way and never block self.
 	candidates = candidates.filter(e => {
-		const hasDepsSection = (e.knownSectionsPresent ?? []).includes('Dependencies');
-		if (hasDepsSection) {
-			// Section-aware: only Dependencies refs block
-			for (const ref of e.scopedRefs) {
-				if (ref.section !== 'Dependencies') continue;
-				const refStatus = statusMap.get(ref.id);
-				if (refStatus !== undefined && !DONE_STATUSES.has(refStatus)) {
-					return false;
-				}
-			}
-		} else {
-			// Fallback: all refs treated as potential blockers (same as before)
-			for (const refId of e.refs) {
-				const refStatus = statusMap.get(refId);
-				if (refStatus !== undefined && !DONE_STATUSES.has(refStatus)) {
-					return false;
-				}
+		for (const dep of e.dependencies ?? []) {
+			if (dep.direction !== 'blocked-by') continue;
+			const refStatus = statusMap.get(dep.id);
+			if (refStatus !== undefined && !DONE_STATUSES.has(refStatus)) {
+				return false;
 			}
 		}
 		return true;

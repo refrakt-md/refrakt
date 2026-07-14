@@ -65,13 +65,24 @@ Migrate all runes from manual alignment classes to the new alignment system.
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `id` | `string` | — | Unique identifier, e.g. `RF-142` (required) |
-| `status` | `string` | `draft` | Current status: `draft`, `ready`, `in-progress`, `review`, `done`, `blocked` |
+| `status` | `string` | `draft` | Current status: `draft`, `ready`, `in-progress`, `review`, `done`, `blocked`, `pending`, `cancelled`, `superseded` |
 | `priority` | `string` | `medium` | Priority: `critical`, `high`, `medium`, `low` |
 | `complexity` | `string` | `unknown` | Complexity: `trivial`, `simple`, `moderate`, `complex`, `unknown` |
 | `assignee` | `string` | — | Person or agent working on this |
 | `milestone` | `string` | — | Milestone this belongs to |
 | `source` | `string` | — | Comma-separated IDs of specs or decisions this implements (e.g. `SPEC-001,ADR-002`) |
+| `supersedes` | `string` | — | ID of the work item this replaces (set when `status="superseded"`) |
+| `pr` | `string` | — | Comma-separated PR references that implemented this item, each `<org>/<repo>#<number>` (e.g. `refrakt-md/refrakt#142`). Powers the `plan status` traceability rollups |
 | `tags` | `string` | — | Comma-separated labels |
+
+### Retiring a work item
+
+Not every work item ships. Rather than deleting the file (which loses the reasoning trail) or marking it `done` (which lies to progress rollups), use one of the two terminal-but-non-achieving states:
+
+- **`cancelled`** — the work is deliberately dropped and no longer wanted. Record the reason in the body or a `## Resolution`.
+- **`superseded`** — the work is replaced by a different item. Pair it with `supersedes="WORK-xxx"` pointing at the replacement.
+
+Both statuses end the item's lifecycle without counting as completion — they are excluded from `plan next`, from milestone progress, and from `plan-progress` achieved counts. A `## Resolution` explaining the retirement is allowed on either.
 | `created` | `string` | `$file.created` | Creation date (ISO 8601). Auto-populated from git history |
 | `modified` | `string` | `$file.modified` | Last modified date (ISO 8601). Auto-populated from git history |
 

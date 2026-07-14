@@ -28,9 +28,9 @@ Naming: prefer `bg` over `background`, `text` over `primary` (the swap fixed in 
 
 The actual token values are not authored in this work item — that's WORK-200 (neutral default) and the preset modules. This is shape only.
 
-## Dependencies
+## Blocks
 
-None — foundational work item for the milestone. Unblocks {% ref "WORK-186" /%}, {% ref "WORK-187" /%}, {% ref "WORK-188" /%}, {% ref "WORK-189" /%}, {% ref "WORK-190" /%}, {% ref "WORK-191" /%} and everything downstream.
+Foundational work item for the milestone (no upstream dependencies of its own). Unblocks {% ref "WORK-186" /%}, {% ref "WORK-187" /%}, {% ref "WORK-188" /%}, {% ref "WORK-189" /%}, {% ref "WORK-190" /%}, {% ref "WORK-191" /%} and everything downstream.
 
 ## References
 

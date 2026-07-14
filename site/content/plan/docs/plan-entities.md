@@ -11,7 +11,9 @@ Each entity type has its own status progression, attributes, and conventional se
 
 Specs are source-of-truth design documents. They describe *what* to build and *why*.
 
-**Statuses:** `draft` → `review` → `accepted` → `superseded` | `deprecated`
+**Statuses:** `draft` → `review` → `accepted` → `implemented` → `shipped` (also: `superseded`, `deprecated`)
+
+`implemented` means all linked work is `done` and in `main`; `shipped` means released to users (pair with `released-in="vX.Y.Z"`).
 
 | Attribute | Description |
 |-----------|-------------|
@@ -43,7 +45,9 @@ Specs are freeform — use whatever section headings make sense for the design.
 
 Work items are discrete, implementable tasks. They're the primary unit of progress tracking.
 
-**Statuses:** `draft` → `ready` → `in-progress` → `review` → `done` (also: `blocked`, `pending`)
+**Statuses:** `draft` → `ready` → `in-progress` → `review` → `done` (also: `blocked`, `pending`, `cancelled`, `superseded`)
+
+`cancelled` and `superseded` are terminal retirement states — an item that will not ship. They are excluded from progress and `plan next`; `superseded` pairs with a `supersedes="WORK-xxx"` attribute pointing at the replacement.
 
 | Attribute | Description |
 |-----------|-------------|
@@ -145,7 +149,9 @@ Unhandled exception — page crashes with a white screen.
 
 Architecture decision records (ADRs) capture design choices and their rationale.
 
-**Statuses:** `proposed` → `accepted` → `superseded` | `deprecated`
+**Statuses:** `proposed` → `accepted` (also: `rejected`, `superseded`, `deprecated`)
+
+`rejected` records a decision that was considered and explicitly declined — worth preserving so contributors don't re-propose it.
 
 | Attribute | Description |
 |-----------|-------------|

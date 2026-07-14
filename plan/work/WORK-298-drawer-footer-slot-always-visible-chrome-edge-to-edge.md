@@ -70,9 +70,9 @@ already know the shape. CSS coverage gets one new selector
 (`rf-drawer__footer`). No behavioral change for existing standalone
 drawers without a `---`.
 
-## Dependencies
+## Blocks
 
-_None — foundation for {% ref "WORK-300" /%} and {% ref "WORK-301" /%}._
+_Foundation for {% ref "WORK-300" /%} and {% ref "WORK-301" /%} (no upstream dependencies of its own)._
 
 ## References
 

@@ -8,7 +8,7 @@ const ent = (status: string, id: string): EntityRegistration => ({ type: 'work',
 describe('plan ordering override (WORK-283)', () => {
 	it('declares an actionable-first work.status order that diverges from matches', () => {
 		expect(plan.theme?.orderings?.work?.status).toEqual(
-			['blocked', 'in-progress', 'review', 'ready', 'pending', 'draft', 'done'],
+			['blocked', 'in-progress', 'review', 'ready', 'pending', 'draft', 'done', 'cancelled', 'superseded'],
 		);
 	});
 

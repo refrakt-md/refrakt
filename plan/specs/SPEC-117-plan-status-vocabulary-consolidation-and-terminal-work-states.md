@@ -1,4 +1,4 @@
-{% spec id="SPEC-117" status="draft" tags="plan, status, vocabulary, ai-workflow" %}
+{% spec id="SPEC-117" status="accepted" tags="plan, status, vocabulary, ai-workflow" %}
 
 # Plan status vocabulary consolidation and terminal work states
 

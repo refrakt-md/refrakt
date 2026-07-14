@@ -1,4 +1,4 @@
-{% decision id="ADR-024" status="accepted" tags="themes,architecture,frameworks,scaffolding,distribution" source="SPEC-116" %}
+{% decision id="ADR-024" status="accepted" tags="themes,architecture,frameworks,scaffolding,distribution" source="SPEC-118" %}
 
 # Themes are framework-agnostic by default; the framework component layer is opt-in
 
@@ -66,7 +66,7 @@ authoring/validation surfaces with the reference theme.
 
 ## Consequences
 
-- **Scaffold (folded into {% ref "SPEC-116" /%}).** `--type theme` defaults to a
+- **Scaffold (folded into {% ref "SPEC-118" /%}).** `--type theme` defaults to a
   framework-agnostic theme mirroring Lumina (tokens + `./transform` config +
   `./layouts` configs + manifest + per-rune CSS + `css-coverage` test), with **no**
   `svelte/`, `SvelteTheme`, or `target`. A `--target <framework>` flag opts into the

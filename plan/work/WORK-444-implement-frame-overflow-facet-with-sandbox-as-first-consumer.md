@@ -3,7 +3,7 @@
 # Implement frame-overflow facet with sandbox as first consumer
 
 Build the `frame-overflow: clip | bleed` facet per {% ref "SPEC-116" /%} /
-{% ref "ADR-023" /%} — a universal frame facet (policy) gated by a per-guest
+{% ref "ADR-026" /%} — a universal frame facet (policy) gated by a per-guest
 runtime `data-overflowing` signal — and land `sandbox` as its first consumer by
 reworking the held `bleed="crop"` PR (refrakt-md/refrakt#530).
 
@@ -60,7 +60,7 @@ reworking the held `bleed="crop"` PR (refrakt-md/refrakt#530).
   `width: calc(100% + gutter)` assumes the full-width host's mobile padding equals
   the gutter (true with `contentMeasure` anchoring), and rounded-iframe corner
   clipping is historically finicky in Safari. Verify on mobile Safari/Chrome.
-- **Guest-self route deferred** ({% ref "ADR-023" /%}) — host-set only for now.
+- **Guest-self route deferred** ({% ref "ADR-026" /%}) — host-set only for now.
 - **Generalisation deferred** — a shared `data-overflowing` signal for
   `codegroup`/`table`/`datatable` is follow-on work, not in this item.
 - **Bleed direction deferred** — v1 is **inline-end only**. Direction (via
@@ -77,7 +77,7 @@ reworking the held `bleed="crop"` PR (refrakt-md/refrakt#530).
 
 ## References
 
-- Spec: {% ref "SPEC-116" /%}. Decision: {% ref "ADR-023" /%}.
+- Spec: {% ref "SPEC-116" /%}. Decision: {% ref "ADR-026" /%}.
 - Frame facets / `resolveFrameChrome`: {% ref "SPEC-086" /%}.
 - Warning precedent: {% ref "SPEC-090" /%}.
 - Held PR to rework: refrakt-md/refrakt#530 (`packages/behaviors/src/elements/sandbox.ts` `nextBleedState` + measurement, `packages/runes/src/tags/sandbox.ts`, `packages/lumina/styles/runes/sandbox.css`).

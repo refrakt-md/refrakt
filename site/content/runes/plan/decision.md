@@ -71,7 +71,7 @@ Move validation to a post-parse AST pass.
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `id` | `string` | — | Identifier, e.g. `ADR-007` (required) |
-| `status` | `string` | `proposed` | Decision status: `proposed`, `accepted`, `superseded`, `deprecated` |
+| `status` | `string` | `proposed` | Decision status: `proposed`, `accepted`, `rejected`, `superseded`, `deprecated`. `rejected` records a decision that was considered and explicitly declined — distinct from `superseded`/`deprecated`, which describe decisions that were once accepted |
 | `date` | `string` | — | Date decided (ISO 8601) |
 | `supersedes` | `string` | — | ID of the decision this replaces |
 | `source` | `string` | — | Comma-separated IDs of specs or entities this decision informs |

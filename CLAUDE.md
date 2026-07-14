@@ -267,6 +267,24 @@ Plan files use `{ID}-{slug}.md` (e.g. `WORK-051-plan-validate-command.md`, `SPEC
 - `{% decision id="ADR-001" status="accepted" source="SPEC-001" %}` — architecture decision record (`source` links to spec it informs)
 - `{% milestone name="v0.5.0" status="active" %}` — release target
 
+### Declaring dependencies (`Blocked by` / `Blocks`)
+
+Work/bug dependencies are **directed** and authored as H2 sections, not attributes:
+
+- `## Blocked by` — this item waits for the referenced items (aliases: `Depends on`, `Requires`, `Deps`, `Needs`, and the deprecated `Dependencies`).
+- `## Blocks` — the referenced items wait for this one (aliases: `Unblocks`, `Enables`, `Required by`).
+
+Both normalise to a single directed graph (`A → B` = "A is blocked by B"), so `plan validate`'s cycle check only fires on genuine deadlocks — prose `{% ref %}` mentions and `## References` entries are **not** dependency edges. `plan next` only excludes an item while its `Blocked by` targets are unfinished. Run `refrakt plan migrate dependencies --apply --git` to upgrade legacy `## Dependencies` headings; it flags (but never auto-flips) entries whose prose reads like the reverse direction so you can move them to `## Blocks` by hand.
+
+### Retiring a work item (`cancelled` vs `superseded` vs delete)
+
+When a work item is not going to ship, don't mark it `done` (that lies to every rollup and the milestone progress bar) and don't delete the file (that loses the reasoning trail). Use a terminal-but-non-achieving status instead:
+
+- **`cancelled`** — deliberately not going to happen; the work is no longer wanted. Record why in the body / `## Resolution`.
+- **`superseded`** — replaced by a different work item. Pair it with `supersedes="WORK-xxx"` pointing at the replacement (validate warns if it's missing).
+
+Both are terminal and excluded from `plan next`, milestone progress numerators, and `plan-progress` achieved counts — retiring is not completing. A `## Resolution` on a `cancelled`/`superseded` item is allowed (it explains the retirement) and no longer triggers the `resolution-not-done` warning. Delete a file only when it was created in error and has no history worth preserving.
+
 ### Workflow
 
 ```bash
@@ -312,7 +330,13 @@ When marking a work item done, always provide a `--resolve` summary unless the c
    ```
    Run this for EVERY criterion that was satisfied. Copy the criterion text exactly from the work item.
 
-2. **Mark the item as done with a `--resolve` summary**:
+2. **Set the `pr` attribute** on the work item (the structured source of truth for traceability — the `PR:` line in `--resolve` prose is legacy narrative only):
+   ```bash
+   npx refrakt plan update <id> --pr "refrakt-md/refrakt#<number>"
+   ```
+   Use the merged PR's `<org>/<repo>#<number>`. Multiple PRs are comma-separated. This powers the `plan status` PR rollups; skipping it leaves the spec→work→PR chain broken.
+
+3. **Mark the item as done with a `--resolve` summary**:
    ```bash
    npx refrakt plan update <id> --status done --resolve "$(cat <<'EOF'
    Branch: `claude/branch-name`
@@ -326,9 +350,19 @@ When marking a work item done, always provide a `--resolve` summary unless the c
    )"
    ```
 
-3. **Commit the updated work item file** along with your implementation changes.
+4. **Commit the updated work item file** along with your implementation changes.
 
-Never mark a work item done without checking off criteria first. Never skip the `--resolve` summary. These are the project's historical record of what was built and why.
+Never mark a work item done without checking off criteria first. Never skip the `--resolve` summary or the `pr` attribute. These are the project's historical record of what was built and why.
+
+### Spec lifecycle (accepted → implemented → shipped)
+
+Specs carry the "is it built, and can users install it?" state beyond `accepted`:
+
+- **`accepted`** — agreed to build it.
+- **`implemented`** — all linked work items are `done`; the code is in `main`. Flip manually once the last work item lands (`plan status` suggests this flip when every `implemented-by` work item is done).
+- **`shipped`** — released to users in an npm version. Flip after `npm run release`, paired with `released-in="vX.Y.Z"` (validate errors on a shipped spec with no `released-in`).
+
+ADRs gain a terminal **`rejected`** status — "considered and explicitly declined" — distinct from `superseded`/`deprecated` (which were once accepted). Record the reasoning in the ADR body rather than deleting it.
 
 Use `--format json` on any command for machine-readable output.
 

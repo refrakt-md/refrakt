@@ -183,6 +183,14 @@
 				"{content}"
 			]
 		},
+		"Data": {
+			"block": "data",
+			"root": ".rf-data",
+			"dataRune": "data",
+			"childOrder": [
+				"{content}"
+			]
+		},
 		"Expand": {
 			"block": "expand",
 			"root": ".rf-expand",
@@ -3702,6 +3710,10 @@
 					"classPattern": ".rf-spec--{value}",
 					"dataAttribute": "data-supersedes"
 				},
+				"released-in": {
+					"source": "meta",
+					"dataAttribute": "data-released-in"
+				},
 				"tags": {
 					"source": "meta",
 					"dataAttribute": "data-tags"
@@ -3734,6 +3746,7 @@
 					"fields": [
 						"version",
 						"supersedes",
+						"released-in",
 						"created",
 						"modified"
 					]
@@ -3798,6 +3811,14 @@
 					"source": "meta",
 					"dataAttribute": "data-source"
 				},
+				"supersedes": {
+					"source": "meta",
+					"dataAttribute": "data-supersedes"
+				},
+				"pr": {
+					"source": "meta",
+					"dataAttribute": "data-pr"
+				},
 				"tags": {
 					"source": "meta",
 					"dataAttribute": "data-tags"
@@ -3833,6 +3854,8 @@
 						"assignee",
 						"milestone",
 						"source",
+						"supersedes",
+						"pr",
 						"created",
 						"modified"
 					]
@@ -3891,6 +3914,10 @@
 					"source": "meta",
 					"dataAttribute": "data-source"
 				},
+				"pr": {
+					"source": "meta",
+					"dataAttribute": "data-pr"
+				},
 				"tags": {
 					"source": "meta",
 					"dataAttribute": "data-tags"
@@ -3925,6 +3952,7 @@
 						"assignee",
 						"milestone",
 						"source",
+						"pr",
 						"created",
 						"modified"
 					]

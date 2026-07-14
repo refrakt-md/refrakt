@@ -14,8 +14,10 @@ import type { HighlightTransform } from '@refrakt-md/highlight';
 import { plan } from '../index.js';
 import { planPipelineHooks, setScannerDependencies, setPlanDir, type PlanAggregatedData } from '../pipeline.js';
 import { scanPlanFiles } from '../scanner.js';
+import { buildBlockedByAdjacency } from '../scanner-core.js';
 import { getGitTimestamps, getStatTimestamps, type FileTimestamps } from '@refrakt-md/content';
 import type { PlanEntity } from '../types.js';
+import { TERMINAL_STATUS_UNION, WORK_STATUS_DISPLAY_ORDER, BUG_STATUS_DISPLAY_ORDER } from './enums.js';
 
 // --- Markdoc tag registry (built once) ---
 
@@ -307,35 +309,38 @@ const NAV_TITLES: Record<string, string> = {
 	decision: 'Decisions',
 };
 
-/** Terminal statuses — collapsed by default in sidebar */
-const TERMINAL_STATUSES = new Set([
-	'done', 'fixed', 'accepted', 'complete', 'superseded', 'deprecated', 'wontfix', 'duplicate',
-]);
+/** Terminal statuses — collapsed by default in sidebar. Derived from the
+ *  canonical per-type terminal sets (SPEC-117) so a new terminal status
+ *  collapses correctly without a second hand-maintained list. */
+const TERMINAL_STATUSES = TERMINAL_STATUS_UNION;
 
 /** Status ordering — active statuses first, terminal last */
-const STATUS_ORDER: Record<string, number> = {
+export const STATUS_ORDER: Record<string, number> = {
 	'in-progress': 0, confirmed: 1, review: 2, ready: 3, reported: 4,
 	active: 5, proposed: 6, planning: 7, draft: 8, pending: 9, blocked: 10,
-	done: 20, fixed: 21, accepted: 22, complete: 23,
-	superseded: 30, deprecated: 31, wontfix: 32, duplicate: 33,
+	done: 20, fixed: 21, accepted: 22, complete: 23, implemented: 24, shipped: 25,
+	superseded: 30, deprecated: 31, wontfix: 32, duplicate: 33, cancelled: 34, rejected: 35,
 };
 
 /** Human-readable status labels for group headers */
-const STATUS_LABELS_DISPLAY: Record<string, string> = {
+export const STATUS_LABELS_DISPLAY: Record<string, string> = {
 	'in-progress': 'In Progress',
 	confirmed: 'Confirmed', review: 'Review', ready: 'Ready', reported: 'Reported',
 	active: 'Active', proposed: 'Proposed', planning: 'Planning', draft: 'Draft',
 	pending: 'Pending', blocked: 'Blocked',
 	done: 'Done', fixed: 'Fixed', accepted: 'Accepted', complete: 'Complete',
+	implemented: 'Implemented', shipped: 'Shipped',
 	superseded: 'Superseded', deprecated: 'Deprecated', wontfix: "Won't Fix", duplicate: 'Duplicate',
+	cancelled: 'Cancelled', rejected: 'Rejected',
 };
 
-/** Status ordering per entity type (for nav display) */
-const STATUS_ORDER_BY_TYPE: Record<string, string[]> = {
-	work: ['in-progress', 'review', 'ready', 'blocked', 'draft', 'pending', 'done'],
+/** Status ordering per entity type (for nav display). Terminal states sink to
+ *  the tail — `cancelled` / `superseded` join `done` there for work. */
+export const STATUS_ORDER_BY_TYPE: Record<string, string[]> = {
+	work: ['in-progress', 'review', 'ready', 'blocked', 'draft', 'pending', 'done', 'cancelled', 'superseded'],
 	bug: ['in-progress', 'confirmed', 'reported', 'fixed', 'wontfix', 'duplicate'],
-	spec: ['review', 'draft', 'accepted', 'superseded', 'deprecated'],
-	decision: ['proposed', 'accepted', 'superseded', 'deprecated'],
+	spec: ['review', 'draft', 'accepted', 'implemented', 'shipped', 'superseded', 'deprecated'],
+	decision: ['proposed', 'accepted', 'rejected', 'superseded', 'deprecated'],
 	milestone: ['active', 'planning', 'complete'],
 };
 
@@ -1188,18 +1193,9 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 	}
 
 	// 4. Run pipeline hooks: register → aggregate → postProcess
-	// Pass scanner dependency data (from ## Dependencies sections) to the pipeline
-	const depMap = new Map<string, string[]>();
-	for (const entity of allEntities) {
-		const entityId = entity.attributes.id || entity.attributes.name;
-		if (!entityId) continue;
-		// Guard: scopedRefs may be absent on entities loaded from stale cache
-		const scopedRefs = entity.scopedRefs ?? [];
-		const depRefs = scopedRefs
-			.filter(r => r.section === 'Dependencies')
-			.map(r => r.id);
-		if (depRefs.length > 0) depMap.set(entityId, depRefs);
-	}
+	// Pass scanner dependency data (typed `Blocked by` / `Blocks` edges,
+	// normalised to "A blocked by B") to the pipeline (SPEC-114).
+	const depMap = buildBlockedByAdjacency(allEntities);
 	setScannerDependencies(depMap);
 	setPlanDir(dir);
 
@@ -1243,8 +1239,8 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 		tags: tags as unknown as Record<string, unknown>,
 		nodes: nodes as unknown as Record<string, unknown>,
 		orderings: {
-			work: { status: ['blocked', 'in-progress', 'review', 'ready', 'pending', 'draft', 'done'] },
-			bug: { status: ['in-progress', 'confirmed', 'reported', 'fixed', 'wontfix', 'duplicate'] },
+			work: { status: [...WORK_STATUS_DISPLAY_ORDER] },
+			bug: { status: [...BUG_STATUS_DISPLAY_ORDER] },
 		},
 	};
 	const collectionResolvedPages = postProcessedPages.map(p => {
@@ -1274,7 +1270,7 @@ export async function runPipeline(options: PipelineOptions): Promise<PipelineRes
 	const typedPlanData = planAggregated as unknown as PlanAggregatedData;
 	const planRels = typedPlanData.relationships;
 	if (planRels) {
-		const RESOLVED_STATUSES = new Set(['done', 'fixed', 'accepted', 'complete', 'wontfix', 'duplicate', 'superseded', 'deprecated']);
+		const RESOLVED_STATUSES = TERMINAL_STATUS_UNION;
 		for (const group of nav) {
 			for (const sg of group.statusGroups) {
 				for (const item of sg.items) {
