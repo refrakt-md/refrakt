@@ -3,6 +3,18 @@ import type { LayoutPageData } from './types.js';
 import { isTag, makeTag } from './helpers.js';
 import { resolveLocaleString, type LocaleContext } from './i18n.js';
 
+// ─── SPEC-035 Zone 4: computed-navigation string catalog ──────────────
+
+/** Canonical English computed-navigation strings keyed by their `core.*`
+ *  i18n key. Single source for both the builders below and the
+ *  `refrakt i18n extract` tooling. */
+export const COMPUTED_STRINGS: Record<string, string> = {
+	'core.toc.title': 'On this page',
+	'core.prevNext.previous': 'Previous',
+	'core.prevNext.next': 'Next',
+	'core.versionSwitcher.label': 'Version',
+};
+
 // ─── Helpers (private) ────────────────────────────────────────────────
 
 /** Recursively extract text content from a serialized tag tree */
@@ -181,7 +193,7 @@ export function buildToc(
 		'data-scrollspy': '',
 	}, [
 		makeTag('p', { class: `${prefix}-on-this-page__title` }, [
-			locale ? resolveLocaleString(locale, 'core.toc.title', 'On this page') : 'On this page',
+			locale ? resolveLocaleString(locale, 'core.toc.title', COMPUTED_STRINGS['core.toc.title']) : COMPUTED_STRINGS['core.toc.title'],
 		]),
 		makeTag('ul', { class: `${prefix}-on-this-page__list` }, items),
 	]);
@@ -237,7 +249,7 @@ export function buildPrevNext(
 			href: prevPage.url,
 		}, [
 			makeTag('span', { class: `${prefix}-prev-next__label` }, [
-				locale ? resolveLocaleString(locale, 'core.prevNext.previous', 'Previous') : 'Previous',
+				locale ? resolveLocaleString(locale, 'core.prevNext.previous', COMPUTED_STRINGS['core.prevNext.previous']) : COMPUTED_STRINGS['core.prevNext.previous'],
 			]),
 			makeTag('span', { class: `${prefix}-prev-next__title` }, [prevPage.title]),
 		]));
@@ -249,7 +261,7 @@ export function buildPrevNext(
 			href: nextPage.url,
 		}, [
 			makeTag('span', { class: `${prefix}-prev-next__label` }, [
-				locale ? resolveLocaleString(locale, 'core.prevNext.next', 'Next') : 'Next',
+				locale ? resolveLocaleString(locale, 'core.prevNext.next', COMPUTED_STRINGS['core.prevNext.next']) : COMPUTED_STRINGS['core.prevNext.next'],
 			]),
 			makeTag('span', { class: `${prefix}-prev-next__title` }, [nextPage.title]),
 		]));
@@ -308,7 +320,7 @@ export function buildVersionSwitcher(
 		'data-version-switcher': '',
 	}, [
 		makeTag('label', { class: `${prefix}-version-switcher__label` }, [
-			locale ? resolveLocaleString(locale, 'core.versionSwitcher.label', 'Version') : 'Version',
+			locale ? resolveLocaleString(locale, 'core.versionSwitcher.label', COMPUTED_STRINGS['core.versionSwitcher.label']) : COMPUTED_STRINGS['core.versionSwitcher.label'],
 		]),
 		makeTag('select', { class: `${prefix}-version-switcher__select` }, options),
 	]);

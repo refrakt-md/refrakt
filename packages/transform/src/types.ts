@@ -137,6 +137,13 @@ export interface RuneConfig {
 	 *  when unset (e.g. hand-built configs in tests). */
 	scope?: string;
 
+	/** SPEC-035 Zone 6 — enum-as-text display values: modifier values that
+	 *  double as visible text (e.g. a hint `type="warning"` rendered as the
+	 *  capitalized title "Warning"). Maps each raw value to its English display
+	 *  string; the engine resolves `{scope}.{block}.{value}` when the value is
+	 *  shown, and `refrakt i18n extract` enumerates these keys. */
+	i18nEnums?: Record<string, string>;
+
 	/** Parent rune typeof name for grouping in editors.
 	 *  E.g., BentoCell sets parent: 'Bento' so they appear as one group.
 	 *  Advisory only — a rune may declare a typical `parent` yet still be valid

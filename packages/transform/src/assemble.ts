@@ -4,6 +4,12 @@ import type { RuneProvenance } from './provenance.js';
 import { mergeThemeConfig, applyRuneExtensions } from './merge.js';
 import type { ThemeConfigOverrides, RuneConfigExtension } from './merge.js';
 
+/** Casing-agnostic rune-name key: lowercases and strips non-alphanumerics so
+ *  `HowTo`, `how-to`, and `howto` all collapse to one bucket. Bridges the
+ *  provenance keys (`Plugin.runes` names, e.g. `howto`) to the PascalCase
+ *  `theme.runes` / `config.runes` keys (e.g. `HowTo`). */
+const normalizeRuneKey = (name: string): string => name.toLowerCase().replace(/[^a-z0-9]/g, '');
+
 /** Inputs to the config assembly function */
 export interface AssembleInput {
 	/** Core (base) theme config — the starting point */
@@ -104,10 +110,21 @@ export function assembleThemeConfig(input: AssembleInput): AssembleResult {
 	// whole provenance map. Only plugin runes are stamped (with the plugin short
 	// name); core and local runes are left untouched — the engine defaults an
 	// absent scope to 'core', so their output stays byte-identical.
+	//
+	// `config.runes` is keyed by PascalCase typeof, but plugin provenance is keyed
+	// by the plugin's own rune name (`Plugin.runes` keys, often lower/kebab), so
+	// match on a casing-agnostic normalisation of both sides. Built from the
+	// *input* provenance (the real plugin entries) rather than `fullProvenance`,
+	// whose loop above adds spurious `core:` entries for the same runes that would
+	// otherwise clobber the plugin entry in this map.
+	const provByNorm = new Map<string, RuneProvenance>();
+	for (const [key, entry] of Object.entries(inputProvenance)) {
+		provByNorm.set(normalizeRuneKey(key), entry);
+	}
 	let stampedAny = false;
 	const runesWithScope: Record<string, RuneConfig> = {};
 	for (const [typeofName, runeConfig] of Object.entries(config.runes)) {
-		const pluginName = fullProvenance[typeofName]?.pluginName;
+		const pluginName = provByNorm.get(normalizeRuneKey(typeofName))?.pluginName;
 		if (pluginName && !runeConfig.scope) {
 			runesWithScope[typeofName] = { ...runeConfig, scope: pluginName };
 			stampedAny = true;

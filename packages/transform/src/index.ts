@@ -51,6 +51,9 @@ export {
 	mergeLocaleStrings,
 } from './i18n.js';
 export type { LocalizedValue, PluralMap, LocaleContext } from './i18n.js';
+export { extractI18nKeys, checkI18nBundle } from './i18n-extract.js';
+export type { I18nCheckResult, I18nCoverageEntry } from './i18n-extract.js';
+export { COMPUTED_STRINGS } from './computed.js';
 export type { ThemeConfigOverrides, RuneConfigExtension } from './merge.js';
 
 // GitHub source URL builder (SPEC-078) — used by file-ref to produce
