@@ -3,7 +3,7 @@ import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetD
 import { isTag, makeTag, readMeta, toKebabCase, resolveOffset, parsePlacement } from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
 import { resolveReading, DEFAULT_READING, READING_CAPABILITIES } from './reading.js';
-import { createLocaleContext, type LocaleContext } from './i18n.js';
+import { createLocaleContext, resolveLocaleString, type LocaleContext } from './i18n.js';
 
 /** The 6 tint colour tokens */
 /** Tint token names per SPEC-053 vocabulary alignment. Each maps to a
@@ -1585,6 +1585,24 @@ function applyProjection(
 }
 
 /** Build a structural element from a StructureEntry config. Returns null if condition is not met. */
+/** SPEC-035 — resolve a rune label through the locale table using the
+ *  auto-derived key `{scope}.{block}.{ref}` (Decision D1). An explicit
+ *  `i18nKey` override pins a stable key across renames. Returns the English
+ *  `label` fallback unchanged when the label is absent, no locale strings are
+ *  configured, or the key is untranslated — so zero-config output is identical. */
+function localizedLabel(
+	locale: LocaleContext | undefined,
+	config: RuneConfig | undefined,
+	ref: string,
+	label: string | undefined,
+	override?: string,
+): string | undefined {
+	if (label === undefined) return undefined;
+	if (!locale) return label;
+	const key = override ?? `${config?.scope ?? 'core'}.${config?.block ?? ''}.${ref}`;
+	return resolveLocaleString(locale, key, label);
+}
+
 function buildStructureElement(
 	entry: StructureEntry,
 	name: string,
@@ -1679,7 +1697,8 @@ function buildStructureElement(
 		if (entry.label) {
 			const labelAttrs: Record<string, string> = { 'data-meta-label': '' };
 			if (entry.labelHidden) labelAttrs['data-meta-label-hidden'] = '';
-			const labelEl = makeTag('span', labelAttrs, [entry.label]);
+			const labelText = localizedLabel(locale, config, entry.ref ?? name, entry.label, entry.i18nKey) ?? entry.label;
+			const labelEl = makeTag('span', labelAttrs, [labelText]);
 			let valueText = text;
 			if (entry.textPrefix) valueText = entry.textPrefix + valueText;
 			if (entry.textSuffix) valueText = valueText + entry.textSuffix;
@@ -1768,8 +1787,9 @@ function buildChip(
 	if (tag === 'time' && value) tagAttrs.datetime = value;
 
 	if (options.includeLabel && field.label) {
+		const label = localizedLabel(locale, config, resolved.name, field.label, field.i18nKey) ?? field.label;
 		return makeTag(tag, tagAttrs, [
-			makeTag('span', { 'data-meta-label': '' }, [field.label]),
+			makeTag('span', { 'data-meta-label': '' }, [label]),
 			makeTag('span', { 'data-meta-value': '' }, [value]),
 		]);
 	}
@@ -1818,10 +1838,11 @@ interface BarItem {
 /** Build a link value — `<a href>` carrying the field's label (or value) as
  *  text, bare (no chip). `data-meta-type="link"` for theme typography. */
 function buildLinkValue(f: ResolvedField, locale?: LocaleContext, config?: RuneConfig): SerializedTag {
+	const text = localizedLabel(locale, config, f.name, f.field.label, f.field.i18nKey) ?? f.value;
 	return makeTag('a', {
 		href: f.href ?? '',
 		'data-meta-type': 'link',
-	}, [f.field.label ?? f.value]);
+	}, [text]);
 }
 
 /** Build a rating widget — `total` mark elements, the first `value` filled.
@@ -1843,9 +1864,10 @@ function buildIconValue(f: ResolvedField, locale?: LocaleContext, config?: RuneC
 	const group = f.field.icon!.group;
 	const attrs: Record<string, string> = {};
 	if (f.field.metaType) attrs['data-meta-type'] = f.field.metaType;
+	const text = localizedLabel(locale, config, f.name, f.field.label, f.field.i18nKey) ?? f.value;
 	return makeTag(f.field.tag ?? 'span', attrs, [
 		makeTag('span', { 'data-icon-group': group, 'data-icon': f.value }, []),
-		makeTag('span', { 'data-meta-value': '' }, [f.field.label ?? f.value]),
+		makeTag('span', { 'data-meta-value': '' }, [text]),
 	]);
 }
 
@@ -1911,7 +1933,8 @@ function renderDefListBlock(
 	if (fields.length === 0) return null;
 
 	const rows: RendererNode[] = fields.map(f => {
-		const dt = makeTag('dt', { 'data-meta-label': '' }, [f.field.label ?? f.name]);
+		const dtText = localizedLabel(locale, config, f.name, f.field.label ?? f.name, f.field.i18nKey) ?? f.name;
+		const dt = makeTag('dt', { 'data-meta-label': '' }, [dtText]);
 		let dd: SerializedTag;
 		if (f.field.splitOn && f.value) {
 			const items = splitFieldValue(f).map(part =>

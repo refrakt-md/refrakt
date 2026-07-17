@@ -99,5 +99,23 @@ export function assembleThemeConfig(input: AssembleInput): AssembleResult {
 		}
 	}
 
+	// SPEC-035 — stamp each plugin rune's i18n `scope` from its provenance so the
+	// engine can derive auto keys `{scope}.{block}.{ref}` without carrying the
+	// whole provenance map. Only plugin runes are stamped (with the plugin short
+	// name); core and local runes are left untouched — the engine defaults an
+	// absent scope to 'core', so their output stays byte-identical.
+	let stampedAny = false;
+	const runesWithScope: Record<string, RuneConfig> = {};
+	for (const [typeofName, runeConfig] of Object.entries(config.runes)) {
+		const pluginName = fullProvenance[typeofName]?.pluginName;
+		if (pluginName && !runeConfig.scope) {
+			runesWithScope[typeofName] = { ...runeConfig, scope: pluginName };
+			stampedAny = true;
+		} else {
+			runesWithScope[typeofName] = runeConfig;
+		}
+	}
+	if (stampedAny) config = { ...config, runes: runesWithScope };
+
 	return { config, provenance: fullProvenance };
 }

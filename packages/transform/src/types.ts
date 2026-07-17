@@ -118,12 +118,24 @@ export interface MetaField {
 	 *  transforms. Mirrors the legacy `StructureEntry.transform`
 	 *  field. */
 	transform?: 'duration' | 'uppercase' | 'capitalize';
+
+	/** SPEC-035 — explicit i18n key override. By default the field's label
+	 *  resolves through the auto-derived key `{scope}.{block}.{fieldName}`;
+	 *  set this to pin a stable key across a block/field rename. */
+	i18nKey?: string;
 }
 
 /** Configuration for a single rune's identity transform */
 export interface RuneConfig {
 	/** BEM block name (without prefix). E.g., 'hint' → .rf-hint */
 	block: string;
+
+	/** SPEC-035 — i18n key scope for this rune's labels: `'core'` for core
+	 *  runes, else the owning plugin's short name (`'learning'`, `'docs'`, …).
+	 *  Stamped from rune provenance in `assembleThemeConfig`; the engine reads
+	 *  it to derive auto keys `{scope}.{block}.{ref}`. Defaults to `'core'`
+	 *  when unset (e.g. hand-built configs in tests). */
+	scope?: string;
 
 	/** Parent rune typeof name for grouping in editors.
 	 *  E.g., BentoCell sets parent: 'Bento' so they appear as one group.
@@ -477,6 +489,10 @@ export interface StructureEntry {
 	 *  apply an sr-only pattern — visually hidden but accessible to screen readers.
 	 *  Use for labels where the value is self-explanatory (IDs, status with sentiment dots). */
 	labelHidden?: boolean;
+
+	/** SPEC-035 — explicit i18n key override for the label. Defaults to the
+	 *  auto-derived key `{scope}.{block}.{ref}`; set to pin a stable key. */
+	i18nKey?: string;
 
 	/** Semantic metadata type — emits `data-meta-type` attribute.
 	 *  Values: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id' */
