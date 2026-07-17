@@ -49,6 +49,7 @@ export {
 	resolvePluralString,
 	selectLocaleBundle,
 	mergeLocaleStrings,
+	collectBehaviorStrings,
 } from './i18n.js';
 export type { LocalizedValue, PluralMap, LocaleContext } from './i18n.js';
 export { extractI18nKeys, checkI18nBundle } from './i18n-extract.js';

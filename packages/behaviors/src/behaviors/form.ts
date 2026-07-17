@@ -1,4 +1,5 @@
 import type { CleanupFn } from '../types.js';
+import { bstr } from '../i18n.js';
 
 /**
  * Form behavior for `[data-rune="form"]`.
@@ -22,8 +23,8 @@ export function formBehavior(el: HTMLElement): CleanupFn {
 
 	const action = el.getAttribute('data-action') || form.getAttribute('action') || '';
 	const method = el.getAttribute('data-method') || form.getAttribute('method') || 'POST';
-	const successMsg = el.getAttribute('data-success') || 'Form submitted successfully.';
-	const errorMsg = el.getAttribute('data-error') || 'Something went wrong. Please try again.';
+	const successMsg = el.getAttribute('data-success') || bstr('behavior.form.success');
+	const errorMsg = el.getAttribute('data-error') || bstr('behavior.form.error');
 	const honeypotEnabled = el.getAttribute('data-honeypot') !== 'false';
 
 	// Inject honeypot field
@@ -69,7 +70,7 @@ export function formBehavior(el: HTMLElement): CleanupFn {
 		e.preventDefault();
 		if (!action) return;
 
-		showStatus('submitting', 'Submitting...');
+		showStatus('submitting', bstr('behavior.form.submitting'));
 
 		try {
 			const formData = new FormData(form);

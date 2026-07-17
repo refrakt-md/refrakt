@@ -1,4 +1,5 @@
 import type { CleanupFn } from '../types.js';
+import { bstr } from '../i18n.js';
 
 /**
  * Section navigation behavior for plan pages.
@@ -80,7 +81,7 @@ export function sectionNavBehavior(container: HTMLElement | Document): CleanupFn
 	const dropdown = document.createElement('nav');
 	dropdown.className = 'rf-section-nav';
 	dropdown.setAttribute('role', 'menu');
-	dropdown.setAttribute('aria-label', 'Page sections');
+	dropdown.setAttribute('aria-label', bstr('behavior.sectionNav.pageSections'));
 
 	const list = document.createElement('ul');
 	list.className = 'rf-section-nav__list';

@@ -168,6 +168,21 @@ export function selectLocaleBundle(
  * first, site overrides last). A scalar per-key overwrite, **not** a deep merge —
  * a site override replaces a plugin default wholesale for that key.
  */
+/**
+ * SPEC-035 Zone 5 — collect the scalar `behavior.*` strings from a resolved
+ * dictionary for inline client delivery (Decision D4). Only the active locale's
+ * behavior strings are emitted into the `<script id="rf-strings">` block; an
+ * empty result means "emit nothing" (English defaults live in the client
+ * behaviors, so a no-JS / zero-config page renders English unchanged).
+ */
+export function collectBehaviorStrings(ctx: LocaleContext): Record<string, string> {
+	const out: Record<string, string> = {};
+	for (const [key, value] of Object.entries(ctx.strings)) {
+		if (key.startsWith('behavior.') && typeof value === 'string') out[key] = value;
+	}
+	return out;
+}
+
 export function mergeLocaleStrings(
 	...dictionaries: Array<Record<string, LocalizedValue> | undefined>
 ): Record<string, LocalizedValue> {

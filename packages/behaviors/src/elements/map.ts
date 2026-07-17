@@ -56,6 +56,7 @@ async function geocode(address: string): Promise<[number, number] | null> {
  * Progressive enhancement: shows a structured list of locations until Leaflet loads.
  */
 import { SafeHTMLElement } from './ssr-safe.js';
+import { bstr } from '../i18n.js';
 
 export class RfMap extends SafeHTMLElement {
 	private mapInstance: any = null;
@@ -221,7 +222,7 @@ export class RfMap extends SafeHTMLElement {
 					if (pin.name) popup += `<strong>${pin.name}</strong>`;
 					if (pin.description) popup += `<br><em>${pin.description}</em>`;
 					if (pin.address) popup += `<br><small>${pin.address}</small>`;
-					if (pin.url) popup += `<br><a href="${pin.url}" target="_blank" rel="noopener">More info</a>`;
+					if (pin.url) popup += `<br><a href="${pin.url}" target="_blank" rel="noopener">${bstr('behavior.map.moreInfo')}</a>`;
 					if (popup) marker.bindPopup(popup);
 					return marker;
 				});

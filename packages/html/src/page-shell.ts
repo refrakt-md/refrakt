@@ -6,6 +6,7 @@ import {
 	colorSchemeMetaContent,
 	type ResolvedTintCascade,
 } from '@refrakt-md/content';
+import { collectBehaviorStrings, type LocaleContext } from '@refrakt-md/transform';
 
 const PRE_PAINT_SCRIPT = prePaintScript();
 const DEFAULT_CASCADE: ResolvedTintCascade = { tint: null, tintMode: 'auto', locked: false };
@@ -34,6 +35,11 @@ export interface PageShellOptions {
 	bodyExtra?: string;
 	/** HTML lang attribute (default: "en") */
 	lang?: string;
+	/** SPEC-035 — render-scoped locale slice. Drives the inline `<meta
+	 *  name="rf-locale">` + `<script id="rf-strings">` behavior-string block
+	 *  (Zone 5) so client behaviors localize synchronously without a fetch.
+	 *  Omit for English (nothing emitted; output unchanged). */
+	locale?: LocaleContext;
 	/** Base URL for OpenGraph canonical URLs (e.g. "https://refrakt.md") */
 	baseUrl?: string;
 	/** Human-readable site name for og:site_name and JSON-LD entries */
@@ -79,6 +85,7 @@ export function renderFullPage(input: RenderPageInput, options: PageShellOptions
 	const { page } = input;
 	const {
 		lang = 'en',
+		locale,
 		stylesheets = [],
 		scripts = [],
 		headExtra = '',
@@ -183,6 +190,22 @@ export function renderFullPage(input: RenderPageInput, options: PageShellOptions
 	// Extra head content
 	if (headExtra) {
 		headParts.push(headExtra);
+	}
+
+	// SPEC-035 Zone 5 — inline behavior-string delivery (Decision D4). Emit the
+	// active-locale marker + a JSON block of the `behavior.*` strings so client
+	// behaviors localize synchronously with no fetch. Nothing is emitted for the
+	// English default (empty block → client behaviors use their English floor).
+	if (locale && locale.locale && locale.locale !== 'en') {
+		headParts.push(renderMetaTag('rf-locale', locale.locale));
+	}
+	if (locale) {
+		const behaviorStrings = collectBehaviorStrings(locale);
+		if (Object.keys(behaviorStrings).length > 0) {
+			// `</script>` in a value would break out of the block; escape the slash.
+			const json = JSON.stringify(behaviorStrings).replace(/</g, '\\u003c');
+			headParts.push(`<script type="application/json" id="rf-strings">${json}</script>`);
+		}
 	}
 
 	// Context data for client-side behaviors

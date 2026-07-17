@@ -243,6 +243,7 @@ export { juxtaposeBehavior } from './behaviors/juxtapose.js';
 export { navCollapsibleBehavior } from './behaviors/nav-collapsible.js';
 export { navMenubarBehavior } from './behaviors/nav-menubar.js';
 export type { BehaviorFn, CleanupFn, InitOptions } from './types.js';
+export { BEHAVIOR_STRINGS, BEHAVIOR_STRING_KEYS, bstr, elStr } from './i18n.js';
 
 // Web component elements — framework-neutral custom elements for interactive runes
 export { registerElements, RfContext, RfDiagram, RfNav, RfMap, RfSandbox } from './elements/index.js';
