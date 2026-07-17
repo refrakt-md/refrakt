@@ -2,7 +2,7 @@
 export { createTransform } from './engine.js';
 
 // Layout transform
-export { layoutTransform } from './layout.js';
+export { layoutTransform, LAYOUT_STRINGS } from './layout.js';
 
 // Computed content builders
 export { buildBreadcrumb, buildToc, buildPrevNext, buildVersionSwitcher } from './computed.js';

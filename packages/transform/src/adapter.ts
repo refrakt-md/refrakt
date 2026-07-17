@@ -4,6 +4,7 @@ import { layoutTransform } from './layout.js';
 import { withoutSearchLayout } from './layouts.js';
 import { renderToHtml } from './html.js';
 import { matchRouteRule } from './route-rules.js';
+import type { LocaleContext } from './i18n.js';
 
 // ─── Theme type ──────────────────────────────────────────────────────
 
@@ -27,6 +28,9 @@ export interface RenderPageInput {
 	 *  dialog). Defaults to `true`. Pass `false` — sourced from
 	 *  `SiteConfig.search` — to strip the search chrome from this page. */
 	search?: boolean;
+	/** SPEC-035 — render-scoped locale slice used to localize layout chrome
+	 *  (Zone 3) and computed navigation (Zone 4). Omit for English. */
+	locale?: LocaleContext;
 }
 
 /**
@@ -36,7 +40,7 @@ export interface RenderPageInput {
  * and produces the final HTML string.
  */
 export function renderPage(input: RenderPageInput): string {
-	const { theme, page, search } = input;
+	const { theme, page, search, locale } = input;
 	const layoutName = matchRouteRule(page.url, theme.manifest.routeRules ?? []);
 	let layoutConfig = theme.layouts[layoutName] ?? theme.layouts['default'];
 
@@ -48,7 +52,7 @@ export function renderPage(input: RenderPageInput): string {
 		layoutConfig = withoutSearchLayout(layoutConfig);
 	}
 
-	const tree = layoutTransform(layoutConfig, page, 'rf');
+	const tree = layoutTransform(layoutConfig, page, 'rf', locale);
 	return renderToHtml(tree);
 }
 
