@@ -84,6 +84,18 @@ export function createTransform(config: ThemeConfig) {
 		if (Array.isArray(tree)) return tree.map(n => identityTransform(n, parentRune));
 		if (!isTag(tree)) return tree;
 
+		// SPEC-035 Zone 2 — programmatic text opt-in: a `data-i18n="{key}"`
+		// attribute on a leaf label (emitted by a schema transform / postTransform
+		// that has no locale access, e.g. budget totals) is resolved here against
+		// the locale table, using the existing text as the English fallback, then
+		// the marker is stripped. Zero-config → text unchanged, attribute removed.
+		const i18nKey = tree.attributes?.['data-i18n'];
+		if (i18nKey) {
+			const { ['data-i18n']: _drop, ...restAttrs } = tree.attributes;
+			const fallback = (tree.children.find(c => typeof c === 'string') as string | undefined) ?? '';
+			return { ...tree, attributes: restAttrs, children: [resolveLocaleString(locale, i18nKey, fallback)] };
+		}
+
 		const dataRune = tree.attributes?.['data-rune'];
 		const configKey = dataRune ? runeKeyMap.get(dataRune) : undefined;
 		if (configKey) {
@@ -1603,6 +1615,20 @@ function localizedLabel(
 	return resolveLocaleString(locale, key, label);
 }
 
+/** SPEC-035 Zone 6 — resolve an enum-as-text display value through the locale
+ *  table. Only values the rune *declares* in `i18nEnums` are ever substituted,
+ *  and the raw value is the fallback — so zero-config English output is
+ *  unchanged and non-enum data values are never touched. Key: `{scope}.{block}.{value}`. */
+function localizedEnumValue(
+	locale: LocaleContext | undefined,
+	config: RuneConfig | undefined,
+	value: string,
+): string {
+	if (!locale || !value || config?.i18nEnums?.[value] === undefined) return value;
+	const key = `${config.scope ?? 'core'}.${config.block ?? ''}.${value}`;
+	return resolveLocaleString(locale, key, value);
+}
+
 function buildStructureElement(
 	entry: StructureEntry,
 	name: string,
@@ -1689,8 +1715,11 @@ function buildStructureElement(
 
 	// Meta text injection: use resolved modifier value as text content
 	if (entry.metaText) {
-		let text = modifierValues[entry.metaText] ?? '';
-		if (entry.transform && transforms[entry.transform]) {
+		const rawText = modifierValues[entry.metaText] ?? '';
+		// SPEC-035 Zone 6 — a declared enum value resolves through the locale
+		// table (e.g. capitalized display values); the raw value is the fallback.
+		let text = localizedEnumValue(locale, config, rawText);
+		if (text === rawText && entry.transform && transforms[entry.transform]) {
 			text = transforms[entry.transform](text);
 		}
 		// When label is specified, emit separate label and value child elements
@@ -1785,28 +1814,30 @@ function buildChip(
 	const tag = field.tag ?? 'span';
 	const tagAttrs = { ...attrs };
 	if (tag === 'time' && value) tagAttrs.datetime = value;
+	// `datetime` keeps the raw value; only the *displayed* text is enum-localized.
+	const displayValue = localizedEnumValue(locale, config, value);
 
 	if (options.includeLabel && field.label) {
 		const label = localizedLabel(locale, config, resolved.name, field.label, field.i18nKey) ?? field.label;
 		return makeTag(tag, tagAttrs, [
 			makeTag('span', { 'data-meta-label': '' }, [label]),
-			makeTag('span', { 'data-meta-value': '' }, [value]),
+			makeTag('span', { 'data-meta-value': '' }, [displayValue]),
 		]);
 	}
-	return makeTag(tag, tagAttrs, [value]);
+	return makeTag(tag, tagAttrs, [displayValue]);
 }
 
 /** Build a plain-text value element — typography hints via
  *  `data-meta-type`, NO `.rf-badge` class (so no chip geometry). Used by
  *  the def-list's `<dd>` and split's left slot when the field isn't
  *  sentiment-mapped. */
-function buildPlainValue(resolved: ResolvedField): SerializedTag {
+function buildPlainValue(resolved: ResolvedField, locale?: LocaleContext, config?: RuneConfig): SerializedTag {
 	const { field, value } = resolved;
 	const attrs: Record<string, string> = {};
 	if (field.metaType) attrs['data-meta-type'] = field.metaType;
 	const tag = field.tag ?? 'span';
 	if (tag === 'time' && value) attrs.datetime = value;
-	return makeTag(tag, attrs, [value]);
+	return makeTag(tag, attrs, [localizedEnumValue(locale, config, value)]);
 }
 
 /** Split a field's value into trimmed non-empty parts using
@@ -1864,7 +1895,10 @@ function buildIconValue(f: ResolvedField, locale?: LocaleContext, config?: RuneC
 	const group = f.field.icon!.group;
 	const attrs: Record<string, string> = {};
 	if (f.field.metaType) attrs['data-meta-type'] = f.field.metaType;
-	const text = localizedLabel(locale, config, f.name, f.field.label, f.field.i18nKey) ?? f.value;
+	// `data-icon` keeps the raw value (glyph selector); the visible text uses the
+	// label if present, else the enum-localized value (Zone 6, e.g. hint titles).
+	const text = localizedLabel(locale, config, f.name, f.field.label, f.field.i18nKey)
+		?? localizedEnumValue(locale, config, f.value);
 	return makeTag(f.field.tag ?? 'span', attrs, [
 		makeTag('span', { 'data-icon-group': group, 'data-icon': f.value }, []),
 		makeTag('span', { 'data-meta-value': '' }, [text]),
@@ -1884,7 +1918,7 @@ function renderBlockValue(
 	if (f.field.icon) return buildIconValue(f, locale, config);
 	return fieldRendersAsChip(f.field)
 		? buildChip(f, { includeLabel }, locale, config)
-		: buildPlainValue(f);
+		: buildPlainValue(f, locale, config);
 }
 
 /** `bar` layout — a horizontal flex row of fields, each in its intrinsic

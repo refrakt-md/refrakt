@@ -20,6 +20,14 @@ import type { ThemeConfig, RuneConfig, StructureEntry } from './types.js';
 import { LAYOUT_STRINGS } from './layout.js';
 import { COMPUTED_STRINGS } from './computed.js';
 
+/** SPEC-035 Zone 2 — programmatic strings emitted by schema transforms /
+ *  postTransform via `data-i18n` markers (they have no config to derive from,
+ *  so their keys are enumerated here for the extract tooling). */
+export const PROGRAMMATIC_STRINGS: Record<string, string> = {
+	'core.budget.total': 'Total',
+	'core.budget.perDay': 'Per day',
+};
+
 /** The auto-derived label key for a field/entry `ref` on a rune. */
 function labelKey(config: RuneConfig, ref: string, override?: string): string {
 	return override ?? `${config.scope ?? 'core'}.${config.block}.${ref}`;
@@ -48,8 +56,8 @@ function collectStructureLabels(
 export function extractI18nKeys(config: ThemeConfig): Record<string, string> {
 	const out: Record<string, string> = {};
 
-	// Zone 3 + Zone 4 — framework-owned chrome catalogs.
-	Object.assign(out, LAYOUT_STRINGS, COMPUTED_STRINGS);
+	// Zone 2 + Zone 3 + Zone 4 — framework-owned catalogs.
+	Object.assign(out, LAYOUT_STRINGS, COMPUTED_STRINGS, PROGRAMMATIC_STRINGS);
 
 	// Zone 1 + Zone 6 — per-rune derived keys.
 	for (const runeConfig of Object.values(config.runes)) {

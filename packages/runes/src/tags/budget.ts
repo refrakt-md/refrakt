@@ -335,13 +335,16 @@ export const budget = createContentModelSchema({
 		// output exactly (carries its own class, no data-name; appends last).
 		const footerChildren: any[] = [
 			new Tag('div', { class: 'rf-budget__total' }, [
-				new Tag('span', { class: 'rf-budget__total-label' }, ['Total']),
+				// SPEC-035 Zone 2 — `data-i18n` marks the programmatic label for
+				// locale resolution in the engine (the schema transform has no
+				// locale access); the literal is the English fallback.
+				new Tag('span', { class: 'rf-budget__total-label', 'data-i18n': 'core.budget.total' }, ['Total']),
 				new Tag('span', { class: 'rf-budget__total-amount' }, [formatBudgetAmount(grandTotal, symbol)]),
 			]),
 		];
 		if (hasPerDay) {
 			footerChildren.push(new Tag('div', { class: 'rf-budget__per-day' }, [
-				new Tag('span', { class: 'rf-budget__per-day-label' }, ['Per day']),
+				new Tag('span', { class: 'rf-budget__per-day-label', 'data-i18n': 'core.budget.perDay' }, ['Per day']),
 				new Tag('span', { class: 'rf-budget__per-day-amount' }, [formatBudgetAmount(perDay, symbol)]),
 			]));
 		}
