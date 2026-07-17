@@ -23,11 +23,13 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "i18n"
   ],
   "scripts": {
-    "build": "node scripts/generate-examples.mjs && tsc",
-    "generate-examples": "node scripts/generate-examples.mjs"
+    "build": "node scripts/generate-examples.mjs && node scripts/generate-translations.mjs && tsc",
+    "generate-examples": "node scripts/generate-examples.mjs",
+    "generate-translations": "node scripts/generate-translations.mjs"
   },
   "dependencies": {
     "@refrakt-md/types": "0.28.0",

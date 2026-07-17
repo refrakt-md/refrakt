@@ -341,6 +341,7 @@ async function loadMergedConfig(
 				provenance: merged.provenance,
 				locale: siteScoped.locale,
 				pluginTranslations: merged.translations,
+				coreTranslations: runesModule.coreTranslations,
 			});
 			mergedConfig = assembled.config;
 		}

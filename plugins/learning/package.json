@@ -1,6 +1,6 @@
 {
   "name": "@refrakt-md/learning",
-  "description": "Learning runes for refrakt.md — how-to guides and recipes",
+  "description": "Learning runes for refrakt.md \u2014 how-to guides and recipes",
   "version": "0.28.0",
   "type": "module",
   "license": "MIT",
@@ -15,7 +15,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "i18n"
   ],
   "scripts": {
     "build": "tsc"
