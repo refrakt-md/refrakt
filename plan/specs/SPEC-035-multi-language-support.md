@@ -1,12 +1,12 @@
-{% spec id="SPEC-035" status="draft" version="2.0" tags="i18n, transform, themes, behaviors, plugins, architecture" %}
+{% spec id="SPEC-035" status="draft" version="2.1" tags="i18n, transform, themes, behaviors, plugins, architecture" %}
 
 # Multi-Language Support
 
 A locale-aware string resolution system enabling Refrakt sites to render UI text, labels, accessibility strings, and structural headings in any language.
 
-## Revision Note (2026-07)
+## Revision Note
 
-This spec was first drafted (v1.0) against an earlier architecture and has been reconciled against the current codebase. The **intent and design principles are unchanged**, but several concrete references were stale and the string inventory had drifted. Notable corrections in v2.0:
+**v2.0 (2026-07)** — reconciled against the current codebase. The **intent and design principles are unchanged**, but several concrete references were stale and the string inventory had drifted:
 
 - **`RunePackage` → `Plugin`**: the package registration type was renamed. `mergePackages()` → `mergePlugins()`, `loadRunePackage()` → `loadPlugin()`. The proposed `translations` bundle now hangs off `Plugin` / `PluginThemeConfig`.
 - **Second label path**: since {% ref "SPEC-080" /%} labels also emit through the `metaFields` / `blocks` model (`MetaField.label`), not only `StructureEntry.label`. Both must be localized.
@@ -14,6 +14,8 @@ This spec was first drafted (v1.0) against an earlier architecture and has been 
 - **Inventory refresh**: diff headers moved to CSS (no longer a JS surface); core budget labels (`"Travelers"`, `"Duration"`, `"Per person"`) were removed; the plan pipeline `KIND_LABELS`/`TYPE_LABELS` constants no longer exist; behaviors split into `behaviors/` + `elements/` and gained new string-bearing files; the `business`, `media`, and `design` plugins were never inventoried.
 - **knownSections shipped** ({% ref "WORK-024" /%}, delivered via {% ref "SPEC-037" /%}) — but **without** the `canonicalSlug` / `i18nAliases` localization shape this spec called for. Zone 7 is reframed accordingly.
 - **Naming**: the proposed `resolveString()` helper is renamed `resolveLocaleString()` to avoid colliding with the unrelated `resolveString()` data-pipeline variable interpolator in `packages/runes/src/data-pipeline.ts`.
+
+**v2.1 (2026-07)** — resolved all six open questions plus two scope decisions (first-party translations, packaging). See the **Decisions** section; the design below reflects the chosen answers (auto-derived keys + extract tooling, `Intl.PluralRules`, JSON-per-locale, inline behavior delivery, per-key fallback, `LocaleContext` threading).
 
 ## Motivation
 
@@ -129,6 +131,18 @@ The document `lang` attribute must reflect the configured locale. This is no lon
 4. **Single resolution path**: All localizable text resolves through one mechanism, whether it originates from structure labels, meta fields, computed transforms, or behaviors.
 5. **Type-safe keys**: Translation keys are derived from existing config, not invented separately. Missing translations fall back to the English literal.
 
+### Value Types
+
+A translated value is either a plain string or — for the small set of count-bearing strings (Decision D2) — a plural category map:
+
+```ts
+/** CLDR plural categories, as returned by Intl.PluralRules. */
+type PluralMap = Partial<Record<Intl.LDMLPluralRule, string>>; // 'zero'|'one'|'two'|'few'|'many'|'other'
+
+/** A dictionary value: a literal string, or a per-category map for plurals. */
+type LocalizedValue = string | PluralMap;
+```
+
 ### Locale Configuration
 
 A `locale` section on `ThemeConfig` (`packages/transform/src/types.ts` — neither field exists today; both are net-new):
@@ -144,7 +158,7 @@ interface ThemeConfig {
    *  Keys follow the pattern: {scope}.{identifier}
    *  Scope is 'core', 'layout', 'behavior', or a plugin name.
    *  Missing keys fall back to the English default baked into the config. */
-  strings?: Record<string, string>;
+  strings?: Record<string, LocalizedValue>;
 }
 ```
 
@@ -185,6 +199,9 @@ Example for a German site:
     'core.hint.caution': 'Achtung',
     'core.hint.check': 'Erledigt',
 
+    // A plural value (Decision D2)
+    'plan.progress.criteria': { one: '{n} Kriterium', other: '{n} Kriterien' },
+
     // Plugin translations
     'learning.howto.estimatedTime': 'Geschätzte Zeit:',
     'learning.recipe.prep': 'Vorbereitung:',
@@ -198,47 +215,74 @@ Example for a German site:
 
 #### Server-side (Zones 1–4, 6)
 
-A `resolveLocaleString(config, key, fallback)` utility available to the engine, computed transforms, and layout builders:
+A `resolveLocaleString(ctx, key, fallback)` utility available to the engine, computed transforms, and layout builders, plus a plural-aware sibling. `ctx` is a narrow `LocaleContext` slice (Decision D6), not the full `ThemeConfig`:
 
 ```ts
-function resolveLocaleString(config: ThemeConfig, key: string, fallback: string): string {
-  return config.strings?.[key] ?? fallback;
+interface LocaleContext {
+  locale: string;                             // BCP 47, defaults to 'en'
+  strings: Record<string, LocalizedValue>;    // merged, locale-selected dictionary
+}
+
+function resolveLocaleString(ctx: LocaleContext, key: string, fallback: string): string {
+  const v = ctx.strings[key];
+  return typeof v === 'string' ? v : fallback;
+}
+
+function resolvePluralString(ctx: LocaleContext, key: string, count: number, fallback: string): string {
+  const v = ctx.strings[key];
+  if (v && typeof v === 'object') {
+    const cat = new Intl.PluralRules(ctx.locale).select(count);
+    return (v[cat] ?? v.other ?? fallback).replace('{n}', String(count));
+  }
+  return typeof v === 'string' ? v.replace('{n}', String(count)) : fallback;
 }
 ```
 
 > Named `resolveLocaleString` (not `resolveString`) to avoid colliding with the existing, unrelated `resolveString()` in `packages/runes/src/data-pipeline.ts`, which interpolates `{{ }}` template variables against data-pipeline sources.
 
+**Plurals and counts (Decision D2)**: Framework chrome prefers **count-neutral phrasing** (`"Progress 3/10"`) so pluralization rarely arises. Where a natural phrasing genuinely inflects, the dictionary value is a `PluralMap` resolved via `Intl.PluralRules` for the active locale — English supplies `{ one, other }`; Polish/Russian/Arabic supply the additional categories. No English `n === 1` ternaries, and **no ICU MessageFormat engine**: the CLDR category model reached via `Intl.PluralRules` is identical to ICU's plural model without the parser or the client-bundle dependency. Revisit ICU only if framework chrome grows variable-laden sentences or a TMS workflow is adopted — and note the resolver dispatches on value shape, so a value could later become an ICU string behind the same key without a format-wide migration.
+
 **Zone 1 — Structure & MetaField labels**: Both label paths must resolve through the locale table.
 
-- *Implementation cost, previously unstated*: `buildStructureElement()` (`packages/transform/src/engine.ts`) currently receives only `(entry, name, modifierValues, icons)` — it has **no access to the `ThemeConfig`**. The `MetaField` renderers (`engine.ts`, the block/`metaFields` path) likewise emit `field.label` literally. Localization requires threading `config` (or at least `{ locale, strings }`) into `buildStructureElement()` and the MetaField block renderers.
-- The label key is derived from the config context: `{pluginScope}.{block}.{ref}` — e.g., `core.budget.total`. Config authors don't set keys manually; the engine derives them from the structure/field path. *(See Open Question 1 — auto-derivation vs. explicit key.)*
+- *Implementation cost*: `buildStructureElement()` (`packages/transform/src/engine.ts`) currently receives only `(entry, name, modifierValues, icons)` — it has **no access to the config**. The `MetaField` renderers likewise emit `field.label` literally. Localization threads a narrow `LocaleContext` (Decision D6) into `buildStructureElement()` and the MetaField block renderers — matching the engine's existing convention of passing explicit slices (`icons`, `modifierValues`) rather than the whole config.
+- The label key is **auto-derived** from the config context: `{pluginScope}.{block}.{ref}` — e.g., `core.budget.total` (Decision D1). Authors don't set keys manually; an optional `i18nKey` override on a field pins a stable key across refactors. Discoverability is handled by the `refrakt i18n extract` tooling (below), not by verbose per-label keys.
 
-**Zone 2 — postTransform / programmatic text**: `postTransform` hooks (and the plan render pipeline) receive the config so they can call `resolveLocaleString()` in programmatic code.
+**Zone 2 — postTransform / programmatic text**: `postTransform` hooks (and the plan render pipeline) receive the `LocaleContext` so they can call `resolveLocaleString()` in programmatic code.
 
-**Zone 3 — Layout chrome**: Layout config builders (`layouts.ts`) receive the theme config and use `resolveLocaleString()` for all text and aria-labels.
+**Zone 3 — Layout chrome**: Layout config builders (`layouts.ts`) receive the `LocaleContext` and use `resolveLocaleString()` for all text and aria-labels.
 
 **Zone 4 — Computed transforms**: `buildToc()`, `buildPrevNext()`, `buildVersionSwitcher()` (`computed.ts`) already receive config-derived data; they use `resolveLocaleString()` with keys like `core.toc.title`.
 
 **Zone 6 — Enum display values**: When the `capitalize` transform is applied to a `metaText` value, the engine first checks for a translation key `{scope}.{block}.{value}` (e.g., `core.hint.warning`). If found, the translation replaces both the capitalize transform and the raw value.
 
-#### Client-side (Zone 5 — Behaviors)
+#### Client-side (Zone 5 — Behaviors) — Decision D4
 
-Behaviors run in the browser with no access to server-side config. Two mechanisms deliver translations:
+Behaviors run in the browser with no access to server-side config. Translations are delivered **inline** (no fetched endpoint):
 
-1. **`data-i18n-*` attributes**: The identity transform emits `data-i18n-{key}={translated-value}` on rune root elements for any behavior strings that have translations. Behaviors read these attributes instead of using hardcoded defaults.
+1. **`data-i18n-*` attributes**: The identity transform emits `data-i18n-{key}={translated-value}` on rune root elements for behavior strings that attach to an element the transform already renders. Behaviors read these instead of hardcoded defaults. Prefer this path wherever a string has an anchor element.
 
-2. **`<meta name="rf-locale">` tag + JSON strings block**: `ThemeShell` (and each adapter's page shell) emits `<meta name="rf-locale" content="de">` and a `<script type="application/json" id="rf-strings">` block containing behavior-scoped translations. The behavior init code reads this once and makes it available to all behaviors.
+2. **`<meta name="rf-locale">` tag + inline JSON block**: `ThemeShell` (and each adapter's page shell) emits `<meta name="rf-locale" content="de">` and a `<script type="application/json" id="rf-strings">` block. The block carries **only the strings behaviors create at runtime** with no anchor element (e.g. `"No results found."` injected by search, the `"Copied"` state, dynamically-built gallery labels) — keeping it to ~15–20 strings, not all 45. Only the active locale is emitted.
 
 ```ts
 // In each behavior:
 const label = el.dataset.i18nCopy ?? getGlobalString('behavior.copy.copy') ?? 'Copy code';
 ```
 
-Fallback chain: element attribute → global strings block → hardcoded English default. Behaviors work identically in SSR-only mode (no JS) and in hydrated mode.
+Fallback chain: element attribute → inline global block → hardcoded English default. Because the block is inline, strings are available **synchronously** at behavior init — no flash-of-English, no interactivity delay, and pages stay self-contained (works in SSR-only / no-JS mode). A single fetched `/rf-strings.json` was rejected: the payload is a couple KB, the caching win is marginal, and a fetch forces either blocked interactivity or a visible English→translated swap on the most visible chrome — plus per-adapter routing, base-path, and cache-invalidation cost. Revisit only if the behavior-string set grows large or soft-navigation duplication becomes measurable.
+
+### Resolution Precedence and Fallback — Decision D5
+
+For a given key, resolution is **first-match-wins, per key** (a scalar lookup, not a deep merge of dictionaries):
+
+1. **Site override** — `ThemeConfig.strings[key]`. Always wins; lets a site owner fix a shipped translation, adjust tone, or match brand terminology.
+2. **Owning package's shipped bundle** for the resolved locale — the plugin's `translations` for plugin-scoped keys, core's bundle for `core.*`/`layout.*`/`behavior.*`. **Locale-tag fallback** applies here: `de-AT` → `de` (progressive BCP-47 subtag stripping) before dropping through.
+3. **Hardcoded English literal** — the `fallback` passed at the call site. Always present, so it is the universal floor.
+
+There is **no per-plugin "default language"**: an untranslated key falls to English, never to some third language the site owner never asked for. Degradation is **per key**, not per language — a missing `de` key shows English inline while the rest of the page stays German, which is what makes shipping partial first-party bundles safe. The `--check` tooling below turns those per-key gaps into a measured coverage number.
 
 ### Plugin Translation Bundles
 
-Plugins ship translation bundles. There is **no existing slot** for this — a `translations` field is net-new on the plugin surface. It hangs off either `Plugin` or `PluginThemeConfig` (`packages/types/src/package.ts`):
+Plugins ship translation bundles. There is **no existing slot** for this — a `translations` field is net-new on the plugin surface (`packages/types/src/package.ts`):
 
 ```ts
 // packages/types/src/package.ts
@@ -252,34 +296,25 @@ export interface Plugin {
   pipeline?: PluginPipelineHooks;
   fileRoots?: Record<string, string>;
 
-  /** NEW: per-locale translation bundles, keyed by BCP 47 locale. */
-  translations?: Record<string, Record<string, string>>;
+  /** NEW: per-locale translation bundles, keyed by BCP 47 locale.
+   *  Authored as JSON files imported here (Decision D3). */
+  translations?: Record<string, Record<string, LocalizedValue>>;
 }
 ```
 
 ```ts
-// plugins/learning/src/index.ts
+// plugins/learning/src/index.ts — JSON authored per locale, imported into the typed field
+import de from './i18n/de.json';
+import fr from './i18n/fr.json';
+
 export const learningPlugin: Plugin = {
   name: 'learning',
   // ... existing fields ...
-  translations: {
-    de: {
-      'learning.howto.estimatedTime': 'Geschätzte Zeit:',
-      'learning.howto.difficulty': 'Schwierigkeit:',
-      'learning.recipe.prep': 'Vorbereitung:',
-      'learning.recipe.cook': 'Kochen:',
-      'learning.recipe.serves': 'Portionen:',
-    },
-    fr: {
-      'learning.howto.estimatedTime': 'Temps estimé :',
-      'learning.recipe.prep': 'Préparation :',
-      'learning.recipe.serves': 'Portions :',
-    },
-  },
+  translations: { de, fr },
 };
 ```
 
-**Merge path**: `mergePlugins()` (`packages/runes/src/plugins.ts`) already aggregates plugin theme contributions (`themeRunes`, `themeIcons`, `themeBackgrounds`) into `MergedPluginResult`. Translation bundles follow the same pattern: thread a `translations` field through `LoadedPlugin` and `MergedPluginResult`, and in the merge loop select the bundle for the configured `locale` and merge into `config.strings`, with theme-level (`ThemeConfig.strings`) overrides taking precedence over plugin defaults.
+**Merge path**: `mergePlugins()` (`packages/runes/src/plugins.ts`) already aggregates plugin theme contributions (`themeRunes`, `themeIcons`, `themeBackgrounds`) into `MergedPluginResult`. Translation bundles follow the same pattern: thread a `translations` field through `LoadedPlugin` and `MergedPluginResult`, select the bundle for the configured `locale` (with the D5 tag fallback), and merge into the `LocaleContext.strings`. Site-level (`ThemeConfig.strings`) entries take precedence over plugin defaults per the D5 precedence chain.
 
 ### Interaction with knownSections
 
@@ -311,43 +346,64 @@ The `locale` field enables locale-aware formatting:
 - **Number formatting**: Budget amounts use `Intl.NumberFormat(config.locale)` for locale-appropriate separators.
 - **Currency**: Already partially handled by `BUDGET_CURRENCY_SYMBOLS`; `Intl.NumberFormat` with `style: 'currency'` would replace the manual symbol lookup.
 
+### Tooling — `refrakt i18n extract`
+
+Auto-derived keys (Decision D1) are only usable if authors and translators can discover them, so the extract command is a **first-class deliverable, not a convenience** — it is the mitigation that makes auto-derivation acceptable:
+
+- Walks every rune's structure / `metaFields` (reusing the `contracts` machinery) and emits every derivable key with its English default as a **JSON dictionary** — the same `key → value` shape used for translation files (Decision D3), so `extract → translate → commit de.json` round-trips.
+- **`--check` mode** (mirroring `contracts --check`) fails CI on drift: a new labelled field with no dictionary entry, or an orphaned key after a block rename. It also reports **per-locale coverage** ("de: 94%"), giving the first-party quality bar a measured number.
+- **MCP-exposed** following the `refrakt.contracts` precedent (CLAUDE.md prefers MCP over CLI where both exist, and an agent bootstrapping a translation wants structured key/default data more than parsed CLI text). Structured JSON output makes the wrapper thin; the detailed input schema is deferred to the work item.
+
+*(This does not conflict with the "CLI/developer tooling i18n" non-goal — that non-goal is about translating refrakt's own CLI strings, not about tooling that supports the i18n system.)*
+
+### First-Party Translations
+
+Because framework-generated chrome is identical on every site, refrakt ships first-party translations rather than leaving every site owner to re-translate the same ~120 strings (Decision D7):
+
+- **Phased after the mechanism.** v1 ships the machinery + extract tooling + English; bundled languages land as a follow-on.
+- **Scope grows by demand.** No fixed language list in this spec; a small initial tier, extended by community PR.
+- **Native-speaker reviewed before a language is advertised as supported** — a bad machine translation under the refrakt name is worse than English. Partial coverage is safe (English fallback per key, per D5), but the quality bar gates the "supported" label.
+- **Packaged in-package, per locale, selected at build time (Decision D8).** Each package that *owns* strings ships its own `i18n/<locale>.json`: core strings in `packages/runes` (alongside `coreConfig`), each plugin's strings in that plugin. **Not** one npm package per language — that would centralize distributed ownership (a per-language package would carry every scope's keys and re-release on any string change), and would split first-party (per-language packages) from community (in-package bundles) into two delivery models. The usual per-language-package driver — runtime client bundle-splitting — doesn't apply to a build-time generator that emits only the active locale. Fixed-mode Changesets versioning means a per-language package wouldn't even decouple releases. An optional aggregate *convenience* meta-package could re-export first-party bundles later if there's demand, but ownership stays in-package.
+
 ## Implementation Zones and Priorities
 
-| Priority | Zone | Effort | Impact |
-|----------|------|--------|--------|
-| P0 | `ThemeConfig.locale` + `strings` + `resolveLocaleString()` | Small | Foundation for everything else |
-| P0 | Thread `config` into `buildStructureElement()` + MetaField renderers | Medium | Prerequisite for Zone 1 — no config access today |
-| P1 | Zone 1 (structure & meta-field labels) | Medium | Highest visibility — affects all runes with metadata |
+| Priority | Zone / Item | Effort | Impact |
+|----------|-------------|--------|--------|
+| P0 | `ThemeConfig.locale` + `strings` + `LocaleContext` + `resolveLocaleString()` / `resolvePluralString()` | Small | Foundation for everything else |
+| P0 | Thread `LocaleContext` into `buildStructureElement()` + MetaField renderers | Medium | Prerequisite for Zone 1 — no config access today |
+| P1 | Zone 1 (structure & meta-field labels) + auto-derived keys | Medium | Highest visibility — affects all runes with metadata |
 | P1 | Zone 4 (computed transforms) | Small | 4 strings, highly visible on every page |
 | P1 | Zone 3 (layout chrome) | Small | ~14 strings, visible site-wide |
-| P2 | Zone 5 (behaviors) | Medium | ~45 strings, requires client-side delivery mechanism |
+| P1 | `refrakt i18n extract` (+ `--check`, MCP) | Medium | Discoverability that makes auto-derived keys usable |
+| P2 | Zone 5 (behaviors) — inline delivery (`data-i18n-*` + JSON block) | Medium | ~45 strings, client-side delivery mechanism |
 | P2 | Zone 6 (enum display values) | Small | Hint titles, typography, docs symbol groups |
 | P2 | Zone 2 (postTransform / plan render) | Small | Re-audit needed — pipeline moved to render model |
 | P2 | Plugin `translations` bundle + `mergePlugins()` wiring | Medium | Enables community-plugin localization |
 | P3 | Zone 7 (knownSections `canonicalSlug` + `i18nAliases`) | Small | Framework now exists — scoped follow-up |
 | P3 | Zone 8 (cross-adapter `lang` attribute) | Small | Correctness/a11y across all adapters |
+| P3 | First-party translation bundles (per-locale JSON, in-package) | Ongoing | Batteries-included localization; demand-driven |
 | P3 | Number/duration formatting | Small | `Intl` APIs handle most of the work |
 
 ## Non-Goals
 
 - **Content translation / multi-language sites**: This spec does not address serving the same site in multiple languages (route-based locale switching, parallel content trees). That is a larger feature that could build on this foundation.
 - **RTL layout support**: Right-to-left text direction is a CSS/layout concern orthogonal to string translation. Worth a separate spec.
-- **CLI / developer tooling i18n**: English-only is acceptable for `refrakt inspect`, `refrakt plan`, etc.
+- **CLI / developer tooling i18n**: English-only is acceptable for `refrakt inspect`, `refrakt plan`, etc. (Distinct from `refrakt i18n extract`, which is tooling that *supports* the i18n system.)
 - **AI prompt translation**: The `packages/ai/` prompts are English-only and used for content generation, not end-user display.
 - **CSS-generated label text**: Labels emitted via CSS `content:` (e.g. diff `Before`/`After`, trailing label colons) are a theming concern, not a string-table concern.
+- **ICU MessageFormat**: Deliberately not adopted (see Decision D2).
 
-## Open Questions
+## Decisions
 
-1. **Key derivation for structure labels**: Auto-derive keys from the config path (`{plugin}.{block}.{ref}`) or explicitly declare on each `StructureEntry` / `MetaField`? Auto-derivation is less boilerplate but harder to discover; explicit keys are self-documenting but verbose. Complicated by the two label paths (`StructureEntry.label` and `MetaField.label`) needing consistent key derivation.
+Resolved from the v1.0 / v2.0 open questions:
 
-2. **Plural forms**: Some strings need plural awareness (e.g., `"3/10 criteria"`, `"Per person"`). Integrate `Intl.PluralRules` or keep it simple with template strings?
-
-3. **Translation file format**: Should translations live in the `Plugin` TypeScript export (as shown above), in separate JSON files per locale, or in a standard format like ICU MessageFormat?
-
-4. **Behavior string delivery**: The `<script type="application/json">` approach is simple but adds payload to every page. An alternative is a single `/rf-strings.json` endpoint that behaviors fetch once. Which is preferable?
-
-5. **Fallback chain depth**: If a plugin doesn't ship a translation for the configured locale, fall back to the plugin's default language, the theme-level strings, or directly to the hardcoded English?
-
-6. **Config threading scope**: Should `buildStructureElement()` and the MetaField renderers receive the full `ThemeConfig`, or a narrow `{ locale, strings }` slice? The narrow slice keeps the engine's coupling small but adds a parameter to plumb; the full config is already available at the engine's call sites.
+- **D1 — Key derivation**: **Auto-derive** keys from the config path (`{plugin}.{block}.{ref}`), with an optional explicit `i18nKey` override on a field for stability across refactors. Discoverability is handled by the `refrakt i18n extract` tooling, not by verbose per-label keys. *Rationale: ~68+ labels make explicit keys pure, drift-prone boilerplate; auto-derivation keeps keys correct by construction and covers both label paths uniformly; the extract command turns discoverability into a generated, exhaustive artifact.*
+- **D2 — Plurals**: `Intl.PluralRules` + `PluralMap` dictionary values, plus a preference for **count-neutral phrasing**. No English `n === 1` ternaries; **no ICU MessageFormat engine**. *Rationale: hardcoded binary plurals are an i18n bug in most languages; full ICU is priced for variable-laden sentence-prose at scale, which refrakt's atomic-label / decomposed-metaField architecture largely designs away; `Intl.PluralRules` gives the identical CLDR model at zero dependency. Revisit only on variable-laden chrome or a TMS workflow — the resolver's shape-dispatch keeps that door open without a migration.*
+- **D3 — Format**: **JSON, one file per locale**, values `string | PluralMap`, imported into the typed `translations` field; inline TS allowed but JSON is canonical. *Rationale: JSON is what translators and TMS tools consume; a typed JSON import keeps type safety; it round-trips with extract output.*
+- **D4 — Behavior delivery**: **Inline** `<script type="application/json" id="rf-strings">` per page + `data-i18n-*` attributes for element-attached strings; the global block carries only runtime-created strings. **No** fetched `/rf-strings.json` endpoint. *Rationale: the payload is a couple KB; inline gives synchronous init (no flash-of-English), keeps pages self-contained, and avoids per-adapter routing / cache-invalidation. Revisit only if the string set grows large or soft-nav duplication becomes measurable.*
+- **D5 — Fallback**: **Per-key first-match** — site `strings` → owning package's shipped locale bundle (with `de-AT`→`de` tag fallback) → English floor. **No per-plugin default language.** Per-key degradation. *Rationale: English is always present as the universal floor; a surprise third language is worse than English; per-key degradation makes partial bundles safe.*
+- **D6 — Config threading**: A narrow **`LocaleContext { locale, strings }`** slice into `buildStructureElement()` and the MetaField renderers, not the full `ThemeConfig`. A bound `t()` closure is an acceptable alternative at implementation time. *Rationale: matches the engine's existing convention of passing explicit slices (`icons`, `modifierValues`); plumbing cost is identical either way, so minimal coupling wins; narrow-first is the safe direction to widen later.*
+- **D7 — First-party translations**: **Ship them** — phased after the mechanism, native-speaker-reviewed, English-fallback for partial coverage, coverage measured by the extract `--check`. *Rationale: chrome strings are universal, so translating them once is the framework's job; it's the difference between "i18n is possible" and "i18n is batteries-included."*
+- **D8 — Packaging**: **In-package per-locale JSON**, locale selected at build time; **not** per-language npm packages. *Rationale: matches string ownership, unifies first-party and community delivery, and the runtime-bundle-splitting driver for per-language packages doesn't apply to a build-time generator.*
 
 {% /spec %}
