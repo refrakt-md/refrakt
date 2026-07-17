@@ -37,6 +37,20 @@ export { extractSelectors } from './selectors.js';
 export { mergeThemeConfig, applyRuneExtensions } from './merge.js';
 export { READING_REGISTERS, DEFAULT_READING, READING_CAPABILITIES, resolveReading, coerceRegister } from './reading.js';
 export type { ReadingRegister, ReadingResolutionInput } from './reading.js';
+
+// Locale-aware string resolution (SPEC-035)
+export {
+	DEFAULT_LOCALE,
+	EN_LOCALE_CONTEXT,
+	normalizeLocale,
+	createLocaleContext,
+	localeFallbackChain,
+	resolveLocaleString,
+	resolvePluralString,
+	selectLocaleBundle,
+	mergeLocaleStrings,
+} from './i18n.js';
+export type { LocalizedValue, PluralMap, LocaleContext } from './i18n.js';
 export type { ThemeConfigOverrides, RuneConfigExtension } from './merge.js';
 
 // GitHub source URL builder (SPEC-078) — used by file-ref to produce

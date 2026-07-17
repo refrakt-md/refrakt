@@ -1,5 +1,6 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 import type { ReadingRegister } from './reading.js';
+import type { LocalizedValue } from './i18n.js';
 
 // ─── SPEC-080: Layout primitive vocabulary ────────────────────────────
 
@@ -625,6 +626,18 @@ export interface ThemeConfig {
 
 	/** Named frame preset definitions (SPEC-086) — media-surface chrome. */
 	frames?: Record<string, FramePresetDefinition>;
+
+	/** SPEC-035 — locale identifier (BCP 47). Defaults to `'en'`. Enables
+	 *  locale-aware string resolution and `Intl` number/duration/currency
+	 *  formatting. Zero-config (unset) leaves output byte-identical to English. */
+	locale?: string;
+
+	/** SPEC-035 — translation strings keyed by auto-derived dotted path
+	 *  (`{scope}.{block}.{ref}`, where scope is `core` / `layout` / `behavior`
+	 *  or a plugin name). Site-level entries take precedence over plugin-shipped
+	 *  and first-party bundles (Decision D5); missing keys fall back to the
+	 *  English literal baked into the config. */
+	strings?: Record<string, LocalizedValue>;
 }
 
 // ─── Layout Transform Types ───────────────────────────────────────────
