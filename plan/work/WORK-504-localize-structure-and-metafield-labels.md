@@ -1,4 +1,4 @@
-{% work id="WORK-504" status="done" priority="high" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,transform,engine,runes" %}
+{% work id="WORK-504" status="done" priority="high" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,transform,engine,runes" pr="refrakt-md/refrakt#568" %}
 
 # Localize structure & meta-field labels (Zone 1) with auto-derived keys
 

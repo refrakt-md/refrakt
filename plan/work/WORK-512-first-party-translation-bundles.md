@@ -1,4 +1,4 @@
-{% work id="WORK-512" status="done" priority="low" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,plugins,runes,packaging" %}
+{% work id="WORK-512" status="done" priority="low" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,plugins,runes,packaging" pr="refrakt-md/refrakt#568" %}
 
 # First-party translation bundles (phased, demand-driven)
 

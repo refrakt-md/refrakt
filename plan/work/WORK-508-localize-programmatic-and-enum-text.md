@@ -1,4 +1,4 @@
-{% work id="WORK-508" status="done" priority="medium" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,transform,runes,plan" %}
+{% work id="WORK-508" status="done" priority="medium" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,transform,runes,plan" pr="refrakt-md/refrakt#568" %}
 
 # Localize programmatic (Zone 2) and enum-as-text (Zone 6) display values
 

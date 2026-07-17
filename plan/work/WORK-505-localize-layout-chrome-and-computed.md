@@ -1,4 +1,4 @@
-{% work id="WORK-505" status="done" priority="high" complexity="simple" source="SPEC-035" milestone="v0.29.0" tags="i18n,transform,layouts" %}
+{% work id="WORK-505" status="done" priority="high" complexity="simple" source="SPEC-035" milestone="v0.29.0" tags="i18n,transform,layouts" pr="refrakt-md/refrakt#568" %}
 
 # Localize layout chrome (Zone 3) and computed transforms (Zone 4)
 

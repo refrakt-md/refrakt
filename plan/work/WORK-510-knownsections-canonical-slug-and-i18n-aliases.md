@@ -1,4 +1,4 @@
-{% work id="WORK-510" status="done" priority="low" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,runes,plan,knownsections" %}
+{% work id="WORK-510" status="done" priority="low" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,runes,plan,knownsections" pr="refrakt-md/refrakt#568" %}
 
 # knownSections `canonicalSlug` + `i18nAliases` — stable-slug follow-up
 

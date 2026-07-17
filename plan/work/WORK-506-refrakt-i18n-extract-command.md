@@ -1,4 +1,4 @@
-{% work id="WORK-506" status="done" priority="high" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,cli,mcp,tooling" %}
+{% work id="WORK-506" status="done" priority="high" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,cli,mcp,tooling" pr="refrakt-md/refrakt#568" %}
 
 # `refrakt i18n extract` command (+ `--check` + MCP)
 

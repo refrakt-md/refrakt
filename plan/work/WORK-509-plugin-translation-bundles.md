@@ -1,4 +1,4 @@
-{% work id="WORK-509" status="done" priority="medium" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,plugins,runes,architecture" %}
+{% work id="WORK-509" status="done" priority="medium" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,plugins,runes,architecture" pr="refrakt-md/refrakt#568" %}
 
 # Plugin translation bundles + `mergePlugins()` wiring
 

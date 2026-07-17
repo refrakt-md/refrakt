@@ -1,4 +1,4 @@
-{% work id="WORK-502" status="done" priority="high" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,transform,types,architecture" %}
+{% work id="WORK-502" status="done" priority="high" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,transform,types,architecture" pr="refrakt-md/refrakt#568" %}
 
 # i18n resolution foundation — locale config, LocaleContext, resolvers, fallback
 

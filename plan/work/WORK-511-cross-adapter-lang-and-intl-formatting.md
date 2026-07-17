@@ -1,4 +1,4 @@
-{% work id="WORK-511" status="done" priority="low" complexity="simple" source="SPEC-035" milestone="v0.29.0" tags="i18n,adapters,transform,intl" %}
+{% work id="WORK-511" status="done" priority="low" complexity="simple" source="SPEC-035" milestone="v0.29.0" tags="i18n,adapters,transform,intl" pr="refrakt-md/refrakt#568" %}
 
 # Cross-adapter `lang` attribute (Zone 8) + Intl number/duration/currency formatting
 

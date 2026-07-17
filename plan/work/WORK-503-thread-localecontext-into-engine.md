@@ -1,4 +1,4 @@
-{% work id="WORK-503" status="done" priority="high" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,transform,engine" %}
+{% work id="WORK-503" status="done" priority="high" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,transform,engine" pr="refrakt-md/refrakt#568" %}
 
 # Thread LocaleContext into the engine label renderers
 
