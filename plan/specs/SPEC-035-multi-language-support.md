@@ -1,4 +1,4 @@
-{% spec id="SPEC-035" status="draft" version="2.1" tags="i18n, transform, themes, behaviors, plugins, architecture" %}
+{% spec id="SPEC-035" status="draft" version="2.2" tags="i18n, transform, themes, behaviors, plugins, architecture" %}
 
 # Multi-Language Support
 
@@ -16,6 +16,8 @@ A locale-aware string resolution system enabling Refrakt sites to render UI text
 - **Naming**: the proposed `resolveString()` helper is renamed `resolveLocaleString()` to avoid colliding with the unrelated `resolveString()` data-pipeline variable interpolator in `packages/runes/src/data-pipeline.ts`.
 
 **v2.1 (2026-07)** — resolved all six open questions plus two scope decisions (first-party translations, packaging). See the **Decisions** section; the design below reflects the chosen answers (auto-derived keys + extract tooling, `Intl.PluralRules`, JSON-per-locale, inline behavior delivery, per-key fallback, `LocaleContext` threading).
+
+**v2.2 (2026-07)** — added the **Forward Compatibility — Multi-Locale Sites** section. Multi-locale (route-based locale trees, switcher, auto-detect) remains a Non-Goal and demand-driven, but this design is constrained so it can be added later without breaking changes.
 
 ## Motivation
 
@@ -392,6 +394,19 @@ Because framework-generated chrome is identical on every site, refrakt ships fir
 - **AI prompt translation**: The `packages/ai/` prompts are English-only and used for content generation, not end-user display.
 - **CSS-generated label text**: Labels emitted via CSS `content:` (e.g. diff `Before`/`After`, trailing label colons) are a theming concern, not a string-table concern.
 - **ICU MessageFormat**: Deliberately not adopted (see Decision D2).
+
+## Forward Compatibility — Multi-Locale Sites
+
+Serving the same site in multiple languages (route-based locale trees, a language switcher, `Accept-Language` auto-detect) stays a **Non-Goal** and is **demand-driven** — we build it only if there's real demand. But this design is deliberately constrained so that feature can be added **as an additive layer, without breaking changes**. The constraints below are load-bearing; violating them would turn a future additive feature into a rewrite.
+
+**Constraints this spec must hold to keep the door open:**
+
+1. **Locale is render-scoped context, never module-global mutable state.** The active locale lives in the `LocaleContext` threaded through resolution (Decision D6) — not a singleton set once per process. This is the single most important constraint: a future route-based system may build multiple locale subtrees, potentially within one build, and any module-level "current locale" global would make that impossible without a rewrite. D6's threaded slice already satisfies this; do not shortcut it into a global.
+2. **Keys stay locale-independent.** `{scope}.{block}.{ref}` never encodes a locale, so the same key space resolves against any locale's bundle. A multi-locale build reuses identical keys per subtree.
+3. **Per-page locale markers are already emitted.** `<html lang>` (Zone 8) and `<meta name="rf-locale">` are per-page, and behavior strings are delivered inline per page (Decision D4) — so N locale subtrees each carry correct, self-contained locale state with no shared single-locale assumption. `hreflang` alternate-links are the clean additive extension point on top.
+4. **`canonicalSlug` (Zone 7) is the cross-locale URL/anchor stabilizer.** Language-independent section slugs mean anchors, deep links, and CSS selectors stay identical across locale trees (`#acceptance-criteria` in every language, not `#akzeptanzkriterien`). This is why Zone 7 matters beyond CSS stability — it's a prerequisite for portable URLs in a multi-locale site.
+
+**What is explicitly deferred to that future feature** (and sits *on top* of this foundation, not inside it): route layout (`/en/…`, `/de/…`), parallel/translated content trees, the switcher component, per-locale sitemaps, and any auto-detect redirect layer. None of these require changing the string-resolution model defined here.
 
 ## Decisions
 
