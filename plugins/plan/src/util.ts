@@ -29,8 +29,13 @@ export function buildSections(sections: any[], config: any): any[] {
 
 	return sections.map((section: any) => {
 		const headingText = section.$heading as string;
-		const slug = slugify(headingText);
 		const canonicalName = section.$canonicalName as string | undefined;
+		// SPEC-035 Zone 7 — a matched known section gets a language-stable slug
+		// (explicit `canonicalSlug` or the slugified canonical name) so the
+		// `<section data-name>` and CSS selectors stay identical across locales;
+		// unrecognised sections keep the heading-derived slug.
+		const canonicalSlug = section.$canonicalSlug as string | undefined;
+		const slug = canonicalSlug ?? slugify(headingText);
 
 		const headingNode = section.$headingNode;
 		const bodyContent = stripHorizontalRules(

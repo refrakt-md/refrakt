@@ -1,4 +1,4 @@
-{% work id="WORK-510" status="ready" priority="low" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,runes,plan,knownsections" %}
+{% work id="WORK-510" status="done" priority="low" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,runes,plan,knownsections" %}
 
 # knownSections `canonicalSlug` + `i18nAliases` — stable-slug follow-up
 
@@ -18,14 +18,30 @@ exists); the `i18nAliases` half layers on locale resolution.
 
 ## Acceptance Criteria
 
-- [ ] `KnownSectionDefinition` gains `canonicalSlug` + `i18nAliases`.
-- [ ] Matched known sections emit a language-independent `data-name` derived from the canonical key.
-- [ ] Locale-specific heading aliases match when `locale` is set; base aliases still match.
-- [ ] Unrecognised sections keep heading-derived slugs (no regression).
+- [x] `KnownSectionDefinition` gains `canonicalSlug` + `i18nAliases`.
+- [x] Matched known sections emit a language-independent `data-name` derived from the canonical key.
+- [x] Locale-specific heading aliases match when `locale` is set; base aliases still match.
+- [x] Unrecognised sections keep heading-derived slugs (no regression).
 
 ## References
 
 - {% ref "SPEC-035" /%} — Zone 7, Interaction with knownSections.
 - {% ref "WORK-024" /%}, {% ref "SPEC-037" /%} — the shipped knownSections framework this extends.
+
+## Resolution
+
+Completed: 2026-07-17
+
+Branch: `claude/milestone-v0-29-0-stzywk`
+
+### What was done
+- Added `canonicalSlug?` + `i18nAliases?` to `KnownSectionDefinition` (`packages/types/src/content-model.ts`).
+- `matchKnownSection()` (`packages/runes/src/lib/resolver.ts`) takes an optional `locale` and matches `i18nAliases[locale]` in addition to base aliases, with BCP-47 region-strip (`de-AT`→`de`). Threaded `locale` through `resolve()` / `resolveContentModel()` / `resolveSections()`.
+- The resolver attaches `$canonicalSlug` (explicit `canonicalSlug` or `slugify(canonicalName)`) on a matched section.
+- `buildSections()` (`plugins/plan/src/util.ts`) derives the `<section data-name>` from `$canonicalSlug` when present, else `slugify($heading)` — so matched sections get a language-stable slug and unrecognised ones are unchanged.
+- Tests: 6 new resolver cases (canonical slug, de + de-AT alias match, region strip, no-locale no-match, default slug).
+
+### Notes
+- The `canonicalSlug` half is fully live (it rides `$canonicalName`, already attached at parse time). The `i18nAliases` half is threadable via the new `locale` param; sourcing the site locale into the parse-time resolver (Markdoc variables) is the remaining integration seam, and the matching mechanism is proven by direct tests. 1416 runes+plan tests green.
 
 {% /work %}
