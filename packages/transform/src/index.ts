@@ -43,6 +43,7 @@ export {
 	DEFAULT_LOCALE,
 	EN_LOCALE_CONTEXT,
 	normalizeLocale,
+	resolveDocumentLang,
 	createLocaleContext,
 	localeFallbackChain,
 	resolveLocaleString,

@@ -66,6 +66,15 @@ export function normalizeLocale(locale: unknown): string {
 }
 
 /**
+ * SPEC-035 Zone 8 — resolve the document `lang` attribute value for a page
+ * shell. Every adapter's `<html lang>` should read `config.locale ?? 'en'`
+ * through this shared helper to avoid drift.
+ */
+export function resolveDocumentLang(locale?: unknown): string {
+	return normalizeLocale(locale);
+}
+
+/**
  * Build a {@link LocaleContext} from a resolved locale + merged dictionary. A
  * thin convenience so call sites don't hand-assemble the slice (and so the
  * locale is normalised consistently).

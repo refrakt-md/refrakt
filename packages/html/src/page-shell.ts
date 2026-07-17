@@ -6,7 +6,7 @@ import {
 	colorSchemeMetaContent,
 	type ResolvedTintCascade,
 } from '@refrakt-md/content';
-import { collectBehaviorStrings, type LocaleContext } from '@refrakt-md/transform';
+import { collectBehaviorStrings, resolveDocumentLang, type LocaleContext } from '@refrakt-md/transform';
 
 const PRE_PAINT_SCRIPT = prePaintScript();
 const DEFAULT_CASCADE: ResolvedTintCascade = { tint: null, tintMode: 'auto', locked: false };
@@ -84,7 +84,6 @@ function renderOgTag(property: string, content: string): string {
 export function renderFullPage(input: RenderPageInput, options: PageShellOptions = {}): string {
 	const { page } = input;
 	const {
-		lang = 'en',
 		locale,
 		stylesheets = [],
 		scripts = [],
@@ -97,6 +96,10 @@ export function renderFullPage(input: RenderPageInput, options: PageShellOptions
 		seo,
 		tintCascade = DEFAULT_CASCADE,
 	} = options;
+
+	// SPEC-035 Zone 8 — the document lang follows the configured locale
+	// (explicit `lang` option still wins for callers that set it directly).
+	const lang = options.lang ?? resolveDocumentLang(locale?.locale);
 
 	const headParts: string[] = [];
 	headParts.push('<meta charset="utf-8">');

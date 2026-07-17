@@ -30,7 +30,23 @@ const BUDGET_CURRENCY_SYMBOLS: Record<string, string> = {
 	INR: '₹', KRW: '₩', BRL: 'R$', MXN: 'MX$', ZAR: 'R',
 };
 
-function formatBudgetAmount(amount: number, symbol: string): string {
+/**
+ * Format a budget amount. Zero-config / English keeps the deterministic
+ * `symbol + grouped amount` form so output is byte-identical. When a non-English
+ * `locale` is configured (SPEC-035), `Intl.NumberFormat` with `style: 'currency'`
+ * produces locale-appropriate separators and currency placement.
+ */
+function formatBudgetAmount(amount: number, symbol: string, currency?: string, locale?: string): string {
+	if (locale && locale !== 'en' && currency && /^[A-Za-z]{3}$/.test(currency)) {
+		try {
+			return new Intl.NumberFormat(locale, {
+				style: 'currency',
+				currency: currency.toUpperCase(),
+			}).format(amount);
+		} catch {
+			// Unknown currency code / unsupported locale → deterministic fallback.
+		}
+	}
 	const parts = (amount % 1 === 0 ? String(amount) : amount.toFixed(2)).split('.');
 	parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 	return symbol + parts.join('.');
@@ -300,6 +316,10 @@ export const budget = createContentModelSchema({
 		const showPerDay = (attrs.showPerDay as boolean) ?? true;
 		const variant = (attrs.variant as string) ?? 'detailed';
 		const symbol = BUDGET_CURRENCY_SYMBOLS[currency.toUpperCase()] || currency + ' ';
+		// SPEC-035 — the active locale, if the content pipeline exposes it as a
+		// Markdoc variable. Absent → English (deterministic) formatting.
+		const locale = (config?.variables?.locale as string | undefined) ?? undefined;
+		const fmt = (amount: number) => formatBudgetAmount(amount, symbol, currency, locale);
 
 		const currencyMeta = new Tag('meta', { content: currency });
 		const durationMeta = new Tag('meta', { content: duration });
@@ -320,7 +340,7 @@ export const budget = createContentModelSchema({
 
 			const catHeader = new Tag('div', { class: 'rf-budget-category__header' }, [
 				new Tag('span', { class: 'rf-budget-category__label' }, [label]),
-				new Tag('span', { class: 'rf-budget-category__subtotal' }, [formatBudgetAmount(subtotal, symbol)]),
+				new Tag('span', { class: 'rf-budget-category__subtotal' }, [fmt(subtotal)]),
 			]);
 			cat.children = [catHeader, ...cat.children];
 		}
@@ -339,13 +359,13 @@ export const budget = createContentModelSchema({
 				// locale resolution in the engine (the schema transform has no
 				// locale access); the literal is the English fallback.
 				new Tag('span', { class: 'rf-budget__total-label', 'data-i18n': 'core.budget.total' }, ['Total']),
-				new Tag('span', { class: 'rf-budget__total-amount' }, [formatBudgetAmount(grandTotal, symbol)]),
+				new Tag('span', { class: 'rf-budget__total-amount' }, [fmt(grandTotal)]),
 			]),
 		];
 		if (hasPerDay) {
 			footerChildren.push(new Tag('div', { class: 'rf-budget__per-day' }, [
 				new Tag('span', { class: 'rf-budget__per-day-label', 'data-i18n': 'core.budget.perDay' }, ['Per day']),
-				new Tag('span', { class: 'rf-budget__per-day-amount' }, [formatBudgetAmount(perDay, symbol)]),
+				new Tag('span', { class: 'rf-budget__per-day-amount' }, [fmt(perDay)]),
 			]));
 		}
 		const footerDiv = new Tag('div', { class: 'rf-budget__footer' }, footerChildren);

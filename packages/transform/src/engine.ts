@@ -3,7 +3,7 @@ import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetD
 import { isTag, makeTag, readMeta, toKebabCase, resolveOffset, parsePlacement } from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
 import { resolveReading, DEFAULT_READING, READING_CAPABILITIES } from './reading.js';
-import { createLocaleContext, resolveLocaleString, type LocaleContext } from './i18n.js';
+import { createLocaleContext, resolveLocaleString, DEFAULT_LOCALE, type LocaleContext } from './i18n.js';
 
 /** The 6 tint colour tokens */
 /** Tint token names per SPEC-053 vocabulary alignment. Each maps to a
@@ -55,6 +55,37 @@ const transforms: Record<string, (v: string) => string> = {
 	uppercase: (s) => s.toUpperCase(),
 	capitalize: (s) => s.charAt(0).toUpperCase() + s.slice(1),
 };
+
+/** Parse an ISO 8601 duration (`PT1H30M`) into `{ hours, minutes, seconds }`. */
+function parseIsoDuration(iso: string): { hours?: number; minutes?: number; seconds?: number } | null {
+	const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+	if (!m) return null;
+	const out: { hours?: number; minutes?: number; seconds?: number } = {};
+	if (m[1]) out.hours = parseInt(m[1], 10);
+	if (m[2]) out.minutes = parseInt(m[2], 10);
+	if (m[3]) out.seconds = parseInt(m[3], 10);
+	return out;
+}
+
+/**
+ * SPEC-035 — locale-aware ISO-8601 duration formatting. For English (or when
+ * `Intl.DurationFormat` is unavailable) it returns the compact `5h 30m` form so
+ * zero-config output is byte-identical; for other locales it uses
+ * `Intl.DurationFormat` (`5 Std. 30 Min.`).
+ */
+function formatDurationLocale(iso: string, locale: LocaleContext | undefined): string {
+	const compact = transforms.duration(iso);
+	if (!locale || locale.locale === DEFAULT_LOCALE) return compact;
+	const DF = (Intl as unknown as { DurationFormat?: any }).DurationFormat;
+	if (typeof DF !== 'function') return compact;
+	const parsed = parseIsoDuration(iso);
+	if (!parsed) return compact;
+	try {
+		return new DF(locale.locale, { style: 'short' }).format(parsed);
+	} catch {
+		return compact;
+	}
+}
 
 /**
  * Create an identity transform function from a theme configuration.
@@ -1772,6 +1803,7 @@ function resolveField(
 	name: string,
 	metaFields: Record<string, MetaField>,
 	modifierValues: Record<string, string>,
+	locale?: LocaleContext,
 ): ResolvedField | null {
 	const field = metaFields[name];
 	if (!field) return null;
@@ -1783,7 +1815,10 @@ function resolveField(
 	}
 	let value = modifierValues[name] ?? '';
 	if (!value && field.condition && !field.renderWhenEmpty) return null;
-	if (field.transform && transforms[field.transform]) {
+	if (field.transform === 'duration') {
+		// SPEC-035 — locale-aware duration; English keeps the compact form.
+		value = formatDurationLocale(value, locale);
+	} else if (field.transform && transforms[field.transform]) {
 		value = transforms[field.transform](value);
 	}
 	const href = field.href ? (modifierValues[field.href] ?? '') : undefined;
@@ -2016,7 +2051,7 @@ function assembleWithBlocks(
 		for (const spec of def.fields) {
 			const fieldName = typeof spec === 'string' ? spec : spec.field;
 			const align = typeof spec === 'string' ? undefined : spec.align;
-			const resolved = resolveField(fieldName, metaFields, modifierValues);
+			const resolved = resolveField(fieldName, metaFields, modifierValues, locale);
 			if (resolved) items.push({ resolved, align });
 		}
 		if (items.length === 0) return null;
