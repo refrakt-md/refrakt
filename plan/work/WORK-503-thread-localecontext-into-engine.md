@@ -1,4 +1,4 @@
-{% work id="WORK-503" status="ready" priority="high" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,transform,engine" %}
+{% work id="WORK-503" status="done" priority="high" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,transform,engine" %}
 
 # Thread LocaleContext into the engine label renderers
 
@@ -16,9 +16,9 @@ previously-unstated prerequisite for localizing Zone 1. Thread the narrow `Local
 
 ## Acceptance Criteria
 
-- [ ] `buildStructureElement()` and the MetaField block renderers receive a `LocaleContext`.
-- [ ] The context is constructed once per render and threaded, not stored in module-global state.
-- [ ] No output change (labels still literal); existing transform/engine tests stay green.
+- [x] `buildStructureElement()` and the MetaField block renderers receive a `LocaleContext`.
+- [x] The context is constructed once per render and threaded, not stored in module-global state.
+- [x] No output change (labels still literal); existing transform/engine tests stay green.
 
 ## Blocked by
 
@@ -27,5 +27,18 @@ previously-unstated prerequisite for localizing Zone 1. Thread the narrow `Local
 ## References
 
 - {% ref "SPEC-035" /%} — Resolution Mechanism (Zone 1), Decision D6.
+
+## Resolution
+
+Completed: 2026-07-17
+
+Branch: `claude/milestone-v0-29-0-stzywk`
+
+### What was done
+- `createTransform` builds a single render-scoped `LocaleContext` from `config.locale` + `config.strings`.
+- Threaded `LocaleContext` (and the owning `RuneConfig`, needed for WORK-504 key derivation) into `buildStructureElement()` (+ its recursive/repeat calls), `assembleWithBlocks()`, `renderBlock`, `renderBarLayout`, `renderDefListBlock`, `renderBlockValue`, `buildChip`, `buildLinkValue`, `buildIconValue`.
+
+### Notes
+- Pure plumbing — labels remain literal; all 600 transform tests still pass, confirming byte-identical output. WORK-504 consumes the threaded context.
 
 {% /work %}

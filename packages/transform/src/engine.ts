@@ -3,6 +3,7 @@ import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetD
 import { isTag, makeTag, readMeta, toKebabCase, resolveOffset, parsePlacement } from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
 import { resolveReading, DEFAULT_READING, READING_CAPABILITIES } from './reading.js';
+import { createLocaleContext, type LocaleContext } from './i18n.js';
 
 /** The 6 tint colour tokens */
 /** Tint token names per SPEC-053 vocabulary alignment. Each maps to a
@@ -68,6 +69,12 @@ const transforms: Record<string, (v: string) => string> = {
 export function createTransform(config: ThemeConfig) {
 	const { prefix, runes, icons = {}, tints = {}, backgrounds = {}, frames = {} } = config;
 
+	// SPEC-035 — construct the render-scoped LocaleContext once, from the resolved
+	// config (locale + already-merged `strings` dictionary). Threaded explicitly
+	// into the label renderers; never stored as module-global state (the
+	// forward-compatibility constraint for future multi-locale builds).
+	const locale = createLocaleContext(config.locale, config.strings);
+
 	// Build lowercase → config-key map for case-insensitive rune lookup
 	const runeKeyMap = new Map(Object.keys(runes).map(k => [toKebabCase(k), k]));
 
@@ -80,7 +87,7 @@ export function createTransform(config: ThemeConfig) {
 		const dataRune = tree.attributes?.['data-rune'];
 		const configKey = dataRune ? runeKeyMap.get(dataRune) : undefined;
 		if (configKey) {
-			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, frames, runes, runeKeyMap, identityTransform, parentRune);
+			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, frames, runes, runeKeyMap, identityTransform, locale, parentRune);
 		}
 
 		// Detect checkbox markers on list items
@@ -483,6 +490,7 @@ function transformRune(
 	allRunes: Record<string, RuneConfig>,
 	runeKeyMap: Map<string, string>,
 	recurse: (node: RendererNode, parentRune?: string) => RendererNode,
+	locale: LocaleContext,
 	parentRune?: string
 ): SerializedTag {
 	const block = `${prefix}-${config.block}`;
@@ -994,14 +1002,14 @@ function transformRune(
 	//    WORK-313; the `structure`-only before/after path below survives for
 	//    non-meta-projecting runes that just inject icons or badges.
 	if (config.blocks || config.layout) {
-		children = assembleWithBlocks(config, block, children, modifierValues);
+		children = assembleWithBlocks(config, block, children, modifierValues, locale);
 	} else if (config.structure) {
 		// Legacy before/after assembly
 		const prepend: RendererNode[] = [];
 		const append: RendererNode[] = [];
 
 		for (const [name, entry] of Object.entries(config.structure)) {
-			const element = buildStructureElement(entry, name, modifierValues, icons);
+			const element = buildStructureElement(entry, name, modifierValues, icons, locale, config);
 			if (!element) continue;
 			if (entry.before) {
 				prepend.push(element);
@@ -1582,6 +1590,8 @@ function buildStructureElement(
 	name: string,
 	modifierValues: Record<string, string>,
 	icons: Record<string, Record<string, string>>,
+	locale: LocaleContext,
+	config: RuneConfig,
 ): SerializedTag | null {
 	// Conditional injection
 	if (entry.condition && !modifierValues[entry.condition]) return null;
@@ -1606,10 +1616,10 @@ function buildStructureElement(
 		for (let i = 0; i < count; i++) {
 			const isFilled = i < filled;
 			if (isFilled && entry.repeat.filledElement) {
-				const el = buildStructureElement(entry.repeat.filledElement, entry.repeat.filledElement.ref ?? '', modifierValues, icons);
+				const el = buildStructureElement(entry.repeat.filledElement, entry.repeat.filledElement.ref ?? '', modifierValues, icons, locale, config);
 				if (el) children.push(el);
 			} else {
-				const el = buildStructureElement(entry.repeat.element, entry.repeat.element.ref ?? '', modifierValues, icons);
+				const el = buildStructureElement(entry.repeat.element, entry.repeat.element.ref ?? '', modifierValues, icons, locale, config);
 				if (el) {
 					if (entry.repeat.filled) {
 						// Add data-filled attribute when filled tracking is active
@@ -1688,7 +1698,7 @@ function buildStructureElement(
 			if (typeof child === 'string') {
 				elementChildren.push(child);
 			} else {
-				const built = buildStructureElement(child, child.ref ?? '', modifierValues, icons);
+				const built = buildStructureElement(child, child.ref ?? '', modifierValues, icons, locale, config);
 				if (built) elementChildren.push(built);
 			}
 		}
@@ -1743,6 +1753,8 @@ function resolveField(
 function buildChip(
 	resolved: ResolvedField,
 	options: { includeLabel: boolean } = { includeLabel: true },
+	locale?: LocaleContext,
+	config?: RuneConfig,
 ): SerializedTag {
 	const { field, value } = resolved;
 	const attrs: Record<string, string> = { class: 'rf-badge' };
@@ -1805,7 +1817,7 @@ interface BarItem {
 
 /** Build a link value — `<a href>` carrying the field's label (or value) as
  *  text, bare (no chip). `data-meta-type="link"` for theme typography. */
-function buildLinkValue(f: ResolvedField): SerializedTag {
+function buildLinkValue(f: ResolvedField, locale?: LocaleContext, config?: RuneConfig): SerializedTag {
 	return makeTag('a', {
 		href: f.href ?? '',
 		'data-meta-type': 'link',
@@ -1827,7 +1839,7 @@ function buildRatingValue(f: ResolvedField): SerializedTag {
 /** Build an icon-decorated value — a leading icon element (glyph selected
  *  by the field's value via `data-icon-group` + `data-icon`) followed by the
  *  value text. Bare (no chip); CSS draws the glyph via `mask-image`. */
-function buildIconValue(f: ResolvedField): SerializedTag {
+function buildIconValue(f: ResolvedField, locale?: LocaleContext, config?: RuneConfig): SerializedTag {
 	const group = f.field.icon!.group;
 	const attrs: Record<string, string> = {};
 	if (f.field.metaType) attrs['data-meta-type'] = f.field.metaType;
@@ -1839,12 +1851,17 @@ function buildIconValue(f: ResolvedField): SerializedTag {
 
 /** Render one resolved field in its intrinsic shape (link > rating > icon >
  *  chip > bare). */
-function renderBlockValue(f: ResolvedField, includeLabel = false): SerializedTag {
-	if (f.field.href) return buildLinkValue(f);
+function renderBlockValue(
+	f: ResolvedField,
+	includeLabel = false,
+	locale?: LocaleContext,
+	config?: RuneConfig,
+): SerializedTag {
+	if (f.field.href) return buildLinkValue(f, locale, config);
 	if (f.field.rating) return buildRatingValue(f);
-	if (f.field.icon) return buildIconValue(f);
+	if (f.field.icon) return buildIconValue(f, locale, config);
 	return fieldRendersAsChip(f.field)
-		? buildChip(f, { includeLabel })
+		? buildChip(f, { includeLabel }, locale, config)
 		: buildPlainValue(f);
 }
 
@@ -1857,14 +1874,16 @@ function renderBarLayout(
 	blockName: string,
 	items: BarItem[],
 	wrap: boolean,
+	locale?: LocaleContext,
+	config?: RuneConfig,
 ): SerializedTag | null {
 	if (items.length === 0) return null;
 
 	const children: RendererNode[] = [];
 	for (const { resolved, align } of items) {
 		const els: SerializedTag[] = resolved.field.splitOn && resolved.value
-			? splitFieldValue(resolved).map(part => renderBlockValue({ ...resolved, value: part }))
-			: [renderBlockValue(resolved)];
+			? splitFieldValue(resolved).map(part => renderBlockValue({ ...resolved, value: part }, false, locale, config))
+			: [renderBlockValue(resolved, false, locale, config)];
 		if (align === 'end' && els.length > 0) {
 			els[0] = { ...els[0], attributes: { ...els[0].attributes, 'data-align': 'end' } };
 		}
@@ -1886,6 +1905,8 @@ function renderBarLayout(
 function renderDefListBlock(
 	blockName: string,
 	fields: ResolvedField[],
+	locale?: LocaleContext,
+	config?: RuneConfig,
 ): SerializedTag | null {
 	if (fields.length === 0) return null;
 
@@ -1894,11 +1915,11 @@ function renderDefListBlock(
 		let dd: SerializedTag;
 		if (f.field.splitOn && f.value) {
 			const items = splitFieldValue(f).map(part =>
-				renderBlockValue({ ...f, value: part }),
+				renderBlockValue({ ...f, value: part }, false, locale, config),
 			);
 			dd = makeTag('dd', { 'data-multi-value': '' }, items);
 		} else if (fieldRendersAsChip(f.field)) {
-			dd = makeTag('dd', {}, [buildChip(f, { includeLabel: false })]);
+			dd = makeTag('dd', {}, [buildChip(f, { includeLabel: false }, locale, config)]);
 		} else {
 			const ddAttrs: Record<string, string> = {};
 			if (f.field.metaType) ddAttrs['data-meta-type'] = f.field.metaType;
@@ -1924,6 +1945,7 @@ function assembleWithBlocks(
 	_block: string,
 	contentChildren: RendererNode[],
 	modifierValues: Record<string, string>,
+	locale: LocaleContext,
 ): RendererNode[] {
 	const blocks = config.blocks ?? {};
 	const layout = config.layout ?? {};
@@ -1941,8 +1963,8 @@ function assembleWithBlocks(
 			if (resolved) items.push({ resolved, align });
 		}
 		if (items.length === 0) return null;
-		if (def.layout === 'bar') return renderBarLayout(name, items, def.wrap ?? true);
-		return renderDefListBlock(name, items.map(i => i.resolved));
+		if (def.layout === 'bar') return renderBarLayout(name, items, def.wrap ?? true, locale, config);
+		return renderDefListBlock(name, items.map(i => i.resolved), locale, config);
 	};
 
 	// No `layout` → render the transform tree verbatim (no projection).
