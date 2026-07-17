@@ -1,4 +1,4 @@
-{% spec id="SPEC-035" status="draft" version="2.2" tags="i18n, transform, themes, behaviors, plugins, architecture" %}
+{% spec id="SPEC-035" status="accepted" version="2.2" tags="i18n, transform, themes, behaviors, plugins, architecture" %}
 
 # Multi-Language Support
 
