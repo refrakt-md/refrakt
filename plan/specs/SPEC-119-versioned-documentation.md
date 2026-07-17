@@ -102,8 +102,12 @@ The version set is declared in a manifest (`versions.json`) that the snapshot CL
 // versions.json — CLI-maintained, ordered newest-first
 {
   "collection": "docs",
-  "latest": "2.0",          // which frozen/live version is canonical "latest"
-  "versions": ["2.0", "1.0", "0.9"]
+  "latest": "live",         // the live tree is canonical "latest" (see Decision D2)
+  "versions": [
+    { "id": "2.0", "state": "supported" },  // frozen, in the switcher
+    { "id": "1.0", "state": "supported" },  // frozen, in the switcher
+    { "id": "0.9", "state": "archived" }    // frozen, out of the build (see Retention)
+  ]
 }
 ```
 
@@ -114,6 +118,13 @@ interface VersionsConfig {
   collection?: string;
   /** Route style for the latest version: 'root' (/docs/) or 'labelled' (/docs/v2/). Default: 'root'. */
   latestAt?: 'root' | 'labelled';
+  /** How many prior supported versions stay live-routed and in the switcher,
+   *  beyond latest. Versions past the window are suggested for archival, never
+   *  auto-removed (Decision D3). Default: 2. */
+  supportWindow?: number;
+  /** Route the live "next" tree publicly at /docs/next/. Default: false — hidden
+   *  until cut, so pre-release docs don't leak (Decision D1). */
+  routeNext?: boolean;
   /** Per-version display label overrides. Default: the version key. */
   labels?: Record<string, string>;
   /** Show the outdated-version banner on non-latest versions. Default: true. */
@@ -121,18 +132,44 @@ interface VersionsConfig {
 }
 ```
 
-The live/authored tree is the **development version** ("next"). Whether "next" is publicly routed (`/docs/next/`) or hidden until cut is a config toggle (see [Open Questions](#open-questions)).
+The live/authored tree is **latest** (Decision D2): it routes at the collection root, is edited freely, and corresponds to the current release line. `next`-style pre-release docs are simply the live tree between releases; it is not publicly routed unless `routeNext` is set.
 
 ### Snapshot workflow — CLI
 
 The `refrakt docs` command group drives the lifecycle:
 
-- **`refrakt docs version <v>`** — copy the live collection into `versioned_docs/<v>/`, append `<v>` to `versions.json`, and (optionally) set it as `latest`. Idempotent-guarded (refuses to overwrite an existing frozen version without `--force`).
-- **`refrakt docs list`** — print the manifest (versions, latest, route map).
+- **`refrakt docs version <v>`** — freeze the *outgoing* line: copy the live collection into `versioned_docs/<v>/` and record `<v>` as a `supported` frozen version in `versions.json`. Run this **when docs are about to diverge for the next line**, not on every release (see [Version Selection & Retention](#version-selection--retention)). Idempotent-guarded (refuses to overwrite an existing frozen version without `--force`).
+- **`refrakt docs list`** — print the manifest (versions, states, latest, route map).
+- **`refrakt docs archive <v>`** — move a frozen version to `archived` state: out of the build and the switcher, retained on disk (or in a branch/tag). Explicit and reversible — the trail is never destroyed.
 - **`refrakt docs backport <path> --to <v>`** — apply a working-tree change to a frozen version (the mitigation for the freeze/backport tax), staged for review rather than silent.
 - **MCP exposure** following the `refrakt.contracts` / `refrakt i18n extract` precedent, so an agent can cut or inspect versions with structured I/O.
 
-The command is designed to hook into the release flow (`npm run version-packages`, see RELEASING.md), so cutting a docs version is a natural step of cutting a release rather than a separate ritual.
+The release flow (`npm run version-packages`, see RELEASING.md) **prompts** for a snapshot at minor/major boundaries — it does not snapshot automatically, because whether a release changes docs enough to fork is a judgment call (Decision D3). Cutting a docs version stays an intentional step.
+
+### Version Selection & Retention
+
+The number of versions is deliberately small — a handful over the project's life, not one per release. Three rules keep it that way.
+
+**1. The snapshot unit is a support line, not a release.** Refrakt uses Changesets fixed mode, so every `@refrakt-md/*` package bumps together on every release, including patches. But a user on `2.0.3` reads the same docs as `2.0.0` — the patch changed no user-facing surface. Docs diverge at **minor (in 0.x) / major (post-1.0)** boundaries, so:
+
+- **Patches never snapshot.** A doc fix shipped in a patch edits the current docs directly, or `backport`s into a frozen version if it applies to an old line.
+- **Versions are labelled by line, not point release** — the switcher shows `2.x`, `1.x`, never `2.0.3`.
+
+**2. Freeze on divergence, not on release.** Do not freeze the current version when it ships — freeze the *outgoing* version at the moment its docs are about to be rewritten for the next line:
+
+```
+live content/docs/  ─── always "latest", edited freely ──►
+        │
+        │ about to rewrite docs for 2.0's breaking changes?
+        ▼
+  refrakt docs version 1.0   ← freeze 1.0 FIRST, then diverge the live tree
+```
+
+This keeps the common path low-friction (virtually every edit lands on the freely-edited live tree, so the freeze/backport tax almost never bites) and means a release that doesn't change docs produces **no snapshot at all** — the live `2.x` tree simply keeps riding. You pay the snapshot cost only when docs genuinely fork.
+
+**3. Retain a rolling window; archive rather than delete.** `supportWindow` (default 2) keeps *latest + N prior supported lines* live-routed and in the switcher. Versions past the window are surfaced by `refrakt docs list` as archival candidates and moved out with `refrakt docs archive` — never auto-removed, never deleted. The binding constraint is **switcher UX and build time, not disk**: frozen Markdown compresses well and diffs rarely, so keeping a few is cheap, but a 20-entry version dropdown is a real failure mode.
+
+A realistic refrakt timeline: pre-1.0 → one live version, switcher hidden (only one version). Cut 1.0 → still just the live tree. Begin 2.0's breaking docs → freeze 1.0. Begin 3.0 → freeze 2.0. Begin 4.0 → freeze 3.0 and archive 1.0 as it leaves the window. Net: **~3 versions visible at once**, indefinitely.
 
 ### Routing and the "latest" alias
 
@@ -182,7 +219,7 @@ The **locale × version cross-product** (a German v1.0 tree) is a **non-goal for
 |----------|-------------|--------|-------|
 | P0 | `versions.json` manifest + `VersionsConfig` + `VersionContext` threading | Medium | Foundation; mirrors {% ref "SPEC-035" /%} `LocaleContext` |
 | P0 | Version-scoped pipeline (partition Register/Aggregate/Post-process per version) | Large | The core engineering; touches `packages/content/` |
-| P1 | `refrakt docs version` / `list` snapshot CLI (+ MCP) | Medium | The author-facing entry point |
+| P1 | `refrakt docs version` / `list` / `archive` snapshot CLI (+ MCP) | Medium | The author-facing entry point; `supportWindow` retention |
 | P1 | Routing + latest-at-root + unversioned canonical | Medium | Per-adapter surface ({% ref "SPEC-058" /%}) |
 | P1 | Cross-version continuity map + switcher targeting fix (replace `versionGroup` peer match) | Medium | Reuses existing switcher widget |
 | P2 | Outdated-version banner (computed content, localizable) | Small | Standard UX |
@@ -190,7 +227,7 @@ The **locale × version cross-product** (a German v1.0 tree) is a **non-goal for
 | P2 | SEO: `rel=canonical` / `noindex` policy + per-version sitemap | Small | `packages/content/src/sitemap.ts` |
 | P3 | Freeze-integrity `--check` | Medium | Drift protection via `contracts` pattern |
 | P3 | `refrakt docs backport` helper | Small | Backport-tax mitigation |
-| P3 | Release-flow integration (snapshot on `version-packages`) | Small | Dogfood driver for the site |
+| P3 | Release-flow snapshot **prompt** at minor/major boundaries | Small | Dogfood driver; intentional, not automatic (Decision D3) |
 
 ## Non-Goals
 
@@ -205,10 +242,15 @@ The **locale × version cross-product** (a German v1.0 tree) is a **non-goal for
 
 Choosing snapshot does not permanently foreclose git-ref. Because routing, the switcher, continuity, banners, and SEO all operate on *resolved content roots* rather than on how those roots were produced, a future git-ref mode could populate the same per-version partitions from checked-out refs instead of frozen dirs, behind a config flag, without touching the presentation or continuity layers. The constraint the v1 design must hold: **nothing downstream of "a version is a content root" may assume the root came from `versioned_docs/`.**
 
+## Decisions
+
+- **D1 — "next" routing**: The live tree is not publicly routed by default; pre-release docs are hidden until cut. A `routeNext` config flag opts into `/docs/next/` for projects that want to publish unreleased docs. *Rationale: a hidden default prevents pre-release docs from leaking or being indexed; the flag covers the minority that deliberately publish a "next."*
+- **D2 — Latest is the live tree**: `latest` routes at the collection root and is the freely-edited live tree, not a frozen artifact. Frozen versions are always genuinely older lines. *Rationale: the alternative (latest = most recent frozen version, live tree = hidden "next") turns every current-docs fix into a backport into a frozen tree — constant friction on the most-edited docs. Live-is-latest keeps the common path frictionless; the freeze/backport tax only applies to rare edits on old lines.*
+- **D3 — Selection & retention**: Snapshot per **docs-significant line** (minor in 0.x / major post-1.0), **freeze on divergence** (freeze the outgoing line when its docs are about to fork), and retain a **rolling window** (`supportWindow`, default 2) of supported lines with explicit `archive` beyond it — never auto-delete. The release flow **prompts** but does not auto-snapshot. *Rationale: decouples docs-versions from npm-versions (fixed-mode bumps everything on every patch); keeps the visible set to a handful; whether a release forks docs is a human judgment, so the trigger stays intentional.*
+
 ## Open Questions
 
-- **Is "next" publicly routed?** Options: always hidden until cut; routed at `/docs/next/`; or config toggle. Leaning toward a config toggle defaulting to hidden, so pre-release docs don't leak by default.
-- **Route form for latest** — root (`/docs/`) vs labelled (`/docs/v2/`) with a root redirect. Spec defaults to root-for-latest; confirm SEO implications of the redirect during implementation.
+- **Route form for latest** — root (`/docs/`) vs labelled (`/docs/v2/`) with a root redirect. Spec defaults to root-for-latest (`latestAt: 'root'`); confirm SEO implications of the redirect during implementation.
 - **Where does `versioned_docs/` live** relative to the collection, and does it belong in the same content root config or a sibling? Affects the loader and the ProjectFiles seam ({% ref "SPEC-113" /%}) for hosted/in-browser builds.
 - **Granularity of freeze integrity** — content-hash only (cheap, catches content edits) vs rendered-output contract (catches framework drift, heavier). Possibly tiered.
 
