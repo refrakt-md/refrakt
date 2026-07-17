@@ -1,0 +1,32 @@
+{% work id="WORK-512" status="ready" priority="low" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,plugins,runes,packaging" %}
+
+# First-party translation bundles (phased, demand-driven)
+
+Ship refrakt's own translations for the universal chrome so a site owner sets `locale` and gets a
+localized UI with zero dictionary authoring. Phased after the mechanism; the initial language tier
+is demand-driven (Decision D7/D8).
+
+## Scope
+
+- Establish the in-package per-locale layout (Decision D8): core strings ship `i18n/<locale>.json` in `packages/runes` (alongside `coreConfig`); each plugin ships its own `i18n/<locale>.json`. **Not** per-language npm packages.
+- Seed the pipeline with **one** non-English language end-to-end (produced via `refrakt i18n extract` → translate) as proof, and wire the build so only the active locale is selected.
+- Establish the quality gate: a language is "supported" only after native-speaker review; partial coverage is safe (English fallback per key) and surfaced by `refrakt i18n extract --check`.
+- Document how to contribute a language (extract → translate → PR) and how coverage is reported.
+
+## Acceptance Criteria
+
+- [ ] In-package per-locale JSON layout exists for core + plugins; no per-language npm package is introduced.
+- [ ] At least one seeded non-English language renders the full chrome end-to-end at build time.
+- [ ] Contribution + coverage-reporting docs exist; the "supported" bar (native-speaker review) is written down.
+- [ ] Partial bundles degrade per-key to English with no hard failures.
+
+## Blocked by
+
+- {% ref "WORK-506" /%}
+- {% ref "WORK-509" /%}
+
+## References
+
+- {% ref "SPEC-035" /%} — First-Party Translations, Decisions D7/D8.
+
+{% /work %}

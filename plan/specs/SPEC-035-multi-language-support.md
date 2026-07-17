@@ -1,8 +1,23 @@
-{% spec id="SPEC-035" status="draft" version="1.0" tags="i18n, transform, themes, behaviors, architecture" %}
+{% spec id="SPEC-035" status="accepted" version="2.2" tags="i18n, transform, themes, behaviors, plugins, architecture" %}
 
 # Multi-Language Support
 
 A locale-aware string resolution system enabling Refrakt sites to render UI text, labels, accessibility strings, and structural headings in any language.
+
+## Revision Note
+
+**v2.0 (2026-07)** — reconciled against the current codebase. The **intent and design principles are unchanged**, but several concrete references were stale and the string inventory had drifted:
+
+- **`RunePackage` → `Plugin`**: the package registration type was renamed. `mergePackages()` → `mergePlugins()`, `loadRunePackage()` → `loadPlugin()`. The proposed `translations` bundle now hangs off `Plugin` / `PluginThemeConfig`.
+- **Second label path**: since {% ref "SPEC-080" /%} labels also emit through the `metaFields` / `blocks` model (`MetaField.label`), not only `StructureEntry.label`. Both must be localized.
+- **`buildStructureElement()` has no config access** today — a real, previously-unstated implementation cost.
+- **Inventory refresh**: diff headers moved to CSS (no longer a JS surface); core budget labels (`"Travelers"`, `"Duration"`, `"Per person"`) were removed; the plan pipeline `KIND_LABELS`/`TYPE_LABELS` constants no longer exist; behaviors split into `behaviors/` + `elements/` and gained new string-bearing files; the `business`, `media`, and `design` plugins were never inventoried.
+- **knownSections shipped** ({% ref "WORK-024" /%}, delivered via {% ref "SPEC-037" /%}) — but **without** the `canonicalSlug` / `i18nAliases` localization shape this spec called for. Zone 7 is reframed accordingly.
+- **Naming**: the proposed `resolveString()` helper is renamed `resolveLocaleString()` to avoid colliding with the unrelated `resolveString()` data-pipeline variable interpolator in `packages/runes/src/data-pipeline.ts`.
+
+**v2.1 (2026-07)** — resolved all six open questions plus two scope decisions (first-party translations, packaging). See the **Decisions** section; the design below reflects the chosen answers (auto-derived keys + extract tooling, `Intl.PluralRules`, JSON-per-locale, inline behavior delivery, per-key fallback, `LocaleContext` threading).
+
+**v2.2 (2026-07)** — added the **Forward Compatibility — Multi-Locale Sites** section. Multi-locale (route-based locale trees, switcher, auto-detect) remains a Non-Goal and demand-driven, but this design is constrained so it can be added later without breaking changes.
 
 ## Motivation
 
@@ -14,72 +29,99 @@ This spec covers the **framework-generated text** — labels, navigation chrome,
 
 ## Inventory of Localizable Text
 
-An audit of the codebase identified **~120 distinct English strings** across seven zones:
+An audit of the codebase identifies **~120+ distinct English strings** across seven zones. Directory note: the plugin tree moved from the spec's original `runes/<name>/` convention to `plugins/<name>/src/`; the behaviors package split into `packages/behaviors/src/behaviors/` (DOM behaviors) and `packages/behaviors/src/elements/` (custom elements).
 
-### Zone 1 — Structure Entry Labels (~60 strings)
+### Zone 1 — Structure Entry & MetaField Labels (~68 strings)
 
-The `label` field on `StructureEntry` emits visible `<span data-meta-label>` elements. These appear across all config files:
+Visible labels are emitted through **two** mechanisms:
 
-- **Core** (`packages/runes/src/config.ts`): `"Travelers:"`, `"Duration:"`
-- **Learning** (`runes/learning/`): `"Est. time:"`, `"Difficulty:"`, `"Prep:"`, `"Cook:"`, `"Serves:"`
-- **Docs** (`runes/docs/`): `"Since:"`, `"Deprecated:"`, `"Source"`
-- **Storytelling** (`runes/storytelling/`): `"Role:"`, `"Status:"`, `"Type:"`, `"Scale:"`, `"Category:"`, `"Alignment:"`, `"Size:"`, `"Structure:"`
-- **Places** (`runes/places/`): `"Date:"`, `"Location:"`, `"Register"`
-- **Plan** (`runes/plan/`): `"ID:"`, `"Status:"`, `"Priority:"`, `"Complexity:"`, `"Assignee:"`, `"Milestone:"`, `"Created:"`, `"Modified:"`, `"Severity:"`, `"Target:"`, `"Supersedes:"`, `"Date:"`, `"Name:"`
-- **Marketing** (`runes/marketing/`): `"Recommended"`, `"Supported"`, `"Not supported"`, `"Not applicable"`
+1. **`StructureEntry.label`** (`packages/transform/src/types.ts`) — the legacy path, emits `<span data-meta-label>`.
+2. **`MetaField.label`** (`packages/transform/src/types.ts`, the {% ref "SPEC-080" /%} `metaFields`/`blocks` model) — emits `<span data-meta-label>` inside a chip (`chip-row`) or as the `<dt>` of a definition list.
 
-### Zone 2 — postTransform Text (~10 strings)
+Both take a literal string and must resolve through the locale system. Current label strings by scope:
 
-Strings created programmatically via `makeTag()` in `postTransform` hooks:
+- **Core** (`packages/runes/src/config.ts` / `packages/runes/src/tags/budget.ts`): budget `"Total"`, `"Per day"`. *(Note: the v1.0 references to core `"Travelers:"`, `"Duration:"`, `"Per person"` are removed from the codebase — do not re-inventory them.)*
+- **Learning** (`plugins/learning/src/`): `"Est. time"`, `"Difficulty"`, `"Prep"`, `"Cook"`, `"Serves"`
+- **Docs** (`plugins/docs/src/`): `"Since"`, `"Deprecated"`, `"Source"`, `"Version"`, `"Released in"`, `"PR"`, `"Tags"`
+- **Storytelling** (`plugins/storytelling/src/`): `"Role"`, `"Status"`, `"Type"`, `"Scale"`, `"Category"`, `"Alignment"`, `"Size"`, `"Structure"`
+- **Places** (`plugins/places/src/`): `"Date"`, `"Location"`, `"Register"`, `"Ends"`
+- **Plan** (`plugins/plan/src/`): `"ID"`, `"Status"`, `"Priority"`, `"Complexity"`, `"Assignee"`, `"Milestone"`, `"Created"`, `"Modified"`, `"Severity"`, `"Target"`, `"Supersedes"`, `"Source"`, plus `achievedLabel` values (`"Fixed"`, `"Accepted"`, `"Complete"`, `"Done"`)
+- **Marketing** (`plugins/marketing/src/tags/comparison.ts`): `"Recommended"`, plus `"Supported"` / `"Not supported"` / `"Not applicable"` aria-labels
+- **Business** (`plugins/business/src/`): mostly author-supplied labels (`emitAttributes: { label: '$label' }`) — low fixed-string surface, but audit `cast.ts` / `organization.ts` for fixed headings.
 
-- **Budget** (`config.ts`): `"Total"`, `"Per person"`, `"Per day"`
-- **Plan pipeline** (`runes/plan/src/pipeline.ts`): `"Relationships"`, `"Progress"`, `"criteria"`, KIND_LABELS (`"Blocked by"`, `"Blocks"`, `"Related"`), TYPE_LABELS (`"work items"`, `"bugs"`, etc.)
+Trailing colons are now added by CSS, so label values themselves omit the `:`.
 
-### Zone 3 — Layout Chrome (~12 strings)
+### Zone 2 — postTransform / Programmatic Text (~6 strings)
 
-`packages/transform/src/layouts.ts` — menu/search/navigation elements:
+Strings created programmatically (e.g. via `makeTag()`), significantly reduced since v1.0:
 
-- aria-labels: `"Open menu"`, `"Close menu"`, `"Search"`, `"Toggle navigation"`, `"Navigation menu"`, `"Page navigation"`, `"Plan navigation"`
+- **Budget** (`packages/runes/src/tags/budget.ts`): `"Total"`, `"Per day"`.
+- **Plan pipeline**: the v1.0 `KIND_LABELS` / `TYPE_LABELS` constants **no longer exist**. `"Blocked by"` / `"Blocks"` are now section-name constants (`plugins/plan/src/scanner-core.ts`) and section keys in the plan tag files (`tags/work.ts`, `tags/bug.ts`, with `"Related"` as an alias). The pipeline render surface moved to a section/render model (`plugins/plan/src/render.ts`, `commands/render-pipeline.ts`) and needs a fresh audit for any remaining literals (`"Relationships"`, `"Progress"`, `"criteria"`).
+
+### Zone 3 — Layout Chrome (~14 strings)
+
+`packages/transform/src/layouts.ts` — menu/search/navigation elements (intact):
+
+- aria-labels: `"Open menu"`, `"Close menu"`, `"Search"`, `"Toggle navigation"`, `"Navigation menu"`, `"Page navigation"`, `"Plan navigation"`, plus newer `"Toggle color theme"`, `"Jump to section"`
 - Visible text: `"Search"`, `"Menu"`, `"Plan"`
 
 ### Zone 4 — Computed Transforms (~4 strings)
 
-`packages/transform/src/computed.ts` — injected navigation text:
+`packages/transform/src/computed.ts` — injected navigation text (intact):
 
-- `"On this page"` (ToC heading)
-- `"Previous"` / `"Next"` (prev/next navigation)
-- `"Version"` (version switcher label)
+- `buildToc()` → `"On this page"` (ToC heading)
+- `buildPrevNext()` → `"Previous"` / `"Next"`
+- `buildVersionSwitcher()` → `"Version"`
 
-### Zone 5 — Behavior Strings (~40 strings)
+### Zone 5 — Behavior Strings (~45 strings)
 
-Client-side JavaScript in `packages/behaviors/src/`:
+Client-side JavaScript, now split across `packages/behaviors/src/behaviors/` and `packages/behaviors/src/elements/`:
 
-- **copy.ts**: `"Copy code"`, `"Copied"`
-- **gallery.ts**: `"Previous"`, `"Next"`, `"Image lightbox"`, `"Close lightbox"`, `"Previous image"`, `"Next image"`, `"View image {n}"`
-- **preview.ts**: `"Preview"`, `"View source"`, `"Auto"`, `"Light"`, `"Dark"`, `"System preference"`, `"Light mode"`, `"Dark mode"`, `"Markdoc"`, `"Rune"`, `"HTML"`
-- **reveal.ts**: `"Continue"`, `"Start over"`
-- **search.ts**: `"Search documentation..."`, `"No results found."`, `"Search is not available."`, `"to navigate"`, `"to select"`, `"Esc"`
-- **datatable.ts**: `"Filter rows..."`, `"Prev"`, `"Next"`
-- **form.ts**: `"Submitting..."`, `"Form submitted successfully."`, `"Something went wrong. Please try again."`, `"Select an option"`
-- **juxtapose.ts**: `"Comparison slider"`, `"Comparison toggle"`, `"Panel {n}"`
-- **audio.ts**: `"Play"`, `"Pause"`, `"Seek"`
-- **sandbox.ts**: `"Sandbox"`
-- **map.ts**: `"More info"`
+- **behaviors/copy.ts**: `"Copy code"`, `"Copied"`
+- **behaviors/gallery.ts**: `"Image lightbox"`, `"Close lightbox"`, `"Previous image"`, `"Next image"`, `"View image {n}"`
+- **behaviors/preview.ts**: `"Preview"`, `"View source"`, `"Auto"`, `"Light"`, `"Dark"`, `"System preference"`, `"Light mode"`, `"Dark mode"`, `"Markdoc"`, `"Rune"`, `"HTML"`
+- **behaviors/reveal.ts**: `"Continue"`, `"Start over"`
+- **behaviors/search.ts**: `"Search documentation..."`, `"No results found."`, `"Search is not available."`, `"to navigate"`, `"to select"`, `"Esc"`
+- **behaviors/datatable.ts**: `"Filter rows..."`, `"Prev"`, `"Next"`
+- **behaviors/form.ts**: `"Submitting..."`, `"Form submitted successfully."`, `"Something went wrong. Please try again."`, `"Select an option"`
+- **behaviors/juxtapose.ts**: `"Comparison slider"`, `"Comparison toggle"`, `"Panel {n}"`
+- **elements/audio.ts**: `"Play"`, `"Pause"`, `"Seek"`
+- **elements/sandbox.ts**: `"Sandboxed user content"`
+- **elements/map.ts**: `"More info"`
+
+**New behavior files not in v1.0** (must be inventoried): **behaviors/carousel.ts** (`"Previous"`, `"Next"`), **behaviors/mobile-menu.ts** (`"Open menu"`, `"Close menu"`), **behaviors/section-nav.ts** / **scrollspy.ts** (`"Page sections"`). Additional element behaviors (`elements/chart.ts`, `elements/diagram.ts`, `elements/nav.ts`, `elements/context.ts`) should be scanned for axis/legend/loading strings.
 
 ### Zone 6 — Schema Defaults and Enum-as-Text (~15 strings)
 
 Rune attribute values that double as visible display text:
 
-- **Hint type** (`note`, `warning`, `caution`, `check`): Capitalized via `capitalize` transform and displayed as the hint title. An author writing `{% hint type="warning" %}` sees "Warning" in any locale.
-- **Diff headers**: `"Before"`, `"After"`
-- **Details fallback**: `"Details"`
-- **Embed fallback**: `"Embedded content"`
-- **Design typography**: Weight names (`"Thin"` through `"Black"`), pangram sample text, section titles (`"Spacing"`, `"Radius"`, `"Shadows"`)
-- **Docs extract**: Symbol group labels (`"Constructor"`, `"Properties"`, `"Methods"`, `"Static Properties"`, `"Static Methods"`, `"Accessors"`, `"Index Signatures"`, `"Class Methods"`)
+- **Hint type** (`packages/runes/src/tags/hint.ts`: `note`, `warning`, `caution`, `check`): capitalized and displayed as the hint title. `{% hint type="warning" %}` renders "Warning" in any locale.
+- **Details fallback** (`packages/runes/src/tags/details.ts`): `"Details"`
+- **Embed fallback** (`packages/runes/src/tags/embed.ts`): `"Embedded content"`
+- **Design typography** (`plugins/design/src/tags/typography.ts`): weight names (`"Thin"` … `"Black"`), pangram sample text, section titles.
+- **Design palette** (`plugins/design/src/tags/palette.ts`, **new since v1.0**): contrast readout `"W: … · B: …"`, accessibility badges `"AAA"` / `"AA"` (✓/✗).
+- **Docs extract**: symbol group labels (`"Constructor"`, `"Properties"`, `"Methods"`, `"Static Properties"`, `"Static Methods"`, `"Accessors"`, `"Index Signatures"`, `"Class Methods"`) — now duplicated across `plugins/docs/src/extract/typescript.ts` **and** `plugins/docs/src/extract/python.ts`; both must be localized.
 
-### Zone 7 — knownSections (Unbuilt)
+*(Removed since v1.0: diff `"Before"`/`"After"` are no longer JS string literals — `packages/runes/src/tags/diff.ts` emits lowercase `data-name="before"`/`data-name="after"` and the visible labels are CSS-generated. Diff localization is therefore a **CSS/`content:` concern**, out of scope for the string table.)*
 
-The planned `knownSections` feature ({% ref "WORK-024" /%}, blocked on {% ref "SPEC-003" /%}) declares expected section names with English aliases. This is both a localization concern and a **CSS stability concern**: `buildSections()` in `runes/plan/src/util.ts` derives `data-name` slugs from heading text, so non-English headings produce different slugs, breaking CSS selectors. `knownSections` would provide canonical slug keys independent of source language.
+### Zone 7 — knownSections (SHIPPED; slug-stability follow-up outstanding)
+
+The `knownSections` feature is **now implemented** ({% ref "WORK-024" /%}, `done`; delivered via {% ref "SPEC-037" /%}, with {% ref "SPEC-003" /%} accepted). Today:
+
+- `KnownSectionDefinition` (`packages/types/src/content-model.ts`) declares canonical section names with an `alias?: string[]` list and an optional per-section `model`.
+- The resolver (`packages/runes/src/lib/resolver.ts`) matches heading text case-insensitively against the canonical name + aliases, attaching `$canonicalName` to matched sections.
+- `buildSections()` (`plugins/plan/src/util.ts`) sets `data-known-section={canonicalName}` on the matched heading.
+
+**What was NOT built** — and remains the localization concern this spec owns: there is no `canonicalSlug` and no `i18nAliases`. `slugify()` in `plugins/plan/src/util.ts` still derives the section wrapper's `data-name` from **raw heading text**, so a non-English heading (`## Akzeptanzkriterien`) still produces a different `data-name` slug than `## Acceptance Criteria`, breaking CSS selectors keyed on it. The `data-known-section` attribute provides a stable *hook on the heading*, but not a stable slug on the `<section>` wrapper.
+
+The remaining work is therefore a **scoped follow-up**, no longer blocked on an unbuilt framework:
+
+1. Derive the section wrapper's `data-name` from the matched canonical key (a stable `canonicalSlug`) instead of heading text, falling back to `slugify($heading)` for unrecognised sections.
+2. Add per-locale heading aliases (`i18nAliases` or resolved from `config.strings`) so authors can write headings in the site locale and still hit the canonical section.
+
+### Zone 8 — HTML `lang` Attribute (cross-adapter)
+
+The document `lang` attribute must reflect the configured locale. This is no longer a single-file change: with the framework adapters ({% ref "SPEC-030" /%}, {% ref "SPEC-058" /%}), each adapter's page shell (html, astro, nuxt, next, eleventy, sveltekit) sets `lang`. All must read `config.locale ?? 'en'`.
 
 ## Design
 
@@ -87,26 +129,38 @@ The planned `knownSections` feature ({% ref "WORK-024" /%}, blocked on {% ref "S
 
 1. **Zero-config English**: Existing sites work unchanged. English is the fallback when no locale is configured.
 2. **Additive localization**: Adding a language means providing a strings dictionary — no structural changes to rune configs.
-3. **Package-scoped translations**: Community packages ship their own translations alongside their rune configs.
-4. **Single resolution path**: All localizable text resolves through one mechanism, whether it originates from structure labels, computed transforms, or behaviors.
+3. **Plugin-scoped translations**: Plugins ship their own translations alongside their rune configs.
+4. **Single resolution path**: All localizable text resolves through one mechanism, whether it originates from structure labels, meta fields, computed transforms, or behaviors.
 5. **Type-safe keys**: Translation keys are derived from existing config, not invented separately. Missing translations fall back to the English literal.
+
+### Value Types
+
+A translated value is either a plain string or — for the small set of count-bearing strings (Decision D2) — a plural category map:
+
+```ts
+/** CLDR plural categories, as returned by Intl.PluralRules. */
+type PluralMap = Partial<Record<Intl.LDMLPluralRule, string>>; // 'zero'|'one'|'two'|'few'|'many'|'other'
+
+/** A dictionary value: a literal string, or a per-category map for plurals. */
+type LocalizedValue = string | PluralMap;
+```
 
 ### Locale Configuration
 
-A `locale` section on `ThemeConfig`:
+A `locale` section on `ThemeConfig` (`packages/transform/src/types.ts` — neither field exists today; both are net-new):
 
 ```ts
 interface ThemeConfig {
-  // ... existing fields ...
+  // ... existing fields: prefix, tokenPrefix, icons, runes, tints?, backgrounds?, frames? ...
 
   /** Locale identifier (BCP 47). Defaults to 'en'. */
   locale?: string;
 
   /** Translation strings keyed by dotted path.
    *  Keys follow the pattern: {scope}.{identifier}
-   *  Scope is 'core', 'layout', 'behavior', or a package name.
+   *  Scope is 'core', 'layout', 'behavior', or a plugin name.
    *  Missing keys fall back to the English default baked into the config. */
-  strings?: Record<string, string>;
+  strings?: Record<string, LocalizedValue>;
 }
 ```
 
@@ -116,8 +170,7 @@ Example for a German site:
 {
   locale: 'de',
   strings: {
-    // Zone 1 — structure labels
-    'core.budget.duration': 'Dauer:',
+    // Zone 1 — structure / meta-field labels
     'core.budget.total': 'Gesamt',
     'core.budget.perDay': 'Pro Tag',
 
@@ -147,10 +200,11 @@ Example for a German site:
     'core.hint.warning': 'Warnung',
     'core.hint.caution': 'Achtung',
     'core.hint.check': 'Erledigt',
-    'core.diff.before': 'Vorher',
-    'core.diff.after': 'Nachher',
 
-    // Community package translations
+    // A plural value (Decision D2)
+    'plan.progress.criteria': { one: '{n} Kriterium', other: '{n} Kriterien' },
+
+    // Plugin translations
     'learning.howto.estimatedTime': 'Geschätzte Zeit:',
     'learning.recipe.prep': 'Vorbereitung:',
     'learning.recipe.cook': 'Kochen:',
@@ -163,148 +217,208 @@ Example for a German site:
 
 #### Server-side (Zones 1–4, 6)
 
-A `resolveString(config, key, fallback)` utility available to the engine, computed transforms, and layout builders:
+A `resolveLocaleString(ctx, key, fallback)` utility available to the engine, computed transforms, and layout builders, plus a plural-aware sibling. `ctx` is a narrow `LocaleContext` slice (Decision D6), not the full `ThemeConfig`:
 
 ```ts
-function resolveString(config: ThemeConfig, key: string, fallback: string): string {
-  return config.strings?.[key] ?? fallback;
+interface LocaleContext {
+  locale: string;                             // BCP 47, defaults to 'en'
+  strings: Record<string, LocalizedValue>;    // merged, locale-selected dictionary
+}
+
+function resolveLocaleString(ctx: LocaleContext, key: string, fallback: string): string {
+  const v = ctx.strings[key];
+  return typeof v === 'string' ? v : fallback;
+}
+
+function resolvePluralString(ctx: LocaleContext, key: string, count: number, fallback: string): string {
+  const v = ctx.strings[key];
+  if (v && typeof v === 'object') {
+    const cat = new Intl.PluralRules(ctx.locale).select(count);
+    return (v[cat] ?? v.other ?? fallback).replace('{n}', String(count));
+  }
+  return typeof v === 'string' ? v.replace('{n}', String(count)) : fallback;
 }
 ```
 
-**Zone 1 — Structure labels**: The engine's `buildStructureElement()` already has access to the full config. When emitting a `label`, it resolves:
+> Named `resolveLocaleString` (not `resolveString`) to avoid colliding with the existing, unrelated `resolveString()` in `packages/runes/src/data-pipeline.ts`, which interpolates `{{ }}` template variables against data-pipeline sources.
 
-```ts
-// Before (current)
-const labelText = entry.label;
+**Plurals and counts (Decision D2)**: Framework chrome prefers **count-neutral phrasing** (`"Progress 3/10"`) so pluralization rarely arises. Where a natural phrasing genuinely inflects, the dictionary value is a `PluralMap` resolved via `Intl.PluralRules` for the active locale — English supplies `{ one, other }`; Polish/Russian/Arabic supply the additional categories. No English `n === 1` ternaries, and **no ICU MessageFormat engine**: the CLDR category model reached via `Intl.PluralRules` is identical to ICU's plural model without the parser or the client-bundle dependency. Revisit ICU only if framework chrome grows variable-laden sentences or a TMS workflow is adopted — and note the resolver dispatches on value shape, so a value could later become an ICU string behind the same key without a format-wide migration.
 
-// After
-const labelText = resolveString(config, entry.labelKey ?? '', entry.label ?? '');
-```
+**Zone 1 — Structure & MetaField labels**: Both label paths must resolve through the locale table.
 
-The `labelKey` is derived automatically from the rune config context: `{packageScope}.{block}.{ref}` — e.g., `core.budget.duration` for the Budget rune's duration label. Config authors don't need to set `labelKey` manually; the engine derives it from the structure path.
+- *Implementation cost*: `buildStructureElement()` (`packages/transform/src/engine.ts`) currently receives only `(entry, name, modifierValues, icons)` — it has **no access to the config**. The `MetaField` renderers likewise emit `field.label` literally. Localization threads a narrow `LocaleContext` (Decision D6) into `buildStructureElement()` and the MetaField block renderers — matching the engine's existing convention of passing explicit slices (`icons`, `modifierValues`) rather than the whole config.
+- The label key is **auto-derived** from the config context: `{pluginScope}.{block}.{ref}` — e.g., `core.budget.total` (Decision D1). Authors don't set keys manually; an optional `i18nKey` override on a field pins a stable key across refactors. Discoverability is handled by the `refrakt i18n extract` tooling (below), not by verbose per-label keys.
 
-**Zone 2 — postTransform text**: `postTransform` hooks receive the config via a new `config` field on the context object, enabling `resolveString()` calls in programmatic code.
+**Zone 2 — postTransform / programmatic text**: `postTransform` hooks (and the plan render pipeline) receive the `LocaleContext` so they can call `resolveLocaleString()` in programmatic code.
 
-**Zone 3 — Layout chrome**: Layout config builders receive the theme config and use `resolveString()` for all text and aria-labels.
+**Zone 3 — Layout chrome**: Layout config builders (`layouts.ts`) receive the `LocaleContext` and use `resolveLocaleString()` for all text and aria-labels.
 
-**Zone 4 — Computed transforms**: `buildToc()`, `buildPrevNext()`, `buildVersionSwitcher()` already receive config-derived data; they use `resolveString()` with keys like `core.toc.title`.
+**Zone 4 — Computed transforms**: `buildToc()`, `buildPrevNext()`, `buildVersionSwitcher()` (`computed.ts`) already receive config-derived data; they use `resolveLocaleString()` with keys like `core.toc.title`.
 
 **Zone 6 — Enum display values**: When the `capitalize` transform is applied to a `metaText` value, the engine first checks for a translation key `{scope}.{block}.{value}` (e.g., `core.hint.warning`). If found, the translation replaces both the capitalize transform and the raw value.
 
-#### Client-side (Zone 5 — Behaviors)
+#### Client-side (Zone 5 — Behaviors) — Decision D4
 
-Behaviors run in the browser with no access to server-side config. Two mechanisms deliver translations:
+Behaviors run in the browser with no access to server-side config. Translations are delivered **inline** (no fetched endpoint):
 
-1. **`data-i18n-*` attributes**: The identity transform emits `data-i18n-{key}={translated-value}` on rune root elements for any behavior strings that have translations. Behaviors read these attributes instead of using hardcoded defaults.
+1. **`data-i18n-*` attributes**: The identity transform emits `data-i18n-{key}={translated-value}` on rune root elements for behavior strings that attach to an element the transform already renders. Behaviors read these instead of hardcoded defaults. Prefer this path wherever a string has an anchor element.
 
-2. **`<meta name="rf-locale">` tag**: `ThemeShell` emits a `<meta name="rf-locale" content="de">` tag and a `<script type="application/json" id="rf-strings">` block containing behavior-scoped translations. The behavior init code reads this once and makes it available to all behaviors.
+2. **`<meta name="rf-locale">` tag + inline JSON block**: `ThemeShell` (and each adapter's page shell) emits `<meta name="rf-locale" content="de">` and a `<script type="application/json" id="rf-strings">` block. The block carries **only the strings behaviors create at runtime** with no anchor element (e.g. `"No results found."` injected by search, the `"Copied"` state, dynamically-built gallery labels) — keeping it to ~15–20 strings, not all 45. Only the active locale is emitted.
 
 ```ts
 // In each behavior:
 const label = el.dataset.i18nCopy ?? getGlobalString('behavior.copy.copy') ?? 'Copy code';
 ```
 
-Fallback chain: element attribute → global strings block → hardcoded English default. This means behaviors work identically in SSR-only mode (no JS) and in hydrated mode.
+Fallback chain: element attribute → inline global block → hardcoded English default. Because the block is inline, strings are available **synchronously** at behavior init — no flash-of-English, no interactivity delay, and pages stay self-contained (works in SSR-only / no-JS mode). A single fetched `/rf-strings.json` was rejected: the payload is a couple KB, the caching win is marginal, and a fetch forces either blocked interactivity or a visible English→translated swap on the most visible chrome — plus per-adapter routing, base-path, and cache-invalidation cost. Revisit only if the behavior-string set grows large or soft-navigation duplication becomes measurable.
 
-### Package Translation Bundles
+### Resolution Precedence and Fallback — Decision D5
 
-Community packages can ship translation bundles:
+For a given key, resolution is **first-match-wins, per key** (a scalar lookup, not a deep merge of dictionaries):
 
-```ts
-// runes/learning/src/index.ts
-export const learningPackage: RunePackage = {
-  name: '@refrakt-md/learning',
-  // ... existing fields ...
-  translations: {
-    de: {
-      'learning.howto.estimatedTime': 'Geschätzte Zeit:',
-      'learning.howto.difficulty': 'Schwierigkeit:',
-      'learning.recipe.prep': 'Vorbereitung:',
-      'learning.recipe.cook': 'Kochen:',
-      'learning.recipe.serves': 'Portionen:',
-    },
-    fr: {
-      'learning.howto.estimatedTime': 'Temps estimé :',
-      'learning.howto.difficulty': 'Difficulté :',
-      'learning.recipe.prep': 'Préparation :',
-      'learning.recipe.cook': 'Cuisson :',
-      'learning.recipe.serves': 'Portions :',
-    },
-  },
-};
-```
+1. **Site override** — `ThemeConfig.strings[key]`. Always wins; lets a site owner fix a shipped translation, adjust tone, or match brand terminology.
+2. **Owning package's shipped bundle** for the resolved locale — the plugin's `translations` for plugin-scoped keys, core's bundle for `core.*`/`layout.*`/`behavior.*`. **Locale-tag fallback** applies here: `de-AT` → `de` (progressive BCP-47 subtag stripping) before dropping through.
+3. **Hardcoded English literal** — the `fallback` passed at the call site. Always present, so it is the universal floor.
 
-`mergePackages()` merges translation bundles. When the theme config specifies `locale: 'de'`, the pipeline selects the `de` bundle from each loaded package and merges into `config.strings`, with theme-level overrides taking precedence.
+There is **no per-plugin "default language"**: an untranslated key falls to English, never to some third language the site owner never asked for. Degradation is **per key**, not per language — a missing `de` key shows English inline while the rest of the page stays German, which is what makes shipping partial first-party bundles safe. The `--check` tooling below turns those per-key gaps into a measured coverage number.
 
-### Interaction with knownSections
+### Plugin Translation Bundles
 
-When `knownSections` ships ({% ref "WORK-024" /%}), it should integrate with the locale system:
+Plugins ship translation bundles. There is **no existing slot** for this — a `translations` field is net-new on the plugin surface (`packages/types/src/package.ts`):
 
 ```ts
-knownSections: {
-  'Acceptance Criteria': {
-    aliases: ['Criteria', 'AC', 'Done When'],
-    // The canonical key for slug generation, independent of source language
-    canonicalSlug: 'acceptance-criteria',
-    // Per-locale heading aliases resolved from config.strings or inline
-    i18nAliases: {
-      de: ['Akzeptanzkriterien', 'Kriterien'],
-      fr: ['Critères d\'acceptation', 'Critères'],
-    },
-    model: { /* section-specific content model */ },
-  },
+// packages/types/src/package.ts
+export interface Plugin {
+  name: string;
+  version: string;
+  runes: Record<string, PluginRune>;
+  extends?: Record<string, RuneExtension>;
+  theme?: PluginThemeConfig;
+  behaviors?: Record<string, unknown>;
+  pipeline?: PluginPipelineHooks;
+  fileRoots?: Record<string, string>;
+
+  /** NEW: per-locale translation bundles, keyed by BCP 47 locale.
+   *  Authored as JSON files imported here (Decision D3). */
+  translations?: Record<string, Record<string, LocalizedValue>>;
 }
 ```
 
-The `canonicalSlug` ensures stable `data-name` attributes regardless of the source language. Alias matching checks the base aliases, then the locale-specific aliases for the configured locale. This makes `knownSections` the key enabler for **content portability** — the same CSS works whether the author writes `## Acceptance Criteria` or `## Akzeptanzkriterien`.
+```ts
+// plugins/learning/src/index.ts — JSON authored per locale, imported into the typed field
+import de from './i18n/de.json';
+import fr from './i18n/fr.json';
+
+export const learningPlugin: Plugin = {
+  name: 'learning',
+  // ... existing fields ...
+  translations: { de, fr },
+};
+```
+
+**Merge path**: `mergePlugins()` (`packages/runes/src/plugins.ts`) already aggregates plugin theme contributions (`themeRunes`, `themeIcons`, `themeBackgrounds`) into `MergedPluginResult`. Translation bundles follow the same pattern: thread a `translations` field through `LoadedPlugin` and `MergedPluginResult`, select the bundle for the configured `locale` (with the D5 tag fallback), and merge into the `LocaleContext.strings`. Site-level (`ThemeConfig.strings`) entries take precedence over plugin defaults per the D5 precedence chain.
+
+### Interaction with knownSections
+
+`knownSections` has shipped, but without stable-slug support (see Zone 7). The locale integration is now a concrete follow-up on an existing type rather than a design against an unbuilt feature:
+
+```ts
+// packages/types/src/content-model.ts — proposed additions
+export interface KnownSectionDefinition {
+  alias?: string[];                       // exists today
+  model?: StructuralContentModel;         // exists today
+
+  /** NEW: canonical slug for the section's data-name, independent of
+   *  source language. Falls back to slugify(canonicalName) if omitted. */
+  canonicalSlug?: string;
+
+  /** NEW: per-locale heading aliases, matched in addition to `alias`
+   *  when config.locale is set. */
+  i18nAliases?: Record<string, string[]>;
+}
+```
+
+`buildSections()` (`plugins/plan/src/util.ts`) would derive the `<section data-name>` from `canonicalSlug` when a known section matched, and `matchKnownSection()` (`packages/runes/src/lib/resolver.ts`) would consult `i18nAliases[config.locale]` alongside the base `alias` list. This makes `knownSections` the enabler for **content portability** — the same CSS works whether the author writes `## Acceptance Criteria` or `## Akzeptanzkriterien`.
 
 ### Number and Duration Formatting
 
 The `locale` field enables locale-aware formatting:
 
-- **Duration transform**: Currently outputs `"5h 30m"`. With locale support, it consults `Intl.DurationFormat` (or a polyfill) to produce `"5 Std. 30 Min."` in German.
-- **Number formatting**: Budget amounts use `Intl.NumberFormat(config.locale)` for locale-appropriate thousands separators and decimal marks.
+- **Duration transform**: Currently outputs `"5h 30m"`. With locale support, consult `Intl.DurationFormat` (or a polyfill) to produce `"5 Std. 30 Min."` in German.
+- **Number formatting**: Budget amounts use `Intl.NumberFormat(config.locale)` for locale-appropriate separators.
 - **Currency**: Already partially handled by `BUDGET_CURRENCY_SYMBOLS`; `Intl.NumberFormat` with `style: 'currency'` would replace the manual symbol lookup.
 
-### HTML `lang` Attribute
+### Tooling — `refrakt i18n extract`
 
-`packages/html/src/page-shell.ts` currently defaults to `lang="en"`. With locale config, this becomes:
+Auto-derived keys (Decision D1) are only usable if authors and translators can discover them, so the extract command is a **first-class deliverable, not a convenience** — it is the mitigation that makes auto-derivation acceptable:
 
-```ts
-const lang = config.locale ?? 'en';
-```
+- Walks every rune's structure / `metaFields` (reusing the `contracts` machinery) and emits every derivable key with its English default as a **JSON dictionary** — the same `key → value` shape used for translation files (Decision D3), so `extract → translate → commit de.json` round-trips.
+- **`--check` mode** (mirroring `contracts --check`) fails CI on drift: a new labelled field with no dictionary entry, or an orphaned key after a block rename. It also reports **per-locale coverage** ("de: 94%"), giving the first-party quality bar a measured number.
+- **MCP-exposed** following the `refrakt.contracts` precedent (CLAUDE.md prefers MCP over CLI where both exist, and an agent bootstrapping a translation wants structured key/default data more than parsed CLI text). Structured JSON output makes the wrapper thin; the detailed input schema is deferred to the work item.
+
+*(This does not conflict with the "CLI/developer tooling i18n" non-goal — that non-goal is about translating refrakt's own CLI strings, not about tooling that supports the i18n system.)*
+
+### First-Party Translations
+
+Because framework-generated chrome is identical on every site, refrakt ships first-party translations rather than leaving every site owner to re-translate the same ~120 strings (Decision D7):
+
+- **Phased after the mechanism.** v1 ships the machinery + extract tooling + English; bundled languages land as a follow-on.
+- **Scope grows by demand.** No fixed language list in this spec; a small initial tier, extended by community PR.
+- **Native-speaker reviewed before a language is advertised as supported** — a bad machine translation under the refrakt name is worse than English. Partial coverage is safe (English fallback per key, per D5), but the quality bar gates the "supported" label.
+- **Packaged in-package, per locale, selected at build time (Decision D8).** Each package that *owns* strings ships its own `i18n/<locale>.json`: core strings in `packages/runes` (alongside `coreConfig`), each plugin's strings in that plugin. **Not** one npm package per language — that would centralize distributed ownership (a per-language package would carry every scope's keys and re-release on any string change), and would split first-party (per-language packages) from community (in-package bundles) into two delivery models. The usual per-language-package driver — runtime client bundle-splitting — doesn't apply to a build-time generator that emits only the active locale. Fixed-mode Changesets versioning means a per-language package wouldn't even decouple releases. An optional aggregate *convenience* meta-package could re-export first-party bundles later if there's demand, but ownership stays in-package.
 
 ## Implementation Zones and Priorities
 
-| Priority | Zone | Effort | Impact |
-|----------|------|--------|--------|
-| P0 | `ThemeConfig.locale` + `strings` + `resolveString()` | Small | Foundation for everything else |
-| P1 | Zone 1 (structure labels) | Medium | Highest visibility — affects all runes with metadata |
+| Priority | Zone / Item | Effort | Impact |
+|----------|-------------|--------|--------|
+| P0 | `ThemeConfig.locale` + `strings` + `LocaleContext` + `resolveLocaleString()` / `resolvePluralString()` | Small | Foundation for everything else |
+| P0 | Thread `LocaleContext` into `buildStructureElement()` + MetaField renderers | Medium | Prerequisite for Zone 1 — no config access today |
+| P1 | Zone 1 (structure & meta-field labels) + auto-derived keys | Medium | Highest visibility — affects all runes with metadata |
 | P1 | Zone 4 (computed transforms) | Small | 4 strings, highly visible on every page |
-| P1 | Zone 3 (layout chrome) | Small | ~12 strings, visible site-wide |
-| P2 | Zone 5 (behaviors) | Medium | ~40 strings, requires client-side delivery mechanism |
-| P2 | Zone 6 (enum display values) | Small | Hint titles, diff headers — common runes |
-| P2 | Zone 2 (postTransform text) | Small | Budget and plan pipeline — fewer sites affected |
-| P3 | Zone 7 (knownSections i18n) | Blocked | Depends on knownSections framework shipping first |
+| P1 | Zone 3 (layout chrome) | Small | ~14 strings, visible site-wide |
+| P1 | `refrakt i18n extract` (+ `--check`, MCP) | Medium | Discoverability that makes auto-derived keys usable |
+| P2 | Zone 5 (behaviors) — inline delivery (`data-i18n-*` + JSON block) | Medium | ~45 strings, client-side delivery mechanism |
+| P2 | Zone 6 (enum display values) | Small | Hint titles, typography, docs symbol groups |
+| P2 | Zone 2 (postTransform / plan render) | Small | Re-audit needed — pipeline moved to render model |
+| P2 | Plugin `translations` bundle + `mergePlugins()` wiring | Medium | Enables community-plugin localization |
+| P3 | Zone 7 (knownSections `canonicalSlug` + `i18nAliases`) | Small | Framework now exists — scoped follow-up |
+| P3 | Zone 8 (cross-adapter `lang` attribute) | Small | Correctness/a11y across all adapters |
+| P3 | First-party translation bundles (per-locale JSON, in-package) | Ongoing | Batteries-included localization; demand-driven |
 | P3 | Number/duration formatting | Small | `Intl` APIs handle most of the work |
 
 ## Non-Goals
 
 - **Content translation / multi-language sites**: This spec does not address serving the same site in multiple languages (route-based locale switching, parallel content trees). That is a larger feature that could build on this foundation.
 - **RTL layout support**: Right-to-left text direction is a CSS/layout concern orthogonal to string translation. Worth a separate spec.
-- **CLI / developer tooling i18n**: English-only is acceptable for `refrakt inspect`, `refrakt plan`, etc.
+- **CLI / developer tooling i18n**: English-only is acceptable for `refrakt inspect`, `refrakt plan`, etc. (Distinct from `refrakt i18n extract`, which is tooling that *supports* the i18n system.)
 - **AI prompt translation**: The `packages/ai/` prompts are English-only and used for content generation, not end-user display.
+- **CSS-generated label text**: Labels emitted via CSS `content:` (e.g. diff `Before`/`After`, trailing label colons) are a theming concern, not a string-table concern.
+- **ICU MessageFormat**: Deliberately not adopted (see Decision D2).
 
-## Open Questions
+## Forward Compatibility — Multi-Locale Sites
 
-1. **Key derivation for structure labels**: Should keys be auto-derived from the config path (`{package}.{block}.{ref}`) or explicitly declared on each `StructureEntry`? Auto-derivation is less boilerplate but harder to discover; explicit keys are self-documenting but verbose.
+Serving the same site in multiple languages (route-based locale trees, a language switcher, `Accept-Language` auto-detect) stays a **Non-Goal** and is **demand-driven** — we build it only if there's real demand. But this design is deliberately constrained so that feature can be added **as an additive layer, without breaking changes**. The constraints below are load-bearing; violating them would turn a future additive feature into a rewrite.
 
-2. **Plural forms**: Some strings need plural awareness (e.g., `"3/10 criteria"`, `"Per person"`). Should we integrate `Intl.PluralRules` or keep it simple with template strings?
+**Constraints this spec must hold to keep the door open:**
 
-3. **Translation file format**: Should translations live in the `RunePackage` TypeScript export (as shown above), in separate JSON files per locale, or in a standard format like ICU MessageFormat?
+1. **Locale is render-scoped context, never module-global mutable state.** The active locale lives in the `LocaleContext` threaded through resolution (Decision D6) — not a singleton set once per process. This is the single most important constraint: a future route-based system may build multiple locale subtrees, potentially within one build, and any module-level "current locale" global would make that impossible without a rewrite. D6's threaded slice already satisfies this; do not shortcut it into a global.
+2. **Keys stay locale-independent.** `{scope}.{block}.{ref}` never encodes a locale, so the same key space resolves against any locale's bundle. A multi-locale build reuses identical keys per subtree.
+3. **Per-page locale markers are already emitted.** `<html lang>` (Zone 8) and `<meta name="rf-locale">` are per-page, and behavior strings are delivered inline per page (Decision D4) — so N locale subtrees each carry correct, self-contained locale state with no shared single-locale assumption. `hreflang` alternate-links are the clean additive extension point on top.
+4. **`canonicalSlug` (Zone 7) is the cross-locale URL/anchor stabilizer.** Language-independent section slugs mean anchors, deep links, and CSS selectors stay identical across locale trees (`#acceptance-criteria` in every language, not `#akzeptanzkriterien`). This is why Zone 7 matters beyond CSS stability — it's a prerequisite for portable URLs in a multi-locale site.
 
-4. **Behavior string delivery**: The `<script type="application/json">` approach is simple but adds payload to every page. An alternative is a single `/rf-strings.json` endpoint that behaviors fetch once. Which is preferable?
+**What is explicitly deferred to that future feature** (and sits *on top* of this foundation, not inside it): route layout (`/en/…`, `/de/…`), parallel/translated content trees, the switcher component, per-locale sitemaps, and any auto-detect redirect layer. None of these require changing the string-resolution model defined here.
 
-5. **Fallback chain depth**: If a community package doesn't ship a translation for the configured locale, should it fall back to the package's default language, or to the theme-level strings, or directly to the hardcoded English?
+## Decisions
+
+Resolved from the v1.0 / v2.0 open questions:
+
+- **D1 — Key derivation**: **Auto-derive** keys from the config path (`{plugin}.{block}.{ref}`), with an optional explicit `i18nKey` override on a field for stability across refactors. Discoverability is handled by the `refrakt i18n extract` tooling, not by verbose per-label keys. *Rationale: ~68+ labels make explicit keys pure, drift-prone boilerplate; auto-derivation keeps keys correct by construction and covers both label paths uniformly; the extract command turns discoverability into a generated, exhaustive artifact.*
+- **D2 — Plurals**: `Intl.PluralRules` + `PluralMap` dictionary values, plus a preference for **count-neutral phrasing**. No English `n === 1` ternaries; **no ICU MessageFormat engine**. *Rationale: hardcoded binary plurals are an i18n bug in most languages; full ICU is priced for variable-laden sentence-prose at scale, which refrakt's atomic-label / decomposed-metaField architecture largely designs away; `Intl.PluralRules` gives the identical CLDR model at zero dependency. Revisit only on variable-laden chrome or a TMS workflow — the resolver's shape-dispatch keeps that door open without a migration.*
+- **D3 — Format**: **JSON, one file per locale**, values `string | PluralMap`, imported into the typed `translations` field; inline TS allowed but JSON is canonical. *Rationale: JSON is what translators and TMS tools consume; a typed JSON import keeps type safety; it round-trips with extract output.*
+- **D4 — Behavior delivery**: **Inline** `<script type="application/json" id="rf-strings">` per page + `data-i18n-*` attributes for element-attached strings; the global block carries only runtime-created strings. **No** fetched `/rf-strings.json` endpoint. *Rationale: the payload is a couple KB; inline gives synchronous init (no flash-of-English), keeps pages self-contained, and avoids per-adapter routing / cache-invalidation. Revisit only if the string set grows large or soft-nav duplication becomes measurable.*
+- **D5 — Fallback**: **Per-key first-match** — site `strings` → owning package's shipped locale bundle (with `de-AT`→`de` tag fallback) → English floor. **No per-plugin default language.** Per-key degradation. *Rationale: English is always present as the universal floor; a surprise third language is worse than English; per-key degradation makes partial bundles safe.*
+- **D6 — Config threading**: A narrow **`LocaleContext { locale, strings }`** slice into `buildStructureElement()` and the MetaField renderers, not the full `ThemeConfig`. A bound `t()` closure is an acceptable alternative at implementation time. *Rationale: matches the engine's existing convention of passing explicit slices (`icons`, `modifierValues`); plumbing cost is identical either way, so minimal coupling wins; narrow-first is the safe direction to widen later.*
+- **D7 — First-party translations**: **Ship them** — phased after the mechanism, native-speaker-reviewed, English-fallback for partial coverage, coverage measured by the extract `--check`. *Rationale: chrome strings are universal, so translating them once is the framework's job; it's the difference between "i18n is possible" and "i18n is batteries-included."*
+- **D8 — Packaging**: **In-package per-locale JSON**, locale selected at build time; **not** per-language npm packages. *Rationale: matches string ownership, unifies first-party and community delivery, and the runtime-bundle-splitting driver for per-language packages doesn't apply to a build-time generator.*
 
 {% /spec %}
