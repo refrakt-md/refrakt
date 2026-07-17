@@ -288,6 +288,8 @@ async function loadMergedConfig(
 		let siteScoped: {
 			plugins?: string[];
 			runes?: import('@refrakt-md/types').SiteConfig['runes'];
+			locale?: string;
+			strings?: Record<string, string | Record<string, string>>;
 		} = config;
 		const hasSites = Object.keys(config.sites).length > 0;
 		if (hasSites || site !== undefined) {
@@ -327,12 +329,18 @@ async function loadMergedConfig(
 		}
 
 		if (merged) {
+			// SPEC-035 — carry the site locale + overrides into the config so the
+			// engine localizes and the plugin/first-party bundles are selected.
+			const siteStrings = siteScoped.strings as Record<string, import('@refrakt-md/transform').LocalizedValue> | undefined;
+			const baseWithStrings = siteStrings ? { ...baseConfig, strings: { ...baseConfig.strings, ...siteStrings } } : baseConfig;
 			const assembled = assembleThemeConfig({
-				coreConfig: baseConfig,
+				coreConfig: baseWithStrings,
 				pluginRunes: merged.themeRunes,
 				pluginIcons: merged.themeIcons,
 				pluginBackgrounds: merged.themeBackgrounds,
 				provenance: merged.provenance,
+				locale: siteScoped.locale,
+				pluginTranslations: merged.translations,
 			});
 			mergedConfig = assembled.config;
 		}

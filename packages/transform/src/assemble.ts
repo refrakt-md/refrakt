@@ -3,6 +3,7 @@ import type { ThemeTokensConfig } from '@refrakt-md/types';
 import type { RuneProvenance } from './provenance.js';
 import { mergeThemeConfig, applyRuneExtensions } from './merge.js';
 import type { ThemeConfigOverrides, RuneConfigExtension } from './merge.js';
+import { selectLocaleBundle, mergeLocaleStrings, normalizeLocale, type LocalizedValue } from './i18n.js';
 
 /** Casing-agnostic rune-name key: lowercases and strips non-alphanumerics so
  *  `HowTo`, `how-to`, and `howto` all collapse to one bucket. Bridges the
@@ -38,6 +39,20 @@ export interface AssembleInput {
 	 *  here have their chrome accents projected into TintTokens shape so the
 	 *  engine emits inline `--tint-*` styles at runtime. */
 	presetMap?: Record<string, ThemeTokensConfig>;
+
+	/** SPEC-035 — active locale (BCP 47). When set, plugin/core translation
+	 *  bundles are selected for it and merged into `config.strings`, and
+	 *  `config.locale` is stamped so the engine localizes. */
+	locale?: string;
+
+	/** SPEC-035 — per-locale plugin translation bundles (from `mergePlugins`).
+	 *  The active locale's dictionary is selected (with `de-AT`→`de` fallback)
+	 *  and merged *under* the site's `ThemeConfig.strings` (site wins, Decision D5). */
+	pluginTranslations?: Record<string, Record<string, LocalizedValue>>;
+
+	/** SPEC-035 — first-party core translation bundles (from `packages/runes`),
+	 *  keyed by locale. Lowest precedence, merged below plugin bundles. */
+	coreTranslations?: Record<string, Record<string, LocalizedValue>>;
 }
 
 /** Result of theme config assembly */
@@ -71,6 +86,9 @@ export function assembleThemeConfig(input: AssembleInput): AssembleResult {
 		extensions,
 		provenance: inputProvenance = {},
 		presetMap,
+		locale,
+		pluginTranslations,
+		coreTranslations,
 	} = input;
 
 	let config = coreConfig;
@@ -133,6 +151,23 @@ export function assembleThemeConfig(input: AssembleInput): AssembleResult {
 		}
 	}
 	if (stampedAny) config = { ...config, runes: runesWithScope };
+
+	// SPEC-035 — resolve the locale dictionary. Precedence (Decision D5, per key,
+	// lowest → highest): core first-party bundle → plugin bundles → the site's
+	// own `ThemeConfig.strings` (always wins). Each bundle is locale-selected with
+	// the `de-AT`→`de` region-strip fallback. `config.locale` is stamped so the
+	// engine builds its LocaleContext from it.
+	if (locale !== undefined) {
+		const resolvedLocale = normalizeLocale(locale);
+		const coreStrings = selectLocaleBundle(coreTranslations, resolvedLocale);
+		const pluginStrings = selectLocaleBundle(pluginTranslations, resolvedLocale);
+		const siteStrings = config.strings ?? {};
+		config = {
+			...config,
+			locale: resolvedLocale,
+			strings: mergeLocaleStrings(coreStrings, pluginStrings, siteStrings),
+		};
+	}
 
 	return { config, provenance: fullProvenance };
 }
