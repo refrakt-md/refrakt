@@ -1,4 +1,4 @@
-{% spec id="SPEC-108" status="accepted" tags="theme,reading,prose,typography,editorial,css,architecture" %}
+{% spec id="SPEC-108" status="implemented" tags="theme,reading,prose,typography,editorial,css,architecture" %}
 
 # Reading role: an editorial treatment for body text
 

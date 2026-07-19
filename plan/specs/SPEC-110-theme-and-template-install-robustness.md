@@ -1,4 +1,4 @@
-{% spec id="SPEC-110" status="accepted" tags="distribution,cli,install,registry,packaging" %}
+{% spec id="SPEC-110" status="implemented" tags="distribution,cli,install,registry,packaging" %}
 
 # Theme and template install robustness
 
