@@ -1,4 +1,4 @@
-{% spec id="SPEC-119" status="draft" version="0.2" tags="content, ai, cli, output, agents" %}
+{% spec id="SPEC-119" status="draft" version="0.3" tags="content, ai, cli, output, agents" %}
 
 # Addressable page representations for machine consumers
 
@@ -218,13 +218,63 @@ Consequences:
 
 ## Configuration
 
-*(Open — pending refinement. See Open Questions §1.)* Whether site owners can disable the `.md`/`.json` routes, at what granularity, and the default posture, is the next question to settle. The advertising rule above already assumes availability is configurable (disabled representations are not advertised).
+Representations are **on by default** (agent-friendliness is the feature's purpose, matching refrakt's existing `llms.txt`/`llms-full.txt` posture) but individually disablable. Configured **per-site** (multi-site projects configure each site independently) in `refrakt.config.json`:
+
+```jsonc
+{
+  "representations": {
+    "md":   true,   // raw round-trippable Markdoc route
+    "json": true    // structured envelope route
+  }
+}
+```
+
+**Per-representation, not one boolean**, because `.md` (raw source) and `.json` (structure) are different exposure postures — an owner may want structured semantics for agents but not a raw-source dump, or vice versa. Each toggle also accepts an object form for finer control; the most useful is dropping raw source from the envelope while keeping structure:
+
+```jsonc
+"json": { "content": false }   // expose structure + semantics, omit the raw Markdoc `content` key
+```
+
+This "structure without source" middle ground is likely what a source-cautious owner actually wants.
+
+**Consistency rules:**
+
+- **Advertising tracks availability.** A disabled representation emits no `rel="alternate"` link and no `llms.txt` note — never advertise a 404. (Already assumed by the advertising rule above.)
+- **Existence ≠ crawlability.** This config governs whether the routes *exist*; `robots.txt` governs whether crawlers *should fetch* them. They are orthogonal — a site may serve `.json` for its own agents while `Disallow`-ing third-party crawlers.
+
+The `md: false, json: true` split (raw source opt-*in*, structure opt-*out*) is a defensible alternative default for source-cautious deployments; this spec defaults both on for parity with the existing `llms-full.txt` posture and simplicity.
+
+-----
+
+## Build cost &amp; caching
+
+Emitting `.md` + `.json` per page adds output, but the build-time cost is small *when the pipeline is not re-run per route* — and that ordering matters: compute-sharing removes most of the cost before caching does anything.
+
+### Compute-sharing is a v1 requirement, not an optimization
+
+The site build already parses + transforms every page to emit HTML. The representations MUST be **projections of that single per-page pipeline run**, read from the loaded `Site` (via the SvelteKit adapter's virtual modules), not independent endpoints that re-invoke `loadContent` / re-parse / re-transform. The naive "three independent endpoints" implementation would run the pipeline 3× per page and genuinely triple the build — an architecture bug to design out from the start. With compute shared, marginal cost per page is:
+
+| Output | Marginal work | Cost |
+|--------|--------------|------|
+| `.md` | copy original file bytes (or in-memory `page.content`) | ~free |
+| `.json` `authored` | walk `page.renderable`, strip `$$mdtype`, `JSON.stringify` | small |
+| `.json` `rendered` / `html` | identity transform + `renderToHtml` — **reuses the HTML prerender's transform** | ~free when reused |
+
+On a typical site, build time is dominated by Svelte compilation + HTML prerender; JSON projection of already-transformed trees is noise beside it.
+
+### Cache-ready by construction
+
+`serializePage()` is a **pure function of well-defined inputs** (`SitePage` + resolved/aggregated data + version). This makes it cache-ready without redesign, so an incremental cache can be layered on later. The served files also carry an **`ETag`** (content hash), making conditional re-fetch (`If-None-Match` → `304`) a first-class affordance for agents polling a `.json` for changes — the highest-value caching in practice, and nearly free for static output.
+
+### Incremental build cache — deferred, with one hard constraint
+
+An incremental/persistent cache (skip re-serializing unchanged pages across rebuilds; restore in CI) is a **scale optimization, deferred** until a large-site user needs it — with compute shared, first-build serialization is already cheap. Any such cache MUST respect **cross-page resolution**: a page's `.json` can change even when its own source did not (a new sibling shifts `breadcrumb auto` / nav / aggregated indexes). So the cache key cannot be the page's own source hash alone — it must fold in a fingerprint of the resolved inputs the page depends on, or invalidate whenever the aggregate phase output changes. Getting this wrong serves stale breadcrumbs; hence deferred and flagged rather than improvised.
 
 -----
 
 ## Open Questions
 
-1. **Opt-out / configuration.** Should owners be able to turn the `.md` and/or `.json` routes off (source-exposure preference, build/hosting cost, attack surface)? At what granularity — one boolean, per-representation (`md` vs `json`), or finer (e.g. omit raw `content` from `.json` to expose structure without source)? Default on or off? Per-site (multi-site config)? To be worked next.
+None currently open — all refinement questions (v0.1 → v0.3) are resolved below. Ready for an `accepted` review; the natural next step is decomposing into work items (serializer + `.md`/`.json` routes + `refrakt render` + config + versioned schema).
 
 -----
 
@@ -239,6 +289,8 @@ Trail of the design decisions settled during refinement (v0.1 → v0.2):
 5. **`llms.txt` manifest** — no per-entry annotation; advertise via `rel="alternate"` head links + a one-line `llms.txt` header note; dedicated manifest deferred.
 6. **Contract** — two tiers: envelope + `authored` = versioned/schema-published/CI-checked contract defined over `data-rune-fields`; `rendered` = theme-coupled, versioned-by-theme. Aligns with (does not fight) the WORK-323/329 stripping.
 7. **Drafts** — no new mechanism; representation set ≡ rendered page set as a security invariant; CLI unrestricted locally.
+8. **Opt-out / configuration** — on by default, per-site, per-representation (`md` / `json`) with an object form (`json: { content: false }`) for structure-without-source; advertising tracks availability; existence orthogonal to `robots.txt` crawlability.
+9. **Build cost / caching** — compute-sharing (one pipeline run per page, all forms project from it) is a v1 requirement; `serializePage()` is a pure, cache-ready function; served files carry `ETag`; an incremental build cache is deferred and must key on cross-page-resolution inputs.
 
 -----
 
@@ -275,5 +327,13 @@ The stable tier (envelope + `authored`) is schema-derived and semver'd; the `ren
 ### 8. Representation set ≡ prerendered page set
 
 Parity between representations and rendered pages is a security invariant enforced structurally (one page enumeration feeds all outputs), not a filter. Drafts and excluded pages get no representation because they produce no HTML page; no separate draft-exposure or auth mechanism is introduced.
+
+### 9. Representations on by default, per-site, per-representation
+
+On by default matches the feature's purpose and refrakt's existing `llms.txt` posture; per-representation toggles (with a `content: false` sub-option) let owners express distinct exposure postures — structure-without-source in particular — that a single boolean cannot. Configured per-site because multi-site projects have independent audiences. Route existence is kept orthogonal to `robots.txt` crawlability.
+
+### 10. Compute-sharing over caching; cache-ready serializer
+
+The dominant build-cost risk is re-running the pipeline per route, so the mitigation is architectural: one pipeline run per page, all forms projecting from the loaded `Site`, with `rendered`/`html` reusing the HTML prerender's transform. Caching is secondary — `serializePage()` is written as a pure function so an incremental cache is possible later, but it is deferred (and must key on cross-page-resolution inputs to avoid stale output). `ETag` on served files covers the high-value serving-side caching for polling agents.
 
 {% /spec %}
