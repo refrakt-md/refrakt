@@ -1,4 +1,4 @@
-{% spec id="SPEC-109" status="implemented" tags="templates,scaffolding,distribution,cli,dx" %}
+{% spec id="SPEC-109" status="shipped" tags="templates,scaffolding,distribution,cli,dx" released-in="v0.25.0" %}
 
 # Site template packages, manifest, and scaffolding
 
