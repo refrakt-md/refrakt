@@ -1,4 +1,4 @@
-{% spec id="SPEC-093" status="draft" source="ADR-017" tags="registry,sandbox,visualization,pipeline,collection,a11y" %}
+{% spec id="SPEC-093" status="shipped" source="ADR-017" tags="registry,sandbox,visualization,pipeline,collection,a11y" released-in="v0.21.0" %}
 
 # Data-bound sandbox
 

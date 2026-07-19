@@ -1,4 +1,4 @@
-{% spec id="SPEC-060" status="draft" tags="runes, behaviors, ui, core, xref" %}
+{% spec id="SPEC-060" status="shipped" tags="runes, behaviors, ui, core, xref" released-in="v0.15.0" %}
 
 # Drawer rune
 

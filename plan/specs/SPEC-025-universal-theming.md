@@ -1,4 +1,4 @@
-{% spec id="SPEC-025" status="implemented" tags="transform, themes, css, dimensions" %}
+{% spec id="SPEC-025" status="shipped" tags="transform, themes, css, dimensions" released-in="v0.9.0" %}
 
 # Universal Theming Dimensions
 

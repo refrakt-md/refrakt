@@ -1,4 +1,4 @@
-{% spec id="SPEC-053" status="draft" tags="theme, tint, tokens, lumina, v1, breaking-change" %}
+{% spec id="SPEC-053" status="shipped" tags="theme, tint, tokens, lumina, v1, breaking-change" released-in="v0.14.0" %}
 
 # Tint shape alignment
 

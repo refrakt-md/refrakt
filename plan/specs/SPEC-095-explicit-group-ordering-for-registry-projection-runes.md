@@ -1,4 +1,4 @@
-{% spec id="SPEC-095" status="draft" source="SPEC-072" tags="registry,collection,aggregate,relationships,grouping,ordering" %}
+{% spec id="SPEC-095" status="accepted" source="SPEC-072" tags="registry,collection,aggregate,relationships,grouping,ordering" %}
 
 # Explicit group ordering for registry-projection runes
 

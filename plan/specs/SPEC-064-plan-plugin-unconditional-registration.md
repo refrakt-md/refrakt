@@ -1,4 +1,4 @@
-{% spec id="SPEC-064" status="draft" tags="plan, plugins, registry, pipeline" source="SPEC-021" %}
+{% spec id="SPEC-064" status="shipped" tags="plan, plugins, registry, pipeline" source="SPEC-021" released-in="v0.15.0" %}
 
 # Plan plugin — unconditional entity registration
 

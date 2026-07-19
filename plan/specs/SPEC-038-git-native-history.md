@@ -1,4 +1,4 @@
-{% spec id="SPEC-038" status="draft" version="1.0" tags="plan, cli, git, history, site" %}
+{% spec id="SPEC-038" status="implemented" version="1.0" tags="plan, cli, git, history, site" %}
 
 # Git-Native Entity History
 

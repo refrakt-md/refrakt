@@ -1,4 +1,4 @@
-{% spec id="SPEC-042" status="draft" version="1.0" tags="plan, cli, create-refrakt, onboarding, dx" %}
+{% spec id="SPEC-042" status="implemented" version="1.0" tags="plan, cli, create-refrakt, onboarding, dx" %}
 
 # Plan Target for create-refrakt
 

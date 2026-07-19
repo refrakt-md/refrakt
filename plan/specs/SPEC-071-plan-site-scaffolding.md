@@ -1,4 +1,4 @@
-{% spec id="SPEC-071" status="draft" tags="plan, scaffolding, entity-routes, collection, dogfood, deprecation" %}
+{% spec id="SPEC-071" status="shipped" tags="plan, scaffolding, entity-routes, collection, dogfood, deprecation" released-in="v0.16.0" %}
 
 # Plan site scaffolding
 

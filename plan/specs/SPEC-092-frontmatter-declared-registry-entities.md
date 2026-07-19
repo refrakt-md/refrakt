@@ -1,4 +1,4 @@
-{% spec id="SPEC-092" status="draft" source="ADR-016" tags="registry,pipeline,frontmatter,content,collection,aggregate" %}
+{% spec id="SPEC-092" status="shipped" source="ADR-016" tags="registry,pipeline,frontmatter,content,collection,aggregate" released-in="v0.21.0" %}
 
 # Frontmatter-declared registry entities
 

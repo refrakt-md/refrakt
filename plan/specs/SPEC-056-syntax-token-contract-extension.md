@@ -1,4 +1,4 @@
-{% spec id="SPEC-056" status="draft" tags="theme, tokens, syntax-highlighting, lumina, presets, shiki" %}
+{% spec id="SPEC-056" status="shipped" tags="theme, tokens, syntax-highlighting, lumina, presets, shiki" released-in="v0.14.1" %}
 
 # Syntax token contract extension
 

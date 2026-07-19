@@ -1,4 +1,4 @@
-{% spec id="SPEC-051" status="draft" tags="theme, lumina, presets, branding, positioning, v1" %}
+{% spec id="SPEC-051" status="shipped" tags="theme, lumina, presets, branding, positioning, v1" released-in="v0.14.0" %}
 
 # Lumina neutral default & tideline preset
 

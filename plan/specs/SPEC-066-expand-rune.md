@@ -1,4 +1,4 @@
-{% spec id="SPEC-066" status="draft" tags="runes, transclusion, registry, core" %}
+{% spec id="SPEC-066" status="shipped" tags="runes, transclusion, registry, core" released-in="v0.15.0" %}
 
 # Expand rune
 

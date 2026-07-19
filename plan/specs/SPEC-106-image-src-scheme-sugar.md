@@ -1,4 +1,4 @@
-{% spec id="SPEC-106" status="draft" tags="image,runes,icon,placeholder,authoring,dx,transform" %}
+{% spec id="SPEC-106" status="shipped" tags="image,runes,icon,placeholder,authoring,dx,transform" released-in="v0.22.0" %}
 
 # Image-src scheme sugar: `placeholder:` and `icon:`
 
