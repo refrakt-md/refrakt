@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/learning",
-  "description": "Learning runes for refrakt.md \u2014 how-to guides and recipes",
-  "version": "0.28.0",
+  "description": "Learning runes for refrakt.md — how-to guides and recipes",
+  "version": "0.29.0",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -22,9 +22,9 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@refrakt-md/types": "0.28.0",
-    "@refrakt-md/transform": "0.28.0",
-    "@refrakt-md/runes": "0.28.0",
+    "@refrakt-md/types": "0.29.0",
+    "@refrakt-md/transform": "0.29.0",
+    "@refrakt-md/runes": "0.29.0",
     "@markdoc/markdoc": "0.4.0",
     "reflect-metadata": "^0.2.0"
   }
