@@ -1,8 +1,8 @@
-{% work id="WORK-516" status="ready" priority="medium" complexity="moderate" source="SPEC-071" tags="plan, cli, deprecation, cleanup" milestone="v0.30.0" %}
+{% work id="WORK-516" status="ready" priority="medium" complexity="moderate" source="SPEC-120" tags="plan, cli, deprecation, cleanup" milestone="v0.30.0" %}
 
 # Remove bespoke plan build/serve render stack
 
-Complete the deprecation started in {% ref "WORK-273" /%}: remove the `plan build` / `plan serve` commands and the private static-site generator behind them, now that a plan site is an ordinary refrakt site (`entityRoutes` + `collection`, scaffolded by `create-refrakt --type plan`). This is the "later release removes `build`/`serve` and the bespoke render stack" phase that {% ref "SPEC-071" /%} § *Deprecation of plan build / plan serve* (step 3) and WORK-273 explicitly deferred. The authoring CLI, plan runes, and register/aggregate hooks are untouched.
+Realize {% ref "SPEC-120" /%}: remove the `plan build` / `plan serve` commands and the private static-site generator behind them, now that a plan site is an ordinary refrakt site (`entityRoutes` + `collection`, scaffolded by `create-refrakt --type plan`). This is the deferred removal phase — {% ref "WORK-273" /%} shipped the deprecation in v0.16.0, and {% ref "SPEC-071" /%} § *Deprecation of plan build / plan serve* (step 3) anticipated but scoped it out. The authoring CLI, plan runes, and register/aggregate hooks are untouched.
 
 ## Acceptance Criteria
 - [ ] `plan build` and `plan serve` are removed from the CLI (command registration + `--help`); invoking them yields an unknown-command error, not the deprecation notice
@@ -26,7 +26,8 @@ Grep for stragglers before finishing: `plan serve`, `plan build`, `render-pipeli
 
 ## References
 
-- {% ref "SPEC-071" /%} — plan site scaffolding; § *Deprecation of plan build / plan serve* step 3 (the removal this item completes) + *Engine / Package Changes*
+- {% ref "SPEC-120" /%} — retire the bespoke plan render stack (the spec this work item realizes)
+- {% ref "SPEC-071" /%} — plan site scaffolding (shipped); § *Deprecation of plan build / plan serve* step 3 anticipated this removal
 - {% ref "WORK-273" /%} — the deprecation phase that deferred removal to a later release
 - {% ref "SPEC-069" /%} — `entityRoutes` / contributed routes, the replacement for per-entity render
 - {% ref "SPEC-070" /%} — `collection` rune, the replacement for the dashboards and per-status listings

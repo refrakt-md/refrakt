@@ -6,10 +6,10 @@ Two threads of plan-tooling hardening that finish work the previous milestones
 deliberately left open. First, teach `plan validate` to catch **lifecycle
 drift** — statuses that contradict the terminal evidence around them
 ({% ref "SPEC-119" /%}), the symmetric counterpart to the one-directional
-lifecycle checks already in place. Second, complete the {% ref "SPEC-071" /%}
-plan-site transition by **removing the bespoke `plan build` / `plan serve`
-render stack** that v0.16.0 deprecated but kept alive — a plan site is now an
-ordinary refrakt site, so the parallel SSG can go.
+lifecycle checks already in place. Second, **remove the bespoke `plan build` /
+`plan serve` render stack** ({% ref "SPEC-120" /%}) that v0.16.0 deprecated but
+kept alive — with the {% ref "SPEC-071" /%} plan-site transition shipped, a plan
+site is now an ordinary refrakt site, so the parallel SSG can go.
 
 ## Shape
 
@@ -27,11 +27,12 @@ predicate so the two never diverge. The v2 (more opinionated) checks are
 deferred until v1 proves non-noisy. A one-time cleanup pass clears the existing
 drift so the checks land on a clean repo.
 
-**Render-stack removal ({% ref "SPEC-071" /%}).** v0.16.0 rebuilt refrakt's
+**Render-stack removal ({% ref "SPEC-120" /%}).** v0.16.0 rebuilt refrakt's
 plan site from `plan/` via `entityRoutes` + `collection` and deprecated
-`plan build` / `plan serve`, but deferred deleting them so existing users
-weren't broken ({% ref "WORK-273" /%}). With the site approach proven and
-shipped, this milestone removes the commands and their private render pipeline
+`plan build` / `plan serve` ({% ref "SPEC-071" /%}), but deferred deleting them
+so existing users weren't broken ({% ref "WORK-273" /%}). With the site approach
+proven and shipped, this milestone removes the commands and their private render
+pipeline
 (`render-pipeline.ts` router, `planLayout`, the port-3000 dev server, the
 pagefind invocation), keeping the plan runes, register/aggregate hooks, and the
 whole authoring CLI intact. Docs move fully to the site approach.
