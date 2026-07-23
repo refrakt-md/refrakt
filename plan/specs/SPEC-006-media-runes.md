@@ -1,4 +1,4 @@
-{% spec id="SPEC-006" status="accepted" tags="runes, media" %}
+{% spec id="SPEC-006" status="implemented" tags="runes, media" %}
 
 # Media Runes — Specification
 

@@ -1,4 +1,4 @@
-{% spec id="SPEC-091" status="draft" tags="engine,runes,config,architecture,dx" %}
+{% spec id="SPEC-091" status="shipped" tags="engine,runes,config,architecture,dx" released-in="v0.20.0" %}
 
 # Engine config variants: modifier-keyed config deltas
 

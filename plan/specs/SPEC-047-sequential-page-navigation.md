@@ -1,4 +1,4 @@
-{% spec id="SPEC-047" status="draft" tags="pagination, nav, docs, sequential-reading" %}
+{% spec id="SPEC-047" status="shipped" tags="pagination, nav, docs, sequential-reading" released-in="v0.14.0" %}
 
 # Sequential page navigation
 

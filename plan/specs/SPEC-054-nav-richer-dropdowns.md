@@ -1,4 +1,4 @@
-{% spec id="SPEC-054" status="accepted" tags="nav, layout, theme, runes, menubar, columns, strip" source="SPEC-046" %}
+{% spec id="SPEC-054" status="shipped" tags="nav, layout, theme, runes, menubar, columns, strip" source="SPEC-046" released-in="v0.14.3" %}
 
 # Nav: richer dropdowns and column flow
 

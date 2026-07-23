@@ -1,4 +1,4 @@
-{% spec id="SPEC-079" status="draft" tags="theme, runes, structure, metadata, badges, eyebrow, definition-list, plan, lumina" %}
+{% spec id="SPEC-079" status="shipped" tags="theme, runes, structure, metadata, badges, eyebrow, definition-list, plan, lumina" released-in="v0.18.0" %}
 
 # Semantic header zones + per-zone layout primitives for metadata-bearing runes
 

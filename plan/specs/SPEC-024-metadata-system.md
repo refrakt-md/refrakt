@@ -1,4 +1,4 @@
-{% spec id="SPEC-024" status="accepted" tags="transform, themes, css, metadata" %}
+{% spec id="SPEC-024" status="shipped" tags="transform, themes, css, metadata" released-in="v0.9.0" %}
 
 # Metadata System
 

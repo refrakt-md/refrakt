@@ -1,4 +1,4 @@
-{% spec id="SPEC-086" status="draft" tags="chrome,runes,engine,lumina,dx" %}
+{% spec id="SPEC-086" status="accepted" tags="chrome,runes,engine,lumina,dx" %}
 
 # Surface chrome: elevation and frame presets
 

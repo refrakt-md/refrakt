@@ -1,4 +1,4 @@
-{% spec id="SPEC-048" status="accepted" tags="theme, tokens, config, lumina, dark-mode, syntax-highlighting" %}
+{% spec id="SPEC-048" status="shipped" tags="theme, tokens, config, lumina, dark-mode, syntax-highlighting" released-in="v0.14.4" %}
 
 # Design tokens contract & config
 

@@ -1,4 +1,4 @@
-{% spec id="SPEC-082" status="draft" source="SPEC-080" tags="theme, runes, serialization, data-channel, transform, engine, contract, migration" %}
+{% spec id="SPEC-082" status="accepted" source="SPEC-080" tags="theme, runes, serialization, data-channel, transform, engine, contract, migration" %}
 
 # Typed node data channel
 

@@ -1,4 +1,4 @@
-{% spec id="SPEC-116" status="draft" tags="composability,runes,engine,frame,media,behaviors,dx" %}
+{% spec id="SPEC-116" status="shipped" tags="composability,runes,engine,frame,media,behaviors,dx" released-in="v0.24.6" %}
 
 # frame-overflow facet — responsive overflow-bleed for media guests
 

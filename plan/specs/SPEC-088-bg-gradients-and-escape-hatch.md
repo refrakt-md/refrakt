@@ -1,4 +1,4 @@
-{% spec id="SPEC-088" status="draft" tags="surfaces,runes,engine,lumina,bg,dx" %}
+{% spec id="SPEC-088" status="shipped" tags="surfaces,runes,engine,lumina,bg,dx" released-in="v0.20.0" %}
 
 # `bg` gradients and a formalized custom-CSS escape hatch
 

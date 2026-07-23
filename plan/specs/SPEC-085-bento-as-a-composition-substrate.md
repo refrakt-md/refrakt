@@ -1,4 +1,4 @@
-{% spec id="SPEC-085" status="draft" tags="bento,composability,marketing,runes" %}
+{% spec id="SPEC-085" status="accepted" tags="bento,composability,marketing,runes" %}
 
 # Bento as a composition substrate
 

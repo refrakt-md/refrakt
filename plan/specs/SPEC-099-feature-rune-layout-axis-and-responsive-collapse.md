@@ -1,4 +1,4 @@
-{% spec id="SPEC-099" status="accepted" tags="feature,layout,collapse,marketing,runes" source="ADR-018" %}
+{% spec id="SPEC-099" status="shipped" tags="feature,layout,collapse,marketing,runes" source="ADR-018" released-in="v0.26.0" %}
 
 # Feature rune layout axis and responsive collapse
 

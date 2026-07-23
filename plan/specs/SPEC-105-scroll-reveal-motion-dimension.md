@@ -1,4 +1,4 @@
-{% spec id="SPEC-105" status="accepted" tags="motion,animation,lumina,engine,behaviors,runes,a11y,dimensions,dx" %}
+{% spec id="SPEC-105" status="shipped" tags="motion,animation,lumina,engine,behaviors,runes,a11y,dimensions,dx" released-in="v0.24.0" %}
 
 # Scroll-reveal motion — a token-driven entrance dimension
 

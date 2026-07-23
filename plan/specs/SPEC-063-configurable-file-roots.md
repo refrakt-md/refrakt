@@ -1,4 +1,4 @@
-{% spec id="SPEC-063" status="draft" tags="content, plugins, config, resolution" %}
+{% spec id="SPEC-063" status="shipped" tags="content, plugins, config, resolution" released-in="v0.15.0" %}
 
 # Configurable file roots
 

@@ -1,4 +1,4 @@
-{% spec id="SPEC-090" status="draft" tags="composability,runes,engine,a11y,dx" %}
+{% spec id="SPEC-090" status="shipped" tags="composability,runes,engine,a11y,dx" released-in="v0.20.0" %}
 
 # Media-guest interaction posture: presentational guests, clickable containers, cover backdrops
 

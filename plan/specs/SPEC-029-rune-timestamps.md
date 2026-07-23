@@ -1,4 +1,4 @@
-{% spec id="SPEC-029" status="draft" tags="content, pipeline, runes, plan" %}
+{% spec id="SPEC-029" status="shipped" tags="content, pipeline, runes, plan" released-in="v0.9.1" %}
 
 # File-Derived Timestamps for Runes
 

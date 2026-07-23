@@ -1,4 +1,4 @@
-{% spec id="SPEC-031" status="draft" tags="vite, architecture, frameworks" %}
+{% spec id="SPEC-031" status="accepted" tags="vite, architecture, frameworks" %}
 
 # Vite Plugin — Framework-Agnostic Rune Integration
 

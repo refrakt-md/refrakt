@@ -1,4 +1,4 @@
-{% spec id="SPEC-052" status="draft" tags="theme, tint, cascade, frontmatter, layout, dark-mode" %}
+{% spec id="SPEC-052" status="shipped" tags="theme, tint, cascade, frontmatter, layout, dark-mode" released-in="v0.14.0" %}
 
 # Per-page and per-subtree tint cascade
 

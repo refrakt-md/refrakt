@@ -1,4 +1,4 @@
-{% spec id="SPEC-089" status="draft" tags="surfaces,runes,engine,lumina,layout,dx" %}
+{% spec id="SPEC-089" status="shipped" tags="surfaces,runes,engine,lumina,layout,dx" released-in="v0.20.0" %}
 
 # Cover layout for media+content runes: `media-position="cover"`, content placement, and intrinsic height
 

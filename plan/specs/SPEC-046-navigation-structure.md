@@ -1,4 +1,4 @@
-{% spec id="SPEC-046" status="draft" tags="nav, layout, theme, runes" %}
+{% spec id="SPEC-046" status="shipped" tags="nav, layout, theme, runes" released-in="v0.14.0" %}
 
 # Navigation structure
 

@@ -1,4 +1,4 @@
-{% spec id="SPEC-026" status="accepted" tags="lumina, themes, css, reference-implementation" %}
+{% spec id="SPEC-026" status="shipped" tags="lumina, themes, css, reference-implementation" released-in="v0.9.0" %}
 
 # Lumina Theme — Reference Implementation
 
