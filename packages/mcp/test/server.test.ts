@@ -38,6 +38,7 @@ describe('CORE_TOOLS', () => {
 			'refrakt.plugins_list',
 			'refrakt.reference',
 			'refrakt.contracts',
+			'refrakt.i18n_extract',
 			'refrakt.inspect',
 			'refrakt.inspect_list',
 		]);
