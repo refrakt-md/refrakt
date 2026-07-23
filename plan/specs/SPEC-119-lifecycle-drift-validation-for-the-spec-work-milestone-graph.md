@@ -1,4 +1,4 @@
-{% spec id="SPEC-119" status="draft" source="SPEC-049" tags="plan, validation, lifecycle, traceability, dx" %}
+{% spec id="SPEC-119" status="accepted" source="SPEC-049" tags="plan, validation, lifecycle, traceability, dx" %}
 
 # Lifecycle-drift validation for the spec–work–milestone graph
 
