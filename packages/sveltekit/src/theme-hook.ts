@@ -37,6 +37,9 @@ const DEFAULT_CASCADE: ResolvedTintCascade = {
  *  `virtual:refrakt/content` is structurally compatible). */
 interface SiteLike {
 	pages: Array<{ route: { url: string }; tintCascade?: ResolvedTintCascade }>;
+	/** SPEC-035 — the site's configured locale (BCP 47); drives `<html lang>`. */
+	locale?: string;
+	config?: { locale?: string };
 }
 
 export function createThemeHandle(getSite: () => Promise<SiteLike>): Handle {
@@ -56,18 +59,31 @@ export function createThemeHandle(getSite: () => Promise<SiteLike>): Handle {
 		}
 	};
 
+	/** SPEC-035 Zone 8 — the configured document locale, read once (defensively)
+	 *  from the loaded Site; defaults to `'en'`. */
+	const localeForSite = async (): Promise<string> => {
+		try {
+			const site = await getSite();
+			return site.locale ?? site.config?.locale ?? 'en';
+		} catch (_) {
+			return 'en';
+		}
+	};
+
 	return async ({ event, resolve }) => {
 		const cascade = await cascadeForUrl(event.url.pathname);
 		const htmlAttrs = htmlTintAttributes(cascade);
 		const metaScheme = colorSchemeMetaContent(cascade);
+		const lang = await localeForSite();
 
 		return resolve(event, {
 			transformPageChunk: ({ html }) => {
 				let result = html;
-				// Splice the cascade attrs inside the opening <html lang="en"> tag.
-				if (htmlAttrs) {
-					result = result.replace(/<html lang="en">/, `<html lang="en" ${htmlAttrs}>`);
-				}
+				// Splice the cascade attrs inside the opening <html lang> tag and set
+				// the configured locale (SPEC-035 Zone 8). The app-shell ships
+				// `<html lang="en">`; rewrite the value + append tint attrs in one pass.
+				const openTag = `<html lang="${lang}"${htmlAttrs ? ` ${htmlAttrs}` : ''}>`;
+				result = result.replace(/<html lang="en">/, openTag);
 				// Pre-paint script + color-scheme meta just inside <head>, before
 				// any stylesheet, so the saved theme applies before first paint.
 				result = result.replace(

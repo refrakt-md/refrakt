@@ -108,6 +108,17 @@ export interface KnownSectionDefinition {
 	alias?: string[];
 	/** Content model for this section's body. If omitted, uses the parent sectionModel. */
 	model?: StructuralContentModel;
+	/** SPEC-035 Zone 7 — canonical slug for the section wrapper's `data-name`,
+	 *  independent of the source language. When a heading matches this known
+	 *  section, the `<section data-name>` is derived from this slug instead of
+	 *  the (possibly translated) heading text, so CSS selectors and cross-locale
+	 *  anchors stay stable. Falls back to `slugify(canonicalName)` if omitted. */
+	canonicalSlug?: string;
+	/** SPEC-035 Zone 7 — per-locale heading aliases, keyed by BCP 47 locale.
+	 *  When `config.locale` is set, the locale's aliases are matched in addition
+	 *  to the base `alias` list, so an author writing headings in the site locale
+	 *  (`## Akzeptanzkriterien`) still hits the canonical section. */
+	i18nAliases?: Record<string, string[]>;
 }
 
 /** Pattern 2 — children split into sections by heading elements. */

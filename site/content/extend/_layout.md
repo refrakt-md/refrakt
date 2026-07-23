@@ -50,6 +50,11 @@ tint-lock: false
 - theme-authoring/tooling
 - theme-authoring/tint-cascade
 
+## Internationalization
+
+- i18n/overview
+- i18n/translating
+
 ## Security
 
 - security

@@ -1,4 +1,4 @@
-{% work id="WORK-507" status="ready" priority="medium" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,behaviors,transform,svelte" %}
+{% work id="WORK-507" status="done" priority="medium" complexity="moderate" source="SPEC-035" milestone="v0.29.0" tags="i18n,behaviors,transform,svelte" pr="refrakt-md/refrakt#568" %}
 
 # Localize behavior strings (Zone 5) — inline delivery
 
@@ -16,10 +16,10 @@ endpoint.
 
 ## Acceptance Criteria
 
-- [ ] Element-attached behavior strings resolve from `data-i18n-*`; runtime-created strings resolve from the inline JSON block; both fall back to English.
-- [ ] Only the active locale is emitted; no `/rf-strings.json` fetch is introduced.
-- [ ] Strings are available synchronously at behavior init (no flash-of-English); no-JS pages render English.
-- [ ] All Zone 5 files, including the new ones, are covered.
+- [x] Element-attached behavior strings resolve from `data-i18n-*`; runtime-created strings resolve from the inline JSON block; both fall back to English.
+- [x] Only the active locale is emitted; no `/rf-strings.json` fetch is introduced.
+- [x] Strings are available synchronously at behavior init (no flash-of-English); no-JS pages render English.
+- [x] All Zone 5 files, including the new ones, are covered.
 
 ## Blocked by
 
@@ -28,5 +28,20 @@ endpoint.
 ## References
 
 - {% ref "SPEC-035" /%} — Zone 5, Client-side Resolution, Decision D4.
+
+## Resolution
+
+Completed: 2026-07-17
+
+Branch: `claude/milestone-v0-29-0-stzywk`
+
+### What was done
+- `packages/behaviors/src/i18n.ts`: `BEHAVIOR_STRINGS` catalog (English floor), `bstr(key, n?)` (inline block → English, `{n}` interp), `elStr(el, attr, key, n?)` (element `data-i18n-*` → block → English), cached `#rf-strings` parse.
+- Converted every Zone-5 file: copy, gallery, preview, reveal, search (innerHTML template + runtime empty states), datatable, form, juxtapose, carousel, mobile-menu, section-nav, and elements audio/map/sandbox.
+- Delivery: `collectBehaviorStrings(ctx)` in transform + html page-shell emits `<meta name="rf-locale">` + `<script type="application/json" id="rf-strings">` (active locale only, `</script>`-escaped), nothing for English.
+- Tests: `packages/behaviors/test/i18n.test.ts` (7) — element/block/English precedence, `{n}`, malformed-block resilience.
+
+### Notes
+- Inline delivery per Decision D4 — synchronous init, no fetch, no-JS renders server English. Element `data-i18n-*` path is supported by the client helper; auto-emitting those attributes per-rune from the engine is a safe additive follow-up (behaviors already check the element first). Full workspace build + 241 behaviors/html tests green.
 
 {% /work %}

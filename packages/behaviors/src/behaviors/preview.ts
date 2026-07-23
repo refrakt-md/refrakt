@@ -1,4 +1,5 @@
 import type { CleanupFn } from '../types.js';
+import { bstr } from '../i18n.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -117,14 +118,14 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 
 		viewPreviewBtn = document.createElement('button');
 		viewPreviewBtn.className = 'rf-preview__toggle-btn rf-preview__toggle-btn--active';
-		viewPreviewBtn.setAttribute('aria-label', 'Preview');
-		viewPreviewBtn.setAttribute('title', 'Preview');
+		viewPreviewBtn.setAttribute('aria-label', bstr('behavior.preview.preview'));
+		viewPreviewBtn.setAttribute('title', bstr('behavior.preview.preview'));
 		viewPreviewBtn.appendChild(createIcon(ICONS.eye));
 
 		viewCodeBtn = document.createElement('button');
 		viewCodeBtn.className = 'rf-preview__toggle-btn';
-		viewCodeBtn.setAttribute('aria-label', 'View source');
-		viewCodeBtn.setAttribute('title', 'View source');
+		viewCodeBtn.setAttribute('aria-label', bstr('behavior.preview.viewSource'));
+		viewCodeBtn.setAttribute('title', bstr('behavior.preview.viewSource'));
 		viewCodeBtn.appendChild(createIcon(ICONS.code));
 
 		viewToggle.appendChild(viewPreviewBtn);
@@ -170,9 +171,9 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 	themeToggle.className = 'rf-preview__toggle';
 
 	const themeOptions: Array<{ mode: 'auto' | 'light' | 'dark'; label: string; title: string; icon: string }> = [
-		{ mode: 'auto', label: 'Auto', title: 'System preference', icon: ICONS.desktop },
-		{ mode: 'light', label: 'Light', title: 'Light mode', icon: ICONS.sun },
-		{ mode: 'dark', label: 'Dark', title: 'Dark mode', icon: ICONS.moon },
+		{ mode: 'auto', label: bstr('behavior.preview.auto'), title: bstr('behavior.preview.systemPreference'), icon: ICONS.desktop },
+		{ mode: 'light', label: bstr('behavior.preview.light'), title: bstr('behavior.preview.lightMode'), icon: ICONS.sun },
+		{ mode: 'dark', label: bstr('behavior.preview.dark'), title: bstr('behavior.preview.darkMode'), icon: ICONS.moon },
 	];
 
 	const themeButtons: Map<string, HTMLButtonElement> = new Map();
@@ -233,19 +234,19 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 		if (sourceEl) {
 			const panel = document.createElement('div');
 			panel.appendChild(sourceEl);
-			sourceTabs.push({ key: 'markdoc', label: 'Markdoc', panel });
+			sourceTabs.push({ key: 'markdoc', label: bstr('behavior.preview.markdoc'), panel });
 		}
 		if (htmlSourceEl) {
 			const panel = document.createElement('div');
 			panel.appendChild(htmlSourceEl);
-			sourceTabs.push({ key: 'rune', label: 'Rune', panel });
+			sourceTabs.push({ key: 'rune', label: bstr('behavior.preview.rune'), panel });
 		}
 
 		// Themed HTML tab (generated at build time by engine postTransform, with Shiki highlighting)
 		if (themedSourceEl) {
 			const panel = document.createElement('div');
 			panel.appendChild(themedSourceEl);
-			sourceTabs.push({ key: 'html', label: 'HTML', panel });
+			sourceTabs.push({ key: 'html', label: bstr('behavior.preview.html'), panel });
 		}
 
 		activeSourceTab = sourceTabs[0]?.key ?? '';

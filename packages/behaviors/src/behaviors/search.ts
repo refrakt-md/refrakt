@@ -1,4 +1,5 @@
 import type { CleanupFn } from '../types.js';
+import { bstr } from '../i18n.js';
 
 /**
  * Pagefind search behavior for layouts.
@@ -48,19 +49,19 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 		d.innerHTML = `
 			<div class="rf-search-dialog__header">
 				<svg class="rf-search-dialog__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-				<input type="search" class="rf-search-dialog__input" placeholder="Search documentation..." autocomplete="off" spellcheck="false" />
-				<kbd class="rf-search-dialog__esc">Esc</kbd>
+				<input type="search" class="rf-search-dialog__input" placeholder="${escapeAttr(bstr('behavior.search.placeholder'))}" autocomplete="off" spellcheck="false" />
+				<kbd class="rf-search-dialog__esc">${escapeHtml(bstr('behavior.search.esc'))}</kbd>
 			</div>
 			<div class="rf-search-dialog__body">
 				<div class="rf-search-dialog__results"></div>
-				<div class="rf-search-dialog__empty" hidden>No results found.</div>
+				<div class="rf-search-dialog__empty" hidden>${escapeHtml(bstr('behavior.search.noResults'))}</div>
 			</div>
 			<div class="rf-search-dialog__footer">
 				<span class="rf-search-dialog__footer-nav">
-					<kbd>\u2191</kbd><kbd>\u2193</kbd> to navigate
+					<kbd>\u2191</kbd><kbd>\u2193</kbd> ${escapeHtml(bstr('behavior.search.toNavigate'))}
 				</span>
 				<span class="rf-search-dialog__footer-select">
-					<kbd>\u21B5</kbd> to select
+					<kbd>\u21B5</kbd> ${escapeHtml(bstr('behavior.search.toSelect'))}
 				</span>
 			</div>
 		`;
@@ -152,7 +153,7 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 		if (!pf) {
 			resultsContainer.innerHTML = '';
 			if (emptyEl) {
-				emptyEl.textContent = 'Search is not available.';
+				emptyEl.textContent = bstr('behavior.search.unavailable');
 				emptyEl.hidden = false;
 			}
 			return;
@@ -170,7 +171,7 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 			if (results.length === 0) {
 				resultsContainer.innerHTML = '';
 				if (emptyEl) {
-					emptyEl.textContent = 'No results found.';
+					emptyEl.textContent = bstr('behavior.search.noResults');
 					emptyEl.hidden = false;
 				}
 				activeIndex = -1;
@@ -192,7 +193,7 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 		} catch {
 			resultsContainer.innerHTML = '';
 			if (emptyEl) {
-				emptyEl.textContent = 'Search is not available.';
+				emptyEl.textContent = bstr('behavior.search.unavailable');
 				emptyEl.hidden = false;
 			}
 		}

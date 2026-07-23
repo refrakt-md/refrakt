@@ -1,5 +1,6 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 import type { ReadingRegister } from './reading.js';
+import type { LocalizedValue } from './i18n.js';
 
 // ─── SPEC-080: Layout primitive vocabulary ────────────────────────────
 
@@ -117,12 +118,31 @@ export interface MetaField {
 	 *  transforms. Mirrors the legacy `StructureEntry.transform`
 	 *  field. */
 	transform?: 'duration' | 'uppercase' | 'capitalize';
+
+	/** SPEC-035 — explicit i18n key override. By default the field's label
+	 *  resolves through the auto-derived key `{scope}.{block}.{fieldName}`;
+	 *  set this to pin a stable key across a block/field rename. */
+	i18nKey?: string;
 }
 
 /** Configuration for a single rune's identity transform */
 export interface RuneConfig {
 	/** BEM block name (without prefix). E.g., 'hint' → .rf-hint */
 	block: string;
+
+	/** SPEC-035 — i18n key scope for this rune's labels: `'core'` for core
+	 *  runes, else the owning plugin's short name (`'learning'`, `'docs'`, …).
+	 *  Stamped from rune provenance in `assembleThemeConfig`; the engine reads
+	 *  it to derive auto keys `{scope}.{block}.{ref}`. Defaults to `'core'`
+	 *  when unset (e.g. hand-built configs in tests). */
+	scope?: string;
+
+	/** SPEC-035 Zone 6 — enum-as-text display values: modifier values that
+	 *  double as visible text (e.g. a hint `type="warning"` rendered as the
+	 *  capitalized title "Warning"). Maps each raw value to its English display
+	 *  string; the engine resolves `{scope}.{block}.{value}` when the value is
+	 *  shown, and `refrakt i18n extract` enumerates these keys. */
+	i18nEnums?: Record<string, string>;
 
 	/** Parent rune typeof name for grouping in editors.
 	 *  E.g., BentoCell sets parent: 'Bento' so they appear as one group.
@@ -477,6 +497,10 @@ export interface StructureEntry {
 	 *  Use for labels where the value is self-explanatory (IDs, status with sentiment dots). */
 	labelHidden?: boolean;
 
+	/** SPEC-035 — explicit i18n key override for the label. Defaults to the
+	 *  auto-derived key `{scope}.{block}.{ref}`; set to pin a stable key. */
+	i18nKey?: string;
+
 	/** Semantic metadata type — emits `data-meta-type` attribute.
 	 *  Values: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id' */
 	metaType?: 'status' | 'category' | 'quantity' | 'temporal' | 'tag' | 'id';
@@ -625,6 +649,18 @@ export interface ThemeConfig {
 
 	/** Named frame preset definitions (SPEC-086) — media-surface chrome. */
 	frames?: Record<string, FramePresetDefinition>;
+
+	/** SPEC-035 — locale identifier (BCP 47). Defaults to `'en'`. Enables
+	 *  locale-aware string resolution and `Intl` number/duration/currency
+	 *  formatting. Zero-config (unset) leaves output byte-identical to English. */
+	locale?: string;
+
+	/** SPEC-035 — translation strings keyed by auto-derived dotted path
+	 *  (`{scope}.{block}.{ref}`, where scope is `core` / `layout` / `behavior`
+	 *  or a plugin name). Site-level entries take precedence over plugin-shipped
+	 *  and first-party bundles (Decision D5); missing keys fall back to the
+	 *  English literal baked into the config. */
+	strings?: Record<string, LocalizedValue>;
 }
 
 // ─── Layout Transform Types ───────────────────────────────────────────

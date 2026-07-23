@@ -474,6 +474,57 @@ describe('resolveSections', () => {
 		expect(result.sections).toEqual([]);
 	});
 
+	// SPEC-035 Zone 7 — canonicalSlug + i18nAliases
+	const knownModel: SectionsModel = {
+		type: 'sections',
+		sectionHeading: 'heading:2',
+		knownSections: {
+			'Acceptance Criteria': {
+				alias: ['Criteria'],
+				canonicalSlug: 'acceptance-criteria',
+				i18nAliases: { de: ['Akzeptanzkriterien'], 'de-AT': ['Abnahmekriterien'] },
+			},
+		},
+		sectionModel: { type: 'sequence', fields: [{ name: 'body', match: 'any', greedy: true, optional: true }] },
+	};
+
+	it('attaches a language-stable $canonicalSlug for a matched known section', () => {
+		const sections = resolveSections([heading(2, 'Acceptance Criteria'), paragraph('x')], knownModel).sections as any[];
+		expect(sections[0].$canonicalName).toBe('Acceptance Criteria');
+		expect(sections[0].$canonicalSlug).toBe('acceptance-criteria');
+	});
+
+	it('matches a locale i18nAlias heading and still yields the canonical slug', () => {
+		const sections = resolveSections([heading(2, 'Akzeptanzkriterien'), paragraph('x')], knownModel, 'de').sections as any[];
+		expect(sections[0].$canonicalName).toBe('Acceptance Criteria');
+		expect(sections[0].$canonicalSlug).toBe('acceptance-criteria');
+	});
+
+	it('applies BCP-47 region-strip so de-AT also matches de aliases', () => {
+		const s1 = resolveSections([heading(2, 'Akzeptanzkriterien'), paragraph('x')], knownModel, 'de-AT').sections as any[];
+		expect(s1[0].$canonicalName).toBe('Acceptance Criteria');
+		// …and the region-specific alias matches too.
+		const s2 = resolveSections([heading(2, 'Abnahmekriterien'), paragraph('x')], knownModel, 'de-AT').sections as any[];
+		expect(s2[0].$canonicalName).toBe('Acceptance Criteria');
+	});
+
+	it('does not match a locale alias without a configured locale', () => {
+		const sections = resolveSections([heading(2, 'Akzeptanzkriterien'), paragraph('x')], knownModel).sections as any[];
+		expect(sections[0].$canonicalName).toBeUndefined();
+		expect(sections[0].$canonicalSlug).toBeUndefined();
+	});
+
+	it('defaults canonicalSlug to slugify(canonicalName) when not declared', () => {
+		const model: SectionsModel = {
+			type: 'sections',
+			sectionHeading: 'heading:2',
+			knownSections: { 'Blocked By': {} },
+			sectionModel: { type: 'sequence', fields: [{ name: 'body', match: 'any', greedy: true, optional: true }] },
+		};
+		const sections = resolveSections([heading(2, 'Blocked By'), paragraph('x')], model).sections as any[];
+		expect(sections[0].$canonicalSlug).toBe('blocked-by');
+	});
+
 	it('promotes deeper heading level when first heading is shallower', () => {
 		const title = heading(2, 'How it works');
 		const blurb = paragraph('Some intro text');

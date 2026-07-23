@@ -1,6 +1,7 @@
 import type { Schema } from '@markdoc/markdoc';
 import type { Plugin, RuneExtension } from '@refrakt-md/types';
-import type { RuneConfig, RuneProvenance } from '@refrakt-md/transform';
+import type { RuneConfig, RuneProvenance, LocalizedValue } from '@refrakt-md/transform';
+import { selectLocaleBundle } from '@refrakt-md/transform';
 import { Rune, defineRune, runeTagMap } from './rune.js';
 
 /** A loaded plugin with its parsed rune definitions */
@@ -44,6 +45,11 @@ export interface MergedPluginResult {
 	 *  Plugin-vs-plugin collisions throw at merge time; user-config-vs-plugin
 	 *  collisions are handled by the caller (user config wins). */
 	fileRoots: Record<string, string>;
+	/** SPEC-035 — per-locale translation bundles aggregated across all plugins,
+	 *  keyed by BCP 47 locale. Keys are plugin-scoped (`{plugin}.{block}.{ref}`)
+	 *  so plugin-vs-plugin collisions don't occur. Select a locale's dictionary
+	 *  with {@link selectPluginStrings}. */
+	translations: Record<string, Record<string, LocalizedValue>>;
 }
 
 /** Reserved namespace names that cannot be used by user config or plugins. */
@@ -320,6 +326,21 @@ export function mergePlugins(
 		}
 	}
 
+	// SPEC-035 — aggregate per-locale translation bundles across all plugins.
+	// Keys are plugin-scoped so there are no cross-plugin collisions; a later
+	// plugin defining the same key simply wins (order-stable).
+	const translations: Record<string, Record<string, LocalizedValue>> = {};
+	for (const loadedPkg of loaded) {
+		const bundles = loadedPkg.pkg.translations;
+		if (!bundles) continue;
+		for (const [locale, dict] of Object.entries(bundles)) {
+			const target = translations[locale] ?? (translations[locale] = {});
+			for (const [key, value] of Object.entries(dict)) {
+				target[key] = value as LocalizedValue;
+			}
+		}
+	}
+
 	// Merge file roots across plugins. Plugin-vs-plugin collisions throw —
 	// plugins should pick distinct namespace names. User-config wins over
 	// plugin collisions, but that's handled outside this function.
@@ -350,7 +371,22 @@ export function mergePlugins(
 		provenance,
 		fixtures,
 		fileRoots,
+		translations,
 	};
+}
+
+/**
+ * SPEC-035 — select the plugin translation dictionary for a locale, applying
+ * the Decision D5 region-strip fallback (`de-AT` → `de`). Returns the merged
+ * plugin-scoped strings for that locale, or an empty object when no plugin
+ * ships one. The caller merges this *under* the site's `ThemeConfig.strings`
+ * (which always wins) to build the final `LocaleContext.strings`.
+ */
+export function selectPluginStrings(
+	merged: Pick<MergedPluginResult, 'translations'>,
+	locale: string,
+): Record<string, LocalizedValue> {
+	return selectLocaleBundle(merged.translations, locale);
 }
 
 /**

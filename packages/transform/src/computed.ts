@@ -1,6 +1,19 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 import type { LayoutPageData } from './types.js';
 import { isTag, makeTag } from './helpers.js';
+import { resolveLocaleString, type LocaleContext } from './i18n.js';
+
+// ─── SPEC-035 Zone 4: computed-navigation string catalog ──────────────
+
+/** Canonical English computed-navigation strings keyed by their `core.*`
+ *  i18n key. Single source for both the builders below and the
+ *  `refrakt i18n extract` tooling. */
+export const COMPUTED_STRINGS: Record<string, string> = {
+	'core.toc.title': 'On this page',
+	'core.prevNext.previous': 'Previous',
+	'core.prevNext.next': 'Next',
+	'core.versionSwitcher.label': 'Version',
+};
 
 // ─── Helpers (private) ────────────────────────────────────────────────
 
@@ -158,6 +171,7 @@ export function buildToc(
 	headings: Array<{ level: number; text: string; id: string }>,
 	prefix: string,
 	options?: { minLevel?: number; maxLevel?: number },
+	locale?: LocaleContext,
 ): SerializedTag | null {
 	const minLevel = options?.minLevel ?? 2;
 	const maxLevel = options?.maxLevel ?? 3;
@@ -178,7 +192,9 @@ export function buildToc(
 		class: `${prefix}-on-this-page`,
 		'data-scrollspy': '',
 	}, [
-		makeTag('p', { class: `${prefix}-on-this-page__title` }, ['On this page']),
+		makeTag('p', { class: `${prefix}-on-this-page__title` }, [
+			locale ? resolveLocaleString(locale, 'core.toc.title', COMPUTED_STRINGS['core.toc.title']) : COMPUTED_STRINGS['core.toc.title'],
+		]),
 		makeTag('ul', { class: `${prefix}-on-this-page__list` }, items),
 	]);
 }
@@ -206,6 +222,7 @@ export function buildPrevNext(
 	currentUrl: string,
 	pages: LayoutPageData['pages'],
 	prefix: string,
+	locale?: LocaleContext,
 ): SerializedTag | null {
 	const slugs = collectNavOrder(navContent);
 	const currentSlug = (currentUrl || '').split('/').filter(Boolean).pop() || '';
@@ -231,7 +248,9 @@ export function buildPrevNext(
 			class: `${prefix}-prev-next__prev`,
 			href: prevPage.url,
 		}, [
-			makeTag('span', { class: `${prefix}-prev-next__label` }, ['Previous']),
+			makeTag('span', { class: `${prefix}-prev-next__label` }, [
+				locale ? resolveLocaleString(locale, 'core.prevNext.previous', COMPUTED_STRINGS['core.prevNext.previous']) : COMPUTED_STRINGS['core.prevNext.previous'],
+			]),
 			makeTag('span', { class: `${prefix}-prev-next__title` }, [prevPage.title]),
 		]));
 	}
@@ -241,7 +260,9 @@ export function buildPrevNext(
 			class: `${prefix}-prev-next__next`,
 			href: nextPage.url,
 		}, [
-			makeTag('span', { class: `${prefix}-prev-next__label` }, ['Next']),
+			makeTag('span', { class: `${prefix}-prev-next__label` }, [
+				locale ? resolveLocaleString(locale, 'core.prevNext.next', COMPUTED_STRINGS['core.prevNext.next']) : COMPUTED_STRINGS['core.prevNext.next'],
+			]),
 			makeTag('span', { class: `${prefix}-prev-next__title` }, [nextPage.title]),
 		]));
 	}
@@ -269,6 +290,7 @@ export function buildVersionSwitcher(
 	pages: LayoutPageData['pages'],
 	frontmatter: Record<string, unknown>,
 	prefix: string,
+	locale?: LocaleContext,
 ): SerializedTag | null {
 	const version = frontmatter.version as string | undefined;
 	const versionGroup = frontmatter.versionGroup as string | undefined;
@@ -297,7 +319,9 @@ export function buildVersionSwitcher(
 		class: `${prefix}-version-switcher`,
 		'data-version-switcher': '',
 	}, [
-		makeTag('label', { class: `${prefix}-version-switcher__label` }, ['Version']),
+		makeTag('label', { class: `${prefix}-version-switcher__label` }, [
+			locale ? resolveLocaleString(locale, 'core.versionSwitcher.label', COMPUTED_STRINGS['core.versionSwitcher.label']) : COMPUTED_STRINGS['core.versionSwitcher.label'],
+		]),
 		makeTag('select', { class: `${prefix}-version-switcher__select` }, options),
 	]);
 }
