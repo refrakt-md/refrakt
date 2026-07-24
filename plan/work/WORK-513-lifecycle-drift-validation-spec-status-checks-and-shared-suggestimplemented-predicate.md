@@ -1,4 +1,4 @@
-{% work id="WORK-513" status="ready" priority="high" complexity="moderate" source="SPEC-119" tags="plan, validation, lifecycle, dx" milestone="v0.30.0" %}
+{% work id="WORK-513" status="in-progress" priority="high" complexity="moderate" source="SPEC-119" tags="plan, validation, lifecycle, dx" milestone="v0.30.0" %}
 
 # Lifecycle-drift validation — spec-status checks and shared suggestImplemented predicate
 

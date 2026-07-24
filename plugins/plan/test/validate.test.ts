@@ -259,7 +259,7 @@ describe('validate — completed milestones with open items', () => {
 		writeMd('milestone/m.md', '{% milestone name="v1.0" status="complete" %}\n# v1.0\n{% /milestone %}');
 		writeMd('work/a.md', '{% work id="WORK-001" status="in-progress" milestone="v1.0" %}\n# A\n{% /work %}');
 		const result = runValidate({ dir: TMP });
-		const issues = result.issues.filter(i => i.type === 'complete-milestone-open-item');
+		const issues = result.issues.filter(i => i.type === 'milestone-complete-with-open-work');
 		expect(issues).toHaveLength(1);
 		expect(issues[0].severity).toBe('warning');
 		expect(issues[0].message).toContain('v1.0');
@@ -270,7 +270,23 @@ describe('validate — completed milestones with open items', () => {
 		writeMd('milestone/m.md', '{% milestone name="v1.0" status="complete" %}\n# v1.0\n{% /milestone %}');
 		writeMd('work/a.md', '{% work id="WORK-001" status="done" milestone="v1.0" %}\n# A\n{% /work %}');
 		const result = runValidate({ dir: TMP });
-		const issues = result.issues.filter(i => i.type === 'complete-milestone-open-item');
+		const issues = result.issues.filter(i => i.type === 'milestone-complete-with-open-work');
+		expect(issues).toHaveLength(0);
+	});
+
+	it('does not warn about a cancelled/superseded member (terminal, not open)', () => {
+		writeMd('milestone/m.md', '{% milestone name="v1.0" status="complete" %}\n# v1.0\n{% /milestone %}');
+		writeMd('work/a.md', '{% work id="WORK-001" status="cancelled" milestone="v1.0" %}\n# A\n{% /work %}');
+		writeMd('work/b.md', '{% work id="WORK-002" status="superseded" supersedes="WORK-001" milestone="v1.0" %}\n# B\n{% /work %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'milestone-complete-with-open-work');
+		expect(issues).toHaveLength(0);
+	});
+
+	it('does not warn for a complete milestone with zero members', () => {
+		writeMd('milestone/m.md', '{% milestone name="v1.0" status="complete" %}\n# v1.0\n{% /milestone %}');
+		const result = runValidate({ dir: TMP });
+		const issues = result.issues.filter(i => i.type === 'milestone-complete-with-open-work');
 		expect(issues).toHaveLength(0);
 	});
 });

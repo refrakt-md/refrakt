@@ -1,4 +1,4 @@
-{% milestone name="v0.30.0" status="planning" %}
+{% milestone name="v0.30.0" status="active" %}
 
 # v0.30.0 — Plan lifecycle validation & render-stack removal
 
