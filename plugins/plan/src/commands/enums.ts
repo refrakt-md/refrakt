@@ -159,10 +159,9 @@ export function specStatusLags(specStatus: string, linkedWorkStatuses: readonly 
 /**
  * Dashboard "actionable-first" status display order (SPEC-072). Diverges from
  * each rune's lifecycle order — blocked/in-progress bubble to the top, terminal
- * states sink to the tail. Shared by the plugin's `theme.orderings` and the
- * bespoke `plan build` render-pipeline so collection/aggregate groups land in
- * the same order on both paths. Covers every canonical status so no group is
- * left unsorted.
+ * states sink to the tail. Consumed by the plugin's `theme.orderings`
+ * (`src/index.ts`) so collection/aggregate groups on the plan site are sorted
+ * consistently. Covers every canonical status so no group is left unsorted.
  */
 export const WORK_STATUS_DISPLAY_ORDER: readonly string[] = [
 	'blocked', 'in-progress', 'review', 'ready', 'pending', 'draft', 'done', 'cancelled', 'superseded',

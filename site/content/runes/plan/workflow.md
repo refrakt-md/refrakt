@@ -85,14 +85,15 @@ The `plan-progress` and `plan-activity` runes render these views in your documen
 
 ## Plan dashboard
 
-For a visual overview, use the built-in dashboard:
+A plan site is an ordinary refrakt site. To browse your plan as a visual dashboard — with status indicators, cross-references, and progress tracking — scaffold a deployable site whose content *is* your plan, then use the standard adapter dev server and build:
 
 ```bash
-# Development mode with hot reload
-refrakt plan serve --open
+# Scaffold a standalone plan site
+npx create-refrakt --type plan
 
-# Static build for hosting
-refrakt plan build --out dist/plan
+# Then, inside the generated project
+npm run dev     # live dashboard while you work
+npm run build   # static output for hosting
 ```
 
-The dashboard renders all your plan entities as browsable pages with status indicators, cross-references, and progress tracking.
+You can also add plan routes to a refrakt site you already run. See [Publish a Plan Site](/plan/docs/plan-site) for both paths.

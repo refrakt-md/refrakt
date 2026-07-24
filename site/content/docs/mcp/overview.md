@@ -29,13 +29,12 @@ The detection result is itself exposed as `refrakt://detect` so an agent can ask
 
 ## Excluded commands
 
-Some commands are intentionally not exposed via MCP because they don't fit the request/response model:
+Some operations are intentionally not exposed via MCP because they don't fit the request/response model:
 
-- `refrakt plan serve` — long-running dev server.
-- `refrakt plan build` — multi-file static site generation.
 - `refrakt write`, `refrakt edit`, `refrakt scaffold-css` — interactive or large filesystem writes.
+- Long-running or whole-site operations — running an adapter dev server (`npm run dev`) or producing a full site build — stay outside the MCP surface for the same reason.
 
-These remain available via the CLI; agents that need them shell out the old way.
+These remain available via the CLI and the adapter tooling; agents that need them shell out the old way.
 
 ## Why use it?
 

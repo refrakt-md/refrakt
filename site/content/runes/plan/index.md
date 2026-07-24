@@ -56,7 +56,7 @@ These runes use the cross-page pipeline to build site-wide views from your plan 
 
 ### CLI commands
 
-The plan package extends the `refrakt` CLI with 9 subcommands under `refrakt plan`. See the full [CLI reference](/runes/plan/cli).
+The plan package extends the `refrakt` CLI with subcommands under `refrakt plan`. See the full [CLI reference](/runes/plan/cli).
 
 | Command | Purpose |
 |---------|---------|
@@ -67,8 +67,8 @@ The plan package extends the `refrakt` CLI with 9 subcommands under `refrakt pla
 | `refrakt plan validate` | Check plan structure for errors |
 | `refrakt plan init` | Initialize plan directory structure |
 | `refrakt plan history` | View git-derived entity and project history |
-| `refrakt plan serve` | Browse plan as an interactive dashboard |
-| `refrakt plan build` | Generate a static plan site |
+
+To view or publish your plan as a site, scaffold one with `create-refrakt --type plan` and use the standard adapter dev server and build — see [Publish a Plan Site](/plan/docs/plan-site).
 
 ### Cross-page pipeline
 

@@ -28,7 +28,9 @@ This project ships `@refrakt-md/mcp`, a Model Context Protocol server that wraps
 - `refrakt://plan/<type>/<id>` — Markdoc source for a single entity (e.g., `refrakt://plan/work/WORK-159`).
 - `refrakt://plan/status` — plan health summary.
 
-**Fall back to the CLI** for things MCP intentionally doesn't expose: long-running commands (`refrakt plan serve`, `refrakt plan build`), `refrakt write`, `refrakt edit`. The shell examples below remain canonical for those, and the CLI keeps working when MCP isn't registered (e.g., outside Claude Code).
+**Fall back to the CLI** for things MCP intentionally doesn't expose: long-running commands (the adapter dev server), `refrakt write`, `refrakt edit`. The shell examples below remain canonical for those, and the CLI keeps working when MCP isn't registered (e.g., outside Claude Code).
+
+> Note: to render or publish plan content, a plan directory is now an ordinary refrakt site — scaffold one with `create-refrakt --type plan` (or add `entityRoutes`/`collection` to an existing site) and use the standard adapter dev server / `npm run build`. The bespoke `refrakt plan serve` / `refrakt plan build` commands were removed in the v0.30.0 line (SPEC-120); the authoring CLI (`create`/`next`/`update`/`validate`/`status`/`migrate`/`next-id`/`history`/`init`) is unchanged.
 
 If MCP appears unavailable in your session, run `mcp__refrakt__refrakt.detect` first to confirm the server is connected and surfaces the expected tools.
 

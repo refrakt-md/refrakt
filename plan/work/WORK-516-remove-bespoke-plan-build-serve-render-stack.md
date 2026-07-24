@@ -1,4 +1,4 @@
-{% work id="WORK-516" status="ready" priority="medium" complexity="moderate" source="SPEC-120" tags="plan, cli, deprecation, cleanup" milestone="v0.30.0" %}
+{% work id="WORK-516" status="in-progress" priority="medium" complexity="moderate" source="SPEC-120" tags="plan, cli, deprecation, cleanup" milestone="v0.30.0" %}
 
 # Remove bespoke plan build/serve render stack
 
