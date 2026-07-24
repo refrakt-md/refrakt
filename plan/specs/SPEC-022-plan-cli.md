@@ -1,4 +1,4 @@
-{% spec id="SPEC-022" status="accepted" version="1.0" tags="plan,cli" %}
+{% spec id="SPEC-022" status="implemented" version="1.0" tags="plan,cli" %}
 
 # Plan CLI
 

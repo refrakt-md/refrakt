@@ -1,4 +1,4 @@
-{% spec id="SPEC-069" status="draft" tags="content, routing, plugins, config, registry" %}
+{% spec id="SPEC-069" status="shipped" tags="content, routing, plugins, config, registry" released-in="v0.16.0" %}
 
 # Plugin-contributed routes & declarative entity routing
 

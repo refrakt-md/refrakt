@@ -1,4 +1,4 @@
-{% spec id="SPEC-084" status="draft" tags="composability,engine,runes,dx" %}
+{% spec id="SPEC-084" status="accepted" tags="composability,engine,runes,dx" %}
 
 # Rune composability contract
 

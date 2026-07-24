@@ -1,4 +1,4 @@
-{% spec id="SPEC-003" status="accepted" tags="runes, content-model" %}
+{% spec id="SPEC-003" status="implemented" tags="runes, content-model" %}
 
 # Declarative Content Model — Specification
 

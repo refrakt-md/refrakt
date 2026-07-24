@@ -1,4 +1,4 @@
-{% spec id="SPEC-049" status="accepted" tags="plan, traceability, ai-workflow" %}
+{% spec id="SPEC-049" status="shipped" tags="plan, traceability, ai-workflow" released-in="v0.28.0" %}
 
 # Spec lifecycle and PR linkage
 

@@ -1,4 +1,4 @@
-{% spec id="SPEC-081" status="draft" source="SPEC-080" tags="theme, runes, contract, structure, assembly, transform, engine, declarative, grouping" %}
+{% spec id="SPEC-081" status="shipped" source="SPEC-080" tags="theme, runes, contract, structure, assembly, transform, engine, declarative, grouping" released-in="v0.18.0" %}
 
 # Declarative structure assembly
 

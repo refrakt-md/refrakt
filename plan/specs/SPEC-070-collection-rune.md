@@ -1,4 +1,4 @@
-{% spec id="SPEC-070" status="draft" tags="runes, registry, listing, core" %}
+{% spec id="SPEC-070" status="shipped" tags="runes, registry, listing, core" released-in="v0.16.0" %}
 
 # Collection rune
 

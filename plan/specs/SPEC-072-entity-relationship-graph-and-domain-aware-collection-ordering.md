@@ -1,4 +1,4 @@
-{% spec id="SPEC-072" status="draft" tags="collection, relationships, registry, ordering, pipeline, plan" source="SPEC-070" %}
+{% spec id="SPEC-072" status="shipped" tags="collection, relationships, registry, ordering, pipeline, plan" source="SPEC-070" released-in="v0.16.0" %}
 
 # Entity relationship graph and domain-aware collection ordering
 

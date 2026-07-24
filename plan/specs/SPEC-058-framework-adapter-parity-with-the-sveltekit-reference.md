@@ -1,4 +1,4 @@
-{% spec id="SPEC-058" status="draft" tags="frameworks, adapters, astro, nuxt, next, eleventy, html, tokens, seo" %}
+{% spec id="SPEC-058" status="shipped" tags="frameworks, adapters, astro, nuxt, next, eleventy, html, tokens, seo" released-in="v0.14.4" %}
 
 # Framework adapter parity with the SvelteKit reference
 

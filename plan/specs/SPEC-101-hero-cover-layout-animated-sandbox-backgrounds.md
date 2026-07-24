@@ -1,4 +1,4 @@
-{% spec id="SPEC-101" status="accepted" tags="layout,lumina,marketing,sandbox,engine,docs,showcase" %}
+{% spec id="SPEC-101" status="shipped" tags="layout,lumina,marketing,sandbox,engine,docs,showcase" released-in="v0.21.0" %}
 
 # Hero cover layout — animated sandbox backgrounds
 

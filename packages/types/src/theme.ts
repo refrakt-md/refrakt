@@ -107,6 +107,15 @@ export interface SiteConfig {
 	icons?: Record<string, string>;
 	/** Plugins to merge into this site's ThemeConfig (runes, layouts, hooks, etc.) */
 	plugins?: string[];
+	/** SPEC-035 — active locale (BCP 47, e.g. `'de'`). Selects first-party and
+	 *  plugin translation bundles and drives locale-aware formatting. Defaults to
+	 *  `'en'` (zero-config English). */
+	locale?: string;
+	/** SPEC-035 — site-level translation overrides, keyed by the auto-derived
+	 *  i18n key (`{scope}.{block}.{ref}`). Highest precedence — these win over
+	 *  first-party and plugin bundles (Decision D5). Values are `string` or a
+	 *  CLDR plural-category map. */
+	strings?: Record<string, string | Record<string, string>>;
 	/** Project-level tint presets — merged after theme tints (last wins).
 	 *  Field shape matches `TintDefinition` from `@refrakt-md/transform` per
 	 *  SPEC-053; `Record<string, unknown>` is used here to avoid a cross-package

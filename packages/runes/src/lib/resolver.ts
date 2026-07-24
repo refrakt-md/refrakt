@@ -335,19 +335,40 @@ function applyHeadingExtract(
  * Matching is case-insensitive against canonical names and aliases.
  * Returns the canonical name and definition, or undefined if no match.
  */
+/** Kebab-case a canonical section name into a language-stable slug (matches the
+ *  plan `slugify` semantics for the ASCII canonical names). */
+function slugifyCanonical(text: string): string {
+	return text
+		.toLowerCase()
+		.trim()
+		.replace(/[^\w\s-]/g, '')
+		.replace(/[\s_]+/g, '-')
+		.replace(/-+/g, '-')
+		.replace(/^-|-$/g, '');
+}
+
 function matchKnownSection(
 	headingText: string,
 	knownSections: Record<string, KnownSectionDefinition>,
+	locale?: string,
 ): { canonicalName: string; definition: KnownSectionDefinition } | undefined {
 	const normalized = headingText.toLowerCase().trim();
+	// SPEC-035 Zone 7 — when a locale is configured, its `i18nAliases` are matched
+	// in addition to the base `alias` list (BCP 47 region-strip, `de-AT`→`de`).
+	const localeCandidates = locale
+		? locale.split('-').map((_, i, parts) => parts.slice(0, parts.length - i).join('-'))
+		: [];
 
 	for (const [canonicalName, definition] of Object.entries(knownSections)) {
 		if (canonicalName.toLowerCase() === normalized) {
 			return { canonicalName, definition };
 		}
-		if (definition.alias) {
-			for (const alias of definition.alias) {
-				if (alias.toLowerCase() === normalized) {
+		if (definition.alias?.some(a => a.toLowerCase() === normalized)) {
+			return { canonicalName, definition };
+		}
+		if (definition.i18nAliases) {
+			for (const tag of localeCandidates) {
+				if (definition.i18nAliases[tag]?.some(a => a.toLowerCase() === normalized)) {
 					return { canonicalName, definition };
 				}
 			}
@@ -368,6 +389,7 @@ function matchKnownSection(
 export function resolveSections(
 	children: Node[],
 	model: SectionsModel,
+	locale?: string,
 ): ResolvedContent {
 	// 1. Determine heading level
 	const headingSpec = model.sectionHeading;
@@ -492,15 +514,23 @@ export function resolveSections(
 
 		// Resolve knownSections: match heading against canonical names and aliases
 		const knownMatch = model.knownSections
-			? matchKnownSection(headingText, model.knownSections)
+			? matchKnownSection(headingText, model.knownSections, locale)
 			: undefined;
 		const sectionModel = knownMatch?.definition.model ?? model.sectionModel;
 		const bodyResolved = resolve(section.body, sectionModel);
+
+		// SPEC-035 Zone 7 — attach the language-stable slug for the section
+		// wrapper's `data-name`: an explicit `canonicalSlug` if declared, else the
+		// slugified canonical name. `buildSections` prefers this over the heading text.
+		const canonicalSlug = knownMatch
+			? (knownMatch.definition.canonicalSlug ?? slugifyCanonical(knownMatch.canonicalName))
+			: undefined;
 
 		return {
 			$heading: headingText,
 			$headingNode: section.headingNode,
 			...(knownMatch ? { $canonicalName: knownMatch.canonicalName } : {}),
+			...(canonicalSlug ? { $canonicalSlug: canonicalSlug } : {}),
 			...Object.fromEntries(
 				Object.entries(extracted).map(([k, v]) => [`$${k}`, v]),
 			),
@@ -720,22 +750,23 @@ export function resolve(
 	children: Node[],
 	model: ContentModel,
 	attributes?: Record<string, unknown>,
+	locale?: string,
 ): ResolvedContent {
 	// Handle conditional models
 	if (isConditional(model)) {
 		for (const branch of model.when) {
 			if (evaluateCondition(branch.condition, children, attributes ?? {})) {
-				return resolve(children, branch.model, attributes);
+				return resolve(children, branch.model, attributes, locale);
 			}
 		}
-		return resolve(children, model.default, attributes);
+		return resolve(children, model.default, attributes, locale);
 	}
 
 	switch (model.type) {
 		case 'sequence':
 			return resolveSequence(children, (model as SequenceModel).fields);
 		case 'sections':
-			return resolveSections(children, model as SectionsModel);
+			return resolveSections(children, model as SectionsModel, locale);
 		case 'delimited':
 			return resolveDelimited(children, model as DelimitedModel);
 		case 'custom':
@@ -753,8 +784,9 @@ export function resolveContentModel(
 	children: Node[],
 	model: ContentModel,
 	attributes?: Record<string, unknown>,
+	locale?: string,
 ): ResolveResult {
 	const { filtered, tintNode, bgNode } = extractSpecialTags(children);
-	const content = resolve(filtered, model, attributes);
+	const content = resolve(filtered, model, attributes, locale);
 	return { content, tintNode, bgNode };
 }

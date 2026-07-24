@@ -1,4 +1,4 @@
-{% spec id="SPEC-050" status="draft" tags="branding, design, logo" %}
+{% spec id="SPEC-050" status="shipped" tags="branding, design, logo" released-in="v0.14.0" %}
 
 # Refrakt Brand Logo — Prism Redesign
 

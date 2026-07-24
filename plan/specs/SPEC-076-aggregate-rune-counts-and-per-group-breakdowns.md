@@ -1,4 +1,4 @@
-{% spec id="SPEC-076" status="draft" tags="aggregate, collection, registry, postprocess, counts, runes" source="SPEC-070" %}
+{% spec id="SPEC-076" status="accepted" tags="aggregate, collection, registry, postprocess, counts, runes" source="SPEC-070" %}
 
 # Aggregate rune — counts and per-group breakdowns from the registry
 

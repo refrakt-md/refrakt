@@ -2,7 +2,7 @@
 export { createTransform } from './engine.js';
 
 // Layout transform
-export { layoutTransform } from './layout.js';
+export { layoutTransform, LAYOUT_STRINGS } from './layout.js';
 
 // Computed content builders
 export { buildBreadcrumb, buildToc, buildPrevNext, buildVersionSwitcher } from './computed.js';
@@ -37,6 +37,25 @@ export { extractSelectors } from './selectors.js';
 export { mergeThemeConfig, applyRuneExtensions } from './merge.js';
 export { READING_REGISTERS, DEFAULT_READING, READING_CAPABILITIES, resolveReading, coerceRegister } from './reading.js';
 export type { ReadingRegister, ReadingResolutionInput } from './reading.js';
+
+// Locale-aware string resolution (SPEC-035)
+export {
+	DEFAULT_LOCALE,
+	EN_LOCALE_CONTEXT,
+	normalizeLocale,
+	resolveDocumentLang,
+	createLocaleContext,
+	localeFallbackChain,
+	resolveLocaleString,
+	resolvePluralString,
+	selectLocaleBundle,
+	mergeLocaleStrings,
+	collectBehaviorStrings,
+} from './i18n.js';
+export type { LocalizedValue, PluralMap, LocaleContext } from './i18n.js';
+export { extractI18nKeys, checkI18nBundle } from './i18n-extract.js';
+export type { I18nCheckResult, I18nCoverageEntry } from './i18n-extract.js';
+export { COMPUTED_STRINGS } from './computed.js';
 export type { ThemeConfigOverrides, RuneConfigExtension } from './merge.js';
 
 // GitHub source URL builder (SPEC-078) — used by file-ref to produce

@@ -1,4 +1,5 @@
 import type { CleanupFn } from '../types.js';
+import { elStr } from '../i18n.js';
 
 /**
  * Reveal behavior for `[data-rune="reveal"]`.
@@ -20,12 +21,12 @@ export function revealBehavior(el: HTMLElement): CleanupFn {
 	// Create Continue button
 	const nextBtn = document.createElement('button');
 	nextBtn.className = 'rf-reveal__next';
-	nextBtn.textContent = 'Continue';
+	nextBtn.textContent = elStr(el, 'data-i18n-continue', 'behavior.reveal.continue');
 
 	// Create Start Over button
 	const resetBtn = document.createElement('button');
 	resetBtn.className = 'rf-reveal__reset';
-	resetBtn.textContent = 'Start over';
+	resetBtn.textContent = elStr(el, 'data-i18n-start-over', 'behavior.reveal.startOver');
 
 	function render() {
 		for (let i = 0; i < steps.length; i++) {

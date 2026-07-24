@@ -9,6 +9,7 @@
  * builds the full player UI.
  */
 import { SafeHTMLElement } from './ssr-safe.js';
+import { bstr } from '../i18n.js';
 
 interface TrackData {
 	src: string;
@@ -223,7 +224,7 @@ export class RfAudio extends SafeHTMLElement {
 		this.playBtn = document.createElement('button');
 		this.playBtn.className = 'rf-audio-player__play';
 		this.playBtn.type = 'button';
-		this.playBtn.setAttribute('aria-label', 'Play');
+		this.playBtn.setAttribute('aria-label', bstr('behavior.audio.play'));
 		this.playBtn.innerHTML = PLAY_ICON;
 		this.playBtn.addEventListener('click', () => this.togglePlayPause());
 		if (!track.src) this.playBtn.disabled = true;
@@ -239,7 +240,7 @@ export class RfAudio extends SafeHTMLElement {
 		this.progressContainer = document.createElement('div');
 		this.progressContainer.className = 'rf-audio-player__progress';
 		this.progressContainer.setAttribute('role', 'slider');
-		this.progressContainer.setAttribute('aria-label', 'Seek');
+		this.progressContainer.setAttribute('aria-label', bstr('behavior.audio.seek'));
 		this.progressContainer.setAttribute('aria-valuemin', '0');
 		this.progressContainer.setAttribute('aria-valuemax', '100');
 		this.progressContainer.setAttribute('aria-valuenow', '0');
@@ -532,7 +533,7 @@ export class RfAudio extends SafeHTMLElement {
 	private updatePlayButton() {
 		if (!this.playBtn) return;
 		this.playBtn.innerHTML = this.isPlaying ? PAUSE_ICON : PLAY_ICON;
-		this.playBtn.setAttribute('aria-label', this.isPlaying ? 'Pause' : 'Play');
+		this.playBtn.setAttribute('aria-label', this.isPlaying ? bstr('behavior.audio.pause') : bstr('behavior.audio.play'));
 	}
 
 	private loadTrack(index: number, autoplay = false) {

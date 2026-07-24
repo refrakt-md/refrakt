@@ -1,4 +1,5 @@
 import type { CleanupFn } from '../types.js';
+import { bstr } from '../i18n.js';
 
 /**
  * Gallery behavior for `[data-rune="gallery"]`.
@@ -47,7 +48,7 @@ function setupLightbox(el: HTMLElement): CleanupFn | void {
 		overlay.className = 'rf-gallery__lightbox';
 		overlay.setAttribute('role', 'dialog');
 		overlay.setAttribute('aria-modal', 'true');
-		overlay.setAttribute('aria-label', 'Image lightbox');
+		overlay.setAttribute('aria-label', bstr('behavior.gallery.lightbox'));
 
 		const img = document.createElement('img');
 		img.src = getImageSrc(items[currentIndex]);
@@ -55,17 +56,17 @@ function setupLightbox(el: HTMLElement): CleanupFn | void {
 
 		const closeBtn = document.createElement('button');
 		closeBtn.className = 'rf-gallery__lightbox-close';
-		closeBtn.setAttribute('aria-label', 'Close lightbox');
+		closeBtn.setAttribute('aria-label', bstr('behavior.gallery.close'));
 		closeBtn.textContent = '\u00D7';
 
 		const prevBtn = document.createElement('button');
 		prevBtn.className = 'rf-gallery__lightbox-nav rf-gallery__lightbox-nav--prev';
-		prevBtn.setAttribute('aria-label', 'Previous image');
+		prevBtn.setAttribute('aria-label', bstr('behavior.gallery.previous'));
 		prevBtn.textContent = '\u2039';
 
 		const nextBtn = document.createElement('button');
 		nextBtn.className = 'rf-gallery__lightbox-nav rf-gallery__lightbox-nav--next';
-		nextBtn.setAttribute('aria-label', 'Next image');
+		nextBtn.setAttribute('aria-label', bstr('behavior.gallery.next'));
 		nextBtn.textContent = '\u203A';
 
 		overlay.appendChild(img);
@@ -121,7 +122,7 @@ function setupLightbox(el: HTMLElement): CleanupFn | void {
 		item.addEventListener('click', handler);
 		item.setAttribute('tabindex', '0');
 		item.setAttribute('role', 'button');
-		item.setAttribute('aria-label', getImageAlt(item) || `View image ${i + 1}`);
+		item.setAttribute('aria-label', getImageAlt(item) || bstr('behavior.gallery.viewImage', i + 1));
 		itemHandlers.push([item, handler]);
 	});
 

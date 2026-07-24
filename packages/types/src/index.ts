@@ -41,6 +41,7 @@ export type {
   PluginAttribute,
   RuneExtension,
   PluginThemeConfig,
+  PluginLocalizedValue,
 } from './package.js';
 
 // Serialized tree types

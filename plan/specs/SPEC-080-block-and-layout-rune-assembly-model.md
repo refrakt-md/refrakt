@@ -1,4 +1,4 @@
-{% spec id="SPEC-080" status="draft" source="SPEC-079" tags="theme, runes, structure, metadata, blocks, layout, bar, definition-list, eyebrow, api, recipe, lumina" %}
+{% spec id="SPEC-080" status="shipped" source="SPEC-079" tags="theme, runes, structure, metadata, blocks, layout, bar, definition-list, eyebrow, api, recipe, lumina" released-in="v0.17.0" %}
 
 # Block-and-layout rune assembly model
 

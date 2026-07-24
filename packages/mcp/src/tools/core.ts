@@ -84,6 +84,32 @@ export const contractsTool: McpTool = {
 };
 
 // ----------------------------------------------------------------------------
+// refrakt.i18n_extract — auto-derived i18n keys + English defaults (SPEC-035)
+// ----------------------------------------------------------------------------
+
+export const i18nExtractTool: McpTool = {
+	name: 'refrakt.i18n_extract',
+	description:
+		'Emit every derivable framework i18n key with its English default as a JSON dictionary (SPEC-035): meta-field/structure labels (auto-derived {scope}.{block}.{ref}), layout chrome (layout.*), computed navigation (core.*), and enum-as-text values. The same key→value shape used by translation files, so an agent can bootstrap a <locale>.json bundle from it.',
+	inputSchema: {
+		type: 'object',
+		properties: {
+			site: siteProp,
+		},
+		additionalProperties: false,
+	},
+	async handler(input, ctx) {
+		const o = input as { site?: string };
+		const args = ['i18n', 'extract'];
+		if (o.site) args.push('--site', o.site);
+		const stdout = invokeCli(args, ctx.cwd);
+		const start = stdout.indexOf('{');
+		if (start === -1) throw new Error('i18n extract produced no JSON output');
+		return JSON.parse(stdout.slice(start));
+	},
+};
+
+// ----------------------------------------------------------------------------
 // refrakt.inspect — see the identity transform output for a rune
 // ----------------------------------------------------------------------------
 
@@ -175,6 +201,7 @@ export const CORE_TOOLS: McpTool[] = [
 	pluginsListTool,
 	referenceTool,
 	contractsTool,
+	i18nExtractTool,
 	inspectTool,
 	inspectListTool,
 ];

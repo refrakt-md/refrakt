@@ -1,4 +1,4 @@
-{% spec id="SPEC-041" status="accepted" version="1.0" tags="cli, runes, ai-workflow, onboarding" %}
+{% spec id="SPEC-041" status="implemented" version="1.0" tags="cli, runes, ai-workflow, onboarding" %}
 
 # Agent Rune Reference
 

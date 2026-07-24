@@ -1,4 +1,4 @@
-{% spec id="SPEC-065" status="draft" tags="runes, xref, pipeline, config, core" %}
+{% spec id="SPEC-065" status="shipped" tags="runes, xref, pipeline, config, core" released-in="v0.15.0" %}
 
 # Configurable xref resolution
 

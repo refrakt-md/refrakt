@@ -1,4 +1,5 @@
 import type { CleanupFn } from '../types.js';
+import { bstr } from '../i18n.js';
 
 interface RowData {
 	el: HTMLTableRowElement;
@@ -75,7 +76,7 @@ export function datatableBehavior(el: HTMLElement): CleanupFn {
 
 		searchInput = document.createElement('input');
 		searchInput.type = 'search';
-		searchInput.placeholder = 'Filter rows...';
+		searchInput.placeholder = bstr('behavior.datatable.filter');
 		searchInput.className = 'rf-datatable__input';
 		toolbar.appendChild(searchInput);
 
@@ -129,14 +130,14 @@ export function datatableBehavior(el: HTMLElement): CleanupFn {
 
 		prevBtn = document.createElement('button');
 		prevBtn.className = 'rf-datatable__page-btn';
-		prevBtn.innerHTML = '&larr; Prev';
+		prevBtn.textContent = `← ${bstr('behavior.datatable.prev')}`;
 
 		pageInfo = document.createElement('span');
 		pageInfo.className = 'rf-datatable__page-info';
 
 		nextBtn = document.createElement('button');
 		nextBtn.className = 'rf-datatable__page-btn';
-		nextBtn.innerHTML = 'Next &rarr;';
+		nextBtn.textContent = `${bstr('behavior.datatable.next')} →`;
 
 		pagination.appendChild(prevBtn);
 		pagination.appendChild(pageInfo);

@@ -98,6 +98,20 @@ describe('assembleThemeConfig', () => {
 		expect(result.provenance['Hint']).toEqual({ qualifiedId: 'core:Hint', source: 'core' });
 	});
 
+	it('stamps i18n scope on plugin runes from provenance (SPEC-035)', () => {
+		const packageProvenance: Record<string, RuneProvenance> = {
+			Hero: { qualifiedId: 'marketing:Hero', source: 'plugin', pluginName: 'marketing', origin: '@refrakt-md/marketing' },
+		};
+		const pluginRunes: Record<string, RuneConfig> = { Hero: { block: 'hero' } };
+
+		const result = assembleThemeConfig({ coreConfig, pluginRunes, provenance: packageProvenance });
+
+		// Plugin rune scoped to its plugin short name…
+		expect(result.config.runes['Hero'].scope).toBe('marketing');
+		// …core runes left untouched (engine defaults absent scope to 'core').
+		expect(result.config.runes['Hint'].scope).toBeUndefined();
+	});
+
 	it('handles full three-layer merge correctly', () => {
 		const pluginRunes: Record<string, RuneConfig> = {
 			Hero: { block: 'hero' },

@@ -1,4 +1,4 @@
-{% spec id="SPEC-096" status="draft" tags="editor,registry,collection,aggregate,frontmatter,query" %}
+{% spec id="SPEC-096" status="accepted" tags="editor,registry,collection,aggregate,frontmatter,query" %}
 
 # Editor registry awareness
 

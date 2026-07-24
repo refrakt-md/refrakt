@@ -284,6 +284,10 @@ export const coreConfig: ThemeConfig = {
 			modifiers: { hintType: { source: 'meta', default: 'note' } },
 			contextModifiers: { 'hero': 'in-hero', 'feature': 'in-feature' },
 			sections: { header: 'header' },
+			// SPEC-035 Zone 6 — the hintType value doubles as the visible title
+			// (CSS capitalizes it). Declaring it as an enum lets `core.hint.<value>`
+			// localize the title; the raw value stays the English fallback.
+			i18nEnums: { note: 'Note', warning: 'Warning', caution: 'Caution', check: 'Check' },
 			// Header is a single `hintType` field, icon-decorated: the value
 			// (note/warning/caution/check) selects both the glyph and the
 			// label text.

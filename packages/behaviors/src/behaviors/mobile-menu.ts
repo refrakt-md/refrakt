@@ -1,4 +1,5 @@
 import type { CleanupFn } from '../types.js';
+import { bstr } from '../i18n.js';
 
 /**
  * Mobile menu behavior for layouts.
@@ -33,7 +34,7 @@ export function mobileMenuBehavior(container: HTMLElement | Document): CleanupFn
 		const mainOpen = !!mainPanel?.hasAttribute('data-open');
 		menuToggles.forEach(btn => {
 			btn.setAttribute('aria-expanded', mainOpen ? 'true' : 'false');
-			btn.setAttribute('aria-label', mainOpen ? 'Close menu' : 'Open menu');
+			btn.setAttribute('aria-label', mainOpen ? bstr('behavior.mobileMenu.close') : bstr('behavior.mobileMenu.open'));
 		});
 		const navOpen = !!navPanel?.hasAttribute('data-open');
 		navToggles.forEach(btn => {

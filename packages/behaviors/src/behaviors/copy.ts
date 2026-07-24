@@ -1,4 +1,5 @@
 import type { CleanupFn } from '../types.js';
+import { elStr } from '../i18n.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -56,7 +57,9 @@ export function copyBehavior(container: HTMLElement | Document): CleanupFn {
 		const btn = document.createElement('button');
 		btn.className = 'rf-codeblock__copy';
 		btn.type = 'button';
-		btn.setAttribute('aria-label', 'Copy code');
+		const copyLabel = elStr(pre, 'data-i18n-copy', 'behavior.copy.copy');
+		const copiedLabel = elStr(pre, 'data-i18n-copied', 'behavior.copy.copied');
+		btn.setAttribute('aria-label', copyLabel);
 		btn.appendChild(createIcon(COPY_ICON));
 
 		let timeout: ReturnType<typeof setTimeout> | undefined;
@@ -66,13 +69,13 @@ export function copyBehavior(container: HTMLElement | Document): CleanupFn {
 			navigator.clipboard.writeText(text).then(() => {
 				btn.innerHTML = '';
 				btn.appendChild(createIcon(CHECK_ICON));
-				btn.setAttribute('aria-label', 'Copied');
+				btn.setAttribute('aria-label', copiedLabel);
 				btn.classList.add('rf-codeblock__copy--copied');
 				if (timeout) clearTimeout(timeout);
 				timeout = setTimeout(() => {
 					btn.innerHTML = '';
 					btn.appendChild(createIcon(COPY_ICON));
-					btn.setAttribute('aria-label', 'Copy code');
+					btn.setAttribute('aria-label', copyLabel);
 					btn.classList.remove('rf-codeblock__copy--copied');
 				}, 2000);
 			});

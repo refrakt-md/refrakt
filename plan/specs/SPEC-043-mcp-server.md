@@ -1,4 +1,4 @@
-{% spec id="SPEC-043" status="draft" version="1.0" tags="cli, mcp, ai-workflow" %}
+{% spec id="SPEC-043" status="shipped" version="1.0" tags="cli, mcp, ai-workflow" released-in="v0.11.0" %}
 
 # Refrakt MCP Server
 

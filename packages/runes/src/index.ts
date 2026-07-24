@@ -168,6 +168,8 @@ export type { ReadingRegister, ReadingResolutionInput } from '@refrakt-md/transf
 export { loadPlugin, mergePlugins, applyAliases, loadLocalRunes, discoverPluginFixtures, discoverPluginFixtureManifest, assertFileRootNamespaceAllowed } from './plugins.js';
 export type { LoadedPlugin, MergedPluginResult } from './plugins.js';
 export { coreConfig, baseConfig, corePipelineHooks, createCorePipelineHooks, resolveCoreSentinels, type PageTreeNode, type CorePipelineHooksOptions } from './config.js';
+// SPEC-035 — first-party core translation bundles (generated from i18n/*.json).
+export { coreTranslations } from './translations.generated.js';
 export { BREADCRUMB_AUTO_SENTINEL } from './tags/breadcrumb.js';
 export { NAV_AUTO_SENTINEL } from './tags/nav.js';
 export { PAGINATION_AUTO_SENTINEL } from './tags/pagination.js';

@@ -1,4 +1,4 @@
-{% spec id="SPEC-057" status="draft" tags="theme, presets, syntax-highlighting, lumina, curated-palettes" %}
+{% spec id="SPEC-057" status="shipped" tags="theme, presets, syntax-highlighting, lumina, curated-palettes" released-in="v0.14.2" %}
 
 # Curated syntax preset lineup — Phase 1
 

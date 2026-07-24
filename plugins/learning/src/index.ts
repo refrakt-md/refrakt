@@ -2,11 +2,12 @@ import type { Plugin } from '@refrakt-md/types';
 import { howto } from './tags/howto.js';
 import { recipe } from './tags/recipe.js';
 import { config } from './config.js';
+import { translations } from './translations.js';
 
 export const learning: Plugin = {
   name: 'learning',
   displayName: 'Learning',
-  version: '0.28.0',
+  version: '0.29.0',
   runes: {
     'howto': {
       transform: howto,
@@ -67,6 +68,7 @@ A timeless Italian favorite with a crispy crust and fresh toppings.
   theme: {
     runes: config as unknown as Record<string, Record<string, unknown>>,
   },
+  translations,
 };
 
 export default learning;

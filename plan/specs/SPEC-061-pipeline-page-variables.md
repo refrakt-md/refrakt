@@ -1,4 +1,4 @@
-{% spec id="SPEC-061" status="draft" tags="pipeline, content, transform, variables" %}
+{% spec id="SPEC-061" status="shipped" tags="pipeline, content, transform, variables" released-in="v0.15.0" %}
 
 # Content variable surface — completing `$page`, `$file`, and rationalizing the namespaces
 

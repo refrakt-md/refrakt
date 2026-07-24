@@ -1,4 +1,5 @@
 import type { CleanupFn } from '../types.js';
+import { elStr } from '../i18n.js';
 
 /**
  * Carousel layout-mode behavior (SPEC-100).
@@ -39,12 +40,12 @@ export function carouselBehavior(el: HTMLElement): CleanupFn | void {
 
 	const prevBtn = document.createElement('button');
 	prevBtn.className = 'rf-carousel__nav rf-carousel__nav--prev';
-	prevBtn.setAttribute('aria-label', 'Previous');
+	prevBtn.setAttribute('aria-label', elStr(el, 'data-i18n-previous', 'behavior.carousel.previous'));
 	prevBtn.textContent = '‹';
 
 	const nextBtn = document.createElement('button');
 	nextBtn.className = 'rf-carousel__nav rf-carousel__nav--next';
-	nextBtn.setAttribute('aria-label', 'Next');
+	nextBtn.setAttribute('aria-label', elStr(el, 'data-i18n-next', 'behavior.carousel.next'));
 	nextBtn.textContent = '›';
 
 	mount.appendChild(prevBtn);

@@ -1,4 +1,4 @@
-{% spec id="SPEC-062" status="draft" tags="runes, docs, code, transform" %}
+{% spec id="SPEC-062" status="shipped" tags="runes, docs, code, transform" released-in="v0.15.0" %}
 
 # Snippet rune
 

@@ -1,4 +1,5 @@
 import type { CleanupFn } from '../types.js';
+import { bstr } from '../i18n.js';
 
 /**
  * Juxtapose behavior for `[data-rune="juxtapose"]`.
@@ -68,7 +69,7 @@ function setupSlider(el: HTMLElement): CleanupFn {
 	const divider = document.createElement('div');
 	divider.className = 'rf-juxtapose__divider';
 	divider.setAttribute('role', 'slider');
-	divider.setAttribute('aria-label', 'Comparison slider');
+	divider.setAttribute('aria-label', bstr('behavior.juxtapose.slider'));
 	divider.setAttribute('aria-valuemin', '0');
 	divider.setAttribute('aria-valuemax', '100');
 	divider.setAttribute('tabindex', '0');
@@ -202,13 +203,13 @@ function setupToggle(el: HTMLElement): CleanupFn {
 	const toggleBar = document.createElement('div');
 	toggleBar.className = 'rf-juxtapose__toggle-bar';
 	toggleBar.setAttribute('role', 'radiogroup');
-	toggleBar.setAttribute('aria-label', 'Comparison toggle');
+	toggleBar.setAttribute('aria-label', bstr('behavior.juxtapose.toggle'));
 
 	const buttons: HTMLButtonElement[] = panels.map((panel, i) => {
 		const btn = document.createElement('button');
 		btn.className = 'rf-juxtapose__toggle-btn';
 		btn.setAttribute('role', 'radio');
-		btn.textContent = getPanelLabel(panel) || `Panel ${i + 1}`;
+		btn.textContent = getPanelLabel(panel) || bstr('behavior.juxtapose.panel', i + 1);
 		toggleBar.appendChild(btn);
 		return btn;
 	});

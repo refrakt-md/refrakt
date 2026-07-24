@@ -1,4 +1,4 @@
-{% spec id="SPEC-073" status="draft" tags="theme, toggle, chrome, layout, behaviors, adapters, lumina, sveltekit" source="SPEC-052" %}
+{% spec id="SPEC-073" status="shipped" tags="theme, toggle, chrome, layout, behaviors, adapters, lumina, sveltekit" source="SPEC-052" released-in="v0.16.0" %}
 
 # First-class theme-mode toggle across adapters
 

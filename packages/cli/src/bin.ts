@@ -38,6 +38,8 @@ if (!command || command === '--help' || command === '-h') {
 	runEdit(args.slice(1));
 } else if (command === 'reference') {
 	runReference(args.slice(1));
+} else if (command === 'i18n') {
+	runI18n(args.slice(1));
 } else if (command.startsWith('-')) {
 	console.error(`Error: Unknown flag "${command}"\n`);
 	printUsage();
@@ -56,6 +58,7 @@ Commands:
   inspect <rune>       Show identity transform output for a rune
   gallery [options]    Generate a static all-runes gallery (light + dark)
   contracts [options]  Generate structure contracts from theme config
+  i18n <subcommand>    i18n tooling (extract translation keys, check coverage)
   scaffold-css         Generate CSS stub files for all runes
   validate             Validate theme config and manifest
   theme <subcommand>   Manage themes (install, info)
@@ -285,6 +288,8 @@ async function loadMergedConfig(
 		let siteScoped: {
 			plugins?: string[];
 			runes?: import('@refrakt-md/types').SiteConfig['runes'];
+			locale?: string;
+			strings?: Record<string, string | Record<string, string>>;
 		} = config;
 		const hasSites = Object.keys(config.sites).length > 0;
 		if (hasSites || site !== undefined) {
@@ -324,12 +329,19 @@ async function loadMergedConfig(
 		}
 
 		if (merged) {
+			// SPEC-035 — carry the site locale + overrides into the config so the
+			// engine localizes and the plugin/first-party bundles are selected.
+			const siteStrings = siteScoped.strings as Record<string, import('@refrakt-md/transform').LocalizedValue> | undefined;
+			const baseWithStrings = siteStrings ? { ...baseConfig, strings: { ...baseConfig.strings, ...siteStrings } } : baseConfig;
 			const assembled = assembleThemeConfig({
-				coreConfig: baseConfig,
+				coreConfig: baseWithStrings,
 				pluginRunes: merged.themeRunes,
 				pluginIcons: merged.themeIcons,
 				pluginBackgrounds: merged.themeBackgrounds,
 				provenance: merged.provenance,
+				locale: siteScoped.locale,
+				pluginTranslations: merged.translations,
+				coreTranslations: runesModule.coreTranslations,
 			});
 			mergedConfig = assembled.config;
 		}
@@ -661,6 +673,87 @@ function runContracts(contractsArgs: string[]): void {
 	]) => {
 		const { config } = await loadMergedConfig(runesModule, assembleThemeConfig, configDir, site);
 		contractsCommand({ output, check, config });
+	}).catch((err) => {
+		console.error(`\nError: ${(err as Error).message}`);
+		process.exit(1);
+	});
+}
+
+function runI18n(i18nArgs: string[]): void {
+	const subcommand = i18nArgs[0];
+	if (!subcommand || subcommand === '--help' || subcommand === '-h') {
+		console.log(`
+Usage: refrakt i18n extract [options]
+
+Emit every derivable framework i18n key with its English default as a JSON
+dictionary — the same shape as translation files, so extract → translate →
+commit <locale>.json round-trips.
+
+Options:
+  --output, -o <path>   Write the dictionary to a file (default: stdout)
+  --check               Compare locale bundle(s) against the derived key set
+  --locale <path>       A <locale>.json bundle to score in --check mode (repeatable)
+  --config <dir>        Config directory (default: cwd)
+  --site <name>         Site name for multi-site configs
+
+Examples:
+  refrakt i18n extract -o packages/runes/i18n/en.json
+  refrakt i18n extract --check --locale packages/runes/i18n/de.json
+`);
+		process.exit(subcommand ? 0 : 1);
+	}
+	if (subcommand !== 'extract') {
+		console.error(`Error: Unknown i18n command "${subcommand}". Did you mean "extract"?`);
+		process.exit(1);
+	}
+
+	const rest = i18nArgs.slice(1);
+	let output: string | undefined;
+	let check = false;
+	const locales: string[] = [];
+	let configDir: string | undefined;
+	let site: string | undefined;
+
+	for (let i = 0; i < rest.length; i++) {
+		const arg = rest[i];
+		if (arg === '--output' || arg === '-o') {
+			output = rest[++i];
+			if (!output) { console.error('Error: --output requires a file path'); process.exit(1); }
+		} else if (arg === '--check') {
+			check = true;
+		} else if (arg === '--locale') {
+			const path = rest[++i];
+			if (!path) { console.error('Error: --locale requires a file path'); process.exit(1); }
+			locales.push(path);
+		} else if (arg === '--config') {
+			configDir = rest[++i];
+			if (!configDir) { console.error('Error: --config requires a directory path'); process.exit(1); }
+		} else if (arg === '--site') {
+			site = rest[++i];
+			if (!site) { console.error('Error: --site requires a name'); process.exit(1); }
+		} else if (arg === '--help' || arg === '-h') {
+			runI18n([]);
+			process.exit(0);
+		} else if (arg.startsWith('-')) {
+			console.error(`Error: Unknown flag "${arg}"\n`);
+			process.exit(1);
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"\n`);
+			process.exit(1);
+		}
+	}
+
+	Promise.all([
+		import('./commands/i18n.js'),
+		import('@refrakt-md/runes'),
+		import('@refrakt-md/transform'),
+	]).then(async ([
+		{ i18nExtractCommand },
+		runesModule,
+		{ assembleThemeConfig },
+	]) => {
+		const { config } = await loadMergedConfig(runesModule, assembleThemeConfig, configDir, site);
+		i18nExtractCommand({ output, check, locales, config });
 	}).catch((err) => {
 		console.error(`\nError: ${(err as Error).message}`);
 		process.exit(1);

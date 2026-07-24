@@ -1,4 +1,4 @@
-{% spec id="SPEC-087" status="draft" tags="surfaces,runes,engine,lumina,tokens,dx" %}
+{% spec id="SPEC-087" status="shipped" tags="surfaces,runes,engine,lumina,tokens,dx" released-in="v0.20.0" %}
 
 # Surface fills: substrate patterns and tint-tracked inset surfaces
 

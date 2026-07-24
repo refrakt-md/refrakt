@@ -3,6 +3,7 @@ import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetD
 import { isTag, makeTag, readMeta, toKebabCase, resolveOffset, parsePlacement } from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
 import { resolveReading, DEFAULT_READING, READING_CAPABILITIES } from './reading.js';
+import { createLocaleContext, resolveLocaleString, DEFAULT_LOCALE, type LocaleContext } from './i18n.js';
 
 /** The 6 tint colour tokens */
 /** Tint token names per SPEC-053 vocabulary alignment. Each maps to a
@@ -55,6 +56,37 @@ const transforms: Record<string, (v: string) => string> = {
 	capitalize: (s) => s.charAt(0).toUpperCase() + s.slice(1),
 };
 
+/** Parse an ISO 8601 duration (`PT1H30M`) into `{ hours, minutes, seconds }`. */
+function parseIsoDuration(iso: string): { hours?: number; minutes?: number; seconds?: number } | null {
+	const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+	if (!m) return null;
+	const out: { hours?: number; minutes?: number; seconds?: number } = {};
+	if (m[1]) out.hours = parseInt(m[1], 10);
+	if (m[2]) out.minutes = parseInt(m[2], 10);
+	if (m[3]) out.seconds = parseInt(m[3], 10);
+	return out;
+}
+
+/**
+ * SPEC-035 — locale-aware ISO-8601 duration formatting. For English (or when
+ * `Intl.DurationFormat` is unavailable) it returns the compact `5h 30m` form so
+ * zero-config output is byte-identical; for other locales it uses
+ * `Intl.DurationFormat` (`5 Std. 30 Min.`).
+ */
+function formatDurationLocale(iso: string, locale: LocaleContext | undefined): string {
+	const compact = transforms.duration(iso);
+	if (!locale || locale.locale === DEFAULT_LOCALE) return compact;
+	const DF = (Intl as unknown as { DurationFormat?: any }).DurationFormat;
+	if (typeof DF !== 'function') return compact;
+	const parsed = parseIsoDuration(iso);
+	if (!parsed) return compact;
+	try {
+		return new DF(locale.locale, { style: 'short' }).format(parsed);
+	} catch {
+		return compact;
+	}
+}
+
 /**
  * Create an identity transform function from a theme configuration.
  *
@@ -68,6 +100,12 @@ const transforms: Record<string, (v: string) => string> = {
 export function createTransform(config: ThemeConfig) {
 	const { prefix, runes, icons = {}, tints = {}, backgrounds = {}, frames = {} } = config;
 
+	// SPEC-035 — construct the render-scoped LocaleContext once, from the resolved
+	// config (locale + already-merged `strings` dictionary). Threaded explicitly
+	// into the label renderers; never stored as module-global state (the
+	// forward-compatibility constraint for future multi-locale builds).
+	const locale = createLocaleContext(config.locale, config.strings);
+
 	// Build lowercase → config-key map for case-insensitive rune lookup
 	const runeKeyMap = new Map(Object.keys(runes).map(k => [toKebabCase(k), k]));
 
@@ -77,10 +115,22 @@ export function createTransform(config: ThemeConfig) {
 		if (Array.isArray(tree)) return tree.map(n => identityTransform(n, parentRune));
 		if (!isTag(tree)) return tree;
 
+		// SPEC-035 Zone 2 — programmatic text opt-in: a `data-i18n="{key}"`
+		// attribute on a leaf label (emitted by a schema transform / postTransform
+		// that has no locale access, e.g. budget totals) is resolved here against
+		// the locale table, using the existing text as the English fallback, then
+		// the marker is stripped. Zero-config → text unchanged, attribute removed.
+		const i18nKey = tree.attributes?.['data-i18n'];
+		if (i18nKey) {
+			const { ['data-i18n']: _drop, ...restAttrs } = tree.attributes;
+			const fallback = (tree.children.find(c => typeof c === 'string') as string | undefined) ?? '';
+			return { ...tree, attributes: restAttrs, children: [resolveLocaleString(locale, i18nKey, fallback)] };
+		}
+
 		const dataRune = tree.attributes?.['data-rune'];
 		const configKey = dataRune ? runeKeyMap.get(dataRune) : undefined;
 		if (configKey) {
-			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, frames, runes, runeKeyMap, identityTransform, parentRune);
+			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, frames, runes, runeKeyMap, identityTransform, locale, parentRune);
 		}
 
 		// Detect checkbox markers on list items
@@ -483,6 +533,7 @@ function transformRune(
 	allRunes: Record<string, RuneConfig>,
 	runeKeyMap: Map<string, string>,
 	recurse: (node: RendererNode, parentRune?: string) => RendererNode,
+	locale: LocaleContext,
 	parentRune?: string
 ): SerializedTag {
 	const block = `${prefix}-${config.block}`;
@@ -994,14 +1045,14 @@ function transformRune(
 	//    WORK-313; the `structure`-only before/after path below survives for
 	//    non-meta-projecting runes that just inject icons or badges.
 	if (config.blocks || config.layout) {
-		children = assembleWithBlocks(config, block, children, modifierValues);
+		children = assembleWithBlocks(config, block, children, modifierValues, locale);
 	} else if (config.structure) {
 		// Legacy before/after assembly
 		const prepend: RendererNode[] = [];
 		const append: RendererNode[] = [];
 
 		for (const [name, entry] of Object.entries(config.structure)) {
-			const element = buildStructureElement(entry, name, modifierValues, icons);
+			const element = buildStructureElement(entry, name, modifierValues, icons, locale, config);
 			if (!element) continue;
 			if (entry.before) {
 				prepend.push(element);
@@ -1577,11 +1628,45 @@ function applyProjection(
 }
 
 /** Build a structural element from a StructureEntry config. Returns null if condition is not met. */
+/** SPEC-035 — resolve a rune label through the locale table using the
+ *  auto-derived key `{scope}.{block}.{ref}` (Decision D1). An explicit
+ *  `i18nKey` override pins a stable key across renames. Returns the English
+ *  `label` fallback unchanged when the label is absent, no locale strings are
+ *  configured, or the key is untranslated — so zero-config output is identical. */
+function localizedLabel(
+	locale: LocaleContext | undefined,
+	config: RuneConfig | undefined,
+	ref: string,
+	label: string | undefined,
+	override?: string,
+): string | undefined {
+	if (label === undefined) return undefined;
+	if (!locale) return label;
+	const key = override ?? `${config?.scope ?? 'core'}.${config?.block ?? ''}.${ref}`;
+	return resolveLocaleString(locale, key, label);
+}
+
+/** SPEC-035 Zone 6 — resolve an enum-as-text display value through the locale
+ *  table. Only values the rune *declares* in `i18nEnums` are ever substituted,
+ *  and the raw value is the fallback — so zero-config English output is
+ *  unchanged and non-enum data values are never touched. Key: `{scope}.{block}.{value}`. */
+function localizedEnumValue(
+	locale: LocaleContext | undefined,
+	config: RuneConfig | undefined,
+	value: string,
+): string {
+	if (!locale || !value || config?.i18nEnums?.[value] === undefined) return value;
+	const key = `${config.scope ?? 'core'}.${config.block ?? ''}.${value}`;
+	return resolveLocaleString(locale, key, value);
+}
+
 function buildStructureElement(
 	entry: StructureEntry,
 	name: string,
 	modifierValues: Record<string, string>,
 	icons: Record<string, Record<string, string>>,
+	locale: LocaleContext,
+	config: RuneConfig,
 ): SerializedTag | null {
 	// Conditional injection
 	if (entry.condition && !modifierValues[entry.condition]) return null;
@@ -1606,10 +1691,10 @@ function buildStructureElement(
 		for (let i = 0; i < count; i++) {
 			const isFilled = i < filled;
 			if (isFilled && entry.repeat.filledElement) {
-				const el = buildStructureElement(entry.repeat.filledElement, entry.repeat.filledElement.ref ?? '', modifierValues, icons);
+				const el = buildStructureElement(entry.repeat.filledElement, entry.repeat.filledElement.ref ?? '', modifierValues, icons, locale, config);
 				if (el) children.push(el);
 			} else {
-				const el = buildStructureElement(entry.repeat.element, entry.repeat.element.ref ?? '', modifierValues, icons);
+				const el = buildStructureElement(entry.repeat.element, entry.repeat.element.ref ?? '', modifierValues, icons, locale, config);
 				if (el) {
 					if (entry.repeat.filled) {
 						// Add data-filled attribute when filled tracking is active
@@ -1661,15 +1746,19 @@ function buildStructureElement(
 
 	// Meta text injection: use resolved modifier value as text content
 	if (entry.metaText) {
-		let text = modifierValues[entry.metaText] ?? '';
-		if (entry.transform && transforms[entry.transform]) {
+		const rawText = modifierValues[entry.metaText] ?? '';
+		// SPEC-035 Zone 6 — a declared enum value resolves through the locale
+		// table (e.g. capitalized display values); the raw value is the fallback.
+		let text = localizedEnumValue(locale, config, rawText);
+		if (text === rawText && entry.transform && transforms[entry.transform]) {
 			text = transforms[entry.transform](text);
 		}
 		// When label is specified, emit separate label and value child elements
 		if (entry.label) {
 			const labelAttrs: Record<string, string> = { 'data-meta-label': '' };
 			if (entry.labelHidden) labelAttrs['data-meta-label-hidden'] = '';
-			const labelEl = makeTag('span', labelAttrs, [entry.label]);
+			const labelText = localizedLabel(locale, config, entry.ref ?? name, entry.label, entry.i18nKey) ?? entry.label;
+			const labelEl = makeTag('span', labelAttrs, [labelText]);
 			let valueText = text;
 			if (entry.textPrefix) valueText = entry.textPrefix + valueText;
 			if (entry.textSuffix) valueText = valueText + entry.textSuffix;
@@ -1688,7 +1777,7 @@ function buildStructureElement(
 			if (typeof child === 'string') {
 				elementChildren.push(child);
 			} else {
-				const built = buildStructureElement(child, child.ref ?? '', modifierValues, icons);
+				const built = buildStructureElement(child, child.ref ?? '', modifierValues, icons, locale, config);
 				if (built) elementChildren.push(built);
 			}
 		}
@@ -1714,6 +1803,7 @@ function resolveField(
 	name: string,
 	metaFields: Record<string, MetaField>,
 	modifierValues: Record<string, string>,
+	locale?: LocaleContext,
 ): ResolvedField | null {
 	const field = metaFields[name];
 	if (!field) return null;
@@ -1725,7 +1815,10 @@ function resolveField(
 	}
 	let value = modifierValues[name] ?? '';
 	if (!value && field.condition && !field.renderWhenEmpty) return null;
-	if (field.transform && transforms[field.transform]) {
+	if (field.transform === 'duration') {
+		// SPEC-035 — locale-aware duration; English keeps the compact form.
+		value = formatDurationLocale(value, locale);
+	} else if (field.transform && transforms[field.transform]) {
 		value = transforms[field.transform](value);
 	}
 	const href = field.href ? (modifierValues[field.href] ?? '') : undefined;
@@ -1743,6 +1836,8 @@ function resolveField(
 function buildChip(
 	resolved: ResolvedField,
 	options: { includeLabel: boolean } = { includeLabel: true },
+	locale?: LocaleContext,
+	config?: RuneConfig,
 ): SerializedTag {
 	const { field, value } = resolved;
 	const attrs: Record<string, string> = { class: 'rf-badge' };
@@ -1754,27 +1849,30 @@ function buildChip(
 	const tag = field.tag ?? 'span';
 	const tagAttrs = { ...attrs };
 	if (tag === 'time' && value) tagAttrs.datetime = value;
+	// `datetime` keeps the raw value; only the *displayed* text is enum-localized.
+	const displayValue = localizedEnumValue(locale, config, value);
 
 	if (options.includeLabel && field.label) {
+		const label = localizedLabel(locale, config, resolved.name, field.label, field.i18nKey) ?? field.label;
 		return makeTag(tag, tagAttrs, [
-			makeTag('span', { 'data-meta-label': '' }, [field.label]),
-			makeTag('span', { 'data-meta-value': '' }, [value]),
+			makeTag('span', { 'data-meta-label': '' }, [label]),
+			makeTag('span', { 'data-meta-value': '' }, [displayValue]),
 		]);
 	}
-	return makeTag(tag, tagAttrs, [value]);
+	return makeTag(tag, tagAttrs, [displayValue]);
 }
 
 /** Build a plain-text value element — typography hints via
  *  `data-meta-type`, NO `.rf-badge` class (so no chip geometry). Used by
  *  the def-list's `<dd>` and split's left slot when the field isn't
  *  sentiment-mapped. */
-function buildPlainValue(resolved: ResolvedField): SerializedTag {
+function buildPlainValue(resolved: ResolvedField, locale?: LocaleContext, config?: RuneConfig): SerializedTag {
 	const { field, value } = resolved;
 	const attrs: Record<string, string> = {};
 	if (field.metaType) attrs['data-meta-type'] = field.metaType;
 	const tag = field.tag ?? 'span';
 	if (tag === 'time' && value) attrs.datetime = value;
-	return makeTag(tag, attrs, [value]);
+	return makeTag(tag, attrs, [localizedEnumValue(locale, config, value)]);
 }
 
 /** Split a field's value into trimmed non-empty parts using
@@ -1805,11 +1903,12 @@ interface BarItem {
 
 /** Build a link value — `<a href>` carrying the field's label (or value) as
  *  text, bare (no chip). `data-meta-type="link"` for theme typography. */
-function buildLinkValue(f: ResolvedField): SerializedTag {
+function buildLinkValue(f: ResolvedField, locale?: LocaleContext, config?: RuneConfig): SerializedTag {
+	const text = localizedLabel(locale, config, f.name, f.field.label, f.field.i18nKey) ?? f.value;
 	return makeTag('a', {
 		href: f.href ?? '',
 		'data-meta-type': 'link',
-	}, [f.field.label ?? f.value]);
+	}, [text]);
 }
 
 /** Build a rating widget — `total` mark elements, the first `value` filled.
@@ -1827,25 +1926,34 @@ function buildRatingValue(f: ResolvedField): SerializedTag {
 /** Build an icon-decorated value — a leading icon element (glyph selected
  *  by the field's value via `data-icon-group` + `data-icon`) followed by the
  *  value text. Bare (no chip); CSS draws the glyph via `mask-image`. */
-function buildIconValue(f: ResolvedField): SerializedTag {
+function buildIconValue(f: ResolvedField, locale?: LocaleContext, config?: RuneConfig): SerializedTag {
 	const group = f.field.icon!.group;
 	const attrs: Record<string, string> = {};
 	if (f.field.metaType) attrs['data-meta-type'] = f.field.metaType;
+	// `data-icon` keeps the raw value (glyph selector); the visible text uses the
+	// label if present, else the enum-localized value (Zone 6, e.g. hint titles).
+	const text = localizedLabel(locale, config, f.name, f.field.label, f.field.i18nKey)
+		?? localizedEnumValue(locale, config, f.value);
 	return makeTag(f.field.tag ?? 'span', attrs, [
 		makeTag('span', { 'data-icon-group': group, 'data-icon': f.value }, []),
-		makeTag('span', { 'data-meta-value': '' }, [f.field.label ?? f.value]),
+		makeTag('span', { 'data-meta-value': '' }, [text]),
 	]);
 }
 
 /** Render one resolved field in its intrinsic shape (link > rating > icon >
  *  chip > bare). */
-function renderBlockValue(f: ResolvedField, includeLabel = false): SerializedTag {
-	if (f.field.href) return buildLinkValue(f);
+function renderBlockValue(
+	f: ResolvedField,
+	includeLabel = false,
+	locale?: LocaleContext,
+	config?: RuneConfig,
+): SerializedTag {
+	if (f.field.href) return buildLinkValue(f, locale, config);
 	if (f.field.rating) return buildRatingValue(f);
-	if (f.field.icon) return buildIconValue(f);
+	if (f.field.icon) return buildIconValue(f, locale, config);
 	return fieldRendersAsChip(f.field)
-		? buildChip(f, { includeLabel })
-		: buildPlainValue(f);
+		? buildChip(f, { includeLabel }, locale, config)
+		: buildPlainValue(f, locale, config);
 }
 
 /** `bar` layout — a horizontal flex row of fields, each in its intrinsic
@@ -1857,14 +1965,16 @@ function renderBarLayout(
 	blockName: string,
 	items: BarItem[],
 	wrap: boolean,
+	locale?: LocaleContext,
+	config?: RuneConfig,
 ): SerializedTag | null {
 	if (items.length === 0) return null;
 
 	const children: RendererNode[] = [];
 	for (const { resolved, align } of items) {
 		const els: SerializedTag[] = resolved.field.splitOn && resolved.value
-			? splitFieldValue(resolved).map(part => renderBlockValue({ ...resolved, value: part }))
-			: [renderBlockValue(resolved)];
+			? splitFieldValue(resolved).map(part => renderBlockValue({ ...resolved, value: part }, false, locale, config))
+			: [renderBlockValue(resolved, false, locale, config)];
 		if (align === 'end' && els.length > 0) {
 			els[0] = { ...els[0], attributes: { ...els[0].attributes, 'data-align': 'end' } };
 		}
@@ -1886,19 +1996,22 @@ function renderBarLayout(
 function renderDefListBlock(
 	blockName: string,
 	fields: ResolvedField[],
+	locale?: LocaleContext,
+	config?: RuneConfig,
 ): SerializedTag | null {
 	if (fields.length === 0) return null;
 
 	const rows: RendererNode[] = fields.map(f => {
-		const dt = makeTag('dt', { 'data-meta-label': '' }, [f.field.label ?? f.name]);
+		const dtText = localizedLabel(locale, config, f.name, f.field.label ?? f.name, f.field.i18nKey) ?? f.name;
+		const dt = makeTag('dt', { 'data-meta-label': '' }, [dtText]);
 		let dd: SerializedTag;
 		if (f.field.splitOn && f.value) {
 			const items = splitFieldValue(f).map(part =>
-				renderBlockValue({ ...f, value: part }),
+				renderBlockValue({ ...f, value: part }, false, locale, config),
 			);
 			dd = makeTag('dd', { 'data-multi-value': '' }, items);
 		} else if (fieldRendersAsChip(f.field)) {
-			dd = makeTag('dd', {}, [buildChip(f, { includeLabel: false })]);
+			dd = makeTag('dd', {}, [buildChip(f, { includeLabel: false }, locale, config)]);
 		} else {
 			const ddAttrs: Record<string, string> = {};
 			if (f.field.metaType) ddAttrs['data-meta-type'] = f.field.metaType;
@@ -1924,6 +2037,7 @@ function assembleWithBlocks(
 	_block: string,
 	contentChildren: RendererNode[],
 	modifierValues: Record<string, string>,
+	locale: LocaleContext,
 ): RendererNode[] {
 	const blocks = config.blocks ?? {};
 	const layout = config.layout ?? {};
@@ -1937,12 +2051,12 @@ function assembleWithBlocks(
 		for (const spec of def.fields) {
 			const fieldName = typeof spec === 'string' ? spec : spec.field;
 			const align = typeof spec === 'string' ? undefined : spec.align;
-			const resolved = resolveField(fieldName, metaFields, modifierValues);
+			const resolved = resolveField(fieldName, metaFields, modifierValues, locale);
 			if (resolved) items.push({ resolved, align });
 		}
 		if (items.length === 0) return null;
-		if (def.layout === 'bar') return renderBarLayout(name, items, def.wrap ?? true);
-		return renderDefListBlock(name, items.map(i => i.resolved));
+		if (def.layout === 'bar') return renderBarLayout(name, items, def.wrap ?? true, locale, config);
+		return renderDefListBlock(name, items.map(i => i.resolved), locale, config);
 	};
 
 	// No `layout` → render the transform tree verbatim (no projection).

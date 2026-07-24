@@ -1,4 +1,4 @@
-{% spec id="SPEC-083" status="draft" source="SPEC-081" tags="runes,chart,rendering,providers,web-component,accessibility,computation-boundary" %}
+{% spec id="SPEC-083" status="accepted" source="SPEC-081" tags="runes,chart,rendering,providers,web-component,accessibility,computation-boundary" %}
 
 # Semantic chart data and pluggable renderer providers
 

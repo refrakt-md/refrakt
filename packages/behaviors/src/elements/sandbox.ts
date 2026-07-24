@@ -33,6 +33,7 @@ const ROLE_FALLBACKS: Record<string, string> = {
  * - Theme synchronization via iframe rebuild
  */
 import { SafeHTMLElement } from './ssr-safe.js';
+import { bstr } from '../i18n.js';
 
 /** Overflow-bleed hysteresis (SPEC-116). Trip `overflowing` only when the content
  *  clearly overruns the frame — by more than the bleed distance (~the content
@@ -390,7 +391,7 @@ export class RfSandbox extends SafeHTMLElement {
 		const banner = document.createElement('div');
 		banner.className = 'rf-sandbox__untrusted-banner';
 		banner.setAttribute('role', 'note');
-		banner.setAttribute('aria-label', 'Sandboxed user content');
+		banner.setAttribute('aria-label', bstr('behavior.sandbox.content'));
 		banner.textContent = 'Sandboxed user content — do not enter sensitive information.';
 		return banner;
 	}

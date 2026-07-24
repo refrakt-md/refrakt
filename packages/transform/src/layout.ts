@@ -9,6 +9,42 @@ import type {
 import { isTag, makeTag } from './helpers.js';
 import { DEFAULT_READING } from './reading.js';
 import { buildBreadcrumb, buildToc, buildPrevNext, buildVersionSwitcher } from './computed.js';
+import { resolveLocaleString, type LocaleContext } from './i18n.js';
+
+// ─── SPEC-035 Zone 3: layout-chrome string catalog ────────────────────
+
+/** Canonical English layout-chrome strings keyed by their `layout.*` i18n key.
+ *  The layout configs carry the English literals; at render time any chrome
+ *  attribute value or text node that exactly matches one of these is resolved
+ *  through the locale table under its key (English is the fallback). Exported
+ *  so the `refrakt i18n extract` tooling can enumerate the layout keys. */
+export const LAYOUT_STRINGS: Record<string, string> = {
+	'layout.openMenu': 'Open menu',
+	'layout.closeMenu': 'Close menu',
+	'layout.search': 'Search',
+	'layout.menu': 'Menu',
+	'layout.plan': 'Plan',
+	'layout.toggleNavigation': 'Toggle navigation',
+	'layout.navigationMenu': 'Navigation menu',
+	'layout.pageNavigation': 'Page navigation',
+	'layout.planNavigation': 'Plan navigation',
+	'layout.toggleColorTheme': 'Toggle color theme',
+	'layout.jumpToSection': 'Jump to section',
+};
+
+/** Reverse index: English literal → `layout.*` key. Only exact matches to a
+ *  known chrome string are localized, so author/page content is never touched. */
+const LAYOUT_STRING_KEY_BY_EN = new Map(
+	Object.entries(LAYOUT_STRINGS).map(([key, en]) => [en, key]),
+);
+
+/** Resolve a chrome string through the locale table when it is a known layout
+ *  string; otherwise pass it through unchanged. */
+function localizeChromeText(locale: LocaleContext | undefined, text: string): string {
+	if (!locale) return text;
+	const key = LAYOUT_STRING_KEY_BY_EN.get(text);
+	return key ? resolveLocaleString(locale, key, text) : text;
+}
 
 /**
  * Transform a declarative layout config + page data into a SerializedTag tree.
@@ -20,14 +56,15 @@ export function layoutTransform(
 	config: LayoutConfig,
 	page: LayoutPageData,
 	prefix: string,
+	locale?: LocaleContext,
 ): SerializedTag {
 	// 1. Pre-resolve all computed content
-	const computed = resolveComputed(config.computed ?? {}, page, prefix);
+	const computed = resolveComputed(config.computed ?? {}, page, prefix, locale);
 
 	// 2. Resolve slots into children
 	const children: RendererNode[] = [];
 	for (const [, slot] of Object.entries(config.slots)) {
-		const result = resolveSlot(slot, config, page, computed, prefix);
+		const result = resolveSlot(slot, config, page, computed, prefix, locale);
 		if (result !== null) {
 			children.push(result);
 		}
@@ -60,6 +97,7 @@ function resolveComputed(
 	defs: Record<string, ComputedContent>,
 	page: LayoutPageData,
 	prefix: string,
+	locale?: LocaleContext,
 ): Record<string, SerializedTag | null> {
 	const results: Record<string, SerializedTag | null> = {};
 
@@ -105,7 +143,7 @@ function resolveComputed(
 				if (def.visibility?.minCount && filtered.length < def.visibility.minCount) {
 					result = null;
 				} else {
-					result = buildToc(filtered, prefix, { minLevel, maxLevel });
+					result = buildToc(filtered, prefix, { minLevel, maxLevel }, locale);
 				}
 				break;
 			}
@@ -113,12 +151,12 @@ function resolveComputed(
 				const regionName = def.source.replace('region:', '');
 				const region = page.regions[regionName];
 				if (region) {
-					result = buildPrevNext(region.content, page.url, page.pages, prefix);
+					result = buildPrevNext(region.content, page.url, page.pages, prefix, locale);
 				}
 				break;
 			}
 			case 'version-switcher': {
-				result = buildVersionSwitcher(page.url, page.pages, page.frontmatter, prefix);
+				result = buildVersionSwitcher(page.url, page.pages, page.frontmatter, prefix, locale);
 				break;
 			}
 		}
@@ -137,6 +175,7 @@ function resolveSlot(
 	page: LayoutPageData,
 	computed: Record<string, SerializedTag | null>,
 	prefix: string,
+	locale?: LocaleContext,
 ): SerializedTag | null {
 	// 1. Frontmatter condition
 	if (slot.frontmatterCondition && !page.frontmatter[slot.frontmatterCondition]) {
@@ -151,7 +190,7 @@ function resolveSlot(
 	// 3. Resolve source content
 	let content: RendererNode[] = [];
 	if (slot.source) {
-		content = resolveSource(slot.source, config, page, computed, prefix);
+		content = resolveSource(slot.source, config, page, computed, prefix, locale);
 		// Skip conditional slots with empty content
 		if (slot.conditional && content.length === 0) {
 			return null;
@@ -166,18 +205,18 @@ function resolveSlot(
 					const chromeName = child.slice(7);
 					const chromeEntry = config.chrome?.[chromeName];
 					if (chromeEntry) {
-						const built = buildLayoutChrome(chromeEntry, chromeEntry.ref ?? chromeName, page, prefix);
+						const built = buildLayoutChrome(chromeEntry, chromeEntry.ref ?? chromeName, page, prefix, locale);
 						if (built) content.push(built);
 					}
 				} else {
 					content.push(child);
 				}
 			} else if (isLayoutSlot(child)) {
-				const resolved = resolveSlot(child as LayoutSlot, config, page, computed, prefix);
+				const resolved = resolveSlot(child as LayoutSlot, config, page, computed, prefix, locale);
 				if (resolved) content.push(resolved);
 			} else {
 				const entry = child as LayoutStructureEntry;
-				const built = buildLayoutChrome(entry, entry.ref ?? '', page, prefix);
+				const built = buildLayoutChrome(entry, entry.ref ?? '', page, prefix, locale);
 				if (built) content.push(built);
 			}
 		}
@@ -212,7 +251,7 @@ function resolveSlot(
 	if (className) attrs.class = className;
 	if (slot.attrs) {
 		for (const [key, val] of Object.entries(slot.attrs)) {
-			attrs[key] = val;
+			attrs[key] = typeof val === 'string' ? localizeChromeText(locale, val) : val;
 		}
 	}
 	// SPEC-108: a content slot's reading default applies to the bare body (the
@@ -257,6 +296,7 @@ function resolveSource(
 	page: LayoutPageData,
 	computed: Record<string, SerializedTag | null>,
 	prefix: string,
+	locale?: LocaleContext,
 ): RendererNode[] {
 	if (source === 'content') {
 		return page.renderable ? [page.renderable] : [];
@@ -286,7 +326,7 @@ function resolveSource(
 		const name = source.slice(7);
 		const entry = config.chrome?.[name];
 		if (!entry) return [];
-		const built = buildLayoutChrome(entry, entry.ref ?? name, page, prefix);
+		const built = buildLayoutChrome(entry, entry.ref ?? name, page, prefix, locale);
 		return built ? [built] : [];
 	}
 
@@ -315,6 +355,7 @@ function buildLayoutChrome(
 	name: string,
 	page: LayoutPageData,
 	prefix: string,
+	locale?: LocaleContext,
 ): SerializedTag | null {
 	// Page data condition
 	if (entry.pageCondition) {
@@ -332,7 +373,7 @@ function buildLayoutChrome(
 	if (entry.attrs) {
 		for (const [key, val] of Object.entries(entry.attrs)) {
 			if (typeof val === 'string') {
-				resolvedAttrs[key] = val;
+				resolvedAttrs[key] = localizeChromeText(locale, val);
 			} else if ('fromPageData' in val) {
 				resolvedAttrs[key] = String(resolvePagePath(page, val.fromPageData) ?? '');
 			}
@@ -382,10 +423,10 @@ function buildLayoutChrome(
 	if (entry.children) {
 		for (const child of entry.children) {
 			if (typeof child === 'string') {
-				elementChildren.push(child);
+				elementChildren.push(localizeChromeText(locale, child));
 			} else {
 				const childEntry = child as LayoutStructureEntry;
-				const built = buildLayoutChrome(childEntry, childEntry.ref ?? '', page, prefix);
+				const built = buildLayoutChrome(childEntry, childEntry.ref ?? '', page, prefix, locale);
 				if (built) elementChildren.push(built);
 			}
 		}

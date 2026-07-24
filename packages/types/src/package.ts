@@ -61,6 +61,11 @@ export interface PluginThemeConfig {
  *  A plugin is an npm package that may contribute runes, layouts, theme config,
  *  pipeline hooks, behaviors, and/or CLI commands (via a separate `cli-plugin`
  *  entry point). */
+/** SPEC-035 — a translation dictionary value: a literal string, or a CLDR
+ *  plural-category map (`{ one, other, … }`). Kept structurally compatible with
+ *  `LocalizedValue` in @refrakt-md/transform without a package dependency. */
+export type PluginLocalizedValue = string | Partial<Record<string, string>>;
+
 export interface Plugin {
 	/** Short identifier used for namespacing (e.g., 'dnd-5e') */
 	name: string;
@@ -87,4 +92,11 @@ export interface Plugin {
 	 *  lands) resolve from the named root. See SPEC-063 for the full
 	 *  authoring + resolution model. */
 	fileRoots?: Record<string, string>;
+	/** SPEC-035 — per-locale translation bundles for this plugin's runes, keyed
+	 *  by BCP 47 locale (`{ de: {...}, fr: {...} }`). Authored as per-locale JSON
+	 *  imported here (Decision D3/D8). Keys are the plugin-scoped i18n keys
+	 *  (`{plugin}.{block}.{ref}`). `mergePlugins()` selects the active locale's
+	 *  bundle (with `de-AT`→`de` fallback) and merges it under the site's
+	 *  `ThemeConfig.strings`, which always wins (Decision D5). */
+	translations?: Record<string, Record<string, PluginLocalizedValue>>;
 }

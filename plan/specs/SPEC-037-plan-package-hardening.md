@@ -1,4 +1,4 @@
-{% spec id="SPEC-037" status="accepted" version="1.0" tags="plan, cli, validation, content-model, quality" %}
+{% spec id="SPEC-037" status="implemented" version="1.0" tags="plan, cli, validation, content-model, quality" %}
 
 # Plan Package Hardening
 

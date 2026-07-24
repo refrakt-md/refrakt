@@ -1,4 +1,4 @@
-{% spec id="SPEC-107" status="accepted" tags="theme,surface,elevation,prominence,css,architecture,dx" %}
+{% spec id="SPEC-107" status="shipped" tags="theme,surface,elevation,prominence,css,architecture,dx" released-in="v0.23.0" %}
 
 # Elevation, prominence & the surface-axis decomposition
 
