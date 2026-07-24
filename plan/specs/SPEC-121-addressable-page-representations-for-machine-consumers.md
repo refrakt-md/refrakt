@@ -1,4 +1,4 @@
-{% spec id="SPEC-119" status="draft" version="0.3" tags="content, ai, cli, output, agents" %}
+{% spec id="SPEC-121" status="draft" version="0.3" tags="content, ai, cli, output, agents" %}
 
 # Addressable page representations for machine consumers
 
