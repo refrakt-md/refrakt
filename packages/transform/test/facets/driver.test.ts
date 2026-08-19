@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { orderFacets, runFacets, WarningCollector } from '../../src/facets/driver.js';
+import { orderFacets, runFacets, runPostAssemble, WarningCollector } from '../../src/facets/driver.js';
 import { makeTag } from '../../src/helpers.js';
 import type { Facet, FacetInput } from '../../src/facets/types.js';
 
@@ -53,7 +53,17 @@ describe('orderFacets', () => {
 
 	it('throws when `after` names an unregistered facet', () => {
 		expect(() => orderFacets([stub('bg', ['media-position'])]))
-			.toThrow(/facet "bg" declares after: "media-position", which is not registered/);
+			.toThrow(/facet "bg" declares after: "media-position", which is neither a registered facet nor a seeded axis/);
+	});
+
+	it('accepts an `after` naming a seeded axis', () => {
+		const ordered = orderFacets([stub('bg', ['media-position'])], { seeded: ['media-position'] });
+		expect(ordered.map(f => f.name)).toEqual(['bg']);
+	});
+
+	it('still throws for an unseeded dependency when other seeds are declared', () => {
+		expect(() => orderFacets([stub('bg', ['tint'])], { seeded: ['media-position'] }))
+			.toThrow(/declares after: "tint"/);
 	});
 
 	it('throws on a duplicate facet name', () => {
@@ -94,20 +104,115 @@ describe('runFacets', () => {
 			name: 'kitchen-sink',
 			resolve: () => ({
 				axes: { a: '1' },
+				state: { s: 'internal' },
 				classes: ['rf-card--x'],
 				dataAttrs: { 'data-x': '' },
-				styles: { '--x': '2px' },
+				styles: [['--x', '2px']],
 				consumes: ['x-meta'],
 			}),
 		};
 		const result = runFacets([facet], input(), new WarningCollector());
 		expect(result).toMatchObject({
 			axes: { a: '1' },
+			state: { s: 'internal' },
 			classes: ['rf-card--x'],
 			dataAttrs: { 'data-x': '' },
-			styles: { '--x': '2px' },
+			styles: [['--x', '2px']],
 			consumes: ['x-meta'],
 		});
+	});
+
+	// Ordered pairs, not a keyed map: `cover` deliberately re-declares
+	// `--cover-scrim-dir` after `content-place` set it, relying on CSS
+	// last-wins. A Record would collapse the two into one declaration.
+	it('preserves duplicate style declarations in order', () => {
+		const first: Facet = { name: 'first', resolve: () => ({ styles: [['--dir', 'to bottom']] }) };
+		const second: Facet = { name: 'second', after: ['first'], resolve: () => ({ styles: [['--dir', 'to top']] }) };
+		const result = runFacets(orderFacets([first, second]), input(), new WarningCollector());
+		expect(result.styles).toEqual([['--dir', 'to bottom'], ['--dir', 'to top']]);
+	});
+
+	it('exposes non-emitted state through ctx.axis()', () => {
+		let seen: string | undefined = 'unset';
+		const producer: Facet = { name: 'producer', resolve: () => ({ state: { cover: 'true' } }) };
+		const consumer: Facet = {
+			name: 'consumer',
+			after: ['producer'],
+			resolve: (ctx) => { seen = ctx.axis('cover'); return null; },
+		};
+		const result = runFacets(orderFacets([producer, consumer]), input(), new WarningCollector());
+		expect(seen).toBe('true');
+		expect(result.axes.cover).toBeUndefined();  // state never reaches the output
+	});
+
+	it('reads a seeded value through the same channel', () => {
+		let seen: string | undefined = 'unset';
+		const facet: Facet = { name: 'reader', resolve: (ctx) => { seen = ctx.axis('media-position'); return null; } };
+		runFacets([facet], { ...input(), seedAxes: { 'media-position': 'cover' } }, new WarningCollector());
+		expect(seen).toBe('cover');
+	});
+
+	it('lets a facet-supplied value shadow a seed of the same name', () => {
+		let seen: string | undefined = 'unset';
+		const producer: Facet = { name: 'producer', resolve: () => ({ axes: { 'media-position': 'inline' } }) };
+		const consumer: Facet = {
+			name: 'consumer',
+			after: ['producer'],
+			resolve: (ctx) => { seen = ctx.axis('media-position'); return null; },
+		};
+		runFacets(
+			orderFacets([producer, consumer]),
+			{ ...input(), seedAxes: { 'media-position': 'cover' } },
+			new WarningCollector(),
+		);
+		expect(seen).toBe('inline');
+	});
+});
+
+describe('runPostAssemble', () => {
+	it('runs only facets that declare the hook, in registry order', () => {
+		const calls: string[] = [];
+		const a: Facet = { name: 'a', resolve: () => null, postAssemble: () => { calls.push('a'); } };
+		const b: Facet = { name: 'b', resolve: () => null };
+		const c: Facet = { name: 'c', after: ['a'], resolve: () => null, postAssemble: () => { calls.push('c'); } };
+
+		const ordered = orderFacets([a, b, c]);
+		const resolution = runFacets(ordered, input(), new WarningCollector());
+		runPostAssemble(ordered, input(), resolution, []);
+		expect(calls).toEqual(['a', 'c']);
+	});
+
+	it('respects appliesTo', () => {
+		const postAssemble = vi.fn();
+		const facet: Facet = { name: 'gated', appliesTo: () => false, resolve: () => null, postAssemble };
+		runPostAssemble([facet], input(), runFacets([], input(), new WarningCollector()), []);
+		expect(postAssemble).not.toHaveBeenCalled();
+	});
+
+	it('mutates the assembled children in place', () => {
+		const facet: Facet = {
+			name: 'mutator',
+			resolve: () => null,
+			postAssemble: (_ctx, children) => {
+				const target = children[0] as any;
+				target.attributes = { ...target.attributes, 'data-touched': '' };
+			},
+		};
+		const children = [makeTag('div', { 'data-name': 'content' }, [])];
+		runPostAssemble([facet], input(), runFacets([], input(), new WarningCollector()), children);
+		expect((children[0] as any).attributes['data-touched']).toBe('');
+	});
+
+	it('sees state resolved during the first phase', () => {
+		let seen: string | undefined = 'unset';
+		const facet: Facet = {
+			name: 'two-phase',
+			resolve: () => ({ state: { cover: 'true' } }),
+			postAssemble: (ctx) => { seen = ctx.axis('cover'); },
+		};
+		const resolution = runFacets([facet], input(), new WarningCollector());
+		runPostAssemble([facet], input(), resolution, []);
+		expect(seen).toBe('true');
 	});
 
 	it('ignores a facet that returns null', () => {

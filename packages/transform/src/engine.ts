@@ -1,10 +1,10 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, FramePresetDefinition, MetaField, BlockDef, LayoutEntry } from './types.js';
-import { isTag, makeTag, readMeta, toKebabCase, resolveOffset, parsePlacement } from './helpers.js';
+import { isTag, makeTag, readMeta, toKebabCase, resolveOffset, parsePlacement, findNodeByDataName } from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
 import { resolveReading, DEFAULT_READING, READING_CAPABILITIES } from './reading.js';
 import { createLocaleContext, resolveLocaleString, DEFAULT_LOCALE, type LocaleContext } from './i18n.js';
-import { ORDERED_FACETS, runFacets, engineWarnings } from './facets/index.js';
+import { ORDERED_FACETS, runFacets, runPostAssemble, engineWarnings } from './facets/index.js';
 
 /** The 6 tint colour tokens */
 /** Tint token names per SPEC-053 vocabulary alignment. Each maps to a
@@ -276,15 +276,7 @@ function findMediaZone(nodes: RendererNode[]): SerializedTag | undefined {
 }
 
 /** Find the first descendant tag carrying `data-name === name`. */
-function findByName(nodes: RendererNode[], name: string): SerializedTag | undefined {
-	for (const node of nodes) {
-		if (!isTag(node)) continue;
-		if (node.attributes?.['data-name'] === name) return node;
-		const found = node.children ? findByName(node.children, name) : undefined;
-		if (found) return found;
-	}
-	return undefined;
-}
+const findByName = findNodeByDataName;
 
 /** SPEC-101 — collect every `rf-sandbox` element in a subtree (cover-backdrop
  *  handling: auto-fill + activation validation). */
@@ -468,21 +460,6 @@ const SCRIM_STRENGTH: Record<string, string> = { sm: '0.3', md: '0.55', lg: '0.8
 
 /** A bare token reference (`primary`, `surface`, …) vs raw CSS (`rgba(…)`, `#…`). */
 const TOKEN_REF = /^[a-z][a-z0-9-]*$/;
-
-/** SPEC-089 — explicit cover-scrim edge → CSS gradient direction (the heaviest
- *  edge is where the named edge sits). Overrides the content-place default. */
-const COVER_SCRIM_DIR: Record<string, string> = {
-	top: 'to top', bottom: 'to bottom', left: 'to left', right: 'to right',
-};
-
-const CONTENT_PLACE_WARNED = new Set<string>();
-/** Warn once when `content-place` is set outside cover mode (it's inert there). */
-function warnContentPlaceOutsideCover(rune: string): void {
-	if (CONTENT_PLACE_WARNED.has(rune)) return;
-	CONTENT_PLACE_WARNED.add(rune);
-	// eslint-disable-next-line no-console
-	console.warn(`[refrakt] \`content-place\` on \`${rune}\` is only active in \`media-position="cover"\` — it anchors the overlay, and there's no overlay outside cover. Ignored.`);
-}
 
 const RAW_OVERLAY_WARNED = new Set<string>();
 /** Warn once when `overlay` carries raw CSS (deprecated — use a token wash or `scrim`). */
@@ -709,9 +686,17 @@ function transformRune(
 	// matches the order these axes were resolved in when inline, so
 	// `modifierValues` key insertion order — and thus attribute order in the
 	// output — is unchanged.
+	const facetInput = { tag, config, block, rune: dataRune ?? block, parentRune };
 	const facetResolution = runFacets(
 		ORDERED_FACETS,
-		{ tag, config, block, rune: dataRune ?? block, parentRune },
+		{
+			...facetInput,
+			seedAxes: {
+				'media-position': modifierValues['media-position'],
+				'content-place': modifierValues['content-place'],
+				'color-scheme': tintDataAttrs['data-color-scheme'],
+			},
+		},
 		engineWarnings,
 	);
 	Object.assign(modifierValues, facetResolution.axes);
@@ -928,15 +913,9 @@ function transformRune(
 		bgMetaProps.add('scrim-tone');
 	}
 
-	// SPEC-089 — in cover mode the scrim facet is consumed by the media well
-	// (section 8), even when the bg layer above didn't run; mark its metas
-	// consumed now so the strip pass (section 7) doesn't leak them to output.
-	if (isCover) {
-		bgMetaProps.add('scrim');
-		bgMetaProps.add('scrim-type');
-		bgMetaProps.add('scrim-blur');
-		bgMetaProps.add('scrim-tone');
-	}
+	// SPEC-089 — in cover mode the scrim metas are consumed by the media well
+	// even when the bg layer above didn't run. The `cover` facet claims them
+	// (its `consumes`), so the strip pass covers them via `facetConsumed`.
 
 	// 1g. Frame chrome (SPEC-086) — resolve the frame preset + facets and decide
 	// which surface they decorate. `self` lands on the rune root; `media` lands
@@ -1167,81 +1146,26 @@ function transformRune(
 		}
 	}
 	styleParts.push(...tintStyleParts);
-	for (const [prop, value] of Object.entries(facetResolution.styles)) {
+	// Facet styles — `content-place` and `cover` land here, in that order, so
+	// cover's explicit `--cover-scrim-dir` is declared last and wins.
+	for (const [prop, value] of facetResolution.styles) {
 		styleParts.push(`${prop}: ${value}`);
 	}
-	// SPEC-089 content-place — the cover overlay anchor. 2-axis logical
-	// (block × inline); `auto` is left to the container query in CSS. Active only
-	// in cover mode; warns otherwise (it's inert outside an overlay).
-	const contentPlace = modifierValues['content-place'];
-	if (contentPlace) {
-		if (!isCover) {
-			warnContentPlaceOutsideCover(dataRune ?? config.block);
-		} else if (contentPlace !== 'auto') {
-			const [blockAxis, inlineAxis] = contentPlace.trim().split(/\s+/);
-			if (blockAxis) styleParts.push(`--cover-place-block: ${blockAxis}`);
-			if (inlineAxis) styleParts.push(`--cover-place-inline: ${inlineAxis}`);
-			// Scrim follows the content edge. The default linear gradient handles
-			// `start` (flip to `to bottom`) and `end` (the default `to top`). For
-			// `center` a linear gradient can't centre a band, so emit a radial
-			// scrim (and a radial mask for the frost variant) keyed off the same
-			// percentage stops as the linear default — cover.css falls through
-			// to the linear gradient via `var()` defaults when these aren't set.
-			if (blockAxis === 'start') {
-				styleParts.push('--cover-scrim-dir: to bottom');
-			} else if (blockAxis === 'center') {
-				// `farthest-side` extent makes 100% radius land on the box's edges
-				// instead of the (much further) corners — without this, the default
-				// `farthest-corner` shape leaves the outer ~30% of width on a wide
-				// aspect (e.g. 16:9) entirely outside the gradient, so text near the
-				// left/right edges gets no scrim coverage. The dark also stays
-				// solid out to 40% radius (matching the linear's `0%, 62%` visual
-				// weight without the dramatic falloff radial gives at the corners).
-				styleParts.push('--cover-scrim-image: radial-gradient(ellipse farthest-side at center, rgb(0 0 0 / 0.55) 40%, transparent 100%)');
-				styleParts.push('--cover-scrim-mask: radial-gradient(ellipse farthest-side at center, #000 50%, transparent 100%)');
-			}
-		}
-	}
-	// SPEC-089 — cover foreground + default-scrim opt-out. The overlaid content
-	// reads against the darkened media, so default the cover region to a dark
-	// colour-scheme (light text) unless a tint/scrim already set one; `scrim="none"`
-	// disables the default scrim (signalled to CSS on the host).
-	if (isCover) {
-		const coverScrim = readMeta(tag, 'scrim');
-		if (coverScrim === 'none') {
-			bgDataAttrs['data-scrim'] = 'none';
-		}
-		// Scrim treatment: gradient (default) or frost (a frosted-glass blur over
-		// the media). Both render on the media well's `::after` (cover.css); the
-		// type + blur amount ride on the host as data attrs.
-		const coverScrimType = readMeta(tag, 'scrim-type');
-		if (coverScrimType && coverScrim !== 'none') {
-			bgDataAttrs['data-scrim-type'] = coverScrimType;
-			if (coverScrimType === 'frost') {
-				const coverScrimBlur = readMeta(tag, 'scrim-blur');
-				if (coverScrimBlur) bgDataAttrs['data-scrim-blur'] = coverScrimBlur;
-			}
-		}
-		// Foreground polarity follows `scrim-tone` (a dark scrim wants light text
-		// → a dark scheme; a light scrim wants dark text → a light scheme). The
-		// scheme is scoped to the *overlay*, not the rune root, so the card's own
-		// surface (the padded edge around the media well) keeps the page palette —
-		// only the text sitting on the darkened media flips. Full scope flips the
-		// `content` overlay; header scope flips the cover-band (the variant layout
-		// carries the scheme via its `attrs`). An explicit tint/scheme wins.
-		const coverScope = config.rootAttributes?.['data-cover-scope'];
-		if (coverScrim !== 'none' && coverScope !== 'header'
-			&& !bgDataAttrs['data-color-scheme'] && !tintDataAttrs['data-color-scheme']) {
-			const overlay = findByName(filteredChildren, 'content');
-			if (overlay) {
-				overlay.attributes = { ...overlay.attributes, 'data-color-scheme': readMeta(tag, 'scrim-tone') ?? 'dark' };
-			}
-		}
-		// An explicit scrim direction pins the default-scrim gradient, overriding
-		// the content-place-derived direction set above.
-		const dir = COVER_SCRIM_DIR[coverScrim ?? ''];
-		if (dir) styleParts.push(`--cover-scrim-dir: ${dir}`);
-	}
+	// Second facet phase: contributions that need the assembled children.
+	// `cover` flips the colour scheme on the `content` overlay here.
+	runPostAssemble(
+		ORDERED_FACETS,
+		{
+			...facetInput,
+			seedAxes: {
+				'media-position': modifierValues['media-position'],
+				'content-place': modifierValues['content-place'],
+				'color-scheme': bgDataAttrs['data-color-scheme'] ?? tintDataAttrs['data-color-scheme'],
+			},
+		},
+		facetResolution,
+		filteredChildren,
+	);
 	// Frame chrome on the self surface contributes its custom props to the root.
 	if (frameChrome && frameTargetKind === 'self') {
 		styleParts.push(...frameChrome.styleParts);

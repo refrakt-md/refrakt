@@ -2,31 +2,48 @@ import type { Facet } from './types.js';
 import { orderFacets } from './driver.js';
 import { elevationFacet } from './elevation.js';
 import { prominenceFacet } from './prominence.js';
+import { contentPlaceFacet } from './content-place.js';
+import { coverFacet } from './cover.js';
 
-export type { Facet, FacetContext, FacetInput, FacetResult, FacetWarning, FacetLayer } from './types.js';
-export type { FacetResolution } from './driver.js';
-export { orderFacets, runFacets, WarningCollector, engineWarnings } from './driver.js';
+export type { Facet, FacetContext, FacetInput, FacetResult, FacetWarning, FacetLayer, FacetStyle } from './types.js';
+export type { FacetResolution, OrderFacetsOptions } from './driver.js';
+export { orderFacets, runFacets, runPostAssemble, WarningCollector, engineWarnings } from './driver.js';
 export { elevationFacet, ELEVATION_VALUES } from './elevation.js';
 export { prominenceFacet, PROMINENCE_VALUES, hasPageSectionHeader } from './prominence.js';
+export { contentPlaceFacet } from './content-place.js';
+export { coverFacet } from './cover.js';
+
+/** Axis values still resolved inline in `transformRune` and handed to facets
+ *  through `FacetInput.seedAxes`.
+ *
+ *  Interim migration scaffolding. `media-position` and `content-place` come
+ *  from the generic config-modifier loop; `color-scheme` reports whether tint
+ *  or the bg layer already claimed the scheme. Each entry disappears when its
+ *  producer becomes a facet — a facet-supplied value shadows the seed of the
+ *  same name, so consumers need no edit when that happens. */
+export const SEEDED_AXES = ['media-position', 'content-place', 'color-scheme'] as const;
 
 /** The facet registry, in declaration order.
  *
  *  Registration order is the tie-break for facets with no `after` relationship,
  *  so it is kept identical to the order the axes were resolved in when they
- *  lived inline in `transformRune` — that keeps `modifierValues` key insertion
- *  order, and therefore attribute order in the output, unchanged.
+ *  lived inline in `transformRune` — that preserves `modifierValues` key
+ *  insertion order and inline-style declaration order, and therefore the
+ *  output byte-for-byte.
  *
- *  Prototype scope (SPEC pending): `elevation` and `prominence` only. The
- *  remaining axes — tint, density, width/spacing, reading/dropcap, motion,
- *  background, frame, substrate — still resolve inline in `transformRune`.
- *  `FacetResult.layers` and a post-assembly hook are declared but not yet
- *  exercised; both need the background and frame facets to design properly. */
+ *  Prototype scope (SPEC pending): `elevation`, `prominence`, `content-place`
+ *  and `cover`. The remaining axes — tint, density, width/spacing, reading and
+ *  dropcap, motion, background, frame, substrate — still resolve inline.
+ *  `FacetResult.layers` is declared but unexercised; it needs the background
+ *  facet, which is the next migration. */
 const FACETS: readonly Facet[] = [
 	elevationFacet,
 	prominenceFacet,
+	contentPlaceFacet,
+	coverFacet,
 ];
 
 /** Registry ordered once at module load.
  *
  *  A cycle or a dangling `after` throws here — at import, not per transform. */
-export const ORDERED_FACETS: readonly Facet[] = orderFacets(FACETS);
+export const ORDERED_FACETS: readonly Facet[] = orderFacets(FACETS, { seeded: SEEDED_AXES });
