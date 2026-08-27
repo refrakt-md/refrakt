@@ -1,8 +1,8 @@
-{% work id="WORK-517" status="in-progress" priority="high" complexity="moderate" source="SPEC-122" tags="engine, transform, architecture, refactor" milestone="v0.30.0" %}
+{% work id="WORK-517" status="in-progress" priority="high" complexity="moderate" source="SPEC-124" tags="engine, transform, architecture, refactor" milestone="v0.31.0" %}
 
 # Facet registry foundation and first universal axes
 
-Realize the foundation of {% ref "SPEC-122" /%}: the facet interface, the driver, and the first two axes migrated out of `transformRune`. `elevation` and `prominence` are chosen deliberately as the *easy* case — both are independent scalars with no cross-axis dependency — so the foundation lands against low-risk axes before {% ref "WORK-518" /%} tests it against the hardest one.
+Realize the foundation of {% ref "SPEC-124" /%}: the facet interface, the driver, and the first two axes migrated out of `transformRune`. `elevation` and `prominence` are chosen deliberately as the *easy* case — both are independent scalars with no cross-axis dependency — so the foundation lands against low-risk axes before {% ref "WORK-518" /%} tests it against the hardest one.
 
 ## Acceptance Criteria
 
@@ -32,7 +32,7 @@ Note `ELEVATION_VALUES` was dead code before this — declared, never read. The 
 
 ## References
 
-- {% ref "SPEC-122" /%} — facet registry (the spec this work item realizes)
+- {% ref "SPEC-124" /%} — facet registry (the spec this work item realizes)
 - {% ref "SPEC-107" /%} — elevation & prominence, the axes migrated here
 
 {% /work %}

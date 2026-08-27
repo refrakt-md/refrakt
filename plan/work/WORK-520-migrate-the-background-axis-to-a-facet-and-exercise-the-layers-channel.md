@@ -1,4 +1,4 @@
-{% work id="WORK-520" status="pending" priority="high" complexity="complex" source="SPEC-122" tags="engine, transform, refactor, bg" milestone="v0.30.0" %}
+{% work id="WORK-520" status="pending" priority="high" complexity="complex" source="SPEC-124" tags="engine, transform, refactor, bg" milestone="v0.31.0" %}
 
 # Migrate the background axis to a facet and exercise the layers channel
 
@@ -30,7 +30,7 @@ Two theme values live inside it — `BLUR_PRESETS` (`4px/8px/16px`, declared *in
 
 ## References
 
-- {% ref "SPEC-122" /%} — facet registry (the spec this work item realizes)
+- {% ref "SPEC-124" /%} — facet registry (the spec this work item realizes)
 - {% ref "SPEC-088" /%} — bg gradients and the custom-CSS escape hatch
 - {% ref "SPEC-104" /%} — live sandbox guests in the bg backdrop layer
 - {% ref "SPEC-089" /%} — cover mode, which reroutes the scrim away from this layer

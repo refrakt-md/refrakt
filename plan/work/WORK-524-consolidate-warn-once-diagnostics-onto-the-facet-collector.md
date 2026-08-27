@@ -1,4 +1,4 @@
-{% work id="WORK-524" status="pending" priority="medium" complexity="moderate" source="SPEC-122" tags="engine, transform, refactor, dx" milestone="v0.30.0" %}
+{% work id="WORK-524" status="pending" priority="medium" complexity="moderate" source="SPEC-124" tags="engine, transform, refactor, dx" milestone="v0.31.0" %}
 
 # Consolidate warn-once diagnostics onto the facet collector
 
@@ -28,6 +28,6 @@ This item is deliberately sequenced after {% ref "WORK-522" /%}: frame and subst
 
 ## References
 
-- {% ref "SPEC-122" /%} — facet registry (the spec this work item realizes)
+- {% ref "SPEC-124" /%} — facet registry (the spec this work item realizes)
 
 {% /work %}

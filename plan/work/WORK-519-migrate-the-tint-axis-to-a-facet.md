@@ -1,4 +1,4 @@
-{% work id="WORK-519" status="ready" priority="high" complexity="moderate" source="SPEC-122" tags="engine, transform, refactor, tint" milestone="v0.30.0" %}
+{% work id="WORK-519" status="ready" priority="high" complexity="moderate" source="SPEC-124" tags="engine, transform, refactor, tint" milestone="v0.31.0" %}
 
 # Migrate the tint axis to a facet
 
@@ -29,7 +29,7 @@ Style ordering matters: the `--tint-*` declarations currently land after `config
 
 ## References
 
-- {% ref "SPEC-122" /%} — facet registry (the spec this work item realizes)
+- {% ref "SPEC-124" /%} — facet registry (the spec this work item realizes)
 - {% ref "SPEC-053" /%} — tint shape alignment and the six-token vocabulary
 - {% ref "SPEC-052" /%} — per-page and per-subtree tint cascade
 

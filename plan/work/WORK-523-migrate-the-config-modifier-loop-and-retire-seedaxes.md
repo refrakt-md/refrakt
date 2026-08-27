@@ -1,4 +1,4 @@
-{% work id="WORK-523" status="pending" priority="medium" complexity="complex" source="SPEC-122" tags="engine, transform, refactor" milestone="v0.30.0" %}
+{% work id="WORK-523" status="pending" priority="medium" complexity="complex" source="SPEC-124" tags="engine, transform, refactor" milestone="v0.31.0" %}
 
 # Migrate the config-modifier loop and retire seedAxes
 
@@ -35,7 +35,7 @@ Watch for the interaction with variants: `resolveVariantConfig` rewrites `config
 
 ## References
 
-- {% ref "SPEC-122" /%} — facet registry (the spec this work item realizes)
+- {% ref "SPEC-124" /%} — facet registry (the spec this work item realizes)
 - {% ref "SPEC-091" /%} — config variants, resolved ahead of the facet pass
 - {% ref "SPEC-082" /%} — the typed field-data channel the modifier loop reads
 

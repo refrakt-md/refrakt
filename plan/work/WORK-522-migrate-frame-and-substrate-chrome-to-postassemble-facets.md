@@ -1,4 +1,4 @@
-{% work id="WORK-522" status="ready" priority="medium" complexity="complex" source="SPEC-122" tags="engine, transform, refactor, frame, substrate" milestone="v0.30.0" %}
+{% work id="WORK-522" status="ready" priority="medium" complexity="complex" source="SPEC-124" tags="engine, transform, refactor, frame, substrate" milestone="v0.31.0" %}
 
 # Migrate frame and substrate chrome to postAssemble facets
 
@@ -30,7 +30,7 @@ This item will likely want `postAssemble` to report contributions rather than on
 
 ## References
 
-- {% ref "SPEC-122" /%} — facet registry (the spec this work item realizes)
+- {% ref "SPEC-124" /%} — facet registry (the spec this work item realizes)
 - {% ref "SPEC-086" /%} — surface chrome: elevation and frame presets
 - {% ref "SPEC-087" /%} — surface fills: substrate patterns
 - {% ref "SPEC-116" /%} — `frame-overflow` and the clip-host inert-marker strip

@@ -1,4 +1,4 @@
-{% work id="WORK-518" status="in-progress" priority="high" complexity="moderate" source="SPEC-122" tags="engine, transform, architecture, refactor" milestone="v0.30.0" %}
+{% work id="WORK-518" status="in-progress" priority="high" complexity="moderate" source="SPEC-124" tags="engine, transform, architecture, refactor" milestone="v0.31.0" %}
 
 # Migrate the cover/scrim coupling — two-phase facets and seeded dependencies
 
@@ -37,7 +37,7 @@ Two incidental findings surfaced while reading this code; record but do not fix 
 
 ## References
 
-- {% ref "SPEC-122" /%} — facet registry (the spec this work item realizes)
+- {% ref "SPEC-124" /%} — facet registry (the spec this work item realizes)
 - {% ref "SPEC-089" /%} — cover layout, `content-place`, and the scrim reroute
 - {% ref "SPEC-088" /%} — the scrim vocabulary this axis reroutes
 

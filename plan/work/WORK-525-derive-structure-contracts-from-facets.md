@@ -1,4 +1,4 @@
-{% work id="WORK-525" status="pending" priority="high" complexity="complex" source="SPEC-122" tags="engine, transform, contracts, refactor" milestone="v0.30.0" %}
+{% work id="WORK-525" status="pending" priority="high" complexity="complex" source="SPEC-124" tags="engine, transform, contracts, refactor" milestone="v0.31.0" %}
 
 # Derive structure contracts from facets
 
@@ -28,7 +28,7 @@ Sequenced last because the answer depends on the full facet set existing, and on
 
 ## References
 
-- {% ref "SPEC-122" /%} — facet registry (the spec this work item realizes)
+- {% ref "SPEC-124" /%} — facet registry (the spec this work item realizes)
 - {% ref "SPEC-028" /%} — rune output standards, which the contracts encode
 
 {% /work %}

@@ -1,4 +1,4 @@
-{% work id="WORK-521" status="ready" priority="medium" complexity="moderate" source="SPEC-122" tags="engine, transform, refactor" milestone="v0.30.0" %}
+{% work id="WORK-521" status="ready" priority="medium" complexity="moderate" source="SPEC-124" tags="engine, transform, refactor" milestone="v0.31.0" %}
 
 # Migrate the remaining scalar axes to facets
 
@@ -33,7 +33,7 @@ Each facet takes its vocabulary with it — `READING_REGISTERS` and `READING_CAP
 
 ## References
 
-- {% ref "SPEC-122" /%} — facet registry (the spec this work item realizes)
+- {% ref "SPEC-124" /%} — facet registry (the spec this work item realizes)
 - {% ref "SPEC-108" /%} — reading register and the dropcap capability gate
 - {% ref "SPEC-105" /%} — scroll-reveal motion and stagger indices
 - {% ref "SPEC-025" /%} — the universal theming dimensions these axes belong to
