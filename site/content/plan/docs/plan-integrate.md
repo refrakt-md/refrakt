@@ -130,7 +130,7 @@ pages rebuild from `plan/` on every build.
 
 ## Next steps
 
-- [Publish a plan site](/plan/docs/plan-site) — the standalone-site path, plus `plan serve`
-  and `plan build` for quick local browsing.
+- [Publish a plan site](/plan/docs/plan-site) — the standalone-site path: scaffold a
+  deployable plan site and run it with the adapter dev server and build.
 - [Entities](/plan/docs/plan-entities) — the attributes and sections each entity type
   supports.

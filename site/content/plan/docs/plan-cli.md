@@ -172,35 +172,9 @@ npx refrakt plan history --since 7d
 | `--status <status>` | Show transitions to a specific status |
 | `--all` | Include content-only events (global mode) |
 
-## serve
+## Viewing and publishing as a site
 
-Local web dashboard for browsing your plan.
-
-```shell
-npx refrakt plan serve
-```
-
-| Flag | Description |
-|------|-------------|
-| `--port N` | Server port (default: `3000`) |
-| `--theme <name>` | Theme (default: `auto`) |
-| `--open` | Auto-open in browser |
-| `--css <file>` | Additional CSS file |
-
-## build
-
-Generate a static plan site.
-
-```shell
-npx refrakt plan build
-```
-
-| Flag | Description |
-|------|-------------|
-| `--out <dir>` | Output directory (default: `./plan-site`) |
-| `--theme <name>` | Theme (default: `auto`) |
-| `--base-url <url>` | Base URL for assets (default: `/`) |
-| `--css <file>` | Additional CSS file |
+There is no `serve` or `build` subcommand — a plan site is an ordinary refrakt site. Scaffold a deployable one with `npx create-refrakt --type plan` (or `refrakt plan init --target <adapter>`) and run it with the standard adapter `npm run dev` / `npm run build`, or wire plan routes into an existing site. See [Publish a Plan Site](/plan/docs/plan-site).
 
 ## migrate
 

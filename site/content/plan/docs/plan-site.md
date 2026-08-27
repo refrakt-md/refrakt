@@ -1,60 +1,22 @@
 ---
 title: Publish a Plan Site
-description: Browse your plan locally with the dev server, export a static site, or scaffold a deployable plan site with dashboards and per-entity pages
+description: Scaffold a standalone deployable plan site, or wire plan routes into an existing refrakt site with entityRoutes — dashboards and a page per entity
 ---
 
 # Publish a Plan Site
 
 Your plan lives as Markdoc files in `plan/`. When you want to *see* it — a progress
-dashboard, a browsable backlog, a page per work item — you have three options, from
-zero-config to fully customizable.
+dashboard, a browsable backlog, a page per work item — a plan site is just an ordinary
+refrakt site. There are two ways to get one.
 
 | You want… | Use |
 |-----------|-----|
-| A quick look while you work | [`refrakt plan serve`](#browse-locally) |
-| A static site to drop on any host | [`refrakt plan build`](#export-a-static-site) |
-| A deployable site you own and customize | [Scaffold a plan site](#scaffold-a-deployable-plan-site) |
+| A standalone site you own and deploy | [Scaffold a plan site](#scaffold-a-deployable-plan-site) |
+| Plan pages inside a site you already run | [Add plan to an existing site](/plan/docs/plan-integrate) |
 
-## Browse locally
-
-The fastest way to see your plan rendered is the built-in dev server. It reads `plan/`
-directly — no scaffolding, no config — and live-reloads as you edit.
-
-```shell
-npx refrakt plan serve --open
-```
-
-This starts a local dashboard with progress summaries, a browsable backlog, decision
-log, and a page per entity. Edits to your `plan/` files refresh the browser immediately.
-
-```shell
-npx refrakt plan serve --port 4000   # custom port
-npx refrakt plan serve --theme aurora # different theme
-```
-
-See the [`serve` reference](/plan/docs/plan-cli#serve) for all flags.
-
-## Export a static site
-
-To produce a self-contained static site — for GitHub Pages, Netlify, an internal file
-server, or a CI artifact — run `build`:
-
-```shell
-npx refrakt plan build --out ./plan-site
-```
-
-This writes plain HTML/CSS to the output directory (default `./plan-site`). There's no
-runtime and no build step on the host — copy the folder anywhere it can be served.
-
-```shell
-npx refrakt plan build --base-url /roadmap/   # served under a sub-path
-```
-
-See the [`build` reference](/plan/docs/plan-cli#build) for all flags.
-
-`serve` and `build` are the right call when you just want to look at your plan. When you
-want a site you can theme, extend, add pages to, and deploy as part of your own project —
-scaffold one.
+Either way you author dashboards with the plan [aggregation runes](/runes/plan) and get a
+page per entity through `entityRoutes`, and you browse and ship with the standard adapter
+dev server (`npm run dev`) and build (`npm run build`).
 
 ## Scaffold a deployable plan site
 
@@ -150,5 +112,5 @@ every push.
 
 - [Add plan to an existing site](/plan/docs/plan-integrate) — wire plan into a docs or
   marketing site you already have.
-- [CLI Reference](/plan/docs/plan-cli) — every `refrakt plan` command, including `serve`
-  and `build`.
+- [CLI Reference](/plan/docs/plan-cli) — every `refrakt plan` command for authoring and
+  managing your plan.

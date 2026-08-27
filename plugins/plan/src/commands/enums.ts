@@ -116,13 +116,52 @@ export const TERMINAL_STATUS_UNION: ReadonlySet<string> = new Set(
 	Object.values(TERMINAL_STATUSES).flatMap(s => [...s]),
 );
 
+// --- Spec lifecycle-drift predicate (SPEC-119) ---------------------------
+//
+// The single predicate that both `plan status` (the `suggestImplemented`
+// carrot) and `plan validate` (the `spec-status-lag` warning) resolve through,
+// so an opportunity and a contradiction can never disagree about the same spec.
+
+/**
+ * Spec statuses that sit *before* `implemented` — the states a spec should
+ * advance out of once its linked work is achieving-terminal. `spec-status-lag`
+ * and `suggestImplemented` fire only for these.
+ */
+export const SPEC_PRE_IMPLEMENTED_STATUSES: ReadonlySet<string> = new Set([
+	'draft', 'review', 'accepted',
+]);
+
+/**
+ * Spec statuses at or beyond `implemented` — the states that assert the linked
+ * work is actually built. `spec-status-ahead` fires when one of these is set
+ * but a linked work item is still non-terminal.
+ */
+export const SPEC_IMPLEMENTED_STATUSES: ReadonlySet<string> = new Set([
+	'implemented', 'shipped',
+]);
+
+/**
+ * The spec↔work lifecycle-drift predicate shared by `plan status`
+ * (`suggestImplemented`) and `plan validate` (`spec-status-lag`): true when a
+ * spec still sits before `implemented`, has ≥1 linked work/bug item, and its
+ * linked work is *entirely* achieving-terminal. Keys on achieving
+ * (`done`/`fixed` via {@link DONE_STATUS_SET}), not merely terminal — a spec
+ * whose work is all `cancelled`/`superseded` is never nudged toward
+ * `implemented` (it should be retired instead). Absence of linked work is never
+ * a contradiction (SPEC-119).
+ */
+export function specStatusLags(specStatus: string, linkedWorkStatuses: readonly string[]): boolean {
+	if (!SPEC_PRE_IMPLEMENTED_STATUSES.has(specStatus)) return false;
+	if (linkedWorkStatuses.length === 0) return false;
+	return linkedWorkStatuses.every(s => DONE_STATUS_SET.has(s));
+}
+
 /**
  * Dashboard "actionable-first" status display order (SPEC-072). Diverges from
  * each rune's lifecycle order — blocked/in-progress bubble to the top, terminal
- * states sink to the tail. Shared by the plugin's `theme.orderings` and the
- * bespoke `plan build` render-pipeline so collection/aggregate groups land in
- * the same order on both paths. Covers every canonical status so no group is
- * left unsorted.
+ * states sink to the tail. Consumed by the plugin's `theme.orderings`
+ * (`src/index.ts`) so collection/aggregate groups on the plan site are sorted
+ * consistently. Covers every canonical status so no group is left unsorted.
  */
 export const WORK_STATUS_DISPLAY_ORDER: readonly string[] = [
 	'blocked', 'in-progress', 'review', 'ready', 'pending', 'draft', 'done', 'cancelled', 'superseded',

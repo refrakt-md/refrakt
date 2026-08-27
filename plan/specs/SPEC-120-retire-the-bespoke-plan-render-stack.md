@@ -1,4 +1,4 @@
-{% spec id="SPEC-120" status="accepted" tags="plan, cli, deprecation, cleanup" %}
+{% spec id="SPEC-120" status="implemented" tags="plan, cli, deprecation, cleanup" %}
 
 # Retire the bespoke plan render stack
 

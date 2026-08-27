@@ -334,47 +334,9 @@ Apr 12  1676387  Accept SPEC-037 and break into work items
 | `resolution` | A `## Resolution` section was added or modified |
 | `content` | File changed but no structured diff detected |
 
-## refrakt plan serve
+## Viewing and publishing a plan as a site
 
-Browse your plan as an interactive dashboard with hot reload.
-
-```bash
-refrakt plan serve
-refrakt plan serve --port 4000 --open
-```
-
-### Options
-
-| Flag | Description |
-|------|-------------|
-| `[directory]` | Plan directory (positional, default: `plan/`) |
-| `--dir <path>` | Plan directory (named flag) |
-| `--port <n>` | HTTP port (default: `3000`) |
-| `--specs <dir>` | Separate specs directory |
-| `--theme <name>` | Theme name (default: `auto`) |
-| `--open` | Open browser automatically |
-
-The dashboard shows an overview of all entities, milestone progress, and links to individual entity pages. File changes trigger automatic reload.
-
-## refrakt plan build
-
-Generate a static HTML site from your plan.
-
-```bash
-refrakt plan build
-refrakt plan build --out dist/plan --base-url /plan/
-```
-
-### Options
-
-| Flag | Description |
-|------|-------------|
-| `[directory]` | Plan directory (positional, default: `plan/`) |
-| `--dir <path>` | Plan directory (named flag) |
-| `--out <dir>` | Output directory (default: `./plan-site`) |
-| `--specs <dir>` | Separate specs directory |
-| `--theme <name>` | Theme name (default: `auto`) |
-| `--base-url <url>` | Base URL for the site (default: `/`) |
+There is no built-in dev server or static-site generator for plans. A plan site is an ordinary refrakt site: scaffold a deployable one with `npx create-refrakt --type plan` (or `refrakt plan init --target <adapter>`), then use the standard adapter `npm run dev` / `npm run build`. You can also wire plan routes into a refrakt site you already run. See [Publish a Plan Site](/plan/docs/plan-site) for both paths.
 
 ## Environment variables
 

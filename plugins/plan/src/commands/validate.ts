@@ -3,7 +3,7 @@ import { basename, join } from 'path';
 import { scanPlanFiles } from '../scanner.js';
 import { buildBlockedByAdjacency } from '../scanner-core.js';
 import type { PlanEntity, PlanRuneType } from '../types.js';
-import { VALID_STATUS, VALID_PRIORITY, VALID_COMPLEXITY, VALID_SEVERITY, DONE_STATUS_SET, isTerminal, PR_REF_RE, RELEASED_IN_RE } from './enums.js';
+import { VALID_STATUS, VALID_PRIORITY, VALID_COMPLEXITY, VALID_SEVERITY, DONE_STATUS_SET, isTerminal, isAchieving, specStatusLags, SPEC_IMPLEMENTED_STATUSES, PR_REF_RE, RELEASED_IN_RE } from './enums.js';
 
 // --- Valid attribute values per type (sets derived from the shared vocabularies) ---
 
@@ -319,6 +319,17 @@ function checkPrAndRelease(entities: PlanEntity[]): ValidationIssue[] {
 					message: `${id} is shipped but has no released-in="vX.Y.Z"`,
 				});
 			}
+			// Mirror of shipped-without-release: a release tag without the
+			// shipped status is a lifecycle contradiction (SPEC-119).
+			if (releasedIn && status !== 'shipped') {
+				issues.push({
+					severity: 'warning',
+					type: 'released-in-without-shipped',
+					source: id,
+					file: e.file,
+					message: `${id} has released-in="${releasedIn}" but status is "${status}" — set status to shipped or clear released-in`,
+				});
+			}
 			if (releasedIn && !RELEASED_IN_RE.test(releasedIn)) {
 				issues.push({
 					severity: 'error',
@@ -531,7 +542,129 @@ function checkFilenameIdMatch(entities: PlanEntity[]): ValidationIssue[] {
 	return issues;
 }
 
-function checkCompletedMilestones(entities: PlanEntity[]): ValidationIssue[] {
+/** Whether a work/bug item's `source` list references the given spec ID. */
+function sourcesSpec(e: PlanEntity, specId: string): boolean {
+	return (e.attributes.source || '')
+		.split(',')
+		.map(s => s.trim())
+		.includes(specId);
+}
+
+/**
+ * Spec-side lifecycle-drift checks (SPEC-119): a spec whose status contradicts
+ * the terminal evidence in the work items that `source` it. Linkage is the
+ * `source="SPEC-xxx"` edge; every check requires ≥1 linked item (absence of
+ * evidence is not a contradiction).
+ */
+function checkSpecLifecycleDrift(entities: PlanEntity[]): ValidationIssue[] {
+	const issues: ValidationIssue[] = [];
+	const specs = entities.filter(e => e.type === 'spec');
+	const workAndBugs = entities.filter(e => e.type === 'work' || e.type === 'bug');
+
+	for (const spec of specs) {
+		const specId = spec.attributes.id;
+		if (!specId) continue;
+		const status = spec.attributes.status || '';
+
+		const linked = workAndBugs.filter(e => sourcesSpec(e, specId));
+		if (linked.length === 0) continue; // no linked evidence → no drift
+		const linkedStatuses = linked.map(e => e.attributes.status || '');
+
+		// spec-status-lag — spec sits before `implemented` but all linked work
+		// is achieving-terminal. Shares its predicate with `plan status`'s
+		// `suggestImplemented` so the carrot and the warning never diverge.
+		if (specStatusLags(status, linkedStatuses)) {
+			issues.push({
+				severity: 'warning',
+				type: 'spec-status-lag',
+				source: specId,
+				file: spec.file,
+				message: `${specId} is ${status} but all ${linked.length} linked work item(s) are done — advance it to implemented`,
+			});
+		}
+
+		// spec-started-in-draft — a draft spec whose work has already begun
+		// (in-progress or achieving-terminal).
+		if (status === 'draft') {
+			const started = linked.filter(e =>
+				e.attributes.status === 'in-progress' || isAchieving(e.type, e.attributes.status || ''),
+			);
+			if (started.length > 0) {
+				issues.push({
+					severity: 'info',
+					type: 'spec-started-in-draft',
+					source: specId,
+					file: spec.file,
+					message: `${specId} is draft but linked work has started (${started.map(e => e.attributes.id || e.file).join(', ')})`,
+				});
+			}
+		}
+
+		// spec-status-ahead — spec claims implemented/shipped but a linked work
+		// item is still non-terminal (the status ran ahead of the work).
+		if (SPEC_IMPLEMENTED_STATUSES.has(status)) {
+			const open = linked.filter(e => !isTerminal(e.type as PlanRuneType, e.attributes.status || ''));
+			if (open.length > 0) {
+				issues.push({
+					severity: 'warning',
+					type: 'spec-status-ahead',
+					source: specId,
+					file: spec.file,
+					target: open[0].attributes.id,
+					message: `${specId} is ${status} but ${open.length} linked work item(s) are not terminal (e.g. ${open[0].attributes.id || open[0].file} is ${open[0].attributes.status || 'unknown'})`,
+				});
+			}
+		}
+	}
+	return issues;
+}
+
+/**
+ * Work-dependency drift (SPEC-119): a work/bug item still `blocked` after every
+ * item in its `## Blocked by` section (SPEC-114 directed edges) has reached an
+ * achieving-terminal status — it is silently excluded from `plan next` for no
+ * reason. Reads the directed dependency graph, never prose `{% ref %}` mentions.
+ */
+function checkStaleBlocked(entities: PlanEntity[]): ValidationIssue[] {
+	const issues: ValidationIssue[] = [];
+	const byId = new Map<string, PlanEntity>();
+	for (const e of entities) {
+		const id = e.attributes.id || e.attributes.name;
+		if (id) byId.set(id, e);
+	}
+	const blockedByAdj = buildBlockedByAdjacency(entities); // id → ids it waits for
+
+	for (const e of entities) {
+		if (e.type !== 'work' && e.type !== 'bug') continue;
+		if (e.attributes.status !== 'blocked') continue;
+		const selfId = e.attributes.id || '';
+		const blockers = blockedByAdj.get(selfId) || [];
+		if (blockers.length === 0) continue; // blocked with no `## Blocked by` targets → nothing to be stale against
+
+		const allSatisfied = blockers.every(t => {
+			const dep = byId.get(t);
+			return dep ? isAchieving(dep.type, dep.attributes.status || '') : false;
+		});
+		if (allSatisfied) {
+			issues.push({
+				severity: 'warning',
+				type: 'stale-blocked',
+				source: selfId || e.file,
+				file: e.file,
+				message: `${selfId || e.file} is blocked but all its "Blocked by" targets (${blockers.join(', ')}) are done — update its status`,
+			});
+		}
+	}
+	return issues;
+}
+
+/**
+ * Milestone-completion drift (SPEC-119): a milestone marked `complete` that
+ * still has a **non-terminal** member. Keys on `isTerminal`, so a `cancelled` /
+ * `superseded` member (deliberately retired, not shipped) does not keep the
+ * milestone from being complete.
+ */
+function checkMilestoneCompletionDrift(entities: PlanEntity[]): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
 	const milestones = entities.filter(e => e.type === 'milestone' && e.attributes.status === 'complete');
 	const workItems = entities.filter(e => e.type === 'work' || e.type === 'bug');
@@ -539,17 +672,17 @@ function checkCompletedMilestones(entities: PlanEntity[]): ValidationIssue[] {
 	for (const m of milestones) {
 		const name = m.attributes.name || m.attributes.id || '';
 		const openItems = workItems.filter(w =>
-			w.attributes.milestone === name && !DONE_STATUSES.has(w.attributes.status || '')
+			w.attributes.milestone === name && !isTerminal(w.type as PlanRuneType, w.attributes.status || ''),
 		);
 		for (const item of openItems) {
 			const itemId = item.attributes.id || item.file;
 			issues.push({
 				severity: 'warning',
-				type: 'complete-milestone-open-item',
+				type: 'milestone-complete-with-open-work',
 				source: name,
 				file: m.file,
 				target: itemId,
-				message: `${name} marked complete but ${itemId} is still ${item.attributes.status || 'unknown'}`,
+				message: `${name} is complete but ${itemId} is still ${item.attributes.status || 'unknown'}`,
 			});
 		}
 	}
@@ -577,7 +710,9 @@ export function runValidate(options: ValidateOptions): ValidateResult {
 		...checkCircularDeps(entities, knownIds),
 		...checkRequiredSections(entities),
 		...checkOrphanedWorkItems(entities),
-		...checkCompletedMilestones(entities),
+		...checkMilestoneCompletionDrift(entities),
+		...checkSpecLifecycleDrift(entities),
+		...checkStaleBlocked(entities),
 		...checkResolutions(entities, dir),
 		...checkFilenameIdMatch(entities),
 	];

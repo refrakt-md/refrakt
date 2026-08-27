@@ -50,11 +50,11 @@ npx refrakt plan update WORK-042 --status done --resolve "Implemented in PR #42"
 
 ## Publish your plan
 
-Browse it locally as you work, or ship it. `refrakt plan serve` opens a live dashboard; `refrakt plan build` exports a static site. Or scaffold a deployable site with `--target` and customize it like any refrakt project.
+Your plan is an ordinary refrakt site. Scaffold a deployable one, then run the standard adapter dev server to browse it live and build it for hosting — customize it like any refrakt project.
 
 ```shell
-npx refrakt plan serve --open
 npm create refrakt my-plan --type plan --target sveltekit
+cd my-plan && npm run dev   # live dashboard; npm run build to ship
 ```
 
 {% /steps %}
@@ -83,7 +83,7 @@ Issue trackers live outside your code. Boards go stale. Status updates get lost 
 
 - {% icon name="globe" /%} **Publish as a site**
 
-  Browse locally with `plan serve`, export a static site with `plan build`, or scaffold a deployable site you own and theme — no SaaS, no lock-in.
+  Scaffold a deployable site you own and theme, browse it live with `npm run dev`, and ship it with `npm run build` — no SaaS, no lock-in.
 
 - {% icon name="wifi-off" /%} **Works offline, zero lock-in**
 

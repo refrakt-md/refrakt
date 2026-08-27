@@ -8,12 +8,13 @@ import {
 	ACTIONABLE_STATUSES,
 	DONE_STATUS_SET,
 	TERMINAL_STATUS_UNION,
+	WORK_STATUS_DISPLAY_ORDER,
+	BUG_STATUS_DISPLAY_ORDER,
 	isTerminal,
 	isAchieving,
 	isActionable,
 } from '../src/commands/enums.js';
 import { config } from '../src/config.js';
-import { STATUS_ORDER_BY_TYPE, STATUS_LABELS_DISPLAY, STATUS_ORDER } from '../src/commands/render-pipeline.js';
 import { runValidate } from '../src/commands/validate.js';
 import { runNext } from '../src/commands/next.js';
 import type { PlanRuneType } from '../src/types.js';
@@ -80,21 +81,15 @@ describe('vocabulary — exhaustiveness against config + orderings', () => {
 		}
 	});
 
-	it('every canonical status has a per-type ordering entry', () => {
-		for (const type of RUNE_TYPES) {
-			const order = STATUS_ORDER_BY_TYPE[type] ?? [];
-			for (const status of VALID_STATUS[type]) {
-				expect(order.includes(status), `${type} status "${status}" missing from STATUS_ORDER_BY_TYPE`).toBe(true);
-			}
+	it('the theme display orderings cover every work/bug status (theme.orderings contract)', () => {
+		// The live plan site groups collection/aggregate output by these orderings
+		// (see src/index.ts theme.orderings). Every canonical work/bug status must
+		// appear, or a status would land in an unsorted group.
+		for (const status of VALID_STATUS.work) {
+			expect(WORK_STATUS_DISPLAY_ORDER.includes(status), `work status "${status}" missing from WORK_STATUS_DISPLAY_ORDER`).toBe(true);
 		}
-	});
-
-	it('every canonical status has a display label and global order', () => {
-		for (const type of RUNE_TYPES) {
-			for (const status of VALID_STATUS[type]) {
-				expect(STATUS_LABELS_DISPLAY[status], `label for "${status}"`).toBeDefined();
-				expect(STATUS_ORDER[status], `order for "${status}"`).toBeDefined();
-			}
+		for (const status of VALID_STATUS.bug) {
+			expect(BUG_STATUS_DISPLAY_ORDER.includes(status), `bug status "${status}" missing from BUG_STATUS_DISPLAY_ORDER`).toBe(true);
 		}
 	});
 });
