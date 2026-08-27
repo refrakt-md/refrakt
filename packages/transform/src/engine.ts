@@ -235,68 +235,6 @@ function warnNonEagerCoverSandbox(container: string, activation: string): void {
 	console.warn(`[refrakt] \`activation="${activation}"\` on a sandbox serving as a \`${container}\` cover backdrop — the backdrop is inert (pointer-events: none), so the poster/Run affordance is unreachable. Drop \`activation\` (eager is the background mode).`);
 }
 
-const BG_GRADIENT_DIRECTIONS: Record<string, string> = {
-	'to-t': 'to top', 'to-b': 'to bottom', 'to-l': 'to left', 'to-r': 'to right',
-	'to-tr': 'to top right', 'to-br': 'to bottom right', 'to-bl': 'to bottom left', 'to-tl': 'to top left',
-};
-
-/** SPEC-088 — build a token-driven `bg` gradient. `stops` are semantic token
- *  names resolved to `var(--rf-color-*)` (colours stay token-owned); `direction`
- *  is a bounded named set; `type` is linear (default) | radial | conic. Returns
- *  null when there are fewer than two stops. */
-/** Resolve a single gradient stop into a CSS colour expression.
- *
- *  Recognises three shapes:
- *  - `transparent` (the CSS keyword) → emits `transparent` verbatim, so
- *    `from="transparent" to="primary"` fades from clear to the theme colour.
- *  - `name/alpha` (Tailwind-style) → emits a `color-mix(... %, transparent)`
- *    wrapper so a token can be used at partial opacity. Alpha accepts a
- *    decimal (`0.5`) or a percent (`50` or `50%`); values outside `[0, 1]`
- *    after normalisation fall through to the plain token.
- *  - Bare token name → `var(--rf-color-{name})` (the original behaviour).
- */
-function resolveBgStop(stop: string): string {
-	if (stop === 'transparent') return 'transparent';
-	const slashIdx = stop.indexOf('/');
-	if (slashIdx > 0 && slashIdx < stop.length - 1) {
-		const name = stop.slice(0, slashIdx);
-		const alphaRaw = stop.slice(slashIdx + 1).replace(/%$/, '');
-		const alpha = parseFloat(alphaRaw);
-		if (Number.isFinite(alpha)) {
-			const fraction = alpha > 1 ? alpha / 100 : alpha;
-			if (fraction >= 0 && fraction <= 1) {
-				return `color-mix(in srgb, var(--rf-color-${name}) ${fraction * 100}%, transparent)`;
-			}
-		}
-	}
-	return `var(--rf-color-${stop})`;
-}
-
-function buildBgGradient(opts: { type?: string; direction?: string; stops: (string | undefined)[] }): string | null {
-	const stops = opts.stops.filter((s): s is string => !!s).map(resolveBgStop);
-	if (stops.length < 2) return null;
-	const type = opts.type ?? 'linear';
-	if (type === 'radial') return `radial-gradient(${stops.join(', ')})`;
-	if (type === 'conic') return `conic-gradient(${stops.join(', ')})`;
-	const dir = BG_GRADIENT_DIRECTIONS[opts.direction ?? 'to-b'] ?? 'to bottom';
-	return `linear-gradient(${dir}, ${stops.join(', ')})`;
-}
-
-/** SPEC-088 — gradient scrim strength (alpha of the tone colour). */
-const SCRIM_STRENGTH: Record<string, string> = { sm: '0.3', md: '0.55', lg: '0.8' };
-
-/** A bare token reference (`primary`, `surface`, …) vs raw CSS (`rgba(…)`, `#…`). */
-const TOKEN_REF = /^[a-z][a-z0-9-]*$/;
-
-const RAW_OVERLAY_WARNED = new Set<string>();
-/** Warn once when `overlay` carries raw CSS (deprecated — use a token wash or `scrim`). */
-function warnRawOverlay(rune: string): void {
-	if (RAW_OVERLAY_WARNED.has(rune)) return;
-	RAW_OVERLAY_WARNED.add(rune);
-	// eslint-disable-next-line no-console
-	console.warn(`[refrakt] raw-CSS \`overlay\` on \`${rune}\` is deprecated (SPEC-088) — use \`overlay="dark|light|<token>"\` for a flat wash or \`scrim\` for a legibility gradient. The raw passthrough will be removed in a future minor.`);
-}
-
 /** Apply BEM classes and structural enhancements to a rune tag */
 function transformRune(
 	tag: SerializedTag,
@@ -471,202 +409,6 @@ function transformRune(
 		modifierValues['stagger'] = '';
 	}
 
-	// 1f. Background processing — read bg-* meta tags and build background layer
-	const bgMetaProps = new Set<string>();
-	const bgDataAttrs: Record<string, string> = {};
-	let bgElement: SerializedTag | null = null;
-
-	// SPEC-104 — a `{% bg %}` body hoists a `data-bg-guest` element (a sandbox
-	// backdrop) into the host's children. Capture it so §1f relocates it into the
-	// bg layer (a sibling of the `bg-video` branch) and the flow drops it (below).
-	const bgGuestNode = (tag.children ?? []).find(
-		(c): c is SerializedTag => isTag(c) && (c as SerializedTag).attributes?.['data-bg-guest'] !== undefined,
-	) ?? null;
-
-	const bgPreset = readMeta(tag, 'bg-preset');
-	const bgSrc = readMeta(tag, 'bg-src');
-	const bgVideo = readMeta(tag, 'bg-video');
-
-	// SPEC-088 — token-driven gradient fill (inline facets override a preset's
-	// structured `gradient`). Built before the trigger so a gradient-only bg
-	// (no image/video/preset-style) still raises the bg layer.
-	const bgGradientDir = readMeta(tag, 'bg-gradient');
-	const bgFrom = readMeta(tag, 'bg-from');
-	const bgVia = readMeta(tag, 'bg-via');
-	const bgTo = readMeta(tag, 'bg-to');
-	const bgGradientType = readMeta(tag, 'bg-gradient-type');
-	let presetGradient: { type?: string; direction?: string; stops: string[] } | undefined;
-	if (bgPreset && backgrounds[bgPreset]) {
-		let p = backgrounds[bgPreset];
-		if (p.extends && backgrounds[p.extends]) p = { ...backgrounds[p.extends], ...p };
-		presetGradient = p.gradient;
-	}
-	let bgGradient: string | null = null;
-	if (bgGradientDir || bgFrom || bgVia || bgTo || bgGradientType) {
-		// Inline facets override individual facets of the preset; stops fall back
-		// to the preset's when the author didn't supply at least two inline.
-		const inlineStops = [bgFrom, bgVia, bgTo].filter((s): s is string => !!s);
-		bgGradient = buildBgGradient({
-			type: bgGradientType ?? presetGradient?.type,
-			direction: bgGradientDir ?? presetGradient?.direction,
-			stops: inlineStops.length >= 2 ? inlineStops : (presetGradient?.stops ?? inlineStops),
-		});
-	} else if (presetGradient) {
-		bgGradient = buildBgGradient(presetGradient);
-	}
-
-	// A scrim or a flat overlay can stand alone (a wash over the rune's own
-	// content), so they also raise the bg/overlay layer.
-	const scrimDir = readMeta(tag, 'scrim');
-	const bgOverlay = readMeta(tag, 'bg-overlay');
-
-	// In cover mode the scrim belongs to the media well (handled below), not the
-	// self-surface bg layer — so it alone doesn't raise the bg layer here.
-	const bgScrim = scrimDir && scrimDir !== 'none' && !isCover;
-	if (bgPreset || bgSrc || bgVideo || bgGradient || bgScrim || bgOverlay || bgGuestNode) {
-		// Resolve preset styles (Tier 1 — CSS-only presets)
-		let presetStyles: Record<string, string> = {};
-		if (bgPreset && backgrounds[bgPreset]) {
-			let preset = backgrounds[bgPreset];
-
-			// Resolve extends chain (single level)
-			if (preset.extends && backgrounds[preset.extends]) {
-				const base = backgrounds[preset.extends];
-				preset = { ...base, params: { ...base.params, ...preset.params }, style: { ...base.style, ...preset.style } };
-			}
-
-			if (preset.style) {
-				presetStyles = { ...preset.style };
-			}
-		}
-
-		const bgBlur = readMeta(tag, 'bg-blur');
-		const bgPosition = readMeta(tag, 'bg-position');
-		const bgFit = readMeta(tag, 'bg-fit');
-		const bgOpacity = readMeta(tag, 'bg-opacity');
-		const bgFixed = readMeta(tag, 'bg-fixed');
-
-		// Blur presets
-		const BLUR_PRESETS: Record<string, string> = { sm: '4px', md: '8px', lg: '16px' };
-
-		// Build bg layer style — preset styles first, then explicit overrides
-		const bgStyleParts: string[] = [];
-		for (const [prop, value] of Object.entries(presetStyles)) {
-			bgStyleParts.push(`${prop}: ${value}`);
-		}
-		// Image takes the base layer when present; otherwise the gradient fills it.
-		if (bgSrc) bgStyleParts.push(`--bg-image: url(${bgSrc})`);
-		else if (bgGradient) bgStyleParts.push(`--bg-image: ${bgGradient}`);
-		if (bgPosition) bgStyleParts.push(`--bg-position: ${bgPosition}`);
-		if (bgBlur) bgStyleParts.push(`--bg-blur: ${BLUR_PRESETS[bgBlur] ?? bgBlur}`);
-		if (bgFit) bgStyleParts.push(`--bg-fit: ${bgFit}`);
-		if (bgOpacity) bgStyleParts.push(`--bg-opacity: ${bgOpacity}`);
-
-		const bgAttrs: Record<string, any> = { 'data-name': 'bg' };
-		if (bgPreset) bgAttrs['data-bg-preset'] = bgPreset;
-		if (bgStyleParts.length) bgAttrs.style = bgStyleParts.join('; ');
-		if (bgFixed) bgAttrs['data-bg-fixed'] = '';
-
-		// Build bg layer children
-		const bgChildren: RendererNode[] = [];
-
-		if (bgVideo) {
-			bgChildren.push(makeTag('video', {
-				'data-name': 'bg-video',
-				autoplay: '',
-				muted: '',
-				loop: '',
-				playsinline: '',
-				src: bgVideo,
-				...(bgStyleParts.length ? { style: bgStyleParts.filter(s => !s.startsWith('--bg-image')).join('; ') } : {}),
-			}));
-		}
-
-		// SPEC-104 — relocate a live sandbox backdrop into the bg layer, a sibling of
-		// the `bg-video` branch: above the `--bg-image` boot frame, below the
-		// overlay/scrim appended after it. The guest arrived tagged + postured by the
-		// bg rune; the flow copy is dropped below (section 4).
-		if (bgGuestNode) {
-			bgChildren.push(bgGuestNode);
-		}
-
-		// overlay — a flat wash (SPEC-088 structured vocabulary): dark | light | a
-		// token reference (+ overlay-opacity). Raw CSS still works but warns.
-		if (bgOverlay) {
-			const bgOverlayOpacity = readMeta(tag, 'bg-overlay-opacity');
-			const overlayAttrs: Record<string, string> = { 'data-name': 'bg-overlay' };
-			if (bgOverlay === 'dark' || bgOverlay === 'light') {
-				overlayAttrs['data-bg-overlay'] = bgOverlay;
-				if (bgOverlayOpacity) overlayAttrs.style = `opacity: ${bgOverlayOpacity}`;
-			} else if (TOKEN_REF.test(bgOverlay)) {
-				const parts = [`background: var(--rf-color-${bgOverlay})`];
-				if (bgOverlayOpacity) parts.push(`opacity: ${bgOverlayOpacity}`);
-				overlayAttrs.style = parts.join('; ');
-			} else {
-				warnRawOverlay(dataRune ?? config.block);
-				overlayAttrs.style = `background: ${bgOverlay}`;
-			}
-			bgChildren.push(makeTag('div', overlayAttrs));
-		}
-
-		// scrim — a structured legibility treatment (SPEC-088). On the bg overlay
-		// layer here; cover mode (SPEC-089) routes the same facet to the media well.
-		if (bgScrim) {
-			const scrimType = readMeta(tag, 'scrim-type') ?? 'gradient';
-			const scrimTone = readMeta(tag, 'scrim-tone') ?? 'dark';
-			const scrimAttrs: Record<string, string> = {
-				'data-name': 'scrim', 'data-scrim': scrimType,
-				'data-scrim-tone': scrimTone, 'data-scrim-dir': scrimDir,
-			};
-			const scrimStyle: string[] = [];
-			if (scrimType === 'frost') {
-				const scrimBlur = readMeta(tag, 'scrim-blur') ?? 'md';
-				scrimStyle.push(`--scrim-blur: ${BLUR_PRESETS[scrimBlur] ?? BLUR_PRESETS.md}`);
-			} else {
-				const scrimStrength = readMeta(tag, 'scrim-strength') ?? 'md';
-				scrimStyle.push(`--scrim-strength: ${SCRIM_STRENGTH[scrimStrength] ?? SCRIM_STRENGTH.md}`);
-			}
-			scrimAttrs.style = scrimStyle.join('; ');
-			bgChildren.push(makeTag('div', scrimAttrs));
-
-			// Foreground polarity (SPEC-088): the overlaid content's text/muted
-			// follow the scrim, not the base surface — a dark scrim yields light
-			// text. Reuse the colour-scheme lever (`data-color-scheme`), which
-			// flips the full palette; an explicit tint scheme still wins.
-			if (!facetResolution.state['color-scheme']) {
-				bgDataAttrs['data-color-scheme'] = scrimTone;
-			}
-		}
-
-		bgElement = makeTag('div', bgAttrs, bgChildren);
-
-		// Add has-bg modifier and class
-		modifierClasses.push(`${block}--has-bg`);
-		bgDataAttrs['data-bg'] = '';
-
-		// Track consumed meta properties
-		bgMetaProps.add('bg-preset');
-		bgMetaProps.add('bg-src');
-		bgMetaProps.add('bg-video');
-		bgMetaProps.add('bg-overlay');
-		bgMetaProps.add('bg-blur');
-		bgMetaProps.add('bg-position');
-		bgMetaProps.add('bg-fit');
-		bgMetaProps.add('bg-opacity');
-		bgMetaProps.add('bg-fixed');
-		bgMetaProps.add('bg-gradient');
-		bgMetaProps.add('bg-from');
-		bgMetaProps.add('bg-via');
-		bgMetaProps.add('bg-to');
-		bgMetaProps.add('bg-gradient-type');
-		bgMetaProps.add('bg-overlay-opacity');
-		bgMetaProps.add('scrim');
-		bgMetaProps.add('scrim-type');
-		bgMetaProps.add('scrim-strength');
-		bgMetaProps.add('scrim-blur');
-		bgMetaProps.add('scrim-tone');
-	}
-
 	// SPEC-089 — in cover mode the scrim metas are consumed by the media well
 	// even when the bg layer above didn't run. The `cover` facet claims them
 	// (its `consumes`), so the strip pass covers them via `facetConsumed`.
@@ -697,7 +439,11 @@ function transformRune(
 	// 4. Auto-label children by tag name or property attribute (recursive)
 	// SPEC-104 — drop the bg guest from the flow: it was relocated into the bg
 	// layer (§1f) and must not also render among the host's content.
-	let children = bgGuestNode ? tag.children.filter(c => c !== bgGuestNode) : tag.children;
+	// Nodes a facet relocated into a layer are dropped from the normal flow, or
+	// they would render twice (SPEC-104's bg sandbox guest).
+	let children = facetResolution.absorbs.length
+		? tag.children.filter(c => !facetResolution.absorbs.includes(c as SerializedTag))
+		: tag.children;
 	if (config.autoLabel) {
 		children = applyAutoLabel(children, config.autoLabel);
 	}
@@ -738,8 +484,11 @@ function transformRune(
 	}
 
 	// 5b. Prepend bg layer element if present (before content, after structural elements)
-	if (bgElement) {
-		children = [bgElement, ...children];
+	const beforeContent = facetResolution.layers
+		.filter(l => l.placement === 'before-content')
+		.map(l => l.element);
+	if (beforeContent.length) {
+		children = [...beforeContent, ...children];
 	}
 
 	// 6. Apply BEM element classes, section anatomy, and media slots to data-name children, then recurse once
@@ -804,7 +553,6 @@ function transformRune(
 		if (c.name !== 'meta' || !c.attributes['data-field']) return true;
 		const prop = c.attributes['data-field'];
 		if (consumedModifierFields?.has(prop)) return false;
-		if (bgMetaProps.has(prop)) return false;
 		if (facetConsumed.has(prop)) return false;
 		return true;
 	});
@@ -857,9 +605,6 @@ function transformRune(
 			seedAxes: {
 				'media-position': modifierValues['media-position'],
 				'content-place': modifierValues['content-place'],
-				// Tint's own claim reaches cover through facet state, which takes
-				// precedence over a seed; this covers the bg layer's claim.
-				'color-scheme': bgDataAttrs['data-color-scheme'],
 			},
 		},
 		facetResolution,
@@ -886,7 +631,6 @@ function transformRune(
 		attributes: {
 			...passAttrs,
 			...modDataAttrs,
-			...bgDataAttrs,
 			class: bemClass,
 			'data-rune': dataRune,
 			'data-density': resolvedDensity,

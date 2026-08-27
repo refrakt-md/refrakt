@@ -65,6 +65,13 @@ export interface FacetResult {
 	consumes?: string[];
 	/** Elements injected into the rune. */
 	layers?: FacetLayer[];
+	/** Nodes the facet took ownership of, removed from the rune's normal flow.
+	 *
+	 *  Relocation is two halves: `layers` puts the new subtree in, `absorbs`
+	 *  takes the original out. The background facet moves a `{% bg %}` sandbox
+	 *  guest from the host's children into the background layer, and without
+	 *  this the guest would render twice. Matched by identity, not by value. */
+	absorbs?: SerializedTag[];
 	/** Diagnostics, emitted by the driver's collector. */
 	warnings?: FacetWarning[];
 	/** Private scratch handed back to this facet's own `postAssemble`.

@@ -1,4 +1,4 @@
-import type { RendererNode } from '@refrakt-md/types';
+import type { RendererNode, SerializedTag } from '@refrakt-md/types';
 import type { Facet, FacetContext, FacetInput, FacetLayer, FacetStyle, FacetWarning } from './types.js';
 
 /** The merged product of every facet that ran, in registry order. */
@@ -10,6 +10,7 @@ export interface FacetResolution {
 	styles: FacetStyle[];
 	consumes: string[];
 	layers: FacetLayer[];
+	absorbs: SerializedTag[];
 	/** Per-facet private scratch from `resolve`, keyed by facet name, handed to
 	 *  that facet's own `postAssemble`. */
 	carry: Map<string, unknown>;
@@ -113,7 +114,7 @@ function createContext(input: FacetInput, resolution: FacetResolution): FacetCon
 
 const emptyResolution = (): FacetResolution => ({
 	axes: {}, state: {}, classes: [], dataAttrs: {}, styles: [], consumes: [], layers: [],
-	warnings: [], carry: new Map(),
+	absorbs: [], warnings: [], carry: new Map(),
 });
 
 /** Run an already-ordered facet list and merge the results.
@@ -141,6 +142,7 @@ export function runFacets(
 		if (result.styles) resolution.styles.push(...result.styles);
 		if (result.consumes) resolution.consumes.push(...result.consumes);
 		if (result.layers) resolution.layers.push(...result.layers);
+		if (result.absorbs) resolution.absorbs.push(...result.absorbs);
 		if (result.carry !== undefined) resolution.carry.set(facet.name, result.carry);
 		if (result.warnings) {
 			resolution.warnings.push(...result.warnings);
