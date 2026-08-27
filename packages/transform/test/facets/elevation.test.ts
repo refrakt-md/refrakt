@@ -12,6 +12,7 @@ const ctx = (attrs: Record<string, any> = {}, config: RuneConfig = { block: 'car
 	config,
 	block: 'rf-card',
 	rune: 'card',
+	fields: {},
 	theme: { tints: {}, backgrounds: {}, frames: {} },
 	axis: () => undefined,
 });

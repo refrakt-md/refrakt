@@ -63,6 +63,11 @@ export interface FacetResult {
 	styles?: FacetStyle[];
 	/** Meta field names this facet consumed — stripped from the output tree. */
 	consumes?: string[];
+	/** Author *attribute* names the facet consumed, removed from pass-through
+	 *  output. Distinct from `consumes`, which claims `<meta data-field>`
+	 *  children. Used by the config-modifier facet, whose attribute names come
+	 *  from the rune's own config and so cannot be a fixed list. */
+	stripAttrs?: string[];
 	/** Elements injected into the rune. */
 	layers?: FacetLayer[];
 	/** Nodes the facet took ownership of, removed from the rune's normal flow.
@@ -102,35 +107,27 @@ export interface FacetContext {
 	 *  resolved config rather than as the rune registry, so a facet cannot reach
 	 *  arbitrarily into the rune graph. */
 	readonly parentConfig?: RuneConfig;
+	/** The parsed SPEC-082 `data-rune-fields` bag, the typed channel modifier
+	 *  values are read from. Parsed once by the engine rather than per facet. */
+	readonly fields: Record<string, unknown>;
 	/** Theme preset registries, for facets that resolve a named preset. */
 	readonly theme: FacetTheme;
-	/** A value resolved earlier in this run: an emitted axis, internal state, or
-	 *  a seeded value from code that has not been migrated to a facet yet. The
-	 *  only channel for cross-facet reads — a facet must declare `after` to rely
-	 *  on one. */
+	/** A value resolved earlier in this run: an emitted axis or internal state.
+	 *  The only channel for cross-facet reads — a facet must declare `after` to
+	 *  rely on one. */
 	axis(name: string): string | undefined;
 }
 
 /** Context fields supplied by the caller; `axis` is provided by the driver. */
-export interface FacetInput extends Omit<FacetContext, 'axis'> {
-	/** Values produced by code still resolving inline in `transformRune`.
-	 *
-	 *  Interim migration scaffolding: it lets a migrated facet depend on an
-	 *  un-migrated producer through the same `ctx.axis()` channel it will use
-	 *  once that producer becomes a facet, so consumers need no edit when it
-	 *  does. Seeded values are readable but never emitted — they are already in
-	 *  the engine's own accumulators. Each entry should disappear as its
-	 *  producer migrates. */
-	readonly seedAxes?: Readonly<Record<string, string | undefined>>;
-}
+export type FacetInput = Omit<FacetContext, 'axis'>;
 
 /** One universal axis of the identity transform (elevation, reading, bg, …). */
 export interface Facet {
 	/** Unique registry key, also the `after` reference. */
 	readonly name: string;
-	/** Facets — or seeded axes — whose values this one reads. The driver
-	 *  topologically sorts on this and rejects cycles, so ordering is declared
-	 *  rather than implied by the physical line order of one long function. */
+	/** Facets whose values this one reads. The driver topologically sorts on
+	 *  this and rejects cycles, so ordering is declared rather than implied by
+	 *  the physical line order of one long function. */
 	readonly after?: readonly string[];
 	/** Cheap bail-out evaluated before `resolve`. */
 	appliesTo?(ctx: FacetContext): boolean;

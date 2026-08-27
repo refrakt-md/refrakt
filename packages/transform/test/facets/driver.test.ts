@@ -8,6 +8,7 @@ const input = (): FacetInput => ({
 	config: { block: 'card' },
 	block: 'rf-card',
 	rune: 'card',
+	fields: {},
 	theme: { tints: {}, backgrounds: {}, frames: {} },
 });
 
@@ -54,17 +55,7 @@ describe('orderFacets', () => {
 
 	it('throws when `after` names an unregistered facet', () => {
 		expect(() => orderFacets([stub('bg', ['media-position'])]))
-			.toThrow(/facet "bg" declares after: "media-position", which is neither a registered facet nor a seeded axis/);
-	});
-
-	it('accepts an `after` naming a seeded axis', () => {
-		const ordered = orderFacets([stub('bg', ['media-position'])], { seeded: ['media-position'] });
-		expect(ordered.map(f => f.name)).toEqual(['bg']);
-	});
-
-	it('still throws for an unseeded dependency when other seeds are declared', () => {
-		expect(() => orderFacets([stub('bg', ['tint'])], { seeded: ['media-position'] }))
-			.toThrow(/declares after: "tint"/);
+			.toThrow(/facet "bg" declares after: "media-position", which is not a registered facet/);
 	});
 
 	it('throws on a duplicate facet name', () => {
@@ -146,28 +137,6 @@ describe('runFacets', () => {
 		expect(result.axes.cover).toBeUndefined();  // state never reaches the output
 	});
 
-	it('reads a seeded value through the same channel', () => {
-		let seen: string | undefined = 'unset';
-		const facet: Facet = { name: 'reader', resolve: (ctx) => { seen = ctx.axis('media-position'); return null; } };
-		runFacets([facet], { ...input(), seedAxes: { 'media-position': 'cover' } }, new WarningCollector());
-		expect(seen).toBe('cover');
-	});
-
-	it('lets a facet-supplied value shadow a seed of the same name', () => {
-		let seen: string | undefined = 'unset';
-		const producer: Facet = { name: 'producer', resolve: () => ({ axes: { 'media-position': 'inline' } }) };
-		const consumer: Facet = {
-			name: 'consumer',
-			after: ['producer'],
-			resolve: (ctx) => { seen = ctx.axis('media-position'); return null; },
-		};
-		runFacets(
-			orderFacets([producer, consumer]),
-			{ ...input(), seedAxes: { 'media-position': 'cover' } },
-			new WarningCollector(),
-		);
-		expect(seen).toBe('inline');
-	});
 });
 
 describe('runPostAssemble', () => {

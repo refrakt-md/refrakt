@@ -8,6 +8,7 @@ const ctx = (contentPlace?: string, mediaPosition = 'cover'): FacetContext => ({
 	config: { block: 'card' },
 	block: 'rf-card',
 	rune: 'card',
+	fields: {},
 	theme: { tints: {}, backgrounds: {}, frames: {} },
 	axis: (name) => (name === 'content-place' ? contentPlace : name === 'media-position' ? mediaPosition : undefined),
 });
@@ -17,8 +18,10 @@ describe('content-place facet', () => {
 		expect(contentPlaceFacet.appliesTo?.(ctx(undefined))).toBe(false);
 	});
 
-	it('declares its dependency on media-position', () => {
-		expect(contentPlaceFacet.after).toEqual(['media-position']);
+	// `media-position` is a config-declared modifier, so the generic modifier
+	// facet is what supplies the axis this one branches on.
+	it('declares its dependency on the modifier facet', () => {
+		expect(contentPlaceFacet.after).toEqual(['modifiers']);
 	});
 
 	it('leaves `auto` to the container query', () => {

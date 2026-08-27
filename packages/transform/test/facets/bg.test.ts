@@ -24,6 +24,7 @@ const ctx = (
 	config: { block: 'hero' },
 	block: 'rf-hero',
 	rune: 'hero',
+	fields: {},
 	theme: theme(),
 	axis: (name) => axes[name],
 });

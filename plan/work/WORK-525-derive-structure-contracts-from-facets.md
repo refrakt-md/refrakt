@@ -1,4 +1,4 @@
-{% work id="WORK-525" status="pending" priority="high" complexity="complex" source="SPEC-124" tags="engine, transform, contracts, refactor" milestone="v0.30.1" %}
+{% work id="WORK-525" status="ready" priority="high" complexity="complex" source="SPEC-124" tags="engine, transform, contracts, refactor" milestone="v0.30.1" %}
 
 # Derive structure contracts from facets
 
