@@ -25,6 +25,7 @@ const ctx = (metas: Array<[string, string]>, config: RuneConfig = MEDIA_RUNE, ru
 	config,
 	block: `rf-${config.block}`,
 	rune,
+	fields: {},
 	theme: theme(),
 	axis: () => undefined,
 });

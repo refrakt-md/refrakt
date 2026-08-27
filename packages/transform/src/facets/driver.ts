@@ -9,6 +9,7 @@ export interface FacetResolution {
 	dataAttrs: Record<string, string>;
 	styles: FacetStyle[];
 	consumes: string[];
+	stripAttrs: string[];
 	layers: FacetLayer[];
 	absorbs: SerializedTag[];
 	/** Per-facet private scratch from `resolve`, keyed by facet name, handed to
@@ -47,21 +48,13 @@ export class WarningCollector {
  *  scoped — a warn-once fires once per process, not once per page or build. */
 export const engineWarnings = new WarningCollector();
 
-export interface OrderFacetsOptions {
-	/** Axis names supplied by `FacetInput.seedAxes` rather than by a facet.
-	 *  An `after` entry may name one of these, so a migrated facet can declare a
-	 *  dependency on a producer that is still inline. */
-	readonly seeded?: readonly string[];
-}
-
 /** Order facets so every facet follows the ones it declares in `after`.
  *
  *  Deterministic: independent facets keep their registration order. Throws on a
- *  dependency cycle, or on an `after` naming neither a registered facet nor a
- *  declared seed — both are programming errors in a static registry, so they
- *  should fail at startup rather than silently reorder or no-op per transform. */
-export function orderFacets(facets: readonly Facet[], options: OrderFacetsOptions = {}): Facet[] {
-	const seeded = new Set(options.seeded ?? []);
+ *  dependency cycle, or on an `after` naming an unregistered facet — both are
+ *  programming errors in a static registry, so they should fail at startup
+ *  rather than silently reorder or no-op per transform. */
+export function orderFacets(facets: readonly Facet[]): Facet[] {
 	const byName = new Map<string, Facet>();
 	for (const facet of facets) {
 		if (byName.has(facet.name)) {
@@ -83,11 +76,8 @@ export function orderFacets(facets: readonly Facet[], options: OrderFacetsOption
 		for (const dep of facet.after ?? []) {
 			const target = byName.get(dep);
 			if (!target) {
-				// A seeded axis has no facet to order against — the engine resolves
-				// it inline before the facet pass runs, so the constraint is met.
-				if (seeded.has(dep)) continue;
 				throw new Error(
-					`[refrakt] facet "${facet.name}" declares after: "${dep}", which is neither a registered facet nor a seeded axis`,
+					`[refrakt] facet "${facet.name}" declares after: "${dep}", which is not a registered facet`,
 				);
 			}
 			visit(target, [...trail, facet.name]);
@@ -100,20 +90,17 @@ export function orderFacets(facets: readonly Facet[], options: OrderFacetsOption
 	return ordered;
 }
 
-/** Build the context a facet reads.
- *
- *  Resolution order: an emitted axis wins over internal state, which wins over
- *  a seeded value — so a migrated facet shadows the seed it replaces without
- *  the seed needing to be removed in the same commit. */
+/** Build the context a facet reads. An emitted axis wins over internal state
+ *  of the same name. */
 function createContext(input: FacetInput, resolution: FacetResolution): FacetContext {
 	return {
 		...input,
-		axis: (name) => resolution.axes[name] ?? resolution.state[name] ?? input.seedAxes?.[name],
+		axis: (name) => resolution.axes[name] ?? resolution.state[name],
 	};
 }
 
 const emptyResolution = (): FacetResolution => ({
-	axes: {}, state: {}, classes: [], dataAttrs: {}, styles: [], consumes: [], layers: [],
+	axes: {}, state: {}, classes: [], dataAttrs: {}, styles: [], consumes: [], stripAttrs: [], layers: [],
 	absorbs: [], warnings: [], carry: new Map(),
 });
 
@@ -141,6 +128,7 @@ export function runFacets(
 		if (result.dataAttrs) Object.assign(resolution.dataAttrs, result.dataAttrs);
 		if (result.styles) resolution.styles.push(...result.styles);
 		if (result.consumes) resolution.consumes.push(...result.consumes);
+		if (result.stripAttrs) resolution.stripAttrs.push(...result.stripAttrs);
 		if (result.layers) resolution.layers.push(...result.layers);
 		if (result.absorbs) resolution.absorbs.push(...result.absorbs);
 		if (result.carry !== undefined) resolution.carry.set(facet.name, result.carry);
@@ -153,10 +141,8 @@ export function runFacets(
 	return resolution;
 }
 
-/** Run the second phase against the assembled children.
- *
- *  Takes a fresh `input` so seeded values reflect state the engine resolved
- *  after `runFacets` returned. `children` is mutated in place. */
+/** Run the second phase against the assembled children, mutating them in
+ *  place. */
 export function runPostAssemble(
 	facets: readonly Facet[],
 	input: FacetInput,

@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { coverFacet } from '../../src/facets/cover.js';
 import { contentPlaceFacet } from '../../src/facets/content-place.js';
 import { orderFacets, runFacets, runPostAssemble, WarningCollector } from '../../src/facets/driver.js';
+import { modifiersFacet } from '../../src/facets/modifiers.js';
+import { tintFacet } from '../../src/facets/tint.js';
 import { makeTag } from '../../src/helpers.js';
 import type { FacetContext, FacetInput } from '../../src/facets/types.js';
 import type { RuneConfig } from '../../src/types.js';
@@ -19,6 +21,7 @@ const ctx = (
 	config,
 	block: 'rf-card',
 	rune: 'card',
+	fields: {},
 	theme: { tints: {}, backgrounds: {}, frames: {} },
 	axis: (name) => axes[name],
 });
@@ -111,43 +114,56 @@ describe('cover facet', () => {
 });
 
 describe('cover ↔ content-place ordering', () => {
-	// A two-facet registry isolating the pair under test. `tint` is declared
-	// seeded rather than registered: cover depends on it for the colour scheme,
-	// but that is not what these cases exercise.
-	const REGISTRY = orderFacets([contentPlaceFacet, coverFacet], { seeded: ['media-position', 'content-place', 'tint'] });
+	// A minimal registry isolating the pair under test, plus the facets they
+	// declare `after`: `modifiers` supplies `media-position` / `content-place`,
+	// and `tint` is what cover's colour-scheme check yields to.
+	const REGISTRY = orderFacets([modifiersFacet, tintFacet, contentPlaceFacet, coverFacet]);
+
+	const CONFIG: RuneConfig = {
+		block: 'card',
+		modifiers: {
+			'media-position': { source: 'attribute', noBemClass: true },
+			'content-place': { source: 'attribute', noBemClass: true },
+		},
+	};
+
+	const input = (attrs: Record<string, any>, children: SerializedTag[] = []): FacetInput => ({
+		tag: makeTag('div', { 'data-rune': 'card', ...attrs }, children),
+		config: CONFIG,
+		block: 'rf-card',
+		rune: 'card',
+		fields: {},
+		theme: { tints: {}, backgrounds: {}, frames: {} },
+	});
 
 	it('orders cover after content-place', () => {
-		expect(REGISTRY.map(f => f.name)).toEqual(['content-place', 'cover']);
+		const names = REGISTRY.map(f => f.name);
+		expect(names.indexOf('cover')).toBeGreaterThan(names.indexOf('content-place'));
+	});
+
+	it('orders both after the modifier facet that supplies their axes', () => {
+		const names = REGISTRY.map(f => f.name);
+		expect(names.indexOf('content-place')).toBeGreaterThan(names.indexOf('modifiers'));
+		expect(names.indexOf('cover')).toBeGreaterThan(names.indexOf('modifiers'));
 	});
 
 	// The whole point of the ordering: both facets declare `--cover-scrim-dir`,
 	// and cover's explicit edge must be the last declaration so CSS picks it.
 	it('declares cover’s explicit direction after content-place’s derived one', () => {
-		const input: FacetInput = {
-			tag: makeTag('div', { 'data-rune': 'card' }, [meta('scrim', 'top')]),
-			config: { block: 'card' },
-			block: 'rf-card',
-			rune: 'card',
-			theme: { tints: {}, backgrounds: {}, frames: {} },
-			seedAxes: { 'media-position': 'cover', 'content-place': 'start center' },
-		};
-		const result = runFacets(REGISTRY, input, new WarningCollector());
+		const result = runFacets(
+			REGISTRY,
+			input({ 'media-position': 'cover', 'content-place': 'start center' }, [meta('scrim', 'top')]),
+			new WarningCollector(),
+		);
 		const dirs = result.styles.filter(([prop]) => prop === '--cover-scrim-dir');
 		expect(dirs).toEqual([['--cover-scrim-dir', 'to bottom'], ['--cover-scrim-dir', 'to top']]);
 	});
 
 	it('runs both phases against a shared resolution', () => {
-		const input: FacetInput = {
-			tag: makeTag('div', { 'data-rune': 'card' }, []),
-			config: { block: 'card' },
-			block: 'rf-card',
-			rune: 'card',
-			theme: { tints: {}, backgrounds: {}, frames: {} },
-			seedAxes: { 'media-position': 'cover' },
-		};
 		const children = [makeTag('div', { 'data-name': 'content' }, [])];
-		const resolution = runFacets(REGISTRY, input, new WarningCollector());
-		runPostAssemble(REGISTRY, input, resolution, children, new WarningCollector());
+		const facetInput = input({ 'media-position': 'cover' });
+		const resolution = runFacets(REGISTRY, facetInput, new WarningCollector());
+		runPostAssemble(REGISTRY, facetInput, resolution, children, new WarningCollector());
 		expect(resolution.state.cover).toBe('true');
 		expect((children[0] as SerializedTag).attributes['data-color-scheme']).toBe('dark');
 	});

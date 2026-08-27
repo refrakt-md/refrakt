@@ -12,6 +12,7 @@ const ctx = (attrs: Record<string, any> = {}, config: RuneConfig = HEADER_RUNE, 
 	config,
 	block: `rf-${config.block}`,
 	rune,
+	fields: {},
 	theme: { tints: {}, backgrounds: {}, frames: {} },
 	axis: () => undefined,
 });

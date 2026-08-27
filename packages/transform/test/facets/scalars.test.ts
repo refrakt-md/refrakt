@@ -19,6 +19,7 @@ const ctx = (
 	config,
 	block: `rf-${config.block}`,
 	rune: 'card',
+	fields: {},
 	theme: THEME,
 	axis: () => undefined,
 	...extra,

@@ -273,55 +273,8 @@ function transformRune(
 	// config, so the rest of the transform sees the variant-merged structure.
 	config = resolveVariantConfig(config, tag, fields);
 
-	// 1. Read modifiers from the field channel, collecting resolved values
 	const modifierClasses: string[] = [];
 	const modifierValues: Record<string, string> = {};
-	const mappedValues: Record<string, string> = {};
-	const attrModifierNames: string[] = [];
-	if (config.modifiers) {
-		for (const [name, mod] of Object.entries(config.modifiers)) {
-			if (mod.source === 'attribute') attrModifierNames.push(name);
-			const value = mod.source === 'meta'
-				? readField(tag, fields, name, mod.default)
-				: tag.attributes[name] ?? mod.default;
-			if (value) {
-				modifierValues[name] = value;
-				if (!mod.noBemClass) {
-					modifierClasses.push(`${block}--${value}`);
-				}
-				// Value mapping: translate raw value through valueMap
-				if (mod.valueMap) {
-					const mapped = mod.valueMap[value] ?? value;
-					if (mod.mapTarget) {
-						mappedValues[mod.mapTarget] = mapped;
-					} else {
-						modifierValues[name] = mapped;
-					}
-				}
-			} else if (value === '') {
-				// Present but empty (e.g. `title=""`) — record it so
-				// `renderWhenEmpty` fields can tell present-empty from absent.
-				// No BEM class (would be a dangling `block--`) and no mapping.
-				modifierValues[name] = '';
-			}
-		}
-	}
-
-	// 1b. Context-aware modifiers — add BEM modifier when nested inside a matching parent rune
-	if (config.contextModifiers && parentRune && config.contextModifiers[parentRune]) {
-		modifierClasses.push(`${block}--${config.contextModifiers[parentRune]}`);
-	}
-
-	// SPEC-089 — cover mode reroutes the scrim facet to the media well (below),
-	// so it must be known before the bg layer (self surface) decides to claim it.
-	const isCover = modifierValues['media-position'] === 'cover';
-
-	// 1c. Static modifiers — always-applied BEM modifier suffixes
-	if (config.staticModifiers) {
-		for (const mod of config.staticModifiers) {
-			modifierClasses.push(`${block}--${mod}`);
-		}
-	}
 
 	// Facet pass (SPEC pending) — universal axes resolved by the facet registry
 	// instead of inline here. Currently `elevation` and `prominence`; the
@@ -335,19 +288,10 @@ function transformRune(
 	const facetInput = {
 		tag, config, block, rune: dataRune ?? block, parentRune,
 		parentConfig: parentConfigKey ? allRunes[parentConfigKey] : undefined,
+		fields,
 		theme: { tints, backgrounds, frames },
 	};
-	const facetResolution = runFacets(
-		ORDERED_FACETS,
-		{
-			...facetInput,
-			seedAxes: {
-				'media-position': modifierValues['media-position'],
-				'content-place': modifierValues['content-place'],
-			},
-		},
-		engineWarnings,
-	);
+	const facetResolution = runFacets(ORDERED_FACETS, facetInput, engineWarnings);
 	Object.assign(modifierValues, facetResolution.axes);
 	modifierClasses.push(...facetResolution.classes);
 
@@ -358,9 +302,9 @@ function transformRune(
 	const dropcapValue = facetResolution.state['dropcap'] === 'true';
 	const resolvedDensity = facetResolution.state['density'] ?? 'full';
 
-	// SPEC-089 — in cover mode the scrim metas are consumed by the media well
-	// even when the bg layer above didn't run. The `cover` facet claims them
-	// (its `consumes`), so the strip pass covers them via `facetConsumed`.
+	// SPEC-090 media-guest posture (below) branches on cover mode, which the
+	// `cover` facet publishes as state.
+	const isCover = facetResolution.state['cover'] === 'true';
 
 	// Frame chrome (SPEC-086) and substrate fills (SPEC-087) are facets. They
 	// resolve in the facet pass above and apply either to the rune root (through
@@ -373,12 +317,8 @@ function transformRune(
 		const kebab = name.replace(/([A-Z])/g, '-$1').toLowerCase();
 		modDataAttrs[`data-${kebab}`] = value;
 	}
-	// Add mapped value attributes (from valueMap + mapTarget)
-	for (const [attr, value] of Object.entries(mappedValues)) {
-		const key = attr.startsWith('data-') ? attr : `data-${attr}`;
-		modDataAttrs[key] = value;
-	}
-	// Facet-supplied attributes that bypass the axis channel.
+	// Facet-supplied attributes that bypass the axis channel — including the
+	// config-modifier facet's `valueMap` + `mapTarget` translations.
 	Object.assign(modDataAttrs, facetResolution.dataAttrs);
 
 	// 3. Build the class string
@@ -539,19 +479,7 @@ function transformRune(
 	}
 	// Second facet phase: contributions that need the assembled children.
 	// `cover` flips the colour scheme on the `content` overlay here.
-	runPostAssemble(
-		ORDERED_FACETS,
-		{
-			...facetInput,
-			seedAxes: {
-				'media-position': modifierValues['media-position'],
-				'content-place': modifierValues['content-place'],
-			},
-		},
-		facetResolution,
-		filteredChildren,
-		engineWarnings,
-	);
+	runPostAssemble(ORDERED_FACETS, facetInput, facetResolution, filteredChildren, engineWarnings);
 	if (styleParts.length) {
 		inlineStyle = inlineStyle
 			? `${inlineStyle}; ${styleParts.join('; ')}`
@@ -561,10 +489,16 @@ function transformRune(
 	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead).
 	// `data-rune-fields` (SPEC-082) is the internal field-data channel — strip it from output so
 	// the dual-emit in WORK-321 stays output-neutral; the engine begins *reading* it in WORK-322.
+	// NOTE: this fixed list still names eight facet-owned axes, so adding an axis
+	// with a fixed attribute name means editing here too. Generalising it needs a
+	// static `Facet.attributes` declaration — `FacetResult.stripAttrs` cannot
+	// carry it, because these must be stripped even when the facet resolves to
+	// nothing (`width="content"`). Left for a follow-up rather than widened into
+	// the riskiest migration.
 	const { width: _w, spacing: _s, inset: _i, elevation: _e, prominence: _p, reveal: _rv, stagger: _st, density: _d, 'data-rune': _dr, 'data-rune-fields': _drf, ...rawPassAttrs } = tag.attributes;
 	// Strip consumed attribute-source modifier names (expressed via data-* / BEM)
-	const passAttrs = attrModifierNames.length > 0
-		? Object.fromEntries(Object.entries(rawPassAttrs).filter(([k]) => !attrModifierNames.includes(k)))
+	const passAttrs = facetResolution.stripAttrs.length > 0
+		? Object.fromEntries(Object.entries(rawPassAttrs).filter(([k]) => !facetResolution.stripAttrs.includes(k)))
 		: rawPassAttrs;
 
 	const result: SerializedTag = {

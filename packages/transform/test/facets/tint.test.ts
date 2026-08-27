@@ -19,6 +19,7 @@ const ctx = (metas: Array<[string, string]>, tints = TINTS): FacetContext => ({
 	config: { block: 'card' },
 	block: 'rf-card',
 	rune: 'card',
+	fields: {},
 	theme: theme(tints),
 	axis: () => undefined,
 });

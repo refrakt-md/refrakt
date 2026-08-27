@@ -6,12 +6,12 @@ import type { Facet, FacetStyle } from './types.js';
  *  query in CSS. Active only in cover mode — outside an overlay it has nothing
  *  to anchor, so it is dropped with a warn-once rather than silently honoured.
  *
- *  Declares `after: ['media-position']` — the axis it branches on is still
- *  resolved inline by the generic modifier loop and reaches the facet as a
- *  seeded value. */
+ *  Declares `after: ['modifiers']` — `media-position` is a config-declared
+ *  modifier, so the generic modifier facet is what supplies the axis it
+ *  branches on. */
 export const contentPlaceFacet: Facet = {
 	name: 'content-place',
-	after: ['media-position'],
+	after: ['modifiers'],
 
 	appliesTo: (ctx) => Boolean(ctx.axis('content-place')),
 
