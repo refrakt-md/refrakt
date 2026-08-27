@@ -1,6 +1,6 @@
-{% milestone name="v0.31.0" status="planning" %}
+{% milestone name="v0.30.1" status="planning" %}
 
-# v0.31.0 — Transform engine facet decomposition
+# v0.30.1 — Transform engine facet decomposition
 
 House-cleaning on the most central package in the project. `transformRune` in
 `packages/transform/src/engine.ts` resolves every universal rune axis — tint,
