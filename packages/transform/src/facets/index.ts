@@ -7,6 +7,7 @@ import { coverFacet } from './cover.js';
 import { frameFacet } from './frame.js';
 import { substrateFacet } from './substrate.js';
 import { tintFacet } from './tint.js';
+import { bgFacet } from './bg.js';
 
 export type { Facet, FacetContext, FacetInput, FacetResult, FacetWarning, FacetLayer, FacetStyle } from './types.js';
 export type { FacetResolution, OrderFacetsOptions } from './driver.js';
@@ -17,6 +18,7 @@ export { contentPlaceFacet } from './content-place.js';
 export { coverFacet } from './cover.js';
 export { frameFacet, FRAME_FACET_META } from './frame.js';
 export { tintFacet, TINT_TOKENS } from './tint.js';
+export { bgFacet, buildBgGradient } from './bg.js';
 export { substrateFacet } from './substrate.js';
 export { applyChromeToTag, hasMediaSection } from './chrome.js';
 export type { Chrome, ChromeCarry, ChromeTarget } from './chrome.js';
@@ -58,6 +60,9 @@ const FACETS: readonly Facet[] = [
 	// the output.
 	frameFacet,
 	substrateFacet,
+	// Background last: its `--has-bg` modifier trailed the class string when it
+	// resolved inline, and it reads both cover's reroute and tint's scheme claim.
+	bgFacet,
 ];
 
 /** Registry ordered once at module load.
