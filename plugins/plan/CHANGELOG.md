@@ -1,5 +1,59 @@
 # @refrakt-md/plan
 
+## 0.30.0
+
+### Minor Changes
+
+- 5ee4c96: Add lifecycle-drift validation to `plan validate` (SPEC-119).
+
+  `plan validate` now flags entities whose status contradicts the terminal
+  evidence around them — the symmetric counterpart to the existing one-directional
+  lifecycle checks. New v1 checks:
+
+  - `spec-status-lag` (warning) — a pre-implemented spec (`draft`/`review`/
+    `accepted`) whose linked work is entirely achieving-terminal.
+  - `spec-started-in-draft` (info) — a `draft` spec with started work.
+  - `spec-status-ahead` (warning) — an `implemented`/`shipped` spec with a
+    non-terminal linked work item.
+  - `released-in-without-shipped` (warning) — `released-in` set on a
+    non-`shipped` spec (mirror of `shipped-without-release`).
+  - `stale-blocked` (warning) — a `blocked` work item whose `## Blocked by`
+    targets are all achieving-terminal.
+  - `milestone-complete-with-open-work` (warning) — a `complete` milestone with
+    a non-terminal member (replaces `complete-milestone-open-item`, now keyed on
+    terminal rather than done/fixed so retired members don't falsely flag).
+
+  `plan status`'s `suggestImplemented` hint and validate's `spec-status-lag`
+  share one predicate, so the suggestion and the warning can never diverge.
+  `--strict` promotes the new warnings to errors.
+
+- a8b6c07: Remove the bespoke `plan build` / `plan serve` render stack (SPEC-120).
+
+  **Breaking:** the `refrakt plan build` and `refrakt plan serve` commands are
+  gone, along with their private static-site generator (the three-family
+  render-pipeline router, `planLayout` shell, the port-3000 dev server + file
+  watcher + SSE reload, the behavior bundler, and the pagefind invocation).
+  Invoking either command now yields an unknown-command error.
+
+  A plan directory is an ordinary refrakt site since SPEC-071: scaffold a
+  deployable plan site with `create-refrakt --type plan` (or `refrakt plan init
+--target <adapter>`) and use the standard adapter dev server / `npm run build`,
+  or wire `entityRoutes` + `collection` into an existing refrakt site. The plan
+  runes, the `register`/`aggregate` pipeline hooks, and the entire authoring CLI
+  (`create` / `next` / `update` / `validate` / `status` / `migrate` / `next-id` /
+  `history` / `init`) are unchanged.
+
+  Also drops the now-orphaned `@refrakt-md/html`, `@refrakt-md/highlight`,
+  `@refrakt-md/behaviors`, `reflect-metadata`, `esbuild`, and `pagefind`
+  dependencies from `@refrakt-md/plan`.
+
+### Patch Changes
+
+- @refrakt-md/content@0.30.0
+- @refrakt-md/runes@0.30.0
+- @refrakt-md/transform@0.30.0
+- @refrakt-md/types@0.30.0
+
 ## 0.29.0
 
 ### Patch Changes

@@ -16,7 +16,7 @@ import { WORK_STATUS_DISPLAY_ORDER, BUG_STATUS_DISPLAY_ORDER } from './commands/
 export const plan: Plugin = {
 	name: 'plan',
 	displayName: 'Plan',
-	version: '0.29.0',
+	version: '0.30.0',
 	runes: {
 		'spec': {
 			transform: spec,
