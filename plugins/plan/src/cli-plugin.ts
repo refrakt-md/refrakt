@@ -5,8 +5,6 @@ import { runNextId, isAutoIdType, type AutoIdType } from './commands/next-id.js'
 import { runInit } from './commands/init.js';
 import { runStatus, EXIT_INVALID_ARGS as STATUS_INVALID_ARGS } from './commands/status.js';
 import { runValidate, EXIT_INVALID_ARGS as VALIDATE_INVALID_ARGS } from './commands/validate.js';
-import { runServe } from './commands/serve.js';
-import { runBuild } from './commands/build.js';
 import { runHistory } from './commands/history.js';
 import { runMigrateFilenames, runMigratePrAttrs, runMigrateDependencies, EXIT_INVALID_ARGS as MIGRATE_INVALID_ARGS } from './commands/migrate.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
@@ -23,93 +21,6 @@ import {
 	migrateSchema, migrateMcpHandler,
 } from './mcp-bindings.js';
 import type { CliPlugin } from '@refrakt-md/types';
-
-async function handleServe(args: string[]): Promise<void> {
-	let dir = resolvePlanDir().dir;
-	let specsDir: string | undefined;
-	let port = 3000;
-	let theme = 'auto';
-	let open = false;
-	let css: string | undefined;
-
-	for (let i = 0; i < args.length; i++) {
-		const arg = args[i];
-		if (arg === '--dir' && args[i + 1]) {
-			dir = args[++i];
-		} else if (arg === '--specs' && args[i + 1]) {
-			specsDir = args[++i];
-		} else if (arg === '--port' && args[i + 1]) {
-			port = parseInt(args[++i], 10);
-			if (isNaN(port)) {
-				console.error('Error: --port must be a number');
-				process.exit(1);
-			}
-		} else if (arg === '--theme' && args[i + 1]) {
-			theme = args[++i];
-		} else if (arg === '--open') {
-			open = true;
-		} else if (arg === '--css' && args[i + 1]) {
-			css = args[++i];
-		} else if (!arg.startsWith('-')) {
-			dir = arg;
-		} else {
-			console.error(`Error: Unexpected argument "${arg}"`);
-			console.error('Usage: refrakt plan serve [directory] [--port N] [--specs dir] [--theme name] [--css file] [--open]');
-			process.exit(1);
-		}
-	}
-
-	try {
-		await runServe({ dir, specsDir, port, theme, open, css });
-	} catch (err: any) {
-		console.error(`Error: ${err.message}`);
-		process.exit(1);
-	}
-}
-
-async function handleBuild(args: string[]): Promise<void> {
-	let dir = resolvePlanDir().dir;
-	let specsDir: string | undefined;
-	let out = './.plan-build';
-	let theme = 'auto';
-	let baseUrl = '/';
-	let css: string | undefined;
-
-	for (let i = 0; i < args.length; i++) {
-		const arg = args[i];
-		if (arg === '--dir' && args[i + 1]) {
-			dir = args[++i];
-		} else if (arg === '--specs' && args[i + 1]) {
-			specsDir = args[++i];
-		} else if (arg === '--out' && args[i + 1]) {
-			out = args[++i];
-		} else if (arg === '--theme' && args[i + 1]) {
-			theme = args[++i];
-		} else if (arg === '--base-url' && args[i + 1]) {
-			baseUrl = args[++i];
-			if (!baseUrl.endsWith('/')) baseUrl += '/';
-		} else if (arg === '--css' && args[i + 1]) {
-			css = args[++i];
-		} else if (!arg.startsWith('-')) {
-			dir = arg;
-		} else {
-			console.error(`Error: Unexpected argument "${arg}"`);
-			console.error('Usage: refrakt plan build [directory] [--out dir] [--specs dir] [--theme name] [--base-url url] [--css file]');
-			process.exit(1);
-		}
-	}
-
-	try {
-		const result = await runBuild({ dir, specsDir, out, theme, baseUrl, css });
-		console.log(`Built ${result.pages} pages to ${result.outputDir}/`);
-		for (const f of result.files) {
-			console.log(`  + ${f}`);
-		}
-	} catch (err: any) {
-		console.error(`Error: ${err.message}`);
-		process.exit(1);
-	}
-}
 
 function handleUpdate(args: string[]): void {
 	const id = args[0];
@@ -843,10 +754,6 @@ const plugin: CliPlugin = {
 			inputSchema: initSchema,
 			mcpHandler: initMcpHandler,
 		},
-		// serve and build are intentionally not exposed via MCP — long-running
-		// servers / file generation don't fit MCP's request/response model.
-		{ name: 'serve', description: 'Browse the plan dashboard', handler: handleServe },
-		{ name: 'build', description: 'Build static plan site', handler: handleBuild },
 		{
 			name: 'history',
 			description: 'View entity and project history',

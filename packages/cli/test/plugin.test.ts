@@ -30,8 +30,17 @@ describe('plugin discovery', () => {
 		expect(stdout).toContain('validate');
 		expect(stdout).toContain('create');
 		expect(stdout).toContain('init');
-		expect(stdout).toContain('serve');
-		expect(stdout).toContain('build');
+		// The bespoke render stack was removed (SPEC-120) — serve/build are gone.
+		expect(stdout).not.toContain('serve');
+		expect(stdout).not.toContain('build');
+	});
+
+	it('rejects the removed serve/build commands as unknown', () => {
+		for (const cmd of ['serve', 'build']) {
+			const { stdout, exitCode } = run('plan', cmd);
+			expect(exitCode).toBe(1);
+			expect(stdout).toContain('Unknown plan command');
+		}
 	});
 
 	it('should show help when no subcommand is given', () => {

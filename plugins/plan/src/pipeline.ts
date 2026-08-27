@@ -135,16 +135,10 @@ export type { EntityRelationship } from './relationships.js';
 
 /**
  * Module-level store for dependency refs extracted from ## Dependencies sections.
- * Maps entityId → array of dependency entity IDs.
- * Set by render-pipeline.ts from scanner data before register() runs.
+ * Maps entityId → array of dependency entity IDs. Populated by the unconditional
+ * scan (via {@link addScannerDep}) during the pipeline's register() hook.
  */
 const _scannerDependencies = new Map<string, string[]>();
-
-/** Set scanner dependency data for the pipeline's aggregate() hook to consume */
-export function setScannerDependencies(deps: Map<string, string[]>): void {
-	_scannerDependencies.clear();
-	for (const [k, v] of deps) _scannerDependencies.set(k, v);
-}
 
 /** Append a directed dependency edge `from → to` ("from is blocked by to"),
  *  deduping. Used by the unconditional scan to accumulate `Blocks` edges that
@@ -158,9 +152,8 @@ function addScannerDep(from: string, to: string): void {
 
 /**
  * Module-level store for the plan directory path.
- * Set by render-pipeline.ts before aggregate() runs (CLI path) or by the
- * `configure` pipeline hook when refrakt's content loader runs the plan
- * plugin (build path). See {@link planPipelineHooks.configure}.
+ * Set by the `configure` pipeline hook when refrakt's content loader runs the
+ * plan plugin. See {@link planPipelineHooks.configure}.
  */
 let _planDir: string | undefined;
 
@@ -195,9 +188,8 @@ export interface PlanAggregatedData {
 	/** Bidirectional relationship index: entityId → edges. SPEC-072's
 	 *  `registry.relate()` graph is the authoritative store for rendering
 	 *  (the `relationships` rune queries it via `getRelated()`); this map
-	 *  remains exposed for the legacy `plan build` render-pipeline, which
-	 *  consumes it to mark nav items blocked by unresolved deps. Removable
-	 *  when `plan build` retires (out of scope for v0.16.0). */
+	 *  stays exposed for consumers that read the aggregated plan edges
+	 *  directly. */
 	relationships: Map<string, EntityRelationship[]>;
 	/** Git-derived history events per entity file path */
 	history: Map<string, HistoryEvent[]>;
@@ -447,10 +439,8 @@ function processPlanFile(
 		// Backfill `data.modified` from file mtime when the rune doesn't set
 		// it explicitly. Plan-activity's default template renders this column
 		// and would otherwise show blank for every entity that hasn't been
-		// hand-stamped — the bespoke `plan build` CLI already does the same
-		// (via mtimeMap in commands/render-pipeline.ts), so this brings the
-		// standard refrakt pipeline to parity. Falls back silently if stat
-		// fails (e.g. file vanished mid-scan).
+		// hand-stamped. Falls back silently if stat fails (e.g. file vanished
+		// mid-scan).
 		if (!data.modified && mtimeMs !== undefined) {
 			data.modified = new Date(mtimeMs).toISOString().slice(0, 10);
 		}
@@ -516,10 +506,10 @@ export const planPipelineHooks: PluginPipelineHooks = {
 		_idReferences.clear();
 		_sourceReferences.clear();
 		_supersedesReferences.clear();
-		// `_scannerDependencies` is intentionally NOT cleared here — the bespoke
-		// `plan build` path seeds it via `setScannerDependencies()` *before*
-		// calling `register()` (see render-pipeline.ts). The standard-load path
-		// populates it via `performUnconditionalScan` below.
+		// Rebuilt from scratch each register() by `performUnconditionalScan`
+		// below (via `addScannerDep`); cleared here so a re-run (e.g. HMR)
+		// doesn't accumulate edges for entities that have since changed.
+		_scannerDependencies.clear();
 
 		for (const page of pages) {
 			walkTags(page.renderable, (tag) => {

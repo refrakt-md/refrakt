@@ -1,6 +1,6 @@
 import { scanPlanFiles } from '../scanner.js';
 import type { PlanEntity, PlanRuneType } from '../types.js';
-import { DONE_STATUS_SET, isActionable } from './enums.js';
+import { DONE_STATUS_SET, isActionable, specStatusLags } from './enums.js';
 
 // --- Constants ---
 
@@ -79,7 +79,9 @@ export interface SpecRollup {
 	implementedBy: string[];
 	/** Unique PR references across those items (attribute wins over legacy `PR:` line). */
 	prs: string[];
-	/** True when the spec is `accepted`, has ≥1 linked item, and all are done/fixed. */
+	/** True when the spec sits before `implemented` (`draft`/`review`/`accepted`),
+	 *  has ≥1 linked item, and all are achieving-terminal (`done`/`fixed`). Shares
+	 *  the `specStatusLags` predicate with validate's `spec-status-lag` (SPEC-119). */
 	suggestImplemented: boolean;
 }
 
@@ -244,8 +246,12 @@ function buildSpecRollups(specs: PlanEntity[], workAndBugs: PlanEntity[]): SpecR
 		const linked = workAndBugs.filter(e => sourcesSpec(e, specId));
 		const prs = [...new Set(linked.flatMap(prRefsFor))];
 
-		const allDone = linked.length > 0 && linked.every(e => DONE_STATUSES.has(e.attributes.status || ''));
-		const suggestImplemented = spec.attributes.status === 'accepted' && allDone;
+		// Shared with `plan validate`'s `spec-status-lag` (SPEC-119) — one
+		// predicate so the carrot and the contradiction never disagree.
+		const suggestImplemented = specStatusLags(
+			spec.attributes.status || '',
+			linked.map(e => e.attributes.status || ''),
+		);
 
 		// Only surface a rollup for specs that actually have linked work or PRs —
 		// keeps the report focused.
