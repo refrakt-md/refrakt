@@ -1,4 +1,4 @@
-{% work id="WORK-519" status="ready" priority="high" complexity="moderate" source="SPEC-124" tags="engine, transform, refactor, tint" milestone="v0.31.0" %}
+{% work id="WORK-519" status="pending" priority="high" complexity="moderate" source="SPEC-124" tags="engine, transform, refactor, tint" milestone="v0.31.0" %}
 
 # Migrate the tint axis to a facet
 

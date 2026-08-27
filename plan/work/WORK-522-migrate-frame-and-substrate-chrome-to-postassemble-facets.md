@@ -1,4 +1,4 @@
-{% work id="WORK-522" status="ready" priority="medium" complexity="complex" source="SPEC-124" tags="engine, transform, refactor, frame, substrate" milestone="v0.31.0" %}
+{% work id="WORK-522" status="pending" priority="medium" complexity="complex" source="SPEC-124" tags="engine, transform, refactor, frame, substrate" milestone="v0.31.0" %}
 
 # Migrate frame and substrate chrome to postAssemble facets
 

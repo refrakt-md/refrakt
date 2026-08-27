@@ -1,4 +1,4 @@
-{% work id="WORK-521" status="ready" priority="medium" complexity="moderate" source="SPEC-124" tags="engine, transform, refactor" milestone="v0.31.0" %}
+{% work id="WORK-521" status="pending" priority="medium" complexity="moderate" source="SPEC-124" tags="engine, transform, refactor" milestone="v0.31.0" %}
 
 # Migrate the remaining scalar axes to facets
 

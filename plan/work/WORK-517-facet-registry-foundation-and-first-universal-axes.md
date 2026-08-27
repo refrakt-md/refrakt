@@ -1,4 +1,4 @@
-{% work id="WORK-517" status="in-progress" priority="high" complexity="moderate" source="SPEC-124" tags="engine, transform, architecture, refactor" milestone="v0.31.0" %}
+{% work id="WORK-517" status="ready" priority="high" complexity="moderate" source="SPEC-124" tags="engine, transform, architecture, refactor" milestone="v0.31.0" %}
 
 # Facet registry foundation and first universal axes
 
