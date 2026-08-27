@@ -33,6 +33,19 @@ export function findByDataName(tag: SerializedTag, name: string): SerializedTag 
 	);
 }
 
+/** Find a tag by its data-name attribute anywhere in a node list, depth-first.
+ *  The recursive counterpart to `findByDataName`, which only looks one level
+ *  down. Returns the first match in document order. */
+export function findNodeByDataName(nodes: RendererNode[], name: string): SerializedTag | undefined {
+	for (const node of nodes) {
+		if (!isTag(node)) continue;
+		if (node.attributes?.['data-name'] === name) return node;
+		const found = node.children ? findNodeByDataName(node.children, name) : undefined;
+		if (found) return found;
+	}
+	return undefined;
+}
+
 /** Get all children that are NOT meta tags */
 export function nonMetaChildren(tag: SerializedTag): RendererNode[] {
 	return tag.children.filter(c => !(isTag(c) && c.name === 'meta'));
