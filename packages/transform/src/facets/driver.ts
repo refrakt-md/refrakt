@@ -10,6 +10,9 @@ export interface FacetResolution {
 	styles: FacetStyle[];
 	consumes: string[];
 	layers: FacetLayer[];
+	/** Per-facet private scratch from `resolve`, keyed by facet name, handed to
+	 *  that facet's own `postAssemble`. */
+	carry: Map<string, unknown>;
 	/** Every warning produced this run, including ones the collector suppressed
 	 *  as duplicates — so a test can assert what a facet decided independently
 	 *  of what reached the console. */
@@ -109,7 +112,8 @@ function createContext(input: FacetInput, resolution: FacetResolution): FacetCon
 }
 
 const emptyResolution = (): FacetResolution => ({
-	axes: {}, state: {}, classes: [], dataAttrs: {}, styles: [], consumes: [], layers: [], warnings: [],
+	axes: {}, state: {}, classes: [], dataAttrs: {}, styles: [], consumes: [], layers: [],
+	warnings: [], carry: new Map(),
 });
 
 /** Run an already-ordered facet list and merge the results.
@@ -137,6 +141,7 @@ export function runFacets(
 		if (result.styles) resolution.styles.push(...result.styles);
 		if (result.consumes) resolution.consumes.push(...result.consumes);
 		if (result.layers) resolution.layers.push(...result.layers);
+		if (result.carry !== undefined) resolution.carry.set(facet.name, result.carry);
 		if (result.warnings) {
 			resolution.warnings.push(...result.warnings);
 			for (const warning of result.warnings) collector.emit(warning);
@@ -155,11 +160,15 @@ export function runPostAssemble(
 	input: FacetInput,
 	resolution: FacetResolution,
 	children: RendererNode[],
+	collector: WarningCollector,
 ): void {
 	const ctx = createContext(input, resolution);
 	for (const facet of facets) {
 		if (!facet.postAssemble) continue;
 		if (facet.appliesTo && !facet.appliesTo(ctx)) continue;
-		facet.postAssemble(ctx, children);
+		const warnings = facet.postAssemble(ctx, children, resolution.carry.get(facet.name));
+		if (!warnings) continue;
+		resolution.warnings.push(...warnings);
+		for (const warning of warnings) collector.emit(warning);
 	}
 }

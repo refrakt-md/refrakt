@@ -8,6 +8,7 @@ const ctx = (contentPlace?: string, mediaPosition = 'cover'): FacetContext => ({
 	config: { block: 'card' },
 	block: 'rf-card',
 	rune: 'card',
+	theme: { tints: {}, backgrounds: {}, frames: {} },
 	axis: (name) => (name === 'content-place' ? contentPlace : name === 'media-position' ? mediaPosition : undefined),
 });
 

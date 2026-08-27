@@ -1,6 +1,6 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, FramePresetDefinition, MetaField, BlockDef, LayoutEntry } from './types.js';
-import { isTag, makeTag, readMeta, toKebabCase, resolveOffset, parsePlacement, findNodeByDataName } from './helpers.js';
+import { isTag, makeTag, readMeta, toKebabCase, resolveOffset, parsePlacement, findNodeByDataName, findMediaZone } from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
 import { resolveReading, DEFAULT_READING, READING_CAPABILITIES } from './reading.js';
 import { createLocaleContext, resolveLocaleString, DEFAULT_LOCALE, type LocaleContext } from './i18n.js';
@@ -174,106 +174,6 @@ function resolveVariantConfig(
 	return effective;
 }
 
-/** Resolved frame chrome — the data attributes + style custom-properties to
- *  land on the frame-target element, plus the meta fields to consume. */
-interface FrameChrome {
-	dataAttrs: Record<string, string>;
-	styleParts: string[];
-	metaProps: Set<string>;
-}
-
-const FRAME_FACET_META = ['frame-aspect', 'frame-displace', 'frame-displace-mode', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-overflow', 'frame-shadow'] as const;
-
-/** SPEC-086 — read the `frame` preset + `frame-*` facet metas, resolve the
- *  preset (one `extends` level) and inline overrides, and emit the chrome
- *  contract (data-displace / data-frame-shadow / --frame-* custom props).
- *  Returns null when no frame meta is present. */
-function resolveFrameChrome(tag: SerializedTag, frames: Record<string, FramePresetDefinition>, guestFit?: string): FrameChrome | null {
-	const metaProps = new Set<string>();
-	const read = (field: string): string | undefined => {
-		const v = readMeta(tag, field);
-		if (v !== undefined && v !== null) metaProps.add(field);
-		return v ?? undefined;
-	};
-
-	const presetName = read('frame');
-	let facets: FramePresetDefinition = {};
-	if (presetName && frames[presetName]) {
-		let preset = frames[presetName];
-		if (preset.extends && frames[preset.extends]) {
-			preset = { ...frames[preset.extends], ...preset };
-		}
-		facets = { ...preset };
-		delete facets.extends;
-	}
-
-	const inline: Record<string, string | undefined> = {
-		aspect: read('frame-aspect'),
-		displace: read('frame-displace'),
-		displaceMode: read('frame-displace-mode'),
-		offset: read('frame-offset'),
-		oversize: read('frame-oversize'),
-		place: read('frame-place'),
-		anchor: read('frame-anchor'),
-		overflow: read('frame-overflow'),
-		shadow: read('frame-shadow'),
-	};
-	for (const [k, v] of Object.entries(inline)) {
-		if (v !== undefined) (facets as Record<string, string>)[k] = v;
-	}
-
-	if (metaProps.size === 0) return null;
-
-	// A displaced guest defaults to its host's containment mode: a bleed host
-	// (guestFit: 'bleed', e.g. hero/feature) spills, a clip host crops to a peek.
-	// An explicit `frame-displace-mode=` still wins. This is the displace face of
-	// the same clip-vs-bleed axis as `data-guest-fit`, so a hero no longer needs
-	// `frame-displace-mode="bleed"` spelled out.
-	if (facets.displace && !(facets as Record<string, string>).displaceMode && guestFit === 'bleed') {
-		(facets as Record<string, string>).displaceMode = 'bleed';
-	}
-
-	const dataAttrs: Record<string, string> = {};
-	const styleParts: string[] = [];
-	if (presetName) dataAttrs['data-frame'] = presetName;
-	if (facets.displace) dataAttrs['data-displace'] = facets.displace;
-	if ((facets as Record<string, string>).displaceMode) dataAttrs['data-displace-mode'] = (facets as Record<string, string>).displaceMode;
-	if (facets.shadow) dataAttrs['data-frame-shadow'] = facets.shadow;
-	// `frame-overflow="bleed"` — a content-overflow policy on the media frame.
-	// Only meaningful on a bleed host (the clip host's media well crops the
-	// over-width); the call site strips it + warns on a clip host.
-	if (facets.overflow === 'bleed') dataAttrs['data-frame-overflow'] = 'bleed';
-	if (facets.aspect) styleParts.push(`--frame-aspect: ${facets.aspect}`);
-	if (facets.offset) styleParts.push(`--frame-offset: ${resolveOffset(facets.offset)}`);
-	if (facets.oversize) styleParts.push(`--frame-oversize: ${facets.oversize}`);
-	if (facets.anchor) styleParts.push(`--frame-anchor: ${facets.anchor}`);
-	if (facets.place) {
-		const { x, y } = parsePlacement(facets.place);
-		styleParts.push(`--frame-place-x: ${x}`, `--frame-place-y: ${y}`);
-	}
-
-	return { dataAttrs, styleParts, metaProps };
-}
-
-/** Merge chrome data attributes + style custom props onto a tag in place. */
-function applyChromeToTag(tag: SerializedTag, dataAttrs: Record<string, string>, styleParts: string[]): void {
-	tag.attributes = { ...tag.attributes, ...dataAttrs };
-	if (styleParts.length) {
-		const existing = tag.attributes.style ? String(tag.attributes.style) : '';
-		tag.attributes.style = existing ? `${existing}; ${styleParts.join('; ')}` : styleParts.join('; ');
-	}
-}
-
-/** Find the first `[data-section="media"]` element in a children tree. */
-function findMediaZone(nodes: RendererNode[]): SerializedTag | undefined {
-	for (const node of nodes) {
-		if (!isTag(node)) continue;
-		if (node.attributes?.['data-section'] === 'media') return node;
-		const found = node.children ? findMediaZone(node.children) : undefined;
-		if (found) return found;
-	}
-	return undefined;
-}
 
 /** Find the first descendant tag carrying `data-name === name`. */
 const findByName = findNodeByDataName;
@@ -340,72 +240,6 @@ function warnNonEagerCoverSandbox(container: string, activation: string): void {
 	COVER_SANDBOX_ACTIVATION_WARNED.add(key);
 	// eslint-disable-next-line no-console
 	console.warn(`[refrakt] \`activation="${activation}"\` on a sandbox serving as a \`${container}\` cover backdrop — the backdrop is inert (pointer-events: none), so the poster/Run affordance is unreachable. Drop \`activation\` (eager is the background mode).`);
-}
-
-const FRAME_NO_TARGET_WARNED = new Set<string>();
-/** Warn once when `frame` is used on a rune with no resolvable frame target. */
-function warnFrameNoTarget(rune: string): void {
-	if (FRAME_NO_TARGET_WARNED.has(rune)) return;
-	FRAME_NO_TARGET_WARNED.add(rune);
-	// eslint-disable-next-line no-console
-	console.warn(`[refrakt] \`frame\` on \`${rune}\` has no frame target — set \`frameTarget\` or give the rune a media section. Frame chrome ignored.`);
-}
-
-const FRAME_OVERFLOW_CLIP_WARNED = new Set<string>();
-/** Warn once when `frame-overflow="bleed"` lands on a clip host — the media well
- *  crops the over-width, so the bleed has no effect (SPEC-116). */
-function warnFrameOverflowClip(rune: string): void {
-	if (FRAME_OVERFLOW_CLIP_WARNED.has(rune)) return;
-	FRAME_OVERFLOW_CLIP_WARNED.add(rune);
-	// eslint-disable-next-line no-console
-	console.warn(`[refrakt] \`frame-overflow="bleed"\` has no effect on \`${rune}\` — a clip host crops its media guest. Use it on a bleed host (hero, feature), or drop it.`);
-}
-
-/** Resolved substrate fill — the markers + custom props for the target surface. */
-interface SubstrateChrome {
-	dataAttrs: Record<string, string>;
-	styleParts: string[];
-	metaProps: Set<string>;
-	/** Per-instance `substrate-target` override (`self` | `media`), if any. */
-	targetOverride?: string;
-}
-
-const SUBSTRATE_CELL: Record<string, string> = { sm: '12px', md: '16px', lg: '24px' };
-const SUBSTRATE_OPACITY: Record<string, string> = { sm: '0.25', md: '0.5', lg: '0.85' };
-
-/** SPEC-087 — read the `substrate` pattern + `substrate-*` facet metas and emit
- *  the markers-only contract: `data-substrate` (+ `data-substrate-fill`) and the
- *  `--substrate-*` custom props. CSS draws the pattern. Returns null when no
- *  substrate is present. */
-function resolveSubstrate(tag: SerializedTag): SubstrateChrome | null {
-	const metaProps = new Set<string>();
-	const read = (field: string): string | undefined => {
-		const v = readMeta(tag, field);
-		if (v !== undefined && v !== null) metaProps.add(field);
-		return v ?? undefined;
-	};
-	const pattern = read('substrate');
-	const size = read('substrate-size');
-	const opacity = read('substrate-opacity');
-	const fill = read('substrate-fill');
-	const targetOverride = read('substrate-target');
-
-	if (!pattern) return null; // facets are meaningless without a pattern
-	const dataAttrs: Record<string, string> = { 'data-substrate': pattern };
-	if (fill) dataAttrs['data-substrate-fill'] = fill;
-	const styleParts: string[] = [];
-	if (size && SUBSTRATE_CELL[size]) styleParts.push(`--substrate-cell: ${SUBSTRATE_CELL[size]}`);
-	if (opacity && SUBSTRATE_OPACITY[opacity]) styleParts.push(`--substrate-opacity: ${SUBSTRATE_OPACITY[opacity]}`);
-	return { dataAttrs, styleParts, metaProps, targetOverride };
-}
-
-const SUBSTRATE_NO_MEDIA_WARNED = new Set<string>();
-/** Warn once when `substrate-target="media"` targets a rune with no media section. */
-function warnSubstrateNoMedia(rune: string): void {
-	if (SUBSTRATE_NO_MEDIA_WARNED.has(rune)) return;
-	SUBSTRATE_NO_MEDIA_WARNED.add(rune);
-	// eslint-disable-next-line no-console
-	console.warn(`[refrakt] \`substrate-target="media"\` on \`${rune}\` has no media section — substrate ignored.`);
 }
 
 const BG_GRADIENT_DIRECTIONS: Record<string, string> = {
@@ -686,7 +520,10 @@ function transformRune(
 	// matches the order these axes were resolved in when inline, so
 	// `modifierValues` key insertion order — and thus attribute order in the
 	// output — is unchanged.
-	const facetInput = { tag, config, block, rune: dataRune ?? block, parentRune };
+	const facetInput = {
+		tag, config, block, rune: dataRune ?? block, parentRune,
+		theme: { tints, backgrounds, frames },
+	};
 	const facetResolution = runFacets(
 		ORDERED_FACETS,
 		{
@@ -917,44 +754,10 @@ function transformRune(
 	// even when the bg layer above didn't run. The `cover` facet claims them
 	// (its `consumes`), so the strip pass covers them via `facetConsumed`.
 
-	// 1g. Frame chrome (SPEC-086) — resolve the frame preset + facets and decide
-	// which surface they decorate. `self` lands on the rune root; `media` lands
-	// on the [data-section="media"] zone (applied after assembly, below).
-	const frameChrome = resolveFrameChrome(tag, frames, config.guestFit);
-	const frameMetaProps = new Set<string>(frameChrome?.metaProps ?? []);
-	let frameTargetKind: 'media' | 'self' | null = null;
-	if (frameChrome) {
-		const hasMediaSection = config.sections ? Object.values(config.sections).includes('media') : false;
-		frameTargetKind = config.frameTarget ?? (hasMediaSection ? 'media' : null);
-		if (!frameTargetKind) warnFrameNoTarget(dataRune ?? config.block);
-		// SPEC-116 — `frame-overflow="bleed"` only does anything on a bleed host
-		// (the clip host's media well crops the over-width). On a clip host, strip
-		// the inert marker so output stays clean, and warn once.
-		if (frameChrome.dataAttrs['data-frame-overflow'] === 'bleed' && config.guestFit !== 'bleed') {
-			delete frameChrome.dataAttrs['data-frame-overflow'];
-			warnFrameOverflowClip(dataRune ?? config.block);
-		}
-	}
-	const frameRootDataAttrs = frameChrome && frameTargetKind === 'self' ? frameChrome.dataAttrs : {};
-
-	// 1h. Substrate fill (SPEC-087) — a generated pattern. Defaults to the self
-	// surface (a background is "behind everything"); the media well is opted into
-	// via `substrate-target="media"`. A per-instance override always wins.
-	const substrateChrome = resolveSubstrate(tag);
-	const substrateMetaProps = new Set<string>(substrateChrome?.metaProps ?? []);
-	let substrateTargetKind: 'media' | 'self' | null = null;
-	if (substrateChrome) {
-		const hasMediaSection = config.sections ? Object.values(config.sections).includes('media') : false;
-		const override = substrateChrome.targetOverride;
-		substrateTargetKind = (override === 'self' || override === 'media')
-			? override
-			: (config.substrateTarget ?? 'self');
-		if (substrateTargetKind === 'media' && !hasMediaSection) {
-			warnSubstrateNoMedia(dataRune ?? config.block);
-			substrateTargetKind = null;
-		}
-	}
-	const substrateRootDataAttrs = substrateChrome && substrateTargetKind === 'self' ? substrateChrome.dataAttrs : {};
+	// Frame chrome (SPEC-086) and substrate fills (SPEC-087) are facets. They
+	// resolve in the facet pass above and apply either to the rune root (through
+	// the resolution's dataAttrs/styles) or to the media zone (through their
+	// postAssemble, once the children exist).
 
 	// 2. Store modifier values as data attributes (so components can read them even after meta removal)
 	const modDataAttrs: Record<string, string> = {};
@@ -1033,25 +836,6 @@ function transformRune(
 		enhancedChildren = applyProjection(enhancedChildren, config.projection, block, config.sections, config.mediaSlots, config.guestFit, readingValue, dropcapValue);
 	}
 
-	// 6c. Frame chrome → media surface (SPEC-086). `self`-target chrome is merged
-	// onto the root below; `media`-target chrome lands on the media zone here.
-	if (frameChrome && frameTargetKind === 'media') {
-		const mediaZone = findMediaZone(enhancedChildren);
-		if (mediaZone) {
-			applyChromeToTag(mediaZone, frameChrome.dataAttrs, frameChrome.styleParts);
-		} else {
-			warnFrameNoTarget(dataRune ?? config.block);
-		}
-	}
-	if (substrateChrome && substrateTargetKind === 'media') {
-		const mediaZone = findMediaZone(enhancedChildren);
-		if (mediaZone) {
-			applyChromeToTag(mediaZone, substrateChrome.dataAttrs, substrateChrome.styleParts);
-		} else {
-			warnSubstrateNoMedia(dataRune ?? config.block);
-		}
-	}
-
 	// 6d. Media-guest interaction posture (SPEC-090). A media guest is
 	// presentational by default. When the container is itself an interaction
 	// target — a stretched whole-tile `href` link (a `link` child) — or the guest
@@ -1105,8 +889,6 @@ function transformRune(
 		if (consumedModifierFields?.has(prop)) return false;
 		if (tintMetaProps.has(prop)) return false;
 		if (bgMetaProps.has(prop)) return false;
-		if (frameMetaProps.has(prop)) return false;
-		if (substrateMetaProps.has(prop)) return false;
 		if (facetConsumed.has(prop)) return false;
 		return true;
 	});
@@ -1165,15 +947,8 @@ function transformRune(
 		},
 		facetResolution,
 		filteredChildren,
+		engineWarnings,
 	);
-	// Frame chrome on the self surface contributes its custom props to the root.
-	if (frameChrome && frameTargetKind === 'self') {
-		styleParts.push(...frameChrome.styleParts);
-	}
-	// Substrate on the self surface likewise.
-	if (substrateChrome && substrateTargetKind === 'self') {
-		styleParts.push(...substrateChrome.styleParts);
-	}
 	if (styleParts.length) {
 		inlineStyle = inlineStyle
 			? `${inlineStyle}; ${styleParts.join('; ')}`
@@ -1196,8 +971,6 @@ function transformRune(
 			...modDataAttrs,
 			...tintDataAttrs,
 			...bgDataAttrs,
-			...frameRootDataAttrs,
-			...substrateRootDataAttrs,
 			class: bemClass,
 			'data-rune': dataRune,
 			'data-density': resolvedDensity,

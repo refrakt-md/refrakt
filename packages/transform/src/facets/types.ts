@@ -1,5 +1,17 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
-import type { RuneConfig } from '../types.js';
+import type { RuneConfig, TintDefinition, BgPresetDefinition, FramePresetDefinition } from '../types.js';
+
+/** Theme-level preset registries a facet may resolve a named preset against.
+ *
+ *  Only the registries a migrated facet actually reads are declared. The rune
+ *  registry (`allRunes` / `runeKeyMap`) that `density` needs to look up a
+ *  parent's `childDensity` is a different kind of lookup and is added when that
+ *  axis migrates. */
+export interface FacetTheme {
+	readonly tints: Record<string, TintDefinition>;
+	readonly backgrounds: Record<string, BgPresetDefinition>;
+	readonly frames: Record<string, FramePresetDefinition>;
+}
 
 /** A diagnostic produced by a facet.
  *
@@ -55,6 +67,15 @@ export interface FacetResult {
 	layers?: FacetLayer[];
 	/** Diagnostics, emitted by the driver's collector. */
 	warnings?: FacetWarning[];
+	/** Private scratch handed back to this facet's own `postAssemble`.
+	 *
+	 *  For a facet whose two phases share resolved work that is neither emitted
+	 *  nor expressible as a string — `frame` resolves its chrome bundle and its
+	 *  target surface in `resolve`, then applies them to the media zone once it
+	 *  exists. The alternative is re-resolving in the second phase, which
+	 *  duplicates the work and risks the two phases disagreeing. Opaque to the
+	 *  driver; each facet casts its own. */
+	carry?: unknown;
 }
 
 /** The read-only view a facet gets of the rune being transformed. */
@@ -67,6 +88,8 @@ export interface FacetContext {
 	 *  diagnostics so messages name what the author wrote. */
 	readonly rune: string;
 	readonly parentRune?: string;
+	/** Theme preset registries, for facets that resolve a named preset. */
+	readonly theme: FacetTheme;
 	/** A value resolved earlier in this run: an emitted axis, internal state, or
 	 *  a seeded value from code that has not been migrated to a facet yet. The
 	 *  only channel for cross-facet reads — a facet must declare `after` to rely
@@ -103,7 +126,13 @@ export interface Facet {
 	 *
 	 *  For contributions that cannot be expressed against the unassembled tag —
 	 *  `cover` flipping the colour scheme on the assembled `content` overlay,
-	 *  and (once migrated) frame/substrate chrome landing on the media zone.
-	 *  Mutates `children` in place; the return value is ignored. */
-	postAssemble?(ctx: FacetContext, children: RendererNode[]): void;
+	 *  `frame` and `substrate` landing their chrome on the media zone. Mutates
+	 *  `children` in place. `carry` is whatever this facet's own `resolve`
+	 *  returned in `FacetResult.carry`.
+	 *
+	 *  Returns diagnostics as data, exactly as `resolve` does — some conditions
+	 *  are only detectable against the assembled tree (a `media`-target chrome
+	 *  finding no media zone), and routing those through the console directly
+	 *  would make them untestable and bypass the collector's dedupe. */
+	postAssemble?(ctx: FacetContext, children: RendererNode[], carry: unknown): FacetWarning[] | void;
 }

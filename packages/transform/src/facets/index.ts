@@ -4,6 +4,8 @@ import { elevationFacet } from './elevation.js';
 import { prominenceFacet } from './prominence.js';
 import { contentPlaceFacet } from './content-place.js';
 import { coverFacet } from './cover.js';
+import { frameFacet } from './frame.js';
+import { substrateFacet } from './substrate.js';
 
 export type { Facet, FacetContext, FacetInput, FacetResult, FacetWarning, FacetLayer, FacetStyle } from './types.js';
 export type { FacetResolution, OrderFacetsOptions } from './driver.js';
@@ -12,6 +14,11 @@ export { elevationFacet, ELEVATION_VALUES } from './elevation.js';
 export { prominenceFacet, PROMINENCE_VALUES, hasPageSectionHeader } from './prominence.js';
 export { contentPlaceFacet } from './content-place.js';
 export { coverFacet } from './cover.js';
+export { frameFacet, FRAME_FACET_META } from './frame.js';
+export { substrateFacet } from './substrate.js';
+export { applyChromeToTag, hasMediaSection } from './chrome.js';
+export type { Chrome, ChromeCarry, ChromeTarget } from './chrome.js';
+export type { FacetTheme } from './types.js';
 
 /** Axis values still resolved inline in `transformRune` and handed to facets
  *  through `FacetInput.seedAxes`.
@@ -31,16 +38,21 @@ export const SEEDED_AXES = ['media-position', 'content-place', 'color-scheme'] a
  *  insertion order and inline-style declaration order, and therefore the
  *  output byte-for-byte.
  *
- *  Prototype scope (SPEC pending): `elevation`, `prominence`, `content-place`
- *  and `cover`. The remaining axes — tint, density, width/spacing, reading and
- *  dropcap, motion, background, frame, substrate — still resolve inline.
+ *  Migrated so far (SPEC-124): `elevation`, `prominence`, `content-place`,
+ *  `cover`, `frame` and `substrate`. Still resolving inline: tint, density,
+ *  width/spacing, reading and dropcap, motion, and background.
  *  `FacetResult.layers` is declared but unexercised; it needs the background
- *  facet, which is the next migration. */
+ *  facet (WORK-520), the first to build its own element tree. */
 const FACETS: readonly Facet[] = [
 	elevationFacet,
 	prominenceFacet,
 	contentPlaceFacet,
 	coverFacet,
+	// Chrome last: their `--frame-*` / `--substrate-*` declarations followed the
+	// cover block's when they resolved inline, and inline-style order is part of
+	// the output.
+	frameFacet,
+	substrateFacet,
 ];
 
 /** Registry ordered once at module load.

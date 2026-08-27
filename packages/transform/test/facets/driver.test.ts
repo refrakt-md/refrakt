@@ -8,6 +8,7 @@ const input = (): FacetInput => ({
 	config: { block: 'card' },
 	block: 'rf-card',
 	rune: 'card',
+	theme: { tints: {}, backgrounds: {}, frames: {} },
 });
 
 /** A facet that records nothing but its own name into an axis. */
@@ -178,14 +179,14 @@ describe('runPostAssemble', () => {
 
 		const ordered = orderFacets([a, b, c]);
 		const resolution = runFacets(ordered, input(), new WarningCollector());
-		runPostAssemble(ordered, input(), resolution, []);
+		runPostAssemble(ordered, input(), resolution, [], new WarningCollector());
 		expect(calls).toEqual(['a', 'c']);
 	});
 
 	it('respects appliesTo', () => {
 		const postAssemble = vi.fn();
 		const facet: Facet = { name: 'gated', appliesTo: () => false, resolve: () => null, postAssemble };
-		runPostAssemble([facet], input(), runFacets([], input(), new WarningCollector()), []);
+		runPostAssemble([facet], input(), runFacets([], input(), new WarningCollector()), [], new WarningCollector());
 		expect(postAssemble).not.toHaveBeenCalled();
 	});
 
@@ -199,7 +200,7 @@ describe('runPostAssemble', () => {
 			},
 		};
 		const children = [makeTag('div', { 'data-name': 'content' }, [])];
-		runPostAssemble([facet], input(), runFacets([], input(), new WarningCollector()), children);
+		runPostAssemble([facet], input(), runFacets([], input(), new WarningCollector()), children, new WarningCollector());
 		expect((children[0] as any).attributes['data-touched']).toBe('');
 	});
 
@@ -211,8 +212,53 @@ describe('runPostAssemble', () => {
 			postAssemble: (ctx) => { seen = ctx.axis('cover'); },
 		};
 		const resolution = runFacets([facet], input(), new WarningCollector());
-		runPostAssemble([facet], input(), resolution, []);
+		runPostAssemble([facet], input(), resolution, [], new WarningCollector());
 		expect(seen).toBe('true');
+	});
+
+	// `carry` is the channel a two-phase facet uses for resolved work that is
+	// neither emitted nor expressible as a string — `frame` resolves its chrome
+	// bundle and target once, rather than re-resolving in the second phase.
+	it('hands a facet its own carry from resolve', () => {
+		let seen: unknown = 'unset';
+		const facet: Facet = {
+			name: 'carrier',
+			resolve: () => ({ carry: { chrome: 'bundle' } }),
+			postAssemble: (_ctx, _children, carry) => { seen = carry; },
+		};
+		const resolution = runFacets([facet], input(), new WarningCollector());
+		runPostAssemble([facet], input(), resolution, [], new WarningCollector());
+		expect(seen).toEqual({ chrome: 'bundle' });
+	});
+
+	it('keeps carry private to the facet that produced it', () => {
+		let seen: unknown = 'unset';
+		const carrier: Facet = { name: 'carrier', resolve: () => ({ carry: 'mine' }) };
+		const other: Facet = {
+			name: 'other',
+			after: ['carrier'],
+			resolve: () => null,
+			postAssemble: (_ctx, _children, carry) => { seen = carry; },
+		};
+		const ordered = orderFacets([carrier, other]);
+		const resolution = runFacets(ordered, input(), new WarningCollector());
+		runPostAssemble(ordered, input(), resolution, [], new WarningCollector());
+		expect(seen).toBeUndefined();
+	});
+
+	it('emits and records warnings returned from the second phase', () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const facet: Facet = {
+			name: 'late',
+			resolve: () => null,
+			postAssemble: () => [{ code: 'late-problem', message: '[refrakt] late problem' }],
+		};
+		const resolution = runFacets([facet], input(), new WarningCollector());
+		runPostAssemble([facet], input(), resolution, [], new WarningCollector());
+
+		expect(warn).toHaveBeenCalledWith('[refrakt] late problem');
+		expect(resolution.warnings.map(w => w.code)).toContain('late-problem');
+		warn.mockRestore();
 	});
 
 	it('ignores a facet that returns null', () => {

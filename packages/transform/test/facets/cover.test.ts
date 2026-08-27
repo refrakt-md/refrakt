@@ -19,6 +19,7 @@ const ctx = (
 	config,
 	block: 'rf-card',
 	rune: 'card',
+	theme: { tints: {}, backgrounds: {}, frames: {} },
 	axis: (name) => axes[name],
 });
 
@@ -124,6 +125,7 @@ describe('cover ↔ content-place ordering', () => {
 			config: { block: 'card' },
 			block: 'rf-card',
 			rune: 'card',
+			theme: { tints: {}, backgrounds: {}, frames: {} },
 			seedAxes: { 'media-position': 'cover', 'content-place': 'start center' },
 		};
 		const result = runFacets(REGISTRY, input, new WarningCollector());
@@ -137,11 +139,12 @@ describe('cover ↔ content-place ordering', () => {
 			config: { block: 'card' },
 			block: 'rf-card',
 			rune: 'card',
+			theme: { tints: {}, backgrounds: {}, frames: {} },
 			seedAxes: { 'media-position': 'cover' },
 		};
 		const children = [makeTag('div', { 'data-name': 'content' }, [])];
 		const resolution = runFacets(REGISTRY, input, new WarningCollector());
-		runPostAssemble(REGISTRY, input, resolution, children);
+		runPostAssemble(REGISTRY, input, resolution, children, new WarningCollector());
 		expect(resolution.state.cover).toBe('true');
 		expect((children[0] as SerializedTag).attributes['data-color-scheme']).toBe('dark');
 	});
