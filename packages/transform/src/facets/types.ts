@@ -95,6 +95,13 @@ export interface FacetContext {
 	 *  diagnostics so messages name what the author wrote. */
 	readonly rune: string;
 	readonly parentRune?: string;
+	/** The nearest ancestor rune's resolved config, when there is one.
+	 *
+	 *  `density` inherits from a parent's `childDensity`, making it the first
+	 *  axis to need more than the current rune's own config. Supplied as the
+	 *  resolved config rather than as the rune registry, so a facet cannot reach
+	 *  arbitrarily into the rune graph. */
+	readonly parentConfig?: RuneConfig;
 	/** Theme preset registries, for facets that resolve a named preset. */
 	readonly theme: FacetTheme;
 	/** A value resolved earlier in this run: an emitted axis, internal state, or
