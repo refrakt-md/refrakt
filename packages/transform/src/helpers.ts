@@ -33,6 +33,19 @@ export function findByDataName(tag: SerializedTag, name: string): SerializedTag 
 	);
 }
 
+/** Find the first `[data-section="media"]` element in a node list, depth-first.
+ *  The media well is where frame and substrate chrome lands, and where a media
+ *  guest's interaction posture is read. */
+export function findMediaZone(nodes: RendererNode[]): SerializedTag | undefined {
+	for (const node of nodes) {
+		if (!isTag(node)) continue;
+		if (node.attributes?.['data-section'] === 'media') return node;
+		const found = node.children ? findMediaZone(node.children) : undefined;
+		if (found) return found;
+	}
+	return undefined;
+}
+
 /** Find a tag by its data-name attribute anywhere in a node list, depth-first.
  *  The recursive counterpart to `findByDataName`, which only looks one level
  *  down. Returns the first match in document order. */
