@@ -1,4 +1,4 @@
-{% work id="WORK-523" status="pending" priority="medium" complexity="complex" source="SPEC-124" tags="engine, transform, refactor" milestone="v0.31.0" %}
+{% work id="WORK-523" status="pending" priority="medium" complexity="complex" source="SPEC-124" tags="engine, transform, refactor" milestone="v0.30.1" %}
 
 # Migrate the config-modifier loop and retire seedAxes
 

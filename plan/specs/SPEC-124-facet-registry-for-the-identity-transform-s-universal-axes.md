@@ -197,6 +197,22 @@ interaction, not in either facet. Unit tests are additive diagnostics, not a
 replacement for the integration suite, and are never grounds for relaxing the
 rule above.
 
+### Releasing
+
+Each implementation PR carries a **patch** changeset. Nothing here changes the
+public API — `facets/` is not exported from the package index — so a patch is
+the correct semver step, and the milestone is a patch release (`v0.30.1`).
+
+The changeset is not bookkeeping. This restructures the code path every rune
+renders through, so a regression that escapes the 630 tests reaches consumers.
+A changelog entry naming which axes moved in which version is what someone
+bisecting a rendering regression needs. Refactors of critical paths are worth
+recording *because* they carry risk, not exempt from it because they add no API.
+
+Landing with no changesets at all would also strand the spec: with nothing
+published, SPEC-124 could reach `implemented` but never `shipped`, since that
+status requires a real `released-in` version.
+
 ## Acceptance Criteria
 
 - [ ] Every universal axis in `transformRune` resolves through the facet registry
@@ -207,6 +223,7 @@ rule above.
 - [ ] All 630 pre-existing transform tests pass **unmodified** at every step
 - [ ] `npm run build`, the full repo suite, and `refrakt contracts --check` pass at every step
 - [ ] `transformRune` no longer contains lettered sub-steps (`1b`…`1h`)
+- [ ] Each implementation PR carries a patch changeset naming the axes it migrated
 - [ ] Theme values still hard-coded in the engine are inventoried and filed as follow-on work
 
 ## Open questions
