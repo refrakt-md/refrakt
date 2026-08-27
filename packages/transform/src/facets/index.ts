@@ -12,7 +12,11 @@ import { widthFacet, contentMeasureFacet, spacingFacet, insetFacet } from './box
 import { densityFacet } from './density.js';
 import { readingFacet, dropcapFacet } from './reading.js';
 import { motionFacet } from './motion.js';
-import { modifiersFacet, contextModifiersFacet, staticModifiersFacet } from './modifiers.js';
+import {
+	modifiersFacet, contextModifiersFacet, staticModifiersFacet,
+	modifiersDescribe, contextModifiersDescribe, staticModifiersDescribe,
+} from './modifiers.js';
+import type { DescribableFacet } from './describe.js';
 
 export type { Facet, FacetContext, FacetInput, FacetResult, FacetWarning, FacetLayer, FacetStyle } from './types.js';
 export type { FacetResolution } from './driver.js';
@@ -29,6 +33,17 @@ export { densityFacet, DENSITY_VALUES } from './density.js';
 export { readingFacet, dropcapFacet, READING_REGISTERS, READING_CAPABILITIES, DEFAULT_READING } from './reading.js';
 export { motionFacet } from './motion.js';
 export { modifiersFacet, contextModifiersFacet, staticModifiersFacet } from './modifiers.js';
+export type { DescribableFacet, FacetContract } from './describe.js';
+
+/** Facets that can describe their output statically, for `refrakt contracts`.
+ *
+ *  Only the config-modifier family: they are the only facets whose output the
+ *  structure contract describes at all. See WORK-525. */
+export const DESCRIBABLE_FACETS: readonly DescribableFacet[] = [
+	modifiersDescribe,
+	contextModifiersDescribe,
+	staticModifiersDescribe,
+];
 export { substrateFacet } from './substrate.js';
 export { applyChromeToTag, hasMediaSection } from './chrome.js';
 export type { Chrome, ChromeCarry, ChromeTarget } from './chrome.js';
