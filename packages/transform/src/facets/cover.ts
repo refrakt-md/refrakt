@@ -24,7 +24,8 @@ const SCRIM_META = ['scrim', 'scrim-type', 'scrim-blur', 'scrim-tone'];
  *  registry constraint here rather than an accident of statement order. */
 export const coverFacet: Facet = {
 	name: 'cover',
-	after: ['media-position', 'content-place'],
+	// `tint` because postAssemble yields to a scheme it already claimed.
+	after: ['media-position', 'content-place', 'tint'],
 
 	appliesTo: (ctx) => ctx.axis('media-position') === 'cover',
 

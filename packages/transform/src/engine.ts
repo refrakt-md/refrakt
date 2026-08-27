@@ -6,13 +6,6 @@ import { resolveReading, DEFAULT_READING, READING_CAPABILITIES } from './reading
 import { createLocaleContext, resolveLocaleString, DEFAULT_LOCALE, type LocaleContext } from './i18n.js';
 import { ORDERED_FACETS, runFacets, runPostAssemble, engineWarnings } from './facets/index.js';
 
-/** The 6 tint colour tokens */
-/** Tint token names per SPEC-053 vocabulary alignment. Each maps to a
- *  matching `--rf-color-*` token via the same dot-to-dash rule the token
- *  contract uses. See `TintTokens` in `./types.ts` for the field-to-token
- *  mapping table. */
-const TINT_TOKENS = ['bg', 'surface', 'text', 'muted', 'primary', 'border'] as const;
-
 /** Pure text transforms for metaText values */
 const transforms: Record<string, (v: string) => string> = {
 	duration(iso: string): string {
@@ -392,81 +385,6 @@ function transformRune(
 		}
 	}
 
-	// 1d. Tint processing — read tint meta tags and resolve colour tokens
-	const tintMetaProps = new Set<string>();
-	const tintDataAttrs: Record<string, string> = {};
-	const tintStyleParts: string[] = [];
-
-	const tintName = readMeta(tag, 'tint');
-	const tintMode = readMeta(tag, 'tint-mode');
-
-	if (tintName || tintMode) {
-		// Resolve named tint definition
-		let lightTokens: Record<string, string> = {};
-		let darkTokens: Record<string, string> = {};
-		let resolvedMode = tintMode;
-
-		if (tintName && tintName !== 'custom' && tints[tintName]) {
-			const def = tints[tintName];
-			if (def.light) {
-				for (const [k, v] of Object.entries(def.light)) {
-					if (v) lightTokens[k] = v;
-				}
-			}
-			if (def.dark) {
-				for (const [k, v] of Object.entries(def.dark)) {
-					if (v) darkTokens[k] = v;
-				}
-			}
-			if (!resolvedMode && def.lockMode) {
-				resolvedMode = def.lockMode;
-			}
-		}
-
-		// Read inline tint token metas (override preset values)
-		for (const token of TINT_TOKENS) {
-			const val = readMeta(tag, `tint-${token}`);
-			if (val) {
-				lightTokens[token] = val;
-				tintMetaProps.add(`tint-${token}`);
-			}
-			const darkVal = readMeta(tag, `tint-dark-${token}`);
-			if (darkVal) {
-				darkTokens[token] = darkVal;
-				tintMetaProps.add(`tint-dark-${token}`);
-			}
-		}
-
-		// Set data attributes
-		const hasTokens = Object.keys(lightTokens).length > 0;
-		if (tintName || hasTokens) {
-			tintDataAttrs['data-tint'] = tintName || 'custom';
-		}
-		if (resolvedMode && resolvedMode !== 'auto') {
-			tintDataAttrs['data-color-scheme'] = resolvedMode;
-		}
-		if (Object.keys(darkTokens).length > 0) {
-			tintDataAttrs['data-tint-dark'] = '';
-		}
-
-		// Build inline styles for tint tokens
-		for (const [token, value] of Object.entries(lightTokens)) {
-			tintStyleParts.push(`--tint-${token}: ${value}`);
-		}
-		for (const [token, value] of Object.entries(darkTokens)) {
-			tintStyleParts.push(`--tint-dark-${token}: ${value}`);
-		}
-
-		// Add --tinted BEM modifier when colour tokens are present
-		if (hasTokens || (tintName && tintName !== 'custom' && tints[tintName])) {
-			modifierClasses.push(`${block}--tinted`);
-		}
-
-		// Track consumed meta properties
-		tintMetaProps.add('tint');
-		tintMetaProps.add('tint-mode');
-	}
-
 	// 1e. Density — resolve from author attribute → context → config default → 'full'
 	const authorDensity = tag.attributes?.density;
 	const parentConfigKey = parentRune ? runeKeyMap.get(parentRune) : undefined;
@@ -531,7 +449,6 @@ function transformRune(
 			seedAxes: {
 				'media-position': modifierValues['media-position'],
 				'content-place': modifierValues['content-place'],
-				'color-scheme': tintDataAttrs['data-color-scheme'],
 			},
 		},
 		engineWarnings,
@@ -716,7 +633,7 @@ function transformRune(
 			// follow the scrim, not the base surface — a dark scrim yields light
 			// text. Reuse the colour-scheme lever (`data-color-scheme`), which
 			// flips the full palette; an explicit tint scheme still wins.
-			if (!tintDataAttrs['data-color-scheme']) {
+			if (!facetResolution.state['color-scheme']) {
 				bgDataAttrs['data-color-scheme'] = scrimTone;
 			}
 		}
@@ -887,7 +804,6 @@ function transformRune(
 		if (c.name !== 'meta' || !c.attributes['data-field']) return true;
 		const prop = c.attributes['data-field'];
 		if (consumedModifierFields?.has(prop)) return false;
-		if (tintMetaProps.has(prop)) return false;
 		if (bgMetaProps.has(prop)) return false;
 		if (facetConsumed.has(prop)) return false;
 		return true;
@@ -927,7 +843,6 @@ function transformRune(
 			}
 		}
 	}
-	styleParts.push(...tintStyleParts);
 	// Facet styles — `content-place` and `cover` land here, in that order, so
 	// cover's explicit `--cover-scrim-dir` is declared last and wins.
 	for (const [prop, value] of facetResolution.styles) {
@@ -942,7 +857,9 @@ function transformRune(
 			seedAxes: {
 				'media-position': modifierValues['media-position'],
 				'content-place': modifierValues['content-place'],
-				'color-scheme': bgDataAttrs['data-color-scheme'] ?? tintDataAttrs['data-color-scheme'],
+				// Tint's own claim reaches cover through facet state, which takes
+				// precedence over a seed; this covers the bg layer's claim.
+				'color-scheme': bgDataAttrs['data-color-scheme'],
 			},
 		},
 		facetResolution,
@@ -969,7 +886,6 @@ function transformRune(
 		attributes: {
 			...passAttrs,
 			...modDataAttrs,
-			...tintDataAttrs,
 			...bgDataAttrs,
 			class: bemClass,
 			'data-rune': dataRune,

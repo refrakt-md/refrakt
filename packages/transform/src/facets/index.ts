@@ -6,6 +6,7 @@ import { contentPlaceFacet } from './content-place.js';
 import { coverFacet } from './cover.js';
 import { frameFacet } from './frame.js';
 import { substrateFacet } from './substrate.js';
+import { tintFacet } from './tint.js';
 
 export type { Facet, FacetContext, FacetInput, FacetResult, FacetWarning, FacetLayer, FacetStyle } from './types.js';
 export type { FacetResolution, OrderFacetsOptions } from './driver.js';
@@ -15,6 +16,7 @@ export { prominenceFacet, PROMINENCE_VALUES, hasPageSectionHeader } from './prom
 export { contentPlaceFacet } from './content-place.js';
 export { coverFacet } from './cover.js';
 export { frameFacet, FRAME_FACET_META } from './frame.js';
+export { tintFacet, TINT_TOKENS } from './tint.js';
 export { substrateFacet } from './substrate.js';
 export { applyChromeToTag, hasMediaSection } from './chrome.js';
 export type { Chrome, ChromeCarry, ChromeTarget } from './chrome.js';
@@ -44,6 +46,9 @@ export const SEEDED_AXES = ['media-position', 'content-place', 'color-scheme'] a
  *  `FacetResult.layers` is declared but unexercised; it needs the background
  *  facet (WORK-520), the first to build its own element tree. */
 const FACETS: readonly Facet[] = [
+	// Tint first: its `--tint-*` declarations led the inline-style string when it
+	// resolved inline, and its `color-scheme` state is read by `cover`.
+	tintFacet,
 	elevationFacet,
 	prominenceFacet,
 	contentPlaceFacet,
