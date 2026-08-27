@@ -111,7 +111,10 @@ describe('cover facet', () => {
 });
 
 describe('cover ↔ content-place ordering', () => {
-	const REGISTRY = orderFacets([contentPlaceFacet, coverFacet], { seeded: ['media-position', 'content-place'] });
+	// A two-facet registry isolating the pair under test. `tint` is declared
+	// seeded rather than registered: cover depends on it for the colour scheme,
+	// but that is not what these cases exercise.
+	const REGISTRY = orderFacets([contentPlaceFacet, coverFacet], { seeded: ['media-position', 'content-place', 'tint'] });
 
 	it('orders cover after content-place', () => {
 		expect(REGISTRY.map(f => f.name)).toEqual(['content-place', 'cover']);

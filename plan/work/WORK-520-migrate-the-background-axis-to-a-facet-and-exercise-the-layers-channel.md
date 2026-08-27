@@ -1,4 +1,4 @@
-{% work id="WORK-520" status="pending" priority="high" complexity="complex" source="SPEC-124" tags="engine, transform, refactor, bg" milestone="v0.30.1" %}
+{% work id="WORK-520" status="ready" priority="high" complexity="complex" source="SPEC-124" tags="engine, transform, refactor, bg" milestone="v0.30.1" %}
 
 # Migrate the background axis to a facet and exercise the layers channel
 
