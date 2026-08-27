@@ -1,4 +1,4 @@
-{% work id="WORK-524" status="pending" priority="medium" complexity="moderate" source="SPEC-124" tags="engine, transform, refactor, dx" milestone="v0.30.1" %}
+{% work id="WORK-524" status="ready" priority="medium" complexity="moderate" source="SPEC-124" tags="engine, transform, refactor, dx" milestone="v0.30.1" %}
 
 # Consolidate warn-once diagnostics onto the facet collector
 
