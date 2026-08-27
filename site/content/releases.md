@@ -6,7 +6,23 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.29.0
+## v0.30.0
+
+- Add lifecycle-drift validation to `plan validate` (SPEC-119).
+- `plan validate` now flags entities whose status contradicts the terminal evidence around them — the symmetric counterpart to the existing one-directional lifecycle checks. New v1 checks:
+- `spec-status-lag` (warning) — a pre-implemented spec (`draft`/`review`/
+- `spec-started-in-draft` (info) — a `draft` spec with started work.
+- `spec-status-ahead` (warning) — an `implemented`/`shipped` spec with a
+- `released-in-without-shipped` (warning) — `released-in` set on a
+- `stale-blocked` (warning) — a `blocked` work item whose `## Blocked by`
+- `milestone-complete-with-open-work` (warning) — a `complete` milestone with
+- `accepted`) whose linked work is entirely achieving-terminal. non-terminal linked work item. non-`shipped` spec (mirror of `shipped-without-release`). targets are all achieving-terminal. a non-terminal member (replaces `complete-milestone-open-item`, now keyed on terminal rather than done/fixed so retired members don't falsely flag).
+- `plan status`'s `suggestImplemented` hint and validate's `spec-status-lag` share one predicate, so the suggestion and the warning can never diverge. `--strict` promotes the new warnings to errors.
+- Remove the bespoke `plan build` / `plan serve` render stack (SPEC-120).
+- **Breaking:** the `refrakt plan build` and `refrakt plan serve` commands are gone, along with their private static-site generator (the three-family render-pipeline router, `planLayout` shell, the port-3000 dev server + file watcher + SSE reload, the behavior bundler, and the pagefind invocation). Invoking either command now yields an unknown-command error.
+- A plan directory is an ordinary refrakt site since SPEC-071: scaffold a deployable plan site with `create-refrakt --type plan` (or `refrakt plan init
+
+## v0.29.0 - July 23, 2026
 
 - Multi-language support (i18n foundation) — SPEC-035
 - Framework-generated text (labels, navigation chrome, accessibility strings, structural headings, and client-side behavior strings) is now localizable. Zero-config English is unchanged — adding a language means providing a strings dictionary, no structural changes.

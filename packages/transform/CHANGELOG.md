@@ -1,5 +1,11 @@
 # @refrakt-md/transform
 
+## 0.30.0
+
+### Patch Changes
+
+- @refrakt-md/types@0.30.0
+
 ## 0.29.0
 
 ### Minor Changes

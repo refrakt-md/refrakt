@@ -1,5 +1,14 @@
 # @refrakt-md/html
 
+## 0.30.0
+
+### Patch Changes
+
+- @refrakt-md/behaviors@0.30.0
+- @refrakt-md/content@0.30.0
+- @refrakt-md/transform@0.30.0
+- @refrakt-md/types@0.30.0
+
 ## 0.29.0
 
 ### Minor Changes
