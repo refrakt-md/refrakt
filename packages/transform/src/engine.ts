@@ -2,7 +2,7 @@ import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, FramePresetDefinition, MetaField, BlockDef, LayoutEntry } from './types.js';
 import { isTag, makeTag, readMeta, toKebabCase, resolveOffset, parsePlacement, findNodeByDataName, findMediaZone } from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
-import { resolveReading, DEFAULT_READING, READING_CAPABILITIES } from './reading.js';
+import { DEFAULT_READING, type ReadingRegister } from './reading.js';
 import { createLocaleContext, resolveLocaleString, DEFAULT_LOCALE, type LocaleContext } from './i18n.js';
 import { ORDERED_FACETS, runFacets, runPostAssemble, engineWarnings } from './facets/index.js';
 
@@ -323,61 +323,18 @@ function transformRune(
 		}
 	}
 
-	// 1e. Density — resolve from author attribute → context → config default → 'full'
-	const authorDensity = tag.attributes?.density;
-	const parentConfigKey = parentRune ? runeKeyMap.get(parentRune) : undefined;
-	const parentChildDensity = parentConfigKey ? allRunes[parentConfigKey]?.childDensity : undefined;
-	const contextDensity = parentChildDensity;
-	const resolvedDensity = authorDensity ?? contextDensity ?? config.defaultDensity ?? 'full';
-
-	// 1f. Width and spacing — universal base attributes on all block runes
-	const widthValue = tag.attributes?.width ?? config.defaultWidth;
-	if (widthValue && widthValue !== 'content') {
-		modifierValues['width'] = widthValue;
-		modifierClasses.push(`${block}--${widthValue}`);
-	}
-
-	// 1f-bis. Reading register (SPEC-108) — author `reading=` ▸ rune `defaultReading`
-	// ▸ `ui`. (The region default applies only to the bare body, not runes.) Emitted
-	// as `data-reading` on the rune's `[data-section="body"]` element; suppressed at
-	// the `ui` default so unmarked content stays byte-identical.
-	const readingValue = resolveReading({ authorAttr: tag.attributes?.reading, runeDefault: config.defaultReading });
-
-	// dropcap (SPEC-108) — a per-instance opt-in honoured only on a prose body
-	// (gated via READING_CAPABILITIES). Off-register it is dropped with a warn-once,
-	// so it never renders where it is meaningless. Emitted as `data-dropcap` on the
-	// same body section as `data-reading`; the theme owns the glyph.
-	const dropcapRequested = Boolean(tag.attributes?.dropcap);
-	const dropcapValue = dropcapRequested && READING_CAPABILITIES[readingValue]?.dropcap === true;
-	if (dropcapRequested && !dropcapValue) {
-		const runeName = tag.attributes?.['data-rune'] ?? block;
-		console.warn(`[refrakt] dropcap is honoured only on a prose body — ignored on "${runeName}" (reading="${readingValue}").`);
-	}
-	// Content-measure (layout axis): page-section runes anchor their content to
-	// the text measure when bled to the `wide` track — only the surface/bg
-	// widens. Emitted as a data attribute (no BEM class); the default (`fill`)
-	// lets content fill the wider track, so it's only emitted when anchored.
-	if (config.contentMeasure === 'anchored') {
-		modifierValues['content-measure'] = 'anchored';
-	}
-	const spacingValue = tag.attributes?.spacing;
-	if (spacingValue && spacingValue !== 'default') {
-		modifierValues['spacing'] = spacingValue;
-		modifierClasses.push(`${block}--spacing-${spacingValue}`);
-	}
-	const insetValue = tag.attributes?.inset;
-	if (insetValue && insetValue !== 'default') {
-		modifierValues['inset'] = insetValue;
-		modifierClasses.push(`${block}--inset-${insetValue}`);
-	}
 	// Facet pass (SPEC pending) — universal axes resolved by the facet registry
 	// instead of inline here. Currently `elevation` and `prominence`; the
 	// remaining axes above and below still resolve inline. Registry order
 	// matches the order these axes were resolved in when inline, so
 	// `modifierValues` key insertion order — and thus attribute order in the
 	// output — is unchanged.
+	// The parent's resolved config, for the one axis that inherits from it
+	// (`density` reads `childDensity`).
+	const parentConfigKey = parentRune ? runeKeyMap.get(parentRune) : undefined;
 	const facetInput = {
 		tag, config, block, rune: dataRune ?? block, parentRune,
+		parentConfig: parentConfigKey ? allRunes[parentConfigKey] : undefined,
 		theme: { tints, backgrounds, frames },
 	};
 	const facetResolution = runFacets(
@@ -394,20 +351,12 @@ function transformRune(
 	Object.assign(modifierValues, facetResolution.axes);
 	modifierClasses.push(...facetResolution.classes);
 
-	// reveal / stagger — SPEC-105 motion facet. Pure intent → attributes: the
-	// author declares the entrance character (closed `reveal` vocabulary, validated
-	// at parse time by the schema's `matches`), the theme owns the choreography
-	// (WORK-432), a behaviour owns the timing (WORK-433). Universal opt-in like
-	// width/elevation — emits `data-reveal` (no BEM class; styled by attribute) and
-	// `data-stagger`, and stamps `--rf-reveal-index` on the cascade items below.
-	const revealValue = tag.attributes?.reveal;
-	if (revealValue) {
-		modifierValues['reveal'] = String(revealValue);
-	}
-	const staggerSet = Boolean(tag.attributes?.stagger);
-	if (staggerSet) {
-		modifierValues['stagger'] = '';
-	}
+	// Axes whose emission point the engine owns rather than the axis channel:
+	// `reading` / `dropcap` are applied to the body section during child
+	// assembly, and `data-density` is unconditional and sits at a fixed position.
+	const readingValue = (facetResolution.state['reading'] ?? DEFAULT_READING) as ReadingRegister;
+	const dropcapValue = facetResolution.state['dropcap'] === 'true';
+	const resolvedDensity = facetResolution.state['density'] ?? 'full';
 
 	// SPEC-089 — in cover mode the scrim metas are consumed by the media well
 	// even when the bg layer above didn't run. The `cover` facet claims them
@@ -483,7 +432,7 @@ function transformRune(
 		children = [wrapped];
 	}
 
-	// 5b. Prepend bg layer element if present (before content, after structural elements)
+	// 5b. Prepend facet-supplied layers (before content, after structural elements)
 	const beforeContent = facetResolution.layers
 		.filter(l => l.placement === 'before-content')
 		.map(l => l.element);
@@ -540,7 +489,7 @@ function transformRune(
 		}
 	}
 
-	// 7. Remove consumed meta tags (modifiers + tint)
+	// 7. Remove consumed meta tags (config modifiers + everything facets claimed)
 	// Build a Set of kebab-cased modifier keys since data-field values are now kebab-case
 	// but config.modifiers keys are camelCase
 	const consumedModifierFields = config.modifiers
@@ -563,14 +512,6 @@ function transformRune(
 			? (modifierValues[config.sequenceDirection.fromModifier] ?? config.sequenceDirection.default)
 			: undefined;
 		annotateSequence(filteredChildren, config.sequence, seqDirection);
-	}
-
-	// 7c. SPEC-105 stagger — stamp `--rf-reveal-index` (document order) on the
-	// rune's cascade items so the motion dimension can offset each child's entrance
-	// from the container's single in-view trigger. Only when the author set
-	// `stagger` and the rune declares its cascade items; otherwise a silent no-op.
-	if (staggerSet && config.staggerItems) {
-		stampStaggerIndex(filteredChildren, config.staggerItems, { n: 0 });
 	}
 
 	// 8. Build inline styles from styles config + tint tokens
@@ -781,33 +722,6 @@ function annotateSequence(children: RendererNode[], sequence: string, direction?
 		} else if (child.children.length > 0) {
 			// Recurse into wrappers (contentWrapper, structural elements)
 			annotateSequence(child.children, sequence, direction);
-		}
-	}
-}
-
-/**
- * Stamp `--rf-reveal-index: N` (0,1,2,… in document order) on a staggered
- * container's cascade items — the elements whose `data-field` or `data-name`
- * equals `itemName` (SPEC-105). Mutates the array in place, merging onto any
- * existing inline style. A matched item is NOT descended into: a nested
- * same-named cascade belongs to that child rune's own stagger pass.
- */
-function stampStaggerIndex(children: RendererNode[], itemName: string, counter: { n: number }): void {
-	for (let i = 0; i < children.length; i++) {
-		const child = children[i];
-		if (!isTag(child)) continue;
-		const isItem = child.attributes?.['data-field'] === itemName
-			|| child.attributes?.['data-name'] === itemName;
-		if (isItem) {
-			const existing = child.attributes?.style ? String(child.attributes.style) : '';
-			const decl = `--rf-reveal-index: ${counter.n}`;
-			children[i] = {
-				...child,
-				attributes: { ...child.attributes, style: existing ? `${existing}; ${decl}` : decl },
-			};
-			counter.n++;
-		} else if (child.children.length > 0) {
-			stampStaggerIndex(child.children, itemName, counter);
 		}
 	}
 }
