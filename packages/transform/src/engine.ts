@@ -4,7 +4,7 @@ import { isTag, makeTag, readMeta, toKebabCase, resolveOffset, parsePlacement, f
 import { mergeRuneConfig } from './merge.js';
 import { DEFAULT_READING, type ReadingRegister } from './reading.js';
 import { createLocaleContext, resolveLocaleString, DEFAULT_LOCALE, type LocaleContext } from './i18n.js';
-import { ORDERED_FACETS, runFacets, runPostAssemble, engineWarnings } from './facets/index.js';
+import { ORDERED_FACETS, FACET_ATTRIBUTES, runFacets, runPostAssemble, engineWarnings } from './facets/index.js';
 
 /** Pure text transforms for metaText values */
 const transforms: Record<string, (v: string) => string> = {
@@ -489,17 +489,16 @@ function transformRune(
 	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead).
 	// `data-rune-fields` (SPEC-082) is the internal field-data channel — strip it from output so
 	// the dual-emit in WORK-321 stays output-neutral; the engine begins *reading* it in WORK-322.
-	// NOTE: this fixed list still names eight facet-owned axes, so adding an axis
-	// with a fixed attribute name means editing here too. Generalising it needs a
-	// static `Facet.attributes` declaration — `FacetResult.stripAttrs` cannot
-	// carry it, because these must be stripped even when the facet resolves to
-	// nothing (`width="content"`). Left for a follow-up rather than widened into
-	// the riskiest migration.
-	const { width: _w, spacing: _s, inset: _i, elevation: _e, prominence: _p, reveal: _rv, stagger: _st, density: _d, 'data-rune': _dr, 'data-rune-fields': _drf, ...rawPassAttrs } = tag.attributes;
-	// Strip consumed attribute-source modifier names (expressed via data-* / BEM)
-	const passAttrs = facetResolution.stripAttrs.length > 0
-		? Object.fromEntries(Object.entries(rawPassAttrs).filter(([k]) => !facetResolution.stripAttrs.includes(k)))
-		: rawPassAttrs;
+	// Attributes consumed by the transform never reach the output: the facet
+	// registry declares its own (`FACET_ATTRIBUTES`), the config-modifier facet
+	// contributes the config-driven ones it claimed, and the two internal
+	// channels go regardless.
+	const { 'data-rune': _dr, 'data-rune-fields': _drf, ...rawPassAttrs } = tag.attributes;
+	const passAttrs = Object.fromEntries(
+		Object.entries(rawPassAttrs).filter(
+			([k]) => !FACET_ATTRIBUTES.has(k) && !facetResolution.stripAttrs.includes(k),
+		),
+	);
 
 	const result: SerializedTag = {
 		...tag,

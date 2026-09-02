@@ -129,6 +129,14 @@ export interface Facet {
 	 *  this and rejects cycles, so ordering is declared rather than implied by
 	 *  the physical line order of one long function. */
 	readonly after?: readonly string[];
+	/** Author attribute names this facet owns, never passed through to output.
+	 *
+	 *  Static rather than a `FacetResult` field, because these must be stripped
+	 *  even when the facet resolves to nothing: `width="content"` is suppressed
+	 *  (no axis, no class) but must not reach the rendered element. A
+	 *  per-instance result channel cannot express that; `FacetResult.stripAttrs`
+	 *  covers the config-modifier case, whose names are not knowable statically. */
+	readonly attributes?: readonly string[];
 	/** Cheap bail-out evaluated before `resolve`. */
 	appliesTo?(ctx: FacetContext): boolean;
 	/** Resolve the axis. Return `null` when the facet contributes nothing. */

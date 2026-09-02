@@ -23,6 +23,7 @@ export function hasPageSectionHeader(sections: Record<string, string> | undefine
  *  register by attribute. */
 export const prominenceFacet: Facet = {
 	name: 'prominence',
+	attributes: ['prominence'],
 
 	appliesTo: (ctx) => Boolean(ctx.tag.attributes?.prominence ?? ctx.config.defaultProminence),
 

@@ -87,6 +87,16 @@ const FACETS: readonly Facet[] = [
 	bgFacet,
 ];
 
+/** Every author attribute the registry owns, derived once at module load.
+ *
+ *  The engine strips these from pass-through output. Deriving it from the
+ *  facets means adding an axis with a fixed attribute name is a file plus a
+ *  registry entry, with no engine edit — which was not true while the list was
+ *  hand-maintained in `transformRune` (WORK-526). */
+export const FACET_ATTRIBUTES: ReadonlySet<string> = new Set(
+	FACETS.flatMap(f => [...(f.attributes ?? [])]),
+);
+
 /** Registry ordered once at module load.
  *
  *  A cycle or a dangling `after` throws here — at import, not per transform. */
