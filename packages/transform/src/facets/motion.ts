@@ -42,6 +42,7 @@ function stampStaggerIndex(children: RendererNode[], itemName: string, counter: 
  *  That walks assembled children, so it belongs to `postAssemble`. */
 export const motionFacet: Facet = {
 	name: 'motion',
+	attributes: ['reveal', 'stagger'],
 
 	resolve(ctx) {
 		const reveal = ctx.tag.attributes?.reveal;

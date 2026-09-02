@@ -17,6 +17,7 @@ export type DensityValue = (typeof DENSITY_VALUES)[number];
  *  conditional `data-*` attributes the axis channel produces. */
 export const densityFacet: Facet = {
 	name: 'density',
+	attributes: ['density'],
 	resolve: (ctx) => ({
 		state: {
 			density: String(

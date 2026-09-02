@@ -14,6 +14,7 @@ import type { Facet } from './types.js';
 /** `width` — the track a block rune occupies. */
 export const widthFacet: Facet = {
 	name: 'width',
+	attributes: ['width'],
 	resolve(ctx) {
 		const value = ctx.tag.attributes?.width ?? ctx.config.defaultWidth;
 		if (!value || value === 'content') return null;
@@ -37,6 +38,7 @@ export const contentMeasureFacet: Facet = {
 /** `spacing` — block-level rhythm override. */
 export const spacingFacet: Facet = {
 	name: 'spacing',
+	attributes: ['spacing'],
 	resolve(ctx) {
 		const value = ctx.tag.attributes?.spacing;
 		if (!value || value === 'default') return null;
@@ -47,6 +49,7 @@ export const spacingFacet: Facet = {
 /** `inset` — internal padding override. */
 export const insetFacet: Facet = {
 	name: 'inset',
+	attributes: ['inset'],
 	resolve(ctx) {
 		const value = ctx.tag.attributes?.inset;
 		if (!value || value === 'default') return null;

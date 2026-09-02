@@ -29,6 +29,7 @@ const DEPRECATED_ALIAS: Record<string, ElevationValue> = {
  *  the closed vocabulary is enforced at parse time by the schema's `matches`. */
 export const elevationFacet: Facet = {
 	name: 'elevation',
+	attributes: ['elevation'],
 
 	resolve(ctx) {
 		const raw = ctx.tag.attributes?.elevation ?? ctx.config.defaultElevation;
