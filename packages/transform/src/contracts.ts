@@ -1,6 +1,7 @@
 import type { ThemeConfig, RuneConfig, StructureEntry } from './types.js';
 import { toKebabCase } from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
+import { DESCRIBABLE_FACETS } from './facets/index.js';
 
 /** Structure contract for a single rune */
 export interface RuneContract {
@@ -100,39 +101,11 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 		childOrder: [],
 	};
 
-	// Modifiers
-	if (config.modifiers && Object.keys(config.modifiers).length > 0) {
-		contract.modifiers = {};
-		for (const [name, mod] of Object.entries(config.modifiers)) {
-			const kebab = name.replace(/([A-Z])/g, '-$1').toLowerCase();
-			contract.modifiers[name] = {
-				source: mod.source,
-				...(mod.default !== undefined ? { default: mod.default } : {}),
-				...(mod.noBemClass ? {} : { classPattern: `.${block}--{value}` }),
-				dataAttribute: `data-${kebab}`,
-				...(mod.valueMap ? { valueMap: mod.valueMap } : {}),
-				...(mod.mapTarget ? { mapTarget: mod.mapTarget } : {}),
-			};
-		}
-	}
-
-	// Context modifiers
-	if (config.contextModifiers && Object.keys(config.contextModifiers).length > 0) {
-		contract.contextModifiers = {};
-		for (const [parent, suffix] of Object.entries(config.contextModifiers)) {
-			contract.contextModifiers[parent] = {
-				suffix,
-				selector: `.${block}--${suffix}`,
-			};
-		}
-	}
-
-	// Static modifiers
-	if (config.staticModifiers && config.staticModifiers.length > 0) {
-		contract.staticModifiers = config.staticModifiers.map(name => ({
-			name,
-			selector: `.${block}--${name}`,
-		}));
+	// Modifier-family sections are declared by the facets that emit them
+	// (WORK-525) — one derivation instead of two.
+	for (const facet of DESCRIBABLE_FACETS) {
+		const described = facet.describe(config, block);
+		if (described) Object.assign(contract, described);
 	}
 
 	// Elements: collected from structure, contentWrapper, and autoLabel
