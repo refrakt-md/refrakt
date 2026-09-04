@@ -21,10 +21,15 @@ export interface FacetResolution {
 	warnings: FacetWarning[];
 }
 
-/** Emits facet diagnostics, applying per-key dedupe.
+/** Emits diagnostics, applying per-key dedupe.
  *
- *  Emission is immediate (not deferred to the end of the run) so that console
- *  output keeps the same ordering it had when each facet warned inline. */
+ *  Scoped to one `createTransform` — that is, one build. A warn-once therefore
+ *  reports once per build rather than once per process, so a dev server
+ *  re-reports on every rebuild instead of falling silent after the first
+ *  occurrence and never mentioning it again (WORK-524).
+ *
+ *  Emission is immediate rather than deferred, so console output keeps the
+ *  ordering it had when each site warned inline. */
 export class WarningCollector {
 	private readonly seen = new Set<string>();
 
@@ -33,7 +38,8 @@ export class WarningCollector {
 			if (this.seen.has(warning.dedupeKey)) return;
 			this.seen.add(warning.dedupeKey);
 		}
-		console.warn(warning.message);
+		if (warning.severity === 'error') console.error(warning.message);
+		else console.warn(warning.message);
 	}
 
 	/** Drop the dedupe memory. Tests use this to run a warn-once path twice. */
@@ -41,12 +47,6 @@ export class WarningCollector {
 		this.seen.clear();
 	}
 }
-
-/** Process-wide collector used by the engine.
- *
- *  Module scope matches the `*_WARNED` sets it replaces, which are also module
- *  scoped — a warn-once fires once per process, not once per page or build. */
-export const engineWarnings = new WarningCollector();
 
 /** Order facets so every facet follows the ones it declares in `after`.
  *

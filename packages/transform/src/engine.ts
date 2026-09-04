@@ -4,7 +4,8 @@ import { isTag, makeTag, readMeta, toKebabCase, resolveOffset, parsePlacement, f
 import { mergeRuneConfig } from './merge.js';
 import { DEFAULT_READING, type ReadingRegister } from './reading.js';
 import { createLocaleContext, resolveLocaleString, DEFAULT_LOCALE, type LocaleContext } from './i18n.js';
-import { ORDERED_FACETS, FACET_ATTRIBUTES, runFacets, runPostAssemble, engineWarnings } from './facets/index.js';
+import { ORDERED_FACETS, FACET_ATTRIBUTES, runFacets, runPostAssemble, WarningCollector } from './facets/index.js';
+import type { FacetWarning } from './facets/index.js';
 
 /** Pure text transforms for metaText values */
 const transforms: Record<string, (v: string) => string> = {
@@ -74,6 +75,11 @@ export function createTransform(config: ThemeConfig) {
 	// Build lowercase → config-key map for case-insensitive rune lookup
 	const runeKeyMap = new Map(Object.keys(runes).map(k => [toKebabCase(k), k]));
 
+	// WORK-524 — diagnostics dedupe per build, not per process. Scoped here so a
+	// dev-server rebuild re-reports rather than falling silent after the first
+	// occurrence and never mentioning it again.
+	const warnings = new WarningCollector();
+
 	function identityTransform(tree: RendererNode, parentRune?: string): RendererNode {
 		if (tree === null || tree === undefined) return tree;
 		if (typeof tree === 'string' || typeof tree === 'number') return tree;
@@ -95,7 +101,7 @@ export function createTransform(config: ThemeConfig) {
 		const dataRune = tree.attributes?.['data-rune'];
 		const configKey = dataRune ? runeKeyMap.get(dataRune) : undefined;
 		if (configKey) {
-			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, frames, runes, runeKeyMap, identityTransform, locale, parentRune);
+			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, frames, runes, runeKeyMap, identityTransform, locale, warnings, parentRune);
 		}
 
 		// Detect checkbox markers on list items
@@ -211,28 +217,25 @@ function findInteractiveGuest(
 	return undefined;
 }
 
-const INTERACTIVE_GUEST_WARNED = new Set<string>();
-/** SPEC-090 — warn once when an interactive guest sits in a linked tile (its
- *  controls are inert under the whole-tile link). Informative, not fatal. */
-function warnInteractiveGuestInLink(container: string, guest: string): void {
-	const key = `${container}:${guest}`;
-	if (INTERACTIVE_GUEST_WARNED.has(key)) return;
-	INTERACTIVE_GUEST_WARNED.add(key);
-	// eslint-disable-next-line no-console
-	console.warn(`[refrakt] interactive guest \`${guest}\` in a linked \`${container}\` — its controls are inert under the whole-tile link. Drop \`href\` or the interactivity.`);
+/** SPEC-090 — an interactive guest in a linked tile: its controls are inert
+ *  under the whole-tile link. Informative, not fatal. */
+function interactiveGuestInLink(container: string, guest: string): FacetWarning {
+	return {
+		code: 'interactive-guest-in-link',
+		dedupeKey: `interactive-guest:${container}:${guest}`,
+		message: `[refrakt] interactive guest \`${guest}\` in a linked \`${container}\` — its controls are inert under the whole-tile link. Drop \`href\` or the interactivity.`,
+	};
 }
 
-const COVER_SANDBOX_ACTIVATION_WARNED = new Set<string>();
-
-/** SPEC-101 — warn once when a non-eager sandbox serves as a cover backdrop:
- *  the posture demotion makes the backdrop inert, so `visible` is a no-op
- *  above the fold and `click`'s Run control is unreachable. Informative. */
-function warnNonEagerCoverSandbox(container: string, activation: string): void {
-	const key = `${container}:${activation}`;
-	if (COVER_SANDBOX_ACTIVATION_WARNED.has(key)) return;
-	COVER_SANDBOX_ACTIVATION_WARNED.add(key);
-	// eslint-disable-next-line no-console
-	console.warn(`[refrakt] \`activation="${activation}"\` on a sandbox serving as a \`${container}\` cover backdrop — the backdrop is inert (pointer-events: none), so the poster/Run affordance is unreachable. Drop \`activation\` (eager is the background mode).`);
+/** SPEC-101 — a non-eager sandbox serving as a cover backdrop: the posture
+ *  demotion makes the backdrop inert, so `visible` is a no-op above the fold
+ *  and `click`'s Run control is unreachable. Informative. */
+function nonEagerCoverSandbox(container: string, activation: string): FacetWarning {
+	return {
+		code: 'non-eager-cover-sandbox',
+		dedupeKey: `cover-sandbox:${container}:${activation}`,
+		message: `[refrakt] \`activation="${activation}"\` on a sandbox serving as a \`${container}\` cover backdrop — the backdrop is inert (pointer-events: none), so the poster/Run affordance is unreachable. Drop \`activation\` (eager is the background mode).`,
+	};
 }
 
 /** Apply BEM classes and structural enhancements to a rune tag */
@@ -248,6 +251,7 @@ function transformRune(
 	runeKeyMap: Map<string, string>,
 	recurse: (node: RendererNode, parentRune?: string) => RendererNode,
 	locale: LocaleContext,
+	warnings: WarningCollector,
 	parentRune?: string
 ): SerializedTag {
 	const block = `${prefix}-${config.block}`;
@@ -259,7 +263,7 @@ function transformRune(
 	if (config.requiresParent && config.requiresParent !== '*') {
 		const requiredRune = toKebabCase(config.requiresParent);
 		if (parentRune !== requiredRune) {
-			warnRequiresParent(dataRune ?? config.block, config.requiresParent, parentRune);
+			warnings.emit(requiresParentViolation(dataRune ?? config.block, config.requiresParent, parentRune));
 		}
 	}
 
@@ -291,7 +295,7 @@ function transformRune(
 		fields,
 		theme: { tints, backgrounds, frames },
 	};
-	const facetResolution = runFacets(ORDERED_FACETS, facetInput, engineWarnings);
+	const facetResolution = runFacets(ORDERED_FACETS, facetInput, warnings);
 	Object.assign(modifierValues, facetResolution.axes);
 	modifierClasses.push(...facetResolution.classes);
 
@@ -343,7 +347,7 @@ function transformRune(
 	//    WORK-313; the `structure`-only before/after path below survives for
 	//    non-meta-projecting runes that just inject icons or badges.
 	if (config.blocks || config.layout) {
-		children = assembleWithBlocks(config, block, children, modifierValues, locale);
+		children = assembleWithBlocks(config, block, children, modifierValues, locale, warnings);
 	} else if (config.structure) {
 		// Legacy before/after assembly
 		const prepend: RendererNode[] = [];
@@ -408,7 +412,7 @@ function transformRune(
 			mediaZone.attributes = { ...mediaZone.attributes, 'data-guest-posture': 'presentational' };
 			if (hasLink) {
 				const guest = findInteractiveGuest(mediaZone, allRunes, runeKeyMap);
-				if (guest) warnInteractiveGuestInLink(dataRune ?? config.block, guest);
+				if (guest) warnings.emit(interactiveGuestInLink(dataRune ?? config.block, guest));
 			}
 			// SPEC-101 — a sandbox serving as the cover backdrop fills the well:
 			// switch an auto-height sandbox to `fill` (the element pins the iframe
@@ -422,7 +426,7 @@ function transformRune(
 					}
 					const activation = sandbox.attributes?.['data-activation'];
 					if (activation === 'visible' || activation === 'click') {
-						warnNonEagerCoverSandbox(dataRune ?? config.block, String(activation));
+						warnings.emit(nonEagerCoverSandbox(dataRune ?? config.block, String(activation)));
 					}
 				}
 			}
@@ -479,7 +483,7 @@ function transformRune(
 	}
 	// Second facet phase: contributions that need the assembled children.
 	// `cover` flips the colour scheme on the `content` overlay here.
-	runPostAssemble(ORDERED_FACETS, facetInput, facetResolution, filteredChildren, engineWarnings);
+	runPostAssemble(ORDERED_FACETS, facetInput, facetResolution, filteredChildren, warnings);
 	if (styleParts.length) {
 		inlineStyle = inlineStyle
 			? `${inlineStyle}; ${styleParts.join('; ')}`
@@ -1211,6 +1215,7 @@ function assembleWithBlocks(
 	contentChildren: RendererNode[],
 	modifierValues: Record<string, string>,
 	locale: LocaleContext,
+	warnings: WarningCollector,
 ): RendererNode[] {
 	const blocks = config.blocks ?? {};
 	const layout = config.layout ?? {};
@@ -1234,7 +1239,7 @@ function assembleWithBlocks(
 
 	// No `layout` → render the transform tree verbatim (no projection).
 	if (Object.keys(layout).length === 0) return contentChildren;
-	const ctx: LayoutCtx = { layout, renderBlock };
+	const ctx: LayoutCtx = { layout, renderBlock, warnings };
 
 	// `root` present → resolve the whole skeleton recursively, pulling flat
 	// transform slots into (possibly created) containers; unlisted slots append.
@@ -1271,14 +1276,15 @@ function assembleWithBlocks(
 interface LayoutCtx {
 	layout: Record<string, LayoutEntry>;
 	renderBlock: (name: string) => SerializedTag | null;
+	warnings: WarningCollector;
 }
 
-const LAYOUT_CYCLE_WARNED = new Set<string>();
-function warnLayoutCycle(name: string): void {
-	if (LAYOUT_CYCLE_WARNED.has(name)) return;
-	LAYOUT_CYCLE_WARNED.add(name);
-	// eslint-disable-next-line no-console
-	console.warn(`[refrakt] layout reference cycle at "${name}" — skipping to break the loop.`);
+function layoutCycle(name: string): FacetWarning {
+	return {
+		code: 'layout-cycle',
+		dedupeKey: `layout-cycle:${name}`,
+		message: `[refrakt] layout reference cycle at "${name}" — skipping to break the loop.`,
+	};
 }
 
 /** SPEC-084 (WORK-337) — runes whose output is structurally meaningless without
@@ -1289,18 +1295,17 @@ const STRUCTURAL_CHILDREN = new Set<string>([
 	'bento-cell', 'definition', 'step', 'tier', 'map-pin',
 	'itinerary-day', 'itinerary-stop',
 ]);
-const REQUIRES_PARENT_WARNED = new Set<string>();
-/** Report a `requiresParent` violation once per (rune, actual-parent). */
-function warnRequiresParent(rune: string, required: string, actual: string | undefined): void {
-	const key = `${rune}<${actual ?? ''}`;
-	if (REQUIRES_PARENT_WARNED.has(key)) return;
-	REQUIRES_PARENT_WARNED.add(key);
+/** Report a `requiresParent` violation once per (rune, actual-parent). A
+ *  structural child misplaced is an error; any other violation renders but is
+ *  off-contract, so it warns. */
+function requiresParentViolation(rune: string, required: string, actual: string | undefined): FacetWarning {
 	const where = actual ? `nested directly in \`${actual}\`` : 'at the top level';
-	const msg = `[refrakt] \`${rune}\` requires parent \`${toKebabCase(required)}\` — found ${where}.`;
-	// eslint-disable-next-line no-console
-	if (STRUCTURAL_CHILDREN.has(rune)) console.error(msg);
-	// eslint-disable-next-line no-console
-	else console.warn(msg);
+	return {
+		code: 'requires-parent',
+		dedupeKey: `requires-parent:${rune}<${actual ?? ''}`,
+		severity: STRUCTURAL_CHILDREN.has(rune) ? 'error' : 'warn',
+		message: `[refrakt] \`${rune}\` requires parent \`${toKebabCase(required)}\` — found ${where}.`,
+	};
 }
 
 /** Map a child array to a `data-name` → node index (tags carrying a data-name). */
@@ -1332,7 +1337,7 @@ function placeNames(
 	const out: RendererNode[] = [];
 	for (const name of order) {
 		if (consumed.has(name)) continue;
-		if (ancestors.includes(name)) { warnLayoutCycle(name); continue; }
+		if (ancestors.includes(name)) { ctx.warnings.emit(layoutCycle(name)); continue; }
 
 		const entry = ctx.layout[name];
 

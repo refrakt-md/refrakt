@@ -24,8 +24,12 @@ export interface FacetWarning {
 	code: string;
 	/** The exact text emitted to the console. */
 	message: string;
-	/** When set, the warning is emitted once per key. Omit to warn every time. */
+	/** When set, the warning is emitted once per key within a build. Omit to
+	 *  report every occurrence. */
 	dedupeKey?: string;
+	/** Console channel. Defaults to `warn`; `error` is for violations that make
+	 *  the output structurally meaningless rather than merely off-contract. */
+	severity?: 'warn' | 'error';
 }
 
 /** An element a facet injects into the rune.
