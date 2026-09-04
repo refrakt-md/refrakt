@@ -20,7 +20,7 @@ import type { DescribableFacet } from './describe.js';
 
 export type { Facet, FacetContext, FacetInput, FacetResult, FacetWarning, FacetLayer, FacetStyle } from './types.js';
 export type { FacetResolution } from './driver.js';
-export { orderFacets, runFacets, runPostAssemble, WarningCollector, engineWarnings } from './driver.js';
+export { orderFacets, runFacets, runPostAssemble, WarningCollector } from './driver.js';
 export { elevationFacet, ELEVATION_VALUES } from './elevation.js';
 export { prominenceFacet, PROMINENCE_VALUES, hasPageSectionHeader } from './prominence.js';
 export { contentPlaceFacet } from './content-place.js';
