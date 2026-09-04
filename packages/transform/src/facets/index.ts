@@ -16,35 +16,80 @@ import {
 	modifiersFacet, contextModifiersFacet, staticModifiersFacet,
 	modifiersDescribe, contextModifiersDescribe, staticModifiersDescribe,
 } from './modifiers.js';
-import type { DescribableFacet } from './describe.js';
+import { elevationAxis } from './elevation.js';
+import { prominenceAxis } from './prominence.js';
+import { contentPlaceAxis } from './content-place.js';
+import { coverAxis } from './cover.js';
+import { frameAxis } from './frame.js';
+import { substrateAxis } from './substrate.js';
+import { tintAxis } from './tint.js';
+import { bgAxis } from './bg.js';
+import { widthAxis, contentMeasureAxis, spacingAxis, insetAxis } from './box.js';
+import { densityAxis } from './density.js';
+import { readingAxis, dropcapAxis } from './reading.js';
+import { motionAxis } from './motion.js';
+import type { DescribableFacet, UniversalAxisFacet } from './describe.js';
 
 export type { Facet, FacetContext, FacetInput, FacetResult, FacetWarning, FacetLayer, FacetStyle } from './types.js';
 export type { FacetResolution } from './driver.js';
 export { orderFacets, runFacets, runPostAssemble, WarningCollector } from './driver.js';
-export { elevationFacet, ELEVATION_VALUES } from './elevation.js';
-export { prominenceFacet, PROMINENCE_VALUES, hasPageSectionHeader } from './prominence.js';
-export { contentPlaceFacet } from './content-place.js';
-export { coverFacet } from './cover.js';
-export { frameFacet, FRAME_FACET_META } from './frame.js';
-export { tintFacet, TINT_TOKENS } from './tint.js';
-export { bgFacet, buildBgGradient } from './bg.js';
+export { elevationFacet, elevationAxis, ELEVATION_VALUES } from './elevation.js';
+export { prominenceFacet, prominenceAxis, PROMINENCE_VALUES, hasPageSectionHeader } from './prominence.js';
+export { contentPlaceFacet, contentPlaceAxis } from './content-place.js';
+export { coverFacet, coverAxis } from './cover.js';
+export { frameFacet, frameAxis, FRAME_FACET_META } from './frame.js';
+export { tintFacet, tintAxis, TINT_TOKENS } from './tint.js';
+export { bgFacet, bgAxis, buildBgGradient } from './bg.js';
 export { widthFacet, contentMeasureFacet, spacingFacet, insetFacet } from './box.js';
-export { densityFacet, DENSITY_VALUES } from './density.js';
-export { readingFacet, dropcapFacet, READING_REGISTERS, READING_CAPABILITIES, DEFAULT_READING } from './reading.js';
-export { motionFacet } from './motion.js';
+export { widthAxis, contentMeasureAxis, spacingAxis, insetAxis } from './box.js';
+export { densityFacet, densityAxis, DENSITY_VALUES } from './density.js';
+export { readingFacet, dropcapFacet, readingAxis, dropcapAxis, READING_REGISTERS, READING_CAPABILITIES, DEFAULT_READING } from './reading.js';
+export { motionFacet, motionAxis } from './motion.js';
 export { modifiersFacet, contextModifiersFacet, staticModifiersFacet } from './modifiers.js';
-export type { DescribableFacet, FacetContract } from './describe.js';
+export type { DescribableFacet, FacetContract, UniversalAxisFacet, UniversalAxisContract, RuneAxisContract } from './describe.js';
 
-/** Facets that can describe their output statically, for `refrakt contracts`.
+/** Facets that describe their config-modifier output statically, for
+ *  `refrakt contracts`.
  *
- *  Only the config-modifier family: they are the only facets whose output the
- *  structure contract describes at all. See WORK-525. */
+ *  Only the config-modifier family — the universal axes describe themselves
+ *  through {@link UNIVERSAL_AXIS_FACETS} instead, because their output is
+ *  mostly the same on every rune and only the gates and defaults vary.
+ *  See WORK-525. */
 export const DESCRIBABLE_FACETS: readonly DescribableFacet[] = [
 	modifiersDescribe,
 	contextModifiersDescribe,
 	staticModifiersDescribe,
 ];
-export { substrateFacet } from './substrate.js';
+
+/** The universal axes, in registry order, for the structure contract.
+ *
+ *  Ordered to match {@link ORDERED_FACETS} so the contract reads in the order
+ *  the engine resolves — which is also the order duplicate CSS declarations
+ *  resolve in (`content-place` then `cover` both write `--cover-scrim-dir`).
+ *
+ *  Adding an axis to the registry and forgetting to add it here is the drift
+ *  this list can still have; `contract-engine-agreement.test.ts` covers the
+ *  claims each entry makes, and `facets/registry.test.ts` covers the coverage
+ *  of the list itself. */
+export const UNIVERSAL_AXIS_FACETS: readonly UniversalAxisFacet[] = [
+	tintAxis,
+	widthAxis,
+	contentMeasureAxis,
+	spacingAxis,
+	insetAxis,
+	densityAxis,
+	readingAxis,
+	dropcapAxis,
+	elevationAxis,
+	prominenceAxis,
+	motionAxis,
+	contentPlaceAxis,
+	coverAxis,
+	frameAxis,
+	substrateAxis,
+	bgAxis,
+];
+export { substrateFacet, substrateAxis } from './substrate.js';
 export { applyChromeToTag, hasMediaSection } from './chrome.js';
 export type { Chrome, ChromeCarry, ChromeTarget } from './chrome.js';
 export type { FacetTheme } from './types.js';
@@ -57,11 +102,8 @@ export type { FacetTheme } from './types.js';
  *  insertion order and inline-style declaration order, and therefore the
  *  output byte-for-byte.
  *
- *  Migrated so far (SPEC-124): `elevation`, `prominence`, `content-place`,
- *  `cover`, `frame` and `substrate`. Still resolving inline: tint, density,
- *  width/spacing, reading and dropcap, motion, and background.
- *  `FacetResult.layers` is declared but unexercised; it needs the background
- *  facet (WORK-520), the first to build its own element tree. */
+ *  Every universal axis has migrated (SPEC-124); nothing resolves inline in
+ *  `transformRune` any more. */
 const FACETS: readonly Facet[] = [
 	// Order reproduces the sequence these axes emitted in when they resolved
 	// inline. Class order, `modifierValues` key insertion order and inline-style

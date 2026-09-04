@@ -1,5 +1,6 @@
 import { readMeta, findNodeByDataName } from '../helpers.js';
 import type { Facet, FacetResult } from './types.js';
+import type { UniversalAxisFacet } from './describe.js';
 
 /** SPEC-089 — explicit cover-scrim edge → CSS gradient direction (the heaviest
  *  edge is where the named edge sits). Overrides the content-place default. */
@@ -90,4 +91,26 @@ export const coverFacet: Facet = {
 			'data-color-scheme': readMeta(ctx.tag, 'scrim-tone') ?? 'dark',
 		};
 	},
+};
+
+/** Contract description (WORK-527).
+ *
+ *  Cover mode is reached through the `media-position` config modifier, so the
+ *  axis is available only on runes that declare one — this is the one universal
+ *  axis whose gate is another rune's config modifier rather than a section role
+ *  or a target. */
+export const coverAxis: UniversalAxisFacet = {
+	axis: 'cover',
+	describeAxis: () => ({
+		description: 'Cover-mode chrome (SPEC-089): with `media-position="cover"` the media fills the surface and the content sits over it, so the scrim is rerouted from the background layer to the media well.',
+		source: 'meta',
+		inputs: SCRIM_META,
+		dataAttributes: ['data-scrim', 'data-scrim-type', 'data-scrim-blur'],
+		customProperties: ['--cover-scrim-dir'],
+		target: 'the rune root, except `data-color-scheme`, which is scoped to the `[data-name="content"]` overlay so only text on the darkened media flips',
+		condition: 'active only when `media-position` resolves to `cover`',
+	}),
+	describeForRune: (config) => (config.modifiers?.['media-position']
+		? null
+		: 'this rune declares no `media-position` modifier, so it cannot enter cover mode'),
 };

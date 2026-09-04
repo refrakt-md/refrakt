@@ -31,6 +31,46 @@ The output includes, for every rune:
 - **elements** — injected structural elements with their selectors and conditions
 - **inlineStyles** — CSS custom properties set via the `styles` config
 - **childOrder** — the order of structural and content children
+- **universalAxes** — what the rune's config settles about the universal axes: resolved defaults, the surface each axis lands on, the block-substituted selectors it adds (`.rf-card--tinted`, `.rf-card--has-bg`), and the axes its config rules out entirely
+
+### Universal axes
+
+Above the per-rune entries, a top-level `universalAxes` section describes the axes the transform applies to *every* rune — `tint`, `width`, `content-measure`, `spacing`, `inset`, `density`, `reading`, `dropcap`, `elevation`, `prominence`, `motion`, `content-place`, `cover`, `frame`, `substrate` and `bg` — in the order the engine resolves them.
+
+Each entry names the axis's author-facing inputs and where they are read from, its closed value vocabulary where the engine owns one, the data attributes and CSS custom properties it emits, any elements it injects, and the condition under which it applies at all.
+
+It is stated once rather than repeated on all 130-odd runes, because an axis is the same everywhere except for its gates and defaults — and those are exactly what each rune's own `universalAxes` records. Selector patterns carry a `{block}` placeholder that the rune's own `block` substitutes:
+
+```json
+{
+  "universalAxes": {
+    "elevation": {
+      "description": "The chrome/depth ladder (SPEC-107)…",
+      "source": "attribute",
+      "inputs": ["elevation"],
+      "values": ["sunken", "flush", "flat", "raised", "floating", "overlay"],
+      "dataAttributes": ["data-elevation"],
+      "condition": "emitted only when the author sets it or the rune declares `defaultElevation`"
+    }
+  },
+  "runes": {
+    "Card": {
+      "universalAxes": {
+        "axes": {
+          "tint": { "selectors": [".rf-card--tinted"] },
+          "frame": { "target": "[data-section=\"media\"]" }
+        },
+        "unavailable": {
+          "reading": "this rune declares no body section",
+          "prominence": "this rune has no page-section header"
+        }
+      }
+    }
+  }
+}
+```
+
+An axis absent from a rune's `axes` **and** from its `unavailable` behaves exactly as the top-level entry describes.
 
 ### CI validation
 

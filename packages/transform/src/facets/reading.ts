@@ -1,5 +1,7 @@
-import { resolveReading, READING_CAPABILITIES, DEFAULT_READING } from '../reading.js';
+import { resolveReading, READING_CAPABILITIES, DEFAULT_READING, READING_REGISTERS } from '../reading.js';
+import type { RuneConfig } from '../types.js';
 import type { Facet } from './types.js';
+import type { UniversalAxisFacet } from './describe.js';
 
 export { READING_REGISTERS, READING_CAPABILITIES, DEFAULT_READING } from '../reading.js';
 
@@ -46,4 +48,44 @@ export const dropcapFacet: Facet = {
 			}],
 		};
 	},
+};
+
+// ─── Contract descriptions (WORK-527) ─────────────────────────────────────
+
+/** Both axes land on the rune's `[data-section="body"]` element, so a rune
+ *  whose `sections` declares no body role can never carry them however the
+ *  author marks it up. */
+function hasBodySection(sections: RuneConfig['sections']): boolean {
+	return sections ? Object.values(sections).includes('body') : false;
+}
+
+export const readingAxis: UniversalAxisFacet = {
+	axis: 'reading',
+	describeAxis: () => ({
+		description: 'Editorial register for body text (SPEC-108). The author picks the register; the theme owns the magnitude.',
+		source: 'attribute',
+		inputs: ['reading'],
+		values: READING_REGISTERS,
+		default: DEFAULT_READING,
+		dataAttributes: ['data-reading'],
+		target: '[data-section="body"]',
+		condition: 'suppressed at the `ui` default, so unmarked bodies carry no attribute',
+	}),
+	describeForRune: (config) => {
+		if (!hasBodySection(config.sections)) return 'this rune declares no body section';
+		return config.defaultReading ? { default: config.defaultReading } : null;
+	},
+};
+
+export const dropcapAxis: UniversalAxisFacet = {
+	axis: 'dropcap',
+	describeAxis: () => ({
+		description: 'Per-instance drop-cap opt-in (SPEC-108).',
+		source: 'attribute',
+		inputs: ['dropcap'],
+		dataAttributes: ['data-dropcap'],
+		target: '[data-section="body"]',
+		condition: 'honoured only when the resolved reading register enables it (`prose`); dropped with a warning otherwise',
+	}),
+	describeForRune: (config) => (hasBodySection(config.sections) ? null : 'this rune declares no body section'),
 };

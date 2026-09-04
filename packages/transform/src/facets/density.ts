@@ -1,4 +1,5 @@
 import type { Facet } from './types.js';
+import type { UniversalAxisFacet } from './describe.js';
 
 /** SPEC-025 — the density scale. */
 export const DENSITY_VALUES = ['full', 'compact', 'minimal'] as const;
@@ -28,4 +29,24 @@ export const densityFacet: Facet = {
 			),
 		},
 	}),
+};
+
+/** Contract description (WORK-527).
+ *
+ *  The rune-level `default` is `defaultDensity` only. The *effective* default
+ *  also depends on where the rune is nested (a parent's `childDensity` beats
+ *  it), which no static contract can settle — the condition says so rather than
+ *  the contract claiming a value it cannot know. */
+export const densityAxis: UniversalAxisFacet = {
+	axis: 'density',
+	describeAxis: () => ({
+		description: 'How tightly a rune packs its content (SPEC-025).',
+		source: 'attribute',
+		inputs: ['density'],
+		values: DENSITY_VALUES,
+		default: 'full',
+		dataAttributes: ['data-density'],
+		condition: 'always present on the rune root; resolution is author ▸ the parent rune\'s `childDensity` ▸ this rune\'s `defaultDensity` ▸ `full`',
+	}),
+	describeForRune: (config) => (config.defaultDensity ? { default: config.defaultDensity } : null),
 };

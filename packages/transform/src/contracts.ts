@@ -1,7 +1,8 @@
 import type { ThemeConfig, RuneConfig, StructureEntry } from './types.js';
 import { toKebabCase } from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
-import { DESCRIBABLE_FACETS } from './facets/index.js';
+import { DESCRIBABLE_FACETS, UNIVERSAL_AXIS_FACETS } from './facets/index.js';
+import type { UniversalAxisContract, RuneAxisContract } from './facets/describe.js';
 
 /** Structure contract for a single rune */
 export interface RuneContract {
@@ -53,6 +54,16 @@ export interface RuneContract {
 	};
 	/** Warnings about invalid projection references */
 	warnings?: string[];
+	/** SPEC-124 / WORK-527 — what this rune's config settles about the universal
+	 *  axes. Only the parts that vary by rune: the axes themselves are described
+	 *  once, at `StructureContract.universalAxes`. An axis absent from `axes` and
+	 *  from `unavailable` behaves exactly as described there. */
+	universalAxes?: {
+		/** Defaults, targets and block-substituted selectors this rune settles. */
+		axes?: Record<string, RuneAxisContract>;
+		/** Axes this rune's config rules out entirely, mapped to why. */
+		unavailable?: Record<string, string>;
+	};
 	/** SPEC-091 — per-variant structures. Keyed by variant axis → value, each
 	 *  entry is the full contract the engine produces when that axis resolves to
 	 *  that value (base config merged with the variant delta). Present only for
@@ -65,6 +76,14 @@ export interface StructureContract {
 	$schema: string;
 	description: string;
 	prefix: string;
+	/** SPEC-124 / WORK-527 — the universal axes the facet registry applies to
+	 *  every rune, in registry order.
+	 *
+	 *  Stated once rather than repeated per rune: an axis is the same everywhere
+	 *  except for its gates and defaults, and those are what each rune's own
+	 *  `universalAxes` records. Selector patterns carry a `{block}` placeholder
+	 *  that `RuneContract.block` substitutes. */
+	universalAxes: Record<string, UniversalAxisContract>;
 	runes: Record<string, RuneContract>;
 }
 
@@ -87,6 +106,9 @@ export function generateStructureContract(config: ThemeConfig): StructureContrac
 		description:
 			'HTML structure contracts for the identity transform. Documents the BEM selectors, data attributes, and HTML structure the engine produces for each rune. Auto-generated from theme config — do not edit by hand.',
 		prefix,
+		universalAxes: Object.fromEntries(
+			UNIVERSAL_AXIS_FACETS.map(facet => [facet.axis, facet.describeAxis()]),
+		),
 		runes: result,
 	};
 }
@@ -106,6 +128,24 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 	for (const facet of DESCRIBABLE_FACETS) {
 		const described = facet.describe(config, block);
 		if (described) Object.assign(contract, described);
+	}
+
+	// Universal axes (WORK-527) — only what this rune's config settles. A string
+	// result means the axis is unavailable here and the string is why; that half
+	// is a flat map because there are hundreds of them across the catalog and the
+	// reason is the only payload.
+	const runeAxes: Record<string, RuneAxisContract> = {};
+	const unavailable: Record<string, string> = {};
+	for (const facet of UNIVERSAL_AXIS_FACETS) {
+		const described = facet.describeForRune(config, block);
+		if (typeof described === 'string') unavailable[facet.axis] = described;
+		else if (described) runeAxes[facet.axis] = described;
+	}
+	if (Object.keys(runeAxes).length > 0 || Object.keys(unavailable).length > 0) {
+		contract.universalAxes = {
+			...(Object.keys(runeAxes).length > 0 ? { axes: runeAxes } : {}),
+			...(Object.keys(unavailable).length > 0 ? { unavailable } : {}),
+		};
 	}
 
 	// Elements: collected from structure, contentWrapper, and autoLabel

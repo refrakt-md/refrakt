@@ -1,4 +1,5 @@
 import type { Facet } from './types.js';
+import type { UniversalAxisFacet } from './describe.js';
 
 /** SPEC-107 — the header-emphasis vocabulary, ordered quiet to loud. */
 export const PROMINENCE_VALUES = ['quiet', 'normal', 'prominent', 'display'] as const;
@@ -40,5 +41,26 @@ export const prominenceFacet: Facet = {
 		}
 
 		return { axes: { prominence: String(value) } };
+	},
+};
+
+/** Contract description (WORK-527).
+ *
+ *  The unavailability is worth recording per rune: an author can write
+ *  `prominence=` on any rune, and on a header-less one the engine drops it with
+ *  a warning. The contract now says so ahead of the warning. */
+export const prominenceAxis: UniversalAxisFacet = {
+	axis: 'prominence',
+	describeAxis: () => ({
+		description: 'Header emphasis (SPEC-107). Scales a rune\'s page-section header; the skin maps it to a type register by attribute, so there is no BEM class.',
+		source: 'attribute',
+		inputs: ['prominence'],
+		values: PROMINENCE_VALUES,
+		dataAttributes: ['data-prominence'],
+		condition: 'requires a page-section header — a `sections` role of header, preamble, title or description. Dropped with a warning otherwise.',
+	}),
+	describeForRune: (config) => {
+		if (!hasPageSectionHeader(config.sections)) return 'this rune has no page-section header';
+		return config.defaultProminence ? { default: config.defaultProminence } : null;
 	},
 };

@@ -2,6 +2,7 @@ import type { RendererNode, SerializedTag } from '@refrakt-md/types';
 import { isTag, makeTag, readMeta } from '../helpers.js';
 import type { BgPresetDefinition } from '../types.js';
 import type { Facet, FacetContext, FacetWarning } from './types.js';
+import type { UniversalAxisFacet } from './describe.js';
 
 /** SPEC-088 — the bounded set of named gradient directions. */
 const BG_GRADIENT_DIRECTIONS: Record<string, string> = {
@@ -249,4 +250,26 @@ export const bgFacet: Facet = {
 			...(warnings.length ? { warnings } : {}),
 		};
 	},
+};
+
+/** Contract description (WORK-527).
+ *
+ *  `dataAttributes` lists what lands on the *rune root*. The injected elements
+ *  carry their own (`data-bg-preset` and `data-bg-fixed` on the layer,
+ *  `data-bg-overlay` on the wash, `data-scrim`/`data-scrim-tone`/`data-scrim-dir`
+ *  on the scrim); the contract names the elements and leaves their internals to
+ *  the elements themselves rather than flattening two surfaces into one list. */
+export const bgAxis: UniversalAxisFacet = {
+	axis: 'bg',
+	describeAxis: () => ({
+		description: 'The background layer (SPEC-088): image, video, gradient, flat overlay wash and legibility scrim, in a single injected layer behind the rune\'s content.',
+		source: 'meta',
+		inputs: BG_META,
+		selectors: ['.{block}--has-bg'],
+		dataAttributes: ['data-bg', 'data-color-scheme'],
+		customProperties: ['--bg-image', '--bg-position', '--bg-blur', '--bg-fit', '--bg-opacity', '--scrim-strength', '--scrim-blur'],
+		elements: ['[data-name="bg"]', '[data-name="bg-video"]', '[data-name="bg-overlay"]', '[data-name="scrim"]'],
+		condition: 'the layer is raised only when a preset, image, video, gradient, overlay, scrim or `{% bg %}` sandbox guest resolves. In cover mode the scrim is routed to the media well instead, and `data-color-scheme` yields to a scheme a tint already claimed.',
+	}),
+	describeForRune: (_config, block) => ({ selectors: [`.${block}--has-bg`] }),
 };

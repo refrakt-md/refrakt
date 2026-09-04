@@ -2,6 +2,7 @@ import type { SerializedTag } from '@refrakt-md/types';
 import { readMeta, findMediaZone } from '../helpers.js';
 import type { Facet, FacetStyle } from './types.js';
 import { applyChromeToTag, hasMediaSection, type Chrome, type ChromeCarry, type ChromeTarget } from './chrome.js';
+import type { UniversalAxisFacet } from './describe.js';
 
 /** SPEC-087 — the substrate size and opacity scales.
  *
@@ -86,5 +87,25 @@ export const substrateFacet: Facet = {
 		const mediaZone = findMediaZone(children);
 		if (!mediaZone) return [noMediaWarning(ctx.rune)];
 		applyChromeToTag(mediaZone, chrome);
+	},
+};
+
+/** Contract description (WORK-527). Unlike `frame`, substrate always has a
+ *  surface — it defaults to the rune root — so it is never unavailable; only
+ *  its configured target varies. */
+export const substrateAxis: UniversalAxisFacet = {
+	axis: 'substrate',
+	describeAxis: () => ({
+		description: 'Generated pattern fills (SPEC-087). Markers only — the engine sets the attributes and cell/opacity custom properties, CSS draws the pattern.',
+		source: 'meta',
+		inputs: ['substrate', 'substrate-size', 'substrate-opacity', 'substrate-fill', 'substrate-target'],
+		dataAttributes: ['data-substrate', 'data-substrate-fill'],
+		customProperties: ['--substrate-cell', '--substrate-opacity'],
+		condition: 'defaults to the rune root. `substrate-target="media"` moves it to the media zone, and is dropped with a warning on a rune with no media section. The facets are inert without a `substrate` pattern.',
+	}),
+	describeForRune: (config) => {
+		if (config.substrateTarget !== 'media') return null;
+		if (!hasMediaSection(config.sections)) return 'this rune targets the media zone but declares no media section';
+		return { target: '[data-section="media"]' };
 	},
 };

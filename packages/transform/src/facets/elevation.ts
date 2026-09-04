@@ -1,4 +1,5 @@
 import type { Facet } from './types.js';
+import type { UniversalAxisFacet } from './describe.js';
 
 /** SPEC-107 — the chrome/depth ladder, ordered shallow to deep.
  *
@@ -48,4 +49,19 @@ export const elevationFacet: Facet = {
 
 		return { axes: { elevation: raw } };
 	},
+};
+
+/** Contract description (WORK-527). The vocabulary is {@link ELEVATION_VALUES}
+ *  itself — the contract restates nothing. */
+export const elevationAxis: UniversalAxisFacet = {
+	axis: 'elevation',
+	describeAxis: () => ({
+		description: 'The chrome/depth ladder (SPEC-107). The skin maps each rung to a chrome bundle by attribute, so there is no BEM class.',
+		source: 'attribute',
+		inputs: ['elevation'],
+		values: ELEVATION_VALUES,
+		dataAttributes: ['data-elevation'],
+		condition: 'emitted only when the author sets it or the rune declares `defaultElevation`',
+	}),
+	describeForRune: (config) => (config.defaultElevation ? { default: config.defaultElevation } : null),
 };
