@@ -95,15 +95,23 @@ export interface RuneAxisContract {
 
 /** A universal axis that can describe itself for the structure contract.
  *
- *  Split in two because the two halves have different lifetimes: `describeAxis`
- *  is the registry's own definition and is emitted once per contract, while
+ *  Split in two because the two halves have different lifetimes: `contract` is
+ *  the registry's own definition and is emitted once per document, while
  *  `describeForRune` is per rune and deliberately narrow — see
- *  {@link RuneAxisContract}. */
+ *  {@link RuneAxisContract}.
+ *
+ *  Only the second half is a function, and only because it takes arguments. The
+ *  registry-level half is a constant, so it is a value: a `describeAxis()`
+ *  returning a fresh literal each call would look like it isolated the registry
+ *  from a mutating consumer, but the vocabularies it embeds are shared module
+ *  constants either way, so the protection would stop one level short of where
+ *  it matters. `UNIVERSAL_AXIS_FACETS` deep-freezes instead. */
 export interface UniversalAxisFacet {
 	/** Axis name, as it appears in the contract. Matches the facet name. */
 	readonly axis: string;
-	/** The registry-level description. Config-independent. */
-	describeAxis(): UniversalAxisContract;
+	/** The registry-level description. Config-independent, and frozen by the
+	 *  registry — `generateStructureContract` emits it by reference. */
+	readonly contract: UniversalAxisContract;
 	/** What this rune's config settles. `null` when nothing does.
 	 *
 	 *  A string result means the axis is *unavailable* on this rune and the

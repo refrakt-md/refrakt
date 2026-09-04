@@ -68,52 +68,52 @@ export const insetFacet: Facet = {
 
 export const widthAxis: UniversalAxisFacet = {
 	axis: 'width',
-	describeAxis: () => ({
+	contract: {
 		description: 'The track a block rune occupies.',
 		source: 'attribute',
 		inputs: ['width'],
 		dataAttributes: ['data-width'],
 		classPattern: '.{block}--{value}',
 		condition: 'suppressed at the `content` default',
-	}),
+	},
 	describeForRune: (config) => (config.defaultWidth ? { default: config.defaultWidth } : null),
 };
 
 export const contentMeasureAxis: UniversalAxisFacet = {
 	axis: 'content-measure',
-	describeAxis: () => ({
+	contract: {
 		description: 'A page-section rune anchors its content to the text measure when bled to the `wide` track; only the surface and background widen.',
 		source: 'config',
 		inputs: ['contentMeasure'],
 		values: ['anchored'],
 		dataAttributes: ['data-content-measure'],
 		condition: 'not author-facing — emitted only when the rune declares `contentMeasure: "anchored"`',
-	}),
+	},
 	describeForRune: (config) => (config.contentMeasure === 'anchored' ? { default: 'anchored' } : null),
 };
 
 export const spacingAxis: UniversalAxisFacet = {
 	axis: 'spacing',
-	describeAxis: () => ({
+	contract: {
 		description: 'Block-level rhythm override.',
 		source: 'attribute',
 		inputs: ['spacing'],
 		dataAttributes: ['data-spacing'],
 		classPattern: '.{block}--spacing-{value}',
 		condition: 'suppressed at the `default` value',
-	}),
+	},
 	describeForRune: () => null,
 };
 
 export const insetAxis: UniversalAxisFacet = {
 	axis: 'inset',
-	describeAxis: () => ({
+	contract: {
 		description: 'Internal padding override.',
 		source: 'attribute',
 		inputs: ['inset'],
 		dataAttributes: ['data-inset'],
 		classPattern: '.{block}--inset-{value}',
 		condition: 'suppressed at the `default` value',
-	}),
+	},
 	describeForRune: () => null,
 };

@@ -106,8 +106,10 @@ export function generateStructureContract(config: ThemeConfig): StructureContrac
 		description:
 			'HTML structure contracts for the identity transform. Documents the BEM selectors, data attributes, and HTML structure the engine produces for each rune. Auto-generated from theme config — do not edit by hand.',
 		prefix,
+		// Emitted by reference — the registry freezes each `contract`, so this
+		// cannot leak a mutable handle back into it.
 		universalAxes: Object.fromEntries(
-			UNIVERSAL_AXIS_FACETS.map(facet => [facet.axis, facet.describeAxis()]),
+			UNIVERSAL_AXIS_FACETS.map(facet => [facet.axis, facet.contract]),
 		),
 		runes: result,
 	};

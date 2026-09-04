@@ -55,13 +55,13 @@ export const elevationFacet: Facet = {
  *  itself — the contract restates nothing. */
 export const elevationAxis: UniversalAxisFacet = {
 	axis: 'elevation',
-	describeAxis: () => ({
+	contract: {
 		description: 'The chrome/depth ladder (SPEC-107). The skin maps each rung to a chrome bundle by attribute, so there is no BEM class.',
 		source: 'attribute',
 		inputs: ['elevation'],
 		values: ELEVATION_VALUES,
 		dataAttributes: ['data-elevation'],
 		condition: 'emitted only when the author sets it or the rune declares `defaultElevation`',
-	}),
+	},
 	describeForRune: (config) => (config.defaultElevation ? { default: config.defaultElevation } : null),
 };

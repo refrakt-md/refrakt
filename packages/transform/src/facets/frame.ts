@@ -146,14 +146,14 @@ export const frameFacet: Facet = {
  *  neither a `frameTarget` nor a media section can carry no frame at all. */
 export const frameAxis: UniversalAxisFacet = {
 	axis: 'frame',
-	describeAxis: () => ({
+	contract: {
 		description: 'Surface chrome (SPEC-086): a named preset from the theme registry with inline `frame-*` overrides layered on top.',
 		source: 'meta',
 		inputs: ['frame', ...FRAME_FACET_META],
 		dataAttributes: ['data-frame', 'data-displace', 'data-displace-mode', 'data-frame-shadow', 'data-frame-overflow'],
 		customProperties: ['--frame-aspect', '--frame-offset', '--frame-oversize', '--frame-anchor', '--frame-place-x', '--frame-place-y'],
 		condition: 'lands on the surface named by `frameTarget`, defaulting to the media zone when the rune declares one. With no target the metas are still consumed but the chrome is dropped with a warning. `data-frame-overflow="bleed"` is stripped with a warning on a clip host.',
-	}),
+	},
 	describeForRune: (config) => {
 		const target = config.frameTarget ?? (hasMediaSection(config.sections) ? 'media' : null);
 		if (!target) return 'this rune declares neither a `frameTarget` nor a media section';

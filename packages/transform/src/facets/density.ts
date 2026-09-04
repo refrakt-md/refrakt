@@ -39,7 +39,7 @@ export const densityFacet: Facet = {
  *  the contract claiming a value it cannot know. */
 export const densityAxis: UniversalAxisFacet = {
 	axis: 'density',
-	describeAxis: () => ({
+	contract: {
 		description: 'How tightly a rune packs its content (SPEC-025).',
 		source: 'attribute',
 		inputs: ['density'],
@@ -47,6 +47,6 @@ export const densityAxis: UniversalAxisFacet = {
 		default: 'full',
 		dataAttributes: ['data-density'],
 		condition: 'always present on the rune root; resolution is author ▸ the parent rune\'s `childDensity` ▸ this rune\'s `defaultDensity` ▸ `full`',
-	}),
+	},
 	describeForRune: (config) => (config.defaultDensity ? { default: config.defaultDensity } : null),
 };

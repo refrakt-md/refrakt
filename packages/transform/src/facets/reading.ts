@@ -61,7 +61,7 @@ function hasBodySection(sections: RuneConfig['sections']): boolean {
 
 export const readingAxis: UniversalAxisFacet = {
 	axis: 'reading',
-	describeAxis: () => ({
+	contract: {
 		description: 'Editorial register for body text (SPEC-108). The author picks the register; the theme owns the magnitude.',
 		source: 'attribute',
 		inputs: ['reading'],
@@ -70,7 +70,7 @@ export const readingAxis: UniversalAxisFacet = {
 		dataAttributes: ['data-reading'],
 		target: '[data-section="body"]',
 		condition: 'suppressed at the `ui` default, so unmarked bodies carry no attribute',
-	}),
+	},
 	describeForRune: (config) => {
 		if (!hasBodySection(config.sections)) return 'this rune declares no body section';
 		return config.defaultReading ? { default: config.defaultReading } : null;
@@ -79,13 +79,13 @@ export const readingAxis: UniversalAxisFacet = {
 
 export const dropcapAxis: UniversalAxisFacet = {
 	axis: 'dropcap',
-	describeAxis: () => ({
+	contract: {
 		description: 'Per-instance drop-cap opt-in (SPEC-108).',
 		source: 'attribute',
 		inputs: ['dropcap'],
 		dataAttributes: ['data-dropcap'],
 		target: '[data-section="body"]',
 		condition: 'honoured only when the resolved reading register enables it (`prose`); dropped with a warning otherwise',
-	}),
+	},
 	describeForRune: (config) => (hasBodySection(config.sections) ? null : 'this rune declares no body section'),
 };

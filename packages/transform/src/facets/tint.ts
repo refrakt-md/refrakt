@@ -89,7 +89,7 @@ export const tintFacet: Facet = {
  *  {@link TINT_TOKENS} — the same list the facet resolves against. */
 export const tintAxis: UniversalAxisFacet = {
 	axis: 'tint',
-	describeAxis: () => ({
+	contract: {
 		description: 'Per-rune colour override (SPEC-053): a named tint from the theme registry, with inline per-token overrides layered on top.',
 		source: 'meta',
 		inputs: ['tint', 'tint-mode', 'tint-{token}', 'tint-dark-{token}'],
@@ -98,6 +98,6 @@ export const tintAxis: UniversalAxisFacet = {
 		dataAttributes: ['data-tint', 'data-color-scheme', 'data-tint-dark'],
 		customProperties: ['--tint-{token}', '--tint-dark-{token}'],
 		condition: 'the `--tinted` class only when colour tokens actually resolve — a bare `tint-mode` locks the colour scheme without tinting anything',
-	}),
+	},
 	describeForRune: (_config, block) => ({ selectors: [`.${block}--tinted`] }),
 };

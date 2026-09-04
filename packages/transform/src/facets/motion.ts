@@ -72,14 +72,14 @@ export const motionFacet: Facet = {
  *  here would create a second source of truth the contract cannot keep honest. */
 export const motionAxis: UniversalAxisFacet = {
 	axis: 'motion',
-	describeAxis: () => ({
+	contract: {
 		description: 'Scroll-reveal entrance (SPEC-105). The author declares the character, the theme owns the choreography, a behaviour owns the timing.',
 		source: 'attribute',
 		inputs: ['reveal', 'stagger'],
 		dataAttributes: ['data-reveal', 'data-stagger'],
 		customProperties: ['--rf-reveal-index'],
 		condition: '`--rf-reveal-index` is stamped on the cascade items named by the rune\'s `staggerItems`; without `staggerItems`, `stagger` marks the root and nothing else',
-	}),
+	},
 	describeForRune: (config) => (config.staggerItems
 		? { target: `[data-name="${config.staggerItems}"], [data-field="${config.staggerItems}"]` }
 		: null),

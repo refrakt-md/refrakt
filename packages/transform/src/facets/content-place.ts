@@ -68,13 +68,13 @@ export const contentPlaceFacet: Facet = {
  *  The two halves are genuinely different output. */
 export const contentPlaceAxis: UniversalAxisFacet = {
 	axis: 'content-place',
-	describeAxis: () => ({
+	contract: {
 		description: 'The cover overlay anchor (SPEC-089): a 2-axis logical placement (block × inline) that also steers the default scrim so it follows the content edge.',
 		source: 'meta',
 		inputs: ['content-place'],
 		customProperties: ['--cover-place-block', '--cover-place-inline', '--cover-scrim-dir', '--cover-scrim-image', '--cover-scrim-mask'],
 		condition: 'active only when `media-position` resolves to `cover`; `auto` emits nothing and is left to the CSS container query. `--cover-scrim-dir` here is overridden by an explicit `scrim` edge, which the `cover` axis declares later.',
-	}),
+	},
 	describeForRune: (config) => (config.modifiers?.['content-place']
 		? null
 		: 'this rune declares no `content-place` modifier'),

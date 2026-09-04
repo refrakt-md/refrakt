@@ -51,14 +51,14 @@ export const prominenceFacet: Facet = {
  *  a warning. The contract now says so ahead of the warning. */
 export const prominenceAxis: UniversalAxisFacet = {
 	axis: 'prominence',
-	describeAxis: () => ({
+	contract: {
 		description: 'Header emphasis (SPEC-107). Scales a rune\'s page-section header; the skin maps it to a type register by attribute, so there is no BEM class.',
 		source: 'attribute',
 		inputs: ['prominence'],
 		values: PROMINENCE_VALUES,
 		dataAttributes: ['data-prominence'],
 		condition: 'requires a page-section header — a `sections` role of header, preamble, title or description. Dropped with a warning otherwise.',
-	}),
+	},
 	describeForRune: (config) => {
 		if (!hasPageSectionHeader(config.sections)) return 'this rune has no page-section header';
 		return config.defaultProminence ? { default: config.defaultProminence } : null;

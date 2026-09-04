@@ -101,7 +101,7 @@ export const coverFacet: Facet = {
  *  or a target. */
 export const coverAxis: UniversalAxisFacet = {
 	axis: 'cover',
-	describeAxis: () => ({
+	contract: {
 		description: 'Cover-mode chrome (SPEC-089): with `media-position="cover"` the media fills the surface and the content sits over it, so the scrim is rerouted from the background layer to the media well.',
 		source: 'meta',
 		inputs: SCRIM_META,
@@ -109,7 +109,7 @@ export const coverAxis: UniversalAxisFacet = {
 		customProperties: ['--cover-scrim-dir'],
 		target: 'the rune root, except `data-color-scheme`, which is scoped to the `[data-name="content"]` overlay so only text on the darkened media flips',
 		condition: 'active only when `media-position` resolves to `cover`',
-	}),
+	},
 	describeForRune: (config) => (config.modifiers?.['media-position']
 		? null
 		: 'this rune declares no `media-position` modifier, so it cannot enter cover mode'),

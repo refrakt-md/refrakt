@@ -61,6 +61,23 @@ export const DESCRIBABLE_FACETS: readonly DescribableFacet[] = [
 	staticModifiersDescribe,
 ];
 
+/** Freeze an axis contract and the arrays inside it.
+ *
+ *  `generateStructureContract` emits each `contract` **by reference**, so a
+ *  consumer that mutated the document it got back would corrupt the registry
+ *  for every later call. One level of freezing would not be enough: the
+ *  vocabularies are shared module constants (`ELEVATION_VALUES`, `TINT_TOKENS`,
+ *  …) reached through `values`/`inputs`/`tokens`, and those are the references
+ *  worth protecting. They are already `as const`, so this only enforces at
+ *  runtime what the types promise. */
+function freezeContract(facet: UniversalAxisFacet): UniversalAxisFacet {
+	for (const value of Object.values(facet.contract)) {
+		if (Array.isArray(value)) Object.freeze(value);
+	}
+	Object.freeze(facet.contract);
+	return Object.freeze(facet);
+}
+
 /** The universal axes, in registry order, for the structure contract.
  *
  *  Ordered to match {@link ORDERED_FACETS} so the contract reads in the order
@@ -88,7 +105,7 @@ export const UNIVERSAL_AXIS_FACETS: readonly UniversalAxisFacet[] = [
 	frameAxis,
 	substrateAxis,
 	bgAxis,
-];
+].map(freezeContract);
 export { substrateFacet, substrateAxis } from './substrate.js';
 export { applyChromeToTag, hasMediaSection } from './chrome.js';
 export type { Chrome, ChromeCarry, ChromeTarget } from './chrome.js';

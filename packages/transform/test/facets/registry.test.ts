@@ -51,6 +51,21 @@ describe('UNIVERSAL_AXIS_FACETS', () => {
 	// Emission order is part of the output: `content-place` and `cover` both
 	// write `--cover-scrim-dir`, and the later declaration wins in CSS. A
 	// contract that listed them the other way round would read as a lie.
+	// `generateStructureContract` emits each `contract` by reference, so a
+	// consumer mutating the document it got back would otherwise corrupt the
+	// registry for every later call. The nested arrays matter most: they are the
+	// shared vocabulary constants.
+	it('freezes every contract, and the vocabularies inside it', () => {
+		for (const facet of UNIVERSAL_AXIS_FACETS) {
+			expect(Object.isFrozen(facet.contract), `${facet.axis}: contract not frozen`).toBe(true);
+			for (const [key, value] of Object.entries(facet.contract)) {
+				if (Array.isArray(value)) {
+					expect(Object.isFrozen(value), `${facet.axis}.${key} not frozen`).toBe(true);
+				}
+			}
+		}
+	});
+
 	it('lists the axes in registry order', () => {
 		const registryOrder = ORDERED_FACETS
 			.map(f => f.name)
