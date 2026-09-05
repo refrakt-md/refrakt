@@ -12,7 +12,7 @@ import { storytellingPipelineHooks } from './pipeline.js';
 export const storytelling: Plugin = {
   name: 'storytelling',
   displayName: 'Storytelling',
-  version: '0.30.0',
+  version: '0.30.1',
   runes: {
     'character': {
       transform: character,

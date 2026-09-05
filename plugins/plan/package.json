@@ -1,7 +1,7 @@
 {
   "name": "@refrakt-md/plan",
   "description": "Planning runes for refrakt.md — specs, work items, bugs, decisions, and milestones",
-  "version": "0.30.0",
+  "version": "0.30.1",
   "type": "module",
   "license": "MIT",
   "repository": {
@@ -61,9 +61,9 @@
   },
   "dependencies": {
     "@markdoc/markdoc": "0.4.0",
-    "@refrakt-md/content": "0.30.0",
-    "@refrakt-md/runes": "0.30.0",
-    "@refrakt-md/transform": "0.30.0",
-    "@refrakt-md/types": "0.30.0"
+    "@refrakt-md/content": "0.30.1",
+    "@refrakt-md/runes": "0.30.1",
+    "@refrakt-md/transform": "0.30.1",
+    "@refrakt-md/types": "0.30.1"
   }
 }
