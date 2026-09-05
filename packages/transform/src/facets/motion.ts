@@ -1,6 +1,7 @@
 import type { RendererNode, SerializedTag } from '@refrakt-md/types';
 import { isTag } from '../helpers.js';
 import type { Facet } from './types.js';
+import type { UniversalAxisFacet } from './describe.js';
 
 /**
  * Stamp `--rf-reveal-index: N` (0,1,2,… in document order) on a staggered
@@ -62,4 +63,24 @@ export const motionFacet: Facet = {
 		if (carry !== true || !ctx.config.staggerItems) return;
 		stampStaggerIndex(children, ctx.config.staggerItems, { n: 0 });
 	},
+};
+
+/** Contract description (WORK-527).
+ *
+ *  No `values`: the `reveal` vocabulary is enforced by the schema layer's
+ *  `matches`, not by the engine, which passes any value through. Restating it
+ *  here would create a second source of truth the contract cannot keep honest. */
+export const motionAxis: UniversalAxisFacet = {
+	axis: 'motion',
+	contract: {
+		description: 'Scroll-reveal entrance (SPEC-105). The author declares the character, the theme owns the choreography, a behaviour owns the timing.',
+		source: 'attribute',
+		inputs: ['reveal', 'stagger'],
+		dataAttributes: ['data-reveal', 'data-stagger'],
+		customProperties: ['--rf-reveal-index'],
+		condition: '`--rf-reveal-index` is stamped on the cascade items named by the rune\'s `staggerItems`; without `staggerItems`, `stagger` marks the root and nothing else',
+	},
+	describeForRune: (config) => (config.staggerItems
+		? { target: `[data-name="${config.staggerItems}"], [data-field="${config.staggerItems}"]` }
+		: null),
 };

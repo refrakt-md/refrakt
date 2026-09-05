@@ -3,6 +3,7 @@ import { readMeta, resolveOffset, parsePlacement, findMediaZone } from '../helpe
 import type { FramePresetDefinition } from '../types.js';
 import type { Facet, FacetContext, FacetStyle } from './types.js';
 import { applyChromeToTag, hasMediaSection, type Chrome, type ChromeCarry, type ChromeTarget } from './chrome.js';
+import type { UniversalAxisFacet } from './describe.js';
 
 /** SPEC-086 — the frame facet vocabulary: the inline `frame-*` overrides that
  *  sit beside a named `frame` preset. */
@@ -137,5 +138,25 @@ export const frameFacet: Facet = {
 		const mediaZone = findMediaZone(children);
 		if (!mediaZone) return [noTargetWarning(ctx.rune)];
 		applyChromeToTag(mediaZone, chrome);
+	},
+};
+
+/** Contract description (WORK-527). The rune-level half is the *target*: which
+ *  surface the chrome lands on is entirely a config decision, and a rune with
+ *  neither a `frameTarget` nor a media section can carry no frame at all. */
+export const frameAxis: UniversalAxisFacet = {
+	axis: 'frame',
+	contract: {
+		description: 'Surface chrome (SPEC-086): a named preset from the theme registry with inline `frame-*` overrides layered on top.',
+		source: 'meta',
+		inputs: ['frame', ...FRAME_FACET_META],
+		dataAttributes: ['data-frame', 'data-displace', 'data-displace-mode', 'data-frame-shadow', 'data-frame-overflow'],
+		customProperties: ['--frame-aspect', '--frame-offset', '--frame-oversize', '--frame-anchor', '--frame-place-x', '--frame-place-y'],
+		condition: 'lands on the surface named by `frameTarget`, defaulting to the media zone when the rune declares one. With no target the metas are still consumed but the chrome is dropped with a warning. `data-frame-overflow="bleed"` is stripped with a warning on a clip host.',
+	},
+	describeForRune: (config) => {
+		const target = config.frameTarget ?? (hasMediaSection(config.sections) ? 'media' : null);
+		if (!target) return 'this rune declares neither a `frameTarget` nor a media section';
+		return { target: target === 'self' ? 'the rune root' : '[data-section="media"]' };
 	},
 };

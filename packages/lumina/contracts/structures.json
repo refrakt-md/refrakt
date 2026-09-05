@@ -2,6 +2,324 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"description": "HTML structure contracts for the identity transform. Documents the BEM selectors, data attributes, and HTML structure the engine produces for each rune. Auto-generated from theme config — do not edit by hand.",
 	"prefix": "rf",
+	"universalAxes": {
+		"tint": {
+			"description": "Per-rune colour override (SPEC-053): a named tint from the theme registry, with inline per-token overrides layered on top.",
+			"source": "meta",
+			"inputs": [
+				"tint",
+				"tint-mode",
+				"tint-{token}",
+				"tint-dark-{token}"
+			],
+			"tokens": [
+				"bg",
+				"surface",
+				"text",
+				"muted",
+				"primary",
+				"border"
+			],
+			"selectors": [
+				".{block}--tinted"
+			],
+			"dataAttributes": [
+				"data-tint",
+				"data-color-scheme",
+				"data-tint-dark"
+			],
+			"customProperties": [
+				"--tint-{token}",
+				"--tint-dark-{token}"
+			],
+			"condition": "the `--tinted` class only when colour tokens actually resolve — a bare `tint-mode` locks the colour scheme without tinting anything"
+		},
+		"width": {
+			"description": "The track a block rune occupies.",
+			"source": "attribute",
+			"inputs": [
+				"width"
+			],
+			"dataAttributes": [
+				"data-width"
+			],
+			"classPattern": ".{block}--{value}",
+			"condition": "suppressed at the `content` default"
+		},
+		"content-measure": {
+			"description": "A page-section rune anchors its content to the text measure when bled to the `wide` track; only the surface and background widen.",
+			"source": "config",
+			"inputs": [
+				"contentMeasure"
+			],
+			"values": [
+				"anchored"
+			],
+			"dataAttributes": [
+				"data-content-measure"
+			],
+			"condition": "not author-facing — emitted only when the rune declares `contentMeasure: \"anchored\"`"
+		},
+		"spacing": {
+			"description": "Block-level rhythm override.",
+			"source": "attribute",
+			"inputs": [
+				"spacing"
+			],
+			"dataAttributes": [
+				"data-spacing"
+			],
+			"classPattern": ".{block}--spacing-{value}",
+			"condition": "suppressed at the `default` value"
+		},
+		"inset": {
+			"description": "Internal padding override.",
+			"source": "attribute",
+			"inputs": [
+				"inset"
+			],
+			"dataAttributes": [
+				"data-inset"
+			],
+			"classPattern": ".{block}--inset-{value}",
+			"condition": "suppressed at the `default` value"
+		},
+		"density": {
+			"description": "How tightly a rune packs its content (SPEC-025).",
+			"source": "attribute",
+			"inputs": [
+				"density"
+			],
+			"values": [
+				"full",
+				"compact",
+				"minimal"
+			],
+			"default": "full",
+			"dataAttributes": [
+				"data-density"
+			],
+			"condition": "always present on the rune root; resolution is author ▸ the parent rune's `childDensity` ▸ this rune's `defaultDensity` ▸ `full`"
+		},
+		"reading": {
+			"description": "Editorial register for body text (SPEC-108). The author picks the register; the theme owns the magnitude.",
+			"source": "attribute",
+			"inputs": [
+				"reading"
+			],
+			"values": [
+				"fine",
+				"ui",
+				"prose"
+			],
+			"default": "ui",
+			"dataAttributes": [
+				"data-reading"
+			],
+			"target": "[data-section=\"body\"]",
+			"condition": "suppressed at the `ui` default, so unmarked bodies carry no attribute"
+		},
+		"dropcap": {
+			"description": "Per-instance drop-cap opt-in (SPEC-108).",
+			"source": "attribute",
+			"inputs": [
+				"dropcap"
+			],
+			"dataAttributes": [
+				"data-dropcap"
+			],
+			"target": "[data-section=\"body\"]",
+			"condition": "honoured only when the resolved reading register enables it (`prose`); dropped with a warning otherwise"
+		},
+		"elevation": {
+			"description": "The chrome/depth ladder (SPEC-107). The skin maps each rung to a chrome bundle by attribute, so there is no BEM class.",
+			"source": "attribute",
+			"inputs": [
+				"elevation"
+			],
+			"values": [
+				"sunken",
+				"flush",
+				"flat",
+				"raised",
+				"floating",
+				"overlay"
+			],
+			"dataAttributes": [
+				"data-elevation"
+			],
+			"condition": "emitted only when the author sets it or the rune declares `defaultElevation`"
+		},
+		"prominence": {
+			"description": "Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
+			"source": "attribute",
+			"inputs": [
+				"prominence"
+			],
+			"values": [
+				"quiet",
+				"normal",
+				"prominent",
+				"display"
+			],
+			"dataAttributes": [
+				"data-prominence"
+			],
+			"condition": "requires a page-section header — a `sections` role of header, preamble, title or description. Dropped with a warning otherwise."
+		},
+		"motion": {
+			"description": "Scroll-reveal entrance (SPEC-105). The author declares the character, the theme owns the choreography, a behaviour owns the timing.",
+			"source": "attribute",
+			"inputs": [
+				"reveal",
+				"stagger"
+			],
+			"dataAttributes": [
+				"data-reveal",
+				"data-stagger"
+			],
+			"customProperties": [
+				"--rf-reveal-index"
+			],
+			"condition": "`--rf-reveal-index` is stamped on the cascade items named by the rune's `staggerItems`; without `staggerItems`, `stagger` marks the root and nothing else"
+		},
+		"content-place": {
+			"description": "The cover overlay anchor (SPEC-089): a 2-axis logical placement (block × inline) that also steers the default scrim so it follows the content edge.",
+			"source": "meta",
+			"inputs": [
+				"content-place"
+			],
+			"customProperties": [
+				"--cover-place-block",
+				"--cover-place-inline",
+				"--cover-scrim-dir",
+				"--cover-scrim-image",
+				"--cover-scrim-mask"
+			],
+			"condition": "active only when `media-position` resolves to `cover`; `auto` emits nothing and is left to the CSS container query. `--cover-scrim-dir` here is overridden by an explicit `scrim` edge, which the `cover` axis declares later."
+		},
+		"cover": {
+			"description": "Cover-mode chrome (SPEC-089): with `media-position=\"cover\"` the media fills the surface and the content sits over it, so the scrim is rerouted from the background layer to the media well.",
+			"source": "meta",
+			"inputs": [
+				"scrim",
+				"scrim-type",
+				"scrim-blur",
+				"scrim-tone"
+			],
+			"dataAttributes": [
+				"data-scrim",
+				"data-scrim-type",
+				"data-scrim-blur"
+			],
+			"customProperties": [
+				"--cover-scrim-dir"
+			],
+			"target": "the rune root, except `data-color-scheme`, which is scoped to the `[data-name=\"content\"]` overlay so only text on the darkened media flips",
+			"condition": "active only when `media-position` resolves to `cover`"
+		},
+		"frame": {
+			"description": "Surface chrome (SPEC-086): a named preset from the theme registry with inline `frame-*` overrides layered on top.",
+			"source": "meta",
+			"inputs": [
+				"frame",
+				"frame-aspect",
+				"frame-displace",
+				"frame-displace-mode",
+				"frame-offset",
+				"frame-oversize",
+				"frame-place",
+				"frame-anchor",
+				"frame-overflow",
+				"frame-shadow"
+			],
+			"dataAttributes": [
+				"data-frame",
+				"data-displace",
+				"data-displace-mode",
+				"data-frame-shadow",
+				"data-frame-overflow"
+			],
+			"customProperties": [
+				"--frame-aspect",
+				"--frame-offset",
+				"--frame-oversize",
+				"--frame-anchor",
+				"--frame-place-x",
+				"--frame-place-y"
+			],
+			"condition": "lands on the surface named by `frameTarget`, defaulting to the media zone when the rune declares one. With no target the metas are still consumed but the chrome is dropped with a warning. `data-frame-overflow=\"bleed\"` is stripped with a warning on a clip host."
+		},
+		"substrate": {
+			"description": "Generated pattern fills (SPEC-087). Markers only — the engine sets the attributes and cell/opacity custom properties, CSS draws the pattern.",
+			"source": "meta",
+			"inputs": [
+				"substrate",
+				"substrate-size",
+				"substrate-opacity",
+				"substrate-fill",
+				"substrate-target"
+			],
+			"dataAttributes": [
+				"data-substrate",
+				"data-substrate-fill"
+			],
+			"customProperties": [
+				"--substrate-cell",
+				"--substrate-opacity"
+			],
+			"condition": "defaults to the rune root. `substrate-target=\"media\"` moves it to the media zone, and is dropped with a warning on a rune with no media section. The facets are inert without a `substrate` pattern."
+		},
+		"bg": {
+			"description": "The background layer (SPEC-088): image, video, gradient, flat overlay wash and legibility scrim, in a single injected layer behind the rune's content.",
+			"source": "meta",
+			"inputs": [
+				"bg-preset",
+				"bg-src",
+				"bg-video",
+				"bg-overlay",
+				"bg-blur",
+				"bg-position",
+				"bg-fit",
+				"bg-opacity",
+				"bg-fixed",
+				"bg-gradient",
+				"bg-from",
+				"bg-via",
+				"bg-to",
+				"bg-gradient-type",
+				"bg-overlay-opacity",
+				"scrim",
+				"scrim-type",
+				"scrim-strength",
+				"scrim-blur",
+				"scrim-tone"
+			],
+			"selectors": [
+				".{block}--has-bg"
+			],
+			"dataAttributes": [
+				"data-bg",
+				"data-color-scheme"
+			],
+			"customProperties": [
+				"--bg-image",
+				"--bg-position",
+				"--bg-blur",
+				"--bg-fit",
+				"--bg-opacity",
+				"--scrim-strength",
+				"--scrim-blur"
+			],
+			"elements": [
+				"[data-name=\"bg\"]",
+				"[data-name=\"bg-video\"]",
+				"[data-name=\"bg-overlay\"]",
+				"[data-name=\"scrim\"]"
+			],
+			"condition": "the layer is raised only when a preset, image, video, gradient, overlay, scrim or `{% bg %}` sandbox guest resolves. In cover mode the scrim is routed to the media well instead, and `data-color-scheme` yields to a scheme a tint already claimed."
+		}
+	},
 	"runes": {
 		"Accordion": {
 			"block": "accordion",
@@ -10,6 +328,30 @@
 			"childOrder": [
 				"{content}"
 			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-accordion--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"bg": {
+						"selectors": [
+							".rf-accordion--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"preamble": {
 					"tag": "header",
@@ -46,6 +388,28 @@
 			"childOrder": [
 				"{content}"
 			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-accordion-item--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-accordion-item--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"header": {
 					"tag": "name",
@@ -61,6 +425,31 @@
 			"childOrder": [
 				"{content}"
 			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-details--tinted"
+						]
+					},
+					"elevation": {
+						"default": "flush"
+					},
+					"bg": {
+						"selectors": [
+							".rf-details--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"summary": {
 					"tag": "summary",
@@ -112,6 +501,31 @@
 					"dataAttribute": "data-min"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-grid--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"bg": {
+						"selectors": [
+							".rf-grid--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"inlineStyles": {
 				"ratio": {
 					"prop": "--grid-ratio"
@@ -147,6 +561,33 @@
 					"dataAttribute": "data-overflow"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-codegroup--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-codegroup--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"topbar": {
 					"tag": "div",
@@ -165,7 +606,29 @@
 			"dataRune": "page-section",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-page-section--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-page-section--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"TableOfContents": {
 			"block": "toc",
@@ -173,7 +636,32 @@
 			"dataRune": "table-of-contents",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-toc--tinted"
+						]
+					},
+					"elevation": {
+						"default": "flush"
+					},
+					"bg": {
+						"selectors": [
+							".rf-toc--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Snippet": {
 			"block": "snippet",
@@ -181,7 +669,29 @@
 			"dataRune": "snippet",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-snippet--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-snippet--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Data": {
 			"block": "data",
@@ -189,7 +699,29 @@
 			"dataRune": "data",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-data--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-data--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Expand": {
 			"block": "expand",
@@ -197,7 +729,29 @@
 			"dataRune": "expand",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-expand--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-expand--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Badge": {
 			"block": "badge",
@@ -205,7 +759,29 @@
 			"dataRune": "badge",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-badge--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-badge--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Bar": {
 			"block": "bar",
@@ -213,7 +789,29 @@
 			"dataRune": "bar",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-bar--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-bar--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Deflist": {
 			"block": "deflist",
@@ -221,7 +819,29 @@
 			"dataRune": "deflist",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-deflist--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-deflist--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Collection": {
 			"block": "collection",
@@ -229,7 +849,29 @@
 			"dataRune": "collection",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-collection--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-collection--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Relationships": {
 			"block": "relationships",
@@ -237,7 +879,29 @@
 			"dataRune": "relationships",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-relationships--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-relationships--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"FileRef": {
 			"block": "file-ref",
@@ -245,7 +909,29 @@
 			"dataRune": "file-ref",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-file-ref--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-file-ref--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Aggregate": {
 			"block": "aggregate",
@@ -253,7 +939,29 @@
 			"dataRune": "aggregate",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-aggregate--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-aggregate--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Progress": {
 			"block": "progress",
@@ -267,6 +975,28 @@
 					"source": "meta",
 					"classPattern": ".rf-progress--{value}",
 					"dataAttribute": "data-sentiment"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-progress--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-progress--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			}
 		},
@@ -308,6 +1038,28 @@
 				"aspect": {
 					"source": "meta",
 					"dataAttribute": "data-aspect"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-card--tinted"
+						]
+					},
+					"frame": {
+						"target": "[data-section=\"media\"]"
+					},
+					"bg": {
+						"selectors": [
+							".rf-card--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header"
 				}
 			},
 			"elements": {
@@ -376,6 +1128,28 @@
 								"selector": ".rf-card--cover"
 							}
 						],
+						"universalAxes": {
+							"axes": {
+								"tint": {
+									"selectors": [
+										".rf-card--tinted"
+									]
+								},
+								"frame": {
+									"target": "[data-section=\"media\"]"
+								},
+								"bg": {
+									"selectors": [
+										".rf-card--has-bg"
+									]
+								}
+							},
+							"unavailable": {
+								"reading": "this rune declares no body section",
+								"dropcap": "this rune declares no body section",
+								"prominence": "this rune has no page-section header"
+							}
+						},
 						"elements": {
 							"content": {
 								"tag": "div",
@@ -411,6 +1185,34 @@
 					"default": "generic",
 					"dataAttribute": "data-provider"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-embed--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-embed--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"Breadcrumb": {
@@ -427,6 +1229,34 @@
 					"dataAttribute": "data-separator"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-breadcrumb--tinted"
+						]
+					},
+					"density": {
+						"default": "minimal"
+					},
+					"elevation": {
+						"default": "flush"
+					},
+					"bg": {
+						"selectors": [
+							".rf-breadcrumb--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"inlineStyles": {
 				"separator": {
 					"prop": "--separator",
@@ -441,7 +1271,29 @@
 			"parent": "Breadcrumb",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-breadcrumb-item--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-breadcrumb-item--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Blog": {
 			"block": "blog",
@@ -473,6 +1325,28 @@
 				"folder": {
 					"source": "meta",
 					"dataAttribute": "data-folder"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-blog--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"bg": {
+						"selectors": [
+							".rf-blog--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			},
 			"elements": {
@@ -542,6 +1416,33 @@
 					"dataAttribute": "data-variant"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-budget--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-budget--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"meta": {
 					"tag": "div",
@@ -588,6 +1489,28 @@
 					"source": "meta",
 					"dataAttribute": "data-subtotal"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-budget-category--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-budget-category--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"BudgetLineItem": {
@@ -597,7 +1520,29 @@
 			"parent": "Budget",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-budget-line-item--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-budget-line-item--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Hint": {
 			"block": "hint",
@@ -623,6 +1568,33 @@
 				"feature": {
 					"suffix": "in-feature",
 					"selector": ".rf-hint--in-feature"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-hint--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"elevation": {
+						"default": "sunken"
+					},
+					"bg": {
+						"selectors": [
+							".rf-hint--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			},
 			"elements": {
@@ -661,6 +1633,28 @@
 					"source": "meta",
 					"dataAttribute": "data-shortcut"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-drawer--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"bg": {
+						"selectors": [
+							".rf-drawer--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"Figure": {
@@ -682,6 +1676,35 @@
 					"default": "center",
 					"classPattern": ".rf-figure--{value}",
 					"dataAttribute": "data-align"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-figure--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"frame": {
+						"target": "the rune root"
+					},
+					"bg": {
+						"selectors": [
+							".rf-figure--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode"
 				}
 			}
 		},
@@ -709,6 +1732,34 @@
 					"dataAttribute": "data-columns"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-gallery--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-gallery--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"inlineStyles": {
 				"columns": "--gallery-columns"
 			},
@@ -728,6 +1779,35 @@
 					"classPattern": ".rf-sidenote--{value}",
 					"dataAttribute": "data-variant"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-sidenote--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"reading": {
+						"default": "fine"
+					},
+					"elevation": {
+						"default": "flush"
+					},
+					"bg": {
+						"selectors": [
+							".rf-sidenote--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"Compare": {
@@ -744,6 +1824,31 @@
 					"classPattern": ".rf-compare--{value}",
 					"dataAttribute": "data-layout"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-compare--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"bg": {
+						"selectors": [
+							".rf-compare--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"Conversation": {
@@ -752,7 +1857,35 @@
 			"dataRune": "conversation",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-conversation--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"elevation": {
+						"default": "flush"
+					},
+					"bg": {
+						"selectors": [
+							".rf-conversation--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"ConversationMessage": {
 			"block": "conversation-message",
@@ -768,6 +1901,28 @@
 					"default": "left",
 					"classPattern": ".rf-conversation-message--{value}",
 					"dataAttribute": "data-align"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-conversation-message--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-conversation-message--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			}
 		},
@@ -785,6 +1940,32 @@
 					"classPattern": ".rf-annotate--{value}",
 					"dataAttribute": "data-variant"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-annotate--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flush"
+					},
+					"bg": {
+						"selectors": [
+							".rf-annotate--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"AnnotateNote": {
@@ -794,7 +1975,29 @@
 			"parent": "Annotate",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-annotate-note--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-annotate-note--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Nav": {
 			"block": "nav",
@@ -809,6 +2012,34 @@
 					"classPattern": ".rf-nav--{value}",
 					"dataAttribute": "data-layout"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-nav--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"elevation": {
+						"default": "flush"
+					},
+					"bg": {
+						"selectors": [
+							".rf-nav--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"NavGroup": {
@@ -818,7 +2049,29 @@
 			"parent": "Nav",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-nav-group--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-nav-group--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Pagination": {
 			"block": "pagination",
@@ -833,6 +2086,31 @@
 					"default": "siblings",
 					"dataAttribute": "data-scope"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-pagination--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"bg": {
+						"selectors": [
+							".rf-pagination--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"NavItem": {
@@ -842,7 +2120,29 @@
 			"parent": "Nav",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-nav-item--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-nav-item--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Diff": {
 			"block": "diff",
@@ -857,6 +2157,28 @@
 					"default": "unified",
 					"classPattern": ".rf-diff--{value}",
 					"dataAttribute": "data-mode"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-diff--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-diff--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			}
 		},
@@ -889,6 +2211,34 @@
 					"source": "meta",
 					"dataAttribute": "data-label-angle"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-chart--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"elevation": {
+						"default": "sunken"
+					},
+					"bg": {
+						"selectors": [
+							".rf-chart--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"PullQuote": {
@@ -910,6 +2260,35 @@
 					"default": "default",
 					"classPattern": ".rf-pullquote--{value}",
 					"dataAttribute": "data-variant"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-pullquote--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"reading": {
+						"default": "prose"
+					},
+					"elevation": {
+						"default": "flush"
+					},
+					"bg": {
+						"selectors": [
+							".rf-pullquote--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			}
 		},
@@ -936,6 +2315,35 @@
 					"default": "left",
 					"classPattern": ".rf-textblock--{value}",
 					"dataAttribute": "data-align"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-textblock--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"reading": {
+						"default": "prose"
+					},
+					"elevation": {
+						"default": "flush"
+					},
+					"bg": {
+						"selectors": [
+							".rf-textblock--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			}
 		},
@@ -964,6 +2372,31 @@
 					"classPattern": ".rf-mediatext--{value}",
 					"dataAttribute": "data-wrap"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-mediatext--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"frame": {
+						"target": "[data-section=\"media\"]"
+					},
+					"bg": {
+						"selectors": [
+							".rf-mediatext--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode"
+				}
 			}
 		},
 		"Showcase": {
@@ -979,6 +2412,31 @@
 					"selector": ".rf-showcase--in-bento-cell"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-showcase--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"frame": {
+						"target": "the rune root"
+					},
+					"bg": {
+						"selectors": [
+							".rf-showcase--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode"
+				}
+			},
 			"childDensity": "compact"
 		},
 		"TabGroup": {
@@ -988,6 +2446,30 @@
 			"childOrder": [
 				"{content}"
 			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-tabs--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"bg": {
+						"selectors": [
+							".rf-tabs--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"preamble": {
 					"tag": "header",
@@ -1023,7 +2505,29 @@
 			"parent": "TabGroup",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-tab--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-tab--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"TabPanel": {
 			"block": "tab-panel",
@@ -1032,7 +2536,29 @@
 			"parent": "TabGroup",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-tab-panel--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-tab-panel--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"DataTable": {
 			"block": "datatable",
@@ -1063,6 +2589,32 @@
 					"source": "meta",
 					"classPattern": ".rf-datatable--{value}",
 					"dataAttribute": "data-default-sort"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-datatable--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"elevation": {
+						"default": "sunken"
+					},
+					"bg": {
+						"selectors": [
+							".rf-datatable--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			}
 		},
@@ -1107,6 +2659,32 @@
 					"classPattern": ".rf-form--{value}",
 					"dataAttribute": "data-honeypot"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-form--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-form--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"FormField": {
@@ -1123,6 +2701,28 @@
 					"classPattern": ".rf-form-field--{value}",
 					"dataAttribute": "data-field-type"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-form-field--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-form-field--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"Reveal": {
@@ -1138,6 +2738,33 @@
 					"default": "click",
 					"classPattern": ".rf-reveal--{value}",
 					"dataAttribute": "data-mode"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-reveal--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-reveal--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			},
 			"elements": {
@@ -1175,7 +2802,29 @@
 			"parent": "Reveal",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-reveal-step--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-reveal-step--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Section": {
 			"block": "section",
@@ -1190,6 +2839,27 @@
 					"default": "start",
 					"classPattern": ".rf-section--{value}",
 					"dataAttribute": "data-align"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-section--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-section--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			},
 			"elements": {
@@ -1250,6 +2920,31 @@
 					"dataAttribute": "data-duration"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-juxtapose--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"bg": {
+						"selectors": [
+							".rf-juxtapose--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"inlineStyles": {
 				"position": "--jx-position",
 				"duration": "--jx-duration"
@@ -1262,7 +2957,29 @@
 			"parent": "Juxtapose",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-juxtapose-panel--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-juxtapose-panel--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Diagram": {
 			"block": "diagram",
@@ -1277,6 +2994,34 @@
 					"default": "mermaid",
 					"dataAttribute": "data-language"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-diagram--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"elevation": {
+						"default": "sunken"
+					},
+					"bg": {
+						"selectors": [
+							".rf-diagram--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"Tint": {
@@ -1286,7 +3031,29 @@
 			"parent": "*",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-tint--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-tint--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Bg": {
 			"block": "bg",
@@ -1295,7 +3062,29 @@
 			"parent": "*",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-bg--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-bg--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Region": {
 			"block": "region",
@@ -1304,7 +3093,29 @@
 			"parent": "Layout",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-region--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-region--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Sandbox": {
 			"block": "sandbox",
@@ -1312,7 +3123,32 @@
 			"dataRune": "sandbox",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-sandbox--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"bg": {
+						"selectors": [
+							".rf-sandbox--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Hero": {
 			"block": "hero",
@@ -1356,6 +3192,39 @@
 				"aspect": {
 					"source": "meta",
 					"dataAttribute": "data-aspect"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-hero--tinted"
+						]
+					},
+					"width": {
+						"default": "full"
+					},
+					"content-measure": {
+						"default": "anchored"
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flush"
+					},
+					"frame": {
+						"target": "[data-section=\"media\"]"
+					},
+					"bg": {
+						"selectors": [
+							".rf-hero--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section"
 				}
 			},
 			"elements": {
@@ -1448,6 +3317,39 @@
 								"selector": ".rf-hero--cover"
 							}
 						],
+						"universalAxes": {
+							"axes": {
+								"tint": {
+									"selectors": [
+										".rf-hero--tinted"
+									]
+								},
+								"width": {
+									"default": "full"
+								},
+								"content-measure": {
+									"default": "anchored"
+								},
+								"density": {
+									"default": "full"
+								},
+								"elevation": {
+									"default": "flush"
+								},
+								"frame": {
+									"target": "[data-section=\"media\"]"
+								},
+								"bg": {
+									"selectors": [
+										".rf-hero--has-bg"
+									]
+								}
+							},
+							"unavailable": {
+								"reading": "this rune declares no body section",
+								"dropcap": "this rune declares no body section"
+							}
+						},
 						"elements": {
 							"preamble": {
 								"tag": "header",
@@ -1505,6 +3407,39 @@
 				"pricing": {
 					"suffix": "in-pricing",
 					"selector": ".rf-cta--in-pricing"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-cta--tinted"
+						]
+					},
+					"width": {
+						"default": "full"
+					},
+					"content-measure": {
+						"default": "anchored"
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flush"
+					},
+					"bg": {
+						"selectors": [
+							".rf-cta--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			},
 			"elements": {
@@ -1570,6 +3505,37 @@
 					"dataAttribute": "data-collapse"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-bento--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flush"
+					},
+					"motion": {
+						"target": "[data-name=\"cell\"], [data-field=\"cell\"]"
+					},
+					"bg": {
+						"selectors": [
+							".rf-bento--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"inlineStyles": {
 				"columns": "--bento-columns",
 				"gap": "--bento-gap"
@@ -1607,6 +3573,30 @@
 				"media-ratio": {
 					"source": "meta",
 					"dataAttribute": "data-media-ratio"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-bento-cell--tinted"
+						]
+					},
+					"frame": {
+						"target": "[data-section=\"media\"]"
+					},
+					"bg": {
+						"selectors": [
+							".rf-bento-cell--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode"
 				}
 			},
 			"elements": {
@@ -1676,6 +3666,43 @@
 					"selector": ".rf-feature--in-grid"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-feature--tinted"
+						]
+					},
+					"width": {
+						"default": "full"
+					},
+					"content-measure": {
+						"default": "anchored"
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flush"
+					},
+					"motion": {
+						"target": "[data-name=\"feature-item\"], [data-field=\"feature-item\"]"
+					},
+					"frame": {
+						"target": "[data-section=\"media\"]"
+					},
+					"bg": {
+						"selectors": [
+							".rf-feature--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier"
+				}
+			},
 			"elements": {
 				"preamble": {
 					"tag": "header",
@@ -1721,7 +3748,29 @@
 			"parent": "Feature",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-definition--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-definition--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Steps": {
 			"block": "steps",
@@ -1730,6 +3779,36 @@
 			"childOrder": [
 				"{content}"
 			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-steps--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flush"
+					},
+					"motion": {
+						"target": "[data-name=\"step\"], [data-field=\"step\"]"
+					},
+					"bg": {
+						"selectors": [
+							".rf-steps--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"preamble": {
 					"tag": "header",
@@ -1785,6 +3864,27 @@
 					"dataAttribute": "data-collapse"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-step--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-step--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"inlineStyles": {
 				"valign": {
 					"prop": "--split-valign"
@@ -1798,6 +3898,36 @@
 			"childOrder": [
 				"{content}"
 			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-pricing--tinted"
+						]
+					},
+					"width": {
+						"default": "full"
+					},
+					"density": {
+						"default": "full"
+					},
+					"motion": {
+						"target": "[data-name=\"tier\"], [data-field=\"tier\"]"
+					},
+					"bg": {
+						"selectors": [
+							".rf-pricing--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"preamble": {
 					"tag": "header",
@@ -1833,7 +3963,29 @@
 			"parent": "Pricing",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-tier--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-tier--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"FeaturedTier": {
 			"block": "tier",
@@ -1848,7 +4000,29 @@
 					"name": "featured",
 					"selector": ".rf-tier--featured"
 				}
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-tier--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-tier--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Testimonial": {
 			"block": "testimonial",
@@ -1877,6 +4051,36 @@
 					"source": "meta",
 					"default": "5",
 					"dataAttribute": "data-rating-total"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-testimonial--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"frame": {
+						"target": "[data-section=\"media\"]"
+					},
+					"bg": {
+						"selectors": [
+							".rf-testimonial--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode"
 				}
 			},
 			"elements": {
@@ -1910,6 +4114,31 @@
 					"classPattern": ".rf-comparison--{value}",
 					"dataAttribute": "data-layout"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-comparison--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"bg": {
+						"selectors": [
+							".rf-comparison--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"ComparisonColumn": {
@@ -1919,7 +4148,29 @@
 			"parent": "Comparison",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-comparison-column--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-comparison-column--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"ComparisonRow": {
 			"block": "comparison-row",
@@ -1940,6 +4191,28 @@
 						"cross": "unchecked"
 					},
 					"mapTarget": "data-checked"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-comparison-row--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-comparison-row--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			}
 		},
@@ -1968,6 +4241,32 @@
 					"source": "meta",
 					"classPattern": ".rf-api--{value}",
 					"dataAttribute": "data-auth"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-api--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-api--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			},
 			"elements": {
@@ -2024,6 +4323,31 @@
 					"dataAttribute": "data-source"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-symbol--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-symbol--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"eyebrow": {
 					"tag": "eyebrow",
@@ -2074,7 +4398,29 @@
 			"parent": "Symbol",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-symbol-group--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-symbol-group--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"SymbolMember": {
 			"block": "symbol-member",
@@ -2083,7 +4429,29 @@
 			"parent": "Symbol",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-symbol-member--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-symbol-member--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Changelog": {
 			"block": "changelog",
@@ -2092,6 +4460,33 @@
 			"childOrder": [
 				"{content}"
 			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-changelog--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-changelog--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"preamble": {
 					"tag": "header",
@@ -2127,7 +4522,29 @@
 			"parent": "Changelog",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-changelog-release--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-changelog-release--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Character": {
 			"block": "character",
@@ -2160,6 +4577,35 @@
 					"source": "meta",
 					"classPattern": ".rf-character--{value}",
 					"dataAttribute": "data-tags"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-character--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"frame": {
+						"target": "[data-section=\"media\"]"
+					},
+					"bg": {
+						"selectors": [
+							".rf-character--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode"
 				}
 			},
 			"elements": {
@@ -2202,6 +4648,28 @@
 			"childOrder": [
 				"{content}"
 			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-character-section--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-character-section--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"header": {
 					"tag": "span",
@@ -2259,6 +4727,34 @@
 					"dataAttribute": "data-collapse"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-realm--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"frame": {
+						"target": "[data-section=\"media\"]"
+					},
+					"bg": {
+						"selectors": [
+							".rf-realm--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier"
+				}
+			},
 			"elements": {
 				"metadata": {
 					"tag": "dl",
@@ -2309,6 +4805,28 @@
 			"childOrder": [
 				"{content}"
 			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-realm-section--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-realm-section--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"header": {
 					"tag": "span",
@@ -2343,6 +4861,34 @@
 					"source": "meta",
 					"classPattern": ".rf-lore--{value}",
 					"dataAttribute": "data-tags"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-lore--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"reading": {
+						"default": "prose"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-lore--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			},
 			"elements": {
@@ -2405,6 +4951,34 @@
 					"dataAttribute": "data-collapse"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-faction--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"frame": {
+						"target": "[data-section=\"media\"]"
+					},
+					"bg": {
+						"selectors": [
+							".rf-faction--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier"
+				}
+			},
 			"elements": {
 				"metadata": {
 					"tag": "dl",
@@ -2456,6 +5030,28 @@
 			"childOrder": [
 				"{content}"
 			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-faction-section--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-faction-section--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"header": {
 					"tag": "span",
@@ -2490,6 +5086,33 @@
 					"source": "meta",
 					"classPattern": ".rf-plot--{value}",
 					"dataAttribute": "data-tags"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-plot--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-plot--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			},
 			"elements": {
@@ -2542,6 +5165,28 @@
 					"classPattern": ".rf-beat--{value}",
 					"dataAttribute": "data-follows"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-beat--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-beat--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"Bond": {
@@ -2569,6 +5214,32 @@
 					"classPattern": ".rf-bond--{value}",
 					"dataAttribute": "data-bidirectional"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-bond--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-bond--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"Storyboard": {
@@ -2592,6 +5263,34 @@
 					"dataAttribute": "data-columns"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-storyboard--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flush"
+					},
+					"bg": {
+						"selectors": [
+							".rf-storyboard--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"inlineStyles": {
 				"columns": "--sb-columns"
 			}
@@ -2603,7 +5302,29 @@
 			"parent": "Storyboard",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-storyboard-panel--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-storyboard-panel--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Event": {
 			"block": "event",
@@ -2636,6 +5357,31 @@
 					"source": "meta",
 					"classPattern": ".rf-event--{value}",
 					"dataAttribute": "data-url"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-event--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-event--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			},
 			"elements": {
@@ -2713,6 +5459,33 @@
 					"dataAttribute": "data-direction"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-itinerary--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-itinerary--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"preamble": {
 					"tag": "header",
@@ -2749,6 +5522,28 @@
 			"childOrder": [
 				"{content}"
 			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-itinerary-day--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-itinerary-day--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"header": {
 					"tag": "label",
@@ -2775,6 +5570,28 @@
 					"source": "meta",
 					"classPattern": ".rf-itinerary-stop--{value}",
 					"dataAttribute": "data-duration"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-itinerary-stop--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-itinerary-stop--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			},
 			"elements": {
@@ -2839,6 +5656,34 @@
 					"dataAttribute": "data-api-key"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-map--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"elevation": {
+						"default": "flush"
+					},
+					"bg": {
+						"selectors": [
+							".rf-map--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"container": {
 					"tag": "div",
@@ -2876,6 +5721,28 @@
 					"source": "meta",
 					"dataAttribute": "data-group"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-map-pin--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-map-pin--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"Cast": {
@@ -2891,6 +5758,30 @@
 					"default": "grid",
 					"classPattern": ".rf-cast--{value}",
 					"dataAttribute": "data-layout"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-cast--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"bg": {
+						"selectors": [
+							".rf-cast--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			},
 			"elements": {
@@ -2928,7 +5819,32 @@
 			"parent": "Cast",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-cast-member--tinted"
+						]
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-cast-member--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Organization": {
 			"block": "organization",
@@ -2937,6 +5853,31 @@
 			"childOrder": [
 				"{content}"
 			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-organization--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-organization--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"preamble": {
 					"tag": "header",
@@ -2980,6 +5921,33 @@
 					"dataAttribute": "data-direction"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-timeline--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-timeline--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"preamble": {
 					"tag": "header",
@@ -3015,7 +5983,29 @@
 			"parent": "Timeline",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-timeline-entry--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-timeline-entry--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Swatch": {
 			"block": "swatch",
@@ -3023,7 +6013,35 @@
 			"dataRune": "swatch",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-swatch--tinted"
+						]
+					},
+					"density": {
+						"default": "minimal"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-swatch--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Palette": {
 			"block": "palette",
@@ -3058,6 +6076,33 @@
 				"design-context": {
 					"suffix": "in-design-context",
 					"selector": ".rf-palette--in-design-context"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-palette--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-palette--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			}
 		},
@@ -3095,6 +6140,33 @@
 					"suffix": "in-design-context",
 					"selector": ".rf-typography--in-design-context"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-typography--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-typography--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"Spacing": {
@@ -3116,6 +6188,33 @@
 					"suffix": "in-design-context",
 					"selector": ".rf-spacing--in-design-context"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-spacing--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-spacing--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"DesignContext": {
@@ -3130,6 +6229,33 @@
 					"source": "meta",
 					"classPattern": ".rf-design-context--{value}",
 					"dataAttribute": "data-title-text"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-design-context--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-design-context--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			}
 		},
@@ -3163,6 +6289,34 @@
 					"suffix": "in-feature",
 					"selector": ".rf-preview--in-feature"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-preview--tinted"
+						]
+					},
+					"width": {
+						"default": "wide"
+					},
+					"density": {
+						"default": "compact"
+					},
+					"bg": {
+						"selectors": [
+							".rf-preview--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"Mockup": {
@@ -3190,6 +6344,34 @@
 					"default": "auto",
 					"dataAttribute": "data-fit"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-mockup--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"elevation": {
+						"default": "flush"
+					},
+					"bg": {
+						"selectors": [
+							".rf-mockup--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"HowTo": {
@@ -3211,6 +6393,33 @@
 					"default": "medium",
 					"classPattern": ".rf-howto--{value}",
 					"dataAttribute": "data-difficulty"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-howto--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-howto--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			},
 			"elements": {
@@ -3316,6 +6525,33 @@
 				"content-place": {
 					"source": "meta",
 					"dataAttribute": "data-content-place"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-recipe--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"frame": {
+						"target": "[data-section=\"media\"]"
+					},
+					"bg": {
+						"selectors": [
+							".rf-recipe--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section"
 				}
 			},
 			"elements": {
@@ -3442,6 +6678,33 @@
 								"selector": ".rf-recipe--cover"
 							}
 						],
+						"universalAxes": {
+							"axes": {
+								"tint": {
+									"selectors": [
+										".rf-recipe--tinted"
+									]
+								},
+								"density": {
+									"default": "full"
+								},
+								"elevation": {
+									"default": "flat"
+								},
+								"frame": {
+									"target": "[data-section=\"media\"]"
+								},
+								"bg": {
+									"selectors": [
+										".rf-recipe--has-bg"
+									]
+								}
+							},
+							"unavailable": {
+								"reading": "this rune declares no body section",
+								"dropcap": "this rune declares no body section"
+							}
+						},
 						"elements": {
 							"metadata": {
 								"tag": "dl",
@@ -3530,7 +6793,29 @@
 			"parent": "Recipe",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-recipe-ingredient--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-recipe-ingredient--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Playlist": {
 			"block": "playlist",
@@ -3576,6 +6861,37 @@
 				"id": {
 					"source": "meta",
 					"dataAttribute": "data-id"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-playlist--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"motion": {
+						"target": "[data-name=\"track\"], [data-field=\"track\"]"
+					},
+					"frame": {
+						"target": "[data-section=\"media\"]"
+					},
+					"bg": {
+						"selectors": [
+							".rf-playlist--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier"
 				}
 			},
 			"elements": {
@@ -3640,7 +6956,32 @@
 			"parent": "Playlist",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-track--tinted"
+						]
+					},
+					"elevation": {
+						"default": "flat"
+					},
+					"bg": {
+						"selectors": [
+							".rf-track--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Audio": {
 			"block": "audio",
@@ -3656,6 +6997,30 @@
 					"classPattern": ".rf-audio--{value}",
 					"dataAttribute": "data-waveform"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-audio--tinted"
+						]
+					},
+					"density": {
+						"default": "compact"
+					},
+					"bg": {
+						"selectors": [
+							".rf-audio--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"MusicPlaylist": {
@@ -3664,7 +7029,29 @@
 			"dataRune": "music-playlist",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-playlist--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-playlist--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"MusicRecording": {
 			"block": "track",
@@ -3673,7 +7060,29 @@
 			"parent": "MusicPlaylist",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-track--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-track--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"Spec": {
 			"block": "spec",
@@ -3725,6 +7134,28 @@
 				"modified": {
 					"source": "meta",
 					"dataAttribute": "data-modified"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-spec--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"bg": {
+						"selectors": [
+							".rf-spec--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			},
 			"elements": {
@@ -3832,6 +7263,28 @@
 					"dataAttribute": "data-modified"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-work--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"bg": {
+						"selectors": [
+							".rf-work--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"eyebrow": {
 					"tag": "div",
@@ -3931,6 +7384,28 @@
 					"dataAttribute": "data-modified"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-bug--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"bg": {
+						"selectors": [
+							".rf-bug--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"eyebrow": {
 					"tag": "div",
@@ -4018,6 +7493,28 @@
 					"dataAttribute": "data-modified"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-decision--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"bg": {
+						"selectors": [
+							".rf-decision--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"eyebrow": {
 					"tag": "div",
@@ -4090,6 +7587,28 @@
 					"dataAttribute": "data-modified"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-milestone--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"bg": {
+						"selectors": [
+							".rf-milestone--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"elements": {
 				"eyebrow": {
 					"tag": "div",
@@ -4139,6 +7658,31 @@
 					"dataAttribute": "data-show"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-backlog--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"bg": {
+						"selectors": [
+							".rf-backlog--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"childDensity": "minimal"
 		},
 		"DecisionLog": {
@@ -4158,6 +7702,31 @@
 					"dataAttribute": "data-sort"
 				}
 			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-decision-log--tinted"
+						]
+					},
+					"density": {
+						"default": "full"
+					},
+					"bg": {
+						"selectors": [
+							".rf-decision-log--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			},
 			"childDensity": "minimal"
 		},
 		"PlanProgress": {
@@ -4166,7 +7735,29 @@
 			"dataRune": "plan-progress",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-plan-progress--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-plan-progress--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		},
 		"PlanActivity": {
 			"block": "plan-activity",
@@ -4179,6 +7770,28 @@
 				"limit": {
 					"source": "meta",
 					"dataAttribute": "data-limit"
+				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-plan-activity--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-plan-activity--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
 			}
 		},
@@ -4210,6 +7823,28 @@
 					"source": "meta",
 					"dataAttribute": "data-group"
 				}
+			},
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-plan-history--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-plan-history--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
 			}
 		},
 		"PlanEntityTabs": {
@@ -4218,7 +7853,29 @@
 			"dataRune": "plan-entity-tabs",
 			"childOrder": [
 				"{content}"
-			]
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-plan-entity-tabs--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-plan-entity-tabs--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no body section",
+					"dropcap": "this rune declares no body section",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
 		}
 	}
 }

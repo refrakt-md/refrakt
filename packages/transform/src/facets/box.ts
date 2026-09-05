@@ -1,4 +1,5 @@
 import type { Facet } from './types.js';
+import type { UniversalAxisFacet } from './describe.js';
 
 /** The layout-box axes: `width`, `spacing`, `inset` and `content-measure`.
  *
@@ -55,4 +56,64 @@ export const insetFacet: Facet = {
 		if (!value || value === 'default') return null;
 		return { axes: { inset: value }, classes: [`${ctx.block}--inset-${value}`] };
 	},
+};
+
+// ─── Contract descriptions (WORK-527) ─────────────────────────────────────
+//
+// None of `width`, `spacing` or `inset` declares `values`. That is accurate
+// rather than an omission: the engine passes any value straight through to the
+// class and the data attribute, so it owns no closed set to publish. The
+// author-facing vocabularies live in the schema layer (`matches`), which the
+// contract does not read.
+
+export const widthAxis: UniversalAxisFacet = {
+	axis: 'width',
+	contract: {
+		description: 'The track a block rune occupies.',
+		source: 'attribute',
+		inputs: ['width'],
+		dataAttributes: ['data-width'],
+		classPattern: '.{block}--{value}',
+		condition: 'suppressed at the `content` default',
+	},
+	describeForRune: (config) => (config.defaultWidth ? { default: config.defaultWidth } : null),
+};
+
+export const contentMeasureAxis: UniversalAxisFacet = {
+	axis: 'content-measure',
+	contract: {
+		description: 'A page-section rune anchors its content to the text measure when bled to the `wide` track; only the surface and background widen.',
+		source: 'config',
+		inputs: ['contentMeasure'],
+		values: ['anchored'],
+		dataAttributes: ['data-content-measure'],
+		condition: 'not author-facing — emitted only when the rune declares `contentMeasure: "anchored"`',
+	},
+	describeForRune: (config) => (config.contentMeasure === 'anchored' ? { default: 'anchored' } : null),
+};
+
+export const spacingAxis: UniversalAxisFacet = {
+	axis: 'spacing',
+	contract: {
+		description: 'Block-level rhythm override.',
+		source: 'attribute',
+		inputs: ['spacing'],
+		dataAttributes: ['data-spacing'],
+		classPattern: '.{block}--spacing-{value}',
+		condition: 'suppressed at the `default` value',
+	},
+	describeForRune: () => null,
+};
+
+export const insetAxis: UniversalAxisFacet = {
+	axis: 'inset',
+	contract: {
+		description: 'Internal padding override.',
+		source: 'attribute',
+		inputs: ['inset'],
+		dataAttributes: ['data-inset'],
+		classPattern: '.{block}--inset-{value}',
+		condition: 'suppressed at the `default` value',
+	},
+	describeForRune: () => null,
 };

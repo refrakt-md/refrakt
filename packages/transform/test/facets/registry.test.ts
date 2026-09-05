@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ORDERED_FACETS, FACET_ATTRIBUTES } from '../../src/facets/index.js';
+import { ORDERED_FACETS, FACET_ATTRIBUTES, UNIVERSAL_AXIS_FACETS } from '../../src/facets/index.js';
 import { createTransform } from '../../src/engine.js';
 import { makeTag } from '../../src/helpers.js';
 import type { ThemeConfig } from '../../src/types.js';
@@ -19,6 +19,58 @@ describe('facet registry', () => {
 	it('has no duplicate names', () => {
 		const names = ORDERED_FACETS.map(f => f.name);
 		expect(new Set(names).size).toBe(names.length);
+	});
+});
+
+describe('UNIVERSAL_AXIS_FACETS', () => {
+	// The three config-modifier facets describe themselves through
+	// `DESCRIBABLE_FACETS` instead — their output is already in the contract's
+	// `modifiers` / `contextModifiers` / `staticModifiers` sections.
+	const CONFIG_MODIFIER_FACETS = ['modifiers', 'context-modifiers', 'static-modifiers'];
+
+	// This is the drift the list can still have: adding a facet to the registry
+	// and forgetting to describe it puts an axis back in the blind spot
+	// WORK-527 closed.
+	it('describes every registered facet that is not a config-modifier facet', () => {
+		const described = new Set(UNIVERSAL_AXIS_FACETS.map(f => f.axis));
+		const expected = ORDERED_FACETS
+			.map(f => f.name)
+			.filter(name => !CONFIG_MODIFIER_FACETS.includes(name));
+		for (const name of expected) {
+			expect(described, `facet "${name}" has no UniversalAxisFacet`).toContain(name);
+		}
+	});
+
+	it('describes nothing that is not a registered facet', () => {
+		const registered = new Set(ORDERED_FACETS.map(f => f.name));
+		for (const axis of UNIVERSAL_AXIS_FACETS.map(f => f.axis)) {
+			expect(registered, `axis "${axis}" has no facet`).toContain(axis);
+		}
+	});
+
+	// Emission order is part of the output: `content-place` and `cover` both
+	// write `--cover-scrim-dir`, and the later declaration wins in CSS. A
+	// contract that listed them the other way round would read as a lie.
+	// `generateStructureContract` emits each `contract` by reference, so a
+	// consumer mutating the document it got back would otherwise corrupt the
+	// registry for every later call. The nested arrays matter most: they are the
+	// shared vocabulary constants.
+	it('freezes every contract, and the vocabularies inside it', () => {
+		for (const facet of UNIVERSAL_AXIS_FACETS) {
+			expect(Object.isFrozen(facet.contract), `${facet.axis}: contract not frozen`).toBe(true);
+			for (const [key, value] of Object.entries(facet.contract)) {
+				if (Array.isArray(value)) {
+					expect(Object.isFrozen(value), `${facet.axis}.${key} not frozen`).toBe(true);
+				}
+			}
+		}
+	});
+
+	it('lists the axes in registry order', () => {
+		const registryOrder = ORDERED_FACETS
+			.map(f => f.name)
+			.filter(name => !CONFIG_MODIFIER_FACETS.includes(name));
+		expect(UNIVERSAL_AXIS_FACETS.map(f => f.axis)).toEqual(registryOrder);
 	});
 });
 

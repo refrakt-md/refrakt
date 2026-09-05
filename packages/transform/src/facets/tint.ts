@@ -1,5 +1,6 @@
 import { readMeta } from '../helpers.js';
 import type { Facet, FacetStyle } from './types.js';
+import type { UniversalAxisFacet } from './describe.js';
 
 /** SPEC-053 — the six tint colour tokens.
  *
@@ -82,4 +83,21 @@ export const tintFacet: Facet = {
 			...(dataAttrs['data-color-scheme'] ? { state: { 'color-scheme': dataAttrs['data-color-scheme'] } } : {}),
 		};
 	},
+};
+
+/** Contract description (WORK-527). `{token}` expands over
+ *  {@link TINT_TOKENS} — the same list the facet resolves against. */
+export const tintAxis: UniversalAxisFacet = {
+	axis: 'tint',
+	contract: {
+		description: 'Per-rune colour override (SPEC-053): a named tint from the theme registry, with inline per-token overrides layered on top.',
+		source: 'meta',
+		inputs: ['tint', 'tint-mode', 'tint-{token}', 'tint-dark-{token}'],
+		tokens: TINT_TOKENS,
+		selectors: ['.{block}--tinted'],
+		dataAttributes: ['data-tint', 'data-color-scheme', 'data-tint-dark'],
+		customProperties: ['--tint-{token}', '--tint-dark-{token}'],
+		condition: 'the `--tinted` class only when colour tokens actually resolve — a bare `tint-mode` locks the colour scheme without tinting anything',
+	},
+	describeForRune: (_config, block) => ({ selectors: [`.${block}--tinted`] }),
 };
