@@ -1,5 +1,316 @@
 # @refrakt-md/transform
 
+## 0.30.1
+
+### Patch Changes
+
+- eb46d12: Migrate the background axis to a facet (SPEC-124, WORK-520).
+
+  The ~200-line step-1f background block moves into
+  `packages/transform/src/facets/bg.ts`: preset resolution with one level of
+  `extends`, token-driven gradients, image/video bases, the flat overlay wash,
+  the legibility scrim, and the SPEC-104 sandbox-guest relocation.
+
+  This is the first facet that builds its own element subtree, so it is the first
+  real use of `FacetResult.layers` — declared since WORK-517 and unexercised
+  until now. The channel held: the engine's hand-written bg-layer splice is
+  replaced by a generic `before-content` insertion that any facet can use.
+
+  It also required one new channel. Relocation turned out to be two halves:
+  `layers` puts the new subtree in, and **`FacetResult.absorbs`** takes the
+  original out. The bg sandbox guest is moved from the host's children into the
+  background layer, and without an explicit way to say so it would render twice.
+  Matched by node identity.
+
+  `bg` declares `after: ['cover', 'tint']`, replacing two more reads of engine
+  internals: cover's scrim reroute and tint's colour-scheme claim now arrive
+  through `ctx.axis()`. With both tint and bg publishing their scheme claim as
+  facet state, the `color-scheme` seed is gone entirely.
+
+  Internal only: no public API changes, and no change to rendered output — the
+  630 pre-existing transform tests pass unmodified, including the bg-gradient,
+  bg-overlay-scrim and bg-guest suites.
+
+  One pre-existing quirk is preserved rather than fixed, and is now pinned by a
+  test that documents it: a gradient stop with out-of-range alpha
+  (`primary/900`) falls back to interpolating the whole stop, emitting
+  `var(--rf-color-primary/900)` — not a valid custom-property name. Fixing it
+  would be a behaviour change and belongs in its own item.
+
+  `engine.ts` is down to 1549 lines from 2223 before the facet work began.
+
+- e67e4eb: Close the contract ↔ engine blind spot, and let the modifier facets declare
+  their own contract sections (SPEC-124, WORK-525).
+
+  `refrakt contracts --check` compares the checked-in contract against what the
+  generator produces _today_ — the generator against itself. Nothing has ever
+  compared the generator against the **engine**, so a change to the engine that
+  the generator does not mirror produced a confidently wrong contract with CI
+  green.
+
+  `contract-engine-agreement.test.ts` closes that: it transforms runes and
+  asserts the engine's actual output matches what the contract promised —
+  declared root selectors, `data-rune`, modifier data attributes and class
+  patterns, `valueMap`/`mapTarget` routing, defaults, static modifiers, context
+  modifiers, and the claim implied by absence.
+
+  Verified by mutation: with the engine changed to stop emitting BEM modifier
+  classes, `contracts --check` still reports "up to date (132 runes)" while the
+  new test fails.
+
+  The three config-modifier facets also gained a `describe(config, block)` that
+  `generateStructureContract` now consumes, replacing the duplicate derivation in
+  `contracts.ts`. Contract output is byte-identical across all 132 runes.
+
+  Internal only: no public API changes.
+
+- 9a8f354: Let facets declare their own author attributes (SPEC-124, WORK-526).
+
+  `transformRune` stripped consumed author attributes from pass-through output
+  using a fixed list naming eight facet-owned axes, so adding an axis with a
+  fixed attribute name still meant editing `engine.ts` — the last coupling
+  contradicting SPEC-124's claim that a new axis is a file plus a registry entry.
+
+  `Facet` now carries a static `attributes` declaration, and the engine strips
+  `FACET_ATTRIBUTES` — derived once from the registry — alongside the
+  config-modifier facet's dynamic `stripAttrs`.
+
+  The declaration is static rather than a `FacetResult` field because these
+  attributes must be stripped **even when the facet resolves to nothing**:
+  `width="content"` is suppressed (no axis, no class) but must not reach the
+  rendered element. A per-instance channel cannot express that.
+
+  Internal only: no public API changes, and pass-through behaviour is unchanged.
+
+  One asymmetry is deliberately **preserved**, and now pinned by a test that says
+  so: `reading` and `dropcap` reach the rendered element today, unlike every
+  other axis attribute. It looks like an oversight — both are consumed and
+  re-expressed as `data-reading` / `data-dropcap` on the body section — but
+  removing them is a behaviour change and belongs in its own item, not in a
+  mechanical cleanup.
+
+- d72385b: Restructure the identity transform's universal-axis resolution as a facet
+  registry (SPEC-124, WORK-517 + WORK-518).
+
+  `transformRune` resolved every universal rune axis inline in one ~800-line
+  function with lettered sub-steps (`1b`…`1h`). This migrates the first four axes
+  — `elevation`, `prominence`, `cover` and `content-place` — into
+  `packages/transform/src/facets/`, where each axis is a module that declares its
+  dependencies and returns its contributions as data for a driver to merge.
+
+  Internal only: no public API changes, and no change to rendered output.
+  Attribute order, class-string order, inline-style declaration order and warning
+  text are all byte-identical, and the 630 pre-existing transform tests pass
+  unmodified.
+
+  Recorded because this sits on the code path every rune renders through. If a
+  regression escapes the test suite, this is the changelog entry to bisect to.
+
+  Notable behaviour that is deliberately _preserved_ rather than fixed:
+
+  - `elevation` still passes unknown values through without validation — the
+    closed set is enforced at parse time by the schema's `matches`, not by the
+    engine.
+  - Warn-once diagnostics keep process-wide dedupe scope (matching the
+    module-level `*_WARNED` sets they will replace). Narrowing that scope is a
+    separate, deliberate decision under WORK-524.
+
+- e2736d4: Migrate frame chrome (SPEC-086) and substrate fills (SPEC-087) to facets
+  (SPEC-124, WORK-522).
+
+  Both axes resolve early against the rune tag but apply late, to a surface
+  chosen at resolve time — the rune root, or the `[data-section="media"]` zone
+  that does not exist until the children are assembled. They are the canonical
+  two-phase facets, and the second real exercise of `postAssemble` after cover.
+
+  Internal only: no public API changes, and no change to rendered output.
+  Attribute order, inline-style declaration order and warning text are all
+  byte-identical, and the 630 pre-existing transform tests pass unmodified.
+
+  Three interface extensions this migration required, none of which the earlier
+  axes needed:
+
+  - **`FacetContext.theme`** — facets can now resolve a named preset. `frame`
+    reads the theme's frame registry; `tints` and `backgrounds` are declared
+    alongside it for the tint and background axes that follow.
+  - **`FacetResult.carry`** — private scratch handed from a facet's `resolve` to
+    its own `postAssemble`, for resolved work that is neither emitted nor
+    expressible as a string. The alternative is re-resolving in the second phase,
+    which duplicates work and lets the two phases disagree.
+  - **`postAssemble` returns diagnostics** instead of `void` — a `media`-target
+    chrome that finds no media zone is only detectable against the assembled
+    tree, and routing that through the console directly would bypass the
+    collector's dedupe and make it untestable.
+
+  `engine.ts` is down to 1889 lines from 2223 before the facet work began, and
+  the `1g` / `1h` / `6c` sub-steps are gone.
+
+- 05115f6: Migrate the config-modifier loop to facets and retire the seeding scaffolding
+  (SPEC-124, WORK-523).
+
+  Steps 1, 1b and 1c of `transformRune` — the generic `config.modifiers` loop,
+  context modifiers and static modifiers — move into
+  `packages/transform/src/facets/modifiers.ts`. This is the last structural
+  migration: **no rune axis resolves inline any more.**
+
+  `modifiers` is registered first, so its axes are visible to every other facet
+  through `ctx.axis()`. That retires the final two seeded values
+  (`media-position` and `content-place`), and with them the whole seeding
+  mechanism: `FacetInput.seedAxes`, `orderFacets`'s `seeded` option and the
+  `SEEDED_AXES` list are all gone. Every `after` now names a real registered
+  facet, so the registry's dependency graph is complete rather than partly
+  scaffolded.
+
+  One new channel: **`FacetResult.stripAttrs`**, author _attribute_ names a facet
+  consumed, removed from pass-through output. Distinct from `consumes`, which
+  claims `<meta data-field>` children. The config-modifier facet needs it because
+  its attribute names come from the rune's own config and so cannot be a fixed
+  list.
+
+  `FacetContext` also gains `fields` — the parsed SPEC-082 `data-rune-fields`
+  bag, parsed once by the engine rather than per facet.
+
+  Internal only: no public API changes, and no change to rendered output. The 630
+  pre-existing transform tests pass unmodified, including the value-mapping,
+  variants, fields and context-modifier suites.
+
+  `engine.ts` is down to 1391 lines from 2223 before the facet work began — a 37%
+  reduction. Every numbered step that remains (2–9) is assembly pipeline, which
+  SPEC-124 scopes out explicitly.
+
+  Known residue, tracked as WORK-526: the engine still strips a **fixed list** of
+  eight facet-owned attribute names from pass-through output. Generalising that
+  needs a static `Facet.attributes` declaration, because those must be stripped
+  even when the facet resolves to nothing (`width="content"`), which a
+  per-instance result channel cannot express. Left out of this change rather than
+  widening the riskiest migration in the milestone.
+
+- c2c1709: Consolidate engine diagnostics onto the facet collector, scoped per build
+  (SPEC-124, WORK-524).
+
+  The last four module-level `*_WARNED` sets in `engine.ts` — interactive guest
+  in a link, non-eager cover sandbox, layout reference cycle, and `requiresParent`
+  violations — now emit through the same `WarningCollector` the facets use. All
+  nine of the original sets are gone.
+
+  **Behaviour change, deliberate.** Those sets were module scoped, so a warn-once
+  fired once per _process_: in a long-lived dev server an author saw a diagnostic
+  once, changed nothing, and never saw it again — not after the edit that failed
+  to fix it, and not on any other page. The collector is now owned by
+  `createTransform`, so dedupe is scoped to one build. A rebuild re-reports; a
+  single build still reports once however many runes trip the same condition.
+
+  Nothing else changes: every message is byte-identical, emission still happens
+  at the same point, and the 630 pre-existing transform tests pass unmodified.
+
+  `FacetWarning` also gains `severity`, because `requiresParent` routes a
+  misplaced structural child (`tab`, `bento-cell`, …) to `console.error` and any
+  other violation to `console.warn`. Without it that site could not go through
+  the collector at all.
+
+- a760a5c: Migrate the remaining scalar axes to facets (SPEC-124, WORK-521).
+
+  `density`, `width`, `spacing`, `inset`, `content-measure`, `reading`,
+  `dropcap` and `motion` (reveal + stagger) move out of steps 1e–1f-bis of
+  `transformRune` into `packages/transform/src/facets/`.
+
+  Two constraints that previously held only by accident are now declared:
+
+  - **`dropcap` declares `after: ['reading']`.** The capability gate reads the
+    resolved register, which worked because the two blocks happened to sit five
+    lines apart. It is now a registry constraint the driver enforces.
+  - **Registry order reproduces the original emission sequence.** Class order,
+    `modifierValues` key insertion order and inline-style declaration order are
+    all part of the output, and all now follow from one ordered list rather than
+    from where statements happen to fall in an 800-line function.
+
+  That second point **fixes the one benign output difference** introduced when
+  tint migrated: `--tinted` is back before `--width` / `--spacing` / `--inset` in
+  the class attribute, where it has always been. Output is byte-identical again.
+
+  Three axes publish facet **state** rather than emitted axes, because the engine
+  owns their emission point: `reading` and `dropcap` are applied to the body
+  section during child assembly, and `data-density` is unconditional at a fixed
+  position. `density` is also the first axis to read config other than its own —
+  it inherits a parent's `childDensity` — so `FacetContext` now carries
+  `parentConfig`, the resolved parent config rather than the rune registry, so a
+  facet cannot reach arbitrarily into the rune graph.
+
+  Internal only: no public API changes. The 630 pre-existing transform tests pass
+  unmodified, including the density, reading, reveal-stagger and content-measure
+  suites.
+
+  `engine.ts` is down to 1463 lines from 2223 before the facet work began — a 34%
+  reduction. Only steps 1, 1b and 1c (the generic config-modifier loop) still
+  resolve inline; they migrate under WORK-523.
+
+- 9b62d17: Migrate the tint axis to a facet (SPEC-124, WORK-519).
+
+  SPEC-053 tint resolution — named-definition lookup, inline `tint-<token>`
+  overrides, `lockMode`, dark-mode tokens, the `--tint-*` custom properties and
+  the `data-tint` / `data-color-scheme` / `data-tint-dark` markers — moves out of
+  step 1d of `transformRune` into `packages/transform/src/facets/tint.ts`, which
+  owns `TINT_TOKENS`.
+
+  Tint publishes the resolved colour scheme as facet **state** rather than as an
+  emitted axis (the attribute is set directly). That lets `cover` — which now
+  declares `after: ['tint']` — tell whether the scheme has already been claimed
+  instead of clobbering it, replacing what was a seeded read of the engine's
+  internal `tintDataAttrs` bag.
+
+  Internal only: no public API changes. Rendered output is unchanged **except**
+  for one benign difference: the `--tinted` BEM modifier now appears _after_
+  `--width` / `--spacing` / `--inset` in the class attribute, where it used to
+  come before them. The facet pass runs at a fixed point that sits after those
+  still-inline axes. Class order within a `class` attribute has no effect on CSS
+  matching or specificity, and no test pinned it — but it is an output
+  difference, so it is recorded here rather than described as byte-identical.
+  It resolves itself when width/spacing/inset migrate under WORK-521.
+
+  Everything else is byte-identical, including inline-style declaration order
+  (tint registers first, so its `--tint-*` declarations still lead), and the 630
+  pre-existing transform tests pass unmodified.
+
+- 04a6112: Describe the universal axes in structure contracts (SPEC-124, WORK-527).
+
+  `refrakt contracts` is documented as describing "the complete HTML structure the
+  identity transform produces for every rune". It did not: across the 132 runes in
+  the checked-in contract, not one universal axis appeared. A theme author reading
+  it learned nothing about `[data-elevation]`, `.rf-card--tinted`,
+  `.rf-hero--has-bg`, `[data-reveal]` or `[data-substrate]` — every one of which
+  the engine emits and Lumina styles.
+
+  Each of the sixteen universal-axis facets now declares its own contract
+  contribution, so the description is derived from the registry rather than
+  hand-listed. Vocabularies come from the facets' existing exports
+  (`ELEVATION_VALUES`, `PROMINENCE_VALUES`, `TINT_TOKENS`, `DENSITY_VALUES`,
+  `READING_REGISTERS`) — the contract restates nothing.
+
+  The output gains two sections:
+
+  - A top-level `universalAxes`, in registry order: each axis's inputs and where
+    they are read from, its closed vocabulary where the engine owns one, the data
+    attributes, custom properties and elements it emits, and the condition under
+    which it applies. Selector patterns carry a `{block}` placeholder.
+  - A per-rune `universalAxes`, carrying only what that rune's config settles —
+    resolved defaults, the surface an axis lands on, the block-substituted
+    selectors it adds (`.rf-card--tinted`, `.rf-card--has-bg`), and, under
+    `unavailable`, the axes its config rules out with the reason.
+
+  Stating the axis once and the deviations per rune keeps the file honest without
+  repeating a near-identical block 132 times.
+
+  **Additive only.** Every existing entry in `contracts/structures.json` is
+  byte-identical, key order included; the new sections sit alongside. The regenerated
+  file (and Lumina's shipped copy) grow from 86 KB to 185 KB.
+
+  `contract-engine-agreement.test.ts` grows from 13 tests to 47, covering the new
+  claims against the engine's actual output — mutation-checked: an engine change
+  that stops emitting `data-elevation` leaves `contracts --check` reporting "up to
+  date (132 runes)" while these tests fail.
+
+  - @refrakt-md/types@0.30.1
+
 ## 0.30.0
 
 ### Patch Changes
