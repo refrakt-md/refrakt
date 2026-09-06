@@ -20,7 +20,7 @@ attributes are silently or noisily inert depending on the rune's entry in
 | `prominence` | `sections` has a header-ish role | warns |
 | `dropcap` | resolved reading register is `prose` | warns |
 | `frame*` | `frameTarget`, or `sections` has a `media` role | warns |
-| `substrate-target="media"` | `sections` has a `media` role | warns |
+| `substrate-target="media"` | `sections` has a `media` role | warns (unreachable today: no rune sets `substrateTarget`, and it defaults to `self`) |
 | `reading` | `sections` has a `body` role | **silent** |
 | `content-place` | rune declares a `content-place` modifier | **silent** |
 | `scrim*` (cover) | rune declares a `media-position` modifier | **silent** |
@@ -154,7 +154,11 @@ live where the schema can already see it, and the guard would be unnecessary
 because there would be nothing to override. Not decided here: it is a migration
 across ~50 rune configs with real churn, and the applicability guarantee does not
 depend on it. {% ref "SPEC-125" /%} evaluates placement as an implementation
-question.
+question, on a **join table vs posture** test rather than field by field —
+`sections` and `mediaSlots` map schema-emitted `data-name`s to closed engine
+vocabularies and are owned by neither the theme nor either endpoint alone, while
+`guestFit` and `substrateTarget` are genuine theme postures that gate nothing.
+`frameTarget` is the one field that resists the test and is called out there.
 
 ## References
 

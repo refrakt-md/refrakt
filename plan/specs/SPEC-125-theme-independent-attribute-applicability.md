@@ -108,19 +108,98 @@ non-overridable on every merge path.
 This is expected to be a no-op in practice (Lumina overrides none of them), which
 makes it cheap to land early and independently.
 
-**Open question — where applicability data lives.** Phase 3 needs
-`sections`/`modifiers` reachable from schema-build time, and today they live in
-`RuneConfig`, which the schema layer never sees. Two shapes:
+**Open question — where applicability data lives.** Phase 3 needs the gating
+facts reachable from schema-build time, and today they live in `RuneConfig`,
+which the schema layer never sees. Two shapes:
 
 - **(a) Keep `RuneConfig` as the source; export a resolved applicability map**
   that `createContentModelSchema` consumes. Smaller change; keeps one definition
-  of `sections`; introduces a build-order coupling between config and schemas.
-- **(b) Move `sections` onto the rune definition**, engine reads it from there.
-  Conceptually cleanest — the guard becomes unnecessary because there is nothing
-  to override — but a migration across ~50 rune configs.
+  of each field; introduces a build-order coupling between config and schemas.
+- **(b) Move the gating fields onto the rune definition**, engine reads them from
+  there. Conceptually cleanest — the guard becomes unnecessary for a moved field,
+  because there is nothing left to override — but a migration across ~50 rune
+  configs.
 
 {% ref "ADR-028" /%} deliberately leaves this open as an implementation question.
 Resolve it here, in its own work item, before Phase 3 starts.
+
+#### The line to draw: join tables vs postures
+
+The question is not "does `sections` move" but **which fields are schema↔engine
+join tables and which are genuine theme postures**. `sections` turns out to be
+the clearest case of the former:
+
+```js
+Accordion: { sections: { preamble: 'preamble', headline: 'title', blurb: 'description' } }
+```
+
+- **Keys** are the rune's own slot names, emitted as `data-name` by its schema
+  transform. A theme cannot invent one — it does not control what the transform
+  emits.
+- **Values** are a closed vocabulary the engine owns
+  (`header | preamble | title | description | body | footer | media`,
+  `types.ts:341`).
+
+The theme owns neither side. All a theme can do is **rewire an existing pair** —
+exactly the capability {% ref "ADR-028" /%} removes.
+
+Its only emission consumer is `applyBemClasses` (`engine.ts:560`), which turns
+the role into `data-section`, plus `data-reading`/`data-dropcap` on a `body` role
+and `data-guest-fit` on a `media` role. **Lumina's CSS reads the emitted
+`data-section` attribute, never the `sections` config**
+(`styles/dimensions/sections.css` and ~10 rune stylesheets), so moving the field
+touches no stylesheet at all. The theme's real relationship to `sections` is
+entirely downstream of emission: it styles roles, it does not define them.
+
+Applying the same test to the fields that travel with it:
+
+| Field | Shape | Verdict |
+|---|---|---|
+| `sections` | `data-name` → closed engine role | **join table** — move |
+| `mediaSlots` | `data-name` → closed vocabulary (`portrait`/`cover`/…) | **join table** — same argument, move with it |
+| `guestFit` | `'clip' \| 'bleed'` containment posture | **posture** — stays; gates nothing |
+| `substrateTarget` | `'media' \| 'self'`, defaults to `'self'` | **posture** — stays; see below |
+| `frameTarget` | `'media' \| 'self'` | **the exception** — see below |
+
+#### `substrateTarget` gates nothing
+
+It defaults to `'self'`, so `substrate` is applicable on **every** rune, and it
+is set on **zero** runes in the catalog. The only unavailability path —
+`substrateTarget: 'media'` on a rune with no media section — is a
+misconfiguration, not an authored intent, and cannot currently occur. It is a
+genuine theme posture ("put the pattern on the media well rather than the whole
+surface") and can stay in `RuneConfig` without splitting anything. This spec's
+earlier framing of it as a fuzzy applicability gate was wrong.
+
+#### `frameTarget` splits frame applicability across two homes
+
+Frame applicability resolves as
+`config.frameTarget ?? (hasMediaSection(config.sections) ? 'media' : null)`.
+The type has no `'none'`, so **`frameTarget` can only ever grant, never revoke**.
+
+It is set on exactly two runes — `Figure` and `Showcase`, both `'self'`, both
+with no media section. In both cases it grants frame applicability to a rune that
+would otherwise have none, and it means "frame *me*, because I am the media" —
+which reads as a structural fact about the rune, not a decoration.
+
+That creates a concrete hazard if `sections` moves and `frameTarget` does not.
+Frame applicability would have two sources, one of them still theme-overridable,
+so a theme could add `frameTarget: 'self'` to a rune whose narrowed schema
+**rejects** `frame=`. Config would grant what the schema forbids — the same
+divergence this spec exists to close, inverted.
+
+Three resolutions, to be decided in the placement work item:
+
+- **(a) `frameTarget` moves with `sections`.** Both become rune identity. Cheapest
+  and most consistent; the migration is two runes.
+- **(b) Narrow `frameTarget` so it can only redirect among surfaces the rune
+  already has.** Then `Figure`/`Showcase` would need a media section to be framed
+  — awkward, since the whole rune *is* the media.
+- **(c) Introduce an explicit "this rune is its own media surface" structural
+  fact** and retire `frameTarget: 'self'`. The most honest modelling; the most
+  churn.
+
+(a) is the recommendation unless (c) turns out to simplify something else.
 
 ### Phase 3 — Narrow schemas and fix the consumers
 
@@ -179,7 +258,10 @@ has quantified the real-world impact.
 - [ ] A lint or test flags a `body`/header slot with no corresponding section
       role, so the drift cannot recur
 - [ ] `IDENTITY_FIELDS` is enforced on `mergeRuneConfig`, not only on variant deltas
-- [ ] Applicability data placement is decided and recorded before Phase 3 begins
+- [ ] Applicability data placement is decided and recorded before Phase 3 begins,
+      on the join-table vs posture test rather than field by field
+- [ ] `frameTarget` is resolved so that frame applicability has a single source —
+      no path by which theme config can grant an attribute the narrowed schema rejects
 - [ ] `createContentModelSchema` merges only applicable universal attributes
 - [ ] Universal-attribute availability is governed by a declared rule that
       accounts for inline-ness and configurator runes — not by which constructor
