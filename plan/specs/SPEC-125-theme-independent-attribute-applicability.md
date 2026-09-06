@@ -44,6 +44,8 @@ Four of the seven gated axes warn when they are dropped. Three — `reading`,
   schema constructor a rune happened to use.
 - Every inapplicable attribute an author writes produces feedback — no silent
   no-ops.
+- Applicability gates are *declared capabilities*, not structural facts reused as
+  proxies. See **The governing rule** below.
 
 ## Non-goals
 
@@ -101,27 +103,74 @@ oversight, or is the slot deliberately not a semantic section? Adding a role is
 **not** output-neutral — it adds `data-section` and enables `data-reading` — so
 each change needs its own justification and test.
 
-#### Direction 2 — roles that may not belong
+#### Direction 2 — roles doing double duty
 
-Three runes map a `body` role from a slot not named `body`, and only one is
-obviously right:
+Three runes map a `body` role from a slot not named `body`:
 
-| Rune | Mapping | Assessment |
+| Rune | Mapping | |
 |---|---|---|
-| `Blog` | `content → body` | correct — it is prose |
-| `Showcase` | `viewport → body` | **questionable** — a component preview surface is not body text |
-| `DataTable` | `table → body` | **questionable** — a table is not prose |
+| `Blog` | `content → body` | prose |
+| `Showcase` | `viewport → body` | a component preview surface |
+| `DataTable` | `table → body` | a table |
 
-Under Phase 3 these two would have `reading` and `dropcap` offered in their
+Under Phase 3 the latter two would have `reading` and `dropcap` offered in their
 schemas, so `{% datatable reading="prose" dropcap=true %}` would validate and
-stamp a drop cap onto a table. Removing a role is likewise not output-neutral —
-it drops `data-section`, which Lumina's CSS may style — so each needs the same
-per-rune justification and test as Direction 1.
+stamp a drop cap onto a table.
+
+**The role is not the problem, and removing it is not the fix.** DataTable's
+table genuinely *is* the rune's main content region, and Lumina styles that role
+directly — `styles/dimensions/sections.css:42` and `styles/dimensions/density.css:45`
+both key on `[data-section="body"]`. Dropping the role would change how these
+runes render, for a reason unrelated to rendering.
+
+The real problem is that `body` carries **two meanings that were merged by
+accident of timing**:
+
+- **Structural** — "the rune's main content region". Its original purpose,
+  consumed by the dimension stylesheets.
+- **Editorial** — "prose that a reading register applies to". Added later by
+  {% ref "SPEC-108" /%}, which reused the existing structural declaration as a
+  *proxy* for a capability it never declared.
+
+The proxy holds for most of the 21 runes with a `body` role and breaks for a real
+minority: `DataTable`, `Showcase`, `Form`, `Api`, `Symbol`. (Only four runes set
+`defaultReading` at all — `Sidenote`, `PullQuote`, `TextBlock`, `Lore`.)
+
+Separating the two meanings is therefore **not a data fix and does not belong in
+Phase 1**. It is a small design change, and it is sequenced into *Phase 4* for a
+reason given there.
 
 #### Guard against recurrence
 
-A lint or test that flags a slot/role mismatch in both directions belongs here,
-so the drift cannot silently return once corrected.
+A lint or test that flags a **missing** role (Direction 1) belongs here, so that
+drift cannot silently return once corrected. Direction 2 is not a lint target —
+those roles are correct.
+
+### The governing rule: declare capabilities, do not infer them
+
+The lesson generalises past `reading`, and is worth stating because it predicts
+where the next axis will go wrong. All four applicability gates today:
+
+| Axis | Gate | Kind |
+|---|---|---|
+| `cover`, `content-place` | rune declares the `media-position` / `content-place` modifier | **exact** |
+| `prominence` | a header-ish role | proxy — sound |
+| `frame`, `substrate` | a `media` role, or an explicit target | proxy — mostly sound |
+| `reading`, `dropcap` | a `body` role | proxy — **lossy** |
+
+The one exact gate is the one whose declaration was made *for that purpose*.
+Every proxy gate reuses a structural fact declared for something else, and the
+lossy one is where the correlation breaks.
+
+> **Rule.** When an axis needs a capability, have runes declare that capability.
+> Infer it from an existing structural fact only when the fact and the capability
+> are genuinely *the same thing*. A `media` role really is a frame target — that
+> inference is identity. A `body` role merely *usually* contains prose — that is
+> correlation, and correlation drifts.
+
+Applied at {% ref "SPEC-108" /%} time this would have caught the `reading` case.
+It is the test to apply to the next universal axis anyone adds. If a second axis
+turns out to need it, this rule is a candidate for promotion to its own ADR.
 
 ### Phase 2 — Lock applicability as rune identity
 
@@ -296,6 +345,48 @@ Consumers then fall out:
   not values arriving through scoped defaults or embed overrides
   ({% ref "ADR-027" /%}).
 
+### Phase 4 — Separate the prose capability from the `body` role
+
+Give `reading` and `dropcap` a declared gate instead of the lossy `body`-role
+proxy, per the governing rule above. The structural role and every stylesheet
+that keys on it are untouched.
+
+**Sequenced after Phase 3, deliberately.** The design question is the default,
+and Phase 3 settles it:
+
+- **Default-on** (a `body` role implies prose unless a rune opts out) keeps the
+  migration tiny, but preserves the lossy proxy as the default — so the DataTable
+  bug simply recurs for the next non-prose rune.
+- **Default-off** (a rune must declare that it bears prose) is honest, but a
+  forgotten declaration silently disables `reading` — which is today's failure
+  mode returning.
+
+Default-off is the right answer **only once schemas have narrowed**: with Phase 3
+in place, a forgotten declaration is no longer silent — the attribute is not
+offered, and `refrakt reference` says so. Phase 3 converts the risk of default-off
+from an invisible regression into a discoverable one. Running Phase 4 first would
+forfeit that.
+
+**Shape.** Express the gate as a capability declared by the facet and provided by
+the rune, rather than another hard-coded helper alongside `hasBodySection` /
+`hasMediaSection` / `hasPageSectionHeader`:
+
+```ts
+readingAxis.requires = 'prose'
+TextBlock: { provides: ['prose'] }
+```
+
+Only one axis needs it initially, so this is close to the narrow fix in cost. It
+is worth doing as the general shape now because {% ref "SPEC-124" /%} already gave
+every facet a declaration point — `requires` sits beside `contract` and
+`describeForRune`, and flows into the structure contract for free. The
+alternative, a bespoke `proseSection` field on `RuneConfig`, solves the same case
+and leaves the next axis to invent its own.
+
+The ~21 runes carrying a `body` role are audited once for whether they bear
+authored prose. Expected non-providers: `DataTable`, `Showcase`, `Form`, `Api`,
+`Symbol`.
+
 ### Migration
 
 Narrowing turns `{% card reading="prose" %}` from a silent no-op into a Markdoc
@@ -316,10 +407,16 @@ has quantified the real-world impact.
 
 - [ ] The ~10 missing-role mismatches are individually assessed and resolved;
       each change carries its own test and the reasoning is recorded
-- [ ] The three non-`body`-slot body roles (`Blog`, `Showcase`, `DataTable`) are
-      assessed for whether the role belongs at all
-- [ ] A lint or test flags a slot/role mismatch **in both directions**, so the
-      drift cannot recur
+- [ ] A lint or test flags a **missing** section role, so Direction 1 drift
+      cannot recur
+- [ ] `reading` and `dropcap` gate on a declared prose capability, not on the
+      `body` role; the structural role and every stylesheet keying on
+      `[data-section="body"]` are unchanged
+- [ ] The capability is declared by the facet and provided by the rune, so the
+      next axis needing one does not invent a bespoke field
+- [ ] The ~21 body-role runes are audited for whether they bear authored prose;
+      `DataTable`, `Showcase`, `Form`, `Api` and `Symbol` no longer offer
+      `reading`/`dropcap`
 - [ ] `IDENTITY_FIELDS` is enforced on `mergeRuneConfig`, not only on variant deltas
 - [ ] Applicability data placement is decided and recorded before Phase 3 begins,
       on the join-table vs posture test rather than field by field
