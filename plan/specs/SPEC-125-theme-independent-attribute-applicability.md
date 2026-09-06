@@ -182,20 +182,73 @@ non-overridable on every merge path.
 This is expected to be a no-op in practice (Lumina overrides none of them), which
 makes it cheap to land early and independently.
 
-**Open question — where applicability data lives.** Phase 3 needs the gating
-facts reachable from schema-build time, and today they live in `RuneConfig`,
-which the schema layer never sees. Two shapes:
+#### Where the applicability data lives — resolved as (b)
 
-- **(a) Keep `RuneConfig` as the source; export a resolved applicability map**
-  that `createContentModelSchema` consumes. Smaller change; keeps one definition
-  of each field; introduces a build-order coupling between config and schemas.
-- **(b) Move the gating fields onto the rune definition**, engine reads them from
-  there. Conceptually cleanest — the guard becomes unnecessary for a moved field,
-  because there is nothing left to override — but a migration across ~50 rune
-  configs.
+Phase 3 needs the gating facts reachable from schema-build time, and today they
+live in `RuneConfig`, which the schema layer never sees. `createContentModelSchema`
+merges all ~37 universal attributes unconditionally, at module scope, with no
+structural input at all:
 
-{% ref "ADR-028" /%} deliberately leaves this open as an implementation question.
-Resolve it here, in its own work item, before Phase 3 starts.
+```ts
+// packages/runes/src/lib/index.ts:384
+Object.assign(attributes, universalAttributes);
+```
+
+Two shapes were considered. **The module graph decides between them.**
+
+**(a) Keep `RuneConfig` as the source and have the schema layer consume it —
+rejected.** The dependency direction is `config → tags`, uniformly. Core's
+`config.ts` imports four sentinels *from* tag modules
+(`BREADCRUMB_AUTO_SENTINEL`, `NAV_AUTO_SENTINEL`, `PAGINATION_AUTO_SENTINEL`,
+`XREF_RUNE_MARKER`); no core tag imports config, and **no plugin tag imports its
+config either — 0 of 9**.
+
+For a tag module to import config would invert that direction and create a cycle
+in core. Because `createContentModelSchema` is called at module scope, the tag
+would observe `coreConfig` still uninitialised mid-cycle — a crash, not a subtle
+bug. The cycle-free variant (narrow later, at catalog/registry assembly) works
+but must run at every assembly point — the core catalog, each plugin's `runes`
+record, the merged tag set — and hands config to every consumer. That is the
+"teach the consumers to read config" model {% ref "ADR-028" /%} already rejected,
+reached by a different route.
+
+**(b) Declare the fact in the tag module and let config reference it — adopted.**
+
+```ts
+// tags/card.ts
+export const cardSections = { media: 'media', body: 'body' } as const;
+export const card = createContentModelSchema({ …, sections: cardSections });
+```
+
+```ts
+// config.ts — already imports from tags/
+Card: { block: 'card', sections: cardSections, … }
+```
+
+- `createContentModelSchema` has the fact **in hand at construction**, so
+  narrowing is local: no config lookup, no cycle, no build-order question.
+- **The engine is unchanged** — it still reads `config.sections` exactly as today.
+- No new import direction anywhere. Core already runs this way; plugins would
+  start to, in the direction their code already permits.
+
+Narrowing becomes correct *by construction* rather than by ordering discipline,
+which is the whole reason to prefer it over the workable form of (a).
+
+**Scope of the move.** The join tables plus `frameTarget`: `sections` (~50
+runes), `mediaSlots` (a handful), `frameTarget` (2). Mechanical, but it touches
+~50 places across ten packages.
+
+**`modifiers` does not move.** For the gates that read it, the schema already
+knows: `cover` and `content-place` gate on the rune declaring a `media-position`
+/ `content-place` modifier, and those are author-facing attributes the schema
+declares anyway (`refrakt reference card` lists both). That is the *exact* gate
+from **The governing rule** above, and it is already schema-side.
+
+**The identity guard remains load-bearing.** Under (b), config *references* the
+rune's declaration rather than owning it — but `sections` is still a `RuneConfig`
+field, so a theme could shadow it in the merged config. The engine would then use
+the theme's value while the schema used the rune's: silent divergence, exactly
+what this spec closes. The guard is required under every option, not just under (a).
 
 #### The line to draw: join tables vs postures
 
@@ -418,8 +471,11 @@ has quantified the real-world impact.
       `DataTable`, `Showcase`, `Form`, `Api` and `Symbol` no longer offer
       `reading`/`dropcap`
 - [ ] `IDENTITY_FIELDS` is enforced on `mergeRuneConfig`, not only on variant deltas
-- [ ] Applicability data placement is decided and recorded before Phase 3 begins,
-      on the join-table vs posture test rather than field by field
+- [ ] The join tables (`sections`, `mediaSlots`) and `frameTarget` are declared in
+      their tag modules and referenced from config, so `createContentModelSchema`
+      has them at construction; the engine's read path is unchanged
+- [ ] `modifiers` stays in `RuneConfig` — the schema already declares the
+      attributes its gates read
 - [ ] `frameTarget` moves with `sections` (resolution (a)), so frame
       applicability has a single source — no path by which theme config can grant
       an attribute the narrowed schema rejects

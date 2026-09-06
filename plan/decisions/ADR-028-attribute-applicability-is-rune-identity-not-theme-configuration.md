@@ -153,8 +153,15 @@ Conceptually the cleanest expression of "this is rune identity" — the field wo
 live where the schema can already see it, and the guard would be unnecessary
 because there would be nothing to override. Not decided here: it is a migration
 across ~50 rune configs with real churn, and the applicability guarantee does not
-depend on it. {% ref "SPEC-125" /%} evaluates placement as an implementation
-question, on a **join table vs posture** test rather than field by field —
+depend on it. {% ref "SPEC-125" /%} evaluated placement as an implementation
+question and **adopted the move** — the deciding factor being the module graph,
+which runs `config → tags` uniformly and so forbids the reverse. Note that the
+guard above is still required either way: config would *reference* the rune's
+declaration, but the field remains on `RuneConfig`, so an unguarded theme
+override could still shadow it and diverge from the schema.
+
+Placement was decided on a **join table vs posture** test rather than field by
+field —
 `sections` and `mediaSlots` map schema-emitted `data-name`s to closed engine
 vocabularies and are owned by neither the theme nor either endpoint alone, while
 `guestFit` and `substrateTarget` are genuine theme postures that gate nothing.
