@@ -63,7 +63,13 @@ or wrong exclusions get frozen into validation errors.
 
 ### Phase 1 — Audit and correct the section-role data
 
-Applicability is derived from `sections`, and `sections` is currently incomplete.
+Applicability is derived from `sections`, and `sections` is currently both
+incomplete and, in places, over-declared. **The audit runs in both directions** —
+a role that is missing wrongly denies an attribute, and a role that is present
+wrongly offers one. Both become hard facts once schemas narrow, so both are worth
+settling first.
+
+#### Direction 1 — roles that are missing
 
 Six runes declare a `body` **slot** in their layout but never map it to the
 `body` **role**: `Card`, `BentoCell`, `Character`, `Realm`, `Faction`,
@@ -95,8 +101,27 @@ oversight, or is the slot deliberately not a semantic section? Adding a role is
 **not** output-neutral — it adds `data-section` and enables `data-reading` — so
 each change needs its own justification and test.
 
-A lint that flags a slot/role mismatch belongs here too, so the drift cannot
-silently recur.
+#### Direction 2 — roles that may not belong
+
+Three runes map a `body` role from a slot not named `body`, and only one is
+obviously right:
+
+| Rune | Mapping | Assessment |
+|---|---|---|
+| `Blog` | `content → body` | correct — it is prose |
+| `Showcase` | `viewport → body` | **questionable** — a component preview surface is not body text |
+| `DataTable` | `table → body` | **questionable** — a table is not prose |
+
+Under Phase 3 these two would have `reading` and `dropcap` offered in their
+schemas, so `{% datatable reading="prose" dropcap=true %}` would validate and
+stamp a drop cap onto a table. Removing a role is likewise not output-neutral —
+it drops `data-section`, which Lumina's CSS may style — so each needs the same
+per-rune justification and test as Direction 1.
+
+#### Guard against recurrence
+
+A lint or test that flags a slot/role mismatch in both directions belongs here,
+so the drift cannot silently return once corrected.
 
 ### Phase 2 — Lock applicability as rune identity
 
@@ -199,7 +224,43 @@ Three resolutions, to be decided in the placement work item:
   fact** and retire `frameTarget: 'self'`. The most honest modelling; the most
   churn.
 
-(a) is the recommendation unless (c) turns out to simplify something else.
+**(a) is the decision.** (c) is recorded below as a follow-on with an explicit
+trigger, because the evidence for it today is thin and (a) does not foreclose it.
+
+#### Why (c) is deferred rather than rejected
+
+The engine has one media model, and it assumes media is a **sub-zone holding a
+guest**: `sections: { x: 'media' }` declares the well, `guestFit` says how the
+well contains its guest, `mediaSlots` sizes it, `findMediaZone()` walks children
+for `data-section="media"`, and `frameTarget` defaults to `'media'` when such a
+zone exists.
+
+`Figure` and `Showcase` do not host media — the image *is* the figure. There is
+no guest. That fact has **no representation in config**: the only way to express
+it is a side effect of `frameTarget: 'self'`, which states the consequence
+("frame chrome lands on my root") rather than the cause ("I am the media
+surface").
+
+(c) would name the cause — e.g. `mediaSurface: 'self'`, mutually exclusive with a
+`media` section role — so that every media-aware axis derives from one fact:
+*chrome lands on the media surface, which is either the root or
+`[data-section="media"]`*.
+
+The argument for it is that `substrateTarget` is **already the second instance of
+the same escape hatch** — same `'media' | 'self'` type, same question, added
+independently, and it too never learned about these two runes. Today
+`{% figure substrate="dots" substrate-target="media" %}` warns "has no media
+section" and does nothing, on a rune that plainly has a media surface.
+
+The argument against is that this is two runes and two axes, one of which is set
+on **zero** runes in the catalog. That is a duplicated pattern, not a
+demonstrated cost, and (c) carries a new config field, a vocabulary, its
+interaction with `sections`, both facets' resolution logic, docs, contract
+description and tests.
+
+**Trigger for revisiting:** if a third media-aware axis needs a `'self'` target,
+stop adding escape hatches and name the fact. Until then (a) holds, and the
+migration (c) would need is the same two runes either way.
 
 ### Phase 3 — Narrow schemas and fix the consumers
 
@@ -253,15 +314,18 @@ has quantified the real-world impact.
 
 ## Acceptance criteria
 
-- [ ] The ~10 slot/role mismatches are individually assessed and resolved; each
-      change carries its own test and the reasoning is recorded
-- [ ] A lint or test flags a `body`/header slot with no corresponding section
-      role, so the drift cannot recur
+- [ ] The ~10 missing-role mismatches are individually assessed and resolved;
+      each change carries its own test and the reasoning is recorded
+- [ ] The three non-`body`-slot body roles (`Blog`, `Showcase`, `DataTable`) are
+      assessed for whether the role belongs at all
+- [ ] A lint or test flags a slot/role mismatch **in both directions**, so the
+      drift cannot recur
 - [ ] `IDENTITY_FIELDS` is enforced on `mergeRuneConfig`, not only on variant deltas
 - [ ] Applicability data placement is decided and recorded before Phase 3 begins,
       on the join-table vs posture test rather than field by field
-- [ ] `frameTarget` is resolved so that frame applicability has a single source —
-      no path by which theme config can grant an attribute the narrowed schema rejects
+- [ ] `frameTarget` moves with `sections` (resolution (a)), so frame
+      applicability has a single source — no path by which theme config can grant
+      an attribute the narrowed schema rejects
 - [ ] `createContentModelSchema` merges only applicable universal attributes
 - [ ] Universal-attribute availability is governed by a declared rule that
       accounts for inline-ness and configurator runes — not by which constructor
