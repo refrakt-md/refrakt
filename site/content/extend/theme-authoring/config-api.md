@@ -312,6 +312,24 @@ Available roles: `'header'`, `'preamble'`, `'title'`, `'description'`, `'body'`,
 
 **Rune identity** (ADR-028) — not theme-overridable. This is a join table rather than a posture: the keys are `data-name` values the rune's own transform emits and the values are a closed engine vocabulary, so a theme owns neither side. All it could do is rewire a pair — and `reading`, `prominence` and `frame` applicability hang off exactly those pairs. Styling the emitted `data-section` stays entirely the theme's business.
 
+`refrakt validate` fails a config in which a rune declares a `body` or heading slot (in `layout`, `structure`, `autoLabel`, `blocks` or `contentWrapper`) with no matching role — that omission silently drops `reading`, `dropcap` or `prominence`, which is exactly how the original mismatches went unnoticed. The check is **direction-only**: it flags a *missing* role and never a role that is present, so a `body` role on a non-prose region stays untouched.
+
+### sectionRoleExceptions
+
+Records a deliberate decision *not* to map a declared slot, keyed by slot name and valued by the reason. It silences the check for that slot and keeps the reasoning next to the decision.
+
+```typescript
+AccordionItem: {
+  block: 'accordion-item',
+  sections: { body: 'body' },
+  sectionRoleExceptions: {
+    header: 'The `header` slot is the <summary> disclosure control, not a page-section header.',
+  },
+}
+```
+
+Use it for a genuine judgement, never to quiet a real omission. Most exceptions so far share one shape: **a child rune takes the `title` role only when its parent does not already hold one** — a second title inside the same subtree flattens the hierarchy `prominence` exists to scale.
+
 See [Dimensions](/extend/theme-authoring/dimensions#sections) for role descriptions and CSS.
 
 ### mediaSlots

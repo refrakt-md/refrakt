@@ -12,6 +12,10 @@ describe('validateThemeConfig', () => {
 			Hint: {
 				block: 'hint',
 				modifiers: { hintType: { source: 'meta', default: 'note' } },
+				// SPEC-125 — the structure below declares a `header` slot, so the
+				// role has to be mapped or the section-role lint (correctly) fails
+				// the config. Matches the real `Hint` entry in `baseConfig`.
+				sections: { header: 'header' },
 				structure: {
 					header: {
 						tag: 'div',
@@ -90,6 +94,7 @@ describe('validateThemeConfig', () => {
 				Hint: {
 					block: 'hint',
 					modifiers: { hintType: { source: 'meta' } },
+					sections: { header: 'header' },
 					structure: {
 						header: {
 							tag: 'div',
@@ -113,6 +118,7 @@ describe('validateThemeConfig', () => {
 			runes: {
 				Test: {
 					block: 'test',
+					sections: { header: 'header' },
 					structure: {
 						header: {
 							tag: 'div',

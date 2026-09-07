@@ -41,12 +41,15 @@ export const config: Record<string, RuneConfig> = {
 		},
 		editHints: { name: 'inline', portrait: 'image', body: 'none', sections: 'none' },
 	},
-	// SPEC-125 Phase 1 — the section's prose is its `body` role. No header-ish
-	// role: the entity's own `name` already holds `title`, and a second title
-	// inside the same subtree would flatten the hierarchy `prominence` exists to
-	// scale. Lumina pins `.rf-{block}__name`'s type outright, so the role would
-	// be inert there anyway — see the resolution on WORK-530.
-	CharacterSection: { block: 'character-section', parent: 'Character', autoLabel: { span: 'header' }, sections: { body: 'body' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
+	// SPEC-125 Phase 1 — the section's prose is its `body` role; the header
+	// decision is recorded in `sectionRoleExceptions`.
+	CharacterSection: {
+		block: 'character-section', parent: 'Character',
+		autoLabel: { span: 'header' },
+		sections: { body: 'body' },
+		sectionRoleExceptions: { header: 'The parent Character already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-character-section__name`\'s type outright, so the role would be inert there anyway.' },
+		editHints: { header: 'inline', name: 'inline', body: 'none' },
+	},
 
 	Realm: {
 		block: 'realm',
@@ -89,7 +92,13 @@ export const config: Record<string, RuneConfig> = {
 		editHints: { name: 'inline', scene: 'image', body: 'none', sections: 'none' },
 	},
 	// SPEC-125 Phase 1 — see CharacterSection; same shape, same correction.
-	RealmSection: { block: 'realm-section', parent: 'Realm', autoLabel: { span: 'header' }, sections: { body: 'body' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
+	RealmSection: {
+		block: 'realm-section', parent: 'Realm',
+		autoLabel: { span: 'header' },
+		sections: { body: 'body' },
+		sectionRoleExceptions: { header: 'The parent Realm already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-realm-section__name`\'s type outright, so the role would be inert there anyway.' },
+		editHints: { header: 'inline', name: 'inline', body: 'none' },
+	},
 
 	Lore: {
 		block: 'lore',
@@ -157,7 +166,13 @@ export const config: Record<string, RuneConfig> = {
 		editHints: { name: 'inline', body: 'none', sections: 'none' },
 	},
 	// SPEC-125 Phase 1 — see CharacterSection; same shape, same correction.
-	FactionSection: { block: 'faction-section', parent: 'Faction', autoLabel: { span: 'header' }, sections: { body: 'body' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
+	FactionSection: {
+		block: 'faction-section', parent: 'Faction',
+		autoLabel: { span: 'header' },
+		sections: { body: 'body' },
+		sectionRoleExceptions: { header: 'The parent Faction already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-faction-section__name`\'s type outright, so the role would be inert there anyway.' },
+		editHints: { header: 'inline', name: 'inline', body: 'none' },
+	},
 
 	Plot: {
 		block: 'plot',

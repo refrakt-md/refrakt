@@ -1,5 +1,7 @@
 import type { ThemeManifest } from '@refrakt-md/types';
 import { VARIANT_DELTA_RESERVED_FIELDS, findReservedFields, identityFieldMessage } from './identity-fields.js';
+import { lintSectionRoles } from './section-roles.js';
+import type { RuneConfig } from './types.js';
 
 export interface ValidationError {
 	path: string;
@@ -75,6 +77,15 @@ export function validateThemeConfig(config: unknown): ValidationResult {
 
 		for (const [runeName, runeConfig] of Object.entries(runes)) {
 			validateRuneConfig(runeName, runeConfig, icons, errors, warnings);
+		}
+
+		// SPEC-125 Phase 1 — slot/role drift. A rune that declares a `body` or
+		// heading slot and never maps it to a role drops `reading`, `dropcap` or
+		// `prominence` in silence, which is the failure mode the spec exists to
+		// remove. An error, not a warning: the whole point is that it cannot pass
+		// unnoticed the way the original twelve mismatches did.
+		for (const finding of lintSectionRoles(runes as Record<string, RuneConfig>)) {
+			errors.push({ path: `runes.${finding.rune}.sections`, message: finding.message });
 		}
 	}
 

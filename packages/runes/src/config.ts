@@ -52,14 +52,18 @@ export const coreConfig: ThemeConfig = {
 
 		Accordion: { block: 'accordion', defaultDensity: 'full', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 		// SPEC-125 Phase 1 — the answer panel is the item's `body` role, so
-		// `reading` / `dropcap` land on it. No header-ish role is declared, and
-		// that is a decision rather than an omission: the `header` slot is the
-		// `<summary>` disclosure control, not a page-section header. Mapping it to
-		// `header` would inherit the chrome-row rhythm (a 3rem bottom margin under
-		// every summary); mapping it to `title` would tighten every summary's
-		// line-height while leaving `prominence` inert anyway, since
-		// `.rf-accordion-item__header` pins the control's font size on purpose.
-		AccordionItem: { block: 'accordion-item', parent: 'Accordion', requiresParent: 'Accordion', rootAttributes: { 'data-state': 'closed' }, autoLabel: { name: 'header' }, sections: { body: 'body' }, editHints: { header: 'inline', body: 'none' } },
+		// `reading` / `dropcap` land on it. The header decision is recorded in
+		// `sectionRoleExceptions` so it travels with the rune.
+		AccordionItem: {
+			block: 'accordion-item', parent: 'Accordion', requiresParent: 'Accordion',
+			rootAttributes: { 'data-state': 'closed' },
+			autoLabel: { name: 'header' },
+			sections: { body: 'body' },
+			sectionRoleExceptions: {
+				header: 'The `header` slot is the <summary> disclosure control, not a page-section header. `header` would inherit the chrome-row rhythm (a 3rem margin under every summary); `title` would tighten every summary\'s line-height while leaving `prominence` inert anyway, since `.rf-accordion-item__header` pins the control\'s font size on purpose. The parent Accordion already holds `title`.',
+			},
+			editHints: { header: 'inline', body: 'none' },
+		},
 		Details: { block: 'details', defaultElevation: 'flush', autoLabel: { summary: 'summary' }, editHints: { summary: 'inline', body: 'none' } },
 		Grid: {
 			block: 'grid',

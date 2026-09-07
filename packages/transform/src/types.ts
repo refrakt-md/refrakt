@@ -359,6 +359,16 @@ export interface RuneConfig {
 	 *  emitted `data-section` freely; it just does not define the roles. */
 	sections?: Record<string, 'header' | 'preamble' | 'title' | 'description' | 'body' | 'footer' | 'media'>;
 
+	/** SPEC-125 — deliberate decisions *not* to map a declared slot to a section
+	 *  role, keyed by slot name, valued by the reason. `lintSectionRoles` flags a
+	 *  rune that declares a `body` or heading slot with no matching role; an entry
+	 *  here silences it for that slot and keeps the reasoning next to the
+	 *  decision, rather than only in a commit message.
+	 *
+	 *  Use it for a genuine judgement ("this `header` slot is a disclosure
+	 *  control, not a page-section header"), never to quiet a real omission. */
+	sectionRoleExceptions?: Record<string, string>;
+
 	/** How this rune hosts a media-zone guest — the chrome/containment axis,
 	 *  orthogonal to interaction `guest-posture`. The engine emits `data-guest-fit`
 	 *  on the rune's `[data-section="media"]` zone; the skin keys off it.
