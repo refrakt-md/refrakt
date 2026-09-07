@@ -7,7 +7,13 @@ import { extractTypographyTokens } from './typography.js';
 import { extractSpacingTokens } from './spacing.js';
 import type { DesignTokens } from '@refrakt-md/types';
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const designContextSections = { title: 'title' } as const;
+
 export const designContext = createContentModelSchema({
+	sections: designContextSections,
 	attributes: {
 		title: { type: String, required: false, default: '', description: 'Heading displayed above the grouped design token sections.' },
 		scope: { type: String, required: false, default: 'default', description: 'Named scope that identifies this token set for cross-page references.' },

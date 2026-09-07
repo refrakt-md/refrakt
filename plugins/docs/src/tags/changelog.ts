@@ -38,7 +38,13 @@ export const changelogRelease = createContentModelSchema({
 	},
 });
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const changelogSections = { preamble: 'preamble', headline: 'title' } as const;
+
 export const changelog = createContentModelSchema({
+	sections: changelogSections,
 	attributes: {
 		project: { type: String, required: false, description: 'Project name displayed in the changelog header.' },
 	},

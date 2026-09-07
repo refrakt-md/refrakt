@@ -356,7 +356,13 @@ function convertFormChildren(nodes: Node[]): Node[] {
 
 export { formField };
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const formSections = { body: 'body' } as const;
+
 export const form = createContentModelSchema({
+	sections: formSections,
 	attributes: {
 		action: { type: String, required: true, description: 'URL the form submits to' },
 		method: { type: String, required: false, matches: methodType.slice(), description: 'HTTP method for form submission' },

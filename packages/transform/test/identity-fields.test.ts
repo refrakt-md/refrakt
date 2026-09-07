@@ -13,6 +13,8 @@ const baseCard: RuneConfig = {
 	block: 'card',
 	modifiers: { mode: { source: 'meta' } },
 	sections: { media: 'media', body: 'body' },
+	mediaSlots: { media: 'cover' },
+	frameTarget: 'media',
 	layout: { root: ['media', 'content'] },
 };
 
@@ -27,7 +29,9 @@ function collect(): { violations: IdentityViolation[]; sink: (v: IdentityViolati
 
 describe('the identity rule is expressed once', () => {
 	it('the variant-delta set is the identity set plus `variants`', () => {
-		expect([...IDENTITY_FIELDS]).toEqual(['block', 'modifiers', 'sections']);
+		// `mediaSlots` and `frameTarget` joined the original three in v0.31.0, once
+		// SPEC-125 Phase 2 moved the join tables into the tag modules that own them.
+		expect([...IDENTITY_FIELDS]).toEqual(['block', 'modifiers', 'sections', 'mediaSlots', 'frameTarget']);
 		expect([...VARIANT_DELTA_RESERVED_FIELDS]).toEqual([...IDENTITY_FIELDS, 'variants']);
 	});
 
@@ -42,12 +46,18 @@ describe('the identity rule is expressed once', () => {
 describe('ADR-028 — theme overrides may not redefine a rune', () => {
 	afterEach(() => vi.restoreAllMocks());
 
+	// A plausible override value per field — `block` and `frameTarget` are
+	// scalars, the rest are maps.
+	const overrideValue: Record<string, unknown> = {
+		block: 'other', frameTarget: 'self', modifiers: {}, sections: {}, mediaSlots: {},
+	};
+
 	for (const field of IDENTITY_FIELDS) {
 		it(`drops and reports a theme override of \`${field}\``, () => {
 			const { violations, sink } = collect();
 			const merged = mergeThemeConfig(
 				themeConfig({ Card: baseCard }),
-				{ runes: { Card: { [field]: field === 'block' ? 'other' : {} } as Partial<RuneConfig> } },
+				{ runes: { Card: { [field]: overrideValue[field] } as Partial<RuneConfig> } },
 				undefined,
 				sink,
 			);
@@ -187,7 +197,8 @@ describe('the variant-delta path still enforces the same rule', () => {
 
 	for (const field of VARIANT_DELTA_RESERVED_FIELDS) {
 		it(`errors on a delta carrying \`${field}\``, () => {
-			const res = validateDelta({ [field]: field === 'block' ? 'other' : {} } as Partial<RuneConfig>);
+			const value = field === 'block' ? 'other' : field === 'frameTarget' ? 'self' : {};
+			const res = validateDelta({ [field]: value } as Partial<RuneConfig>);
 			expect(res.valid).toBe(false);
 			expect(res.errors.some((e) => e.path === `runes.Card.variants.mode.cover.${field}`)).toBe(true);
 			expect(res.errors.some((e) => e.message.includes(`identity field "${field}"`))).toBe(true);

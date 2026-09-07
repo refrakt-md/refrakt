@@ -71,7 +71,13 @@ function autoColumns(count: number, columns?: number): number {
 interface ColorEntry { name: string; values: string[]; group: string; }
 interface ColorGroup { title: string; entries: ColorEntry[]; }
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const paletteSections = { title: 'title' } as const;
+
 export const palette = createContentModelSchema({
+	sections: paletteSections,
 	attributes: {
 		title: { type: String, required: false, default: '', description: 'Heading displayed above the palette section.' },
 		showContrast: { type: Boolean, required: false, default: false, description: 'Enable/disable WCAG contrast ratio values against white and black.' },

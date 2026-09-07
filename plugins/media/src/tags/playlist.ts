@@ -8,7 +8,20 @@ import { parseDuration, formatDuration } from '../duration.js';
 const playlistType = ['album', 'podcast', 'audiobook', 'series', 'mix'] as const;
 const contentType = ['auto', 'lyrics', 'chapters'] as const;
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+// SPEC-125 Phase 1 — the `body` slot is the prose an author writes *after* the
+// track list (`layout.content` places `tracks` and `body` separately), so it is
+// both structurally the body and genuinely prose-bearing. The track list stays
+// unroled: it is structured content the rune reinterprets, and mapping it to
+// `body` would invent a `datatable`-shaped overload where none exists.
+export const playlistSections = { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media', body: 'body' } as const;
+export const playlistMediaSlots = { media: 'cover' } as const;
+
 export const playlist = createContentModelSchema({
+	sections: playlistSections,
+	mediaSlots: playlistMediaSlots,
 	base: SplitLayoutModel,
 	attributes: {
 		type: { type: String, required: false, matches: playlistType.slice(), description: 'Collection format: album, podcast, audiobook, series, or mix.' },

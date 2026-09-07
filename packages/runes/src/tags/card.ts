@@ -27,7 +27,19 @@ import { SplitLayoutModel, buildLayoutMetas, splitMediaBodyFooter, extractMediaI
  * knowledge — it's plain and composable, standalone or fed by a collection
  * body template.
  */
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+// SPEC-125 Phase 1 — the `body` slot carries the card's main content ("body
+// (optional, repeatable any block)" is the content model), so it is the `body`
+// role. It went undeclared, which is why `reading` and `dropcap` were silently
+// dropped on every card. `title` is deliberately not mapped: the leading
+// heading lives *inside* the body slot, so a `title` role would nest one
+// section inside another and resize every card heading via `--rf-title-size`.
+export const cardSections = { media: 'media', body: 'body' } as const;
+
 export const card = createContentModelSchema({
+	sections: cardSections,
 	base: SplitLayoutModel,
 	attributes: {
 		href: { type: String, required: false, default: '', description: 'Optional link target; makes the whole card clickable.' },

@@ -1,17 +1,25 @@
 import type { RuneConfig } from '@refrakt-md/transform';
 import { resolveValign } from '@refrakt-md/transform';
 
+// SPEC-125 Phase 2 — the join tables (`sections`, `mediaSlots`, `frameTarget`)
+// are declared in the tag modules that own them and referenced here. Config
+// points at rune identity; it does not define it (ADR-028). The engine's read
+// path is unchanged — it still reads `config.sections` and friends.
+import { bondSections } from './tags/bond.js';
+import { characterMediaSlots, characterSectionSections, characterSections } from './tags/character.js';
+import { factionMediaSlots, factionSectionSections, factionSections } from './tags/faction.js';
+import { loreSections } from './tags/lore.js';
+import { plotSections } from './tags/plot.js';
+import { realmMediaSlots, realmSectionSections, realmSections } from './tags/realm.js';
+import { storyboardPanelMediaSlots } from './tags/storyboard.js';
+
 export const config: Record<string, RuneConfig> = {
 	Character: {
 		block: 'character',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		// SPEC-125 Phase 1 — the `body` slot carries the character's prose and
-		// went unmapped, so `reading` / `dropcap` were silently dropped. The
-		// header-ish roles were already right: `name` is the title, inside the
-		// `preamble` header, so `prominence` already worked.
-		sections: { preamble: 'preamble', name: 'title', portrait: 'media', body: 'body' },
-		mediaSlots: { portrait: 'portrait' },
+		sections: characterSections,
+		mediaSlots: characterMediaSlots,
 		modifiers: {
 			role: { source: 'meta', default: 'supporting' },
 			status: { source: 'meta', default: 'alive' },
@@ -46,7 +54,7 @@ export const config: Record<string, RuneConfig> = {
 	CharacterSection: {
 		block: 'character-section', parent: 'Character',
 		autoLabel: { span: 'header' },
-		sections: { body: 'body' },
+		sections: characterSectionSections,
 		sectionRoleExceptions: { header: 'The parent Character already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-character-section__name`\'s type outright, so the role would be inert there anyway.' },
 		editHints: { header: 'inline', name: 'inline', body: 'none' },
 	},
@@ -55,9 +63,8 @@ export const config: Record<string, RuneConfig> = {
 		block: 'realm',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		// SPEC-125 Phase 1 — see Character; same shape, same correction.
-		sections: { preamble: 'preamble', name: 'title', scene: 'media', body: 'body' },
-		mediaSlots: { scene: 'cover' },
+		sections: realmSections,
+		mediaSlots: realmMediaSlots,
 		modifiers: {
 			realmType: { source: 'meta', default: 'place' },
 			scale: { source: 'meta' },
@@ -95,7 +102,7 @@ export const config: Record<string, RuneConfig> = {
 	RealmSection: {
 		block: 'realm-section', parent: 'Realm',
 		autoLabel: { span: 'header' },
-		sections: { body: 'body' },
+		sections: realmSectionSections,
 		sectionRoleExceptions: { header: 'The parent Realm already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-realm-section__name`\'s type outright, so the role would be inert there anyway.' },
 		editHints: { header: 'inline', name: 'inline', body: 'none' },
 	},
@@ -105,7 +112,7 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
 		defaultReading: 'prose',
-		sections: { title: 'title', body: 'body' },
+		sections: loreSections,
 		modifiers: {
 			category: { source: 'meta' },
 			spoiler: { source: 'meta', default: 'false' },
@@ -125,9 +132,8 @@ export const config: Record<string, RuneConfig> = {
 		block: 'faction',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		// SPEC-125 Phase 1 — see Character; same shape, same correction.
-		sections: { preamble: 'preamble', name: 'title', scene: 'media', body: 'body' },
-		mediaSlots: { scene: 'cover' },
+		sections: factionSections,
+		mediaSlots: factionMediaSlots,
 		modifiers: {
 			factionType: { source: 'meta' },
 			alignment: { source: 'meta' },
@@ -169,7 +175,7 @@ export const config: Record<string, RuneConfig> = {
 	FactionSection: {
 		block: 'faction-section', parent: 'Faction',
 		autoLabel: { span: 'header' },
-		sections: { body: 'body' },
+		sections: factionSectionSections,
 		sectionRoleExceptions: { header: 'The parent Faction already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-faction-section__name`\'s type outright, so the role would be inert there anyway.' },
 		editHints: { header: 'inline', name: 'inline', body: 'none' },
 	},
@@ -178,7 +184,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'plot',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { title: 'title' },
+		sections: plotSections,
 		modifiers: {
 			plotType: { source: 'meta', default: 'arc' },
 			structure: { source: 'meta', default: 'linear' },
@@ -234,7 +240,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'bond',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { body: 'body' },
+		sections: bondSections,
 		modifiers: {
 			bondType: { source: 'meta' },
 			status: { source: 'meta', default: 'active' },
@@ -254,5 +260,5 @@ export const config: Record<string, RuneConfig> = {
 		styles: { columns: '--sb-columns' },
 		editHints: { panels: 'none' },
 	},
-	StoryboardPanel: { block: 'storyboard-panel', parent: 'Storyboard', mediaSlots: { image: 'cover' }, editHints: { image: 'image', caption: 'inline', body: 'none' } },
+	StoryboardPanel: { block: 'storyboard-panel', parent: 'Storyboard', mediaSlots: storyboardPanelMediaSlots, editHints: { image: 'image', caption: 'inline', body: 'none' } },
 };

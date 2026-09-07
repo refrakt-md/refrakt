@@ -89,7 +89,15 @@ export const definition = createContentModelSchema({
 
 const alignType = ['left', 'center', 'right'] as const;
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const featureSections = { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' } as const;
+export const featureMediaSlots = { media: 'cover' } as const;
+
 export const feature = createContentModelSchema({
+	sections: featureSections,
+	mediaSlots: featureMediaSlots,
 	base: SplitLayoutModel,
 	attributes: {
 		align: { type: String, required: false, matches: alignType.slice(), description: 'Horizontal alignment of headline and body text' },

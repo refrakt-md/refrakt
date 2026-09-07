@@ -3,7 +3,13 @@ import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, linkItem, pageSectionProperties } from '@refrakt-md/runes';
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const ctaSections = { preamble: 'preamble', headline: 'title', blurb: 'description' } as const;
+
 export const cta = createContentModelSchema({
+	sections: ctaSections,
 	contentModel: {
 		type: 'sequence',
 		fields: [

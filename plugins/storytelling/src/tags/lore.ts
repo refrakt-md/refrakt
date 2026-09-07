@@ -4,7 +4,13 @@ const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 import { taxonomyAttributes } from './common.js';
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const loreSections = { title: 'title', body: 'body' } as const;
+
 export const lore = createContentModelSchema({
+	sections: loreSections,
 	base: taxonomyAttributes,
 	attributes: {
 		title: { type: String, required: true, description: 'Heading displayed for this lore entry.' },

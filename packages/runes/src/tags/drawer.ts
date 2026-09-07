@@ -47,7 +47,13 @@ function splitDrawerBodyZones(nodes: Node[]): { body: Node[]; footer: Node[] | n
 	};
 }
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const drawerSections = { header: 'header', body: 'body', footer: 'footer' } as const;
+
 export const drawer = createContentModelSchema({
+	sections: drawerSections,
 	attributes: {
 		id: {
 			type: String,

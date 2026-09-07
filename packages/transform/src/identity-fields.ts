@@ -24,8 +24,17 @@
  */
 
 /** Fields that define what a rune *is* (ADR-028). Non-overridable on every
- *  merge path into a `RuneConfig`. */
-export const IDENTITY_FIELDS = ['block', 'modifiers', 'sections'] as const;
+ *  merge path into a `RuneConfig`.
+ *
+ *  `mediaSlots` and `frameTarget` join the original three once the join tables
+ *  move into their tag modules (SPEC-125 Phase 2). `frameTarget` in particular
+ *  has to: frame applicability resolves as
+ *  `config.frameTarget ?? (hasMediaSection(config.sections) ? 'media' : null)`,
+ *  and the type has no `'none'` — so it can only ever *grant*. Left unguarded, a
+ *  theme could add `frameTarget: 'self'` to a rune whose schema rejects
+ *  `frame=`, config granting what the schema forbids: the same divergence this
+ *  rule exists to close, inverted. */
+export const IDENTITY_FIELDS = ['block', 'modifiers', 'sections', 'mediaSlots', 'frameTarget'] as const;
 
 export type IdentityField = (typeof IDENTITY_FIELDS)[number];
 

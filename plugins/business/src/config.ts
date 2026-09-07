@@ -1,5 +1,13 @@
 import type { RuneConfig } from '@refrakt-md/transform';
 
+// SPEC-125 Phase 2 — the join tables (`sections`, `mediaSlots`, `frameTarget`)
+// are declared in the tag modules that own them and referenced here. Config
+// points at rune identity; it does not define it (ADR-028). The engine's read
+// path is unchanged — it still reads `config.sections` and friends.
+import { castSections } from './tags/cast.js';
+import { organizationSections } from './tags/organization.js';
+import { timelineSections } from './tags/timeline.js';
+
 const pageSectionAutoLabel = {
 	header: 'preamble',
 	eyebrow: 'eyebrow',
@@ -12,7 +20,7 @@ export const config: Record<string, RuneConfig> = {
 	Cast: {
 		block: 'cast',
 		defaultDensity: 'full',
-		sections: { preamble: 'preamble', headline: 'title', blurb: 'description' },
+		sections: castSections,
 		modifiers: {
 			layout: { source: 'meta', default: 'grid' },
 		},
@@ -29,7 +37,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'organization',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', body: 'body' },
+		sections: organizationSections,
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', body: 'none' },
 	},
@@ -39,7 +47,7 @@ export const config: Record<string, RuneConfig> = {
 		defaultElevation: 'flat',
 		sequence: 'connected',
 		sequenceDirection: { fromModifier: 'direction', default: 'vertical' },
-		sections: { preamble: 'preamble', headline: 'title', blurb: 'description' },
+		sections: timelineSections,
 		modifiers: { direction: { source: 'meta', default: 'vertical' } },
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', entries: 'none' },

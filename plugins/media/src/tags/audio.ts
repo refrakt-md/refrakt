@@ -4,7 +4,13 @@ const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 import { parseDuration } from '../duration.js';
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const audioSections = { description: 'description' } as const;
+
 export const audio = createContentModelSchema({
+	sections: audioSections,
 	attributes: {
 		src: { type: String, required: false, description: 'URL of the audio file to play.' },
 		playlist: { type: String, required: false, description: 'ID of a playlist rune to load tracks from.' },

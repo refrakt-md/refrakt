@@ -39,7 +39,13 @@ function labelFromSource(source: string | undefined, lines: string | undefined):
 
 const overflowValues = ['scroll', 'wrap', 'hide'] as const;
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const codeGroupSections = { topbar: 'header' } as const;
+
 export const codegroup = createContentModelSchema({
+	sections: codeGroupSections,
 	attributes: {
 		title: { type: String, required: false, description: 'Title displayed above the code group' },
 		labels: { type: String, required: false, description: 'Comma-separated custom tab labels' },

@@ -54,7 +54,13 @@ export const castMember = createContentModelSchema({
 	},
 });
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const castSections = { preamble: 'preamble', headline: 'title', blurb: 'description' } as const;
+
 export const cast = createContentModelSchema({
+	sections: castSections,
 	attributes: {
 		// `grid`/`list`/`carousel` from the canonical const (ADR-018 / SPEC-100).
 		layout: { type: String, required: false, matches: layoutMatches([LAYOUT.grid, LAYOUT.list, LAYOUT.carousel]), description: 'Visual arrangement of members: grid (cards), list (compact roster), or carousel (scroll-snap track).' },

@@ -10,7 +10,13 @@ const bodyFields = [
 	{ name: 'body', match: 'list|tag' as const, greedy: true, optional: true },
 ];
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const howToSections = { preamble: 'preamble', headline: 'title', blurb: 'description' } as const;
+
 export const howto = createContentModelSchema({
+	sections: howToSections,
 	attributes: {
 		estimatedTime: { type: String, required: false, default: '', description: 'Estimated total time to complete all steps (e.g. "30 min")' },
 		difficulty: { type: String, required: false, matches: difficultyType.slice(), description: 'Skill level: easy, medium, or hard' },

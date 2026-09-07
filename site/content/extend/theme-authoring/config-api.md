@@ -312,6 +312,17 @@ Available roles: `'header'`, `'preamble'`, `'title'`, `'description'`, `'body'`,
 
 **Rune identity** (ADR-028) — not theme-overridable. This is a join table rather than a posture: the keys are `data-name` values the rune's own transform emits and the values are a closed engine vocabulary, so a theme owns neither side. All it could do is rewire a pair — and `reading`, `prominence` and `frame` applicability hang off exactly those pairs. Styling the emitted `data-section` stays entirely the theme's business.
 
+Since v0.31.0 the map is **declared in the rune's tag module** and referenced here, so `createContentModelSchema` has the fact at construction. `mediaSlots` and `frameTarget` moved with it for the same reason. The engine's read path is unchanged — it still reads `config.sections`.
+
+```typescript
+// tags/card.ts
+export const cardSections = { media: 'media', body: 'body' } as const;
+export const card = createContentModelSchema({ sections: cardSections, /* … */ });
+
+// config.ts
+Card: { block: 'card', sections: cardSections, /* … */ }
+```
+
 `refrakt validate` fails a config in which a rune declares a `body` or heading slot (in `layout`, `structure`, `autoLabel`, `blocks` or `contentWrapper`) with no matching role — that omission silently drops `reading`, `dropcap` or `prominence`, which is exactly how the original mismatches went unnoticed. The check is **direction-only**: it flags a *missing* role and never a role that is present, so a `body` role on a non-prose region stays untouched.
 
 ### sectionRoleExceptions

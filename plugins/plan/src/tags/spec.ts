@@ -5,7 +5,13 @@ import { createContentModelSchema, createComponentRenderable, asNodes, Renderabl
 import { stripHorizontalRules } from '../util.js';
 import { VALID_STATUS } from '../commands/enums.js';
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const specSections = { title: 'title', blurb: 'description', body: 'body' } as const;
+
 export const spec = createContentModelSchema({
+	sections: specSections,
 	attributes: {
 		id: { type: String, required: true, description: 'Unique identifier (e.g., "SPEC-008").' },
 		status: { type: String, required: false, matches: [...VALID_STATUS.spec], description: 'Current status: draft, review, accepted, implemented, shipped, superseded, or deprecated.' },

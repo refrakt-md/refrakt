@@ -6,7 +6,15 @@ import { createContentModelSchema, createComponentRenderable, asNodes, Renderabl
 
 const difficultyType = ['easy', 'medium', 'hard'] as const;
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const recipeSections = { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' } as const;
+export const recipeMediaSlots = { media: 'cover' } as const;
+
 export const recipe = createContentModelSchema({
+	sections: recipeSections,
+	mediaSlots: recipeMediaSlots,
 	base: SplitLayoutModel,
 	attributes: {
 		prepTime: { type: String, required: false, default: '', description: 'Time needed for preparation before cooking (e.g. "15 min")' },

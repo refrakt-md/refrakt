@@ -4,7 +4,13 @@ const { Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas } from '@refrakt-md/runes';
 import { extractScene, buildStoryContent } from './common.js';
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const factionSectionSections = { body: 'body' } as const;
+
 export const factionSection = createContentModelSchema({
+	sections: factionSectionSections,
 	attributes: {
 		name: { type: String, required: true },
 	},
@@ -28,7 +34,16 @@ export const factionSection = createContentModelSchema({
 	},
 });
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+// SPEC-125 Phase 1 — see `characterSections`; same shape, same correction.
+export const factionSections = { preamble: 'preamble', name: 'title', scene: 'media', body: 'body' } as const;
+export const factionMediaSlots = { scene: 'cover' } as const;
+
 export const faction = createContentModelSchema({
+	sections: factionSections,
+	mediaSlots: factionMediaSlots,
 	base: SplitLayoutModel,
 	attributes: {
 		name: { type: String, required: true, description: 'Display name shown in the faction header.' },

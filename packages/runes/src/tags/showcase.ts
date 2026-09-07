@@ -20,7 +20,15 @@ function warnShowcaseDeprecated(attr: string, replacement: string): void {
 	console.warn(`[refrakt] showcase \`${attr}\` is deprecated (SPEC-086) — use \`${replacement}\`. The alias will be removed in a future minor.`);
 }
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const showcaseSections = { viewport: 'body' } as const;
+export const showcaseFrameTarget = 'self' as const;
+
 export const showcase = createContentModelSchema({
+	sections: showcaseSections,
+	frameTarget: showcaseFrameTarget,
 	attributes: {
 		shadow: { type: String, required: false, matches: shadowValues.slice(), description: 'Shadow style around the showcase content' },
 		bleed: { type: String, required: false, matches: bleedValues.slice(), description: 'Direction content extends beyond its container' },

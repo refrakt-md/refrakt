@@ -1,6 +1,16 @@
 import type { RuneConfig, SerializedTag, RendererNode } from '@refrakt-md/transform';
 import { isTag, makeTag, renderToHtml, readMeta, readField } from '@refrakt-md/transform';
 
+// SPEC-125 Phase 2 — the join tables (`sections`, `mediaSlots`, `frameTarget`)
+// are declared in the tag modules that own them and referenced here. Config
+// points at rune identity; it does not define it (ADR-028). The engine's read
+// path is unchanged — it still reads `config.sections` and friends.
+import { designContextSections } from './tags/design-context.js';
+import { mockupMediaSlots } from './tags/mockup.js';
+import { paletteSections } from './tags/palette.js';
+import { spacingSections } from './tags/spacing.js';
+import { typographySections } from './tags/typography.js';
+
 export const config: Record<string, RuneConfig> = {
 	Swatch: {
 		block: 'swatch',
@@ -12,7 +22,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'palette',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { title: 'title' },
+		sections: paletteSections,
 		modifiers: {
 			title: { source: 'meta' },
 			showContrast: { source: 'meta' },
@@ -26,7 +36,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'typography',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { title: 'title' },
+		sections: typographySections,
 		modifiers: {
 			title: { source: 'meta' },
 			showSizes: { source: 'meta' },
@@ -40,7 +50,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'spacing',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { title: 'title' },
+		sections: spacingSections,
 		modifiers: {
 			title: { source: 'meta' },
 		},
@@ -51,7 +61,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'design-context',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { title: 'title' },
+		sections: designContextSections,
 		modifiers: {
 			titleText: { source: 'meta' },
 		},
@@ -102,7 +112,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'mockup',
 		defaultDensity: 'compact',
 		defaultElevation: 'flush',
-		mediaSlots: { viewport: 'hero' },
+		mediaSlots: mockupMediaSlots,
 		modifiers: {
 			device: { source: 'meta', default: 'browser' },
 			color: { source: 'meta', default: 'dark' },

@@ -5,7 +5,13 @@ import { createContentModelSchema, createComponentRenderable, asNodes, Renderabl
 
 const orgType = ['Organization', 'LocalBusiness', 'Corporation', 'EducationalOrganization', 'GovernmentOrganization', 'NonProfit'] as const;
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const organizationSections = { preamble: 'preamble', headline: 'title', blurb: 'description', body: 'body' } as const;
+
 export const organization = createContentModelSchema({
+	sections: organizationSections,
 	attributes: {
 		type: { type: String, required: false, matches: orgType.slice(), description: 'Schema.org organization category used for structured data.' },
 	},

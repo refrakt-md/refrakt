@@ -1,5 +1,12 @@
 import type { RuneConfig } from '@refrakt-md/transform';
 
+// SPEC-125 Phase 2 — the join tables (`sections`, `mediaSlots`, `frameTarget`)
+// are declared in the tag modules that own them and referenced here. Config
+// points at rune identity; it does not define it (ADR-028). The engine's read
+// path is unchanged — it still reads `config.sections` and friends.
+import { eventSections } from './tags/event.js';
+import { itinerarySections, itineraryStopSections } from './tags/itinerary.js';
+
 const pageSectionAutoLabel = {
 	header: 'preamble',
 	eyebrow: 'eyebrow',
@@ -13,7 +20,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'event',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { headline: 'title', blurb: 'description', body: 'body' },
+		sections: eventSections,
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', body: 'none', date: 'none', endDate: 'none', location: 'none', register: 'link' },
 		modifiers: {
@@ -45,7 +52,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'itinerary',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { preamble: 'preamble', headline: 'title', blurb: 'description' },
+		sections: itinerarySections,
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', days: 'none' },
 		modifiers: {
@@ -74,9 +81,7 @@ export const config: Record<string, RuneConfig> = {
 			duration: { source: 'meta' },
 		},
 		autoLabel: { time: 'time', location: 'location' },
-		// SPEC-125 Phase 1 — each stop's note is authored prose and its only
-		// content region, so it is the `body` role.
-		sections: { body: 'body' },
+		sections: itineraryStopSections,
 		editHints: { time: 'none', location: 'none', body: 'none' },
 	},
 	Map: {

@@ -5,7 +5,13 @@ import { createContentModelSchema, createComponentRenderable, asNodes, Renderabl
 import { buildSections } from '../util.js';
 import { VALID_STATUS, VALID_SEVERITY } from '../commands/enums.js';
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const bugSections = { title: 'title', blurb: 'description', body: 'body' } as const;
+
 export const bug = createContentModelSchema({
+	sections: bugSections,
 	attributes: {
 		id: { type: String, required: true, description: 'Unique identifier.' },
 		status: { type: String, required: false, matches: [...VALID_STATUS.bug], description: 'Current status: reported, confirmed, in-progress, fixed, wontfix, or duplicate.' },

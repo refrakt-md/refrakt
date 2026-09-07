@@ -1,6 +1,18 @@
 import type { RuneConfig, SerializedTag } from '@refrakt-md/transform';
 import { isTag, makeTag, readMeta, resolveValign } from '@refrakt-md/transform';
 
+// SPEC-125 Phase 2 — the join tables (`sections`, `mediaSlots`, `frameTarget`)
+// are declared in the tag modules that own them and referenced here. Config
+// points at rune identity; it does not define it (ADR-028). The engine's read
+// path is unchanged — it still reads `config.sections` and friends.
+import { bentoCellSections } from './tags/bento.js';
+import { featureMediaSlots, featureSections } from './tags/feature.js';
+import { heroMediaSlots, heroSections } from './tags/hero.js';
+import { stepMediaSlots, stepsSections } from './tags/steps.js';
+import { testimonialMediaSlots, testimonialSections } from './tags/testimonial.js';
+import { ctaSections } from './tags/cta.js';
+import { pricingSections } from './tags/pricing.js';
+
 // ─── RuneConfig entries ───
 
 const pageSectionAutoLabel = {
@@ -50,12 +62,12 @@ export const config: Record<string, RuneConfig> = {
 			valign: { prop: '--split-valign', transform: resolveValign },
 			aspect: 'aspect-ratio',
 		},
-		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
-		mediaSlots: { media: 'hero' },
+		sections: heroSections,
+		mediaSlots: heroMediaSlots,
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code', media: 'image' },
 	},
-	CallToAction: { block: 'cta', defaultDensity: 'full', defaultWidth: 'full', defaultElevation: 'flush', contentMeasure: 'anchored', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code' } },
+	CallToAction: { block: 'cta', defaultDensity: 'full', defaultWidth: 'full', defaultElevation: 'flush', contentMeasure: 'anchored', sections: ctaSections, contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code' } },
 	Bento: {
 		block: 'bento',
 		defaultDensity: 'full',
@@ -85,14 +97,7 @@ export const config: Record<string, RuneConfig> = {
 			'content-height': { source: 'meta', noBemClass: true },
 			'media-ratio': { source: 'meta', noBemClass: true },
 		},
-		// SPEC-125 Phase 1 — a cell has both. `body` is its main content region
-		// (undeclared, so `reading` / `dropcap` were silently dropped), and `title`
-		// is a sibling heading slot, unambiguously the cell's title. Note that
-		// Lumina pins `.rf-bento-cell__title`'s font size, so `prominence` is
-		// declarable here but has no visible effect under that skin — a skin gap,
-		// not a reason to withhold the structural role (ADR-028: emission is
-		// theme-agnostic, styling is the theme's business).
-		sections: { media: 'media', title: 'title', body: 'body' },
+		sections: bentoCellSections,
 		// SPEC-081/091: the transform emits flat slots; `layout` builds the
 		// skeleton — media beside/above a `content` wrapper grouping title/body/
 		// footer. A base `layout` is the prerequisite for the cover variant
@@ -121,8 +126,8 @@ export const config: Record<string, RuneConfig> = {
 		// Page section: content stays at the text measure when bled to wide.
 		contentMeasure: 'anchored',
 		staggerItems: 'feature-item',
-		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
-		mediaSlots: { media: 'cover' },
+		sections: featureSections,
+		mediaSlots: featureMediaSlots,
 		modifiers: {
 			// BUG-001: content-first DOM, so the truthful stacked default is
 			// `bottom` (media beneath the text); Lumina counters the shared
@@ -154,7 +159,7 @@ export const config: Record<string, RuneConfig> = {
 		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', title: 'inline', description: 'inline', icon: 'icon' },
 	},
 	Definition: { block: 'definition', parent: 'Feature', requiresParent: 'Feature' },
-	Steps: { block: 'steps', defaultDensity: 'full', defaultElevation: 'flush', sequence: 'numbered', staggerItems: 'step', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+	Steps: { block: 'steps', defaultDensity: 'full', defaultElevation: 'flush', sequence: 'numbered', staggerItems: 'step', sections: stepsSections, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 	Step: {
 		block: 'step',
 		parent: 'Steps', requiresParent: 'Steps',
@@ -170,18 +175,18 @@ export const config: Record<string, RuneConfig> = {
 		styles: {
 			valign: { prop: '--split-valign', transform: resolveValign },
 		},
-		mediaSlots: { media: 'cover' },
+		mediaSlots: stepMediaSlots,
 		editHints: { content: 'none', media: 'image' },
 	},
-	Pricing: { block: 'pricing', defaultDensity: 'full', defaultWidth: 'full', staggerItems: 'tier', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+	Pricing: { block: 'pricing', defaultDensity: 'full', defaultWidth: 'full', staggerItems: 'tier', sections: pricingSections, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 	Tier: { block: 'tier', parent: 'Pricing', requiresParent: 'Pricing', editHints: { name: 'inline', price: 'inline' } },
 	FeaturedTier: { block: 'tier', parent: 'Pricing', requiresParent: 'Pricing', staticModifiers: ['featured'], editHints: { name: 'inline', price: 'inline' } },
 	Testimonial: {
 		block: 'testimonial',
 		defaultDensity: 'compact',
 		defaultElevation: 'flat',
-		sections: { avatar: 'media' },
-		mediaSlots: { avatar: 'portrait' },
+		sections: testimonialSections,
+		mediaSlots: testimonialMediaSlots,
 		modifiers: {
 			variant: { source: 'meta', default: 'card' },
 			rating: { source: 'meta', noBemClass: true },

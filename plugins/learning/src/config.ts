@@ -1,6 +1,13 @@
 import type { RuneConfig } from '@refrakt-md/transform';
 import { resolveValign } from '@refrakt-md/transform';
 
+// SPEC-125 Phase 2 — the join tables (`sections`, `mediaSlots`, `frameTarget`)
+// are declared in the tag modules that own them and referenced here. Config
+// points at rune identity; it does not define it (ADR-028). The engine's read
+// path is unchanged — it still reads `config.sections` and friends.
+import { howToSections } from './tags/howto.js';
+import { recipeMediaSlots, recipeSections } from './tags/recipe.js';
+
 const pageSectionAutoLabel = {
 	header: 'preamble',
 	eyebrow: 'eyebrow',
@@ -15,7 +22,7 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
 		sequence: 'numbered',
-		sections: { preamble: 'preamble', headline: 'title', blurb: 'description' },
+		sections: howToSections,
 		modifiers: {
 			estimatedTime: { source: 'meta' },
 			difficulty: { source: 'meta', default: 'medium' },
@@ -47,8 +54,8 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
 		sequence: 'numbered',
-		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
-		mediaSlots: { media: 'cover' },
+		sections: recipeSections,
+		mediaSlots: recipeMediaSlots,
 		modifiers: {
 			'media-position': { source: 'meta', default: 'top', noBemClass: true },
 			prepTime: { source: 'meta', noBemClass: true },

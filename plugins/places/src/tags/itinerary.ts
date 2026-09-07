@@ -4,7 +4,15 @@ const { Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes, pageSectionProperties } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+// SPEC-125 Phase 1 — each stop's note is authored prose and its only content
+// region, so it is the `body` role.
+export const itineraryStopSections = { body: 'body' } as const;
+
 export const itineraryStop = createContentModelSchema({
+	sections: itineraryStopSections,
 	attributes: {
 		time: { type: String, required: false, description: 'Scheduled time for this stop (e.g. "9:00 AM").' },
 		location: { type: String, required: false, description: 'Name of the place or venue for this stop.' },
@@ -109,7 +117,13 @@ export const itineraryDay = createContentModelSchema({
 	},
 });
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const itinerarySections = { preamble: 'preamble', headline: 'title', blurb: 'description' } as const;
+
 export const itinerary = createContentModelSchema({
+	sections: itinerarySections,
 	attributes: {
 		variant: { type: String, required: false, description: 'Layout style for the itinerary (e.g. "day-by-day").' },
 		direction: { type: String, required: false, description: 'Flow direction of the timeline: vertical or horizontal.' },

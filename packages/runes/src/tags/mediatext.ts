@@ -7,7 +7,15 @@ import { RenderableNodeCursor } from '../lib/renderable.js';
 const alignValues = ['left', 'right'] as const;
 const ratioValues = ['1:2', '1:1', '2:1'] as const;
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const mediaTextSections = { body: 'body', media: 'media' } as const;
+export const mediaTextMediaSlots = { media: 'cover' } as const;
+
 export const mediatext = createContentModelSchema({
+	sections: mediaTextSections,
+	mediaSlots: mediaTextMediaSlots,
 	attributes: {
 		align: { type: String, required: false, matches: alignValues.slice(), description: 'Side the media appears on' },
 		ratio: { type: String, required: false, matches: ratioValues.slice(), description: 'Width ratio between media and text' },
