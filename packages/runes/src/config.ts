@@ -51,7 +51,15 @@ export const coreConfig: ThemeConfig = {
 		// ─── Simple runes (block name only, engine adds BEM classes) ───
 
 		Accordion: { block: 'accordion', defaultDensity: 'full', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
-		AccordionItem: { block: 'accordion-item', parent: 'Accordion', requiresParent: 'Accordion', rootAttributes: { 'data-state': 'closed' }, autoLabel: { name: 'header' }, editHints: { header: 'inline', body: 'none' } },
+		// SPEC-125 Phase 1 — the answer panel is the item's `body` role, so
+		// `reading` / `dropcap` land on it. No header-ish role is declared, and
+		// that is a decision rather than an omission: the `header` slot is the
+		// `<summary>` disclosure control, not a page-section header. Mapping it to
+		// `header` would inherit the chrome-row rhythm (a 3rem bottom margin under
+		// every summary); mapping it to `title` would tighten every summary's
+		// line-height while leaving `prominence` inert anyway, since
+		// `.rf-accordion-item__header` pins the control's font size on purpose.
+		AccordionItem: { block: 'accordion-item', parent: 'Accordion', requiresParent: 'Accordion', rootAttributes: { 'data-state': 'closed' }, autoLabel: { name: 'header' }, sections: { body: 'body' }, editHints: { header: 'inline', body: 'none' } },
 		Details: { block: 'details', defaultElevation: 'flush', autoLabel: { summary: 'summary' }, editHints: { summary: 'inline', body: 'none' } },
 		Grid: {
 			block: 'grid',
@@ -172,7 +180,14 @@ export const coreConfig: ThemeConfig = {
 				height: { source: 'meta', noBemClass: true },
 				aspect: { source: 'meta', noBemClass: true },
 			},
-			sections: { media: 'media' },
+			// SPEC-125 Phase 1 — the `body` slot carries the card's main content
+			// ("body (optional, repeatable any block)" is the content model), so it
+			// is the `body` role. It went undeclared, which is why `reading` and
+			// `dropcap` were silently dropped on every card. `title` is deliberately
+			// not mapped: the card's leading heading lives *inside* the body slot,
+			// so a `title` role would nest inside the body region and resize every
+			// card heading via `--rf-title-size`.
+			sections: { media: 'media', body: 'body' },
 			// SPEC-081/091: the transform emits flat slots; `layout` builds the
 			// skeleton — media beside a `content` wrapper grouping eyebrow/body/
 			// footer. A base `layout` is the prerequisite for the cover variant

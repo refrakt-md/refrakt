@@ -1,4 +1,4 @@
-{% decision id="ADR-028" status="proposed" date="2026-09-05" source="SPEC-125" tags="runes,attributes,schema,config,theme,architecture" %}
+{% decision id="ADR-028" status="accepted" date="2026-09-05" source="SPEC-125" tags="runes,attributes,schema,config,theme,architecture" %}
 
 # Attribute applicability is rune identity, not theme configuration
 

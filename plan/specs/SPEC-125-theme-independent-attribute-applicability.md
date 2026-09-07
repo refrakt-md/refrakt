@@ -1,4 +1,4 @@
-{% spec id="SPEC-125" status="draft" date="2026-09-05" tags="runes,attributes,schema,config,theme,cli,language-server,dx" %}
+{% spec id="SPEC-125" status="accepted" date="2026-09-05" tags="runes,attributes,schema,config,theme,cli,language-server,dx" %}
 
 # Theme-independent attribute applicability
 

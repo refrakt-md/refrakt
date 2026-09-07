@@ -85,7 +85,14 @@ export const config: Record<string, RuneConfig> = {
 			'content-height': { source: 'meta', noBemClass: true },
 			'media-ratio': { source: 'meta', noBemClass: true },
 		},
-		sections: { media: 'media' },
+		// SPEC-125 Phase 1 — a cell has both. `body` is its main content region
+		// (undeclared, so `reading` / `dropcap` were silently dropped), and `title`
+		// is a sibling heading slot, unambiguously the cell's title. Note that
+		// Lumina pins `.rf-bento-cell__title`'s font size, so `prominence` is
+		// declarable here but has no visible effect under that skin — a skin gap,
+		// not a reason to withhold the structural role (ADR-028: emission is
+		// theme-agnostic, styling is the theme's business).
+		sections: { media: 'media', title: 'title', body: 'body' },
 		// SPEC-081/091: the transform emits flat slots; `layout` builds the
 		// skeleton — media beside/above a `content` wrapper grouping title/body/
 		// footer. A base `layout` is the prerequisite for the cover variant

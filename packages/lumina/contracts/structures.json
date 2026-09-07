@@ -402,8 +402,6 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -1057,8 +1055,6 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
 					"prominence": "this rune has no page-section header"
 				}
 			},
@@ -1145,8 +1141,6 @@
 								}
 							},
 							"unavailable": {
-								"reading": "this rune declares no body section",
-								"dropcap": "this rune declares no body section",
 								"prominence": "this rune has no page-section header"
 							}
 						},
@@ -3592,9 +3586,6 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
-					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode"
 				}
