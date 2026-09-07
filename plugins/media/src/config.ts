@@ -8,7 +8,13 @@ export const config: Record<string, RuneConfig> = {
 		defaultElevation: 'flat',
 		sequence: 'numbered',
 		staggerItems: 'track',
-		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
+		// SPEC-125 Phase 1 — the `body` slot is the prose an author writes *after*
+		// the track list (`layout.content` places `tracks` and `body` separately),
+		// so it is both structurally the body and genuinely prose-bearing. The
+		// track list stays unroled: it is structured content the rune
+		// reinterprets, and mapping it to `body` would invent a `datatable`-shaped
+		// overload where none exists.
+		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media', body: 'body' },
 		mediaSlots: { media: 'cover' },
 		modifiers: {
 			type: { source: 'meta', default: 'album' },

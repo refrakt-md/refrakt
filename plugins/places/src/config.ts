@@ -53,6 +53,14 @@ export const config: Record<string, RuneConfig> = {
 			direction: { source: 'meta', default: 'vertical' },
 		},
 	},
+	// SPEC-125 Phase 1 — no header-ish role, deliberately. The parent `Itinerary`
+	// already holds `title` on its headline, and `prominence` scales *the* header
+	// of a page-section family rune: a second title in the same subtree flattens
+	// the hierarchy it exists to scale. Lumina also pins
+	// `.rf-itinerary-day__header`'s type, so the role would be inert there while
+	// `[data-section="title"]`'s `margin: 0` stripped the heading's top margin —
+	// a visible cost for no gain. The `stops` slot is a structured list, not a
+	// body; the prose lives on each `ItineraryStop`.
 	ItineraryDay: {
 		block: 'itinerary-day',
 		parent: 'Itinerary', requiresParent: 'Itinerary',
@@ -68,6 +76,9 @@ export const config: Record<string, RuneConfig> = {
 			duration: { source: 'meta' },
 		},
 		autoLabel: { time: 'time', location: 'location' },
+		// SPEC-125 Phase 1 — each stop's note is authored prose and its only
+		// content region, so it is the `body` role.
+		sections: { body: 'body' },
 		editHints: { time: 'none', location: 'none', body: 'none' },
 	},
 	Map: {
