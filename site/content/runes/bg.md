@@ -75,9 +75,11 @@ A **raw-CSS** `overlay` (e.g. `overlay="linear-gradient(…)"`) is deprecated �
 
 A structured legibility treatment behind overlaid text — richer than a flat overlay. `scrim` sets the heavy edge (`top`/`bottom`/`left`/`right`); `scrim-type` is `gradient` (default, a directional darken/lighten) or `frost` (a `backdrop-filter` blur + tint); `scrim-tone` (`dark`/`light`) picks whether it darkens or lightens — and **flips the overlaid content's foreground** to match, so a `dark` scrim gives you light text (and `light` gives dark text) without setting colours by hand.
 
+The `scrim*` attributes are **universal attributes on the rune the background sits behind**, not attributes of `{% bg %}` — `bg` supplies the image, the rune carries the treatment:
+
 ```markdoc
-{% hero %}
-{% bg src="/images/photo.jpg" scrim="bottom" scrim-strength="lg" %}
+{% hero scrim="bottom" scrim-strength="lg" %}
+{% bg src="/images/photo.jpg" %}
 # Legible over the photo
 A bottom-weighted gradient scrim keeps the heading readable.
 {% /hero %}

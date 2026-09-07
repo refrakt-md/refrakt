@@ -453,8 +453,44 @@ is content targeting a genuinely bodyless rune, where the error is correct.
 The transitional option from {% ref "ADR-028" /%}'s rejected alternatives is
 available if the break proves too sharp: keep schemas permissive for one minor
 and have `refrakt reference` and the editor *annotate* inapplicable attributes
-rather than reject them, narrowing in the following minor. Decide once Phase 1
-has quantified the real-world impact.
+rather than reject them, narrowing in the following minor.
+
+### Decided: narrow directly, no transitional minor
+
+Phase 1 has landed, so the impact is now measured rather than estimated. Every
+`{% tag %}` in the repo's markdown — 986 files across `site/content`, `plan`,
+the plugins and the `create-refrakt` templates — was scanned for the seven gated
+axes and each use attributed to the rune it sits on, then checked against the
+structure contract's `unavailable` map:
+
+- **25 uses in live authored content. 0 would be rejected** after narrowing.
+- **5 would be rejected, all inside documentation code fences** — illustrative
+  examples, not content that builds.
+
+The transitional minor exists to soften a break that does not materialise here,
+and it carries a real cost: it preserves the silent no-op as the default
+experience for another release, which is the thing this spec exists to remove.
+**Narrow directly in Phase 3.**
+
+Two caveats the same scan turned up, both now fixed rather than migrated:
+
+- Three docs taught `{% recipe reading="prose" %}` as the "editorial-header
+  composition" — the flagship example of this spec and {% ref "SPEC-108" /%}.
+  `recipe` has no `body` slot at all (its content is ingredients, steps and
+  tips), so `reading` was always a no-op there and the composition only ever
+  half-worked. The user docs now use `blog`, which maps `content → body` and
+  carries the whole composition; {% ref "SPEC-108" /%} carries a correction note
+  rather than a rewrite.
+- `site/content/runes/bg.md` documented `{% bg src="…" scrim="bottom" %}`, but
+  `bg` is a hand-written schema that declares no `scrim` attribute, so that
+  example was **already** a Markdoc `attribute-undefined` error with the scrim
+  silently never applying. The `scrim*` family is universal and belongs on the
+  rune the background sits behind; the doc now shows that form.
+
+Neither is a migration concern — both were broken before narrowing. They are
+recorded here because the impact scan is what surfaced them, and because they
+are the same disease this spec treats: documentation promising an attribute the
+schema does not carry.
 
 ## Acceptance criteria
 
