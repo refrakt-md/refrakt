@@ -1,4 +1,5 @@
 import type { ThemeManifest } from '@refrakt-md/types';
+import { VARIANT_DELTA_RESERVED_FIELDS, findReservedFields, identityFieldMessage } from './identity-fields.js';
 
 export interface ValidationError {
 	path: string;
@@ -248,8 +249,6 @@ function validateRuneConfig(
 		if (typeof rune.variants !== 'object' || rune.variants === null || Array.isArray(rune.variants)) {
 			errors.push({ path: `${prefix}.variants`, message: 'Must be an object' });
 		} else {
-			// Identity fields a variant delta may not touch.
-			const IDENTITY_FIELDS = ['block', 'modifiers', 'sections', 'variants'];
 			for (const [axis, byValue] of Object.entries(rune.variants as Record<string, unknown>)) {
 				if (!modifierNames.has(axis)) {
 					errors.push({ path: `${prefix}.variants.${axis}`, message: `Variant axis "${axis}" must be a declared modifier` });
@@ -264,10 +263,8 @@ function validateRuneConfig(
 						errors.push({ path: deltaPath, message: 'Must be a partial RuneConfig object' });
 						continue;
 					}
-					for (const field of IDENTITY_FIELDS) {
-						if (field in (delta as Record<string, unknown>)) {
-							errors.push({ path: `${deltaPath}.${field}`, message: `Variant deltas may not override the identity field "${field}"` });
-						}
+					for (const field of findReservedFields(delta, VARIANT_DELTA_RESERVED_FIELDS)) {
+						errors.push({ path: `${deltaPath}.${field}`, message: `Variant deltas ${identityFieldMessage(field)}` });
 					}
 				}
 			}

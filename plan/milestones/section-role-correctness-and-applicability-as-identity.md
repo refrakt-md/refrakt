@@ -1,4 +1,4 @@
-{% milestone name="v0.31.0" status="planning" %}
+{% milestone name="v0.31.0" status="active" %}
 
 # v0.31.0 — Section-role correctness and applicability as identity
 

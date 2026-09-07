@@ -125,9 +125,18 @@ export interface MetaField {
 	i18nKey?: string;
 }
 
-/** Configuration for a single rune's identity transform */
+/** Configuration for a single rune's identity transform.
+ *
+ *  ADR-028 splits this interface in two. `block`, `modifiers` and `sections`
+ *  are **rune identity** — they say what the rune *is*, and attribute
+ *  applicability derives from them, so a theme override may not redefine them
+ *  (see `identity-fields.ts`; `mergeRuneConfig` drops and reports any that
+ *  appear in a theme override, and `validateThemeConfig` errors on any that
+ *  appear in a SPEC-091 variant delta). Every other field is assembly or
+ *  decoration and stays fully theme-owned. */
 export interface RuneConfig {
-	/** BEM block name (without prefix). E.g., 'hint' → .rf-hint */
+	/** BEM block name (without prefix). E.g., 'hint' → .rf-hint
+	 *  **Identity (ADR-028)** — not theme-overridable. */
 	block: string;
 
 	/** SPEC-035 — i18n key scope for this rune's labels: `'core'` for core
@@ -165,7 +174,10 @@ export interface RuneConfig {
 	 *  the interaction-posture build warning. */
 	interactive?: boolean;
 
-	/** Modifier sources — maps modifier name to where to read it from */
+	/** Modifier sources — maps modifier name to where to read it from.
+	 *  **Identity (ADR-028)** — not theme-overridable: which modifiers a rune
+	 *  declares is what gates the `cover` and `content-place` axes, so a theme
+	 *  that could add one would grant an attribute the rune's schema rejects. */
 	modifiers?: Record<string, {
 		/** Where to read the modifier value */
 		source: 'meta' | 'attribute';
@@ -337,7 +349,14 @@ export interface RuneConfig {
 	/** Maps structural ref names to standard section roles.
 	 *  The identity transform emits `data-section` on elements whose
 	 *  `data-name` matches a key in this map, enabling generic theme styling.
-	 *  Roles: 'header' | 'preamble' | 'title' | 'description' | 'body' | 'footer' | 'media' */
+	 *  Roles: 'header' | 'preamble' | 'title' | 'description' | 'body' | 'footer' | 'media'
+	 *
+	 *  **Identity (ADR-028)** — not theme-overridable. A join table, not a
+	 *  posture: the keys are `data-name`s the rune's own transform emits and the
+	 *  values are a closed engine vocabulary, so a theme owns neither side — all
+	 *  it could do is rewire a pair, and `reading`, `prominence` and `frame`
+	 *  applicability hang off exactly those pairs. A theme still styles the
+	 *  emitted `data-section` freely; it just does not define the roles. */
 	sections?: Record<string, 'header' | 'preamble' | 'title' | 'description' | 'body' | 'footer' | 'media'>;
 
 	/** How this rune hosts a media-zone guest — the chrome/containment axis,

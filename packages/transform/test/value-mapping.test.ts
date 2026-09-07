@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createTransform } from '../src/engine.js';
-import { mergeThemeConfig } from '../src/merge.js';
+import { mergeThemeConfig, type IdentityViolation } from '../src/merge.js';
 import { makeTag } from '../src/helpers.js';
 import type { ThemeConfig } from '../src/types.js';
 import type { SerializedTag } from '@refrakt-md/types';
@@ -186,7 +186,12 @@ describe('value mapping with mapTarget', () => {
 });
 
 describe('mergeThemeConfig with valueMap', () => {
-	it('theme modifiers with valueMap replace base modifiers', () => {
+	// ADR-028 — `modifiers` is rune identity, so a theme can no longer reach in
+	// to add a `valueMap` (or anything else) by restating the modifier. Which
+	// modifiers a rune declares is what gates `cover` and `content-place`; a
+	// theme that could add one would grant an attribute the rune's own schema
+	// rejects. A `valueMap` belongs on the rune's declaration, not the theme's.
+	it('a theme may not add a valueMap by overriding modifiers', () => {
 		const base: ThemeConfig = baseConfig({
 			Beat: {
 				block: 'beat',
@@ -195,19 +200,40 @@ describe('mergeThemeConfig with valueMap', () => {
 				},
 			},
 		});
-		const merged = mergeThemeConfig(base, {
-			runes: {
-				Beat: {
-					modifiers: {
-						status: {
-							source: 'meta' as const,
-							default: 'planned',
-							valueMap: { complete: 'done' },
+		const violations: IdentityViolation[] = [];
+		const merged = mergeThemeConfig(
+			base,
+			{
+				runes: {
+					Beat: {
+						modifiers: {
+							status: {
+								source: 'meta' as const,
+								default: 'planned',
+								valueMap: { complete: 'done' },
+							},
 						},
 					},
 				},
 			},
+			undefined,
+			(v) => violations.push(v),
+		);
+		expect(merged.runes.Beat.modifiers!.status.valueMap).toBeUndefined();
+		expect(violations.map((v) => v.field)).toEqual(['modifiers']);
+	});
+
+	it('a valueMap declared by the rune survives an unrelated theme override', () => {
+		const base: ThemeConfig = baseConfig({
+			Beat: {
+				block: 'beat',
+				modifiers: {
+					status: { source: 'meta' as const, default: 'planned', valueMap: { complete: 'done' } },
+				},
+			},
 		});
+		const merged = mergeThemeConfig(base, { runes: { Beat: { staticModifiers: ['themed'] } } });
 		expect(merged.runes.Beat.modifiers!.status.valueMap).toEqual({ complete: 'done' });
+		expect(merged.runes.Beat.staticModifiers).toEqual(['themed']);
 	});
 });
