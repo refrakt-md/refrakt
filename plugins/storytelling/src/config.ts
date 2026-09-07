@@ -6,7 +6,11 @@ export const config: Record<string, RuneConfig> = {
 		block: 'character',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { preamble: 'preamble', name: 'title', portrait: 'media' },
+		// SPEC-125 Phase 1 — the `body` slot carries the character's prose and
+		// went unmapped, so `reading` / `dropcap` were silently dropped. The
+		// header-ish roles were already right: `name` is the title, inside the
+		// `preamble` header, so `prominence` already worked.
+		sections: { preamble: 'preamble', name: 'title', portrait: 'media', body: 'body' },
 		mediaSlots: { portrait: 'portrait' },
 		modifiers: {
 			role: { source: 'meta', default: 'supporting' },
@@ -37,13 +41,19 @@ export const config: Record<string, RuneConfig> = {
 		},
 		editHints: { name: 'inline', portrait: 'image', body: 'none', sections: 'none' },
 	},
-	CharacterSection: { block: 'character-section', parent: 'Character', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
+	// SPEC-125 Phase 1 — the section's prose is its `body` role. No header-ish
+	// role: the entity's own `name` already holds `title`, and a second title
+	// inside the same subtree would flatten the hierarchy `prominence` exists to
+	// scale. Lumina pins `.rf-{block}__name`'s type outright, so the role would
+	// be inert there anyway — see the resolution on WORK-530.
+	CharacterSection: { block: 'character-section', parent: 'Character', autoLabel: { span: 'header' }, sections: { body: 'body' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
 
 	Realm: {
 		block: 'realm',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { preamble: 'preamble', name: 'title', scene: 'media' },
+		// SPEC-125 Phase 1 — see Character; same shape, same correction.
+		sections: { preamble: 'preamble', name: 'title', scene: 'media', body: 'body' },
 		mediaSlots: { scene: 'cover' },
 		modifiers: {
 			realmType: { source: 'meta', default: 'place' },
@@ -78,7 +88,8 @@ export const config: Record<string, RuneConfig> = {
 		autoLabel: { scene: 'scene' },
 		editHints: { name: 'inline', scene: 'image', body: 'none', sections: 'none' },
 	},
-	RealmSection: { block: 'realm-section', parent: 'Realm', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
+	// SPEC-125 Phase 1 — see CharacterSection; same shape, same correction.
+	RealmSection: { block: 'realm-section', parent: 'Realm', autoLabel: { span: 'header' }, sections: { body: 'body' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
 
 	Lore: {
 		block: 'lore',
@@ -105,7 +116,8 @@ export const config: Record<string, RuneConfig> = {
 		block: 'faction',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { preamble: 'preamble', name: 'title', scene: 'media' },
+		// SPEC-125 Phase 1 — see Character; same shape, same correction.
+		sections: { preamble: 'preamble', name: 'title', scene: 'media', body: 'body' },
 		mediaSlots: { scene: 'cover' },
 		modifiers: {
 			factionType: { source: 'meta' },
@@ -144,7 +156,8 @@ export const config: Record<string, RuneConfig> = {
 		autoLabel: { scene: 'scene' },
 		editHints: { name: 'inline', body: 'none', sections: 'none' },
 	},
-	FactionSection: { block: 'faction-section', parent: 'Faction', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
+	// SPEC-125 Phase 1 — see CharacterSection; same shape, same correction.
+	FactionSection: { block: 'faction-section', parent: 'Faction', autoLabel: { span: 'header' }, sections: { body: 'body' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
 
 	Plot: {
 		block: 'plot',
