@@ -1,4 +1,4 @@
-{% work id="WORK-533" status="done" priority="high" complexity="complex" source="SPEC-125" tags="runes,config,schema,refactor" milestone="v0.31.0" %}
+{% work id="WORK-533" status="done" priority="high" complexity="complex" source="SPEC-125" tags="runes,config,schema,refactor" milestone="v0.31.0" pr="refrakt-md/refrakt#591" %}
 
 # Declare join tables in tag modules
 

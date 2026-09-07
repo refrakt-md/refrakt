@@ -1,4 +1,4 @@
-{% work id="WORK-530" status="done" priority="medium" complexity="moderate" source="SPEC-125" tags="runes,config,sections,storytelling" milestone="v0.31.0" %}
+{% work id="WORK-530" status="done" priority="medium" complexity="moderate" source="SPEC-125" tags="runes,config,sections,storytelling" milestone="v0.31.0" pr="refrakt-md/refrakt#591" %}
 
 # Correct section roles — storytelling runes
 

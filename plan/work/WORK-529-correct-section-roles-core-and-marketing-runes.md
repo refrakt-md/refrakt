@@ -1,4 +1,4 @@
-{% work id="WORK-529" status="done" priority="high" complexity="moderate" source="SPEC-125" tags="runes,config,sections,marketing" milestone="v0.31.0" %}
+{% work id="WORK-529" status="done" priority="high" complexity="moderate" source="SPEC-125" tags="runes,config,sections,marketing" milestone="v0.31.0" pr="refrakt-md/refrakt#591" %}
 
 # Correct section roles — core and marketing runes
 

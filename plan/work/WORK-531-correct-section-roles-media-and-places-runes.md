@@ -1,4 +1,4 @@
-{% work id="WORK-531" status="done" priority="medium" complexity="simple" source="SPEC-125" tags="runes,config,sections,media,places" milestone="v0.31.0" %}
+{% work id="WORK-531" status="done" priority="medium" complexity="simple" source="SPEC-125" tags="runes,config,sections,media,places" milestone="v0.31.0" pr="refrakt-md/refrakt#591" %}
 
 # Correct section roles — media and places runes
 

@@ -1,4 +1,4 @@
-{% work id="WORK-532" status="done" priority="medium" complexity="simple" source="SPEC-125" tags="runes,config,validation,dx" milestone="v0.31.0" %}
+{% work id="WORK-532" status="done" priority="medium" complexity="simple" source="SPEC-125" tags="runes,config,validation,dx" milestone="v0.31.0" pr="refrakt-md/refrakt#591" %}
 
 # Lint slot/role mismatches
 

@@ -1,4 +1,4 @@
-{% work id="WORK-528" status="done" priority="high" complexity="simple" source="SPEC-125" tags="transform,config,theme,validation" milestone="v0.31.0" %}
+{% work id="WORK-528" status="done" priority="high" complexity="simple" source="SPEC-125" tags="transform,config,theme,validation" milestone="v0.31.0" pr="refrakt-md/refrakt#591" %}
 
 # Enforce identity fields on theme overrides
 
