@@ -110,7 +110,7 @@ Only `contentDir` and `theme` are strictly required for a site to load.
 |-------|------|-------------|
 | `plugins` | `string[]` | Plugins to merge into this site's `ThemeConfig`. |
 | `routeRules` | `RouteRule[]` | Route-to-layout mapping rules (first match wins). Each rule is `{ pattern, layout, entity? }` — `entity` additionally registers matching pages as registry entities of that type (e.g. `runes/**` → `rune`) without per-page frontmatter. |
-| `entityRoutes` | `EntityRoute[]` | Declarative entity → page routes. Each rule generates one page per registered entity matching `type` (plus an optional `filter`) — the built-in alternative to a `contributePages` pipeline hook. See [Generating routes from entities](/extend/plugin-authoring/pipeline#generating-routes-from-entities--entityroutes). |
+| `entityRoutes` | `EntityRoute[]` | Declarative entity → page routes. Each rule generates one page per registered entity matching `type` (plus an optional `filter`). See [Entity routes](/docs/configuration/entity-routes). |
 | `search` | `boolean` | Whether to render the search UI (header button + `Cmd/Ctrl+K` dialog). Defaults to `true`. Set `false` to omit the search chrome entirely. Results require a [Pagefind index](/docs/configuration/search). |
 | `overrides` | `Record<string, string>` | Component overrides — `typeof` name → relative component path. |
 | `runes` | `RunesConfig` | Rune resolution: `prefer`, `aliases`, `local`. |
@@ -122,7 +122,7 @@ Only `contentDir` and `theme` are strictly required for a site to load.
 
 ### Localization
 
-These control refrakt's own generated UI text — nav chrome, pagination, behavior labels — not your page content. See [Internationalization](/extend/i18n/overview).
+These control refrakt's own generated UI text — nav chrome, pagination, behavior labels — not your page content. See [Internationalization](/docs/configuration/i18n).
 
 | Field | Type | Description |
 |-------|------|-------------|

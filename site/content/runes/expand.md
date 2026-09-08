@@ -59,7 +59,7 @@ The `canonical=true` attribute appends a "view canonical" link to the embedded c
 For each `{% expand %}` placeholder the resolver:
 
 1. Looks the entity up in the registry by `(type?, id)`. Name-match fallback applies the same way `{% ref %}` does.
-2. Checks the entity has `sourceFile` + `extract` set. Entities registered without an extractor (pages, headings) can't be embedded — the build surfaces a clear error.
+2. Checks the entity is [embeddable](/docs/authoring/entities#embeddable-entities). Entities registered without content to hand back (pages, headings) can't be embedded — the build surfaces a clear error.
 3. Reads the source file through the snippet sandbox (project-root-relative, no traversal escape).
 4. Calls the plugin's `extract()` to grab the embeddable subtree from the parsed AST.
 5. Optionally shifts heading levels (when `level=` is set).

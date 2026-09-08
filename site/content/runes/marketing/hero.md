@@ -178,7 +178,7 @@ The backdrop sandbox is forced to `height="fill"` and the **backdrop posture** â
 
 ## Section header
 
-Hero supports an optional eyebrow, headline, and blurb above the headline and description. Place a short paragraph or heading before the main content to use them. See [Page sections](/extend/rune-authoring/page-sections) for the full syntax.
+Hero supports an optional eyebrow, headline, and blurb above the headline and description. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
 ### Layout attributes
 

@@ -93,7 +93,7 @@ Maps a namespace to a directory, letting runes that read files off disk address 
 }
 ```
 
-`{% partial file="shared:footer.md" /%}` then resolves regardless of which page includes it. `entityRoutes`' `render-template` uses the same resolver. See [Partials](/extend/rune-authoring/partials#namespaced-partials-via-file-roots).
+`{% partial file="shared:footer.md" /%}` then resolves regardless of which page includes it. `entityRoutes`' `render-template` uses the same resolver. See [Partials](/docs/authoring/partials#namespaced-partials-via-file-roots).
 
 ## When you need a config file
 

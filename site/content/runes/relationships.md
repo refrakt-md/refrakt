@@ -9,7 +9,7 @@ type: rune
 
 # Relationships
 
-`{% relationships %}` renders the **relationship edges** of one entity — what it implements, what blocks it, who it allies with — grouped by kind. It's the graph counterpart to [`collection`](/runes/collection): where `collection` selects a *set* of entities by a `field:value` query, `relationships` projects the *edges* touching a single entity, read from the registry's [relationship graph](/extend/plugin-authoring/pipeline).
+`{% relationships %}` renders the **relationship edges** of one entity — what it implements, what blocks it, who it allies with — grouped by kind. It's the graph counterpart to [`collection`](/runes/collection): where `collection` selects a *set* of entities by a `field:value` query, `relationships` projects the *edges* touching a single entity, read from the registry's [relationship graph](/docs/authoring/entities#relationships).
 
 It's generic over the edge **kind**, which is an arbitrary string. Plugins contribute edges with their own vocabulary — plan emits `implements` / `blocked-by` / `depends-on`, a storytelling plugin might emit `ally` / `rival` / `mentor` — and `relationships` groups and labels whatever it finds. There is one generic rune, not a per-domain `*-relationships`.
 

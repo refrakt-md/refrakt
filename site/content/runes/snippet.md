@@ -194,7 +194,7 @@ No `title` attribute. Snippet's output is a fence; for a labelled chrome wrap in
 
 ## View source — recursively
 
-Snippet's killer trick: feed it `$file.path` from the page-variable surface ({% xref "/extend/variables" /%}) to embed the page's own source.
+Snippet's killer trick: feed it `$file.path` from the page-variable surface ({% xref "/docs/authoring/variables" /%}) to embed the page's own source.
 
 ```markdoc
 {% snippet path=$file.path lang="markdoc" /%}
@@ -208,4 +208,4 @@ Renders as the snippet block below — at build time it reads the page you're lo
 
 - [Codegroup](/runes/codegroup) — tabbed code blocks; consumes snippet children transparently.
 - [Diff](/runes/diff) — before/after code comparison; consumes snippet children transparently.
-- [Content variables](/extend/variables) — `$file.path` for the view-source-of-current-page pattern.
+- [Content variables](/docs/authoring/variables) — `$file.path` for the view-source-of-current-page pattern.
