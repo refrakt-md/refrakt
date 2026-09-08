@@ -1,4 +1,4 @@
-{% spec id="SPEC-124" status="accepted" tags="engine, transform, architecture, refactor, dx" %}
+{% spec id="SPEC-124" status="shipped" tags="engine, transform, architecture, refactor, dx" released-in="v0.30.1" %}
 
 # Facet registry for the identity transform's universal axes
 
