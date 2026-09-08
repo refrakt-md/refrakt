@@ -1,5 +1,56 @@
 # @refrakt-md/marketing
 
+## 0.31.0
+
+### Minor Changes
+
+- 3b799a5: Correct missing section roles on card, bento-cell and accordion-item (SPEC-125 Phase 1)
+
+  Three runes declared a slot in their layout that their `sections` map never mapped to a role. Because `data-section` is what `reading`, `dropcap` and `prominence` gate on, the omission silently dropped those attributes — `{% card reading="prose" %}` did nothing at all, with no warning.
+
+  - **`card`** gains a `body` role on its body slot. Its content model is literally "body (optional, repeatable any block)", so this is the clearest case of the three — and the one that surfaced the whole problem. `reading` and `dropcap` now land.
+  - **`bento-cell`** gains both a `body` role and a `title` role; its title is a sibling slot of its body. `reading`, `dropcap` and `prominence` now land.
+  - **`accordion-item`** gains a `body` role on its answer panel, so `reading` and `dropcap` now land there too. It deliberately declares **no** header-ish role: the `header` slot is the `<summary>` disclosure control, not a page-section header.
+
+  `card` deliberately keeps no `title` role — its leading heading is nested _inside_ the body slot rather than beside it, so a title role would nest one section inside another and resize every card heading.
+
+  **Rendered output changes**, though under Lumina nothing moves. The three runes now emit `data-section` on those slots. Checked in a browser against the real stylesheet: `[data-section="body"]`'s declarations (`line-height: relaxed`, `color: text`) are already the inherited values, and `[data-section="title"]`'s type is outranked by `.rf-bento-cell__title`, so every element's computed style and box size is byte-identical at every density. A theme with its own `[data-section]` rules may see a change on these three runes; that is the intended, visible half of the correction.
+
+  Lumina additionally fixes a case this exposed: at `density="minimal"` the blanket `[data-section="body"] { display: none }` would have hidden a card's title along with its prose, because card nests the title in its body. Minimal density now keeps a body-nested title and hides only the body's other children — so `{% card density="minimal" %}` shows title-only rather than an empty surface. Previously it did nothing at all.
+
+  `prominence` is now declarable on `bento-cell` but has no visible effect under Lumina, which pins `.rf-bento-cell__title`'s font size rather than letting it ride `--rf-title-size`. That is a skin gap, not a config one.
+
+### Patch Changes
+
+- 19cb36e: Declare the schema↔engine join tables in tag modules (SPEC-125 Phase 2)
+
+  `sections`, `mediaSlots` and `frameTarget` are not theme configuration: their keys are `data-name`s a rune's own transform emits and their values are a closed engine vocabulary, so the theme owns neither side. All 72 declarations across core and the nine plugins now live in the tag module that owns each rune, with `ThemeConfig.runes` _referencing_ the declaration rather than defining it:
+
+  ```ts
+  // tags/card.ts
+  export const cardSections = { media: 'media', body: 'body' } as const;
+  export const card = createContentModelSchema({ sections: cardSections, … });
+
+  // config.ts — already imports from tags/
+  Card: { block: 'card', sections: cardSections, … }
+  ```
+
+  This is what makes narrowing possible. `createContentModelSchema` now has the gating facts **at construction**, recorded on a new `schemaRuneStructures` WeakMap alongside the existing `schemaContentModels` — so a rune's Markdoc schema can later offer only the universal attributes that can affect it, with no config lookup and no import cycle. The direction matters: `config → tags` holds uniformly across the repo, and having tags import config instead would cycle in core, where `createContentModelSchema` runs at module scope and would observe `coreConfig` uninitialised.
+
+  **Pure relocation.** No values changed, the engine's read path is untouched (it still reads `config.sections`, `config.mediaSlots`, `config.frameTarget`), transform output is byte-identical, and `refrakt contracts --check` passes with no regeneration.
+
+  `IDENTITY_FIELDS` gains `mediaSlots` and `frameTarget`, closing the gap the identity guard deliberately left. `frameTarget` in particular needs it: frame applicability resolves as `config.frameTarget ?? (hasMediaSection(config.sections) ? 'media' : null)` and the type has no `'none'`, so it can only ever _grant_ — an unguarded theme could add `frameTarget: 'self'` to a rune whose schema rejects `frame=`, config granting what the schema forbids.
+
+  New public API on `@refrakt-md/runes`: `schemaRuneStructures`, plus the `RuneStructure` and `SectionRole` types. `createContentModelSchema` accepts `sections`, `mediaSlots` and `frameTarget`; all three are optional and nothing reads them yet.
+
+- Updated dependencies [3b799a5]
+- Updated dependencies [a88de39]
+- Updated dependencies [6c6b824]
+- Updated dependencies [19cb36e]
+  - @refrakt-md/runes@0.31.0
+  - @refrakt-md/transform@0.31.0
+  - @refrakt-md/types@0.31.0
+
 ## 0.30.1
 
 ### Patch Changes

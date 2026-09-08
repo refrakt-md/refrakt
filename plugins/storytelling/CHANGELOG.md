@@ -1,5 +1,66 @@
 # @refrakt-md/storytelling
 
+## 0.31.0
+
+### Minor Changes
+
+- bedde34: Correct missing section roles on the storytelling entity and section runes (SPEC-125 Phase 1)
+
+  Six runes in two families of three, each family resolving the same way across its siblings.
+
+  **`character`, `realm`, `faction`** gain a `body` role. All three share one shape — a `preamble` header holding `name`, a media slot, and a `body` slot the `sections` map never mapped — so `reading` and `dropcap` were silently dropped on all three. Their header roles were already correct, so `prominence` already worked; only `body` was missing.
+
+  **`character-section`, `realm-section`, `faction-section`** gain a `body` role on their prose, and deliberately gain **no** header-ish role. The entity's own `name` already holds `title`; a second `title` inside the same subtree would flatten the very hierarchy `prominence` exists to scale, and Lumina pins `.rf-{block}__name`'s type outright, so the role would be inert there in any case. The contract keeps recording `prominence` as unavailable on these three, which is the honest answer.
+
+  **Rendered output changes**: the six runes now emit `data-section="body"` on those slots. Checked in a browser against the real stylesheet — including the `realm` case where the new body role sits beside an existing `media` role — every element's computed style and box geometry is unchanged. `[data-section="body"]`'s declarations are already the values inherited from `html`, and none of the six stylesheets sets `line-height` or `color` on its body element. A theme with its own `[data-section]` rules may see a change; that is the intended, visible half of the correction.
+
+  Note: `character`'s entity-level body slot is currently always empty — prose written directly inside `{% character %}` is dropped by its content model, unlike `realm` and `faction`, which handle the same input correctly. The role is declared correctly here; the content-model defect is tracked separately as BUG-003.
+
+### Patch Changes
+
+- 6c6b824: Lint slot/role mismatches so section-role drift cannot recur (SPEC-125 Phase 1)
+
+  The twelve corrections in this milestone were found by an ad-hoc script comparing each rune's declared slots against its `sections` map. Nothing stopped the same drift returning the next time a rune gained a `body` slot — and the failure mode is silent: `reading`, `dropcap` and `prominence` are simply dropped.
+
+  `@refrakt-md/transform` now exports two new functions. `declaredSlots(config)` collects every slot a rune declares, from all five config fields that can introduce one (`layout`, `structure`, `autoLabel`, `blocks`, `contentWrapper`) — the reconstruction the ad-hoc script had to do by hand. `lintSectionRoles(runes)` builds on it and flags a rune declaring a `body` or heading slot with no matching role.
+
+  `validateThemeConfig` runs the lint, so `refrakt validate` and `refrakt plugin validate` fail on drift with a non-zero exit rather than only warning. Across the 132-rune catalogue the check is quiet: no findings, and no noise from the ~105 genuinely bodyless runes.
+
+  The check is **direction-only** — it flags a _missing_ role and never a role that is present. A `body` role on a non-prose region (`datatable`'s table, `showcase`'s viewport) is an overload of what `body` means, not a data error, and themes style those roles directly; flagging them would push someone toward removing a correct role.
+
+  New `RuneConfig.sectionRoleExceptions` records a deliberate decision not to map a slot, keyed by slot name and valued by the reason, so the reasoning travels with the rune instead of living only in a commit message. Applied to the five runes this milestone deliberately left without a header-ish role — `accordion-item`, the three storytelling `*-section` runes, and `itinerary-day` — each carrying its own justification.
+
+  Theme and plugin authors upgrading may see `refrakt validate` fail on a rune that was quietly dropping an attribute. That is the check working: map the role, or record why not.
+
+- 19cb36e: Declare the schema↔engine join tables in tag modules (SPEC-125 Phase 2)
+
+  `sections`, `mediaSlots` and `frameTarget` are not theme configuration: their keys are `data-name`s a rune's own transform emits and their values are a closed engine vocabulary, so the theme owns neither side. All 72 declarations across core and the nine plugins now live in the tag module that owns each rune, with `ThemeConfig.runes` _referencing_ the declaration rather than defining it:
+
+  ```ts
+  // tags/card.ts
+  export const cardSections = { media: 'media', body: 'body' } as const;
+  export const card = createContentModelSchema({ sections: cardSections, … });
+
+  // config.ts — already imports from tags/
+  Card: { block: 'card', sections: cardSections, … }
+  ```
+
+  This is what makes narrowing possible. `createContentModelSchema` now has the gating facts **at construction**, recorded on a new `schemaRuneStructures` WeakMap alongside the existing `schemaContentModels` — so a rune's Markdoc schema can later offer only the universal attributes that can affect it, with no config lookup and no import cycle. The direction matters: `config → tags` holds uniformly across the repo, and having tags import config instead would cycle in core, where `createContentModelSchema` runs at module scope and would observe `coreConfig` uninitialised.
+
+  **Pure relocation.** No values changed, the engine's read path is untouched (it still reads `config.sections`, `config.mediaSlots`, `config.frameTarget`), transform output is byte-identical, and `refrakt contracts --check` passes with no regeneration.
+
+  `IDENTITY_FIELDS` gains `mediaSlots` and `frameTarget`, closing the gap the identity guard deliberately left. `frameTarget` in particular needs it: frame applicability resolves as `config.frameTarget ?? (hasMediaSection(config.sections) ? 'media' : null)` and the type has no `'none'`, so it can only ever _grant_ — an unguarded theme could add `frameTarget: 'self'` to a rune whose schema rejects `frame=`, config granting what the schema forbids.
+
+  New public API on `@refrakt-md/runes`: `schemaRuneStructures`, plus the `RuneStructure` and `SectionRole` types. `createContentModelSchema` accepts `sections`, `mediaSlots` and `frameTarget`; all three are optional and nothing reads them yet.
+
+- Updated dependencies [3b799a5]
+- Updated dependencies [a88de39]
+- Updated dependencies [6c6b824]
+- Updated dependencies [19cb36e]
+  - @refrakt-md/runes@0.31.0
+  - @refrakt-md/transform@0.31.0
+  - @refrakt-md/types@0.31.0
+
 ## 0.30.1
 
 ### Patch Changes
