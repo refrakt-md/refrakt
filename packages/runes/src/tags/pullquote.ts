@@ -7,7 +7,13 @@ import { RenderableNodeCursor } from '../lib/renderable.js';
 const alignValues = ['left', 'center', 'right'] as const;
 const variantValues = ['default', 'accent', 'editorial'] as const;
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const pullQuoteSections = { body: 'body' } as const;
+
 export const pullquote = createContentModelSchema({
+	sections: pullQuoteSections,
 	attributes: {
 		align: { type: String, required: false, matches: alignValues.slice(), description: 'Text alignment of the quote' },
 		variant: { type: String, required: false, matches: variantValues.slice(), description: 'Visual style of the quote block' },

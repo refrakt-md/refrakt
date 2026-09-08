@@ -1,9 +1,11 @@
 import { baseConfig } from '@refrakt-md/runes';
-import { mergeThemeConfig } from '@refrakt-md/transform';
+import { mergeThemeConfig, type ThemeConfigOverrides } from '@refrakt-md/transform';
 import { icons as lucideIcons } from './icons.js';
 
-/** Lumina theme configuration — extends base with icon SVGs and tint presets */
-export const luminaConfig = mergeThemeConfig(baseConfig, {
+/** Lumina's overrides, exported separately from the merged result so tests can
+ *  re-run the merge with a diagnostics sink — notably the ADR-028 identity
+ *  guard, which Lumina must not trip (it overrides no rune at all). */
+export const luminaOverrides: ThemeConfigOverrides = {
 	tints: {
 		base: {
 			light: {
@@ -94,4 +96,7 @@ export const luminaConfig = mergeThemeConfig(baseConfig, {
 		},
 		global: lucideIcons,
 	},
-});
+};
+
+/** Lumina theme configuration — extends base with icon SVGs and tint presets */
+export const luminaConfig = mergeThemeConfig(baseConfig, luminaOverrides);

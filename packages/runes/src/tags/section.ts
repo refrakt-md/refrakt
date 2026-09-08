@@ -13,7 +13,13 @@ const alignType = ['start', 'center', 'end'] as const;
  * body is content-agnostic — anything (a `bento`, a grid of cards, prose) — so a
  * preamble-less grid primitive can be introduced with a title and intro.
  */
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const sectionSections = { preamble: 'preamble', headline: 'title', blurb: 'description' } as const;
+
 export const section = createContentModelSchema({
+	sections: sectionSections,
 	attributes: {
 		align: { type: String, required: false, matches: alignType.slice(), description: 'Header alignment: start (default), center, or end' },
 	},

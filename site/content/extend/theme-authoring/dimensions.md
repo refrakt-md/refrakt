@@ -355,10 +355,12 @@ The vocabulary is small and ordered tightest-UI → most-editorial:
 Per-rune defaults live on `RuneConfig.defaultReading`; a layout's content-region default lives on its `content` slot's `reading`. The **editorial-header composition** — a full-bleed frame with contained, readable text — is the SPEC-107 × SPEC-108 payoff:
 
 ```markdoc
-{% recipe elevation="flush" width="full" prominence="display" reading="prose" %}
+{% blog elevation="flush" width="full" prominence="display" reading="prose" %}
 ```
 
 `width="full"` bleeds the frame, `prominence="display"` sizes the headline, and `reading="prose"` holds the body to measure underneath — the canonical magazine spread.
+
+The rune has to have a **body role** for `reading` to land: `blog` maps `content → body`, so the register reaches its prose. A rune whose content is entirely structured — `recipe`, whose slots are ingredients, steps and tips — has no body region for a reading register to hold, and `reading` is inapplicable there.
 
 ### Media slots
 

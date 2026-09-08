@@ -8,7 +8,15 @@ import { isMediaNode } from './common.js';
 const sizeValues = ['small', 'medium', 'large', 'full'] as const;
 const alignValues = ['left', 'center', 'right'] as const;
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const figureSections = { caption: 'description' } as const;
+export const figureFrameTarget = 'self' as const;
+
 export const figure = createContentModelSchema({
+	sections: figureSections,
+	frameTarget: figureFrameTarget,
 	attributes: {
 		size: { type: String, required: false, matches: sizeValues.slice(), description: 'Display width of the figure' },
 		align: { type: String, required: false, matches: alignValues.slice(), description: 'Horizontal alignment of the figure' },

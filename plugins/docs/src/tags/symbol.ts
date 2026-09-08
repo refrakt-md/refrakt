@@ -84,7 +84,13 @@ const headerBodyFields = [
 	{ name: 'body', match: 'heading|paragraph|fence|list|blockquote|tag|hr|table' as const, greedy: true, optional: true },
 ];
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const symbolSections = { preamble: 'preamble', headline: 'title', body: 'body' } as const;
+
 export const symbol = createContentModelSchema({
+	sections: symbolSections,
 	attributes: {
 		kind: { type: String, required: false, matches: ['function', 'class', 'interface', 'enum', 'type', 'module', 'hook', 'component'], default: 'function', description: 'Symbol category that controls grouping behavior and icon display.' },
 		lang: { type: String, required: false, default: 'typescript', description: 'Programming language used for syntax highlighting in code examples.' },

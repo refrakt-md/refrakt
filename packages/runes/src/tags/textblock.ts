@@ -6,7 +6,13 @@ import { RenderableNodeCursor } from '../lib/renderable.js';
 
 const alignValues = ['left', 'center', 'right', 'justify'] as const;
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const textBlockSections = { body: 'body' } as const;
+
 export const textblock = createContentModelSchema({
+	sections: textBlockSections,
 	attributes: {
 		columns: { type: Number, required: false, description: 'Number of text columns' },
 		lead: { type: Boolean, required: false, description: 'Style the first paragraph as a lead' },

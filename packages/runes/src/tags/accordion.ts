@@ -5,7 +5,13 @@ import { createComponentRenderable, createContentModelSchema, asNodes } from '..
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { pageSectionProperties } from './common.js';
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const accordionItemSections = { body: 'body' } as const;
+
 export const accordionItem = createContentModelSchema({
+	sections: accordionItemSections,
 	attributes: {
 		name: { type: String, required: true },
 	},
@@ -49,7 +55,13 @@ export const accordionItem = createContentModelSchema({
 	},
 });
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const accordionSections = { preamble: 'preamble', headline: 'title', blurb: 'description' } as const;
+
 export const accordion = createContentModelSchema({
+	sections: accordionSections,
 	attributes: {
 		multiple: { type: Boolean, required: false, description: 'Allow multiple panels to be open at once' },
 	},

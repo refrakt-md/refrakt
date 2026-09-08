@@ -275,7 +275,13 @@ function convertBudgetChildren(nodes: unknown[]): unknown[] {
 	return [...preamble, ...converted];
 }
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const budgetSections = { preamble: 'preamble', headline: 'title', footer: 'footer' } as const;
+
 export const budget = createContentModelSchema({
+	sections: budgetSections,
 	attributes: {
 		currency: { type: String, required: false, description: 'Currency symbol or code (e.g. USD, EUR)' },
 		duration: { type: String, required: false, description: 'Budget duration for per-day calculations (e.g. "5 days", "1 month")' },

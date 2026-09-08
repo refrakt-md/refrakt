@@ -4,7 +4,13 @@ const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 import { VALID_STATUS } from '../commands/enums.js';
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const milestoneSections = { title: 'title', blurb: 'description', body: 'body' } as const;
+
 export const milestone = createContentModelSchema({
+	sections: milestoneSections,
 	attributes: {
 		name: { type: String, required: true, description: 'Milestone name (e.g., "v0.5.0").' },
 		target: { type: String, required: false, description: 'Target date (aspirational, not a commitment).' },

@@ -5,7 +5,13 @@ const { Ast, Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, SplitLayoutModel, buildLayoutMetas, nameHelper as name, pageSectionProperties, asNodes, unwrapParagraphImages } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const stepMediaSlots = { media: 'cover' } as const;
+
 export const step = createContentModelSchema({
+	mediaSlots: stepMediaSlots,
   base: SplitLayoutModel,
   contentModel: {
     type: 'delimited',
@@ -74,7 +80,13 @@ export const step = createContentModelSchema({
   },
 });
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const stepsSections = { preamble: 'preamble', headline: 'title', blurb: 'description' } as const;
+
 export const steps = createContentModelSchema({
+	sections: stepsSections,
   attributes: {},
   contentModel: () => ({
     when: [

@@ -35,6 +35,20 @@ export { extractSelectors } from './selectors.js';
 
 // Theme config merging
 export { mergeThemeConfig, applyRuneExtensions } from './merge.js';
+export type { IdentityViolation, RuneConfigMergeOptions } from './merge.js';
+
+// Rune identity (ADR-028) — the shared rule behind both merge paths
+export {
+	IDENTITY_FIELDS,
+	VARIANT_DELTA_RESERVED_FIELDS,
+	findReservedFields,
+	identityFieldMessage,
+} from './identity-fields.js';
+export type { IdentityField } from './identity-fields.js';
+
+// Section-role drift lint (SPEC-125) — shared "declared slots" helper + check
+export { declaredSlots, lintSectionRoles, BODY_SLOT_NAMES, HEADER_SLOT_NAMES } from './section-roles.js';
+export type { SectionRoleFinding } from './section-roles.js';
 export { READING_REGISTERS, DEFAULT_READING, READING_CAPABILITIES, resolveReading, coerceRegister } from './reading.js';
 export type { ReadingRegister, ReadingResolutionInput } from './reading.js';
 

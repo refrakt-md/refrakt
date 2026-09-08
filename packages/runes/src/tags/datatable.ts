@@ -4,7 +4,13 @@ const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const dataTableSections = { table: 'body' } as const;
+
 export const datatable = createContentModelSchema({
+	sections: dataTableSections,
 	attributes: {
 		sortable: { type: String, required: false, description: 'Column names to enable sorting, or "all"' },
 		searchable: { type: Boolean, required: false, description: 'Show a search input to filter rows' },

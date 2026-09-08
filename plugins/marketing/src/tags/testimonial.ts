@@ -5,7 +5,15 @@ import { createContentModelSchema, createComponentRenderable, asNodes, Renderabl
 
 const variantType = ['card', 'inline', 'quote'] as const;
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const testimonialSections = { avatar: 'media' } as const;
+export const testimonialMediaSlots = { avatar: 'portrait' } as const;
+
 export const testimonial = createContentModelSchema({
+	sections: testimonialSections,
+	mediaSlots: testimonialMediaSlots,
 	attributes: {
 		rating: { type: Number, required: false, description: 'Star rating value (1-5) shown alongside the testimonial' },
 		variant: { type: String, required: false, matches: variantType.slice(), description: 'Visual style: card with border, inline with text flow, or quote with large quotation marks' },

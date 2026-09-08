@@ -36,7 +36,13 @@ export const revealStep = createContentModelSchema({
 	},
 });
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const revealSections = { preamble: 'preamble', headline: 'title', blurb: 'description' } as const;
+
 export const reveal = createContentModelSchema({
+	sections: revealSections,
 	attributes: {
 		mode: { type: String, required: false, matches: modeType.slice(), description: 'Step progression: click, scroll, or auto' },
 	},

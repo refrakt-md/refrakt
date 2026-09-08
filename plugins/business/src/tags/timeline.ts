@@ -37,7 +37,13 @@ export const timelineEntry = createContentModelSchema({
 	},
 });
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const timelineSections = { preamble: 'preamble', headline: 'title', blurb: 'description' } as const;
+
 export const timeline = createContentModelSchema({
+	sections: timelineSections,
 	attributes: {
 		direction: { type: String, required: false, description: 'Axis along which entries are laid out (vertical or horizontal).' },
 	},

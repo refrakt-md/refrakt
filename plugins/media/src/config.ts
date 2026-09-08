@@ -1,6 +1,13 @@
 import type { RuneConfig } from '@refrakt-md/transform';
 import { resolveValign } from '@refrakt-md/transform';
 
+// SPEC-125 Phase 2 — the join tables (`sections`, `mediaSlots`, `frameTarget`)
+// are declared in the tag modules that own them and referenced here. Config
+// points at rune identity; it does not define it (ADR-028). The engine's read
+// path is unchanged — it still reads `config.sections` and friends.
+import { audioSections } from './tags/audio.js';
+import { playlistMediaSlots, playlistSections } from './tags/playlist.js';
+
 export const config: Record<string, RuneConfig> = {
 	Playlist: {
 		block: 'playlist',
@@ -8,8 +15,8 @@ export const config: Record<string, RuneConfig> = {
 		defaultElevation: 'flat',
 		sequence: 'numbered',
 		staggerItems: 'track',
-		sections: { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' },
-		mediaSlots: { media: 'cover' },
+		sections: playlistSections,
+		mediaSlots: playlistMediaSlots,
 		modifiers: {
 			type: { source: 'meta', default: 'album' },
 			'media-position': { source: 'meta', default: 'top', noBemClass: true },
@@ -50,7 +57,7 @@ export const config: Record<string, RuneConfig> = {
 	Audio: {
 		block: 'audio',
 		defaultDensity: 'compact',
-		sections: { description: 'description' },
+		sections: audioSections,
 		modifiers: {
 			waveform: { source: 'meta', default: 'false' },
 		},

@@ -5,7 +5,13 @@ import { createContentModelSchema, createComponentRenderable, asNodes, Renderabl
 import { slugify, buildSections } from '../util.js';
 import { VALID_STATUS, VALID_PRIORITY, VALID_COMPLEXITY } from '../commands/enums.js';
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const workSections = { title: 'title', blurb: 'description', body: 'body' } as const;
+
 export const work = createContentModelSchema({
+	sections: workSections,
 	attributes: {
 		id: { type: String, required: true, description: 'Unique identifier (e.g., "RF-142").' },
 		status: { type: String, required: false, matches: [...VALID_STATUS.work], description: 'Current status: draft, ready, in-progress, review, done, blocked, pending, cancelled, or superseded.' },

@@ -26,7 +26,19 @@ function zoneRoles(zones: Node[][]): { media: Node[]; body: Node[]; footer: Node
 	return { media: zones[0], footer: zones[zones.length - 1], body: zones.slice(1, -1).flat() };
 }
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+// SPEC-125 Phase 1 — a cell has both. `body` is its main content region
+// (undeclared, so `reading` / `dropcap` were silently dropped), and `title` is
+// a sibling heading slot, unambiguously the cell's title. Lumina pins
+// `.rf-bento-cell__title`'s font size, so `prominence` is declarable here but
+// has no visible effect under that skin — a skin gap, not a reason to withhold
+// the structural role (ADR-028: emission is theme-agnostic, styling is not).
+export const bentoCellSections = { media: 'media', title: 'title', body: 'body' } as const;
+
 export const bentoCell = createContentModelSchema({
+	sections: bentoCellSections,
 	attributes: {
 		size: { type: String, required: false },
 		cols: { type: Number, required: false },

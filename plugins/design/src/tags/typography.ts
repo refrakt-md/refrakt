@@ -61,7 +61,13 @@ function buildFontsUrl(specimens: Specimen[]): string {
 	return `https://fonts.googleapis.com/css2?${families.join('&')}&display=swap`;
 }
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const typographySections = { title: 'title' } as const;
+
 export const typography = createContentModelSchema({
+	sections: typographySections,
 	attributes: {
 		title: { type: String, required: false, default: '', description: 'Heading displayed above the typography specimens.' },
 		sample: { type: String, required: false, default: 'The quick brown fox jumps over the lazy dog', description: 'Preview sentence rendered at each size in the specimen cards.' },

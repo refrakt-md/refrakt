@@ -1,5 +1,41 @@
 import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, TintTokens, BgPresetDefinition, FramePresetDefinition, BlockDef } from './types.js';
 import type { ThemeTokensConfig } from '@refrakt-md/types';
+import { IDENTITY_FIELDS, findReservedFields, identityFieldMessage } from './identity-fields.js';
+
+/** A theme override that tried to redefine a rune (ADR-028). Reported, and the
+ *  offending field is dropped — the rune's own declaration wins. */
+export interface IdentityViolation {
+	/** Config path, e.g. `runes.Card.sections`. */
+	path: string;
+	/** The rune's `theme.runes` key, e.g. `Card`. */
+	rune: string;
+	/** The identity field the override carried. */
+	field: string;
+	message: string;
+}
+
+export interface RuneConfigMergeOptions {
+	/** Enforce ADR-028 on this merge: identity fields present in the override
+	 *  are reported and dropped instead of shadowing the base. Off by default —
+	 *  the engine's transform-time variant application (`engine.ts`) and the
+	 *  contract generator merge deltas that `validateThemeConfig` has already
+	 *  vetted, and neither is a place to emit config diagnostics. */
+	guardIdentity?: boolean;
+	/** Rune key, for the reported path. */
+	runeName?: string;
+	/** Violation sink. Defaults to a one-time `console.warn` per path. */
+	onViolation?: (violation: IdentityViolation) => void;
+}
+
+/** Paths already warned about, so a dev-server re-assembly doesn't re-spam. */
+const warnedIdentityPaths = new Set<string>();
+
+function defaultIdentityViolationReporter(violation: IdentityViolation): void {
+	if (warnedIdentityPaths.has(violation.path)) return;
+	warnedIdentityPaths.add(violation.path);
+	// eslint-disable-next-line no-console
+	console.warn(`[refrakt] ${violation.message}`);
+}
 
 export interface ThemeConfigOverrides {
 	prefix?: string;
@@ -29,11 +65,21 @@ export function mergeThemeConfig(
 	base: ThemeConfig,
 	overrides: ThemeConfigOverrides,
 	presetMap?: Record<string, ThemeTokensConfig>,
+	onIdentityViolation?: (violation: IdentityViolation) => void,
 ): ThemeConfig {
 	const mergedRunes = { ...base.runes };
 	if (overrides.runes) {
 		for (const [key, value] of Object.entries(overrides.runes)) {
-			mergedRunes[key] = mergeRuneConfig(mergedRunes[key], value);
+			// ADR-028 — this is the theme-override path, so identity is guarded.
+			// A key with no base entry is a *new* rune (a plugin contributing its
+			// own), not an override: `mergeRuneConfig` short-circuits there and
+			// the guard never applies, which is why plugins declaring `sections`
+			// on their own runes are unaffected.
+			mergedRunes[key] = mergeRuneConfig(mergedRunes[key], value, {
+				guardIdentity: true,
+				runeName: key,
+				onViolation: onIdentityViolation,
+			});
 		}
 	}
 
@@ -60,14 +106,27 @@ export function mergeThemeConfig(
  * fields `metaFields`, `blocks`, and `layout` merge by inner key so a
  * theme can override a single field, block, or container's order without
  * restating the full plugin map.
+ *
+ * With `guardIdentity`, the ADR-028 identity fields (`block`, `modifiers`,
+ * `sections`) are stripped from the override before merging: a theme may not
+ * redefine what a rune *is*, only how it looks. `variants` is deliberately not
+ * guarded here — SPEC-091 lets a theme add axes and override value deltas, and
+ * the by-axis merge below exists for exactly that.
  */
 export function mergeRuneConfig(
 	base: RuneConfig | undefined,
 	override: Partial<RuneConfig>,
+	options: RuneConfigMergeOptions = {},
 ): RuneConfig {
+	// No base means this key introduces a rune rather than overriding one —
+	// there is no identity to protect, and the declaration is the rune's own.
 	if (!base) return override as RuneConfig;
 
-	const merged: RuneConfig = { ...base, ...override };
+	const effectiveOverride = options.guardIdentity
+		? stripIdentityFields(override, options)
+		: override;
+
+	const merged: RuneConfig = { ...base, ...effectiveOverride };
 
 	if (base.metaFields || override.metaFields) {
 		merged.metaFields = { ...base.metaFields, ...override.metaFields };
@@ -102,6 +161,34 @@ export function mergeRuneConfig(
 	}
 
 	return merged;
+}
+
+/** Drop the ADR-028 identity fields from a theme override, reporting each one.
+ *  Returns the input untouched when it carries none — the overwhelmingly
+ *  common case, and the one that must stay allocation-free. */
+function stripIdentityFields(
+	override: Partial<RuneConfig>,
+	options: RuneConfigMergeOptions,
+): Partial<RuneConfig> {
+	const violations = findReservedFields(override, IDENTITY_FIELDS);
+	if (violations.length === 0) return override;
+
+	const rune = options.runeName ?? '<rune>';
+	const report = options.onViolation ?? defaultIdentityViolationReporter;
+	const cleaned: Partial<RuneConfig> = { ...override };
+
+	for (const field of violations) {
+		delete cleaned[field as keyof RuneConfig];
+		const path = `runes.${rune}.${field}`;
+		report({
+			path,
+			rune,
+			field,
+			message: `${path}: theme overrides ${identityFieldMessage(field)}. The override is ignored; the rune's own declaration stands.`,
+		});
+	}
+
+	return cleaned;
 }
 
 /**

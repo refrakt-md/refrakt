@@ -1,5 +1,13 @@
 import type { RuneConfig } from '@refrakt-md/transform';
 
+// SPEC-125 Phase 2 — the join tables (`sections`, `mediaSlots`, `frameTarget`)
+// are declared in the tag modules that own them and referenced here. Config
+// points at rune identity; it does not define it (ADR-028). The engine's read
+// path is unchanged — it still reads `config.sections` and friends.
+import { apiSections } from './tags/api.js';
+import { symbolSections } from './tags/symbol.js';
+import { changelogSections } from './tags/changelog.js';
+
 const pageSectionAutoLabel = {
 	header: 'preamble',
 	eyebrow: 'eyebrow',
@@ -13,7 +21,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'api',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { body: 'body' },
+		sections: apiSections,
 		modifiers: {
 			method: { source: 'meta', default: 'GET' },
 			path: { source: 'meta' },
@@ -37,7 +45,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'symbol',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { preamble: 'preamble', headline: 'title', body: 'body' },
+		sections: symbolSections,
 		modifiers: {
 			kind: { source: 'meta', default: 'function' },
 			lang: { source: 'meta', default: 'typescript' },
@@ -70,6 +78,6 @@ export const config: Record<string, RuneConfig> = {
 	},
 	SymbolGroup: { block: 'symbol-group', parent: 'Symbol', editHints: { label: 'inline', body: 'none' } },
 	SymbolMember: { block: 'symbol-member', parent: 'Symbol', editHints: { name: 'inline', body: 'none' } },
-	Changelog: { block: 'changelog', defaultDensity: 'full', defaultElevation: 'flat', sections: { preamble: 'preamble', headline: 'title' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', releases: 'none' } },
+	Changelog: { block: 'changelog', defaultDensity: 'full', defaultElevation: 'flat', sections: changelogSections, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', releases: 'none' } },
 	ChangelogRelease: { block: 'changelog-release', parent: 'Changelog', editHints: { version: 'inline', body: 'none' } },
 };

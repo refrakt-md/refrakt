@@ -7,7 +7,13 @@ const deviceType = ['iphone-15', 'iphone-se', 'pixel', 'phone', 'ipad', 'tablet'
 const colorType = ['dark', 'light', 'auto'] as const;
 const fitType = ['auto', 'none'] as const;
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const mockupMediaSlots = { viewport: 'hero' } as const;
+
 export const mockup = createContentModelSchema({
+	mediaSlots: mockupMediaSlots,
 	attributes: {
 		device: { type: String, required: false, matches: deviceType.slice(), description: 'Device frame to render around the content (e.g. iphone-15, browser, macbook).' },
 		label: { type: String, required: false, description: 'Caption text shown below the device mockup.' },

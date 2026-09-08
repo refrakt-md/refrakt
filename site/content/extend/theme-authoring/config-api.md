@@ -32,6 +32,10 @@ interface ThemeConfig {
 
 Each entry in `runes` describes how a single rune type is transformed. All fields except `block` are optional.
 
+{% hint type="warning" %}
+**Three fields are rune identity, not theme configuration.** `block`, `modifiers` and `sections` say what a rune *is*, and a rune's universal-attribute applicability is derived from them — `reading` needs a `body` role, `prominence` needs a header-ish one, `cover` needs a declared `media-position` modifier. A theme that could rewrite them could change what the same markdown means, so it may not: an override of one is ignored with a build warning, and a variant delta carrying one is a config-load error. Everything else here stays fully theme-owned. See {% ref "ADR-028" /%}.
+{% /hint %}
+
 ### block
 
 The BEM block name, without the prefix. This is the only required field.
@@ -43,9 +47,13 @@ Grid: { block: 'grid' }
 
 The engine always produces the block class (`.rf-grid`) and sets `data-rune="grid"` on the root element.
 
+**Rune identity** (ADR-028) — not theme-overridable.
+
 ### modifiers
 
 Reads values from meta tags or HTML attributes and produces BEM modifier classes plus data attributes.
+
+**Rune identity** (ADR-028) — not theme-overridable. Which modifiers a rune declares is what gates the `cover` and `content-place` axes, so a theme that could add one would grant an attribute the rune's own schema rejects.
 
 ```typescript
 modifiers: {
@@ -301,6 +309,37 @@ Budget: {
 ```
 
 Available roles: `'header'`, `'preamble'`, `'title'`, `'description'`, `'body'`, `'footer'`, `'media'`.
+
+**Rune identity** (ADR-028) — not theme-overridable. This is a join table rather than a posture: the keys are `data-name` values the rune's own transform emits and the values are a closed engine vocabulary, so a theme owns neither side. All it could do is rewire a pair — and `reading`, `prominence` and `frame` applicability hang off exactly those pairs. Styling the emitted `data-section` stays entirely the theme's business.
+
+Since v0.31.0 the map is **declared in the rune's tag module** and referenced here, so `createContentModelSchema` has the fact at construction. `mediaSlots` and `frameTarget` moved with it for the same reason. The engine's read path is unchanged — it still reads `config.sections`.
+
+```typescript
+// tags/card.ts
+export const cardSections = { media: 'media', body: 'body' } as const;
+export const card = createContentModelSchema({ sections: cardSections, /* … */ });
+
+// config.ts
+Card: { block: 'card', sections: cardSections, /* … */ }
+```
+
+`refrakt validate` fails a config in which a rune declares a `body` or heading slot (in `layout`, `structure`, `autoLabel`, `blocks` or `contentWrapper`) with no matching role — that omission silently drops `reading`, `dropcap` or `prominence`, which is exactly how the original mismatches went unnoticed. The check is **direction-only**: it flags a *missing* role and never a role that is present, so a `body` role on a non-prose region stays untouched.
+
+### sectionRoleExceptions
+
+Records a deliberate decision *not* to map a declared slot, keyed by slot name and valued by the reason. It silences the check for that slot and keeps the reasoning next to the decision.
+
+```typescript
+AccordionItem: {
+  block: 'accordion-item',
+  sections: { body: 'body' },
+  sectionRoleExceptions: {
+    header: 'The `header` slot is the <summary> disclosure control, not a page-section header.',
+  },
+}
+```
+
+Use it for a genuine judgement, never to quiet a real omission. Most exceptions so far share one shape: **a child rune takes the `title` role only when its parent does not already hold one** — a second title inside the same subtree flattens the hierarchy `prominence` exists to scale.
 
 See [Dimensions](/extend/theme-authoring/dimensions#sections) for role descriptions and CSS.
 
@@ -708,11 +747,9 @@ const myConfig = mergeThemeConfig(baseConfig, {
   // Override specific rune configs (shallow merge per rune)
   runes: {
     Hint: {
-      // This replaces only the 'modifiers' field of the Hint config
-      // All other fields (block, contextModifiers, structure) are preserved
-      modifiers: {
-        hintType: { source: 'meta', default: 'info' }, // different default
-      },
+      // This replaces only the 'defaultElevation' field of the Hint config
+      // All other fields (block, modifiers, blocks, layout) are preserved
+      defaultElevation: 'raised',
     },
   },
 });
@@ -725,10 +762,14 @@ Merge behavior:
 | `prefix` | Override replaces base |
 | `tokenPrefix` | Override replaces base |
 | `icons` | Shallow merge by group (override groups replace base groups) |
-| `runes` | Per-rune merge: most fields replace, but `metaFields`, `blocks`, `layout`, and `variants` merge **by inner key** |
+| `runes` | Per-rune merge: most fields replace, but `metaFields`, `blocks`, `layout`, and `variants` merge **by inner key**; `block`, `modifiers` and `sections` are identity and cannot be overridden at all |
 
 {% hint type="note" %}
-Per-rune merge is **shallow for most fields** — overriding `modifiers` replaces the entire `modifiers` object, not individual entries. The block-and-layout fields are the exception: `metaFields`, `blocks`, `layout`, and `variants` merge **by inner key**, so a theme can re-point a single field, swap one block's primitive, reshape one container, or add one variant without restating the whole map. When overriding a wrapper-creating `layout` entry, restate its `tag` (the entry is replaced as a whole).
+Per-rune merge is **shallow for most fields** — overriding `structure` or `styles` replaces the entire object, not individual entries. The block-and-layout fields are the exception: `metaFields`, `blocks`, `layout`, and `variants` merge **by inner key**, so a theme can re-point a single field, swap one block's primitive, reshape one container, or add one variant without restating the whole map. When overriding a wrapper-creating `layout` entry, restate its `tag` (the entry is replaced as a whole).
+{% /hint %}
+
+{% hint type="warning" %}
+`block`, `modifiers` and `sections` are **rune identity** (ADR-028) and are not overridable here. An override carrying one is dropped — the rune's own declaration stands — and a build warning names the rune and the field. Adding a modifier, or rewiring a section role, would change which universal attributes an author may write on that rune, and applicability is a fact about the rune rather than about the theme. A theme still styles the emitted `data-section` / modifier attributes however it likes; it just does not define them.
 {% /hint %}
 
 ## Real-world examples

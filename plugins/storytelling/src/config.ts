@@ -1,13 +1,25 @@
 import type { RuneConfig } from '@refrakt-md/transform';
 import { resolveValign } from '@refrakt-md/transform';
 
+// SPEC-125 Phase 2 — the join tables (`sections`, `mediaSlots`, `frameTarget`)
+// are declared in the tag modules that own them and referenced here. Config
+// points at rune identity; it does not define it (ADR-028). The engine's read
+// path is unchanged — it still reads `config.sections` and friends.
+import { bondSections } from './tags/bond.js';
+import { characterMediaSlots, characterSectionSections, characterSections } from './tags/character.js';
+import { factionMediaSlots, factionSectionSections, factionSections } from './tags/faction.js';
+import { loreSections } from './tags/lore.js';
+import { plotSections } from './tags/plot.js';
+import { realmMediaSlots, realmSectionSections, realmSections } from './tags/realm.js';
+import { storyboardPanelMediaSlots } from './tags/storyboard.js';
+
 export const config: Record<string, RuneConfig> = {
 	Character: {
 		block: 'character',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { preamble: 'preamble', name: 'title', portrait: 'media' },
-		mediaSlots: { portrait: 'portrait' },
+		sections: characterSections,
+		mediaSlots: characterMediaSlots,
 		modifiers: {
 			role: { source: 'meta', default: 'supporting' },
 			status: { source: 'meta', default: 'alive' },
@@ -37,14 +49,22 @@ export const config: Record<string, RuneConfig> = {
 		},
 		editHints: { name: 'inline', portrait: 'image', body: 'none', sections: 'none' },
 	},
-	CharacterSection: { block: 'character-section', parent: 'Character', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
+	// SPEC-125 Phase 1 — the section's prose is its `body` role; the header
+	// decision is recorded in `sectionRoleExceptions`.
+	CharacterSection: {
+		block: 'character-section', parent: 'Character',
+		autoLabel: { span: 'header' },
+		sections: characterSectionSections,
+		sectionRoleExceptions: { header: 'The parent Character already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-character-section__name`\'s type outright, so the role would be inert there anyway.' },
+		editHints: { header: 'inline', name: 'inline', body: 'none' },
+	},
 
 	Realm: {
 		block: 'realm',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { preamble: 'preamble', name: 'title', scene: 'media' },
-		mediaSlots: { scene: 'cover' },
+		sections: realmSections,
+		mediaSlots: realmMediaSlots,
 		modifiers: {
 			realmType: { source: 'meta', default: 'place' },
 			scale: { source: 'meta' },
@@ -78,14 +98,21 @@ export const config: Record<string, RuneConfig> = {
 		autoLabel: { scene: 'scene' },
 		editHints: { name: 'inline', scene: 'image', body: 'none', sections: 'none' },
 	},
-	RealmSection: { block: 'realm-section', parent: 'Realm', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
+	// SPEC-125 Phase 1 — see CharacterSection; same shape, same correction.
+	RealmSection: {
+		block: 'realm-section', parent: 'Realm',
+		autoLabel: { span: 'header' },
+		sections: realmSectionSections,
+		sectionRoleExceptions: { header: 'The parent Realm already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-realm-section__name`\'s type outright, so the role would be inert there anyway.' },
+		editHints: { header: 'inline', name: 'inline', body: 'none' },
+	},
 
 	Lore: {
 		block: 'lore',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
 		defaultReading: 'prose',
-		sections: { title: 'title', body: 'body' },
+		sections: loreSections,
 		modifiers: {
 			category: { source: 'meta' },
 			spoiler: { source: 'meta', default: 'false' },
@@ -105,8 +132,8 @@ export const config: Record<string, RuneConfig> = {
 		block: 'faction',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { preamble: 'preamble', name: 'title', scene: 'media' },
-		mediaSlots: { scene: 'cover' },
+		sections: factionSections,
+		mediaSlots: factionMediaSlots,
 		modifiers: {
 			factionType: { source: 'meta' },
 			alignment: { source: 'meta' },
@@ -144,13 +171,20 @@ export const config: Record<string, RuneConfig> = {
 		autoLabel: { scene: 'scene' },
 		editHints: { name: 'inline', body: 'none', sections: 'none' },
 	},
-	FactionSection: { block: 'faction-section', parent: 'Faction', autoLabel: { span: 'header' }, editHints: { header: 'inline', name: 'inline', body: 'none' } },
+	// SPEC-125 Phase 1 — see CharacterSection; same shape, same correction.
+	FactionSection: {
+		block: 'faction-section', parent: 'Faction',
+		autoLabel: { span: 'header' },
+		sections: factionSectionSections,
+		sectionRoleExceptions: { header: 'The parent Faction already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-faction-section__name`\'s type outright, so the role would be inert there anyway.' },
+		editHints: { header: 'inline', name: 'inline', body: 'none' },
+	},
 
 	Plot: {
 		block: 'plot',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { title: 'title' },
+		sections: plotSections,
 		modifiers: {
 			plotType: { source: 'meta', default: 'arc' },
 			structure: { source: 'meta', default: 'linear' },
@@ -206,7 +240,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'bond',
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
-		sections: { body: 'body' },
+		sections: bondSections,
 		modifiers: {
 			bondType: { source: 'meta' },
 			status: { source: 'meta', default: 'active' },
@@ -226,5 +260,5 @@ export const config: Record<string, RuneConfig> = {
 		styles: { columns: '--sb-columns' },
 		editHints: { panels: 'none' },
 	},
-	StoryboardPanel: { block: 'storyboard-panel', parent: 'Storyboard', mediaSlots: { image: 'cover' }, editHints: { image: 'image', caption: 'inline', body: 'none' } },
+	StoryboardPanel: { block: 'storyboard-panel', parent: 'Storyboard', mediaSlots: storyboardPanelMediaSlots, editHints: { image: 'image', caption: 'inline', body: 'none' } },
 };

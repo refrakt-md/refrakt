@@ -17,6 +17,31 @@ export { sanitizeSandboxContent } from './sanitize.js';
  */
 export const schemaContentModels = new WeakMap<Schema, ContentModel | ((attrs: Record<string, any>) => ContentModel)>();
 
+/**
+ * The schema↔engine join tables a rune declares about itself — SPEC-125 Phase 2.
+ *
+ * `sections`, `mediaSlots` and `frameTarget` are not theme configuration: their
+ * keys are `data-name`s the rune's own transform emits and their values are a
+ * closed engine vocabulary, so the theme owns neither side (ADR-028). They are
+ * declared in the tag module, referenced by `ThemeConfig.runes`, and recorded
+ * here so `createContentModelSchema` has them **at construction** — which is
+ * what lets a later change narrow a rune's universal attributes to the ones
+ * that can affect it, with no config lookup and no import cycle.
+ *
+ * The engine's read path is unchanged: it still reads `config.sections`,
+ * `config.mediaSlots` and `config.frameTarget`.
+ */
+export interface RuneStructure {
+  sections?: Record<string, SectionRole>;
+  mediaSlots?: Record<string, string>;
+  frameTarget?: 'media' | 'self';
+}
+
+export const schemaRuneStructures = new WeakMap<Schema, RuneStructure>();
+
+/** The closed vocabulary `sections` values are drawn from. */
+export type SectionRole = 'header' | 'preamble' | 'title' | 'description' | 'body' | 'footer' | 'media';
+
 /** Normalize resolver output (single Node, Node[], or undefined) into Node[]. */
 export function asNodes(value: unknown): Node[] {
   if (Array.isArray(value)) return value as Node[];
@@ -359,6 +384,21 @@ export interface ContentModelSchemaOptions {
    * and empties it before transform; the rune reads it via `readDeferredBody`.
    */
   deferBody?: boolean;
+
+  /**
+   * SPEC-125 Phase 2 — the rune's own join tables: which of its emitted slots
+   * carry which section role, which are media slots, and which surface `frame`
+   * chrome decorates. Declared here (and referenced from `ThemeConfig.runes`)
+   * rather than owned by config, because a rune's universal-attribute
+   * applicability derives from these facts and a theme may not redefine them.
+   *
+   * Recorded on {@link schemaRuneStructures}; nothing in this constructor reads
+   * them yet. Passing them is what makes the facts reachable at schema-build
+   * time at all — the prerequisite for narrowing.
+   */
+  sections?: Record<string, SectionRole>;
+  mediaSlots?: Record<string, string>;
+  frameTarget?: 'media' | 'self';
 }
 
 /**
@@ -489,6 +529,16 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 
   // Register content model for introspection by editor / language server
   schemaContentModels.set(schema, options.contentModel);
+
+  // SPEC-125 Phase 2 — record the rune's own join tables, so the applicability
+  // facts are reachable from the schema without loading theme config.
+  if (options.sections || options.mediaSlots || options.frameTarget) {
+    schemaRuneStructures.set(schema, {
+      ...(options.sections && { sections: options.sections }),
+      ...(options.mediaSlots && { mediaSlots: options.mediaSlots }),
+      ...(options.frameTarget && { frameTarget: options.frameTarget }),
+    });
+  }
 
   // Record the base record reference so reference output can identify
   // attributes inherited from a registered preset.

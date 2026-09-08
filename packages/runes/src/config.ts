@@ -22,6 +22,30 @@ import { resolveRelationships } from './relationships-resolve.js';
 import { resolveAggregates } from './aggregate-resolve.js';
 import { resolveDataBindings } from './data-resolve.js';
 
+// SPEC-125 Phase 2 — the join tables (`sections`, `mediaSlots`, `frameTarget`)
+// are declared in the tag modules that own them and referenced here. Config
+// points at rune identity; it does not define it (ADR-028). The engine's read
+// path is unchanged — it still reads `config.sections` and friends.
+import { accordionItemSections, accordionSections } from './tags/accordion.js';
+import { annotateSections } from './tags/annotate.js';
+import { blogSections } from './tags/blog.js';
+import { budgetSections } from './tags/budget.js';
+import { cardSections } from './tags/card.js';
+import { codeGroupSections } from './tags/codegroup.js';
+import { dataTableSections } from './tags/datatable.js';
+import { drawerSections } from './tags/drawer.js';
+import { figureFrameTarget, figureSections } from './tags/figure.js';
+import { formSections } from './tags/form.js';
+import { hintSections } from './tags/hint.js';
+import { mediaTextMediaSlots, mediaTextSections } from './tags/mediatext.js';
+import { pullQuoteSections } from './tags/pullquote.js';
+import { revealSections } from './tags/reveal.js';
+import { sectionSections } from './tags/section.js';
+import { showcaseFrameTarget, showcaseSections } from './tags/showcase.js';
+import { sidenoteSections } from './tags/sidenote.js';
+import { textBlockSections } from './tags/textblock.js';
+import { tabGroupSections } from './tags/tabs.js';
+
 /** Read text content from a property span child */
 function readPropText(node: SerializedTag, prop: string): string {
 	for (const c of node.children) {
@@ -50,8 +74,20 @@ export const coreConfig: ThemeConfig = {
 	runes: {
 		// ─── Simple runes (block name only, engine adds BEM classes) ───
 
-		Accordion: { block: 'accordion', defaultDensity: 'full', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
-		AccordionItem: { block: 'accordion-item', parent: 'Accordion', requiresParent: 'Accordion', rootAttributes: { 'data-state': 'closed' }, autoLabel: { name: 'header' }, editHints: { header: 'inline', body: 'none' } },
+		Accordion: { block: 'accordion', defaultDensity: 'full', sections: accordionSections, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+		// SPEC-125 Phase 1 — the answer panel is the item's `body` role, so
+		// `reading` / `dropcap` land on it. The header decision is recorded in
+		// `sectionRoleExceptions` so it travels with the rune.
+		AccordionItem: {
+			block: 'accordion-item', parent: 'Accordion', requiresParent: 'Accordion',
+			rootAttributes: { 'data-state': 'closed' },
+			autoLabel: { name: 'header' },
+			sections: accordionItemSections,
+			sectionRoleExceptions: {
+				header: 'The `header` slot is the <summary> disclosure control, not a page-section header. `header` would inherit the chrome-row rhythm (a 3rem margin under every summary); `title` would tighten every summary\'s line-height while leaving `prominence` inert anyway, since `.rf-accordion-item__header` pins the control\'s font size on purpose. The parent Accordion already holds `title`.',
+			},
+			editHints: { header: 'inline', body: 'none' },
+		},
 		Details: { block: 'details', defaultElevation: 'flush', autoLabel: { summary: 'summary' }, editHints: { summary: 'inline', body: 'none' } },
 		Grid: {
 			block: 'grid',
@@ -94,7 +130,7 @@ export const coreConfig: ThemeConfig = {
 				topbar: { fields: ['title'], layout: 'bar' },
 			},
 			layout: { root: ['topbar'] },
-			sections: { topbar: 'header' },
+			sections: codeGroupSections,
 			// Opt in to the highlight transform's `theme.code.colorScheme` cascade
 			// (topbar + tab chrome flip with the inner code). Static flag → declared
 			// via rootAttributes rather than a postTransform. The `data-code-host`
@@ -172,7 +208,7 @@ export const coreConfig: ThemeConfig = {
 				height: { source: 'meta', noBemClass: true },
 				aspect: { source: 'meta', noBemClass: true },
 			},
-			sections: { media: 'media' },
+			sections: cardSections,
 			// SPEC-081/091: the transform emits flat slots; `layout` builds the
 			// skeleton — media beside a `content` wrapper grouping eyebrow/body/
 			// footer. A base `layout` is the prerequisite for the cover variant
@@ -221,7 +257,7 @@ export const coreConfig: ThemeConfig = {
 		Blog: {
 			block: 'blog',
 			defaultDensity: 'full',
-			sections: { preamble: 'preamble', headline: 'title', blurb: 'description', content: 'body' },
+			sections: blogSections,
 			contentWrapper: { tag: 'div', ref: 'content' },
 			modifiers: {
 				layout: { source: 'meta', default: 'list' },
@@ -237,7 +273,7 @@ export const coreConfig: ThemeConfig = {
 			block: 'budget',
 			defaultDensity: 'full',
 			defaultElevation: 'flat',
-			sections: { preamble: 'preamble', headline: 'title', footer: 'footer' },
+			sections: budgetSections,
 			editHints: { headline: 'inline' },
 			modifiers: {
 				currency: { source: 'meta', default: 'USD' },
@@ -283,7 +319,7 @@ export const coreConfig: ThemeConfig = {
 			defaultElevation: 'sunken',
 			modifiers: { hintType: { source: 'meta', default: 'note' } },
 			contextModifiers: { 'hero': 'in-hero', 'feature': 'in-feature' },
-			sections: { header: 'header' },
+			sections: hintSections,
 			// SPEC-035 Zone 6 — the hintType value doubles as the visible title
 			// (CSS capitalizes it). Declaring it as an enum lets `core.hint.<value>`
 			// localize the title; the raw value stays the English fallback.
@@ -307,7 +343,7 @@ export const coreConfig: ThemeConfig = {
 				size: { source: 'meta', default: 'md' },
 				shortcut: { source: 'meta', noBemClass: true },
 			},
-			sections: { header: 'header', body: 'body', footer: 'footer' },
+			sections: drawerSections,
 			editHints: { title: 'inline', body: 'none', close: 'none', footer: 'none' },
 		},
 		Figure: {
@@ -316,12 +352,12 @@ export const coreConfig: ThemeConfig = {
 			defaultElevation: 'flat',
 			// SPEC-086 — a figure *is* a frame around its image, so `frame` chrome
 			// targets the figure's own root (its body is the media).
-			frameTarget: 'self',
+			frameTarget: figureFrameTarget,
 			modifiers: {
 				size: { source: 'meta', default: 'default' },
 				align: { source: 'meta', default: 'center' },
 			},
-			sections: { caption: 'description' },
+			sections: figureSections,
 			editHints: { caption: 'inline' },
 		},
 		Gallery: {
@@ -345,7 +381,7 @@ export const coreConfig: ThemeConfig = {
 			defaultElevation: 'flush',
 			defaultReading: 'fine',
 			modifiers: { variant: { source: 'meta', default: 'sidenote' } },
-			sections: { body: 'body' },
+			sections: sidenoteSections,
 			editHints: { body: 'inline' },
 		},
 		Compare: {
@@ -366,7 +402,7 @@ export const coreConfig: ThemeConfig = {
 			defaultDensity: 'full',
 			defaultElevation: 'flush',
 			modifiers: { variant: { source: 'meta', default: 'margin' } },
-			sections: { body: 'body' },
+			sections: annotateSections,
 			editHints: { body: 'none', notes: 'none' },
 		},
 		AnnotateNote: { block: 'annotate-note', parent: 'Annotate', editHints: { body: 'inline' } },
@@ -460,7 +496,7 @@ export const coreConfig: ThemeConfig = {
 				align: { source: 'meta', default: 'center' },
 				variant: { source: 'meta', default: 'default' },
 			},
-			sections: { body: 'body' },
+			sections: pullQuoteSections,
 			editHints: { body: 'inline' },
 		},
 		TextBlock: {
@@ -473,7 +509,7 @@ export const coreConfig: ThemeConfig = {
 				lead: { source: 'meta' },
 				align: { source: 'meta', default: 'left' },
 			},
-			sections: { body: 'body' },
+			sections: textBlockSections,
 			editHints: { body: 'none' },
 		},
 		MediaText: {
@@ -484,8 +520,8 @@ export const coreConfig: ThemeConfig = {
 				ratio: { source: 'meta', default: '1:1' },
 				wrap: { source: 'meta' },
 			},
-			sections: { body: 'body', media: 'media' },
-			mediaSlots: { media: 'cover' },
+			sections: mediaTextSections,
+			mediaSlots: mediaTextMediaSlots,
 			editHints: { media: 'image', body: 'none' },
 		},
 
@@ -493,21 +529,21 @@ export const coreConfig: ThemeConfig = {
 			block: 'showcase',
 			defaultDensity: 'compact',
 			childDensity: 'compact',
-			sections: { viewport: 'body' },
+			sections: showcaseSections,
 			// SPEC-086 — showcase is the degenerate `frameTarget: 'self'` case: its
 			// body *is* the media, so `frame` chrome lands on its own root. Its old
 			// shadow/bleed/aspect/offset/place attributes are deprecated aliases for
 			// `frame-*` facets (mapped + warned in showcase.ts); breakout (a
 			// displaced guest spilling past a clipping ancestor) is its distinct
 			// value, retained via the host-owned-clip CSS.
-			frameTarget: 'self',
+			frameTarget: showcaseFrameTarget,
 			contextModifiers: { 'bento-cell': 'in-bento-cell' },
 			editHints: { viewport: 'none' },
 		},
 
 		// ─── Interactive runes (still get BEM classes, components add behavior) ───
 
-		TabGroup: { block: 'tabs', interactive: true, defaultDensity: 'full', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+		TabGroup: { block: 'tabs', interactive: true, defaultDensity: 'full', sections: tabGroupSections, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
 		Tab: { block: 'tab', parent: 'TabGroup', requiresParent: 'TabGroup', rootAttributes: { 'data-state': 'inactive' }, editHints: { name: 'inline' } },
 		TabPanel: { block: 'tab-panel', parent: 'TabGroup', requiresParent: 'TabGroup', rootAttributes: { 'data-state': 'inactive' } },
 		DataTable: {
@@ -515,7 +551,7 @@ export const coreConfig: ThemeConfig = {
 			interactive: true,
 			defaultDensity: 'compact',
 			defaultElevation: 'sunken',
-			sections: { table: 'body' },
+			sections: dataTableSections,
 			modifiers: {
 				searchable: { source: 'meta', default: 'false' },
 				sortable: { source: 'meta' },
@@ -529,7 +565,7 @@ export const coreConfig: ThemeConfig = {
 			interactive: true,
 			defaultDensity: 'full',
 			defaultElevation: 'flat',
-			sections: { body: 'body' },
+			sections: formSections,
 			modifiers: {
 				variant: { source: 'meta', default: 'stacked' },
 				action: { source: 'meta' },
@@ -554,7 +590,7 @@ export const coreConfig: ThemeConfig = {
 			modifiers: {
 				mode: { source: 'meta', default: 'click' },
 			},
-			sections: { preamble: 'preamble', headline: 'title', blurb: 'description' },
+			sections: revealSections,
 			autoLabel: pageSectionAutoLabel,
 			editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', steps: 'none' },
 		},
@@ -564,7 +600,7 @@ export const coreConfig: ThemeConfig = {
 			modifiers: {
 				align: { source: 'meta', default: 'start' },
 			},
-			sections: { preamble: 'preamble', headline: 'title', blurb: 'description' },
+			sections: sectionSections,
 			autoLabel: pageSectionAutoLabel,
 			editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', body: 'none' },
 		},

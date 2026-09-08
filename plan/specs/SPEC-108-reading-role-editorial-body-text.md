@@ -127,6 +127,16 @@ readable body — only actually reads as editorial once the body has a reading r
 {% recipe elevation="flush" width="full" prominence="display" reading="prose" %}
 ```
 
+> **Correction (SPEC-125 Phase 1, v0.31.0).** The example above never worked as
+> written: `recipe` has no `body` slot — its content is entirely structured
+> (ingredients, steps, tips) — so it has no `body` section role and `reading`
+> was silently dropped on it. `prominence` and `width` did apply, so the
+> composition half-worked, which is why it went unnoticed. The working form of
+> the same spread uses a rune with a body role, e.g.
+> `{% blog elevation="flush" width="full" prominence="display" reading="prose" %}`.
+> The user docs were corrected; this text is left as the record of what was
+> specified at the time.
+
 `prominence="display"` gives the headline, `width="full"` bleeds the frame, and
 `reading="prose"` holds the body to measure underneath it — the canonical magazine spread,
 and exactly the `display` + contained off-diagonal {% ref "SPEC-107" /%} §3 used to argue

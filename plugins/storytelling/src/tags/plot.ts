@@ -68,7 +68,13 @@ export const beat = createContentModelSchema({
 const plotType = ['arc', 'quest', 'subplot', 'campaign', 'episode', 'act', 'chapter'] as const;
 const structureType = ['linear', 'parallel', 'branching', 'web'] as const;
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const plotSections = { title: 'title' } as const;
+
 export const plot = createContentModelSchema({
+	sections: plotSections,
 	base: taxonomyAttributes,
 	attributes: {
 		title: { type: String, required: true, description: 'Heading displayed for this plot line.' },

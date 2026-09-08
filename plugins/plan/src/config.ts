@@ -1,5 +1,15 @@
 import type { RuneConfig } from '@refrakt-md/transform';
 
+// SPEC-125 Phase 2 — the join tables (`sections`, `mediaSlots`, `frameTarget`)
+// are declared in the tag modules that own them and referenced here. Config
+// points at rune identity; it does not define it (ADR-028). The engine's read
+// path is unchanged — it still reads `config.sections` and friends.
+import { bugSections } from './tags/bug.js';
+import { decisionSections } from './tags/decision.js';
+import { milestoneSections } from './tags/milestone.js';
+import { specSections } from './tags/spec.js';
+import { workSections } from './tags/work.js';
+
 /** Shared `eyebrow + status` rendering — every plan entity declares
  *  these two fields on its eyebrow zone. Pulled out so the per-entity
  *  metaFields blocks only carry the entity-specific extras. */
@@ -57,7 +67,7 @@ export const config: Record<string, RuneConfig> = {
 			tags: { fields: ['tags'], layout: 'bar' },
 		},
 		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
-		sections: { title: 'title', blurb: 'description', body: 'body' },
+		sections: specSections,
 		editHints: { body: 'none' },
 	},
 	Work: {
@@ -106,7 +116,7 @@ export const config: Record<string, RuneConfig> = {
 			tags: { fields: ['tags'], layout: 'bar' },
 		},
 		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
-		sections: { title: 'title', blurb: 'description', body: 'body' },
+		sections: workSections,
 		editHints: { body: 'none' },
 	},
 	Bug: {
@@ -149,7 +159,7 @@ export const config: Record<string, RuneConfig> = {
 			tags: { fields: ['tags'], layout: 'bar' },
 		},
 		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
-		sections: { title: 'title', blurb: 'description', body: 'body' },
+		sections: bugSections,
 		editHints: { body: 'none' },
 	},
 	Decision: {
@@ -184,7 +194,7 @@ export const config: Record<string, RuneConfig> = {
 			tags: { fields: ['tags'], layout: 'bar' },
 		},
 		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
-		sections: { title: 'title', blurb: 'description', body: 'body' },
+		sections: decisionSections,
 		editHints: { body: 'none' },
 	},
 	Milestone: {
@@ -214,7 +224,7 @@ export const config: Record<string, RuneConfig> = {
 			metadata: { fields: ['target', 'created', 'modified'], layout: 'definition-list' },
 		},
 		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'body'] },
-		sections: { title: 'title', blurb: 'description', body: 'body' },
+		sections: milestoneSections,
 		editHints: { body: 'none' },
 	},
 	Backlog: {

@@ -67,7 +67,13 @@ function convertHeadings(nodes: Node[]): Node[] {
   return converted;
 }
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const tabGroupSections = { preamble: 'preamble', headline: 'title', blurb: 'description' } as const;
+
 export const tabs = createContentModelSchema({
+	sections: tabGroupSections,
   attributes: {},
   contentModel: () => ({
     type: 'custom' as const,

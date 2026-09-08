@@ -4,7 +4,15 @@ import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, linkItem, pageSectionProperties, extractMediaImage, unwrapParagraphImages } from '@refrakt-md/runes';
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const heroSections = { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' } as const;
+export const heroMediaSlots = { media: 'hero' } as const;
+
 export const hero = createContentModelSchema({
+	sections: heroSections,
+	mediaSlots: heroMediaSlots,
 	base: SplitLayoutModel,
 	attributes: {
 		align: { type: String, required: false, matches: ['left', 'center', 'right'], description: 'Horizontal alignment of headline and body text' },

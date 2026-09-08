@@ -46,6 +46,20 @@
 	display: none;
 }
 
+/* Most runes put the title beside the body; card puts its leading heading
+ * *inside* the body slot. The blanket hide above would take the title with it
+ * and leave an empty surface, so where a title is nested in the body, keep the
+ * body box and hide only its other children — "title and primary metadata only"
+ * then means what it says on those runes too. (SPEC-125 Phase 1: card only
+ * gained a `body` role in v0.31.0, so this case could not arise before.) */
+[data-density="minimal"] [data-section="body"]:has(> [data-name="title"]) {
+	display: revert;
+}
+
+[data-density="minimal"] [data-section="body"]:has(> [data-name="title"]) > :not([data-name="title"]) {
+	display: none;
+}
+
 [data-density="minimal"] [data-section="footer"] {
 	display: none;
 }
@@ -72,7 +86,8 @@
 [data-density="minimal"] [data-density="full"] [data-section="description"],
 [data-density="minimal"] [data-density="full"] [data-section="body"],
 [data-density="minimal"] [data-density="full"] [data-section="footer"],
-[data-density="minimal"] [data-density="full"] [data-meta-rank="secondary"] {
+[data-density="minimal"] [data-density="full"] [data-meta-rank="secondary"],
+[data-density="minimal"] [data-density="full"] [data-section="body"]:has(> [data-name="title"]) > :not([data-name="title"]) {
 	display: revert;
 }
 

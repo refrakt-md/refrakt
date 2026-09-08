@@ -4,7 +4,13 @@ const { Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas } from '@refrakt-md/runes';
 import { extractScene, buildStoryContent } from './common.js';
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const realmSectionSections = { body: 'body' } as const;
+
 export const realmSection = createContentModelSchema({
+	sections: realmSectionSections,
 	attributes: {
 		name: { type: String, required: true },
 	},
@@ -28,7 +34,16 @@ export const realmSection = createContentModelSchema({
 	},
 });
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+// SPEC-125 Phase 1 — see `characterSections`; same shape, same correction.
+export const realmSections = { preamble: 'preamble', name: 'title', scene: 'media', body: 'body' } as const;
+export const realmMediaSlots = { scene: 'cover' } as const;
+
 export const realm = createContentModelSchema({
+	sections: realmSections,
+	mediaSlots: realmMediaSlots,
 	base: SplitLayoutModel,
 	attributes: {
 		name: { type: String, required: true, description: 'Display name shown in the realm header.' },

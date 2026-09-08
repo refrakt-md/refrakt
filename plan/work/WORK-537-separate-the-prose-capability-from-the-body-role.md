@@ -44,7 +44,7 @@ and flows into the structure contract for free. A bespoke `proseSection` on
       next axis needing one does not invent a bespoke field
 - [ ] The structural `body` role and every stylesheet keying on
       `[data-section="body"]` are unchanged
-- [ ] The ~21 body-role runes are audited for whether they bear authored prose
+- [ ] The 32 body-role runes are audited for whether they bear authored prose
 - [ ] `DataTable`, `Showcase`, `Form`, `Api` and `Symbol` no longer offer
       `reading`/`dropcap`; `Blog`, `TextBlock`, `PullQuote`, `Sidenote` and `Lore`
       still do
@@ -52,6 +52,29 @@ and flows into the structure contract for free. A bespoke `proseSection` on
       than still citing the body role
 - [ ] A breaking changeset records the runes that lose the attributes
 - [ ] `npm run build`, the full repo suite, and `refrakt contracts --check` pass
+
+## Scope grew in v0.31.0 — the audit list, not the answer
+
+The criteria above said "~21" when this item was written. Phase 1 added a `body`
+role to twelve more runes, so the audit covers **32**:
+
+`AccordionItem`, `Annotate`, `Api`, `BentoCell`, `Blog`, `Bond`, `Bug`, `Card`,
+`Character`, `CharacterSection`, `DataTable`, `Decision`, `Drawer`, `Event`,
+`Faction`, `FactionSection`, `Form`, `ItineraryStop`, `Lore`, `MediaText`,
+`Milestone`, `Organization`, `Playlist`, `PullQuote`, `Realm`, `RealmSection`,
+`Showcase`, `Sidenote`, `Spec`, `Symbol`, `TextBlock`, `Work`.
+
+**The expected non-provider list is unchanged.** All twelve additions are
+prose-bearing regions — a card's body, a bento cell's body, an accordion
+answer, a storytelling entity's or section's prose, an itinerary stop's note,
+the prose after a playlist's track list — so `DataTable`, `Showcase`, `Form`,
+`Api` and `Symbol` remain the five expected to lose `reading`/`dropcap`. The
+larger number is more runes to confirm, not more exceptions to find.
+
+One caveat on `Character`: its body role is correct but its slot is **always
+empty** — prose written directly inside `{% character %}` is dropped by its
+content model ({% ref "BUG-003" /%}). It provides prose in principle and none in
+practice until that is fixed; audit it on the intent, not on the current output.
 
 ## Approach
 

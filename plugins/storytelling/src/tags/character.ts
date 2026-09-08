@@ -4,7 +4,13 @@ const { Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
 import { taxonomyAttributes } from './common.js';
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const characterSectionSections = { body: 'body' } as const;
+
 export const characterSection = createContentModelSchema({
+	sections: characterSectionSections,
 	attributes: {
 		name: { type: String, required: true },
 	},
@@ -31,7 +37,19 @@ export const characterSection = createContentModelSchema({
 const roleType = ['protagonist', 'antagonist', 'supporting', 'minor'] as const;
 const statusType = ['alive', 'dead', 'unknown', 'missing'] as const;
 
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+// SPEC-125 Phase 1 — the `body` slot carries the character's prose and went
+// unmapped, so `reading` / `dropcap` were silently dropped. The header roles
+// were already right: `name` is the title, inside the `preamble` header, so
+// `prominence` already worked. Realm and Faction share this shape exactly.
+export const characterSections = { preamble: 'preamble', name: 'title', portrait: 'media', body: 'body' } as const;
+export const characterMediaSlots = { portrait: 'portrait' } as const;
+
 export const character = createContentModelSchema({
+	sections: characterSections,
+	mediaSlots: characterMediaSlots,
 	base: taxonomyAttributes,
 	attributes: {
 		name: { type: String, required: true, description: 'Display name shown in the character header.' },
