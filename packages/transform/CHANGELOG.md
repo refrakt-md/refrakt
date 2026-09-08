@@ -1,5 +1,58 @@
 # @refrakt-md/transform
 
+## 0.31.0
+
+### Minor Changes
+
+- a88de39: Enforce rune identity on theme overrides (ADR-028)
+
+  `block`, `modifiers` and `sections` are rune identity: they say what a rune _is_, and universal-attribute applicability derives from them — `reading` needs a `body` section role, `prominence` a header-ish one, `cover` a declared `media-position` modifier. Until now the `IDENTITY_FIELDS` rule guarded only SPEC-091 variant deltas, while the theme-override path shallow-merged without restriction, so a theme could write `runes: { Card: { sections: {} } }` and silently disable `reading` on every card in a site.
+
+  `mergeThemeConfig` now drops any of the three from a theme override and reports it, naming the rune and the field; the rune's own declaration stands. The rule itself moved to a single shared module (`identity-fields.ts`, exported as `IDENTITY_FIELDS` / `VARIANT_DELTA_RESERVED_FIELDS`) that both merge paths consume, so the two cannot drift.
+
+  This is a no-op against everything the project ships — Lumina overrides no rune, and none of the nine official plugins collides with a core rune — and a test now guards that. The one capability removed is a theme reaching into `modifiers` to restate a modifier (e.g. to add a `valueMap`); that belongs on the rune's own declaration. Themes keep `layout`, `structure`, `styles`, `contentWrapper`, `staticModifiers`, `autoLabel`, `editHints`, `projection` and `variants` unchanged.
+
+  `@refrakt-md/lumina` additionally exports its overrides object as `luminaOverrides` alongside the merged `luminaConfig`.
+
+- 6c6b824: Lint slot/role mismatches so section-role drift cannot recur (SPEC-125 Phase 1)
+
+  The twelve corrections in this milestone were found by an ad-hoc script comparing each rune's declared slots against its `sections` map. Nothing stopped the same drift returning the next time a rune gained a `body` slot — and the failure mode is silent: `reading`, `dropcap` and `prominence` are simply dropped.
+
+  `@refrakt-md/transform` now exports two new functions. `declaredSlots(config)` collects every slot a rune declares, from all five config fields that can introduce one (`layout`, `structure`, `autoLabel`, `blocks`, `contentWrapper`) — the reconstruction the ad-hoc script had to do by hand. `lintSectionRoles(runes)` builds on it and flags a rune declaring a `body` or heading slot with no matching role.
+
+  `validateThemeConfig` runs the lint, so `refrakt validate` and `refrakt plugin validate` fail on drift with a non-zero exit rather than only warning. Across the 132-rune catalogue the check is quiet: no findings, and no noise from the ~105 genuinely bodyless runes.
+
+  The check is **direction-only** — it flags a _missing_ role and never a role that is present. A `body` role on a non-prose region (`datatable`'s table, `showcase`'s viewport) is an overload of what `body` means, not a data error, and themes style those roles directly; flagging them would push someone toward removing a correct role.
+
+  New `RuneConfig.sectionRoleExceptions` records a deliberate decision not to map a slot, keyed by slot name and valued by the reason, so the reasoning travels with the rune instead of living only in a commit message. Applied to the five runes this milestone deliberately left without a header-ish role — `accordion-item`, the three storytelling `*-section` runes, and `itinerary-day` — each carrying its own justification.
+
+  Theme and plugin authors upgrading may see `refrakt validate` fail on a rune that was quietly dropping an attribute. That is the check working: map the role, or record why not.
+
+- 19cb36e: Declare the schema↔engine join tables in tag modules (SPEC-125 Phase 2)
+
+  `sections`, `mediaSlots` and `frameTarget` are not theme configuration: their keys are `data-name`s a rune's own transform emits and their values are a closed engine vocabulary, so the theme owns neither side. All 72 declarations across core and the nine plugins now live in the tag module that owns each rune, with `ThemeConfig.runes` _referencing_ the declaration rather than defining it:
+
+  ```ts
+  // tags/card.ts
+  export const cardSections = { media: 'media', body: 'body' } as const;
+  export const card = createContentModelSchema({ sections: cardSections, … });
+
+  // config.ts — already imports from tags/
+  Card: { block: 'card', sections: cardSections, … }
+  ```
+
+  This is what makes narrowing possible. `createContentModelSchema` now has the gating facts **at construction**, recorded on a new `schemaRuneStructures` WeakMap alongside the existing `schemaContentModels` — so a rune's Markdoc schema can later offer only the universal attributes that can affect it, with no config lookup and no import cycle. The direction matters: `config → tags` holds uniformly across the repo, and having tags import config instead would cycle in core, where `createContentModelSchema` runs at module scope and would observe `coreConfig` uninitialised.
+
+  **Pure relocation.** No values changed, the engine's read path is untouched (it still reads `config.sections`, `config.mediaSlots`, `config.frameTarget`), transform output is byte-identical, and `refrakt contracts --check` passes with no regeneration.
+
+  `IDENTITY_FIELDS` gains `mediaSlots` and `frameTarget`, closing the gap the identity guard deliberately left. `frameTarget` in particular needs it: frame applicability resolves as `config.frameTarget ?? (hasMediaSection(config.sections) ? 'media' : null)` and the type has no `'none'`, so it can only ever _grant_ — an unguarded theme could add `frameTarget: 'self'` to a rune whose schema rejects `frame=`, config granting what the schema forbids.
+
+  New public API on `@refrakt-md/runes`: `schemaRuneStructures`, plus the `RuneStructure` and `SectionRole` types. `createContentModelSchema` accepts `sections`, `mediaSlots` and `frameTarget`; all three are optional and nothing reads them yet.
+
+### Patch Changes
+
+- @refrakt-md/types@0.31.0
+
 ## 0.30.1
 
 ### Patch Changes

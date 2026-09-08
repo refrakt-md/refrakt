@@ -1,5 +1,46 @@
 # @refrakt-md/lumina
 
+## 0.31.0
+
+### Minor Changes
+
+- 3b799a5: Correct missing section roles on card, bento-cell and accordion-item (SPEC-125 Phase 1)
+
+  Three runes declared a slot in their layout that their `sections` map never mapped to a role. Because `data-section` is what `reading`, `dropcap` and `prominence` gate on, the omission silently dropped those attributes — `{% card reading="prose" %}` did nothing at all, with no warning.
+
+  - **`card`** gains a `body` role on its body slot. Its content model is literally "body (optional, repeatable any block)", so this is the clearest case of the three — and the one that surfaced the whole problem. `reading` and `dropcap` now land.
+  - **`bento-cell`** gains both a `body` role and a `title` role; its title is a sibling slot of its body. `reading`, `dropcap` and `prominence` now land.
+  - **`accordion-item`** gains a `body` role on its answer panel, so `reading` and `dropcap` now land there too. It deliberately declares **no** header-ish role: the `header` slot is the `<summary>` disclosure control, not a page-section header.
+
+  `card` deliberately keeps no `title` role — its leading heading is nested _inside_ the body slot rather than beside it, so a title role would nest one section inside another and resize every card heading.
+
+  **Rendered output changes**, though under Lumina nothing moves. The three runes now emit `data-section` on those slots. Checked in a browser against the real stylesheet: `[data-section="body"]`'s declarations (`line-height: relaxed`, `color: text`) are already the inherited values, and `[data-section="title"]`'s type is outranked by `.rf-bento-cell__title`, so every element's computed style and box size is byte-identical at every density. A theme with its own `[data-section]` rules may see a change on these three runes; that is the intended, visible half of the correction.
+
+  Lumina additionally fixes a case this exposed: at `density="minimal"` the blanket `[data-section="body"] { display: none }` would have hidden a card's title along with its prose, because card nests the title in its body. Minimal density now keeps a body-nested title and hides only the body's other children — so `{% card density="minimal" %}` shows title-only rather than an empty surface. Previously it did nothing at all.
+
+  `prominence` is now declarable on `bento-cell` but has no visible effect under Lumina, which pins `.rf-bento-cell__title`'s font size rather than letting it ride `--rf-title-size`. That is a skin gap, not a config one.
+
+- a88de39: Enforce rune identity on theme overrides (ADR-028)
+
+  `block`, `modifiers` and `sections` are rune identity: they say what a rune _is_, and universal-attribute applicability derives from them — `reading` needs a `body` section role, `prominence` a header-ish one, `cover` a declared `media-position` modifier. Until now the `IDENTITY_FIELDS` rule guarded only SPEC-091 variant deltas, while the theme-override path shallow-merged without restriction, so a theme could write `runes: { Card: { sections: {} } }` and silently disable `reading` on every card in a site.
+
+  `mergeThemeConfig` now drops any of the three from a theme override and reports it, naming the rune and the field; the rune's own declaration stands. The rule itself moved to a single shared module (`identity-fields.ts`, exported as `IDENTITY_FIELDS` / `VARIANT_DELTA_RESERVED_FIELDS`) that both merge paths consume, so the two cannot drift.
+
+  This is a no-op against everything the project ships — Lumina overrides no rune, and none of the nine official plugins collides with a core rune — and a test now guards that. The one capability removed is a theme reaching into `modifiers` to restate a modifier (e.g. to add a `valueMap`); that belongs on the rune's own declaration. Themes keep `layout`, `structure`, `styles`, `contentWrapper`, `staticModifiers`, `autoLabel`, `editHints`, `projection` and `variants` unchanged.
+
+  `@refrakt-md/lumina` additionally exports its overrides object as `luminaOverrides` alongside the merged `luminaConfig`.
+
+### Patch Changes
+
+- Updated dependencies [3b799a5]
+- Updated dependencies [a88de39]
+- Updated dependencies [6c6b824]
+- Updated dependencies [19cb36e]
+  - @refrakt-md/runes@0.31.0
+  - @refrakt-md/transform@0.31.0
+  - @refrakt-md/skeleton@0.31.0
+  - @refrakt-md/types@0.31.0
+
 ## 0.30.1
 
 ### Patch Changes

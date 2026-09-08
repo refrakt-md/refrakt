@@ -1,5 +1,64 @@
 # @refrakt-md/places
 
+## 0.31.0
+
+### Minor Changes
+
+- 30cae81: Correct missing section roles on playlist and itinerary-stop (SPEC-125 Phase 1)
+
+  **`playlist`** gains a `body` role. Its `layout` places `tracks` and `body` as separate slots, and the `body` slot holds the prose an author writes _after_ the track list — so it is both structurally the body and genuinely prose-bearing. `reading` and `dropcap` now land on it. The track list stays unroled: it is structured content the rune reinterprets, and mapping it to `body` would invent the `datatable`-shaped overload SPEC-125 Direction 2 exists to avoid.
+
+  **`itinerary-stop`** gains a `body` role on each stop's note — authored prose, and the stop's only content region.
+
+  **`itinerary-day` deliberately gains no header-ish role.** Its parent `itinerary` already holds `title` on its headline, and `prominence` scales _the_ header of a page-section family rune, so a second title in the same subtree would flatten the hierarchy the axis exists to scale. The contract keeps recording `prominence` as unavailable on the day, which is the accurate answer.
+
+  **Rendered output changes**: `playlist` and `itinerary-stop` now emit `data-section="body"` on those slots. Checked in a browser against the real stylesheet — every element's computed style and box geometry is unchanged. `.rf-itinerary-stop__body` already sets its own `font-size`, `line-height` and `color`, so the shared `[data-section="body"]` rules are outranked there; on `playlist` they apply but are already the values inherited from `html`. A theme with its own `[data-section]` rules may see a change on these two runes.
+
+### Patch Changes
+
+- 6c6b824: Lint slot/role mismatches so section-role drift cannot recur (SPEC-125 Phase 1)
+
+  The twelve corrections in this milestone were found by an ad-hoc script comparing each rune's declared slots against its `sections` map. Nothing stopped the same drift returning the next time a rune gained a `body` slot — and the failure mode is silent: `reading`, `dropcap` and `prominence` are simply dropped.
+
+  `@refrakt-md/transform` now exports two new functions. `declaredSlots(config)` collects every slot a rune declares, from all five config fields that can introduce one (`layout`, `structure`, `autoLabel`, `blocks`, `contentWrapper`) — the reconstruction the ad-hoc script had to do by hand. `lintSectionRoles(runes)` builds on it and flags a rune declaring a `body` or heading slot with no matching role.
+
+  `validateThemeConfig` runs the lint, so `refrakt validate` and `refrakt plugin validate` fail on drift with a non-zero exit rather than only warning. Across the 132-rune catalogue the check is quiet: no findings, and no noise from the ~105 genuinely bodyless runes.
+
+  The check is **direction-only** — it flags a _missing_ role and never a role that is present. A `body` role on a non-prose region (`datatable`'s table, `showcase`'s viewport) is an overload of what `body` means, not a data error, and themes style those roles directly; flagging them would push someone toward removing a correct role.
+
+  New `RuneConfig.sectionRoleExceptions` records a deliberate decision not to map a slot, keyed by slot name and valued by the reason, so the reasoning travels with the rune instead of living only in a commit message. Applied to the five runes this milestone deliberately left without a header-ish role — `accordion-item`, the three storytelling `*-section` runes, and `itinerary-day` — each carrying its own justification.
+
+  Theme and plugin authors upgrading may see `refrakt validate` fail on a rune that was quietly dropping an attribute. That is the check working: map the role, or record why not.
+
+- 19cb36e: Declare the schema↔engine join tables in tag modules (SPEC-125 Phase 2)
+
+  `sections`, `mediaSlots` and `frameTarget` are not theme configuration: their keys are `data-name`s a rune's own transform emits and their values are a closed engine vocabulary, so the theme owns neither side. All 72 declarations across core and the nine plugins now live in the tag module that owns each rune, with `ThemeConfig.runes` _referencing_ the declaration rather than defining it:
+
+  ```ts
+  // tags/card.ts
+  export const cardSections = { media: 'media', body: 'body' } as const;
+  export const card = createContentModelSchema({ sections: cardSections, … });
+
+  // config.ts — already imports from tags/
+  Card: { block: 'card', sections: cardSections, … }
+  ```
+
+  This is what makes narrowing possible. `createContentModelSchema` now has the gating facts **at construction**, recorded on a new `schemaRuneStructures` WeakMap alongside the existing `schemaContentModels` — so a rune's Markdoc schema can later offer only the universal attributes that can affect it, with no config lookup and no import cycle. The direction matters: `config → tags` holds uniformly across the repo, and having tags import config instead would cycle in core, where `createContentModelSchema` runs at module scope and would observe `coreConfig` uninitialised.
+
+  **Pure relocation.** No values changed, the engine's read path is untouched (it still reads `config.sections`, `config.mediaSlots`, `config.frameTarget`), transform output is byte-identical, and `refrakt contracts --check` passes with no regeneration.
+
+  `IDENTITY_FIELDS` gains `mediaSlots` and `frameTarget`, closing the gap the identity guard deliberately left. `frameTarget` in particular needs it: frame applicability resolves as `config.frameTarget ?? (hasMediaSection(config.sections) ? 'media' : null)` and the type has no `'none'`, so it can only ever _grant_ — an unguarded theme could add `frameTarget: 'self'` to a rune whose schema rejects `frame=`, config granting what the schema forbids.
+
+  New public API on `@refrakt-md/runes`: `schemaRuneStructures`, plus the `RuneStructure` and `SectionRole` types. `createContentModelSchema` accepts `sections`, `mediaSlots` and `frameTarget`; all three are optional and nothing reads them yet.
+
+- Updated dependencies [3b799a5]
+- Updated dependencies [a88de39]
+- Updated dependencies [6c6b824]
+- Updated dependencies [19cb36e]
+  - @refrakt-md/runes@0.31.0
+  - @refrakt-md/transform@0.31.0
+  - @refrakt-md/types@0.31.0
+
 ## 0.30.1
 
 ### Patch Changes
