@@ -1,6 +1,6 @@
 {
 	"$schema": "http://json-schema.org/draft-07/schema#",
-	"$id": "https://refrakt.md/schemas/v0.11/refrakt.config.schema.json",
+	"$id": "https://refrakt.md/refrakt.config.schema.json",
 	"title": "RefraktConfig",
 	"description": "Project-level configuration for refrakt.md. Three valid shapes — flat (legacy, deprecated in v0.12, slated for removal in v1.0), singular `site`, plural `sites` — all collapse to a canonical normalized form internally. The unversioned URL https://refrakt.md/refrakt.config.schema.json is a 'latest' alias that always serves the most recently published schema.",
 	"type": "object",
