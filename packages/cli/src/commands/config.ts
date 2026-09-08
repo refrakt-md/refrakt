@@ -8,26 +8,8 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { RefraktConfig } from '@refrakt-md/types';
+import { SITE_FIELDS } from '@refrakt-md/transform/node';
 import { discoverPlugins } from '../lib/plugins.js';
-
-const SITE_FIELDS = [
-	'contentDir',
-	'theme',
-	'target',
-	'overrides',
-	'routeRules',
-	'highlight',
-	'icons',
-	'plugins',
-	'tints',
-	'backgrounds',
-	'sandbox',
-	'baseUrl',
-	'siteName',
-	'defaultImage',
-	'logo',
-	'runes',
-] as const;
 
 export async function runConfigCommand(args: string[]): Promise<void> {
 	const sub = args[0];

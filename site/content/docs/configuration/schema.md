@@ -46,10 +46,14 @@ A symlink at the repo root (`refrakt.config.schema.json` → `packages/transform
 ## What the schema covers
 
 - **All three shapes** — flat (legacy, deprecated in v0.12), singular `site`, plural `sites` — with `oneOf` enforcing mutual exclusivity between `site` and `sites`.
-- **Top-level sections** — `plugins`, `plan`, `site`/`sites`.
+- **Top-level sections** — `plugins`, `plan`, `xrefs`, `fileRoots`, `site`/`sites`, plus the deprecated flat-shape shorthands.
 - **`SiteConfig` definition** — every site-scoped field with its type, description, and required-ness.
 - **`PlanConfig` definition** — `plan.dir`.
-- **Helper definitions** — `RouteRule`, `HighlightConfig`, `RunesConfig`.
+- **Helper definitions** — `RouteRule`, `EntityRoute`, `XrefPattern`, `SandboxConfig`, `HighlightConfig`, `SiteThemeConfig`, `RunesConfig`.
+
+{% hint type="note" %}
+The schema is hand-maintained, but it doesn't drift: `packages/transform/test/config-schema.test.ts` reads the `RefraktConfig`, `SiteConfig`, `EntityRoute`, `XrefPattern`, `RouteRule`, and `PlanConfig` interfaces out of `@refrakt-md/types` and fails if the schema is missing a field — or describes one the types don't have.
+{% /hint %}
 
 ## Local-development reference
 

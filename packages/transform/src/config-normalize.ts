@@ -71,8 +71,13 @@ export interface NormalizeOptions {
 }
 
 /** Site fields that mirror to the top level of the config when there is exactly
- *  one site, so adapters that read `config.contentDir` keep working. */
-const SITE_FIELDS = [
+ *  one site, so adapters that read `config.contentDir` keep working.
+ *
+ *  This is the canonical legacy-shorthand set: the same fields the flat shape
+ *  accepted at the top level. `refrakt config migrate` consumes it to run the
+ *  inverse operation (top level → `site`), so both directions stay in step —
+ *  keep this the single definition rather than hand-copying it. */
+export const SITE_FIELDS = [
 	'contentDir',
 	'theme',
 	'target',

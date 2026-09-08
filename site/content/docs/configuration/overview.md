@@ -51,9 +51,49 @@ The singular shape produces `sites.default` after normalization. Multi-site repo
 |---------|---------|----------|
 | `plugins` | Plugins contributing runes, layouts, hooks, CLI commands, and MCP tools | No (auto-discovered if absent) |
 | `plan` | Plan-management directory configuration | No |
+| `xrefs` | URL templates for cross-references that aren't registry entities | No |
+| `fileRoots` | Named directories that file-reading runes reach via `namespace:filename` | No |
 | `site` / `sites` | Per-site settings | No (planning-only repos can omit) |
 
-Site-scoped fields (`contentDir`, `theme`, `target`, `plugins`, `routeRules`, `icons`, `backgrounds`, `tints`, `runes`, `highlight`, `baseUrl`, `siteName`, `logo`, `defaultImage`, `sandbox`, `overrides`) live inside a site entry. See [Sites](/docs/configuration/sites).
+Everything else is site-scoped and lives inside a site entry — `contentDir`, `theme`, `target`, `plugins`, `routeRules`, `entityRoutes`, `search`, `highlight`, `icons`, `locale`, `strings`, `tints`, `backgrounds`, `sandbox`, `baseUrl`, `siteName`, `logo`, `defaultImage`, `repoUrl`, `repoBranch`, `runes`, and `overrides`. See [Sites](/docs/configuration/sites).
+
+{% hint type="note" %}
+This list is the complete set as of the current release. The [JSON Schema](/docs/configuration/schema) is the machine-readable version and is drift-tested against the TypeScript interfaces, so your editor's autocomplete is authoritative if the two ever disagree.
+{% /hint %}
+
+### `xrefs` — URL templates for external references
+
+`{% xref %}` and `{% ref %}` resolve IDs against the entity registry first. `xrefs` catches the ones that aren't registry entities — issue numbers, RFCs, ticket IDs — by matching the ID against a regex and building a URL from it. Patterns are tried in order; first match wins.
+
+```json
+{
+  "xrefs": [
+    {
+      "match": "^GH-(?<num>\\d+)$",
+      "template": "https://github.com/owner/repo/issues/{num}",
+      "type": "github-issue",
+      "label": "GitHub #{num}"
+    }
+  ]
+}
+```
+
+`match` is anchored to a whole-string match automatically. Named groups are available as `{name}` in both `template` and `label`; `{id}` is the full matched ID. See [`xref`](/runes/xref) for the authoring side.
+
+### `fileRoots` — named directories for file-reading runes
+
+Maps a namespace to a directory, letting runes that read files off disk address them as `namespace:filename` instead of by relative path. Values are relative to the project root and must point at directories that exist. The namespace `site` is reserved.
+
+```json
+{
+  "fileRoots": {
+    "shared": "./content/_shared",
+    "templates": "./content/_templates"
+  }
+}
+```
+
+`{% partial file="shared:footer.md" /%}` then resolves regardless of which page includes it. `entityRoutes`' `render-template` uses the same resolver. See [Partials](/extend/rune-authoring/partials#namespaced-partials-via-file-roots).
 
 ## When you need a config file
 
