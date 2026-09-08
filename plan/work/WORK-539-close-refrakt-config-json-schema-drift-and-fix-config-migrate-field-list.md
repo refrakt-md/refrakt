@@ -1,4 +1,4 @@
-{% work id="WORK-539" status="done" priority="high" complexity="moderate" source="" tags="config,schema,docs" milestone="v0.32.0" %}
+{% work id="WORK-539" status="done" priority="high" complexity="moderate" source="" tags="config,schema,docs" milestone="v0.32.0" pr="refrakt-md/refrakt#593" %}
 
 # Close refrakt.config.json schema drift and fix config migrate field list
 

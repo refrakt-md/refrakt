@@ -1,4 +1,4 @@
-{% work id="WORK-540" status="done" priority="high" complexity="moderate" source="" tags="docs,content,information-architecture" milestone="v0.32.0" %}
+{% work id="WORK-540" status="done" priority="high" complexity="moderate" source="" tags="docs,content,information-architecture" milestone="v0.32.0" pr="refrakt-md/refrakt#593" %}
 
 # Move author-facing pages out of the Extend handbook into Docs
 

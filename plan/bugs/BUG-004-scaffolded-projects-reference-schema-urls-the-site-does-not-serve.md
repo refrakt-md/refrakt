@@ -1,4 +1,4 @@
-{% bug id="BUG-004" status="fixed" severity="major" milestone="v0.32.0" tags="config,schema,site,create-refrakt" %}
+{% bug id="BUG-004" status="fixed" severity="major" milestone="v0.32.0" tags="config,schema,site,create-refrakt" pr="refrakt-md/refrakt#593" %}
 
 # Scaffolded projects reference schema URLs the site does not serve
 
