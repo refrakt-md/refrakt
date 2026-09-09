@@ -1,4 +1,4 @@
-{% work id="WORK-534" status="done" priority="high" complexity="complex" source="SPEC-125" tags="runes,schema,markdoc,breaking" milestone="v0.32.0" %}
+{% work id="WORK-534" status="done" priority="high" complexity="complex" source="SPEC-125" tags="runes,schema,markdoc,breaking" milestone="v0.32.0" pr="refrakt-md/refrakt#594" %}
 
 # Narrow rune schemas to applicable universal attributes
 

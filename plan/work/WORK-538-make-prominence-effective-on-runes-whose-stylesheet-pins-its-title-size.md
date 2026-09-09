@@ -1,4 +1,4 @@
-{% work id="WORK-538" status="done" priority="high" complexity="moderate" source="SPEC-107" tags="lumina,css,prominence,dimensions,dx" milestone="v0.32.0" %}
+{% work id="WORK-538" status="done" priority="high" complexity="moderate" source="SPEC-107" tags="lumina,css,prominence,dimensions,dx" milestone="v0.32.0" pr="refrakt-md/refrakt#594" %}
 
 # Make prominence effective on runes whose stylesheet pins its title size
 
