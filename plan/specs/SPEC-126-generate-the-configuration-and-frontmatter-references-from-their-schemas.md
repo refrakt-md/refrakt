@@ -45,6 +45,50 @@ The concrete evidence, all found by hand during a single audit:
 WORK-539 fixed the instances and added a schema drift test. It did not fix the
 cause: the docs are still a third hand-maintained copy, guarded by nothing.
 
+## The source of truth is not where its name says
+
+Everything above rests on `RefraktConfig` and `SiteConfig` being the thing the
+schema and the docs are derived from. They live in
+`packages/types/src/theme.ts`, which is not about themes.
+
+The file was created by commit `c3fe915` (v0.25.0), which split a single
+`@refrakt-md/types` module into fifteen files in one pass. Two tells that the
+placement was mechanical rather than considered: `index.ts` re-exports the whole
+batch under one `// Theme system types` comment — which is how `RefraktConfig`
+came to be labelled a theme type — and the same commit created
+`packages/types/src/types.ts` as a zero-line file, still empty and still
+unreferenced today.
+
+The file holds two unrelated concerns:
+
+| Project / site configuration | Theme system |
+|---|---|
+| `RefraktConfig`, `SiteConfig`, `PlanConfig`, `XrefPattern`, `EntityRoute`, `RouteRule` | `SiteThemeConfig`, `ThemeManifest`, `LayoutDefinition`, `ComponentDefinition`, `getThemePackage` |
+
+The only bridge is one field, `SiteConfig.theme: string | SiteThemeConfig`.
+Everything got filed under the referenced type rather than the referencing one.
+
+This matters here because this spec's whole claim is *"the docs are generated
+from the schema, and the schema is drift-tested against the types."* A reader
+following that chain lands in a file whose name says it is about something else.
+
+### A second declaration of the same fields
+
+While checking the above: `ThemeManifest` **also** declares `siteName`,
+`baseUrl`, `defaultImage`, `logo`, and `routeRules` — the same five fields as
+`SiteConfig`. The precedence is real but is written down in exactly one place, a
+scaffold template:
+
+```ts
+// packages/create-refrakt/template-html/build.ts:115
+routeRules: site.routeRules ?? manifest.routeRules ?? [],
+```
+
+Site config wins; the theme manifest is the fallback. A generated reference
+derived from `refrakt.config.schema.json` alone would describe
+`SiteConfig.baseUrl` and say nothing about a theme being able to supply it —
+accurate and still misleading. The reference has to say which wins.
+
 ## What the repo already does
 
 Four generation patterns exist here, and their inconsistency is itself the
@@ -66,6 +110,23 @@ That settles the enforcement question below: a drift guard belongs in `npm test`
 not behind a CLI flag that no automation invokes.
 
 ## Proposal
+
+### Give the config types an honestly-named home
+
+Split `packages/types/src/theme.ts` into `config.ts` (the six configuration
+types) and `theme.ts` (the five theme-system ones), delete the dead
+`types.ts`, and replace the single `// Theme system types` block in `index.ts`
+with two groups that say what they are.
+
+This is a type-only move with no runtime change, and it is cheap: **nothing
+outside `@refrakt-md/types` deep-imports `theme.ts`.** Every consumer goes
+through the package index, so the re-exports keep them working untouched. The
+only in-repo references to the path are `config-schema.test.ts` (which reads the
+source to extract interface members) and some `codegroup` test fixtures.
+
+Do this **first**, before the generator. The generator's whole value is that a
+reader can follow the chain from a rendered table back to the declaration; that
+chain should not pass through a misnamed file.
 
 ### Generated reference pages
 
@@ -139,9 +200,22 @@ shape. Plain tables grouped by schema definition, with `{% deflist %}` for
 nested objects, keep the generator simple and the output diff-readable. Revisit
 if the reference outgrows it.
 
+**D5 — Mark theme-defaultable fields in the reference, don't hide the overlap.**
+The five fields a `ThemeManifest` can also supply need to say so, or the
+reference is accurate and misleading at once. Cheapest honest option: a column
+or marker on those rows plus one sentence stating the precedence
+(`site` wins, theme is the fallback). Deriving the set automatically would mean
+teaching the generator about a second schema that does not exist yet, so start
+with a hand-maintained list in the generator — five entries — and let
+`config-schema.test.ts` assert it still matches `ThemeManifest`'s properties, so
+the marker cannot silently go stale either.
+
 ## Acceptance Criteria
 
+- [ ] The configuration types live in a file named for configuration, the dead `types.ts` is gone, and `index.ts` groups them as configuration rather than theme types
 - [ ] A generator renders a Markdoc reference page from a JSON Schema, including nested definitions, enums, defaults, required-ness, and deprecation
+- [ ] The reference marks the five fields a theme manifest can also supply, and states which wins
+- [ ] A test asserts that marked set still matches `ThemeManifest`, so it cannot go stale
 - [ ] `docs/configuration/reference.md` is generated and covers every top-level and site-scoped field
 - [ ] `packages/content/frontmatter.schema.json` exists and describes every frontmatter field refrakt consumes, including `type`, `id`, `created`, and `modified`
 - [ ] `Frontmatter` no longer hides consumed fields behind the index signature
@@ -153,14 +227,29 @@ if the reference outgrows it.
 
 ## Approach
 
-Land it in three parts, each independently shippable:
+Land it in four parts, each independently shippable:
 
+0. **Split `theme.ts`.** Type-only, no runtime change, no external consumers to
+   update. Small enough to review in one sitting and worth doing on its own
+   merits even if the rest slips.
 1. **The generator plus the config reference.** Reuses an existing, published
    schema, so it proves the mechanism without introducing a new source of truth.
 2. **The frontmatter schema.** Standalone value (editor validation for
    frontmatter), and it forces the four undeclared fields into the open.
 3. **The frontmatter reference, and trimming the prose pages.** Cheap once the
    first two are in.
+
+**The generator is the small half of part 1.** Rendering a schema as tables is
+perhaps 150 lines. The bulk of the work is that only 10 of 22 `SiteConfig`
+fields carry a `description` today — `contentDir`, `overrides`, `routeRules`,
+`icons`, `tints`, `baseUrl`, `siteName`, `defaultImage`, `logo`, and all three
+`RunesConfig` fields have none. `sites.md` has good prose for every one of them,
+so part 1 is largely *relocating prose from the docs into the schema*. Budget it
+that way.
+
+That relocation pays twice: those descriptions are what editors show on hover,
+so a user hovering `baseUrl` in VS Code currently gets nothing. Filling them
+fixes the reference and the editor experience in the same edit.
 
 Byte-stability matters more than it looks: a generator whose output reorders
 between runs makes the drift test fail spuriously and trains people to
