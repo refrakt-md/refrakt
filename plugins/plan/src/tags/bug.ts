@@ -12,6 +12,7 @@ export const bugSections = { title: 'title', blurb: 'description', body: 'body' 
 
 export const bug = createContentModelSchema({
 	sections: bugSections,
+	provides: ['prose'],
 	attributes: {
 		id: { type: String, required: true, description: 'Unique identifier.' },
 		status: { type: String, required: false, matches: [...VALID_STATUS.bug], description: 'Current status: reported, confirmed, in-progress, fixed, wontfix, or duplicate.' },

@@ -47,6 +47,15 @@ export interface RuneStructure {
    * is not reachable from there without loading theme config.
    */
   universalAttributes?: UniversalAttributePosture;
+  /**
+   * Content capabilities the rune declares — SPEC-125 Phase 4.
+   *
+   * Recorded here for the same reason as the join tables: `reading` and
+   * `dropcap` availability hangs off it, and the schema layer must answer that
+   * without reaching for theme config. `RuneConfig.provides` carries the same
+   * list for the engine; a test holds the two together.
+   */
+  provides?: readonly string[];
 }
 
 export const schemaRuneStructures = new WeakMap<Schema, RuneStructure>();
@@ -433,6 +442,18 @@ export interface ContentModelSchemaOptions {
    * different reasons, and a reader cannot tell either from an oversight.
    */
   universalAttributes?: UniversalAttributePosture;
+  /**
+   * Content capabilities this rune's own content provides — SPEC-125 Phase 4.
+   *
+   * Today only `'prose'`: this rune's body holds authored prose, so `reading`
+   * and `dropcap` mean something on it. Declared here *and* on the rune's
+   * `RuneConfig`, exactly as `sections` is — the schema layer narrows from this
+   * copy, the engine gates on the config one.
+   *
+   * Default-off. A rune that bears prose and forgets to say so loses `reading`,
+   * which schema narrowing makes visible rather than silent.
+   */
+  provides?: readonly string[];
 }
 
 /**
@@ -467,6 +488,7 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
       ...(options.sections && { sections: options.sections }),
       ...(options.mediaSlots && { mediaSlots: options.mediaSlots }),
       ...(options.frameTarget && { frameTarget: options.frameTarget }),
+      ...(options.provides && { provides: options.provides }),
     },
     declaredAttributes: Object.keys(attributes),
   });
@@ -591,6 +613,7 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
     ...(options.mediaSlots && { mediaSlots: options.mediaSlots }),
     ...(options.frameTarget && { frameTarget: options.frameTarget }),
     universalAttributes: options.universalAttributes ?? 'auto',
+    ...(options.provides && { provides: options.provides }),
   });
 
   // Record the base record reference so reference output can identify

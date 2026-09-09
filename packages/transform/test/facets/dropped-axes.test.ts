@@ -46,41 +46,52 @@ function ctx(opts: {
 
 const warnings = (result: FacetResult | null) => result?.warnings ?? [];
 
-describe('reading on a rune with no body section', () => {
-	const BODY_RUNE: RuneConfig = { block: 'textblock', sections: { content: 'body' } };
-	const BODYLESS: RuneConfig = { block: 'grid' };
+describe('reading on a rune that declares no prose', () => {
+	// WORK-537 moved the gate from the `body` section role onto a declared
+	// capability, so `PROSE` is what unlocks the axis — and `NO_PROSE` keeps its
+	// body role deliberately, to pin that the role alone is no longer enough.
+	const PROSE: RuneConfig = { block: 'textblock', sections: { content: 'body' }, provides: ['prose'] };
+	const NO_PROSE: RuneConfig = { block: 'datatable', sections: { table: 'body' } };
 
-	it('warns, naming the register and where it would have landed', () => {
-		const result = readingFacet.resolve(ctx({ config: BODYLESS, attrs: { reading: 'prose' } }));
+	it('warns, naming the register and why nothing carries it', () => {
+		const result = readingFacet.resolve(ctx({ rune: 'datatable', config: NO_PROSE, attrs: { reading: 'prose' } }));
 		const [warning] = warnings(result);
-		expect(warning?.code).toBe('reading-without-body');
+		expect(warning?.code).toBe('reading-without-prose');
 		expect(warning?.message).toContain('reading="prose"');
-		expect(warning?.message).toContain('grid');
-		expect(warning?.message).toContain('no body section');
-		expect(warning?.dedupeKey).toBe('grid:prose');
+		expect(warning?.message).toContain('datatable');
+		expect(warning?.message).toContain('no prose body');
+		expect(warning?.dedupeKey).toBe('datatable:prose');
 	});
 
-	it('still publishes the register — the diagnostic does not change resolution', () => {
-		const result = readingFacet.resolve(ctx({ config: BODYLESS, attrs: { reading: 'prose' } }));
+	it('publishes no register at all, so dropcap sees the same answer', () => {
+		const result = readingFacet.resolve(ctx({ rune: 'datatable', config: NO_PROSE, attrs: { reading: 'prose' } }));
+		expect(result?.state).toBeUndefined();
+	});
+
+	it('resolves normally on a rune that declares prose', () => {
+		const result = readingFacet.resolve(ctx({ rune: 'textblock', config: PROSE, attrs: { reading: 'prose' } }));
+		expect(warnings(result)).toEqual([]);
 		expect(result?.state?.reading).toBe('prose');
 	});
 
-	it('stays silent on a rune that has a body to carry it', () => {
-		const result = readingFacet.resolve(ctx({ rune: 'textblock', config: BODY_RUNE, attrs: { reading: 'prose' } }));
-		expect(warnings(result)).toEqual([]);
+	it('a body role alone no longer unlocks it', () => {
+		// The proxy SPEC-108 relied on. `NO_PROSE` has a `body` role — on its
+		// table — and gets neither the register nor a silent pass.
+		expect(NO_PROSE.sections).toBeTruthy();
+		expect(readingFacet.resolve(ctx({ rune: 'datatable', config: NO_PROSE }))).toBeNull();
 	});
 
 	it('stays silent when nothing was asked for', () => {
 		// The default case, and the one that decides whether this channel is
 		// usable: every unmarked block in a build resolves to `ui`.
-		expect(warnings(readingFacet.resolve(ctx({ config: BODYLESS })))).toEqual([]);
-		expect(warnings(readingFacet.resolve(ctx({ rune: 'textblock', config: BODY_RUNE })))).toEqual([]);
+		expect(warnings(readingFacet.resolve(ctx({ rune: 'datatable', config: NO_PROSE })))).toEqual([]);
+		expect(warnings(readingFacet.resolve(ctx({ rune: 'textblock', config: PROSE })))).toEqual([]);
 	});
 
 	it('stays silent on a value that is not a register at all', () => {
 		// A typo falls through the resolution cascade to `ui`; it is Markdoc's
 		// job to reject it, not this facet's to guess.
-		expect(warnings(readingFacet.resolve(ctx({ config: BODYLESS, attrs: { reading: 'prosey' } })))).toEqual([]);
+		expect(warnings(readingFacet.resolve(ctx({ rune: 'datatable', config: NO_PROSE, attrs: { reading: 'prosey' } })))).toEqual([]);
 	});
 });
 

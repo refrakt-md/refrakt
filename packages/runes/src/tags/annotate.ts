@@ -36,6 +36,7 @@ export const annotateSections = { body: 'body' } as const;
 
 export const annotate = createContentModelSchema({
 	sections: annotateSections,
+	provides: ['prose'],
 	attributes: {
 		variant: { type: String, required: false, matches: variantType.slice(), description: 'Annotation display style: margin, tooltip, or inline' },
 	},

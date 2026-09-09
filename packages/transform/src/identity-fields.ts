@@ -38,7 +38,7 @@
  *  `universalAttributes` joins them in Phase 3: it decides what an author may
  *  write on the rune at all, which is the most direct form of "applicability is
  *  not theme configuration" there is. */
-export const IDENTITY_FIELDS = ['block', 'modifiers', 'sections', 'mediaSlots', 'frameTarget', 'universalAttributes'] as const;
+export const IDENTITY_FIELDS = ['block', 'modifiers', 'sections', 'mediaSlots', 'frameTarget', 'universalAttributes', 'provides'] as const;
 
 export type IdentityField = (typeof IDENTITY_FIELDS)[number];
 

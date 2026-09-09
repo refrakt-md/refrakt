@@ -16,6 +16,7 @@ const baseCard: RuneConfig = {
 	mediaSlots: { media: 'cover' },
 	frameTarget: 'media',
 	universalAttributes: 'auto',
+	provides: ['prose'],
 	layout: { root: ['media', 'content'] },
 };
 
@@ -33,9 +34,10 @@ describe('the identity rule is expressed once', () => {
 		// `mediaSlots` and `frameTarget` joined the original three in v0.31.0, once
 		// SPEC-125 Phase 2 moved the join tables into the tag modules that own them;
 		// `universalAttributes` joined in v0.32.0, when Phase 3 made it decide what
-		// an author may write on the rune at all.
+		// an author may write on the rune at all, and `provides` with it, when
+		// Phase 4 moved the `reading`/`dropcap` gate onto a declared capability.
 		expect([...IDENTITY_FIELDS]).toEqual([
-			'block', 'modifiers', 'sections', 'mediaSlots', 'frameTarget', 'universalAttributes',
+			'block', 'modifiers', 'sections', 'mediaSlots', 'frameTarget', 'universalAttributes', 'provides',
 		]);
 		expect([...VARIANT_DELTA_RESERVED_FIELDS]).toEqual([...IDENTITY_FIELDS, 'variants']);
 	});
@@ -55,7 +57,7 @@ describe('ADR-028 — theme overrides may not redefine a rune', () => {
 	// scalars, the rest are maps.
 	const overrideValue: Record<string, unknown> = {
 		block: 'other', frameTarget: 'self', modifiers: {}, sections: {}, mediaSlots: {},
-		universalAttributes: 'inline',
+		universalAttributes: 'inline', provides: ['prose'],
 	};
 
 	for (const field of IDENTITY_FIELDS) {
@@ -206,6 +208,7 @@ describe('the variant-delta path still enforces the same rule', () => {
 			const value = field === 'block' ? 'other'
 				: field === 'frameTarget' ? 'self'
 				: field === 'universalAttributes' ? 'inline'
+				: field === 'provides' ? ['prose']
 				: {};
 			const res = validateDelta({ [field]: value } as Partial<RuneConfig>);
 			expect(res.valid).toBe(false);

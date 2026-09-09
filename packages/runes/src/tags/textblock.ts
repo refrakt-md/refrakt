@@ -13,6 +13,7 @@ export const textBlockSections = { body: 'body' } as const;
 
 export const textblock = createContentModelSchema({
 	sections: textBlockSections,
+	provides: ['prose'],
 	attributes: {
 		columns: { type: Number, required: false, description: 'Number of text columns' },
 		lead: { type: Boolean, required: false, description: 'Style the first paragraph as a lead' },

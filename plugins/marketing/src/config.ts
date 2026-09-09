@@ -98,6 +98,7 @@ export const config: Record<string, RuneConfig> = {
 			'media-ratio': { source: 'meta', noBemClass: true },
 		},
 		sections: bentoCellSections,
+		provides: ['prose'],
 		// SPEC-081/091: the transform emits flat slots; `layout` builds the
 		// skeleton — media beside/above a `content` wrapper grouping title/body/
 		// footer. A base `layout` is the prerequisite for the cover variant

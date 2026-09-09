@@ -40,6 +40,7 @@ export const cardSections = { media: 'media', body: 'body' } as const;
 
 export const card = createContentModelSchema({
 	sections: cardSections,
+	provides: ['prose'],
 	base: SplitLayoutModel,
 	attributes: {
 		href: { type: String, required: false, default: '', description: 'Optional link target; makes the whole card clickable.' },

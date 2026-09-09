@@ -12,6 +12,7 @@ export const decisionSections = { title: 'title', blurb: 'description', body: 'b
 
 export const decision = createContentModelSchema({
 	sections: decisionSections,
+	provides: ['prose'],
 	attributes: {
 		id: { type: String, required: true, description: 'Identifier (e.g., "ADR-007").' },
 		status: { type: String, required: false, matches: [...VALID_STATUS.decision], description: 'Decision status: proposed, accepted, rejected, superseded, or deprecated.' },

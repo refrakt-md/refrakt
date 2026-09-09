@@ -112,6 +112,18 @@ export interface UniversalAxisFacet {
 	/** The registry-level description. Config-independent, and frozen by the
 	 *  registry — `generateStructureContract` emits it by reference. */
 	readonly contract: UniversalAxisContract;
+	/** A content capability this axis needs the rune to declare — SPEC-125
+	 *  Phase 4. Matched against `RuneConfig.provides`.
+	 *
+	 *  The declaration point exists so the gate is *stated by the axis that
+	 *  needs it* rather than inferred from a structural fact that happens to
+	 *  correlate. `reading` and `dropcap` were gated on the `body` section role,
+	 *  which is a proxy: it says where the main content region is, not that the
+	 *  region holds prose. Only these two axes need a capability today, so this
+	 *  is close to a bespoke field in cost — but the next axis that needs one
+	 *  reuses it instead of inventing its own, and it flows into the structure
+	 *  contract through the same `describeForRune` that everything else does. */
+	readonly requires?: string;
 	/** What this rune's config settles. `null` when nothing does.
 	 *
 	 *  A string result means the axis is *unavailable* on this rune and the

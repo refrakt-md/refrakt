@@ -12,6 +12,7 @@ export const organizationSections = { preamble: 'preamble', headline: 'title', b
 
 export const organization = createContentModelSchema({
 	sections: organizationSections,
+	provides: ['prose'],
 	attributes: {
 		type: { type: String, required: false, matches: orgType.slice(), description: 'Schema.org organization category used for structured data.' },
 	},

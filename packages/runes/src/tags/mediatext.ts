@@ -15,6 +15,7 @@ export const mediaTextMediaSlots = { media: 'cover' } as const;
 
 export const mediatext = createContentModelSchema({
 	sections: mediaTextSections,
+	provides: ['prose'],
 	mediaSlots: mediaTextMediaSlots,
 	attributes: {
 		align: { type: String, required: false, matches: alignValues.slice(), description: 'Side the media appears on' },

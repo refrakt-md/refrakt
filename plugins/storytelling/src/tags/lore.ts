@@ -11,6 +11,7 @@ export const loreSections = { title: 'title', body: 'body' } as const;
 
 export const lore = createContentModelSchema({
 	sections: loreSections,
+	provides: ['prose'],
 	base: taxonomyAttributes,
 	attributes: {
 		title: { type: String, required: true, description: 'Heading displayed for this lore entry.' },

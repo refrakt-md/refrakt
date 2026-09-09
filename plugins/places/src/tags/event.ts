@@ -10,6 +10,7 @@ export const eventSections = { headline: 'title', blurb: 'description', body: 'b
 
 export const event = createContentModelSchema({
 	sections: eventSections,
+	provides: ['prose'],
 	attributes: {
 		date: { type: String, required: false, description: 'Start date of the event (e.g. 2025-06-15).' },
 		endDate: { type: String, required: false, description: 'End date for multi-day events.' },

@@ -51,7 +51,7 @@ describe('what is reported is what the schema carries', () => {
 		// is exactly what a bare omission leaves unanswered.
 		const grid = describeRune(info('grid'));
 		expect(grid).toContain('Not applicable to this rune:');
-		expect(grid).toMatch(/reading.*: this rune declares no body section/);
+		expect(grid).toMatch(/reading.*: this rune declares no prose body/);
 		expect(grid).toMatch(/prominence: this rune has no page-section header/);
 	});
 

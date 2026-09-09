@@ -11,6 +11,7 @@ export const characterSectionSections = { body: 'body' } as const;
 
 export const characterSection = createContentModelSchema({
 	sections: characterSectionSections,
+	provides: ['prose'],
 	attributes: {
 		name: { type: String, required: true },
 	},
@@ -49,6 +50,7 @@ export const characterMediaSlots = { portrait: 'portrait' } as const;
 
 export const character = createContentModelSchema({
 	sections: characterSections,
+	provides: ['prose'],
 	mediaSlots: characterMediaSlots,
 	base: taxonomyAttributes,
 	attributes: {

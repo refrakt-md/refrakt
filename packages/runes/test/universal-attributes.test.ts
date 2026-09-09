@@ -52,8 +52,17 @@ describe('`auto` gates axis by axis on what the rune is made of', () => {
 		}
 	});
 
-	it('a body role unlocks the prose axes', () => {
-		const { available } = resolveUniversalAttributes({ structure: { sections: { body: 'body' } } });
+	it('a declared prose capability unlocks the prose axes — a body role does not', () => {
+		// WORK-537 — SPEC-108 gated these on the `body` section role, which says
+		// where the main content region is, not that it holds prose. A datatable's
+		// body role is on its `<table>`.
+		const roleOnly = resolveUniversalAttributes({ structure: { sections: { body: 'body' } } });
+		expect(roleOnly.available).not.toContain('reading');
+		expect(roleOnly.available).not.toContain('dropcap');
+
+		const { available } = resolveUniversalAttributes({
+			structure: { sections: { body: 'body' }, provides: ['prose'] },
+		});
 		expect(available).toContain('reading');
 		expect(available).toContain('dropcap');
 		expect(available).not.toContain('prominence');

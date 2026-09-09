@@ -12,6 +12,7 @@ export const accordionItemSections = { body: 'body' } as const;
 
 export const accordionItem = createContentModelSchema({
 	sections: accordionItemSections,
+	provides: ['prose'],
 	attributes: {
 		name: { type: String, required: true },
 	},

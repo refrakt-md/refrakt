@@ -142,6 +142,10 @@ export function resolveUniversalAttributes(
 		sections: input.structure?.sections,
 		mediaSlots: input.structure?.mediaSlots,
 		frameTarget: input.structure?.frameTarget,
+		// SPEC-125 Phase 4 — `reading` and `dropcap` gate on a declared content
+		// capability rather than on the `body` section role, which was only ever
+		// a proxy for it.
+		provides: input.structure?.provides,
 		modifiers: Object.fromEntries(
 			[...(input.declaredAttributes ?? [])].map((name) => [name, { source: 'attribute' as const }]),
 		),

@@ -83,6 +83,7 @@ export const coreConfig: ThemeConfig = {
 			rootAttributes: { 'data-state': 'closed' },
 			autoLabel: { name: 'header' },
 			sections: accordionItemSections,
+			provides: ['prose'],
 			sectionRoleExceptions: {
 				header: 'The `header` slot is the <summary> disclosure control, not a page-section header. `header` would inherit the chrome-row rhythm (a 3rem margin under every summary); `title` would tighten every summary\'s line-height while leaving `prominence` inert anyway, since `.rf-accordion-item__header` pins the control\'s font size on purpose. The parent Accordion already holds `title`.',
 			},
@@ -217,6 +218,7 @@ export const coreConfig: ThemeConfig = {
 				aspect: { source: 'meta', noBemClass: true },
 			},
 			sections: cardSections,
+			provides: ['prose'],
 			// SPEC-081/091: the transform emits flat slots; `layout` builds the
 			// skeleton — media beside a `content` wrapper grouping eyebrow/body/
 			// footer. A base `layout` is the prerequisite for the cover variant
@@ -266,6 +268,7 @@ export const coreConfig: ThemeConfig = {
 			block: 'blog',
 			defaultDensity: 'full',
 			sections: blogSections,
+			provides: ['prose'],
 			contentWrapper: { tag: 'div', ref: 'content' },
 			modifiers: {
 				layout: { source: 'meta', default: 'list' },
@@ -352,6 +355,7 @@ export const coreConfig: ThemeConfig = {
 				shortcut: { source: 'meta', noBemClass: true },
 			},
 			sections: drawerSections,
+			provides: ['prose'],
 			editHints: { title: 'inline', body: 'none', close: 'none', footer: 'none' },
 		},
 		Figure: {
@@ -390,6 +394,7 @@ export const coreConfig: ThemeConfig = {
 			defaultReading: 'fine',
 			modifiers: { variant: { source: 'meta', default: 'sidenote' } },
 			sections: sidenoteSections,
+			provides: ['prose'],
 			editHints: { body: 'inline' },
 		},
 		Compare: {
@@ -411,6 +416,7 @@ export const coreConfig: ThemeConfig = {
 			defaultElevation: 'flush',
 			modifiers: { variant: { source: 'meta', default: 'margin' } },
 			sections: annotateSections,
+			provides: ['prose'],
 			editHints: { body: 'none', notes: 'none' },
 		},
 		AnnotateNote: { block: 'annotate-note', parent: 'Annotate', editHints: { body: 'inline' } },
@@ -505,6 +511,7 @@ export const coreConfig: ThemeConfig = {
 				variant: { source: 'meta', default: 'default' },
 			},
 			sections: pullQuoteSections,
+			provides: ['prose'],
 			editHints: { body: 'inline' },
 		},
 		TextBlock: {
@@ -518,6 +525,7 @@ export const coreConfig: ThemeConfig = {
 				align: { source: 'meta', default: 'left' },
 			},
 			sections: textBlockSections,
+			provides: ['prose'],
 			editHints: { body: 'none' },
 		},
 		MediaText: {
@@ -529,6 +537,7 @@ export const coreConfig: ThemeConfig = {
 				wrap: { source: 'meta' },
 			},
 			sections: mediaTextSections,
+			provides: ['prose'],
 			mediaSlots: mediaTextMediaSlots,
 			editHints: { media: 'image', body: 'none' },
 		},

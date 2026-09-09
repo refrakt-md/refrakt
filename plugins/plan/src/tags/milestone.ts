@@ -11,6 +11,7 @@ export const milestoneSections = { title: 'title', blurb: 'description', body: '
 
 export const milestone = createContentModelSchema({
 	sections: milestoneSections,
+	provides: ['prose'],
 	attributes: {
 		name: { type: String, required: true, description: 'Milestone name (e.g., "v0.5.0").' },
 		target: { type: String, required: false, description: 'Target date (aspirational, not a commitment).' },

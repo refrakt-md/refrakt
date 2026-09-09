@@ -12,6 +12,7 @@ export const specSections = { title: 'title', blurb: 'description', body: 'body'
 
 export const spec = createContentModelSchema({
 	sections: specSections,
+	provides: ['prose'],
 	attributes: {
 		id: { type: String, required: true, description: 'Unique identifier (e.g., "SPEC-008").' },
 		status: { type: String, required: false, matches: [...VALID_STATUS.spec], description: 'Current status: draft, review, accepted, implemented, shipped, superseded, or deprecated.' },

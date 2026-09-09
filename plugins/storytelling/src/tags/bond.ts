@@ -10,6 +10,7 @@ export const bondSections = { body: 'body' } as const;
 
 export const bond = createContentModelSchema({
 	sections: bondSections,
+	provides: ['prose'],
 	attributes: {
 		from: { type: String, required: true, description: 'Name of the first character or entity in this bond.' },
 		to: { type: String, required: true, description: 'Name of the second character or entity in this bond.' },

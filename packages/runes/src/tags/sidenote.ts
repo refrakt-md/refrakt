@@ -13,6 +13,7 @@ export const sidenoteSections = { body: 'body' } as const;
 
 export const sidenote = createContentModelSchema({
 	sections: sidenoteSections,
+	provides: ['prose'],
 	attributes: {
 		variant: { type: String, required: false, matches: variantType.slice(), description: 'Display style: sidenote, footnote, or tooltip' },
 	},

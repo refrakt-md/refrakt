@@ -16,6 +16,7 @@ export const blogSections = { preamble: 'preamble', headline: 'title', blurb: 'd
 
 export const blog = createContentModelSchema({
 	sections: blogSections,
+	provides: ['prose'],
 	attributes: {
 		folder: { type: String, required: true, description: 'Content folder path to list blog posts from (e.g. "/blog")' },
 		sort: { type: String, required: false, default: 'date-desc', matches: sortOptions.slice(), description: 'Sort order: date-desc, date-asc, title-asc, title-desc' },
