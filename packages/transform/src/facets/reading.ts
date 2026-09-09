@@ -1,9 +1,16 @@
-import { resolveReading, READING_CAPABILITIES, DEFAULT_READING, READING_REGISTERS } from '../reading.js';
+import { resolveReading, coerceRegister, READING_CAPABILITIES, DEFAULT_READING, READING_REGISTERS } from '../reading.js';
 import type { RuneConfig } from '../types.js';
 import type { Facet } from './types.js';
 import type { UniversalAxisFacet } from './describe.js';
 
 export { READING_REGISTERS, READING_CAPABILITIES, DEFAULT_READING } from '../reading.js';
+
+/** Both axes land on the rune's `[data-section="body"]` element, so a rune
+ *  whose `sections` declares no body role can never carry them however the
+ *  author marks it up. */
+function hasBodySection(sections: RuneConfig['sections']): boolean {
+	return sections ? Object.values(sections).includes('body') : false;
+}
 
 /** `reading` — SPEC-108 editorial register for body text.
  *
@@ -14,14 +21,36 @@ export { READING_REGISTERS, READING_CAPABILITIES, DEFAULT_READING } from '../rea
  *  and suppressed at the `ui` default so unmarked content stays unchanged. */
 export const readingFacet: Facet = {
 	name: 'reading',
-	resolve: (ctx) => ({
-		state: {
-			reading: resolveReading({
-				authorAttr: ctx.tag.attributes?.reading,
-				runeDefault: ctx.config.defaultReading,
-			}),
-		},
-	}),
+	resolve(ctx) {
+		const register = resolveReading({
+			authorAttr: ctx.tag.attributes?.reading,
+			runeDefault: ctx.config.defaultReading,
+		});
+		const result = { state: { reading: register } };
+
+		// WORK-536 — `reading` was the one gated axis with no diagnostic at all.
+		// The facet always resolves and publishes the register as state; the value
+		// only becomes `data-reading` when `applyBemClasses` finds an element with
+		// section role `body`. On a body-less rune it therefore vanished with no
+		// code path aware that anything had been requested.
+		//
+		// Only an *explicit* request warns. A rune resolving to the `ui` default
+		// emits nothing anyway, so warning there would fire on every unmarked
+		// block in a build — noise that would train readers to ignore the channel.
+		const requested = coerceRegister(ctx.tag.attributes?.reading);
+		if (requested && !hasBodySection(ctx.config.sections)) {
+			return {
+				...result,
+				warnings: [{
+					code: 'reading-without-body',
+					message: `[refrakt] reading="${requested}" on "${ctx.rune}" has nothing to apply to — the register lands on the rune's \`data-section="body"\` element, and this rune declares no body section. Ignored.`,
+					dedupeKey: `${ctx.rune}:${requested}`,
+				}],
+			};
+		}
+
+		return result;
+	},
 };
 
 /** `dropcap` — SPEC-108 per-instance opt-in, honoured only on a prose body.
@@ -51,13 +80,6 @@ export const dropcapFacet: Facet = {
 };
 
 // ─── Contract descriptions (WORK-527) ─────────────────────────────────────
-
-/** Both axes land on the rune's `[data-section="body"]` element, so a rune
- *  whose `sections` declares no body role can never carry them however the
- *  author marks it up. */
-function hasBodySection(sections: RuneConfig['sections']): boolean {
-	return sections ? Object.values(sections).includes('body') : false;
-}
 
 export const readingAxis: UniversalAxisFacet = {
 	axis: 'reading',

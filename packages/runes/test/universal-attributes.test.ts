@@ -74,18 +74,26 @@ describe('`auto` gates axis by axis on what the rune is made of', () => {
 		for (const name of AXIS_ATTRIBUTES.frame) expect(framed.available).toContain(name);
 	});
 
-	it('the cover axis gates on a declared modifier, not on structure', () => {
-		// `scrim*` decorates a cover image, which a rune opts into by declaring a
-		// `media-position` attribute. This is the input that made `modifiers` stay
-		// in config rather than moving to the join tables (WORK-533).
+	it('the cover axis is reported per rune but removes no attribute', () => {
+		// `cover` gates on a declared `media-position` modifier — the one universal
+		// axis whose gate is another rune's config modifier. But it owns no
+		// author-facing attribute: the `scrim*` family belongs to `bg`, which
+		// builds the scrim on *any* rune; cover merely reroutes it to the media
+		// well. Filing `scrim*` under `cover` narrowed a working attribute off 82
+		// of 83 runes (WORK-536), so the two facts are pinned apart here.
+		expect(AXIS_ATTRIBUTES.cover, '`cover` must own no attributes').toBeUndefined();
+
 		const without = resolveUniversalAttributes({ structure: { mediaSlots: { media: 'cover' } } });
-		expect(without.available).not.toContain('scrim');
+		expect(without.unavailable.get('cover'), 'cover is still reported unavailable').toBeTruthy();
+		for (const name of ['scrim', 'scrim-type', 'scrim-strength', 'scrim-blur', 'scrim-tone']) {
+			expect(without.available, `\`${name}\` works via the bg layer on any rune`).toContain(name);
+		}
 
 		const with_ = resolveUniversalAttributes({
 			structure: { mediaSlots: { media: 'cover' } },
 			declaredAttributes: ['media-position'],
 		});
-		for (const name of AXIS_ATTRIBUTES.cover) expect(with_.available).toContain(name);
+		expect(with_.unavailable.has('cover')).toBe(false);
 	});
 
 	it('an axis is never both available and explained away', () => {

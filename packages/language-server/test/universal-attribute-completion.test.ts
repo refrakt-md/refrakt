@@ -57,7 +57,10 @@ describe('completion offers only the universal attributes that apply', () => {
 		expect(grid).not.toContain('prominence');
 		expect(grid).not.toContain('frame');
 		expect(grid).not.toContain('frame-aspect');
-		expect(grid).not.toContain('scrim');
+		// …but `scrim*` stays: it belongs to the `bg` axis, which every rune has.
+		// The background layer builds a scrim on any rune; cover mode only
+		// reroutes it to the media well (WORK-536).
+		expect(grid).toContain('scrim');
 	});
 
 	it('keeps the axes that a rune can actually act on', () => {

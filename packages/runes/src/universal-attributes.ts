@@ -32,7 +32,16 @@ import type { RuneStructure } from './lib/index.js';
  */
 export const AXIS_ATTRIBUTES: Readonly<Record<string, readonly string[]>> = {
 	tint: ['tint', 'tint-mode'],
-	bg: ['bg', 'bg-gradient', 'bg-from', 'bg-to', 'bg-via', 'bg-gradient-type'],
+	// The `scrim*` family belongs to `bg`, not to `cover`. The background layer
+	// builds the scrim on any rune — `bgAxis.contract.inputs` lists all five, and
+	// `bg` is available everywhere — while `cover` merely *reroutes* it to the
+	// media well when a rune enters cover mode. Filing them under `cover` (which
+	// is gated on a `media-position` modifier) narrowed a working attribute off
+	// 82 of 83 runes; see WORK-536.
+	bg: [
+		'bg', 'bg-gradient', 'bg-from', 'bg-to', 'bg-via', 'bg-gradient-type',
+		'scrim', 'scrim-type', 'scrim-strength', 'scrim-blur', 'scrim-tone',
+	],
 	width: ['width'],
 	spacing: ['spacing'],
 	inset: ['inset'],
@@ -46,7 +55,9 @@ export const AXIS_ATTRIBUTES: Readonly<Record<string, readonly string[]>> = {
 		'frame-oversize', 'frame-place', 'frame-anchor', 'frame-overflow', 'frame-shadow',
 	],
 	substrate: ['substrate', 'substrate-size', 'substrate-opacity', 'substrate-fill', 'substrate-target'],
-	cover: ['scrim', 'scrim-type', 'scrim-strength', 'scrim-blur', 'scrim-tone'],
+	// `cover` owns no author-facing attribute of its own — like `density`,
+	// `content-measure` and `content-place`, it can still be reported unavailable
+	// on a rune, it simply removes nothing from the schema.
 };
 
 /**

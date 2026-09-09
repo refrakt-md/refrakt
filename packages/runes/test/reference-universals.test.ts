@@ -32,7 +32,10 @@ describe('what is reported is what the schema carries', () => {
 		const grid = describeRune(info('grid'));
 		// `grid` arranges children — no body, no header, no media surface.
 		expect(grid).toContain('Universal attributes: ');
-		for (const absent of ['reading', 'dropcap', 'prominence', 'frame-aspect', 'scrim-tone']) {
+		// Note `scrim*` is deliberately absent from this list: it belongs to the
+		// `bg` axis, which every rune has — the background layer builds a scrim on
+		// any rune, and cover mode only reroutes it (WORK-536).
+		for (const absent of ['reading', 'dropcap', 'prominence', 'frame-aspect']) {
 			expect(grid, `grid should not advertise \`${absent}\``).not.toMatch(
 				new RegExp(`Universal attributes:[^\\n]*\\b${absent}\\b`),
 			);
