@@ -27,6 +27,19 @@ refrakt reference recipe --format json
 refrakt reference hint --no-example
 ```
 
+### Universal attributes are reported per rune
+
+The output lists the [universal attributes](/runes/surfaces) *this* rune carries, followed by the axes it does not, each with its reason:
+
+```
+Universal attributes: tint, tint-mode, bg, width, spacing, inset, elevation, reveal, …
+Not applicable to this rune:
+  - dropcap, reading: this rune declares no body section
+  - prominence: this rune has no page-section header
+```
+
+Both halves are read from the rune's schema, so they match what Markdoc validation accepts and what editor completion offers. `--format json` carries the same information as `attributes.universal` and `attributes.universalUnavailable`.
+
 ### Options
 
 | Flag | Description |
@@ -58,6 +71,8 @@ refrakt reference list --format json
 ## refrakt reference dump
 
 Write the full reference — every rune, grouped by package, with universal attributes and attribute presets hoisted into top-level sections — to a single file. `create-refrakt` runs this automatically when scaffolding a new site, producing the initial `AGENTS.md`.
+
+The hoisted **Universal Attributes** section is the shared vocabulary, not a list every rune accepts; each rune's own section states which of them it carries.
 
 ```shell
 refrakt reference dump

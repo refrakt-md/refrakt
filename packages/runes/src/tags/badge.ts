@@ -1,5 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Config, Node, RenderableTreeNode, Schema } from '@markdoc/markdoc';
+import { declareUniversalPosture } from '../lib/index.js';
 const { Tag } = Markdoc;
 
 const sentimentValues = ['positive', 'negative', 'caution', 'neutral'] as const;
@@ -52,3 +53,6 @@ export const badge: Schema = {
 		return new Tag('span', attrs, children);
 	},
 };
+
+// SPEC-125 Phase 3 — an inline `<span class="rf-badge">`; the block axes have nothing to act on.
+declareUniversalPosture(badge, 'inline');

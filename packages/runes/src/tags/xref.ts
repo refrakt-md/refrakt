@@ -1,5 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Config, Node, Schema } from '@markdoc/markdoc';
+import { declareUniversalPosture } from '../lib/index.js';
 const { Tag } = Markdoc;
 
 /** Sentinel attribute value used to identify xref placeholders in the renderable tree */
@@ -63,3 +64,6 @@ export const xref: Schema = {
 		return new Tag('span', attrs, [label || id]);
 	},
 };
+
+// SPEC-125 Phase 3 — an inline link; the block axes have nothing to act on.
+declareUniversalPosture(xref, 'inline');

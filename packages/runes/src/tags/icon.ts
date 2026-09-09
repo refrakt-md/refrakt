@@ -1,5 +1,6 @@
 import type { Config, Node, Schema } from '@markdoc/markdoc';
 import { resolveIcon } from '../lib/icon-resolve.js';
+import { declareUniversalPosture } from '../lib/index.js';
 
 /**
  * Icon rune — self-closing tag that resolves an icon name to an inline SVG.
@@ -34,3 +35,6 @@ export const icon: Schema = {
 		return resolveIcon(name, config, { size }).tag;
 	},
 };
+
+// SPEC-125 Phase 3 — an inline `<svg>`/`<span>` with no `data-rune` marker — see the note above.
+declareUniversalPosture(icon, 'inline');

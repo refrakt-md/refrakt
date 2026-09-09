@@ -66,12 +66,14 @@ import { defineRune, runeTagMap } from './rune.js';
 export * from './interfaces.js';
 export { Rune, defineRune, runeTagMap } from './rune.js';
 export { RenderableNodeCursor } from './lib/renderable.js';
-export { createContentModelSchema, createComponentRenderable, asNodes, schemaContentModels, schemaRuneStructures, sanitizeSandboxContent } from './lib/index.js';
+export { createContentModelSchema, createComponentRenderable, asNodes, schemaContentModels, schemaRuneStructures, declareUniversalPosture, sanitizeSandboxContent } from './lib/index.js';
 export type { RuneStructure, SectionRole } from './lib/index.js';
 
 // SPEC-125 Phase 3 — the declared rule for universal-attribute availability
 export { resolveUniversalAttributes, AXIS_ATTRIBUTES, POSTURE_REASONS } from './universal-attributes.js';
 export type { UniversalAttributePosture, UniversalAttributeInput, UniversalAttributeAvailability } from './universal-attributes.js';
+export { describeSchemaUniversals, UNRECORDED_REASON } from './schema-universals.js';
+export type { SchemaUniversals, UnavailableAxis } from './schema-universals.js';
 export type { DeprecationRule, ContentModelSchemaOptions } from './lib/index.js';
 export { resolve, resolveSequence, resolveDelimited, resolveContentModel, resolveListItems, evaluateCondition, matchesType } from './lib/resolver.js';
 export { registerImageScheme, resolveImageScheme, hasImageScheme } from './lib/image-schemes.js';

@@ -15,6 +15,7 @@
 
 import Markdoc from '@markdoc/markdoc';
 import type { Config, Node, Schema } from '@markdoc/markdoc';
+import { declareUniversalPosture } from '../lib/index.js';
 const { Tag } = Markdoc;
 
 /** Sentinel attribute value used to identify expand placeholders in the
@@ -75,3 +76,6 @@ export const expand: Schema = {
 		return new Tag('div', attrs, []);
 	},
 };
+
+// SPEC-125 Phase 3 — a legacy gap, not a principle — see the note in `coreConfig.Expand`.
+declareUniversalPosture(expand, 'none');
