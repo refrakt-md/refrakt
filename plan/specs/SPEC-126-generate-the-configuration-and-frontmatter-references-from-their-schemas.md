@@ -210,6 +210,68 @@ with a hand-maintained list in the generator — five entries — and let
 `config-schema.test.ts` assert it still matches `ThemeManifest`'s properties, so
 the marker cannot silently go stale either.
 
+**D6 — The generated reference replaces the per-topic field tables; it does not
+supplement them.** Two copies of a field list is the thing this spec exists to
+remove, and "supplement" is just that with extra steps.
+
+The real objection to replacing was never the tables, it was losing the
+*curation*: `sites.md` groups fields into Core / SEO and branding / Content
+rendering / Localization, which is genuinely useful and would be destroyed by a
+generator emitting 22 fields in schema order. So don't destroy it — see D7.
+
+Concretely, `sites.md` loses its `## SiteConfig fields` section (~115 of its 240
+lines) and keeps Single-site, Multi-site, CLI `--site`, and Path resolution —
+which is what the page is actually about. `overview.md` loses its "Top-level
+sections" table too, and the temptation to keep that one as orientation should
+be resisted: five stable-looking rows is exactly the table that was missing
+`xrefs` and `fileRoots` until WORK-539.
+
+Worked examples stay and are not duplication. `sites.md`'s multi-site JSON block
+sets `baseUrl` per site — that is a field *in use*, not a field list.
+
+**D7 — The grouping is data, carried in the schema.** Add `x-group` to each
+property and an ordered `x-groups` array at the schema root. The generator emits
+one section per group, in that order; the drift test requires every property to
+declare a group and every group to appear in `x-groups`, so a new field cannot
+land ungrouped.
+
+```jsonc
+{
+  "x-groups": ["Core", "Content rendering", "SEO and branding", "Localization", "Legacy"],
+  "definitions": {
+    "SiteConfig": {
+      "properties": {
+        "baseUrl": {
+          "type": "string",
+          "description": "Public base URL of the site. Used for canonical links, `og:url`, and `og:image.`",
+          "x-group": "SEO and branding",
+          "x-theme-default": true
+        }
+      }
+    }
+  }
+}
+```
+
+Verified: ajv compiles and validates identically with these present (`strict:
+false` is already how `config-schema.test.ts` configures it), and unknown
+keywords are ignored by JSON Schema consumers by definition, so editors are
+unaffected.
+
+**For a `$ref` property, the description comes from the target definition.**
+That matters more than it sounds: `HighlightConfig.description` already carries
+the whole "use `theme.presets` instead" paragraph — the most editorial content
+in the current table, already in the schema. The same rule covers `sandbox`,
+`runes`, and `theme` without relocating any prose.
+
+The cost is that `x-group`, `x-groups`, and `x-theme-default` are documentation
+concerns living in an artifact editors download. The alternative — a grouping
+map beside the generator, with the same drift test — works equally well and
+keeps the published schema clean. `x-group` wins on one practical point: adding
+a config field stays **single-touch** (property, description, group, one place),
+where a separate map is a second list to remember, which is the failure mode
+this spec exists to remove.
+
 ## Considered and deferred: embedding the source directly
 
 The obvious cheaper idea is to skip generation and have the docs reference the
@@ -257,7 +319,9 @@ reference.
 - [ ] `docs/authoring/frontmatter.md` is generated from that schema
 - [ ] A test regenerates both pages in memory and fails if the committed copies are stale
 - [ ] The frontmatter schema is served at the versioned and unversioned URLs, like the other two
-- [ ] The hand-written configuration pages link to the reference instead of restating field lists
+- [ ] The hand-written configuration pages link to the reference instead of restating field lists — `sites.md` loses `## SiteConfig fields`, `overview.md` loses its top-level table, worked examples stay
+- [ ] Every property declares an `x-group` that appears in the root `x-groups`, enforced by the drift test
+- [ ] The generated reference renders grouped sections in `x-groups` order, and resolves `$ref` property descriptions from the target definition
 - [ ] Generated pages carry the do-not-edit banner and are byte-stable across runs
 
 ## Approach
@@ -293,12 +357,6 @@ order to the schema's own.
 
 ## Open questions
 
-- **Does the reference replace the per-topic field tables, or supplement them?**
-  Trimming `sites.md`'s tables to a link is the honest version of "one home per
-  fact", but those tables are genuinely useful in place. A middle option is to
-  keep short curated tables for the common fields and mark the reference as the
-  complete set. Leaning toward trimming, with the reference linked from each
-  section.
 - **Should the CLI reference (`docs/cli/reference.md`) follow?** Same problem,
   same shape, larger surface. Out of scope here; worth a follow-up once the
   mechanism is proven.
