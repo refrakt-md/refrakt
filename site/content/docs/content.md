@@ -188,4 +188,18 @@ Pages with `order` are sorted numerically. Pages without `order` fall back to al
 
 ## Partials
 
-Reusable content blocks can be defined in a `_partials/` directory and included in any page. See [Partials](/extend/rune-authoring/partials) for details.
+Reusable content blocks can be defined in a `_partials/` directory and included in any page. See [Partials](/docs/authoring/partials) for details.
+
+## What else is in the Authoring guide
+
+This page covers how files become routed pages. The rest of the authoring surface:
+
+{% nav layout="cards" %}
+- authoring/variables
+- authoring/partials
+- authoring/page-sections
+- authoring/entities
+- authoring/tint
+- authoring/nav-slug-resolution
+- authoring/rich-menubar-panels
+{% /nav %}

@@ -98,7 +98,7 @@ every spec, work item, bug, decision, and milestone gets its own URL:
 ```
 
 `{% expand $item.id /%}` inlines the entity's full content on its page. See
-[`entityRoutes`](/docs/configuration/sites#generating-routes-from-entities--entityroutes)
+[`entityRoutes`](/docs/configuration/entity-routes)
 for the full grammar.
 
 ### Deploy

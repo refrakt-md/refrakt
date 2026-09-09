@@ -11,6 +11,7 @@ export {
 	resolveSite,
 	resolvePlanConfig,
 	DEFAULT_SITE_NAME,
+	SITE_FIELDS,
 } from './config-normalize.js';
 export type { NormalizedRefraktConfig, NormalizeOptions } from './config-normalize.js';
 

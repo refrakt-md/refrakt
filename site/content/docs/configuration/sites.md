@@ -89,7 +89,9 @@ A `SiteConfig` accepts these fields. Required fields are bold.
 |-------|------|-------------|
 | **`contentDir`** | `string` | Path to the content directory, relative to the project root. |
 | **`theme`** | `string \| SiteThemeConfig` | Active theme. Accepts either a package name string (legacy shorthand — `"@refrakt-md/lumina"`) or a full `SiteThemeConfig` object with `package`, `presets`, `tokens`, `modes`, and `code.colorScheme`. See [Theme presets](#theme-object-form) for the object form. |
-| **`target`** | `string` | Target adapter identifier (`svelte`, `astro`, `next`, `nuxt`, `eleventy`, `html`). |
+| `target` | `string` | Target adapter identifier (`svelte`, `astro`, `next`, `nuxt`, `eleventy`, `html`). **Optional and documentation-only** — no adapter reads or validates it. Slated for removal in v1.0. |
+
+Only `contentDir` and `theme` are strictly required for a site to load.
 
 ### SEO and branding
 
@@ -107,7 +109,8 @@ A `SiteConfig` accepts these fields. Required fields are bold.
 | Field | Type | Description |
 |-------|------|-------------|
 | `plugins` | `string[]` | Plugins to merge into this site's `ThemeConfig`. |
-| `routeRules` | `RouteRule[]` | Route-to-layout mapping rules (first match wins). |
+| `routeRules` | `RouteRule[]` | Route-to-layout mapping rules (first match wins). Each rule is `{ pattern, layout, entity? }` — `entity` additionally registers matching pages as registry entities of that type (e.g. `runes/**` → `rune`) without per-page frontmatter. |
+| `entityRoutes` | `EntityRoute[]` | Declarative entity → page routes. Each rule generates one page per registered entity matching `type` (plus an optional `filter`). See [Entity routes](/docs/configuration/entity-routes). |
 | `search` | `boolean` | Whether to render the search UI (header button + `Cmd/Ctrl+K` dialog). Defaults to `true`. Set `false` to omit the search chrome entirely. Results require a [Pagefind index](/docs/configuration/search). |
 | `overrides` | `Record<string, string>` | Component overrides — `typeof` name → relative component path. |
 | `runes` | `RunesConfig` | Rune resolution: `prefer`, `aliases`, `local`. |
@@ -116,6 +119,15 @@ A `SiteConfig` accepts these fields. Required fields are bold.
 | `tints` | `Record<string, object>` | Project-level tint presets. |
 | `backgrounds` | `Record<string, object>` | Project-level background presets. |
 | `sandbox` | `object` | `{ dir }` — directory of `{% sandbox %}` program sources. (`examplesDir` is the deprecated alias, still accepted with a warning — ADR-022.) |
+
+### Localization
+
+These control refrakt's own generated UI text — nav chrome, pagination, behavior labels — not your page content. See [Internationalization](/docs/configuration/i18n).
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `locale` | `string` | Active locale (BCP 47, e.g. `"de"`). Selects first-party and plugin translation bundles and drives locale-aware date/number formatting. Defaults to `"en"`. |
+| `strings` | `Record<string, string \| Record<string, string>>` | Site-level overrides for individual UI strings, keyed by i18n key (`{scope}.{block}.{ref}`). Highest precedence — these win over first-party and plugin bundles. A value is either a string or a map of CLDR plural categories (`one`, `other`, …) to strings. |
 
 ### Theme object form
 

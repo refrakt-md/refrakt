@@ -44,6 +44,12 @@ jobs:
       # still auto-builds previews for non-production branches via its Git
       # integration; automatic production builds are disabled in the dashboard
       # (Branch control) so this step is the only path to production.
+      #
+      # This step must stay *after* the version bump: the site enumerates the
+      # versioned JSON Schema URLs (/schemas/vX.Y/…) from the version in
+      # packages/transform/package.json, so building here is what publishes the
+      # URL that create-refrakt bakes into projects scaffolded from this
+      # release. Building before the bump would leave that URL a 404 (BUG-004).
       - name: Deploy site to Cloudflare Pages (production)
         if: steps.changesets.outputs.published == 'true'
         run: |

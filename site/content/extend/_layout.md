@@ -22,10 +22,6 @@ tint-lock: false
 - rune-authoring/output-contract
 - rune-authoring/composability
 - rune-authoring/patterns
-- rune-authoring/partials
-- rune-authoring/page-sections
-- rune-authoring/nav-slug-resolution
-- rune-authoring/rich-menubar-panels
 
 ## Plugin authoring
 
@@ -52,7 +48,6 @@ tint-lock: false
 
 ## Internationalization
 
-- i18n/overview
 - i18n/translating
 
 ## Security

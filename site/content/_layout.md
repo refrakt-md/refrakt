@@ -18,13 +18,17 @@ tint-lock: true
 
   Install refrakt and build your first site.
 
-- [Configuration](/docs/configuration/overview)
-
-  Sites, plugins, and themes in `refrakt.config.json`.
-
 - [Content](/docs/content)
 
   Pages, layouts, regions, and frontmatter.
+
+- [Authoring](/docs/authoring/variables)
+
+  Variables, partials, entities, page sections, tint.
+
+- [Configuration](/docs/configuration/overview)
+
+  Sites, plugins, and themes in `refrakt.config.json`.
 
 ---
 
@@ -129,8 +133,10 @@ tint-lock: true
 {% nav layout="columns" %}
 ## Learn
 - [Getting started](/docs/getting-started)
-- [Configuration](/docs/configuration/overview)
 - [Content](/docs/content)
+- [Authoring](/docs/authoring/variables)
+- [Entities](/docs/authoring/entities)
+- [Configuration](/docs/configuration/overview)
 - [CLI](/docs/cli/cli-overview)
 - [Adapters](/docs/adapters/adapters-overview)
 - [MCP](/docs/mcp/overview)

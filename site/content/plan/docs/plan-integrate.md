@@ -93,7 +93,7 @@ Each rule renders one page per matching entity, with `$item` bound to that entit
 `{% expand $item.id /%}` inlines its content. The adapter also back-fills each entity's
 `sourceUrl` with the generated route, so a `{% ref %}` (or any entity cross-link) resolves
 to the on-site page automatically. Adjust the `url` patterns to fit your site's URL scheme.
-Full grammar: [`entityRoutes`](/docs/configuration/sites#generating-routes-from-entities--entityroutes).
+Full grammar: [`entityRoutes`](/docs/configuration/entity-routes).
 
 ## 5. Surface dashboards on any page
 

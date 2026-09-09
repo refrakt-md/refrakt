@@ -7,6 +7,10 @@ description: How to use build-time pipeline hooks to build site-wide indexes and
 
 The cross-page pipeline is a build-time mechanism that lets packages scan all pages, build site-wide indexes, contribute virtual pages, and enrich page content using cross-page data. It runs in a sequence of phases after all pages have been individually parsed and transformed.
 
+{% hint type="note" %}
+**This page is for plugin authors.** If you're writing content and landed here from `{% collection %}`, `{% aggregate %}`, `{% relationships %}`, or `{% expand %}`, you want [Entities](/docs/authoring/entities) — what an entity is, where entities come from, and how those runes fit together. Generating a page per entity is [Entity routes](/docs/configuration/entity-routes).
+{% /hint %}
+
 ## When to Use It
 
 Most runes don't need the pipeline. Pure presentation runes (hero, hint, datatable) are fully self-contained — they have no need to know about other pages.
@@ -127,32 +131,19 @@ A `ContributedPage` is `{ url, title?, frontmatter?, content, variables?, source
 
 ### Generating routes from entities — `entityRoutes`
 
-You usually don't need to write `contributePages` by hand. For the common case — "one page per registered entity" — use the **declarative `entityRoutes` adapter** in your site config. It's a built-in `contributePages` provider:
+Don't write `contributePages` for the common case. "One page per registered entity" is a site-config field — `entityRoutes` is a built-in `contributePages` provider, so a site owner gets those routes without a line of plugin code:
 
 ```json
-{
-  "sites": {
-    "main": {
-      "contentDir": "./content",
-      "entityRoutes": [
-        { "type": "spec", "url": "/specs/{id}/", "title": "{title}", "render": "{% expand $item.id /%}" },
-        { "type": "work", "filter": "status:ready", "url": "/work/{id}/", "render": "{% expand $item.id /%}" },
-        { "type": "decision", "url": "/decisions/{id}/", "render-template": "templates:decision-page.md" }
-      ]
-    }
-  }
-}
+{ "type": "spec", "url": "/specs/{id}/", "render": "{% expand $item.id /%}" }
 ```
 
-Per rule, for each registered entity matching `type` + optional `filter` (the [field-match grammar](/runes/collection#the-field-match-grammar)):
+Full field reference and templating rules: [Entity routes](/docs/configuration/entity-routes).
 
-- **`url` / `title` / `frontmatter`** interpolate `{name}` placeholders from the entity's fields (`{id}`, `{title}`, …). `url` is per-segment URL-encoded and site-root-relative (the site's `basePath` is applied).
-- **`render`** is an inline markdoc body, or **`render-template`** points at a markdoc partial (mutually exclusive). Both are transformed per entity with **`$item` bound** — same contract as a [collection per-item template](/runes/collection#the-item-variable) — so `{% expand $item.id /%}` inlines the entity, and formatter functions like `{% date($item.data.published) %}` work here too.
-- The adapter **back-fills each matched entity's `sourceUrl`** with the generated route, so `{% ref %}` to that entity prefers the on-site page.
+Reach for `contributePages` when the shape doesn't fit — pages synthesised from an external API, one page per *group* of entities, or routes that depend on cross-page aggregation.
 
-### Embeddable entities — `embed()` / `sourceFile`
+### Making entities embeddable — `embed()` / `sourceFile`
 
-For `{% expand $item.id /%}` (above) to render an entity's content, the entity must be **embeddable**. An entity is embeddable if it has either:
+`{% expand %}` and `entityRoutes`' `render` both inline an entity's content, which only works if the entity you registered can produce it. Give it either:
 
 - **`embed(): Node`** — returns the entity's content AST directly (for in-memory / external sources, no file on disk); or
 - **`sourceFile` + `extract(parsedSource): Node`** — a project-root-relative `.md` path plus a function that pulls the entity's subtree from the freshly-parsed source (the plan plugin's path).
@@ -165,7 +156,7 @@ registry.register({
 });
 ```
 
-`{% expand %}` prefers `embed()`, falling back to reading + extracting `sourceFile`; an entity with neither produces a clear build error.
+`{% expand %}` prefers `embed()`, falling back to reading + extracting `sourceFile`. An entity with neither can still be linked and counted — it just can't be expanded, and attempting it is a clear build error rather than an empty block.
 
 ### Phase 3 — aggregate
 

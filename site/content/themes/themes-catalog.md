@@ -12,7 +12,7 @@ Layered on top of Lumina are **presets** — named `ThemeTokensConfig` modules t
 - **Theme presets** override chrome (typography, body bg, surfaces). They reshape the entire visual identity of a site. Layer one on Lumina via `theme.presets` in `refrakt.config.json`.
 - **Syntax presets** override syntax highlighting (and optionally code-surface canvas + chrome accents). They reshape how code reads, optionally with their own canvas. Two flavours: **scoped** presets like niwaki touch only the foreground; **integrated** presets like Nord ship chrome + canvas + foreground together. Layer alongside or instead of a chrome preset.
 
-Both can be opt-in as the **active** preset for a whole site, or registered as a named **tint** (`theme.tints[].extends`) for inline scoped use on a single section or code block. See [Tint cascade](/extend/theme-authoring/tint-cascade) for the scoping mechanics and [Theme authoring](/extend/theme-authoring/overview) if you're building your own.
+Both can be opt-in as the **active** preset for a whole site, or registered as a named **tint** (`theme.tints[].extends`) for inline scoped use on a single section or code block. See [Tint and colour scheme](/docs/authoring/tint) for the scoping mechanics and [Theme authoring](/extend/theme-authoring/overview) if you're building your own.
 
 ## Lumina
 

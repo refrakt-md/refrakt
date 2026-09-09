@@ -32,10 +32,6 @@ This handbook is for developers extending refrakt — writing custom runes, buil
 
   The `ProjectFiles` seam and the fetch-then-build materialization pattern for rendering a repo with no local filesystem.
 
-- [Content variables](/extend/variables)
-
-  The author-facing variable surface: `$frontmatter`, `$page`, `$file`, and the conventions that separate public variables from pipeline internals.
-
 - [Security](/extend/security)
 
   Threat model for runes that surface raw author HTML/CSS/JS, plus the `ResolvedSecurityPolicy` contract.
@@ -52,6 +48,7 @@ A few things worth knowing before you write your first rune:
 - **Read [Authoring overview](/extend/rune-authoring/authoring-overview) first.** It introduces `createContentModelSchema`, `createComponentRenderable`, and the identity-transform engine. Everything else in Extend assumes that mental model.
 - **Runes almost always belong in a plugin**, not in the core rune library. See the [community package rune checklist](/extend/rune-authoring/authoring-overview#community-package-rune).
 - **The author-facing rune reference catalog is at [`/runes`](/runes/rune-catalog).** Both audiences use it for different reasons — authors copy snippets, developers verify their own rune output.
+- **Know what your rune's users already have.** The [Authoring guide](/docs/authoring/entities) documents the surface content authors write against — [entities](/docs/authoring/entities), [content variables](/docs/authoring/variables), [page sections](/docs/authoring/page-sections), [partials](/docs/authoring/partials). A rune that fits those conventions needs far less documentation of its own.
 
 ## Useful CLI commands
 

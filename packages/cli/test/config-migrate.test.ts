@@ -150,6 +150,51 @@ describe('refrakt config migrate', () => {
 		expect(stdout).toContain('no "site" section');
 	});
 
+	it('moves every legacy shorthand into the site, leaving project-level fields behind', () => {
+		// Regression: the command used to keep its own copy of the site-field
+		// list, which had drifted from the normalizer's. `search`, `repoUrl`, and
+		// `repoBranch` were stranded at the top level, where nothing reads them
+		// once the config is in nested shape.
+		writeFileSync(
+			join(tempDir, 'refrakt.config.json'),
+			JSON.stringify({
+				contentDir: './content',
+				theme: '@refrakt-md/lumina',
+				search: false,
+				repoUrl: 'https://github.com/owner/repo',
+				repoBranch: 'develop',
+				icons: { mark: '<svg/>' },
+				plan: { dir: './planning' },
+				xrefs: [{ match: '^GH-(?<n>\\d+)$', template: 'https://x/{n}' }],
+				fileRoots: { shared: './shared' },
+			}, null, '\t'),
+		);
+
+		const { exitCode } = run('config', 'migrate', '--apply');
+		expect(exitCode).toBe(0);
+
+		const config = readConfig();
+		expect(config.site).toMatchObject({
+			contentDir: './content',
+			theme: '@refrakt-md/lumina',
+			search: false,
+			repoUrl: 'https://github.com/owner/repo',
+			repoBranch: 'develop',
+			icons: { mark: '<svg/>' },
+		});
+		for (const stranded of ['search', 'repoUrl', 'repoBranch', 'icons', 'contentDir']) {
+			expect(config).not.toHaveProperty(stranded);
+		}
+
+		// Project-level fields are not site fields — they stay at the top level.
+		expect(config.plan).toEqual({ dir: './planning' });
+		expect(config.xrefs).toHaveLength(1);
+		expect(config.fileRoots).toEqual({ shared: './shared' });
+		expect(config.site).not.toHaveProperty('plan');
+		expect(config.site).not.toHaveProperty('xrefs');
+		expect(config.site).not.toHaveProperty('fileRoots');
+	});
+
 	it('shows config command in --help', () => {
 		// Run from project root, not tempDir
 		const stdout = execFileSync('node', [CLI, '--help'], { encoding: 'utf8', timeout: 5000 });

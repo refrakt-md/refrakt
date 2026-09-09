@@ -15,14 +15,29 @@ tint-lock: false
 ## Guide
 
 - getting-started
+- content
+
+## Authoring
+
+- authoring/variables
+- authoring/partials
+- authoring/page-sections
+- authoring/entities
+- authoring/tint
+- authoring/nav-slug-resolution
+- authoring/rich-menubar-panels
+
+## Configuration
+
 - configuration/overview
-- configuration/plugins
-- configuration/plan
 - configuration/sites
+- configuration/plugins
+- configuration/entity-routes
 - configuration/search
+- configuration/i18n
+- configuration/plan
 - configuration/migration
 - configuration/schema
-- content
 
 ## CLI
 
