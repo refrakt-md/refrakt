@@ -93,6 +93,44 @@ shared Markdoc functions rather than template syntax.
 Hold that line: **bind `$row`, render the body, no control flow.** A page that
 needs conditional structure per row wants a generator or a rune of its own.
 
+## Where the rows come from: not a command
+
+A recurring suggestion is to let `data` take a command instead of a path — the
+Unix "everything is a file" instinct, which would let any tool that emits JSON
+become a source. It is the right instinct pointed at the wrong seam, and it is
+recorded here so it is not re-proposed.
+
+`data`'s own documentation states two guarantees a `cmd=` attribute would break:
+
+> The read goes through the same sandbox as snippet (project-root bounded, via
+> the SPEC-113 `ProjectFiles` seam), so `data` is **safe on sites that accept
+> untrusted author content** and **works in fully in-memory/hosted builds**.
+
+- **Security.** The sandbox exists so untrusted authors can use `data`. Executing
+  commands named in page content is not a caveat on that design, it is an
+  inversion of it.
+- **Hosted builds.** `ProjectFiles` abstracts over "there may be no filesystem".
+  A shell command cannot run there, so any page using it would work locally and
+  fail hosted — pages stop being portable.
+- **Reproducibility**, third and smaller. File content is diffable and
+  content-addressed; command output depends on environment, tool versions, and
+  network.
+
+Two ways to get the benefit without the cost:
+
+**Materialise the file.** A generator writes a committed JSON artifact and `data`
+reads it as an ordinary file. Requires nothing new, keeps all three guarantees,
+and the committed intermediate is reviewable in a diff. This is what
+{% ref "SPEC-126" /%} does.
+
+**Plugin-registered sources**, if a seam is ever wanted: `src="refrakt:config-fields"`,
+resolved by a source a trusted plugin registered. This preserves the invariant
+precisely — *trusted code may provide data; untrusted content may only name it*
+— and nothing executes from a page. It reuses two existing conventions: the
+format adapters are already a `raw → DataTable` seam, and `fileRoots` already
+established `namespace:name` as the addressing syntax. Out of scope here, but
+the shape to reach for if the need arises.
+
 ## Open questions
 
 - **`$row` or `$item`?** `$item` matches `collection` and `entityRoutes` exactly,
@@ -122,7 +160,7 @@ needs conditional structure per row wants a generator or a rune of its own.
 
 ## References
 
-- SPEC-126 — the config reference generator; the investigation that produced the evidence above, and the case where a per-row template is *not* sufficient on its own
+- {% ref "SPEC-126" /%} — the config reference generator. It produced the evidence above, and **part 1 of it depends on this spec**: the script emits flattened JSON and the page renders it with a `data` body. It is also the case where a per-row template is not sufficient on its own — the semantics have to be decoded first.
 - `/runes/collection` — the per-item template contract this inherits
 - `/docs/configuration/entity-routes` — `render` / `render-template`, the same contract applied to generated pages
 
