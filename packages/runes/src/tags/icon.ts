@@ -8,6 +8,16 @@ import { resolveIcon } from '../lib/icon-resolve.js';
  *   {% icon name="rocket" /%}              → looks up global.rocket
  *   {% icon name="hint/warning" /%}        → looks up hint.warning
  *   {% icon name="rocket" size="24px" /%}  → with size override
+ *
+ * SPEC-125 Phase 3 assessment — `icon` carries no universal attributes, and
+ * that is correct rather than an oversight. It resolves to a bare inline
+ * `<svg>` (or a `<span class="rf-icon">` fallback) with no `data-rune` marker
+ * and no entry in `coreConfig`, so the identity transform never sees it as a
+ * rune at all. There is no block to tint, no surface to frame and no body to
+ * set a reading register on — and no engine pass that would read such an
+ * attribute even if the schema declared one. This is `inline` posture in
+ * substance; it is recorded here rather than as a `RuneConfig` field because
+ * `icon` has no `RuneConfig`.
  */
 export const icon: Schema = {
 	selfClosing: true,

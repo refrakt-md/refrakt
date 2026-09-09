@@ -47,6 +47,7 @@ export { readingFacet, dropcapFacet, readingAxis, dropcapAxis, READING_REGISTERS
 export { motionFacet, motionAxis } from './motion.js';
 export { modifiersFacet, contextModifiersFacet, staticModifiersFacet } from './modifiers.js';
 export type { DescribableFacet, FacetContract, UniversalAxisFacet, UniversalAxisContract, RuneAxisContract } from './describe.js';
+export { UNIVERSAL_POSTURE_REASONS } from './describe.js';
 
 /** Facets that describe their config-modifier output statically, for
  *  `refrakt contracts`.

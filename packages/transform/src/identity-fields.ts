@@ -33,8 +33,12 @@
  *  and the type has no `'none'` — so it can only ever *grant*. Left unguarded, a
  *  theme could add `frameTarget: 'self'` to a rune whose schema rejects
  *  `frame=`, config granting what the schema forbids: the same divergence this
- *  rule exists to close, inverted. */
-export const IDENTITY_FIELDS = ['block', 'modifiers', 'sections', 'mediaSlots', 'frameTarget'] as const;
+ *  rule exists to close, inverted.
+ *
+ *  `universalAttributes` joins them in Phase 3: it decides what an author may
+ *  write on the rune at all, which is the most direct form of "applicability is
+ *  not theme configuration" there is. */
+export const IDENTITY_FIELDS = ['block', 'modifiers', 'sections', 'mediaSlots', 'frameTarget', 'universalAttributes'] as const;
 
 export type IdentityField = (typeof IDENTITY_FIELDS)[number];
 

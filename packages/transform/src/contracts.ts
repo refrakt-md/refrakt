@@ -1,7 +1,7 @@
 import type { ThemeConfig, RuneConfig, StructureEntry } from './types.js';
 import { toKebabCase } from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
-import { DESCRIBABLE_FACETS, UNIVERSAL_AXIS_FACETS } from './facets/index.js';
+import { DESCRIBABLE_FACETS, UNIVERSAL_AXIS_FACETS, UNIVERSAL_POSTURE_REASONS } from './facets/index.js';
 import type { UniversalAxisContract, RuneAxisContract } from './facets/describe.js';
 
 /** Structure contract for a single rune */
@@ -138,10 +138,19 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 	// reason is the only payload.
 	const runeAxes: Record<string, RuneAxisContract> = {};
 	const unavailable: Record<string, string> = {};
-	for (const facet of UNIVERSAL_AXIS_FACETS) {
-		const described = facet.describeForRune(config, block);
-		if (typeof described === 'string') unavailable[facet.axis] = described;
-		else if (described) runeAxes[facet.axis] = described;
+	// SPEC-125 Phase 3 — a non-`auto` posture rules out every axis at once, for a
+	// reason about the rune's kind rather than its anatomy. Checked before the
+	// per-axis gates so the recorded reason is the posture's, not a structural
+	// one that happens to also apply.
+	const posture = config.universalAttributes ?? 'auto';
+	if (posture !== 'auto') {
+		for (const facet of UNIVERSAL_AXIS_FACETS) unavailable[facet.axis] = UNIVERSAL_POSTURE_REASONS[posture];
+	} else {
+		for (const facet of UNIVERSAL_AXIS_FACETS) {
+			const described = facet.describeForRune(config, block);
+			if (typeof described === 'string') unavailable[facet.axis] = described;
+			else if (described) runeAxes[facet.axis] = described;
+		}
 	}
 	if (Object.keys(runeAxes).length > 0 || Object.keys(unavailable).length > 0) {
 		contract.universalAxes = {

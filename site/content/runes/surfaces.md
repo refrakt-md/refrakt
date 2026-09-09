@@ -18,6 +18,10 @@ Every block rune exposes one or two decorable **surfaces**, and a small, univers
 | `tint` | colour | recolour the surface (see [tint](/runes/tint)) |
 | `bg` | image | an image/video layer behind content (see [bg](/runes/bg)) |
 
+**Universal, but not unconditional.** Some of these axes need something to act on: `prominence` needs a rune with a section header, `reading` and `dropcap` need one with a body, the `frame-*` facets need a media surface. A rune that has none of those never honoured the attribute — `{% grid reading="prose" %}` did nothing at all. Since 0.32.0 the rune's schema says so, so writing one where it cannot apply is a build error (`Invalid attribute: 'reading'`) rather than silence. Nothing about *what renders* changed; only whether you are told.
+
+Editor completion reads the schema too, so it now offers a rune only the axes that rune can act on — the quickest way to see what applies is to type `{% grid ` and look. (`refrakt reference` still prints the full universal list on every rune; narrowing it is tracked separately.)
+
 The page walks the model along its four editorial axes:
 
 - **Chrome** — the depth, header weight, and framing that shape a surface.

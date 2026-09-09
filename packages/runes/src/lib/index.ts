@@ -4,6 +4,8 @@ import type { Config, Node, RenderableTreeNodes, Schema, SchemaAttribute, Tag, V
 
 import { resolveContentModel } from './resolver.js';
 import { schemaBasePresets } from '../attribute-presets.js';
+import { resolveUniversalAttributes } from '../universal-attributes.js';
+import type { UniversalAttributePosture } from '../universal-attributes.js';
 
 export { createComponentRenderable } from './component.js';
 export type { InlineTransformResult } from './component.js';
@@ -392,13 +394,23 @@ export interface ContentModelSchemaOptions {
    * rather than owned by config, because a rune's universal-attribute
    * applicability derives from these facts and a theme may not redefine them.
    *
-   * Recorded on {@link schemaRuneStructures}; nothing in this constructor reads
-   * them yet. Passing them is what makes the facts reachable at schema-build
-   * time at all — the prerequisite for narrowing.
+   * Recorded on {@link schemaRuneStructures}, and read here: they are what
+   * narrows the universal attributes this rune offers (SPEC-125 Phase 3).
    */
   sections?: Record<string, SectionRole>;
   mediaSlots?: Record<string, string>;
   frameTarget?: 'media' | 'self';
+
+  /**
+   * SPEC-125 Phase 3 — why this rune carries *no* universal attributes, when it
+   * carries none. Defaults to `auto`, where structural applicability decides
+   * axis by axis from the join tables above.
+   *
+   * Stated rather than inferred from which constructor a schema used: an
+   * `inline` span and a `configurator` rune both end up with none, for
+   * different reasons, and a reader cannot tell either from an oversight.
+   */
+  universalAttributes?: UniversalAttributePosture;
 }
 
 /**
@@ -420,8 +432,25 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
     Object.assign(attributes, options.attributes);
   }
 
-  // Add universal attributes
-  Object.assign(attributes, universalAttributes);
+  // Universal attributes — only the ones that can affect this rune (SPEC-125
+  // Phase 3). Availability comes from the same axis registry the structure
+  // contract derives its `unavailable` map from, so the schema and the contract
+  // cannot disagree. `declaredAttributes` is what has been merged so far: the
+  // `cover` and `content-place` gates read modifiers the rune declares as its
+  // own author attributes, and those are already in `attributes` by now — which
+  // is why `modifiers` did not need to move out of config.
+  const { available: applicableUniversals } = resolveUniversalAttributes({
+    posture: options.universalAttributes,
+    structure: {
+      ...(options.sections && { sections: options.sections }),
+      ...(options.mediaSlots && { mediaSlots: options.mediaSlots }),
+      ...(options.frameTarget && { frameTarget: options.frameTarget }),
+    },
+    declaredAttributes: Object.keys(attributes),
+  });
+  for (const [name, def] of Object.entries(universalAttributes)) {
+    if (applicableUniversals.has(name)) attributes[name] = def;
+  }
 
   // deferBody: declare the stash attribute so the loader-captured body source
   // is readable in the transform (see deferred-body.ts).

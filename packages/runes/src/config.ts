@@ -159,12 +159,20 @@ export const coreConfig: ThemeConfig = {
 		 * substitutes the entity content wrapped in `<section
 		 * class="rf-expand" data-rune="expand">`. Engine config provides the
 		 * block name for CSS tree-shaking. */
-		Expand: { block: 'expand' },
+		/* SPEC-125 Phase 3 — `expand` offers no universal attributes, and unlike its
+		 * five siblings that is **not** principled: it is a block-level disclosure,
+		 * so `tint`, `bg`, `width`, `elevation` and the rest would all mean
+		 * something on it. It reads as legacy — a hand-written schema that predates
+		 * the universal set. Recorded as `none` rather than quietly inheriting the
+		 * gap; giving it the block axes means migrating it to
+		 * `createContentModelSchema`, which WORK-534 scopes out. */
+		Expand: { block: 'expand', universalAttributes: 'none' },
 		/* Badge emits a complete `<span class="rf-badge" data-rune="badge">`
 		 * directly from its schema and needs no engine post-processing, but
 		 * still needs an entry in the theme config so `computeUsedCssBlocks`
 		 * includes `badge.css` in CSS tree-shaking when a badge is rendered. */
-		Badge: { block: 'badge' },
+		/* SPEC-125 Phase 3 — an inline span; the block axes have nothing to act on. */
+		Badge: { block: 'badge', universalAttributes: 'inline' },
 		/* SPEC-079 composable rune handles — render the same DOM as the
 		 * engine's `split` / `definition-list` layout primitives. CSS comes
 		 * from the universal `[data-zone-layout=…]` selectors; per-rune
@@ -632,8 +640,11 @@ export const coreConfig: ThemeConfig = {
 				language: { source: 'meta', default: 'mermaid', noBemClass: true },
 			},
 		},
-		Tint: { block: 'tint', parent: '*' },
-		Bg: { block: 'bg', parent: '*' },
+		/* SPEC-125 Phase 3 — configurator runes: they *supply* an axis value to the
+		 * parent rather than carrying one. A `{% tint %}` with its own `tint=` is
+		 * circular. */
+		Tint: { block: 'tint', parent: '*', universalAttributes: 'configurator' },
+		Bg: { block: 'bg', parent: '*', universalAttributes: 'configurator' },
 		Region: { block: 'region', parent: 'Layout' },
 		Sandbox: {
 			block: 'sandbox',

@@ -120,3 +120,14 @@ export interface UniversalAxisFacet {
 	 *  catalog and the reason is the only payload. */
 	describeForRune(config: RuneConfig, block: string): RuneAxisContract | string | null;
 }
+
+/** Why a rune with a non-`auto` posture offers no universal attributes at all.
+ *
+ *  Shared by `generateStructureContract` (which records them as `unavailable`
+ *  reasons) and by the schema layer's `resolveUniversalAttributes`, so the two
+ *  say the same thing rather than paraphrasing each other. */
+export const UNIVERSAL_POSTURE_REASONS: Readonly<Record<'inline' | 'configurator' | 'none', string>> = {
+	inline: 'this rune is inline — the block-level universal axes have nothing to act on',
+	configurator: 'this rune supplies axis values to its parent rather than carrying its own',
+	none: 'this rune declares no universal attributes',
+};
