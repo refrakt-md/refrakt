@@ -210,6 +210,41 @@ with a hand-maintained list in the generator — five entries — and let
 `config-schema.test.ts` assert it still matches `ThemeManifest`'s properties, so
 the marker cannot silently go stale either.
 
+## Considered and deferred: embedding the source directly
+
+The obvious cheaper idea is to skip generation and have the docs reference the
+declarations directly — `{% snippet %}` to embed `SiteConfig`, or
+`{% file-ref preview="drawer" %}` to hoist it into a side panel. Recorded here
+because it will come up again.
+
+**As a replacement for generation, it does not work.** `snippet` and `file-ref`
+both address content by **line range only** — there is no symbol or marker
+extraction. `SiteConfig` begins at line 74 today; add a field to `EntityRoute`
+above it and every range shifts, and the failure is *silent and wrong* rather
+than broken: the page renders `PlanConfig`'s body under a `SiteConfig` heading,
+looking entirely authoritative. That is worse than the drift being fixed here,
+which at least fails loudly in a test. (`codegroup`'s per-fence `source=` is not
+a candidate at all — it only derives the tab label; the fence body stays
+hand-written.)
+
+It is also the wrong artifact for the reader. `refrakt.config.json` is edited by
+people who never open the TypeScript; handing them `?:` syntax and
+cross-package type references because it is technically the truth is the same
+mistake WORK-540 corrected on the pipeline page.
+
+**As an addition it is genuinely good, and is deferred rather than rejected.**
+`file-ref preview="drawer"` on each generated definition heading would let a
+reader verify the table against the declaration without leaving the page —
+provenance for the "this is generated" claim, using machinery that already
+exists and is already configured (`repoUrl` is set on the main site). Left out
+of this spec to keep the first pass small; revisit once the generator is
+proven.
+
+If `snippet` is ever pointed at `theme.ts` anyway, pair it with a test asserting
+the slice still starts with the expected `export interface` line. That converts
+silent-wrong into loud-fail, which is the minimum bar for a line-addressed
+reference.
+
 ## Acceptance Criteria
 
 - [ ] The configuration types live in a file named for configuration, the dead `types.ts` is gone, and `index.ts` groups them as configuration rather than theme types
