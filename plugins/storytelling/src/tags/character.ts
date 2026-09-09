@@ -2,7 +2,7 @@ import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
-import { taxonomyAttributes } from './common.js';
+import { taxonomyAttributes, buildStoryContent } from './common.js';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
@@ -66,7 +66,12 @@ export const character = createContentModelSchema({
 		emitAttributes: { name: '$heading' },
 		fields: [
 			{ name: 'portrait', match: 'image', optional: true },
-			{ name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
+			// BUG-003 — this was named `header` and matched `heading|paragraph`,
+			// and `transform` never read it, so prose written directly inside
+			// `{% character %}` was resolved and then dropped. `description` is what
+			// Realm and Faction call the same field, and `heading` never matched
+			// here anyway: a heading in the preamble starts a section.
+			{ name: 'description', match: 'paragraph', optional: true, greedy: true },
 			{ name: 'items', match: 'tag', optional: true, greedy: true },
 		],
 		sectionModel: {
@@ -95,10 +100,16 @@ export const character = createContentModelSchema({
 		const hasPortrait = portrait.count() > 0;
 		const portraitDiv = hasPortrait ? portrait.wrap('div') : undefined;
 
-		const sections = sectionNodes.tag('div').typeof('CharacterSection');
-		const hasSections = sections.count() > 0;
-		const sectionsContainer = hasSections ? sections.wrap('div') : undefined;
-		const body = !hasSections ? sectionNodes.wrap('div') : undefined;
+		// BUG-003 — the same helper Realm and Faction use. It builds the body from
+		// the authored prose (plus any leftover nodes when there are no sections),
+		// so lead prose and sections can now coexist; the old bespoke version built
+		// the body from the *items* cursor and only when `hasSections` was false,
+		// which is why prose vanished either way. Character extracts its portrait
+		// from an `image` field directly, so there is no leftover scene text —
+		// hence the empty `extraDescription`.
+		const { bodyDiv, sectionsContainer, sections, hasSections } = buildStoryContent(
+			[], resolved.description, sectionNodes, 'CharacterSection', config,
+		);
 
 		// SPEC-081: emit flat `data-name` slots — the `layout` config builds the
 		// content column + preamble header. The portrait stays a floated avatar
@@ -107,7 +118,8 @@ export const character = createContentModelSchema({
 		if (portraitDiv) children.push(portraitDiv.next());
 		children.push(roleMeta, statusMeta, aliasesMeta, tagsMeta);
 		children.push(nameTag);
-		children.push(hasSections ? sectionsContainer!.next() : body!.next());
+		if (bodyDiv) children.push(bodyDiv.next());
+		if (sectionsContainer) children.push(sectionsContainer.next());
 
 		const schemaMap = {
 			name: nameTag,
@@ -127,7 +139,8 @@ export const character = createContentModelSchema({
 			refs: {
 				name: nameTag,
 				...(portraitDiv ? { portrait: portraitDiv } : {}),
-				...(hasSections ? { sections: sectionsContainer! } : { body: body! }),
+				...(bodyDiv ? { body: bodyDiv } : {}),
+				...(sectionsContainer ? { sections: sectionsContainer } : {}),
 			},
 			schema: schemaMap,
 			children,

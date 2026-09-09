@@ -4617,8 +4617,8 @@
 					"children": [
 						"preamble",
 						"metadata",
-						"sections",
-						"body"
+						"body",
+						"sections"
 					]
 				},
 				"preamble": {

@@ -45,7 +45,11 @@ export const config: Record<string, RuneConfig> = {
 		// portrait stays a floated avatar sibling at the article root.
 		layout: {
 			root: ['portrait', 'content'],
-			content: { tag: 'div', children: ['preamble', 'metadata', 'sections', 'body'] },
+			// BUG-003 — `body` before `sections`, matching Realm and Faction. The
+			// order was the other way round because the two were mutually
+			// exclusive: only one of them was ever emitted. Now that lead prose
+			// and sections can coexist, the prose has to read first.
+			content: { tag: 'div', children: ['preamble', 'metadata', 'body', 'sections'] },
 			preamble: { tag: 'header', children: ['name'] },
 		},
 		editHints: { name: 'inline', portrait: 'image', body: 'none', sections: 'none' },
