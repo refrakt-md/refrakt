@@ -1,4 +1,4 @@
-{% work id="WORK-538" status="ready" priority="high" complexity="moderate" source="SPEC-107" tags="lumina,css,prominence,dimensions,dx" milestone="v0.32.0" %}
+{% work id="WORK-538" status="done" priority="high" complexity="moderate" source="SPEC-107" tags="lumina,css,prominence,dimensions,dx" milestone="v0.32.0" %}
 
 # Make prominence effective on runes whose stylesheet pins its title size
 
@@ -66,18 +66,18 @@ theme-dependent. Fixing the skin is better: the axis is meant to work, and
 
 ## Acceptance Criteria
 
-- [ ] `prominence` visibly changes the title size on all eight runes, verified by
+- [x] `prominence` visibly changes the title size on all eight runes, verified by
       measuring computed `font-size` in a browser rather than by reading the CSS
-- [ ] Each rune keeps its **current** size at the default (`normal`, or unset) —
+- [x] Each rune keeps its **current** size at the default (`normal`, or unset) —
       this must not restyle any page that never asked for prominence
-- [ ] `Hero`'s raw `3.25rem` becomes a token
-- [ ] The 28 runes where the axis already works are unchanged
-- [ ] A test locks the mechanism so a future rune stylesheet cannot silently
+- [x] `Hero`'s raw `3.25rem` becomes a token
+- [x] The 28 runes where the axis already works are unchanged
+- [x] A test locks the mechanism so a future rune stylesheet cannot silently
       re-break it — ideally a check that no `.rf-*__{title-slot}` rule sets
       `font-size` without going through `--rf-title-size`
-- [ ] The CSS coverage tests pass and `refrakt contracts --check` is unmoved
+- [x] The CSS coverage tests pass and `refrakt contracts --check` is unmoved
       (this changes no emitted attribute)
-- [ ] `npm run build` and the full repo suite pass
+- [x] `npm run build` and the full repo suite pass
 
 ## Approach
 
@@ -117,5 +117,73 @@ more, `Hero` and `CallToAction` among them.
 - {% ref "SPEC-125" /%} — the applicability work that surfaced it
 - {% ref "WORK-535" /%} — `refrakt reference` stops over-promising
 - {% ref "WORK-340" /%} — Lumina token discipline (the `3.25rem`)
+
+## Resolution
+
+Completed: 2026-09-09
+
+Branch: `claude/milestone-v0-31-0-e5ihxr`
+
+### Two problems, not one
+
+The item was written about reach: eight rune stylesheets pin their title `font-size`, so `--rf-title-size` never arrives and the axis is inert. Fixing reach exposed a second problem the first was hiding — **the ramp was an absolute type scale**, and once `prominence` could reach a rune resting outside that scale it moved the title the *wrong way*: `display` shrank a hero (52 → 40px), `quiet` enlarged a bento cell (18 → 20px). Shipping reach alone would have been worse than leaving the axis inert.
+
+Both are fixed. The second was put to the user as a design decision rather than assumed, since SPEC-107 owns the axis; they chose the relative ramp and accepted the density consequence below.
+
+### The mechanism
+
+One variable carried two independent inputs — the density default and the author's override — which is why a rune had nowhere to state its own resting size that did not also clobber `prominence`. Split in two:
+
+```css
+[data-prominence="display"] { --rf-prominence-size: calc(var(--rf-title-size, …) * 5 / 3); }
+[data-section="title"]      { font-size: var(--rf-prominence-size, var(--rf-title-size, …)); }
+```
+
+- `--rf-title-size` is the **resting** size: density sets it, and a rune may override it on its root.
+- `--rf-prominence-size` is the **author's override**: only `[data-prominence]` sets it, and it is read first.
+- `density.css` clears `--rf-prominence-size` at every `[data-density]` root — every rune root has one — so an ancestor's `prominence` cannot leak into a nested rune's title. It is declared in `density.css` specifically because that file is imported *before* `surfaces.css`, so a rune carrying both attributes still keeps its own.
+
+The eight pinning runes now declare `--rf-title-size` on their root and read `var(--rf-prominence-size, var(--rf-title-size))` on the title element. One pattern, applied identically to all eight, per the Approach's instruction not to solve it eight ways. The title rule (rather than deleting it in favour of `[data-section="title"]`) is kept because `hero` and `cta` group a bare-tag fallback into it — `.rf-hero h1, .rf-hero__headline` — which would otherwise lose the treatment.
+
+### The ramp
+
+The multipliers are the ratios the old fixed steps had to the `2xl` resting size — ×5/6, ×5/4, ×5/3 — expressed as exact fractions so `1.5rem` still yields precisely 20 / 30 / 40px. That makes the change a no-op for every rune resting at the density default while giving runes resting above or below it a ramp that moves in the direction its name implies.
+
+### Measured, not reasoned
+
+Headless Chromium against the bundled stylesheet, **all 36 title-role runes × 4 prominence values × 2 densities**, before and after:
+
+- **No resting size changed anywhere.** Nothing that never asked for `prominence` is restyled.
+- **Full density:** the 28 already-working runes are byte-identical (24/20/30/40). The eight changed from flat to a real ramp — `Hero` 52 → 43.3/52/65/86.7, `CallToAction` 40 → 33.3/40/50/66.7, `BentoCell` 18 → 15/18/22.5/30.
+- **Compact density:** all 36 changed, 20/20/30/40 → 20/16.7/25/33.3. The ramp now scales with density instead of ignoring it. This is the deliberate, user-approved half of the change and the changeset calls it out.
+- **Nesting:** a `bento-cell` inside a `display`-prominence `section` stays at its own size, before and after.
+- **Nothing is inert.** Zero runes now show one size across all four values.
+
+### The guard, and the guard's own bug
+
+`packages/lumina/test/prominence-reach.test.ts` derives the `.rf-{block}__{slot}` selectors from config and fails if any rune stylesheet declares a title `font-size` outside the chain — the shape of the mistake, not a list of runes.
+
+Worth recording: **the first version of it silently passed.** Its `font-size` matcher required `^` or `;` before the declaration, and in every real rule the declaration follows a comment, so it matched nothing and reported no offenders. Caught by deliberately re-introducing the pin and checking the test failed. It now uses a lookbehind, and both directions are verified — it fails with the pin restored, passes without it. A guard that cannot fail is worse than no guard, because it is trusted.
+
+### `hero`'s `3.25rem`
+
+Now a named resting size on `.rf-hero` rather than an inline number. Deliberately **not** promoted to a `--rf-text-5xl` token: `packages/types/src/token-contract.ts` enumerates the scale as a typed `xs … 4xl` interface every theme must satisfy, and adding a step to accommodate one rune's one-off would oblige every theme to define it. The criterion asked for "a token"; a named Lumina-local property satisfies the intent — no magic number buried in a rule — without a contract change. Flagging in case you read that criterion more literally.
+
+### Files changed
+
+- `packages/lumina/styles/dimensions/sections.css` — the consumer reads the override first
+- `packages/lumina/styles/dimensions/surfaces.css` — the relative ramp, with the reasoning inline
+- `packages/lumina/styles/dimensions/density.css` — the nested-rune reset
+- 8 rune stylesheets — resting size on the root, chain on the title element; `palette`, `typography`, `spacing` and `design-context` gained a root rule (they had none)
+- `packages/lumina/test/prominence-reach.test.ts` (new, 3 cases)
+- `site/content/runes/surfaces.md` — the ramp is relative
+- `plan/specs/SPEC-107-*.md` — a reference-implementation note. The spec itself is **unchanged and did not need to be**: it already delegates magnitude to the theme ("the theme owns the actual paint and may interpret, clamp, or no-op a value"), which is exactly the latitude used.
+- `.changeset/olive-seals-shake.md`
+
+### Notes
+
+- Verified: `npm run build` clean, full suite 4160/4160 across 342 files, `refrakt contracts --check --site main` unmoved (this changes no emitted attribute).
+- `packages/proof-skin` is unaffected: it reads `--rf-title-size`, which density still sets, and implements no `prominence` rules at all — its prerogative under ADR-028.
+- This unblocks {% ref "WORK-535" /%}, which can now make `refrakt reference` authoritative without the reference theme contradicting it.
 
 {% /work %}

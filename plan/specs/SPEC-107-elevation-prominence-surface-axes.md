@@ -116,6 +116,17 @@ type tokens from {% ref "SPEC-094" /%} Tier 1; the top rung is the display famil
 | `prominent` | Featured — louder than default |
 | `display` | Banner / hero register — display type, generous rhythm |
 
+> **Reference-implementation note (v0.32.0, {% ref "WORK-538" /%}).** Lumina
+> first read this table as an *absolute* type scale — fixed `xl` / `3xl` / `4xl`
+> steps. That only reads as a register when a rune's resting title size happens
+> to be the density default: on a `hero`, which rests above the whole scale,
+> `display` made the title *smaller*, and on a `bento-cell`, which rests below
+> it, `quiet` made it *larger*. Worse, eight runes pinned their title
+> `font-size` directly and the axis could not reach them at all. Lumina's ramp
+> is now **relative to each rune's resting size**, preserving every number for
+> runes resting at the density default. This spec is unchanged — it delegates
+> magnitude to the theme, which is exactly the latitude that was used.
+
 **Availability is gated by structure, magnitude by the theme.** Unlike `elevation`,
 `prominence` is *not* universal: it applies only to runes that carry the page-section
 header model (the cluster already sharing `pageSectionProperties` / `sections: { preamble,

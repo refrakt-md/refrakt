@@ -38,6 +38,15 @@
 	--rf-title-size: var(--rf-text);
 }
 
+/* Every rune root clears the prominence override so an ancestor's `prominence=`
+ * cannot leak into a nested rune's title — the same protection the density
+ * declarations above already give --rf-title-size. Declared here because this
+ * file is imported before dimensions/surfaces.css, so a rune carrying both
+ * `data-density` and `data-prominence` still keeps its own. */
+[data-density] {
+	--rf-prominence-size: initial;
+}
+
 [data-density="minimal"] [data-section="description"] {
 	display: none;
 }

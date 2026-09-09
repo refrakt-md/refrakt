@@ -69,7 +69,7 @@ A clear float — higher z-height.
 
 ### `prominence` — the section-header family
 
-`prominence` scales the weight of a rune's **section header** — its title type size — without touching the rest of the surface. It applies only to runes that carry a page-section header (a title/preamble), running `quiet → normal → prominent → display`. `normal` is the rune's density default; the steps re-point the title size up or down:
+`prominence` scales the weight of a rune's **section header** — its title type size — without touching the rest of the surface. It applies only to runes that carry a page-section header (a title/preamble), running `quiet → normal → prominent → display`. `normal` is the rune's **resting** title size, and the steps ramp *relative to it* rather than to fixed sizes — so `display` is always larger than the rune's default and `quiet` always smaller, whether the rune rests at the density default (a `section`), above it (a `hero`) or below it (a `bento-cell`):
 
 {% preview source=true %}
 

@@ -2,6 +2,7 @@
 /* Call to Action — skin. The preamble/eyebrow/button-row layout + mobile stack
  * live in @refrakt-md/skeleton (styles/runes/cta.css). */
 .rf-cta {
+	--rf-title-size: var(--rf-text-4xl);
 	padding: 3.5rem 2rem 3rem;
 }
 .rf-cta .rf-cta__preamble,
@@ -52,7 +53,10 @@
 .rf-cta h2,
 .rf-cta h3,
 .rf-cta__headline {
-	font-size: var(--rf-text-4xl);
+	/* WORK-538 — read the prominence override first; the fallback is this rune's
+	 * resting size, stated as --rf-title-size on the root so the prominence ramp
+	 * can compute from it. */
+	font-size: var(--rf-prominence-size, var(--rf-title-size));
 	font-weight: var(--rf-weight-bold);
 	letter-spacing: var(--rf-tracking-tight);
 	margin-bottom: 0.75rem;

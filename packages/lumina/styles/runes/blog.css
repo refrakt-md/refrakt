@@ -1,13 +1,17 @@
 @layer skin {
 /* Blog — post listing with filtering and sorting */
 .rf-blog {
+	--rf-title-size: var(--rf-text-3xl);
 	padding: 2rem 0;
 }
 .rf-blog__preamble {
 	margin-bottom: 2rem;
 }
 .rf-blog__headline {
-	font-size: var(--rf-text-3xl);
+	/* WORK-538 — read the prominence override first; the fallback is this rune's
+	 * resting size, stated as --rf-title-size on the root so the prominence ramp
+	 * can compute from it. */
+	font-size: var(--rf-prominence-size, var(--rf-title-size));
 	font-weight: var(--rf-weight-bold);
 	letter-spacing: var(--rf-tracking-tight);
 	margin: 0 0 0.5rem;

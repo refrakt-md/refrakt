@@ -85,17 +85,32 @@
 /* ─── Prominence: page-section-header type register ───────────────────
  * `data-prominence` re-points the section title size for page-section-header
  * family runes (the engine only emits it where a header role exists). `normal`
- * is the density default; the other steps layer on top, cascading down to
- * [data-section="title"] via --rf-title-size — the same mechanism density uses,
- * so a nested rune's own density/prominence re-declares it. */
+ * is the rune's resting size; the other steps ramp away from it, cascading down
+ * to [data-section="title"] via --rf-prominence-size.
+ *
+ * **The ramp is relative, not an absolute type scale** (v0.32.0, WORK-538).
+ * The steps used to be fixed sizes — xl / 3xl / 4xl — which only reads as a
+ * register when the rune's resting size happens to be the density default. On a
+ * hero, whose headline rests above the whole scale, `display` made the title
+ * *smaller*; on a bento cell, which rests below it, `quiet` made it *larger*.
+ * The multipliers below are the ratios those fixed steps had to the 2xl resting
+ * size, so every rune resting at the density default keeps its exact numbers
+ * (1.5rem → 20 / 24 / 30 / 40px) while a rune that states its own resting size
+ * ramps around that instead.
+ *
+ * Published as --rf-prominence-size rather than by overwriting --rf-title-size,
+ * so a rune can state a resting size without also silencing the author's
+ * override. density.css clears the variable at every rune root, before these
+ * rules, so an ancestor's prominence cannot leak into a nested rune's title
+ * while a rune carrying both still keeps its own. */
 [data-prominence="quiet"] {
-	--rf-title-size: var(--rf-text-xl);
+	--rf-prominence-size: calc(var(--rf-title-size, var(--rf-text-2xl)) * 5 / 6);
 }
 [data-prominence="prominent"] {
-	--rf-title-size: var(--rf-text-3xl);
+	--rf-prominence-size: calc(var(--rf-title-size, var(--rf-text-2xl)) * 5 / 4);
 }
 [data-prominence="display"] {
-	--rf-title-size: var(--rf-text-4xl);
+	--rf-prominence-size: calc(var(--rf-title-size, var(--rf-text-2xl)) * 5 / 3);
 }
 
 /* ─── Media slot shares the surface chrome ───────────────────────────

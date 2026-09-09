@@ -1,7 +1,17 @@
 @layer skin {
+
+/* WORK-538 — resting title size, so the prominence ramp computes from it
+ * rather than from the density default. */
+.rf-design-context {
+	--rf-title-size: var(--rf-text-xl);
+}
+
 /* Design Context — unified token card wrapper */
 .rf-design-context__title {
-	font-size: var(--rf-text-xl);
+	/* WORK-538 — read the prominence override first; the fallback is this rune's
+	 * resting size, stated as --rf-title-size on the root so the prominence ramp
+	 * can compute from it. */
+	font-size: var(--rf-prominence-size, var(--rf-title-size));
 	font-weight: var(--rf-weight-bold);
 	margin-bottom: 1rem;
 }
