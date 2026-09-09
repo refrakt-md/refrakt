@@ -307,6 +307,51 @@ the slice still starts with the expected `export interface` line. That converts
 silent-wrong into loud-fail, which is the minimum bar for a line-addressed
 reference.
 
+### `{% data %}` gets closer than expected, and stops in a revealing place
+
+The other rune worth ruling out is `{% data %}` — unlike `snippet` it addresses
+by *structure*, not line number, so the objection above does not apply. Tested
+against the real schema, with no new code:
+
+```markdoc
+{% data src="packages/transform/refrakt.config.schema.json"
+        root="definitions.SiteConfig.properties"
+        orient="index" key-column="Field"
+        columns="Field, type as Type, description as Description" /%}
+```
+
+renders all 22 `SiteConfig` fields, no warnings. `orient=index` already handles
+the object-of-objects shape a `properties` map has, and `where` filters on schema
+keywords — `where="deprecated:true"` returned exactly `target`, so
+`where="x-group:…"` would give D7's grouped sections directly.
+
+It stops at `$ref`:
+
+```
+["theme","","Active theme — accepts a package name string…"]
+["highlight","",""]
+["runes","",""]
+```
+
+`highlight` has no `type` or `description` of its own — both live on
+`HighlightConfig`. Same for `runes`; `theme`'s type is a `oneOf`. Nor can `data`
+reach the sibling `required` array to mark required fields.
+
+**That is the argument for a generator, stated precisely.** The rendering is not
+the hard part — `data` already does it. The hard part is *decoding JSON Schema
+semantics*: resolving `$ref`, folding `required`, collapsing `oneOf`. A rune that
+knew those things would no longer be a generic data rune.
+
+A hybrid is therefore available and worth naming: have the CLI emit a flattened,
+presentation-ready JSON (the semantic work) and let `{% data %}` render it in the
+page (the presentation work). The page would stay live with no committed
+Markdoc. It is rejected here only on D1's grounds — the output would be
+invisible in review, and a changed field description would appear in no diff.
+Worth revisiting if the committed-output step becomes a burden.
+
+Per-row templates for `data`, which would widen its usefulness for sources that
+are already rows, are specified separately in {% ref "SPEC-127" /%}.
+
 ## Acceptance Criteria
 
 - [ ] The configuration types live in a file named for configuration, the dead `types.ts` is gone, and `index.ts` groups them as configuration rather than theme types
