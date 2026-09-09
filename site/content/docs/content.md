@@ -194,30 +194,12 @@ Reusable content blocks can be defined in a `_partials/` directory and included 
 
 This page covers how files become routed pages. The rest of the authoring surface:
 
-{% nav layout="columns" %}
-- [Content variables](/docs/authoring/variables)
-
-  `$frontmatter`, `$page`, and `$file` — what you can interpolate into attributes and prose.
-
-- [Partials](/docs/authoring/partials)
-
-  Reusable fragments, including namespaced `shared:footer.md` refs.
-
-- [Page sections](/docs/authoring/page-sections)
-
-  The eyebrow / headline / blurb slots above any rune's content.
-
----
-
-- [Entities](/docs/authoring/entities)
-
-  What the registry holds, and how `ref`, `expand`, `collection`, `aggregate`, and `relationships` read it.
-
-- [Tint and colour scheme](/docs/authoring/tint)
-
-  `tint`, `tint-mode`, and `tint-lock` — the frontmatter cascade.
-
-- [Navigation](/docs/authoring/nav-slug-resolution)
-
-  How nav slugs resolve, plus [rich menubar panels](/docs/authoring/rich-menubar-panels).
+{% nav layout="cards" %}
+- authoring/variables
+- authoring/partials
+- authoring/page-sections
+- authoring/entities
+- authoring/tint
+- authoring/nav-slug-resolution
+- authoring/rich-menubar-panels
 {% /nav %}
