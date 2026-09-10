@@ -4,10 +4,12 @@ const { Tag } = Markdoc;
 import { tags as coreTags, nodes, extractHeadings, runeTagMap, defineRune } from '@refrakt-md/runes';
 import media from '../src/index.js';
 
-// Create Rune instances from the package
+// Create Rune instances from the package, the way `loadPlugin` does — `aliases`
+// included, or `runeTagMap` never registers the alias spellings and
+// `{% music-playlist %}` is unparseable in tests while working in a real build.
 const pluginRunes: Record<string, any> = {};
 for (const [name, entry] of Object.entries(media.runes)) {
-  pluginRunes[name] = defineRune({ name, schema: entry.transform as any });
+  pluginRunes[name] = defineRune({ name, schema: entry.transform as any, aliases: entry.aliases });
 }
 const tags = { ...coreTags, ...runeTagMap(pluginRunes), ...Markdoc.tags };
 

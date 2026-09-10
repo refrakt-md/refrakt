@@ -39,7 +39,12 @@ describe('section-role drift', () => {
 	it('covers core and all nine plugins', () => {
 		// A guard on the guard: if a plugin stops contributing runes here, the
 		// check above would pass by looking at less.
-		expect(Object.keys(allRunes).length).toBeGreaterThanOrEqual(132);
+		//
+		// 130, down from 132: BUG-009 made `music-playlist` / `music-recording`
+		// aliases of `playlist` / `track` instead of separate registrations, so
+		// their duplicate `MusicPlaylist` / `MusicRecording` config entries went
+		// with them. Two fewer entries, the same runes covered.
+		expect(Object.keys(allRunes).length).toBeGreaterThanOrEqual(130);
 		for (const [name, plugin] of Object.entries(plugins)) {
 			const runes = Object.keys(plugin.theme?.runes ?? {});
 			expect(runes.length, `${name} contributed no runes`).toBeGreaterThan(0);

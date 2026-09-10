@@ -71,11 +71,12 @@ describe('the audit of the body-role runes', () => {
 		// A count, so a future rune gaining a `body` role shows up here and gets
 		// audited rather than silently defaulting to "no prose".
 		//
-		// 33, not the 32 the work item lists: `MusicPlaylist` is the schema.org
-		// alias of `Playlist` and was a bare `{ block }` stub, so it emitted none
-		// of its primary's section roles. This audit found that, and it now
-		// carries the same join tables — which makes it a 33rd body-role entry.
-		expect(bodyRunes.length).toBe(33);
+		// 32 — the number the original audit named. It read 33 for a while because
+		// `MusicPlaylist` was registered as a rune in its own right rather than as
+		// an alias of `playlist`, so it needed a duplicate config entry that this
+		// audit then had to keep in sync. BUG-009 made it a real alias; it now
+		// resolves to the primary's config and is no longer a separate body role.
+		expect(bodyRunes.length).toBe(32);
 	});
 
 	it('the five non-prose bodies declare no prose capability', () => {

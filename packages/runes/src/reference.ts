@@ -567,10 +567,27 @@ export interface ReferenceContext {
 	source: Record<string, string>;
 }
 
-/** Hydrate every non-excluded rune in a context, sorted alphabetically by name. */
-export function hydrateAllRuneInfos(ctx: ReferenceContext): RuneInfo[] {
+export interface HydrateAllOptions {
+	/**
+	 * Include the runes in {@link EXCLUDED_RUNES}. Defaults to `false`.
+	 *
+	 * The exclusion is a *catalogue* policy — child-only runes would bury the
+	 * top-level ones in a listing a reader scans — so it belongs to the rendered
+	 * document, not to the data. Machine-readable output needs the complete set:
+	 * `accordion-item` has a required `name` attribute, and a consumer generating
+	 * its documentation cannot see it otherwise (BUG-009).
+	 */
+	includeExcluded?: boolean;
+}
+
+/** Hydrate every rune in a context, sorted alphabetically by name. */
+export function hydrateAllRuneInfos(
+	ctx: ReferenceContext,
+	options: HydrateAllOptions = {},
+): RuneInfo[] {
+	const { includeExcluded = false } = options;
 	return Object.values(ctx.runes)
-		.filter(rune => !EXCLUDED_RUNES.has(rune.name))
+		.filter(rune => includeExcluded || !EXCLUDED_RUNES.has(rune.name))
 		.map(rune => hydrateRuneInfo(rune, {
 			pluginName: ctx.source[rune.name] ?? 'core',
 			example: ctx.fixtures[rune.name] ?? RUNE_EXAMPLES[rune.name],

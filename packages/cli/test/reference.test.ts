@@ -99,6 +99,41 @@ describe('referenceListCommand', () => {
 		expect(result.output).not.toMatch(/^- note /m);
 	});
 
+	// BUG-009 — the catalogue omits child-only runes, but the JSON dump is the
+	// machine-readable rune set and must carry them. `accordion-item` has a
+	// *required* `name` attribute that was reachable via `reference <name>` and
+	// invisible to anything reading the dump.
+	it('the JSON dump carries child-only runes the catalogue omits', () => {
+		const dir = mkdtempSync(join(tmpdir(), 'refrakt-ref-'));
+		try {
+			const out = join(dir, 'runes.json');
+			const result = referenceDumpCommand(ctx, { format: 'json', output: out, section: '# Available Runes', check: false });
+			expect(result.exitCode).toBe(0);
+			const names = JSON.parse(readFileSync(out, 'utf8')).map((r: { name: string }) => r.name);
+			expect(names).toContain('accordion-item');
+			expect(names).toContain('tab');
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
+	});
+
+	// Every name the dump reports must be describable on its own, or a consumer
+	// reading the dump can name a rune the CLI then denies exists.
+	it('every rune in the JSON dump resolves via reference <name>', () => {
+		const dir = mkdtempSync(join(tmpdir(), 'refrakt-ref-'));
+		try {
+			const out = join(dir, 'runes.json');
+			referenceDumpCommand(ctx, { format: 'json', output: out, section: '# Available Runes', check: false });
+			const names: string[] = JSON.parse(readFileSync(out, 'utf8')).map((r: { name: string }) => r.name);
+			const unresolvable = names.filter(
+				name => referenceNameCommand(ctx, { name, format: 'markdown', noExample: true }).exitCode !== 0,
+			);
+			expect(unresolvable).toEqual([]);
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
+	});
+
 	it('outputs valid JSON with --format json', () => {
 		const result = referenceListCommand(ctx, { format: 'json' });
 		expect(result.exitCode).toBe(0);
