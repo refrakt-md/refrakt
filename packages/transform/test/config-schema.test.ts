@@ -7,8 +7,11 @@ import { SITE_FIELDS } from '../src/config-normalize.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const schema = JSON.parse(readFileSync(resolve(here, '..', 'refrakt.config.schema.json'), 'utf-8'));
+// The configuration interfaces moved out of `theme.ts` in WORK-541 — that file
+// is about the theme system, and a reader following docs → schema → types
+// should not land in it.
 const typesSource = readFileSync(
-	resolve(here, '..', '..', 'types', 'src', 'theme.ts'),
+	resolve(here, '..', '..', 'types', 'src', 'config.ts'),
 	'utf-8',
 );
 
@@ -23,7 +26,7 @@ const typesSource = readFileSync(
  */
 function declaredProperties(interfaceName: string): string[] {
 	const start = typesSource.indexOf(`export interface ${interfaceName} {`);
-	if (start === -1) throw new Error(`interface ${interfaceName} not found in types/src/theme.ts`);
+	if (start === -1) throw new Error(`interface ${interfaceName} not found in types/src/config.ts`);
 	const end = typesSource.indexOf('\n}', start);
 	if (end === -1) throw new Error(`interface ${interfaceName} is unterminated`);
 

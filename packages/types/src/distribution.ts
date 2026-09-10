@@ -8,7 +8,7 @@
  *  theme that *also* ships a preset pack — so these are independent manifests,
  *  not a single `kind` discriminator (SPEC-111 §1). */
 
-import type { SiteConfig } from './theme.js';
+import type { SiteConfig } from './config.js';
 
 /** Site-template manifest — `template.json` (SPEC-109 §2).
  *

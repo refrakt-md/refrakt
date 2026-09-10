@@ -19,17 +19,21 @@ export type {
   DeepPartial,
 } from './token-contract.js';
 
-// Theme system types
+// Project configuration — the shape of `refrakt.config.json`
 export type {
   RefraktConfig,
   SiteConfig,
-  SiteThemeConfig,
   PlanConfig,
   XrefPattern,
-  ThemeManifest,
-  LayoutDefinition,
   RouteRule,
   EntityRoute,
+} from './config.js';
+
+// Theme system types
+export type {
+  SiteThemeConfig,
+  ThemeManifest,
+  LayoutDefinition,
   ComponentDefinition,
 } from './theme.js';
 export { getThemePackage } from './theme.js';
