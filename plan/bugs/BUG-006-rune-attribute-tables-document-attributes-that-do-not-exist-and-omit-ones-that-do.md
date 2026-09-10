@@ -1,4 +1,4 @@
-{% bug id="BUG-006" status="confirmed" severity="major" milestone="v0.32.0" tags="docs,runes,reference" %}
+{% bug id="BUG-006" status="confirmed" severity="major" milestone="v0.33.0" tags="docs,runes,reference" %}
 
 # Rune attribute tables document attributes that do not exist, and omit ones that do
 

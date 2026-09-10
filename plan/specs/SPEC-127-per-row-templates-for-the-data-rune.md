@@ -93,6 +93,27 @@ shared Markdoc functions rather than template syntax.
 Hold that line: **bind `$row`, render the body, no control flow.** A page that
 needs conditional structure per row wants a generator or a rune of its own.
 
+## The binding is `$row`, and there is no `$item` alias
+
+`$item` would match `collection` and `entityRoutes` exactly, and consistency is
+a real argument. It loses to shape:
+
+```
+collection   $item.data.title    an entity: id / type / url / data
+data         $row.title          a flat row from a file
+```
+
+One name for two shapes is a trap — an author who learned `$item.data.x` in a
+collection would reach for it here and get `undefined`, with nothing to explain
+why. A different name is the signal that the contents are different.
+
+**No alias, for the same reason.** Accepting `$item` as a synonym would
+reintroduce exactly the confusion the separate name exists to prevent, and would
+make the wrong mental model work just often enough to be believed.
+
+What transfers between the two is the *contract* — bind a record, render a
+block, no control flow — and that transfers regardless of the name.
+
 ## Where the rows come from: not a command
 
 A recurring suggestion is to let `data` take a command instead of a path — the
@@ -133,10 +154,6 @@ the shape to reach for if the need arises.
 
 ## Open questions
 
-- **`$row` or `$item`?** `$item` matches `collection` and `entityRoutes` exactly,
-  which argues for consistency. `$row` is more honest about the source being
-  tabular, and avoids implying registry semantics that are not there. Leaning
-  `$row`, with `$item` possibly accepted as an alias.
 - **What happens to `columns`, `numeric`, and `text` when a body is present?**
   `columns` still makes sense as select-and-rename (it determines which keys
   `$row` exposes and under what names). `numeric` / `text` exist to emit
@@ -151,7 +168,8 @@ the shape to reach for if the need arises.
 
 ## Acceptance Criteria
 
-- [ ] `{% data %}` accepts an optional body, transformed once per row with the row bound
+- [ ] `{% data %}` accepts an optional body, transformed once per row with `$row` bound
+- [ ] `$item` is **not** accepted as an alias
 - [ ] The binding contract matches `collection` per-item templates, including shared formatter functions
 - [ ] Attributes that shape the rows (`root`, `orient`, `columns`, `where`, `sort`, `limit`, `offset`) apply identically with or without a body
 - [ ] The body form composes with the existing sandbox and in-memory `ProjectFiles` seam
