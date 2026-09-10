@@ -1,4 +1,4 @@
-{% bug id="BUG-009" status="confirmed" severity="major" milestone="v0.34.0" tags="validation, markdoc, pipeline, runes, dx" %}
+{% bug id="BUG-010" status="confirmed" severity="major" milestone="v0.34.0" tags="validation, markdoc, pipeline, runes, dx" %}
 
 # Markdoc validation never runs outside the language server
 
