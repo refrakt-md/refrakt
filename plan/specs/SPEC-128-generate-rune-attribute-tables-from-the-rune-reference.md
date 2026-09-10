@@ -190,6 +190,58 @@ and none of those are author axes). It lives in `@refrakt-md/transform` rather
 than the rune reference, so plumbing it through is real work — but it is
 authored where the axis is implemented, which is the property that matters.
 
+**D1b — Unavailable axes are a grouped note, not accordion items.**
+
+The accordion holds only the axes a rune *carries*. Axes it does not carry
+render as a short uncollapsed note beneath it, grouped by reason — one line per
+reason.
+
+Making them items was the obvious first shape and the distribution rules it out.
+Per rune, across the 51 runes in the default site:
+
+| carried / unavailable axes | runes |
+|---|---|
+| 8 / 4 | 28 |
+| 9 / 3 | 8 |
+| 10 / 2 | 5 |
+| 11 / 1 | 4 |
+| **0 / 12** | **6** |
+
+For 55% of the catalogue a third of the accordion would be negative space, and
+the six inline runes would get twelve consecutive "not applicable" items and
+nothing else — a section that says no twelve times.
+
+Grouping by reason collapses that, because the reasons are far fewer than the
+axes. No rune has more than **three** distinct reasons (11 runes have one, 12
+have two, 28 have three), and `badge`'s twelve unavailable axes share exactly
+one:
+
+```
+bg, dropcap, elevation, frame, inset, motion, prominence,
+reading, spacing, substrate, tint, width:
+  this rune is inline — the block-level universal axes have
+  nothing to act on
+```
+
+Four consequences, which is why this beats the alternatives of reordering the
+items or marking their summaries:
+
+1. The worst case inverts — twelve negative items become one sentence that
+   teaches something.
+2. **The six zero-universal runes stop being a special case.** No carried axes
+   means no items, so the accordion is simply not rendered and the note stands
+   alone. The behaviour D1 wanted falls out of the rule instead of a branch.
+3. More discoverable, not less: uncollapsed prose beats a collapsed item.
+4. It makes the page and `refrakt reference <name>` the *same shape* — the CLI
+   already prints `Universal attributes: …` followed by `Not applicable to this
+   rune:` grouped by reason (`reference.ts:251-276`). The agreement criterion
+   below stops being an awkward cross-medium comparison, and WORK-535's design
+   reasoning carries over rather than being re-argued.
+
+Rejected: items only when there are few (1–2), a note otherwise. An inconsistent
+page shape across the catalogue costs more than it saves — a reader should learn
+this layout once.
+
 **D2 — Generated rows, hand-written surroundings.** A rune page is mostly worked
 examples and prose, and those stay untouched. Only the table renders from data.
 `aggregate.md` is the case to design against: it has *two* tables — a `$item`
@@ -208,12 +260,12 @@ question that reads better whole.
 - [ ] Pages documenting rune attributes outside `/runes/` are in scope, including `plan/docs/plan-entities.md`
 - [ ] An npm script runs it, beside the existing `runes:*` scripts
 - [ ] Rune pages render their own (and base-preset) attributes from that artifact
-- [ ] Universal attributes render as a collapsed accordion with **one item per axis**, not one row per attribute
-- [ ] Axes the rune does not carry appear as items giving the reason, from `universalUnavailable`
+- [ ] Universal attributes render as a collapsed accordion with **one item per carried axis**, not one row per attribute
+- [ ] Axes the rune does not carry are **not** items — they render as an uncollapsed note beneath, grouped by reason, one line each
 - [ ] The accordion is a shared partial taking the rune name, not markup repeated across ~45 pages
 - [ ] `SerializedRune` carries full attribute records for universals, grouped by axis — not the current bare `string[]`
 - [ ] Per-axis prose comes from the facet contract descriptions, not a second hand-written copy
-- [ ] The six runes carrying no universal attributes render their posture reason instead of an empty accordion
+- [ ] The six runes carrying no universal attributes render no accordion at all — just their one-line posture reason
 - [ ] The rendered universal section agrees with `refrakt reference <name>` — same axes carried, same reasons for the rest
 - [ ] `check-rune-docs.mjs` gains a content check: the artifact is fresh, and no page hand-writes a table for a rune with generated rows
 - [ ] The stale-artifact failure names the command to run
@@ -235,11 +287,6 @@ check a generated table against a schema by eye.
 
 ## Open questions
 
-- **How does an unavailable axis read in a summary?** An accordion of thirteen
-  items where several say "not applicable" risks reading as thirteen failures.
-  The reasons themselves are good prose (*"this rune declares no prose body"*),
-  so this is a presentation question — order carried axes first, or mark the
-  unavailable ones in the summary — not a data question.
 - **Should `HIDDEN_ATTRIBUTES` grow?** It currently holds one entry
   (`feature.split`), so internal `__`-prefixed attributes such as
   `__deferred-body` appear in `reference --format json` for every rune with a

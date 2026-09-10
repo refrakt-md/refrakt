@@ -29,12 +29,12 @@ left to do**: no `$ref` to resolve, no sibling `required` array to fold.
 - [ ] Pages outside `/runes/` that document rune attributes are covered, including `plan/docs/plan-entities.md`
 - [ ] An npm script runs it, beside the existing `runes:*` scripts
 - [ ] Pages carry their own and base-preset attributes rendered from the artifact
-- [ ] Universal attributes render as a collapsed accordion with **one item per axis**, not one row per attribute
-- [ ] Axes the rune does not carry appear as items giving the reason, from `universalUnavailable`
+- [ ] Universal attributes render as a collapsed accordion with **one item per carried axis**, not one row per attribute
+- [ ] Axes the rune does not carry are **not** items — they render as an uncollapsed note beneath, grouped by reason, one line each
 - [ ] The accordion is a shared partial taking the rune name, not markup repeated across ~45 pages
 - [ ] `SerializedRune` carries full attribute records for universals, grouped by axis — not the current bare `string[]`
 - [ ] Per-axis prose comes from the facet contract descriptions in `packages/transform/src/facets/`
-- [ ] The six runes with no universal attributes render their posture reason instead of an empty accordion
+- [ ] The six runes with no universal attributes render no accordion at all — just their one-line posture reason
 - [ ] The rendered universal section agrees with `refrakt reference <name>`
 - [ ] Internal `__`-prefixed attributes are filtered — `__deferred-body` currently reaches `reference --format json` for every rune with a body
 - [ ] `check-rune-docs.mjs` gains a content check: the artifact is fresh, and no page hand-writes a table for a rune with generated rows
@@ -61,10 +61,16 @@ eye.
 universal attributes, 24 are constant across all 45 runes that carry any — only
 `prominence` (10/45), `reading`+`dropcap` (8/45) and `frame*` (4/45) vary, and
 six runes carry none at all. So render the delta, at axis granularity, in a
-collapsed accordion authored once as a partial. An unavailable axis is just an
-item that gives its reason instead of listing attributes, which is where
-WORK-535's output lands. Full argument and measurements in
-{% ref "SPEC-128" /%} D1.
+collapsed accordion authored once as a partial. Full argument and measurements
+in {% ref "SPEC-128" /%} D1.
+
+**Unavailable axes are a note, not items.** 28 runes have 4 unavailable axes
+against 8 carried, and the 6 inline runes have 12 against 0 — as items that
+reads as a section saying "no" twelve times. Grouped by reason it collapses:
+no rune has more than three distinct reasons, and `badge`'s twelve axes share
+one. The six zero-universal runes then need no special case — no carried axes
+means no accordion, just the note. This is also exactly what
+`refrakt reference <name>` prints, so the CLI-agreement criterion comes free.
 
 This needs `SerializedRune` to stop discarding universal attribute definitions —
 `attributes.universal` is a bare `string[]` today while `own` / `base` are full
