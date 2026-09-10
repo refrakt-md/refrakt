@@ -98,9 +98,30 @@ export function headingText(n: Node): string {
 }
 
 /**
+ * Collect the plain text of already-transformed children, walking into tags.
+ *
+ * The renderable counterpart to {@link headingText}: inline code is a `Tag` by
+ * this point, and a variable has been resolved to its value. Used for the
+ * rendered heading id, where both of those matter.
+ */
+export function renderableText(children: RenderableTreeNode[]): string {
+  let text = '';
+  for (const child of children) {
+    if (typeof child === 'string') text += child;
+    else if (Markdoc.Tag.isTag(child)) text += renderableText(child.children ?? []);
+  }
+  return text;
+}
+
+/**
  * Pre-scan an AST for heading nodes, extracting their text and generating
- * IDs with {@link headingSlug} — the same function the `heading` node
- * transform uses, so the index and the rendered anchor always agree.
+ * IDs with {@link headingSlug} — the same slug rules the `heading` node
+ * transform applies, so the index and the rendered anchor agree.
+ *
+ * The two necessarily read different phases: this runs at parse time, so a
+ * heading whose text comes from a variable (`### {% $row.name %}` inside a
+ * `{% data %}` body) is not knowable here and is indexed under its unresolved
+ * form. The rendered anchor, which is what a link targets, is correct.
  */
 export function extractHeadings(node: Node): HeadingInfo[] {
   const headings: HeadingInfo[] = [];

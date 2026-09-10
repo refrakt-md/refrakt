@@ -1,0 +1,224 @@
+{
+	"groups": [
+		{
+			"slug": "content-theme",
+			"name": "Content and theme",
+			"blurb": "What the site is built from."
+		},
+		{
+			"slug": "site-identity",
+			"name": "Site identity",
+			"blurb": "Used for canonical links, social cards and structured data."
+		},
+		{
+			"slug": "routing",
+			"name": "Routing and entities",
+			"blurb": "How pages map to layouts, and which become registry entities."
+		},
+		{
+			"slug": "runes-plugins",
+			"name": "Runes and plugins",
+			"blurb": "Which runes exist, and which package wins when names collide."
+		},
+		{
+			"slug": "presentation",
+			"name": "Presentation",
+			"blurb": "Cross-cutting visual configuration."
+		},
+		{
+			"slug": "content-sources",
+			"name": "Content sources",
+			"blurb": "Where source links and file-reading runes resolve from."
+		},
+		{
+			"slug": "i18n",
+			"name": "Internationalisation",
+			"blurb": "Locale selection and string overrides."
+		}
+	],
+	"fields": [
+		{
+			"group": "content-theme",
+			"groupName": "Content and theme",
+			"name": "contentDir",
+			"type": "string",
+			"required": true,
+			"description": "Path to the content directory, relative to the project root. Required for a site to load."
+		},
+		{
+			"group": "content-theme",
+			"groupName": "Content and theme",
+			"name": "theme",
+			"type": "string | SiteThemeConfig",
+			"required": true,
+			"description": "Active theme — accepts a package name string (legacy shorthand) or a full SiteThemeConfig with presets, token overrides, mode overlays, and code-block colour scheme."
+		},
+		{
+			"group": "content-theme",
+			"groupName": "Content and theme",
+			"name": "target",
+			"type": "string",
+			"required": false,
+			"description": "Documentation-only adapter hint (svelte, astro, next, nuxt, eleventy, html). No adapter validates or reads this field today; it serves as an in-config record of the intended adapter. Slated for removal in v1.0.",
+			"deprecated": true
+		},
+		{
+			"group": "site-identity",
+			"groupName": "Site identity",
+			"name": "baseUrl",
+			"type": "string",
+			"required": false,
+			"description": "Public base URL of the site, used for canonical links, `og:url` and `og:image`.",
+			"themeDefaultable": true
+		},
+		{
+			"group": "site-identity",
+			"groupName": "Site identity",
+			"name": "siteName",
+			"type": "string",
+			"required": false,
+			"description": "Human-readable site name, used for `og:site_name` and Organization JSON-LD.",
+			"themeDefaultable": true
+		},
+		{
+			"group": "site-identity",
+			"groupName": "Site identity",
+			"name": "logo",
+			"type": "string",
+			"required": false,
+			"description": "Site logo path used in Organization JSON-LD (e.g. `/favicon-192.png`).",
+			"themeDefaultable": true
+		},
+		{
+			"group": "site-identity",
+			"groupName": "Site identity",
+			"name": "defaultImage",
+			"type": "string",
+			"required": false,
+			"description": "Default `og:image` for pages that do not set their own. 1200×630 is recommended.",
+			"themeDefaultable": true
+		},
+		{
+			"group": "routing",
+			"groupName": "Routing and entities",
+			"name": "routeRules",
+			"type": "RouteRule[]",
+			"required": false,
+			"description": "Route-to-layout mapping rules, evaluated in order — first match wins. A rule may also set `entity`, registering matching pages as registry entities of that type (e.g. `runes/**` → `rune`) without per-page frontmatter.",
+			"themeDefaultable": true
+		},
+		{
+			"group": "routing",
+			"groupName": "Routing and entities",
+			"name": "entityRoutes",
+			"type": "EntityRoute[]",
+			"required": false,
+			"description": "Declarative entity → page routes. Each rule generates one page per registered entity matching `type` plus an optional `filter` — the built-in alternative to writing a `contributePages` pipeline hook by hand."
+		},
+		{
+			"group": "runes-plugins",
+			"groupName": "Runes and plugins",
+			"name": "plugins",
+			"type": "string[]",
+			"required": false,
+			"description": "Plugins to merge into this site's ThemeConfig (runes, layouts, hooks, etc.)."
+		},
+		{
+			"group": "runes-plugins",
+			"groupName": "Runes and plugins",
+			"name": "runes",
+			"type": "RunesConfig",
+			"required": false,
+			"description": "Rune resolution — which package wins when several define the same rune name, extra tag names for existing runes, and runes loaded from local files."
+		},
+		{
+			"group": "runes-plugins",
+			"groupName": "Runes and plugins",
+			"name": "overrides",
+			"type": "Record<string, string>",
+			"required": false,
+			"description": "Component overrides, mapping a `typeof` name to a component path relative to the project root."
+		},
+		{
+			"group": "presentation",
+			"groupName": "Presentation",
+			"name": "icons",
+			"type": "Record<string, string>",
+			"required": false,
+			"description": "Custom icon SVGs, merged into the theme's global icon group and referenced by name."
+		},
+		{
+			"group": "presentation",
+			"groupName": "Presentation",
+			"name": "tints",
+			"type": "Record<string, object>",
+			"required": false,
+			"description": "Project-level tint presets, available to any page or rune via the `tint` attribute."
+		},
+		{
+			"group": "presentation",
+			"groupName": "Presentation",
+			"name": "backgrounds",
+			"type": "Record<string, object>",
+			"required": false,
+			"description": "Named bg presets (keyed by name). Each is a BgPresetDefinition: `style` and/or token-driven `gradient` (engine-resolved), `extends` a base preset, and/or `sandbox` ({ src, framework?, dependencies? }) for a live sandbox backdrop resolved at transform time (SPEC-104). `sandbox` presets are project-level content."
+		},
+		{
+			"group": "presentation",
+			"groupName": "Presentation",
+			"name": "highlight",
+			"type": "HighlightConfig",
+			"required": false,
+			"description": "Legacy syntax-highlighting configuration — picks a Shiki built-in theme by name (or a `{ light, dark }` pair) for fenced code blocks. The recommended modern approach is `theme.presets` (which contribute `--rf-syntax-*` token overrides via Lumina syntax presets like `@refrakt-md/lumina/presets/nord`) plus `theme.code.colorScheme` for forced light/dark code blocks. Kept for back-compat; both mechanisms can coexist."
+		},
+		{
+			"group": "presentation",
+			"groupName": "Presentation",
+			"name": "sandbox",
+			"type": "SandboxConfig",
+			"required": false,
+			"description": "Sandbox configuration — the runtime program-source directory scanned at build time (SPEC-104, ADR-022)."
+		},
+		{
+			"group": "presentation",
+			"groupName": "Presentation",
+			"name": "search",
+			"type": "boolean",
+			"required": false,
+			"description": "Whether to render the site-wide search UI (header button + Cmd/Ctrl+K dialog, powered by Pagefind). Defaults to true. Set false to omit the search chrome entirely. Results require a Pagefind index built and served at /pagefind/ — see the Setting up search guide."
+		},
+		{
+			"group": "content-sources",
+			"groupName": "Content sources",
+			"name": "repoUrl",
+			"type": "string",
+			"required": false,
+			"description": "Canonical GitHub (or compatible) repository URL — e.g. `https://github.com/owner/repo`. Used by the `file-ref` rune (SPEC-078) to build deep-link `View source on GitHub →` URLs of the form `{repoUrl}/blob/{repoBranch}/{path}#L{start}-L{end}`. When absent, `file-ref` falls back to a no-href link / in-page anchor with a build warning."
+		},
+		{
+			"group": "content-sources",
+			"groupName": "Content sources",
+			"name": "repoBranch",
+			"type": "string",
+			"required": false,
+			"description": "Git ref appended to GitHub source URLs — accepts any branch name, tag, or commit SHA. Defaults to `main` when omitted. Use a commit SHA for archival URLs that won't drift when the file is edited later."
+		},
+		{
+			"group": "i18n",
+			"groupName": "Internationalisation",
+			"name": "locale",
+			"type": "string",
+			"required": false,
+			"description": "Active locale (BCP 47, e.g. `de`). Selects first-party and plugin translation bundles for framework-generated UI text and drives locale-aware date/number formatting. Defaults to `en`.",
+			"default": "\"en\""
+		},
+		{
+			"group": "i18n",
+			"groupName": "Internationalisation",
+			"name": "strings",
+			"type": "Record<string, string | Record<string, string>>",
+			"required": false,
+			"description": "Site-level translation overrides for framework-generated UI text, keyed by the auto-derived i18n key (`{scope}.{block}.{ref}`). Highest precedence — these win over first-party and plugin bundles. Each value is a string, or a map of CLDR plural categories (`one`, `other`, …) to strings."
+		}
+	]
+}

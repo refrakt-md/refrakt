@@ -104,6 +104,16 @@ The rendered rows are spliced in as **siblings**, landing exactly where hand-wri
 {% /accordion %}
 ```
 
+### A variable inside backticks is literal
+
+Markdoc does not interpolate inside inline code, so this renders the text `{% $row.name %}` rather than the value:
+
+```markdoc
+### `{% $row.name %}`
+```
+
+Nothing warns — you get a heading per row, each showing the same literal. Use `**bold**`, or leave the value bare and style the surrounding markup.
+
 ### Limits
 
 The binding is deliberately shallow — bind a row, render a block, no conditionals or iteration. Formatting goes through the shared Markdoc functions, the same constraint [`collection`](/runes/collection) templates hold. A page needing conditional structure per row wants a rune of its own.

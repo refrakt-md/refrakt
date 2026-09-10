@@ -17,6 +17,7 @@
     "runes:metadata": "node scripts/backfill-rune-metadata.mjs",
     "runes:check-docs": "node scripts/check-rune-docs.mjs",
     "content:check-links": "node scripts/check-content-links.mjs",
+    "config:reference": "node scripts/generate-config-reference.mjs",
     "changeset": "changeset",
     "version-packages": "changeset version && node scripts/sync-plugin-versions.mjs && node scripts/generate-changelog.mjs && npm install --package-lock-only",
     "release": "npm run build && changeset publish"

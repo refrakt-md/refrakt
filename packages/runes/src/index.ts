@@ -119,7 +119,7 @@ export { COLLECTION_SENTINEL } from './tags/collection.js';
 export { functions, currency, date, number, join, concat, humanize } from './functions.js';
 export { linkItem, pageSectionProperties, buildLayoutMetas, splitMediaBodyFooter, extractMediaImage, unwrapParagraphImages, isMediaNode, isSchemeMediaNode, name as nameHelper, description as descriptionHelper, SplitablePageSectionModel, SplitLayoutModel, splitLayoutAttributes } from './tags/common.js';
 export type { LayoutMetas } from './tags/common.js';
-export { extractHeadings, firstH1, headingsToList, headingSlug, headingText } from './util.js';
+export { extractHeadings, firstH1, headingsToList, headingSlug, headingText, renderableText } from './util.js';
 export { LANG_MAP, FALLBACK_LANG, inferLanguage } from './lang-map.js';
 export type { HeadingInfo } from './util.js';
 export { extractSeo, collectJsonLd, textContent } from './seo.js';

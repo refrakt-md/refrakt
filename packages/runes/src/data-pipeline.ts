@@ -157,14 +157,25 @@ function resolveRowVariable(value: unknown, row: Record<string, unknown>): unkno
  * A numeric column exposes its normalized number so a template can do
  * arithmetic or formatting with it; everything else exposes the cell's text,
  * which is what a template renders.
+ *
+ * Booleans are the one extra coercion. The table intermediate is text, so a
+ * JSON `false` arrives as the *string* `"false"` — which is truthy, making
+ * `{% if $row.flag %}` render for every row. Sources with boolean fields are
+ * exactly what a per-row template wants to branch on, so `"true"` / `"false"`
+ * bind as booleans. The match is on the whole cell, so a column of prose
+ * mentioning "false" is unaffected.
  */
 function rowObjects(table: TypedTable): Record<string, unknown>[] {
 	return table.rows.map((cells) => {
 		const row: Record<string, unknown> = {};
 		cells.forEach((cell, c) => {
-			row[table.headers[c]] = table.columnTypes[c] === 'numeric' && cell.value !== null
-				? cell.value
-				: cell.text;
+			if (table.columnTypes[c] === 'numeric' && cell.value !== null) {
+				row[table.headers[c]] = cell.value;
+			} else if (cell.text === 'true' || cell.text === 'false') {
+				row[table.headers[c]] = cell.text === 'true';
+			} else {
+				row[table.headers[c]] = cell.text;
+			}
 		});
 		return row;
 	});

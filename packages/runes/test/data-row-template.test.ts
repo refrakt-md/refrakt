@@ -121,3 +121,28 @@ describe('data rune — per-row body (SPEC-127)', () => {
 		expect(findAllTags(rendered, (t) => t.name === 'h2')).toHaveLength(2);
 	});
 });
+
+describe('data rune — row value binding', () => {
+	const BOOLS = JSON.stringify({ items: [{ name: 'a', flag: true }, { name: 'b', flag: false }] });
+
+	/**
+	 * The table intermediate is text, so a JSON `false` arrives as the string
+	 * `"false"` — truthy, which made `{% if %}` render for every row.
+	 */
+	it('binds booleans as booleans, so {% if %} branches correctly', () => {
+		const { rendered } = runData(
+			`{% data src="x.json" root="items" %}\n{% $row.name %}{% if $row.flag %}-yes{% /if %}\n{% /data %}`,
+			{ 'x.json': BOOLS },
+		);
+		const out = JSON.stringify(rendered);
+		expect((out.match(/-yes/g) ?? []).length).toBe(1);
+	});
+
+	it('leaves prose containing the word false alone', () => {
+		const { rendered } = runData(
+			`{% data src="x.json" root="items" %}\n{% $row.note %}\n{% /data %}`,
+			{ 'x.json': JSON.stringify({ items: [{ note: 'this is false economy' }] }) },
+		);
+		expect(JSON.stringify(rendered)).toContain('this is false economy');
+	});
+});

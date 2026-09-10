@@ -1,4 +1,4 @@
-{% work id="WORK-544" status="ready" priority="high" complexity="moderate" source="SPEC-126" milestone="v0.33.0" tags="config,schema,docs,tooling" %}
+{% work id="WORK-544" status="in-progress" priority="high" complexity="moderate" source="SPEC-126" milestone="v0.33.0" tags="config,schema,docs,tooling" %}
 
 # Generate the configuration reference
 
@@ -16,15 +16,15 @@ scripts/generate-config-reference.mjs
 ```
 
 ## Acceptance Criteria
-- [ ] The script emits a byte-stable JSON artifact (deterministic key ordering)
-- [ ] `$ref` properties take their type and description from the target definition
-- [ ] `required` is folded into per-row flags; `oneOf` collapses to a readable type
-- [ ] An npm script runs it, beside the existing `runes:*` scripts
-- [ ] A colocated test unit-tests the flattening, checks the committed artifact is fresh, and asserts every property has a group and every group is used
-- [ ] The stale-artifact failure message names the command to run
-- [ ] `docs/configuration/reference.md` renders the artifact per group, in the declared group order
-- [ ] The five theme-defaultable fields are marked with the precedence stated, and a test ties that set to `ThemeManifest`
-- [ ] The published schema gains no non-standard keywords
+- [x] The script emits a byte-stable JSON artifact (deterministic key ordering)
+- [x] `$ref` properties take their type and description from the target definition
+- [x] `required` is folded into per-row flags; `oneOf` collapses to a readable type
+- [x] An npm script runs it, beside the existing `runes:*` scripts
+- [x] A colocated test unit-tests the flattening, checks the committed artifact is fresh, and asserts every property has a group and every group is used
+- [x] The stale-artifact failure message names the command to run
+- [x] `docs/configuration/reference.md` renders the artifact per group, in the declared group order
+- [x] The five theme-defaultable fields are marked with the precedence stated, and a test ties that set to `ThemeManifest`
+- [x] The published schema gains no non-standard keywords
 
 ## Approach
 

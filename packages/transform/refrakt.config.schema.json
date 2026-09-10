@@ -83,6 +83,7 @@
 			"additionalProperties": false
 		},
 		"SiteConfig": {
+			"description": "Configuration for one site — the unit a build renders. A single-site project declares one under `site`; a multi-site project declares several under `sites`.",
 			"type": "object",
 			"required": ["contentDir", "theme"],
 			"properties": {
@@ -148,6 +149,7 @@
 			}
 		},
 		"RouteRule": {
+			"description": "One route-to-layout mapping. `pattern` is a glob matched against a page URL; `layout` names the layout to apply. An optional `entity` also registers matching pages as registry entities of that type.",
 			"type": "object",
 			"required": ["pattern", "layout"],
 			"properties": {
@@ -309,6 +311,7 @@
 			"additionalProperties": false
 		},
 		"RunesConfig": {
+			"description": "Rune resolution — which package wins when several define the same rune name, extra tag names for existing runes, and runes loaded from local files.",
 			"type": "object",
 			"properties": {
 				"prefer": { "description": "Which package wins when several define a rune of the same name, mapping rune name to package. Use `\"__core__\"` to force the built-in core rune to take precedence.", "type": "object", "additionalProperties": { "type": "string" } },
