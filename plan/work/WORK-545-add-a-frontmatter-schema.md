@@ -1,4 +1,4 @@
-{% work id="WORK-545" status="ready" priority="high" complexity="moderate" source="SPEC-126" milestone="v0.33.0" tags="content,schema,frontmatter,dx" %}
+{% work id="WORK-545" status="in-progress" priority="high" complexity="moderate" source="SPEC-126" milestone="v0.33.0" tags="content,schema,frontmatter,dx" %}
 
 # Add a frontmatter schema
 
@@ -21,14 +21,14 @@ what makes `/runes/rune-catalog` work, and an author cannot currently learn it
 exists from the page that claims to list frontmatter fields.
 
 ## Acceptance Criteria
-- [ ] `packages/content/frontmatter.schema.json` describes every frontmatter field refrakt itself consumes
-- [ ] `type`, `id`, `created`, and `modified` are declared, with descriptions
-- [ ] `icon`, `tint`, `tint-mode`, and `tint-lock` are declared
-- [ ] `Frontmatter` no longer hides consumed fields behind the index signature
-- [ ] The index signature stays — arbitrary custom fields remain supported
-- [ ] The schema is served at the versioned and unversioned URLs, like the other two
-- [ ] A drift test guards it against the `Frontmatter` interface, as `config-schema.test.ts` does for the config schema
-- [ ] Every property carries a `description`
+- [x] `packages/content/frontmatter.schema.json` describes every frontmatter field refrakt itself consumes
+- [x] `type`, `id`, `created`, and `modified` are declared, with descriptions
+- [x] `icon`, `tint`, `tint-mode`, and `tint-lock` are declared
+- [x] `Frontmatter` no longer hides consumed fields behind the index signature
+- [x] The index signature stays — arbitrary custom fields remain supported
+- [x] The schema is served at the versioned and unversioned URLs, like the other two
+- [x] A drift test guards it against the `Frontmatter` interface, as `config-schema.test.ts` does for the config schema
+- [x] Every property carries a `description`
 
 ## Approach
 

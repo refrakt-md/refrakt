@@ -68,7 +68,26 @@ Both schemas are published at two URL forms:
 | `https://refrakt.md/schemas/vX.Y/refrakt.config.schema.json` | **Versioned** — a stable URL per minor release line. `create-refrakt` scaffolds this form. |
 | `https://refrakt.md/refrakt.config.schema.json` | **Latest alias** — the most recently published schema. |
 
-The theme-token schema is published the same way, at `https://refrakt.md/schemas/vX.Y/theme-tokens.json` and `https://refrakt.md/schemas/theme-tokens.json`.
+Two more schemas are published the same way:
+
+| Schema | Describes | Versioned URL |
+|--------|-----------|---------------|
+| `theme-tokens.json` | A theme's design tokens | `https://refrakt.md/schemas/vX.Y/theme-tokens.json` |
+| `frontmatter.schema.json` | Page frontmatter in `.md` files | `https://refrakt.md/schemas/vX.Y/frontmatter.schema.json` |
+
+Both also resolve at the unversioned alias (`https://refrakt.md/theme-tokens.json`, `https://refrakt.md/frontmatter.schema.json`).
+
+### Validating frontmatter in your editor
+
+The frontmatter schema describes the fields refrakt itself reads. It deliberately does **not** close the set — runes and pipeline hooks read arbitrary author fields, so unknown keys are valid. Point your editor's YAML support at it to get hover documentation and completion inside `---` blocks:
+
+```json
+{
+  "yaml.schemas": {
+    "https://refrakt.md/frontmatter.schema.json": ["**/content/**/*.md"]
+  }
+}
+```
 
 Every version from `v0.11` (the first release to publish a versioned URL) through the current release resolves. The route is generated from the version `@refrakt-md/transform` ships, so each release publishes its own URL as a side effect of building the site — see `site/src/lib/schema-versions.ts`.
 
