@@ -5,14 +5,14 @@
 Every rune schema in refrakt declares required attributes, typed attributes and
 `matches` enums. Markdoc can check all of them. Nothing in the build asks it to,
 so the declarations are documentation that the pipeline itself ignores —
-`{% ref "BUG-009" /%}`.
+`{% ref "BUG-010" /%}`.
 
 This spec wires `Markdoc.validate()` into the content pipeline and routes its
 findings through the diagnostics surface that already exists.
 
 ## Problem
 
-{% ref "BUG-009" /%} carries the full evidence. In summary: `Markdoc.validate()`
+{% ref "BUG-010" /%} carries the full evidence. In summary: `Markdoc.validate()`
 never sees site content, four error classes pass through
 `transform()` in silence, the custom attribute-type validators in
 `packages/runes/src/attributes.ts` and `plugins/media/src/attributes.ts` never
@@ -172,7 +172,7 @@ same as validation inside the pipeline a user runs — the corpus test protects
   invent refrakt-specific validations.
 - **Fixing the `NaN` in `SpaceSeparatedNumberList.transform`.** Enabling
   validation makes the guard fire, but the unguarded `parseInt` is its own small
-  defect; see {% ref "BUG-009" /%}.
+  defect; see {% ref "BUG-010" /%}.
 
 ## Acceptance Criteria
 
@@ -218,7 +218,7 @@ generated inline values, so it pays for itself twice.
 
 ## References
 
-- {% ref "BUG-009" /%} — the defect and all supporting measurements
+- {% ref "BUG-010" /%} — the defect and all supporting measurements
 - {% ref "WORK-549" /%} — the prerequisite question about error severity
 - {% ref "SPEC-126" /%} — established that guards only work when something runs them
 - {% ref "SPEC-129" /%} — depends on the same diagnostics surface via its D6

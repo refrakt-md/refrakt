@@ -44,7 +44,7 @@ rune finds out, not that our own documentation gets cleaner.
 
 ## What lands
 
-- {% ref "BUG-009" /%} — the defect, with the measurements behind each claim.
+- {% ref "BUG-010" /%} — the defect, with the measurements behind each claim.
 - {% ref "WORK-549" /%} — settles what an error-severity diagnostic actually
   does. Small, and it goes first: two specs currently assume `ctx.error` is
   loud, and nobody has checked.
