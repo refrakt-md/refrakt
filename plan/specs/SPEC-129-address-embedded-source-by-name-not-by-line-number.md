@@ -154,6 +154,7 @@ by passing the new fields through.
 | `match` | Raw regex anchor. The general form; `symbol` is sugar over it. |
 | `until` | Regex ending the extent. Overrides `extent`. |
 | `extent` | `auto` (delimiter balance, default) or `dedent` (indentation). |
+| `doc` | Include the preceding doc comment. Defaults to on for `symbol`, off for `match` — D9. |
 | `lines` | Unchanged. Mutually exclusive with `symbol` / `match`. |
 
 ### The algorithm
@@ -203,10 +204,24 @@ eight. It works well as a declared strategy; it does not work as a default.
 all balance. Unbalanced → refuse. This is what converts the residual error rate
 from silent-wrong into loud-fail.
 
-**6. Doc comment.** Absorb a contiguous comment block immediately above the
-anchor by default; `doc=false` opts out. A declaration quoted without its
-doc comment is a worse quotation, and the whole point of this feature is to
-quote declarations.
+**6. Head.** Two separate things attach above the anchor line, and they are not
+the same kind of thing:
+
+- **Annotations** — `@Component(…)`, `#[derive(Debug)]`, `@dataclass`. These
+  are *part of the declaration*, not commentary. A class quoted without its
+  decorator is wrong in a way a class quoted without its doc comment is not.
+  They attach **always**, independent of `doc`.
+- **The doc comment** — a contiguous comment block reaching up from the anchor
+  (or from the annotations above it) to the first blank line. Governed by
+  `doc`, whose default depends on the addressing mode per D9.
+
+Both need the comment and annotation prefixes to come from the language table,
+not from a union regex — see D10.
+
+Measured against TypeScript's own JSDoc attachment (`node.jsDoc`, the only real
+oracle for "which comment documents this symbol"), the blank-line rule takes
+exactly the attached JSDoc for **749 of 756** resolvable symbols — 99.07%, with
+4 over-absorptions and 3 under. Its limit is recorded in D9.
 
 ### Generic in practice, not just in principle
 
@@ -276,6 +291,50 @@ perhaps 15 more lines. Deferred to phase 3 rather than dropped, because the
 error it causes is overwhelmingly the *safe* kind, and because the phase-1
 value does not depend on it.
 
+**D9 — `doc` defaults on for `symbol`, off for `match`.** The two attributes
+make different promises, and the default has to follow the promise rather than
+be uniform for tidiness:
+
+- `symbol="SiteConfig"` names an **entity** and delegates boundary-finding
+  entirely. Having chosen the start line itself, the resolver also owns whether
+  the doc comment is part of what was asked for — and it is. A reference
+  quoting a declaration without its documentation is a worse quotation.
+- `match="^\.rf-hint\s*\{"` names a **line**. The author has already made the
+  boundary decision; that is what a raw anchor is *for*. Walking upward past
+  the line their regex matched silently overrides them. An author who wants
+  the comment can anchor on the comment, or pass `doc=true`.
+
+So `doc` is tri-state: unset takes the mode's default, `doc=true` forces
+inclusion, `doc=false` forces exclusion.
+
+**This is not the sniffing D5 forbids.** D5 rules out inferring behaviour from
+*the file*, where a wrong guess is silently wrong and the author has no signal
+that a guess happened. D9 infers from *which attribute the author wrote* —
+an explicit authored choice — and a wrong doc comment is visible on the
+rendered page. Different risk class, opposite conclusion.
+
+**The known limit: abutting comments cannot be told apart.** A blank line is
+the only available signal that two adjacent comments are distinct, so when a
+comment documenting one thing directly abuts the comment documenting the next,
+both are taken. `packages/runes/src/tags/card.ts` is the live example — a
+21-line JSDoc for the `card` rune, then two `//` blocks with no blank line
+between, then `cardSections`. The walk presents the `card` rune's docblock as
+documentation for `cardSections`.
+
+This is **not fixable by heuristic** and should not be chased. It is 4 cases in
+756, it is visible rather than silent, and the fix belongs in the source file
+(a blank line) rather than the resolver. Document it; do not add cleverness.
+
+**D10 — Comment and annotation prefixes come from the language table, never a
+union regex.** The prototype walks `^\s*(//|#|\*|/\*)` across all languages. In
+CSS that eats `#header { … }` as a comment; in a language where `#` is
+significant it will find something else. There are zero such lines in Lumina
+today, so this repo would not notice — but refrakt ships to projects whose
+files we have never seen, and a head that silently swallows a preceding rule is
+precisely the failure class this spec exists to remove. The prefixes belong in
+the same per-language table that supplies `symbol=`'s keywords, and a language
+absent from the table gets no head absorption rather than a guessed one.
+
 ## Non-goals
 
 - **Cross-file resolution.** `symbol="SiteConfig"` searches the file named by
@@ -299,7 +358,10 @@ value does not depend on it.
 - [ ] Brace-less statements use continuation lookahead that skips blank and comment lines
 - [ ] `type` aliases do not terminate on a brace
 - [ ] An extracted slice that is not delimiter-balanced is refused, never rendered
-- [ ] A leading doc comment is absorbed by default and `doc=false` opts out
+- [ ] Annotations (`@Component`, `#[derive]`, `@dataclass`) attach to the symbol always, independent of `doc`
+- [ ] `doc` is tri-state: unset defaults to on for `symbol` and off for `match`; `doc=true` and `doc=false` force the choice
+- [ ] Comment and annotation prefixes come from the per-language table; a language absent from it gets no head absorption rather than a guessed one
+- [ ] A test covers the abutting-comment limit (D9) so the behaviour is pinned rather than accidental
 - [ ] Every refusal names the file, the anchor, the reason, and the `until=` / `lines=` fallback
 - [ ] Failures use the existing error-fence path and emit a `ctx.error` diagnostic — no new failure channel
 - [ ] A regression corpus test scores the resolver against the repo's own sources and asserts the silent-wrong count stays at or below its recorded baseline
@@ -348,6 +410,11 @@ than reading them off this spec.
   would let a reference quote one field. The anchor engine can do it — nested
   anchors and a `dedent`-like extent — but it multiplies the failure surface,
   and no current page wants it. Defer until one does.
+- **Annotation handling is specified but untested.** This repo contains zero
+  decorators and zero CSS lines beginning `#`, so neither D10's hazard nor the
+  annotation rule was exercised by the measurements — both are reasoned, not
+  observed. The corpus test cannot cover them from this repo's sources alone
+  and will need hand-built fixtures.
 - **Is `match=` a regex or a literal by default?** A raw regex is more powerful
   and more likely to be miswritten by an author who does not realise `.` and
   `(` are special. A `match-type="literal|regex"` attribute is the obvious
