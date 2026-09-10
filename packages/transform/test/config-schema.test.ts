@@ -63,6 +63,33 @@ describe('refrakt.config.schema.json', () => {
 			});
 		}
 
+		it('gives every property a description', () => {
+			// Descriptions are what an editor shows on hover and what the
+			// generated configuration reference renders as each field's body, so
+			// a description-less field is invisible in two places at once. Without
+			// this, the next field added arrives bare and nothing says so
+			// (WORK-542).
+			//
+			// `$ref` properties are exempt: they inherit the description of the
+			// definition they point at, and repeating it invites the two copies to
+			// disagree.
+			const undescribed: string[] = [];
+			const scan = (node: Record<string, any>, where: string) => {
+				for (const [name, prop] of Object.entries(node.properties ?? {})) {
+					const p = prop as Record<string, unknown>;
+					if (p.$ref) continue;
+					if (typeof p.description !== 'string' || p.description.trim() === '') {
+						undescribed.push(`${where}.${name}`);
+					}
+				}
+			};
+			scan(schema, 'RefraktConfig');
+			for (const [name, def] of Object.entries(schema.definitions ?? {})) {
+				scan(def as Record<string, any>, name);
+			}
+			expect(undescribed).toEqual([]);
+		});
+
 		it('declares no schema property the interfaces do not have', () => {
 			// `$schema` is the JSON-Schema pointer itself, not a config field.
 			const inSchema = Object.keys(schema.properties).filter((k) => k !== '$schema');
