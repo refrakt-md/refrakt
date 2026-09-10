@@ -1,4 +1,4 @@
-{% work id="WORK-543" status="in-progress" priority="high" complexity="moderate" source="SPEC-127" milestone="v0.33.0" tags="runes,data,authoring" %}
+{% work id="WORK-543" status="done" priority="high" complexity="moderate" source="SPEC-127" milestone="v0.33.0" tags="runes,data,authoring" %}
 
 # Per-row templates for the data rune
 
@@ -66,5 +66,45 @@ way.
 
 Nesting — a row whose value is itself an array — is explicitly out of scope. It
 is the first step toward the control flow this is trying not to build.
+
+## Resolution
+
+Completed: 2026-09-10
+
+Branch: `claude/content-author-docs-org-vps1un`
+
+### What was done
+
+**`packages/runes/src/data-pipeline.ts`** — `resolveData` returns `Node[]`, and
+`walkAndReplaceData` splices rather than assigning. `bindRow` deep-clones the
+body per row, substituting `Variable`s whose path starts with `row`; `rowObjects`
+projects the typed table into plain objects keyed by column header. A
+`TABLE_CONSUMERS` check makes a body inside `chart` / `datatable` a build error.
+
+**`packages/runes/src/tags/data.ts`** — a note on why the content model stays
+empty while a body must still be allowed: the body never reaches the transform,
+but Markdoc rejects the tag before the preprocessor sees it otherwise.
+
+**`packages/runes/test/data-row-template.test.ts`** — 9 tests, including the one
+SPEC-127 could not write before: `{% accordion %}` building two items from
+generated `{% accordion-item %}`s.
+
+**Docs** — `/runes/data` gains the body form, the composition example, and the
+limits; `/runes/collection` cross-references it and says why the binding name
+differs.
+
+### Notes
+
+- `$row` binds at preprocess, not via `config.variables` — the binding differs
+  per row and one shared config cannot express that. Variables reach the AST as
+  `Variable` objects in a node's *attributes*, on tags and text nodes alike, so
+  one rule covers both.
+- Numeric columns bind as numbers so a template can compute with them; other
+  columns bind as the cell's text, which is what a template renders.
+- `numeric` / `text` **warn** with a body rather than being silently ignored —
+  they type `data-value` on cells a body does not emit.
+- One test expectation was wrong at first: `card` moves `href` onto the link
+  element it wraps the surface in, not the card tag. The binding was correct.
+- Full suite 4273 passing.
 
 {% /work %}
