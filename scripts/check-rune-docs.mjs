@@ -31,39 +31,56 @@ export const CLI_PATH = join(ROOT, 'packages/cli/dist/bin.js');
 const SITE = 'main';
 
 /**
- * Runes with no doc page of their own — child runes documented inside a parent's
- * page, plus internal runes never authored directly. Each is annotated with its
- * parent. Update this set when you add a child/internal rune; a new *top-level*
- * rune must instead get its own `/runes/<name>` page.
+ * Runes with no doc page of their own, mapped to the page their content belongs
+ * on — a child rune to its parent, an internal rune to `null`.
+ *
+ * A Map rather than a Set because the parent has to be *data*: the coverage
+ * check only needs to know a rune is pageless, but the attribute generator needs
+ * to know which page a child's table lands on, and a comment cannot tell it
+ * (SPEC-128 D5). `null` distinguishes "no table anywhere" from "documented on
+ * the parent's page" — collapsing the two would put `error`'s attributes on some
+ * arbitrary page.
+ *
+ * Update this when you add a child/internal rune; a new *top-level* rune must
+ * instead get its own `/runes/<name>` page.
  */
-export const PAGELESS = new Set([
-	// child runes — documented within their parent rune's page
-	'accordion-item',                        // accordion
-	'tab',                                   // tabs
-	'conversation-message',                  // conversation
-	'note',                                  // annotate
-	'reveal-step',                           // reveal
-	'budget-category', 'budget-line-item',   // budget
-	'form-field',                            // form
-	'bento-cell',                            // marketing/bento
-	'definition',                            // marketing/feature
-	'step',                                  // marketing/steps
-	'tier',                                  // marketing/pricing
-	'comparison-column', 'comparison-row',   // marketing/comparison
-	'symbol-group', 'symbol-member',         // docs/symbol
-	'changelog-release',                     // docs/changelog
-	'character-section',                     // storytelling/character
-	'realm-section',                         // storytelling/realm
-	'faction-section',                       // storytelling/faction
-	'beat',                                  // storytelling/plot
-	'storyboard-panel',                      // storytelling/storyboard
-	'map-pin',                               // places/map
-	'itinerary-day', 'itinerary-stop',       // places/itinerary
-	'cast-member',                           // business/cast
-	'timeline-entry',                        // business/timeline
-	// internal — not authored directly in content
-	'error',                                 // validation error reporting
-	'region',                                // layout (documented in layout.md)
+export const PAGELESS = new Map([
+	// Child runes → the page their attributes belong on. The value is the
+	// parent *rune*, which resolves to `/runes/<parent>` (a plugin rune sits
+	// under its plugin's directory, so the path is derived, not stored).
+	['accordion-item', 'accordion'],
+	['tab', 'tabs'],
+	['conversation-message', 'conversation'],
+	['note', 'annotate'],
+	['reveal-step', 'reveal'],
+	['budget-category', 'budget'],
+	['budget-line-item', 'budget'],
+	['form-field', 'form'],
+	['bento-cell', 'bento'],
+	['definition', 'feature'],
+	['step', 'steps'],
+	['tier', 'pricing'],
+	['comparison-column', 'comparison'],
+	['comparison-row', 'comparison'],
+	['symbol-group', 'symbol'],
+	['symbol-member', 'symbol'],
+	['changelog-release', 'changelog'],
+	['character-section', 'character'],
+	['realm-section', 'realm'],
+	['faction-section', 'faction'],
+	['beat', 'plot'],
+	['storyboard-panel', 'storyboard'],
+	['map-pin', 'map'],
+	['itinerary-day', 'itinerary'],
+	['itinerary-stop', 'itinerary'],
+	['cast-member', 'cast'],
+	['timeline-entry', 'timeline'],
+
+	// Internal — not authored directly, so their content belongs on no page at
+	// all. `null` is a different answer from "documented on the parent's page",
+	// and the generator must not confuse the two.
+	['error', null],  // validation error reporting — never authored
+	['region', null],  // layout — documented in layout.md
 ]);
 
 /** The active package set's runes + aliases, from the built CLI. */

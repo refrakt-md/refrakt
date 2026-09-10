@@ -9,6 +9,7 @@ import type { Schema } from '@markdoc/markdoc';
 import type { ContentModel, ContentFieldDefinition } from '@refrakt-md/types';
 import { RUNE_EXAMPLES } from './examples.js';
 import { UNIVERSAL_ATTRIBUTE_NAMES, lookupAttributePreset, schemaBasePresets } from './attribute-presets.js';
+import { AXIS_ATTRIBUTES } from './universal-attributes.js';
 import { schemaContentModels } from './lib/index.js';
 import { describeSchemaUniversals } from './schema-universals.js';
 
@@ -206,7 +207,7 @@ export function describeRune(rune: RuneInfo): string {
 	const attrs = rune.schema.attributes;
 	if (attrs && Object.keys(attrs).length > 0) {
 		const entries = Object.entries(attrs).filter(
-			([name]) => !HIDDEN_ATTRIBUTES.has(`${rune.name}.${name}`),
+			([name]) => !HIDDEN_ATTRIBUTES.has(`${rune.name}.${name}`) && !name.startsWith('__'),
 		);
 		if (entries.length > 0) {
 			const preset = rune.basePreset;
@@ -638,6 +639,19 @@ export interface SerializedRune {
 		/** Universal attributes this rune actually carries. Already narrowed —
 		 *  read from the schema, never from the static universal set. */
 		universal: string[];
+		/**
+		 * The same attributes, grouped by axis and carrying their full records.
+		 *
+		 * `universal` is a bare name list, which is enough for the CLI's one-line
+		 * summary and not enough for anything that renders them: a consumer had no
+		 * type, no `matches`, no description, while `own` and `base` carried all
+		 * three (WORK-548). Grouped by axis to match `universalUnavailable`, so
+		 * both halves of the universal story have the same shape.
+		 */
+		universalAvailable: Array<{
+			axis: string;
+			attributes: Record<string, SerializedAttribute>;
+		}>;
 		/** Axes the rune carries no attributes for, each with the reason it does
 		 *  not apply (WORK-535). The machine-readable half of the human output's
 		 *  "Not applicable here" line, so the two formats agree. */
@@ -672,17 +686,39 @@ export function serializeRune(info: RuneInfo, pluginName?: string): SerializedRu
 	const own: Record<string, SerializedAttribute> = {};
 	const baseAttrs: Record<string, SerializedAttribute> = {};
 	const universal: string[] = [];
+	const universalRecords: Record<string, SerializedAttribute> = {};
 
 	for (const [attrName, attrDef] of Object.entries(attrs)) {
 		if (HIDDEN_ATTRIBUTES.has(`${info.name}.${attrName}`)) continue;
+		// Internal attributes are filtered by the `__` prefix rather than listed
+		// one by one. `HIDDEN_ATTRIBUTES` is keyed `rune.attribute`, so hiding
+		// `__deferred-body` that way needs a fresh entry every time a rune opts
+		// into `deferBody` — added silently, or not at all. The two also mean
+		// different things: `feature.split` is a real attribute we choose not to
+		// document, while a `__` attribute was never author-facing (BUG-009).
+		if (attrName.startsWith('__')) continue;
 		if (UNIVERSAL_ATTRIBUTE_NAMES.has(attrName)) {
 			universal.push(attrName);
+			universalRecords[attrName] = toSerializedAttribute(attrDef);
 		} else if (presetAttrs?.has(attrName)) {
 			baseAttrs[attrName] = toSerializedAttribute(attrDef);
 		} else {
 			own[attrName] = toSerializedAttribute(attrDef);
 		}
 	}
+
+	// Fold the universal names through the axis map, so the available half is
+	// shaped like `universalUnavailable` rather than being a flat list the
+	// consumer has to re-group.
+	const universalAvailable: SerializedRune['attributes']['universalAvailable'] = [];
+	for (const [axis, names] of Object.entries(AXIS_ATTRIBUTES)) {
+		const carried: Record<string, SerializedAttribute> = {};
+		for (const name of names) {
+			if (universalRecords[name]) carried[name] = universalRecords[name];
+		}
+		if (Object.keys(carried).length > 0) universalAvailable.push({ axis, attributes: carried });
+	}
+	universalAvailable.sort((a, b) => a.axis.localeCompare(b.axis));
 
 	return {
 		name: info.name,
@@ -702,6 +738,7 @@ export function serializeRune(info: RuneInfo, pluginName?: string): SerializedRu
 				}
 				: {}),
 			universal,
+			universalAvailable,
 			universalUnavailable: describeSchemaUniversals(info.schema as Schema).unavailable,
 		},
 		...(info.contentModel ? { contentModel: info.contentModel } : {}),

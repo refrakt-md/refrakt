@@ -16,6 +16,7 @@
     "test:watch": "vitest",
     "runes:metadata": "node scripts/backfill-rune-metadata.mjs",
     "runes:check-docs": "node scripts/check-rune-docs.mjs",
+    "runes:attributes": "node scripts/generate-rune-attributes.mjs",
     "content:check-links": "node scripts/check-content-links.mjs",
     "config:reference": "node scripts/generate-config-reference.mjs",
     "changeset": "changeset",

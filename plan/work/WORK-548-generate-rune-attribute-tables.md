@@ -1,4 +1,4 @@
-{% work id="WORK-548" status="ready" priority="high" complexity="complex" source="SPEC-128" milestone="v0.33.0" tags="docs,runes,reference,tooling" %}
+{% work id="WORK-548" status="in-progress" priority="high" complexity="complex" source="SPEC-128" milestone="v0.33.0" tags="docs,runes,reference,tooling" %}
 
 # Generate rune attribute tables
 
@@ -90,6 +90,36 @@ whole.
 Filter internal attributes by the `__` prefix convention rather than growing
 `HIDDEN_ATTRIBUTES` entry by entry — the prefix already means "internal", and a
 list would need maintaining.
+
+## Open: `{% data %}` cannot live inside a `{% partial %}`
+
+Found by testing the partial design against the real content pipeline:
+
+```
+Error: data rune reached the transform phase — its preprocess hook was not
+wired through.
+```
+
+Structural, not a wiring mistake. `preprocessData` walks the **page's** AST
+before transform; partials are resolved by Markdoc *at* transform via
+`config.partials`, so the partial's content is not in the page AST when the
+preprocessor runs and the `data` tag survives to its throwing transform. A plain
+partial with `variables` works — it is specifically the preprocessor runes
+(`data`, `snippet`) that cannot be inside one.
+
+This blocks the criterion above: *"The accordion is a shared partial taking the
+rune name, not markup repeated across ~45 pages."* Three options, none free:
+
+1. **Repeat the `{% data %}` block per page** — works today, and is exactly what
+   the criterion rejects.
+2. **Make `preprocessData` walk partials.** Partial ASTs are shared across pages
+   while each page binds a different `$rune`, so this needs per-page expansion
+   rather than mutation of the shared tree.
+3. **A rune rather than a partial** — `{% rune-attributes name="card" /%}`. Clean
+   at the call site; adds a rune to the catalogue for a docs-site concern.
+
+Note `docs/authoring/partials.md` states partials are "inlined at parse time",
+which this contradicts. That line needs correcting whichever option wins.
 
 ## Blocked by
 
