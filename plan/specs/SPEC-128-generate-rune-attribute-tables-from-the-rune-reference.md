@@ -138,6 +138,14 @@ each axis means — and the accordion should point at it rather than restate it.
 An earlier revision of this decision claimed no such page existed; that was
 wrong, from a truncated search, and is corrected here.
 
+**The link is per-axis, not one URL.** surfaces.md covers 8 of the 12 axes,
+organised by editorial theme (Chrome, Reading, Fills, Cover); `motion` has its
+own page at `/runes/motion`; and `spacing` / `inset` are documented nowhere at
+all — see {% ref "BUG-008" /%}, which this decision surfaced. So each accordion
+item carries its own destination, from a small axis→page map. That map is also
+the thing that makes the gap checkable: assert every axis in `AXIS_ATTRIBUTES`
+has an entry and a new axis cannot ship undocumented.
+
 *What the link cannot carry is per-rune applicability*, and surfaces.md says so
 itself:
 
@@ -358,7 +366,8 @@ failure that actually occurs.
 - [ ] Axes the rune does not carry are **not** items — they render as an uncollapsed note beneath, grouped by reason, one line each
 - [ ] The accordion is a shared partial taking the rune name, not markup repeated across ~45 pages
 - [ ] `SerializedRune` carries full attribute records for universals, grouped by axis — not the current bare `string[]`
-- [ ] The accordion links to `/runes/surfaces` for what each axis means, rather than restating it
+- [ ] Each accordion item links to that axis's documentation, from an axis→page map — not one shared URL, since `motion` lives on its own page and two axes have none
+- [ ] A test asserts every axis in `AXIS_ATTRIBUTES` has a documentation entry, so a new axis cannot ship undocumented
 - [ ] Per-axis prose, **if the items need it**, comes from the facet contract descriptions rather than a second hand-written copy — try the link-only form first
 - [ ] The six runes carrying no universal attributes render no accordion at all — just their one-line posture reason
 - [ ] Internal `__`-prefixed attributes are filtered in `serializeRune`, so every consumer benefits, not only this generator
