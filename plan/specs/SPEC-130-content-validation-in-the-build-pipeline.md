@@ -7,15 +7,13 @@ Every rune schema in refrakt declares required attributes, typed attributes and
 so the declarations are documentation that the pipeline itself ignores —
 `{% ref "BUG-009" /%}`.
 
-This spec wires `Markdoc.validate()` into the content pipeline, routes its
-findings through the diagnostics surface that already exists, and gives the
-`error` rune — built to render `ValidationError` rows and never once
-constructed — its input.
+This spec wires `Markdoc.validate()` into the content pipeline and routes its
+findings through the diagnostics surface that already exists.
 
 ## Problem
 
 {% ref "BUG-009" /%} carries the full evidence. In summary: `Markdoc.validate()`
-is called only by the language server, four error classes pass through
+never sees site content, four error classes pass through
 `transform()` in silence, the custom attribute-type validators in
 `packages/runes/src/attributes.ts` and `plugins/media/src/attributes.ts` never
 execute in a build, and `refrakt validate` checks theme config rather than
@@ -42,11 +40,11 @@ Almost all of it, which is why this is wiring rather than construction:
 
 | Piece | State |
 |---|---|
-| `Markdoc.validate()` | Called once, in `packages/language-server/src/parser/markdoc.ts` |
+| `Markdoc.validate()` | Called in the language server, and over the fixture corpus in `packages/runes/test/fixture-corpus.test.ts` — never on site content |
+| A working precedent | `fixture-corpus.test.ts` already does validate + transform-does-not-throw over 40 fixtures, under `npm test`, with a variables bag and no false positives |
 | Rune attribute schemas (`required`, `matches`, types) | Complete, ~175 tags |
 | Custom attribute validators | Written; never execute in a build |
 | Diagnostics surface (`ctx.info` / `warn` / `error`) | Exists — `packages/content/src/site.ts:301` |
-| `error` rune, renders a `ValidationError` as `<tr>` | Exists; **no producer** |
 | Error-fence precedent for in-page failure | Shipped, in `snippet-pipeline.ts` |
 
 The gap is a call and a routing decision, not a new subsystem.
@@ -65,12 +63,18 @@ Findings map onto the existing diagnostics surface rather than a new channel:
 `ctx.error` / `ctx.warn` / `ctx.info`, carrying the page URL that surface
 already takes.
 
-### Give the `error` rune its input
+### In-page display follows the snippet precedent
 
-For in-page display, findings become `error` rune instances — the role it was
-written for. This follows `snippet`'s established shape: the build continues,
-the page renders, and the failure is visible where the mistake is rather than
-only in a build log.
+Where a finding is shown in the page as well as the log, it follows
+`snippet`'s established shape: the build continues, the page renders, and the
+failure is visible where the mistake is rather than only in a build log.
+
+An earlier draft routed findings into the `error` rune, which renders a
+`ValidationError` as a table row. That is withdrawn — {% ref "WORK-550" /%}
+removes the rune. Its `<tr>` output presumes a page-level report collected into
+a table, and adopting that model because a leftover row happened to exist would
+be letting legacy shape a design. If a findings table is later wanted, it gets
+designed as one.
 
 Whether the *build* also fails is deliberately not decided here — see D3.
 
@@ -97,8 +101,8 @@ validation *to* it would deepen the confusion, not fix it.
 
 **D2 — Reuse the diagnostics surface; invent nothing.** `ctx.error` / `warn` /
 `info` already exist, already carry a page URL, and already funnel to callers.
-The `error` rune already renders a `ValidationError`. Wiring these together is
-strictly less work than any new mechanism and leaves one place to reason about.
+Wiring into them is strictly less work than any new mechanism and leaves one
+place to reason about.
 
 **D3 — Whether errors fail the build is out of scope until
 {% ref "WORK-549" /%} answers what error severity currently does.** This spec
@@ -144,6 +148,19 @@ at risk. Recorded because it is the first thing that would break if fence
 handling were ever reordered relative to validation, and because a validation
 pass that flagged every documentation example would be abandoned within a day.
 
+**D8 — Follow `fixture-corpus.test.ts`, which already proves the pattern.**
+`packages/runes/test/fixture-corpus.test.ts` (WORK-414 / {% ref "SPEC-102" /%})
+runs `Markdoc.validate()` over 40 rune fixtures with a variables bag, filters to
+error/critical, asserts empty, and additionally asserts `transform` does not
+throw. It runs under `npm test` and it works. This spec is largely that test's
+approach pointed at content instead of fixtures.
+
+Two things it does **not** prove, and which should not be inferred from it. Its
+fixtures do not use `$item`, so its clean run says nothing about D4's false
+positives on collection templates. And a test over a fixed corpus is not the
+same as validation inside the pipeline a user runs — the corpus test protects
+*our* fixtures, which is why it did not catch any of this.
+
 ## Non-goals
 
 - **Deciding build-failure semantics.** D3; {% ref "WORK-549" /%} first.
@@ -161,7 +178,7 @@ pass that flagged every documentation example would be abandoned within a day.
 
 - [ ] `Markdoc.validate()` runs in the content pipeline against the same assembled config the transform uses, including plugin runes
 - [ ] Findings route to the existing `ctx.error` / `ctx.warn` / `ctx.info` surface, mapped from `ValidateError.error.level`, carrying the page URL
-- [ ] The `error` rune is constructed from findings and renders them in-page, following `snippet`'s error-fence precedent
+- [ ] In-page display, if included, follows `snippet`'s error-fence precedent and does not reintroduce a `ValidationError` table row
 - [ ] Phase 1 ids (`tag-undefined`, `attribute-undefined`) are enabled and covered by tests
 - [ ] Phase 2 ids are enabled only after the blast radius across `site/` and `plan-site/` is measured and recorded
 - [ ] The dormant custom attribute validators demonstrably execute once phase 2 lands — a test proves `SpaceSeparatedNumberList` rejects non-numeric input in a build
@@ -174,8 +191,7 @@ pass that flagged every documentation example would be abandoned within a day.
 ## Approach
 
 0. **{% ref "WORK-549" /%} first.** Everything about consequence depends on it.
-1. **Phase 1** — the call, the severity mapping, the `error` rune producer, the
-   two safe ids. Independently shippable and already the majority of the value.
+1. **Phase 1** — the call, the severity mapping, and the two safe ids. Independently shippable and already the majority of the value.
 2. **Phase 2** — measure the blast radius, then enable the attribute ids. This
    is where the dormant validators wake up, so expect findings.
 3. **Phase 3** — complete the variable bag, then `variable-undefined`, then the
@@ -206,8 +222,9 @@ generated inline values, so it pays for itself twice.
 - {% ref "WORK-549" /%} — the prerequisite question about error severity
 - {% ref "SPEC-126" /%} — established that guards only work when something runs them
 - {% ref "SPEC-129" /%} — depends on the same diagnostics surface via its D6
+- {% ref "WORK-550" /%} — removes the `error` rune this spec no longer routes into
 - `packages/content/src/site.ts` — where the config is assembled and diagnostics defined
-- `packages/runes/src/tags/error.ts` — the renderer waiting for a producer
-- `packages/language-server/src/parser/markdoc.ts` — today's only validate call
+- `packages/runes/test/fixture-corpus.test.ts` — the working precedent (D8)
+- `packages/language-server/src/parser/markdoc.ts` — the other existing validate call
 
 {% /spec %}
