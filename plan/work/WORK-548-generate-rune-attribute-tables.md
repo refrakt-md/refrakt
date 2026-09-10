@@ -36,7 +36,9 @@ left to do**: no `$ref` to resolve, no sibling `required` array to fold.
 - [ ] Per-axis prose comes from the facet contract descriptions in `packages/transform/src/facets/`
 - [ ] The six runes with no universal attributes render no accordion at all — just their one-line posture reason
 - [ ] The rendered universal section agrees with `refrakt reference <name>`
-- [ ] Internal `__`-prefixed attributes are filtered — `__deferred-body` currently reaches `reference --format json` for every rune with a body
+- [ ] Internal `__`-prefixed attributes are filtered **in `serializeRune`**, not in the generator — `__deferred-body` reaches `reference --format json` today on `aggregate`, `collection` and `relationships`
+- [ ] `PAGELESS` carries each child rune's parent as data, not as a comment, so a child's attributes land on the parent's page
+- [ ] `error` and `region` are distinguishable from child runes — "no table anywhere" is not the same answer as "documented on the parent's page"
 - [ ] `check-rune-docs.mjs` gains a content check: the artifact is fresh, and no page hand-writes a table for a rune with generated rows
 - [ ] The stale-artifact failure names the command to run
 - [ ] Pages with more than one table keep their hand-written ones intact

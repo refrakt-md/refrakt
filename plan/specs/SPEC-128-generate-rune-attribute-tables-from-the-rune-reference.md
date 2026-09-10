@@ -130,13 +130,25 @@ against the real package set:
 rendered from a shared partial.**
 
 An earlier draft said "universal attributes are not listed per page; the page
-links to their reference". Both halves were wrong.
+links to their reference". A link is necessary and not sufficient.
 
-*There is no reference to link to.* The only pages documenting these attributes
-are `extend/theme-authoring/surfaces.md` and `tint-cascade.md`;
-`dimensions.md` covers the `data-*` attributes a theme's CSS targets, not the
-attributes an author types. So D1 as written would have sent a content author
-into the Extend handbook — the exact cross-guide leak WORK-540 existed to close.
+*The reference exists and should be linked.* `site/content/runes/surfaces.md`
+is a substantial author-facing page — the surface model, the vocabulary, what
+each axis means — and the accordion should point at it rather than restate it.
+An earlier revision of this decision claimed no such page existed; that was
+wrong, from a truncated search, and is corrected here.
+
+*What the link cannot carry is per-rune applicability*, and surfaces.md says so
+itself:
+
+> To see what a given rune accepts, run `refrakt reference <rune>` — it lists
+> that rune's real universal attributes and names the reason for each axis it
+> leaves out.
+
+That is the gap. The vocabulary page is documented; *whether this rune honours
+this axis* is answerable only by running a CLI command. A reader on
+`/runes/card` should not have to. Since 0.32.0 the schema knows the answer, so
+the page can render it.
 
 *And "a subset per rune" overstates the variance.* Measured across the 51 runes
 in the default site:
@@ -189,6 +201,13 @@ facet carries a contract `description` (`packages/transform/src/facets/*.ts` —
 and none of those are author axes). It lives in `@refrakt-md/transform` rather
 than the rune reference, so plumbing it through is real work — but it is
 authored where the axis is implemented, which is the property that matters.
+
+Given that surfaces.md already explains each axis well, the facet descriptions
+may turn out to be a one-line summary rather than the item's substance — an
+accordion item arguably needs only *this rune carries `tint`, `tint-mode`* plus
+a link to the concept. **Try the link-only form first**; if the items read as
+bare name lists, add the facet prose. That ordering keeps the D1a plumbing
+optional rather than assumed.
 
 **D1b — Unavailable axes are a grouped note, not accordion items.**
 
@@ -252,6 +271,81 @@ variables table and an attributes table — and only the second is generated.
 one meaning of agree. A second script answering a second meaning would split a
 question that reads better whole.
 
+**D4 — Filter internal attributes by the `__` prefix, at the source.**
+
+Measured: exactly one `__`-prefixed attribute reaches
+`reference --format json` — `__deferred-body`, on exactly **three** runes
+(`aggregate`, `collection`, `relationships`). No other underscore-prefixed
+attributes leak. An earlier revision of this spec said "every rune with a body";
+that was wrong.
+
+Growing `HIDDEN_ATTRIBUTES` would work today — three entries. Filter by prefix
+instead, for two reasons:
+
+- **`HIDDEN_ATTRIBUTES` is keyed `rune.attribute`**, so it needs one entry per
+  rune and a new one every time a rune opts into `deferBody` — added silently,
+  or not at all. The failure is a `__deferred-body` row appearing in a generated
+  table because nobody remembered.
+- **The two mechanisms mean different things.** `feature.split` is a real,
+  public attribute we choose not to document — an editorial call.
+  `__deferred-body` was never public; SPEC-070 stashes it on the AST as an
+  implementation detail (`DEFERRED_BODY_ATTR` in `deferred-body.ts`). One list
+  holding both conflates "undocumented on purpose" with "not an author
+  attribute at all".
+
+**Filter in `serializeRune`, not in the generator.** Anyone running
+`reference aggregate --format json` sees `__deferred-body` today; that is noise
+for every consumer, not just this one. Fixing it at the source fixes it once.
+Treat it as a small bug the generator happens to have found.
+
+Caveat: `__` is a convention with one member, so this is really "filter by
+prefix *and* keep the prefix meaningful" — say so where `DEFERRED_BODY_ATTR` is
+defined.
+
+**D5 — `PAGELESS` becomes a Map, not a second list.**
+
+`scripts/check-rune-docs.mjs` already tracks runes with no page of their own —
+about thirty, child runes plus two internal ones. Each is annotated with its
+parent **in a comment**:
+
+```js
+'bento-cell',   // marketing/bento
+'tier',         // marketing/pricing
+```
+
+Coverage is all the existing guard needs, so a comment suffices. The generator
+needs more: to place a child rune's attributes on its parent's page, the parent
+has to be *data*. Promote the comments to values rather than adding a parallel
+list that can disagree with this one.
+
+Two entries have no parent — `error` and `region` are internal, never authored
+directly (`region` is documented in `layout.md`). They need a distinct value, not
+a missing one: "documented on the parent's page" and "no table anywhere" are
+different answers, and a Map that cannot tell them apart will quietly do the
+wrong thing for one of them.
+
+**D6 — This does *not* subsume `docs/cli/reference.md`.**
+
+Closing SPEC-126's open question: no, and they should not be done together.
+
+`docs/cli/reference.md` is not a whole-CLI reference. It is a 116-line page about
+the single `refrakt reference` command, with three flag tables — 18 rows in
+total.
+
+The blocker is the source of truth. Rune attributes come from schemas, which are
+already data. **The CLI has no structured command surface at all** — no command
+registry, no flag declarations; argument parsing and `--help` text are written by
+hand per command. There is nothing to generate *from*. Building one means
+restructuring how every command declares its flags and deriving both `--help` and
+the docs from that. Worth doing, plausibly; but it is its own spec, not a rider
+on this one, and it shares no machinery with generating rune tables.
+
+If CLI-doc drift is the worry, the cheap guard is the one already exercised
+during this milestone's survey: parse the documented flags out of the page and
+assert each appears in that command's source. Run ad hoc against the plan
+commands it came back 27/27 clean. A fraction of the cost, and it catches the
+failure that actually occurs.
+
 ## Acceptance Criteria
 
 - [ ] A recorded answer to why 102 pages have no attribute table, and which of them should
@@ -264,8 +358,11 @@ question that reads better whole.
 - [ ] Axes the rune does not carry are **not** items — they render as an uncollapsed note beneath, grouped by reason, one line each
 - [ ] The accordion is a shared partial taking the rune name, not markup repeated across ~45 pages
 - [ ] `SerializedRune` carries full attribute records for universals, grouped by axis — not the current bare `string[]`
-- [ ] Per-axis prose comes from the facet contract descriptions, not a second hand-written copy
+- [ ] The accordion links to `/runes/surfaces` for what each axis means, rather than restating it
+- [ ] Per-axis prose, **if the items need it**, comes from the facet contract descriptions rather than a second hand-written copy — try the link-only form first
 - [ ] The six runes carrying no universal attributes render no accordion at all — just their one-line posture reason
+- [ ] Internal `__`-prefixed attributes are filtered in `serializeRune`, so every consumer benefits, not only this generator
+- [ ] `PAGELESS` carries each child rune's parent as data rather than a comment, with `error` / `region` distinguishable from child runes
 - [ ] The rendered universal section agrees with `refrakt reference <name>` — same axes carried, same reasons for the rest
 - [ ] `check-rune-docs.mjs` gains a content check: the artifact is fresh, and no page hand-writes a table for a rune with generated rows
 - [ ] The stale-artifact failure names the command to run
@@ -284,22 +381,6 @@ question that reads better whole.
 Order matters at step 3: converting a page whose table was just corrected proves
 the generator reproduces a reviewed result, rather than asking a reviewer to
 check a generated table against a schema by eye.
-
-## Open questions
-
-- **Should `HIDDEN_ATTRIBUTES` grow?** It currently holds one entry
-  (`feature.split`), so internal `__`-prefixed attributes such as
-  `__deferred-body` appear in `reference --format json` for every rune with a
-  body. Harmless in the CLI, but a generated table would render them unless
-  filtered. Either extend the hidden set or filter by the `__` convention — the
-  latter matches the prefix's documented meaning.
-- **Child runes.** Five pages document a child rune under a parent's page
-  (`bento-cell` under `bento`, and similar), so the page name does not resolve
-  to a rune. `check-rune-docs.mjs` already handles this with its `PAGELESS` set;
-  the generator needs the same mapping rather than a second list.
-- **Does this subsume the `docs/cli/reference.md` question** left open in
-  SPEC-126? Both are "generate a reference from data the CLI already has", and
-  answering them together may be cheaper than twice.
 
 ## References
 

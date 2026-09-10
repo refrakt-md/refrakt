@@ -410,9 +410,14 @@ fixes the reference and the editor experience in the same edit.
 
 ## Open questions
 
-- **Should the CLI reference (`docs/cli/reference.md`) follow?** Same problem,
-  same shape, larger surface. Out of scope here; worth a follow-up once the
-  mechanism is proven.
+- ~~**Should the CLI reference (`docs/cli/reference.md`) follow?**~~ **Answered:
+  no** — see {% ref "SPEC-128" /%} D6. Not the same shape and not a larger
+  surface: it is one 116-line page about the `refrakt reference` command, 18
+  table rows. The blocker is that the CLI has no structured command surface to
+  generate *from* — parsing and `--help` text are hand-written per command, so
+  this would mean building a command registry first. Its own spec, sharing no
+  machinery with either reference generator. The cheap guard, if drift is the
+  worry, is asserting documented flags exist in the command's source.
 - **Do the existing `--check` flags get wired into CI as part of this?** They
   guard real artifacts and currently guard nothing. Adjacent, not required.
 
