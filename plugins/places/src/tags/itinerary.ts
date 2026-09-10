@@ -13,6 +13,7 @@ export const itineraryStopSections = { body: 'body' } as const;
 
 export const itineraryStop = createContentModelSchema({
 	sections: itineraryStopSections,
+	provides: ['prose'],
 	attributes: {
 		time: { type: String, required: false, description: 'Scheduled time for this stop (e.g. "9:00 AM").' },
 		location: { type: String, required: false, description: 'Name of the place or venue for this stop.' },

@@ -1,7 +1,17 @@
 @layer skin {
+
+/* WORK-538 — resting title size, so the prominence ramp computes from it
+ * rather than from the density default. */
+.rf-typography {
+	--rf-title-size: var(--rf-text-lg);
+}
+
 /* Typography — font specimen display */
 .rf-typography__title {
-	font-size: var(--rf-text-lg);
+	/* WORK-538 — read the prominence override first; the fallback is this rune's
+	 * resting size, stated as --rf-title-size on the root so the prominence ramp
+	 * can compute from it. */
+	font-size: var(--rf-prominence-size, var(--rf-title-size));
 	font-weight: var(--rf-weight-semibold);
 	margin-bottom: 1rem;
 }

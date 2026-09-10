@@ -21,6 +21,7 @@ export const playlistMediaSlots = { media: 'cover' } as const;
 
 export const playlist = createContentModelSchema({
 	sections: playlistSections,
+	provides: ['prose'],
 	mediaSlots: playlistMediaSlots,
 	base: SplitLayoutModel,
 	attributes: {

@@ -10,6 +10,7 @@ import type { ContentModel, ContentFieldDefinition } from '@refrakt-md/types';
 import { RUNE_EXAMPLES } from './examples.js';
 import { UNIVERSAL_ATTRIBUTE_NAMES, lookupAttributePreset, schemaBasePresets } from './attribute-presets.js';
 import { schemaContentModels } from './lib/index.js';
+import { describeSchemaUniversals } from './schema-universals.js';
 
 // ---------------------------------------------------------------------------
 // Rune info shape
@@ -240,9 +241,38 @@ export function describeRune(rune: RuneInfo): string {
 				}
 			}
 
+			// WORK-535 — this used to print `UNIVERSAL_ATTRIBUTE_NAMES` wholesale
+			// under the claim "available on every rune". On a `card`, three of
+			// those do nothing; the CLI stated as fact something false about the
+			// rune it was describing. Report what the rune carries, and say why
+			// for what it does not — reference output is a teaching surface, and
+			// "why is `reading` on textblock but not card?" is the question a
+			// bare omission leaves unanswered.
 			if (universal.length > 0) {
-				const names = Array.from(UNIVERSAL_ATTRIBUTE_NAMES).join(', ');
-				lines.push(`Universal attributes (available on every rune): ${names}.`);
+				lines.push(`Universal attributes: ${universal.map(([name]) => name).join(', ')}.`);
+			}
+			const { unavailable } = describeSchemaUniversals(rune.schema as Schema);
+			if (unavailable.length > 0) {
+				// Grouped by reason: a rune usually has one or two, and an inline
+				// rune has a single reason covering all thirteen axes. One line
+				// per reason keeps the generated reference readable at 132 runes.
+				const byReason = new Map<string, string[]>();
+				for (const { axis, reason, attributes } of unavailable) {
+					// Name the axis, and spell out its attributes when the axis name
+					// is not itself one of them — `motion` and `cover` are axes an
+					// author has never typed, and a bare "motion" would leave them
+					// hunting for what it covers.
+					const label = attributes.includes(axis) ? axis : `${axis} (${attributes.join(', ')})`;
+					const axes = byReason.get(reason);
+					if (axes) axes.push(label);
+					else byReason.set(reason, [label]);
+				}
+				lines.push('Not applicable to this rune:');
+				for (const [reason, axes] of byReason) {
+					// Colon, not a dash: several reasons contain an em-dash of their
+					// own, and two in one line reads as a broken sentence.
+					lines.push(`  - ${axes.join(', ')}: ${reason}`);
+				}
 			}
 		}
 	}
@@ -588,7 +618,13 @@ export interface SerializedRune {
 	attributes: {
 		own: Record<string, SerializedAttribute>;
 		base?: { name: string; description: string; attributes: Record<string, SerializedAttribute> };
+		/** Universal attributes this rune actually carries. Already narrowed —
+		 *  read from the schema, never from the static universal set. */
 		universal: string[];
+		/** Axes the rune carries no attributes for, each with the reason it does
+		 *  not apply (WORK-535). The machine-readable half of the human output's
+		 *  "Not applicable here" line, so the two formats agree. */
+		universalUnavailable: Array<{ axis: string; reason: string; attributes: string[] }>;
 	};
 	contentModel?: SerializedContentModel;
 	example?: string;
@@ -649,6 +685,7 @@ export function serializeRune(info: RuneInfo, pluginName?: string): SerializedRu
 				}
 				: {}),
 			universal,
+			universalUnavailable: describeSchemaUniversals(info.schema as Schema).unavailable,
 		},
 		...(info.contentModel ? { contentModel: info.contentModel } : {}),
 		...(info.example ? { example: info.example } : {}),
@@ -740,9 +777,15 @@ export function renderReferenceMarkdown(ctx: ReferenceContext, options: RenderRe
 	}
 	lines.push('');
 
+	// WORK-535 — this section is the universal *vocabulary*, not a promise that
+	// every rune accepts every entry. Each rune carries the subset that can
+	// affect it; its own section lists what it has and names the reason for what
+	// it does not. Saying so here is what keeps the hoisted list (which exists so
+	// 132 rune sections need not repeat 37 attributes) from reading as the blanket
+	// claim it used to make.
 	lines.push('## Universal Attributes');
 	lines.push('');
-	lines.push('These attributes are available on every rune:');
+	lines.push('These attributes come from the shared universal vocabulary rather than from any one rune. **A rune carries only the ones that can affect it** — `reading` needs a body, `prominence` a section header, the `frame-*` facets a media surface. Each rune\'s section below lists the universal attributes it accepts, and names the reason for any it does not. Writing one where it does not apply is a build error, not a silent no-op.');
 	lines.push('');
 	for (const attr of UNIVERSAL_ATTRIBUTE_NAMES) {
 		lines.push(`- \`${attr}\``);

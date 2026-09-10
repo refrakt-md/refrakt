@@ -19,6 +19,7 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
 		sections: characterSections,
+		provides: ['prose'],
 		mediaSlots: characterMediaSlots,
 		modifiers: {
 			role: { source: 'meta', default: 'supporting' },
@@ -44,7 +45,11 @@ export const config: Record<string, RuneConfig> = {
 		// portrait stays a floated avatar sibling at the article root.
 		layout: {
 			root: ['portrait', 'content'],
-			content: { tag: 'div', children: ['preamble', 'metadata', 'sections', 'body'] },
+			// BUG-003 — `body` before `sections`, matching Realm and Faction. The
+			// order was the other way round because the two were mutually
+			// exclusive: only one of them was ever emitted. Now that lead prose
+			// and sections can coexist, the prose has to read first.
+			content: { tag: 'div', children: ['preamble', 'metadata', 'body', 'sections'] },
 			preamble: { tag: 'header', children: ['name'] },
 		},
 		editHints: { name: 'inline', portrait: 'image', body: 'none', sections: 'none' },
@@ -55,6 +60,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'character-section', parent: 'Character',
 		autoLabel: { span: 'header' },
 		sections: characterSectionSections,
+		provides: ['prose'],
 		sectionRoleExceptions: { header: 'The parent Character already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-character-section__name`\'s type outright, so the role would be inert there anyway.' },
 		editHints: { header: 'inline', name: 'inline', body: 'none' },
 	},
@@ -64,6 +70,7 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
 		sections: realmSections,
+		provides: ['prose'],
 		mediaSlots: realmMediaSlots,
 		modifiers: {
 			realmType: { source: 'meta', default: 'place' },
@@ -103,6 +110,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'realm-section', parent: 'Realm',
 		autoLabel: { span: 'header' },
 		sections: realmSectionSections,
+		provides: ['prose'],
 		sectionRoleExceptions: { header: 'The parent Realm already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-realm-section__name`\'s type outright, so the role would be inert there anyway.' },
 		editHints: { header: 'inline', name: 'inline', body: 'none' },
 	},
@@ -113,6 +121,7 @@ export const config: Record<string, RuneConfig> = {
 		defaultElevation: 'flat',
 		defaultReading: 'prose',
 		sections: loreSections,
+		provides: ['prose'],
 		modifiers: {
 			category: { source: 'meta' },
 			spoiler: { source: 'meta', default: 'false' },
@@ -133,6 +142,7 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
 		sections: factionSections,
+		provides: ['prose'],
 		mediaSlots: factionMediaSlots,
 		modifiers: {
 			factionType: { source: 'meta' },
@@ -176,6 +186,7 @@ export const config: Record<string, RuneConfig> = {
 		block: 'faction-section', parent: 'Faction',
 		autoLabel: { span: 'header' },
 		sections: factionSectionSections,
+		provides: ['prose'],
 		sectionRoleExceptions: { header: 'The parent Faction already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-faction-section__name`\'s type outright, so the role would be inert there anyway.' },
 		editHints: { header: 'inline', name: 'inline', body: 'none' },
 	},
@@ -241,6 +252,7 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
 		sections: bondSections,
+		provides: ['prose'],
 		modifiers: {
 			bondType: { source: 'meta' },
 			status: { source: 'meta', default: 'active' },

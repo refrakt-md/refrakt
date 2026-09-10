@@ -46,6 +46,13 @@ export {
 } from './identity-fields.js';
 export type { IdentityField } from './identity-fields.js';
 
+// Universal axis registry (SPEC-124) — the single definition of what each axis
+// does and when it is unavailable on a rune. `generateStructureContract` builds
+// its `unavailable` map from `describeForRune`; SPEC-125 Phase 3 narrows rune
+// schemas from the same call, so the contract and the schemas cannot disagree.
+export { UNIVERSAL_AXIS_FACETS, DESCRIBABLE_FACETS, UNIVERSAL_POSTURE_REASONS } from './facets/index.js';
+export type { UniversalAxisFacet, UniversalAxisContract, RuneAxisContract, DescribableFacet, FacetContract } from './facets/index.js';
+
 // Section-role drift lint (SPEC-125) — shared "declared slots" helper + check
 export { declaredSlots, lintSectionRoles, BODY_SLOT_NAMES, HEADER_SLOT_NAMES } from './section-roles.js';
 export type { SectionRoleFinding } from './section-roles.js';

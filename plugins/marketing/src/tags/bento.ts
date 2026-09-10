@@ -39,6 +39,7 @@ export const bentoCellSections = { media: 'media', title: 'title', body: 'body' 
 
 export const bentoCell = createContentModelSchema({
 	sections: bentoCellSections,
+	provides: ['prose'],
 	attributes: {
 		size: { type: String, required: false },
 		cols: { type: Number, required: false },

@@ -25,6 +25,11 @@ const ctx = (
 	...extra,
 });
 
+/** WORK-537 — `reading` and `dropcap` gate on a declared prose capability
+ *  rather than on the `body` section role, so their fixtures must declare it.
+ *  Default-off is the point: a rune that says nothing gets neither axis. */
+const PROSE_RUNE: RuneConfig = { block: 'article', provides: ['prose'] };
+
 describe('width facet', () => {
 	it('contributes nothing by default', () => {
 		expect(widthFacet.resolve(ctx())).toBeNull();
@@ -127,23 +132,23 @@ describe('density facet', () => {
 
 describe('reading facet', () => {
 	it('defaults to the ui register', () => {
-		expect(readingFacet.resolve(ctx())?.state).toEqual({ reading: 'ui' });
+		expect(readingFacet.resolve(ctx({}, PROSE_RUNE))?.state).toEqual({ reading: 'ui' });
 	});
 
 	it('takes the rune default', () => {
-		expect(readingFacet.resolve(ctx({}, { block: 'article', defaultReading: 'prose' }))?.state)
+		expect(readingFacet.resolve(ctx({}, { ...PROSE_RUNE, defaultReading: 'prose' }))?.state)
 			.toEqual({ reading: 'prose' });
 	});
 
 	it('lets the author override', () => {
-		const config: RuneConfig = { block: 'article', defaultReading: 'prose' };
+		const config: RuneConfig = { ...PROSE_RUNE, defaultReading: 'prose' };
 		expect(readingFacet.resolve(ctx({ reading: 'fine' }, config))?.state).toEqual({ reading: 'fine' });
 	});
 });
 
 describe('dropcap facet', () => {
 	const withRegister = (register: string, attrs: Record<string, any> = { dropcap: true }): FacetContext =>
-		ctx(attrs, { block: 'article' }, { axis: (name) => (name === 'reading' ? register : undefined) });
+		ctx(attrs, PROSE_RUNE, { axis: (name) => (name === 'reading' ? register : undefined) });
 
 	it('does not run unless requested', () => {
 		expect(dropcapFacet.appliesTo?.(withRegister('prose', {}))).toBe(false);
@@ -169,7 +174,7 @@ describe('dropcap facet', () => {
 	}
 
 	it('falls back to the default register when reading resolved nothing', () => {
-		const result = dropcapFacet.resolve(ctx({ dropcap: true }));
+		const result = dropcapFacet.resolve(ctx({ dropcap: true }, PROSE_RUNE));
 		expect(result?.warnings?.[0].message).toContain('reading="ui"');
 	});
 });

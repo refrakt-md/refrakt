@@ -14,10 +14,29 @@ export const contentPlaceFacet: Facet = {
 	name: 'content-place',
 	after: ['modifiers'],
 
-	appliesTo: (ctx) => Boolean(ctx.axis('content-place')),
+	// WORK-536 — the second clause is the diagnostic-only path. `content-place`
+	// reaches this facet as an *axis*, supplied by the generic modifier facet
+	// from a config-declared `content-place` modifier. A rune that declares no
+	// such modifier therefore never set the axis, `appliesTo` returned false, and
+	// the facet never ran — so it never got the chance to say the request had
+	// been dropped. Schema narrowing (WORK-534) does not cover this: scoped
+	// defaults and embed overrides (ADR-027) apply attribute bags to runes that
+	// never spelled the attribute out, and those bypass Markdoc validation
+	// entirely. So the facet now also runs on the bare attribute, purely to warn.
+	appliesTo: (ctx) => Boolean(ctx.axis('content-place') ?? ctx.tag.attributes?.['content-place']),
 
 	resolve(ctx) {
-		const contentPlace = ctx.axis('content-place')!;
+		const contentPlace = ctx.axis('content-place');
+
+		if (!contentPlace) {
+			return {
+				warnings: [{
+					code: 'content-place-undeclared',
+					message: `[refrakt] \`content-place\` on \`${ctx.rune}\` has nothing to anchor — the rune declares no \`content-place\` modifier, so the value is never read. Ignored.`,
+					dedupeKey: ctx.rune,
+				}],
+			};
+		}
 
 		if (ctx.axis('media-position') !== 'cover') {
 			return {

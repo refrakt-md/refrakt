@@ -15,6 +15,8 @@ const baseCard: RuneConfig = {
 	sections: { media: 'media', body: 'body' },
 	mediaSlots: { media: 'cover' },
 	frameTarget: 'media',
+	universalAttributes: 'auto',
+	provides: ['prose'],
 	layout: { root: ['media', 'content'] },
 };
 
@@ -30,8 +32,13 @@ function collect(): { violations: IdentityViolation[]; sink: (v: IdentityViolati
 describe('the identity rule is expressed once', () => {
 	it('the variant-delta set is the identity set plus `variants`', () => {
 		// `mediaSlots` and `frameTarget` joined the original three in v0.31.0, once
-		// SPEC-125 Phase 2 moved the join tables into the tag modules that own them.
-		expect([...IDENTITY_FIELDS]).toEqual(['block', 'modifiers', 'sections', 'mediaSlots', 'frameTarget']);
+		// SPEC-125 Phase 2 moved the join tables into the tag modules that own them;
+		// `universalAttributes` joined in v0.32.0, when Phase 3 made it decide what
+		// an author may write on the rune at all, and `provides` with it, when
+		// Phase 4 moved the `reading`/`dropcap` gate onto a declared capability.
+		expect([...IDENTITY_FIELDS]).toEqual([
+			'block', 'modifiers', 'sections', 'mediaSlots', 'frameTarget', 'universalAttributes', 'provides',
+		]);
 		expect([...VARIANT_DELTA_RESERVED_FIELDS]).toEqual([...IDENTITY_FIELDS, 'variants']);
 	});
 
@@ -50,6 +57,7 @@ describe('ADR-028 — theme overrides may not redefine a rune', () => {
 	// scalars, the rest are maps.
 	const overrideValue: Record<string, unknown> = {
 		block: 'other', frameTarget: 'self', modifiers: {}, sections: {}, mediaSlots: {},
+		universalAttributes: 'inline', provides: ['prose'],
 	};
 
 	for (const field of IDENTITY_FIELDS) {
@@ -197,7 +205,11 @@ describe('the variant-delta path still enforces the same rule', () => {
 
 	for (const field of VARIANT_DELTA_RESERVED_FIELDS) {
 		it(`errors on a delta carrying \`${field}\``, () => {
-			const value = field === 'block' ? 'other' : field === 'frameTarget' ? 'self' : {};
+			const value = field === 'block' ? 'other'
+				: field === 'frameTarget' ? 'self'
+				: field === 'universalAttributes' ? 'inline'
+				: field === 'provides' ? ['prose']
+				: {};
 			const res = validateDelta({ [field]: value } as Partial<RuneConfig>);
 			expect(res.valid).toBe(false);
 			expect(res.errors.some((e) => e.path === `runes.Card.variants.mode.cover.${field}`)).toBe(true);

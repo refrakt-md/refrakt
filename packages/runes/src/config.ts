@@ -83,6 +83,7 @@ export const coreConfig: ThemeConfig = {
 			rootAttributes: { 'data-state': 'closed' },
 			autoLabel: { name: 'header' },
 			sections: accordionItemSections,
+			provides: ['prose'],
 			sectionRoleExceptions: {
 				header: 'The `header` slot is the <summary> disclosure control, not a page-section header. `header` would inherit the chrome-row rhythm (a 3rem margin under every summary); `title` would tighten every summary\'s line-height while leaving `prominence` inert anyway, since `.rf-accordion-item__header` pins the control\'s font size on purpose. The parent Accordion already holds `title`.',
 			},
@@ -159,12 +160,20 @@ export const coreConfig: ThemeConfig = {
 		 * substitutes the entity content wrapped in `<section
 		 * class="rf-expand" data-rune="expand">`. Engine config provides the
 		 * block name for CSS tree-shaking. */
-		Expand: { block: 'expand' },
+		/* SPEC-125 Phase 3 — `expand` offers no universal attributes, and unlike its
+		 * five siblings that is **not** principled: it is a block-level disclosure,
+		 * so `tint`, `bg`, `width`, `elevation` and the rest would all mean
+		 * something on it. It reads as legacy — a hand-written schema that predates
+		 * the universal set. Recorded as `none` rather than quietly inheriting the
+		 * gap; giving it the block axes means migrating it to
+		 * `createContentModelSchema`, which WORK-534 scopes out. */
+		Expand: { block: 'expand', universalAttributes: 'none' },
 		/* Badge emits a complete `<span class="rf-badge" data-rune="badge">`
 		 * directly from its schema and needs no engine post-processing, but
 		 * still needs an entry in the theme config so `computeUsedCssBlocks`
 		 * includes `badge.css` in CSS tree-shaking when a badge is rendered. */
-		Badge: { block: 'badge' },
+		/* SPEC-125 Phase 3 — an inline span; the block axes have nothing to act on. */
+		Badge: { block: 'badge', universalAttributes: 'inline' },
 		/* SPEC-079 composable rune handles — render the same DOM as the
 		 * engine's `split` / `definition-list` layout primitives. CSS comes
 		 * from the universal `[data-zone-layout=…]` selectors; per-rune
@@ -209,6 +218,7 @@ export const coreConfig: ThemeConfig = {
 				aspect: { source: 'meta', noBemClass: true },
 			},
 			sections: cardSections,
+			provides: ['prose'],
 			// SPEC-081/091: the transform emits flat slots; `layout` builds the
 			// skeleton — media beside a `content` wrapper grouping eyebrow/body/
 			// footer. A base `layout` is the prerequisite for the cover variant
@@ -258,6 +268,7 @@ export const coreConfig: ThemeConfig = {
 			block: 'blog',
 			defaultDensity: 'full',
 			sections: blogSections,
+			provides: ['prose'],
 			contentWrapper: { tag: 'div', ref: 'content' },
 			modifiers: {
 				layout: { source: 'meta', default: 'list' },
@@ -344,6 +355,7 @@ export const coreConfig: ThemeConfig = {
 				shortcut: { source: 'meta', noBemClass: true },
 			},
 			sections: drawerSections,
+			provides: ['prose'],
 			editHints: { title: 'inline', body: 'none', close: 'none', footer: 'none' },
 		},
 		Figure: {
@@ -382,6 +394,7 @@ export const coreConfig: ThemeConfig = {
 			defaultReading: 'fine',
 			modifiers: { variant: { source: 'meta', default: 'sidenote' } },
 			sections: sidenoteSections,
+			provides: ['prose'],
 			editHints: { body: 'inline' },
 		},
 		Compare: {
@@ -403,6 +416,7 @@ export const coreConfig: ThemeConfig = {
 			defaultElevation: 'flush',
 			modifiers: { variant: { source: 'meta', default: 'margin' } },
 			sections: annotateSections,
+			provides: ['prose'],
 			editHints: { body: 'none', notes: 'none' },
 		},
 		AnnotateNote: { block: 'annotate-note', parent: 'Annotate', editHints: { body: 'inline' } },
@@ -497,6 +511,7 @@ export const coreConfig: ThemeConfig = {
 				variant: { source: 'meta', default: 'default' },
 			},
 			sections: pullQuoteSections,
+			provides: ['prose'],
 			editHints: { body: 'inline' },
 		},
 		TextBlock: {
@@ -510,6 +525,7 @@ export const coreConfig: ThemeConfig = {
 				align: { source: 'meta', default: 'left' },
 			},
 			sections: textBlockSections,
+			provides: ['prose'],
 			editHints: { body: 'none' },
 		},
 		MediaText: {
@@ -521,6 +537,7 @@ export const coreConfig: ThemeConfig = {
 				wrap: { source: 'meta' },
 			},
 			sections: mediaTextSections,
+			provides: ['prose'],
 			mediaSlots: mediaTextMediaSlots,
 			editHints: { media: 'image', body: 'none' },
 		},
@@ -632,8 +649,11 @@ export const coreConfig: ThemeConfig = {
 				language: { source: 'meta', default: 'mermaid', noBemClass: true },
 			},
 		},
-		Tint: { block: 'tint', parent: '*' },
-		Bg: { block: 'bg', parent: '*' },
+		/* SPEC-125 Phase 3 — configurator runes: they *supply* an axis value to the
+		 * parent rather than carrying one. A `{% tint %}` with its own `tint=` is
+		 * circular. */
+		Tint: { block: 'tint', parent: '*', universalAttributes: 'configurator' },
+		Bg: { block: 'bg', parent: '*', universalAttributes: 'configurator' },
 		Region: { block: 'region', parent: 'Layout' },
 		Sandbox: {
 			block: 'sandbox',

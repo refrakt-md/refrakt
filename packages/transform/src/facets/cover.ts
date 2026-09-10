@@ -11,6 +11,16 @@ const COVER_SCRIM_DIR: Record<string, string> = {
 /** The scrim meta fields the media well claims in cover mode. */
 const SCRIM_META = ['scrim', 'scrim-type', 'scrim-blur', 'scrim-tone'];
 
+/** `scrim-strength` is the one scrim facet cover mode cannot honour.
+ *
+ *  Outside cover the background layer builds the scrim and reads all five
+ *  `scrim*` metas, `scrim-strength` among them (it sets `--scrim-strength`).
+ *  In cover mode the scrim is rerouted to the media well, whose CSS has no
+ *  strength knob — so the value is dropped. It was dropped *and* left
+ *  unconsumed, which leaked the raw `<meta>` tag into the rendered tree
+ *  (WORK-536). */
+const UNSUPPORTED_IN_COVER = 'scrim-strength';
+
 /** `cover` — SPEC-089 media-position="cover" chrome.
  *
  *  In cover mode the rune's media fills the surface and its content sits over
@@ -67,6 +77,20 @@ export const coverFacet: Facet = {
 		// duplicate declaration resolves this way round in CSS.
 		const dir = COVER_SCRIM_DIR[scrim ?? ''];
 		if (dir) result.styles!.push(['--cover-scrim-dir', dir]);
+
+		// Say so rather than dropping it in silence, and claim the meta either way
+		// so it cannot survive the strip pass into the output.
+		const strength = readMeta(ctx.tag, UNSUPPORTED_IN_COVER);
+		if (strength !== undefined) {
+			result.consumes!.push(UNSUPPORTED_IN_COVER);
+			if (scrim !== 'none') {
+				result.warnings = [{
+					code: 'scrim-strength-in-cover',
+					message: `[refrakt] \`scrim-strength\` is not honoured in cover mode — on \`${ctx.rune}\` the scrim is rendered by the media well, which has no strength control. Ignored.`,
+					dedupeKey: ctx.rune,
+				}];
+			}
+		}
 
 		return result;
 	},

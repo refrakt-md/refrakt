@@ -68,6 +68,7 @@ export const config: Record<string, RuneConfig> = {
 		},
 		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
 		sections: specSections,
+		provides: ['prose'],
 		editHints: { body: 'none' },
 	},
 	Work: {
@@ -117,6 +118,7 @@ export const config: Record<string, RuneConfig> = {
 		},
 		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
 		sections: workSections,
+		provides: ['prose'],
 		editHints: { body: 'none' },
 	},
 	Bug: {
@@ -160,6 +162,7 @@ export const config: Record<string, RuneConfig> = {
 		},
 		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
 		sections: bugSections,
+		provides: ['prose'],
 		editHints: { body: 'none' },
 	},
 	Decision: {
@@ -195,6 +198,7 @@ export const config: Record<string, RuneConfig> = {
 		},
 		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
 		sections: decisionSections,
+		provides: ['prose'],
 		editHints: { body: 'none' },
 	},
 	Milestone: {
@@ -225,6 +229,7 @@ export const config: Record<string, RuneConfig> = {
 		},
 		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'body'] },
 		sections: milestoneSections,
+		provides: ['prose'],
 		editHints: { body: 'none' },
 	},
 	Backlog: {

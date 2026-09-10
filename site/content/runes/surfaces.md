@@ -18,6 +18,10 @@ Every block rune exposes one or two decorable **surfaces**, and a small, univers
 | `tint` | colour | recolour the surface (see [tint](/runes/tint)) |
 | `bg` | image | an image/video layer behind content (see [bg](/runes/bg)) |
 
+**Universal, but not unconditional.** Some of these axes need something to act on: `prominence` needs a rune with a section header, `reading` and `dropcap` need one whose body holds **prose** (a `datatable`'s main region is a table, so neither applies there), the `frame-*` facets need a media surface. A rune that has none of those never honoured the attribute — `{% grid reading="prose" %}` did nothing at all. Since 0.32.0 the rune's schema says so, so writing one where it cannot apply is a build error (`Invalid attribute: 'reading'`) rather than silence. Nothing about *what renders* changed; only whether you are told.
+
+To see what a given rune accepts, run [`refrakt reference <rune>`](/docs/cli/reference) — it lists that rune's real universal attributes and names the reason for each axis it leaves out (`prominence: this rune has no page-section header`). Editor completion reads the same schema, so typing `{% grid ` offers only what applies.
+
 The page walks the model along its four editorial axes:
 
 - **Chrome** — the depth, header weight, and framing that shape a surface.
@@ -69,7 +73,7 @@ A clear float — higher z-height.
 
 ### `prominence` — the section-header family
 
-`prominence` scales the weight of a rune's **section header** — its title type size — without touching the rest of the surface. It applies only to runes that carry a page-section header (a title/preamble), running `quiet → normal → prominent → display`. `normal` is the rune's density default; the steps re-point the title size up or down:
+`prominence` scales the weight of a rune's **section header** — its title type size — without touching the rest of the surface. It applies only to runes that carry a page-section header (a title/preamble), running `quiet → normal → prominent → display`. `normal` is the rune's **resting** title size, and the steps ramp *relative to it* rather than to fixed sizes — so `display` is always larger than the rune's default and `quiet` always smaller, whether the rune rests at the density default (a `section`), above it (a `hero`) or below it (a `bento-cell`):
 
 {% preview source=true %}
 
@@ -221,6 +225,8 @@ Where `width` sets a rune's *footprint*, `reading` sets how its *running text* r
 | `prose` | articles, pullquotes, long-form | line length capped to a readable measure, editorial rhythm, drop-cap eligible |
 
 Most of the time you don't set it: editorial runes (`pullquote`, `lore`, `textblock`) are `prose` already, captions are `fine`, and a `blog-article` page reads its body as `prose` with **zero markup**. Set `reading=` only to override — e.g. force a `card`'s body to read as prose.
+
+**Only runes whose body holds prose accept it.** A rune declares that about itself, so `reading` and `dropcap` appear on a `card`, a `blog`, an `accordion` answer or a storytelling entity, and not on a `datatable`, `showcase`, `form`, `api` or `symbol` — those have a main content region, but it holds a table, a viewport, fields or a signature rather than running text. `refrakt reference <rune>` says which, and why.
 
 **`reading` is independent of `width`.** A full-bleed band can still hold its text at a readable line length — the editorial-header spread:
 

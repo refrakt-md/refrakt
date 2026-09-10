@@ -14,6 +14,7 @@ export const pullQuoteSections = { body: 'body' } as const;
 
 export const pullquote = createContentModelSchema({
 	sections: pullQuoteSections,
+	provides: ['prose'],
 	attributes: {
 		align: { type: String, required: false, matches: alignValues.slice(), description: 'Text alignment of the quote' },
 		variant: { type: String, required: false, matches: variantValues.slice(), description: 'Visual style of the quote block' },

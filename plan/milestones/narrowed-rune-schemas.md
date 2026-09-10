@@ -1,4 +1,4 @@
-{% milestone name="v0.32.0" status="planning" %}
+{% milestone name="v0.32.0" status="active" %}
 
 # v0.32.0 — Narrowed rune schemas
 
@@ -23,10 +23,15 @@ sharpest cases in advance: the runes an author is most likely to have written
 `reading` on are exactly the ones whose roles were missing, and those now work
 rather than erroring.
 
-The transitional option stays open until v0.31.0 quantifies real-world impact:
-keep schemas permissive for one minor and have the tooling *annotate* rather than
-reject, narrowing in the release after. Recorded in {% ref "ADR-028" /%}'s
-rejected alternatives.
+**The transitional option is closed.** {% ref "v0.31.0" /%} quantified the
+impact rather than estimating it: every `{% tag %}` in the repo's 986 markdown
+files was attributed to its rune and checked against the structure contract, and
+**25 uses of a gated axis in live content are rejected by none of them**. The
+five that a narrowed schema would reject are all inside documentation code
+fences, and were corrected in v0.31.0 rather than migrated. Keeping schemas
+permissive for a release would soften a break that does not materialise, at the
+cost of another minor spent on the silent no-op it exists to remove. Narrow
+directly; see {% ref "SPEC-125" /%}'s Migration section for the numbers.
 
 ## Shape
 
@@ -59,6 +64,24 @@ than another hard-coded helper beside `hasBodySection` / `hasMediaSection` /
 `hasPageSectionHeader`. Only one axis needs it initially; it is worth the general
 shape now because {% ref "SPEC-124" /%} already gave every facet a declaration
 point.
+
+## Also in this release
+
+Two items joined after this milestone was written, both surfaced by the v0.31.0
+implementation rather than planned into it:
+
+- {% ref "WORK-538" /%} — `prominence` is inert on 8 of the 36 runes with a
+  header-ish role, because their stylesheet pins the title `font-size` and
+  `--rf-title-size` never reaches the element. `{% hero prominence="display" %}`
+  does nothing today. It is a skin defect rather than an applicability one, but
+  it is sequenced **before** {% ref "WORK-535" /%} deliberately: that item makes
+  `refrakt reference` authoritative about which attributes a rune offers, and
+  shipping it while the reference theme ignores the axis on its flagship rune
+  would trade a broad over-promise for a narrower one.
+- {% ref "BUG-003" /%} — `character`'s body slot is always empty; prose written
+  directly inside `{% character %}` is dropped by its content model. Worth
+  fixing before {% ref "WORK-537" /%} audits which runes bear prose, or the rune
+  looks like a non-provider for the wrong reason.
 
 ## Sequencing
 

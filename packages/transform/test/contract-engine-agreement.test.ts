@@ -166,6 +166,7 @@ const axisConfig: ThemeConfig = {
 		Panel: {
 			block: 'panel',
 			sections: { title: 'header', body: 'body', figure: 'media' },
+			provides: ['prose'],
 			defaultElevation: 'raised',
 			defaultDensity: 'compact',
 			defaultReading: 'prose',

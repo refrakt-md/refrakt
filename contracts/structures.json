@@ -345,8 +345,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -440,8 +440,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -516,8 +516,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -579,8 +579,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -619,8 +619,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -652,8 +652,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -682,8 +682,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -712,8 +712,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -729,25 +729,23 @@
 				"{content}"
 			],
 			"universalAxes": {
-				"axes": {
-					"tint": {
-						"selectors": [
-							".rf-expand--tinted"
-						]
-					},
-					"bg": {
-						"selectors": [
-							".rf-expand--has-bg"
-						]
-					}
-				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
-					"prominence": "this rune has no page-section header",
-					"content-place": "this rune declares no `content-place` modifier",
-					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
-					"frame": "this rune declares neither a `frameTarget` nor a media section"
+					"tint": "this rune declares no universal attributes",
+					"width": "this rune declares no universal attributes",
+					"content-measure": "this rune declares no universal attributes",
+					"spacing": "this rune declares no universal attributes",
+					"inset": "this rune declares no universal attributes",
+					"density": "this rune declares no universal attributes",
+					"reading": "this rune declares no universal attributes",
+					"dropcap": "this rune declares no universal attributes",
+					"elevation": "this rune declares no universal attributes",
+					"prominence": "this rune declares no universal attributes",
+					"motion": "this rune declares no universal attributes",
+					"content-place": "this rune declares no universal attributes",
+					"cover": "this rune declares no universal attributes",
+					"frame": "this rune declares no universal attributes",
+					"substrate": "this rune declares no universal attributes",
+					"bg": "this rune declares no universal attributes"
 				}
 			}
 		},
@@ -759,25 +757,23 @@
 				"{content}"
 			],
 			"universalAxes": {
-				"axes": {
-					"tint": {
-						"selectors": [
-							".rf-badge--tinted"
-						]
-					},
-					"bg": {
-						"selectors": [
-							".rf-badge--has-bg"
-						]
-					}
-				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
-					"prominence": "this rune has no page-section header",
-					"content-place": "this rune declares no `content-place` modifier",
-					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
-					"frame": "this rune declares neither a `frameTarget` nor a media section"
+					"tint": "this rune is inline — the block-level universal axes have nothing to act on",
+					"width": "this rune is inline — the block-level universal axes have nothing to act on",
+					"content-measure": "this rune is inline — the block-level universal axes have nothing to act on",
+					"spacing": "this rune is inline — the block-level universal axes have nothing to act on",
+					"inset": "this rune is inline — the block-level universal axes have nothing to act on",
+					"density": "this rune is inline — the block-level universal axes have nothing to act on",
+					"reading": "this rune is inline — the block-level universal axes have nothing to act on",
+					"dropcap": "this rune is inline — the block-level universal axes have nothing to act on",
+					"elevation": "this rune is inline — the block-level universal axes have nothing to act on",
+					"prominence": "this rune is inline — the block-level universal axes have nothing to act on",
+					"motion": "this rune is inline — the block-level universal axes have nothing to act on",
+					"content-place": "this rune is inline — the block-level universal axes have nothing to act on",
+					"cover": "this rune is inline — the block-level universal axes have nothing to act on",
+					"frame": "this rune is inline — the block-level universal axes have nothing to act on",
+					"substrate": "this rune is inline — the block-level universal axes have nothing to act on",
+					"bg": "this rune is inline — the block-level universal axes have nothing to act on"
 				}
 			}
 		},
@@ -802,8 +798,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -832,8 +828,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -862,8 +858,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -892,8 +888,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -922,8 +918,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -952,8 +948,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -989,8 +985,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -1200,8 +1196,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -1243,8 +1239,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -1280,8 +1276,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -1430,8 +1426,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -1498,8 +1494,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -1529,8 +1525,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -1584,8 +1580,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -1695,8 +1691,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode"
 				}
@@ -1746,8 +1742,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -1836,8 +1832,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -1872,8 +1868,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -1911,8 +1907,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -1984,8 +1980,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -2027,8 +2023,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -2058,8 +2054,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -2098,8 +2094,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -2129,8 +2125,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -2167,8 +2163,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -2226,8 +2222,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -2426,6 +2422,8 @@
 					}
 				},
 				"unavailable": {
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode"
@@ -2457,8 +2455,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -2514,8 +2512,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -2545,8 +2543,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -2605,6 +2603,8 @@
 					}
 				},
 				"unavailable": {
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -2674,6 +2674,8 @@
 					}
 				},
 				"unavailable": {
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -2710,8 +2712,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -2754,8 +2756,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -2811,8 +2813,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -2849,8 +2851,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -2931,8 +2933,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -2966,8 +2968,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -3009,8 +3011,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -3027,25 +3029,23 @@
 				"{content}"
 			],
 			"universalAxes": {
-				"axes": {
-					"tint": {
-						"selectors": [
-							".rf-tint--tinted"
-						]
-					},
-					"bg": {
-						"selectors": [
-							".rf-tint--has-bg"
-						]
-					}
-				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
-					"prominence": "this rune has no page-section header",
-					"content-place": "this rune declares no `content-place` modifier",
-					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
-					"frame": "this rune declares neither a `frameTarget` nor a media section"
+					"tint": "this rune supplies axis values to its parent rather than carrying its own",
+					"width": "this rune supplies axis values to its parent rather than carrying its own",
+					"content-measure": "this rune supplies axis values to its parent rather than carrying its own",
+					"spacing": "this rune supplies axis values to its parent rather than carrying its own",
+					"inset": "this rune supplies axis values to its parent rather than carrying its own",
+					"density": "this rune supplies axis values to its parent rather than carrying its own",
+					"reading": "this rune supplies axis values to its parent rather than carrying its own",
+					"dropcap": "this rune supplies axis values to its parent rather than carrying its own",
+					"elevation": "this rune supplies axis values to its parent rather than carrying its own",
+					"prominence": "this rune supplies axis values to its parent rather than carrying its own",
+					"motion": "this rune supplies axis values to its parent rather than carrying its own",
+					"content-place": "this rune supplies axis values to its parent rather than carrying its own",
+					"cover": "this rune supplies axis values to its parent rather than carrying its own",
+					"frame": "this rune supplies axis values to its parent rather than carrying its own",
+					"substrate": "this rune supplies axis values to its parent rather than carrying its own",
+					"bg": "this rune supplies axis values to its parent rather than carrying its own"
 				}
 			}
 		},
@@ -3058,25 +3058,23 @@
 				"{content}"
 			],
 			"universalAxes": {
-				"axes": {
-					"tint": {
-						"selectors": [
-							".rf-bg--tinted"
-						]
-					},
-					"bg": {
-						"selectors": [
-							".rf-bg--has-bg"
-						]
-					}
-				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
-					"prominence": "this rune has no page-section header",
-					"content-place": "this rune declares no `content-place` modifier",
-					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
-					"frame": "this rune declares neither a `frameTarget` nor a media section"
+					"tint": "this rune supplies axis values to its parent rather than carrying its own",
+					"width": "this rune supplies axis values to its parent rather than carrying its own",
+					"content-measure": "this rune supplies axis values to its parent rather than carrying its own",
+					"spacing": "this rune supplies axis values to its parent rather than carrying its own",
+					"inset": "this rune supplies axis values to its parent rather than carrying its own",
+					"density": "this rune supplies axis values to its parent rather than carrying its own",
+					"reading": "this rune supplies axis values to its parent rather than carrying its own",
+					"dropcap": "this rune supplies axis values to its parent rather than carrying its own",
+					"elevation": "this rune supplies axis values to its parent rather than carrying its own",
+					"prominence": "this rune supplies axis values to its parent rather than carrying its own",
+					"motion": "this rune supplies axis values to its parent rather than carrying its own",
+					"content-place": "this rune supplies axis values to its parent rather than carrying its own",
+					"cover": "this rune supplies axis values to its parent rather than carrying its own",
+					"frame": "this rune supplies axis values to its parent rather than carrying its own",
+					"substrate": "this rune supplies axis values to its parent rather than carrying its own",
+					"bg": "this rune supplies axis values to its parent rather than carrying its own"
 				}
 			}
 		},
@@ -3102,8 +3100,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -3135,8 +3133,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -3217,8 +3215,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section"
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body"
 				}
 			},
 			"elements": {
@@ -3340,8 +3338,8 @@
 								}
 							},
 							"unavailable": {
-								"reading": "this rune declares no body section",
-								"dropcap": "this rune declares no body section"
+								"reading": "this rune declares no prose body",
+								"dropcap": "this rune declares no prose body"
 							}
 						},
 						"elements": {
@@ -3429,8 +3427,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -3522,8 +3520,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -3689,8 +3687,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier"
 				}
 			},
@@ -3754,8 +3752,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -3793,8 +3791,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -3869,8 +3867,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -3912,8 +3910,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -3969,8 +3967,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -4006,8 +4004,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -4067,8 +4065,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode"
@@ -4123,8 +4121,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -4154,8 +4152,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -4198,8 +4196,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -4254,6 +4252,8 @@
 					}
 				},
 				"unavailable": {
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -4334,6 +4334,8 @@
 					}
 				},
 				"unavailable": {
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -4404,8 +4406,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -4435,8 +4437,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -4471,8 +4473,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -4528,8 +4530,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -4615,8 +4617,8 @@
 					"children": [
 						"preamble",
 						"metadata",
-						"sections",
-						"body"
+						"body",
+						"sections"
 					]
 				},
 				"preamble": {
@@ -5087,8 +5089,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -5159,8 +5161,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -5262,8 +5264,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -5296,8 +5298,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -5458,8 +5460,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -5515,8 +5517,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -5653,8 +5655,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -5713,8 +5715,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -5754,8 +5756,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -5814,8 +5816,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -5918,8 +5920,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -5975,8 +5977,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -6011,8 +6013,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -6075,8 +6077,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -6138,8 +6140,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -6186,8 +6188,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -6228,8 +6230,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -6287,8 +6289,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -6342,8 +6344,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -6392,8 +6394,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -6527,8 +6529,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section"
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body"
 				}
 			},
 			"elements": {
@@ -6678,8 +6680,8 @@
 								}
 							},
 							"unavailable": {
-								"reading": "this rune declares no body section",
-								"dropcap": "this rune declares no body section"
+								"reading": "this rune declares no prose body",
+								"dropcap": "this rune declares no prose body"
 							}
 						},
 						"elements": {
@@ -6785,8 +6787,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -6949,8 +6951,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -6990,8 +6992,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
@@ -7012,6 +7014,9 @@
 							".rf-playlist--tinted"
 						]
 					},
+					"frame": {
+						"target": "[data-section=\"media\"]"
+					},
 					"bg": {
 						"selectors": [
 							".rf-playlist--has-bg"
@@ -7019,12 +7024,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
-					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
-					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
-					"frame": "this rune declares neither a `frameTarget` nor a media section"
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode"
 				}
 			}
 		},
@@ -7050,8 +7051,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -7650,8 +7651,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -7694,8 +7695,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -7725,8 +7726,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -7761,8 +7762,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -7813,8 +7814,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
@@ -7843,8 +7844,8 @@
 					}
 				},
 				"unavailable": {
-					"reading": "this rune declares no body section",
-					"dropcap": "this rune declares no body section",
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
 					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",

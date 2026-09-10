@@ -4,6 +4,8 @@ import type { Config, Node, RenderableTreeNodes, Schema, SchemaAttribute, Tag, V
 
 import { resolveContentModel } from './resolver.js';
 import { schemaBasePresets } from '../attribute-presets.js';
+import { resolveUniversalAttributes } from '../universal-attributes.js';
+import type { UniversalAttributePosture } from '../universal-attributes.js';
 
 export { createComponentRenderable } from './component.js';
 export type { InlineTransformResult } from './component.js';
@@ -35,9 +37,40 @@ export interface RuneStructure {
   sections?: Record<string, SectionRole>;
   mediaSlots?: Record<string, string>;
   frameTarget?: 'media' | 'self';
+  /**
+   * The rune's universal-attribute posture — SPEC-125 Phase 3.
+   *
+   * Recorded alongside the join tables because it answers the same question
+   * from the same place: *what can an author write on this rune?* Consumers
+   * that only have the schema — `refrakt reference`, the language server —
+   * need it to explain an axis's absence, and `RuneConfig.universalAttributes`
+   * is not reachable from there without loading theme config.
+   */
+  universalAttributes?: UniversalAttributePosture;
+  /**
+   * Content capabilities the rune declares — SPEC-125 Phase 4.
+   *
+   * Recorded here for the same reason as the join tables: `reading` and
+   * `dropcap` availability hangs off it, and the schema layer must answer that
+   * without reaching for theme config. `RuneConfig.provides` carries the same
+   * list for the engine; a test holds the two together.
+   */
+  provides?: readonly string[];
 }
 
 export const schemaRuneStructures = new WeakMap<Schema, RuneStructure>();
+
+/**
+ * Record a hand-written schema's universal-attribute posture.
+ *
+ * `createContentModelSchema` records this itself. The handful of runes with
+ * hand-written schemas (`badge`, `xref`, `icon`, `tint`, `bg`, `expand`) never
+ * carried universal attributes, and before Phase 3 that was indistinguishable
+ * from an oversight; calling this states which it is, where the rune lives.
+ */
+export function declareUniversalPosture(schema: Schema, posture: UniversalAttributePosture): void {
+  schemaRuneStructures.set(schema, { ...schemaRuneStructures.get(schema), universalAttributes: posture });
+}
 
 /** The closed vocabulary `sections` values are drawn from. */
 export type SectionRole = 'header' | 'preamble' | 'title' | 'description' | 'body' | 'footer' | 'media';
@@ -392,13 +425,35 @@ export interface ContentModelSchemaOptions {
    * rather than owned by config, because a rune's universal-attribute
    * applicability derives from these facts and a theme may not redefine them.
    *
-   * Recorded on {@link schemaRuneStructures}; nothing in this constructor reads
-   * them yet. Passing them is what makes the facts reachable at schema-build
-   * time at all — the prerequisite for narrowing.
+   * Recorded on {@link schemaRuneStructures}, and read here: they are what
+   * narrows the universal attributes this rune offers (SPEC-125 Phase 3).
    */
   sections?: Record<string, SectionRole>;
   mediaSlots?: Record<string, string>;
   frameTarget?: 'media' | 'self';
+
+  /**
+   * SPEC-125 Phase 3 — why this rune carries *no* universal attributes, when it
+   * carries none. Defaults to `auto`, where structural applicability decides
+   * axis by axis from the join tables above.
+   *
+   * Stated rather than inferred from which constructor a schema used: an
+   * `inline` span and a `configurator` rune both end up with none, for
+   * different reasons, and a reader cannot tell either from an oversight.
+   */
+  universalAttributes?: UniversalAttributePosture;
+  /**
+   * Content capabilities this rune's own content provides — SPEC-125 Phase 4.
+   *
+   * Today only `'prose'`: this rune's body holds authored prose, so `reading`
+   * and `dropcap` mean something on it. Declared here *and* on the rune's
+   * `RuneConfig`, exactly as `sections` is — the schema layer narrows from this
+   * copy, the engine gates on the config one.
+   *
+   * Default-off. A rune that bears prose and forgets to say so loses `reading`,
+   * which schema narrowing makes visible rather than silent.
+   */
+  provides?: readonly string[];
 }
 
 /**
@@ -420,8 +475,26 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
     Object.assign(attributes, options.attributes);
   }
 
-  // Add universal attributes
-  Object.assign(attributes, universalAttributes);
+  // Universal attributes — only the ones that can affect this rune (SPEC-125
+  // Phase 3). Availability comes from the same axis registry the structure
+  // contract derives its `unavailable` map from, so the schema and the contract
+  // cannot disagree. `declaredAttributes` is what has been merged so far: the
+  // `cover` and `content-place` gates read modifiers the rune declares as its
+  // own author attributes, and those are already in `attributes` by now — which
+  // is why `modifiers` did not need to move out of config.
+  const { available: applicableUniversals } = resolveUniversalAttributes({
+    posture: options.universalAttributes,
+    structure: {
+      ...(options.sections && { sections: options.sections }),
+      ...(options.mediaSlots && { mediaSlots: options.mediaSlots }),
+      ...(options.frameTarget && { frameTarget: options.frameTarget }),
+      ...(options.provides && { provides: options.provides }),
+    },
+    declaredAttributes: Object.keys(attributes),
+  });
+  for (const [name, def] of Object.entries(universalAttributes)) {
+    if (applicableUniversals.has(name)) attributes[name] = def;
+  }
 
   // deferBody: declare the stash attribute so the loader-captured body source
   // is readable in the transform (see deferred-body.ts).
@@ -532,13 +605,16 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 
   // SPEC-125 Phase 2 — record the rune's own join tables, so the applicability
   // facts are reachable from the schema without loading theme config.
-  if (options.sections || options.mediaSlots || options.frameTarget) {
-    schemaRuneStructures.set(schema, {
-      ...(options.sections && { sections: options.sections }),
-      ...(options.mediaSlots && { mediaSlots: options.mediaSlots }),
-      ...(options.frameTarget && { frameTarget: options.frameTarget }),
-    });
-  }
+  // Phase 3 added the posture to the same record — it is recorded even when it
+  // is the `auto` default, so a consumer can tell "this rune was built through
+  // the schema builder and is structurally gated" from "nothing is known".
+  schemaRuneStructures.set(schema, {
+    ...(options.sections && { sections: options.sections }),
+    ...(options.mediaSlots && { mediaSlots: options.mediaSlots }),
+    ...(options.frameTarget && { frameTarget: options.frameTarget }),
+    universalAttributes: options.universalAttributes ?? 'auto',
+    ...(options.provides && { provides: options.provides }),
+  });
 
   // Record the base record reference so reference output can identify
   // attributes inherited from a registered preset.

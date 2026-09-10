@@ -11,6 +11,7 @@ export const factionSectionSections = { body: 'body' } as const;
 
 export const factionSection = createContentModelSchema({
 	sections: factionSectionSections,
+	provides: ['prose'],
 	attributes: {
 		name: { type: String, required: true },
 	},
@@ -43,6 +44,7 @@ export const factionMediaSlots = { scene: 'cover' } as const;
 
 export const faction = createContentModelSchema({
 	sections: factionSections,
+	provides: ['prose'],
 	mediaSlots: factionMediaSlots,
 	base: SplitLayoutModel,
 	attributes: {

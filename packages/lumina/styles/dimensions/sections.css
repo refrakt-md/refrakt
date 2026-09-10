@@ -18,12 +18,16 @@
 }
 
 /* ─── Title: primary heading ──────────────────────────────────────── */
-/* The size rides --rf-title-size (set per density root in density.css) so a
- * nested rune's own density re-declares it, and a rune's own title CSS
- * (e.g. .rf-hero__headline) outranks the bare attribute selector. */
+/* Two inputs, in priority order:
+ *   --rf-prominence-size  an explicit author `prominence=` (surfaces.css)
+ *   --rf-title-size       the resting size for this density (density.css)
+ * They were one variable until v0.32.0, which meant a rune could not state its
+ * own resting size without also clobbering the author's override — the reason
+ * `prominence` was inert on eight runes (WORK-538). Splitting them lets a rune
+ * pin its default while `prominence` still wins. */
 [data-section="title"] {
 	font-family: var(--rf-font-sans);
-	font-size: var(--rf-title-size, var(--rf-text-2xl));
+	font-size: var(--rf-prominence-size, var(--rf-title-size, var(--rf-text-2xl)));
 	font-weight: var(--rf-weight-bold);
 	line-height: var(--rf-leading-tight);
 	color: var(--rf-color-text);

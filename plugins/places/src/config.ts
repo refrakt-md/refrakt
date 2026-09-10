@@ -21,6 +21,7 @@ export const config: Record<string, RuneConfig> = {
 		defaultDensity: 'full',
 		defaultElevation: 'flat',
 		sections: eventSections,
+		provides: ['prose'],
 		autoLabel: pageSectionAutoLabel,
 		editHints: { headline: 'inline', blurb: 'inline', body: 'none', date: 'none', endDate: 'none', location: 'none', register: 'link' },
 		modifiers: {
@@ -82,6 +83,7 @@ export const config: Record<string, RuneConfig> = {
 		},
 		autoLabel: { time: 'time', location: 'location' },
 		sections: itineraryStopSections,
+		provides: ['prose'],
 		editHints: { time: 'none', location: 'none', body: 'none' },
 	},
 	Map: {

@@ -12,6 +12,7 @@ export const workSections = { title: 'title', blurb: 'description', body: 'body'
 
 export const work = createContentModelSchema({
 	sections: workSections,
+	provides: ['prose'],
 	attributes: {
 		id: { type: String, required: true, description: 'Unique identifier (e.g., "RF-142").' },
 		status: { type: String, required: false, matches: [...VALID_STATUS.work], description: 'Current status: draft, ready, in-progress, review, done, blocked, pending, cancelled, or superseded.' },

@@ -54,6 +54,7 @@ export const drawerSections = { header: 'header', body: 'body', footer: 'footer'
 
 export const drawer = createContentModelSchema({
 	sections: drawerSections,
+	provides: ['prose'],
 	attributes: {
 		id: {
 			type: String,

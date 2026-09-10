@@ -359,6 +359,49 @@ export interface RuneConfig {
 	 *  emitted `data-section` freely; it just does not define the roles. */
 	sections?: Record<string, 'header' | 'preamble' | 'title' | 'description' | 'body' | 'footer' | 'media'>;
 
+	/** Capabilities this rune declares about its own content — SPEC-125 Phase 4.
+	 *
+	 *  A section role says *where* a region sits; a capability says *what kind of
+	 *  content it holds*. The two were conflated: SPEC-108 gated `reading` and
+	 *  `dropcap` on the `body` role, reusing a structural declaration as a proxy
+	 *  for an editorial fact it never stated. The proxy holds for most runes and
+	 *  breaks for a real minority — a `datatable`'s body role is on its `<table>`,
+	 *  and a drop cap on a table is nonsense.
+	 *
+	 *  Currently one capability, `'prose'`: this rune's body holds authored prose
+	 *  that an editorial register applies to. A facet declares what it needs via
+	 *  `UniversalAxisFacet.requires`, so the next axis needing a capability
+	 *  reuses this rather than inventing another bespoke field.
+	 *
+	 *  **Default-off**: a rune must say it bears prose. Safe only because schema
+	 *  narrowing (WORK-534) makes an omission visible — the attribute is not
+	 *  offered and `refrakt reference` names the reason — rather than silently
+	 *  disabling `reading` the way the old proxy silently enabled it.
+	 *
+	 *  **Identity (ADR-028)** — not theme-overridable, for the same reason as
+	 *  `sections`: it decides what an author may write on the rune. */
+	provides?: readonly string[];
+
+	/** SPEC-125 Phase 3 — why this rune carries *no* universal attributes, when
+	 *  it carries none. Defaults to `auto`, where structural applicability
+	 *  decides axis by axis from `sections` / `mediaSlots` / `frameTarget`.
+	 *
+	 *  Six runes carry hand-written schemas and so have never offered universal
+	 *  attributes. That split is mostly principled, but "it happens not to use
+	 *  `createContentModelSchema`" is an implementation detail a reader cannot
+	 *  tell from an oversight — so the reason is stated:
+	 *
+	 *  - `inline` — an inline span; the block-level axes have nothing to act on.
+	 *  - `configurator` — the rune *supplies* an axis value to its parent rather
+	 *    than carrying one (`{% tint %}` with its own `tint=` is circular).
+	 *  - `none` — neither of the above.
+	 *
+	 *  **Identity (ADR-028)** — not theme-overridable, for the same reason
+	 *  `sections` is not: it decides what an author may write on the rune.
+	 *  `generateStructureContract` reads it so the contract's `unavailable` map
+	 *  and the narrowed schema agree. */
+	universalAttributes?: 'auto' | 'inline' | 'configurator' | 'none';
+
 	/** SPEC-125 — deliberate decisions *not* to map a declared slot to a section
 	 *  role, keyed by slot name, valued by the reason. `lintSectionRoles` flags a
 	 *  rune that declares a `body` or heading slot with no matching role; an entry

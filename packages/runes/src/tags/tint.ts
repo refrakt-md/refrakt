@@ -1,5 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, Schema, RenderableTreeNodes } from '@markdoc/markdoc';
+import { declareUniversalPosture } from '../lib/index.js';
 const { Tag } = Markdoc;
 
 /** The 6 tint token names */
@@ -101,3 +102,6 @@ export const tint: Schema = {
 		return new Tag('div', { 'data-tint-source': true }, metas as any[]);
 	},
 };
+
+// SPEC-125 Phase 3 — supplies a tint to its parent rather than carrying one; `{% tint tint=… %}` is circular.
+declareUniversalPosture(tint, 'configurator');

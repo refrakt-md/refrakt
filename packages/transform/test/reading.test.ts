@@ -21,9 +21,9 @@ function findSection(node: any, role: string): SerializedTag | undefined {
 const config: ThemeConfig = {
 	prefix: 'rf', tokenPrefix: '--rf', icons: {},
 	runes: {
-		Pullquote: { block: 'pullquote', defaultReading: 'prose', sections: { body: 'body' } },
-		Card: { block: 'card', sections: { body: 'body' } },
-		Caption: { block: 'caption', defaultReading: 'fine', sections: { body: 'body' } },
+		Pullquote: { block: 'pullquote', defaultReading: 'prose', sections: { body: 'body' }, provides: ['prose'] },
+		Card: { block: 'card', sections: { body: 'body' }, provides: ['prose'] },
+		Caption: { block: 'caption', defaultReading: 'fine', sections: { body: 'body' }, provides: ['prose'] },
 	},
 };
 

@@ -11,6 +11,7 @@ export const realmSectionSections = { body: 'body' } as const;
 
 export const realmSection = createContentModelSchema({
 	sections: realmSectionSections,
+	provides: ['prose'],
 	attributes: {
 		name: { type: String, required: true },
 	},
@@ -43,6 +44,7 @@ export const realmMediaSlots = { scene: 'cover' } as const;
 
 export const realm = createContentModelSchema({
 	sections: realmSections,
+	provides: ['prose'],
 	mediaSlots: realmMediaSlots,
 	base: SplitLayoutModel,
 	attributes: {

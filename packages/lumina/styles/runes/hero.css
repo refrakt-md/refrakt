@@ -5,7 +5,12 @@
  * @refrakt-md/skeleton (styles/runes/hero.css). What remains here is skin:
  * spacing, type, the headline gradient, surface chrome, the scrim, radii, and
  * text-align. */
+/* The hero rests above the --rf-text scale's top step (4xl = 2.5rem); stated
+ * here rather than promoted to a --rf-text-5xl token, because the type scale is
+ * a typed contract every theme must satisfy (SPEC-048) and one rune's one-off
+ * does not belong in it. The prominence ramp scales around this value. */
 .rf-hero {
+	--rf-title-size: 3.25rem;
 	padding: 7rem 2rem 6.5rem;
 	background-size: cover;
 	background-position: center;
@@ -80,8 +85,10 @@
 }
 .rf-hero h1,
 .rf-hero__headline {
-	/* Hero display headline — a one-off above the --rf-text scale's top step. */
-	font-size: 3.25rem;
+	/* WORK-538 — read the prominence override first; the fallback is this rune's
+	 * resting size, stated as --rf-title-size on the root so the prominence ramp
+	 * can compute from it. */
+	font-size: var(--rf-prominence-size, var(--rf-title-size));
 	font-weight: var(--rf-weight-bold);
 	letter-spacing: var(--rf-tracking-tight);
 	line-height: var(--rf-leading-tight);

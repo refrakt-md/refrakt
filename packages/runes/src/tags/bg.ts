@@ -1,5 +1,6 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, Schema, RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
+import { declareUniversalPosture } from '../lib/index.js';
 const { Tag } = Markdoc;
 
 /** Element/rune names that carry player chrome or captions — they are *subject*
@@ -141,3 +142,6 @@ export const bg: Schema = {
 		return new Tag('div', { 'data-bg-source': true }, [...metas, ...guestNodes]);
 	},
 };
+
+// SPEC-125 Phase 3 — supplies a background to its parent rather than carrying one.
+declareUniversalPosture(bg, 'configurator');

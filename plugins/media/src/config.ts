@@ -16,6 +16,7 @@ export const config: Record<string, RuneConfig> = {
 		sequence: 'numbered',
 		staggerItems: 'track',
 		sections: playlistSections,
+		provides: ['prose'],
 		mediaSlots: playlistMediaSlots,
 		modifiers: {
 			type: { source: 'meta', default: 'album' },
@@ -65,6 +66,19 @@ export const config: Record<string, RuneConfig> = {
 	},
 
 	// Legacy aliases
-	MusicPlaylist: { block: 'playlist' },
+	//
+	// `music-playlist` is the schema.org name for the *same* rune — same schema
+	// object, same emitted tree — so it must carry the same join tables and
+	// capability. It did not: it was a bare `{ block }` stub, so a
+	// `{% music-playlist %}` rendered with none of the five `data-section`
+	// attributes its primary emits. WORK-537 surfaced it (the prose capability
+	// diverged between the two), and the section drift was the same bug a layer
+	// down — an alias that renders differently from what it aliases.
+	MusicPlaylist: {
+		block: 'playlist',
+		sections: playlistSections,
+		provides: ['prose'],
+		mediaSlots: playlistMediaSlots,
+	},
 	MusicRecording: { block: 'track', parent: 'MusicPlaylist' },
 };
