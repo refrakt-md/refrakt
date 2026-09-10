@@ -37,6 +37,13 @@ both **comments** in `config.ts`; it appears in no schema, no implementation, an
 no test. `git log -S` confirms it has never been in the rune source — it entered
 the docs at `c3fe915` and was never implemented.
 
+**The attribute was deliberately abandoned**, not forgotten: a `{% partial %}`
+placed inside the collection's body does the same job, and is the more intuitive
+and composable pattern — it reuses the partial mechanism authors already know
+rather than adding a second, collection-specific way to name a template file.
+The docs simply kept describing the discarded design. So the fix is to document
+the partial-in-body pattern, not to implement `item-template`.
+
 **`tint.md` documents `tint` and `tint-mode`**, but the `tint` rune's own
 attributes are `preset` and `mode`, and it carries no universal attributes at
 all. Plausibly exposed rather than caused by WORK-534, which narrowed universal
@@ -72,22 +79,30 @@ data needed to check them has existed the whole time, as
 `refrakt reference <name> --format json`.
 
 ## Acceptance Criteria
-- [ ] `collection.md` no longer documents `item-template`; `show` is documented
+- [ ] `collection.md`'s `### Reusable templates — item-template` section is replaced with the partial-in-body pattern, and `show` is documented
 - [ ] `tint.md` documents only `preset` and `mode`
 - [ ] `xref.md` documents `primary`, marked required
 - [ ] `aggregate.md` documents `layout`, `chart-type`, and `chart-title`
-- [ ] A decision is recorded on whether `item-template` should be *implemented* rather than deleted from the docs
+- [ ] The replacement `collection` + `partial` example is verified to build, not written from the same assumption that produced the original
 
 ## Approach
 
 Fix the four pages by hand — it is a small, mechanical diff and it should not
 wait on tooling.
 
-`item-template` needs a call before editing: the documented behaviour (point a
-collection at a reusable partial instead of an inline body) is coherent and
-matches `entityRoutes`' `render-template`, so this may be a *missing feature*
-rather than stale prose. Deleting the section is correct only if the feature
-isn't wanted; otherwise the bug is in the rune, not the page.
+The `collection.md` edit is the only one that writes new prose rather than
+correcting a row. The replacement is a `{% partial %}` inside the collection
+body, and it **must be verified against a real build** before it ships: the
+section being replaced was itself a plausible-looking example that never worked,
+and swapping in a second unverified example would repeat the bug rather than fix
+it.
+
+Two things suggest the pattern is sound, and neither is proof: `collection.md:168`
+already asserts that `{% link href=$item.url %}` "works in any body template,
+**partial**, or table cell where `$item` is bound", and `config.partials` is
+handed to Markdoc's transform config, so a partial's content expands within the
+transform pass and per-item `$item` binding applies to it. Confirm with a build,
+not with either of those.
 
 Preventing recurrence is {% ref "SPEC-128" /%} — generating these tables rather
 than checking them. This bug is deliberately independent of it: the pages are
