@@ -1,5 +1,95 @@
 # @refrakt-md/transform
 
+## 0.32.0
+
+### Minor Changes
+
+- 19eb537: Warn instead of silently dropping `reading`, `content-place` and `scrim-strength` (WORK-536)
+
+  Of the gated universal axes, four reported when a request was dropped and three said nothing. Each was silent for a different reason:
+
+  - **`reading`** always resolved and published its register as state; the value only became `data-reading` once child assembly found an element with section role `body`. On a body-less rune it vanished with no code path aware anything had been asked for. Now warns — but only on an explicit `reading=`, since every unmarked block in a build resolves to the `ui` default and warning there would make the channel worth ignoring.
+  - **`content-place`** was gated by `appliesTo` on an axis that a rune without the matching config modifier never sets, so the facet never ran and never got the chance to complain. It now also runs on the bare attribute, purely to warn.
+  - **`scrim-strength` in cover mode** was neither honoured nor consumed: cover's scrim meta list omits it, so it was dropped from the styling _and_ leaked its raw `<meta>` tag into the rendered tree. Now warned and consumed.
+
+  Each goes through the facet warning collector with a `dedupeKey`, so it reports once per build rather than once per rune instance.
+
+  **Fixes an over-narrowing regression in the same release.** WORK-534 filed the `scrim*` family under the `cover` axis, which is gated on a declared `media-position` modifier — so narrowing removed `scrim`, `scrim-type`, `scrim-strength`, `scrim-blur` and `scrim-tone` from **82 of 83 runes**. That was wrong: the background layer reads all five and raises itself on any rune, and cover mode does not _enable_ the scrim, it **reroutes** it to the media well. Verified against the engine — a bare `{ block: 'grid' }` config with `scrim="bottom"` produces a full scrim overlay. The family now belongs to the `bg` axis, where the facet that implements it lives, so `{% textblock scrim="bottom" %}` validates again. `cover` owns no author-facing attribute and is still reported per rune, like `density` and `content-place`.
+
+  This is why the work item's third case changed shape: `scrim*` on a rune that cannot enter cover mode is not dropped at all, and the genuine defect runs the other way.
+
+  Schema narrowing catches _authored_ attributes at validation time; these runtime diagnostics cover the path it cannot see, where scoped defaults and embed overrides (ADR-027) apply attribute bags to runes that never spelled the attribute out.
+
+- 33ec21f: **Breaking:** rune schemas now declare only the universal attributes that can affect them (WORK-534, SPEC-125 Phase 3)
+
+  `createContentModelSchema` merged all 37 universal attributes onto every rune unconditionally. Several are structurally inert on most runes: `reading` and `dropcap` need a body section role, `prominence` a header-ish one, the `frame*` family a media surface, the cover `scrim*` family a `media-position` modifier. Authoring tools read the schema, so they promised every attribute on every rune — and the engine then dropped the inapplicable ones, three of them in total silence.
+
+  Schemas are now narrowed at construction: 84 tags lost 1,651 attribute slots between them.
+
+  **What breaks.** Writing a gated attribute on a rune that cannot honour it moves from a silent no-op to a Markdoc validation error. `{% grid reading="prose" %}` used to build and do nothing; it now fails with `Invalid attribute: 'reading'`.
+
+  The break is narrower than it sounds, because the attribute never did anything in the first place — a build that starts failing was already not getting the behaviour it asked for. A scan of all 986 markdown files in this repo found 25 uses of a gated universal attribute in live content and **none** that a narrowed schema rejects. The five that would be rejected were all inside documentation code fences, and were corrected in 0.31.0. Downstream content the scan cannot see is what this note is for; the fix in every case is to delete the attribute, or to move it to a rune that has the structure it needs.
+
+  0.31.0 also removed the sharpest edge in advance: the runes an author is most likely to have written `reading` on were six whose section roles were missing, and those now honour it rather than rejecting it.
+
+  SPEC-125 had deferred the choice between narrowing outright and a transitional minor that annotates instead of rejecting. The numbers above decided it — a transitional release buys nothing and costs another minor of the silent no-op it exists to replace.
+
+  **Availability is now a declared rule, not a side effect of which constructor a schema used.** `resolveUniversalAttributes()` takes three inputs — the rune's posture (`auto` | `inline` | `configurator` | `none`, a new non-overridable `RuneConfig.universalAttributes` field), its own join tables, and the attributes it declares — and answers axis by axis. The six hand-written schemas that never carried universal attributes are each assessed and recorded: `badge`/`xref`/`icon` are inline, `tint`/`bg` supply an axis to their parent rather than carrying one, and `expand` is recorded as a legacy gap rather than passing as a decision.
+
+  **The schema and the structure contract cannot disagree**, because they are one derivation: both call `UniversalAxisFacet.describeForRune`, and a test compares the narrowed schemas against the contract's `unavailable` map across all paired runes in core and the nine plugins. That agreement is the point — an author told one thing by `refrakt reference` and another by Markdoc validation is the exact failure SPEC-125 exists to remove.
+
+  **Language-server completion narrows for free**, with no theme config loaded on the completion path — applicability is rune identity (ADR-028), answerable from the schema alone.
+
+  Transform output is unchanged. This changes what may be written, not what is emitted.
+
+- 6b94801: **Breaking:** `reading` and `dropcap` gate on a declared prose capability, not the `body` section role (WORK-537, SPEC-125 Phase 4)
+
+  The `body` role carried two meanings that were merged by accident of timing. Structurally it means "the rune's main content region", and Lumina keys layout and density off it. SPEC-108 later reused that declaration as a _proxy_ for an editorial fact it never stated — "prose that a reading register applies to".
+
+  The proxy holds for most of the 32 body-role runes and breaks for a real minority. A `datatable`'s body role is on its `<table>`; a `showcase`'s is on its viewport. Once schemas narrowed (WORK-534), `{% datatable reading="prose" dropcap=true %}` would have validated and stamped a drop cap onto a table.
+
+  **What changes.** `reading` and `dropcap` are no longer offered on **`Api`, `DataTable`, `Form`, `Showcase` and `Symbol`** — writing either is now a Markdoc validation error, and a value arriving by another route (a scoped default, an embed override) is dropped with a warning naming the reason. The other 27 body-role runes are unaffected: `Blog`, `Card`, `TextBlock`, `PullQuote`, `Sidenote`, `Lore`, the storytelling entities and sections, the plan runes, and the rest all declare prose and keep both attributes.
+
+  **Removing the role would have been the other fix, and it is the wrong one.** A datatable's table genuinely _is_ its main content region, and Lumina styles that role — dropping it would change how the rune renders for a reason unrelated to rendering. Every one of the five keeps its `body` role and every `[data-section="body"]` stylesheet is untouched.
+
+  **The gate is declared, not inferred.** A facet states what it needs (`UniversalAxisFacet.requires`) and a rune states what it provides (`RuneConfig.provides`), so the next axis needing a content capability reuses this instead of inventing another bespoke field. `provides` is a non-overridable identity field for the same reason `sections` is: it decides what an author may write.
+
+  Default-off — a rune must say it bears prose. That is only safe because schema narrowing landed first: a forgotten declaration is no longer silent, because the attribute is not offered and `refrakt reference` names the reason.
+
+  **Also fixed:** `MusicPlaylist`, the schema.org alias of `Playlist`, was a bare `{ block }` config stub, so `{% music-playlist %}` rendered with none of the five `data-section` attributes its primary emits despite being the same schema and the same output tree. The audit surfaced it through the prose capability; the section drift was the same bug a layer down. It now carries the same join tables.
+
+  **Also fixed:** the facet warning collector deduped on a bare key, so two _different_ diagnostics that both key on the rune name silenced each other — `frame` and `content-place` already collided this way, a warn-once swallowing an unrelated warning for the rest of a build. Keys are now namespaced by warning code.
+
+### Patch Changes
+
+- 20f27f6: Close the drift between `refrakt.config.json`'s JSON Schema and the config types, and fix `refrakt config migrate` stranding site fields
+
+  The published schema is hand-maintained and nothing guarded it against the `RefraktConfig` / `SiteConfig` interfaces, so it had fallen behind in both directions. Editors validating against it were missing autocomplete for real fields, and rejecting two that are valid:
+
+  - **Absent from the schema entirely** — the project-level `xrefs` and `fileRoots`, and the site-level `entityRoutes`, `locale`, and `strings`.
+  - **Actively rejected** — `sandbox.dir` (only the deprecated `examplesDir` alias was allowed, so the current spelling errored) and `routeRules[].entity`, which combined with `additionalProperties: false` made SPEC-092's convention-based entity typing a validation failure.
+  - **Advertised but dead** — a top-level `tints`, dropped from `RefraktConfig` in SPEC-053. The normalizer deliberately refuses to mirror it, so a value written there is silently ignored at runtime.
+
+  `packages/transform/test/config-schema.test.ts` now guards this. Rather than mirroring the field list in a literal — which only catches drift if someone remembers to update it — it reads the interfaces out of `@refrakt-md/types` and asserts coverage in both directions, so a field added to `SiteConfig` fails until the schema describes it.
+
+  **`refrakt config migrate` fix.** The command kept its own hand-copied `SITE_FIELDS` array, which had drifted from the authoritative one in `config-normalize.ts`. The two describe inverse operations over the same set — the normalizer mirrors site → top level, the migration moves top level → site — so the divergence left `search`, `repoUrl`, and `repoBranch` behind at the top level of a migrated config, where nothing reads them once the file is in nested shape. It also moved `tints`, which the normalizer excludes on purpose. `SITE_FIELDS` is now exported from `@refrakt-md/transform/node` and consumed by the CLI, so both directions stay in step; the list is already type-checked with `satisfies readonly (keyof SiteConfig)[]`.
+
+  No runtime behaviour changes for configs that were already valid — the schema is used for editor validation, and the top-level `tints` removal can't invalidate an existing file because the top level does not set `additionalProperties: false`.
+
+- 9c9ea05: Serve every published JSON Schema URL, fixing the 404 that scaffolded projects' `$schema` pointed at
+
+  `create-refrakt` writes a `$schema` URL derived from its own package version (`https://refrakt.md/schemas/vX.Y/refrakt.config.schema.json`), but the docs site only ever served one hardcoded version — `v0.11`. Every project scaffolded from v0.12 onward pointed at a URL that did not exist, so new projects got no editor validation or autocomplete at all.
+
+  The theme-token schema had it worse: `create-refrakt` scaffolds `https://refrakt.md/schemas/vX.Y/theme-tokens.json` for preset authoring, and there was no route for it at any URL. Its own `$id` claimed `https://refrakt.md/schemas/theme-tokens.json`, which also 404'd.
+
+  The versioned route is now generated rather than hardcoded: `schemas/[version]/` enumerates `v0.11` through the version `@refrakt-md/transform` ships, for both schemas, plus the unversioned `schemas/theme-tokens.json` alias. Because the release workflow builds the site _after_ the version bump, the release that publishes vX.Y now publishes `/schemas/vX.Y/` as part of the same run — the coupling that was missing between the scaffold and the route.
+
+  Each endpoint stamps `$id` to match the URL it is served from. The schema file bundled inside this package now carries the unversioned `$id` (`https://refrakt.md/refrakt.config.schema.json`) rather than a hardcoded `v0.11`, so the packaged copy can't go stale between releases.
+
+  Versioned URLs are stable addresses, not frozen snapshots — every version serves the latest schema body, which is benign because schema changes are additive. `site/content/docs/configuration/schema.md` now says so plainly instead of promising per-release freezing.
+
+  - @refrakt-md/types@0.32.0
+
 ## 0.31.0
 
 ### Minor Changes
