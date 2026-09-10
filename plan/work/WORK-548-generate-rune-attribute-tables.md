@@ -93,7 +93,16 @@ list would need maintaining.
 
 ## Blocked by
 
-- {% ref "WORK-547" /%} — the scope is unknown until the survey lands
 - {% ref "WORK-543" /%} — the pages need the `data` body to render rows
+- {% ref "BUG-009" /%} — the data source carries phantom runes (`music-playlist`) and omits nine child runes (`accordion-item`, `tab`, …); generating from it before that is fixed bakes both into the artifact
+
+## Scope, now that WORK-547 has landed
+
+**108 runes**, not the minority this item was drafted against. Every rune with
+at least one own or base-preset attribute gets a table; the 10 with none get
+nothing. 72 of those 108 have a page with no table today, 17 of them with a
+*required* attribute. See {% ref "SPEC-128" /%} for the survey.
+
+Child runes (16 with attributes) render onto their parent's page via D5's map.
 
 {% /work %}

@@ -73,24 +73,65 @@ the artifact would match what the generator produced. **Iterate the configured
 sites, and assert the artifact covers every rune in every site**, or the guard
 guards nothing for a third of the catalogue.
 
-## The prior question: why do 102 pages have no table at all?
+## Answered: the missing tables are drift, not editorial restraint
 
-Only 13 of ~115 rune pages carry an `## Attributes` section. **This has to be
-answered before the scope is knowable**, and it is the main reason this is a
-spec rather than a work item.
+This spec asked why so few rune pages carry an `## Attributes` section, offered
+"mostly deliberate, some drift" as the likely answer, and made settling it the
+first deliverable. {% ref "WORK-547" /%} settled it. **The guess was wrong, and
+in the direction that widens scope.**
 
-Two possibilities, with different consequences:
+Surveyed across both configured sites (`main` and `plan`), 118 runes:
 
-- **Deliberate.** Simple runes are fully explained by their examples, and a
-  table would be ceremony. Then generation applies to a minority of pages and
-  the change is small.
-- **Drift.** Pages were written before their runes grew attributes, and the
-  absence is the same bug as an incomplete table, just total. Then the scope is
-  the whole catalogue.
+| | |
+|---|---|
+| runes with ≥1 own or base-preset attribute | **108** |
+| …whose page carries an `## Attributes` section | **18** |
+| …with a page and **no** table | **72** |
+| …that are child runes, documented on a parent's page | 16 |
+| runes with **zero** own/base attributes | 10 |
+| …of those, carrying a table anyway | **0** |
 
-The answer is probably "mostly the first, with some of the second", and
-distinguishing them needs a pass over the runes that have non-trivial attributes
-but no table. That pass is the first deliverable, not the generator.
+The "deliberate" hypothesis makes a prediction: untabled runes should be the
+simple ones, fully explained by an example. It fails. The untabled set includes
+`bg` (15 own attributes), `grid` (13), `sandbox` (12), `work` (12), `bug` (10) —
+and **17 runes with at least one *required* attribute**, among them `bond`
+(`from`, `to`), `swatch` (`color`, `label`), `embed` (`url`), `form` (`action`),
+`api` (`path`), and all five plan entity runes.
+
+A required attribute that appears in no table is the same defect
+{% ref "BUG-006" /%} found on `xref` — the reader cannot learn the rune has a
+mandatory input — except here it is the norm rather than the exception.
+
+What *is* deliberate is the other end: all 10 runes with no attributes have no
+table. Existing practice is right exactly where it is defensible and absent
+everywhere else, which is the signature of drift, not judgment.
+
+### The rule
+
+**A page carries a generated attribute table when its rune has at least one own
+or base-preset attribute.** All 108. Child runes' tables go on their parent's
+page, placed via D5's map.
+
+That is simpler than the threshold this spec's work item originally proposed
+("more than one own attribute, or any required one"), and the survey is why.
+A threshold made sense when tables were hand-written and each one cost effort to
+write and maintain. Generated, a one-row table costs nothing — so a threshold
+buys only *less content*, at the price of a rule to remember and a reader who
+cannot tell whether a missing table means "this rune has no attributes" or "it
+has some, but not enough to qualify". Zero is the only cutoff that is
+self-evident from the page.
+
+### What the survey also turned up
+
+Two defects in the data source, both filed as {% ref "BUG-009" /%} and both
+blocking this spec's generator:
+
+- `reference dump` emits `music-playlist` / `music-recording` as runes that
+  `reference <name>` cannot resolve — the artifact would carry phantom entries.
+- `EXCLUDED_RUNES` hides nine core child runes (`accordion-item`, `tab`,
+  `form-field`, …) from every reference output, while twenty equivalent plugin
+  child runes are reported in full. Their attributes cannot be generated at all
+  until the two lists agree.
 
 ## Proposal
 
@@ -356,7 +397,8 @@ failure that actually occurs.
 
 ## Acceptance Criteria
 
-- [ ] A recorded answer to why 102 pages have no attribute table, and which of them should
+- [x] A recorded answer to why so many pages have no attribute table, and which of them should — WORK-547: drift, and all 108 runes with attributes should
+- [ ] {% ref "BUG-009" /%} is fixed first — the generator's data source currently carries phantom runes and omits nine child runes
 - [ ] `scripts/generate-rune-attributes.mjs` emits a committed, byte-stable JSON artifact covering every rune in **every configured site**, not just the default one
 - [ ] A test asserts the artifact covers every rune in every site — a generator reading one site would emit a plausible artifact missing all plan runes, and a naive freshness check would pass
 - [ ] Pages documenting rune attributes outside `/runes/` are in scope, including `plan/docs/plan-entities.md`
