@@ -21,7 +21,7 @@ The answer is probably "mostly the first, with some of the second".
 - [ ] Pages documenting rune attributes outside `/runes/` are included, such as `plan/docs/plan-entities.md`
 - [ ] Pages whose runes have non-trivial attributes but no table are listed
 - [ ] A recorded rule for when a page should carry one — not a page-by-page verdict, a criterion the generator and reviewers can apply
-- [ ] The rule covers the five pages that document a child rune under a parent's page
+- [ ] The rule covers the **27 child runes documented across 23 parent pages** (counted from `PAGELESS`), and the two internal runes that belong on no page
 - [ ] The outcome is written back into {% ref "SPEC-128" /%}, replacing its open question
 
 ## Approach
@@ -42,8 +42,11 @@ the second half — {% ref "BUG-006" /%} found its page omits `primary`, its onl
 *required* attribute, which is the worst thing to leave to prose.
 
 Handle child runes by reusing `check-rune-docs.mjs`'s `PAGELESS` mapping rather
-than inventing a second list. Five pages document a child under a parent's page
-(the page name does not resolve to a rune), and that script already models it.
+than inventing a second list — it already models them, and
+{% ref "SPEC-128" /%} D5 turns its parent annotations from comments into data.
+Note the scale: **27 child runes across 23 parent pages**, not the handful an
+earlier draft of this item claimed. Nearly every plugin contributes some, so a
+rule that only works for `bento-cell` will not survive contact.
 
 This is deliberately a survey, not an implementation. Its output is a decision
 and a list.

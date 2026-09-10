@@ -82,6 +82,52 @@ sources that need domain semantics decoded first. Those still want a generator
 that understands the format and emits flattened rows — which `data` can then
 render. The two compose; neither replaces the other.
 
+## The emission contract: splice, not wrap
+
+`data` is a **preprocessor**, not a runtime rune — `preprocessData` walks the
+parsed AST and replaces each `{% data %}` tag before the transform phase runs.
+The replacement today is strictly 1:1:
+
+```ts
+// packages/runes/src/data-pipeline.ts
+node.children[i] = resolveDataToNode(child, page, ctx, files);
+```
+
+One tag in, exactly one node out — currently a `table`. A per-row body produces
+*N* nodes, so this line has to change, and **how** it changes decides whether
+`data` composes with any rune that inspects its own children.
+
+It must splice the row outputs in as direct siblings. Wrapping them in a single
+container node to preserve the 1:1 shape is the tempting minimal change, and
+what it does depends on which container — which is the problem.
+
+Measured by hand-authoring `{% accordion-item %}` at each depth (the `data` body
+form does not exist yet, so this probes the destination half only):
+
+| Items authored | Resolved | Body text |
+|---|---|---|
+| as direct children of `{% accordion %}` | yes | kept |
+| inside `{% div %}` | yes | kept |
+| inside `{% section %}` | **no** | **gone** |
+| inside `{% grid %}` | **no** | **gone** |
+
+So the rule is not "a wrapper breaks it". A passthrough container leaves the
+subtree intact; a container that is itself a rune with a content model consumes
+and reinterprets its children, and the `accordion-item` tags **and their body
+text disappear from the output entirely** — no error, no warning, no fallback
+prose. A page written that way renders an empty accordion and nothing says why.
+
+That the outcome is wrapper-dependent is the argument, more than any single
+failure. A wrapper makes composition a property of a container choice made
+inside `data`, invisible from the page, correct for some parent runes and
+silently destructive for others. Splicing removes the question: the rows land
+exactly where a hand-authored equivalent would, for every parent.
+
+**Still unproven, and it needs a test when the body form lands.** Nothing here
+exercised `{% data %}` — it cannot until this spec ships. The end-to-end
+assertion is the acceptance criterion below, not something the probe above
+established.
+
 ## Constraint: stay shallow
 
 The failure mode is obvious and worth naming up front. Add conditionals,
@@ -169,6 +215,8 @@ the shape to reach for if the need arises.
 ## Acceptance Criteria
 
 - [ ] `{% data %}` accepts an optional body, transformed once per row with `$row` bound
+- [ ] Row outputs are **spliced** into the parent's children as direct siblings, not wrapped in a container node
+- [ ] A test proves the body form composes with a rune that reads its own children — `accordion` building items from generated `{% accordion-item %}` tags is the case to pin
 - [ ] `$item` is **not** accepted as an alias
 - [ ] The binding contract matches `collection` per-item templates, including shared formatter functions
 - [ ] Attributes that shape the rows (`root`, `orient`, `columns`, `where`, `sort`, `limit`, `offset`) apply identically with or without a body

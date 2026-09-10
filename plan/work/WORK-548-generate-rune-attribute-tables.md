@@ -29,8 +29,16 @@ left to do**: no `$ref` to resolve, no sibling `required` array to fold.
 - [ ] Pages outside `/runes/` that document rune attributes are covered, including `plan/docs/plan-entities.md`
 - [ ] An npm script runs it, beside the existing `runes:*` scripts
 - [ ] Pages carry their own and base-preset attributes rendered from the artifact
-- [ ] Universal attributes are not listed per page; the page links to their reference
-- [ ] Internal `__`-prefixed attributes are filtered — `__deferred-body` currently reaches `reference --format json` for every rune with a body
+- [ ] Universal attributes render as a collapsed accordion with **one item per carried axis**, not one row per attribute
+- [ ] Axes the rune does not carry are **not** items — they render as an uncollapsed note beneath, grouped by reason, one line each
+- [ ] The accordion is a shared partial taking the rune name, not markup repeated across ~45 pages
+- [ ] `SerializedRune` carries full attribute records for universals, grouped by axis — not the current bare `string[]`
+- [ ] Per-axis prose comes from the facet contract descriptions in `packages/transform/src/facets/`
+- [ ] The six runes with no universal attributes render no accordion at all — just their one-line posture reason
+- [ ] The rendered universal section agrees with `refrakt reference <name>`
+- [ ] Internal `__`-prefixed attributes are filtered **in `serializeRune`**, not in the generator — `__deferred-body` reaches `reference --format json` today on `aggregate`, `collection` and `relationships`
+- [ ] `PAGELESS` carries each child rune's parent as data, not as a comment, so a child's attributes land on the parent's page
+- [ ] `error` and `region` are distinguishable from child runes — "no table anywhere" is not the same answer as "documented on the parent's page"
 - [ ] `check-rune-docs.mjs` gains a content check: the artifact is fresh, and no page hand-writes a table for a rune with generated rows
 - [ ] The stale-artifact failure names the command to run
 - [ ] Pages with more than one table keep their hand-written ones intact
@@ -51,11 +59,24 @@ known-good result. That proves the generator reproduces a reviewed answer,
 rather than asking a reviewer to check a generated table against a schema by
 eye.
 
-**Own attributes only.** Every rune carries a dozen-plus universal axes (`tint`,
-`bg`, `width`, `reading`, …); listing them per page buries the two or three the
-reader came for. WORK-535 made a second option available — reporting the axes a
-rune *lacks*, with the reason — which is genuinely useful but belongs in a
-collapsed block, not the primary table.
+**Own attributes in the table; universals in an axis accordion.** Of the
+universal attributes, 24 are constant across all 45 runes that carry any — only
+`prominence` (10/45), `reading`+`dropcap` (8/45) and `frame*` (4/45) vary, and
+six runes carry none at all. So render the delta, at axis granularity, in a
+collapsed accordion authored once as a partial. Full argument and measurements
+in {% ref "SPEC-128" /%} D1.
+
+**Unavailable axes are a note, not items.** 28 runes have 4 unavailable axes
+against 8 carried, and the 6 inline runes have 12 against 0 — as items that
+reads as a section saying "no" twelve times. Grouped by reason it collapses:
+no rune has more than three distinct reasons, and `badge`'s twelve axes share
+one. The six zero-universal runes then need no special case — no carried axes
+means no accordion, just the note. This is also exactly what
+`refrakt reference <name>` prints, so the CLI-agreement criterion comes free.
+
+This needs `SerializedRune` to stop discarding universal attribute definitions —
+`attributes.universal` is a bare `string[]` today while `own` / `base` are full
+records. Budget for that; it is a change to a stable JSON contract.
 
 **`aggregate.md` is the page to design against.** It has two tables: an `$item`
 variables table and an attributes table. Only the second is generated, and the

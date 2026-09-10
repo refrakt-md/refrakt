@@ -22,6 +22,8 @@ This is the rendering half of the milestone: {% ref "WORK-544" /%} and
 
 ## Acceptance Criteria
 - [ ] `{% data %}` accepts an optional body, transformed once per row with `$row` bound
+- [ ] Row outputs are **spliced** into the parent's children as direct siblings, not wrapped in a container node
+- [ ] A test proves the body form composes with a rune that reads its own children — generated `{% accordion-item %}` tags inside `{% accordion %}` is the case to pin
 - [ ] `$item` is **not** accepted as an alias
 - [ ] Shaping attributes (`root`, `orient`, `columns`, `where`, `sort`, `limit`, `offset`) apply identically with or without a body
 - [ ] Shared markdoc formatter functions work inside the body, as they do in `collection` templates
@@ -31,6 +33,20 @@ This is the rendering half of the milestone: {% ref "WORK-544" /%} and
 - [ ] `/runes/data` documents it with a worked example, cross-referenced from `collection`'s per-item templates
 
 ## Approach
+
+**Splice the rows in; do not wrap them.** `preprocessData` currently does a 1:1
+replacement (`node.children[i] = resolveDataToNode(...)`), so emitting *N* rows
+forces this line to change. Wrapping them in one container to preserve the 1:1
+shape is the tempting minimal edit, and its effect depends on which container: a
+spike hand-authoring `{% accordion-item %}` at each depth found direct children
+and a `{% div %}` wrapper both fine, while `{% section %}` and `{% grid %}`
+wrappers destroyed the items **and their body text** with no error or warning.
+See {% ref "SPEC-127" /%} for the table. Splicing costs one line and makes the
+question moot for every parent rune.
+
+Note the spike probed only the destination half — `{% data %}` has no body form
+to test until this work item ships, so the end-to-end composition is an
+acceptance criterion here, not an established fact.
 
 **Stay shallow.** Bind `$row`, render the body, no control flow. Formatting goes
 through the shared markdoc functions, not template syntax. Add conditionals and
