@@ -1,5 +1,112 @@
 # @refrakt-md/runes
 
+## 0.32.0
+
+### Minor Changes
+
+- 19eb537: Warn instead of silently dropping `reading`, `content-place` and `scrim-strength` (WORK-536)
+
+  Of the gated universal axes, four reported when a request was dropped and three said nothing. Each was silent for a different reason:
+
+  - **`reading`** always resolved and published its register as state; the value only became `data-reading` once child assembly found an element with section role `body`. On a body-less rune it vanished with no code path aware anything had been asked for. Now warns — but only on an explicit `reading=`, since every unmarked block in a build resolves to the `ui` default and warning there would make the channel worth ignoring.
+  - **`content-place`** was gated by `appliesTo` on an axis that a rune without the matching config modifier never sets, so the facet never ran and never got the chance to complain. It now also runs on the bare attribute, purely to warn.
+  - **`scrim-strength` in cover mode** was neither honoured nor consumed: cover's scrim meta list omits it, so it was dropped from the styling _and_ leaked its raw `<meta>` tag into the rendered tree. Now warned and consumed.
+
+  Each goes through the facet warning collector with a `dedupeKey`, so it reports once per build rather than once per rune instance.
+
+  **Fixes an over-narrowing regression in the same release.** WORK-534 filed the `scrim*` family under the `cover` axis, which is gated on a declared `media-position` modifier — so narrowing removed `scrim`, `scrim-type`, `scrim-strength`, `scrim-blur` and `scrim-tone` from **82 of 83 runes**. That was wrong: the background layer reads all five and raises itself on any rune, and cover mode does not _enable_ the scrim, it **reroutes** it to the media well. Verified against the engine — a bare `{ block: 'grid' }` config with `scrim="bottom"` produces a full scrim overlay. The family now belongs to the `bg` axis, where the facet that implements it lives, so `{% textblock scrim="bottom" %}` validates again. `cover` owns no author-facing attribute and is still reported per rune, like `density` and `content-place`.
+
+  This is why the work item's third case changed shape: `scrim*` on a rune that cannot enter cover mode is not dropped at all, and the genuine defect runs the other way.
+
+  Schema narrowing catches _authored_ attributes at validation time; these runtime diagnostics cover the path it cannot see, where scoped defaults and embed overrides (ADR-027) apply attribute bags to runes that never spelled the attribute out.
+
+- 33ec21f: **Breaking:** rune schemas now declare only the universal attributes that can affect them (WORK-534, SPEC-125 Phase 3)
+
+  `createContentModelSchema` merged all 37 universal attributes onto every rune unconditionally. Several are structurally inert on most runes: `reading` and `dropcap` need a body section role, `prominence` a header-ish one, the `frame*` family a media surface, the cover `scrim*` family a `media-position` modifier. Authoring tools read the schema, so they promised every attribute on every rune — and the engine then dropped the inapplicable ones, three of them in total silence.
+
+  Schemas are now narrowed at construction: 84 tags lost 1,651 attribute slots between them.
+
+  **What breaks.** Writing a gated attribute on a rune that cannot honour it moves from a silent no-op to a Markdoc validation error. `{% grid reading="prose" %}` used to build and do nothing; it now fails with `Invalid attribute: 'reading'`.
+
+  The break is narrower than it sounds, because the attribute never did anything in the first place — a build that starts failing was already not getting the behaviour it asked for. A scan of all 986 markdown files in this repo found 25 uses of a gated universal attribute in live content and **none** that a narrowed schema rejects. The five that would be rejected were all inside documentation code fences, and were corrected in 0.31.0. Downstream content the scan cannot see is what this note is for; the fix in every case is to delete the attribute, or to move it to a rune that has the structure it needs.
+
+  0.31.0 also removed the sharpest edge in advance: the runes an author is most likely to have written `reading` on were six whose section roles were missing, and those now honour it rather than rejecting it.
+
+  SPEC-125 had deferred the choice between narrowing outright and a transitional minor that annotates instead of rejecting. The numbers above decided it — a transitional release buys nothing and costs another minor of the silent no-op it exists to replace.
+
+  **Availability is now a declared rule, not a side effect of which constructor a schema used.** `resolveUniversalAttributes()` takes three inputs — the rune's posture (`auto` | `inline` | `configurator` | `none`, a new non-overridable `RuneConfig.universalAttributes` field), its own join tables, and the attributes it declares — and answers axis by axis. The six hand-written schemas that never carried universal attributes are each assessed and recorded: `badge`/`xref`/`icon` are inline, `tint`/`bg` supply an axis to their parent rather than carrying one, and `expand` is recorded as a legacy gap rather than passing as a decision.
+
+  **The schema and the structure contract cannot disagree**, because they are one derivation: both call `UniversalAxisFacet.describeForRune`, and a test compares the narrowed schemas against the contract's `unavailable` map across all paired runes in core and the nine plugins. That agreement is the point — an author told one thing by `refrakt reference` and another by Markdoc validation is the exact failure SPEC-125 exists to remove.
+
+  **Language-server completion narrows for free**, with no theme config loaded on the completion path — applicability is rune identity (ADR-028), answerable from the schema alone.
+
+  Transform output is unchanged. This changes what may be written, not what is emitted.
+
+- 79751e2: `refrakt reference` reports each rune's actual universal attributes (WORK-535)
+
+  `refrakt reference card` printed all 37 universal attributes under the heading **"Universal attributes (available on every rune)"**. On most runes several of them do nothing — the CLI stated as fact something false about the rune it was describing, which is the symptom that opened SPEC-125. Unlike language-server completion, this did not fall out of the schema narrowing for free: the line was a separate code path printing the static universal set wholesale.
+
+  Each rune now reports what it carries, and names the reason for what it does not:
+
+  ```
+  Universal attributes: tint, tint-mode, bg, width, spacing, inset, elevation, reveal, …
+  Not applicable to this rune:
+    - dropcap, reading: this rune declares no body section
+    - prominence: this rune has no page-section header
+  ```
+
+  51 of the 55 runes in this repo's reference had at least one false claim before.
+
+  **Explaining, not just omitting.** The alternative was to let an inapplicable attribute vanish silently, which matches the schema and is simpler. But reference output is a teaching surface — it is what `create-refrakt` writes into `AGENTS.md` for coding agents — and "why is `reading` on `textblock` but not on `grid`?" is exactly the question a bare omission leaves unanswered.
+
+  **The schema stays authoritative.** Availability is read off the rune's own attribute list; the applicability rule is consulted only to explain an absence, and an axis the schema carries is never reported unavailable whatever the rule says. A tool that contradicted the rune it describes is the bug being fixed, so the reconciliation is pinned by a test across every core rune rather than left implicit.
+
+  `--format json` gains `attributes.universalUnavailable` (`{ axis, reason, attributes }[]`) alongside the existing narrowed `attributes.universal`, so machine consumers get the same answer as the human output. The hoisted **Universal Attributes** section in `reference dump` now reads as the shared vocabulary rather than a blanket promise.
+
+  No theme config is loaded to produce any of it. `ReferenceContext` carries schemas, not configs — the right shape, because applicability is rune identity (ADR-028). The posture that explains an inline rune's absences (`badge` is inline; a structural reason would be true and beside the point) is recorded on the schema at construction, next to the join tables that answer the same question.
+
+- 6b94801: **Breaking:** `reading` and `dropcap` gate on a declared prose capability, not the `body` section role (WORK-537, SPEC-125 Phase 4)
+
+  The `body` role carried two meanings that were merged by accident of timing. Structurally it means "the rune's main content region", and Lumina keys layout and density off it. SPEC-108 later reused that declaration as a _proxy_ for an editorial fact it never stated — "prose that a reading register applies to".
+
+  The proxy holds for most of the 32 body-role runes and breaks for a real minority. A `datatable`'s body role is on its `<table>`; a `showcase`'s is on its viewport. Once schemas narrowed (WORK-534), `{% datatable reading="prose" dropcap=true %}` would have validated and stamped a drop cap onto a table.
+
+  **What changes.** `reading` and `dropcap` are no longer offered on **`Api`, `DataTable`, `Form`, `Showcase` and `Symbol`** — writing either is now a Markdoc validation error, and a value arriving by another route (a scoped default, an embed override) is dropped with a warning naming the reason. The other 27 body-role runes are unaffected: `Blog`, `Card`, `TextBlock`, `PullQuote`, `Sidenote`, `Lore`, the storytelling entities and sections, the plan runes, and the rest all declare prose and keep both attributes.
+
+  **Removing the role would have been the other fix, and it is the wrong one.** A datatable's table genuinely _is_ its main content region, and Lumina styles that role — dropping it would change how the rune renders for a reason unrelated to rendering. Every one of the five keeps its `body` role and every `[data-section="body"]` stylesheet is untouched.
+
+  **The gate is declared, not inferred.** A facet states what it needs (`UniversalAxisFacet.requires`) and a rune states what it provides (`RuneConfig.provides`), so the next axis needing a content capability reuses this instead of inventing another bespoke field. `provides` is a non-overridable identity field for the same reason `sections` is: it decides what an author may write.
+
+  Default-off — a rune must say it bears prose. That is only safe because schema narrowing landed first: a forgotten declaration is no longer silent, because the attribute is not offered and `refrakt reference` names the reason.
+
+  **Also fixed:** `MusicPlaylist`, the schema.org alias of `Playlist`, was a bare `{ block }` config stub, so `{% music-playlist %}` rendered with none of the five `data-section` attributes its primary emits despite being the same schema and the same output tree. The audit surfaced it through the prose capability; the section drift was the same bug a layer down. It now carries the same join tables.
+
+  **Also fixed:** the facet warning collector deduped on a bare key, so two _different_ diagnostics that both key on the rune name silenced each other — `frame` and `content-place` already collided this way, a warn-once swallowing an unrelated warning for the rest of a build. Keys are now namespaced by warning code.
+
+### Patch Changes
+
+- a4ff5ad: Documentation: move author-facing pages out of the Extend handbook, and give the entity registry an author-facing home
+
+  The `/docs` vs `/extend` split was drawn by subsystem rather than by audience, so several pages describing what you type in a Markdown file lived in a handbook whose own introduction tells content authors to go elsewhere. `extend/variables.md` was the clearest case — its description reads "The author-facing variable surface", and it wasn't in the Extend sidebar at all.
+
+  Moved to `/docs/authoring/`, with redirect stubs at the old URLs: **content variables**, **partials**, **page sections** (linked from ~19 rune reference pages), **nav slug resolution**, and **rich menubar panels**. The i18n overview moved to `/docs/configuration/i18n`, next to the `locale` and `strings` fields it documents.
+
+  **New: [Entities](https://refrakt.md/docs/authoring/entities).** `collection`, `aggregate`, `relationships`, and `expand` all used to link into the plugin-authoring pipeline reference to explain what an entity _is_ — a page that opens by describing itself as a build-time plugin mechanism. Authors needed the concept, not the implementation. The four runes now link to a page that covers what the registry holds, where entities come from (including `type` in frontmatter, which is how the rune catalog works), and how the query runes relate.
+
+  **New: [Entity routes](https://refrakt.md/docs/configuration/entity-routes).** `entityRoutes` is site configuration, but it was documented only inside the pipeline hook reference — so the field was invisible to anyone reading the configuration docs. It now has a full reference there, and the pipeline page points at it.
+
+  **Split rather than moved:** the tint cascade is now [frontmatter semantics for authors](https://refrakt.md/docs/authoring/tint) and [the resolution function and SSR contract for theme developers](https://refrakt.md/extend/theme-authoring/tint-cascade). Both audiences genuinely need it, at different depths.
+
+  No content was duplicated — each page has exactly one home, and the two handbooks cross-link at their boundaries. Every internal link was verified against the built site.
+
+- Updated dependencies [19eb537]
+- Updated dependencies [33ec21f]
+- Updated dependencies [20f27f6]
+- Updated dependencies [9c9ea05]
+- Updated dependencies [6b94801]
+  - @refrakt-md/transform@0.32.0
+  - @refrakt-md/types@0.32.0
+
 ## 0.31.0
 
 ### Minor Changes
