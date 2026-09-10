@@ -24,7 +24,9 @@ One artifact for all runes; each page selects its own rows with
 left to do**: no `$ref` to resolve, no sibling `required` array to fold.
 
 ## Acceptance Criteria
-- [ ] The script emits a byte-stable JSON artifact covering the active rune set
+- [ ] The script emits a byte-stable JSON artifact covering every rune in **every configured site**, not just the default one
+- [ ] A test asserts that coverage — a generator reading one site emits a plausible artifact missing every plan rune, and a naive freshness check passes anyway
+- [ ] Pages outside `/runes/` that document rune attributes are covered, including `plan/docs/plan-entities.md`
 - [ ] An npm script runs it, beside the existing `runes:*` scripts
 - [ ] Pages carry their own and base-preset attributes rendered from the artifact
 - [ ] Universal attributes are not listed per page; the page links to their reference
@@ -35,10 +37,19 @@ left to do**: no `$ref` to resolve, no sibling `required` array to fold.
 
 ## Approach
 
-**Convert the four {% ref "BUG-006" /%} pages first.** Their tables will have just
-been corrected by hand, so the generated output can be diffed against a known-good
-result — proving the generator reproduces a reviewed answer, rather than asking
-a reviewer to check a generated table against a schema by eye.
+**Iterate sites, don't assume one.** The plan runes live in `@refrakt-md/plan`,
+only in the `plan` site's plugin set. `refrakt reference work --format json`
+reports "Unknown rune" without `--site plan`. The failure mode here is quiet:
+the artifact would simply lack every plan rune, and the freshness test would
+pass because it matches what the generator produced. The coverage assertion is
+what catches it.
+
+**Convert the corrected pages first** — the four from {% ref "BUG-006" /%}, then
+`plan-entities.md` once {% ref "BUG-007" /%} has fixed it. Their tables will have
+just been put right by hand, so the generated output can be diffed against a
+known-good result. That proves the generator reproduces a reviewed answer,
+rather than asking a reviewer to check a generated table against a schema by
+eye.
 
 **Own attributes only.** Every rune carries a dozen-plus universal axes (`tint`,
 `bg`, `width`, `reading`, …); listing them per page buries the two or three the

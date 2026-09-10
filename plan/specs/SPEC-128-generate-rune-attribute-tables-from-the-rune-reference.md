@@ -45,6 +45,34 @@ That is the recurrence rate for tables that are hand-copied from a moving
 target, with no guard. Fixing the four is BUG-006's job. Stopping the fifth is
 this spec's.
 
+## Scope: pages that document rune attributes, not pages under `/runes/`
+
+The obvious scope is the rune reference catalogue. It is too narrow.
+
+{% ref "BUG-007" /%} found all five plan entity tables in
+`site/content/plan/docs/plan-entities.md` drifted — it documents `{% spec %}`,
+`{% work %}`, `{% bug %}`, `{% decision %}` and `{% milestone %}` attributes from
+a plan docs page, outside `/runes/` entirely. A generator scoped to the rune
+catalogue walks straight past it, and so does `check-rune-docs.mjs`, which is
+why the drift there went unnoticed while the `/runes/` pages at least had a
+coverage guard.
+
+So the rule is **any page documenting a rune's attributes**, wherever it lives.
+
+That has a concrete implementation consequence. The plan runes come from
+`@refrakt-md/plan`, which is only in the `plan` site's plugin set:
+
+```bash
+refrakt reference work --format json              # → Unknown rune "work"
+refrakt reference work --format json --site plan  # → works
+```
+
+A generator reading "the active rune set" from one site would silently emit an
+artifact missing every plan rune — and the freshness test would pass, because
+the artifact would match what the generator produced. **Iterate the configured
+sites, and assert the artifact covers every rune in every site**, or the guard
+guards nothing for a third of the catalogue.
+
 ## The prior question: why do 102 pages have no table at all?
 
 Only 13 of ~115 rune pages carry an `## Attributes` section. **This has to be
@@ -124,7 +152,9 @@ question that reads better whole.
 ## Acceptance Criteria
 
 - [ ] A recorded answer to why 102 pages have no attribute table, and which of them should
-- [ ] `scripts/generate-rune-attributes.mjs` emits a committed, byte-stable JSON artifact covering the active rune set
+- [ ] `scripts/generate-rune-attributes.mjs` emits a committed, byte-stable JSON artifact covering every rune in **every configured site**, not just the default one
+- [ ] A test asserts the artifact covers every rune in every site — a generator reading one site would emit a plausible artifact missing all plan runes, and a naive freshness check would pass
+- [ ] Pages documenting rune attributes outside `/runes/` are in scope, including `plan/docs/plan-entities.md`
 - [ ] An npm script runs it, beside the existing `runes:*` scripts
 - [ ] Rune pages render their own (and base-preset) attributes from that artifact
 - [ ] Universal attributes are not listed per page; the page links to their reference
@@ -164,7 +194,8 @@ check a generated table against a schema by eye.
 
 ## References
 
-- {% ref "BUG-006" /%} — the four drifted pages; fix those by hand first, independent of this
+- {% ref "BUG-006" /%} — the four drifted `/runes/` pages; fix those by hand first, independent of this
+- {% ref "BUG-007" /%} — the same drift on `plan/docs/plan-entities.md`, which is what widened this spec's scope beyond the rune catalogue
 - {% ref "SPEC-127" /%} — per-row `data` templates; this spec depends on them for rendering
 - {% ref "SPEC-126" /%} — the same pattern applied to the configuration reference; shares the script-plus-committed-artifact shape and the enforcement model
 - `scripts/check-rune-docs.mjs` — the guard this extends
