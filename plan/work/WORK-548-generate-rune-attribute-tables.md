@@ -29,7 +29,13 @@ left to do**: no `$ref` to resolve, no sibling `required` array to fold.
 - [ ] Pages outside `/runes/` that document rune attributes are covered, including `plan/docs/plan-entities.md`
 - [ ] An npm script runs it, beside the existing `runes:*` scripts
 - [ ] Pages carry their own and base-preset attributes rendered from the artifact
-- [ ] Universal attributes are not listed per page; the page links to their reference
+- [ ] Universal attributes render as a collapsed accordion with **one item per axis**, not one row per attribute
+- [ ] Axes the rune does not carry appear as items giving the reason, from `universalUnavailable`
+- [ ] The accordion is a shared partial taking the rune name, not markup repeated across ~45 pages
+- [ ] `SerializedRune` carries full attribute records for universals, grouped by axis — not the current bare `string[]`
+- [ ] Per-axis prose comes from the facet contract descriptions in `packages/transform/src/facets/`
+- [ ] The six runes with no universal attributes render their posture reason instead of an empty accordion
+- [ ] The rendered universal section agrees with `refrakt reference <name>`
 - [ ] Internal `__`-prefixed attributes are filtered — `__deferred-body` currently reaches `reference --format json` for every rune with a body
 - [ ] `check-rune-docs.mjs` gains a content check: the artifact is fresh, and no page hand-writes a table for a rune with generated rows
 - [ ] The stale-artifact failure names the command to run
@@ -51,11 +57,18 @@ known-good result. That proves the generator reproduces a reviewed answer,
 rather than asking a reviewer to check a generated table against a schema by
 eye.
 
-**Own attributes only.** Every rune carries a dozen-plus universal axes (`tint`,
-`bg`, `width`, `reading`, …); listing them per page buries the two or three the
-reader came for. WORK-535 made a second option available — reporting the axes a
-rune *lacks*, with the reason — which is genuinely useful but belongs in a
-collapsed block, not the primary table.
+**Own attributes in the table; universals in an axis accordion.** Of the
+universal attributes, 24 are constant across all 45 runes that carry any — only
+`prominence` (10/45), `reading`+`dropcap` (8/45) and `frame*` (4/45) vary, and
+six runes carry none at all. So render the delta, at axis granularity, in a
+collapsed accordion authored once as a partial. An unavailable axis is just an
+item that gives its reason instead of listing attributes, which is where
+WORK-535's output lands. Full argument and measurements in
+{% ref "SPEC-128" /%} D1.
+
+This needs `SerializedRune` to stop discarding universal attribute definitions —
+`attributes.universal` is a bare `string[]` today while `own` / `base` are full
+records. Budget for that; it is a change to a stable JSON contract.
 
 **`aggregate.md` is the page to design against.** It has two tables: an `$item`
 variables table and an attributes table. Only the second is generated, and the
