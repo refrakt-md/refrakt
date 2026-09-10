@@ -11,13 +11,15 @@ that exists to the content it was written for.
 
 Three pieces of one feature exist in the repo and none are wired to each other:
 
-- **`Markdoc.validate()`** — called from exactly one place, the language server.
-  Not the build, not `npm test`, not CI.
+- **`Markdoc.validate()`** — never called on site content. It runs in the
+  language server, and over the 40-file rune fixture corpus in
+  `fixture-corpus.test.ts`. Neither sees a user's pages.
 - **Custom attribute-type validators** — `SeparatedString`,
   `SpaceSeparatedNumberList`, and media's. `transform()` never invokes a custom
   type's `validate()`; only `validate()` does. They have never run in a build.
 - **The `error` rune** — takes a Markdoc `ValidationError` and renders it as a
-  table row. Purpose-built for validation output. **Nothing constructs it.**
+  table row. Purpose-built for validation output. **Nothing constructs it**, and
+  writing it by hand crashes the build.
 
 And `refrakt validate`, the command whose name promises this, checks theme
 config and manifest. It never reads content.
@@ -46,10 +48,12 @@ rune finds out, not that our own documentation gets cleaner.
 - {% ref "WORK-549" /%} — settles what an error-severity diagnostic actually
   does. Small, and it goes first: two specs currently assume `ctx.error` is
   loud, and nobody has checked.
+- {% ref "WORK-550" /%} — remove the `error` rune. On inspection it is not a
+  renderer waiting for input, it is a landmine: author-reachable, and a
+  `{% error /%}` in any page kills the build on an unguarded `err.id`.
 - {% ref "SPEC-130" /%} — the wiring. Validation at the point the tag set is
   assembled, findings routed through the diagnostics surface that already
-  exists, the `error` rune finally given its input, and the error ids enabled in
-  three phases by risk.
+  exists, and the error ids enabled in three phases by risk.
 
 ## The through-line
 
@@ -58,8 +62,13 @@ rune finds out, not that our own documentation gets cleaner.
 This is {% ref "SPEC-126" /%}'s finding in a second place. That spec noticed
 this repo has two `--check` flags and neither runs in CI, while the guards that
 actually catch things are tests that `npm test` executes. Here the pattern
-repeats one level deeper: not a guard nobody runs, but a guard nobody *calls* —
-plus a renderer for its output that was built and left unconnected.
+repeats one level deeper: not a guard nobody runs, but a guard nobody *points
+at the content* — plus a renderer for its output that was built and left
+unconnected.
+
+The exception proves it. `fixture-corpus.test.ts` runs exactly this validation,
+under `npm test`, and it works — over our fixtures. The machinery was never the
+problem; where it was aimed was.
 
 Which is why {% ref "WORK-549" /%} is not optional bookkeeping. Wiring
 validation into a diagnostics surface that turns out to fail nothing would

@@ -2,11 +2,22 @@
 
 # Markdoc validation never runs outside the language server
 
-`Markdoc.validate()` has exactly one call site in the repo —
-`packages/language-server/src/parser/markdoc.ts:18`. The content pipeline never
-calls it. So a rune typo, an unknown attribute, a missing required attribute
-and an out-of-enum modifier value all render silently, and the only user who
-ever learns is one running the VS Code extension.
+`Markdoc.validate()` is never called on site content. A rune typo, an unknown
+attribute, a missing required attribute and an out-of-enum modifier value all
+render silently, and the only user who ever learns is one running the VS Code
+extension.
+
+It is called in two places, neither of which sees a user's pages:
+
+- `packages/language-server/src/parser/markdoc.ts:18` — the language server, so
+  editor diagnostics only.
+- `packages/runes/test/fixture-corpus.test.ts:48` — over the 40-file **rune
+  fixture corpus** (WORK-414 / SPEC-102), filtered to error/critical and
+  asserted empty, plus a `transform` does-not-throw check.
+
+The second is a real guard that runs under `npm test`, and it is the model
+{% ref "SPEC-130" /%} should follow — but its corpus is our fixtures, not
+`site/content` and not any user's content.
 
 Three pieces of a validation feature exist and none are connected to each
 other.
@@ -40,7 +51,8 @@ unstyled. `refrakt validate` reports success without having read the content at
 all.
 
 The only surface that reports any of it is the VS Code extension, through the
-language server's lone `Markdoc.validate()` call.
+language server's `Markdoc.validate()` call. The fixture-corpus test would
+catch the same mistakes, but only in `packages/runes/fixtures/`.
 
 ## Symptoms
 
@@ -77,7 +89,9 @@ transform() invoked custom validate(): false
 validate()  invoked custom validate(): true
 ```
 
-So every validator below runs *only* inside the language server:
+So every validator below runs only where `validate()` is called — the language
+server, and the fixture-corpus test for whichever fixtures happen to exercise
+them. Never in a build, and never over a user's content:
 
 - `SeparatedString.validate` — `packages/runes/src/attributes.ts`
 - `SpaceSeparatedNumberList.validate` — same file
