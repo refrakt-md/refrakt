@@ -12,7 +12,7 @@ type: rune
 `{% file-ref %}` is the path-based sibling of [`xref`](/runes/xref) and [`expand`](/runes/expand): where those resolve a registered entity by id, `file-ref` points at an arbitrary project file by path. The inline form renders an `<a>` to the file's canonical GitHub URL; the `preview="drawer"` form hoists a drawer containing the file's snippet plus a "View source on GitHub →" footer link, leaving an inline link in prose that opens it (SPEC-078).
 
 {% hint type="note" %}
-File-ref requires a `repoUrl` (and optional `repoBranch`) on the site config so the canonical GitHub URL can be built. See [Site configuration → `repoUrl`](/docs/configuration/sites#seo-and-branding).
+File-ref requires a `repoUrl` (and optional `repoBranch`) on the site config so the canonical GitHub URL can be built. See [`repoUrl` in the configuration reference](/docs/configuration/reference#repourl).
 {% /hint %}
 
 ## Linking to a file

@@ -51,6 +51,19 @@ export function urlForFile(file, contentDir) {
 	return '/' + rel;
 }
 
+/**
+ * True when a page builds headings from data rather than writing them.
+ *
+ * `{% data %}` with a body renders it once per row, binding `$row` at
+ * preprocess — so `### {% $row.name %}` becomes one heading per row. This check
+ * reads the *parsed* source, before that substitution, so it cannot know those
+ * ids. Rather than report every link into such a page as broken, treat its
+ * heading set as unknown.
+ */
+export function hasGeneratedHeadings(source) {
+	return /\{%\s*data\b[^%]*%\}[\s\S]*?\{%\s*\/data\s*%\}/.test(source);
+}
+
 /** Heading ids for one page's source, frontmatter stripped. */
 export function headingIdsFor(source) {
 	const body = source.replace(/^---\n[\s\S]*?\n---\n/, '');
@@ -73,6 +86,7 @@ export function headingIdsFor(source) {
 export function findBrokenFragments(pages) {
 	const idsByUrl = new Map();
 	for (const page of pages) {
+		if (hasGeneratedHeadings(page.source)) continue;
 		const ids = headingIdsFor(page.source);
 		if (ids) idsByUrl.set(page.url, ids);
 	}

@@ -47,18 +47,12 @@ The singular shape produces `sites.default` after normalization. Multi-site repo
 
 ## Top-level sections
 
-| Section | Purpose | Required |
-|---------|---------|----------|
-| `plugins` | Plugins contributing runes, layouts, hooks, CLI commands, and MCP tools | No (auto-discovered if absent) |
-| `plan` | Plan-management directory configuration | No |
-| `xrefs` | URL templates for cross-references that aren't registry entities | No |
-| `fileRoots` | Named directories that file-reading runes reach via `namespace:filename` | No |
-| `site` / `sites` | Per-site settings | No (planning-only repos can omit) |
+A config file has two scopes: a handful of fields at the root, and everything else inside a site entry. Both are listed in the **[configuration reference](/docs/configuration/reference)** — the root ones under *Top-level*, the rest grouped by what they do.
 
-Everything else is site-scoped and lives inside a site entry — `contentDir`, `theme`, `target`, `plugins`, `routeRules`, `entityRoutes`, `search`, `highlight`, `icons`, `locale`, `strings`, `tints`, `backgrounds`, `sandbox`, `baseUrl`, `siteName`, `logo`, `defaultImage`, `repoUrl`, `repoBranch`, `runes`, and `overrides`. See [Sites](/docs/configuration/sites).
+The root holds what is not per-site: `plugins`, `plan`, `xrefs` and `fileRoots`, plus the `site` / `sites` entry itself. See [Sites](/docs/configuration/sites) for how a site entry is shaped.
 
 {% hint type="note" %}
-This list is the complete set as of the current release. The [JSON Schema](/docs/configuration/schema) is the machine-readable version and is drift-tested against the TypeScript interfaces, so your editor's autocomplete is authoritative if the two ever disagree.
+The reference is generated from the [JSON Schema](/docs/configuration/schema), which is itself drift-tested against the TypeScript interfaces — so the page, your editor's autocomplete and the code cannot disagree.
 {% /hint %}
 
 ### `xrefs` — URL templates for external references

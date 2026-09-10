@@ -1,0 +1,115 @@
+{
+	"fields": [
+		{
+			"name": "title",
+			"type": "string",
+			"required": false,
+			"description": "Page title. Used for the document title, navigation labels and social cards; falls back to the page's first H1 when omitted."
+		},
+		{
+			"name": "description",
+			"type": "string",
+			"required": false,
+			"description": "Short summary, used for the meta description, social cards and the blurb on link cards."
+		},
+		{
+			"name": "slug",
+			"type": "string",
+			"required": false,
+			"description": "Override the URL segment derived from the filename."
+		},
+		{
+			"name": "draft",
+			"type": "boolean",
+			"required": false,
+			"description": "Exclude the page from the built site and from navigation."
+		},
+		{
+			"name": "redirect",
+			"type": "string",
+			"required": false,
+			"description": "Redirect this URL elsewhere instead of rendering a page."
+		},
+		{
+			"name": "order",
+			"type": "number",
+			"required": false,
+			"description": "Sort position among sibling pages in generated navigation. Lower sorts first."
+		},
+		{
+			"name": "date",
+			"type": "string",
+			"required": false,
+			"description": "Publication date (ISO 8601). Used for ordering and display by blog-style listings."
+		},
+		{
+			"name": "author",
+			"type": "string",
+			"required": false,
+			"description": "Author name, used in article metadata and structured data."
+		},
+		{
+			"name": "tags",
+			"type": "string[]",
+			"required": false,
+			"description": "Free-form labels, filterable with the `field:value` grammar `collection` and `aggregate` share."
+		},
+		{
+			"name": "image",
+			"type": "string",
+			"required": false,
+			"description": "Page image, used for social cards and as the media for link cards."
+		},
+		{
+			"name": "icon",
+			"type": "string",
+			"required": false,
+			"description": "Icon name resolvable by the `icon` rune. `nav layout=\"cards\"` renders it on each child page's card."
+		},
+		{
+			"name": "tint",
+			"type": [
+				"string",
+				"null"
+			],
+			"required": false,
+			"description": "Named tint preset for this page, or for the whole subtree when set in a `_layout.md`. Cascades down the layout chain; an explicit null resets to inherit from the layer above."
+		},
+		{
+			"name": "tint-mode",
+			"type": "\"auto\" | \"light\" | \"dark\"",
+			"required": false,
+			"description": "Initial colour-scheme behaviour. `auto` follows the user's preference; `light` / `dark` lock the server-rendered mode. Cascades down the layout chain."
+		},
+		{
+			"name": "tint-lock",
+			"type": "boolean",
+			"required": false,
+			"description": "Ignore the user's theme preference and hide the theme toggle — for surfaces that should look the same to every visitor. Cascades down the layout chain."
+		},
+		{
+			"name": "type",
+			"type": "string",
+			"required": false,
+			"description": "Register this page as an entity of the named type, so `collection`, `aggregate` and `xref` can find it. This is what drives the entity registry. A `routeRules` entry can set it for a whole subtree instead of per page."
+		},
+		{
+			"name": "id",
+			"type": "string",
+			"required": false,
+			"description": "Explicit entity ID for this page. Defaults to the page's slug."
+		},
+		{
+			"name": "created",
+			"type": "string",
+			"required": false,
+			"description": "Creation date (ISO 8601), overriding what git history or the filesystem reports."
+		},
+		{
+			"name": "modified",
+			"type": "string",
+			"required": false,
+			"description": "Last-modified date (ISO 8601), overriding what git history or the filesystem reports."
+		}
+	]
+}

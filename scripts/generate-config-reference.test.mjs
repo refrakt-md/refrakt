@@ -10,6 +10,7 @@ import {
 	flatten,
 	ungrouped,
 	staleGroupEntries,
+	ungroupedTopLevel,
 	render,
 	readSchema,
 } from './generate-config-reference.mjs';
@@ -84,6 +85,13 @@ describe('the real schema', () => {
 
 	it('has no group entry for a field the schema no longer declares', () => {
 		expect(staleGroupEntries(schema)).toEqual([]);
+	});
+
+	it('lists every non-legacy top-level field', () => {
+		// The root is mostly legacy shorthand for `sites.default.*`; what is not
+		// must appear in the reference, or `overview.md` loses the only place a
+		// reader can find it.
+		expect(ungroupedTopLevel(schema)).toEqual([]);
 	});
 
 	it('uses every declared group', () => {

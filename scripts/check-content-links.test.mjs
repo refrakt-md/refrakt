@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { findBrokenFragments, collectPages, headingIdsFor, urlForFile } from './check-content-links.mjs';
+import { findBrokenFragments, collectPages, headingIdsFor, urlForFile, hasGeneratedHeadings } from './check-content-links.mjs';
 
 /**
  * Colocated with the script, the same shape as `check-rune-docs.mjs`: unit
@@ -62,5 +62,31 @@ describe('the real content tree', () => {
 	it('has no internal fragment pointing at a missing heading', () => {
 		const broken = findBrokenFragments(collectPages());
 		expect(broken.map(b => `${b.from} → ${b.url}#${b.fragment}`)).toEqual([]);
+	});
+});
+
+describe('hasGeneratedHeadings', () => {
+	it('treats a page with a data body as having unknown headings', () => {
+		// `### {% $row.name %}` becomes one heading per row at preprocess, which
+		// this parse-time check cannot see.
+		const broken = findBrokenFragments([
+			{ file: 'a.md', url: '/a', source: 'See [there](/b#contentdir).' },
+			{
+				file: 'b.md',
+				url: '/b',
+				source: '{% data src="x.json" %}\n### {% $row.name %}\n{% /data %}\n',
+			},
+		]);
+		expect(broken).toEqual([]);
+	});
+
+	it('still checks a page whose data tag is self-closing', () => {
+		// No body means no generated headings — the page's own headings are all
+		// there are, so a bad fragment into it is still a real error.
+		const broken = findBrokenFragments([
+			{ file: 'a.md', url: '/a', source: 'See [there](/b#nope).' },
+			{ file: 'b.md', url: '/b', source: '## Real\n\n{% data src="x.json" /%}\n' },
+		]);
+		expect(broken).toHaveLength(1);
 	});
 });

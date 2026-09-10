@@ -19,6 +19,7 @@ tint-lock: false
 
 ## Authoring
 
+- authoring/frontmatter
 - authoring/variables
 - authoring/partials
 - authoring/page-sections
@@ -30,6 +31,7 @@ tint-lock: false
 ## Configuration
 
 - configuration/overview
+- configuration/reference
 - configuration/sites
 - configuration/plugins
 - configuration/entity-routes

@@ -20,22 +20,9 @@ description: A short summary for SEO and navigation
 Page content starts here.
 ```
 
-### Supported fields
+Every field is optional, and you can add arbitrary custom fields — runes and pipeline hooks can read them.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `title` | `string` | Page title — used in navigation, breadcrumbs, and `<title>` |
-| `description` | `string` | Page description — used for SEO meta tags and page summaries |
-| `slug` | `string` | Custom URL override (see [Routing](#routing) below) |
-| `draft` | `boolean` | Marks the page as a draft (see [Drafts](#drafts) below) |
-| `redirect` | `string` | Redirect target URL — the page generates a redirect instead of normal content |
-| `order` | `number` | Controls sort position in navigation and pagination |
-| `date` | `string` | Publication date (ISO 8601 format, e.g., `2025-03-15`) |
-| `author` | `string` | Content author name |
-| `tags` | `string[]` | Array of content tags |
-| `image` | `string` | Featured image URL — used for social sharing and page cards |
-
-All fields are optional. You can also add arbitrary custom fields — they're accessible to runes and pipeline hooks.
+The ones refrakt itself reads are listed in the **[frontmatter reference](/docs/authoring/frontmatter)**, generated from the schema. Two worth knowing early, because they turn up in the rest of this page: `slug` overrides the computed URL (see [Routing](#routing)), and `draft` keeps a page out of the build (see [Drafts](#drafts)).
 
 ## Routing
 
@@ -195,6 +182,7 @@ Reusable content blocks can be defined in a `_partials/` directory and included 
 This page covers how files become routed pages. The rest of the authoring surface:
 
 {% nav layout="cards" %}
+- authoring/frontmatter
 - authoring/variables
 - authoring/partials
 - authoring/page-sections

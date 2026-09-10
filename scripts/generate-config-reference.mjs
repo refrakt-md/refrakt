@@ -25,6 +25,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const SCHEMA_PATH = join(ROOT, 'packages/transform/refrakt.config.schema.json');
 export const ARTIFACT_PATH = join(ROOT, 'site/content/_data/config-fields.json');
+export const FRONTMATTER_SCHEMA_PATH = join(ROOT, 'packages/content/frontmatter.schema.json');
+export const FRONTMATTER_ARTIFACT_PATH = join(ROOT, 'site/content/_data/frontmatter-fields.json');
 export const REGENERATE_COMMAND = 'npm run config:reference';
 
 /**
@@ -82,6 +84,25 @@ export const GROUPS = [
 ];
 
 /**
+ * Top-level fields — the ones that sit outside a site entry.
+ *
+ * A separate list because they are a different scope, not a different subject:
+ * a reader needs to know `xrefs` goes at the root while `icons` goes inside a
+ * site. `site` / `sites` are excluded — they are the container the site fields
+ * live in, described by the page's prose rather than as fields.
+ *
+ * `plugins` is excluded too, despite being valid at the root: it is listed under
+ * the site scope, where it is usually written, and listing it twice would give
+ * the page two headings with the same anchor.
+ */
+export const TOP_LEVEL = {
+	slug: 'top-level',
+	name: 'Top-level',
+	blurb: 'Fields that sit outside a site entry, at the root of the file.',
+	fields: ['plan', 'xrefs', 'fileRoots'],
+};
+
+/**
  * Fields a theme's `ThemeManifest` can also supply.
  *
  * A reference derived from the config schema alone would describe
@@ -137,7 +158,7 @@ export function resolveProperty(name, prop, schema, required) {
 	};
 }
 
-/** Flatten `SiteConfig` into grouped, renderable rows. */
+/** Flatten `SiteConfig` and the top-level fields into grouped, renderable rows. */
 export function flatten(schema) {
 	const site = schema.definitions.SiteConfig;
 	const required = site.required ?? [];
@@ -148,8 +169,18 @@ export function flatten(schema) {
 			if (!prop) continue;
 			// `group` is the slug, not the display name: the `where` grammar splits
 			// clauses on whitespace, so a multi-word value cannot be filtered on.
-			rows.push({ group: group.slug, groupName: group.name, ...resolveProperty(field, prop, schema, required) });
+			rows.push({ group: group.slug, groupName: group.name, scope: 'site', ...resolveProperty(field, prop, schema, required) });
 		}
+	}
+	for (const field of TOP_LEVEL.fields) {
+		const prop = schema.properties[field];
+		if (!prop) continue;
+		rows.push({
+			group: TOP_LEVEL.slug,
+			groupName: TOP_LEVEL.name,
+			scope: 'top-level',
+			...resolveProperty(field, prop, schema, schema.required ?? []),
+		});
 	}
 	return rows;
 }
@@ -158,6 +189,32 @@ export function flatten(schema) {
 export function ungrouped(schema) {
 	const placed = new Set(GROUPS.flatMap((g) => g.fields));
 	return Object.keys(schema.definitions.SiteConfig.properties).filter((n) => !placed.has(n));
+}
+
+/**
+ * Top-level properties the reference does not list.
+ *
+ * Most of the root is the flat legacy shape — the same names `SiteConfig`
+ * declares, accepted at the root and collapsed into `sites.default.*`. It is
+ * deprecated (v0.12, slated for removal in v1.0) and documenting it beside the
+ * real fields would invite writing it, so a name that also exists on
+ * `SiteConfig` is excluded.
+ *
+ * Detected structurally rather than by matching "Legacy shorthand" in the
+ * description: only 5 of the 17 say so, and a rule that depends on wording
+ * breaks the first time someone rewrites one.
+ *
+ * `$schema` is the JSON-Schema pointer; `site` / `sites` are the containers the
+ * site fields live in, described by prose rather than listed as fields. What is
+ * left must appear in `TOP_LEVEL`.
+ */
+export function ungroupedTopLevel(schema) {
+	const containers = new Set(['$schema', 'site', 'sites']);
+	const siteFields = new Set(Object.keys(schema.definitions.SiteConfig.properties));
+	const placed = new Set(TOP_LEVEL.fields);
+	return Object.keys(schema.properties).filter(
+		(name) => !containers.has(name) && !siteFields.has(name) && !placed.has(name),
+	);
 }
 
 /** Grouped field names that no longer exist in the schema. */
@@ -170,7 +227,10 @@ export function render(schema) {
 	// Key order is fixed by construction, so the freshness check below is a
 	// stable equality comparison rather than something that flaps.
 	return JSON.stringify(
-		{ groups: GROUPS.map(({ slug, name, blurb }) => ({ slug, name, blurb })), fields: flatten(schema) },
+		{
+			groups: [...GROUPS, TOP_LEVEL].map(({ slug, name, blurb }) => ({ slug, name, blurb })),
+			fields: flatten(schema),
+		},
 		null,
 		'\t',
 	) + '\n';
@@ -178,6 +238,27 @@ export function render(schema) {
 
 export function readSchema() {
 	return JSON.parse(readFileSync(SCHEMA_PATH, 'utf8'));
+}
+
+export function readFrontmatterSchema() {
+	return JSON.parse(readFileSync(FRONTMATTER_SCHEMA_PATH, 'utf8'));
+}
+
+/**
+ * Frontmatter fields, flattened the same way.
+ *
+ * No grouping map: eighteen fields is a list a reader scans, and inventing
+ * categories for it would be arrangement for its own sake. They are ordered as
+ * the schema declares them, which follows the interface.
+ */
+export function flattenFrontmatter(schema) {
+	const required = schema.required ?? [];
+	return Object.entries(schema.properties).map(([name, prop]) =>
+		resolveProperty(name, prop, schema, required));
+}
+
+export function renderFrontmatter(schema) {
+	return JSON.stringify({ fields: flattenFrontmatter(schema) }, null, '\t') + '\n';
 }
 
 function main(argv) {
@@ -192,27 +273,46 @@ function main(argv) {
 		return 1;
 	}
 
-	const rendered = render(schema);
+	const missingTop = ungroupedTopLevel(schema);
+	if (missingTop.length > 0) {
+		console.error(`Top-level fields with no group: ${missingTop.join(', ')}`);
+		console.error('\nAdd them to TOP_LEVEL in scripts/generate-config-reference.mjs.');
+		return 1;
+	}
+
+	const outputs = [
+		{ path: ARTIFACT_PATH, name: 'config-fields.json', body: render(schema) },
+		{
+			path: FRONTMATTER_ARTIFACT_PATH,
+			name: 'frontmatter-fields.json',
+			body: renderFrontmatter(readFrontmatterSchema()),
+		},
+	];
 
 	if (argv.includes('--check')) {
-		let current = '';
-		try {
-			current = readFileSync(ARTIFACT_PATH, 'utf8');
-		} catch {
-			/* missing counts as stale */
-		}
-		if (current !== rendered) {
-			console.error('site/content/_data/config-fields.json is out of date.');
-			console.error(`Run \`${REGENERATE_COMMAND}\` and commit the result.`);
+		const stale = outputs.filter((out) => {
+			let current = '';
+			try {
+				current = readFileSync(out.path, 'utf8');
+			} catch {
+				/* missing counts as stale */
+			}
+			return current !== out.body;
+		});
+		if (stale.length > 0) {
+			for (const out of stale) console.error(`site/content/_data/${out.name} is out of date.`);
+			console.error(`\nRun \`${REGENERATE_COMMAND}\` and commit the result.`);
 			return 1;
 		}
-		console.log('✓ config-fields.json is up to date');
+		console.log('✓ generated reference data is up to date');
 		return 0;
 	}
 
-	mkdirSync(dirname(ARTIFACT_PATH), { recursive: true });
-	writeFileSync(ARTIFACT_PATH, rendered);
-	console.log(`Wrote ${flatten(schema).length} fields to site/content/_data/config-fields.json`);
+	for (const out of outputs) {
+		mkdirSync(dirname(out.path), { recursive: true });
+		writeFileSync(out.path, out.body);
+		console.log(`Wrote ${out.name}`);
+	}
 	return 0;
 }
 
