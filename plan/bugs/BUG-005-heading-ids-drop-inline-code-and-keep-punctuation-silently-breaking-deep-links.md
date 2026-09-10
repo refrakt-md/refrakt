@@ -1,4 +1,4 @@
-{% bug id="BUG-005" status="confirmed" severity="minor" milestone="v0.32.0" tags="content,headings,docs" %}
+{% bug id="BUG-005" status="confirmed" severity="minor" milestone="v0.33.0" tags="content,headings,docs" %}
 
 # Heading IDs drop inline code and keep punctuation, silently breaking deep links
 

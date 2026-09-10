@@ -1,4 +1,4 @@
-{% milestone name="v0.20.2" status="active" %}
+{% milestone name="v0.20.2" status="complete" %}
 
 # v0.20.2 — HTML scaffold client runtime
 
