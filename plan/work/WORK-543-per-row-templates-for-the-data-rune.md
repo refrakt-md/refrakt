@@ -36,13 +36,17 @@ This is the rendering half of the milestone: {% ref "WORK-544" /%} and
 
 **Splice the rows in; do not wrap them.** `preprocessData` currently does a 1:1
 replacement (`node.children[i] = resolveDataToNode(...)`), so emitting *N* rows
-forces this line to change. Wrapping the rows in one container to preserve the
-1:1 shape is the tempting minimal edit and it breaks composition invisibly — a
-spike measured `accordion` resolving 2 items from explicit `{% accordion-item %}`
-children and **0** from the same items one level deeper, with the tags and their
-body text dropped from the output entirely, no error or warning. See
-{% ref "SPEC-127" /%} for the table. Splicing costs one line; the wrapper costs
-every rune with a content model.
+forces this line to change. Wrapping them in one container to preserve the 1:1
+shape is the tempting minimal edit, and its effect depends on which container: a
+spike hand-authoring `{% accordion-item %}` at each depth found direct children
+and a `{% div %}` wrapper both fine, while `{% section %}` and `{% grid %}`
+wrappers destroyed the items **and their body text** with no error or warning.
+See {% ref "SPEC-127" /%} for the table. Splicing costs one line and makes the
+question moot for every parent rune.
+
+Note the spike probed only the destination half — `{% data %}` has no body form
+to test until this work item ships, so the end-to-end composition is an
+acceptance criterion here, not an established fact.
 
 **Stay shallow.** Bind `$row`, render the body, no control flow. Formatting goes
 through the shared markdoc functions, not template syntax. Add conditionals and

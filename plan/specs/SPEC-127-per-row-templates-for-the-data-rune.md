@@ -98,25 +98,35 @@ One tag in, exactly one node out — currently a `table`. A per-row body produce
 `data` composes with any rune that inspects its own children.
 
 It must splice the row outputs in as direct siblings. Wrapping them in a single
-container node to preserve the 1:1 shape is the tempting minimal change and it
-silently breaks composition. Measured against `accordion`, which reads its
-children to build items:
+container node to preserve the 1:1 shape is the tempting minimal change, and
+what it does depends on which container — which is the problem.
 
-| Authored as | Items resolved |
-|---|---|
-| headings (the documented form) | 1 |
-| explicit `{% accordion-item %}` children | 2 |
-| the same items **one level deeper** | **0** |
+Measured by hand-authoring `{% accordion-item %}` at each depth (the `data` body
+form does not exist yet, so this probes the destination half only):
 
-The wrapped case does not merely fail to build items. The `accordion-item` tags
-and their body text are **gone from the output entirely** — no error, no
-warning, no fallback prose. A page written that way renders an empty accordion
-and nothing anywhere says why.
+| Items authored | Resolved | Body text |
+|---|---|---|
+| as direct children of `{% accordion %}` | yes | kept |
+| inside `{% div %}` | yes | kept |
+| inside `{% section %}` | **no** | **gone** |
+| inside `{% grid %}` | **no** | **gone** |
 
-That failure mode is the argument. A wrapper would make `data` usable only for
-runes that treat children as opaque, and would fail — invisibly — for every rune
-with a content model, which is most of the catalogue. Splicing costs one line
-and keeps `data` composable by construction.
+So the rule is not "a wrapper breaks it". A passthrough container leaves the
+subtree intact; a container that is itself a rune with a content model consumes
+and reinterprets its children, and the `accordion-item` tags **and their body
+text disappear from the output entirely** — no error, no warning, no fallback
+prose. A page written that way renders an empty accordion and nothing says why.
+
+That the outcome is wrapper-dependent is the argument, more than any single
+failure. A wrapper makes composition a property of a container choice made
+inside `data`, invisible from the page, correct for some parent runes and
+silently destructive for others. Splicing removes the question: the rows land
+exactly where a hand-authored equivalent would, for every parent.
+
+**Still unproven, and it needs a test when the body form lands.** Nothing here
+exercised `{% data %}` — it cannot until this spec ships. The end-to-end
+assertion is the acceptance criterion below, not something the probe above
+established.
 
 ## Constraint: stay shallow
 
