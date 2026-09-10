@@ -1,4 +1,4 @@
-{% milestone name="v0.30.1" status="planning" %}
+{% milestone name="v0.30.1" status="complete" %}
 
 # v0.30.1 — Transform engine facet decomposition
 
