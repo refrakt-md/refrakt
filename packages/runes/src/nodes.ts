@@ -4,6 +4,7 @@ import type { Schema } from '@markdoc/markdoc';
 import * as xml from 'fast-xml-parser';
 import { unescapeFenceContent } from './fence-escape.js';
 import { resolveImageScheme } from './lib/image-schemes.js';
+import { headingSlug, headingText } from './util.js';
 
 const { dirname, join, isAbsolute } = pb;
 const { Tag } = Markdoc;
@@ -24,17 +25,13 @@ export const heading: Schema = {
     const children = node.transformChildren(config);
 
     if (!attributes.id || typeof attributes.id !== 'string') {
-      attributes.id = children
-        .filter((child: any) => typeof child === 'string')
-        .join(' ')
-        // Strip URL-unsafe punctuation that breaks fragment links. `%` in
-        // particular trips `decodeURI` (SvelteKit's prerender crawler) when
-        // it isn't followed by a valid hex pair — e.g. a heading whose text
-        // contains a literal `{% symbol %}` would otherwise produce an id
-        // like `…-{%-symbol-%}-…` and crash the prerender.
-        .replace(/[?{}%]/g, '')
-        .replace(/\s+/g, '-')
-        .toLowerCase();
+      // `headingSlug` is shared with `extractHeadings`, so the rendered anchor
+      // and the heading index cannot drift apart (BUG-005). Read the id off the
+      // *source* node rather than the transformed children: inline code has
+      // become a Tag by now, and filtering to strings would drop its text —
+      // which is how `` ### `fileRoots` — named … `` used to render with an id
+      // that omitted `fileRoots` entirely.
+      attributes.id = headingSlug(headingText(node));
     }
 
     return new Tag(

@@ -1,4 +1,4 @@
-{% bug id="BUG-007" status="confirmed" severity="major" milestone="v0.33.0" tags="docs,plan,reference" %}
+{% bug id="BUG-007" status="fixed" severity="major" milestone="v0.33.0" tags="docs,plan,reference" %}
 
 # Plan entity attribute tables omit attributes the plan workflow requires
 
@@ -69,12 +69,12 @@ considers pages under the rune catalogue, so this page is invisible to the one
 guard that exists.
 
 ## Acceptance Criteria
-- [ ] `spec` documents `released-in`, `created`, `modified`
-- [ ] `work` documents `pr`, `supersedes`, `created`, `modified`
-- [ ] `bug` documents `pr`, `created`, `modified`
-- [ ] `decision` and `milestone` document `created`, `modified`
-- [ ] `released-in` and `pr` are marked as required by the workflow, not merely listed
-- [ ] The page's prose does not contradict `CLAUDE.md` on when each is mandatory
+- [x] `spec` documents `released-in`, `created`, `modified`
+- [x] `work` documents `pr`, `supersedes`, `created`, `modified`
+- [x] `bug` documents `pr`, `created`, `modified`
+- [x] `decision` and `milestone` document `created`, `modified`
+- [x] `released-in` and `pr` are marked as required by the workflow, not merely listed
+- [x] The page's prose does not contradict `CLAUDE.md` on when each is mandatory
 
 ## Approach
 
@@ -95,5 +95,41 @@ fields to set by hand.
 - {% ref "BUG-006" /%} — the same class of drift on `/runes/` pages
 - {% ref "SPEC-128" /%} — generating these tables; its scope is widened to cover pages like this one, which are not under `/runes/`
 - `CLAUDE.md` — the plan workflow that depends on the undocumented attributes
+
+## Resolution
+
+Completed: 2026-09-10
+
+Branch: `claude/content-author-docs-org-vps1un`
+
+### What was done
+
+`site/content/plan/docs/plan-entities.md` — all five entity tables now cover
+every attribute the schema declares. Verified mechanically against
+`refrakt reference <rune> --format json --site plan`: spec 8/8, work 12/12,
+bug 10/10, decision 8/8, milestone 5/5, no attribute left undocumented.
+
+Added, rather than merely listed:
+
+- **`released-in`** (spec) — noted as required once `status="shipped"`, because
+  `plan validate` errors without it.
+- **`pr`** (work, bug) — noted as the thing to set when marking an item done,
+  since it is what links a spec to the code that delivered it and what
+  `plan status` builds its PR rollups from.
+- **`supersedes`** (work) — paired with `status="superseded"`, which validate
+  warns about when the replacement is unnamed.
+- **`created` / `modified`** (all five) — described as tooling-maintained with a
+  file-timestamp fallback, so they read as something you rarely set by hand
+  rather than as fields to fill in.
+
+### Notes
+
+- The three lifecycle attributes were the point of this bug: a bare row does not
+  convey "validate will refuse this", so each says where in the lifecycle it
+  becomes mandatory. Checked against CLAUDE.md so the page and the workflow
+  agree.
+- Every claim was measured, unlike {% ref "BUG-006" /%}, where three of four
+  original claims turned out to be false positives. All five tables here were
+  genuinely incomplete.
 
 {% /bug %}

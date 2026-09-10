@@ -15,6 +15,10 @@ This rune is part of **@refrakt-md/design**. Install with `npm install @refrakt-
 
 Displays design tokens for spacing, border radius, and shadows. Content is organized by `##` sections — `Spacing`, `Radius`, and `Shadows` — with `name: value` list items in each.
 
+{% hint type="note" %}
+**Not the `spacing` attribute.** This rune *renders a design system's spacing scale* as documentation. The universal `spacing` attribute — which adjusts the rhythm around any block rune — is a different thing with the same name; see [Surfaces](/runes/surfaces#spacing-and-inset).
+{% /hint %}
+
 ## Full token set
 
 A complete spacing system with scale, radii, and shadows.

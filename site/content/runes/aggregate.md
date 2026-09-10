@@ -39,7 +39,7 @@ The output is a `<span class="rf-aggregate" data-aggregate="count">N</span>` —
 
 ## Body-zoned form
 
-Give `aggregate` a body and it iterates — but unlike `collection`, the iteration runs over **groups**, not entities. The body splits on a top-level `---` into up to three zones (same convention as [`card`](/runes/card) and [`collection`](/runes/collection#body-zones--preamble-template-fallback)), and **`$item` binds differently in each**:
+Give `aggregate` a body and it iterates — but unlike `collection`, the iteration runs over **groups**, not entities. The body splits on a top-level `---` into up to three zones (same convention as [`card`](/runes/card) and [`collection`](/runes/collection#body-zones-preamble-template-fallback)), and **`$item` binds differently in each**:
 
 | Zone | When rendered | `$item` |
 |------|---------------|---------|
@@ -154,7 +154,7 @@ When the primary set is empty:
 {% aggregate type="work" filter="status:zzz" empty="Nothing yet." /%}
 ```
 
-Precedence matches [`collection`](/runes/collection#body-zones--preamble-template-fallback): the body fallback zone wins when both are present.
+Precedence matches [`collection`](/runes/collection#body-zones-preamble-template-fallback): the body fallback zone wins when both are present.
 
 ## Attributes
 
@@ -167,6 +167,9 @@ Precedence matches [`collection`](/runes/collection#body-zones--preamble-templat
 | `sort` | `key` \| `count` \| `value` \| `percent` | — | Sort groups; prefix `-` for descending. Honors domain-aware ordering when sorting by `key`. |
 | `limit` | number | — | Max groups, applied after sort. |
 | `empty` | string | — | Fallback text shown when the query yields nothing (self-closing form; body form uses a fallback zone). Absent → render nothing. |
+| `layout` | `chart` | — | Render the groups as a chart instead of the default output. |
+| `chart-type` | `bar` \| `line` \| `area` \| `pie` | — | Chart form, with `layout="chart"`. |
+| `chart-title` | string | — | Title rendered above the chart. |
 
 ## Output contract
 

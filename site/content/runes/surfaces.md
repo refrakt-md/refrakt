@@ -12,6 +12,8 @@ Every block rune exposes one or two decorable **surfaces**, and a small, univers
 | `elevation` | self | the depth of the box — recessed, flat, or lifted on a shadow |
 | `prominence` | self | the weight of a section header — quiet up to display size |
 | `width` | layout | how wide the rune sits in the page — contained to full-bleed |
+| `spacing` | layout | vertical rhythm *around* the rune (see [below](#spacing-and-inset)) |
+| `inset` | layout | padding *within* the rune (see [below](#spacing-and-inset)) |
 | `reading` | text | how the body text reads — UI text vs long-form prose |
 | `frame` / `frame-*` | media | present the media — aspect, crop, silhouette shadow, displacement |
 | `substrate` / `substrate-*` | self (default) | a generated pattern (dots, grid, …) |
@@ -374,6 +376,30 @@ A layered showstopper that transitions from deep orange to golden yellow.
 {% /preview %}
 
 The cover scrim, `content-place`, and `scrim-type` are documented on [card → cover mode](/runes/card#cover-mode).
+
+## Spacing and inset
+
+Two axes control the box rather than its surface, and they pair: **`spacing`** is the vertical rhythm *around* a rune, **`inset`** the padding *within* it. Both take the same scale, and both are suppressed at `default` — an unmarked rune emits nothing for them.
+
+| Value | Effect |
+|-------|--------|
+| `flush` | none — the rune butts against its neighbours (`spacing`) or its own edges (`inset`) |
+| `tight` | less than the default |
+| `default` | the theme's rhythm; emits no class or attribute |
+| `loose` | more than the default |
+| `breathe` | most |
+
+```markdoc
+{% card inset="breathe" spacing="tight" %}
+Roomy inside, close to what follows.
+{% /card %}
+```
+
+They are independent, and mixing them is the point — a card can sit tight in a stack while its contents breathe, or the reverse. Neither declares a closed value set in the engine: the value passes through to `data-spacing` / `data-inset` and to `.rf-{block}--spacing-{value}`, so a theme can define its own steps beyond the five above.
+
+`spacing` is inert on a rune with nothing around it, and `inset` on a rune that draws no box of its own — `refrakt reference <rune>` reports which axes a given rune carries.
+
+Not to be confused with the [`{% spacing %}` rune](/runes/design/spacing), which renders a design system's spacing scale as documentation. Same word, unrelated job.
 
 ## Composition
 

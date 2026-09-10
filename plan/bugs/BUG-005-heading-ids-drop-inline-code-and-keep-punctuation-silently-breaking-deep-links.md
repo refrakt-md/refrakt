@@ -1,4 +1,4 @@
-{% bug id="BUG-005" status="confirmed" severity="minor" milestone="v0.33.0" tags="content,headings,docs" %}
+{% bug id="BUG-005" status="fixed" severity="minor" milestone="v0.33.0" tags="content,headings,docs" %}
 
 # Heading IDs drop inline code and keep punctuation, silently breaking deep links
 
@@ -42,5 +42,64 @@ Two parts, and the second is the reason this is filed rather than fixed in passi
 2. **Decide what happens to existing anchors.** Changing the scheme changes every generated id, so any external link or bookmark into a heading whose id contains punctuation breaks. Options: accept it (the current ids are barely linkable by hand anyway), or emit both the new id and a hidden alias element carrying the old one.
 
 Worth pairing with a build-time check that reports intra-site fragments matching no heading id — the class of bug is invisible without one, which is how twelve accumulated.
+
+## Resolution
+
+Completed: 2026-09-10
+
+Branch: `claude/content-author-docs-org-vps1un`
+
+### What was done
+
+**One slug implementation, shared.** `packages/runes/src/util.ts` gains
+`headingSlug()` and `headingText()`; both `extractHeadings` and the `heading`
+node transform in `nodes.ts` now call them.
+
+They were two near-copies that had already drifted — `extractHeadings` stripped
+`?`, the node transform stripped `?{}%` — so a heading containing `{`, `}` or
+`%` was *indexed under one id and rendered under another*. The doc comment on
+`extractHeadings` claimed they used "the same algorithm". That second defect was
+not in this bug's original report; it fell out of unifying them.
+
+New rules: lowercase, drop everything that is not a letter/number/space/hyphen
+(Unicode-aware, so non-ASCII headings keep their words), collapse separator runs
+to one `-`, trim. Dropping punctuation subsumes the reason `%` was stripped —
+a literal `%` without a hex pair used to crash SvelteKit's prerender crawler.
+
+**Inline code is included.** `headingText` walks `code` nodes as well as `text`,
+concatenating rather than joining with a space (the AST's text nodes carry their
+own spacing). The worst case in this bug is fixed and verified in the built
+HTML: `` ### `fileRoots` — named directories … `` was
+`id="-—-named-directories-for-file-reading-runes"` — subject dropped, dangling
+prefix — and is now `id="fileroots-named-directories-for-file-reading-runes"`.
+It also fixes the *displayed* heading text, which had the same hole.
+
+**A guard, so this cannot silently accumulate again.**
+`scripts/check-content-links.mjs` reports internal links whose `#fragment`
+matches no heading on the target page, reading ids from `extractHeadings` rather
+than reimplementing the rules — a reimplementation is what let the original
+twelve through. Colocated `check-content-links.test.mjs` follows the
+`check-rune-docs.mjs` shape: unit tests over the pure computation plus one live
+check over the real content tree. `npm run content:check-links`.
+
+**Broken links fixed.** The scheme change repaired 6 of the 12 on its own — the
+authors had written the intuitive anchor all along, and it is now the real one.
+The remaining 6 were corrected by looking up the actual ids.
+
+### Decision — existing anchors break, and that is accepted
+
+This bug left open whether to alias old ids. Not doing so. The ids being
+replaced are the ones nobody could write by hand — that is the bug — so an
+external link into one is unlikely, and carrying a hidden alias element per
+heading would add permanent markup to every page to preserve anchors that were
+broken in practice. In-repo links are all fixed and now guarded.
+
+### Notes
+
+- Full suite 4263 passing (16 new). No test asserted a punctuation-bearing id,
+  so nothing else had to change.
+- Site build verified, not just the test suite: `id="spacing-and-inset"`,
+  `id="body-zones-preamble-template-fallback"` and the `fileroots` case above
+  all confirmed in `site/build`.
 
 {% /bug %}

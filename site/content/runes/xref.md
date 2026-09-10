@@ -78,7 +78,7 @@ See [file-ref](/runes/file-ref) for the path-based sibling that uses the same `p
 
 | Attribute | Type | Required | Description |
 |-----------|------|----------|-------------|
-| (positional) | String | Yes | Entity ID or name to resolve |
+| `primary` (positional) | String | Yes | Entity ID or name to resolve. Written positionally — `{% xref "SPEC-001" /%}` — not as `primary="…"`. |
 | `label` | String | No | Custom link text (defaults to entity title) |
 | `type` | String | No | Entity type hint for disambiguation |
 | `preview` | `drawer` | No | Hoist a preview drawer with the entity's expanded body; the inline link opens it (SPEC-078). |
