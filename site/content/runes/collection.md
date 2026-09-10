@@ -103,6 +103,8 @@ For anything richer than raw values (formatting, combining fields, a designed ca
 
 Give `collection` a **body** and it becomes the per-item template: the body is transformed once per entity with **`$item` bound** to that entity. The body is *raw* output arranged by `layout` — add a rune like `{% card %}` for chrome.
 
+[`data`](/runes/data#per-row-templates-give-data-a-body) has the same contract for rows read from a file, binding `$row`. The name differs because the shape does: an `$item` is an entity with `id` / `type` / `url` / `data`, a `$row` is flat.
+
 ```markdoc
 {% collection type="work" filter="status:ready" sort="priority" layout="grid" %}
 {% card href=$item.url %}

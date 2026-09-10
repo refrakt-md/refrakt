@@ -1,4 +1,4 @@
-{% work id="WORK-543" status="ready" priority="high" complexity="moderate" source="SPEC-127" milestone="v0.33.0" tags="runes,data,authoring" %}
+{% work id="WORK-543" status="in-progress" priority="high" complexity="moderate" source="SPEC-127" milestone="v0.33.0" tags="runes,data,authoring" %}
 
 # Per-row templates for the data rune
 
@@ -21,16 +21,16 @@ This is the rendering half of the milestone: {% ref "WORK-544" /%} and
 {% ref "WORK-548" /%} both depend on it.
 
 ## Acceptance Criteria
-- [ ] `{% data %}` accepts an optional body, transformed once per row with `$row` bound
-- [ ] Row outputs are **spliced** into the parent's children as direct siblings, not wrapped in a container node
-- [ ] A test proves the body form composes with a rune that reads its own children — generated `{% accordion-item %}` tags inside `{% accordion %}` is the case to pin
-- [ ] `$item` is **not** accepted as an alias
-- [ ] Shaping attributes (`root`, `orient`, `columns`, `where`, `sort`, `limit`, `offset`) apply identically with or without a body
-- [ ] Shared markdoc formatter functions work inside the body, as they do in `collection` templates
-- [ ] The body form composes with the existing sandbox and the in-memory `ProjectFiles` seam
-- [ ] Using the body form where a `<table>` is required (inside `chart` / `datatable`) is a clear build error, not an empty render
-- [ ] A decision is recorded for `numeric` / `text` with a body present — warn or silently ignore
-- [ ] `/runes/data` documents it with a worked example, cross-referenced from `collection`'s per-item templates
+- [x] `{% data %}` accepts an optional body, transformed once per row with `$row` bound
+- [x] Row outputs are **spliced** into the parent's children as direct siblings, not wrapped in a container node
+- [x] A test proves the body form composes with a rune that reads its own children — generated `{% accordion-item %}` tags inside `{% accordion %}` is the case to pin
+- [x] `$item` is **not** accepted as an alias
+- [x] Shaping attributes (`root`, `orient`, `columns`, `where`, `sort`, `limit`, `offset`) apply identically with or without a body
+- [x] Shared markdoc formatter functions work inside the body, as they do in `collection` templates
+- [x] The body form composes with the existing sandbox and the in-memory `ProjectFiles` seam
+- [x] Using the body form where a `<table>` is required (inside `chart` / `datatable`) is a clear build error, not an empty render
+- [x] A decision is recorded for `numeric` / `text` with a body present — warn or silently ignore
+- [x] `/runes/data` documents it with a worked example, cross-referenced from `collection`'s per-item templates
 
 ## Approach
 

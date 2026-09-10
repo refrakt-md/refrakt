@@ -39,6 +39,11 @@ export const data = createContentModelSchema({
 		numeric: { type: String, required: false, description: 'Comma-separated columns to force to numeric typing (emits data-value).' },
 		text: { type: String, required: false, description: 'Comma-separated columns to force to text typing.' },
 	},
+	// An optional body is the per-row template (SPEC-127): transformed once per
+	// row with `$row` bound, in place of the `<table>` the bodyless form emits.
+	// The content model stays empty because the body never reaches the transform
+	// — `preprocessData` binds and splices it at parse time — but it must be
+	// *allowed* here or Markdoc rejects the tag before the preprocessor sees it.
 	contentModel: { type: 'sequence', fields: [] },
 	transform(_resolved, _attrs) {
 		// Unreachable in normal operation — corePipelineHooks.preprocess replaces

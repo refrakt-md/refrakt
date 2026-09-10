@@ -1,4 +1,4 @@
-{% spec id="SPEC-128" status="draft" tags="docs, runes, reference, tooling, dx" %}
+{% spec id="SPEC-128" status="accepted" tags="docs, runes, reference, tooling, dx" %}
 
 # Generate rune attribute tables from the rune reference
 

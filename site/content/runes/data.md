@@ -70,6 +70,50 @@ Every knob below runs at **build time** on a single intermediate shape, identica
 - **`columns`** selects, reorders, and renames: `"revenue as 'Revenue ($)'"`. Quote an alias that contains spaces or punctuation.
 - **`limit`** / **`offset`** slice the rows — the `data` analogue of snippet's `lines=`.
 
+## Per-row templates — give `data` a body
+
+Without a body, `data` emits a `<table>`. Give it one and the body is rendered **once per row**, with `$row` bound to that row — so a data file can drive arbitrary Markdoc, not just table cells.
+
+```markdoc
+{% data src="team.csv" sort="name" %}
+{% card %}
+### {% $row.name %}
+
+{% $row.role %}
+{% /card %}
+{% /data %}
+```
+
+`$row.<column>` reads a cell by its column name — after `columns` renaming, so `columns="full_name as name"` gives you `$row.name`. A column that types as numeric binds as a **number**; everything else binds as the cell's text.
+
+Every shaping attribute applies exactly as it does to the table form: `where`, `sort`, `columns`, `limit` and `offset` all run first, and the body sees what survives.
+
+### It composes with runes that read their own children
+
+The rendered rows are spliced in as **siblings**, landing exactly where hand-written ones would. So a parent rune that builds structure from its children — `accordion`, `tabs`, `bento` — works with generated items:
+
+```markdoc
+{% accordion %}
+{% data src="faq.csv" %}
+{% accordion-item %}
+## {% $row.question %}
+
+{% $row.answer %}
+{% /accordion-item %}
+{% /data %}
+{% /accordion %}
+```
+
+### Limits
+
+The binding is deliberately shallow — bind a row, render a block, no conditionals or iteration. Formatting goes through the shared Markdoc functions, the same constraint [`collection`](/runes/collection) templates hold. A page needing conditional structure per row wants a rune of its own.
+
+Two more:
+
+- **`$item` is not an alias for `$row`.** A collection's `$item` is an entity (`id` / `type` / `url` / `data`); a data row is flat. One name for two shapes is a trap, so reaching for `$item.data.x` here is an error rather than a silent `undefined`.
+- **Not inside `chart` or `datatable`.** Those consume the `<table>` this rune would otherwise emit, so a body there is a build error rather than an empty render.
+- **`numeric` / `text` warn.** They exist to type the `data-value` attribute on table cells; a body emits no cells. Numeric columns still bind to `$row` as numbers.
+
 ## Typing and the `data-value` channel
 
 A Markdown table carries only text, so a formatted number (`$1,200`, `1,500`, `98%`) is just a string. `numeric` types a column: every value cell keeps its human-formatted text **and** gains a normalized `data-value` (`"$1,200"` → `data-value="1200"`).
