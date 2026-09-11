@@ -112,13 +112,18 @@ export const AXIS_DESCRIPTIONS = Object.fromEntries(
 /** Axis-level rows: what a rune carries, and what it does not, with the reason. */
 export function axisRowsForRune(rune) {
 	const rows = [];
-	for (const { axis, attributes } of rune.attributes.universalAvailable ?? []) {
+	for (const { axis } of rune.attributes.universalAvailable ?? []) {
 		rows.push({
 			rune: rune.name,
 			axis,
 			available: true,
 			description: AXIS_DESCRIPTIONS[axis] ?? '',
-			attributes: Object.keys(attributes).join(', '),
+			// The filter a page's subquery hands the `axisAttributes` partition.
+			// Pre-formatted because `where` takes one string and the
+			// preprocess-time resolver cannot concatenate `"axis:" + $row.axis`
+			// (BUG-010) — the same reason the page-level binding is `"rune:card"`
+			// rather than a bare name.
+			query: `axis:${axis}`,
 		});
 	}
 	// Grouped by reason rather than one row per axis: no rune has more than
@@ -155,7 +160,36 @@ export function build(sites) {
 	}
 
 	const names = [...byName.keys()].sort();
-	const artifact = { own: [], base: [], axesAvailable: [], axesUnavailable: [] };
+	const artifact = { own: [], base: [], axesAvailable: [], axesUnavailable: [], axisAttributes: [] };
+
+	// One row per (axis, attribute) — keyed by **axis alone**, not (rune, axis).
+	//
+	// Measured across the full rune set: every axis's attribute records are
+	// identical on every rune that carries it (0 of 12 vary). So this is 37 rows
+	// rather than the 3105 a (rune, axis) keying would produce, and SPEC-128's
+	// objection to carrying per-attribute universal data — "3081 rows against
+	// 515" — does not apply once the duplication is factored out. It also means
+	// a page's subquery filters on the axis alone and never needs the rune.
+	const seenAxes = new Set();
+	for (const name of names) {
+		for (const { axis, attributes } of byName.get(name).rune.attributes.universalAvailable ?? []) {
+			if (seenAxes.has(axis)) continue;
+			seenAxes.add(axis);
+			for (const [attrName, attr] of Object.entries(attributes)) {
+				artifact.axisAttributes.push({
+					axis,
+					name: attrName,
+					type: attr.matches?.length
+						? attr.matches.map((v) => JSON.stringify(v)).join(' | ')
+						: attr.type,
+					required: attr.required === true,
+					description: attr.description ?? '',
+				});
+			}
+		}
+	}
+	artifact.axisAttributes.sort((a, b) => a.axis.localeCompare(b.axis) || a.name.localeCompare(b.name));
+
 	for (const name of names) {
 		const { rune } = byName.get(name);
 		const page = pageForRune(name);
@@ -180,7 +214,7 @@ export function build(sites) {
  * (BUG-010). Partitioned, every query is `root="<partition>" where=$r` with
  * `$r` = `"rune:card"` — which is what SPEC-128 D1 wanted from the call site.
  */
-export const PARTITIONS = ['own', 'base', 'axesAvailable', 'axesUnavailable'];
+export const PARTITIONS = ['own', 'base', 'axesAvailable', 'axesUnavailable', 'axisAttributes'];
 
 /** Every attribute row across the partitions that carry them. */
 export function allAttributeRows(artifact) {

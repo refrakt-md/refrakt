@@ -72,12 +72,14 @@ describe('rowsForRune', () => {
 });
 
 describe('axisRowsForRune', () => {
-	it('names the axis, its prose and the attributes it carries', () => {
+	it('names the axis, its prose and the filter its subquery uses', () => {
 		const [row] = axisRowsForRune(rune('card', {
 			universalAvailable: [{ axis: 'tint', attributes: { tint: {}, 'tint-mode': {} } }],
 		}));
 		expect(row).toMatchObject({
-			rune: 'card', axis: 'tint', available: true, attributes: 'tint, tint-mode',
+			rune: 'card', axis: 'tint', available: true,
+			// The ready-made filter a page's subquery hands `axisAttributes`.
+			query: 'axis:tint',
 		});
 		expect(row.description).toMatch(/colour override/);
 	});
@@ -187,6 +189,30 @@ describe('build', () => {
 		expect(artifact.base.map((r) => r.name)).toEqual(['valign']);
 		expect(artifact.axesAvailable.map((r) => r.axis)).toEqual(['tint']);
 		expect(artifact.axesUnavailable.map((r) => r.reason)).toEqual(['no header']);
+	});
+
+	it('keys axis attributes by axis alone, because they do not vary by rune', () => {
+		// Measured across the full rune set: every axis's attribute records are
+		// identical on every rune carrying it (0 of 12 vary). That is what makes
+		// this 37 rows rather than 3105, and what lets a page's subquery filter
+		// on the axis without knowing the rune.
+		const artifact = build(readSites());
+		const byAxis = new Map();
+		for (const row of artifact.axisAttributes) {
+			expect(byAxis.get(`${row.axis}/${row.name}`)).toBeUndefined();
+			byAxis.set(`${row.axis}/${row.name}`, row);
+		}
+		expect(artifact.axisAttributes.length).toBeLessThan(100);
+		// Every axis a rune carries has rows to render, or its item would be empty.
+		const axes = new Set(artifact.axisAttributes.map((r) => r.axis));
+		for (const row of artifact.axesAvailable) expect(axes).toContain(row.axis);
+	});
+
+	it('gives every carried axis a ready-made subquery filter', () => {
+		// `where` takes one string and nothing concatenates at preprocess time,
+		// so `"axis:bg"` has to arrive built (BUG-010).
+		const artifact = build(readSites());
+		for (const row of artifact.axesAvailable) expect(row.query).toBe(`axis:${row.axis}`);
 	});
 
 	it('keeps each partition single-purpose, so a query needs no second clause', () => {

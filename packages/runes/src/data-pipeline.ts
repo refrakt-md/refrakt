@@ -108,7 +108,25 @@ function walkAndReplaceData(
 			// harmless while `{% section %}` and `{% grid %}` consume their
 			// children — the `accordion-item` tags and their body text vanish with
 			// no error or warning (SPEC-127).
-			const replacement = resolveData(child, page, ctx, files, enclosing);
+			let replacement = resolveData(child, page, ctx, files, enclosing);
+			// Resolve any `data` the replacement carries — a subquery, one copy
+			// per outer row, each with its `where` already bound (WORK-553).
+			//
+			// Walked through a throwaway container because a subquery can be a
+			// *direct* child of the body, in which case it is the replacement
+			// node itself: `walkAndReplaceData` only ever replaces children, so
+			// handing it the node would walk past the very tag that needs
+			// resolving.
+			//
+			// This terminates without a depth limit: the tags come from the
+			// authored body and each pass consumes one level of it. A row value
+			// cannot synthesise a new `data` tag — rows are text, and `bindRow`
+			// only substitutes into slots that already exist.
+			if (replacement.length > 0) {
+				const container = new Ast.Node('document', {}, replacement);
+				walkAndReplaceData(container, page, ctx, files, onReplaced, enclosing);
+				replacement = container.children;
+			}
 			node.children.splice(i, 1, ...replacement);
 			i += replacement.length - 1;
 			onReplaced();
@@ -134,7 +152,16 @@ function bindRow(node: Node, row: Record<string, unknown>): Node {
 	for (const [key, value] of Object.entries(node.attributes ?? {})) {
 		attributes[key] = resolveRowVariable(value, row);
 	}
-	const children = (node.children ?? []).map((child) => bindRow(child, row));
+	// **A nested `data` owns its own `$row`** (WORK-553). Its *attributes* bind
+	// from this row — that is how a subquery is parameterised, `where=$row.axis`
+	// — but its body belongs to the subquery's rows, so it is copied verbatim.
+	//
+	// Without the stop, the outer bind resolves the inner body's `$row.name`
+	// against the outer row, which has no such column, and blanks it to `''`
+	// before the subquery ever runs. Measured, not theorised.
+	const children = node.tag === 'data'
+		? (node.children ?? []).map(cloneNode)
+		: (node.children ?? []).map((child) => bindRow(child, row));
 	const copy = new Ast.Node(node.type, attributes, children, node.tag);
 	// `inline` and a few other node types carry meaning in fields the
 	// constructor does not take; copy what Markdoc sets.
@@ -162,6 +189,19 @@ function splitCells(body: Node[]): Node[][] {
 		else cells[cells.length - 1].push(node);
 	}
 	return cells;
+}
+
+/** Deep-copy a node without touching variables — the subquery body's copy. */
+function cloneNode(node: Node): Node {
+	const copy = new Ast.Node(
+		node.type,
+		{ ...(node.attributes ?? {}) },
+		(node.children ?? []).map(cloneNode),
+		node.tag,
+	);
+	if (node.lines) copy.lines = node.lines;
+	if (node.location) copy.location = node.location;
+	return copy;
 }
 
 function resolveRowVariable(value: unknown, row: Record<string, unknown>): unknown {

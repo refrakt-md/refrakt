@@ -134,22 +134,27 @@ no new machinery:
 {% /data %}
 ```
 
-### `details`, not `accordion`
+### `accordion`, with the SEO concern split out
 
-The axes render as one `{% details %}` per axis rather than `{% accordion %}`
-items. Same collapsed behaviour, and two things better:
+An interim version used `{% details %}` per axis, to avoid `accordion`'s
+unconditional `typeof="FAQPage"` — an axis is not a frequently asked question,
+and across 88 pages that is roughly **970 fabricated `Question` entries** in the
+site's structured data.
 
-- **`accordion` emits `typeof="FAQPage"` with each item a `Question`.** An axis
-  is not a frequently asked question. Across 88 pages that would have been ~970
-  fabricated FAQ entries in the site's structured data.
-- **No wrapper means no empty wrapper.** `details` comes straight from the `data`
-  body, so the six zero-axis runes get nothing at all rather than an empty
-  container.
+Reviewed against the preview, `details` is the wrong *component*: an accordion
+is what this section should be, and the structured data is the part that should
+bend. So the accordion stays and the schema.org problem becomes
+{% ref "WORK-552" /%} — an attribute that suppresses a rune's schema emission.
 
-`accordion` was still fixed in passing: with no items *and* no header it now
-renders nothing, because an empty `FAQPage` is structured data claiming
-questions it does not have. That is reachable for anyone wrapping generated
-items.
+Two things landed from that detour anyway:
+
+- **`accordion` with no items and no header now renders nothing**, because an
+  empty `FAQPage` is structured data claiming questions it does not have. That
+  is reachable for anyone wrapping generated items, and it is what keeps the six
+  zero-axis runes from emitting an empty container.
+- **Each item's content is a table**, not a comma-joined string — which needed
+  {% ref "WORK-553" /%}, since `data` generates the items and the table has to
+  come from a query inside a query.
 
 ## Blocked by
 
@@ -196,6 +201,15 @@ Branch: `claude/content-author-docs-org-vps1un`
 **A near-miss worth recording.** The rollout script globbed `plan-site/content/**` alongside `site/content/runes/**`, and `plan-site/content/_partials/entity/spec.md` — a *card template* — shadowed the real `runes/plan/spec.md` in the basename map. The five plan runes silently resolved to the wrong files. They were skipped rather than rewritten, so nothing was damaged, but a slightly different script would have mangled five card templates. Caught only because two scripts disagreed about whether `spec` had an `## Attributes` heading.
 
 **Deviation from this item's premise, already recorded in the generator tests:** the approach says plan runes are only in the `plan` site, so a one-site generator would drop them. Measured, `main` already loads `@refrakt-md/plan`, so `plan` is a strict subset. The multi-site iteration is right in shape but is insurance here, not the thing that catches the gap.
+
+**A `{#` comment is not a comment, and that cost a build.** The shared block's
+header comment was first written with Markdoc's documented `{# … #}` syntax,
+quoting `{% data %}` and `{% include %}` in its prose. Neither the delimiters nor
+the contents are special: the braces rendered literally and both quoted tags were
+parsed as *real tags*, on all 94 pages at once — 0 errors to **226**. Rewritten
+as an HTML comment. Filed as {% ref "BUG-012" /%}, because the docs show that
+syntax in two places and a comment is exactly where someone would write example
+markup.
 
 **Left as-is, worth a follow-up:** `PAGELESS` maps `region` to `null` while its comment says "documented in layout.md" — and it is, by a hand-written table that survives. The data and the comment disagree; `'layout'` is probably the honest value.
 

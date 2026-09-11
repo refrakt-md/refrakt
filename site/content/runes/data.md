@@ -147,6 +147,28 @@ Three things to know:
 - **`headers` needs a body.** On a self-closing tag it is an error rather than a silent no-op — it would read as a rename of `columns`, which selects and renames *source* columns instead.
 - **A `---` inside a cell splits it.** The same constraint [`card`](/runes/card) and [`grid`](/runes/grid) carry. Watch for it in free-text columns.
 
+### Nested queries
+
+A `{% data %}` inside another one's body runs as a **subquery**, once per outer row:
+
+```markdoc
+{% data src="axes.json" where=$r %}
+## {% $row.axis %}
+
+{% data src="axis-attributes.json" where=$row.query headers="Attribute, Type" %}
+{% code %}{% $row.name %}{% /code %}
+---
+{% $row.type %}
+{% /data %}
+{% /data %}
+```
+
+`$row` always means **the nearest enclosing query's** row — so the inner table sees attribute rows even though both sources have a `name` column. The one place the outer row reaches in is the subquery's **attributes**: `where=$row.query` is how the subquery gets filtered for this row, which is the whole point.
+
+Because `where` takes a single string and nothing here concatenates, the filter value has to arrive ready-made. Emit it as a column (`query` above holds `"axis:bg"`) rather than trying to build it at the call site.
+
+An empty subquery renders nothing and does **not** take its row with it — a row whose subquery finds no matches still renders its own content.
+
 ### Limits
 
 The binding is deliberately shallow — bind a row, render a block. `{% if %}` works (`{% else /%}` is self-closing), but there is no iteration, and formatting goes through the shared Markdoc functions, the same constraint [`collection`](/runes/collection) templates hold.
