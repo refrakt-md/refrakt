@@ -31,7 +31,7 @@ left to do**: no `$ref` to resolve, no sibling `required` array to fold.
 - [ ] Pages carry their own and base-preset attributes rendered from the artifact
 - [ ] Universal attributes render as a collapsed accordion with **one item per carried axis**, not one row per attribute
 - [ ] Axes the rune does not carry are **not** items — they render as an uncollapsed note beneath, grouped by reason, one line each
-- [ ] The accordion is a shared partial taking the rune name, not markup repeated across ~45 pages
+- [ ] The accordion is authored once and included, not markup repeated across ~45 pages — needs {% ref "WORK-549" /%}, since a partial cannot contain `{% data %}`
 - [ ] `SerializedRune` carries full attribute records for universals, grouped by axis — not the current bare `string[]`
 - [ ] Per-axis prose comes from the facet contract descriptions in `packages/transform/src/facets/`
 - [ ] The six runes with no universal attributes render no accordion at all — just their one-line posture reason
@@ -63,8 +63,9 @@ eye.
 universal attributes, 24 are constant across all 45 runes that carry any — only
 `prominence` (10/45), `reading`+`dropcap` (8/45) and `frame*` (4/45) vary, and
 six runes carry none at all. So render the delta, at axis granularity, in a
-collapsed accordion authored once as a partial. Full argument and measurements
-in {% ref "SPEC-128" /%} D1.
+collapsed accordion authored once as a shared block. Full argument and
+measurements in {% ref "SPEC-128" /%} D1; the inclusion mechanism is
+{% ref "WORK-549" /%}.
 
 **Unavailable axes are a note, not items.** 28 runes have 4 unavailable axes
 against 8 carried, and the 6 inline runes have 12 against 0 — as items that
@@ -91,39 +92,23 @@ Filter internal attributes by the `__` prefix convention rather than growing
 `HIDDEN_ATTRIBUTES` entry by entry — the prefix already means "internal", and a
 list would need maintaining.
 
-## Open: `{% data %}` cannot live inside a `{% partial %}`
+## The shared block needs a macro rune
 
-Found by testing the partial design against the real content pipeline:
+`{% data %}` cannot live inside a `{% partial %}` — `preprocessData` walks the
+page AST before transform, while partials resolve *at* transform, so the tag
+survives to its throwing transform. That blocks the shared-block criterion
+above.
 
-```
-Error: data rune reached the transform phase — its preprocess hook was not
-wired through.
-```
-
-Structural, not a wiring mistake. `preprocessData` walks the **page's** AST
-before transform; partials are resolved by Markdoc *at* transform via
-`config.partials`, so the partial's content is not in the page AST when the
-preprocessor runs and the `data` tag survives to its throwing transform. A plain
-partial with `variables` works — it is specifically the preprocessor runes
-(`data`, `snippet`) that cannot be inside one.
-
-This blocks the criterion above: *"The accordion is a shared partial taking the
-rune name, not markup repeated across ~45 pages."* Three options, none free:
-
-1. **Repeat the `{% data %}` block per page** — works today, and is exactly what
-   the criterion rejects.
-2. **Make `preprocessData` walk partials.** Partial ASTs are shared across pages
-   while each page binds a different `$rune`, so this needs per-page expansion
-   rather than mutation of the shared tree.
-3. **A rune rather than a partial** — `{% rune-attributes name="card" /%}`. Clean
-   at the call site; adds a rune to the catalogue for a docs-site concern.
-
-Note `docs/authoring/partials.md` states partials are "inlined at parse time",
-which this contradicts. That line needs correcting whichever option wins.
+Filed as {% ref "SPEC-129" /%} (a pre-transform macro rune) and
+{% ref "WORK-549" /%}. Testing it also surfaced {% ref "BUG-010" /%}: a `where`
+that cannot be resolved silently matches every row, so a page filtering one
+rune's attributes would render the whole catalogue under that rune's heading and
+look plausible.
 
 ## Blocked by
 
 - {% ref "WORK-543" /%} — the pages need the `data` body to render rows
+- {% ref "WORK-549" /%} — the shared accordion block cannot be a partial; it needs the macro rune
 - {% ref "BUG-009" /%} — the data source carries phantom runes (`music-playlist`) and omits nine child runes (`accordion-item`, `tab`, …); generating from it before that is fixed bakes both into the artifact
 
 ## Scope, now that WORK-547 has landed

@@ -168,7 +168,7 @@ against the real package set:
 ## Design decisions
 
 **D1 — Own attributes in the table; universal attributes in an axis accordion,
-rendered from a shared partial.**
+authored once as a shared block.**
 
 An earlier draft said "universal attributes are not listed per page; the page
 links to their reference". A link is necessary and not sufficient.
@@ -228,12 +228,26 @@ Collapsed by default, so the noise objection is answered without hiding
 anything: `AccordionItem` headers render as `<summary>`, so the content stays in
 the DOM and find-in-page reaches it.
 
-**One partial, not markup on 45 pages.** The accordion is authored once as a
-partial taking the rune name, not copied into every page. Drift cost would be
-zero either way since it is generated, but the byte cost is not, and changing
-the presentation later should be one file. This is the same argument that
-retired the `item-template` idea in {% ref "SPEC-127" /%}'s lineage — a partial
-does the work and composes better.
+**One shared block, not markup on 45 pages.** The accordion is authored once,
+not copied into every page. Drift cost would be zero either way since it is
+generated, but the byte cost is not, and changing the presentation later should
+be one file.
+
+**Correction: it cannot be a `{% partial %}`.** Testing the design against the
+real pipeline found that a preprocessor rune inside a partial never resolves —
+Markdoc expands partials during `transform`, while `preprocessData` walks the
+page AST *before* it, so the `data` tag survives to its own throwing transform:
+
+```
+Error: data rune reached the transform phase — its preprocess hook was not
+wired through.
+```
+
+A plain partial with `variables` works; it is specifically `data` and `snippet`
+that cannot be inside one — which are exactly the runes worth factoring out.
+{% ref "SPEC-129" /%} proposes the sibling that can, pasting AST during
+preprocess, and {% ref "WORK-549" /%} implements it. This spec's shared-block
+criterion depends on it.
 
 **D1a — `SerializedRune` has to carry more than it does.** `attributes.own` and
 `attributes.base` are full `SerializedAttribute` records (type, required,
@@ -406,7 +420,7 @@ failure that actually occurs.
 - [ ] Rune pages render their own (and base-preset) attributes from that artifact
 - [ ] Universal attributes render as a collapsed accordion with **one item per carried axis**, not one row per attribute
 - [ ] Axes the rune does not carry are **not** items — they render as an uncollapsed note beneath, grouped by reason, one line each
-- [ ] The accordion is a shared partial taking the rune name, not markup repeated across ~45 pages
+- [ ] The accordion is authored once and included, not markup repeated across ~45 pages — via {% ref "WORK-549" /%}'s macro rune, since a partial cannot contain `{% data %}`
 - [ ] `SerializedRune` carries full attribute records for universals, grouped by axis — not the current bare `string[]`
 - [ ] Each accordion item links to that axis's documentation, from an axis→page map — not one shared URL, since `motion` lives on its own page and two axes have none
 - [ ] A test asserts every axis in `AXIS_ATTRIBUTES` has a documentation entry, so a new axis cannot ship undocumented
