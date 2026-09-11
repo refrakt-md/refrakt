@@ -69,6 +69,7 @@ tint-lock: false
 - snippet
 - data
 - include
+- code
 - datatable
 - chart
 - diagram

@@ -9,6 +9,7 @@ import { codegroup } from './tags/codegroup.js';
 import { snippet } from './tags/snippet.js';
 import { data } from './tags/data.js';
 import { include } from './tags/include.js';
+import { code } from './tags/code.js';
 import { hint } from './tags/hint.js';
 import { tab, tabs } from './tags/tabs.js';
 import { nav } from './tags/nav.js';
@@ -444,6 +445,14 @@ export const runes = {
     typeName: 'Data',
     category: 'Code & Data',
     snippet: ['{% data src="${1:data/revenue.csv}" /%}'],
+  }),
+  code: defineRune({
+    name: 'code',
+    schema: code,
+    description: 'Inline code span for dynamic content. Backticks are literal by definition, so a variable inside them never resolves; this renders the same `<code>` and does (WORK-551).',
+    typeName: 'Code',
+    category: 'Code & Data',
+    snippet: ['{% code %}${1:value}{% /code %}'],
   }),
   include: defineRune({
     name: 'include',

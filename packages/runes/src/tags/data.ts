@@ -35,12 +35,15 @@ export const data = createContentModelSchema({
 		sort: { type: String, required: false, description: 'Sort by a column; "-" prefix for descending.' },
 		limit: { type: Number, required: false, description: 'Maximum number of rows.' },
 		offset: { type: Number, required: false, description: 'Skip this many rows before limiting.' },
+		// Body-as-table-row (WORK-550). Its presence switches what the body means.
+		headers: { type: String, required: false, description: 'Header labels for a `---`-delimited body, e.g. "Attribute, Type". Setting it makes the body one table ROW — cells separated by `---` — instead of a run of blocks, so cells can carry emphasis, links, runes and {% if %}. Requires a body.' },
 		// Shared typing.
 		numeric: { type: String, required: false, description: 'Comma-separated columns to force to numeric typing (emits data-value).' },
 		text: { type: String, required: false, description: 'Comma-separated columns to force to text typing.' },
 	},
 	// An optional body is the per-row template (SPEC-127): transformed once per
 	// row with `$row` bound, in place of the `<table>` the bodyless form emits.
+	// With `headers` set it is instead one `---`-delimited table *row* (WORK-550).
 	// The content model stays empty because the body never reaches the transform
 	// — `preprocessData` binds and splices it at parse time — but it must be
 	// *allowed* here or Markdoc rejects the tag before the preprocessor sees it.

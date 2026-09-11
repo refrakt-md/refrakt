@@ -42,7 +42,7 @@ import {
 	unknownFieldWarnings,
 	type TypedTable,
 } from './data-projection.js';
-import { emitTableNode, emitErrorNode } from './data-emit.js';
+import { emitTableNode, emitBodyTableNode, emitErrorNode } from './data-emit.js';
 
 /** Resolve a Markdoc attribute value to a string — literal strings and
  *  `Variable` AST nodes (e.g. `src=$file.dir`). Mirrors snippet's resolver. */
@@ -143,6 +143,27 @@ function bindRow(node: Node, row: Record<string, unknown>): Node {
 	return copy;
 }
 
+/**
+ * Split a body into `---`-delimited cells (WORK-550).
+ *
+ * `---` is already refrakt's delimiter for this shape — `card` splits its body
+ * into media / body / footer on it, `grid` splits columns on it — and Markdoc
+ * parses it to an `hr` node whether or not blank lines surround it, so a cell
+ * can be written tightly without turning the line above into a setext heading.
+ *
+ * A cell may hold any number of block nodes, including none: `a --- --- b` is
+ * three cells, the middle one empty. That matters for a column an author wants
+ * blank on some rows.
+ */
+function splitCells(body: Node[]): Node[][] {
+	const cells: Node[][] = [[]];
+	for (const node of body) {
+		if (node.type === 'hr') cells.push([]);
+		else cells[cells.length - 1].push(node);
+	}
+	return cells;
+}
+
 function resolveRowVariable(value: unknown, row: Record<string, unknown>): unknown {
 	if (value && typeof value === 'object') {
 		const node = value as { $$mdtype?: string; path?: unknown };
@@ -213,6 +234,17 @@ function resolveDataToNodes(
 ): Node[] {
 	const a = tag.attributes;
 	const src = resolveString(a.src, ctx.variables);
+	const headers = splitList(resolveString(a.headers, ctx.variables));
+
+	// `headers` describes the *body's* cells, so without a body there is nothing
+	// for it to describe. Ignoring it silently would read as a rename of
+	// `columns`, which selects and renames source columns instead.
+	if (headers.length > 0 && body.length === 0) {
+		const msg = '`headers` names the columns of a `---`-delimited body and needs one. '
+			+ 'For a bodyless table, select and rename source columns with `columns`.';
+		ctx.error(`data "${src || '(unresolved)'}": ${msg}`, page.url);
+		return [emitErrorNode(`data error: ${msg}`)];
+	}
 
 	if (!src) {
 		const msg = 'data `src` attribute is required (and an unresolvable variable reference resolves to empty)';
@@ -272,6 +304,25 @@ function resolveDataToNodes(
 		const typed = applyTyping(projected, { numeric: numericCols, text: textCols, sources });
 
 		if (body.length === 0) return [emitTableNode(typed)];
+
+		// WORK-550 — `headers` switches what the body *means*: a `---`-delimited
+		// sequence of cells rather than a run of blocks. The cells stay authored
+		// Markdoc, so a generated table can carry the emphasis, links, runes and
+		// `{% if %}` the bodyless form's literal-text cells cannot.
+		if (headers.length > 0) {
+			const cells = splitCells(body);
+			if (cells.length !== headers.length) {
+				throw new DataSourceError(
+					`\`headers\` names ${headers.length} column${headers.length === 1 ? '' : 's'} but the body has `
+					+ `${cells.length} \`---\`-delimited cell${cells.length === 1 ? '' : 's'}. `
+					+ 'Separate each cell with a `---` line; the counts must match.',
+				);
+			}
+			const rows = rowObjects(typed).map((row) =>
+				cells.map((cell) => cell.map((child) => bindRow(child, row))),
+			);
+			return [emitBodyTableNode(headers, rows)];
+		}
 
 		// `numeric` / `text` exist to drive the `data-value` channel that charts
 		// and sortable tables read off `<td>`s. With a body there are no cells to

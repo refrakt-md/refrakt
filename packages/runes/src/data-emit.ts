@@ -45,6 +45,51 @@ export function emitTableNode(table: TypedTable): Node {
 }
 
 /**
+ * Build a `table` node whose cells are **authored Markdoc** rather than literal
+ * text (WORK-550).
+ *
+ * `emitTableNode` above wraps every cell in a bare `text` node, so nothing a
+ * source contains is ever markup — right for arbitrary CSV, but it means a
+ * generated reference table cannot render `` `href` `` or `✓` the way the
+ * hand-written one it replaces does. Here the cells come from the rune's body,
+ * already parsed by Markdoc and bound per row, so emphasis, links, runes and
+ * `{% if %}` all work inside one.
+ *
+ * The output is deliberately the *same* shape `emitTableNode` produces —
+ * `table > thead > tr > th` and `table > tbody > tr > td` — so `chart`'s
+ * `findTable`, `datatable`'s lookup and the `td` node's rendering need no
+ * special case for a body-built table.
+ */
+/**
+ * Drop the wrapping `paragraph` from a single-block cell.
+ *
+ * A cell authored as one line parses to `paragraph > inline > …`, which would
+ * render `<td><p>href</p></td>` — where a hand-written pipe table gives
+ * `<td>href</td>`, and where the theme's paragraph spacing then applies inside
+ * a table cell. Unwrapping keeps a body-built table structurally identical to
+ * both, which is the whole point of reusing the shape.
+ *
+ * A cell with several blocks (a list, two paragraphs) keeps them: there the
+ * wrapper is carrying real structure rather than markdown's default.
+ */
+function unwrapCell(cell: Node[]): Node[] {
+	if (cell.length === 1 && cell[0].type === 'paragraph') return cell[0].children ?? [];
+	return cell;
+}
+
+export function emitBodyTableNode(headers: string[], rows: Node[][][]): Node {
+	const headerCells = headers.map((h) => new Ast.Node('th', {}, [inlineText(h)]));
+	const thead = new Ast.Node('thead', {}, [new Ast.Node('tr', {}, headerCells)]);
+
+	const bodyRows = rows.map((cells) =>
+		new Ast.Node('tr', {}, cells.map((cell) => new Ast.Node('td', {}, unwrapCell(cell)))),
+	);
+	const tbody = new Ast.Node('tbody', {}, bodyRows);
+
+	return new Ast.Node('table', {}, [thead, tbody]);
+}
+
+/**
  * Build a visible in-page error callout (a `hint` rune node, `type="caution"`)
  * carrying the message — used for sandbox-escape / missing-file / parse-error /
  * empty-result, so the failure is visible and the build continues (the `data`

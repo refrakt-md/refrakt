@@ -1659,6 +1659,16 @@
 			"rune": "data",
 			"plugin": "core",
 			"scope": "own",
+			"name": "headers",
+			"type": "string",
+			"required": false,
+			"description": "Header labels for a `---`-delimited body, e.g. \"Attribute, Type\". Setting it makes the body one table ROW — cells separated by `---` — instead of a run of blocks, so cells can carry emphasis, links, runes and {% if %}. Requires a body.",
+			"page": "data"
+		},
+		{
+			"rune": "data",
+			"plugin": "core",
+			"scope": "own",
 			"name": "numeric",
 			"type": "string",
 			"required": false,
@@ -7493,6 +7503,13 @@
 			"axes": "prominence",
 			"reason": "this rune has no page-section header",
 			"page": "chart"
+		},
+		{
+			"rune": "code",
+			"available": false,
+			"axes": "bg, dropcap, elevation, frame, inset, motion (reveal, stagger), prominence, reading, spacing, substrate, tint, width",
+			"reason": "this rune is inline — the block-level universal axes have nothing to act on",
+			"page": "code"
 		},
 		{
 			"rune": "codegroup",

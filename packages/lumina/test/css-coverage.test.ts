@@ -27,6 +27,7 @@ const UNSTYLED_BLOCKS = new Set([
 	'deflist',           // styled via shared [data-zone-layout="definition-list"] selectors
 	'data',              // preprocess rune (SPEC-103) — emits a plain `table` node; styled by the shared table CSS, no own `.rf-data` element
 	'include',           // preprocess rune (SPEC-129) — splices the partial's content in and leaves nothing behind; there is no `.rf-include` element to style
+	'code',              // inline rune (WORK-551) — renders a bare `<code>` on purpose, styled by global.css's element rule so it is indistinguishable from a backtick span
 ]);
 
 const KNOWN_MISSING_SELECTORS = new Set([

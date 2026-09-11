@@ -112,11 +112,44 @@ Markdoc does not interpolate inside inline code, so this renders the text `{% $r
 ### `{% $row.name %}`
 ```
 
-Nothing warns — you get a heading per row, each showing the same literal. Use `**bold**`, or leave the value bare and style the surrounding markup.
+Nothing warns — you get a heading per row, each showing the same literal.
+
+This is standard Markdown, and it is the *only* inline construct with the property: links, nested emphasis and rune bodies all pass a variable through fine. Use [`{% code %}`](/runes/code) when you want the value code-styled:
+
+```markdoc
+### {% code %}{% $row.name %}{% /code %}
+```
+
+### A table with formatted cells
+
+Set `headers` and the body becomes one table **row** — cells separated by `---` — instead of a run of blocks:
+
+```markdoc
+{% data src="_data/rune-attributes.json" root="attributes" where="rune:card scope:own"
+        headers="Attribute, Type, Required, Description" %}
+{% code %}{% $row.name %}{% /code %}
+---
+{% $row.type %}
+---
+{% if $row.required %}✓{% else /%}—{% /if %}
+---
+{% $row.description %}
+{% /data %}
+```
+
+This is how you get a table whose cells carry markup. The bodyless form above builds its cells from literal text — right for arbitrary CSV, where a stray `*` should stay a `*` — so it can render `true` but never `✓`, and `href` but never `` `href` ``. Here the cells are markdown you wrote, so emphasis, links, runes and `{% if %}` all work inside one.
+
+The emitted table is structurally identical to the bodyless one, so [`chart`](/runes/chart) and [`datatable`](/runes/datatable) consume it unchanged.
+
+Three things to know:
+
+- **The counts must match.** `headers` naming four columns and a body with three `---`-delimited cells is a build error that names both numbers.
+- **`headers` needs a body.** On a self-closing tag it is an error rather than a silent no-op — it would read as a rename of `columns`, which selects and renames *source* columns instead.
+- **A `---` inside a cell splits it.** The same constraint [`card`](/runes/card) and [`grid`](/runes/grid) carry. Watch for it in free-text columns.
 
 ### Limits
 
-The binding is deliberately shallow — bind a row, render a block, no conditionals or iteration. Formatting goes through the shared Markdoc functions, the same constraint [`collection`](/runes/collection) templates hold. A page needing conditional structure per row wants a rune of its own.
+The binding is deliberately shallow — bind a row, render a block. `{% if %}` works (`{% else /%}` is self-closing), but there is no iteration, and formatting goes through the shared Markdoc functions, the same constraint [`collection`](/runes/collection) templates hold.
 
 Two more:
 
@@ -246,6 +279,7 @@ A SQLite adapter is specified but not yet implemented. It will slot into the sam
 | `offset` | Number | No | Skip this many rows before limiting. |
 | `numeric` | String | No | Comma-separated columns to force to numeric typing (emits `data-value`). |
 | `text` | String | No | Comma-separated columns to force to text typing. |
+| `headers` | String | No | Header labels for a `---`-delimited body, e.g. `"Attribute, Type"`. Setting it makes the body one table **row** rather than a run of blocks. Requires a body. |
 
 ## See also
 

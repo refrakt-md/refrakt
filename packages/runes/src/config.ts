@@ -162,6 +162,9 @@ export const coreConfig: ThemeConfig = {
 		 * sees an `Include` tag and there is no `include` block to style. The
 		 * entry exists so the rune is known to inspect/contracts tooling. */
 		Include: { block: 'include' },
+		/* An inline `<code>`, styled by the same rule as a backtick code span so a
+		 * page mixing the two is not visibly inconsistent (WORK-551). */
+		Code: { block: 'code', universalAttributes: 'inline' },
 		/* Expand emits a placeholder during transform; the postProcess hook
 		 * substitutes the entity content wrapped in `<section
 		 * class="rf-expand" data-rune="expand">`. Engine config provides the
