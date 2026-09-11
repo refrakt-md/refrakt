@@ -19,10 +19,14 @@ preprocess, so `data` and `snippet` inside it resolve. Unblocks
 
 ## Approach
 
-**The name, the new-rune question and the directory are settled** — see
-SPEC-129. What remains open is whether `include` becomes the documented default
-over `partial`, which is editorial rather than technical and does not block
-implementation.
+**Every design question is settled** — see SPEC-129: a new rune (not a mode on
+the Markdoc builtin), named `include`, sharing `_partials/`, with `partial`
+staying the documented default.
+
+**That last decision makes the error message the deliverable, not a detail.**
+If `partial` is what authors reach for first, the preprocessor failure *is* the
+discovery path for `include` — for most people the only time they learn it
+exists. Write that message before writing the rune.
 
 **Option B needs {% ref "BUG-010" /%} fixed first, not alongside.** Deriving the
 query from `$page.slug` means `resolveString` evaluating `Function` nodes — and

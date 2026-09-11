@@ -180,12 +180,26 @@ Two consequences to settle before implementing:
 - **Recursion needs a bound.** An include including itself is an infinite paste.
   A depth limit with a clear error, rather than a stack overflow.
 
-## Open questions
+## Settled: `partial` stays the default
 
-- **Should `include` be the documented default**, with `partial` presented as
-  Markdoc's built-in that still works? Two peers invite "which one?"; a default
-  plus a compatibility note does not. It slightly demotes a Markdoc feature in
-  refrakt's own docs, which is an editorial call rather than a technical one.
+`include` is the specialist, reached for when the file contains a preprocessor
+rune. Two reasons, the second the stronger:
+
+- **Variables will be wanted more often than preprocessor runes.** Parameterising
+  a reusable chunk is the common case; needing `data` or `snippet` inside one is
+  not.
+- **`partial` is an established Markdoc standard.** Presenting refrakt's rune as
+  the default would have refrakt quietly demoting a Markdoc feature in its own
+  docs, and would surprise someone arriving from Markdoc who expects `partial` to
+  work as it does everywhere else. Keeping it default keeps "refrakt is Markdoc
+  plus runes" true.
+
+**This makes the error message load-bearing rather than merely good.** If
+`partial` is what authors reach for first, then hitting the preprocessor failure
+*is* the discovery path for `include` — for most authors it will be the only time
+they learn the second rune exists. An error that describes the pipeline
+("preprocess hook was not wired through") teaches nothing; one that names the fix
+is the entire onboarding.
 
 ## Acceptance Criteria
 
@@ -194,7 +208,7 @@ Two consequences to settle before implementing:
 - [ ] Nesting is bounded, with an error naming the cycle rather than a stack overflow
 - [ ] The parameterisation question is settled, per A / B / C above
 - [ ] Both runes read `_partials/` and the same `namespace:file` roots
-- [ ] The preprocessor-in-a-partial failure names the fix — use `include` — rather than describing the pipeline
+- [ ] The preprocessor-in-a-partial failure names the fix — use `include` — rather than describing the pipeline, since with `partial` as the default this is the main discovery path for the new rune
 - [ ] `docs/authoring/partials.md`'s "inlined at parse time" claim is corrected
 - [ ] The two runes' difference is documented where an author choosing between them will look
 
