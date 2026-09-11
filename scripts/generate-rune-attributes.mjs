@@ -22,6 +22,7 @@ import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
+import { UNIVERSAL_AXIS_FACETS } from '@refrakt-md/transform';
 import { PAGELESS } from './check-rune-docs.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -90,6 +91,18 @@ export function rowsForRune(rune) {
 	return rows;
 }
 
+/**
+ * One line of prose per axis, read from the facet contracts themselves.
+ *
+ * `UNIVERSAL_AXIS_FACETS` is the registry the structure contract already
+ * describes itself from, so the axis prose on a rune page and the axis prose in
+ * `refrakt contracts` are the same sentence with one author. Writing it again
+ * here would be a second copy to keep true.
+ */
+export const AXIS_DESCRIPTIONS = Object.fromEntries(
+	UNIVERSAL_AXIS_FACETS.map((facet) => [facet.axis, facet.contract.description]),
+);
+
 /** Axis-level rows: what a rune carries, and what it does not, with the reason. */
 export function axisRowsForRune(rune) {
 	const rows = [];
@@ -98,6 +111,7 @@ export function axisRowsForRune(rune) {
 			rune: rune.name,
 			axis,
 			available: true,
+			description: AXIS_DESCRIPTIONS[axis] ?? '',
 			attributes: Object.keys(attributes).join(', '),
 		});
 	}
