@@ -44,25 +44,73 @@ import {
 } from './data-projection.js';
 import { emitTableNode, emitBodyTableNode, emitErrorNode } from './data-emit.js';
 
-/** Resolve a Markdoc attribute value to a string — literal strings and
- *  `Variable` AST nodes (e.g. `src=$file.dir`). Mirrors snippet's resolver. */
-function resolveString(value: unknown, variables: Record<string, unknown> | undefined): string {
-	if (value === undefined || value === null) return '';
-	if (typeof value === 'string') return value;
-	if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+/**
+ * Resolve a Markdoc attribute value, saying *why* when it cannot (BUG-010).
+ *
+ * The old resolver returned `''` for everything it could not read, which is the
+ * right default for an absent optional attribute and disastrous for a present
+ * one: `applyWhere` treats an empty expression as "no filter", so
+ * "I could not read your filter" silently became "you wrote no filter" and the
+ * page rendered the **entire** source. Measured on a two-row file, a valid
+ * filter gave one row and every unreadable one gave both.
+ *
+ * So the reason travels with the failure and the call site decides. Absent is
+ * still fine; present-but-unreadable is an error that names what went wrong.
+ */
+type ResolvedAttr = { ok: true; value: string } | { ok: false; why: string };
+
+function resolveAttr(value: unknown, variables: Record<string, unknown> | undefined): ResolvedAttr {
+	if (value === undefined || value === null) return { ok: false, why: 'is empty' };
+	if (typeof value === 'string') {
+		return value === '' ? { ok: false, why: 'is empty' } : { ok: true, value };
+	}
+	if (typeof value === 'number' || typeof value === 'boolean') return { ok: true, value: String(value) };
 	if (typeof value === 'object' && '$$mdtype' in (value as Record<string, unknown>)) {
-		const node = value as { $$mdtype: string; path?: unknown };
+		const node = value as { $$mdtype: string; path?: unknown; name?: string };
 		if (node.$$mdtype === 'Variable' && Array.isArray(node.path)) {
+			const path = (node.path as string[]).join('.');
 			let current: unknown = variables;
 			for (const segment of node.path as string[]) {
-				if (current === null || current === undefined) return '';
+				if (current === null || current === undefined) { current = undefined; break; }
 				current = (current as Record<string, unknown>)[segment];
 			}
-			return current === null || current === undefined ? '' : String(current);
+			return current === null || current === undefined
+				? { ok: false, why: `references \`$${path}\`, which is not defined here` }
+				: { ok: true, value: String(current) };
+		}
+		if (node.$$mdtype === 'Function') {
+			// `data` resolves its attributes during preprocess, and Markdoc
+			// evaluates functions during the transform — so the call has not
+			// happened yet and there is nothing to read.
+			return {
+				ok: false,
+				why: `is a call to \`${node.name ?? 'a function'}()\`, and \`data\` reads its attributes `
+					+ 'during preprocess — before functions are evaluated',
+			};
 		}
 	}
-	return '';
+	return { ok: false, why: 'could not be read' };
 }
+
+/** Resolve to a string, treating anything unreadable as absent. For attributes
+ *  whose failure the caller reports separately via {@link resolveAttr}. */
+function resolveString(value: unknown, variables: Record<string, unknown> | undefined): string {
+	const r = resolveAttr(value, variables);
+	return r.ok ? r.value : '';
+}
+
+/**
+ * Every attribute `data` resolves as a string (BUG-010).
+ *
+ * `limit` and `offset` are absent on purpose — they go through `numberAttr`,
+ * which has its own coercion, and `header` is a Boolean. Everything here
+ * reaches `resolveAttr`, so a present-but-unreadable one is reported rather
+ * than quietly becoming `''`.
+ */
+const STRING_ATTRIBUTES = [
+	'src', 'format', 'delimiter', 'root', 'orient', 'key-column',
+	'columns', 'where', 'sort', 'numeric', 'text', 'headers',
+] as const;
 
 /** Parse a comma-separated column list into trimmed, non-empty names. */
 function splitList(raw: string): string[] {
@@ -273,6 +321,27 @@ function resolveDataToNodes(
 	body: Node[],
 ): Node[] {
 	const a = tag.attributes;
+
+	// BUG-010 — an attribute the author *wrote* but the rune cannot read is an
+	// error, and the reason is named. Absent stays absent: only keys actually
+	// present in the tag are checked, so omitting `where` is still fine.
+	//
+	// Checked up front and reported together, because one unreadable attribute
+	// usually means the call site is wrong in a way that affects several.
+	const unreadable: string[] = [];
+	for (const name of STRING_ATTRIBUTES) {
+		if (!(name in a)) continue;
+		const r = resolveAttr(a[name], ctx.variables);
+		if (!r.ok) unreadable.push(`\`${name}\` ${r.why}`);
+	}
+	if (unreadable.length > 0) {
+		const msg = unreadable.length === 1
+			? unreadable[0]
+			: `${unreadable.length} attributes could not be read — ${unreadable.join('; ')}`;
+		ctx.error(`data: ${msg}`, page.url);
+		return [emitErrorNode(`data error: ${msg}`)];
+	}
+
 	const src = resolveString(a.src, ctx.variables);
 	const headers = splitList(resolveString(a.headers, ctx.variables));
 

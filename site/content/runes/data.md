@@ -254,6 +254,19 @@ A sandbox escape, a missing file, a parse error, or a **source that yielded no r
 
 A **filter that legitimately matched nothing** is not an error. `{% data %}` renders nothing at all and says nothing — asking real data a question with no answer today is normal, and a page listing open bugs when there are none is working, not broken.
 
+An attribute the rune **cannot read** is a build error naming what went wrong. `data` resolves its attributes during the preprocess phase, so a few things that look like they should work cannot:
+
+```
+data: `where` is a call to `concat()`, and `data` reads its attributes
+      during preprocess — before functions are evaluated
+data: `where` references `$missing`, which is not defined here
+data: `where` is empty
+```
+
+This matters more than it sounds. An unreadable `where` used to resolve to an empty string, and an empty filter is *no* filter — so the page rendered the whole source instead of erroring. On a page filtering one rune's attributes out of a catalogue, that renders every rune's attributes under that rune's heading and looks completely plausible.
+
+Omitting an attribute is untouched: only attributes you actually wrote are checked.
+
 That leaves the mistake worth catching on its own: a **misspelt column**. Any `where`, `sort`, or `columns` clause naming a column the source does not have emits a build warning that names the column and lists the ones that exist:
 
 ```

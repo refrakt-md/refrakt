@@ -1,4 +1,4 @@
-{% bug id="BUG-010" status="confirmed" severity="major" milestone="v0.33.0" tags="runes,data,dx" %}
+{% bug id="BUG-010" status="fixed" severity="major" milestone="v0.33.0" tags="runes,data,dx" %}
 
 # An unresolvable `data` `where` value silently matches every row
 
@@ -62,11 +62,11 @@ Two independently reasonable decisions meeting badly:
 Composed, "I could not read your filter" becomes "you wrote no filter".
 
 ## Acceptance Criteria
-- [ ] A `where` attribute that is present but resolves to empty is an error, not a silent pass-through
-- [ ] The message names the attribute and says what was unresolvable
-- [ ] `sort`, `columns` and the other optional shaping attributes behave the same way — present-but-unresolvable is not silently ignored
-- [ ] Omitting an attribute entirely stays valid and unchanged
-- [ ] A test covers present-but-unresolvable separately from absent, since the two produce identical values today
+- [x] A `where` attribute that is present but resolves to empty is an error, not a silent pass-through
+- [x] The message names the attribute and says what was unresolvable
+- [x] `sort`, `columns` and the other optional shaping attributes behave the same way — present-but-unresolvable is not silently ignored
+- [x] Omitting an attribute entirely stays valid and unchanged
+- [x] A test covers present-but-unresolvable separately from absent, since the two produce identical values today
 
 ## Approach
 
@@ -84,5 +84,32 @@ empty and still need to fail loudly.
 
 - {% ref "SPEC-129" /%} — the macro rune, whose page-derived query is what surfaced this
 - {% ref "WORK-544" /%} — the same class of silent-success bug, one milestone earlier
+
+## Resolution
+
+Completed: 2026-09-11
+
+Branch: `claude/content-author-docs-org-vps1un`
+
+### What was done
+
+- `packages/runes/src/data-pipeline.ts` — `resolveAttr` returns `{ ok, value } | { ok: false, why }` instead of collapsing every failure to `''`. `resolveString` is now a thin wrapper for the call sites that report separately.
+- A `STRING_ATTRIBUTES` list checked up front: for each key **actually present** on the tag, an unreadable value is a build error naming the attribute and the reason. All failures are reported together.
+- `site/content/runes/data.md` — a section on unreadable attributes under "When something goes wrong".
+- `packages/runes/test/data-rune.test.ts` — 8 tests.
+
+### Notes
+
+**Re-measured before fixing, because BUG-011 had touched this code since the bug was filed.** Still live, and the numbers are stark — on a two-row source, the valid filter rendered 2 rows (header + match) while `concat(…)`, an undefined variable and an explicit `where=""` each rendered 3: the entire source, silently.
+
+**Three failures, three messages.** The old resolver could not distinguish them and the new one does: a function call says `data` reads its attributes during preprocess, before functions are evaluated; an undefined variable is named; an explicitly empty value says so. The first is the one that surfaced this, and the message is the part that makes it actionable rather than mysterious.
+
+**Presence, not emptiness, is the test.** `'where' in tag.attributes` separates absent from unreadable — which is the whole bug, since both produced `''` before. Probed both ways: disabling the check fails the 5 new tests; treating absent as present fails 6 existing ones across two files.
+
+**BUG-011's posture is preserved and pinned by a test.** "I read your filter and it matched nothing" still renders nothing silently; only "I could not read your filter" errors. Those two were deliberately separated one item ago and it would be easy to re-merge them by accident.
+
+**Resisted widening `resolveString` to evaluate functions**, as the approach warned. That would have made `concat(...)` work and left the bug invisible again — a `where` referencing an undefined variable would still resolve to empty and still need to fail loudly. Function evaluation at preprocess time is a separate question; this is about not lying when the answer is unavailable.
+
+**Verified against the real site**, which is the case that matters: 94 rune pages pass `where=$r` through an `{% include %}`, and a page that forgot the binding used to render the entire 516-row catalogue under one rune's heading. Build is clean at 0 errors.
 
 {% /bug %}

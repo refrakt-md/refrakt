@@ -296,3 +296,75 @@ describe('data rune — error path (SPEC-103)', () => {
 		expect(result).toBeUndefined(); // no mutation
 	});
 });
+
+describe('an unreadable attribute (BUG-010)', () => {
+	const CSV = 'region,revenue\nNorth,100\nSouth,200\n';
+	const files = { 'd.csv': CSV };
+
+	it('errors on a `where` the rune cannot read, rather than matching every row', () => {
+		// The bug: `resolveString` returned '' for anything it could not read, and
+		// `applyWhere` treats an empty expression as *no filter*. Composed, "I
+		// could not read your filter" became "you wrote no filter" and the page
+		// rendered the entire source — which looks plausible until someone counts.
+		const { rendered, warnings } = runData('{% data src="d.csv" where=concat("region:", "North") /%}', files);
+		expect(findTable(rendered)).toBeUndefined();
+		const errs = warnings.filter((w) => w.severity === 'error');
+		expect(errs).toHaveLength(1);
+		expect(errs[0].message).toContain('`where`');
+		expect(errs[0].message).toContain('concat()');
+	});
+
+	it('names an undefined variable rather than silently emptying it', () => {
+		const { warnings } = runData('{% data src="d.csv" where=$missing /%}', files);
+		const errs = warnings.filter((w) => w.severity === 'error');
+		expect(errs[0].message).toContain('$missing');
+		expect(errs[0].message).toContain('not defined');
+	});
+
+	it('treats an explicitly empty value as unreadable too', () => {
+		const { warnings } = runData('{% data src="d.csv" where="" /%}', files);
+		expect(warnings.filter((w) => w.severity === 'error')[0].message).toContain('is empty');
+	});
+
+	it('applies to the other shaping attributes, not just `where`', () => {
+		for (const attr of ['sort', 'columns', 'numeric', 'text', 'root', 'format']) {
+			const { warnings } = runData(`{% data src="d.csv" ${attr}=$missing /%}`, files);
+			const errs = warnings.filter((w) => w.severity === 'error');
+			expect(errs.length, `${attr} should be checked`).toBeGreaterThan(0);
+			expect(errs[0].message).toContain(`\`${attr}\``);
+		}
+	});
+
+	it('reports every unreadable attribute at once', () => {
+		// One bad attribute usually means the call site is wrong in a way that
+		// affects several; fixing them one build at a time is the slow path.
+		const { warnings } = runData('{% data src="d.csv" sort=$a columns=$b /%}', files);
+		const msg = warnings.filter((w) => w.severity === 'error')[0].message;
+		expect(msg).toContain('`sort`');
+		expect(msg).toContain('`columns`');
+	});
+
+	it('leaves an omitted attribute alone — absent is not unreadable', () => {
+		const { rendered, warnings } = runData('{% data src="d.csv" /%}', files);
+		expect(findTable(rendered)).toBeDefined();
+		expect(warnings.filter((w) => w.severity === 'error')).toEqual([]);
+	});
+
+	it('still renders nothing, silently, for a valid filter with no matches', () => {
+		// BUG-011's posture must survive: "I read your filter and it matched
+		// nothing" is not the same as "I could not read your filter".
+		const { rendered, warnings } = runData('{% data src="d.csv" where="region:NOPE" /%}', files);
+		expect(findTable(rendered)).toBeUndefined();
+		expect(warnings).toEqual([]);
+	});
+
+	it('accepts a variable that *is* defined', () => {
+		const { rendered, warnings } = runData(
+			'{% data src="d.csv" where=$q /%}', files, { q: 'region:North' },
+		);
+		expect(warnings.filter((w) => w.severity === 'error')).toEqual([]);
+		const json = JSON.stringify(rendered);
+		expect(json).toContain('North');
+		expect(json).not.toContain('South');
+	});
+});
