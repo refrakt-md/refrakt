@@ -1,4 +1,4 @@
-{% work id="WORK-552" status="done" priority="medium" complexity="simple" source="SPEC-130" milestone="v0.33.0" tags="runes,seo,schema-org" %}
+{% work id="WORK-552" status="done" priority="medium" complexity="simple" milestone="v0.33.0" tags="runes,seo,schema-org" %}
 
 # Suppress an accordion's schema.org emission
 

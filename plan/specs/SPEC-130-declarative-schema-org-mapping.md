@@ -84,6 +84,82 @@ So the split is clean: **the transform computes values, config names their schem
 roles.** No case requires config to compute anything, which is what makes this
 tractable.
 
+## The driving case: `playlist`
+
+`accordion` alone would have produced a weaker design. `playlist` is the rune
+that shows what the config actually has to express, because it **already
+declares what its content is** and emits the wrong schema anyway:
+
+```ts
+type: { matches: ['album', 'podcast', 'audiobook', 'series', 'mix'] }  // line 28
+…
+schemaOrgType: 'MusicPlaylist'                                          // line 237, unconditional
+schema: { name, image, byArtist, track: trackItems }
+const trackAttrs = { typeof: 'MusicRecording' };                        // line 153, unconditional
+```
+
+So `{% playlist type="podcast" %}` publishes a podcast as a music playlist whose
+episodes are music recordings. Silently, on every podcast. Filed separately as
+{% ref "BUG-013" /%}, since it is wrong today whenever this spec lands.
+
+The correct mapping needs both kinds of change at once:
+
+| `type` | schema.org | Items | Track property | Relation to `MusicPlaylist` |
+|--------|-----------|-------|----------------|------------------------------|
+| `album` | `MusicAlbum` | `MusicRecording` | `track` | **subtype** — safe narrowing |
+| `mix` | `MusicPlaylist` | `MusicRecording` | `track` | today's default |
+| `podcast` | `PodcastSeries` | `PodcastEpisode` | `hasPart` | **branch switch** |
+| `audiobook` | `Audiobook` | `Chapter` | `hasPart` | **branch switch** |
+| `series` | `CreativeWorkSeries` | `CreativeWork` | `hasPart` | **branch switch** |
+
+Note that even the *default* is imprecise: `album` is a `MusicAlbum`, a subtype
+of `MusicPlaylist`, so the safe narrowing is already available and unused.
+
+### Consequence: schema keys off a modifier, not a new attribute
+
+`type` and a `schema` attribute would be the same fact stated twice, and an
+author who disagreed with themselves would get no warning. So the mapping keys
+off the modifier the rune already has:
+
+```ts
+Playlist: {
+  schema: {
+    by: 'type',
+    album:   { type: 'MusicAlbum',    properties: { track: 'track' },   children: { track: 'MusicRecording' } },
+    podcast: { type: 'PodcastSeries', properties: { track: 'hasPart' }, children: { track: 'PodcastEpisode' } },
+    …
+  },
+}
+```
+
+`by` names an existing entry in the rune's `modifiers` config, so this reuses the
+mechanism that already drives BEM modifiers and data attributes rather than
+inventing a parallel one.
+
+That settles the layering:
+
+- **derive** — a content attribute picks the schema, because the author has
+  already said what the thing is
+- **override** — `schema="<Type>"` for when the author knows better than the
+  mapping; rarely needed once the default is derived
+- **suppress** — `schema="none"`, orthogonal to both ({% ref "WORK-552" /%})
+
+### Two emitters, one mapping
+
+`MusicRecording` is stamped in two places: playlist's own `<li>` items (line 153)
+and the standalone `track` rune. A per-type child mapping has to reach both, or a
+podcast's inline items become `PodcastEpisode` while `{% track %}` children stay
+`MusicRecording`. Whether that is one config entry consulted twice or two
+entries kept in step is a design question this spec must answer, not gloss.
+
+### Curation, not validation
+
+These mappings are hand-written per rune. Nothing checks that `PodcastEpisode` is
+really the right item type for `PodcastSeries` — refrakt ships no schema.org
+ontology and this spec does not propose adding one. At five rows per rune that is
+the right trade, but it means the table is a human judgement recorded in config,
+and should be reviewed as such.
+
 ## What it unlocks
 
 **A safe type override.** The per-type table makes `schema="ItemList"` express
