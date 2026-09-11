@@ -12,3 +12,8 @@ plans/
 .claude/*
 !.claude/settings.json
 .gallery/
+
+# Transient per-test scratch directories. Each test creates one and removes it
+# in `afterEach`, so they only exist mid-run — but a `git status` during a suite
+# sees them, which is enough to trip tooling that watches for untracked files.
+.tmp-*/
