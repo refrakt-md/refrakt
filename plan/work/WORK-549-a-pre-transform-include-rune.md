@@ -1,8 +1,8 @@
 {% work id="WORK-549" status="ready" priority="high" complexity="moderate" source="SPEC-129" milestone="v0.33.0" tags="runes,authoring,preprocess" %}
 
-# A pre-transform macro rune
+# A pre-transform include rune
 
-Implement {% ref "SPEC-129" /%}: a rune that pastes a file's AST during
+Implement {% ref "SPEC-129" /%}: an `{% include %}` rune that pastes a file's AST during
 preprocess, so `data` and `snippet` inside it resolve. Unblocks
 {% ref "WORK-548" /%}'s shared-block criterion.
 
@@ -19,11 +19,10 @@ preprocess, so `data` and `snippet` inside it resolve. Unblocks
 
 ## Approach
 
-**Settle the name and the `partial` question first.** SPEC-129 leaves three open:
-what it is called, whether `partial` should instead gain a preprocess mode, and
-whether the file shares `_partials/`. Two file-pasting runes differing only in
-phase is a teaching burden, and that is a decision to make deliberately rather
-than discover after the rune ships.
+**The name, the new-rune question and the directory are settled** — see
+SPEC-129. What remains open is whether `include` becomes the documented default
+over `partial`, which is editorial rather than technical and does not block
+implementation.
 
 **Option B needs {% ref "BUG-010" /%} fixed first, not alongside.** Deriving the
 query from `$page.slug` means `resolveString` evaluating `Function` nodes — and
@@ -35,7 +34,7 @@ plausible. Fix the silent failure, then build on the resolver.
 `data` rows, measured there: a container that is itself a rune with a content
 model consumes its children, and the pasted content vanishes with no error.
 
-**Recursion is the failure worth designing for.** A macro including itself is an
+**Recursion is the failure worth designing for.** An include including itself is an
 infinite paste. Bound the depth and name the cycle; a stack overflow during
 preprocess gives an author nothing to act on.
 

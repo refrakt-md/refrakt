@@ -420,7 +420,7 @@ failure that actually occurs.
 - [ ] Rune pages render their own (and base-preset) attributes from that artifact
 - [ ] Universal attributes render as a collapsed accordion with **one item per carried axis**, not one row per attribute
 - [ ] Axes the rune does not carry are **not** items — they render as an uncollapsed note beneath, grouped by reason, one line each
-- [ ] The accordion is authored once and included, not markup repeated across ~45 pages — via {% ref "WORK-549" /%}'s macro rune, since a partial cannot contain `{% data %}`
+- [ ] The accordion is authored once and included, not markup repeated across ~45 pages — via {% ref "WORK-549" /%}'s include rune, since a partial cannot contain `{% data %}`
 - [ ] `SerializedRune` carries full attribute records for universals, grouped by axis — not the current bare `string[]`
 - [ ] Each accordion item links to that axis's documentation, from an axis→page map — not one shared URL, since `motion` lives on its own page and two axes have none
 - [ ] A test asserts every axis in `AXIS_ATTRIBUTES` has a documentation entry, so a new axis cannot ship undocumented

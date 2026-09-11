@@ -92,14 +92,14 @@ Filter internal attributes by the `__` prefix convention rather than growing
 `HIDDEN_ATTRIBUTES` entry by entry — the prefix already means "internal", and a
 list would need maintaining.
 
-## The shared block needs a macro rune
+## The shared block needs an include rune
 
 `{% data %}` cannot live inside a `{% partial %}` — `preprocessData` walks the
 page AST before transform, while partials resolve *at* transform, so the tag
 survives to its throwing transform. That blocks the shared-block criterion
 above.
 
-Filed as {% ref "SPEC-129" /%} (a pre-transform macro rune) and
+Filed as {% ref "SPEC-129" /%} (a pre-transform include rune) and
 {% ref "WORK-549" /%}. Testing it also surfaced {% ref "BUG-010" /%}: a `where`
 that cannot be resolved silently matches every row, so a page filtering one
 rune's attributes would render the whole catalogue under that rune's heading and
@@ -108,7 +108,7 @@ look plausible.
 ## Blocked by
 
 - {% ref "WORK-543" /%} — the pages need the `data` body to render rows
-- {% ref "WORK-549" /%} — the shared accordion block cannot be a partial; it needs the macro rune
+- {% ref "WORK-549" /%} — the shared accordion block cannot be a partial; it needs the include rune
 - {% ref "BUG-009" /%} — the data source carries phantom runes (`music-playlist`) and omits nine child runes (`accordion-item`, `tab`, …); generating from it before that is fixed bakes both into the artifact
 
 ## Scope, now that WORK-547 has landed
