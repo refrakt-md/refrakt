@@ -48,10 +48,24 @@ export const data = createContentModelSchema({
 	transform(_resolved, _attrs) {
 		// Unreachable in normal operation — corePipelineHooks.preprocess replaces
 		// `data` tags with `table` nodes before the transform runs.
+		//
+		// For a *content* author there is exactly one way to get here, and it is
+		// the common one: the file was pulled in with `{% partial %}`, which
+		// Markdoc expands during transform — after the preprocess phase that
+		// resolves `data`. So the message names that fix first (SPEC-129). With
+		// `partial` documented as the default, this error is the main way anyone
+		// discovers `include` exists; describing the pipeline teaches nothing.
 		throw new Error(
-			'data rune reached the transform phase — its preprocess hook was not wired through. ' +
-			'Ensure the content pipeline runs registered `preprocess` hooks before `Markdoc.transform` ' +
-			'(data pre-resolves to a Markdoc `table` node; see SPEC-103 § Architecture).',
+			'{% data %} reached the transform phase unresolved.\n\n' +
+			'If this file is pulled in with {% partial %}: use {% include %} instead. ' +
+			'Markdoc expands partials during the transform, which is after the preprocess ' +
+			'phase that resolves `data` — so a `data` tag inside a partial never gets read. ' +
+			'{% include file="..." /%} pastes the file before preprocess, so `data` and ' +
+			'`snippet` inside it resolve. Both runes read the same `_partials/` directory ' +
+			'and file roots, so only the call site changes.\n\n' +
+			'If you are building a custom pipeline: registered `preprocess` hooks must run ' +
+			'before `Markdoc.transform` (data pre-resolves to a Markdoc `table` node; ' +
+			'see SPEC-103 § Architecture).',
 		);
 	},
 });

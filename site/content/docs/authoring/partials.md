@@ -7,7 +7,11 @@ description: Reusable content fragments shared across pages
 
 Partials let you extract repeated content into separate files and include them anywhere. Instead of duplicating the same call-to-action, disclaimer, or author bio across multiple pages, write it once and reference it by name.
 
-Partials use Markdoc's built-in `{% partial %}` tag. Content is inlined at parse time, so there is no runtime overhead.
+Partials use Markdoc's built-in `{% partial %}` tag. Content is resolved at build time, so there is no runtime overhead.
+
+{% hint type="note" %}
+A partial cannot contain `{% data %}` or `{% snippet %}`. Those resolve in an earlier build phase than partials do, and the build stops with an error naming the fix — use [`{% include %}`](/runes/include), refrakt's sibling rune, which reads the same `_partials/` directory. See [Partial or include?](#partial-or-include) below.
+{% /hint %}
 
 ## Setup
 
@@ -149,11 +153,33 @@ Avoid circular references — a partial that includes itself (directly or indire
 
 ## How it works
 
-Partials are resolved during the parse phase, before any rune transforms run. Each partial file is parsed into a Markdoc AST node and spliced into the page's AST wherever `{% partial %}` appears. This means:
+Each partial file is parsed once per build into a Markdoc syntax tree. When the page is **transformed**, Markdoc looks up `{% partial %}`'s `file` in that set and transforms the partial's tree in its place, with `variables` bound as a scope. This means:
 
-- Runes inside partials work exactly as they would inline
-- Headings in partials appear in the table of contents
 - No extra network requests or runtime cost
+- Headings in partials appear in the table of contents
+- Runes inside partials work as they would inline — *except* the two that resolve before the transform, below
+
+## Partial or include?
+
+refrakt resolves `{% data %}` and `{% snippet %}` in a **preprocess** phase that runs before the transform, walking the page's syntax tree. A partial's content is not in that tree yet, so a preprocessor rune inside one is never seen, survives to its own transform, and stops the build:
+
+```
+{% data %} reached the transform phase unresolved.
+
+If this file is pulled in with {% partial %}: use {% include %} instead.
+```
+
+[`{% include %}`](/runes/include) is refrakt's answer. It pastes the file's content into the page ahead of the preprocess phase, so `data` and `snippet` inside it resolve. It reads the same `_partials/` directory and the same file roots, and takes the same `variables` — only the tag name changes.
+
+**Reach for `{% partial %}` first.** It is Markdoc's, it behaves the same way in every Markdoc project, and it covers the common case. **Reach for `{% include %}` when the file contains `{% data %}` or `{% snippet %}`.**
+
+| | `partial` | `include` |
+|---|---|---|
+| Whose tag | Markdoc's | refrakt's |
+| Reads `_partials/` and file roots | yes | yes |
+| Takes `variables` | yes | yes |
+| Contains `data` / `snippet` | **no** — the build stops | yes |
+| Sees the page's own variables | no — its scope replaces them | yes, for anything it does not bind |
 
 ## Editor support
 

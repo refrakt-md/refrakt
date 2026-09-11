@@ -69,7 +69,10 @@ export function provideDiagnostics(
 /** Scan for {% partial file="..." %} tags and warn when the referenced file doesn't exist */
 function checkPartialReferences(text: string): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
-  const partialRegex = /\{%\s*partial\s+file\s*=\s*"([^"]*)"\s*\/?%\}/g;
+  // `include` (SPEC-129) resolves `file` against the same `_partials/`
+  // directory and file roots `partial` does, so a bad reference in either is
+  // the same diagnostic.
+  const partialRegex = /\{%\s*(?:partial|include)\s+file\s*=\s*"([^"]*)"[^%]*?\/?%\}/g;
   let match;
 
   while ((match = partialRegex.exec(text)) !== null) {

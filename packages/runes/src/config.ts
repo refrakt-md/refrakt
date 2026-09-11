@@ -12,6 +12,7 @@ import { resolveXrefs } from './xref-resolve.js';
 import type { CompiledXrefPattern } from './xref-patterns.js';
 import { preprocessSnippets, wrapStandaloneSnippets } from './snippet-pipeline.js';
 import { preprocessData } from './data-pipeline.js';
+import { preprocessIncludes } from './include-pipeline.js';
 import { registerDrawers, resolveAutoDrawerTitleLevels, hoistPreviewDrawers } from './drawer-pipeline.js';
 import { resolveFileRefs } from './file-ref-resolve.js';
 import { resolveXrefPreviews } from './xref-preview-resolve.js';
@@ -156,6 +157,11 @@ export const coreConfig: ThemeConfig = {
 		 * table renders through the standard `table` node (no `data`-specific
 		 * block CSS). */
 		Data: { block: 'data' },
+		/* Include leaves nothing behind at all — its preprocess hook splices the
+		 * tag away and pastes the partial's AST in its place, so the engine never
+		 * sees an `Include` tag and there is no `include` block to style. The
+		 * entry exists so the rune is known to inspect/contracts tooling. */
+		Include: { block: 'include' },
 		/* Expand emits a placeholder during transform; the postProcess hook
 		 * substitutes the entity content wrapped in `<section
 		 * class="rf-expand" data-rune="expand">`. Engine config provides the
@@ -2234,13 +2240,20 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 	const repoBranch = opts.repoBranch;
 
 	return {
-	// Compose the core preprocess steps: snippet (→ fence) then data (→ table).
-	// Both mutate the AST in place, so a single pass over the same tree applies
-	// both; either mutating means the caller takes the returned AST.
+	// Compose the core preprocess steps: include (→ pasted AST), then snippet
+	// (→ fence), then data (→ table). All three mutate the AST in place, so a
+	// single pass over the same tree applies them; any one mutating means the
+	// caller takes the returned AST.
+	//
+	// **Include runs first, and the order is load-bearing** (SPEC-129): the
+	// whole point of the rune is that the pasted content is in the tree when the
+	// later preprocessors walk it. Anything added to this phase that authors may
+	// want inside an included file belongs after include, not before.
 	preprocess(ast, page, ctx) {
+		const includeChanged = preprocessIncludes(ast, page, ctx);
 		const snippetChanged = preprocessSnippets(ast, page, ctx);
 		const dataChanged = preprocessData(ast, page, ctx);
-		return (snippetChanged || dataChanged) ? ast : undefined;
+		return (includeChanged || snippetChanged || dataChanged) ? ast : undefined;
 	},
 
 	register(pages: readonly TransformedPage[], registry: EntityRegistry, ctx: PipelineContext): void {

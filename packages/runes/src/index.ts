@@ -8,6 +8,7 @@ import { grid } from './tags/grid.js';
 import { codegroup } from './tags/codegroup.js';
 import { snippet } from './tags/snippet.js';
 import { data } from './tags/data.js';
+import { include } from './tags/include.js';
 import { hint } from './tags/hint.js';
 import { tab, tabs } from './tags/tabs.js';
 import { nav } from './tags/nav.js';
@@ -443,6 +444,14 @@ export const runes = {
     typeName: 'Data',
     category: 'Code & Data',
     snippet: ['{% data src="${1:data/revenue.csv}" /%}'],
+  }),
+  include: defineRune({
+    name: 'include',
+    schema: include,
+    description: 'Paste a partial\'s AST into the page before the preprocess phase, so `data` and `snippet` inside it resolve — the case `{% partial %}` cannot serve. Reads the same `_partials/` and file roots (SPEC-129).',
+    typeName: 'Include',
+    category: 'Code & Data',
+    snippet: ['{% include file="${1:shared-block.md}" /%}'],
   }),
   chart: defineRune({
     name: 'chart',

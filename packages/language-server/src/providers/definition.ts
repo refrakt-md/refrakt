@@ -27,7 +27,9 @@ export function provideDefinition(
   const offset = document.offsetAt(params.position);
 
   // Find if cursor is inside a {% partial file="..." %} tag's file value
-  const partialRegex = /\{%\s*partial\s+file\s*=\s*"([^"]*)"\s*\/?%\}/g;
+  // Both `partial` and `include` (SPEC-129) name a file in the same
+  // `_partials/` directory, so go-to-definition works the same on either.
+  const partialRegex = /\{%\s*(?:partial|include)\s+file\s*=\s*"([^"]*)"[^%]*?\/?%\}/g;
   let match;
 
   while ((match = partialRegex.exec(text)) !== null) {

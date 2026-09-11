@@ -721,6 +721,36 @@
 				}
 			}
 		},
+		"Include": {
+			"block": "include",
+			"root": ".rf-include",
+			"dataRune": "include",
+			"childOrder": [
+				"{content}"
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-include--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-include--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
+		},
 		"Expand": {
 			"block": "expand",
 			"root": ".rf-expand",
