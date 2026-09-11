@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { findBrokenFragments, collectPages, headingIdsFor, urlForFile, hasGeneratedHeadings } from './check-content-links.mjs';
+import { findBrokenFragments, findComments, collectPages, headingIdsFor, urlForFile, hasGeneratedHeadings } from './check-content-links.mjs';
 
 /**
  * Colocated with the script, the same shape as `check-rune-docs.mjs`: unit
@@ -88,5 +88,41 @@ describe('hasGeneratedHeadings', () => {
 			{ file: 'b.md', url: '/b', source: '## Real\n\n{% data src="x.json" /%}\n' },
 		]);
 		expect(broken).toHaveLength(1);
+	});
+});
+
+describe('findComments (BUG-012)', () => {
+	const page = (source) => [{ file: 'a.md', url: '/a', source }];
+
+	it('flags an HTML comment, which renders as visible text', () => {
+		// Measured: `<!-- a note -->` does not pass through as an HTML comment —
+		// Markdoc parses it into a paragraph, so the reader sees the delimiters.
+		const found = findComments(page('<!--\n  a note\n-->\n\nVisible.'));
+		expect(found).toEqual([{ file: 'a.md', form: 'an HTML comment' }]);
+	});
+
+	it('flags Markdoc comment syntax, which is not enabled', () => {
+		const found = findComments(page('{#\n  a note\n#}\n\nVisible.'));
+		expect(found).toEqual([{ file: 'a.md', form: 'Markdoc comment syntax' }]);
+	});
+
+	it('allows either form inside a fenced code block', () => {
+		// Showing the syntax as an example is fine, and is every existing use in
+		// this repo — a guard that fired on those would be turned off on day one.
+		expect(findComments(page('```markdoc\n{# like this #}\n<!-- or this -->\n```'))).toEqual([]);
+	});
+
+	it('allows either form inside inline code', () => {
+		expect(findComments(page('Write `<!-- x -->` or `{# x #}` to show it.'))).toEqual([]);
+	});
+
+	it('does not mistake Svelte block syntax for a comment', () => {
+		// `site/content/releases.md` describes `{@const}` inside `{#if}`. There is
+		// no closing `#}`, so it is not a comment attempt.
+		expect(findComments(page('- Fix build failure ({@const} inside {#if} block)'))).toEqual([]);
+	});
+
+	it('is quiet on ordinary content', () => {
+		expect(findComments(page('# Title\n\nSome prose.'))).toEqual([]);
 	});
 });

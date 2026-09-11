@@ -1,13 +1,33 @@
 {% bug id="BUG-012" status="confirmed" severity="minor" tags="content,authoring,docs" %}
 
-# Markdoc comment syntax is documented but renders literally
+# There is no way to write a comment in refrakt content
 
-`{# … #}` appears in two doc pages as the way to comment out content. It is not
-enabled: `Markdoc.parse` leaves the braces and the text between them as an
-ordinary text node, so an author copying the example gets `{# … #}` printed on
-the page.
+**Neither comment form is a comment.** Both render as visible text, for
+different reasons, and there is no third option:
 
-Worse, **anything tag-shaped inside the "comment" is parsed as a real tag.**
+- `{# … #}` is not enabled. `Markdoc.parse` leaves the braces and the text
+  between them as an ordinary text node — and **anything tag-shaped inside is
+  parsed as a real tag**.
+- `<!-- … -->` is not passed through as an HTML comment either. Markdoc parses
+  it into a **paragraph**, so the reader sees the delimiters:
+
+```
+Markdoc.transform(Markdoc.parse('<!--\n  a note\n-->'))
+  → <p>&lt;!-- a note --&gt;</p>
+```
+
+`{# … #}` appears in two doc pages as the way to comment out content, so an
+author following the docs gets braces on the page.
+
+## Expected
+
+A note in a content file that the reader never sees — the thing every other
+markup language has.
+
+## Actual
+
+Both candidate forms render as visible text. There is no third option, so a
+shared block cannot carry an explanation of itself.
 
 ## Steps to reproduce
 
@@ -48,11 +68,13 @@ and the three sibling call sites). Markdoc's comment support is a tokenizer
 option; without a tokenizer configured for it, `{#` is not special.
 
 ## Acceptance Criteria
+- [ ] Content has *some* way to carry a note that the reader never sees
 - [ ] `{# … #}` either works as a comment, or is not shown in the docs as though it does
 - [ ] If enabled: content inside a comment is not parsed — a `{% data %}` in a comment stays inert
 - [ ] If enabled: a test covers the tag-shaped-content case specifically, since that is the damaging one
 - [ ] The two documented examples agree with whichever answer is chosen
-- [ ] An alternative is documented either way — HTML comments work today and are what the shared block now uses
+- [ ] The docs say plainly which forms do not work, since both of the obvious ones fail
+- [ ] `scripts/check-content-links.mjs`'s `findComments` guard stays, or is retired deliberately if the syntax starts working
 
 ## Approach
 
@@ -62,8 +84,14 @@ mode without them (tag-shaped prose going live) is sharp. Confirm the option
 actually suppresses tag parsing rather than only hiding the delimiters — the
 measurement above suggests the naive wiring does neither.
 
-If it turns out to cost more than that, correct the two examples to use HTML
-comments and say plainly that `{# … #}` is not supported.
+If it turns out to cost more than that, correct the two examples and say plainly
+that neither form works — but note that leaves content with no comment
+mechanism at all, which is a gap worth naming rather than papering over.
+
+**A guard already exists.** `findComments` in `scripts/check-content-links.mjs`
+fails the build on either form outside code fences, which is how this stopped
+being a recurring mistake. It was added after an HTML comment in the shared
+attribute block reached the rendered pages.
 
 ## References
 

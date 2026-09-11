@@ -1,7 +1,10 @@
 /**
- * Intra-site link check (BUG-005).
+ * Content authoring checks (BUG-005, BUG-012).
  *
- * Reports internal links whose target page or `#fragment` does not exist.
+ * Two hazards that share a shape — the page looks fine, so nothing catches them:
+ *
+ *   - an internal link whose target page or `#fragment` does not exist
+ *   - a comment that is not a comment
  *
  * A fragment that matches no element is not an error in any browser — the
  * reader simply lands at the top of the page and hunts. That silence is how
@@ -14,7 +17,7 @@
  * rather than a reimplementation of the rules.
  *
  * Usage:
- *   node scripts/check-content-links.mjs        # exit 1 on any broken link
+ *   node scripts/check-content-links.mjs        # exit 1 on any finding
  */
 import { readdirSync, statSync, readFileSync, existsSync } from 'node:fs';
 import { join, relative, dirname } from 'node:path';
@@ -120,10 +123,51 @@ export function collectPages(root = ROOT) {
 	return pages;
 }
 
+/**
+ * Comments that reach the reader (BUG-012).
+ *
+ * Neither comment form is safe in refrakt content, for opposite reasons:
+ *
+ *   - `<!-- … -->` is passed through by Markdown and lands in the output.
+ *   - `{# … #}` is not enabled, so the braces render *and* anything tag-shaped
+ *     inside is parsed as a real tag. A `{% data %}` quoted in one took a site
+ *     build from 0 errors to 226.
+ *
+ * Both are most tempting in exactly the place they do most damage: a note at the
+ * top of a shared block, explaining the markup it contains.
+ *
+ * Fenced code and inline code are stripped first — showing either form as an
+ * example is fine, and that is every existing use in this repo.
+ */
+export function findComments(pages) {
+	const found = [];
+	for (const page of pages) {
+		const bare = page.source
+			.replace(/```[\s\S]*?```/g, '')
+			.replace(/`[^`\n]*`/g, '');
+		// `{#` needs its closing `#}` to count: prose describing Svelte's `{#if}`
+		// is not a comment attempt, and `site/content/releases.md` has one.
+		for (const [pattern, form] of [[/<!--[\s\S]*?-->/, 'an HTML comment'], [/\{#[\s\S]*?#\}/, 'Markdoc comment syntax']]) {
+			if (pattern.test(bare)) found.push({ file: page.file, form });
+		}
+	}
+	return found;
+}
+
 function main() {
+	const comments = findComments(collectPages());
+	if (comments.length > 0) {
+		console.error(`${comments.length} content file(s) contain a comment that reaches the reader:\n`);
+		for (const c of comments) console.error(`  ${c.file}  — ${c.form}`);
+		console.error('\nNeither form is stripped: an HTML comment is passed through to the page,');
+		console.error('and `{# … #}` renders literally while parsing any tag inside it for real.');
+		console.error('Put the note beside the file (a README) rather than inside it.');
+		return 1;
+	}
+
 	const broken = findBrokenFragments(collectPages());
 	if (broken.length === 0) {
-		console.log('✓ every internal #fragment resolves to a heading');
+		console.log('✓ every internal #fragment resolves to a heading, and no comment reaches the reader');
 		return 0;
 	}
 	console.error(`${broken.length} internal link(s) point at a heading that does not exist:\n`);
