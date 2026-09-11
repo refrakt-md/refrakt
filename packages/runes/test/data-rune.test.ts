@@ -237,10 +237,53 @@ describe('data rune — error path (SPEC-103)', () => {
 		expect(warnings.some((w) => w.severity === 'error' && /infer format/.test(w.message))).toBe(true);
 	});
 
-	it('errors visibly when the result is empty after projection', () => {
-		const { rendered, warnings } = runData('{% data src="d.csv" where="region:NOPE" /%}', { 'd.csv': REVENUE_CSV });
-		expect(findTable(rendered)).toBeUndefined();
-		expect(warnings.some((w) => w.severity === 'error' && /empty/.test(w.message))).toBe(true);
+	describe('an empty result (BUG-011)', () => {
+		it('renders nothing, silently, when a valid filter legitimately matches no rows', () => {
+			// Asking real data a question with no answer today is normal, not a
+			// build failure. `region` is a real column; no row has that value.
+			const { rendered, warnings } = runData('{% data src="d.csv" where="region:NOPE" /%}', { 'd.csv': REVENUE_CSV });
+			expect(findTable(rendered)).toBeUndefined();
+			expect(findTag(rendered, (t) => t.attributes?.['data-rune'] === 'hint')).toBeUndefined();
+			expect(warnings).toEqual([]);
+		});
+
+		it('warns when a `where` clause names a column the source does not have', () => {
+			// This is the case the blanket empty-result error used to stand in
+			// for. Detecting it directly is what lets the case above go quiet.
+			const { warnings } = runData('{% data src="d.csv" where="regio:North" /%}', { 'd.csv': REVENUE_CSV });
+			const warned = warnings.filter((w) => w.severity === 'warning');
+			expect(warned).toHaveLength(1);
+			expect(warned[0].message).toContain('"regio"');
+			expect(warned[0].message).toContain('Available:');
+			expect(warnings.some((w) => w.severity === 'error')).toBe(false);
+		});
+
+		it('warns about a misspelt column even when the result is not empty', () => {
+			// A clause that names nothing is a mistake whether or not some other
+			// clause still matches — so the warning cannot be gated on emptiness.
+			const { rendered, warnings } = runData(
+				'{% data src="d.csv" sort="revenu" /%}',
+				{ 'd.csv': REVENUE_CSV },
+			);
+			expect(findTable(rendered)).toBeDefined();
+			expect(warnings.some((w) => w.severity === 'warning' && w.message.includes('"revenu"'))).toBe(true);
+		});
+
+		it('warns on a `columns` spec naming an absent source column', () => {
+			const { warnings } = runData(
+				'{% data src="d.csv" columns="regoin as Region" /%}',
+				{ 'd.csv': REVENUE_CSV },
+			);
+			expect(warnings.some((w) => w.severity === 'warning' && /`columns`.*"regoin"/.test(w.message))).toBe(true);
+		});
+
+		it('still errors when the source itself yielded no rows', () => {
+			// A different author mistake — the wrong file, or a `root` pointing at
+			// nothing — and it keeps its own message.
+			const { rendered, warnings } = runData('{% data src="d.csv" /%}', { 'd.csv': 'region,revenue\n' });
+			expect(findTable(rendered)).toBeUndefined();
+			expect(warnings.some((w) => w.severity === 'error')).toBe(true);
+		});
 	});
 
 	it('no-ops (leaves the tag) when no provider is available', () => {

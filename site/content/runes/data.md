@@ -195,7 +195,17 @@ Use `data` to scope and type what lands on the page (the honest fallback); wrap 
 
 ## When something goes wrong
 
-A sandbox escape, a missing file, a parse error, or an empty result renders a visible **error callout** in place of the table and emits a build warning — the build keeps going, and the failure is obvious on the page rather than silently producing a broken table.
+A sandbox escape, a missing file, a parse error, or a **source that yielded no rows** renders a visible **error callout** in place of the table and records a build error — the build keeps going, and the failure is obvious on the page rather than silently producing a broken table. "No rows" here means the file or the `root` you pointed at held nothing; it is a wrong-target mistake.
+
+A **filter that legitimately matched nothing** is not an error. `{% data %}` renders nothing at all and says nothing — asking real data a question with no answer today is normal, and a page listing open bugs when there are none is working, not broken.
+
+That leaves the mistake worth catching on its own: a **misspelt column**. Any `where`, `sort`, or `columns` clause naming a column the source does not have emits a build warning that names the column and lists the ones that exist:
+
+```
+data "revenue.csv": `where` names a column the source does not have: "regio". Available: region, quarter, revenue.
+```
+
+The warning fires whether or not the result ends up empty — a clause that matches nothing is a mistake even when another clause still returns rows.
 
 ## SQLite — a later tier
 

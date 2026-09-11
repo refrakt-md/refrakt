@@ -8,10 +8,16 @@
  * emitted table is consumed by `chart`/`datatable` with no structural edits and
  * is the honest no-JS fallback on a bare page.
  *
- * On any failure (sandbox escape / missing file / parse error / empty result)
- * the tag is replaced with a visible error callout and a build warning is
- * emitted — the build continues and the `data` tag never reaches its throwing
- * transform.
+ * On a failure (sandbox escape / missing file / parse error / a source that
+ * yielded no rows) the tag is replaced with a visible error callout and a build
+ * error is recorded — the build continues and the `data` tag never reaches its
+ * throwing transform.
+ *
+ * A *projection* that ends with no rows is not a failure (BUG-011). Asking real
+ * data a question with no answer today is normal, so the tag is spliced away and
+ * nothing renders. What used to justify erroring there — catching a misspelt
+ * column — is now `unknownFieldWarnings`, which detects the typo directly
+ * instead of inferring it from an empty result.
  */
 
 import Markdoc from '@markdoc/markdoc';
@@ -33,6 +39,7 @@ import {
 	applyColumns,
 	applyLimitOffset,
 	applyTyping,
+	unknownFieldWarnings,
 	type TypedTable,
 } from './data-projection.js';
 import { emitTableNode, emitErrorNode } from './data-emit.js';
@@ -224,16 +231,39 @@ function resolveDataToNodes(
 		const format = resolveFormat(src, resolveString(a.format, ctx.variables));
 		const table = runAdapter(raw, format, a, ctx);
 
+		// A source that parsed to nothing is an error: the author pointed at the
+		// wrong file, or a `root` / JSON pointer into nothing. Checked *before*
+		// projection, so it stays distinct from "my filter excluded everything"
+		// — collapsing the two is what BUG-011 was.
+		if (table.rows.length === 0) {
+			throw new DataSourceError(
+				'source yielded no rows — check the file has data, and that `root` / `orient` point at the right place',
+			);
+		}
+
+		const whereSpec = resolveString(a.where, ctx.variables) || undefined;
+		const sortSpec = resolveString(a.sort, ctx.variables) || undefined;
+		const columnsSpec = resolveString(a.columns, ctx.variables) || undefined;
+
+		// The typo detector (BUG-011). Fires on a misspelt column whether or not
+		// the result ends up empty — a clause that names nothing is a mistake even
+		// when some other clause still matches rows.
+		for (const w of unknownFieldWarnings(table, { where: whereSpec, sort: sortSpec, columns: columnsSpec })) {
+			ctx.warn(`data "${src}": ${w}`, page.url);
+		}
+
 		// Shared projection: where → sort → columns → limit/offset.
-		const { table: filtered, warnings } = applyWhere(table, resolveString(a.where, ctx.variables) || undefined);
+		const { table: filtered, warnings } = applyWhere(table, whereSpec);
 		for (const w of warnings) ctx.warn(`data "${src}": ${w}`, page.url);
-		const sorted = applySort(filtered, resolveString(a.sort, ctx.variables) || undefined);
-		const { table: selected, sources } = applyColumns(sorted, resolveString(a.columns, ctx.variables) || undefined);
+		const sorted = applySort(filtered, sortSpec);
+		const { table: selected, sources } = applyColumns(sorted, columnsSpec);
 		const projected: DataTable = applyLimitOffset(selected, numberAttr(a.limit), numberAttr(a.offset));
 
-		if (projected.rows.length === 0) {
-			throw new DataSourceError('result is empty after projection (no rows to render)');
-		}
+		// A filter that legitimately matched nothing renders nothing, silently.
+		// Asking real data a question with no answer today is normal — a page
+		// listing open bugs when there are none is working, not broken — and the
+		// mistake this used to catch now has its own warning above.
+		if (projected.rows.length === 0) return [];
 
 		// Shared typing → data-value channel (`numeric`/`text` may name the
 		// source or the renamed column).

@@ -109,6 +109,31 @@ render the whole catalogue under that rune's heading and look plausible. That is
 independent of this item's critical path but worth fixing before anyone leans on
 a computed `where`.
 
+Building the block then surfaced {% ref "BUG-011" /%}, which *was* on the critical
+path: an empty `data` result was a build error, and the block's sections are
+empty for most runes — the base-preset table for **115 of 126**. Every one of
+those pages would have rendered a caution callout. Fixed, so the block's sections
+now vanish silently when they have nothing to say.
+
+### The headings still need solving
+
+BUG-011 makes an empty `{% data %}` render nothing, but a **static heading
+outside it still renders** — leaving a bare `### Inherited from the … preset`
+above nothing on 115 pages. Gating it with `{% if %}` does not work, for the
+reason recorded in BUG-011: `preprocessData` walks into an `if` tag's children,
+so the `data` resolves before the condition is evaluated.
+
+Options, none yet chosen:
+
+- Put the heading **inside** the `data` body. It then repeats per row, so it only
+  works for a section whose body is a single row — which the base-preset table is
+  not.
+- Emit a **section-header row** from the generator and render it with a
+  one-row `data` query, so the heading is data like everything else.
+- Let the **call site** pass the headings it wants, so a page with no base preset
+  omits that argument. Returns per-page knowledge to the call site, which is what
+  D1 was avoiding, but only one flag's worth.
+
 ## Blocked by
 
 - {% ref "WORK-543" /%} — the pages need the `data` body to render rows
