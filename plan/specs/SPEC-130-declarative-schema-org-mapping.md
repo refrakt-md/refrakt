@@ -2,19 +2,22 @@
 
 # Declarative schema.org mapping
 
-Move the schema.org channel from 29 imperative call sites into rune config,
-keyed by `data-name` — the same way BEM, modifiers and `editHints` already work.
+Move the schema.org channel from 29 imperative call sites into declarative
+data, keyed by `data-name` — the same shape BEM, modifiers and `editHints`
+already use.
+
+**Declared on the rune, not in theme config.** Schema.org output is what a rune
+*means*, and {% ref "ADR-028" /%} settles that such facts are rune identity: a
+theme may not redefine them. So the table sits beside the rune's other
+self-declarations and is referenced from config, exactly as `sections` is.
 
 ```ts
-Accordion: {
-  block: 'accordion',
-  schema: {
-    FAQPage: {
-      properties: { items: 'mainEntity' },
-      children: { 'accordion-item': { type: 'Question', properties: { name: 'name', body: 'acceptedAnswer' } } },
-    },
-  },
-}
+// plugins/media/src/tags/playlist.ts — beside playlistSections, playlistMediaSlots
+export const playlistSchema = {
+  by: 'type',
+  album:   { type: 'MusicAlbum',    properties: { track: 'track' },   children: { track: 'MusicRecording' } },
+  podcast: { type: 'PodcastSeries', properties: { track: 'hasPart' }, children: { track: 'PodcastEpisode' } },
+} as const;
 ```
 
 ## Problem
@@ -62,16 +65,62 @@ because it is not obvious from the architecture diagram.
 runs later, at render time. So schema emitted by the engine would reach the HTML
 and never reach the JSON-LD.
 
-The mapping is therefore **config data consulted at transform time**, not engine
-behaviour. `createComponentRenderable` needs the theme config, threaded the way
-`__backgrounds` and `__securityPolicy` already are.
+The mapping is therefore **data consulted at transform time**, not engine
+behaviour. `createContentModelSchema` is the single place that sees every rune —
+it wraps each rune's transform and already post-processes the result (the tint
+and bg meta injection). Every one of the 29 schema emitters goes through it;
+none is a raw `Schema`. So schema application is one step there, not 29 edits.
+
+The rune's own table is reachable from its definition. Where a *merged* view is
+needed — for `contracts` and `reference` — it arrives the way
+`__backgrounds` and `__securityPolicy` already do, through `config.variables`.
+A module-level registry would not do: this repo builds two sites in one
+process.
 
 Relocating `extractSeo` to after the engine is the alternative. It is a larger
-change — content loading is framework-agnostic and has no theme config today —
-and it is not obviously better, so it is recorded as rejected rather than
-unconsidered.
+change — content loading is framework-agnostic — and it is not obviously
+better, so it is recorded as rejected rather than unconsidered.
 
-## What the config has to express
+## Ownership: the rune, not the theme
+
+An earlier draft of this spec put the table in `ThemeConfig.runes` alongside
+`block` and `structure`, and listed "a site can restate a rune's schema without
+forking it" as a benefit. **That is an anti-feature**, and {% ref "ADR-028" /%}
+had already decided against it:
+
+> Attribute applicability is a property of the rune, never of the theme.
+>
+> Content becomes portable in fact, not just in principle. Today the same
+> markdown can mean different things under different themes.
+>
+> Emission stays theme-agnostic, and no mechanism will be added for a theme to
+> suppress it.
+
+Schema.org is the sharpest case that reasoning covers. It is a machine-readable
+public claim about what the content *is*; a theme able to change it would mean
+the same markdown says different things to a search engine depending on how the
+site is skinned. Styling is the theme's business — emission is not.
+
+So `schema` follows the pattern already established for `sections`:
+
+```ts
+// SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
+// from the theme config rather than owned by it: a theme may not redefine
+// what a section *is* (ADR-028).
+export const accordionSections = { … } as const;
+```
+
+Declared on the rune, referenced from config so tooling can read it, and added
+to `IDENTITY_FIELDS` in `packages/transform/src/identity-fields.ts` so no merge
+path can redefine it.
+
+**The legitimate per-site need is already served, at the right layer.** An
+author who wants a different type says so in *content* — `schema="none"`,
+`schema="<Type>"` — where they are making a claim about their own content. A
+theme making that claim on their behalf, for every page, is the thing being
+ruled out.
+
+## What the table has to express
 
 Surveyed across all 21 `schema:` maps in the codebase, the values split two ways:
 
@@ -80,14 +129,14 @@ Surveyed across all 21 `schema:` maps in the codebase, the values split two ways
 | Named refs | `nameTag`, `titleTag`, `tiers`, `trackItems` | Yes — already carry `data-name` / `data-field` |
 | Computed metas | `parsedPriceMeta`, `resolvedCurrencyMeta`, `estimatedTimeMeta` | Yes, by reference — the tag carries `data-field`; only its *value* is computed |
 
-So the split is clean: **the transform computes values, config names their schema
-roles.** No case requires config to compute anything, which is what makes this
-tractable.
+So the split is clean: **the transform computes values, the table names their
+schema roles.** No case requires the table to compute anything, which is what
+makes this tractable.
 
 ## The driving case: `playlist`
 
 `accordion` alone would have produced a weaker design. `playlist` is the rune
-that shows what the config actually has to express, because it **already
+that shows what the table actually has to express, because it **already
 declares what its content is** and emits the wrong schema anyway:
 
 ```ts
@@ -132,9 +181,9 @@ Playlist: {
 }
 ```
 
-`by` names an existing entry in the rune's `modifiers` config, so this reuses the
-mechanism that already drives BEM modifiers and data attributes rather than
-inventing a parallel one.
+`by` names an existing entry in the rune's `modifiers` — itself an identity
+field under {% ref "ADR-028" /%} — so this reuses the mechanism that already
+drives BEM modifiers and data attributes rather than inventing a parallel one.
 
 That settles the layering:
 
@@ -165,9 +214,6 @@ and should be reviewed as such.
 **A safe type override.** The per-type table makes `schema="ItemList"` express
 the parent rename and the child's type change together — the thing that is not
 expressible today.
-
-**Site and theme overrides.** Rune config merges (`mergeThemeConfig`), so a site
-can restate a rune's schema without forking the rune.
 
 **Contextual schema.** A child rune could declare what it means inside a given
 parent, mirroring the existing `contextModifiers: { 'parent-rune': 'suffix' }`:
@@ -202,7 +248,7 @@ closes a real gap in what `contracts` claims to cover.
 - [ ] The mapping is applied at transform time, so `extractSeo` still sees it — a test asserts the JSON-LD, not just the HTML attributes
 - [ ] A rune can offer more than one type, with per-type property names *and* per-type child mappings
 - [ ] Suppressing schema entirely is expressible, and strips the whole subtree rather than just the root
-- [ ] Config merging lets a site override a rune's schema without forking the rune
+- [ ] `schema` joins `IDENTITY_FIELDS`, so no merge path — theme override or variant delta — can redefine what a rune means
 - [ ] `refrakt contracts` describes the schema.org output it currently omits
 - [ ] Every one of the 21 existing `schema:` maps is expressible, including the computed-meta cases
 - [ ] The imperative form either still works or is fully migrated — not half of each
@@ -212,5 +258,7 @@ closes a real gap in what `contracts` claims to cover.
 - {% ref "WORK-552" /%} — `schema="none"` on accordion, shipping ahead of this
 - {% ref "WORK-548" /%} — the ~970 fabricated `Question` entries that surfaced it
 - {% ref "SPEC-082" /%} — the schema.org channel this reworks
+- {% ref "ADR-028" /%} — rune identity is not theme configuration; why the table belongs to the rune
+- {% ref "BUG-013" /%} — the mistyped playlists this would fix
 
 {% /spec %}
