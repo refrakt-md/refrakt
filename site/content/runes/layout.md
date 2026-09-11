@@ -44,3 +44,7 @@ Layouts are inherited from parent directories. A `_layout.md` in a subdirectory 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `extends` | `string` | `"parent"` | Which layout to extend |
+
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:layout"} /%}

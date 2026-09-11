@@ -116,14 +116,17 @@ Use `layout="cards"` for side-by-side cards. Ideal for pricing comparisons or wh
 
 ## Attributes
 
-| Attribute | Type | Default | Description |
-|---|---|---|---|
-| `title` | string | | Comparison title displayed above the matrix |
-| `highlighted` | string | | Column name to visually emphasize as recommended |
-| `layout` | string | `table` | Display variant: `table` or `cards` |
-| `labels` | string | `left` | Row label position: `left` or `hidden` |
-| `collapse` | string | `true` | Collapse to cards on mobile |
-| `verdict` | string | | Summary text shown below the comparison |
+### `comparison`
+
+{% include file="rune-attributes.md" variables={r: "rune:comparison"} /%}
+
+### `comparison-column`
+
+{% include file="rune-attributes.md" variables={r: "rune:comparison-column"} /%}
+
+### `comparison-row`
+
+{% include file="rune-attributes.md" variables={r: "rune:comparison-row"} /%}
 
 ## Markdown reinterpretation
 
@@ -135,19 +138,6 @@ Use `layout="cards"` for side-by-side cards. Ideal for pricing comparisons or wh
 | Text after bold | Feature description |
 | `~~Strikethrough~~` | Negative indicator — limitation or missing capability |
 | Blockquote | Callout badge within a column |
-
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |
 
 ## Section header
 

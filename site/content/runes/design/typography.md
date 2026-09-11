@@ -56,23 +56,5 @@ A typography rune can show a single font for focused documentation.
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `title` | `string` | — | Section heading |
-| `sample` | `string` | `"The quick brown fox..."` | Sample text for size previews |
-| `showSizes` | `boolean` | `true` | Show size progression samples |
-| `showWeights` | `boolean` | `true` | Show weight comparison |
-| `showCharset` | `boolean` | `false` | Show full character set |
+{% include file="rune-attributes.md" variables={r: "rune:typography"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

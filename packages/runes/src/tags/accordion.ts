@@ -93,6 +93,15 @@ export const accordion = createContentModelSchema({
 		const items = sectionNodes.tag('details').typeof('AccordionItem');
 		const itemsContainer = items.wrap('div');
 
+		// An accordion with neither items nor a header has nothing to show, and
+		// the `FAQPage` below would be structured data claiming a page of
+		// questions with no questions in it. Render nothing at all.
+		//
+		// This is reachable now that items can come from a `{% data %}` whose
+		// result is legitimately empty (BUG-011) — a shared block wrapping
+		// generated items cannot know in advance whether there will be any.
+		if (items.count() === 0 && headerNodes.count() === 0) return null;
+
 		const children = headerNodes.count() > 0
 			? [headerNodes.wrap('header').next(), itemsContainer.next()]
 			: [itemsContainer.next()];

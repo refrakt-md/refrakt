@@ -246,40 +246,10 @@ A SQLite adapter is specified but not yet implemented. It will slot into the sam
 
 ## Attributes
 
-### Core
 
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `src` | String | Yes | Path to the source file, relative to the project root (sandboxed). |
-| `format` | String | No | `csv` \| `tsv` \| `json` \| `ndjson`. Inferred from the extension; override for ambiguity. |
+Every attribute in one table. Format-specific ones say so in their description — `CSV/TSV:` or `JSON:`; the rest apply to every source.
 
-### CSV / TSV
-
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `delimiter` | String | No | Override the field separator. |
-| `header` | Boolean | No | Whether the first row is the header (default `true`). `false` synthesizes `col1…`. |
-
-### JSON
-
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `root` | String | No | Dotted path / JSON Pointer to the array or map within the document. |
-| `orient` | String | No | `records` \| `values` \| `index`. `records`/`values` auto-detected; `index` is explicit. |
-| `key-column` | String | No | When `orient=index`, the header for the synthesized key column (default `key`). |
-
-### Shared (all formats)
-
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `columns` | String | No | Select + order + rename: `"name as Product, revenue as 'Revenue ($)'"`. Dotted paths for JSON. |
-| `where` | String | No | Filter rows with the `field:value` grammar. |
-| `sort` | String | No | Sort by a column; `-` prefix descends. |
-| `limit` | Number | No | Maximum number of rows. |
-| `offset` | Number | No | Skip this many rows before limiting. |
-| `numeric` | String | No | Comma-separated columns to force to numeric typing (emits `data-value`). |
-| `text` | String | No | Comma-separated columns to force to text typing. |
-| `headers` | String | No | Header labels for a `---`-delimited body, e.g. `"Attribute, Type"`. Setting it makes the body one table **row** rather than a run of blocks. Requires a body. |
+{% include file="rune-attributes.md" variables={r: "rune:data"} /%}
 
 ## See also
 

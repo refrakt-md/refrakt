@@ -4,6 +4,9 @@ import {
 	ARTIFACT_PATH,
 	REGENERATE_COMMAND,
 	AXIS_DESCRIPTIONS,
+	PARTITIONS,
+	allAttributeRows,
+	allAxisRows,
 	configuredSites,
 	rowsForRune,
 	axisRowsForRune,
@@ -144,7 +147,7 @@ describe('coverageGaps', () => {
 			site: 'main',
 			runes: [rune('tint', { universalAvailable: [{ axis: 'tint', attributes: { tint: {} } }] })],
 		}];
-		expect(coverageGaps(all, { attributes: [], axes: [] })).toEqual(['main:tint (axes)']);
+		expect(coverageGaps(all, { own: [], base: [], axesAvailable: [], axesUnavailable: [] })).toEqual(['main:tint (axes)']);
 	});
 });
 
@@ -154,7 +157,7 @@ describe('build', () => {
 			site: 'main',
 			runes: [rune('accordion-item', { own: { open: { type: 'boolean' } } })],
 		}]);
-		expect(artifact.attributes[0].page).toBe('accordion');
+		expect(artifact.own[0].page).toBe('accordion');
 	});
 
 	it('keeps one entry for a core rune present in every site', () => {
@@ -163,7 +166,35 @@ describe('build', () => {
 			{ site: 'main', runes: [core] },
 			{ site: 'plan', runes: [core] },
 		]);
-		expect(artifact.attributes).toHaveLength(1);
+		expect(allAttributeRows(artifact)).toHaveLength(1);
+	});
+
+	it('partitions the rows into the four roots a page queries', () => {
+		// The partitioning is the page contract: it is what lets a call site pass
+		// one binding (`$r` = "rune:card") instead of four pre-built filter
+		// strings, since `where` takes one string and cannot concatenate.
+		const artifact = build([{
+			site: 'main',
+			runes: [rune('card', {
+				own: { href: { type: 'string' } },
+				base: { name: 'split layout', attributes: { valign: { type: 'string' } } },
+				universalAvailable: [{ axis: 'tint', attributes: { tint: {} } }],
+				universalUnavailable: [{ axis: 'prominence', reason: 'no header', attributes: ['prominence'] }],
+			})],
+		}]);
+		expect(Object.keys(artifact)).toEqual(PARTITIONS);
+		expect(artifact.own.map((r) => r.name)).toEqual(['href']);
+		expect(artifact.base.map((r) => r.name)).toEqual(['valign']);
+		expect(artifact.axesAvailable.map((r) => r.axis)).toEqual(['tint']);
+		expect(artifact.axesUnavailable.map((r) => r.reason)).toEqual(['no header']);
+	});
+
+	it('keeps each partition single-purpose, so a query needs no second clause', () => {
+		const artifact = build(readSites());
+		expect(artifact.own.every((r) => r.scope === 'own')).toBe(true);
+		expect(artifact.base.every((r) => r.scope === 'base')).toBe(true);
+		expect(artifact.axesAvailable.every((r) => r.available === true)).toBe(true);
+		expect(artifact.axesUnavailable.every((r) => r.available === false)).toBe(true);
 	});
 
 	it('sorts by rune name so the artifact is byte-stable across runs', () => {
@@ -174,7 +205,7 @@ describe('build', () => {
 		const forward = build([{ site: 'main', runes }]);
 		const reversed = build([{ site: 'main', runes: [...runes].reverse() }]);
 		expect(render(forward)).toBe(render(reversed));
-		expect(forward.attributes.map((r) => r.rune)).toEqual(['alpha', 'zebra']);
+		expect(forward.own.map((r) => r.rune)).toEqual(['alpha', 'zebra']);
 	});
 });
 
@@ -196,7 +227,7 @@ describe('against the real rune set', () => {
 		// site carrying a plugin another lacks — but in this repo it is
 		// insurance, not the thing that catches the gap. The synthetic
 		// `coverageGaps` cases above are what actually exercise that logic.
-		const covered = new Set(artifact.attributes.map((r) => r.rune));
+		const covered = new Set(allAttributeRows(artifact).map((r) => r.rune));
 		for (const name of ['spec', 'work', 'bug', 'decision', 'milestone']) {
 			expect(covered).toContain(name);
 		}
@@ -209,24 +240,24 @@ describe('against the real rune set', () => {
 	it('gives every carried axis prose from the facet contracts', () => {
 		// A new universal axis that never reached `UNIVERSAL_AXIS_FACETS` would
 		// render as a heading with nothing under it.
-		const bare = artifact.axes.filter((r) => r.available && !r.description);
+		const bare = artifact.axesAvailable.filter((r) => !r.description);
 		expect(bare).toEqual([]);
 	});
 
 	it('sources that prose from the facets rather than a second copy here', () => {
 		expect(AXIS_DESCRIPTIONS.tint).toMatch(/SPEC-053/);
-		const tintRow = artifact.axes.find((r) => r.axis === 'tint' && r.available);
+		const tintRow = artifact.axesAvailable.find((r) => r.axis === 'tint');
 		expect(tintRow.description).toBe(AXIS_DESCRIPTIONS.tint);
 	});
 
 	it('carries no internal `__`-prefixed attribute', () => {
 		// `__deferred-body` reached `reference --format json` on `aggregate`,
 		// `collection` and `relationships` before WORK-548 filtered it.
-		expect(artifact.attributes.filter((r) => r.name.startsWith('__'))).toEqual([]);
+		expect(allAttributeRows(artifact).filter((r) => r.name.startsWith('__'))).toEqual([]);
 	});
 
 	it('routes each child rune\'s rows onto its parent\'s page', () => {
-		for (const row of artifact.attributes) {
+		for (const row of allAttributeRows(artifact)) {
 			if (!PAGELESS.has(row.rune)) continue;
 			expect(row.page).toBe(PAGELESS.get(row.rune));
 		}

@@ -212,6 +212,10 @@ The media / content split, responsive collapse, and mobile full-bleed media head
 
 In **cover mode** the root carries `data-media-position="cover"` plus `data-cover-scope="full"` (and `rf-card--cover`); `content-place` emits `data-content-place` and the `--cover-place-block`/`--cover-place-inline` custom properties, `height` emits `data-height`, and `aspect` an inline `aspect-ratio`. The default scrim is added unless `scrim="none"` or a `tint` opts out; `scrim-type="frost"` adds `data-scrim-type`/`data-scrim-blur` (the scrim renders on the media well's `::after`, never the self-surface bg layer). The overlay foreground scheme (`data-color-scheme`) lands on the `[data-name="content"]` overlay — not the root — so the card box surface keeps the page palette.
 
+## Attributes
+
+{% include file="rune-attributes.md" variables={r: "rune:card"} /%}
+
 ## See also
 
 - [collection](/runes/collection) — feeds cards from registry entities via a body template.

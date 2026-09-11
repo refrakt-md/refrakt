@@ -103,22 +103,15 @@ Budget supports an optional eyebrow, headline, and blurb above the categories. P
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `currency` | `string` | `USD` | Currency code |
-| `duration` | `string` | — | Budget duration (e.g. trip length, project span, fiscal period) |
-| `showPerDay` | `boolean` | `true` | Display per-day cost breakdowns |
-| `variant` | `string` | `detailed` | Display variant: `detailed` or `summary` |
+#### `budget`
 
-### Common attributes
+{% include file="rune-attributes.md" variables={r: "rune:budget"} /%}
 
-All block runes share these attributes for layout and theming.
+#### `budget-category`
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |
+{% include file="rune-attributes.md" variables={r: "rune:budget-category"} /%}
+
+#### `budget-line-item`
+
+{% include file="rune-attributes.md" variables={r: "rune:budget-line-item"} /%}
+

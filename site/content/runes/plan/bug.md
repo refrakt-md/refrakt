@@ -68,28 +68,5 @@ Build crashes with undefined reference error.
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `id` | `string` | — | Unique identifier (required) |
-| `status` | `string` | `reported` | Current status: `reported`, `confirmed`, `in-progress`, `fixed`, `wontfix`, `duplicate` |
-| `severity` | `string` | `major` | Impact level: `critical`, `major`, `minor`, `cosmetic` |
-| `assignee` | `string` | — | Person or agent working on this |
-| `milestone` | `string` | — | Milestone for the fix |
-| `source` | `string` | — | Comma-separated IDs of specs or decisions this relates to (e.g. `SPEC-001`) |
-| `pr` | `string` | — | Comma-separated PR references that fixed this bug, each `<org>/<repo>#<number>` |
-| `tags` | `string` | — | Comma-separated labels |
-| `created` | `string` | `$file.created` | Creation date (ISO 8601). Auto-populated from git history |
-| `modified` | `string` | `$file.modified` | Last modified date (ISO 8601). Auto-populated from git history |
+{% include file="rune-attributes.md" variables={r: "rune:bug"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

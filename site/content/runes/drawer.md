@@ -63,14 +63,7 @@ Multiple xrefs to {% ref "auth-system" /%} or to {% ref "auth-system" label="thi
 
 ## Attributes
 
-| Attribute | Type | Default | Meaning |
-|-----------|------|---------|---------|
-| `id` | string | **required** | Stable id. Becomes `id="drawer-{value}"` on the wrapper. |
-| `title` | string | — | Heading text shown in the drawer header. |
-| `headingLevel` | 1-6 | auto | Title heading level. Out-of-range values clamp to 1-6. When omitted, auto-resolves to one deeper than the nearest preceding heading on the page (default h2 if none). |
-| `side` | `right` \| `left` \| `top` \| `bottom` | `right` | Edge the panel slides from when enhanced into a `<dialog>`. |
-| `size` | `sm` \| `md` \| `lg` | `md` | Panel size — width for left/right, height for top/bottom. |
-| `shortcut` | string | — | Keyboard shortcut to open the panel (`.`, `cmd+k`, etc.). |
+{% include file="rune-attributes.md" variables={r: "rune:drawer"} /%}
 
 ## Progressive enhancement
 

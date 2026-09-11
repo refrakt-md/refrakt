@@ -80,13 +80,7 @@ The rune stays generic; computing `progressDone`/`progressTotal` is the data lay
 
 ## Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `value` | number | — | Completed amount (paired with `max`). |
-| `max` | number | — | Total amount (paired with `value`). |
-| `percent` | number | — | Direct percentage 0–100, when there's no count. |
-| `display` | `fraction` \| `percent` \| `none` | `fraction` (with value/max) | The numeric readout. |
-| `sentiment` | `positive` \| `caution` \| `negative` | — | Fill tone cue. Absent → neutral primary fill. |
+{% include file="rune-attributes.md" variables={r: "rune:progress"} /%}
 
 ## Output contract
 

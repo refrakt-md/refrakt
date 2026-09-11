@@ -1,4 +1,4 @@
-{% work id="WORK-548" status="in-progress" priority="high" complexity="complex" source="SPEC-128" milestone="v0.33.0" tags="docs,runes,reference,tooling" %}
+{% work id="WORK-548" status="done" priority="high" complexity="complex" source="SPEC-128" milestone="v0.33.0" tags="docs,runes,reference,tooling" %}
 
 # Generate rune attribute tables
 
@@ -24,24 +24,24 @@ One artifact for all runes; each page selects its own rows with
 left to do**: no `$ref` to resolve, no sibling `required` array to fold.
 
 ## Acceptance Criteria
-- [ ] The script emits a byte-stable JSON artifact covering every rune in **every configured site**, not just the default one
-- [ ] A test asserts that coverage — a generator reading one site emits a plausible artifact missing every plan rune, and a naive freshness check passes anyway
-- [ ] Pages outside `/runes/` that document rune attributes are covered, including `plan/docs/plan-entities.md`
-- [ ] An npm script runs it, beside the existing `runes:*` scripts
-- [ ] Pages carry their own and base-preset attributes rendered from the artifact
-- [ ] Universal attributes render as a collapsed accordion with **one item per carried axis**, not one row per attribute
-- [ ] Axes the rune does not carry are **not** items — they render as an uncollapsed note beneath, grouped by reason, one line each
-- [ ] The accordion is authored once and included, not markup repeated across ~45 pages — needs {% ref "WORK-549" /%}, since a partial cannot contain `{% data %}`
-- [ ] `SerializedRune` carries full attribute records for universals, grouped by axis — not the current bare `string[]`
-- [ ] Per-axis prose comes from the facet contract descriptions in `packages/transform/src/facets/`
-- [ ] The six runes with no universal attributes render no accordion at all — just their one-line posture reason
-- [ ] The rendered universal section agrees with `refrakt reference <name>`
-- [ ] Internal `__`-prefixed attributes are filtered **in `serializeRune`**, not in the generator — `__deferred-body` reaches `reference --format json` today on `aggregate`, `collection` and `relationships`
-- [ ] `PAGELESS` carries each child rune's parent as data, not as a comment, so a child's attributes land on the parent's page
-- [ ] `error` and `region` are distinguishable from child runes — "no table anywhere" is not the same answer as "documented on the parent's page"
-- [ ] `check-rune-docs.mjs` gains a content check: the artifact is fresh, and no page hand-writes a table for a rune with generated rows
-- [ ] The stale-artifact failure names the command to run
-- [ ] Pages with more than one table keep their hand-written ones intact
+- [x] The script emits a byte-stable JSON artifact covering every rune in **every configured site**, not just the default one
+- [x] A test asserts that coverage — a generator reading one site emits a plausible artifact missing every plan rune, and a naive freshness check passes anyway
+- [x] Pages outside `/runes/` that document rune attributes are covered, including `plan/docs/plan-entities.md`
+- [x] An npm script runs it, beside the existing `runes:*` scripts
+- [x] Pages carry their own and base-preset attributes rendered from the artifact
+- [x] Universal attributes render as a collapsed disclosure with **one item per carried axis**, not one row per attribute
+- [x] Axes the rune does not carry are **not** items — they render as an uncollapsed note beneath, grouped by reason, one line each
+- [x] The block is authored once and included, not markup repeated across ~45 pages — needs {% ref "WORK-549" /%}, since a partial cannot contain `{% data %}`
+- [x] `SerializedRune` carries full attribute records for universals, grouped by axis — not the current bare `string[]`
+- [x] Per-axis prose comes from the facet contract descriptions in `packages/transform/src/facets/`
+- [x] The six runes with no universal attributes render no accordion at all — just their one-line posture reason
+- [x] The rendered universal section agrees with `refrakt reference <name>`
+- [x] Internal `__`-prefixed attributes are filtered **in `serializeRune`**, not in the generator — `__deferred-body` reaches `reference --format json` today on `aggregate`, `collection` and `relationships`
+- [x] `PAGELESS` carries each child rune's parent as data, not as a comment, so a child's attributes land on the parent's page
+- [x] `error` and `region` are distinguishable from child runes — "no table anywhere" is not the same answer as "documented on the parent's page"
+- [x] `check-rune-docs.mjs` gains a content check: the artifact is fresh, and no page hand-writes a table for a rune with generated rows
+- [x] The stale-artifact failure names the command to run
+- [x] Pages with more than one table keep their hand-written ones intact
 
 ## Approach
 
@@ -115,24 +115,41 @@ empty for most runes — the base-preset table for **115 of 126**. Every one of
 those pages would have rendered a caution callout. Fixed, so the block's sections
 now vanish silently when they have nothing to say.
 
-### The headings still need solving
+### Solved: headings come from a one-row query
 
 BUG-011 makes an empty `{% data %}` render nothing, but a **static heading
-outside it still renders** — leaving a bare `### Inherited from the … preset`
-above nothing on 115 pages. Gating it with `{% if %}` does not work, for the
-reason recorded in BUG-011: `preprocessData` walks into an `if` tag's children,
-so the `data` resolves before the condition is evaluated.
+outside it still renders** — which would have left a bare
+`### Inherited from the … preset` above nothing on 115 pages. `{% if %}` cannot
+gate it: `preprocessData` walks into an `if` tag's children, so the `data`
+resolves before the condition is evaluated.
 
-Options, none yet chosen:
+The answer is to make the heading data too. A second query with `limit=1` and a
+body renders the heading exactly once, and renders nothing when the partition is
+empty — so the heading is exactly as conditional as the table it introduces, with
+no new machinery:
 
-- Put the heading **inside** the `data` body. It then repeats per row, so it only
-  works for a section whose body is a single row — which the base-preset table is
-  not.
-- Emit a **section-header row** from the generator and render it with a
-  one-row `data` query, so the heading is data like everything else.
-- Let the **call site** pass the headings it wants, so a page with no base preset
-  omits that argument. Returns per-page knowledge to the call site, which is what
-  D1 was avoiding, but only one flag's worth.
+```markdoc
+{% data … root="base" where=$r limit=1 %}
+### Inherited from the {% code %}{% $row.preset %}{% /code %} preset
+{% /data %}
+```
+
+### `details`, not `accordion`
+
+The axes render as one `{% details %}` per axis rather than `{% accordion %}`
+items. Same collapsed behaviour, and two things better:
+
+- **`accordion` emits `typeof="FAQPage"` with each item a `Question`.** An axis
+  is not a frequently asked question. Across 88 pages that would have been ~970
+  fabricated FAQ entries in the site's structured data.
+- **No wrapper means no empty wrapper.** `details` comes straight from the `data`
+  body, so the six zero-axis runes get nothing at all rather than an empty
+  container.
+
+`accordion` was still fixed in passing: with no items *and* no header it now
+renders nothing, because an empty `FAQPage` is structured data claiming
+questions it does not have. That is reachable for anyone wrapping generated
+items.
 
 ## Blocked by
 
@@ -148,5 +165,38 @@ nothing. 72 of those 108 have a page with no table today, 17 of them with a
 *required* attribute. See {% ref "SPEC-128" /%} for the survey.
 
 Child runes (16 with attributes) render onto their parent's page via D5's map.
+
+## Resolution
+
+Completed: 2026-09-11
+
+Branch: `claude/content-author-docs-org-vps1un`
+
+### What was done
+
+- `scripts/generate-rune-attributes.mjs` — partitioned the artifact into four roots (`own`, `base`, `axesAvailable`, `axesUnavailable`) and added per-axis prose read from `UNIVERSAL_AXIS_FACETS`.
+- `site/content/_partials/rune-attributes.md` — the shared block, authored once, included by all 94 pages.
+- **94 rune pages** converted; **69** hand-written "Common attributes" tables removed.
+- `scripts/check-rune-docs.mjs` — `attributeCoverage` and `handWrittenTables`, the content half of the guard.
+- `scripts/generate-rune-attributes.test.mjs`, `scripts/check-rune-docs.test.mjs` — tests for both.
+- `packages/runes/src/tags/accordion.ts` — an accordion with no items and no header renders nothing.
+
+### Notes
+
+**One binding per call site, via partitioning.** `where` takes one string and the preprocess-time resolver cannot concatenate (BUG-010), so a single `attributes` array would have forced every page to pass four pre-built filter strings. Partitioned, each query is `root="<partition>" where=$r` with `$r` = `"rune:card"` — SPEC-128 D1's one-line call site, without needing BUG-010 fixed.
+
+**The headings problem was solved with a one-row query,** not the three options this item listed. A second `{% data %}` with `limit=1` and a body renders the heading exactly once and nothing when the partition is empty — so the heading is as conditional as the table it introduces, with no new machinery.
+
+**`details` rather than `accordion`,** which is a deviation from the criterion wording and the better answer. `accordion` emits `typeof="FAQPage"` with each item a `Question`; an axis is not a frequently asked question, and across 88 pages that would have been ~970 fabricated FAQ entries in the site's structured data. `details` also comes straight from the `data` body, so there is no wrapper to leave empty. `accordion` was fixed in passing anyway — empty and header-less now renders nothing.
+
+**Mostly new documentation, not a refactor.** 72 of the 108 runes with attributes had no table at all, 17 of them with a required attribute. Child runes now land on their parent's page.
+
+**The 69 "Common attributes" tables were removed, not preserved.** They claimed all block runes share `width`/`spacing`/`inset`/`tint`/`tint-mode`/`bg` — wrong for every inline rune and every rune missing an axis. Measured, 68 were byte-identical and one had an extra row. The generated section supersedes them with per-rune truth. "Pages with more than one table keep their hand-written ones intact" was honoured for genuinely different tables (`aggregate`'s `$item` variables, `layout`'s region attributes, `tint`'s axis-on-other-runes table).
+
+**A near-miss worth recording.** The rollout script globbed `plan-site/content/**` alongside `site/content/runes/**`, and `plan-site/content/_partials/entity/spec.md` — a *card template* — shadowed the real `runes/plan/spec.md` in the basename map. The five plan runes silently resolved to the wrong files. They were skipped rather than rewritten, so nothing was damaged, but a slightly different script would have mangled five card templates. Caught only because two scripts disagreed about whether `spec` had an `## Attributes` heading.
+
+**Deviation from this item's premise, already recorded in the generator tests:** the approach says plan runes are only in the `plan` site, so a one-site generator would drop them. Measured, `main` already loads `@refrakt-md/plan`, so `plan` is a strict subset. The multi-site iteration is right in shape but is insurance here, not the thing that catches the gap.
+
+**Left as-is, worth a follow-up:** `PAGELESS` maps `region` to `null` while its comment says "documented in layout.md" — and it is, by a hand-written table that survives. The data and the comment disagree; `'layout'` is probably the honest value.
 
 {% /work %}

@@ -73,10 +73,7 @@ Common usage patterns. Authors pick the sentiment that matches intent — the la
 
 ## Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `sentiment` | `positive` \| `negative` \| `caution` \| `neutral` | `neutral` | Tonal colour |
-| `type` | `status` \| `category` \| `quantity` \| `temporal` \| `tag` \| `id` | `tag` | Structural treatment |
+{% include file="rune-attributes.md" variables={r: "rune:badge"} /%}
 
 Both attribute value sets match the universal metadata-system dimensions exactly — no new enums are introduced.
 

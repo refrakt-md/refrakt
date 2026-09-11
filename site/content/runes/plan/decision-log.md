@@ -41,10 +41,7 @@ An aggregation rune that renders a chronological list of architecture decision r
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `filter` | `string` | — | Space-separated `field:value` pairs. Fields: `status`, `date`, `tags` |
-| `sort` | `string` | `date` | Sort field: `date` (reverse chronological) or `id` |
+{% include file="rune-attributes.md" variables={r: "rune:decision-log"} /%}
 
 ### Output structure
 

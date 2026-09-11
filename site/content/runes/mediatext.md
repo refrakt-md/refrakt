@@ -61,21 +61,5 @@ In spring, cherry blossoms drift across the garden like pink snow, settling on t
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `align` | `string` | `left` | Image placement: `left` or `right` |
-| `ratio` | `string` | `1:1` | Image-to-text width ratio: `1:2`, `1:1`, or `2:1` |
-| `wrap` | `boolean` | `false` | Enable text wrapping around the image instead of side-by-side columns |
+{% include file="rune-attributes.md" variables={r: "rune:mediatext"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

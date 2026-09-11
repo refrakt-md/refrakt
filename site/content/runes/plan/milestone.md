@@ -67,23 +67,5 @@ A milestone with all goals achieved.
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `name` | `string` | — | Milestone name, e.g. `v0.5.0` (required) |
-| `target` | `string` | — | Target date (aspirational, not a commitment) |
-| `status` | `string` | `planning` | Current status: `planning`, `active`, `complete` |
-| `created` | `string` | `$file.created` | Creation date (ISO 8601). Auto-populated from git history |
-| `modified` | `string` | `$file.modified` | Last modified date (ISO 8601). Auto-populated from git history |
+{% include file="rune-attributes.md" variables={r: "rune:milestone"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

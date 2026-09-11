@@ -53,13 +53,7 @@ Scope to a single type with `type=` — its done-state drives the bar:
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `type` | `string` | `work,bug` | Entity type(s) to chart, comma-separated: `work`, `bug`, `spec`, `decision`, `milestone`. |
-| `show` | `string` | — | Legacy alias for `type`; `all` expands to the full plan set. |
-| `milestone` | `string` | — | Scope every bar to a milestone — lowers to `filter="milestone:…"`. |
-| `filter` | `string` | — | Raw `field:value` filter clauses ([collection grammar](/runes/collection)); overrides `milestone`. |
-| `value` | `string` | per type | Override the achieved-subset clause for every bar (default: each type's terminal-positive status). |
+{% include file="rune-attributes.md" variables={r: "rune:plan-progress"} /%}
 
 ### How it composes
 

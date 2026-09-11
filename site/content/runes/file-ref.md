@@ -77,12 +77,7 @@ The filename default (e.g. `theme.ts`) is conservative — when the file-ref ref
 
 ## Attributes
 
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `path` | string | yes | Project-root-relative file path. Same sandbox as `snippet` — absolute paths, traversal escapes (`..`), and out-of-root symlinks are rejected; missing files error at build time. |
-| `lines` | string | no | Line range: `"42-58"` or `"42"`. Drives the GitHub `#L42-L58` anchor and (with `preview="drawer"`) the snippet slice. |
-| `label` | string | no | Display text for the inline link. Defaults to the filename. Pass an explicit label when referring to a symbol within the file. |
-| `preview` | `drawer` | no | Hoist a preview drawer with the file's snippet + a GitHub footer link; the inline link opens it. |
+{% include file="rune-attributes.md" variables={r: "rune:file-ref"} /%}
 
 ## Site configuration
 

@@ -41,23 +41,5 @@ Gandalf chose Frodo as the ring-bearer, guiding him with wisdom and trust throug
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `from` | `string` | — | Origin entity name (required) |
-| `to` | `string` | — | Target entity name (required) |
-| `type` | `string` | — | Relationship type (e.g. `fellowship`, `romantic`, `antagonistic`, `familial`, `mentorship`) |
-| `status` | `string` | `active` | Relationship status (e.g. `active`, `broken`, `dormant`) |
-| `bidirectional` | `boolean` | `true` | Whether the bond is mutual |
+{% include file="rune-attributes.md" variables={r: "rune:bond"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

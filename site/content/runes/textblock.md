@@ -51,22 +51,5 @@ This is the opening paragraph of the article, styled with larger text and heavie
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `dropcap` | `boolean` | `false` | Enable drop cap styling on the first letter |
-| `columns` | `number` | `1` | Number of text columns (values greater than 1 trigger column layout) |
-| `lead` | `boolean` | `false` | Display as a lead paragraph with larger, bolder text |
-| `align` | `string` | `left` | Text alignment: `left`, `center`, `right`, or `justify` |
+{% include file="rune-attributes.md" variables={r: "rune:textblock"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

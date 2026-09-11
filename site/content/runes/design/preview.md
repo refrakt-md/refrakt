@@ -133,22 +133,5 @@ See the [sandbox rune docs](/runes/sandbox) for full details on framework preset
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `title` | `string` | -- | Optional label displayed in the toolbar |
-| `theme` | `"auto"` \| `"light"` \| `"dark"` | `"auto"` | Initial theme mode (user can toggle) |
-| `source` | `boolean` | `false` | Auto-infer source code from children's Markdoc text |
-| `responsive` | `string` | -- | Comma-separated viewport presets: `mobile`, `tablet`, `desktop` |
+{% include file="rune-attributes.md" variables={r: "rune:preview"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `wide` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

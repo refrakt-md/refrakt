@@ -108,10 +108,7 @@ The accordion sees the included headings as its own children and builds one item
 
 ## Attributes
 
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `file` | string | yes | The partial to paste, by the same key `{% partial %}` uses — a path under `_partials/` (`"attrs.md"`, `"shared/attrs.md"`) or a namespaced file root (`"shared:attrs.md"`). |
-| `variables` | object | no | Bindings substituted into the pasted content, e.g. `variables={q: "rune:card"}`. |
+{% include file="rune-attributes.md" variables={r: "rune:include"} /%}
 
 ## Errors
 

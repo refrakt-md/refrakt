@@ -1,11 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import {
 	computeDrift,
 	loadPackageRunes,
 	findDocPages,
 	PAGELESS,
 	CLI_PATH,
+	ARTIFACT_PATH,
+	REGENERATE_COMMAND,
+	attributeCoverage,
+	handWrittenTables,
 } from './check-rune-docs.mjs';
 
 const pkg = (names, aliases = []) => ({ names: new Set(names), aliases: new Set(aliases) });
@@ -56,5 +60,22 @@ describe.skipIf(!existsSync(CLI_PATH))('rune docs are in parity (live)', () => {
 		const docPages = findDocPages();
 		const stale = [...PAGELESS].filter((name) => docPages.get(name)?.isRune);
 		expect(stale).toEqual([]);
+	});
+
+	// WORK-548 — the content half of "do the pages and the runes agree?".
+	it('every rune with generated attribute rows has a page that renders them', () => {
+		const artifact = JSON.parse(readFileSync(ARTIFACT_PATH, 'utf8'));
+		expect(attributeCoverage(artifact)).toEqual([]);
+	});
+
+	it('no page hand-writes an attribute table beside the generated one', () => {
+		// The drift this whole item exists to remove, and it comes back the
+		// moment someone adds a row "just for now".
+		const artifact = JSON.parse(readFileSync(ARTIFACT_PATH, 'utf8'));
+		expect(handWrittenTables(artifact)).toEqual([]);
+	});
+
+	it('the stale-artifact failure names the command to run', () => {
+		expect(REGENERATE_COMMAND).toBe('npm run runes:attributes');
 	});
 });

@@ -46,22 +46,5 @@ In the third age, a band of dwarven exiles discovered rich veins of mithril bene
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `title` | `string` | — | Lore entry title (required) |
-| `category` | `string` | — | Category or classification (e.g. `prophecy`, `history`, `legend`, `myth`) |
-| `spoiler` | `boolean` | `false` | Whether this entry contains spoilers |
-| `tags` | `string` | — | Comma-separated metadata tags |
+{% include file="rune-attributes.md" variables={r: "rune:lore"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

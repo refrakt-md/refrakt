@@ -255,31 +255,11 @@ Choose `collapse` to match the narrowest width your authored grid can comfortabl
 
 ### `bento`
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `columns` | `number` | `6` | Number of grid columns |
-| `gap` | `string` | `1rem` | Grid gap |
-| `levels` | `string` | — | Heading-sugar footprint ladder, by absolute heading level (rung 0 = h1, rung 1 = h2, …): rungs of `W` (cols, 1 row) or `WxH`, e.g. `6,5,4,3,2,1` or `4x2,3x1,2x1`. Overrides tiered sizing; ignored for explicit-cell grids |
-| `row-height` | `string` | `md` | Uniform row track height: `sm`, `md`, `lg`, or `xl` |
-| `content-height` | `string` | — | Grid default — pin column cells' text height: `sm`, `md`, `lg`, or `xl` |
-| `media-ratio` | `string` | — | Grid default — media's share of a beside cell's width: `1/3`, `2/5`, `1/2`, `3/5`, or `2/3` |
-| `media-position` | `string` | size-derived | Grid default media placement for every cell: `top`, `bottom`, `start`, or `end`. A cell's own `media-position` wins |
-| `frame` / `frame-*` | `string` | — | Grid default frame chrome cascaded to every cell's media zone (SPEC-086); a cell's own `frame-*` wins. See [surfaces](/runes/surfaces) |
-| `elevation` | `string` | — | Cascades to every cell's `box-shadow` (`none`/`sm`/`md`/`lg`) — lifts the cells, not the grid box; a cell's own `elevation` wins |
-| `collapse` | `string` | `sm` | Binary stack breakpoint: `sm` (640px), `md` (768px), `lg` (1024px), or `never` |
+{% include file="rune-attributes.md" variables={r: "rune:bento"} /%}
 
 ### `bento-cell`
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `size` | `string` | `medium` | Size preset: `small`, `medium`, `large`, or `full` |
-| `cols` | `number` | — | Explicit column span (overrides `size` width) |
-| `rows` | `number` | — | Explicit row span (overrides `size` height) |
-| `media-position` | `string` | size-derived | Media placement: `top`, `bottom`, `start`, or `end` |
-| `content-height` | `string` | grid default | Override the grid `content-height` for this cell: `sm`, `md`, `lg`, or `xl` |
-| `media-ratio` | `string` | grid default | Override the grid `media-ratio` for this cell: `1/3`, `2/5`, `1/2`, `3/5`, or `2/3` |
-| `href` | `string` | — | Makes the whole cell a link |
-| `frame` / `frame-*` | `string` | grid default | Frame chrome on the cell's media zone (aspect, anchor, shadow, …) — see [surfaces](/runes/surfaces) |
+{% include file="rune-attributes.md" variables={r: "rune:bento-cell"} /%}
 
 ## Common attributes
 

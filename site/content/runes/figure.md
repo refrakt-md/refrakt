@@ -45,23 +45,5 @@ A figure *is* a frame around its image, so it sets `frameTarget: "self"` ([surfa
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `caption` | `string` | — | Caption text (falls back to first paragraph) |
-| `size` | `string` | — | One of `small`, `medium`, `large`, `full` |
-| `align` | `string` | — | One of `left`, `center`, `right` |
-| `elevation` | `string` | — | Self-surface `box-shadow`: `none`, `sm`, `md`, `lg` |
-| `frame-*` | `string` | — | Media-surface chrome (aspect, shadow, …) — see [surfaces](/runes/surfaces) |
+{% include file="rune-attributes.md" variables={r: "rune:figure"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

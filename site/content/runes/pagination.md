@@ -62,24 +62,5 @@ When the current page is a section index (it has child pages), `auto` mode rende
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `auto` | `boolean` | `false` | Derive prev/next from sibling page order |
-| `prev` | `string` | — | Explicit previous page (slug or URL). Skips auto mode. |
-| `next` | `string` | — | Explicit next page (slug or URL). Skips auto mode. |
-| `scope` | `string` | `siblings` | Auto-mode scope: `siblings` (direct page-tree siblings) or `section` (all pages in the top-level section) |
-| `prev-label` | `string` | — | Override the label rendered for the previous link |
-| `next-label` | `string` | — | Override the label rendered for the next link |
+{% include file="rune-attributes.md" variables={r: "rune:pagination"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

@@ -619,26 +619,5 @@ If the named directory does not exist, the sandbox displays an error message in 
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `src` | `string` | — | Name of a subdirectory in the examples directory to load files from |
-| `framework` | `string` | — | Framework preset to load: `tailwind`, `bootstrap`, `bulma`, `pico` |
-| `dependencies` | `string` | — | Comma-separated URLs of scripts/stylesheets to load |
-| `label` | `string` | — | Label for the sandbox (used when inside compare) |
-| `height` | `number \| string` | auto | Fixed height in pixels, or `"fill"` to fill the host's height (auto-sizes by default) |
-| `context` | `string` | `default` | Name of the design context scope to inject tokens from |
-| `activation` | `string` | `eager` | When to mount the iframe: `eager`, `visible` (on scroll-in), or `click` |
-| `poster` | `string` | — | Image URL shown in the iframe's place until a non-eager sandbox activates |
+{% include file="rune-attributes.md" variables={r: "rune:sandbox"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

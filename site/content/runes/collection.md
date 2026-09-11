@@ -195,17 +195,7 @@ Formatting lives in these functions, not in `fields` or a projection mini-langua
 
 ## Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `type` | string | — | Entity type(s) to query, comma-separated. (`show` is an alias.) |
-| `filter` | string | — | `field:value` clauses (see [grammar](#the-field-match-grammar)). |
-| `sort` | string | — | Sort field; `-field` / `field-desc` for descending. |
-| `group` | string | — | Group-by field. |
-| `group-display` | `headings` \| `accordion` | `headings` | How groups are presented (only with `group`). |
-| `limit` | number | — | Max items, applied after sort. |
-| `fields` | string | — | Comma-separated `data` fields for the no-body built-in. |
-| `layout` | `list` \| `grid` \| `table` | `list` | Arrangement. Item chrome comes from the item. |
-| `empty` | string | — | Fallback text shown when the query yields nothing (no-body form). Absent → render nothing. |
+{% include file="rune-attributes.md" variables={r: "rune:collection"} /%}
 
 ## Body zones — preamble, template, fallback
 

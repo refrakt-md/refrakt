@@ -1,17 +1,23 @@
 /**
  * Materialise every rune's attributes as data the doc pages render (SPEC-128).
  *
- * `site/content/_data/rune-attributes.json` is committed and diffable; each page
- * selects its own rows with `{% data … where="rune:snippet scope:own" %}`. The
- * script emits data rather than prose for the same reason
+ * `site/content/_data/rune-attributes.json` is committed and diffable. It is
+ * partitioned into four roots — `own`, `base`, `axesAvailable`,
+ * `axesUnavailable` — so a page selects its rows with one binding:
+ * `{% data root="own" where=$r %}` where `$r` is `"rune:snippet"`. The script
+ * emits data rather than prose for the same reason
  * `generate-config-reference.mjs` does — the artifact a reviewer reads is the
  * field data, which is the part that can be wrong.
  *
- * **Iterate the configured sites.** The plan runes come from `@refrakt-md/plan`,
- * which is only in the `plan` site's plugin set, so a generator reading one site
- * emits a plausible artifact missing a third of the catalogue — and a naive
- * freshness check passes, because the artifact matches what the generator
+ * **Iterate the configured sites**, because a site can carry a plugin another
+ * lacks — and the failure is quiet: the artifact would simply be missing those
+ * runes, and a freshness check still passes, since it matches what the generator
  * produced. `coverageGaps` is what catches that.
+ *
+ * In *this* repo the `main` site already loads every plugin including
+ * `@refrakt-md/plan`, so `plan` is a strict subset and either site alone would
+ * cover the catalogue. The iteration is insurance here rather than load-bearing;
+ * the synthetic cases in the test file are what actually exercise the logic.
  *
  * Usage:
  *   node scripts/generate-rune-attributes.mjs           # write the artifact
@@ -63,7 +69,7 @@ export function runesForSite(site, cliPath = CLI) {
  * accordion that names each axis and links to its documentation, so the page
  * needs the axis rows below rather than a record per attribute (SPEC-128 D1,
  * "try the link-only form first"). Carrying them here instead would be 3081
- * rows against 512 — six times the artifact for a table nothing renders.
+ * rows against 515 — six times the artifact for a table nothing renders.
  */
 export function rowsForRune(rune) {
 	const rows = [];
@@ -149,21 +155,47 @@ export function build(sites) {
 	}
 
 	const names = [...byName.keys()].sort();
-	const attributes = [];
-	const axes = [];
+	const artifact = { own: [], base: [], axesAvailable: [], axesUnavailable: [] };
 	for (const name of names) {
 		const { rune } = byName.get(name);
 		const page = pageForRune(name);
-		for (const row of rowsForRune(rune)) attributes.push({ ...row, page });
-		for (const row of axisRowsForRune(rune)) axes.push({ ...row, page });
+		for (const row of rowsForRune(rune)) {
+			artifact[row.scope].push({ ...row, page });
+		}
+		for (const row of axisRowsForRune(rune)) {
+			artifact[row.available ? 'axesAvailable' : 'axesUnavailable'].push({ ...row, page });
+		}
 	}
-	return { attributes, axes };
+	return artifact;
+}
+
+/**
+ * The four partitions, as `root` names.
+ *
+ * Partitioned rather than two arrays carrying a `scope` / `available`
+ * discriminator so a page's query needs **one** binding. With a single
+ * `attributes` array every call site would have to pass four pre-built filter
+ * strings (`"rune:card scope:own"`, `"rune:card scope:base"`, …), because
+ * `where` takes one string and the preprocess-time resolver cannot concatenate
+ * (BUG-010). Partitioned, every query is `root="<partition>" where=$r` with
+ * `$r` = `"rune:card"` — which is what SPEC-128 D1 wanted from the call site.
+ */
+export const PARTITIONS = ['own', 'base', 'axesAvailable', 'axesUnavailable'];
+
+/** Every attribute row across the partitions that carry them. */
+export function allAttributeRows(artifact) {
+	return [...artifact.own, ...artifact.base];
+}
+
+/** Every axis row across the partitions that carry them. */
+export function allAxisRows(artifact) {
+	return [...artifact.axesAvailable, ...artifact.axesUnavailable];
 }
 
 /** Runes present in a site's rune set but absent from the artifact. */
 export function coverageGaps(sites, artifact) {
-	const covered = new Set(artifact.attributes.map((r) => r.rune));
-	const axisOnly = new Set(artifact.axes.map((r) => r.rune));
+	const covered = new Set(allAttributeRows(artifact).map((r) => r.rune));
+	const axisOnly = new Set(allAxisRows(artifact).map((r) => r.rune));
 	const gaps = [];
 	for (const { site, runes } of sites) {
 		for (const rune of runes) {
@@ -217,8 +249,9 @@ function main(argv) {
 	mkdirSync(dirname(ARTIFACT_PATH), { recursive: true });
 	writeFileSync(ARTIFACT_PATH, rendered);
 	console.log(
-		`Wrote ${artifact.attributes.length} attribute rows and ${artifact.axes.length} axis rows `
-		+ `across ${sites.length} site(s)`,
+		`Wrote ${allAttributeRows(artifact).length} attribute rows and ${allAxisRows(artifact).length} axis rows `
+		+ `across ${sites.length} site(s) — `
+		+ PARTITIONS.map((p) => `${p}: ${artifact[p].length}`).join(', '),
 	);
 	return 0;
 }

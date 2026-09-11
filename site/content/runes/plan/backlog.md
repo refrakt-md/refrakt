@@ -97,14 +97,7 @@ Filters combine with AND logic. Multiple values for the same field combine with 
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `filter` | `string` | — | Space-separated `field:value` pairs. Same-field values are OR'd; different fields are AND'd. Fields: `status`, `priority`, `severity`, `assignee`, `milestone`, `complexity`, `tags` |
-| `sort` | `string` | `priority` | Sort field: `priority`, `status`, `id`, `assignee`, `complexity`, `milestone`, `date` |
-| `group` | `string` | — | Group by field: `status`, `priority`, `assignee`, `milestone`, `type`, `tags` |
-| `show` | `string` | `all` | Entity types to include: `all`, `work`, `bug`, `spec`, `decision`, `milestone`. `all` is work + bug; other types must be requested explicitly |
-| `layout` | `string` | `cards` | Item layout: `cards` (default), `list`, or `table`. Forwarded to the underlying `collection`. |
-| `limit` | `number` | — | Cap the number of entities rendered. Applied after sort, before group — "top N" semantics. Unset renders the full filtered set. |
+{% include file="rune-attributes.md" variables={r: "rune:backlog"} /%}
 
 ### Output structure
 

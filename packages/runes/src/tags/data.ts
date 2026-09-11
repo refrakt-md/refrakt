@@ -24,7 +24,7 @@ export const data = createContentModelSchema({
 		format: { type: String, required: false, matches: ['csv', 'tsv', 'json', 'ndjson'], description: 'Source format. Inferred from the file extension; override for ambiguity.' },
 		// CSV / TSV.
 		delimiter: { type: String, required: false, description: 'Override the field separator (CSV/TSV).' },
-		header: { type: Boolean, required: false, description: 'Whether the first row is the header (default true). false synthesizes col1…' },
+		header: { type: Boolean, required: false, description: 'CSV/TSV: whether the first row is the header (default true). false synthesizes col1…' },
 		// JSON (adapter lands in WORK-486; declared here for the full surface).
 		root: { type: String, required: false, description: 'JSON: dotted path / JSON Pointer to the array or map within the document.' },
 		orient: { type: String, required: false, matches: ['records', 'values', 'index'], description: 'JSON: how each element maps to a row. records/values auto-detected; index is explicit.' },

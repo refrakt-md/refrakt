@@ -46,22 +46,5 @@ Video could not be loaded. [Watch on the original site](https://example.com/vide
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `url` | `string` | **required** | URL to embed |
-| `type` | `string` | — | Content type (auto-detected from URL if omitted) |
-| `aspect` | `string` | `16:9` | Aspect ratio: `16:9`, `4:3`, `1:1`, or `auto` |
-| `title` | `string` | — | Accessible title for the iframe |
+{% include file="rune-attributes.md" variables={r: "rune:embed"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

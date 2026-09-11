@@ -176,23 +176,5 @@ legacyRender(source: string): any
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `kind` | `string` | `"function"` | Construct type: `function`, `class`, `interface`, `enum`, `type`, `module`, `hook`, `component` |
-| `lang` | `string` | `"typescript"` | Programming language: `typescript`, `javascript`, `python`, `rust`, `go`, etc. |
-| `since` | `string` | -- | Version when this construct was introduced |
-| `deprecated` | `string` | -- | Version when deprecated, or `"true"` for general deprecation |
-| `source` | `string` | -- | URL to source code (GitHub permalink, etc.) |
+{% include file="rune-attributes.md" variables={r: "rune:symbol"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

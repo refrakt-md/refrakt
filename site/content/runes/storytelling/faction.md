@@ -60,13 +60,13 @@ An underground network of spies and thieves operating across the port cities.
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `name` | `string` | — | Faction name (required) |
-| `type` | `string` | — | Faction type (e.g. `guild`, `cult`, `government`, `knightly order`) |
-| `alignment` | `string` | — | Alignment descriptor (e.g. `lawful`, `chaotic`, `neutral`) |
-| `size` | `string` | — | Size or scope descriptor (e.g. `small`, `medium`, `large`) |
-| `tags` | `string` | — | Comma-separated metadata tags |
+#### `faction`
+
+{% include file="rune-attributes.md" variables={r: "rune:faction"} /%}
+
+#### `faction-section`
+
+{% include file="rune-attributes.md" variables={r: "rune:faction-section"} /%}
 
 ### Layout attributes
 
@@ -79,15 +79,3 @@ A faction's `scene` field (the image at the top of each section) is the media zo
 | `valign` | `string` | — | Cross-axis alignment when scene is beside content: `top`, `center`, `bottom`, `stretch` |
 | `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

@@ -158,18 +158,7 @@ Precedence matches [`collection`](/runes/collection#body-zones-preamble-template
 
 ## Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `type` | string | — | Entity type(s) to query, comma-separated. |
-| `filter` | string | — | `field:value` clauses defining the **primary set** being measured (see [grammar](/runes/collection#the-field-match-grammar)). |
-| `value` | string | — | Optional secondary `field:value` clause defining the **achieved subset** within `filter`. Drives `$item.value` and `$item.percent`. |
-| `group` | string | — | Group-by field; omit to render once with totals. |
-| `sort` | `key` \| `count` \| `value` \| `percent` | — | Sort groups; prefix `-` for descending. Honors domain-aware ordering when sorting by `key`. |
-| `limit` | number | — | Max groups, applied after sort. |
-| `empty` | string | — | Fallback text shown when the query yields nothing (self-closing form; body form uses a fallback zone). Absent → render nothing. |
-| `layout` | `chart` | — | Render the groups as a chart instead of the default output. |
-| `chart-type` | `bar` \| `line` \| `area` \| `pie` | — | Chart form, with `layout="chart"`. |
-| `chart-title` | string | — | Title rendered above the chart. |
+{% include file="rune-attributes.md" variables={r: "rune:aggregate"} /%}
 
 ## Output contract
 

@@ -36,26 +36,9 @@ Join us for three days of talks, workshops, and networking with the web developm
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `date` | `string` | — | Event start date |
-| `endDate` | `string` | — | Event end date |
-| `location` | `string` | — | Venue name or "Online" |
-| `url` | `string` | — | Event or registration URL |
+{% include file="rune-attributes.md" variables={r: "rune:event"} /%}
 
 ## Section header
 
 Event supports an optional eyebrow, headline, and blurb above the section above event details. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |
