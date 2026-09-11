@@ -71,11 +71,38 @@ it wraps each rune's transform and already post-processes the result (the tint
 and bg meta injection). Every one of the 29 schema emitters goes through it;
 none is a raw `Schema`. So schema application is one step there, not 29 edits.
 
-The rune's own table is reachable from its definition. Where a *merged* view is
-needed — for `contracts` and `reference` — it arrives the way
-`__backgrounds` and `__securityPolicy` already do, through `config.variables`.
-A module-level registry would not do: this repo builds two sites in one
-process.
+### Nothing needs threading
+
+The obvious guess is that the table is passed to `createComponentRenderable`.
+It cannot be: picking a row needs `attrs` (for `by: 'type'`), and that function
+receives only the assembled result.
+
+The wrapper has both. So `schema` is an **option to `createContentModelSchema`**,
+sitting with the rune-identity declarations already there — `sections`,
+`mediaSlots`, `provides`, `base`:
+
+```ts
+export const playlist = createContentModelSchema({
+  sections: playlistSections,
+  mediaSlots: playlistMediaSlots,
+  schema: playlistSchema,        // ← beside its siblings
+  attributes: { … },
+  transform(resolved, attrs, config) { … },
+});
+```
+
+Since {% ref "ADR-028" /%} rules out merging, there is no merged view to
+assemble and **no `config.variables` threading is required** — the table is a
+module constant in lexical scope, and `contracts` / `reference` read it the way
+they already read `sections`.
+
+The 29 call sites get *simpler*: they stop passing `schemaOrgType` and `schema`
+entirely rather than gaining an argument.
+
+The child mapping works because Markdoc transforms bottom-up. By the time the
+wrapper sees `result`, the children carry their own `typeof`, so it rewrites
+them — the move `stripSchemaOrg` already makes for `schema="none"`
+({% ref "WORK-552" /%}).
 
 Relocating `extractSeo` to after the engine is the alternative. It is a larger
 change — content loading is framework-agnostic — and it is not obviously
