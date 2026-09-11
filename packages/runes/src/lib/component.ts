@@ -137,3 +137,35 @@ export function createComponentRenderable(result: InlineTransformResult): Tag {
 
   return tag;
 }
+
+/**
+ * Remove the schema.org channel from a subtree (WORK-552).
+ *
+ * `typeof` and `property` are the whole channel: `createComponentRenderable`
+ * stamps them, and `collectJsonLd` *derives* the JSON-LD by walking the tree for
+ * `typeof`. Deleting both therefore removes the RDFa and the JSON-LD together —
+ * there is no third place structured data hides.
+ *
+ * Whole subtree, not just the root, because a child rune declares its own type
+ * independently: an `accordion-item` emits `Question` whether or not its
+ * `accordion` emits `FAQPage`. Stripping only the root would leave orphan
+ * `Question` nodes with no container, which is worse than either consistent
+ * state.
+ *
+ * **This has to run during the transform.** `extractSeo` reads the
+ * `Markdoc.transform` output before the identity transform ever sees the tree,
+ * so a later pass would clean the HTML and leave the JSON-LD already harvested —
+ * a failure that looks fixed on the page and is not.
+ */
+export function stripSchemaOrg<T>(nodes: T): T {
+	const visit = (node: unknown): void => {
+		if (Array.isArray(node)) { node.forEach(visit); return; }
+		if (!Markdoc.Tag.isTag(node as never)) return;
+		const tag = node as Tag;
+		delete tag.attributes.typeof;
+		delete tag.attributes.property;
+		(tag.children ?? []).forEach(visit);
+	};
+	visit(nodes);
+	return nodes;
+}

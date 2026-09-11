@@ -7,7 +7,7 @@ import { schemaBasePresets } from '../attribute-presets.js';
 import { resolveUniversalAttributes } from '../universal-attributes.js';
 import type { UniversalAttributePosture } from '../universal-attributes.js';
 
-export { createComponentRenderable } from './component.js';
+export { createComponentRenderable, stripSchemaOrg } from './component.js';
 export type { InlineTransformResult } from './component.js';
 export { resolve, resolveSequence, resolveDelimited, resolveSections, resolveContentModel, resolveListItems, evaluateCondition, matchesType } from './resolver.js';
 export { sanitizeSandboxContent } from './sanitize.js';

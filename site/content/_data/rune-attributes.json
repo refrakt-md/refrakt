@@ -11,6 +11,16 @@
 			"page": "accordion"
 		},
 		{
+			"rune": "accordion",
+			"plugin": "core",
+			"scope": "own",
+			"name": "schema",
+			"type": "\"none\"",
+			"required": false,
+			"description": "Set to \"none\" to emit no schema.org markup. Use it when the panels are not a FAQ — a list of definitions, say — so the page does not publish fabricated Question entries. Suppresses the items too, not just the container.",
+			"page": "accordion"
+		},
+		{
 			"rune": "accordion-item",
 			"plugin": "core",
 			"scope": "own",

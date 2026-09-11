@@ -26,7 +26,7 @@
 ### Universal attributes
 {% /data %}
 
-{% accordion %}
+{% accordion schema="none" %}
 {% data src="site/content/_data/rune-attributes.json" root="axesAvailable" where=$r %}
 ## {% $row.axis %}
 

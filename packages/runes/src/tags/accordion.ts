@@ -1,7 +1,7 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes } from '../lib/index.js';
+import { createComponentRenderable, createContentModelSchema, asNodes, stripSchemaOrg } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { pageSectionProperties } from './common.js';
 
@@ -65,6 +65,7 @@ export const accordion = createContentModelSchema({
 	sections: accordionSections,
 	attributes: {
 		multiple: { type: Boolean, required: false, description: 'Allow multiple panels to be open at once' },
+		schema: { type: String, required: false, matches: ['none'], description: 'Set to "none" to emit no schema.org markup. Use it when the panels are not a FAQ — a list of definitions, say — so the page does not publish fabricated Question entries. Suppresses the items too, not just the container.' },
 	},
 	contentModel: () => ({
 		type: 'sections' as const,
@@ -102,20 +103,28 @@ export const accordion = createContentModelSchema({
 		// generated items cannot know in advance whether there will be any.
 		if (items.count() === 0 && headerNodes.count() === 0) return null;
 
+		// SPEC-130 / WORK-552 — an accordion is not always a FAQ. Strip the whole
+		// subtree, not just the root: `accordion-item` declares `Question`
+		// independently, and leaving those with no `FAQPage` around them is worse
+		// than either consistent state.
+		//
+		// Done here rather than in a later pass because `extractSeo` reads the
+		// transform output; see `stripSchemaOrg`.
+		const noSchema = attrs.schema === 'none';
+		if (noSchema) stripSchemaOrg(sectionNodes.nodes);
+
 		const children = headerNodes.count() > 0
 			? [headerNodes.wrap('header').next(), itemsContainer.next()]
 			: [itemsContainer.next()];
 
-		return createComponentRenderable({ rune: 'accordion', schemaOrgType: 'FAQPage',
+		return createComponentRenderable({ rune: 'accordion',
+			...(noSchema ? {} : { schemaOrgType: 'FAQPage', schema: { mainEntity: items } }),
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
 				item: items,
 			},
 			refs: { ...pageSectionProperties(headerNodes), items: itemsContainer },
-			schema: {
-				mainEntity: items,
-			},
 			children,
 		});
 	},

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parse, findTag, findAllTags } from './helpers.js';
+import { collectJsonLd } from '../src/seo.js';
 
 describe('accordion tag', () => {
 	it('should convert headings to accordion items', () => {
@@ -129,5 +130,50 @@ describe('an accordion with nothing in it', () => {
 		// author wrote, which is a different case from "the query found nothing".
 		const result = parse('{% accordion %}\n# Questions\n{% /accordion %}');
 		expect(findTag(result, (t) => t.attributes?.['data-rune'] === 'accordion')).toBeDefined();
+	});
+});
+
+describe('schema="none" (WORK-552)', () => {
+	const SRC = (attrs = '') => `{% accordion ${attrs} %}\n## Q\n\nA.\n\n## Q2\n\nB.\n{% /accordion %}`;
+
+	it('emits FAQPage and Question by default', () => {
+		const json = JSON.stringify(parse(SRC()));
+		expect(json).toContain('FAQPage');
+		expect(json).toContain('Question');
+	});
+
+	it('emits no schema at all when set to "none"', () => {
+		const json = JSON.stringify(parse(SRC('schema="none"')));
+		expect(json).not.toContain('FAQPage');
+		expect(json).not.toContain('Question');
+		// The items declare `Answer` independently too — the strip is subtree-wide.
+		expect(json).not.toContain('Answer');
+	});
+
+	it('strips the `property` half as well, not just `typeof`', () => {
+		// `collectJsonLd` reads `typeof`, but a stray `property` on a child would
+		// still attach to whatever ancestor type survives.
+		const json = JSON.stringify(parse(SRC('schema="none"')));
+		expect(json).not.toContain('"property"');
+	});
+
+	it('leaves the rendered content identical', () => {
+		// Compare the trees with the schema attributes removed from both, rather
+		// than regexing the serialised JSON — a string strip leaves dangling
+		// commas and reports a difference that is not there.
+		const bare = (node: unknown): unknown => {
+			if (Array.isArray(node)) return node.map(bare);
+			if (!node || typeof node !== 'object') return node;
+			const { typeof: _t, property: _p, ...attrs } = (node as any).attributes ?? {};
+			return { ...(node as any), attributes: attrs, children: ((node as any).children ?? []).map(bare) };
+		};
+		expect(bare(parse(SRC('schema="none"')))).toEqual(bare(parse(SRC())));
+	});
+
+	it('produces no JSON-LD, not merely bare HTML attributes', () => {
+		// The failure worth guarding: a strip that runs too late cleans the
+		// markup and leaves the structured data already harvested.
+		expect(collectJsonLd(parse(SRC('schema="none"')))).toEqual([]);
+		expect(collectJsonLd(parse(SRC()))).not.toEqual([]);
 	});
 });
