@@ -53,9 +53,9 @@ Three properties distinguish it from `partial`:
 2. **It pastes AST, not renderables.** The page sees the content as if typed
    there, so a parent rune's content model reads it — the same constraint
    {% ref "SPEC-127" /%} settled for `data` rows, and for the same reason.
-3. **It takes no `variables`.** A partial's variable binding exists because it
-   expands at transform, where a variable scope is available. An include is a
-   paste; parameterisation is what the next section is about.
+3. **It substitutes its `variables` into the pasted AST**, rather than binding
+   them in a transform-time scope the way `partial` does. Same author-facing
+   shape, different mechanism — see the parameterisation section.
 
 ## Settled: a new rune, not a mode on `partial`
 
@@ -115,55 +115,78 @@ it is what a *content* author hits, and it is the main way anyone will discover
 the distinction. It has to name the fix: this file uses `{% data %}`, include it
 with `{% include %}`.
 
-**A file needing both parameters and preprocessing has nowhere to go.** `include`
-takes no variables; `partial` cannot preprocess. That is not hypothetical — it is
-exactly what the accordion needed before option B removed the parameter. Option B
-makes it moot here and leaves the gap real for the next author. Worth watching
-rather than solving pre-emptively: if it recurs, the answer is probably variables
-on `include`, at which point the "no variables" property was never load-bearing.
+**A file needing both parameters and preprocessing.** An earlier draft flagged
+this as a gap with nowhere to go, since `include` was assumed to take no
+variables and `partial` cannot preprocess. It takes variables, so the gap is
+closed — `include` covers both. Recorded because the reasoning that produced it
+was wrong rather than merely outdated: see the parameterisation section.
 
-## The hard part: a paste is the same everywhere
+## Settled: `include` takes variables
 
-An include with no parameters pastes identical content into every page. The
-motivating use needs each rune page to filter the artifact to *its own* rune:
+An earlier draft of this spec asserted that it could not, reasoning that *"a
+partial's variable binding exists because it expands at transform, where a
+variable scope is available; an include is a paste."* **That is a non-sequitur
+and the assertion was wrong.** A paste can substitute variables into the AST it
+pastes — no transform-time scope required.
+
+The mechanism already exists in this codebase. `bindRow` in `data-pipeline.ts`
+clones a `data` body once per row, replacing `Variable` nodes whose path starts
+with `row`. An include does the same with its own bindings.
+
+Verified end to end. An included file authored as:
 
 ```markdoc
-{% data src="…/rune-attributes.json" where="rune:card scope:own" %}
+{% data src="…" root="rows" where=$q %}
+{% $row.name %}
+{% /data %}
 ```
 
-Three ways to get a page-specific value into a page-independent paste, in
-increasing order of what they demand:
+pasted with `{q: 'rune:card scope:own'}` substituted at paste time, then run
+through `preprocessData` with a deliberately **empty** `ctx.variables`, filters
+correctly — the matching row renders and the other rune's row does not leak.
+The binding came entirely from the include.
 
-**A — the page carries the query in frontmatter.** `preprocessData` already
-resolves bare `Variable` attributes against page variables, `frontmatter`
-included. Verified: `where=$q` filters correctly, only the matching row renders.
-So a rune page adds one frontmatter key and the include pastes
-`where=$frontmatter.attrQuery`. No include parameters at all.
+### What that changes
 
-*Cost:* a line per page, on files that already carry `type: rune` — so a second
-per-rune key in a per-rune file. *Risk:* it is hand-written, which is the class
-of thing this milestone exists to stop; a wrong value filters to nothing and the
-page renders empty.
+**Parameterisation is no longer the hard part.** The call site passes the query:
 
-**B — derive it from the page.** `$page.slug` is already available and *is* the
-rune name for `/runes/card`. Pages need nothing added. The gap is composing
-`"rune:" + slug`, which needs `resolveString` to evaluate `Function` nodes —
-today `concat(…)` returns empty and, per {% ref "BUG-010" /%}, that silently
-matches every row.
+```markdoc
+{% include file="rune-attributes.md" variables={q: "rune:card scope:own"} /%}
+```
 
-*Cost:* teaching the preprocess-time resolver to evaluate Markdoc functions.
-*Benefit:* zero per-page authoring, and it is the only option where adding a rune
-page cannot get the wiring wrong.
+No function evaluation in the resolver, and no per-page frontmatter.
 
-**C — the include takes one attribute.** `{% include file="…" name="card" /%}`. Works
-immediately, and concedes the "no variables" property — at which point it is
-`partial` that expands earlier, and the honest move would be to give `partial` a
-preprocess mode rather than add a rune.
+**It removes this spec's dependency on {% ref "BUG-010" /%}.** That dependency
+existed only because deriving the query from `$page.slug` needed
+`resolveString` to evaluate `Function` nodes. BUG-010 remains a real bug worth
+fixing on its own merits; it is no longer on this spec's critical path.
 
-**Recommended: B**, with A as the fallback if function evaluation at preprocess
-pulls in more of Markdoc's evaluator than is comfortable. B is the only option
-where a new rune page needs nothing beyond existing, and it forces
-{% ref "BUG-010" /%} to be fixed rather than worked around.
+**It closes the gap this spec previously flagged.** "A file needing both
+parameters *and* preprocessing has nowhere to go" was an artifact of the wrong
+assumption, not a real hole.
+
+### Still worth doing later: derive from the page
+
+`$page.slug` already *is* the rune name for `/runes/card`, so a rune page could
+carry nothing at all — not even a call-site argument. That needs the
+preprocess-time resolver to evaluate functions (`concat("rune:", $page.slug, …)`),
+which is exactly what BUG-010 makes unsafe today.
+
+Worth having eventually, because it is the only form where adding a rune page
+cannot get the wiring wrong. Not worth blocking on: it is a refinement of a call
+site, and the variables form ships without it.
+
+### The cost of this decision
+
+`include` becomes a strict superset of `partial` — paste, plus variables, plus
+preprocessing. That sharpens "why two runes?", since the difference is no longer
+a capability tradeoff.
+
+The answer is unchanged and does not depend on one: `partial` is a Markdoc
+builtin that cannot be extended, and it stays the default on the standards
+argument. What *does* get harder is the teaching line, which can no longer be
+"use `partial` unless you need more" and has to be "use `partial` — it is
+Markdoc's — unless your file contains `data` or `snippet`."
 
 ## Constraint: pasting pre-transform is more powerful than it looks
 
@@ -206,7 +229,8 @@ is the entire onboarding.
 - [ ] A file's AST can be pasted into a page during preprocess, so `data` and `snippet` inside it resolve
 - [ ] The pasted content is spliced as siblings, so a parent rune's content model sees it
 - [ ] Nesting is bounded, with an error naming the cycle rather than a stack overflow
-- [ ] The parameterisation question is settled, per A / B / C above
+- [ ] `include` accepts `variables`, substituted into the pasted AST at paste time
+- [ ] A test proves a variable reaches a `data` attribute inside the included file, with page variables empty
 - [ ] Both runes read `_partials/` and the same `namespace:file` roots
 - [ ] The preprocessor-in-a-partial failure names the fix — use `include` — rather than describing the pipeline, since with `partial` as the default this is the main discovery path for the new rune
 - [ ] `docs/authoring/partials.md`'s "inlined at parse time" claim is corrected

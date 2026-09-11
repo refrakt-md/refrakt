@@ -12,8 +12,8 @@ preprocess, so `data` and `snippet` inside it resolve. Unblocks
 - [ ] A test proves a `{% data %}` inside the pasted file resolves — the case `partial` fails
 - [ ] Nesting is bounded and a cycle errors by name rather than overflowing the stack
 - [ ] The file resolves through the same `ProjectFiles` sandbox `snippet` and `data` use
-- [ ] Parameterisation follows SPEC-129's settled option
-- [ ] `{% data %}`'s `where` can name the rune without per-page authoring, or the fallback is implemented and its cost recorded
+- [ ] `include` accepts `variables`, substituted into the pasted AST at paste time — the same thing `bindRow` does for `$row`
+- [ ] A test proves a variable reaches a `{% data %}` attribute inside the included file, with page variables deliberately empty
 - [ ] The preprocessor-in-a-partial failure names the fix — use `include` — rather than describing the pipeline; with `partial` as the default this is the main discovery path for the new rune
 - [ ] Both runes read `_partials/` and the same `namespace:file` roots
 - [ ] `docs/authoring/partials.md` no longer claims partials are "inlined at parse time"
@@ -30,11 +30,13 @@ If `partial` is what authors reach for first, the preprocessor failure *is* the
 discovery path for `include` — for most people the only time they learn it
 exists. Write that message before writing the rune.
 
-**Option B needs {% ref "BUG-010" /%} fixed first, not alongside.** Deriving the
-query from `$page.slug` means `resolveString` evaluating `Function` nodes — and
-while an unresolvable `where` silently matches every row, a mistake there
-produces a page that renders every rune's attributes under one heading and looks
-plausible. Fix the silent failure, then build on the resolver.
+**Variables come first; deriving from the page is a later refinement.**
+Substituting bindings into the pasted AST needs no changes to `resolveString`,
+so this ships without {% ref "BUG-010" /%}. Deriving the query from
+`$page.slug` instead — so a rune page carries nothing at all — does need
+function evaluation, and that must wait until BUG-010 is fixed: while an
+unresolvable `where` silently matches every row, a mistake there renders every
+rune's attributes under one heading and looks plausible.
 
 **Splice, don't wrap** — the same constraint {% ref "SPEC-127" /%} settled for
 `data` rows, measured there: a container that is itself a rune with a content
@@ -46,6 +48,7 @@ preprocess gives an author nothing to act on.
 
 ## Blocked by
 
-- {% ref "BUG-010" /%} — option B builds on the resolver this bug makes untrustworthy
+Nothing. The variables form needs no resolver changes — {% ref "BUG-010" /%} is
+a prerequisite only for the later `$page.slug` refinement, not for shipping.
 
 {% /work %}

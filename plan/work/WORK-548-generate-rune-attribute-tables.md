@@ -100,10 +100,14 @@ survives to its throwing transform. That blocks the shared-block criterion
 above.
 
 Filed as {% ref "SPEC-129" /%} (a pre-transform include rune) and
-{% ref "WORK-549" /%}. Testing it also surfaced {% ref "BUG-010" /%}: a `where`
-that cannot be resolved silently matches every row, so a page filtering one
-rune's attributes would render the whole catalogue under that rune's heading and
-look plausible.
+{% ref "WORK-549" /%}, which carries `variables` and so needs no resolver
+changes to ship.
+
+Testing it also surfaced {% ref "BUG-010" /%}: a `where` that cannot be resolved
+silently matches every row, so a page filtering one rune's attributes would
+render the whole catalogue under that rune's heading and look plausible. That is
+independent of this item's critical path but worth fixing before anyone leans on
+a computed `where`.
 
 ## Blocked by
 
