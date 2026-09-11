@@ -14,6 +14,8 @@ preprocess, so `data` and `snippet` inside it resolve. Unblocks
 - [ ] The file resolves through the same `ProjectFiles` sandbox `snippet` and `data` use
 - [ ] Parameterisation follows SPEC-129's settled option
 - [ ] `{% data %}`'s `where` can name the rune without per-page authoring, or the fallback is implemented and its cost recorded
+- [ ] The preprocessor-in-a-partial failure names the fix — use `include` — rather than describing the pipeline; with `partial` as the default this is the main discovery path for the new rune
+- [ ] Both runes read `_partials/` and the same `namespace:file` roots
 - [ ] `docs/authoring/partials.md` no longer claims partials are "inlined at parse time"
 - [ ] The choice between this rune and `partial` is documented where an author will look
 
