@@ -15,6 +15,10 @@ This rune is part of **@refrakt-md/design**. Install with `npm install @refrakt-
 
 Displays design tokens for spacing, border radius, and shadows. Content is organized by `##` sections — `Spacing`, `Radius`, and `Shadows` — with `name: value` list items in each.
 
+{% hint type="note" %}
+**Not the `spacing` attribute.** This rune *renders a design system's spacing scale* as documentation. The universal `spacing` attribute — which adjusts the rhythm around any block rune — is a different thing with the same name; see [Surfaces](/runes/surfaces#spacing-and-inset).
+{% /hint %}
+
 ## Full token set
 
 A complete spacing system with scale, radii, and shadows.
@@ -78,19 +82,5 @@ Document visual tokens without a spacing scale.
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `title` | `string` | — | Section heading |
+{% include file="rune-attributes.md" variables={r: "rune:spacing"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

@@ -1,0 +1,278 @@
+/**
+ * Project configuration — the shape of `refrakt.config.json`.
+ *
+ * These types are the source of truth `refrakt.config.schema.json` is
+ * drift-tested against (`packages/transform/test/config-schema.test.ts`), and
+ * the documented configuration reference is generated from that schema. They
+ * used to live in `theme.ts`, left there by the mechanical module split in
+ * `c3fe915` because `SiteConfig` references `SiteThemeConfig`. A reader
+ * following the docs → schema → types chain landed in a file whose name said it
+ * was about something else (WORK-541).
+ *
+ * `SiteThemeConfig` stays in `theme.ts`: it is genuinely a theme type, and it
+ * is the reference direction that dragged everything else in with it.
+ */
+import type { SiteThemeConfig } from './theme.js';
+
+/** A declarative entity → page route (SPEC-069). Generates one page per
+ *  registered entity matching `type` + optional `filter`. `{name}` placeholders
+ *  in `url` / `title` / `frontmatter` interpolate entity fields; `$item` is
+ *  bound in `render` / `render-template`. `render` and `render-template` are
+ *  mutually exclusive. */
+export interface EntityRoute {
+	/** Entity type(s) the rule matches, comma-separated for multiple. */
+	type: string;
+	/** Optional field:value filter (SPEC-070 grammar). */
+	filter?: string;
+	/** Templated route, site-root-relative (basePath applied by the loader). */
+	url: string;
+	/** Templated page title; falls back to the rendered content's heading. */
+	title?: string;
+	/** Inline markdoc body, with `$item` bound. */
+	render?: string;
+	/** Markdoc partial used as the body instead of `render`. */
+	'render-template'?: string;
+	/** Frontmatter for the generated page (`{name}` placeholders interpolate). */
+	frontmatter?: Record<string, unknown>;
+}
+
+/** Per-site configuration. A project may declare a single site (via `site`) or
+ *  multiple named sites (via `sites: { name: SiteConfig }`).
+ *  Only `contentDir` and `theme` are strictly required for the site to load. */
+export interface SiteConfig {
+	/** Path to content directory, relative to project root */
+	contentDir: string;
+	/** Active theme — accepts either a package name string (legacy shorthand)
+	 *  or a full {@link SiteThemeConfig} with presets, token overrides, mode
+	 *  overlays, and `colorScheme`. */
+	theme: string | SiteThemeConfig;
+	/** Documentation-only adapter hint (`svelte`, `astro`, `next`, `nuxt`, `eleventy`, `html`).
+	 *  No adapter reads or validates this field today; it serves as an in-config record of
+	 *  which adapter the site is intended for. Slated for removal in v1.0. */
+	target?: string;
+	/** Component overrides — maps typeof names to relative paths of replacement components */
+	overrides?: Record<string, string>;
+	/** Route-to-layout mapping rules, evaluated in order (first match wins) */
+	routeRules?: RouteRule[];
+	/** Declarative entity → page routes (SPEC-069). Each rule generates one page
+	 *  per registered entity matching `type` + optional `filter`. */
+	entityRoutes?: EntityRoute[];
+	/** Whether to render the site-wide search UI — the header search button
+	 *  plus the Cmd/Ctrl+K dialog, powered by Pagefind. Defaults to `true`.
+	 *
+	 *  Set to `false` to omit the search chrome entirely: the `search` client
+	 *  behavior is never initialized and the trigger button is not rendered in
+	 *  any layout. Leave it enabled (the default) to keep the button; note that
+	 *  results only appear once a Pagefind index has been built and served at
+	 *  `/pagefind/` — see the "Setting up search" guide. Until then the button
+	 *  opens to a graceful "Search is not available." message. */
+	search?: boolean;
+	/** Syntax highlighting options */
+	highlight?: {
+		theme?: string | { light: string; dark: string };
+	};
+	/** Custom icon SVGs — merged into the theme's global icon group */
+	icons?: Record<string, string>;
+	/** Plugins to merge into this site's ThemeConfig (runes, layouts, hooks, etc.) */
+	plugins?: string[];
+	/** SPEC-035 — active locale (BCP 47, e.g. `'de'`). Selects first-party and
+	 *  plugin translation bundles and drives locale-aware formatting. Defaults to
+	 *  `'en'` (zero-config English). */
+	locale?: string;
+	/** SPEC-035 — site-level translation overrides, keyed by the auto-derived
+	 *  i18n key (`{scope}.{block}.{ref}`). Highest precedence — these win over
+	 *  first-party and plugin bundles (Decision D5). Values are `string` or a
+	 *  CLDR plural-category map. */
+	strings?: Record<string, string | Record<string, string>>;
+	/** Project-level tint presets — merged after theme tints (last wins).
+	 *  Field shape matches `TintDefinition` from `@refrakt-md/transform` per
+	 *  SPEC-053; `Record<string, unknown>` is used here to avoid a cross-package
+	 *  type dependency in `@refrakt-md/types`. */
+	tints?: Record<string, Record<string, unknown>>;
+	/** Project-level background presets — merged after theme backgrounds (last wins) */
+	backgrounds?: Record<string, Record<string, unknown>>;
+	/** Sandbox configuration. The runtime program-source directory (SPEC-104). */
+	sandbox?: {
+		/** Directory of sandbox program sources, scanned at build time
+		 *  (ADR-022). Relative to the project root. */
+		dir?: string;
+		/** @deprecated Renamed to `dir` (ADR-022). Still accepted as input — the
+		 *  config normalizer coalesces it into `dir` and emits a deprecation
+		 *  warning — but will be removed in a future release. */
+		examplesDir?: string;
+	};
+	/** Base URL for canonical links and og:url */
+	baseUrl?: string;
+	/** Human-readable site name for og:site_name */
+	siteName?: string;
+	/** Default og:image for pages without their own image */
+	defaultImage?: string;
+	/** Site logo for Organization JSON-LD schema */
+	logo?: string;
+	/** Canonical GitHub (or compatible) repository URL — e.g.
+	 *  `"https://github.com/owner/repo"`. Used by file-ref (SPEC-078) to
+	 *  build deep-link "View source" URLs of the form
+	 *  `{repoUrl}/blob/{repoBranch}/{path}#L{start}-L{end}`. When absent,
+	 *  `file-ref` falls back to a no-href link / in-page anchor with a
+	 *  build warning. */
+	repoUrl?: string;
+	/** Git ref appended to GitHub source URLs (branch / tag / commit SHA).
+	 *  Defaults to `"main"` when omitted. Use a commit SHA for archival
+	 *  URLs that won't drift when the file is edited later. */
+	repoBranch?: string;
+	/** Rune resolution configuration */
+	runes?: {
+		prefer?: Record<string, string>;
+		aliases?: Record<string, string>;
+		local?: Record<string, string>;
+	};
+}
+
+/** Plan-management configuration. Optional — when absent, plan tooling falls
+ *  back to autodetecting `./plan` from the working directory. */
+export interface PlanConfig {
+	/** Plan directory, relative to project root. Default: `plan` */
+	dir?: string;
+}
+
+/** Project-level configuration (refrakt.config.json).
+ *
+ *  Three valid input shapes — all collapse to the same normalized internal form:
+ *  - **Flat** (legacy): top-level `contentDir`, `theme`, `target`, …
+ *  - **Singular**: `{ "site": { contentDir, theme, target, … } }`
+ *  - **Plural**: `{ "sites": { "main": { … }, "blog": { … } } }`
+ *
+ *  Flat and singular shapes both collapse to `sites.default`. Plural projects
+ *  must reference sites by name in CLI commands and adapter options. */
+export interface RefraktConfig {
+	/** Plugins for this project — npm packages that contribute runes, layouts,
+	 *  pipeline hooks, behaviors, and/or CLI commands and MCP tools.
+	 *  When set, this is authoritative; when absent, plugin discovery falls back
+	 *  to scanning `package.json` for `@refrakt-md/*` dependencies. */
+	plugins?: string[];
+
+	/** Plan-management configuration. */
+	plan?: PlanConfig;
+
+	/** Cross-reference URL templates. Patterns are tried in array order when an
+	 *  xref's ID isn't found in the registry (or when the registry-found entity
+	 *  has no usable `sourceUrl`). First match wins. See {@link XrefPattern}. */
+	xrefs?: XrefPattern[];
+
+	/** Named file roots — directories that file-reading runes can reach via
+	 *  a `namespace:filename` syntax. Markdoc partials extend `{% partial %}`
+	 *  to honor namespaced refs (`shared:footer.md`); the snippet rune
+	 *  ({% ref "SPEC-062" /%}) consumes the same resolver when its v2 lands.
+	 *
+	 *  Keys are namespace names; values are paths relative to the config
+	 *  file's directory (i.e. the project root). Paths must point to existing
+	 *  directories. The namespace `site` is reserved for future site-level
+	 *  resolution. See SPEC-063 for the full resolution model. */
+	fileRoots?: Record<string, string>;
+
+	/** Singular-site declaration. Mutually exclusive with `sites`. */
+	site?: SiteConfig;
+
+	/** Multi-site declaration keyed by site name. Mutually exclusive with `site`. */
+	sites?: Record<string, SiteConfig>;
+
+	// --- Legacy flat-shape fields (backwards compatible) ---
+	// These are shorthand for `sites.default.*`. The normalizer mirrors them
+	// into a `sites.default` entry and exposes them at the top level for
+	// existing adapter code that reads them directly. They are populated for
+	// single-site configs (flat or singular shape) after normalization but
+	// undefined for multi-site repos, where each site lives under `sites[name]`.
+	// Adapter code reading these directly should null-check or migrate to
+	// `resolveSite(config).site.contentDir`.
+
+	/** @deprecated Shorthand for `sites.default.contentDir`. Undefined for multi-site configs — use `resolveSite(config).site.contentDir`. */
+	contentDir?: string;
+	/** @deprecated Shorthand for `sites.default.theme`. Undefined for multi-site configs — use `resolveSite(config).site.theme`. Accepts the same `string | SiteThemeConfig` shape as the per-site field. */
+	theme?: string | SiteThemeConfig;
+	/** @deprecated Shorthand for `sites.default.target`. Undefined for multi-site configs — use `resolveSite(config).site.target`. The field itself is also under review (v0.11.0 follow-up): adapters do not validate it and it is increasingly vestigial; treat it as documentation-only for now. */
+	target?: string;
+	/** @deprecated Shorthand for `sites.default.overrides` */
+	overrides?: Record<string, string>;
+	/** @deprecated Shorthand for `sites.default.routeRules` */
+	routeRules?: RouteRule[];
+	/** @deprecated Shorthand for `sites.default.search` */
+	search?: boolean;
+	/** @deprecated Shorthand for `sites.default.highlight` */
+	highlight?: {
+		theme?: string | { light: string; dark: string };
+	};
+	/** @deprecated Shorthand for `sites.default.icons` */
+	icons?: Record<string, string>;
+	/** @deprecated Shorthand for `sites.default.backgrounds` */
+	backgrounds?: Record<string, Record<string, unknown>>;
+	/** @deprecated Shorthand for `sites.default.sandbox` */
+	sandbox?: {
+		dir?: string;
+		/** @deprecated Renamed to `dir` (ADR-022). */
+		examplesDir?: string;
+	};
+	/** @deprecated Shorthand for `sites.default.baseUrl` */
+	baseUrl?: string;
+	/** @deprecated Shorthand for `sites.default.siteName` */
+	siteName?: string;
+	/** @deprecated Shorthand for `sites.default.defaultImage` */
+	defaultImage?: string;
+	/** @deprecated Shorthand for `sites.default.logo` */
+	logo?: string;
+	/** @deprecated Shorthand for `sites.default.repoUrl` */
+	repoUrl?: string;
+	/** @deprecated Shorthand for `sites.default.repoBranch` */
+	repoBranch?: string;
+	/** @deprecated Shorthand for `sites.default.runes` */
+	runes?: {
+		prefer?: Record<string, string>;
+		aliases?: Record<string, string>;
+		local?: Record<string, string>;
+	};
+}
+
+/** A single cross-reference resolution pattern. Configures how unresolved xref
+ *  IDs (those without a matching registry entity) are turned into URLs.
+ *
+ *  Example: route GitHub-style refs to issue pages.
+ *  ```jsonc
+ *  {
+ *    "match": "^GH-(?<num>\\d+)$",
+ *    "template": "https://github.com/myuser/myrepo/issues/{num}",
+ *    "type": "github-issue",
+ *    "label": "GitHub #{num}"
+ *  }
+ *  ```
+ *
+ *  See SPEC-065 for the full resolution model. */
+export interface XrefPattern {
+	/** Regex pattern matched against the ID. Anchored to whole-string match by
+	 *  default — `^` and `$` are auto-applied unless explicit anchors are
+	 *  present at the start/end. Named groups (`(?<name>...)`) are extractable
+	 *  in `template` and `label` as `{name}`. */
+	match: string;
+	/** URL template. Supports `{id}` (the full matched ID) and `{name}` for
+	 *  named groups. Each substituted value is encoded per URL segment (split
+	 *  on `/`, encode each segment, rejoin) so path-shaped captures preserve
+	 *  slashes. */
+	template: string;
+	/** CSS modifier class — applied as `rf-xref--{type}`. Default: `"external"`.
+	 *  The value `"unresolved"` is reserved and rejected at config load. */
+	type?: string;
+	/** Template for the rendered link text. Same placeholder syntax as
+	 *  `template`. Default: `"{id}"`. The rune's `label=` attribute (if set)
+	 *  still overrides this. */
+	label?: string;
+}
+
+export interface RouteRule {
+	/** Glob-style pattern matched against the page URL (e.g. "docs/**", "**") */
+	pattern: string;
+	/** Name of the layout to use (key in manifest.layouts) */
+	layout: string;
+	/** Register pages matching this pattern as registry entities of this type,
+	 *  in addition to their `page` registration (SPEC-092). A page's own
+	 *  frontmatter `type` overrides the rule. Lets a project type a whole section
+	 *  by convention (e.g. `runes/**` → `rune`) without per-page frontmatter. */
+	entity?: string;
+}

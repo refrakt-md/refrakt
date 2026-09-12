@@ -23,7 +23,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "frontmatter.schema.json"
   ],
   "scripts": {
     "build": "tsc"

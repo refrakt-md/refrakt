@@ -62,23 +62,5 @@ Use `filter` to match against frontmatter fields and `sort` to control ordering.
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `folder` | `string` | — | Content folder path to list blog posts from (required) |
-| `sort` | `string` | `date-desc` | Sort order: `date-desc`, `date-asc`, `title-asc`, `title-desc` |
-| `filter` | `string` | — | Filter expression to match against frontmatter fields (e.g. `tag:javascript`) |
-| `limit` | `number` | — | Maximum number of posts to display |
-| `layout` | `string` | `list` | Display layout: `list`, `grid`, or `compact` |
+{% include file="rune-attributes.md" variables={r: "rune:blog"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

@@ -1,4 +1,4 @@
-{% work id="WORK-542" status="ready" priority="high" complexity="moderate" source="SPEC-126" milestone="v0.33.0" tags="config,schema,docs,dx" %}
+{% work id="WORK-542" status="done" priority="high" complexity="moderate" source="SPEC-126" milestone="v0.33.0" tags="config,schema,docs,dx" %}
 
 # Backfill the missing descriptions in refrakt.config.schema.json
 
@@ -26,10 +26,10 @@ this is done, and large if it is not — separating them keeps that visible rath
 than hidden inside a "write a generator" estimate.
 
 ## Acceptance Criteria
-- [ ] Every property in `refrakt.config.schema.json` has a `description`, at both the top level and inside every definition
-- [ ] The prose reads as user-facing documentation, not implementation notes
-- [ ] `sites.md` and `overview.md` are not left contradicting the schema — where prose moved, the page keeps its narrative and drops the duplicated sentence
-- [ ] `config-schema.test.ts` asserts every property carries a non-empty `description`
+- [x] Every property in `refrakt.config.schema.json` has a `description`, at both the top level and inside every definition
+- [x] The prose reads as user-facing documentation, not implementation notes
+- [x] `sites.md` and `overview.md` are not left contradicting the schema — where prose moved, the page keeps its narrative and drops the duplicated sentence
+- [x] `config-schema.test.ts` asserts every property carries a non-empty `description`
 
 ## Approach
 
@@ -55,5 +55,44 @@ field arrives description-less and nothing says so.
 ## Blocked by
 
 - {% ref "WORK-541" /%} — not strictly, but the drift test reads the interface path, so landing the split first avoids editing the same test twice.
+
+## Resolution
+
+Completed: 2026-09-10
+
+Branch: `claude/content-author-docs-org-vps1un`
+
+### What was done
+
+**`packages/transform/refrakt.config.schema.json`** — 20 descriptions added, so
+every non-`$ref` property at the top level and in every definition now carries
+one. Prose lifted from `sites.md`'s field tables and `plugins.md`'s
+conflict-resolution section rather than newly written, so the schema and the
+pages say the same thing.
+
+`$ref` properties are left alone deliberately: they inherit from the definition
+they point at, and a second copy would be a second thing to keep in sync.
+
+**`packages/transform/test/config-schema.test.ts`** — new `gives every property
+a description` assertion, exempting `$ref` properties and naming the offenders
+by `Definition.property` when it fails.
+
+### Notes
+
+- Standalone value regardless of the generator: these are the strings an editor
+  shows on hover, so hovering `baseUrl` in VS Code now says something.
+- Verified the new assertion bites: removing `SiteConfig.baseUrl`'s description
+  failed the test naming exactly that field.
+- **Two false starts worth recording.** Round-tripping the file through
+  `json.dumps` reformatted every compact one-liner — 254 insertions for 20
+  additions — so the edit is textual instead, and the diff is 20 lines changed.
+  Then a naive "does this object start with a description?" check produced a
+  *duplicate* `description` key on top-level `contentDir`, which already had one
+  in a later position. `JSON.parse` accepts duplicates silently (last wins), so
+  the test passed and only reading the diff caught it. The final pass scans each
+  property's balanced object text before inserting.
+- Top-level `contentDir` kept its existing "Legacy shorthand" description; the
+  new prose went to `SiteConfig.contentDir`, which is the field a user writes.
+- Full suite 4264 passing.
 
 {% /work %}

@@ -8,6 +8,8 @@ import { grid } from './tags/grid.js';
 import { codegroup } from './tags/codegroup.js';
 import { snippet } from './tags/snippet.js';
 import { data } from './tags/data.js';
+import { include } from './tags/include.js';
+import { code } from './tags/code.js';
 import { hint } from './tags/hint.js';
 import { tab, tabs } from './tags/tabs.js';
 import { nav } from './tags/nav.js';
@@ -119,7 +121,7 @@ export { COLLECTION_SENTINEL } from './tags/collection.js';
 export { functions, currency, date, number, join, concat, humanize } from './functions.js';
 export { linkItem, pageSectionProperties, buildLayoutMetas, splitMediaBodyFooter, extractMediaImage, unwrapParagraphImages, isMediaNode, isSchemeMediaNode, name as nameHelper, description as descriptionHelper, SplitablePageSectionModel, SplitLayoutModel, splitLayoutAttributes } from './tags/common.js';
 export type { LayoutMetas } from './tags/common.js';
-export { extractHeadings, firstH1, headingsToList } from './util.js';
+export { extractHeadings, firstH1, headingsToList, headingSlug, headingText, renderableText } from './util.js';
 export { LANG_MAP, FALLBACK_LANG, inferLanguage } from './lang-map.js';
 export type { HeadingInfo } from './util.js';
 export { extractSeo, collectJsonLd, textContent } from './seo.js';
@@ -443,6 +445,22 @@ export const runes = {
     typeName: 'Data',
     category: 'Code & Data',
     snippet: ['{% data src="${1:data/revenue.csv}" /%}'],
+  }),
+  code: defineRune({
+    name: 'code',
+    schema: code,
+    description: 'Inline code span for dynamic content. Backticks are literal by definition, so a variable inside them never resolves; this renders the same `<code>` and does (WORK-551).',
+    typeName: 'Code',
+    category: 'Code & Data',
+    snippet: ['{% code %}${1:value}{% /code %}'],
+  }),
+  include: defineRune({
+    name: 'include',
+    schema: include,
+    description: 'Paste a partial\'s AST into the page before the preprocess phase, so `data` and `snippet` inside it resolve — the case `{% partial %}` cannot serve. Reads the same `_partials/` and file roots (SPEC-129).',
+    typeName: 'Include',
+    category: 'Code & Data',
+    snippet: ['{% include file="${1:shared-block.md}" /%}'],
   }),
   chart: defineRune({
     name: 'chart',

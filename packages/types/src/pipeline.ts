@@ -212,6 +212,14 @@ export interface PreprocessContext extends PipelineContext {
 	 *  Variable nodes that aren't resolvable here render as empty strings,
 	 *  matching transform-time behaviour. */
 	variables?: Record<string, unknown>;
+	/** Parsed partial ASTs, keyed exactly as `config.partials` keys them —
+	 *  unprefixed for the site's `_partials/` (`footer.md`), namespaced for a
+	 *  registered file root (`shared:footer.md`). Exposed at preprocess time so
+	 *  `include` (SPEC-129) can paste a file's AST *before* the other
+	 *  preprocessors run, reading the same directory and roots `{% partial %}`
+	 *  does. Values are Markdoc `Node`s; typed as `unknown` because this package
+	 *  does not depend on Markdoc. */
+	partials?: Record<string, unknown>;
 }
 
 /** Per-page metadata handed to {@link PluginPipelineHooks.preprocess}. */

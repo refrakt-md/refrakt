@@ -46,13 +46,7 @@ The `canonical=true` attribute appends a "view canonical" link to the embedded c
 
 ## Attributes
 
-| Attribute | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `primary` | string | yes | — | Entity ID or name. Same lookup shape as `{% ref %}`. |
-| `level` | number | no | unset | Heading-demotion opt-in. When set, embedded headings shift by `N - 1` and the embed merges into the host outline. When unset (default), the embed reads as a peer document with its own outline scope. |
-| `type` | string | no | — | Entity type hint for disambiguation. |
-| `canonical` | boolean | no | `false` | Append a visible "view canonical" link pointing at the entity's URL. |
-| `label` | string | no | — | Custom label for the canonical link (only meaningful when `canonical=true`). |
+{% include file="rune-attributes.md" variables={r: "rune:expand"} /%}
 
 ## Resolution model
 

@@ -124,7 +124,4 @@ Then use `{% icon name="my-logo" /%}` in your content.
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `name` | `string` | — | Icon name, optionally prefixed with group (`"rocket"` or `"hint/warning"`) |
-| `size` | `string` | — | CSS size override (e.g., `"16px"`, `"2rem"`) |
+{% include file="rune-attributes.md" variables={r: "rune:icon"} /%}

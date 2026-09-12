@@ -58,13 +58,7 @@ Content-only events (body edits with no attribute/criteria/resolution change) ar
 
 ## Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `id` | `string` | — | Entity ID for single-entity mode. Omit for global feed. |
-| `limit` | `number` | `20` | Maximum events (per-entity) or commits (global) to show |
-| `type` | `string` | `"all"` | Entity type filter: `work`, `bug`, `spec`, `decision`, or comma-separated |
-| `since` | `string` | — | Time filter: `"7d"`, `"30d"`, or ISO date. Maps to git `--since`. |
-| `group` | `string` | `"commit"` | Global mode grouping: `commit` (group by commit) or `entity` (group by entity) |
+{% include file="rune-attributes.md" variables={r: "rune:plan-history"} /%}
 
 ## Event types
 

@@ -23,7 +23,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
 /**
- * Locate `packages/transform` by walking up from the working directory.
+ * Locate `packages/<name>` by walking up from the working directory.
  *
  * Not `import.meta.url`-relative: Vite bundles this module into
  * `.svelte-kit/output/server/chunks/`, so at build time the module's own path
@@ -31,28 +31,38 @@ import { dirname, resolve } from 'node:path';
  * callers — the site build and dev server run from `site/`, the test runner
  * from the repo root.
  */
-let transformDir: string | undefined;
-function transformPackageDir(): string {
-	if (transformDir) return transformDir;
+const packageDirs = new Map<string, string>();
+function packageDir(name: string): string {
+	const cached = packageDirs.get(name);
+	if (cached) return cached;
 	let dir = resolve(process.cwd());
 	for (let up = 0; up < 6; up++) {
-		const candidate = resolve(dir, 'packages', 'transform');
-		if (existsSync(resolve(candidate, 'package.json'))) return (transformDir = candidate);
+		const candidate = resolve(dir, 'packages', name);
+		if (existsSync(resolve(candidate, 'package.json'))) {
+			packageDirs.set(name, candidate);
+			return candidate;
+		}
 		const parent = dirname(dir);
 		if (parent === dir) break;
 		dir = parent;
 	}
 	throw new Error(
-		`Could not locate packages/transform walking up from ${process.cwd()} — the schema endpoints read the published schemas and the version from there.`,
+		`Could not locate packages/${name} walking up from ${process.cwd()} — the schema endpoints read the published schemas and the version from there.`,
 	);
 }
 
-export type SchemaName = 'refrakt.config.schema.json' | 'theme-tokens.json';
+export type SchemaName =
+	| 'refrakt.config.schema.json'
+	| 'theme-tokens.json'
+	| 'frontmatter.schema.json';
 
-/** Source file backing each published schema URL. */
-const SCHEMA_FILES: Record<SchemaName, string> = {
-	'refrakt.config.schema.json': 'refrakt.config.schema.json',
-	'theme-tokens.json': 'theme-tokens.schema.json',
+/** Source file backing each published schema URL, and the package it ships in.
+ *  Not all three live in `transform`: the frontmatter schema belongs beside the
+ *  interface it describes, in `@refrakt-md/content`. */
+const SCHEMA_FILES: Record<SchemaName, { package: string; file: string }> = {
+	'refrakt.config.schema.json': { package: 'transform', file: 'refrakt.config.schema.json' },
+	'theme-tokens.json': { package: 'transform', file: 'theme-tokens.schema.json' },
+	'frontmatter.schema.json': { package: 'content', file: 'frontmatter.schema.json' },
 };
 
 /** The first release that published a versioned schema URL (WORK-176). Nothing
@@ -66,7 +76,7 @@ const COMPLETED_MAJORS: Record<number, number> = {};
 
 /** The version `@refrakt-md/transform` currently ships, as `[major, minor]`. */
 export function currentVersion(): [number, number] {
-	const pkg = JSON.parse(readFileSync(resolve(transformPackageDir(), 'package.json'), 'utf-8'));
+	const pkg = JSON.parse(readFileSync(resolve(packageDir('transform'), 'package.json'), 'utf-8'));
 	const [major, minor] = String(pkg.version).split('.').map(Number);
 	if (!Number.isInteger(major) || !Number.isInteger(minor)) {
 		throw new Error(`@refrakt-md/transform has an unparseable version: ${pkg.version}`);
@@ -120,7 +130,8 @@ export function publishedSchemaVersions(): string[] {
  * the way a hardcoded version string does.
  */
 export function readSchema(name: SchemaName, version: string | null): string {
-	const body = JSON.parse(readFileSync(resolve(transformPackageDir(), SCHEMA_FILES[name]), 'utf-8'));
+	const source = SCHEMA_FILES[name];
+	const body = JSON.parse(readFileSync(resolve(packageDir(source.package), source.file), 'utf-8'));
 	body.$id = `https://refrakt.md/schemas/${version ?? currentSchemaVersion()}/${name}`;
 	return `${JSON.stringify(body, null, '\t')}\n`;
 }

@@ -37,9 +37,7 @@ Show fewer or more recent items.
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `limit` | `number` | `10` | Maximum number of recent items to show |
+{% include file="rune-attributes.md" variables={r: "rune:plan-activity"} /%}
 
 ### Output structure
 

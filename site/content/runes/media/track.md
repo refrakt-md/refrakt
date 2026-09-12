@@ -55,12 +55,4 @@ The opening track from *Kind of Blue*, featuring the iconic two-chord modal stru
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `src` | `string` | — | Audio file URL |
-| `artist` | `string` | — | Artist or creator name |
-| `duration` | `string` | — | Track duration in `m:ss` or ISO 8601 (`PT4M1S`) |
-| `number` | `number` | — | Track number in a sequence |
-| `date` | `string` | — | Release or publish date |
-| `url` | `string` | — | Link to the track's page |
-| `type` | `string` | `song` | Track type: `song`, `episode`, `chapter`, `talk`, or `video` |
+{% include file="rune-attributes.md" variables={r: "rune:track"} /%}

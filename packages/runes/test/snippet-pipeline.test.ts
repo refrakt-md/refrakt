@@ -511,11 +511,16 @@ describe('snippet via createCorePipelineHooks', () => {
 		expect(typeof core.preprocess).toBe('function');
 	});
 
-	it('the snippet schema transform throws if reached (preprocess not wired)', async () => {
-		// Directly invoke the schema's transform — should throw to point user at registration.
+	it('the snippet schema transform names `include` as the fix if reached', async () => {
+		// The reachable case is a content author's: the file was pulled in with
+		// `{% partial %}`, which expands after the preprocess phase. With
+		// `partial` documented as the default, this error is the main way anyone
+		// discovers `include` exists, so it has to name the fix rather than
+		// describe the pipeline (SPEC-129).
 		writeFileSync(join(tmpRoot, 'foo.ts'), 'x\n');
 		const ast = Markdoc.parse('{% snippet path="foo.ts" /%}\n');
 		// Transform without preprocess — schema transform fires.
-		expect(() => Markdoc.transform(ast, { tags, nodes })).toThrow(/preprocess hook was not wired/);
+		expect(() => Markdoc.transform(ast, { tags, nodes })).toThrow(/\{% include %\}/);
+		expect(() => Markdoc.transform(ast, { tags, nodes })).toThrow(/\{% partial %\}/);
 	});
 });

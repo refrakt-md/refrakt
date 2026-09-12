@@ -1,4 +1,4 @@
-{% bug id="BUG-008" status="confirmed" severity="minor" milestone="v0.33.0" tags="docs,runes,reference" %}
+{% bug id="BUG-008" status="fixed" severity="minor" milestone="v0.33.0" tags="docs,runes,reference" %}
 
 # Two universal attributes have no author-facing documentation
 
@@ -50,10 +50,10 @@ every axis has one.
 `motion` was noticed and given its own page. `spacing` and `inset` were not.
 
 ## Acceptance Criteria
-- [ ] `spacing` is documented as a universal attribute, with its accepted values
-- [ ] `inset` is documented as a universal attribute, with its accepted values
-- [ ] Each is reachable from `/runes/surfaces`, whether defined there or linked
-- [ ] The `{% spacing %}` design rune and the `spacing` universal attribute are distinguishable from their pages — the name collision is the reason this went unnoticed
+- [x] `spacing` is documented as a universal attribute, with its accepted values
+- [x] `inset` is documented as a universal attribute, with its accepted values
+- [x] Each is reachable from `/runes/surfaces`, whether defined there or linked
+- [x] The `{% spacing %}` design rune and the `spacing` universal attribute are distinguishable from their pages — the name collision is the reason this went unnoticed
 
 ## Approach
 
@@ -71,5 +71,37 @@ failure that happened here.
 
 - {% ref "SPEC-128" /%} — D1 makes `/runes/surfaces` the accordion's link target, which is what surfaced this
 - `packages/runes/src/universal-attributes.ts` — `AXIS_ATTRIBUTES`, the list every axis should be checkable against
+
+## Resolution
+
+Completed: 2026-09-10
+
+Branch: `claude/content-author-docs-org-vps1un`
+
+### What was done
+
+**`site/content/runes/surfaces.md`** — new `## Spacing and inset` section
+documenting both axes: what each controls (rhythm *around* vs padding *within*),
+the shared `flush | tight | default | loose | breathe` scale, that `default`
+emits nothing, and that the engine declares no closed value set so a theme can
+add its own steps. Both attributes added to the page's overview table.
+
+**`site/content/runes/design/spacing.md`** — a note distinguishing the
+`{% spacing %}` design rune from the `spacing` attribute, with a link across.
+`surfaces.md` carries the reciprocal note. The name collision is the likeliest
+reason this gap survived: searching for "spacing" finds a page and stops.
+
+### Notes
+
+- Values were read from the Lumina stylesheets (`--spacing-flush|tight|loose|
+  breathe`, and the same four for `inset`) plus the facet contracts in
+  `packages/transform/src/facets/box.ts`, which say each is suppressed at
+  `default`.
+- The section heading is deliberately punctuation-free. The first draft was
+  `## Spacing and inset — rhythm around and padding within`, whose real slug
+  keeps the em-dash — exactly the {% ref "BUG-005" /%} trap. Verified in the
+  built HTML: `id="spacing-and-inset"`.
+- The axis→page map that {% ref "SPEC-128" /%} D1 needs is now complete: every
+  universal axis has somewhere to point.
 
 {% /bug %}

@@ -1,4 +1,4 @@
-{% work id="WORK-545" status="ready" priority="high" complexity="moderate" source="SPEC-126" milestone="v0.33.0" tags="content,schema,frontmatter,dx" %}
+{% work id="WORK-545" status="done" priority="high" complexity="moderate" source="SPEC-126" milestone="v0.33.0" tags="content,schema,frontmatter,dx" %}
 
 # Add a frontmatter schema
 
@@ -21,14 +21,14 @@ what makes `/runes/rune-catalog` work, and an author cannot currently learn it
 exists from the page that claims to list frontmatter fields.
 
 ## Acceptance Criteria
-- [ ] `packages/content/frontmatter.schema.json` describes every frontmatter field refrakt itself consumes
-- [ ] `type`, `id`, `created`, and `modified` are declared, with descriptions
-- [ ] `icon`, `tint`, `tint-mode`, and `tint-lock` are declared
-- [ ] `Frontmatter` no longer hides consumed fields behind the index signature
-- [ ] The index signature stays — arbitrary custom fields remain supported
-- [ ] The schema is served at the versioned and unversioned URLs, like the other two
-- [ ] A drift test guards it against the `Frontmatter` interface, as `config-schema.test.ts` does for the config schema
-- [ ] Every property carries a `description`
+- [x] `packages/content/frontmatter.schema.json` describes every frontmatter field refrakt itself consumes
+- [x] `type`, `id`, `created`, and `modified` are declared, with descriptions
+- [x] `icon`, `tint`, `tint-mode`, and `tint-lock` are declared
+- [x] `Frontmatter` no longer hides consumed fields behind the index signature
+- [x] The index signature stays — arbitrary custom fields remain supported
+- [x] The schema is served at the versioned and unversioned URLs, like the other two
+- [x] A drift test guards it against the `Frontmatter` interface, as `config-schema.test.ts` does for the config schema
+- [x] Every property carries a `description`
 
 ## Approach
 
@@ -49,5 +49,43 @@ does not close the set, and it should not set `additionalProperties: false`.
 ## Blocked by
 
 - {% ref "WORK-541" /%} — do the types reorganisation before adding a second schema drift test, so both tests read stable paths
+
+## Resolution
+
+Completed: 2026-09-10
+
+Branch: `claude/content-author-docs-org-vps1un`
+
+### What was done
+
+**`packages/content/frontmatter.schema.json`** — 18 properties, every one with
+a description. Open set: no `additionalProperties: false`.
+
+**`packages/content/src/frontmatter.ts`** — `type`, `id`, `created` and
+`modified` declared, each with a note naming the consumer that reads it. The
+index signature keeps its own comment explaining that it is deliberate.
+
+**`site/src/lib/schema-versions.ts`** — `packageDir(name)` replaces
+`transformPackageDir()`, and `SCHEMA_FILES` carries a package per schema. The
+frontmatter schema ships in `@refrakt-md/content`, not `transform`.
+
+**Two routes** mirroring the existing pair, plus `files` widened in
+`packages/content/package.json` so the schema is published.
+
+**`packages/content/test/frontmatter-schema.test.ts`** — 9 tests: drift both
+ways, every property described, the four formerly-hidden fields asserted by
+name, and validation cases including the open set and the `tint: null` reset.
+
+**`docs/configuration/schema.md`** — a table of all three published schemas and
+an editor-configuration snippet for validating frontmatter.
+
+### Notes
+
+- Verified against the built site rather than tests alone: both URLs resolve,
+  `$id` is stamped per version, and the full `v0.11`→current range is served.
+- The `files` field would have silently omitted the schema from the published
+  package — `transform` lists its two schemas explicitly and `content` listed
+  only `dist`.
+- Full suite 4300 passing.
 
 {% /work %}

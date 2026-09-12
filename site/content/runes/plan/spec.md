@@ -71,14 +71,7 @@ This specification has been superseded. See the current token system specificati
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `id` | `string` | — | Unique identifier, e.g. `SPEC-008` (required) |
-| `status` | `string` | `draft` | Current status: `draft`, `review`, `accepted`, `implemented`, `shipped`, `superseded`, `deprecated` |
-| `version` | `string` | — | Spec version, e.g. `1.0`, `1.2` |
-| `supersedes` | `string` | — | ID of the spec this replaces |
-| `released-in` | `string` | — | Release version this spec shipped in (semver, e.g. `v0.11.4`). Required when `status="shipped"` |
-| `tags` | `string` | — | Comma-separated labels |
+{% include file="rune-attributes.md" variables={r: "rune:spec"} /%}
 
 ### Lifecycle: accepted → implemented → shipped
 
@@ -89,15 +82,3 @@ This specification has been superseded. See the current token system specificati
 | `created` | `string` | `$file.created` | Creation date (ISO 8601). Auto-populated from git history |
 | `modified` | `string` | `$file.modified` | Last modified date (ISO 8601). Auto-populated from git history |
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

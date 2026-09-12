@@ -65,20 +65,12 @@ export const config: Record<string, RuneConfig> = {
 		editHints: { description: 'inline' },
 	},
 
-	// Legacy aliases
-	//
-	// `music-playlist` is the schema.org name for the *same* rune — same schema
-	// object, same emitted tree — so it must carry the same join tables and
-	// capability. It did not: it was a bare `{ block }` stub, so a
-	// `{% music-playlist %}` rendered with none of the five `data-section`
-	// attributes its primary emits. WORK-537 surfaced it (the prose capability
-	// diverged between the two), and the section drift was the same bug a layer
-	// down — an alias that renders differently from what it aliases.
-	MusicPlaylist: {
-		block: 'playlist',
-		sections: playlistSections,
-		provides: ['prose'],
-		mediaSlots: playlistMediaSlots,
-	},
-	MusicRecording: { block: 'track', parent: 'MusicPlaylist' },
+	// No `MusicPlaylist` / `MusicRecording` entries: the schema.org spellings are
+	// aliases of `playlist` / `track`, so they emit `data-rune="playlist"` and
+	// resolve to the primary's config. They used to need their own entries only
+	// because they were registered as separate runes — which also made them
+	// diverge from what they aliased (WORK-537 had to copy the join tables across
+	// to stop `{% music-playlist %}` rendering without its section roles). BUG-009
+	// removed the duplicate registration, so there is nothing left to keep in
+	// sync.
 };

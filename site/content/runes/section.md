@@ -68,9 +68,7 @@ For growing teams.
 
 ## Attributes
 
-| Attribute | Type | Description |
-|-----------|------|-------------|
-| `align` | `start` \| `center` \| `end` | Header alignment (default `start`). The body always spans the full section width. |
+{% include file="rune-attributes.md" variables={r: "rune:section"} /%}
 
 ## Anatomy
 

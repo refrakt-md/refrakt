@@ -7,8 +7,11 @@ import { SITE_FIELDS } from '../src/config-normalize.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const schema = JSON.parse(readFileSync(resolve(here, '..', 'refrakt.config.schema.json'), 'utf-8'));
+// The configuration interfaces moved out of `theme.ts` in WORK-541 — that file
+// is about the theme system, and a reader following docs → schema → types
+// should not land in it.
 const typesSource = readFileSync(
-	resolve(here, '..', '..', 'types', 'src', 'theme.ts'),
+	resolve(here, '..', '..', 'types', 'src', 'config.ts'),
 	'utf-8',
 );
 
@@ -23,7 +26,7 @@ const typesSource = readFileSync(
  */
 function declaredProperties(interfaceName: string): string[] {
 	const start = typesSource.indexOf(`export interface ${interfaceName} {`);
-	if (start === -1) throw new Error(`interface ${interfaceName} not found in types/src/theme.ts`);
+	if (start === -1) throw new Error(`interface ${interfaceName} not found in types/src/config.ts`);
 	const end = typesSource.indexOf('\n}', start);
 	if (end === -1) throw new Error(`interface ${interfaceName} is unterminated`);
 
@@ -59,6 +62,33 @@ describe('refrakt.config.schema.json', () => {
 				);
 			});
 		}
+
+		it('gives every property a description', () => {
+			// Descriptions are what an editor shows on hover and what the
+			// generated configuration reference renders as each field's body, so
+			// a description-less field is invisible in two places at once. Without
+			// this, the next field added arrives bare and nothing says so
+			// (WORK-542).
+			//
+			// `$ref` properties are exempt: they inherit the description of the
+			// definition they point at, and repeating it invites the two copies to
+			// disagree.
+			const undescribed: string[] = [];
+			const scan = (node: Record<string, any>, where: string) => {
+				for (const [name, prop] of Object.entries(node.properties ?? {})) {
+					const p = prop as Record<string, unknown>;
+					if (p.$ref) continue;
+					if (typeof p.description !== 'string' || p.description.trim() === '') {
+						undescribed.push(`${where}.${name}`);
+					}
+				}
+			};
+			scan(schema, 'RefraktConfig');
+			for (const [name, def] of Object.entries(schema.definitions ?? {})) {
+				scan(def as Record<string, any>, name);
+			}
+			expect(undescribed).toEqual([]);
+		});
 
 		it('declares no schema property the interfaces do not have', () => {
 			// `$schema` is the JSON-Schema pointer itself, not a config field.

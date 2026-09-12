@@ -1,4 +1,4 @@
-{% spec id="SPEC-128" status="draft" tags="docs, runes, reference, tooling, dx" %}
+{% spec id="SPEC-128" status="accepted" tags="docs, runes, reference, tooling, dx" %}
 
 # Generate rune attribute tables from the rune reference
 
@@ -73,24 +73,65 @@ the artifact would match what the generator produced. **Iterate the configured
 sites, and assert the artifact covers every rune in every site**, or the guard
 guards nothing for a third of the catalogue.
 
-## The prior question: why do 102 pages have no table at all?
+## Answered: the missing tables are drift, not editorial restraint
 
-Only 13 of ~115 rune pages carry an `## Attributes` section. **This has to be
-answered before the scope is knowable**, and it is the main reason this is a
-spec rather than a work item.
+This spec asked why so few rune pages carry an `## Attributes` section, offered
+"mostly deliberate, some drift" as the likely answer, and made settling it the
+first deliverable. {% ref "WORK-547" /%} settled it. **The guess was wrong, and
+in the direction that widens scope.**
 
-Two possibilities, with different consequences:
+Surveyed across both configured sites (`main` and `plan`), 118 runes:
 
-- **Deliberate.** Simple runes are fully explained by their examples, and a
-  table would be ceremony. Then generation applies to a minority of pages and
-  the change is small.
-- **Drift.** Pages were written before their runes grew attributes, and the
-  absence is the same bug as an incomplete table, just total. Then the scope is
-  the whole catalogue.
+| | |
+|---|---|
+| runes with ≥1 own or base-preset attribute | **108** |
+| …whose page carries an `## Attributes` section | **18** |
+| …with a page and **no** table | **72** |
+| …that are child runes, documented on a parent's page | 16 |
+| runes with **zero** own/base attributes | 10 |
+| …of those, carrying a table anyway | **0** |
 
-The answer is probably "mostly the first, with some of the second", and
-distinguishing them needs a pass over the runes that have non-trivial attributes
-but no table. That pass is the first deliverable, not the generator.
+The "deliberate" hypothesis makes a prediction: untabled runes should be the
+simple ones, fully explained by an example. It fails. The untabled set includes
+`bg` (15 own attributes), `grid` (13), `sandbox` (12), `work` (12), `bug` (10) —
+and **17 runes with at least one *required* attribute**, among them `bond`
+(`from`, `to`), `swatch` (`color`, `label`), `embed` (`url`), `form` (`action`),
+`api` (`path`), and all five plan entity runes.
+
+A required attribute that appears in no table is the same defect
+{% ref "BUG-006" /%} found on `xref` — the reader cannot learn the rune has a
+mandatory input — except here it is the norm rather than the exception.
+
+What *is* deliberate is the other end: all 10 runes with no attributes have no
+table. Existing practice is right exactly where it is defensible and absent
+everywhere else, which is the signature of drift, not judgment.
+
+### The rule
+
+**A page carries a generated attribute table when its rune has at least one own
+or base-preset attribute.** All 108. Child runes' tables go on their parent's
+page, placed via D5's map.
+
+That is simpler than the threshold this spec's work item originally proposed
+("more than one own attribute, or any required one"), and the survey is why.
+A threshold made sense when tables were hand-written and each one cost effort to
+write and maintain. Generated, a one-row table costs nothing — so a threshold
+buys only *less content*, at the price of a rule to remember and a reader who
+cannot tell whether a missing table means "this rune has no attributes" or "it
+has some, but not enough to qualify". Zero is the only cutoff that is
+self-evident from the page.
+
+### What the survey also turned up
+
+Two defects in the data source, both filed as {% ref "BUG-009" /%} and both
+blocking this spec's generator:
+
+- `reference dump` emits `music-playlist` / `music-recording` as runes that
+  `reference <name>` cannot resolve — the artifact would carry phantom entries.
+- `EXCLUDED_RUNES` hides nine core child runes (`accordion-item`, `tab`,
+  `form-field`, …) from every reference output, while twenty equivalent plugin
+  child runes are reported in full. Their attributes cannot be generated at all
+  until the two lists agree.
 
 ## Proposal
 
@@ -127,7 +168,7 @@ against the real package set:
 ## Design decisions
 
 **D1 — Own attributes in the table; universal attributes in an axis accordion,
-rendered from a shared partial.**
+authored once as a shared block.**
 
 An earlier draft said "universal attributes are not listed per page; the page
 links to their reference". A link is necessary and not sufficient.
@@ -187,12 +228,26 @@ Collapsed by default, so the noise objection is answered without hiding
 anything: `AccordionItem` headers render as `<summary>`, so the content stays in
 the DOM and find-in-page reaches it.
 
-**One partial, not markup on 45 pages.** The accordion is authored once as a
-partial taking the rune name, not copied into every page. Drift cost would be
-zero either way since it is generated, but the byte cost is not, and changing
-the presentation later should be one file. This is the same argument that
-retired the `item-template` idea in {% ref "SPEC-127" /%}'s lineage — a partial
-does the work and composes better.
+**One shared block, not markup on 45 pages.** The accordion is authored once,
+not copied into every page. Drift cost would be zero either way since it is
+generated, but the byte cost is not, and changing the presentation later should
+be one file.
+
+**Correction: it cannot be a `{% partial %}`.** Testing the design against the
+real pipeline found that a preprocessor rune inside a partial never resolves —
+Markdoc expands partials during `transform`, while `preprocessData` walks the
+page AST *before* it, so the `data` tag survives to its own throwing transform:
+
+```
+Error: data rune reached the transform phase — its preprocess hook was not
+wired through.
+```
+
+A plain partial with `variables` works; it is specifically `data` and `snippet`
+that cannot be inside one — which are exactly the runes worth factoring out.
+{% ref "SPEC-129" /%} proposes the sibling that can, pasting AST during
+preprocess, and {% ref "WORK-549" /%} implements it. This spec's shared-block
+criterion depends on it.
 
 **D1a — `SerializedRune` has to carry more than it does.** `attributes.own` and
 `attributes.base` are full `SerializedAttribute` records (type, required,
@@ -356,7 +411,8 @@ failure that actually occurs.
 
 ## Acceptance Criteria
 
-- [ ] A recorded answer to why 102 pages have no attribute table, and which of them should
+- [x] A recorded answer to why so many pages have no attribute table, and which of them should — WORK-547: drift, and all 108 runes with attributes should
+- [ ] {% ref "BUG-009" /%} is fixed first — the generator's data source currently carries phantom runes and omits nine child runes
 - [ ] `scripts/generate-rune-attributes.mjs` emits a committed, byte-stable JSON artifact covering every rune in **every configured site**, not just the default one
 - [ ] A test asserts the artifact covers every rune in every site — a generator reading one site would emit a plausible artifact missing all plan runes, and a naive freshness check would pass
 - [ ] Pages documenting rune attributes outside `/runes/` are in scope, including `plan/docs/plan-entities.md`
@@ -364,7 +420,7 @@ failure that actually occurs.
 - [ ] Rune pages render their own (and base-preset) attributes from that artifact
 - [ ] Universal attributes render as a collapsed accordion with **one item per carried axis**, not one row per attribute
 - [ ] Axes the rune does not carry are **not** items — they render as an uncollapsed note beneath, grouped by reason, one line each
-- [ ] The accordion is a shared partial taking the rune name, not markup repeated across ~45 pages
+- [ ] The accordion is authored once and included, not markup repeated across ~45 pages — via {% ref "WORK-549" /%}'s include rune, since a partial cannot contain `{% data %}`
 - [ ] `SerializedRune` carries full attribute records for universals, grouped by axis — not the current bare `string[]`
 - [ ] Each accordion item links to that axis's documentation, from an axis→page map — not one shared URL, since `motion` lives on its own page and two axes have none
 - [ ] A test asserts every axis in `AXIS_ATTRIBUTES` has a documentation entry, so a new axis cannot ship undocumented

@@ -49,22 +49,5 @@ Use `pageSize` to paginate large tables.
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `sortable` | `string` | — | Comma-separated list of sortable column names |
-| `searchable` | `boolean` | `false` | Enable search/filter input |
-| `pageSize` | `number` | `0` | Rows per page (0 = show all) |
-| `defaultSort` | `string` | — | Column to sort by default |
+{% include file="rune-attributes.md" variables={r: "rune:datatable"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

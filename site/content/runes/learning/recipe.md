@@ -44,12 +44,7 @@ A rich and creamy Italian pasta dish.
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `prepTime` | `string` | — | Prep time in ISO 8601 duration (e.g. "PT15M") |
-| `cookTime` | `string` | — | Cook time in ISO 8601 duration |
-| `servings` | `number` | — | Number of servings |
-| `difficulty` | `string` | `medium` | Difficulty level: `easy`, `medium`, or `hard` |
+{% include file="rune-attributes.md" variables={r: "rune:recipe"} /%}
 
 ## Section header
 
@@ -66,19 +61,6 @@ The body splits on `---` into **media → content → footer** zones (media-firs
 | `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
 | `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
 | `content-place` | `string` | `auto` | **Cover only.** Where the overlaid header anchors: `<block> <inline>` (each `start`/`center`/`end`), or `auto` |
-
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |
 
 ## Cover mode
 

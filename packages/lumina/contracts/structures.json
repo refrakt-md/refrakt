@@ -721,6 +721,64 @@
 				}
 			}
 		},
+		"Include": {
+			"block": "include",
+			"root": ".rf-include",
+			"dataRune": "include",
+			"childOrder": [
+				"{content}"
+			],
+			"universalAxes": {
+				"axes": {
+					"tint": {
+						"selectors": [
+							".rf-include--tinted"
+						]
+					},
+					"bg": {
+						"selectors": [
+							".rf-include--has-bg"
+						]
+					}
+				},
+				"unavailable": {
+					"reading": "this rune declares no prose body",
+					"dropcap": "this rune declares no prose body",
+					"prominence": "this rune has no page-section header",
+					"content-place": "this rune declares no `content-place` modifier",
+					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
+					"frame": "this rune declares neither a `frameTarget` nor a media section"
+				}
+			}
+		},
+		"Code": {
+			"block": "code",
+			"root": ".rf-code",
+			"dataRune": "code",
+			"childOrder": [
+				"{content}"
+			],
+			"universalAxes": {
+				"unavailable": {
+					"tint": "this rune is inline — the block-level universal axes have nothing to act on",
+					"width": "this rune is inline — the block-level universal axes have nothing to act on",
+					"content-measure": "this rune is inline — the block-level universal axes have nothing to act on",
+					"spacing": "this rune is inline — the block-level universal axes have nothing to act on",
+					"inset": "this rune is inline — the block-level universal axes have nothing to act on",
+					"density": "this rune is inline — the block-level universal axes have nothing to act on",
+					"reading": "this rune is inline — the block-level universal axes have nothing to act on",
+					"dropcap": "this rune is inline — the block-level universal axes have nothing to act on",
+					"elevation": "this rune is inline — the block-level universal axes have nothing to act on",
+					"prominence": "this rune is inline — the block-level universal axes have nothing to act on",
+					"motion": "this rune is inline — the block-level universal axes have nothing to act on",
+					"content-place": "this rune is inline — the block-level universal axes have nothing to act on",
+					"cover": "this rune is inline — the block-level universal axes have nothing to act on",
+					"frame": "this rune is inline — the block-level universal axes have nothing to act on",
+					"substrate": "this rune is inline — the block-level universal axes have nothing to act on",
+					"bg": "this rune is inline — the block-level universal axes have nothing to act on"
+				}
+			}
+		},
 		"Expand": {
 			"block": "expand",
 			"root": ".rf-expand",
@@ -6994,66 +7052,6 @@
 				"unavailable": {
 					"reading": "this rune declares no prose body",
 					"dropcap": "this rune declares no prose body",
-					"content-place": "this rune declares no `content-place` modifier",
-					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
-					"frame": "this rune declares neither a `frameTarget` nor a media section"
-				}
-			}
-		},
-		"MusicPlaylist": {
-			"block": "playlist",
-			"root": ".rf-playlist",
-			"dataRune": "music-playlist",
-			"childOrder": [
-				"{content}"
-			],
-			"universalAxes": {
-				"axes": {
-					"tint": {
-						"selectors": [
-							".rf-playlist--tinted"
-						]
-					},
-					"frame": {
-						"target": "[data-section=\"media\"]"
-					},
-					"bg": {
-						"selectors": [
-							".rf-playlist--has-bg"
-						]
-					}
-				},
-				"unavailable": {
-					"content-place": "this rune declares no `content-place` modifier",
-					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode"
-				}
-			}
-		},
-		"MusicRecording": {
-			"block": "track",
-			"root": ".rf-track",
-			"dataRune": "music-recording",
-			"parent": "MusicPlaylist",
-			"childOrder": [
-				"{content}"
-			],
-			"universalAxes": {
-				"axes": {
-					"tint": {
-						"selectors": [
-							".rf-track--tinted"
-						]
-					},
-					"bg": {
-						"selectors": [
-							".rf-track--has-bg"
-						]
-					}
-				},
-				"unavailable": {
-					"reading": "this rune declares no prose body",
-					"dropcap": "this rune declares no prose body",
-					"prominence": "this rune has no page-section header",
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"

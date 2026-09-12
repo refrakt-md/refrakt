@@ -135,24 +135,7 @@ Dark overlay, heavy blur, top-aligned, and slightly transparent.
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `src` | `string` | — | URL of the background image |
-| `video` | `string` | — | URL of the background video |
-| `gradient` | `string` | — | Gradient direction (bounded set: `to-t`…`to-tl`) |
-| `from` / `to` / `via` | `string` | — | Gradient stops — **semantic token names** (→ `var(--rf-color-*)`) |
-| `gradient-type` | `string` | `linear` | `linear`, `radial`, or `conic` |
-| `overlay` | `string` | `none` | Flat wash: `none`, `dark`, `light`, or a token name (raw CSS deprecated) |
-| `overlay-opacity` | `string` | — | Opacity of a token-coloured overlay wash |
-| `scrim` | `string` | — | Legibility scrim heavy edge: `top`, `bottom`, `left`, `right` |
-| `scrim-type` | `string` | `gradient` | `gradient` or `frost` (backdrop blur) |
-| `scrim-strength` / `scrim-blur` | `string` | `md` | Gradient strength / frost blur: `sm`, `md`, `lg` |
-| `scrim-tone` | `string` | `dark` | `dark` (darken for light text) or `light` |
-| `blur` | `string` | `none` | Blur strength: `none`, `sm`, `md`, or `lg` |
-| `position` | `string` | `center` | CSS background-position value (e.g., `top`, `bottom left`) |
-| `fit` | `string` | `cover` | Image fit mode: `cover` or `contain` |
-| `opacity` | `string` | `1` | Background opacity (e.g., `0.5`) |
-| `fixed` | `boolean` | `false` | Fixed/parallax background effect |
+{% include file="rune-attributes.md" variables={r: "rune:bg"} /%}
 
 ## Named presets & the escape hatch
 

@@ -69,9 +69,13 @@ Bob leads the engineering team.
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `layout` | `string` | `grid` | Display layout: `grid`, `list`, or `carousel` (a horizontal scroll-snap track with prev/next nav — the shared [carousel layout mode](/extend/rune-authoring/patterns#the-carousel-contract)) |
+#### `cast`
+
+{% include file="rune-attributes.md" variables={r: "rune:cast"} /%}
+
+#### `cast-member`
+
+{% include file="rune-attributes.md" variables={r: "rune:cast-member"} /%}
 
 ### Member attributes
 
@@ -84,15 +88,3 @@ Bob leads the engineering team.
 
 Cast supports an optional eyebrow, headline, and blurb above the section above cast members. Place a short paragraph or heading before the main content to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

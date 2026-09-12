@@ -76,12 +76,7 @@ See [file-ref](/runes/file-ref) for the path-based sibling that uses the same `p
 
 ## Attributes
 
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-| (positional) | String | Yes | Entity ID or name to resolve |
-| `label` | String | No | Custom link text (defaults to entity title) |
-| `type` | String | No | Entity type hint for disambiguation |
-| `preview` | `drawer` | No | Hoist a preview drawer with the entity's expanded body; the inline link opens it (SPEC-078). |
+{% include file="rune-attributes.md" variables={r: "rune:xref"} /%}
 
 ## Resolution order
 

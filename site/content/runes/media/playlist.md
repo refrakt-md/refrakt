@@ -94,13 +94,7 @@ Tracks can include nested lists for chapter markers or lyrics. Use `content="cha
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `type` | `string` | `album` | Playlist type: `album`, `podcast`, `audiobook`, `series`, or `mix` |
-| `artist` | `string` | — | Default artist applied to all tracks |
-| `player` | `boolean` | — | Show an embedded audio player |
-| `content` | `string` | `auto` | Cue point display: `auto`, `lyrics`, or `chapters` |
-| `id` | `string` | — | Identifier for connecting an `audio` player rune |
+{% include file="rune-attributes.md" variables={r: "rune:playlist"} /%}
 
 ## Section header
 
@@ -117,15 +111,3 @@ The body splits on `---` into **media (cover art) → content (tracks)** zones (
 | `valign` | `string` | — | Cross-axis alignment when cover is beside content: `top`, `center`, `bottom`, `stretch` |
 | `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

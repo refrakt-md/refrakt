@@ -1,4 +1,4 @@
-{% milestone name="v0.33.0" status="planning" %}
+{% milestone name="v0.33.0" status="active" %}
 
 # v0.33.0 — Generated reference docs
 

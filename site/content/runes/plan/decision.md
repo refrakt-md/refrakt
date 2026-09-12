@@ -68,26 +68,5 @@ Move validation to a post-parse AST pass.
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `id` | `string` | — | Identifier, e.g. `ADR-007` (required) |
-| `status` | `string` | `proposed` | Decision status: `proposed`, `accepted`, `rejected`, `superseded`, `deprecated`. `rejected` records a decision that was considered and explicitly declined — distinct from `superseded`/`deprecated`, which describe decisions that were once accepted |
-| `date` | `string` | — | Date decided (ISO 8601) |
-| `supersedes` | `string` | — | ID of the decision this replaces |
-| `source` | `string` | — | Comma-separated IDs of specs or entities this decision informs |
-| `tags` | `string` | — | Comma-separated labels |
-| `created` | `string` | `$file.created` | Creation date (ISO 8601). Auto-populated from git history |
-| `modified` | `string` | `$file.modified` | Last modified date (ISO 8601). Auto-populated from git history |
+{% include file="rune-attributes.md" variables={r: "rune:decision"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

@@ -75,11 +75,4 @@ Use the `playlist` attribute to connect the player to a named playlist rune via 
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `src` | `string` | — | Audio file URL |
-| `playlist` | `string` | — | ID of a playlist rune to connect to |
-| `title` | `string` | — | Track title displayed in the player |
-| `artist` | `string` | — | Artist name displayed in the player |
-| `waveform` | `boolean` | — | Show waveform visualisation |
-| `chapters` | `string` | — | URL to an external chapters file |
+{% include file="rune-attributes.md" variables={r: "rune:audio"} /%}

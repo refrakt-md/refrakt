@@ -138,21 +138,5 @@ Both gutter columns start at 74 (matching the file's real coordinates), the head
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `mode` | `string` | `unified` | Display mode: `unified`, `split`, or `inline` |
-| `language` | `string` | — | Language for syntax highlighting |
-| `title` | `string` | — | Optional title or filename rendered as a full-width header above the diff |
+{% include file="rune-attributes.md" variables={r: "rune:diff"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

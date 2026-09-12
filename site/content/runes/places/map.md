@@ -78,16 +78,13 @@ Control the map height with the `height` attribute.
 
 ## Attributes
 
-| Attribute | Type | Default | Description |
-|---|---|---|---|
-| `zoom` | number | auto | Initial zoom level (1–20) |
-| `center` | string | auto | Center point — coordinates or address |
-| `variant` | string | `street` | Map variant: `street`, `satellite`, `terrain`, `dark`, `minimal` |
-| `height` | string | `medium` | Container height: `small`, `medium`, `large`, `full` |
-| `provider` | string | `openstreetmap` | Tile provider: `openstreetmap`, `mapbox` |
-| `interactive` | string | `true` | Enable pan/zoom interaction |
-| `route` | string | `false` | Connect pins with a route line |
-| `cluster` | string | `false` | Cluster nearby pins at low zoom |
+### `map`
+
+{% include file="rune-attributes.md" variables={r: "rune:map"} /%}
+
+### `map-pin`
+
+{% include file="rune-attributes.md" variables={r: "rune:map-pin"} /%}
 
 ## Markdown reinterpretation
 
@@ -101,15 +98,3 @@ Control the map height with the `height` attribute.
 | Coordinates in text | Direct lat/lng position |
 | Address text | Geocoded via Nominatim at runtime |
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

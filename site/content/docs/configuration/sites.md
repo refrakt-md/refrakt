@@ -81,53 +81,10 @@ Unknown site names produce a "did you mean?" suggestion. Plan-only repos (no sit
 
 ## SiteConfig fields
 
-A `SiteConfig` accepts these fields. Required fields are bold.
-
-### Core (required)
-
-| Field | Type | Description |
-|-------|------|-------------|
-| **`contentDir`** | `string` | Path to the content directory, relative to the project root. |
-| **`theme`** | `string \| SiteThemeConfig` | Active theme. Accepts either a package name string (legacy shorthand — `"@refrakt-md/lumina"`) or a full `SiteThemeConfig` object with `package`, `presets`, `tokens`, `modes`, and `code.colorScheme`. See [Theme presets](#theme-object-form) for the object form. |
-| `target` | `string` | Target adapter identifier (`svelte`, `astro`, `next`, `nuxt`, `eleventy`, `html`). **Optional and documentation-only** — no adapter reads or validates it. Slated for removal in v1.0. |
-
-Only `contentDir` and `theme` are strictly required for a site to load.
-
-### SEO and branding
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `baseUrl` | `string` | Public base URL of the site. Used for canonical links, og:url, og:image. |
-| `siteName` | `string` | Human-readable site name for `og:site_name` and Organization JSON-LD. |
-| `logo` | `string` | Site logo path used in Organization JSON-LD (e.g., `/favicon-192.png`). |
-| `defaultImage` | `string` | Default og:image for pages without their own (recommended 1200x630). |
-| `repoUrl` | `string` | Canonical GitHub (or compatible) repository URL — e.g. `"https://github.com/owner/repo"`. Used by the [`file-ref`](/runes/file-ref) rune to build deep-link `View source on GitHub →` URLs of the form `{repoUrl}/blob/{repoBranch}/{path}#L{start}-L{end}`. When absent, `file-ref` falls back to a no-href link / in-page anchor with a build warning. |
-| `repoBranch` | `string` | Git ref appended to GitHub source URLs — accepts any branch name, tag, or commit SHA. Defaults to `"main"` when omitted. Use a commit SHA for archival URLs that won't drift when the file is edited later. |
-
-### Content rendering
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `plugins` | `string[]` | Plugins to merge into this site's `ThemeConfig`. |
-| `routeRules` | `RouteRule[]` | Route-to-layout mapping rules (first match wins). Each rule is `{ pattern, layout, entity? }` — `entity` additionally registers matching pages as registry entities of that type (e.g. `runes/**` → `rune`) without per-page frontmatter. |
-| `entityRoutes` | `EntityRoute[]` | Declarative entity → page routes. Each rule generates one page per registered entity matching `type` (plus an optional `filter`). See [Entity routes](/docs/configuration/entity-routes). |
-| `search` | `boolean` | Whether to render the search UI (header button + `Cmd/Ctrl+K` dialog). Defaults to `true`. Set `false` to omit the search chrome entirely. Results require a [Pagefind index](/docs/configuration/search). |
-| `overrides` | `Record<string, string>` | Component overrides — `typeof` name → relative component path. |
-| `runes` | `RunesConfig` | Rune resolution: `prefer`, `aliases`, `local`. |
-| `highlight` | `HighlightConfig` | **Legacy.** Picks a Shiki built-in theme by name (or `{ light, dark }` pair) for fenced code blocks. The recommended modern approach is **`theme.presets`** with a Lumina syntax preset (`@refrakt-md/lumina/presets/nord`, `…/tideline`, etc.) plus **`theme.code.colorScheme`** to force light/dark code. Kept for back-compat; both mechanisms can coexist. |
-| `icons` | `Record<string, string>` | Custom icon SVGs merged into the theme's global icon group. |
-| `tints` | `Record<string, object>` | Project-level tint presets. |
-| `backgrounds` | `Record<string, object>` | Project-level background presets. |
-| `sandbox` | `object` | `{ dir }` — directory of `{% sandbox %}` program sources. (`examplesDir` is the deprecated alias, still accepted with a warning — ADR-022.) |
-
-### Localization
-
-These control refrakt's own generated UI text — nav chrome, pagination, behavior labels — not your page content. See [Internationalization](/docs/configuration/i18n).
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `locale` | `string` | Active locale (BCP 47, e.g. `"de"`). Selects first-party and plugin translation bundles and drives locale-aware date/number formatting. Defaults to `"en"`. |
-| `strings` | `Record<string, string \| Record<string, string>>` | Site-level overrides for individual UI strings, keyed by i18n key (`{scope}.{block}.{ref}`). Highest precedence — these win over first-party and plugin bundles. A value is either a string or a map of CLDR plural categories (`one`, `other`, …) to strings. |
+The complete list of fields a site accepts — with types, defaults and which
+are required — is the **[configuration reference](/docs/configuration/reference)**,
+generated from the schema. The sections below cover the two shapes that need
+explaining rather than listing.
 
 ### Theme object form
 
@@ -138,14 +95,6 @@ The string form (`"theme": "@refrakt-md/lumina"`) is shorthand for `{ "package":
 - **`modes`** — per-mode overlays (e.g. `dark`) layered on top of theme modes and preset modes.
 - **`code.colorScheme`** — force fenced code blocks to a fixed scheme (`light` / `dark`) regardless of the page's mode.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| **`package`** | `string` | Theme package name (e.g. `@refrakt-md/lumina`) or relative path. |
-| `presets` | `string[]` | Preset module identifiers merged into the theme (last wins per token). |
-| `colorScheme` | `'auto' \| 'light' \| 'dark'` | Initial colour scheme — `auto` respects user preference, `light` / `dark` force the scheme. |
-| `tokens` | `ThemeTokensConfig` | Token overrides applied on top of base + presets. |
-| `modes` | `Record<string, PartialTokenContract>` | Per-mode overlays (typically just `dark`). |
-| `code.colorScheme` | `'auto' \| 'light' \| 'dark'` | Force code blocks to a fixed scheme regardless of page mode. |
 
 ```json
 {

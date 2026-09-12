@@ -12,7 +12,7 @@ type: rune
 `{% file-ref %}` is the path-based sibling of [`xref`](/runes/xref) and [`expand`](/runes/expand): where those resolve a registered entity by id, `file-ref` points at an arbitrary project file by path. The inline form renders an `<a>` to the file's canonical GitHub URL; the `preview="drawer"` form hoists a drawer containing the file's snippet plus a "View source on GitHub →" footer link, leaving an inline link in prose that opens it (SPEC-078).
 
 {% hint type="note" %}
-File-ref requires a `repoUrl` (and optional `repoBranch`) on the site config so the canonical GitHub URL can be built. See [Site configuration → `repoUrl`](/docs/configuration/sites#seo-and-branding).
+File-ref requires a `repoUrl` (and optional `repoBranch`) on the site config so the canonical GitHub URL can be built. See [`repoUrl` in the configuration reference](/docs/configuration/reference#repourl).
 {% /hint %}
 
 ## Linking to a file
@@ -77,12 +77,7 @@ The filename default (e.g. `theme.ts`) is conservative — when the file-ref ref
 
 ## Attributes
 
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `path` | string | yes | Project-root-relative file path. Same sandbox as `snippet` — absolute paths, traversal escapes (`..`), and out-of-root symlinks are rejected; missing files error at build time. |
-| `lines` | string | no | Line range: `"42-58"` or `"42"`. Drives the GitHub `#L42-L58` anchor and (with `preview="drawer"`) the snippet slice. |
-| `label` | string | no | Display text for the inline link. Defaults to the filename. Pass an explicit label when referring to a symbol within the file. |
-| `preview` | `drawer` | no | Hoist a preview drawer with the file's snippet + a GitHub footer link; the inline link opens it. |
+{% include file="rune-attributes.md" variables={r: "rune:file-ref"} /%}
 
 ## Site configuration
 

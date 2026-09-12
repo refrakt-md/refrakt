@@ -434,24 +434,5 @@ Content without any device chrome.
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `device` | `string` | `"browser"` | Device type: `iphone-15`, `iphone-se`, `pixel`, `phone`, `ipad`, `tablet`, `browser`, `browser-dark`, `macbook`, `watch`, `none` |
-| `label` | `string` | — | Caption displayed below the device frame |
-| `color` | `string` | `"dark"` | Bezel color: `dark`, `light`, `auto` |
-| `statusBar` | `boolean` | `true` | Show status bar on mobile devices |
-| `url` | `string` | — | URL to display in browser address bar |
-| `scale` | `number` | `1` | CSS transform scale factor |
+{% include file="rune-attributes.md" variables={r: "rune:mockup"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

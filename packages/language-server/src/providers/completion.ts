@@ -159,8 +159,10 @@ function completeAttributeValues(
   attrName: string,
   prefix: string,
 ): CompletionItem[] {
-  // Special case: partial file="" attribute — complete from _partials/ directory
-  if (tagName === 'partial' && attrName === 'file') {
+  // Special case: the `file=""` attribute on `partial` and its refrakt sibling
+  // `include` (SPEC-129) — both read the same `_partials/` directory, so both
+  // complete from it.
+  if ((tagName === 'partial' || tagName === 'include') && attrName === 'file') {
     return getPartialNames()
       .filter(name => name.startsWith(prefix))
       .map((name, i) => ({

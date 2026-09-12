@@ -182,13 +182,7 @@ Both `linenumbers` and `highlight` are also fence-level annotations — `` ```ts
 
 ## Attributes
 
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `path` | String | Yes | Path to the source file, relative to the project root. |
-| `lines` | String | No | Line range. `"10-25"` / `"10-"` / `"-20"` / `"10"`. 1-indexed, inclusive. |
-| `lang` | String | No | Override the extension-inferred syntax-highlighting language. |
-| `linenumbers` | Boolean | No | Show line numbers in the gutter. Start counter derives from `lines` (file coordinates). |
-| `highlight` | String | No | Range(s) to emphasize without cropping. Shiki-style format: `"74-78"`, `"74-78,82,90-92"`. File coordinates. |
+{% include file="rune-attributes.md" variables={r: "rune:snippet"} /%}
 
 No `title` attribute. Snippet's output is a fence; for a labelled chrome wrap in `{% codegroup title="..." %}`.
 

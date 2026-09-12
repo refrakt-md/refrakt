@@ -28,6 +28,29 @@ export interface Frontmatter {
    *  brand should look the same to every visitor. Cascades down the layout
    *  chain. See SPEC-052. */
   'tint-lock'?: boolean;
+
+  // The four below were read through the index signature rather than declared
+  // (WORK-545) — consumed by refrakt and invisible to both the type and the
+  // docs. `type` in particular drives the entire entity registry.
+
+  /** Registers this page as an entity of the named type, so `{% collection %}`,
+   *  `{% aggregate %}` and `{% xref %}` can find it. A `routeRules` entry can
+   *  set this for a whole subtree instead of per page. Read by
+   *  `page-entities.ts`. */
+  type?: string;
+  /** Explicit entity ID for this page. Defaults to the page's slug when
+   *  omitted. Read by `page-entities.ts`. */
+  id?: string;
+  /** Creation date (ISO 8601), overriding what git history or the filesystem
+   *  reports. Read by `timestamps.ts`. */
+  created?: string;
+  /** Last-modified date (ISO 8601), overriding what git history or the
+   *  filesystem reports. Read by `timestamps.ts`. */
+  modified?: string;
+
+  /** Arbitrary author fields. Deliberately open: runes and pipeline hooks read
+   *  frontmatter keys refrakt itself knows nothing about, so the declared
+   *  members above describe what refrakt consumes rather than closing the set. */
   [key: string]: unknown;
 }
 

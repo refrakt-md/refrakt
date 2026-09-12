@@ -63,18 +63,7 @@ Because `$item` means the same thing here as in a `collection` body, the **same 
 
 ## Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `of` | string | — | Entity to describe — an id (e.g. `of=$item.id`) or a bound entity. Required for output. |
-| `kind` | string | — | Edge kinds to include, comma-separated. |
-| `type` | string | — | Restrict related entity types, comma-separated. |
-| `group` | `kind` \| `type` \| `none` | `kind` | Grouping. |
-| `group-display` | `headings` \| `accordion` | `headings` | How groups are presented. |
-| `sort` | string | — | Sort related entities by a field. |
-| `limit` | number | — | Max edges. |
-| `fields` | string | — | Comma-separated `data` fields for the no-body built-in. |
-| `layout` | `list` \| `grid` | `list` | Arrangement. Item chrome comes from the item. |
-| `empty` | string | — | Fallback text when there are no matching edges (no-body form). Absent → render nothing. |
+{% include file="rune-attributes.md" variables={r: "rune:relationships"} /%}
 
 ## Empty state and body zones
 

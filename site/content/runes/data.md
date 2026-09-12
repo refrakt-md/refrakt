@@ -70,6 +70,115 @@ Every knob below runs at **build time** on a single intermediate shape, identica
 - **`columns`** selects, reorders, and renames: `"revenue as 'Revenue ($)'"`. Quote an alias that contains spaces or punctuation.
 - **`limit`** / **`offset`** slice the rows — the `data` analogue of snippet's `lines=`.
 
+## Per-row templates — give `data` a body
+
+Without a body, `data` emits a `<table>`. Give it one and the body is rendered **once per row**, with `$row` bound to that row — so a data file can drive arbitrary Markdoc, not just table cells.
+
+```markdoc
+{% data src="team.csv" sort="name" %}
+{% card %}
+### {% $row.name %}
+
+{% $row.role %}
+{% /card %}
+{% /data %}
+```
+
+`$row.<column>` reads a cell by its column name — after `columns` renaming, so `columns="full_name as name"` gives you `$row.name`. A column that types as numeric binds as a **number**; everything else binds as the cell's text.
+
+Every shaping attribute applies exactly as it does to the table form: `where`, `sort`, `columns`, `limit` and `offset` all run first, and the body sees what survives.
+
+### It composes with runes that read their own children
+
+The rendered rows are spliced in as **siblings**, landing exactly where hand-written ones would. So a parent rune that builds structure from its children — `accordion`, `tabs`, `bento` — works with generated items:
+
+```markdoc
+{% accordion %}
+{% data src="faq.csv" %}
+{% accordion-item %}
+## {% $row.question %}
+
+{% $row.answer %}
+{% /accordion-item %}
+{% /data %}
+{% /accordion %}
+```
+
+### A variable inside backticks is literal
+
+Markdoc does not interpolate inside inline code, so this renders the text `{% $row.name %}` rather than the value:
+
+```markdoc
+### `{% $row.name %}`
+```
+
+Nothing warns — you get a heading per row, each showing the same literal.
+
+This is standard Markdown, and it is the *only* inline construct with the property: links, nested emphasis and rune bodies all pass a variable through fine. Use [`{% code %}`](/runes/code) when you want the value code-styled:
+
+```markdoc
+### {% code %}{% $row.name %}{% /code %}
+```
+
+### A table with formatted cells
+
+Set `headers` and the body becomes one table **row** — cells separated by `---` — instead of a run of blocks:
+
+```markdoc
+{% data src="_data/rune-attributes.json" root="attributes" where="rune:card scope:own"
+        headers="Attribute, Type, Required, Description" %}
+{% code %}{% $row.name %}{% /code %}
+---
+{% $row.type %}
+---
+{% if $row.required %}✓{% else /%}—{% /if %}
+---
+{% $row.description %}
+{% /data %}
+```
+
+This is how you get a table whose cells carry markup. The bodyless form above builds its cells from literal text — right for arbitrary CSV, where a stray `*` should stay a `*` — so it can render `true` but never `✓`, and `href` but never `` `href` ``. Here the cells are markdown you wrote, so emphasis, links, runes and `{% if %}` all work inside one.
+
+The emitted table is structurally identical to the bodyless one, so [`chart`](/runes/chart) and [`datatable`](/runes/datatable) consume it unchanged.
+
+Three things to know:
+
+- **The counts must match.** `headers` naming four columns and a body with three `---`-delimited cells is a build error that names both numbers.
+- **`headers` needs a body.** On a self-closing tag it is an error rather than a silent no-op — it would read as a rename of `columns`, which selects and renames *source* columns instead.
+- **A `---` inside a cell splits it.** The same constraint [`card`](/runes/card) and [`grid`](/runes/grid) carry. Watch for it in free-text columns.
+
+### Nested queries
+
+A `{% data %}` inside another one's body runs as a **subquery**, once per outer row:
+
+```markdoc
+{% data src="axes.json" where=$r %}
+## {% $row.axis %}
+
+{% data src="axis-attributes.json" where=$row.query headers="Attribute, Type" %}
+{% code %}{% $row.name %}{% /code %}
+---
+{% $row.type %}
+{% /data %}
+{% /data %}
+```
+
+`$row` always means **the nearest enclosing query's** row — so the inner table sees attribute rows even though both sources have a `name` column. The one place the outer row reaches in is the subquery's **attributes**: `where=$row.query` is how the subquery gets filtered for this row, which is the whole point.
+
+Because `where` takes a single string and nothing here concatenates, the filter value has to arrive ready-made. Emit it as a column (`query` above holds `"axis:bg"`) rather than trying to build it at the call site.
+
+An empty subquery renders nothing and does **not** take its row with it — a row whose subquery finds no matches still renders its own content.
+
+### Limits
+
+The binding is deliberately shallow — bind a row, render a block. `{% if %}` works (`{% else /%}` is self-closing), but there is no iteration, and formatting goes through the shared Markdoc functions, the same constraint [`collection`](/runes/collection) templates hold.
+
+Two more:
+
+- **`$item` is not an alias for `$row`.** A collection's `$item` is an entity (`id` / `type` / `url` / `data`); a data row is flat. One name for two shapes is a trap, so reaching for `$item.data.x` here is an error rather than a silent `undefined`.
+- **Not inside `chart` or `datatable`.** Those consume the `<table>` this rune would otherwise emit, so a body there is a build error rather than an empty render.
+- **`numeric` / `text` warn.** They exist to type the `data-value` attribute on table cells; a body emits no cells. Numeric columns still bind to `$row` as numbers.
+
 ## Typing and the `data-value` channel
 
 A Markdown table carries only text, so a formatted number (`$1,200`, `1,500`, `98%`) is just a string. `numeric` types a column: every value cell keeps its human-formatted text **and** gains a normalized `data-value` (`"$1,200"` → `data-value="1200"`).
@@ -141,7 +250,30 @@ Use `data` to scope and type what lands on the page (the honest fallback); wrap 
 
 ## When something goes wrong
 
-A sandbox escape, a missing file, a parse error, or an empty result renders a visible **error callout** in place of the table and emits a build warning — the build keeps going, and the failure is obvious on the page rather than silently producing a broken table.
+A sandbox escape, a missing file, a parse error, or a **source that yielded no rows** renders a visible **error callout** in place of the table and records a build error — the build keeps going, and the failure is obvious on the page rather than silently producing a broken table. "No rows" here means the file or the `root` you pointed at held nothing; it is a wrong-target mistake.
+
+A **filter that legitimately matched nothing** is not an error. `{% data %}` renders nothing at all and says nothing — asking real data a question with no answer today is normal, and a page listing open bugs when there are none is working, not broken.
+
+An attribute the rune **cannot read** is a build error naming what went wrong. `data` resolves its attributes during the preprocess phase, so a few things that look like they should work cannot:
+
+```
+data: `where` is a call to `concat()`, and `data` reads its attributes
+      during preprocess — before functions are evaluated
+data: `where` references `$missing`, which is not defined here
+data: `where` is empty
+```
+
+This matters more than it sounds. An unreadable `where` used to resolve to an empty string, and an empty filter is *no* filter — so the page rendered the whole source instead of erroring. On a page filtering one rune's attributes out of a catalogue, that renders every rune's attributes under that rune's heading and looks completely plausible.
+
+Omitting an attribute is untouched: only attributes you actually wrote are checked.
+
+That leaves the mistake worth catching on its own: a **misspelt column**. Any `where`, `sort`, or `columns` clause naming a column the source does not have emits a build warning that names the column and lists the ones that exist:
+
+```
+data "revenue.csv": `where` names a column the source does not have: "regio". Available: region, quarter, revenue.
+```
+
+The warning fires whether or not the result ends up empty — a clause that matches nothing is a mistake even when another clause still returns rows.
 
 ## SQLite — a later tier
 
@@ -149,39 +281,10 @@ A SQLite adapter is specified but not yet implemented. It will slot into the sam
 
 ## Attributes
 
-### Core
 
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `src` | String | Yes | Path to the source file, relative to the project root (sandboxed). |
-| `format` | String | No | `csv` \| `tsv` \| `json` \| `ndjson`. Inferred from the extension; override for ambiguity. |
+Every attribute in one table. Format-specific ones say so in their description — `CSV/TSV:` or `JSON:`; the rest apply to every source.
 
-### CSV / TSV
-
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `delimiter` | String | No | Override the field separator. |
-| `header` | Boolean | No | Whether the first row is the header (default `true`). `false` synthesizes `col1…`. |
-
-### JSON
-
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `root` | String | No | Dotted path / JSON Pointer to the array or map within the document. |
-| `orient` | String | No | `records` \| `values` \| `index`. `records`/`values` auto-detected; `index` is explicit. |
-| `key-column` | String | No | When `orient=index`, the header for the synthesized key column (default `key`). |
-
-### Shared (all formats)
-
-| Attribute | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `columns` | String | No | Select + order + rename: `"name as Product, revenue as 'Revenue ($)'"`. Dotted paths for JSON. |
-| `where` | String | No | Filter rows with the `field:value` grammar. |
-| `sort` | String | No | Sort by a column; `-` prefix descends. |
-| `limit` | Number | No | Maximum number of rows. |
-| `offset` | Number | No | Skip this many rows before limiting. |
-| `numeric` | String | No | Comma-separated columns to force to numeric typing (emits `data-value`). |
-| `text` | String | No | Comma-separated columns to force to text typing. |
+{% include file="rune-attributes.md" variables={r: "rune:data"} /%}
 
 ## See also
 

@@ -130,7 +130,7 @@ Trending up week over week.
 
 ### Code-sample card
 
-A `{% codegroup %}` in the media zone is a tabbed snippet with a title below — here dressed with a displaced frame over a `substrate` fill (the chrome itself is documented in [Surfaces](/runes/surfaces#chrome--shadow-and-frame)). With no `href` the tabs stay interactive.
+A `{% codegroup %}` in the media zone is a tabbed snippet with a title below — here dressed with a displaced frame over a `substrate` fill (the chrome itself is documented in [Surfaces](/runes/surfaces#chrome-the-surface-axes-and-the-frame)). With no `href` the tabs stay interactive.
 
 {% preview source=true %}
 
@@ -270,7 +270,7 @@ The same metrics stacked as a single column.
 
 {% /preview %}
 
-The sandbox sources live in [`site/examples/`](/runes/sandbox#examples-directory) — Tailwind `dark:` variants flow with the preview's theme toggle, which rebuilds each iframe with the new scheme baked into its srcdoc.
+The sandbox sources live in [`site/examples/`](/runes/sandbox#directory-structure) — Tailwind `dark:` variants flow with the preview's theme toggle, which rebuilds each iframe with the new scheme baked into its srcdoc.
 
 ### Live program
 
@@ -289,7 +289,7 @@ In a plain card the scene animates; a linked or cover card would demote it to a 
 
 {% /preview %}
 
-The cover demotion is also a feature in its own right: put a sandbox in a `media-position="cover"` media zone and the running scene becomes a full-bleed **animated background** with the content overlaid — see [the animated hero backdrop](/runes/marketing/hero#animated-background--a-live-program-as-the-backdrop).
+The cover demotion is also a feature in its own right: put a sandbox in a `media-position="cover"` media zone and the running scene becomes a full-bleed **animated background** with the content overlaid — see [the animated hero backdrop](/runes/marketing/hero#animated-background-a-live-program-as-the-backdrop).
 
 ## Interactive guests & posture
 

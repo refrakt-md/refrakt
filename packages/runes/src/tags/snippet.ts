@@ -49,13 +49,21 @@ export const snippet = createContentModelSchema({
 	transform(_resolved, _attrs) {
 		// Unreachable in normal operation — corePipelineHooks.preprocess
 		// replaces snippet tags with fence nodes before the transform runs.
-		// If you see this error, ensure your content pipeline runs the
-		// preprocess phase (call sites: packages/content/src/site.ts and the
-		// hook set assembled via createCorePipelineHooks).
+		//
+		// The reachable case is a content author's, not a framework author's:
+		// the file was pulled in with `{% partial %}`, which expands during the
+		// transform — after the preprocess phase. Name that fix first (SPEC-129).
 		throw new Error(
-			'snippet rune reached the transform phase — its preprocess hook was not wired through. ' +
-			'Ensure the content pipeline runs registered `preprocess` hooks before `Markdoc.transform` ' +
-			'(snippet pre-resolves to a Markdoc `fence` node; see SPEC-062 § Composition).',
+			'{% snippet %} reached the transform phase unresolved.\n\n' +
+			'If this file is pulled in with {% partial %}: use {% include %} instead. ' +
+			'Markdoc expands partials during the transform, which is after the preprocess ' +
+			'phase that resolves `snippet` — so a `snippet` tag inside a partial never gets ' +
+			'read. {% include file="..." /%} pastes the file before preprocess, so `snippet` ' +
+			'and `data` inside it resolve. Both runes read the same `_partials/` directory ' +
+			'and file roots, so only the call site changes.\n\n' +
+			'If you are building a custom pipeline: registered `preprocess` hooks must run ' +
+			'before `Markdoc.transform` (snippet pre-resolves to a Markdoc `fence` node; ' +
+			'see SPEC-062 § Composition).',
 		);
 	},
 });

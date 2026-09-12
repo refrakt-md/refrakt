@@ -39,7 +39,7 @@ The output is a `<span class="rf-aggregate" data-aggregate="count">N</span>` —
 
 ## Body-zoned form
 
-Give `aggregate` a body and it iterates — but unlike `collection`, the iteration runs over **groups**, not entities. The body splits on a top-level `---` into up to three zones (same convention as [`card`](/runes/card) and [`collection`](/runes/collection#body-zones--preamble-template-fallback)), and **`$item` binds differently in each**:
+Give `aggregate` a body and it iterates — but unlike `collection`, the iteration runs over **groups**, not entities. The body splits on a top-level `---` into up to three zones (same convention as [`card`](/runes/card) and [`collection`](/runes/collection#body-zones-preamble-template-fallback)), and **`$item` binds differently in each**:
 
 | Zone | When rendered | `$item` |
 |------|---------------|---------|
@@ -154,19 +154,11 @@ When the primary set is empty:
 {% aggregate type="work" filter="status:zzz" empty="Nothing yet." /%}
 ```
 
-Precedence matches [`collection`](/runes/collection#body-zones--preamble-template-fallback): the body fallback zone wins when both are present.
+Precedence matches [`collection`](/runes/collection#body-zones-preamble-template-fallback): the body fallback zone wins when both are present.
 
 ## Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `type` | string | — | Entity type(s) to query, comma-separated. |
-| `filter` | string | — | `field:value` clauses defining the **primary set** being measured (see [grammar](/runes/collection#the-field-match-grammar)). |
-| `value` | string | — | Optional secondary `field:value` clause defining the **achieved subset** within `filter`. Drives `$item.value` and `$item.percent`. |
-| `group` | string | — | Group-by field; omit to render once with totals. |
-| `sort` | `key` \| `count` \| `value` \| `percent` | — | Sort groups; prefix `-` for descending. Honors domain-aware ordering when sorting by `key`. |
-| `limit` | number | — | Max groups, applied after sort. |
-| `empty` | string | — | Fallback text shown when the query yields nothing (self-closing form; body form uses a fallback zone). Absent → render nothing. |
+{% include file="rune-attributes.md" variables={r: "rune:aggregate"} /%}
 
 ## Output contract
 

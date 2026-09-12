@@ -187,30 +187,5 @@ Sidebar (appears first on mobile).
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `columns` | `number` | — | Fixed number of grid columns |
-| `rows` | `number` | — | Fixed number of grid rows |
-| `flow` | `string` | — | Grid flow: `row`, `column`, `dense`, `row dense`, `column dense` |
-| `spans` | `string` | — | Space-separated column span values (e.g., `"2 1"`) |
-| `ratio` | `string` | — | Column width ratio as CSS grid-template-columns value |
-| `gap` | `string` | `default` | Gap between cells: `none`, `tight`, `default`, or `loose` |
-| `valign` | `string` | — | Vertical cell alignment: `top`, `center`, or `bottom` |
-| `collapse` | `string` | — | Collapse to single column at breakpoint: `sm`, `md`, `lg`, or `never` |
-| `mode` | `string` | `columns` | Layout mode: `columns`, `auto`, or `masonry` |
-| `min` | `string` | `250px` | Minimum column width in auto mode (e.g., `200px`, `15rem`) |
-| `aspect` | `string` | — | Aspect ratio enforced on all cells (e.g., `16/9`, `1/1`) |
-| `stack` | `string` | — | Cell order when collapsed: `natural` or `reverse` |
+{% include file="rune-attributes.md" variables={r: "rune:grid"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

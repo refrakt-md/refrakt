@@ -4,6 +4,7 @@ import type { Schema } from '@markdoc/markdoc';
 import * as xml from 'fast-xml-parser';
 import { unescapeFenceContent } from './fence-escape.js';
 import { resolveImageScheme } from './lib/image-schemes.js';
+import { headingSlug, renderableText } from './util.js';
 
 const { dirname, join, isAbsolute } = pb;
 const { Tag } = Markdoc;
@@ -24,17 +25,20 @@ export const heading: Schema = {
     const children = node.transformChildren(config);
 
     if (!attributes.id || typeof attributes.id !== 'string') {
-      attributes.id = children
-        .filter((child: any) => typeof child === 'string')
-        .join(' ')
-        // Strip URL-unsafe punctuation that breaks fragment links. `%` in
-        // particular trips `decodeURI` (SvelteKit's prerender crawler) when
-        // it isn't followed by a valid hex pair — e.g. a heading whose text
-        // contains a literal `{% symbol %}` would otherwise produce an id
-        // like `…-{%-symbol-%}-…` and crash the prerender.
-        .replace(/[?{}%]/g, '')
-        .replace(/\s+/g, '-')
-        .toLowerCase();
+      // Slug the *transformed* children, walking into tags rather than keeping
+      // only top-level strings (BUG-005). Both halves matter:
+      //
+      // - Walking in keeps inline code, which is a Tag by this point. Filtering
+      //   to strings dropped it, so `` ### `fileRoots` — named … `` rendered with
+      //   an id that omitted `fileRoots` entirely.
+      // - Reading the transformed tree rather than the source node keeps
+      //   variables *resolved*. A heading like `### {% $row.name %}` inside a
+      //   `{% data %}` body is bound per row before this runs; slugging the
+      //   source would give every row the same id.
+      //
+      // `headingSlug` itself is shared with `extractHeadings`, so the rules
+      // cannot drift even though the two read different phases.
+      attributes.id = headingSlug(renderableText(children));
     }
 
     return new Tag(

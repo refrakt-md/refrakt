@@ -1,0 +1,83 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "https://refrakt.md/frontmatter.schema.json",
+	"title": "Frontmatter",
+	"description": "YAML frontmatter for a refrakt content page. Describes the fields refrakt itself consumes; the set is deliberately open, since runes and pipeline hooks read arbitrary author fields. The unversioned URL https://refrakt.md/frontmatter.schema.json is a 'latest' alias that always serves the most recently published schema.",
+	"type": "object",
+	"properties": {
+		"title": {
+			"description": "Page title. Used for the document title, navigation labels and social cards; falls back to the page's first H1 when omitted.",
+			"type": "string"
+		},
+		"description": {
+			"description": "Short summary, used for the meta description, social cards and the blurb on link cards.",
+			"type": "string"
+		},
+		"slug": {
+			"description": "Override the URL segment derived from the filename.",
+			"type": "string"
+		},
+		"draft": {
+			"description": "Exclude the page from the built site and from navigation.",
+			"type": "boolean"
+		},
+		"redirect": {
+			"description": "Redirect this URL elsewhere instead of rendering a page.",
+			"type": "string"
+		},
+		"order": {
+			"description": "Sort position among sibling pages in generated navigation. Lower sorts first.",
+			"type": "number"
+		},
+		"date": {
+			"description": "Publication date (ISO 8601). Used for ordering and display by blog-style listings.",
+			"type": "string"
+		},
+		"author": {
+			"description": "Author name, used in article metadata and structured data.",
+			"type": "string"
+		},
+		"tags": {
+			"description": "Free-form labels, filterable with the `field:value` grammar `collection` and `aggregate` share.",
+			"type": "array",
+			"items": { "type": "string" }
+		},
+		"image": {
+			"description": "Page image, used for social cards and as the media for link cards.",
+			"type": "string"
+		},
+		"icon": {
+			"description": "Icon name resolvable by the `icon` rune. `nav layout=\"cards\"` renders it on each child page's card.",
+			"type": "string"
+		},
+		"tint": {
+			"description": "Named tint preset for this page, or for the whole subtree when set in a `_layout.md`. Cascades down the layout chain; an explicit null resets to inherit from the layer above.",
+			"type": ["string", "null"]
+		},
+		"tint-mode": {
+			"description": "Initial colour-scheme behaviour. `auto` follows the user's preference; `light` / `dark` lock the server-rendered mode. Cascades down the layout chain.",
+			"type": "string",
+			"enum": ["auto", "light", "dark"]
+		},
+		"tint-lock": {
+			"description": "Ignore the user's theme preference and hide the theme toggle — for surfaces that should look the same to every visitor. Cascades down the layout chain.",
+			"type": "boolean"
+		},
+		"type": {
+			"description": "Register this page as an entity of the named type, so `collection`, `aggregate` and `xref` can find it. This is what drives the entity registry. A `routeRules` entry can set it for a whole subtree instead of per page.",
+			"type": "string"
+		},
+		"id": {
+			"description": "Explicit entity ID for this page. Defaults to the page's slug.",
+			"type": "string"
+		},
+		"created": {
+			"description": "Creation date (ISO 8601), overriding what git history or the filesystem reports.",
+			"type": "string"
+		},
+		"modified": {
+			"description": "Last-modified date (ISO 8601), overriding what git history or the filesystem reports.",
+			"type": "string"
+		}
+	}
+}

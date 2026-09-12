@@ -21,7 +21,9 @@ Specs are source-of-truth design documents. They describe *what* to build and *w
 | `status` | Current status (default: `draft`) |
 | `version` | Spec version string, e.g., `"2.1"` |
 | `supersedes` | ID of the spec this replaces |
+| `released-in` | Release the spec shipped in, e.g. `v0.32.0`. **Required once `status="shipped"`** — `plan validate` errors without it. |
 | `tags` | Comma-separated labels |
+| `created`, `modified` | ISO 8601 dates. Maintained by the tooling — it falls back to the file's own timestamps — so you rarely set these by hand. |
 
 ```markdoc
 {% spec id="SPEC-001" status="draft" tags="auth, security" %}
@@ -58,7 +60,10 @@ Work items are discrete, implementable tasks. They're the primary unit of progre
 | `assignee` | Person or agent working on it |
 | `milestone` | Release target name |
 | `source` | Comma-separated IDs of specs/decisions it implements |
+| `supersedes` | ID of the work item this replaces. **Pair it with `status="superseded"`** — `plan validate` warns when that status has no replacement named. |
+| `pr` | Comma-separated PR references that implemented this, e.g. `refrakt-md/refrakt#593`. **Set this when marking an item `done`** — it is what links a spec to the code that delivered it, and `plan status` builds its PR rollups from it. |
 | `tags` | Comma-separated labels |
+| `created`, `modified` | ISO 8601 dates, maintained by the tooling. |
 
 **Conventional sections:**
 
@@ -111,7 +116,9 @@ Bug reports for defects.
 | `assignee` | Person fixing it |
 | `milestone` | Fix target |
 | `source` | Related spec/decision IDs |
+| `pr` | Comma-separated PR references that fixed this. **Set this when marking a bug `fixed`**, same as on a work item. |
 | `tags` | Comma-separated labels |
+| `created`, `modified` | ISO 8601 dates, maintained by the tooling. |
 
 **Conventional sections:**
 
@@ -161,6 +168,7 @@ Architecture decision records (ADRs) capture design choices and their rationale.
 | `supersedes` | ID of the decision this replaces |
 | `source` | Spec/entity IDs this decision informs |
 | `tags` | Comma-separated labels |
+| `created`, `modified` | ISO 8601 dates, maintained by the tooling. |
 
 **Conventional sections:**
 
@@ -213,6 +221,7 @@ Named release targets that group work items and track progress toward a goal.
 | `name` | Required. Semver string, e.g., `v1.0.0` |
 | `status` | Current status (default: `planning`) |
 | `target` | Target date (ISO 8601, aspirational) |
+| `created`, `modified` | ISO 8601 dates, maintained by the tooling. |
 
 ```markdoc
 {% milestone name="v1.0.0" status="active" target="2026-06-01" %}

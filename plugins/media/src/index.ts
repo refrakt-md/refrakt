@@ -11,6 +11,12 @@ export const media: Plugin = {
   runes: {
     'playlist': {
       transform: playlist,
+      // `music-playlist` is the schema.org name, kept as a legacy spelling. It is
+      // an *alias*, not a second registration: registering it separately made it
+      // a distinct rune carrying a self-referential `aliases: ['music-playlist']`,
+      // which printed "Aliases: music-playlist" in the reference and duplicated
+      // every playlist attribute under a second name in the JSON dump (BUG-009).
+      aliases: ['music-playlist'],
       description: 'Playlist with track listing — albums, podcasts, audiobooks, mixes',
       seoType: 'MusicPlaylist',
       category: 'Semantic',
@@ -27,6 +33,8 @@ export const media: Plugin = {
     },
     'track': {
       transform: track,
+      /** `music-recording` is the schema.org spelling — see the note on `playlist`. */
+      aliases: ['music-recording'],
       description: 'Individual track with metadata — for use inside playlist or standalone',
       seoType: 'MusicRecording',
       category: 'Semantic',
@@ -49,28 +57,6 @@ Recorded on January 15, 2025.
 {% /audio %}`,
     },
 
-    // Legacy aliases
-    'music-playlist': {
-      transform: playlist,
-      aliases: ['music-playlist'],
-      description: 'Music playlist with track listing (legacy name — use playlist)',
-      seoType: 'MusicPlaylist',
-      fixture: `{% music-playlist %}
-# Album Title
-
-- **Track One** (3:42)
-- **Track Two** (4:15)
-{% /music-playlist %}`,
-    },
-    'music-recording': {
-      transform: track,
-      aliases: ['music-recording'],
-      description: 'Individual music track metadata (legacy name — use track)',
-      seoType: 'MusicRecording',
-      fixture: `{% music-recording src="/audio/track.mp3" artist="Artist" duration="PT3M" %}
-Track Name
-{% /music-recording %}`,
-    },
   },
   theme: {
     runes: config as unknown as Record<string, Record<string, unknown>>,

@@ -63,13 +63,13 @@ A sprawling network of tunnels beneath the old city, home to smugglers and worse
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `name` | `string` | — | Realm name (required) |
-| `type` | `string` | `place` | Realm type (e.g. `city`, `dungeon`, `plane`, `sanctuary`) |
-| `scale` | `string` | — | Size or scope descriptor (e.g. `settlement`, `region`, `complex`) |
-| `parent` | `string` | — | Parent realm reference for hierarchical locations |
-| `tags` | `string` | — | Comma-separated metadata tags |
+#### `realm`
+
+{% include file="rune-attributes.md" variables={r: "rune:realm"} /%}
+
+#### `realm-section`
+
+{% include file="rune-attributes.md" variables={r: "rune:realm-section"} /%}
 
 ### Layout attributes
 
@@ -82,15 +82,3 @@ A realm's `scene` field (the image at the top of each section) is the media zone
 | `valign` | `string` | — | Cross-axis alignment when scene is beside content: `top`, `center`, `bottom`, `stretch` |
 | `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack: `sm`, `md`, `lg`, `never` |
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

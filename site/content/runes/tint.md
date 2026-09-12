@@ -147,14 +147,11 @@ Tokens are namespaced as `--tint-*` rather than directly overriding theme tokens
 
 ## Attributes
 
-### On the `tint` child rune
+{% include file="rune-attributes.md" variables={r: "rune:tint"} /%}
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `preset` | `string` | — | Named tint from theme config as starting point |
-| `mode` | `string` | `"auto"` | Colour scheme: `auto`, `dark`, or `light` |
+## The tint axis on other runes
 
-### On any parent rune
+Every rune that carries the tint axis accepts these directly — no `{% tint %}` child needed.
 
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|

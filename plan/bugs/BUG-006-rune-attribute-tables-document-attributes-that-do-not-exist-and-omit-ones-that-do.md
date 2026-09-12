@@ -1,18 +1,36 @@
-{% bug id="BUG-006" status="confirmed" severity="major" milestone="v0.33.0" tags="docs,runes,reference" %}
+{% bug id="BUG-006" status="fixed" severity="major" milestone="v0.33.0" tags="docs,runes,reference" %}
 
 # Rune attribute tables document attributes that do not exist, and omit ones that do
 
-Thirteen rune reference pages carry a hand-written `## Attributes` table. Four
-of them disagree with the rune's actual schema — in both directions. Measured
-against `refrakt reference <name> --format json` on `main` at `f92d50a`, after
-the v0.31.0 milestone work (WORK-534/535) landed.
+Thirteen rune reference pages carry a hand-written `## Attributes` table. **Two**
+of them disagree with the rune's actual schema.
 
 | Page | Documented, not real | Real, undocumented |
 |---|---|---|
-| `collection.md` | `item-template` | `show` |
-| `tint.md` | `tint`, `tint-mode` | — |
+| `collection.md` | `item-template` | — |
 | `aggregate.md` | — | `layout`, `chart-type`, `chart-title` |
-| `xref.md` | — | `primary` **(required)** |
+
+**Corrected during the fix — this bug originally claimed four pages, and three
+of those claims were wrong.** The first pass compared each page's tables against
+the rune's own attributes without reading the surrounding headings, which
+produced three false positives:
+
+- **`tint.md` is correct.** Its two tables are labelled `### On the tint child
+  rune` (`preset`, `mode` — right) and `### On any parent rune` (`tint`,
+  `tint-mode`). The second documents the *universal* tint axis, which every
+  block rune carries. Accurate as written.
+- **`xref.md` does document its required attribute**, as `(positional)` — which
+  is what a Markdoc primary attribute is. Not omitted, just not named `primary`.
+  Renaming it is still worth doing, because a generated table will emit
+  `primary` and a reader needs to connect the two, but it is a clarity fix
+  rather than drift.
+- **`collection.md` does document `show`**, inline in the `type` row
+  (*"`show` is an alias"*), which matches `collection.ts:21` exactly.
+
+The measured drift rate is therefore 2 in 13, not 4. That weakens this bug and
+strengthens {% ref "SPEC-128" /%}'s case rather than the reverse: the pages that
+*are* wrong were not findable by eye — this took a schema dump to see, and the
+first careful reading still got three of four wrong.
 
 ## Expected
 
@@ -44,15 +62,6 @@ rather than adding a second, collection-specific way to name a template file.
 The docs simply kept describing the discarded design. So the fix is to document
 the partial-in-body pattern, not to implement `item-template`.
 
-**`tint.md` documents `tint` and `tint-mode`**, but the `tint` rune's own
-attributes are `preset` and `mode`, and it carries no universal attributes at
-all. Plausibly exposed rather than caused by WORK-534, which narrowed universal
-attributes to the ones each rune actually applies.
-
-**`xref.md` omits `primary`** — the rune's one **required** attribute. The table
-lists `label`, `type`, and `preview`; the attribute an author cannot omit is not
-in it.
-
 **`aggregate.md` omits `layout`, `chart-type`, and `chart-title`.** The page's
 prose covers `layout="chart"` correctly, and `rune-catalog.md` uses all three in
 a live example — so the feature is documented and exercised in this repo, while
@@ -79,16 +88,18 @@ data needed to check them has existed the whole time, as
 `refrakt reference <name> --format json`.
 
 ## Acceptance Criteria
-- [ ] `collection.md`'s `### Reusable templates — item-template` section is replaced with the partial-in-body pattern, and `show` is documented
-- [ ] `tint.md` documents only `preset` and `mode`
-- [ ] `xref.md` documents `primary`, marked required
-- [ ] `aggregate.md` documents `layout`, `chart-type`, and `chart-title`
-- [ ] The replacement `collection` + `partial` example is verified to build, not written from the same assumption that produced the original
+- [x] `collection.md`'s `### Reusable templates — item-template` section is replaced with the partial-in-body pattern, and the `item-template` table row goes with it
+- [x] `aggregate.md` documents `layout`, `chart-type`, and `chart-title`
+- [x] `xref.md` names its required positional attribute `primary`, so the page and a generated table agree
+- [x] The replacement `collection` + `partial` example is verified against the real content pipeline, not written from the same assumption that produced the original
+
+(A fifth criterion — *"`tint.md` documents only `preset` and `mode`"* — was
+withdrawn: the page is correct as written. See the correction at the top.)
 
 ## Approach
 
-Fix the four pages by hand — it is a small, mechanical diff and it should not
-wait on tooling.
+Fix the pages by hand — it is a small, mechanical diff and it should not wait on
+tooling.
 
 The `collection.md` edit is the only one that writes new prose rather than
 correcting a row. The replacement is a `{% partial %}` inside the collection
@@ -112,6 +123,48 @@ wrong today and the fix should not be blocked on a generator.
 
 - {% ref "SPEC-128" /%} — generate the tables from the rune reference, so this class of drift cannot recur
 - `scripts/check-rune-docs.mjs` — the existing guard, which covers page existence but not page content
-- WORK-534 / WORK-535 — narrowed per-rune universal attributes and improved `refrakt reference` reporting; the `tint.md` mismatch is visible against the post-WORK-534 schemas
+- WORK-534 / WORK-535 — narrowed per-rune universal attributes and improved `refrakt reference` reporting; the reason `tint.md`'s "on any parent rune" table is trustworthy is that those axes are now schema-declared per rune
+
+## Resolution
+
+Completed: 2026-09-10
+
+Branch: `claude/content-author-docs-org-vps1un`
+
+### What was done
+
+**`site/content/runes/collection.md`** — replaced the
+`### Reusable templates — item-template` section with the partial-in-body
+pattern, and removed the `item-template` table row. `item-template` was never
+implemented; a `{% partial %}` in the collection body does the job.
+
+**`site/content/runes/aggregate.md`** — added the missing `layout`,
+`chart-type` and `chart-title` rows, with their `matches` values.
+
+**`site/content/runes/xref.md`** — the required positional attribute is now
+named `primary`, with a note that it is written positionally. The row existed
+as `(positional)`; naming it means the page and a generated table will agree.
+
+**`packages/content/test/collection-partial-template.test.ts`** — new. Builds a
+temp site and asserts the partial renders once per entity with `$item` bound and
+nothing unresolved. The interaction is not obvious — partials inline at *parse*
+time while a collection's per-item template is a deferred body re-parsed per
+entity (SPEC-070) — so this is pinned rather than trusted.
+
+### Notes
+
+- **Three of this bug's four original claims were wrong**, corrected in the body.
+  The first pass compared each page's tables against the rune's attributes
+  without reading the surrounding headings. `tint.md` is correct (its second
+  table is labelled "On any parent rune" and documents the universal tint axis);
+  `xref.md` did document its required attribute, as `(positional)`;
+  `collection.md` does document `show`, inline in the `type` row. Real drift was
+  2 of 13 pages, not 4.
+- That cuts against this bug and for {% ref "SPEC-128" /%}: the two genuinely
+  wrong pages needed a schema dump to find, and a careful reading still
+  misjudged three of four.
+- The replacement example was verified against the real content pipeline before
+  shipping, as this bug required — the section it replaces was itself a
+  plausible-looking example that never worked.
 
 {% /bug %}

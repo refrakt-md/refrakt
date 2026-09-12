@@ -55,21 +55,25 @@ Runes create interpretation contexts for Markdown content.
 
 Accordion supports an optional eyebrow, headline, and blurb above the panels. Place a short paragraph or heading before your content heading to use them. See [Page sections](/docs/authoring/page-sections) for the full syntax.
 
+### When the panels are not a FAQ
+
+An accordion declares itself a `FAQPage`, with each panel a `Question` and its body an `Answer`. That is right for a genuine FAQ and wrong for every other use — a list of definitions, a set of options, the universal-attribute sections on these rune pages. Publishing questions that nobody asked is structured data asserting something untrue.
+
+```markdoc
+{% accordion schema="none" %}
+```
+
+Suppresses the whole subtree, panels included, and the JSON-LD with it. Nothing else changes — same markup, same classes, same behaviour.
+
+`"none"` is the only value. `FAQPage` has no subtype to narrow to, and switching to another type (`ItemList`, say) would need the container's property renamed *and* each panel's type and properties changed, which an attribute on the container cannot reach.
+
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `multiple` | `boolean` | `true` | Allow multiple panels to be open simultaneously |
+#### `accordion`
 
-### Common attributes
+{% include file="rune-attributes.md" variables={r: "rune:accordion"} /%}
 
-All block runes share these attributes for layout and theming.
+#### `accordion-item`
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |
+{% include file="rune-attributes.md" variables={r: "rune:accordion-item"} /%}
+

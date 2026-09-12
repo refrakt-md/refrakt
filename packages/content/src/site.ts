@@ -305,6 +305,18 @@ async function processContentTree(
     projectRoot: opts.projectRoot,
     sandbox: opts.sandbox,
     variables,
+    // SPEC-129 — the *same* map `transformContent` hands Markdoc as
+    // `config.partials`, so `{% include %}` and `{% partial %}` read one
+    // directory and one set of file roots. Include clones before it pastes;
+    // these nodes are shared by every page that references them.
+    //
+    // Defaulted to `{}` rather than left undefined: a site with no partials at
+    // all is a legitimate state, and an `{% include %}` there should get the
+    // author-facing "not found, here is what is available" error. Undefined
+    // means *no map was wired* — a custom pipeline — and include no-ops so the
+    // schema transform can name the wiring, matching snippet and data without a
+    // sandbox.
+    partials: parsedPartials ?? {},
   });
 
   for (const page of tree.pages()) {

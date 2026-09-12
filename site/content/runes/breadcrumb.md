@@ -42,20 +42,5 @@ Use the `separator` attribute to change the divider between items.
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `separator` | `string` | `'/'` | Character displayed between breadcrumb items |
-| `auto` | `boolean` | `false` | When `true`, the breadcrumb is generated automatically from the page hierarchy by the cross-page pipeline. Provide no children. |
+{% include file="rune-attributes.md" variables={r: "rune:breadcrumb"} /%}
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

@@ -176,7 +176,11 @@ export function referenceDumpCommand(
 ): ReferenceDumpResult {
 	let rendered: string;
 	if (options.format === 'json') {
-		const infos = hydrateAllRuneInfos(ctx);
+		// The JSON dump is the machine-readable rune set, so it carries child-only
+		// runes that the rendered catalogue omits — a consumer generating docs for
+		// `accordion-item` needs its required `name` attribute (BUG-009). The
+		// markdown path below keeps the curated listing unchanged.
+		const infos = hydrateAllRuneInfos(ctx, { includeExcluded: true });
 		const payload = infos.map(info => serializeRune(info, info.plugin ?? 'core'));
 		rendered = JSON.stringify(payload, null, 2) + '\n';
 	} else {

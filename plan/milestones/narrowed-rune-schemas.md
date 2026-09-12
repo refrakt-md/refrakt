@@ -1,4 +1,4 @@
-{% milestone name="v0.32.0" status="active" %}
+{% milestone name="v0.32.0" status="complete" %}
 
 # v0.32.0 — Narrowed rune schemas
 

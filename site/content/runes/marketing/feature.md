@@ -222,11 +222,7 @@ why Refrakt
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `align` | `string` | `center` | Horizontal alignment of headline + body text: `left`, `center`, `right` |
-| `layout` | `string` | derived from `media-position` | Item arrangement: `grid` (tiled), `list` (single column), or `carousel` (scroll-snap track, all viewports) |
-| `collapse-to` | `string` | `stack` | Collapsed (mobile) form below the `collapse` breakpoint: `stack` or `carousel` (a swipe row). Use `layout="grid" collapse-to="carousel"` for grid-on-desktop, carousel-on-mobile. |
+{% include file="rune-attributes.md" variables={r: "rune:feature"} /%}
 
 ## Section header
 
@@ -243,15 +239,3 @@ The body splits on `---` into **media → content** zones (media-first in source
 | `valign` | `string` | — | Cross-axis alignment when media is beside content: `top`, `center`, `bottom`, `stretch` |
 | `collapse` | `string` | — | Breakpoint at which beside layouts collapse to a stack **and** a `grid` of items reflows to one column: `sm`, `md`, `lg`, `never` |
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

@@ -93,15 +93,13 @@ Use the `variant` attribute to change the layout.
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `action` | `string` | — | Form submission endpoint URL (required) |
-| `method` | `string` | `POST` | HTTP method: `GET` or `POST` |
-| `success` | `string` | — | Message shown on successful submission |
-| `error` | `string` | — | Message shown on failed submission |
-| `variant` | `string` | `stacked` | Layout: `stacked`, `inline`, `compact` |
-| `name` | `string` | — | Form identifier for multi-form pages |
-| `honeypot` | `boolean` | `true` | Auto-generate honeypot spam field |
+#### `form`
+
+{% include file="rune-attributes.md" variables={r: "rune:form"} /%}
+
+#### `form-field`
+
+{% include file="rune-attributes.md" variables={r: "rune:form-field"} /%}
 
 ### Smart type inference
 
@@ -118,19 +116,6 @@ Field types are automatically inferred from the list item text:
 | message, comments, description | `<textarea>` |
 | file, upload, attachment | `<input type="file">` |
 | anything else | `<input type="text">` |
-
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |
 
 ### Field modifiers
 

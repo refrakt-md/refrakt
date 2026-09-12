@@ -184,6 +184,48 @@ export function applySort(table: DataTable, spec: string | undefined): DataTable
 	return { headers: table.headers, rows: sorted };
 }
 
+/**
+ * Warn about a `where` / `sort` / `columns` clause naming a column the source
+ * does not have (BUG-011).
+ *
+ * This is the typo detector. Before it, nothing reported a misspelt field: a
+ * clause naming a column that does not exist matched no rows, and the only
+ * thing that noticed was `data`'s blanket "result is empty after projection"
+ * error — which fired just as loudly on a *correct* filter that legitimately
+ * matched nothing. One signal was standing in for two conditions, so it was
+ * wrong about one of them. Detecting the typo directly is what lets the empty
+ * case stop being a failure.
+ *
+ * All three specs are checked against the adapter's headers, which is right for
+ * each of them: `where` and `sort` run before `columns`, and `columns` names
+ * *source* headers even when it renames them.
+ */
+export function unknownFieldWarnings(
+	table: DataTable,
+	specs: { where?: string; sort?: string; columns?: string },
+): string[] {
+	const known = new Set(table.headers);
+	const available = table.headers.join(', ');
+	const warnings: string[] = [];
+	const check = (attr: string, field: string) => {
+		if (field === '' || known.has(field)) return;
+		warnings.push(`\`${attr}\` names a column the source does not have: "${field}". Available: ${available}.`);
+	};
+
+	for (const clause of parseFieldMatch(specs.where).clauses) check('where', clause.field);
+
+	if (specs.sort && specs.sort.trim() !== '') {
+		const trimmed = specs.sort.trim();
+		check('sort', (trimmed.startsWith('-') ? trimmed.slice(1) : trimmed).trim());
+	}
+
+	if (specs.columns && specs.columns.trim() !== '') {
+		for (const sel of parseColumnsSpec(specs.columns)) check('columns', sel.source);
+	}
+
+	return warnings;
+}
+
 /** Apply `limit`/`offset` — a row slice (the `data` analogue of snippet `lines=`). */
 export function applyLimitOffset(table: DataTable, limit?: number, offset?: number): DataTable {
 	const start = offset && offset > 0 ? offset : 0;

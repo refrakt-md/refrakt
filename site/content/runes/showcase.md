@@ -91,29 +91,7 @@ Facets compose freely.
 
 ### Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `frame-shadow` | `string` | `none` | Silhouette `drop-shadow`: `none`, `sm`, `md`, `lg` |
-| `frame-displace` | `string` | — | Edge/corner to move toward: `top`, `bottom`, `end`, `bottom-end`, `top-end` |
-| `frame-offset` | `string` | — | Displacement distance (named scale): `none`, `sm`, `md`, `lg`, `xl` |
-| `frame-aspect` | `string` | — | Viewport aspect ratio (e.g. `16/9`, `4/3`, `1/1`) |
-| `frame-place` | `string` | — | Alignment of the framed box within its slot (e.g. `left top`) |
-| `frame-anchor` | `string` | — | Crop focal point when cut (`object-position`) |
-| `frame-oversize` | `string` | — | Scale factor by which the guest exceeds its slot (clipped guests only) |
-| `frame` | `string` | — | Named frame preset from theme/project config (facets above override it) |
+{% include file="rune-attributes.md" variables={r: "rune:showcase"} /%}
 
 **Deprecated aliases** (emit a build warning): `shadow` → `frame-shadow` (`soft`/`hard`/`elevated` → `sm`/`md`/`lg`), `bleed` → `frame-displace`, `offset` → `frame-offset` (named scale; raw lengths warn), `aspect` → `frame-aspect`, `place` → `frame-place`.
 
-### Common attributes
-
-All block runes share these attributes for layout and theming.
-
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `elevation` | `string` | — | Self-surface `box-shadow`: `none`, `sm`, `md`, `lg` |
-| `width` | `string` | `content` | Page grid width: `content`, `wide`, or `full` |
-| `spacing` | `string` | — | Vertical spacing: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `inset` | `string` | — | Horizontal padding: `flush`, `tight`, `default`, `loose`, or `breathe` |
-| `tint` | `string` | — | Named colour tint from theme configuration |
-| `tint-mode` | `string` | `auto` | Colour scheme override: `auto`, `dark`, or `light` |
-| `bg` | `string` | — | Named background preset from theme configuration |

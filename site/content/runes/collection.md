@@ -103,6 +103,8 @@ For anything richer than raw values (formatting, combining fields, a designed ca
 
 Give `collection` a **body** and it becomes the per-item template: the body is transformed once per entity with **`$item` bound** to that entity. The body is *raw* output arranged by `layout` — add a rune like `{% card %}` for chrome.
 
+[`data`](/runes/data#per-row-templates-give-data-a-body) has the same contract for rows read from a file, binding `$row`. The name differs because the shape does: an `$item` is an entity with `id` / `type` / `url` / `data`, a `$row` is flat.
+
 ```markdoc
 {% collection type="work" filter="status:ready" sort="priority" layout="grid" %}
 {% card href=$item.url %}
@@ -136,15 +138,25 @@ Payload fields are accessed under `.data` (e.g. `$item.data.title`) — there's 
 
 The card in the example above (`{% card %}`) knows nothing about `$item`, the registry, or collection — the *template* wires entity fields into its attributes/body. So [`card`](/runes/card) stays a self-contained component you can also use standalone, and there's no per-entity `*-card` proliferation: a designed item is `{% card %}` (or another rune) fed by `$item`, not a bespoke `work-card`.
 
-### Reusable templates — `item-template`
+### Reusable templates — a partial in the body
 
-When the same template is reused across collections, point `item-template` at a markdoc partial instead of writing an inline body (mutually exclusive with an inline body):
+When the same template is reused across collections, put a [partial](/docs/authoring/partials) in the collection body instead of repeating it:
 
 ```markdoc
-{% collection type="page" filter="url:/blog/*" sort="date-desc" item-template="cards:post.md" /%}
+{% collection type="page" filter="url:/blog/*" sort="date-desc" %}
+{% partial file="post-card.md" /%}
+{% /collection %}
 ```
 
-…where `cards/post.md` contains the `{% card href=$item.url %}…{% /card %}` template. Same mechanism, different source.
+…where `_partials/post-card.md` contains the template:
+
+```markdoc
+{% card href=$item.url %}
+# {% $item.data.title %}
+{% /card %}
+```
+
+`$item` is bound inside the partial exactly as it is in an inline body, so the partial *is* the per-item template — no collection-specific mechanism, and the same file works in any collection.
 
 ## Table columns
 
@@ -183,18 +195,7 @@ Formatting lives in these functions, not in `fields` or a projection mini-langua
 
 ## Attributes
 
-| Attribute | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `type` | string | — | Entity type(s) to query, comma-separated. (`show` is an alias.) |
-| `filter` | string | — | `field:value` clauses (see [grammar](#the-field-match-grammar)). |
-| `sort` | string | — | Sort field; `-field` / `field-desc` for descending. |
-| `group` | string | — | Group-by field. |
-| `group-display` | `headings` \| `accordion` | `headings` | How groups are presented (only with `group`). |
-| `limit` | number | — | Max items, applied after sort. |
-| `fields` | string | — | Comma-separated `data` fields for the no-body built-in. |
-| `layout` | `list` \| `grid` \| `table` | `list` | Arrangement. Item chrome comes from the item. |
-| `item-template` | string | — | Partial used as the per-item template (mutually exclusive with an inline body). |
-| `empty` | string | — | Fallback text shown when the query yields nothing (no-body form). Absent → render nothing. |
+{% include file="rune-attributes.md" variables={r: "rune:collection"} /%}
 
 ## Body zones — preamble, template, fallback
 
