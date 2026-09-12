@@ -1,4 +1,4 @@
-{% spec id="SPEC-129" status="draft" tags="snippet, file-ref, docs, drift, tooling, runes" %}
+{% spec id="SPEC-131" status="draft" tags="snippet, file-ref, docs, drift, tooling, runes" %}
 
 # Address embedded source by name, not by line number
 
@@ -137,6 +137,11 @@ the file* — exactly the concern being extended.
 Resolution lands there, behind the existing `ReadFileOptions` shape. Both
 call sites (`snippet-pipeline.ts`, `file-ref-resolve.ts`) gain the capability
 by passing the new fields through.
+
+A fourth consumer may be arriving: {% ref "SPEC-129" /%}'s pre-transform
+`include` rune is also path-addressed. If it ships, it should take this layer
+rather than growing a `lines=` of its own — which is the argument for putting
+the resolution in the shared reader rather than in either pipeline.
 
 ### The attribute surface
 
@@ -426,6 +431,7 @@ than reading them off this spec.
 - {% ref "SPEC-062" /%} — `snippet`; the origin of the `lines=` addressing model and the error-fence path D6 reuses
 - {% ref "SPEC-066" /%} — `expand`; the third consumer of the shared reader
 - {% ref "SPEC-113" /%} — the `ProjectFiles` seam that owns containment, unchanged by this spec
+- {% ref "SPEC-129" /%} — the pre-transform `include` rune. A fourth path-addressed rune: if it lands, it should take the same addressing layer rather than growing its own `lines=`
 - {% ref "SPEC-126" /%} — rejected line-addressed embedding for the config reference and proposed the one-off assertion this spec generalises
 - `packages/runes/src/lib/read-file.ts` — the shared reader this extends
 

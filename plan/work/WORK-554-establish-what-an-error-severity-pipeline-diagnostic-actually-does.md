@@ -1,4 +1,4 @@
-{% work id="WORK-549" status="ready" priority="high" complexity="simple" milestone="v0.34.0" tags="validation, pipeline, ci, dx" %}
+{% work id="WORK-554" status="ready" priority="high" complexity="simple" milestone="v0.34.0" tags="validation, pipeline, ci, dx" %}
 
 # Establish what an error-severity pipeline diagnostic actually does
 
@@ -14,12 +14,12 @@ both dependent designs assume the strongest reading.
 
 ## Why this blocks two things
 
-- {% ref "SPEC-129" /%} D6 routes symbol-resolution failures through the
+- {% ref "SPEC-131" /%} D6 routes symbol-resolution failures through the
   existing error-fence path plus `ctx.error`, and calls the result a loud
   failure. If `ctx.error` is not load-bearing, "loud" means "an error fence on
   a page nobody reloaded", and the spec's central guarantee is weaker than it
   claims.
-- {% ref "SPEC-130" /%} proposes feeding `Markdoc.validate()` output into that
+- {% ref "SPEC-132" /%} proposes feeding `Markdoc.validate()` output into that
   same surface. If the surface does not fail anything, wiring validation into
   it produces diagnostics with no consequence — which is precisely the disease
   {% ref "SPEC-126" /%} identified in the two `--check` flags that never run in
@@ -35,7 +35,7 @@ claim, so it goes first.
 - [ ] The same is established for the adapter dev server (does it surface, overlay, or swallow?)
 - [ ] The behaviour is recorded in the pipeline-hooks documentation so the next design does not have to rediscover it
 - [ ] If error severity turns out not to fail anything, a follow-up is filed for making it do so, with the blast radius measured first — how many error diagnostics does a clean build of `site/` and `plan-site/` currently emit?
-- [ ] {% ref "SPEC-129" /%} D6 and its open question are updated to state the answer rather than pose it
+- [ ] {% ref "SPEC-131" /%} D6 and its open question are updated to state the answer rather than pose it
 
 ## Approach
 
@@ -47,12 +47,12 @@ The blast-radius count matters and should not be skipped. If error diagnostics
 are currently inert, some may already be firing on a clean build — turning them
 load-bearing would then break the build immediately, which changes it from a
 one-line fix into its own piece of work. Better to know that now than to
-discover it inside {% ref "SPEC-130" /%}.
+discover it inside {% ref "SPEC-132" /%}.
 
 ## References
 
-- {% ref "SPEC-129" /%} — D6 and its open question depend on the answer
-- {% ref "SPEC-130" /%} — proposes routing validation output through this surface
+- {% ref "SPEC-131" /%} — D6 and its open question depend on the answer
+- {% ref "SPEC-132" /%} — proposes routing validation output through this surface
 - {% ref "SPEC-126" /%} — established that this repo's guards only work when a test runs them
 - `packages/content/src/site.ts:301` — where the three severities are defined
 
