@@ -1,4 +1,4 @@
-{% work id="WORK-550" status="ready" priority="medium" complexity="trivial" milestone="v0.34.0" source="BUG-010" tags="runes, cleanup, validation, breaking" %}
+{% work id="WORK-555" status="ready" priority="medium" complexity="trivial" milestone="v0.34.0" source="BUG-014" tags="runes, cleanup, validation, breaking" %}
 
 # Remove the error rune
 
@@ -51,9 +51,9 @@ and never read; `children: [tag, code, level, message]` disagrees with
 `properties: { code, tag, level, message }`; and no header row exists anywhere,
 so the four columns are unlabelled.
 
-### Its shape would misdirect SPEC-130
+### Its shape would misdirect SPEC-132
 
-{% ref "SPEC-130" /%} originally proposed giving this rune its input. That is
+{% ref "SPEC-132" /%} originally proposed giving this rune its input. That is
 withdrawn. A bare `<tr>` is invalid HTML outside a table and nothing emits a
 wrapper, so the rune presumes a caller that collects many findings into
 `<table><thead>…` — that is, a **page-level report**. Adopting it would pick
@@ -95,8 +95,8 @@ minor.
 
 ## References
 
-- {% ref "BUG-010" /%} — where the rune's state was catalogued; this is symptom 3
-- {% ref "SPEC-130" /%} — no longer depends on this rune; see its display open question
+- {% ref "BUG-014" /%} — where the rune's state was catalogued; this is symptom 3
+- {% ref "SPEC-132" /%} — no longer depends on this rune; see its display open question
 - `packages/runes/src/rune.ts:76` — `runeTagMap`, which is why the tag is author-reachable
 - `packages/runes/src/lib/index.ts:548` — the unguarded `options.transform` call
 

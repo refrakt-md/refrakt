@@ -1,18 +1,18 @@
-{% spec id="SPEC-130" status="draft" tags="validation, markdoc, pipeline, runes, dx" %}
+{% spec id="SPEC-132" status="draft" tags="validation, markdoc, pipeline, runes, dx" %}
 
 # Content validation in the build pipeline
 
 Every rune schema in refrakt declares required attributes, typed attributes and
 `matches` enums. Markdoc can check all of them. Nothing in the build asks it to,
 so the declarations are documentation that the pipeline itself ignores —
-`{% ref "BUG-010" /%}`.
+`{% ref "BUG-014" /%}`.
 
 This spec wires `Markdoc.validate()` into the content pipeline and routes its
 findings through the diagnostics surface that already exists.
 
 ## Problem
 
-{% ref "BUG-010" /%} carries the full evidence. In summary: `Markdoc.validate()`
+{% ref "BUG-014" /%} carries the full evidence. In summary: `Markdoc.validate()`
 never sees site content, four error classes pass through
 `transform()` in silence, the custom attribute-type validators in
 `packages/runes/src/attributes.ts` and `plugins/media/src/attributes.ts` never
@@ -22,6 +22,27 @@ content.
 The sharpest consequence is `tag-undefined`: a mistyped or renamed rune is not
 an error, it **renders its children as prose and vanishes**. A site author sees
 a page missing a block, with nothing anywhere telling them why.
+
+### The absence already distorts a shipped design
+
+{% ref "BUG-011" /%}, fixed in v0.33.0, is this spec's thesis arrived at
+independently from the other end. `{% data %}`'s empty-result **error** was
+doing double duty as a typo detector, because `applyWhere` had no warning of its
+own for a clause naming a field the data lacks:
+
+| `where` | author meant | before the fix |
+|---|---|---|
+| `scope:nope` | valid field, legitimately no matches | **error** |
+| `scop:own` | typo'd field name | **error** |
+
+Two conditions, one signal, and it was wrong about the legitimate one. The bug
+puts it plainly: the check "cannot be relaxed on its own, because it is the only
+thing standing between an author and a silently wrong page."
+
+That is what a missing validation layer costs. With nothing catching a typo,
+an unrelated check gets overloaded into the role and fails at its own job. The
+fix gave `data` its own per-clause warning — the right answer locally, and also
+a demonstration that this keeps being solved one rune at a time.
 
 ### This is a product defect before it is a repo defect
 
@@ -70,7 +91,7 @@ Where a finding is shown in the page as well as the log, it follows
 failure is visible where the mistake is rather than only in a build log.
 
 An earlier draft routed findings into the `error` rune, which renders a
-`ValidationError` as a table row. That is withdrawn — {% ref "WORK-550" /%}
+`ValidationError` as a table row. That is withdrawn — {% ref "WORK-555" /%}
 removes the rune. Its `<tr>` output presumes a page-level report collected into
 a table, and adopting that model because a leftover row happened to exist would
 be letting legacy shape a design. If a findings table is later wanted, it gets
@@ -105,13 +126,13 @@ Wiring into them is strictly less work than any new mechanism and leaves one
 place to reason about.
 
 **D3 — Whether errors fail the build is out of scope until
-{% ref "WORK-549" /%} answers what error severity currently does.** This spec
+{% ref "WORK-554" /%} answers what error severity currently does.** This spec
 deliberately does not assert that validation "fails CI", because nobody has
 established that an error-severity diagnostic fails anything. Asserting it would
 repeat {% ref "SPEC-126" /%}'s finding in a new place: a guard that reports into
 a void.
 
-{% ref "WORK-549" /%} settles it, including the blast radius — how many error
+{% ref "WORK-554" /%} settles it, including the blast radius — how many error
 diagnostics a clean build already emits. Phase 1 can land as diagnostics
 regardless; the consequence is a separate, informed decision.
 
@@ -163,7 +184,7 @@ same as validation inside the pipeline a user runs — the corpus test protects
 
 ## Non-goals
 
-- **Deciding build-failure semantics.** D3; {% ref "WORK-549" /%} first.
+- **Deciding build-failure semantics.** D3; {% ref "WORK-554" /%} first.
 - **Validating the docs' fenced examples.** A related and worthwhile guard — the
   markdoc-fence test — but a repo script over `site/content`, not a pipeline
   feature. Separate work.
@@ -172,7 +193,7 @@ same as validation inside the pipeline a user runs — the corpus test protects
   invent refrakt-specific validations.
 - **Fixing the `NaN` in `SpaceSeparatedNumberList.transform`.** Enabling
   validation makes the guard fire, but the unguarded `parseInt` is its own small
-  defect; see {% ref "BUG-010" /%}.
+  defect; see {% ref "BUG-014" /%}.
 
 ## Acceptance Criteria
 
@@ -190,7 +211,7 @@ same as validation inside the pipeline a user runs — the corpus test protects
 
 ## Approach
 
-0. **{% ref "WORK-549" /%} first.** Everything about consequence depends on it.
+0. **{% ref "WORK-554" /%} first.** Everything about consequence depends on it.
 1. **Phase 1** — the call, the severity mapping, and the two safe ids. Independently shippable and already the majority of the value.
 2. **Phase 2** — measure the blast radius, then enable the attribute ids. This
    is where the dormant validators wake up, so expect findings.
@@ -218,11 +239,13 @@ generated inline values, so it pays for itself twice.
 
 ## References
 
-- {% ref "BUG-010" /%} — the defect and all supporting measurements
-- {% ref "WORK-549" /%} — the prerequisite question about error severity
+- {% ref "BUG-014" /%} — the defect and all supporting measurements
+- {% ref "WORK-554" /%} — the prerequisite question about error severity
 - {% ref "SPEC-126" /%} — established that guards only work when something runs them
-- {% ref "SPEC-129" /%} — depends on the same diagnostics surface via its D6
-- {% ref "WORK-550" /%} — removes the `error` rune this spec no longer routes into
+- {% ref "BUG-011" /%} — the same thesis from the other end: with no typo detector, `data`'s empty-result error was overloaded into the role and failed the legitimate case
+- {% ref "BUG-010" /%} — an unresolvable `data` `where` value silently matching every row; another instance of the class
+- {% ref "SPEC-131" /%} — depends on the same diagnostics surface via its D6
+- {% ref "WORK-555" /%} — removes the `error` rune this spec no longer routes into
 - `packages/content/src/site.ts` — where the config is assembled and diagnostics defined
 - `packages/runes/test/fixture-corpus.test.ts` — the working precedent (D8)
 - `packages/language-server/src/parser/markdoc.ts` — the other existing validate call

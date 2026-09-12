@@ -44,14 +44,14 @@ rune finds out, not that our own documentation gets cleaner.
 
 ## What lands
 
-- {% ref "BUG-010" /%} — the defect, with the measurements behind each claim.
-- {% ref "WORK-549" /%} — settles what an error-severity diagnostic actually
+- {% ref "BUG-014" /%} — the defect, with the measurements behind each claim.
+- {% ref "WORK-554" /%} — settles what an error-severity diagnostic actually
   does. Small, and it goes first: two specs currently assume `ctx.error` is
   loud, and nobody has checked.
-- {% ref "WORK-550" /%} — remove the `error` rune. On inspection it is not a
+- {% ref "WORK-555" /%} — remove the `error` rune. On inspection it is not a
   renderer waiting for input, it is a landmine: author-reachable, and a
   `{% error /%}` in any page kills the build on an unguarded `err.id`.
-- {% ref "SPEC-130" /%} — the wiring. Validation at the point the tag set is
+- {% ref "SPEC-132" /%} — the wiring. Validation at the point the tag set is
   assembled, findings routed through the diagnostics surface that already
   exists, and the error ids enabled in three phases by risk.
 
@@ -70,14 +70,14 @@ The exception proves it. `fixture-corpus.test.ts` runs exactly this validation,
 under `npm test`, and it works — over our fixtures. The machinery was never the
 problem; where it was aimed was.
 
-Which is why {% ref "WORK-549" /%} is not optional bookkeeping. Wiring
+Which is why {% ref "WORK-554" /%} is not optional bookkeeping. Wiring
 validation into a diagnostics surface that turns out to fail nothing would
 reproduce the exact disease, with more code.
 
 ## Deliberately not here
 
 - **Build-failure semantics.** Whether an error stops the build waits on
-  {% ref "WORK-549" /%}. Phase 1 lands as diagnostics either way.
+  {% ref "WORK-554" /%}. Phase 1 lands as diagnostics either way.
 - **`variable-undefined`.** Markdoc's variable checking is all-or-nothing, and
   `site.ts` already passes a partial bag — enabling it today would flag every
   correct `$item.*` in collection templates. Blocked on completing the bag,

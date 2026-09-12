@@ -1,4 +1,4 @@
-{% bug id="BUG-010" status="confirmed" severity="major" milestone="v0.34.0" tags="validation, markdoc, pipeline, runes, dx" %}
+{% bug id="BUG-014" status="confirmed" severity="major" milestone="v0.34.0" tags="validation, markdoc, pipeline, runes, dx" %}
 
 # Markdoc validation never runs outside the language server
 
@@ -16,7 +16,7 @@ It is called in two places, neither of which sees a user's pages:
   asserted empty, plus a `transform` does-not-throw check.
 
 The second is a real guard that runs under `npm test`, and it is the model
-{% ref "SPEC-130" /%} should follow — but its corpus is our fixtures, not
+{% ref "SPEC-132" /%} should follow — but its corpus is our fixtures, not
 `site/content` and not any user's content.
 
 Three pieces of a validation feature exist and none are connected to each
@@ -172,7 +172,7 @@ positives above.
 ## Approach
 
 Not fixed in place: the wiring carries sequencing and severity decisions that
-belong in a design, specified in {% ref "SPEC-130" /%}. This bug records the
+belong in a design, specified in {% ref "SPEC-132" /%}. This bug records the
 defect and the evidence it rests on.
 
 {% /bug %}
