@@ -1,5 +1,12 @@
 # @refrakt-md/skeleton
 
+## 0.33.0
+
+### Patch Changes
+
+- Updated dependencies [d9b9417]
+  - @refrakt-md/types@0.33.0
+
 ## 0.32.0
 
 ### Patch Changes

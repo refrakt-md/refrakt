@@ -6,7 +6,97 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.32.0
+## v0.33.0
+
+- Make `music-playlist` / `music-recording` real aliases, and let the JSON reference dump carry child runes (BUG-009)
+- `music-playlist` and `music-recording` were registered as separate runes carrying a self-referential `aliases: ['music-playlist']`, rather than as aliases on `playlist` / `track`. They already shared the primary's transform, so rendering is unchanged — but the duplication printed "Aliases: music-playlist" in the reference, put a phantom duplicate of every playlist attribute in `reference dump --format json`, and forced duplicate theme config entries that then had to be kept in sync by hand. Both spellings still parse.
+- Separately, `EXCLUDED_RUNES` — the child-only runes the catalogue deliberately omits so they don't bury top-level ones — was applied inside `hydrateAllRuneInfos`, which made it a property of the rune data rather than of the rendered document. `refrakt reference dump --format json` therefore omitted nine child runes (`accordion-item`, `tab`, `form-field`, …) that `refrakt reference <name>` describes in full, including required attributes. The exclusion now applies where the catalogue is rendered; the JSON dump carries the complete rune set. Markdown catalogue output is unchanged.
+- Add a published frontmatter schema (WORK-545)
+- `packages/content/frontmatter.schema.json` describes the frontmatter fields refrakt consumes, served at `https://refrakt.md/frontmatter.schema.json` and the versioned `https://refrakt.md/schemas/vX.Y/frontmatter.schema.json`, alongside the config and theme-token schemas. Pointing an editor's YAML support at it gives hover documentation and completion inside `---` blocks, which nothing provided before.
+- Writing it surfaced four fields that were read through the `Frontmatter` index signature rather than declared — `type`, `id`, `created` and `modified`. All four are now declared and documented. `type` is the most consequential: it drives the entity registry, and an author could not learn it existed from the page that claims to list frontmatter fields.
+- The index signature stays, and the schema does not set `additionalProperties: false`. Runes and pipeline hooks read arbitrary author fields; the schema describes what refrakt consumes rather than closing the set.
+- A drift test guards the schema against the interface in both directions, the same shape `config-schema.test.ts` uses for the config schema.
+- Add `{% include %}`, a pre-transform sibling to `{% partial %}` (SPEC-129)
+- A partial cannot contain `{% data %}` or `{% snippet %}`. Markdoc expands partials during the transform; refrakt resolves those two runes in a preprocess phase that walks the page's syntax tree _before_ it. A partial's content is not in that tree yet, so the tag survives, reaches its own transform, and stops the build.
+- `{% include %}` closes the gap. It runs first in the preprocess phase and splices the file's parsed AST into the page, so everything after it — `snippet`, `data`, and anything later added to the phase — sees the pasted content as ordinary page content.
+- Both runes read the same `_partials/` directory and the same `namespace:file` file roots, so only the call site changes: a file's location does not depend on its contents. `partial` stays the documented default — it is Markdoc's, and it covers the common case.
+- **Content is spliced as siblings**, not wrapped, so a parent rune's content model reads it — `{% accordion %}{% include … /%}{% /accordion %}` builds one item per included heading.
+- **`variables` are substituted into the pasted content** rather than bound as a transform-time scope, which is what lets a binding reach a preprocessor attribute like `{% data where=$q %}`. Variables the include does not bind are left alone, so `{% $page.slug %}` inside an included file still resolves against the page.
+- **Nesting is bounded and cycles are named** — `include error: cycle — a.md → b.md → a.md` rather than a stack overflow.
+- Failures render as a caution callout on the page and record a build error; one bad include does not take down the build.
+- The `data` and `snippet` schema-transform errors now name this fix instead of describing the pipeline, since with `partial` as the default that error is how most authors will discover the rune exists. `docs/authoring/partials.md`'s claim that partials are "inlined at parse time" is corrected, and the choice between the two runes is documented there and on the new `/runes/include` page.
+- Editor support (completions, missing-file diagnostics, go-to-definition) now covers `{% include %}` alongside `{% partial %}`.
+- Give `{% data %}` an optional per-row body (SPEC-127)
+- Without a body `data` emits a `<table>`, as before. With one, the body is rendered **once per row** with `$row` bound to that row, so a data file can drive arbitrary Markdoc rather than only table cells.
+- Rows are **spliced in as siblings**, landing where hand-written ones would, so the body form composes with runes that build structure from their own children — `{% accordion %}` with generated `{% accordion-item %}`s works.
+- `$row.<column>` reads a cell by column name, after `columns` renaming. Numeric columns bind as numbers; everything else as the cell's text. All shaping attributes (`where`, `sort`, `columns`, `limit`, `offset`, and the JSON `root`/`orient`) apply first, unchanged.
+- The binding is deliberately shallow — bind a row, render a block, no control flow. `$item` is not an alias for `$row`: a collection's `$item` is an entity, a data row is flat. A body inside `chart` or `datatable` is a build error rather than an empty render, since those consume the table. `numeric` / `text` warn when set alongside a body, as they type an attribute on table cells that a body does not emit.
+- Carry universal attribute records in `serializeRune`, and filter internal attributes by prefix
+- `SerializedRune.attributes.universalAvailable` is new: the universal attributes a rune carries, grouped by axis and with their full records (type, `matches`, description). `attributes.universal` remains a bare name list, which was enough for the CLI's one-line summary and not enough for anything rendering them — `own` and `base` carried full records while universals carried none.
+- Grouped by axis to match `universalUnavailable`, so both halves of the universal story have the same shape rather than one being flat and the other keyed.
+- Attributes prefixed `__` are now filtered from every reference output. `HIDDEN_ATTRIBUTES` is keyed `rune.attribute`, so hiding `__deferred-body` that way needed a new entry each time a rune opted into `deferBody` — added silently, or not at all. The two also mean different things: `feature.split` is a real attribute we choose not to document, while a `__` attribute was never author-facing.
+- `{% accordion schema="none" %}` emits no structured data (WORK-552)
+- An accordion always declared `typeof="FAQPage"`, with each item a `Question` and its body an `Answer`. That is right for a FAQ and wrong for every other use of a disclosure list. refrakt's own rune pages render each universal axis as an accordion item, which published roughly **970 fabricated `Question` entries** across 88 pages — plausible-looking structured data asserting something untrue.
+- Suppresses the whole subtree, not just the container: `accordion-item` declares `Question` independently, and stripping only the root would leave orphan `Question` nodes with no `FAQPage` around them — worse than either consistent state. The JSON-LD goes with it, because `collectJsonLd` derives it from the same `typeof` attributes.
+- `"none"` is the only accepted value, declared via `matches` so it validates and appears in the rune's generated attribute table. `FAQPage` has no subtype to narrow to, and any other type is a branch switch the rune cannot follow — `ItemList` would need `itemListElement` on the root _and_ `ListItem` with different properties on each item. Making that expressible is SPEC-130's job.
+- Markup, classes, behaviour and rendered content are otherwise unchanged, and an accordion without the attribute emits exactly what it did before.
+- Add `{% code %}`, an inline code span that can hold a variable (WORK-551)
+- A backtick code span is literal by definition, so Markdoc syntax inside one is never parsed:
+- Nothing warned about this — you simply got the literal text, once per row.
+- It is the **only** inline construct with that property. Links, nested emphasis and rune bodies all pass a variable through intact (`{% badge %}{% $row.name %}{% /badge %}` already rendered the value), so this closes one specific gap rather than offering a second spelling for something Markdown does well. **Backticks remain correct for static code**, exactly as `**bold**` remains correct for static emphasis; reach for the rune when the content is dynamic — a `{% data %}` row value, a binding passed to an `{% include %}`.
+- It renders the same `code` element a backtick span does, which Lumina styles with an element rule, so a paragraph mixing the two looks uniform. `.rf-code` is added for a theme that wants to tell them apart.
+- Bind booleans in `{% data %}` per-row templates, and describe every schema definition
+- The table intermediate `data` builds is text, so a JSON `false` reached a per-row body as the _string_ `"false"` — which is truthy, making `{% if $row.flag %}` render for every row. Cells whose entire text is `true` or `false` now bind as booleans, alongside the existing numeric channel.
+- `refrakt.config.schema.json` gains descriptions on `SiteConfig`, `RouteRule` and `RunesConfig`, so a `$ref` property inherits meaningful prose instead of an empty string.
+- `{% data %}`: a body can now emit a table **row** (WORK-550)
+- Set `headers` and the per-row body becomes one table row — cells separated by `---` — instead of a run of blocks:
+- This is how you get a generated table whose cells carry markup. The bodyless form builds its cells from literal text — right for arbitrary CSV, where a stray `*` should stay a `*` — so it can render `true` but never `✓`, and `href` but never `` `href` ``. Here the cells are markdown you wrote, so emphasis, links, runes and `{% if %}` all work inside one.
+- `---` is already refrakt's delimiter for this shape (`card` splits media / body / footer on it, `grid` splits columns), and Markdoc parses it to a clean `hr` with or without surrounding blank lines.
+- The emitted table is structurally identical to the bodyless one — a single-block cell is unwrapped so `<td>href</td>` matches a pipe table rather than `<td><p>href</p></td>` — so `chart` and `datatable` consume it unchanged.
+- A `headers` count that disagrees with the body's `---` cell count is a build error naming both numbers.
+- `headers` on a self-closing `data` is an error rather than a silent no-op — it would read as a rename of `columns`, which selects and renames _source_ columns instead.
+- A `---` inside a cell's own content splits it, the same constraint `card` and `grid` carry.
+- A body without `headers` keeps emitting blocks exactly as before.
+- `{% data %}`: an empty filter result is no longer a build error (BUG-011)
+- A `where` that is correct and simply matches nothing rendered a caution callout reading _"result is empty after projection"_. Asking real data a question with no answer today is normal — a page listing open bugs when there are none is working, not broken.
+- The check could not just be removed, because it was the only thing catching a **misspelt column**: `where="regio:North"` matched no rows, and nothing reported the typo. One signal was standing in for two conditions, so it was wrong about one of them.
+- **A source that yielded no rows** — an empty file, or a `root` / `orient` pointing at nothing — stays a build **error**, with a message about where to look.
+- **A `where`, `sort`, or `columns` clause naming a column the source does not have** is a new build **warning** that names the column and lists the ones that exist. It fires whether or not the result ends up empty, since a clause that matches nothing is a mistake even when another clause still returns rows.
+- **A filter that legitimately matched nothing** renders nothing, silently.
+- This is what makes a shared block of `{% data %}` queries practical: a section that has nothing to say now disappears instead of reporting a failure.
+- `{% data %}`: an attribute the rune cannot read is an error, not an empty string (BUG-010)
+- `resolveString` returned `''` for anything it could not resolve, and `applyWhere` treats an empty expression as _no filter_. Composed, "I could not read your filter" became "you wrote no filter" — and the page rendered the **entire** source.
+- Measured on a two-row file: a valid filter rendered one row, and `concat(…)`, an undefined variable and an explicit `where=""` each rendered both. Silently. On a page filtering one rune's attributes out of a catalogue, that renders _every_ rune's attributes under that rune's heading and looks entirely plausible.
+- An attribute that is **present but unreadable** now fails the build and says why:
+- Several are reported together, since one bad attribute usually means the call site is wrong in a way that affects more than one.
+- **Omitting an attribute is still fine.** Only keys actually present on the tag are checked, so a `data` with no `where` renders everything, as before.
+- **A valid filter matching nothing still renders nothing, silently** (BUG-011). "I read your filter and it matched nothing" and "I could not read your filter" are different answers and now have different behaviour.
+- Covers `src`, `format`, `delimiter`, `root`, `orient`, `key-column`, `columns`, `where`, `sort`, `numeric`, `text` and `headers`.
+- Fix heading IDs dropping inline code and keeping punctuation (BUG-005)
+- A heading's `id` came from two near-copies of the same slug rules that had drifted apart — one stripped `?`, the other `?{}%` — so a heading containing `{`, `}` or `%` was indexed under one id and rendered under another. Both now share `headingSlug()`.
+- Inline code in a heading contributed nothing to the id, because a `code` node is not a `text` node: `` ### `fileRoots` — named directories for file-reading runes `` produced `-—-named-directories-for-file-reading-runes`, dropping the heading's actual subject. Code content is now included, in the displayed heading text as well as the id.
+- Punctuation is now stripped rather than carried through, so ids match what an author writing an anchor by hand would guess: `## Body zones — preamble, template, fallback` gives `body-zones-preamble-template-fallback`, not `body-zones-—-preamble,-template,-fallback`.
+- **This changes generated heading IDs.** Anchors into headings whose text contains punctuation or inline code will change; links using the intuitive spelling start working. IDs set explicitly via an `id` attribute are unaffected.
+- `{% data %}`: a query can now nest inside another query's body (WORK-553)
+- A `{% data %}` inside another one's body runs as a subquery, once per outer row:
+- `$row` refers to the **nearest enclosing** query's row, so the inner table sees attribute rows even when both sources have a column of the same name. The outer row reaches exactly one place: the subquery's **attributes**, which is how it gets filtered — `where=$row.query`.
+- `bindRow` descended into a nested query's body and resolved its `$row` references against the _outer_ row, blanking them to `''` when the outer row had no such column. A nested `data` now keeps its body untouched; only its attributes bind.
+- `walkAndReplaceData` advanced past what it spliced, so inner tags survived to the transform and threw. The spliced output is now walked, which terminates without a depth limit because the tags come from the authored body and each pass consumes one level of it.
+- An empty subquery renders nothing and does not take its row with it — a row whose subquery finds no matches still renders its own content.
+- This is what lets a generated list carry a table per item: refrakt's own rune pages now render each universal axis as an accordion item containing that axis's attribute table.
+- Rune attribute tables are generated from the schemas (WORK-548, SPEC-128)
+- Every rune doc page now renders its attribute table from `refrakt reference`'s own data instead of a hand-copied table. 94 pages, one shared block, authored once.
+- **This is mostly new documentation, not a refactor.** 72 of the 108 runes with attributes had no table at all — 17 of them with a _required_ attribute nobody had written down. Child runes (`accordion-item`, `tier`, `step`, `tab`, `form-field`, …) now appear on their parent's page, which is where a reader looks for them.
+- The block renders four things, each of which disappears when it has nothing to say:
+- the rune's **own** attributes, with `` `name` `` in code and `✓` / `—` for required — matching the hand-written tables it replaces
+- attributes inherited from a **base preset**, under a heading naming that preset
+- the **universal axes** it carries, one collapsed disclosure each, with prose read from the facet contracts in `packages/transform/src/facets/`
+- the axes it **does not** carry, grouped by reason — `badge`'s twelve collapse to a single row rather than saying "no" twelve times
+- Also removes the hand-written "Common attributes" table from 69 pages. It claimed all block runes share `width`/`spacing`/`inset`/`tint`/`tint-mode`/`bg`, which is wrong for every inline rune and every rune missing an axis; the generated section says which axes a rune actually carries, and why not for the rest.
+- The generated section agrees with `refrakt reference <name>` — both read the same serialized rune.
+- `check-rune-docs` gains the content half of its question: every rune with generated rows has a page that renders them, and no page hand-writes a table beside a generated one. `npm run runes:attributes -- --check` keeps the artifact fresh.
+
+## v0.32.0 - September 10, 2026
 
 - `refrakt reference` reports each rune's actual universal attributes (WORK-535)
 - `refrakt reference card` printed all 37 universal attributes under the heading **"Universal attributes (available on every rune)"**. On most runes several of them do nothing — the CLI stated as fact something false about the rune it was describing, which is the symptom that opened SPEC-125. Unlike language-server completion, this did not fall out of the schema narrowing for free: the line was a separate code path printing the static universal set wholesale.
