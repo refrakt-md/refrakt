@@ -1,5 +1,17 @@
 # @refrakt-md/nuxt
 
+## 0.33.0
+
+### Patch Changes
+
+- Updated dependencies [84d025d]
+- Updated dependencies [0963668]
+- Updated dependencies [d9b9417]
+  - @refrakt-md/transform@0.33.0
+  - @refrakt-md/content@0.33.0
+  - @refrakt-md/types@0.33.0
+  - @refrakt-md/behaviors@0.33.0
+
 ## 0.32.0
 
 ### Patch Changes

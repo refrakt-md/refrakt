@@ -1,5 +1,18 @@
 # @refrakt-md/transform
 
+## 0.33.0
+
+### Patch Changes
+
+- 84d025d: Bind booleans in `{% data %}` per-row templates, and describe every schema definition
+
+  The table intermediate `data` builds is text, so a JSON `false` reached a per-row body as the _string_ `"false"` — which is truthy, making `{% if $row.flag %}` render for every row. Cells whose entire text is `true` or `false` now bind as booleans, alongside the existing numeric channel.
+
+  `refrakt.config.schema.json` gains descriptions on `SiteConfig`, `RouteRule` and `RunesConfig`, so a `$ref` property inherits meaningful prose instead of an empty string.
+
+- Updated dependencies [d9b9417]
+  - @refrakt-md/types@0.33.0
+
 ## 0.32.0
 
 ### Minor Changes

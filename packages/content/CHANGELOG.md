@@ -1,5 +1,62 @@
 # @refrakt-md/content
 
+## 0.33.0
+
+### Minor Changes
+
+- 0963668: Add a published frontmatter schema (WORK-545)
+
+  `packages/content/frontmatter.schema.json` describes the frontmatter fields refrakt consumes, served at `https://refrakt.md/frontmatter.schema.json` and the versioned `https://refrakt.md/schemas/vX.Y/frontmatter.schema.json`, alongside the config and theme-token schemas. Pointing an editor's YAML support at it gives hover documentation and completion inside `---` blocks, which nothing provided before.
+
+  Writing it surfaced four fields that were read through the `Frontmatter` index signature rather than declared — `type`, `id`, `created` and `modified`. All four are now declared and documented. `type` is the most consequential: it drives the entity registry, and an author could not learn it existed from the page that claims to list frontmatter fields.
+
+  The index signature stays, and the schema does not set `additionalProperties: false`. Runes and pipeline hooks read arbitrary author fields; the schema describes what refrakt consumes rather than closing the set.
+
+  A drift test guards the schema against the interface in both directions, the same shape `config-schema.test.ts` uses for the config schema.
+
+### Patch Changes
+
+- d9b9417: Add `{% include %}`, a pre-transform sibling to `{% partial %}` (SPEC-129)
+
+  A partial cannot contain `{% data %}` or `{% snippet %}`. Markdoc expands partials during the transform; refrakt resolves those two runes in a preprocess phase that walks the page's syntax tree _before_ it. A partial's content is not in that tree yet, so the tag survives, reaches its own transform, and stops the build.
+
+  `{% include %}` closes the gap. It runs first in the preprocess phase and splices the file's parsed AST into the page, so everything after it — `snippet`, `data`, and anything later added to the phase — sees the pasted content as ordinary page content.
+
+  ```markdoc
+  {% include file="attribute-table.md" variables={q: "rune:card scope:own"} /%}
+  ```
+
+  Both runes read the same `_partials/` directory and the same `namespace:file` file roots, so only the call site changes: a file's location does not depend on its contents. `partial` stays the documented default — it is Markdoc's, and it covers the common case.
+
+  Details worth knowing:
+
+  - **Content is spliced as siblings**, not wrapped, so a parent rune's content model reads it — `{% accordion %}{% include … /%}{% /accordion %}` builds one item per included heading.
+  - **`variables` are substituted into the pasted content** rather than bound as a transform-time scope, which is what lets a binding reach a preprocessor attribute like `{% data where=$q %}`. Variables the include does not bind are left alone, so `{% $page.slug %}` inside an included file still resolves against the page.
+  - **Nesting is bounded and cycles are named** — `include error: cycle — a.md → b.md → a.md` rather than a stack overflow.
+  - Failures render as a caution callout on the page and record a build error; one bad include does not take down the build.
+
+  The `data` and `snippet` schema-transform errors now name this fix instead of describing the pipeline, since with `partial` as the default that error is how most authors will discover the rune exists. `docs/authoring/partials.md`'s claim that partials are "inlined at parse time" is corrected, and the choice between the two runes is documented there and on the new `/runes/include` page.
+
+  Editor support (completions, missing-file diagnostics, go-to-definition) now covers `{% include %}` alongside `{% partial %}`.
+
+- Updated dependencies [7532b55]
+- Updated dependencies [cb05ee2]
+- Updated dependencies [ec7357b]
+- Updated dependencies [84d025d]
+- Updated dependencies [ec7357b]
+- Updated dependencies [bc06abe]
+- Updated dependencies [2c1b5c2]
+- Updated dependencies [f23d794]
+- Updated dependencies [9f912a1]
+- Updated dependencies [d9b9417]
+- Updated dependencies [a6752f4]
+- Updated dependencies [fde9ae0]
+- Updated dependencies [0d3ebed]
+  - @refrakt-md/runes@0.33.0
+  - @refrakt-md/transform@0.33.0
+  - @refrakt-md/types@0.33.0
+  - @refrakt-md/highlight@0.33.0
+
 ## 0.32.0
 
 ### Patch Changes
