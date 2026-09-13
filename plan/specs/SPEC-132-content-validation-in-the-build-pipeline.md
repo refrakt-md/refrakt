@@ -108,7 +108,10 @@ Not all at once, because they carry different risk:
 |---|---|---|
 | 1 | `tag-undefined`, `attribute-undefined` | No prerequisites. Highest value — the vanishing-rune case. |
 | 2 | `attribute-value-invalid`, `attribute-missing-required`, `attribute-type-invalid` | Activates the dormant custom validators; needs the blast radius measured first. |
-| 3 | `variable-undefined` | Blocked on a complete per-page variable bag — see D4. |
+
+`variable-undefined` is **not staged here at all**. An earlier draft had it as a
+third phase; D4 explains why it is not sequenced work but an unanswered
+research question.
 
 ## Design decisions
 
@@ -137,7 +140,10 @@ a void.
 diagnostics a clean build already emits. Phase 1 can land as diagnostics
 regardless; the consequence is a separate, informed decision.
 
-**D4 — `variable-undefined` last, and only behind a complete variable bag.**
+**D4 — `variable-undefined` is out of scope, and not because it is large.**
+An earlier draft of this spec called it "blocked on a complete per-page variable
+bag". That was wrong: **there is no bag that completes.**
+
 Markdoc's variable checking is all-or-nothing, measured:
 
 | config | result |
@@ -146,10 +152,41 @@ Markdoc's variable checking is all-or-nothing, measured:
 | `variables: {}` | *every* reference flagged |
 | incomplete bag | false positives on the missing ones |
 
-`site.ts:75` already passes a bag, so enabling this today would flag every
-`$item.*` in collection templates and deferred bodies — `$item` binds later and
-per-entity. A validation pass that cries wolf on correct content gets switched
-off, which costs more than never having enabled it.
+The fatal detail is that it validates the **full path**, not the root. Seeding
+the roots does not rescue it:
+
+```js
+variables: { item: { data: { title: 'x' } }, row: {} }
+→ "Undefined variable: 'item.data.description'"
+→ "Undefined variable: 'row.name'"
+```
+
+And most variable use in real content is **scope-local**, bound per iteration
+inside a rune's body template rather than in the page config. Counting roots
+across `site/content` with fences stripped: `$item` 88 uses, `$row` 62,
+`$page` 37, `$file` 35, then a tail of `$r`, `$count`, `$shown`, `$kind`, `$q`,
+`$amount`, `$fieldName`, `$heading`. `$item` and `$row` alone are about 150 of
+roughly 260 references, and both come from collection templates, deferred
+bodies, entity routes, and — since {% ref "SPEC-127" /%} shipped in v0.33.0 —
+`data`'s per-row templates.
+
+`Markdoc.validate()` has no scope model. It cannot know that a subtree has extra
+variables bound, and the valid paths under `$item.data.*` are whatever each
+entity's frontmatter happens to contain: author-defined, per page, per
+collection, **not knowable statically**.
+
+That leaves three options, none of them a phase of this spec:
+
+1. Teach validation about rune-local scopes — walk the tree, have each rune
+   declare what it binds. A real feature with a declarative surface.
+2. Skip validation inside template subtrees — which is where most variables
+   live, leaving the check nearly worthless.
+3. Drop `variable-undefined` permanently.
+
+{% ref "SPEC-127" /%} adding `$row` shows the scope-local surface is growing, so
+option 1 gets more expensive over time rather than less. Deciding between them
+needs its own investigation and its own spec; sequencing it as "phase 3" would
+imply it is scheduled work when it is an open question.
 
 **D5 — Validation must be disableable, and the escape hatch must be narrow.**
 Users have content we cannot anticipate, and a framework that refuses to build
@@ -158,11 +195,19 @@ quiet. A config switch (per-site, and per-error-id) is required. It should not
 be per-page or per-tag: that granularity invites suppressing the symptom at the
 one call site that revealed a real bug.
 
-**D6 — Fix the language server's blind spot in the same pass.** It passes `tags`
-and `nodes` only, so by D4's table it cannot report `variable-undefined` at all.
-Once the pipeline assembles a complete bag, the LSP should consume the same
-assembly rather than building a second, weaker config. Two validators
-disagreeing about what is valid is its own bug in waiting.
+**D6 — The language server's variable blind spot is correct behaviour, not a
+bug.** It passes `tags` and `nodes` with no `variables`, so by D4's table it
+skips variable checking entirely. An earlier draft called this a blind spot to
+fix "once the pipeline assembles a complete bag". Given D4, that moment never
+arrives — and skipping the check is exactly what avoids flagging every
+`$item.data.*` in an author's collection template while they type it.
+
+So the LSP is left alone here. What does still hold is the narrower point
+underneath: the LSP and the pipeline should not disagree about which **tags and
+attributes** are valid. If they drift, that is a bug — but they currently build
+their tag sets from the same catalog, so there is nothing to fix today. Recorded
+so a future change that gives one of them a different tag set is recognised as a
+regression.
 
 **D7 — Fenced examples must stay exempt.** `escapeFenceTags` already neutralises
 tags inside fences before parsing, so `site/content`'s 152 markdoc fences are not
@@ -246,6 +291,7 @@ execute.
 ## Non-goals
 
 - **Deciding build-failure semantics.** D3; {% ref "WORK-554" /%} first.
+- **`variable-undefined`, and scope-aware variable validation generally.** D4. Not deferred to a later phase of this spec — it needs its own spec, starting from whether scope-aware validation earns its cost.
 - **Validating the docs' fenced examples.** A related and worthwhile guard — the
   markdoc-fence test — but a repo script over `site/content`, not a pipeline
   feature. Separate work.
@@ -267,25 +313,27 @@ execute.
 - [ ] Phase 1 ids (`tag-undefined`, `attribute-undefined`) are enabled and covered by tests
 - [ ] Phase 2 ids are enabled only after the blast radius across `site/` and `plan-site/` is measured and recorded
 - [ ] The dormant custom attribute validators demonstrably execute once phase 2 lands — a test proves `SpaceSeparatedNumberList` rejects non-numeric input in a build
-- [ ] `variable-undefined` stays off until the per-page variable bag is complete, with a test asserting no false positives on `$item.*` in collection templates and deferred bodies
+- [ ] `variable-undefined` is never enabled, and a test pins that — asserting no findings on a collection template using `$item.data.*` (D4)
 - [ ] Validation is disableable per site and per error id; not per page or per tag
-- [ ] The language server consumes the same config assembly as the pipeline rather than its own
 - [ ] A test asserts fenced examples are exempt, pinning the `escapeFenceTags` ordering
 - [ ] A clean build of `site/` and `plan-site/` emits zero unexpected findings
 
 ## Approach
 
 0. **{% ref "WORK-554" /%} first.** Everything about consequence depends on it.
-1. **Phase 1** — the call, the severity mapping, and the two safe ids. Independently shippable and already the majority of the value.
-2. **Phase 2** — measure the blast radius, then enable the attribute ids. This
-   is where the dormant validators wake up, so expect findings.
-3. **Phase 3** — complete the variable bag, then `variable-undefined`, then the
-   language-server unification (D6).
+1. **Phase 1** — the call, the severity mapping, the `PipelineWarning` phase
+   member, and the two safe ids. Independently shippable and already the
+   majority of the value.
+2. **Phase 2** — measure the blast radius, then enable the attribute ids, and
+   correct the four over-escalated custom validators (D11). This is where the
+   dormant validators wake up, so expect findings.
 
-**Budget the blast radius, not the wiring.** The call itself is a few lines. The
-work is in whatever phase 2 turns up across two dogfooded sites, and in the
-variable-bag completion phase 3 needs — which is also the prerequisite for
-generated inline values, so it pays for itself twice.
+There is no phase 3. The two phases above are the whole spec, which makes its
+acceptance criteria usable as milestone exit conditions rather than a mix of
+scheduled and speculative work.
+
+**Budget the blast radius, not the wiring.** The call itself is a few lines.
+The work is whatever phase 2 turns up across two dogfooded sites.
 
 ## Open questions
 

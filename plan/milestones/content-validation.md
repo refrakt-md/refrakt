@@ -51,9 +51,16 @@ rune finds out, not that our own documentation gets cleaner.
 - {% ref "WORK-555" /%} — remove the `error` rune. On inspection it is not a
   renderer waiting for input, it is a landmine: author-reachable, and a
   `{% error /%}` in any page kills the build on an unguarded `err.id`.
-- {% ref "SPEC-132" /%} — the wiring. Validation at the point the tag set is
-  assembled, findings routed through the diagnostics surface that already
-  exists, and the error ids enabled in three phases by risk.
+- {% ref "SPEC-132" /%} — the wiring, in two phases by risk:
+  - {% ref "WORK-556" /%} — the call, the severity mapping, and the two safe
+    ids. The whole mechanism; everything after it is choosing what to switch on.
+  - {% ref "WORK-557" /%} — measure what phase 2 would report across both
+    dogfooded sites, before enabling it. An afternoon, and it decides whether
+    phase 2 stays in this milestone.
+  - {% ref "WORK-558" /%} — the attribute ids, plus the severity correction to
+    the four custom validators that have never run in a build.
+  - {% ref "WORK-559" /%} — the escape hatch, shipped alongside rather than
+    after.
 
 ## The through-line
 
@@ -78,11 +85,15 @@ reproduce the exact disease, with more code.
 
 - **Build-failure semantics.** Whether an error stops the build waits on
   {% ref "WORK-554" /%}. Phase 1 lands as diagnostics either way.
-- **`variable-undefined`.** Markdoc's variable checking is all-or-nothing, and
-  `site.ts` already passes a partial bag — enabling it today would flag every
-  correct `$item.*` in collection templates. Blocked on completing the bag,
-  which is also the prerequisite for generated inline values, so the work pays
-  twice.
+- **`variable-undefined`, and scope-aware variable validation generally.** Not
+  deferred to a later phase — removed from {% ref "SPEC-132" /%} entirely. An
+  earlier framing called it "blocked on completing the variable bag"; there is
+  no bag that completes. Markdoc validates the **full path**, and most variable
+  use in real content is scope-local: `$item` (88 uses) and `$row` (62) are
+  about 150 of roughly 260 references in `site/content`, all bound per-iteration
+  inside rune body templates, with valid paths depending on author-defined
+  frontmatter. See {% ref "SPEC-132" /%} D4. It needs its own spec, starting
+  from whether scope-aware validation earns its cost.
 - **Validating the docs' fenced examples.** Worth doing, and a repo script over
   `site/content` rather than a pipeline feature. Its own work item.
 - **Renaming `refrakt validate`.** Real, and a follow-up.

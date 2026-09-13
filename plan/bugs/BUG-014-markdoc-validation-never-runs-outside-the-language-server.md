@@ -161,13 +161,18 @@ on.
 `variables: { generatedIds, path, headings, __source, __sourcePath, …contentVariables }`.
 Enabling validation as-is would therefore flag every `$item.*` in collection
 templates and deferred bodies, because `$item` binds later and per-entity.
-`variable-undefined` cannot be turned on until the per-page variable bag is
-complete.
+`variable-undefined` cannot be turned on at all. Markdoc validates the **full
+path**, not the root, and most variable use in content is scope-local — `$item`
+and `$row` alone account for roughly 150 of ~260 references, bound per-iteration
+inside rune body templates, with valid paths depending on author-defined
+frontmatter. {% ref "SPEC-132" /%} D4 records the measurement; the check is out
+of that spec's scope entirely rather than deferred.
 
 **The language server cannot catch undefined variables at all.** It passes
 `tags` and `nodes` and no `variables`, so per the table above that check is
-skipped. Anyone "fixing" that by passing a bag will immediately create the false
-positives above.
+skipped — which, given the above, is the correct behaviour rather than a gap.
+Anyone "fixing" it by passing a bag would immediately create the false positives
+above.
 
 ## Approach
 
