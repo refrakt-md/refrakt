@@ -265,21 +265,59 @@ carry `data-name="track-name"` / `"track-artist"` / `"track-duration"`, set on
 the same line that stamps the RDFa. They are addressable today; they are simply
 not *keyed* declaratively. Pure lookup once the table exists.
 
-**Retype + wrap — a `data-name` adds nothing.** `recipe`'s `<li>`s already get
-`data-name = 'ingredient'` / `'step'` on the line above the mutation. The
-obstacle is the wrapper, and the wrapper exists for exactly one reason:
+**Retype + wrap — a `data-name` adds nothing, and the wrapper has to stay.**
+`recipe`'s `<li>`s already get `data-name = 'ingredient'` / `'step'` on the line
+above the mutation, so addressing is not the obstacle. The wrapper is — and the
+tempting move is to delete it by teaching `collectJsonLd` to take a typed node's
+own text as a named property:
 
 ```js
 // seo.ts — collectProperties
 if (prop && !childTypeof) { /* extract value */ }
 ```
 
-A node carrying both `typeof` and `property` is read as a nested entity, so its
-own text is never taken as a scalar — hence a child element to hold it. **Let a
-typed node declare which property takes its own text and this shape stops
-existing**, rather than needing a tree-surgery verb in the table. That is a
-change to `collectJsonLd`, not to the runes; no CSS selects `[property="text"]`,
-so the wrappers can go. It is the single highest-leverage edit in this spec.
+**That would break the HTML.** The rule mirrors RDFa rather than deviating from
+it. RDFa Core 1.1 §7.5 step 11 resolves a property's object as: `@content` →
+literal; else `@typeof` present and `@about` absent → *the typed resource*; else
+a plain literal from the text. So an element carrying both `property` and
+`typeof` has its object fixed to the typed resource, and its text is unreachable
+as a literal. Today's output —
+
+```html
+<div typeof="Answer" property="acceptedAnswer"><div property="text">…</div></div>
+```
+
+— expresses `_:q acceptedAnswer _:a . _:a a Answer . _:a text "…"`. Without the
+inner element it expresses the first two triples and says nothing about the
+text. Since {% ref "SPEC-082" /%} chose to render the SEO carriers inline
+("Option B" — `component.ts:108`), refrakt publishes the RDFa *and* the JSON-LD
+on the same page, so the two would assert different graphs on every accordion,
+recipe and how-to.
+
+The wrapper is therefore the conformant idiom, not a workaround. What is wrong
+is that runes hand-write it. Move the wrapping into the **applier** and let the
+table declare only the role:
+
+```ts
+accordionItem: {
+  type: 'Question',
+  properties: { name: 'name' },
+  entities: {
+    body: { type: 'Answer', property: 'acceptedAnswer', text: 'text' },
+  },
+}
+```
+
+`text:` names the property that takes the node's own content; the applier emits
+the conformant wrapper, the way the engine's `structure` entries already own
+injected elements. That keeps the table a lookup, keeps the HTML valid, and
+collapses into the `entities:` form below rather than being a fifth concept —
+an `Answer` *is* a nested entity built from the body node.
+
+Note the collector is otherwise a fair RDFa subset: `property` + `href` on an
+`<a>`, `property` + `src` on an `<img>`, and `<meta property content>` all
+resolve as RDFa 1.1 specifies. The one rule worth changing was the one holding
+conformance up.
 
 **Index-derived values — one keyword.** `position: 'index'`. A value that is not
 in the content has to be generated, and no amount of naming helps. The
@@ -308,9 +346,10 @@ This is an extension rather than a new concept: `properties` and `refs` already
 project over the same nodes twice (tier's `nameTag` is in both). `entities` is a
 third projection.
 
-**Total: one new entry kind, one keyword, one change to `collectJsonLd`, and
-zero new `data-name`s.** Group C is not the hard half of this spec; it is four
-small, separable decisions, and only one of them touches the table's shape.
+**Total: one new entry kind (`entities`, carrying an optional `text`), one
+keyword (`index`), no change to `collectJsonLd`, and zero new `data-name`s.**
+Group C is not the hard half of this spec; it is four small, separable
+decisions, and only one of them touches the table's shape.
 
 ## Constraint: styling already selects on this channel
 
@@ -555,17 +594,20 @@ declaration outlives the first.
   offers types it has mappings for, so the unsafe case stops being expressible —
   which may make validation unnecessary rather than deferred. Confirm. Note this
   holds only if the `organization` free-text path closes too.
-- **Does `collectJsonLd` change, or does the table express wrapping?** Letting a
-  typed node name the property that takes its own text deletes the "retype +
-  wrap" shape outright, at the cost of an edit to the one function every rune's
-  structured data flows through. The alternative is a tree-surgery verb in the
-  table. Recommended: change the collector — but it is the riskiest single edit
-  here and should land on its own, with the existing JSON-LD tests as the net.
+- **Do the two serializations have to agree?** Settled for the wrapper case —
+  they must, so the wrapper stays (above). But it is a standing question for the
+  spec, because refrakt publishes RDFa inline *and* JSON-LD in the head, and
+  nothing checks them against each other. One divergence already exists:
+  `breadcrumb` emits `<meta property="position" content="1">`, which RDFa reads
+  as the string `"1"` while the JSON-LD carries the number `1`. Harmless here,
+  but it shows there is no guard. Worth deciding whether "the RDFa and the
+  JSON-LD express the same graph" is an invariant this spec asserts and tests,
+  or merely a thing that happens to hold.
 - **Migration shape.** 35 call sites across 30 runes, split 7 / 14 / 9 by the
   groups above. The natural sequencing follows that split — Group A (decide and
   delete), Group B (mechanical), Group C (four separable decisions, not a
-  rewrite) — plus the collector change and the CSS decoupling as their own
-  items. Five or six work items rather than one.
+  rewrite) — plus the CSS decoupling as its own item. Four or five work items
+  rather than one.
 
 ## Non-goals
 
@@ -587,7 +629,8 @@ declaration outlives the first.
 - [ ] `refrakt contracts` describes the schema.org output it currently omits
 - [ ] Every one of the 22 existing `schema:` maps is expressible, including the computed-meta cases
 - [ ] The imperative `typeof:` / `property:` stamps and the `attributes.typeof = …` mutations are covered too, or the runes carrying them are named as out of scope with a reason
-- [ ] A typed node can supply its own text as a named property, so the `property="text"` wrappers are no longer needed to satisfy `collectJsonLd`
+- [ ] A nested entity can name the property that takes its own content, with the applier emitting the RDFa-conformant wrapper — no rune hand-writes one
+- [ ] The inline RDFa and the JSON-LD express the same graph for every rune that emits both — asserted by a test, not by inspection
 - [ ] Grouping named sibling nodes into a nested entity is expressible, so `testimonial`'s `Person` / `Rating` and `event`'s `Place` are declared rather than synthesised by hand
 - [ ] No stylesheet selects on `property=`; the six Lumina rules move to BEM element classes and a CSS coverage assertion keeps them there
 - [ ] `defineRune({ schemaOrgType })` is deleted or fed from the table — the type is declared once
