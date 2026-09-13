@@ -244,7 +244,8 @@ roles**, and nothing has to be computed by the table.
 `accordion`, `accordion-item`, `breadcrumb`, `event`, `how-to`, `playlist`,
 `recipe`, `testimonial`, `timeline`. Here the schema is not a map over existing
 nodes; the transform *builds* schema-bearing structure. Four distinct shapes,
-none of which the sketched table can express:
+none of which the table as first sketched expresses — though, as the next
+section shows, what each one actually needs differs enormously:
 
 | Shape | Where | What it does |
 |-------|-------|--------------|
@@ -253,29 +254,106 @@ none of which the sketched table can express:
 | **Index-derived values** | `breadcrumb`, `timeline` | the parent emits each child's `position` from the loop index — a value that exists nowhere in the content |
 | **Inline property stamps** | `playlist` | writes `property: 'byArtist'`, `property: 'duration'` directly onto the spans it builds for each track |
 
-Two of these break a stated premise. The synthesised entities carry **no
-`data-name` and no `data-field`** — `new Tag('span', { typeof: 'Person',
-property: 'author' }, …)` — so a table "keyed by `data-name`" has no handle for
-them. And the index-derived `position` *is* the table computing something.
+### What Group C actually costs
 
-This does not sink the design, but it decides its scope. Three honest options,
-and the spec should pick one rather than discover it during implementation:
+The obvious reading is "these nodes are unaddressable, so give everything a
+`data-name` first". That is the wrong diagnosis, and acting on it would be
+mostly wasted work. Taken shape by shape:
 
-1. **The table covers Groups A and B; Group C keeps a documented imperative
-   escape hatch.** Smallest, ships soonest, and explicitly fails the "not half
-   of each" criterion — so that criterion would have to be rewritten to "every
-   rune is wholly one or wholly the other", which is a weaker but honest bar.
-2. **Extend the table** with a wrap/retype form and a `position: 'index'`
-   generator, and require every synthesised entity to first gain a `data-name`
-   so it is addressable. Larger, and the `data-name`s are worth having anyway
-   (they are BEM element handles and `editHints` targets).
-3. **Normalise Group C first**, as separate prep work: give every synthesised
-   node a `data-name`, move the retype/wrap into a shared helper, and only then
-   apply the table. Slowest, but it is the option where the table stays simple.
+**Inline property stamps — nothing missing.** `playlist`'s track spans already
+carry `data-name="track-name"` / `"track-artist"` / `"track-duration"`, set on
+the same line that stamps the RDFa. They are addressable today; they are simply
+not *keyed* declaratively. Pure lookup once the table exists.
 
-Option 3 is the recommendation: the per-rune prep is mechanical and individually
-reviewable, and it keeps the mapping format from growing a generator vocabulary
-on its first outing.
+**Retype + wrap — a `data-name` adds nothing.** `recipe`'s `<li>`s already get
+`data-name = 'ingredient'` / `'step'` on the line above the mutation. The
+obstacle is the wrapper, and the wrapper exists for exactly one reason:
+
+```js
+// seo.ts — collectProperties
+if (prop && !childTypeof) { /* extract value */ }
+```
+
+A node carrying both `typeof` and `property` is read as a nested entity, so its
+own text is never taken as a scalar — hence a child element to hold it. **Let a
+typed node declare which property takes its own text and this shape stops
+existing**, rather than needing a tree-surgery verb in the table. That is a
+change to `collectJsonLd`, not to the runes; no CSS selects `[property="text"]`,
+so the wrappers can go. It is the single highest-leverage edit in this spec.
+
+**Index-derived values — one keyword.** `position: 'index'`. A value that is not
+in the content has to be generated, and no amount of naming helps. The
+vocabulary is closed: `index` is the only generator anywhere in the codebase,
+used by two runes.
+
+**Synthesised entities — one new entry kind, and still not about naming.**
+Naming the invented `<span typeof="Person">` is pointless, because under a
+declarative table the applier is what creates it. What matters is whether the
+*sources* are addressable, and they already are — `testimonial` has
+`author-name` / `author-role` refs and a `rating` property; `event` has
+`location` as a `data-field` before the `Place` span duplicates the value. So
+the gap is a third kind of entry — *group these named nodes into a nested
+entity*:
+
+```ts
+entities: {
+  author: { type: 'Person', property: 'author',
+            properties: { 'author-name': 'name', 'author-role': 'jobTitle' } },
+  rating: { type: 'Rating', property: 'reviewRating',
+            properties: { rating: 'ratingValue' } },
+}
+```
+
+This is an extension rather than a new concept: `properties` and `refs` already
+project over the same nodes twice (tier's `nameTag` is in both). `entities` is a
+third projection.
+
+**Total: one new entry kind, one keyword, one change to `collectJsonLd`, and
+zero new `data-name`s.** Group C is not the hard half of this spec; it is four
+small, separable decisions, and only one of them touches the table's shape.
+
+## Constraint: styling already selects on this channel
+
+Surfaced while checking whether the `property="text"` wrappers were safe to
+delete. Lumina selects on RDFa attributes in six places:
+
+| Selector | State | Why |
+|----------|-------|-----|
+| `.rf-tier h1[property="name"]` | **live** | `nameTag` is in both `refs` and `schema` |
+| `.rf-plot > span[property="name"]` | **live** | `titleTag` is in both |
+| `.rf-tier p[property="price"]` | dead | `property="price"` lands on `parsedPriceMeta`, a `<meta>` — not on the `<p>` |
+| `.rf-lore > span[property="title"]` | dead | the span carries `property="headline"` |
+| `.rf-bond > span[property="from"]` | dead | `bond` has no `schema:` map at all |
+| `.rf-bond > span[property="to"]` | dead | as above |
+
+Confirmed against `refrakt inspect` output for each rune, and none of the four
+dead rules has a BEM equivalent elsewhere in its stylesheet — so a `lore` title,
+a `bond` endpoint and a `tier` price render unstyled today. The CSS coverage
+test does not catch it: it checks that config-derived selectors *exist*, not
+that hand-written ones *match*.
+
+Two consequences this spec has to absorb:
+
+- **`schema="none"` is a styling hazard.** `stripSchemaOrg` deletes `property`
+  wholesale, so on `pricing` it would unstyle the tier heading. It is benign on
+  `accordion` by luck rather than design, and {% ref "WORK-552" /%} has already
+  shipped.
+- **Any rename in the table silently restyles a rune.** Every live selector is a
+  tripwire across the migration, and the four dead ones are what that tripwire
+  looks like after it fires — nobody noticed either time.
+
+So the rule this spec should establish: **presentation never selects on the
+schema.org channel.** The refs already produce BEM element classes for every one
+of these nodes (`.rf-tier__name`, `.rf-lore__title`), which is what the CSS
+should have used. Migrating the six rules is small and half of it is a bug fix
+regardless of whether this spec ships — filed as {% ref "BUG-014" /%}. Guarding
+it afterwards is a one-line assertion in the CSS coverage test.
+
+This also sharpens the ADR-028 argument. The reason a theme may not redefine
+schema.org is that emission is a claim about content, not about skin. A theme
+that *styles off* emission has the same coupling pointed the other way: it makes
+the rune's appearance depend on its SEO channel, so a correction to the
+structured data becomes a visual regression.
 
 ## The driving case: `playlist`
 
@@ -477,10 +555,17 @@ declaration outlives the first.
   offers types it has mappings for, so the unsafe case stops being expressible —
   which may make validation unnecessary rather than deferred. Confirm. Note this
   holds only if the `organization` free-text path closes too.
+- **Does `collectJsonLd` change, or does the table express wrapping?** Letting a
+  typed node name the property that takes its own text deletes the "retype +
+  wrap" shape outright, at the cost of an edit to the one function every rune's
+  structured data flows through. The alternative is a tree-surgery verb in the
+  table. Recommended: change the collector — but it is the riskiest single edit
+  here and should land on its own, with the existing JSON-LD tests as the net.
 - **Migration shape.** 35 call sites across 30 runes, split 7 / 14 / 9 by the
   groups above. The natural sequencing follows that split — Group A (decide and
-  delete), Group B (mechanical), Group C (per-rune prep, then map) — which
-  suggests three or four work items rather than one.
+  delete), Group B (mechanical), Group C (four separable decisions, not a
+  rewrite) — plus the collector change and the CSS decoupling as their own
+  items. Five or six work items rather than one.
 
 ## Non-goals
 
@@ -502,6 +587,9 @@ declaration outlives the first.
 - [ ] `refrakt contracts` describes the schema.org output it currently omits
 - [ ] Every one of the 22 existing `schema:` maps is expressible, including the computed-meta cases
 - [ ] The imperative `typeof:` / `property:` stamps and the `attributes.typeof = …` mutations are covered too, or the runes carrying them are named as out of scope with a reason
+- [ ] A typed node can supply its own text as a named property, so the `property="text"` wrappers are no longer needed to satisfy `collectJsonLd`
+- [ ] Grouping named sibling nodes into a nested entity is expressible, so `testimonial`'s `Person` / `Rating` and `event`'s `Place` are declared rather than synthesised by hand
+- [ ] No stylesheet selects on `property=`; the six Lumina rules move to BEM element classes and a CSS coverage assertion keeps them there
 - [ ] `defineRune({ schemaOrgType })` is deleted or fed from the table — the type is declared once
 - [ ] Whether a bare `@type` with no properties is emitted is decided and applied uniformly across the seven Group A runes
 - [ ] The imperative form either still works or is fully migrated — not half of each, per rune
