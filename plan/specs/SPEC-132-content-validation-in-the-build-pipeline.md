@@ -66,7 +66,8 @@ Almost all of it, which is why this is wiring rather than construction:
 | Rune attribute schemas (`required`, `matches`, types) | Complete, ~175 tags |
 | Custom attribute validators | Written; never execute in a build |
 | Diagnostics surface (`ctx.info` / `warn` / `error`) | Exists — `packages/content/src/site.ts:301` |
-| Error-fence precedent for in-page failure | Shipped, in `snippet-pipeline.ts` |
+| `PipelineWarning` — severity, phase, `pluginName`, url, message | Exists — `packages/types/src/pipeline.ts:156` |
+| A display surface for those warnings | Planned — {% ref "WORK-395" /%}'s editor validation rail, which {% ref "SPEC-098" /%} also depends on |
 
 The gap is a call and a routing decision, not a new subsystem.
 
@@ -84,18 +85,18 @@ Findings map onto the existing diagnostics surface rather than a new channel:
 `ctx.error` / `ctx.warn` / `ctx.info`, carrying the page URL that surface
 already takes.
 
-### In-page display follows the snippet precedent
+### Nothing is rendered into the page
 
-Where a finding is shown in the page as well as the log, it follows
-`snippet`'s established shape: the build continues, the page renders, and the
-failure is visible where the mistake is rather than only in a build log.
+Findings become `PipelineWarning`s and go no further. Display is
+{% ref "WORK-395" /%}'s editor validation rail, which already exists as planned
+work — see D9 for why that is the right surface rather than a fallback.
 
-An earlier draft routed findings into the `error` rune, which renders a
-`ValidationError` as a table row. That is withdrawn — {% ref "WORK-555" /%}
-removes the rune. Its `<tr>` output presumes a page-level report collected into
-a table, and adopting that model because a leftover row happened to exist would
-be letting legacy shape a design. If a findings table is later wanted, it gets
-designed as one.
+Two earlier drafts of this section are withdrawn, and both for the same reason.
+The first routed findings into the `error` rune ({% ref "WORK-555" /%} now
+removes it); the second reached for `snippet`'s error fence. Neither fits: both
+*replace* content that could not be produced, whereas a validation finding
+annotates content that rendered perfectly well. Putting a diagnostic into the
+flow of a page that is otherwise fine is worse than putting it beside the page.
 
 Whether the *build* also fails is deliberately not decided here — see D3.
 
@@ -182,6 +183,66 @@ positives on collection templates. And a test over a fixed corpus is not the
 same as validation inside the pipeline a user runs — the corpus test protects
 *our* fixtures, which is why it did not catch any of this.
 
+**D9 — Findings go to the warning channel; display belongs to the editor, not
+this spec.** The earlier open question — page, log, or both? — is answered by
+work that already exists.
+
+{% ref "WORK-395" /%} pipes `PipelineWarning`s through to an editor validation
+rail: severity, message, source plugin, a count badge, and inline indicators on
+the specific block a warning is attributable to. {% ref "SPEC-098" /%} names it
+"the warning channel" and depends on it. So the in-page surface is a planned
+feature with an owner, and it is a *better* surface than anything this spec
+would invent: a rail beside the page beats an error row wedged into content that
+rendered fine.
+
+This spec therefore emits `PipelineWarning`s and stops. No error fence, no
+in-page node, no new display. That also settles the objection that raised the
+question: a validation finding annotates working content rather than replacing
+broken content, so it does not belong *in* the flow.
+
+Two concrete consequences for the implementation:
+
+- `PipelineWarning.phase` is `'register' | 'contribute' | 'aggregate' |
+  'postProcess'`. Validation is none of these, so the union needs a new member.
+- `PipelineWarning.pluginName` is required, and core validation findings come
+  from no plugin. They need an agreed value — `'core'` matches how
+  `reference.ts` already groups core runes.
+
+**D10 — Plugins need no new validation surface, because they already have two.**
+Every pipeline hook receives a `ctx` carrying `info` / `warn` / `error`, and
+`PipelineWarning` already has a `pluginName` field, so a plugin can emit a
+validation-shaped diagnostic today and have it attributed. Separately, Markdoc's
+validation is schema-driven and plugins already supply their own schemas — a
+plugin wanting stricter checking tightens its own `required` and `matches`,
+declaratively, with no API at all.
+
+What is deliberately not offered is plugin-contributed *Markdoc validators*
+(custom rules run inside `validate()`). Nothing needs it, both existing routes
+cover the real cases, and adding it would mean versioning a rule API.
+
+**D11 — `critical`, `error` and `warning` are distinct, and must not be
+collapsed.** Extracted from Markdoc's own source, every id it can emit:
+
+| level | ids | meaning |
+|---|---|---|
+| `critical` | `parse-error`, `missing-closing`, `missing-opening`, `table-syntax`, `tag-placement-invalid`, `tag-selfclosing-has-children`, `function-undefined` | the document could not be **understood** |
+| `error` | `attribute-undefined`, `attribute-missing-required`, `attribute-type-invalid`, `attribute-value-invalid`, `variable-undefined`, `slot-*`, `parameter-*`, `href-format-invalid`, `no-inline-annotations`, `fence-tag-error` | it parsed, but violates a **schema** |
+| `warning` | `child-invalid`, `duplicate-attribute` | suspicious, not wrong |
+
+The split is real and useful: `critical` is structural and not a matter of
+preference, so it should **not** be suppressible through D5's per-error-id
+switch. `error` is the configurable band. Note that all four of this spec's
+phase 1 and 2 ids are `error`, never `critical`.
+
+**This surfaces a defect.** Refrakt's own custom validators — both in
+`packages/runes/src/attributes.ts` and both in `plugins/media/src/attributes.ts`
+— return `id: 'attribute-type-invalid'` at `level: 'critical'`, while Markdoc
+emits that same id at `level: 'error'`. The same failure is reported at two
+different severities depending on which code path produced it. Harmless while
+nothing reads severity; wrong the moment this spec makes severity load-bearing.
+Correct them to `'error'` as part of phase 2, when those validators first
+execute.
+
 ## Non-goals
 
 - **Deciding build-failure semantics.** D3; {% ref "WORK-554" /%} first.
@@ -199,7 +260,10 @@ same as validation inside the pipeline a user runs — the corpus test protects
 
 - [ ] `Markdoc.validate()` runs in the content pipeline against the same assembled config the transform uses, including plugin runes
 - [ ] Findings route to the existing `ctx.error` / `ctx.warn` / `ctx.info` surface, mapped from `ValidateError.error.level`, carrying the page URL
-- [ ] In-page display, if included, follows `snippet`'s error-fence precedent and does not reintroduce a `ValidationError` table row
+- [ ] Findings are emitted as `PipelineWarning`s and nothing is rendered into the page — display is {% ref "WORK-395" /%}'s (D9)
+- [ ] `PipelineWarning.phase` gains a member for validation, and core findings carry an agreed `pluginName`
+- [ ] `critical` findings are not suppressible by the D5 switch; `error` findings are (D11)
+- [ ] The four custom validators emitting `attribute-type-invalid` at `critical` are corrected to `error`, matching Markdoc (D11)
 - [ ] Phase 1 ids (`tag-undefined`, `attribute-undefined`) are enabled and covered by tests
 - [ ] Phase 2 ids are enabled only after the blast radius across `site/` and `plan-site/` is measured and recorded
 - [ ] The dormant custom attribute validators demonstrably execute once phase 2 lands — a test proves `SpaceSeparatedNumberList` rejects non-numeric input in a build
@@ -225,17 +289,19 @@ generated inline values, so it pays for itself twice.
 
 ## Open questions
 
-- **Does a validation finding belong in the page, the log, or both?** D2 says
-  both, following `snippet`. But `snippet`'s error fence replaces content that
-  could not be resolved, whereas a validation finding annotates content that
-  rendered anyway. Rendering an error table row *next to* working output may be
-  more confusing than a build-log entry. Worth prototyping before committing.
-- **Should plugin authors be able to contribute validations?** The pipeline-hook
-  surface makes it natural, and `Plugin` already carries hooks. Out of scope
-  here, but the wiring should not foreclose it.
-- **Is `critical` distinct from `error` in practice?** Markdoc emits both; the
-  custom validators in `attributes.ts` use `critical`. If the mapping collapses
-  them, say so explicitly rather than leaving two levels that behave identically.
+All three questions this spec opened are now answered — in D9 (display belongs
+to {% ref "WORK-395" /%}), D10 (plugins already have two routes) and D11 (the
+levels are distinct, and our own validators over-escalate). One question
+surfaced while answering them:
+
+- **Are plugin-contributed virtual pages validated?** {% ref "SPEC-069" /%}'s
+  `contributePages` synthesizes pages that "flow through the rest of the
+  pipeline exactly like file-backed pages". If validation sits where the tag set
+  is assembled, they get validated too — and a finding on one is a *plugin*
+  bug, not an author's, reported against a page whose source the author cannot
+  open. Either they are exempt, or their findings need to say plainly that the
+  page was generated and by whom. `PipelineWarning.pluginName` already carries
+  the attribution needed for the second option, which makes it the cheaper one.
 
 ## References
 
@@ -245,6 +311,9 @@ generated inline values, so it pays for itself twice.
 - {% ref "BUG-011" /%} — the same thesis from the other end: with no typo detector, `data`'s empty-result error was overloaded into the role and failed the legitimate case
 - {% ref "BUG-010" /%} — an unresolvable `data` `where` value silently matching every row; another instance of the class
 - {% ref "SPEC-131" /%} — depends on the same diagnostics surface via its D6
+- {% ref "WORK-395" /%} — the editor validation rail that displays these findings (D9)
+- {% ref "SPEC-098" /%} — also depends on that warning channel
+- `packages/types/src/pipeline.ts:156` — `PipelineWarning`, whose `phase` union this spec extends
 - {% ref "WORK-555" /%} — removes the `error` rune this spec no longer routes into
 - `packages/content/src/site.ts` — where the config is assembled and diagnostics defined
 - `packages/runes/test/fixture-corpus.test.ts` — the working precedent (D8)
