@@ -394,6 +394,63 @@ that *styles off* emission has the same coupling pointed the other way: it makes
 the rune's appearance depend on its SEO channel, so a correction to the
 structured data becomes a visual regression.
 
+## Adjacent cleanup: `property: 'contentSection'`
+
+29 runes pass `property: 'contentSection'` to `createComponentRenderable`, on the
+line above their `schema:` map. **It is not the schema.org channel**, despite
+sitting next to it and sharing the word: `createComponentRenderable` maps the
+`property` *field* to `data-field`, kebab-cased, so what ships is
+
+```html
+<section data-field="content-section" typeof="FAQPage" class="rf-accordion" …>
+```
+
+Two different things called `property` in one call, one of which becomes
+`data-field` and one of which becomes RDFa `property`. That alone is worth
+fixing while every one of these call sites is open.
+
+**Nothing reads it.** Every reference in the repo, outside the 29 declarations:
+
+| Where | What it is |
+|-------|-----------|
+| `documents/page.ts` | the `Page` document node — **dead and broken** (below) |
+| `transform/test/html.test.ts` | a hand-built fixture checking `$$mdtype` stripping; not pipeline output |
+| `plugins/marketing/test/hero-content-model.test.ts` | asserts the attribute exists — a characterisation test of today's output |
+| `site/content/extend/rune-authoring/` (4 pages) | documented as part of the output contract |
+
+Zero hits in the engine, the Svelte renderer, the framework adapters, the
+editor, behaviors, the language server, any stylesheet, or
+`contracts/structures.json` — which is its own small indictment, since
+`contracts` claims to describe the complete HTML structure and omits an
+attribute present on every section rune on every page.
+
+**The one consumer that ever existed is dead code, and was broken anyway.**
+`Page` splits children on `c.attributes['data-field'] === 'contentSection'` —
+camelCase, against an attribute that is kebab-cased at emission. It could never
+have matched. It is also never registered: `documents` is exported from
+`packages/runes/src/index.ts` and no Markdoc config consumes it, so the node
+never runs. That is why nobody noticed the case mismatch.
+
+Deleting `Page` has a bonus that *is* squarely this spec's business: it emits
+`typeof="PageSection"` on every wrapper it makes, and `PageSection` is not a
+schema.org type at all. Dead today, but it is an invented type sitting in the
+codebase waiting to be revived. Its config entry (`PageSection: { block:
+'page-section' }` in `coreConfig`) and `packages/lumina/styles/runes/page-section.css`
+go with it — the CSS exists only because the coverage test derives it from that
+config entry, a closed loop of dead code keeping itself alive.
+
+So the removal is: the `property:` line from 29 transforms, the `Page` /
+`DocPage` document nodes, the `PageSection` config entry and its CSS, the
+marketing characterisation test, and four docs pages. With
+`property: 'contentSection'` gone, `TransformResult.property` has exactly one
+remaining user — `error.ts`, whose `data-field="error"` is equally unread — so
+**the field itself can go**, taking the naming collision with it.
+
+Not the schema.org channel, so it could ship separately. But it rides the same
+call-site sweep, and removing a line from 29 files already being edited is
+free. `PageSectionSlots` in `packages/types` is unrelated and stays — it types
+the `eyebrow` / `headline` / `blurb` header slots.
+
 ## The driving case: `playlist`
 
 `accordion` alone would have produced a weaker design. `playlist` is the rune
@@ -634,6 +691,7 @@ declaration outlives the first.
 - [ ] Grouping named sibling nodes into a nested entity is expressible, so `testimonial`'s `Person` / `Rating` and `event`'s `Place` are declared rather than synthesised by hand
 - [ ] No stylesheet selects on `property=`; the six Lumina rules move to BEM element classes and a CSS coverage assertion keeps them there
 - [ ] `defineRune({ schemaOrgType })` is deleted or fed from the table — the type is declared once
+- [ ] `property: 'contentSection'` is gone from all 29 transforms, along with the dead `Page` / `DocPage` nodes, the `PageSection` config entry and its CSS — and `TransformResult.property` with them, so nothing in the call signature shares a name with the schema.org channel
 - [ ] Whether a bare `@type` with no properties is emitted is decided and applied uniformly across the seven Group A runes
 - [ ] The imperative form either still works or is fully migrated — not half of each, per rune
 
