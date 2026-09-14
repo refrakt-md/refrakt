@@ -1,4 +1,4 @@
-{% bug id="BUG-015" status="confirmed" severity="minor" tags="lumina,css,schema-org,seo" %}
+{% bug id="BUG-015" status="confirmed" severity="minor" tags="lumina,css,schema-org,seo" milestone="v0.35.0" %}
 
 # Lumina rules selecting on schema.org property attributes have gone stale
 
