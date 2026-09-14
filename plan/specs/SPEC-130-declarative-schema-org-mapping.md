@@ -161,19 +161,30 @@ the survey, the half this spec called easy. The reference only holds while the
 rune declares it at build time. (`embed` escapes because its schema metas are
 not in `properties`; non-meta nodes escape because only metas are dropped.)
 
-**The fix is to split selection from application.** Picking a row needs `attrs`,
-which only the wrapper has; applying a row needs the nodes, which only
-`createComponentRenderable` has. So the wrapper resolves the row and passes
-*that* — not the table — down:
+**The fix is the field bag, and it is simpler than it looked.** A prototype
+(below) settled this. `data-rune-fields` already carries every scalar property
+value, typed, on the rune root — which is exactly what a value-only schema
+property needs. The applier does not need the dropped `<meta>` to survive; it
+rebuilds a carrier from the bag:
 
 ```ts
-createComponentRenderable({ rune: 'playlist', schemaRow, … })
+const node = findByName(root, src);
+if (node) { node.attributes.property = prop; return; }   // visible carrier: stamp in place
+const v = bag[src];                                       // value-only: rebuild
+if (v !== undefined) root.children.push(new Tag('meta', { property: prop, content: String(v) }));
 ```
 
-Rejected alternatives: stop dropping pure-data metas (changes the children of
-every rune in the catalog, for this); or have the applier reconstruct the
-dropped metas from `data-rune-fields` (re-creating nodes the same function just
-deleted).
+So `createComponentRenderable` needs no knowledge of schema at all — it simply
+always treats property metas as pure data, which is already what it does when
+`schema:` is absent. Selection needs `attrs` and application needs the tree plus
+the bag; the wrapper has all three. **Nothing is threaded into
+`createComponentRenderable` after all.**
+
+An earlier revision of this section proposed threading the resolved row down one
+level, on the assumption that a dropped node was unrecoverable. It is not — the
+bag *is* the recovery. Recorded because the reasoning ("the meta is gone,
+therefore the applier must run where the meta still exists") is plausible and
+wrong, and someone will re-derive it.
 
 So the table is still an **option to `createContentModelSchema`**, sitting with
 the rune-identity declarations already there — `sections`, `mediaSlots`,
@@ -412,7 +423,9 @@ project over the same nodes twice (tier's `nameTag` is in both). `entities` is a
 third projection.
 
 **Total: one new entry kind (`entities`, carrying an optional `text`), one
-keyword (`index`), no change to `collectJsonLd`, and zero new `data-name`s.**
+keyword (`index`), no change to `collectJsonLd`, and no new `data-name`s *for
+these runes* — though the prototype later found a separate set that does need
+naming, cutting across all three groups.**
 Group C is not the hard half of this spec; it is four small, separable
 decisions, and only one of them touches the table's shape.
 
@@ -695,6 +708,66 @@ else. It has also drifted — nine entries for thirty emitting runes, and
 The table should replace it and the field should be deleted, or the second stale
 declaration outlives the first.
 
+## Prototype: the `entities:` shape, measured
+
+`entities:` carries the whole of shape 2 and had only been sketched, so it was
+built throwaway against two runes — `testimonial` (sources are visible nodes)
+and `event` (a source that exists only as an attribute value). Both were
+rewritten to drop `schemaOrgType`, the `schema:` map and the hand-built entity
+spans, declaring instead:
+
+```ts
+export const testimonialSchema = {
+  type: 'Review',
+  properties: { quote: 'reviewBody' },
+  entities: {
+    author: { type: 'Person', property: 'author',
+              properties: { 'author-name': 'name', 'author-role': 'jobTitle' } },
+    rating: { type: 'Rating', property: 'reviewRating',
+              properties: { rating: 'ratingValue' } },
+  },
+} as const;
+```
+
+**Both reproduced today's JSON-LD.** `testimonial` byte-identical (including its
+existing `jobTitle: ", CTO at Acme"` comma defect — the prototype was checked
+for equivalence, not improvement); `event` identical under the normalised
+comparison, differing only in key order because rebuilt carriers are appended
+last. The applier is about 60 lines and needs three resolution strategies: stamp
+a named node in place, rebuild a value-only carrier from the bag, or synthesise
+an entity span from either.
+
+`testimonial`'s `rating` is the case that mattered: its meta *is* dropped by
+`createComponentRenderable` once the rune stops declaring `schema:`, and the
+applier recovered the value from the bag. That is what settled the section
+above.
+
+### What the prototype found: unaddressable sources
+
+A schema source that is in **neither `properties` nor `refs`** is reachable by
+neither route — not in the bag, and carrying no `data-name`. Two kinds recur:
+
+| Kind | Runes | Sources |
+|------|-------|---------|
+| Metas built only for SEO | `embed`, `tier` | `titleMeta`, `urlMeta`, `embedUrlMeta`; `parsedPriceMeta`, `resolvedCurrencyMeta` |
+| Image nodes | `figure`, `recipe`, `playlist`, `realm`, `faction` | `imgs[0]`, `seoImage`, `sceneImgTag` — the node itself is anonymous; only its wrapper is named |
+
+Roughly ten sources across seven runes. Each needs either a `refs` entry (giving
+it a `data-name`) or a `properties` entry (putting it in the bag) before the
+table can address it — small and mechanical, but it must happen *before* those
+runes migrate.
+
+This also corrects an earlier claim in this spec that Group C needed "zero new
+`data-name`s". That holds for the runes Group C named; it does not hold for this
+set, which cuts across all three groups and was invisible until the mechanism
+was built.
+
+### What the prototype did not cover
+
+`by:` row selection from `attrs`, per-type `children:` mappings, and the `text:`
+carrier form are all still sketches. `playlist` exercises all three at once and
+is the natural second prototype if one is wanted.
+
 ## Harvest at both points, and assert they agree
 
 The spec has been treating the harvest point as a decision — keep `extractSeo`
@@ -881,7 +954,8 @@ has started.
 ## Acceptance Criteria
 - [ ] A baseline JSON-LD snapshot covers all 30 emitting runes and is committed before the first call site changes, so every later step is reviewed as a diff against it
 - [ ] A rune's schema.org type and property mapping are expressible in config, keyed by `data-name` / `data-field`
-- [ ] Row selection (needs `attrs`) and row application (needs the nodes) are split, so a schema value carried by a property `<meta>` is not dropped before it can be stamped — `recipe`, `event`, `track`, `playlist`, `character`, `realm`, `lore` and `howto` keep the RDFa they emit today
+- [ ] A schema value whose `<meta>` carrier is dropped as pure data is rebuilt from `data-rune-fields`, so `recipe`, `event`, `track`, `playlist`, `character`, `realm`, `lore` and `howto` keep the RDFa they emit today without `createComponentRenderable` gaining any knowledge of schema
+- [ ] Every schema source is addressable — the ~10 sources in neither `properties` nor `refs` (`embed`, `tier`, and the image nodes in `figure`, `recipe`, `playlist`, `realm`, `faction`) gain a name or a bag entry before their rune migrates
 - [ ] Plugin runes declare schema the same way core runes do, and the plugin-facing contract says so
 - [ ] The mapping is applied at transform time, so `extractSeo` still sees it — a test asserts the JSON-LD, not just the HTML attributes
 - [ ] A rune can offer more than one type, with per-type property names *and* per-type child mappings — where a child mapping carries its own property map, not just a type name
