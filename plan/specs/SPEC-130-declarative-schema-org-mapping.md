@@ -3,8 +3,8 @@
 # Declarative schema.org mapping
 
 Move the schema.org channel from 35 imperative call sites across 30 runes into
-declarative data, keyed by `data-name` — the same shape BEM, modifiers and
-`editHints` already use.
+declarative data, keyed by the rune's own names — the same shape BEM, modifiers
+and `editHints` already use.
 
 **Declared on the rune, not in theme config.** Schema.org output is what a rune
 *means*, and {% ref "ADR-028" /%} settles that such facts are rune identity: a
@@ -260,12 +260,29 @@ ruled out.
 
 ### Key direction: the rune's name, not the schema property
 
-The table is keyed by the rune's own `data-name` and valued by the schema.org
-property:
+The table is keyed by a name in the rune's own **flat namespace** and valued by
+the schema.org property:
 
 ```ts
 properties: { 'author-name': 'name', 'author-role': 'jobTitle' }
 ```
+
+"Flat namespace" is {% ref "ADR-008" /%}'s term and is the precise one here:
+`properties` and `refs` share a single namespace with uniqueness enforced, so a
+key names exactly one node. Which HTML attribute that name surfaces as —
+`data-name` for a `refs` entry, `data-field` for a `properties` entry — is a
+consequence of which map the rune put it in, not a second key space. The applier
+resolves both, e.g. `playlist`'s track items are addressed as `track` and carry
+`data-field="track"`.
+
+That asymmetry is worth a glance but not a fix here: the track `<li>`s are
+structural children parked in `properties` (the "content-marker property" idiom
+`createComponentRenderable` documents, shared with `budget`'s `category`,
+`accordion`'s `item`, `itinerary`'s `day`), so they get `data-field` and no BEM
+element class, while their container — a `refs` entry — gets both. Moving those
+to `refs` would be a genuine cleanup and would give the items the
+`.rf-playlist__track` class they arguably want, but it changes HTML output
+across several runes for reasons unrelated to schema.org. **Out of scope here.**
 
 This is deliberate, and it is the **opposite** of the imperative `schema:` map
 it replaces (`schema: { reviewBody: quoteTag }` — schema property as key). The
@@ -1046,7 +1063,7 @@ has started.
 ## Acceptance Criteria
 - [ ] A baseline JSON-LD snapshot covers all 30 emitting runes and is committed before the first call site changes, so every later step is reviewed as a diff against it
 - [ ] `seo` is recomputed from `enrichedPages` after `runPipeline`, so `postProcess`-injected schema reaches the JSON-LD — `{% breadcrumb auto=true %}` publishes the `BreadcrumbList` it renders, asserted by a test
-- [ ] A rune's schema.org type and property mapping are expressible in config, keyed by `data-name` / `data-field`
+- [ ] A rune's schema.org type and property mapping are expressible in config, keyed by a name in the rune's flat namespace (ADR-008) whether it surfaces as `data-name` or `data-field`
 - [ ] A schema value whose `<meta>` carrier is dropped as pure data is rebuilt from `data-rune-fields`, so `recipe`, `event`, `track`, `playlist`, `character`, `realm`, `lore` and `howto` keep the RDFa they emit today without `createComponentRenderable` gaining any knowledge of schema
 - [ ] Every schema source is addressable — the ~10 sources in neither `properties` nor `refs` (`embed`, `tier`, and the image nodes in `figure`, `recipe`, `playlist`, `realm`, `faction`) gain a name or a bag entry before their rune migrates
 - [ ] Plugin runes declare schema the same way core runes do, and the plugin-facing contract says so
