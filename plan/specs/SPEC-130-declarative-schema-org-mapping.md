@@ -520,7 +520,7 @@ So the rule this spec should establish: **presentation never selects on the
 schema.org channel.** The refs already produce BEM element classes for every one
 of these nodes (`.rf-tier__name`, `.rf-lore__title`), which is what the CSS
 should have used. Migrating the six rules is small and half of it is a bug fix
-regardless of whether this spec ships — filed as {% ref "BUG-014" /%}. Guarding
+regardless of whether this spec ships — filed as {% ref "BUG-015" /%}. Guarding
 it afterwards is a one-line assertion in the CSS coverage test.
 
 This also sharpens the ADR-028 argument. The reason a theme may not redefine
@@ -536,15 +536,15 @@ An earlier revision of this spec scoped in the removal of
 `data-field="content-section"` and that nothing reads. It rode the same call-site
 sweep, so folding it in looked free.
 
-It has moved to {% ref "SPEC-131" /%}. The reason is that it is **not the
+It has moved to {% ref "SPEC-133" /%}. The reason is that it is **not the
 schema.org channel**: `createComponentRenderable` maps the `property` *field* to
 `data-field`, not to the RDFa `property` attribute, and the thing it is an
-instance of is the six-way overload of `data-field` that SPEC-131 exists to
+instance of is the six-way overload of `data-field` that SPEC-133 exists to
 resolve. Two different things called `property` in one call is a naming problem,
 not an emission one.
 
 What stays here is only the consequence for this spec: the applier addresses
-nodes by a name in the rune's flat namespace, so whichever way SPEC-131 settles
+nodes by a name in the rune's flat namespace, so whichever way SPEC-133 settles
 `properties` versus `refs`, the table keys do not change — see "Key direction"
 above.
 
@@ -1042,7 +1042,7 @@ has started.
 - [ ] Grouping named sibling nodes into a nested entity is expressible, so `testimonial`'s `Person` / `Rating` and `event`'s `Place` are declared rather than synthesised by hand
 - [ ] No stylesheet selects on `property=`; the six Lumina rules move to BEM element classes and a CSS coverage assertion keeps them there
 - [ ] `defineRune({ schemaOrgType })` is deleted or fed from the table — the type is declared once
-- [ ] `typeof="PageSection"` is not emitted anywhere — it is not a schema.org type (the removal itself belongs to {% ref "SPEC-131" /%}; this spec only requires that no invented type survives)
+- [ ] `typeof="PageSection"` is not emitted anywhere — it is not a schema.org type (the removal itself belongs to {% ref "SPEC-133" /%}; this spec only requires that no invented type survives)
 - [ ] Whether a bare `@type` with no properties is emitted is decided and applied uniformly across the seven Group A runes
 - [ ] The imperative form either still works or is fully migrated — not half of each, per rune
 
@@ -1053,8 +1053,8 @@ has started.
 - {% ref "SPEC-082" /%} — the schema.org channel this reworks
 - {% ref "ADR-028" /%} — rune identity is not theme configuration; why the table belongs to the rune
 - {% ref "BUG-013" /%} — the mistyped playlists this would fix
-- {% ref "BUG-014" /%} — stylesheets selecting on the schema.org channel, four of them already dead
-- {% ref "SPEC-131" /%} — what `data-field` and `data-name` each mean; carries the `contentSection` removal this spec surfaced
+- {% ref "BUG-015" /%} — stylesheets selecting on the schema.org channel, four of them already dead
+- {% ref "SPEC-133" /%} — what `data-field` and `data-name` each mean; carries the `contentSection` removal this spec surfaced
 - {% ref "ADR-008" /%} — the flat namespace the table's keys live in
 
 {% /spec %}
