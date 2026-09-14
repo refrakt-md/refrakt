@@ -115,9 +115,11 @@ schema.
 
 That reframes the rejected alternative below. "Relocate `extractSeo`" is not
 merely a larger change with no upside; it is the only option that closes the
-`postProcess` hole. Keeping the harvest where it is means this spec ships a
-mechanism with a known gap, which is defensible but must be said out loud —
-see the open question.
+`postProcess` hole — and, as the hidden-carrier section shows, the only one that
+lets the rendered node carry the schema. Keeping the harvest where it is means
+this spec ships a mechanism with a known gap, which is defensible but must be
+said out loud — see the open question, and the two-point invariant that makes
+the move testable.
 
 ### Selection and application split
 
@@ -693,6 +695,104 @@ else. It has also drifted — nine entries for thirty emitting runes, and
 The table should replace it and the field should be deleted, or the second stale
 declaration outlives the first.
 
+## Harvest at both points, and assert they agree
+
+The spec has been treating the harvest point as a decision — keep `extractSeo`
+where it is, or move it. It is better as an **invariant**: harvest at both
+points and require the two graphs to match. Drift then fails a test instead of
+shipping.
+
+**It holds today.** Measured by running `collectJsonLd` over the pre-engine tree
+and over the same tree after `createTransform`, across 15 runes spanning core and
+five plugins:
+
+| Result | Runes |
+|--------|-------|
+| Identical | accordion, breadcrumb, figure, embed, gallery, budget, track, testimonial, pricing, timeline, cast |
+| Key order only | recipe, howto, playlist, event |
+| Semantic drift | *none* |
+
+So the engine is schema-preserving, and the test goes green on day one. It is a
+regression net, not a migration.
+
+**The comparison has to sort object keys and preserve array order.** The four
+order-only cases are the runes whose metas the engine relocates to the end of
+the block, so `collectProperties` meets them later — a difference with no
+meaning in JSON-LD. Array order is the opposite: `itemListElement`, `step`,
+`track` and `recipeInstructions` are ordered sequences, and a breadcrumb whose
+items reversed is a real defect. A naive `JSON.stringify` comparison fails four
+runes for nothing; a normalise-keys-keep-arrays comparison fails only on
+substance.
+
+**This subsumes the RDFa/JSON-LD question.** The shipped JSON-LD is harvested
+pre-engine and the shipped HTML *is* the post-engine tree, so "both harvests
+agree" is exactly "the RDFa in the published HTML expresses the same graph as
+the published JSON-LD" — the invariant this spec was otherwise going to assert
+by hand. With one caveat worth recording: `collectJsonLd` is an RDFa subset (no
+`@about`, `@resource`, `@vocab`, prefixes or `@rel`), so it proves *our reader*
+sees the same graph at both points, not that a conformant processor would.
+Upgrading to a real distiller over the rendered HTML is a later option, not a
+prerequisite.
+
+**It also makes relocation safe rather than brave.** Every argument for moving
+`extractSeo` — the `postProcess` hole, and stamping the rendered node instead of
+a hidden `<meta>` (below) — becomes a change with a net under it instead of a
+leap. And the net is not passive: run at page level, through the real pipeline,
+the invariant *fails today* on a page using `{% breadcrumb auto=true %}`, because
+the post-engine harvest sees a `BreadcrumbList` the pre-engine one never had.
+That is the known bug surfacing itself, which is the behaviour wanted.
+
+Hence a scope choice: rune-level (fixtures, cheap, catches engine drift) or
+page-level (through `runPipeline`, catches the `postProcess` class too). Both,
+ideally — they are the same assertion at two granularities.
+
+## The hidden carrier, and what relocation would buy
+
+A value-only schema property is emitted twice, and neither copy is the one the
+reader sees. `recipe`'s rendered output:
+
+```html
+<article typeof="Recipe" … data-prep-time="PT15M">
+  …
+  <dl data-name="metadata">
+    <div data-name="row" data-field="prepTime"><dt>Prep</dt><dd data-meta-type="temporal">15m</dd></div>
+  …
+  <meta content="PT15M" property="prepTime" />   <!-- trailing, after the content div -->
+</article>
+```
+
+`PT15M` appears three times: the fields bag on the root, the rendered `<dd>`,
+and a hidden `<meta>`. The RDFa is correct — the meta is inside the `Recipe`
+scope, so the triples are right — but the node a human reads carries no schema,
+and the node carrying the schema is invisible.
+
+The cause is the same seam as everything else here, inverted. The transform
+stamps a `<meta>` because **at transform time the `<dd>` does not exist** — the
+engine builds that `<dl>` later from `data-rune-fields`. Not "the engine cannot
+emit schema" but its mirror: the engine's own output cannot carry schema.
+
+RDFa has the right idiom for a human/machine value split — `@content` overriding
+the element text:
+
+```html
+<dd property="prepTime" content="PT15M" data-meta-type="temporal">15m</dd>
+```
+
+One node instead of two. But the engine builds that `<dd>`, so stamping it means
+stamping at engine time, which today's pre-engine harvest would never see — you
+would need the meta *and* the stamp, worse than now.
+
+**So this is a second argument for relocating `extractSeo`, and the spec
+previously recorded only the first.** Relocation closes the `postProcess` hole
+*and* lets the rendered node become the carrier, deleting the hidden metas across
+`recipe`, `howto`, `event`, `playlist` and `track`. Weigh both before settling on
+keeping the harvest where it is — with the two-point invariant above as the net,
+the move is testable rather than risky.
+
+Until then the table should simply say which kind of carrier a row wants, and
+default to the hidden `<meta>` — today's behaviour, made explicit rather than
+incidental.
+
 ## Before anything moves: the baseline
 
 This migration rewrites structured data across 30 runes in 10 packages, and the
@@ -743,15 +843,16 @@ has started.
   offers types it has mappings for, so the unsafe case stops being expressible —
   which may make validation unnecessary rather than deferred. Confirm. Note this
   holds only if the `organization` free-text path closes too.
-- **Do the two serializations have to agree?** Settled for the wrapper case —
-  they must, so the wrapper stays (above). But it is a standing question for the
-  spec, because refrakt publishes RDFa inline *and* JSON-LD in the head, and
-  nothing checks them against each other. One divergence already exists:
-  `breadcrumb` emits `<meta property="position" content="1">`, which RDFa reads
-  as the string `"1"` while the JSON-LD carries the number `1`. Harmless here,
-  but it shows there is no guard. Worth deciding whether "the RDFa and the
-  JSON-LD express the same graph" is an invariant this spec asserts and tests,
-  or merely a thing that happens to hold.
+- **Where does the harvest end up?** No longer a leap, given the two-point
+  invariant above: the question is whether this spec *also* moves `extractSeo`
+  (closing the `postProcess` hole and enabling the rendered-node carrier), or
+  ships the invariant now and moves it in a follow-up. Either is defensible; a
+  third option — never moving it — should be chosen deliberately, since it
+  permanently keeps both the hidden metas and the `postProcess` blind spot.
+  One small divergence to fold in either way: `breadcrumb` emits
+  `<meta property="position" content="1">`, a string `"1"` in RDFa against the
+  number `1` in the JSON-LD. Harmless, but it is the kind of thing the invariant
+  should be tuned to either catch or explicitly tolerate.
 - **Is the table part of the public plugin contract?** It has to be — 67 of the
   runes live in plugins, and a plugin rune must be able to declare its schema
   the same way a core rune does. But that makes "curation, not validation" a
@@ -791,7 +892,7 @@ has started.
 - [ ] Every one of the 22 existing `schema:` maps is expressible, including the computed-meta cases
 - [ ] The imperative `typeof:` / `property:` stamps and the `attributes.typeof = …` mutations are covered too, or the runes carrying them are named as out of scope with a reason
 - [ ] A nested entity can name the property that takes its own content, with the applier emitting the RDFa-conformant wrapper — no rune hand-writes one
-- [ ] The inline RDFa and the JSON-LD express the same graph for every rune that emits both — asserted by a test, not by inspection
+- [ ] The JSON-LD is harvested at both the pre-engine and post-engine points and the two graphs are asserted equal — object keys normalised, array order significant — so RDFa/JSON-LD divergence fails a test rather than shipping
 - [ ] Grouping named sibling nodes into a nested entity is expressible, so `testimonial`'s `Person` / `Rating` and `event`'s `Place` are declared rather than synthesised by hand
 - [ ] No stylesheet selects on `property=`; the six Lumina rules move to BEM element classes and a CSS coverage assertion keeps them there
 - [ ] `defineRune({ schemaOrgType })` is deleted or fed from the table — the type is declared once
