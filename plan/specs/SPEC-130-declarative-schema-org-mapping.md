@@ -529,62 +529,24 @@ that *styles off* emission has the same coupling pointed the other way: it makes
 the rune's appearance depend on its SEO channel, so a correction to the
 structured data becomes a visual regression.
 
-## Adjacent cleanup: `property: 'contentSection'`
+## Adjacent cleanup, moved out: `property: 'contentSection'`
 
-29 runes pass `property: 'contentSection'` to `createComponentRenderable`, on the
-line above their `schema:` map. **It is not the schema.org channel**, despite
-sitting next to it and sharing the word: `createComponentRenderable` maps the
-`property` *field* to `data-field`, kebab-cased, so what ships is
+An earlier revision of this spec scoped in the removal of
+`property: 'contentSection'` — 29 transforms passing a value that becomes
+`data-field="content-section"` and that nothing reads. It rode the same call-site
+sweep, so folding it in looked free.
 
-```html
-<section data-field="content-section" typeof="FAQPage" class="rf-accordion" …>
-```
+It has moved to {% ref "SPEC-131" /%}. The reason is that it is **not the
+schema.org channel**: `createComponentRenderable` maps the `property` *field* to
+`data-field`, not to the RDFa `property` attribute, and the thing it is an
+instance of is the six-way overload of `data-field` that SPEC-131 exists to
+resolve. Two different things called `property` in one call is a naming problem,
+not an emission one.
 
-Two different things called `property` in one call, one of which becomes
-`data-field` and one of which becomes RDFa `property`. That alone is worth
-fixing while every one of these call sites is open.
-
-**Nothing reads it.** Every reference in the repo, outside the 29 declarations:
-
-| Where | What it is |
-|-------|-----------|
-| `documents/page.ts` | the `Page` document node — **dead and broken** (below) |
-| `transform/test/html.test.ts` | a hand-built fixture checking `$$mdtype` stripping; not pipeline output |
-| `plugins/marketing/test/hero-content-model.test.ts` | asserts the attribute exists — a characterisation test of today's output |
-| `site/content/extend/rune-authoring/` (4 pages) | documented as part of the output contract |
-
-Zero hits in the engine, the Svelte renderer, the framework adapters, the
-editor, behaviors, the language server, any stylesheet, or
-`contracts/structures.json` — which is its own small indictment, since
-`contracts` claims to describe the complete HTML structure and omits an
-attribute present on every section rune on every page.
-
-**The one consumer that ever existed is dead code, and was broken anyway.**
-`Page` splits children on `c.attributes['data-field'] === 'contentSection'` —
-camelCase, against an attribute that is kebab-cased at emission. It could never
-have matched. It is also never registered: `documents` is exported from
-`packages/runes/src/index.ts` and no Markdoc config consumes it, so the node
-never runs. That is why nobody noticed the case mismatch.
-
-Deleting `Page` has a bonus that *is* squarely this spec's business: it emits
-`typeof="PageSection"` on every wrapper it makes, and `PageSection` is not a
-schema.org type at all. Dead today, but it is an invented type sitting in the
-codebase waiting to be revived. Its config entry (`PageSection: { block:
-'page-section' }` in `coreConfig`) and `packages/lumina/styles/runes/page-section.css`
-go with it — the CSS exists only because the coverage test derives it from that
-config entry, a closed loop of dead code keeping itself alive.
-
-So the removal is: the `property:` line from 29 transforms, the `Page` /
-`DocPage` document nodes, the `PageSection` config entry and its CSS, the
-marketing characterisation test, and four docs pages. With
-`property: 'contentSection'` gone, `TransformResult.property` has exactly one
-remaining user — `error.ts`, whose `data-field="error"` is equally unread — so
-**the field itself can go**, taking the naming collision with it.
-
-Not the schema.org channel, so it could ship separately. But it rides the same
-call-site sweep, and removing a line from 29 files already being edited is
-free. `PageSectionSlots` in `packages/types` is unrelated and stays — it types
-the `eyebrow` / `headline` / `blurb` header slots.
+What stays here is only the consequence for this spec: the applier addresses
+nodes by a name in the rune's flat namespace, so whichever way SPEC-131 settles
+`properties` versus `refs`, the table keys do not change — see "Key direction"
+above.
 
 ## The driving case: `playlist`
 
@@ -1080,7 +1042,7 @@ has started.
 - [ ] Grouping named sibling nodes into a nested entity is expressible, so `testimonial`'s `Person` / `Rating` and `event`'s `Place` are declared rather than synthesised by hand
 - [ ] No stylesheet selects on `property=`; the six Lumina rules move to BEM element classes and a CSS coverage assertion keeps them there
 - [ ] `defineRune({ schemaOrgType })` is deleted or fed from the table — the type is declared once
-- [ ] `property: 'contentSection'` is gone from all 29 transforms, along with the dead `Page` / `DocPage` nodes, the `PageSection` config entry and its CSS — and `TransformResult.property` with them, so nothing in the call signature shares a name with the schema.org channel
+- [ ] `typeof="PageSection"` is not emitted anywhere — it is not a schema.org type (the removal itself belongs to {% ref "SPEC-131" /%}; this spec only requires that no invented type survives)
 - [ ] Whether a bare `@type` with no properties is emitted is decided and applied uniformly across the seven Group A runes
 - [ ] The imperative form either still works or is fully migrated — not half of each, per rune
 
@@ -1091,5 +1053,8 @@ has started.
 - {% ref "SPEC-082" /%} — the schema.org channel this reworks
 - {% ref "ADR-028" /%} — rune identity is not theme configuration; why the table belongs to the rune
 - {% ref "BUG-013" /%} — the mistyped playlists this would fix
+- {% ref "BUG-014" /%} — stylesheets selecting on the schema.org channel, four of them already dead
+- {% ref "SPEC-131" /%} — what `data-field` and `data-name` each mean; carries the `contentSection` removal this spec surfaced
+- {% ref "ADR-008" /%} — the flat namespace the table's keys live in
 
 {% /spec %}
