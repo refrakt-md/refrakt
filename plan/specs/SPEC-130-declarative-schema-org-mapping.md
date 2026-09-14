@@ -118,7 +118,7 @@ merely a larger change with no upside; it is the only option that closes the
 `postProcess` hole — and, as the hidden-carrier section shows, the only one that
 lets the rendered node carry the schema. Keeping the harvest where it is means
 this spec ships a mechanism with a known gap, which is defensible but must be
-said out loud — see the open question, and the two-point invariant that makes
+said out loud — see the harvest decision, and the two-point invariant that makes
 the move testable.
 
 ### Selection and application split
@@ -253,10 +253,10 @@ to `IDENTITY_FIELDS` in `packages/transform/src/identity-fields.ts` so no merge
 path can redefine it.
 
 **The legitimate per-site need is already served, at the right layer.** An
-author who wants a different type says so in *content* — `schema="none"`,
-`schema="<Type>"` — where they are making a claim about their own content. A
-theme making that claim on their behalf, for every page, is the thing being
-ruled out.
+author who wants different structured data says so in *content* — by the
+attribute the rune already derives from, or `schema="none"` — where they are
+making a claim about their own content. A theme making that claim on their
+behalf, for every page, is the thing being ruled out.
 
 ### Key direction: the rune's name, not the schema property
 
@@ -652,9 +652,10 @@ That settles the layering:
 
 - **derive** — a content attribute picks the schema, because the author has
   already said what the thing is
-- **override** — `schema="<Type>"` for when the author knows better than the
-  mapping; rarely needed once the default is derived
-- **suppress** — `schema="none"`, orthogonal to both ({% ref "WORK-552" /%})
+- **suppress** — `schema="none"`, orthogonal ({% ref "WORK-552" /%})
+- ~~**override**~~ — `schema="<Type>"` was the third layer in an earlier draft.
+  Deferred: with every multi-type rune carrying a table, it has no demonstrated
+  use, and dropping it is what lets D5 dispense with validation. See D3.
 
 ### Two emitters, one mapping
 
@@ -957,60 +958,141 @@ runes this spec changes have no JSON-LD test at all. Cheap to build now while
 the current behaviour is the reference; impossible to reconstruct once the sweep
 has started.
 
-## Open questions
+## Decisions
 
-- **Is `none` a type or a mode?** `schema="none"` suppresses; every other value
-  names a type. Reads fine, but it makes the attribute's vocabulary a union of
-  two kinds of thing.
-- **`organization` already has an override, under another name.**
-  `organization.ts:43` passes `typeof: attrs.type || undefined` — the author's
-  `type=` attribute becomes the schema.org type verbatim, uncurated and
-  unvalidated. That is the `schema="<Type>"` escape hatch, shipped on one rune
-  with a different spelling. Reconcile: either `organization` grows a curated
-  `by: 'type'` table like `playlist`, or it is the precedent and `schema=` is
-  the one that changes. Two spellings for one thing is the outcome to avoid.
-- **Does an empty entity get emitted?** Group A above — seven runes publish a
-  bare `@type`. Proposed: no entity without at least one property. Needs a
-  decision because it changes seven runes' output, and `refrakt contracts`
-  `--check` will show the diff.
-- **Arity.** `appendToProperty` stores a single value as a scalar and only
-  promotes to an array on the second: a one-track playlist emits
-  `"track": { … }`, not `"track": [ … ]`. If the table says a property is a
-  list, the emitter can normalise. Cheap to add while the shape is being
-  designed; awkward to retrofit.
-- **~~The `postProcess` emitters.~~** Settled with the harvest decision: `seo`
-  is recomputed after `runPipeline`, so `breadcrumb auto`'s JSON-LD stops being
-  dropped. It still builds its renderables outside any Markdoc schema, so the
-  applier cannot reach it — the hook must call the same applier directly, or
-  that one emitter stays hand-written and the "not half of each" criterion is
-  read per rune.
-- **Validation.** Narrowing to a subtype is always safe (schema.org properties
-  are inherited); switching branches is not. With a per-type table the rune only
-  offers types it has mappings for, so the unsafe case stops being expressible —
-  which may make validation unnecessary rather than deferred. Confirm. Note this
-  holds only if the `organization` free-text path closes too.
-- **~~Where does the harvest end up?~~** Settled: after the pipeline, not after
-  the engine — see the decision section. What remains is one small divergence to
-  fold in: `breadcrumb` emits `<meta property="position" content="1">`, a string
-  `"1"` in RDFa against the number `1` in the JSON-LD. Harmless, but the
-  invariant should be tuned to either catch it or explicitly tolerate it.
-- **Is the table part of the public plugin contract?** It has to be — 67 of the
-  runes live in plugins, and a plugin rune must be able to declare its schema
-  the same way a core rune does. But that makes "curation, not validation" a
-  wider claim than it first looks: a third-party plugin would be asserting
-  arbitrary schema.org types on its users' pages, with no ontology to check it
-  against and no theme-level way to suppress it (by {% ref "ADR-028" /%}, and
-  rightly). Probably acceptable — it is the same trust already extended to any
-  plugin's transform code, and `schema="none"` gives the author an out — but it
-  should be a decision recorded here rather than a consequence discovered later.
-- **Migration shape.** 35 call sites across 30 runes, split 7 / 14 / 9 by the
-  groups above. The natural sequencing follows that split — Group A (decide and
-  delete), Group B (mechanical), Group C (four separable decisions, not a
-  rewrite) — preceded by the baseline snapshot, and with the harvest move and
-  the CSS decoupling as their own items. Six or seven work items rather than
-  one. The harvest move is independent of the table and can land first: it fixes
-  a live bug on its own and puts the drift invariant in place before the sweep
-  starts.
+Everything below was an open question. None needs more research; each is
+recorded with the reasoning so it is not re-litigated.
+
+### D1 — `schema="none"` stays a value, not a second attribute
+
+The vocabulary is "a schema.org type, or `none`", which is a union of two kinds
+of thing and reads fine anyway. The alternative — a separate suppression
+attribute — splits one concern across two spellings, which is worse. It has also
+shipped ({% ref "WORK-552" /%}), so the cost of changing it is real and the
+benefit is cosmetic. Document the vocabulary; change nothing.
+
+### D2 — `organization` is the precedent, not the inconsistency
+
+**A correction to earlier revisions of this spec**, which twice described
+`organization`'s `type=` as free-text and unvalidated. It is neither:
+
+```ts
+const orgType = ['Organization', 'LocalBusiness', 'Corporation',
+                 'EducationalOrganization', 'GovernmentOrganization', 'NonProfit'] as const;
+type: { type: String, required: false, matches: orgType.slice(), … }
+```
+
+A curated six-value enum, enforced by Markdoc. So `organization` is already
+doing exactly what this spec proposes — deriving a schema.org type from a
+content attribute the author has already set — just expressed imperatively. It
+converts to a `by: 'type'` table directly, and its rows are the simplest
+possible kind: a type and nothing else, since all six share `Organization`'s
+properties.
+
+**And its list contains a type that does not exist.** schema.org has `NGO`;
+there is no `NonProfit`. The enum validates against *itself*, so `matches` is
+satisfied and nothing notices that the value is not in the vocabulary it claims
+to speak. Correcting it to `NGO` belongs with this conversion.
+
+That finding is the argument for the whole spec in miniature: the mapping was
+already a curated table, it was already wrong, and it was wrong somewhere no
+tool could look. Making it data that `inspect` and `contracts` can print is what
+turns "someone would have to notice" into "someone can review it".
+
+### D3 — a universal `schema="<Type>"` override is deferred
+
+With per-type tables everywhere and no free-text path (D2), the layering this
+spec described reduces to two live mechanisms: **derive** (a content attribute
+picks the row) and **suppress** (`schema="none"`). The third, **override**, has
+no demonstrated use once the default is derived — nobody has asked for it, and
+it is the only one that lets an author assert a type the rune has no mapping
+for.
+
+Deferring it is also what makes D5 hold. Ship derive and suppress; add override
+if a real case appears.
+
+### D4 — an entity with no properties is not emitted
+
+A row that resolves to a bare `@type` emits nothing. Seven runes change —
+`gallery`, `data-table`, `budget`, `itinerary`, `map`, `symbol`, `blog` — each
+of which currently publishes `{"@context": …, "@type": "Dataset"}` and no more.
+A type assertion with nothing attached tells a consumer nothing; it is noise in
+every channel that reads it.
+
+This gives Group A a migration with a forcing function — write a mapping or lose
+the type — rather than a silent carry-forward of seven meaningless entities.
+
+### D5 — no validation mechanism; review is the control
+
+Narrowing to a subtype is always safe; switching branches is not. With every
+multi-type rune carrying a curated table (D2) and no override (D3), a rune only
+ever emits a type it has a row for, so the unsafe case stops being expressible.
+No validation mechanism is needed.
+
+**But "no mechanism" is not "no risk", and D2 is the proof.** Nothing checks a
+table against schema.org, because refrakt ships no ontology and this spec does
+not propose adding one. What replaces validation is visibility: `inspect` and
+`contracts` print the resolved table, so a wrong row is reviewable. That is a
+weaker guarantee than validation and should be described as such rather than
+implied away.
+
+### D6 — declared list properties always serialise as arrays
+
+`appendToProperty` stores the first value as a scalar and only promotes on the
+second, so a one-track playlist emits `"track": { … }` and a two-track one
+emits `"track": [ … ]` — the shape of the output varying with the amount of
+content. A row may declare a property a list; those always emit an array.
+
+Cheap while the shape is being designed, awkward to retrofit. It changes output
+for every single-item collection, so it lands as a visible diff against the
+baseline.
+
+### D7 — the table is part of the public plugin contract
+
+It has to be: 67 of the runes live in plugins, and a plugin rune must declare
+its schema the way a core rune does. That extends "curation, not validation"
+(D5) to third parties, who would be asserting schema.org types on their users'
+pages with no ontology to check them against and no theme-level suppression
+(by {% ref "ADR-028" /%}, and rightly).
+
+Accepted. It is the same trust already extended to any plugin's transform code,
+which can emit arbitrary `typeof` today, and `schema="none"` gives the author an
+out. D2 shows the risk is not hypothetical even in first-party code — which is
+an argument for `inspect --audit` covering plugin runes, not for withholding the
+mechanism.
+
+### D8 — the `postProcess` hook calls the applier
+
+`buildAutoBreadcrumb` builds its renderables outside any Markdoc schema, so the
+wrapper cannot reach it. It is one call site: the hook applies the resolved row
+directly. That keeps "not half of each" exceptionless rather than carving out
+the one emitter that happens to live in a pipeline phase.
+
+The `position` divergence folds in here — `breadcrumb` emits
+`<meta property="position" content="1">`, a string in RDFa against a number in
+the JSON-LD. Emit `String(index + 1)` so both channels agree, rather than
+teaching the invariant to tolerate a mismatch.
+
+## Migration shape
+
+Seven work items. The first two are independent of the table and land first.
+
+1. **Baseline snapshot** — JSON-LD fixtures for all 30 emitting runes, committed
+   before anything moves.
+2. **Harvest after the pipeline** — recompute `seo` from `enrichedPages`, plus
+   the two-point drift invariant. Fixes `breadcrumb auto` on its own.
+3. **CSS decoupling** — the six Lumina rules off the schema.org channel
+   ({% ref "BUG-015" /%}), plus the coverage assertion that keeps them off.
+4. **The mechanism** — the table, the applier, `entities` / `text` / `index`,
+   `IDENTITY_FIELDS`, and the ~10 unaddressable sources named first.
+5. **Group A** — apply D4; seven runes lose a bare type or gain a mapping.
+6. **Group B** — 14 runes, mechanical.
+7. **Group C** — nine runes, four separable shapes; `playlist` first since it
+   exercises `by:`, `children:` and the inline stamps at once.
+
+Tooling (`contracts`, `reference`, `inspect`) rides items 4–7 rather than
+forming its own, since each needs the table to exist before it has anything to
+print.
 
 ## Non-goals
 
@@ -1040,10 +1122,13 @@ has started.
 - [ ] A nested entity can name the property that takes its own content, with the applier emitting the RDFa-conformant wrapper — no rune hand-writes one
 - [ ] The JSON-LD is harvested at both the pre-engine and post-engine points and the two graphs are asserted equal — object keys normalised, array order significant — so RDFa/JSON-LD divergence fails a test rather than shipping
 - [ ] Grouping named sibling nodes into a nested entity is expressible, so `testimonial`'s `Person` / `Rating` and `event`'s `Place` are declared rather than synthesised by hand
+- [ ] A property declared a list always serialises as an array, so a one-item collection and a two-item one have the same shape (D6)
+- [ ] `organization`'s six-value enum becomes a `by: 'type'` table, and `NonProfit` is corrected to `NGO` — a type that does not exist in schema.org (D2)
+- [ ] `breadcrumb`'s `position` agrees between the RDFa and the JSON-LD (D8)
 - [ ] No stylesheet selects on `property=`; the six Lumina rules move to BEM element classes and a CSS coverage assertion keeps them there
 - [ ] `defineRune({ schemaOrgType })` is deleted or fed from the table — the type is declared once
 - [ ] `typeof="PageSection"` is not emitted anywhere — it is not a schema.org type (the removal itself belongs to {% ref "SPEC-133" /%}; this spec only requires that no invented type survives)
-- [ ] Whether a bare `@type` with no properties is emitted is decided and applied uniformly across the seven Group A runes
+- [ ] No entity is emitted without at least one property (D4) — each of the seven Group A runes either gains a mapping or stops emitting a type
 - [ ] The imperative form either still works or is fully migrated — not half of each, per rune
 
 ## References
