@@ -119,15 +119,63 @@ merely a larger change with no upside; it is the only option that closes the
 mechanism with a known gap, which is defensible but must be said out loud —
 see the open question.
 
-### Nothing needs threading
+### Selection and application split
 
-The obvious guess is that the table is passed to `createComponentRenderable`.
-It cannot be: picking a row needs `attrs` (for `by: 'type'`), and that function
-receives only the assembled result.
+An earlier draft of this section was called "Nothing needs threading" and
+claimed the table could live wholly in `createContentModelSchema`, with
+`createComponentRenderable` untouched. **That is wrong**, and the reason decides
+the shape of the mechanism.
 
-The wrapper has both. So `schema` is an **option to `createContentModelSchema`**,
-sitting with the rune-identity declarations already there — `sections`,
-`mediaSlots`, `provides`, `base`:
+`createComponentRenderable` classifies each property `<meta>` by consulting
+`schema:` *at build time*:
+
+```ts
+const isSeoMeta = n.name === 'meta' && schemaTags.has(n);
+if (!isSeoMeta) n.attributes['data-field'] = toKebabCase(k);
+…
+if (!isSeoMeta) pureDataMetas.add(n);
+…
+.filter(c => !emptySeoMetas.has(c) && !pureDataMetas.has(c))
+```
+
+A property meta that is *not* named in `schema:` gets `data-field` and is
+**dropped from the children**. The ones that survive do so precisely because the
+rune declares them — visible in today's output:
+
+```html
+<meta content="Pink Floyd" property="byArtist" />   <!-- playlist -->
+<meta content="PT15M" property="prepTime" />        <!-- recipe -->
+```
+
+So if the call sites "stop passing `schema` entirely" and the table is applied
+afterwards in the wrapper, those nodes no longer exist by the time the applier
+runs. There is nothing left to stamp.
+
+This is not a corner case. It hits every schema value that is a `<meta>` also
+listed in `properties` — at least **8 runes and ~16 properties**: `recipe` (3),
+`event` (3), `track` (5), `playlist`, `character`, `realm`, `lore`, `howto`.
+That is almost exactly the "computed metas — declarative by reference" row of
+the survey, the half this spec called easy. The reference only holds while the
+rune declares it at build time. (`embed` escapes because its schema metas are
+not in `properties`; non-meta nodes escape because only metas are dropped.)
+
+**The fix is to split selection from application.** Picking a row needs `attrs`,
+which only the wrapper has; applying a row needs the nodes, which only
+`createComponentRenderable` has. So the wrapper resolves the row and passes
+*that* — not the table — down:
+
+```ts
+createComponentRenderable({ rune: 'playlist', schemaRow, … })
+```
+
+Rejected alternatives: stop dropping pure-data metas (changes the children of
+every rune in the catalog, for this); or have the applier reconstruct the
+dropped metas from `data-rune-fields` (re-creating nodes the same function just
+deleted).
+
+So the table is still an **option to `createContentModelSchema`**, sitting with
+the rune-identity declarations already there — `sections`, `mediaSlots`,
+`provides`, `base` — and the resolved row is threaded one level down:
 
 ```ts
 export const playlist = createContentModelSchema({
@@ -142,10 +190,11 @@ export const playlist = createContentModelSchema({
 Since {% ref "ADR-028" /%} rules out merging, there is no merged view to
 assemble and **no `config.variables` threading is required** — the table is a
 module constant in lexical scope, and `contracts` / `reference` read it the way
-they already read `sections`.
+they already read `sections`. The threading is one resolved row, passed one
+level, not a table plumbed through the pipeline.
 
-The 35 call sites get *simpler*: they stop passing `schemaOrgType` and `schema`
-entirely rather than gaining an argument.
+The 35 call sites still get *simpler*: they stop hand-writing `schemaOrgType`
+and the `schema` map, and carry a single opaque value they do not construct.
 
 The child mapping works because Markdoc transforms bottom-up. By the time the
 wrapper sees `result`, the children carry their own `typeof`, so it rewrites
@@ -318,6 +367,20 @@ Note the collector is otherwise a fair RDFa subset: `property` + `href` on an
 `<a>`, `property` + `src` on an `<img>`, and `<meta property content>` all
 resolve as RDFa 1.1 specifies. The one rule worth changing was the one holding
 conformance up.
+
+**The other three shapes are already conformant**, checked against `refrakt
+inspect` output so the question does not get re-opened:
+
+```html
+<li typeof="MusicRecording" data-field="track" property="track">  <!-- typed resource held by a property -->
+<span typeof="Person" property="author"><meta property="name" …>  <!-- same, with inner literals -->
+<meta content="1" property="position" />                          <!-- plain literal -->
+```
+
+So wrapping was the only place where the imperative form was load-bearing for
+the standard rather than merely habitual. The rest of Group C is imperative by
+accretion, and can be moved into the table without touching what the HTML
+asserts.
 
 **Index-derived values — one keyword.** `position: 'index'`. A value that is not
 in the content has to be generated, and no amount of naming helps. The
@@ -613,6 +676,14 @@ that might appear inside it.
 closes a real gap in what `contracts` claims to cover. Both read config, so the
 table has to be reachable from config — which it is, by the `sections` pattern.
 
+`refrakt inspect` belongs on that list too, and is the one that matters most in
+practice: it is the per-rune tool an author actually reaches for, and every
+claim in this spec was verified with it. Today it shows the RDFa only
+incidentally, as raw HTML in the rendered output. It should show the resolved
+schema row — the type, the property mapping, the child mappings — the way it
+already shows BEM classes and data attributes, and `--audit` should be able to
+report a rune whose table names a `data-name` the rune does not emit.
+
 **One declaration instead of two.** `defineRune({ schemaOrgType })` already
 carries a rune's type in the catalog — `packages/runes/src/index.ts`, nine
 entries. Nothing reads `Rune.schemaOrgType`: it is assigned in `rune.ts:59` and
@@ -621,6 +692,27 @@ else. It has also drifted — nine entries for thirty emitting runes, and
 `Accordion: 'FAQPage'` is no longer unconditional since {% ref "WORK-552" /%}.
 The table should replace it and the field should be deleted, or the second stale
 declaration outlives the first.
+
+## Before anything moves: the baseline
+
+This migration rewrites structured data across 30 runes in 10 packages, and the
+output is a thing nobody looks at directly — a page renders identically whether
+its JSON-LD is right or ruined. Every regression in this spec's history was
+found by *running* `extractSeo`, not by reading a transform, and four dead CSS
+selectors survived years of review precisely because nothing asserted them.
+
+So the first work item is a **baseline snapshot of today's JSON-LD for every
+emitting rune**, before a single call site changes. Per-rune fixtures through
+`extractSeo`, committed. Then each migration step is reviewed as a diff against
+it: `playlist type="podcast"` *should* change, `recipe` should not, and the
+seven Group A entities disappear in exactly one commit.
+
+The existing coverage is not that. `packages/runes/test/seo.test.ts` and the
+per-plugin `seo.test.ts` files assert a handful of runes — `accordion`,
+`breadcrumb`, `playlist` — with hand-written expectations, and several of the
+runes this spec changes have no JSON-LD test at all. Cheap to build now while
+the current behaviour is the reference; impossible to reconstruct once the sweep
+has started.
 
 ## Open questions
 
@@ -660,11 +752,20 @@ declaration outlives the first.
   but it shows there is no guard. Worth deciding whether "the RDFa and the
   JSON-LD express the same graph" is an invariant this spec asserts and tests,
   or merely a thing that happens to hold.
+- **Is the table part of the public plugin contract?** It has to be — 67 of the
+  runes live in plugins, and a plugin rune must be able to declare its schema
+  the same way a core rune does. But that makes "curation, not validation" a
+  wider claim than it first looks: a third-party plugin would be asserting
+  arbitrary schema.org types on its users' pages, with no ontology to check it
+  against and no theme-level way to suppress it (by {% ref "ADR-028" /%}, and
+  rightly). Probably acceptable — it is the same trust already extended to any
+  plugin's transform code, and `schema="none"` gives the author an out — but it
+  should be a decision recorded here rather than a consequence discovered later.
 - **Migration shape.** 35 call sites across 30 runes, split 7 / 14 / 9 by the
   groups above. The natural sequencing follows that split — Group A (decide and
   delete), Group B (mechanical), Group C (four separable decisions, not a
-  rewrite) — plus the CSS decoupling as its own item. Four or five work items
-  rather than one.
+  rewrite) — preceded by the baseline snapshot and accompanied by the CSS
+  decoupling as their own items. Five or six work items rather than one.
 
 ## Non-goals
 
@@ -677,13 +778,16 @@ declaration outlives the first.
 - **A schema.org ontology.** See "Curation, not validation" above.
 
 ## Acceptance Criteria
+- [ ] A baseline JSON-LD snapshot covers all 30 emitting runes and is committed before the first call site changes, so every later step is reviewed as a diff against it
 - [ ] A rune's schema.org type and property mapping are expressible in config, keyed by `data-name` / `data-field`
+- [ ] Row selection (needs `attrs`) and row application (needs the nodes) are split, so a schema value carried by a property `<meta>` is not dropped before it can be stamped — `recipe`, `event`, `track`, `playlist`, `character`, `realm`, `lore` and `howto` keep the RDFa they emit today
+- [ ] Plugin runes declare schema the same way core runes do, and the plugin-facing contract says so
 - [ ] The mapping is applied at transform time, so `extractSeo` still sees it — a test asserts the JSON-LD, not just the HTML attributes
 - [ ] A rune can offer more than one type, with per-type property names *and* per-type child mappings — where a child mapping carries its own property map, not just a type name
 - [ ] A child entity is never declared without the property that holds it, so it cannot float up as a detached top-level entity
 - [ ] Suppressing schema entirely is expressible on every rune, not just `accordion`, and strips the whole subtree rather than just the root
 - [ ] `schema` joins `IDENTITY_FIELDS`, so no merge path — theme override or variant delta — can redefine what a rune means
-- [ ] `refrakt contracts` describes the schema.org output it currently omits
+- [ ] `refrakt contracts` describes the schema.org output it currently omits, and `refrakt inspect` shows a rune's resolved schema row rather than leaving it to be read out of the raw HTML
 - [ ] Every one of the 22 existing `schema:` maps is expressible, including the computed-meta cases
 - [ ] The imperative `typeof:` / `property:` stamps and the `attributes.typeof = …` mutations are covered too, or the runes carrying them are named as out of scope with a reason
 - [ ] A nested entity can name the property that takes its own content, with the applier emitting the RDFa-conformant wrapper — no rune hand-writes one
