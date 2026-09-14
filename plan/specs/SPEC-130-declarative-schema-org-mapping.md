@@ -214,12 +214,10 @@ wrapper sees `result`, the children carry their own `typeof`, so it rewrites
 them — the move `stripSchemaOrg` already makes for `schema="none"`
 ({% ref "WORK-552" /%}).
 
-Relocating `extractSeo` is the alternative. It is a larger change — content
-loading is framework-agnostic — but it is no longer "not obviously better": it
-is what would let `postProcess`-injected schema be harvested. Note that moving
-it after *the pipeline* (recompute `seo` from `enrichedPages`) is a much smaller
-change than moving it after *the engine*, and closes the whole known gap. The
-two should not be conflated when this is decided.
+Relocating `extractSeo` is the alternative, and it is really two alternatives
+that must not be conflated: moving it after *the pipeline* and moving it after
+*the engine* differ by an order of magnitude. **Decided below**: the first is
+in scope, the second is ruled out.
 
 ## Ownership: the rune, not the theme
 
@@ -897,16 +895,67 @@ One node instead of two. But the engine builds that `<dd>`, so stamping it means
 stamping at engine time, which today's pre-engine harvest would never see — you
 would need the meta *and* the stamp, worse than now.
 
-**So this is a second argument for relocating `extractSeo`, and the spec
-previously recorded only the first.** Relocation closes the `postProcess` hole
-*and* lets the rendered node become the carrier, deleting the hidden metas across
-`recipe`, `howto`, `event`, `playlist` and `track`. Weigh both before settling on
-keeping the harvest where it is — with the two-point invariant above as the net,
-the move is testable rather than risky.
+This was a second argument for relocating `extractSeo` past the engine. **It is
+not enough** — see the decision below. The hidden metas stay, and the table
+simply says which kind of carrier a row wants, defaulting to the hidden
+`<meta>`: today's behaviour, made explicit rather than incidental.
 
-Until then the table should simply say which kind of carrier a row wants, and
-default to the hidden `<meta>` — today's behaviour, made explicit rather than
-incidental.
+## Decision: move the harvest after the pipeline, not after the engine
+
+The two relocations differ by an order of magnitude, and the difference is
+structural rather than a matter of effort.
+
+### After the pipeline — in scope
+
+Recompute `seo` from `enrichedPages` once `runPipeline` returns, inside
+`loadSite`. One change in one place: `extractSeo` is pure, the pages are in
+hand, and it stays where content loading already lives — framework-agnostic,
+before any adapter sees anything. It closes the `postProcess` hole completely.
+
+### After the engine — ruled out
+
+**There is no post-engine seam to move to.** The engine is not invoked at one
+place in the framework; in SvelteKit it runs in the *site's own load function*:
+
+```ts
+// site/src/routes/[...slug]/+page.server.ts
+const renderable = hl(transform(serialized));   // ← the engine, line 29
+…
+seo: page.seo,                                   // ← line 41
+```
+
+Three lines apart, in code the user owns. Eleventy differs again — it passes
+`page.renderable` straight to `renderPage` and reads `page.seo` off the load
+result, never calling `createTransform` itself.
+
+So a post-engine harvest is not one relocation but N, several of them in
+user-land site code. **The pre-engine harvest exists because it is the last
+framework-agnostic point** — which is what this spec's earlier "content loading
+is framework-agnostic" line was gesturing at, and it is a structural fact rather
+than a preference.
+
+What that forecloses is only the rendered-node carrier, and that is cosmetic:
+the RDFa is correct either way, both channels carry the right triples, and the
+cost is three hidden elements per rune. Not worth N adapter changes plus churn
+in every site's load function.
+
+Detection survives the decision. The two-point invariant runs in tests, where
+engine output is available in a harness, so drift is caught without production
+harvesting moving at all.
+
+### Two sub-decisions inside the move
+
+- **`extractSeo` returns og metadata as well as JSON-LD.** Recomputing after the
+  pipeline re-derives og from the enriched tree, and `extractOgMeta` reads
+  hero / first `h1` / first paragraph / first image — all of which `postProcess`
+  can touch (collection and pagination sentinels inject content). Recompute
+  both and let the baseline show what moves; recomputing only `jsonLd` would
+  leave og deriving from a tree that no longer matches the page.
+- **This is an output change, by design.** Pages using
+  `{% breadcrumb auto=true %}` gain a `BreadcrumbList` they do not publish
+  today. That is the fix, but it should land as a visible diff against the
+  baseline rather than as a silent side effect — another reason the baseline
+  snapshot sequences first.
 
 ## Before anything moves: the baseline
 
@@ -950,24 +999,22 @@ has started.
   `"track": { … }`, not `"track": [ … ]`. If the table says a property is a
   list, the emitter can normalise. Cheap to add while the shape is being
   designed; awkward to retrofit.
-- **The `postProcess` emitters.** `breadcrumb auto` builds schema outside any
-  Markdoc schema, and its JSON-LD is dropped today. In scope (recompute `seo`
-  after `runPipeline`), or explicitly excluded and filed?
+- **~~The `postProcess` emitters.~~** Settled with the harvest decision: `seo`
+  is recomputed after `runPipeline`, so `breadcrumb auto`'s JSON-LD stops being
+  dropped. It still builds its renderables outside any Markdoc schema, so the
+  applier cannot reach it — the hook must call the same applier directly, or
+  that one emitter stays hand-written and the "not half of each" criterion is
+  read per rune.
 - **Validation.** Narrowing to a subtype is always safe (schema.org properties
   are inherited); switching branches is not. With a per-type table the rune only
   offers types it has mappings for, so the unsafe case stops being expressible —
   which may make validation unnecessary rather than deferred. Confirm. Note this
   holds only if the `organization` free-text path closes too.
-- **Where does the harvest end up?** No longer a leap, given the two-point
-  invariant above: the question is whether this spec *also* moves `extractSeo`
-  (closing the `postProcess` hole and enabling the rendered-node carrier), or
-  ships the invariant now and moves it in a follow-up. Either is defensible; a
-  third option — never moving it — should be chosen deliberately, since it
-  permanently keeps both the hidden metas and the `postProcess` blind spot.
-  One small divergence to fold in either way: `breadcrumb` emits
-  `<meta property="position" content="1">`, a string `"1"` in RDFa against the
-  number `1` in the JSON-LD. Harmless, but it is the kind of thing the invariant
-  should be tuned to either catch or explicitly tolerate.
+- **~~Where does the harvest end up?~~** Settled: after the pipeline, not after
+  the engine — see the decision section. What remains is one small divergence to
+  fold in: `breadcrumb` emits `<meta property="position" content="1">`, a string
+  `"1"` in RDFa against the number `1` in the JSON-LD. Harmless, but the
+  invariant should be tuned to either catch it or explicitly tolerate it.
 - **Is the table part of the public plugin contract?** It has to be — 67 of the
   runes live in plugins, and a plugin rune must be able to declare its schema
   the same way a core rune does. But that makes "curation, not validation" a
@@ -980,8 +1027,11 @@ has started.
 - **Migration shape.** 35 call sites across 30 runes, split 7 / 14 / 9 by the
   groups above. The natural sequencing follows that split — Group A (decide and
   delete), Group B (mechanical), Group C (four separable decisions, not a
-  rewrite) — preceded by the baseline snapshot and accompanied by the CSS
-  decoupling as their own items. Five or six work items rather than one.
+  rewrite) — preceded by the baseline snapshot, and with the harvest move and
+  the CSS decoupling as their own items. Six or seven work items rather than
+  one. The harvest move is independent of the table and can land first: it fixes
+  a live bug on its own and puts the drift invariant in place before the sweep
+  starts.
 
 ## Non-goals
 
@@ -995,6 +1045,7 @@ has started.
 
 ## Acceptance Criteria
 - [ ] A baseline JSON-LD snapshot covers all 30 emitting runes and is committed before the first call site changes, so every later step is reviewed as a diff against it
+- [ ] `seo` is recomputed from `enrichedPages` after `runPipeline`, so `postProcess`-injected schema reaches the JSON-LD — `{% breadcrumb auto=true %}` publishes the `BreadcrumbList` it renders, asserted by a test
 - [ ] A rune's schema.org type and property mapping are expressible in config, keyed by `data-name` / `data-field`
 - [ ] A schema value whose `<meta>` carrier is dropped as pure data is rebuilt from `data-rune-fields`, so `recipe`, `event`, `track`, `playlist`, `character`, `realm`, `lore` and `howto` keep the RDFa they emit today without `createComponentRenderable` gaining any knowledge of schema
 - [ ] Every schema source is addressable — the ~10 sources in neither `properties` nor `refs` (`embed`, `tier`, and the image nodes in `figure`, `recipe`, `playlist`, `realm`, `faction`) gain a name or a bag entry before their rune migrates
