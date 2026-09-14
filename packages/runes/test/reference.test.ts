@@ -92,7 +92,9 @@ describe('renderContentModel — sections', () => {
 			},
 		};
 		const out = renderContentModel(itineraryModel);
-		expect(out).toContain('Heading parsing: each section heading is parsed into `time` (pattern `^(.+?)\\s*[-–—]\\s*`) and `location` (remaining text).');
+		expect(out).toContain(
+			'Heading parsing: each section heading is parsed into `time` (pattern `^(.+?)\\s*[-–—]\\s*`) and `location` (remaining text).',
+		);
 	});
 
 	it('lists knownSections with aliases', () => {
@@ -109,7 +111,9 @@ describe('renderContentModel — sections', () => {
 			},
 		};
 		const out = renderContentModel(model);
-		expect(out).toContain('Known sections: `abilities`, `relationships` (aliases: connections, bonds).');
+		expect(out).toContain(
+			'Known sections: `abilities`, `relationships` (aliases: connections, bonds).',
+		);
 	});
 });
 
@@ -172,7 +176,8 @@ describe('renderContentModel — custom', () => {
 	it('renders the description verbatim under Content structure (tabs shape)', () => {
 		const tabsModel: SerializedContentModel = {
 			type: 'custom',
-			description: 'Converts headings at the specified level to tab tags, extracting tab name and optional image from heading content.',
+			description:
+				'Converts headings at the specified level to tab tags, extracting tab name and optional image from heading content.',
 		};
 		expect(renderContentModel(tabsModel)).toMatchInlineSnapshot(`
 			"Content structure:
@@ -188,7 +193,11 @@ describe('renderContentModel — stability', () => {
 			delimiter: 'hr',
 			zones: [
 				{ name: 'content', type: 'sequence', fields: [{ name: 'headline', match: 'heading' }] },
-				{ name: 'media', type: 'sequence', fields: [{ name: 'media', match: 'any', greedy: true }] },
+				{
+					name: 'media',
+					type: 'sequence',
+					fields: [{ name: 'media', match: 'any', greedy: true }],
+				},
 			],
 		};
 		const first = renderContentModel(model);
@@ -285,7 +294,10 @@ describe('attribute preset registry', () => {
 			flavor: { type: String, required: false },
 		};
 		registerAttributePreset(record, { name: 'test preset', description: 'A preset for testing.' });
-		expect(lookupAttributePreset(record)).toEqual({ name: 'test preset', description: 'A preset for testing.' });
+		expect(lookupAttributePreset(record)).toEqual({
+			name: 'test preset',
+			description: 'A preset for testing.',
+		});
 	});
 
 	it('populates schemaBasePresets when a schema is built with base:', () => {
@@ -326,7 +338,9 @@ describe('describeRune — attribute tiers', () => {
 		};
 		const out = describeRune(rune);
 		expect(out).toContain('Attributes:\n  - align: "left" | "right" (optional)');
-		expect(out).toContain('Inherited from the `split layout` preset — Layout controls for runes that can render stacked or split.');
+		expect(out).toContain(
+			'Inherited from the `split layout` preset — Layout controls for runes that can render stacked or split.',
+		);
 		expect(out).toContain('  - layout: "stacked" | "split" (optional)');
 		expect(out).toContain('  - ratio: string (optional)');
 		// WORK-535 — this line used to print all 37 universal attributes under
@@ -364,7 +378,11 @@ describe('describeRune', () => {
 				delimiter: 'hr',
 				zones: [
 					{ name: 'content', type: 'sequence', fields: [{ name: 'headline', match: 'heading' }] },
-					{ name: 'media', type: 'sequence', fields: [{ name: 'media', match: 'any', greedy: true }] },
+					{
+						name: 'media',
+						type: 'sequence',
+						fields: [{ name: 'media', match: 'any', greedy: true }],
+					},
 				],
 			},
 		};

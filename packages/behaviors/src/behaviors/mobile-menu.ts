@@ -27,29 +27,34 @@ export function mobileMenuBehavior(container: HTMLElement | Document): CleanupFn
 
 	const mainPanel = root.querySelector<HTMLElement>('.rf-mobile-panel:not(.rf-mobile-panel--nav)');
 	const navPanel = root.querySelector<HTMLElement>('.rf-mobile-panel--nav');
-	const menuToggles = root.querySelectorAll<HTMLElement>('[data-mobile-menu-toggle], [data-mobile-menu-open]');
+	const menuToggles = root.querySelectorAll<HTMLElement>(
+		'[data-mobile-menu-toggle], [data-mobile-menu-open]',
+	);
 	const navToggles = root.querySelectorAll<HTMLElement>('[data-mobile-nav-toggle]');
 
 	function syncTriggers() {
 		const mainOpen = !!mainPanel?.hasAttribute('data-open');
-		menuToggles.forEach(btn => {
+		menuToggles.forEach((btn) => {
 			btn.setAttribute('aria-expanded', mainOpen ? 'true' : 'false');
-			btn.setAttribute('aria-label', mainOpen ? bstr('behavior.mobileMenu.close') : bstr('behavior.mobileMenu.open'));
+			btn.setAttribute(
+				'aria-label',
+				mainOpen ? bstr('behavior.mobileMenu.close') : bstr('behavior.mobileMenu.open'),
+			);
 		});
 		const navOpen = !!navPanel?.hasAttribute('data-open');
-		navToggles.forEach(btn => {
+		navToggles.forEach((btn) => {
 			btn.setAttribute('aria-expanded', navOpen ? 'true' : 'false');
 		});
 	}
 
 	function closeAll() {
-		panels.forEach(p => p.removeAttribute('data-open'));
+		panels.forEach((p) => p.removeAttribute('data-open'));
 		document.body.style.overflow = '';
 		syncTriggers();
 	}
 
 	function openPanel(panel: HTMLElement) {
-		panels.forEach(p => {
+		panels.forEach((p) => {
 			if (p !== panel) p.removeAttribute('data-open');
 		});
 		panel.setAttribute('data-open', '');
@@ -103,6 +108,6 @@ export function mobileMenuBehavior(container: HTMLElement | Document): CleanupFn
 
 	return () => {
 		closeAll();
-		cleanups.forEach(fn => fn());
+		cleanups.forEach((fn) => fn());
 	};
 }

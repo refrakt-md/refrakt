@@ -1,4 +1,9 @@
-import type { EntityRegistration, EntityRegistry, EntityEdge, ResolvedEdge } from '@refrakt-md/types';
+import type {
+	EntityRegistration,
+	EntityRegistry,
+	EntityEdge,
+	ResolvedEdge,
+} from '@refrakt-md/types';
 
 /**
  * Concrete implementation of the cross-page entity registry.
@@ -50,7 +55,7 @@ export class EntityRegistryImpl implements EntityRegistry {
 			}
 			const urlList = urlMap.get(normalized.sourceUrl);
 			if (urlList) {
-				const idx = urlList.findIndex(e => sameIdentity(e, normalized));
+				const idx = urlList.findIndex((e) => sameIdentity(e, normalized));
 				if (idx >= 0) {
 					urlList[idx] = normalized;
 				} else {
@@ -125,7 +130,10 @@ export class EntityRegistryImpl implements EntityRegistry {
 
 	/** Outgoing edges of `id`, each with its target entity resolved (SPEC-072).
 	 *  Edges to unknown entities are dropped. */
-	getRelated(id: string, opts?: { kind?: string | string[]; type?: string | string[] }): ResolvedEdge[] {
+	getRelated(
+		id: string,
+		opts?: { kind?: string | string[]; type?: string | string[] },
+	): ResolvedEdge[] {
 		const edges = this.edgesByFrom.get(id);
 		if (!edges) return [];
 		const kinds = opts?.kind === undefined ? undefined : new Set(toArray(opts.kind));

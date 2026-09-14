@@ -1,5 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, mkdtempSync, rmSync, existsSync, readFileSync, writeFileSync, statSync, utimesSync } from 'fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	rmSync,
+	existsSync,
+	readFileSync,
+	writeFileSync,
+	statSync,
+	utimesSync,
+} from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { runInit, type InitOptions } from '../src/commands/init.js';
@@ -101,10 +110,22 @@ describe('plan init — scaffolding', () => {
 		mkdirSync(join(planDir, 'specs'), { recursive: true });
 		mkdirSync(join(planDir, 'decisions'), { recursive: true });
 		mkdirSync(join(planDir, 'milestones'), { recursive: true });
-		writeFileSync(join(planDir, 'work', 'my-task.md'), '{% work id="WORK-001" status="ready" %}\n# Mine\n{% /work %}\n');
-		writeFileSync(join(planDir, 'specs', 'my-spec.md'), '{% spec id="SPEC-001" status="draft" %}\n# Mine\n{% /spec %}\n');
-		writeFileSync(join(planDir, 'decisions', 'my-decision.md'), '{% decision id="ADR-001" status="proposed" %}\n# Mine\n{% /decision %}\n');
-		writeFileSync(join(planDir, 'milestones', 'mine.md'), '{% milestone name="v0.1.0" status="planning" %}\n# Mine\n{% /milestone %}\n');
+		writeFileSync(
+			join(planDir, 'work', 'my-task.md'),
+			'{% work id="WORK-001" status="ready" %}\n# Mine\n{% /work %}\n',
+		);
+		writeFileSync(
+			join(planDir, 'specs', 'my-spec.md'),
+			'{% spec id="SPEC-001" status="draft" %}\n# Mine\n{% /spec %}\n',
+		);
+		writeFileSync(
+			join(planDir, 'decisions', 'my-decision.md'),
+			'{% decision id="ADR-001" status="proposed" %}\n# Mine\n{% /decision %}\n',
+		);
+		writeFileSync(
+			join(planDir, 'milestones', 'mine.md'),
+			'{% milestone name="v0.1.0" status="planning" %}\n# Mine\n{% /milestone %}\n',
+		);
 
 		expect(() => safeInit({ dir: planDir, projectRoot: TMP })).not.toThrow();
 
@@ -121,7 +142,10 @@ describe('plan init — scaffolding', () => {
 		// scaffold the non-colliding examples and skip just the WORK one.
 		const planDir = join(TMP, 'plan');
 		mkdirSync(join(planDir, 'work'), { recursive: true });
-		writeFileSync(join(planDir, 'work', 'my-task.md'), '{% work id="WORK-001" status="ready" %}\n# Mine\n{% /work %}\n');
+		writeFileSync(
+			join(planDir, 'work', 'my-task.md'),
+			'{% work id="WORK-001" status="ready" %}\n# Mine\n{% /work %}\n',
+		);
 
 		safeInit({ dir: planDir, projectRoot: TMP });
 
@@ -488,12 +512,15 @@ describe('plan init — Claude SessionStart hook', () => {
 
 	it('merges into existing .claude/settings.json without clobbering other hooks', () => {
 		mkdirSync(join(TMP, '.claude'), { recursive: true });
-		writeFileSync(join(TMP, '.claude', 'settings.json'), JSON.stringify({
-			hooks: {
-				SessionStart: [{ hooks: [{ type: 'command', command: 'echo existing' }] }],
-				Stop: [{ hooks: [{ type: 'command', command: 'echo stop' }] }],
-			},
-		}));
+		writeFileSync(
+			join(TMP, '.claude', 'settings.json'),
+			JSON.stringify({
+				hooks: {
+					SessionStart: [{ hooks: [{ type: 'command', command: 'echo existing' }] }],
+					Stop: [{ hooks: [{ type: 'command', command: 'echo stop' }] }],
+				},
+			}),
+		);
 
 		runInit({
 			dir: join(TMP, 'plan'),
@@ -670,7 +697,10 @@ describe('plan init — example file content', () => {
 		const planDir = join(TMP, 'plan');
 		safeInit({ dir: planDir, projectRoot: TMP });
 
-		const decision = readFileSync(join(planDir, 'decisions', 'ADR-001-example-decision.md'), 'utf-8');
+		const decision = readFileSync(
+			join(planDir, 'decisions', 'ADR-001-example-decision.md'),
+			'utf-8',
+		);
 		expect(decision).toContain('{% decision');
 		expect(decision).toContain('{% /decision %}');
 	});
@@ -690,10 +720,16 @@ describe('plan init — example file content', () => {
 		safeInit({ dir: planDir, projectRoot: TMP });
 
 		const statusFiles = [
-			['work', 'in-progress.md'], ['work', 'ready.md'], ['work', 'blocked.md'], ['work', 'done.md'],
-			['specs', 'accepted.md'], ['specs', 'draft.md'],
-			['decisions', 'accepted.md'], ['decisions', 'proposed.md'],
-			['milestones', 'active.md'], ['milestones', 'complete.md'],
+			['work', 'in-progress.md'],
+			['work', 'ready.md'],
+			['work', 'blocked.md'],
+			['work', 'done.md'],
+			['specs', 'accepted.md'],
+			['specs', 'draft.md'],
+			['decisions', 'accepted.md'],
+			['decisions', 'proposed.md'],
+			['milestones', 'active.md'],
+			['milestones', 'complete.md'],
 		];
 		for (const [typeDir, fileName] of statusFiles) {
 			expect(existsSync(join(planDir, typeDir, fileName))).toBe(false);

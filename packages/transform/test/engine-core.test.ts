@@ -34,7 +34,9 @@ function findByTypeof(node: any, typeof_: string): SerializedTag | undefined {
 describe('basic modifiers', () => {
 	it('reads modifier value from meta tag and adds BEM modifier class', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Hint: {
 					block: 'hint',
@@ -54,7 +56,9 @@ describe('basic modifiers', () => {
 
 	it('applies default value when meta tag is absent', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Hint: {
 					block: 'hint',
@@ -71,7 +75,9 @@ describe('basic modifiers', () => {
 
 	it('sets data attribute from modifier value with camelCase to kebab-case', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Hint: {
 					block: 'hint',
@@ -88,7 +94,9 @@ describe('basic modifiers', () => {
 
 	it('handles multiple modifiers with separate classes and data attrs', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Figure: {
 					block: 'figure',
@@ -114,7 +122,9 @@ describe('basic modifiers', () => {
 
 	it('produces no modifier class when value is missing and no default', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Test: {
 					block: 'test',
@@ -132,7 +142,9 @@ describe('basic modifiers', () => {
 
 	it('sets data-rune to lowercased value', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Hint: { block: 'hint' },
 			},
@@ -151,7 +163,9 @@ describe('basic modifiers', () => {
 describe('autoLabel', () => {
 	it('labels child by tag name', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				AccordionItem: {
 					block: 'accordion-item',
@@ -160,20 +174,18 @@ describe('autoLabel', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('div', { 'data-rune': 'accordion-item' }, [
-			makeTag('name', {}, ['Title']),
-		]);
+		const tag = makeTag('div', { 'data-rune': 'accordion-item' }, [makeTag('name', {}, ['Title'])]);
 
 		const result = asTag(transform(tag));
-		const child = result.children.find(
-			(c: any) => c?.name === 'name'
-		) as SerializedTag;
+		const child = result.children.find((c: any) => c?.name === 'name') as SerializedTag;
 		expect(child.attributes['data-name']).toBe('header');
 	});
 
 	it('labels child by data-field attribute', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Test: {
 					block: 'test',
@@ -188,14 +200,16 @@ describe('autoLabel', () => {
 
 		const result = asTag(transform(tag));
 		const child = result.children.find(
-			(c: any) => c?.attributes?.['data-field'] === 'title'
+			(c: any) => c?.attributes?.['data-field'] === 'title',
 		) as SerializedTag;
 		expect(child.attributes['data-name']).toBe('heading');
 	});
 
 	it('does not override existing data-name', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Test: {
 					block: 'test',
@@ -209,15 +223,15 @@ describe('autoLabel', () => {
 		]);
 
 		const result = asTag(transform(tag));
-		const child = result.children.find(
-			(c: any) => c?.name === 'summary'
-		) as SerializedTag;
+		const child = result.children.find((c: any) => c?.name === 'summary') as SerializedTag;
 		expect(child.attributes['data-name']).toBe('custom');
 	});
 
 	it('ignores children that do not match autoLabel keys', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Test: {
 					block: 'test',
@@ -226,14 +240,10 @@ describe('autoLabel', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'test' }, [
-			makeTag('p', {}, ['text']),
-		]);
+		const tag = makeTag('section', { 'data-rune': 'test' }, [makeTag('p', {}, ['text'])]);
 
 		const result = asTag(transform(tag));
-		const child = result.children.find(
-			(c: any) => c?.name === 'p'
-		) as SerializedTag;
+		const child = result.children.find((c: any) => c?.name === 'p') as SerializedTag;
 		expect(child.attributes['data-name']).toBeUndefined();
 	});
 });
@@ -244,7 +254,9 @@ describe('autoLabel', () => {
 describe('contentWrapper', () => {
 	it('wraps content children in configured element', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Recipe: {
 					block: 'recipe',
@@ -270,7 +282,9 @@ describe('contentWrapper', () => {
 
 	it('works together with structure injection', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Api: {
 					block: 'api',
@@ -282,9 +296,7 @@ describe('contentWrapper', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'api' }, [
-			makeTag('p', {}, ['Description']),
-		]);
+		const tag = makeTag('section', { 'data-rune': 'api' }, [makeTag('p', {}, ['Description'])]);
 
 		const result = asTag(transform(tag));
 		// First child: structure element (header), second: wrapped content
@@ -296,7 +308,9 @@ describe('contentWrapper', () => {
 
 	it('works without structure config', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Test: {
 					block: 'test',
@@ -325,7 +339,9 @@ describe('contentWrapper', () => {
 describe('structure injection', () => {
 	it('prepends element when before=true', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Hint: {
 					block: 'hint',
@@ -336,9 +352,7 @@ describe('structure injection', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'hint' }, [
-			makeTag('p', {}, ['Content']),
-		]);
+		const tag = makeTag('section', { 'data-rune': 'hint' }, [makeTag('p', {}, ['Content'])]);
 
 		const result = asTag(transform(tag));
 		const first = asTag(result.children[0] as any);
@@ -347,7 +361,9 @@ describe('structure injection', () => {
 
 	it('appends element by default (no before flag)', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Test: {
 					block: 'test',
@@ -358,9 +374,7 @@ describe('structure injection', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'test' }, [
-			makeTag('p', {}, ['Content']),
-		]);
+		const tag = makeTag('section', { 'data-rune': 'test' }, [makeTag('p', {}, ['Content'])]);
 
 		const result = asTag(transform(tag));
 		const last = asTag(result.children[result.children.length - 1] as any);
@@ -369,7 +383,9 @@ describe('structure injection', () => {
 
 	it('builds nested structure children', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Hint: {
 					block: 'hint',
@@ -387,9 +403,7 @@ describe('structure injection', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'hint' }, [
-			makeTag('p', {}, ['Content']),
-		]);
+		const tag = makeTag('section', { 'data-rune': 'hint' }, [makeTag('p', {}, ['Content'])]);
 
 		const result = asTag(transform(tag));
 		const header = asTag(result.children[0] as any);
@@ -403,7 +417,9 @@ describe('structure injection', () => {
 
 	it('skips element when condition modifier is absent', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Api: {
 					block: 'api',
@@ -415,20 +431,18 @@ describe('structure injection', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'api' }, [
-			makeTag('p', {}, ['Content']),
-		]);
+		const tag = makeTag('section', { 'data-rune': 'api' }, [makeTag('p', {}, ['Content'])]);
 
 		const result = asTag(transform(tag));
-		const hasBadge = result.children.some(
-			(c: any) => c?.attributes?.['data-name'] === 'badge'
-		);
+		const hasBadge = result.children.some((c: any) => c?.attributes?.['data-name'] === 'badge');
 		expect(hasBadge).toBe(false);
 	});
 
 	it('includes element when condition modifier is present', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Api: {
 					block: 'api',
@@ -446,15 +460,15 @@ describe('structure injection', () => {
 		]);
 
 		const result = asTag(transform(tag));
-		const hasBadge = result.children.some(
-			(c: any) => c?.attributes?.['data-name'] === 'badge'
-		);
+		const hasBadge = result.children.some((c: any) => c?.attributes?.['data-name'] === 'badge');
 		expect(hasBadge).toBe(true);
 	});
 
 	it('includes element when conditionAny has at least one match', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Recipe: {
 					block: 'recipe',
@@ -474,15 +488,15 @@ describe('structure injection', () => {
 		]);
 
 		const result = asTag(transform(tag));
-		const hasMeta = result.children.some(
-			(c: any) => c?.attributes?.['data-name'] === 'meta'
-		);
+		const hasMeta = result.children.some((c: any) => c?.attributes?.['data-name'] === 'meta');
 		expect(hasMeta).toBe(true);
 	});
 
 	it('skips element when conditionAny has no matches', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Recipe: {
 					block: 'recipe',
@@ -497,20 +511,18 @@ describe('structure injection', () => {
 			},
 		};
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'recipe' }, [
-			makeTag('p', {}, ['Content']),
-		]);
+		const tag = makeTag('section', { 'data-rune': 'recipe' }, [makeTag('p', {}, ['Content'])]);
 
 		const result = asTag(transform(tag));
-		const hasMeta = result.children.some(
-			(c: any) => c?.attributes?.['data-name'] === 'meta'
-		);
+		const hasMeta = result.children.some((c: any) => c?.attributes?.['data-name'] === 'meta');
 		expect(hasMeta).toBe(false);
 	});
 
 	it('uses ref as data-name instead of structure key', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Test: {
 					block: 'test',
@@ -525,7 +537,7 @@ describe('structure injection', () => {
 
 		const result = asTag(transform(tag));
 		const element = result.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'custom-name'
+			(c: any) => c?.attributes?.['data-name'] === 'custom-name',
 		);
 		expect(element).toBeDefined();
 	});
@@ -537,7 +549,9 @@ describe('structure injection', () => {
 describe('structure metaText', () => {
 	it('injects modifier value as text content', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Api: {
 					block: 'api',
@@ -553,14 +567,16 @@ describe('structure metaText', () => {
 
 		const result = asTag(transform(tag));
 		const badge = result.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'badge'
+			(c: any) => c?.attributes?.['data-name'] === 'badge',
 		) as SerializedTag;
 		expect(badge.children).toContain('GET');
 	});
 
 	it('applies duration transform (ISO 8601)', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Recipe: {
 					block: 'recipe',
@@ -578,14 +594,16 @@ describe('structure metaText', () => {
 
 		const result = asTag(transform(tag));
 		const time = result.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'time'
+			(c: any) => c?.attributes?.['data-name'] === 'time',
 		) as SerializedTag;
 		expect(time.children).toContain('1h 30m');
 	});
 
 	it('applies uppercase transform', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Test: {
 					block: 'test',
@@ -603,14 +621,16 @@ describe('structure metaText', () => {
 
 		const result = asTag(transform(tag));
 		const badge = result.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'badge'
+			(c: any) => c?.attributes?.['data-name'] === 'badge',
 		) as SerializedTag;
 		expect(badge.children).toContain('GET');
 	});
 
 	it('applies capitalize transform', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Test: {
 					block: 'test',
@@ -628,20 +648,27 @@ describe('structure metaText', () => {
 
 		const result = asTag(transform(tag));
 		const label = result.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'label'
+			(c: any) => c?.attributes?.['data-name'] === 'label',
 		) as SerializedTag;
 		expect(label.children).toContain('Easy');
 	});
 
 	it('applies textPrefix and textSuffix', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Recipe: {
 					block: 'recipe',
 					modifiers: { servings: { source: 'meta' } },
 					structure: {
-						serving: { tag: 'span', metaText: 'servings', textPrefix: 'Serves: ', textSuffix: ' people' },
+						serving: {
+							tag: 'span',
+							metaText: 'servings',
+							textPrefix: 'Serves: ',
+							textSuffix: ' people',
+						},
 					},
 				},
 			},
@@ -653,14 +680,16 @@ describe('structure metaText', () => {
 
 		const result = asTag(transform(tag));
 		const serving = result.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'serving'
+			(c: any) => c?.attributes?.['data-name'] === 'serving',
 		) as SerializedTag;
 		expect(serving.children).toContain('Serves: 4 people');
 	});
 
 	it('emits separate label and value elements when label is set', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Recipe: {
 					block: 'recipe',
@@ -678,7 +707,7 @@ describe('structure metaText', () => {
 
 		const result = asTag(transform(tag));
 		const time = result.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'time'
+			(c: any) => c?.attributes?.['data-name'] === 'time',
 		) as SerializedTag;
 		expect(time.children).toHaveLength(2);
 		const labelEl = asTag(time.children[0] as any);
@@ -691,7 +720,9 @@ describe('structure metaText', () => {
 
 	it('wraps textPrefix inside value element when label is also set', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Test: {
 					block: 'test',
@@ -709,7 +740,7 @@ describe('structure metaText', () => {
 
 		const result = asTag(transform(tag));
 		const item = result.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'item'
+			(c: any) => c?.attributes?.['data-name'] === 'item',
 		) as SerializedTag;
 		const labelEl = asTag(item.children[0] as any);
 		const valueEl = asTag(item.children[1] as any);
@@ -724,7 +755,9 @@ describe('structure metaText', () => {
 describe('structure attrs', () => {
 	it('sets literal string attrs on element', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Test: {
 					block: 'test',
@@ -739,14 +772,16 @@ describe('structure attrs', () => {
 
 		const result = asTag(transform(tag));
 		const nav = result.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'nav'
+			(c: any) => c?.attributes?.['data-name'] === 'nav',
 		) as SerializedTag;
 		expect(nav.attributes.role).toBe('navigation');
 	});
 
 	it('resolves fromModifier attrs to modifier value', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Event: {
 					block: 'event',
@@ -764,14 +799,16 @@ describe('structure attrs', () => {
 
 		const result = asTag(transform(tag));
 		const link = result.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'link'
+			(c: any) => c?.attributes?.['data-name'] === 'link',
 		) as SerializedTag;
 		expect(link.attributes.href).toBe('https://example.com');
 	});
 
 	it('produces empty string when fromModifier modifier is missing', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Event: {
 					block: 'event',
@@ -787,7 +824,7 @@ describe('structure attrs', () => {
 
 		const result = asTag(transform(tag));
 		const link = result.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'link'
+			(c: any) => c?.attributes?.['data-name'] === 'link',
 		) as SerializedTag;
 		expect(link.attributes.href).toBe('');
 	});
@@ -799,7 +836,9 @@ describe('structure attrs', () => {
 describe('rootAttributes', () => {
 	it('adds extra attributes to root element', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Test: {
 					block: 'test',
@@ -817,7 +856,9 @@ describe('rootAttributes', () => {
 
 	it('coexists with standard attributes', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Test: {
 					block: 'test',
@@ -841,7 +882,9 @@ describe('rootAttributes', () => {
 describe('BEM class application', () => {
 	it('applies BEM element class to data-name children', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Hint: { block: 'hint' },
 			},
@@ -853,39 +896,41 @@ describe('BEM class application', () => {
 
 		const result = asTag(transform(tag));
 		const header = result.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'header'
+			(c: any) => c?.attributes?.['data-name'] === 'header',
 		) as SerializedTag;
 		expect(header.attributes.class).toContain('rf-hint__header');
 	});
 
 	it('applies BEM classes recursively to nested data-name children', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Hint: { block: 'hint' },
 			},
 		};
 		const transform = createTransform(config);
 		const tag = makeTag('section', { 'data-rune': 'hint' }, [
-			makeTag('div', { 'data-name': 'header' }, [
-				makeTag('span', { 'data-name': 'icon' }, []),
-			]),
+			makeTag('div', { 'data-name': 'header' }, [makeTag('span', { 'data-name': 'icon' }, [])]),
 		]);
 
 		const result = asTag(transform(tag));
 		const header = result.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'header'
+			(c: any) => c?.attributes?.['data-name'] === 'header',
 		) as SerializedTag;
 		expect(header.attributes.class).toContain('rf-hint__header');
 		const icon = header.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'icon'
+			(c: any) => c?.attributes?.['data-name'] === 'icon',
 		) as SerializedTag;
 		expect(icon.attributes.class).toContain('rf-hint__icon');
 	});
 
 	it('preserves existing class on data-name children', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Hint: { block: 'hint' },
 			},
@@ -897,7 +942,7 @@ describe('BEM class application', () => {
 
 		const result = asTag(transform(tag));
 		const header = result.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'header'
+			(c: any) => c?.attributes?.['data-name'] === 'header',
 		) as SerializedTag;
 		expect(header.attributes.class).toContain('rf-hint__header');
 		expect(header.attributes.class).toContain('custom');
@@ -905,7 +950,9 @@ describe('BEM class application', () => {
 
 	it('recurses into nested runes with separate BEM namespace', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Grid: { block: 'grid' },
 				Hint: { block: 'hint' },
@@ -924,7 +971,9 @@ describe('BEM class application', () => {
 
 	it('does not duplicate block class for runes inside a single data-name wrapper', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Outer: {
 					block: 'outer',
@@ -940,7 +989,7 @@ describe('BEM class application', () => {
 
 		const result = asTag(transform(tag));
 		const body = result.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'body'
+			(c: any) => c?.attributes?.['data-name'] === 'body',
 		) as SerializedTag;
 		const inner = findByTypeof(body, 'Inner')!;
 		expect(inner.attributes.class).toBe('rf-inner');
@@ -948,7 +997,9 @@ describe('BEM class application', () => {
 
 	it('does not duplicate block class for runes nested inside multiple data-name elements', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Parent: {
 					block: 'parent',
@@ -966,12 +1017,12 @@ describe('BEM class application', () => {
 
 		const result = asTag(transform(tag));
 		const wrapper = result.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'content'
+			(c: any) => c?.attributes?.['data-name'] === 'content',
 		) as SerializedTag;
 		expect(wrapper.attributes.class).toContain('rf-parent__content');
 
 		const items = wrapper.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'items'
+			(c: any) => c?.attributes?.['data-name'] === 'items',
 		) as SerializedTag;
 		expect(items.attributes.class).toContain('rf-parent__items');
 
@@ -981,7 +1032,9 @@ describe('BEM class application', () => {
 
 	it('context modifiers work through data-name wrapper elements', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Parent: {
 					block: 'parent',
@@ -989,7 +1042,7 @@ describe('BEM class application', () => {
 				},
 				Child: {
 					block: 'child',
-					contextModifiers: { 'parent': 'in-parent' },
+					contextModifiers: { parent: 'in-parent' },
 				},
 			},
 		};
@@ -1000,7 +1053,7 @@ describe('BEM class application', () => {
 
 		const result = asTag(transform(tag));
 		const body = result.children.find(
-			(c: any) => c?.attributes?.['data-name'] === 'body'
+			(c: any) => c?.attributes?.['data-name'] === 'body',
 		) as SerializedTag;
 		const child = findByTypeof(body, 'Child')!;
 		expect(child.attributes.class).toContain('rf-child--in-parent');
@@ -1014,7 +1067,9 @@ describe('BEM class application', () => {
 describe('meta tag filtering', () => {
 	it('removes consumed modifier meta tags from output', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Hint: {
 					block: 'hint',
@@ -1030,7 +1085,7 @@ describe('meta tag filtering', () => {
 
 		const result = asTag(transform(tag));
 		const hasMeta = result.children.some(
-			(c: any) => c?.name === 'meta' && c?.attributes?.['data-field'] === 'hint-type'
+			(c: any) => c?.name === 'meta' && c?.attributes?.['data-field'] === 'hint-type',
 		);
 		expect(hasMeta).toBe(false);
 		// Paragraph is preserved
@@ -1040,7 +1095,9 @@ describe('meta tag filtering', () => {
 
 	it('preserves non-modifier meta tags', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Hint: {
 					block: 'hint',
@@ -1056,14 +1113,16 @@ describe('meta tag filtering', () => {
 
 		const result = asTag(transform(tag));
 		const hasOtherMeta = result.children.some(
-			(c: any) => c?.name === 'meta' && c?.attributes?.['data-field'] === 'other'
+			(c: any) => c?.name === 'meta' && c?.attributes?.['data-field'] === 'other',
 		);
 		expect(hasOtherMeta).toBe(true);
 	});
 
 	it('preserves meta tags without data-field attribute', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Hint: {
 					block: 'hint',
@@ -1078,7 +1137,7 @@ describe('meta tag filtering', () => {
 
 		const result = asTag(transform(tag));
 		const hasCharsetMeta = result.children.some(
-			(c: any) => c?.name === 'meta' && c?.attributes?.charset === 'utf-8'
+			(c: any) => c?.name === 'meta' && c?.attributes?.charset === 'utf-8',
 		);
 		expect(hasCharsetMeta).toBe(true);
 	});

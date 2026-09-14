@@ -8,13 +8,22 @@ import type { SerializedTag } from '@refrakt-md/types';
 
 const THEME: FacetTheme = { tints: {}, backgrounds: {}, frames: {} };
 
-const meta = (field: string, content: string) => makeTag('meta', { 'data-field': field, content }, []);
+const meta = (field: string, content: string) =>
+	makeTag('meta', { 'data-field': field, content }, []);
 
 const MEDIA_RUNE: RuneConfig = { block: 'card', sections: { visual: 'media' } };
 const BARE_RUNE: RuneConfig = { block: 'badge' };
 
-const ctx = (metas: Array<[string, string]>, config: RuneConfig = MEDIA_RUNE, rune = 'card'): FacetContext => ({
-	tag: makeTag('div', { 'data-rune': rune }, metas.map(([f, c]) => meta(f, c))),
+const ctx = (
+	metas: Array<[string, string]>,
+	config: RuneConfig = MEDIA_RUNE,
+	rune = 'card',
+): FacetContext => ({
+	tag: makeTag(
+		'div',
+		{ 'data-rune': rune },
+		metas.map(([f, c]) => meta(f, c)),
+	),
 	config,
 	block: `rf-${config.block}`,
 	rune,
@@ -35,27 +44,53 @@ describe('substrate facet', () => {
 	});
 
 	it('emits the pattern marker', () => {
-		expect(substrateFacet.resolve(ctx([['substrate', 'grid']]))?.dataAttrs)
-			.toEqual({ 'data-substrate': 'grid' });
+		expect(substrateFacet.resolve(ctx([['substrate', 'grid']]))?.dataAttrs).toEqual({
+			'data-substrate': 'grid',
+		});
 	});
 
 	it('emits the fill marker when set', () => {
-		expect(substrateFacet.resolve(ctx([['substrate', 'dots'], ['substrate-fill', 'primary']]))?.dataAttrs)
-			.toEqual({ 'data-substrate': 'dots', 'data-substrate-fill': 'primary' });
+		expect(
+			substrateFacet.resolve(
+				ctx([
+					['substrate', 'dots'],
+					['substrate-fill', 'primary'],
+				]),
+			)?.dataAttrs,
+		).toEqual({ 'data-substrate': 'dots', 'data-substrate-fill': 'primary' });
 	});
 
 	it('maps the size and opacity scales', () => {
-		const result = substrateFacet.resolve(ctx([['substrate', 'grid'], ['substrate-size', 'lg'], ['substrate-opacity', 'sm']]));
-		expect(result?.styles).toEqual([['--substrate-cell', '24px'], ['--substrate-opacity', '0.25']]);
+		const result = substrateFacet.resolve(
+			ctx([
+				['substrate', 'grid'],
+				['substrate-size', 'lg'],
+				['substrate-opacity', 'sm'],
+			]),
+		);
+		expect(result?.styles).toEqual([
+			['--substrate-cell', '24px'],
+			['--substrate-opacity', '0.25'],
+		]);
 	});
 
 	it('drops an off-scale size rather than passing it through', () => {
-		const result = substrateFacet.resolve(ctx([['substrate', 'grid'], ['substrate-size', 'enormous']]));
+		const result = substrateFacet.resolve(
+			ctx([
+				['substrate', 'grid'],
+				['substrate-size', 'enormous'],
+			]),
+		);
 		expect(result?.styles).toEqual([]);
 	});
 
 	it('consumes every substrate meta it read', () => {
-		const result = substrateFacet.resolve(ctx([['substrate', 'grid'], ['substrate-size', 'md']]));
+		const result = substrateFacet.resolve(
+			ctx([
+				['substrate', 'grid'],
+				['substrate-size', 'md'],
+			]),
+		);
 		expect(result?.consumes).toEqual(['substrate', 'substrate-size']);
 	});
 
@@ -75,22 +110,49 @@ describe('substrate facet', () => {
 
 		it('lets a per-instance override beat the rune default', () => {
 			const config: RuneConfig = { ...MEDIA_RUNE, substrateTarget: 'media' };
-			const result = substrateFacet.resolve(ctx([['substrate', 'grid'], ['substrate-target', 'self']], config));
+			const result = substrateFacet.resolve(
+				ctx(
+					[
+						['substrate', 'grid'],
+						['substrate-target', 'self'],
+					],
+					config,
+				),
+			);
 			expect(carryOf(result).target).toBe('self');
 		});
 
 		it('lets a per-instance override opt into the media well', () => {
-			const result = substrateFacet.resolve(ctx([['substrate', 'grid'], ['substrate-target', 'media']]));
+			const result = substrateFacet.resolve(
+				ctx([
+					['substrate', 'grid'],
+					['substrate-target', 'media'],
+				]),
+			);
 			expect(carryOf(result).target).toBe('media');
 		});
 
 		it('ignores an unrecognised override and falls back to the default', () => {
-			const result = substrateFacet.resolve(ctx([['substrate', 'grid'], ['substrate-target', 'sideways']]));
+			const result = substrateFacet.resolve(
+				ctx([
+					['substrate', 'grid'],
+					['substrate-target', 'sideways'],
+				]),
+			);
 			expect(carryOf(result).target).toBe('self');
 		});
 
 		it('warns and targets nothing when media is requested but absent', () => {
-			const result = substrateFacet.resolve(ctx([['substrate', 'grid'], ['substrate-target', 'media']], BARE_RUNE, 'badge'));
+			const result = substrateFacet.resolve(
+				ctx(
+					[
+						['substrate', 'grid'],
+						['substrate-target', 'media'],
+					],
+					BARE_RUNE,
+					'badge',
+				),
+			);
 			expect(carryOf(result).target).toBeNull();
 			expect(result?.warnings?.[0].code).toBe('substrate-no-media');
 			expect(result?.dataAttrs).toBeUndefined();
@@ -99,7 +161,11 @@ describe('substrate facet', () => {
 
 	describe('postAssemble — media target', () => {
 		it('lands the chrome on the media zone', () => {
-			const c = ctx([['substrate', 'grid'], ['substrate-target', 'media'], ['substrate-size', 'sm']]);
+			const c = ctx([
+				['substrate', 'grid'],
+				['substrate-target', 'media'],
+				['substrate-size', 'sm'],
+			]);
 			const children = [makeTag('div', { 'data-section': 'media' }, [])];
 			substrateFacet.postAssemble!(c, children, substrateFacet.resolve(c)!.carry);
 			const zone = children[0] as SerializedTag;
@@ -108,7 +174,10 @@ describe('substrate facet', () => {
 		});
 
 		it('warns when the media zone never materialised', () => {
-			const c = ctx([['substrate', 'grid'], ['substrate-target', 'media']]);
+			const c = ctx([
+				['substrate', 'grid'],
+				['substrate-target', 'media'],
+			]);
 			const warnings = substrateFacet.postAssemble!(c, [], substrateFacet.resolve(c)!.carry);
 			expect(warnings?.[0].code).toBe('substrate-no-media');
 		});

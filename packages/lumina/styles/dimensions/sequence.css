@@ -1,64 +1,63 @@
 @layer skin {
-/* === Sequential Items — skin ===
+	/* === Sequential Items — skin ===
  * The connector lines (borders), the marker chrome (fill, radius, shadow), the
  * counter type, and the layout gaps. The counter mechanism, list resets, item
  * geometry, and marker box placement live in @refrakt-md/skeleton
  * (dimensions/sequence.css). */
 
-/* Numbered — counter circle chrome + type. */
-[data-sequence="numbered"] > li::before {
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-bold);
-	font-variant-numeric: tabular-nums;
-	color: var(--rf-color-primary);
-	background: var(--rf-color-surface-active);
-	border-radius: 50%;
-}
+	/* Numbered — counter circle chrome + type. */
+	[data-sequence="numbered"] > li::before {
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-bold);
+		font-variant-numeric: tabular-nums;
+		color: var(--rf-color-primary);
+		background: var(--rf-color-surface-active);
+		border-radius: 50%;
+	}
 
-[data-sequence="numbered"] > li + li {
-	border-top: 1px solid var(--rf-color-border);
-}
+	[data-sequence="numbered"] > li + li {
+		border-top: 1px solid var(--rf-color-border);
+	}
 
-/* Connected vertical — the line is a left border; the dot is the marker. */
-[data-sequence="connected"] > li {
-	border-left: 2px solid var(--rf-color-border);
-}
+	/* Connected vertical — the line is a left border; the dot is the marker. */
+	[data-sequence="connected"] > li {
+		border-left: 2px solid var(--rf-color-border);
+	}
 
-[data-sequence="connected"] > li:last-child {
-	border-left-color: transparent;
-}
+	[data-sequence="connected"] > li:last-child {
+		border-left-color: transparent;
+	}
 
-[data-sequence="connected"] > li::before {
-	border-radius: 50%;
-	background: var(--rf-color-primary);
-	border: 2px solid var(--rf-color-bg);
-	box-shadow: 0 0 0 2px var(--rf-color-primary);
-}
+	[data-sequence="connected"] > li::before {
+		border-radius: 50%;
+		background: var(--rf-color-primary);
+		border: 2px solid var(--rf-color-bg);
+		box-shadow: 0 0 0 2px var(--rf-color-primary);
+	}
 
-/* Connected horizontal — the line moves to the top border; gap spaces the items. */
-[data-sequence="connected"][data-sequence-direction="horizontal"] {
-	gap: 2rem;
-}
+	/* Connected horizontal — the line moves to the top border; gap spaces the items. */
+	[data-sequence="connected"][data-sequence-direction="horizontal"] {
+		gap: 2rem;
+	}
 
-[data-sequence="connected"][data-sequence-direction="horizontal"] > li {
-	border-left: none;
-	border-top: 2px solid var(--rf-color-border);
-}
+	[data-sequence="connected"][data-sequence-direction="horizontal"] > li {
+		border-left: none;
+		border-top: 2px solid var(--rf-color-border);
+	}
 
-[data-sequence="connected"][data-sequence-direction="horizontal"] > li:last-child {
-	border-top-color: var(--rf-color-border);
-}
+	[data-sequence="connected"][data-sequence-direction="horizontal"] > li:last-child {
+		border-top-color: var(--rf-color-border);
+	}
 
-/* === Density interaction === */
+	/* === Density interaction === */
 
-/* Compact: smaller circle keeps the same type scale. */
-[data-density="compact"] [data-sequence="numbered"] > li::before {
-	font-size: var(--rf-text-xs);
-}
+	/* Compact: smaller circle keeps the same type scale. */
+	[data-density="compact"] [data-sequence="numbered"] > li::before {
+		font-size: var(--rf-text-xs);
+	}
 
-/* Minimal: drop the connector line on the collapsed list. */
-[data-density="minimal"] [data-sequence="connected"] > li {
-	border-left: none;
-}
-
+	/* Minimal: drop the connector line on the collapsed list. */
+	[data-density="minimal"] [data-sequence="connected"] > li {
+		border-left: none;
+	}
 }

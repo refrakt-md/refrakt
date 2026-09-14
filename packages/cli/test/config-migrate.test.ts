@@ -37,12 +37,16 @@ describe('refrakt config migrate', () => {
 	it('flat → singular site (dry run shows diff but does not write)', () => {
 		writeFileSync(
 			join(tempDir, 'refrakt.config.json'),
-			JSON.stringify({
-				contentDir: './content',
-				theme: '@refrakt-md/lumina',
-				target: 'svelte',
-				plugins: ['@refrakt-md/marketing'],
-			}, null, '\t'),
+			JSON.stringify(
+				{
+					contentDir: './content',
+					theme: '@refrakt-md/lumina',
+					target: 'svelte',
+					plugins: ['@refrakt-md/marketing'],
+				},
+				null,
+				'\t',
+			),
 		);
 		const before = readConfig();
 		const { stdout, exitCode } = run('config', 'migrate');
@@ -55,12 +59,16 @@ describe('refrakt config migrate', () => {
 	it('flat → singular site with --apply writes the change', () => {
 		writeFileSync(
 			join(tempDir, 'refrakt.config.json'),
-			JSON.stringify({
-				contentDir: './content',
-				theme: '@refrakt-md/lumina',
-				target: 'svelte',
-				plugins: ['@refrakt-md/marketing', '@refrakt-md/plan'],
-			}, null, '\t'),
+			JSON.stringify(
+				{
+					contentDir: './content',
+					theme: '@refrakt-md/lumina',
+					target: 'svelte',
+					plugins: ['@refrakt-md/marketing', '@refrakt-md/plan'],
+				},
+				null,
+				'\t',
+			),
 		);
 		const { stdout, exitCode } = run('config', 'migrate', '--apply');
 		expect(exitCode).toBe(0);
@@ -90,11 +98,23 @@ describe('refrakt config migrate', () => {
 	it('singular → multi-site with --name promotes to sites map', () => {
 		writeFileSync(
 			join(tempDir, 'refrakt.config.json'),
-			JSON.stringify({
-				site: { contentDir: './content', theme: 't', target: 'svelte' },
-			}, null, '\t'),
+			JSON.stringify(
+				{
+					site: { contentDir: './content', theme: 't', target: 'svelte' },
+				},
+				null,
+				'\t',
+			),
 		);
-		const { exitCode } = run('config', 'migrate', '--to', 'multi-site', '--name', 'main', '--apply');
+		const { exitCode } = run(
+			'config',
+			'migrate',
+			'--to',
+			'multi-site',
+			'--name',
+			'main',
+			'--apply',
+		);
 		expect(exitCode).toBe(0);
 		const after = readConfig();
 		expect(after.sites).toEqual({
@@ -106,9 +126,13 @@ describe('refrakt config migrate', () => {
 	it('idempotent — running on an already-migrated config is a no-op', () => {
 		writeFileSync(
 			join(tempDir, 'refrakt.config.json'),
-			JSON.stringify({
-				site: { contentDir: './content', theme: 't', target: 'svelte' },
-			}, null, '\t'),
+			JSON.stringify(
+				{
+					site: { contentDir: './content', theme: 't', target: 'svelte' },
+				},
+				null,
+				'\t',
+			),
 		);
 		const before = readConfig();
 		const { stdout, exitCode } = run('config', 'migrate', '--apply');
@@ -145,7 +169,15 @@ describe('refrakt config migrate', () => {
 				target: 'svelte',
 			}),
 		);
-		const { stdout, exitCode } = run('config', 'migrate', '--to', 'multi-site', '--name', 'main', '--apply');
+		const { stdout, exitCode } = run(
+			'config',
+			'migrate',
+			'--to',
+			'multi-site',
+			'--name',
+			'main',
+			'--apply',
+		);
 		expect(exitCode).toBe(1);
 		expect(stdout).toContain('no "site" section');
 	});
@@ -157,17 +189,21 @@ describe('refrakt config migrate', () => {
 		// once the config is in nested shape.
 		writeFileSync(
 			join(tempDir, 'refrakt.config.json'),
-			JSON.stringify({
-				contentDir: './content',
-				theme: '@refrakt-md/lumina',
-				search: false,
-				repoUrl: 'https://github.com/owner/repo',
-				repoBranch: 'develop',
-				icons: { mark: '<svg/>' },
-				plan: { dir: './planning' },
-				xrefs: [{ match: '^GH-(?<n>\\d+)$', template: 'https://x/{n}' }],
-				fileRoots: { shared: './shared' },
-			}, null, '\t'),
+			JSON.stringify(
+				{
+					contentDir: './content',
+					theme: '@refrakt-md/lumina',
+					search: false,
+					repoUrl: 'https://github.com/owner/repo',
+					repoBranch: 'develop',
+					icons: { mark: '<svg/>' },
+					plan: { dir: './planning' },
+					xrefs: [{ match: '^GH-(?<n>\\d+)$', template: 'https://x/{n}' }],
+					fileRoots: { shared: './shared' },
+				},
+				null,
+				'\t',
+			),
 		);
 
 		const { exitCode } = run('config', 'migrate', '--apply');

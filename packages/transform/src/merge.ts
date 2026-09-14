@@ -1,4 +1,13 @@
-import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, TintTokens, BgPresetDefinition, FramePresetDefinition, BlockDef } from './types.js';
+import type {
+	ThemeConfig,
+	RuneConfig,
+	StructureEntry,
+	TintDefinition,
+	TintTokens,
+	BgPresetDefinition,
+	FramePresetDefinition,
+	BlockDef,
+} from './types.js';
 import type { ThemeTokensConfig } from '@refrakt-md/types';
 import { IDENTITY_FIELDS, findReservedFields, identityFieldMessage } from './identity-fields.js';
 
@@ -84,9 +93,7 @@ export function mergeThemeConfig(
 	}
 
 	const mergedTints = { ...base.tints, ...overrides.tints };
-	const resolvedTints = mergedTints
-		? resolveTintExtends(mergedTints, presetMap)
-		: mergedTints;
+	const resolvedTints = mergedTints ? resolveTintExtends(mergedTints, presetMap) : mergedTints;
 
 	return {
 		prefix: overrides.prefix ?? base.prefix,

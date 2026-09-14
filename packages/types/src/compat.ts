@@ -48,11 +48,15 @@ export function satisfiesRange(version: string, range: string): boolean {
 		if (!bound) return false;
 		const d = cmp(v, bound);
 		const ok =
-			op === '>=' ? d >= 0 :
-			op === '<=' ? d <= 0 :
-			op === '>' ? d > 0 :
-			op === '<' ? d < 0 :
-			d === 0;
+			op === '>='
+				? d >= 0
+				: op === '<='
+					? d <= 0
+					: op === '>'
+						? d > 0
+						: op === '<'
+							? d < 0
+							: d === 0;
 		if (!ok) return false;
 	}
 	return true;

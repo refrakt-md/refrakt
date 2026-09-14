@@ -30,21 +30,25 @@ export const contentPlaceFacet: Facet = {
 
 		if (!contentPlace) {
 			return {
-				warnings: [{
-					code: 'content-place-undeclared',
-					message: `[refrakt] \`content-place\` on \`${ctx.rune}\` has nothing to anchor — the rune declares no \`content-place\` modifier, so the value is never read. Ignored.`,
-					dedupeKey: ctx.rune,
-				}],
+				warnings: [
+					{
+						code: 'content-place-undeclared',
+						message: `[refrakt] \`content-place\` on \`${ctx.rune}\` has nothing to anchor — the rune declares no \`content-place\` modifier, so the value is never read. Ignored.`,
+						dedupeKey: ctx.rune,
+					},
+				],
 			};
 		}
 
 		if (ctx.axis('media-position') !== 'cover') {
 			return {
-				warnings: [{
-					code: 'content-place-outside-cover',
-					message: `[refrakt] \`content-place\` on \`${ctx.rune}\` is only active in \`media-position="cover"\` — it anchors the overlay, and there's no overlay outside cover. Ignored.`,
-					dedupeKey: ctx.rune,
-				}],
+				warnings: [
+					{
+						code: 'content-place-outside-cover',
+						message: `[refrakt] \`content-place\` on \`${ctx.rune}\` is only active in \`media-position="cover"\` — it anchors the overlay, and there's no overlay outside cover. Ignored.`,
+						dedupeKey: ctx.rune,
+					},
+				],
 			};
 		}
 
@@ -71,8 +75,14 @@ export const contentPlaceFacet: Facet = {
 			// left/right edges gets no scrim coverage. The dark also stays solid
 			// out to 40% radius (matching the linear's `0%, 62%` visual weight
 			// without the dramatic falloff radial gives at the corners).
-			styles.push(['--cover-scrim-image', 'radial-gradient(ellipse farthest-side at center, rgb(0 0 0 / 0.55) 40%, transparent 100%)']);
-			styles.push(['--cover-scrim-mask', 'radial-gradient(ellipse farthest-side at center, #000 50%, transparent 100%)']);
+			styles.push([
+				'--cover-scrim-image',
+				'radial-gradient(ellipse farthest-side at center, rgb(0 0 0 / 0.55) 40%, transparent 100%)',
+			]);
+			styles.push([
+				'--cover-scrim-mask',
+				'radial-gradient(ellipse farthest-side at center, #000 50%, transparent 100%)',
+			]);
 		}
 
 		return { styles };
@@ -88,13 +98,20 @@ export const contentPlaceFacet: Facet = {
 export const contentPlaceAxis: UniversalAxisFacet = {
 	axis: 'content-place',
 	contract: {
-		description: 'The cover overlay anchor (SPEC-089): a 2-axis logical placement (block × inline) that also steers the default scrim so it follows the content edge.',
+		description:
+			'The cover overlay anchor (SPEC-089): a 2-axis logical placement (block × inline) that also steers the default scrim so it follows the content edge.',
 		source: 'meta',
 		inputs: ['content-place'],
-		customProperties: ['--cover-place-block', '--cover-place-inline', '--cover-scrim-dir', '--cover-scrim-image', '--cover-scrim-mask'],
-		condition: 'active only when `media-position` resolves to `cover`; `auto` emits nothing and is left to the CSS container query. `--cover-scrim-dir` here is overridden by an explicit `scrim` edge, which the `cover` axis declares later.',
+		customProperties: [
+			'--cover-place-block',
+			'--cover-place-inline',
+			'--cover-scrim-dir',
+			'--cover-scrim-image',
+			'--cover-scrim-mask',
+		],
+		condition:
+			'active only when `media-position` resolves to `cover`; `auto` emits nothing and is left to the CSS container query. `--cover-scrim-dir` here is overridden by an explicit `scrim` edge, which the `cover` axis declares later.',
 	},
-	describeForRune: (config) => (config.modifiers?.['content-place']
-		? null
-		: 'this rune declares no `content-place` modifier'),
+	describeForRune: (config) =>
+		config.modifiers?.['content-place'] ? null : 'this rune declares no `content-place` modifier',
 };

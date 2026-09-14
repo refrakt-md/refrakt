@@ -38,8 +38,8 @@ function bodyRows(rendered: unknown): string[][] {
 describe('data body as a table row (WORK-550)', () => {
 	it('emits one row per record, with the headers it was given', () => {
 		const { rendered, errors } = runData(
-			'{% data src="a.csv" headers="Attribute, Type" %}\n'
-			+ '{% $row.name %}\n---\n{% $row.type %}\n{% /data %}',
+			'{% data src="a.csv" headers="Attribute, Type" %}\n' +
+				'{% $row.name %}\n---\n{% $row.type %}\n{% /data %}',
 			{ 'a.csv': ATTRS },
 		);
 		expect(errors).toEqual([]);
@@ -53,8 +53,8 @@ describe('data body as a table row (WORK-550)', () => {
 		// generated table could never carry the `<code>` and `<strong>` the
 		// hand-written ones it replaces use.
 		const { rendered } = runData(
-			'{% data src="a.csv" headers="Attribute, Type" %}\n'
-			+ '{% code %}{% $row.name %}{% /code %}\n---\n**{% $row.type %}**\n{% /data %}',
+			'{% data src="a.csv" headers="Attribute, Type" %}\n' +
+				'{% code %}{% $row.name %}{% /code %}\n---\n**{% $row.type %}**\n{% /data %}',
 			{ 'a.csv': ATTRS },
 		);
 		const codes = findAllTags(rendered, (t) => t.name === 'code');
@@ -64,8 +64,8 @@ describe('data body as a table row (WORK-550)', () => {
 
 	it('evaluates {% if %} per cell, so a boolean renders as a glyph', () => {
 		const { rendered } = runData(
-			'{% data src="a.csv" headers="Attribute, Required" %}\n'
-			+ '{% $row.name %}\n---\n{% if $row.required %}✓{% else /%}—{% /if %}\n{% /data %}',
+			'{% data src="a.csv" headers="Attribute, Required" %}\n' +
+				'{% $row.name %}\n---\n{% if $row.required %}✓{% else /%}—{% /if %}\n{% /data %}',
 			{ 'a.csv': ATTRS },
 		);
 		const json = JSON.stringify(rendered);
@@ -101,16 +101,17 @@ describe('data body as a table row (WORK-550)', () => {
 		// without unwrapping it renders `<td><p>href</p></td>` where a pipe table
 		// gives `<td>href</td>` — a difference the tag-name counts below are the
 		// only thing that catches.
-		const shape = (r: unknown) => ['table', 'thead', 'tbody', 'tr', 'th', 'td', 'p']
-			.map((n) => `${n}:${findAllTags(r, (t) => t.name === n).length}`);
+		const shape = (r: unknown) =>
+			['table', 'thead', 'tbody', 'tr', 'th', 'td', 'p'].map(
+				(n) => `${n}:${findAllTags(r, (t) => t.name === n).length}`,
+			);
 		const body = runData(
 			'{% data src="a.csv" headers="Attribute, Type" %}\n{% $row.name %}\n---\n{% $row.type %}\n{% /data %}',
 			{ 'a.csv': ATTRS },
 		);
-		const bodyless = runData(
-			'{% data src="a.csv" columns="name as Attribute, type as Type" /%}',
-			{ 'a.csv': ATTRS },
-		);
+		const bodyless = runData('{% data src="a.csv" columns="name as Attribute, type as Type" /%}', {
+			'a.csv': ATTRS,
+		});
 		expect(shape(body.rendered)).toEqual(shape(bodyless.rendered));
 	});
 
@@ -133,10 +134,9 @@ describe('data body as a table row (WORK-550)', () => {
 	});
 
 	it('leaves a body without `headers` emitting blocks, exactly as before', () => {
-		const { rendered } = runData(
-			'{% data src="a.csv" %}\n## {% $row.name %}\n{% /data %}',
-			{ 'a.csv': ATTRS },
-		);
+		const { rendered } = runData('{% data src="a.csv" %}\n## {% $row.name %}\n{% /data %}', {
+			'a.csv': ATTRS,
+		});
 		expect(findTag(rendered, (t) => t.name === 'table')).toBeUndefined();
 		const h2 = findAllTags(rendered, (t) => t.name === 'h2');
 		expect(h2.map((h) => (h.children ?? []).join(''))).toEqual(['href', 'src']);
@@ -146,9 +146,9 @@ describe('data body as a table row (WORK-550)', () => {
 describe('the code rune (WORK-551)', () => {
 	it('resolves a variable backticks would render literally', () => {
 		const { rendered } = runData(
-			'{% data src="a.csv" limit=1 %}\n'
-			+ '- rune: {% code %}{% $row.name %}{% /code %}\n'
-			+ '- backticks: `{% $row.name %}`\n{% /data %}',
+			'{% data src="a.csv" limit=1 %}\n' +
+				'- rune: {% code %}{% $row.name %}{% /code %}\n' +
+				'- backticks: `{% $row.name %}`\n{% /data %}',
 			{ 'a.csv': ATTRS },
 		);
 		const codes = findAllTags(rendered, (t) => t.name === 'code');
@@ -162,7 +162,10 @@ describe('the code rune (WORK-551)', () => {
 		// The element is what matters: the theme's `code { … }` rule styles both,
 		// so a paragraph mixing the two looks uniform. The identity transform
 		// additionally adds `.rf-code`, which a theme may target but need not.
-		const { rendered } = runData('{% data src="a.csv" limit=1 %}\n{% code %}x{% /code %}\n{% /data %}', { 'a.csv': ATTRS });
+		const { rendered } = runData(
+			'{% data src="a.csv" limit=1 %}\n{% code %}x{% /code %}\n{% /data %}',
+			{ 'a.csv': ATTRS },
+		);
 		const el = findTag(rendered, (t) => t.name === 'code');
 		expect(el).toBeDefined();
 		expect(el!.attributes?.['data-rune']).toBe('code');
@@ -174,11 +177,11 @@ describe('nested data queries (WORK-553)', () => {
 	const ATTRS = 'axis,name\nbg,bg-from\nbg,scrim\ntint,tint-mode\n';
 	const files = { 'axes.csv': AXES, 'attrs.csv': ATTRS };
 
-	it('resolves a data inside another data\'s body', () => {
+	it("resolves a data inside another data's body", () => {
 		const { rendered, errors } = runData(
-			'{% data src="axes.csv" %}\n## {% $row.axis %}\n\n'
-			+ '{% data src="attrs.csv" where=$row.query %}\n- {% $row.name %}\n{% /data %}\n'
-			+ '{% /data %}',
+			'{% data src="axes.csv" %}\n## {% $row.axis %}\n\n' +
+				'{% data src="attrs.csv" where=$row.query %}\n- {% $row.name %}\n{% /data %}\n' +
+				'{% /data %}',
 			files,
 		);
 		expect(errors).toEqual([]);
@@ -186,15 +189,15 @@ describe('nested data queries (WORK-553)', () => {
 		for (const t of ['bg-from', 'scrim', 'tint-mode']) expect(json).toContain(t);
 	});
 
-	it('scopes `$row` in a subquery\'s body to the subquery, not the outer row', () => {
+	it("scopes `$row` in a subquery's body to the subquery, not the outer row", () => {
 		// Both sources have a `name` column, which is the whole point: without
 		// scoping, the outer bind resolves the inner body's `$row.name` against
 		// the outer row and blanks it, because the outer row's `name` is a
 		// different column entirely.
 		const { rendered } = runData(
-			'{% data src="axes.csv" %}\nouter={% $row.name %}\n\n'
-			+ '{% data src="attrs.csv" where=$row.query %}\ninner={% $row.name %}\n{% /data %}\n'
-			+ '{% /data %}',
+			'{% data src="axes.csv" %}\nouter={% $row.name %}\n\n' +
+				'{% data src="attrs.csv" where=$row.query %}\ninner={% $row.name %}\n{% /data %}\n' +
+				'{% /data %}',
 			files,
 		);
 		const json = JSON.stringify(rendered);
@@ -203,11 +206,11 @@ describe('nested data queries (WORK-553)', () => {
 		expect(json).toContain('tint-mode');
 	});
 
-	it('binds a subquery\'s *attributes* from the outer row — that is how it is filtered', () => {
+	it("binds a subquery's *attributes* from the outer row — that is how it is filtered", () => {
 		const { rendered } = runData(
-			'{% data src="axes.csv" where="axis:bg" %}\n'
-			+ '{% data src="attrs.csv" where=$row.query %}\n- {% $row.name %}\n{% /data %}\n'
-			+ '{% /data %}',
+			'{% data src="axes.csv" where="axis:bg" %}\n' +
+				'{% data src="attrs.csv" where=$row.query %}\n- {% $row.name %}\n{% /data %}\n' +
+				'{% /data %}',
 			files,
 		);
 		const json = JSON.stringify(rendered);
@@ -219,9 +222,9 @@ describe('nested data queries (WORK-553)', () => {
 
 	it('lets a subquery emit a table with `headers`', () => {
 		const { rendered, errors } = runData(
-			'{% data src="axes.csv" where="axis:bg" %}\n## {% $row.axis %}\n\n'
-			+ '{% data src="attrs.csv" where=$row.query headers="Attribute" %}\n{% $row.name %}\n{% /data %}\n'
-			+ '{% /data %}',
+			'{% data src="axes.csv" where="axis:bg" %}\n## {% $row.axis %}\n\n' +
+				'{% data src="attrs.csv" where=$row.query headers="Attribute" %}\n{% $row.name %}\n{% /data %}\n' +
+				'{% /data %}',
 			files,
 		);
 		expect(errors).toEqual([]);
@@ -234,9 +237,9 @@ describe('nested data queries (WORK-553)', () => {
 		// BUG-011's posture, one level down: an empty subquery is not a failure
 		// and must not take the row that contains it with it.
 		const { rendered, errors } = runData(
-			'{% data src="axes.csv" %}\n## {% $row.axis %}\n\n'
-			+ '{% data src="attrs.csv" where="axis:NOPE" %}\n- {% $row.name %}\n{% /data %}\n'
-			+ '{% /data %}',
+			'{% data src="axes.csv" %}\n## {% $row.axis %}\n\n' +
+				'{% data src="attrs.csv" where="axis:NOPE" %}\n- {% $row.name %}\n{% /data %}\n' +
+				'{% /data %}',
 			files,
 		);
 		expect(errors).toEqual([]);

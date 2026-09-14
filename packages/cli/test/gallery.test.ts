@@ -2,12 +2,21 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { flattenCssImports, renderGalleryDocument, renderLayoutDocument, type GalleryCell } from '../src/lib/gallery.js';
+import {
+	flattenCssImports,
+	renderGalleryDocument,
+	renderLayoutDocument,
+	type GalleryCell,
+} from '../src/lib/gallery.js';
 
 describe('flattenCssImports', () => {
 	let dir: string;
-	beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'refrakt-gallery-')); });
-	afterEach(() => { rmSync(dir, { recursive: true, force: true }); });
+	beforeEach(() => {
+		dir = mkdtempSync(join(tmpdir(), 'refrakt-gallery-'));
+	});
+	afterEach(() => {
+		rmSync(dir, { recursive: true, force: true });
+	});
 
 	it('inlines relative @imports recursively into one string', () => {
 		writeFileSync(join(dir, 'a.css'), 'a { color: red; }');
@@ -21,7 +30,10 @@ describe('flattenCssImports', () => {
 	});
 
 	it('leaves remote (non-relative) imports untouched', () => {
-		writeFileSync(join(dir, 'index.css'), "@import 'https://example.com/x.css';\na { color: red; }");
+		writeFileSync(
+			join(dir, 'index.css'),
+			"@import 'https://example.com/x.css';\na { color: red; }",
+		);
 		const out = flattenCssImports(join(dir, 'index.css'));
 		expect(out).toContain("@import 'https://example.com/x.css';");
 	});
@@ -38,7 +50,11 @@ describe('flattenCssImports', () => {
 describe('renderGalleryDocument', () => {
 	const cells: GalleryCell[] = [
 		{ rune: 'hint', variant: 'default', html: '<div class="rf-hint">x</div>' },
-		{ rune: 'hint', variant: 'type-warning', html: '<div class="rf-hint rf-hint--warning">y</div>' },
+		{
+			rune: 'hint',
+			variant: 'type-warning',
+			html: '<div class="rf-hint rf-hint--warning">y</div>',
+		},
 		{ rune: 'card', variant: 'default', html: '<div class="rf-card">z</div>' },
 	];
 
@@ -56,12 +72,20 @@ describe('renderGalleryDocument', () => {
 	});
 
 	it('sets the dark mode attribute only for dark', () => {
-		expect(renderGalleryDocument({ mode: 'dark', themeCss: '', cells })).toContain('<html lang="en" data-theme="dark">');
-		expect(renderGalleryDocument({ mode: 'light', themeCss: '', cells })).toContain('<html lang="en">');
+		expect(renderGalleryDocument({ mode: 'dark', themeCss: '', cells })).toContain(
+			'<html lang="en" data-theme="dark">',
+		);
+		expect(renderGalleryDocument({ mode: 'light', themeCss: '', cells })).toContain(
+			'<html lang="en">',
+		);
 	});
 
 	it('inlines the theme CSS and disables animation for stable screenshots', () => {
-		const doc = renderGalleryDocument({ mode: 'light', themeCss: ':root{--rf-color-text:#000}', cells });
+		const doc = renderGalleryDocument({
+			mode: 'light',
+			themeCss: ':root{--rf-color-text:#000}',
+			cells,
+		});
 		expect(doc).toContain('--rf-color-text:#000');
 		expect(doc).toContain('animation-duration: 0s !important');
 	});
@@ -75,7 +99,12 @@ describe('renderGalleryDocument', () => {
 
 describe('renderLayoutDocument', () => {
 	it('wraps the layout body as a standalone page (no gallery chrome)', () => {
-		const doc = renderLayoutDocument({ mode: 'light', themeCss: ':root{}', name: 'docs', bodyHtml: '<div class="rf-layout-docs">x</div>' });
+		const doc = renderLayoutDocument({
+			mode: 'light',
+			themeCss: ':root{}',
+			name: 'docs',
+			bodyHtml: '<div class="rf-layout-docs">x</div>',
+		});
 		expect(doc).toContain('<div class="rf-layout-docs">x</div>');
 		expect(doc).toContain('<title>refrakt layout — docs (light)</title>');
 		expect(doc).not.toContain('rf-gallery');
@@ -83,9 +112,21 @@ describe('renderLayoutDocument', () => {
 	});
 
 	it('sets the dark attribute and is deterministic', () => {
-		expect(renderLayoutDocument({ mode: 'dark', themeCss: '', name: 'plan', bodyHtml: '<main/>' })).toContain('<html lang="en" data-theme="dark">');
-		const a = renderLayoutDocument({ mode: 'light', themeCss: ':root{}', name: 'docs', bodyHtml: '<main/>' });
-		const b = renderLayoutDocument({ mode: 'light', themeCss: ':root{}', name: 'docs', bodyHtml: '<main/>' });
+		expect(
+			renderLayoutDocument({ mode: 'dark', themeCss: '', name: 'plan', bodyHtml: '<main/>' }),
+		).toContain('<html lang="en" data-theme="dark">');
+		const a = renderLayoutDocument({
+			mode: 'light',
+			themeCss: ':root{}',
+			name: 'docs',
+			bodyHtml: '<main/>',
+		});
+		const b = renderLayoutDocument({
+			mode: 'light',
+			themeCss: ':root{}',
+			name: 'docs',
+			bodyHtml: '<main/>',
+		});
 		expect(a).toBe(b);
 	});
 });

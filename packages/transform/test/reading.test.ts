@@ -19,18 +19,35 @@ function findSection(node: any, role: string): SerializedTag | undefined {
 }
 
 const config: ThemeConfig = {
-	prefix: 'rf', tokenPrefix: '--rf', icons: {},
+	prefix: 'rf',
+	tokenPrefix: '--rf',
+	icons: {},
 	runes: {
-		Pullquote: { block: 'pullquote', defaultReading: 'prose', sections: { body: 'body' }, provides: ['prose'] },
+		Pullquote: {
+			block: 'pullquote',
+			defaultReading: 'prose',
+			sections: { body: 'body' },
+			provides: ['prose'],
+		},
 		Card: { block: 'card', sections: { body: 'body' }, provides: ['prose'] },
-		Caption: { block: 'caption', defaultReading: 'fine', sections: { body: 'body' }, provides: ['prose'] },
+		Caption: {
+			block: 'caption',
+			defaultReading: 'fine',
+			sections: { body: 'body' },
+			provides: ['prose'],
+		},
 	},
 };
 
 // `data-rune` is the kebab form; config keys are PascalCase.
 const rune = (kebab: string, attrs: Record<string, any> = {}) =>
-	asTag(createTransform(config)(makeTag('div', { 'data-rune': kebab, ...attrs },
-		[makeTag('div', { 'data-name': 'body' }, [makeTag('p', {}, ['x'])])])));
+	asTag(
+		createTransform(config)(
+			makeTag('div', { 'data-rune': kebab, ...attrs }, [
+				makeTag('div', { 'data-name': 'body' }, [makeTag('p', {}, ['x'])]),
+			]),
+		),
+	);
 
 describe('resolveReading (SPEC-108)', () => {
 	it('resolves with precedence author ▸ rune ▸ region ▸ ui', () => {
@@ -62,22 +79,36 @@ describe('data-reading emission (SPEC-108)', () => {
 	});
 	it('author reading= overrides the rune default; invalid falls through', () => {
 		// prose → ui (suppressed)
-		expect(findSection(rune('pullquote', { reading: 'ui' }), 'body')?.attributes['data-reading']).toBeUndefined();
+		expect(
+			findSection(rune('pullquote', { reading: 'ui' }), 'body')?.attributes['data-reading'],
+		).toBeUndefined();
 		// ui rune → prose
-		expect(findSection(rune('card', { reading: 'prose' }), 'body')?.attributes['data-reading']).toBe('prose');
+		expect(
+			findSection(rune('card', { reading: 'prose' }), 'body')?.attributes['data-reading'],
+		).toBe('prose');
 		// typo → rune default
-		expect(findSection(rune('pullquote', { reading: 'bogus' }), 'body')?.attributes['data-reading']).toBe('prose');
+		expect(
+			findSection(rune('pullquote', { reading: 'bogus' }), 'body')?.attributes['data-reading'],
+		).toBe('prose');
 	});
 });
 
 describe('dropcap emission (SPEC-108)', () => {
 	it('emits data-dropcap on a prose body', () => {
-		expect(findSection(rune('pullquote', { dropcap: true }), 'body')?.attributes['data-dropcap']).toBe('true');
+		expect(
+			findSection(rune('pullquote', { dropcap: true }), 'body')?.attributes['data-dropcap'],
+		).toBe('true');
 	});
 	it('is dropped off-register (ui body) — gated to prose', () => {
-		expect(findSection(rune('card', { dropcap: true }), 'body')?.attributes['data-dropcap']).toBeUndefined();
+		expect(
+			findSection(rune('card', { dropcap: true }), 'body')?.attributes['data-dropcap'],
+		).toBeUndefined();
 		// honoured once the author flips the card to prose
-		expect(findSection(rune('card', { dropcap: true, reading: 'prose' }), 'body')?.attributes['data-dropcap']).toBe('true');
+		expect(
+			findSection(rune('card', { dropcap: true, reading: 'prose' }), 'body')?.attributes[
+				'data-dropcap'
+			],
+		).toBe('true');
 	});
 	it('is absent when not requested', () => {
 		expect(findSection(rune('pullquote'), 'body')?.attributes['data-dropcap']).toBeUndefined();

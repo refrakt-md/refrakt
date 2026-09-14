@@ -9,7 +9,7 @@ function walkTags(node: unknown, fn: (tag: InstanceType<typeof Tag>) => void): v
 		fn(node);
 		for (const child of node.children) walkTags(child, fn);
 	} else if (Array.isArray(node)) {
-		node.forEach(n => walkTags(n, fn));
+		node.forEach((n) => walkTags(n, fn));
 	}
 }
 
@@ -17,11 +17,11 @@ function mapTags(node: unknown, fn: (tag: InstanceType<typeof Tag>) => unknown):
 	if (Markdoc.Tag.isTag(node)) {
 		const mapped = fn(node);
 		if (mapped !== node) return mapped;
-		const newChildren = node.children.map(c => mapTags(c, fn));
+		const newChildren = node.children.map((c) => mapTags(c, fn));
 		const changed = newChildren.some((c, i) => c !== node.children[i]);
 		return changed ? new Tag(node.name, node.attributes, newChildren as any[]) : node;
 	}
-	if (Array.isArray(node)) return node.map(n => mapTags(n, fn));
+	if (Array.isArray(node)) return node.map((n) => mapTags(n, fn));
 	return node;
 }
 
@@ -36,7 +36,12 @@ export const designPipelineHooks: PluginPipelineHooks = {
 				const scope = readNodeField(tag, 'scope') || 'default';
 				try {
 					const tokens = JSON.parse(tokensRaw) as DesignTokens;
-					registry.register({ type: 'design-context', id: scope, sourceUrl: page.url, data: tokens as Record<string, unknown> });
+					registry.register({
+						type: 'design-context',
+						id: scope,
+						sourceUrl: page.url,
+						data: tokens as Record<string, unknown>,
+					});
 				} catch {
 					ctx.warn(`Failed to parse design tokens`, page.url);
 				}
@@ -53,7 +58,9 @@ export const designPipelineHooks: PluginPipelineHooks = {
 	},
 
 	postProcess(page, aggregated, ctx) {
-		const designData = aggregated['design'] as { contexts: Record<string, DesignTokens> } | undefined;
+		const designData = aggregated['design'] as
+			| { contexts: Record<string, DesignTokens> }
+			| undefined;
 		if (!designData?.contexts || Object.keys(designData.contexts).length === 0) return page;
 
 		let modified = false;
@@ -64,12 +71,18 @@ export const designPipelineHooks: PluginPipelineHooks = {
 			const tokens = designData.contexts[scope];
 			if (!tokens) {
 				if (scope !== 'default') {
-					ctx.warn(`Sandbox references design context "${scope}" which is not defined on any page`, page.url);
+					ctx.warn(
+						`Sandbox references design context "${scope}" which is not defined on any page`,
+						page.url,
+					);
 				}
 				return tag;
 			}
 			modified = true;
-			const injected = new Tag('meta', { 'data-field': 'design-tokens', content: JSON.stringify(tokens) });
+			const injected = new Tag('meta', {
+				'data-field': 'design-tokens',
+				content: JSON.stringify(tokens),
+			});
 			return new Tag(tag.name, tag.attributes, [...tag.children, injected]);
 		});
 

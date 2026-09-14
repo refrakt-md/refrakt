@@ -23,7 +23,9 @@ afterEach(() => {
 
 describe('scanPlanFiles', () => {
 	it('should scan a directory recursively and find plan runes', () => {
-		writeMd('work/task.md', `{% work id="WORK-001" status="ready" priority="high" %}
+		writeMd(
+			'work/task.md',
+			`{% work id="WORK-001" status="ready" priority="high" %}
 
 # Build the scanner
 
@@ -31,43 +33,59 @@ describe('scanPlanFiles', () => {
 - [ ] Scans directories
 - [x] Returns typed objects
 
-{% /work %}`);
-		writeMd('spec/auth.md', `{% spec id="SPEC-001" status="accepted" %}
+{% /work %}`,
+		);
+		writeMd(
+			'spec/auth.md',
+			`{% spec id="SPEC-001" status="accepted" %}
 
 # Authentication System
 
 Token-based auth for the API.
 
-{% /spec %}`);
+{% /spec %}`,
+		);
 		writeMd('notes.md', '# Just a regular markdown file\n\nNo plan runes here.');
 
 		const entities = scanPlanFiles(TMP);
 		expect(entities).toHaveLength(2);
 
-		const types = entities.map(e => e.type).sort();
+		const types = entities.map((e) => e.type).sort();
 		expect(types).toEqual(['spec', 'work']);
 	});
 
 	it('should handle all 5 rune types', () => {
 		writeMd('spec.md', '{% spec id="SPEC-001" status="draft" %}\n\n# A Spec\n\n{% /spec %}');
 		writeMd('work.md', '{% work id="WORK-001" status="ready" %}\n\n# A Task\n\n{% /work %}');
-		writeMd('bug.md', '{% bug id="BUG-001" status="confirmed" severity="major" %}\n\n# A Bug\n\n{% /bug %}');
-		writeMd('decision.md', '{% decision id="ADR-001" status="accepted" date="2026-03-01" %}\n\n# A Decision\n\n{% /decision %}');
-		writeMd('milestone.md', '{% milestone name="v1.0" status="active" target="2026-04-01" %}\n\n# v1.0\n\n{% /milestone %}');
+		writeMd(
+			'bug.md',
+			'{% bug id="BUG-001" status="confirmed" severity="major" %}\n\n# A Bug\n\n{% /bug %}',
+		);
+		writeMd(
+			'decision.md',
+			'{% decision id="ADR-001" status="accepted" date="2026-03-01" %}\n\n# A Decision\n\n{% /decision %}',
+		);
+		writeMd(
+			'milestone.md',
+			'{% milestone name="v1.0" status="active" target="2026-04-01" %}\n\n# v1.0\n\n{% /milestone %}',
+		);
 
 		const entities = scanPlanFiles(TMP);
 		expect(entities).toHaveLength(5);
 
-		const types = new Set(entities.map(e => e.type));
+		const types = new Set(entities.map((e) => e.type));
 		expect(types).toEqual(new Set(['spec', 'work', 'bug', 'decision', 'milestone']));
 	});
 
 	it('should extract all attributes from the rune opening tag', () => {
-		writeMd('work.md', `{% work id="WORK-042" status="in-progress" priority="high" complexity="moderate" tags="cli, plan" milestone="v0.5.0" %}
+		writeMd(
+			'work.md',
+			`{% work id="WORK-042" status="in-progress" priority="high" complexity="moderate" tags="cli, plan" milestone="v0.5.0" %}
 
 # My Task
 
-{% /work %}`);
+{% /work %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		expect(entity.attributes).toEqual({
@@ -81,24 +99,30 @@ Token-based auth for the API.
 	});
 
 	it('should extract title from the first H1 heading', () => {
-		writeMd('work.md', `{% work id="WORK-001" status="ready" %}
+		writeMd(
+			'work.md',
+			`{% work id="WORK-001" status="ready" %}
 
 # Build the Scanner Library
 
 ## Not this heading
 
-{% /work %}`);
+{% /work %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		expect(entity.title).toBe('Build the Scanner Library');
 	});
 
 	it('should include inline-code segments in the extracted title', () => {
-		writeMd('work.md', `{% work id="WORK-001" status="ready" %}
+		writeMd(
+			'work.md',
+			`{% work id="WORK-001" status="ready" %}
 
 # Build rune \`name\` with **bold** and *italic*
 
-{% /work %}`);
+{% /work %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		// Plain text — backticks stripped, formatting markers stripped.
@@ -106,18 +130,23 @@ Token-based auth for the API.
 	});
 
 	it('should return undefined title when no H1 exists', () => {
-		writeMd('work.md', `{% work id="WORK-001" status="ready" %}
+		writeMd(
+			'work.md',
+			`{% work id="WORK-001" status="ready" %}
 
 ## Only H2 headings here
 
-{% /work %}`);
+{% /work %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		expect(entity.title).toBeUndefined();
 	});
 
 	it('should extract acceptance criteria checkboxes', () => {
-		writeMd('work.md', `{% work id="WORK-001" status="ready" %}
+		writeMd(
+			'work.md',
+			`{% work id="WORK-001" status="ready" %}
 
 # Task
 
@@ -129,7 +158,8 @@ Token-based auth for the API.
 ## Approach
 Some text here.
 
-{% /work %}`);
+{% /work %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		expect(entity.criteria).toEqual([
@@ -140,7 +170,9 @@ Some text here.
 	});
 
 	it('should extract reference IDs from ref/xref tags', () => {
-		writeMd('work.md', `{% work id="WORK-001" status="ready" %}
+		writeMd(
+			'work.md',
+			`{% work id="WORK-001" status="ready" %}
 
 # Task
 
@@ -151,14 +183,17 @@ Some text here.
 - {% ref "WORK-021" /%} (xref migration)
 - {% xref "WORK-026" /%} (ref alias)
 
-{% /work %}`);
+{% /work %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		expect(entity.refs).toEqual(['SPEC-022', 'WORK-021', 'WORK-026']);
 	});
 
 	it('should deduplicate reference IDs', () => {
-		writeMd('work.md', `{% work id="WORK-001" status="ready" %}
+		writeMd(
+			'work.md',
+			`{% work id="WORK-001" status="ready" %}
 
 # Task
 
@@ -168,18 +203,22 @@ See {% ref "SPEC-022" /%} for details.
 
 - {% ref "SPEC-022" /%} (Plan CLI)
 
-{% /work %}`);
+{% /work %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		expect(entity.refs).toEqual(['SPEC-022']);
 	});
 
 	it('should set file path relative to the scan directory', () => {
-		writeMd('work/deep/nested/task.md', `{% work id="WORK-001" status="ready" %}
+		writeMd(
+			'work/deep/nested/task.md',
+			`{% work id="WORK-001" status="ready" %}
 
 # Task
 
-{% /work %}`);
+{% /work %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		expect(entity.file).toBe('work/deep/nested/task.md');
@@ -195,26 +234,32 @@ See {% ref "SPEC-022" /%} for details.
 	});
 
 	it('should handle files with no criteria', () => {
-		writeMd('spec.md', `{% spec id="SPEC-001" status="draft" %}
+		writeMd(
+			'spec.md',
+			`{% spec id="SPEC-001" status="draft" %}
 
 # A Spec
 
 Just prose, no checkboxes.
 
-{% /spec %}`);
+{% /spec %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		expect(entity.criteria).toEqual([]);
 	});
 
 	it('should handle files with no refs', () => {
-		writeMd('work.md', `{% work id="WORK-001" status="ready" %}
+		writeMd(
+			'work.md',
+			`{% work id="WORK-001" status="ready" %}
 
 # Standalone Task
 
 No references here.
 
-{% /work %}`);
+{% /work %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		expect(entity.refs).toEqual([]);
@@ -263,7 +308,10 @@ describe('caching', () => {
 	});
 
 	it('should re-parse files when mtime changes', () => {
-		writeMd('work.md', '{% work id="WORK-001" status="ready" %}\n\n# Original Title\n\n{% /work %}');
+		writeMd(
+			'work.md',
+			'{% work id="WORK-001" status="ready" %}\n\n# Original Title\n\n{% /work %}',
+		);
 
 		const first = scanPlanFiles(TMP, { cache: true });
 		expect(first[0].title).toBe('Original Title');
@@ -282,7 +330,9 @@ describe('caching', () => {
 
 describe('resolution extraction', () => {
 	it('should extract a full resolution section', () => {
-		writeMd('work.md', `{% work id="WORK-001" status="done" %}
+		writeMd(
+			'work.md',
+			`{% work id="WORK-001" status="done" %}
 
 # Task
 
@@ -299,7 +349,8 @@ PR: refrakt-md/refrakt#142
 ### Notes
 - Chose A over B
 
-{% /work %}`);
+{% /work %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		expect(entity.resolution).toBeDefined();
@@ -312,7 +363,9 @@ PR: refrakt-md/refrakt#142
 	});
 
 	it('should extract a minimal resolution (just a sentence)', () => {
-		writeMd('work.md', `{% work id="WORK-001" status="done" %}
+		writeMd(
+			'work.md',
+			`{% work id="WORK-001" status="done" %}
 
 # Task
 
@@ -322,7 +375,8 @@ Completed: 2026-03-24
 
 Trivial config fix — added missing block field.
 
-{% /work %}`);
+{% /work %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		expect(entity.resolution).toBeDefined();
@@ -333,21 +387,26 @@ Trivial config fix — added missing block field.
 	});
 
 	it('should return undefined resolution when no section exists', () => {
-		writeMd('work.md', `{% work id="WORK-001" status="ready" %}
+		writeMd(
+			'work.md',
+			`{% work id="WORK-001" status="ready" %}
 
 # Task
 
 ## Acceptance Criteria
 - [ ] Something
 
-{% /work %}`);
+{% /work %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		expect(entity.resolution).toBeUndefined();
 	});
 
 	it('should extract resolution with only some fields', () => {
-		writeMd('work.md', `{% work id="WORK-001" status="done" %}
+		writeMd(
+			'work.md',
+			`{% work id="WORK-001" status="done" %}
 
 # Task
 
@@ -358,7 +417,8 @@ Completed: 2026-03-20
 ### What was done
 - Fixed the bug
 
-{% /work %}`);
+{% /work %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		expect(entity.resolution).toBeDefined();
@@ -369,7 +429,9 @@ Completed: 2026-03-20
 	});
 
 	it('should extract resolution from bug runes', () => {
-		writeMd('bug.md', `{% bug id="BUG-001" status="fixed" severity="major" %}
+		writeMd(
+			'bug.md',
+			`{% bug id="BUG-001" status="fixed" severity="major" %}
 
 # Button breaks
 
@@ -382,7 +444,8 @@ Branch: \`claude/fix-button\`
 ### What was done
 - Fixed the click handler
 
-{% /bug %}`);
+{% /bug %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		expect(entity.resolution).toBeDefined();
@@ -393,7 +456,9 @@ Branch: \`claude/fix-button\`
 
 describe('scoped refs and known sections', () => {
 	it('tags refs with their canonical section name', () => {
-		writeMd('work/a.md', `{% work id="WORK-001" status="ready" %}
+		writeMd(
+			'work/a.md',
+			`{% work id="WORK-001" status="ready" %}
 
 # Task
 
@@ -403,7 +468,8 @@ describe('scoped refs and known sections', () => {
 ## References
 - {% ref "SPEC-001" /%}
 
-{% /work %}`);
+{% /work %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		// `## Dependencies` is a deprecated alias of the canonical `Blocked by` (SPEC-114).
@@ -413,7 +479,9 @@ describe('scoped refs and known sections', () => {
 	});
 
 	it('matches section aliases case-insensitively', () => {
-		writeMd('work/a.md', `{% work id="WORK-001" status="ready" %}
+		writeMd(
+			'work/a.md',
+			`{% work id="WORK-001" status="ready" %}
 
 # Task
 
@@ -423,7 +491,8 @@ describe('scoped refs and known sections', () => {
 ## AC
 - [ ] Done
 
-{% /work %}`);
+{% /work %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		expect(entity.scopedRefs).toContainEqual({ id: 'WORK-002', section: 'Blocked by' });
@@ -432,7 +501,9 @@ describe('scoped refs and known sections', () => {
 	});
 
 	it('reports known sections present', () => {
-		writeMd('bug/a.md', `{% bug id="BUG-001" status="confirmed" severity="major" %}
+		writeMd(
+			'bug/a.md',
+			`{% bug id="BUG-001" status="confirmed" severity="major" %}
 
 # Bug
 
@@ -445,7 +516,8 @@ Works.
 ## Actual
 Broken.
 
-{% /bug %}`);
+{% /bug %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		expect(entity.knownSectionsPresent).toContain('Steps to Reproduce');
@@ -454,7 +526,9 @@ Broken.
 	});
 
 	it('refs before any section heading have no section', () => {
-		writeMd('work/a.md', `{% work id="WORK-001" status="ready" %}
+		writeMd(
+			'work/a.md',
+			`{% work id="WORK-001" status="ready" %}
 
 # Task
 
@@ -463,7 +537,8 @@ Broken.
 ## Approach
 Notes.
 
-{% /work %}`);
+{% /work %}`,
+		);
 
 		const [entity] = scanPlanFiles(TMP);
 		expect(entity.scopedRefs).toContainEqual({ id: 'SPEC-001', section: undefined });
@@ -500,7 +575,9 @@ describe('edge cases', () => {
 	});
 
 	it('should only use the first plan rune tag in a file', () => {
-		writeMd('multi.md', `{% work id="WORK-001" status="ready" %}
+		writeMd(
+			'multi.md',
+			`{% work id="WORK-001" status="ready" %}
 
 # First
 
@@ -510,7 +587,8 @@ describe('edge cases', () => {
 
 # Second
 
-{% /spec %}`);
+{% /spec %}`,
+		);
 
 		const entities = scanPlanFiles(TMP);
 		expect(entities).toHaveLength(1);
@@ -597,13 +675,13 @@ describe('scanPlanSources', () => {
 		const entities = scanPlanSources(sources);
 		expect(entities).toHaveLength(2);
 
-		const work = entities.find(e => e.type === 'work')!;
+		const work = entities.find((e) => e.type === 'work')!;
 		expect(work.attributes.id).toBe('WORK-001');
 		expect(work.attributes.status).toBe('in-progress');
 		expect(work.mtime).toBe(1700000000000);
 		expect(work.criteria).toHaveLength(2);
 
-		const spec = entities.find(e => e.type === 'spec')!;
+		const spec = entities.find((e) => e.type === 'spec')!;
 		expect(spec.attributes.id).toBe('SPEC-001');
 		expect(spec.mtime).toBe(1699000000000);
 	});

@@ -48,7 +48,7 @@
 }
 
 [data-sequence="connected"] > li::before {
-	content: '';
+	content: "";
 	position: absolute;
 	left: -0.4375rem;
 	top: 0.25rem;

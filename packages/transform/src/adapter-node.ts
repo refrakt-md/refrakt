@@ -1,10 +1,7 @@
 import type { RefraktConfig } from '@refrakt-md/types';
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import {
-	normalizeRefraktConfig,
-	type NormalizedRefraktConfig,
-} from './config-normalize.js';
+import { normalizeRefraktConfig, type NormalizedRefraktConfig } from './config-normalize.js';
 
 export {
 	normalizeRefraktConfig,

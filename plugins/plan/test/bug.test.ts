@@ -17,7 +17,7 @@ Showcase extends above the boundary.
 Showcase is clipped.
 {% /bug %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bug');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'bug');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 	});
@@ -30,7 +30,7 @@ Showcase is clipped.
 1. Do something
 {% /bug %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bug');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'bug');
 		expect(fields(tag).status).toBe('reported');
 		expect(fields(tag).severity).toBe('critical');
 	});
@@ -52,8 +52,8 @@ Broken.
 - Browser: Chrome
 {% /bug %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bug');
-		const sections = findAllTags(tag!, t => t.name === 'section' && !!t.attributes['data-name']);
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'bug');
+		const sections = findAllTags(tag!, (t) => t.name === 'section' && !!t.attributes['data-name']);
 		expect(sections.length).toBe(4);
 		expect(sections[0].attributes['data-name']).toBe('steps-to-reproduce');
 		expect(sections[1].attributes['data-name']).toBe('expected');

@@ -3,10 +3,22 @@ import { resolve } from 'node:path';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import type { Rune } from '@refrakt-md/runes';
 import type { ThemeConfig, RuneConfig, LayoutConfig, LayoutPageData } from '@refrakt-md/transform';
-import { toKebabCase, layoutTransform, defaultLayout, docsLayout, blogArticleLayout, planLayout } from '@refrakt-md/transform';
+import {
+	toKebabCase,
+	layoutTransform,
+	defaultLayout,
+	docsLayout,
+	blogArticleLayout,
+	planLayout,
+} from '@refrakt-md/transform';
 import { getFixture, hasFixture, applyFixtureOverrides } from '../lib/fixtures.js';
 import { discoverVariants } from '../lib/variants.js';
-import { flattenCssImports, renderGalleryDocument, renderLayoutDocument, type GalleryCell } from '../lib/gallery.js';
+import {
+	flattenCssImports,
+	renderGalleryDocument,
+	renderLayoutDocument,
+	type GalleryCell,
+} from '../lib/gallery.js';
 import type { InspectDeps } from './inspect.js';
 
 export interface GalleryOptions {
@@ -49,7 +61,7 @@ export async function galleryCommand(options: GalleryOptions, deps: InspectDeps)
 	}
 	const resolveConfig = (rune: Rune): RuneConfig | undefined => {
 		if (rune.typeName && config.runes[rune.typeName]) return config.runes[rune.typeName];
-		const keys = [rune.name, ...(rune.aliases ?? [])].flatMap(k => [k, k.replace(/-/g, '')]);
+		const keys = [rune.name, ...(rune.aliases ?? [])].flatMap((k) => [k, k.replace(/-/g, '')]);
 		for (const k of keys) {
 			const cfg = configByRune.get(k);
 			if (cfg) return cfg;
@@ -126,7 +138,7 @@ export async function galleryCommand(options: GalleryOptions, deps: InspectDeps)
 	// each whole-page at multiple viewports.
 	const page = buildSyntheticPage(transform, deps);
 	const layouts: Record<string, LayoutConfig> = {
-		'default': defaultLayout,
+		default: defaultLayout,
 		docs: docsLayout,
 		'blog-article': blogArticleLayout,
 		plan: planLayout,
@@ -134,7 +146,11 @@ export async function galleryCommand(options: GalleryOptions, deps: InspectDeps)
 	for (const [name, layout] of Object.entries(layouts)) {
 		let bodyHtml: string;
 		try {
-			const tree = layoutTransform(layout, { ...page, frontmatter: { ...page.frontmatter, layout: name } }, 'rf');
+			const tree = layoutTransform(
+				layout,
+				{ ...page, frontmatter: { ...page.frontmatter, layout: name } },
+				'rf',
+			);
 			bodyHtml = deps.renderToHtml(tree, { pretty: false });
 		} catch (err) {
 			console.warn(`Layout "${name}" skipped: ${(err as Error).message}`);
@@ -148,14 +164,16 @@ export async function galleryCommand(options: GalleryOptions, deps: InspectDeps)
 	}
 	console.log(`Layouts: ${Object.keys(layouts).length} fixtures (× light/dark).`);
 
-	const runeCount = new Set(cells.map(c => c.rune)).size;
+	const runeCount = new Set(cells.map((c) => c.rune)).size;
 	console.log(`Gallery: ${runeCount} runes, ${cells.length} variant cells.`);
 	if (missing.length > 0) {
 		console.warn(`No fixture (gap marker shown) for ${missing.length}: ${missing.join(', ')}`);
 	}
 	if (skipped.length > 0) {
 		const preview = skipped.slice(0, 12).join(', ');
-		console.warn(`Skipped ${skipped.length} cell(s) that failed to render: ${preview}${skipped.length > 12 ? '…' : ''}`);
+		console.warn(
+			`Skipped ${skipped.length} cell(s) that failed to render: ${preview}${skipped.length > 12 ? '…' : ''}`,
+		);
 	}
 }
 
@@ -173,16 +191,26 @@ function gapMarker(rune: string): string {
  *  semantic variants. Matched by exact name or these prefixes. */
 const UNIVERSAL_AXIS_PREFIXES = ['bg', 'substrate', 'frame', 'scrim', 'tint'];
 const UNIVERSAL_AXES = new Set([
-	'width', 'spacing', 'inset', 'elevation', 'prominence', 'density',
-	'cover', 'media-position', 'posture', 'guest-posture',
+	'width',
+	'spacing',
+	'inset',
+	'elevation',
+	'prominence',
+	'density',
+	'cover',
+	'media-position',
+	'posture',
+	'guest-posture',
 	// SPEC-105 motion facet — universal, and a static screenshot of a reveal
 	// variant is identical to the default (the cell renders the final state), so
 	// expanding them per-rune is pure noise. The motion docs showcase them once.
-	'reveal', 'stagger',
+	'reveal',
+	'stagger',
 	// SPEC-108 reading register + drop cap — universal editorial dimension,
 	// showcased once in the dedicated reading subject rather than expanded across
 	// every rune (which would add a fine/ui/prose × dropcap matrix to each).
-	'reading', 'dropcap',
+	'reading',
+	'dropcap',
 ]);
 
 /** Cap on variant cells per rune, so a rune with a large own enum (e.g. icon
@@ -191,13 +219,15 @@ const MAX_CELLS_PER_RUNE = 16;
 
 function isUniversalAxis(attr: string): boolean {
 	if (UNIVERSAL_AXES.has(attr)) return true;
-	return UNIVERSAL_AXIS_PREFIXES.some(p => attr === p || attr.startsWith(`${p}-`));
+	return UNIVERSAL_AXIS_PREFIXES.some((p) => attr === p || attr.startsWith(`${p}-`));
 }
 
 /** The variant matrix for a rune: a base cell plus one per *own* enum modifier
  *  value (universal surface axes excluded), capped per rune. */
 function variantMatrix(rune: Rune): { variant: string; flags: Record<string, string> }[] {
-	const out: { variant: string; flags: Record<string, string> }[] = [{ variant: 'default', flags: {} }];
+	const out: { variant: string; flags: Record<string, string> }[] = [
+		{ variant: 'default', flags: {} },
+	];
 	const variants = discoverVariants(rune.schema);
 	for (const [attr, values] of Object.entries(variants)) {
 		if (isUniversalAxis(attr)) continue;
@@ -239,9 +269,10 @@ function renderCell(
 	deps: InspectDeps,
 ): string {
 	const base = deps.packageFixtures?.[rune.name];
-	const source = base !== undefined
-		? applyFixtureOverrides(base, rune.name, flags)
-		: getFixture(rune.name, flags);
+	const source =
+		base !== undefined
+			? applyFixtureOverrides(base, rune.name, flags)
+			: getFixture(rune.name, flags);
 	return deps.renderToHtml(sourceToTree(source, transform, deps), { pretty: false });
 }
 
@@ -325,8 +356,14 @@ function buildSyntheticPage(transform: (tree: any) => any, deps: InspectDeps): L
 			header: region('header', '[Docs](/docs) · [Blog](/blog) · [Reference](/docs/api)'),
 			nav: region('nav', deps.packageFixtures?.nav ?? getFixture('nav')),
 			footer: region('footer', 'Footer — [Docs](/docs) · [GitHub](https://github.com)'),
-			sidebar: region('sidebar', '### Related\n- [Tokens](/docs/tokens)\n- [Layouts](/docs/layouts)'),
-			pagination: region('pagination', deps.packageFixtures?.pagination ?? getFixture('pagination')),
+			sidebar: region(
+				'sidebar',
+				'### Related\n- [Tokens](/docs/tokens)\n- [Layouts](/docs/layouts)',
+			),
+			pagination: region(
+				'pagination',
+				deps.packageFixtures?.pagination ?? getFixture('pagination'),
+			),
 		},
 		pages: [
 			{ url: '/docs/intro', title: 'Introduction', draft: false },
@@ -334,7 +371,13 @@ function buildSyntheticPage(transform: (tree: any) => any, deps: InspectDeps): L
 			{ url: '/docs/building-a-theme', title: 'Building a theme', draft: false },
 			{ url: '/docs/configuration', title: 'Configuration', draft: false },
 			{ url: '/docs/api', title: 'Reference', draft: false },
-			{ url: '/blog/launch', title: 'Launch post', draft: false, date: '2026-01-15', author: 'Jane Doe' },
+			{
+				url: '/blog/launch',
+				title: 'Launch post',
+				draft: false,
+				date: '2026-01-15',
+				author: 'Jane Doe',
+			},
 		],
 		frontmatter: {
 			title: 'Building a theme',
@@ -396,7 +439,9 @@ function loadThemeCss(themePackage: string): string {
 	try {
 		indexCss = require.resolve(themePackage);
 	} catch {
-		throw new Error(`Could not resolve theme package "${themePackage}". Install it or pass --theme <package>.`);
+		throw new Error(
+			`Could not resolve theme package "${themePackage}". Install it or pass --theme <package>.`,
+		);
 	}
 	try {
 		return flattenCssImports(indexCss);

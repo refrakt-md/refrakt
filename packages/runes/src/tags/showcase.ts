@@ -17,7 +17,9 @@ function warnShowcaseDeprecated(attr: string, replacement: string): void {
 	if (SHOWCASE_DEPRECATED_WARNED.has(attr)) return;
 	SHOWCASE_DEPRECATED_WARNED.add(attr);
 	// eslint-disable-next-line no-console
-	console.warn(`[refrakt] showcase \`${attr}\` is deprecated (SPEC-086) — use \`${replacement}\`. The alias will be removed in a future minor.`);
+	console.warn(
+		`[refrakt] showcase \`${attr}\` is deprecated (SPEC-086) — use \`${replacement}\`. The alias will be removed in a future minor.`,
+	);
 }
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
@@ -30,21 +32,42 @@ export const showcase = createContentModelSchema({
 	sections: showcaseSections,
 	frameTarget: showcaseFrameTarget,
 	attributes: {
-		shadow: { type: String, required: false, matches: shadowValues.slice(), description: 'Shadow style around the showcase content' },
-		bleed: { type: String, required: false, matches: bleedValues.slice(), description: 'Direction content extends beyond its container' },
+		shadow: {
+			type: String,
+			required: false,
+			matches: shadowValues.slice(),
+			description: 'Shadow style around the showcase content',
+		},
+		bleed: {
+			type: String,
+			required: false,
+			matches: bleedValues.slice(),
+			description: 'Direction content extends beyond its container',
+		},
 		offset: { type: String, required: false, description: 'CSS offset from the container edge' },
 		aspect: { type: String, required: false, description: 'Aspect ratio of the showcase area' },
-		place: { type: String, required: false, matches: [
-			'left', 'center', 'right', 'top', 'bottom',
-			'top left', 'top center', 'top right',
-			'bottom left', 'bottom center', 'bottom right',
-		], description: 'Position of content within the showcase area' },
+		place: {
+			type: String,
+			required: false,
+			matches: [
+				'left',
+				'center',
+				'right',
+				'top',
+				'bottom',
+				'top left',
+				'top center',
+				'top right',
+				'bottom left',
+				'bottom center',
+				'bottom right',
+			],
+			description: 'Position of content within the showcase area',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const children = new RenderableNodeCursor(
@@ -93,7 +116,8 @@ export const showcase = createContentModelSchema({
 
 		childNodes.push(viewport);
 
-		return createComponentRenderable({ rune: 'showcase',
+		return createComponentRenderable({
+			rune: 'showcase',
 			tag: 'div',
 			properties,
 			refs: {

@@ -5,18 +5,27 @@ import { config } from './config.js';
 import { translations } from './translations.js';
 
 export const learning: Plugin = {
-  name: 'learning',
-  displayName: 'Learning',
-  version: '0.33.0',
-  runes: {
-    'howto': {
-      transform: howto,
-      aliases: ['how-to'],
-      description: 'Step-by-step how-to guide with tools/materials list and instructions',
-      seoType: 'HowTo',
-      category: 'Semantic',
-      snippet: ['{% howto difficulty="${1|easy,medium,hard|}" %}', '# ${2:How to Do Something}', '', '- ${3:Tool or material needed}', '', '1. ${4:First step}', '2. ${5:Second step}', '{% /howto %}'],
-      fixture: `{% howto estimatedTime="PT45M" difficulty="easy" %}
+	name: 'learning',
+	displayName: 'Learning',
+	version: '0.33.0',
+	runes: {
+		howto: {
+			transform: howto,
+			aliases: ['how-to'],
+			description: 'Step-by-step how-to guide with tools/materials list and instructions',
+			seoType: 'HowTo',
+			category: 'Semantic',
+			snippet: [
+				'{% howto difficulty="${1|easy,medium,hard|}" %}',
+				'# ${2:How to Do Something}',
+				'',
+				'- ${3:Tool or material needed}',
+				'',
+				'1. ${4:First step}',
+				'2. ${5:Second step}',
+				'{% /howto %}',
+			],
+			fixture: `{% howto estimatedTime="PT45M" difficulty="easy" %}
 # Set Up a Refrakt Theme
 
 - Node.js 20+
@@ -29,14 +38,25 @@ export const learning: Plugin = {
 4. Write CSS targeting the BEM selectors from \`refrakt inspect\`
 5. Test with \`refrakt inspect --serve\`
 {% /howto %}`,
-    },
-    'recipe': {
-      transform: recipe,
-      description: 'Recipe with ingredients, steps, and chef tips. Supports media-first layouts via media-position. Lists become ingredients, ordered lists become steps, blockquotes become tips.',
-      seoType: 'Recipe',
-      category: 'Semantic',
-      snippet: ['{% recipe prepTime="${1:15m}" cookTime="${2:30m}" servings=${3:4} difficulty="${4|easy,medium,hard|}" %}', '# ${5:Recipe Name}', '', '- ${6:Ingredient one}', '- ${7:Ingredient two}', '', '1. ${8:Step one}', '2. ${9:Step two}', '{% /recipe %}'],
-      fixture: `{% recipe prepTime="PT15M" cookTime="PT30M" servings="4" difficulty="medium" media-position="end" %}
+		},
+		recipe: {
+			transform: recipe,
+			description:
+				'Recipe with ingredients, steps, and chef tips. Supports media-first layouts via media-position. Lists become ingredients, ordered lists become steps, blockquotes become tips.',
+			seoType: 'Recipe',
+			category: 'Semantic',
+			snippet: [
+				'{% recipe prepTime="${1:15m}" cookTime="${2:30m}" servings=${3:4} difficulty="${4|easy,medium,hard|}" %}',
+				'# ${5:Recipe Name}',
+				'',
+				'- ${6:Ingredient one}',
+				'- ${7:Ingredient two}',
+				'',
+				'1. ${8:Step one}',
+				'2. ${9:Step two}',
+				'{% /recipe %}',
+			],
+			fixture: `{% recipe prepTime="PT15M" cookTime="PT30M" servings="4" difficulty="medium" media-position="end" %}
 ![Classic Margherita Pizza](placeholder:cover)
 
 ---
@@ -63,12 +83,12 @@ A timeless Italian favorite with a crispy crust and fresh toppings.
 
 > For the best crust, preheat your oven with a pizza stone for at least 30 minutes before baking.
 {% /recipe %}`,
-    },
-  },
-  theme: {
-    runes: config as unknown as Record<string, Record<string, unknown>>,
-  },
-  translations,
+		},
+	},
+	theme: {
+		runes: config as unknown as Record<string, Record<string, unknown>>,
+	},
+	translations,
 };
 
 export default learning;

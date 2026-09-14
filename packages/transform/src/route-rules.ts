@@ -37,7 +37,7 @@ export function matchRouteEntity(url: string, rules: RouteRule[]): string | unde
 
 function matchPattern(url: string, pattern: string): boolean {
 	const regexStr = pattern
-		.replace(/[.+^${}()|[\]\\]/g, '\\$&')  // escape regex special chars (except * and ?)
+		.replace(/[.+^${}()|[\]\\]/g, '\\$&') // escape regex special chars (except * and ?)
 		.replace(/\*\*/g, '{{GLOBSTAR}}')
 		.replace(/\*/g, '[^/]*')
 		.replace(/\{\{GLOBSTAR\}\}/g, '.*');

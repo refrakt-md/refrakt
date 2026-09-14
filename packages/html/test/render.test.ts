@@ -48,9 +48,7 @@ function makePageData(overrides: Partial<LayoutPageData> = {}): LayoutPageData {
 describe('applyHtmlTransforms', () => {
 	it('is a passthrough (table/code wrapping is now in Markdoc node schemas)', () => {
 		const table = makeTag('table', { class: 'data' }, [
-			makeTag('tr', {}, [
-				makeTag('td', {}, ['Cell']),
-			]),
+			makeTag('tr', {}, [makeTag('td', {}, ['Cell'])]),
 		]);
 		const result = applyHtmlTransforms(table) as any;
 
@@ -93,9 +91,7 @@ describe('renderPage', () => {
 		// Table wrapping now comes from the Markdoc node schema, not renderPage
 		const page = makePageData({
 			renderable: makeTag('div', { class: 'rf-table-wrapper' }, [
-				makeTag('table', {}, [
-					makeTag('tr', {}, [makeTag('td', {}, ['Cell'])]),
-				]),
+				makeTag('table', {}, [makeTag('tr', {}, [makeTag('td', {}, ['Cell'])])]),
 			]),
 		});
 		const html = renderPage({ theme, page });
@@ -142,9 +138,12 @@ describe('renderFullPage', () => {
 	it('writes tint attributes on <html> from a locked cascade (SPEC-073)', () => {
 		const theme = makeTheme({ layouts: {} });
 		const page = makePageData();
-		const html = renderFullPage({ theme, page }, {
-			tintCascade: { tint: 'niwaki', tintMode: 'dark', locked: true },
-		});
+		const html = renderFullPage(
+			{ theme, page },
+			{
+				tintCascade: { tint: 'niwaki', tintMode: 'dark', locked: true },
+			},
+		);
 
 		expect(html).toContain('data-theme="dark"');
 		expect(html).toContain('data-tint="niwaki"');
@@ -181,9 +180,12 @@ describe('renderFullPage', () => {
 	it('includes stylesheet links', () => {
 		const theme = makeTheme({ layouts: {} });
 		const page = makePageData();
-		const html = renderFullPage({ theme, page }, {
-			stylesheets: ['/css/theme.css', '/css/custom.css'],
-		});
+		const html = renderFullPage(
+			{ theme, page },
+			{
+				stylesheets: ['/css/theme.css', '/css/custom.css'],
+			},
+		);
 
 		expect(html).toContain('<link rel="stylesheet" href="/css/theme.css">');
 		expect(html).toContain('<link rel="stylesheet" href="/css/custom.css">');
@@ -192,9 +194,12 @@ describe('renderFullPage', () => {
 	it('includes script tags', () => {
 		const theme = makeTheme({ layouts: {} });
 		const page = makePageData();
-		const html = renderFullPage({ theme, page }, {
-			scripts: ['/js/behaviors.js'],
-		});
+		const html = renderFullPage(
+			{ theme, page },
+			{
+				scripts: ['/js/behaviors.js'],
+			},
+		);
 
 		expect(html).toContain('<script src="/js/behaviors.js"></script>');
 	});
@@ -219,9 +224,12 @@ describe('renderFullPage', () => {
 	it('includes extra head content', () => {
 		const theme = makeTheme({ layouts: {} });
 		const page = makePageData();
-		const html = renderFullPage({ theme, page }, {
-			headExtra: '<link rel="icon" href="/favicon.ico">',
-		});
+		const html = renderFullPage(
+			{ theme, page },
+			{
+				headExtra: '<link rel="icon" href="/favicon.ico">',
+			},
+		);
 
 		expect(html).toContain('<link rel="icon" href="/favicon.ico">');
 	});

@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { parse, findTag, findAllTags } from './helpers.js';
 import { planPipelineHooks } from '../src/pipeline.js';
-import type { TransformedPage, EntityRegistry, EntityRegistration, PipelineContext } from '@refrakt-md/types';
+import type {
+	TransformedPage,
+	EntityRegistry,
+	EntityRegistration,
+	PipelineContext,
+} from '@refrakt-md/types';
 
 function makePage(url: string, content: string): TransformedPage {
 	const renderable = parse(content);
@@ -18,13 +23,28 @@ function makeRegistry() {
 	const entries: EntityRegistration[] = [];
 	const edges: Array<{ fromId: string; toId: string; kind: string }> = [];
 	const registry: EntityRegistry = {
-		register(entry: EntityRegistration) { entries.push(entry); },
-		getAll(type: string) { return entries.filter(e => e.type === type); },
-		getById(type: string, id: string) { return entries.find(e => e.type === type && e.id === id); },
-		getByUrl(type: string, url: string) { return entries.filter(e => e.type === type && e.sourceUrl === url); },
-		getTypes() { return [...new Set(entries.map(e => e.type))]; },
-		relate(edge) { edges.push({ fromId: edge.fromId, toId: edge.toId, kind: edge.kind }); },
-		getRelated(id) { return []; void id; },
+		register(entry: EntityRegistration) {
+			entries.push(entry);
+		},
+		getAll(type: string) {
+			return entries.filter((e) => e.type === type);
+		},
+		getById(type: string, id: string) {
+			return entries.find((e) => e.type === type && e.id === id);
+		},
+		getByUrl(type: string, url: string) {
+			return entries.filter((e) => e.type === type && e.sourceUrl === url);
+		},
+		getTypes() {
+			return [...new Set(entries.map((e) => e.type))];
+		},
+		relate(edge) {
+			edges.push({ fromId: edge.fromId, toId: edge.toId, kind: edge.kind });
+		},
+		getRelated(id) {
+			return [];
+			void id;
+		},
 	};
 	return { entries, edges, registry };
 }
@@ -34,7 +54,9 @@ function makeCtx() {
 	return {
 		ctx: {
 			info: () => {},
-			warn: (msg: string) => { warnings.push(msg); },
+			warn: (msg: string) => {
+				warnings.push(msg);
+			},
 			error: () => {},
 		} as PipelineContext,
 		warnings,
@@ -52,10 +74,13 @@ describe('planPipelineHooks.register', () => {
 	});
 
 	it('registers a work item', () => {
-		const page = makePage('/plan/work/rf-142', `{% work id="RF-142" status="ready" priority="high" complexity="moderate" milestone="v0.5.0" assignee="alice" tags="layout" %}
+		const page = makePage(
+			'/plan/work/rf-142',
+			`{% work id="RF-142" status="ready" priority="high" complexity="moderate" milestone="v0.5.0" assignee="alice" tags="layout" %}
 # Implement dark mode
 Description.
-{% /work %}`);
+{% /work %}`,
+		);
 
 		planPipelineHooks.register!([page], registry, ctx);
 
@@ -72,13 +97,16 @@ Description.
 	});
 
 	it('registers a spec', () => {
-		const page = makePage('/plan/spec/spec-008', `{% spec id="SPEC-008" status="accepted" version="1.0" tags="runes" %}
+		const page = makePage(
+			'/plan/spec/spec-008',
+			`{% spec id="SPEC-008" status="accepted" version="1.0" tags="runes" %}
 # Tint Rune
 
 > Specification for tint rune.
 
 Body content.
-{% /spec %}`);
+{% /spec %}`,
+		);
 
 		planPipelineHooks.register!([page], registry, ctx);
 
@@ -90,12 +118,15 @@ Body content.
 	});
 
 	it('registers a bug', () => {
-		const page = makePage('/plan/work/bug-001', `{% bug id="BUG-001" status="confirmed" severity="major" %}
+		const page = makePage(
+			'/plan/work/bug-001',
+			`{% bug id="BUG-001" status="confirmed" severity="major" %}
 # Showcase bleed bug
 
 ## Steps to Reproduce
 1. Create showcase with bleed
-{% /bug %}`);
+{% /bug %}`,
+		);
 
 		planPipelineHooks.register!([page], registry, ctx);
 
@@ -106,7 +137,9 @@ Body content.
 	});
 
 	it('registers a decision', () => {
-		const page = makePage('/plan/decision/adr-007', `{% decision id="ADR-007" status="accepted" date="2026-03-11" %}
+		const page = makePage(
+			'/plan/decision/adr-007',
+			`{% decision id="ADR-007" status="accepted" date="2026-03-11" %}
 # Use CSS custom properties
 
 ## Context
@@ -114,7 +147,8 @@ Need token injection.
 
 ## Decision
 CSS custom properties.
-{% /decision %}`);
+{% /decision %}`,
+		);
 
 		planPipelineHooks.register!([page], registry, ctx);
 
@@ -125,12 +159,15 @@ CSS custom properties.
 	});
 
 	it('registers a milestone by name', () => {
-		const page = makePage('/plan/milestone-050', `{% milestone name="v0.5.0" status="active" target="2026-03-29" %}
+		const page = makePage(
+			'/plan/milestone-050',
+			`{% milestone name="v0.5.0" status="active" target="2026-03-29" %}
 # v0.5.0 — Layout & Tint
 
 - Complete alignment migration
 - Ship tint rune
-{% /milestone %}`);
+{% /milestone %}`,
+		);
 
 		planPipelineHooks.register!([page], registry, ctx);
 
@@ -143,15 +180,21 @@ CSS custom properties.
 
 	it('registers multiple entities across pages', () => {
 		const pages = [
-			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="draft" %}
+			makePage(
+				'/plan/spec/s1',
+				`{% spec id="SPEC-001" status="draft" %}
 # First Spec
 > Summary.
 Body.
-{% /spec %}`),
-			makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" %}
+{% /spec %}`,
+			),
+			makePage(
+				'/plan/work/w1',
+				`{% work id="WORK-001" status="ready" priority="high" %}
 # First Work
 Description.
-{% /work %}`),
+{% /work %}`,
+			),
 		];
 
 		planPipelineHooks.register!(pages, registry, ctx);
@@ -162,10 +205,13 @@ Description.
 	});
 
 	it('extracts title text', () => {
-		const page = makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" %}
+		const page = makePage(
+			'/plan/work/w1',
+			`{% work id="WORK-001" status="ready" priority="high" %}
 # My Important Task
 Description.
-{% /work %}`);
+{% /work %}`,
+		);
 
 		planPipelineHooks.register!([page], registry, ctx);
 
@@ -173,9 +219,12 @@ Description.
 	});
 
 	it('skips pages with no plan runes', () => {
-		const page = makePage('/docs/intro', `# Introduction
+		const page = makePage(
+			'/docs/intro',
+			`# Introduction
 
-Just a normal page.`);
+Just a normal page.`,
+		);
 
 		planPipelineHooks.register!([page], registry, ctx);
 		expect(entries).toHaveLength(0);
@@ -183,10 +232,13 @@ Just a normal page.`);
 
 	it('warns on missing id', () => {
 		const { warnings, ctx: warnCtx } = makeCtx();
-		const page = makePage('/plan/work/bad', `{% work status="ready" priority="high" %}
+		const page = makePage(
+			'/plan/work/bad',
+			`{% work status="ready" priority="high" %}
 # No ID
 Description.
-{% /work %}`);
+{% /work %}`,
+		);
 
 		// work requires id, so Markdoc will error — but if it somehow gets through:
 		// the pipeline hook should handle it gracefully
@@ -196,7 +248,9 @@ Description.
 	});
 
 	it('counts checklist progress for work items', () => {
-		const page = makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" %}
+		const page = makePage(
+			'/plan/work/w1',
+			`{% work id="WORK-001" status="ready" priority="high" %}
 # Task with checklist
 
 ## Acceptance Criteria
@@ -205,7 +259,8 @@ Description.
 - [ ] Third criterion pending
 - [ ] Fourth criterion pending
 - [ ] Fifth criterion pending
-{% /work %}`);
+{% /work %}`,
+		);
 
 		planPipelineHooks.register!([page], registry, ctx);
 
@@ -215,11 +270,14 @@ Description.
 	});
 
 	it('does not set checklist counts when no checkboxes', () => {
-		const page = makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" %}
+		const page = makePage(
+			'/plan/work/w1',
+			`{% work id="WORK-001" status="ready" priority="high" %}
 # Task without checklist
 
 Just a description, no checkboxes.
-{% /work %}`);
+{% /work %}`,
+		);
 
 		planPipelineHooks.register!([page], registry, ctx);
 
@@ -228,7 +286,6 @@ Just a description, no checkboxes.
 		expect(entries[0].data.totalCount).toBeUndefined();
 	});
 });
-
 
 describe('planPipelineHooks — source attribute and implements relationships', () => {
 	function runFullPipeline(pages: TransformedPage[]) {
@@ -240,14 +297,20 @@ describe('planPipelineHooks — source attribute and implements relationships', 
 			entries,
 			edges,
 			aggregated,
-			processed: pages.map(page => planPipelineHooks.postProcess!(page, aggregated)),
+			processed: pages.map((page) => planPipelineHooks.postProcess!(page, aggregated)),
 		};
 	}
 
 	it('contributes relationship edges to the registry graph (SPEC-072)', () => {
 		const pages = [
-			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}\n# Test Spec\n> Summary.\n{% /spec %}`),
-			makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" source="SPEC-001" %}\n# Implement spec\nDescription.\n{% /work %}`),
+			makePage(
+				'/plan/spec/s1',
+				`{% spec id="SPEC-001" status="accepted" %}\n# Test Spec\n> Summary.\n{% /spec %}`,
+			),
+			makePage(
+				'/plan/work/w1',
+				`{% work id="WORK-001" status="ready" priority="high" source="SPEC-001" %}\n# Implement spec\nDescription.\n{% /work %}`,
+			),
 		];
 		const { edges } = runFullPipeline(pages);
 		// forward + reverse edges both contributed
@@ -257,32 +320,44 @@ describe('planPipelineHooks — source attribute and implements relationships', 
 
 	it('registers source attribute on work items', () => {
 		const pages = [
-			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}
+			makePage(
+				'/plan/spec/s1',
+				`{% spec id="SPEC-001" status="accepted" %}
 # Test Spec
 > Summary.
-{% /spec %}`),
-			makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" source="SPEC-001" %}
+{% /spec %}`,
+			),
+			makePage(
+				'/plan/work/w1',
+				`{% work id="WORK-001" status="ready" priority="high" source="SPEC-001" %}
 # Implement spec
 Description.
-{% /work %}`),
+{% /work %}`,
+			),
 		];
 
 		const { entries } = runFullPipeline(pages);
-		const workEntry = entries.find(e => e.id === 'WORK-001');
+		const workEntry = entries.find((e) => e.id === 'WORK-001');
 		expect(workEntry).toBeDefined();
 		expect(workEntry!.data.source).toBe('SPEC-001');
 	});
 
 	it('creates implements relationship from work to spec via source attribute', () => {
 		const pages = [
-			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}
+			makePage(
+				'/plan/spec/s1',
+				`{% spec id="SPEC-001" status="accepted" %}
 # Test Spec
 > Summary.
-{% /spec %}`),
-			makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" source="SPEC-001" %}
+{% /spec %}`,
+			),
+			makePage(
+				'/plan/work/w1',
+				`{% work id="WORK-001" status="ready" priority="high" source="SPEC-001" %}
 # Implement spec
 Description.
-{% /work %}`),
+{% /work %}`,
+			),
 		];
 
 		const { aggregated } = runFullPipeline(pages);
@@ -305,21 +380,30 @@ Description.
 
 	it('handles multiple source IDs', () => {
 		const pages = [
-			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}
+			makePage(
+				'/plan/spec/s1',
+				`{% spec id="SPEC-001" status="accepted" %}
 # Spec One
 > Summary.
-{% /spec %}`),
-			makePage('/plan/decision/d1', `{% decision id="ADR-001" status="accepted" date="2026-03-01" %}
+{% /spec %}`,
+			),
+			makePage(
+				'/plan/decision/d1',
+				`{% decision id="ADR-001" status="accepted" date="2026-03-01" %}
 # Decision One
 ## Context
 Context.
 ## Decision
 Decision.
-{% /decision %}`),
-			makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" source="SPEC-001,ADR-001" %}
+{% /decision %}`,
+			),
+			makePage(
+				'/plan/work/w1',
+				`{% work id="WORK-001" status="ready" priority="high" source="SPEC-001,ADR-001" %}
 # Multi-source task
 Description.
-{% /work %}`),
+{% /work %}`,
+			),
 		];
 
 		const { aggregated } = runFullPipeline(pages);
@@ -334,14 +418,20 @@ Description.
 
 	it('does not duplicate source references as related', () => {
 		const pages = [
-			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}
+			makePage(
+				'/plan/spec/s1',
+				`{% spec id="SPEC-001" status="accepted" %}
 # Spec
 > Summary.
-{% /spec %}`),
-			makePage('/plan/work/w1', `{% work id="WORK-001" status="ready" priority="high" source="SPEC-001" %}
+{% /spec %}`,
+			),
+			makePage(
+				'/plan/work/w1',
+				`{% work id="WORK-001" status="ready" priority="high" source="SPEC-001" %}
 # Implement spec
 See SPEC-001 for details.
-{% /work %}`),
+{% /work %}`,
+			),
 		];
 
 		const { aggregated } = runFullPipeline(pages);
@@ -356,20 +446,25 @@ See SPEC-001 for details.
 		expect(toSpec[0].kind).toBe('implements');
 	});
 
-
 	it('creates informs relationship from decision to spec via source attribute', () => {
 		const pages = [
-			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}
+			makePage(
+				'/plan/spec/s1',
+				`{% spec id="SPEC-001" status="accepted" %}
 # Test Spec
 > Summary.
-{% /spec %}`),
-			makePage('/plan/decision/d1', `{% decision id="ADR-010" status="accepted" date="2026-04-01" source="SPEC-001" %}
+{% /spec %}`,
+			),
+			makePage(
+				'/plan/decision/d1',
+				`{% decision id="ADR-010" status="accepted" date="2026-04-01" source="SPEC-001" %}
 # Use BEM naming
 ## Context
 Need naming convention.
 ## Decision
 BEM.
-{% /decision %}`),
+{% /decision %}`,
+			),
 		];
 
 		const { aggregated } = runFullPipeline(pages);
@@ -390,20 +485,25 @@ BEM.
 		expect(informedByRel!.toId).toBe('ADR-010');
 	});
 
-
 	it('does not duplicate decision source references as related', () => {
 		const pages = [
-			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}
+			makePage(
+				'/plan/spec/s1',
+				`{% spec id="SPEC-001" status="accepted" %}
 # Spec
 > Summary.
-{% /spec %}`),
-			makePage('/plan/decision/d1', `{% decision id="ADR-010" status="accepted" date="2026-04-01" source="SPEC-001" %}
+{% /spec %}`,
+			),
+			makePage(
+				'/plan/decision/d1',
+				`{% decision id="ADR-010" status="accepted" date="2026-04-01" source="SPEC-001" %}
 # Decision about SPEC-001
 ## Context
 See SPEC-001 for details.
 ## Decision
 Decision.
-{% /decision %}`),
+{% /decision %}`,
+			),
 		];
 
 		const { aggregated } = runFullPipeline(pages);
@@ -418,18 +518,23 @@ Decision.
 		expect(toSpec[0].kind).toBe('informs');
 	});
 
-
 	it('supports source attribute on bug items', () => {
 		const pages = [
-			makePage('/plan/spec/s1', `{% spec id="SPEC-001" status="accepted" %}
+			makePage(
+				'/plan/spec/s1',
+				`{% spec id="SPEC-001" status="accepted" %}
 # Spec
 > Summary.
-{% /spec %}`),
-			makePage('/plan/work/b1', `{% bug id="BUG-001" status="confirmed" severity="major" source="SPEC-001" %}
+{% /spec %}`,
+			),
+			makePage(
+				'/plan/work/b1',
+				`{% bug id="BUG-001" status="confirmed" severity="major" source="SPEC-001" %}
 # Bug from spec
 ## Steps to Reproduce
 1. Step one
-{% /bug %}`),
+{% /bug %}`,
+			),
 		];
 
 		const { aggregated } = runFullPipeline(pages);

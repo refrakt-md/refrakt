@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	const slug = params.slug || '';
 	const url = '/' + slug;
 
-	const page = site.pages.find(p => p.route.url === url);
+	const page = site.pages.find((p) => p.route.url === url);
 
 	if (!page || page.route.draft) {
 		error(404, 'Page not found');
@@ -36,8 +36,12 @@ export const load: PageServerLoad = async ({ params }) => {
 		regions: Object.fromEntries(
 			[...page.layout.regions.entries()].map(([name, region]) => [
 				name,
-				{ name: region.name, mode: region.mode, content: region.content.map(c => hl(transform(serialize(c)))) }
-			])
+				{
+					name: region.name,
+					mode: region.mode,
+					content: region.content.map((c) => hl(transform(serialize(c)))),
+				},
+			]),
 		),
 		seo: page.seo,
 		url,
@@ -49,6 +53,6 @@ export const load: PageServerLoad = async ({ params }) => {
 export async function entries() {
 	const site = await getSite();
 	return site.pages
-		.filter(p => !p.route.draft)
-		.map(p => ({ slug: p.route.url === '/' ? '' : p.route.url.slice(1) }));
+		.filter((p) => !p.route.draft)
+		.map((p) => ({ slug: p.route.url === '/' ? '' : p.route.url.slice(1) }));
 }

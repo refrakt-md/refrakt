@@ -58,7 +58,8 @@ function discoverPacks(cwd: string): DiscoveredPack[] {
 			// skip malformed
 		}
 	};
-	const isDir = (e: { isDirectory(): boolean; isSymbolicLink(): boolean }) => e.isDirectory() || e.isSymbolicLink();
+	const isDir = (e: { isDirectory(): boolean; isSymbolicLink(): boolean }) =>
+		e.isDirectory() || e.isSymbolicLink();
 	for (const entry of readdirSync(modulesDir, { withFileTypes: true })) {
 		if (!isDir(entry)) continue;
 		if (entry.name.startsWith('@')) {
@@ -106,7 +107,9 @@ export async function themePresetsListCommand(options: PresetsListOptions): Prom
 
 	let total = 0;
 	for (const pack of packs) {
-		const entries = pack.manifest.presets.filter((p) => !options.scope || p.scope === options.scope);
+		const entries = pack.manifest.presets.filter(
+			(p) => !options.scope || p.scope === options.scope,
+		);
 		if (entries.length === 0) continue;
 		console.log(`\n${pack.packageName}:`);
 		for (const p of entries) {
@@ -117,7 +120,9 @@ export async function themePresetsListCommand(options: PresetsListOptions): Prom
 	if (total === 0) {
 		console.log(`No presets${options.scope ? ` with scope "${options.scope}"` : ''} found.`);
 	} else if (themes.length) {
-		console.log(`\n  ⚠ = palette preset not tuned for the active theme (${themes.join(', ')}); still applies, may need adjustment`);
+		console.log(
+			`\n  ⚠ = palette preset not tuned for the active theme (${themes.join(', ')}); still applies, may need adjustment`,
+		);
 	}
 }
 
@@ -142,7 +147,10 @@ export async function themePresetsInstallCommand(options: PresetsInstallOptions)
 		console.error(`Error: ${(err as Error).message}`);
 		process.exit(1);
 	}
-	const { name: pmName, cmd } = buildInstallCommand(resolved.installSource, { registry: options.registry, cwd });
+	const { name: pmName, cmd } = buildInstallCommand(resolved.installSource, {
+		registry: options.registry,
+		cwd,
+	});
 	console.log(`Using ${pmName} to install preset pack "${resolved.name}"...`);
 	try {
 		execSync(cmd, { cwd, stdio: 'inherit' });
@@ -159,7 +167,10 @@ export async function themePresetsInstallCommand(options: PresetsInstallOptions)
 		process.exit(1);
 	}
 	const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8')) as PresetPackManifest;
-	const compat = validateCompat(manifest.refrakt ?? (readInstalledManifest(cwd, resolved.name)?.refrakt as string | undefined), getProjectRefraktVersion(cwd));
+	const compat = validateCompat(
+		manifest.refrakt ?? (readInstalledManifest(cwd, resolved.name)?.refrakt as string | undefined),
+		getProjectRefraktVersion(cwd),
+	);
 	for (const w of compat.warnings) console.log(`  ⚠ ${w}`);
 	if (compat.errors.length) {
 		for (const e of compat.errors) console.error(`  ✗ ${e}`);
@@ -171,7 +182,9 @@ export async function themePresetsInstallCommand(options: PresetsInstallOptions)
 	if (options.use) {
 		const entry = manifest.presets.find((p) => p.id === options.use);
 		if (!entry) {
-			console.error(`Error: preset "${options.use}" not found in ${resolved.name} (have: ${manifest.presets.map((p) => p.id).join(', ')}).`);
+			console.error(
+				`Error: preset "${options.use}" not found in ${resolved.name} (have: ${manifest.presets.map((p) => p.id).join(', ')}).`,
+			);
 			process.exit(1);
 		}
 		const configData = loadRefraktConfigFile(cwd);
@@ -184,10 +197,16 @@ export async function themePresetsInstallCommand(options: PresetsInstallOptions)
 		const moduleId = `${resolved.name}/${entry.id}`;
 		appendSitePreset(configData.raw, selection.key, moduleId);
 		writeRefraktConfigFile(configData.path, configData.raw);
-		console.log(`\nApplied preset "${entry.id}" → ${selection.key !== 'default' ? `site "${selection.key}" ` : ''}theme.presets ("${moduleId}").`);
-		console.log('Ensure the pack exports that preset subpath (e.g. "./' + entry.id + '" → its module).');
+		console.log(
+			`\nApplied preset "${entry.id}" → ${selection.key !== 'default' ? `site "${selection.key}" ` : ''}theme.presets ("${moduleId}").`,
+		);
+		console.log(
+			'Ensure the pack exports that preset subpath (e.g. "./' + entry.id + '" → its module).',
+		);
 	} else {
-		console.log(`\nInstalled. Apply a preset with: refrakt theme presets install ${options.source} --use <id>`);
+		console.log(
+			`\nInstalled. Apply a preset with: refrakt theme presets install ${options.source} --use <id>`,
+		);
 		console.log(`Available: ${manifest.presets.map((p) => p.id).join(', ')}`);
 	}
 }
@@ -205,7 +224,13 @@ export async function themePresetsValidateCommand(options: PresetsValidateOption
 			const dir = resolve(cwd, options.pack);
 			const manifestPath = resolve(dir, 'presets.json');
 			if (existsSync(manifestPath)) {
-				packs = [{ packageName: options.pack, dir, manifest: JSON.parse(readFileSync(manifestPath, 'utf-8')) }];
+				packs = [
+					{
+						packageName: options.pack,
+						dir,
+						manifest: JSON.parse(readFileSync(manifestPath, 'utf-8')),
+					},
+				];
 			}
 		}
 	}
@@ -238,8 +263,14 @@ export async function themePresetsValidateCommand(options: PresetsValidateOption
 			// is skipped for them, but resolvability is still checked.
 			const { errors: e, warnings: w } = validatePresetEntry(entry, config);
 			const all = [...(resolveError ? [resolveError] : []), ...e];
-			for (const msg of all) { console.log(`  ✗ ${msg}`); errors++; }
-			for (const msg of w) { console.log(`  ⚠ ${msg}`); warnings++; }
+			for (const msg of all) {
+				console.log(`  ✗ ${msg}`);
+				errors++;
+			}
+			for (const msg of w) {
+				console.log(`  ⚠ ${msg}`);
+				warnings++;
+			}
 			if (all.length === 0 && w.length === 0) console.log(`  ✓ ${entry.id} [${entry.scope}]`);
 		}
 	}

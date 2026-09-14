@@ -14,7 +14,9 @@ describe('RUNE_EXAMPLES is generated from fixtures/*.md', () => {
 	});
 
 	it('stripFrontmatter removes a leading YAML block but leaves bodies without one', () => {
-		expect(stripFrontmatter('---\nrune: hint\n---\n\n{% hint %}x{% /hint %}')).toBe('\n{% hint %}x{% /hint %}');
+		expect(stripFrontmatter('---\nrune: hint\n---\n\n{% hint %}x{% /hint %}')).toBe(
+			'\n{% hint %}x{% /hint %}',
+		);
 		expect(stripFrontmatter('{% hint %}x{% /hint %}')).toBe('{% hint %}x{% /hint %}');
 	});
 });

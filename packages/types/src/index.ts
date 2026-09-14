@@ -1,51 +1,50 @@
 // Core interfaces and type definitions
 export {
-  Newable,
-  NodeType,
+	Newable,
+	NodeType,
 } from './interfaces.js';
-
 
 // Design tokens (standalone interface, not tied to a rune schema)
 export type { DesignTokens } from './tokens.js';
 
 // Token contract (SPEC-048) — the universal theme-token surface
 export type {
-  TokenContract,
-  PartialTokenContract,
-  ThemeTokensConfig,
-  ThemeTokensModeOverlay,
-  SentimentTokens,
-  SyntaxTokens,
-  DeepPartial,
+	TokenContract,
+	PartialTokenContract,
+	ThemeTokensConfig,
+	ThemeTokensModeOverlay,
+	SentimentTokens,
+	SyntaxTokens,
+	DeepPartial,
 } from './token-contract.js';
 
 // Project configuration — the shape of `refrakt.config.json`
 export type {
-  RefraktConfig,
-  SiteConfig,
-  PlanConfig,
-  XrefPattern,
-  RouteRule,
-  EntityRoute,
+	RefraktConfig,
+	SiteConfig,
+	PlanConfig,
+	XrefPattern,
+	RouteRule,
+	EntityRoute,
 } from './config.js';
 
 // Theme system types
 export type {
-  SiteThemeConfig,
-  ThemeManifest,
-  LayoutDefinition,
-  ComponentDefinition,
+	SiteThemeConfig,
+	ThemeManifest,
+	LayoutDefinition,
+	ComponentDefinition,
 } from './theme.js';
 export { getThemePackage } from './theme.js';
 
 // Plugin types
 export type {
-  Plugin,
-  PluginRune,
-  PluginAttribute,
-  RuneExtension,
-  PluginThemeConfig,
-  PluginLocalizedValue,
+	Plugin,
+	PluginRune,
+	PluginAttribute,
+	RuneExtension,
+	PluginThemeConfig,
+	PluginLocalizedValue,
 } from './package.js';
 
 // Serialized tree types

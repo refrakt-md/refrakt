@@ -12,10 +12,15 @@ const TINTS: Record<string, TintDefinition> = {
 
 const theme = (tints = TINTS): FacetTheme => ({ tints, backgrounds: {}, frames: {} });
 
-const meta = (field: string, content: string) => makeTag('meta', { 'data-field': field, content }, []);
+const meta = (field: string, content: string) =>
+	makeTag('meta', { 'data-field': field, content }, []);
 
 const ctx = (metas: Array<[string, string]>, tints = TINTS): FacetContext => ({
-	tag: makeTag('div', { 'data-rune': 'card' }, metas.map(([f, c]) => meta(f, c))),
+	tag: makeTag(
+		'div',
+		{ 'data-rune': 'card' },
+		metas.map(([f, c]) => meta(f, c)),
+	),
 	config: { block: 'card' },
 	block: 'rf-card',
 	rune: 'card',
@@ -70,47 +75,79 @@ describe('tint facet', () => {
 
 	describe('lockMode', () => {
 		it('applies the definition’s lock when the author sets no mode', () => {
-			expect(tintFacet.resolve(ctx([['tint', 'night']]))?.dataAttrs?.['data-color-scheme']).toBe('dark');
+			expect(tintFacet.resolve(ctx([['tint', 'night']]))?.dataAttrs?.['data-color-scheme']).toBe(
+				'dark',
+			);
 		});
 
 		it('lets an authored tint-mode win over the lock', () => {
-			const result = tintFacet.resolve(ctx([['tint', 'night'], ['tint-mode', 'light']]));
+			const result = tintFacet.resolve(
+				ctx([
+					['tint', 'night'],
+					['tint-mode', 'light'],
+				]),
+			);
 			expect(result?.dataAttrs?.['data-color-scheme']).toBe('light');
 		});
 
 		it('treats `auto` as the absence of a lock', () => {
-			const result = tintFacet.resolve(ctx([['tint', 'forest'], ['tint-mode', 'auto']]));
+			const result = tintFacet.resolve(
+				ctx([
+					['tint', 'forest'],
+					['tint-mode', 'auto'],
+				]),
+			);
 			expect(result?.dataAttrs?.['data-color-scheme']).toBeUndefined();
 		});
 	});
 
 	describe('inline token overrides', () => {
 		it('overrides a preset token, leaving the others alone', () => {
-			const result = tintFacet.resolve(ctx([['tint', 'forest'], ['tint-bg', '#ffffff']]));
+			const result = tintFacet.resolve(
+				ctx([
+					['tint', 'forest'],
+					['tint-bg', '#ffffff'],
+				]),
+			);
 			expect(result?.styles).toContainEqual(['--tint-bg', '#ffffff']);
 			expect(result?.styles).toContainEqual(['--tint-text', '#12301a']);
 		});
 
 		it('works with no preset at all — `custom`', () => {
-			const result = tintFacet.resolve(ctx([['tint', 'custom'], ['tint-primary', 'rebeccapurple']]));
+			const result = tintFacet.resolve(
+				ctx([
+					['tint', 'custom'],
+					['tint-primary', 'rebeccapurple'],
+				]),
+			);
 			expect(result?.dataAttrs?.['data-tint']).toBe('custom');
 			expect(result?.styles).toEqual([['--tint-primary', 'rebeccapurple']]);
 			expect(result?.classes).toEqual(['rf-card--tinted']);
 		});
 
 		it('names an inline-only tint `custom` when no tint attribute was given', () => {
-			const result = tintFacet.resolve(ctx([['tint-mode', 'dark'], ['tint-bg', '#000']]));
+			const result = tintFacet.resolve(
+				ctx([
+					['tint-mode', 'dark'],
+					['tint-bg', '#000'],
+				]),
+			);
 			expect(result?.dataAttrs?.['data-tint']).toBe('custom');
 		});
 
 		it('accepts a dark-mode override', () => {
-			const result = tintFacet.resolve(ctx([['tint', 'custom'], ['tint-dark-bg', '#000']]));
+			const result = tintFacet.resolve(
+				ctx([
+					['tint', 'custom'],
+					['tint-dark-bg', '#000'],
+				]),
+			);
 			expect(result?.styles).toEqual([['--tint-dark-bg', '#000']]);
 			expect(result?.dataAttrs?.['data-tint-dark']).toBe('');
 		});
 
 		it('accepts every token in the vocabulary', () => {
-			const metas = TINT_TOKENS.map(t => [`tint-${t}`, `v-${t}`] as [string, string]);
+			const metas = TINT_TOKENS.map((t) => [`tint-${t}`, `v-${t}`] as [string, string]);
 			const result = tintFacet.resolve(ctx([['tint', 'custom'], ...metas]));
 			expect(result?.styles).toHaveLength(TINT_TOKENS.length);
 		});
@@ -128,7 +165,9 @@ describe('tint facet', () => {
 		// Published as state, not an emitted axis: the attribute is set directly,
 		// and `cover` needs to know the scheme was claimed so it does not clobber it.
 		it('publishes the resolved scheme for later facets', () => {
-			expect(tintFacet.resolve(ctx([['tint', 'night']]))?.state).toEqual({ 'color-scheme': 'dark' });
+			expect(tintFacet.resolve(ctx([['tint', 'night']]))?.state).toEqual({
+				'color-scheme': 'dark',
+			});
 		});
 
 		it('publishes nothing when no scheme was locked', () => {
@@ -137,7 +176,13 @@ describe('tint facet', () => {
 	});
 
 	it('consumes its metas, including the inline tokens it read', () => {
-		const result = tintFacet.resolve(ctx([['tint', 'forest'], ['tint-bg', '#fff'], ['tint-dark-text', '#000']]));
+		const result = tintFacet.resolve(
+			ctx([
+				['tint', 'forest'],
+				['tint-bg', '#fff'],
+				['tint-dark-text', '#000'],
+			]),
+		);
 		expect(result?.consumes).toEqual(['tint', 'tint-mode', 'tint-bg', 'tint-dark-text']);
 	});
 });

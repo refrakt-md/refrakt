@@ -58,8 +58,10 @@ function getDynamicValues(tagName: string, attrName: string, aggregated: Aggrega
 	const design = aggregated['design'] as { contexts?: Record<string, unknown> } | undefined;
 	if (!design?.contexts) return [];
 	const scopes = Object.keys(design.contexts);
-	if ((tagName === 'sandbox' && attrName === 'context') ||
-		(tagName === 'design-context' && attrName === 'scope')) {
+	if (
+		(tagName === 'sandbox' && attrName === 'context') ||
+		(tagName === 'design-context' && attrName === 'scope')
+	) {
 		return scopes;
 	}
 	return [];
@@ -134,9 +136,7 @@ export function attributeCompletionSource(
 
 		// Get already-used attributes
 		const before = doc.slice(Math.max(0, pos - 500), pos);
-		const usedAttrs = new Set(
-			[...before.matchAll(/(\w[\w-]*)="/g)].map((m) => m[1]),
-		);
+		const usedAttrs = new Set([...before.matchAll(/(\w[\w-]*)="/g)].map((m) => m[1]));
 
 		const options = Object.entries(rune.attributes)
 			.filter(([name]) => !usedAttrs.has(name))

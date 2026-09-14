@@ -16,10 +16,12 @@ describe('sandbox tag', () => {
 <button class="btn">Click me</button>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox).toBeDefined();
 		expect(sandbox!.name).toBe('rf-sandbox');
-		expect(sandbox!.attributes['data-source-content']).toContain('<button class="btn">Click me</button>');
+		expect(sandbox!.attributes['data-source-content']).toContain(
+			'<button class="btn">Click me</button>',
+		);
 	});
 
 	it('should pass framework as a data attribute', () => {
@@ -27,16 +29,17 @@ describe('sandbox tag', () => {
 <div class="p-4">Hello</div>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox!.attributes['data-framework']).toBe('tailwind');
 	});
 
 	it('should pass dependencies as a data attribute', () => {
-		const result = parse(`{% sandbox dependencies="https://cdn.example.com/lib.js,https://cdn.example.com/style.css" %}
+		const result =
+			parse(`{% sandbox dependencies="https://cdn.example.com/lib.js,https://cdn.example.com/style.css" %}
 <div>Test</div>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox!.attributes['data-dependencies']).toContain('lib.js');
 		expect(sandbox!.attributes['data-dependencies']).toContain('style.css');
 	});
@@ -46,7 +49,7 @@ describe('sandbox tag', () => {
 <p>Content</p>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox!.attributes['data-height']).toBe('auto');
 	});
 
@@ -55,7 +58,7 @@ describe('sandbox tag', () => {
 <p>Content</p>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox!.attributes['data-height']).toBe('400');
 	});
 
@@ -64,7 +67,7 @@ describe('sandbox tag', () => {
 <p>Content</p>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox!.attributes['data-height']).toBe('fill');
 	});
 
@@ -73,7 +76,7 @@ describe('sandbox tag', () => {
 <p>Content</p>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox!.attributes['data-height']).toBe('auto');
 	});
 
@@ -82,8 +85,8 @@ describe('sandbox tag', () => {
 <div>Hello World</div>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
-		const pre = findTag(sandbox!, t => t.name === 'pre');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
+		const pre = findTag(sandbox!, (t) => t.name === 'pre');
 		expect(pre).toBeDefined();
 		expect(pre!.attributes['data-language']).toBe('html');
 	});
@@ -99,7 +102,7 @@ describe('sandbox tag', () => {
 </script>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		const content = sandbox!.attributes['data-source-content'] as string;
 		expect(content).toContain('<style>');
 		expect(content).toContain('.box { color: red; }');
@@ -112,7 +115,7 @@ describe('sandbox tag', () => {
 <button>Old</button>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox!.attributes['data-label']).toBe('Before');
 	});
 
@@ -121,7 +124,7 @@ describe('sandbox tag', () => {
 <p>Content</p>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox!.attributes['data-label']).toBeUndefined();
 	});
 
@@ -129,7 +132,7 @@ describe('sandbox tag', () => {
 		const result = parse(`{% sandbox %}
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox!.attributes['data-source-content']).toBe('');
 	});
 
@@ -138,7 +141,7 @@ describe('sandbox tag', () => {
 <p>Test</p>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		// Empty values are not serialized as data-* attributes.
 		expect(sandbox!.attributes['data-framework']).toBeUndefined();
 		expect(sandbox!.attributes['data-dependencies']).toBeUndefined();
@@ -163,10 +166,13 @@ describe('sandbox with src attribute', () => {
 			'examples/login/script.js': 'console.log("hello");',
 		});
 
-		const result = parse(`{% sandbox src="login" %}
-{% /sandbox %}`, vars);
+		const result = parse(
+			`{% sandbox src="login" %}
+{% /sandbox %}`,
+			vars,
+		);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox).toBeDefined();
 		const content = sandbox!.attributes['data-source-content'] as string;
 		expect(content).toContain('<form>Login</form>');
@@ -180,10 +186,13 @@ describe('sandbox with src attribute', () => {
 			'examples/card/style.css': '.card { border: 1px solid; }',
 		});
 
-		const result = parse(`{% sandbox src="card" %}
-{% /sandbox %}`, vars);
+		const result = parse(
+			`{% sandbox src="card" %}
+{% /sandbox %}`,
+			vars,
+		);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		// SPEC-081: panels are built client-side; the transform only ships the
 		// labelled origins (`{label}\t{origin}` per line).
 		const origins = sandbox!.attributes['data-source-origins'] as string;
@@ -196,10 +205,13 @@ describe('sandbox with src attribute', () => {
 			'examples/demo/index.html': '<button>Click</button>',
 		});
 
-		const result = parse(`{% sandbox src="demo" framework="tailwind" %}
-{% /sandbox %}`, vars);
+		const result = parse(
+			`{% sandbox src="demo" framework="tailwind" %}
+{% /sandbox %}`,
+			vars,
+		);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox!.attributes['data-framework']).toBe('tailwind');
 		expect(sandbox!.attributes['data-source-content']).toContain('<button>Click</button>');
 	});
@@ -207,10 +219,13 @@ describe('sandbox with src attribute', () => {
 	it('should show error when src directory does not exist', () => {
 		const vars = mockSandboxFs({});
 
-		const result = parse(`{% sandbox src="missing" %}
-{% /sandbox %}`, vars);
+		const result = parse(
+			`{% sandbox src="missing" %}
+{% /sandbox %}`,
+			vars,
+		);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox!.attributes['data-source-content']).toContain('not found');
 	});
 
@@ -219,7 +234,7 @@ describe('sandbox with src attribute', () => {
 <p>Inline content</p>
 {% /sandbox %}`);
 
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox!.attributes['data-source-content']).toContain('<p>Inline content</p>');
 	});
 });
@@ -232,17 +247,19 @@ describe('sandbox with src attribute', () => {
 // "directory not found" message — in both providers.
 describe('sandbox src containment (SPEC-113)', () => {
 	function contentOf(result: unknown): string {
-		const sandbox = findTag(result as any, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(result as any, (t) => t.attributes['data-rune'] === 'sandbox');
 		return (sandbox!.attributes['data-source-content'] as string) ?? '';
 	}
 
 	it('memoryProjectFiles: a root-escaping `src` resolves to the in-band error, not the file', () => {
 		// `secret/...` sits inside the project but outside `examples`; the escape
 		// attempt climbs past the root, which the provider denies outright.
-		const files = memoryProjectFiles(new Map([
-			['examples/ok/index.html', '<div>ok</div>'],
-			['secret/index.html', '<div>SECRET</div>'],
-		]));
+		const files = memoryProjectFiles(
+			new Map([
+				['examples/ok/index.html', '<div>ok</div>'],
+				['secret/index.html', '<div>SECRET</div>'],
+			]),
+		);
 		const vars = { __sandboxFiles: files, __sandboxExamplesDir: 'examples' };
 
 		const escaped = contentOf(parse(`{% sandbox src="../../secret" %}\n{% /sandbox %}`, vars));
@@ -268,10 +285,9 @@ describe('sandbox src containment (SPEC-113)', () => {
 			};
 
 			// `../../<outside>` from the examples dir climbs out of the project root.
-			const escaped = contentOf(parse(
-				`{% sandbox src="../../${path.basename(outside)}" %}\n{% /sandbox %}`,
-				vars,
-			));
+			const escaped = contentOf(
+				parse(`{% sandbox src="../../${path.basename(outside)}" %}\n{% /sandbox %}`, vars),
+			);
 			expect(escaped).toContain('not found');
 			expect(escaped).not.toContain('SECRET');
 

@@ -64,12 +64,22 @@ async function runConfigMigrate(args: string[]): Promise<void> {
 	// On flat → nested migration, populate `site.plugins` from installed plugins
 	// if absent. Gives users a working plugin list immediately without
 	// having to remember to declare each plugin manually.
-	if (opts.to === 'nested' && migrated.site && (migrated.site as { plugins?: unknown }).plugins === undefined) {
+	if (
+		opts.to === 'nested' &&
+		migrated.site &&
+		(migrated.site as { plugins?: unknown }).plugins === undefined
+	) {
 		try {
 			const discovered = await discoverPlugins({ cwd: process.cwd(), warn: false });
 			if (discovered.length > 0) {
 				const site = migrated.site as unknown as Record<string, unknown>;
-				migrated = { ...migrated, site: { ...site, plugins: discovered.map((p) => p.pluginName) } as unknown as typeof migrated.site };
+				migrated = {
+					...migrated,
+					site: {
+						...site,
+						plugins: discovered.map((p) => p.pluginName),
+					} as unknown as typeof migrated.site,
+				};
 			}
 		} catch {
 			// Discovery failure is non-blocking — the migration still applies.
@@ -283,4 +293,3 @@ function formatDiff(before: string, after: string, label: string): string {
 	}
 	return lines.join('\n');
 }
-

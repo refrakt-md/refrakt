@@ -202,7 +202,9 @@ async function runPlugin(namespace: string, pluginArgs: string[]): Promise<void>
 			console.error(`  Did you mean "${suggestion}"?\n`);
 		} else if (namespaces.length === 0) {
 			console.error(`\n  No refrakt plugins are installed in this project.`);
-			console.error(`  Install one to enable namespaced commands, e.g.: npm install ${pluginName}\n`);
+			console.error(
+				`  Install one to enable namespaced commands, e.g.: npm install ${pluginName}\n`,
+			);
 		} else {
 			console.error(`\n  Installed plugins: ${namespaces.map((n) => `"${n}"`).join(', ')}`);
 			console.error(`  Or install a new one: npm install ${pluginName}\n`);
@@ -263,7 +265,8 @@ async function loadMergedConfig(
 	tags: Record<string, any>;
 	fixtures: Record<string, string>;
 }> {
-	const { runes, tags, loadPlugin, mergePlugins, applyAliases, loadLocalRunes, baseConfig } = runesModule;
+	const { runes, tags, loadPlugin, mergePlugins, applyAliases, loadLocalRunes, baseConfig } =
+		runesModule;
 
 	let mergedRunes = runes;
 	let mergedTags: Record<string, any> = tags;
@@ -276,7 +279,12 @@ async function loadMergedConfig(
 		configResult = loadRefraktConfigFile(configDir);
 	} catch {
 		// No refrakt.config.json — fall back to core runes only.
-		return { config: mergedConfig, runes: mergedRunes, tags: mergedTags, fixtures: packageFixtures };
+		return {
+			config: mergedConfig,
+			runes: mergedRunes,
+			tags: mergedTags,
+			fixtures: packageFixtures,
+		};
 	}
 
 	try {
@@ -306,9 +314,7 @@ async function loadMergedConfig(
 		let merged;
 
 		if (siteScoped.plugins && siteScoped.plugins.length > 0) {
-			const loaded = await Promise.all(
-				siteScoped.plugins.map((name: string) => loadPlugin(name))
-			);
+			const loaded = await Promise.all(siteScoped.plugins.map((name: string) => loadPlugin(name)));
 			merged = mergePlugins(loaded, coreRuneNames, siteScoped.runes?.prefer);
 			mergedRunes = { ...runes, ...merged.runes };
 			mergedTags = { ...tags, ...merged.tags };
@@ -331,8 +337,12 @@ async function loadMergedConfig(
 		if (merged) {
 			// SPEC-035 — carry the site locale + overrides into the config so the
 			// engine localizes and the plugin/first-party bundles are selected.
-			const siteStrings = siteScoped.strings as Record<string, import('@refrakt-md/transform').LocalizedValue> | undefined;
-			const baseWithStrings = siteStrings ? { ...baseConfig, strings: { ...baseConfig.strings, ...siteStrings } } : baseConfig;
+			const siteStrings = siteScoped.strings as
+				| Record<string, import('@refrakt-md/transform').LocalizedValue>
+				| undefined;
+			const baseWithStrings = siteStrings
+				? { ...baseConfig, strings: { ...baseConfig.strings, ...siteStrings } }
+				: baseConfig;
 			const assembled = assembleThemeConfig({
 				coreConfig: baseWithStrings,
 				pluginRunes: merged.themeRunes,
@@ -445,25 +455,54 @@ function runInspect(inspectArgs: string[]): void {
 		import('@refrakt-md/runes'),
 		import('@refrakt-md/transform'),
 		import('@markdoc/markdoc'),
-	]).then(async ([
-		{ inspectCommand },
-		runesModule,
-		{ createTransform, renderToHtml, extractSelectors, assembleThemeConfig },
-		markdocModule,
-	]) => {
-		const { nodes, serializeTree, extractHeadings } = runesModule;
-		const Markdoc = markdocModule.default ?? markdocModule;
+	])
+		.then(
+			async ([
+				{ inspectCommand },
+				runesModule,
+				{ createTransform, renderToHtml, extractSelectors, assembleThemeConfig },
+				markdocModule,
+			]) => {
+				const { nodes, serializeTree, extractHeadings } = runesModule;
+				const Markdoc = markdocModule.default ?? markdocModule;
 
-		const merged = await loadMergedConfig(runesModule, assembleThemeConfig, undefined, site);
+				const merged = await loadMergedConfig(runesModule, assembleThemeConfig, undefined, site);
 
-		return inspectCommand(
-			{ runeName, list, json, audit, auditMeta, auditDimensions, showInterface, all, cssDir, theme, items, flags },
-			{ Markdoc, runes: merged.runes, tags: merged.tags, nodes, serializeTree, extractHeadings, createTransform, renderToHtml, extractSelectors, baseConfig: merged.config, packageFixtures: merged.fixtures },
-		);
-	}).catch((err) => {
-		console.error(`\nError: ${(err as Error).message}`);
-		process.exit(1);
-	});
+				return inspectCommand(
+					{
+						runeName,
+						list,
+						json,
+						audit,
+						auditMeta,
+						auditDimensions,
+						showInterface,
+						all,
+						cssDir,
+						theme,
+						items,
+						flags,
+					},
+					{
+						Markdoc,
+						runes: merged.runes,
+						tags: merged.tags,
+						nodes,
+						serializeTree,
+						extractHeadings,
+						createTransform,
+						renderToHtml,
+						extractSelectors,
+						baseConfig: merged.config,
+						packageFixtures: merged.fixtures,
+					},
+				);
+			},
+		)
+		.catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(1);
+		});
 }
 
 function runGallery(galleryArgs: string[]): void {
@@ -475,13 +514,22 @@ function runGallery(galleryArgs: string[]): void {
 		const arg = galleryArgs[i];
 		if (arg === '--theme') {
 			theme = galleryArgs[++i];
-			if (!theme) { console.error('Error: --theme requires a value'); process.exit(1); }
+			if (!theme) {
+				console.error('Error: --theme requires a value');
+				process.exit(1);
+			}
 		} else if (arg === '--out' || arg === '--output-dir' || arg === '-d') {
 			outDir = galleryArgs[++i];
-			if (!outDir) { console.error('Error: --out requires a directory path'); process.exit(1); }
+			if (!outDir) {
+				console.error('Error: --out requires a directory path');
+				process.exit(1);
+			}
 		} else if (arg === '--site') {
 			site = galleryArgs[++i];
-			if (!site) { console.error('Error: --site requires a name'); process.exit(1); }
+			if (!site) {
+				console.error('Error: --site requires a name');
+				process.exit(1);
+			}
 		} else if (arg === '--help' || arg === '-h') {
 			printUsage();
 			process.exit(0);
@@ -497,25 +545,41 @@ function runGallery(galleryArgs: string[]): void {
 		import('@refrakt-md/runes'),
 		import('@refrakt-md/transform'),
 		import('@markdoc/markdoc'),
-	]).then(async ([
-		{ galleryCommand },
-		runesModule,
-		{ createTransform, renderToHtml, extractSelectors, assembleThemeConfig },
-		markdocModule,
-	]) => {
-		const { nodes, serializeTree, extractHeadings } = runesModule;
-		const Markdoc = markdocModule.default ?? markdocModule;
+	])
+		.then(
+			async ([
+				{ galleryCommand },
+				runesModule,
+				{ createTransform, renderToHtml, extractSelectors, assembleThemeConfig },
+				markdocModule,
+			]) => {
+				const { nodes, serializeTree, extractHeadings } = runesModule;
+				const Markdoc = markdocModule.default ?? markdocModule;
 
-		const merged = await loadMergedConfig(runesModule, assembleThemeConfig, undefined, site);
+				const merged = await loadMergedConfig(runesModule, assembleThemeConfig, undefined, site);
 
-		return galleryCommand(
-			{ theme, outDir },
-			{ Markdoc, runes: merged.runes, tags: merged.tags, nodes, serializeTree, extractHeadings, createTransform, renderToHtml, extractSelectors, baseConfig: merged.config, packageFixtures: merged.fixtures },
-		);
-	}).catch((err) => {
-		console.error(`\nError: ${(err as Error).message}`);
-		process.exit(1);
-	});
+				return galleryCommand(
+					{ theme, outDir },
+					{
+						Markdoc,
+						runes: merged.runes,
+						tags: merged.tags,
+						nodes,
+						serializeTree,
+						extractHeadings,
+						createTransform,
+						renderToHtml,
+						extractSelectors,
+						baseConfig: merged.config,
+						packageFixtures: merged.fixtures,
+					},
+				);
+			},
+		)
+		.catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(1);
+		});
 }
 
 function runWrite(writeArgs: string[]): void {
@@ -581,42 +645,53 @@ function runWrite(writeArgs: string[]): void {
 
 	// Dynamic imports to avoid loading @refrakt-md/runes at parse time
 	// (markdoc CJS/ESM interop requires Node.js 22.12+ or a bundler)
-	Promise.all([
-		import('./config.js'),
-		import('./commands/write.js'),
-		import('@refrakt-md/runes'),
-	]).then(async ([{ detectProvider }, { writeCommand }, runesModule]) => {
-		let resolved;
-		try {
-			resolved = await detectProvider(providerName);
-		} catch (err) {
+	Promise.all([import('./config.js'), import('./commands/write.js'), import('@refrakt-md/runes')])
+		.then(async ([{ detectProvider }, { writeCommand }, runesModule]) => {
+			let resolved;
+			try {
+				resolved = await detectProvider(providerName);
+			} catch (err) {
+				console.error(`\nError: ${(err as Error).message}`);
+				process.exit(1);
+			}
+
+			// Load plugins to include in AI prompt
+			const { runes } = runesModule;
+			let mergedRunes: Record<string, any> = runes;
+			try {
+				const { loadRefraktConfigFile } = await import('./config-file.js');
+				const { config } = loadRefraktConfigFile();
+				if (config.plugins && config.plugins.length > 0) {
+					const loaded = await Promise.all(
+						config.plugins.map((name: string) => runesModule.loadPlugin(name)),
+					);
+					const merged = runesModule.mergePlugins(
+						loaded,
+						new Set(Object.keys(runes)),
+						config.runes?.prefer,
+					);
+					mergedRunes = { ...runes, ...merged.runes };
+				}
+			} catch {
+				// No config file or packages — use core runes only
+			}
+
+			const modelName = model ?? resolved.defaultModel;
+			return writeCommand({
+				prompt: prompt!,
+				provider: resolved.provider,
+				providerName: resolved.name,
+				modelName,
+				model,
+				output,
+				outputDir,
+				runes: mergedRunes,
+			});
+		})
+		.catch((err) => {
 			console.error(`\nError: ${(err as Error).message}`);
 			process.exit(1);
-		}
-
-		// Load plugins to include in AI prompt
-		const { runes } = runesModule;
-		let mergedRunes: Record<string, any> = runes;
-		try {
-			const { loadRefraktConfigFile } = await import('./config-file.js');
-			const { config } = loadRefraktConfigFile();
-			if (config.plugins && config.plugins.length > 0) {
-				const loaded = await Promise.all(
-					config.plugins.map((name: string) => runesModule.loadPlugin(name))
-				);
-				const merged = runesModule.mergePlugins(loaded, new Set(Object.keys(runes)), config.runes?.prefer);
-				mergedRunes = { ...runes, ...merged.runes };
-			}
-		} catch {
-			// No config file or packages — use core runes only
-		}
-
-		const modelName = model ?? resolved.defaultModel;
-		return writeCommand({ prompt: prompt!, provider: resolved.provider, providerName: resolved.name, modelName, model, output, outputDir, runes: mergedRunes });
-	}).catch((err) => {
-		console.error(`\nError: ${(err as Error).message}`);
-		process.exit(1);
-	});
+		});
 }
 
 function runContracts(contractsArgs: string[]): void {
@@ -666,17 +741,15 @@ function runContracts(contractsArgs: string[]): void {
 		import('./commands/contracts.js'),
 		import('@refrakt-md/runes'),
 		import('@refrakt-md/transform'),
-	]).then(async ([
-		{ contractsCommand },
-		runesModule,
-		{ assembleThemeConfig },
-	]) => {
-		const { config } = await loadMergedConfig(runesModule, assembleThemeConfig, configDir, site);
-		contractsCommand({ output, check, config });
-	}).catch((err) => {
-		console.error(`\nError: ${(err as Error).message}`);
-		process.exit(1);
-	});
+	])
+		.then(async ([{ contractsCommand }, runesModule, { assembleThemeConfig }]) => {
+			const { config } = await loadMergedConfig(runesModule, assembleThemeConfig, configDir, site);
+			contractsCommand({ output, check, config });
+		})
+		.catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(1);
+		});
 }
 
 function runI18n(i18nArgs: string[]): void {
@@ -718,19 +791,31 @@ Examples:
 		const arg = rest[i];
 		if (arg === '--output' || arg === '-o') {
 			output = rest[++i];
-			if (!output) { console.error('Error: --output requires a file path'); process.exit(1); }
+			if (!output) {
+				console.error('Error: --output requires a file path');
+				process.exit(1);
+			}
 		} else if (arg === '--check') {
 			check = true;
 		} else if (arg === '--locale') {
 			const path = rest[++i];
-			if (!path) { console.error('Error: --locale requires a file path'); process.exit(1); }
+			if (!path) {
+				console.error('Error: --locale requires a file path');
+				process.exit(1);
+			}
 			locales.push(path);
 		} else if (arg === '--config') {
 			configDir = rest[++i];
-			if (!configDir) { console.error('Error: --config requires a directory path'); process.exit(1); }
+			if (!configDir) {
+				console.error('Error: --config requires a directory path');
+				process.exit(1);
+			}
 		} else if (arg === '--site') {
 			site = rest[++i];
-			if (!site) { console.error('Error: --site requires a name'); process.exit(1); }
+			if (!site) {
+				console.error('Error: --site requires a name');
+				process.exit(1);
+			}
 		} else if (arg === '--help' || arg === '-h') {
 			runI18n([]);
 			process.exit(0);
@@ -747,17 +832,15 @@ Examples:
 		import('./commands/i18n.js'),
 		import('@refrakt-md/runes'),
 		import('@refrakt-md/transform'),
-	]).then(async ([
-		{ i18nExtractCommand },
-		runesModule,
-		{ assembleThemeConfig },
-	]) => {
-		const { config } = await loadMergedConfig(runesModule, assembleThemeConfig, configDir, site);
-		i18nExtractCommand({ output, check, locales, config });
-	}).catch((err) => {
-		console.error(`\nError: ${(err as Error).message}`);
-		process.exit(1);
-	});
+	])
+		.then(async ([{ i18nExtractCommand }, runesModule, { assembleThemeConfig }]) => {
+			const { config } = await loadMergedConfig(runesModule, assembleThemeConfig, configDir, site);
+			i18nExtractCommand({ output, check, locales, config });
+		})
+		.catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(1);
+		});
 }
 
 function runScaffoldCss(scaffoldArgs: string[]): void {
@@ -793,12 +876,14 @@ function runScaffoldCss(scaffoldArgs: string[]): void {
 		}
 	}
 
-	import('./commands/scaffold-css.js').then(({ scaffoldCssCommand }) => {
-		scaffoldCssCommand({ outputDir, force });
-	}).catch((err) => {
-		console.error(`\nError: ${(err as Error).message}`);
-		process.exit(1);
-	});
+	import('./commands/scaffold-css.js')
+		.then(({ scaffoldCssCommand }) => {
+			scaffoldCssCommand({ outputDir, force });
+		})
+		.catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(1);
+		});
 }
 
 function runValidate(validateArgs: string[]): void {
@@ -838,12 +923,14 @@ function runValidate(validateArgs: string[]): void {
 		}
 	}
 
-	import('./commands/validate.js').then(({ validateCommand }) => {
-		validateCommand({ configPath, manifestPath });
-	}).catch((err) => {
-		console.error(`\nError: ${(err as Error).message}`);
-		process.exit(1);
-	});
+	import('./commands/validate.js')
+		.then(({ validateCommand }) => {
+			validateCommand({ configPath, manifestPath });
+		})
+		.catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(1);
+		});
 }
 
 function runTemplate(tArgs: string[]): void {
@@ -870,7 +957,10 @@ template, scaffold a fresh project with: create-refrakt <name> --template <src>
 		const arg = tArgs[i];
 		if (arg === '--site') {
 			site = tArgs[++i];
-			if (!site) { console.error('Error: --site requires a value'); process.exit(1); }
+			if (!site) {
+				console.error('Error: --site requires a value');
+				process.exit(1);
+			}
 		} else {
 			positional.push(arg!);
 		}
@@ -883,9 +973,12 @@ template, scaffold a fresh project with: create-refrakt <name> --template <src>
 			console.error('Usage: refrakt template install <dir> [--site <name>]');
 			process.exit(1);
 		}
-		import('./commands/template.js').then(({ templateInstallCommand }) =>
-			templateInstallCommand({ source, site }),
-		).catch((err) => { console.error(`\nError: ${(err as Error).message}`); process.exit(1); });
+		import('./commands/template.js')
+			.then(({ templateInstallCommand }) => templateInstallCommand({ source, site }))
+			.catch((err) => {
+				console.error(`\nError: ${(err as Error).message}`);
+				process.exit(1);
+			});
 	} else {
 		console.error(`Error: Unknown template subcommand "${subcommand}"\n`);
 		console.error('Available subcommands: install');
@@ -954,20 +1047,35 @@ Examples:
 			const source = pPositional[0];
 			if (!source) {
 				console.error('Error: Missing source\n');
-				console.error('Usage: refrakt theme presets install <dir | .tgz | package> [--use <id>] [--site <name>] [--registry <url>]');
+				console.error(
+					'Usage: refrakt theme presets install <dir | .tgz | package> [--use <id>] [--site <name>] [--registry <url>]',
+				);
 				process.exit(1);
 			}
-			import('./commands/presets.js').then(({ themePresetsInstallCommand }) =>
-				themePresetsInstallCommand({ source, use, site: pSite, registry: pRegistry }),
-			).catch((err) => { console.error(`\nError: ${(err as Error).message}`); process.exit(1); });
+			import('./commands/presets.js')
+				.then(({ themePresetsInstallCommand }) =>
+					themePresetsInstallCommand({ source, use, site: pSite, registry: pRegistry }),
+				)
+				.catch((err) => {
+					console.error(`\nError: ${(err as Error).message}`);
+					process.exit(1);
+				});
 		} else if (action === 'list') {
-			import('./commands/presets.js').then(({ themePresetsListCommand }) =>
-				themePresetsListCommand({ scope: scope as 'syntax' | 'palette' | undefined }),
-			).catch((err) => { console.error(`\nError: ${(err as Error).message}`); process.exit(1); });
+			import('./commands/presets.js')
+				.then(({ themePresetsListCommand }) =>
+					themePresetsListCommand({ scope: scope as 'syntax' | 'palette' | undefined }),
+				)
+				.catch((err) => {
+					console.error(`\nError: ${(err as Error).message}`);
+					process.exit(1);
+				});
 		} else if (action === 'validate') {
-			import('./commands/presets.js').then(({ themePresetsValidateCommand }) =>
-				themePresetsValidateCommand({ pack }),
-			).catch((err) => { console.error(`\nError: ${(err as Error).message}`); process.exit(1); });
+			import('./commands/presets.js')
+				.then(({ themePresetsValidateCommand }) => themePresetsValidateCommand({ pack }))
+				.catch((err) => {
+					console.error(`\nError: ${(err as Error).message}`);
+					process.exit(1);
+				});
 		} else {
 			console.error(`Error: Unknown "theme presets" action "${action}"\n`);
 			console.error('Available: list, validate, install');
@@ -984,10 +1092,16 @@ Examples:
 		const arg = themeArgs[i];
 		if (arg === '--site') {
 			site = themeArgs[++i];
-			if (!site) { console.error('Error: --site requires a value'); process.exit(1); }
+			if (!site) {
+				console.error('Error: --site requires a value');
+				process.exit(1);
+			}
 		} else if (arg === '--registry') {
 			registry = themeArgs[++i];
-			if (!registry) { console.error('Error: --registry requires a value'); process.exit(1); }
+			if (!registry) {
+				console.error('Error: --registry requires a value');
+				process.exit(1);
+			}
 		} else {
 			positional.push(arg!);
 		}
@@ -997,30 +1111,38 @@ Examples:
 		const source = positional[0];
 		if (!source) {
 			console.error('Error: Missing source argument\n');
-			console.error('Usage: refrakt theme install <directory | .tgz | package-name> [--site <name>] [--registry <url>]');
+			console.error(
+				'Usage: refrakt theme install <directory | .tgz | package-name> [--site <name>] [--registry <url>]',
+			);
 			process.exit(1);
 		}
 
-		import('./commands/theme.js').then(({ themeInstallCommand }) => {
-			return themeInstallCommand({ source, site, registry });
-		}).catch((err) => {
-			console.error(`\nError: ${(err as Error).message}`);
-			process.exit(1);
-		});
+		import('./commands/theme.js')
+			.then(({ themeInstallCommand }) => {
+				return themeInstallCommand({ source, site, registry });
+			})
+			.catch((err) => {
+				console.error(`\nError: ${(err as Error).message}`);
+				process.exit(1);
+			});
 	} else if (subcommand === 'info') {
-		import('./commands/theme.js').then(({ themeInfoCommand }) => {
-			return themeInfoCommand({ site });
-		}).catch((err) => {
-			console.error(`\nError: ${(err as Error).message}`);
-			process.exit(1);
-		});
+		import('./commands/theme.js')
+			.then(({ themeInfoCommand }) => {
+				return themeInfoCommand({ site });
+			})
+			.catch((err) => {
+				console.error(`\nError: ${(err as Error).message}`);
+				process.exit(1);
+			});
 	} else if (subcommand === 'list') {
-		import('./commands/theme.js').then(({ themeListCommand }) => {
-			return themeListCommand({});
-		}).catch((err) => {
-			console.error(`\nError: ${(err as Error).message}`);
-			process.exit(1);
-		});
+		import('./commands/theme.js')
+			.then(({ themeListCommand }) => {
+				return themeListCommand({});
+			})
+			.catch((err) => {
+				console.error(`\nError: ${(err as Error).message}`);
+				process.exit(1);
+			});
 	} else {
 		console.error(`Error: Unknown theme subcommand "${subcommand}"\n`);
 		console.error('Available subcommands: install, info, list, presets');
@@ -1072,12 +1194,14 @@ function runEdit(editArgs: string[]): void {
 		}
 	}
 
-	import('./commands/edit.js').then(({ editCommand }) => {
-		return editCommand({ port, contentDir, devServer, noOpen });
-	}).catch((err) => {
-		console.error(`\nError: ${(err as Error).message}`);
-		process.exit(1);
-	});
+	import('./commands/edit.js')
+		.then(({ editCommand }) => {
+			return editCommand({ port, contentDir, devServer, noOpen });
+		})
+		.catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(1);
+		});
 }
 
 function runReference(refArgs: string[]): void {
@@ -1135,7 +1259,10 @@ Examples:
 	}
 }
 
-function parseReferenceArgs(remaining: string[], accept: Set<string>): {
+function parseReferenceArgs(
+	remaining: string[],
+	accept: Set<string>,
+): {
 	format: 'markdown' | 'json';
 	configDir?: string;
 	site?: string;
@@ -1207,19 +1334,21 @@ function runReferenceName(name: string, remaining: string[]): void {
 		import('./commands/reference.js'),
 		import('@refrakt-md/runes'),
 		import('@refrakt-md/transform'),
-	]).then(async ([{ referenceNameCommand }, runesModule, { assembleThemeConfig }]) => {
-		const ctx = await buildReferenceContext(runesModule, assembleThemeConfig, configDir, site);
-		const result = referenceNameCommand(ctx, { name, format, noExample });
-		if (result.exitCode === 0) {
-			console.log(result.output);
-		} else {
-			console.error(result.output);
-		}
-		process.exit(result.exitCode);
-	}).catch((err) => {
-		console.error(`\nError: ${(err as Error).message}`);
-		process.exit(2);
-	});
+	])
+		.then(async ([{ referenceNameCommand }, runesModule, { assembleThemeConfig }]) => {
+			const ctx = await buildReferenceContext(runesModule, assembleThemeConfig, configDir, site);
+			const result = referenceNameCommand(ctx, { name, format, noExample });
+			if (result.exitCode === 0) {
+				console.log(result.output);
+			} else {
+				console.error(result.output);
+			}
+			process.exit(result.exitCode);
+		})
+		.catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(2);
+		});
 }
 
 function runReferenceList(remaining: string[]): void {
@@ -1232,19 +1361,21 @@ function runReferenceList(remaining: string[]): void {
 		import('./commands/reference.js'),
 		import('@refrakt-md/runes'),
 		import('@refrakt-md/transform'),
-	]).then(async ([{ referenceListCommand }, runesModule, { assembleThemeConfig }]) => {
-		const ctx = await buildReferenceContext(runesModule, assembleThemeConfig, configDir, site);
-		const result = referenceListCommand(ctx, { packageFilter, format });
-		if (result.exitCode === 0) {
-			console.log(result.output);
-		} else {
-			console.error(result.output);
-		}
-		process.exit(result.exitCode);
-	}).catch((err) => {
-		console.error(`\nError: ${(err as Error).message}`);
-		process.exit(2);
-	});
+	])
+		.then(async ([{ referenceListCommand }, runesModule, { assembleThemeConfig }]) => {
+			const ctx = await buildReferenceContext(runesModule, assembleThemeConfig, configDir, site);
+			const result = referenceListCommand(ctx, { packageFilter, format });
+			if (result.exitCode === 0) {
+				console.log(result.output);
+			} else {
+				console.error(result.output);
+			}
+			process.exit(result.exitCode);
+		})
+		.catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(2);
+		});
 }
 
 function runReferenceDump(remaining: string[]): void {
@@ -1257,26 +1388,28 @@ function runReferenceDump(remaining: string[]): void {
 		import('./commands/reference.js'),
 		import('@refrakt-md/runes'),
 		import('@refrakt-md/transform'),
-	]).then(async ([{ referenceDumpCommand }, runesModule, { assembleThemeConfig }]) => {
-		const ctx = await buildReferenceContext(runesModule, assembleThemeConfig, configDir, site);
-		const result = referenceDumpCommand(ctx, {
-			output: output ?? 'AGENTS.md',
-			format,
-			section: section ?? '# Available Runes',
-			check,
+	])
+		.then(async ([{ referenceDumpCommand }, runesModule, { assembleThemeConfig }]) => {
+			const ctx = await buildReferenceContext(runesModule, assembleThemeConfig, configDir, site);
+			const result = referenceDumpCommand(ctx, {
+				output: output ?? 'AGENTS.md',
+				format,
+				section: section ?? '# Available Runes',
+				check,
+			});
+			if (result.exitCode !== 0) {
+				console.error(result.message);
+				process.exit(result.exitCode);
+			}
+			if (result.wrote) {
+				console.log(`Wrote reference to ${output ?? 'AGENTS.md'}`);
+			}
+			process.exit(0);
+		})
+		.catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(2);
 		});
-		if (result.exitCode !== 0) {
-			console.error(result.message);
-			process.exit(result.exitCode);
-		}
-		if (result.wrote) {
-			console.log(`Wrote reference to ${output ?? 'AGENTS.md'}`);
-		}
-		process.exit(0);
-	}).catch((err) => {
-		console.error(`\nError: ${(err as Error).message}`);
-		process.exit(2);
-	});
 }
 
 /** Build a ReferenceContext from the merged config, matching `loadMergedConfig` but
@@ -1317,7 +1450,7 @@ async function buildReferenceContext(
 
 		if (scopedPlugins && scopedPlugins.length > 0) {
 			const loadedPackages = await Promise.all(
-				scopedPlugins.map((name: string) => loadPlugin(name))
+				scopedPlugins.map((name: string) => loadPlugin(name)),
 			);
 			const merged = mergePlugins(loadedPackages, coreRuneNames, scopedRunes?.prefer);
 

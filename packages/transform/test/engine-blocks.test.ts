@@ -28,7 +28,7 @@ function findByName(node: SerializedTag, name: string): SerializedTag | undefine
 
 /** data-name values of a node's direct element children. */
 const directNames = (node: SerializedTag): (string | undefined)[] =>
-	node.children.filter(isT).map(c => c.attributes['data-name']);
+	node.children.filter(isT).map((c) => c.attributes['data-name']);
 
 describe('SPEC-080 block-and-layout assembly', () => {
 	// api-shaped: a flat rune whose eyebrow bar mixes chip + bare fields.
@@ -45,7 +45,11 @@ describe('SPEC-080 block-and-layout assembly', () => {
 			auth: { metaType: 'status', condition: 'auth' },
 		},
 		blocks: {
-			eyebrow: { fields: ['method', 'path', { field: 'auth', align: 'end' }], layout: 'bar', wrap: false },
+			eyebrow: {
+				fields: ['method', 'path', { field: 'auth', align: 'end' }],
+				layout: 'bar',
+				wrap: false,
+			},
 		},
 		layout: { root: ['eyebrow', 'body'] },
 	};
@@ -64,7 +68,9 @@ describe('SPEC-080 block-and-layout assembly', () => {
 	describe('bar layout — intrinsic field shape', () => {
 		it('renders chip vs bare from metaType, not the layout', () => {
 			const transform = createTransform(baseConfig({ Api: apiConfig }));
-			const result = asTag(transform(makeApiTag({ method: 'POST', path: '/users/:id', auth: 'Bearer' })));
+			const result = asTag(
+				transform(makeApiTag({ method: 'POST', path: '/users/:id', auth: 'Bearer' })),
+			);
 
 			const eyebrow = findByName(result, 'eyebrow')!;
 			expect(eyebrow.attributes['data-zone-layout']).toBe('bar');
@@ -111,10 +117,11 @@ describe('SPEC-080 block-and-layout assembly', () => {
 				layout: { root: ['topbar', 'panels'] },
 			};
 			const transform = createTransform(baseConfig({ CodeGroup: cfg }));
-			const mk = (title: string | null) => makeTag('section', { 'data-rune': 'code-group' }, [
-				...(title !== null ? [makeTag('meta', { 'data-field': 'title', content: title })] : []),
-				makeTag('div', { 'data-name': 'panels' }, []),
-			]);
+			const mk = (title: string | null) =>
+				makeTag('section', { 'data-rune': 'code-group' }, [
+					...(title !== null ? [makeTag('meta', { 'data-field': 'title', content: title })] : []),
+					makeTag('div', { 'data-name': 'panels' }, []),
+				]);
 
 			// title="" → topbar present, with an empty value span (window chrome).
 			const empty = asTag(transform(mk('')));
@@ -162,9 +169,13 @@ describe('SPEC-080 block-and-layout assembly', () => {
 				blocks: { eyebrow: { fields: ['auth'], layout: 'bar' } },
 				layout: { root: ['eyebrow', 'body'] },
 			};
-			const result = asTag(createTransform(baseConfig({ Api: cfg }))(
-				makeTag('article', { 'data-rune': 'api' }, [makeTag('div', { 'data-name': 'body' }, ['x'])]),
-			));
+			const result = asTag(
+				createTransform(baseConfig({ Api: cfg }))(
+					makeTag('article', { 'data-rune': 'api' }, [
+						makeTag('div', { 'data-name': 'body' }, ['x']),
+					]),
+				),
+			);
 			expect(findByName(result, 'eyebrow')).toBeUndefined();
 			expect(directNames(result)).toEqual(['body']);
 		});
@@ -189,19 +200,23 @@ describe('SPEC-080 block-and-layout assembly', () => {
 				makeTag('header', { 'data-name': 'preamble' }, [makeTag('h2', {}, ['Pancakes'])]),
 				makeTag('ol', { 'data-name': 'steps' }, [makeTag('li', {}, ['Mix'])]),
 			]);
-			const result = asTag(createTransform(baseConfig({ Recipe: cfg }))(
-				makeTag('article', { 'data-rune': 'recipe' }, [
-					makeTag('meta', { 'data-field': 'difficulty', content: 'hard' }),
-					makeTag('div', { 'data-name': 'media' }, [makeTag('img', { src: '/x.jpg' })]),
-					content,
-				]),
-			));
+			const result = asTag(
+				createTransform(baseConfig({ Recipe: cfg }))(
+					makeTag('article', { 'data-rune': 'recipe' }, [
+						makeTag('meta', { 'data-field': 'difficulty', content: 'hard' }),
+						makeTag('div', { 'data-name': 'media' }, [makeTag('img', { src: '/x.jpg' })]),
+						content,
+					]),
+				),
+			);
 			// root untouched: media + content
 			expect(directNames(result)).toEqual(['media', 'content']);
 			// content reordered with metadata injected on top
 			const contentEl = findByName(result, 'content')!;
 			expect(directNames(contentEl)).toEqual(['metadata', 'preamble', 'steps']);
-			expect((contentEl.children[0] as SerializedTag).attributes['data-zone-layout']).toBe('definition-list');
+			expect((contentEl.children[0] as SerializedTag).attributes['data-zone-layout']).toBe(
+				'definition-list',
+			);
 		});
 
 		it('can place metadata into the media container (overlay)', () => {
@@ -212,16 +227,22 @@ describe('SPEC-080 block-and-layout assembly', () => {
 				blocks: { metadata: { fields: ['difficulty'], layout: 'bar' } },
 				layout: { media: ['scene', 'metadata'], content: ['preamble'] },
 			};
-			const result = asTag(createTransform(baseConfig({ Recipe: cfg }))(
-				makeTag('article', { 'data-rune': 'recipe' }, [
-					makeTag('meta', { 'data-field': 'difficulty', content: 'hard' }),
-					makeTag('div', { 'data-name': 'media' }, [makeTag('img', { 'data-name': 'scene', src: '/x.jpg' })]),
-					makeTag('div', { 'data-name': 'content' }, [makeTag('header', { 'data-name': 'preamble' }, ['T'])]),
-				]),
-			));
+			const result = asTag(
+				createTransform(baseConfig({ Recipe: cfg }))(
+					makeTag('article', { 'data-rune': 'recipe' }, [
+						makeTag('meta', { 'data-field': 'difficulty', content: 'hard' }),
+						makeTag('div', { 'data-name': 'media' }, [
+							makeTag('img', { 'data-name': 'scene', src: '/x.jpg' }),
+						]),
+						makeTag('div', { 'data-name': 'content' }, [
+							makeTag('header', { 'data-name': 'preamble' }, ['T']),
+						]),
+					]),
+				),
+			);
 			const media = findByName(result, 'media')!;
 			expect(directNames(media)).toEqual(['scene', 'metadata']);
-			expect((findByName(media, 'metadata'))!.attributes['data-zone-layout']).toBe('bar');
+			expect(findByName(media, 'metadata')!.attributes['data-zone-layout']).toBe('bar');
 		});
 	});
 
@@ -234,12 +255,14 @@ describe('SPEC-080 block-and-layout assembly', () => {
 				blocks: { eyebrow: { fields: [{ field: 'source', align: 'end' }], layout: 'bar' } },
 				layout: { root: ['eyebrow', 'body'] },
 			};
-			const result = asTag(createTransform(baseConfig({ Symbol: cfg }))(
-				makeTag('article', { 'data-rune': 'symbol' }, [
-					makeTag('meta', { 'data-field': 'source', content: 'https://example.com/src.ts' }),
-					makeTag('div', { 'data-name': 'body' }, ['x']),
-				]),
-			));
+			const result = asTag(
+				createTransform(baseConfig({ Symbol: cfg }))(
+					makeTag('article', { 'data-rune': 'symbol' }, [
+						makeTag('meta', { 'data-field': 'source', content: 'https://example.com/src.ts' }),
+						makeTag('div', { 'data-name': 'body' }, ['x']),
+					]),
+				),
+			);
 			const link = findByName(result, 'eyebrow')!.children[0] as SerializedTag;
 			expect(link.name).toBe('a');
 			expect(link.attributes.href).toBe('https://example.com/src.ts');
@@ -259,19 +282,21 @@ describe('SPEC-080 block-and-layout assembly', () => {
 				blocks: { rating: { fields: ['rating'], layout: 'bar' } },
 				layout: { root: ['rating', 'body'] },
 			};
-			const result = asTag(createTransform(baseConfig({ Testimonial: cfg }))(
-				makeTag('article', { 'data-rune': 'testimonial' }, [
-					makeTag('meta', { 'data-field': 'rating', content: '4' }),
-					makeTag('meta', { 'data-field': 'rating-total', content: '5' }),
-					makeTag('div', { 'data-name': 'body' }, ['x']),
-				]),
-			));
+			const result = asTag(
+				createTransform(baseConfig({ Testimonial: cfg }))(
+					makeTag('article', { 'data-rune': 'testimonial' }, [
+						makeTag('meta', { 'data-field': 'rating', content: '4' }),
+						makeTag('meta', { 'data-field': 'rating-total', content: '5' }),
+						makeTag('div', { 'data-name': 'body' }, ['x']),
+					]),
+				),
+			);
 			const widget = findByName(result, 'rating')!.children[0] as SerializedTag;
 			expect(widget.attributes['data-meta-type']).toBe('rating');
 			const marks = widget.children as SerializedTag[];
 			expect(marks.length).toBe(5);
-			expect(marks.filter(m => m.attributes['data-filled'] === 'true').length).toBe(4);
-			expect(marks.filter(m => m.attributes['data-filled'] === 'false').length).toBe(1);
+			expect(marks.filter((m) => m.attributes['data-filled'] === 'true').length).toBe(4);
+			expect(marks.filter((m) => m.attributes['data-filled'] === 'false').length).toBe(1);
 		});
 	});
 
@@ -284,12 +309,14 @@ describe('SPEC-080 block-and-layout assembly', () => {
 				blocks: { header: { fields: ['hintType'], layout: 'bar' } },
 				layout: { root: ['header', 'body'] },
 			};
-			const result = asTag(createTransform(baseConfig({ Hint: cfg }))(
-				makeTag('article', { 'data-rune': 'hint' }, [
-					makeTag('meta', { 'data-field': 'hint-type', content: 'warning' }),
-					makeTag('div', { 'data-name': 'body' }, ['x']),
-				]),
-			));
+			const result = asTag(
+				createTransform(baseConfig({ Hint: cfg }))(
+					makeTag('article', { 'data-rune': 'hint' }, [
+						makeTag('meta', { 'data-field': 'hint-type', content: 'warning' }),
+						makeTag('div', { 'data-name': 'body' }, ['x']),
+					]),
+				),
+			);
 			const field = findByName(result, 'header')!.children[0] as SerializedTag;
 			const icon = field.children[0] as SerializedTag;
 			expect(icon.attributes['data-icon-group']).toBe('hint');
@@ -314,13 +341,15 @@ describe('SPEC-080 block-and-layout assembly', () => {
 				blocks: { metadata: { fields: ['kind', 'since'], layout: 'definition-list' } },
 				layout: { root: ['metadata', 'body'] },
 			};
-			const result = asTag(createTransform(baseConfig({ Card: cfg }))(
-				makeTag('article', { 'data-rune': 'card' }, [
-					makeTag('meta', { 'data-field': 'kind', content: 'function' }),
-					makeTag('meta', { 'data-field': 'since', content: 'v1.2' }),
-					makeTag('div', { 'data-name': 'body' }, ['x']),
-				]),
-			));
+			const result = asTag(
+				createTransform(baseConfig({ Card: cfg }))(
+					makeTag('article', { 'data-rune': 'card' }, [
+						makeTag('meta', { 'data-field': 'kind', content: 'function' }),
+						makeTag('meta', { 'data-field': 'since', content: 'v1.2' }),
+						makeTag('div', { 'data-name': 'body' }, ['x']),
+					]),
+				),
+			);
 			const metadata = findByName(result, 'metadata')!;
 			expect(metadata.name).toBe('dl');
 			const [kindRow, sinceRow] = metadata.children as SerializedTag[];
@@ -342,13 +371,25 @@ describe('SPEC-080 block-and-layout assembly', () => {
 		const transform = createTransform(baseConfig({ Hint: cfg }));
 
 		it('reads a modifier from data-rune-fields identically to the legacy meta', () => {
-			const fromFields = asTag(transform(makeTag('div', {
-				'data-rune': 'hint',
-				'data-rune-fields': JSON.stringify({ hintType: 'warning' }),
-			}, [])));
-			const fromMeta = asTag(transform(makeTag('div', { 'data-rune': 'hint' }, [
-				makeTag('meta', { 'data-field': 'hint-type', content: 'warning' }),
-			])));
+			const fromFields = asTag(
+				transform(
+					makeTag(
+						'div',
+						{
+							'data-rune': 'hint',
+							'data-rune-fields': JSON.stringify({ hintType: 'warning' }),
+						},
+						[],
+					),
+				),
+			);
+			const fromMeta = asTag(
+				transform(
+					makeTag('div', { 'data-rune': 'hint' }, [
+						makeTag('meta', { 'data-field': 'hint-type', content: 'warning' }),
+					]),
+				),
+			);
 
 			for (const out of [fromFields, fromMeta]) {
 				expect(out.attributes['data-hint-type']).toBe('warning');
@@ -359,12 +400,18 @@ describe('SPEC-080 block-and-layout assembly', () => {
 		});
 
 		it('prefers the fields bag over the legacy meta when both are present', () => {
-			const out = asTag(transform(makeTag('div', {
-				'data-rune': 'hint',
-				'data-rune-fields': JSON.stringify({ hintType: 'warning' }),
-			}, [
-				makeTag('meta', { 'data-field': 'hint-type', content: 'note' }),
-			])));
+			const out = asTag(
+				transform(
+					makeTag(
+						'div',
+						{
+							'data-rune': 'hint',
+							'data-rune-fields': JSON.stringify({ hintType: 'warning' }),
+						},
+						[makeTag('meta', { 'data-field': 'hint-type', content: 'note' })],
+					),
+				),
+			);
 			expect(out.attributes['data-hint-type']).toBe('warning'); // fields wins
 		});
 
@@ -381,17 +428,26 @@ describe('SPEC-080 block-and-layout assembly', () => {
 				root: ['media', 'content'],
 				media: { tag: 'div', children: ['cover'] },
 				content: { tag: 'div', children: ['preamble', 'body'] },
-				preamble: { tag: 'header', attrs: { 'data-section': 'preamble' }, children: ['headline', 'blurb'] },
+				preamble: {
+					tag: 'header',
+					attrs: { 'data-section': 'preamble' },
+					children: ['headline', 'blurb'],
+				},
 			},
 		};
 		const transform = createTransform(baseConfig({ Recipe: cfg }));
-		const run = () => asTag(transform(makeTag('article', { 'data-rune': 'recipe' }, [
-			makeTag('img', { 'data-name': 'cover' }, []),
-			makeTag('h1', { 'data-name': 'headline' }, ['Title']),
-			makeTag('p', { 'data-name': 'blurb' }, ['Blurb']),
-			makeTag('ul', { 'data-name': 'body' }, ['x']),
-			makeTag('meta', { content: 'leftover' }, []),
-		])));
+		const run = () =>
+			asTag(
+				transform(
+					makeTag('article', { 'data-rune': 'recipe' }, [
+						makeTag('img', { 'data-name': 'cover' }, []),
+						makeTag('h1', { 'data-name': 'headline' }, ['Title']),
+						makeTag('p', { 'data-name': 'blurb' }, ['Blurb']),
+						makeTag('ul', { 'data-name': 'body' }, ['x']),
+						makeTag('meta', { content: 'leftover' }, []),
+					]),
+				),
+			);
 
 		it('creates wrappers (tag entries) and nests flat slots per the layout tree', () => {
 			const out = run();
@@ -413,7 +469,7 @@ describe('SPEC-080 block-and-layout assembly', () => {
 		it('appends unlisted slots at root (never drops content)', () => {
 			const out = run();
 			// the unnamed leftover meta is neither consumed nor dropped
-			const leftover = out.children.filter(c => isT(c) && c.name === 'meta');
+			const leftover = out.children.filter((c) => isT(c) && c.name === 'meta');
 			expect(leftover.length).toBe(1);
 			// consumed slots are gone from root (pulled into wrappers)
 			expect(directNames(out).filter(Boolean)).toEqual(['media', 'content']);
@@ -422,10 +478,20 @@ describe('SPEC-080 block-and-layout assembly', () => {
 		it('places a slot referenced twice only once (diamond)', () => {
 			const dia: RuneConfig = {
 				block: 'x',
-				layout: { root: ['a', 'b'], a: { tag: 'div', children: ['shared'] }, b: { tag: 'div', children: ['shared'] } },
+				layout: {
+					root: ['a', 'b'],
+					a: { tag: 'div', children: ['shared'] },
+					b: { tag: 'div', children: ['shared'] },
+				},
 			};
 			const t = createTransform(baseConfig({ X: dia }));
-			const out = asTag(t(makeTag('section', { 'data-rune': 'x' }, [makeTag('span', { 'data-name': 'shared' }, ['s'])])));
+			const out = asTag(
+				t(
+					makeTag('section', { 'data-rune': 'x' }, [
+						makeTag('span', { 'data-name': 'shared' }, ['s']),
+					]),
+				),
+			);
 			expect(findByName(findByName(out, 'a')!, 'shared')).toBeDefined();
 			expect(findByName(findByName(out, 'b')!, 'shared')).toBeUndefined();
 		});
@@ -433,14 +499,18 @@ describe('SPEC-080 block-and-layout assembly', () => {
 		it('honours projection.hide after layout assembly (explicit drop)', () => {
 			const cfg: RuneConfig = {
 				block: 'z',
-				layout: { root: ['keep'] },        // 'drop' is unlisted → would append…
-				projection: { hide: ['drop'] },    // …but hide removes it
+				layout: { root: ['keep'] }, // 'drop' is unlisted → would append…
+				projection: { hide: ['drop'] }, // …but hide removes it
 			};
 			const t = createTransform(baseConfig({ Z: cfg }));
-			const out = asTag(t(makeTag('section', { 'data-rune': 'z' }, [
-				makeTag('div', { 'data-name': 'keep' }, ['k']),
-				makeTag('div', { 'data-name': 'drop' }, ['d']),
-			])));
+			const out = asTag(
+				t(
+					makeTag('section', { 'data-rune': 'z' }, [
+						makeTag('div', { 'data-name': 'keep' }, ['k']),
+						makeTag('div', { 'data-name': 'drop' }, ['d']),
+					]),
+				),
+			);
 			expect(findByName(out, 'keep')).toBeDefined();
 			expect(findByName(out, 'drop')).toBeUndefined();
 		});
@@ -448,7 +518,11 @@ describe('SPEC-080 block-and-layout assembly', () => {
 		it('breaks layout reference cycles without hanging', () => {
 			const cyc: RuneConfig = {
 				block: 'y',
-				layout: { root: ['a'], a: { tag: 'div', children: ['b'] }, b: { tag: 'div', children: ['a'] } },
+				layout: {
+					root: ['a'],
+					a: { tag: 'div', children: ['b'] },
+					b: { tag: 'div', children: ['a'] },
+				},
 			};
 			const t = createTransform(baseConfig({ Y: cyc }));
 			const out = asTag(t(makeTag('section', { 'data-rune': 'y' }, [])));

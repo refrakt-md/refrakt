@@ -106,7 +106,10 @@ export async function runPipeline(
 				});
 				contributed.forEach((cp, ruleIndex) => {
 					if (fileUrls.has(cp.url)) {
-						ctx.warn(`contributed page "${cp.url}" collides with a file-backed page; the file wins`, cp.url);
+						ctx.warn(
+							`contributed page "${cp.url}" collides with a file-backed page; the file wins`,
+							cp.url,
+						);
 						return;
 					}
 					const prior = contributedUrls.get(cp.url);
@@ -115,7 +118,10 @@ export async function runPipeline(
 						return;
 					}
 					contributedUrls.set(cp.url, pluginName);
-					const sp = options.renderContributed!({ ...cp, source: { plugin: pluginName, ruleIndex } });
+					const sp = options.renderContributed!({
+						...cp,
+						source: { plugin: pluginName, ruleIndex },
+					});
 					newPages.push(sp);
 				});
 			} catch (err) {
@@ -183,16 +189,15 @@ export async function runPipeline(
 	}));
 
 	// Tally entity count across all registered types
-	const entityCount = registry.getTypes().reduce(
-		(sum, type) => sum + registry.getAll(type).length,
-		0,
-	);
+	const entityCount = registry
+		.getTypes()
+		.reduce((sum, type) => sum + registry.getAll(type).length, 0);
 
 	const stats: PipelineStats = {
 		pageCount: allPages.length,
 		entityCount,
 		packageCount: hookSets.filter(
-			hs => hs.hooks.register || hs.hooks.aggregate || hs.hooks.postProcess
+			(hs) => hs.hooks.register || hs.hooks.aggregate || hs.hooks.postProcess,
 		).length,
 	};
 

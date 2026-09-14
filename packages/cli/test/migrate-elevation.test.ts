@@ -41,20 +41,23 @@ function read(name: string): string {
 
 describe('refrakt migrate elevation', () => {
 	it('maps each deprecated value to its ladder rung with --apply', () => {
-		write('page.md', [
-			'{% card elevation="none" %}a{% /card %}',
-			'{% card elevation="sm" %}b{% /card %}',
-			'{% card elevation="md" %}c{% /card %}',
-			'{% figure elevation="lg" %}d{% /figure %}',
-		].join('\n'));
+		write(
+			'page.md',
+			[
+				'{% card elevation="none" %}a{% /card %}',
+				'{% card elevation="sm" %}b{% /card %}',
+				'{% card elevation="md" %}c{% /card %}',
+				'{% figure elevation="lg" %}d{% /figure %}',
+			].join('\n'),
+		);
 
 		const { stdout, exitCode } = run('migrate', 'elevation', 'page.md', '--apply');
 		expect(exitCode).toBe(0);
 		expect(stdout).toContain('Migrated 4');
 
 		const out = read('page.md');
-		expect(out).toContain('elevation="flat"');     // none → flat
-		expect(out).toContain('elevation="raised"');   // sm/md → raised
+		expect(out).toContain('elevation="flat"'); // none → flat
+		expect(out).toContain('elevation="raised"'); // sm/md → raised
 		expect(out).toContain('elevation="floating"'); // lg → floating
 		expect(out).not.toMatch(/elevation="(none|sm|md|lg)"/);
 	});

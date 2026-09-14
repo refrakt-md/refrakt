@@ -1,7 +1,15 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
 import { escapeFenceTags } from '@refrakt-md/runes';
-import type { PlanEntity, PlanRuneType, Criterion, Resolution, ScopedRef, DependencyEdge, FileSource } from './types.js';
+import type {
+	PlanEntity,
+	PlanRuneType,
+	Criterion,
+	Resolution,
+	ScopedRef,
+	DependencyEdge,
+	FileSource,
+} from './types.js';
 
 const PLAN_RUNE_TYPES = new Set<string>(['spec', 'work', 'bug', 'decision', 'milestone']);
 const REF_TAG_NAMES = new Set<string>(['ref', 'xref']);
@@ -18,25 +26,25 @@ const KNOWN_SECTIONS: Record<string, Record<string, string[]>> = {
 		'Acceptance Criteria': ['criteria', 'ac', 'done when'],
 		[BLOCKED_BY_SECTION]: ['depends on', 'requires', 'deps', 'needs', 'dependencies'],
 		[BLOCKS_SECTION]: ['unblocks', 'enables', 'required by'],
-		'Approach': ['technical notes', 'implementation notes', 'how'],
-		'References': ['refs', 'related', 'context'],
+		Approach: ['technical notes', 'implementation notes', 'how'],
+		References: ['refs', 'related', 'context'],
 		'Edge Cases': ['exceptions', 'corner cases'],
-		'Verification': ['test cases', 'tests'],
+		Verification: ['test cases', 'tests'],
 	},
 	bug: {
 		'Steps to Reproduce': ['reproduction', 'steps', 'repro'],
-		'Expected': ['expected behaviour'],
-		'Actual': ['actual behaviour'],
-		'Environment': ['env'],
+		Expected: ['expected behaviour'],
+		Actual: ['actual behaviour'],
+		Environment: ['env'],
 		[BLOCKED_BY_SECTION]: ['depends on', 'requires', 'deps', 'needs', 'dependencies'],
 		[BLOCKS_SECTION]: ['unblocks', 'enables', 'required by'],
 	},
 	decision: {
-		'Context': ['background'],
+		Context: ['background'],
 		'Options Considered': ['options', 'alternatives'],
-		'Decision': [],
-		'Rationale': ['reasoning'],
-		'Consequences': ['impact', 'trade-offs'],
+		Decision: [],
+		Rationale: ['reasoning'],
+		Consequences: ['impact', 'trade-offs'],
 	},
 };
 
@@ -47,7 +55,7 @@ function matchKnownSection(runeType: string, headingText: string): string | unde
 	const normalized = headingText.toLowerCase().trim();
 	for (const [canonical, aliases] of Object.entries(sections)) {
 		if (canonical.toLowerCase() === normalized) return canonical;
-		if (aliases.some(a => a === normalized)) return canonical;
+		if (aliases.some((a) => a === normalized)) return canonical;
 	}
 	return undefined;
 }
@@ -74,11 +82,11 @@ function walkNodes(node: Node, predicate: (n: Node) => boolean): Node[] {
  * text (no backticks), suitable for the `data.title` field which is
  * interpolated into headings and `<title>` as a literal string. */
 function extractTitle(ast: Node): string | undefined {
-	const headings = walkNodes(ast, n => n.type === 'heading' && n.attributes.level === 1);
+	const headings = walkNodes(ast, (n) => n.type === 'heading' && n.attributes.level === 1);
 	if (headings.length === 0) return undefined;
 
 	const texts: string[] = [];
-	walkNodes(headings[0], n => {
+	walkNodes(headings[0], (n) => {
 		if ((n.type === 'text' || n.type === 'code') && n.attributes.content) {
 			texts.push(n.attributes.content as string);
 		}
@@ -104,7 +112,11 @@ function extractCriteria(source: string, runeStartLine: number, runeEndLine: num
 }
 
 /** Extract the Resolution section from the raw source within the rune's line range */
-function extractResolution(source: string, runeStartLine: number, runeEndLine: number): Resolution | undefined {
+function extractResolution(
+	source: string,
+	runeStartLine: number,
+	runeEndLine: number,
+): Resolution | undefined {
 	const lines = source.split('\n');
 	// Find the first ## Resolution heading within the rune range
 	let resolutionStart = -1;
@@ -134,13 +146,22 @@ function extractResolution(source: string, runeStartLine: number, runeEndLine: n
 
 	for (const line of contentLines) {
 		const dateMatch = line.match(/^Completed:\s*(.+)$/);
-		if (dateMatch) { date = dateMatch[1].trim(); continue; }
+		if (dateMatch) {
+			date = dateMatch[1].trim();
+			continue;
+		}
 
 		const branchMatch = line.match(/^Branch:\s*(.+)$/);
-		if (branchMatch) { branch = branchMatch[1].trim().replace(/^`|`$/g, ''); continue; }
+		if (branchMatch) {
+			branch = branchMatch[1].trim().replace(/^`|`$/g, '');
+			continue;
+		}
 
 		const prMatch = line.match(/^PR:\s*(.+)$/);
-		if (prMatch) { pr = prMatch[1].trim(); continue; }
+		if (prMatch) {
+			pr = prMatch[1].trim();
+			continue;
+		}
 
 		bodyLines.push(line);
 	}
@@ -152,7 +173,7 @@ function extractResolution(source: string, runeStartLine: number, runeEndLine: n
 
 /** Extract all referenced entity IDs from ref/xref tag nodes in the AST */
 function extractRefs(ast: Node): string[] {
-	const refNodes = walkNodes(ast, n => n.type === 'tag' && REF_TAG_NAMES.has(n.tag as string));
+	const refNodes = walkNodes(ast, (n) => n.type === 'tag' && REF_TAG_NAMES.has(n.tag as string));
 	const ids: string[] = [];
 	for (const node of refNodes) {
 		const primary = node.attributes.primary as string | undefined;
@@ -165,7 +186,7 @@ function extractRefs(ast: Node): string[] {
 /** Extract heading text from an AST heading node */
 function extractHeadingText(node: Node): string {
 	const texts: string[] = [];
-	walkNodes(node, n => {
+	walkNodes(node, (n) => {
 		if (n.type === 'text' && n.attributes.content) {
 			texts.push(n.attributes.content as string);
 		}
@@ -178,7 +199,10 @@ function extractHeadingText(node: Node): string {
  * Extract section-scoped refs and known section presence from the AST.
  * Walks the plan tag's children, tracking which H2 section each ref falls in.
  */
-function extractScopedRefs(planTag: Node, runeType: string): { scopedRefs: ScopedRef[]; knownSectionsPresent: string[] } {
+function extractScopedRefs(
+	planTag: Node,
+	runeType: string,
+): { scopedRefs: ScopedRef[]; knownSectionsPresent: string[] } {
 	const scopedRefs: ScopedRef[] = [];
 	const knownSectionsPresent: string[] = [];
 	let currentSection: string | undefined;
@@ -194,7 +218,10 @@ function extractScopedRefs(planTag: Node, runeType: string): { scopedRefs: Scope
 		}
 
 		// Find refs in this node (including deeply nested ones)
-		const refNodes = walkNodes(child, n => n.type === 'tag' && REF_TAG_NAMES.has(n.tag as string));
+		const refNodes = walkNodes(
+			child,
+			(n) => n.type === 'tag' && REF_TAG_NAMES.has(n.tag as string),
+		);
 		for (const refNode of refNodes) {
 			const id = refNode.attributes.primary as string | undefined;
 			if (id) {
@@ -255,7 +282,8 @@ export function buildBlockedByAdjacency(entities: PlanEntity[]): Map<string, str
 		const id = e.attributes.id || e.attributes.name;
 		if (!id) continue;
 		for (const dep of e.dependencies ?? []) {
-			if (dep.direction === 'blocked-by') add(id, dep.id); // id waits for dep.id
+			if (dep.direction === 'blocked-by')
+				add(id, dep.id); // id waits for dep.id
 			else add(dep.id, id); // id blocks dep.id → dep.id waits for id
 		}
 	}
@@ -268,7 +296,7 @@ export function parseFileContent(source: string, relPath: string): PlanEntity | 
 
 	// Find the first plan rune tag at the top level
 	const planTag = ast.children.find(
-		(n: Node) => n.type === 'tag' && PLAN_RUNE_TYPES.has(n.tag as string)
+		(n: Node) => n.type === 'tag' && PLAN_RUNE_TYPES.has(n.tag as string),
 	);
 	if (!planTag) return null;
 
@@ -289,7 +317,18 @@ export function parseFileContent(source: string, relPath: string): PlanEntity | 
 	const dependencies = computeDependencies(scopedRefs);
 	const resolution = extractResolution(source, startLine, endLine);
 
-	return { file: relPath, type: runeType, attributes, title, criteria, refs, scopedRefs, dependencies, knownSectionsPresent, resolution };
+	return {
+		file: relPath,
+		type: runeType,
+		attributes,
+		title,
+		criteria,
+		refs,
+		scopedRefs,
+		dependencies,
+		knownSectionsPresent,
+		resolution,
+	};
 }
 
 /**

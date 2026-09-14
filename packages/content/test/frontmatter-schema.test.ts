@@ -5,9 +5,7 @@ import { fileURLToPath } from 'node:url';
 import Ajv from 'ajv';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const schema = JSON.parse(
-	readFileSync(resolve(here, '..', 'frontmatter.schema.json'), 'utf-8'),
-);
+const schema = JSON.parse(readFileSync(resolve(here, '..', 'frontmatter.schema.json'), 'utf-8'));
 const typesSource = readFileSync(resolve(here, '..', 'src', 'frontmatter.ts'), 'utf-8');
 
 /**
@@ -22,7 +20,8 @@ const typesSource = readFileSync(resolve(here, '..', 'src', 'frontmatter.ts'), '
  */
 function declaredProperties(): string[] {
 	const start = typesSource.indexOf('export interface Frontmatter {');
-	if (start === -1) throw new Error('interface Frontmatter not found in content/src/frontmatter.ts');
+	if (start === -1)
+		throw new Error('interface Frontmatter not found in content/src/frontmatter.ts');
 	const end = typesSource.indexOf('\n}', start);
 	if (end === -1) throw new Error('interface Frontmatter is unterminated');
 	return typesSource
@@ -47,9 +46,7 @@ describe('frontmatter.schema.json', () => {
 		});
 
 		it('declares no property the interface does not have', () => {
-			expect(declaredProperties()).toEqual(
-				expect.arrayContaining(Object.keys(schema.properties)),
-			);
+			expect(declaredProperties()).toEqual(expect.arrayContaining(Object.keys(schema.properties)));
 		});
 
 		it('gives every property a description', () => {
@@ -79,12 +76,14 @@ describe('frontmatter.schema.json', () => {
 
 	describe('validation', () => {
 		it('accepts a typical page', () => {
-			expect(validate({
-				title: 'Surfaces',
-				description: 'The surface model on one page',
-				tags: ['runes', 'theme'],
-				type: 'rune',
-			})).toBe(true);
+			expect(
+				validate({
+					title: 'Surfaces',
+					description: 'The surface model on one page',
+					tags: ['runes', 'theme'],
+					type: 'rune',
+				}),
+			).toBe(true);
 		});
 
 		/**

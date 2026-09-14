@@ -26,7 +26,12 @@ describe('runPipeline', () => {
 				register(pages, registry, ctx) {
 					events.push('register');
 					for (const p of pages) {
-						registry.register({ type: 'page', id: p.url, sourceUrl: p.url, data: { title: p.title } });
+						registry.register({
+							type: 'page',
+							id: p.url,
+							sourceUrl: p.url,
+							data: { title: p.title },
+						});
 					}
 				},
 				aggregate(registry, ctx) {
@@ -131,18 +136,29 @@ describe('runPipeline', () => {
 		const makeHookSet = (name: string): HookSet => ({
 			pluginName: name,
 			hooks: {
-				register() { order.push(`register:${name}`); },
-				aggregate() { order.push(`aggregate:${name}`); return {}; },
-				postProcess(p) { order.push(`post:${name}`); return p; },
+				register() {
+					order.push(`register:${name}`);
+				},
+				aggregate() {
+					order.push(`aggregate:${name}`);
+					return {};
+				},
+				postProcess(p) {
+					order.push(`post:${name}`);
+					return p;
+				},
 			},
 		});
 
 		await runPipeline([makePage('/a/', 'A')], [makeHookSet('first'), makeHookSet('second')]);
 
 		expect(order).toEqual([
-			'register:first', 'register:second',
-			'aggregate:first', 'aggregate:second',
-			'post:first', 'post:second',
+			'register:first',
+			'register:second',
+			'aggregate:first',
+			'aggregate:second',
+			'post:first',
+			'post:second',
 		]);
 	});
 
@@ -153,7 +169,9 @@ describe('runPipeline', () => {
 			{
 				pluginName: 'producer',
 				hooks: {
-					aggregate() { return { value: 42 }; },
+					aggregate() {
+						return { value: 42 };
+					},
 				},
 			},
 			{

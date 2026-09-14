@@ -14,10 +14,14 @@ export function juxtaposeBehavior(el: HTMLElement): CleanupFn {
 	const variant = el.getAttribute('data-variant') || 'slider';
 
 	switch (variant) {
-		case 'toggle': return setupToggle(el);
-		case 'fade': return setupFade(el);
-		case 'auto': return setupAuto(el);
-		default: return setupSlider(el);
+		case 'toggle':
+			return setupToggle(el);
+		case 'fade':
+			return setupFade(el);
+		case 'auto':
+			return setupAuto(el);
+		default:
+			return setupSlider(el);
 	}
 }
 
@@ -25,7 +29,9 @@ export function juxtaposeBehavior(el: HTMLElement): CleanupFn {
 
 function getPanels(el: HTMLElement): HTMLElement[] {
 	const container = el.querySelector('[data-name="panels"]') || el;
-	return Array.from(container.querySelectorAll<HTMLElement>(':scope > [data-rune="juxtapose-panel"]'));
+	return Array.from(
+		container.querySelectorAll<HTMLElement>(':scope > [data-rune="juxtapose-panel"]'),
+	);
 }
 
 function getPanelLabel(panel: HTMLElement): string {

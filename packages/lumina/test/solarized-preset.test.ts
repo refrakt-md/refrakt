@@ -56,16 +56,16 @@ describe('Solarized preset module — SPEC-057 import', () => {
 		it('Solarized invariant — the eight accent hues are mode-symmetric', () => {
 			// The whole point of Solarized: same accents in both modes.
 			const accentRoles = [
-				'keyword',    // red     #dc322f
-				'function',   // blue    #268bd2
-				'type',       // yellow  #b58900
-				'string',     // cyan    #2aa198
-				'constant',   // violet  #6c71c4
-				'number',     // orange  #cb4b16
-				'regex',      // green   #859900
-				'tag',        // red
-				'attribute',  // blue
-				'operator',   // violet
+				'keyword', // red     #dc322f
+				'function', // blue    #268bd2
+				'type', // yellow  #b58900
+				'string', // cyan    #2aa198
+				'constant', // violet  #6c71c4
+				'number', // orange  #cb4b16
+				'regex', // green   #859900
+				'tag', // red
+				'attribute', // blue
+				'operator', // violet
 				'string-expression', // magenta #d33682
 			] as const;
 			for (const role of accentRoles) {

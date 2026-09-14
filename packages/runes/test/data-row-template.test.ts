@@ -114,16 +114,20 @@ describe('data rune — per-row body (SPEC-127)', () => {
 	});
 
 	it('leaves a $row reference to a missing column empty rather than throwing', () => {
-		const { rendered } = runData(
-			`{% data src="people.csv" %}\n## {% $row.nope %}\n{% /data %}`,
-			{ 'people.csv': CSV },
-		);
+		const { rendered } = runData(`{% data src="people.csv" %}\n## {% $row.nope %}\n{% /data %}`, {
+			'people.csv': CSV,
+		});
 		expect(findAllTags(rendered, (t) => t.name === 'h2')).toHaveLength(2);
 	});
 });
 
 describe('data rune — row value binding', () => {
-	const BOOLS = JSON.stringify({ items: [{ name: 'a', flag: true }, { name: 'b', flag: false }] });
+	const BOOLS = JSON.stringify({
+		items: [
+			{ name: 'a', flag: true },
+			{ name: 'b', flag: false },
+		],
+	});
 
 	/**
 	 * The table intermediate is text, so a JSON `false` arrives as the string

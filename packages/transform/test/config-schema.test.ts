@@ -10,10 +10,7 @@ const schema = JSON.parse(readFileSync(resolve(here, '..', 'refrakt.config.schem
 // The configuration interfaces moved out of `theme.ts` in WORK-541 — that file
 // is about the theme system, and a reader following docs → schema → types
 // should not land in it.
-const typesSource = readFileSync(
-	resolve(here, '..', '..', 'types', 'src', 'config.ts'),
-	'utf-8',
-);
+const typesSource = readFileSync(resolve(here, '..', '..', 'types', 'src', 'config.ts'), 'utf-8');
 
 /**
  * Pull the declared property names off an interface in `@refrakt-md/types`.
@@ -57,9 +54,7 @@ describe('refrakt.config.schema.json', () => {
 			it(`describes every ${interfaceName} field`, () => {
 				const declared = declaredProperties(interfaceName);
 				expect(declared.length).toBeGreaterThan(0);
-				expect(Object.keys(node()).sort()).toEqual(
-					expect.arrayContaining(declared.sort()),
-				);
+				expect(Object.keys(node()).sort()).toEqual(expect.arrayContaining(declared.sort()));
 			});
 		}
 
@@ -93,30 +88,26 @@ describe('refrakt.config.schema.json', () => {
 		it('declares no schema property the interfaces do not have', () => {
 			// `$schema` is the JSON-Schema pointer itself, not a config field.
 			const inSchema = Object.keys(schema.properties).filter((k) => k !== '$schema');
-			expect(declaredProperties('RefraktConfig')).toEqual(
-				expect.arrayContaining(inSchema),
-			);
+			expect(declaredProperties('RefraktConfig')).toEqual(expect.arrayContaining(inSchema));
 		});
 
 		it('accepts every legacy shorthand at the top level', () => {
 			// `SITE_FIELDS` is the set the normalizer mirrors site → top level and
 			// `refrakt config migrate` moves top level → site. Both directions need
 			// the flat shape to still validate.
-			expect(Object.keys(schema.properties)).toEqual(
-				expect.arrayContaining([...SITE_FIELDS]),
-			);
+			expect(Object.keys(schema.properties)).toEqual(expect.arrayContaining([...SITE_FIELDS]));
 		});
 
 		it('only lists legacy shorthands that are real site fields', () => {
-			expect(declaredProperties('SiteConfig')).toEqual(
-				expect.arrayContaining([...SITE_FIELDS]),
-			);
+			expect(declaredProperties('SiteConfig')).toEqual(expect.arrayContaining([...SITE_FIELDS]));
 		});
 	});
 
 	describe('validation', () => {
 		it('accepts a minimal singular-site config', () => {
-			expect(validate({ site: { contentDir: './content', theme: '@refrakt-md/lumina' } })).toBe(true);
+			expect(validate({ site: { contentDir: './content', theme: '@refrakt-md/lumina' } })).toBe(
+				true,
+			);
 		});
 
 		it('accepts entityRoutes, locale, and strings on a site', () => {
@@ -126,10 +117,18 @@ describe('refrakt.config.schema.json', () => {
 					theme: '@refrakt-md/lumina',
 					entityRoutes: [
 						{ type: 'spec', url: '/specs/{id}/', render: '{% expand $item.id /%}' },
-						{ type: 'work', filter: 'status:ready', url: '/work/{id}/', 'render-template': 'templates:work.md' },
+						{
+							type: 'work',
+							filter: 'status:ready',
+							url: '/work/{id}/',
+							'render-template': 'templates:work.md',
+						},
 					],
 					locale: 'de',
-					strings: { 'core.toc.title': 'Inhalt', 'core.pagination.count': { one: '{n} Seite', other: '{n} Seiten' } },
+					strings: {
+						'core.toc.title': 'Inhalt',
+						'core.pagination.count': { one: '{n} Seite', other: '{n} Seiten' },
+					},
 				},
 			});
 			expect(ajv.errorsText(validate.errors)).toBe('No errors');
@@ -139,7 +138,13 @@ describe('refrakt.config.schema.json', () => {
 		it('accepts project-level xrefs and fileRoots', () => {
 			expect(
 				validate({
-					xrefs: [{ match: '^GH-(?<num>\\d+)$', template: 'https://github.com/o/r/issues/{num}', label: 'GitHub #{num}' }],
+					xrefs: [
+						{
+							match: '^GH-(?<num>\\d+)$',
+							template: 'https://github.com/o/r/issues/{num}',
+							label: 'GitHub #{num}',
+						},
+					],
 					fileRoots: { shared: './shared', templates: './templates' },
 					site: { contentDir: './content', theme: '@refrakt-md/lumina' },
 				}),

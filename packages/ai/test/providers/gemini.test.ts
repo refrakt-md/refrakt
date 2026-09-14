@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { createGeminiProvider, formatGeminiRequest, parseGeminiSSE } from '../../src/providers/gemini.js';
+import {
+	createGeminiProvider,
+	formatGeminiRequest,
+	parseGeminiSSE,
+} from '../../src/providers/gemini.js';
 import type { Message } from '../../src/provider.js';
 
 function mockSSEResponse(events: string[]): Response {
@@ -21,17 +25,12 @@ describe('formatGeminiRequest', () => {
 			{ role: 'user', content: 'Hello' },
 		];
 
-		const result = formatGeminiRequest(
-			{ messages },
-			{ model: 'gemini-2.0-flash' },
-		);
+		const result = formatGeminiRequest({ messages }, { model: 'gemini-2.0-flash' });
 
 		expect(result.systemInstruction).toEqual({
 			parts: [{ text: 'You are helpful.' }],
 		});
-		expect(result.contents).toEqual([
-			{ role: 'user', parts: [{ text: 'Hello' }] },
-		]);
+		expect(result.contents).toEqual([{ role: 'user', parts: [{ text: 'Hello' }] }]);
 	});
 
 	it('joins multiple system messages into one systemInstruction', () => {
@@ -41,10 +40,7 @@ describe('formatGeminiRequest', () => {
 			{ role: 'user', content: 'Hello' },
 		];
 
-		const result = formatGeminiRequest(
-			{ messages },
-			{ model: 'gemini-2.0-flash' },
-		);
+		const result = formatGeminiRequest({ messages }, { model: 'gemini-2.0-flash' });
 
 		expect(result.systemInstruction).toEqual({
 			parts: [{ text: 'Base layer.\n\nMode layer.' }],
@@ -67,10 +63,7 @@ describe('formatGeminiRequest', () => {
 			{ role: 'user', content: 'How are you?' },
 		];
 
-		const result = formatGeminiRequest(
-			{ messages },
-			{ model: 'gemini-2.0-flash' },
-		);
+		const result = formatGeminiRequest({ messages }, { model: 'gemini-2.0-flash' });
 
 		expect(result.contents).toEqual([
 			{ role: 'user', parts: [{ text: 'Hello' }] },
@@ -222,7 +215,9 @@ describe('createGeminiProvider', () => {
 		for await (const _ of provider.complete({
 			messages: [{ role: 'user', content: 'Hi' }],
 			model: 'gemini-2.0-flash-lite',
-		})) { /* drain */ }
+		})) {
+			/* drain */
+		}
 
 		expect(capturedUrl).toContain('/models/gemini-2.0-flash-lite:streamGenerateContent');
 	});
@@ -242,7 +237,9 @@ describe('createGeminiProvider', () => {
 		});
 
 		await expect(async () => {
-			for await (const _ of iter) { /* drain */ }
+			for await (const _ of iter) {
+				/* drain */
+			}
 		}).rejects.toThrow('Gemini API error (400)');
 	});
 });

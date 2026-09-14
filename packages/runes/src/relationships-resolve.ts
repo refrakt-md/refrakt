@@ -8,12 +8,23 @@
  */
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
-import type { EntityRegistry, EntityRegistration, ResolvedEdge, PipelineContext } from '@refrakt-md/types';
+import type {
+	EntityRegistry,
+	EntityRegistration,
+	ResolvedEdge,
+	PipelineContext,
+} from '@refrakt-md/types';
 import { humanize } from './functions.js';
 import {
-	type CollectionEmbedConfig, type Ordering,
-	fieldValue, titleLink as titleLinkFor,
-	groupBy, projectItem, renderItemTemplate, buildOrdering, splitBodyZones,
+	type CollectionEmbedConfig,
+	type Ordering,
+	fieldValue,
+	titleLink as titleLinkFor,
+	groupBy,
+	projectItem,
+	renderItemTemplate,
+	buildOrdering,
+	splitBodyZones,
 	renderGroupAccordion,
 } from './collection-helpers.js';
 import { RELATIONSHIPS_SENTINEL } from './tags/relationships.js';
@@ -41,7 +52,10 @@ function hasSentinel(tag: TagNode): boolean {
 }
 
 function csv(s: string): string[] {
-	return s.split(',').map((x) => x.trim()).filter(Boolean);
+	return s
+		.split(',')
+		.map((x) => x.trim())
+		.filter(Boolean);
 }
 
 interface RelQuery {
@@ -81,17 +95,25 @@ function sortEdges(edges: ResolvedEdge[], sortExpr: string, ordering: Ordering):
 	if (!sortExpr) return edges;
 	let field = sortExpr.trim();
 	let dir = 1;
-	if (field.startsWith('-')) { dir = -1; field = field.slice(1); }
-	else if (field.endsWith('-desc')) { dir = -1; field = field.slice(0, -5); }
-	else if (field.endsWith('-asc')) { field = field.slice(0, -4); }
+	if (field.startsWith('-')) {
+		dir = -1;
+		field = field.slice(1);
+	} else if (field.endsWith('-desc')) {
+		dir = -1;
+		field = field.slice(0, -5);
+	} else if (field.endsWith('-asc')) {
+		field = field.slice(0, -4);
+	}
 	const ranked = edges.some((e) => ordering.order(e.target.type, field));
 	return [...edges].sort((a, b) => {
 		if (ranked) {
 			const ra = ordering.rank(a.target.type, field, fieldValue(a.target, field));
 			const rb = ordering.rank(b.target.type, field, fieldValue(b.target, field));
-			const aR = ra >= 0, bR = rb >= 0;
-			if (aR && bR) { if (ra !== rb) return (ra - rb) * dir; }
-			else if (aR !== bR) return aR ? -1 : 1;
+			const aR = ra >= 0,
+				bR = rb >= 0;
+			if (aR && bR) {
+				if (ra !== rb) return (ra - rb) * dir;
+			} else if (aR !== bR) return aR ? -1 : 1;
 		}
 		const av = fieldValue(a.target, field);
 		const bv = fieldValue(b.target, field);
@@ -104,15 +126,24 @@ function titleLink(e: EntityRegistration): TagNode {
 }
 
 function builtInItem(edge: ResolvedEdge, q: RelQuery): TagNode {
-	const spans = q.fields.map((f) =>
-		new Tag('span', { class: 'rf-relationships__field', 'data-field': f }, [fieldValue(edge.target, f)]),
+	const spans = q.fields.map(
+		(f) =>
+			new Tag('span', { class: 'rf-relationships__field', 'data-field': f }, [
+				fieldValue(edge.target, f),
+			]),
 	);
 	const attrs = { 'data-entity-id': edge.target.id, 'data-kind': edge.kind };
 	// grid gets card chrome (mirroring collection); list stays an inline row.
 	if (q.layout === 'grid') {
-		return new Tag('article', { class: 'rf-relationships__card', ...attrs }, [titleLink(edge.target), ...spans]);
+		return new Tag('article', { class: 'rf-relationships__card', ...attrs }, [
+			titleLink(edge.target),
+			...spans,
+		]);
 	}
-	return new Tag('div', { class: 'rf-relationships__item', ...attrs }, [titleLink(edge.target), ...spans]);
+	return new Tag('div', { class: 'rf-relationships__item', ...attrs }, [
+		titleLink(edge.target),
+		...spans,
+	]);
 }
 
 function renderEdges(
@@ -123,8 +154,20 @@ function renderEdges(
 ): RenderableTreeNode[] {
 	return edges.map((edge) => {
 		if (tmpl && embedConfig) {
-			const kids = renderItemTemplate(tmpl, embedConfig, { item: projectItem(edge.target), kind: edge.kind });
-			return new Tag('div', { class: 'rf-relationships__item', 'data-entity-id': edge.target.id, 'data-kind': edge.kind, 'data-block': '' }, kids);
+			const kids = renderItemTemplate(tmpl, embedConfig, {
+				item: projectItem(edge.target),
+				kind: edge.kind,
+			});
+			return new Tag(
+				'div',
+				{
+					class: 'rf-relationships__item',
+					'data-entity-id': edge.target.id,
+					'data-kind': edge.kind,
+					'data-block': '',
+				},
+				kids,
+			);
 		}
 		return builtInItem(edge, q);
 	});
@@ -143,12 +186,13 @@ function resolveOne(
 		ctx.warn('relationships — no `of` entity given (pass of=$item.id on an entity page)', pageUrl);
 	}
 
-	let edges: ResolvedEdge[] = q.of && registry.getRelated
-		? registry.getRelated(q.of, {
-			kind: q.kinds.length ? q.kinds : undefined,
-			type: q.types.length ? q.types : undefined,
-		})
-		: [];
+	let edges: ResolvedEdge[] =
+		q.of && registry.getRelated
+			? registry.getRelated(q.of, {
+					kind: q.kinds.length ? q.kinds : undefined,
+					type: q.types.length ? q.types : undefined,
+				})
+			: [];
 	edges = sortEdges(edges, q.sort, ordering);
 	// `$count` = total matched (pre-limit); `$shown` = rendered (post-limit).
 	const matched = edges.length;
@@ -163,9 +207,17 @@ function resolveOne(
 	if (edges.length === 0) {
 		const out: RenderableTreeNode[] = [];
 		if (zones.fallback && embedConfig) {
-			out.push(new Tag('div', { 'data-name': 'empty', class: 'rf-relationships__empty' }, renderItemTemplate(zones.fallback, embedConfig, counts)));
+			out.push(
+				new Tag(
+					'div',
+					{ 'data-name': 'empty', class: 'rf-relationships__empty' },
+					renderItemTemplate(zones.fallback, embedConfig, counts),
+				),
+			);
 		} else if (q.empty) {
-			out.push(new Tag('div', { 'data-name': 'empty', class: 'rf-relationships__empty' }, [q.empty]));
+			out.push(
+				new Tag('div', { 'data-name': 'empty', class: 'rf-relationships__empty' }, [q.empty]),
+			);
 		}
 		return new Tag(tag.name, attrs, out);
 	}
@@ -175,27 +227,45 @@ function resolveOne(
 		children = renderEdges(edges, q, tmpl, embedConfig);
 	} else {
 		// group by kind (default) or by target type
-		const keyOf = q.group === 'type' ? (e: ResolvedEdge) => e.target.type : (e: ResolvedEdge) => e.kind;
+		const keyOf =
+			q.group === 'type' ? (e: ResolvedEdge) => e.target.type : (e: ResolvedEdge) => e.kind;
 		const groups = groupBy(edges, keyOf);
 		if (q.groupDisplay === 'accordion') {
 			children = renderGroupAccordion(
-				[...groups].map(([key, es]) => ({ key, label: humanize(key), count: es.length, nodes: renderEdges(es, q, tmpl, embedConfig) })),
+				[...groups].map(([key, es]) => ({
+					key,
+					label: humanize(key),
+					count: es.length,
+					nodes: renderEdges(es, q, tmpl, embedConfig),
+				})),
 			);
 		} else {
 			children = [];
 			for (const [key, es] of groups) {
-				children.push(new Tag('div', { class: 'rf-relationships__group', 'data-group': key }, [
-					new Tag('h3', { class: 'rf-relationships__group-title' }, [humanize(key)]),
-					...renderEdges(es, q, tmpl, embedConfig),
-				]));
+				children.push(
+					new Tag('div', { class: 'rf-relationships__group', 'data-group': key }, [
+						new Tag('h3', { class: 'rf-relationships__group-title' }, [humanize(key)]),
+						...renderEdges(es, q, tmpl, embedConfig),
+					]),
+				);
 			}
 		}
 	}
 
-	const itemsDiv = new Tag('div', { 'data-name': 'items', class: 'rf-relationships__items' }, children);
+	const itemsDiv = new Tag(
+		'div',
+		{ 'data-name': 'items', class: 'rf-relationships__items' },
+		children,
+	);
 	const head: RenderableTreeNode[] = [];
 	if (zones.preamble && embedConfig) {
-		head.push(new Tag('div', { 'data-name': 'preamble', class: 'rf-relationships__preamble' }, renderItemTemplate(zones.preamble, embedConfig, counts)));
+		head.push(
+			new Tag(
+				'div',
+				{ 'data-name': 'preamble', class: 'rf-relationships__preamble' },
+				renderItemTemplate(zones.preamble, embedConfig, counts),
+			),
+		);
 	}
 	return new Tag(tag.name, attrs, [...head, itemsDiv]);
 }

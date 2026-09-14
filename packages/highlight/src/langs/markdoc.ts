@@ -35,9 +35,7 @@ export const markdocLanguage: LanguageRegistration = {
 				2: { name: 'entity.name.tag.markdoc' },
 				3: { name: 'punctuation.definition.tag.end.markdoc' },
 			},
-			patterns: [
-				{ include: 'text.html.basic' },
-			],
+			patterns: [{ include: 'text.html.basic' }],
 		},
 		'markdoc-tag': {
 			name: 'meta.tag.markdoc',
@@ -50,9 +48,7 @@ export const markdocLanguage: LanguageRegistration = {
 			endCaptures: {
 				1: { name: 'punctuation.definition.tag.end.markdoc' },
 			},
-			patterns: [
-				{ include: '#tag-attributes' },
-			],
+			patterns: [{ include: '#tag-attributes' }],
 		},
 		'tag-attributes': {
 			patterns: [

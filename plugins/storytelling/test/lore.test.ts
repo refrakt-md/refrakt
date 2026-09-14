@@ -7,7 +7,7 @@ describe('lore tag', () => {
 Ancient beings worshipped before the current pantheon.
 {% /lore %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'lore');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 	});
@@ -17,8 +17,11 @@ Ancient beings worshipped before the current pantheon.
 Content.
 {% /lore %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
-		const titleTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-name'] === 'title');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'lore');
+		const titleTag = findTag(
+			tag!,
+			(t) => t.name === 'span' && t.attributes['data-name'] === 'title',
+		);
 		expect(titleTag).toBeDefined();
 		expect(titleTag!.children[0]).toBe('The Prophecy');
 	});
@@ -28,7 +31,7 @@ Content.
 Content.
 {% /lore %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'lore');
 		// SPEC-082: field values live in the data-rune-fields bag.
 		const fields = JSON.parse(tag!.attributes['data-rune-fields'] as string);
 		expect(fields.category).toBe('prophecy');
@@ -39,7 +42,7 @@ Content.
 Hidden content.
 {% /lore %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'lore');
 		expect(fields(tag).spoiler).toBe('true');
 	});
 
@@ -48,7 +51,7 @@ Hidden content.
 Content.
 {% /lore %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'lore');
 		expect(fields(tag).tags).toBe('magic,history');
 	});
 
@@ -57,7 +60,7 @@ Content.
 Long ago...
 {% /legend %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'lore');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'lore');
 		expect(tag).toBeDefined();
 	});
 });

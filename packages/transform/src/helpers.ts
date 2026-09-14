@@ -10,11 +10,20 @@ export function toKebabCase(s: string): string {
 
 /** Type guard: is this node a serialized tag? */
 export function isTag(node: RendererNode): node is SerializedTag {
-	return typeof node === 'object' && node !== null && !Array.isArray(node) && (node as any).$$mdtype === 'Tag';
+	return (
+		typeof node === 'object' &&
+		node !== null &&
+		!Array.isArray(node) &&
+		(node as any).$$mdtype === 'Tag'
+	);
 }
 
 /** Create a serialized tag node */
-export function makeTag(name: string, attributes: Record<string, any> = {}, children: RendererNode[] = []): SerializedTag {
+export function makeTag(
+	name: string,
+	attributes: Record<string, any> = {},
+	children: RendererNode[] = [],
+): SerializedTag {
 	return { $$mdtype: 'Tag', name, attributes, children };
 }
 
@@ -22,14 +31,15 @@ export function makeTag(name: string, attributes: Record<string, any> = {}, chil
 export function findMeta(tag: SerializedTag, property: string): SerializedTag | undefined {
 	const kebab = toKebabCase(property);
 	return tag.children.find(
-		(c): c is SerializedTag => isTag(c) && c.name === 'meta' && c.attributes['data-field'] === kebab
+		(c): c is SerializedTag =>
+			isTag(c) && c.name === 'meta' && c.attributes['data-field'] === kebab,
 	);
 }
 
 /** Find a child tag by its data-name attribute */
 export function findByDataName(tag: SerializedTag, name: string): SerializedTag | undefined {
 	return tag.children.find(
-		(c): c is SerializedTag => isTag(c) && c.attributes['data-name'] === name
+		(c): c is SerializedTag => isTag(c) && c.attributes['data-name'] === name,
 	);
 }
 
@@ -61,11 +71,15 @@ export function findNodeByDataName(nodes: RendererNode[], name: string): Seriali
 
 /** Get all children that are NOT meta tags */
 export function nonMetaChildren(tag: SerializedTag): RendererNode[] {
-	return tag.children.filter(c => !(isTag(c) && c.name === 'meta'));
+	return tag.children.filter((c) => !(isTag(c) && c.name === 'meta'));
 }
 
 /** Read a meta tag's content value, with optional default */
-export function readMeta(tag: SerializedTag, property: string, defaultValue?: string): string | undefined {
+export function readMeta(
+	tag: SerializedTag,
+	property: string,
+	defaultValue?: string,
+): string | undefined {
 	const meta = findMeta(tag, property);
 	return meta?.attributes.content ?? defaultValue;
 }
@@ -82,7 +96,7 @@ export function parseFields(tag: FieldHost): Record<string, unknown> {
 	if (typeof raw !== 'string' || raw.length === 0) return {};
 	try {
 		const v = JSON.parse(raw);
-		return v && typeof v === 'object' && !Array.isArray(v) ? v as Record<string, unknown> : {};
+		return v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {};
 	} catch {
 		return {};
 	}
@@ -94,7 +108,11 @@ export function parseFields(tag: FieldHost): Record<string, unknown> {
  *  pre-engine consumers (plugin register hooks) so they read the same channel
  *  the engine does. Scalars are returned as strings (matching the meta's
  *  `content`); non-scalar / absent → the meta fallback. */
-export function readField(tag: FieldHost, name: string, fields?: Record<string, unknown>): string | undefined {
+export function readField(
+	tag: FieldHost,
+	name: string,
+	fields?: Record<string, unknown>,
+): string | undefined {
 	const bag = fields ?? parseFields(tag);
 	const v = bag[name];
 	if (v !== undefined && v !== null && typeof v !== 'object') {
@@ -103,10 +121,11 @@ export function readField(tag: FieldHost, name: string, fields?: Record<string, 
 	const kebab = toKebabCase(name);
 	const child = (tag.children ?? []).find(
 		(c): c is { attributes: Record<string, unknown> } =>
-			!!c && typeof c === 'object'
-			&& (c as { $$mdtype?: string }).$$mdtype === 'Tag'
-			&& (c as { name?: string }).name === 'meta'
-			&& (c as { attributes?: Record<string, unknown> }).attributes?.['data-field'] === kebab,
+			!!c &&
+			typeof c === 'object' &&
+			(c as { $$mdtype?: string }).$$mdtype === 'Tag' &&
+			(c as { name?: string }).name === 'meta' &&
+			(c as { attributes?: Record<string, unknown> }).attributes?.['data-field'] === kebab,
 	);
 	return child ? (child.attributes.content as string | undefined) : undefined;
 }
@@ -180,7 +199,10 @@ export function resolveGap(value: string): string {
 
 /** Convert space-separated ratio numbers to CSS fr units: "2 1" → "2fr 1fr" */
 export function ratioToFr(value: string): string {
-	return value.split(/\s+/).map(n => `${n}fr`).join(' ');
+	return value
+		.split(/\s+/)
+		.map((n) => `${n}fr`)
+		.join(' ');
 }
 
 /** Named offset presets → CSS spacing token values (SPEC-086 named scale).
@@ -192,13 +214,13 @@ export function ratioToFr(value: string): string {
  *  `--rf-spacing-section` = 4rem) and still have visible overhang. */
 const OFFSET_PRESETS: Record<string, string> = {
 	none: '0',
-	sm: 'var(--rf-spacing-sm)',                  // 0.5rem
-	md: 'var(--rf-spacing-md)',                  // 1.5rem
-	lg: 'var(--rf-spacing-lg)',                  // 2rem
-	xl: 'var(--rf-spacing-xl)',                  // 3rem
-	'2xl': 'var(--rf-spacing-section)',          // 4rem — matches a tight section's padding-block
-	'3xl': 'var(--rf-spacing-section-loose)',    // 6rem — comfortably past a section edge
-	'4xl': 'var(--rf-spacing-section-breathe)',  // 8rem — definitive bleed past any section
+	sm: 'var(--rf-spacing-sm)', // 0.5rem
+	md: 'var(--rf-spacing-md)', // 1.5rem
+	lg: 'var(--rf-spacing-lg)', // 2rem
+	xl: 'var(--rf-spacing-xl)', // 3rem
+	'2xl': 'var(--rf-spacing-section)', // 4rem — matches a tight section's padding-block
+	'3xl': 'var(--rf-spacing-section-loose)', // 6rem — comfortably past a section edge
+	'4xl': 'var(--rf-spacing-section-breathe)', // 8rem — definitive bleed past any section
 };
 
 /** Resolve an offset preset name to its CSS value. SPEC-086 closed the raw-value
@@ -207,7 +229,9 @@ const OFFSET_PRESETS: Record<string, string> = {
 export function resolveOffset(value: string): string {
 	const resolved = OFFSET_PRESETS[value];
 	if (resolved === undefined) {
-		console.warn(`[refrakt] Unknown offset "${value}" — expected one of ${Object.keys(OFFSET_PRESETS).join(', ')}. Falling back to "none".`);
+		console.warn(
+			`[refrakt] Unknown offset "${value}" — expected one of ${Object.keys(OFFSET_PRESETS).join(', ')}. Falling back to "none".`,
+		);
 		return OFFSET_PRESETS.none;
 	}
 	return resolved;
@@ -229,17 +253,17 @@ export function resolveValign(value: string): string {
 
 /** Map spatial place values to CSS justify-self / align-self pairs */
 const PLACE_MAP: Record<string, { x: string; y: string }> = {
-	'left':           { x: 'start',  y: 'center' },
-	'center':         { x: 'center', y: 'center' },
-	'right':          { x: 'end',    y: 'center' },
-	'top':            { x: 'center', y: 'start' },
-	'bottom':         { x: 'center', y: 'end' },
-	'top left':       { x: 'start',  y: 'start' },
-	'top center':     { x: 'center', y: 'start' },
-	'top right':      { x: 'end',    y: 'start' },
-	'bottom left':    { x: 'start',  y: 'end' },
-	'bottom center':  { x: 'center', y: 'end' },
-	'bottom right':   { x: 'end',    y: 'end' },
+	left: { x: 'start', y: 'center' },
+	center: { x: 'center', y: 'center' },
+	right: { x: 'end', y: 'center' },
+	top: { x: 'center', y: 'start' },
+	bottom: { x: 'center', y: 'end' },
+	'top left': { x: 'start', y: 'start' },
+	'top center': { x: 'center', y: 'start' },
+	'top right': { x: 'end', y: 'start' },
+	'bottom left': { x: 'start', y: 'end' },
+	'bottom center': { x: 'center', y: 'end' },
+	'bottom right': { x: 'end', y: 'end' },
 };
 
 /** Parse a spatial place value into CSS justify-self (x) and align-self (y) values. */

@@ -61,7 +61,9 @@ describe('section-role drift', () => {
 		);
 		expect(bodyless.length).toBeGreaterThan(80);
 		const names = new Set(bodyless.map(([n]) => n));
-		expect(lintSectionRoles(allRunes).filter((f) => f.kind === 'missing-body-role' && names.has(f.rune))).toEqual([]);
+		expect(
+			lintSectionRoles(allRunes).filter((f) => f.kind === 'missing-body-role' && names.has(f.rune)),
+		).toEqual([]);
 	});
 
 	it('every exception carries a reason', () => {
@@ -90,8 +92,9 @@ describe('section-role drift', () => {
 		const base: RuneConfig = { block: 'widget', layout: { root: ['body', 'title'] } };
 		expect(lintSectionRoles({ Widget: base }).map((f) => f.slot)).toEqual(['body', 'title']);
 		expect(
-			lintSectionRoles({ Widget: { ...base, sectionRoleExceptions: { body: 'a reason long enough to be real' } } })
-				.map((f) => f.slot),
+			lintSectionRoles({
+				Widget: { ...base, sectionRoleExceptions: { body: 'a reason long enough to be real' } },
+			}).map((f) => f.slot),
 		).toEqual(['title']);
 	});
 

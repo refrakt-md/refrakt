@@ -1,7 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode, SchemaAttribute } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { asNodes, RenderableNodeCursor, extractMediaImage, registerAttributePreset } from '@refrakt-md/runes';
+import {
+	asNodes,
+	RenderableNodeCursor,
+	extractMediaImage,
+	registerAttributePreset,
+} from '@refrakt-md/runes';
 
 /**
  * Shared taxonomy attributes for storytelling runes that participate in
@@ -12,12 +17,17 @@ import { asNodes, RenderableNodeCursor, extractMediaImage, registerAttributePres
  * rather than listing them as each rune's own.
  */
 export const taxonomyAttributes: Record<string, SchemaAttribute> = {
-	tags: { type: String, required: false, description: 'Comma-separated keywords for filtering and cross-referencing.' },
+	tags: {
+		type: String,
+		required: false,
+		description: 'Comma-separated keywords for filtering and cross-referencing.',
+	},
 };
 
 registerAttributePreset(taxonomyAttributes, {
 	name: 'storytelling taxonomy',
-	description: 'Shared taxonomy attributes (tags) used by storytelling entities for filtering and cross-referencing.',
+	description:
+		'Shared taxonomy attributes (tags) used by storytelling entities for filtering and cross-referencing.',
 });
 
 /**
@@ -48,7 +58,9 @@ export function extractScene(
 	let extraDescription: RenderableTreeNode[] = [];
 
 	if (sceneImgTag) {
-		sceneDiv = new RenderableNodeCursor([sceneImgTag]).wrap('div') as RenderableNodeCursor<Markdoc.Tag>;
+		sceneDiv = new RenderableNodeCursor([sceneImgTag]).wrap(
+			'div',
+		) as RenderableNodeCursor<Markdoc.Tag>;
 	} else if (sceneRendered.count() > 0) {
 		// First paragraph was text, not an image — include as description
 		extraDescription = sceneRendered.toArray();
@@ -88,19 +100,22 @@ export function buildStoryContent(
 		Markdoc.transform(descAstNodes, config) as RenderableTreeNode[],
 	);
 
-	const sections = sectionNodes.tag('div').typeof(sectionTypeName) as RenderableNodeCursor<Markdoc.Tag>;
+	const sections = sectionNodes
+		.tag('div')
+		.typeof(sectionTypeName) as RenderableNodeCursor<Markdoc.Tag>;
 	const hasSections = sections.count() > 0;
 
 	// Body prose: lead description + (when there are no structured sections) any
 	// leftover authored body nodes.
 	const bodyNodes: RenderableTreeNode[] = [...extraDescription, ...descRendered.toArray()];
 	if (!hasSections) bodyNodes.push(...sectionNodes.toArray());
-	const bodyDiv = bodyNodes.length > 0
-		? new RenderableNodeCursor(bodyNodes).wrap('div') as RenderableNodeCursor<Markdoc.Tag>
-		: undefined;
+	const bodyDiv =
+		bodyNodes.length > 0
+			? (new RenderableNodeCursor(bodyNodes).wrap('div') as RenderableNodeCursor<Markdoc.Tag>)
+			: undefined;
 
 	const sectionsContainer = hasSections
-		? sections.wrap('div') as RenderableNodeCursor<Markdoc.Tag>
+		? (sections.wrap('div') as RenderableNodeCursor<Markdoc.Tag>)
 		: undefined;
 
 	return { bodyDiv, sectionsContainer, sections, hasSections };

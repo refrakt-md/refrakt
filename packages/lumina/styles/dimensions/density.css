@@ -1,103 +1,107 @@
 @layer skin {
-/* ─── Density Dimension ─────────────────────────────────────────────────
+	/* ─── Density Dimension ─────────────────────────────────────────────────
  * Controls spacing, visibility, and detail level across all runes.
  * Three levels: full (dedicated page), compact (grid/card), minimal (list).
  *
  * Sets --rune-padding which surfaces consume for container padding.
  * ────────────────────────────────────────────────────────────────────── */
 
-/* ─── Full: all content visible, generous spacing ─────────────────── */
+	/* ─── Full: all content visible, generous spacing ─────────────────── */
 
-[data-density="full"] {
-	--rune-padding: var(--rf-spacing-md);
-	--rf-title-size: var(--rf-text-2xl);
-}
+	[data-density="full"] {
+		--rune-padding: var(--rf-spacing-md);
+		--rf-title-size: var(--rf-text-2xl);
+	}
 
-/* ─── Compact: truncated descriptions, tight spacing ──────────────── */
+	/* ─── Compact: truncated descriptions, tight spacing ──────────────── */
 
-[data-density="compact"] {
-	--rune-padding: var(--rf-spacing-sm);
-	--rf-title-size: var(--rf-text-xl);
-}
+	[data-density="compact"] {
+		--rune-padding: var(--rf-spacing-sm);
+		--rf-title-size: var(--rf-text-xl);
+	}
 
-[data-density="compact"] [data-section="description"] {
-	display: -webkit-box;
-	-webkit-line-clamp: 2;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
-}
+	[data-density="compact"] [data-section="description"] {
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
 
-[data-density="compact"] [data-meta-rank="secondary"] {
-	display: none;
-}
+	[data-density="compact"] [data-meta-rank="secondary"] {
+		display: none;
+	}
 
-/* ─── Minimal: title and primary metadata only ────────────────────── */
+	/* ─── Minimal: title and primary metadata only ────────────────────── */
 
-[data-density="minimal"] {
-	--rune-padding: var(--rf-spacing-xs);
-	--rf-title-size: var(--rf-text);
-}
+	[data-density="minimal"] {
+		--rune-padding: var(--rf-spacing-xs);
+		--rf-title-size: var(--rf-text);
+	}
 
-/* Every rune root clears the prominence override so an ancestor's `prominence=`
+	/* Every rune root clears the prominence override so an ancestor's `prominence=`
  * cannot leak into a nested rune's title — the same protection the density
  * declarations above already give --rf-title-size. Declared here because this
  * file is imported before dimensions/surfaces.css, so a rune carrying both
  * `data-density` and `data-prominence` still keeps its own. */
-[data-density] {
-	--rf-prominence-size: initial;
-}
+	[data-density] {
+		--rf-prominence-size: initial;
+	}
 
-[data-density="minimal"] [data-section="description"] {
-	display: none;
-}
+	[data-density="minimal"] [data-section="description"] {
+		display: none;
+	}
 
-[data-density="minimal"] [data-section="body"] {
-	display: none;
-}
+	[data-density="minimal"] [data-section="body"] {
+		display: none;
+	}
 
-/* Most runes put the title beside the body; card puts its leading heading
+	/* Most runes put the title beside the body; card puts its leading heading
  * *inside* the body slot. The blanket hide above would take the title with it
  * and leave an empty surface, so where a title is nested in the body, keep the
  * body box and hide only its other children — "title and primary metadata only"
  * then means what it says on those runes too. (SPEC-125 Phase 1: card only
  * gained a `body` role in v0.31.0, so this case could not arise before.) */
-[data-density="minimal"] [data-section="body"]:has(> [data-name="title"]) {
-	display: revert;
-}
+	[data-density="minimal"] [data-section="body"]:has(> [data-name="title"]) {
+		display: revert;
+	}
 
-[data-density="minimal"] [data-section="body"]:has(> [data-name="title"]) > :not([data-name="title"]) {
-	display: none;
-}
+	[data-density="minimal"]
+		[data-section="body"]:has(> [data-name="title"])
+		> :not([data-name="title"]) {
+		display: none;
+	}
 
-[data-density="minimal"] [data-section="footer"] {
-	display: none;
-}
+	[data-density="minimal"] [data-section="footer"] {
+		display: none;
+	}
 
-[data-density="minimal"] [data-meta-rank="secondary"] {
-	display: none;
-}
+	[data-density="minimal"] [data-meta-rank="secondary"] {
+		display: none;
+	}
 
-/* ─── Nested density scoping ─────────────────────────────────────── *
+	/* ─── Nested density scoping ─────────────────────────────────────── *
  * Density rules use descendant selectors that leak into nested runes
  * with their own density. These resets ensure each rune's density is
  * self-contained — e.g. a full-density recipe inside a compact-density
  * preview should not have its description truncated.
  * ──────────────────────────────────────────────────────────────────── */
 
-[data-density="compact"] [data-density="full"] [data-section="description"] {
-	display: block;
-	-webkit-line-clamp: unset;
-	-webkit-box-orient: initial;
-	overflow: visible;
-}
+	[data-density="compact"] [data-density="full"] [data-section="description"] {
+		display: block;
+		-webkit-line-clamp: unset;
+		-webkit-box-orient: initial;
+		overflow: visible;
+	}
 
-[data-density="compact"] [data-density="full"] [data-meta-rank="secondary"],
-[data-density="minimal"] [data-density="full"] [data-section="description"],
-[data-density="minimal"] [data-density="full"] [data-section="body"],
-[data-density="minimal"] [data-density="full"] [data-section="footer"],
-[data-density="minimal"] [data-density="full"] [data-meta-rank="secondary"],
-[data-density="minimal"] [data-density="full"] [data-section="body"]:has(> [data-name="title"]) > :not([data-name="title"]) {
-	display: revert;
-}
-
+	[data-density="compact"] [data-density="full"] [data-meta-rank="secondary"],
+	[data-density="minimal"] [data-density="full"] [data-section="description"],
+	[data-density="minimal"] [data-density="full"] [data-section="body"],
+	[data-density="minimal"] [data-density="full"] [data-section="footer"],
+	[data-density="minimal"] [data-density="full"] [data-meta-rank="secondary"],
+	[data-density="minimal"]
+		[data-density="full"]
+		[data-section="body"]:has(> [data-name="title"])
+		> :not([data-name="title"]) {
+		display: revert;
+	}
 }

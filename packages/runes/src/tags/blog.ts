@@ -12,17 +12,44 @@ const layoutOptions = ['list', 'grid', 'compact'] as const;
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
 // what a section *is* (ADR-028).
-export const blogSections = { preamble: 'preamble', headline: 'title', blurb: 'description', content: 'body' } as const;
+export const blogSections = {
+	preamble: 'preamble',
+	headline: 'title',
+	blurb: 'description',
+	content: 'body',
+} as const;
 
 export const blog = createContentModelSchema({
 	sections: blogSections,
 	provides: ['prose'],
 	attributes: {
-		folder: { type: String, required: true, description: 'Content folder path to list blog posts from (e.g. "/blog")' },
-		sort: { type: String, required: false, default: 'date-desc', matches: sortOptions.slice(), description: 'Sort order: date-desc, date-asc, title-asc, title-desc' },
-		filter: { type: String, required: false, default: '', description: 'Filter expression to match against frontmatter fields (e.g. "tag:javascript" or "draft:false")' },
+		folder: {
+			type: String,
+			required: true,
+			description: 'Content folder path to list blog posts from (e.g. "/blog")',
+		},
+		sort: {
+			type: String,
+			required: false,
+			default: 'date-desc',
+			matches: sortOptions.slice(),
+			description: 'Sort order: date-desc, date-asc, title-asc, title-desc',
+		},
+		filter: {
+			type: String,
+			required: false,
+			default: '',
+			description:
+				'Filter expression to match against frontmatter fields (e.g. "tag:javascript" or "draft:false")',
+		},
 		limit: { type: Number, required: false, description: 'Maximum number of posts to display' },
-		layout: { type: String, required: false, default: 'list', matches: layoutOptions.slice(), description: 'Display layout: list, grid, or compact' },
+		layout: {
+			type: String,
+			required: false,
+			default: 'list',
+			matches: layoutOptions.slice(),
+			description: 'Display layout: list, grid, or compact',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
@@ -32,10 +59,7 @@ export const blog = createContentModelSchema({
 		],
 	},
 	transform(resolved, attrs, config) {
-		const headerAstNodes = [
-			resolved.headline,
-			resolved.blurb,
-		].filter(Boolean) as Node[];
+		const headerAstNodes = [resolved.headline, resolved.blurb].filter(Boolean) as Node[];
 		const header = new RenderableNodeCursor(
 			Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[],
 		);
@@ -63,7 +87,9 @@ export const blog = createContentModelSchema({
 			postList,
 		];
 
-		return createComponentRenderable({ rune: 'blog', schemaOrgType: 'Blog',
+		return createComponentRenderable({
+			rune: 'blog',
+			schemaOrgType: 'Blog',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

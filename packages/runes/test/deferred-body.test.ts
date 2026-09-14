@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import Markdoc from '@markdoc/markdoc';
 import { createContentModelSchema } from '../src/lib/index.js';
-import { captureDeferredBodies, readDeferredBody, transformDeferredTemplate, DEFERRED_BODY_ATTR } from '../src/deferred-body.js';
+import {
+	captureDeferredBodies,
+	readDeferredBody,
+	transformDeferredTemplate,
+	DEFERRED_BODY_ATTR,
+} from '../src/deferred-body.js';
 
 const { Tag } = Markdoc;
 
@@ -55,7 +60,9 @@ describe('deferred-body capture', () => {
 			{ id: 'P-1', data: { title: 'Widget', price: '$20' } },
 			{ id: 'P-2', data: { title: 'Gadget', price: '$35' } },
 		];
-		const outs = entities.map((item) => JSON.stringify(transformDeferredTemplate(stashed, {}, { item })));
+		const outs = entities.map((item) =>
+			JSON.stringify(transformDeferredTemplate(stashed, {}, { item })),
+		);
 
 		expect(outs[0]).toContain('Widget');
 		expect(outs[0]).not.toContain('Gadget');

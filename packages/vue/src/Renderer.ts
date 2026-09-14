@@ -3,8 +3,20 @@ import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 import { isTag, extractComponentInterface, renderToHtml } from '@refrakt-md/transform';
 
 const VOID_ELEMENTS = new Set([
-	'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
-	'link', 'meta', 'param', 'source', 'track', 'wbr',
+	'area',
+	'base',
+	'br',
+	'col',
+	'embed',
+	'hr',
+	'img',
+	'input',
+	'link',
+	'meta',
+	'param',
+	'source',
+	'track',
+	'wbr',
 ]);
 
 /**
@@ -35,7 +47,7 @@ function renderNode(
 	if (typeof node === 'number') return String(node);
 
 	if (Array.isArray(node)) {
-		const children = node.map(child => renderNode(child, components, elements)).filter(Boolean);
+		const children = node.map((child) => renderNode(child, components, elements)).filter(Boolean);
 		return children.length === 1 ? children[0]! : h('template', null, children);
 	}
 
@@ -51,14 +63,14 @@ function renderNode(
 		// Build named slots from refs (pre-rendered HTML)
 		const slots: Record<string, () => VNode> = {};
 		for (const [name, tags] of Object.entries(iface.refs)) {
-			const html = tags.map(t => renderToHtml(t)).join('');
+			const html = tags.map((t) => renderToHtml(t)).join('');
 			slots[name] = () => h('div', { 'data-ref': name, innerHTML: html });
 		}
 
 		// Default slot from anonymous children
 		if (iface.children.length > 0) {
 			const childVnodes = iface.children
-				.map(child => renderNode(child, components, elements))
+				.map((child) => renderNode(child, components, elements))
 				.filter(Boolean) as VNode[];
 			slots.default = () => h('template', null, childVnodes);
 		}
@@ -71,7 +83,7 @@ function renderNode(
 
 	if (ElementOverride) {
 		const childVnodes = node.children
-			.map(child => renderNode(child, components, elements))
+			.map((child) => renderNode(child, components, elements))
 			.filter(Boolean) as VNode[];
 		return h(ElementOverride, { tag: node }, { default: () => childVnodes });
 	}
@@ -84,7 +96,7 @@ function renderNode(
 	// Null-named tags (Markdoc document root) — render children without wrapper
 	if (!node.name) {
 		const childVnodes = node.children
-			.map(child => renderNode(child, components, elements))
+			.map((child) => renderNode(child, components, elements))
 			.filter(Boolean) as VNode[];
 		return h('template', null, childVnodes);
 	}
@@ -97,16 +109,18 @@ function renderNode(
 	// Raw HTML content (code blocks, raw-html attribute)
 	const isRaw = node.attributes?.['data-codeblock'] || node.attributes?.['data-raw-html'];
 	if (isRaw) {
-		const html = node.children.map(child => {
-			if (typeof child === 'string') return child;
-			return renderToHtml(child);
-		}).join('');
+		const html = node.children
+			.map((child) => {
+				if (typeof child === 'string') return child;
+				return renderToHtml(child);
+			})
+			.join('');
 		return h(node.name, { ...toVueProps(node.attributes), innerHTML: html });
 	}
 
 	// Regular HTML element — recursively render children
 	const childVnodes = node.children
-		.map(child => renderNode(child, components, elements))
+		.map((child) => renderNode(child, components, elements))
 		.filter(Boolean) as VNode[];
 	return h(node.name, toVueProps(node.attributes), childVnodes);
 }

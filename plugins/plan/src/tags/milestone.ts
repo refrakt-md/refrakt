@@ -1,7 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	RenderableNodeCursor,
+} from '@refrakt-md/runes';
 import { VALID_STATUS } from '../commands/enums.js';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
@@ -14,10 +19,27 @@ export const milestone = createContentModelSchema({
 	provides: ['prose'],
 	attributes: {
 		name: { type: String, required: true, description: 'Milestone name (e.g., "v0.5.0").' },
-		target: { type: String, required: false, description: 'Target date (aspirational, not a commitment).' },
-		status: { type: String, required: false, matches: [...VALID_STATUS.milestone], description: 'Current status: planning, active, or complete.' },
-		created: { type: String, required: false, description: 'Creation date (ISO 8601). Defaults to file creation date from git.' },
-		modified: { type: String, required: false, description: 'Last modified date (ISO 8601). Defaults to file modification date from git.' },
+		target: {
+			type: String,
+			required: false,
+			description: 'Target date (aspirational, not a commitment).',
+		},
+		status: {
+			type: String,
+			required: false,
+			matches: [...VALID_STATUS.milestone],
+			description: 'Current status: planning, active, or complete.',
+		},
+		created: {
+			type: String,
+			required: false,
+			description: 'Creation date (ISO 8601). Defaults to file creation date from git.',
+		},
+		modified: {
+			type: String,
+			required: false,
+			description: 'Last modified date (ISO 8601). Defaults to file modification date from git.',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
@@ -60,7 +82,8 @@ export const milestone = createContentModelSchema({
 		}
 		const bodyDiv = new Tag('div', {}, contentChildren);
 
-		return createComponentRenderable({ rune: 'milestone',
+		return createComponentRenderable({
+			rune: 'milestone',
 			tag: 'section',
 			properties: {
 				name: nameMeta,
@@ -74,7 +97,16 @@ export const milestone = createContentModelSchema({
 				blurb,
 				body: bodyDiv,
 			},
-			children: [nameMeta, targetMeta, statusMeta, createdMeta, modifiedMeta, ...(title ? [title.next()] : []), ...(blurb ? [blurb] : []), bodyDiv],
+			children: [
+				nameMeta,
+				targetMeta,
+				statusMeta,
+				createdMeta,
+				modifiedMeta,
+				...(title ? [title.next()] : []),
+				...(blurb ? [blurb] : []),
+				bodyDiv,
+			],
 		});
 	},
 });

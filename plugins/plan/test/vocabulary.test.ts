@@ -27,16 +27,21 @@ describe('vocabulary — derived lifecycle sets (SPEC-117)', () => {
 	it('terminal/achieving/actionable sets only contain canonical statuses', () => {
 		for (const type of RUNE_TYPES) {
 			const valid = new Set(VALID_STATUS[type]);
-			for (const s of TERMINAL_STATUSES[type]) expect(valid.has(s), `${type} terminal "${s}"`).toBe(true);
-			for (const s of ACHIEVING_STATUSES[type]) expect(valid.has(s), `${type} achieving "${s}"`).toBe(true);
-			for (const s of ACTIONABLE_STATUSES[type]) expect(valid.has(s), `${type} actionable "${s}"`).toBe(true);
+			for (const s of TERMINAL_STATUSES[type])
+				expect(valid.has(s), `${type} terminal "${s}"`).toBe(true);
+			for (const s of ACHIEVING_STATUSES[type])
+				expect(valid.has(s), `${type} achieving "${s}"`).toBe(true);
+			for (const s of ACTIONABLE_STATUSES[type])
+				expect(valid.has(s), `${type} actionable "${s}"`).toBe(true);
 		}
 	});
 
 	it('every achieving status is also terminal', () => {
 		for (const type of RUNE_TYPES) {
 			for (const s of ACHIEVING_STATUSES[type]) {
-				expect(TERMINAL_STATUSES[type].has(s), `${type} achieving "${s}" must be terminal`).toBe(true);
+				expect(TERMINAL_STATUSES[type].has(s), `${type} achieving "${s}" must be terminal`).toBe(
+					true,
+				);
 			}
 		}
 	});
@@ -70,13 +75,20 @@ describe('vocabulary — derived lifecycle sets (SPEC-117)', () => {
 describe('vocabulary — exhaustiveness against config + orderings', () => {
 	it('every canonical status has a sentimentMap entry', () => {
 		const configByType: Record<PlanRuneType, string> = {
-			spec: 'Spec', work: 'Work', bug: 'Bug', decision: 'Decision', milestone: 'Milestone',
+			spec: 'Spec',
+			work: 'Work',
+			bug: 'Bug',
+			decision: 'Decision',
+			milestone: 'Milestone',
 		};
 		for (const type of RUNE_TYPES) {
 			const runeConfig = config[configByType[type]] as any;
 			const sentimentMap = runeConfig.metaFields.status.sentimentMap as Record<string, string>;
 			for (const status of VALID_STATUS[type]) {
-				expect(sentimentMap[status], `${type} status "${status}" missing sentimentMap entry`).toBeDefined();
+				expect(
+					sentimentMap[status],
+					`${type} status "${status}" missing sentimentMap entry`,
+				).toBeDefined();
 			}
 		}
 	});
@@ -86,10 +98,16 @@ describe('vocabulary — exhaustiveness against config + orderings', () => {
 		// (see src/index.ts theme.orderings). Every canonical work/bug status must
 		// appear, or a status would land in an unsorted group.
 		for (const status of VALID_STATUS.work) {
-			expect(WORK_STATUS_DISPLAY_ORDER.includes(status), `work status "${status}" missing from WORK_STATUS_DISPLAY_ORDER`).toBe(true);
+			expect(
+				WORK_STATUS_DISPLAY_ORDER.includes(status),
+				`work status "${status}" missing from WORK_STATUS_DISPLAY_ORDER`,
+			).toBe(true);
 		}
 		for (const status of VALID_STATUS.bug) {
-			expect(BUG_STATUS_DISPLAY_ORDER.includes(status), `bug status "${status}" missing from BUG_STATUS_DISPLAY_ORDER`).toBe(true);
+			expect(
+				BUG_STATUS_DISPLAY_ORDER.includes(status),
+				`bug status "${status}" missing from BUG_STATUS_DISPLAY_ORDER`,
+			).toBe(true);
 		}
 	});
 });
@@ -109,17 +127,29 @@ describe('terminal work states (WORK-493)', () => {
 
 	it('validate accepts cancelled and superseded work statuses', () => {
 		writeMd('work/a.md', '{% work id="WORK-001" status="cancelled" %}\n# A\n{% /work %}');
-		writeMd('work/b.md', '{% work id="WORK-002" status="superseded" supersedes="WORK-001" %}\n# B\n{% /work %}');
+		writeMd(
+			'work/b.md',
+			'{% work id="WORK-002" status="superseded" supersedes="WORK-001" %}\n# B\n{% /work %}',
+		);
 		const result = runValidate({ dir: TMP });
-		expect(result.issues.filter(i => i.type === 'invalid-status')).toHaveLength(0);
+		expect(result.issues.filter((i) => i.type === 'invalid-status')).toHaveLength(0);
 	});
 
 	it('cancelled / superseded items are excluded from plan next', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="ready" priority="high" %}\n# Ready\n{% /work %}');
-		writeMd('work/b.md', '{% work id="WORK-002" status="cancelled" priority="high" %}\n# Cancelled\n{% /work %}');
-		writeMd('work/c.md', '{% work id="WORK-003" status="superseded" priority="high" supersedes="WORK-001" %}\n# Superseded\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="ready" priority="high" %}\n# Ready\n{% /work %}',
+		);
+		writeMd(
+			'work/b.md',
+			'{% work id="WORK-002" status="cancelled" priority="high" %}\n# Cancelled\n{% /work %}',
+		);
+		writeMd(
+			'work/c.md',
+			'{% work id="WORK-003" status="superseded" priority="high" supersedes="WORK-001" %}\n# Superseded\n{% /work %}',
+		);
 		const result = runNext({ dir: TMP, count: 10 });
-		const ids = result.items.map(i => i.id);
+		const ids = result.items.map((i) => i.id);
 		expect(ids).toContain('WORK-001');
 		expect(ids).not.toContain('WORK-002');
 		expect(ids).not.toContain('WORK-003');
@@ -128,40 +158,55 @@ describe('terminal work states (WORK-493)', () => {
 	it('warns on a superseded work item with no supersedes target', () => {
 		writeMd('work/a.md', '{% work id="WORK-001" status="superseded" %}\n# A\n{% /work %}');
 		const result = runValidate({ dir: TMP });
-		const warn = result.issues.filter(i => i.type === 'superseded-without-target');
+		const warn = result.issues.filter((i) => i.type === 'superseded-without-target');
 		expect(warn).toHaveLength(1);
 		expect(warn[0].severity).toBe('warning');
 	});
 
 	it('does not warn about supersedes when the target is present and known', () => {
 		writeMd('work/a.md', '{% work id="WORK-001" status="done" %}\n# A\n{% /work %}');
-		writeMd('work/b.md', '{% work id="WORK-002" status="superseded" supersedes="WORK-001" %}\n# B\n{% /work %}');
+		writeMd(
+			'work/b.md',
+			'{% work id="WORK-002" status="superseded" supersedes="WORK-001" %}\n# B\n{% /work %}',
+		);
 		const result = runValidate({ dir: TMP });
-		expect(result.issues.filter(i => i.type === 'superseded-without-target')).toHaveLength(0);
-		expect(result.issues.filter(i => i.type === 'broken-supersedes')).toHaveLength(0);
+		expect(result.issues.filter((i) => i.type === 'superseded-without-target')).toHaveLength(0);
+		expect(result.issues.filter((i) => i.type === 'broken-supersedes')).toHaveLength(0);
 	});
 
 	it('warns when supersedes points at an unknown entity', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="superseded" supersedes="WORK-999" %}\n# A\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="superseded" supersedes="WORK-999" %}\n# A\n{% /work %}',
+		);
 		const result = runValidate({ dir: TMP });
-		const warn = result.issues.filter(i => i.type === 'broken-supersedes');
+		const warn = result.issues.filter((i) => i.type === 'broken-supersedes');
 		expect(warn).toHaveLength(1);
 		expect(warn[0].target).toBe('WORK-999');
 	});
 
 	it('allows a ## Resolution on cancelled / superseded work (no resolution-not-done warning)', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="cancelled" %}\n# A\n\n## Resolution\n\nCompleted: 2026-01-01\n\nAbandoned in favour of a simpler approach.\n{% /work %}');
-		writeMd('work/b.md', '{% work id="WORK-002" status="superseded" supersedes="WORK-003" %}\n# B\n\n## Resolution\n\nCompleted: 2026-01-01\n\nReplaced by WORK-003.\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="cancelled" %}\n# A\n\n## Resolution\n\nCompleted: 2026-01-01\n\nAbandoned in favour of a simpler approach.\n{% /work %}',
+		);
+		writeMd(
+			'work/b.md',
+			'{% work id="WORK-002" status="superseded" supersedes="WORK-003" %}\n# B\n\n## Resolution\n\nCompleted: 2026-01-01\n\nReplaced by WORK-003.\n{% /work %}',
+		);
 		writeMd('work/c.md', '{% work id="WORK-003" status="ready" %}\n# C\n{% /work %}');
 		const result = runValidate({ dir: TMP });
-		const warns = result.issues.filter(i => i.type === 'resolution-not-done');
+		const warns = result.issues.filter((i) => i.type === 'resolution-not-done');
 		expect(warns).toHaveLength(0);
 	});
 
 	it('still warns about a ## Resolution on a non-terminal item', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="in-progress" %}\n# A\n\n## Resolution\n\nCompleted: 2026-01-01\n\nDone-ish.\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="in-progress" %}\n# A\n\n## Resolution\n\nCompleted: 2026-01-01\n\nDone-ish.\n{% /work %}',
+		);
 		const result = runValidate({ dir: TMP });
-		expect(result.issues.filter(i => i.type === 'resolution-not-done')).toHaveLength(1);
+		expect(result.issues.filter((i) => i.type === 'resolution-not-done')).toHaveLength(1);
 	});
 });
 

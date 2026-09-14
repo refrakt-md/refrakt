@@ -9,11 +9,11 @@ describe('cast tag', () => {
 - Carol Williams - Designer
 {% /cast %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'cast');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'cast');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('section');
 
-		const members = findAllTags(tag!, t => t.attributes['data-rune'] === 'cast-member');
+		const members = findAllTags(tag!, (t) => t.attributes['data-rune'] === 'cast-member');
 		expect(members.length).toBe(3);
 	});
 
@@ -22,15 +22,21 @@ describe('cast tag', () => {
 - Sarah Chen - Head of Content
 {% /cast %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'cast');
-		const member = findTag(tag!, t => t.attributes['data-rune'] === 'cast-member');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'cast');
+		const member = findTag(tag!, (t) => t.attributes['data-rune'] === 'cast-member');
 		expect(member).toBeDefined();
 
-		const nameTag = findTag(member!, t => t.name === 'span' && t.attributes['data-name'] === 'name');
+		const nameTag = findTag(
+			member!,
+			(t) => t.name === 'span' && t.attributes['data-name'] === 'name',
+		);
 		expect(nameTag).toBeDefined();
 		expect(nameTag!.children[0]).toBe('Sarah Chen');
 
-		const roleTag = findTag(member!, t => t.name === 'span' && t.attributes['data-name'] === 'role');
+		const roleTag = findTag(
+			member!,
+			(t) => t.name === 'span' && t.attributes['data-name'] === 'role',
+		);
 		expect(roleTag).toBeDefined();
 		expect(roleTag!.children[0]).toBe('Head of Content');
 	});
@@ -40,7 +46,7 @@ describe('cast tag', () => {
 - Person One - Role
 {% /cast %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'cast');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'cast');
 		expect(fields(tag).layout).toBe('list');
 	});
 
@@ -49,7 +55,7 @@ describe('cast tag', () => {
 - Dev One - Engineer
 {% /team %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'cast');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'cast');
 		expect(tag).toBeDefined();
 	});
 });

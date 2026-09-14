@@ -99,9 +99,10 @@ export function navMenubarBehavior(el: HTMLElement): CleanupFn {
 					const order = Array.from(triggerByGroup.keys());
 					const idx = order.indexOf(group);
 					if (idx === -1) break;
-					const next = e.key === 'ArrowRight'
-						? order[(idx + 1) % order.length]
-						: order[(idx - 1 + order.length) % order.length];
+					const next =
+						e.key === 'ArrowRight'
+							? order[(idx + 1) % order.length]
+							: order[(idx - 1 + order.length) % order.length];
 					const nextTrigger = triggerByGroup.get(next);
 					nextTrigger?.focus();
 					if (group.getAttribute('data-open') === 'true') openGroup(next);

@@ -35,7 +35,8 @@ export const badge: Schema = {
 			type: String,
 			required: false,
 			matches: typeValues.slice(),
-			description: 'Meta-type dimension: status, category, quantity, temporal, tag, id. Default: tag.',
+			description:
+				'Meta-type dimension: status, category, quantity, temporal, tag, id. Default: tag.',
 		},
 	},
 	transform(node: Node, config: Config) {

@@ -1,63 +1,62 @@
 @layer skin {
-/* Gallery — skin. The grid/carousel/masonry layouts, item/lightbox/nav positioning,
+	/* Gallery — skin. The grid/carousel/masonry layouts, item/lightbox/nav positioning,
  * and responsive columns live in @refrakt-md/skeleton (styles/runes/gallery.css). */
-.rf-gallery {
-	margin: 0;
-	--rf-gallery-edge: 0.5rem;
-	--rf-gallery-gap: 0.5rem;
-	padding: var(--rf-gallery-edge);
-}
-.rf-gallery__items {
-	gap: var(--rf-gallery-gap);
-}
-.rf-gallery__item {
-	border-radius: var(--rf-radius-md);
-	margin: 0;
-}
-.rf-gallery__item figcaption {
-	padding: 0.5rem 0.75rem;
-	background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
-	color: white;
-	font-size: var(--rf-text-sm);
-}
-.rf-gallery > figcaption {
-	margin-top: 0.625rem;
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-muted);
-	text-align: center;
-	font-style: italic;
-}
-/* Carousel nav chrome is now the shared `.rf-carousel__nav` (styles/runes/carousel.css). */
-.rf-gallery[data-layout="masonry"] .rf-gallery__items {
-	column-gap: var(--rf-gallery-gap);
-}
-.rf-gallery[data-layout="masonry"] .rf-gallery__item {
-	margin-bottom: var(--rf-gallery-gap);
-}
-.rf-gallery[data-lightbox="true"] .rf-gallery__item {
-	cursor: zoom-in;
-}
-.rf-gallery__lightbox {
-	background: rgba(0, 0, 0, 0.9);
-}
-.rf-gallery__lightbox img {
-	border-radius: var(--rf-radius-md);
-}
-.rf-gallery__lightbox-close {
-	border-radius: 50%;
-	border: none;
-	background: rgba(255, 255, 255, 0.15);
-	color: white;
-	font-size: var(--rf-text-2xl);
-	cursor: pointer;
-}
-.rf-gallery__lightbox-nav {
-	border-radius: 50%;
-	border: none;
-	background: rgba(255, 255, 255, 0.15);
-	color: white;
-	font-size: var(--rf-text-2xl);
-	cursor: pointer;
-}
-
+	.rf-gallery {
+		margin: 0;
+		--rf-gallery-edge: 0.5rem;
+		--rf-gallery-gap: 0.5rem;
+		padding: var(--rf-gallery-edge);
+	}
+	.rf-gallery__items {
+		gap: var(--rf-gallery-gap);
+	}
+	.rf-gallery__item {
+		border-radius: var(--rf-radius-md);
+		margin: 0;
+	}
+	.rf-gallery__item figcaption {
+		padding: 0.5rem 0.75rem;
+		background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+		color: white;
+		font-size: var(--rf-text-sm);
+	}
+	.rf-gallery > figcaption {
+		margin-top: 0.625rem;
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+		text-align: center;
+		font-style: italic;
+	}
+	/* Carousel nav chrome is now the shared `.rf-carousel__nav` (styles/runes/carousel.css). */
+	.rf-gallery[data-layout="masonry"] .rf-gallery__items {
+		column-gap: var(--rf-gallery-gap);
+	}
+	.rf-gallery[data-layout="masonry"] .rf-gallery__item {
+		margin-bottom: var(--rf-gallery-gap);
+	}
+	.rf-gallery[data-lightbox="true"] .rf-gallery__item {
+		cursor: zoom-in;
+	}
+	.rf-gallery__lightbox {
+		background: rgba(0, 0, 0, 0.9);
+	}
+	.rf-gallery__lightbox img {
+		border-radius: var(--rf-radius-md);
+	}
+	.rf-gallery__lightbox-close {
+		border-radius: 50%;
+		border: none;
+		background: rgba(255, 255, 255, 0.15);
+		color: white;
+		font-size: var(--rf-text-2xl);
+		cursor: pointer;
+	}
+	.rf-gallery__lightbox-nav {
+		border-radius: 50%;
+		border: none;
+		background: rgba(255, 255, 255, 0.15);
+		color: white;
+		font-size: var(--rf-text-2xl);
+		cursor: pointer;
+	}
 }

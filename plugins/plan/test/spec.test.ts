@@ -11,13 +11,14 @@ describe('spec tag', () => {
 The system uses JWT tokens.
 {% /spec %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'spec');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'spec');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 	});
 
 	it('should pass id, status, version as meta', () => {
-		const result = parse(`{% spec id="SPEC-008" status="draft" version="1.2" supersedes="SPEC-003" tags="tint,theming" %}
+		const result =
+			parse(`{% spec id="SPEC-008" status="draft" version="1.2" supersedes="SPEC-003" tags="tint,theming" %}
 # Tint Rune
 
 > Section-level colour override.
@@ -25,7 +26,7 @@ The system uses JWT tokens.
 Details here.
 {% /spec %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'spec');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'spec');
 		expect(fields(tag).id).toBe('SPEC-008');
 		expect(fields(tag).status).toBe('draft');
 		expect(fields(tag).version).toBe('1.2');
@@ -40,7 +41,7 @@ Details here.
 Some content.
 {% /spec %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'spec');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'spec');
 		expect(tag).toBeDefined();
 
 		expect(fields(tag).status).toBe('draft');

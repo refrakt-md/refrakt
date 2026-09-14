@@ -1,4 +1,8 @@
-import type { BaseComponentProps, PageSectionSlots, SplitLayoutProperties } from '@refrakt-md/types';
+import type {
+	BaseComponentProps,
+	PageSectionSlots,
+	SplitLayoutProperties,
+} from '@refrakt-md/types';
 
 export interface TrackProps<R = unknown> extends BaseComponentProps<R> {
 	name?: string;
@@ -14,7 +18,10 @@ export interface AudioProps<R = unknown> extends BaseComponentProps<R> {
 	waveform?: string;
 }
 
-export interface PlaylistProps<R = unknown> extends BaseComponentProps<R>, PageSectionSlots<R>, SplitLayoutProperties {
+export interface PlaylistProps<R = unknown>
+	extends BaseComponentProps<R>,
+		PageSectionSlots<R>,
+		SplitLayoutProperties {
 	type?: string;
 	artist?: string;
 	id?: string;

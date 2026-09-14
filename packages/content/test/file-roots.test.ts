@@ -34,12 +34,12 @@ describe('resolveUserFileRoots', () => {
 	});
 
 	it('rejects non-string / empty-string path values', () => {
-		expect(() =>
-			resolveUserFileRoots({ shared: '' as unknown as string }, '/x'),
-		).toThrow(/non-empty string/);
-		expect(() =>
-			resolveUserFileRoots({ shared: 42 as unknown as string }, '/x'),
-		).toThrow(/non-empty string/);
+		expect(() => resolveUserFileRoots({ shared: '' as unknown as string }, '/x')).toThrow(
+			/non-empty string/,
+		);
+		expect(() => resolveUserFileRoots({ shared: 42 as unknown as string }, '/x')).toThrow(
+			/non-empty string/,
+		);
 	});
 });
 
@@ -58,10 +58,7 @@ describe('mergeFileRoots', () => {
 	});
 
 	it('produces no warning when there is no collision', () => {
-		const result = mergeFileRoots(
-			{ shared: '/user/_shared' },
-			{ plan: '/plugin/plan' },
-		);
+		const result = mergeFileRoots({ shared: '/user/_shared' }, { plan: '/plugin/plan' });
 		expect(result.warnings).toHaveLength(0);
 		expect(result.roots).toEqual({
 			shared: '/user/_shared',
@@ -70,10 +67,7 @@ describe('mergeFileRoots', () => {
 	});
 
 	it('produces no warning when user and plugin agree on the path', () => {
-		const result = mergeFileRoots(
-			{ shared: '/agreed' },
-			{ shared: '/agreed' },
-		);
+		const result = mergeFileRoots({ shared: '/agreed' }, { shared: '/agreed' });
 		expect(result.warnings).toHaveLength(0);
 	});
 
@@ -135,9 +129,9 @@ describe('readFileRoots', () => {
 	});
 
 	it('throws when a registered directory does not exist', async () => {
-		await expect(
-			readFileRoots({ ghost: join(tmpRoot, 'missing') }),
-		).rejects.toThrow(/does not exist/);
+		await expect(readFileRoots({ ghost: join(tmpRoot, 'missing') })).rejects.toThrow(
+			/does not exist/,
+		);
 	});
 
 	it('throws when a registered path is a file, not a directory', async () => {
@@ -154,11 +148,13 @@ describe('readFileRoots', () => {
 
 describe('readFileRoots through a ProjectFiles provider (SPEC-113)', () => {
 	it('scans an in-project root through a pure in-memory provider (no fs)', async () => {
-		const files = memoryProjectFiles(new Map([
-			['site/shared/footer.md', '# Footer'],
-			['site/shared/legal/terms.md', '# Terms'],
-			['site/shared/readme.txt', 'ignored'],
-		]));
+		const files = memoryProjectFiles(
+			new Map([
+				['site/shared/footer.md', '# Footer'],
+				['site/shared/legal/terms.md', '# Terms'],
+				['site/shared/readme.txt', 'ignored'],
+			]),
+		);
 		const result = await readFileRoots(
 			{ shared: '/project/site/shared' },
 			{ projectFiles: files, projectRoot: '/project' },
@@ -172,7 +168,10 @@ describe('readFileRoots through a ProjectFiles provider (SPEC-113)', () => {
 	it('throws when the provider has no such directory', async () => {
 		const files = memoryProjectFiles(new Map());
 		await expect(
-			readFileRoots({ ghost: '/project/missing' }, { projectFiles: files, projectRoot: '/project' }),
+			readFileRoots(
+				{ ghost: '/project/missing' },
+				{ projectFiles: files, projectRoot: '/project' },
+			),
 		).rejects.toThrow(/does not exist/);
 	});
 
@@ -181,12 +180,18 @@ describe('readFileRoots through a ProjectFiles provider (SPEC-113)', () => {
 		// the provider is bypassed and the fs path runs (and throws — no such dir).
 		const files = memoryProjectFiles(new Map());
 		await expect(
-			readFileRoots({ shared: '/elsewhere/shared' }, { projectFiles: files, projectRoot: '/project' }),
+			readFileRoots(
+				{ shared: '/elsewhere/shared' },
+				{ projectFiles: files, projectRoot: '/project' },
+			),
 		).rejects.toThrow(/does not exist/);
 	});
 
 	it('matches the fs scan for the same in-project tree', async () => {
-		const map = new Map([['shared/a.md', '# A'], ['shared/nested/b.md', '# B']]);
+		const map = new Map([
+			['shared/a.md', '# A'],
+			['shared/nested/b.md', '# B'],
+		]);
 		const viaProvider = await readFileRoots(
 			{ shared: '/p/shared' },
 			{ projectFiles: memoryProjectFiles(map), projectRoot: '/p' },
@@ -209,15 +214,21 @@ describe('validateNamespacedReference', () => {
 	});
 
 	it('rejects missing namespace prefix', () => {
-		expect(() => validateNamespacedReference('footer.md', roots)).toThrow(/missing a namespace prefix/);
+		expect(() => validateNamespacedReference('footer.md', roots)).toThrow(
+			/missing a namespace prefix/,
+		);
 	});
 
 	it('rejects empty namespace', () => {
-		expect(() => validateNamespacedReference(':footer.md', roots)).toThrow(/missing a namespace prefix/);
+		expect(() => validateNamespacedReference(':footer.md', roots)).toThrow(
+			/missing a namespace prefix/,
+		);
 	});
 
 	it('rejects unknown namespace and lists registered ones', () => {
-		expect(() => validateNamespacedReference('unknown:file.md', roots)).toThrow(/Unknown file-root namespace "unknown"/);
+		expect(() => validateNamespacedReference('unknown:file.md', roots)).toThrow(
+			/Unknown file-root namespace "unknown"/,
+		);
 		expect(() => validateNamespacedReference('unknown:file.md', roots)).toThrow(/shared, plan/);
 	});
 
@@ -226,7 +237,9 @@ describe('validateNamespacedReference', () => {
 	});
 
 	it('rejects traversal that escapes the root', () => {
-		expect(() => validateNamespacedReference('shared:../escape.md', roots)).toThrow(/escapes its root/);
+		expect(() => validateNamespacedReference('shared:../escape.md', roots)).toThrow(
+			/escapes its root/,
+		);
 	});
 
 	it('rejects empty path after the colon', () => {

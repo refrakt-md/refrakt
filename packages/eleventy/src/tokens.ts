@@ -93,10 +93,7 @@ export async function getUsedCssCopyMap(
  * in the base template — `/css/base.css` first, then one entry per used
  * rune block. Pairs with {@link getUsedCssCopyMap}.
  */
-export async function getUsedCssImports(
-	configPath: string,
-	siteName?: string,
-): Promise<string[]> {
+export async function getUsedCssImports(configPath: string, siteName?: string): Promise<string[]> {
 	const blocks = await getUsedCssBlocksInternal(configPath, siteName);
 	if (!blocks) return ['/css/index.css'];
 	const hrefs = ['/css/base.css'];
@@ -116,8 +113,7 @@ async function getUsedCssBlocksInternal(
 		const themePackage = getThemePackage(site.theme);
 		const { createRefraktLoader, analyzeRuneUsage } = await import('@refrakt-md/content');
 		const themeModule = await import(themePackage + '/transform');
-		const themeConfig =
-			themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
+		const themeConfig = themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
 		const loader = createRefraktLoader({ configPath, site: siteName });
 		const loadedSite = await loader.getSite();
 		const report = analyzeRuneUsage(loadedSite.pages);

@@ -122,7 +122,8 @@ describe('authoring hints from packages', () => {
 				aliases: [],
 				description: 'A custom widget for dashboards',
 				schema: { attributes: {} },
-				authoringHints: 'Best for dashboard widgets that display real-time metrics. Pair with a refresh interval when the data changes often.',
+				authoringHints:
+					'Best for dashboard widgets that display real-time metrics. Pair with a refresh interval when the data changes often.',
 			},
 		};
 
@@ -160,7 +161,8 @@ describe('authoring hints from packages', () => {
 						variant: { type: String, matches: ['a', 'b', 'c'] },
 					},
 				},
-				authoringHints: 'Supports dynamic data binding and auto-refresh intervals — set the refresh attribute in seconds.',
+				authoringHints:
+					'Supports dynamic data binding and auto-refresh intervals — set the refresh attribute in seconds.',
 			},
 		};
 

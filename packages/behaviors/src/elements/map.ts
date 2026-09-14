@@ -25,7 +25,8 @@ const tileUrls: Record<string, Record<string, string>> = {
 };
 
 const attributions: Record<string, string> = {
-	openstreetmap: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+	openstreetmap:
+		'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 	mapbox: '&copy; <a href="https://www.mapbox.com/">Mapbox</a>',
 };
 
@@ -42,7 +43,9 @@ async function geocode(address: string): Promise<[number, number] | null> {
 			geocodeCache.set(address, coords);
 			return coords;
 		}
-	} catch { /* geocoding failed */ }
+	} catch {
+		/* geocoding failed */
+	}
 	return null;
 }
 
@@ -145,9 +148,11 @@ export class RfMap extends SafeHTMLElement {
 						if (coords) return { ...pin, lat: coords[0], lng: coords[1] };
 					}
 					return null;
-				})
+				}),
 			);
-			const validPins = resolvedPins.filter((p): p is PinData => p !== null && p.lat !== 0 && p.lng !== 0);
+			const validPins = resolvedPins.filter(
+				(p): p is PinData => p !== null && p.lat !== 0 && p.lng !== 0,
+			);
 			if (validPins.length === 0) return;
 
 			// Create map container
@@ -172,8 +177,8 @@ export class RfMap extends SafeHTMLElement {
 					mapCenter = geocoded || [validPins[0].lat, validPins[0].lng];
 				}
 			} else {
-				const lats = validPins.map(p => p.lat);
-				const lngs = validPins.map(p => p.lng);
+				const lats = validPins.map((p) => p.lat);
+				const lngs = validPins.map((p) => p.lng);
 				mapCenter = [
 					(Math.min(...lats) + Math.max(...lats)) / 2,
 					(Math.min(...lngs) + Math.max(...lngs)) / 2,
@@ -194,11 +199,14 @@ export class RfMap extends SafeHTMLElement {
 			// Add tile layer
 			if (provider === 'mapbox') {
 				const style = tileUrls.mapbox[mapStyle] || tileUrls.mapbox.street;
-				L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/${style}/tiles/256/{z}/{x}/{y}@2x?access_token=${apiKey}`, {
-					attribution: attributions.mapbox,
-					tileSize: 512,
-					zoomOffset: -1,
-				}).addTo(map);
+				L.tileLayer(
+					`https://api.mapbox.com/styles/v1/mapbox/${style}/tiles/256/{z}/{x}/{y}@2x?access_token=${apiKey}`,
+					{
+						attribution: attributions.mapbox,
+						tileSize: 512,
+						zoomOffset: -1,
+					},
+				).addTo(map);
 			} else {
 				const tileUrl = tileUrls.openstreetmap[mapStyle] || tileUrls.openstreetmap.street;
 				L.tileLayer(tileUrl, { attribution: attributions.openstreetmap }).addTo(map);
@@ -216,13 +224,14 @@ export class RfMap extends SafeHTMLElement {
 			const layerGroups: Record<string, any> = {};
 
 			for (const [groupName, groupPins] of groups) {
-				const markers = groupPins.map(pin => {
+				const markers = groupPins.map((pin) => {
 					const marker = L.marker([pin.lat, pin.lng]);
 					let popup = '';
 					if (pin.name) popup += `<strong>${pin.name}</strong>`;
 					if (pin.description) popup += `<br><em>${pin.description}</em>`;
 					if (pin.address) popup += `<br><small>${pin.address}</small>`;
-					if (pin.url) popup += `<br><a href="${pin.url}" target="_blank" rel="noopener">${bstr('behavior.map.moreInfo')}</a>`;
+					if (pin.url)
+						popup += `<br><a href="${pin.url}" target="_blank" rel="noopener">${bstr('behavior.map.moreInfo')}</a>`;
 					if (popup) marker.bindPopup(popup);
 					return marker;
 				});
@@ -243,7 +252,7 @@ export class RfMap extends SafeHTMLElement {
 
 			// Route line
 			if (route && validPins.length > 1) {
-				const routeCoords = validPins.map(p => [p.lat, p.lng] as [number, number]);
+				const routeCoords = validPins.map((p) => [p.lat, p.lng] as [number, number]);
 				L.polyline(routeCoords, {
 					color: 'var(--rf-color-primary, #3b82f6)',
 					weight: 3,
@@ -255,9 +264,11 @@ export class RfMap extends SafeHTMLElement {
 			// Clustering
 			if (cluster && allMarkers.length > 0) {
 				try {
-					const clusterCdn = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster-src.js';
+					const clusterCdn =
+						'https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster-src.js';
 					const clusterCss = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css';
-					const clusterDefaultCss = 'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css';
+					const clusterDefaultCss =
+						'https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css';
 
 					for (const href of [clusterCss, clusterDefaultCss]) {
 						if (!root.querySelector(`link[href="${href}"]`)) {
@@ -290,7 +301,7 @@ export class RfMap extends SafeHTMLElement {
 
 			// Fit bounds if no explicit center/zoom
 			if (!centerAttr && !zoomAttr && validPins.length > 1) {
-				const bounds = L.latLngBounds(validPins.map(p => [p.lat, p.lng]));
+				const bounds = L.latLngBounds(validPins.map((p) => [p.lat, p.lng]));
 				map.fitBounds(bounds, { padding: [30, 30] });
 			}
 

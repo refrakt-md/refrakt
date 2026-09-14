@@ -8,10 +8,22 @@ const { Tag } = Markdoc;
 
 function ctxOf() {
 	const warnings: string[] = [];
-	return { ctx: { info() {}, warn(m: string) { warnings.push(m); }, error() {} } as any, warnings };
+	return {
+		ctx: {
+			info() {},
+			warn(m: string) {
+				warnings.push(m);
+			},
+			error() {},
+		} as any,
+		warnings,
+	};
 }
 
-function sandbox(query: string, opts: { fields?: string; shape?: string; limit?: number; fallback?: boolean } = {}) {
+function sandbox(
+	query: string,
+	opts: { fields?: string; shape?: string; limit?: number; fallback?: boolean } = {},
+) {
 	const attrs: Record<string, unknown> = { 'data-rf-query': query };
 	if (opts.fields) attrs['data-rf-fields'] = opts.fields;
 	if (opts.shape) attrs['data-rf-shape'] = opts.shape;
@@ -29,10 +41,30 @@ function carrierJson(resolved: any): any {
 function registryWithPages() {
 	const r = new EntityRegistryImpl();
 	// Real registry convention: `url` has no trailing slash, `parentUrl` has one.
-	r.register({ type: 'page', id: '/', sourceUrl: '/', data: { url: '/', title: 'Home', parentUrl: '', tags: ['root'] } });
-	r.register({ type: 'page', id: '/docs', sourceUrl: '/docs', data: { url: '/docs', title: 'Docs', parentUrl: '/' } });
-	r.register({ type: 'page', id: '/docs/a', sourceUrl: '/docs/a', data: { url: '/docs/a', title: 'A', parentUrl: '/docs/' } });
-	r.register({ type: 'page', id: '/blog', sourceUrl: '/blog', data: { url: '/blog', title: 'Blog', parentUrl: '/' } });
+	r.register({
+		type: 'page',
+		id: '/',
+		sourceUrl: '/',
+		data: { url: '/', title: 'Home', parentUrl: '', tags: ['root'] },
+	});
+	r.register({
+		type: 'page',
+		id: '/docs',
+		sourceUrl: '/docs',
+		data: { url: '/docs', title: 'Docs', parentUrl: '/' },
+	});
+	r.register({
+		type: 'page',
+		id: '/docs/a',
+		sourceUrl: '/docs/a',
+		data: { url: '/docs/a', title: 'A', parentUrl: '/docs/' },
+	});
+	r.register({
+		type: 'page',
+		id: '/blog',
+		sourceUrl: '/blog',
+		data: { url: '/blog', title: 'Blog', parentUrl: '/' },
+	});
 	return r;
 }
 
@@ -41,11 +73,36 @@ function registryWithPages() {
  *  closed-graph filter can be exercised. */
 function registryWithGraph() {
 	const r = new EntityRegistryImpl();
-	r.register({ type: 'spec', id: 'SPEC-1', sourceUrl: '/plan/spec/spec-1', data: { url: '/plan/spec/spec-1', title: 'Spec One' } });
-	r.register({ type: 'work', id: 'WORK-1', sourceUrl: '/plan/work/work-1', data: { url: '/plan/work/work-1', title: 'Work One' } });
-	r.register({ type: 'decision', id: 'ADR-1', sourceUrl: '/plan/decision/adr-1', data: { url: '/plan/decision/adr-1', title: 'ADR One' } });
-	r.register({ type: 'milestone', id: 'v1', sourceUrl: '/plan/milestone/v1', data: { url: '/plan/milestone/v1', title: 'v1' } });
-	r.register({ type: 'page', id: 'PAGE-1', sourceUrl: '/docs', data: { url: '/docs', title: 'Docs' } });
+	r.register({
+		type: 'spec',
+		id: 'SPEC-1',
+		sourceUrl: '/plan/spec/spec-1',
+		data: { url: '/plan/spec/spec-1', title: 'Spec One' },
+	});
+	r.register({
+		type: 'work',
+		id: 'WORK-1',
+		sourceUrl: '/plan/work/work-1',
+		data: { url: '/plan/work/work-1', title: 'Work One' },
+	});
+	r.register({
+		type: 'decision',
+		id: 'ADR-1',
+		sourceUrl: '/plan/decision/adr-1',
+		data: { url: '/plan/decision/adr-1', title: 'ADR One' },
+	});
+	r.register({
+		type: 'milestone',
+		id: 'v1',
+		sourceUrl: '/plan/milestone/v1',
+		data: { url: '/plan/milestone/v1', title: 'v1' },
+	});
+	r.register({
+		type: 'page',
+		id: 'PAGE-1',
+		sourceUrl: '/docs',
+		data: { url: '/docs', title: 'Docs' },
+	});
 	r.relate({ fromId: 'WORK-1', toId: 'SPEC-1', kind: 'implements', toType: 'spec' });
 	r.relate({ fromId: 'SPEC-1', toId: 'ADR-1', kind: 'informed-by', toType: 'decision' });
 	r.relate({ fromId: 'WORK-1', toId: 'v1', kind: 'depends-on', toType: 'milestone' });
@@ -59,7 +116,12 @@ const PLAN_QUERY = 'type:spec type:work type:decision type:milestone';
 describe('resolveDataBindings (SPEC-093 core)', () => {
 	it('injects the flat query result as JSON', () => {
 		const { ctx } = ctxOf();
-		const out = resolveDataBindings(sandbox('type:page', { fallback: true }), registryWithPages(), ctx, '/x/');
+		const out = resolveDataBindings(
+			sandbox('type:page', { fallback: true }),
+			registryWithPages(),
+			ctx,
+			'/x/',
+		);
 		const payload = carrierJson(out);
 		expect(payload.shape).toBe('flat');
 		expect(payload.records).toHaveLength(4);
@@ -69,7 +131,12 @@ describe('resolveDataBindings (SPEC-093 core)', () => {
 
 	it('builds a tree from parentUrl with data-shape=tree', () => {
 		const { ctx } = ctxOf();
-		const out = resolveDataBindings(sandbox('type:page', { shape: 'tree', fallback: true }), registryWithPages(), ctx, '/x/');
+		const out = resolveDataBindings(
+			sandbox('type:page', { shape: 'tree', fallback: true }),
+			registryWithPages(),
+			ctx,
+			'/x/',
+		);
 		const payload = carrierJson(out);
 		expect(payload.shape).toBe('tree');
 		// Nests correctly despite url (no slash) vs parentUrl (trailing slash).
@@ -82,7 +149,12 @@ describe('resolveDataBindings (SPEC-093 core)', () => {
 
 	it('builds nodes + SPEC-072 edges with data-shape=graph', () => {
 		const { ctx } = ctxOf();
-		const out = resolveDataBindings(sandbox(PLAN_QUERY, { shape: 'graph', fallback: true }), registryWithGraph(), ctx, '/x/');
+		const out = resolveDataBindings(
+			sandbox(PLAN_QUERY, { shape: 'graph', fallback: true }),
+			registryWithGraph(),
+			ctx,
+			'/x/',
+		);
 		const payload = carrierJson(out);
 		expect(payload.shape).toBe('graph');
 		// Nodes: the four selected entities (PAGE-1 isn't in the selection).
@@ -99,7 +171,12 @@ describe('resolveDataBindings (SPEC-093 core)', () => {
 
 	it('drops graph edges to nodes outside the query selection (closed graph)', () => {
 		const { ctx } = ctxOf();
-		const out = resolveDataBindings(sandbox(PLAN_QUERY, { shape: 'graph', fallback: true }), registryWithGraph(), ctx, '/x/');
+		const out = resolveDataBindings(
+			sandbox(PLAN_QUERY, { shape: 'graph', fallback: true }),
+			registryWithGraph(),
+			ctx,
+			'/x/',
+		);
 		const payload = carrierJson(out);
 		expect(payload.edges).toHaveLength(3);
 		expect(payload.edges.some((e: any) => e.to === 'PAGE-1')).toBe(false);
@@ -107,13 +184,23 @@ describe('resolveDataBindings (SPEC-093 core)', () => {
 
 	it('projects only data-fields when set', () => {
 		const { ctx } = ctxOf();
-		const out = resolveDataBindings(sandbox('type:page', { fields: 'title', fallback: true }), registryWithPages(), ctx, '/x/');
+		const out = resolveDataBindings(
+			sandbox('type:page', { fields: 'title', fallback: true }),
+			registryWithPages(),
+			ctx,
+			'/x/',
+		);
 		expect(Object.keys(carrierJson(out).records[0].data)).toEqual(['title']);
 	});
 
 	it('filters by non-type clauses', () => {
 		const { ctx } = ctxOf();
-		const out = resolveDataBindings(sandbox('type:page tags:root', { fallback: true }), registryWithPages(), ctx, '/x/');
+		const out = resolveDataBindings(
+			sandbox('type:page tags:root', { fallback: true }),
+			registryWithPages(),
+			ctx,
+			'/x/',
+		);
 		const payload = carrierJson(out);
 		expect(payload.records).toHaveLength(1);
 		expect(payload.records[0].url).toBe('/');
@@ -121,7 +208,12 @@ describe('resolveDataBindings (SPEC-093 core)', () => {
 
 	it('caps the payload and warns', () => {
 		const { ctx, warnings } = ctxOf();
-		const out = resolveDataBindings(sandbox('type:page', { limit: 2, fallback: true }), registryWithPages(), ctx, '/x/');
+		const out = resolveDataBindings(
+			sandbox('type:page', { limit: 2, fallback: true }),
+			registryWithPages(),
+			ctx,
+			'/x/',
+		);
 		expect(carrierJson(out).records).toHaveLength(2);
 		expect(warnings.some((w) => /over the 2 cap/.test(w))).toBe(true);
 	});
@@ -134,7 +226,12 @@ describe('resolveDataBindings (SPEC-093 core)', () => {
 
 	it('warns and no-ops when the query has no type clause', () => {
 		const { ctx, warnings } = ctxOf();
-		const out = resolveDataBindings(sandbox('tags:root', { fallback: true }), registryWithPages(), ctx, '/x/');
+		const out = resolveDataBindings(
+			sandbox('tags:root', { fallback: true }),
+			registryWithPages(),
+			ctx,
+			'/x/',
+		);
 		expect(carrierJson(out)).toBeNull();
 		expect(warnings.some((w) => /no entity type/.test(w))).toBe(true);
 	});

@@ -11,12 +11,12 @@ import { parse, findTag, findAllTags, fields } from './helpers.js';
 describe('hero content model', () => {
 	// Helper: find a child tag with a specific `data-field` attribute
 	function findProperty(root: Tag, prop: string): Tag | undefined {
-		return findTag(root, t => t.attributes['data-field'] === prop);
+		return findTag(root, (t) => t.attributes['data-field'] === prop);
 	}
 
 	// Helper: find a child tag with a specific `data-name` attribute
 	function findRef(root: Tag, name: string): Tag | undefined {
-		return findTag(root, t => t.attributes['data-name'] === name);
+		return findTag(root, (t) => t.attributes['data-name'] === name);
 	}
 
 	// -----------------------------------------------------------------
@@ -28,7 +28,7 @@ describe('hero content model', () => {
 # Welcome
 {% /hero %}`);
 
-		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+		const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(hero).toBeDefined();
 		expect(hero!.name).toBe('section');
 		expect(hero!.attributes['data-field']).toBe('content-section');
@@ -47,7 +47,7 @@ Short eyebrow.
 Supporting blurb text.
 {% /hero %}`);
 
-		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+		const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(hero).toBeDefined();
 
 		// eyebrow, headline, blurb are child tags with data-name attributes (refs)
@@ -63,7 +63,7 @@ Supporting blurb text.
 Some blurb.
 {% /hero %}`);
 
-		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+		const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(hero).toBeDefined();
 		expect(findRef(hero!, 'eyebrow')).toBeUndefined();
 		expect(findRef(hero!, 'headline')).toBeDefined();
@@ -75,7 +75,7 @@ Some blurb.
 # Just a Headline
 {% /hero %}`);
 
-		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+		const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(hero).toBeDefined();
 		expect(findRef(hero!, 'headline')).toBeDefined();
 		expect(findRef(hero!, 'eyebrow')).toBeUndefined();
@@ -94,12 +94,15 @@ Some blurb.
 - [Learn More](/docs)
 {% /hero %}`);
 
-		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
-		const linkItems = findAllTags(hero!, t => t.name === 'li' && t.attributes['data-name'] === 'action');
+		const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
+		const linkItems = findAllTags(
+			hero!,
+			(t) => t.name === 'li' && t.attributes['data-name'] === 'action',
+		);
 		expect(linkItems.length).toBe(2);
 
 		// Check the link URL
-		const link = findTag(hero!, t => t.name === 'a' && t.attributes.href === '/start');
+		const link = findTag(hero!, (t) => t.name === 'a' && t.attributes.href === '/start');
 		expect(link).toBeDefined();
 	});
 
@@ -112,8 +115,11 @@ npm create refrakt
 \`\`\`
 {% /hero %}`);
 
-		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
-		const command = findTag(hero!, t => t.name === 'div' && t.attributes['data-name'] === 'command');
+		const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
+		const command = findTag(
+			hero!,
+			(t) => t.name === 'div' && t.attributes['data-name'] === 'command',
+		);
 		expect(command).toBeDefined();
 	});
 
@@ -129,9 +135,13 @@ npm create refrakt
 - [Docs](/docs)
 {% /hero %}`);
 
-		const hero1 = findTag(result1 as any, t => t.attributes['data-rune'] === 'hero');
-		expect(findTag(hero1!, t => t.name === 'div' && t.attributes['data-name'] === 'command')).toBeDefined();
-		expect(findTag(hero1!, t => t.name === 'li' && t.attributes['data-name'] === 'action')).toBeDefined();
+		const hero1 = findTag(result1 as any, (t) => t.attributes['data-rune'] === 'hero');
+		expect(
+			findTag(hero1!, (t) => t.name === 'div' && t.attributes['data-name'] === 'command'),
+		).toBeDefined();
+		expect(
+			findTag(hero1!, (t) => t.name === 'li' && t.attributes['data-name'] === 'action'),
+		).toBeDefined();
 
 		// List before fence
 		const result2 = parse(`{% hero %}
@@ -144,9 +154,13 @@ npm create refrakt
 \`\`\`
 {% /hero %}`);
 
-		const hero2 = findTag(result2 as any, t => t.attributes['data-rune'] === 'hero');
-		expect(findTag(hero2!, t => t.name === 'div' && t.attributes['data-name'] === 'command')).toBeDefined();
-		expect(findTag(hero2!, t => t.name === 'li' && t.attributes['data-name'] === 'action')).toBeDefined();
+		const hero2 = findTag(result2 as any, (t) => t.attributes['data-rune'] === 'hero');
+		expect(
+			findTag(hero2!, (t) => t.name === 'div' && t.attributes['data-name'] === 'command'),
+		).toBeDefined();
+		expect(
+			findTag(hero2!, (t) => t.name === 'li' && t.attributes['data-name'] === 'action'),
+		).toBeDefined();
 	});
 
 	// -----------------------------------------------------------------
@@ -164,11 +178,11 @@ Build something amazing.
 ![Hero image](/images/hero.png)
 {% /hero %}`);
 
-		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+		const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(hero).toBeDefined();
 
 		// Media zone should contain the image
-		const img = findTag(hero!, t => t.name === 'img');
+		const img = findTag(hero!, (t) => t.name === 'img');
 		expect(img).toBeDefined();
 		expect(img!.attributes.src).toBe('/images/hero.png');
 	});
@@ -180,7 +194,7 @@ Build something amazing.
 Just text content.
 {% /hero %}`);
 
-		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+		const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(hero).toBeDefined();
 		expect(findRef(hero!, 'headline')).toBeDefined();
 	});
@@ -194,7 +208,7 @@ Just text content.
 # Left-Aligned
 {% /hero %}`);
 
-		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+		const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(fields(hero).align).toBe('left');
 	});
 
@@ -203,7 +217,7 @@ Just text content.
 # Centered
 {% /hero %}`);
 
-		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+		const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(fields(hero).align).toBe('center');
 	});
 
@@ -216,7 +230,7 @@ Just text content.
 # Split Hero
 {% /hero %}`);
 
-		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+		const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(fields(hero)['media-position']).toBe('end');
 	});
 
@@ -229,7 +243,7 @@ Just text content.
 # Split Hero
 {% /hero %}`);
 
-		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+		const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(fields(hero)['media-ratio']).toBe('2/3');
 		expect(fields(hero).valign).toBe('center');
 	});
@@ -245,13 +259,14 @@ Just text content.
 Description.
 {% /hero %}`);
 
-		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
-		const headerEl = findTag(hero!, t => t.name === 'header');
+		const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
+		const headerEl = findTag(hero!, (t) => t.name === 'header');
 		expect(headerEl).toBeDefined();
 
 		// Header should be inside a content div
-		const contentDiv = findTag(hero!, t =>
-			t.name === 'div' && t.attributes['data-name'] === 'content',
+		const contentDiv = findTag(
+			hero!,
+			(t) => t.name === 'div' && t.attributes['data-name'] === 'content',
 		);
 		expect(contentDiv).toBeDefined();
 	});
@@ -263,9 +278,10 @@ Description.
 - [Go](/go)
 {% /hero %}`);
 
-		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
-		const actionsDiv = findTag(hero!, t =>
-			t.name === 'div' && t.attributes['data-name'] === 'actions',
+		const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
+		const actionsDiv = findTag(
+			hero!,
+			(t) => t.name === 'div' && t.attributes['data-name'] === 'actions',
 		);
 		expect(actionsDiv).toBeDefined();
 	});
@@ -279,7 +295,7 @@ Description.
 # Right-Aligned
 {% /hero %}`);
 
-		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+		const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(fields(hero).align).toBe('right');
 	});
 
@@ -303,7 +319,7 @@ The modern way to create documentation sites.
 - [View Docs](/docs)
 {% /hero %}`);
 
-		const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+		const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(hero).toBeDefined();
 		expect(hero!.name).toBe('section');
 
@@ -313,11 +329,14 @@ The modern way to create documentation sites.
 		expect(findRef(hero!, 'blurb')).toBeDefined();
 
 		// Actions
-		const linkItems = findAllTags(hero!, t => t.name === 'li' && t.attributes['data-name'] === 'action');
+		const linkItems = findAllTags(
+			hero!,
+			(t) => t.name === 'li' && t.attributes['data-name'] === 'action',
+		);
 		expect(linkItems.length).toBe(2);
 
 		// Media
-		const img = findTag(hero!, t => t.name === 'img');
+		const img = findTag(hero!, (t) => t.name === 'img');
 		expect(img).toBeDefined();
 
 		// Layout metas

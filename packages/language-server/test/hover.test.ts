@@ -5,98 +5,98 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { TextDocuments } from 'vscode-languageserver';
 
 function hover(content: string, cursorOffset: number) {
-  const doc = TextDocument.create('file:///test.md', 'markdown', 1, content);
-  const position = doc.positionAt(cursorOffset);
+	const doc = TextDocument.create('file:///test.md', 'markdown', 1, content);
+	const position = doc.positionAt(cursorOffset);
 
-  const documents = {
-    get: (uri: string) => uri === 'file:///test.md' ? doc : undefined,
-  } as unknown as TextDocuments<TextDocument>;
+	const documents = {
+		get: (uri: string) => (uri === 'file:///test.md' ? doc : undefined),
+	} as unknown as TextDocuments<TextDocument>;
 
-  return provideHover(
-    {
-      textDocument: { uri: 'file:///test.md' },
-      position,
-    },
-    documents,
-  );
+	return provideHover(
+		{
+			textDocument: { uri: 'file:///test.md' },
+			position,
+		},
+		documents,
+	);
 }
 
 describe('rune name hover', () => {
-  it('shows hover for rune name', () => {
-    const text = '{% hint type="note" %}';
-    const offset = text.indexOf('hint') + 2; // Cursor on "hint"
-    const result = hover(text, offset);
-    expect(result).not.toBeNull();
-    expect(result!.contents).toBeDefined();
-    const value = (result!.contents as { value: string }).value;
-    expect(value).toContain('hint');
-    expect(value).toContain('Callout');
-  });
+	it('shows hover for rune name', () => {
+		const text = '{% hint type="note" %}';
+		const offset = text.indexOf('hint') + 2; // Cursor on "hint"
+		const result = hover(text, offset);
+		expect(result).not.toBeNull();
+		expect(result!.contents).toBeDefined();
+		const value = (result!.contents as { value: string }).value;
+		expect(value).toContain('hint');
+		expect(value).toContain('Callout');
+	});
 
-  it('shows aliases in hover', () => {
-    const text = '{% hint type="note" %}';
-    const offset = text.indexOf('hint') + 2;
-    const result = hover(text, offset);
-    const value = (result!.contents as { value: string }).value;
-    expect(value).toContain('callout');
-  });
+	it('shows aliases in hover', () => {
+		const text = '{% hint type="note" %}';
+		const offset = text.indexOf('hint') + 2;
+		const result = hover(text, offset);
+		const value = (result!.contents as { value: string }).value;
+		expect(value).toContain('callout');
+	});
 
-  it('shows hover for alias name', () => {
-    const text = '{% callout type="note" %}';
-    const offset = text.indexOf('callout') + 2;
-    const result = hover(text, offset);
-    expect(result).not.toBeNull();
-  });
+	it('shows hover for alias name', () => {
+		const text = '{% callout type="note" %}';
+		const offset = text.indexOf('callout') + 2;
+		const result = hover(text, offset);
+		expect(result).not.toBeNull();
+	});
 
-  it('shows SEO type in hover', () => {
-    const text = '{% accordion %}';
-    const offset = text.indexOf('accordion') + 2;
-    const result = hover(text, offset);
-    const value = (result!.contents as { value: string }).value;
-    expect(value).toContain('FAQPage');
-  });
+	it('shows SEO type in hover', () => {
+		const text = '{% accordion %}';
+		const offset = text.indexOf('accordion') + 2;
+		const result = hover(text, offset);
+		const value = (result!.contents as { value: string }).value;
+		expect(value).toContain('FAQPage');
+	});
 
-  it('shows attributes in hover', () => {
-    const text = '{% hint type="note" %}';
-    const offset = text.indexOf('hint') + 2;
-    const result = hover(text, offset);
-    const value = (result!.contents as { value: string }).value;
-    expect(value).toContain('Attributes');
-    expect(value).toContain('type');
-  });
+	it('shows attributes in hover', () => {
+		const text = '{% hint type="note" %}';
+		const offset = text.indexOf('hint') + 2;
+		const result = hover(text, offset);
+		const value = (result!.contents as { value: string }).value;
+		expect(value).toContain('Attributes');
+		expect(value).toContain('type');
+	});
 });
 
 describe('attribute name hover', () => {
-  it('shows hover for attribute name', () => {
-    const text = '{% hint type="note" %}';
-    const offset = text.indexOf('type') + 2;
-    const result = hover(text, offset);
-    expect(result).not.toBeNull();
-    const value = (result!.contents as { value: string }).value;
-    expect(value).toContain('type');
-    expect(value).toContain('hint');
-  });
+	it('shows hover for attribute name', () => {
+		const text = '{% hint type="note" %}';
+		const offset = text.indexOf('type') + 2;
+		const result = hover(text, offset);
+		expect(result).not.toBeNull();
+		const value = (result!.contents as { value: string }).value;
+		expect(value).toContain('type');
+		expect(value).toContain('hint');
+	});
 
-  it('shows enum values for attribute', () => {
-    const text = '{% hint type="note" %}';
-    const offset = text.indexOf('type') + 2;
-    const result = hover(text, offset);
-    const value = (result!.contents as { value: string }).value;
-    expect(value).toContain('note');
-    expect(value).toContain('warning');
-  });
+	it('shows enum values for attribute', () => {
+		const text = '{% hint type="note" %}';
+		const offset = text.indexOf('type') + 2;
+		const result = hover(text, offset);
+		const value = (result!.contents as { value: string }).value;
+		expect(value).toContain('note');
+		expect(value).toContain('warning');
+	});
 });
 
 describe('no hover', () => {
-  it('returns null outside tags', () => {
-    const result = hover('Hello world', 5);
-    expect(result).toBeNull();
-  });
+	it('returns null outside tags', () => {
+		const result = hover('Hello world', 5);
+		expect(result).toBeNull();
+	});
 
-  it('returns null for unknown rune', () => {
-    const text = '{% nonexistentrune %}';
-    const offset = text.indexOf('nonexistentrune') + 2;
-    const result = hover(text, offset);
-    expect(result).toBeNull();
-  });
+	it('returns null for unknown rune', () => {
+		const text = '{% nonexistentrune %}';
+		const offset = text.indexOf('nonexistentrune') + 2;
+		const result = hover(text, offset);
+		expect(result).toBeNull();
+	});
 });

@@ -181,7 +181,11 @@ ${tail}</body>
 }
 
 function escapeHtml(s: string): string {
-	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	return s
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;');
 }
 
 /**
@@ -202,13 +206,15 @@ export function renderGalleryDocument(opts: GalleryDocumentOptions): string {
 
 	const sections: string[] = [];
 	for (const [rune, runeCells] of byRune) {
-		const cellHtml = runeCells.map(cell => {
-			const anchor = `${cell.rune}--${cell.variant}`;
-			return `      <div class="rf-gallery__cell" data-gallery-cell="${escapeHtml(anchor)}" data-rune="${escapeHtml(cell.rune)}" data-variant="${escapeHtml(cell.variant)}">
+		const cellHtml = runeCells
+			.map((cell) => {
+				const anchor = `${cell.rune}--${cell.variant}`;
+				return `      <div class="rf-gallery__cell" data-gallery-cell="${escapeHtml(anchor)}" data-rune="${escapeHtml(cell.rune)}" data-variant="${escapeHtml(cell.variant)}">
         <span class="rf-gallery__cell-label">${escapeHtml(cell.variant)}</span>
 ${cell.html}
       </div>`;
-		}).join('\n');
+			})
+			.join('\n');
 		sections.push(`    <section class="rf-gallery__rune" data-gallery-rune="${escapeHtml(rune)}">
       <h2 class="rf-gallery__rune-title">${escapeHtml(rune)}</h2>
 ${cellHtml}

@@ -8,8 +8,12 @@ import type { RuneConfig, ThemeConfig } from '../src/types.js';
 // only package that can see core and all nine plugins at once; these are the
 // unit-level rules.
 
-const themeConfig = (runes: Record<string, RuneConfig>): ThemeConfig =>
-	({ prefix: 'rf', tokenPrefix: '--rf', icons: {}, runes });
+const themeConfig = (runes: Record<string, RuneConfig>): ThemeConfig => ({
+	prefix: 'rf',
+	tokenPrefix: '--rf',
+	icons: {},
+	runes,
+});
 
 describe('declaredSlots', () => {
 	it('collects layout container keys and their children', () => {
@@ -58,17 +62,25 @@ describe('lintSectionRoles — missing body role', () => {
 	});
 
 	it('is quiet once the role is mapped', () => {
-		expect(lintSectionRoles({
-			Widget: { block: 'widget', layout: { root: ['body'] }, sections: { body: 'body' } },
-		})).toEqual([]);
+		expect(
+			lintSectionRoles({
+				Widget: { block: 'widget', layout: { root: ['body'] }, sections: { body: 'body' } },
+			}),
+		).toEqual([]);
 	});
 
 	it('is quiet when another slot already carries the body role', () => {
 		// Blog maps `content → body`, DataTable `table → body`. The region is
 		// declared, just under a different name.
-		expect(lintSectionRoles({
-			Blog: { block: 'blog', layout: { root: ['body', 'content'] }, sections: { content: 'body' } },
-		})).toEqual([]);
+		expect(
+			lintSectionRoles({
+				Blog: {
+					block: 'blog',
+					layout: { root: ['body', 'content'] },
+					sections: { content: 'body' },
+				},
+			}),
+		).toEqual([]);
 	});
 
 	it('is quiet for a rune with no body slot at all', () => {
@@ -78,16 +90,28 @@ describe('lintSectionRoles — missing body role', () => {
 });
 
 describe('lintSectionRoles — missing header role', () => {
-	it.each(['title', 'header', 'headline', 'name'])('flags a `%s` slot with no header-ish role', (slot) => {
-		const findings = lintSectionRoles({ Widget: { block: 'widget', layout: { root: [slot] } } });
-		expect(findings).toEqual([expect.objectContaining({ slot, kind: 'missing-header-role' })]);
-	});
+	it.each(['title', 'header', 'headline', 'name'])(
+		'flags a `%s` slot with no header-ish role',
+		(slot) => {
+			const findings = lintSectionRoles({ Widget: { block: 'widget', layout: { root: [slot] } } });
+			expect(findings).toEqual([expect.objectContaining({ slot, kind: 'missing-header-role' })]);
+		},
+	);
 
-	it.each(['header', 'preamble', 'title', 'description'])('is quiet when the rune declares a `%s` role', (role) => {
-		expect(lintSectionRoles({
-			Widget: { block: 'widget', layout: { root: ['title'] }, sections: { title: role as never } },
-		})).toEqual([]);
-	});
+	it.each(['header', 'preamble', 'title', 'description'])(
+		'is quiet when the rune declares a `%s` role',
+		(role) => {
+			expect(
+				lintSectionRoles({
+					Widget: {
+						block: 'widget',
+						layout: { root: ['title'] },
+						sections: { title: role as never },
+					},
+				}),
+			).toEqual([]);
+		},
+	);
 
 	it('reports at most one header finding per rune', () => {
 		const findings = lintSectionRoles({
@@ -102,9 +126,11 @@ describe('lintSectionRoles — direction only', () => {
 		// SPEC-125 Direction 2: `body` on a table is an overload of the role's
 		// meaning, not a data error. Flagging it here would push someone toward
 		// removing a role the theme styles.
-		expect(lintSectionRoles({
-			DataTable: { block: 'datatable', layout: { root: ['table'] }, sections: { table: 'body' } },
-		})).toEqual([]);
+		expect(
+			lintSectionRoles({
+				DataTable: { block: 'datatable', layout: { root: ['table'] }, sections: { table: 'body' } },
+			}),
+		).toEqual([]);
 	});
 });
 
@@ -112,9 +138,11 @@ describe('sectionRoleExceptions', () => {
 	it('silences exactly its own slot', () => {
 		const base: RuneConfig = { block: 'widget', layout: { root: ['body', 'title'] } };
 		expect(lintSectionRoles({ Widget: base }).map((f) => f.slot)).toEqual(['body', 'title']);
-		expect(lintSectionRoles({
-			Widget: { ...base, sectionRoleExceptions: { body: 'the region is a control, not prose' } },
-		}).map((f) => f.slot)).toEqual(['title']);
+		expect(
+			lintSectionRoles({
+				Widget: { ...base, sectionRoleExceptions: { body: 'the region is a control, not prose' } },
+			}).map((f) => f.slot),
+		).toEqual(['title']);
 	});
 });
 
@@ -122,18 +150,26 @@ describe('validateThemeConfig integration', () => {
 	it('reports drift as an error, not a warning', () => {
 		// The failure mode being closed is a silent one, so it has to fail rather
 		// than scroll past in a build log.
-		const res = validateThemeConfig(themeConfig({
-			Widget: { block: 'widget', layout: { root: ['body'] } },
-		}));
+		const res = validateThemeConfig(
+			themeConfig({
+				Widget: { block: 'widget', layout: { root: ['body'] } },
+			}),
+		);
 		expect(res.valid).toBe(false);
 		expect(res.errors.some((e) => e.path === 'runes.Widget.sections')).toBe(true);
 		expect(res.warnings.some((w) => w.path === 'runes.Widget.sections')).toBe(false);
 	});
 
 	it('passes a rune that maps its slots', () => {
-		const res = validateThemeConfig(themeConfig({
-			Widget: { block: 'widget', layout: { root: ['body', 'title'] }, sections: { body: 'body', title: 'title' } },
-		}));
+		const res = validateThemeConfig(
+			themeConfig({
+				Widget: {
+					block: 'widget',
+					layout: { root: ['body', 'title'] },
+					sections: { body: 'body', title: 'title' },
+				},
+			}),
+		);
 		expect(res.valid).toBe(true);
 	});
 });

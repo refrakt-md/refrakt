@@ -1,7 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes, isMediaNode } from '@refrakt-md/runes';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	asNodes,
+	isMediaNode,
+} from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 
 const variantType = ['comic', 'clean', 'polaroid'] as const;
@@ -15,9 +20,7 @@ export const storyboardPanel = createContentModelSchema({
 	mediaSlots: storyboardPanelMediaSlots,
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const children = new RenderableNodeCursor(
@@ -25,11 +28,17 @@ export const storyboardPanel = createContentModelSchema({
 		);
 
 		// The panel image is an <img> or a scheme-resolved <svg> (placeholder:/icon:).
-		const image = (children.flatten().toArray().filter(n => isMediaNode(n)) as InstanceType<typeof Tag>[]).slice(0, 1);
+		const image = (
+			children
+				.flatten()
+				.toArray()
+				.filter((n) => isMediaNode(n)) as InstanceType<typeof Tag>[]
+		).slice(0, 1);
 		const caption = children.tag('p').limit(1);
 		const body = children.wrap('div');
 
-		return createComponentRenderable({ rune: 'storyboard-panel',
+		return createComponentRenderable({
+			rune: 'storyboard-panel',
 			tag: 'div',
 			refs: {
 				image,
@@ -54,7 +63,10 @@ function convertStoryboardChildren(nodes: unknown[]): unknown[] {
 	};
 
 	for (const node of nodes as Node[]) {
-		if (node.type === 'image' || (node.type === 'paragraph' && Array.from(node.walk()).some(n => n.type === 'image'))) {
+		if (
+			node.type === 'image' ||
+			(node.type === 'paragraph' && Array.from(node.walk()).some((n) => n.type === 'image'))
+		) {
 			// Image starts a new panel
 			flushPanel();
 			currentPanelChildren.push(node);
@@ -73,14 +85,25 @@ function convertStoryboardChildren(nodes: unknown[]): unknown[] {
 
 export const storyboard = createContentModelSchema({
 	attributes: {
-		columns: { type: Number, required: false, description: 'Number of panel columns in the grid layout.' },
-		variant: { type: String, required: false, matches: variantType.slice(), description: 'Visual style: comic (speech bubbles), clean (minimal), or polaroid (photo frame).' },
+		columns: {
+			type: Number,
+			required: false,
+			description: 'Number of panel columns in the grid layout.',
+		},
+		variant: {
+			type: String,
+			required: false,
+			matches: variantType.slice(),
+			description:
+				'Visual style: comic (speech bubbles), clean (minimal), or polaroid (photo frame).',
+		},
 	},
 	contentModel: {
 		type: 'custom',
 		processChildren: convertStoryboardChildren,
-		description: 'Image-triggered panel accumulator. Each image starts a new panel; '
-			+ 'subsequent non-image content becomes the panel caption.',
+		description:
+			'Image-triggered panel accumulator. Each image starts a new panel; ' +
+			'subsequent non-image content becomes the panel caption.',
 	},
 	transform(resolved, attrs, config) {
 		const allChildren = asNodes(resolved.children);
@@ -94,7 +117,8 @@ export const storyboard = createContentModelSchema({
 		const panels = body.tag('div').typeof('StoryboardPanel');
 		const panelsContainer = panels.wrap('div');
 
-		return createComponentRenderable({ rune: 'storyboard',
+		return createComponentRenderable({
+			rune: 'storyboard',
 			tag: 'div',
 			properties: {
 				panel: panels,

@@ -68,7 +68,10 @@ export function __resetDrawerState(): void {
  *  `"."`, `"k"`, `"cmd+k"`, `"shift+/"`, `"ctrl+alt+x"`. Returns null when
  *  the input is unparsable so the caller can drop it silently. */
 export function parseShortcut(input: string): ParsedShortcut | null {
-	const parts = input.split('+').map((p) => p.trim().toLowerCase()).filter(Boolean);
+	const parts = input
+		.split('+')
+		.map((p) => p.trim().toLowerCase())
+		.filter(Boolean);
 	if (parts.length === 0) return null;
 	const key = parts[parts.length - 1];
 	if (!key) return null;
@@ -140,7 +143,7 @@ export function drawerBehavior(el: HTMLElement): CleanupFn {
 	if (closeBtn) closeBtn.hidden = false;
 
 	const shortcutAttr = dialog.getAttribute('data-shortcut') ?? undefined;
-	const shortcut = shortcutAttr ? parseShortcut(shortcutAttr) ?? undefined : undefined;
+	const shortcut = shortcutAttr ? (parseShortcut(shortcutAttr) ?? undefined) : undefined;
 
 	const registry = getRegistry(doc);
 	if (registry.has(id)) {

@@ -5,7 +5,11 @@ import { matchesFilterExpr } from '../src/field-match.js';
 import { EntityRegistryImpl } from '../../content/src/registry.js';
 import type { TransformedPage } from '@refrakt-md/types';
 
-function makePage(url: string, title: string, headings: Array<{ level: number; text: string; id: string }> = []): TransformedPage {
+function makePage(
+	url: string,
+	title: string,
+	headings: Array<{ level: number; text: string; id: string }> = [],
+): TransformedPage {
 	return {
 		url,
 		title,
@@ -19,9 +23,15 @@ function makeCtx() {
 	const warnings: Array<{ severity: string; message: string; url?: string }> = [];
 	return {
 		ctx: {
-			info(message: string, url?: string) { warnings.push({ severity: 'info', message, url }); },
-			warn(message: string, url?: string) { warnings.push({ severity: 'warning', message, url }); },
-			error(message: string, url?: string) { warnings.push({ severity: 'error', message, url }); },
+			info(message: string, url?: string) {
+				warnings.push({ severity: 'info', message, url });
+			},
+			warn(message: string, url?: string) {
+				warnings.push({ severity: 'warning', message, url });
+			},
+			error(message: string, url?: string) {
+				warnings.push({ severity: 'error', message, url });
+			},
 		},
 		warnings,
 	};
@@ -85,7 +95,7 @@ describe('corePipelineHooks.register', () => {
 				author: 'Ada',
 				image: '/og.png',
 				category: 'Guides', // custom field
-				status: 'beta',     // custom field
+				status: 'beta', // custom field
 				// reserved routing/render-control keys — must be excluded:
 				layout: 'docs',
 				tint: 'warm',
@@ -117,10 +127,10 @@ describe('corePipelineHooks.register', () => {
 		// the entity is filterable by the shared field-match grammar — the same
 		// path collection/aggregate use, with no resolver change
 		const entity = registry.getById('page', '/guides/intro/')!;
-		expect(matchesFilterExpr(entity, 'tags:guide')).toBe(true);          // array member
+		expect(matchesFilterExpr(entity, 'tags:guide')).toBe(true); // array member
 		expect(matchesFilterExpr(entity, 'category:Guides status:beta')).toBe(true); // AND
 		expect(matchesFilterExpr(entity, 'tags:missing')).toBe(false);
-		expect(matchesFilterExpr(entity, 'layout:docs')).toBe(false);        // reserved → not indexed
+		expect(matchesFilterExpr(entity, 'layout:docs')).toBe(false); // reserved → not indexed
 	});
 });
 
@@ -151,18 +161,18 @@ describe('corePipelineHooks.aggregate', () => {
 		expect(result.breadcrumbPaths.get('/docs/guide/')).toEqual(['/', '/docs/']);
 
 		// /docs/guide/advanced/ has full chain
-		expect(result.breadcrumbPaths.get('/docs/guide/advanced/')).toEqual(['/', '/docs/', '/docs/guide/']);
+		expect(result.breadcrumbPaths.get('/docs/guide/advanced/')).toEqual([
+			'/',
+			'/docs/',
+			'/docs/guide/',
+		]);
 	});
 
 	it('builds a page tree', () => {
 		const registry = new EntityRegistryImpl();
 		const { ctx } = makeCtx();
 
-		const pages = [
-			makePage('/', 'Home'),
-			makePage('/docs/', 'Docs'),
-			makePage('/about/', 'About'),
-		];
+		const pages = [makePage('/', 'Home'), makePage('/docs/', 'Docs'), makePage('/about/', 'About')];
 
 		corePipelineHooks.register!(pages, registry, ctx);
 		const result = corePipelineHooks.aggregate!(registry, ctx) as any;
@@ -179,16 +189,17 @@ describe('corePipelineHooks.aggregate', () => {
 		const registry = new EntityRegistryImpl();
 		const { ctx } = makeCtx();
 
-		const pages = [
-			makePage('/', 'Home'),
-			makePage('/docs/', 'Docs'),
-		];
+		const pages = [makePage('/', 'Home'), makePage('/docs/', 'Docs')];
 
 		corePipelineHooks.register!(pages, registry, ctx);
 		const result = corePipelineHooks.aggregate!(registry, ctx) as any;
 
 		expect(result.pagesByUrl.get('/')).toEqual({ url: '/', title: 'Home', parentUrl: '/' });
-		expect(result.pagesByUrl.get('/docs/')).toEqual({ url: '/docs/', title: 'Docs', parentUrl: '/' });
+		expect(result.pagesByUrl.get('/docs/')).toEqual({
+			url: '/docs/',
+			title: 'Docs',
+			parentUrl: '/',
+		});
 	});
 
 	it('builds a heading index', () => {
@@ -216,7 +227,12 @@ describe('corePipelineHooks validations', () => {
 		const { ctx, warnings } = makeCtx();
 
 		// Register a page first from a "shadow" source
-		registry.register({ type: 'page', id: '/docs/', sourceUrl: '/other/', data: { url: '/docs/', title: 'Shadow', parentUrl: '/' } });
+		registry.register({
+			type: 'page',
+			id: '/docs/',
+			sourceUrl: '/other/',
+			data: { url: '/docs/', title: 'Shadow', parentUrl: '/' },
+		});
 
 		// Now run the register hook — it should detect the collision
 		corePipelineHooks.register!([makePage('/docs/', 'Docs')], registry, ctx);
@@ -230,12 +246,8 @@ describe('corePipelineHooks validations', () => {
 		const registry = new EntityRegistryImpl();
 		const { ctx, warnings } = makeCtx();
 
-		corePipelineHooks.register!([
-			makePage('/', 'Home'),
-			makePage('/docs/', 'Docs'),
-		], registry, ctx);
+		corePipelineHooks.register!([makePage('/', 'Home'), makePage('/docs/', 'Docs')], registry, ctx);
 
 		expect(warnings).toHaveLength(0);
 	});
-
 });

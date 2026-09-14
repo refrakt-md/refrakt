@@ -59,7 +59,7 @@ function run(
 const PEOPLE = 'name,role\nAda,Engineer\nGrace,Admiral\n';
 
 describe('include rune (SPEC-129)', () => {
-	it('pastes the file\'s AST into the page', () => {
+	it("pastes the file's AST into the page", () => {
 		const { rendered } = run('{% include file="intro.md" /%}', {
 			partials: { 'intro.md': '## Shared heading\n\nShared body.\n' },
 		});
@@ -91,7 +91,9 @@ describe('include rune (SPEC-129)', () => {
 		it('is the difference from {% partial %}, which leaves the tag to its throwing transform', () => {
 			// The same file, the same page, the same partial map — only the call
 			// site changes. This is the comparison the error message describes.
-			const partials = { 'rows.md': '{% data src="people.csv" %}\n## {% $row.name %}\n{% /data %}\n' };
+			const partials = {
+				'rows.md': '{% data src="people.csv" %}\n## {% $row.name %}\n{% /data %}\n',
+			};
 			const files = { 'people.csv': PEOPLE };
 			expect(() => run('{% partial file="rows.md" /%}', { partials, files })).toThrow(
 				/reached the transform phase unresolved/,
@@ -101,7 +103,7 @@ describe('include rune (SPEC-129)', () => {
 	});
 
 	describe('splicing', () => {
-		it('splices as siblings, so a parent rune\'s content model reads the content', () => {
+		it("splices as siblings, so a parent rune's content model reads the content", () => {
 			// `accordion` splits on h2s. If the pasted nodes were wrapped in a
 			// container the accordion would see one opaque child and produce no
 			// items — SPEC-127's measured failure, silent in both cases.
@@ -114,15 +116,18 @@ describe('include rune (SPEC-129)', () => {
 		});
 
 		it('keeps the nodes around an include intact', () => {
-			const { rendered } = run(
-				'# Before\n\n{% include file="mid.md" /%}\n\n# After\n',
-				{ partials: { 'mid.md': '## Middle\n' } },
-			);
+			const { rendered } = run('# Before\n\n{% include file="mid.md" /%}\n\n# After\n', {
+				partials: { 'mid.md': '## Middle\n' },
+			});
 			const headings = findAllTags(rendered, (t) => t.name === 'h1' || t.name === 'h2');
-			expect(headings.map((h) => (h.children ?? []).join(''))).toEqual(['Before', 'Middle', 'After']);
+			expect(headings.map((h) => (h.children ?? []).join(''))).toEqual([
+				'Before',
+				'Middle',
+				'After',
+			]);
 		});
 
-		it('does not let one page\'s resolution leak into the next page\'s copy', () => {
+		it("does not let one page's resolution leak into the next page's copy", () => {
 			// A build parses each partial once and hands every page the same node
 			// objects, while the later preprocessors mutate the tree in place — so
 			// include has to clone before it pastes.
@@ -133,11 +138,19 @@ describe('include rune (SPEC-129)', () => {
 			// missing clone writes the first page's result into the second page's
 			// source.
 			const parsed = {
-				'rows.md': Markdoc.parse('{% div %}\n{% data src=$src %}\n## {% $row.name %}\n{% /data %}\n{% /div %}\n'),
+				'rows.md': Markdoc.parse(
+					'{% div %}\n{% data src=$src %}\n## {% $row.name %}\n{% /data %}\n{% /div %}\n',
+				),
 			};
 			const files = { 'a.csv': 'name\nAda\n', 'b.csv': 'name\nGrace\n' };
-			const first = run('{% include file="rows.md" variables={src: "a.csv"} /%}', { parsed, files });
-			const second = run('{% include file="rows.md" variables={src: "b.csv"} /%}', { parsed, files });
+			const first = run('{% include file="rows.md" variables={src: "a.csv"} /%}', {
+				parsed,
+				files,
+			});
+			const second = run('{% include file="rows.md" variables={src: "b.csv"} /%}', {
+				parsed,
+				files,
+			});
 			const names = (r: ReturnType<typeof run>) =>
 				findAllTags(r.rendered, (t) => t.name === 'h2').map((h) => (h.children ?? []).join(''));
 			expect(first.errors).toEqual([]);
@@ -149,10 +162,9 @@ describe('include rune (SPEC-129)', () => {
 
 	describe('variables', () => {
 		it('substitutes a binding into text', () => {
-			const { rendered } = run(
-				'{% include file="greet.md" variables={who: "Ada"} /%}',
-				{ partials: { 'greet.md': 'Hello {% $who %}.\n' } },
-			);
+			const { rendered } = run('{% include file="greet.md" variables={who: "Ada"} /%}', {
+				partials: { 'greet.md': 'Hello {% $who %}.\n' },
+			});
 			expect(JSON.stringify(rendered)).toContain('Ada');
 		});
 
@@ -165,7 +177,9 @@ describe('include rune (SPEC-129)', () => {
 			const { rendered, errors } = run(
 				'{% include file="rows.md" variables={q: "role:Admiral"} /%}',
 				{
-					partials: { 'rows.md': '{% data src="people.csv" where=$q %}\n## {% $row.name %}\n{% /data %}\n' },
+					partials: {
+						'rows.md': '{% data src="people.csv" where=$q %}\n## {% $row.name %}\n{% /data %}\n',
+					},
 					files: { 'people.csv': PEOPLE },
 					variables: {},
 				},
@@ -180,23 +194,26 @@ describe('include rune (SPEC-129)', () => {
 			// surface, so a partial cannot see `$page`. A paste is page content.
 			const ast = Markdoc.parse('{% include file="where.md" /%}');
 			const ctx: PreprocessContext = {
-				info: () => {}, warn: () => {}, error: () => {},
+				info: () => {},
+				warn: () => {},
+				error: () => {},
 				variables: {},
 				partials: { 'where.md': Markdoc.parse('Page: {% $page.slug %}\n') },
 			};
 			preprocessIncludes(ast, { url: '/page', relativePath: 'page.md', filePath: '/page.md' }, ctx);
-			const rendered = Markdoc.transform(ast, { tags, nodes, variables: { page: { slug: 'card' } } });
+			const rendered = Markdoc.transform(ast, {
+				tags,
+				nodes,
+				variables: { page: { slug: 'card' } },
+			});
 			expect(JSON.stringify(rendered)).toContain('card');
 		});
 
 		it('resolves a page variable used as a binding value', () => {
-			const { rendered } = run(
-				'{% include file="greet.md" variables={who: $page.slug} /%}',
-				{
-					partials: { 'greet.md': 'Hello {% $who %}.\n' },
-					variables: { page: { slug: 'card' } },
-				},
-			);
+			const { rendered } = run('{% include file="greet.md" variables={who: $page.slug} /%}', {
+				partials: { 'greet.md': 'Hello {% $who %}.\n' },
+				variables: { page: { slug: 'card' } },
+			});
 			expect(JSON.stringify(rendered)).toContain('card');
 		});
 	});
@@ -285,9 +302,15 @@ describe('include rune (SPEC-129)', () => {
 
 	it('no-ops when no partials are wired, leaving the schema to name it', () => {
 		const ast = Markdoc.parse('{% include file="a.md" /%}');
-		const ctx: PreprocessContext = { info: () => {}, warn: () => {}, error: () => {}, variables: {} };
-		expect(preprocessIncludes(ast, { url: '/p', relativePath: 'p.md', filePath: '/p.md' }, ctx))
-			.toBeUndefined();
+		const ctx: PreprocessContext = {
+			info: () => {},
+			warn: () => {},
+			error: () => {},
+			variables: {},
+		};
+		expect(
+			preprocessIncludes(ast, { url: '/p', relativePath: 'p.md', filePath: '/p.md' }, ctx),
+		).toBeUndefined();
 		expect(() => Markdoc.transform(ast, { tags, nodes })).toThrow(/preprocess hook was not wired/);
 	});
 });

@@ -65,7 +65,7 @@ export function renderTokenCss() {
 	// inside `@layer skin` so the whole theme is layered uniformly; otherwise the
 	// generated (unlayered) tokens would beat skin `:root` overrides (e.g. the
 	// surface radius aliases) regardless of source order.
-	const wrap = body => `@layer skin {\n${body}\n}\n`;
+	const wrap = (body) => `@layer skin {\n${body}\n}\n`;
 	const baseBody = iconCss ? `${HEADER}\n${base}\n${iconCss}` : `${HEADER}\n${base}`;
 	return {
 		base: wrap(baseBody),

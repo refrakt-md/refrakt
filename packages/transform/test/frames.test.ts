@@ -7,7 +7,9 @@ import type { SerializedTag } from '@refrakt-md/types';
 const asTag = (n: any): SerializedTag => n as SerializedTag;
 
 const config: ThemeConfig = {
-	prefix: 'rf', tokenPrefix: '--rf', icons: {},
+	prefix: 'rf',
+	tokenPrefix: '--rf',
+	icons: {},
 	frames: {
 		screenshot: { shadow: 'lg', aspect: '16/9' },
 		'hero-peek': { extends: 'screenshot', displace: 'bottom', offset: 'lg' },
@@ -38,7 +40,10 @@ function findMedia(node: any): SerializedTag | undefined {
 describe('SPEC-086 frame chrome', () => {
 	it('applies a frame preset to the media zone (default media target)', () => {
 		const transform = createTransform(config);
-		const tag = makeTag('div', { 'data-rune': 'card' }, [mediaChild(), frameMeta('frame', 'screenshot')]);
+		const tag = makeTag('div', { 'data-rune': 'card' }, [
+			mediaChild(),
+			frameMeta('frame', 'screenshot'),
+		]);
 		const result = asTag(transform(tag));
 		const media = findMedia(result)!;
 		expect(media.attributes['data-frame']).toBe('screenshot');
@@ -50,7 +55,10 @@ describe('SPEC-086 frame chrome', () => {
 
 	it('resolves `extends` and merges displace/offset (offset via the named scale)', () => {
 		const transform = createTransform(config);
-		const tag = makeTag('div', { 'data-rune': 'card' }, [mediaChild(), frameMeta('frame', 'hero-peek')]);
+		const tag = makeTag('div', { 'data-rune': 'card' }, [
+			mediaChild(),
+			frameMeta('frame', 'hero-peek'),
+		]);
 		const media = findMedia(asTag(transform(tag)))!;
 		expect(media.attributes['data-displace']).toBe('bottom');
 		expect(media.attributes['data-frame-shadow']).toBe('lg'); // inherited
@@ -89,7 +97,10 @@ describe('SPEC-086 frame chrome', () => {
 
 	it('consumes frame metas (stripped from output)', () => {
 		const transform = createTransform(config);
-		const tag = makeTag('div', { 'data-rune': 'card' }, [mediaChild(), frameMeta('frame', 'screenshot')]);
+		const tag = makeTag('div', { 'data-rune': 'card' }, [
+			mediaChild(),
+			frameMeta('frame', 'screenshot'),
+		]);
 		const result = asTag(transform(tag));
 		const hasFrameMeta = (result.children as any[]).some(
 			(c) => c?.name === 'meta' && c.attributes?.['data-field'] === 'frame',
@@ -100,7 +111,10 @@ describe('SPEC-086 frame chrome', () => {
 	// SPEC-086 × guestFit — a displaced guest defaults to its host's containment.
 	it('defaults a displaced guest to bleed on a bleed host', () => {
 		const transform = createTransform(config);
-		const tag = makeTag('div', { 'data-rune': 'hero' }, [mediaChild(), frameMeta('frame-displace', 'bottom')]);
+		const tag = makeTag('div', { 'data-rune': 'hero' }, [
+			mediaChild(),
+			frameMeta('frame-displace', 'bottom'),
+		]);
 		const media = findMedia(asTag(transform(tag)))!;
 		expect(media.attributes['data-displace']).toBe('bottom');
 		expect(media.attributes['data-displace-mode']).toBe('bleed');
@@ -108,7 +122,10 @@ describe('SPEC-086 frame chrome', () => {
 
 	it('leaves a clip host to the peek default (no displace-mode emitted)', () => {
 		const transform = createTransform(config);
-		const tag = makeTag('div', { 'data-rune': 'card' }, [mediaChild(), frameMeta('frame-displace', 'bottom')]);
+		const tag = makeTag('div', { 'data-rune': 'card' }, [
+			mediaChild(),
+			frameMeta('frame-displace', 'bottom'),
+		]);
 		const media = findMedia(asTag(transform(tag)))!;
 		expect(media.attributes['data-displace']).toBe('bottom');
 		expect(media.attributes['data-displace-mode']).toBeUndefined();
@@ -128,7 +145,10 @@ describe('SPEC-086 frame chrome', () => {
 	// SPEC-116 — frame-overflow="bleed"
 	it('emits data-frame-overflow on a bleed host', () => {
 		const transform = createTransform(config);
-		const tag = makeTag('div', { 'data-rune': 'hero' }, [mediaChild(), frameMeta('frame-overflow', 'bleed')]);
+		const tag = makeTag('div', { 'data-rune': 'hero' }, [
+			mediaChild(),
+			frameMeta('frame-overflow', 'bleed'),
+		]);
 		const media = findMedia(asTag(transform(tag)))!;
 		expect(media.attributes['data-frame-overflow']).toBe('bleed');
 	});
@@ -137,7 +157,10 @@ describe('SPEC-086 frame chrome', () => {
 		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 		const transform = createTransform(config);
 		// Card is a clip host (no guestFit) — the well crops the over-width.
-		const tag = makeTag('div', { 'data-rune': 'card' }, [mediaChild(), frameMeta('frame-overflow', 'bleed')]);
+		const tag = makeTag('div', { 'data-rune': 'card' }, [
+			mediaChild(),
+			frameMeta('frame-overflow', 'bleed'),
+		]);
 		const media = findMedia(asTag(transform(tag)))!;
 		expect(media.attributes['data-frame-overflow']).toBeUndefined();
 		expect(warn).toHaveBeenCalledWith(expect.stringContaining('no effect on `card`'));
@@ -146,7 +169,10 @@ describe('SPEC-086 frame chrome', () => {
 
 	it('clip (default) emits nothing', () => {
 		const transform = createTransform(config);
-		const tag = makeTag('div', { 'data-rune': 'hero' }, [mediaChild(), frameMeta('frame-overflow', 'clip')]);
+		const tag = makeTag('div', { 'data-rune': 'hero' }, [
+			mediaChild(),
+			frameMeta('frame-overflow', 'clip'),
+		]);
 		const media = findMedia(asTag(transform(tag)))!;
 		expect(media.attributes['data-frame-overflow']).toBeUndefined();
 	});

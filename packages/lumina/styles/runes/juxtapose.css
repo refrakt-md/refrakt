@@ -1,86 +1,87 @@
 @layer skin {
-/* Juxtapose — skin. The panel clip/positioning, label placement, media fill, slider
+	/* Juxtapose — skin. The panel clip/positioning, label placement, media fill, slider
  * divider/handle positioning, toggle-bar flex, and meta/label hides live in
  * @refrakt-md/skeleton (styles/runes/juxtapose.css). */
-.rf-juxtapose__panels {
-	border-radius: var(--rf-radius-lg);
-	border: 1px solid var(--rf-color-border);
-	background: var(--rf-color-surface);
-}
-.rf-juxtapose-panel__name {
-	padding: 0.25rem 0.75rem;
-	background: rgba(0, 0, 0, 0.6);
-	color: white;
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-semibold);
-	border-radius: var(--rf-radius-sm);
-}
-.rf-juxtapose__divider {
-	cursor: col-resize;
-}
-.rf-juxtapose:not([data-orientation="horizontal"]) .rf-juxtapose__divider {
-	background: var(--rf-color-bg, #fff);
-	box-shadow: var(--rf-shadow-sm);
-}
-.rf-juxtapose[data-orientation="horizontal"] .rf-juxtapose__divider {
-	background: var(--rf-color-bg, #fff);
-	box-shadow: var(--rf-shadow-sm);
-	cursor: row-resize;
-}
-.rf-juxtapose__divider-handle {
-	border-radius: var(--rf-radius-full);
-	background: var(--rf-color-bg, #fff);
-	border: 2px solid var(--rf-color-border);
-	box-shadow: var(--rf-shadow-md);
-}
-.rf-juxtapose__divider-handle::before {
-	content: '\2194';
-	font-size: var(--rf-text);
-	color: var(--rf-color-muted);
-	line-height: 1;
-}
-.rf-juxtapose[data-orientation="horizontal"] .rf-juxtapose__divider-handle::before {
-	content: '\2195';
-}
-.rf-juxtapose__divider:focus-visible {
-	outline: 2px solid var(--rf-color-primary);
-	outline-offset: 2px;
-}
-.rf-juxtapose__toggle-bar {
-	gap: 0.125rem;
-	padding: 0.125rem;
-	margin-bottom: 0.75rem;
-	background: var(--rf-color-surface-active);
-	border-radius: var(--rf-radius-full);
-}
-.rf-juxtapose__toggle-btn,
-.rf-juxtapose__toggle-btn[data-state] {
-	padding: 0.25rem 0.75rem;
-	border: none;
-	border-radius: var(--rf-radius-full);
-	background: transparent;
-	color: var(--rf-color-muted);
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-medium);
-	cursor: pointer;
-	transition: background 150ms ease, color 150ms ease;
-}
-.rf-juxtapose__toggle-btn:hover {
-	color: var(--rf-color-text);
-}
-.rf-juxtapose__toggle-btn--active,
-.rf-juxtapose__toggle-btn[data-state="active"] {
-	background: var(--rf-color-bg);
-	color: var(--rf-color-text);
-	box-shadow: var(--rf-shadow-xs);
-}
-.rf-juxtapose--fade .rf-juxtapose__panels {
-	cursor: pointer;
-}
-[data-section="media"] > .rf-juxtapose .rf-juxtapose__panels {
-	background: transparent;
-	border: 0;
-	border-radius: var(--rf-radius-media);
-}
-
+	.rf-juxtapose__panels {
+		border-radius: var(--rf-radius-lg);
+		border: 1px solid var(--rf-color-border);
+		background: var(--rf-color-surface);
+	}
+	.rf-juxtapose-panel__name {
+		padding: 0.25rem 0.75rem;
+		background: rgba(0, 0, 0, 0.6);
+		color: white;
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-semibold);
+		border-radius: var(--rf-radius-sm);
+	}
+	.rf-juxtapose__divider {
+		cursor: col-resize;
+	}
+	.rf-juxtapose:not([data-orientation="horizontal"]) .rf-juxtapose__divider {
+		background: var(--rf-color-bg, #fff);
+		box-shadow: var(--rf-shadow-sm);
+	}
+	.rf-juxtapose[data-orientation="horizontal"] .rf-juxtapose__divider {
+		background: var(--rf-color-bg, #fff);
+		box-shadow: var(--rf-shadow-sm);
+		cursor: row-resize;
+	}
+	.rf-juxtapose__divider-handle {
+		border-radius: var(--rf-radius-full);
+		background: var(--rf-color-bg, #fff);
+		border: 2px solid var(--rf-color-border);
+		box-shadow: var(--rf-shadow-md);
+	}
+	.rf-juxtapose__divider-handle::before {
+		content: "\2194";
+		font-size: var(--rf-text);
+		color: var(--rf-color-muted);
+		line-height: 1;
+	}
+	.rf-juxtapose[data-orientation="horizontal"] .rf-juxtapose__divider-handle::before {
+		content: "\2195";
+	}
+	.rf-juxtapose__divider:focus-visible {
+		outline: 2px solid var(--rf-color-primary);
+		outline-offset: 2px;
+	}
+	.rf-juxtapose__toggle-bar {
+		gap: 0.125rem;
+		padding: 0.125rem;
+		margin-bottom: 0.75rem;
+		background: var(--rf-color-surface-active);
+		border-radius: var(--rf-radius-full);
+	}
+	.rf-juxtapose__toggle-btn,
+	.rf-juxtapose__toggle-btn[data-state] {
+		padding: 0.25rem 0.75rem;
+		border: none;
+		border-radius: var(--rf-radius-full);
+		background: transparent;
+		color: var(--rf-color-muted);
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-medium);
+		cursor: pointer;
+		transition:
+			background 150ms ease,
+			color 150ms ease;
+	}
+	.rf-juxtapose__toggle-btn:hover {
+		color: var(--rf-color-text);
+	}
+	.rf-juxtapose__toggle-btn--active,
+	.rf-juxtapose__toggle-btn[data-state="active"] {
+		background: var(--rf-color-bg);
+		color: var(--rf-color-text);
+		box-shadow: var(--rf-shadow-xs);
+	}
+	.rf-juxtapose--fade .rf-juxtapose__panels {
+		cursor: pointer;
+	}
+	[data-section="media"] > .rf-juxtapose .rf-juxtapose__panels {
+		background: transparent;
+		border: 0;
+		border-radius: var(--rf-radius-media);
+	}
 }

@@ -126,7 +126,7 @@ export function assembleFromDirectory(
 	const htmlFiles = byRole.get('html') ?? [];
 	let htmlFile: DiscoveredFile | undefined;
 	if (htmlFiles.length > 1) {
-		htmlFile = htmlFiles.find(f => f.name === 'index.html') ?? htmlFiles[0];
+		htmlFile = htmlFiles.find((f) => f.name === 'index.html') ?? htmlFiles[0];
 		warnings.push(`Sandbox src "${srcName}" has multiple .html files — using ${htmlFile.name}`);
 	} else if (htmlFiles.length === 1) {
 		htmlFile = htmlFiles[0];
@@ -136,15 +136,15 @@ export function assembleFromDirectory(
 
 	// CSS — concatenate alphabetically
 	const cssFiles = byRole.get('css') ?? [];
-	const cssContent = cssFiles.map(f => f.content).join('\n');
+	const cssContent = cssFiles.map((f) => f.content).join('\n');
 
 	// JS — concatenate alphabetically
 	const jsFiles = byRole.get('js') ?? [];
-	let jsContent = jsFiles.map(f => f.content).join('\n');
+	let jsContent = jsFiles.map((f) => f.content).join('\n');
 
 	// SVG — inject into HTML body
 	const svgFiles = byRole.get('svg') ?? [];
-	const svgContent = svgFiles.map(f => f.content).join('\n');
+	const svgContent = svgFiles.map((f) => f.content).join('\n');
 
 	// Shaders — inject as JS constants
 	const vertFile = (byRole.get('glsl-vert') ?? [])[0];
@@ -186,7 +186,7 @@ export function assembleFromDirectory(
 		});
 	}
 	if (cssContent) {
-		const originNames = cssFiles.map(f => `${srcName}/${f.name}`).join(', ');
+		const originNames = cssFiles.map((f) => `${srcName}/${f.name}`).join(', ');
 		panels.push({
 			label: `CSS`,
 			language: 'css',
@@ -198,7 +198,7 @@ export function assembleFromDirectory(
 		const originParts: string[] = [];
 		if (vertFile) originParts.push(`${srcName}/${vertFile.name}`);
 		if (fragFile) originParts.push(`${srcName}/${fragFile.name}`);
-		originParts.push(...jsFiles.map(f => `${srcName}/${f.name}`));
+		originParts.push(...jsFiles.map((f) => `${srcName}/${f.name}`));
 		panels.push({
 			label: `JavaScript`,
 			language: 'javascript',

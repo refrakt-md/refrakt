@@ -2,10 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import {
-	runes as coreRunes,
-	type ReferenceContext,
-} from '@refrakt-md/runes';
+import { runes as coreRunes, type ReferenceContext } from '@refrakt-md/runes';
 import {
 	referenceNameCommand,
 	referenceListCommand,
@@ -25,7 +22,11 @@ describe('referenceNameCommand', () => {
 	const ctx = buildTestContext();
 
 	it('returns markdown for a known rune', () => {
-		const result = referenceNameCommand(ctx, { name: 'hint', format: 'markdown', noExample: false });
+		const result = referenceNameCommand(ctx, {
+			name: 'hint',
+			format: 'markdown',
+			noExample: false,
+		});
 		expect(result.exitCode).toBe(0);
 		expect(result.output).toContain('### hint');
 		expect(result.output).toContain('Attributes:');
@@ -33,13 +34,21 @@ describe('referenceNameCommand', () => {
 	});
 
 	it('resolves rune by alias', () => {
-		const result = referenceNameCommand(ctx, { name: 'callout', format: 'markdown', noExample: false });
+		const result = referenceNameCommand(ctx, {
+			name: 'callout',
+			format: 'markdown',
+			noExample: false,
+		});
 		expect(result.exitCode).toBe(0);
 		expect(result.output).toContain('### hint');
 	});
 
 	it('returns exit code 1 for unknown rune', () => {
-		const result = referenceNameCommand(ctx, { name: 'nonexistent', format: 'markdown', noExample: false });
+		const result = referenceNameCommand(ctx, {
+			name: 'nonexistent',
+			format: 'markdown',
+			noExample: false,
+		});
 		expect(result.exitCode).toBe(1);
 		expect(result.output).toContain('Unknown rune');
 	});
@@ -107,7 +116,12 @@ describe('referenceListCommand', () => {
 		const dir = mkdtempSync(join(tmpdir(), 'refrakt-ref-'));
 		try {
 			const out = join(dir, 'runes.json');
-			const result = referenceDumpCommand(ctx, { format: 'json', output: out, section: '# Available Runes', check: false });
+			const result = referenceDumpCommand(ctx, {
+				format: 'json',
+				output: out,
+				section: '# Available Runes',
+				check: false,
+			});
 			expect(result.exitCode).toBe(0);
 			const names = JSON.parse(readFileSync(out, 'utf8')).map((r: { name: string }) => r.name);
 			expect(names).toContain('accordion-item');
@@ -123,10 +137,18 @@ describe('referenceListCommand', () => {
 		const dir = mkdtempSync(join(tmpdir(), 'refrakt-ref-'));
 		try {
 			const out = join(dir, 'runes.json');
-			referenceDumpCommand(ctx, { format: 'json', output: out, section: '# Available Runes', check: false });
-			const names: string[] = JSON.parse(readFileSync(out, 'utf8')).map((r: { name: string }) => r.name);
+			referenceDumpCommand(ctx, {
+				format: 'json',
+				output: out,
+				section: '# Available Runes',
+				check: false,
+			});
+			const names: string[] = JSON.parse(readFileSync(out, 'utf8')).map(
+				(r: { name: string }) => r.name,
+			);
 			const unresolvable = names.filter(
-				name => referenceNameCommand(ctx, { name, format: 'markdown', noExample: true }).exitCode !== 0,
+				(name) =>
+					referenceNameCommand(ctx, { name, format: 'markdown', noExample: true }).exitCode !== 0,
 			);
 			expect(unresolvable).toEqual([]);
 		} finally {
@@ -194,15 +216,35 @@ describe('referenceDumpCommand', () => {
 	it('is deterministic (byte-identical across runs)', () => {
 		const pathA = join(tempDir, 'A.md');
 		const pathB = join(tempDir, 'B.md');
-		referenceDumpCommand(ctx, { output: pathA, format: 'markdown', section: '# Available Runes', check: false });
-		referenceDumpCommand(ctx, { output: pathB, format: 'markdown', section: '# Available Runes', check: false });
+		referenceDumpCommand(ctx, {
+			output: pathA,
+			format: 'markdown',
+			section: '# Available Runes',
+			check: false,
+		});
+		referenceDumpCommand(ctx, {
+			output: pathB,
+			format: 'markdown',
+			section: '# Available Runes',
+			check: false,
+		});
 		expect(readFileSync(pathA, 'utf-8')).toBe(readFileSync(pathB, 'utf-8'));
 	});
 
 	it('--check exits 0 when file is up to date', () => {
 		const outputPath = join(tempDir, 'AGENTS.md');
-		referenceDumpCommand(ctx, { output: outputPath, format: 'markdown', section: '# Available Runes', check: false });
-		const result = referenceDumpCommand(ctx, { output: outputPath, format: 'markdown', section: '# Available Runes', check: true });
+		referenceDumpCommand(ctx, {
+			output: outputPath,
+			format: 'markdown',
+			section: '# Available Runes',
+			check: false,
+		});
+		const result = referenceDumpCommand(ctx, {
+			output: outputPath,
+			format: 'markdown',
+			section: '# Available Runes',
+			check: true,
+		});
 		expect(result.exitCode).toBe(0);
 		expect(result.wrote).toBe(false);
 	});
@@ -210,23 +252,39 @@ describe('referenceDumpCommand', () => {
 	it('--check exits 1 when file is stale', () => {
 		const outputPath = join(tempDir, 'AGENTS.md');
 		writeFileSync(outputPath, '# Available Runes\n\nOut of date content.\n');
-		const result = referenceDumpCommand(ctx, { output: outputPath, format: 'markdown', section: '# Available Runes', check: true });
+		const result = referenceDumpCommand(ctx, {
+			output: outputPath,
+			format: 'markdown',
+			section: '# Available Runes',
+			check: true,
+		});
 		expect(result.exitCode).toBe(1);
 		expect(result.message).toContain('out of date');
 	});
 
 	it('--check exits 1 when file does not exist', () => {
 		const outputPath = join(tempDir, 'missing.md');
-		const result = referenceDumpCommand(ctx, { output: outputPath, format: 'markdown', section: '# Available Runes', check: true });
+		const result = referenceDumpCommand(ctx, {
+			output: outputPath,
+			format: 'markdown',
+			section: '# Available Runes',
+			check: true,
+		});
 		expect(result.exitCode).toBe(1);
 		expect(result.message).toContain('does not exist');
 	});
 
 	it('preserves surrounding content when replacing named section', () => {
 		const outputPath = join(tempDir, 'AGENTS.md');
-		const initial = '# Project Overview\n\nSome intro text here.\n\n# Available Runes\n\nOld runes content.\n\n# Other Section\n\nMore text.\n';
+		const initial =
+			'# Project Overview\n\nSome intro text here.\n\n# Available Runes\n\nOld runes content.\n\n# Other Section\n\nMore text.\n';
 		writeFileSync(outputPath, initial);
-		referenceDumpCommand(ctx, { output: outputPath, format: 'markdown', section: '# Available Runes', check: false });
+		referenceDumpCommand(ctx, {
+			output: outputPath,
+			format: 'markdown',
+			section: '# Available Runes',
+			check: false,
+		});
 		const updated = readFileSync(outputPath, 'utf-8');
 		expect(updated).toContain('# Project Overview');
 		expect(updated).toContain('Some intro text here.');

@@ -22,15 +22,15 @@ import plan from '@refrakt-md/plan';
 
 const fullRunes: Record<string, RuneConfig> = {
 	...baseConfig.runes,
-	...marketing.theme?.runes as Record<string, RuneConfig>,
-	...docs.theme?.runes as Record<string, RuneConfig>,
-	...storytelling.theme?.runes as Record<string, RuneConfig>,
-	...places.theme?.runes as Record<string, RuneConfig>,
-	...business.theme?.runes as Record<string, RuneConfig>,
-	...design.theme?.runes as Record<string, RuneConfig>,
-	...learning.theme?.runes as Record<string, RuneConfig>,
-	...media.theme?.runes as Record<string, RuneConfig>,
-	...plan.theme?.runes as Record<string, RuneConfig>,
+	...(marketing.theme?.runes as Record<string, RuneConfig>),
+	...(docs.theme?.runes as Record<string, RuneConfig>),
+	...(storytelling.theme?.runes as Record<string, RuneConfig>),
+	...(places.theme?.runes as Record<string, RuneConfig>),
+	...(business.theme?.runes as Record<string, RuneConfig>),
+	...(design.theme?.runes as Record<string, RuneConfig>),
+	...(learning.theme?.runes as Record<string, RuneConfig>),
+	...(media.theme?.runes as Record<string, RuneConfig>),
+	...(plan.theme?.runes as Record<string, RuneConfig>),
 };
 
 const fullConfig: ThemeConfig = { ...baseConfig, runes: fullRunes };
@@ -51,7 +51,7 @@ describe('Structure contracts', () => {
 		expect(committed).toBe(generatedJson);
 	});
 
-	it('the repo-level contracts/structures.json stays in sync with Lumina\'s copy', () => {
+	it("the repo-level contracts/structures.json stays in sync with Lumina's copy", () => {
 		const generated = generateStructureContract(fullConfig);
 		const generatedJson = JSON.stringify(generated, null, '\t') + '\n';
 

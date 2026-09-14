@@ -22,9 +22,7 @@ function isListNode(node: RenderableTreeNode): node is Tag {
 const navItem = createContentModelSchema({
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const children = new RenderableNodeCursor(
@@ -44,9 +42,11 @@ const navItem = createContentModelSchema({
 		const directLinks = children.tag('a').toArray();
 		const slug = children.tag('span');
 		const nestedItems = children.tag('ul');
-		const badges = children.toArray().filter(
-			n => Markdoc.Tag.isTag(n) && (n as Tag).attributes?.['data-rune'] === 'badge',
-		) as Tag[];
+		const badges = children
+			.toArray()
+			.filter(
+				(n) => Markdoc.Tag.isTag(n) && (n as Tag).attributes?.['data-rune'] === 'badge',
+			) as Tag[];
 
 		// SPEC-054 — paragraphs that appear under a list item (CommonMark
 		// indented continuation) become per-item descriptions. In a CommonMark
@@ -57,26 +57,27 @@ const navItem = createContentModelSchema({
 		const linkParagraphs: Tag[] = [];
 		const descriptionParagraphs: Tag[] = [];
 		for (const p of paragraphs) {
-			const hasLink = p.children.some(
-				c => Markdoc.Tag.isTag(c) && (c as Tag).name === 'a',
-			);
+			const hasLink = p.children.some((c) => Markdoc.Tag.isTag(c) && (c as Tag).name === 'a');
 			if (hasLink) linkParagraphs.push(p);
 			else descriptionParagraphs.push(p);
 		}
-		const linksFromParagraphs: Tag[] = linkParagraphs.flatMap(
-			p => p.children.filter(
-				(c): c is Tag => Markdoc.Tag.isTag(c) && (c as Tag).name === 'a',
-			),
+		const linksFromParagraphs: Tag[] = linkParagraphs.flatMap((p) =>
+			p.children.filter((c): c is Tag => Markdoc.Tag.isTag(c) && (c as Tag).name === 'a'),
 		);
 		const allLinks: Tag[] = [...directLinks, ...linksFromParagraphs];
 
-		const descriptionText: RenderableTreeNode[] = descriptionParagraphs.flatMap(p => p.children);
-		const description = descriptionText.length > 0
-			? new Markdoc.Tag('span', {
-				'data-name': 'description',
-				class: 'rf-nav-item__description',
-			}, descriptionText)
-			: undefined;
+		const descriptionText: RenderableTreeNode[] = descriptionParagraphs.flatMap((p) => p.children);
+		const description =
+			descriptionText.length > 0
+				? new Markdoc.Tag(
+						'span',
+						{
+							'data-name': 'description',
+							class: 'rf-nav-item__description',
+						},
+						descriptionText,
+					)
+				: undefined;
 
 		// Explicit links (e.g., [Label](/path)) pass through — slug resolution
 		// happens at postProcess time (SPEC-055). The per-item description is
@@ -84,10 +85,10 @@ const navItem = createContentModelSchema({
 		// matching the shape produced by auto=true frontmatter enrichment.
 		if (allLinks.length > 0) {
 			const enrichedLinks = description
-				? allLinks.map(a => ({
-					...a,
-					children: [...(a.children ?? []), description],
-				}))
+				? allLinks.map((a) => ({
+						...a,
+						children: [...(a.children ?? []), description],
+					}))
 				: allLinks;
 			const extraChildren: RenderableTreeNode[] = [];
 			if (badges.length > 0) {
@@ -117,9 +118,7 @@ const navItem = createContentModelSchema({
 			properties: {
 				slug,
 				...(description ? { description } : {}),
-				children: nestedItems.count() > 0
-					? nestedItems.flatten().tag('li')
-					: undefined,
+				children: nestedItems.count() > 0 ? nestedItems.flatten().tag('li') : undefined,
 			},
 			children: itemChildren,
 		});
@@ -177,9 +176,7 @@ function parseNavStructure(allNodes: RenderableTreeNode[]): {
 		if (!currentGroup) {
 			if (Markdoc.Tag.isTag(node) && isListNode(node)) {
 				topLevel.push(
-					...node.children.filter(
-						(c): c is Tag<'li'> => Markdoc.Tag.isTag(c) && c.name === 'li',
-					),
+					...node.children.filter((c): c is Tag<'li'> => Markdoc.Tag.isTag(c) && c.name === 'li'),
 				);
 			}
 			continue;
@@ -233,11 +230,17 @@ function partitionGroupChildren(children: RenderableTreeNode[]): {
 	if (firstBodyIdx !== -1) {
 		// Intro: first slot candidate before the first body block.
 		for (let i = 0; i < firstBodyIdx; i++) {
-			if (isSlotCandidate(children[i])) { introIdx = i; break; }
+			if (isSlotCandidate(children[i])) {
+				introIdx = i;
+				break;
+			}
 		}
 		// Footer: last slot candidate after the last body block.
 		for (let i = children.length - 1; i > lastBodyIdx; i--) {
-			if (isSlotCandidate(children[i])) { footerIdx = i; break; }
+			if (isSlotCandidate(children[i])) {
+				footerIdx = i;
+				break;
+			}
 		}
 	} else {
 		// No body. Preserve the prior simple-group behaviour: a lone slot
@@ -281,9 +284,7 @@ function buildGroupTag(group: ParsedGroup): Tag<'section'> {
 	for (const c of body) {
 		if (Markdoc.Tag.isTag(c) && isListNode(c)) {
 			items.push(
-				...c.children.filter(
-					(x): x is Tag<'li'> => Markdoc.Tag.isTag(x) && x.name === 'li',
-				),
+				...c.children.filter((x): x is Tag<'li'> => Markdoc.Tag.isTag(x) && x.name === 'li'),
 			);
 		}
 	}
@@ -332,25 +333,46 @@ function bucketColumns(sequence: NavSequence): ParsedGroup[][] {
 
 export const nav = createContentModelSchema({
 	attributes: {
-		ordered: { type: Boolean, required: false, description: 'Use numbered list for navigation items' },
-		auto: { type: Boolean, required: false, description: 'Automatically generate from child pages' },
+		ordered: {
+			type: Boolean,
+			required: false,
+			description: 'Use numbered list for navigation items',
+		},
+		auto: {
+			type: Boolean,
+			required: false,
+			description: 'Automatically generate from child pages',
+		},
 		layout: {
 			type: String,
 			required: false,
 			matches: ['vertical', 'menubar', 'columns', 'cards', 'strip'],
-			description: 'Presentation layout: sidebar (vertical), horizontal menubar (header), column grid (footer), cards (section landing), or strip (compact secondary nav). Defaults to vertical.',
+			description:
+				'Presentation layout: sidebar (vertical), horizontal menubar (header), column grid (footer), cards (section landing), or strip (compact secondary nav). Defaults to vertical.',
 		},
-		collapsible: { type: Boolean, required: false, description: 'Make each group collapsible. The group containing the current page auto-expands; others start collapsed. Only meaningful for vertical layout.' },
-		defaultOpen: { type: String, required: false, description: 'Comma-separated group titles to expand by default, overriding the URL-driven auto-open behaviour.' },
+		collapsible: {
+			type: Boolean,
+			required: false,
+			description:
+				'Make each group collapsible. The group containing the current page auto-expands; others start collapsed. Only meaningful for vertical layout.',
+		},
+		defaultOpen: {
+			type: String,
+			required: false,
+			description:
+				'Comma-separated group titles to expand by default, overriding the URL-driven auto-open behaviour.',
+		},
 	},
 	contentModel: {
 		type: 'custom',
 		processChildren: (nodes) => headingsToList({ level: 1 })(nodes as Node[]),
-		description: 'Top-level (#) headings become nav groups; the list directly under each heading becomes the group\'s items. Items are page slugs — wrap in markdown links to set custom labels, or use plain text to resolve the page title. Without headings, a single list becomes a flat nav.',
+		description:
+			"Top-level (#) headings become nav groups; the list directly under each heading becomes the group's items. Items are page slugs — wrap in markdown links to set custom labels, or use plain text to resolve the page title. Without headings, a single list becomes a flat nav.",
 	},
 	transform(resolved, attrs, config) {
 		const collapsible = Boolean(attrs.collapsible);
-		const sourcePath = (config as { variables?: { __sourcePath?: string } }).variables?.__sourcePath;
+		const sourcePath = (config as { variables?: { __sourcePath?: string } }).variables
+			?.__sourcePath;
 
 		const forwardLayout = (tag: Tag): Tag => {
 			if (attrs.layout) tag.attributes.layout = attrs.layout;
@@ -369,12 +391,16 @@ export const nav = createContentModelSchema({
 
 		const maybeWithTrigger = (children: RenderableTreeNode[]): RenderableTreeNode[] => {
 			if (attrs.layout === 'menubar') {
-				const trigger = new Markdoc.Tag('button', {
-					'data-name': 'trigger',
-					type: 'button',
-					'aria-label': 'Toggle navigation',
-					'aria-expanded': 'false',
-				}, []);
+				const trigger = new Markdoc.Tag(
+					'button',
+					{
+						'data-name': 'trigger',
+						type: 'button',
+						'aria-label': 'Toggle navigation',
+						'aria-expanded': 'false',
+					},
+					[],
+				);
 				return [trigger, ...children];
 			}
 			return children;
@@ -383,17 +409,22 @@ export const nav = createContentModelSchema({
 		if (attrs.auto) {
 			// Emit a placeholder with an empty nav and a sentinel meta tag.
 			// The core post-process hook will replace this with resolved child page items.
-			const sentinelMeta = new Markdoc.Tag('meta', { 'data-field': NAV_AUTO_SENTINEL, content: 'true' });
+			const sentinelMeta = new Markdoc.Tag('meta', {
+				'data-field': NAV_AUTO_SENTINEL,
+				content: 'true',
+			});
 
-			return forwardLayout(createComponentRenderable({
-				rune: 'nav',
-				tag: 'nav',
-				properties: {
-					group: [],
-					item: [],
-				},
-				children: maybeWithTrigger([sentinelMeta]),
-			}));
+			return forwardLayout(
+				createComponentRenderable({
+					rune: 'nav',
+					tag: 'nav',
+					properties: {
+						group: [],
+						item: [],
+					},
+					children: maybeWithTrigger([sentinelMeta]),
+				}),
+			);
 		}
 
 		const children = new RenderableNodeCursor(
@@ -416,22 +447,24 @@ export const nav = createContentModelSchema({
 		// downstream if needed; the schema doesn't have a ctx hook here).
 		if (attrs.layout === 'strip') {
 			const flatItems = children.flatten().tag('li');
-			return forwardLayout(createComponentRenderable({
-				rune: 'nav',
-				tag: 'nav',
-				class: attrs.ordered ? 'ordered' : undefined,
-				properties: {
-					group: [],
-					item: flatItems,
-				},
-				children: children.toArray(),
-			}));
+			return forwardLayout(
+				createComponentRenderable({
+					rune: 'nav',
+					tag: 'nav',
+					class: attrs.ordered ? 'ordered' : undefined,
+					properties: {
+						group: [],
+						item: flatItems,
+					},
+					children: children.toArray(),
+				}),
+			);
 		}
 
 		const { topLevel, sequence } = parseNavStructure(children.toArray());
 		const groups = sequence.filter((s): s is ParsedGroup => s.kind === 'group');
 		const hasGroups = groups.length > 0;
-		const hasColumnBreaks = sequence.some(s => s.kind === 'column-break');
+		const hasColumnBreaks = sequence.some((s) => s.kind === 'column-break');
 
 		// Headingless mode: no `##` sections. If `<hr>`s are present and the
 		// layout is columns, bucket the flat items at the top level into
@@ -464,10 +497,27 @@ export const nav = createContentModelSchema({
 				flushColumn();
 
 				const columnTags = columns.map(
-					col => new Markdoc.Tag('div', { 'data-name': 'column' }, col),
+					(col) => new Markdoc.Tag('div', { 'data-name': 'column' }, col),
 				);
 				const allItems = children.flatten().tag('li');
-				return forwardLayout(createComponentRenderable({
+				return forwardLayout(
+					createComponentRenderable({
+						rune: 'nav',
+						tag: 'nav',
+						class: attrs.ordered ? 'ordered' : undefined,
+						properties: {
+							group: [],
+							item: allItems,
+						},
+						children: maybeWithTrigger(columnTags),
+					}),
+				);
+			}
+
+			// Flat list (no groups, no column breaks).
+			const allItems = children.flatten().tag('li');
+			return forwardLayout(
+				createComponentRenderable({
 					rune: 'nav',
 					tag: 'nav',
 					class: attrs.ordered ? 'ordered' : undefined,
@@ -475,22 +525,9 @@ export const nav = createContentModelSchema({
 						group: [],
 						item: allItems,
 					},
-					children: maybeWithTrigger(columnTags),
-				}));
-			}
-
-			// Flat list (no groups, no column breaks).
-			const allItems = children.flatten().tag('li');
-			return forwardLayout(createComponentRenderable({
-				rune: 'nav',
-				tag: 'nav',
-				class: attrs.ordered ? 'ordered' : undefined,
-				properties: {
-					group: [],
-					item: allItems,
-				},
-				children: maybeWithTrigger(children.toArray()),
-			}));
+					children: maybeWithTrigger(children.toArray()),
+				}),
+			);
 		}
 
 		// Has groups. Build group tags with intro/footer slot detection.
@@ -502,11 +539,14 @@ export const nav = createContentModelSchema({
 			}
 		}
 
-		const topLevelContainer = topLevel.length > 0
-			? new Markdoc.Tag('div', { 'data-name': 'top-level' }, [new Markdoc.Tag('ul', {}, topLevel)])
-			: null;
+		const topLevelContainer =
+			topLevel.length > 0
+				? new Markdoc.Tag('div', { 'data-name': 'top-level' }, [
+						new Markdoc.Tag('ul', {}, topLevel),
+					])
+				: null;
 
-		const allGroupItems = groupTags.flatMap(g => {
+		const allGroupItems = groupTags.flatMap((g) => {
 			// Lists now live inside the group's `<div data-name="panel">` wrapper
 			// (added by buildGroupTag). Walk the group's descendants once to
 			// collect every <li> regardless of nesting depth.
@@ -528,13 +568,31 @@ export const nav = createContentModelSchema({
 			const columns = bucketColumns(sequence);
 			const groupTagByRef = new Map(groups.map((g, i) => [g, groupTags[i]]));
 			const columnTags = columns.map(
-				col => new Markdoc.Tag(
-					'div',
-					{ 'data-name': 'column' },
-					col.map(g => groupTagByRef.get(g)!).filter(Boolean) as RenderableTreeNode[],
-				),
+				(col) =>
+					new Markdoc.Tag(
+						'div',
+						{ 'data-name': 'column' },
+						col.map((g) => groupTagByRef.get(g)!).filter(Boolean) as RenderableTreeNode[],
+					),
 			);
-			return forwardLayout(createComponentRenderable({
+			return forwardLayout(
+				createComponentRenderable({
+					rune: 'nav',
+					tag: 'nav',
+					class: attrs.ordered ? 'ordered' : undefined,
+					properties: {
+						group: groupTags,
+						item: [...topLevel, ...allGroupItems],
+					},
+					children: maybeWithTrigger(
+						topLevelContainer ? [topLevelContainer, ...columnTags] : columnTags,
+					),
+				}),
+			);
+		}
+
+		return forwardLayout(
+			createComponentRenderable({
 				rune: 'nav',
 				tag: 'nav',
 				class: attrs.ordered ? 'ordered' : undefined,
@@ -543,22 +601,9 @@ export const nav = createContentModelSchema({
 					item: [...topLevel, ...allGroupItems],
 				},
 				children: maybeWithTrigger(
-					topLevelContainer ? [topLevelContainer, ...columnTags] : columnTags,
+					topLevelContainer ? [topLevelContainer, ...groupTags] : groupTags,
 				),
-			}));
-		}
-
-		return forwardLayout(createComponentRenderable({
-			rune: 'nav',
-			tag: 'nav',
-			class: attrs.ordered ? 'ordered' : undefined,
-			properties: {
-				group: groupTags,
-				item: [...topLevel, ...allGroupItems],
-			},
-			children: maybeWithTrigger(
-				topLevelContainer ? [topLevelContainer, ...groupTags] : groupTags,
-			),
-		}));
+			}),
+		);
 	},
 });

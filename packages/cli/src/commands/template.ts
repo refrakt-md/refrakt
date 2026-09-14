@@ -10,7 +10,11 @@ import { existsSync, readFileSync, mkdirSync, cpSync } from 'node:fs';
 import { resolve, isAbsolute } from 'node:path';
 import { execSync } from 'node:child_process';
 import type { RefraktConfig, SiteConfig } from '@refrakt-md/types';
-import { loadRefraktConfigFile, writeRefraktConfigFile, detectPackageManager } from '../config-file.js';
+import {
+	loadRefraktConfigFile,
+	writeRefraktConfigFile,
+	detectPackageManager,
+} from '../config-file.js';
 import {
 	resolveTargetSite,
 	createSite,
@@ -38,7 +42,9 @@ export function applyTemplateSite(
 	siteKey: string,
 	projectRoot: string,
 ): { deps: string[] } {
-	const manifest = JSON.parse(readFileSync(resolve(templateDir, 'template.json'), 'utf-8')) as TemplateManifestLite;
+	const manifest = JSON.parse(
+		readFileSync(resolve(templateDir, 'template.json'), 'utf-8'),
+	) as TemplateManifestLite;
 	if (manifest.kind && manifest.kind !== 'site') {
 		throw new Error(`template has kind "${manifest.kind}" — only "site" templates are supported`);
 	}
@@ -52,19 +58,34 @@ export function applyTemplateSite(
 	const site = { contentDir, theme: tsite.theme ?? '@refrakt-md/lumina' } as unknown as SiteConfig;
 	const siteRec = site as unknown as Record<string, unknown>;
 	const tsiteRec = tsite as Record<string, unknown>;
-	for (const key of ['plugins', 'routeRules', 'entityRoutes', 'assets', 'backgrounds', 'overrides', 'tints', 'highlight', 'target'] as const) {
+	for (const key of [
+		'plugins',
+		'routeRules',
+		'entityRoutes',
+		'assets',
+		'backgrounds',
+		'overrides',
+		'tints',
+		'highlight',
+		'target',
+	] as const) {
 		if (tsiteRec[key] !== undefined) siteRec[key] = tsiteRec[key];
 	}
 	if (existsSync(resolve(templateDir, 'sandboxes'))) {
 		const sandboxDir = `${base}/sandboxes`;
-		cpSync(resolve(templateDir, 'sandboxes'), resolve(projectRoot, sandboxDir), { recursive: true });
+		cpSync(resolve(templateDir, 'sandboxes'), resolve(projectRoot, sandboxDir), {
+			recursive: true,
+		});
 		site.sandbox = { dir: sandboxDir };
 	}
 
 	createSite(raw, siteKey, site);
 
 	const deps: string[] = [...(tsite.plugins ?? [])];
-	const themePkg = typeof tsite.theme === 'string' ? tsite.theme : (tsite.theme as { package?: string } | undefined)?.package;
+	const themePkg =
+		typeof tsite.theme === 'string'
+			? tsite.theme
+			: (tsite.theme as { package?: string } | undefined)?.package;
 	if (themePkg) deps.push(themePkg);
 	return { deps };
 }
@@ -76,7 +97,9 @@ export async function templateInstallCommand(options: TemplateInstallOptions): P
 	const dir = isAbsolute(source) ? source : resolve(cwd, source);
 	if (!existsSync(resolve(dir, 'template.json'))) {
 		console.error(`Error: "${source}" is not a template directory (no template.json).`);
-		console.error('For a published/bundled template, scaffold with: create-refrakt <name> --template <source>');
+		console.error(
+			'For a published/bundled template, scaffold with: create-refrakt <name> --template <source>',
+		);
 		process.exit(1);
 	}
 
@@ -92,12 +115,15 @@ export async function templateInstallCommand(options: TemplateInstallOptions): P
 	const selection = resolveTargetSite(configData.raw, siteFlag, 'new');
 	if (!selection.key) {
 		console.error(`Error: ${selection.error}.`);
-		if (selection.candidates?.length) console.error(`Existing sites: ${selection.candidates.join(', ')}`);
+		if (selection.candidates?.length)
+			console.error(`Existing sites: ${selection.candidates.join(', ')}`);
 		process.exit(1);
 	}
 
 	// Compat (ADR-023).
-	const manifest = JSON.parse(readFileSync(resolve(dir, 'template.json'), 'utf-8')) as TemplateManifestLite;
+	const manifest = JSON.parse(
+		readFileSync(resolve(dir, 'template.json'), 'utf-8'),
+	) as TemplateManifestLite;
 	const compat = validateCompat(manifest.refrakt, getProjectRefraktVersion(cwd));
 	for (const w of compat.warnings) console.log(`  ⚠ ${w}`);
 	if (compat.errors.length) {
@@ -122,5 +148,7 @@ export async function templateInstallCommand(options: TemplateInstallOptions): P
 
 	console.log('');
 	console.log(`Template installed as site "${selection.key}".`);
-	console.log(`  content → ${(configData.raw.sites?.[selection.key]?.contentDir) ?? `sites/${selection.key}/content`}`);
+	console.log(
+		`  content → ${configData.raw.sites?.[selection.key]?.contentDir ?? `sites/${selection.key}/content`}`,
+	);
 }

@@ -55,7 +55,9 @@ export function writePrompt(options?: WritePromptOptions): string {
 		return FRONTMATTER_INSTRUCTION + exemplars;
 	}
 
-	return FRONTMATTER_INSTRUCTION + `
+	return (
+		FRONTMATTER_INSTRUCTION +
+		`
 
 ## Multi-file output
 
@@ -90,5 +92,7 @@ description: Welcome to the site
 ---
 title: Getting Started
 description: Learn the basics
----` + exemplars;
+---` +
+		exemplars
+	);
 }

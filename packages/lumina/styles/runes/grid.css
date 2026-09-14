@@ -1,10 +1,13 @@
 @layer skin {
-/* Grid — skin. The grid system (tracks, columns, flow, spans, modes, aspect cells,
+	/* Grid — skin. The grid system (tracks, columns, flow, spans, modes, aspect cells,
  * collapse) lives in @refrakt-md/skeleton (styles/runes/grid.css). */
-.rf-grid [data-layout="grid"] {
-	gap: var(--grid-gap, 1.5rem);
-}
-.rf-grid [data-name="cell"] p:first-child { margin-top: 0; }
-.rf-grid [data-name="cell"] p:last-child { margin-bottom: 0; }
-
+	.rf-grid [data-layout="grid"] {
+		gap: var(--grid-gap, 1.5rem);
+	}
+	.rf-grid [data-name="cell"] p:first-child {
+		margin-top: 0;
+	}
+	.rf-grid [data-name="cell"] p:last-child {
+		margin-bottom: 0;
+	}
 }

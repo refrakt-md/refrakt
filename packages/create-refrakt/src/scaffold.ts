@@ -1,4 +1,12 @@
-import { mkdirSync, cpSync, writeFileSync, existsSync, renameSync, readFileSync, rmSync } from 'node:fs';
+import {
+	mkdirSync,
+	cpSync,
+	writeFileSync,
+	existsSync,
+	renameSync,
+	readFileSync,
+	rmSync,
+} from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runInit } from '@refrakt-md/plan/init';
@@ -76,7 +84,12 @@ export async function scaffold(options: ScaffoldOptions): Promise<void> {
 /** Resolve a `--template` value to a template directory: a bundled name under
  *  `templates/<name>`, or a local directory / absolute path (SPEC-109 §5). */
 export function resolveTemplateDir(source: string): string {
-	const bundled = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'templates', source);
+	const bundled = path.resolve(
+		path.dirname(fileURLToPath(import.meta.url)),
+		'..',
+		'templates',
+		source,
+	);
 	if (existsSync(path.join(bundled, 'template.json'))) return bundled;
 	const local = path.isAbsolute(source) ? source : path.resolve(process.cwd(), source);
 	if (existsSync(path.join(local, 'template.json'))) return local;
@@ -107,14 +120,20 @@ interface TemplateManifestLite {
 export function applyTemplate(opts: { targetDir: string; templateSource: string }): void {
 	const { targetDir, templateSource } = opts;
 	const templateDir = resolveTemplateDir(templateSource);
-	const manifest = JSON.parse(readFileSync(path.join(templateDir, 'template.json'), 'utf-8')) as TemplateManifestLite;
+	const manifest = JSON.parse(
+		readFileSync(path.join(templateDir, 'template.json'), 'utf-8'),
+	) as TemplateManifestLite;
 	if (manifest.kind && manifest.kind !== 'site') {
-		throw new Error(`template "${templateSource}" has kind "${manifest.kind}" — only "site" templates are supported`);
+		throw new Error(
+			`template "${templateSource}" has kind "${manifest.kind}" — only "site" templates are supported`,
+		);
 	}
 
 	const configPath = path.join(targetDir, 'refrakt.config.json');
 	if (!existsSync(configPath)) {
-		throw new Error('framework starter did not produce a refrakt.config.json — cannot apply template');
+		throw new Error(
+			'framework starter did not produce a refrakt.config.json — cannot apply template',
+		);
 	}
 	const config = JSON.parse(readFileSync(configPath, 'utf-8')) as {
 		sites?: Record<string, Record<string, unknown>>;
@@ -139,14 +158,26 @@ export function applyTemplate(opts: { targetDir: string; templateSource: string 
 	// activation, so no new build/npm dependency (SPEC-109 §7).
 	if (existsSync(path.join(templateDir, 'sandboxes'))) {
 		const sandboxDirRel = './sandboxes';
-		cpSync(path.join(templateDir, 'sandboxes'), path.resolve(targetDir, sandboxDirRel), { recursive: true });
+		cpSync(path.join(templateDir, 'sandboxes'), path.resolve(targetDir, sandboxDirRel), {
+			recursive: true,
+		});
 		site.sandbox = { dir: sandboxDirRel };
 	}
 
 	// Merge the template's `site` SiteConfig (theme, plugins, routes, assets,
 	// backgrounds, …) over the starter's defaults — author-meaningful fields win.
 	const tsite = manifest.site ?? {};
-	for (const key of ['theme', 'plugins', 'routeRules', 'entityRoutes', 'assets', 'backgrounds', 'overrides', 'tints', 'highlight'] as const) {
+	for (const key of [
+		'theme',
+		'plugins',
+		'routeRules',
+		'entityRoutes',
+		'assets',
+		'backgrounds',
+		'overrides',
+		'tints',
+		'highlight',
+	] as const) {
 		if (tsite[key] !== undefined) site[key] = tsite[key];
 	}
 	if (config.sites) config.sites[siteKey] = site;
@@ -163,15 +194,19 @@ export function applyTemplate(opts: { targetDir: string; templateSource: string 
 function pinTemplateDeps(targetDir: string, tsite: TemplateManifestLite['site']): void {
 	const pkgPath = path.join(targetDir, 'package.json');
 	if (!existsSync(pkgPath) || !tsite) return;
-	const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as { dependencies?: Record<string, string> };
+	const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as {
+		dependencies?: Record<string, string>;
+	};
 	pkg.dependencies = pkg.dependencies ?? {};
 	const v = `~${getRefraktVersion()}`;
 	const pin = (name: string) => {
-		if (!pkg.dependencies![name]) pkg.dependencies![name] = name.startsWith('@refrakt-md/') ? v : 'latest';
+		if (!pkg.dependencies![name])
+			pkg.dependencies![name] = name.startsWith('@refrakt-md/') ? v : 'latest';
 	};
 	for (const p of tsite.plugins ?? []) pin(p);
 	const theme = tsite.theme;
-	const themePkg = typeof theme === 'string' ? theme : (theme as { package?: string } | undefined)?.package;
+	const themePkg =
+		typeof theme === 'string' ? theme : (theme as { package?: string } | undefined)?.package;
 	if (themePkg) pin(themePkg);
 	writeFileSync(pkgPath, JSON.stringify(pkg, null, '\t') + '\n');
 }
@@ -191,16 +226,12 @@ async function scaffoldSvelteKitSite(options: ScaffoldOptions): Promise<void> {
 	const { projectName, targetDir, theme } = options;
 
 	// Copy template directory recursively
-	const templateDir = path.resolve(
-		path.dirname(fileURLToPath(import.meta.url)),
-		'..',
-		'template'
-	);
+	const templateDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'template');
 
 	if (!existsSync(templateDir)) {
 		throw new Error(
 			`Template directory not found at ${templateDir}. ` +
-			`This is a bug in create-refrakt — please report it.`
+				`This is a bug in create-refrakt — please report it.`,
 		);
 	}
 
@@ -220,13 +251,13 @@ async function scaffoldHtmlSite(options: ScaffoldOptions): Promise<void> {
 	const templateDir = path.resolve(
 		path.dirname(fileURLToPath(import.meta.url)),
 		'..',
-		'template-html'
+		'template-html',
 	);
 
 	if (!existsSync(templateDir)) {
 		throw new Error(
 			`Template directory not found at ${templateDir}. ` +
-			`This is a bug in create-refrakt — please report it.`
+				`This is a bug in create-refrakt — please report it.`,
 		);
 	}
 
@@ -274,12 +305,12 @@ function generatePackageJson(projectName: string, theme: string): string {
 			'@sveltejs/kit': '^2.50.0',
 			'@sveltejs/vite-plugin-svelte': '^6.0.0',
 			'@tailwindcss/vite': '^4.0.0',
-			'pagefind': '^1.3.0',
-			'svelte': '^5.0.0',
+			pagefind: '^1.3.0',
+			svelte: '^5.0.0',
 			'svelte-check': '^4.0.0',
-			'tailwindcss': '^4.0.0',
-			'typescript': '^5.4.0',
-			'vite': '^7.0.0',
+			tailwindcss: '^4.0.0',
+			typescript: '^5.4.0',
+			vite: '^7.0.0',
 		},
 	};
 	return JSON.stringify(pkg, null, '\t') + '\n';
@@ -288,18 +319,20 @@ function generatePackageJson(projectName: string, theme: string): string {
 /** Project-scoped MCP server registration. Read by Claude Code, Cursor, and
  *  other MCP-aware clients via `.mcp.json` at the project root. */
 function generateMcpConfig(): string {
-	return JSON.stringify(
-		{
-			mcpServers: {
-				refrakt: {
-					command: 'npx',
-					args: ['@refrakt-md/mcp'],
+	return (
+		JSON.stringify(
+			{
+				mcpServers: {
+					refrakt: {
+						command: 'npx',
+						args: ['@refrakt-md/mcp'],
+					},
 				},
 			},
-		},
-		null,
-		'\t',
-	) + '\n';
+			null,
+			'\t',
+		) + '\n'
+	);
 }
 
 function generateRefraktConfig(theme: string, target: string = 'svelte'): string {
@@ -311,9 +344,7 @@ function generateRefraktConfig(theme: string, target: string = 'svelte'): string
 				theme,
 				target,
 				plugins: ['@refrakt-md/marketing'],
-				routeRules: [
-					{ pattern: '**', layout: 'default' },
-				],
+				routeRules: [{ pattern: '**', layout: 'default' }],
 			},
 		},
 	};
@@ -344,9 +375,9 @@ function generateHtmlPackageJson(projectName: string, theme: string): string {
 			'@markdoc/markdoc': '^0.4.0',
 		},
 		devDependencies: {
-			'esbuild': '^0.25.0',
-			'tsx': '^4.0.0',
-			'typescript': '^5.4.0',
+			esbuild: '^0.25.0',
+			tsx: '^4.0.0',
+			typescript: '^5.4.0',
 		},
 	};
 	return JSON.stringify(pkg, null, '\t') + '\n';
@@ -358,13 +389,13 @@ async function scaffoldAstroSite(options: ScaffoldOptions): Promise<void> {
 	const templateDir = path.resolve(
 		path.dirname(fileURLToPath(import.meta.url)),
 		'..',
-		'template-astro'
+		'template-astro',
 	);
 
 	if (!existsSync(templateDir)) {
 		throw new Error(
 			`Template directory not found at ${templateDir}. ` +
-			`This is a bug in create-refrakt — please report it.`
+				`This is a bug in create-refrakt — please report it.`,
 		);
 	}
 
@@ -384,13 +415,13 @@ async function scaffoldNuxtSite(options: ScaffoldOptions): Promise<void> {
 	const templateDir = path.resolve(
 		path.dirname(fileURLToPath(import.meta.url)),
 		'..',
-		'template-nuxt'
+		'template-nuxt',
 	);
 
 	if (!existsSync(templateDir)) {
 		throw new Error(
 			`Template directory not found at ${templateDir}. ` +
-			`This is a bug in create-refrakt — please report it.`
+				`This is a bug in create-refrakt — please report it.`,
 		);
 	}
 
@@ -410,13 +441,13 @@ async function scaffoldNextSite(options: ScaffoldOptions): Promise<void> {
 	const templateDir = path.resolve(
 		path.dirname(fileURLToPath(import.meta.url)),
 		'..',
-		'template-next'
+		'template-next',
 	);
 
 	if (!existsSync(templateDir)) {
 		throw new Error(
 			`Template directory not found at ${templateDir}. ` +
-			`This is a bug in create-refrakt — please report it.`
+				`This is a bug in create-refrakt — please report it.`,
 		);
 	}
 
@@ -436,21 +467,27 @@ async function scaffoldEleventySite(options: ScaffoldOptions): Promise<void> {
 	const templateDir = path.resolve(
 		path.dirname(fileURLToPath(import.meta.url)),
 		'..',
-		'template-eleventy'
+		'template-eleventy',
 	);
 
 	if (!existsSync(templateDir)) {
 		throw new Error(
 			`Template directory not found at ${templateDir}. ` +
-			`This is a bug in create-refrakt — please report it.`
+				`This is a bug in create-refrakt — please report it.`,
 		);
 	}
 
 	cpSync(templateDir, targetDir, { recursive: true });
 	renameDotfiles(targetDir);
 
-	writeFileSync(path.join(targetDir, 'package.json'), generateEleventyPackageJson(projectName, theme));
-	writeFileSync(path.join(targetDir, 'refrakt.config.json'), generateRefraktConfig(theme, 'eleventy'));
+	writeFileSync(
+		path.join(targetDir, 'package.json'),
+		generateEleventyPackageJson(projectName, theme),
+	);
+	writeFileSync(
+		path.join(targetDir, 'refrakt.config.json'),
+		generateRefraktConfig(theme, 'eleventy'),
+	);
 	writeFileSync(path.join(targetDir, '.mcp.json'), generateMcpConfig());
 	writeFileSync(path.join(targetDir, 'README.md'), generateReadme(projectName));
 	await writeAgentsMd(targetDir, DEFAULT_SCAFFOLDED_PLUGINS);
@@ -458,8 +495,8 @@ async function scaffoldEleventySite(options: ScaffoldOptions): Promise<void> {
 
 function renameDotfiles(targetDir: string): void {
 	const dotfileRenames: Record<string, string> = {
-		'_gitignore': '.gitignore',
-		'_npmrc': '.npmrc',
+		_gitignore: '.gitignore',
+		_npmrc: '.npmrc',
 	};
 	for (const [from, to] of Object.entries(dotfileRenames)) {
 		const srcPath = path.join(targetDir, from);
@@ -490,11 +527,11 @@ function generateAstroPackageJson(projectName: string, theme: string): string {
 			'@refrakt-md/transform': v,
 			'@refrakt-md/types': v,
 			[theme]: v,
-			'astro': '^5.0.0',
+			astro: '^5.0.0',
 			'@markdoc/markdoc': '^0.4.0',
 		},
 		devDependencies: {
-			'typescript': '^5.4.0',
+			typescript: '^5.4.0',
 		},
 	};
 	return JSON.stringify(pkg, null, '\t') + '\n';
@@ -523,8 +560,8 @@ function generateNuxtPackageJson(projectName: string, theme: string): string {
 			'@markdoc/markdoc': '^0.4.0',
 		},
 		devDependencies: {
-			'nuxt': '^3.0.0',
-			'typescript': '^5.4.0',
+			nuxt: '^3.0.0',
+			typescript: '^5.4.0',
 		},
 	};
 	return JSON.stringify(pkg, null, '\t') + '\n';
@@ -551,14 +588,14 @@ function generateNextPackageJson(projectName: string, theme: string): string {
 			'@refrakt-md/transform': v,
 			'@refrakt-md/types': v,
 			[theme]: v,
-			'next': '^15.0.0',
-			'react': '^19.0.0',
+			next: '^15.0.0',
+			react: '^19.0.0',
 			'react-dom': '^19.0.0',
 			'@markdoc/markdoc': '^0.4.0',
 		},
 		devDependencies: {
 			'@types/react': '^19.0.0',
-			'typescript': '^5.4.0',
+			typescript: '^5.4.0',
 		},
 	};
 	return JSON.stringify(pkg, null, '\t') + '\n';
@@ -587,7 +624,7 @@ function generateEleventyPackageJson(projectName: string, theme: string): string
 		},
 		devDependencies: {
 			'@11ty/eleventy': '^3.0.0',
-			'typescript': '^5.4.0',
+			typescript: '^5.4.0',
 		},
 	};
 	return JSON.stringify(pkg, null, '\t') + '\n';
@@ -669,7 +706,10 @@ export function scaffoldTheme(options: ThemeScaffoldOptions): void {
 	writeFileSync(path.join(targetDir, 'tokens', 'dark.css'), generateThemeDarkTokens());
 	writeFileSync(path.join(targetDir, 'styles', 'global.css'), generateThemeGlobalCss());
 	writeFileSync(path.join(targetDir, 'tsconfig.json'), generateThemeTsconfig());
-	writeFileSync(path.join(targetDir, 'test', 'css-coverage.test.ts'), generateThemeCssCoverageTest());
+	writeFileSync(
+		path.join(targetDir, 'test', 'css-coverage.test.ts'),
+		generateThemeCssCoverageTest(),
+	);
 	writeFileSync(path.join(targetDir, 'preview', 'kitchen-sink.md'), generateThemeKitchenSink());
 	writeFileSync(path.join(targetDir, 'base.css'), generateThemeBaseCss());
 
@@ -678,7 +718,10 @@ export function scaffoldTheme(options: ThemeScaffoldOptions): void {
 	if (svelte) {
 		mkdirSync(path.join(targetDir, 'svelte', 'layouts'), { recursive: true });
 		writeFileSync(path.join(targetDir, 'svelte', 'index.ts'), generateThemeSvelteIndex());
-		writeFileSync(path.join(targetDir, 'svelte', 'layouts', 'DefaultLayout.svelte'), generateThemeDefaultLayout());
+		writeFileSync(
+			path.join(targetDir, 'svelte', 'layouts', 'DefaultLayout.svelte'),
+			generateThemeDefaultLayout(),
+		);
 		writeFileSync(path.join(targetDir, 'svelte', 'tokens.css'), generateThemeTokensBridge());
 	}
 }
@@ -1290,7 +1333,11 @@ function rmContentDirSamples(contentDir: string): void {
 	for (const name of ['index.md', 'hello.md', 'about.md']) {
 		const p = path.join(contentDir, name);
 		if (existsSync(p)) {
-			try { writeFileSync(p, ''); } catch { /* ignore */ }
+			try {
+				writeFileSync(p, '');
+			} catch {
+				/* ignore */
+			}
 		}
 	}
 }
@@ -1314,15 +1361,33 @@ function generatePlanSiteRefraktConfig(target: string): string {
 				theme: '@refrakt-md/lumina',
 				target,
 				plugins: ['@refrakt-md/plan'],
-				routeRules: [
-					{ pattern: '**', layout: 'docs' },
-				],
+				routeRules: [{ pattern: '**', layout: 'docs' }],
 				entityRoutes: [
-					{ type: 'spec',      url: '/specs/{id}/',        title: '{title}',         render: '{% expand $item.id /%}' },
-					{ type: 'work',      url: '/work/{id}/',         title: '{id} — {title}',  render: '{% expand $item.id /%}' },
-					{ type: 'bug',       url: '/bugs/{id}/',         title: '{id} — {title}',  render: '{% expand $item.id /%}' },
-					{ type: 'decision',  url: '/decisions/{id}/',    title: '{title}',         render: '{% expand $item.id /%}' },
-					{ type: 'milestone', url: '/milestones/{name}/', title: '{name}',          render: '{% expand $item.name /%}' },
+					{ type: 'spec', url: '/specs/{id}/', title: '{title}', render: '{% expand $item.id /%}' },
+					{
+						type: 'work',
+						url: '/work/{id}/',
+						title: '{id} — {title}',
+						render: '{% expand $item.id /%}',
+					},
+					{
+						type: 'bug',
+						url: '/bugs/{id}/',
+						title: '{id} — {title}',
+						render: '{% expand $item.id /%}',
+					},
+					{
+						type: 'decision',
+						url: '/decisions/{id}/',
+						title: '{title}',
+						render: '{% expand $item.id /%}',
+					},
+					{
+						type: 'milestone',
+						url: '/milestones/{name}/',
+						title: '{name}',
+						render: '{% expand $item.name /%}',
+					},
 				],
 			},
 		},
@@ -1550,7 +1615,10 @@ export function scaffoldPresetPack(options: PresetPackScaffoldOptions): void {
 			variable: '#1c1917',
 		},
 	};
-	writeFileSync(path.join(targetDir, 'src', 'ember.json'), JSON.stringify(ember, null, '\t') + '\n');
+	writeFileSync(
+		path.join(targetDir, 'src', 'ember.json'),
+		JSON.stringify(ember, null, '\t') + '\n',
+	);
 
 	writeFileSync(
 		path.join(targetDir, 'README.md'),
@@ -1596,8 +1664,12 @@ export interface PluginScaffoldOptions {
 
 /** Convert a package name to a safe JS identifier for the Plugin export var. */
 function toIdentifier(name: string): string {
-	const camel = name.replace(/[^a-zA-Z0-9]+(.)/g, (_, c: string) => c.toUpperCase()).replace(/[^a-zA-Z0-9]/g, '');
-	return /^[a-zA-Z_]/.test(camel) ? camel : `plugin${camel.charAt(0).toUpperCase()}${camel.slice(1)}`;
+	const camel = name
+		.replace(/[^a-zA-Z0-9]+(.)/g, (_, c: string) => c.toUpperCase())
+		.replace(/[^a-zA-Z0-9]/g, '');
+	return /^[a-zA-Z_]/.test(camel)
+		? camel
+		: `plugin${camel.charAt(0).toUpperCase()}${camel.slice(1)}`;
 }
 
 /** Scaffold a **plugin** package (SPEC-116 §2): a `Plugin` with one example
@@ -1646,17 +1718,32 @@ export function scaffoldPlugin(options: PluginScaffoldOptions): void {
 	};
 	writeFileSync(path.join(targetDir, 'package.json'), JSON.stringify(pkg, null, '\t') + '\n');
 
-	writeFileSync(path.join(targetDir, 'tsconfig.json'), JSON.stringify({
-		compilerOptions: {
-			target: 'ES2022', module: 'ES2022', moduleResolution: 'bundler',
-			declaration: true, outDir: 'dist', rootDir: 'src',
-			strict: true, esModuleInterop: true, skipLibCheck: true,
-			resolveJsonModule: true,
-		},
-		include: ['src'],
-	}, null, '\t') + '\n');
+	writeFileSync(
+		path.join(targetDir, 'tsconfig.json'),
+		JSON.stringify(
+			{
+				compilerOptions: {
+					target: 'ES2022',
+					module: 'ES2022',
+					moduleResolution: 'bundler',
+					declaration: true,
+					outDir: 'dist',
+					rootDir: 'src',
+					strict: true,
+					esModuleInterop: true,
+					skipLibCheck: true,
+					resolveJsonModule: true,
+				},
+				include: ['src'],
+			},
+			null,
+			'\t',
+		) + '\n',
+	);
 
-	writeFileSync(path.join(targetDir, 'src', 'tags', 'callout.ts'), `import Markdoc from '@markdoc/markdoc';
+	writeFileSync(
+		path.join(targetDir, 'src', 'tags', 'callout.ts'),
+		`import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import {
@@ -1698,9 +1785,12 @@ export const callout = createContentModelSchema({
 \t\t});
 \t},
 });
-`);
+`,
+	);
 
-	writeFileSync(path.join(targetDir, 'src', 'config.ts'), `import type { RuneConfig } from '@refrakt-md/transform';
+	writeFileSync(
+		path.join(targetDir, 'src', 'config.ts'),
+		`import type { RuneConfig } from '@refrakt-md/transform';
 
 /** Identity-transform config for this plugin's runes, keyed by PascalCase
  *  typeName. The engine reads this to add BEM classes, modifiers, and structure. */
@@ -1715,9 +1805,12 @@ export const config: Record<string, RuneConfig> = {
 \t\tautoLabel: { span: 'title', div: 'body' },
 \t},
 };
-`);
+`,
+	);
 
-	writeFileSync(path.join(targetDir, 'src', 'index.ts'), `import type { Plugin } from '@refrakt-md/types';
+	writeFileSync(
+		path.join(targetDir, 'src', 'index.ts'),
+		`import type { Plugin } from '@refrakt-md/types';
 import { callout } from './tags/callout.js';
 import { config } from './config.js';
 
@@ -1740,9 +1833,12 @@ export const ${ident}: Plugin = {
 };
 
 export default ${ident};
-`);
+`,
+	);
 
-	writeFileSync(path.join(targetDir, 'styles', 'callout.css'), `.rf-callout {
+	writeFileSync(
+		path.join(targetDir, 'styles', 'callout.css'),
+		`.rf-callout {
 \tdisplay: block;
 \tpadding: var(--rf-space-4, 1rem);
 \tborder-inline-start: 3px solid var(--rf-color-primary, #3b82f6);
@@ -1763,9 +1859,12 @@ export default ${ident};
 .rf-callout[data-tone='tip'] {
 \tborder-inline-start-color: var(--rf-color-success, #10b981);
 }
-`);
+`,
+	);
 
-	writeFileSync(path.join(targetDir, 'README.md'), `# ${fullName}
+	writeFileSync(
+		path.join(targetDir, 'README.md'),
+		`# ${fullName}
 
 A refrakt **plugin** — a package of custom runes (SPEC-116, plugin authoring guide).
 
@@ -1789,7 +1888,8 @@ npx refrakt inspect callout    # see the emitted HTML/BEM
 ## Use in a site
 
 Add \`"${fullName}"\` to a site's \`plugins\` in \`refrakt.config.json\`.
-`);
+`,
+	);
 }
 
 // ─── Template-package scaffold (SPEC-116 §2) ────────────────────────────────
@@ -1851,11 +1951,16 @@ export function scaffoldTemplate(options: TemplatePackScaffoldOptions): void {
 	};
 	writeFileSync(path.join(targetDir, 'package.json'), JSON.stringify(pkg, null, '\t') + '\n');
 
-	writeFileSync(path.join(targetDir, 'content', '_layout.md'), `---
+	writeFileSync(
+		path.join(targetDir, 'content', '_layout.md'),
+		`---
 layout: docs
 ---
-`);
-	writeFileSync(path.join(targetDir, 'content', 'index.md'), `---
+`,
+	);
+	writeFileSync(
+		path.join(targetDir, 'content', 'index.md'),
+		`---
 title: Home
 description: A site built from the ${templateName} template
 ---
@@ -1866,8 +1971,11 @@ Edit these pages — they are copied into the project at scaffold time and becom
 the author's to change.
 
 - [Get started](/docs/getting-started)
-`);
-	writeFileSync(path.join(targetDir, 'content', 'docs', 'getting-started.md'), `---
+`,
+	);
+	writeFileSync(
+		path.join(targetDir, 'content', 'docs', 'getting-started.md'),
+		`---
 title: Getting started
 description: First steps
 ---
@@ -1877,9 +1985,12 @@ description: First steps
 1. Install dependencies.
 2. Run the dev server.
 3. Edit content under \`content/\`.
-`);
+`,
+	);
 
-	writeFileSync(path.join(targetDir, 'README.md'), `# ${fullName}
+	writeFileSync(
+		path.join(targetDir, 'README.md'),
+		`# ${fullName}
 
 A refrakt.md **site template** (SPEC-109). Installed via:
 
@@ -1898,5 +2009,6 @@ npx create-refrakt my-site --framework svelte --template ${fullName}
 
 Stick to built-in layouts (\`default\`, \`docs\`, \`blog-article\`) so the template
 renders under any theme; a theme-specific custom layout couples it to that theme.
-`);
+`,
+	);
 }

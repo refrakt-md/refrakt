@@ -33,7 +33,11 @@ export interface ResourceContent {
 
 /** Static resource list — dynamic ones (e.g. refrakt://rune/<name>) are
  *  surfaced via templated entries the client can complete. */
-export function listResources(ctx: { cwd: string; hasPlan: boolean; hasSites: boolean }): McpResource[] {
+export function listResources(ctx: {
+	cwd: string;
+	hasPlan: boolean;
+	hasSites: boolean;
+}): McpResource[] {
 	const list: McpResource[] = [
 		{
 			uri: 'refrakt://detect',
@@ -193,11 +197,7 @@ function readPlanEntity(uri: string, cwd: string, type: string, id: string): Res
 	const planDir = resolvePlanDir(cwd);
 	if (!planDir || !existsSync(planDir)) throw resourceError(uri, 'plan directory not found');
 	// Look in plan/<type>s/ first (the convention), then anywhere under plan/.
-	const candidates = [
-		join(planDir, `${type}s`),
-		join(planDir, type),
-		planDir,
-	];
+	const candidates = [join(planDir, `${type}s`), join(planDir, type), planDir];
 	for (const dir of candidates) {
 		if (!existsSync(dir)) continue;
 		const found = findEntityFile(dir, id);

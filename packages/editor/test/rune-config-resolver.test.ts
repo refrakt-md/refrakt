@@ -8,7 +8,9 @@ import { makeRuneConfigResolver } from '../src/server.js';
 // `PullQuote` → `pull-quote`. The resolver must match anyway (typeName, then
 // separator-insensitive name/aliases), exactly as the identity transform does.
 const config: ThemeConfig = {
-	prefix: 'rf', tokenPrefix: '--rf', icons: {},
+	prefix: 'rf',
+	tokenPrefix: '--rf',
+	icons: {},
 	runes: {
 		PullQuote: { block: 'pullquote', defaultReading: 'prose' },
 		TextBlock: { block: 'textblock', defaultReading: 'prose' },

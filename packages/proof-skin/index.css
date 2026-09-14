@@ -9,6 +9,6 @@
  * Load order: skeleton first (it declares `@layer skeleton, skin;`), then the
  * proof's tokens + skin (both self-declare `@layer skin`, winning over skeleton
  * by layer order with plain single-class/attribute selectors — no !important). */
-@import '@refrakt-md/skeleton';
-@import './tokens.css';
-@import './skin.css';
+@import "@refrakt-md/skeleton";
+@import "./tokens.css";
+@import "./skin.css";

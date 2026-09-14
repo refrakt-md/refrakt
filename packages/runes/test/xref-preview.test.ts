@@ -50,7 +50,7 @@ describe('xref preview="drawer" (SPEC-078, WORK-302)', () => {
 			const { ctx } = makeCtx();
 			const out = resolveXrefPreviews(tree, '/p/', undefined, ctx);
 			// Placeholder still has data-rune="xref" — wasn't touched.
-			const placeholders = findAll(out, t => t.attributes?.['data-rune'] === 'xref');
+			const placeholders = findAll(out, (t) => t.attributes?.['data-rune'] === 'xref');
 			expect(placeholders).toHaveLength(1);
 			expect(placeholders[0].attributes['data-xref-preview']).toBeUndefined();
 		});
@@ -58,14 +58,19 @@ describe('xref preview="drawer" (SPEC-078, WORK-302)', () => {
 		it('rewrites preview="drawer" placeholders to an inline anchor + hoist sentinel', () => {
 			const tree = render('See {% ref "SPEC-076" preview="drawer" /%} for the design.');
 			const reg = makeRegistry([
-				{ type: 'spec', id: 'SPEC-076', sourceUrl: '/specs/SPEC-076/', data: { title: 'Aggregate rune' } },
+				{
+					type: 'spec',
+					id: 'SPEC-076',
+					sourceUrl: '/specs/SPEC-076/',
+					data: { title: 'Aggregate rune' },
+				},
 			]);
 			const { ctx } = makeCtx();
 			const out = resolveXrefPreviews(tree, '/p/', reg, ctx);
 
 			const anchors = findAll(
 				out,
-				t => t.name === 'a' && t.attributes.href === '#drawer-SPEC-076',
+				(t) => t.name === 'a' && t.attributes.href === '#drawer-SPEC-076',
 			);
 			expect(anchors).toHaveLength(1);
 			expect(anchors[0].attributes['aria-controls']).toBe('drawer-SPEC-076');
@@ -75,7 +80,7 @@ describe('xref preview="drawer" (SPEC-078, WORK-302)', () => {
 
 			const sentinels = findAll(
 				out,
-				t => t.name === 'meta' && t.attributes['data-field'] === HOIST_DRAWER_SENTINEL,
+				(t) => t.name === 'meta' && t.attributes['data-field'] === HOIST_DRAWER_SENTINEL,
 			);
 			expect(sentinels).toHaveLength(1);
 			expect(sentinels[0].attributes['data-source']).toBe('xref');
@@ -85,11 +90,19 @@ describe('xref preview="drawer" (SPEC-078, WORK-302)', () => {
 		it('uses authored label when set instead of entity title', () => {
 			const tree = render('See {% ref "SPEC-076" label="the aggregate spec" preview="drawer" /%}.');
 			const reg = makeRegistry([
-				{ type: 'spec', id: 'SPEC-076', sourceUrl: '/specs/SPEC-076/', data: { title: 'Aggregate rune' } },
+				{
+					type: 'spec',
+					id: 'SPEC-076',
+					sourceUrl: '/specs/SPEC-076/',
+					data: { title: 'Aggregate rune' },
+				},
 			]);
 			const { ctx } = makeCtx();
 			const out = resolveXrefPreviews(tree, '/p/', reg, ctx);
-			const anchor = findAll(out, t => t.name === 'a' && t.attributes.href === '#drawer-SPEC-076')[0];
+			const anchor = findAll(
+				out,
+				(t) => t.name === 'a' && t.attributes.href === '#drawer-SPEC-076',
+			)[0];
 			expect(anchor.children).toEqual(['the aggregate spec']);
 		});
 
@@ -98,7 +111,10 @@ describe('xref preview="drawer" (SPEC-078, WORK-302)', () => {
 			const reg = makeRegistry([]);
 			const { ctx } = makeCtx();
 			const out = resolveXrefPreviews(tree, '/p/', reg, ctx);
-			const anchor = findAll(out, t => t.name === 'a' && t.attributes.href === '#drawer-MISSING-1')[0];
+			const anchor = findAll(
+				out,
+				(t) => t.name === 'a' && t.attributes.href === '#drawer-MISSING-1',
+			)[0];
 			expect(anchor.children).toEqual(['MISSING-1']);
 		});
 	});
@@ -107,25 +123,33 @@ describe('xref preview="drawer" (SPEC-078, WORK-302)', () => {
 		it('builds a drawer whose body contains an expand-pending placeholder, footer linking to sourceUrl', () => {
 			const tree = render('See {% ref "SPEC-076" preview="drawer" /%}.');
 			const reg = makeRegistry([
-				{ type: 'spec', id: 'SPEC-076', sourceUrl: '/specs/SPEC-076/', data: { title: 'Aggregate rune' } },
+				{
+					type: 'spec',
+					id: 'SPEC-076',
+					sourceUrl: '/specs/SPEC-076/',
+					data: { title: 'Aggregate rune' },
+				},
 			]);
 			const { ctx } = makeCtx();
 			let out = resolveXrefPreviews(tree, '/p/', reg, ctx);
 			out = hoistPreviewDrawers(out, '/p/', reg, undefined, ctx);
 
-			const drawers = findAll(out, t => t.attributes['data-rune'] === 'drawer');
+			const drawers = findAll(out, (t) => t.attributes['data-rune'] === 'drawer');
 			expect(drawers).toHaveLength(1);
 			expect(drawers[0].attributes.id).toBe('drawer-SPEC-076');
 
 			// Body is an expand-pending placeholder pointing at SPEC-076.
-			const placeholders = findAll(drawers[0], t => t.attributes['data-rune'] === 'expand-pending');
+			const placeholders = findAll(
+				drawers[0],
+				(t) => t.attributes['data-rune'] === 'expand-pending',
+			);
 			expect(placeholders).toHaveLength(1);
 			expect(placeholders[0].attributes['data-expand-id']).toBe('SPEC-076');
 
 			// Footer link points at the entity sourceUrl.
-			const footers = findAll(drawers[0], t => t.name === 'footer');
+			const footers = findAll(drawers[0], (t) => t.name === 'footer');
 			expect(footers).toHaveLength(1);
-			const footerLinks = findAll(footers[0], t => t.name === 'a');
+			const footerLinks = findAll(footers[0], (t) => t.name === 'a');
 			expect(footerLinks).toHaveLength(1);
 			expect(footerLinks[0].attributes.href).toBe('/specs/SPEC-076/');
 		});
@@ -139,24 +163,34 @@ describe('xref preview="drawer" (SPEC-078, WORK-302)', () => {
 			const { ctx } = makeCtx();
 			let out = resolveXrefPreviews(tree, '/p/', reg, ctx);
 			out = hoistPreviewDrawers(out, '/p/', reg, undefined, ctx);
-			const drawers = findAll(out, t => t.attributes['data-rune'] === 'drawer');
+			const drawers = findAll(out, (t) => t.attributes['data-rune'] === 'drawer');
 			expect(drawers).toHaveLength(1);
-			const footers = findAll(drawers[0], t => t.name === 'footer');
+			const footers = findAll(drawers[0], (t) => t.name === 'footer');
 			expect(footers).toHaveLength(0);
 		});
 
 		it('multiple references to the same entity dedupe to one hoisted drawer', () => {
-			const tree = render('A {% ref "SPEC-076" preview="drawer" /%} and B {% ref "SPEC-076" preview="drawer" /%}.');
+			const tree = render(
+				'A {% ref "SPEC-076" preview="drawer" /%} and B {% ref "SPEC-076" preview="drawer" /%}.',
+			);
 			const reg = makeRegistry([
-				{ type: 'spec', id: 'SPEC-076', sourceUrl: '/specs/SPEC-076/', data: { title: 'Aggregate rune' } },
+				{
+					type: 'spec',
+					id: 'SPEC-076',
+					sourceUrl: '/specs/SPEC-076/',
+					data: { title: 'Aggregate rune' },
+				},
 			]);
 			const { ctx } = makeCtx();
 			let out = resolveXrefPreviews(tree, '/p/', reg, ctx);
 			out = hoistPreviewDrawers(out, '/p/', reg, undefined, ctx);
-			const drawers = findAll(out, t => t.attributes['data-rune'] === 'drawer');
+			const drawers = findAll(out, (t) => t.attributes['data-rune'] === 'drawer');
 			expect(drawers).toHaveLength(1);
 			// Both inline anchors point at the same drawer.
-			const anchors = findAll(out, t => t.name === 'a' && (t.attributes.href as string | undefined) === '#drawer-SPEC-076');
+			const anchors = findAll(
+				out,
+				(t) => t.name === 'a' && (t.attributes.href as string | undefined) === '#drawer-SPEC-076',
+			);
 			expect(anchors).toHaveLength(2);
 		});
 	});
@@ -182,11 +216,11 @@ describe('xref preview="drawer" (SPEC-078, WORK-302)', () => {
 			out = resolveExpands(out, '/p/', reg, [], undefined, ctx);
 
 			// The expand-pending placeholder is now resolved into the entity's content.
-			const drawers = findAll(out, t => t.attributes['data-rune'] === 'drawer');
+			const drawers = findAll(out, (t) => t.attributes['data-rune'] === 'drawer');
 			expect(drawers).toHaveLength(1);
-			const remaining = findAll(drawers[0], t => t.attributes['data-rune'] === 'expand-pending');
+			const remaining = findAll(drawers[0], (t) => t.attributes['data-rune'] === 'expand-pending');
 			expect(remaining).toHaveLength(0);
-			const resolvedExpands = findAll(drawers[0], t => t.attributes['data-rune'] === 'expand');
+			const resolvedExpands = findAll(drawers[0], (t) => t.attributes['data-rune'] === 'expand');
 			expect(resolvedExpands.length).toBeGreaterThan(0);
 		});
 	});

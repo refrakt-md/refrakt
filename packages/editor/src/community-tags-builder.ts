@@ -23,7 +23,10 @@ export async function buildCommunityTagsBundle(
 	if (pluginNames.length === 0) return { outputPath: '', success: false };
 
 	const cacheDir = resolve(import.meta.dirname, '..', '.community-tags-cache');
-	const hash = createHash('md5').update(pluginNames.slice().sort().join(',')).digest('hex').slice(0, 8);
+	const hash = createHash('md5')
+		.update(pluginNames.slice().sort().join(','))
+		.digest('hex')
+		.slice(0, 8);
 	const outputPath = resolve(cacheDir, `${hash}.js`);
 
 	if (existsSync(outputPath)) return { outputPath, success: true };

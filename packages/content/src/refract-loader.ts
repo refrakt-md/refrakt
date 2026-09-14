@@ -1,17 +1,19 @@
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import type { Plugin, SiteConfig, SecurityPolicy, RefraktConfig, XrefPattern } from '@refrakt-md/types';
+import type {
+	Plugin,
+	SiteConfig,
+	SecurityPolicy,
+	RefraktConfig,
+	XrefPattern,
+} from '@refrakt-md/types';
 import { getThemePackage } from '@refrakt-md/types';
 import { fsProjectFiles } from '@refrakt-md/types/project-files';
 import { normalizeRefraktConfig, resolveSite, loadPresets } from '@refrakt-md/transform/node';
 import type { ThemeTokensConfig } from '@refrakt-md/types';
 import { compileXrefPatterns, type CompiledXrefPattern } from '@refrakt-md/runes';
 import { mergeFileRoots, resolveUserFileRoots, type FileRoots } from './file-roots.js';
-import {
-	createSiteLoader,
-	createVirtualSiteLoader,
-	type SiteLoader,
-} from './loader.js';
+import { createSiteLoader, createVirtualSiteLoader, type SiteLoader } from './loader.js';
 import type { ContentTree } from './content-tree.js';
 import type { Site, VirtualReader } from './site.js';
 
@@ -57,9 +59,7 @@ interface AssembledSiteContext {
  *  stderr so the build surface remains visible. Errors don't throw — they
  *  produce a permissively-empty pattern set so the rest of the load
  *  succeeds and the user can fix the config without losing the whole site. */
-function compileConfiguredXrefPatterns(
-	patterns: XrefPattern[] | undefined,
-): CompiledXrefPattern[] {
+function compileConfiguredXrefPatterns(patterns: XrefPattern[] | undefined): CompiledXrefPattern[] {
 	const result = compileXrefPatterns(patterns);
 	for (const warning of result.warnings) {
 		process.stderr.write(`refrakt: xref pattern warning — ${warning}\n`);
@@ -77,9 +77,8 @@ function compileConfiguredXrefPatterns(
  *  from. Exported so non-SvelteKit adapters (HTML build script, Astro setup,
  *  custom hosts) can compose options the same way. */
 export function buildHighlightOptions(site: SiteConfig) {
-	const themeCode = typeof site.theme === 'object' && site.theme !== null
-		? site.theme.code
-		: undefined;
+	const themeCode =
+		typeof site.theme === 'object' && site.theme !== null ? site.theme.code : undefined;
 	return {
 		...(site.highlight ?? {}),
 		...(themeCode?.colorScheme ? { codeColorScheme: themeCode.colorScheme } : {}),
@@ -99,7 +98,12 @@ function collectTintPresetSpecs(site: SiteConfig): string[] {
 		if (typeof ext !== 'string') continue;
 		// Only treat module-path / file-path values as preset specs; bare names
 		// are tint-name extends and stay on the existing resolveTintExtends path.
-		if (ext.startsWith('@') || ext.startsWith('./') || ext.startsWith('../') || ext.startsWith('/')) {
+		if (
+			ext.startsWith('@') ||
+			ext.startsWith('./') ||
+			ext.startsWith('../') ||
+			ext.startsWith('/')
+		) {
 			if (!specs.includes(ext)) specs.push(ext);
 		}
 	}
@@ -174,9 +178,7 @@ async function assembleSiteContext(
 	}
 
 	const { loadPlugin, mergePlugins, runes: coreRunes } = await import('@refrakt-md/runes');
-	const loaded = await Promise.all(
-		pluginNames.map((name: string) => loadPlugin(name))
-	);
+	const loaded = await Promise.all(pluginNames.map((name: string) => loadPlugin(name)));
 	const coreRuneNames = new Set(Object.keys(coreRunes));
 	const merged = mergePlugins(loaded, coreRuneNames, site.runes?.prefer);
 
@@ -357,7 +359,18 @@ export interface VirtualRefraktLoaderOptions {
  * dependencies in the host environment.
  */
 export function createVirtualRefraktLoader(options: VirtualRefraktLoaderOptions): RefraktLoader {
-	const { site, tree, reader, variables, security, basePath, projectRoot, xrefs, fileRoots: userFileRootsOption, dev } = options;
+	const {
+		site,
+		tree,
+		reader,
+		variables,
+		security,
+		basePath,
+		projectRoot,
+		xrefs,
+		fileRoots: userFileRootsOption,
+		dev,
+	} = options;
 	const xrefPatterns = compileConfiguredXrefPatterns(xrefs);
 	const userFileRoots = userFileRootsOption ?? {};
 

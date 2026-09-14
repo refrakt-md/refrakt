@@ -1,547 +1,562 @@
 @layer skin {
-/* Nav */
-.rf-nav {
-	padding: 0.5rem 0;
-}
-.rf-nav ul {
-	padding: 0;
-	margin: 0;
-}
-.rf-nav li {
-	padding: 0.0625rem 0;
-}
-.rf-nav-group {
-	margin-bottom: 1.75rem;
-}
-/* Top-level items — product switcher links above groups */
-.rf-nav__top-level {
-	padding-bottom: 1.25rem;
-	margin-bottom: 1.25rem;
-	border-bottom: 1px solid var(--rf-color-border);
-}
-.rf-nav__top-level .rf-nav-item__link {
-	font-weight: var(--rf-weight-semibold);
-	font-size: var(--rf-text-sm);
-}
-.rf-nav-group h2,
-.rf-nav-group h3 {
-	font-size: var(--rf-text-xs);
-	text-transform: uppercase;
-	letter-spacing: var(--rf-tracking-wider);
-	color: var(--rf-color-muted);
-	margin-top: 0;
-	margin-bottom: 0.5rem;
-	padding-left: 0.75rem;
-	font-weight: var(--rf-weight-semibold);
-}
-.rf-nav-item__link {
-	padding: 0.375rem 0.75rem;
-	border-radius: var(--rf-radius-sm);
-	color: var(--rf-color-text);
-	text-decoration: none;
-	font-size: var(--rf-text-sm);
-	transition: background-color 150ms ease, color 150ms ease;
-}
-.rf-nav-item__link:hover {
-	background: var(--rf-color-surface);
-	color: var(--rf-color-text);
-	text-decoration: none;
-}
-/* SPEC-055: current page receives aria-current="page" at build time
- * (replaces the legacy --active modifier set at runtime by rf-nav). */
-.rf-nav-item__link[aria-current="page"] {
-	background: color-mix(in srgb, var(--rf-color-primary) 8%, transparent);
-	color: var(--rf-color-primary);
-	font-weight: var(--rf-weight-semibold);
-}
-/* SPEC-055: ancestor-of-current-page link — subtler treatment than the
- * exact-match aria-current state. Themes can collapse the two into a
- * single style if they prefer. */
-.rf-nav-item__link[data-active="ancestor"] {
-	color: var(--rf-color-primary);
-}
-.rf-nav-item {
-	padding: 0.375rem 0.75rem;
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-muted);
-}
-
-/* Items with an inline badge (recognised by the nav schema and tagged with
- * data-name="badge") sit on one row so the badge rides alongside the link
- * instead of wrapping to the next line — the link's `display: block` would
- * otherwise eat the full row. */
-.rf-nav-item:has(> .rf-badge[data-name="badge"]) {
-	gap: 0.375rem;
-	padding: 0;
-}
-
-/* ─── Collapsible groups (vertical sidebar) ───────────────────────────── */
-
-.rf-nav--collapsible .rf-nav-group h2,
-.rf-nav--collapsible .rf-nav-group h3 {
-	cursor: pointer;
-	user-select: none;
-	border-radius: var(--rf-radius-sm);
-}
-.rf-nav--collapsible .rf-nav-group h2:hover,
-.rf-nav--collapsible .rf-nav-group h3:hover {
-	color: var(--rf-color-text);
-}
-.rf-nav--collapsible .rf-nav-group h2:focus-visible,
-.rf-nav--collapsible .rf-nav-group h3:focus-visible {
-	outline: 2px solid var(--rf-color-primary);
-	outline-offset: 2px;
-}
-.rf-nav--collapsible .rf-nav-group h2::after,
-.rf-nav--collapsible .rf-nav-group h3::after {
-	border-right: 1.5px solid currentColor;
-	border-bottom: 1.5px solid currentColor;
-	transition: transform 200ms ease;
-	margin-right: 0.25rem;
-}
-/* SPEC-054 wraps the group body in `<div data-name="panel">`. Animate that
- * wrapper; keep the direct ul/ol selectors as a fallback for older trees
- * that haven't picked up the panel structure. */
-.rf-nav--collapsible .rf-nav-group > .rf-nav-group__panel,
-.rf-nav--collapsible .rf-nav-group > ul,
-.rf-nav--collapsible .rf-nav-group > ol {
-	transition: height 200ms ease;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.rf-nav--collapsible .rf-nav-group > .rf-nav-group__panel,
-	.rf-nav--collapsible .rf-nav-group > ul,
-	.rf-nav--collapsible .rf-nav-group > ol,
-	.rf-nav--collapsible .rf-nav-group h2::after,
-	.rf-nav--collapsible .rf-nav-group h3::after {
-		transition: none;
+	/* Nav */
+	.rf-nav {
+		padding: 0.5rem 0;
 	}
-}
-
-/* ─── Menubar layout (header) ─────────────────────────────────────────── */
-
-.rf-nav--menubar {
-	padding: 0;
-	margin: 0;
-}
-.rf-nav--menubar > .rf-nav__top-level {
-	padding: 0;
-	margin: 0;
-	border: 0;
-}
-.rf-nav--menubar > .rf-nav__top-level > ul,
-.rf-nav--menubar > .rf-nav__top-level ul {
-	gap: 0.25rem;
-	margin: 0;
-}
-.rf-nav--menubar > .rf-nav__top-level li {
-	padding: 0;
-	margin: 0;
-}
-.rf-nav--menubar > .rf-nav__top-level .rf-nav-item__link {
-	padding: 0.375rem 0.75rem;
-	font-weight: var(--rf-weight-medium);
-	font-size: var(--rf-text-sm);
-	border-radius: var(--rf-radius-sm);
-	color: var(--rf-color-muted);
-	transition: background-color 150ms ease, color 150ms ease;
-}
-.rf-nav--menubar > .rf-nav__top-level .rf-nav-item__link:hover {
-	background: var(--rf-color-surface);
-	color: var(--rf-color-text);
-}
-.rf-nav--menubar .rf-nav-group {
-	margin: 0;
-}
-.rf-nav--menubar .rf-nav-group h2,
-.rf-nav--menubar .rf-nav-group h3 {
-	margin: 0;
-	padding: 0.375rem 0.75rem;
-	font-size: var(--rf-text-sm);
-	font-weight: var(--rf-weight-medium);
-	line-height: inherit;
-	text-transform: none;
-	letter-spacing: normal;
-	color: var(--rf-color-muted);
-	cursor: pointer;
-	user-select: none;
-	border-radius: var(--rf-radius-sm);
-	transition: background-color 150ms ease, color 150ms ease;
-}
-.rf-nav--menubar .rf-nav-group h2:hover,
-.rf-nav--menubar .rf-nav-group h3:hover,
-.rf-nav--menubar .rf-nav-group[data-open="true"] h2,
-.rf-nav--menubar .rf-nav-group[data-open="true"] h3 {
-	background: var(--rf-color-surface);
-	color: var(--rf-color-text);
-}
-/* The dropdown panel is the <div data-name="panel"> wrapper added by the
- * nav schema's buildGroupTag. Positioning + visibility live on this
- * wrapper so the rule works equally well for simple <ul> dropdowns and
- * rich panels containing nested navs / intro / footer slots. */
-.rf-nav--menubar .rf-nav-group > .rf-nav-group__panel {
-	padding: 0.5rem;
-	background: var(--rf-color-bg);
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-md);
-	box-shadow: var(--rf-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.08));
-	transition: opacity 150ms ease, visibility 150ms ease, transform 150ms ease;
-}
-/* Inside the panel, lists render naturally (no extra positioning). */
-.rf-nav--menubar .rf-nav-group__panel ul {
-	padding: 0;
-	margin: 0;
-}
-.rf-nav--menubar .rf-nav-group__panel li {
-	padding: 0;
-}
-/* Flat dropdown items: force the link to fill the panel's content width so
- * the hover hit-area is the whole row rather than just the text. Scoped to
- * `> ul > li > a` so it only catches flat panels — nested columns navs
- * (which sit inside `.rf-nav--columns`) keep their own item styling. */
-.rf-nav--menubar .rf-nav-group__panel > ul > li > .rf-nav-item__link {
-	padding: 0.5rem 0.75rem;
-}
-.rf-nav--menubar .rf-nav-group .rf-nav-item__link {
-	font-size: var(--rf-text-sm);
-	font-weight: var(--rf-weight-normal);
-}
-.rf-nav--menubar > nav,
-.rf-nav--menubar {
-	gap: 0.25rem;
-}
-
-@media (max-width: 768px) {
-	.rf-nav--menubar {
-		gap: 0;
+	.rf-nav ul {
+		padding: 0;
+		margin: 0;
 	}
-	.rf-nav--menubar > .rf-nav__top-level > ul {
-		gap: 0;
+	.rf-nav li {
+		padding: 0.0625rem 0;
 	}
-	.rf-nav--menubar > .rf-nav__top-level .rf-nav-item__link {
-		padding: 0.5rem 0.75rem;
+	.rf-nav-group {
+		margin-bottom: 1.75rem;
 	}
-	.rf-nav--menubar .rf-nav-group {
-		margin: 1rem 0 0;
+	/* Top-level items — product switcher links above groups */
+	.rf-nav__top-level {
+		padding-bottom: 1.25rem;
+		margin-bottom: 1.25rem;
+		border-bottom: 1px solid var(--rf-color-border);
 	}
-	.rf-nav--menubar .rf-nav-group h2,
-	.rf-nav--menubar .rf-nav-group h3 {
+	.rf-nav__top-level .rf-nav-item__link {
+		font-weight: var(--rf-weight-semibold);
+		font-size: var(--rf-text-sm);
+	}
+	.rf-nav-group h2,
+	.rf-nav-group h3 {
 		font-size: var(--rf-text-xs);
 		text-transform: uppercase;
 		letter-spacing: var(--rf-tracking-wider);
 		color: var(--rf-color-muted);
-		background: transparent;
-		cursor: default;
-		padding: 0.5rem 0.75rem 0.25rem;
+		margin-top: 0;
+		margin-bottom: 0.5rem;
+		padding-left: 0.75rem;
 		font-weight: var(--rf-weight-semibold);
+	}
+	.rf-nav-item__link {
+		padding: 0.375rem 0.75rem;
+		border-radius: var(--rf-radius-sm);
+		color: var(--rf-color-text);
+		text-decoration: none;
+		font-size: var(--rf-text-sm);
+		transition:
+			background-color 150ms ease,
+			color 150ms ease;
+	}
+	.rf-nav-item__link:hover {
+		background: var(--rf-color-surface);
+		color: var(--rf-color-text);
+		text-decoration: none;
+	}
+	/* SPEC-055: current page receives aria-current="page" at build time
+ * (replaces the legacy --active modifier set at runtime by rf-nav). */
+	.rf-nav-item__link[aria-current="page"] {
+		background: color-mix(in srgb, var(--rf-color-primary) 8%, transparent);
+		color: var(--rf-color-primary);
+		font-weight: var(--rf-weight-semibold);
+	}
+	/* SPEC-055: ancestor-of-current-page link — subtler treatment than the
+ * exact-match aria-current state. Themes can collapse the two into a
+ * single style if they prefer. */
+	.rf-nav-item__link[data-active="ancestor"] {
+		color: var(--rf-color-primary);
+	}
+	.rf-nav-item {
+		padding: 0.375rem 0.75rem;
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+	}
+
+	/* Items with an inline badge (recognised by the nav schema and tagged with
+ * data-name="badge") sit on one row so the badge rides alongside the link
+ * instead of wrapping to the next line — the link's `display: block` would
+ * otherwise eat the full row. */
+	.rf-nav-item:has(> .rf-badge[data-name="badge"]) {
+		gap: 0.375rem;
+		padding: 0;
+	}
+
+	/* ─── Collapsible groups (vertical sidebar) ───────────────────────────── */
+
+	.rf-nav--collapsible .rf-nav-group h2,
+	.rf-nav--collapsible .rf-nav-group h3 {
+		cursor: pointer;
+		user-select: none;
+		border-radius: var(--rf-radius-sm);
+	}
+	.rf-nav--collapsible .rf-nav-group h2:hover,
+	.rf-nav--collapsible .rf-nav-group h3:hover {
+		color: var(--rf-color-text);
+	}
+	.rf-nav--collapsible .rf-nav-group h2:focus-visible,
+	.rf-nav--collapsible .rf-nav-group h3:focus-visible {
+		outline: 2px solid var(--rf-color-primary);
+		outline-offset: 2px;
+	}
+	.rf-nav--collapsible .rf-nav-group h2::after,
+	.rf-nav--collapsible .rf-nav-group h3::after {
+		border-right: 1.5px solid currentColor;
+		border-bottom: 1.5px solid currentColor;
+		transition: transform 200ms ease;
+		margin-right: 0.25rem;
+	}
+	/* SPEC-054 wraps the group body in `<div data-name="panel">`. Animate that
+ * wrapper; keep the direct ul/ol selectors as a fallback for older trees
+ * that haven't picked up the panel structure. */
+	.rf-nav--collapsible .rf-nav-group > .rf-nav-group__panel,
+	.rf-nav--collapsible .rf-nav-group > ul,
+	.rf-nav--collapsible .rf-nav-group > ol {
+		transition: height 200ms ease;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.rf-nav--collapsible .rf-nav-group > .rf-nav-group__panel,
+		.rf-nav--collapsible .rf-nav-group > ul,
+		.rf-nav--collapsible .rf-nav-group > ol,
+		.rf-nav--collapsible .rf-nav-group h2::after,
+		.rf-nav--collapsible .rf-nav-group h3::after {
+			transition: none;
+		}
+	}
+
+	/* ─── Menubar layout (header) ─────────────────────────────────────────── */
+
+	.rf-nav--menubar {
+		padding: 0;
+		margin: 0;
+	}
+	.rf-nav--menubar > .rf-nav__top-level {
+		padding: 0;
+		margin: 0;
+		border: 0;
+	}
+	.rf-nav--menubar > .rf-nav__top-level > ul,
+	.rf-nav--menubar > .rf-nav__top-level ul {
+		gap: 0.25rem;
+		margin: 0;
+	}
+	.rf-nav--menubar > .rf-nav__top-level li {
+		padding: 0;
+		margin: 0;
+	}
+	.rf-nav--menubar > .rf-nav__top-level .rf-nav-item__link {
+		padding: 0.375rem 0.75rem;
+		font-weight: var(--rf-weight-medium);
+		font-size: var(--rf-text-sm);
+		border-radius: var(--rf-radius-sm);
+		color: var(--rf-color-muted);
+		transition:
+			background-color 150ms ease,
+			color 150ms ease;
+	}
+	.rf-nav--menubar > .rf-nav__top-level .rf-nav-item__link:hover {
+		background: var(--rf-color-surface);
+		color: var(--rf-color-text);
+	}
+	.rf-nav--menubar .rf-nav-group {
+		margin: 0;
+	}
+	.rf-nav--menubar .rf-nav-group h2,
+	.rf-nav--menubar .rf-nav-group h3 {
+		margin: 0;
+		padding: 0.375rem 0.75rem;
+		font-size: var(--rf-text-sm);
+		font-weight: var(--rf-weight-medium);
+		line-height: inherit;
+		text-transform: none;
+		letter-spacing: normal;
+		color: var(--rf-color-muted);
+		cursor: pointer;
+		user-select: none;
+		border-radius: var(--rf-radius-sm);
+		transition:
+			background-color 150ms ease,
+			color 150ms ease;
 	}
 	.rf-nav--menubar .rf-nav-group h2:hover,
 	.rf-nav--menubar .rf-nav-group h3:hover,
 	.rf-nav--menubar .rf-nav-group[data-open="true"] h2,
 	.rf-nav--menubar .rf-nav-group[data-open="true"] h3 {
-		background: transparent;
+		background: var(--rf-color-surface);
+		color: var(--rf-color-text);
+	}
+	/* The dropdown panel is the <div data-name="panel"> wrapper added by the
+ * nav schema's buildGroupTag. Positioning + visibility live on this
+ * wrapper so the rule works equally well for simple <ul> dropdowns and
+ * rich panels containing nested navs / intro / footer slots. */
+	.rf-nav--menubar .rf-nav-group > .rf-nav-group__panel {
+		padding: 0.5rem;
+		background: var(--rf-color-bg);
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-md);
+		box-shadow: var(--rf-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.08));
+		transition:
+			opacity 150ms ease,
+			visibility 150ms ease,
+			transform 150ms ease;
+	}
+	/* Inside the panel, lists render naturally (no extra positioning). */
+	.rf-nav--menubar .rf-nav-group__panel ul {
+		padding: 0;
+		margin: 0;
+	}
+	.rf-nav--menubar .rf-nav-group__panel li {
+		padding: 0;
+	}
+	/* Flat dropdown items: force the link to fill the panel's content width so
+ * the hover hit-area is the whole row rather than just the text. Scoped to
+ * `> ul > li > a` so it only catches flat panels — nested columns navs
+ * (which sit inside `.rf-nav--columns`) keep their own item styling. */
+	.rf-nav--menubar .rf-nav-group__panel > ul > li > .rf-nav-item__link {
+		padding: 0.5rem 0.75rem;
+	}
+	.rf-nav--menubar .rf-nav-group .rf-nav-item__link {
+		font-size: var(--rf-text-sm);
+		font-weight: var(--rf-weight-normal);
+	}
+	.rf-nav--menubar > nav,
+	.rf-nav--menubar {
+		gap: 0.25rem;
+	}
+
+	@media (max-width: 768px) {
+		.rf-nav--menubar {
+			gap: 0;
+		}
+		.rf-nav--menubar > .rf-nav__top-level > ul {
+			gap: 0;
+		}
+		.rf-nav--menubar > .rf-nav__top-level .rf-nav-item__link {
+			padding: 0.5rem 0.75rem;
+		}
+		.rf-nav--menubar .rf-nav-group {
+			margin: 1rem 0 0;
+		}
+		.rf-nav--menubar .rf-nav-group h2,
+		.rf-nav--menubar .rf-nav-group h3 {
+			font-size: var(--rf-text-xs);
+			text-transform: uppercase;
+			letter-spacing: var(--rf-tracking-wider);
+			color: var(--rf-color-muted);
+			background: transparent;
+			cursor: default;
+			padding: 0.5rem 0.75rem 0.25rem;
+			font-weight: var(--rf-weight-semibold);
+		}
+		.rf-nav--menubar .rf-nav-group h2:hover,
+		.rf-nav--menubar .rf-nav-group h3:hover,
+		.rf-nav--menubar .rf-nav-group[data-open="true"] h2,
+		.rf-nav--menubar .rf-nav-group[data-open="true"] h3 {
+			background: transparent;
+			color: var(--rf-color-muted);
+		}
+		.rf-nav--menubar .rf-nav-group > .rf-nav-group__panel {
+			padding: 0;
+			background: transparent;
+			border: 0;
+			box-shadow: none;
+		}
+	}
+
+	/* ─── Columns layout (footer) ─────────────────────────────────────────── */
+
+	.rf-nav--columns {
+		gap: 2rem;
+		padding: 1.5rem 0;
+	}
+	.rf-nav--columns .rf-nav__top-level {
+		padding-bottom: 1rem;
+		margin-bottom: 0;
+		border-bottom: 0;
+	}
+	.rf-nav--columns .rf-nav-group {
+		margin: 0;
+	}
+	.rf-nav--columns .rf-nav-group h2,
+	.rf-nav--columns .rf-nav-group h3 {
+		padding-left: 0;
+		margin-bottom: 0.75rem;
+		color: var(--rf-color-text);
+		font-size: var(--rf-text-xs);
+	}
+	.rf-nav--columns .rf-nav-item__link {
+		padding: 0.25rem 0;
 		color: var(--rf-color-muted);
 	}
-	.rf-nav--menubar .rf-nav-group > .rf-nav-group__panel {
-		padding: 0;
+	.rf-nav--columns .rf-nav-item__link:hover {
 		background: transparent;
-		border: 0;
-		box-shadow: none;
+		color: var(--rf-color-text);
 	}
-}
-
-/* ─── Columns layout (footer) ─────────────────────────────────────────── */
-
-.rf-nav--columns {
-	gap: 2rem;
-	padding: 1.5rem 0;
-}
-.rf-nav--columns .rf-nav__top-level {
-	padding-bottom: 1rem;
-	margin-bottom: 0;
-	border-bottom: 0;
-}
-.rf-nav--columns .rf-nav-group {
-	margin: 0;
-}
-.rf-nav--columns .rf-nav-group h2,
-.rf-nav--columns .rf-nav-group h3 {
-	padding-left: 0;
-	margin-bottom: 0.75rem;
-	color: var(--rf-color-text);
-	font-size: var(--rf-text-xs);
-}
-.rf-nav--columns .rf-nav-item__link {
-	padding: 0.25rem 0;
-	color: var(--rf-color-muted);
-}
-.rf-nav--columns .rf-nav-item__link:hover {
-	background: transparent;
-	color: var(--rf-color-text);
-}
-/* Standalone columns (footer, section landing) use a text-only treatment
+	/* Standalone columns (footer, section landing) use a text-only treatment
  * for the active item — the generic `.rf-nav-item__link[aria-current="page"]`
  * surface tint would compete with the column layout's quiet rhythm. The
  * nested-in-menubar case re-enables the tint below at higher specificity. */
-.rf-nav--columns .rf-nav-item__link[aria-current="page"] {
-	background: transparent;
-}
+	.rf-nav--columns .rf-nav-item__link[aria-current="page"] {
+		background: transparent;
+	}
 
-@media (max-width: 600px) {
-	.rf-nav--columns {
-		/* Keep two columns on mobile. `minmax(0, 1fr)` lets columns shrink
+	@media (max-width: 600px) {
+		.rf-nav--columns {
+			/* Keep two columns on mobile. `minmax(0, 1fr)` lets columns shrink
 		 * below their min-content width so long link labels don't push the
 		 * grid wider than the viewport and trigger horizontal scroll. */
-		gap: 1.25rem 1.5rem;
+			gap: 1.25rem 1.5rem;
+		}
+		.rf-nav--columns .rf-nav-item__link {
+			overflow-wrap: anywhere;
+		}
 	}
-	.rf-nav--columns .rf-nav-item__link {
-		overflow-wrap: anywhere;
+
+	/* ─── Cards layout (section landing) ──────────────────────────────────── */
+
+	.rf-nav--cards {
+		padding: 0;
 	}
-}
+	.rf-nav--cards > .rf-nav__top-level {
+		padding: 0;
+		margin: 0 0 1.5rem;
+		border: 0;
+	}
+	.rf-nav--cards > .rf-nav__top-level > ul,
+	.rf-nav--cards > ul {
+		gap: 1rem;
+		padding: 0;
+		margin: 0;
+	}
+	.rf-nav--cards .rf-nav-group {
+		margin: 0 0 2rem;
+	}
+	.rf-nav--cards .rf-nav-group h2,
+	.rf-nav--cards .rf-nav-group h3 {
+		font-size: var(--rf-text-sm);
+		padding-left: 0;
+		margin-bottom: 1rem;
+	}
+	.rf-nav--cards .rf-nav-group > ul {
+		gap: 1rem;
+	}
+	.rf-nav--cards .rf-nav-item {
+		padding: 0;
+		color: inherit;
+		font-size: inherit;
+	}
+	.rf-nav--cards .rf-nav-item__link {
+		gap: 0.5rem;
+		padding: 1.25rem;
+		background: var(--rf-color-surface, var(--rf-color-bg));
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-md);
+		color: var(--rf-color-text);
+		text-decoration: none;
+		transition:
+			border-color 150ms ease,
+			transform 150ms ease,
+			box-shadow 150ms ease;
+	}
+	.rf-nav--cards .rf-nav-item__link:hover {
+		border-color: var(--rf-color-primary);
+		background: var(--rf-color-surface, var(--rf-color-bg));
+		transform: translateY(-1px);
+		box-shadow: var(--rf-shadow-sm, 0 2px 6px rgba(0, 0, 0, 0.05));
+	}
+	.rf-nav--cards .rf-nav-item__icon {
+		color: var(--rf-color-primary);
+		margin-bottom: 0.25rem;
+	}
+	.rf-nav--cards .rf-nav-item__title {
+		font-size: var(--rf-text);
+		font-weight: var(--rf-weight-semibold);
+		color: var(--rf-color-text);
+	}
+	.rf-nav--cards .rf-nav-item__description {
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+		line-height: var(--rf-leading-normal);
+	}
 
-/* ─── Cards layout (section landing) ──────────────────────────────────── */
+	/* ─── Per-item description (SPEC-054, any layout) ─────────────────────── */
 
-.rf-nav--cards {
-	padding: 0;
-}
-.rf-nav--cards > .rf-nav__top-level {
-	padding: 0;
-	margin: 0 0 1.5rem;
-	border: 0;
-}
-.rf-nav--cards > .rf-nav__top-level > ul,
-.rf-nav--cards > ul {
-	gap: 1rem;
-	padding: 0;
-	margin: 0;
-}
-.rf-nav--cards .rf-nav-group {
-	margin: 0 0 2rem;
-}
-.rf-nav--cards .rf-nav-group h2,
-.rf-nav--cards .rf-nav-group h3 {
-	font-size: var(--rf-text-sm);
-	padding-left: 0;
-	margin-bottom: 1rem;
-}
-.rf-nav--cards .rf-nav-group > ul {
-	gap: 1rem;
-}
-.rf-nav--cards .rf-nav-item {
-	padding: 0;
-	color: inherit;
-	font-size: inherit;
-}
-.rf-nav--cards .rf-nav-item__link {
-	gap: 0.5rem;
-	padding: 1.25rem;
-	background: var(--rf-color-surface, var(--rf-color-bg));
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-md);
-	color: var(--rf-color-text);
-	text-decoration: none;
-	transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
-}
-.rf-nav--cards .rf-nav-item__link:hover {
-	border-color: var(--rf-color-primary);
-	background: var(--rf-color-surface, var(--rf-color-bg));
-	transform: translateY(-1px);
-	box-shadow: var(--rf-shadow-sm, 0 2px 6px rgba(0, 0, 0, 0.05));
-}
-.rf-nav--cards .rf-nav-item__icon {
-	color: var(--rf-color-primary);
-	margin-bottom: 0.25rem;
-}
-.rf-nav--cards .rf-nav-item__title {
-	font-size: var(--rf-text);
-	font-weight: var(--rf-weight-semibold);
-	color: var(--rf-color-text);
-}
-.rf-nav--cards .rf-nav-item__description {
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-muted);
-	line-height: var(--rf-leading-normal);
-}
+	.rf-nav-item__description {
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+		line-height: var(--rf-leading-snug);
+		margin-top: 0.125rem;
+	}
 
-/* ─── Per-item description (SPEC-054, any layout) ─────────────────────── */
+	/* ─── Menubar group slots (SPEC-054 rich panel content) ──────────────── */
 
-.rf-nav-item__description {
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-muted);
-	line-height: var(--rf-leading-snug);
-	margin-top: 0.125rem;
-}
-
-/* ─── Menubar group slots (SPEC-054 rich panel content) ──────────────── */
-
-/* Nested columns nav inside a menubar panel: render as a distinct surface
+	/* Nested columns nav inside a menubar panel: render as a distinct surface
  * card so the column grid reads as a grouped block rather than bleeding
  * into the panel's chrome. Resets the standalone columns padding (which
  * assumes a footer-like context) and tightens the gap for the tighter
  * dropdown box. */
-.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns {
-	padding: 0.75rem;
-	gap: 1rem;
-	background: var(--rf-color-surface);
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-sm);
-}
+	.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns {
+		padding: 0.75rem;
+		gap: 1rem;
+		background: var(--rf-color-surface);
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-sm);
+	}
 
-/* Items inside a nested menubar columns nav: render the whole link as one
+	/* Items inside a nested menubar columns nav: render the whole link as one
  * generously padded click target with the title on top in regular text
  * colour and the description stacked below in muted colour. The description
  * `<span>` lives inside the `<a>` (see navItem transform), so styling on
  * the link covers both lines. */
-.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item {
-	padding: 0;
-}
-.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link {
-	padding: 0.75rem;
-	color: var(--rf-color-text);
-	font-weight: var(--rf-weight-medium);
-	border-radius: var(--rf-radius-sm);
-}
-.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link:hover {
-	background: var(--rf-color-surface-hover);
-	color: var(--rf-color-text);
-}
-/* Re-enable a neutral surface tint on the active item inside a menubar
+	.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item {
+		padding: 0;
+	}
+	.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link {
+		padding: 0.75rem;
+		color: var(--rf-color-text);
+		font-weight: var(--rf-weight-medium);
+		border-radius: var(--rf-radius-sm);
+	}
+	.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link:hover {
+		background: var(--rf-color-surface-hover);
+		color: var(--rf-color-text);
+	}
+	/* Re-enable a neutral surface tint on the active item inside a menubar
  * dropdown — the standalone-columns override above zeroes the background,
  * but here it helps the current page stand out from peers in a tight
  * panel. Uses the purpose-built interactive-surface tokens so the contrast
  * direction stays correct in dark mode. */
-.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link[aria-current="page"] {
-	background: var(--rf-color-surface-active);
-}
-.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link .rf-nav-item__description {
-	font-weight: var(--rf-weight-normal);
-	color: var(--rf-color-muted);
-}
+	.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link[aria-current="page"] {
+		background: var(--rf-color-surface-active);
+	}
+	.rf-nav--menubar
+		.rf-nav-group__panel
+		.rf-nav--columns
+		.rf-nav-item__link
+		.rf-nav-item__description {
+		font-weight: var(--rf-weight-normal);
+		color: var(--rf-color-muted);
+	}
 
-/* Intro / footer slots inside a menubar panel get airy padding so the
+	/* Intro / footer slots inside a menubar panel get airy padding so the
  * eyebrow / "see all" links breathe inside the dropdown frame. */
-.rf-nav--menubar .rf-nav-group__panel > .rf-nav-group__intro {
-	margin: 0 0 0.75rem;
-	padding: 0.5rem 0.75rem 0;
-}
-.rf-nav--menubar .rf-nav-group__panel > .rf-nav-group__footer {
-	margin: 0.75rem 0 0;
-	padding: 0 0.75rem 0.5rem;
-}
+	.rf-nav--menubar .rf-nav-group__panel > .rf-nav-group__intro {
+		margin: 0 0 0.75rem;
+		padding: 0.5rem 0.75rem 0;
+	}
+	.rf-nav--menubar .rf-nav-group__panel > .rf-nav-group__footer {
+		margin: 0.75rem 0 0;
+		padding: 0 0.75rem 0.5rem;
+	}
 
-.rf-nav-group__intro {
-	margin: 0 0 0.75rem;
-}
+	.rf-nav-group__intro {
+		margin: 0 0 0.75rem;
+	}
 
-/* Eyebrow intro: a plain paragraph in the intro slot renders as a small
+	/* Eyebrow intro: a plain paragraph in the intro slot renders as a small
  * muted lead-in above the panel content. */
-.rf-nav-group__intro p:only-child {
-	margin: 0;
-	font-size: var(--rf-text-xs);
-	color: var(--rf-color-muted);
-}
+	.rf-nav-group__intro p:only-child {
+		margin: 0;
+		font-size: var(--rf-text-xs);
+		color: var(--rf-color-muted);
+	}
 
-.rf-nav-group__footer {
-	margin: 0.75rem 0 0;
-}
-.rf-nav-group__footer p {
-	margin: 0;
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-muted);
-}
-.rf-nav-group__footer a {
-	color: var(--rf-color-primary);
-	font-weight: var(--rf-weight-medium);
-}
+	.rf-nav-group__footer {
+		margin: 0.75rem 0 0;
+	}
+	.rf-nav-group__footer p {
+		margin: 0;
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+	}
+	.rf-nav-group__footer a {
+		color: var(--rf-color-primary);
+		font-weight: var(--rf-weight-medium);
+	}
 
-/* ─── Multi-section columns (SPEC-054 columns flow rule) ──────────────── */
+	/* ─── Multi-section columns (SPEC-054 columns flow rule) ──────────────── */
 
-/* When the columns layout has <hr> separators, groups are bucketed into
+	/* When the columns layout has <hr> separators, groups are bucketed into
  * .rf-nav-group__column wrappers (or .rf-nav__column at the nav level for
  * headingless mode). Each column stacks one or more sections vertically. */
-.rf-nav--columns .rf-nav-group__column,
-.rf-nav--columns .rf-nav__column,
-.rf-nav--columns > div[data-name="column"] {
-	gap: 1.25rem;
-}
+	.rf-nav--columns .rf-nav-group__column,
+	.rf-nav--columns .rf-nav__column,
+	.rf-nav--columns > div[data-name="column"] {
+		gap: 1.25rem;
+	}
 
-/* Stepped collapse: at four columns × 14rem min + gaps the grid needs ~62rem
+	/* Stepped collapse: at four columns × 14rem min + gaps the grid needs ~62rem
  * of width, so below ~900px the explicit-column flow would overflow. Step
  * down to a 2×N grid before going single-column at the narrowest breakpoint. */
 
-@media (max-width: 600px) {
-	.rf-nav--columns:has(> div[data-name="column"]) {
-		/* Keep two columns on mobile. `minmax(0, 1fr)` lets columns shrink
+	@media (max-width: 600px) {
+		.rf-nav--columns:has(> div[data-name="column"]) {
+			/* Keep two columns on mobile. `minmax(0, 1fr)` lets columns shrink
 		 * below their min-content width so long link labels don't push the
 		 * grid wider than the viewport and trigger horizontal scroll. */
+		}
 	}
-}
 
-/* ─── Strip layout (SPEC-054 compact secondary nav) ───────────────────── */
+	/* ─── Strip layout (SPEC-054 compact secondary nav) ───────────────────── */
 
-.rf-nav--strip {
-	gap: 0.5rem 1rem;
-	padding: 0.5rem 0;
-	font-size: var(--rf-text-sm);
-}
-.rf-nav--strip ul {
-	gap: 0.5rem 1rem;
-	padding: 0;
-	margin: 0;
-}
-.rf-nav--strip li {
-	padding: 0;
-}
-.rf-nav--strip .rf-nav-item__link {
-	padding: 0.25rem 0;
-	color: var(--rf-color-muted);
-	font-size: var(--rf-text-sm);
-	border-radius: 0;
-	background: transparent;
-}
-.rf-nav--strip .rf-nav-item__link:hover {
-	color: var(--rf-color-text);
-	background: transparent;
-}
-.rf-nav--strip .rf-nav-item__link[aria-current="page"] {
-	color: var(--rf-color-primary);
-	background: transparent;
-}
+	.rf-nav--strip {
+		gap: 0.5rem 1rem;
+		padding: 0.5rem 0;
+		font-size: var(--rf-text-sm);
+	}
+	.rf-nav--strip ul {
+		gap: 0.5rem 1rem;
+		padding: 0;
+		margin: 0;
+	}
+	.rf-nav--strip li {
+		padding: 0;
+	}
+	.rf-nav--strip .rf-nav-item__link {
+		padding: 0.25rem 0;
+		color: var(--rf-color-muted);
+		font-size: var(--rf-text-sm);
+		border-radius: 0;
+		background: transparent;
+	}
+	.rf-nav--strip .rf-nav-item__link:hover {
+		color: var(--rf-color-text);
+		background: transparent;
+	}
+	.rf-nav--strip .rf-nav-item__link[aria-current="page"] {
+		color: var(--rf-color-primary);
+		background: transparent;
+	}
 
-/* When a strip nav is nested inside a menubar panel footer slot, render
+	/* When a strip nav is nested inside a menubar panel footer slot, render
  * compact-but-still-tap-friendly. */
-.rf-nav-group__footer .rf-nav--strip {
-	padding: 0;
-	font-size: var(--rf-text-xs);
-}
+	.rf-nav-group__footer .rf-nav--strip {
+		padding: 0;
+		font-size: var(--rf-text-xs);
+	}
 
-/* ─── Mobile menubar: nested columns collapse ─────────────────────────── */
+	/* ─── Mobile menubar: nested columns collapse ─────────────────────────── */
 
-/* Placed at the end of the file so the source order beats the desktop
+	/* Placed at the end of the file so the source order beats the desktop
  * nested-columns rules at equal specificity. On a collapsed menubar
  * drawer (≤ 768px), drop the columns nav's surface card chrome and
  * flatten to a single-column flow so each item visually matches a
  * regular flat-dropdown item rather than a card-styled grid cell. */
-@media (max-width: 768px) {
-	.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns {
-		padding: 0;
-		gap: 0;
-		background: transparent;
-		border: 0;
-		border-radius: 0;
-	}
-	/* Tighter padding + bolder weight matches the visual rhythm of the
+	@media (max-width: 768px) {
+		.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns {
+			padding: 0;
+			gap: 0;
+			background: transparent;
+			border: 0;
+			border-radius: 0;
+		}
+		/* Tighter padding + bolder weight matches the visual rhythm of the
 	 * regular flat menubar group items above. Hover swaps to a text-colour
 	 * change rather than a surface tint so the drawer doesn't fill with
 	 * highlighted bands as the user scrolls. */
-	.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link {
-		padding: 0.25rem 0.75rem;
-		font-weight: var(--rf-weight-medium);
+		.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link {
+			padding: 0.25rem 0.75rem;
+			font-weight: var(--rf-weight-medium);
+		}
+		.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link:hover {
+			background: transparent;
+			color: var(--rf-color-primary);
+		}
 	}
-	.rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link:hover {
-		background: transparent;
-		color: var(--rf-color-primary);
-	}
-}
-
 }

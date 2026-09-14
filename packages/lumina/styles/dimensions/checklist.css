@@ -1,52 +1,51 @@
 @layer skin {
-/* === Checklist — skin ===
+	/* === Checklist — skin ===
  * The indicator chrome (fill, border, radius, box-shadow) and the item text
  * treatment per state. The indicator gutter + box placement/size live in
  * @refrakt-md/skeleton (dimensions/checklist.css). */
 
-/* Indicator base chrome. */
-[data-checked]::before {
-	border-radius: var(--rf-radius-sm, 0.25rem);
-	border: 2px solid var(--rf-color-border);
-	background: transparent;
-}
+	/* Indicator base chrome. */
+	[data-checked]::before {
+		border-radius: var(--rf-radius-sm, 0.25rem);
+		border: 2px solid var(--rf-color-border);
+		background: transparent;
+	}
 
-/* Checked — filled with checkmark */
-[data-checked="checked"]::before {
-	background: var(--rf-color-primary);
-	border-color: var(--rf-color-primary);
-}
+	/* Checked — filled with checkmark */
+	[data-checked="checked"]::before {
+		background: var(--rf-color-primary);
+		border-color: var(--rf-color-primary);
+	}
 
-[data-checked="checked"] {
-	color: var(--rf-color-muted);
-}
+	[data-checked="checked"] {
+		color: var(--rf-color-muted);
+	}
 
-/* Active — primary colour with emphasis */
-[data-checked="active"]::before {
-	border-color: var(--rf-color-primary);
-	background: var(--rf-color-primary);
-	box-shadow: 0 0 0 3px color-mix(in oklch, var(--rf-color-primary) 20%, transparent);
-}
+	/* Active — primary colour with emphasis */
+	[data-checked="active"]::before {
+		border-color: var(--rf-color-primary);
+		background: var(--rf-color-primary);
+		box-shadow: 0 0 0 3px color-mix(in oklch, var(--rf-color-primary) 20%, transparent);
+	}
 
-[data-checked="active"] {
-	color: var(--rf-color-primary);
-	font-weight: var(--rf-weight-semibold);
-}
+	[data-checked="active"] {
+		color: var(--rf-color-primary);
+		font-weight: var(--rf-weight-semibold);
+	}
 
-/* Skipped — muted with strikethrough */
-[data-checked="skipped"]::before {
-	background: var(--rf-color-muted);
-	border-color: var(--rf-color-muted);
-}
+	/* Skipped — muted with strikethrough */
+	[data-checked="skipped"]::before {
+		background: var(--rf-color-muted);
+		border-color: var(--rf-color-muted);
+	}
 
-[data-checked="skipped"] {
-	text-decoration: line-through;
-	color: var(--rf-color-muted);
-}
+	[data-checked="skipped"] {
+		text-decoration: line-through;
+		color: var(--rf-color-muted);
+	}
 
-/* Unchecked — empty indicator (inherits base styling) */
-[data-checked="unchecked"]::before {
-	background: transparent;
-}
-
+	/* Unchecked — empty indicator (inherits base styling) */
+	[data-checked="unchecked"]::before {
+		background: transparent;
+	}
 }

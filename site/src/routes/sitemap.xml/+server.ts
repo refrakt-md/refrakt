@@ -9,7 +9,7 @@ export async function GET() {
 	const site = await loadContent(contentDir);
 	const baseUrl = process.env.SITE_URL || 'https://refrakt.md';
 
-	const entries = site.pages.map(p => ({
+	const entries = site.pages.map((p) => ({
 		url: p.route.url,
 		draft: p.route.draft,
 	}));

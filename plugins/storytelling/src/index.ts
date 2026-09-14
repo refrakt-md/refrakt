@@ -10,18 +10,29 @@ import { config } from './config.js';
 import { storytellingPipelineHooks } from './pipeline.js';
 
 export const storytelling: Plugin = {
-  name: 'storytelling',
-  displayName: 'Storytelling',
-  version: '0.33.0',
-  runes: {
-    'character': {
-      transform: character,
-      aliases: ['npc', 'pc'],
-      description: 'Character profile with portrait, role, status, and sectioned details. Headings become sections.',
-      seoType: 'Person',
-      category: 'Semantic',
-      snippet: ['{% character name="${1:Name}" role="${2|protagonist,antagonist,supporting,minor|}" status="${3|alive,dead,unknown,missing|}" %}', '## Backstory', '', '${4:Character background.}', '', '## Abilities', '', '- ${5:Ability one}', '{% /character %}'],
-      fixture: `{% character name="Veshra" role="antagonist" status="alive" aliases="The Bone Witch" tags="magic-user" %}
+	name: 'storytelling',
+	displayName: 'Storytelling',
+	version: '0.33.0',
+	runes: {
+		character: {
+			transform: character,
+			aliases: ['npc', 'pc'],
+			description:
+				'Character profile with portrait, role, status, and sectioned details. Headings become sections.',
+			seoType: 'Person',
+			category: 'Semantic',
+			snippet: [
+				'{% character name="${1:Name}" role="${2|protagonist,antagonist,supporting,minor|}" status="${3|alive,dead,unknown,missing|}" %}',
+				'## Backstory',
+				'',
+				'${4:Character background.}',
+				'',
+				'## Abilities',
+				'',
+				'- ${5:Ability one}',
+				'{% /character %}',
+			],
+			fixture: `{% character name="Veshra" role="antagonist" status="alive" aliases="The Bone Witch" tags="magic-user" %}
 ## Backstory
 
 Raised in the shadow of the Ashen Spire, Veshra discovered her gift for necromancy at a young age.
@@ -32,19 +43,24 @@ Raised in the shadow of the Ashen Spire, Veshra discovered her gift for necroman
 - Spirit binding
 - Plague whisper
 {% /character %}`,
-    },
-    'character-section': {
-      transform: characterSection,
-      description: 'Individual section within a character profile',
-    },
-    'realm': {
-      transform: realm,
-      aliases: ['location', 'place'],
-      description: 'Location or realm description with scene image, scale, and sectioned details. Headings become sections.',
-      seoType: 'Place',
-      category: 'Semantic',
-      snippet: ['{% realm name="${1:Name}" type="${2:sanctuary}" %}', '${3:Description of the location.}', '{% /realm %}'],
-      fixture: `{% realm name="Rivendell" type="sanctuary" scale="settlement" parent="Eriador" %}
+		},
+		'character-section': {
+			transform: characterSection,
+			description: 'Individual section within a character profile',
+		},
+		realm: {
+			transform: realm,
+			aliases: ['location', 'place'],
+			description:
+				'Location or realm description with scene image, scale, and sectioned details. Headings become sections.',
+			seoType: 'Place',
+			category: 'Semantic',
+			snippet: [
+				'{% realm name="${1:Name}" type="${2:sanctuary}" %}',
+				'${3:Description of the location.}',
+				'{% /realm %}',
+			],
+			fixture: `{% realm name="Rivendell" type="sanctuary" scale="settlement" parent="Eriador" %}
 ![Scene](placeholder:wide)
 
 The Last Homely House East of the Sea.
@@ -59,19 +75,24 @@ A hidden valley in the foothills of the Misty Mountains.
 - Council chamber
 - Extensive libraries
 {% /realm %}`,
-    },
-    'realm-section': {
-      transform: realmSection,
-      description: 'Individual section within a realm description',
-    },
-    'faction': {
-      transform: faction,
-      aliases: ['guild', 'order'],
-      description: 'Faction or organization within a story world with alignment, size, and sectioned details.',
-      seoType: 'Organization',
-      category: 'Semantic',
-      snippet: ['{% faction name="${1:Name}" type="${2:guild}" %}', '${3:Faction description.}', '{% /faction %}'],
-      fixture: `{% faction name="The Silver Order" type="knightly order" alignment="lawful" size="large" %}
+		},
+		'realm-section': {
+			transform: realmSection,
+			description: 'Individual section within a realm description',
+		},
+		faction: {
+			transform: faction,
+			aliases: ['guild', 'order'],
+			description:
+				'Faction or organization within a story world with alignment, size, and sectioned details.',
+			seoType: 'Organization',
+			category: 'Semantic',
+			snippet: [
+				'{% faction name="${1:Name}" type="${2:guild}" %}',
+				'${3:Faction description.}',
+				'{% /faction %}',
+			],
+			fixture: `{% faction name="The Silver Order" type="knightly order" alignment="lawful" size="large" %}
 A prestigious order of knights sworn to protect the realm.
 
 ## Ranks
@@ -85,19 +106,24 @@ A prestigious order of knights sworn to protect the realm.
 
 Their fortress overlooks the capital city from the northern cliffs.
 {% /faction %}`,
-    },
-    'faction-section': {
-      transform: factionSection,
-      description: 'Individual section within a faction description',
-    },
-    'lore': {
-      transform: lore,
-      aliases: ['legend', 'myth'],
-      description: 'Lore entry for world-building details, legends, or historical records. Supports spoiler mode.',
-      seoType: 'Article',
-      category: 'Semantic',
-      snippet: ['{% lore title="${1:Title}" category="${2:history}" %}', '${3:Lore content.}', '{% /lore %}'],
-      fixture: `{% lore title="The Prophecy of the Chosen One" category="prophecy" spoiler=true %}
+		},
+		'faction-section': {
+			transform: factionSection,
+			description: 'Individual section within a faction description',
+		},
+		lore: {
+			transform: lore,
+			aliases: ['legend', 'myth'],
+			description:
+				'Lore entry for world-building details, legends, or historical records. Supports spoiler mode.',
+			seoType: 'Article',
+			category: 'Semantic',
+			snippet: [
+				'{% lore title="${1:Title}" category="${2:history}" %}',
+				'${3:Lore content.}',
+				'{% /lore %}',
+			],
+			fixture: `{% lore title="The Prophecy of the Chosen One" category="prophecy" spoiler=true %}
 An ancient text found in the ruins of the First Temple.
 
 > *When darkness covers the land and the last star fades,
@@ -105,15 +131,23 @@ An ancient text found in the ruins of the First Temple.
 
 The prophecy has been interpreted differently by various factions throughout history.
 {% /lore %}`,
-    },
-    'plot': {
-      transform: plot,
-      aliases: ['storyline', 'arc'],
-      description: 'Plot arc with sequential beats. Lists with [x]/[>]/[ ]/[-] markers become beat checkpoints.',
-      seoType: 'CreativeWork',
-      category: 'Semantic',
-      snippet: ['{% plot title="${1:Arc Title}" %}', '${2:Plot summary.}', '', '- [ ] **${3:Beat One}** \\u2014 ${4:Description}', '- [ ] **${5:Beat Two}** \\u2014 ${6:Description}', '{% /plot %}'],
-      fixture: `{% plot title="The Quest for the Crown" type="quest" structure="linear" %}
+		},
+		plot: {
+			transform: plot,
+			aliases: ['storyline', 'arc'],
+			description:
+				'Plot arc with sequential beats. Lists with [x]/[>]/[ ]/[-] markers become beat checkpoints.',
+			seoType: 'CreativeWork',
+			category: 'Semantic',
+			snippet: [
+				'{% plot title="${1:Arc Title}" %}',
+				'${2:Plot summary.}',
+				'',
+				'- [ ] **${3:Beat One}** \\u2014 ${4:Description}',
+				'- [ ] **${5:Beat Two}** \\u2014 ${6:Description}',
+				'{% /plot %}',
+			],
+			fixture: `{% plot title="The Quest for the Crown" type="quest" structure="linear" %}
 The heroes must recover the lost crown before the solstice.
 
 - [x] **Discovery** — Find the ancient map in the library
@@ -122,30 +156,46 @@ The heroes must recover the lost crown before the solstice.
 - [ ] **Confrontation** — Face the guardian of the vault
 - [-] **Return** — Bring the crown back to the capital
 {% /plot %}`,
-    },
-    'beat': {
-      transform: beat,
-      description: 'Individual plot beat within a plot arc',
-    },
-    'bond': {
-      transform: bond,
-      aliases: ['relationship'],
-      description: 'Relationship between two named entities with type, status, and directional indicator.',
-      category: 'Semantic',
-      snippet: ['{% bond from="${1:Entity A}" to="${2:Entity B}" type="${3:alliance}" %}', '${4:Relationship description.}', '{% /bond %}'],
-      fixture: `{% bond from="Aragorn" to="Legolas" type="fellowship" status="active" %}
+		},
+		beat: {
+			transform: beat,
+			description: 'Individual plot beat within a plot arc',
+		},
+		bond: {
+			transform: bond,
+			aliases: ['relationship'],
+			description:
+				'Relationship between two named entities with type, status, and directional indicator.',
+			category: 'Semantic',
+			snippet: [
+				'{% bond from="${1:Entity A}" to="${2:Entity B}" type="${3:alliance}" %}',
+				'${4:Relationship description.}',
+				'{% /bond %}',
+			],
+			fixture: `{% bond from="Aragorn" to="Legolas" type="fellowship" status="active" %}
 Forged during the Council of Elrond, their bond was tested through the
 War of the Ring. Despite their different backgrounds, they developed
 a deep mutual respect.
 {% /bond %}`,
-    },
-    'storyboard': {
-      transform: storyboard,
-      aliases: ['comic'],
-      description: 'Comic/storyboard layout where images become panels and paragraphs become captions',
-      category: 'Semantic',
-      snippet: ['{% storyboard %}', '![${1:Panel 1}](${2:/path/to/image1.png})', '', '${3:Caption for panel 1}', '', '![${4:Panel 2}](${5:/path/to/image2.png})', '', '${6:Caption for panel 2}', '{% /storyboard %}'],
-      fixture: `{% storyboard variant="clean" columns="3" %}
+		},
+		storyboard: {
+			transform: storyboard,
+			aliases: ['comic'],
+			description:
+				'Comic/storyboard layout where images become panels and paragraphs become captions',
+			category: 'Semantic',
+			snippet: [
+				'{% storyboard %}',
+				'![${1:Panel 1}](${2:/path/to/image1.png})',
+				'',
+				'${3:Caption for panel 1}',
+				'',
+				'![${4:Panel 2}](${5:/path/to/image2.png})',
+				'',
+				'${6:Caption for panel 2}',
+				'{% /storyboard %}',
+			],
+			fixture: `{% storyboard variant="clean" columns="3" %}
 ![Panel 1](placeholder:cover)
 The hero surveys the landscape from atop the hill.
 
@@ -155,25 +205,31 @@ A distant rumble echoes across the valley.
 ![Panel 3](placeholder:cover)
 The journey begins.
 {% /storyboard %}`,
-    },
-    'storyboard-panel': {
-      transform: storyboardPanel,
-      description: 'Individual panel within a storyboard',
-    },
-  },
-  theme: {
-    runes: config as unknown as Record<string, Record<string, unknown>>,
-  },
-  pipeline: storytellingPipelineHooks,
+		},
+		'storyboard-panel': {
+			transform: storyboardPanel,
+			description: 'Individual panel within a storyboard',
+		},
+	},
+	theme: {
+		runes: config as unknown as Record<string, Record<string, unknown>>,
+	},
+	pipeline: storytellingPipelineHooks,
 };
 
 export default storytelling;
 
 export type {
-	CharacterSectionProps, CharacterProps,
-	RealmSectionProps, RealmProps,
-	BeatProps, PlotProps, BondProps,
-	StoryboardPanelProps, StoryboardProps,
+	CharacterSectionProps,
+	CharacterProps,
+	RealmSectionProps,
+	RealmProps,
+	BeatProps,
+	PlotProps,
+	BondProps,
+	StoryboardPanelProps,
+	StoryboardProps,
 	LoreProps,
-	FactionSectionProps, FactionProps,
+	FactionSectionProps,
+	FactionProps,
 } from './props.js';

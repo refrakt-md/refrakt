@@ -10,7 +10,7 @@ export async function GET() {
 	const baseUrl = process.env.SITE_URL || 'https://refrakt.md';
 
 	const pages = site.pages
-		.filter(p => !p.route.draft)
+		.filter((p) => !p.route.draft)
 		.sort((a, b) => a.route.url.localeCompare(b.route.url));
 
 	const lines: string[] = [
@@ -50,7 +50,9 @@ export async function GET() {
 
 	lines.push('## Optional');
 	lines.push('');
-	lines.push(`- [llms-full.txt](${baseUrl}/llms-full.txt): Full documentation content for comprehensive context`);
+	lines.push(
+		`- [llms-full.txt](${baseUrl}/llms-full.txt): Full documentation content for comprehensive context`,
+	);
 	lines.push('');
 
 	return new Response(lines.join('\n'), {

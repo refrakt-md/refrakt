@@ -9,7 +9,8 @@ function seo(content: string) {
 
 describe('SEO: Event', () => {
 	it('should extract Event with date, location, and description', () => {
-		const result = seo(`{% event date="2026-03-15" endDate="2026-03-17" location="Stockholm, Sweden" url="https://example.com/register" %}
+		const result =
+			seo(`{% event date="2026-03-15" endDate="2026-03-17" location="Stockholm, Sweden" url="https://example.com/register" %}
 # Nordic Developer Summit
 
 A three-day conference for developers and designers.

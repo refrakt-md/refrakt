@@ -52,7 +52,11 @@ const config: ThemeConfig = {
 const CONTRACT = generateStructureContract(config);
 const transform = createTransform(config);
 
-const render = (rune: string, attrs: Record<string, any> = {}, parent?: SerializedTag): SerializedTag => {
+const render = (
+	rune: string,
+	attrs: Record<string, any> = {},
+	parent?: SerializedTag,
+): SerializedTag => {
 	const tag = makeTag('div', { 'data-rune': rune, ...attrs }, []);
 	if (!parent) return transform(tag) as SerializedTag;
 	const wrapper = { ...parent, children: [tag] };
@@ -60,7 +64,10 @@ const render = (rune: string, attrs: Record<string, any> = {}, parent?: Serializ
 	return out.children[0] as SerializedTag;
 };
 
-const classesOf = (tag: SerializedTag) => String(tag.attributes.class ?? '').split(/\s+/).filter(Boolean);
+const classesOf = (tag: SerializedTag) =>
+	String(tag.attributes.class ?? '')
+		.split(/\s+/)
+		.filter(Boolean);
 
 describe('contract ↔ engine agreement', () => {
 	describe('root identity', () => {
@@ -186,7 +193,8 @@ const AXIS_CONTRACT = generateStructureContract(axisConfig);
 const UNIVERSAL = AXIS_CONTRACT.universalAxes;
 const axisTransform = createTransform(axisConfig);
 
-const meta = (field: string, content: string) => makeTag('meta', { 'data-field': field, content }, []);
+const meta = (field: string, content: string) =>
+	makeTag('meta', { 'data-field': field, content }, []);
 
 /** Render a rune with a `[data-name]` child for each named section, so the
  *  axes that land on a section (`reading`, `dropcap`) have somewhere to go. */
@@ -198,7 +206,7 @@ const renderAxis = (
 ): SerializedTag => {
 	const children = [
 		...metas.map(([f, c]) => meta(f, c)),
-		...names.map(n => makeTag('div', { 'data-name': n }, [])),
+		...names.map((n) => makeTag('div', { 'data-name': n }, [])),
 	];
 	return axisTransform(makeTag('div', { 'data-rune': rune, ...attrs }, children)) as SerializedTag;
 };
@@ -235,8 +243,9 @@ describe('contract ↔ engine agreement: universal axes', () => {
 
 		it('expands {token} only where a token vocabulary is declared', () => {
 			for (const [axis, declared] of Object.entries(UNIVERSAL)) {
-				const usesToken = [...declared.inputs, ...(declared.customProperties ?? [])]
-					.some(s => s.includes('{token}'));
+				const usesToken = [...declared.inputs, ...(declared.customProperties ?? [])].some((s) =>
+					s.includes('{token}'),
+				);
 				if (usesToken) expect(declared.tokens, `${axis}: {token} with no tokens`).toBeTruthy();
 			}
 		});
@@ -315,7 +324,11 @@ describe('contract ↔ engine agreement: universal axes', () => {
 
 	describe('box axes', () => {
 		it('emits the declared class pattern, with {block} and {value} substituted', () => {
-			const cases: Array<[string, string]> = [['width', 'wide'], ['spacing', 'loose'], ['inset', 'tight']];
+			const cases: Array<[string, string]> = [
+				['width', 'wide'],
+				['spacing', 'loose'],
+				['inset', 'tight'],
+			];
 			for (const [axis, value] of cases) {
 				const pattern = UNIVERSAL[axis].classPattern!;
 				const expected = pattern.slice(1).replace('{block}', 'rf-panel').replace('{value}', value);
@@ -327,12 +340,16 @@ describe('contract ↔ engine agreement: universal axes', () => {
 
 		it('honours the suppressed default the condition describes', () => {
 			expect(renderAxis('panel', { width: 'content' }).attributes['data-width']).toBeUndefined();
-			expect(renderAxis('panel', { spacing: 'default' }).attributes['data-spacing']).toBeUndefined();
+			expect(
+				renderAxis('panel', { spacing: 'default' }).attributes['data-spacing'],
+			).toBeUndefined();
 			expect(renderAxis('panel', { inset: 'default' }).attributes['data-inset']).toBeUndefined();
 		});
 
 		it('emits content-measure exactly where the contract records it', () => {
-			expect(AXIS_CONTRACT.runes.Panel.universalAxes!.axes!['content-measure'].default).toBe('anchored');
+			expect(AXIS_CONTRACT.runes.Panel.universalAxes!.axes!['content-measure'].default).toBe(
+				'anchored',
+			);
 			expect(renderAxis('panel').attributes['data-content-measure']).toBe('anchored');
 			expect(AXIS_CONTRACT.runes.Chip.universalAxes?.axes?.['content-measure']).toBeUndefined();
 			expect(renderAxis('chip').attributes['data-content-measure']).toBeUndefined();
@@ -384,7 +401,7 @@ describe('contract ↔ engine agreement: universal axes', () => {
 			}
 		});
 
-		it('stamps the declared custom property on the rune\'s recorded stagger target', () => {
+		it("stamps the declared custom property on the rune's recorded stagger target", () => {
 			expect(AXIS_CONTRACT.runes.Panel.universalAxes!.axes!.motion.target).toContain('item');
 			const out = renderAxis('panel', { stagger: 'true' });
 			const item = findByName(out, 'item')!;
@@ -400,8 +417,13 @@ describe('contract ↔ engine agreement: universal axes', () => {
 
 	describe('frame', () => {
 		it('lands on the surface the rune contract names', () => {
-			expect(AXIS_CONTRACT.runes.Panel.universalAxes!.axes!.frame.target).toBe('[data-section="media"]');
-			const out = renderAxis('panel', {}, [['frame', 'polaroid'], ['frame-aspect', '4/3']]);
+			expect(AXIS_CONTRACT.runes.Panel.universalAxes!.axes!.frame.target).toBe(
+				'[data-section="media"]',
+			);
+			const out = renderAxis('panel', {}, [
+				['frame', 'polaroid'],
+				['frame-aspect', '4/3'],
+			]);
 			expect(out.attributes['data-frame']).toBeUndefined();
 			expect(findByName(out, 'figure')!.attributes['data-frame']).toBe('polaroid');
 		});
@@ -419,7 +441,10 @@ describe('contract ↔ engine agreement: universal axes', () => {
 	describe('substrate', () => {
 		it('defaults to the rune root, as the condition claims', () => {
 			expect(AXIS_CONTRACT.runes.Panel.universalAxes?.axes?.substrate).toBeUndefined();
-			const out = renderAxis('panel', {}, [['substrate', 'dots'], ['substrate-size', 'md']]);
+			const out = renderAxis('panel', {}, [
+				['substrate', 'dots'],
+				['substrate-size', 'md'],
+			]);
 			expect(out.attributes['data-substrate']).toBe('dots');
 			expect(String(out.attributes.style)).toContain(UNIVERSAL.substrate.customProperties![0]);
 		});
@@ -443,7 +468,15 @@ describe('contract ↔ engine agreement: universal axes', () => {
 			const unavailable = AXIS_CONTRACT.runes.Chip.universalAxes!.unavailable!;
 			expect(unavailable.cover).toBeTruthy();
 			expect(unavailable['content-place']).toBeTruthy();
-			const out = renderAxis('chip', {}, [['media-position', 'cover'], ['scrim', 'top']], []);
+			const out = renderAxis(
+				'chip',
+				{},
+				[
+					['media-position', 'cover'],
+					['scrim', 'top'],
+				],
+				[],
+			);
 			expect(out.attributes.style).toBeUndefined();
 			expect(out.attributes['data-scrim-type']).toBeUndefined();
 		});
@@ -464,7 +497,8 @@ describe('contract ↔ engine agreement: universal axes', () => {
 		const attrsIn = (tag: SerializedTag, out: Set<string>): Set<string> => {
 			for (const k of Object.keys(tag.attributes ?? {})) out.add(k);
 			for (const child of tag.children ?? []) {
-				if (child && typeof child === 'object' && 'attributes' in child) attrsIn(child as SerializedTag, out);
+				if (child && typeof child === 'object' && 'attributes' in child)
+					attrsIn(child as SerializedTag, out);
 			}
 			return out;
 		};
@@ -474,19 +508,25 @@ describe('contract ↔ engine agreement: universal axes', () => {
 				it(`${runeName}: ${axis} emits none of its declared attributes`, () => {
 					const declared = UNIVERSAL[axis];
 					const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-					const attrInputs = declared.source === 'attribute'
-						? Object.fromEntries(declared.inputs.map(i => [i, 'x']))
-						: {};
-					const metaInputs: Array<[string, string]> = declared.source === 'meta'
-						? declared.inputs.filter(i => !i.includes('{')).map(i => [i, 'x'] as [string, string])
-						: [];
+					const attrInputs =
+						declared.source === 'attribute'
+							? Object.fromEntries(declared.inputs.map((i) => [i, 'x']))
+							: {};
+					const metaInputs: Array<[string, string]> =
+						declared.source === 'meta'
+							? declared.inputs
+									.filter((i) => !i.includes('{'))
+									.map((i) => [i, 'x'] as [string, string])
+							: [];
 					const out = renderAxis(contract.dataRune, attrInputs, metaInputs);
 					const present = declared.target
 						? new Set(Object.keys(out.attributes ?? {}))
 						: attrsIn(out, new Set());
 					for (const attr of declared.dataAttributes ?? []) {
-						expect(present, `${attr} present despite "${contract.universalAxes!.unavailable![axis]}"`)
-							.not.toContain(attr);
+						expect(
+							present,
+							`${attr} present despite "${contract.universalAxes!.unavailable![axis]}"`,
+						).not.toContain(attr);
 					}
 					warn.mockRestore();
 				});

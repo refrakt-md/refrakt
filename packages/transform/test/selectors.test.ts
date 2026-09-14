@@ -30,11 +30,15 @@ describe('extractSelectors', () => {
 	});
 
 	it('extracts data attribute selectors', () => {
-		const tag = makeTag('section', {
-			class: 'rf-hint',
-			'data-rune': 'hint',
-			'data-hint-type': 'warning',
-		}, []);
+		const tag = makeTag(
+			'section',
+			{
+				class: 'rf-hint',
+				'data-rune': 'hint',
+				'data-hint-type': 'warning',
+			},
+			[],
+		);
 		const selectors = extractSelectors(tag, 'rf');
 		expect(selectors).toContain('[data-rune="hint"]');
 		expect(selectors).toContain('[data-hint-type="warning"]');
@@ -54,22 +58,24 @@ describe('extractSelectors', () => {
 			makeTag('div', { class: 'rf-hint__body', 'data-name': 'body' }, []),
 		]);
 		const selectors = extractSelectors(tag, 'rf');
-		const bodyCount = selectors.filter(s => s === '.rf-hint__body').length;
+		const bodyCount = selectors.filter((s) => s === '.rf-hint__body').length;
 		expect(bodyCount).toBe(1);
 	});
 
 	it('sorts selectors: blocks, modifiers, elements, data attributes', () => {
-		const tag = makeTag('section', {
-			class: 'rf-hint rf-hint--warning',
-			'data-rune': 'hint',
-		}, [
-			makeTag('span', { class: 'rf-hint__icon' }, []),
-		]);
+		const tag = makeTag(
+			'section',
+			{
+				class: 'rf-hint rf-hint--warning',
+				'data-rune': 'hint',
+			},
+			[makeTag('span', { class: 'rf-hint__icon' }, [])],
+		);
 		const selectors = extractSelectors(tag, 'rf');
 		const blockIdx = selectors.indexOf('.rf-hint');
 		const modIdx = selectors.indexOf('.rf-hint--warning');
 		const elemIdx = selectors.indexOf('.rf-hint__icon');
-		const dataIdx = selectors.findIndex(s => s.startsWith('['));
+		const dataIdx = selectors.findIndex((s) => s.startsWith('['));
 
 		expect(blockIdx).toBeLessThan(modIdx);
 		expect(modIdx).toBeLessThan(elemIdx);
@@ -94,20 +100,24 @@ describe('extractSelectors', () => {
 
 	it('extracts selectors from a fully transformed rune tree', () => {
 		// Simulates a hint rune after identity transform
-		const tag = makeTag('section', {
-			class: 'rf-hint rf-hint--warning',
-			'data-rune': 'hint',
-			'data-hint-type': 'warning',
-			typeof: 'Hint',
-		}, [
-			makeTag('div', { class: 'rf-hint__header', 'data-name': 'header' }, [
-				makeTag('span', { class: 'rf-hint__icon', 'data-name': 'icon' }, []),
-				makeTag('span', { class: 'rf-hint__title', 'data-name': 'title' }, ['warning']),
-			]),
-			makeTag('div', { class: 'rf-hint__body', 'data-name': 'body' }, [
-				makeTag('p', {}, ['Check your settings']),
-			]),
-		]);
+		const tag = makeTag(
+			'section',
+			{
+				class: 'rf-hint rf-hint--warning',
+				'data-rune': 'hint',
+				'data-hint-type': 'warning',
+				typeof: 'Hint',
+			},
+			[
+				makeTag('div', { class: 'rf-hint__header', 'data-name': 'header' }, [
+					makeTag('span', { class: 'rf-hint__icon', 'data-name': 'icon' }, []),
+					makeTag('span', { class: 'rf-hint__title', 'data-name': 'title' }, ['warning']),
+				]),
+				makeTag('div', { class: 'rf-hint__body', 'data-name': 'body' }, [
+					makeTag('p', {}, ['Check your settings']),
+				]),
+			],
+		);
 
 		const selectors = extractSelectors(tag, 'rf');
 		expect(selectors).toEqual([

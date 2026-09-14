@@ -23,8 +23,10 @@ interface ChapterData {
 	time: number; // seconds
 }
 
-const PLAY_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="7,4 20,12 7,20"/></svg>';
-const PAUSE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="4" height="16"/><rect x="15" y="4" width="4" height="16"/></svg>';
+const PLAY_ICON =
+	'<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="7,4 20,12 7,20"/></svg>';
+const PAUSE_ICON =
+	'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="4" height="16"/><rect x="15" y="4" width="4" height="16"/></svg>';
 
 export class RfAudio extends SafeHTMLElement {
 	private audioEl: HTMLAudioElement | null = null;
@@ -72,7 +74,11 @@ export class RfAudio extends SafeHTMLElement {
 			this.audioEl = null;
 		}
 		if (this.wavesurfer) {
-			try { this.wavesurfer.destroy(); } catch { /* already destroyed */ }
+			try {
+				this.wavesurfer.destroy();
+			} catch {
+				/* already destroyed */
+			}
 			this.wavesurfer = null;
 		}
 		// Remove playlist click handlers
@@ -183,9 +189,7 @@ export class RfAudio extends SafeHTMLElement {
 
 	private updateActivePlaylistTrack() {
 		for (let i = 0; i < this.playlistTrackItems.length; i++) {
-			this.playlistTrackItems[i].classList.toggle(
-				'rf-track--active', i === this.currentTrackIndex,
-			);
+			this.playlistTrackItems[i].classList.toggle('rf-track--active', i === this.currentTrackIndex);
 		}
 	}
 
@@ -438,7 +442,9 @@ export class RfAudio extends SafeHTMLElement {
 				this.audioEl.pause();
 				this.isPlaying = false;
 			} else {
-				this.audioEl.play().catch(() => { /* autoplay blocked */ });
+				this.audioEl.play().catch(() => {
+					/* autoplay blocked */
+				});
 				this.isPlaying = true;
 			}
 			this.updatePlayButton();
@@ -533,7 +539,10 @@ export class RfAudio extends SafeHTMLElement {
 	private updatePlayButton() {
 		if (!this.playBtn) return;
 		this.playBtn.innerHTML = this.isPlaying ? PAUSE_ICON : PLAY_ICON;
-		this.playBtn.setAttribute('aria-label', this.isPlaying ? bstr('behavior.audio.pause') : bstr('behavior.audio.play'));
+		this.playBtn.setAttribute(
+			'aria-label',
+			this.isPlaying ? bstr('behavior.audio.pause') : bstr('behavior.audio.play'),
+		);
 	}
 
 	private loadTrack(index: number, autoplay = false) {
@@ -574,7 +583,9 @@ export class RfAudio extends SafeHTMLElement {
 				if (autoplay) {
 					this.pendingAutoplay = () => {
 						this.pendingAutoplay = null;
-						this.audioEl!.play().catch(() => { /* autoplay blocked */ });
+						this.audioEl!.play().catch(() => {
+							/* autoplay blocked */
+						});
 						this.isPlaying = true;
 						this.updatePlayButton();
 					};
@@ -589,7 +600,9 @@ export class RfAudio extends SafeHTMLElement {
 					if (audio) {
 						this.pendingAutoplay = () => {
 							this.pendingAutoplay = null;
-							audio.play().catch(() => { /* autoplay blocked */ });
+							audio.play().catch(() => {
+								/* autoplay blocked */
+							});
 							this.isPlaying = true;
 							this.updatePlayButton();
 						};

@@ -3,7 +3,12 @@ import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createContentModelSchema, createComponentRenderable, asNodes } from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
-import { SplitLayoutModel, buildLayoutMetas, splitMediaBodyFooter, extractMediaImage } from './common.js';
+import {
+	SplitLayoutModel,
+	buildLayoutMetas,
+	splitMediaBodyFooter,
+	extractMediaImage,
+} from './common.js';
 
 /**
  * `card` (SPEC-070) — a generic, self-contained content card.
@@ -43,14 +48,32 @@ export const card = createContentModelSchema({
 	provides: ['prose'],
 	base: SplitLayoutModel,
 	attributes: {
-		href: { type: String, required: false, default: '', description: 'Optional link target; makes the whole card clickable.' },
+		href: {
+			type: String,
+			required: false,
+			default: '',
+			description: 'Optional link target; makes the whole card clickable.',
+		},
 		// SPEC-089 — cover mode (`media-position="cover"`, from splitLayoutAttributes)
 		// overlays content on a media well. `content-place` anchors the overlaid box
 		// ("block inline", e.g. "end start", or "auto" to adapt on orientation);
 		// `height` / `aspect` give a cover/bg-only card its intrinsic shape.
-		'content-place': { type: String, required: false, description: 'Cover overlay anchor: "<block> <inline>" (e.g. "end start") or "auto"' },
-		height: { type: String, required: false, matches: ['sm', 'md', 'lg', 'xl'], description: 'Intrinsic card height (named scale) for cover / bg-only cards' },
-		aspect: { type: String, required: false, description: 'Intrinsic card aspect ratio (e.g. "16/9", "3/4") for cover / bg-only cards' },
+		'content-place': {
+			type: String,
+			required: false,
+			description: 'Cover overlay anchor: "<block> <inline>" (e.g. "end start") or "auto"',
+		},
+		height: {
+			type: String,
+			required: false,
+			matches: ['sm', 'md', 'lg', 'xl'],
+			description: 'Intrinsic card height (named scale) for cover / bg-only cards',
+		},
+		aspect: {
+			type: String,
+			required: false,
+			description: 'Intrinsic card aspect ratio (e.g. "16/9", "3/4") for cover / bg-only cards',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
@@ -60,7 +83,11 @@ export const card = createContentModelSchema({
 		// Split the body on `---` into media / body / footer zones. The shared
 		// helper enforces the canonical media-first body shape (1 group = body,
 		// 2 = media + body, 3+ = media + body + footer).
-		const { media: mediaNodes, body: bodyNodes, footer: footerNodes } = splitMediaBodyFooter(asNodes(resolved.body));
+		const {
+			media: mediaNodes,
+			body: bodyNodes,
+			footer: footerNodes,
+		} = splitMediaBodyFooter(asNodes(resolved.body));
 
 		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
 
@@ -87,7 +114,13 @@ export const card = createContentModelSchema({
 			);
 			const img = extractMediaImage(mediaCursor);
 			const inner = img ? [img] : mediaCursor.toArray();
-			children.push(new Tag('div', { 'data-section': 'media', 'data-name': 'media' }, inner as RenderableTreeNode[]));
+			children.push(
+				new Tag(
+					'div',
+					{ 'data-section': 'media', 'data-name': 'media' },
+					inner as RenderableTreeNode[],
+				),
+			);
 		}
 
 		// Eyebrow: a leading paragraph immediately followed by a heading becomes a
@@ -137,7 +170,11 @@ export const card = createContentModelSchema({
 			const footerCursor = new RenderableNodeCursor(
 				Markdoc.transform(footerNodes, config) as RenderableTreeNode[],
 			);
-			footerTag = new Tag('footer', { 'data-name': 'footer' }, footerCursor.toArray() as RenderableTreeNode[]);
+			footerTag = new Tag(
+				'footer',
+				{ 'data-name': 'footer' },
+				footerCursor.toArray() as RenderableTreeNode[],
+			);
 		}
 
 		// Flat slots, in order. The engine's layout assembly wraps
@@ -151,7 +188,11 @@ export const card = createContentModelSchema({
 		let linkTag: InstanceType<typeof Tag> | undefined;
 		const href = String(attrs.href ?? '');
 		if (href) {
-			linkTag = new Tag('a', { 'data-name': 'link', href, 'aria-hidden': 'true', tabindex: '-1' }, []);
+			linkTag = new Tag(
+				'a',
+				{ 'data-name': 'link', href, 'aria-hidden': 'true', tabindex: '-1' },
+				[],
+			);
 			children.push(linkTag);
 		}
 

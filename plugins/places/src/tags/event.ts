@@ -1,7 +1,14 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, pageSectionProperties, unwrapParagraphImages } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	RenderableNodeCursor,
+	pageSectionProperties,
+	unwrapParagraphImages,
+} from '@refrakt-md/runes';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
@@ -12,9 +19,17 @@ export const event = createContentModelSchema({
 	sections: eventSections,
 	provides: ['prose'],
 	attributes: {
-		date: { type: String, required: false, description: 'Start date of the event (e.g. 2025-06-15).' },
+		date: {
+			type: String,
+			required: false,
+			description: 'Start date of the event (e.g. 2025-06-15).',
+		},
 		endDate: { type: String, required: false, description: 'End date for multi-day events.' },
-		location: { type: String, required: false, description: 'Venue or place name where the event is held.' },
+		location: {
+			type: String,
+			required: false,
+			description: 'Venue or place name where the event is held.',
+		},
 		url: { type: String, required: false, description: 'Link to the event page or ticket source.' },
 	},
 	contentModel: {
@@ -29,7 +44,9 @@ export const event = createContentModelSchema({
 		// the header (and so `pageSectionProperties`' top-level `img` lookup finds
 		// it).
 		const header = new RenderableNodeCursor(
-			unwrapParagraphImages(Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[]),
+			unwrapParagraphImages(
+				Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
+			),
 		);
 		const body = new RenderableNodeCursor(
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
@@ -44,9 +61,11 @@ export const event = createContentModelSchema({
 		const bodyDiv = body.wrap('div');
 
 		// Schema.org nested Place for location
-		const locationWrapper = attrs.location ? new Tag('span', { typeof: 'Place', property: 'location' }, [
-			new Tag('meta', { property: 'name', content: attrs.location }),
-		]) : undefined;
+		const locationWrapper = attrs.location
+			? new Tag('span', { typeof: 'Place', property: 'location' }, [
+					new Tag('meta', { property: 'name', content: attrs.location }),
+				])
+			: undefined;
 
 		// SPEC-081: emit flat `data-name` header slots — `layout` wraps
 		// eyebrow/headline/blurb in the preamble <header>, so each is
@@ -61,7 +80,9 @@ export const event = createContentModelSchema({
 		];
 		if (locationWrapper) resultChildren.push(locationWrapper);
 
-		return createComponentRenderable({ rune: 'event', schemaOrgType: 'Event',
+		return createComponentRenderable({
+			rune: 'event',
+			schemaOrgType: 'Event',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {

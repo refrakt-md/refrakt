@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { describeRune, serializeRune, hydrateRuneInfo, UNIVERSAL_ATTRIBUTE_NAMES, runes, describeSchemaUniversals, AXIS_ATTRIBUTES } from '../src/index.js';
+import {
+	describeRune,
+	serializeRune,
+	hydrateRuneInfo,
+	UNIVERSAL_ATTRIBUTE_NAMES,
+	runes,
+	describeSchemaUniversals,
+	AXIS_ATTRIBUTES,
+} from '../src/index.js';
 import type { RuneInfo } from '../src/reference.js';
 import type { Schema } from '@markdoc/markdoc';
 
@@ -14,7 +22,12 @@ import type { Schema } from '@markdoc/markdoc';
 
 /** Hydrate a real core rune the way the reference command does. */
 function info(name: string): RuneInfo {
-	const rune = (runes as Record<string, { name: string; schema: Schema; aliases: string[]; description: string }>)[name];
+	const rune = (
+		runes as Record<
+			string,
+			{ name: string; schema: Schema; aliases: string[]; description: string }
+		>
+	)[name];
 	if (!rune) throw new Error(`no such rune: ${name}`);
 	return hydrateRuneInfo(rune as never, { pluginName: 'core' });
 }
@@ -28,7 +41,7 @@ describe('the blanket claim is gone', () => {
 });
 
 describe('what is reported is what the schema carries', () => {
-	it('lists a rune\'s real universal attributes, not the static set', () => {
+	it("lists a rune's real universal attributes, not the static set", () => {
 		const grid = describeRune(info('grid'));
 		// `grid` arranges children — no body, no header, no media surface.
 		expect(grid).toContain('Universal attributes: ');
@@ -81,26 +94,37 @@ describe('json and markdown agree', () => {
 
 			// Every reported universal attribute is really on the schema…
 			for (const attr of json.attributes.universal) {
-				expect(declared.has(attr), `${name}: JSON reports \`${attr}\` which the schema lacks`).toBe(true);
+				expect(declared.has(attr), `${name}: JSON reports \`${attr}\` which the schema lacks`).toBe(
+					true,
+				);
 			}
 			// …and every universal attribute on the schema is reported.
 			for (const attr of declared) {
 				if (!UNIVERSAL_ATTRIBUTE_NAMES.has(attr)) continue;
-				expect(json.attributes.universal, `${name}: schema has \`${attr}\`, JSON omits it`).toContain(attr);
+				expect(
+					json.attributes.universal,
+					`${name}: schema has \`${attr}\`, JSON omits it`,
+				).toContain(attr);
 			}
 
 			// The unavailable axes name attributes the schema really lacks.
 			for (const { axis, reason, attributes } of json.attributes.universalUnavailable) {
 				expect(reason.length, `${name}/${axis}: empty reason`).toBeGreaterThan(0);
 				for (const attr of attributes) {
-					expect(declared.has(attr), `${name}: \`${axis}\` called unavailable but \`${attr}\` is declared`).toBe(false);
+					expect(
+						declared.has(attr),
+						`${name}: \`${axis}\` called unavailable but \`${attr}\` is declared`,
+					).toBe(false);
 				}
 			}
 
 			// And the human output reports the same axes as missing.
 			const markdown = describeRune(runeInfo);
 			for (const { axis } of json.attributes.universalUnavailable) {
-				expect(markdown, `${name}: markdown omits \`${axis}\` from its not-applicable list`).toContain(axis);
+				expect(
+					markdown,
+					`${name}: markdown omits \`${axis}\` from its not-applicable list`,
+				).toContain(axis);
 			}
 		}
 	});
@@ -114,12 +138,19 @@ describe('the schema is authoritative over the rule', () => {
 		// reconciliation, not just the rule, is what is pinned here.
 		for (const name of Object.keys(runes as Record<string, unknown>)) {
 			let runeInfo: RuneInfo;
-			try { runeInfo = info(name); } catch { continue; }
+			try {
+				runeInfo = info(name);
+			} catch {
+				continue;
+			}
 			const schema = runeInfo.schema as Schema;
 			const declared = new Set(Object.keys(schema.attributes ?? {}));
 			for (const { axis } of describeSchemaUniversals(schema).unavailable) {
 				for (const attr of AXIS_ATTRIBUTES[axis] ?? []) {
-					expect(declared.has(attr), `${name}: \`${axis}\` reported unavailable while \`${attr}\` is declared`).toBe(false);
+					expect(
+						declared.has(attr),
+						`${name}: \`${axis}\` reported unavailable while \`${attr}\` is declared`,
+					).toBe(false);
 				}
 			}
 		}

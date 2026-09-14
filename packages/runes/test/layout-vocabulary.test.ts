@@ -10,7 +10,11 @@ describe('canonical layout vocabulary (ADR-018)', () => {
 	});
 
 	it('composes canonical picks with rune-local literals', () => {
-		expect(layoutMatches([LAYOUT.grid, LAYOUT.list], 'masonry')).toEqual(['grid', 'list', 'masonry']);
+		expect(layoutMatches([LAYOUT.grid, LAYOUT.list], 'masonry')).toEqual([
+			'grid',
+			'list',
+			'masonry',
+		]);
 	});
 
 	it('supports a canonical subset without local values', () => {

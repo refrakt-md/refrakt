@@ -4,7 +4,8 @@ import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('recipe tag', () => {
 	it('should transform a basic recipe', () => {
-		const result = parse(`{% recipe prepTime="PT15M" cookTime="PT30M" servings=4 difficulty="easy" %}
+		const result =
+			parse(`{% recipe prepTime="PT15M" cookTime="PT30M" servings=4 difficulty="easy" %}
 # Pasta Carbonara
 
 A classic Italian pasta dish.
@@ -21,7 +22,7 @@ A classic Italian pasta dish.
 > Use freshly ground black pepper for best results.
 {% /recipe %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 	});
@@ -35,7 +36,7 @@ A classic Italian pasta dish.
 1. step one
 {% /recipe %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
 		// SPEC-082: field values live in the data-rune-fields bag.
@@ -55,13 +56,16 @@ A classic Italian pasta dish.
 2. Bake
 {% /recipe %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
-		const ingredients = findTag(tag!, t => t.name === 'ul' && t.attributes['data-name'] === 'ingredients');
+		const ingredients = findTag(
+			tag!,
+			(t) => t.name === 'ul' && t.attributes['data-name'] === 'ingredients',
+		);
 		expect(ingredients).toBeDefined();
 
-		const steps = findTag(tag!, t => t.name === 'ol' && t.attributes['data-name'] === 'steps');
+		const steps = findTag(tag!, (t) => t.name === 'ol' && t.attributes['data-name'] === 'steps');
 		expect(steps).toBeDefined();
 	});
 
@@ -80,16 +84,16 @@ A recipe with a photo.
 1. step one
 {% /recipe %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
 		// media-position field
 		expect(fields(tag)['media-position']).toBe('end');
 
 		// Media zone should have an image
-		const media = findTag(tag!, t => t.attributes['data-name'] === 'media');
+		const media = findTag(tag!, (t) => t.attributes['data-name'] === 'media');
 		expect(media).toBeDefined();
-		const img = findTag(media!, t => t.name === 'img');
+		const img = findTag(media!, (t) => t.name === 'img');
 		expect(img).toBeDefined();
 	});
 
@@ -102,14 +106,14 @@ A recipe with a photo.
 1. Mix
 {% /recipe %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
 		// SPEC-081: content slots are emitted flat (the engine's layout groups
 		// them into the content column). The `primary: true` flag on the content
 		// zone routes single-block bodies (no `---`) into content rather than
 		// media — so a recipe without an image still surfaces ingredients.
-		const ingredients = findTag(tag!, t => t.attributes['data-name'] === 'ingredients');
+		const ingredients = findTag(tag!, (t) => t.attributes['data-name'] === 'ingredients');
 		expect(ingredients).toBeDefined();
 
 		// media-position defaults to top
@@ -125,15 +129,18 @@ A recipe with a photo.
 - cucumbers
 {% /recipe %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
-		const ingredients = findTag(tag!, t => t.name === 'ul' && t.attributes['data-name'] === 'ingredients');
+		const ingredients = findTag(
+			tag!,
+			(t) => t.name === 'ul' && t.attributes['data-name'] === 'ingredients',
+		);
 		expect(ingredients).toBeDefined();
 		expect(ingredients!.children.length).toBe(3);
 
 		// Steps list should still exist but be empty
-		const steps = findTag(tag!, t => t.name === 'ol' && t.attributes['data-name'] === 'steps');
+		const steps = findTag(tag!, (t) => t.name === 'ol' && t.attributes['data-name'] === 'steps');
 		expect(steps).toBeDefined();
 		expect(steps!.children.length).toBe(0);
 	});
@@ -147,15 +154,18 @@ A recipe with a photo.
 3. Wait 20 minutes
 {% /recipe %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
-		const steps = findTag(tag!, t => t.name === 'ol' && t.attributes['data-name'] === 'steps');
+		const steps = findTag(tag!, (t) => t.name === 'ol' && t.attributes['data-name'] === 'steps');
 		expect(steps).toBeDefined();
 		expect(steps!.children.length).toBe(3);
 
 		// Ingredients list should still exist but be empty
-		const ingredients = findTag(tag!, t => t.name === 'ul' && t.attributes['data-name'] === 'ingredients');
+		const ingredients = findTag(
+			tag!,
+			(t) => t.name === 'ul' && t.attributes['data-name'] === 'ingredients',
+		);
 		expect(ingredients).toBeDefined();
 		expect(ingredients!.children.length).toBe(0);
 	});
@@ -173,13 +183,13 @@ A recipe with a photo.
 > Tip two about baking
 {% /recipe %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
-		const tips = findTag(tag!, t => t.attributes['data-name'] === 'tips');
+		const tips = findTag(tag!, (t) => t.attributes['data-name'] === 'tips');
 		expect(tips).toBeDefined();
 		// Should contain both blockquotes
-		const blockquotes = findAllTags(tips!, t => t.name === 'blockquote');
+		const blockquotes = findAllTags(tips!, (t) => t.name === 'blockquote');
 		expect(blockquotes.length).toBe(2);
 	});
 
@@ -196,18 +206,21 @@ A delightful pasta recipe.
 1. Cook
 {% /recipe %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'recipe');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'recipe');
 		expect(tag).toBeDefined();
 
 		// SPEC-081: header fields are emitted flat (data-name); the engine's
 		// `layout` wraps them in the preamble header.
-		const eyebrow = findTag(tag!, t => t.name === 'p' && t.attributes['data-name'] === 'eyebrow');
+		const eyebrow = findTag(tag!, (t) => t.name === 'p' && t.attributes['data-name'] === 'eyebrow');
 		expect(eyebrow).toBeDefined();
 
-		const headline = findTag(tag!, t => /^h[1-6]$/.test(t.name) && t.attributes['data-name'] === 'headline');
+		const headline = findTag(
+			tag!,
+			(t) => /^h[1-6]$/.test(t.name) && t.attributes['data-name'] === 'headline',
+		);
 		expect(headline).toBeDefined();
 
-		const blurb = findTag(tag!, t => t.name === 'p' && t.attributes['data-name'] === 'blurb');
+		const blurb = findTag(tag!, (t) => t.name === 'p' && t.attributes['data-name'] === 'blurb');
 		expect(blurb).toBeDefined();
 	});
 

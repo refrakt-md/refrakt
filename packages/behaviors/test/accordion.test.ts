@@ -12,12 +12,15 @@ beforeEach(() => {
 
 function createAccordion(opts?: { multiple?: boolean; itemCount?: number }): HTMLElement {
 	const count = opts?.itemCount ?? 3;
-	const items = Array.from({ length: count }, (_, i) => `
+	const items = Array.from(
+		{ length: count },
+		(_, i) => `
 		<details>
 			<summary>Item ${i + 1}</summary>
 			<div data-name="body">Content ${i + 1}</div>
 		</details>
-	`).join('');
+	`,
+	).join('');
 
 	const el = document.createElement('section');
 	el.setAttribute('data-rune', 'accordion');

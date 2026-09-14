@@ -28,14 +28,15 @@ const gameSystemPkg: Plugin = {
 	displayName: 'Game System',
 	version: '1.0.0',
 	runes: {
-		'item': {
+		item: {
 			transform: { attributes: { name: { type: String } } },
 			schema: { name: { type: 'string', required: true } },
 			fixture: '{% item name="Sword" %}content{% /item %}',
-			authoringHints: 'Pair with a rarity level and a descriptive name; used for tabletop RPG equipment, consumables, and quest items.',
+			authoringHints:
+				'Pair with a rarity level and a descriptive name; used for tabletop RPG equipment, consumables, and quest items.',
 			description: 'Game item with name and rarity',
 		},
-		'spell': {
+		spell: {
 			transform: { attributes: { name: { type: String } } },
 			schema: { name: { type: 'string', required: true } },
 			fixture: '{% spell name="Fireball" %}content{% /spell %}',
@@ -43,7 +44,7 @@ const gameSystemPkg: Plugin = {
 		},
 	},
 	extends: {
-		'character': {
+		character: {
 			schema: {
 				class: { type: 'string' },
 				level: { type: 'number' },
@@ -66,7 +67,7 @@ const altSystemPkg: Plugin = {
 	displayName: 'Alt System',
 	version: '1.0.0',
 	runes: {
-		'item': {
+		item: {
 			transform: { attributes: { name: { type: String } } },
 			schema: { name: { type: 'string', required: true } },
 		},
@@ -77,7 +78,7 @@ const uniqueSystemPkg: Plugin = {
 	name: 'unique-system',
 	version: '1.0.0',
 	runes: {
-		'gadget': {
+		gadget: {
 			transform: { attributes: { name: { type: String } } },
 		},
 	},
@@ -157,7 +158,7 @@ describe('mergePlugins', () => {
 			name: 'shadow-pkg',
 			version: '1.0.0',
 			runes: {
-				'hint': { transform: { attributes: {} } },
+				hint: { transform: { attributes: {} } },
 				'unique-rune': { transform: { attributes: {} } },
 			},
 		};
@@ -176,7 +177,7 @@ describe('mergePlugins', () => {
 			name: 'shadow-pkg',
 			version: '1.0.0',
 			runes: {
-				'hint': { transform: { attributes: {} } },
+				hint: { transform: { attributes: {} } },
 				'unique-rune': { transform: { attributes: {} } },
 			},
 		};
@@ -192,12 +193,12 @@ describe('mergePlugins', () => {
 		const pkg1: Plugin = {
 			name: 'pkg1',
 			version: '1.0.0',
-			runes: { 'hint': { transform: { attributes: {} } } },
+			runes: { hint: { transform: { attributes: {} } } },
 		};
 		const pkg2: Plugin = {
 			name: 'pkg2',
 			version: '1.0.0',
-			runes: { 'hint': { transform: { attributes: {} } } },
+			runes: { hint: { transform: { attributes: {} } } },
 		};
 		const loaded = [
 			makeLoadedPlugin(pkg1, '@refrakt-community/pkg1'),
@@ -211,12 +212,12 @@ describe('mergePlugins', () => {
 		const pkg1: Plugin = {
 			name: 'pkg1',
 			version: '1.0.0',
-			runes: { 'hint': { transform: { attributes: {} } } },
+			runes: { hint: { transform: { attributes: {} } } },
 		};
 		const pkg2: Plugin = {
 			name: 'pkg2',
 			version: '1.0.0',
-			runes: { 'hint': { transform: { attributes: {} } } },
+			runes: { hint: { transform: { attributes: {} } } },
 		};
 		const loaded = [
 			makeLoadedPlugin(pkg1, '@refrakt-community/pkg1'),
@@ -283,8 +284,9 @@ describe('mergePlugins', () => {
 			makeLoadedPlugin(altSystemPkg, '@refrakt-community/alt-system'),
 		];
 
-		expect(() => mergePlugins(loaded, coreRuneNames, { item: 'nonexistent' }))
-			.toThrow('does not match');
+		expect(() => mergePlugins(loaded, coreRuneNames, { item: 'nonexistent' })).toThrow(
+			'does not match',
+		);
 	});
 
 	it('collision error message includes resolution instructions', () => {
@@ -325,7 +327,9 @@ describe('mergePlugins', () => {
 		const result = mergePlugins(loaded, coreRuneNames);
 
 		// item has authoring hints, spell does not
-		expect(result.runes['item'].authoringHints).toBe('Pair with a rarity level and a descriptive name; used for tabletop RPG equipment, consumables, and quest items.');
+		expect(result.runes['item'].authoringHints).toBe(
+			'Pair with a rarity level and a descriptive name; used for tabletop RPG equipment, consumables, and quest items.',
+		);
 		expect(result.runes['spell'].authoringHints).toBeUndefined();
 	});
 
@@ -333,17 +337,17 @@ describe('mergePlugins', () => {
 		const ext1: Plugin = {
 			name: 'ext1',
 			version: '1.0.0',
-			runes: { 'gadget1': { transform: { attributes: {} } } },
+			runes: { gadget1: { transform: { attributes: {} } } },
 			extends: {
-				'character': { schema: { hp: { type: 'number' } } },
+				character: { schema: { hp: { type: 'number' } } },
 			},
 		};
 		const ext2: Plugin = {
 			name: 'ext2',
 			version: '1.0.0',
-			runes: { 'gadget2': { transform: { attributes: {} } } },
+			runes: { gadget2: { transform: { attributes: {} } } },
 			extends: {
-				'character': { schema: { ac: { type: 'number' } } },
+				character: { schema: { ac: { type: 'number' } } },
 			},
 		};
 
@@ -360,7 +364,11 @@ describe('mergePlugins', () => {
 	describe('fileRoots merging', () => {
 		// Each plugin needs a unique rune name to avoid the rune-collision
 		// check tripping before the fileRoots merge logic runs.
-		function makeLoadedWithRoots(name: string, runeName: string, roots: Record<string, string>): LoadedPlugin {
+		function makeLoadedWithRoots(
+			name: string,
+			runeName: string,
+			roots: Record<string, string>,
+		): LoadedPlugin {
 			const pkg: Plugin = {
 				name,
 				version: '1.0.0',
@@ -371,7 +379,13 @@ describe('mergePlugins', () => {
 			return {
 				pkg,
 				npmName: name,
-				runes: { [runeName]: defineRune({ name: runeName, schema: pkg.runes[runeName].transform as any, description: 'stub' }) },
+				runes: {
+					[runeName]: defineRune({
+						name: runeName,
+						schema: pkg.runes[runeName].transform as any,
+						description: 'stub',
+					}),
+				},
 				fixtures: {},
 				fileRoots: roots,
 			};
@@ -424,21 +438,19 @@ describe('applyAliases', () => {
 	});
 
 	it('throws on alias collision with existing rune', () => {
-		expect(() => applyAliases(runes, tags, { 'hint': 'hero' }, provenance))
-			.toThrow('conflicts with an existing rune');
+		expect(() => applyAliases(runes, tags, { hint: 'hero' }, provenance)).toThrow(
+			'conflicts with an existing rune',
+		);
 	});
 
 	it('throws when alias targets nonexistent rune', () => {
-		expect(() => applyAliases(runes, tags, { 'my-thing': 'nonexistent' }, provenance))
-			.toThrow('does not exist');
+		expect(() => applyAliases(runes, tags, { 'my-thing': 'nonexistent' }, provenance)).toThrow(
+			'does not exist',
+		);
 	});
 
 	it('handles multiple aliases', () => {
-		const result = applyAliases(
-			runes, tags,
-			{ 'my-hint': 'hint', 'my-hero': 'hero' },
-			provenance,
-		);
+		const result = applyAliases(runes, tags, { 'my-hint': 'hint', 'my-hero': 'hero' }, provenance);
 
 		expect(result.tags['my-hint']).toBe(runes.hint.schema);
 		expect(result.tags['my-hero']).toBe(runes.hero.schema);

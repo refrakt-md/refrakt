@@ -121,7 +121,9 @@ export async function discoverPlugins(opts: DiscoverOptions = {}): Promise<Disco
 }
 
 /** Return the list of `{ pluginName, source }` candidates to attempt. */
-function resolveCandidates(cwd: string): Array<{ pluginName: string; source: 'config' | 'dependency-scan' }> {
+function resolveCandidates(
+	cwd: string,
+): Array<{ pluginName: string; source: 'config' | 'dependency-scan' }> {
 	const configCandidates = candidatesFromConfig(cwd);
 	if (configCandidates) return configCandidates;
 	return candidatesFromPackageJson(cwd);

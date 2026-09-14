@@ -8,10 +8,10 @@ describe('bg directive rune', () => {
 This has a background.
 {% /hint %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'hint');
 		expect(tag).toBeDefined();
 
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-src');
+		const meta = findTag(tag!, (t) => t.name === 'meta' && t.attributes['data-field'] === 'bg-src');
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('/images/bg.jpg');
 	});
@@ -22,8 +22,11 @@ This has a background.
 Video background.
 {% /hint %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-video');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'hint');
+		const meta = findTag(
+			tag!,
+			(t) => t.name === 'meta' && t.attributes['data-field'] === 'bg-video',
+		);
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('/videos/loop.mp4');
 	});
@@ -34,8 +37,11 @@ Video background.
 Dark overlay.
 {% /hint %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-overlay');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'hint');
+		const meta = findTag(
+			tag!,
+			(t) => t.name === 'meta' && t.attributes['data-field'] === 'bg-overlay',
+		);
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('dark');
 	});
@@ -46,8 +52,11 @@ Dark overlay.
 No overlay.
 {% /hint %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-overlay');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'hint');
+		const meta = findTag(
+			tag!,
+			(t) => t.name === 'meta' && t.attributes['data-field'] === 'bg-overlay',
+		);
 		expect(meta).toBeUndefined();
 	});
 
@@ -57,8 +66,11 @@ No overlay.
 Blurred bg.
 {% /hint %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-blur');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'hint');
+		const meta = findTag(
+			tag!,
+			(t) => t.name === 'meta' && t.attributes['data-field'] === 'bg-blur',
+		);
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('sm');
 	});
@@ -69,13 +81,19 @@ Blurred bg.
 Custom position.
 {% /hint %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'hint');
 
-		const posMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-position');
+		const posMeta = findTag(
+			tag!,
+			(t) => t.name === 'meta' && t.attributes['data-field'] === 'bg-position',
+		);
 		expect(posMeta).toBeDefined();
 		expect(posMeta!.attributes.content).toBe('top');
 
-		const fitMeta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-fit');
+		const fitMeta = findTag(
+			tag!,
+			(t) => t.name === 'meta' && t.attributes['data-field'] === 'bg-fit',
+		);
 		expect(fitMeta).toBeDefined();
 		expect(fitMeta!.attributes.content).toBe('contain');
 	});
@@ -86,8 +104,11 @@ Custom position.
 Default position.
 {% /hint %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-position');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'hint');
+		const meta = findTag(
+			tag!,
+			(t) => t.name === 'meta' && t.attributes['data-field'] === 'bg-position',
+		);
 		expect(meta).toBeUndefined();
 	});
 
@@ -97,8 +118,11 @@ Default position.
 Fixed bg.
 {% /hint %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
-		const meta = findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-fixed');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'hint');
+		const meta = findTag(
+			tag!,
+			(t) => t.name === 'meta' && t.attributes['data-field'] === 'bg-fixed',
+		);
 		expect(meta).toBeDefined();
 		expect(meta!.attributes.content).toBe('true');
 	});
@@ -109,11 +133,11 @@ Fixed bg.
 This is the body content.
 {% /hint %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'hint');
 		expect(tag).toBeDefined();
 
 		// The bg should be extracted; body should still have the paragraph
-		const body = findTag(tag!, t => t.attributes['data-name'] === 'body');
+		const body = findTag(tag!, (t) => t.attributes['data-name'] === 'body');
 		expect(body).toBeDefined();
 	});
 
@@ -123,13 +147,23 @@ This is the body content.
 Combined.
 {% /hint %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hint');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'hint');
 		expect(tag).toBeDefined();
 
-		expect(findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-src')).toBeDefined();
-		expect(findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-overlay')).toBeDefined();
-		expect(findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-blur')).toBeDefined();
-		expect(findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-position')).toBeDefined();
-		expect(findTag(tag!, t => t.name === 'meta' && t.attributes['data-field'] === 'bg-opacity')).toBeDefined();
+		expect(
+			findTag(tag!, (t) => t.name === 'meta' && t.attributes['data-field'] === 'bg-src'),
+		).toBeDefined();
+		expect(
+			findTag(tag!, (t) => t.name === 'meta' && t.attributes['data-field'] === 'bg-overlay'),
+		).toBeDefined();
+		expect(
+			findTag(tag!, (t) => t.name === 'meta' && t.attributes['data-field'] === 'bg-blur'),
+		).toBeDefined();
+		expect(
+			findTag(tag!, (t) => t.name === 'meta' && t.attributes['data-field'] === 'bg-position'),
+		).toBeDefined();
+		expect(
+			findTag(tag!, (t) => t.name === 'meta' && t.attributes['data-field'] === 'bg-opacity'),
+		).toBeDefined();
 	});
 });

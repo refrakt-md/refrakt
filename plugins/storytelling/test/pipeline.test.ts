@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { parse, findTag, findAllTags } from './helpers.js';
 import { storytellingPipelineHooks } from '../src/pipeline.js';
-import type { TransformedPage, EntityRegistry, EntityRegistration, PipelineContext } from '@refrakt-md/types';
+import type {
+	TransformedPage,
+	EntityRegistry,
+	EntityRegistration,
+	PipelineContext,
+} from '@refrakt-md/types';
 
 function makePage(url: string, content: string): TransformedPage {
 	const renderable = parse(content);
@@ -17,11 +22,21 @@ function makePage(url: string, content: string): TransformedPage {
 function makeRegistry() {
 	const entries: EntityRegistration[] = [];
 	const registry: EntityRegistry = {
-		register(entry: EntityRegistration) { entries.push(entry); },
-		getAll(type: string) { return entries.filter(e => e.type === type); },
-		getById(type: string, id: string) { return entries.find(e => e.type === type && e.id === id); },
-		getByUrl(type: string, url: string) { return entries.filter(e => e.type === type && e.sourceUrl === url); },
-		getTypes() { return [...new Set(entries.map(e => e.type))]; },
+		register(entry: EntityRegistration) {
+			entries.push(entry);
+		},
+		getAll(type: string) {
+			return entries.filter((e) => e.type === type);
+		},
+		getById(type: string, id: string) {
+			return entries.find((e) => e.type === type && e.id === id);
+		},
+		getByUrl(type: string, url: string) {
+			return entries.filter((e) => e.type === type && e.sourceUrl === url);
+		},
+		getTypes() {
+			return [...new Set(entries.map((e) => e.type))];
+		},
 	};
 	return { entries, registry };
 }
@@ -31,7 +46,9 @@ function makeCtx() {
 	return {
 		ctx: {
 			info: () => {},
-			warn: (msg: string) => { warnings.push(msg); },
+			warn: (msg: string) => {
+				warnings.push(msg);
+			},
 			error: () => {},
 		} as PipelineContext,
 		warnings,
@@ -43,7 +60,7 @@ function runPipeline(pages: TransformedPage[]) {
 	const { ctx } = makeCtx();
 	storytellingPipelineHooks.register!(pages, registry, ctx);
 	const aggregated = { storytelling: storytellingPipelineHooks.aggregate!(registry, ctx) };
-	return pages.map(page => storytellingPipelineHooks.postProcess!(page, aggregated, ctx));
+	return pages.map((page) => storytellingPipelineHooks.postProcess!(page, aggregated, ctx));
 }
 
 describe('storytellingPipelineHooks.register', () => {
@@ -57,11 +74,14 @@ describe('storytellingPipelineHooks.register', () => {
 	});
 
 	it('registers a character entity', () => {
-		const page = makePage('/world/veshra', `{% character name="Veshra" role="antagonist" status="alive" aliases="The Bone Witch" tags="magic-user" %}
+		const page = makePage(
+			'/world/veshra',
+			`{% character name="Veshra" role="antagonist" status="alive" aliases="The Bone Witch" tags="magic-user" %}
 ## Backstory
 
 Raised in the shadow of the Ashen Spire.
-{% /character %}`);
+{% /character %}`,
+		);
 
 		storytellingPipelineHooks.register!([page], registry, ctx);
 
@@ -77,9 +97,12 @@ Raised in the shadow of the Ashen Spire.
 	});
 
 	it('registers a realm entity', () => {
-		const page = makePage('/world/rivendell', `{% realm name="Rivendell" type="sanctuary" scale="settlement" %}
+		const page = makePage(
+			'/world/rivendell',
+			`{% realm name="Rivendell" type="sanctuary" scale="settlement" %}
 A hidden valley.
-{% /realm %}`);
+{% /realm %}`,
+		);
 
 		storytellingPipelineHooks.register!([page], registry, ctx);
 
@@ -91,9 +114,12 @@ A hidden valley.
 	});
 
 	it('registers a faction entity', () => {
-		const page = makePage('/world/silver-order', `{% faction name="The Silver Order" type="knightly order" alignment="lawful" size="large" %}
+		const page = makePage(
+			'/world/silver-order',
+			`{% faction name="The Silver Order" type="knightly order" alignment="lawful" size="large" %}
 A prestigious order of knights.
-{% /faction %}`);
+{% /faction %}`,
+		);
 
 		storytellingPipelineHooks.register!([page], registry, ctx);
 
@@ -106,9 +132,12 @@ A prestigious order of knights.
 	});
 
 	it('registers a lore entity', () => {
-		const page = makePage('/world/prophecy', `{% lore title="The Prophecy of the Chosen One" category="prophecy" spoiler=true %}
+		const page = makePage(
+			'/world/prophecy',
+			`{% lore title="The Prophecy of the Chosen One" category="prophecy" spoiler=true %}
 An ancient text found in the ruins.
-{% /lore %}`);
+{% /lore %}`,
+		);
 
 		storytellingPipelineHooks.register!([page], registry, ctx);
 
@@ -120,12 +149,15 @@ An ancient text found in the ruins.
 	});
 
 	it('registers a plot entity', () => {
-		const page = makePage('/world/quest', `{% plot title="The Quest for the Crown" type="quest" structure="linear" %}
+		const page = makePage(
+			'/world/quest',
+			`{% plot title="The Quest for the Crown" type="quest" structure="linear" %}
 The heroes must recover the lost crown.
 
 - [x] **Discovery** — Find the map
 - [ ] **Departure** — Leave the city
-{% /plot %}`);
+{% /plot %}`,
+		);
 
 		storytellingPipelineHooks.register!([page], registry, ctx);
 
@@ -137,9 +169,12 @@ The heroes must recover the lost crown.
 	});
 
 	it('registers a bond entity', () => {
-		const page = makePage('/world/bonds', `{% bond from="Aragorn" to="Legolas" type="fellowship" status="active" %}
+		const page = makePage(
+			'/world/bonds',
+			`{% bond from="Aragorn" to="Legolas" type="fellowship" status="active" %}
 Forged during the Council of Elrond.
-{% /bond %}`);
+{% /bond %}`,
+		);
 
 		storytellingPipelineHooks.register!([page], registry, ctx);
 
@@ -154,12 +189,18 @@ Forged during the Council of Elrond.
 
 	it('registers multiple entities across pages', () => {
 		const pages = [
-			makePage('/world/aragorn', `{% character name="Aragorn" role="protagonist" %}
+			makePage(
+				'/world/aragorn',
+				`{% character name="Aragorn" role="protagonist" %}
 The heir of Isildur.
-{% /character %}`),
-			makePage('/world/rivendell', `{% realm name="Rivendell" type="sanctuary" %}
+{% /character %}`,
+			),
+			makePage(
+				'/world/rivendell',
+				`{% realm name="Rivendell" type="sanctuary" %}
 A hidden valley.
-{% /realm %}`),
+{% /realm %}`,
+			),
 		];
 
 		storytellingPipelineHooks.register!(pages, registry, ctx);
@@ -170,9 +211,12 @@ A hidden valley.
 	});
 
 	it('skips pages with no storytelling runes', () => {
-		const page = makePage('/docs/intro', `# Introduction
+		const page = makePage(
+			'/docs/intro',
+			`# Introduction
 
-Just a normal page.`);
+Just a normal page.`,
+		);
 
 		storytellingPipelineHooks.register!([page], registry, ctx);
 		expect(entries).toHaveLength(0);
@@ -185,15 +229,24 @@ describe('storytellingPipelineHooks.aggregate', () => {
 		const { ctx } = makeCtx();
 
 		const pages = [
-			makePage('/world/aragorn', `{% character name="Aragorn" role="protagonist" %}
+			makePage(
+				'/world/aragorn',
+				`{% character name="Aragorn" role="protagonist" %}
 Content.
-{% /character %}`),
-			makePage('/world/legolas', `{% character name="Legolas" role="supporting" %}
+{% /character %}`,
+			),
+			makePage(
+				'/world/legolas',
+				`{% character name="Legolas" role="supporting" %}
 Content.
-{% /character %}`),
-			makePage('/world/bonds', `{% bond from="Aragorn" to="Legolas" type="fellowship" status="active" %}
+{% /character %}`,
+			),
+			makePage(
+				'/world/bonds',
+				`{% bond from="Aragorn" to="Legolas" type="fellowship" status="active" %}
 Their bond.
-{% /bond %}`),
+{% /bond %}`,
+			),
 		];
 
 		storytellingPipelineHooks.register!(pages, registry, ctx);
@@ -211,18 +264,24 @@ Their bond.
 		const { ctx, warnings } = makeCtx();
 
 		const pages = [
-			makePage('/world/legolas', `{% character name="Legolas" role="supporting" %}
+			makePage(
+				'/world/legolas',
+				`{% character name="Legolas" role="supporting" %}
 Content.
-{% /character %}`),
-			makePage('/world/bonds', `{% bond from="UnknownCharacter" to="Legolas" type="rivalry" %}
+{% /character %}`,
+			),
+			makePage(
+				'/world/bonds',
+				`{% bond from="UnknownCharacter" to="Legolas" type="rivalry" %}
 Description.
-{% /bond %}`),
+{% /bond %}`,
+			),
 		];
 
 		storytellingPipelineHooks.register!(pages, registry, ctx);
 		storytellingPipelineHooks.aggregate!(registry, ctx);
 
-		expect(warnings.some(w => w.includes('UnknownCharacter'))).toBe(true);
+		expect(warnings.some((w) => w.includes('UnknownCharacter'))).toBe(true);
 	});
 
 	it('warns on orphaned bonds (to entity not registered)', () => {
@@ -230,18 +289,24 @@ Description.
 		const { ctx, warnings } = makeCtx();
 
 		const pages = [
-			makePage('/world/aragorn', `{% character name="Aragorn" role="protagonist" %}
+			makePage(
+				'/world/aragorn',
+				`{% character name="Aragorn" role="protagonist" %}
 Content.
-{% /character %}`),
-			makePage('/world/bonds', `{% bond from="Aragorn" to="GhostCharacter" type="mystery" %}
+{% /character %}`,
+			),
+			makePage(
+				'/world/bonds',
+				`{% bond from="Aragorn" to="GhostCharacter" type="mystery" %}
 Description.
-{% /bond %}`),
+{% /bond %}`,
+			),
 		];
 
 		storytellingPipelineHooks.register!(pages, registry, ctx);
 		storytellingPipelineHooks.aggregate!(registry, ctx);
 
-		expect(warnings.some(w => w.includes('GhostCharacter'))).toBe(true);
+		expect(warnings.some((w) => w.includes('GhostCharacter'))).toBe(true);
 	});
 
 	it('registers character aliases for cross-link lookup', () => {
@@ -249,9 +314,12 @@ Description.
 		const { ctx } = makeCtx();
 
 		const pages = [
-			makePage('/world/aragorn', `{% character name="Aragorn" aliases="Strider, Elessar" %}
+			makePage(
+				'/world/aragorn',
+				`{% character name="Aragorn" aliases="Strider, Elessar" %}
 Content.
-{% /character %}`),
+{% /character %}`,
+			),
 		];
 
 		storytellingPipelineHooks.register!(pages, registry, ctx);
@@ -268,128 +336,179 @@ Content.
 describe('storytellingPipelineHooks.postProcess — cross-links', () => {
 	it('resolves bold text to cross-page links', () => {
 		const pages = [
-			makePage('/world/aragorn', `{% character name="Aragorn" role="protagonist" %}
+			makePage(
+				'/world/aragorn',
+				`{% character name="Aragorn" role="protagonist" %}
 A ranger from the North.
-{% /character %}`),
-			makePage('/world/tale', `{% lore title="The Fellowship" category="history" %}
+{% /character %}`,
+			),
+			makePage(
+				'/world/tale',
+				`{% lore title="The Fellowship" category="history" %}
 He fought alongside **Aragorn** in the war.
-{% /lore %}`),
+{% /lore %}`,
+			),
 		];
 
 		const processed = runPipeline(pages);
 
 		// Tale page should have a link to Aragorn
 		const talePage = processed[1];
-		const link = findTag(talePage.renderable as any, t => t.name === 'a' && t.attributes.href === '/world/aragorn');
+		const link = findTag(
+			talePage.renderable as any,
+			(t) => t.name === 'a' && t.attributes.href === '/world/aragorn',
+		);
 		expect(link).toBeDefined();
 		// The link should wrap the strong tag
-		const strong = findTag(link!, t => t.name === 'strong');
+		const strong = findTag(link!, (t) => t.name === 'strong');
 		expect(strong).toBeDefined();
 	});
 
 	it('does not create self-links on entity own page', () => {
 		const pages = [
-			makePage('/world/aragorn', `{% character name="Aragorn" role="protagonist" %}
+			makePage(
+				'/world/aragorn',
+				`{% character name="Aragorn" role="protagonist" %}
 **Aragorn** is a hero. He is known as **Aragorn** the brave.
-{% /character %}`),
+{% /character %}`,
+			),
 		];
 
 		const processed = runPipeline(pages);
 
 		const aragornPage = processed[0];
-		const link = findTag(aragornPage.renderable as any, t => t.name === 'a' && t.attributes.href === '/world/aragorn');
+		const link = findTag(
+			aragornPage.renderable as any,
+			(t) => t.name === 'a' && t.attributes.href === '/world/aragorn',
+		);
 		expect(link).toBeUndefined();
 	});
 
 	it('resolves first occurrence only per page', () => {
 		const pages = [
-			makePage('/world/aragorn', `{% character name="Aragorn" role="protagonist" %}
+			makePage(
+				'/world/aragorn',
+				`{% character name="Aragorn" role="protagonist" %}
 Content.
-{% /character %}`),
-			makePage('/world/story', `{% lore title="Tale" category="history" %}
+{% /character %}`,
+			),
+			makePage(
+				'/world/story',
+				`{% lore title="Tale" category="history" %}
 **Aragorn** led the charge. Later, **Aragorn** returned home.
-{% /lore %}`),
+{% /lore %}`,
+			),
 		];
 
 		const processed = runPipeline(pages);
 
 		const storyPage = processed[1];
-		const links = findAllTags(storyPage.renderable as any, t => t.name === 'a' && t.attributes.href === '/world/aragorn');
+		const links = findAllTags(
+			storyPage.renderable as any,
+			(t) => t.name === 'a' && t.attributes.href === '/world/aragorn',
+		);
 		expect(links).toHaveLength(1);
 	});
 
 	it('does not resolve inside headings', () => {
 		const pages = [
-			makePage('/world/aragorn', `{% character name="Aragorn" role="protagonist" %}
+			makePage(
+				'/world/aragorn',
+				`{% character name="Aragorn" role="protagonist" %}
 Content.
-{% /character %}`),
-			makePage('/world/about', `{% lore title="History" category="history" %}
+{% /character %}`,
+			),
+			makePage(
+				'/world/about',
+				`{% lore title="History" category="history" %}
 ## **Aragorn** the King
 
 Some text about the king.
-{% /lore %}`),
+{% /lore %}`,
+			),
 		];
 
 		const processed = runPipeline(pages);
 
 		const aboutPage = processed[1];
 		// There should be no link inside the heading
-		const headings = findAllTags(aboutPage.renderable as any, t => /^h[1-6]$/.test(t.name));
+		const headings = findAllTags(aboutPage.renderable as any, (t) => /^h[1-6]$/.test(t.name));
 		for (const heading of headings) {
-			const link = findTag(heading, t => t.name === 'a');
+			const link = findTag(heading, (t) => t.name === 'a');
 			expect(link).toBeUndefined();
 		}
 	});
 
 	it('does not resolve inside code blocks', () => {
 		const pages = [
-			makePage('/world/aragorn', `{% character name="Aragorn" role="protagonist" %}
+			makePage(
+				'/world/aragorn',
+				`{% character name="Aragorn" role="protagonist" %}
 Content.
-{% /character %}`),
-			makePage('/world/docs', `{% lore title="Code Example" category="technical" %}
+{% /character %}`,
+			),
+			makePage(
+				'/world/docs',
+				`{% lore title="Code Example" category="technical" %}
 Some text then:
 
 \`\`\`
 **Aragorn** is not a link here
 \`\`\`
-{% /lore %}`),
+{% /lore %}`,
+			),
 		];
 
 		const processed = runPipeline(pages);
 
 		const docsPage = processed[1];
-		const codeBlocks = findAllTags(docsPage.renderable as any, t => t.name === 'pre');
+		const codeBlocks = findAllTags(docsPage.renderable as any, (t) => t.name === 'pre');
 		for (const code of codeBlocks) {
-			const link = findTag(code, t => t.name === 'a');
+			const link = findTag(code, (t) => t.name === 'a');
 			expect(link).toBeUndefined();
 		}
 	});
 
 	it('resolves character aliases', () => {
 		const pages = [
-			makePage('/world/aragorn', `{% character name="Aragorn" aliases="Strider, Elessar" %}
+			makePage(
+				'/world/aragorn',
+				`{% character name="Aragorn" aliases="Strider, Elessar" %}
 Content.
-{% /character %}`),
-			makePage('/world/tale', `{% lore title="A Tale" category="history" %}
+{% /character %}`,
+			),
+			makePage(
+				'/world/tale',
+				`{% lore title="A Tale" category="history" %}
 The ranger known as **Strider** approached.
-{% /lore %}`),
+{% /lore %}`,
+			),
 		];
 
 		const processed = runPipeline(pages);
 
 		const talePage = processed[1];
-		const link = findTag(talePage.renderable as any, t => t.name === 'a' && t.attributes.href === '/world/aragorn');
+		const link = findTag(
+			talePage.renderable as any,
+			(t) => t.name === 'a' && t.attributes.href === '/world/aragorn',
+		);
 		expect(link).toBeDefined();
 	});
 
 	it('returns unmodified page when no matches', () => {
 		const pages = [
-			makePage('/world/aragorn', `{% character name="Aragorn" role="protagonist" %}
+			makePage(
+				'/world/aragorn',
+				`{% character name="Aragorn" role="protagonist" %}
 Content.
-{% /character %}`),
-			makePage('/world/story', `{% lore title="A Tale" category="history" %}
+{% /character %}`,
+			),
+			makePage(
+				'/world/story',
+				`{% lore title="A Tale" category="history" %}
 No bold entity names here.
-{% /lore %}`),
+{% /lore %}`,
+			),
 		];
 
 		const processed = runPipeline(pages);

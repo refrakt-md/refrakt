@@ -38,7 +38,7 @@ describe('One Dark preset module — SPEC-057 import', () => {
 
 		it('claims chrome + code-surface + syntax in dark mode', () => {
 			const dark = oneDark.modes!.dark;
-			expect(dark.color?.bg).toBe('#282c34');     // syntax-bg
+			expect(dark.color?.bg).toBe('#282c34'); // syntax-bg
 			expect(dark.color?.code?.bg).toBe('#282c34');
 			expect(dark.syntax?.keyword).toBe('#c678dd'); // hue-3 purple
 		});

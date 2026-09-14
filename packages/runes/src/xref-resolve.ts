@@ -186,7 +186,7 @@ function compactSamePageHref(href: string, pageUrl: string): string {
 	const fragment = href.slice(hashIdx);
 	// Normalise trailing slashes for the comparison so `/x/` and `/x` are
 	// treated as the same page (different adapters normalise differently).
-	const stripTrail = (s: string) => s.endsWith('/') ? s.slice(0, -1) : s;
+	const stripTrail = (s: string) => (s.endsWith('/') ? s.slice(0, -1) : s);
 	if (stripTrail(hrefPath) === stripTrail(pageUrl)) return fragment;
 	return href;
 }
@@ -211,10 +211,15 @@ function resolvePlaceholder(
 			// of the same name — shares a single URL across the matches, so the
 			// ambiguity is immaterial: every candidate links to the same place.
 			// Only warn when the destinations actually diverge.
-			const distinctHrefs = new Set(nameMatches.map(e => resolveEntityHref(e) ?? e.sourceUrl ?? ''));
+			const distinctHrefs = new Set(
+				nameMatches.map((e) => resolveEntityHref(e) ?? e.sourceUrl ?? ''),
+			);
 			if (distinctHrefs.size > 1) {
 				const matchList = nameMatches
-					.map(e => `${e.type} "${(e.data.title as string) || (e.data.name as string) || e.id}" on ${e.sourceUrl ?? '(no URL)'}`)
+					.map(
+						(e) =>
+							`${e.type} "${(e.data.title as string) || (e.data.name as string) || e.id}" on ${e.sourceUrl ?? '(no URL)'}`,
+					)
 					.join(', ');
 				rc.ctx.warn(
 					`xref "${id}" on ${rc.pageUrl} — matches ${nameMatches.length} entities (${matchList}). Add type hint to disambiguate.`,
@@ -245,11 +250,7 @@ function resolvePlaceholder(
 		if (patternHit) {
 			resolved = {
 				href: patternHit.url,
-				label: deriveEntityLabel(
-					id,
-					authoredLabel,
-					entity,
-				) || patternHit.label,
+				label: deriveEntityLabel(id, authoredLabel, entity) || patternHit.label,
 				type: entity?.type ?? patternHit.type,
 				source: 'pattern',
 				targetType: entity?.type,
@@ -269,10 +270,14 @@ function resolvePlaceholder(
 	if (!resolved) {
 		rc.ctx.warn(`xref "${id}" on ${rc.pageUrl} — entity not found`, rc.pageUrl);
 		return {
-			tag: new Tag('span', {
-				class: 'rf-xref rf-xref--unresolved',
-				'data-xref-id': id,
-			}, [authoredLabel || id]),
+			tag: new Tag(
+				'span',
+				{
+					class: 'rf-xref rf-xref--unresolved',
+					'data-xref-id': id,
+				},
+				[authoredLabel || id],
+			),
 		};
 	}
 
@@ -325,7 +330,7 @@ function walk(renderable: unknown, rc: ResolveContext): unknown {
 	if (!Tag.isTag(renderable as any)) {
 		if (Array.isArray(renderable)) {
 			const arr = renderable as unknown[];
-			const newChildren = arr.map(c => walk(c, rc));
+			const newChildren = arr.map((c) => walk(c, rc));
 			if (newChildren.every((c, i) => c === arr[i])) return renderable;
 			return newChildren;
 		}
@@ -340,9 +345,13 @@ function walk(renderable: unknown, rc: ResolveContext): unknown {
 		const typeHint = tag.attributes['data-xref-type'] as string | undefined;
 
 		if (!id) {
-			return new Tag('span', {
-				class: 'rf-xref rf-xref--unresolved',
-			}, [label || '?']);
+			return new Tag(
+				'span',
+				{
+					class: 'rf-xref rf-xref--unresolved',
+				},
+				[label || '?'],
+			);
 		}
 
 		return resolvePlaceholder(id, label, typeHint, rc).tag;

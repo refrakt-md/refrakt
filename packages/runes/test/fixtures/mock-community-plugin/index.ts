@@ -59,29 +59,31 @@ export const gameSystem: Plugin = {
 	displayName: 'Game System',
 	version: '1.0.0',
 	runes: {
-		'item': {
+		item: {
 			transform: itemSchema,
 			schema: {
 				name: { type: 'string', required: true },
 				rarity: { type: 'string', matches: ['common', 'uncommon', 'rare', 'legendary'] },
 			},
 			fixture: '{% item name="Sword of Truth" rarity="rare" %}\nA legendary blade.\n{% /item %}',
-			authoringHints: 'Used for RPG game items with rarity levels — equipment, consumables, and quest items all fit. Set the rarity attribute to control the item tier.',
+			authoringHints:
+				'Used for RPG game items with rarity levels — equipment, consumables, and quest items all fit. Set the rarity attribute to control the item tier.',
 			description: 'Game item with name and rarity',
 		},
-		'spell': {
+		spell: {
 			transform: spellSchema,
 			schema: {
 				name: { type: 'string', required: true },
 				level: { type: 'number' },
 				school: { type: 'string' },
 			},
-			fixture: '{% spell name="Fireball" level=3 school="evocation" %}\nHurls a ball of fire.\n{% /spell %}',
+			fixture:
+				'{% spell name="Fireball" level=3 school="evocation" %}\nHurls a ball of fire.\n{% /spell %}',
 			description: 'Magic spell with school and level',
 		},
 	},
 	extends: {
-		'character': {
+		character: {
 			schema: {
 				class: { type: 'string' },
 				level: { type: 'number' },

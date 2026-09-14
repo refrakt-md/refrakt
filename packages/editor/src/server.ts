@@ -1,12 +1,29 @@
 import { createServer } from 'node:http';
-import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync, rmSync, statSync, renameSync, readdirSync, watch } from 'node:fs';
+import {
+	readFileSync,
+	writeFileSync,
+	existsSync,
+	mkdirSync,
+	copyFileSync,
+	rmSync,
+	statSync,
+	renameSync,
+	readdirSync,
+	watch,
+} from 'node:fs';
 import { basename, dirname } from 'node:path';
 import { join, resolve, normalize, extname, relative } from 'node:path';
 import { exec } from 'node:child_process';
 import { ContentTree, loadContent } from '@refrakt-md/content';
 import { parseFrontmatter, serializeFrontmatter } from '@refrakt-md/content';
 import type { HookSet } from '@refrakt-md/content';
-import { runes as allRunes, RUNE_EXAMPLES, corePipelineHooks, schemaContentModels, serializeContentModel } from '@refrakt-md/runes';
+import {
+	runes as allRunes,
+	RUNE_EXAMPLES,
+	corePipelineHooks,
+	schemaContentModels,
+	serializeContentModel,
+} from '@refrakt-md/runes';
 import type { ThemeConfig, RendererNode, RuneConfig } from '@refrakt-md/transform';
 import type { RouteRule, Plugin, AggregatedData } from '@refrakt-md/types';
 import { createTransform, toKebabCase } from '@refrakt-md/transform';
@@ -48,8 +65,11 @@ export interface EditorOptions {
 	sandboxExamplesDir?: string;
 	/** Community rune metadata for the editor palette */
 	communityRunes?: Array<{
-		name: string; aliases: string[]; description: string;
-		selfClosing: boolean; category: string;
+		name: string;
+		aliases: string[];
+		description: string;
+		selfClosing: boolean;
+		category: string;
 		attributes: Record<string, { type: string; required: boolean; values?: string[] }>;
 		example?: string;
 		contentModel?: object;
@@ -194,7 +214,17 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 
 	async function refreshPipelineCache(): Promise<void> {
 		try {
-			const site = await loadContent(absContentDir, '/', themeConfig.icons, extraTags, options.plugins, options.sandboxExamplesDir, undefined, undefined, process.cwd());
+			const site = await loadContent(
+				absContentDir,
+				'/',
+				themeConfig.icons,
+				extraTags,
+				options.plugins,
+				options.sandboxExamplesDir,
+				undefined,
+				undefined,
+				process.cwd(),
+			);
 			cachedAggregated = site.aggregated;
 			layoutResolver.setAggregated(site.aggregated, buildHookSets());
 		} catch {
@@ -237,11 +267,21 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 			} else if (method === 'GET' && url.pathname.startsWith('/api/preview/')) {
 				const filePath = decodeURIComponent(url.pathname.slice('/api/preview/'.length));
 				const previewUrl = '/' + filePath.replace(/\.md$/, '').replace(/\/index$/, '');
-				handlePreview(res, absContentDir, filePath, themeConfig, themeCss, highlightTransform, extraTags,
-					{ aggregated: cachedAggregated, hookSets: buildHookSets(), url: previewUrl });
+				handlePreview(
+					res,
+					absContentDir,
+					filePath,
+					themeConfig,
+					themeCss,
+					highlightTransform,
+					extraTags,
+					{ aggregated: cachedAggregated, hookSets: buildHookSets(), url: previewUrl },
+				);
 			} else if (method === 'POST' && url.pathname === '/api/preview') {
-				await handlePreviewContent(req, res, themeConfig, themeCss, highlightTransform, extraTags,
-					{ aggregated: cachedAggregated, hookSets: buildHookSets() });
+				await handlePreviewContent(req, res, themeConfig, themeCss, highlightTransform, extraTags, {
+					aggregated: cachedAggregated,
+					hookSets: buildHookSets(),
+				});
 			} else if (method === 'POST' && url.pathname === '/api/pages') {
 				await handleCreatePage(req, res, absContentDir, markOwnWrite);
 			} else if (method === 'POST' && url.pathname === '/api/directories') {
@@ -303,12 +343,14 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 				res.writeHead(200, {
 					'Content-Type': 'text/event-stream',
 					'Cache-Control': 'no-cache',
-					'Connection': 'keep-alive',
+					Connection: 'keep-alive',
 					'Access-Control-Allow-Origin': '*',
 				});
 				res.write(': connected\n\n');
 				sseClients.add(res);
-				req.on('close', () => { sseClients.delete(res); });
+				req.on('close', () => {
+					sseClients.delete(res);
+				});
 				return;
 			} else if (method === 'GET' && url.pathname === '/api/assets') {
 				if (!staticDir) {
@@ -333,7 +375,11 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 			} else if (staticDir && method === 'GET' && !url.pathname.startsWith('/api/')) {
 				// Try project static dir first (images, fonts, etc.), then SPA fallback
 				const staticFile = join(staticDir, url.pathname);
-				if (staticFile.startsWith(staticDir) && existsSync(staticFile) && statSync(staticFile).isFile()) {
+				if (
+					staticFile.startsWith(staticDir) &&
+					existsSync(staticFile) &&
+					statSync(staticFile).isFile()
+				) {
 					const ext = extname(staticFile);
 					const contentType = MIME_TYPES[ext] ?? 'application/octet-stream';
 					const content = readFileSync(staticFile);
@@ -365,11 +411,12 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 		console.log('');
 
 		if (open) {
-			const cmd = process.platform === 'darwin'
-				? 'open'
-				: process.platform === 'win32'
-					? 'start'
-					: 'xdg-open';
+			const cmd =
+				process.platform === 'darwin'
+					? 'open'
+					: process.platform === 'win32'
+						? 'start'
+						: 'xdg-open';
 			exec(`${cmd} ${url}`);
 		}
 	});
@@ -382,7 +429,7 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 		if (!filename) return;
 
 		// Skip hidden files and directories (.DS_Store, .git, etc.)
-		if (filename.split('/').some(part => part.startsWith('.'))) return;
+		if (filename.split('/').some((part) => part.startsWith('.'))) return;
 
 		// Only care about markdown files
 		if (!filename.endsWith('.md')) return;
@@ -394,24 +441,27 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 
 		// Debounce: coalesce rapid events for the same file (300ms)
 		clearTimeout(watchDebounce.get(relPath));
-		watchDebounce.set(relPath, setTimeout(() => {
-			watchDebounce.delete(relPath);
+		watchDebounce.set(
+			relPath,
+			setTimeout(() => {
+				watchDebounce.delete(relPath);
 
-			const fullPath = join(absContentDir, relPath);
-			let event: string;
+				const fullPath = join(absContentDir, relPath);
+				let event: string;
 
-			if (eventType === 'rename') {
-				event = existsSync(fullPath) ? 'file-created' : 'file-deleted';
-			} else {
-				event = 'file-changed';
-			}
+				if (eventType === 'rename') {
+					event = existsSync(fullPath) ? 'file-created' : 'file-deleted';
+				} else {
+					event = 'file-changed';
+				}
 
-			broadcastSSE(event, { path: relPath });
+				broadcastSSE(event, { path: relPath });
 
-			// Refresh layout resolver so layout changes propagate
-			layoutResolver.refresh().catch(() => {});
-			refreshPipelineCache().catch(() => {});
-		}, 300));
+				// Refresh layout resolver so layout changes propagate
+				layoutResolver.refresh().catch(() => {});
+				refreshPipelineCache().catch(() => {});
+			}, 300),
+		);
 	});
 }
 
@@ -445,7 +495,10 @@ function serveStatic(
 
 // ── Route handlers ──────────────────────────────────────────────────────
 
-async function handleGetTree(res: import('node:http').ServerResponse, contentDir: string): Promise<void> {
+async function handleGetTree(
+	res: import('node:http').ServerResponse,
+	contentDir: string,
+): Promise<void> {
 	const tree = await ContentTree.fromDirectory(contentDir);
 	serveJson(res, directoryToJson(tree.root, contentDir));
 }
@@ -500,7 +553,9 @@ function handlePreview(
 	filePath: string,
 	themeConfig: ThemeConfig,
 	themeCss: string,
-	highlight: (tree: import('@refrakt-md/transform').RendererNode) => import('@refrakt-md/transform').RendererNode,
+	highlight: (
+		tree: import('@refrakt-md/transform').RendererNode,
+	) => import('@refrakt-md/transform').RendererNode,
 	extraTags?: Record<string, import('@markdoc/markdoc').Schema>,
 	pipelineOptions?: PreviewPipelineOptions,
 ): void {
@@ -517,7 +572,15 @@ function handlePreview(
 		return;
 	}
 
-	const html = renderPreviewPage(contentDir, filePath, themeConfig, themeCss, highlight, extraTags, pipelineOptions);
+	const html = renderPreviewPage(
+		contentDir,
+		filePath,
+		themeConfig,
+		themeCss,
+		highlight,
+		extraTags,
+		pipelineOptions,
+	);
 	serveHtml(res, html);
 }
 
@@ -526,14 +589,23 @@ async function handlePreviewContent(
 	res: import('node:http').ServerResponse,
 	themeConfig: ThemeConfig,
 	themeCss: string,
-	highlight: (tree: import('@refrakt-md/transform').RendererNode) => import('@refrakt-md/transform').RendererNode,
+	highlight: (
+		tree: import('@refrakt-md/transform').RendererNode,
+	) => import('@refrakt-md/transform').RendererNode,
 	extraTags?: Record<string, import('@markdoc/markdoc').Schema>,
 	pipelineOptions?: PreviewPipelineOptions,
 ): Promise<void> {
 	const body = await readBody(req);
 	const { content } = JSON.parse(body) as { content: string };
 
-	const html = renderPreviewContent(content, themeConfig, themeCss, highlight, extraTags, pipelineOptions);
+	const html = renderPreviewContent(
+		content,
+		themeConfig,
+		themeCss,
+		highlight,
+		extraTags,
+		pipelineOptions,
+	);
 	serveHtml(res, html);
 }
 
@@ -572,8 +644,18 @@ async function handleCreatePage(
 	markOwnWrite: (relPath: string) => void,
 ): Promise<void> {
 	const body = await readBody(req);
-	const { directory = '', slug, title, template = 'blank', draft } = JSON.parse(body) as {
-		directory?: string; slug: string; title: string; template?: string; draft?: boolean;
+	const {
+		directory = '',
+		slug,
+		title,
+		template = 'blank',
+		draft,
+	} = JSON.parse(body) as {
+		directory?: string;
+		slug: string;
+		title: string;
+		template?: string;
+		draft?: boolean;
 	};
 
 	if (!slug || !SLUG_RE.test(slug)) {
@@ -617,13 +699,21 @@ async function handleCreateDirectory(
 	markOwnWrite: (relPath: string) => void,
 ): Promise<void> {
 	const body = await readBody(req);
-	const { parent = '', name, createLayout } = JSON.parse(body) as {
-		parent?: string; name: string; createLayout?: boolean;
+	const {
+		parent = '',
+		name,
+		createLayout,
+	} = JSON.parse(body) as {
+		parent?: string;
+		name: string;
+		createLayout?: boolean;
 	};
 
 	if (!name || !SLUG_RE.test(name)) {
 		res.writeHead(400, { 'Content-Type': 'application/json' });
-		res.end(JSON.stringify({ error: 'Invalid directory name. Use lowercase alphanumeric and hyphens.' }));
+		res.end(
+			JSON.stringify({ error: 'Invalid directory name. Use lowercase alphanumeric and hyphens.' }),
+		);
 		return;
 	}
 
@@ -847,7 +937,9 @@ function deriveChildRunes(config?: ThemeConfig): Set<string> {
  *  identity transform's lookup: PascalCase `typeName` for core runes, else the
  *  kebab `name`/aliases (separator-insensitive) for plugin runes. Used to surface
  *  config-derived metadata (e.g. `defaultReading`) the editor needs. */
-export function makeRuneConfigResolver(config?: ThemeConfig): (rune: { name: string; aliases?: string[]; typeName?: string }) => RuneConfig | undefined {
+export function makeRuneConfigResolver(
+	config?: ThemeConfig,
+): (rune: { name: string; aliases?: string[]; typeName?: string }) => RuneConfig | undefined {
 	const byKebab = new Map<string, RuneConfig>();
 	for (const [key, cfg] of Object.entries(config?.runes ?? {})) {
 		const kebab = toKebabCase(key);
@@ -882,11 +974,14 @@ function handleGetRunes(
 			if (rune.schema.attributes) {
 				for (const [name, attr] of Object.entries(rune.schema.attributes)) {
 					if ((attr as any).deprecated) continue;
-					const typeName = typeof attr.type === 'function'
-						? attr.type.name
-						: Array.isArray(attr.type)
-							? attr.type.map((t: unknown) => (t as { name?: string }).name ?? 'unknown').join(' | ')
-							: 'String';
+					const typeName =
+						typeof attr.type === 'function'
+							? attr.type.name
+							: Array.isArray(attr.type)
+								? attr.type
+										.map((t: unknown) => (t as { name?: string }).name ?? 'unknown')
+										.join(' | ')
+								: 'String';
 					attrs[name] = {
 						type: typeName,
 						required: attr.required ?? false,
@@ -933,7 +1028,10 @@ function handleGetRunes(
 			for (const entry of communityRunes) {
 				// Surface the rune's reading default (SPEC-108) for the register-gated
 				// dropcap toggle, matching the catalog runes above.
-				const entryReading = resolveRuneConfig({ name: entry.name, aliases: entry.aliases })?.defaultReading;
+				const entryReading = resolveRuneConfig({
+					name: entry.name,
+					aliases: entry.aliases,
+				})?.defaultReading;
 				if (entryReading && !entry.defaultReading) entry.defaultReading = entryReading;
 				// Inject preset names for universal attributes on community runes too
 				if (themeConfig?.tints && entry.attributes['tint'] && !entry.attributes['tint'].values) {
@@ -964,7 +1062,9 @@ function safePath(contentDir: string, filePath: string): string | null {
 function readBody(req: import('node:http').IncomingMessage): Promise<string> {
 	return new Promise((resolve, reject) => {
 		let data = '';
-		req.on('data', chunk => { data += chunk; });
+		req.on('data', (chunk) => {
+			data += chunk;
+		});
 		req.on('end', () => resolve(data));
 		req.on('error', reject);
 	});
@@ -979,7 +1079,10 @@ interface TreeNode {
 	layout?: TreeNode;
 }
 
-function directoryToJson(dir: import('@refrakt-md/content').ContentDirectory, rootDir: string): TreeNode {
+function directoryToJson(
+	dir: import('@refrakt-md/content').ContentDirectory,
+	rootDir: string,
+): TreeNode {
 	const dirRelPath = relative(rootDir, dir.dirPath);
 	const node: TreeNode = {
 		name: dir.name,
@@ -1037,12 +1140,18 @@ function stripFunctions(config: ThemeConfig): ThemeConfig {
 
 // ── Asset management ────────────────────────────────────────────────────
 
-function listImageAssets(staticDir: string): Array<{ path: string; name: string; size: number; modified: number }> {
+function listImageAssets(
+	staticDir: string,
+): Array<{ path: string; name: string; size: number; modified: number }> {
 	const results: Array<{ path: string; name: string; size: number; modified: number }> = [];
 
 	function walk(dir: string, prefix: string) {
 		let entries;
-		try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+		try {
+			entries = readdirSync(dir, { withFileTypes: true });
+		} catch {
+			return;
+		}
 		for (const entry of entries) {
 			if (entry.name.startsWith('.')) continue;
 			const fullPath = join(dir, entry.name);

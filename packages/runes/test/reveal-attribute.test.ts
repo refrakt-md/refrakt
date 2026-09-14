@@ -21,7 +21,7 @@ describe('reveal universal attribute (SPEC-105)', () => {
 
 	it('rejects an unknown reveal value as a build error', () => {
 		const errors = validate('{% card reveal="zoom" %}\n# T\nbody\n{% /card %}');
-		const invalid = errors.find(e => e.error.id === 'attribute-value-invalid');
+		const invalid = errors.find((e) => e.error.id === 'attribute-value-invalid');
 		expect(invalid, 'expected an attribute-value-invalid error for reveal="zoom"').toBeDefined();
 		expect(invalid!.error.level).toBe('error');
 	});
@@ -33,7 +33,7 @@ describe('reveal universal attribute (SPEC-105)', () => {
 
 	it('rejects a non-boolean stagger value', () => {
 		const errors = validate('{% card stagger="yes" %}\n# T\nbody\n{% /card %}');
-		const invalid = errors.find(e => e.error.id === 'attribute-type-invalid');
+		const invalid = errors.find((e) => e.error.id === 'attribute-type-invalid');
 		expect(invalid, 'expected an attribute-type-invalid error for stagger="yes"').toBeDefined();
 	});
 });

@@ -35,10 +35,7 @@ export interface MinimalVitePlugin {
  * Shared between the Astro and Nuxt adapters so they emit byte-identical
  * site-tokens CSS without re-implementing the virtual-module machinery.
  */
-export function createSiteTokensVitePlugin(
-	site: SiteConfig,
-	configDir: string,
-): MinimalVitePlugin {
+export function createSiteTokensVitePlugin(site: SiteConfig, configDir: string): MinimalVitePlugin {
 	let css = '';
 	return {
 		name: 'refrakt-md:site-tokens',
@@ -92,7 +89,7 @@ export function createRunesCssVitePlugin(
 				return;
 			}
 			const imports = buildUsedCssImports(result.themePackage, result.usedBlocks);
-			css = imports.map(spec => `@import '${spec}';`).join('\n') + '\n';
+			css = imports.map((spec) => `@import '${spec}';`).join('\n') + '\n';
 		},
 		resolveId(id: string) {
 			if (id === RUNES_VIRTUAL_ID) return RUNES_RESOLVED_ID;

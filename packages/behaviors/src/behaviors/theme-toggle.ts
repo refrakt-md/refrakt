@@ -35,7 +35,11 @@ function applyPref(pref: ThemePref): void {
 }
 
 function labelFor(pref: ThemePref): string {
-	return pref === 'auto' ? 'Theme: auto (system)' : pref === 'light' ? 'Theme: light' : 'Theme: dark';
+	return pref === 'auto'
+		? 'Theme: auto (system)'
+		: pref === 'light'
+			? 'Theme: light'
+			: 'Theme: dark';
 }
 
 export function themeToggleBehavior(container: HTMLElement | Document): CleanupFn {

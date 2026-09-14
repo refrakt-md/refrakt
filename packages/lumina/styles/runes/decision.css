@@ -1,33 +1,32 @@
 @layer skin {
-/* Decision */
+	/* Decision */
 
-/* SPEC-079: eyebrow + metadata zone names replace header-primary /
+	/* SPEC-079: eyebrow + metadata zone names replace header-primary /
  * header-secondary. */
 
-.rf-decision__eyebrow {
-	margin-bottom: 0.75rem;
-}
-.rf-decision__title h1,
-.rf-decision__title h2,
-.rf-decision__title h3 {
-	margin-top: 0;
-}
+	.rf-decision__eyebrow {
+		margin-bottom: 0.75rem;
+	}
+	.rf-decision__title h1,
+	.rf-decision__title h2,
+	.rf-decision__title h3 {
+		margin-top: 0;
+	}
 
-.rf-decision__metadata {
-	margin-bottom: 1.5rem;
-}
+	.rf-decision__metadata {
+		margin-bottom: 1.5rem;
+	}
 
-.rf-decision__body {
-	font-size: var(--rf-text-sm);
-	line-height: var(--rf-leading-relaxed);
-}
-.rf-decision__body > section {
-	margin-top: 1rem;
-	padding-top: 0.75rem;
-	border-top: 1px solid var(--rf-color-border);
-}
-.rf-decision__body > section:first-child {
-	margin-top: 0.75rem;
-}
-
+	.rf-decision__body {
+		font-size: var(--rf-text-sm);
+		line-height: var(--rf-leading-relaxed);
+	}
+	.rf-decision__body > section {
+		margin-top: 1rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--rf-color-border);
+	}
+	.rf-decision__body > section:first-child {
+		margin-top: 0.75rem;
+	}
 }

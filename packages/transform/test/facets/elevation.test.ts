@@ -7,7 +7,10 @@ import type { RuneConfig } from '../../src/types.js';
 /** Build a context directly — no ThemeConfig, no createTransform, no tree walk.
  *  A failure here localises to the facet rather than to "something in the
  *  transform produced the wrong attribute". */
-const ctx = (attrs: Record<string, any> = {}, config: RuneConfig = { block: 'card' }): FacetContext => ({
+const ctx = (
+	attrs: Record<string, any> = {},
+	config: RuneConfig = { block: 'card' },
+): FacetContext => ({
 	tag: makeTag('div', { 'data-rune': 'card', ...attrs }, []),
 	config,
 	block: 'rf-card',
@@ -23,7 +26,9 @@ describe('elevation facet', () => {
 	});
 
 	it('resolves the authored attribute to the elevation axis', () => {
-		expect(elevationFacet.resolve(ctx({ elevation: 'raised' }))).toEqual({ axes: { elevation: 'raised' } });
+		expect(elevationFacet.resolve(ctx({ elevation: 'raised' }))).toEqual({
+			axes: { elevation: 'raised' },
+		});
 	});
 
 	it('emits no BEM class — the axis is styled by attribute', () => {
@@ -36,7 +41,9 @@ describe('elevation facet', () => {
 	});
 
 	it('lets the author override the rune default', () => {
-		const result = elevationFacet.resolve(ctx({ elevation: 'raised' }, { block: 'chart', defaultElevation: 'sunken' }));
+		const result = elevationFacet.resolve(
+			ctx({ elevation: 'raised' }, { block: 'chart', defaultElevation: 'sunken' }),
+		);
 		expect(result).toEqual({ axes: { elevation: 'raised' } });
 	});
 
@@ -46,13 +53,15 @@ describe('elevation facet', () => {
 
 	it('passes every ladder value through unchanged', () => {
 		for (const value of ELEVATION_VALUES) {
-			expect(elevationFacet.resolve(ctx({ elevation: value }))).toEqual({ axes: { elevation: value } });
+			expect(elevationFacet.resolve(ctx({ elevation: value }))).toEqual({
+				axes: { elevation: value },
+			});
 		}
 	});
 
 	describe('deprecated shadow-scale aliases', () => {
 		const cases: Array<[string, string]> = [
-			['none', 'flat'],   // keeps the surface — NOT flush
+			['none', 'flat'], // keeps the surface — NOT flush
 			['sm', 'raised'],
 			['md', 'raised'],
 			['lg', 'floating'],

@@ -160,7 +160,13 @@ export function build(sites) {
 	}
 
 	const names = [...byName.keys()].sort();
-	const artifact = { own: [], base: [], axesAvailable: [], axesUnavailable: [], axisAttributes: [] };
+	const artifact = {
+		own: [],
+		base: [],
+		axesAvailable: [],
+		axesUnavailable: [],
+		axisAttributes: [],
+	};
 
 	// One row per (axis, attribute) — keyed by **axis alone**, not (rune, axis).
 	//
@@ -188,7 +194,9 @@ export function build(sites) {
 			}
 		}
 	}
-	artifact.axisAttributes.sort((a, b) => a.axis.localeCompare(b.axis) || a.name.localeCompare(b.name));
+	artifact.axisAttributes.sort(
+		(a, b) => a.axis.localeCompare(b.axis) || a.name.localeCompare(b.name),
+	);
 
 	for (const name of names) {
 		const { rune } = byName.get(name);
@@ -233,10 +241,15 @@ export function coverageGaps(sites, artifact) {
 	const gaps = [];
 	for (const { site, runes } of sites) {
 		for (const rune of runes) {
-			const hasAttributes = Object.keys(rune.attributes.own).length > 0
-				|| Object.keys(rune.attributes.base?.attributes ?? {}).length > 0;
+			const hasAttributes =
+				Object.keys(rune.attributes.own).length > 0 ||
+				Object.keys(rune.attributes.base?.attributes ?? {}).length > 0;
 			if (hasAttributes && !covered.has(rune.name)) gaps.push(`${site}:${rune.name}`);
-			else if (!hasAttributes && !axisOnly.has(rune.name) && (rune.attributes.universalAvailable ?? []).length > 0) {
+			else if (
+				!hasAttributes &&
+				!axisOnly.has(rune.name) &&
+				(rune.attributes.universalAvailable ?? []).length > 0
+			) {
 				gaps.push(`${site}:${rune.name} (axes)`);
 			}
 		}
@@ -283,9 +296,9 @@ function main(argv) {
 	mkdirSync(dirname(ARTIFACT_PATH), { recursive: true });
 	writeFileSync(ARTIFACT_PATH, rendered);
 	console.log(
-		`Wrote ${allAttributeRows(artifact).length} attribute rows and ${allAxisRows(artifact).length} axis rows `
-		+ `across ${sites.length} site(s) — `
-		+ PARTITIONS.map((p) => `${p}: ${artifact[p].length}`).join(', '),
+		`Wrote ${allAttributeRows(artifact).length} attribute rows and ${allAxisRows(artifact).length} axis rows ` +
+			`across ${sites.length} site(s) — ` +
+			PARTITIONS.map((p) => `${p}: ${artifact[p].length}`).join(', '),
 	);
 	return 0;
 }

@@ -37,9 +37,7 @@ export async function computeUsedCssBlocks(
 	const themeDir = dirname(fileURLToPath(themeEntryUrl));
 	const stylesDir = join(themeDir, 'styles', 'runes');
 
-	const runeKeyMap = new Map(
-		Object.keys(themeConfig.runes).map(k => [toKebabCase(k), k]),
-	);
+	const runeKeyMap = new Map(Object.keys(themeConfig.runes).map((k) => [toKebabCase(k), k]));
 
 	const usedBlocks = new Set<string>();
 
@@ -86,10 +84,7 @@ export async function computeUsedCssBlocks(
  * @returns Module specifiers consumable by Vite virtual modules, Next.js
  *          `import` statements, or HTML `<link>` href attributes.
  */
-export function buildUsedCssImports(
-	themePackage: string,
-	usedBlocks: Set<string>,
-): string[] {
+export function buildUsedCssImports(themePackage: string, usedBlocks: Set<string>): string[] {
 	const imports: string[] = [`${themePackage}/base.css`];
 	for (const block of [...usedBlocks].sort()) {
 		imports.push(`${themePackage}/styles/runes/${block}.css`);

@@ -17,7 +17,7 @@ You will need these tools:
 3. Attach the roof
 {% /howto %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'how-to');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'how-to');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 	});
@@ -29,7 +29,7 @@ You will need these tools:
 1. Do this
 {% /howto %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'how-to');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'how-to');
 		// SPEC-082: field values live in the data-rune-fields bag.
 		const fields = JSON.parse(tag!.attributes['data-rune-fields'] as string);
 		expect(fields.estimatedTime).toBe('PT30M');
@@ -46,12 +46,12 @@ You will need these tools:
 2. Cut to size
 {% /howto %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'how-to');
-		const tools = findAllTags(tag!, t => t.name === 'li' && t.attributes['data-name'] === 'tool');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'how-to');
+		const tools = findAllTags(tag!, (t) => t.name === 'li' && t.attributes['data-name'] === 'tool');
 		expect(tools.length).toBe(2);
 		expect(tools[0].attributes.typeof).toBe('HowToTool');
 
-		const steps = findAllTags(tag!, t => t.name === 'li' && t.attributes['data-name'] === 'step');
+		const steps = findAllTags(tag!, (t) => t.name === 'li' && t.attributes['data-name'] === 'step');
 		expect(steps.length).toBe(2);
 		expect(steps[0].attributes.typeof).toBe('HowToStep');
 	});
@@ -63,7 +63,7 @@ You will need these tools:
 1. Step one
 {% /how-to %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'how-to');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'how-to');
 		expect(tag).toBeDefined();
 	});
 
@@ -77,12 +77,12 @@ You will need these tools:
 2. Bake
 {% /howto %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'how-to');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'how-to');
 		expect(tag).toBeDefined();
-		const wrapped = findAllTags(tag!, t => t.name === 'p').some(
-			p => p.children.some((c: any) => c?.name === 'img'),
+		const wrapped = findAllTags(tag!, (t) => t.name === 'p').some((p) =>
+			p.children.some((c: any) => c?.name === 'img'),
 		);
 		expect(wrapped).toBe(false);
-		expect(findTag(tag!, t => t.name === 'img')).toBeDefined();
+		expect(findTag(tag!, (t) => t.name === 'img')).toBeDefined();
 	});
 });

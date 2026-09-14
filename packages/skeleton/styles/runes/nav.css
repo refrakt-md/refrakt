@@ -4,8 +4,12 @@
  * reflows. Type, colour, spacing, borders, radii, the dropdown chrome, and the
  * chevron glyph stay skin (Lumina's styles/runes/nav.css). */
 
-.rf-nav ul { list-style: none; }
-.rf-nav-item__link { display: block; }
+.rf-nav ul {
+	list-style: none;
+}
+.rf-nav-item__link {
+	display: block;
+}
 
 /* Inline-badge items sit on one row. */
 .rf-nav-item:has(> .rf-badge[data-name="badge"]) {
@@ -26,7 +30,7 @@
 }
 .rf-nav--collapsible .rf-nav-group h2::after,
 .rf-nav--collapsible .rf-nav-group h3::after {
-	content: '';
+	content: "";
 	width: 0.5rem;
 	height: 0.5rem;
 	transform: rotate(45deg);
@@ -81,7 +85,9 @@
 	pointer-events: auto;
 	transform: translateY(0);
 }
-.rf-nav--menubar .rf-nav-group__panel ul { list-style: none; }
+.rf-nav--menubar .rf-nav-group__panel ul {
+	list-style: none;
+}
 .rf-nav--menubar .rf-nav-group__panel > ul > li > .rf-nav-item__link {
 	display: block;
 	width: 100%;

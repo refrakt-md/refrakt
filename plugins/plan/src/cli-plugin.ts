@@ -6,26 +6,42 @@ import { runInit } from './commands/init.js';
 import { runStatus, EXIT_INVALID_ARGS as STATUS_INVALID_ARGS } from './commands/status.js';
 import { runValidate, EXIT_INVALID_ARGS as VALIDATE_INVALID_ARGS } from './commands/validate.js';
 import { runHistory } from './commands/history.js';
-import { runMigrateFilenames, runMigratePrAttrs, runMigrateDependencies, EXIT_INVALID_ARGS as MIGRATE_INVALID_ARGS } from './commands/migrate.js';
+import {
+	runMigrateFilenames,
+	runMigratePrAttrs,
+	runMigrateDependencies,
+	EXIT_INVALID_ARGS as MIGRATE_INVALID_ARGS,
+} from './commands/migrate.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
 import { resolvePlanDir, scaffoldRefraktConfigForPlan } from './plan-config.js';
 import {
-	nextSchema, nextMcpHandler,
-	updateSchema, updateMcpHandler,
-	createSchema, createMcpHandler,
-	statusSchema, statusMcpHandler,
-	validateSchema, validateMcpHandler,
-	nextIdSchema, nextIdMcpHandler,
-	initSchema, initMcpHandler,
-	historySchema, historyMcpHandler,
-	migrateSchema, migrateMcpHandler,
+	nextSchema,
+	nextMcpHandler,
+	updateSchema,
+	updateMcpHandler,
+	createSchema,
+	createMcpHandler,
+	statusSchema,
+	statusMcpHandler,
+	validateSchema,
+	validateMcpHandler,
+	nextIdSchema,
+	nextIdMcpHandler,
+	initSchema,
+	initMcpHandler,
+	historySchema,
+	historyMcpHandler,
+	migrateSchema,
+	migrateMcpHandler,
 } from './mcp-bindings.js';
 import type { CliPlugin } from '@refrakt-md/types';
 
 function handleUpdate(args: string[]): void {
 	const id = args[0];
 	if (!id || id.startsWith('-')) {
-		console.error('Usage: refrakt plan update <id> [--status <s>] [--check "text"] [--uncheck "text"] [--resolve "text"] [--resolve-file <path>] [--<attr> <value>] [--format json]');
+		console.error(
+			'Usage: refrakt plan update <id> [--status <s>] [--check "text"] [--uncheck "text"] [--resolve "text"] [--resolve-file <path>] [--<attr> <value>] [--format json]',
+		);
 		process.exit(1);
 	}
 
@@ -62,12 +78,23 @@ function handleUpdate(args: string[]): void {
 	}
 
 	if (Object.keys(attrs).length === 0 && !check && !uncheck && !resolveText && !resolveFile) {
-		console.error('Error: No changes specified. Use --status, --check, --uncheck, --resolve, or --<attr> <value>.');
+		console.error(
+			'Error: No changes specified. Use --status, --check, --uncheck, --resolve, or --<attr> <value>.',
+		);
 		process.exit(1);
 	}
 
 	try {
-		const result = runUpdate({ id, dir, attrs, check, uncheck, resolve: resolveText, resolveFile, formatJson });
+		const result = runUpdate({
+			id,
+			dir,
+			attrs,
+			check,
+			uncheck,
+			resolve: resolveText,
+			resolveFile,
+			formatJson,
+		});
 		if (formatJson) {
 			console.log(JSON.stringify(result, null, 2));
 		} else {
@@ -132,7 +159,9 @@ function handleNext(args: string[]): void {
 			}
 		} else {
 			console.error(`Error: Unexpected argument "${arg}"`);
-			console.error('Usage: refrakt plan next [--milestone <name>] [--tag <tag>] [--assignee <name>] [--type work|bug|all] [--count N] [--format json]');
+			console.error(
+				'Usage: refrakt plan next [--milestone <name>] [--tag <tag>] [--assignee <name>] [--type work|bug|all] [--count N] [--format json]',
+			);
 			process.exit(EXIT_INVALID_ARGS);
 		}
 	}
@@ -153,7 +182,9 @@ function handleNext(args: string[]): void {
 	} else {
 		for (const item of result.items) {
 			console.log(`${item.id}  ${item.title ?? '(untitled)'}`);
-			console.log(`  type: ${item.type}  priority: ${item.priority}  complexity: ${item.complexity}`);
+			console.log(
+				`  type: ${item.type}  priority: ${item.priority}  complexity: ${item.complexity}`,
+			);
 			console.log(`  file: ${item.file}`);
 			if (item.criteria.length > 0) {
 				console.log('  criteria:');
@@ -205,7 +236,13 @@ function handleCreate(args: string[]): void {
 	}
 
 	try {
-		const result = runCreate({ dir, type, id, title, attrs: Object.keys(attrs).length > 0 ? attrs : undefined });
+		const result = runCreate({
+			dir,
+			type,
+			id,
+			title,
+			attrs: Object.keys(attrs).length > 0 ? attrs : undefined,
+		});
 		if (formatJson) {
 			console.log(JSON.stringify(result, null, 2));
 		} else {
@@ -304,7 +341,9 @@ function handleInit(args: string[]): void {
 			noWrapper = true;
 		} else {
 			console.error(`Error: Unexpected argument "${arg}"`);
-			console.error('Usage: refrakt plan init [--dir <path>] [--project-root <path>] [--agent <tool>] [--no-package-json] [--no-hooks] [--no-mcp] [--no-wrapper] [--no-config] [--minimal] [--format json]');
+			console.error(
+				'Usage: refrakt plan init [--dir <path>] [--project-root <path>] [--agent <tool>] [--no-package-json] [--no-hooks] [--no-mcp] [--no-wrapper] [--no-config] [--minimal] [--format json]',
+			);
 			process.exit(1);
 		}
 	}
@@ -364,7 +403,9 @@ function handleInit(args: string[]): void {
 	}
 	if (result.packageManager && result.packageJsonUpdated) {
 		console.log();
-		console.log(`Next: run \`${result.packageManager} install\` to pull in @refrakt-md/cli + @refrakt-md/plan.`);
+		console.log(
+			`Next: run \`${result.packageManager} install\` to pull in @refrakt-md/cli + @refrakt-md/plan.`,
+		);
 	}
 }
 
@@ -401,8 +442,12 @@ function handleValidate(args: string[]): void {
 	console.log();
 
 	for (const issue of result.issues) {
-		const prefix = issue.severity === 'error' ? '  ✗ error  ' :
-			issue.severity === 'warning' ? '  ⚠ warn   ' : '  ℹ info   ';
+		const prefix =
+			issue.severity === 'error'
+				? '  ✗ error  '
+				: issue.severity === 'warning'
+					? '  ⚠ warn   '
+					: '  ℹ info   ';
 		console.log(`${prefix} ${issue.message}`);
 	}
 
@@ -410,7 +455,9 @@ function handleValidate(args: string[]): void {
 		console.log();
 	}
 
-	console.log(`  Result: ${result.counts.errors} errors, ${result.counts.warnings} warnings, ${result.counts.info} info`);
+	console.log(
+		`  Result: ${result.counts.errors} errors, ${result.counts.warnings} warnings, ${result.counts.info} info`,
+	);
 	process.exit(result.exitCode);
 }
 
@@ -478,7 +525,9 @@ function handleStatus(args: string[]): void {
 	if (result.ready.length > 0) {
 		console.log('  Ready (highest priority):');
 		for (const r of result.ready) {
-			console.log(`    ${r.id}  ${(r.title ?? '(untitled)').padEnd(35)}  ${r.priority.padEnd(9)} ${r.complexity}`);
+			console.log(
+				`    ${r.id}  ${(r.title ?? '(untitled)').padEnd(35)}  ${r.priority.padEnd(9)} ${r.complexity}`,
+			);
 		}
 		console.log();
 	}
@@ -495,16 +544,18 @@ function handleStatus(args: string[]): void {
 	}
 
 	// Traceability — specs ready to flip + PRs per spec (SPEC-049)
-	const flipSuggestions = result.specRollups.filter(r => r.suggestImplemented);
+	const flipSuggestions = result.specRollups.filter((r) => r.suggestImplemented);
 	if (flipSuggestions.length > 0) {
 		console.log('  Ready to mark implemented (all linked work done):');
 		for (const r of flipSuggestions) {
-			console.log(`    ${r.id}  ${r.title ?? '(untitled)'}  → refrakt plan update ${r.id} --status implemented`);
+			console.log(
+				`    ${r.id}  ${r.title ?? '(untitled)'}  → refrakt plan update ${r.id} --status implemented`,
+			);
 		}
 		console.log();
 	}
 
-	const withPrs = result.specRollups.filter(r => r.prs.length > 0);
+	const withPrs = result.specRollups.filter((r) => r.prs.length > 0);
 	if (withPrs.length > 0) {
 		console.log('  PRs by spec:');
 		for (const r of withPrs) {
@@ -561,7 +612,9 @@ function handleHistory(args: string[]): void {
 			id = arg;
 		} else {
 			console.error(`Error: Unexpected argument "${arg}"`);
-			console.error('Usage: refrakt plan history [<id>] [--limit N] [--since <duration|date>] [--type <types>] [--author <name>] [--status <status>] [--all] [--format json]');
+			console.error(
+				'Usage: refrakt plan history [<id>] [--limit N] [--since <duration|date>] [--type <types>] [--author <name>] [--status <status>] [--all] [--format json]',
+			);
 			process.exit(1);
 		}
 	}
@@ -572,7 +625,9 @@ function handleHistory(args: string[]): void {
 function handleMigrate(args: string[]): void {
 	const sub = args[0];
 	if (sub !== 'filenames' && sub !== 'pr-attrs' && sub !== 'dependencies') {
-		console.error('Usage: refrakt plan migrate <filenames|pr-attrs|dependencies> [--dir <path>] [--dry-run] [--apply] [--git] [--format json]');
+		console.error(
+			'Usage: refrakt plan migrate <filenames|pr-attrs|dependencies> [--dir <path>] [--dry-run] [--apply] [--git] [--format json]',
+		);
 		console.error('Subcommands: filenames, pr-attrs, dependencies');
 		process.exit(MIGRATE_INVALID_ARGS);
 	}
@@ -614,7 +669,9 @@ function handleMigrate(args: string[]): void {
 			process.exit(result.exitCode);
 			return;
 		}
-		console.log(`Scanned ${result.scanned} plan files in ${dir}/  (repo: ${result.repoSlug ?? 'unknown'})`);
+		console.log(
+			`Scanned ${result.scanned} plan files in ${dir}/  (repo: ${result.repoSlug ?? 'unknown'})`,
+		);
 		const verb = apply ? 'Backfilled' : 'Would backfill';
 		const rows = apply ? result.applied : result.resolved;
 		console.log(`  ${verb} pr on ${rows.length} item(s)${apply ? '' : ''}:`);
@@ -644,11 +701,16 @@ function handleMigrate(args: string[]): void {
 		}
 		console.log(`Scanned ${result.scanned} plan files in ${dir}/`);
 		const verb = apply ? 'Renamed' : 'Would rename';
-		console.log(`  ${verb} ${result.renamed.length} "## Dependencies" heading(s) → "## Blocked by":`);
+		console.log(
+			`  ${verb} ${result.renamed.length} "## Dependencies" heading(s) → "## Blocked by":`,
+		);
 		for (const r of result.renamed) console.log(`    ${r.file}:${r.line}`);
 		if (result.reverseFlags.length > 0) {
-			console.log(`\n  ${result.reverseFlags.length} entry(ies) may belong under "## Blocks" — review manually (not auto-flipped):`);
-			for (const f of result.reverseFlags) console.log(`    ${f.file}:${f.line}  ${f.reason}\n      ${f.text}`);
+			console.log(
+				`\n  ${result.reverseFlags.length} entry(ies) may belong under "## Blocks" — review manually (not auto-flipped):`,
+			);
+			for (const f of result.reverseFlags)
+				console.log(`    ${f.file}:${f.line}  ${f.reason}\n      ${f.text}`);
 		}
 		if (!apply && result.renamed.length > 0) {
 			const gitHint = useGit ? '' : ' (add --git to stage the edits)';

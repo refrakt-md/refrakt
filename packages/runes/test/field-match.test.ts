@@ -1,7 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { parseFieldMatch, matchesFieldMatch, matchesFilterExpr, resolveEntityField, type MatchableEntity } from '../src/field-match.js';
+import {
+	parseFieldMatch,
+	matchesFieldMatch,
+	matchesFilterExpr,
+	resolveEntityField,
+	type MatchableEntity,
+} from '../src/field-match.js';
 
-function entity(over: Partial<MatchableEntity> & { data?: Record<string, unknown> } = {}): MatchableEntity {
+function entity(
+	over: Partial<MatchableEntity> & { data?: Record<string, unknown> } = {},
+): MatchableEntity {
 	return { id: 'X-1', type: 'work', sourceUrl: '/work/X-1/', data: {}, ...over };
 }
 
@@ -72,7 +80,9 @@ describe('matchesFieldMatch — operators', () => {
 	});
 
 	it('array / comma-joined fields match on membership', () => {
-		expect(matchesFilterExpr(entity({ data: { tags: 'docs,runes,plan' } }), 'tags:runes')).toBe(true);
+		expect(matchesFilterExpr(entity({ data: { tags: 'docs,runes,plan' } }), 'tags:runes')).toBe(
+			true,
+		);
 		expect(matchesFilterExpr(entity({ data: { tags: ['a', 'b'] } }), 'tags:b')).toBe(true);
 		expect(matchesFilterExpr(entity({ data: { tags: 'docs' } }), 'tags:runes')).toBe(false);
 	});

@@ -3,14 +3,22 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
-	nextSchema, nextMcpHandler,
-	updateSchema, updateMcpHandler,
-	createSchema, createMcpHandler,
-	statusSchema, statusMcpHandler,
-	validateSchema, validateMcpHandler,
-	nextIdSchema, nextIdMcpHandler,
-	historySchema, historyMcpHandler,
-	migrateSchema, migrateMcpHandler,
+	nextSchema,
+	nextMcpHandler,
+	updateSchema,
+	updateMcpHandler,
+	createSchema,
+	createMcpHandler,
+	statusSchema,
+	statusMcpHandler,
+	validateSchema,
+	validateMcpHandler,
+	nextIdSchema,
+	nextIdMcpHandler,
+	historySchema,
+	historyMcpHandler,
+	migrateSchema,
+	migrateMcpHandler,
 	initSchema,
 } from '../src/mcp-bindings.js';
 
@@ -34,8 +42,15 @@ afterEach(() => {
 describe('plan command schemas', () => {
 	it('all schemas are valid JSON Schema objects', () => {
 		const schemas = [
-			nextSchema, updateSchema, createSchema, statusSchema,
-			validateSchema, nextIdSchema, historySchema, migrateSchema, initSchema,
+			nextSchema,
+			updateSchema,
+			createSchema,
+			statusSchema,
+			validateSchema,
+			nextIdSchema,
+			historySchema,
+			migrateSchema,
+			initSchema,
 		];
 		for (const schema of schemas) {
 			expect(schema.type).toBe('object');
@@ -123,7 +138,7 @@ describe('plan command mcpHandlers', () => {
 			dir: tempDir,
 			status: 'pending',
 		})) as { changes: any[] };
-		expect(result.changes.find(c => c.field === 'status')?.new).toBe('pending');
+		expect(result.changes.find((c) => c.field === 'status')?.new).toBe('pending');
 	});
 
 	it('updateMcpHandler accepts cosmetic bug severity (WORK-491)', async () => {
@@ -136,7 +151,7 @@ describe('plan command mcpHandlers', () => {
 			dir: tempDir,
 			severity: 'cosmetic',
 		})) as { changes: any[] };
-		expect(result.changes.find(c => c.field === 'severity')?.new).toBe('cosmetic');
+		expect(result.changes.find((c) => c.field === 'severity')?.new).toBe('cosmetic');
 	});
 
 	it('updateMcpHandler accepts a check substring', async () => {
@@ -161,7 +176,10 @@ describe('plan command mcpHandlers', () => {
 	});
 
 	it('nextIdMcpHandler returns the next available id', async () => {
-		const result = (await nextIdMcpHandler({ type: 'work', dir: tempDir })) as Record<string, unknown>;
+		const result = (await nextIdMcpHandler({ type: 'work', dir: tempDir })) as Record<
+			string,
+			unknown
+		>;
 		expect(result.nextId).toBe('WORK-002');
 	});
 
@@ -205,10 +223,7 @@ describe('plan command mcpHandlers — ctx.cwd resolution', () => {
 			join(cwdRoot, 'plan/work/WORK-001-example.md'),
 			`{% work id="WORK-001" status="ready" priority="medium" complexity="simple" %}\n\n# Example\n\nDescription.\n\n## Acceptance Criteria\n\n- [ ] Criterion one\n\n{% /work %}\n`,
 		);
-		writeFileSync(
-			join(cwdRoot, 'refrakt.config.json'),
-			JSON.stringify({ plan: { dir: 'plan' } }),
-		);
+		writeFileSync(join(cwdRoot, 'refrakt.config.json'), JSON.stringify({ plan: { dir: 'plan' } }));
 		savedEnv = process.env.REFRAKT_PLAN_DIR;
 		delete process.env.REFRAKT_PLAN_DIR;
 	});
@@ -227,7 +242,10 @@ describe('plan command mcpHandlers — ctx.cwd resolution', () => {
 	});
 
 	it('resolves a relative dir argument against ctx.cwd', async () => {
-		const result = (await statusMcpHandler({ dir: 'plan' }, { cwd: cwdRoot })) as Record<string, unknown>;
+		const result = (await statusMcpHandler({ dir: 'plan' }, { cwd: cwdRoot })) as Record<
+			string,
+			unknown
+		>;
 		expect((result.counts as any).work.byStatus.ready).toBe(1);
 	});
 });

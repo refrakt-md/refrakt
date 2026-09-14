@@ -22,12 +22,14 @@ export const snippet = createContentModelSchema({
 		path: {
 			type: String,
 			required: true,
-			description: 'Path to the source file, relative to the project root. Rejected if it escapes the root.',
+			description:
+				'Path to the source file, relative to the project root. Rejected if it escapes the root.',
 		},
 		lines: {
 			type: String,
 			required: false,
-			description: 'Line range. Formats: "10-25", "10-" (to EOF), "-20" (from start), "10" (single line). 1-indexed, inclusive.',
+			description:
+				'Line range. Formats: "10-25", "10-" (to EOF), "-20" (from start), "10" (single line). 1-indexed, inclusive.',
 		},
 		lang: {
 			type: String,
@@ -37,12 +39,14 @@ export const snippet = createContentModelSchema({
 		linenumbers: {
 			type: Boolean,
 			required: false,
-			description: 'Show line numbers in the gutter. Starting number derives from the `lines` range start (e.g. lines="74-125" → first line is 74), so numbers reflect the file\'s real offsets. WORK-304.',
+			description:
+				'Show line numbers in the gutter. Starting number derives from the `lines` range start (e.g. lines="74-125" → first line is 74), so numbers reflect the file\'s real offsets. WORK-304.',
 		},
 		highlight: {
 			type: String,
 			required: false,
-			description: 'Range(s) to emphasize without cropping — Shiki-style format: "74-78", "74-78,82,90-92". Indices are file coordinates (same frame as `lines=`). Use this when you want full context visible but want to draw the eye to specific lines. WORK-304.',
+			description:
+				'Range(s) to emphasize without cropping — Shiki-style format: "74-78", "74-78,82,90-92". Indices are file coordinates (same frame as `lines=`). Use this when you want full context visible but want to draw the eye to specific lines. WORK-304.',
 		},
 	},
 	contentModel: { type: 'sequence', fields: [] },
@@ -55,15 +59,15 @@ export const snippet = createContentModelSchema({
 		// transform — after the preprocess phase. Name that fix first (SPEC-129).
 		throw new Error(
 			'{% snippet %} reached the transform phase unresolved.\n\n' +
-			'If this file is pulled in with {% partial %}: use {% include %} instead. ' +
-			'Markdoc expands partials during the transform, which is after the preprocess ' +
-			'phase that resolves `snippet` — so a `snippet` tag inside a partial never gets ' +
-			'read. {% include file="..." /%} pastes the file before preprocess, so `snippet` ' +
-			'and `data` inside it resolve. Both runes read the same `_partials/` directory ' +
-			'and file roots, so only the call site changes.\n\n' +
-			'If you are building a custom pipeline: registered `preprocess` hooks must run ' +
-			'before `Markdoc.transform` (snippet pre-resolves to a Markdoc `fence` node; ' +
-			'see SPEC-062 § Composition).',
+				'If this file is pulled in with {% partial %}: use {% include %} instead. ' +
+				'Markdoc expands partials during the transform, which is after the preprocess ' +
+				'phase that resolves `snippet` — so a `snippet` tag inside a partial never gets ' +
+				'read. {% include file="..." /%} pastes the file before preprocess, so `snippet` ' +
+				'and `data` inside it resolve. Both runes read the same `_partials/` directory ' +
+				'and file roots, so only the call site changes.\n\n' +
+				'If you are building a custom pipeline: registered `preprocess` hooks must run ' +
+				'before `Markdoc.transform` (snippet pre-resolves to a Markdoc `fence` node; ' +
+				'see SPEC-062 § Composition).',
 		);
 	},
 });

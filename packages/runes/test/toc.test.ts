@@ -17,11 +17,11 @@ More text.
 
 Install steps.`);
 
-		const nav = findTag(result as any, t => t.attributes['data-rune'] === 'table-of-contents');
+		const nav = findTag(result as any, (t) => t.attributes['data-rune'] === 'table-of-contents');
 		expect(nav).toBeDefined();
 		expect(nav!.name).toBe('nav');
 
-		const links = findAllTags(nav!, t => t.name === 'a');
+		const links = findAllTags(nav!, (t) => t.name === 'a');
 		expect(links.length).toBe(3);
 		expect(links[0].attributes.href).toBe('#introduction');
 		expect(links[0].children).toContain('Introduction');
@@ -38,8 +38,8 @@ Install steps.`);
 
 #### Level 4`);
 
-		const nav = findTag(result as any, t => t.attributes['data-rune'] === 'table-of-contents');
-		const links = findAllTags(nav!, t => t.name === 'a');
+		const nav = findTag(result as any, (t) => t.attributes['data-rune'] === 'table-of-contents');
+		const links = findAllTags(nav!, (t) => t.name === 'a');
 		// depth=2 means h2 and h3 only (h2..h{2+1})
 		expect(links.length).toBe(2);
 	});
@@ -51,7 +51,7 @@ Install steps.`);
 
 ## Second`);
 
-		const nav = findTag(result as any, t => t.attributes['data-rune'] === 'table-of-contents');
+		const nav = findTag(result as any, (t) => t.attributes['data-rune'] === 'table-of-contents');
 		expect(fields(nav).ordered).toBe(true);
 	});
 
@@ -60,10 +60,10 @@ Install steps.`);
 
 Just a paragraph.`);
 
-		const nav = findTag(result as any, t => t.attributes['data-rune'] === 'table-of-contents');
+		const nav = findTag(result as any, (t) => t.attributes['data-rune'] === 'table-of-contents');
 		expect(nav).toBeDefined();
 
-		const links = findAllTags(nav!, t => t.name === 'a');
+		const links = findAllTags(nav!, (t) => t.name === 'a');
 		expect(links.length).toBe(0);
 	});
 });

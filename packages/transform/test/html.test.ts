@@ -14,13 +14,17 @@ describe('renderToHtml', () => {
 	});
 
 	it('renders attributes', () => {
-		const tag = makeTag('div', { class: 'rf-hint rf-hint--warning', 'data-rune': 'hint' }, ['text']);
+		const tag = makeTag('div', { class: 'rf-hint rf-hint--warning', 'data-rune': 'hint' }, [
+			'text',
+		]);
 		const html = renderToHtml(tag);
 		expect(html).toBe('<div class="rf-hint rf-hint--warning" data-rune="hint">text</div>');
 	});
 
 	it('skips null, undefined, and false attributes', () => {
-		const tag = makeTag('div', { class: 'test', id: null, hidden: false, 'data-x': undefined }, ['text']);
+		const tag = makeTag('div', { class: 'test', id: null, hidden: false, 'data-x': undefined }, [
+			'text',
+		]);
 		expect(renderToHtml(tag)).toBe('<div class="test">text</div>');
 	});
 
@@ -43,15 +47,12 @@ describe('renderToHtml', () => {
 			makeTag('p', {}, ['Content']),
 		]);
 		expect(renderToHtml(tag)).toBe(
-			'<div class="rf-hint"><span class="rf-hint__icon"></span><p>Content</p></div>'
+			'<div class="rf-hint"><span class="rf-hint__icon"></span><p>Content</p></div>',
 		);
 	});
 
 	it('handles arrays of nodes', () => {
-		const nodes = [
-			makeTag('p', {}, ['First']),
-			makeTag('p', {}, ['Second']),
-		];
+		const nodes = [makeTag('p', {}, ['First']), makeTag('p', {}, ['Second'])];
 		expect(renderToHtml(nodes)).toBe('<p>First</p><p>Second</p>');
 	});
 
@@ -69,27 +70,37 @@ describe('renderToHtml', () => {
 	});
 
 	it('omits internal attributes ($$mdtype)', () => {
-		const tag = makeTag('section', {
-			$$mdtype: 'Tag',
-			typeof: 'Hint',
-			property: 'contentSection',
-			class: 'rf-hint',
-		}, ['text']);
+		const tag = makeTag(
+			'section',
+			{
+				$$mdtype: 'Tag',
+				typeof: 'Hint',
+				property: 'contentSection',
+				class: 'rf-hint',
+			},
+			['text'],
+		);
 		const html = renderToHtml(tag);
-		expect(html).toBe('<section typeof="Hint" property="contentSection" class="rf-hint">text</section>');
+		expect(html).toBe(
+			'<section typeof="Hint" property="contentSection" class="rf-hint">text</section>',
+		);
 		expect(html).not.toContain('$$mdtype');
 	});
 
 	it('escapes attribute values', () => {
 		const tag = makeTag('div', { 'data-value': 'a "quoted" & <special>' }, ['text']);
-		expect(renderToHtml(tag)).toBe('<div data-value="a &quot;quoted&quot; &amp; &lt;special&gt;">text</div>');
+		expect(renderToHtml(tag)).toBe(
+			'<div data-value="a &quot;quoted&quot; &amp; &lt;special&gt;">text</div>',
+		);
 	});
 
 	it('renders null-named tags (document root) without a wrapper element', () => {
-		const root = { $$mdtype: 'Tag' as const, name: null as any, attributes: {}, children: [
-			makeTag('p', {}, ['Hello']),
-			makeTag('p', {}, ['World']),
-		]};
+		const root = {
+			$$mdtype: 'Tag' as const,
+			name: null as any,
+			attributes: {},
+			children: [makeTag('p', {}, ['Hello']), makeTag('p', {}, ['World'])],
+		};
 		expect(renderToHtml(root)).toBe('<p>Hello</p><p>World</p>');
 	});
 
@@ -101,17 +112,22 @@ describe('renderToHtml', () => {
 	});
 
 	it('renders null-named tags with nested rune content correctly', () => {
-		const root = { $$mdtype: 'Tag' as const, name: null as any, attributes: {}, children: [
-			makeTag('div', { class: 'rf-preview', 'data-rune': 'preview' }, [
-				makeTag('div', { class: 'rf-hint', 'data-rune': 'hint' }, [
-					makeTag('p', {}, ['Nested content']),
+		const root = {
+			$$mdtype: 'Tag' as const,
+			name: null as any,
+			attributes: {},
+			children: [
+				makeTag('div', { class: 'rf-preview', 'data-rune': 'preview' }, [
+					makeTag('div', { class: 'rf-hint', 'data-rune': 'hint' }, [
+						makeTag('p', {}, ['Nested content']),
+					]),
 				]),
-			]),
-		]};
+			],
+		};
 		const html = renderToHtml(root);
 		expect(html).not.toContain('<null>');
 		expect(html).toBe(
-			'<div class="rf-preview" data-rune="preview"><div class="rf-hint" data-rune="hint"><p>Nested content</p></div></div>'
+			'<div class="rf-preview" data-rune="preview"><div class="rf-hint" data-rune="hint"><p>Nested content</p></div></div>',
 		);
 	});
 });
@@ -142,9 +158,7 @@ describe('renderToHtml pretty printing', () => {
 				makeTag('span', { class: 'rf-hint__icon' }, []),
 				makeTag('span', { class: 'rf-hint__title' }, ['warning']),
 			]),
-			makeTag('div', { class: 'rf-hint__body' }, [
-				makeTag('p', {}, ['Check your settings']),
-			]),
+			makeTag('div', { class: 'rf-hint__body' }, [makeTag('p', {}, ['Check your settings'])]),
 		]);
 		const expected = [
 			'<section class="rf-hint">',
@@ -161,9 +175,7 @@ describe('renderToHtml pretty printing', () => {
 	});
 
 	it('supports custom indent string', () => {
-		const tag = makeTag('div', {}, [
-			makeTag('p', {}, ['text']),
-		]);
+		const tag = makeTag('div', {}, [makeTag('p', {}, ['text'])]);
 		const expected = '<div>\n\t<p>text</p>\n</div>';
 		expect(renderToHtml(tag, { pretty: true, indent: '\t' })).toBe(expected);
 	});
@@ -175,16 +187,13 @@ describe('renderToHtml pretty printing', () => {
 	});
 
 	it('pretty-prints null-named tags without a wrapper element', () => {
-		const root = { $$mdtype: 'Tag' as const, name: null as any, attributes: {}, children: [
-			makeTag('div', { class: 'outer' }, [
-				makeTag('p', {}, ['Content']),
-			]),
-		]};
-		const expected = [
-			'<div class="outer">',
-			'  <p>Content</p>',
-			'</div>',
-		].join('\n');
+		const root = {
+			$$mdtype: 'Tag' as const,
+			name: null as any,
+			attributes: {},
+			children: [makeTag('div', { class: 'outer' }, [makeTag('p', {}, ['Content'])])],
+		};
+		const expected = ['<div class="outer">', '  <p>Content</p>', '</div>'].join('\n');
 		expect(renderToHtml(root, { pretty: true })).toBe(expected);
 	});
 });

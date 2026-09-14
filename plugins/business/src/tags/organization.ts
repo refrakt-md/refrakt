@@ -1,20 +1,44 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, pageSectionProperties, unwrapParagraphImages } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	RenderableNodeCursor,
+	pageSectionProperties,
+	unwrapParagraphImages,
+} from '@refrakt-md/runes';
 
-const orgType = ['Organization', 'LocalBusiness', 'Corporation', 'EducationalOrganization', 'GovernmentOrganization', 'NonProfit'] as const;
+const orgType = [
+	'Organization',
+	'LocalBusiness',
+	'Corporation',
+	'EducationalOrganization',
+	'GovernmentOrganization',
+	'NonProfit',
+] as const;
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
 // what a section *is* (ADR-028).
-export const organizationSections = { preamble: 'preamble', headline: 'title', blurb: 'description', body: 'body' } as const;
+export const organizationSections = {
+	preamble: 'preamble',
+	headline: 'title',
+	blurb: 'description',
+	body: 'body',
+} as const;
 
 export const organization = createContentModelSchema({
 	sections: organizationSections,
 	provides: ['prose'],
 	attributes: {
-		type: { type: String, required: false, matches: orgType.slice(), description: 'Schema.org organization category used for structured data.' },
+		type: {
+			type: String,
+			required: false,
+			matches: orgType.slice(),
+			description: 'Schema.org organization category used for structured data.',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
@@ -27,7 +51,9 @@ export const organization = createContentModelSchema({
 		// Unwrap Markdoc's `<p>` around a leading logo image so it sits bare in the
 		// header (and so `pageSectionProperties`' top-level `img` lookup finds it).
 		const header = new RenderableNodeCursor(
-			unwrapParagraphImages(Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[]),
+			unwrapParagraphImages(
+				Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
+			),
 		);
 		const body = new RenderableNodeCursor(
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
@@ -37,7 +63,9 @@ export const organization = createContentModelSchema({
 
 		const bodyDiv = body.wrap('div');
 
-		return createComponentRenderable({ rune: 'organization', schemaOrgType: 'Organization',
+		return createComponentRenderable({
+			rune: 'organization',
+			schemaOrgType: 'Organization',
 			tag: 'article',
 			property: 'contentSection',
 			typeof: attrs.type || undefined,
@@ -52,11 +80,7 @@ export const organization = createContentModelSchema({
 				name: sectionProps.headline,
 				description: sectionProps.blurb,
 			},
-			children: [
-				typeMeta,
-				header.wrap('header').next(),
-				bodyDiv.next(),
-			],
+			children: [typeMeta, header.wrap('header').next(), bodyDiv.next()],
 		});
 	},
 });

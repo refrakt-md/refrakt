@@ -15,7 +15,7 @@ describe('chart tag', () => {
 | Mar   | 150     |
 {% /chart %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'chart');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'chart');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('rf-chart');
 	});
@@ -28,13 +28,13 @@ describe('chart tag', () => {
 | 2024 | 5000  |
 {% /chart %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'chart');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'chart');
 
 		const fields = JSON.parse(tag!.attributes['data-rune-fields'] as string);
 		expect(fields.type).toBe('line');
 		expect(fields.stacked).toBe('true');
 
-		const caption = findTag(tag!, t => t.name === 'caption');
+		const caption = findTag(tag!, (t) => t.name === 'caption');
 		expect(caption).toBeDefined();
 		expect(caption!.children).toContain('Growth');
 	});
@@ -46,10 +46,10 @@ describe('chart tag', () => {
 | Jan   | 100     |
 {% /chart %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'chart');
-		const table = findTag(tag!, t => t.name === 'table' && t.attributes['data-name'] === 'data');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'chart');
+		const table = findTag(tag!, (t) => t.name === 'table' && t.attributes['data-name'] === 'data');
 		expect(table).toBeDefined();
-		expect(findTag(table!, t => t.name === 'thead')).toBeDefined();
-		expect(findTag(table!, t => t.name === 'tbody')).toBeDefined();
+		expect(findTag(table!, (t) => t.name === 'thead')).toBeDefined();
+		expect(findTag(table!, (t) => t.name === 'tbody')).toBeDefined();
 	});
 });

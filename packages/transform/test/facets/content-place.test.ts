@@ -10,7 +10,8 @@ const ctx = (contentPlace?: string, mediaPosition = 'cover'): FacetContext => ({
 	rune: 'card',
 	fields: {},
 	theme: { tints: {}, backgrounds: {}, frames: {} },
-	axis: (name) => (name === 'content-place' ? contentPlace : name === 'media-position' ? mediaPosition : undefined),
+	axis: (name) =>
+		name === 'content-place' ? contentPlace : name === 'media-position' ? mediaPosition : undefined,
 });
 
 describe('content-place facet', () => {

@@ -24,7 +24,12 @@
 
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
-import type { EntityRegistry, EntityRegistration, PipelineContext, ProjectFiles } from '@refrakt-md/types';
+import type {
+	EntityRegistry,
+	EntityRegistration,
+	PipelineContext,
+	ProjectFiles,
+} from '@refrakt-md/types';
 import { EXPAND_PLACEHOLDER_MARKER } from './tags/expand.js';
 import { readWholeSandboxedFile, SnippetSandboxError } from './lib/read-file.js';
 import type { CompiledXrefPattern } from './xref-patterns.js';
@@ -85,7 +90,11 @@ export function resolveExpands(
 	return walk(renderable, rc, []);
 }
 
-function walk(node: unknown, rc: ExpandResolveContext, stack: Array<{ type: string; id: string }>): unknown {
+function walk(
+	node: unknown,
+	rc: ExpandResolveContext,
+	stack: Array<{ type: string; id: string }>,
+): unknown {
 	if (Array.isArray(node)) {
 		let mutated = false;
 		const next = node.map((c) => {
@@ -127,7 +136,10 @@ function resolveOnePlaceholder(
 	const authoredLabel = attrs['data-expand-label'] as string | undefined;
 
 	if (!id) {
-		rc.ctx.error(`expand placeholder is missing \`primary\`/id attribute on ${rc.pageUrl}`, rc.pageUrl);
+		rc.ctx.error(
+			`expand placeholder is missing \`primary\`/id attribute on ${rc.pageUrl}`,
+			rc.pageUrl,
+		);
 		return errorNode(id, 'missing id attribute');
 	}
 
@@ -151,9 +163,9 @@ function resolveOnePlaceholder(
 	// Cycle detection. The stack is per-page-render — embedding the same
 	// entity on two different pages is fine; embedding it inside itself
 	// transitively is the bug we catch.
-	if (stack.some(s => s.type === entity.type && s.id === entity.id)) {
+	if (stack.some((s) => s.type === entity.type && s.id === entity.id)) {
 		const cyclePath = [...stack, { type: entity.type, id: entity.id }]
-			.map(s => `${s.id} (${s.type})`)
+			.map((s) => `${s.id} (${s.type})`)
 			.join(' → ');
 		rc.ctx.error(`expand cycle detected on ${rc.pageUrl}. Cycle: ${cyclePath}`, rc.pageUrl);
 		return errorNode(id, 'cycle detected');
@@ -167,7 +179,10 @@ function resolveOnePlaceholder(
 	} else {
 		const files = rc.embedConfig?.projectFiles;
 		if (!files) {
-			rc.ctx.error(`expand "${id}" — no file provider configured (embedConfig.projectFiles is unset)`, rc.pageUrl);
+			rc.ctx.error(
+				`expand "${id}" — no file provider configured (embedConfig.projectFiles is unset)`,
+				rc.pageUrl,
+			);
 			return errorNode(id, 'no file provider configured');
 		}
 		let parsed: Node;
@@ -175,7 +190,10 @@ function resolveOnePlaceholder(
 			parsed = parseSourceFile(entity.sourceFile!, files, rc.parseCache);
 		} catch (err) {
 			const msg = err instanceof SnippetSandboxError ? err.message : (err as Error).message;
-			rc.ctx.error(`expand "${id}" — failed to read source file "${entity.sourceFile}": ${msg}`, rc.pageUrl);
+			rc.ctx.error(
+				`expand "${id}" — failed to read source file "${entity.sourceFile}": ${msg}`,
+				rc.pageUrl,
+			);
 			return errorNode(id, msg);
 		}
 		extracted = entity.extract!(parsed);
@@ -198,7 +216,7 @@ function resolveOnePlaceholder(
 		processed = shiftHeadings(extracted, shift, clampedHeadings);
 		if (clampedHeadings.length > 0) {
 			rc.ctx.warn(
-				`expand "${id}" at ${rc.pageUrl} — heading demotion (level=${level}) would push ${clampedHeadings.length} heading(s) past H6. Clamped to H6: ${clampedHeadings.map(t => `"${t}"`).join(', ')}`,
+				`expand "${id}" at ${rc.pageUrl} — heading demotion (level=${level}) would push ${clampedHeadings.length} heading(s) past H6. Clamped to H6: ${clampedHeadings.map((t) => `"${t}"`).join(', ')}`,
 				rc.pageUrl,
 			);
 		}
@@ -291,7 +309,7 @@ function resolveCanonicalHref(
 	patterns: CompiledXrefPattern[],
 ): string | undefined {
 	const sourceUrl = entity.sourceUrl;
-	const dataUrl = (entity.data.url as string | undefined);
+	const dataUrl = entity.data.url as string | undefined;
 	const baseUrl = dataUrl || sourceUrl;
 	if (baseUrl) {
 		const headingId = entity.data.headingId as string | undefined;
@@ -323,11 +341,7 @@ function canonicalLinkDefault(entity: EntityRegistration): string {
  *  snippet (absolute / traversal / symlink-escape rejected). File-system
  *  access lives entirely behind the provider so the `node:fs` import stays
  *  out of this module and Vite can tree-shake it from browser bundles. */
-function parseSourceFile(
-	sourceFile: string,
-	files: ProjectFiles,
-	cache: Map<string, Node>,
-): Node {
+function parseSourceFile(sourceFile: string, files: ProjectFiles, cache: Map<string, Node>): Node {
 	const cached = cache.get(sourceFile);
 	if (cached) return cached;
 	const raw = readWholeSandboxedFile({ files, relativePath: sourceFile });
@@ -372,9 +386,13 @@ function collectHeadingText(node: Node): string {
 function errorNode(id: string, message: string): InstanceType<typeof Tag> {
 	// Engine adds `rf-expand` from the block config. Error variant gets a
 	// static modifier via the engine config; we only set the data attrs.
-	return new Tag('section', {
-		'data-rune': 'expand',
-		'data-entity-id': id,
-		'data-expand-error': message,
-	}, [`expand "${id}" — ${message}`]);
+	return new Tag(
+		'section',
+		{
+			'data-rune': 'expand',
+			'data-entity-id': id,
+			'data-expand-error': message,
+		},
+		[`expand "${id}" — ${message}`],
+	);
 }

@@ -68,9 +68,7 @@ async function build() {
 	let finalConfig = themeConfig;
 
 	if (pluginNames.length > 0) {
-		const loaded = await Promise.all(
-			pluginNames.map((name: string) => loadPlugin(name))
-		);
+		const loaded = await Promise.all(pluginNames.map((name: string) => loadPlugin(name)));
 		const coreRuneNames = new Set(Object.keys(coreRunes));
 		const merged = mergePlugins(loaded, coreRuneNames, site.runes?.prefer);
 
@@ -173,16 +171,14 @@ async function build() {
 			});
 		}
 	} catch (err) {
-		console.warn(
-			`Tree-shaking skipped (${(err as Error).message}); shipping full theme barrel.`,
-		);
+		console.warn(`Tree-shaking skipped (${(err as Error).message}); shipping full theme barrel.`);
 		stylesheets = ['/styles.css'];
 	}
 
 	// Collect page metadata for navigation
 	const pages = loadedSite.pages
-		.filter(p => !p.route.draft)
-		.map(p => ({
+		.filter((p) => !p.route.draft)
+		.map((p) => ({
 			url: p.route.url,
 			title: (p.frontmatter.title as string) ?? '',
 			draft: p.route.draft,
@@ -202,7 +198,7 @@ async function build() {
 			regions[name] = {
 				name: region.name,
 				mode: region.mode,
-				content: region.content.map(c => hl(transform(serialize(c))) as RendererNode),
+				content: region.content.map((c) => hl(transform(serialize(c))) as RendererNode),
 			};
 		}
 
@@ -233,14 +229,15 @@ async function build() {
 				siteName: site.siteName,
 				defaultImage: site.defaultImage,
 				logo: site.logo,
-					tintCascade: page.tintCascade,
+				tintCascade: page.tintCascade,
 			},
 		);
 
 		// Write to build/{path}/index.html
-		const filePath = page.route.url === '/'
-			? path.join(outDir, 'index.html')
-			: path.join(outDir, page.route.url.slice(1), 'index.html');
+		const filePath =
+			page.route.url === '/'
+				? path.join(outDir, 'index.html')
+				: path.join(outDir, page.route.url.slice(1), 'index.html');
 
 		mkdirSync(path.dirname(filePath), { recursive: true });
 		writeFileSync(filePath, html);
@@ -289,7 +286,7 @@ async function build() {
 	console.log(`Built ${count} pages to ${outDir}/ (+ client.js)`);
 }
 
-build().catch(err => {
+build().catch((err) => {
 	console.error(err);
 	process.exit(1);
 });

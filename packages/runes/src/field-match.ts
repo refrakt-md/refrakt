@@ -139,6 +139,9 @@ export function matchesFieldMatch(entity: MatchableEntity, parsed: ParsedFieldMa
 }
 
 /** Convenience: parse + match in one call. */
-export function matchesFilterExpr(entity: MatchableEntity, expr: string | undefined | null): boolean {
+export function matchesFilterExpr(
+	entity: MatchableEntity,
+	expr: string | undefined | null,
+): boolean {
 	return matchesFieldMatch(entity, parseFieldMatch(expr));
 }

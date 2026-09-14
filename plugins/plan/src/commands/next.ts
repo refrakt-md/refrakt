@@ -74,7 +74,7 @@ export function runNext(options: NextOptions): NextResult {
 	// Filter to actionable types
 	const typeFilter = type === 'all' ? ['work', 'bug'] : [type];
 
-	let candidates = entities.filter(e => {
+	let candidates = entities.filter((e) => {
 		if (!typeFilter.includes(e.type)) return false;
 		const status = e.attributes.status ?? '';
 		return isActionable(e.type as PlanRuneType, status);
@@ -83,7 +83,7 @@ export function runNext(options: NextOptions): NextResult {
 	// Exclude items with unfinished dependencies. Only the typed `blocked-by`
 	// edges (from a `## Blocked by` section) block an item — prose refs no longer
 	// count (SPEC-114). `Blocks` edges point the other way and never block self.
-	candidates = candidates.filter(e => {
+	candidates = candidates.filter((e) => {
 		for (const dep of e.dependencies ?? []) {
 			if (dep.direction !== 'blocked-by') continue;
 			const refStatus = statusMap.get(dep.id);
@@ -96,16 +96,16 @@ export function runNext(options: NextOptions): NextResult {
 
 	// Apply filters
 	if (milestone) {
-		candidates = candidates.filter(e => e.attributes.milestone === milestone);
+		candidates = candidates.filter((e) => e.attributes.milestone === milestone);
 	}
 	if (tag) {
-		candidates = candidates.filter(e => {
-			const tags = (e.attributes.tags ?? '').split(',').map(t => t.trim());
+		candidates = candidates.filter((e) => {
+			const tags = (e.attributes.tags ?? '').split(',').map((t) => t.trim());
 			return tags.includes(tag);
 		});
 	}
 	if (assignee) {
-		candidates = candidates.filter(e => e.attributes.assignee === assignee);
+		candidates = candidates.filter((e) => e.attributes.assignee === assignee);
 	}
 
 	// Sort: priority (critical first), then complexity (simpler first)
@@ -122,7 +122,7 @@ export function runNext(options: NextOptions): NextResult {
 	const selected = candidates.slice(0, count);
 
 	return {
-		items: selected.map(e => ({
+		items: selected.map((e) => ({
 			id: e.attributes.id ?? e.attributes.name ?? '',
 			title: e.title,
 			type: e.type,

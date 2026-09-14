@@ -7,10 +7,7 @@ import { tmpdir } from 'node:os';
 const fixturesDir = resolve(import.meta.dirname, 'fixtures');
 
 function tmpOutputDir(): string {
-	return join(
-		tmpdir(),
-		`extract-test-${Date.now()}-${Math.random().toString(36).slice(2)}`
-	);
+	return join(tmpdir(), `extract-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 }
 
 const cleanupDirs: string[] = [];

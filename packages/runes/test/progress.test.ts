@@ -14,7 +14,10 @@ function find(node: unknown, pred: (t: InstanceType<typeof Markdoc.Tag>) => bool
 		if (Array.isArray(n)) return n.forEach(walk);
 		if (!Markdoc.Tag.isTag(n as never)) return;
 		const t = n as InstanceType<typeof Markdoc.Tag>;
-		if (pred(t)) { found = t; return; }
+		if (pred(t)) {
+			found = t;
+			return;
+		}
 		(t.children ?? []).forEach(walk);
 	};
 	walk(node);
@@ -46,12 +49,18 @@ describe('progress rune', () => {
 
 	it('display=none hides the readout; display=percent overrides fraction', () => {
 		expect(part(render('{% progress value=1 max=2 display="none" /%}'), 'value')).toBeUndefined();
-		expect(JSON.stringify(part(render('{% progress value=1 max=2 display="percent" /%}'), 'value'))).toContain('50%');
+		expect(
+			JSON.stringify(part(render('{% progress value=1 max=2 display="percent" /%}'), 'value')),
+		).toContain('50%');
 	});
 
 	it('clamps and degrades: max=0 → 0%, value>max → 100%', () => {
-		expect(root(render('{% progress value=5 max=0 /%}')).attributes.style).toBe('--rf-progress: 0%');
-		expect(root(render('{% progress value=9 max=4 /%}')).attributes.style).toBe('--rf-progress: 100%');
+		expect(root(render('{% progress value=5 max=0 /%}')).attributes.style).toBe(
+			'--rf-progress: 0%',
+		);
+		expect(root(render('{% progress value=9 max=4 /%}')).attributes.style).toBe(
+			'--rf-progress: 100%',
+		);
 	});
 
 	it('body becomes the label + accessible name', () => {

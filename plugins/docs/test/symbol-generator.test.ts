@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { generateSymbolMarkdown, generateMultiSymbolMarkdown, toSlug } from '../src/extract/symbol-generator.js';
+import {
+	generateSymbolMarkdown,
+	generateMultiSymbolMarkdown,
+	toSlug,
+} from '../src/extract/symbol-generator.js';
 import type { SymbolDoc } from '../src/extract/types.js';
 
 describe('toSlug', () => {
@@ -27,12 +31,30 @@ describe('generateSymbolMarkdown', () => {
 		signature: '(source: string, options?: RenderOptions) => RenderTree',
 		description: 'Transforms a Markdoc document into a renderable tree.',
 		parameters: [
-			{ name: 'source', type: 'string', description: 'Raw Markdoc content to parse', optional: false },
 			{
-				name: 'options', type: 'RenderOptions', description: 'Configuration for the render pass', optional: true,
+				name: 'source',
+				type: 'string',
+				description: 'Raw Markdoc content to parse',
+				optional: false,
+			},
+			{
+				name: 'options',
+				type: 'RenderOptions',
+				description: 'Configuration for the render pass',
+				optional: true,
 				children: [
-					{ name: 'runes', type: 'RuneMap', description: 'Custom rune definitions', optional: true },
-					{ name: 'variables', type: 'Record<string, any>', description: 'Template variables', optional: true },
+					{
+						name: 'runes',
+						type: 'RuneMap',
+						description: 'Custom rune definitions',
+						optional: true,
+					},
+					{
+						name: 'variables',
+						type: 'Record<string, any>',
+						description: 'Template variables',
+						optional: true,
+					},
 				],
 			},
 		],
@@ -51,7 +73,9 @@ describe('generateSymbolMarkdown', () => {
 		expect(md).toContain('```typescript');
 		expect(md).toContain('(source: string, options?: RenderOptions) => RenderTree');
 		expect(md).toContain('- **source** `string` -- Raw Markdoc content to parse');
-		expect(md).toContain('- **options** `RenderOptions` *(optional)* -- Configuration for the render pass');
+		expect(md).toContain(
+			'- **options** `RenderOptions` *(optional)* -- Configuration for the render pass',
+		);
 		expect(md).toContain('  - **runes** `RuneMap` *(optional)* -- Custom rune definitions');
 		expect(md).toContain('> Returns `RenderTree` -- A framework-agnostic tree for rendering.');
 		expect(md).toContain('> Throws `ParseError` if the source contains invalid Markdoc syntax.');
@@ -108,8 +132,18 @@ describe('generateSymbolMarkdown', () => {
 				{
 					label: 'Properties',
 					members: [
-						{ name: 'prefix', kind: 'property', signature: 'prefix: string', description: 'BEM prefix.' },
-						{ name: 'runes', kind: 'property', signature: 'runes: Record<string, RuneConfig>', description: 'Per-rune config.' },
+						{
+							name: 'prefix',
+							kind: 'property',
+							signature: 'prefix: string',
+							description: 'BEM prefix.',
+						},
+						{
+							name: 'runes',
+							kind: 'property',
+							signature: 'runes: Record<string, RuneConfig>',
+							description: 'Per-rune config.',
+						},
 					],
 				},
 			],
@@ -142,11 +176,17 @@ describe('generateSymbolMarkdown', () => {
 					label: 'Constructor',
 					members: [
 						{
-							name: 'constructor', kind: 'constructor',
+							name: 'constructor',
+							kind: 'constructor',
 							signature: 'new (config: ParserConfig)',
 							description: '',
 							parameters: [
-								{ name: 'config', type: 'ParserConfig', description: 'Parser configuration', optional: false },
+								{
+									name: 'config',
+									type: 'ParserConfig',
+									description: 'Parser configuration',
+									optional: false,
+								},
 							],
 						},
 					],
@@ -155,10 +195,13 @@ describe('generateSymbolMarkdown', () => {
 					label: 'Methods',
 					members: [
 						{
-							name: 'parse', kind: 'method',
+							name: 'parse',
+							kind: 'method',
 							signature: 'parse(source: string): ASTNode',
 							description: 'Parse a source string into an AST.',
-							parameters: [{ name: 'source', type: 'string', description: 'Raw content', optional: false }],
+							parameters: [
+								{ name: 'source', type: 'string', description: 'Raw content', optional: false },
+							],
 							returns: { type: 'ASTNode', description: 'The parsed AST' },
 						},
 					],
@@ -186,7 +229,12 @@ describe('generateSymbolMarkdown', () => {
 			description: 'Categories for runes.',
 			parameters: [
 				{ name: 'Layout', type: '"layout"', description: 'Core structural runes', optional: false },
-				{ name: 'Content', type: '"content"', description: 'Content structure runes', optional: false },
+				{
+					name: 'Content',
+					type: '"content"',
+					description: 'Content structure runes',
+					optional: false,
+				},
 			],
 			since: '1.2.0',
 			filePath: '/test/enums.ts',
@@ -216,14 +264,27 @@ describe('generateSymbolMarkdown', () => {
 		// No groups or parameters for type aliases
 		expect(md).not.toContain('###');
 	});
-
 });
 
 describe('generateMultiSymbolMarkdown', () => {
 	it('generates multiple symbols in one file', () => {
 		const docs: SymbolDoc[] = [
-			{ name: 'foo', kind: 'function', signature: '() => void', description: 'Foo.', filePath: '/test.ts', line: 1 },
-			{ name: 'bar', kind: 'function', signature: '() => void', description: 'Bar.', filePath: '/test.ts', line: 5 },
+			{
+				name: 'foo',
+				kind: 'function',
+				signature: '() => void',
+				description: 'Foo.',
+				filePath: '/test.ts',
+				line: 1,
+			},
+			{
+				name: 'bar',
+				kind: 'function',
+				signature: '() => void',
+				description: 'Bar.',
+				filePath: '/test.ts',
+				line: 5,
+			},
 		];
 
 		const md = generateMultiSymbolMarkdown(docs, 'utils.ts');

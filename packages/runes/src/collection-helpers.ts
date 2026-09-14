@@ -45,7 +45,8 @@ export function splitBodyZones(bodySource: string): BodyZones {
 		else segments[segments.length - 1].push(node);
 	}
 	if (segments.length === 1) return { template: bodySource };
-	const src = (nodes: Node[]) => (nodes.length ? Markdoc.format(new Ast.Node('document', {}, nodes)) : '');
+	const src = (nodes: Node[]) =>
+		nodes.length ? Markdoc.format(new Ast.Node('document', {}, nodes)) : '';
 	const s = segments.map(src);
 	if (s.length === 2) return { preamble: s[0] || undefined, template: s[1] };
 	return { preamble: s[0] || undefined, template: s[1], fallback: s[2] || undefined };
@@ -147,7 +148,12 @@ export function entityIdentifier(e: EntityRegistration): string {
  *  (WORK-344). */
 export function projectItem(
 	e: EntityRegistration,
-	opts?: { mixed?: boolean; sentiments?: CollectionEmbedConfig['sentiments']; group?: string; groupCount?: number },
+	opts?: {
+		mixed?: boolean;
+		sentiments?: CollectionEmbedConfig['sentiments'];
+		group?: string;
+		groupCount?: number;
+	},
 ) {
 	const status = (e.data as Record<string, unknown>)?.status as string | undefined;
 	const sentiment = status ? (opts?.sentiments?.[e.type]?.status?.[status] ?? '') : '';
@@ -168,27 +174,40 @@ export function projectItem(
  *  With an {@link Ordering}, enum fields sort by domain rank (each entity ranked
  *  within its *own* `(type, field)` order — so mixed-type sets compose); ranked
  *  items come before unranked, which then fall back to numeric/lexical. */
-export function sortEntities(entities: EntityRegistration[], sortExpr: string, ordering?: Ordering): EntityRegistration[] {
+export function sortEntities(
+	entities: EntityRegistration[],
+	sortExpr: string,
+	ordering?: Ordering,
+): EntityRegistration[] {
 	if (!sortExpr) return entities;
 	let field = sortExpr.trim();
 	let dir = 1;
-	if (field.startsWith('-')) { dir = -1; field = field.slice(1); }
-	else if (field.endsWith('-desc')) { dir = -1; field = field.slice(0, -5); }
-	else if (field.endsWith('-asc')) { field = field.slice(0, -4); }
+	if (field.startsWith('-')) {
+		dir = -1;
+		field = field.slice(1);
+	} else if (field.endsWith('-desc')) {
+		dir = -1;
+		field = field.slice(0, -5);
+	} else if (field.endsWith('-asc')) {
+		field = field.slice(0, -4);
+	}
 	const ranked = ordering && entities.some((e) => ordering.order(e.type, field));
 	return [...entities].sort((a, b) => {
 		if (ranked) {
 			const ra = ordering!.rank(a.type, field, fieldValue(a, field));
 			const rb = ordering!.rank(b.type, field, fieldValue(b, field));
-			const aR = ra >= 0, bR = rb >= 0;
-			if (aR && bR) { if (ra !== rb) return (ra - rb) * dir; }
-			else if (aR !== bR) return aR ? -1 : 1; // ranked before unranked, dir-independent
+			const aR = ra >= 0,
+				bR = rb >= 0;
+			if (aR && bR) {
+				if (ra !== rb) return (ra - rb) * dir;
+			} else if (aR !== bR) return aR ? -1 : 1; // ranked before unranked, dir-independent
 		}
 		const av = fieldValue(a, field);
 		const bv = fieldValue(b, field);
 		const an = Number(av);
 		const bn = Number(bv);
-		if (av !== '' && bv !== '' && Number.isFinite(an) && Number.isFinite(bn)) return (an - bn) * dir;
+		if (av !== '' && bv !== '' && Number.isFinite(an) && Number.isFinite(bn))
+			return (an - bn) * dir;
 		return av.localeCompare(bv) * dir;
 	});
 }
@@ -208,7 +227,11 @@ export function groupBy<T>(items: T[], keyOf: (item: T) => string): Map<string, 
 /** Group entities by one of their fields (empty → `(none)`). With an
  *  {@link Ordering}, groups are emitted in domain order — each group's
  *  representative (minimum) rank across its members, ranked groups first. */
-export function groupEntities(entities: EntityRegistration[], field: string, ordering?: Ordering): Map<string, EntityRegistration[]> {
+export function groupEntities(
+	entities: EntityRegistration[],
+	field: string,
+	ordering?: Ordering,
+): Map<string, EntityRegistration[]> {
 	const groups = groupBy(entities, (e) => fieldValue(e, field) || '(none)');
 	if (!ordering || ![...entities].some((e) => ordering.order(e.type, field))) return groups;
 	const repRank = (members: EntityRegistration[]): number => {
@@ -241,14 +264,15 @@ export interface AccordionPanel {
  *  per-group count worth showing. The classes are emitted directly because
  *  collection/relationships resolve in postProcess, after the engine. */
 export function renderGroupAccordion(panels: AccordionPanel[]): RenderableTreeNode[] {
-	const items = panels.map((p) =>
-		new Tag('details', { class: 'rf-accordion-item', 'data-group': p.key }, [
-			new Tag('summary', { class: 'rf-accordion-item__header' }, [
-				new Tag('span', { class: 'rf-accordion-item__title' }, [p.label]),
-				new Tag('span', { class: 'rf-accordion-item__count' }, [String(p.count)]),
+	const items = panels.map(
+		(p) =>
+			new Tag('details', { class: 'rf-accordion-item', 'data-group': p.key }, [
+				new Tag('summary', { class: 'rf-accordion-item__header' }, [
+					new Tag('span', { class: 'rf-accordion-item__title' }, [p.label]),
+					new Tag('span', { class: 'rf-accordion-item__count' }, [String(p.count)]),
+				]),
+				new Tag('div', { class: 'rf-accordion-item__body' }, p.nodes),
 			]),
-			new Tag('div', { class: 'rf-accordion-item__body' }, p.nodes),
-		]),
 	);
 	return [new Tag('div', { class: 'rf-accordion' }, items)];
 }

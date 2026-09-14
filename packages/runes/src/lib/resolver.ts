@@ -51,7 +51,7 @@ function extractSpecialTags(children: Node[]): {
 	let tintNode: Node | undefined;
 	let bgNode: Node | undefined;
 
-	const filtered = children.filter(n => {
+	const filtered = children.filter((n) => {
 		if (n.type === 'tag' && n.tag === 'tint') {
 			tintNode = n;
 			return false;
@@ -86,7 +86,7 @@ export function matchesType(node: Node, match: string): boolean {
 
 	// Pipe-separated alternatives: 'list|fence' matches either
 	if (match.includes('|')) {
-		return match.split('|').some(m => matchesType(node, m));
+		return match.split('|').some((m) => matchesType(node, m));
 	}
 
 	// heading:N
@@ -126,11 +126,13 @@ export function matchesType(node: Node, match: string): boolean {
  */
 export function imageInParagraph(node: Node): Node | null {
 	if (node.type !== 'paragraph') return null;
-	const inlineKids = (node.children ?? []).flatMap(c =>
+	const inlineKids = (node.children ?? []).flatMap((c) =>
 		c.type === 'inline' ? (c.children ?? []) : [c],
 	);
 	const meaningful = inlineKids.filter(
-		c => !(c.type === 'text' && String(c.attributes?.content ?? '').trim() === '') && c.type !== 'softbreak',
+		(c) =>
+			!(c.type === 'text' && String(c.attributes?.content ?? '').trim() === '') &&
+			c.type !== 'softbreak',
 	);
 	return meaningful.length === 1 && meaningful[0].type === 'image' ? meaningful[0] : null;
 }
@@ -165,15 +167,13 @@ export function resolveSequence(
 			// node, unwrapping the `paragraph > inline > image` Markdown produces.
 			// Scoped to the exact match so `heading|paragraph|image` header fields
 			// keep their paragraphs intact.
-			const unwrapImage = field.match === 'image'
-				? (n: Node): Node => imageInParagraph(n) ?? n
-				: (n: Node): Node => n;
+			const unwrapImage =
+				field.match === 'image'
+					? (n: Node): Node => imageInParagraph(n) ?? n
+					: (n: Node): Node => n;
 			if (field.greedy) {
 				const collected: Node[] = [];
-				while (
-					childIndex < children.length &&
-					matchesType(children[childIndex], field.match)
-				) {
+				while (childIndex < children.length && matchesType(children[childIndex], field.match)) {
 					collected.push(unwrapImage(children[childIndex]));
 					childIndex++;
 				}
@@ -188,7 +188,7 @@ export function resolveSequence(
 				if ((field as any).emitTag) {
 					// listToTags: convert list items to emitted tag nodes
 					const listNodes = field.greedy
-						? result[field.name] as Node[]
+						? (result[field.name] as Node[])
 						: [result[field.name] as Node];
 					const tagNodes: Node[] = [];
 					for (const listNode of listNodes) {
@@ -203,9 +203,8 @@ export function resolveSequence(
 									if (ref.startsWith('$')) {
 										// Support fallback: '$a|$b' tries a, then b
 										const parts = ref.slice(1).split('|');
-										attrs[key] = parts
-											.map(p => items[i][p.trim()])
-											.find(v => v != null && v !== '') ?? '';
+										attrs[key] =
+											parts.map((p) => items[i][p.trim()]).find((v) => v != null && v !== '') ?? '';
 									} else {
 										attrs[key] = ref;
 									}
@@ -242,10 +241,7 @@ export function resolveSequence(
  * Resolve a delimited model: split children by delimiter nodes, then
  * resolve each zone's content.
  */
-export function resolveDelimited(
-	children: Node[],
-	model: DelimitedModel,
-): ResolvedContent {
+export function resolveDelimited(children: Node[], model: DelimitedModel): ResolvedContent {
 	// Split children into groups at each delimiter
 	const groups: Node[][] = [[]];
 
@@ -259,7 +255,7 @@ export function resolveDelimited(
 
 	if (model.dynamicZones && model.zoneModel) {
 		return {
-			zones: groups.map(group => resolve(group, model.zoneModel!)),
+			zones: groups.map((group) => resolve(group, model.zoneModel!)),
 		};
 	}
 
@@ -270,7 +266,7 @@ export function resolveDelimited(
 	// content rather than media, matching authoring intuition.
 	const result: ResolvedContent = {};
 	if (model.zones) {
-		const primaryIdx = groups.length === 1 ? model.zones.findIndex(z => z.primary) : -1;
+		const primaryIdx = groups.length === 1 ? model.zones.findIndex((z) => z.primary) : -1;
 		for (let i = 0; i < model.zones.length; i++) {
 			const zone = model.zones[i];
 			let group: Node[];
@@ -305,10 +301,7 @@ function extractHeadingText(headingNode: Node): string {
  * Apply heading extract patterns to heading text, producing named fields.
  * Each field's regex is applied in order; 'remainder' captures what's left.
  */
-function applyHeadingExtract(
-	text: string,
-	extract: HeadingExtract,
-): Record<string, string> {
+function applyHeadingExtract(text: string, extract: HeadingExtract): Record<string, string> {
 	const result: Record<string, string> = {};
 	let remaining = text;
 
@@ -363,12 +356,12 @@ function matchKnownSection(
 		if (canonicalName.toLowerCase() === normalized) {
 			return { canonicalName, definition };
 		}
-		if (definition.alias?.some(a => a.toLowerCase() === normalized)) {
+		if (definition.alias?.some((a) => a.toLowerCase() === normalized)) {
 			return { canonicalName, definition };
 		}
 		if (definition.i18nAliases) {
 			for (const tag of localeCandidates) {
-				if (definition.i18nAliases[tag]?.some(a => a.toLowerCase() === normalized)) {
+				if (definition.i18nAliases[tag]?.some((a) => a.toLowerCase() === normalized)) {
 					return { canonicalName, definition };
 				}
 			}
@@ -402,13 +395,13 @@ export function resolveSections(
 		// If the first heading is shallower than the second, and there are 2+
 		// headings at the deeper level, use the deeper level as the section
 		// boundary. The shallower first heading becomes preamble content.
-		const headings = children.filter(n => n.type === 'heading');
+		const headings = children.filter((n) => n.type === 'heading');
 		if (headings.length >= 2) {
 			const firstLevel = headings[0].attributes?.level;
 			const secondLevel = headings[1].attributes?.level;
 			if (firstLevel !== undefined && secondLevel !== undefined && secondLevel > firstLevel) {
 				const countAtSecondLevel = headings.filter(
-					h => h.attributes?.level === secondLevel,
+					(h) => h.attributes?.level === secondLevel,
 				).length;
 				level = countAtSecondLevel >= 2 ? secondLevel : firstLevel;
 			} else {
@@ -423,9 +416,7 @@ export function resolveSections(
 		// No headings found
 		if (model.implicitSection && model.emitTag) {
 			// Wrap all children in a single emitted tag
-			const preamble = model.fields
-				? resolveSequence([], model.fields)
-				: {};
+			const preamble = model.fields ? resolveSequence([], model.fields) : {};
 			const tagNode = new Ast.Node(
 				'tag',
 				{ ...(model.implicitSection.attributes ?? {}) },
@@ -435,9 +426,7 @@ export function resolveSections(
 			return { ...preamble, sections: [tagNode] };
 		}
 
-		const preamble = model.fields
-			? resolveSequence(children, model.fields)
-			: {};
+		const preamble = model.fields ? resolveSequence(children, model.fields) : {};
 		return { ...preamble, sections: [] };
 	}
 
@@ -460,9 +449,7 @@ export function resolveSections(
 
 	// implicitSection: if no sections found, wrap all children in a single emitted tag
 	if (rawSections.length === 0 && model.implicitSection && model.emitTag) {
-		const preamble = model.fields
-			? resolveSequence([], model.fields)
-			: {};
+		const preamble = model.fields ? resolveSequence([], model.fields) : {};
 		const tagNode = new Ast.Node(
 			'tag',
 			{ ...(model.implicitSection.attributes ?? {}) },
@@ -473,14 +460,12 @@ export function resolveSections(
 	}
 
 	// 3. Resolve preamble fields
-	const preamble = model.fields
-		? resolveSequence(preambleNodes, model.fields)
-		: {};
+	const preamble = model.fields ? resolveSequence(preambleNodes, model.fields) : {};
 
 	// 4. Process each section
 	if (model.emitTag) {
 		// emitTag: convert sections to AST tag nodes
-		const tagNodes = rawSections.map(section => {
+		const tagNodes = rawSections.map((section) => {
 			const headingText = extractHeadingText(section.headingNode);
 			const extracted = model.headingExtract
 				? applyHeadingExtract(headingText, model.headingExtract)
@@ -506,7 +491,7 @@ export function resolveSections(
 	}
 
 	// No emitTag: return resolved section data
-	const resolvedSections = rawSections.map(section => {
+	const resolvedSections = rawSections.map((section) => {
 		const headingText = extractHeadingText(section.headingNode);
 		const extracted = model.headingExtract
 			? applyHeadingExtract(headingText, model.headingExtract)
@@ -531,9 +516,7 @@ export function resolveSections(
 			$headingNode: section.headingNode,
 			...(knownMatch ? { $canonicalName: knownMatch.canonicalName } : {}),
 			...(canonicalSlug ? { $canonicalSlug: canonicalSlug } : {}),
-			...Object.fromEntries(
-				Object.entries(extracted).map(([k, v]) => [`$${k}`, v]),
-			),
+			...Object.fromEntries(Object.entries(extracted).map(([k, v]) => [`$${k}`, v])),
 			...bodyResolved,
 		};
 	});
@@ -554,7 +537,7 @@ export function evaluateCondition(
 	attributes: Record<string, unknown>,
 ): boolean {
 	if ('hasChild' in condition) {
-		return children.some(c => matchesType(c, condition.hasChild));
+		return children.some((c) => matchesType(c, condition.hasChild));
 	}
 	if ('in' in condition) {
 		const value = String(attributes[condition.attribute] ?? '');
@@ -620,13 +603,10 @@ function findInlineMatch(n: Node, matchType: string): Node | null {
  * 1. Match typed inline nodes (strong, em, link, image, code)
  * 2. Collect remaining text, run regex pattern fields
  */
-export function resolveListItems(
-	listNode: Node,
-	itemModel: ItemModel,
-): Record<string, unknown>[] {
+export function resolveListItems(listNode: Node, itemModel: ItemModel): Record<string, unknown>[] {
 	const listItems = listNode.children ?? [];
 
-	return listItems.map(listItem => {
+	return listItems.map((listItem) => {
 		const result: Record<string, unknown> = {};
 		// Flatten `inline` wrapper nodes — Markdoc wraps inline content in
 		// an `inline` node (item > inline > [strong, text, em, ...]).
@@ -651,8 +631,7 @@ export function resolveListItems(
 
 			// Nested list (cue points, sub-items)
 			if (field.match === 'list') {
-				const idx = inlineChildren.findIndex((c, i) =>
-					!consumed.has(i) && (c.type === 'list'));
+				const idx = inlineChildren.findIndex((c, i) => !consumed.has(i) && c.type === 'list');
 				if (idx >= 0) {
 					consumed.add(idx);
 					result[field.name] = field.itemModel
@@ -707,12 +686,12 @@ export function resolveListItems(
 		for (const idx of softConsumed) consumed.add(idx);
 
 		// Phase 2: Collect remaining text, run pattern fields
-		const textFields = itemModel.fields.filter(f => f.match === 'text');
+		const textFields = itemModel.fields.filter((f) => f.match === 'text');
 		if (textFields.length > 0) {
 			const remainingText = inlineChildren
 				.filter((_, i) => !consumed.has(i))
-				.filter(c => c.type === 'text' || c.type === 'softbreak')
-				.map(c => c.attributes?.content ?? '')
+				.filter((c) => c.type === 'text' || c.type === 'softbreak')
+				.map((c) => c.attributes?.content ?? '')
 				.join('')
 				.trim();
 

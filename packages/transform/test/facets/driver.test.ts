@@ -1,5 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
-import { orderFacets, runFacets, runPostAssemble, WarningCollector } from '../../src/facets/driver.js';
+import {
+	orderFacets,
+	runFacets,
+	runPostAssemble,
+	WarningCollector,
+} from '../../src/facets/driver.js';
 import { makeTag } from '../../src/helpers.js';
 import type { Facet, FacetInput } from '../../src/facets/types.js';
 
@@ -22,22 +27,22 @@ const stub = (name: string, after?: string[]): Facet => ({
 describe('orderFacets', () => {
 	it('keeps registration order for independent facets', () => {
 		const ordered = orderFacets([stub('a'), stub('b'), stub('c')]);
-		expect(ordered.map(f => f.name)).toEqual(['a', 'b', 'c']);
+		expect(ordered.map((f) => f.name)).toEqual(['a', 'b', 'c']);
 	});
 
 	it('places a facet after the one it declares', () => {
 		// registered in the wrong order on purpose
 		const ordered = orderFacets([stub('dropcap', ['reading']), stub('reading')]);
-		expect(ordered.map(f => f.name)).toEqual(['reading', 'dropcap']);
+		expect(ordered.map((f) => f.name)).toEqual(['reading', 'dropcap']);
 	});
 
 	it('resolves a transitive chain', () => {
 		const ordered = orderFacets([stub('c', ['b']), stub('b', ['a']), stub('a')]);
-		expect(ordered.map(f => f.name)).toEqual(['a', 'b', 'c']);
+		expect(ordered.map((f) => f.name)).toEqual(['a', 'b', 'c']);
 	});
 
 	it('is deterministic across equivalent orderings', () => {
-		const names = () => orderFacets([stub('x'), stub('y', ['x']), stub('z')]).map(f => f.name);
+		const names = () => orderFacets([stub('x'), stub('y', ['x']), stub('z')]).map((f) => f.name);
 		expect(names()).toEqual(names());
 	});
 
@@ -45,8 +50,9 @@ describe('orderFacets', () => {
 	// ordering was previously implied by physical line order, so it could not be
 	// stated incorrectly. They are new surface introduced by the registry.
 	it('throws on a dependency cycle, naming the trail', () => {
-		expect(() => orderFacets([stub('a', ['b']), stub('b', ['a'])]))
-			.toThrow(/facet dependency cycle: a → b → a/);
+		expect(() => orderFacets([stub('a', ['b']), stub('b', ['a'])])).toThrow(
+			/facet dependency cycle: a → b → a/,
+		);
 	});
 
 	it('throws on a self-referential facet', () => {
@@ -54,8 +60,9 @@ describe('orderFacets', () => {
 	});
 
 	it('throws when `after` names an unregistered facet', () => {
-		expect(() => orderFacets([stub('bg', ['media-position'])]))
-			.toThrow(/facet "bg" declares after: "media-position", which is not a registered facet/);
+		expect(() => orderFacets([stub('bg', ['media-position'])])).toThrow(
+			/facet "bg" declares after: "media-position", which is not a registered facet/,
+		);
 	});
 
 	it('throws on a duplicate facet name', () => {
@@ -69,7 +76,10 @@ describe('runFacets', () => {
 		const reader: Facet = {
 			name: 'reader',
 			after: ['writer'],
-			resolve: (ctx) => { seen = ctx.axis('writer'); return null; },
+			resolve: (ctx) => {
+				seen = ctx.axis('writer');
+				return null;
+			},
 		};
 		const writer: Facet = { name: 'writer', resolve: () => ({ axes: { writer: 'prose' } }) };
 
@@ -79,7 +89,13 @@ describe('runFacets', () => {
 
 	it('returns undefined for an axis no facet set', () => {
 		let seen: string | undefined = 'unset';
-		const probe: Facet = { name: 'probe', resolve: (ctx) => { seen = ctx.axis('nope'); return null; } };
+		const probe: Facet = {
+			name: 'probe',
+			resolve: (ctx) => {
+				seen = ctx.axis('nope');
+				return null;
+			},
+		};
 		runFacets([probe], input(), new WarningCollector());
 		expect(seen).toBeUndefined();
 	});
@@ -119,9 +135,16 @@ describe('runFacets', () => {
 	// last-wins. A Record would collapse the two into one declaration.
 	it('preserves duplicate style declarations in order', () => {
 		const first: Facet = { name: 'first', resolve: () => ({ styles: [['--dir', 'to bottom']] }) };
-		const second: Facet = { name: 'second', after: ['first'], resolve: () => ({ styles: [['--dir', 'to top']] }) };
+		const second: Facet = {
+			name: 'second',
+			after: ['first'],
+			resolve: () => ({ styles: [['--dir', 'to top']] }),
+		};
 		const result = runFacets(orderFacets([first, second]), input(), new WarningCollector());
-		expect(result.styles).toEqual([['--dir', 'to bottom'], ['--dir', 'to top']]);
+		expect(result.styles).toEqual([
+			['--dir', 'to bottom'],
+			['--dir', 'to top'],
+		]);
 	});
 
 	it('exposes non-emitted state through ctx.axis()', () => {
@@ -130,21 +153,36 @@ describe('runFacets', () => {
 		const consumer: Facet = {
 			name: 'consumer',
 			after: ['producer'],
-			resolve: (ctx) => { seen = ctx.axis('cover'); return null; },
+			resolve: (ctx) => {
+				seen = ctx.axis('cover');
+				return null;
+			},
 		};
 		const result = runFacets(orderFacets([producer, consumer]), input(), new WarningCollector());
 		expect(seen).toBe('true');
-		expect(result.axes.cover).toBeUndefined();  // state never reaches the output
+		expect(result.axes.cover).toBeUndefined(); // state never reaches the output
 	});
-
 });
 
 describe('runPostAssemble', () => {
 	it('runs only facets that declare the hook, in registry order', () => {
 		const calls: string[] = [];
-		const a: Facet = { name: 'a', resolve: () => null, postAssemble: () => { calls.push('a'); } };
+		const a: Facet = {
+			name: 'a',
+			resolve: () => null,
+			postAssemble: () => {
+				calls.push('a');
+			},
+		};
 		const b: Facet = { name: 'b', resolve: () => null };
-		const c: Facet = { name: 'c', after: ['a'], resolve: () => null, postAssemble: () => { calls.push('c'); } };
+		const c: Facet = {
+			name: 'c',
+			after: ['a'],
+			resolve: () => null,
+			postAssemble: () => {
+				calls.push('c');
+			},
+		};
 
 		const ordered = orderFacets([a, b, c]);
 		const resolution = runFacets(ordered, input(), new WarningCollector());
@@ -154,8 +192,19 @@ describe('runPostAssemble', () => {
 
 	it('respects appliesTo', () => {
 		const postAssemble = vi.fn();
-		const facet: Facet = { name: 'gated', appliesTo: () => false, resolve: () => null, postAssemble };
-		runPostAssemble([facet], input(), runFacets([], input(), new WarningCollector()), [], new WarningCollector());
+		const facet: Facet = {
+			name: 'gated',
+			appliesTo: () => false,
+			resolve: () => null,
+			postAssemble,
+		};
+		runPostAssemble(
+			[facet],
+			input(),
+			runFacets([], input(), new WarningCollector()),
+			[],
+			new WarningCollector(),
+		);
 		expect(postAssemble).not.toHaveBeenCalled();
 	});
 
@@ -169,7 +218,13 @@ describe('runPostAssemble', () => {
 			},
 		};
 		const children = [makeTag('div', { 'data-name': 'content' }, [])];
-		runPostAssemble([facet], input(), runFacets([], input(), new WarningCollector()), children, new WarningCollector());
+		runPostAssemble(
+			[facet],
+			input(),
+			runFacets([], input(), new WarningCollector()),
+			children,
+			new WarningCollector(),
+		);
 		expect((children[0] as any).attributes['data-touched']).toBe('');
 	});
 
@@ -178,7 +233,9 @@ describe('runPostAssemble', () => {
 		const facet: Facet = {
 			name: 'two-phase',
 			resolve: () => ({ state: { cover: 'true' } }),
-			postAssemble: (ctx) => { seen = ctx.axis('cover'); },
+			postAssemble: (ctx) => {
+				seen = ctx.axis('cover');
+			},
 		};
 		const resolution = runFacets([facet], input(), new WarningCollector());
 		runPostAssemble([facet], input(), resolution, [], new WarningCollector());
@@ -193,7 +250,9 @@ describe('runPostAssemble', () => {
 		const facet: Facet = {
 			name: 'carrier',
 			resolve: () => ({ carry: { chrome: 'bundle' } }),
-			postAssemble: (_ctx, _children, carry) => { seen = carry; },
+			postAssemble: (_ctx, _children, carry) => {
+				seen = carry;
+			},
 		};
 		const resolution = runFacets([facet], input(), new WarningCollector());
 		runPostAssemble([facet], input(), resolution, [], new WarningCollector());
@@ -207,7 +266,9 @@ describe('runPostAssemble', () => {
 			name: 'other',
 			after: ['carrier'],
 			resolve: () => null,
-			postAssemble: (_ctx, _children, carry) => { seen = carry; },
+			postAssemble: (_ctx, _children, carry) => {
+				seen = carry;
+			},
 		};
 		const ordered = orderFacets([carrier, other]);
 		const resolution = runFacets(ordered, input(), new WarningCollector());
@@ -226,19 +287,27 @@ describe('runPostAssemble', () => {
 		runPostAssemble([facet], input(), resolution, [], new WarningCollector());
 
 		expect(warn).toHaveBeenCalledWith('[refrakt] late problem');
-		expect(resolution.warnings.map(w => w.code)).toContain('late-problem');
+		expect(resolution.warnings.map((w) => w.code)).toContain('late-problem');
 		warn.mockRestore();
 	});
 
 	it('ignores a facet that returns null', () => {
-		const result = runFacets([{ name: 'quiet', resolve: () => null }], input(), new WarningCollector());
+		const result = runFacets(
+			[{ name: 'quiet', resolve: () => null }],
+			input(),
+			new WarningCollector(),
+		);
 		expect(result.axes).toEqual({});
 		expect(result.warnings).toEqual([]);
 	});
 
 	it('lets a later facet overwrite an earlier axis of the same name', () => {
 		const first: Facet = { name: 'first', resolve: () => ({ axes: { shared: 'a' } }) };
-		const second: Facet = { name: 'second', after: ['first'], resolve: () => ({ axes: { shared: 'b' } }) };
+		const second: Facet = {
+			name: 'second',
+			after: ['first'],
+			resolve: () => ({ axes: { shared: 'b' } }),
+		};
 		const result = runFacets(orderFacets([first, second]), input(), new WarningCollector());
 		expect(result.axes.shared).toBe('b');
 	});
@@ -263,7 +332,9 @@ describe('WarningCollector', () => {
 		const collector = new WarningCollector();
 		const facet: Facet = {
 			name: 'once',
-			resolve: () => ({ warnings: [{ code: 'once', message: '[refrakt] once', dedupeKey: 'once:card' }] }),
+			resolve: () => ({
+				warnings: [{ code: 'once', message: '[refrakt] once', dedupeKey: 'once:card' }],
+			}),
 		};
 		runFacets([facet], input(), collector);
 		runFacets([facet], input(), collector);
@@ -293,8 +364,8 @@ describe('WarningCollector', () => {
 		runFacets([facet], input(), collector);
 		const second = runFacets([facet], input(), collector);
 
-		expect(warn).toHaveBeenCalledTimes(1);           // console saw it once
-		expect(second.warnings).toHaveLength(1);          // the facet still decided it
+		expect(warn).toHaveBeenCalledTimes(1); // console saw it once
+		expect(second.warnings).toHaveLength(1); // the facet still decided it
 		expect(second.warnings[0].code).toBe('once');
 		warn.mockRestore();
 	});

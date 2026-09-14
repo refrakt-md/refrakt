@@ -1,184 +1,185 @@
 @layer skin {
-/* Default layout */
-.rf-header {
-	background: var(--rf-color-bg);
-	border-bottom: 1px solid var(--rf-color-border);
-}
-.rf-header__inner {
-	gap: 1rem;
-	padding: 0.625rem 1.5rem;
-}
-.rf-header p {
-	margin: 0;
-	line-height: 1;
-}
-.rf-header h1, .rf-header h2, .rf-header h3 {
-	margin: 0;
-	font-size: var(--rf-text-xl);
-	font-weight: var(--rf-weight-semibold);
-	letter-spacing: var(--rf-tracking-tight);
-	line-height: 1;
-}
-.rf-header a {
-	color: inherit;
-	text-decoration: none;
-}
-.rf-header a:hover {
-	text-decoration: none;
-}
-.rf-header p:first-child a {
-	gap: 0.5rem;
-	font-weight: var(--rf-weight-semibold);
-	font-size: var(--rf-text-xl);
-	letter-spacing: var(--rf-tracking-tight);
-}
-.rf-header p:first-child a > .rf-icon {
-	vertical-align: middle;
-	color: currentColor;
-}
-.rf-header__inner p ~ p {
-	font-size: var(--rf-text-sm);
-}
-.rf-header__inner p ~ p a {
-	margin-left: 1.5rem;
-	color: var(--rf-color-muted);
-}
-.rf-header__inner p ~ p a:hover {
-	color: var(--rf-color-text);
-}
-.rf-header__inner p ~ p a svg {
-	vertical-align: -0.15em;
-}
-.rf-page-content {
-	--rf-content-max: 80rem;
-	--rf-content-gutter: 1.5rem;
+	/* Default layout */
+	.rf-header {
+		background: var(--rf-color-bg);
+		border-bottom: 1px solid var(--rf-color-border);
+	}
+	.rf-header__inner {
+		gap: 1rem;
+		padding: 0.625rem 1.5rem;
+	}
+	.rf-header p {
+		margin: 0;
+		line-height: 1;
+	}
+	.rf-header h1,
+	.rf-header h2,
+	.rf-header h3 {
+		margin: 0;
+		font-size: var(--rf-text-xl);
+		font-weight: var(--rf-weight-semibold);
+		letter-spacing: var(--rf-tracking-tight);
+		line-height: 1;
+	}
+	.rf-header a {
+		color: inherit;
+		text-decoration: none;
+	}
+	.rf-header a:hover {
+		text-decoration: none;
+	}
+	.rf-header p:first-child a {
+		gap: 0.5rem;
+		font-weight: var(--rf-weight-semibold);
+		font-size: var(--rf-text-xl);
+		letter-spacing: var(--rf-tracking-tight);
+	}
+	.rf-header p:first-child a > .rf-icon {
+		vertical-align: middle;
+		color: currentColor;
+	}
+	.rf-header__inner p ~ p {
+		font-size: var(--rf-text-sm);
+	}
+	.rf-header__inner p ~ p a {
+		margin-left: 1.5rem;
+		color: var(--rf-color-muted);
+	}
+	.rf-header__inner p ~ p a:hover {
+		color: var(--rf-color-text);
+	}
+	.rf-header__inner p ~ p a svg {
+		vertical-align: -0.15em;
+	}
+	.rf-page-content {
+		--rf-content-max: 80rem;
+		--rf-content-gutter: 1.5rem;
 
-	padding-top: 2.5rem;
-	padding-bottom: 4rem;
-}
-.rf-page-content > article > [data-width="full"] {
-	padding-inline: max(
-		var(--rf-content-gutter, 1.5rem),
-		calc((100% - var(--rf-content-max, 80rem)) / 2)
-	);
-}
-/* Page sections (data-content-measure="anchored") keep their content at the
+		padding-top: 2.5rem;
+		padding-bottom: 4rem;
+	}
+	.rf-page-content > article > [data-width="full"] {
+		padding-inline: max(
+			var(--rf-content-gutter, 1.5rem),
+			calc((100% - var(--rf-content-max, 80rem)) / 2)
+		);
+	}
+	/* Page sections (data-content-measure="anchored") keep their content at the
  * text measure when bled to the wide track — only the surface/background
  * widens, matching how `full` reads as a band. The absolutely-positioned bg
  * fills the padded box, so the inner padding restores content without pulling
  * the bleed in. Runes without the flag fill the wide track (card breakout). */
-.rf-page-content > article > [data-content-measure="anchored"][data-width="wide"] {
-	padding-inline: max(
-		var(--rf-content-gutter, 1.5rem),
-		calc((100% - var(--rf-content-max, 80rem)) / 2)
-	);
-}
-/* Tinted sections also break out to full width */
-.rf-page-content > article > :is([data-tint], [data-color-scheme]):not([data-width]) {
-	padding-inline: max(
-		var(--rf-content-gutter, 1.5rem),
-		calc((100% - var(--rf-content-max, 80rem)) / 2)
-	);
-}
+	.rf-page-content > article > [data-content-measure="anchored"][data-width="wide"] {
+		padding-inline: max(
+			var(--rf-content-gutter, 1.5rem),
+			calc((100% - var(--rf-content-max, 80rem)) / 2)
+		);
+	}
+	/* Tinted sections also break out to full width */
+	.rf-page-content > article > :is([data-tint], [data-color-scheme]):not([data-width]) {
+		padding-inline: max(
+			var(--rf-content-gutter, 1.5rem),
+			calc((100% - var(--rf-content-max, 80rem)) / 2)
+		);
+	}
 
-/* Section spacing — vertical rhythm around block runes.
+	/* Section spacing — vertical rhythm around block runes.
  * Rune blocks (elements with data-rune) get section-level margins.
  * Prose elements (p, h2, pre, table, etc.) keep their natural flow
  * spacing from global.css — only gaining section margins when
  * immediately adjacent to a rune block. */
-.rf-page-content > article > * + [data-rune] {
-	margin-top: var(--rf-spacing-section, 4rem);
-	margin-bottom: var(--rf-spacing-section, 4rem);
-}
-/* Prose after a rune block: section gap above only.
+	.rf-page-content > article > * + [data-rune] {
+		margin-top: var(--rf-spacing-section, 4rem);
+		margin-bottom: var(--rf-spacing-section, 4rem);
+	}
+	/* Prose after a rune block: section gap above only.
  * No margin-bottom so subsequent prose keeps natural flow spacing. */
-.rf-page-content > article > [data-rune] + :not([data-rune]) {
-	margin-top: var(--rf-spacing-section, 4rem);
-}
-.rf-page-content > article > [data-spacing="flush"] {
-	margin-top: 0;
-	margin-bottom: 0;
-}
-.rf-page-content > article > [data-spacing="tight"] {
-	margin-top: var(--rf-spacing-section-tight, 1.5rem);
-	margin-bottom: var(--rf-spacing-section-tight, 1.5rem);
-}
-.rf-page-content > article > [data-spacing="loose"] {
-	margin-top: var(--rf-spacing-section-loose, 8rem);
-	margin-bottom: var(--rf-spacing-section-loose, 8rem);
-}
-.rf-page-content > article > [data-spacing="breathe"] {
-	margin-top: var(--rf-spacing-section-breathe, 12rem);
-	margin-bottom: var(--rf-spacing-section-breathe, 12rem);
-}
+	.rf-page-content > article > [data-rune] + :not([data-rune]) {
+		margin-top: var(--rf-spacing-section, 4rem);
+	}
+	.rf-page-content > article > [data-spacing="flush"] {
+		margin-top: 0;
+		margin-bottom: 0;
+	}
+	.rf-page-content > article > [data-spacing="tight"] {
+		margin-top: var(--rf-spacing-section-tight, 1.5rem);
+		margin-bottom: var(--rf-spacing-section-tight, 1.5rem);
+	}
+	.rf-page-content > article > [data-spacing="loose"] {
+		margin-top: var(--rf-spacing-section-loose, 8rem);
+		margin-bottom: var(--rf-spacing-section-loose, 8rem);
+	}
+	.rf-page-content > article > [data-spacing="breathe"] {
+		margin-top: var(--rf-spacing-section-breathe, 12rem);
+		margin-bottom: var(--rf-spacing-section-breathe, 12rem);
+	}
 
-/* Spacing on tinted/dark sections — use padding so space is inside the painted background */
-.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="flush"] {
-	margin-top: 0;
-	margin-bottom: 0;
-	padding-top: 0;
-	padding-bottom: 0;
-}
-.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="tight"] {
-	margin-top: 0;
-	margin-bottom: 0;
-	padding-top: var(--rf-spacing-section-tight, 1.5rem);
-	padding-bottom: var(--rf-spacing-section-tight, 1.5rem);
-}
-.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="default"],
-.rf-page-content > article > :is([data-color-scheme], [data-tint]):not([data-spacing]) {
-	margin-top: 0;
-	margin-bottom: 0;
-	padding-top: var(--rf-spacing-section, 4rem);
-	padding-bottom: var(--rf-spacing-section, 4rem);
-}
-.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="loose"] {
-	margin-top: 0;
-	margin-bottom: 0;
-	padding-top: var(--rf-spacing-section-loose, 8rem);
-	padding-bottom: var(--rf-spacing-section-loose, 8rem);
-}
-.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="breathe"] {
-	margin-top: 0;
-	margin-bottom: 0;
-	padding-top: var(--rf-spacing-section-breathe, 12rem);
-	padding-bottom: var(--rf-spacing-section-breathe, 12rem);
-}
+	/* Spacing on tinted/dark sections — use padding so space is inside the painted background */
+	.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="flush"] {
+		margin-top: 0;
+		margin-bottom: 0;
+		padding-top: 0;
+		padding-bottom: 0;
+	}
+	.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="tight"] {
+		margin-top: 0;
+		margin-bottom: 0;
+		padding-top: var(--rf-spacing-section-tight, 1.5rem);
+		padding-bottom: var(--rf-spacing-section-tight, 1.5rem);
+	}
+	.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="default"],
+	.rf-page-content > article > :is([data-color-scheme], [data-tint]):not([data-spacing]) {
+		margin-top: 0;
+		margin-bottom: 0;
+		padding-top: var(--rf-spacing-section, 4rem);
+		padding-bottom: var(--rf-spacing-section, 4rem);
+	}
+	.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="loose"] {
+		margin-top: 0;
+		margin-bottom: 0;
+		padding-top: var(--rf-spacing-section-loose, 8rem);
+		padding-bottom: var(--rf-spacing-section-loose, 8rem);
+	}
+	.rf-page-content > article > :is([data-color-scheme], [data-tint])[data-spacing="breathe"] {
+		margin-top: 0;
+		margin-bottom: 0;
+		padding-top: var(--rf-spacing-section-breathe, 12rem);
+		padding-bottom: var(--rf-spacing-section-breathe, 12rem);
+	}
 
-/* Inset — horizontal padding within block runes */
-.rf-page-content > article > [data-inset="flush"] {
-	padding-inline: 0;
-}
-.rf-page-content > article > [data-inset="tight"] {
-	padding-inline: var(--rf-inset-tight, 1rem);
-}
-.rf-page-content > article > [data-inset="loose"] {
-	padding-inline: var(--rf-inset-loose, 4rem);
-}
-.rf-page-content > article > [data-inset="breathe"] {
-	padding-inline: var(--rf-inset-breathe, 8rem);
-}
+	/* Inset — horizontal padding within block runes */
+	.rf-page-content > article > [data-inset="flush"] {
+		padding-inline: 0;
+	}
+	.rf-page-content > article > [data-inset="tight"] {
+		padding-inline: var(--rf-inset-tight, 1rem);
+	}
+	.rf-page-content > article > [data-inset="loose"] {
+		padding-inline: var(--rf-inset-loose, 4rem);
+	}
+	.rf-page-content > article > [data-inset="breathe"] {
+		padding-inline: var(--rf-inset-breathe, 8rem);
+	}
 
-/* Collapse top/bottom padding when a full-bleed section is first/last */
-.rf-page-content:has(> article > :first-child:is([data-width="full"], [data-tint])) {
-	padding-top: 0;
-}
-.rf-page-content:has(> article > :last-child:is([data-width="full"], [data-tint])) {
-	padding-bottom: 0;
-}
+	/* Collapse top/bottom padding when a full-bleed section is first/last */
+	.rf-page-content:has(> article > :first-child:is([data-width="full"], [data-tint])) {
+		padding-top: 0;
+	}
+	.rf-page-content:has(> article > :last-child:is([data-width="full"], [data-tint])) {
+		padding-bottom: 0;
+	}
 
-/* Site footer */
-.rf-footer {
-	padding: 2.5rem 1.5rem 2rem;
-	border-top: 1px solid var(--rf-color-border);
-	background: var(--rf-color-bg);
-	color: var(--rf-color-muted);
-	font-size: var(--rf-text-sm);
-}
-.rf-footer p {
-	margin: 1.5rem 0 0;
-	font-size: var(--rf-text-xs);
-	color: var(--rf-color-muted);
-}
-
+	/* Site footer */
+	.rf-footer {
+		padding: 2.5rem 1.5rem 2rem;
+		border-top: 1px solid var(--rf-color-border);
+		background: var(--rf-color-bg);
+		color: var(--rf-color-muted);
+		font-size: var(--rf-text-sm);
+	}
+	.rf-footer p {
+		margin: 1.5rem 0 0;
+		font-size: var(--rf-text-xs);
+		color: var(--rf-color-muted);
+	}
 }

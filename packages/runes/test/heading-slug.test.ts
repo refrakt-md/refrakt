@@ -11,8 +11,9 @@ import { parse, findTag } from './helpers.js';
  */
 describe('headingSlug', () => {
 	it('drops punctuation rather than carrying it into the id', () => {
-		expect(headingSlug('Body zones — preamble, template, fallback'))
-			.toBe('body-zones-preamble-template-fallback');
+		expect(headingSlug('Body zones — preamble, template, fallback')).toBe(
+			'body-zones-preamble-template-fallback',
+		);
 	});
 
 	it('collapses separator runs left behind by dropped punctuation', () => {
@@ -46,7 +47,7 @@ describe('heading ids include inline code', () => {
 
 	it('the rendered heading uses the same id as the index', () => {
 		const indexed = extractHeadings(Markdoc.parse(source))[0].id;
-		const rendered = findTag(parse(source) as any, t => t.name === 'h3');
+		const rendered = findTag(parse(source) as any, (t) => t.name === 'h3');
 		expect(rendered).toBeDefined();
 		expect(rendered!.attributes.id).toBe(indexed);
 	});
@@ -57,7 +58,7 @@ describe('heading ids include inline code', () => {
 		// literal `%` that Markdoc does not read as a tag.
 		const braces = '## Config {overrides} at 100% width\n';
 		const indexed = extractHeadings(Markdoc.parse(braces))[0].id;
-		const rendered = findTag(parse(braces) as any, t => t.name === 'h2');
+		const rendered = findTag(parse(braces) as any, (t) => t.name === 'h2');
 		expect(rendered!.attributes.id).toBe(indexed);
 	});
 });

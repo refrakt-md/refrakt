@@ -7,6 +7,4 @@
  * separately in registerElements().
  */
 export const SafeHTMLElement: typeof HTMLElement =
-	typeof HTMLElement !== 'undefined'
-		? HTMLElement
-		: (class {} as unknown as typeof HTMLElement);
+	typeof HTMLElement !== 'undefined' ? HTMLElement : (class {} as unknown as typeof HTMLElement);

@@ -7,18 +7,36 @@ import { RenderableNodeCursor } from '@refrakt-md/runes';
 /** Strip common leading whitespace from all lines. */
 function dedent(text: string): string {
 	const lines = text.split('\n');
-	const indents = lines.filter(l => l.trim().length > 0).map(l => l.match(/^(\s*)/)?.[0].length ?? 0);
+	const indents = lines
+		.filter((l) => l.trim().length > 0)
+		.map((l) => l.match(/^(\s*)/)?.[0].length ?? 0);
 	const min = indents.length > 0 ? Math.min(...indents) : 0;
-	return min > 0 ? lines.map(l => l.slice(min)).join('\n') : text;
+	return min > 0 ? lines.map((l) => l.slice(min)).join('\n') : text;
 }
 
 const VOID_ELEMENTS = new Set([
-	'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
-	'link', 'meta', 'param', 'source', 'track', 'wbr',
+	'area',
+	'base',
+	'br',
+	'col',
+	'embed',
+	'hr',
+	'img',
+	'input',
+	'link',
+	'meta',
+	'param',
+	'source',
+	'track',
+	'wbr',
 ]);
 
 function escapeHtml(s: string): string {
-	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	return s
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;');
 }
 
 /** Render Markdoc Tag tree to pretty-printed HTML, preserving structural attributes. */
@@ -33,18 +51,27 @@ function renderRuneHtml(nodes: Markdoc.RenderableTreeNode[], depth = 0): string 
 			if (trimmed) lines.push(indent.repeat(depth) + escapeHtml(trimmed));
 			continue;
 		}
-		if (typeof node === 'number') { lines.push(indent.repeat(depth) + String(node)); continue; }
+		if (typeof node === 'number') {
+			lines.push(indent.repeat(depth) + String(node));
+			continue;
+		}
 		if (!Tag.isTag(node)) continue;
 
 		const { name, attributes, children = [] } = node;
-		if (!name) { lines.push(renderRuneHtml(children, depth)); continue; }
+		if (!name) {
+			lines.push(renderRuneHtml(children, depth));
+			continue;
+		}
 
 		// Build attributes, skipping $$mdtype
 		const attrParts: string[] = [];
 		for (const [k, v] of Object.entries(attributes ?? {})) {
 			if (k === '$$mdtype') continue;
 			if (v === undefined || v === null || v === false) continue;
-			if (v === true) { attrParts.push(k); continue; }
+			if (v === true) {
+				attrParts.push(k);
+				continue;
+			}
 			attrParts.push(`${k}="${escapeHtml(String(v))}"`);
 		}
 		const attrStr = attrParts.length ? ' ' + attrParts.join(' ') : '';
@@ -56,9 +83,15 @@ function renderRuneHtml(nodes: Markdoc.RenderableTreeNode[], depth = 0): string 
 		}
 
 		// Inline text-only children on the same line
-		const allText = children.every((c: Markdoc.RenderableTreeNode) => typeof c === 'string' || typeof c === 'number');
+		const allText = children.every(
+			(c: Markdoc.RenderableTreeNode) => typeof c === 'string' || typeof c === 'number',
+		);
 		if (allText && children.length <= 1) {
-			const text = children.map((c: Markdoc.RenderableTreeNode) => typeof c === 'string' ? escapeHtml(c) : String(c ?? '')).join('');
+			const text = children
+				.map((c: Markdoc.RenderableTreeNode) =>
+					typeof c === 'string' ? escapeHtml(c) : String(c ?? ''),
+				)
+				.join('');
 			lines.push(`${pad}<${name}${attrStr}>${text}</${name}>`);
 			continue;
 		}
@@ -75,7 +108,7 @@ function renderRuneHtml(nodes: Markdoc.RenderableTreeNode[], depth = 0): string 
 /** Extract fence node from children, returning it separately. */
 function extractFence(children: unknown[]): { fence: Node | undefined; rest: unknown[] } {
 	const nodes = children as Node[];
-	const fenceIdx = nodes.findIndex(c => c.type === 'fence');
+	const fenceIdx = nodes.findIndex((c) => c.type === 'fence');
 	if (fenceIdx === -1) return { fence: undefined, rest: nodes };
 	const fence = nodes[fenceIdx];
 	return { fence, rest: [...nodes.slice(0, fenceIdx), ...nodes.slice(fenceIdx + 1)] };
@@ -83,10 +116,29 @@ function extractFence(children: unknown[]): { fence: Node | undefined; rest: unk
 
 export const preview = createContentModelSchema({
 	attributes: {
-		title: { type: String, required: false, description: 'Label shown in the preview card header.' },
-		theme: { type: String, required: false, matches: ['auto', 'light', 'dark'], description: 'Background theme for the preview viewport: auto follows the page, light/dark forces a mode.' },
-		source: { type: Boolean, required: false, description: 'Enable/disable showing the source code panel alongside the rendered preview.' },
-		responsive: { type: String, required: false, description: 'Comma-separated viewport presets (e.g. "mobile,tablet,desktop") for responsive preview frames. Accepts mobile (375px), tablet (768px), and desktop (full); other values are ignored.' },
+		title: {
+			type: String,
+			required: false,
+			description: 'Label shown in the preview card header.',
+		},
+		theme: {
+			type: String,
+			required: false,
+			matches: ['auto', 'light', 'dark'],
+			description:
+				'Background theme for the preview viewport: auto follows the page, light/dark forces a mode.',
+		},
+		source: {
+			type: Boolean,
+			required: false,
+			description: 'Enable/disable showing the source code panel alongside the rendered preview.',
+		},
+		responsive: {
+			type: String,
+			required: false,
+			description:
+				'Comma-separated viewport presets (e.g. "mobile,tablet,desktop") for responsive preview frames. Accepts mobile (375px), tablet (768px), and desktop (full); other values are ignored.',
+		},
 	},
 	contentModel: {
 		type: 'custom',
@@ -97,7 +149,8 @@ export const preview = createContentModelSchema({
 			if (fence) return [...rest, fence];
 			return rest;
 		},
-		description: 'Extracts fence blocks for source display, passes remaining children for preview rendering.',
+		description:
+			'Extracts fence blocks for source display, passes remaining children for preview rendering.',
 	},
 	transform(resolved, attrs, config, node) {
 		const title = attrs.title ?? '';
@@ -109,14 +162,14 @@ export const preview = createContentModelSchema({
 
 		// 1. Extract fence child for source display
 		let sourcePre: Markdoc.Tag<'pre'> | undefined;
-		const fenceIdx = allChildren.findIndex(c => c.type === 'fence');
+		const fenceIdx = allChildren.findIndex((c) => c.type === 'fence');
 		let contentChildren: Node[];
 		if (fenceIdx !== -1) {
 			const fence = allChildren[fenceIdx];
 			contentChildren = [...allChildren.slice(0, fenceIdx), ...allChildren.slice(fenceIdx + 1)];
 			const lang = fence.attributes.language || 'shell';
 			sourcePre = new Tag('pre', { 'data-language': lang }, [
-				new Tag('code', { 'data-language': lang }, [fence.attributes.content])
+				new Tag('code', { 'data-language': lang }, [fence.attributes.content]),
 			]) as Markdoc.Tag<'pre'>;
 		} else {
 			contentChildren = allChildren;
@@ -132,7 +185,7 @@ export const preview = createContentModelSchema({
 				const childSource = dedent(allLines.slice(start, end).join('\n').trim());
 				if (childSource) {
 					sourcePre = new Tag('pre', { 'data-language': 'markdoc' }, [
-						new Tag('code', { 'data-language': 'markdoc' }, [childSource])
+						new Tag('code', { 'data-language': 'markdoc' }, [childSource]),
 					]) as Markdoc.Tag<'pre'>;
 				}
 			}
@@ -148,7 +201,7 @@ export const preview = createContentModelSchema({
 			const htmlString = renderRuneHtml(children.toArray());
 			if (htmlString) {
 				htmlSourcePre = new Tag('pre', { 'data-language': 'html' }, [
-					new Tag('code', { 'data-language': 'html' }, [htmlString])
+					new Tag('code', { 'data-language': 'html' }, [htmlString]),
 				]) as Markdoc.Tag<'pre'>;
 			}
 		}
@@ -166,7 +219,8 @@ export const preview = createContentModelSchema({
 			...children.toArray(),
 		];
 
-		return createComponentRenderable({ rune: 'preview',
+		return createComponentRenderable({
+			rune: 'preview',
 			tag: 'div',
 			properties: {
 				...(titleMeta ? { title: titleMeta } : {}),

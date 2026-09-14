@@ -26,12 +26,32 @@
 	/* Per-character offsets — set on the `[data-reveal]` container and inherited by
 	 * staggered children, so the single hidden-state block below covers every
 	 * character. `none` carries no offsets (it never animates). */
-	[data-reveal="fade"]  { --reveal-x: 0; --reveal-y: 0;                      --reveal-scale: 1;                       --reveal-blur: 0; }
-	[data-reveal="slide"] { --reveal-x: 0; --reveal-y: var(--rf-reveal-distance, 1.5rem); --reveal-scale: 1;             --reveal-blur: 0; }
-	[data-reveal="scale"] { --reveal-x: 0; --reveal-y: 0;                      --reveal-scale: var(--rf-reveal-scale-start, 0.95); --reveal-blur: 0; }
+	[data-reveal="fade"] {
+		--reveal-x: 0;
+		--reveal-y: 0;
+		--reveal-scale: 1;
+		--reveal-blur: 0;
+	}
+	[data-reveal="slide"] {
+		--reveal-x: 0;
+		--reveal-y: var(--rf-reveal-distance, 1.5rem);
+		--reveal-scale: 1;
+		--reveal-blur: 0;
+	}
+	[data-reveal="scale"] {
+		--reveal-x: 0;
+		--reveal-y: 0;
+		--reveal-scale: var(--rf-reveal-scale-start, 0.95);
+		--reveal-blur: 0;
+	}
 	/* `blur` is focus-led; it animates `filter` (not compositor-cheap), so a theme
 	 * or low-power path may downgrade it to `fade` by zeroing the blur token. */
-	[data-reveal="blur"]  { --reveal-x: 0; --reveal-y: 0;                      --reveal-scale: 1;                       --reveal-blur: var(--rf-reveal-blur, 8px); }
+	[data-reveal="blur"] {
+		--reveal-x: 0;
+		--reveal-y: 0;
+		--reveal-scale: 1;
+		--reveal-blur: var(--rf-reveal-blur, 8px);
+	}
 
 	/* The animated unit:
 	 *   • non-staggered → the `[data-reveal]` element itself,
@@ -43,19 +63,21 @@
 	 * the `transform` shorthand, so it composes with the rune transforms Lumina
 	 * already uses (hover-lifts on card/cta/feature, frame displacement, drawer/nav
 	 * slides) instead of clobbering them. */
-	[data-animate] :where(
+	[data-animate]
+	:where(
 		[data-reveal]:not([data-reveal="none"]):not([data-stagger]),
 		[data-stagger]:not([data-reveal="none"]) [style*="--rf-reveal-index"]
 	) {
 		transition:
-			opacity   var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out),
+			opacity var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out),
 			translate var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out),
-			scale     var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out),
-			filter    var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out);
+			scale var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out),
+			filter var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out);
 	}
 
 	/* Pre-entrance (hidden) — until the unit's trigger fires. */
-	[data-animate] :where(
+	[data-animate]
+	:where(
 		[data-reveal]:not([data-reveal="none"]):not([data-stagger]):not([data-in-view]),
 		[data-stagger]:not([data-reveal="none"]):not([data-in-view]) [style*="--rf-reveal-index"]
 	) {
@@ -70,7 +92,8 @@
 	 * transition `translate`/`scale`/`filter` to-or-from `none`, so reverting to
 	 * the default would snap (no motion on iOS) — only opacity would animate.
 	 * Transitioning between two explicit values animates everywhere. */
-	[data-animate] :where(
+	[data-animate]
+	:where(
 		[data-reveal]:not([data-reveal="none"]):not([data-stagger])[data-in-view],
 		[data-stagger][data-in-view] [style*="--rf-reveal-index"]
 	) {
@@ -90,11 +113,17 @@
 	 * sliding section, let the media arrive a beat behind the content for a subtle
 	 * two-part entrance. Demonstrated on the named anatomy the theme already styles;
 	 * a theme adds or drops this freely. */
-	[data-animate] [data-reveal="slide"]:not([data-stagger]):not([data-in-view]) > * > [data-section="media"] {
+	[data-animate]
+		[data-reveal="slide"]:not([data-stagger]):not([data-in-view])
+		> *
+		> [data-section="media"] {
 		translate: 0 calc(var(--rf-reveal-distance, 1.5rem) * 1.5);
 	}
-	[data-animate] [data-reveal="slide"]:not([data-stagger])[data-in-view] > * > [data-section="media"] {
-		translate: 0 0;  /* explicit identity end-state — see the WebKit note above */
+	[data-animate]
+		[data-reveal="slide"]:not([data-stagger])[data-in-view]
+		> *
+		> [data-section="media"] {
+		translate: 0 0; /* explicit identity end-state — see the WebKit note above */
 	}
 	[data-animate] [data-reveal="slide"]:not([data-stagger]) > * > [data-section="media"] {
 		transition: translate var(--rf-reveal-duration, 0.9s) var(--rf-reveal-easing, ease-out);

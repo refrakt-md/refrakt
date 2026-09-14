@@ -22,10 +22,10 @@ export const densityFacet: Facet = {
 	resolve: (ctx) => ({
 		state: {
 			density: String(
-				ctx.tag.attributes?.density
-				?? ctx.parentConfig?.childDensity
-				?? ctx.config.defaultDensity
-				?? 'full',
+				ctx.tag.attributes?.density ??
+					ctx.parentConfig?.childDensity ??
+					ctx.config.defaultDensity ??
+					'full',
 			),
 		},
 	}),
@@ -46,7 +46,8 @@ export const densityAxis: UniversalAxisFacet = {
 		values: DENSITY_VALUES,
 		default: 'full',
 		dataAttributes: ['data-density'],
-		condition: 'always present on the rune root; resolution is author ▸ the parent rune\'s `childDensity` ▸ this rune\'s `defaultDensity` ▸ `full`',
+		condition:
+			"always present on the rune root; resolution is author ▸ the parent rune's `childDensity` ▸ this rune's `defaultDensity` ▸ `full`",
 	},
 	describeForRune: (config) => (config.defaultDensity ? { default: config.defaultDensity } : null),
 };

@@ -85,14 +85,17 @@ export const embed = createContentModelSchema({
 	attributes: {
 		url: { type: String, required: true, description: 'URL of the content to embed' },
 		type: { type: String, required: false, description: 'Override auto-detected embed type' },
-		aspect: { type: String, required: false, matches: aspectType.slice(), description: 'Aspect ratio of the embed frame' },
+		aspect: {
+			type: String,
+			required: false,
+			matches: aspectType.slice(),
+			description: 'Aspect ratio of the embed frame',
+		},
 		title: { type: String, required: false, description: 'Accessible title for the embed iframe' },
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'fallback', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'fallback', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const url = attrs.url ?? '';
@@ -122,20 +125,27 @@ export const embed = createContentModelSchema({
 		const children: any[] = [urlMeta, titleMeta, embedUrlMeta];
 		let wrapperDiv: InstanceType<typeof Tag> | undefined;
 		if (detected.embedUrl) {
-			const iframe = new Tag('iframe', {
-				src: detected.embedUrl,
-				title: iframeTitle,
-				frameborder: '0',
-				allow: 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
-				allowfullscreen: '',
-				loading: 'lazy',
-			}, []);
+			const iframe = new Tag(
+				'iframe',
+				{
+					src: detected.embedUrl,
+					title: iframeTitle,
+					frameborder: '0',
+					allow:
+						'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
+					allowfullscreen: '',
+					loading: 'lazy',
+				},
+				[],
+			);
 			wrapperDiv = new Tag('div', { style: `padding-bottom: ${paddingPercent}%` }, [iframe]);
 			children.push(wrapperDiv);
 		}
 		children.push(fallback.next());
 
-		return createComponentRenderable({ rune: 'embed', schemaOrgType: 'VideoObject',
+		return createComponentRenderable({
+			rune: 'embed',
+			schemaOrgType: 'VideoObject',
 			tag: 'figure',
 			properties: {
 				provider: providerMeta,

@@ -31,9 +31,8 @@ export const widthFacet: Facet = {
  *  when anchored — the `fill` default lets content use the wider track. */
 export const contentMeasureFacet: Facet = {
 	name: 'content-measure',
-	resolve: (ctx) => (ctx.config.contentMeasure === 'anchored'
-		? { axes: { 'content-measure': 'anchored' } }
-		: null),
+	resolve: (ctx) =>
+		ctx.config.contentMeasure === 'anchored' ? { axes: { 'content-measure': 'anchored' } } : null,
 };
 
 /** `spacing` — block-level rhythm override. */
@@ -82,14 +81,17 @@ export const widthAxis: UniversalAxisFacet = {
 export const contentMeasureAxis: UniversalAxisFacet = {
 	axis: 'content-measure',
 	contract: {
-		description: 'A page-section rune anchors its content to the text measure when bled to the `wide` track; only the surface and background widen.',
+		description:
+			'A page-section rune anchors its content to the text measure when bled to the `wide` track; only the surface and background widen.',
 		source: 'config',
 		inputs: ['contentMeasure'],
 		values: ['anchored'],
 		dataAttributes: ['data-content-measure'],
-		condition: 'not author-facing — emitted only when the rune declares `contentMeasure: "anchored"`',
+		condition:
+			'not author-facing — emitted only when the rune declares `contentMeasure: "anchored"`',
 	},
-	describeForRune: (config) => (config.contentMeasure === 'anchored' ? { default: 'anchored' } : null),
+	describeForRune: (config) =>
+		config.contentMeasure === 'anchored' ? { default: 'anchored' } : null,
 };
 
 export const spacingAxis: UniversalAxisFacet = {

@@ -1,420 +1,424 @@
 @layer skin {
-/* Mockup — Device frame chrome around content */
+	/* Mockup — Device frame chrome around content */
 
-.rf-mockup {
-	--mockup-bezel-dark: #1a1a1a;
-	--mockup-bezel-light: #e5e5e5;
-	--mockup-bezel: var(--mockup-bezel-dark);
-	--mockup-chrome: #2a2a2a;
-	--mockup-chrome-text: #999;
-	--mockup-scale: 1;
-}
+	.rf-mockup {
+		--mockup-bezel-dark: #1a1a1a;
+		--mockup-bezel-light: #e5e5e5;
+		--mockup-bezel: var(--mockup-bezel-dark);
+		--mockup-chrome: #2a2a2a;
+		--mockup-chrome-text: #999;
+		--mockup-scale: 1;
+	}
 
-/* ── Color modifiers ── */
+	/* ── Color modifiers ── */
 
-.rf-mockup--dark {
-	--mockup-bezel: var(--mockup-bezel-dark);
-	--mockup-chrome: #2a2a2a;
-	--mockup-chrome-text: #999;
-}
+	.rf-mockup--dark {
+		--mockup-bezel: var(--mockup-bezel-dark);
+		--mockup-chrome: #2a2a2a;
+		--mockup-chrome-text: #999;
+	}
 
-.rf-mockup--light {
-	--mockup-bezel: var(--mockup-bezel-light);
-	--mockup-chrome: #f5f5f5;
-	--mockup-chrome-text: #666;
-}
+	.rf-mockup--light {
+		--mockup-bezel: var(--mockup-bezel-light);
+		--mockup-chrome: #f5f5f5;
+		--mockup-chrome-text: #666;
+	}
 
-.rf-mockup--auto {
-	--mockup-bezel: var(--mockup-bezel-dark);
-	--mockup-chrome: #2a2a2a;
-	--mockup-chrome-text: #999;
-}
+	.rf-mockup--auto {
+		--mockup-bezel: var(--mockup-bezel-dark);
+		--mockup-chrome: #2a2a2a;
+		--mockup-chrome-text: #999;
+	}
 
-/* ── Viewport (content area) ── */
+	/* ── Viewport (content area) ── */
 
-.rf-mockup__viewport {
-	background: var(--rf-color-bg);
-}
+	.rf-mockup__viewport {
+		background: var(--rf-color-bg);
+	}
 
-.rf-mockup__viewport > *:first-child {
-	margin-top: 0;
-}
+	.rf-mockup__viewport > *:first-child {
+		margin-top: 0;
+	}
 
-.rf-mockup__viewport > *:last-child {
-	margin-bottom: 0;
-}
+	.rf-mockup__viewport > *:last-child {
+		margin-bottom: 0;
+	}
 
-/* ── Label ── */
+	/* ── Label ── */
 
-.rf-mockup__label {
-	text-align: center;
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-medium);
-	color: var(--rf-color-muted);
-	margin-top: 0.75rem;
-}
+	.rf-mockup__label {
+		text-align: center;
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-medium);
+		color: var(--rf-color-muted);
+		margin-top: 0.75rem;
+	}
 
-/* ═══════════════════════════════════════
+	/* ═══════════════════════════════════════
    MOBILE DEVICES
    ═══════════════════════════════════════ */
 
-/* ── Bezel (mobile/tablet outer shell) ── */
+	/* ── Bezel (mobile/tablet outer shell) ── */
 
-.rf-mockup__bezel {
-	background: var(--mockup-bezel);
-}
+	.rf-mockup__bezel {
+		background: var(--mockup-bezel);
+	}
 
-.rf-mockup__notch[data-notch="dynamic-island"] {
-	background: #000;
-	border-radius: 20px;
-}
+	.rf-mockup__notch[data-notch="dynamic-island"] {
+		background: #000;
+		border-radius: 20px;
+	}
 
-.rf-mockup__notch[data-notch="classic"] {
-	background: var(--mockup-bezel);
-	border-radius: 0 0 20px 20px;
-}
+	.rf-mockup__notch[data-notch="classic"] {
+		background: var(--mockup-bezel);
+		border-radius: 0 0 20px 20px;
+	}
 
-.rf-mockup__notch[data-notch="punch-hole"] {
-	background: #000;
-	border-radius: var(--rf-radius-full);
-}
+	.rf-mockup__notch[data-notch="punch-hole"] {
+		background: #000;
+		border-radius: var(--rf-radius-full);
+	}
 
-/* ── Status bar ── */
+	/* ── Status bar ── */
 
-.rf-mockup__status-bar {
-	padding: 0 1.5rem;
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-semibold);
-	color: var(--rf-color-text);
-	background: var(--rf-color-bg);
-}
+	.rf-mockup__status-bar {
+		padding: 0 1.5rem;
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-semibold);
+		color: var(--rf-color-text);
+		background: var(--rf-color-bg);
+	}
 
-.rf-mockup__status-time {
-	font-variant-numeric: tabular-nums;
-}
+	.rf-mockup__status-time {
+		font-variant-numeric: tabular-nums;
+	}
 
-.rf-mockup__status-icons::after {
-	content: '\25CF\25CF\25CF \25AE 100%';
-	font-size: var(--rf-text-xs);
-	letter-spacing: var(--rf-tracking-wider);
-	color: var(--rf-color-muted);
-}
+	.rf-mockup__status-icons::after {
+		content: "\25CF\25CF\25CF \25AE 100%";
+		font-size: var(--rf-text-xs);
+		letter-spacing: var(--rf-tracking-wider);
+		color: var(--rf-color-muted);
+	}
 
-/* ── Home indicator ── */
+	/* ── Home indicator ── */
 
-.rf-mockup__home-indicator {
-	background: var(--rf-color-bg);
-}
+	.rf-mockup__home-indicator {
+		background: var(--rf-color-bg);
+	}
 
-.rf-mockup__home-indicator::after {
-	background: var(--rf-color-text);
-	border-radius: var(--rf-radius-full);
-	opacity: 0.2;
-}
+	.rf-mockup__home-indicator::after {
+		background: var(--rf-color-text);
+		border-radius: var(--rf-radius-full);
+		opacity: 0.2;
+	}
 
-/* ── iPhone 15 ── */
+	/* ── iPhone 15 ── */
 
-.rf-mockup--iphone-15 .rf-mockup__frame {
-	--mockup-device-width: 393px;
-	width: 393px;
-	border-radius: 55px;
-}
+	.rf-mockup--iphone-15 .rf-mockup__frame {
+		--mockup-device-width: 393px;
+		width: 393px;
+		border-radius: 55px;
+	}
 
-.rf-mockup--iphone-15 .rf-mockup__bezel {
-	border-radius: 55px;
-	border: 10px solid var(--mockup-bezel);
-}
+	.rf-mockup--iphone-15 .rf-mockup__bezel {
+		border-radius: 55px;
+		border: 10px solid var(--mockup-bezel);
+	}
 
-.rf-mockup--iphone-15 .rf-mockup__viewport {
-	height: 852px;
-	border-radius: 0;
-}
+	.rf-mockup--iphone-15 .rf-mockup__viewport {
+		height: 852px;
+		border-radius: 0;
+	}
 
-/* ── iPhone SE ── */
+	/* ── iPhone SE ── */
 
-.rf-mockup--iphone-se .rf-mockup__frame {
-	--mockup-device-width: 375px;
-	width: 375px;
-	border-radius: 40px;
-}
+	.rf-mockup--iphone-se .rf-mockup__frame {
+		--mockup-device-width: 375px;
+		width: 375px;
+		border-radius: 40px;
+	}
 
-.rf-mockup--iphone-se .rf-mockup__bezel {
-	border-radius: 40px;
-	border: 10px solid var(--mockup-bezel);
-	padding-bottom: 60px;
-}
+	.rf-mockup--iphone-se .rf-mockup__bezel {
+		border-radius: 40px;
+		border: 10px solid var(--mockup-bezel);
+		padding-bottom: 60px;
+	}
 
-.rf-mockup--iphone-se .rf-mockup__notch[data-notch="classic"] {
-	position: relative;
-	top: auto;
-	left: auto;
-	transform: none;
-	width: 100%;
-	height: 60px;
-	background: var(--mockup-bezel);
-	border-radius: 0;
-}
+	.rf-mockup--iphone-se .rf-mockup__notch[data-notch="classic"] {
+		position: relative;
+		top: auto;
+		left: auto;
+		transform: none;
+		width: 100%;
+		height: 60px;
+		background: var(--mockup-bezel);
+		border-radius: 0;
+	}
 
-.rf-mockup--iphone-se .rf-mockup__bezel::after {
-	content: '';
-	position: absolute;
-	bottom: 14px;
-	left: 50%;
-	transform: translateX(-50%);
-	width: 36px;
-	height: 36px;
-	border: 2px solid var(--mockup-chrome-text);
-	border-radius: var(--rf-radius-full);
-	opacity: 0.5;
-}
+	.rf-mockup--iphone-se .rf-mockup__bezel::after {
+		content: "";
+		position: absolute;
+		bottom: 14px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 36px;
+		height: 36px;
+		border: 2px solid var(--mockup-chrome-text);
+		border-radius: var(--rf-radius-full);
+		opacity: 0.5;
+	}
 
-.rf-mockup--iphone-se .rf-mockup__viewport {
-	height: 667px;
-}
+	.rf-mockup--iphone-se .rf-mockup__viewport {
+		height: 667px;
+	}
 
-/* ── Pixel ── */
+	/* ── Pixel ── */
 
-.rf-mockup--pixel .rf-mockup__frame {
-	--mockup-device-width: 412px;
-	width: 412px;
-	border-radius: 40px;
-}
+	.rf-mockup--pixel .rf-mockup__frame {
+		--mockup-device-width: 412px;
+		width: 412px;
+		border-radius: 40px;
+	}
 
-.rf-mockup--pixel .rf-mockup__bezel {
-	border-radius: 40px;
-	border: 8px solid var(--mockup-bezel);
-}
+	.rf-mockup--pixel .rf-mockup__bezel {
+		border-radius: 40px;
+		border: 8px solid var(--mockup-bezel);
+	}
 
-.rf-mockup--pixel .rf-mockup__viewport {
-	height: 915px;
-}
+	.rf-mockup--pixel .rf-mockup__viewport {
+		height: 915px;
+	}
 
-/* ── Generic phone ── */
+	/* ── Generic phone ── */
 
-.rf-mockup--phone .rf-mockup__frame {
-	--mockup-device-width: 390px;
-	width: 390px;
-	border-radius: 48px;
-}
+	.rf-mockup--phone .rf-mockup__frame {
+		--mockup-device-width: 390px;
+		width: 390px;
+		border-radius: 48px;
+	}
 
-.rf-mockup--phone .rf-mockup__bezel {
-	border-radius: 48px;
-	border: 10px solid var(--mockup-bezel);
-}
+	.rf-mockup--phone .rf-mockup__bezel {
+		border-radius: 48px;
+		border: 10px solid var(--mockup-bezel);
+	}
 
-.rf-mockup--phone .rf-mockup__viewport {
-	height: 844px;
-}
+	.rf-mockup--phone .rf-mockup__viewport {
+		height: 844px;
+	}
 
-/* ═══════════════════════════════════════
+	/* ═══════════════════════════════════════
    TABLET DEVICES
    ═══════════════════════════════════════ */
 
-/* ── iPad ── */
+	/* ── iPad ── */
 
-.rf-mockup--ipad .rf-mockup__frame {
-	--mockup-device-width: 820px;
-	width: 820px;
-	border-radius: 24px;
-}
+	.rf-mockup--ipad .rf-mockup__frame {
+		--mockup-device-width: 820px;
+		width: 820px;
+		border-radius: 24px;
+	}
 
-.rf-mockup--ipad .rf-mockup__bezel {
-	border-radius: 24px;
-	border: 12px solid var(--mockup-bezel);
-}
+	.rf-mockup--ipad .rf-mockup__bezel {
+		border-radius: 24px;
+		border: 12px solid var(--mockup-bezel);
+	}
 
-.rf-mockup--ipad .rf-mockup__viewport {
-	height: 1180px;
-}
+	.rf-mockup--ipad .rf-mockup__viewport {
+		height: 1180px;
+	}
 
-/* ── Generic tablet ── */
+	/* ── Generic tablet ── */
 
-.rf-mockup--tablet .rf-mockup__frame {
-	--mockup-device-width: 800px;
-	width: 800px;
-	border-radius: 20px;
-}
+	.rf-mockup--tablet .rf-mockup__frame {
+		--mockup-device-width: 800px;
+		width: 800px;
+		border-radius: 20px;
+	}
 
-.rf-mockup--tablet .rf-mockup__bezel {
-	border-radius: 20px;
-	border: 14px solid var(--mockup-bezel);
-}
+	.rf-mockup--tablet .rf-mockup__bezel {
+		border-radius: 20px;
+		border: 14px solid var(--mockup-bezel);
+	}
 
-.rf-mockup--tablet .rf-mockup__viewport {
-	height: 1100px;
-}
+	.rf-mockup--tablet .rf-mockup__viewport {
+		height: 1100px;
+	}
 
-/* ═══════════════════════════════════════
+	/* ═══════════════════════════════════════
    DESKTOP DEVICES
    ═══════════════════════════════════════ */
 
-/* ── Title bar (browser / macbook) ── */
+	/* ── Title bar (browser / macbook) ── */
 
-.rf-mockup__title-bar {
-	gap: 0.75rem;
-	padding: 0.625rem 1rem;
-	background: var(--mockup-chrome);
-}
+	.rf-mockup__title-bar {
+		gap: 0.75rem;
+		padding: 0.625rem 1rem;
+		background: var(--mockup-chrome);
+	}
 
-/* ── Traffic lights ── */
+	/* ── Traffic lights ── */
 
-.rf-mockup__traffic-lights {
-	gap: 0.5rem;
-}
+	.rf-mockup__traffic-lights {
+		gap: 0.5rem;
+	}
 
-.rf-mockup__traffic-light {
-	border-radius: var(--rf-radius-full);
-}
+	.rf-mockup__traffic-light {
+		border-radius: var(--rf-radius-full);
+	}
 
-.rf-mockup__traffic-light[data-light="close"] {
-	background: #ff5f57;
-}
+	.rf-mockup__traffic-light[data-light="close"] {
+		background: #ff5f57;
+	}
 
-.rf-mockup__traffic-light[data-light="minimize"] {
-	background: #febc2e;
-}
+	.rf-mockup__traffic-light[data-light="minimize"] {
+		background: #febc2e;
+	}
 
-.rf-mockup__traffic-light[data-light="maximize"] {
-	background: #28c840;
-}
+	.rf-mockup__traffic-light[data-light="maximize"] {
+		background: #28c840;
+	}
 
-/* ── Address bar (browser only) ── */
+	/* ── Address bar (browser only) ── */
 
-.rf-mockup__address-bar {
-	margin: 0 auto;
-	padding: 0.25rem 0.75rem;
-	background: rgba(255, 255, 255, 0.08);
-	border-radius: var(--rf-radius-sm);
-}
+	.rf-mockup__address-bar {
+		margin: 0 auto;
+		padding: 0.25rem 0.75rem;
+		background: rgba(255, 255, 255, 0.08);
+		border-radius: var(--rf-radius-sm);
+	}
 
-.rf-mockup__url {
-	font-size: var(--rf-text-xs);
-	font-family: var(--rf-font-sans);
-	color: var(--mockup-chrome-text);
-	white-space: nowrap;
-	text-overflow: ellipsis;
-}
+	.rf-mockup__url {
+		font-size: var(--rf-text-xs);
+		font-family: var(--rf-font-sans);
+		color: var(--mockup-chrome-text);
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
 
-/* ── Browser ── */
+	/* ── Browser ── */
 
-.rf-mockup--browser .rf-mockup__frame {
-	width: 100%;
-	border-radius: var(--rf-radius-lg) var(--rf-radius-lg) 0 0;
-	overflow: hidden;
-}
+	.rf-mockup--browser .rf-mockup__frame {
+		width: 100%;
+		border-radius: var(--rf-radius-lg) var(--rf-radius-lg) 0 0;
+		overflow: hidden;
+	}
 
-.rf-mockup--browser .rf-mockup__title-bar {
-	border-radius: var(--rf-radius-lg) var(--rf-radius-lg) 0 0;
-}
+	.rf-mockup--browser .rf-mockup__title-bar {
+		border-radius: var(--rf-radius-lg) var(--rf-radius-lg) 0 0;
+	}
 
-.rf-mockup--browser .rf-mockup__viewport {
-	min-height: 12rem;
-	border: 1px solid var(--rf-color-border);
-	border-top: none;
-}
+	.rf-mockup--browser .rf-mockup__viewport {
+		min-height: 12rem;
+		border: 1px solid var(--rf-color-border);
+		border-top: none;
+	}
 
-/* ── Browser dark ── */
+	/* ── Browser dark ── */
 
-.rf-mockup--browser-dark .rf-mockup__frame {
-	width: 100%;
-	border-radius: var(--rf-radius-lg) var(--rf-radius-lg) 0 0;
-	overflow: hidden;
-}
+	.rf-mockup--browser-dark .rf-mockup__frame {
+		width: 100%;
+		border-radius: var(--rf-radius-lg) var(--rf-radius-lg) 0 0;
+		overflow: hidden;
+	}
 
-.rf-mockup--browser-dark .rf-mockup__title-bar {
-	background: #1a1a1a;
-	border-radius: var(--rf-radius-lg) var(--rf-radius-lg) 0 0;
-}
+	.rf-mockup--browser-dark .rf-mockup__title-bar {
+		background: #1a1a1a;
+		border-radius: var(--rf-radius-lg) var(--rf-radius-lg) 0 0;
+	}
 
-.rf-mockup--browser-dark .rf-mockup__address-bar {
-	background: rgba(255, 255, 255, 0.06);
-}
+	.rf-mockup--browser-dark .rf-mockup__address-bar {
+		background: rgba(255, 255, 255, 0.06);
+	}
 
-.rf-mockup--browser-dark .rf-mockup__viewport {
-	min-height: 12rem;
-	border: 1px solid rgba(255, 255, 255, 0.1);
-	border-top: none;
-}
+	.rf-mockup--browser-dark .rf-mockup__viewport {
+		min-height: 12rem;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-top: none;
+	}
 
-/* ── MacBook ── */
+	/* ── MacBook ── */
 
-.rf-mockup--macbook .rf-mockup__frame {
-	--mockup-device-width: 1440px;
-	width: 1440px;
-}
+	.rf-mockup--macbook .rf-mockup__frame {
+		--mockup-device-width: 1440px;
+		width: 1440px;
+	}
 
-.rf-mockup--macbook .rf-mockup__title-bar {
-	border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
-	border: 3px solid var(--mockup-bezel);
-	border-bottom: none;
-}
+	.rf-mockup--macbook .rf-mockup__title-bar {
+		border-radius: var(--rf-radius-md) var(--rf-radius-md) 0 0;
+		border: 3px solid var(--mockup-bezel);
+		border-bottom: none;
+	}
 
-.rf-mockup--macbook .rf-mockup__viewport {
-	min-height: 12rem;
-	border: 3px solid var(--mockup-bezel);
-	border-top: none;
-	border-bottom: none;
-}
+	.rf-mockup--macbook .rf-mockup__viewport {
+		min-height: 12rem;
+		border: 3px solid var(--mockup-bezel);
+		border-top: none;
+		border-bottom: none;
+	}
 
-/* ── Keyboard ── */
+	/* ── Keyboard ── */
 
-.rf-mockup__keyboard {
-	background: linear-gradient(to bottom, var(--mockup-bezel), color-mix(in srgb, var(--mockup-bezel), #000 15%));
-	padding: 0.5rem 2rem 0.75rem;
-	border-radius: 0 0 var(--rf-radius-md) var(--rf-radius-md);
-}
+	.rf-mockup__keyboard {
+		background: linear-gradient(
+			to bottom,
+			var(--mockup-bezel),
+			color-mix(in srgb, var(--mockup-bezel), #000 15%)
+		);
+		padding: 0.5rem 2rem 0.75rem;
+		border-radius: 0 0 var(--rf-radius-md) var(--rf-radius-md);
+	}
 
-.rf-mockup__trackpad {
-	background: color-mix(in srgb, var(--mockup-bezel), #fff 10%);
-	border-radius: var(--rf-radius-full);
-	margin-top: 0.25rem;
-}
+	.rf-mockup__trackpad {
+		background: color-mix(in srgb, var(--mockup-bezel), #fff 10%);
+		border-radius: var(--rf-radius-full);
+		margin-top: 0.25rem;
+	}
 
-/* ═══════════════════════════════════════
+	/* ═══════════════════════════════════════
    SPECIAL DEVICES
    ═══════════════════════════════════════ */
 
-/* ── Watch ── */
+	/* ── Watch ── */
 
-.rf-mockup--watch .rf-mockup__frame {
-	--mockup-device-width: 198px;
-	width: 198px;
-	border-radius: 40px;
-	position: relative;
-}
+	.rf-mockup--watch .rf-mockup__frame {
+		--mockup-device-width: 198px;
+		width: 198px;
+		border-radius: 40px;
+		position: relative;
+	}
 
-.rf-mockup--watch .rf-mockup__bezel {
-	border-radius: 40px;
-	border: 14px solid var(--mockup-bezel);
-}
+	.rf-mockup--watch .rf-mockup__bezel {
+		border-radius: 40px;
+		border: 14px solid var(--mockup-bezel);
+	}
 
-.rf-mockup--watch .rf-mockup__bezel::after {
-	content: '';
-	position: absolute;
-	right: -6px;
-	top: 35%;
-	width: 6px;
-	height: 28px;
-	background: var(--mockup-bezel);
-	border-radius: 0 3px 3px 0;
-}
+	.rf-mockup--watch .rf-mockup__bezel::after {
+		content: "";
+		position: absolute;
+		right: -6px;
+		top: 35%;
+		width: 6px;
+		height: 28px;
+		background: var(--mockup-bezel);
+		border-radius: 0 3px 3px 0;
+	}
 
-.rf-mockup--watch .rf-mockup__viewport {
-	height: 242px;
-	border-radius: 26px;
-}
+	.rf-mockup--watch .rf-mockup__viewport {
+		height: 242px;
+		border-radius: 26px;
+	}
 
-/* ── None (no frame) ── */
+	/* ── None (no frame) ── */
 
-.rf-mockup--none .rf-mockup__viewport {
-	border: 1px dashed var(--rf-color-border);
-	border-radius: var(--rf-radius-sm);
-}
-.rf-preview .rf-mockup {
-	margin: 0;
-}
+	.rf-mockup--none .rf-mockup__viewport {
+		border: 1px dashed var(--rf-color-border);
+		border-radius: var(--rf-radius-sm);
+	}
+	.rf-preview .rf-mockup {
+		margin: 0;
+	}
 
-/* ── Mockup as a media guest ──
+	/* ── Mockup as a media guest ──
  * In a card / bento-cell media zone the mockup sits in the recessed well. Its
  * `flush` elevation gives it vertical breathing room (padding-block) but leaves
  * it hugging the well's sides; add matching inline padding so the inset reads
@@ -422,24 +426,23 @@
  * padding also narrows `100cqi` — and the device, which fills the slot width as
  * a media guest (skeleton's uncapped frame zoom), then fills the padded box, so
  * the gap stays even with the top/bottom margin at any slot width. */
-[data-section="media"] > .rf-mockup {
-	padding-inline: var(--rune-padding, var(--rf-spacing-sm));
-}
+	[data-section="media"] > .rf-mockup {
+		padding-inline: var(--rune-padding, var(--rf-spacing-sm));
+	}
 
-/* ═══════════════════════════════════════
+	/* ═══════════════════════════════════════
    DARK MODE
    ═══════════════════════════════════════ */
 
-@media (prefers-color-scheme: dark) {
-	.rf-mockup--auto {
-		--mockup-bezel: var(--mockup-bezel-light);
-		--mockup-chrome: #3a3a3a;
-		--mockup-chrome-text: #aaa;
-	}
+	@media (prefers-color-scheme: dark) {
+		.rf-mockup--auto {
+			--mockup-bezel: var(--mockup-bezel-light);
+			--mockup-chrome: #3a3a3a;
+			--mockup-chrome-text: #aaa;
+		}
 
-	.rf-mockup--light .rf-mockup__address-bar {
-		background: rgba(0, 0, 0, 0.15);
+		.rf-mockup--light .rf-mockup__address-bar {
+			background: rgba(0, 0, 0, 0.15);
+		}
 	}
-}
-
 }

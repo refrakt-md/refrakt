@@ -25,9 +25,22 @@ function parseAmount(str: string): number {
 // authored amounts, so it rides along.
 
 const BUDGET_CURRENCY_SYMBOLS: Record<string, string> = {
-	USD: '$', EUR: '€', GBP: '£', JPY: '¥', CNY: '¥',
-	AUD: 'A$', CAD: 'C$', CHF: 'CHF ', SEK: 'kr', NOK: 'kr', DKK: 'kr',
-	INR: '₹', KRW: '₩', BRL: 'R$', MXN: 'MX$', ZAR: 'R',
+	USD: '$',
+	EUR: '€',
+	GBP: '£',
+	JPY: '¥',
+	CNY: '¥',
+	AUD: 'A$',
+	CAD: 'C$',
+	CHF: 'CHF ',
+	SEK: 'kr',
+	NOK: 'kr',
+	DKK: 'kr',
+	INR: '₹',
+	KRW: '₩',
+	BRL: 'R$',
+	MXN: 'MX$',
+	ZAR: 'R',
 };
 
 /**
@@ -36,7 +49,12 @@ const BUDGET_CURRENCY_SYMBOLS: Record<string, string> = {
  * `locale` is configured (SPEC-035), `Intl.NumberFormat` with `style: 'currency'`
  * produces locale-appropriate separators and currency placement.
  */
-function formatBudgetAmount(amount: number, symbol: string, currency?: string, locale?: string): string {
+function formatBudgetAmount(
+	amount: number,
+	symbol: string,
+	currency?: string,
+	locale?: string,
+): string {
 	if (locale && locale !== 'en' && currency && /^[A-Za-z]{3}$/.test(currency)) {
 		try {
 			return new Intl.NumberFormat(locale, {
@@ -136,7 +154,8 @@ export const budgetLineItem = createContentModelSchema({
 		const descTag = new Tag('span', {}, [attrs.description ?? '']);
 		const amountTag = new Tag('span', {}, [attrs.amount ?? '']);
 
-		return createComponentRenderable({ rune: 'budget-line-item',
+		return createComponentRenderable({
+			rune: 'budget-line-item',
 			tag: 'li',
 			properties: {
 				description: descTag,
@@ -166,15 +185,29 @@ function convertCategoryChildren(nodes: unknown[]): unknown[] {
 				const match = text.match(DESCRIPTION_AMOUNT_PATTERN);
 
 				if (match) {
-					converted.push(new Ast.Node('tag', {
-						description: match[1].trim(),
-						amount: match[2].trim(),
-					}, [], 'budget-line-item'));
+					converted.push(
+						new Ast.Node(
+							'tag',
+							{
+								description: match[1].trim(),
+								amount: match[2].trim(),
+							},
+							[],
+							'budget-line-item',
+						),
+					);
 				} else {
-					converted.push(new Ast.Node('tag', {
-						description: text,
-						amount: '',
-					}, [], 'budget-line-item'));
+					converted.push(
+						new Ast.Node(
+							'tag',
+							{
+								description: text,
+								amount: '',
+							},
+							[],
+							'budget-line-item',
+						),
+					);
 				}
 			}
 		} else {
@@ -204,7 +237,8 @@ export const budgetCategory = createContentModelSchema({
 	contentModel: {
 		type: 'custom',
 		processChildren: convertCategoryChildren,
-		description: 'Converts list items into budget-line-item tags with "Description: $Amount" pattern.',
+		description:
+			'Converts list items into budget-line-item tags with "Description: $Amount" pattern.',
 	},
 	transform(resolved, attrs, config) {
 		// Compute subtotal from the raw children before transforming
@@ -221,7 +255,8 @@ export const budgetCategory = createContentModelSchema({
 		const items = body.tag('li').typeof('BudgetLineItem');
 		const itemsList = new Tag('ul', {}, items.toArray());
 
-		return createComponentRenderable({ rune: 'budget-category',
+		return createComponentRenderable({
+			rune: 'budget-category',
 			tag: 'div',
 			properties: {
 				label: labelTag,
@@ -264,7 +299,7 @@ function convertBudgetChildren(nodes: unknown[]): unknown[] {
 	const n = converted.length - 1;
 	if (!converted[n] || converted[n].type !== 'list') return nodes;
 
-	const tags = converted[n].children.map(item => {
+	const tags = converted[n].children.map((item) => {
 		const heading = item.children[0];
 		const { label, estimate } = parseEstimate(heading);
 
@@ -278,21 +313,39 @@ function convertBudgetChildren(nodes: unknown[]): unknown[] {
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
 // what a section *is* (ADR-028).
-export const budgetSections = { preamble: 'preamble', headline: 'title', footer: 'footer' } as const;
+export const budgetSections = {
+	preamble: 'preamble',
+	headline: 'title',
+	footer: 'footer',
+} as const;
 
 export const budget = createContentModelSchema({
 	sections: budgetSections,
 	attributes: {
-		currency: { type: String, required: false, description: 'Currency symbol or code (e.g. USD, EUR)' },
-		duration: { type: String, required: false, description: 'Budget duration for per-day calculations (e.g. "5 days", "1 month")' },
+		currency: {
+			type: String,
+			required: false,
+			description: 'Currency symbol or code (e.g. USD, EUR)',
+		},
+		duration: {
+			type: String,
+			required: false,
+			description: 'Budget duration for per-day calculations (e.g. "5 days", "1 month")',
+		},
 		showPerDay: { type: Boolean, required: false, description: 'Show per-day cost breakdown' },
-		variant: { type: String, required: false, matches: variantType.slice(), description: 'Display style: detailed line items or summary' },
+		variant: {
+			type: String,
+			required: false,
+			matches: variantType.slice(),
+			description: 'Display style: detailed line items or summary',
+		},
 	},
 	contentModel: {
 		type: 'custom',
 		processChildren: convertBudgetChildren,
-		description: 'Converts headings into budget-category tags with estimate parsing, '
-			+ 'where list items become budget-line-items with "Description: $Amount" pattern.',
+		description:
+			'Converts headings into budget-category tags with estimate parsing, ' +
+			'where list items become budget-line-items with "Description: $Amount" pattern.',
 	},
 	transform(resolved, attrs, config) {
 		const allChildren = asNodes(resolved.children);
@@ -364,15 +417,23 @@ export const budget = createContentModelSchema({
 				// SPEC-035 Zone 2 — `data-i18n` marks the programmatic label for
 				// locale resolution in the engine (the schema transform has no
 				// locale access); the literal is the English fallback.
-				new Tag('span', { class: 'rf-budget__total-label', 'data-i18n': 'core.budget.total' }, ['Total']),
+				new Tag('span', { class: 'rf-budget__total-label', 'data-i18n': 'core.budget.total' }, [
+					'Total',
+				]),
 				new Tag('span', { class: 'rf-budget__total-amount' }, [fmt(grandTotal)]),
 			]),
 		];
 		if (hasPerDay) {
-			footerChildren.push(new Tag('div', { class: 'rf-budget__per-day' }, [
-				new Tag('span', { class: 'rf-budget__per-day-label', 'data-i18n': 'core.budget.perDay' }, ['Per day']),
-				new Tag('span', { class: 'rf-budget__per-day-amount' }, [fmt(perDay)]),
-			]));
+			footerChildren.push(
+				new Tag('div', { class: 'rf-budget__per-day' }, [
+					new Tag(
+						'span',
+						{ class: 'rf-budget__per-day-label', 'data-i18n': 'core.budget.perDay' },
+						['Per day'],
+					),
+					new Tag('span', { class: 'rf-budget__per-day-amount' }, [fmt(perDay)]),
+				]),
+			);
 		}
 		const footerDiv = new Tag('div', { class: 'rf-budget__footer' }, footerChildren);
 
@@ -385,14 +446,18 @@ export const budget = createContentModelSchema({
 		// SPEC-081: emit flat header slots — `layout` builds the preamble
 		// <header>; the categories and footer append after it.
 		const children: any[] = [
-			currencyMeta, durationMeta,
-			showPerDayMeta, variantMeta,
+			currencyMeta,
+			durationMeta,
+			showPerDayMeta,
+			variantMeta,
 			...header.toArray(),
 			categoriesDiv,
 			footerDiv,
 		];
 
-		return createComponentRenderable({ rune: 'budget', schemaOrgType: 'ItemList',
+		return createComponentRenderable({
+			rune: 'budget',
+			schemaOrgType: 'ItemList',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

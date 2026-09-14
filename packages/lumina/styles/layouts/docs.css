@@ -1,140 +1,139 @@
 @layer skin {
-/* Docs layout */
+	/* Docs layout */
 
-/* ---- Fixed header ---- */
-.rf-docs-header {
-	background: var(--rf-color-bg, #fff);
-	border-bottom: 1px solid var(--rf-color-border);
-}
-.rf-docs-header__inner {
-	gap: 1rem;
-	padding: 0.625rem 1.5rem;
-}
-.rf-docs-header p {
-	margin: 0;
-	line-height: 1;
-}
-.rf-docs-header a {
-	color: inherit;
-	text-decoration: none;
-}
-.rf-docs-header a:hover {
-	text-decoration: none;
-}
-.rf-docs-header p:first-child a {
-	gap: 0.5rem;
-	font-weight: var(--rf-weight-semibold);
-	font-size: var(--rf-text-xl);
-	letter-spacing: var(--rf-tracking-tight);
-}
-.rf-docs-header p:first-child a > .rf-icon {
-	vertical-align: middle;
-	color: currentColor;
-}
-.rf-docs-header__inner p ~ p {
-	font-size: var(--rf-text-sm);
-}
-.rf-docs-header__inner p ~ p a {
-	margin-left: 1.5rem;
-	color: var(--rf-color-muted);
-}
-.rf-docs-header__inner p ~ p a:hover {
-	color: var(--rf-color-text);
-}
-.rf-docs-header__inner p ~ p a svg {
-	vertical-align: -0.15em;
-}
+	/* ---- Fixed header ---- */
+	.rf-docs-header {
+		background: var(--rf-color-bg, #fff);
+		border-bottom: 1px solid var(--rf-color-border);
+	}
+	.rf-docs-header__inner {
+		gap: 1rem;
+		padding: 0.625rem 1.5rem;
+	}
+	.rf-docs-header p {
+		margin: 0;
+		line-height: 1;
+	}
+	.rf-docs-header a {
+		color: inherit;
+		text-decoration: none;
+	}
+	.rf-docs-header a:hover {
+		text-decoration: none;
+	}
+	.rf-docs-header p:first-child a {
+		gap: 0.5rem;
+		font-weight: var(--rf-weight-semibold);
+		font-size: var(--rf-text-xl);
+		letter-spacing: var(--rf-tracking-tight);
+	}
+	.rf-docs-header p:first-child a > .rf-icon {
+		vertical-align: middle;
+		color: currentColor;
+	}
+	.rf-docs-header__inner p ~ p {
+		font-size: var(--rf-text-sm);
+	}
+	.rf-docs-header__inner p ~ p a {
+		margin-left: 1.5rem;
+		color: var(--rf-color-muted);
+	}
+	.rf-docs-header__inner p ~ p a:hover {
+		color: var(--rf-color-text);
+	}
+	.rf-docs-header__inner p ~ p a svg {
+		vertical-align: -0.15em;
+	}
 
-/* ---- Sticky sidebar ---- */
-.rf-docs-sidebar {
-	padding: 1.5rem;
-	border-right: 1px solid var(--rf-color-border);
-	background: var(--rf-color-bg, #fff);
-}
-.rf-docs-sidebar::-webkit-scrollbar {
-	width: 0;
-}
+	/* ---- Sticky sidebar ---- */
+	.rf-docs-sidebar {
+		padding: 1.5rem;
+		border-right: 1px solid var(--rf-color-border);
+		background: var(--rf-color-bg, #fff);
+	}
+	.rf-docs-sidebar::-webkit-scrollbar {
+		width: 0;
+	}
 
-/* ---- Content area ---- */
-.rf-docs-content {
-	padding-top: 4.75rem;
-	padding-bottom: 4rem;
-}
-.rf-docs-content__inner {
-	--rf-content-padding: 2.5rem;
-}
-.rf-docs-content__inner--has-toc {
-	gap: 6rem;
-}
+	/* ---- Content area ---- */
+	.rf-docs-content {
+		padding-top: 4.75rem;
+		padding-bottom: 4rem;
+	}
+	.rf-docs-content__inner {
+		--rf-content-padding: 2.5rem;
+	}
+	.rf-docs-content__inner--has-toc {
+		gap: 6rem;
+	}
 
-/* Pagination wrapper sits outside the article grid, so it gets its own
+	/* Pagination wrapper sits outside the article grid, so it gets its own
    horizontal padding so prev/next don't run to the viewport edges on
    narrow viewports. Uses the same `--rf-content-padding` token the
    article grid uses for its gutter columns. */
-.rf-docs-content__pagination {
-	padding-inline: var(--rf-content-padding, 2.5rem);
-}
+	.rf-docs-content__pagination {
+		padding-inline: var(--rf-content-padding, 2.5rem);
+	}
 
-/* ---- "On this page" sidebar ---- */
-.rf-docs-toc {
-	padding: 0 1.25rem;
-}
-.rf-docs-toc::-webkit-scrollbar {
-	width: 0;
-}
+	/* ---- "On this page" sidebar ---- */
+	.rf-docs-toc {
+		padding: 0 1.25rem;
+	}
+	.rf-docs-toc::-webkit-scrollbar {
+		width: 0;
+	}
 
-/* ---- Mobile toolbar (hidden on desktop) ---- */
-.rf-docs-toolbar {
-	gap: 0.75rem;
-	padding: 0.625rem 1rem;
-	border-bottom: 1px solid var(--rf-color-border);
-	background: var(--rf-color-bg, #fff);
-}
-.rf-docs-toolbar__hamburger {
-	background: none;
-	border: none;
-	padding: 0.25rem;
-	cursor: pointer;
-	color: var(--rf-color-muted);
-	line-height: 0;
-}
-.rf-docs-toolbar__hamburger:hover {
-	color: var(--rf-color-text);
-}
-.rf-docs-toolbar__breadcrumb {
-	font-size: var(--rf-text-xs);
-	color: var(--rf-color-muted);
-	/* `flex: 1 1 0` (basis 0, not auto) so the breadcrumb shrinks against
+	/* ---- Mobile toolbar (hidden on desktop) ---- */
+	.rf-docs-toolbar {
+		gap: 0.75rem;
+		padding: 0.625rem 1rem;
+		border-bottom: 1px solid var(--rf-color-border);
+		background: var(--rf-color-bg, #fff);
+	}
+	.rf-docs-toolbar__hamburger {
+		background: none;
+		border: none;
+		padding: 0.25rem;
+		cursor: pointer;
+		color: var(--rf-color-muted);
+		line-height: 0;
+	}
+	.rf-docs-toolbar__hamburger:hover {
+		color: var(--rf-color-text);
+	}
+	.rf-docs-toolbar__breadcrumb {
+		font-size: var(--rf-text-xs);
+		color: var(--rf-color-muted);
+		/* `flex: 1 1 0` (basis 0, not auto) so the breadcrumb shrinks against
 	 * the available space rather than starting at its full content width —
 	 * combined with `min-width: 0` this is what triggers ellipsis on long
 	 * titles. Without basis 0 a long page title overflows the toolbar and
 	 * forces horizontal page scroll on narrow viewports. */
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-.rf-docs-breadcrumb-category {
-	color: var(--rf-color-muted);
-}
-.rf-docs-breadcrumb-sep {
-	margin: 0 0.35rem;
-	color: var(--rf-color-border);
-}
-.rf-docs-breadcrumb-page {
-	color: var(--rf-color-text);
-	font-weight: var(--rf-weight-medium);
-}
-
-/* ---- Hide TOC on medium screens ---- */
-
-/* ---- Mobile overrides ---- */
-@media (max-width: 768px) {
-	.rf-docs-content {
-		padding-top: 2rem;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
-	.rf-docs-content__inner {
-		--rf-content-padding: 1.5rem;
-		--rf-docs-wide-inset: 1.5rem;
+	.rf-docs-breadcrumb-category {
+		color: var(--rf-color-muted);
 	}
-}
+	.rf-docs-breadcrumb-sep {
+		margin: 0 0.35rem;
+		color: var(--rf-color-border);
+	}
+	.rf-docs-breadcrumb-page {
+		color: var(--rf-color-text);
+		font-weight: var(--rf-weight-medium);
+	}
 
+	/* ---- Hide TOC on medium screens ---- */
+
+	/* ---- Mobile overrides ---- */
+	@media (max-width: 768px) {
+		.rf-docs-content {
+			padding-top: 2rem;
+		}
+		.rf-docs-content__inner {
+			--rf-content-padding: 1.5rem;
+			--rf-docs-wide-inset: 1.5rem;
+		}
+	}
 }

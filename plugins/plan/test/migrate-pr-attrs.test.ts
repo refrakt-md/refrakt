@@ -7,7 +7,11 @@ import { runMigratePrAttrs } from '../src/commands/migrate.js';
 const TMP = join(import.meta.dirname, '.tmp-pr-attrs-test');
 
 function git(...args: string[]): string {
-	return execFileSync('git', args, { cwd: TMP, stdio: ['pipe', 'pipe', 'pipe'], encoding: 'utf8' }).trim();
+	return execFileSync('git', args, {
+		cwd: TMP,
+		stdio: ['pipe', 'pipe', 'pipe'],
+		encoding: 'utf8',
+	}).trim();
 }
 
 function writeWork(id: string, status: string, extra = ''): void {
@@ -40,7 +44,14 @@ function landViaPr(id: string, prNumber: number): void {
 	git('add', '-A');
 	git('commit', '-q', '-m', `${id}: done`);
 	git('checkout', '-q', 'main');
-	git('merge', '--no-ff', '-q', '-m', `Merge pull request #${prNumber} from acme/${branch}`, branch);
+	git(
+		'merge',
+		'--no-ff',
+		'-q',
+		'-m',
+		`Merge pull request #${prNumber} from acme/${branch}`,
+		branch,
+	);
 }
 
 describe('migrate pr-attrs — git backfill (WORK-498)', () => {
@@ -96,7 +107,7 @@ describe('migrate pr-attrs — git backfill (WORK-498)', () => {
 
 		const result = runMigratePrAttrs({ dir: TMP });
 		expect(result.resolved).toHaveLength(0);
-		expect(result.unresolved.map(u => u.id)).toContain('WORK-004');
+		expect(result.unresolved.map((u) => u.id)).toContain('WORK-004');
 	});
 
 	it('skips an item flipped to done via two different PRs (ambiguous)', () => {
@@ -112,7 +123,7 @@ describe('migrate pr-attrs — git backfill (WORK-498)', () => {
 
 		const result = runMigratePrAttrs({ dir: TMP });
 		expect(result.resolved).toHaveLength(0);
-		expect(result.skipped.map(s => s.id)).toContain('WORK-005');
+		expect(result.skipped.map((s) => s.id)).toContain('WORK-005');
 	});
 
 	it('reports no origin remote gracefully', () => {
@@ -123,6 +134,6 @@ describe('migrate pr-attrs — git backfill (WORK-498)', () => {
 
 		const result = runMigratePrAttrs({ dir: TMP });
 		expect(result.repoSlug).toBeNull();
-		expect(result.unresolved.map(u => u.id)).toContain('WORK-006');
+		expect(result.unresolved.map((u) => u.id)).toContain('WORK-006');
 	});
 });

@@ -88,7 +88,12 @@ export function resolveSource(source: string, cwd: string = process.cwd()): Reso
 		if (!pkg.name) {
 			throw new Error(`package.json in "${abs}" is missing a "name" field.`);
 		}
-		return { name: pkg.name, version: pkg.version, installSource: `file:${abs}`, sourceType: 'directory' };
+		return {
+			name: pkg.name,
+			version: pkg.version,
+			installSource: `file:${abs}`,
+			sourceType: 'directory',
+		};
 	}
 	// Registry specifier — name resolved up front; version known after install.
 	return { name: parsePackageName(source), installSource: source, sourceType: 'registry' };
@@ -141,7 +146,9 @@ export function validateCompat(
 	const warnings: string[] = [];
 	if (!declaredRange) return { errors, warnings };
 	if (!projectVersion) {
-		warnings.push(`could not determine the project's refrakt version to validate "${declaredRange}"`);
+		warnings.push(
+			`could not determine the project's refrakt version to validate "${declaredRange}"`,
+		);
 		return { errors, warnings };
 	}
 	const result = checkRefraktCompat(declaredRange, projectVersion);
@@ -160,7 +167,9 @@ export function validateThemeExports(manifest: Record<string, unknown> | undefin
 	if (!manifest) return ['Theme directory not found in node_modules — install may have failed'];
 	const exportsMap = (manifest.exports ?? {}) as Record<string, unknown>;
 	if (!exportsMap['./transform']) {
-		warnings.push('Theme is missing ./transform export — CSS tree-shaking and identity-transform config will be unavailable');
+		warnings.push(
+			'Theme is missing ./transform export — CSS tree-shaking and identity-transform config will be unavailable',
+		);
 	}
 	return warnings;
 }
@@ -209,17 +218,26 @@ export function validatePresetEntry(
 	const warnings: string[] = [];
 	const id = typeof entry.id === 'string' ? entry.id : '(unnamed)';
 	if (entry.scope !== 'syntax' && entry.scope !== 'palette') {
-		errors.push(`preset "${id}" has an invalid scope "${String(entry.scope)}" (expected "syntax" | "palette")`);
+		errors.push(
+			`preset "${id}" has an invalid scope "${String(entry.scope)}" (expected "syntax" | "palette")`,
+		);
 	}
 	if (entry.tunedFor !== undefined) {
-		if (!Array.isArray(entry.tunedFor) || (entry.tunedFor as unknown[]).some((t) => typeof t !== 'string')) {
-			warnings.push(`preset "${id}" has a malformed "tunedFor" (expected an array of theme package names)`);
+		if (
+			!Array.isArray(entry.tunedFor) ||
+			(entry.tunedFor as unknown[]).some((t) => typeof t !== 'string')
+		) {
+			warnings.push(
+				`preset "${id}" has a malformed "tunedFor" (expected an array of theme package names)`,
+			);
 		}
 	}
 	if (config && entry.scope === 'syntax') {
 		const chrome = presetChromeKeys(config);
 		if (chrome.length > 0) {
-			warnings.push(`preset "${id}" is declared scope "syntax" but sets chrome tokens (${chrome.join(', ')}) — it is really a "palette" preset`);
+			warnings.push(
+				`preset "${id}" is declared scope "syntax" but sets chrome tokens (${chrome.join(', ')}) — it is really a "palette" preset`,
+			);
 		}
 	}
 	return { errors, warnings };
@@ -260,7 +278,10 @@ export function resolveTargetSite(
 	if (mode === 'existing') {
 		if (siteFlag) {
 			if (!keys.includes(siteFlag)) {
-				return { error: `site "${siteFlag}" is not declared in refrakt.config.json`, candidates: keys };
+				return {
+					error: `site "${siteFlag}" is not declared in refrakt.config.json`,
+					candidates: keys,
+				};
 			}
 			return { key: siteFlag };
 		}
@@ -270,7 +291,10 @@ export function resolveTargetSite(
 	// mode === 'new'
 	const key = siteFlag ?? 'default';
 	if (keys.includes(key)) {
-		return { error: `site "${key}" already exists; full-site templates create a new site (choose a fresh --site name)`, candidates: keys };
+		return {
+			error: `site "${key}" already exists; full-site templates create a new site (choose a fresh --site name)`,
+			candidates: keys,
+		};
 	}
 	return { key };
 }
@@ -285,7 +309,9 @@ function getSite(raw: RefraktConfig, key: string): SiteConfig | undefined {
  *  form's `presets`/`tokens`/`modes`/`colorScheme`. Returns the previous
  *  package name. The site must already exist. */
 export function setSiteTheme(raw: RefraktConfig, key: string, pkgName: string): string | undefined {
-	const apply = (current: string | SiteThemeConfig | undefined): { previous?: string; next: string | SiteThemeConfig } => {
+	const apply = (
+		current: string | SiteThemeConfig | undefined,
+	): { previous?: string; next: string | SiteThemeConfig } => {
 		if (current === undefined || typeof current === 'string') {
 			return { previous: typeof current === 'string' ? current : undefined, next: pkgName };
 		}
@@ -309,7 +335,8 @@ export function appendSitePreset(raw: RefraktConfig, key: string, presetModule: 
 	const site = getSite(raw, key);
 	if (!site) return;
 	const theme = site.theme;
-	const obj: SiteThemeConfig = typeof theme === 'string' ? { package: theme } : { ...(theme ?? { package: '' }) };
+	const obj: SiteThemeConfig =
+		typeof theme === 'string' ? { package: theme } : { ...(theme ?? { package: '' }) };
 	const presets = obj.presets ? [...obj.presets] : [];
 	if (!presets.includes(presetModule)) presets.push(presetModule);
 	obj.presets = presets;

@@ -1,101 +1,102 @@
 @layer skin {
-/* Relationships — an entity's graph edges, grouped by kind (SPEC-072).
+	/* Relationships — an entity's graph edges, grouped by kind (SPEC-072).
  *
  * Generic over kind: the rune emits `data-kind` on each item and a humanized
  * group heading per kind. Mirrors collection's list chrome.
  */
 
-.rf-relationships {
-	margin: var(--rf-spacing-md) 0;
-}
+	.rf-relationships {
+		margin: var(--rf-spacing-md) 0;
+	}
 
-.rf-relationships__preamble > :first-child { margin-top: 0; }
+	.rf-relationships__preamble > :first-child {
+		margin-top: 0;
+	}
 
-.rf-relationships__empty {
-	color: var(--rf-color-muted);
-	font-size: 0.9375em;
-}
+	.rf-relationships__empty {
+		color: var(--rf-color-muted);
+		font-size: 0.9375em;
+	}
 
-.rf-relationships__items {
-	gap: var(--rf-spacing-sm);
-}
+	.rf-relationships__items {
+		gap: var(--rf-spacing-sm);
+	}
 
-/* grid arranges edges into responsive columns; list stays a stacked flow.
+	/* grid arranges edges into responsive columns; list stays a stacked flow.
  * Mirrors collection: item chrome comes from the item (the card built-in, or
  * a {% card %} in the body template), not the layout. */
-.rf-relationships[data-layout='grid'] .rf-relationships__items {
-	gap: var(--rf-spacing-md);
-}
+	.rf-relationships[data-layout="grid"] .rf-relationships__items {
+		gap: var(--rf-spacing-md);
+	}
 
-/* Grouped grid: the grid belongs to each group (its items are the cells), not
+	/* Grouped grid: the grid belongs to each group (its items are the cells), not
  * to __items — whose children are the group blocks (or the accordion wrapper).
  * Left on __items, each group collapses into a single column. So __items stacks
  * the groups and each group becomes the grid, with its title spanning. */
-.rf-relationships[data-layout='grid'] .rf-relationships__items:has(.rf-relationships__group),
-.rf-relationships[data-layout='grid'] .rf-relationships__items:has(.rf-accordion) {
-	gap: var(--rf-spacing-md);
-}
-.rf-relationships[data-layout='grid'] .rf-relationships__group {
-	gap: var(--rf-spacing-md);
-}
+	.rf-relationships[data-layout="grid"] .rf-relationships__items:has(.rf-relationships__group),
+	.rf-relationships[data-layout="grid"] .rf-relationships__items:has(.rf-accordion) {
+		gap: var(--rf-spacing-md);
+	}
+	.rf-relationships[data-layout="grid"] .rf-relationships__group {
+		gap: var(--rf-spacing-md);
+	}
 
-.rf-relationships__group {
-	margin-top: var(--rf-spacing-md);
-	/* Tight default for the built-in inline shape (title + field spans). */
-	gap: var(--rf-spacing-xs);
-}
-.rf-relationships__group:first-child {
-	margin-top: 0;
-}
-/* Modestly roomier when items carry a body template (block content — more than
+	.rf-relationships__group {
+		margin-top: var(--rf-spacing-md);
+		/* Tight default for the built-in inline shape (title + field spans). */
+		gap: var(--rf-spacing-xs);
+	}
+	.rf-relationships__group:first-child {
+		margin-top: 0;
+	}
+	/* Modestly roomier when items carry a body template (block content — more than
  * a one-liner). Body-template items are marked `data-block` by the resolver;
  * the built-in inline title+field rows are not. */
-.rf-relationships__group:has(.rf-relationships__item[data-block]) {
-	gap: var(--rf-spacing-sm);
-}
+	.rf-relationships__group:has(.rf-relationships__item[data-block]) {
+		gap: var(--rf-spacing-sm);
+	}
 
-.rf-relationships__group-title {
-	margin: 0 0 var(--rf-spacing-sm);
-	font-size: 0.875em;
-	text-transform: uppercase;
-	letter-spacing: var(--rf-tracking-wider);
-	color: var(--rf-color-muted);
-}
+	.rf-relationships__group-title {
+		margin: 0 0 var(--rf-spacing-sm);
+		font-size: 0.875em;
+		text-transform: uppercase;
+		letter-spacing: var(--rf-tracking-wider);
+		color: var(--rf-color-muted);
+	}
 
-.rf-relationships__item {
-	gap: var(--rf-spacing-xs) var(--rf-spacing-sm);
-}
-.rf-relationships__item[data-block] > :first-child {
-	margin-top: 0;
-}
-.rf-relationships__item[data-block] > :last-child {
-	margin-bottom: 0;
-}
+	.rf-relationships__item {
+		gap: var(--rf-spacing-xs) var(--rf-spacing-sm);
+	}
+	.rf-relationships__item[data-block] > :first-child {
+		margin-top: 0;
+	}
+	.rf-relationships__item[data-block] > :last-child {
+		margin-bottom: 0;
+	}
 
-/* Card chrome for the grid built-in (mirrors collection's __card). */
-.rf-relationships__card {
-	gap: var(--rf-spacing-xs);
-	padding: var(--rf-spacing-md);
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-md);
-	background: var(--rf-color-surface);
-}
-.rf-relationships__card:hover {
-	background: var(--rf-color-surface-hover);
-}
+	/* Card chrome for the grid built-in (mirrors collection's __card). */
+	.rf-relationships__card {
+		gap: var(--rf-spacing-xs);
+		padding: var(--rf-spacing-md);
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-md);
+		background: var(--rf-color-surface);
+	}
+	.rf-relationships__card:hover {
+		background: var(--rf-color-surface-hover);
+	}
 
-.rf-relationships__title {
-	font-weight: var(--rf-weight-semibold);
-	color: var(--rf-color-text);
-	text-decoration: none;
-}
-.rf-relationships__title:hover {
-	color: var(--rf-color-primary);
-}
+	.rf-relationships__title {
+		font-weight: var(--rf-weight-semibold);
+		color: var(--rf-color-text);
+		text-decoration: none;
+	}
+	.rf-relationships__title:hover {
+		color: var(--rf-color-primary);
+	}
 
-.rf-relationships__field {
-	font-size: 0.875em;
-	color: var(--rf-color-muted);
-}
-
+	.rf-relationships__field {
+		font-size: 0.875em;
+		color: var(--rf-color-muted);
+	}
 }

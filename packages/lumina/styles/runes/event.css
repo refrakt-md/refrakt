@@ -1,41 +1,40 @@
 @layer skin {
-/* Event */
+	/* Event */
 
-/* When/where def-list — geometry from the shared `[data-zone-layout=
+	/* When/where def-list — geometry from the shared `[data-zone-layout=
  * definition-list]` primitive; this block owns only its top margin. */
-.rf-event__metadata {
-	margin-top: 1.25rem;
-}
+	.rf-event__metadata {
+		margin-top: 1.25rem;
+	}
 
-/* Register CTA — a bar-wrapped link; style the inner `<a>` as a button. */
-.rf-event__register {
-	margin-top: 1.5rem;
-}
-.rf-event__register a {
-	padding: 0.5rem 1rem;
-	background: var(--rf-color-primary);
-	color: var(--rf-color-on-primary);
-	border-radius: var(--rf-radius-md);
-	font-weight: var(--rf-weight-medium);
-	font-size: var(--rf-text-sm);
-	text-decoration: none;
-}
-.rf-event__register a:hover {
-	background: var(--rf-color-primary-hover);
-}
-.rf-event__body {
-	margin-top: 1.5rem;
-}
-.rf-event__body ul,
-.rf-event__body ol {
-	padding-left: 1.5rem;
-}
-.rf-event__body a {
-	color: var(--rf-color-primary);
-	text-decoration: none;
-}
-.rf-event__body a:hover {
-	color: var(--rf-color-primary-hover);
-}
-
+	/* Register CTA — a bar-wrapped link; style the inner `<a>` as a button. */
+	.rf-event__register {
+		margin-top: 1.5rem;
+	}
+	.rf-event__register a {
+		padding: 0.5rem 1rem;
+		background: var(--rf-color-primary);
+		color: var(--rf-color-on-primary);
+		border-radius: var(--rf-radius-md);
+		font-weight: var(--rf-weight-medium);
+		font-size: var(--rf-text-sm);
+		text-decoration: none;
+	}
+	.rf-event__register a:hover {
+		background: var(--rf-color-primary-hover);
+	}
+	.rf-event__body {
+		margin-top: 1.5rem;
+	}
+	.rf-event__body ul,
+	.rf-event__body ol {
+		padding-left: 1.5rem;
+	}
+	.rf-event__body a {
+		color: var(--rf-color-primary);
+		text-decoration: none;
+	}
+	.rf-event__body a:hover {
+		color: var(--rf-color-primary-hover);
+	}
 }

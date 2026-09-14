@@ -14,13 +14,16 @@ export const hintSections = { header: 'header' } as const;
 export const hint = createContentModelSchema({
 	sections: hintSections,
 	attributes: {
-		type: { type: String, matches: hintType.slice(), errorLevel: 'critical', description: 'Visual style: caution, check, note, or warning' },
+		type: {
+			type: String,
+			matches: hintType.slice(),
+			errorLevel: 'critical',
+			description: 'Visual style: caution, check, note, or warning',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const hintType = new Tag('meta', { content: attrs.type ?? 'note' });
@@ -29,7 +32,8 @@ export const hint = createContentModelSchema({
 		);
 		const bodyDiv = body.wrap('div');
 
-		return createComponentRenderable({ rune: 'hint',
+		return createComponentRenderable({
+			rune: 'hint',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

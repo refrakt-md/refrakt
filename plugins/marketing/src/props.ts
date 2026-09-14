@@ -1,6 +1,13 @@
-import type { BaseComponentProps, PageSectionSlots, SplitLayoutProperties } from '@refrakt-md/types';
+import type {
+	BaseComponentProps,
+	PageSectionSlots,
+	SplitLayoutProperties,
+} from '@refrakt-md/types';
 
-export interface FeatureProps<R = unknown> extends BaseComponentProps<R>, PageSectionSlots<R>, SplitLayoutProperties {
+export interface FeatureProps<R = unknown>
+	extends BaseComponentProps<R>,
+		PageSectionSlots<R>,
+		SplitLayoutProperties {
 	align?: string;
 	'feature-item'?: R;
 	content?: R;
@@ -62,7 +69,10 @@ export interface ComparisonProps<R = unknown> extends BaseComponentProps<R>, Pag
 	grid?: R;
 }
 
-export interface HeroProps<R = unknown> extends BaseComponentProps<R>, PageSectionSlots<R>, SplitLayoutProperties {
+export interface HeroProps<R = unknown>
+	extends BaseComponentProps<R>,
+		PageSectionSlots<R>,
+		SplitLayoutProperties {
 	align?: string;
 	actions?: R;
 	content?: R;

@@ -71,8 +71,8 @@ export function resolveXrefPreviews(
 		const tag = node;
 
 		if (
-			tag.attributes?.['data-rune'] === XREF_RUNE_MARKER
-			&& tag.attributes?.['data-xref-preview'] === 'drawer'
+			tag.attributes?.['data-rune'] === XREF_RUNE_MARKER &&
+			tag.attributes?.['data-xref-preview'] === 'drawer'
 		) {
 			return resolveOne(tag, registry, ctx, pageUrl);
 		}
@@ -110,8 +110,7 @@ function resolveOne(
 	// Try to resolve the entity title for the inline link label when the
 	// author didn't supply an explicit `label=`. Fall back to the id.
 	const entity = registry ? findEntity(registry, id) : undefined;
-	const label = authoredLabel
-		|| (entity ? entityDisplayLabel(entity) : id);
+	const label = authoredLabel || (entity ? entityDisplayLabel(entity) : id);
 	const entityTitle = entity ? entityDisplayLabel(entity) : id;
 
 	const slug = id;
@@ -172,10 +171,7 @@ function buildXrefHoist(
 	const title = payload.title || entityId;
 
 	if (!entityId || !targetId) {
-		context.ctx.warn(
-			`xref hoist payload missing required entity-id or target-id`,
-			context.pageUrl,
-		);
+		context.ctx.warn(`xref hoist payload missing required entity-id or target-id`, context.pageUrl);
 		return null;
 	}
 
@@ -183,17 +179,25 @@ function buildXrefHoist(
 
 	// Header — title + close button (same shape author-declared drawers use).
 	const titleHeading = new Tag('h3', { 'data-name': 'title', class: 'rf-drawer__title' }, [title]);
-	const closeButton = new Tag('button', {
-		type: 'button',
-		'aria-label': 'Close',
-		hidden: true,
-		'data-name': 'close',
-		class: 'rf-drawer__close',
-	}, ['×']);
-	const header = new Tag('header', {
-		'data-name': 'header',
-		class: 'rf-drawer__header',
-	}, [titleHeading, closeButton]);
+	const closeButton = new Tag(
+		'button',
+		{
+			type: 'button',
+			'aria-label': 'Close',
+			hidden: true,
+			'data-name': 'close',
+			class: 'rf-drawer__close',
+		},
+		['×'],
+	);
+	const header = new Tag(
+		'header',
+		{
+			'data-name': 'header',
+			class: 'rf-drawer__header',
+		},
+		[titleHeading, closeButton],
+	);
 
 	// Body — an expand-pending placeholder. `resolveExpands` runs after
 	// `hoistPreviewDrawers` in the pipeline and substitutes this with the
@@ -215,13 +219,9 @@ function buildXrefHoist(
 	// drawer-target entities).
 	const footerHref = entity?.sourceUrl ?? '';
 	const footer = footerHref
-		? new Tag(
-			'footer',
-			{ 'data-name': 'footer', class: 'rf-drawer__footer' },
-			[
+		? new Tag('footer', { 'data-name': 'footer', class: 'rf-drawer__footer' }, [
 				new Tag('a', { href: footerHref }, [`View full page →`]),
-			],
-		)
+			])
 		: null;
 
 	const drawerChildren: RenderableTreeNode[] = [header, body];

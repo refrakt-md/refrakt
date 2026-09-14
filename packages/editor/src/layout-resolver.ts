@@ -4,7 +4,12 @@ import { ContentTree, resolveLayouts, Router, parseFrontmatter } from '@refrakt-
 import type { ContentPage, HookSet } from '@refrakt-md/content';
 import { tags, nodes, serializeTree } from '@refrakt-md/runes';
 import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
-import type { AggregatedData, TransformedPage, PipelineWarning, PipelineContext } from '@refrakt-md/types';
+import type {
+	AggregatedData,
+	TransformedPage,
+	PipelineWarning,
+	PipelineContext,
+} from '@refrakt-md/types';
 
 export interface PagePreviewData {
 	renderable: unknown;
@@ -71,14 +76,24 @@ export class LayoutResolver {
 
 		// Phase 4: run postProcess hooks before serialization
 		const url = this.router.filePathToUrl(filePath);
-		const postProcessed = this.runPostProcess(rendered, url, frontmatter as Record<string, unknown>);
+		const postProcessed = this.runPostProcess(
+			rendered,
+			url,
+			frontmatter as Record<string, unknown>,
+		);
 
-		const serialized = serializeTree(postProcessed as import('@markdoc/markdoc').RenderableTreeNodes) as RendererNode;
+		const serialized = serializeTree(
+			postProcessed as import('@markdoc/markdoc').RenderableTreeNodes,
+		) as RendererNode;
 		let transformed = identityTransform(serialized);
 		if (highlightTransform) transformed = highlightTransform(transformed);
 
 		// Resolve layouts and transform region content
-		const regions = this.resolveAndTransformRegions(filePath, identityTransform, highlightTransform);
+		const regions = this.resolveAndTransformRegions(
+			filePath,
+			identityTransform,
+			highlightTransform,
+		);
 
 		return {
 			renderable: transformed,
@@ -110,7 +125,13 @@ export class LayoutResolver {
 
 		// We need to resolve regions as if a page existed in this directory.
 		// The layout chain includes this layout file and all parent layouts.
-		const regions = this.resolveAndTransformRegions(syntheticPagePath, identityTransform, highlightTransform, rawContent, filePath);
+		const regions = this.resolveAndTransformRegions(
+			syntheticPagePath,
+			identityTransform,
+			highlightTransform,
+			rawContent,
+			filePath,
+		);
 
 		// Compute URL for route rule matching (use the directory URL)
 		const url = this.router.filePathToUrl(dirPrefix ? `${dirPrefix}index.md` : 'index.md');
@@ -120,7 +141,8 @@ export class LayoutResolver {
 			$$mdtype: 'Tag',
 			name: 'div',
 			attributes: {
-				style: 'padding:2rem;text-align:center;color:#94a3b8;border:2px dashed #e2e8f0;border-radius:8px;margin:1rem 0;font-family:system-ui,-apple-system,sans-serif;',
+				style:
+					'padding:2rem;text-align:center;color:#94a3b8;border:2px dashed #e2e8f0;border-radius:8px;margin:1rem 0;font-family:system-ui,-apple-system,sans-serif;',
 			},
 			children: ['Page content will appear here'],
 		};
@@ -193,7 +215,9 @@ export class LayoutResolver {
 
 		// For synthetic paths, find any page in the same directory
 		// to anchor layout resolution
-		const dirPrefix = filePath.includes('/') ? filePath.substring(0, filePath.lastIndexOf('/') + 1) : '';
+		const dirPrefix = filePath.includes('/')
+			? filePath.substring(0, filePath.lastIndexOf('/') + 1)
+			: '';
 		for (const page of this.tree.pages()) {
 			if (dirPrefix && page.relativePath.startsWith(dirPrefix)) return page;
 		}
@@ -259,8 +283,32 @@ function makeEditorContext(
 	url: string,
 ): PipelineContext {
 	return {
-		info(message, infoUrl) { warnings.push({ severity: 'info', phase: 'postProcess', pluginName, url: infoUrl ?? url, message }); },
-		warn(message, warnUrl) { warnings.push({ severity: 'warning', phase: 'postProcess', pluginName, url: warnUrl ?? url, message }); },
-		error(message, errUrl) { warnings.push({ severity: 'error', phase: 'postProcess', pluginName, url: errUrl ?? url, message }); },
+		info(message, infoUrl) {
+			warnings.push({
+				severity: 'info',
+				phase: 'postProcess',
+				pluginName,
+				url: infoUrl ?? url,
+				message,
+			});
+		},
+		warn(message, warnUrl) {
+			warnings.push({
+				severity: 'warning',
+				phase: 'postProcess',
+				pluginName,
+				url: warnUrl ?? url,
+				message,
+			});
+		},
+		error(message, errUrl) {
+			warnings.push({
+				severity: 'error',
+				phase: 'postProcess',
+				pluginName,
+				url: errUrl ?? url,
+				message,
+			});
+		},
 	};
 }

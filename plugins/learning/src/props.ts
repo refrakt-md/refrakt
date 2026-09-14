@@ -1,6 +1,13 @@
-import type { BaseComponentProps, PageSectionSlots, SplitLayoutProperties } from '@refrakt-md/types';
+import type {
+	BaseComponentProps,
+	PageSectionSlots,
+	SplitLayoutProperties,
+} from '@refrakt-md/types';
 
-export interface RecipeProps<R = unknown> extends BaseComponentProps<R>, PageSectionSlots<R>, SplitLayoutProperties {
+export interface RecipeProps<R = unknown>
+	extends BaseComponentProps<R>,
+		PageSectionSlots<R>,
+		SplitLayoutProperties {
 	prepTime?: string;
 	cookTime?: string;
 	servings?: string;

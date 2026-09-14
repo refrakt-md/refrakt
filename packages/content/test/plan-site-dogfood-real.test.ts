@@ -57,10 +57,11 @@ describe('refrakt plan site dogfood (SPEC-071 / WORK-272)', () => {
 		for (const rule of planSite.entityRoutes) {
 			const inline = rule.render ?? '';
 			const tmpl = rule['render-template'] ?? '';
-			const ok =
-				/\{% expand .* \/%\}/.test(inline) ||
-				/^entity\/[a-z]+\.md$/.test(tmpl);
-			expect(ok, `entityRoutes rule for type "${rule.type}" must declare render or render-template`).toBe(true);
+			const ok = /\{% expand .* \/%\}/.test(inline) || /^entity\/[a-z]+\.md$/.test(tmpl);
+			expect(
+				ok,
+				`entityRoutes rule for type "${rule.type}" must declare render or render-template`,
+			).toBe(true);
 		}
 	});
 
@@ -70,11 +71,14 @@ describe('refrakt plan site dogfood (SPEC-071 / WORK-272)', () => {
 	// timeout — a starvation timeout, not a hang or a race (WORK-330). Give it
 	// generous headroom so the full suite is deterministic; a genuine hang would
 	// still fail well within this bound.
-	it('builds a browsable plan site from refrakt\'s real plan/ via entityRoutes + collection', async () => {
+	it("builds a browsable plan site from refrakt's real plan/ via entityRoutes + collection", async () => {
 		const planSite = readPlanSiteConfig();
 		// configure() registers the plan: file-root and primes the plugin's
 		// scan target. Mirrors what the adapter does for the docs site.
-		await planPipelineHooks.configure!({ config: { plan: { dir: 'plan' } }, configDir: repoRoot } as never);
+		await planPipelineHooks.configure!({
+			config: { plan: { dir: 'plan' } },
+			configDir: repoRoot,
+		} as never);
 
 		const site = await loadContent(
 			join(repoRoot, 'plan-site', 'content'),
@@ -123,6 +127,9 @@ describe('refrakt plan site dogfood (SPEC-071 / WORK-272)', () => {
 		const errors = site.pipelineWarnings.filter(
 			(w) => w.severity === 'error' && w.phase !== 'register',
 		);
-		expect(errors, errors.map((e) => `${e.phase}/${e.pluginName}: ${e.message}`).join('\n')).toEqual([]);
+		expect(
+			errors,
+			errors.map((e) => `${e.phase}/${e.pluginName}: ${e.message}`).join('\n'),
+		).toEqual([]);
 	}, 30_000);
 });

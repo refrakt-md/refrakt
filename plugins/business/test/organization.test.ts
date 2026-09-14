@@ -12,7 +12,7 @@ A leading technology company.
 - [Twitter](https://twitter.com/acme)
 {% /organization %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'organization');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'organization');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 	});
@@ -24,7 +24,7 @@ A leading technology company.
 Description.
 {% /organization %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'organization');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'organization');
 		expect(fields(tag).type).toBe('LocalBusiness');
 	});
 
@@ -35,7 +35,7 @@ Description.
 Open Monday to Friday.
 {% /business %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'organization');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'organization');
 		expect(tag).toBeDefined();
 	});
 
@@ -48,12 +48,12 @@ Open Monday to Friday.
 About us.
 {% /organization %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'organization');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'organization');
 		expect(tag).toBeDefined();
-		const wrapped = findAllTags(tag!, t => t.name === 'p').some(
-			p => p.children.some((c: any) => c?.name === 'img'),
+		const wrapped = findAllTags(tag!, (t) => t.name === 'p').some((p) =>
+			p.children.some((c: any) => c?.name === 'img'),
 		);
 		expect(wrapped).toBe(false);
-		expect(findTag(tag!, t => t.name === 'img')).toBeDefined();
+		expect(findTag(tag!, (t) => t.name === 'img')).toBeDefined();
 	});
 });

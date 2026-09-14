@@ -1,8 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { createOllamaProvider, formatOllamaRequest, parseOllamaNDJSON } from '../../src/providers/ollama.js';
+import {
+	createOllamaProvider,
+	formatOllamaRequest,
+	parseOllamaNDJSON,
+} from '../../src/providers/ollama.js';
 
 function mockNDJSONResponse(lines: object[]): Response {
-	const text = lines.map(l => JSON.stringify(l)).join('\n') + '\n';
+	const text = lines.map((l) => JSON.stringify(l)).join('\n') + '\n';
 	const encoder = new TextEncoder();
 	const stream = new ReadableStream({
 		start(controller) {
@@ -20,10 +24,7 @@ describe('formatOllamaRequest', () => {
 			{ role: 'user' as const, content: 'Hello' },
 		];
 
-		const result = formatOllamaRequest(
-			{ messages },
-			{ model: 'llama3.2' },
-		);
+		const result = formatOllamaRequest({ messages }, { model: 'llama3.2' });
 
 		expect(result.messages).toEqual(messages);
 	});
@@ -35,10 +36,7 @@ describe('formatOllamaRequest', () => {
 			{ role: 'user' as const, content: 'Hello' },
 		];
 
-		const result = formatOllamaRequest(
-			{ messages },
-			{ model: 'llama3.2' },
-		);
+		const result = formatOllamaRequest({ messages }, { model: 'llama3.2' });
 
 		expect(result.messages).toEqual([
 			{ role: 'system', content: 'Base layer.\n\nMode layer.' },
@@ -121,7 +119,11 @@ describe('parseOllamaNDJSON', () => {
 		const response = mockNDJSONResponse([
 			{ model: 'llama3.2', message: { role: 'assistant', content: 'First' }, done: false },
 			{ model: 'llama3.2', message: { role: 'assistant', content: '' }, done: true },
-			{ model: 'llama3.2', message: { role: 'assistant', content: 'Should not appear' }, done: false },
+			{
+				model: 'llama3.2',
+				message: { role: 'assistant', content: 'Should not appear' },
+				done: false,
+			},
 		]);
 
 		const chunks: string[] = [];
@@ -154,7 +156,9 @@ describe('createOllamaProvider', () => {
 
 		for await (const _ of provider.complete({
 			messages: [{ role: 'user', content: 'Hello' }],
-		})) { /* drain */ }
+		})) {
+			/* drain */
+		}
 
 		expect(capturedUrl).toBe('http://localhost:11434/api/chat');
 	});
@@ -176,7 +180,9 @@ describe('createOllamaProvider', () => {
 
 		for await (const _ of provider.complete({
 			messages: [{ role: 'user', content: 'Hello' }],
-		})) { /* drain */ }
+		})) {
+			/* drain */
+		}
 
 		expect(capturedUrl).toBe('http://192.168.1.100:11434/api/chat');
 	});
@@ -193,7 +199,9 @@ describe('createOllamaProvider', () => {
 		});
 
 		await expect(async () => {
-			for await (const _ of iter) { /* drain */ }
+			for await (const _ of iter) {
+				/* drain */
+			}
 		}).rejects.toThrow('Ollama API error (404)');
 	});
 });

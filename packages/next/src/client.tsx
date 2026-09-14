@@ -31,17 +31,19 @@ export function BehaviorInit({ pages, currentUrl }: BehaviorInitProps) {
 	useEffect(() => {
 		let cleanup: (() => void) | undefined;
 
-		import('@refrakt-md/behaviors').then(({ registerElements, RfContext, initRuneBehaviors, initLayoutBehaviors }) => {
-			RfContext.pages = pages;
-			RfContext.currentUrl = pathname ?? currentUrl;
-			registerElements();
-			const cleanupRunes = initRuneBehaviors();
-			const cleanupLayout = initLayoutBehaviors();
-			cleanup = () => {
-				cleanupRunes();
-				cleanupLayout();
-			};
-		});
+		import('@refrakt-md/behaviors').then(
+			({ registerElements, RfContext, initRuneBehaviors, initLayoutBehaviors }) => {
+				RfContext.pages = pages;
+				RfContext.currentUrl = pathname ?? currentUrl;
+				registerElements();
+				const cleanupRunes = initRuneBehaviors();
+				const cleanupLayout = initLayoutBehaviors();
+				cleanup = () => {
+					cleanupRunes();
+					cleanupLayout();
+				};
+			},
+		);
 
 		return () => {
 			cleanup?.();

@@ -32,18 +32,15 @@ const pad = (s: string, n: number) => s + ' '.repeat(Math.max(0, n - s.length));
  *   ✓  Build complete (0 errors, 1 warning)
  * ```
  */
-export function formatPipelineSummary(
-	stats: PipelineStats,
-	warnings: PipelineWarning[],
-): string {
+export function formatPipelineSummary(stats: PipelineStats, warnings: PipelineWarning[]): string {
 	const lines: string[] = [];
 	lines.push(`  ${pad('Phase 1: Parse', 30)} ${stats.pageCount} pages`);
 	lines.push(`  ${pad('Phase 2: Register', 30)} ${stats.entityCount} entities`);
 	lines.push(`  ${pad('Phase 3: Aggregate', 30)} ${stats.packageCount} packages`);
 	lines.push(`  ${pad('Phase 4: Post-process', 30)} ${stats.pageCount} pages`);
 
-	const errorCount = warnings.filter(w => w.severity === 'error').length;
-	const warnCount = warnings.filter(w => w.severity === 'warning').length;
+	const errorCount = warnings.filter((w) => w.severity === 'error').length;
+	const warnCount = warnings.filter((w) => w.severity === 'warning').length;
 
 	for (const w of warnings) {
 		const icon = ICON[w.severity];
@@ -59,5 +56,5 @@ export function formatPipelineSummary(
 	);
 	lines.push('');
 
-	return lines.map(l => l + '\n').join('');
+	return lines.map((l) => l + '\n').join('');
 }

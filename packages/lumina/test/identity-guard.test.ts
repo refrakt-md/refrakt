@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { assembleThemeConfig, mergeThemeConfig, type IdentityViolation, type RuneConfig } from '@refrakt-md/transform';
+import {
+	assembleThemeConfig,
+	mergeThemeConfig,
+	type IdentityViolation,
+	type RuneConfig,
+} from '@refrakt-md/transform';
 import { baseConfig } from '@refrakt-md/runes';
 import { luminaOverrides } from '../src/config.js';
 import marketing from '@refrakt-md/marketing';
@@ -48,7 +53,9 @@ describe('ADR-028 identity guard — shipped configs', () => {
 
 		// Mirrors assembleThemeConfig's merge order without its console reporter:
 		// core → plugin runes → theme overrides.
-		let config = mergeThemeConfig(baseConfig, { runes: pluginRunes }, undefined, (v) => violations.push(v));
+		let config = mergeThemeConfig(baseConfig, { runes: pluginRunes }, undefined, (v) =>
+			violations.push(v),
+		);
 		config = mergeThemeConfig(config, luminaOverrides, undefined, (v) => violations.push(v));
 
 		expect(violations).toEqual([]);

@@ -16,12 +16,21 @@ const alignType = ['start', 'center', 'end'] as const;
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
 // what a section *is* (ADR-028).
-export const sectionSections = { preamble: 'preamble', headline: 'title', blurb: 'description' } as const;
+export const sectionSections = {
+	preamble: 'preamble',
+	headline: 'title',
+	blurb: 'description',
+} as const;
 
 export const section = createContentModelSchema({
 	sections: sectionSections,
 	attributes: {
-		align: { type: String, required: false, matches: alignType.slice(), description: 'Header alignment: start (default), center, or end' },
+		align: {
+			type: String,
+			required: false,
+			matches: alignType.slice(),
+			description: 'Header alignment: start (default), center, or end',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
@@ -33,7 +42,9 @@ export const section = createContentModelSchema({
 		],
 	},
 	transform(resolved, attrs, config) {
-		const headerAstNodes = [resolved.eyebrow, resolved.headline, resolved.blurb].filter(Boolean) as Node[];
+		const headerAstNodes = [resolved.eyebrow, resolved.headline, resolved.blurb].filter(
+			Boolean,
+		) as Node[];
 		const header = new RenderableNodeCursor(
 			Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[],
 		);
@@ -47,7 +58,8 @@ export const section = createContentModelSchema({
 		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
 		const children = [alignMeta, ...headerContent, body.next()];
 
-		return createComponentRenderable({ rune: 'section',
+		return createComponentRenderable({
+			rune: 'section',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

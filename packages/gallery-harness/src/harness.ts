@@ -34,7 +34,9 @@ export const DEFAULT_VIEWPORTS: Viewport[] = [
  *  DOMContentLoaded) to enhance the DOM, so the screenshot is of the settled
  *  page. Animations/transitions are already disabled by the gallery CSS. */
 async function settle(page: Page): Promise<void> {
-	await page.evaluate(() => (document as unknown as { fonts?: { ready: Promise<unknown> } }).fonts?.ready);
+	await page.evaluate(
+		() => (document as unknown as { fonts?: { ready: Promise<unknown> } }).fonts?.ready,
+	);
 	await page.waitForTimeout(250);
 }
 
@@ -96,7 +98,10 @@ export function registerGalleryTests(artifacts: GalleryArtifacts): void {
 					await page.setViewportSize({ width: vp.width, height: vp.height });
 					await page.goto(pathToFileURL(layout[mode]).href);
 					await settle(page);
-					await expect(page).toHaveScreenshot(`${theme}/layouts/${layout.name}-${mode}-${vp.name}.png`, { fullPage: true });
+					await expect(page).toHaveScreenshot(
+						`${theme}/layouts/${layout.name}-${mode}-${vp.name}.png`,
+						{ fullPage: true },
+					);
 				});
 			}
 		}

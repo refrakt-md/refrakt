@@ -13,5 +13,5 @@
 @layer skeleton, skin;
 
 @import url("skeleton.css") layer(skeleton);
-@import url("skin.lumina.css");      /* self-declares @layer skin */
+@import url("skin.lumina.css"); /* self-declares @layer skin */
 /* @import url("skin.editorial.css");   ← swap in to compare */

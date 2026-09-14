@@ -16,21 +16,33 @@ function makeCtx() {
 	const warnings: Array<{ severity: string; message: string; url?: string }> = [];
 	return {
 		ctx: {
-			info(message: string, url?: string) { warnings.push({ severity: 'info', message, url }); },
-			warn(message: string, url?: string) { warnings.push({ severity: 'warning', message, url }); },
-			error(message: string, url?: string) { warnings.push({ severity: 'error', message, url }); },
+			info(message: string, url?: string) {
+				warnings.push({ severity: 'info', message, url });
+			},
+			warn(message: string, url?: string) {
+				warnings.push({ severity: 'warning', message, url });
+			},
+			error(message: string, url?: string) {
+				warnings.push({ severity: 'error', message, url });
+			},
 		},
 		warnings,
 	};
 }
 
 function makeCoreData(pages: PageMeta[]) {
-	const pagesByUrl = new Map(pages.map(p => [p.url, p]));
+	const pagesByUrl = new Map(pages.map((p) => [p.url, p]));
 	return {
 		breadcrumbPaths: new Map<string, string[]>(),
 		pagesByUrl: pagesByUrl as Map<string, { url: string; title: string; parentUrl: string }>,
 		allPosts: [],
-		registry: { getAll: () => [], getById: () => undefined, getByUrl: () => [], getTypes: () => [], register: () => {} } as any,
+		registry: {
+			getAll: () => [],
+			getById: () => undefined,
+			getByUrl: () => [],
+			getTypes: () => [],
+			register: () => {},
+		} as any,
 	};
 }
 
@@ -41,9 +53,7 @@ function makeNavItem(slug: string): any {
 }
 
 function makeExplicitNavItem(href: string, label: string): any {
-	return new Tag('li', { 'data-rune': 'nav-item' }, [
-		new Tag('a', { href }, [label]),
-	]);
+	return new Tag('li', { 'data-rune': 'nav-item' }, [new Tag('a', { href }, [label])]);
 }
 
 function makeNav(sourcePath: string, items: any[]): any {
@@ -89,7 +99,7 @@ describe('SPEC-055 nav slug resolution', () => {
 		const link = findLink(out);
 		expect(link).toBeTruthy();
 		expect(link.attributes.href).toBe('/docs/getting-started');
-		expect(warnings.filter(w => w.severity === 'error')).toHaveLength(0);
+		expect(warnings.filter((w) => w.severity === 'error')).toHaveLength(0);
 	});
 
 	it('resolves a multi-segment slug relative to the nav source dir', () => {
@@ -103,7 +113,7 @@ describe('SPEC-055 nav slug resolution', () => {
 
 		const link = findLink(out);
 		expect(link.attributes.href).toBe('/docs/themes/configuration');
-		expect(warnings.filter(w => w.severity === 'error')).toHaveLength(0);
+		expect(warnings.filter((w) => w.severity === 'error')).toHaveLength(0);
 	});
 
 	it('passes through slugs starting with /', () => {
@@ -130,7 +140,7 @@ describe('SPEC-055 nav slug resolution', () => {
 
 		const link = findLink(out);
 		expect(link.attributes.href).toBe('/docs/getting-started');
-		expect(warnings.filter(w => w.severity === 'error')).toHaveLength(0);
+		expect(warnings.filter((w) => w.severity === 'error')).toHaveLength(0);
 	});
 
 	it('emits an error with closest-match suggestions when a bare slug is unresolvable', () => {
@@ -143,7 +153,7 @@ describe('SPEC-055 nav slug resolution', () => {
 
 		resolveCoreSentinels(nav, '/', makeCoreData(pages), ctx);
 
-		const errors = warnings.filter(w => w.severity === 'error');
+		const errors = warnings.filter((w) => w.severity === 'error');
 		expect(errors).toHaveLength(1);
 		expect(errors[0].message).toContain('configuration');
 		expect(errors[0].message).toContain('docs/_layout.md');
@@ -160,22 +170,20 @@ describe('SPEC-055 nav slug resolution', () => {
 
 		resolveCoreSentinels(nav, '/', makeCoreData(pages), ctx);
 
-		const errors = warnings.filter(w => w.severity === 'error');
+		const errors = warnings.filter((w) => w.severity === 'error');
 		expect(errors).toHaveLength(1);
 		expect(errors[0].message).toContain('themes/missing');
 		expect(errors[0].message).toContain('/docs/themes/missing');
 	});
 
 	it('normalises trailing slashes', () => {
-		const pages: PageMeta[] = [
-			{ url: '/docs/themes/', title: 'Themes', parentUrl: '/docs/' },
-		];
+		const pages: PageMeta[] = [{ url: '/docs/themes/', title: 'Themes', parentUrl: '/docs/' }];
 		const nav = makeNav('docs/_layout.md', [makeNavItem('themes')]);
 		const { ctx, warnings } = makeCtx();
 
 		const out = resolveCoreSentinels(nav, '/', makeCoreData(pages), ctx);
 
-		expect(warnings.filter(w => w.severity === 'error')).toHaveLength(0);
+		expect(warnings.filter((w) => w.severity === 'error')).toHaveLength(0);
 		const link = findLink(out);
 		expect(link.attributes.href).toBe('/docs/themes/');
 	});
@@ -196,8 +204,8 @@ describe('SPEC-055 nav active state', () => {
 		const out = resolveCoreSentinels(nav, '/docs/themes/overview', makeCoreData(pages), ctx);
 
 		const links = findAllLinks(out);
-		const overview = links.find(l => l.attributes.href === '/docs/themes/overview');
-		const cfg = links.find(l => l.attributes.href === '/docs/themes/config');
+		const overview = links.find((l) => l.attributes.href === '/docs/themes/overview');
+		const cfg = links.find((l) => l.attributes.href === '/docs/themes/config');
 		expect(overview.attributes['aria-current']).toBe('page');
 		expect(cfg.attributes['aria-current']).toBeUndefined();
 	});
@@ -215,11 +223,16 @@ describe('SPEC-055 nav active state', () => {
 		]);
 		const { ctx } = makeCtx();
 
-		const out = resolveCoreSentinels(nav, '/docs/themes/configuration/sites', makeCoreData(pages), ctx);
+		const out = resolveCoreSentinels(
+			nav,
+			'/docs/themes/configuration/sites',
+			makeCoreData(pages),
+			ctx,
+		);
 
 		const links = findAllLinks(out);
-		const themes = links.find(l => l.attributes.href === '/docs/themes');
-		const themesCfg = links.find(l => l.attributes.href === '/docs/themes/configuration');
+		const themes = links.find((l) => l.attributes.href === '/docs/themes');
+		const themesCfg = links.find((l) => l.attributes.href === '/docs/themes/configuration');
 
 		// Both are prefixes; longest (themes/configuration) wins as ancestor.
 		expect(themesCfg.attributes['data-active']).toBe('ancestor');
@@ -241,8 +254,8 @@ describe('SPEC-055 nav active state', () => {
 		const out = resolveCoreSentinels(nav, '/docs/themes/configuration', makeCoreData(pages), ctx);
 
 		const links = findAllLinks(out);
-		const themes = links.find(l => l.attributes.href === '/docs/themes');
-		const themesCfg = links.find(l => l.attributes.href === '/docs/themes/configuration');
+		const themes = links.find((l) => l.attributes.href === '/docs/themes');
+		const themesCfg = links.find((l) => l.attributes.href === '/docs/themes/configuration');
 
 		expect(themesCfg.attributes['aria-current']).toBe('page');
 		expect(themesCfg.attributes['data-active']).toBeUndefined();

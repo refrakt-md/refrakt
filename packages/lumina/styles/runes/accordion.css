@@ -1,87 +1,96 @@
 @layer skin {
-/* Accordion — skin. The eyebrow stretched-link, items passthrough, header flex +
+	/* Accordion — skin. The eyebrow stretched-link, items passthrough, header flex +
  * chevron box/glyph/rotate mechanism, title/count flex, and the ::details-content
  * collapse mechanism live in @refrakt-md/skeleton (styles/runes/accordion.css).
  * No wrapping border / radius — the only chrome is the divider between items. */
-.rf-accordion__preamble {
-	margin-bottom: 1.5rem;
-}
-.rf-accordion__eyebrow {
-	font-size: var(--rf-text-sm);
-	font-weight: var(--rf-weight-semibold);
-	letter-spacing: var(--rf-tracking-wider);
-	text-transform: uppercase;
-	color: var(--rf-color-primary);
-	margin: 0 0 0.5rem;
-}
-.rf-accordion__eyebrow:has(a) {
-	padding: 0.25rem 0.875rem;
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-full);
-	color: var(--rf-color-text);
-	font-weight: var(--rf-weight-normal);
-	text-transform: none;
-	letter-spacing: var(--rf-tracking-normal);
-	transition: border-color 150ms ease;
-}
-.rf-accordion__eyebrow:has(a):hover { border-color: var(--rf-color-muted); }
-.rf-accordion__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: var(--rf-weight-semibold); text-decoration: none; }
-.rf-accordion__eyebrow:has(a) a::before { border-radius: inherit; }
-.rf-accordion__headline {
-	margin-top: 0;
-}
-.rf-accordion__blurb {
-	color: var(--rf-color-muted);
-	margin-bottom: 0;
-}
-.rf-accordion__image {
-	margin-bottom: 1rem;
-}
-.rf-accordion-item {
-	border-bottom: 1px solid var(--rf-color-border);
-}
-.rf-accordion-item:last-child {
-	border-bottom: none;
-}
-.rf-accordion-item__header {
-	gap: 0.5rem;
-	padding: 0.875rem 0rem;
-	font-weight: var(--rf-weight-semibold);
-	font-size: var(--rf-text);
-	cursor: pointer;
-	user-select: none;
-}
-/* Chevron tint + rotate animation (the box + glyph + the open-rotate are
+	.rf-accordion__preamble {
+		margin-bottom: 1.5rem;
+	}
+	.rf-accordion__eyebrow {
+		font-size: var(--rf-text-sm);
+		font-weight: var(--rf-weight-semibold);
+		letter-spacing: var(--rf-tracking-wider);
+		text-transform: uppercase;
+		color: var(--rf-color-primary);
+		margin: 0 0 0.5rem;
+	}
+	.rf-accordion__eyebrow:has(a) {
+		padding: 0.25rem 0.875rem;
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-full);
+		color: var(--rf-color-text);
+		font-weight: var(--rf-weight-normal);
+		text-transform: none;
+		letter-spacing: var(--rf-tracking-normal);
+		transition: border-color 150ms ease;
+	}
+	.rf-accordion__eyebrow:has(a):hover {
+		border-color: var(--rf-color-muted);
+	}
+	.rf-accordion__eyebrow:has(a) a {
+		color: var(--rf-color-primary);
+		font-weight: var(--rf-weight-semibold);
+		text-decoration: none;
+	}
+	.rf-accordion__eyebrow:has(a) a::before {
+		border-radius: inherit;
+	}
+	.rf-accordion__headline {
+		margin-top: 0;
+	}
+	.rf-accordion__blurb {
+		color: var(--rf-color-muted);
+		margin-bottom: 0;
+	}
+	.rf-accordion__image {
+		margin-bottom: 1rem;
+	}
+	.rf-accordion-item {
+		border-bottom: 1px solid var(--rf-color-border);
+	}
+	.rf-accordion-item:last-child {
+		border-bottom: none;
+	}
+	.rf-accordion-item__header {
+		gap: 0.5rem;
+		padding: 0.875rem 0rem;
+		font-weight: var(--rf-weight-semibold);
+		font-size: var(--rf-text);
+		cursor: pointer;
+		user-select: none;
+	}
+	/* Chevron tint + rotate animation (the box + glyph + the open-rotate are
  * skeleton). */
-.rf-accordion-item__header::before {
-	background: var(--rf-color-muted);
-	transition: transform 200ms ease;
-}
-.rf-accordion-item__title {
-	/* flex sizing is skeleton */
-}
-/* Per-group count for collection/relationships group-display="accordion". */
-.rf-accordion-item__count {
-	/* flex-shrink is skeleton */
-}
-.rf-accordion-item::details-content {
-	transition: block-size 250ms ease, content-visibility 250ms allow-discrete;
-}
-.rf-accordion-item__body {
-	padding: 0 1.25rem 1rem;
-}
-/* Prose styles for the standalone accordion rune's bodies. */
-.rf-accordion-item__body:not(:has([data-block])) {
-	font-size: var(--rf-text-sm);
-	line-height: var(--rf-leading-relaxed);
-	color: var(--rf-color-muted);
-}
-.rf-accordion-item__body p:last-child {
-	margin-bottom: 0;
-}
-/* Block-content panels get the small gap (the flex column is skeleton). */
-.rf-accordion-item__body:has([data-block]) {
-	gap: var(--rf-spacing-sm);
-}
-
+	.rf-accordion-item__header::before {
+		background: var(--rf-color-muted);
+		transition: transform 200ms ease;
+	}
+	.rf-accordion-item__title {
+		/* flex sizing is skeleton */
+	}
+	/* Per-group count for collection/relationships group-display="accordion". */
+	.rf-accordion-item__count {
+		/* flex-shrink is skeleton */
+	}
+	.rf-accordion-item::details-content {
+		transition:
+			block-size 250ms ease,
+			content-visibility 250ms allow-discrete;
+	}
+	.rf-accordion-item__body {
+		padding: 0 1.25rem 1rem;
+	}
+	/* Prose styles for the standalone accordion rune's bodies. */
+	.rf-accordion-item__body:not(:has([data-block])) {
+		font-size: var(--rf-text-sm);
+		line-height: var(--rf-leading-relaxed);
+		color: var(--rf-color-muted);
+	}
+	.rf-accordion-item__body p:last-child {
+		margin-bottom: 0;
+	}
+	/* Block-content panels get the small gap (the flex column is skeleton). */
+	.rf-accordion-item__body:has([data-block]) {
+		gap: var(--rf-spacing-sm);
+	}
 }

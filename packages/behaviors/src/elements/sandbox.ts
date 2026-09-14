@@ -7,9 +7,13 @@ const FRAMEWORK_PRESETS: Record<string, string[]> = {
 		'<script src="https://cdn.tailwindcss.com"><\/script>',
 		'<script>tailwind.config = { darkMode: "class" }<\/script>',
 	],
-	bootstrap: ['<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">'],
+	bootstrap: [
+		'<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css">',
+	],
 	bulma: ['<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1/css/bulma.min.css">'],
-	pico: ['<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">'],
+	pico: [
+		'<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">',
+	],
 };
 
 const ROLE_FALLBACKS: Record<string, string> = {
@@ -132,7 +136,9 @@ export class RfSandbox extends SafeHTMLElement {
 	 *  the current theme. */
 	private effectiveTheme(): 'light' | 'dark' | string {
 		const ancestorScheme = !this._localScheme
-			? (this.closest('[data-color-scheme]') as HTMLElement | null)?.getAttribute('data-color-scheme') as 'light' | 'dark' | null
+			? ((this.closest('[data-color-scheme]') as HTMLElement | null)?.getAttribute(
+					'data-color-scheme',
+				) as 'light' | 'dark' | null)
 			: null;
 		return this._localScheme || ancestorScheme || RfContext.theme;
 	}
@@ -144,7 +150,10 @@ export class RfSandbox extends SafeHTMLElement {
 		this._activated = true;
 		// A backdrop keeps its observer alive so it can suspend again off-screen;
 		// every other activation mode is one-shot and releases the observer.
-		if (this._io && !this._backdrop) { this._io.disconnect(); this._io = null; }
+		if (this._io && !this._backdrop) {
+			this._io.disconnect();
+			this._io = null;
+		}
 
 		this.buildIframe(this.effectiveTheme());
 
@@ -182,7 +191,8 @@ export class RfSandbox extends SafeHTMLElement {
 	 *  reduced-motion users always mount via the control, so motion-sensitive
 	 *  visitors opt in. */
 	private renderPoster() {
-		const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const reduce =
+			typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 		const poster = document.createElement('div');
 		poster.className = 'rf-sandbox__poster';
@@ -215,9 +225,12 @@ export class RfSandbox extends SafeHTMLElement {
 		// `visible`: auto-mount when scrolled into view — unless the visitor
 		// prefers reduced motion, in which case they activate explicitly.
 		if (this._activation === 'visible' && !reduce && typeof IntersectionObserver !== 'undefined') {
-			this._io = new IntersectionObserver((entries) => {
-				if (entries.some((e) => e.isIntersecting)) this.activate();
-			}, { rootMargin: '200px' });
+			this._io = new IntersectionObserver(
+				(entries) => {
+					if (entries.some((e) => e.isIntersecting)) this.activate();
+				},
+				{ rootMargin: '200px' },
+			);
 			this._io.observe(this);
 		}
 	}
@@ -228,8 +241,8 @@ export class RfSandbox extends SafeHTMLElement {
 	 *  visibilitychange listener suspends it on a hidden tab — so a long page never
 	 *  drives an unseen scene. */
 	private initBackdrop() {
-		const reduce = typeof matchMedia === 'function'
-			&& matchMedia('(prefers-reduced-motion: reduce)').matches;
+		const reduce =
+			typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 		if (reduce) return; // boot frame stands in — never mount the live scene
 
 		this._visHandler = () => {
@@ -243,11 +256,14 @@ export class RfSandbox extends SafeHTMLElement {
 			this.activate();
 			return;
 		}
-		this._io = new IntersectionObserver((entries) => {
-			this._onScreen = entries.some((e) => e.isIntersecting);
-			if (this._onScreen && !document.hidden) this.activate();
-			else this.suspend();
-		}, { rootMargin: '200px' });
+		this._io = new IntersectionObserver(
+			(entries) => {
+				this._onScreen = entries.some((e) => e.isIntersecting);
+				if (this._onScreen && !document.hidden) this.activate();
+				else this.suspend();
+			},
+			{ rootMargin: '200px' },
+		);
 		this._io.observe(this);
 	}
 
@@ -259,8 +275,14 @@ export class RfSandbox extends SafeHTMLElement {
 			window.removeEventListener('message', this.messageHandler);
 			this.messageHandler = null;
 		}
-		if (this.themeCleanup) { this.themeCleanup(); this.themeCleanup = null; }
-		if (this.ancestorObserver) { this.ancestorObserver.disconnect(); this.ancestorObserver = null; }
+		if (this.themeCleanup) {
+			this.themeCleanup();
+			this.themeCleanup = null;
+		}
+		if (this.ancestorObserver) {
+			this.ancestorObserver.disconnect();
+			this.ancestorObserver = null;
+		}
 		this.iframe?.remove();
 		this.iframe = null;
 		this._activated = false;
@@ -300,9 +322,7 @@ export class RfSandbox extends SafeHTMLElement {
 		// Sandbox attribute: untrusted mode drops `allow-same-origin` so the
 		// iframe gets a unique opaque origin. Closes parent-origin attacks
 		// (cookie theft, parent-DOM access, same-origin storage abuse).
-		const sandboxAttr = this._untrusted
-			? 'allow-scripts'
-			: 'allow-scripts allow-same-origin';
+		const sandboxAttr = this._untrusted ? 'allow-scripts' : 'allow-scripts allow-same-origin';
 		this.iframe.setAttribute('sandbox', sandboxAttr);
 
 		// Tier 3 (separate-origin escape hatch): when the host has provided a
@@ -332,7 +352,14 @@ export class RfSandbox extends SafeHTMLElement {
 			window.addEventListener('message', onReady);
 		} else {
 			// Tier 1/2: srcdoc with optional meta-CSP injected for untrusted mode.
-			this.iframe.srcdoc = this.buildSrcdoc(this._content, this._framework, this._dependencies, this._tokens, theme, this._rfData);
+			this.iframe.srcdoc = this.buildSrcdoc(
+				this._content,
+				this._framework,
+				this._dependencies,
+				this._tokens,
+				theme,
+				this._rfData,
+			);
 		}
 
 		this.iframe.title = this._label;
@@ -341,8 +368,11 @@ export class RfSandbox extends SafeHTMLElement {
 		// SPEC-101 `fill`: the host owns the height (a cover media well) — pin the
 		// iframe to 100% (ignoring any preserved height from a rebuild) and never
 		// negotiate it via resize messages.
-		const height = this._heightAttr === 'fill' ? '100%'
-			: currentHeight || (this._heightAttr !== 'auto' ? parseInt(this._heightAttr) + 'px' : '150px');
+		const height =
+			this._heightAttr === 'fill'
+				? '100%'
+				: currentHeight ||
+					(this._heightAttr !== 'auto' ? parseInt(this._heightAttr) + 'px' : '150px');
 		this.iframe.style.cssText = `width: 100%; border: none; height: ${height};`;
 
 		// Untrusted-mode UX affordance: a persistent visual marker above the
@@ -404,7 +434,14 @@ export class RfSandbox extends SafeHTMLElement {
 		this.buildIframe(theme);
 	}
 
-	private buildSrcdoc(content: string, framework: string, dependencies: string, tokens: DesignTokens | null, theme?: string, rfData?: string): string {
+	private buildSrcdoc(
+		content: string,
+		framework: string,
+		dependencies: string,
+		tokens: DesignTokens | null,
+		theme?: string,
+		rfData?: string,
+	): string {
 		const depTags = this.buildDependencyTags(framework, dependencies, tokens);
 
 		// SPEC-093 — expose a data binding's payload to the iframe as a frozen
@@ -418,12 +455,14 @@ export class RfSandbox extends SafeHTMLElement {
 		// Apply theme on BOTH <html> and <body>. Mobile WebKit may not
 		// reliably apply or retain attributes on <html> in srcdoc iframes,
 		// so we duplicate on <body> as the primary target.
-		const htmlAttrs = theme === 'dark' ? ' class="dark" data-theme="dark" style="color-scheme:dark"'
-			: theme === 'light' ? ' data-theme="light" style="color-scheme:light"'
-			: '';
-		const bodyClass = theme === 'dark' ? ' class="dark"'
-			: '';
-		const bodyDataTheme = (theme === 'dark' || theme === 'light') ? ` data-theme="${theme}"` : '';
+		const htmlAttrs =
+			theme === 'dark'
+				? ' class="dark" data-theme="dark" style="color-scheme:dark"'
+				: theme === 'light'
+					? ' data-theme="light" style="color-scheme:light"'
+					: '';
+		const bodyClass = theme === 'dark' ? ' class="dark"' : '';
+		const bodyDataTheme = theme === 'dark' || theme === 'light' ? ` data-theme="${theme}"` : '';
 
 		// Strip data-source attributes from rendered content (authoring markers only)
 		const renderedContent = content.replace(/\s*data-source(?:="[^"]*")?/g, '');
@@ -505,8 +544,12 @@ ${renderedContent}
       }
     }
   }).observe(document.head, { childList: true });
-<\/script>${(!theme || theme === 'auto') ? `
-<script>if(window.matchMedia('(prefers-color-scheme:dark)').matches){document.body.classList.add('dark');document.body.setAttribute('data-theme','dark')}<\/script>` : ''}
+<\/script>${
+			!theme || theme === 'auto'
+				? `
+<script>if(window.matchMedia('(prefers-color-scheme:dark)').matches){document.body.classList.add('dark');document.body.setAttribute('data-theme','dark')}<\/script>`
+				: ''
+		}
 </body>
 </html>`;
 	}
@@ -546,17 +589,18 @@ ${renderedContent}
 			}
 		}
 		if (this._dependencies) {
-			for (const url of this._dependencies.split(',').map(u => u.trim()).filter(Boolean)) {
+			for (const url of this._dependencies
+				.split(',')
+				.map((u) => u.trim())
+				.filter(Boolean)) {
 				addOrigin(url);
 			}
 		}
 
 		const styleSrc = ["'unsafe-inline'", ...origins].join(' ');
-		const fontSrc = ["data:", "https://fonts.gstatic.com", ...origins].join(' ');
-		const imgSrc = ["data:", ...origins].join(' ');
-		const scriptSrc = this._allowJs
-			? ["'unsafe-inline'", ...origins].join(' ')
-			: "'none'";
+		const fontSrc = ['data:', 'https://fonts.gstatic.com', ...origins].join(' ');
+		const imgSrc = ['data:', ...origins].join(' ');
+		const scriptSrc = this._allowJs ? ["'unsafe-inline'", ...origins].join(' ') : "'none'";
 
 		const directives = [
 			"default-src 'none'",
@@ -573,7 +617,11 @@ ${renderedContent}
 		return `<meta http-equiv="Content-Security-Policy" content="${directives}">`;
 	}
 
-	private buildDependencyTags(framework: string, dependencies: string, tokens: DesignTokens | null): string {
+	private buildDependencyTags(
+		framework: string,
+		dependencies: string,
+		tokens: DesignTokens | null,
+	): string {
 		const tags: string[] = [];
 
 		// Design tokens (injected before framework so they serve as defaults)
@@ -596,7 +644,10 @@ ${renderedContent}
 		}
 
 		if (dependencies) {
-			for (const url of dependencies.split(',').map(u => u.trim()).filter(Boolean)) {
+			for (const url of dependencies
+				.split(',')
+				.map((u) => u.trim())
+				.filter(Boolean)) {
 				if (url.endsWith('.css')) {
 					tags.push(`<link rel="stylesheet" href="${url}">`);
 				} else {
@@ -612,7 +663,7 @@ ${renderedContent}
 		const parts: string[] = [];
 
 		if (tokens.fonts && tokens.fonts.length > 0) {
-			const families = tokens.fonts.map(f => {
+			const families = tokens.fonts.map((f) => {
 				const name = f.family.replace(/ /g, '+');
 				const weights = f.weights.sort((a, b) => a - b).join(';');
 				return `family=${name}:wght@${weights}`;
@@ -655,9 +706,9 @@ ${renderedContent}
 		if (vars.length > 0) {
 			const rules: string[] = [`:root {\n${vars.join('\n')}\n}`];
 			if (tokens.fonts) {
-				const bodyFont = tokens.fonts.find(f => f.role === 'body');
-				const headingFont = tokens.fonts.find(f => f.role === 'heading');
-				const monoFont = tokens.fonts.find(f => f.role === 'mono');
+				const bodyFont = tokens.fonts.find((f) => f.role === 'body');
+				const headingFont = tokens.fonts.find((f) => f.role === 'heading');
+				const monoFont = tokens.fonts.find((f) => f.role === 'mono');
 				if (bodyFont) rules.push('body { font-family: var(--font-body); }');
 				if (headingFont) rules.push('h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); }');
 				if (monoFont) rules.push('code, pre, kbd { font-family: var(--font-mono); }');

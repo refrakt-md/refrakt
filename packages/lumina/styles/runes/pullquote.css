@@ -1,100 +1,99 @@
 @layer skin {
-/* PullQuote */
-.rf-pullquote {
-	margin: 2rem 0;
-	padding: 1.5rem 2rem;
-	border: none;
-	font-size: var(--rf-text-xl);
-	font-style: italic;
-	font-weight: var(--rf-weight-medium);
-	line-height: var(--rf-leading-normal);
-	color: var(--rf-color-text);
-	background: none;
-	border-radius: 0;
-}
-.rf-pullquote::before {
-	content: '\201C';
-	/* Decorative oversized quote glyph — a display one-off above the type scale. */
-	font-size: 4rem;
-	font-style: normal;
-	font-weight: var(--rf-weight-bold);
-	line-height: 1;
-	color: var(--rf-color-primary);
-	opacity: 0.4;
-}
-.rf-pullquote p {
-	margin: 0;
-}
-.rf-pullquote p + p {
-	margin-top: 0.75rem;
-}
-
-/* Alignment — block modes */
-.rf-pullquote--center {
-	text-align: center;
-	max-width: 80%;
-}
-.rf-pullquote--left {
-	text-align: left;
-	border-left: 2px solid var(--rf-color-primary);
-	padding-left: 1.5rem;
-}
-.rf-pullquote--right {
-	text-align: right;
-	border-right: 2px solid var(--rf-color-primary);
-	padding-right: 1.5rem;
-}
-
-/* Float modes — left/right pull quotes can float for text wrapping */
-.rf-pullquote[data-align="left"] {
-	margin: 0.5rem 2rem 1rem 0;
-}
-.rf-pullquote[data-align="right"] {
-	margin: 0.5rem 0 1rem 2rem;
-}
-
-/* Style: accent — uses primary color background tint */
-.rf-pullquote--accent {
-	background: color-mix(in srgb, var(--rf-color-primary) 8%, transparent);
-	border-radius: var(--rf-radius-md);
-	padding: 2rem 2.5rem;
-}
-.rf-pullquote--accent::before {
-	color: var(--rf-color-primary);
-	opacity: 0.5;
-}
-
-/* Style: editorial — decorative top/bottom rules */
-.rf-pullquote--editorial {
-	border-top: 2px solid var(--rf-color-border);
-	border-bottom: 2px solid var(--rf-color-border);
-	padding: 1.75rem 0;
-	font-family: Georgia, 'Times New Roman', serif;
-	letter-spacing: var(--rf-tracking-normal);
-}
-
-/* Reset inner blockquote — global blockquote styles shouldn't apply here */
-.rf-pullquote blockquote {
-	border: none;
-	background: none;
-	padding: 0;
-	margin: 0;
-	border-radius: 0;
-	color: inherit;
-}
-.rf-pullquote blockquote::before {
-	display: none;
-}
-
-/* Responsive — floated quotes become full-width on mobile */
-@media (max-width: 768px) {
-	.rf-pullquote[data-align="left"],
-	.rf-pullquote[data-align="right"] {
-		margin: 1.5rem 0;
+	/* PullQuote */
+	.rf-pullquote {
+		margin: 2rem 0;
+		padding: 1.5rem 2rem;
+		border: none;
+		font-size: var(--rf-text-xl);
+		font-style: italic;
+		font-weight: var(--rf-weight-medium);
+		line-height: var(--rf-leading-normal);
+		color: var(--rf-color-text);
+		background: none;
+		border-radius: 0;
 	}
+	.rf-pullquote::before {
+		content: "\201C";
+		/* Decorative oversized quote glyph — a display one-off above the type scale. */
+		font-size: 4rem;
+		font-style: normal;
+		font-weight: var(--rf-weight-bold);
+		line-height: 1;
+		color: var(--rf-color-primary);
+		opacity: 0.4;
+	}
+	.rf-pullquote p {
+		margin: 0;
+	}
+	.rf-pullquote p + p {
+		margin-top: 0.75rem;
+	}
+
+	/* Alignment — block modes */
 	.rf-pullquote--center {
-		max-width: 100%;
+		text-align: center;
+		max-width: 80%;
 	}
-}
+	.rf-pullquote--left {
+		text-align: left;
+		border-left: 2px solid var(--rf-color-primary);
+		padding-left: 1.5rem;
+	}
+	.rf-pullquote--right {
+		text-align: right;
+		border-right: 2px solid var(--rf-color-primary);
+		padding-right: 1.5rem;
+	}
 
+	/* Float modes — left/right pull quotes can float for text wrapping */
+	.rf-pullquote[data-align="left"] {
+		margin: 0.5rem 2rem 1rem 0;
+	}
+	.rf-pullquote[data-align="right"] {
+		margin: 0.5rem 0 1rem 2rem;
+	}
+
+	/* Style: accent — uses primary color background tint */
+	.rf-pullquote--accent {
+		background: color-mix(in srgb, var(--rf-color-primary) 8%, transparent);
+		border-radius: var(--rf-radius-md);
+		padding: 2rem 2.5rem;
+	}
+	.rf-pullquote--accent::before {
+		color: var(--rf-color-primary);
+		opacity: 0.5;
+	}
+
+	/* Style: editorial — decorative top/bottom rules */
+	.rf-pullquote--editorial {
+		border-top: 2px solid var(--rf-color-border);
+		border-bottom: 2px solid var(--rf-color-border);
+		padding: 1.75rem 0;
+		font-family: Georgia, "Times New Roman", serif;
+		letter-spacing: var(--rf-tracking-normal);
+	}
+
+	/* Reset inner blockquote — global blockquote styles shouldn't apply here */
+	.rf-pullquote blockquote {
+		border: none;
+		background: none;
+		padding: 0;
+		margin: 0;
+		border-radius: 0;
+		color: inherit;
+	}
+	.rf-pullquote blockquote::before {
+		display: none;
+	}
+
+	/* Responsive — floated quotes become full-width on mobile */
+	@media (max-width: 768px) {
+		.rf-pullquote[data-align="left"],
+		.rf-pullquote[data-align="right"] {
+			margin: 1.5rem 0;
+		}
+		.rf-pullquote--center {
+			max-width: 100%;
+		}
+	}
 }

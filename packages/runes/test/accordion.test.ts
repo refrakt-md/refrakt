@@ -14,14 +14,17 @@ Content for first section.
 Content for second section.
 {% /accordion %}`);
 
-		const acc = findTag(result as any, t => t.attributes['data-rune'] === 'accordion');
+		const acc = findTag(result as any, (t) => t.attributes['data-rune'] === 'accordion');
 		expect(acc).toBeDefined();
 		expect(acc!.name).toBe('section');
 
-		const items = findAllTags(acc!, t => t.attributes['data-rune'] === 'accordion-item');
+		const items = findAllTags(acc!, (t) => t.attributes['data-rune'] === 'accordion-item');
 		expect(items.length).toBe(2);
 
-		const firstName = findTag(items[0], t => t.name === 'summary' && t.attributes['data-field'] === 'name');
+		const firstName = findTag(
+			items[0],
+			(t) => t.name === 'summary' && t.attributes['data-field'] === 'name',
+		);
 		expect(firstName).toBeDefined();
 		expect(firstName!.children).toContain('First Section');
 	});
@@ -37,7 +40,7 @@ A content framework.
 Run npm install.
 {% /faq %}`);
 
-		const acc = findTag(result as any, t => t.attributes['data-rune'] === 'accordion');
+		const acc = findTag(result as any, (t) => t.attributes['data-rune'] === 'accordion');
 		expect(acc).toBeDefined();
 	});
 
@@ -52,10 +55,10 @@ Content two.
 {% /accordion-item %}
 {% /accordion %}`);
 
-		const acc = findTag(result as any, t => t.attributes['data-rune'] === 'accordion');
+		const acc = findTag(result as any, (t) => t.attributes['data-rune'] === 'accordion');
 		expect(acc).toBeDefined();
 
-		const items = findAllTags(acc!, t => t.attributes['data-rune'] === 'accordion-item');
+		const items = findAllTags(acc!, (t) => t.attributes['data-rune'] === 'accordion-item');
 		expect(items.length).toBe(2);
 	});
 
@@ -66,10 +69,13 @@ Content.
 {% /accordion-item %}
 {% /accordion %}`);
 
-		const acc = findTag(result as any, t => t.attributes['data-rune'] === 'accordion');
+		const acc = findTag(result as any, (t) => t.attributes['data-rune'] === 'accordion');
 		expect(acc).toBeDefined();
 
-		const container = findTag(acc!, t => t.name === 'div' && t.attributes['data-name'] === 'items');
+		const container = findTag(
+			acc!,
+			(t) => t.name === 'div' && t.attributes['data-name'] === 'items',
+		);
 		expect(container).toBeDefined();
 	});
 
@@ -82,13 +88,16 @@ Content one.
 Content two.
 {% /accordion %}`);
 
-		const acc = findTag(result as any, t => t.attributes['data-rune'] === 'accordion');
+		const acc = findTag(result as any, (t) => t.attributes['data-rune'] === 'accordion');
 		expect(acc).toBeDefined();
 
-		const items = findAllTags(acc!, t => t.attributes['data-rune'] === 'accordion-item');
+		const items = findAllTags(acc!, (t) => t.attributes['data-rune'] === 'accordion-item');
 		expect(items.length).toBe(2);
 
-		const firstName = findTag(items[0], t => t.name === 'summary' && t.attributes['data-field'] === 'name');
+		const firstName = findTag(
+			items[0],
+			(t) => t.name === 'summary' && t.attributes['data-field'] === 'name',
+		);
 		expect(firstName).toBeDefined();
 		expect(firstName!.children).toContain('Item One');
 	});
@@ -105,10 +114,10 @@ Answer two.
 Answer three.
 {% /accordion %}`);
 
-		const acc = findTag(result as any, t => t.attributes['data-rune'] === 'accordion');
+		const acc = findTag(result as any, (t) => t.attributes['data-rune'] === 'accordion');
 		expect(acc).toBeDefined();
 
-		const items = findAllTags(acc!, t => t.attributes['data-rune'] === 'accordion-item');
+		const items = findAllTags(acc!, (t) => t.attributes['data-rune'] === 'accordion-item');
 		expect(items.length).toBe(3);
 	});
 });
@@ -134,7 +143,8 @@ describe('an accordion with nothing in it', () => {
 });
 
 describe('schema="none" (WORK-552)', () => {
-	const SRC = (attrs = '') => `{% accordion ${attrs} %}\n## Q\n\nA.\n\n## Q2\n\nB.\n{% /accordion %}`;
+	const SRC = (attrs = '') =>
+		`{% accordion ${attrs} %}\n## Q\n\nA.\n\n## Q2\n\nB.\n{% /accordion %}`;
 
 	it('emits FAQPage and Question by default', () => {
 		const json = JSON.stringify(parse(SRC()));
@@ -165,7 +175,11 @@ describe('schema="none" (WORK-552)', () => {
 			if (Array.isArray(node)) return node.map(bare);
 			if (!node || typeof node !== 'object') return node;
 			const { typeof: _t, property: _p, ...attrs } = (node as any).attributes ?? {};
-			return { ...(node as any), attributes: attrs, children: ((node as any).children ?? []).map(bare) };
+			return {
+				...(node as any),
+				attributes: attrs,
+				children: ((node as any).children ?? []).map(bare),
+			};
 		};
 		expect(bare(parse(SRC('schema="none"')))).toEqual(bare(parse(SRC())));
 	});

@@ -1,7 +1,9 @@
 /* character — structure. The float-containment, the floated portrait box (float +
  * size + clip), the avatar fill, the sections flex column, and the section-name
  * block. Portrait margins/radius, type, borders, and list indents are skin. */
-.rf-character { display: flow-root; }
+.rf-character {
+	display: flow-root;
+}
 .rf-character__portrait {
 	float: right;
 	width: 120px;

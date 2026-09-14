@@ -7,7 +7,12 @@ import { createTransform, renderToHtml } from '@refrakt-md/transform';
 import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
 import { parseFrontmatter } from '@refrakt-md/content';
 import type { HookSet } from '@refrakt-md/content';
-import type { AggregatedData, TransformedPage, PipelineWarning, PipelineContext } from '@refrakt-md/types';
+import type {
+	AggregatedData,
+	TransformedPage,
+	PipelineWarning,
+	PipelineContext,
+} from '@refrakt-md/types';
 
 /**
  * Render a markdown file through the full refrakt.md pipeline,
@@ -24,7 +29,14 @@ export function renderPreviewPage(
 ): string {
 	const fullPath = join(contentDir, filePath);
 	const raw = readFileSync(fullPath, 'utf-8');
-	return renderPreviewContent(raw, themeConfig, themeCss, highlightTransform, extraTags, pipelineOptions);
+	return renderPreviewContent(
+		raw,
+		themeConfig,
+		themeCss,
+		highlightTransform,
+		extraTags,
+		pipelineOptions,
+	);
 }
 
 export interface PreviewPipelineOptions {
@@ -136,9 +148,33 @@ function runPreviewPostProcess(
 	for (const { pluginName, hooks } of hookSets) {
 		if (!hooks.postProcess) continue;
 		const ctx: PipelineContext = {
-			info(message, u) { warnings.push({ severity: 'info', phase: 'postProcess', pluginName, url: u ?? url, message }); },
-			warn(message, u) { warnings.push({ severity: 'warning', phase: 'postProcess', pluginName, url: u ?? url, message }); },
-			error(message, u) { warnings.push({ severity: 'error', phase: 'postProcess', pluginName, url: u ?? url, message }); },
+			info(message, u) {
+				warnings.push({
+					severity: 'info',
+					phase: 'postProcess',
+					pluginName,
+					url: u ?? url,
+					message,
+				});
+			},
+			warn(message, u) {
+				warnings.push({
+					severity: 'warning',
+					phase: 'postProcess',
+					pluginName,
+					url: u ?? url,
+					message,
+				});
+			},
+			error(message, u) {
+				warnings.push({
+					severity: 'error',
+					phase: 'postProcess',
+					pluginName,
+					url: u ?? url,
+					message,
+				});
+			},
 		};
 		try {
 			page = hooks.postProcess(page, aggregated, ctx) as TransformedPage;

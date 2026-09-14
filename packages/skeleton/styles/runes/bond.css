@@ -18,14 +18,14 @@
 	position: relative;
 }
 .rf-bond__arrow::after {
-	content: '';
+	content: "";
 	position: absolute;
 	right: -1px;
 	top: 50%;
 	transform: translateY(-50%);
 }
 .rf-bond[data-bidirectional="true"] .rf-bond__arrow::before {
-	content: '';
+	content: "";
 	position: absolute;
 	left: -1px;
 	top: 50%;

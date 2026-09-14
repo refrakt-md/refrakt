@@ -10,7 +10,7 @@ describe('playlist rune', () => {
 - **Track Two** (4:15)
 {% /playlist %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'playlist');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'playlist');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('section');
 	});
@@ -22,12 +22,15 @@ describe('playlist rune', () => {
 - **Track One** (3:00)
 {% /playlist %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'playlist');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'playlist');
 		expect(tag).toBeDefined();
 
 		// SPEC-081: the headline is emitted flat (data-name); the engine's
 		// `layout` wraps it in the preamble <header>.
-		const headline = findTag(tag!, t => /^h[1-6]$/.test(t.name) && t.attributes['data-name'] === 'headline');
+		const headline = findTag(
+			tag!,
+			(t) => /^h[1-6]$/.test(t.name) && t.attributes['data-name'] === 'headline',
+		);
 		expect(headline).toBeDefined();
 	});
 
@@ -40,9 +43,8 @@ describe('playlist rune', () => {
 - **Stairway to Heaven** (8:02)
 {% /playlist %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'playlist');
-		const trackNames = findAllTags(tag!, t =>
-			t.attributes['data-name'] === 'track-name');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'playlist');
+		const trackNames = findAllTags(tag!, (t) => t.attributes['data-name'] === 'track-name');
 		expect(trackNames.length).toBe(3);
 		expect(trackNames[0].children).toContain('Bohemian Rhapsody');
 		expect(trackNames[1].children).toContain('Hotel California');
@@ -56,9 +58,8 @@ describe('playlist rune', () => {
 - **Track** (3:42)
 {% /playlist %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'playlist');
-		const duration = findTag(tag!, t =>
-			t.attributes['data-name'] === 'track-duration');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'playlist');
+		const duration = findTag(tag!, (t) => t.attributes['data-name'] === 'track-duration');
 		expect(duration).toBeDefined();
 		expect(duration!.children).toContain('3:42');
 	});
@@ -70,9 +71,8 @@ describe('playlist rune', () => {
 - **Bohemian Rhapsody** — *Queen* (5:55)
 {% /playlist %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'playlist');
-		const artist = findTag(tag!, t =>
-			t.attributes['data-name'] === 'track-artist');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'playlist');
+		const artist = findTag(tag!, (t) => t.attributes['data-name'] === 'track-artist');
 		expect(artist).toBeDefined();
 		expect(artist!.children).toContain('Queen');
 	});
@@ -84,9 +84,8 @@ describe('playlist rune', () => {
 - **Speak to Me** (1:13)
 {% /playlist %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'playlist');
-		const artist = findTag(tag!, t =>
-			t.attributes['data-name'] === 'track-artist');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'playlist');
+		const artist = findTag(tag!, (t) => t.attributes['data-name'] === 'track-artist');
 		expect(artist).toBeDefined();
 		expect(artist!.children).toContain('Pink Floyd');
 	});
@@ -102,8 +101,8 @@ describe('playlist rune', () => {
 - **Track** (3:00)
 {% /playlist %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'playlist');
-		const img = findTag(tag!, t => t.name === 'img');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'playlist');
+		const img = findTag(tag!, (t) => t.name === 'img');
 		expect(img).toBeDefined();
 	});
 
@@ -115,8 +114,7 @@ describe('playlist rune', () => {
 {% /music-playlist %}`);
 
 		// Legacy name uses same schema, data-rune is 'playlist'
-		const tag = findTag(result as any, t =>
-			t.attributes['data-rune'] === 'playlist');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'playlist');
 		expect(tag).toBeDefined();
 	});
 
@@ -127,11 +125,11 @@ describe('playlist rune', () => {
 - **Track** (3:00)
 {% /playlist %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'playlist');
-		const player = findTag(tag!, t => t.attributes['data-name'] === 'player');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'playlist');
+		const player = findTag(tag!, (t) => t.attributes['data-name'] === 'player');
 		expect(player).toBeDefined();
 
-		const audioEl = findTag(player!, t => t.name === 'rf-audio');
+		const audioEl = findTag(player!, (t) => t.name === 'rf-audio');
 		expect(audioEl).toBeDefined();
 	});
 
@@ -143,9 +141,8 @@ describe('playlist rune', () => {
 - **Track Two** (4:00)
 {% /playlist %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'playlist');
-		const tracks = findTag(tag!, t =>
-			t.attributes['data-name'] === 'tracks');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'playlist');
+		const tracks = findTag(tag!, (t) => t.attributes['data-name'] === 'tracks');
 		expect(tracks).toBeDefined();
 		expect(tracks!.name).toBe('ol');
 	});

@@ -1,16 +1,14 @@
 @layer skin {
+	.rf-file-ref > a {
+		color: var(--rf-color-primary);
+		text-decoration: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 2px;
+		font-family: var(--rf-font-mono, ui-monospace, SFMono-Regular, monospace);
+		font-size: 0.9375em;
+	}
 
-.rf-file-ref > a {
-	color: var(--rf-color-primary);
-	text-decoration: underline;
-	text-decoration-thickness: 1px;
-	text-underline-offset: 2px;
-	font-family: var(--rf-font-mono, ui-monospace, SFMono-Regular, monospace);
-	font-size: 0.9375em;
-}
-
-.rf-file-ref > a:hover {
-	text-decoration-thickness: 2px;
-}
-
+	.rf-file-ref > a:hover {
+		text-decoration-thickness: 2px;
+	}
 }

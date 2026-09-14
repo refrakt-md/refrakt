@@ -22,11 +22,12 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 	if (triggers.length === 0) return () => {};
 
 	// Platform detection for keyboard shortcut display
-	const isMac = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform ?? '');
+	const isMac =
+		typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform ?? '');
 	const shortcutLabel = isMac ? '\u2318K' : 'Ctrl+K';
 
 	// Set shortcut text in trigger kbd elements
-	triggers.forEach(trigger => {
+	triggers.forEach((trigger) => {
 		const kbd = trigger.querySelector('.rf-search-trigger__kbd');
 		if (kbd && !kbd.textContent) {
 			kbd.textContent = shortcutLabel;
@@ -127,7 +128,7 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 			// Dynamic path prevents TypeScript from resolving the module at compile time.
 			// Pagefind generates this file at build time in the site's output directory.
 			const path = '/pagefind/pagefind.js';
-			const pf = await (Function('p', 'return import(p)')(path));
+			const pf = await Function('p', 'return import(p)')(path);
 			await pf.init();
 			pagefind = pf;
 			return pagefind;
@@ -164,9 +165,7 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 			if (!search || !search.results) return;
 
 			// Load first 8 results
-			const results = await Promise.all(
-				search.results.slice(0, 8).map((r: any) => r.data()),
-			);
+			const results = await Promise.all(search.results.slice(0, 8).map((r: any) => r.data()));
 
 			if (results.length === 0) {
 				resultsContainer.innerHTML = '';
@@ -261,13 +260,17 @@ export function searchBehavior(container: HTMLElement | Document): CleanupFn {
 
 	return () => {
 		document.body.style.overflow = '';
-		cleanups.forEach(fn => fn());
+		cleanups.forEach((fn) => fn());
 		dialog?.remove();
 	};
 }
 
 function escapeHtml(str: string): string {
-	return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	return str
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;');
 }
 
 function escapeAttr(str: string): string {

@@ -40,13 +40,16 @@ describe('width facet', () => {
 	});
 
 	it('emits an axis and a BEM modifier', () => {
-		expect(widthFacet.resolve(ctx({ width: 'wide' })))
-			.toEqual({ axes: { width: 'wide' }, classes: ['rf-card--wide'] });
+		expect(widthFacet.resolve(ctx({ width: 'wide' }))).toEqual({
+			axes: { width: 'wide' },
+			classes: ['rf-card--wide'],
+		});
 	});
 
 	it('falls back to the rune default', () => {
-		expect(widthFacet.resolve(ctx({}, { block: 'hero', defaultWidth: 'full' }))?.axes)
-			.toEqual({ width: 'full' });
+		expect(widthFacet.resolve(ctx({}, { block: 'hero', defaultWidth: 'full' }))?.axes).toEqual({
+			width: 'full',
+		});
 	});
 
 	it('lets the author override the rune default', () => {
@@ -67,7 +70,9 @@ describe('spacing and inset facets', () => {
 	});
 
 	it('emit prefixed BEM modifiers, unlike width', () => {
-		expect(spacingFacet.resolve(ctx({ spacing: 'loose' }))?.classes).toEqual(['rf-card--spacing-loose']);
+		expect(spacingFacet.resolve(ctx({ spacing: 'loose' }))?.classes).toEqual([
+			'rf-card--spacing-loose',
+		]);
 		expect(insetFacet.resolve(ctx({ inset: 'none' }))?.classes).toEqual(['rf-card--inset-none']);
 	});
 
@@ -80,13 +85,16 @@ describe('spacing and inset facets', () => {
 describe('content-measure facet', () => {
 	// Config-derived, not author-driven — not every axis reads an attribute.
 	it('emits only when the rune anchors', () => {
-		expect(contentMeasureFacet.resolve(ctx({}, { block: 'card', contentMeasure: 'anchored' })))
-			.toEqual({ axes: { 'content-measure': 'anchored' } });
+		expect(
+			contentMeasureFacet.resolve(ctx({}, { block: 'card', contentMeasure: 'anchored' })),
+		).toEqual({ axes: { 'content-measure': 'anchored' } });
 	});
 
 	it('stays silent at the `fill` default', () => {
 		expect(contentMeasureFacet.resolve(ctx())).toBeNull();
-		expect(contentMeasureFacet.resolve(ctx({}, { block: 'card', contentMeasure: 'fill' }))).toBeNull();
+		expect(
+			contentMeasureFacet.resolve(ctx({}, { block: 'card', contentMeasure: 'fill' })),
+		).toBeNull();
 	});
 
 	it('ignores an author attribute', () => {
@@ -100,29 +108,33 @@ describe('density facet', () => {
 	});
 
 	it('takes the rune default', () => {
-		expect(densityFacet.resolve(ctx({}, { block: 'card', defaultDensity: 'compact' }))?.state)
-			.toEqual({ density: 'compact' });
+		expect(
+			densityFacet.resolve(ctx({}, { block: 'card', defaultDensity: 'compact' }))?.state,
+		).toEqual({ density: 'compact' });
 	});
 
 	// The only axis that reads config other than its own.
 	it('inherits the parent rune’s childDensity', () => {
 		const parentConfig: RuneConfig = { block: 'grid', childDensity: 'minimal' };
-		expect(densityFacet.resolve(ctx({}, { block: 'card' }, { parentConfig }))?.state)
-			.toEqual({ density: 'minimal' });
+		expect(densityFacet.resolve(ctx({}, { block: 'card' }, { parentConfig }))?.state).toEqual({
+			density: 'minimal',
+		});
 	});
 
 	it('lets the parent context beat the rune’s own default', () => {
 		const parentConfig: RuneConfig = { block: 'grid', childDensity: 'minimal' };
 		const config: RuneConfig = { block: 'card', defaultDensity: 'compact' };
-		expect(densityFacet.resolve(ctx({}, config, { parentConfig }))?.state)
-			.toEqual({ density: 'minimal' });
+		expect(densityFacet.resolve(ctx({}, config, { parentConfig }))?.state).toEqual({
+			density: 'minimal',
+		});
 	});
 
 	it('lets the author beat everything', () => {
 		const parentConfig: RuneConfig = { block: 'grid', childDensity: 'minimal' };
 		const config: RuneConfig = { block: 'card', defaultDensity: 'compact' };
-		expect(densityFacet.resolve(ctx({ density: 'full' }, config, { parentConfig }))?.state)
-			.toEqual({ density: 'full' });
+		expect(densityFacet.resolve(ctx({ density: 'full' }, config, { parentConfig }))?.state).toEqual(
+			{ density: 'full' },
+		);
 	});
 
 	it('publishes state, never an emitted axis — the engine owns the attribute', () => {
@@ -136,18 +148,24 @@ describe('reading facet', () => {
 	});
 
 	it('takes the rune default', () => {
-		expect(readingFacet.resolve(ctx({}, { ...PROSE_RUNE, defaultReading: 'prose' }))?.state)
-			.toEqual({ reading: 'prose' });
+		expect(
+			readingFacet.resolve(ctx({}, { ...PROSE_RUNE, defaultReading: 'prose' }))?.state,
+		).toEqual({ reading: 'prose' });
 	});
 
 	it('lets the author override', () => {
 		const config: RuneConfig = { ...PROSE_RUNE, defaultReading: 'prose' };
-		expect(readingFacet.resolve(ctx({ reading: 'fine' }, config))?.state).toEqual({ reading: 'fine' });
+		expect(readingFacet.resolve(ctx({ reading: 'fine' }, config))?.state).toEqual({
+			reading: 'fine',
+		});
 	});
 });
 
 describe('dropcap facet', () => {
-	const withRegister = (register: string, attrs: Record<string, any> = { dropcap: true }): FacetContext =>
+	const withRegister = (
+		register: string,
+		attrs: Record<string, any> = { dropcap: true },
+	): FacetContext =>
 		ctx(attrs, PROSE_RUNE, { axis: (name) => (name === 'reading' ? register : undefined) });
 
 	it('does not run unless requested', () => {
@@ -206,8 +224,11 @@ describe('motion facet', () => {
 		it('stamps document-order indices on the cascade items', () => {
 			const children = [item('item'), item('item'), item('item')];
 			motionFacet.postAssemble!(ctx({ stagger: true }, config), children, true);
-			expect(children.map(c => (c as SerializedTag).attributes.style))
-				.toEqual(['--rf-reveal-index: 0', '--rf-reveal-index: 1', '--rf-reveal-index: 2']);
+			expect(children.map((c) => (c as SerializedTag).attributes.style)).toEqual([
+				'--rf-reveal-index: 0',
+				'--rf-reveal-index: 1',
+				'--rf-reveal-index: 2',
+			]);
 		});
 
 		it('matches on data-field as well as data-name', () => {
@@ -219,14 +240,19 @@ describe('motion facet', () => {
 		it('merges onto an existing inline style', () => {
 			const children = [makeTag('div', { 'data-name': 'item', style: 'color: red' }, [])];
 			motionFacet.postAssemble!(ctx({ stagger: true }, config), children, true);
-			expect((children[0] as SerializedTag).attributes.style).toBe('color: red; --rf-reveal-index: 0');
+			expect((children[0] as SerializedTag).attributes.style).toBe(
+				'color: red; --rf-reveal-index: 0',
+			);
 		});
 
 		it('descends through wrappers, continuing the count', () => {
 			const children = [makeTag('div', {}, [item('item'), item('item')]), item('item')];
 			motionFacet.postAssemble!(ctx({ stagger: true }, config), children, true);
 			const wrapped = (children[0] as SerializedTag).children as SerializedTag[];
-			expect(wrapped.map(c => c.attributes.style)).toEqual(['--rf-reveal-index: 0', '--rf-reveal-index: 1']);
+			expect(wrapped.map((c) => c.attributes.style)).toEqual([
+				'--rf-reveal-index: 0',
+				'--rf-reveal-index: 1',
+			]);
 			expect((children[1] as SerializedTag).attributes.style).toBe('--rf-reveal-index: 2');
 		});
 

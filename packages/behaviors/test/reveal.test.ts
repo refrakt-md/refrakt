@@ -11,11 +11,14 @@ beforeEach(() => {
 function createReveal(opts?: { stepCount?: number }): HTMLElement {
 	const count = opts?.stepCount ?? 3;
 
-	const steps = Array.from({ length: count }, (_, i) => `
+	const steps = Array.from(
+		{ length: count },
+		(_, i) => `
 		<div class="rf-reveal-step" typeof="RevealStep" data-rune="reveal-step">
 			<div class="rf-reveal-step__content">Step ${i + 1} content</div>
 		</div>
-	`).join('');
+	`,
+	).join('');
 
 	const el = document.createElement('section');
 	el.setAttribute('data-rune', 'reveal');

@@ -26,23 +26,27 @@ export const fileRef = createContentModelSchema({
 		path: {
 			type: String,
 			required: true,
-			description: 'Project-root-relative file path. Same sandbox as snippet — absolute paths, traversal escapes, and out-of-root symlinks are rejected.',
+			description:
+				'Project-root-relative file path. Same sandbox as snippet — absolute paths, traversal escapes, and out-of-root symlinks are rejected.',
 		},
 		lines: {
 			type: String,
 			required: false,
-			description: 'Line range. `"42-58"` (range), `"42"` (single line). Drives both the GitHub anchor (#L42-L58) and the drawer-body snippet slice when `preview="drawer"`.',
+			description:
+				'Line range. `"42-58"` (range), `"42"` (single line). Drives both the GitHub anchor (#L42-L58) and the drawer-body snippet slice when `preview="drawer"`.',
 		},
 		label: {
 			type: String,
 			required: false,
-			description: 'Display text for the inline link. Defaults to the filename (e.g. `token-contract.ts`). Pass an explicit label when the file-ref refers to a symbol within the file rather than the file itself.',
+			description:
+				'Display text for the inline link. Defaults to the filename (e.g. `token-contract.ts`). Pass an explicit label when the file-ref refers to a symbol within the file rather than the file itself.',
 		},
 		preview: {
 			type: String,
 			required: false,
 			matches: ['drawer'],
-			description: 'Preview target. `"drawer"` hoists a drawer with the file\'s snippet + a GitHub footer link, leaving an inline link at the call site that opens it. Absent → no preview, just the inline link.',
+			description:
+				'Preview target. `"drawer"` hoists a drawer with the file\'s snippet + a GitHub footer link, leaving an inline link at the call site that opens it. Absent → no preview, just the inline link.',
 		},
 	},
 	selfClosing: true,
@@ -59,7 +63,8 @@ export const fileRef = createContentModelSchema({
 		// fallback when no label is given.
 		const fallbackLabel = defaultLabel(path);
 
-		const meta = (field: string, content: string) => new Tag('meta', { 'data-field': field, content });
+		const meta = (field: string, content: string) =>
+			new Tag('meta', { 'data-field': field, content });
 
 		const metas = [
 			meta('file-ref-path', path),

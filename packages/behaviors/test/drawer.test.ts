@@ -357,7 +357,13 @@ describe('drawerBehavior', () => {
 
 describe('parseShortcut', () => {
 	it('parses bare key', () => {
-		expect(parseShortcut('.')).toMatchObject({ key: '.', cmd: false, ctrl: false, alt: false, shift: false });
+		expect(parseShortcut('.')).toMatchObject({
+			key: '.',
+			cmd: false,
+			ctrl: false,
+			alt: false,
+			shift: false,
+		});
 	});
 
 	it('parses cmd+k', () => {

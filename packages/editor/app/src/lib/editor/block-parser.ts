@@ -305,7 +305,11 @@ export function parseBlocks(source: string): ParsedBlock[] {
 		// ── Blockquote ───────────────────────────────────────────
 		if (trimmed.startsWith('>')) {
 			const start = i;
-			while (i < lines.length && (lines[i].trimStart().startsWith('>') || (lines[i].trim() !== '' && !isBlockStart(lines[i])))) {
+			while (
+				i < lines.length &&
+				(lines[i].trimStart().startsWith('>') ||
+					(lines[i].trim() !== '' && !isBlockStart(lines[i])))
+			) {
 				i++;
 			}
 			const src = lines.slice(start, i).join('\n');
@@ -327,7 +331,11 @@ export function parseBlocks(source: string): ParsedBlock[] {
 			while (i < lines.length) {
 				const lt = lines[i].trimStart();
 				// Continue if it's a list item, continuation indent, or blank line within
-				if (/^(\d+\.|[-*+])\s/.test(lt) || (lt === '' && i + 1 < lines.length && /^(\s+|\d+\.|[-*+]\s)/.test(lines[i + 1])) || (lt !== '' && lines[i].startsWith('  '))) {
+				if (
+					/^(\d+\.|[-*+])\s/.test(lt) ||
+					(lt === '' && i + 1 < lines.length && /^(\s+|\d+\.|[-*+]\s)/.test(lines[i + 1])) ||
+					(lt !== '' && lines[i].startsWith('  '))
+				) {
 					i++;
 				} else {
 					break;
@@ -414,7 +422,10 @@ export function parseContentTree(content: string): ContentNode[] {
 		const line = lines[i];
 		const trimmed = line.trimStart();
 
-		if (trimmed === '') { i++; continue; }
+		if (trimmed === '') {
+			i++;
+			continue;
+		}
 
 		// Fenced code
 		if (trimmed.startsWith('```') || trimmed.startsWith('~~~')) {
@@ -468,7 +479,10 @@ export function parseContentTree(content: string): ContentNode[] {
 					const lt = lines[i].trimStart();
 					const nestedOpen = RUNE_OPEN_RE.exec(lt);
 					if (nestedOpen && nestedOpen[1] === name && nestedOpen[3] !== '/') depth++;
-					if (closeRe.test(lt)) { depth--; if (depth === 0) break; }
+					if (closeRe.test(lt)) {
+						depth--;
+						if (depth === 0) break;
+					}
 					innerLines.push(lines[i]);
 					i++;
 				}
@@ -521,7 +535,12 @@ export function parseContentTree(content: string): ContentNode[] {
 		// Blockquote
 		if (trimmed.startsWith('>')) {
 			const start = i;
-			while (i < lines.length && (lines[i].trimStart().startsWith('>') || (lines[i].trim() !== '' && !isBlockStart(lines[i])))) i++;
+			while (
+				i < lines.length &&
+				(lines[i].trimStart().startsWith('>') ||
+					(lines[i].trim() !== '' && !isBlockStart(lines[i])))
+			)
+				i++;
 			const src = lines.slice(start, i).join('\n');
 			nodes.push({ type: 'quote', label: 'Blockquote', source: src });
 			continue;
@@ -548,9 +567,16 @@ export function parseContentTree(content: string): ContentNode[] {
 					i++;
 				} else if (lt !== '' && lines[i].startsWith('  ')) {
 					i++;
-				} else { break; }
+				} else {
+					break;
+				}
 			}
-			nodes.push({ type: 'list', label: ordered ? 'Ordered list' : 'List', source: lines.slice(start, i).join('\n'), listOrdered: ordered });
+			nodes.push({
+				type: 'list',
+				label: ordered ? 'Ordered list' : 'List',
+				source: lines.slice(start, i).join('\n'),
+				listOrdered: ordered,
+			});
 			continue;
 		}
 
@@ -571,7 +597,11 @@ export function parseContentTree(content: string): ContentNode[] {
  * Replace a nested rune node's source within a parent content string.
  * Finds the node's original source and replaces it with the new source.
  */
-export function replaceNodeSource(parentContent: string, oldSource: string, newSource: string): string {
+export function replaceNodeSource(
+	parentContent: string,
+	oldSource: string,
+	newSource: string,
+): string {
 	const idx = parentContent.indexOf(oldSource);
 	if (idx === -1) return parentContent;
 	return parentContent.slice(0, idx) + newSource + parentContent.slice(idx + oldSource.length);
@@ -583,21 +613,38 @@ export function replaceNodeSource(parentContent: string, oldSource: string, newS
 function defaultTemplate(match: string): string {
 	const primary = match.includes('|') ? match.split('|')[0] : match;
 	switch (primary) {
-		case 'heading': return '## Heading';
-		case 'heading:1': return '# Heading';
-		case 'heading:2': return '## Heading';
-		case 'heading:3': return '### Heading';
-		case 'heading:4': return '#### Heading';
-		case 'heading:5': return '##### Heading';
-		case 'heading:6': return '###### Heading';
-		case 'paragraph': return 'Text content';
-		case 'list': case 'list:unordered': return '- Item 1\n- Item 2';
-		case 'list:ordered': return '1. Item 1\n2. Item 2';
-		case 'fence': return '```\ncode\n```';
-		case 'image': return '![alt](url)';
-		case 'blockquote': case 'quote': return '> Quote';
-		case 'any': return 'Content';
-		default: return 'Content';
+		case 'heading':
+			return '## Heading';
+		case 'heading:1':
+			return '# Heading';
+		case 'heading:2':
+			return '## Heading';
+		case 'heading:3':
+			return '### Heading';
+		case 'heading:4':
+			return '#### Heading';
+		case 'heading:5':
+			return '##### Heading';
+		case 'heading:6':
+			return '###### Heading';
+		case 'paragraph':
+			return 'Text content';
+		case 'list':
+		case 'list:unordered':
+			return '- Item 1\n- Item 2';
+		case 'list:ordered':
+			return '1. Item 1\n2. Item 2';
+		case 'fence':
+			return '```\ncode\n```';
+		case 'image':
+			return '![alt](url)';
+		case 'blockquote':
+		case 'quote':
+			return '> Quote';
+		case 'any':
+			return 'Content';
+		default:
+			return 'Content';
 	}
 }
 
@@ -712,7 +759,9 @@ export function removeListItem(
 	const newListSource = remaining.join('\n\n');
 	const idx = innerContent.indexOf(listNode.source);
 	if (idx === -1) return innerContent;
-	return innerContent.slice(0, idx) + newListSource + innerContent.slice(idx + listNode.source.length);
+	return (
+		innerContent.slice(0, idx) + newListSource + innerContent.slice(idx + listNode.source.length)
+	);
 }
 
 /**
@@ -734,7 +783,8 @@ export function reorderListItem(
 
 	const listNode = field.nodes[0];
 	const items = splitListItems(listNode.source);
-	if (fromIndex < 0 || fromIndex >= items.length || toIndex < 0 || toIndex >= items.length) return innerContent;
+	if (fromIndex < 0 || fromIndex >= items.length || toIndex < 0 || toIndex >= items.length)
+		return innerContent;
 
 	// Move item from fromIndex to toIndex
 	const reordered = [...items];
@@ -752,7 +802,9 @@ export function reorderListItem(
 	const newListSource = reordered.join('\n');
 	const idx = innerContent.indexOf(listNode.source);
 	if (idx === -1) return innerContent;
-	return innerContent.slice(0, idx) + newListSource + innerContent.slice(idx + listNode.source.length);
+	return (
+		innerContent.slice(0, idx) + newListSource + innerContent.slice(idx + listNode.source.length)
+	);
 }
 
 /**
@@ -815,7 +867,7 @@ export function reorderGreedyItem(
 	if (fromIndex < 0 || fromIndex >= field.nodes.length) return innerContent;
 	if (toIndex < 0 || toIndex >= field.nodes.length) return innerContent;
 
-	const nodesSources = field.nodes.map(n => n.source);
+	const nodesSources = field.nodes.map((n) => n.source);
 
 	const reordered = [...nodesSources];
 	const [moved] = reordered.splice(fromIndex, 1);
@@ -861,13 +913,13 @@ function findField(
 	zoneName?: string,
 ): { field: ResolvedField | null; fields: ResolvedField[] | null } {
 	if (structure.type === 'sequence') {
-		const field = structure.fields.find(f => f.name === fieldName) ?? null;
+		const field = structure.fields.find((f) => f.name === fieldName) ?? null;
 		return { field, fields: structure.fields };
 	}
 	if (structure.type === 'delimited' && zoneName) {
-		const zone = structure.zones.find(z => z.name === zoneName);
+		const zone = structure.zones.find((z) => z.name === zoneName);
 		if (!zone) return { field: null, fields: null };
-		const field = zone.fields.find(f => f.name === fieldName) ?? null;
+		const field = zone.fields.find((f) => f.name === fieldName) ?? null;
 		return { field, fields: zone.fields };
 	}
 	return { field: null, fields: null };
@@ -895,7 +947,7 @@ function insertInSequence(
 	fieldName: string,
 	template: string,
 ): string {
-	const fieldIndex = fields.findIndex(f => f.name === fieldName);
+	const fieldIndex = fields.findIndex((f) => f.name === fieldName);
 	if (fieldIndex === -1) return innerContent;
 
 	// Find the last filled field before this one to insert after
@@ -940,7 +992,7 @@ function insertInDelimited(
 	fields: ResolvedField[],
 	template: string,
 ): string {
-	const zoneIndex = structure.zones.findIndex(z => z.name === zoneName);
+	const zoneIndex = structure.zones.findIndex((z) => z.name === zoneName);
 	if (zoneIndex === -1) return innerContent;
 
 	// Split content at delimiters (---) to find zone boundaries
@@ -1025,8 +1077,12 @@ export function buildRuneMap(runes: RuneInfo[]): Map<string, RuneInfo> {
 export function extractRuneInner(example: string, name: string): string {
 	const lines = example.split('\n');
 	// Strip opening tag line ({% name ... %})
-	const openRe = new RegExp(`^\\{%\\s+${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b.*%\\}\\s*$`);
-	const closeRe = new RegExp(`^\\{%\\s+/${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*%\\}\\s*$`);
+	const openRe = new RegExp(
+		`^\\{%\\s+${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b.*%\\}\\s*$`,
+	);
+	const closeRe = new RegExp(
+		`^\\{%\\s+/${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*%\\}\\s*$`,
+	);
 
 	let start = 0;
 	let end = lines.length;
@@ -1077,7 +1133,7 @@ export function groupIntoEditorBlocks(blocks: ParsedBlock[]): EditorBlock[] {
 
 	function flushProse() {
 		if (proseChildren.length === 0) return;
-		const source = proseChildren.map(b => b.source).join('\n\n');
+		const source = proseChildren.map((b) => b.source).join('\n\n');
 		result.push({
 			id: `prose_${proseChildren[0].id}`,
 			type: 'prose',

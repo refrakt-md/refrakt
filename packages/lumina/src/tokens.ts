@@ -161,13 +161,13 @@ export const luminaTokens: ThemeTokensConfig = {
 	// numeric literals + boolean/null/Symbol (Shiki paints them all from
 	// one slot).
 	syntax: {
-		keyword: '#2a5c63',     // deep teal
-		function: '#4a3b6e',    // slate violet
-		string: '#8a3a3a',      // warm rust
-		constant: '#876327',    // antique ochre
-		comment: '#8a857d',     // warm muted (italic via rune CSS)
+		keyword: '#2a5c63', // deep teal
+		function: '#4a3b6e', // slate violet
+		string: '#8a3a3a', // warm rust
+		constant: '#876327', // antique ochre
+		comment: '#8a857d', // warm muted (italic via rune CSS)
 		punctuation: '#6b6661', // tonal — same as color.muted
-		variable: '#1c1a17',    // tonal — same as color.text
+		variable: '#1c1a17', // tonal — same as color.text
 	},
 
 	// SPEC-105 — scroll-reveal motion physics. The single source of truth for the
@@ -222,13 +222,13 @@ export const luminaTokens: ThemeTokensConfig = {
 			// Dark-mode syntax — lifted and slightly desaturated from light values
 			// so they read against the warm-near-black surface without shouting.
 			syntax: {
-				keyword: '#7eb6bc',     // light teal
-				function: '#a89bc7',    // light slate violet
-				string: '#c79a9a',      // light rust
-				constant: '#d4b07e',    // light antique ochre
-				comment: '#6b6661',     // warm muted (italic)
+				keyword: '#7eb6bc', // light teal
+				function: '#a89bc7', // light slate violet
+				string: '#c79a9a', // light rust
+				constant: '#d4b07e', // light antique ochre
+				comment: '#6b6661', // warm muted (italic)
 				punctuation: '#94908a', // = dark color.muted
-				variable: '#f6f4ef',    // = dark color.text
+				variable: '#f6f4ef', // = dark color.text
 			},
 
 			// Legacy alias — kept until the rename is fully rolled out. All the

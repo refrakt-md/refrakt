@@ -16,21 +16,33 @@ function makeCtx() {
 	const warnings: Array<{ severity: string; message: string; url?: string }> = [];
 	return {
 		ctx: {
-			info(message: string, url?: string) { warnings.push({ severity: 'info', message, url }); },
-			warn(message: string, url?: string) { warnings.push({ severity: 'warning', message, url }); },
-			error(message: string, url?: string) { warnings.push({ severity: 'error', message, url }); },
+			info(message: string, url?: string) {
+				warnings.push({ severity: 'info', message, url });
+			},
+			warn(message: string, url?: string) {
+				warnings.push({ severity: 'warning', message, url });
+			},
+			error(message: string, url?: string) {
+				warnings.push({ severity: 'error', message, url });
+			},
 		},
 		warnings,
 	};
 }
 
 function makeCoreData(pages: PageMeta[]) {
-	const pagesByUrl = new Map(pages.map(p => [p.url, p]));
+	const pagesByUrl = new Map(pages.map((p) => [p.url, p]));
 	return {
 		breadcrumbPaths: new Map<string, string[]>(),
 		pagesByUrl: pagesByUrl as Map<string, { url: string; title: string; parentUrl: string }>,
 		allPosts: [],
-		registry: { getAll: () => [], getById: () => undefined, getByUrl: () => [], getTypes: () => [], register: () => {} } as any,
+		registry: {
+			getAll: () => [],
+			getById: () => undefined,
+			getByUrl: () => [],
+			getTypes: () => [],
+			register: () => {},
+		} as any,
 	};
 }
 
@@ -39,7 +51,11 @@ function makeNavItem(slug: string): any {
 }
 
 function makeNav(layout: string | undefined, attrs: Record<string, string>, items: any[]): any {
-	const baseAttrs: Record<string, string> = { 'data-rune': 'nav', 'data-source-path': 'docs/_layout.md', ...attrs };
+	const baseAttrs: Record<string, string> = {
+		'data-rune': 'nav',
+		'data-source-path': 'docs/_layout.md',
+		...attrs,
+	};
 	if (layout) baseAttrs.layout = layout;
 	return new Tag('rf-nav', baseAttrs, items);
 }

@@ -60,12 +60,14 @@ const RESERVED_FILE_ROOT_NAMESPACES = new Set(['site']);
  *  and at user-config-resolution time. */
 export function assertFileRootNamespaceAllowed(namespace: string, source: string): void {
 	if (namespace.length === 0) {
-		throw new Error(`File-root namespace from ${source} is empty — namespaces must be non-empty strings.`);
+		throw new Error(
+			`File-root namespace from ${source} is empty — namespaces must be non-empty strings.`,
+		);
 	}
 	if (RESERVED_FILE_ROOT_NAMESPACES.has(namespace)) {
 		throw new Error(
 			`File-root namespace "${namespace}" from ${source} is reserved. ` +
-			`Pick a different namespace name.`
+				`Pick a different namespace name.`,
 		);
 	}
 }
@@ -83,7 +85,7 @@ export async function loadPlugin(npmPackageName: string): Promise<LoadedPlugin> 
 	} catch (err) {
 		throw new Error(
 			`Failed to load plugin "${npmPackageName}": ${(err as Error).message}\n` +
-			`Make sure the package is installed: npm install ${npmPackageName}`
+				`Make sure the package is installed: npm install ${npmPackageName}`,
 		);
 	}
 
@@ -207,7 +209,7 @@ export function mergePlugins(
 
 			const preferred = prefer?.[name];
 			if (preferred) {
-				const match = candidates.find(c => c.pkg.pkg.name === preferred);
+				const match = candidates.find((c) => c.pkg.pkg.name === preferred);
 				if (match) {
 					runes[name] = match.rune;
 					provenance[name] = {
@@ -218,21 +220,21 @@ export function mergePlugins(
 					};
 					continue;
 				}
-				const available = [...candidates.map(c => c.pkg.pkg.name), '__core__'].join(', ');
+				const available = [...candidates.map((c) => c.pkg.pkg.name), '__core__'].join(', ');
 				throw new Error(
 					`Rune "${name}" preference "${preferred}" does not match any providing plugin.\n` +
-					`Available: ${available}`
+						`Available: ${available}`,
 				);
 			}
 
-			const pkgNames = candidates.map(c => c.pkg.npmName).join(', ');
-			const pkgShortNames = [...candidates.map(c => c.pkg.pkg.name), '__core__'].join(', ');
+			const pkgNames = candidates.map((c) => c.pkg.npmName).join(', ');
+			const pkgShortNames = [...candidates.map((c) => c.pkg.pkg.name), '__core__'].join(', ');
 			throw new Error(
 				`Rune name "${name}" is ambiguous: provided by ${pkgNames} and also a core rune.\n` +
-				`  Resolve by adding to refrakt.config.json:\n` +
-				`  "runes": { "prefer": { "${name}": "<plugin-name>" } }\n\n` +
-				`  Use "__core__" to keep the core version.\n` +
-				`  Available: ${pkgShortNames}`
+					`  Resolve by adding to refrakt.config.json:\n` +
+					`  "runes": { "prefer": { "${name}": "<plugin-name>" } }\n\n` +
+					`  Use "__core__" to keep the core version.\n` +
+					`  Available: ${pkgShortNames}`,
 			);
 		}
 
@@ -248,7 +250,7 @@ export function mergePlugins(
 		} else {
 			const preferred = prefer?.[name];
 			if (preferred) {
-				const match = candidates.find(c => c.pkg.pkg.name === preferred);
+				const match = candidates.find((c) => c.pkg.pkg.name === preferred);
 				if (match) {
 					runes[name] = match.rune;
 					provenance[name] = {
@@ -258,21 +260,21 @@ export function mergePlugins(
 						origin: match.pkg.npmName,
 					};
 				} else {
-					const available = candidates.map(c => c.pkg.pkg.name).join(', ');
+					const available = candidates.map((c) => c.pkg.pkg.name).join(', ');
 					throw new Error(
 						`Rune "${name}" preference "${preferred}" does not match any providing plugin.\n` +
-						`Available: ${available}`
+							`Available: ${available}`,
 					);
 				}
 			} else {
-				const pkgNames = candidates.map(c => c.pkg.npmName).join(', ');
-				const pkgShortNames = candidates.map(c => c.pkg.pkg.name).join(', ');
+				const pkgNames = candidates.map((c) => c.pkg.npmName).join(', ');
+				const pkgShortNames = candidates.map((c) => c.pkg.pkg.name).join(', ');
 				throw new Error(
 					`Rune name "${name}" is ambiguous.\n` +
-					`  Found in: ${pkgNames}\n\n` +
-					`  Resolve by adding to refrakt.config.json:\n` +
-					`  "runes": { "prefer": { "${name}": "${candidates[0].pkg.pkg.name}" } }\n\n` +
-					`  Available plugin names: ${pkgShortNames}`
+						`  Found in: ${pkgNames}\n\n` +
+						`  Resolve by adding to refrakt.config.json:\n` +
+						`  "runes": { "prefer": { "${name}": "${candidates[0].pkg.pkg.name}" } }\n\n` +
+						`  Available plugin names: ${pkgShortNames}`,
 				);
 			}
 		}
@@ -352,7 +354,7 @@ export function mergePlugins(
 				const previous = fileRootProvenance.get(namespace);
 				throw new Error(
 					`Plugin file-root namespace "${namespace}" is registered by both "${previous}" and "${loadedPkg.npmName}". ` +
-					`Plugins must pick distinct namespace names; resolve by renaming one of them.`,
+						`Plugins must pick distinct namespace names; resolve by renaming one of them.`,
 				);
 			}
 			fileRoots[namespace] = absPath;
@@ -367,7 +369,7 @@ export function mergePlugins(
 		themeIcons,
 		themeBackgrounds,
 		extensions,
-		plugins: loaded.map(l => l.pkg),
+		plugins: loaded.map((l) => l.pkg),
 		provenance,
 		fixtures,
 		fileRoots,
@@ -409,14 +411,14 @@ export function applyAliases(
 		if (runes[alias] || tags[alias]) {
 			throw new Error(
 				`Alias "${alias}" conflicts with an existing rune or tag name. ` +
-				`Remove the alias or rename the rune.`
+					`Remove the alias or rename the rune.`,
 			);
 		}
 		const target = runes[canonical];
 		if (!target) {
 			throw new Error(
 				`Alias "${alias}" targets rune "${canonical}" which does not exist. ` +
-				`Check the rune name in runes.aliases.`
+					`Check the rune name in runes.aliases.`,
 			);
 		}
 		newTags[alias] = target.schema;
@@ -452,7 +454,7 @@ export async function loadLocalRunes(
 			mod = await import(/* @vite-ignore */ absPath);
 		} catch (err) {
 			throw new Error(
-				`Failed to load local rune "${name}" from "${modulePath}": ${(err as Error).message}`
+				`Failed to load local rune "${name}" from "${modulePath}": ${(err as Error).message}`,
 			);
 		}
 
@@ -460,7 +462,7 @@ export async function loadLocalRunes(
 
 		if (!entry.transform || typeof entry.transform !== 'object') {
 			throw new Error(
-				`Local rune "${name}" at "${modulePath}" must export a transform (Markdoc Schema).`
+				`Local rune "${name}" at "${modulePath}" must export a transform (Markdoc Schema).`,
 			);
 		}
 
@@ -475,9 +477,7 @@ export async function loadLocalRunes(
 		pkg: {
 			name: '__local__',
 			version: '0.0.0',
-			runes: Object.fromEntries(
-				Object.entries(runes).map(([k]) => [k, { transform: {} }])
-			),
+			runes: Object.fromEntries(Object.entries(runes).map(([k]) => [k, { transform: {} }])),
 		},
 		npmName: '__local__',
 		runes,
@@ -536,7 +536,9 @@ export async function discoverPluginFixtureManifest(
  * When a rune ships multiple scenarios, the `canonical` scenario wins (falling
  * back to the first parsed). Backward-compatible with bare `<rune>.md` files.
  */
-export async function discoverPluginFixtures(npmPackageName: string): Promise<Record<string, string>> {
+export async function discoverPluginFixtures(
+	npmPackageName: string,
+): Promise<Record<string, string>> {
 	const fixtures: Record<string, string> = {};
 
 	for (const fx of await discoverPluginFixtureManifest(npmPackageName)) {
@@ -564,7 +566,7 @@ function findPluginExport(mod: Record<string, unknown>, npmName: string): Plugin
 
 	throw new Error(
 		`Package "${npmName}" does not export a valid Plugin object.\n` +
-		`Expected an export with { name: string, version: string, runes: { ... } }`
+			`Expected an export with { name: string, version: string, runes: { ... } }`,
 	);
 }
 
@@ -572,7 +574,12 @@ function findPluginExport(mod: Record<string, unknown>, npmName: string): Plugin
 function isPlugin(value: unknown): value is Plugin {
 	if (typeof value !== 'object' || value === null) return false;
 	const obj = value as Record<string, unknown>;
-	return typeof obj.name === 'string' && typeof obj.version === 'string' && typeof obj.runes === 'object' && obj.runes !== null;
+	return (
+		typeof obj.name === 'string' &&
+		typeof obj.version === 'string' &&
+		typeof obj.runes === 'object' &&
+		obj.runes !== null
+	);
 }
 
 /** Validate a loaded Plugin has required fields */
@@ -591,7 +598,7 @@ function validatePlugin(pkg: Plugin, npmName: string): void {
 		if (!entry.transform || typeof entry.transform !== 'object') {
 			throw new Error(
 				`Plugin "${npmName}" rune "${name}" has an invalid transform. ` +
-				`Expected a Markdoc Schema object (created via createContentModelSchema()).`
+					`Expected a Markdoc Schema object (created via createContentModelSchema()).`,
 			);
 		}
 	}

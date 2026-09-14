@@ -1,54 +1,53 @@
 @layer skin {
-/* Bond */
-.rf-bond {
-	gap: 0.75rem;
-}
-.rf-bond > span[property="from"],
-.rf-bond > span[property="to"] {
-	font-weight: var(--rf-weight-semibold);
-	font-size: var(--rf-text);
-	color: var(--rf-color-text);
-	white-space: nowrap;
-}
-.rf-bond__arrow {
-	background: var(--rf-color-border);
-}
-.rf-bond__arrow::after {
-	border: 4px solid transparent;
-	border-left: 6px solid var(--rf-color-border);
-}
-.rf-bond[data-bidirectional="true"] .rf-bond__arrow::before {
-	border: 4px solid transparent;
-	border-right: 6px solid var(--rf-color-border);
-}
-.rf-bond__body {
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-muted);
-}
+	/* Bond */
+	.rf-bond {
+		gap: 0.75rem;
+	}
+	.rf-bond > span[property="from"],
+	.rf-bond > span[property="to"] {
+		font-weight: var(--rf-weight-semibold);
+		font-size: var(--rf-text);
+		color: var(--rf-color-text);
+		white-space: nowrap;
+	}
+	.rf-bond__arrow {
+		background: var(--rf-color-border);
+	}
+	.rf-bond__arrow::after {
+		border: 4px solid transparent;
+		border-left: 6px solid var(--rf-color-border);
+	}
+	.rf-bond[data-bidirectional="true"] .rf-bond__arrow::before {
+		border: 4px solid transparent;
+		border-right: 6px solid var(--rf-color-border);
+	}
+	.rf-bond__body {
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+	}
 
-/* Status variants */
-.rf-bond--active .rf-bond__arrow,
-.rf-bond--active .rf-bond__arrow::after {
-	border-left-color: var(--rf-color-primary);
-}
-.rf-bond--active .rf-bond__arrow {
-	background: var(--rf-color-primary);
-}
-.rf-bond--active[data-bidirectional="true"] .rf-bond__arrow::before {
-	border-right-color: var(--rf-color-primary);
-}
+	/* Status variants */
+	.rf-bond--active .rf-bond__arrow,
+	.rf-bond--active .rf-bond__arrow::after {
+		border-left-color: var(--rf-color-primary);
+	}
+	.rf-bond--active .rf-bond__arrow {
+		background: var(--rf-color-primary);
+	}
+	.rf-bond--active[data-bidirectional="true"] .rf-bond__arrow::before {
+		border-right-color: var(--rf-color-primary);
+	}
 
-.rf-bond[data-status="broken"] .rf-bond__arrow {
-	background: repeating-linear-gradient(
-		90deg,
-		var(--rf-color-muted) 0,
-		var(--rf-color-muted) 4px,
-		transparent 4px,
-		transparent 8px
-	);
-}
-.rf-bond[data-status="broken"] {
-	opacity: 0.6;
-}
-
+	.rf-bond[data-status="broken"] .rf-bond__arrow {
+		background: repeating-linear-gradient(
+			90deg,
+			var(--rf-color-muted) 0,
+			var(--rf-color-muted) 4px,
+			transparent 4px,
+			transparent 8px
+		);
+	}
+	.rf-bond[data-status="broken"] {
+		opacity: 0.6;
+	}
 }

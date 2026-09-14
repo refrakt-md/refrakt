@@ -53,7 +53,16 @@ describe('Tokyo Night preset module — SPEC-057 import + extended-role validato
 		// below 4, escalate per the SPEC-057 verification gate.
 		it('SPEC-057 fidelity gate: sets at least 4 of 7 extended roles distinctly in dark mode', () => {
 			const syn = tokyoNight.modes!.dark.syntax!;
-			const EXTENDED_ROLES = ['type', 'property', 'parameter', 'tag', 'attribute', 'operator', 'number', 'regex'] as const;
+			const EXTENDED_ROLES = [
+				'type',
+				'property',
+				'parameter',
+				'tag',
+				'attribute',
+				'operator',
+				'number',
+				'regex',
+			] as const;
 			const FALLBACK_PAIRS: Record<string, keyof typeof syn> = {
 				type: 'function',
 				property: 'variable',
@@ -71,7 +80,10 @@ describe('Tokyo Night preset module — SPEC-057 import + extended-role validato
 				const fallback = (syn as Record<string, string | undefined>)[FALLBACK_PAIRS[role]];
 				if (value !== fallback) distinctCount++;
 			}
-			expect(distinctCount, `Tokyo Night should distinguish ≥4 extended roles in dark mode; found ${distinctCount}`).toBeGreaterThanOrEqual(4);
+			expect(
+				distinctCount,
+				`Tokyo Night should distinguish ≥4 extended roles in dark mode; found ${distinctCount}`,
+			).toBeGreaterThanOrEqual(4);
 		});
 
 		it('headline SPEC-056 split — type ≠ function in both modes', () => {
@@ -85,7 +97,9 @@ describe('Tokyo Night preset module — SPEC-057 import + extended-role validato
 
 		it('parameter gets a dedicated hue in Storm (yellow #e0af68) distinct from variable', () => {
 			expect(tokyoNight.modes?.dark.syntax?.parameter).toBe('#e0af68');
-			expect(tokyoNight.modes?.dark.syntax?.parameter).not.toBe(tokyoNight.modes?.dark.syntax?.variable);
+			expect(tokyoNight.modes?.dark.syntax?.parameter).not.toBe(
+				tokyoNight.modes?.dark.syntax?.variable,
+			);
 		});
 	});
 

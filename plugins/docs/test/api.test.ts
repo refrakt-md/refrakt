@@ -14,7 +14,7 @@ Returns a list of all users.
 | limit | number | Items per page |
 {% /api %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'api');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'api');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 	});
@@ -26,7 +26,7 @@ Returns a list of all users.
 Creates a new user.
 {% /api %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'api');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'api');
 
 		expect(fields(tag).method).toBe('POST');
 		expect(fields(tag).path).toBe('/api/users');
@@ -40,7 +40,7 @@ Creates a new user.
 Deletes a user by ID.
 {% /endpoint %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'api');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'api');
 		expect(tag).toBeDefined();
 	});
 });

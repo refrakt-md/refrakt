@@ -120,7 +120,11 @@ export function normalizeRefraktConfig(
 	// Handles top-level (flat shape) and per-site occurrences. Emits a one-time
 	// deprecation warning so users learn to rename, but keeps the site building.
 	const migratedFromLegacyPackages = renameLegacyPackagesField(raw as Record<string, unknown>);
-	if (migratedFromLegacyPackages && !legacyPackagesWarningEmitted && !options.suppressLegacyPackagesWarning) {
+	if (
+		migratedFromLegacyPackages &&
+		!legacyPackagesWarningEmitted &&
+		!options.suppressLegacyPackagesWarning
+	) {
 		legacyPackagesWarningEmitted = true;
 		const where = options.configDir ? ` (${options.configDir}/refrakt.config.json)` : '';
 		// eslint-disable-next-line no-console
@@ -149,7 +153,9 @@ export function normalizeRefraktConfig(
 
 	if (hasPlural) {
 		if (typeof input.sites !== 'object' || input.sites === null || Array.isArray(input.sites)) {
-			throw new Error('refrakt.config.json: "sites" must be an object mapping names to site configs');
+			throw new Error(
+				'refrakt.config.json: "sites" must be an object mapping names to site configs',
+			);
 		}
 		const entries = Object.entries(input.sites);
 		if (entries.length === 0) {
@@ -160,10 +166,14 @@ export function normalizeRefraktConfig(
 			// Nested-shape paths are file-relative — absolutize against configDir
 			// when we have one so adapters see absolute paths and don't have to
 			// guess the anchor.
-			sites[name] = configDir ? absolutizeSitePaths(site as SiteConfig, configDir) : (site as SiteConfig);
+			sites[name] = configDir
+				? absolutizeSitePaths(site as SiteConfig, configDir)
+				: (site as SiteConfig);
 		}
 	} else if (hasSingular) {
-		const site = configDir ? absolutizeSitePaths(input.site as SiteConfig, configDir) : (input.site as SiteConfig);
+		const site = configDir
+			? absolutizeSitePaths(input.site as SiteConfig, configDir)
+			: (input.site as SiteConfig);
 		sites = { [DEFAULT_SITE_NAME]: site };
 	} else if (hasFlatSiteFields(input)) {
 		// Flat shape — leave paths as-is so legacy cwd-relative resolution
@@ -402,11 +412,7 @@ function levenshtein(a: string, b: string): number {
 	for (let i = 1; i <= m; i++) {
 		for (let j = 1; j <= n; j++) {
 			const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-			dp[i]![j] = Math.min(
-				dp[i - 1]![j]! + 1,
-				dp[i]![j - 1]! + 1,
-				dp[i - 1]![j - 1]! + cost,
-			);
+			dp[i]![j] = Math.min(dp[i - 1]![j]! + 1, dp[i]![j - 1]! + 1, dp[i - 1]![j - 1]! + cost);
 		}
 	}
 	return dp[m]![n]!;

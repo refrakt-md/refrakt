@@ -5,10 +5,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 function tmpOutputDir(): string {
-	return join(
-		tmpdir(),
-		`scaffold-css-test-${Date.now()}-${Math.random().toString(36).slice(2)}`
-	);
+	return join(tmpdir(), `scaffold-css-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 }
 
 const cleanupDirs: string[] = [];

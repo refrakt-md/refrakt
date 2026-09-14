@@ -34,7 +34,13 @@ const SVGNS = 'http://www.w3.org/2000/svg';
 const SERIES_COUNT = 6;
 
 /** Geometry defaults — mirror the `--rf-chart-*` values shipped in chart.css. */
-const GEOM_DEFAULTS = { barRatio: 0.75, barThickness: 12, barGap: 0.15, barClusterGap: 4, pointRadius: 4 };
+const GEOM_DEFAULTS = {
+	barRatio: 0.75,
+	barThickness: 12,
+	barGap: 0.15,
+	barClusterGap: 4,
+	pointRadius: 4,
+};
 
 function cellValue(cell: HTMLTableCellElement): string {
 	return (cell.dataset.value ?? cell.textContent ?? '').trim();
@@ -116,9 +122,16 @@ function formatTick(v: number): string {
 /** Standalone svg renderer — a future `ChartProvider.render` lifts this verbatim.
  *  Emits only tagged elements (class + data-series + optional data-meta-sentiment);
  *  all colour/stroke/font is painted by chart.css from the contract props. */
-function renderSvg(data: ChartData, container: HTMLElement, host: HTMLElement, opts: { type: string; tickCount: number; tickStep?: number; labelAngle: number | 'auto' }): void {
+function renderSvg(
+	data: ChartData,
+	container: HTMLElement,
+	host: HTMLElement,
+	opts: { type: string; tickCount: number; tickStep?: number; labelAngle: number | 'auto' },
+): void {
 	const svgW = 600;
-	const padTop = 30, padLeft = 50, padRight = 20;
+	const padTop = 30,
+		padLeft = 50,
+		padRight = 20;
 	const cw = svgW - padLeft - padRight;
 	const g = readGeometry(host);
 
@@ -138,12 +151,12 @@ function renderSvg(data: ChartData, container: HTMLElement, host: HTMLElement, o
 	const charW = labelSize * 0.6;
 	const maxLabelLen = labels.length ? Math.max(...labels.map((l) => l.length)) : 0;
 	const estLabelW = maxLabelLen * charW;
-	const labelAngle = opts.labelAngle === 'auto'
-		? (estLabelW > bgw * 0.95 ? -45 : 0)
-		: opts.labelAngle;
-	const labelExtent = labelAngle === 0
-		? labelSize + 8
-		: Math.abs(Math.sin((labelAngle * Math.PI) / 180)) * estLabelW + labelSize;
+	const labelAngle =
+		opts.labelAngle === 'auto' ? (estLabelW > bgw * 0.95 ? -45 : 0) : opts.labelAngle;
+	const labelExtent =
+		labelAngle === 0
+			? labelSize + 8
+			: Math.abs(Math.sin((labelAngle * Math.PI) / 180)) * estLabelW + labelSize;
 	const padBottom = 10 + labelExtent;
 	const chBase = 230;
 	const ch = chBase;
@@ -162,10 +175,27 @@ function renderSvg(data: ChartData, container: HTMLElement, host: HTMLElement, o
 		for (let si = 0; si < SERIES_COUNT; si++) {
 			const grad = svgEl('linearGradient', {
 				id: `${chartId}-area-${si}`,
-				x1: '0', y1: '0', x2: '0', y2: '1',
+				x1: '0',
+				y1: '0',
+				x2: '0',
+				y2: '1',
 			});
-			grad.appendChild(svgEl('stop', { offset: '0%', class: 'rf-chart__area-stop', 'data-series': si, 'data-position': 'top' }));
-			grad.appendChild(svgEl('stop', { offset: '100%', class: 'rf-chart__area-stop', 'data-series': si, 'data-position': 'bottom' }));
+			grad.appendChild(
+				svgEl('stop', {
+					offset: '0%',
+					class: 'rf-chart__area-stop',
+					'data-series': si,
+					'data-position': 'top',
+				}),
+			);
+			grad.appendChild(
+				svgEl('stop', {
+					offset: '100%',
+					class: 'rf-chart__area-stop',
+					'data-series': si,
+					'data-position': 'bottom',
+				}),
+			);
 			defs.appendChild(grad);
 		}
 		svg.appendChild(defs);
@@ -176,19 +206,49 @@ function renderSvg(data: ChartData, container: HTMLElement, host: HTMLElement, o
 	for (const t of ticks) {
 		const y = pad.top + ch - (t / maxVal) * ch;
 		if (t > 0) {
-			svg.appendChild(svgEl('line', {
-				x1: pad.left, y1: y, x2: svgW - pad.right, y2: y, class: 'rf-chart__grid',
-			}));
+			svg.appendChild(
+				svgEl('line', {
+					x1: pad.left,
+					y1: y,
+					x2: svgW - pad.right,
+					y2: y,
+					class: 'rf-chart__grid',
+				}),
+			);
 		}
-		svg.appendChild(svgEl('text', {
-			x: pad.left - 8, y: y + 4,
-			'text-anchor': 'end', class: 'rf-chart__tick-label',
-		}, formatTick(t)));
+		svg.appendChild(
+			svgEl(
+				'text',
+				{
+					x: pad.left - 8,
+					y: y + 4,
+					'text-anchor': 'end',
+					class: 'rf-chart__tick-label',
+				},
+				formatTick(t),
+			),
+		);
 	}
 
 	// Axes — painted via `.rf-chart__axis` (grid colour/width from the contract).
-	svg.appendChild(svgEl('line', { x1: pad.left, y1: pad.top, x2: pad.left, y2: svgH - pad.bottom, class: 'rf-chart__axis' }));
-	svg.appendChild(svgEl('line', { x1: pad.left, y1: svgH - pad.bottom, x2: svgW - pad.right, y2: svgH - pad.bottom, class: 'rf-chart__axis' }));
+	svg.appendChild(
+		svgEl('line', {
+			x1: pad.left,
+			y1: pad.top,
+			x2: pad.left,
+			y2: svgH - pad.bottom,
+			class: 'rf-chart__axis',
+		}),
+	);
+	svg.appendChild(
+		svgEl('line', {
+			x1: pad.left,
+			y1: svgH - pad.bottom,
+			x2: svgW - pad.right,
+			y2: svgH - pad.bottom,
+			class: 'rf-chart__axis',
+		}),
+	);
 
 	const tagSentiment = (el: SVGElement, i: number, si: number) => {
 		const s = data.sentiments[i]?.[si];
@@ -198,27 +258,40 @@ function renderSvg(data: ChartData, container: HTMLElement, host: HTMLElement, o
 	if (opts.type === 'line') {
 		const baseY = pad.top + ch;
 		for (let si = 0; si < series.length; si++) {
-			const pts = labels.map((_, i) =>
-				`${pad.left + i * bgw + bgw / 2},${pad.top + ch - (values[i][si] / maxVal) * ch}`,
-			).join(' ');
+			const pts = labels
+				.map(
+					(_, i) =>
+						`${pad.left + i * bgw + bgw / 2},${pad.top + ch - (values[i][si] / maxVal) * ch}`,
+				)
+				.join(' ');
 			// Area polygon: closes the line down to the baseline so the gradient
 			// fades from the line at the top to transparent at the chart floor.
 			// Rendered before the polyline so the line + points sit on top.
 			const firstX = pad.left + bgw / 2;
 			const lastX = pad.left + (labels.length - 1) * bgw + bgw / 2;
 			const areaPts = `${firstX},${baseY} ${pts} ${lastX},${baseY}`;
-			svg.appendChild(svgEl('polygon', {
-				points: areaPts,
-				class: 'rf-chart__area',
-				'data-series': si % SERIES_COUNT,
-				fill: `url(#${chartId}-area-${si % SERIES_COUNT})`,
-			}));
-			svg.appendChild(svgEl('polyline', { points: pts, class: 'rf-chart__line', 'data-series': si % SERIES_COUNT }));
+			svg.appendChild(
+				svgEl('polygon', {
+					points: areaPts,
+					class: 'rf-chart__area',
+					'data-series': si % SERIES_COUNT,
+					fill: `url(#${chartId}-area-${si % SERIES_COUNT})`,
+				}),
+			);
+			svg.appendChild(
+				svgEl('polyline', {
+					points: pts,
+					class: 'rf-chart__line',
+					'data-series': si % SERIES_COUNT,
+				}),
+			);
 			for (let i = 0; i < labels.length; i++) {
 				const c = svgEl('circle', {
 					cx: pad.left + i * bgw + bgw / 2,
 					cy: pad.top + ch - (values[i][si] / maxVal) * ch,
-					r: g.pointRadius, class: 'rf-chart__point', 'data-series': si % SERIES_COUNT,
+					r: g.pointRadius,
+					class: 'rf-chart__point',
+					'data-series': si % SERIES_COUNT,
 				});
 				tagSentiment(c, i, si);
 				svg.appendChild(c);
@@ -232,9 +305,10 @@ function renderSvg(data: ChartData, container: HTMLElement, host: HTMLElement, o
 		const seriesCount = Math.max(series.length, 1);
 		const availableCluster = bgw * (1 - g.barGap);
 		const idealClusterW = seriesCount * g.barThickness + (seriesCount - 1) * g.barClusterGap;
-		const barW = idealClusterW <= availableCluster
-			? g.barThickness
-			: Math.max(0, (availableCluster - (seriesCount - 1) * g.barClusterGap) / seriesCount);
+		const barW =
+			idealClusterW <= availableCluster
+				? g.barThickness
+				: Math.max(0, (availableCluster - (seriesCount - 1) * g.barClusterGap) / seriesCount);
 		const clusterW = seriesCount * barW + (seriesCount - 1) * g.barClusterGap;
 		const clusterStart = (bgw - clusterW) / 2;
 		for (let i = 0; i < labels.length; i++) {
@@ -243,7 +317,10 @@ function renderSvg(data: ChartData, container: HTMLElement, host: HTMLElement, o
 				const rect = svgEl('rect', {
 					x: pad.left + i * bgw + clusterStart + si * (barW + g.barClusterGap),
 					y: pad.top + ch - h,
-					width: barW, height: h, class: 'rf-chart__bar', 'data-series': si % SERIES_COUNT,
+					width: barW,
+					height: h,
+					class: 'rf-chart__bar',
+					'data-series': si % SERIES_COUNT,
 				});
 				tagSentiment(rect, i, si);
 				svg.appendChild(rect);
@@ -291,9 +368,12 @@ export class RfChart extends SafeHTMLElement {
 		const tickStepRaw = this.dataset.tickStep;
 		const tickStep = tickStepRaw ? parseFloat(tickStepRaw) : undefined;
 		const labelAngleRaw = this.dataset.labelAngle ?? 'auto';
-		const labelAngle: number | 'auto' = labelAngleRaw === 'auto'
-			? 'auto'
-			: (Number.isFinite(parseFloat(labelAngleRaw)) ? parseFloat(labelAngleRaw) : 'auto');
+		const labelAngle: number | 'auto' =
+			labelAngleRaw === 'auto'
+				? 'auto'
+				: Number.isFinite(parseFloat(labelAngleRaw))
+					? parseFloat(labelAngleRaw)
+					: 'auto';
 
 		const rendered = document.createElement('div');
 		rendered.className = 'rf-chart__rendered';

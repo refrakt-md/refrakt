@@ -20,9 +20,12 @@ function createIcon(content: string): SVGSVGElement {
 const ICONS = {
 	eye: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>',
 	code: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
-	mobile: '<rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>',
-	tablet: '<rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>',
-	desktop: '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
+	mobile:
+		'<rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>',
+	tablet:
+		'<rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>',
+	desktop:
+		'<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
 	sun: '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>',
 	moon: '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
 } as const;
@@ -132,8 +135,14 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 		viewToggle.appendChild(viewCodeBtn);
 		leftGroup.appendChild(viewToggle);
 
-		const onPreview = () => { view = 'preview'; render(); };
-		const onCode = () => { view = 'code'; render(); };
+		const onPreview = () => {
+			view = 'preview';
+			render();
+		};
+		const onCode = () => {
+			view = 'code';
+			render();
+		};
 		viewPreviewBtn.addEventListener('click', onPreview);
 		viewCodeBtn.addEventListener('click', onCode);
 		cleanups.push(() => {
@@ -155,7 +164,10 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 			btn.setAttribute('title', VIEWPORT_PRESETS[preset].label);
 			btn.appendChild(createIcon(VIEWPORT_ICONS[preset] || ICONS.desktop));
 
-			const onClick = () => { activeViewport = preset; render(); };
+			const onClick = () => {
+				activeViewport = preset;
+				render();
+			};
 			btn.addEventListener('click', onClick);
 			cleanups.push(() => btn.removeEventListener('click', onClick));
 
@@ -170,10 +182,30 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 	const themeToggle = document.createElement('div');
 	themeToggle.className = 'rf-preview__toggle';
 
-	const themeOptions: Array<{ mode: 'auto' | 'light' | 'dark'; label: string; title: string; icon: string }> = [
-		{ mode: 'auto', label: bstr('behavior.preview.auto'), title: bstr('behavior.preview.systemPreference'), icon: ICONS.desktop },
-		{ mode: 'light', label: bstr('behavior.preview.light'), title: bstr('behavior.preview.lightMode'), icon: ICONS.sun },
-		{ mode: 'dark', label: bstr('behavior.preview.dark'), title: bstr('behavior.preview.darkMode'), icon: ICONS.moon },
+	const themeOptions: Array<{
+		mode: 'auto' | 'light' | 'dark';
+		label: string;
+		title: string;
+		icon: string;
+	}> = [
+		{
+			mode: 'auto',
+			label: bstr('behavior.preview.auto'),
+			title: bstr('behavior.preview.systemPreference'),
+			icon: ICONS.desktop,
+		},
+		{
+			mode: 'light',
+			label: bstr('behavior.preview.light'),
+			title: bstr('behavior.preview.lightMode'),
+			icon: ICONS.sun,
+		},
+		{
+			mode: 'dark',
+			label: bstr('behavior.preview.dark'),
+			title: bstr('behavior.preview.darkMode'),
+			icon: ICONS.moon,
+		},
 	];
 
 	const themeButtons: Map<string, HTMLButtonElement> = new Map();
@@ -184,7 +216,10 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 		btn.setAttribute('title', opt.title);
 		btn.appendChild(createIcon(opt.icon));
 
-		const onClick = () => { themeMode = opt.mode; render(); };
+		const onClick = () => {
+			themeMode = opt.mode;
+			render();
+		};
 		btn.addEventListener('click', onClick);
 		cleanups.push(() => btn.removeEventListener('click', onClick));
 
@@ -263,7 +298,10 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 				if (tab.key === activeSourceTab) btn.classList.add('rf-preview__source-tab--active');
 				btn.textContent = tab.label;
 
-				const onClick = () => { activeSourceTab = tab.key; render(); };
+				const onClick = () => {
+					activeSourceTab = tab.key;
+					render();
+				};
 				btn.addEventListener('click', onClick);
 				cleanups.push(() => btn.removeEventListener('click', onClick));
 
@@ -316,9 +354,10 @@ export function previewBehavior(el: HTMLElement): CleanupFn {
 			btn.classList.toggle('rf-preview__toggle-btn--active', activeViewport === preset);
 		}
 		if (viewportFrame) {
-			const width = activeViewport && VIEWPORT_PRESETS[activeViewport]
-				? VIEWPORT_PRESETS[activeViewport].width
-				: null;
+			const width =
+				activeViewport && VIEWPORT_PRESETS[activeViewport]
+					? VIEWPORT_PRESETS[activeViewport].width
+					: null;
 			viewportFrame.classList.toggle('rf-preview__viewport-frame--constrained', !!width);
 			viewportFrame.style.maxWidth = width ? `${width}px` : '';
 

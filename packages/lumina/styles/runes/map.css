@@ -1,63 +1,71 @@
 @layer skin {
-/* ── Map Rune ── */
+	/* ── Map Rune ── */
 
-.rf-map {
-	margin: 2rem 0;
-	border-radius: var(--rf-radius-lg, 0.75rem);
-}
+	.rf-map {
+		margin: 2rem 0;
+		border-radius: var(--rf-radius-lg, 0.75rem);
+	}
 
-/* Spacing variants */
-.rf-map--spacing-flush { margin: 0; }
-.rf-map--spacing-tight { margin: 0.5rem 0; }
-.rf-map--spacing-loose { margin: 3rem 0; }
-.rf-map--spacing-breathe { margin: 4rem 0; }
+	/* Spacing variants */
+	.rf-map--spacing-flush {
+		margin: 0;
+	}
+	.rf-map--spacing-tight {
+		margin: 0.5rem 0;
+	}
+	.rf-map--spacing-loose {
+		margin: 3rem 0;
+	}
+	.rf-map--spacing-breathe {
+		margin: 4rem 0;
+	}
 
-.rf-map__container {
-	background: var(--rf-color-surface, #f8f9fa);
-	/* Establish a stacking context so Leaflet's internal pane z-indices
+	.rf-map__container {
+		background: var(--rf-color-surface, #f8f9fa);
+		/* Establish a stacking context so Leaflet's internal pane z-indices
 	 * (tile-pane 200, overlay-pane 400, marker-pane 600, popup-pane 700,
 	 * etc.) stay contained instead of escaping past siblings — otherwise
 	 * a map dropped into a cover card's media slot punches through the
 	 * cover scrim (z-index auto) and overlaid content (z-index 1).
 	 * `position: relative` alone is not enough; `isolation: isolate` is. */
-}
+	}
 
-/* Fallback list shown while Leaflet loads */
-.rf-map__fallback {
-	padding: 1.5rem;
-	margin: 0;
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-muted);
-}
+	/* Fallback list shown while Leaflet loads */
+	.rf-map__fallback {
+		padding: 1.5rem;
+		margin: 0;
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+	}
 
-.rf-map__fallback li {
-	padding: 0.25rem 0;
-}
+	.rf-map__fallback li {
+		padding: 0.25rem 0;
+	}
 
-.rf-map__fallback strong {
-	color: var(--rf-color-text);
-}
+	.rf-map__fallback strong {
+		color: var(--rf-color-text);
+	}
 
-/* MapPin in fallback / a11y list */
-.rf-map-pin {
-	padding: 0.25rem 0;
-}
+	/* MapPin in fallback / a11y list */
+	.rf-map-pin {
+		padding: 0.25rem 0;
+	}
 
-.rf-map-pin__description {
-	color: var(--rf-color-muted);
-	font-style: italic;
-}
+	.rf-map-pin__description {
+		color: var(--rf-color-muted);
+		font-style: italic;
+	}
 
-.rf-map-pin__group {
-	font-size: var(--rf-text-xs);
-	padding: 0.1rem 0.5rem;
-	border-radius: var(--rf-radius-sm, 0.25rem);
-	background: var(--rf-color-surface, #f0f0f0);
-	color: var(--rf-color-muted);
-	margin-left: 0.5rem;
-}
+	.rf-map-pin__group {
+		font-size: var(--rf-text-xs);
+		padding: 0.1rem 0.5rem;
+		border-radius: var(--rf-radius-sm, 0.25rem);
+		background: var(--rf-color-surface, #f0f0f0);
+		color: var(--rf-color-muted);
+		margin-left: 0.5rem;
+	}
 
-/* ── Map as a media guest ──
+	/* ── Map as a media guest ──
  * When dropped into a `[data-section="media"]` slot (e.g. a card or
  * bento-cell in cover mode), the map yields its standalone presentation to
  * the slot: no outer margin or padding (map is in the Banner surface group
@@ -66,49 +74,48 @@
  * slot height instead of capping at the per-size pixel height. The fallback
  * list (rendered before Leaflet hydrates) drops its outer padding too so it
  * doesn't bleed past the slot edge during the brief flash before tiles load. */
-[data-section="media"] > .rf-map {
-	margin: 0;
-	padding: 0;
-	border-radius: inherit;
-}
-[data-section="media"] .rf-map__fallback {
-	padding: 0.75rem 1rem;
-}
+	[data-section="media"] > .rf-map {
+		margin: 0;
+		padding: 0;
+		border-radius: inherit;
+	}
+	[data-section="media"] .rf-map__fallback {
+		padding: 0.75rem 1rem;
+	}
 
-/* Leaflet popup overrides to match theme */
-.rf-map .leaflet-popup-content-wrapper {
-	border-radius: var(--rf-radius-md, 0.5rem);
-	font-family: var(--rf-font-sans, inherit);
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-text);
-}
+	/* Leaflet popup overrides to match theme */
+	.rf-map .leaflet-popup-content-wrapper {
+		border-radius: var(--rf-radius-md, 0.5rem);
+		font-family: var(--rf-font-sans, inherit);
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-text);
+	}
 
-.rf-map .leaflet-popup-content {
-	margin: 0.75rem 1rem;
-	line-height: var(--rf-leading-normal);
-}
+	.rf-map .leaflet-popup-content {
+		margin: 0.75rem 1rem;
+		line-height: var(--rf-leading-normal);
+	}
 
-.rf-map .leaflet-popup-content strong {
-	font-size: var(--rf-text);
-	margin-bottom: 0.25rem;
-}
+	.rf-map .leaflet-popup-content strong {
+		font-size: var(--rf-text);
+		margin-bottom: 0.25rem;
+	}
 
-.rf-map .leaflet-popup-content em {
-	color: var(--rf-color-muted);
-}
+	.rf-map .leaflet-popup-content em {
+		color: var(--rf-color-muted);
+	}
 
-.rf-map .leaflet-popup-content small {
-	color: var(--rf-color-muted);
-	font-size: var(--rf-text-xs);
-}
+	.rf-map .leaflet-popup-content small {
+		color: var(--rf-color-muted);
+		font-size: var(--rf-text-xs);
+	}
 
-.rf-map .leaflet-popup-content a {
-	color: var(--rf-color-primary);
-	text-decoration: none;
-}
+	.rf-map .leaflet-popup-content a {
+		color: var(--rf-color-primary);
+		text-decoration: none;
+	}
 
-.rf-map .leaflet-popup-content a:hover {
-	text-decoration: underline;
-}
-
+	.rf-map .leaflet-popup-content a:hover {
+		text-decoration: underline;
+	}
 }

@@ -47,11 +47,15 @@ describe('colorSchemeMetaContent', () => {
 	});
 
 	it('returns "light dark" when locked but mode is auto', () => {
-		expect(colorSchemeMetaContent({ tint: null, tintMode: 'auto', locked: true })).toBe('light dark');
+		expect(colorSchemeMetaContent({ tint: null, tintMode: 'auto', locked: true })).toBe(
+			'light dark',
+		);
 	});
 
 	it('returns "light dark" when explicit but not locked (user can override)', () => {
-		expect(colorSchemeMetaContent({ tint: null, tintMode: 'dark', locked: false })).toBe('light dark');
+		expect(colorSchemeMetaContent({ tint: null, tintMode: 'dark', locked: false })).toBe(
+			'light dark',
+		);
 	});
 });
 

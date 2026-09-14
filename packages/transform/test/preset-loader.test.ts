@@ -14,7 +14,9 @@ describe('loadPreset', () => {
 	});
 
 	it('loads a preset via named `config` export', async () => {
-		const config = await loadPreset('./fixtures/preset-with-named-config.mjs', { from: fixturesDir });
+		const config = await loadPreset('./fixtures/preset-with-named-config.mjs', {
+			from: fixturesDir,
+		});
 		expect(config.syntax?.keyword).toBe('#2d5230');
 		expect(config.syntax?.function).toBe('#b35070');
 	});
@@ -38,9 +40,9 @@ describe('loadPreset', () => {
 	});
 
 	it('throws a clear error when the specifier does not resolve', async () => {
-		await expect(
-			loadPreset('@refrakt-md/no-such-preset', { from: fixturesDir }),
-		).rejects.toThrow(/not found/);
+		await expect(loadPreset('@refrakt-md/no-such-preset', { from: fixturesDir })).rejects.toThrow(
+			/not found/,
+		);
 	});
 
 	it('throws a clear error when a relative path does not exist', async () => {

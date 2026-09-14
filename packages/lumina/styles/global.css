@@ -1,5 +1,5 @@
 @layer skin {
-/* Lumina Theme — Global Base Styles (skin).
+	/* Lumina Theme — Global Base Styles (skin).
  *
  * Structure (box model, zone resets, prose/heading/list/table rhythm, the
  * responsive-image + scroll mechanisms) lives in @refrakt-md/skeleton
@@ -7,163 +7,205 @@
  * typography, colour, native chrome, and the surface treatment of code/pre/
  * tables. */
 
-html {
-	font-family: var(--rf-font-sans);
-	color: var(--rf-color-text);
-	background: var(--rf-color-bg);
-	line-height: var(--rf-leading-relaxed);
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	-webkit-text-size-adjust: 100%;
-	text-size-adjust: 100%;
-	transition: background-color 200ms ease, color 200ms ease;
-	/* Opt out of mobile Safari's "text inflation" — it auto-scales text
+	html {
+		font-family: var(--rf-font-sans);
+		color: var(--rf-color-text);
+		background: var(--rf-color-bg);
+		line-height: var(--rf-leading-relaxed);
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		-webkit-text-size-adjust: 100%;
+		text-size-adjust: 100%;
+		transition:
+			background-color 200ms ease,
+			color 200ms ease;
+		/* Opt out of mobile Safari's "text inflation" — it auto-scales text
 	 * inside elements wider than the viewport (e.g. the diff's
 	 * `min-width: 40rem` split panels and any horizontally-scrolling
 	 * code block) and makes their fonts read several pixels larger
 	 * than designed. */
-	-webkit-text-size-adjust: 100%;
-	text-size-adjust: 100%;
-}
+		-webkit-text-size-adjust: 100%;
+		text-size-adjust: 100%;
+	}
 
-/* ─── Theme-aware browser chrome (WORK-351) ─────────────────────────
+	/* ─── Theme-aware browser chrome (WORK-351) ─────────────────────────
  * Make native chrome — scrollbars, form controls, the main viewport
  * scrollbar — follow the active theme instead of always rendering in
  * the OS default scheme. */
 
-/* `color-scheme` so the UA paints native widgets/scrollbars per mode. */
-:root { color-scheme: light; }
-[data-theme="dark"] { color-scheme: dark; }
-@media (prefers-color-scheme: dark) {
-	:root:not([data-theme="light"]) { color-scheme: dark; }
-}
+	/* `color-scheme` so the UA paints native widgets/scrollbars per mode. */
+	:root {
+		color-scheme: light;
+	}
+	[data-theme="dark"] {
+		color-scheme: dark;
+	}
+	@media (prefers-color-scheme: dark) {
+		:root:not([data-theme="light"]) {
+			color-scheme: dark;
+		}
+	}
 
-/* Branded text selection — a subtle primary wash (the native/OS blue
+	/* Branded text selection — a subtle primary wash (the native/OS blue
  * otherwise leaks through). Background only, so the element's own text
  * colour stays legible under any theme. */
-::selection {
-	background: color-mix(in oklch, var(--rf-color-primary) 22%, transparent);
-}
+	::selection {
+		background: color-mix(in oklch, var(--rf-color-primary) 22%, transparent);
+	}
 
-/* Token-driven scrollbars. `scrollbar-color` / `scrollbar-width` inherit,
+	/* Token-driven scrollbars. `scrollbar-color` / `scrollbar-width` inherit,
  * so setting them on the root reaches every overflow container (codegroup,
  * datatable, drawer body, nav/sidebar) without per-rune rules; the WebKit
  * pseudo-elements refine the same colours. More specific per-container
  * rules (e.g. the hidden docs sidebar) still win. */
-:root {
-	scrollbar-width: thin;
-	scrollbar-color: var(--rf-color-muted) transparent;
-}
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-	background: var(--rf-color-muted);
-	border-radius: var(--rf-radius-full);
-	border: 2px solid transparent;
-	background-clip: padding-box;
-}
-::-webkit-scrollbar-thumb:hover { background: var(--rf-color-text); }
+	:root {
+		scrollbar-width: thin;
+		scrollbar-color: var(--rf-color-muted) transparent;
+	}
+	::-webkit-scrollbar {
+		width: 10px;
+		height: 10px;
+	}
+	::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	::-webkit-scrollbar-thumb {
+		background: var(--rf-color-muted);
+		border-radius: var(--rf-radius-full);
+		border: 2px solid transparent;
+		background-clip: padding-box;
+	}
+	::-webkit-scrollbar-thumb:hover {
+		background: var(--rf-color-text);
+	}
 
-/* ─── Keyboard focus (WORK-352) ─────────────────────────────────────
+	/* ─── Keyboard focus (WORK-352) ─────────────────────────────────────
  * A uniform, token-driven focus ring on every interactive element, at
  * zero specificity (`:where`) so a rune's own `:focus-visible` overrides
  * it. An outline (not box-shadow) follows border-radius and never shifts
  * layout; `outline-color` uses `primary`, so it is visible in both modes. */
-:where(
-	a[href], button, input, select, textarea, summary,
-	[tabindex]:not([tabindex="-1"]),
-	[role="button"], [role="tab"], [role="link"], [role="menuitem"], [role="menuitemradio"]
-):focus-visible {
-	outline: 2px solid var(--rf-color-primary);
-	outline-offset: 2px;
-}
+	:where(
+		a[href],
+		button,
+		input,
+		select,
+		textarea,
+		summary,
+		[tabindex]:not([tabindex="-1"]),
+		[role="button"],
+		[role="tab"],
+		[role="link"],
+		[role="menuitem"],
+		[role="menuitemradio"]
+	):focus-visible {
+		outline: 2px solid var(--rf-color-primary);
+		outline-offset: 2px;
+	}
 
-/* ─── Reduced motion (WORK-352) ─────────────────────────────────────
+	/* ─── Reduced motion (WORK-352) ─────────────────────────────────────
  * Honour the user's motion preference across every animated rune
  * (chart, reveal, juxtapose, accordion, drawer, …) in one place. Uses a
  * near-zero duration rather than `none` so animation/transition end
  * events still fire for behaviours that await them. */
-@media (prefers-reduced-motion: reduce) {
-	*, *::before, *::after {
-		animation-duration: 0.01ms !important;
-		animation-iteration-count: 1 !important;
-		transition-duration: 0.01ms !important;
-		scroll-behavior: auto !important;
+	@media (prefers-reduced-motion: reduce) {
+		*,
+		*::before,
+		*::after {
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+			scroll-behavior: auto !important;
+		}
 	}
-}
 
-h1, h2, h3, h4, h5, h6 {
-	line-height: var(--rf-leading-tight);
-	font-weight: var(--rf-weight-semibold);
-	letter-spacing: var(--rf-tracking-tight);
-}
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		line-height: var(--rf-leading-tight);
+		font-weight: var(--rf-weight-semibold);
+		letter-spacing: var(--rf-tracking-tight);
+	}
 
-h1 { font-size: var(--rf-text-3xl); font-weight: var(--rf-weight-bold); letter-spacing: var(--rf-tracking-tight); }
-h2 { font-size: var(--rf-text-2xl); }
-h3 { font-size: var(--rf-text-xl); }
-h4 { font-size: var(--rf-text); }
+	h1 {
+		font-size: var(--rf-text-3xl);
+		font-weight: var(--rf-weight-bold);
+		letter-spacing: var(--rf-tracking-tight);
+	}
+	h2 {
+		font-size: var(--rf-text-2xl);
+	}
+	h3 {
+		font-size: var(--rf-text-xl);
+	}
+	h4 {
+		font-size: var(--rf-text);
+	}
 
-a {
-	color: var(--rf-color-primary);
-	text-decoration: none;
-	transition: color 150ms ease;
-}
-a:hover {
-	color: var(--rf-color-primary-hover);
-	text-decoration: underline;
-}
+	a {
+		color: var(--rf-color-primary);
+		text-decoration: none;
+		transition: color 150ms ease;
+	}
+	a:hover {
+		color: var(--rf-color-primary-hover);
+		text-decoration: underline;
+	}
 
-strong { font-weight: var(--rf-weight-semibold); }
+	strong {
+		font-weight: var(--rf-weight-semibold);
+	}
 
-code {
-	font-family: var(--rf-font-mono);
-	font-size: 0.875em;
-	background: var(--rf-color-inline-code-bg);
-	padding: 0.15rem 0.4rem;
-	border-radius: var(--rf-radius-sm);
-	font-variant-ligatures: none;
-}
+	code {
+		font-family: var(--rf-font-mono);
+		font-size: 0.875em;
+		background: var(--rf-color-inline-code-bg);
+		padding: 0.15rem 0.4rem;
+		border-radius: var(--rf-radius-sm);
+		font-variant-ligatures: none;
+	}
 
-pre {
-	background: var(--rf-color-code-bg);
-	color: var(--rf-color-code-text);
-	padding: 1.25rem 1.5rem;
-	border-radius: var(--rf-radius-md);
-	font-size: var(--rf-text-sm);
-	line-height: var(--rf-leading-relaxed);
-	border: 1px solid var(--rf-color-border);
-}
+	pre {
+		background: var(--rf-color-code-bg);
+		color: var(--rf-color-code-text);
+		padding: 1.25rem 1.5rem;
+		border-radius: var(--rf-radius-md);
+		font-size: var(--rf-text-sm);
+		line-height: var(--rf-leading-relaxed);
+		border: 1px solid var(--rf-color-border);
+	}
 
-pre code {
-	background: none;
-	padding: 0;
-	font-size: inherit;
-	border-radius: 0;
-}
+	pre code {
+		background: none;
+		padding: 0;
+		font-size: inherit;
+		border-radius: 0;
+	}
 
-hr {
-	border: none;
-	border-top: 1px solid var(--rf-color-border);
-}
+	hr {
+		border: none;
+		border-top: 1px solid var(--rf-color-border);
+	}
 
-table {
-	font-size: var(--rf-text-sm);
-}
+	table {
+		font-size: var(--rf-text-sm);
+	}
 
-th {
-	text-align: left;
-	font-weight: var(--rf-weight-semibold);
-	padding: 0.625rem 1rem;
-	border-bottom: 1px solid var(--rf-color-border);
-	font-size: var(--rf-text-xs);
-	text-transform: uppercase;
-	letter-spacing: var(--rf-tracking-wide);
-	color: var(--rf-color-muted);
-}
+	th {
+		text-align: left;
+		font-weight: var(--rf-weight-semibold);
+		padding: 0.625rem 1rem;
+		border-bottom: 1px solid var(--rf-color-border);
+		font-size: var(--rf-text-xs);
+		text-transform: uppercase;
+		letter-spacing: var(--rf-tracking-wide);
+		color: var(--rf-color-muted);
+	}
 
-td {
-	padding: 0.625rem 1rem;
-	border-bottom: 1px solid var(--rf-color-border);
-}
-
+	td {
+		padding: 0.625rem 1rem;
+		border-bottom: 1px solid var(--rf-color-border);
+	}
 }

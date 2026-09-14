@@ -1,54 +1,69 @@
 @layer skin {
-/* Background — Directive rune for background images, video, overlays, blur */
+	/* Background — Directive rune for background images, video, overlays, blur */
 
-/* Background layer — absolute positioned behind content. `border-radius:
+	/* Background layer — absolute positioned behind content. `border-radius:
  * inherit` rounds the gradient/image to whatever shape the parent surface has,
  * so a card / bento-cell / any rounded host clips the bg to its own corners
  * without needing `overflow: hidden` (though hosts with thin-edge padding
  * still need it so the bg can't poke past the rounded outer edge). */
-[data-name="bg"] {
-	border-radius: inherit;
-	background-image: var(--bg-image);
-	background-size: var(--bg-fit, cover);
-	background-position: var(--bg-position, center);
-	background-repeat: no-repeat;
-}
-/* Blur and opacity applied when set via custom properties */
-[data-name="bg"][style*="--bg-blur"] {
-	filter: blur(var(--bg-blur));
-}
-[data-name="bg"][style*="--bg-opacity"] {
-	opacity: var(--bg-opacity);
-}
-/* Fixed (parallax) background */
-[data-name="bg"][data-bg-fixed] {
-	background-attachment: fixed;
-}
-[data-name="bg-video"][style*="--bg-blur"] {
-	filter: blur(var(--bg-blur));
-}
-[data-name="bg-video"][style*="--bg-opacity"] {
-	opacity: var(--bg-opacity);
-}
-[data-name="bg-overlay"][data-bg-overlay="dark"] {
-	background: rgba(0, 0, 0, 0.5);
-}
-[data-name="bg-overlay"][data-bg-overlay="light"] {
-	background: rgba(255, 255, 255, 0.6);
-}
-[data-name="scrim"][data-scrim-tone="dark"]  { --scrim-color: 0 0 0; }
-[data-name="scrim"][data-scrim-tone="light"] { --scrim-color: 255 255 255; }
-[data-name="scrim"][data-scrim-dir="top"]    { --scrim-grad-dir: to top; }
-[data-name="scrim"][data-scrim-dir="bottom"] { --scrim-grad-dir: to bottom; }
-[data-name="scrim"][data-scrim-dir="left"]   { --scrim-grad-dir: to left; }
-[data-name="scrim"][data-scrim-dir="right"]  { --scrim-grad-dir: to right; }
-[data-name="scrim"][data-scrim="gradient"] {
-	background-image: linear-gradient(var(--scrim-grad-dir, to top), transparent, rgb(var(--scrim-color, 0 0 0) / var(--scrim-strength, 0.55)));
-}
-[data-name="scrim"][data-scrim="frost"] {
-	-webkit-backdrop-filter: blur(var(--scrim-blur, 8px));
-	backdrop-filter: blur(var(--scrim-blur, 8px));
-	background: rgb(var(--scrim-color, 0 0 0) / 0.18);
-}
-
+	[data-name="bg"] {
+		border-radius: inherit;
+		background-image: var(--bg-image);
+		background-size: var(--bg-fit, cover);
+		background-position: var(--bg-position, center);
+		background-repeat: no-repeat;
+	}
+	/* Blur and opacity applied when set via custom properties */
+	[data-name="bg"][style*="--bg-blur"] {
+		filter: blur(var(--bg-blur));
+	}
+	[data-name="bg"][style*="--bg-opacity"] {
+		opacity: var(--bg-opacity);
+	}
+	/* Fixed (parallax) background */
+	[data-name="bg"][data-bg-fixed] {
+		background-attachment: fixed;
+	}
+	[data-name="bg-video"][style*="--bg-blur"] {
+		filter: blur(var(--bg-blur));
+	}
+	[data-name="bg-video"][style*="--bg-opacity"] {
+		opacity: var(--bg-opacity);
+	}
+	[data-name="bg-overlay"][data-bg-overlay="dark"] {
+		background: rgba(0, 0, 0, 0.5);
+	}
+	[data-name="bg-overlay"][data-bg-overlay="light"] {
+		background: rgba(255, 255, 255, 0.6);
+	}
+	[data-name="scrim"][data-scrim-tone="dark"] {
+		--scrim-color: 0 0 0;
+	}
+	[data-name="scrim"][data-scrim-tone="light"] {
+		--scrim-color: 255 255 255;
+	}
+	[data-name="scrim"][data-scrim-dir="top"] {
+		--scrim-grad-dir: to top;
+	}
+	[data-name="scrim"][data-scrim-dir="bottom"] {
+		--scrim-grad-dir: to bottom;
+	}
+	[data-name="scrim"][data-scrim-dir="left"] {
+		--scrim-grad-dir: to left;
+	}
+	[data-name="scrim"][data-scrim-dir="right"] {
+		--scrim-grad-dir: to right;
+	}
+	[data-name="scrim"][data-scrim="gradient"] {
+		background-image: linear-gradient(
+			var(--scrim-grad-dir, to top),
+			transparent,
+			rgb(var(--scrim-color, 0 0 0) / var(--scrim-strength, 0.55))
+		);
+	}
+	[data-name="scrim"][data-scrim="frost"] {
+		-webkit-backdrop-filter: blur(var(--scrim-blur, 8px));
+		backdrop-filter: blur(var(--scrim-blur, 8px));
+		background: rgb(var(--scrim-color, 0 0 0) / 0.18);
+	}
 }

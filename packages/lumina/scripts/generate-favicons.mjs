@@ -39,17 +39,11 @@ const sizes = [16, 24, 32, 48, 64, 96, 180, 192, 512];
  *  raster output. We strip the prefers-color-scheme block entirely so the
  *  rasterised PNG carries one definite colour (sharp ignores @media). */
 function svgWithFixedColor(hex) {
-	return sourceSvg.replace(
-		/<style>[^<]*<\/style>/,
-		`<style>:where(svg){color:${hex}}</style>`,
-	);
+	return sourceSvg.replace(/<style>[^<]*<\/style>/, `<style>:where(svg){color:${hex}}</style>`);
 }
 
 async function render(svg, size) {
-	return sharp(Buffer.from(svg))
-		.resize(size, size)
-		.png({ compressionLevel: 9 })
-		.toBuffer();
+	return sharp(Buffer.from(svg)).resize(size, size).png({ compressionLevel: 9 }).toBuffer();
 }
 
 async function main() {
@@ -66,7 +60,7 @@ async function main() {
 	console.log(`Wrote ${sizes.length * 2} PNG variants to ${outputDir}`);
 }
 
-main().catch(err => {
+main().catch((err) => {
 	console.error(err);
 	process.exit(1);
 });

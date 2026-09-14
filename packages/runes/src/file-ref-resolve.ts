@@ -41,7 +41,7 @@ function metaContent(tag: TagNode, field: string): string {
 
 function hasSentinel(tag: TagNode): boolean {
 	return (tag.children ?? []).some(
-		c => isTag(c) && c.name === 'meta' && c.attributes['data-field'] === FILE_REF_SENTINEL,
+		(c) => isTag(c) && c.name === 'meta' && c.attributes['data-field'] === FILE_REF_SENTINEL,
 	);
 }
 
@@ -89,7 +89,7 @@ export function resolveFileRefs(
 	const walk = (node: unknown): unknown => {
 		if (Array.isArray(node)) {
 			let mutated = false;
-			const out = node.map(c => {
+			const out = node.map((c) => {
 				const w = walk(c);
 				if (w !== c) mutated = true;
 				return w;
@@ -103,7 +103,7 @@ export function resolveFileRefs(
 		}
 		if (!tag.children || tag.children.length === 0) return tag;
 		let mutated = false;
-		const next = tag.children.map(c => {
+		const next = tag.children.map((c) => {
 			const w = walk(c);
 			if (w !== c) mutated = true;
 			return w;
@@ -190,10 +190,7 @@ function buildFileRefHoist(
 	const githubUrl = payload['github-url'];
 
 	if (!filePath || !targetId) {
-		context.ctx.warn(
-			`file-ref hoist payload missing required path or target-id`,
-			context.pageUrl,
-		);
+		context.ctx.warn(`file-ref hoist payload missing required path or target-id`, context.pageUrl);
 		return null;
 	}
 	if (!context.projectFiles) {
@@ -217,11 +214,13 @@ function buildFileRefHoist(
 		});
 		fileContent = result.content;
 		lang = inferLanguage(result.relativePath);
-		for (const w of result.warnings) context.ctx.warn(`file-ref ${filePath}: ${w}`, context.pageUrl);
+		for (const w of result.warnings)
+			context.ctx.warn(`file-ref ${filePath}: ${w}`, context.pageUrl);
 	} catch (err) {
-		const msg = err instanceof SnippetSandboxError
-			? err.message
-			: `file-ref ${filePath}: ${err instanceof Error ? err.message : String(err)}`;
+		const msg =
+			err instanceof SnippetSandboxError
+				? err.message
+				: `file-ref ${filePath}: ${err instanceof Error ? err.message : String(err)}`;
 		context.ctx.error(msg, context.pageUrl);
 		return null;
 	}
@@ -232,32 +231,48 @@ function buildFileRefHoist(
 	// the highlight transform's color-scheme stamping pass) AND on the
 	// <code> with text children — the highlight walker only highlights
 	// nodes whose children are text, so the <code> is the actual hit.
-	const codeBlock = new Tag('pre', {
-		'data-language': lang,
-		'data-codeblock': 'true',
-	}, [new Tag('code', { 'data-language': lang, 'data-codeblock': 'true' }, [fileContent])]);
-	const snippetFigure = new Tag('figure', {
-		class: 'rf-snippet',
-		'data-rune': 'snippet',
-		'data-source-path': filePath,
-		...(lines ? { 'data-lines': lines } : {}),
-	}, [codeBlock]);
+	const codeBlock = new Tag(
+		'pre',
+		{
+			'data-language': lang,
+			'data-codeblock': 'true',
+		},
+		[new Tag('code', { 'data-language': lang, 'data-codeblock': 'true' }, [fileContent])],
+	);
+	const snippetFigure = new Tag(
+		'figure',
+		{
+			class: 'rf-snippet',
+			'data-rune': 'snippet',
+			'data-source-path': filePath,
+			...(lines ? { 'data-lines': lines } : {}),
+		},
+		[codeBlock],
+	);
 	const body = new Tag('div', { 'data-name': 'body', class: 'rf-drawer__body' }, [snippetFigure]);
 
 	// Header — title + close button (close hidden until the behavior
 	// layer reveals it, same as authored drawers).
 	const titleHeading = new Tag('h3', { 'data-name': 'title', class: 'rf-drawer__title' }, [title]);
-	const closeButton = new Tag('button', {
-		type: 'button',
-		'aria-label': 'Close',
-		hidden: true,
-		'data-name': 'close',
-		class: 'rf-drawer__close',
-	}, ['×']);
-	const header = new Tag('header', {
-		'data-name': 'header',
-		class: 'rf-drawer__header',
-	}, [titleHeading, closeButton]);
+	const closeButton = new Tag(
+		'button',
+		{
+			type: 'button',
+			'aria-label': 'Close',
+			hidden: true,
+			'data-name': 'close',
+			class: 'rf-drawer__close',
+		},
+		['×'],
+	);
+	const header = new Tag(
+		'header',
+		{
+			'data-name': 'header',
+			class: 'rf-drawer__header',
+		},
+		[titleHeading, closeButton],
+	);
 
 	// Footer — "View source on GitHub →" link. Hides when no
 	// repoUrl is configured (githubUrl will be empty in the payload).
@@ -265,12 +280,15 @@ function buildFileRefHoist(
 	if (githubUrl) {
 		const arrow = ' →';
 		footerChildren.push(
-			new Tag('a', { href: githubUrl, rel: 'external noopener', target: '_blank' }, [`View source on GitHub${arrow}`]),
+			new Tag('a', { href: githubUrl, rel: 'external noopener', target: '_blank' }, [
+				`View source on GitHub${arrow}`,
+			]),
 		);
 	}
-	const footer = footerChildren.length > 0
-		? new Tag('footer', { 'data-name': 'footer', class: 'rf-drawer__footer' }, footerChildren)
-		: null;
+	const footer =
+		footerChildren.length > 0
+			? new Tag('footer', { 'data-name': 'footer', class: 'rf-drawer__footer' }, footerChildren)
+			: null;
 
 	const drawerChildren: RenderableTreeNode[] = [header, body];
 	if (footer) drawerChildren.push(footer);

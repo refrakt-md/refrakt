@@ -16,21 +16,31 @@ interface TemplateOptions {
 
 export function renderTemplate(type: PlanItemType, opts: TemplateOptions): string {
 	switch (type) {
-		case 'work': return workTemplate(opts);
-		case 'bug': return bugTemplate(opts);
-		case 'decision': return decisionTemplate(opts);
-		case 'spec': return specTemplate(opts);
-		case 'milestone': return milestoneTemplate(opts);
+		case 'work':
+			return workTemplate(opts);
+		case 'bug':
+			return bugTemplate(opts);
+		case 'decision':
+			return decisionTemplate(opts);
+		case 'spec':
+			return specTemplate(opts);
+		case 'milestone':
+			return milestoneTemplate(opts);
 	}
 }
 
 function attrString(base: Record<string, string>, extra?: Record<string, string>): string {
 	const merged = { ...base, ...extra };
-	return Object.entries(merged).map(([k, v]) => `${k}="${v}"`).join(' ');
+	return Object.entries(merged)
+		.map(([k, v]) => `${k}="${v}"`)
+		.join(' ');
 }
 
 function workTemplate({ id, title, attrs }: TemplateOptions): string {
-	const a = attrString({ id, status: 'draft', priority: 'medium', complexity: 'unknown', source: '', tags: '' }, attrs);
+	const a = attrString(
+		{ id, status: 'draft', priority: 'medium', complexity: 'unknown', source: '', tags: '' },
+		attrs,
+	);
 	return `{% work ${a} %}
 
 # ${title}
@@ -128,4 +138,3 @@ function milestoneTemplate({ id, title, attrs }: TemplateOptions): string {
 {% /milestone %}
 `;
 }
-

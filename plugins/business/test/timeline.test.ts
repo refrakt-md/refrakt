@@ -13,11 +13,11 @@ We began building.
 Open-sourced the library.
 {% /timeline %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'timeline');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'timeline');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('section');
 
-		const entries = findAllTags(tag!, t => t.attributes['data-rune'] === 'timeline-entry');
+		const entries = findAllTags(tag!, (t) => t.attributes['data-rune'] === 'timeline-entry');
 		expect(entries.length).toBe(2);
 	});
 
@@ -28,15 +28,15 @@ Open-sourced the library.
 Description here.
 {% /timeline %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'timeline');
-		const entry = findTag(tag!, t => t.attributes['data-rune'] === 'timeline-entry');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'timeline');
+		const entry = findTag(tag!, (t) => t.attributes['data-rune'] === 'timeline-entry');
 		expect(entry).toBeDefined();
 
-		const dateTag = findTag(entry!, t => t.name === 'time');
+		const dateTag = findTag(entry!, (t) => t.name === 'time');
 		expect(dateTag).toBeDefined();
 		expect(dateTag!.children[0]).toBe('2023');
 
-		const labelTag = findTag(entry!, t => t.name === 'span');
+		const labelTag = findTag(entry!, (t) => t.name === 'span');
 		expect(labelTag).toBeDefined();
 		expect(labelTag!.children[0]).toBe('Company founded');
 	});
@@ -48,7 +48,7 @@ Description here.
 Content.
 {% /timeline %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'timeline');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'timeline');
 		expect(fields(tag).direction).toBe('horizontal');
 	});
 
@@ -59,11 +59,11 @@ Content.
 Content.
 {% /timeline %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'timeline');
-		const entry = findTag(tag!, t => t.attributes['data-rune'] === 'timeline-entry');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'timeline');
+		const entry = findTag(tag!, (t) => t.attributes['data-rune'] === 'timeline-entry');
 		expect(entry).toBeDefined();
 
-		const labelTag = findTag(entry!, t => t.name === 'span');
+		const labelTag = findTag(entry!, (t) => t.name === 'span');
 		expect(labelTag).toBeDefined();
 		expect(labelTag!.children[0]).toBe('Just a milestone');
 	});

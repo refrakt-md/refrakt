@@ -23,7 +23,11 @@ import { declareUniversalPosture } from '../lib/index.js';
 export const icon: Schema = {
 	selfClosing: true,
 	attributes: {
-		name: { type: String, required: true, description: 'Icon name, optionally prefixed with group (e.g., "rocket" or "hint/warning")' },
+		name: {
+			type: String,
+			required: true,
+			description: 'Icon name, optionally prefixed with group (e.g., "rocket" or "hint/warning")',
+		},
 		size: { type: String, required: false, description: 'CSS size override for the icon' },
 	},
 	transform(node: Node, config: Config) {

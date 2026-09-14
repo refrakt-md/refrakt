@@ -42,7 +42,12 @@ function readCache(dir: string): ScanCache {
 	if (!existsSync(cachePath)) return {};
 	try {
 		const parsed = JSON.parse(readFileSync(cachePath, 'utf8'));
-		if (parsed && typeof parsed === 'object' && parsed.version === CACHE_VERSION && parsed.entries) {
+		if (
+			parsed &&
+			typeof parsed === 'object' &&
+			parsed.version === CACHE_VERSION &&
+			parsed.entries
+		) {
 			return parsed.entries as ScanCache;
 		}
 		return {};

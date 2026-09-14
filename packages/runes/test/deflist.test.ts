@@ -7,7 +7,7 @@ describe('deflist rune (SPEC-079 definition-list layout)', () => {
 - **Priority:** high
 - **Complexity:** moderate
 {% /deflist %}`);
-		const dl = findTag(result as any, t => t.attributes['data-rune'] === 'deflist');
+		const dl = findTag(result as any, (t) => t.attributes['data-rune'] === 'deflist');
 		expect(dl).toBeDefined();
 		expect(dl!.name).toBe('dl');
 		expect(dl!.attributes['data-zone-layout']).toBe('definition-list');
@@ -19,7 +19,7 @@ describe('deflist rune (SPEC-079 definition-list layout)', () => {
 - **Complexity:** moderate
 - **Assignee:** alice
 {% /deflist %}`);
-		const dl = findTag(result as any, t => t.attributes['data-rune'] === 'deflist');
+		const dl = findTag(result as any, (t) => t.attributes['data-rune'] === 'deflist');
 		const rows = dl!.children.filter((c: any) => c.attributes?.['data-name'] === 'row');
 		expect(rows.length).toBe(3);
 
@@ -29,7 +29,9 @@ describe('deflist rune (SPEC-079 definition-list layout)', () => {
 		expect(dt.name).toBe('dt');
 		expect(dt.attributes['data-meta-label']).toBe('');
 		// dt children should contain the term text (without trailing `:`)
-		const flatText = (dt.children as any[]).flatMap(c => typeof c === 'string' ? [c] : c.children?.filter((x: any) => typeof x === 'string') ?? []);
+		const flatText = (dt.children as any[]).flatMap((c) =>
+			typeof c === 'string' ? [c] : (c.children?.filter((x: any) => typeof x === 'string') ?? []),
+		);
 		const joined = flatText.join('').trim();
 		expect(joined).toBe('Priority');
 
@@ -40,7 +42,7 @@ describe('deflist rune (SPEC-079 definition-list layout)', () => {
 		const result = parse(`{% deflist %}
 - **Priority:** high
 {% /deflist %}`);
-		const dl = findTag(result as any, t => t.attributes['data-rune'] === 'deflist');
+		const dl = findTag(result as any, (t) => t.attributes['data-rune'] === 'deflist');
 		const row = (dl!.children as any[])[0];
 		const dd = row.children[1] as any;
 		// Locate the value text — should be `high` without leading space
@@ -54,8 +56,8 @@ describe('deflist rune (SPEC-079 definition-list layout)', () => {
 		const result = parse(`{% deflist %}
 - **Priority:** {% badge sentiment="caution" %}high{% /badge %}
 {% /deflist %}`);
-		const dl = findTag(result as any, t => t.attributes['data-rune'] === 'deflist');
-		const badges = findAllTags(dl as any, t => t.attributes['data-rune'] === 'badge');
+		const dl = findTag(result as any, (t) => t.attributes['data-rune'] === 'deflist');
+		const badges = findAllTags(dl as any, (t) => t.attributes['data-rune'] === 'badge');
 		expect(badges.length).toBe(1);
 		expect(badges[0].attributes['data-meta-sentiment']).toBe('caution');
 	});
@@ -65,8 +67,8 @@ describe('deflist rune (SPEC-079 definition-list layout)', () => {
 - Plain item without bold prefix
 - **Term:** With prefix
 {% /deflist %}`);
-		const dl = findTag(result as any, t => t.attributes['data-rune'] === 'deflist');
-		const rows = (dl!.children as any[]).filter(c => c.attributes?.['data-name'] === 'row');
+		const dl = findTag(result as any, (t) => t.attributes['data-rune'] === 'deflist');
+		const rows = (dl!.children as any[]).filter((c) => c.attributes?.['data-name'] === 'row');
 		expect(rows.length).toBe(2);
 
 		const fallbackDt = rows[0].children[0] as any;
@@ -80,7 +82,7 @@ describe('deflist rune (SPEC-079 definition-list layout)', () => {
 		const result = parse(`{% definitions %}
 - **Foo:** bar
 {% /definitions %}`);
-		const dl = findTag(result as any, t => t.attributes['data-rune'] === 'deflist');
+		const dl = findTag(result as any, (t) => t.attributes['data-rune'] === 'deflist');
 		expect(dl).toBeDefined();
 	});
 });

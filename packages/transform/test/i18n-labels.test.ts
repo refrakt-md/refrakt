@@ -24,7 +24,7 @@ function labelTexts(node: SerializedTag): string[] {
 	const walk = (n: unknown) => {
 		if (!isT(n)) return;
 		if ('data-meta-label' in n.attributes) {
-			const text = n.children.find(c => typeof c === 'string');
+			const text = n.children.find((c) => typeof c === 'string');
 			if (typeof text === 'string') out.push(text);
 		}
 		// dt carries data-meta-label and its own text child
@@ -64,7 +64,13 @@ function makeRecipeTag() {
 }
 
 function baseConfig(extra: Partial<ThemeConfig> = {}): ThemeConfig {
-	return { prefix: 'rf', tokenPrefix: '--rf', icons: {}, runes: { Recipe: recipeConfig }, ...extra };
+	return {
+		prefix: 'rf',
+		tokenPrefix: '--rf',
+		icons: {},
+		runes: { Recipe: recipeConfig },
+		...extra,
+	};
 }
 
 describe('SPEC-035 Zone 1 — meta-field label localization', () => {
@@ -103,7 +109,12 @@ describe('SPEC-035 Zone 1 — meta-field label localization', () => {
 		const overrideConfig: RuneConfig = {
 			...recipeConfig,
 			metaFields: {
-				prepTime: { metaType: 'temporal', label: 'Prep', condition: 'prepTime', i18nKey: 'learning.stable.prep' },
+				prepTime: {
+					metaType: 'temporal',
+					label: 'Prep',
+					condition: 'prepTime',
+					i18nKey: 'learning.stable.prep',
+				},
 				servings: { metaType: 'quantity', label: 'Serves', condition: 'servings' },
 			},
 		};

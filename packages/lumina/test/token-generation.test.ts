@@ -71,14 +71,21 @@ describe('Lumina token CSS is generated from src/tokens.ts', () => {
 		const tintCss = readFileSync(resolve(here, '..', 'styles', 'runes', 'tint.css'), 'utf-8');
 		const baseDecls = extractDeclarations(readFileSync(baseCssPath, 'utf-8'));
 		const darkThemeDecls = extractDeclarations(
-			extractBlock(darkCssPath ? readFileSync(darkCssPath, 'utf-8') : '', /\[data-theme="dark"\](?:,\s*\[data-color-scheme="dark"\])?\s*\{/),
+			extractBlock(
+				darkCssPath ? readFileSync(darkCssPath, 'utf-8') : '',
+				/\[data-theme="dark"\](?:,\s*\[data-color-scheme="dark"\])?\s*\{/,
+			),
 		);
-		const tintDark = extractDeclarations(extractBlock(tintCss, /\[data-color-scheme="dark"\]\s*\{/));
-		const tintLight = extractDeclarations(extractBlock(tintCss, /\[data-color-scheme="light"\]\s*\{/));
+		const tintDark = extractDeclarations(
+			extractBlock(tintCss, /\[data-color-scheme="dark"\]\s*\{/),
+		);
+		const tintLight = extractDeclarations(
+			extractBlock(tintCss, /\[data-color-scheme="light"\]\s*\{/),
+		);
 
 		const resolveVar = (value: string, decls: Map<string, string>): string => {
 			const m = value.match(/^var\(\s*(--[A-Za-z0-9-]+)\s*\)$/);
-			return m ? decls.get(m[1]) ?? value : value;
+			return m ? (decls.get(m[1]) ?? value) : value;
 		};
 		const drift: { name: string; block: string; tint: string; canonical: string }[] = [];
 		const check = (decls: Map<string, string>, canonical: Map<string, string>, block: string) => {
@@ -86,11 +93,14 @@ describe('Lumina token CSS is generated from src/tokens.ts', () => {
 				if (!name.startsWith('--rf-')) continue;
 				const value = resolveVar(raw, decls);
 				const want = canonical.get(name);
-				if (want !== undefined && want !== value) drift.push({ name, block, tint: value, canonical: want });
+				if (want !== undefined && want !== value)
+					drift.push({ name, block, tint: value, canonical: want });
 			}
 		};
 		check(tintDark, darkThemeDecls, 'dark');
 		check(tintLight, baseDecls, 'light');
-		expect(drift, `tint.css scheme overrides drifted: ${JSON.stringify(drift, null, 2)}`).toEqual([]);
+		expect(drift, `tint.css scheme overrides drifted: ${JSON.stringify(drift, null, 2)}`).toEqual(
+			[],
+		);
 	});
 });

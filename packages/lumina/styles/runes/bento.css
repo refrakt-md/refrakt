@@ -1,81 +1,92 @@
 @layer skin {
-/* Bento — skin. A grid of cells, each a card-in-a-grid-track (SPEC-085). The
+	/* Bento — skin. A grid of cells, each a card-in-a-grid-track (SPEC-085). The
  * container-query grid system, cell flex layout, media placement, sizing knobs,
  * collapse queries, and the stretched link live in @refrakt-md/skeleton
  * (styles/runes/bento.css). What remains here is skin: the grid gap, the cell
  * surface chrome + spacing vars, the media-well chrome, type, and bleed resets. */
 
-.rf-bento__grid {
-	gap: var(--bento-gap, 1rem);
-}
+	.rf-bento__grid {
+		gap: var(--bento-gap, 1rem);
+	}
 
-/* The cell. `:where()` keeps the background at zero specificity so a per-cell
+	/* The cell. `:where()` keeps the background at zero specificity so a per-cell
  * `{% tint %}` can repaint it (tint-deferrable). */
-:where(.rf-bento-cell) {
-	background: var(--rf-color-surface);
-}
-.rf-bento-cell {
-	--rf-title-size: var(--rf-text-lg);
-	border-radius: var(--rf-radius-container);
-	/* Thin-edge inset model: the cell hugs its media with a thin edge; the content
+	:where(.rf-bento-cell) {
+		background: var(--rf-color-surface);
+	}
+	.rf-bento-cell {
+		--rf-title-size: var(--rf-text-lg);
+		border-radius: var(--rf-radius-container);
+		/* Thin-edge inset model: the cell hugs its media with a thin edge; the content
 	 * zone adds the remaining inset back (below). */
-	--container-padding: 1.25rem;
-	--bento-cell-edge: 0.5rem;
-	--bento-media-gap: var(--rf-spacing-md);
-	padding: var(--bento-cell-edge);
-	border: 1px solid var(--rf-color-border);
-	gap: var(--bento-media-gap);
-}
+		--container-padding: 1.25rem;
+		--bento-cell-edge: 0.5rem;
+		--bento-media-gap: var(--rf-spacing-md);
+		padding: var(--bento-cell-edge);
+		border: 1px solid var(--rf-color-border);
+		gap: var(--bento-media-gap);
+	}
 
-/* Media slot shares the cell surface chrome (1px border + recessed well). */
-:where(.rf-bento-cell) [data-section="media"] {
-	border: 1px solid var(--rf-color-border);
-	background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
-}
+	/* Media slot shares the cell surface chrome (1px border + recessed well). */
+	:where(.rf-bento-cell) [data-section="media"] {
+		border: 1px solid var(--rf-color-border);
+		background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
+	}
 
-.rf-bento-cell[data-media-position="start"] > .rf-bento-cell__media,
-.rf-bento-cell[data-media-position="end"] > .rf-bento-cell__media {
-	margin-bottom: 0;
-}
+	.rf-bento-cell[data-media-position="start"] > .rf-bento-cell__media,
+	.rf-bento-cell[data-media-position="end"] > .rf-bento-cell__media {
+		margin-bottom: 0;
+	}
 
-.rf-bento-cell__media { margin-bottom: 0; }
+	.rf-bento-cell__media {
+		margin-bottom: 0;
+	}
 
-/* Add the remaining inset back on top of the cell's thin edge, so text sits at
+	/* Add the remaining inset back on top of the cell's thin edge, so text sits at
  * the full `--container-padding`. */
-.rf-bento-cell__content {
-	padding: calc(var(--container-padding) - var(--bento-cell-edge));
-}
-.rf-bento-cell__title {
-	/* WORK-538 — read the prominence override first; the fallback is this rune's
+	.rf-bento-cell__content {
+		padding: calc(var(--container-padding) - var(--bento-cell-edge));
+	}
+	.rf-bento-cell__title {
+		/* WORK-538 — read the prominence override first; the fallback is this rune's
 	 * resting size, stated as --rf-title-size on the root so the prominence ramp
 	 * can compute from it. */
-	font-size: var(--rf-prominence-size, var(--rf-title-size));
-	font-weight: var(--rf-weight-semibold);
-	margin: 0 0 0.5rem;
-}
-.rf-bento-cell__body > :first-child { margin-top: 0; }
-.rf-bento-cell__body p:last-child { margin-bottom: 0; }
-.rf-bento-cell__footer {
-	padding-top: 0.5rem;
-	border-top: 1px solid var(--rf-color-border);
-	font-size: 0.8125em;
-	color: var(--rf-color-muted);
-}
-.rf-bento-cell__body img {
-	border-radius: var(--rf-radius-sm);
-	margin-bottom: 0.75rem;
-}
+		font-size: var(--rf-prominence-size, var(--rf-title-size));
+		font-weight: var(--rf-weight-semibold);
+		margin: 0 0 0.5rem;
+	}
+	.rf-bento-cell__body > :first-child {
+		margin-top: 0;
+	}
+	.rf-bento-cell__body p:last-child {
+		margin-bottom: 0;
+	}
+	.rf-bento-cell__footer {
+		padding-top: 0.5rem;
+		border-top: 1px solid var(--rf-color-border);
+		font-size: 0.8125em;
+		color: var(--rf-color-muted);
+	}
+	.rf-bento-cell__body img {
+		border-radius: var(--rf-radius-sm);
+		margin-bottom: 0.75rem;
+	}
 
-/* Drop padding on bleed edges when a showcase bleeds (clipped to a peek by
+	/* Drop padding on bleed edges when a showcase bleeds (clipped to a peek by
  * the media-zone + cell overflow). */
-.rf-bento-cell:has(.rf-showcase[data-bleed="bottom"]),
-.rf-bento-cell:has(.rf-showcase[data-bleed="both"]),
-.rf-bento-cell:has(.rf-showcase[data-bleed="bottom-end"]) { padding-bottom: 0; }
-.rf-bento-cell:has(.rf-showcase[data-bleed="end"]),
-.rf-bento-cell:has(.rf-showcase[data-bleed="bottom-end"]),
-.rf-bento-cell:has(.rf-showcase[data-bleed="top-end"]) { padding-inline-end: 0; }
-.rf-bento-cell:has(.rf-showcase[data-bleed="top"]),
-.rf-bento-cell:has(.rf-showcase[data-bleed="both"]),
-.rf-bento-cell:has(.rf-showcase[data-bleed="top-end"]) { padding-top: 0; }
-
+	.rf-bento-cell:has(.rf-showcase[data-bleed="bottom"]),
+	.rf-bento-cell:has(.rf-showcase[data-bleed="both"]),
+	.rf-bento-cell:has(.rf-showcase[data-bleed="bottom-end"]) {
+		padding-bottom: 0;
+	}
+	.rf-bento-cell:has(.rf-showcase[data-bleed="end"]),
+	.rf-bento-cell:has(.rf-showcase[data-bleed="bottom-end"]),
+	.rf-bento-cell:has(.rf-showcase[data-bleed="top-end"]) {
+		padding-inline-end: 0;
+	}
+	.rf-bento-cell:has(.rf-showcase[data-bleed="top"]),
+	.rf-bento-cell:has(.rf-showcase[data-bleed="both"]),
+	.rf-bento-cell:has(.rf-showcase[data-bleed="top-end"]) {
+		padding-top: 0;
+	}
 }

@@ -11,7 +11,7 @@ const HEADER_SECTION_ROLES = new Set(['header', 'preamble', 'title', 'descriptio
 
 /** A rune "has a header" when its `sections` map includes a header-ish role. */
 export function hasPageSectionHeader(sections: Record<string, string> | undefined): boolean {
-	return !!sections && Object.values(sections).some(role => HEADER_SECTION_ROLES.has(role));
+	return !!sections && Object.values(sections).some((role) => HEADER_SECTION_ROLES.has(role));
 }
 
 /** `prominence` — the header-emphasis axis (SPEC-107).
@@ -33,10 +33,12 @@ export const prominenceFacet: Facet = {
 
 		if (!hasPageSectionHeader(ctx.config.sections)) {
 			return {
-				warnings: [{
-					code: 'prominence-unsupported',
-					message: `[refrakt] prominence is not supported on "${ctx.rune}" — it applies only to runes with a page-section header. Ignored.`,
-				}],
+				warnings: [
+					{
+						code: 'prominence-unsupported',
+						message: `[refrakt] prominence is not supported on "${ctx.rune}" — it applies only to runes with a page-section header. Ignored.`,
+					},
+				],
 			};
 		}
 
@@ -52,12 +54,14 @@ export const prominenceFacet: Facet = {
 export const prominenceAxis: UniversalAxisFacet = {
 	axis: 'prominence',
 	contract: {
-		description: 'Header emphasis (SPEC-107). Scales a rune\'s page-section header; the skin maps it to a type register by attribute, so there is no BEM class.',
+		description:
+			"Header emphasis (SPEC-107). Scales a rune's page-section header; the skin maps it to a type register by attribute, so there is no BEM class.",
 		source: 'attribute',
 		inputs: ['prominence'],
 		values: PROMINENCE_VALUES,
 		dataAttributes: ['data-prominence'],
-		condition: 'requires a page-section header — a `sections` role of header, preamble, title or description. Dropped with a warning otherwise.',
+		condition:
+			'requires a page-section header — a `sections` role of header, preamble, title or description. Dropped with a warning otherwise.',
 	},
 	describeForRune: (config) => {
 		if (!hasPageSectionHeader(config.sections)) return 'this rune has no page-section header';

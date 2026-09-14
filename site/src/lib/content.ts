@@ -1,1 +1,6 @@
-export { getSite, getTransform, getHighlightTransform, invalidateSite } from 'virtual:refrakt/content';
+export {
+	getSite,
+	getTransform,
+	getHighlightTransform,
+	invalidateSite,
+} from 'virtual:refrakt/content';

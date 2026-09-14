@@ -1,12 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { modifiersFacet, contextModifiersFacet, staticModifiersFacet } from '../../src/facets/modifiers.js';
+import {
+	modifiersFacet,
+	contextModifiersFacet,
+	staticModifiersFacet,
+} from '../../src/facets/modifiers.js';
 import { makeTag } from '../../src/helpers.js';
 import type { FacetContext, FacetTheme } from '../../src/facets/types.js';
 import type { RuneConfig } from '../../src/types.js';
 
 const THEME: FacetTheme = { tints: {}, backgrounds: {}, frames: {} };
 
-const meta = (field: string, content: string) => makeTag('meta', { 'data-field': field, content }, []);
+const meta = (field: string, content: string) =>
+	makeTag('meta', { 'data-field': field, content }, []);
 
 const ctx = (
 	config: RuneConfig,
@@ -14,7 +19,11 @@ const ctx = (
 	metas: Array<[string, string]> = [],
 	extra: Partial<FacetContext> = {},
 ): FacetContext => ({
-	tag: makeTag('div', { 'data-rune': 'card', ...attrs }, metas.map(([f, c]) => meta(f, c))),
+	tag: makeTag(
+		'div',
+		{ 'data-rune': 'card', ...attrs },
+		metas.map(([f, c]) => meta(f, c)),
+	),
 	config,
 	block: 'rf-card',
 	rune: 'card',
@@ -38,28 +47,40 @@ describe('modifiers facet', () => {
 
 	it('reads a meta-sourced modifier from a data-field child', () => {
 		const config: RuneConfig = { block: 'card', modifiers: { tone: { source: 'meta' } } };
-		expect(modifiersFacet.resolve(ctx(config, {}, [['tone', 'cool']]))?.axes).toEqual({ tone: 'cool' });
+		expect(modifiersFacet.resolve(ctx(config, {}, [['tone', 'cool']]))?.axes).toEqual({
+			tone: 'cool',
+		});
 	});
 
 	it('prefers the typed field bag over the meta child', () => {
 		const config: RuneConfig = { block: 'card', modifiers: { tone: { source: 'meta' } } };
-		const result = modifiersFacet.resolve(ctx(config, {}, [['tone', 'cool']], { fields: { tone: 'warm' } }));
+		const result = modifiersFacet.resolve(
+			ctx(config, {}, [['tone', 'cool']], { fields: { tone: 'warm' } }),
+		);
 		expect(result?.axes).toEqual({ tone: 'warm' });
 	});
 
 	it('ignores a non-scalar field value and falls back to the meta child', () => {
 		const config: RuneConfig = { block: 'card', modifiers: { tone: { source: 'meta' } } };
-		const result = modifiersFacet.resolve(ctx(config, {}, [['tone', 'cool']], { fields: { tone: { a: 1 } } }));
+		const result = modifiersFacet.resolve(
+			ctx(config, {}, [['tone', 'cool']], { fields: { tone: { a: 1 } } }),
+		);
 		expect(result?.axes).toEqual({ tone: 'cool' });
 	});
 
 	it('applies the declared default', () => {
-		const config: RuneConfig = { block: 'card', modifiers: { tone: { source: 'attribute', default: 'warm' } } };
+		const config: RuneConfig = {
+			block: 'card',
+			modifiers: { tone: { source: 'attribute', default: 'warm' } },
+		};
 		expect(modifiersFacet.resolve(ctx(config))?.axes).toEqual({ tone: 'warm' });
 	});
 
 	it('suppresses the BEM class with noBemClass, keeping the axis', () => {
-		const config: RuneConfig = { block: 'card', modifiers: { tone: { source: 'attribute', noBemClass: true } } };
+		const config: RuneConfig = {
+			block: 'card',
+			modifiers: { tone: { source: 'attribute', noBemClass: true } },
+		};
 		const result = modifiersFacet.resolve(ctx(config, { tone: 'warm' }));
 		expect(result?.axes).toEqual({ tone: 'warm' });
 		expect(result?.classes).toBeUndefined();
@@ -93,20 +114,25 @@ describe('modifiers facet', () => {
 		it('sends the mapped value to a separate attribute with mapTarget', () => {
 			const config: RuneConfig = {
 				block: 'card',
-				modifiers: { level: { source: 'attribute', valueMap: { '1': 'high' }, mapTarget: 'severity' } },
+				modifiers: {
+					level: { source: 'attribute', valueMap: { '1': 'high' }, mapTarget: 'severity' },
+				},
 			};
 			const result = modifiersFacet.resolve(ctx(config, { level: '1' }));
-			expect(result?.axes).toEqual({ level: '1' });           // the axis keeps the raw value
+			expect(result?.axes).toEqual({ level: '1' }); // the axis keeps the raw value
 			expect(result?.dataAttrs).toEqual({ 'data-severity': 'high' });
 		});
 
 		it('does not double-prefix a mapTarget already starting with data-', () => {
 			const config: RuneConfig = {
 				block: 'card',
-				modifiers: { level: { source: 'attribute', valueMap: { '1': 'high' }, mapTarget: 'data-severity' } },
+				modifiers: {
+					level: { source: 'attribute', valueMap: { '1': 'high' }, mapTarget: 'data-severity' },
+				},
 			};
-			expect(modifiersFacet.resolve(ctx(config, { level: '1' }))?.dataAttrs)
-				.toEqual({ 'data-severity': 'high' });
+			expect(modifiersFacet.resolve(ctx(config, { level: '1' }))?.dataAttrs).toEqual({
+				'data-severity': 'high',
+			});
 		});
 	});
 
@@ -163,7 +189,11 @@ describe('modifiers facet', () => {
 	it('preserves config declaration order across axes and classes', () => {
 		const config: RuneConfig = {
 			block: 'card',
-			modifiers: { a: { source: 'attribute' }, b: { source: 'attribute' }, c: { source: 'attribute' } },
+			modifiers: {
+				a: { source: 'attribute' },
+				b: { source: 'attribute' },
+				c: { source: 'attribute' },
+			},
 		};
 		const result = modifiersFacet.resolve(ctx(config, { a: '1', b: '2', c: '3' }));
 		expect(Object.keys(result!.axes!)).toEqual(['a', 'b', 'c']);
@@ -175,8 +205,9 @@ describe('context-modifiers facet', () => {
 	const config: RuneConfig = { block: 'card', contextModifiers: { grid: 'in-grid' } };
 
 	it('adds the modifier when nested in a matching parent', () => {
-		expect(contextModifiersFacet.resolve(ctx(config, {}, [], { parentRune: 'grid' }))?.classes)
-			.toEqual(['rf-card--in-grid']);
+		expect(
+			contextModifiersFacet.resolve(ctx(config, {}, [], { parentRune: 'grid' }))?.classes,
+		).toEqual(['rf-card--in-grid']);
 	});
 
 	it('contributes nothing under a different parent', () => {
@@ -188,15 +219,19 @@ describe('context-modifiers facet', () => {
 	});
 
 	it('contributes nothing when the rune declares none', () => {
-		expect(contextModifiersFacet.resolve(ctx({ block: 'card' }, {}, [], { parentRune: 'grid' }))).toBeNull();
+		expect(
+			contextModifiersFacet.resolve(ctx({ block: 'card' }, {}, [], { parentRune: 'grid' })),
+		).toBeNull();
 	});
 });
 
 describe('static-modifiers facet', () => {
 	it('always applies its declared suffixes, in order', () => {
 		const config: RuneConfig = { block: 'card', staticModifiers: ['boxed', 'flush'] };
-		expect(staticModifiersFacet.resolve(ctx(config))?.classes)
-			.toEqual(['rf-card--boxed', 'rf-card--flush']);
+		expect(staticModifiersFacet.resolve(ctx(config))?.classes).toEqual([
+			'rf-card--boxed',
+			'rf-card--flush',
+		]);
 	});
 
 	it('contributes nothing when the list is absent or empty', () => {

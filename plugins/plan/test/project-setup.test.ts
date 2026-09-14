@@ -2,7 +2,11 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync, utimesSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { findInstallRoot, detectPackageManager, installCommand } from '../src/commands/project-setup.js';
+import {
+	findInstallRoot,
+	detectPackageManager,
+	installCommand,
+} from '../src/commands/project-setup.js';
 
 let TMP: string;
 

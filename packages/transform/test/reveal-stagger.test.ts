@@ -103,7 +103,7 @@ describe('stagger facet (SPEC-105)', () => {
 		expect(revealIndices(result)).toEqual(['0', '1']);
 	});
 
-	it('merges --rf-reveal-index onto an item\'s existing inline style', () => {
+	it("merges --rf-reveal-index onto an item's existing inline style", () => {
 		const transform = createTransform(baseConfig());
 		const tag = makeTag('section', { 'data-rune': 'bento', stagger: true }, [
 			makeTag('div', { 'data-field': 'cell', style: 'color: red' }, []),

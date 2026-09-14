@@ -11,7 +11,9 @@ import { config as storytellingConfig } from '../src/config.js';
 // all three. A sibling that diverges fails its row.
 
 const themeConfig: ThemeConfig = {
-	prefix: 'rf', tokenPrefix: '--rf', icons: {},
+	prefix: 'rf',
+	tokenPrefix: '--rf',
+	icons: {},
 	runes: storytellingConfig,
 };
 
@@ -37,7 +39,11 @@ function findByAttr(node: any, attr: string, value: string): any {
 function ownBody(node: any): any {
 	for (const c of node.children ?? []) {
 		if (!c || typeof c !== 'object') continue;
-		if (typeof c.attributes?.['data-rune'] === 'string' && c.attributes['data-rune'].endsWith('-section')) continue;
+		if (
+			typeof c.attributes?.['data-rune'] === 'string' &&
+			c.attributes['data-rune'].endsWith('-section')
+		)
+			continue;
 		if (c.attributes?.['data-name'] === 'body') return c;
 		const hit = ownBody(c);
 		if (hit) return hit;
@@ -69,8 +75,10 @@ const ENTITIES = [
 	},
 ];
 
-const plain = (e: (typeof ENTITIES)[number], attrs = '') => `${e.open(attrs)}\nEntity prose.\n${e.close}`;
-const sectioned = (e: (typeof ENTITIES)[number], attrs = '') => `${e.open(attrs)}\n${e.section}\n${e.close}`;
+const plain = (e: (typeof ENTITIES)[number], attrs = '') =>
+	`${e.open(attrs)}\nEntity prose.\n${e.close}`;
+const sectioned = (e: (typeof ENTITIES)[number], attrs = '') =>
+	`${e.open(attrs)}\n${e.section}\n${e.close}`;
 
 describe.each(ENTITIES)('$rune — entity body role', (entity) => {
 	const { rune } = entity;

@@ -109,11 +109,14 @@ describe('loadVirtualModule', () => {
 
 	it('works with different theme package names', () => {
 		const customConfig = { ...config, theme: '@refrakt-md/aurora' };
-		expect(loadVirtualModule('\0virtual:refrakt/theme', customConfig))
-			.toContain("import _manifest from '@refrakt-md/aurora/manifest';");
-		expect(loadVirtualModule('\0virtual:refrakt/theme', customConfig))
-			.toContain("import { layouts as _layouts } from '@refrakt-md/aurora/layouts';");
-		expect(loadVirtualModule('\0virtual:refrakt/tokens', customConfig))
-			.toContain("import '@refrakt-md/aurora';");
+		expect(loadVirtualModule('\0virtual:refrakt/theme', customConfig)).toContain(
+			"import _manifest from '@refrakt-md/aurora/manifest';",
+		);
+		expect(loadVirtualModule('\0virtual:refrakt/theme', customConfig)).toContain(
+			"import { layouts as _layouts } from '@refrakt-md/aurora/layouts';",
+		);
+		expect(loadVirtualModule('\0virtual:refrakt/tokens', customConfig)).toContain(
+			"import '@refrakt-md/aurora';",
+		);
 	});
 });

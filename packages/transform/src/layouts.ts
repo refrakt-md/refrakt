@@ -26,9 +26,7 @@ export function withoutSearchLayout(layout: LayoutConfig): LayoutConfig {
  * site sets `search: false` in refrakt.config.json to strip the search chrome
  * from every layout at theme-assembly time. The input layouts are left intact.
  */
-export function withoutSearch(
-	layouts: Record<string, LayoutConfig>,
-): Record<string, LayoutConfig> {
+export function withoutSearch(layouts: Record<string, LayoutConfig>): Record<string, LayoutConfig> {
 	const result: Record<string, LayoutConfig> = {};
 	for (const [name, layout] of Object.entries(layouts)) {
 		result[name] = withoutSearchLayout(layout);
@@ -38,18 +36,23 @@ export function withoutSearch(
 
 // ─── Shared SVG Icons ─────────────────────────────────────────────────
 
-const MENU_DOTS_SVG = '<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="4" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="16" r="1.5"/></svg>';
+const MENU_DOTS_SVG =
+	'<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="4" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="16" r="1.5"/></svg>';
 
-const CLOSE_X_SVG = '<svg width="20" height="20" viewBox="0 0 20 20" stroke="currentColor" stroke-width="2" fill="none"><line x1="4" y1="4" x2="16" y2="16"/><line x1="16" y1="4" x2="4" y2="16"/></svg>';
+const CLOSE_X_SVG =
+	'<svg width="20" height="20" viewBox="0 0 20 20" stroke="currentColor" stroke-width="2" fill="none"><line x1="4" y1="4" x2="16" y2="16"/><line x1="16" y1="4" x2="4" y2="16"/></svg>';
 
 // Combined dots/x icon. The two groups are toggled by CSS based on the
 // button's aria-expanded state, so the same trigger opens and closes the
 // mobile panel.
-const MENU_TOGGLE_SVG = '<svg width="20" height="20" viewBox="0 0 20 20"><g class="rf-mobile-menu-btn__icon-open" fill="currentColor"><circle cx="10" cy="4" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="16" r="1.5"/></g><g class="rf-mobile-menu-btn__icon-close" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="4" x2="16" y2="16"/><line x1="16" y1="4" x2="4" y2="16"/></g></svg>';
+const MENU_TOGGLE_SVG =
+	'<svg width="20" height="20" viewBox="0 0 20 20"><g class="rf-mobile-menu-btn__icon-open" fill="currentColor"><circle cx="10" cy="4" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="10" cy="16" r="1.5"/></g><g class="rf-mobile-menu-btn__icon-close" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="4" x2="16" y2="16"/><line x1="16" y1="4" x2="4" y2="16"/></g></svg>';
 
-const HAMBURGER_SVG = '<svg width="20" height="20" viewBox="0 0 20 20" stroke="currentColor" stroke-width="2" fill="none"><line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/></svg>';
+const HAMBURGER_SVG =
+	'<svg width="20" height="20" viewBox="0 0 20 20" stroke="currentColor" stroke-width="2" fill="none"><line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/></svg>';
 
-const SEARCH_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+const SEARCH_SVG =
+	'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
 
 // ─── Shared Chrome ────────────────────────────────────────────────────
 

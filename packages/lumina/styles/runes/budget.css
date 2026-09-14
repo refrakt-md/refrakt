@@ -1,135 +1,134 @@
 @layer skin {
-/* Budget */
+	/* Budget */
 
-/* Duration + currency meta row — flex/gap from the shared
+	/* Duration + currency meta row — flex/gap from the shared
  * `[data-zone-layout=bar]` primitive; this block owns only its spacing. */
-.rf-budget__meta {
-	margin-bottom: 0.75rem;
-}
-.rf-budget__preamble {
-	margin-bottom: 1.5rem;
-}
-.rf-budget .rf-budget__eyebrow {
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-semibold);
-	letter-spacing: var(--rf-tracking-wider);
-	text-transform: uppercase;
-	color: var(--rf-color-primary);
-	margin: 0 0 0.375rem;
-}
-.rf-budget__headline {
-	margin-top: 0;
-	margin-bottom: 0.25rem;
-}
-.rf-budget .rf-budget__blurb {
-	color: var(--rf-color-muted);
-	margin-bottom: 0;
-	max-width: 40rem;
-}
+	.rf-budget__meta {
+		margin-bottom: 0.75rem;
+	}
+	.rf-budget__preamble {
+		margin-bottom: 1.5rem;
+	}
+	.rf-budget .rf-budget__eyebrow {
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-semibold);
+		letter-spacing: var(--rf-tracking-wider);
+		text-transform: uppercase;
+		color: var(--rf-color-primary);
+		margin: 0 0 0.375rem;
+	}
+	.rf-budget__headline {
+		margin-top: 0;
+		margin-bottom: 0.25rem;
+	}
+	.rf-budget .rf-budget__blurb {
+		color: var(--rf-color-muted);
+		margin-bottom: 0;
+		max-width: 40rem;
+	}
 
-/* Categories */
-.rf-budget__categories {
-	gap: 1.5rem;
-}
+	/* Categories */
+	.rf-budget__categories {
+		gap: 1.5rem;
+	}
 
-/* Budget Category — no border box, spacing and typography create hierarchy */
-.rf-budget-category {
-	padding: 0;
-}
-.rf-budget-category--estimate {
-	border-left: 2px dashed var(--rf-color-warning);
-	padding-left: 1rem;
-}
-.rf-budget-category__header {
-	margin-bottom: 0.5rem;
-}
-.rf-budget-category--estimate .rf-budget-category__subtotal::before {
-	content: 'est.';
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-semibold);
-	text-transform: uppercase;
-	letter-spacing: var(--rf-tracking-wider);
-	color: var(--rf-color-warning);
-	background: var(--rf-color-warning-bg);
-	padding: 0.0625rem 0.375rem;
-	border-radius: var(--rf-radius-full);
-	margin-right: 0.5rem;
-	vertical-align: middle;
-}
-.rf-budget-category__label {
-	font-size: var(--rf-text);
-	font-weight: var(--rf-weight-semibold);
-	color: var(--rf-color-text);
-}
-.rf-budget-category__subtotal {
-	font-size: var(--rf-text);
-	font-weight: var(--rf-weight-semibold);
-	color: var(--rf-color-text);
-	white-space: nowrap;
-}
-.rf-budget-category__line-items {
-	padding: 0;
-	margin: 0;
-}
+	/* Budget Category — no border box, spacing and typography create hierarchy */
+	.rf-budget-category {
+		padding: 0;
+	}
+	.rf-budget-category--estimate {
+		border-left: 2px dashed var(--rf-color-warning);
+		padding-left: 1rem;
+	}
+	.rf-budget-category__header {
+		margin-bottom: 0.5rem;
+	}
+	.rf-budget-category--estimate .rf-budget-category__subtotal::before {
+		content: "est.";
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-semibold);
+		text-transform: uppercase;
+		letter-spacing: var(--rf-tracking-wider);
+		color: var(--rf-color-warning);
+		background: var(--rf-color-warning-bg);
+		padding: 0.0625rem 0.375rem;
+		border-radius: var(--rf-radius-full);
+		margin-right: 0.5rem;
+		vertical-align: middle;
+	}
+	.rf-budget-category__label {
+		font-size: var(--rf-text);
+		font-weight: var(--rf-weight-semibold);
+		color: var(--rf-color-text);
+	}
+	.rf-budget-category__subtotal {
+		font-size: var(--rf-text);
+		font-weight: var(--rf-weight-semibold);
+		color: var(--rf-color-text);
+		white-space: nowrap;
+	}
+	.rf-budget-category__line-items {
+		padding: 0;
+		margin: 0;
+	}
 
-/* Budget Line Item */
-.rf-budget-line-item {
-	padding: 0.3125rem 0;
-	gap: 1rem;
-}
-.rf-budget-line-item + .rf-budget-line-item {
-	border-top: 1px solid var(--rf-color-border);
-}
-.rf-budget-line-item__description {
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-muted);
-}
-.rf-budget-line-item__amount {
-	font-size: var(--rf-text-sm);
-	font-weight: var(--rf-weight-medium);
-	color: var(--rf-color-text);
-	white-space: nowrap;
-	font-variant-numeric: tabular-nums;
-}
+	/* Budget Line Item */
+	.rf-budget-line-item {
+		padding: 0.3125rem 0;
+		gap: 1rem;
+	}
+	.rf-budget-line-item + .rf-budget-line-item {
+		border-top: 1px solid var(--rf-color-border);
+	}
+	.rf-budget-line-item__description {
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+	}
+	.rf-budget-line-item__amount {
+		font-size: var(--rf-text-sm);
+		font-weight: var(--rf-weight-medium);
+		color: var(--rf-color-text);
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
+	}
 
-/* Budget Footer — total line */
-.rf-budget__footer {
-	margin-top: 1.5rem;
-	padding-top: 1rem;
-	border-top: 2px solid var(--rf-color-text);
-	gap: 0.5rem;
-}
-.rf-budget__total {
-	gap: 1rem;
-}
-.rf-budget__total-label {
-	font-size: var(--rf-text);
-	font-weight: var(--rf-weight-bold);
-	color: var(--rf-color-text);
-}
-.rf-budget__total-amount {
-	font-size: var(--rf-text-xl);
-	font-weight: var(--rf-weight-bold);
-	color: var(--rf-color-text);
-	white-space: nowrap;
-	font-variant-numeric: tabular-nums;
-}
-.rf-budget__per-day {
-	gap: 1rem;
-}
-.rf-budget__per-day-label {
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-muted);
-}
-.rf-budget__per-day-amount {
-	font-size: var(--rf-text);
-	font-weight: var(--rf-weight-medium);
-	color: var(--rf-color-muted);
-	white-space: nowrap;
-	font-variant-numeric: tabular-nums;
-}
-[data-variant="summary"] .rf-budget-category__header {
-	margin-bottom: 0;
-}
-
+	/* Budget Footer — total line */
+	.rf-budget__footer {
+		margin-top: 1.5rem;
+		padding-top: 1rem;
+		border-top: 2px solid var(--rf-color-text);
+		gap: 0.5rem;
+	}
+	.rf-budget__total {
+		gap: 1rem;
+	}
+	.rf-budget__total-label {
+		font-size: var(--rf-text);
+		font-weight: var(--rf-weight-bold);
+		color: var(--rf-color-text);
+	}
+	.rf-budget__total-amount {
+		font-size: var(--rf-text-xl);
+		font-weight: var(--rf-weight-bold);
+		color: var(--rf-color-text);
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
+	}
+	.rf-budget__per-day {
+		gap: 1rem;
+	}
+	.rf-budget__per-day-label {
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+	}
+	.rf-budget__per-day-amount {
+		font-size: var(--rf-text);
+		font-weight: var(--rf-weight-medium);
+		color: var(--rf-color-muted);
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
+	}
+	[data-variant="summary"] .rf-budget-category__header {
+		margin-bottom: 0;
+	}
 }

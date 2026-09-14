@@ -13,10 +13,17 @@ import { parseFieldMatch, matchesFieldMatch, type MatchableEntity } from './fiel
 import { transformDeferredTemplate } from './deferred-body.js';
 import { humanize } from './functions.js';
 import {
-	type CollectionEmbedConfig, type Ordering,
-	fieldValue, titleLink as titleLinkFor,
-	sortEntities, groupEntities, projectItem, buildOrdering,
-	splitBodyZones, renderItemTemplate, renderGroupAccordion,
+	type CollectionEmbedConfig,
+	type Ordering,
+	fieldValue,
+	titleLink as titleLinkFor,
+	sortEntities,
+	groupEntities,
+	projectItem,
+	buildOrdering,
+	splitBodyZones,
+	renderItemTemplate,
+	renderGroupAccordion,
 } from './collection-helpers.js';
 import { COLLECTION_SENTINEL } from './tags/collection.js';
 
@@ -65,13 +72,19 @@ function readQuery(tag: TagNode): CollectionQuery {
 	const limitRaw = metaContent(tag, 'collection-limit');
 	const limitNum = Number(limitRaw);
 	return {
-		types: metaContent(tag, 'collection-type').split(',').map((s) => s.trim()).filter(Boolean),
+		types: metaContent(tag, 'collection-type')
+			.split(',')
+			.map((s) => s.trim())
+			.filter(Boolean),
 		filter: metaContent(tag, 'collection-filter'),
 		sort: metaContent(tag, 'collection-sort'),
 		group: metaContent(tag, 'collection-group'),
 		groupDisplay: metaContent(tag, 'collection-group-display') || 'headings',
 		limit: limitRaw && Number.isFinite(limitNum) && limitNum > 0 ? Math.floor(limitNum) : undefined,
-		fields: metaContent(tag, 'collection-fields').split(',').map((s) => s.trim()).filter(Boolean),
+		fields: metaContent(tag, 'collection-fields')
+			.split(',')
+			.map((s) => s.trim())
+			.filter(Boolean),
 		layout: metaContent(tag, 'collection-layout') || 'list',
 		bodySource: metaContent(tag, 'collection-body'),
 		empty: metaContent(tag, 'collection-empty'),
@@ -79,14 +92,17 @@ function readQuery(tag: TagNode): CollectionQuery {
 }
 
 function renderBuiltInItem(e: EntityRegistration, q: CollectionQuery): TagNode {
-	const fieldSpans = q.fields.map((f) =>
-		new Tag('span', { class: 'rf-collection__field', 'data-field': f }, [fieldValue(e, f)]),
+	const fieldSpans = q.fields.map(
+		(f) => new Tag('span', { class: 'rf-collection__field', 'data-field': f }, [fieldValue(e, f)]),
 	);
 	if (q.layout === 'list') {
 		return new Tag('div', { class: 'rf-collection__item', 'data-entity-id': e.id }, [titleLink(e)]);
 	}
 	// cards / grid
-	return new Tag('article', { class: 'rf-collection__card', 'data-entity-id': e.id }, [titleLink(e), ...fieldSpans]);
+	return new Tag('article', { class: 'rf-collection__card', 'data-entity-id': e.id }, [
+		titleLink(e),
+		...fieldSpans,
+	]);
 }
 
 interface ColumnDef {
@@ -101,9 +117,14 @@ function splitColumns(bodySource: string, ctx: PipelineContext, pageUrl: string)
 	let current: { label: string; cellNodes: unknown[] } | null = null;
 	for (const node of ast.children) {
 		if (node.type === 'heading') {
-			const label = Markdoc.format(node).replace(/^#+\s*/, '').trim();
+			const label = Markdoc.format(node)
+				.replace(/^#+\s*/, '')
+				.trim();
 			if (label.includes('$item')) {
-				ctx.warn(`collection: $item in a table column heading ("${label}") is not per-row; use a static label`, pageUrl);
+				ctx.warn(
+					`collection: $item in a table column heading ("${label}") is not per-row; use a static label`,
+					pageUrl,
+				);
 			}
 			current = { label, cellNodes: [] };
 			columns.push({ label, cellSource: '' });
@@ -123,14 +144,28 @@ function renderHeadingTable(
 	embedConfig: CollectionEmbedConfig | undefined,
 	ctx: PipelineContext,
 	pageUrl: string,
-	itemOpts?: { mixed?: boolean; sentiments?: CollectionEmbedConfig['sentiments']; group?: string; groupCount?: number },
+	itemOpts?: {
+		mixed?: boolean;
+		sentiments?: CollectionEmbedConfig['sentiments'];
+		group?: string;
+		groupCount?: number;
+	},
 ): TagNode {
 	const columns = splitColumns(bodySource, ctx, pageUrl);
 	if (!embedConfig) {
-		ctx.error('collection — table column templates present but no embedConfig threaded through the pipeline', pageUrl);
+		ctx.error(
+			'collection — table column templates present but no embedConfig threaded through the pipeline',
+			pageUrl,
+		);
 		return new Tag('table', { class: 'rf-collection__table' }, []);
 	}
-	const thead = new Tag('thead', {}, [new Tag('tr', {}, columns.map((c) => new Tag('th', {}, [c.label])))]);
+	const thead = new Tag('thead', {}, [
+		new Tag(
+			'tr',
+			{},
+			columns.map((c) => new Tag('th', {}, [c.label])),
+		),
+	]);
 	const rows = entities.map((e) => {
 		const item = projectItem(e, itemOpts);
 		const cells = columns.map((c) => {
@@ -144,7 +179,10 @@ function renderHeadingTable(
 }
 
 function renderTable(entities: EntityRegistration[], q: CollectionQuery): TagNode {
-	const headCells = [new Tag('th', {}, ['Title']), ...q.fields.map((f) => new Tag('th', {}, [humanize(f)]))];
+	const headCells = [
+		new Tag('th', {}, ['Title']),
+		...q.fields.map((f) => new Tag('th', {}, [humanize(f)])),
+	];
 	const thead = new Tag('thead', {}, [new Tag('tr', {}, headCells)]);
 	const rows = entities.map((e) => {
 		const cells = [
@@ -162,17 +200,29 @@ function renderBody(
 	embedConfig: CollectionEmbedConfig | undefined,
 	ctx: PipelineContext,
 	pageUrl: string,
-	itemOpts?: { mixed?: boolean; sentiments?: CollectionEmbedConfig['sentiments']; group?: string; groupCount?: number },
+	itemOpts?: {
+		mixed?: boolean;
+		sentiments?: CollectionEmbedConfig['sentiments'];
+		group?: string;
+		groupCount?: number;
+	},
 ): RenderableTreeNode[] {
 	if (!embedConfig) {
-		ctx.error('collection — body template present but no embedConfig threaded through the pipeline', pageUrl);
+		ctx.error(
+			'collection — body template present but no embedConfig threaded through the pipeline',
+			pageUrl,
+		);
 		return [];
 	}
 	return entities.map((e) => {
 		const item = projectItem(e, itemOpts);
 		const out = transformDeferredTemplate(bodySource, embedConfig as never, { item });
 		const children = Array.isArray(out) ? out : [out];
-		return new Tag('div', { class: 'rf-collection__item', 'data-entity-id': e.id, 'data-block': '' }, children as RenderableTreeNode[]);
+		return new Tag(
+			'div',
+			{ class: 'rf-collection__item', 'data-entity-id': e.id, 'data-block': '' },
+			children as RenderableTreeNode[],
+		);
 	});
 }
 
@@ -180,7 +230,10 @@ function renderGroupOrFlat(
 	entities: EntityRegistration[],
 	q: CollectionQuery,
 	ordering: Ordering,
-	renderItems: (es: EntityRegistration[], groupInfo?: { group: string; groupCount: number }) => RenderableTreeNode[],
+	renderItems: (
+		es: EntityRegistration[],
+		groupInfo?: { group: string; groupCount: number },
+	) => RenderableTreeNode[],
 ): RenderableTreeNode[] {
 	if (!q.group) return renderItems(entities);
 	const groups = groupEntities(entities, q.group, ordering);
@@ -188,15 +241,22 @@ function renderGroupOrFlat(
 	// collection's per-item template can render group context inline.
 	if (q.groupDisplay === 'accordion') {
 		return renderGroupAccordion(
-			[...groups].map(([name, es]) => ({ key: name, label: name, count: es.length, nodes: renderItems(es, { group: name, groupCount: es.length }) })),
+			[...groups].map(([name, es]) => ({
+				key: name,
+				label: name,
+				count: es.length,
+				nodes: renderItems(es, { group: name, groupCount: es.length }),
+			})),
 		);
 	}
 	const out: RenderableTreeNode[] = [];
 	for (const [name, es] of groups) {
-		out.push(new Tag('div', { class: 'rf-collection__group', 'data-group': name }, [
-			new Tag('h3', { class: 'rf-collection__group-title' }, [name]),
-			...renderItems(es, { group: name, groupCount: es.length }),
-		]));
+		out.push(
+			new Tag('div', { class: 'rf-collection__group', 'data-group': name }, [
+				new Tag('h3', { class: 'rf-collection__group-title' }, [name]),
+				...renderItems(es, { group: name, groupCount: es.length }),
+			]),
+		);
 	}
 	return out;
 }
@@ -240,7 +300,13 @@ function resolveOne(
 	if (entities.length === 0) {
 		const out: RenderableTreeNode[] = [];
 		if (zones.fallback && embedConfig) {
-			out.push(new Tag('div', { 'data-name': 'empty', class: 'rf-collection__empty' }, renderItemTemplate(zones.fallback, embedConfig, counts)));
+			out.push(
+				new Tag(
+					'div',
+					{ 'data-name': 'empty', class: 'rf-collection__empty' },
+					renderItemTemplate(zones.fallback, embedConfig, counts),
+				),
+			);
 		} else if (q.empty) {
 			out.push(new Tag('div', { 'data-name': 'empty', class: 'rf-collection__empty' }, [q.empty]));
 		}
@@ -251,20 +317,36 @@ function resolveOne(
 	let children: RenderableTreeNode[];
 	if (q.layout === 'table' && tmpl) {
 		// Heading-delimited column templates (WORK-264).
-		children = renderGroupOrFlat(entities, q, ordering, (es, gi) => [renderHeadingTable(es, tmpl, embedConfig, ctx, pageUrl, { ...itemOpts, ...gi })]);
+		children = renderGroupOrFlat(entities, q, ordering, (es, gi) => [
+			renderHeadingTable(es, tmpl, embedConfig, ctx, pageUrl, { ...itemOpts, ...gi }),
+		]);
 	} else if (tmpl) {
-		children = renderGroupOrFlat(entities, q, ordering, (es, gi) => renderBody(es, tmpl, embedConfig, ctx, pageUrl, { ...itemOpts, ...gi }));
+		children = renderGroupOrFlat(entities, q, ordering, (es, gi) =>
+			renderBody(es, tmpl, embedConfig, ctx, pageUrl, { ...itemOpts, ...gi }),
+		);
 	} else if (q.layout === 'table') {
 		children = renderGroupOrFlat(entities, q, ordering, (es) => [renderTable(es, q)]);
 	} else {
-		children = renderGroupOrFlat(entities, q, ordering, (es) => es.map((e) => renderBuiltInItem(e, q)));
+		children = renderGroupOrFlat(entities, q, ordering, (es) =>
+			es.map((e) => renderBuiltInItem(e, q)),
+		);
 	}
 
-	const itemsDiv = new Tag('div', { 'data-name': 'items', class: 'rf-collection__items' }, children);
+	const itemsDiv = new Tag(
+		'div',
+		{ 'data-name': 'items', class: 'rf-collection__items' },
+		children,
+	);
 	// Preamble renders once, above items, only when non-empty.
 	const head: RenderableTreeNode[] = [];
 	if (zones.preamble && embedConfig) {
-		head.push(new Tag('div', { 'data-name': 'preamble', class: 'rf-collection__preamble' }, renderItemTemplate(zones.preamble, embedConfig, counts)));
+		head.push(
+			new Tag(
+				'div',
+				{ 'data-name': 'preamble', class: 'rf-collection__preamble' },
+				renderItemTemplate(zones.preamble, embedConfig, counts),
+			),
+		);
 	}
 	return new Tag(tag.name, attrs, [...head, itemsDiv]);
 }

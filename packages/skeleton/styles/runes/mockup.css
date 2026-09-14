@@ -40,7 +40,10 @@
 .rf-mockup__frame {
 	position: relative;
 	margin-inline: auto;
-	zoom: calc(var(--mockup-scale, 1) * min(1, tan(atan2(100cqi, var(--mockup-device-width, 100cqi)))));
+	zoom: calc(
+		var(--mockup-scale, 1) *
+		min(1, tan(atan2(100cqi, var(--mockup-device-width, 100cqi))))
+	);
 }
 
 /* Media guest: fill the slot. The slot, not the device, sets the size here, so
@@ -123,7 +126,7 @@
 	height: 32px;
 }
 .rf-mockup__home-indicator::after {
-	content: '';
+	content: "";
 	display: block;
 	width: 134px;
 	height: 5px;

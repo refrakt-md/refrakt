@@ -1,18 +1,30 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	asNodes,
+	RenderableNodeCursor,
+	pageSectionProperties,
+} from '@refrakt-md/runes';
 
 export const timelineEntry = createContentModelSchema({
 	attributes: {
-		date: { type: String, required: false, description: 'Date or time shown on this entry (e.g. "2024-03", "Q1 2025").' },
-		label: { type: String, required: false, description: 'Short title or milestone name for the entry.' },
+		date: {
+			type: String,
+			required: false,
+			description: 'Date or time shown on this entry (e.g. "2024-03", "Q1 2025").',
+		},
+		label: {
+			type: String,
+			required: false,
+			description: 'Short title or milestone name for the entry.',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const dateTag = new Tag('time', {}, [attrs.date ?? '']);
@@ -21,7 +33,9 @@ export const timelineEntry = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable({ rune: 'timeline-entry', schemaOrgType: 'ListItem',
+		return createComponentRenderable({
+			rune: 'timeline-entry',
+			schemaOrgType: 'ListItem',
 			tag: 'li',
 			refs: {
 				date: dateTag,
@@ -40,12 +54,20 @@ export const timelineEntry = createContentModelSchema({
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
 // what a section *is* (ADR-028).
-export const timelineSections = { preamble: 'preamble', headline: 'title', blurb: 'description' } as const;
+export const timelineSections = {
+	preamble: 'preamble',
+	headline: 'title',
+	blurb: 'description',
+} as const;
 
 export const timeline = createContentModelSchema({
 	sections: timelineSections,
 	attributes: {
-		direction: { type: String, required: false, description: 'Axis along which entries are laid out (vertical or horizontal).' },
+		direction: {
+			type: String,
+			required: false,
+			description: 'Axis along which entries are laid out (vertical or horizontal).',
+		},
 	},
 	contentModel: () => ({
 		type: 'sections' as const,
@@ -95,7 +117,9 @@ export const timeline = createContentModelSchema({
 		}
 		children.push(entriesList);
 
-		return createComponentRenderable({ rune: 'timeline', schemaOrgType: 'ItemList',
+		return createComponentRenderable({
+			rune: 'timeline',
+			schemaOrgType: 'ItemList',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

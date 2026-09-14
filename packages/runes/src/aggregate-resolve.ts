@@ -11,10 +11,19 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 import type { EntityRegistry, EntityRegistration, PipelineContext } from '@refrakt-md/types';
-import { parseFieldMatch, matchesFieldMatch, type MatchableEntity, type ParsedFieldMatch } from './field-match.js';
 import {
-	type CollectionEmbedConfig, type Ordering,
-	buildOrdering, splitBodyZones, renderItemTemplate, groupEntities,
+	parseFieldMatch,
+	matchesFieldMatch,
+	type MatchableEntity,
+	type ParsedFieldMatch,
+} from './field-match.js';
+import {
+	type CollectionEmbedConfig,
+	type Ordering,
+	buildOrdering,
+	splitBodyZones,
+	renderItemTemplate,
+	groupEntities,
 } from './collection-helpers.js';
 import { AGGREGATE_SENTINEL } from './tags/aggregate.js';
 import { humanize } from './functions.js';
@@ -59,7 +68,10 @@ function readQuery(tag: TagNode): AggregateQuery {
 	const limitRaw = metaContent(tag, 'aggregate-limit');
 	const limitNum = Number(limitRaw);
 	return {
-		types: metaContent(tag, 'aggregate-type').split(',').map((s) => s.trim()).filter(Boolean),
+		types: metaContent(tag, 'aggregate-type')
+			.split(',')
+			.map((s) => s.trim())
+			.filter(Boolean),
 		filter: metaContent(tag, 'aggregate-filter'),
 		value: metaContent(tag, 'aggregate-value'),
 		group: metaContent(tag, 'aggregate-group'),
@@ -115,12 +127,16 @@ function buildChart(
 	// non-bar `chart-type` (the engine would otherwise reset it to the default)
 	// and avoids a doubled class. `data-type` is also set directly so the
 	// pre-render tree is already correct.
-	return new Tag('rf-chart', {
-		'data-rune': 'chart',
-		'data-rune-fields': JSON.stringify({ type: q.chartType, stacked: 'false' }),
-		'data-type': q.chartType,
-		'data-stacked': 'false',
-	}, [table]);
+	return new Tag(
+		'rf-chart',
+		{
+			'data-rune': 'chart',
+			'data-rune-fields': JSON.stringify({ type: q.chartType, stacked: 'false' }),
+			'data-type': q.chartType,
+			'data-stacked': 'false',
+		},
+		[table],
+	);
 }
 
 function percentOf(value: number, count: number): number {
@@ -158,15 +174,23 @@ function sortGroups(
 	if (!sortExpr) return groups;
 	let field = sortExpr.trim();
 	let dir = 1;
-	if (field.startsWith('-')) { dir = -1; field = field.slice(1); }
-	else if (field.endsWith('-desc')) { dir = -1; field = field.slice(0, -5); }
-	else if (field.endsWith('-asc')) { field = field.slice(0, -4); }
+	if (field.startsWith('-')) {
+		dir = -1;
+		field = field.slice(1);
+	} else if (field.endsWith('-desc')) {
+		dir = -1;
+		field = field.slice(0, -5);
+	} else if (field.endsWith('-asc')) {
+		field = field.slice(0, -4);
+	}
 
 	if (field === 'count') {
 		return [...groups].sort(([, a], [, b]) => (a.length - b.length) * dir);
 	}
 	if (field === 'value') {
-		return [...groups].sort(([, a], [, b]) => (countValue(a, valueParsed) - countValue(b, valueParsed)) * dir);
+		return [...groups].sort(
+			([, a], [, b]) => (countValue(a, valueParsed) - countValue(b, valueParsed)) * dir,
+		);
 	}
 	if (field === 'percent') {
 		return [...groups].sort(([, a], [, b]) => {
@@ -181,9 +205,11 @@ function sortGroups(
 		const tb = mb[0]?.type ?? '';
 		const ra = ordering.rank(ta, groupField, ka);
 		const rb = ordering.rank(tb, groupField, kb);
-		const aR = ra >= 0, bR = rb >= 0;
-		if (aR && bR) { if (ra !== rb) return (ra - rb) * dir; }
-		else if (aR !== bR) return aR ? -1 : 1;
+		const aR = ra >= 0,
+			bR = rb >= 0;
+		if (aR && bR) {
+			if (ra !== rb) return (ra - rb) * dir;
+		} else if (aR !== bR) return aR ? -1 : 1;
 		return ka.localeCompare(kb) * dir;
 	});
 }
@@ -224,7 +250,11 @@ function resolveOne(
 	// domain-aware grouping/sort the body-zoned form uses.
 	if (q.layout === 'chart') {
 		if (countTotal === 0) {
-			return new Tag('div', { 'data-name': 'empty', class: 'rf-aggregate__empty' }, q.empty ? [q.empty] : []);
+			return new Tag(
+				'div',
+				{ 'data-name': 'empty', class: 'rf-aggregate__empty' },
+				q.empty ? [q.empty] : [],
+			);
 		}
 		let groups = [...groupEntities(entities, q.group, ordering).entries()];
 		groups = sortGroups(groups, q.sort, q.group, ordering, valueParsed);
@@ -236,11 +266,15 @@ function resolveOne(
 	// `class="rf-aggregate"` to the wrapper span; we just stamp the count and
 	// swap children for the digit.
 	if (!q.bodySource) {
-		return new Tag(tag.name, {
-			...tag.attributes,
-			'data-aggregate': 'count',
-			'data-count': String(countTotal),
-		}, [String(countTotal)]);
+		return new Tag(
+			tag.name,
+			{
+				...tag.attributes,
+				'data-aggregate': 'count',
+				'data-count': String(countTotal),
+			},
+			[String(countTotal)],
+		);
 	}
 
 	const zones = splitBodyZones(q.bodySource);
@@ -252,7 +286,13 @@ function resolveOne(
 		const out: RenderableTreeNode[] = [];
 		if (zones.fallback && embedConfig) {
 			const vars = { item: { key: '', count: 0, value: 0, percent: 0, total: 0, shown: 0 } };
-			out.push(new Tag('div', { 'data-name': 'empty', class: 'rf-aggregate__empty' }, renderItemTemplate(zones.fallback, embedConfig, vars)));
+			out.push(
+				new Tag(
+					'div',
+					{ 'data-name': 'empty', class: 'rf-aggregate__empty' },
+					renderItemTemplate(zones.fallback, embedConfig, vars),
+				),
+			);
 		} else if (q.empty) {
 			out.push(new Tag('div', { 'data-name': 'empty', class: 'rf-aggregate__empty' }, [q.empty]));
 		}
@@ -262,16 +302,39 @@ function resolveOne(
 	// Preamble (once, when non-empty) — totals projection on $item.
 	const head: RenderableTreeNode[] = [];
 	if (zones.preamble && embedConfig) {
-		const vars = { item: { count: countTotal, value: valueTotal, percent: percentTotal, total: countTotal } };
-		head.push(new Tag('div', { 'data-name': 'preamble', class: 'rf-aggregate__preamble' }, renderItemTemplate(zones.preamble, embedConfig, vars)));
+		const vars = {
+			item: { count: countTotal, value: valueTotal, percent: percentTotal, total: countTotal },
+		};
+		head.push(
+			new Tag(
+				'div',
+				{ 'data-name': 'preamble', class: 'rf-aggregate__preamble' },
+				renderItemTemplate(zones.preamble, embedConfig, vars),
+			),
+		);
 	}
 
 	// Ungrouped: render the template once with the totals projection on $item.
 	if (!q.group) {
 		const out: RenderableTreeNode[] = [...head];
 		if (tmpl && embedConfig) {
-			const vars = { item: { key: '', count: countTotal, value: valueTotal, percent: percentTotal, total: countTotal, shown: 1 } };
-			out.push(new Tag('div', { 'data-name': 'items', class: 'rf-aggregate__items' }, renderItemTemplate(tmpl, embedConfig, vars)));
+			const vars = {
+				item: {
+					key: '',
+					count: countTotal,
+					value: valueTotal,
+					percent: percentTotal,
+					total: countTotal,
+					shown: 1,
+				},
+			};
+			out.push(
+				new Tag(
+					'div',
+					{ 'data-name': 'items', class: 'rf-aggregate__items' },
+					renderItemTemplate(tmpl, embedConfig, vars),
+				),
+			);
 		}
 		return new Tag(tag.name, attrs, out);
 	}
@@ -305,7 +368,11 @@ function resolveOne(
 			);
 		}
 	}
-	const itemsDiv = new Tag('div', { 'data-name': 'items', class: 'rf-aggregate__items' }, groupNodes);
+	const itemsDiv = new Tag(
+		'div',
+		{ 'data-name': 'items', class: 'rf-aggregate__items' },
+		groupNodes,
+	);
 	return new Tag(tag.name, attrs, [...head, itemsDiv]);
 }
 

@@ -20,12 +20,17 @@ function registry(entries: EntityRegistration[]): EntityRegistry {
 
 function render(src: string, reg: EntityRegistry): RenderableTreeNode {
 	const ast = Markdoc.parse(src);
-	captureDeferredBodies(ast, (n) => Boolean((tags as Record<string, { deferBody?: boolean }>)[n]?.deferBody));
+	captureDeferredBodies(ast, (n) =>
+		Boolean((tags as Record<string, { deferBody?: boolean }>)[n]?.deferBody),
+	);
 	const transformed = Markdoc.transform(ast, { tags, nodes, variables: {} } as never);
 	return resolveCollections(transformed, '/p/', reg, { tags, nodes }, ctx) as RenderableTreeNode;
 }
 
-function findAll(node: unknown, pred: (t: InstanceType<typeof Markdoc.Tag>) => boolean): InstanceType<typeof Markdoc.Tag>[] {
+function findAll(
+	node: unknown,
+	pred: (t: InstanceType<typeof Markdoc.Tag>) => boolean,
+): InstanceType<typeof Markdoc.Tag>[] {
 	const out: InstanceType<typeof Markdoc.Tag>[] = [];
 	const walk = (n: unknown) => {
 		if (Array.isArray(n)) return n.forEach(walk);
@@ -39,7 +44,10 @@ function findAll(node: unknown, pred: (t: InstanceType<typeof Markdoc.Tag>) => b
 }
 
 const work = (id: string, data: Record<string, unknown>): EntityRegistration => ({
-	type: 'work', id, sourceUrl: `/work/${id}/`, data,
+	type: 'work',
+	id,
+	sourceUrl: `/work/${id}/`,
+	data,
 });
 
 describe('collection resolver', () => {
@@ -70,7 +78,10 @@ describe('collection resolver', () => {
 		const out = render('{% collection type="work" layout="table" fields="status" /%}', reg);
 		const tables = findAll(out, (t) => t.name === 'table');
 		expect(tables).toHaveLength(1);
-		const rows = findAll(out, (t) => t.name === 'tr' && t.attributes['data-entity-id'] !== undefined);
+		const rows = findAll(
+			out,
+			(t) => t.name === 'tr' && t.attributes['data-entity-id'] !== undefined,
+		);
 		expect(rows).toHaveLength(3);
 	});
 
@@ -91,7 +102,10 @@ describe('collection resolver', () => {
 		const ths = findAll(out, (t) => t.name === 'th');
 		expect(ths.map((t) => (t.children ?? [])[0])).toEqual(['Title', 'Status']);
 		// One row per ready entity, each with 2 cells
-		const rows = findAll(out, (t) => t.name === 'tr' && t.attributes['data-entity-id'] !== undefined);
+		const rows = findAll(
+			out,
+			(t) => t.name === 'tr' && t.attributes['data-entity-id'] !== undefined,
+		);
 		expect(rows).toHaveLength(2);
 		const blob = JSON.stringify(out);
 		expect(blob).toContain('Alpha');

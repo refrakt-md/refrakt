@@ -9,11 +9,11 @@ describe('testimonial tag', () => {
 **Jane Doe** — CEO, Acme Corp
 {% /testimonial %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'testimonial');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'testimonial');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 
-		const quote = findTag(tag!, t => t.name === 'blockquote');
+		const quote = findTag(tag!, (t) => t.name === 'blockquote');
 		expect(quote).toBeDefined();
 	});
 
@@ -24,8 +24,11 @@ describe('testimonial tag', () => {
 **Sarah Chen** — VP Engineering, Tech Corp
 {% /testimonial %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'testimonial');
-		const authorName = findTag(tag!, t => t.name === 'span' && t.attributes['data-name'] === 'author-name');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'testimonial');
+		const authorName = findTag(
+			tag!,
+			(t) => t.name === 'span' && t.attributes['data-name'] === 'author-name',
+		);
 		expect(authorName).toBeDefined();
 	});
 
@@ -36,8 +39,8 @@ describe('testimonial tag', () => {
 **John Smith**
 {% /testimonial %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'testimonial');
-		const ratingMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 5);
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'testimonial');
+		const ratingMeta = findTag(tag!, (t) => t.name === 'meta' && t.attributes.content === 5);
 		expect(ratingMeta).toBeDefined();
 	});
 
@@ -48,7 +51,7 @@ describe('testimonial tag', () => {
 **Alice** — Designer
 {% /review %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'testimonial');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'testimonial');
 		expect(tag).toBeDefined();
 	});
 
@@ -59,7 +62,7 @@ describe('testimonial tag', () => {
 **Bob** — CTO
 {% /testimonial %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'testimonial');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'testimonial');
 		expect(tag).toBeDefined();
 	});
 });

@@ -4,7 +4,14 @@ import type { PluginPipelineHooks, EntityRegistration } from '@refrakt-md/types'
 
 const { Tag } = Markdoc;
 
-const STORYTELLING_ENTITY_TYPES = new Set(['character', 'realm', 'faction', 'lore', 'plot', 'bond']);
+const STORYTELLING_ENTITY_TYPES = new Set([
+	'character',
+	'realm',
+	'faction',
+	'lore',
+	'plot',
+	'bond',
+]);
 
 /** Tags where cross-links should not resolve */
 const EXCLUDED_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre', 'code']);
@@ -14,14 +21,14 @@ function walkTags(node: unknown, fn: (tag: InstanceType<typeof Tag>) => void): v
 		fn(node);
 		for (const child of node.children) walkTags(child, fn);
 	} else if (Array.isArray(node)) {
-		node.forEach(n => walkTags(n, fn));
+		node.forEach((n) => walkTags(n, fn));
 	}
 }
 
 function extractTextContent(node: unknown): string {
 	if (typeof node === 'string') return node;
 	if (!Markdoc.Tag.isTag(node)) return '';
-	return node.children.map(c => extractTextContent(c)).join('');
+	return node.children.map((c) => extractTextContent(c)).join('');
 }
 
 function readField(tag: InstanceType<typeof Tag>, field: string): string {
@@ -33,7 +40,10 @@ function readField(tag: InstanceType<typeof Tag>, field: string): string {
  *  Pre-order returns the entity's own title (e.g. in `content > header`)
  *  before any nested section name, so it works whether the title is a direct
  *  child (realm/character) or nested in the content column (faction). */
-function findByName(tag: InstanceType<typeof Tag>, name: string): InstanceType<typeof Tag> | undefined {
+function findByName(
+	tag: InstanceType<typeof Tag>,
+	name: string,
+): InstanceType<typeof Tag> | undefined {
 	for (const c of tag.children) {
 		if (!Markdoc.Tag.isTag(c)) continue;
 		if (c.attributes['data-name'] === name) return c;
@@ -64,7 +74,10 @@ function extractEntityName(tag: InstanceType<typeof Tag>, runeType: string): str
 }
 
 /** Extract type-specific metadata for a storytelling entity */
-function extractEntityData(tag: InstanceType<typeof Tag>, runeType: string): Record<string, unknown> {
+function extractEntityData(
+	tag: InstanceType<typeof Tag>,
+	runeType: string,
+): Record<string, unknown> {
 	const data: Record<string, unknown> = {};
 	switch (runeType) {
 		case 'character':
@@ -178,7 +191,10 @@ export const storytellingPipelineHooks: PluginPipelineHooks = {
 				if (type === 'character') {
 					const aliases = String(entity.data.aliases ?? '');
 					if (aliases) {
-						for (const alias of aliases.split(',').map(a => a.trim()).filter(Boolean)) {
+						for (const alias of aliases
+							.split(',')
+							.map((a) => a.trim())
+							.filter(Boolean)) {
 							if (!entityByName.has(alias)) {
 								entityByName.set(alias, entity);
 							}
@@ -224,9 +240,21 @@ export const storytellingPipelineHooks: PluginPipelineHooks = {
 			// but the storytelling register hook above always sets it from
 			// `page.url`, so bond entities reaching this loop always carry one.
 			const bondSourceUrl = bond.sourceUrl ?? '';
-			addRelationship(from, { target: to, bondType, status, bidirectional, sourceUrl: bondSourceUrl });
+			addRelationship(from, {
+				target: to,
+				bondType,
+				status,
+				bidirectional,
+				sourceUrl: bondSourceUrl,
+			});
 			if (bidirectional) {
-				addRelationship(to, { target: from, bondType, status, bidirectional, sourceUrl: bondSourceUrl });
+				addRelationship(to, {
+					target: from,
+					bondType,
+					status,
+					bidirectional,
+					sourceUrl: bondSourceUrl,
+				});
 			}
 		}
 
@@ -239,7 +267,8 @@ export const storytellingPipelineHooks: PluginPipelineHooks = {
 
 	postProcess(page, aggregated) {
 		const maybeStoryData = aggregated['storytelling'] as StorytellingAggregatedData | undefined;
-		if (!maybeStoryData || !maybeStoryData.entityByName || maybeStoryData.entityByName.size === 0) return page;
+		if (!maybeStoryData || !maybeStoryData.entityByName || maybeStoryData.entityByName.size === 0)
+			return page;
 		const storyData = maybeStoryData;
 
 		const linkedNames = new Set<string>();
@@ -248,7 +277,7 @@ export const storytellingPipelineHooks: PluginPipelineHooks = {
 		function mapNode(node: unknown, insideRuneDepth: number): unknown {
 			if (typeof node === 'string') return node;
 			if (Array.isArray(node)) {
-				const mapped = node.map(n => mapNode(n, insideRuneDepth));
+				const mapped = node.map((n) => mapNode(n, insideRuneDepth));
 				return mapped.some((n, i) => n !== node[i]) ? mapped : node;
 			}
 			if (!Markdoc.Tag.isTag(node)) return node;

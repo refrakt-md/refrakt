@@ -1,10 +1,40 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
-import type { ThemeConfig, RuneConfig, StructureEntry, TintDefinition, BgPresetDefinition, FramePresetDefinition, MetaField, BlockDef, LayoutEntry } from './types.js';
-import { isTag, makeTag, readMeta, toKebabCase, resolveOffset, parsePlacement, findNodeByDataName, findMediaZone } from './helpers.js';
+import type {
+	ThemeConfig,
+	RuneConfig,
+	StructureEntry,
+	TintDefinition,
+	BgPresetDefinition,
+	FramePresetDefinition,
+	MetaField,
+	BlockDef,
+	LayoutEntry,
+} from './types.js';
+import {
+	isTag,
+	makeTag,
+	readMeta,
+	toKebabCase,
+	resolveOffset,
+	parsePlacement,
+	findNodeByDataName,
+	findMediaZone,
+} from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
 import { DEFAULT_READING, type ReadingRegister } from './reading.js';
-import { createLocaleContext, resolveLocaleString, DEFAULT_LOCALE, type LocaleContext } from './i18n.js';
-import { ORDERED_FACETS, FACET_ATTRIBUTES, runFacets, runPostAssemble, WarningCollector } from './facets/index.js';
+import {
+	createLocaleContext,
+	resolveLocaleString,
+	DEFAULT_LOCALE,
+	type LocaleContext,
+} from './i18n.js';
+import {
+	ORDERED_FACETS,
+	FACET_ATTRIBUTES,
+	runFacets,
+	runPostAssemble,
+	WarningCollector,
+} from './facets/index.js';
 import type { FacetWarning } from './facets/index.js';
 
 /** Pure text transforms for metaText values */
@@ -23,7 +53,9 @@ const transforms: Record<string, (v: string) => string> = {
 };
 
 /** Parse an ISO 8601 duration (`PT1H30M`) into `{ hours, minutes, seconds }`. */
-function parseIsoDuration(iso: string): { hours?: number; minutes?: number; seconds?: number } | null {
+function parseIsoDuration(
+	iso: string,
+): { hours?: number; minutes?: number; seconds?: number } | null {
 	const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
 	if (!m) return null;
 	const out: { hours?: number; minutes?: number; seconds?: number } = {};
@@ -73,7 +105,7 @@ export function createTransform(config: ThemeConfig) {
 	const locale = createLocaleContext(config.locale, config.strings);
 
 	// Build lowercase → config-key map for case-insensitive rune lookup
-	const runeKeyMap = new Map(Object.keys(runes).map(k => [toKebabCase(k), k]));
+	const runeKeyMap = new Map(Object.keys(runes).map((k) => [toKebabCase(k), k]));
 
 	// WORK-524 — diagnostics dedupe per build, not per process. Scoped here so a
 	// dev-server rebuild re-reports rather than falling silent after the first
@@ -83,7 +115,7 @@ export function createTransform(config: ThemeConfig) {
 	function identityTransform(tree: RendererNode, parentRune?: string): RendererNode {
 		if (tree === null || tree === undefined) return tree;
 		if (typeof tree === 'string' || typeof tree === 'number') return tree;
-		if (Array.isArray(tree)) return tree.map(n => identityTransform(n, parentRune));
+		if (Array.isArray(tree)) return tree.map((n) => identityTransform(n, parentRune));
 		if (!isTag(tree)) return tree;
 
 		// SPEC-035 Zone 2 — programmatic text opt-in: a `data-i18n="{key}"`
@@ -94,26 +126,48 @@ export function createTransform(config: ThemeConfig) {
 		const i18nKey = tree.attributes?.['data-i18n'];
 		if (i18nKey) {
 			const { ['data-i18n']: _drop, ...restAttrs } = tree.attributes;
-			const fallback = (tree.children.find(c => typeof c === 'string') as string | undefined) ?? '';
-			return { ...tree, attributes: restAttrs, children: [resolveLocaleString(locale, i18nKey, fallback)] };
+			const fallback =
+				(tree.children.find((c) => typeof c === 'string') as string | undefined) ?? '';
+			return {
+				...tree,
+				attributes: restAttrs,
+				children: [resolveLocaleString(locale, i18nKey, fallback)],
+			};
 		}
 
 		const dataRune = tree.attributes?.['data-rune'];
 		const configKey = dataRune ? runeKeyMap.get(dataRune) : undefined;
 		if (configKey) {
-			return transformRune(tree, runes[configKey], prefix, icons, tints, backgrounds, frames, runes, runeKeyMap, identityTransform, locale, warnings, parentRune);
+			return transformRune(
+				tree,
+				runes[configKey],
+				prefix,
+				icons,
+				tints,
+				backgrounds,
+				frames,
+				runes,
+				runeKeyMap,
+				identityTransform,
+				locale,
+				warnings,
+				parentRune,
+			);
 		}
 
 		// Detect checkbox markers on list items
 		if (tree.name === 'li') {
 			const checked = detectCheckboxMarker(tree);
 			if (checked) {
-				return { ...checked, children: checked.children.map(n => identityTransform(n, parentRune)) };
+				return {
+					...checked,
+					children: checked.children.map((n) => identityTransform(n, parentRune)),
+				};
 			}
 		}
 
 		// Recurse into children even for non-rune tags (pass parent context through)
-		return { ...tree, children: tree.children.map(n => identityTransform(n, parentRune)) };
+		return { ...tree, children: tree.children.map((n) => identityTransform(n, parentRune)) };
 	}
 
 	return (tree: RendererNode) => identityTransform(tree);
@@ -125,7 +179,7 @@ function parseFields(raw: unknown): Record<string, unknown> {
 	if (typeof raw !== 'string' || raw.length === 0) return {};
 	try {
 		const v = JSON.parse(raw);
-		return v && typeof v === 'object' && !Array.isArray(v) ? v as Record<string, unknown> : {};
+		return v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {};
 	} catch {
 		return {};
 	}
@@ -163,16 +217,16 @@ function resolveVariantConfig(
 		// Axes are validated to be declared modifiers at config load; stay
 		// defensive at runtime and skip an axis with no modifier source.
 		if (!mod) continue;
-		const value = mod.source === 'attribute'
-			? (tag.attributes[axis] ?? mod.default)
-			: readField(tag, fields, axis, mod.default);
+		const value =
+			mod.source === 'attribute'
+				? (tag.attributes[axis] ?? mod.default)
+				: readField(tag, fields, axis, mod.default);
 		if (value && byValue[value]) {
 			effective = mergeRuneConfig(effective, byValue[value]);
 		}
 	}
 	return effective;
 }
-
 
 /** Find the first descendant tag carrying `data-name === name`. */
 const findByName = findNodeByDataName;
@@ -252,7 +306,7 @@ function transformRune(
 	recurse: (node: RendererNode, parentRune?: string) => RendererNode,
 	locale: LocaleContext,
 	warnings: WarningCollector,
-	parentRune?: string
+	parentRune?: string,
 ): SerializedTag {
 	const block = `${prefix}-${config.block}`;
 	const dataRune = tag.attributes?.['data-rune'];
@@ -263,7 +317,9 @@ function transformRune(
 	if (config.requiresParent && config.requiresParent !== '*') {
 		const requiredRune = toKebabCase(config.requiresParent);
 		if (parentRune !== requiredRune) {
-			warnings.emit(requiresParentViolation(dataRune ?? config.block, config.requiresParent, parentRune));
+			warnings.emit(
+				requiresParentViolation(dataRune ?? config.block, config.requiresParent, parentRune),
+			);
 		}
 	}
 
@@ -290,7 +346,11 @@ function transformRune(
 	// (`density` reads `childDensity`).
 	const parentConfigKey = parentRune ? runeKeyMap.get(parentRune) : undefined;
 	const facetInput = {
-		tag, config, block, rune: dataRune ?? block, parentRune,
+		tag,
+		config,
+		block,
+		rune: dataRune ?? block,
+		parentRune,
 		parentConfig: parentConfigKey ? allRunes[parentConfigKey] : undefined,
 		fields,
 		theme: { tints, backgrounds, frames },
@@ -335,7 +395,7 @@ function transformRune(
 	// Nodes a facet relocated into a layer are dropped from the normal flow, or
 	// they would render twice (SPEC-104's bg sandbox guest).
 	let children = facetResolution.absorbs.length
-		? tag.children.filter(c => !facetResolution.absorbs.includes(c as SerializedTag))
+		? tag.children.filter((c) => !facetResolution.absorbs.includes(c as SerializedTag))
 		: tag.children;
 	if (config.autoLabel) {
 		children = applyAutoLabel(children, config.autoLabel);
@@ -364,35 +424,61 @@ function transformRune(
 		}
 
 		if (config.contentWrapper) {
-			const wrapped = makeTag(config.contentWrapper.tag,
-				{ 'data-name': config.contentWrapper.ref }, children);
+			const wrapped = makeTag(
+				config.contentWrapper.tag,
+				{ 'data-name': config.contentWrapper.ref },
+				children,
+			);
 			children = [...prepend, wrapped, ...append];
 		} else if (prepend.length || append.length) {
 			children = [...prepend, ...children, ...append];
 		}
 	} else if (config.contentWrapper) {
-		const wrapped = makeTag(config.contentWrapper.tag,
-			{ 'data-name': config.contentWrapper.ref }, children);
+		const wrapped = makeTag(
+			config.contentWrapper.tag,
+			{ 'data-name': config.contentWrapper.ref },
+			children,
+		);
 		children = [wrapped];
 	}
 
 	// 5b. Prepend facet-supplied layers (before content, after structural elements)
 	const beforeContent = facetResolution.layers
-		.filter(l => l.placement === 'before-content')
-		.map(l => l.element);
+		.filter((l) => l.placement === 'before-content')
+		.map((l) => l.element);
 	if (beforeContent.length) {
 		children = [...beforeContent, ...children];
 	}
 
 	// 6. Apply BEM element classes, section anatomy, and media slots to data-name children, then recurse once
-	let enhancedChildren = children.map(child => {
+	let enhancedChildren = children.map((child) => {
 		if (!isTag(child)) return recurse(child, dataRune);
-		return recurse(applyBemClasses(child, block, config.sections, config.mediaSlots, config.guestFit, readingValue, dropcapValue), dataRune);
+		return recurse(
+			applyBemClasses(
+				child,
+				block,
+				config.sections,
+				config.mediaSlots,
+				config.guestFit,
+				readingValue,
+				dropcapValue,
+			),
+			dataRune,
+		);
 	});
 
 	// 6b. Projection pass — declarative structural reshaping (hide → group → relocate)
 	if (config.projection) {
-		enhancedChildren = applyProjection(enhancedChildren, config.projection, block, config.sections, config.mediaSlots, config.guestFit, readingValue, dropcapValue);
+		enhancedChildren = applyProjection(
+			enhancedChildren,
+			config.projection,
+			block,
+			config.sections,
+			config.mediaSlots,
+			config.guestFit,
+			readingValue,
+			dropcapValue,
+		);
 	}
 
 	// 6d. Media-guest interaction posture (SPEC-090). A media guest is
@@ -437,10 +523,10 @@ function transformRune(
 	// Build a Set of kebab-cased modifier keys since data-field values are now kebab-case
 	// but config.modifiers keys are camelCase
 	const consumedModifierFields = config.modifiers
-		? new Set(Object.keys(config.modifiers).map(k => toKebabCase(k)))
+		? new Set(Object.keys(config.modifiers).map((k) => toKebabCase(k)))
 		: undefined;
 	const facetConsumed = new Set(facetResolution.consumes);
-	const filteredChildren = enhancedChildren.filter(child => {
+	const filteredChildren = enhancedChildren.filter((child) => {
 		if (!isTag(child as any)) return true;
 		const c = child as SerializedTag;
 		if (c.name !== 'meta' || !c.attributes['data-field']) return true;
@@ -485,9 +571,7 @@ function transformRune(
 	// `cover` flips the colour scheme on the `content` overlay here.
 	runPostAssemble(ORDERED_FACETS, facetInput, facetResolution, filteredChildren, warnings);
 	if (styleParts.length) {
-		inlineStyle = inlineStyle
-			? `${inlineStyle}; ${styleParts.join('; ')}`
-			: styleParts.join('; ');
+		inlineStyle = inlineStyle ? `${inlineStyle}; ${styleParts.join('; ')}` : styleParts.join('; ');
 	}
 
 	// Strip consumed universal attributes from output (they're expressed via data-* / BEM instead).
@@ -533,13 +617,17 @@ function transformRune(
 }
 
 /** Recursively apply autoLabel mapping to all descendant nodes. */
-function applyAutoLabel(children: RendererNode[], autoLabel: Record<string, string>): RendererNode[] {
-	return children.map(child => {
+function applyAutoLabel(
+	children: RendererNode[],
+	autoLabel: Record<string, string>,
+): RendererNode[] {
+	return children.map((child) => {
 		if (!isTag(child)) return child;
 		const label = autoLabel[child.name] ?? autoLabel[child.attributes?.['data-field']];
-		const labeled = label && !child.attributes['data-name']
-			? { ...child, attributes: { ...child.attributes, 'data-name': label } }
-			: child;
+		const labeled =
+			label && !child.attributes['data-name']
+				? { ...child, attributes: { ...child.attributes, 'data-name': label } }
+				: child;
 		if (labeled.children.length === 0) return labeled;
 		return { ...labeled, children: applyAutoLabel(labeled.children, autoLabel) };
 	});
@@ -547,13 +635,21 @@ function applyAutoLabel(children: RendererNode[], autoLabel: Record<string, stri
 
 /** Recursively apply BEM element classes, section anatomy, and media slots to data-name elements within a rune's children.
  *  Pure decoration — does not recurse into the transform pipeline. */
-function applyBemClasses(child: SerializedTag, block: string, sections?: Record<string, string>, mediaSlots?: Record<string, string>, guestFit?: string, reading?: string, dropcap?: boolean): SerializedTag {
+function applyBemClasses(
+	child: SerializedTag,
+	block: string,
+	sections?: Record<string, string>,
+	mediaSlots?: Record<string, string>,
+	guestFit?: string,
+	reading?: string,
+	dropcap?: boolean,
+): SerializedTag {
 	const dataName = child.attributes['data-name'];
 	if (dataName) {
 		const elementClass = `${block}__${dataName}`;
 		const childExistingClass = child.attributes.class || '';
 		// Recursively apply BEM to nested data-name children (e.g., icon/title inside header)
-		const nestedChildren = child.children.map(c => {
+		const nestedChildren = child.children.map((c) => {
 			if (!isTag(c)) return c;
 			return applyBemClasses(c, block, sections, mediaSlots, guestFit, reading, dropcap);
 		});
@@ -567,7 +663,9 @@ function applyBemClasses(child: SerializedTag, block: string, sections?: Record<
 				...(sectionRole ? { 'data-section': sectionRole } : {}),
 				// SPEC-108: refine the body section with its reading register, suppressed
 				// at the `ui` default (so unmarked bodies stay byte-identical).
-				...(sectionRole === 'body' && reading && reading !== DEFAULT_READING ? { 'data-reading': reading } : {}),
+				...(sectionRole === 'body' && reading && reading !== DEFAULT_READING
+					? { 'data-reading': reading }
+					: {}),
 				...(sectionRole === 'body' && dropcap ? { 'data-dropcap': 'true' } : {}),
 				...(mediaSlot ? { 'data-media': mediaSlot } : {}),
 				// The chrome/containment axis (SPEC-090 sibling) rides the media
@@ -585,8 +683,8 @@ const CHECKBOX_RE = /^\[(x|X|>|\s|-)\]\s*/;
 
 /** Map marker characters to data-checked values */
 const MARKER_TO_CHECKED: Record<string, string> = {
-	'x': 'checked',
-	'X': 'checked',
+	x: 'checked',
+	X: 'checked',
 	' ': 'unchecked',
 	'>': 'active',
 	'-': 'skipped',
@@ -673,8 +771,13 @@ function annotateSequence(children: RendererNode[], sequence: string, direction?
  *  extraction would silently fail and the dispatcher would emit a
  *  second preamble alongside the schema's, producing duplicate wrappers
  *  in the rendered DOM. */
-function extractByDataName(children: RendererNode[], name: string): { element: SerializedTag; rest: RendererNode[] } | null {
-	const idx = children.findIndex(c => isTag(c) && (c as SerializedTag).attributes?.['data-name'] === name);
+function extractByDataName(
+	children: RendererNode[],
+	name: string,
+): { element: SerializedTag; rest: RendererNode[] } | null {
+	const idx = children.findIndex(
+		(c) => isTag(c) && (c as SerializedTag).attributes?.['data-name'] === name,
+	);
 	if (idx !== -1) {
 		const element = children[idx] as SerializedTag;
 		const rest = [...children.slice(0, idx), ...children.slice(idx + 1)];
@@ -714,14 +817,18 @@ function findDeepByDataName(children: RendererNode[], name: string): SerializedT
 }
 
 /** Insert an element into a target element's children (found by data-name). */
-function insertIntoTarget(children: RendererNode[], targetName: string, element: RendererNode, position: 'prepend' | 'append'): RendererNode[] {
-	return children.map(child => {
+function insertIntoTarget(
+	children: RendererNode[],
+	targetName: string,
+	element: RendererNode,
+	position: 'prepend' | 'append',
+): RendererNode[] {
+	return children.map((child) => {
 		if (!isTag(child)) return child;
 		const tag = child as SerializedTag;
 		if (tag.attributes?.['data-name'] === targetName) {
-			const newChildren = position === 'prepend'
-				? [element, ...tag.children]
-				: [...tag.children, element];
+			const newChildren =
+				position === 'prepend' ? [element, ...tag.children] : [...tag.children, element];
 			return { ...tag, children: newChildren };
 		}
 		// Recurse into children to find nested targets
@@ -750,7 +857,7 @@ function applyProjection(
 	// Phase 1: Hide — remove elements matching hide entries
 	if (projection.hide) {
 		const hideSet = new Set(projection.hide);
-		result = result.filter(child => {
+		result = result.filter((child) => {
 			if (!isTag(child)) return true;
 			const name = (child as SerializedTag).attributes?.['data-name'];
 			return !name || !hideSet.has(name);
@@ -795,7 +902,12 @@ function applyProjection(
 			// Try to find target by data-name in the tree
 			const targetExists = findDeepByDataName(result, relDef.into);
 			if (targetExists) {
-				result = insertIntoTarget(result, relDef.into, extracted.element, relDef.position ?? 'append');
+				result = insertIntoTarget(
+					result,
+					relDef.into,
+					extracted.element,
+					relDef.position ?? 'append',
+				);
 			}
 			// If target not found, element is dropped (no-op for invalid references)
 		}
@@ -847,7 +959,7 @@ function buildStructureElement(
 ): SerializedTag | null {
 	// Conditional injection
 	if (entry.condition && !modifierValues[entry.condition]) return null;
-	if (entry.conditionAny && !entry.conditionAny.some(k => modifierValues[k])) return null;
+	if (entry.conditionAny && !entry.conditionAny.some((k) => modifierValues[k])) return null;
 
 	const dataName = entry.ref ?? name;
 
@@ -868,10 +980,24 @@ function buildStructureElement(
 		for (let i = 0; i < count; i++) {
 			const isFilled = i < filled;
 			if (isFilled && entry.repeat.filledElement) {
-				const el = buildStructureElement(entry.repeat.filledElement, entry.repeat.filledElement.ref ?? '', modifierValues, icons, locale, config);
+				const el = buildStructureElement(
+					entry.repeat.filledElement,
+					entry.repeat.filledElement.ref ?? '',
+					modifierValues,
+					icons,
+					locale,
+					config,
+				);
 				if (el) children.push(el);
 			} else {
-				const el = buildStructureElement(entry.repeat.element, entry.repeat.element.ref ?? '', modifierValues, icons, locale, config);
+				const el = buildStructureElement(
+					entry.repeat.element,
+					entry.repeat.element.ref ?? '',
+					modifierValues,
+					icons,
+					locale,
+					config,
+				);
 				if (el) {
 					if (entry.repeat.filled) {
 						// Add data-filled attribute when filled tracking is active
@@ -934,7 +1060,9 @@ function buildStructureElement(
 		if (entry.label) {
 			const labelAttrs: Record<string, string> = { 'data-meta-label': '' };
 			if (entry.labelHidden) labelAttrs['data-meta-label-hidden'] = '';
-			const labelText = localizedLabel(locale, config, entry.ref ?? name, entry.label, entry.i18nKey) ?? entry.label;
+			const labelText =
+				localizedLabel(locale, config, entry.ref ?? name, entry.label, entry.i18nKey) ??
+				entry.label;
 			const labelEl = makeTag('span', labelAttrs, [labelText]);
 			let valueText = text;
 			if (entry.textPrefix) valueText = entry.textPrefix + valueText;
@@ -954,7 +1082,14 @@ function buildStructureElement(
 			if (typeof child === 'string') {
 				elementChildren.push(child);
 			} else {
-				const built = buildStructureElement(child, child.ref ?? '', modifierValues, icons, locale, config);
+				const built = buildStructureElement(
+					child,
+					child.ref ?? '',
+					modifierValues,
+					icons,
+					locale,
+					config,
+				);
 				if (built) elementChildren.push(built);
 			}
 		}
@@ -1000,9 +1135,7 @@ function resolveField(
 	}
 	const href = field.href ? (modifierValues[field.href] ?? '') : undefined;
 	if (field.href && !href) return null;
-	const ratingTotal = field.rating
-		? (modifierValues[field.rating.total ?? ''] || '5')
-		: undefined;
+	const ratingTotal = field.rating ? modifierValues[field.rating.total ?? ''] || '5' : undefined;
 	return { name, value, field, href, ratingTotal };
 }
 
@@ -1030,7 +1163,8 @@ function buildChip(
 	const displayValue = localizedEnumValue(locale, config, value);
 
 	if (options.includeLabel && field.label) {
-		const label = localizedLabel(locale, config, resolved.name, field.label, field.i18nKey) ?? field.label;
+		const label =
+			localizedLabel(locale, config, resolved.name, field.label, field.i18nKey) ?? field.label;
 		return makeTag(tag, tagAttrs, [
 			makeTag('span', { 'data-meta-label': '' }, [label]),
 			makeTag('span', { 'data-meta-value': '' }, [displayValue]),
@@ -1043,7 +1177,11 @@ function buildChip(
  *  `data-meta-type`, NO `.rf-badge` class (so no chip geometry). Used by
  *  the def-list's `<dd>` and split's left slot when the field isn't
  *  sentiment-mapped. */
-function buildPlainValue(resolved: ResolvedField, locale?: LocaleContext, config?: RuneConfig): SerializedTag {
+function buildPlainValue(
+	resolved: ResolvedField,
+	locale?: LocaleContext,
+	config?: RuneConfig,
+): SerializedTag {
 	const { field, value } = resolved;
 	const attrs: Record<string, string> = {};
 	if (field.metaType) attrs['data-meta-type'] = field.metaType;
@@ -1058,7 +1196,10 @@ function buildPlainValue(resolved: ResolvedField, locale?: LocaleContext, config
 function splitFieldValue(resolved: ResolvedField): string[] {
 	const sep = resolved.field.splitOn;
 	if (!sep || !resolved.value) return [resolved.value].filter(Boolean);
-	return resolved.value.split(sep).map(s => s.trim()).filter(Boolean);
+	return resolved.value
+		.split(sep)
+		.map((s) => s.trim())
+		.filter(Boolean);
 }
 
 // ─── SPEC-080: block-and-layout assembly ──────────────────────────────────
@@ -1080,12 +1221,20 @@ interface BarItem {
 
 /** Build a link value — `<a href>` carrying the field's label (or value) as
  *  text, bare (no chip). `data-meta-type="link"` for theme typography. */
-function buildLinkValue(f: ResolvedField, locale?: LocaleContext, config?: RuneConfig): SerializedTag {
+function buildLinkValue(
+	f: ResolvedField,
+	locale?: LocaleContext,
+	config?: RuneConfig,
+): SerializedTag {
 	const text = localizedLabel(locale, config, f.name, f.field.label, f.field.i18nKey) ?? f.value;
-	return makeTag('a', {
-		href: f.href ?? '',
-		'data-meta-type': 'link',
-	}, [text]);
+	return makeTag(
+		'a',
+		{
+			href: f.href ?? '',
+			'data-meta-type': 'link',
+		},
+		[text],
+	);
 }
 
 /** Build a rating widget — `total` mark elements, the first `value` filled.
@@ -1103,14 +1252,19 @@ function buildRatingValue(f: ResolvedField): SerializedTag {
 /** Build an icon-decorated value — a leading icon element (glyph selected
  *  by the field's value via `data-icon-group` + `data-icon`) followed by the
  *  value text. Bare (no chip); CSS draws the glyph via `mask-image`. */
-function buildIconValue(f: ResolvedField, locale?: LocaleContext, config?: RuneConfig): SerializedTag {
+function buildIconValue(
+	f: ResolvedField,
+	locale?: LocaleContext,
+	config?: RuneConfig,
+): SerializedTag {
 	const group = f.field.icon!.group;
 	const attrs: Record<string, string> = {};
 	if (f.field.metaType) attrs['data-meta-type'] = f.field.metaType;
 	// `data-icon` keeps the raw value (glyph selector); the visible text uses the
 	// label if present, else the enum-localized value (Zone 6, e.g. hint titles).
-	const text = localizedLabel(locale, config, f.name, f.field.label, f.field.i18nKey)
-		?? localizedEnumValue(locale, config, f.value);
+	const text =
+		localizedLabel(locale, config, f.name, f.field.label, f.field.i18nKey) ??
+		localizedEnumValue(locale, config, f.value);
 	return makeTag(f.field.tag ?? 'span', attrs, [
 		makeTag('span', { 'data-icon-group': group, 'data-icon': f.value }, []),
 		makeTag('span', { 'data-meta-value': '' }, [text]),
@@ -1149,9 +1303,12 @@ function renderBarLayout(
 
 	const children: RendererNode[] = [];
 	for (const { resolved, align } of items) {
-		const els: SerializedTag[] = resolved.field.splitOn && resolved.value
-			? splitFieldValue(resolved).map(part => renderBlockValue({ ...resolved, value: part }, false, locale, config))
-			: [renderBlockValue(resolved, false, locale, config)];
+		const els: SerializedTag[] =
+			resolved.field.splitOn && resolved.value
+				? splitFieldValue(resolved).map((part) =>
+						renderBlockValue({ ...resolved, value: part }, false, locale, config),
+					)
+				: [renderBlockValue(resolved, false, locale, config)];
 		if (align === 'end' && els.length > 0) {
 			els[0] = { ...els[0], attributes: { ...els[0].attributes, 'data-align': 'end' } };
 		}
@@ -1178,12 +1335,13 @@ function renderDefListBlock(
 ): SerializedTag | null {
 	if (fields.length === 0) return null;
 
-	const rows: RendererNode[] = fields.map(f => {
-		const dtText = localizedLabel(locale, config, f.name, f.field.label ?? f.name, f.field.i18nKey) ?? f.name;
+	const rows: RendererNode[] = fields.map((f) => {
+		const dtText =
+			localizedLabel(locale, config, f.name, f.field.label ?? f.name, f.field.i18nKey) ?? f.name;
 		const dt = makeTag('dt', { 'data-meta-label': '' }, [dtText]);
 		let dd: SerializedTag;
 		if (f.field.splitOn && f.value) {
-			const items = splitFieldValue(f).map(part =>
+			const items = splitFieldValue(f).map((part) =>
 				renderBlockValue({ ...f, value: part }, false, locale, config),
 			);
 			dd = makeTag('dd', { 'data-multi-value': '' }, items);
@@ -1192,19 +1350,24 @@ function renderDefListBlock(
 		} else {
 			const ddAttrs: Record<string, string> = {};
 			if (f.field.metaType) ddAttrs['data-meta-type'] = f.field.metaType;
-			const text = f.field.tag === 'time' && f.value
-				? makeTag('time', { datetime: f.value }, [f.value])
-				: f.value;
+			const text =
+				f.field.tag === 'time' && f.value
+					? makeTag('time', { datetime: f.value }, [f.value])
+					: f.value;
 			dd = makeTag('dd', ddAttrs, [text]);
 		}
 		return makeTag('div', { 'data-name': 'row', 'data-field': f.name }, [dt, dd]);
 	});
 
-	return makeTag('dl', {
-		'data-name': blockName,
-		'data-zone': blockName,
-		'data-zone-layout': 'definition-list',
-	}, rows);
+	return makeTag(
+		'dl',
+		{
+			'data-name': blockName,
+			'data-zone': blockName,
+			'data-zone-layout': 'definition-list',
+		},
+		rows,
+	);
 }
 
 /** SPEC-080 main assembler — projects named metadata blocks and places them,
@@ -1234,7 +1397,12 @@ function assembleWithBlocks(
 		}
 		if (items.length === 0) return null;
 		if (def.layout === 'bar') return renderBarLayout(name, items, def.wrap ?? true, locale, config);
-		return renderDefListBlock(name, items.map(i => i.resolved), locale, config);
+		return renderDefListBlock(
+			name,
+			items.map((i) => i.resolved),
+			locale,
+			config,
+		);
 	};
 
 	// No `layout` → render the transform tree verbatim (no projection).
@@ -1249,8 +1417,8 @@ function assembleWithBlocks(
 		const byName = mapDataNames(contentChildren);
 		const consumed = new Set<string>();
 		const placed = placeNames(rootOrder, byName, consumed, ctx, ['root']);
-		const rest = contentChildren.filter(c =>
-			!(isTag(c) && c.attributes['data-name'] && consumed.has(c.attributes['data-name'])),
+		const rest = contentChildren.filter(
+			(c) => !(isTag(c) && c.attributes['data-name'] && consumed.has(c.attributes['data-name'])),
 		);
 		return [...placed, ...rest];
 	}
@@ -1260,12 +1428,12 @@ function assembleWithBlocks(
 	let result = contentChildren;
 	for (const [key, entry] of Object.entries(layout)) {
 		const childOrder = Array.isArray(entry) ? entry : entry.children;
-		result = updateContainerByName(result, key, children => {
+		result = updateContainerByName(result, key, (children) => {
 			const byName = mapDataNames(children);
 			const consumed = new Set<string>();
 			const placed = placeNames(childOrder, byName, consumed, ctx, [key]);
-			const rest = children.filter(c =>
-				!(isTag(c) && c.attributes['data-name'] && consumed.has(c.attributes['data-name'])),
+			const rest = children.filter(
+				(c) => !(isTag(c) && c.attributes['data-name'] && consumed.has(c.attributes['data-name'])),
 			);
 			return [...placed, ...rest];
 		});
@@ -1291,14 +1459,27 @@ function layoutCycle(name: string): FacetWarning {
  *  their parent (kebab `data-rune`). A misplacement of these is an *error*; any
  *  other `requiresParent` violation is a *warning* (renders, but off-contract). */
 const STRUCTURAL_CHILDREN = new Set<string>([
-	'accordion-item', 'tab', 'tab-panel', 'breadcrumb-item', 'juxtapose-panel',
-	'bento-cell', 'definition', 'step', 'tier', 'map-pin',
-	'itinerary-day', 'itinerary-stop',
+	'accordion-item',
+	'tab',
+	'tab-panel',
+	'breadcrumb-item',
+	'juxtapose-panel',
+	'bento-cell',
+	'definition',
+	'step',
+	'tier',
+	'map-pin',
+	'itinerary-day',
+	'itinerary-stop',
 ]);
 /** Report a `requiresParent` violation once per (rune, actual-parent). A
  *  structural child misplaced is an error; any other violation renders but is
  *  off-contract, so it warns. */
-function requiresParentViolation(rune: string, required: string, actual: string | undefined): FacetWarning {
+function requiresParentViolation(
+	rune: string,
+	required: string,
+	actual: string | undefined,
+): FacetWarning {
 	const where = actual ? `nested directly in \`${actual}\`` : 'at the top level';
 	return {
 		code: 'requires-parent',
@@ -1337,7 +1518,10 @@ function placeNames(
 	const out: RendererNode[] = [];
 	for (const name of order) {
 		if (consumed.has(name)) continue;
-		if (ancestors.includes(name)) { ctx.warnings.emit(layoutCycle(name)); continue; }
+		if (ancestors.includes(name)) {
+			ctx.warnings.emit(layoutCycle(name));
+			continue;
+		}
 
 		const entry = ctx.layout[name];
 
@@ -1357,9 +1541,17 @@ function placeNames(
 				const childOrder = Array.isArray(entry) ? entry : entry.children;
 				const innerByName = mapDataNames(existing.children);
 				const innerConsumed = new Set<string>();
-				const innerPlaced = placeNames(childOrder, innerByName, innerConsumed, ctx, [...ancestors, name]);
-				const innerRest = existing.children.filter(c =>
-					!(isTag(c) && c.attributes['data-name'] && innerConsumed.has(c.attributes['data-name'])),
+				const innerPlaced = placeNames(childOrder, innerByName, innerConsumed, ctx, [
+					...ancestors,
+					name,
+				]);
+				const innerRest = existing.children.filter(
+					(c) =>
+						!(
+							isTag(c) &&
+							c.attributes['data-name'] &&
+							innerConsumed.has(c.attributes['data-name'])
+						),
 				);
 				out.push({ ...existing, children: [...innerPlaced, ...innerRest] });
 				continue;
@@ -1369,11 +1561,19 @@ function placeNames(
 
 		// 3. projected block
 		const block = ctx.renderBlock(name);
-		if (block) { consumed.add(name); out.push(block); continue; }
+		if (block) {
+			consumed.add(name);
+			out.push(block);
+			continue;
+		}
 
 		// 4. transform node by data-name
 		const node = byName.get(name);
-		if (node) { consumed.add(name); out.push(node); continue; }
+		if (node) {
+			consumed.add(name);
+			out.push(node);
+			continue;
+		}
 
 		// 5. unresolved → skip
 	}
@@ -1389,7 +1589,7 @@ function updateContainerByName(
 ): RendererNode[] {
 	let done = false;
 	const walk = (nodes: RendererNode[]): RendererNode[] =>
-		nodes.map(n => {
+		nodes.map((n) => {
 			if (done || !isTag(n)) return n;
 			if (n.attributes['data-name'] === name) {
 				done = true;

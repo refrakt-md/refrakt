@@ -13,7 +13,10 @@ function find(node: unknown, pred: (t: InstanceType<typeof Markdoc.Tag>) => bool
 		if (Array.isArray(n)) return n.forEach(walk);
 		if (!Markdoc.Tag.isTag(n as never)) return;
 		const t = n as InstanceType<typeof Markdoc.Tag>;
-		if (pred(t)) { found = t; return; }
+		if (pred(t)) {
+			found = t;
+			return;
+		}
 		(t.children ?? []).forEach(walk);
 	};
 	walk(node);
@@ -43,7 +46,9 @@ describe('card rune', () => {
 	});
 
 	it('3 zones → media + body + footer', () => {
-		const out = render('{% card %}\n![a](/i.png)\n\n---\n\n### T\nBody.\n\n---\n\nJan 15 · tag\n{% /card %}');
+		const out = render(
+			'{% card %}\n![a](/i.png)\n\n---\n\n### T\nBody.\n\n---\n\nJan 15 · tag\n{% /card %}',
+		);
 		expect(part(out, 'media')).toBeDefined();
 		expect(part(out, 'body')).toBeDefined();
 		const footer = part(out, 'footer');
@@ -70,7 +75,9 @@ describe('card rune', () => {
 	});
 
 	it('leading paragraph before a heading becomes an eyebrow', () => {
-		const out = render('{% card %}\nBrunch classic\n\n### Tequila Sunrise\nBody text.\n{% /card %}');
+		const out = render(
+			'{% card %}\nBrunch classic\n\n### Tequila Sunrise\nBody text.\n{% /card %}',
+		);
 		const eyebrow = part(out, 'eyebrow');
 		expect(eyebrow).toBeDefined();
 		expect(eyebrow!.name).toBe('p');

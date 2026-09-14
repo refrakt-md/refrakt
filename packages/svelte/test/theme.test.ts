@@ -7,12 +7,14 @@ describe('isLayoutConfig', () => {
 	});
 
 	it('returns true for a full LayoutConfig with all fields', () => {
-		expect(isLayoutConfig({
-			block: 'default',
-			slots: { main: { tag: 'main', source: 'content' } },
-			chrome: {},
-			behaviors: ['mobile-menu'],
-		})).toBe(true);
+		expect(
+			isLayoutConfig({
+				block: 'default',
+				slots: { main: { tag: 'main', source: 'content' } },
+				chrome: {},
+				behaviors: ['mobile-menu'],
+			}),
+		).toBe(true);
 	});
 
 	it('returns false for a function (Svelte component)', () => {
