@@ -1,4 +1,4 @@
-{% spec id="SPEC-126" status="accepted" tags="docs, config, schema, tooling, dx" %}
+{% spec id="SPEC-126" status="shipped" tags="docs, config, schema, tooling, dx" released-in="v0.33.0" %}
 
 # Generate the configuration and frontmatter references from their schemas
 

@@ -1,4 +1,4 @@
-{% spec id="SPEC-129" status="draft" tags="runes, authoring, preprocess, dx" %}
+{% spec id="SPEC-129" status="shipped" tags="runes, authoring, preprocess, dx" released-in="v0.33.0" %}
 
 # A pre-transform include rune
 

@@ -1,4 +1,4 @@
-{% spec id="SPEC-127" status="accepted" tags="runes, data, authoring, dx" %}
+{% spec id="SPEC-127" status="shipped" tags="runes, data, authoring, dx" released-in="v0.33.0" %}
 
 # Per-row templates for the data rune
 
