@@ -15,9 +15,10 @@ const typesSource = readFileSync(resolve(here, '..', 'src', 'frontmatter.ts'), '
  *
  * Reads the real declarations rather than mirroring them in a literal, the same
  * approach `config-schema.test.ts` takes — which is what caught two config
- * discrepancies nobody had spotted by hand. Only top-level members at one tab
+ * discrepancies nobody had spotted by hand. Only top-level members at one level
  * of indentation are collected; the index signature is skipped by the pattern,
- * since it is not a named field.
+ * since it is not a named field. The pattern accepts either indent style so it
+ * does not silently match nothing if the source file is reformatted.
  */
 function declaredProperties(): string[] {
 	const start = typesSource.indexOf('export interface Frontmatter {');
@@ -27,7 +28,7 @@ function declaredProperties(): string[] {
 	return typesSource
 		.slice(start, end)
 		.split('\n')
-		.map((line) => line.match(/^ {2}(?:'([^']+)'|([A-Za-z_$][\w$]*))\??\s*:/))
+		.map((line) => line.match(/^(?:\t| {2})(?:'([^']+)'|([A-Za-z_$][\w$]*))\??\s*:/))
 		.filter((m): m is RegExpMatchArray => m !== null)
 		.map((m) => m[1] ?? m[2]);
 }

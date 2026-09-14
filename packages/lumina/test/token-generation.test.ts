@@ -14,7 +14,14 @@ function extractDeclarations(css: string): Map<string, string> {
 	const out = new Map<string, string>();
 	for (const m of css.matchAll(/(--[a-zA-Z0-9_-]+):\s*([^;\n]+);/g)) {
 		const name = m[1].trim();
-		const value = m[2].trim();
+		// Normalise internal spacing before comparing. tokens/*.css is generator
+		// output (excluded from Biome, so the two don't fight over it), while the
+		// files it gets compared against are Biome-formatted — `rgba(0,0,0,0.3)`
+		// and `rgba(0, 0, 0, 0.3)` are one value written by two different tools.
+		const value = m[2]
+			.trim()
+			.replace(/\s+/g, ' ')
+			.replace(/\s*,\s*/g, ',');
 		if (!out.has(name)) out.set(name, value);
 	}
 	return out;
