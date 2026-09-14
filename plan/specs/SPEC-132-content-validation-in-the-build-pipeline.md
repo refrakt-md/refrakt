@@ -1,4 +1,4 @@
-{% spec id="SPEC-132" status="draft" tags="validation, markdoc, pipeline, runes, dx" %}
+{% spec id="SPEC-132" status="accepted" tags="validation, markdoc, pipeline, runes, dx" %}
 
 # Content validation in the build pipeline
 
