@@ -260,6 +260,48 @@ author who wants a different type says so in *content* — `schema="none"`,
 theme making that claim on their behalf, for every page, is the thing being
 ruled out.
 
+### Key direction: the rune's name, not the schema property
+
+The table is keyed by the rune's own `data-name` and valued by the schema.org
+property:
+
+```ts
+properties: { 'author-name': 'name', 'author-role': 'jobTitle' }
+```
+
+This is deliberate, and it is the **opposite** of the imperative `schema:` map
+it replaces (`schema: { reviewBody: quoteTag }` — schema property as key). The
+flip is worth stating because anyone who has read the 22 existing maps will read
+the new form as backwards.
+
+It goes this way because every declarative join table in the codebase does:
+
+| Table | Key | Value |
+|-------|-----|-------|
+| `sections` | `headline` | `title` |
+| `mediaSlots` | `media` | `cover` |
+| `editHints` | `headline` | `inline` |
+| `autoLabel` | `summary` | `summary` |
+| `contextModifiers` | `parent-rune` | `suffix` |
+
+All keyed by what the rune *has*, valued by what it *means* — which is what
+{% ref "SPEC-125" /%} means by "join tables the rune declares about itself". The
+imperative `schema:` map is the odd one out, and it is the one going away.
+
+One invariant reinforces it: {% ref "ADR-008" /%} gives `properties` and `refs` a
+single flat namespace with uniqueness enforced (`createComponentRenderable`
+throws on a collision), so these keys are *guaranteed* unique. Schema property
+names carry no such guarantee, and keying by them would forbid two sources
+mapping to one property — `recipeIngredient` drawn from two places, say. Neither
+multiplicity is needed today, but only one direction has the uniqueness already
+enforced.
+
+The cost is real and is accepted: curating a table ("is `PodcastEpisode` right
+for `PodcastSeries`?") means scanning schema.org names, which now sit in the
+value column. The mitigation is that `inspect` and `reference` render the
+*resolved* table, and can order it by schema property regardless of how it was
+authored — the review view need not match the authoring view.
+
 ## What the table has to express
 
 Surveyed across all 30 emitting runes — not just the 22 `schema:` maps — they
