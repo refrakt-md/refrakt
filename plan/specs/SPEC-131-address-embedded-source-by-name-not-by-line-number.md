@@ -94,6 +94,12 @@ top-level exported symbol in `packages/*/src/**/*.ts` and `plugins/*/src/*.ts`
 comments were excluded on both sides so the comparison measures the extent
 algorithm rather than a comment-absorption preference.
 
+**What the corpus does not cover.** Every symbol in it is a *top-level* TypeScript
+declaration, so two things went unexercised and neither is disproven by the
+numbers below: anchors nested inside an enclosing block (which is what makes
+depth-relative counting necessary — see the note under the algorithm) and any
+file whose structure is not carried by braces (D11).
+
 | Outcome | Count | Rate |
 |---|---|---|
 | Span byte-identical to the compiler | 1,297 | **95.37%** |
@@ -122,6 +128,11 @@ correct span wrongly rejected.
 This is what makes the approach viable, and it is the part to protect in
 review. The self-check is load-bearing, not a nicety.
 
+Note the scope of that argument, though: it holds because the extent and the
+imbalance share a cause, which is only true when the extent was *derived from*
+delimiter counting. It does not transfer to extents found some other way —
+D2.
+
 ## Proposal
 
 ### One resolver, three consumers
@@ -149,7 +160,8 @@ the resolution in the shared reader rather than in either pipeline.
 {% snippet path="packages/types/src/config.ts" symbol="SiteConfig" /%}
 {% snippet path="packages/lumina/styles/runes/hint.css" match="^\.rf-hint\s*\{" /%}
 {% snippet path="scripts/deploy.py" match="^def build" extent="dedent" /%}
-{% snippet path="README.md" match="^## Install" until="^## " /%}
+{% snippet path="README.md" match="^## Install" extent="section" /%}
+{% snippet path="site/content/runes/tabs.md" match="^\{% tabs" extent="paired" /%}
 {% file-ref path="packages/content/src/pipeline.ts" symbol="runPipeline" preview="drawer" /%}
 ```
 
@@ -157,8 +169,9 @@ the resolution in the shared reader rather than in either pipeline.
 |---|---|
 | `symbol` | Named declaration. Builds an anchor regex from the keyword table. |
 | `match` | Raw regex anchor. The general form; `symbol` is sugar over it. |
-| `until` | Regex ending the extent. Overrides `extent`. |
-| `extent` | `auto` (delimiter balance, default) or `dedent` (indentation). |
+| `until` | Regex ending the extent, **exclusive** — the matching line is not included. Overrides `extent`. |
+| `through` | As `until`, but **inclusive** of the matching line. D12. |
+| `extent` | `auto` (delimiter balance, default), `dedent` (indentation), `section` (next sibling at the anchor's own level), or `paired` (matching close token). D11. |
 | `doc` | Include the preceding doc comment. Defaults to on for `symbol`, off for `match` — D9. |
 | `lines` | Unchanged. Mutually exclusive with `symbol` / `match`. |
 
@@ -185,18 +198,30 @@ For `match=`, the author's regex, applied per line. No match → refuse, naming
 the symbol and the file.
 
 **3. Extent (`auto`).** Scan forward over the masked source tracking delimiter
-depth. Three rules, each of which cost an iteration of the prototype to find:
+depth. **Depth is measured relative to the anchor line, not to the start of the
+file** — see the note below. Three rules, each of which cost an iteration of the
+prototype to find:
 
-- **Only `;` at depth 0, or `}` closing a depth-0 brace block, terminates.**
-  Parens and brackets nest but never end a statement. Without this, a
-  multi-line parameter list ends the extent at its `)` — the single largest
-  failure class, worth 38 percentage points on its own.
-- **A brace-less statement ends at the first depth-0 line that is not a
-  continuation** — looking ahead past blank and comment lines, and treating a
-  next line starting `| & . ? : , ) ] } => extends` as a continuation. Without
-  the lookahead, a union type with a comment between members ends early.
+- **Only `;` at anchor depth, or `}` closing a brace block opened at anchor
+  depth, terminates.** Parens and brackets nest but never end a statement.
+  Without this, a multi-line parameter list ends the extent at its `)` — the
+  single largest failure class, worth 38 percentage points on its own.
+- **A brace-less statement ends at the first line back at anchor depth that is
+  not a continuation** — looking ahead past blank and comment lines, and
+  treating a next line starting `| & . ? : , ) ] } => extends` as a
+  continuation. Without the lookahead, a union type with a comment between
+  members ends early.
 - **`type` aliases never terminate on a brace.** A type-level object literal
   (`T extends object ? { … } : T`) is not a body.
+
+> **Relative, not absolute.** The prototype counted from file start, which is
+> indistinguishable from anchor-relative for the top-level exported symbols it
+> was measured on — every one of them sits at depth 0. It is wrong for any
+> nested anchor: `match='"scripts"'` in `package.json` sits at depth 1 under the
+> root object, so no `}` ever closes a depth-0 block and the extent runs to EOF.
+> The same applies to a method inside a class, a rule inside `@media`, and a job
+> under `jobs:`. Record the anchor's depth on entry and terminate on return to
+> it.
 
 **4. Extent (`dedent`).** Consume blank lines and lines indented deeper than
 the anchor. For Python, YAML, and anything else where indentation carries the
@@ -205,11 +230,27 @@ failed there — a multi-line parameter list returns to the anchor's indent leve
 before the body opens, so it truncated roughly one TypeScript declaration in
 eight. It works well as a declared strategy; it does not work as a default.
 
-**5. Self-check.** Re-mask the extracted slice and verify `{}`, `()`, and `[]`
-all balance. Unbalanced → refuse. This is what converts the residual error rate
-from silent-wrong into loud-fail.
+**5. Extent (`section`).** Consume forward until the next sibling at the
+anchor's own level. The terminator is *derived from the anchor line* rather than
+supplied by the author: a `###` heading ends at the next `^#{1,3}\s`, a
+`[tool.poetry]` table ends at the next `^\[`, a banner comment ends at the next
+banner of the same shape. The level-detecting patterns come from the language
+table (D10), and a format absent from it falls back to `until` / `through`.
 
-**6. Head.** Two separate things attach above the anchor line, and they are not
+**6. Extent (`paired`).** Balance a matching *token* pair rather than a
+delimiter: `{% tabs %}` / `{% /tabs %}`, `<section>` / `</section>`, `{#if}` /
+`{/if}`. The pairs come from the language table; nesting of the same token is
+counted, so an inner `{% tab %}` does not close the outer `{% tabs %}`. For
+symmetric fences (```` ``` ````) the first recurrence closes, because there is
+nothing to nest.
+
+**7. Self-check.** For `auto` only: re-mask the extracted slice and verify `{}`,
+`()`, and `[]` all balance. Unbalanced → refuse. This is what converts the
+residual error rate from silent-wrong into loud-fail. `paired` self-checks on
+its own token stack; `dedent`, `section`, `until` and `through` do not
+delimiter-balance at all — D2.
+
+**8. Head.** Two separate things attach above the anchor line, and they are not
 the same kind of thing:
 
 - **Annotations** — `@Component(…)`, `#[derive(Debug)]`, `@dataclass`. These
@@ -236,6 +277,12 @@ knowledge. That is the evidence for `match=` being the real contract and
 `symbol=` being sugar: the engine never learns a language, it learns
 delimiters.
 
+**But note what that demonstrates and what it does not.** CSS is
+brace-balanced, so the CSS result proves the engine is *delimiter*-agnostic,
+not *format*-agnostic. The formats that carry no braces at all — Markdown,
+YAML, TOML, and the tag-paired family — are the ones D11 exists to reach, and
+a Markdown or Svelte fixture is the test that would actually prove the claim.
+
 ## Design decisions
 
 **D1 — A regex anchor and a balanced extent, not a parser.** See the table
@@ -245,33 +292,56 @@ useless on the CSS, Markdown, JSON, and shell that the docs also quote. If a
 future consumer needs true type-aware resolution (overload sets, declaration
 merging, re-exports), that is a different feature with a different spec.
 
-**D2 — The self-check is required, not optional.** It is the difference between
-a 4.63% error rate that fails loudly and a 4.63% error rate that renders wrong
-code. Never make it opt-out. If a future change makes the masker smarter, the
-self-check gets *more* accurate, not less necessary.
+**D2 — The self-check is required for `auto`, and inert everywhere else.** For
+`auto` it is the difference between a 4.63% error rate that fails loudly and a
+4.63% error rate that renders wrong code. Never make it opt-out *there*, and if
+a future change makes the masker smarter the self-check gets more accurate, not
+less necessary.
+
+It must not be applied globally, because the argument for it does not
+generalise. "Zero false alarms is a structural property" holds precisely
+*because* the same lexer defect produces both the wrong extent and the
+imbalance — which is only true when the extent was **derived from** delimiter
+counting. A `section` extent over Markdown prose did not come from delimiter
+counting, and prose is full of `:)` and `(in)famous` and half-quoted brackets.
+Balance-checking it would turn D4's escape hatch into a false-alarm generator
+and, by {% ref "SPEC-126" /%} D3's reasoning, get the guard disabled for the
+case that needs it. Scope the check to the strategy that earns it.
 
 **D3 — `match=` is the contract; `symbol=` is sugar over it.** The keyword
 table is a convenience for the languages we ship docs in, and it will always be
 incomplete. Ship both from day one so an unsupported language is a slightly
 more verbose invocation rather than a dead end.
 
-**D4 — Never a dead end.** `until=` and `lines=` stay, permanently and
-documented. 4.56% of symbols in this repo cannot be resolved by the anchor
+**D4 — Never a dead end.** `until=` / `through=` and `lines=` stay, permanently
+and documented. 4.56% of symbols in this repo cannot be resolved by the anchor
 engine, and an author who hits one needs a way through that is not "wait for a
 fix". Every refusal message must name the fallback:
 
 ```
 snippet error: could not resolve symbol "renderFullPage" in
 packages/html/src/page-shell.ts — the extracted slice is unbalanced, so the
-extent is wrong. Use `until="^}"` to end the extent explicitly, or `lines=`
-to address by line range.
+extent is wrong. Use `through="^}"` to end the extent on a closing brace, or
+`lines=` to address by line range.
 ```
 
-**D5 — Extent strategy is declared, never sniffed from the file extension.**
+The example says `through`, not `until`, deliberately: the brace line belongs
+in the slice. D12.
+
+**D5 — Look up lexical facts by language; never infer strategy from it.**
 Guessing `dedent` for `.py` and `auto` for `.ts` would be right most of the
 time, and *silently* wrong the rest — reintroducing the failure mode this spec
-exists to remove. Default `auto`, and make the author say `dedent` when they
-mean it.
+exists to remove. Default `auto`, and make the author say `dedent`, `section`
+or `paired` when they mean it.
+
+The rule is about **strategy**, not about the language table as such — D10
+already requires a per-language table for comment and annotation prefixes, and
+D11 adds heading shapes and token pairs to it. The distinction that matters:
+*what a comment looks like in CSS* is a lexical fact of the format with one
+correct answer, and a missing entry degrades to no head absorption rather than
+a guess. *Which extent the author wanted* is a choice only the author holds,
+and a wrong guess renders plausible wrong code. Table lookups for the first;
+never for the second.
 
 **D6 — Failures follow snippet's existing in-band error path.** Resolution
 failures raise `SnippetSandboxError`, which `resolveSnippetToFence` already
@@ -340,6 +410,49 @@ precisely the failure class this spec exists to remove. The prefixes belong in
 the same per-language table that supplies `symbol=`'s keywords, and a language
 absent from the table gets no head absorption rather than a guessed one.
 
+**D11 — There are four structural families, not two.** `symbol` versus `match`
+is the *anchor* axis and D3 settles it: nothing non-code needs a new anchor,
+because `match="^## Install"` names a Markdown section perfectly well. The gap
+is on the *extent* axis, where `auto` and `dedent` cover two families and the
+other two are where every non-code target lives:
+
+| Family | Terminator | Examples | Strategy |
+|---|---|---|---|
+| Balanced delimiters | matching `}` | TS, CSS, JSON | `auto` |
+| Indentation | dedent to anchor level | Python, YAML | `dedent` |
+| Sibling-terminated | next peer at the anchor's level | Markdown headings, TOML tables, ini, banner comments, diff hunks | `section` |
+| Paired tokens | matching close token | Markdoc, HTML, Svelte, Vue, JSX, fenced blocks | `paired` |
+
+Both additions are earned, not speculative:
+
+- **Sibling-terminated is already in this spec, pushed onto the author.** The
+  `README.md` example above originally read `until="^## "`, which works only
+  because the author did the heading-level arithmetic by hand. Anchor on a
+  `###` and that terminator is wrong; you need `^#{1,3}\s`. A terminator
+  derivable from the anchor line is a strategy, not an author burden — and this
+  repo quotes Markdown constantly (`lang="markdoc"` snippets on the docs pages,
+  and every file under `plan/`).
+- **Paired tokens fail *silently*, which is the failure class this spec
+  exists to remove.** `LANG_MAP` already ships `markdoc`, `svelte`, `vue`,
+  `html` and `jsx`. Point `auto` at a Svelte file anchored on `<script>` and
+  delimiter counting terminates at the first `}` closing a brace block at
+  anchor depth — somewhere inside the script body. The slice **balances**, so
+  the D2 self-check passes and the page renders a plausible wrong span. The
+  measurements were TypeScript-only, so this is unexercised rather than
+  disproven, and the self-check cannot catch it: the extent is wrong because
+  the *wrong family* was used, not because the lexer misread anything.
+
+`auto` stays the default. An author who points it at a tag-paired file should
+get a refusal or a documented mis-extent, not a new guess — D5.
+
+**D12 — `until` is exclusive, `through` is inclusive, and neither is a
+default.** The spec did not say which, and the two families want opposite
+answers: `until="^}"` in code wants the terminator line *in*, `until="^## "` in
+Markdown wants it *out*. Either default is silently wrong half the time, on the
+attribute D4 designates as the escape hatch of last resort — the one place a
+silent wrong answer is least affordable. Two attributes, each saying what it
+means, costs one row in a table and removes the ambiguity entirely.
+
 ## Non-goals
 
 - **Cross-file resolution.** `symbol="SiteConfig"` searches the file named by
@@ -352,26 +465,43 @@ absent from the table gets no head absorption rather than a guessed one.
   usable structure. D4.
 - **New preview targets.** `preview="drawer"` behaviour is unchanged; this
   spec only changes how the referenced region is located.
+- **Explicit region markers in the source.** `// #region example` … `//
+  #endregion`, resolved through the comment-prefix table D10 already builds, is
+  the one mode that can address *part* of a construct — "the six lines inside
+  `runPipeline` that illustrate the point" is expressible by neither `symbol`
+  nor any extent above. It also inverts the drift contract usefully: the anchor
+  lives in the source file, where a refactorer sees it, rather than in a doc
+  page they never open, and it survives the rename that makes `symbol=` fail.
+  Deferred rather than dismissed, on three counts — it requires editing every
+  quoted file, it must bypass the D2 self-check by construction (a mid-function
+  region is *deliberately* unbalanced), and nothing in `site/content` wants it
+  yet. Its own spec when one does.
 
 ## Acceptance Criteria
 
 - [ ] `readSnippetFile` resolves `symbol` and `match` anchors in addition to `lines`, and `snippet`, `file-ref`, and `expand` all gain the capability from that one change
 - [ ] `symbol` builds its anchor from a documented keyword table; `match` accepts a raw regex; the two are mutually exclusive with each other and with `lines`
-- [ ] `extent` accepts `auto` (default) and `dedent`; `until` overrides both
+- [ ] `extent` accepts `auto` (default), `dedent`, `section`, and `paired`; `until` / `through` override all four
+- [ ] `until` excludes its matching line and `through` includes it; neither is inferred from the file or the strategy
 - [ ] The masker handles line comments, block comments, single- and double-quoted strings, and template literals including nested `${}`
-- [ ] The extent terminates only on a depth-0 `;` or a `}` closing a depth-0 brace block; parens and brackets nest without terminating
+- [ ] The extent terminates only on a `;` at anchor depth or a `}` closing a brace block opened at anchor depth; parens and brackets nest without terminating
+- [ ] Depth is measured relative to the anchor line, covered by a test anchoring on a nested target (a `package.json` key, a class method, a rule inside `@media`)
 - [ ] Brace-less statements use continuation lookahead that skips blank and comment lines
 - [ ] `type` aliases do not terminate on a brace
-- [ ] An extracted slice that is not delimiter-balanced is refused, never rendered
+- [ ] Under `extent="auto"`, an extracted slice that is not delimiter-balanced is refused, never rendered
+- [ ] The balance self-check does not run for `dedent`, `section`, `until` or `through`, covered by a test extracting a prose Markdown section containing unbalanced brackets
+- [ ] `extent="section"` derives its terminator from the anchor's own level, covered by tests on a `###` Markdown heading and a TOML table
+- [ ] `extent="paired"` balances nested same-name tokens, covered by a test extracting an outer `{% tabs %}` containing inner `{% tab %}` blocks
 - [ ] Annotations (`@Component`, `#[derive]`, `@dataclass`) attach to the symbol always, independent of `doc`
 - [ ] `doc` is tri-state: unset defaults to on for `symbol` and off for `match`; `doc=true` and `doc=false` force the choice
-- [ ] Comment and annotation prefixes come from the per-language table; a language absent from it gets no head absorption rather than a guessed one
+- [ ] Comment prefixes, annotation prefixes, heading/section shapes, and token pairs all come from the per-language table; a language absent from it gets no head absorption and no `section` / `paired` support rather than a guessed one
 - [ ] A test covers the abutting-comment limit (D9) so the behaviour is pinned rather than accidental
-- [ ] Every refusal names the file, the anchor, the reason, and the `until=` / `lines=` fallback
+- [ ] Every refusal names the file, the anchor, the reason, and the `until=` / `through=` / `lines=` fallback
 - [ ] Failures use the existing error-fence path and emit a `ctx.error` diagnostic — no new failure channel
 - [ ] A regression corpus test scores the resolver against the repo's own sources and asserts the silent-wrong count stays at or below its recorded baseline
 - [ ] `extent="dedent"` is covered by tests against an indentation-structured fixture
-- [ ] The engine is proven language-agnostic by a test extracting a CSS rule via `match=`
+- [ ] The engine is proven delimiter-agnostic by a test extracting a CSS rule via `match=`, and format-agnostic by tests on a brace-free format (Markdown or YAML) and a tag-paired one (Svelte or Markdoc)
+- [ ] `extent="auto"` against a tag-paired file either refuses or is documented as unsupported — never renders a brace-terminated span from a tag-structured source
 - [ ] A `--fix` codemod converts `lines=` invocations to anchors, verifying byte-identical output and refusing to rewrite when it differs
 - [ ] The 23 line-addressed snippets in `site/content` are migrated, or individually justified as intentionally line-addressed
 - [ ] `snippet` and `file-ref` doc pages document the new attributes, including the fallbacks
@@ -386,8 +516,12 @@ Four phases, each shippable alone.
    a regression in a heuristic, and it is cheap because the repo is its own
    corpus. Record the baseline counts in the test so a change that trades
    loud-fail for silent-wrong cannot pass unnoticed.
-2. **`dedent`, `until`, and the docs.** Completes the surface and closes D4's
-   dead-end risk before anyone depends on the feature.
+2. **The remaining extents, `until` / `through`, and the docs.** `dedent`,
+   `section` and `paired` (D11) plus the two explicit terminators (D12).
+   Completes the surface and closes D4's dead-end risk before anyone depends on
+   the feature. `section` and `paired` are the ones that make the non-TypeScript
+   half of `site/content` addressable at all, so phase 3's migration should not
+   start before they land.
 3. **The codemod and the migration.** Converts the 23 existing invocations and
    removes the live exposure. Regex-literal lexing (D8) lands here if the
    migration surfaces refusals that need it.
