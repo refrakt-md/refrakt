@@ -165,6 +165,22 @@ Runes are Markdoc tags that **reinterpret** standard Markdown. A heading inside 
 
 ## Conventions
 
+### Code Formatting
+
+[Biome](https://biomejs.dev) owns formatting. `biome.jsonc` is the config; `.editorconfig` mirrors the indentation rules for editors and for the file types Biome doesn't format.
+
+```bash
+npm run format        # rewrite files
+npm run format:check  # verify (this is what CI gates on)
+npm run lint          # Biome linter — advisory, not yet a gate
+```
+
+- **Tabs for indentation**, everywhere except JSON and YAML. Tab width is the reader's choice; don't hard-code someone's preference into the file.
+- **JSON uses two spaces** — npm rewrites `package.json` and the lockfile that way on every install.
+- Single quotes, semicolons, trailing commas, 100-column lines. All enforced; don't hand-tune.
+- `.svelte`, `.astro`, and `.vue` are excluded: Biome formats only their `<script>` blocks, which would leave the markup half-converted. They're tab-indented already and `.editorconfig` keeps them that way.
+- The linter runs `recommended` minus three rules that this codebase deliberately doesn't follow (see the comments in `biome.jsonc`). There are pre-existing findings in the remaining rules, so `npm run lint` is not clean yet and CI does not gate on it.
+
 ### BEM Naming
 
 All identity-transformed runes use: `.rf-{block}`, `.rf-{block}--{modifier}`, `.rf-{block}__{element}`. Element classes come from `data-name` attributes on children — the engine's `applyBemClasses` function reads `data-name` and adds the corresponding BEM class.
