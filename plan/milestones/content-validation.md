@@ -1,0 +1,107 @@
+{% milestone name="v0.34.0" status="planning" %}
+
+# v0.34.0 — Content validation
+
+Every rune schema declares required attributes, typed attributes and `matches`
+enums. Markdoc can check all of them, and has been able to the entire time.
+Nothing in the build ever asked it to. This milestone connects the validator
+that exists to the content it was written for.
+
+## Why
+
+Three pieces of one feature exist in the repo and none are wired to each other:
+
+- **`Markdoc.validate()`** — never called on site content. It runs in the
+  language server, and over the 40-file rune fixture corpus in
+  `fixture-corpus.test.ts`. Neither sees a user's pages.
+- **Custom attribute-type validators** — `SeparatedString`,
+  `SpaceSeparatedNumberList`, and media's. `transform()` never invokes a custom
+  type's `validate()`; only `validate()` does. They have never run in a build.
+- **The `error` rune** — takes a Markdoc `ValidationError` and renders it as a
+  table row. Purpose-built for validation output. **Nothing constructs it**, and
+  writing it by hand crashes the build.
+
+And `refrakt validate`, the command whose name promises this, checks theme
+config and manifest. It never reads content.
+
+The result is four error classes rendering in silence. The worst is
+`tag-undefined`: a mistyped or renamed rune does not fail — it **drops the tag
+and renders its children as prose**, so the block simply vanishes from the page.
+
+## Who this is actually for
+
+Not us. A scan of `site/content` found **zero** genuine unknown tags across 124
+distinct tags in prose. There is no backlog of latent breakage in our own docs,
+and this milestone would be dishonest sold as if there were.
+
+It is for the people running refrakt on sites we never see, who mostly do not
+have the VS Code extension, and for whom the entire validation surface is
+therefore unreachable. Every `required`, `matches` and type declaration in every
+rune schema is currently a promise the framework does not keep for them.
+
+That framing decides the scope: the goal is that a site author who mistypes a
+rune finds out, not that our own documentation gets cleaner.
+
+## What lands
+
+- {% ref "BUG-014" /%} — the defect, with the measurements behind each claim.
+- {% ref "WORK-554" /%} — settles what an error-severity diagnostic actually
+  does. Small, and it goes first: two specs currently assume `ctx.error` is
+  loud, and nobody has checked.
+- {% ref "WORK-555" /%} — remove the `error` rune. On inspection it is not a
+  renderer waiting for input, it is a landmine: author-reachable, and a
+  `{% error /%}` in any page kills the build on an unguarded `err.id`.
+- {% ref "SPEC-132" /%} — the wiring, in two phases by risk:
+  - {% ref "WORK-556" /%} — the call, the severity mapping, and the two safe
+    ids. The whole mechanism; everything after it is choosing what to switch on.
+  - {% ref "WORK-557" /%} — measure what phase 2 would report across both
+    dogfooded sites, before enabling it. An afternoon, and it decides whether
+    phase 2 stays in this milestone.
+  - {% ref "WORK-558" /%} — the attribute ids, plus the severity correction to
+    the four custom validators that have never run in a build.
+  - {% ref "WORK-559" /%} — the escape hatch, shipped alongside rather than
+    after.
+
+## The through-line
+
+*The checks were always written. Nothing was listening.*
+
+This is {% ref "SPEC-126" /%}'s finding in a second place. That spec noticed
+this repo has two `--check` flags and neither runs in CI, while the guards that
+actually catch things are tests that `npm test` executes. Here the pattern
+repeats one level deeper: not a guard nobody runs, but a guard nobody *points
+at the content* — plus a renderer for its output that was built and left
+unconnected.
+
+The exception proves it. `fixture-corpus.test.ts` runs exactly this validation,
+under `npm test`, and it works — over our fixtures. The machinery was never the
+problem; where it was aimed was.
+
+Which is why {% ref "WORK-554" /%} is not optional bookkeeping. Wiring
+validation into a diagnostics surface that turns out to fail nothing would
+reproduce the exact disease, with more code.
+
+## Deliberately not here
+
+- **Build-failure semantics.** Whether an error stops the build waits on
+  {% ref "WORK-554" /%}. Phase 1 lands as diagnostics either way.
+- **`variable-undefined`, and scope-aware variable validation generally.** Not
+  deferred to a later phase — removed from {% ref "SPEC-132" /%} entirely. An
+  earlier framing called it "blocked on completing the variable bag"; there is
+  no bag that completes. Markdoc validates the **full path**, and most variable
+  use in real content is scope-local: `$item` (88 uses) and `$row` (62) are
+  about 150 of roughly 260 references in `site/content`, all bound per-iteration
+  inside rune body templates, with valid paths depending on author-defined
+  frontmatter. See {% ref "SPEC-132" /%} D4. It needs its own spec, starting
+  from whether scope-aware validation earns its cost.
+- **Validating the docs' fenced examples.** Worth doing, and a repo script over
+  `site/content` rather than a pipeline feature. Its own work item.
+- **Renaming `refrakt validate`.** Real, and a follow-up.
+
+## Minor, not patch
+
+Nothing here changes an existing API. New diagnostics on content that
+previously built silently is a behaviour change users will notice, which rules
+out patch; Changesets runs in fixed mode, so the release is a minor.
+
+{% /milestone %}

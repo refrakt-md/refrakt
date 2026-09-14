@@ -1,5 +1,32 @@
 # @refrakt-md/media
 
+## 0.33.0
+
+### Patch Changes
+
+- cb05ee2: Make `music-playlist` / `music-recording` real aliases, and let the JSON reference dump carry child runes (BUG-009)
+
+  `music-playlist` and `music-recording` were registered as separate runes carrying a self-referential `aliases: ['music-playlist']`, rather than as aliases on `playlist` / `track`. They already shared the primary's transform, so rendering is unchanged — but the duplication printed "Aliases: music-playlist" in the reference, put a phantom duplicate of every playlist attribute in `reference dump --format json`, and forced duplicate theme config entries that then had to be kept in sync by hand. Both spellings still parse.
+
+  Separately, `EXCLUDED_RUNES` — the child-only runes the catalogue deliberately omits so they don't bury top-level ones — was applied inside `hydrateAllRuneInfos`, which made it a property of the rune data rather than of the rendered document. `refrakt reference dump --format json` therefore omitted nine child runes (`accordion-item`, `tab`, `form-field`, …) that `refrakt reference <name>` describes in full, including required attributes. The exclusion now applies where the catalogue is rendered; the JSON dump carries the complete rune set. Markdown catalogue output is unchanged.
+
+- Updated dependencies [7532b55]
+- Updated dependencies [cb05ee2]
+- Updated dependencies [ec7357b]
+- Updated dependencies [84d025d]
+- Updated dependencies [ec7357b]
+- Updated dependencies [bc06abe]
+- Updated dependencies [2c1b5c2]
+- Updated dependencies [f23d794]
+- Updated dependencies [9f912a1]
+- Updated dependencies [d9b9417]
+- Updated dependencies [a6752f4]
+- Updated dependencies [fde9ae0]
+- Updated dependencies [0d3ebed]
+  - @refrakt-md/runes@0.33.0
+  - @refrakt-md/transform@0.33.0
+  - @refrakt-md/types@0.33.0
+
 ## 0.32.0
 
 ### Minor Changes
