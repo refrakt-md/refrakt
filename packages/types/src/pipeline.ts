@@ -160,7 +160,13 @@ export interface PipelineContext {
 /** A diagnostic emitted by a pipeline hook */
 export interface PipelineWarning {
 	severity: 'info' | 'warning' | 'error';
-	phase: 'register' | 'contribute' | 'aggregate' | 'postProcess';
+	/** Which build stage produced the diagnostic. `'validate'` is the
+	 *  per-page `Markdoc.validate()` pass (SPEC-132) — it runs during Phase 1
+	 *  parsing rather than in one of the cross-page hook phases, so it is not a
+	 *  hook phase like the other four. Core findings carry
+	 *  `pluginName: 'core'`; a finding on a plugin-contributed page carries that
+	 *  plugin's name. */
+	phase: 'register' | 'contribute' | 'aggregate' | 'postProcess' | 'validate';
 	pluginName: string;
 	/** Page URL that triggered the warning, if applicable */
 	url?: string;

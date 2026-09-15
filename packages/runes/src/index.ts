@@ -17,7 +17,6 @@ import {
 export { Page } from './documents/page.js';
 import { DocPage } from './documents/doc.js';
 
-import { error } from './tags/error.js';
 import { grid } from './tags/grid.js';
 import { codegroup } from './tags/codegroup.js';
 import { snippet } from './tags/snippet.js';
@@ -81,6 +80,17 @@ import { defineRune, runeTagMap } from './rune.js';
 
 export * from './interfaces.js';
 export { Rune, defineRune, runeTagMap } from './rune.js';
+/** Custom Markdoc attribute types. Exported since SPEC-132, which is the first
+ *  release in which their `validate()` runs in a build at all — `transform()`
+ *  never invoked it, only `Markdoc.validate()` does. `plugins/media` carries its
+ *  own copies of these classes, which is what an unexported utility tends to
+ *  produce. */
+export {
+	SeparatedString,
+	CommaSeparatedList,
+	SpaceSeparatedList,
+	SpaceSeparatedNumberList,
+} from './attributes.js';
 export { RenderableNodeCursor } from './lib/renderable.js';
 export {
 	createContentModelSchema,
@@ -397,13 +407,6 @@ export const runes = {
 			'```',
 			'{% /codegroup %}',
 		],
-	}),
-	error: defineRune({
-		name: 'error',
-		schema: error,
-		description: 'Error reporting table',
-		typeName: 'Error',
-		category: 'Semantic',
 	}),
 	grid: defineRune({
 		name: 'grid',
@@ -1081,6 +1084,23 @@ export const tags = {
 	...runeTagMap(runes),
 	link,
 	...Markdoc.tags,
+	// Markdoc's `if` / `else` declare `primary: { type: Object }`, which is a
+	// statement about *expression syntax*: `{% if $var %}` and
+	// `{% if equals(a, b) %}` both pass an AST node, and an AST node is an
+	// object. It stops being true in this pipeline, because preprocess hooks
+	// substitute variables for their values before the page is validated —
+	// `bindRow` turns `{% if $row.required %}` into `{% if true %}`, and a
+	// boolean is not an Object.
+	//
+	// SPEC-132's validation pass reported that 3,302 times across `site/`
+	// (WORK-557), every one a false positive. The type check cannot catch a
+	// real authoring error here: pre-substitution every legal form is already
+	// an object, and post-substitution every value is legal. So the constraint
+	// is dropped rather than the findings filtered — the root cause, not the
+	// symptom. `render: false` is preserved; it is what keeps the condition out
+	// of the rendered output.
+	if: { ...Markdoc.tags.if, attributes: { primary: { render: false } } },
+	else: { ...Markdoc.tags.else, attributes: { primary: { render: false } } },
 };
 
 export const nodes = {

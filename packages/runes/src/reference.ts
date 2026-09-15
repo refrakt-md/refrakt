@@ -71,7 +71,6 @@ export interface RuneInfo {
 
 /** Runes that are internal or child-only — excluded from generated reference docs */
 export const EXCLUDED_RUNES = new Set([
-	'error',
 	'tab',
 	'accordion-item',
 	'budget-category',

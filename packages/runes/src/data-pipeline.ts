@@ -236,6 +236,14 @@ function bindRow(node: Node, row: Record<string, unknown>): Node {
 	// constructor does not take; copy what Markdoc sets.
 	if (node.lines) copy.lines = node.lines;
 	if (node.location) copy.location = node.location;
+	// `inline` was named in the comment above and then not copied, so every
+	// node a row template bound came out block-level. Harmless while nothing
+	// validated — and then 6,609 `tag-placement-invalid` findings the moment
+	// SPEC-132 pointed Markdoc's validator at the content, because `{% code %}`
+	// declares `inline: true` and the rune-attribute tables bind it per row.
+	// `cloneWithBindings` in include-pipeline.ts had it right all along.
+	copy.inline = node.inline;
+	if (node.annotations?.length) copy.annotations = node.annotations;
 	return copy;
 }
 
@@ -270,6 +278,10 @@ function cloneNode(node: Node): Node {
 	);
 	if (node.lines) copy.lines = node.lines;
 	if (node.location) copy.location = node.location;
+	// Same omission as `bindRow` had — a nested `data`'s verbatim body copy must
+	// keep `inline` too, or the subquery's `{% code %}` cells come out block.
+	copy.inline = node.inline;
+	if (node.annotations?.length) copy.annotations = node.annotations;
 	return copy;
 }
 

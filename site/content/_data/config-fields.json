@@ -36,6 +36,11 @@
 			"blurb": "Locale selection and string overrides."
 		},
 		{
+			"slug": "validation",
+			"name": "Content validation",
+			"blurb": "Which authoring mistakes the build reports, and how to narrow that."
+		},
+		{
 			"slug": "top-level",
 			"name": "Top-level",
 			"blurb": "Fields that sit outside a site entry, at the root of the file."
@@ -246,6 +251,15 @@
 			"type": "Record<string, string | Record<string, string>>",
 			"required": false,
 			"description": "Site-level translation overrides for framework-generated UI text, keyed by the auto-derived i18n key (`{scope}.{block}.{ref}`). Highest precedence — these win over first-party and plugin bundles. Each value is a string, or a map of CLDR plural categories (`one`, `other`, …) to strings."
+		},
+		{
+			"group": "validation",
+			"groupName": "Content validation",
+			"scope": "site",
+			"name": "validation",
+			"type": "ValidationConfig",
+			"required": false,
+			"description": "Content validation (SPEC-132). Every rune schema declares required attributes, typed attributes and `matches` enums; the build checks them with `Markdoc.validate()` and reports findings as pipeline warnings. Nothing is rendered into the page. Findings whose level is `critical` — a parse error, an unclosed tag, a tag in an impossible position — are reported whatever you set here: they mean the document could not be understood, which is not a matter of preference. Suppression is deliberately per-site and per-error-id only. There is no per-page or per-tag switch, because that granularity silences the one call site that revealed a real bug. Three options: `enabled` (false turns the pass off for this site), `ids` (replace the default error-id list entirely) and `disableIds` (stop treating specific ids as problems — they are demoted to `info`, not dropped). The defaults are `tag-undefined`, `attribute-undefined`, `attribute-value-invalid`, `attribute-missing-required` and `attribute-type-invalid`."
 		},
 		{
 			"group": "top-level",

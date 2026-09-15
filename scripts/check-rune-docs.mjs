@@ -81,7 +81,6 @@ export const PAGELESS = new Map([
 	// Internal — not authored directly, so their content belongs on no page at
 	// all. `null` is a different answer from "documented on the parent's page",
 	// and the generator must not confuse the two.
-	['error', null], // validation error reporting — never authored
 	['region', null], // layout — documented in layout.md
 ]);
 

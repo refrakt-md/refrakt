@@ -50,6 +50,15 @@ export {
 export { runPipeline, type HookSet, type PipelineResult, type PipelineStats } from './pipeline.js';
 export { formatPipelineSummary } from './format.js';
 export {
+	validatePage,
+	resolveValidationIds,
+	isSuppressible,
+	DEFAULT_VALIDATION_IDS,
+	DEFAULT_VALIDATION_SETTINGS,
+	type ValidationSettings,
+	type ValidatePageOptions,
+} from './validate.js';
+export {
 	readFileRoots,
 	resolveUserFileRoots,
 	mergeFileRoots,

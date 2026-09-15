@@ -56,9 +56,12 @@ export const aggregate = createContentModelSchema({
 				'Sort groups by `key`, `count`, `value`, or `percent` (prefix `-` for descending). Honors SPEC-072 domain-aware ordering when the group field has one.',
 		},
 		limit: {
-			type: String,
+			// Same defect as `collection.limit`, found alongside it. No content
+			// exercises it today, so it produced no finding — fixed anyway,
+			// because leaving one of two identical declarations wrong is how the
+			// next person concludes `String` was deliberate.
+			type: Number,
 			required: false,
-			default: '',
 			description: 'Cap the number of groups (after sort).',
 		},
 		empty: {
