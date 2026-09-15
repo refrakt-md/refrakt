@@ -101,6 +101,25 @@ export interface SiteConfig {
 		 *  warning — but will be removed in a future release. */
 		examplesDir?: string;
 	};
+	/** Content validation (SPEC-132). The build runs `Markdoc.validate()` over
+	 *  every page and reports findings as pipeline warnings; nothing is rendered
+	 *  into the page. Omit for the documented defaults.
+	 *
+	 *  `critical` findings are reported whatever is set here — they mean the
+	 *  document could not be understood, which is not a matter of preference
+	 *  (D11). Suppression is per-site and per-error-id only: there is
+	 *  deliberately no per-page or per-tag switch, because that granularity
+	 *  silences the one call site that revealed a real bug (D5). */
+	validation?: {
+		/** `false` stops reporting every suppressible finding for this site. */
+		enabled?: boolean;
+		/** Replace the default error ids entirely. Adding `variable-undefined`
+		 *  is a mistake the framework will let you make — see D4. */
+		ids?: string[];
+		/** Error ids to stop treating as problems. Demoted to `info` rather than
+		 *  dropped, so they stay visible without adding build-summary noise. */
+		disableIds?: string[];
+	};
 	/** Base URL for canonical links and og:url */
 	baseUrl?: string;
 	/** Human-readable site name for og:site_name */
@@ -210,6 +229,12 @@ export interface RefraktConfig {
 		dir?: string;
 		/** @deprecated Renamed to `dir` (ADR-022). */
 		examplesDir?: string;
+	};
+	/** @deprecated Shorthand for `sites.default.validation` */
+	validation?: {
+		enabled?: boolean;
+		ids?: string[];
+		disableIds?: string[];
 	};
 	/** @deprecated Shorthand for `sites.default.baseUrl` */
 	baseUrl?: string;

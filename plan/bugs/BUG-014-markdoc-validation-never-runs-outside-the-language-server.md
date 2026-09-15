@@ -1,4 +1,4 @@
-{% bug id="BUG-014" status="confirmed" severity="major" milestone="v0.34.0" tags="validation, markdoc, pipeline, runes, dx" %}
+{% bug id="BUG-014" status="fixed" severity="major" milestone="v0.34.0" tags="validation, markdoc, pipeline, runes, dx" %}
 
 # Markdoc validation never runs outside the language server
 
@@ -179,5 +179,68 @@ above.
 Not fixed in place: the wiring carries sequencing and severity decisions that
 belong in a design, specified in {% ref "SPEC-132" /%}. This bug records the
 defect and the evidence it rests on.
+
+## Resolution
+
+Completed: 2026-09-15
+
+Branch: `claude/milestone-v0-34-0-5zoab0`
+
+Fixed across the v0.34.0 milestone. Each symptom, and where it closed:
+
+| symptom | closed by |
+|---|---|
+| 1 — four error classes pass through `transform()` silently | {% ref "WORK-556" /%} (`tag-undefined`, `attribute-undefined`) and {% ref "WORK-558" /%} (`attribute-value-invalid`, `attribute-missing-required`) |
+| 2 — custom attribute validators are dead code in the build path | {% ref "WORK-558" /%}. They execute for the first time; a test proves one rejects bad input through `loadContent` rather than by calling the class. |
+| 3 — the `error` rune has no producer | {% ref "WORK-555" /%}. Deleted rather than wired: it was author-reachable and crashed the build on an unguarded `err.id`. |
+| 4 — `refrakt validate` does not validate content | **Deliberately open.** SPEC-132 D1 makes renaming or repurposing that command a follow-up, and argues that adding content validation *to* it would deepen the confusion rather than fix it — a third guard nobody invokes. Validation belongs where the content is already being processed. |
+
+### One claim in this report was wrong
+
+> *Scanning `site/content` … found **zero** genuine `tag-undefined`. So fixing
+> this is **prospective, not remedial** for the refrakt repo itself.*
+
+True for `tag-undefined`, and the report is careful to say the attribute classes
+"could not be checked the same way; they need the built tag set". Once they
+could be, the repo was not clean:
+
+- `{% hint type="tip" %}` — not one of `caution | check | note | warning`, so it
+  rendered `data-type="tip"` with no CSS behind it. Symptom 1, third row,
+  in our own blog.
+- `{% ref "Sandbox" %}` written as an opening tag where `ref` is self-closing,
+  swallowing the rest of the paragraph.
+- `frame-displace="both"` — a value Lumina styles and the schema's `matches`
+  enum omits. The schema and the stylesheet disagreed and the page rendered
+  correctly, so nothing could have found it but a validator.
+- `collection.limit` declared `String` while its own documentation writes
+  `limit=5`, and five quoted booleans in content that worked by accident.
+
+And two defects in the machinery itself: `bindRow` dropped `inline` when cloning
+nodes (6,609 findings once the pass ran), and
+`plan-site-dogfood-real.test.ts` had been building 786 pages with every plan
+rune missing from Markdoc's tag set — passing the whole time, because an
+undefined tag drops and renders its children as prose. That last one is this
+bug's thesis proved on the test suite written to catch defects.
+
+So the framing should have been "prospective **and** remedial". The
+user-facing argument the report rests on is unaffected and was the right one to
+lead with.
+
+### The `SpaceSeparatedNumberList` note needs a correction too
+
+> *`SpaceSeparatedNumberList` is the clearest case. Its `validate` exists to
+> reject non-numeric input; its `transform` runs `parseInt` unguarded. In the
+> build the check never fires and the `NaN` sails through.*
+
+Accurate about the class, but **no shipped rune uses it** — only
+`grid.spans` uses `SpaceSeparatedList`. So the `NaN` was never reachable from
+content either. The unguarded `parseInt` remains its own small defect, out of
+scope per {% ref "WORK-558" /%}, and now genuinely guarded for anyone who does
+declare the type.
+
+### Verification
+
+`site/` and `plan-site/` both report zero findings across all five enabled ids,
+down from 9,926 when the pass was first switched on. 4,427 tests pass.
 
 {% /bug %}

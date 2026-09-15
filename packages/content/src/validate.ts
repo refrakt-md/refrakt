@@ -78,14 +78,21 @@ export function isSuppressible(level: MarkdocLevel): boolean {
 	return level !== 'critical';
 }
 
-/** Per-site validation settings, resolved from `refrakt.config.json`. */
+/**
+ * Per-site validation settings, resolved from `refrakt.config.json`.
+ *
+ * Deliberately per-site and per-error-id, and nothing finer. Per-page or
+ * per-tag suppression invites silencing the one call site that revealed a real
+ * bug, which is how a validation feature becomes decoration (SPEC-132 D5).
+ */
 export interface ValidationSettings {
-	/** Master switch. `false` disables every suppressible finding; `critical`
-	 *  findings still report (D11). */
+	/** Master switch. `false` stops reporting every suppressible finding;
+	 *  `critical` findings still report (D11). */
 	enabled: boolean;
 	/** Error ids to report, replacing {@link DEFAULT_VALIDATION_IDS} entirely. */
 	ids?: readonly string[];
-	/** Error ids to drop from whichever list is in effect. */
+	/** Error ids to stop treating as problems. Demoted to `info` rather than
+	 *  dropped — see {@link validatePage}. */
 	disableIds?: readonly string[];
 }
 
@@ -96,6 +103,13 @@ export function resolveValidationIds(settings?: ValidationSettings): Set<string>
 	const base = settings?.ids ?? DEFAULT_VALIDATION_IDS;
 	const disabled = new Set(settings?.disableIds ?? []);
 	return new Set(base.filter((id) => !disabled.has(id)));
+}
+
+/** Ids the site asked to stop treating as problems, as distinct from ids that
+ *  were never enabled. The two are handled differently: a disabled id is
+ *  demoted, an id outside the allow-list is dropped. */
+function demotedIds(settings?: ValidationSettings): Set<string> {
+	return new Set(settings?.disableIds ?? []);
 }
 
 export interface ValidatePageOptions {
@@ -122,6 +136,22 @@ export interface ValidatePageOptions {
  * Never throws: a validator that breaks the build it was added to protect is
  * worse than no validator. A failure inside `Markdoc.validate` is itself
  * reported as a finding.
+ *
+ * Three dispositions, and the difference between them is the point:
+ *
+ * | case | outcome |
+ * |---|---|
+ * | `critical` level | always reported; no configuration silences it (D11) |
+ * | id in `disableIds` | **demoted to `info`** |
+ * | id outside the allow-list, or `enabled: false` | dropped |
+ *
+ * Demotion rather than deletion is WORK-559's recorded decision. An id someone
+ * has actively judged unimportant should stop adding noise to the build
+ * summary, but it should not become invisible: a reader who goes looking — or
+ * the editor's validation rail — can still see what was set aside, and turning
+ * the id back on is then an informed choice rather than a leap. Ids that were
+ * never enabled are a different thing and are simply not reported; there is no
+ * value in an `info` stream of every check the project has decided against.
  */
 export function validatePage(
 	ast: Node,
@@ -130,6 +160,7 @@ export function validatePage(
 ): PipelineWarning[] {
 	const settings = opts.settings ?? DEFAULT_VALIDATION_SETTINGS;
 	const allowed = resolveValidationIds(settings);
+	const demoted = demotedIds(settings);
 	const pluginName = opts.contributedBy ?? 'core';
 
 	let findings: ValidateError[];
@@ -150,17 +181,22 @@ export function validatePage(
 	const out: PipelineWarning[] = [];
 	for (const finding of findings) {
 		const level = finding.error.level as MarkdocLevel;
+		const id = finding.error.id;
+		let severity = severityFor(level);
 
-		// `critical` is reported unconditionally — neither the master switch nor
-		// the id allow-list can silence it. The allow-list governs the rest, and
-		// the master switch turns the rest off wholesale.
+		// `critical` is reported unconditionally — neither the master switch, the
+		// allow-list, nor `disableIds` can touch it.
 		if (isSuppressible(level)) {
 			if (!settings.enabled) continue;
-			if (!allowed.has(finding.error.id)) continue;
+			if (demoted.has(id)) {
+				severity = 'info';
+			} else if (!allowed.has(id)) {
+				continue;
+			}
 		}
 
 		out.push({
-			severity: severityFor(level),
+			severity,
 			phase: 'validate',
 			pluginName,
 			url: opts.url,

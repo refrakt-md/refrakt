@@ -81,6 +81,12 @@ export const GROUPS = [
 		blurb: 'Locale selection and string overrides.',
 		fields: ['locale', 'strings'],
 	},
+	{
+		slug: 'validation',
+		name: 'Content validation',
+		blurb: 'Which authoring mistakes the build reports, and how to narrow that.',
+		fields: ['validation'],
+	},
 ];
 
 /**

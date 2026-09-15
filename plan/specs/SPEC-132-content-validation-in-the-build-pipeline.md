@@ -304,19 +304,19 @@ execute.
 
 ## Acceptance Criteria
 
-- [ ] `Markdoc.validate()` runs in the content pipeline against the same assembled config the transform uses, including plugin runes
-- [ ] Findings route to the existing `ctx.error` / `ctx.warn` / `ctx.info` surface, mapped from `ValidateError.error.level`, carrying the page URL
-- [ ] Findings are emitted as `PipelineWarning`s and nothing is rendered into the page — display is {% ref "WORK-395" /%}'s (D9)
-- [ ] `PipelineWarning.phase` gains a member for validation, and core findings carry an agreed `pluginName`
-- [ ] `critical` findings are not suppressible by the D5 switch; `error` findings are (D11)
-- [ ] The four custom validators emitting `attribute-type-invalid` at `critical` are corrected to `error`, matching Markdoc (D11)
-- [ ] Phase 1 ids (`tag-undefined`, `attribute-undefined`) are enabled and covered by tests
-- [ ] Phase 2 ids are enabled only after the blast radius across `site/` and `plan-site/` is measured and recorded
-- [ ] The dormant custom attribute validators demonstrably execute once phase 2 lands — a test proves `SpaceSeparatedNumberList` rejects non-numeric input in a build
-- [ ] `variable-undefined` is never enabled, and a test pins that — asserting no findings on a collection template using `$item.data.*` (D4)
-- [ ] Validation is disableable per site and per error id; not per page or per tag
-- [ ] A test asserts fenced examples are exempt, pinning the `escapeFenceTags` ordering
-- [ ] A clean build of `site/` and `plan-site/` emits zero unexpected findings
+- [x] `Markdoc.validate()` runs in the content pipeline against the same assembled config the transform uses, including plugin runes
+- [x] Findings route to the existing `ctx.error` / `ctx.warn` / `ctx.info` surface, mapped from `ValidateError.error.level`, carrying the page URL
+- [x] Findings are emitted as `PipelineWarning`s and nothing is rendered into the page — display is {% ref "WORK-395" /%}'s (D9)
+- [x] `PipelineWarning.phase` gains a member for validation, and core findings carry an agreed `pluginName`
+- [x] `critical` findings are not suppressible by the D5 switch; `error` findings are (D11)
+- [x] The four custom validators emitting `attribute-type-invalid` at `critical` are corrected to `error`, matching Markdoc (D11)
+- [x] Phase 1 ids (`tag-undefined`, `attribute-undefined`) are enabled and covered by tests
+- [x] Phase 2 ids are enabled only after the blast radius across `site/` and `plan-site/` is measured and recorded
+- [x] The dormant custom attribute validators demonstrably execute once phase 2 lands — a test proves `SpaceSeparatedNumberList` rejects non-numeric input in a build
+- [x] `variable-undefined` is never enabled, and a test pins that — asserting no findings on a collection template using `$item.data.*` (D4)
+- [x] Validation is disableable per site and per error id; not per page or per tag
+- [x] A test asserts fenced examples are exempt, pinning the `escapeFenceTags` ordering
+- [x] A clean build of `site/` and `plan-site/` emits zero unexpected findings
 
 ## Approach
 

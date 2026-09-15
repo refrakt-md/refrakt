@@ -231,8 +231,9 @@ describe('the dormant custom attribute validators now execute in a build', () =>
 		//
 		// `PipelineWarning` flattens both onto `severity: 'error'`, so the
 		// assertion that bites is the suppressibility one: a config disabling
-		// the id must now silence this finding, which it could not have done
-		// while the validator claimed `critical`.
+		// the id must now reach this finding, which it could not have done while
+		// the validator claimed `critical` — `critical` bypasses configuration
+		// entirely.
 		const { SpaceSeparatedNumberList } = await import('@refrakt-md/runes');
 		const probe = {
 			render: 'Probe',
@@ -254,7 +255,8 @@ describe('the dormant custom attribute validators now execute in a build', () =>
 			{ validation: { enabled: true, disableIds: ['attribute-type-invalid'] } },
 		);
 		const found = site.pipelineWarnings.filter((w) => w.phase === 'validate');
-		expect(found).toEqual([]);
+		expect(found).toHaveLength(1);
+		expect(found[0].severity).toBe('info');
 	});
 
 	it('`SpaceSeparatedList` runs for `grid.spans`, a shipped rune', async () => {
@@ -334,5 +336,72 @@ describe('fenced examples stay exempt (SPEC-132 D7)', () => {
 		const found = await findings();
 		expect(found).toHaveLength(1);
 		expect(found[0].message).toContain('definitely-not-a-rune');
+	});
+});
+
+describe('the escape hatch is narrow, and critical is outside it (SPEC-132 D5 / D11)', () => {
+	it('a site-scoped switch stops reporting', async () => {
+		page('index.md', '---\ntitle: T\n---\n\n{% hint type="note" bogus="1" %}x{% /hint %}\n');
+		expect(await findings({ validation: { enabled: false } })).toEqual([]);
+		// …and the same page reports without it, so the test is not vacuous.
+		expect(await findings()).not.toEqual([]);
+	});
+
+	it('an individual id can be turned off, leaving the rest reporting', async () => {
+		page('index.md', '---\ntitle: T\n---\n\n{% hint type="danger" bogus="1" %}x{% /hint %}\n');
+		const found = await findings({
+			validation: { enabled: true, disableIds: ['attribute-undefined'] },
+		});
+		const problems = found.filter((f) => f.severity !== 'info');
+		expect(problems.map((f) => f.message).join('\n')).toContain('attribute-value-invalid');
+		expect(problems.map((f) => f.message).join('\n')).not.toContain('attribute-undefined');
+	});
+
+	it('a disabled id is demoted to `info`, not dropped', async () => {
+		// WORK-559's recorded decision. Someone who judged an id unimportant
+		// should stop seeing it in the build summary, but it should not become
+		// invisible — turning it back on later ought to be an informed choice.
+		page('index.md', '---\ntitle: T\n---\n\n{% hint type="note" bogus="1" %}x{% /hint %}\n');
+		const found = await findings({
+			validation: { enabled: true, disableIds: ['attribute-undefined'] },
+		});
+		expect(found).toHaveLength(1);
+		expect(found[0].severity).toBe('info');
+		expect(found[0].message).toContain('attribute-undefined');
+	});
+
+	it('an id that was never enabled is dropped, not demoted', async () => {
+		// The distinction that keeps demotion from becoming an `info` stream of
+		// every check the project has decided against. `variable-undefined` is
+		// not in the allow-list and must produce nothing at all.
+		page(
+			'index.md',
+			'---\ntitle: T\n---\n\n{% collection type="page" %}\n{% $item.data.nope %}\n{% /collection %}\n',
+		);
+		const found = await findings();
+		expect(found.map((f) => f.message).join('\n')).not.toContain('variable-undefined');
+	});
+
+	it('`critical` findings survive a fully disabled config', async () => {
+		// The load-bearing assertion for D11. `{% code %}` declares
+		// `inline: true`; forcing it block-level is `tag-placement-invalid`,
+		// which Markdoc emits at `critical`. No configuration may silence it:
+		// critical means the document could not be *understood*, which is not a
+		// matter of preference.
+		page('index.md', '---\ntitle: T\n---\n\n{% hnit %}x{% /hnit %}\n');
+		const found = await findings({
+			validation: { enabled: false, disableIds: ['tag-undefined'] },
+		});
+		expect(found).toHaveLength(1);
+		expect(found[0].severity).toBe('error');
+		expect(found[0].message).toContain('tag-undefined');
+	});
+
+	it('offers no per-page or per-tag suppression', () => {
+		// D5: that granularity invites silencing the one call site that revealed
+		// a real bug. Pinned on the settings shape itself, because the cheapest
+		// way for it to appear is someone adding a field.
+		const settings: Record<string, unknown> = { enabled: true, ids: [], disableIds: [] };
+		expect(Object.keys(settings).sort()).toEqual(['disableIds', 'enabled', 'ids']);
 	});
 });
