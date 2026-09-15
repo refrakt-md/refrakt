@@ -16,6 +16,7 @@
       // is its own, and each is guarded by a drift test — formatting them here
       // would put the formatter and the generator in a permanent fight.
       "!**/contracts/structures.json", // refrakt contracts
+      "!**/contracts/seo-baseline/baseline.json", // generate-seo-baseline.mjs
       "!packages/lumina/tokens/base.css", // generate-tokens.mjs
       "!packages/lumina/tokens/dark.css", // generate-tokens.mjs
       "!packages/runes/src/examples.ts", // generate-examples.mjs
