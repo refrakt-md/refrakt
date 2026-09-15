@@ -164,6 +164,18 @@ for (const [name, site] of Object.entries(sites)) {
 			.sort((a, b) => b[1] - a[1])
 			.map(([msg, n]) => `${n}× ${msg}`),
 		samples: findings.slice(0, 12).map((f) => `${f.url} — ${f.message}`),
+		// Every finding outside the single dominant message, with its page — the
+		// list WORK-558 actually works from.
+		outliers: (() => {
+			const counts = {};
+			for (const f of findings) {
+				const k = f.message.replace(/\(line \d+\)/, '').trim();
+				counts[k] = (counts[k] ?? 0) + 1;
+			}
+			return findings
+				.filter((f) => counts[f.message.replace(/\(line \d+\)/, '').trim()] < 100)
+				.map((f) => `${f.url} — ${f.message}`);
+		})(),
 	};
 }
 
