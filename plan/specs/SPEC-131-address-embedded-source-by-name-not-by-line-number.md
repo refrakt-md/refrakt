@@ -201,6 +201,7 @@ the resolution in the shared reader rather than in either pipeline.
 | `extent` | `auto` (delimiter balance, default), `dedent` (indentation), `section` (next sibling at the anchor's own level), or `paired` (matching close token). D11. |
 | `doc` | Include the preceding doc comment. Defaults to on for `symbol`, off for `match` — D9. |
 | `highlight-match` | Regex(es) highlighting matching lines within the resolved slice. The anchor-native form of `highlight`. D13. |
+| `reindent` | Strip the slice's common leading whitespace. Defaults on for anchors, off for `lines` — D16. |
 | `lines` | Unchanged. Mutually exclusive with `symbol` / `match`. |
 | `highlight`, `linenumbers` | Unchanged — still file coordinates. D13. |
 
@@ -636,6 +637,29 @@ The engine still never guesses. And **`{name}` interpolation must be escaped**:
 a symbol name containing `.` or `(` spliced raw into a regex is injection from
 content.
 
+**D16 — `reindent` strips common leading whitespace, on by default for anchors
+and off for `lines`.** Anchoring makes nested targets easy for the first time —
+a class method, a key inside `"scripts"`, a rule inside `@media`, a step under
+`jobs:`. Every one of those slices carries one or two levels of leading
+indentation it did not ask for, and renders with a ragged left edge that wastes
+horizontal space a code block does not have. Removing the *common* prefix
+preserves relative structure exactly, so the result stays valid in
+indentation-significant languages: a dedented Python method is a function, a
+dedented YAML subtree is that subtree rooted.
+
+The default follows the addressing mode, for the same reason D9's does. An
+author writing `lines="10-40"` has seen the file and chosen those columns;
+changing how they render would be a silent visual change to all 23 existing
+invocations. An author writing `symbol="…"` has delegated boundary-finding
+entirely and never saw a column number — the resolver picked the region, so it
+owns presenting it legibly. `reindent=false` and `reindent=true` force either
+way.
+
+One interaction to respect: D7's codemod verifies that a rewritten invocation
+produces a **byte-identical slice**. That comparison must run before
+`reindent`, or every nested target fails verification for a difference the
+codemod itself introduced.
+
 ## Non-goals
 
 - **Cross-file resolution.** `symbol="SiteConfig"` searches the file named by
@@ -679,6 +703,8 @@ content.
 - [ ] `paired` handles asymmetric, symmetric, and self-closing token shapes; a self-closing anchor returns one line rather than scanning to EOF
 - [ ] `linenumbers` and numeric `highlight` stay in file coordinates under an anchor; `highlight-match` highlights by regex within the resolved slice
 - [ ] The language table is a data structure behind a merge seam, with no hard-coded per-language branching in the engine
+- [ ] `reindent` strips the slice's common leading whitespace, defaulting on for `symbol` / `match` and off for `lines`, covered by a test on a nested target
+- [ ] The codemod's byte-identical check compares the slice before `reindent` is applied
 - [ ] The extent terminates only on a `;` at anchor depth or a `}` closing a brace block opened at anchor depth; parens and brackets nest without terminating
 - [ ] Depth is measured relative to the anchor line, covered by a test anchoring on a nested target (a `package.json` key, a class method, a rule inside `@media`)
 - [ ] Brace-less statements use continuation lookahead that skips blank and comment lines
