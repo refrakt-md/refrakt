@@ -1122,10 +1122,27 @@ transform time a child cannot see its parent, while a parent sees its
 already-transformed children. `contextModifiers` works only because the engine
 runs later, over a whole tree.
 
+That rule splits into two channels, which behave differently and should be
+stated separately:
+
+- **`property` — which collection the child joins (`track` vs `hasPart`) — is
+  always the parent's.** It describes a relationship, and only the parent knows
+  it. This is forced, not chosen: without the parent's stamp the child floats
+  free whatever type it carries.
+- **`typeof` — what the child *is* — is the child's when declared, else the
+  parent's child-row default.**
+
 `contextProperties` therefore stays deferred, on the same grounds as D3's
-override: no demonstrated use. Should {% ref "BUG-016" /%} be resolved by making
-the composition work, the fix is a wider matcher on the parent's `children:`
-mapping — still nothing declared on the child.
+override: no demonstrated use.
+
+**{% ref "BUG-016" /%} is being resolved by making the composition work**
+({% ref "WORK-572" /%}), and that does not disturb any of the above — it
+confirms it. A nested `{% track %}` with no explicit `type` takes the playlist's
+child type; one with an explicit `type` keeps it; the playlist supplies the
+collection property either way. The child still declares nothing about its
+parent. What it costs this spec is only that `playlist`'s `children:` mapping
+must match tag-built children as well as transform-built ones — a wider matcher
+on the parent, not a new mechanism.
 
 ## Migration shape
 

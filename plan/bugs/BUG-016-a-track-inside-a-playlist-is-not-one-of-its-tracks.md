@@ -53,16 +53,23 @@ builds itself and never sees the `{% track %}`, so the track floats up.
 
 ## Expected
 
-One of:
+**Decided: the composition works.** `track` is useful standalone *and* useful
+inside a playlist when the list format is too limited and the author wants full
+control — that is the escape hatch the docs were describing, and it is worth
+having. So `playlist`'s content model accepts `track` tags into its `tracks`
+field, they render inside the `<ol>`, and they nest in the playlist's structured
+data like any other item.
 
-- **The composition works** — `playlist`'s content model accepts `track` tags
-  into its `tracks` field, they render inside the `<ol>`, and they nest in the
-  playlist's structured data like any other item.
-- **The composition is not offered** — the docs stop recommending it, and
-  writing it is a diagnostic rather than silently broken output.
+The bar is equivalence: **a nested track with no explicit `type` produces the
+same schema as the same content written as a list item.** The fuller form may
+carry more (`url`, `position`); it may not carry less.
 
-Either is defensible. What is not is the current state: documented, silently
-wrong in three ways at once.
+Withdrawing the composition was the cheaper option and was considered. It was
+rejected because the feature is genuinely wanted — the item model cannot express
+body content, cue points with prose, or per-track links, and an author who needs
+those has nowhere else to go.
+
+Fixed by {% ref "WORK-572" /%}.
 
 ## Why this is `major` rather than `minor`
 
@@ -89,26 +96,28 @@ Render the markdoc above through `extractSeo` and inspect the tree. Measured
 directly against the built packages, not inferred from the source.
 
 ## Acceptance Criteria
-- [ ] A decision is recorded: either `playlist` accepts `track` children, or the composition is withdrawn
-- [ ] If accepted — `{% track %}` children render inside the `<ol data-name="tracks">` and nest under the playlist's track property, with no detached entity
-- [ ] If withdrawn — `/runes/media/track` stops claiming the composition works, and the case produces a diagnostic rather than silent breakage
-- [ ] No `<li>` is emitted outside a list in either resolution
+- [ ] `{% track %}` children render inside the `<ol data-name="tracks">` and nest under the playlist's track property, with no detached entity
+- [ ] No `<li>` is emitted outside a list
+- [ ] A nested track with no explicit `type` produces the same JSON-LD as the same content written as a list item, asserted directly
+- [ ] `/runes/media/track`'s claim that the composition works is true, with a worked example
 - [ ] A test covers a `{% track %}` inside a `{% playlist %}`, asserting the JSON-LD has no detached entity
-- [ ] {% ref "BUG-013" /%}'s "two emitters" reasoning is corrected to match whichever resolution lands
+- [ ] {% ref "BUG-013" /%}'s "two emitters" reasoning is corrected to match this resolution
 
 ## Approach
 
-**Decide before {% ref "WORK-569" /%} builds `playlist`'s schema table**, because
-the two resolutions want different things from the table. If the composition is
-withdrawn, `playlist` and `track` are independent emitters that each key off
-their own `type` attribute and nothing is shared (see {% ref "SPEC-130" /%} D9).
-If it is accepted, `playlist`'s `children:` mapping must reach tag-built
-children as well as transform-built ones — still no context mechanism on the
-child, but a wider matcher on the parent.
+See {% ref "WORK-572" /%} for the mechanics. The two facts that shape it:
 
-Withdrawing is the smaller change and has no known users — the composition
-produces broken output today, so nobody can be relying on it. Accepting it is
-the better feature, and is a content-model change rather than a schema one.
+- **The parent supplies the collection property; the child may supply its own
+  type.** Nesting requires both `typeof` and `property` on the same node and
+  only the parent knows the relationship, so the parent already has to touch
+  every nested child — type inheritance then costs nothing extra. The child
+  declares nothing about its parent, exactly as {% ref "SPEC-130" /%} D9 has it.
+- **`track`'s `?? 'song'` default currently hides the absence** it would need to
+  detect, so the inheritance cannot fire until that moves to a fallback row.
+
+This lands **before** {% ref "WORK-569" /%}. Structure first, schema second: a
+`children:` mapping written while tag-built children are still not children
+covers half the population and gets revised the moment this ships.
 
 Note this is **not** blocked on {% ref "SPEC-130" /%}. The invalid `<li>` and
 the detached entity are wrong today regardless of how the schema channel is
@@ -117,8 +126,9 @@ expressed.
 ## References
 
 - {% ref "SPEC-130" /%} — D9, which this finding produced
+- {% ref "WORK-572" /%} — the fix
 - {% ref "BUG-013" /%} — the sibling defect; its "two emitters" section assumed this composition worked
-- {% ref "WORK-569" /%} — the work item that needs this settled
+- {% ref "WORK-569" /%} — takes over the stamping once the table exists
 - `plugins/media/src/tags/playlist.ts:121` — items built from `itemModel` only
 - `packages/runes/src/seo.ts:109` — the nesting rule the detached entity falls out of
 - `site/content/runes/media/track.md:16` — the claim

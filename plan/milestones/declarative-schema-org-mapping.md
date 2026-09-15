@@ -65,7 +65,7 @@ claims.
 
 ## What lands
 
-Twelve work items. The first five change no structured data at all — they are
+Thirteen work items. The first five change no structured data at all — they are
 the ground the migration stands on.
 
 **Ground**
@@ -90,6 +90,9 @@ the ground the migration stands on.
 
 **Migration**
 
+- {% ref "WORK-572" /%} — `playlist` accepts `{% track %}` children
+  ({% ref "BUG-016" /%}). A content-model fix, not a schema one, and it lands
+  before {% ref "WORK-569" /%} so the table covers the whole track population.
 - {% ref "WORK-567" /%} — Group A: seven runes gain a mapping or lose their type.
 - {% ref "WORK-568" /%} — Group B: fourteen flat mappings, and `NGO`.
 - {% ref "WORK-569" /%} — `playlist` **and** `track`: `by:`, per-type
@@ -97,10 +100,9 @@ the ground the migration stands on.
 - {% ref "WORK-570" /%} — retype and wrap: `accordion`, `recipe`, `how-to`.
 - {% ref "WORK-571" /%} — synthesised entities and `index`; closes Group C.
 
-Plus three bugs: {% ref "BUG-013" /%} and {% ref "BUG-015" /%} are fixed by
-{% ref "WORK-569" /%} and {% ref "WORK-564" /%}. {% ref "BUG-016" /%} is a
-content-model defect that needs deciding before {% ref "WORK-569" /%} lands —
-see below.
+Plus three bugs: {% ref "BUG-013" /%}, {% ref "BUG-015" /%} and
+{% ref "BUG-016" /%}, fixed by {% ref "WORK-569" /%}, {% ref "WORK-564" /%} and
+{% ref "WORK-572" /%} respectively.
 
 ## The spec's one open question, closed
 
@@ -129,10 +131,25 @@ in its graph is already stamping that child's attributes, and `contextProperties
 would be a second mechanism for what `children:` does. Markdoc's bottom-up
 transform order agrees: a child cannot see its parent at transform time.
 
+D9 splits into two channels, and the split is what makes the rest fall out:
+**`property` — which collection a child joins — is always the parent's**, since
+only the parent knows the relationship and nesting fails without its stamp.
+**`typeof` is the child's when declared, else the parent's child-row default.**
+So a parent is already obliged to touch every nested child, and type inheritance
+costs nothing extra.
+
 Two things fell out of asking. `track` ignores its own `type` exactly as
 `playlist` does, which folds into {% ref "BUG-013" /%} and widens
 {% ref "WORK-569" /%} to cover both runes. And the broken composition is
 {% ref "BUG-016" /%} — documented, and wrong in three ways at once.
+
+**{% ref "BUG-016" /%} is resolved by making the composition work**, not by
+withdrawing it: `track` is genuinely useful inside a playlist when the list
+format is too limited, and the item model cannot express body content, cue
+points with prose, or per-track links. {% ref "WORK-572" /%} lands it, to the
+bar that **a nested track with no explicit `type` produces the same schema as
+the same content written as a list item** — the fuller form may carry more, not
+less. None of that disturbs D9; it is D9's rule applied.
 
 ## Two deviations from the spec's migration shape
 

@@ -91,12 +91,15 @@ Each rune keys off the attribute its author already set:
 here rather than leaving it in Group B keeps the pair coherent and the review in
 one place.
 
-What this item does **not** do is fix {% ref "BUG-016" /%}. That is a content
-model defect, not a schema one, and it is wrong today regardless of how the
-channel is expressed — but it should be decided before this lands, because if
-the composition is made to work then `playlist`'s `children:` mapping needs a
-matcher wide enough to reach tag-built children as well as transform-built ones.
-Still nothing declared on the child.
+{% ref "BUG-016" /%} is **not** this item's to fix — it is a content-model
+defect, and {% ref "WORK-572" /%} lands it first. What that costs this item is
+one widening: `playlist`'s `children:` mapping must match tag-built children as
+well as transform-built ones, so the table covers the whole track population
+rather than half of it. Still nothing declared on the child.
+
+That ordering is deliberate. A `children:` mapping written while `{% track %}`
+children are not yet children would be revised the moment {% ref "WORK-572" /%}
+ships.
 
 ## Acceptance Criteria
 
@@ -107,6 +110,9 @@ Still nothing declared on the child.
 - [ ] `album` narrows to `MusicAlbum`, so the default stops being imprecise
 - [ ] The standalone `track` rune gains its own `by: 'type'` table over `song | episode | chapter | talk | video`, so `{% track type="episode" %}` stops emitting `MusicRecording`
 - [ ] No context mechanism is added — neither rune declares anything about the other (D9)
+- [ ] The `children:` mapping reaches tag-built children as well as transform-built ones, so a `{% track %}` child and a list item get the same row
+- [ ] The declarative table replaces {% ref "WORK-572" /%}'s imperative stamping on both shapes — not one migrated and one left behind
+- [ ] A nested track with no explicit `type` still matches its list-item equivalent after the table replaces the imperative form
 - [ ] The inline track spans resolve by their existing `data-name`s (`track-name`, `track-artist`, `track-duration`) — `playlist` needs no new names
 - [ ] `playlist`'s image source resolves through the name {% ref "WORK-561" /%} gave it
 - [ ] Every row is reviewed through `refrakt inspect`'s resolved-table view, per {% ref "WORK-566" /%}
@@ -138,12 +144,14 @@ own terms.
 - {% ref "WORK-561" /%}
 - {% ref "WORK-565" /%}
 - {% ref "WORK-566" /%}
+- {% ref "WORK-572" /%}
 
 ## References
 
 - {% ref "SPEC-130" /%} — "The driving case: playlist", D3, D5, and **D9** which settles the two emitters
 - {% ref "BUG-013" /%} — the mistyped playlists *and* tracks this resolves
-- {% ref "BUG-016" /%} — decide before this lands; it widens the `children:` matcher if resolved the other way
+- {% ref "BUG-016" /%} / {% ref "WORK-572" /%} — land first; they are why the `children:` matcher has to be wider
+- **`position`** — {% ref "WORK-572" /%} notes nested tracks could take `position: 'index'`, which list items lack entirely. Decide here, where the one generator lives
 - `plugins/media/src/tags/playlist.ts:28,98,153,237` — the enum, the default, the item type, the unconditional parent type
 - `plugins/media/src/tags/track.ts:15,96` — `track`'s own enum and its unconditional `MusicRecording`
 
