@@ -31,11 +31,11 @@ List items with coordinates become map pins. Bold text sets the pin name, italic
 
 ## Route
 
-Ordered lists with `route="true"` draw a connecting line between pins.
+Ordered lists with `route=true` draw a connecting line between pins.
 
 {% preview source=true %}
 
-{% map route="true" variant="terrain" %}
+{% map route=true variant="terrain" %}
 - **Portland** - 45.5152, -122.6784
 - **Crater Lake** - 42.8684, -122.1685
 - **Redwood National Park** - 41.2132, -124.0046

@@ -85,7 +85,7 @@
 			"plugin": "core",
 			"scope": "own",
 			"name": "limit",
-			"type": "string",
+			"type": "number",
 			"required": false,
 			"description": "Cap the number of groups (after sort).",
 			"page": "aggregate"
@@ -1275,7 +1275,7 @@
 			"plugin": "core",
 			"scope": "own",
 			"name": "limit",
-			"type": "string",
+			"type": "number",
 			"required": false,
 			"description": "Max items.",
 			"page": "collection"
@@ -15739,7 +15739,7 @@
 		{
 			"axis": "frame",
 			"name": "frame-displace",
-			"type": "\"top\" | \"bottom\" | \"end\" | \"bottom-end\" | \"top-end\"",
+			"type": "\"top\" | \"bottom\" | \"end\" | \"bottom-end\" | \"top-end\" | \"both\"",
 			"required": false,
 			"description": "Edge/corner the framed guest moves toward"
 		},

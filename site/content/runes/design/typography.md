@@ -48,7 +48,7 @@ A typography rune can show a single font for focused documentation.
 
 {% preview source=true %}
 
-{% typography title="Monospace" showCharset="true" %}
+{% typography title="Monospace" showCharset=true %}
 - mono: Fira Code (400, 500, 700)
 {% /typography %}
 

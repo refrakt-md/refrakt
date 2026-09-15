@@ -20,7 +20,7 @@ import type { PipelineWarning } from '@refrakt-md/types';
 type MarkdocLevel = 'debug' | 'info' | 'warning' | 'error' | 'critical';
 
 /**
- * Error ids reported out of the box — SPEC-132 phase 1.
+ * Error ids reported out of the box — SPEC-132 phases 1 and 2.
  *
  * An explicit allow-list rather than a deny-list, so enabling an id is a
  * deliberate act rather than a side effect of Markdoc adding one.
@@ -31,13 +31,23 @@ type MarkdocLevel = 'debug' | 'info' | 'warning' | 'error' | 'critical';
  * templates, with valid paths depending on author-defined frontmatter. Enabling
  * it flags every collection template. See SPEC-132 D4: it is out of scope
  * entirely rather than deferred, and needs its own spec.
- *
- * The phase 2 attribute ids (`attribute-value-invalid`,
- * `attribute-missing-required`, `attribute-type-invalid`) are added by WORK-558,
- * gated on WORK-557's blast-radius measurement — they wake the custom attribute
- * validators, which have never executed in a build.
  */
-export const DEFAULT_VALIDATION_IDS: readonly string[] = ['tag-undefined', 'attribute-undefined'];
+export const DEFAULT_VALIDATION_IDS: readonly string[] = [
+	// Phase 1 (WORK-556). `tag-undefined` is the one the milestone is sold on:
+	// a mistyped rune drops its tag and renders its children as prose, so the
+	// block silently vanishes from the page.
+	'tag-undefined',
+	'attribute-undefined',
+	// Phase 2 (WORK-558), gated on WORK-557's blast-radius measurement. These
+	// are what make `required` and `matches` mean something across ~175 tags,
+	// and they are the ids that wake the custom attribute validators in
+	// `packages/runes/src/attributes.ts` and `plugins/media/src/attributes.ts`
+	// — which had never executed in a build, because `transform()` does not
+	// invoke a custom type's `validate()`.
+	'attribute-value-invalid',
+	'attribute-missing-required',
+	'attribute-type-invalid',
+];
 
 /** How a finding's Markdoc level maps onto `PipelineWarning.severity`.
  *

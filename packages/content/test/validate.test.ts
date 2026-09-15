@@ -108,8 +108,14 @@ describe('content validation reports what the schemas already declared', () => {
 });
 
 describe('the id allow-list is explicit, so enabling an id is deliberate', () => {
-	it('ships only the phase 1 ids', () => {
-		expect([...DEFAULT_VALIDATION_IDS]).toEqual(['tag-undefined', 'attribute-undefined']);
+	it('ships the phase 1 and phase 2 ids', () => {
+		expect([...DEFAULT_VALIDATION_IDS]).toEqual([
+			'tag-undefined',
+			'attribute-undefined',
+			'attribute-value-invalid',
+			'attribute-missing-required',
+			'attribute-type-invalid',
+		]);
 	});
 
 	it('never enables `variable-undefined` (SPEC-132 D4)', async () => {
@@ -127,11 +133,135 @@ describe('the id allow-list is explicit, so enabling an id is deliberate', () =>
 	});
 
 	it('filters ids outside the allow-list', async () => {
-		// `attribute-value-invalid` is phase 2 (WORK-558), not phase 1.
+		// An id Markdoc can emit that we deliberately do not report.
 		const ids = resolveValidationIds();
-		expect(ids.has('attribute-value-invalid')).toBe(false);
-		expect(ids.has('attribute-missing-required')).toBe(false);
-		expect(ids.has('attribute-type-invalid')).toBe(false);
+		expect(ids.has('variable-undefined')).toBe(false);
+		expect(ids.has('no-inline-annotations')).toBe(false);
+	});
+});
+
+describe('phase 2 — the attribute ids make the schemas mean something', () => {
+	it('reports an out-of-enum `matches` value', async () => {
+		// BUG-014's symptom 1, third row: `transform()` passes the bad value
+		// straight through, the engine emits `.rf-hint--danger` and
+		// `[data-type="danger"]`, and no CSS matches — a silently unstyled
+		// variant. Lumina's css-coverage test cannot catch it, because it
+		// derives expected selectors from `baseConfig`: it checks config→CSS,
+		// never content→CSS.
+		page('index.md', '---\ntitle: T\n---\n\n{% hint type="danger" %}x{% /hint %}\n');
+		const found = await findings();
+		expect(found.map((f) => f.message).join('\n')).toContain('attribute-value-invalid');
+		expect(found.map((f) => f.message).join('\n')).toContain('danger');
+	});
+
+	it('reports a missing required attribute', async () => {
+		// `accordion-item` declares `name` required.
+		page(
+			'index.md',
+			'---\ntitle: T\n---\n\n{% accordion %}\n{% accordion-item %}\nbody\n{% /accordion-item %}\n{% /accordion %}\n',
+		);
+		const found = await findings();
+		expect(found.map((f) => f.message).join('\n')).toContain('attribute-missing-required');
+	});
+
+	it('reports a type mismatch', async () => {
+		// `collection.limit` is a count. Quoting it is the slip this catches —
+		// and the one that was in our own docs until WORK-558.
+		page('index.md', '---\ntitle: T\n---\n\n{% collection type="page" limit="5" /%}\n');
+		const found = await findings();
+		expect(found.map((f) => f.message).join('\n')).toContain('attribute-type-invalid');
+		expect(found.map((f) => f.message).join('\n')).toContain('limit');
+	});
+
+	it('accepts the correct forms without complaint', async () => {
+		page(
+			'index.md',
+			'---\ntitle: T\n---\n\n{% hint type="note" %}x{% /hint %}\n\n{% collection type="page" limit=5 /%}\n',
+		);
+		expect(await findings()).toEqual([]);
+	});
+});
+
+describe('the dormant custom attribute validators now execute in a build', () => {
+	// The heart of BUG-014's symptom 2. `transform()` does not invoke a
+	// `CustomAttributeTypeInterface`'s `validate()` — only `Markdoc.validate()`
+	// does — so every one of these classes was dead code in the build path.
+	// These tests run them through `loadContent`, the real pipeline, not
+	// through the class directly.
+
+	it('`SpaceSeparatedNumberList` rejects non-numeric input in a build', async () => {
+		// No shipped rune currently uses this type (only `SpaceSeparatedList`,
+		// on `grid.spans`), so the type is registered on a test rune here. What
+		// is being proved is that the *pipeline* invokes a custom validator at
+		// all — which it never did before SPEC-132 — not that any particular
+		// rune declares this one.
+		const { SpaceSeparatedNumberList } = await import('@refrakt-md/runes');
+		const probe = {
+			render: 'Probe',
+			attributes: { cols: { type: SpaceSeparatedNumberList, required: false } },
+		};
+		page('index.md', '---\ntitle: T\n---\n\n{% probe cols="1 two 3" /%}\n');
+		const site = await loadContent(
+			dir,
+			'/',
+			undefined,
+			{ probe } as never,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			dir,
+			undefined,
+			undefined,
+			{},
+		);
+		const found = site.pipelineWarnings.filter((w) => w.phase === 'validate');
+		const text = found.map((f) => f.message).join('\n');
+		expect(text).toContain('contains non-numeric value');
+		expect(text).toContain('two');
+	});
+
+	it('emits `error`, not `critical`, matching Markdoc (SPEC-132 D11)', async () => {
+		// All four custom validators returned `level: 'critical'` for an id
+		// Markdoc emits at `error`, so the identical failure was reported at two
+		// severities depending on which code path produced it. Harmless while
+		// nothing read severity; wrong the moment this milestone made it
+		// load-bearing — `critical` is the non-suppressible band, and an
+		// out-of-range attribute is not "the document could not be understood".
+		//
+		// `PipelineWarning` flattens both onto `severity: 'error'`, so the
+		// assertion that bites is the suppressibility one: a config disabling
+		// the id must now silence this finding, which it could not have done
+		// while the validator claimed `critical`.
+		const { SpaceSeparatedNumberList } = await import('@refrakt-md/runes');
+		const probe = {
+			render: 'Probe',
+			attributes: { cols: { type: SpaceSeparatedNumberList, required: false } },
+		};
+		page('index.md', '---\ntitle: T\n---\n\n{% probe cols="1 two 3" /%}\n');
+		const site = await loadContent(
+			dir,
+			'/',
+			undefined,
+			{ probe } as never,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			dir,
+			undefined,
+			undefined,
+			{ validation: { enabled: true, disableIds: ['attribute-type-invalid'] } },
+		);
+		const found = site.pipelineWarnings.filter((w) => w.phase === 'validate');
+		expect(found).toEqual([]);
+	});
+
+	it('`SpaceSeparatedList` runs for `grid.spans`, a shipped rune', async () => {
+		// The one custom-typed attribute that actually ships. A well-formed
+		// value passes; the validator running at all is the point.
+		page('index.md', '---\ntitle: T\n---\n\n{% grid spans="2 1 1" %}\na\n{% /grid %}\n');
+		expect(await findings()).toEqual([]);
 	});
 });
 

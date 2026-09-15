@@ -210,7 +210,12 @@ const universalAttributes: Record<string, SchemaAttribute> = {
 	'frame-displace': {
 		type: String,
 		required: false,
-		matches: ['top', 'bottom', 'end', 'bottom-end', 'top-end'],
+		// `both` was missing until SPEC-132's validation pass reported
+		// `{% showcase frame-displace="both" %}` as out-of-enum — while Lumina
+		// has styled `[data-displace="both"]` all along. The schema and the
+		// stylesheet disagreed, the page rendered correctly, and nothing else in
+		// the toolchain compares those two.
+		matches: ['top', 'bottom', 'end', 'bottom-end', 'top-end', 'both'],
 		description: 'Edge/corner the framed guest moves toward',
 	},
 	'frame-displace-mode': {
