@@ -660,18 +660,15 @@ That settles the layering:
 ### Two emitters, one mapping
 
 `MusicRecording` is stamped in two places: playlist's own `<li>` items (line 153)
-and the standalone `track` rune. A per-type child mapping has to reach both, or a
-podcast's inline items become `PodcastEpisode` while `{% track %}` children stay
-`MusicRecording`. Whether that is one config entry consulted twice or two
-entries kept in step is a design question this spec must answer, not gloss.
+and the standalone `track` rune. Whether a per-type child mapping has to reach
+both was left open here as a design question this spec "must answer, not gloss".
 
-It is also the same question as **contextual schema**, listed below under "what
-it unlocks" — a `{% track %}` inside a podcast is exactly "a child rune declares
-what it means inside a given parent". So `contextProperties` is not a later
-bonus; the third acceptance criterion (per-type child mappings) cannot be met
-for `playlist` without it, because `playlist` accepts both inline list items and
-`{% track %}` children. Either the spec includes it or it narrows that criterion
-to transform-built children only.
+**Answered in D9 below, and the premise was wrong.** The two emitters never
+populate the same collection: `playlist` builds its items exclusively from
+markdown-list `itemModel` data, and a `{% track %}` inside a `{% playlist %}`
+is not one of its tracks at all ({% ref "BUG-016" /%}). So there is no shared
+mapping to keep in step, `contextProperties` is not required, and the per-type
+child-mapping criterion stands as written.
 
 A related structural fact the table compiles down to: `collectJsonLd` nests a
 child entity **only when the same node carries both `typeof` and `property`**.
@@ -706,6 +703,12 @@ Worth noting this case is *already* expressible imperatively — a parent can ma
 a child's tags into its own `schema` map with a cursor. What config adds is
 letting the child declare it, so the parent needs no knowledge of every rune
 that might appear inside it.
+
+**Deferred by D9**, which found the case that motivated it (`playlist` /
+`track`) does not need it and could not use it: at transform time a child cannot
+see its parent, and a parent that wants a child in its graph must stamp
+`property` on it anyway. Kept here as a possible future, not a requirement of
+this spec.
 
 **Tooling.** `contracts` and `reference` can describe the structured data, which
 closes a real gap in what `contracts` claims to cover. Both read config, so the
@@ -1073,6 +1076,74 @@ The `position` divergence folds in here — `breadcrumb` emits
 the JSON-LD. Emit `String(index + 1)` so both channels agree, rather than
 teaching the invariant to tolerate a mismatch.
 
+### D9 — no `contextProperties`; each emitter keys off its own attribute
+
+The "two emitters, one mapping" section above called this a question the spec
+must answer. Answered here, against the built packages rather than by reading
+the transforms — and **the premise it rested on is false**.
+
+**The two emitters never populate the same collection.** `playlist` builds its
+track items exclusively from markdown-list `itemModel` data
+(`playlist.ts:121-155`). Its content model has no field matching a `track` tag,
+so a `{% track %}` inside a `{% playlist %}` falls through to the greedy `body`
+field: it renders as a bare `<li>` in the prose body, outside the
+`<ol data-name="tracks">`, and its JSON-LD floats up as a detached top-level
+`MusicRecording`. Filed as {% ref "BUG-016" /%} — it is wrong today, and the
+docs recommend it.
+
+So the feared mix — "a podcast's inline items become `PodcastEpisode` while
+`{% track %}` children stay `MusicRecording`" — cannot arise, because a
+`{% track %}` was never among the playlist's children in the first place.
+
+**Each emitter already declares its own type.** `track` carries its own
+five-value enum — `song | episode | chapter | talk | video` (`track.ts:15`) —
+and emits `MusicRecording` for all five, exactly as `playlist` ignores its own
+`type`. The same defect, in a second rune, independently fixable. So both
+convert to `by: 'type'` over their *own* attribute:
+
+| Rune | `by:` | Rows |
+|------|-------|------|
+| `playlist` | its `type` | album, mix, podcast, audiobook, series — plus the child mapping for its transform-built items |
+| `track` | its `type` | song, episode, chapter, talk, video |
+
+Two tables, no threading, nothing to keep in step. The consistency the section
+worried about is a property of each rune honouring the attribute the author
+already set, not of a shared mapping.
+
+**And the general rule, which outlives this rune pair: the parent retypes its
+children; a child never declares its context.** `collectJsonLd` nests a typed
+node into its parent only when that node carries both `typeof` and `property`
+(`seo.ts:109`), and only the parent can supply the `property`. So a parent that
+wants a child in its graph must already touch that child's attributes — at
+which point stamping `typeof` alongside `property` is free, and
+`contextProperties` would be a second mechanism for what `children:` does.
+Markdoc's bottom-up transform order says the same thing from the other side: at
+transform time a child cannot see its parent, while a parent sees its
+already-transformed children. `contextModifiers` works only because the engine
+runs later, over a whole tree.
+
+That rule splits into two channels, which behave differently and should be
+stated separately:
+
+- **`property` — which collection the child joins (`track` vs `hasPart`) — is
+  always the parent's.** It describes a relationship, and only the parent knows
+  it. This is forced, not chosen: without the parent's stamp the child floats
+  free whatever type it carries.
+- **`typeof` — what the child *is* — is the child's when declared, else the
+  parent's child-row default.**
+
+`contextProperties` therefore stays deferred, on the same grounds as D3's
+override: no demonstrated use.
+
+**{% ref "BUG-016" /%} is being resolved by making the composition work**
+({% ref "WORK-572" /%}), and that does not disturb any of the above — it
+confirms it. A nested `{% track %}` with no explicit `type` takes the playlist's
+child type; one with an explicit `type` keeps it; the playlist supplies the
+collection property either way. The child still declares nothing about its
+parent. What it costs this spec is only that `playlist`'s `children:` mapping
+must match tag-built children as well as transform-built ones — a wider matcher
+on the parent, not a new mechanism.
+
 ## Migration shape
 
 Seven work items. The first two are independent of the table and land first.
@@ -1139,6 +1210,7 @@ print.
 - {% ref "ADR-028" /%} — rune identity is not theme configuration; why the table belongs to the rune
 - {% ref "BUG-013" /%} — the mistyped playlists this would fix
 - {% ref "BUG-015" /%} — stylesheets selecting on the schema.org channel, four of them already dead
+- {% ref "BUG-016" /%} — a `{% track %}` inside a `{% playlist %}` is not one of its tracks; the finding behind D9
 - {% ref "SPEC-133" /%} — what `data-field` and `data-name` each mean; carries the `contentSection` removal this spec surfaced
 - {% ref "ADR-008" /%} — the flat namespace the table's keys live in
 
