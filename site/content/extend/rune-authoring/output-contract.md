@@ -54,12 +54,23 @@ return createComponentRenderable({
 
 ## Properties vs Refs
 
-These serve fundamentally different purposes:
+### The rule
+
+One question decides the map, and you can answer it without reading the engine:
+
+> **Does this node survive into the rendered HTML?**
+>
+> - **Yes, and someone might want to address it** → `refs`. It gets `data-name` and a BEM element class.
+> - **No — it exists only to carry a value** → `properties`. The value reaches the field bag; the carrier disappears.
+
+`properties` is *values only*. `refs` is *everything that stays*.
+
+The mechanism behind it:
 
 | Aspect | Properties | Refs |
 |--------|-----------|------|
 | **Attribute set** | `data-field="kebab-name"` | `data-name="key"` |
-| **Purpose** | Carry metadata for modifiers | Label structural elements |
+| **Purpose** | Carry a value for modifiers | Label a structural element |
 | **Engine reads** | Value from meta tag content | Element for BEM class |
 | **After transform** | Meta tag removed from output | Element stays, gets BEM class |
 | **Example** | `hintType` meta with content "warning" | `body` div wrapping content |
@@ -67,6 +78,38 @@ These serve fundamentally different purposes:
 **Properties** flow: rune emits `<meta data-field="hint-type" content="warning">` -> engine reads it -> adds `rf-hint--warning` class + `data-hint-type="warning"` attribute on the root -> removes the meta tag.
 
 **Refs** flow: rune emits `<div data-name="body">` -> engine reads it -> adds `rf-hint__body` class -> element stays in output.
+
+### What the catalog emits today
+
+The row above that says "meta tag removed from output" describes only one of the things `data-field` currently does. **Most `data-field` attributes in the catalog are on elements that survive** — `<li data-field="item">`, `<span data-field="name">`, `<time data-field="date">`, `<a data-field="url">`. Render the catalog and count for yourself:
+
+```bash
+npx refrakt inspect <rune> --site main
+```
+
+Only `<meta>` carriers reach the field bag. The discriminator in `createComponentRenderable` is literally `n.name === 'meta'`, not which map you chose — so **a non-meta placed in `properties` behaves like a ref that forgot its BEM class**. Nothing warns you; the rune just renders less styleable HTML.
+
+Write new runes against the rule, not against the catalog. Existing runes are being migrated; until then, expect to see `data-field` on elements that stay.
+
+### The one documented exception: postprocess sentinels
+
+A meta tag kept deliberately so a phase-4 `postProcess()` hook can find it later is **not** a consumed modifier — it must survive the engine, not be stripped by it. The `collection`, `aggregate`, `blog`, `backlog`, `relationships` and `plan-*` runes all do this.
+
+This is a genuinely different job from both maps above. It stays in `properties` today and is called out here rather than left implicit: if you are writing a sentinel, you are taking the exception knowingly, not discovering it by accident.
+
+### Schema-relevant nodes
+
+Three idioms recur once a rune also publishes structured data. They follow from the rule rather than competing with it:
+
+| The node is… | Map | Why |
+|---|---|---|
+| A **value-only source** — a computed string with no visible carrier | `properties` | Nothing survives, so there is nothing to address. |
+| A node the schema **stamps in place** — an element that gets `typeof`/`property` added to it | `refs` | It survives, so it needs a name. The schema annotates the node the ref already gives you. |
+| **Both** — visible *and* value-bearing, like `<time data-field="date">` | `refs`, with a named entry | It survives, so the rule puts it in `refs`; give it a name so the schema mapping can reach it by that name rather than by attribute. |
+
+The third case is the common one and the one worth getting right. Name it in `refs`, and its value reaches the schema by the mapping stamping the node in place — not by emitting a duplicate meta beside it.
+
+**Do not style off the schema channel.** CSS selects the BEM element class (`.rf-lore__title`), never `[property="headline"]`. A rune's appearance must not depend on its structured-data output, or correcting the schema becomes a visual regression. This is enforced by a test.
 
 ### Component override mapping
 
