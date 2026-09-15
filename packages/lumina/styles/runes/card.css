@@ -1,5 +1,5 @@
 @layer skin {
-/* card — generic content card (SPEC-070) — skin.
+	/* card — generic content card (SPEC-070) — skin.
  *
  * A soft surface fill plus a subtle border; the surface + border + structure
  * (media split, footer separator) carry the card. Pure layout (the stretched
@@ -7,84 +7,87 @@
  * @refrakt-md/skeleton (styles/runes/card.css). All spacing stays here in skin.
  */
 
-.rf-card {
-	/* Thin-edge inset model (matches `bento-cell`): the card hugs its media with
+	.rf-card {
+		/* Thin-edge inset model (matches `bento-cell`): the card hugs its media with
 	 * only a small edge margin, and the content zone adds the remaining inset
 	 * back below. The root `padding` lives in skin so it overrides the
 	 * surface-elevation padding (dimensions/surfaces.css, also skin) by source
 	 * order — in skeleton it would lose and an elevated card would double-pad. */
-	--rf-card-edge: var(--rf-spacing-sm);
-	--rf-card-media-gap: var(--rf-spacing-lg);
-	--rf-card-split-gap: var(--rf-spacing-sm);
-	padding: var(--rf-card-edge);
-	border-radius: var(--rf-radius-container);
-	border: 1px solid var(--rf-color-border);
-	background: var(--rf-color-surface);
-}
+		--rf-card-edge: var(--rf-spacing-sm);
+		--rf-card-media-gap: var(--rf-spacing-lg);
+		--rf-card-split-gap: var(--rf-spacing-sm);
+		padding: var(--rf-card-edge);
+		border-radius: var(--rf-radius-container);
+		border: 1px solid var(--rf-color-border);
+		background: var(--rf-color-surface);
+	}
 
-/* Media slot shares the card surface chrome (1px border + recessed well) so the
+	/* Media slot shares the card surface chrome (1px border + recessed well) so the
  * framed media reads as part of the card. `:where()` keeps it overridable
  * per-instance, matching the elevation rule. */
-:where(.rf-card) [data-section="media"] {
-	border: 1px solid var(--rf-color-border);
-	background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
-}
+	:where(.rf-card) [data-section="media"] {
+		border: 1px solid var(--rf-color-border);
+		background: oklch(from var(--rf-color-surface) calc(l - var(--rf-surface-inset-shift)) c h);
+	}
 
-/* Content zone fills the remaining inset so total text padding still equals
+	/* Content zone fills the remaining inset so total text padding still equals
  * `--rune-padding`. `max(0, …)` keeps dense+ (rune-padding < edge) safe. */
-.rf-card__content {
-	padding: max(0px, calc(var(--rune-padding, var(--rf-spacing-md)) - var(--rf-card-edge)));
-}
+	.rf-card__content {
+		padding: max(0px, calc(var(--rune-padding, var(--rf-spacing-md)) - var(--rf-card-edge)));
+	}
 
-/* Split layout: tight column-gap beside content; row-gap stays at the larger
+	/* Split layout: tight column-gap beside content; row-gap stays at the larger
  * media-gap so the collapse step picks up the generous stacked spacing. (The
  * vertical-align is structure; these gaps are skin.) */
-.rf-card[data-media-position="start"],
-.rf-card[data-media-position="end"] {
-	column-gap: var(--rf-card-split-gap);
-	row-gap: var(--rf-card-media-gap);
-}
+	.rf-card[data-media-position="start"],
+	.rf-card[data-media-position="end"] {
+		column-gap: var(--rf-card-split-gap);
+		row-gap: var(--rf-card-media-gap);
+	}
 
-/* Stacked layouts (top / bottom): explicit gap between the media banner and the
+	/* Stacked layouts (top / bottom): explicit gap between the media banner and the
  * content zone. */
-.rf-card[data-media-position="top"] > [data-section="media"] {
-	margin-bottom: var(--rf-card-media-gap);
-}
-.rf-card[data-media-position="bottom"] > [data-section="media"] {
-	margin-top: var(--rf-card-media-gap);
-}
+	.rf-card[data-media-position="top"] > [data-section="media"] {
+		margin-bottom: var(--rf-card-media-gap);
+	}
+	.rf-card[data-media-position="bottom"] > [data-section="media"] {
+		margin-top: var(--rf-card-media-gap);
+	}
 
-/* Only a linked card (stretched `.rf-card__link` present) reacts to hover. */
-.rf-card:has(.rf-card__link):hover {
-	background: var(--rf-color-surface-hover);
-}
+	/* Only a linked card (stretched `.rf-card__link` present) reacts to hover. */
+	.rf-card:has(.rf-card__link):hover {
+		background: var(--rf-color-surface-hover);
+	}
 
-.rf-card__body > :first-child { margin-top: 0; }
-.rf-card__body > :last-child { margin-bottom: 0; }
+	.rf-card__body > :first-child {
+		margin-top: 0;
+	}
+	.rf-card__body > :last-child {
+		margin-bottom: 0;
+	}
 
-/* Eyebrow — a leading paragraph immediately before a heading, the same kicker
+	/* Eyebrow — a leading paragraph immediately before a heading, the same kicker
  * treatment as page-section / recipe. */
-.rf-card__eyebrow {
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-semibold);
-	letter-spacing: var(--rf-tracking-wider);
-	text-transform: uppercase;
-	color: var(--rf-color-primary);
-	margin: 0 0 var(--rf-spacing-xs);
-}
+	.rf-card__eyebrow {
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-semibold);
+		letter-spacing: var(--rf-tracking-wider);
+		text-transform: uppercase;
+		color: var(--rf-color-primary);
+		margin: 0 0 var(--rf-spacing-xs);
+	}
 
-/* The body's leading heading is the card title; drop its prose top margin so it
+	/* The body's leading heading is the card title; drop its prose top margin so it
  * hugs the eyebrow (or the top of the card) instead of opening a gap. */
-.rf-card__title {
-	margin-top: 0;
-}
+	.rf-card__title {
+		margin-top: 0;
+	}
 
-.rf-card__footer {
-	margin-top: var(--rf-spacing-sm);
-	padding-top: var(--rf-spacing-sm);
-	border-top: 1px solid var(--rf-color-border);
-	font-size: 0.8125em;
-	color: var(--rf-color-muted);
-}
-
+	.rf-card__footer {
+		margin-top: var(--rf-spacing-sm);
+		padding-top: var(--rf-spacing-sm);
+		border-top: 1px solid var(--rf-color-border);
+		font-size: 0.8125em;
+		color: var(--rf-color-muted);
+	}
 }

@@ -3,7 +3,9 @@
  * toggle-bar flex, and the meta/label hides. Radii, surface, chrome, glyphs, and
  * the toggle-button styling stay skin (Lumina's styles/runes/juxtapose.css). */
 
-.rf-juxtapose__panels { overflow: hidden; }
+.rf-juxtapose__panels {
+	overflow: hidden;
+}
 .rf-juxtapose-panel {
 	position: relative;
 	overflow: hidden;
@@ -13,16 +15,24 @@
 	bottom: 0.5rem;
 	pointer-events: none;
 }
-.rf-juxtapose-panel:first-child .rf-juxtapose-panel__name { left: 0.5rem; }
-.rf-juxtapose-panel:last-child .rf-juxtapose-panel__name { right: 0.5rem; }
+.rf-juxtapose-panel:first-child .rf-juxtapose-panel__name {
+	left: 0.5rem;
+}
+.rf-juxtapose-panel:last-child .rf-juxtapose-panel__name {
+	right: 0.5rem;
+}
 .rf-juxtapose-panel__body :is(img, .rf-placeholder) {
 	display: block;
 	width: 100%;
 	height: auto;
 	object-fit: cover;
 }
-.rf-juxtapose-panel > meta { display: none; }
-.rf-juxtapose--toggle .rf-juxtapose-panel__name { display: none; }
+.rf-juxtapose-panel > meta {
+	display: none;
+}
+.rf-juxtapose--toggle .rf-juxtapose-panel__name {
+	display: none;
+}
 
 /* Slider divider (injected by behavior) */
 .rf-juxtapose__divider {

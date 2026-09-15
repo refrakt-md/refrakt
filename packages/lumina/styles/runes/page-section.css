@@ -1,20 +1,19 @@
 @layer skin {
-/* PageSection */
-.rf-page-section {
-	padding: 3rem 0;
-}
-.rf-page-section > h1:first-child,
-.rf-page-section > h2:first-child {
-	margin-top: 0;
-}
-.rf-page-section--split {
-	gap: 3rem;
-}
-
-@media (max-width: 768px) {
-	.rf-page-section--split {
-		gap: 1.5rem;
+	/* PageSection */
+	.rf-page-section {
+		padding: 3rem 0;
 	}
-}
+	.rf-page-section > h1:first-child,
+	.rf-page-section > h2:first-child {
+		margin-top: 0;
+	}
+	.rf-page-section--split {
+		gap: 3rem;
+	}
 
+	@media (max-width: 768px) {
+		.rf-page-section--split {
+			gap: 1.5rem;
+		}
+	}
 }

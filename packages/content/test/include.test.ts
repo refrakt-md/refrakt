@@ -24,10 +24,7 @@ describe('include through a real build', () => {
 		sharedDir = path.join(root, 'shared-partials');
 		mkdirSync(path.join(contentDir, '_partials'), { recursive: true });
 		mkdirSync(sharedDir, { recursive: true });
-		writeFileSync(
-			path.join(root, 'people.csv'),
-			'name,role\nAda,Engineer\nGrace,Admiral\n',
-		);
+		writeFileSync(path.join(root, 'people.csv'), 'name,role\nAda,Engineer\nGrace,Admiral\n');
 	});
 
 	afterEach(() => {
@@ -36,8 +33,17 @@ describe('include through a real build', () => {
 
 	const build = (fileRoots?: Record<string, string>) =>
 		loadContent(
-			contentDir, '/', undefined, undefined, undefined, undefined,
-			undefined, undefined, /* projectRoot */ root, undefined, fileRoots,
+			contentDir,
+			'/',
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			/* projectRoot */ root,
+			undefined,
+			fileRoots,
 		);
 
 	const html = (site: Awaited<ReturnType<typeof loadContent>>, url = '/') =>

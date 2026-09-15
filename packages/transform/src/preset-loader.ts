@@ -49,14 +49,10 @@ export async function loadPreset(
 		try {
 			parsed = JSON.parse(readFileSync(fileURLToPath(resolvedSpec), 'utf-8'));
 		} catch (err) {
-			throw new Error(
-				`failed to load JSON preset '${specifier}': ${(err as Error).message}`,
-			);
+			throw new Error(`failed to load JSON preset '${specifier}': ${(err as Error).message}`);
 		}
 		if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-			throw new Error(
-				`preset '${specifier}' JSON is not a ThemeTokensConfig object`,
-			);
+			throw new Error(`preset '${specifier}' JSON is not a ThemeTokensConfig object`);
 		}
 		return parsed as ThemeTokensConfig;
 	}
@@ -65,21 +61,15 @@ export async function loadPreset(
 	try {
 		mod = await import(resolvedSpec);
 	} catch (err) {
-		throw new Error(
-			`failed to load preset '${specifier}': ${(err as Error).message}`,
-		);
+		throw new Error(`failed to load preset '${specifier}': ${(err as Error).message}`);
 	}
 
 	const config = (mod.default ?? mod.config) as ThemeTokensConfig | undefined;
 	if (config === undefined) {
-		throw new Error(
-			`preset '${specifier}' has no default or named 'config' export`,
-		);
+		throw new Error(`preset '${specifier}' has no default or named 'config' export`);
 	}
 	if (typeof config !== 'object' || config === null || Array.isArray(config)) {
-		throw new Error(
-			`preset '${specifier}' export is not a ThemeTokensConfig object`,
-		);
+		throw new Error(`preset '${specifier}' export is not a ThemeTokensConfig object`);
 	}
 
 	return config;
@@ -94,5 +84,5 @@ export async function loadPresets(
 	specifiers: readonly string[],
 	options: { from?: string } = {},
 ): Promise<ThemeTokensConfig[]> {
-	return Promise.all(specifiers.map(s => loadPreset(s, options)));
+	return Promise.all(specifiers.map((s) => loadPreset(s, options)));
 }

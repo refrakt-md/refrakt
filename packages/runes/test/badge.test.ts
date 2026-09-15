@@ -5,7 +5,7 @@ describe('badge tag', () => {
 	it('renders a neutral badge by default', () => {
 		const result = parse(`Frontend {% badge %}New{% /badge %} feature`);
 
-		const badge = findTag(result as any, t => t.attributes['data-rune'] === 'badge');
+		const badge = findTag(result as any, (t) => t.attributes['data-rune'] === 'badge');
 		expect(badge).toBeDefined();
 		expect(badge!.name).toBe('span');
 		expect(badge!.attributes['class']).toBe('rf-badge');
@@ -15,7 +15,7 @@ describe('badge tag', () => {
 
 	it('emits data-meta-sentiment per attribute', () => {
 		const result = parse(`{% badge sentiment="positive" %}New{% /badge %}`);
-		const badge = findTag(result as any, t => t.attributes['data-rune'] === 'badge');
+		const badge = findTag(result as any, (t) => t.attributes['data-rune'] === 'badge');
 		expect(badge!.attributes['data-meta-sentiment']).toBe('positive');
 	});
 
@@ -23,20 +23,28 @@ describe('badge tag', () => {
 		const statusBadge = parse(`{% badge type="status" %}Active{% /badge %}`);
 		const defaultBadge = parse(`{% badge %}Frontend{% /badge %}`);
 
-		expect(findTag(statusBadge as any, t => t.attributes['data-rune'] === 'badge')!.attributes['data-meta-type']).toBe('status');
-		expect(findTag(defaultBadge as any, t => t.attributes['data-rune'] === 'badge')!.attributes['data-meta-type']).toBe('tag');
+		expect(
+			findTag(statusBadge as any, (t) => t.attributes['data-rune'] === 'badge')!.attributes[
+				'data-meta-type'
+			],
+		).toBe('status');
+		expect(
+			findTag(defaultBadge as any, (t) => t.attributes['data-rune'] === 'badge')!.attributes[
+				'data-meta-type'
+			],
+		).toBe('tag');
 	});
 
 	it('preserves children as text content', () => {
 		const result = parse(`{% badge sentiment="caution" %}Beta{% /badge %}`);
-		const badge = findTag(result as any, t => t.attributes['data-rune'] === 'badge');
+		const badge = findTag(result as any, (t) => t.attributes['data-rune'] === 'badge');
 		expect(badge!.children).toContain('Beta');
 	});
 
 	it('accepts all sentiment values', () => {
 		for (const sentiment of ['positive', 'negative', 'caution', 'neutral']) {
 			const result = parse(`{% badge sentiment="${sentiment}" %}Label{% /badge %}`);
-			const badge = findTag(result as any, t => t.attributes['data-rune'] === 'badge');
+			const badge = findTag(result as any, (t) => t.attributes['data-rune'] === 'badge');
 			expect(badge).toBeDefined();
 			expect(badge!.attributes['data-meta-sentiment']).toBe(sentiment);
 		}
@@ -45,7 +53,7 @@ describe('badge tag', () => {
 	it('accepts all type values', () => {
 		for (const type of ['status', 'category', 'quantity', 'temporal', 'tag', 'id']) {
 			const result = parse(`{% badge type="${type}" %}Label{% /badge %}`);
-			const badge = findTag(result as any, t => t.attributes['data-rune'] === 'badge');
+			const badge = findTag(result as any, (t) => t.attributes['data-rune'] === 'badge');
 			expect(badge).toBeDefined();
 			expect(badge!.attributes['data-meta-type']).toBe(type);
 		}
@@ -53,14 +61,16 @@ describe('badge tag', () => {
 
 	it('combines sentiment + type', () => {
 		const result = parse(`{% badge type="status" sentiment="positive" %}Active{% /badge %}`);
-		const badge = findTag(result as any, t => t.attributes['data-rune'] === 'badge');
+		const badge = findTag(result as any, (t) => t.attributes['data-rune'] === 'badge');
 		expect(badge!.attributes['data-meta-sentiment']).toBe('positive');
 		expect(badge!.attributes['data-meta-type']).toBe('status');
 	});
 
 	it('works inline inside a paragraph', () => {
-		const result = parse(`This API is {% badge sentiment="caution" %}Beta{% /badge %} — use carefully.`);
-		const badge = findTag(result as any, t => t.attributes['data-rune'] === 'badge');
+		const result = parse(
+			`This API is {% badge sentiment="caution" %}Beta{% /badge %} — use carefully.`,
+		);
+		const badge = findTag(result as any, (t) => t.attributes['data-rune'] === 'badge');
 		expect(badge).toBeDefined();
 	});
 });

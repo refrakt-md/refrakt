@@ -4,7 +4,11 @@ import { makeTag, parseFields, readField } from '../src/helpers.js';
 describe('SPEC-082 field channel helpers', () => {
 	describe('parseFields', () => {
 		it('parses the data-rune-fields JSON object', () => {
-			const tag = makeTag('article', { 'data-rune-fields': JSON.stringify({ status: 'done', rating: 4 }) }, []);
+			const tag = makeTag(
+				'article',
+				{ 'data-rune-fields': JSON.stringify({ status: 'done', rating: 4 }) },
+				[],
+			);
 			expect(parseFields(tag)).toEqual({ status: 'done', rating: 4 });
 		});
 
@@ -17,9 +21,13 @@ describe('SPEC-082 field channel helpers', () => {
 
 	describe('readField', () => {
 		it('reads from the bag first (camelCase key), coercing scalars to string', () => {
-			const tag = makeTag('article', {
-				'data-rune-fields': JSON.stringify({ status: 'done', servings: 4 }),
-			}, []);
+			const tag = makeTag(
+				'article',
+				{
+					'data-rune-fields': JSON.stringify({ status: 'done', servings: 4 }),
+				},
+				[],
+			);
 			expect(readField(tag, 'status')).toBe('done');
 			expect(readField(tag, 'servings')).toBe('4'); // number → string
 		});
@@ -32,11 +40,13 @@ describe('SPEC-082 field channel helpers', () => {
 		});
 
 		it('prefers the bag over a legacy meta when both are present', () => {
-			const tag = makeTag('article', {
-				'data-rune-fields': JSON.stringify({ status: 'done' }),
-			}, [
-				makeTag('meta', { 'data-field': 'status', content: 'ready' }),
-			]);
+			const tag = makeTag(
+				'article',
+				{
+					'data-rune-fields': JSON.stringify({ status: 'done' }),
+				},
+				[makeTag('meta', { 'data-field': 'status', content: 'ready' })],
+			);
 			expect(readField(tag, 'status')).toBe('done');
 		});
 
@@ -45,9 +55,13 @@ describe('SPEC-082 field channel helpers', () => {
 		});
 
 		it('accepts a pre-parsed bag to avoid re-parsing per field', () => {
-			const tag = makeTag('article', {
-				'data-rune-fields': JSON.stringify({ a: '1', b: '2' }),
-			}, []);
+			const tag = makeTag(
+				'article',
+				{
+					'data-rune-fields': JSON.stringify({ a: '1', b: '2' }),
+				},
+				[],
+			);
 			const bag = parseFields(tag);
 			expect(readField(tag, 'a', bag)).toBe('1');
 			expect(readField(tag, 'b', bag)).toBe('2');

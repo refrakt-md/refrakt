@@ -32,9 +32,10 @@ export function emitTableNode(table: TypedTable): Node {
 			// A numeric column with a parseable value carries the normalized number
 			// on `data-value`; the cell text stays the original human-formatted
 			// string (and the no-JS fallback).
-			const attrs = table.columnTypes[c] === 'numeric' && cell.value !== null
-				? { 'data-value': String(cell.value) }
-				: {};
+			const attrs =
+				table.columnTypes[c] === 'numeric' && cell.value !== null
+					? { 'data-value': String(cell.value) }
+					: {};
 			return new Ast.Node('td', attrs, [inlineText(cell.text)]);
 		});
 		return new Ast.Node('tr', {}, cells);
@@ -81,8 +82,13 @@ export function emitBodyTableNode(headers: string[], rows: Node[][][]): Node {
 	const headerCells = headers.map((h) => new Ast.Node('th', {}, [inlineText(h)]));
 	const thead = new Ast.Node('thead', {}, [new Ast.Node('tr', {}, headerCells)]);
 
-	const bodyRows = rows.map((cells) =>
-		new Ast.Node('tr', {}, cells.map((cell) => new Ast.Node('td', {}, unwrapCell(cell)))),
+	const bodyRows = rows.map(
+		(cells) =>
+			new Ast.Node(
+				'tr',
+				{},
+				cells.map((cell) => new Ast.Node('td', {}, unwrapCell(cell))),
+			),
 	);
 	const tbody = new Ast.Node('tbody', {}, bodyRows);
 

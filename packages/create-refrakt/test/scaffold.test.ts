@@ -8,7 +8,7 @@ function tmpTarget(): string {
 	return join(
 		tmpdir(),
 		`create-refrakt-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-		'my-site'
+		'my-site',
 	);
 }
 
@@ -86,7 +86,9 @@ describe('scaffold', () => {
 		expect(config.sites.main.theme).toBe('@my-org/theme-custom');
 		expect(config.sites.main.contentDir).toBe('./content');
 		expect(config.sites.main.target).toBe('svelte');
-		expect(config.$schema).toMatch(/^https:\/\/refrakt\.md\/schemas\/v\d+\.\d+\/refrakt\.config\.schema\.json$/);
+		expect(config.$schema).toMatch(
+			/^https:\/\/refrakt\.md\/schemas\/v\d+\.\d+\/refrakt\.config\.schema\.json$/,
+		);
 	});
 
 	it('generates dependency versions matching the package version', async () => {
@@ -126,7 +128,7 @@ describe('scaffold', () => {
 		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' });
 
 		await expect(
-			scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' })
+			scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina' }),
 		).rejects.toThrow('already exists');
 	});
 
@@ -156,7 +158,10 @@ describe('scaffold', () => {
 		const layout = readFileSync(join(targetDir, 'src', 'routes', '+layout.svelte'), 'utf-8');
 		expect(layout).toContain('virtual:refrakt/tokens');
 
-		const page = readFileSync(join(targetDir, 'src', 'routes', '[...slug]', '+page.svelte'), 'utf-8');
+		const page = readFileSync(
+			join(targetDir, 'src', 'routes', '[...slug]', '+page.svelte'),
+			'utf-8',
+		);
 		expect(page).toContain('virtual:refrakt/theme');
 	});
 
@@ -195,7 +200,12 @@ describe('scaffold (html target)', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
+		await scaffold({
+			projectName: 'my-site',
+			targetDir,
+			theme: '@refrakt-md/lumina',
+			target: 'html',
+		});
 
 		expect(existsSync(join(targetDir, 'build.ts'))).toBe(true);
 		expect(existsSync(join(targetDir, 'tsconfig.json'))).toBe(true);
@@ -223,7 +233,12 @@ describe('scaffold (html target)', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
+		await scaffold({
+			projectName: 'my-site',
+			targetDir,
+			theme: '@refrakt-md/lumina',
+			target: 'html',
+		});
 
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		expect(pkg.name).toBe('my-site');
@@ -248,7 +263,12 @@ describe('scaffold (html target)', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
+		await scaffold({
+			projectName: 'my-site',
+			targetDir,
+			theme: '@refrakt-md/lumina',
+			target: 'html',
+		});
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
 		expect(config.sites.main.target).toBe('html');
@@ -260,7 +280,12 @@ describe('scaffold (html target)', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
+		await scaffold({
+			projectName: 'my-site',
+			targetDir,
+			theme: '@refrakt-md/lumina',
+			target: 'html',
+		});
 
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		const ownPkg = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
@@ -276,10 +301,15 @@ describe('scaffold (html target)', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' });
+		await scaffold({
+			projectName: 'my-site',
+			targetDir,
+			theme: '@refrakt-md/lumina',
+			target: 'html',
+		});
 
 		await expect(
-			scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' })
+			scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'html' }),
 		).rejects.toThrow('already exists');
 	});
 });
@@ -289,7 +319,12 @@ describe('scaffold (astro target)', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'astro' });
+		await scaffold({
+			projectName: 'my-site',
+			targetDir,
+			theme: '@refrakt-md/lumina',
+			target: 'astro',
+		});
 
 		expect(existsSync(join(targetDir, 'astro.config.mjs'))).toBe(true);
 		expect(existsSync(join(targetDir, 'tsconfig.json'))).toBe(true);
@@ -313,7 +348,12 @@ describe('scaffold (astro target)', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'astro' });
+		await scaffold({
+			projectName: 'my-site',
+			targetDir,
+			theme: '@refrakt-md/lumina',
+			target: 'astro',
+		});
 
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		expect(pkg.name).toBe('my-site');
@@ -332,7 +372,12 @@ describe('scaffold (astro target)', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'astro' });
+		await scaffold({
+			projectName: 'my-site',
+			targetDir,
+			theme: '@refrakt-md/lumina',
+			target: 'astro',
+		});
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
 		expect(config.sites.main.target).toBe('astro');
@@ -345,7 +390,12 @@ describe('scaffold (nuxt target)', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'nuxt' });
+		await scaffold({
+			projectName: 'my-site',
+			targetDir,
+			theme: '@refrakt-md/lumina',
+			target: 'nuxt',
+		});
 
 		expect(existsSync(join(targetDir, 'nuxt.config.ts'))).toBe(true);
 		expect(existsSync(join(targetDir, 'tsconfig.json'))).toBe(true);
@@ -367,7 +417,12 @@ describe('scaffold (nuxt target)', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'nuxt' });
+		await scaffold({
+			projectName: 'my-site',
+			targetDir,
+			theme: '@refrakt-md/lumina',
+			target: 'nuxt',
+		});
 
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		expect(pkg.name).toBe('my-site');
@@ -384,7 +439,12 @@ describe('scaffold (nuxt target)', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'nuxt' });
+		await scaffold({
+			projectName: 'my-site',
+			targetDir,
+			theme: '@refrakt-md/lumina',
+			target: 'nuxt',
+		});
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
 		expect(config.sites.main.target).toBe('nuxt');
@@ -396,7 +456,12 @@ describe('scaffold (next target)', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'next' });
+		await scaffold({
+			projectName: 'my-site',
+			targetDir,
+			theme: '@refrakt-md/lumina',
+			target: 'next',
+		});
 
 		expect(existsSync(join(targetDir, 'next.config.mjs'))).toBe(true);
 		expect(existsSync(join(targetDir, 'tsconfig.json'))).toBe(true);
@@ -419,7 +484,12 @@ describe('scaffold (next target)', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'next' });
+		await scaffold({
+			projectName: 'my-site',
+			targetDir,
+			theme: '@refrakt-md/lumina',
+			target: 'next',
+		});
 
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		expect(pkg.name).toBe('my-site');
@@ -437,7 +507,12 @@ describe('scaffold (next target)', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'next' });
+		await scaffold({
+			projectName: 'my-site',
+			targetDir,
+			theme: '@refrakt-md/lumina',
+			target: 'next',
+		});
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
 		expect(config.sites.main.target).toBe('next');
@@ -449,7 +524,12 @@ describe('scaffold (eleventy target)', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'eleventy' });
+		await scaffold({
+			projectName: 'my-site',
+			targetDir,
+			theme: '@refrakt-md/lumina',
+			target: 'eleventy',
+		});
 
 		expect(existsSync(join(targetDir, 'eleventy.config.js'))).toBe(true);
 		expect(existsSync(join(targetDir, '.gitignore'))).toBe(true);
@@ -472,7 +552,12 @@ describe('scaffold (eleventy target)', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'eleventy' });
+		await scaffold({
+			projectName: 'my-site',
+			targetDir,
+			theme: '@refrakt-md/lumina',
+			target: 'eleventy',
+		});
 
 		const pkg = JSON.parse(readFileSync(join(targetDir, 'package.json'), 'utf-8'));
 		expect(pkg.name).toBe('my-site');
@@ -489,7 +574,12 @@ describe('scaffold (eleventy target)', () => {
 		const targetDir = tmpTarget();
 		cleanupDirs.push(join(targetDir, '..'));
 
-		await scaffold({ projectName: 'my-site', targetDir, theme: '@refrakt-md/lumina', target: 'eleventy' });
+		await scaffold({
+			projectName: 'my-site',
+			targetDir,
+			theme: '@refrakt-md/lumina',
+			target: 'eleventy',
+		});
 
 		const config = JSON.parse(readFileSync(join(targetDir, 'refrakt.config.json'), 'utf-8'));
 		expect(config.sites.main.target).toBe('eleventy');

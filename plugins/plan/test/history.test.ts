@@ -29,7 +29,9 @@ describe('parseTagAttributes', () => {
 			status: 'draft',
 			version: '1.0',
 		});
-		expect(parseTagAttributes('{% bug id="BUG-001" status="confirmed" severity="major" %}')).toEqual({
+		expect(
+			parseTagAttributes('{% bug id="BUG-001" status="confirmed" severity="major" %}'),
+		).toEqual({
 			id: 'BUG-001',
 			status: 'confirmed',
 			severity: 'major',
@@ -129,17 +131,13 @@ describe('diffCriteria', () => {
 	it('detects checked criteria', () => {
 		const prev = [{ text: 'Unit tests pass', checked: false }];
 		const curr = [{ text: 'Unit tests pass', checked: true }];
-		expect(diffCriteria(prev, curr)).toEqual([
-			{ text: 'Unit tests pass', action: 'checked' },
-		]);
+		expect(diffCriteria(prev, curr)).toEqual([{ text: 'Unit tests pass', action: 'checked' }]);
 	});
 
 	it('detects unchecked criteria', () => {
 		const prev = [{ text: 'Unit tests pass', checked: true }];
 		const curr = [{ text: 'Unit tests pass', checked: false }];
-		expect(diffCriteria(prev, curr)).toEqual([
-			{ text: 'Unit tests pass', action: 'unchecked' },
-		]);
+		expect(diffCriteria(prev, curr)).toEqual([{ text: 'Unit tests pass', action: 'unchecked' }]);
 	});
 
 	it('detects added criteria', () => {
@@ -148,9 +146,7 @@ describe('diffCriteria', () => {
 			{ text: 'Existing', checked: false },
 			{ text: 'New criterion', checked: false },
 		];
-		expect(diffCriteria(prev, curr)).toEqual([
-			{ text: 'New criterion', action: 'added' },
-		]);
+		expect(diffCriteria(prev, curr)).toEqual([{ text: 'New criterion', action: 'added' }]);
 	});
 
 	it('detects removed criteria', () => {
@@ -159,9 +155,7 @@ describe('diffCriteria', () => {
 			{ text: 'Remove this', checked: false },
 		];
 		const curr = [{ text: 'Keep this', checked: false }];
-		expect(diffCriteria(prev, curr)).toEqual([
-			{ text: 'Remove this', action: 'removed' },
-		]);
+		expect(diffCriteria(prev, curr)).toEqual([{ text: 'Remove this', action: 'removed' }]);
 	});
 
 	it('handles multiple simultaneous changes', () => {
@@ -171,10 +165,10 @@ describe('diffCriteria', () => {
 			{ text: 'C', checked: false },
 		];
 		const curr = [
-			{ text: 'A', checked: true },   // checked
-			{ text: 'B', checked: true },   // unchanged
+			{ text: 'A', checked: true }, // checked
+			{ text: 'B', checked: true }, // unchanged
 			// C removed
-			{ text: 'D', checked: false },  // added
+			{ text: 'D', checked: false }, // added
 		];
 		const changes = diffCriteria(prev, curr);
 		expect(changes).toContainEqual({ text: 'A', action: 'checked' });
@@ -219,7 +213,8 @@ describe('extractEntityHistory', () => {
 	});
 
 	it('returns a single created event for a new file', () => {
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="draft" priority="low" %}\n\n# My Task\n\n{% /work %}',
 			'Create WORK-001',
 		);
@@ -237,11 +232,13 @@ describe('extractEntityHistory', () => {
 	});
 
 	it('detects attribute changes across commits', () => {
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="draft" priority="low" %}\n\n# Task\n\n{% /work %}',
 			'Create task',
 		);
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="ready" priority="high" %}\n\n# Task\n\n{% /work %}',
 			'Promote task',
 		);
@@ -250,17 +247,27 @@ describe('extractEntityHistory', () => {
 		expect(events).toHaveLength(2);
 		expect(events[0].kind).toBe('created');
 		expect(events[1].kind).toBe('attributes');
-		expect(events[1].attributeChanges).toContainEqual({ field: 'status', from: 'draft', to: 'ready' });
-		expect(events[1].attributeChanges).toContainEqual({ field: 'priority', from: 'low', to: 'high' });
+		expect(events[1].attributeChanges).toContainEqual({
+			field: 'status',
+			from: 'draft',
+			to: 'ready',
+		});
+		expect(events[1].attributeChanges).toContainEqual({
+			field: 'priority',
+			from: 'low',
+			to: 'high',
+		});
 		expect(events[1].message).toBe('Promote task');
 	});
 
 	it('detects criteria changes', () => {
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="ready" %}\n\n# Task\n\n## AC\n- [ ] Write tests\n- [ ] Write docs\n\n{% /work %}',
 			'Create task',
 		);
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="ready" %}\n\n# Task\n\n## AC\n- [x] Write tests\n- [ ] Write docs\n\n{% /work %}',
 			'Check off tests',
 		);
@@ -268,17 +275,17 @@ describe('extractEntityHistory', () => {
 		const events = extractEntityHistory('work/task.md', TMP);
 		expect(events).toHaveLength(2);
 		expect(events[1].kind).toBe('criteria');
-		expect(events[1].criteriaChanges).toEqual([
-			{ text: 'Write tests', action: 'checked' },
-		]);
+		expect(events[1].criteriaChanges).toEqual([{ text: 'Write tests', action: 'checked' }]);
 	});
 
 	it('detects resolution section being added', () => {
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="ready" %}\n\n# Task\n\n{% /work %}',
 			'Create task',
 		);
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="done" %}\n\n# Task\n\n## Resolution\n\nCompleted: 2026-04-12\n\n{% /work %}',
 			'Mark done',
 		);
@@ -287,15 +294,21 @@ describe('extractEntityHistory', () => {
 		expect(events).toHaveLength(2);
 		// The status change takes priority as the event kind
 		expect(events[1].kind).toBe('attributes');
-		expect(events[1].attributeChanges).toContainEqual({ field: 'status', from: 'ready', to: 'done' });
+		expect(events[1].attributeChanges).toContainEqual({
+			field: 'status',
+			from: 'ready',
+			to: 'done',
+		});
 	});
 
 	it('detects resolution-only change', () => {
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="done" %}\n\n# Task\n\n{% /work %}',
 			'Create done task',
 		);
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="done" %}\n\n# Task\n\n## Resolution\n\nCompleted: 2026-04-12\n\n{% /work %}',
 			'Add resolution',
 		);
@@ -306,11 +319,13 @@ describe('extractEntityHistory', () => {
 	});
 
 	it('falls back to content event for body-only edits', () => {
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="ready" %}\n\n# Task\n\nOriginal description.\n\n{% /work %}',
 			'Create task',
 		);
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="ready" %}\n\n# Task\n\nUpdated description with more detail.\n\n{% /work %}',
 			'Expand description',
 		);
@@ -322,11 +337,13 @@ describe('extractEntityHistory', () => {
 	});
 
 	it('handles combined attribute + criteria changes in one commit', () => {
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="ready" %}\n\n# Task\n\n- [ ] Step A\n- [ ] Step B\n\n{% /work %}',
 			'Create',
 		);
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="done" %}\n\n# Task\n\n- [x] Step A\n- [x] Step B\n\n{% /work %}',
 			'Complete task',
 		);
@@ -334,34 +351,43 @@ describe('extractEntityHistory', () => {
 		const events = extractEntityHistory('work/task.md', TMP);
 		expect(events).toHaveLength(2);
 		expect(events[1].kind).toBe('attributes');
-		expect(events[1].attributeChanges).toContainEqual({ field: 'status', from: 'ready', to: 'done' });
+		expect(events[1].attributeChanges).toContainEqual({
+			field: 'status',
+			from: 'ready',
+			to: 'done',
+		});
 		expect(events[1].criteriaChanges).toContainEqual({ text: 'Step A', action: 'checked' });
 		expect(events[1].criteriaChanges).toContainEqual({ text: 'Step B', action: 'checked' });
 	});
 
 	it('handles multi-step lifecycle', () => {
 		// Create
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="draft" priority="low" %}\n\n# Task\n\n- [ ] Build it\n- [ ] Test it\n\n{% /work %}',
 			'Draft task',
 		);
 		// Ready
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="ready" priority="medium" %}\n\n# Task\n\n- [ ] Build it\n- [ ] Test it\n\n{% /work %}',
 			'Mark ready',
 		);
 		// In progress
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="in-progress" priority="medium" %}\n\n# Task\n\n- [ ] Build it\n- [ ] Test it\n\n{% /work %}',
 			'Start working',
 		);
 		// Check first criterion
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="in-progress" priority="medium" %}\n\n# Task\n\n- [x] Build it\n- [ ] Test it\n\n{% /work %}',
 			'Built it',
 		);
 		// Done
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="done" priority="medium" %}\n\n# Task\n\n- [x] Build it\n- [x] Test it\n\n## Resolution\n\nCompleted: 2026-04-12\n\n{% /work %}',
 			'Mark done',
 		);
@@ -373,17 +399,33 @@ describe('extractEntityHistory', () => {
 		expect(events[0].initialAttributes?.status).toBe('draft');
 
 		expect(events[1].kind).toBe('attributes');
-		expect(events[1].attributeChanges).toContainEqual({ field: 'status', from: 'draft', to: 'ready' });
-		expect(events[1].attributeChanges).toContainEqual({ field: 'priority', from: 'low', to: 'medium' });
+		expect(events[1].attributeChanges).toContainEqual({
+			field: 'status',
+			from: 'draft',
+			to: 'ready',
+		});
+		expect(events[1].attributeChanges).toContainEqual({
+			field: 'priority',
+			from: 'low',
+			to: 'medium',
+		});
 
 		expect(events[2].kind).toBe('attributes');
-		expect(events[2].attributeChanges).toContainEqual({ field: 'status', from: 'ready', to: 'in-progress' });
+		expect(events[2].attributeChanges).toContainEqual({
+			field: 'status',
+			from: 'ready',
+			to: 'in-progress',
+		});
 
 		expect(events[3].kind).toBe('criteria');
 		expect(events[3].criteriaChanges).toEqual([{ text: 'Build it', action: 'checked' }]);
 
 		expect(events[4].kind).toBe('attributes');
-		expect(events[4].attributeChanges).toContainEqual({ field: 'status', from: 'in-progress', to: 'done' });
+		expect(events[4].attributeChanges).toContainEqual({
+			field: 'status',
+			from: 'in-progress',
+			to: 'done',
+		});
 		expect(events[4].criteriaChanges).toContainEqual({ text: 'Test it', action: 'checked' });
 	});
 
@@ -395,7 +437,8 @@ describe('extractEntityHistory', () => {
 	});
 
 	it('includes short hash (7 chars)', () => {
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="ready" %}\n\n# Task\n\n{% /work %}',
 			'Create',
 		);
@@ -406,7 +449,8 @@ describe('extractEntityHistory', () => {
 	});
 
 	it('records ISO date string', () => {
-		writeAndCommit('work/task.md',
+		writeAndCommit(
+			'work/task.md',
 			'{% work id="WORK-001" status="ready" %}\n\n# Task\n\n{% /work %}',
 			'Create',
 		);

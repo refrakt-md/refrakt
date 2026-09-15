@@ -2,14 +2,27 @@ import type { SerializedTag } from '@refrakt-md/types';
 import { readMeta, resolveOffset, parsePlacement, findMediaZone } from '../helpers.js';
 import type { FramePresetDefinition } from '../types.js';
 import type { Facet, FacetContext, FacetStyle } from './types.js';
-import { applyChromeToTag, hasMediaSection, type Chrome, type ChromeCarry, type ChromeTarget } from './chrome.js';
+import {
+	applyChromeToTag,
+	hasMediaSection,
+	type Chrome,
+	type ChromeCarry,
+	type ChromeTarget,
+} from './chrome.js';
 import type { UniversalAxisFacet } from './describe.js';
 
 /** SPEC-086 — the frame facet vocabulary: the inline `frame-*` overrides that
  *  sit beside a named `frame` preset. */
 export const FRAME_FACET_META = [
-	'frame-aspect', 'frame-displace', 'frame-displace-mode', 'frame-offset',
-	'frame-oversize', 'frame-place', 'frame-anchor', 'frame-overflow', 'frame-shadow',
+	'frame-aspect',
+	'frame-displace',
+	'frame-displace-mode',
+	'frame-offset',
+	'frame-oversize',
+	'frame-place',
+	'frame-anchor',
+	'frame-overflow',
+	'frame-shadow',
 ] as const;
 
 /** Read the `frame` preset + `frame-*` facet metas, resolve the preset (one
@@ -68,7 +81,8 @@ function resolveFrameChrome(
 	const styles: FacetStyle[] = [];
 	if (presetName) dataAttrs['data-frame'] = presetName;
 	if (facets.displace) dataAttrs['data-displace'] = facets.displace;
-	if ((facets as Record<string, string>).displaceMode) dataAttrs['data-displace-mode'] = (facets as Record<string, string>).displaceMode;
+	if ((facets as Record<string, string>).displaceMode)
+		dataAttrs['data-displace-mode'] = (facets as Record<string, string>).displaceMode;
 	if (facets.shadow) dataAttrs['data-frame-shadow'] = facets.shadow;
 	// `frame-overflow="bleed"` — a content-overflow policy on the media frame.
 	// Only meaningful on a bleed host (the clip host's media well crops the
@@ -106,7 +120,8 @@ export const frameFacet: Facet = {
 		if (!chrome) return null;
 
 		const warnings = [];
-		let target: ChromeTarget = ctx.config.frameTarget ?? (hasMediaSection(ctx.config.sections) ? 'media' : null);
+		let target: ChromeTarget =
+			ctx.config.frameTarget ?? (hasMediaSection(ctx.config.sections) ? 'media' : null);
 		if (!target) warnings.push(noTargetWarning(ctx.rune));
 
 		// SPEC-116 — `frame-overflow="bleed"` only does anything on a bleed host
@@ -147,12 +162,27 @@ export const frameFacet: Facet = {
 export const frameAxis: UniversalAxisFacet = {
 	axis: 'frame',
 	contract: {
-		description: 'Surface chrome (SPEC-086): a named preset from the theme registry with inline `frame-*` overrides layered on top.',
+		description:
+			'Surface chrome (SPEC-086): a named preset from the theme registry with inline `frame-*` overrides layered on top.',
 		source: 'meta',
 		inputs: ['frame', ...FRAME_FACET_META],
-		dataAttributes: ['data-frame', 'data-displace', 'data-displace-mode', 'data-frame-shadow', 'data-frame-overflow'],
-		customProperties: ['--frame-aspect', '--frame-offset', '--frame-oversize', '--frame-anchor', '--frame-place-x', '--frame-place-y'],
-		condition: 'lands on the surface named by `frameTarget`, defaulting to the media zone when the rune declares one. With no target the metas are still consumed but the chrome is dropped with a warning. `data-frame-overflow="bleed"` is stripped with a warning on a clip host.',
+		dataAttributes: [
+			'data-frame',
+			'data-displace',
+			'data-displace-mode',
+			'data-frame-shadow',
+			'data-frame-overflow',
+		],
+		customProperties: [
+			'--frame-aspect',
+			'--frame-offset',
+			'--frame-oversize',
+			'--frame-anchor',
+			'--frame-place-x',
+			'--frame-place-y',
+		],
+		condition:
+			'lands on the surface named by `frameTarget`, defaulting to the media zone when the rune declares one. With no target the metas are still consumed but the chrome is dropped with a warning. `data-frame-overflow="bleed"` is stripped with a warning on a clip host.',
 	},
 	describeForRune: (config) => {
 		const target = config.frameTarget ?? (hasMediaSection(config.sections) ? 'media' : null);

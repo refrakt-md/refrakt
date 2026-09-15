@@ -5,25 +5,19 @@ describe('parseCssFile', () => {
 	it('extracts BEM block selectors', () => {
 		const css = `.rf-hint { color: red; }`;
 		const matches = parseCssFile(css, 'hint.css');
-		expect(matches).toEqual([
-			{ selector: '.rf-hint', file: 'hint.css', line: 1 },
-		]);
+		expect(matches).toEqual([{ selector: '.rf-hint', file: 'hint.css', line: 1 }]);
 	});
 
 	it('extracts BEM modifier selectors', () => {
 		const css = `.rf-hint--warning { color: orange; }`;
 		const matches = parseCssFile(css, 'hint.css');
-		expect(matches).toEqual([
-			{ selector: '.rf-hint--warning', file: 'hint.css', line: 1 },
-		]);
+		expect(matches).toEqual([{ selector: '.rf-hint--warning', file: 'hint.css', line: 1 }]);
 	});
 
 	it('extracts BEM element selectors', () => {
 		const css = `.rf-hint__icon { display: flex; }`;
 		const matches = parseCssFile(css, 'hint.css');
-		expect(matches).toEqual([
-			{ selector: '.rf-hint__icon', file: 'hint.css', line: 1 },
-		]);
+		expect(matches).toEqual([{ selector: '.rf-hint__icon', file: 'hint.css', line: 1 }]);
 	});
 
 	it('extracts multiple selectors from compound rules', () => {
@@ -49,10 +43,10 @@ describe('parseCssFile', () => {
 	it('handles comma-separated selectors', () => {
 		const css = `.rf-hint__body p:last-child,\n.rf-hint__body ul { margin: 0; }`;
 		const matches = parseCssFile(css, 'hint.css');
-		const selectors = matches.map(m => m.selector);
+		const selectors = matches.map((m) => m.selector);
 		expect(selectors).toContain('.rf-hint__body');
 		// Should appear twice (once per comma-separated selector)
-		expect(selectors.filter(s => s === '.rf-hint__body')).toHaveLength(2);
+		expect(selectors.filter((s) => s === '.rf-hint__body')).toHaveLength(2);
 	});
 
 	it('ignores non .rf-* selectors', () => {
@@ -92,9 +86,7 @@ describe('auditSelectors', () => {
 
 	it('marks unstyled selectors correctly', () => {
 		const generated = ['.rf-hint', '.rf-hint--warning', '.rf-hint__body'];
-		const cssMatches = [
-			{ selector: '.rf-hint', file: 'hint.css', line: 1 },
-		];
+		const cssMatches = [{ selector: '.rf-hint', file: 'hint.css', line: 1 }];
 		const result = auditSelectors('hint', generated, cssMatches);
 		expect(result.total).toBe(3);
 		expect(result.styled).toBe(1);
@@ -124,8 +116,12 @@ describe('collectAllSelectors', () => {
 	it('collects selectors across variants', () => {
 		const variants = { type: ['note', 'warning'] };
 		const selectors = collectAllSelectors(
-			'hint', 'hint', 'rf',
-			variants, undefined, undefined,
+			'hint',
+			'hint',
+			'rf',
+			variants,
+			undefined,
+			undefined,
 			(flags) => {
 				const base = ['.rf-hint', '.rf-hint__body'];
 				if (flags.type) base.push(`.rf-hint--${flags.type}`);
@@ -140,8 +136,12 @@ describe('collectAllSelectors', () => {
 
 	it('adds context modifier selectors synthetically', () => {
 		const selectors = collectAllSelectors(
-			'hint', 'hint', 'rf',
-			{}, { Hero: 'in-hero', Feature: 'in-feature' }, undefined,
+			'hint',
+			'hint',
+			'rf',
+			{},
+			{ Hero: 'in-hero', Feature: 'in-feature' },
+			undefined,
 			() => ['.rf-hint', '.rf-hint__body'],
 		);
 		expect(selectors).toContain('.rf-hint--in-hero');
@@ -149,18 +149,20 @@ describe('collectAllSelectors', () => {
 	});
 
 	it('adds static modifier selectors synthetically', () => {
-		const selectors = collectAllSelectors(
-			'tier', 'tier', 'rf',
-			{}, undefined, ['featured'],
-			() => ['.rf-tier'],
-		);
+		const selectors = collectAllSelectors('tier', 'tier', 'rf', {}, undefined, ['featured'], () => [
+			'.rf-tier',
+		]);
 		expect(selectors).toContain('.rf-tier--featured');
 	});
 
 	it('deduplicates and sorts selectors', () => {
 		const selectors = collectAllSelectors(
-			'hint', 'hint', 'rf',
-			{ type: ['note', 'warning'] }, undefined, undefined,
+			'hint',
+			'hint',
+			'rf',
+			{ type: ['note', 'warning'] },
+			undefined,
+			undefined,
 			() => ['.rf-hint', '.rf-hint__body', '.rf-hint'],
 		);
 		// No duplicates
@@ -174,8 +176,12 @@ describe('collectAllSelectors', () => {
 
 	it('runs with empty flags when no variants', () => {
 		const selectors = collectAllSelectors(
-			'grid', 'grid', 'rf',
-			{}, undefined, undefined,
+			'grid',
+			'grid',
+			'rf',
+			{},
+			undefined,
+			undefined,
 			(flags) => {
 				expect(Object.keys(flags)).toHaveLength(0);
 				return ['.rf-grid'];

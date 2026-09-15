@@ -22,7 +22,8 @@ import type { SerializedTag } from '@refrakt-md/types';
 // console spy: the driver owns emission, and a test that watches the console is
 // really testing the driver.
 
-const meta = (field: string, content: string) => makeTag('meta', { 'data-field': field, content }, []);
+const meta = (field: string, content: string) =>
+	makeTag('meta', { 'data-field': field, content }, []);
 
 function ctx(opts: {
 	rune?: string;
@@ -34,7 +35,11 @@ function ctx(opts: {
 	const rune = opts.rune ?? 'grid';
 	const config = opts.config ?? { block: rune };
 	return {
-		tag: makeTag('div', { 'data-rune': rune, ...(opts.attrs ?? {}) }, (opts.children ?? []) as never) as SerializedTag,
+		tag: makeTag(
+			'div',
+			{ 'data-rune': rune, ...(opts.attrs ?? {}) },
+			(opts.children ?? []) as never,
+		) as SerializedTag,
 		config,
 		block: `rf-${config.block}`,
 		rune,
@@ -50,11 +55,17 @@ describe('reading on a rune that declares no prose', () => {
 	// WORK-537 moved the gate from the `body` section role onto a declared
 	// capability, so `PROSE` is what unlocks the axis — and `NO_PROSE` keeps its
 	// body role deliberately, to pin that the role alone is no longer enough.
-	const PROSE: RuneConfig = { block: 'textblock', sections: { content: 'body' }, provides: ['prose'] };
+	const PROSE: RuneConfig = {
+		block: 'textblock',
+		sections: { content: 'body' },
+		provides: ['prose'],
+	};
 	const NO_PROSE: RuneConfig = { block: 'datatable', sections: { table: 'body' } };
 
 	it('warns, naming the register and why nothing carries it', () => {
-		const result = readingFacet.resolve(ctx({ rune: 'datatable', config: NO_PROSE, attrs: { reading: 'prose' } }));
+		const result = readingFacet.resolve(
+			ctx({ rune: 'datatable', config: NO_PROSE, attrs: { reading: 'prose' } }),
+		);
 		const [warning] = warnings(result);
 		expect(warning?.code).toBe('reading-without-prose');
 		expect(warning?.message).toContain('reading="prose"');
@@ -64,12 +75,16 @@ describe('reading on a rune that declares no prose', () => {
 	});
 
 	it('publishes no register at all, so dropcap sees the same answer', () => {
-		const result = readingFacet.resolve(ctx({ rune: 'datatable', config: NO_PROSE, attrs: { reading: 'prose' } }));
+		const result = readingFacet.resolve(
+			ctx({ rune: 'datatable', config: NO_PROSE, attrs: { reading: 'prose' } }),
+		);
 		expect(result?.state).toBeUndefined();
 	});
 
 	it('resolves normally on a rune that declares prose', () => {
-		const result = readingFacet.resolve(ctx({ rune: 'textblock', config: PROSE, attrs: { reading: 'prose' } }));
+		const result = readingFacet.resolve(
+			ctx({ rune: 'textblock', config: PROSE, attrs: { reading: 'prose' } }),
+		);
 		expect(warnings(result)).toEqual([]);
 		expect(result?.state?.reading).toBe('prose');
 	});
@@ -84,14 +99,22 @@ describe('reading on a rune that declares no prose', () => {
 	it('stays silent when nothing was asked for', () => {
 		// The default case, and the one that decides whether this channel is
 		// usable: every unmarked block in a build resolves to `ui`.
-		expect(warnings(readingFacet.resolve(ctx({ rune: 'datatable', config: NO_PROSE })))).toEqual([]);
+		expect(warnings(readingFacet.resolve(ctx({ rune: 'datatable', config: NO_PROSE })))).toEqual(
+			[],
+		);
 		expect(warnings(readingFacet.resolve(ctx({ rune: 'textblock', config: PROSE })))).toEqual([]);
 	});
 
 	it('stays silent on a value that is not a register at all', () => {
 		// A typo falls through the resolution cascade to `ui`; it is Markdoc's
 		// job to reject it, not this facet's to guess.
-		expect(warnings(readingFacet.resolve(ctx({ rune: 'datatable', config: NO_PROSE, attrs: { reading: 'prosey' } })))).toEqual([]);
+		expect(
+			warnings(
+				readingFacet.resolve(
+					ctx({ rune: 'datatable', config: NO_PROSE, attrs: { reading: 'prosey' } }),
+				),
+			),
+		).toEqual([]);
 	});
 });
 
@@ -122,7 +145,10 @@ describe('content-place on a rune that declares no such modifier', () => {
 	});
 
 	it('resolves normally in cover mode', () => {
-		const c = ctx({ rune: 'card', axes: { 'content-place': 'end center', 'media-position': 'cover' } });
+		const c = ctx({
+			rune: 'card',
+			axes: { 'content-place': 'end center', 'media-position': 'cover' },
+		});
 		const result = contentPlaceFacet.resolve(c);
 		expect(warnings(result)).toEqual([]);
 		expect(result?.styles).toContainEqual(['--cover-place-block', 'end']);
@@ -130,13 +156,22 @@ describe('content-place on a rune that declares no such modifier', () => {
 });
 
 describe('scrim-strength in cover mode', () => {
-	const COVER_RUNE: RuneConfig = { block: 'card', modifiers: { 'media-position': { source: 'meta' } } };
-	const inCover = (children: unknown[]) => ctx({
-		rune: 'card', config: COVER_RUNE, children, axes: { 'media-position': 'cover' },
-	});
+	const COVER_RUNE: RuneConfig = {
+		block: 'card',
+		modifiers: { 'media-position': { source: 'meta' } },
+	};
+	const inCover = (children: unknown[]) =>
+		ctx({
+			rune: 'card',
+			config: COVER_RUNE,
+			children,
+			axes: { 'media-position': 'cover' },
+		});
 
 	it('warns, naming why the media well cannot honour it', () => {
-		const result = coverFacet.resolve(inCover([meta('scrim', 'bottom'), meta('scrim-strength', 'lg')]));
+		const result = coverFacet.resolve(
+			inCover([meta('scrim', 'bottom'), meta('scrim-strength', 'lg')]),
+		);
 		const [warning] = warnings(result);
 		expect(warning?.code).toBe('scrim-strength-in-cover');
 		expect(warning?.message).toContain('card');
@@ -147,14 +182,18 @@ describe('scrim-strength in cover mode', () => {
 	it('claims the meta so it cannot leak into the rendered tree', () => {
 		// The half that is a rendering bug rather than a diagnostic gap: the tag
 		// was left unconsumed, so the strip pass let a raw `<meta>` through.
-		const result = coverFacet.resolve(inCover([meta('scrim', 'bottom'), meta('scrim-strength', 'lg')]));
+		const result = coverFacet.resolve(
+			inCover([meta('scrim', 'bottom'), meta('scrim-strength', 'lg')]),
+		);
 		expect(result?.consumes).toContain('scrim-strength');
 	});
 
 	it('consumes without warning when the scrim is switched off', () => {
 		// `scrim="none"` means the author already said they want no scrim; telling
 		// them a scrim facet was ignored is noise.
-		const result = coverFacet.resolve(inCover([meta('scrim', 'none'), meta('scrim-strength', 'lg')]));
+		const result = coverFacet.resolve(
+			inCover([meta('scrim', 'none'), meta('scrim-strength', 'lg')]),
+		);
 		expect(warnings(result)).toEqual([]);
 		expect(result?.consumes).toContain('scrim-strength');
 	});

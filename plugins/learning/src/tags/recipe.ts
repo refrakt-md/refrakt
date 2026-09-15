@@ -2,14 +2,28 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, SplitLayoutModel, pageSectionProperties, buildLayoutMetas, extractMediaImage } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	RenderableNodeCursor,
+	SplitLayoutModel,
+	pageSectionProperties,
+	buildLayoutMetas,
+	extractMediaImage,
+} from '@refrakt-md/runes';
 
 const difficultyType = ['easy', 'medium', 'hard'] as const;
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
 // what a section *is* (ADR-028).
-export const recipeSections = { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' } as const;
+export const recipeSections = {
+	preamble: 'preamble',
+	headline: 'title',
+	blurb: 'description',
+	media: 'media',
+} as const;
 export const recipeMediaSlots = { media: 'cover' } as const;
 
 export const recipe = createContentModelSchema({
@@ -17,14 +31,38 @@ export const recipe = createContentModelSchema({
 	mediaSlots: recipeMediaSlots,
 	base: SplitLayoutModel,
 	attributes: {
-		prepTime: { type: String, required: false, default: '', description: 'Time needed for preparation before cooking (e.g. "15 min")' },
-		cookTime: { type: String, required: false, default: '', description: 'Active cooking or baking time (e.g. "45 min")' },
-		servings: { type: Number, required: false, description: 'Number of portions the recipe yields' },
-		difficulty: { type: String, required: false, matches: difficultyType.slice(), default: 'medium', description: 'Skill level: easy, medium, or hard' },
+		prepTime: {
+			type: String,
+			required: false,
+			default: '',
+			description: 'Time needed for preparation before cooking (e.g. "15 min")',
+		},
+		cookTime: {
+			type: String,
+			required: false,
+			default: '',
+			description: 'Active cooking or baking time (e.g. "45 min")',
+		},
+		servings: {
+			type: Number,
+			required: false,
+			description: 'Number of portions the recipe yields',
+		},
+		difficulty: {
+			type: String,
+			required: false,
+			matches: difficultyType.slice(),
+			default: 'medium',
+			description: 'Skill level: easy, medium, or hard',
+		},
 		// SPEC-089 — cover mode (`media-position="cover"`, from splitLayoutAttributes)
 		// regroups the preamble header over the media (header scope). `content-place`
 		// anchors that overlaid preamble: "<block> <inline>" (e.g. "end start") or "auto".
-		'content-place': { type: String, required: false, description: 'Cover overlay anchor: "<block> <inline>" (e.g. "end start") or "auto"' },
+		'content-place': {
+			type: String,
+			required: false,
+			description: 'Cover overlay anchor: "<block> <inline>" (e.g. "end start") or "auto"',
+		},
 	},
 	contentModel: {
 		type: 'delimited',
@@ -35,9 +73,7 @@ export const recipe = createContentModelSchema({
 			{
 				name: 'media',
 				type: 'sequence',
-				fields: [
-					{ name: 'media', match: 'any', optional: true, greedy: true },
-				],
+				fields: [{ name: 'media', match: 'any', optional: true, greedy: true }],
 			},
 			{
 				name: 'content',
@@ -47,7 +83,12 @@ export const recipe = createContentModelSchema({
 					{ name: 'eyebrow', match: 'paragraph', optional: true },
 					{ name: 'headline', match: 'heading', optional: true },
 					{ name: 'blurb', match: 'paragraph', optional: true },
-					{ name: 'ingredients', match: 'list:unordered', optional: true, template: '- Ingredient' },
+					{
+						name: 'ingredients',
+						match: 'list:unordered',
+						optional: true,
+						template: '- Ingredient',
+					},
 					{ name: 'steps', match: 'list:ordered', optional: true, template: '1. Step' },
 					{ name: 'tips', match: 'blockquote', greedy: true, optional: true },
 				],
@@ -59,18 +100,17 @@ export const recipe = createContentModelSchema({
 		const mediaZone = (resolved.media ?? {}) as ResolvedContent;
 
 		// Collect header AST nodes (eyebrow, headline, blurb) and transform
-		const headerAstNodes = [
-			contentZone.eyebrow,
-			contentZone.headline,
-			contentZone.blurb,
-		].filter(Boolean) as Node[];
+		const headerAstNodes = [contentZone.eyebrow, contentZone.headline, contentZone.blurb].filter(
+			Boolean,
+		) as Node[];
 		const header = new RenderableNodeCursor(
 			Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[],
 		);
 
 		// Transform ingredients (single unordered list node)
 		const ingredientsRendered = Markdoc.transform(
-			contentZone.ingredients ? [contentZone.ingredients as Node] : [], config,
+			contentZone.ingredients ? [contentZone.ingredients as Node] : [],
+			config,
 		) as RenderableTreeNode[];
 		const ingredients: any[] = [];
 		for (const node of ingredientsRendered) {
@@ -81,7 +121,8 @@ export const recipe = createContentModelSchema({
 
 		// Transform steps (single ordered list node)
 		const stepsRendered = Markdoc.transform(
-			contentZone.steps ? [contentZone.steps as Node] : [], config,
+			contentZone.steps ? [contentZone.steps as Node] : [],
+			config,
 		) as RenderableTreeNode[];
 		const steps: any[] = [];
 		for (const node of stepsRendered) {
@@ -91,15 +132,14 @@ export const recipe = createContentModelSchema({
 		}
 
 		// Transform tips (greedy blockquotes)
-		const tipsRendered = Markdoc.transform(asNodes(contentZone.tips), config) as RenderableTreeNode[];
-		const tips = tipsRendered.filter(
-			(n: any) => Markdoc.Tag.isTag(n) && n.name === 'blockquote',
-		);
+		const tipsRendered = Markdoc.transform(
+			asNodes(contentZone.tips),
+			config,
+		) as RenderableTreeNode[];
+		const tips = tipsRendered.filter((n: any) => Markdoc.Tag.isTag(n) && n.name === 'blockquote');
 
 		// Transform media AST nodes
-		const mediaAstNodes = (
-			Array.isArray(mediaZone.media) ? mediaZone.media : []
-		) as Node[];
+		const mediaAstNodes = (Array.isArray(mediaZone.media) ? mediaZone.media : []) as Node[];
 		const side = new RenderableNodeCursor(
 			Markdoc.transform(mediaAstNodes, config) as RenderableTreeNode[],
 		);
@@ -107,7 +147,9 @@ export const recipe = createContentModelSchema({
 		// Recipe attribute meta tags
 		const prepTimeMeta = new Tag('meta', { content: attrs.prepTime });
 		const cookTimeMeta = new Tag('meta', { content: attrs.cookTime });
-		const servingsMeta = new Tag('meta', { content: attrs.servings != null ? String(attrs.servings) : '' });
+		const servingsMeta = new Tag('meta', {
+			content: attrs.servings != null ? String(attrs.servings) : '',
+		});
 		const difficultyMeta = new Tag('meta', { content: attrs.difficulty });
 
 		// Annotate ingredient lis with data-name and recipeIngredient property
@@ -130,7 +172,12 @@ export const recipe = createContentModelSchema({
 
 		// Layout meta tags
 		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
-		const { mediaPosition: mediaPositionMeta, mediaRatio: mediaRatioMeta, valign: valignMeta, collapse: collapseMeta } = layoutMetas;
+		const {
+			mediaPosition: mediaPositionMeta,
+			mediaRatio: mediaRatioMeta,
+			valign: valignMeta,
+			collapse: collapseMeta,
+		} = layoutMetas;
 
 		// SPEC-089 cover anchor — emit only when set; the engine reads it as a field.
 		const contentPlace = attrs['content-place'] as string | undefined;
@@ -144,9 +191,7 @@ export const recipe = createContentModelSchema({
 
 		// Unwrap paragraph-wrapped images in the media zone
 		const mediaImgTag = extractMediaImage(side);
-		const mediaCursor = mediaImgTag
-			? new RenderableNodeCursor([mediaImgTag])
-			: side;
+		const mediaCursor = mediaImgTag ? new RenderableNodeCursor([mediaImgTag]) : side;
 		const mediaDiv = mediaCursor.wrap('div');
 		const hasMedia = mediaCursor.toArray().length > 0;
 
@@ -170,7 +215,9 @@ export const recipe = createContentModelSchema({
 			...(tips.length > 0 ? [tipsDiv] : []),
 		];
 
-		return createComponentRenderable({ rune: 'recipe', schemaOrgType: 'Recipe',
+		return createComponentRenderable({
+			rune: 'recipe',
+			schemaOrgType: 'Recipe',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {

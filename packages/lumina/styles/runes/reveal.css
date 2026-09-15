@@ -1,83 +1,94 @@
 @layer skin {
-/* Reveal — skin. The eyebrow stretched-link, steps flex, hidden-step collapse,
+	/* Reveal — skin. The eyebrow stretched-link, steps flex, hidden-step collapse,
  * metadata hide, and control flex live in @refrakt-md/skeleton
  * (styles/runes/reveal.css). */
-.rf-reveal__preamble {
-	margin-bottom: 1.5rem;
-}
-.rf-reveal__eyebrow {
-	font-size: var(--rf-text-sm);
-	font-weight: var(--rf-weight-semibold);
-	letter-spacing: var(--rf-tracking-wider);
-	text-transform: uppercase;
-	color: var(--rf-color-primary);
-	margin: 0 0 0.5rem;
-}
-.rf-reveal__eyebrow:has(a) {
-	padding: 0.25rem 0.875rem;
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-full);
-	color: var(--rf-color-text);
-	font-weight: var(--rf-weight-normal);
-	text-transform: none;
-	letter-spacing: var(--rf-tracking-normal);
-	transition: border-color 150ms ease;
-}
-.rf-reveal__eyebrow:has(a):hover { border-color: var(--rf-color-muted); }
-.rf-reveal__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: var(--rf-weight-semibold); text-decoration: none; }
-.rf-reveal__eyebrow:has(a) a::before { border-radius: inherit; }
-.rf-reveal__headline {
-	margin-top: 0;
-}
-.rf-reveal__blurb {
-	color: var(--rf-color-muted);
-	margin-bottom: 0;
-}
-.rf-reveal__image {
-	margin-bottom: 1rem;
-}
-.rf-reveal__steps {
-	gap: 1rem;
-}
-.rf-reveal-step {
-	transition: opacity 0.3s ease, transform 0.3s ease;
-}
-.rf-reveal-step--visible {
-	opacity: 1;
-	transform: translateY(0);
-}
-.rf-reveal-step--hidden {
-	opacity: 0;
-	margin: 0;
-	transform: translateY(0.5rem);
-}
-.rf-reveal-step__content {
-	padding: 1rem 0;
-	border-bottom: 1px solid var(--rf-color-border);
-}
-.rf-reveal-step__title {
-	font-size: var(--rf-text-lg);
-	font-weight: var(--rf-weight-semibold);
-	margin: 0 0 0.5rem;
-}
-.rf-reveal-step__body p:last-child { margin-bottom: 0; }
-.rf-reveal__next,
-.rf-reveal__reset {
-	gap: 0.5rem;
-	margin-top: 1rem;
-	padding: 0.5rem 1.25rem;
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-md);
-	background: var(--rf-color-surface);
-	color: var(--rf-color-text);
-	font-size: var(--rf-text-sm);
-	font-weight: var(--rf-weight-medium);
-	cursor: pointer;
-	transition: background 0.15s;
-}
-.rf-reveal__next:hover,
-.rf-reveal__reset:hover {
-	background: var(--rf-color-border);
-}
-
+	.rf-reveal__preamble {
+		margin-bottom: 1.5rem;
+	}
+	.rf-reveal__eyebrow {
+		font-size: var(--rf-text-sm);
+		font-weight: var(--rf-weight-semibold);
+		letter-spacing: var(--rf-tracking-wider);
+		text-transform: uppercase;
+		color: var(--rf-color-primary);
+		margin: 0 0 0.5rem;
+	}
+	.rf-reveal__eyebrow:has(a) {
+		padding: 0.25rem 0.875rem;
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-full);
+		color: var(--rf-color-text);
+		font-weight: var(--rf-weight-normal);
+		text-transform: none;
+		letter-spacing: var(--rf-tracking-normal);
+		transition: border-color 150ms ease;
+	}
+	.rf-reveal__eyebrow:has(a):hover {
+		border-color: var(--rf-color-muted);
+	}
+	.rf-reveal__eyebrow:has(a) a {
+		color: var(--rf-color-primary);
+		font-weight: var(--rf-weight-semibold);
+		text-decoration: none;
+	}
+	.rf-reveal__eyebrow:has(a) a::before {
+		border-radius: inherit;
+	}
+	.rf-reveal__headline {
+		margin-top: 0;
+	}
+	.rf-reveal__blurb {
+		color: var(--rf-color-muted);
+		margin-bottom: 0;
+	}
+	.rf-reveal__image {
+		margin-bottom: 1rem;
+	}
+	.rf-reveal__steps {
+		gap: 1rem;
+	}
+	.rf-reveal-step {
+		transition:
+			opacity 0.3s ease,
+			transform 0.3s ease;
+	}
+	.rf-reveal-step--visible {
+		opacity: 1;
+		transform: translateY(0);
+	}
+	.rf-reveal-step--hidden {
+		opacity: 0;
+		margin: 0;
+		transform: translateY(0.5rem);
+	}
+	.rf-reveal-step__content {
+		padding: 1rem 0;
+		border-bottom: 1px solid var(--rf-color-border);
+	}
+	.rf-reveal-step__title {
+		font-size: var(--rf-text-lg);
+		font-weight: var(--rf-weight-semibold);
+		margin: 0 0 0.5rem;
+	}
+	.rf-reveal-step__body p:last-child {
+		margin-bottom: 0;
+	}
+	.rf-reveal__next,
+	.rf-reveal__reset {
+		gap: 0.5rem;
+		margin-top: 1rem;
+		padding: 0.5rem 1.25rem;
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-md);
+		background: var(--rf-color-surface);
+		color: var(--rf-color-text);
+		font-size: var(--rf-text-sm);
+		font-weight: var(--rf-weight-medium);
+		cursor: pointer;
+		transition: background 0.15s;
+	}
+	.rf-reveal__next:hover,
+	.rf-reveal__reset:hover {
+		background: var(--rf-color-border);
+	}
 }

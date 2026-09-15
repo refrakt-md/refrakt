@@ -5,11 +5,16 @@ import type { ThemeConfig, RendererNode } from '@refrakt-md/transform';
 import type { SerializedTag, AggregatedData } from '@refrakt-md/types';
 import { baseConfig } from '@refrakt-md/runes';
 
-type PostTransformFn = (node: SerializedTag, context: { modifiers: Record<string, string>; parentType?: string }) => SerializedTag;
+type PostTransformFn = (
+	node: SerializedTag,
+	context: { modifiers: Record<string, string>; parentType?: string },
+) => SerializedTag;
 
 /** Runes needing external resources or runtime data — show placeholder in editor */
 const RUNTIME_ONLY_TYPES = new Set([
-	'nav', 'nav-group', 'nav-item',   // needs RfContext.pages
+	'nav',
+	'nav-group',
+	'nav-item', // needs RfContext.pages
 ]);
 
 /**
@@ -72,7 +77,9 @@ export function renderBlockPreview(
 ): { html: string; isComponent: boolean } {
 	const ast = Markdoc.parse(source);
 	const fullConfig = restoreFunctions(themeConfig, communityPostTransforms, communityStyles);
-	const mergedTags = extraTags ? { ...tags, ...extraTags as Record<string, import('@markdoc/markdoc').Schema> } : tags;
+	const mergedTags = extraTags
+		? { ...tags, ...(extraTags as Record<string, import('@markdoc/markdoc').Schema>) }
+		: tags;
 	const renderable = Markdoc.transform(ast, {
 		tags: mergedTags,
 		nodes,
@@ -121,7 +128,9 @@ function injectSandboxDesignTokens(node: RendererNode, aggregated: AggregatedDat
 	if (node === null || node === undefined) return node;
 	if (typeof node === 'string' || typeof node === 'number') return node;
 	if (Array.isArray(node)) {
-		return node.map(n => injectSandboxDesignTokens(n as RendererNode, aggregated)) as RendererNode;
+		return node.map((n) =>
+			injectSandboxDesignTokens(n as RendererNode, aggregated),
+		) as RendererNode;
 	}
 
 	const tag = node as SerializedTag;
@@ -129,7 +138,7 @@ function injectSandboxDesignTokens(node: RendererNode, aggregated: AggregatedDat
 		const design = aggregated['design'] as { contexts?: Record<string, unknown> } | undefined;
 		const contexts = design?.contexts ?? {};
 		const contextChild = tag.children?.find(
-			c => (c as SerializedTag)?.attributes?.['data-field'] === 'context',
+			(c) => (c as SerializedTag)?.attributes?.['data-field'] === 'context',
 		) as SerializedTag | undefined;
 		const scope = (contextChild?.attributes?.content as string) ?? 'default';
 		const tokens = contexts[scope];
@@ -145,7 +154,9 @@ function injectSandboxDesignTokens(node: RendererNode, aggregated: AggregatedDat
 	}
 
 	if (tag.children?.length) {
-		const newChildren = tag.children.map(c => injectSandboxDesignTokens(c as RendererNode, aggregated));
+		const newChildren = tag.children.map((c) =>
+			injectSandboxDesignTokens(c as RendererNode, aggregated),
+		);
 		return { ...tag, children: newChildren };
 	}
 

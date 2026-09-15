@@ -78,13 +78,22 @@
 }
 
 /* ── auto / unset placement — adapts to the cover region's orientation ── */
-[data-media-position="cover"]:not([data-cover-scope="header"]):is([data-content-place="auto"], :not([data-content-place])) > [data-name="content"],
-[data-cover-scope="header"]:is([data-content-place="auto"], :not([data-content-place])) > [data-name="cover-band"] > [data-name="preamble"] {
+[data-media-position="cover"]:not([data-cover-scope="header"]):is(
+	[data-content-place="auto"],
+	:not([data-content-place])
+) > [data-name="content"],
+[data-cover-scope="header"]:is([data-content-place="auto"], :not([data-content-place]))
+	> [data-name="cover-band"]
+	> [data-name="preamble"] {
 	align-self: end;
 	justify-self: stretch;
 }
 @container (min-aspect-ratio: 1 / 1) {
-	[data-media-position="cover"]:not([data-cover-scope="header"]):is([data-content-place="auto"], :not([data-content-place])) > [data-name="content"] {
+	[data-media-position="cover"]:not([data-cover-scope="header"]):is(
+			[data-content-place="auto"],
+			:not([data-content-place])
+		)
+		> [data-name="content"] {
 		align-self: center;
 		justify-self: start;
 	}

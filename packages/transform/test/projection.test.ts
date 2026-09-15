@@ -210,9 +210,7 @@ describe('projection: relocate', () => {
 			Card: {
 				block: 'card',
 				structure: {
-					header: { tag: 'div', before: true, children: [
-						{ tag: 'h2', ref: 'title' },
-					] },
+					header: { tag: 'div', before: true, children: [{ tag: 'h2', ref: 'title' }] },
 					badge: { tag: 'span' },
 				},
 				projection: {

@@ -1,30 +1,35 @@
 @layer skin {
-/* progress — skin. The flex row, value auto-push, track box, and fill box live in
+	/* progress — skin. The flex row, value auto-push, track box, and fill box live in
  * @refrakt-md/skeleton (styles/runes/progress.css). */
-.rf-progress {
-	gap: var(--rf-spacing-xs) var(--rf-spacing-sm);
-	margin: var(--rf-spacing-sm) 0;
-}
-.rf-progress__label {
-	font-weight: var(--rf-weight-semibold);
-	color: var(--rf-color-text);
-}
-.rf-progress__value {
-	font-weight: var(--rf-weight-semibold);
-	color: var(--rf-color-text);
-}
-.rf-progress__track {
-	border-radius: var(--rf-radius-pill, 999px);
-	background: var(--rf-color-surface-hover);
-}
-.rf-progress__fill {
-	border-radius: inherit;
-	background: var(--rf-color-primary);
-	transition: width 0.3s ease;
-}
-/* Sentiment variants tint the fill. */
-.rf-progress--positive .rf-progress__fill { background: var(--rf-color-success); }
-.rf-progress--caution .rf-progress__fill { background: var(--rf-color-warning); }
-.rf-progress--negative .rf-progress__fill { background: var(--rf-color-danger); }
-
+	.rf-progress {
+		gap: var(--rf-spacing-xs) var(--rf-spacing-sm);
+		margin: var(--rf-spacing-sm) 0;
+	}
+	.rf-progress__label {
+		font-weight: var(--rf-weight-semibold);
+		color: var(--rf-color-text);
+	}
+	.rf-progress__value {
+		font-weight: var(--rf-weight-semibold);
+		color: var(--rf-color-text);
+	}
+	.rf-progress__track {
+		border-radius: var(--rf-radius-pill, 999px);
+		background: var(--rf-color-surface-hover);
+	}
+	.rf-progress__fill {
+		border-radius: inherit;
+		background: var(--rf-color-primary);
+		transition: width 0.3s ease;
+	}
+	/* Sentiment variants tint the fill. */
+	.rf-progress--positive .rf-progress__fill {
+		background: var(--rf-color-success);
+	}
+	.rf-progress--caution .rf-progress__fill {
+		background: var(--rf-color-warning);
+	}
+	.rf-progress--negative .rf-progress__fill {
+		background: var(--rf-color-danger);
+	}
 }

@@ -18,15 +18,27 @@ export const figure = createContentModelSchema({
 	sections: figureSections,
 	frameTarget: figureFrameTarget,
 	attributes: {
-		size: { type: String, required: false, matches: sizeValues.slice(), description: 'Display width of the figure' },
-		align: { type: String, required: false, matches: alignValues.slice(), description: 'Horizontal alignment of the figure' },
-		caption: { type: String, required: false, description: 'Caption text displayed below the figure' },
+		size: {
+			type: String,
+			required: false,
+			matches: sizeValues.slice(),
+			description: 'Display width of the figure',
+		},
+		align: {
+			type: String,
+			required: false,
+			matches: alignValues.slice(),
+			description: 'Horizontal alignment of the figure',
+		},
+		caption: {
+			type: String,
+			required: false,
+			description: 'Caption text displayed below the figure',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const children = new RenderableNodeCursor(
@@ -35,13 +47,19 @@ export const figure = createContentModelSchema({
 
 		// Media is an <img> or a scheme-resolved <svg> (placeholder:/icon:) — both
 		// count as the figure's image (SPEC-106).
-		const imgs = children.flatten().toArray().filter(n => isMediaNode(n)) as InstanceType<typeof Tag>[];
+		const imgs = children
+			.flatten()
+			.toArray()
+			.filter((n) => isMediaNode(n)) as InstanceType<typeof Tag>[];
 
 		// For caption fallback, skip paragraphs that only contain a media node
-		const textParagraphs = children.tag('p').toArray().filter(p => {
-			const kids = (p.children || []).filter((c: any) => Markdoc.Tag.isTag(c));
-			return !(kids.length === 1 && isMediaNode(kids[0]));
-		});
+		const textParagraphs = children
+			.tag('p')
+			.toArray()
+			.filter((p) => {
+				const kids = (p.children || []).filter((c: any) => Markdoc.Tag.isTag(c));
+				return !(kids.length === 1 && isMediaNode(kids[0]));
+			});
 
 		const captionContent = attrs.caption || undefined;
 		const captionTag = captionContent
@@ -57,7 +75,9 @@ export const figure = createContentModelSchema({
 		if (sizeMeta) childNodes.push(sizeMeta);
 		if (alignMeta) childNodes.push(alignMeta);
 
-		return createComponentRenderable({ rune: 'figure', schemaOrgType: 'ImageObject',
+		return createComponentRenderable({
+			rune: 'figure',
+			schemaOrgType: 'ImageObject',
 			tag: 'figure',
 			properties: {
 				...(sizeMeta ? { size: sizeMeta } : {}),

@@ -1,8 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-	createSiteTokensVitePlugin,
-	SITE_TOKENS_VIRTUAL_ID,
-} from '../src/site-tokens-vite.js';
+import { createSiteTokensVitePlugin, SITE_TOKENS_VIRTUAL_ID } from '../src/site-tokens-vite.js';
 import type { SiteConfig } from '@refrakt-md/types';
 
 describe('createSiteTokensVitePlugin', () => {

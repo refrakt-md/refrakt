@@ -11,11 +11,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 	const siteTokensCss = await siteTokensCssPromise;
 	return (
 		<html lang="en">
-			<head>
-				{siteTokensCss && (
-					<style dangerouslySetInnerHTML={{ __html: siteTokensCss }} />
-				)}
-			</head>
+			<head>{siteTokensCss && <style dangerouslySetInnerHTML={{ __html: siteTokensCss }} />}</head>
 			<body>{children}</body>
 		</html>
 	);

@@ -63,7 +63,10 @@ describe('card — the body slot is the body role', () => {
 	});
 
 	it('dropcap now lands on the card body', () => {
-		const out = identity('{% card reading="prose" dropcap=true %}\nJust the body.\n{% /card %}', 'card');
+		const out = identity(
+			'{% card reading="prose" dropcap=true %}\nJust the body.\n{% /card %}',
+			'card',
+		);
 		expect(byName(out, 'body')?.attributes['data-dropcap']).toBe('true');
 	});
 

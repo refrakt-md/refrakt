@@ -80,7 +80,12 @@ describe('assembleThemeConfig', () => {
 
 	it('preserves and enriches provenance from packages', () => {
 		const packageProvenance: Record<string, RuneProvenance> = {
-			Hero: { qualifiedId: 'marketing:Hero', source: 'plugin', pluginName: 'marketing', origin: '@refrakt-md/marketing' },
+			Hero: {
+				qualifiedId: 'marketing:Hero',
+				source: 'plugin',
+				pluginName: 'marketing',
+				origin: '@refrakt-md/marketing',
+			},
 		};
 		const pluginRunes: Record<string, RuneConfig> = {
 			Hero: { block: 'hero' },
@@ -100,7 +105,12 @@ describe('assembleThemeConfig', () => {
 
 	it('stamps i18n scope on plugin runes from provenance (SPEC-035)', () => {
 		const packageProvenance: Record<string, RuneProvenance> = {
-			Hero: { qualifiedId: 'marketing:Hero', source: 'plugin', pluginName: 'marketing', origin: '@refrakt-md/marketing' },
+			Hero: {
+				qualifiedId: 'marketing:Hero',
+				source: 'plugin',
+				pluginName: 'marketing',
+				origin: '@refrakt-md/marketing',
+			},
 		};
 		const pluginRunes: Record<string, RuneConfig> = { Hero: { block: 'hero' } };
 

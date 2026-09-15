@@ -3,7 +3,12 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { runCreate } from './create.js';
 import { idExists } from './next-id.js';
-import { findInstallRoot, detectPackageManager, installCommand, type PackageManager } from './project-setup.js';
+import {
+	findInstallRoot,
+	detectPackageManager,
+	installCommand,
+	type PackageManager,
+} from './project-setup.js';
 import { scaffoldRefraktConfigForPlan } from '../plan-config.js';
 
 export const EXIT_SUCCESS = 0;
@@ -55,7 +60,11 @@ export interface InitResult {
 	installRoot: string | null;
 	packageManager: PackageManager | null;
 	/** What happened to refrakt.config.json — `null` when scaffolding was skipped (e.g., --no-config). */
-	refraktConfig: { action: 'created' | 'extended' | 'preserved' | 'skipped'; path: string; message: string } | null;
+	refraktConfig: {
+		action: 'created' | 'extended' | 'preserved' | 'skipped';
+		path: string;
+		message: string;
+	} | null;
 }
 
 /**
@@ -262,7 +271,7 @@ function detectAgentFiles(projectRoot: string): string[] {
 }
 
 function hasPlanMarker(content: string): boolean {
-	return PLAN_MARKERS.some(m => content.includes(m));
+	return PLAN_MARKERS.some((m) => content.includes(m));
 }
 
 /**
@@ -292,7 +301,10 @@ function appendPlanSummary(projectRoot: string, relPath: string): boolean {
  * Merge plan-related entries into an existing package.json or create one.
  * Never overwrites existing keys. Returns true if the file was modified.
  */
-function updateHostPackageJson(pkgJsonPath: string, versions: { cli: string; plan: string }): boolean {
+function updateHostPackageJson(
+	pkgJsonPath: string,
+	versions: { cli: string; plan: string },
+): boolean {
 	let pkg: Record<string, any> = {};
 	try {
 		pkg = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
@@ -373,7 +385,7 @@ function writeClaudeHook(projectRoot: string): boolean {
 
 	for (const block of settings.hooks.SessionStart) {
 		if (!block.hooks) continue;
-		if (block.hooks.some(h => h.command === HOOK_COMMAND)) {
+		if (block.hooks.some((h) => h.command === HOOK_COMMAND)) {
 			return false;
 		}
 	}
@@ -458,10 +470,12 @@ export function runInit(options: InitOptions): InitResult {
 		noConfig = false,
 	} = options;
 
-	const versions = options.versions ?? (() => {
-		const v = getOwnVersion();
-		return { cli: v, plan: v };
-	})();
+	const versions =
+		options.versions ??
+		(() => {
+			const v = getOwnVersion();
+			return { cli: v, plan: v };
+		})();
 
 	const created: string[] = [];
 
@@ -475,9 +489,19 @@ export function runInit(options: InitOptions): InitResult {
 		}
 	}
 
-	const examples: { type: 'spec' | 'work' | 'decision' | 'milestone'; id: string; title: string; attrs?: Record<string, string> }[] = [
+	const examples: {
+		type: 'spec' | 'work' | 'decision' | 'milestone';
+		id: string;
+		title: string;
+		attrs?: Record<string, string>;
+	}[] = [
 		{ type: 'spec', id: 'SPEC-001', title: 'Example Spec' },
-		{ type: 'work', id: 'WORK-001', title: 'Example Work Item', attrs: { priority: 'medium', complexity: 'simple', tags: '' } },
+		{
+			type: 'work',
+			id: 'WORK-001',
+			title: 'Example Work Item',
+			attrs: { priority: 'medium', complexity: 'simple', tags: '' },
+		},
 		{ type: 'decision', id: 'ADR-001', title: 'Example Decision' },
 		{ type: 'milestone', id: 'v0.1.0', title: 'First Release' },
 	];

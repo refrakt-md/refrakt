@@ -30,7 +30,11 @@ import {
 	heading,
 } from '../lib/format.js';
 import { collectMetadata, checkMetaCss, type MetaAuditResult } from '../lib/meta-audit.js';
-import { collectDimensions, checkDimensionCss, type DimensionAuditResult } from '../lib/dimension-audit.js';
+import {
+	collectDimensions,
+	checkDimensionCss,
+	type DimensionAuditResult,
+} from '../lib/dimension-audit.js';
 
 /** Dependencies injected at runtime via dynamic imports */
 export interface InspectDeps {
@@ -63,14 +67,8 @@ export interface InspectOptions {
 	flags: Record<string, string>;
 }
 
-export async function inspectCommand(
-	options: InspectOptions,
-	deps: InspectDeps,
-): Promise<void> {
-	const {
-		runes,
-		baseConfig,
-	} = deps;
+export async function inspectCommand(options: InspectOptions, deps: InspectDeps): Promise<void> {
+	const { runes, baseConfig } = deps;
 
 	// --list mode: show all available runes
 	if (options.list) {
@@ -101,14 +99,16 @@ export async function inspectCommand(
 	}
 
 	if (!options.runeName) {
-		throw new Error('Missing rune name. Use --list to see available runes.\n\nUsage: refrakt inspect <rune> [options]');
+		throw new Error(
+			'Missing rune name. Use --list to see available runes.\n\nUsage: refrakt inspect <rune> [options]',
+		);
 	}
 
 	// Resolve the rune by name or alias
 	const rune = findRune(options.runeName, runes);
 	if (!rune) {
 		const available = Object.values(runes)
-			.map(r => `  ${r.name}${r.aliases.length > 0 ? ` (${r.aliases.join(', ')})` : ''}`)
+			.map((r) => `  ${r.name}${r.aliases.length > 0 ? ` (${r.aliases.join(', ')})` : ''}`)
 			.join('\n');
 		throw new Error(`Unknown rune "${options.runeName}"\n\nAvailable runes:\n${available}`);
 	}
@@ -165,20 +165,22 @@ function runSingleAudit(
 ): void {
 	const cssDir = resolveCssDir(options.cssDir);
 	if (!cssDir) {
-		throw new Error('No CSS directory found. Use --css <dir> to specify the path to rune CSS files.');
+		throw new Error(
+			'No CSS directory found. Use --css <dir> to specify the path to rune CSS files.',
+		);
 	}
 
 	const runeTypeof = rune.typeName;
 	const runeConfig = runeTypeof ? config.runes[runeTypeof] : undefined;
 	if (!runeConfig) {
-		throw new Error(`No engine config found for rune "${rune.name}". It may be a component-only rune without identity transform config.`);
+		throw new Error(
+			`No engine config found for rune "${rune.name}". It may be a component-only rune without identity transform config.`,
+		);
 	}
 
 	// Read CSS for this block
 	const cssFile = readCssForBlock(cssDir, runeConfig.block);
-	const cssMatches: CssSelectorMatch[] = cssFile
-		? parseCssFile(cssFile.content, cssFile.path)
-		: [];
+	const cssMatches: CssSelectorMatch[] = cssFile ? parseCssFile(cssFile.content, cssFile.path) : [];
 
 	// Collect all possible selectors across variants
 	const schemaVariants = discoverVariants(rune.schema);
@@ -213,7 +215,9 @@ function runFullAudit(
 ): void {
 	const cssDir = resolveCssDir(options.cssDir);
 	if (!cssDir) {
-		throw new Error('No CSS directory found. Use --css <dir> to specify the path to rune CSS files.');
+		throw new Error(
+			'No CSS directory found. Use --css <dir> to specify the path to rune CSS files.',
+		);
 	}
 
 	// Parse all CSS files upfront
@@ -254,8 +258,8 @@ function runFullAudit(
 
 		// Filter CSS matches to only those relevant to this rune's block
 		const blockPrefix = `.${config.prefix}-${runeConfig.block}`;
-		const relevantCss = allCssMatches.filter(m =>
-			m.selector.startsWith(blockPrefix) || m.selector.startsWith('[data-')
+		const relevantCss = allCssMatches.filter(
+			(m) => m.selector.startsWith(blockPrefix) || m.selector.startsWith('[data-'),
 		);
 
 		results.push(auditSelectors(rune.name, allSelectors, relevantCss));
@@ -263,7 +267,7 @@ function runFullAudit(
 
 	// Sort results: complete first, then partial, then not-started, alphabetically within each group
 	results.sort((a, b) => {
-		const order = { 'complete': 0, 'partial': 1, 'not-started': 2 };
+		const order = { complete: 0, partial: 1, 'not-started': 2 };
 		const statusDiff = order[a.status] - order[b.status];
 		if (statusDiff !== 0) return statusDiff;
 		return a.rune.localeCompare(b.rune);
@@ -334,7 +338,10 @@ function runPipeline(
 	deps: InspectDeps,
 ): { tree: any; source: string } {
 	const base = deps.packageFixtures?.[rune.name];
-	const source = base !== undefined ? applyFixtureOverrides(base, rune.name, flags) : getFixture(rune.name, flags);
+	const source =
+		base !== undefined
+			? applyFixtureOverrides(base, rune.name, flags)
+			: getFixture(rune.name, flags);
 	const ast = deps.Markdoc.parse(source);
 	const headings = deps.extractHeadings(ast);
 
@@ -360,7 +367,7 @@ function runPipeline(
 
 /** List all available runes */
 function listRunes(runes: Record<string, Rune>, json: boolean): void {
-	const list = Object.values(runes).map(rune => ({
+	const list = Object.values(runes).map((rune) => ({
 		name: rune.name,
 		aliases: rune.aliases,
 		description: rune.description,
@@ -392,10 +399,7 @@ function findRune(name: string, runes: Record<string, Rune>): Rune | undefined {
 }
 
 /** Run metadata dimension audit across all rune configs */
-function runMetaAudit(
-	config: ThemeConfig,
-	options: InspectOptions,
-): void {
+function runMetaAudit(config: ThemeConfig, options: InspectOptions): void {
 	const metadata = collectMetadata(config);
 	const cssDir = resolveCssDir(options.cssDir);
 	const cssResult = cssDir ? checkMetaCss(cssDir) : undefined;
@@ -410,18 +414,15 @@ function runMetaAudit(
 }
 
 /** Run universal theming dimension audit across all rune configs */
-function runDimensionAudit(
-	config: ThemeConfig,
-	options: InspectOptions,
-): void {
+function runDimensionAudit(config: ThemeConfig, options: InspectOptions): void {
 	const dimensions = collectDimensions(config);
 	const cssDir = resolveCssDir(options.cssDir);
 	const cssResult = cssDir ? checkDimensionCss(cssDir) : undefined;
 
 	// Determine unassigned runes: runes with dimensions but no surface in CSS
-	const allRuneBlocks = new Set(Object.values(config.runes).map(r => r.block));
-	const assignedBlocks = new Set(cssResult?.surfaces.flatMap(g => g.runes) ?? []);
-	const unassignedRunes = [...allRuneBlocks].filter(b => !assignedBlocks.has(b)).sort();
+	const allRuneBlocks = new Set(Object.values(config.runes).map((r) => r.block));
+	const assignedBlocks = new Set(cssResult?.surfaces.flatMap((g) => g.runes) ?? []);
+	const unassignedRunes = [...allRuneBlocks].filter((b) => !assignedBlocks.has(b)).sort();
 
 	const result: DimensionAuditResult = {
 		...dimensions,
@@ -446,7 +447,10 @@ function showComponentInterface(
 ): void {
 	// Run the pipeline to get the serialized (pre-identity-transform) tree
 	const base = deps.packageFixtures?.[rune.name];
-	const source = base !== undefined ? applyFixtureOverrides(base, rune.name, options.flags) : getFixture(rune.name, options.flags);
+	const source =
+		base !== undefined
+			? applyFixtureOverrides(base, rune.name, options.flags)
+			: getFixture(rune.name, options.flags);
 	const ast = deps.Markdoc.parse(source);
 	const headings = deps.extractHeadings(ast);
 
@@ -529,7 +533,7 @@ function showComponentInterface(
 		if (refEntries.length > 0) {
 			console.log(heading('Slots (named renderables)'));
 			for (const [name, tags] of refEntries) {
-				const tagNames = tags.map(t => t.name).join(', ');
+				const tagNames = tags.map((t) => t.name).join(', ');
 				console.log(`  ${name}: Snippet  (${tagNames})`);
 			}
 			console.log('');
@@ -599,7 +603,10 @@ function findFirstRuneTag(node: any): any {
 }
 
 /** Check if any flag has value "all" and corresponds to a known variant */
-function findExpandAttr(flags: Record<string, string>, variants: Record<string, string[]>): string | null {
+function findExpandAttr(
+	flags: Record<string, string>,
+	variants: Record<string, string[]>,
+): string | null {
 	for (const [key, value] of Object.entries(flags)) {
 		if (value === 'all' && variants[key]) {
 			return key;
@@ -614,9 +621,10 @@ async function resolveTheme(theme: string, baseConfig: ThemeConfig): Promise<The
 
 	// Try dynamic import — works for package names (e.g., '@refrakt-md/lumina')
 	// and file paths (e.g., './src/config.ts')
-	const importPath = theme.startsWith('.') || theme.startsWith('/')
-		? (await import('node:path')).resolve(theme)
-		: theme + '/transform';
+	const importPath =
+		theme.startsWith('.') || theme.startsWith('/')
+			? (await import('node:path')).resolve(theme)
+			: theme + '/transform';
 
 	try {
 		const mod = await import(importPath);
@@ -625,10 +633,14 @@ async function resolveTheme(theme: string, baseConfig: ThemeConfig): Promise<The
 		if (config && typeof config === 'object' && config.runes && config.prefix) {
 			return config as ThemeConfig;
 		}
-		console.error(`Warning: "${importPath}" does not export a valid ThemeConfig, using base config.\n`);
+		console.error(
+			`Warning: "${importPath}" does not export a valid ThemeConfig, using base config.\n`,
+		);
 		return baseConfig;
 	} catch (err) {
-		console.error(`Warning: Could not load theme "${theme}" (${importPath}): ${(err as Error).message}\n`);
+		console.error(
+			`Warning: Could not load theme "${theme}" (${importPath}): ${(err as Error).message}\n`,
+		);
 		console.error(`Falling back to base config.\n`);
 		return baseConfig;
 	}

@@ -124,10 +124,14 @@ export function detectPackageManager(rootDir: string): PackageManager {
 /** Shell command that installs dependencies for the given package manager. */
 export function installCommand(pm: PackageManager): string {
 	switch (pm) {
-		case 'pnpm': return 'pnpm install';
-		case 'yarn': return 'yarn install';
-		case 'bun': return 'bun install';
+		case 'pnpm':
+			return 'pnpm install';
+		case 'yarn':
+			return 'yarn install';
+		case 'bun':
+			return 'bun install';
 		case 'npm':
-		default: return 'npm install';
+		default:
+			return 'npm install';
 	}
 }

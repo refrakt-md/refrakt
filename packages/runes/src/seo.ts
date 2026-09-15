@@ -32,10 +32,7 @@ export function textContent(tag: Tag): string {
 	return parts.join('').trim();
 }
 
-function findFirst(
-	tree: RenderableTreeNodes,
-	predicate: (tag: Tag) => boolean,
-): Tag | undefined {
+function findFirst(tree: RenderableTreeNodes, predicate: (tag: Tag) => boolean): Tag | undefined {
 	if (Array.isArray(tree)) {
 		for (const node of tree) {
 			const found = findFirst(node as RenderableTreeNodes, predicate);
@@ -210,7 +207,7 @@ function extractOgMeta(
 	if (frontmatter.image) og.image = frontmatter.image as string;
 
 	// Priority 2: Hero rune
-	const hero = findFirst(tree, tag => tag.attributes?.['data-rune'] === 'hero');
+	const hero = findFirst(tree, (tag) => tag.attributes?.['data-rune'] === 'hero');
 	if (hero) {
 		if (!og.title) {
 			const headline = findProperty(hero, 'headline');
@@ -224,15 +221,15 @@ function extractOgMeta(
 
 	// Priority 3: First content elements
 	if (!og.title) {
-		const h1 = findFirst(tree, tag => tag.name === 'h1');
+		const h1 = findFirst(tree, (tag) => tag.name === 'h1');
 		if (h1) og.title = textContent(h1);
 	}
 	if (!og.description) {
-		const p = findFirst(tree, tag => tag.name === 'p' && !tag.attributes['data-field']);
+		const p = findFirst(tree, (tag) => tag.name === 'p' && !tag.attributes['data-field']);
 		if (p) og.description = textContent(p).slice(0, 200);
 	}
 	if (!og.image) {
-		const img = findFirst(tree, tag => tag.name === 'img');
+		const img = findFirst(tree, (tag) => tag.name === 'img');
 		if (img) og.image = img.attributes.src;
 	}
 

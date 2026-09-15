@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { parse, findTag, fields } from './helpers.js';
 
 describe('grid tag', () => {
-  it('should transform a grid with sections divided by hr', () => {
-    const result = parse(`{% grid layout="1 1" %}
+	it('should transform a grid with sections divided by hr', () => {
+		const result = parse(`{% grid layout="1 1" %}
 First column content.
 
 ---
@@ -11,15 +11,15 @@ First column content.
 Second column content.
 {% /grid %}`);
 
-    expect(result).toBeDefined();
+		expect(result).toBeDefined();
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    expect(gridTag).toBeDefined();
-    expect(gridTag!.name).toBe('section');
-  });
+		const gridTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'grid');
+		expect(gridTag).toBeDefined();
+		expect(gridTag!.name).toBe('section');
+	});
 
-  it('should also work with the columns alias', () => {
-    const result = parse(`{% columns layout="1 1" %}
+	it('should also work with the columns alias', () => {
+		const result = parse(`{% columns layout="1 1" %}
 Left side.
 
 ---
@@ -27,12 +27,12 @@ Left side.
 Right side.
 {% /columns %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    expect(gridTag).toBeDefined();
-  });
+		const gridTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'grid');
+		expect(gridTag).toBeDefined();
+	});
 
-  it('should emit mode meta for auto mode', () => {
-    const result = parse(`{% grid mode="auto" min="280px" %}
+	it('should emit mode meta for auto mode', () => {
+		const result = parse(`{% grid mode="auto" min="280px" %}
 
 Card one.
 
@@ -45,15 +45,15 @@ Card two.
 Card three.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    expect(gridTag).toBeDefined();
+		const gridTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'grid');
+		expect(gridTag).toBeDefined();
 
-    expect(fields(gridTag).mode).toBe('auto');
-    expect(fields(gridTag).min).toBe('280px');
-  });
+		expect(fields(gridTag).mode).toBe('auto');
+		expect(fields(gridTag).min).toBe('280px');
+	});
 
-  it('should not emit mode meta for default columns mode', () => {
-    const result = parse(`{% grid %}
+	it('should not emit mode meta for default columns mode', () => {
+		const result = parse(`{% grid %}
 Content.
 
 ---
@@ -61,12 +61,12 @@ Content.
 More content.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    expect(fields(gridTag).mode).toBeUndefined();
-  });
+		const gridTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'grid');
+		expect(fields(gridTag).mode).toBeUndefined();
+	});
 
-  it('should emit aspect meta when set', () => {
-    const result = parse(`{% grid aspect="16/9" %}
+	it('should emit aspect meta when set', () => {
+		const result = parse(`{% grid aspect="16/9" %}
 Cell one.
 
 ---
@@ -74,12 +74,12 @@ Cell one.
 Cell two.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    expect(fields(gridTag).aspect).toBe('16/9');
-  });
+		const gridTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'grid');
+		expect(fields(gridTag).aspect).toBe('16/9');
+	});
 
-  it('should emit stack meta when set', () => {
-    const result = parse(`{% grid stack="reverse" %}
+	it('should emit stack meta when set', () => {
+		const result = parse(`{% grid stack="reverse" %}
 Main content.
 
 ---
@@ -87,12 +87,12 @@ Main content.
 Sidebar.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    expect(fields(gridTag).stack).toBe('reverse');
-  });
+		const gridTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'grid');
+		expect(fields(gridTag).stack).toBe('reverse');
+	});
 
-  it('should emit masonry mode meta', () => {
-    const result = parse(`{% grid mode="masonry" %}
+	it('should emit masonry mode meta', () => {
+		const result = parse(`{% grid mode="masonry" %}
 Short card.
 
 ---
@@ -104,12 +104,12 @@ Tall card.
 Medium card.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    expect(fields(gridTag).mode).toBe('masonry');
-  });
+		const gridTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'grid');
+		expect(fields(gridTag).mode).toBe('masonry');
+	});
 
-  it('should route layout="auto" deprecation to mode attribute', () => {
-    const result = parse(`{% grid layout="auto" %}
+	it('should route layout="auto" deprecation to mode attribute', () => {
+		const result = parse(`{% grid layout="auto" %}
 Card one.
 
 ---
@@ -117,12 +117,12 @@ Card one.
 Card two.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    expect(fields(gridTag).mode).toBe('auto');
-  });
+		const gridTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'grid');
+		expect(fields(gridTag).mode).toBe('auto');
+	});
 
-  it('should route layout="2 1" deprecation to spans attribute', () => {
-    const result = parse(`{% grid layout="2 1" %}
+	it('should route layout="2 1" deprecation to spans attribute', () => {
+		const result = parse(`{% grid layout="2 1" %}
 Wide column.
 
 ---
@@ -130,10 +130,10 @@ Wide column.
 Narrow column.
 {% /grid %}`);
 
-    const gridTag = findTag(result as any, t => t.attributes['data-rune'] === 'grid');
-    expect(gridTag).toBeDefined();
-    // Should produce cells with colspan data (from spans processing)
-    const cell = findTag(gridTag!, t => t.attributes['data-colspan'] === 2);
-    expect(cell).toBeDefined();
-  });
+		const gridTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'grid');
+		expect(gridTag).toBeDefined();
+		// Should produce cells with colspan data (from spans processing)
+		const cell = findTag(gridTag!, (t) => t.attributes['data-colspan'] === 2);
+		expect(cell).toBeDefined();
+	});
 });

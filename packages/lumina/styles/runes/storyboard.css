@@ -1,47 +1,48 @@
 @layer skin {
-/* Storyboard */
-.rf-storyboard__panels {
-	gap: 1rem;
-}
-/* Clean style */
-.rf-storyboard--clean .rf-storyboard-panel {
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-md);
-}
-.rf-storyboard--clean .rf-storyboard-panel__body {
-	padding: 0.75rem;
-}
-/* Comic style */
-.rf-storyboard--comic .rf-storyboard-panel {
-	border: 3px solid var(--rf-color-text);
-	border-radius: 0.25rem;
-	transform: rotate(-0.5deg);
-}
-.rf-storyboard--comic .rf-storyboard-panel:nth-child(even) {
-	transform: rotate(0.5deg);
-}
-.rf-storyboard--comic .rf-storyboard-panel__body {
-	padding: 0.5rem;
-}
-.rf-storyboard--comic .rf-storyboard-panel__body p {
-	font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
-	font-size: var(--rf-text);
-	text-align: center;
-	margin: 0.5rem 0 0;
-}
-/* Polaroid style */
-.rf-storyboard--polaroid .rf-storyboard-panel {
-	background: white;
-	padding: 0.75rem 0.75rem 2.5rem;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	border-radius: 2px;
-}
-.rf-storyboard--polaroid .rf-storyboard-panel__body p {
-	font-size: var(--rf-text-sm);
-	text-align: center;
-	color: var(--rf-color-muted);
-	margin: 0.5rem 0 0;
-}
-.rf-storyboard-panel__body p:last-child { margin-bottom: 0; }
-
+	/* Storyboard */
+	.rf-storyboard__panels {
+		gap: 1rem;
+	}
+	/* Clean style */
+	.rf-storyboard--clean .rf-storyboard-panel {
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-md);
+	}
+	.rf-storyboard--clean .rf-storyboard-panel__body {
+		padding: 0.75rem;
+	}
+	/* Comic style */
+	.rf-storyboard--comic .rf-storyboard-panel {
+		border: 3px solid var(--rf-color-text);
+		border-radius: 0.25rem;
+		transform: rotate(-0.5deg);
+	}
+	.rf-storyboard--comic .rf-storyboard-panel:nth-child(even) {
+		transform: rotate(0.5deg);
+	}
+	.rf-storyboard--comic .rf-storyboard-panel__body {
+		padding: 0.5rem;
+	}
+	.rf-storyboard--comic .rf-storyboard-panel__body p {
+		font-family: "Comic Sans MS", "Chalkboard SE", cursive;
+		font-size: var(--rf-text);
+		text-align: center;
+		margin: 0.5rem 0 0;
+	}
+	/* Polaroid style */
+	.rf-storyboard--polaroid .rf-storyboard-panel {
+		background: white;
+		padding: 0.75rem 0.75rem 2.5rem;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		border-radius: 2px;
+	}
+	.rf-storyboard--polaroid .rf-storyboard-panel__body p {
+		font-size: var(--rf-text-sm);
+		text-align: center;
+		color: var(--rf-color-muted);
+		margin: 0.5rem 0 0;
+	}
+	.rf-storyboard-panel__body p:last-child {
+		margin-bottom: 0;
+	}
 }

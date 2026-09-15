@@ -13,8 +13,12 @@ import { densityFacet } from './density.js';
 import { readingFacet, dropcapFacet } from './reading.js';
 import { motionFacet } from './motion.js';
 import {
-	modifiersFacet, contextModifiersFacet, staticModifiersFacet,
-	modifiersDescribe, contextModifiersDescribe, staticModifiersDescribe,
+	modifiersFacet,
+	contextModifiersFacet,
+	staticModifiersFacet,
+	modifiersDescribe,
+	contextModifiersDescribe,
+	staticModifiersDescribe,
 } from './modifiers.js';
 import { elevationAxis } from './elevation.js';
 import { prominenceAxis } from './prominence.js';
@@ -30,11 +34,24 @@ import { readingAxis, dropcapAxis } from './reading.js';
 import { motionAxis } from './motion.js';
 import type { DescribableFacet, UniversalAxisFacet } from './describe.js';
 
-export type { Facet, FacetContext, FacetInput, FacetResult, FacetWarning, FacetLayer, FacetStyle } from './types.js';
+export type {
+	Facet,
+	FacetContext,
+	FacetInput,
+	FacetResult,
+	FacetWarning,
+	FacetLayer,
+	FacetStyle,
+} from './types.js';
 export type { FacetResolution } from './driver.js';
 export { orderFacets, runFacets, runPostAssemble, WarningCollector } from './driver.js';
 export { elevationFacet, elevationAxis, ELEVATION_VALUES } from './elevation.js';
-export { prominenceFacet, prominenceAxis, PROMINENCE_VALUES, hasPageSectionHeader } from './prominence.js';
+export {
+	prominenceFacet,
+	prominenceAxis,
+	PROMINENCE_VALUES,
+	hasPageSectionHeader,
+} from './prominence.js';
 export { contentPlaceFacet, contentPlaceAxis } from './content-place.js';
 export { coverFacet, coverAxis } from './cover.js';
 export { frameFacet, frameAxis, FRAME_FACET_META } from './frame.js';
@@ -43,10 +60,24 @@ export { bgFacet, bgAxis, buildBgGradient } from './bg.js';
 export { widthFacet, contentMeasureFacet, spacingFacet, insetFacet } from './box.js';
 export { widthAxis, contentMeasureAxis, spacingAxis, insetAxis } from './box.js';
 export { densityFacet, densityAxis, DENSITY_VALUES } from './density.js';
-export { readingFacet, dropcapFacet, readingAxis, dropcapAxis, READING_REGISTERS, READING_CAPABILITIES, DEFAULT_READING } from './reading.js';
+export {
+	readingFacet,
+	dropcapFacet,
+	readingAxis,
+	dropcapAxis,
+	READING_REGISTERS,
+	READING_CAPABILITIES,
+	DEFAULT_READING,
+} from './reading.js';
 export { motionFacet, motionAxis } from './motion.js';
 export { modifiersFacet, contextModifiersFacet, staticModifiersFacet } from './modifiers.js';
-export type { DescribableFacet, FacetContract, UniversalAxisFacet, UniversalAxisContract, RuneAxisContract } from './describe.js';
+export type {
+	DescribableFacet,
+	FacetContract,
+	UniversalAxisFacet,
+	UniversalAxisContract,
+	RuneAxisContract,
+} from './describe.js';
 export { UNIVERSAL_POSTURE_REASONS } from './describe.js';
 
 /** Facets that describe their config-modifier output statically, for
@@ -154,7 +185,7 @@ const FACETS: readonly Facet[] = [
  *  registry entry, with no engine edit — which was not true while the list was
  *  hand-maintained in `transformRune` (WORK-526). */
 export const FACET_ATTRIBUTES: ReadonlySet<string> = new Set(
-	FACETS.flatMap(f => [...(f.attributes ?? [])]),
+	FACETS.flatMap((f) => [...(f.attributes ?? [])]),
 );
 
 /** Registry ordered once at module load.

@@ -1,94 +1,99 @@
 export interface Newable<T> {
-  new (...args: any[]): T;
+	new (...args: any[]): T;
 }
 
 export type NodeType =
-  'document' |
+	| 'document'
 
-  // Document metadata
-  'meta' |
+	// Document metadata
+	| 'meta'
 
-  //Content sectioning
-  'address' |
-  'article' |
-  'aside' |
-  'details' |
-  'footer' |
-  'form' |
-  'header' |
-  'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' |
-  'hgroup' |
-  'main' |
-  'nav' |
-  'section' |
-  'search' |
+	//Content sectioning
+	| 'address'
+	| 'article'
+	| 'aside'
+	| 'details'
+	| 'footer'
+	| 'form'
+	| 'header'
+	| 'h1'
+	| 'h2'
+	| 'h3'
+	| 'h4'
+	| 'h5'
+	| 'h6'
+	| 'hgroup'
+	| 'main'
+	| 'nav'
+	| 'section'
+	| 'search'
 
-  // Text content
-  'blockquote' |
-  'dd' |
-  'div' |
-  'dl' |
-  'dt' |
-  'figcaption' |
-  'figure' |
-  'hr' |
-  'li' |
-  'menu' |
-  'ol' |
-  'p' |
-  'pre' |
-  'ul' |
+	// Text content
+	| 'blockquote'
+	| 'dd'
+	| 'div'
+	| 'dl'
+	| 'dt'
+	| 'figcaption'
+	| 'figure'
+	| 'hr'
+	| 'li'
+	| 'menu'
+	| 'ol'
+	| 'p'
+	| 'pre'
+	| 'ul'
 
-  // Inline text semantics
-  'a' |
-  'abbr' |
-  'b' |
-  'bdi' |
-  'bdo' |
-  'br' |
-  'cite' |
-  'code' |
-  'data' |
-  'dfn' |
-  'em' |
-  'i' |
-  'kbd' |
-  'span' |
-  'strong' |
-  'summary' |
-  'time' |
+	// Inline text semantics
+	| 'a'
+	| 'abbr'
+	| 'b'
+	| 'bdi'
+	| 'bdo'
+	| 'br'
+	| 'cite'
+	| 'code'
+	| 'data'
+	| 'dfn'
+	| 'em'
+	| 'i'
+	| 'kbd'
+	| 'span'
+	| 'strong'
+	| 'summary'
+	| 'time'
 
-  // Image and multimedia
-  'area' |
-  'audio' |
-  'img' |
-  'map' |
-  'track' |
-  'video' |
+	// Image and multimedia
+	| 'area'
+	| 'audio'
+	| 'img'
+	| 'map'
+	| 'track'
+	| 'video'
 
-  // SVG and MathML
-  'svg' |
-  'path' |
-  'math' |
+	// SVG and MathML
+	| 'svg'
+	| 'path'
+	| 'math'
 
-  // Forms
-  'button' |
-  'fieldset' |
-  'input' |
-  'label' |
-  'legend' |
-  'option' |
-  'select' |
-  'textarea' |
+	// Forms
+	| 'button'
+	| 'fieldset'
+	| 'input'
+	| 'label'
+	| 'legend'
+	| 'option'
+	| 'select'
+	| 'textarea'
 
-  // Table content
-  'caption' |
-  'col' |
-  'colgroup' |
-  'table' |
-  'tbody' |
-  'td' |
-  'tfoot' |
-  'th' |
-  'thead' |
-  'tr';
+	// Table content
+	| 'caption'
+	| 'col'
+	| 'colgroup'
+	| 'table'
+	| 'tbody'
+	| 'td'
+	| 'tfoot'
+	| 'th'
+	| 'thead'
+	| 'tr';

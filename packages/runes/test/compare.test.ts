@@ -13,7 +13,7 @@ const x = 2;
 \`\`\`
 {% /compare %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'compare');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'compare');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('div');
 	});
@@ -29,7 +29,7 @@ const b = 2;
 \`\`\`
 {% /compare %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'compare');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'compare');
 		expect(fields(tag).layout).toBe('stacked');
 	});
 
@@ -44,8 +44,11 @@ const after = true;
 \`\`\`
 {% /compare %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'compare');
-		const panels = findAllTags(tag!, t => t.name === 'div' && t.attributes['data-panel'] === true);
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'compare');
+		const panels = findAllTags(
+			tag!,
+			(t) => t.name === 'div' && t.attributes['data-panel'] === true,
+		);
 		expect(panels.length).toBe(2);
 	});
 
@@ -60,8 +63,8 @@ const b = 2;
 \`\`\`
 {% /compare %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'compare');
-		const header = findTag(tag!, t => t.attributes['data-name'] === 'header');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'compare');
+		const header = findTag(tag!, (t) => t.attributes['data-name'] === 'header');
 		expect(header).toBeUndefined();
 	});
 
@@ -76,8 +79,8 @@ const a: number = 1;
 \`\`\`
 {% /compare %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'compare');
-		const header = findTag(tag!, t => t.attributes['data-name'] === 'header');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'compare');
+		const header = findTag(tag!, (t) => t.attributes['data-name'] === 'header');
 		expect(header).toBeDefined();
 		expect(header!.children).toContain('Implementations');
 	});
@@ -97,8 +100,11 @@ const a: number = 1;
 \`\`\`
 {% /compare %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'compare');
-		const panels = findAllTags(tag!, t => t.name === 'div' && t.attributes['data-panel'] === true);
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'compare');
+		const panels = findAllTags(
+			tag!,
+			(t) => t.name === 'div' && t.attributes['data-panel'] === true,
+		);
 		expect(panels.length).toBe(3);
 	});
 });

@@ -16,7 +16,9 @@ function asTag(node: any): SerializedTag {
 describe('SPEC-091 engine config variants — selection', () => {
 	function configWithVariant(): ThemeConfig {
 		return {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Card: {
 					block: 'card',
@@ -61,7 +63,9 @@ describe('SPEC-091 engine config variants — selection', () => {
 
 	it('selects a variant from an attribute-source axis', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Tile: {
 					block: 'tile',
@@ -78,7 +82,9 @@ describe('SPEC-091 engine config variants — selection', () => {
 
 	it('a delta restructures layout (root replaces, new wrapper keys add)', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Panel: {
 					block: 'panel',
@@ -125,7 +131,7 @@ describe('SPEC-091 engine config variants — merge', () => {
 		const merged = mergeRuneConfig(base, {
 			variants: {
 				mode: { cover: { staticModifiers: ['cover-themed'] } }, // override value delta
-				size: { large: { staticModifiers: ['lg'] } },          // new axis
+				size: { large: { staticModifiers: ['lg'] } }, // new axis
 			},
 		});
 		expect(merged.variants?.mode.cover.staticModifiers).toEqual(['cover-themed']);
@@ -138,7 +144,9 @@ describe('SPEC-091 engine config variants — merge', () => {
 describe('SPEC-091 engine config variants — validation', () => {
 	function validate(runeConfig: RuneConfig) {
 		return validateThemeConfig({
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: { Card: runeConfig },
 		});
 	}
@@ -177,7 +185,9 @@ describe('SPEC-091 engine config variants — validation', () => {
 describe('SPEC-091 engine config variants — contracts', () => {
 	it('enumerates a per-variant contract for each axis/value', () => {
 		const contract = generateStructureContract({
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Card: {
 					block: 'card',

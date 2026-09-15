@@ -1,37 +1,46 @@
 @layer skin {
-/* Expand — skin. The inline-block canonical-link box lives in @refrakt-md/skeleton
+	/* Expand — skin. The inline-block canonical-link box lives in @refrakt-md/skeleton
  * (styles/runes/expand.css). */
-.rf-expand {
-	margin: var(--rf-spacing-md) 0;
-}
-.rf-expand[data-outline-scope] {
-	padding: var(--rf-spacing-md) 0;
-}
-.rf-expand[data-outline-scope] :is(h1, h2, h3, h4, h5, h6):first-child {
-	margin-top: 0;
-}
-.rf-expand[data-outline-scope] h1 { font-size: var(--rf-text-2xl); }
-.rf-expand[data-outline-scope] h2 { font-size: var(--rf-text-xl); }
-.rf-expand[data-outline-scope] h3 { font-size: var(--rf-text-lg); }
-.rf-expand > :first-child { margin-top: 0; }
-.rf-expand > :last-child { margin-bottom: 0; }
-.rf-expand__canonical-link {
-	margin-top: var(--rf-spacing-sm);
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-primary);
-	text-decoration: none;
-}
-.rf-expand__canonical-link:hover {
-	text-decoration: underline;
-}
-.rf-expand[data-expand-error] {
-	padding: var(--rf-spacing-sm) var(--rf-spacing-md);
-	border-left: 3px solid var(--rf-color-danger);
-	background: var(--rf-color-danger-bg);
-	color: var(--rf-color-danger);
-	font-family: var(--rf-font-mono);
-	font-size: var(--rf-text-sm);
-	border-radius: 0 var(--rf-radius-sm) var(--rf-radius-sm) 0;
-}
-
+	.rf-expand {
+		margin: var(--rf-spacing-md) 0;
+	}
+	.rf-expand[data-outline-scope] {
+		padding: var(--rf-spacing-md) 0;
+	}
+	.rf-expand[data-outline-scope] :is(h1, h2, h3, h4, h5, h6):first-child {
+		margin-top: 0;
+	}
+	.rf-expand[data-outline-scope] h1 {
+		font-size: var(--rf-text-2xl);
+	}
+	.rf-expand[data-outline-scope] h2 {
+		font-size: var(--rf-text-xl);
+	}
+	.rf-expand[data-outline-scope] h3 {
+		font-size: var(--rf-text-lg);
+	}
+	.rf-expand > :first-child {
+		margin-top: 0;
+	}
+	.rf-expand > :last-child {
+		margin-bottom: 0;
+	}
+	.rf-expand__canonical-link {
+		margin-top: var(--rf-spacing-sm);
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-primary);
+		text-decoration: none;
+	}
+	.rf-expand__canonical-link:hover {
+		text-decoration: underline;
+	}
+	.rf-expand[data-expand-error] {
+		padding: var(--rf-spacing-sm) var(--rf-spacing-md);
+		border-left: 3px solid var(--rf-color-danger);
+		background: var(--rf-color-danger-bg);
+		color: var(--rf-color-danger);
+		font-family: var(--rf-font-mono);
+		font-size: var(--rf-text-sm);
+		border-radius: 0 var(--rf-radius-sm) var(--rf-radius-sm) 0;
+	}
 }

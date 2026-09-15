@@ -1,5 +1,5 @@
 @layer skin {
-/* Tint Rune — Colour Token Bridge
+	/* Tint Rune — Colour Token Bridge
  *
  * Maps --tint-* custom properties (set by the identity transform) to
  * Lumina's internal --rf-color-* tokens.
@@ -9,186 +9,186 @@
  * its inherited value instead of becoming guaranteed-invalid (which would
  * happen with a self-referencing var() fallback — a CSS cycle). */
 
-/* ── 0. Token registration ────────────────────────────────────────────────
+	/* ── 0. Token registration ────────────────────────────────────────────────
  * @property makes guaranteed-invalid fall back to the inherited value
  * (inherits: true) rather than propagating as invalid through children.
  * initial-value must match the light-mode defaults in tokens/base.css. */
 
-@property --rf-color-bg {
-	syntax: '<color>';
-	inherits: true;
-	initial-value: #f5f4f1;
-}
-@property --rf-color-surface {
-	syntax: '<color>';
-	inherits: true;
-	initial-value: #fbfaf7;
-}
-@property --rf-color-text {
-	syntax: '<color>';
-	inherits: true;
-	initial-value: #1c1a17;
-}
-@property --rf-color-muted {
-	syntax: '<color>';
-	inherits: true;
-	initial-value: #6b6661;
-}
-@property --rf-color-primary {
-	syntax: '<color>';
-	inherits: true;
-	initial-value: #1c1a17;
-}
-@property --rf-color-border {
-	syntax: '<color>';
-	inherits: true;
-	initial-value: #e2e0dd;
-}
+	@property --rf-color-bg {
+		syntax: "<color>";
+		inherits: true;
+		initial-value: #f5f4f1;
+	}
+	@property --rf-color-surface {
+		syntax: "<color>";
+		inherits: true;
+		initial-value: #fbfaf7;
+	}
+	@property --rf-color-text {
+		syntax: "<color>";
+		inherits: true;
+		initial-value: #1c1a17;
+	}
+	@property --rf-color-muted {
+		syntax: "<color>";
+		inherits: true;
+		initial-value: #6b6661;
+	}
+	@property --rf-color-primary {
+		syntax: "<color>";
+		inherits: true;
+		initial-value: #1c1a17;
+	}
+	@property --rf-color-border {
+		syntax: "<color>";
+		inherits: true;
+		initial-value: #e2e0dd;
+	}
 
-/* ── 1. Colour scheme override ──────────────────────────────────────────────
+	/* ── 1. Colour scheme override ──────────────────────────────────────────────
  * Forces dark or light mode tokens on a subtree. The six tint-bridgeable
  * tokens are also exposed as --cs-* intermediaries so compound selectors
  * in step 4 can fall back to them without a cycle. */
 
-/* Keep in sync with tokens/dark.css */
-[data-color-scheme="dark"] {
-	color-scheme: dark;
-	color: var(--rf-color-text);
-	background-color: var(--rf-color-bg);
+	/* Keep in sync with tokens/dark.css */
+	[data-color-scheme="dark"] {
+		color-scheme: dark;
+		color: var(--rf-color-text);
+		background-color: var(--rf-color-bg);
 
-	--cs-bg: #1a1a17;
-	--cs-surface: #1f1f1c;
-	--cs-text: #f6f4ef;
-	--cs-muted: #94908a;
-	--cs-accent: #f6f4ef;
-	--cs-border: #282825;
+		--cs-bg: #1a1a17;
+		--cs-surface: #1f1f1c;
+		--cs-text: #f6f4ef;
+		--cs-muted: #94908a;
+		--cs-accent: #f6f4ef;
+		--cs-border: #282825;
 
-	--rf-color-bg: var(--cs-bg);
-	--rf-color-surface: var(--cs-surface);
-	--rf-color-text: var(--cs-text);
-	--rf-color-muted: var(--cs-muted);
-	--rf-color-primary: var(--cs-accent);
-	--rf-color-border: var(--cs-border);
+		--rf-color-bg: var(--cs-bg);
+		--rf-color-surface: var(--cs-surface);
+		--rf-color-text: var(--cs-text);
+		--rf-color-muted: var(--cs-muted);
+		--rf-color-primary: var(--cs-accent);
+		--rf-color-border: var(--cs-border);
 
-	--rf-color-primary-hover: #d4cfc5;
-	--rf-color-surface-hover: #282825;
-	--rf-color-surface-active: #333330;
-	--rf-color-surface-raised: #272723;
+		--rf-color-primary-hover: #d4cfc5;
+		--rf-color-surface-hover: #282825;
+		--rf-color-surface-active: #333330;
+		--rf-color-surface-raised: #272723;
 
-	--rf-color-info: #9bb4c7;
-	--rf-color-info-bg: #1f2530;
-	--rf-color-info-border: #3d4655;
-	--rf-color-warning: #d4a868;
-	--rf-color-warning-bg: #2a2519;
-	--rf-color-warning-border: #4a3f2a;
-	--rf-color-danger: #d48888;
-	--rf-color-danger-bg: #2a1818;
-	--rf-color-danger-border: #4a2a2a;
-	--rf-color-success: #7eb398;
-	--rf-color-success-bg: #1a2a1f;
-	--rf-color-success-border: #2a4a35;
+		--rf-color-info: #9bb4c7;
+		--rf-color-info-bg: #1f2530;
+		--rf-color-info-border: #3d4655;
+		--rf-color-warning: #d4a868;
+		--rf-color-warning-bg: #2a2519;
+		--rf-color-warning-border: #4a3f2a;
+		--rf-color-danger: #d48888;
+		--rf-color-danger-bg: #2a1818;
+		--rf-color-danger-border: #4a2a2a;
+		--rf-color-success: #7eb398;
+		--rf-color-success-bg: #1a2a1f;
+		--rf-color-success-border: #2a4a35;
 
-	--rf-color-code-bg: #1c1c19;
-	--rf-color-code-text: #f6f4ef;
-	--rf-color-code-inline-bg: #2b2b29;
-	--rf-color-inline-code-bg: #2b2b29;
+		--rf-color-code-bg: #1c1c19;
+		--rf-color-code-text: #f6f4ef;
+		--rf-color-code-inline-bg: #2b2b29;
+		--rf-color-inline-code-bg: #2b2b29;
 
-	--rf-syntax-keyword: #7eb6bc;
-	--rf-syntax-function: #a89bc7;
-	--rf-syntax-string: #c79a9a;
-	--rf-syntax-constant: #d4b07e;
-	--rf-syntax-comment: #6b6661;
-	--rf-syntax-punctuation: #94908a;
-	--rf-syntax-variable: #f6f4ef;
+		--rf-syntax-keyword: #7eb6bc;
+		--rf-syntax-function: #a89bc7;
+		--rf-syntax-string: #c79a9a;
+		--rf-syntax-constant: #d4b07e;
+		--rf-syntax-comment: #6b6661;
+		--rf-syntax-punctuation: #94908a;
+		--rf-syntax-variable: #f6f4ef;
 
-	--rf-syntax-foreground: #f6f4ef;
-	--rf-syntax-background: #1c1c19;
-	--rf-syntax-token-keyword: #7eb6bc;
-	--rf-syntax-token-string: #c79a9a;
-	--rf-syntax-token-string-expression: #c79a9a;
-	--rf-syntax-token-constant: #d4b07e;
-	--rf-syntax-token-comment: #6b6661;
-	--rf-syntax-token-function: #a89bc7;
-	--rf-syntax-token-parameter: #f6f4ef;
-	--rf-syntax-token-punctuation: #94908a;
-	--rf-syntax-token-link: #a89bc7;
+		--rf-syntax-foreground: #f6f4ef;
+		--rf-syntax-background: #1c1c19;
+		--rf-syntax-token-keyword: #7eb6bc;
+		--rf-syntax-token-string: #c79a9a;
+		--rf-syntax-token-string-expression: #c79a9a;
+		--rf-syntax-token-constant: #d4b07e;
+		--rf-syntax-token-comment: #6b6661;
+		--rf-syntax-token-function: #a89bc7;
+		--rf-syntax-token-parameter: #f6f4ef;
+		--rf-syntax-token-punctuation: #94908a;
+		--rf-syntax-token-link: #a89bc7;
 
-	--rf-shadow-xs: 0 1px 2px rgba(0,0,0,0.3);
-	--rf-shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
-	--rf-shadow-md: 0 4px 12px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3);
-	--rf-shadow-lg: 0 8px 24px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3);
-}
+		--rf-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+		--rf-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+		--rf-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+		--rf-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+	}
 
-/* Keep in sync with tokens/base.css */
-[data-color-scheme="light"] {
-	color-scheme: light;
-	color: var(--rf-color-text);
-	background-color: var(--rf-color-bg);
+	/* Keep in sync with tokens/base.css */
+	[data-color-scheme="light"] {
+		color-scheme: light;
+		color: var(--rf-color-text);
+		background-color: var(--rf-color-bg);
 
-	--cs-bg: #f5f4f1;
-	--cs-surface: #fbfaf7;
-	--cs-text: #1c1a17;
-	--cs-muted: #6b6661;
-	--cs-accent: #1c1a17;
-	--cs-border: #e2e0dd;
+		--cs-bg: #f5f4f1;
+		--cs-surface: #fbfaf7;
+		--cs-text: #1c1a17;
+		--cs-muted: #6b6661;
+		--cs-accent: #1c1a17;
+		--cs-border: #e2e0dd;
 
-	--rf-color-bg: var(--cs-bg);
-	--rf-color-surface: var(--cs-surface);
-	--rf-color-text: var(--cs-text);
-	--rf-color-muted: var(--cs-muted);
-	--rf-color-primary: var(--cs-accent);
-	--rf-color-border: var(--cs-border);
+		--rf-color-bg: var(--cs-bg);
+		--rf-color-surface: var(--cs-surface);
+		--rf-color-text: var(--cs-text);
+		--rf-color-muted: var(--cs-muted);
+		--rf-color-primary: var(--cs-accent);
+		--rf-color-border: var(--cs-border);
 
-	--rf-color-primary-hover: #3a342d;
-	--rf-color-surface-hover: #ecebe8;
-	--rf-color-surface-active: #e2e0dd;
-	--rf-color-surface-raised: #ffffff;
+		--rf-color-primary-hover: #3a342d;
+		--rf-color-surface-hover: #ecebe8;
+		--rf-color-surface-active: #e2e0dd;
+		--rf-color-surface-raised: #ffffff;
 
-	--rf-color-info: #34547a;
-	--rf-color-info-bg: #e8edf4;
-	--rf-color-info-border: #c5d2e0;
-	--rf-color-warning: #9c5a18;
-	--rf-color-warning-bg: #f5ebd9;
-	--rf-color-warning-border: #e0c9a3;
-	--rf-color-danger: #a83232;
-	--rf-color-danger-bg: #f5e0e0;
-	--rf-color-danger-border: #e0b8b8;
-	--rf-color-success: #2d6a3e;
-	--rf-color-success-bg: #e0eee4;
-	--rf-color-success-border: #b8d4be;
+		--rf-color-info: #34547a;
+		--rf-color-info-bg: #e8edf4;
+		--rf-color-info-border: #c5d2e0;
+		--rf-color-warning: #9c5a18;
+		--rf-color-warning-bg: #f5ebd9;
+		--rf-color-warning-border: #e0c9a3;
+		--rf-color-danger: #a83232;
+		--rf-color-danger-bg: #f5e0e0;
+		--rf-color-danger-border: #e0b8b8;
+		--rf-color-success: #2d6a3e;
+		--rf-color-success-bg: #e0eee4;
+		--rf-color-success-border: #b8d4be;
 
-	--rf-color-code-bg: #ebeae8;
-	--rf-color-code-text: #1c1a17;
-	--rf-color-code-inline-bg: #e6e5e3;
-	--rf-color-inline-code-bg: #e6e5e3;
+		--rf-color-code-bg: #ebeae8;
+		--rf-color-code-text: #1c1a17;
+		--rf-color-code-inline-bg: #e6e5e3;
+		--rf-color-inline-code-bg: #e6e5e3;
 
-	--rf-syntax-keyword: #2a5c63;
-	--rf-syntax-function: #4a3b6e;
-	--rf-syntax-string: #8a3a3a;
-	--rf-syntax-constant: #876327;
-	--rf-syntax-comment: #8a857d;
-	--rf-syntax-punctuation: #6b6661;
-	--rf-syntax-variable: #1c1a17;
+		--rf-syntax-keyword: #2a5c63;
+		--rf-syntax-function: #4a3b6e;
+		--rf-syntax-string: #8a3a3a;
+		--rf-syntax-constant: #876327;
+		--rf-syntax-comment: #8a857d;
+		--rf-syntax-punctuation: #6b6661;
+		--rf-syntax-variable: #1c1a17;
 
-	--rf-syntax-foreground: #1c1a17;
-	--rf-syntax-background: #ebeae8;
-	--rf-syntax-token-keyword: #2a5c63;
-	--rf-syntax-token-string: #8a3a3a;
-	--rf-syntax-token-string-expression: #8a3a3a;
-	--rf-syntax-token-constant: #876327;
-	--rf-syntax-token-comment: #8a857d;
-	--rf-syntax-token-function: #4a3b6e;
-	--rf-syntax-token-parameter: #1c1a17;
-	--rf-syntax-token-punctuation: #6b6661;
-	--rf-syntax-token-link: #4a3b6e;
+		--rf-syntax-foreground: #1c1a17;
+		--rf-syntax-background: #ebeae8;
+		--rf-syntax-token-keyword: #2a5c63;
+		--rf-syntax-token-string: #8a3a3a;
+		--rf-syntax-token-string-expression: #8a3a3a;
+		--rf-syntax-token-constant: #876327;
+		--rf-syntax-token-comment: #8a857d;
+		--rf-syntax-token-function: #4a3b6e;
+		--rf-syntax-token-parameter: #1c1a17;
+		--rf-syntax-token-punctuation: #6b6661;
+		--rf-syntax-token-link: #4a3b6e;
 
-	--rf-shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
-	--rf-shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-	--rf-shadow-md: 0 4px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
-	--rf-shadow-lg: 0 8px 24px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
-}
+		--rf-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+		--rf-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+		--rf-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.04);
+		--rf-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+	}
 
-/* ── 2. Tint bridge — light mode (default) ────────────────────────────────
+	/* ── 2. Tint bridge — light mode (default) ────────────────────────────────
  * Maps --tint-* → --rf-color-*. No fallback needed — when --tint-* is
  * unset, var() produces guaranteed-invalid, and @property makes the
  * token inherit from the parent element.
@@ -196,57 +196,56 @@
  * :where() background gives tinted elements a painted background at zero
  * specificity — runes with their own background naturally override it. */
 
-:where([data-tint]) {
-	background-color: var(--rf-color-bg);
-}
+	:where([data-tint]) {
+		background-color: var(--rf-color-bg);
+	}
 
-[data-tint] {
-	color: var(--rf-color-text);
-	--rf-color-bg: var(--tint-bg);
-	--rf-color-surface: var(--tint-surface);
-	--rf-color-text: var(--tint-text);
-	--rf-color-muted: var(--tint-muted);
-	--rf-color-primary: var(--tint-primary);
-	--rf-color-border: var(--tint-border);
-}
+	[data-tint] {
+		color: var(--rf-color-text);
+		--rf-color-bg: var(--tint-bg);
+		--rf-color-surface: var(--tint-surface);
+		--rf-color-text: var(--tint-text);
+		--rf-color-muted: var(--tint-muted);
+		--rf-color-primary: var(--tint-primary);
+		--rf-color-border: var(--tint-border);
+	}
 
-/* ── 3. Tint bridge — dark ancestor ───────────────────────────────────────
+	/* ── 3. Tint bridge — dark ancestor ───────────────────────────────────────
  * When a dark context is on an ancestor (data-theme on html, or
  * data-color-scheme on a parent), prefer dark tint values.
  * Uses descendant combinator — does NOT match same-element.
  * Unset tokens → guaranteed-invalid → @property inherits from parent
  * (which carries the dark theme value). */
 
-:is([data-theme="dark"], [data-color-scheme="dark"]) [data-tint] {
-	--rf-color-bg: var(--tint-dark-bg, var(--tint-bg));
-	--rf-color-surface: var(--tint-dark-surface, var(--tint-surface));
-	--rf-color-text: var(--tint-dark-text, var(--tint-text));
-	--rf-color-muted: var(--tint-dark-muted, var(--tint-muted));
-	--rf-color-primary: var(--tint-dark-primary, var(--tint-primary));
-	--rf-color-border: var(--tint-dark-border, var(--tint-border));
-}
+	:is([data-theme="dark"], [data-color-scheme="dark"]) [data-tint] {
+		--rf-color-bg: var(--tint-dark-bg, var(--tint-bg));
+		--rf-color-surface: var(--tint-dark-surface, var(--tint-surface));
+		--rf-color-text: var(--tint-dark-text, var(--tint-text));
+		--rf-color-muted: var(--tint-dark-muted, var(--tint-muted));
+		--rf-color-primary: var(--tint-dark-primary, var(--tint-primary));
+		--rf-color-border: var(--tint-dark-border, var(--tint-border));
+	}
 
-/* ── 4. Tint bridge — colour scheme + tint on SAME element ────────────────
+	/* ── 4. Tint bridge — colour scheme + tint on SAME element ────────────────
  * Compound selectors (no space) match when both attributes sit on the
  * same element. Falls back to --cs-* intermediaries so that unlisted
  * tint tokens use the colour-scheme value, not the page-level value. */
 
-[data-color-scheme="dark"][data-tint] {
-	--rf-color-bg: var(--tint-dark-bg, var(--tint-bg, var(--cs-bg)));
-	--rf-color-surface: var(--tint-dark-surface, var(--tint-surface, var(--cs-surface)));
-	--rf-color-text: var(--tint-dark-text, var(--tint-text, var(--cs-text)));
-	--rf-color-muted: var(--tint-dark-muted, var(--tint-muted, var(--cs-muted)));
-	--rf-color-primary: var(--tint-dark-primary, var(--tint-primary, var(--cs-accent)));
-	--rf-color-border: var(--tint-dark-border, var(--tint-border, var(--cs-border)));
-}
+	[data-color-scheme="dark"][data-tint] {
+		--rf-color-bg: var(--tint-dark-bg, var(--tint-bg, var(--cs-bg)));
+		--rf-color-surface: var(--tint-dark-surface, var(--tint-surface, var(--cs-surface)));
+		--rf-color-text: var(--tint-dark-text, var(--tint-text, var(--cs-text)));
+		--rf-color-muted: var(--tint-dark-muted, var(--tint-muted, var(--cs-muted)));
+		--rf-color-primary: var(--tint-dark-primary, var(--tint-primary, var(--cs-accent)));
+		--rf-color-border: var(--tint-dark-border, var(--tint-border, var(--cs-border)));
+	}
 
-[data-color-scheme="light"][data-tint] {
-	--rf-color-bg: var(--tint-bg, var(--cs-bg));
-	--rf-color-surface: var(--tint-surface, var(--cs-surface));
-	--rf-color-text: var(--tint-text, var(--cs-text));
-	--rf-color-muted: var(--tint-muted, var(--cs-muted));
-	--rf-color-primary: var(--tint-primary, var(--cs-accent));
-	--rf-color-border: var(--tint-border, var(--cs-border));
-}
-
+	[data-color-scheme="light"][data-tint] {
+		--rf-color-bg: var(--tint-bg, var(--cs-bg));
+		--rf-color-surface: var(--tint-surface, var(--cs-surface));
+		--rf-color-text: var(--tint-text, var(--cs-text));
+		--rf-color-muted: var(--tint-muted, var(--cs-muted));
+		--rf-color-primary: var(--tint-primary, var(--cs-accent));
+		--rf-color-border: var(--tint-border, var(--cs-border));
+	}
 }

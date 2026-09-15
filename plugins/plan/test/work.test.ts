@@ -3,7 +3,8 @@ import { parse, findTag, findAllTags, fields } from './helpers.js';
 
 describe('work tag', () => {
 	it('should transform a basic work item', () => {
-		const result = parse(`{% work id="RF-142" status="ready" priority="high" complexity="moderate" %}
+		const result =
+			parse(`{% work id="RF-142" status="ready" priority="high" complexity="moderate" %}
 # Implement dark mode support
 
 The theme needs dual definitions.
@@ -16,19 +17,20 @@ The theme needs dual definitions.
 Use CSS custom properties.
 {% /work %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'work');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'work');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 	});
 
 	it('should pass all attributes as meta', () => {
-		const result = parse(`{% work id="RF-100" status="in-progress" priority="critical" complexity="complex" assignee="alice" milestone="v1.0" tags="auth" %}
+		const result =
+			parse(`{% work id="RF-100" status="in-progress" priority="critical" complexity="complex" assignee="alice" milestone="v1.0" tags="auth" %}
 # Some work
 
 Description here.
 {% /work %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'work');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'work');
 		expect(fields(tag).id).toBe('RF-100');
 		expect(fields(tag).status).toBe('in-progress');
 		expect(fields(tag).priority).toBe('critical');
@@ -44,18 +46,19 @@ Description here.
 Do something.
 {% /task %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'work');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'work');
 		expect(tag).toBeDefined();
 	});
 
 	it('should pass source attribute as meta', () => {
-		const result = parse(`{% work id="RF-300" status="ready" priority="high" source="SPEC-001,ADR-002" %}
+		const result =
+			parse(`{% work id="RF-300" status="ready" priority="high" source="SPEC-001,ADR-002" %}
 # Implement feature from spec
 
 Description.
 {% /work %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'work');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'work');
 		expect(fields(tag).source).toBe('SPEC-001,ADR-002');
 	});
 
@@ -66,7 +69,7 @@ Description.
 Description.
 {% /work %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'work');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'work');
 		expect(fields(tag).source).toBe('');
 	});
 
@@ -84,10 +87,10 @@ Description.
 - Edge case one
 {% /work %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'work');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'work');
 		expect(tag).toBeDefined();
 
-		const sections = findAllTags(tag!, t => t.name === 'section' && !!t.attributes['data-name']);
+		const sections = findAllTags(tag!, (t) => t.name === 'section' && !!t.attributes['data-name']);
 		expect(sections.length).toBe(2);
 		expect(sections[0].attributes['data-name']).toBe('acceptance-criteria');
 		expect(sections[1].attributes['data-name']).toBe('edge-cases');

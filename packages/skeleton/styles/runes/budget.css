@@ -10,7 +10,9 @@
 	justify-content: space-between;
 	align-items: center;
 }
-.rf-budget-category__line-items { list-style: none; }
+.rf-budget-category__line-items {
+	list-style: none;
+}
 .rf-budget-line-item {
 	display: flex;
 	justify-content: space-between;

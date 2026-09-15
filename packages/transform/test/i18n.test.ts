@@ -78,7 +78,9 @@ describe('resolvePluralString', () => {
 	};
 
 	it('selects the English one/other categories', () => {
-		expect(resolvePluralString(en, 'plan.progress.criteria', 1, '{n} criteria')).toBe('1 criterion');
+		expect(resolvePluralString(en, 'plan.progress.criteria', 1, '{n} criteria')).toBe(
+			'1 criterion',
+		);
 		expect(resolvePluralString(en, 'plan.progress.criteria', 5, '{n} criteria')).toBe('5 criteria');
 	});
 	it('selects Polish few/many categories via Intl.PluralRules', () => {

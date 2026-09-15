@@ -11,11 +11,11 @@ describe('SPEC-054 menubar slot detection', () => {
 - pricing
 {% /nav %}`);
 
-		const nav = findTag(result as any, t => t.attributes['data-rune'] === 'nav');
+		const nav = findTag(result as any, (t) => t.attributes['data-rune'] === 'nav');
 		expect(nav).toBeDefined();
 
-		const intros = findAllTags(result as any, t => t.attributes['data-name'] === 'intro');
-		const footers = findAllTags(result as any, t => t.attributes['data-name'] === 'footer');
+		const intros = findAllTags(result as any, (t) => t.attributes['data-name'] === 'intro');
+		const footers = findAllTags(result as any, (t) => t.attributes['data-name'] === 'footer');
 		expect(intros).toHaveLength(0);
 		expect(footers).toHaveLength(0);
 	});
@@ -29,11 +29,11 @@ For teams shipping documentation
 - pricing
 {% /nav %}`);
 
-		const intro = findTag(result as any, t => t.attributes['data-name'] === 'intro');
+		const intro = findTag(result as any, (t) => t.attributes['data-name'] === 'intro');
 		expect(intro).toBeDefined();
 		expect(intro!.name).toBe('div');
 		// The intro contains the paragraph
-		const para = findTag(intro!, t => t.name === 'p');
+		const para = findTag(intro!, (t) => t.name === 'p');
 		expect(para).toBeDefined();
 	});
 
@@ -47,9 +47,9 @@ For teams shipping documentation
 - [Getting started](/docs/getting-started)
 {% /nav %}`);
 
-		const intro = findTag(result as any, t => t.attributes['data-name'] === 'intro');
+		const intro = findTag(result as any, (t) => t.attributes['data-name'] === 'intro');
 		expect(intro).toBeDefined();
-		const blockquote = findTag(intro!, t => t.name === 'blockquote');
+		const blockquote = findTag(intro!, (t) => t.name === 'blockquote');
 		expect(blockquote).toBeDefined();
 	});
 
@@ -63,8 +63,8 @@ Intro paragraph
 See all docs →
 {% /nav %}`);
 
-		const intro = findTag(result as any, t => t.attributes['data-name'] === 'intro');
-		const footer = findTag(result as any, t => t.attributes['data-name'] === 'footer');
+		const intro = findTag(result as any, (t) => t.attributes['data-name'] === 'intro');
+		const footer = findTag(result as any, (t) => t.attributes['data-name'] === 'footer');
 		expect(intro).toBeDefined();
 		expect(footer).toBeDefined();
 	});
@@ -77,8 +77,8 @@ Eyebrow text
 - features
 {% /nav %}`);
 
-		const intro = findTag(result as any, t => t.attributes['data-name'] === 'intro');
-		const footer = findTag(result as any, t => t.attributes['data-name'] === 'footer');
+		const intro = findTag(result as any, (t) => t.attributes['data-name'] === 'intro');
+		const footer = findTag(result as any, (t) => t.attributes['data-name'] === 'footer');
 		expect(intro).toBeDefined();
 		expect(footer).toBeUndefined();
 	});
@@ -89,7 +89,7 @@ Eyebrow text
 Just some content here, no list.
 {% /nav %}`);
 
-		const intro = findTag(result as any, t => t.attributes['data-name'] === 'intro');
+		const intro = findTag(result as any, (t) => t.attributes['data-name'] === 'intro');
 		expect(intro).toBeDefined();
 	});
 });
@@ -105,7 +105,7 @@ describe('SPEC-054 columns layout flow rule', () => {
 {% /nav %}`);
 
 		// No column wrappers in backwards-compat mode — groups render directly
-		const columns = findAllTags(result as any, t => t.attributes['data-name'] === 'column');
+		const columns = findAllTags(result as any, (t) => t.attributes['data-name'] === 'column');
 		expect(columns).toHaveLength(0);
 	});
 
@@ -131,19 +131,28 @@ describe('SPEC-054 columns layout flow rule', () => {
 - privacy
 {% /nav %}`);
 
-		const columns = findAllTags(result as any, t => t.attributes['data-name'] === 'column');
+		const columns = findAllTags(result as any, (t) => t.attributes['data-name'] === 'column');
 		expect(columns).toHaveLength(3);
 
 		// First column should contain Product + Resources
-		const firstColGroups = findAllTags(columns[0], t => t.attributes['data-rune'] === 'nav-group');
+		const firstColGroups = findAllTags(
+			columns[0],
+			(t) => t.attributes['data-rune'] === 'nav-group',
+		);
 		expect(firstColGroups).toHaveLength(2);
 
 		// Second column should contain Community + Status
-		const secondColGroups = findAllTags(columns[1], t => t.attributes['data-rune'] === 'nav-group');
+		const secondColGroups = findAllTags(
+			columns[1],
+			(t) => t.attributes['data-rune'] === 'nav-group',
+		);
 		expect(secondColGroups).toHaveLength(2);
 
 		// Third column should contain Legal alone
-		const thirdColGroups = findAllTags(columns[2], t => t.attributes['data-rune'] === 'nav-group');
+		const thirdColGroups = findAllTags(
+			columns[2],
+			(t) => t.attributes['data-rune'] === 'nav-group',
+		);
 		expect(thirdColGroups).toHaveLength(1);
 	});
 
@@ -158,13 +167,13 @@ describe('SPEC-054 columns layout flow rule', () => {
 - [Adapters](/docs/adapters/adapters-overview)
 {% /nav %}`);
 
-		const columns = findAllTags(result as any, t => t.attributes['data-name'] === 'column');
+		const columns = findAllTags(result as any, (t) => t.attributes['data-name'] === 'column');
 		expect(columns).toHaveLength(2);
 
-		const firstColItems = findAllTags(columns[0], t => t.attributes['data-rune'] === 'nav-item');
+		const firstColItems = findAllTags(columns[0], (t) => t.attributes['data-rune'] === 'nav-item');
 		expect(firstColItems).toHaveLength(2);
 
-		const secondColItems = findAllTags(columns[1], t => t.attributes['data-rune'] === 'nav-item');
+		const secondColItems = findAllTags(columns[1], (t) => t.attributes['data-rune'] === 'nav-item');
 		expect(secondColItems).toHaveLength(2);
 	});
 });
@@ -177,16 +186,16 @@ describe('SPEC-054 strip layout', () => {
 - [Status](https://status.example.com)
 {% /nav %}`);
 
-		const nav = findTag(result as any, t => t.attributes['data-rune'] === 'nav');
+		const nav = findTag(result as any, (t) => t.attributes['data-rune'] === 'nav');
 		expect(nav).toBeDefined();
 		expect(nav!.attributes['layout']).toBe('strip');
 
-		const items = findAllTags(result as any, t => t.attributes['data-rune'] === 'nav-item');
+		const items = findAllTags(result as any, (t) => t.attributes['data-rune'] === 'nav-item');
 		expect(items).toHaveLength(3);
 
 		// Strip should NOT have group / column / intro / footer slots
-		const groups = findAllTags(result as any, t => t.attributes['data-rune'] === 'nav-group');
-		const columns = findAllTags(result as any, t => t.attributes['data-name'] === 'column');
+		const groups = findAllTags(result as any, (t) => t.attributes['data-rune'] === 'nav-group');
+		const columns = findAllTags(result as any, (t) => t.attributes['data-name'] === 'column');
 		expect(groups).toHaveLength(0);
 		expect(columns).toHaveLength(0);
 	});
@@ -209,14 +218,17 @@ describe('SPEC-054 nested rune content in menubar groups', () => {
 {% /nav %}`);
 
 		// Outer nav exists
-		const navs = findAllTags(result as any, t => t.attributes['data-rune'] === 'nav');
+		const navs = findAllTags(result as any, (t) => t.attributes['data-rune'] === 'nav');
 		expect(navs.length).toBeGreaterThanOrEqual(2);
 
 		// Inner nav uses columns headingless mode → has column wrappers
-		const columnsInsideMenubar = navs.find(n => n.attributes['layout'] === 'columns');
+		const columnsInsideMenubar = navs.find((n) => n.attributes['layout'] === 'columns');
 		expect(columnsInsideMenubar).toBeDefined();
 
-		const columnDivs = findAllTags(columnsInsideMenubar!, t => t.attributes['data-name'] === 'column');
+		const columnDivs = findAllTags(
+			columnsInsideMenubar!,
+			(t) => t.attributes['data-name'] === 'column',
+		);
 		expect(columnDivs).toHaveLength(2);
 	});
 
@@ -234,11 +246,11 @@ describe('SPEC-054 nested rune content in menubar groups', () => {
 {% /nav %}`);
 
 		// The nested nav alone should not be promoted to intro — it's body content.
-		const intro = findTag(result as any, t => t.attributes['data-name'] === 'intro');
+		const intro = findTag(result as any, (t) => t.attributes['data-name'] === 'intro');
 		expect(intro).toBeUndefined();
 
 		// The nested nav lives directly inside the panel.
-		const panel = findTag(result as any, t => t.attributes['data-name'] === 'panel');
+		const panel = findTag(result as any, (t) => t.attributes['data-name'] === 'panel');
 		expect(panel).toBeDefined();
 		const nestedNav = panel!.children.find(
 			(c: any) => c && typeof c === 'object' && c.attributes?.['data-rune'] === 'nav',
@@ -247,7 +259,8 @@ describe('SPEC-054 nested rune content in menubar groups', () => {
 	});
 
 	it('with paragraph after a nested nav, the nav stays in body and only the paragraph becomes footer', () => {
-		const result = parse(`{% nav layout="menubar" %}
+		const result = parse(
+			`{% nav layout="menubar" %}
 ## Docs
 
 {% nav layout="columns" %}
@@ -255,20 +268,21 @@ describe('SPEC-054 nested rune content in menubar groups', () => {
 {% /nav %}
 
 See all docs →
-`+ `{% /nav %}`);
+` + `{% /nav %}`,
+		);
 
-		const intro = findTag(result as any, t => t.attributes['data-name'] === 'intro');
+		const intro = findTag(result as any, (t) => t.attributes['data-name'] === 'intro');
 		expect(intro).toBeUndefined();
 
-		const footer = findTag(result as any, t => t.attributes['data-name'] === 'footer');
+		const footer = findTag(result as any, (t) => t.attributes['data-name'] === 'footer');
 		expect(footer).toBeDefined();
 		// The trailing paragraph is in the footer.
-		const footerParagraph = findTag(footer!, t => t.name === 'p');
+		const footerParagraph = findTag(footer!, (t) => t.name === 'p');
 		expect(footerParagraph).toBeDefined();
 
 		// The nested nav stays in the panel body, not inside the footer slot.
-		const panel = findTag(result as any, t => t.attributes['data-name'] === 'panel');
-		const navInsideFooter = findAllTags(footer!, t => t.attributes['data-rune'] === 'nav');
+		const panel = findTag(result as any, (t) => t.attributes['data-name'] === 'panel');
+		const navInsideFooter = findAllTags(footer!, (t) => t.attributes['data-rune'] === 'nav');
 		expect(navInsideFooter).toHaveLength(0);
 		const navInPanelBody = panel!.children.find(
 			(c: any) => c && typeof c === 'object' && c.attributes?.['data-rune'] === 'nav',
@@ -289,7 +303,10 @@ describe('SPEC-054 per-item descriptions', () => {
   Author content in plain markdown.
 {% /nav %}`);
 
-		const descriptions = findAllTags(result as any, t => t.attributes['data-name'] === 'description');
+		const descriptions = findAllTags(
+			result as any,
+			(t) => t.attributes['data-name'] === 'description',
+		);
 		expect(descriptions.length).toBeGreaterThanOrEqual(2);
 	});
 
@@ -300,7 +317,7 @@ describe('SPEC-054 per-item descriptions', () => {
   Set up sites, plugins, and themes.
 {% /nav %}`);
 
-		const description = findTag(result as any, t => t.attributes['data-name'] === 'description');
+		const description = findTag(result as any, (t) => t.attributes['data-name'] === 'description');
 		expect(description).toBeDefined();
 		// Description is a <span>, not a <p>, so it can live inline inside the link.
 		expect(description!.name).toBe('span');
@@ -316,9 +333,9 @@ describe('SPEC-054 per-item descriptions', () => {
 		expect(descText).not.toContain('Configuration');
 
 		// Description is a child of the <a>, not a sibling.
-		const link = findTag(result as any, t => t.name === 'a');
+		const link = findTag(result as any, (t) => t.name === 'a');
 		expect(link).toBeDefined();
-		const descInsideLink = findTag(link!, t => t.attributes['data-name'] === 'description');
+		const descInsideLink = findTag(link!, (t) => t.attributes['data-name'] === 'description');
 		expect(descInsideLink).toBeDefined();
 	});
 });

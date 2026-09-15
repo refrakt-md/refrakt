@@ -1,5 +1,5 @@
 @layer skin {
-/* Frame chrome (SPEC-086) — media-surface presentation.
+	/* Frame chrome (SPEC-086) — media-surface presentation.
  *
  * The engine lands the frame contract on the frame-target element: a rune's
  * `[data-section="media"]` zone (frameTarget: 'media') or the rune's own root
@@ -21,48 +21,66 @@
  * `frame-shadow` (drop-shadow silhouette here) never collide — different property,
  * different surface. */
 
-/* ── Silhouette drop-shadow ────────────────────────────────────────────
+	/* ── Silhouette drop-shadow ────────────────────────────────────────────
  * Same media-target / self-target split as `frame-displace`. Media-target
  * frames land `data-frame-shadow` on the media zone wrapper, but the shadow
  * should ride the inner guest so it (a) shifts with `frame-displace` and
  * (b) actually casts onto exposed slot interior when the guest is inset
  * from the wrapper. Self-target frames (showcase, figure) keep the filter
  * on the root itself, where it traces the rune's own painted silhouette. */
-[data-frame-shadow="none"] { --frame-shadow: none; }
-[data-frame-shadow="sm"]   { --frame-shadow: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.10)); }
-[data-frame-shadow="md"]   { --frame-shadow: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.25)); }
-[data-frame-shadow="lg"]   { --frame-shadow: drop-shadow(0 12px 40px rgba(0, 0, 0, 0.20)); }
+	[data-frame-shadow="none"] {
+		--frame-shadow: none;
+	}
+	[data-frame-shadow="sm"] {
+		--frame-shadow: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
+	}
+	[data-frame-shadow="md"] {
+		--frame-shadow: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.25));
+	}
+	[data-frame-shadow="lg"] {
+		--frame-shadow: drop-shadow(0 12px 40px rgba(0, 0, 0, 0.2));
+	}
 
-/* Self-target — figure, showcase, anything else where the rune root is the
+	/* Self-target — figure, showcase, anything else where the rune root is the
  * frame target. The filter applies to the painted root. */
-[data-frame-shadow]:not([data-section="media"]) {
-	filter: var(--frame-shadow);
-}
+	[data-frame-shadow]:not([data-section="media"]) {
+		filter: var(--frame-shadow);
+	}
 
-/* Media-target — card, bento-cell, recipe, etc. The filter rides the inner
+	/* Media-target — card, bento-cell, recipe, etc. The filter rides the inner
  * guest so a displaced image's shadow falls into the slot's exposed
  * interior (clipped at the slot's `overflow: hidden` boundary like any
  * other in-slot content). */
-[data-section="media"][data-frame-shadow] > :is(img, video, .rf-placeholder, [data-rune]) {
-	filter: var(--frame-shadow);
-}
+	[data-section="media"][data-frame-shadow] > :is(img, video, .rf-placeholder, [data-rune]) {
+		filter: var(--frame-shadow);
+	}
 
-/* ── Aspect ratio ────────────────────────────────────────────────────── */
-[style*="--frame-aspect"] { aspect-ratio: var(--frame-aspect); }
+	/* ── Aspect ratio ────────────────────────────────────────────────────── */
+	[style*="--frame-aspect"] {
+		aspect-ratio: var(--frame-aspect);
+	}
 
-/* ── Crop anchor — focal point when the guest is cut ─────────────────── */
-[style*="--frame-anchor"] > :is(img, video, .rf-placeholder) { object-position: var(--frame-anchor); }
+	/* ── Crop anchor — focal point when the guest is cut ─────────────────── */
+	[style*="--frame-anchor"] > :is(img, video, .rf-placeholder) {
+		object-position: var(--frame-anchor);
+	}
 
-/* ── Placement of the framed box within its slot ─────────────────────── */
-[style*="--frame-place-x"] { justify-self: var(--frame-place-x, auto); align-self: var(--frame-place-y, auto); }
+	/* ── Placement of the framed box within its slot ─────────────────────── */
+	[style*="--frame-place-x"] {
+		justify-self: var(--frame-place-x, auto);
+		align-self: var(--frame-place-y, auto);
+	}
 
-/* ── Oversize — guest exceeds its slot (clipping hosts crop it) ──────── */
-/* `[data-rune]` extends the rule to nested rune guests (codegroup, mockup,
+	/* ── Oversize — guest exceeds its slot (clipping hosts crop it) ──────── */
+	/* `[data-rune]` extends the rule to nested rune guests (codegroup, mockup,
  * chart, etc.), so frame chrome stays guest-agnostic — the same selector
  * pattern the displace rule uses. */
-[style*="--frame-oversize"] > :is(img, video, .rf-placeholder, [data-rune]) { width: calc(100% * var(--frame-oversize, 1)); max-width: none; }
+	[style*="--frame-oversize"] > :is(img, video, .rf-placeholder, [data-rune]) {
+		width: calc(100% * var(--frame-oversize, 1));
+		max-width: none;
+	}
 
-/* ── Displacement (peek / spill) — move the guest toward an edge/corner.
+	/* ── Displacement (peek / spill) — move the guest toward an edge/corner.
  * The host decides whether the guest is cropped or spills; this only moves it.
  * Two cases, distinguished by where the engine landed `data-displace`:
  *
@@ -80,45 +98,87 @@
  *      We push the root with negative margins so it can spill past its
  *      parent's edge for a true breakout. */
 
-/* — Case 1a: media-zone displace, default `peek` mode → translate the inner
+	/* — Case 1a: media-zone displace, default `peek` mode → translate the inner
  *   guest inside the slot. The zone's `overflow: hidden` clips the displaced
  *   guest into a peek (card / bento-cell behaviour). */
-[data-section="media"][data-displace]:not([data-displace-mode="bleed"]) > :is(img, video, .rf-placeholder, [data-rune]) {
-	transform: translate(var(--displace-x, 0), var(--displace-y, 0));
-}
-[data-section="media"][data-displace="top"]        { --displace-y: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
-[data-section="media"][data-displace="bottom"]     { --displace-y: var(--frame-offset, var(--rf-spacing-lg)); }
-[data-section="media"][data-displace="end"]        { --displace-x: var(--frame-offset, var(--rf-spacing-lg)); }
-[data-section="media"][data-displace="top-end"]    { --displace-x: var(--frame-offset, var(--rf-spacing-lg)); --displace-y: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
-[data-section="media"][data-displace="bottom-end"] { --displace-x: var(--frame-offset, var(--rf-spacing-lg)); --displace-y: var(--frame-offset, var(--rf-spacing-lg)); }
+	[data-section="media"][data-displace]:not([data-displace-mode="bleed"])
+	> :is(img, video, .rf-placeholder, [data-rune]) {
+		transform: translate(var(--displace-x, 0), var(--displace-y, 0));
+	}
+	[data-section="media"][data-displace="top"] {
+		--displace-y: calc(-1 * var(--frame-offset, var(--rf-spacing-lg)));
+	}
+	[data-section="media"][data-displace="bottom"] {
+		--displace-y: var(--frame-offset, var(--rf-spacing-lg));
+	}
+	[data-section="media"][data-displace="end"] {
+		--displace-x: var(--frame-offset, var(--rf-spacing-lg));
+	}
+	[data-section="media"][data-displace="top-end"] {
+		--displace-x: var(--frame-offset, var(--rf-spacing-lg));
+		--displace-y: calc(-1 * var(--frame-offset, var(--rf-spacing-lg)));
+	}
+	[data-section="media"][data-displace="bottom-end"] {
+		--displace-x: var(--frame-offset, var(--rf-spacing-lg));
+		--displace-y: var(--frame-offset, var(--rf-spacing-lg));
+	}
 
-/* — Case 1b: media-zone displace, `bleed` mode → negative margin on the media
+	/* — Case 1b: media-zone displace, `bleed` mode → negative margin on the media
  *   zone itself, so following layout pulls up and the guest extends past the
  *   host's edge (hero / cta behaviour). The guest renders at its natural
  *   position inside the zone — no translate, no artificial gap above. The
  *   margin needs to exceed the host's padding for the guest to clear the host
  *   edge; the offset scale tops out at `3xl` (6rem) for this. */
-[data-section="media"][data-displace="top"][data-displace-mode="bleed"]        { margin-top: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
-[data-section="media"][data-displace="bottom"][data-displace-mode="bleed"]     { margin-bottom: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
-[data-section="media"][data-displace="end"][data-displace-mode="bleed"]        { margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
-[data-section="media"][data-displace="top-end"][data-displace-mode="bleed"]    { margin-top: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
-[data-section="media"][data-displace="bottom-end"][data-displace-mode="bleed"] { margin-bottom: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
+	[data-section="media"][data-displace="top"][data-displace-mode="bleed"] {
+		margin-top: calc(-1 * var(--frame-offset, var(--rf-spacing-lg)));
+	}
+	[data-section="media"][data-displace="bottom"][data-displace-mode="bleed"] {
+		margin-bottom: calc(-1 * var(--frame-offset, var(--rf-spacing-lg)));
+	}
+	[data-section="media"][data-displace="end"][data-displace-mode="bleed"] {
+		margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg)));
+	}
+	[data-section="media"][data-displace="top-end"][data-displace-mode="bleed"] {
+		margin-top: calc(-1 * var(--frame-offset, var(--rf-spacing-lg)));
+		margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg)));
+	}
+	[data-section="media"][data-displace="bottom-end"][data-displace-mode="bleed"] {
+		margin-bottom: calc(-1 * var(--frame-offset, var(--rf-spacing-lg)));
+		margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg)));
+	}
 
-/* — Case 2: self-target (showcase, etc.) → root moves; parent decides. */
-[data-displace]:not([data-section="media"]) { position: relative; z-index: 1; }
-[data-displace="top"]:not([data-section="media"])        { margin-top: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
-[data-displace="bottom"]:not([data-section="media"])     { margin-bottom: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
-[data-displace="both"]:not([data-section="media"])       { margin-block: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
-[data-displace="end"]:not([data-section="media"])        { margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
-[data-displace="bottom-end"]:not([data-section="media"]) { margin-bottom: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
-[data-displace="top-end"]:not([data-section="media"])    { margin-top: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg))); }
+	/* — Case 2: self-target (showcase, etc.) → root moves; parent decides. */
+	[data-displace]:not([data-section="media"]) {
+		position: relative;
+		z-index: 1;
+	}
+	[data-displace="top"]:not([data-section="media"]) {
+		margin-top: calc(-1 * var(--frame-offset, var(--rf-spacing-lg)));
+	}
+	[data-displace="bottom"]:not([data-section="media"]) {
+		margin-bottom: calc(-1 * var(--frame-offset, var(--rf-spacing-lg)));
+	}
+	[data-displace="both"]:not([data-section="media"]) {
+		margin-block: calc(-1 * var(--frame-offset, var(--rf-spacing-lg)));
+	}
+	[data-displace="end"]:not([data-section="media"]) {
+		margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg)));
+	}
+	[data-displace="bottom-end"]:not([data-section="media"]) {
+		margin-bottom: calc(-1 * var(--frame-offset, var(--rf-spacing-lg)));
+		margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg)));
+	}
+	[data-displace="top-end"]:not([data-section="media"]) {
+		margin-top: calc(-1 * var(--frame-offset, var(--rf-spacing-lg)));
+		margin-inline-end: calc(-1 * var(--frame-offset, var(--rf-spacing-lg)));
+	}
 
-/* Displacement carries across breakpoints. For media-target the guest is
+	/* Displacement carries across breakpoints. For media-target the guest is
  * clipped by the zone's `overflow: hidden` regardless of width, so the peek
  * reads consistently from desktop to mobile. For self-target (showcase) the
  * negative-margin spill stays on too — that's the intended breakout. */
 
-/* ── frame-overflow="bleed" (SPEC-116) ───────────────────────────────────
+	/* ── frame-overflow="bleed" (SPEC-116) ───────────────────────────────────
  * The host declares the policy (`data-frame-overflow="bleed"` on its media
  * zone, a bleed host only); the guest signals the fact (`data-overflowing`,
  * set by its runtime when its content is wider than the frame). When both
@@ -131,13 +191,12 @@
  * at the content row). v1 is inline-end only; direction (via frame-anchor) and
  * side-by-side are deferred. The host media zone is already `overflow: visible`
  * for a rune guest (the bleed-host guestFit rule), so the guest can spill. */
-@media (max-width: 640px) {
-	[data-frame-overflow="bleed"] > [data-overflowing] {
-		width: calc(100% + var(--rf-bleed-room-end, var(--rf-content-gutter, 1.5rem)));
-		max-width: none;
-		border-start-end-radius: 0;
-		border-end-end-radius: 0;
+	@media (max-width: 640px) {
+		[data-frame-overflow="bleed"] > [data-overflowing] {
+			width: calc(100% + var(--rf-bleed-room-end, var(--rf-content-gutter, 1.5rem)));
+			max-width: none;
+			border-start-end-radius: 0;
+			border-end-end-radius: 0;
+		}
 	}
-}
-
 }

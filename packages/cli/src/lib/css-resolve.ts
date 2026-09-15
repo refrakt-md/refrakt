@@ -42,7 +42,10 @@ export function resolveCssDir(explicitDir?: string): string | null {
 }
 
 /** Read a single CSS file for a BEM block name (e.g., "hint" → hint.css) */
-export function readCssForBlock(cssDir: string, block: string): { content: string; path: string } | null {
+export function readCssForBlock(
+	cssDir: string,
+	block: string,
+): { content: string; path: string } | null {
 	const filePath = join(cssDir, `${block}.css`);
 	if (!existsSync(filePath)) return null;
 	return { content: readFileSync(filePath, 'utf-8'), path: filePath };
@@ -51,10 +54,10 @@ export function readCssForBlock(cssDir: string, block: string): { content: strin
 /** Read all CSS files from the directory */
 export function readAllCss(cssDir: string): Array<{ content: string; path: string }> {
 	const files = readdirSync(cssDir)
-		.filter(f => f.endsWith('.css'))
+		.filter((f) => f.endsWith('.css'))
 		.sort();
 
-	return files.map(f => {
+	return files.map((f) => {
 		const filePath = join(cssDir, f);
 		return { content: readFileSync(filePath, 'utf-8'), path: filePath };
 	});

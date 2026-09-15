@@ -3,11 +3,16 @@ import type { ContentDirectory, ContentPage } from '../src/content-tree.js';
 import { resolveTintCascade } from '../src/tint-cascade.js';
 
 /** Build a content page from raw markdown with optional frontmatter. */
-function page(relativePath: string, frontmatter: Record<string, unknown> = {}, body = ''): ContentPage {
+function page(
+	relativePath: string,
+	frontmatter: Record<string, unknown> = {},
+	body = '',
+): ContentPage {
 	const keys = Object.keys(frontmatter);
-	const yaml = keys.length > 0
-		? '---\n' + keys.map(k => `${k}: ${JSON.stringify(frontmatter[k])}`).join('\n') + '\n---\n'
-		: '';
+	const yaml =
+		keys.length > 0
+			? '---\n' + keys.map((k) => `${k}: ${JSON.stringify(frontmatter[k])}`).join('\n') + '\n---\n'
+			: '';
 	return {
 		filePath: `/abs/${relativePath}`,
 		relativePath,

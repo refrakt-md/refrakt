@@ -2,7 +2,11 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { initRuneBehaviors, registerLayoutModeBehaviors, getLayoutModeBehaviorNames } from '../src/index.js';
+import {
+	initRuneBehaviors,
+	registerLayoutModeBehaviors,
+	getLayoutModeBehaviorNames,
+} from '../src/index.js';
 
 beforeEach(() => {
 	document.body.innerHTML = '';

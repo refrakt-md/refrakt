@@ -22,8 +22,12 @@
 .rf-preview__controls[hidden] {
 	display: none;
 }
-.rf-preview__view-toggle { display: flex; }
-.rf-preview__toggle { display: flex; }
+.rf-preview__view-toggle {
+	display: flex;
+}
+.rf-preview__toggle {
+	display: flex;
+}
 .rf-preview__toggle-btn {
 	display: flex;
 	align-items: center;
@@ -31,11 +35,17 @@
 	width: 1.625rem;
 	height: 1.625rem;
 }
-.rf-preview__canvas { overflow: hidden; }
+.rf-preview__canvas {
+	overflow: hidden;
+}
 /* Clip the source panel to its rounded corners (matching the canvas) — otherwise
  * the code block's square fill bleeds past the rounded border at the bottom. */
-.rf-preview__source { overflow: hidden; }
-.rf-preview__viewport-toggle { display: flex; }
+.rf-preview__source {
+	overflow: hidden;
+}
+.rf-preview__viewport-toggle {
+	display: flex;
+}
 .rf-preview__viewport-frame {
 	position: relative;
 	overflow: hidden;
@@ -58,7 +68,9 @@
 	pointer-events: none;
 	z-index: 1;
 }
-.rf-preview__source-tabs { display: flex; }
+.rf-preview__source-tabs {
+	display: flex;
+}
 /* The in-feature breakout (`.rf-preview--in-feature { margin-inline: -gutter }`)
  * is NOT here: it overrides the skin rule `.rf-preview { margin: 2rem 0 }` by
  * specificity, so it must stay in @layer skin — in @layer skeleton it loses to

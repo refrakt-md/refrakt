@@ -92,16 +92,20 @@ describe('--site flag on inspect', () => {
 				},
 			}),
 		);
-		const { stdout, exitCode } = run(tempDir, 'inspect', 'hint', '--type=warning', '--site', 'maim');
+		const { stdout, exitCode } = run(
+			tempDir,
+			'inspect',
+			'hint',
+			'--type=warning',
+			'--site',
+			'maim',
+		);
 		expect(exitCode).toBe(1);
 		expect(stdout).toMatch(/Did you mean "main"/);
 	});
 
 	it('errors when --site is used in a planning-only project', () => {
-		writeFileSync(
-			join(tempDir, 'refrakt.config.json'),
-			JSON.stringify({ plan: { dir: 'plan' } }),
-		);
+		writeFileSync(join(tempDir, 'refrakt.config.json'), JSON.stringify({ plan: { dir: 'plan' } }));
 		const { stdout, exitCode } = run(tempDir, 'inspect', 'hint', '--site', 'main');
 		expect(exitCode).toBe(1);
 		expect(stdout).toMatch(/No site configured/);

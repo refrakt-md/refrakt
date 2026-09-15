@@ -4,7 +4,9 @@
  * waveform box, the waveform-mode progress hide, the chapters list reset, and the
  * chapter row flex. Surface, colours, radii, borders, type, and focus chrome are
  * skin. */
-.rf-audio rf-audio { display: block; }
+.rf-audio rf-audio {
+	display: block;
+}
 .rf-audio-player {
 	display: flex;
 	flex-direction: column;

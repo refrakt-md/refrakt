@@ -1,30 +1,29 @@
 @layer skin {
-/* Details — skin. The summary flex, marker hide, disclosure-marker push, and the
+	/* Details — skin. The summary flex, marker hide, disclosure-marker push, and the
  * open-rotate live in @refrakt-md/skeleton (styles/runes/details.css). */
-.rf-details__summary {
-	gap: 0.5rem;
-	padding: 0.75rem 0;
-	font-weight: var(--rf-weight-semibold);
-	font-size: var(--rf-text-sm);
-	cursor: pointer;
-	user-select: none;
-	transition: background-color 200ms ease;
-}
-.rf-details__summary:hover {
-	color: var(--rf-color-primary);
-}
-.rf-details__summary::after {
-	content: '▸';
-	color: var(--rf-color-muted);
-	transition: transform 200ms ease;
-}
-.rf-details__body {
-	padding: 0 0 1rem;
-	font-size: var(--rf-text-sm);
-	line-height: var(--rf-leading-relaxed);
-}
-.rf-details__body p:last-child {
-	margin-bottom: 0;
-}
-
+	.rf-details__summary {
+		gap: 0.5rem;
+		padding: 0.75rem 0;
+		font-weight: var(--rf-weight-semibold);
+		font-size: var(--rf-text-sm);
+		cursor: pointer;
+		user-select: none;
+		transition: background-color 200ms ease;
+	}
+	.rf-details__summary:hover {
+		color: var(--rf-color-primary);
+	}
+	.rf-details__summary::after {
+		content: "▸";
+		color: var(--rf-color-muted);
+		transition: transform 200ms ease;
+	}
+	.rf-details__body {
+		padding: 0 0 1rem;
+		font-size: var(--rf-text-sm);
+		line-height: var(--rf-leading-relaxed);
+	}
+	.rf-details__body p:last-child {
+		margin-bottom: 0;
+	}
 }

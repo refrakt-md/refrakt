@@ -7,7 +7,7 @@ import type { SerializedTag } from '@refrakt-md/types';
 
 describe('facet registry', () => {
 	it('orders every facet after the ones it declares', () => {
-		const names = ORDERED_FACETS.map(f => f.name);
+		const names = ORDERED_FACETS.map((f) => f.name);
 		for (const facet of ORDERED_FACETS) {
 			for (const dep of facet.after ?? []) {
 				expect(names.indexOf(dep)).toBeGreaterThanOrEqual(0);
@@ -17,7 +17,7 @@ describe('facet registry', () => {
 	});
 
 	it('has no duplicate names', () => {
-		const names = ORDERED_FACETS.map(f => f.name);
+		const names = ORDERED_FACETS.map((f) => f.name);
 		expect(new Set(names).size).toBe(names.length);
 	});
 });
@@ -32,18 +32,18 @@ describe('UNIVERSAL_AXIS_FACETS', () => {
 	// and forgetting to describe it puts an axis back in the blind spot
 	// WORK-527 closed.
 	it('describes every registered facet that is not a config-modifier facet', () => {
-		const described = new Set(UNIVERSAL_AXIS_FACETS.map(f => f.axis));
-		const expected = ORDERED_FACETS
-			.map(f => f.name)
-			.filter(name => !CONFIG_MODIFIER_FACETS.includes(name));
+		const described = new Set(UNIVERSAL_AXIS_FACETS.map((f) => f.axis));
+		const expected = ORDERED_FACETS.map((f) => f.name).filter(
+			(name) => !CONFIG_MODIFIER_FACETS.includes(name),
+		);
 		for (const name of expected) {
 			expect(described, `facet "${name}" has no UniversalAxisFacet`).toContain(name);
 		}
 	});
 
 	it('describes nothing that is not a registered facet', () => {
-		const registered = new Set(ORDERED_FACETS.map(f => f.name));
-		for (const axis of UNIVERSAL_AXIS_FACETS.map(f => f.axis)) {
+		const registered = new Set(ORDERED_FACETS.map((f) => f.name));
+		for (const axis of UNIVERSAL_AXIS_FACETS.map((f) => f.axis)) {
 			expect(registered, `axis "${axis}" has no facet`).toContain(axis);
 		}
 	});
@@ -67,10 +67,10 @@ describe('UNIVERSAL_AXIS_FACETS', () => {
 	});
 
 	it('lists the axes in registry order', () => {
-		const registryOrder = ORDERED_FACETS
-			.map(f => f.name)
-			.filter(name => !CONFIG_MODIFIER_FACETS.includes(name));
-		expect(UNIVERSAL_AXIS_FACETS.map(f => f.axis)).toEqual(registryOrder);
+		const registryOrder = ORDERED_FACETS.map((f) => f.name).filter(
+			(name) => !CONFIG_MODIFIER_FACETS.includes(name),
+		);
+		expect(UNIVERSAL_AXIS_FACETS.map((f) => f.axis)).toEqual(registryOrder);
 	});
 });
 
@@ -78,12 +78,21 @@ describe('FACET_ATTRIBUTES', () => {
 	// Derived from the registry, not hand-maintained in the engine — adding an
 	// axis with a fixed attribute name is a file plus a registry entry.
 	it('is the union of every facet’s declared attributes', () => {
-		const declared = ORDERED_FACETS.flatMap(f => [...(f.attributes ?? [])]);
+		const declared = ORDERED_FACETS.flatMap((f) => [...(f.attributes ?? [])]);
 		expect([...FACET_ATTRIBUTES].sort()).toEqual([...new Set(declared)].sort());
 	});
 
 	it('covers the axes whose attributes the transform consumes', () => {
-		for (const attr of ['width', 'spacing', 'inset', 'elevation', 'prominence', 'reveal', 'stagger', 'density']) {
+		for (const attr of [
+			'width',
+			'spacing',
+			'inset',
+			'elevation',
+			'prominence',
+			'reveal',
+			'stagger',
+			'density',
+		]) {
 			expect(FACET_ATTRIBUTES.has(attr)).toBe(true);
 		}
 	});
@@ -100,8 +109,16 @@ describe('FACET_ATTRIBUTES', () => {
 
 describe('pass-through attributes', () => {
 	const config: ThemeConfig = {
-		prefix: 'rf', tokenPrefix: '--rf', icons: {},
-		runes: { Card: { block: 'card', sections: { body: 'body' }, modifiers: { tone: { source: 'attribute' } } } },
+		prefix: 'rf',
+		tokenPrefix: '--rf',
+		icons: {},
+		runes: {
+			Card: {
+				block: 'card',
+				sections: { body: 'body' },
+				modifiers: { tone: { source: 'attribute' } },
+			},
+		},
 	};
 	const transform = createTransform(config);
 	const render = (attrs: Record<string, any>) =>

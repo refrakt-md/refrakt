@@ -1,22 +1,25 @@
 @layer skin {
-/* Organization */
-.rf-organization__type {
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-normal);
-	text-transform: uppercase;
-	letter-spacing: var(--rf-tracking-wider);
-	color: var(--rf-color-muted);
-	opacity: 0.6;
-	margin-bottom: 0.5rem;
-}
-.rf-organization__body img {
-	margin-bottom: 1rem;
-}
-.rf-organization__body ul,
-.rf-organization__body ol {
-	padding-left: 1.5rem;
-}
-.rf-organization__body a { color: var(--rf-color-primary); }
-.rf-organization__body a:hover { color: var(--rf-color-primary-hover); }
-
+	/* Organization */
+	.rf-organization__type {
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-normal);
+		text-transform: uppercase;
+		letter-spacing: var(--rf-tracking-wider);
+		color: var(--rf-color-muted);
+		opacity: 0.6;
+		margin-bottom: 0.5rem;
+	}
+	.rf-organization__body img {
+		margin-bottom: 1rem;
+	}
+	.rf-organization__body ul,
+	.rf-organization__body ol {
+		padding-left: 1.5rem;
+	}
+	.rf-organization__body a {
+		color: var(--rf-color-primary);
+	}
+	.rf-organization__body a:hover {
+		color: var(--rf-color-primary-hover);
+	}
 }

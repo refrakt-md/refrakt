@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { parseInlineMarkdown, serializeInlineHtml, stripInlineMarkdown } from '../app/src/lib/editor/inline-markdown.js';
+import {
+	parseInlineMarkdown,
+	serializeInlineHtml,
+	stripInlineMarkdown,
+} from '../app/src/lib/editor/inline-markdown.js';
 import { JSDOM } from 'jsdom';
 
 /** Helper: parse markdown to HTML, then serialize back through a DOM element */
@@ -102,12 +106,12 @@ describe('round-trip (parse -> serialize)', () => {
 	});
 
 	it('preserves mixed formatting', () => {
-		expect(roundTrip('Check out [our docs](/docs) for **more info**'))
-			.toBe('Check out [our docs](/docs) for **more info**');
+		expect(roundTrip('Check out [our docs](/docs) for **more info**')).toBe(
+			'Check out [our docs](/docs) for **more info**',
+		);
 	});
 
 	it('preserves nested bold+italic', () => {
-		expect(roundTrip('**bold and *italic* text**'))
-			.toBe('**bold and *italic* text**');
+		expect(roundTrip('**bold and *italic* text**')).toBe('**bold and *italic* text**');
 	});
 });

@@ -6,7 +6,9 @@
  * dimensions/metadata.css). */
 
 /* Rating — star-row is an inline flex row (the glyph + colours are skin). */
-[data-meta-type="rating"] { display: inline-flex; }
+[data-meta-type="rating"] {
+	display: inline-flex;
+}
 
 /* ── Layout: bar (SPEC-080) ──
  * Horizontal flex row of fields; wraps by default (`data-wrap="false"` keeps it
@@ -17,8 +19,12 @@
 	flex-wrap: wrap;
 	align-items: center;
 }
-[data-zone-layout="bar"][data-wrap="false"] { flex-wrap: nowrap; }
-[data-zone-layout="bar"] [data-align="end"] { margin-left: auto; }
+[data-zone-layout="bar"][data-wrap="false"] {
+	flex-wrap: nowrap;
+}
+[data-zone-layout="bar"] [data-align="end"] {
+	margin-left: auto;
+}
 
 /* ── Layout: definition-list ──
  * Each row stacks dt over dd; rows flow into auto-fit columns that collapse to a
@@ -32,7 +38,9 @@
 	flex-direction: column;
 	min-width: 0;
 }
-[data-zone-layout="definition-list"] dd { margin: 0; }
+[data-zone-layout="definition-list"] dd {
+	margin: 0;
+}
 /* Multi-value dd (fields with `splitOn`) renders a row of chips inside the cell. */
 [data-zone-layout="definition-list"] dd[data-multi-value] {
 	display: flex;

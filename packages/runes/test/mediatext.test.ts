@@ -9,21 +9,21 @@ describe('mediatext tag', () => {
 Some body text here.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'media-text');
+		const mt = findTag(result as any, (t) => t.attributes['data-rune'] === 'media-text');
 		expect(mt).toBeDefined();
 		expect(mt!.name).toBe('div');
 
 		// Media div should contain the extracted image
-		const media = findTag(mt!, t => t.attributes['data-name'] === 'media');
+		const media = findTag(mt!, (t) => t.attributes['data-name'] === 'media');
 		expect(media).toBeDefined();
-		const img = findTag(media!, t => t.name === 'img');
+		const img = findTag(media!, (t) => t.name === 'img');
 		expect(img).toBeDefined();
 		expect(img!.attributes.src).toBe('/images/photo.jpg');
 
 		// Body div should contain text but not the image
-		const body = findTag(mt!, t => t.attributes['data-name'] === 'body');
+		const body = findTag(mt!, (t) => t.attributes['data-name'] === 'body');
 		expect(body).toBeDefined();
-		const bodyImg = findTag(body!, t => t.name === 'img');
+		const bodyImg = findTag(body!, (t) => t.name === 'img');
 		expect(bodyImg).toBeUndefined();
 	});
 
@@ -36,9 +36,9 @@ Some body text here.
 Body text.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'media-text');
-		const media = findTag(mt!, t => t.attributes['data-name'] === 'media');
-		const images = findAllTags(media!, t => t.name === 'img');
+		const mt = findTag(result as any, (t) => t.attributes['data-rune'] === 'media-text');
+		const media = findTag(mt!, (t) => t.attributes['data-name'] === 'media');
+		const images = findAllTags(media!, (t) => t.name === 'img');
 		expect(images.length).toBe(2);
 	});
 
@@ -47,12 +47,12 @@ Body text.
 Just some text without any images.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'media-text');
+		const mt = findTag(result as any, (t) => t.attributes['data-rune'] === 'media-text');
 		expect(mt).toBeDefined();
 
-		const media = findTag(mt!, t => t.attributes['data-name'] === 'media');
+		const media = findTag(mt!, (t) => t.attributes['data-name'] === 'media');
 		expect(media).toBeDefined();
-		const img = findTag(media!, t => t.name === 'img');
+		const img = findTag(media!, (t) => t.name === 'img');
 		expect(img).toBeUndefined();
 	});
 
@@ -63,7 +63,7 @@ Just some text without any images.
 Text content.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'media-text');
+		const mt = findTag(result as any, (t) => t.attributes['data-rune'] === 'media-text');
 
 		expect(fields(mt).align).toBe('right');
 		expect(fields(mt).ratio).toBe('2:1');
@@ -76,7 +76,7 @@ Text content.
 Text content.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'media-text');
+		const mt = findTag(result as any, (t) => t.attributes['data-rune'] === 'media-text');
 
 		expect(fields(mt).wrap).toBe('true');
 	});
@@ -88,7 +88,7 @@ Text content.
 Text content.
 {% /mediatext %}`);
 
-		const mt = findTag(result as any, t => t.attributes['data-rune'] === 'media-text');
+		const mt = findTag(result as any, (t) => t.attributes['data-rune'] === 'media-text');
 
 		expect(fields(mt).wrap).toBeUndefined();
 	});

@@ -39,9 +39,10 @@ export const modifiersFacet: Facet = {
 			// `data-*` attribute and a BEM class, so it must not pass through.
 			if (mod.source === 'attribute') stripAttrs.push(name);
 
-			const value = mod.source === 'meta'
-				? readFieldValue(ctx, name, mod.default)
-				: ctx.tag.attributes[name] ?? mod.default;
+			const value =
+				mod.source === 'meta'
+					? readFieldValue(ctx, name, mod.default)
+					: (ctx.tag.attributes[name] ?? mod.default);
 
 			if (value) {
 				axes[name] = value;
@@ -92,7 +93,7 @@ export const staticModifiersFacet: Facet = {
 	resolve(ctx) {
 		const mods = ctx.config.staticModifiers;
 		if (!mods?.length) return null;
-		return { classes: mods.map(mod => `${ctx.block}--${mod}`) };
+		return { classes: mods.map((mod) => `${ctx.block}--${mod}`) };
 	},
 };
 
@@ -141,7 +142,10 @@ export const staticModifiersDescribe: DescribableFacet = {
 	describe(config: RuneConfig, block: string): FacetContract | null {
 		if (!config.staticModifiers?.length) return null;
 		return {
-			staticModifiers: config.staticModifiers.map(name => ({ name, selector: `.${block}--${name}` })),
+			staticModifiers: config.staticModifiers.map((name) => ({
+				name,
+				selector: `.${block}--${name}`,
+			})),
 		};
 	},
 };

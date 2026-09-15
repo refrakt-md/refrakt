@@ -66,9 +66,7 @@ async function createProviderByName(name: ProviderName): Promise<ResolvedProvide
 		case 'gemini': {
 			const apiKey = process.env.GOOGLE_API_KEY;
 			if (!apiKey) {
-				throw new Error(
-					'GOOGLE_API_KEY environment variable is required for the Gemini provider',
-				);
+				throw new Error('GOOGLE_API_KEY environment variable is required for the Gemini provider');
 			}
 			return {
 				name: 'gemini',
@@ -85,8 +83,6 @@ async function createProviderByName(name: ProviderName): Promise<ResolvedProvide
 			};
 		}
 		default:
-			throw new Error(
-				`Unknown provider "${name}". Available: anthropic, gemini, ollama`,
-			);
+			throw new Error(`Unknown provider "${name}". Available: anthropic, gemini, ollama`);
 	}
 }

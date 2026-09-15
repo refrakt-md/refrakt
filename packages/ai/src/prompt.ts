@@ -144,9 +144,9 @@ export function generateSystemPromptParts(
 	mode?: string,
 ): [string, string] {
 	const runeDescriptions = Object.values(runes)
-		.filter(rune => !EXCLUDED_RUNES.has(rune.name))
-		.filter(rune => !includeRunes || includeRunes.has(rune.name))
-		.map(rune => describeRune(rune))
+		.filter((rune) => !EXCLUDED_RUNES.has(rune.name))
+		.filter((rune) => !includeRunes || includeRunes.has(rune.name))
+		.map((rune) => describeRune(rune))
 		.join('\n\n');
 
 	let runeVocab = `## Available Runes\n\n${runeDescriptions}`;

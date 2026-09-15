@@ -43,9 +43,8 @@ export function formatGeminiRequest(
 		generationConfig.temperature = options.temperature;
 	}
 
-	const systemInstruction = systemParts.length > 0
-		? { parts: [{ text: systemParts.join('\n\n') }] }
-		: undefined;
+	const systemInstruction =
+		systemParts.length > 0 ? { parts: [{ text: systemParts.join('\n\n') }] } : undefined;
 
 	return {
 		contents,

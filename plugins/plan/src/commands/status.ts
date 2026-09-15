@@ -117,7 +117,7 @@ function findBlockedItems(entities: PlanEntity[], allEntities: PlanEntity[]): Bl
 	for (const e of entities) {
 		if (e.attributes.status !== 'blocked') continue;
 		const id = e.attributes.id || '';
-		const blockedBy = e.refs.filter(ref => {
+		const blockedBy = e.refs.filter((ref) => {
 			const dep = entityById.get(ref);
 			return dep && !DONE_STATUSES.has(dep.attributes.status || '');
 		});
@@ -138,9 +138,13 @@ function findReadyItems(entities: PlanEntity[], allEntities: PlanEntity[]): Read
 		if (!isActionable(e.type, e.attributes.status || '')) continue;
 
 		// Check dependencies are met
-		const depsUnmet = e.refs.some(ref => {
+		const depsUnmet = e.refs.some((ref) => {
 			const dep = entityById.get(ref);
-			return dep && (dep.type === 'work' || dep.type === 'bug') && !DONE_STATUSES.has(dep.attributes.status || '');
+			return (
+				dep &&
+				(dep.type === 'work' || dep.type === 'bug') &&
+				!DONE_STATUSES.has(dep.attributes.status || '')
+			);
 		});
 		if (depsUnmet) continue;
 
@@ -206,7 +210,11 @@ function findWarnings(allEntities: PlanEntity[]): Warning[] {
 		}
 
 		// Orphaned work items (no milestone)
-		if ((e.type === 'work' || e.type === 'bug') && !e.attributes.milestone && !DONE_STATUSES.has(e.attributes.status || '')) {
+		if (
+			(e.type === 'work' || e.type === 'bug') &&
+			!e.attributes.milestone &&
+			!DONE_STATUSES.has(e.attributes.status || '')
+		) {
 			warnings.push({
 				type: 'no-milestone',
 				source: id,
@@ -224,8 +232,16 @@ function findWarnings(allEntities: PlanEntity[]): Warning[] {
 function prRefsFor(e: PlanEntity): string[] {
 	const attr = (e.attributes.pr || '').trim();
 	const raw = attr
-		? attr.split(',').map(s => s.trim()).filter(Boolean)
-		: (e.resolution?.pr ? e.resolution.pr.split(',').map(s => s.trim()).filter(Boolean) : []);
+		? attr
+				.split(',')
+				.map((s) => s.trim())
+				.filter(Boolean)
+		: e.resolution?.pr
+			? e.resolution.pr
+					.split(',')
+					.map((s) => s.trim())
+					.filter(Boolean)
+			: [];
 	return [...new Set(raw)];
 }
 
@@ -233,7 +249,7 @@ function prRefsFor(e: PlanEntity): string[] {
 function sourcesSpec(e: PlanEntity, specId: string): boolean {
 	return (e.attributes.source || '')
 		.split(',')
-		.map(s => s.trim())
+		.map((s) => s.trim())
 		.includes(specId);
 }
 
@@ -243,14 +259,14 @@ function buildSpecRollups(specs: PlanEntity[], workAndBugs: PlanEntity[]): SpecR
 		const specId = spec.attributes.id;
 		if (!specId) continue;
 
-		const linked = workAndBugs.filter(e => sourcesSpec(e, specId));
+		const linked = workAndBugs.filter((e) => sourcesSpec(e, specId));
 		const prs = [...new Set(linked.flatMap(prRefsFor))];
 
 		// Shared with `plan validate`'s `spec-status-lag` (SPEC-119) — one
 		// predicate so the carrot and the contradiction never disagree.
 		const suggestImplemented = specStatusLags(
 			spec.attributes.status || '',
-			linked.map(e => e.attributes.status || ''),
+			linked.map((e) => e.attributes.status || ''),
 		);
 
 		// Only surface a rollup for specs that actually have linked work or PRs —
@@ -261,7 +277,7 @@ function buildSpecRollups(specs: PlanEntity[], workAndBugs: PlanEntity[]): SpecR
 			id: specId,
 			title: spec.title,
 			status: spec.attributes.status || 'draft',
-			implementedBy: linked.map(e => e.attributes.id || '').filter(Boolean),
+			implementedBy: linked.map((e) => e.attributes.id || '').filter(Boolean),
 			prs,
 			suggestImplemented,
 		});
@@ -269,21 +285,25 @@ function buildSpecRollups(specs: PlanEntity[], workAndBugs: PlanEntity[]): SpecR
 	return rollups;
 }
 
-function findMilestoneProgress(milestones: PlanEntity[], workItems: PlanEntity[], scopeName?: string): MilestoneProgress | undefined {
+function findMilestoneProgress(
+	milestones: PlanEntity[],
+	workItems: PlanEntity[],
+	scopeName?: string,
+): MilestoneProgress | undefined {
 	let milestone: PlanEntity | undefined;
 
 	if (scopeName) {
-		milestone = milestones.find(m => (m.attributes.name || m.attributes.id) === scopeName);
+		milestone = milestones.find((m) => (m.attributes.name || m.attributes.id) === scopeName);
 	} else {
 		// Find the active milestone
-		milestone = milestones.find(m => m.attributes.status === 'active');
+		milestone = milestones.find((m) => m.attributes.status === 'active');
 	}
 
 	if (!milestone) return undefined;
 
 	const name = milestone.attributes.name || milestone.attributes.id || '';
-	const items = workItems.filter(w => w.attributes.milestone === name);
-	const done = items.filter(w => DONE_STATUSES.has(w.attributes.status || '')).length;
+	const items = workItems.filter((w) => w.attributes.milestone === name);
+	const done = items.filter((w) => DONE_STATUSES.has(w.attributes.status || '')).length;
 
 	return {
 		name,

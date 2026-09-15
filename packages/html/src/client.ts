@@ -42,7 +42,9 @@ interface PageContext {
  */
 export async function initPage(container: HTMLElement | Document = document): Promise<() => void> {
 	// Dynamic import so tree-shaking works if behaviors aren't needed
-	const { registerElements, RfContext, initRuneBehaviors, initLayoutBehaviors } = await import('@refrakt-md/behaviors');
+	const { registerElements, RfContext, initRuneBehaviors, initLayoutBehaviors } = await import(
+		'@refrakt-md/behaviors'
+	);
 
 	// Read page context from embedded script
 	const contextEl = (container === document ? document : container).querySelector?.('#rf-context');

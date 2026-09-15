@@ -8,15 +8,26 @@ const layoutType = ['side-by-side', 'stacked'] as const;
 
 export const compare = createContentModelSchema({
 	attributes: {
-		layout: { type: String, required: false, matches: layoutType.slice(), description: 'Display panels side-by-side or stacked' },
-		labels: { type: String, required: false, description: 'Comma-separated custom labels for each panel' },
-		title: { type: String, required: false, description: 'Optional title displayed above the panels' },
+		layout: {
+			type: String,
+			required: false,
+			matches: layoutType.slice(),
+			description: 'Display panels side-by-side or stacked',
+		},
+		labels: {
+			type: String,
+			required: false,
+			description: 'Comma-separated custom labels for each panel',
+		},
+		title: {
+			type: String,
+			required: false,
+			description: 'Optional title displayed above the panels',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const children = new RenderableNodeCursor(
@@ -39,15 +50,20 @@ export const compare = createContentModelSchema({
 			let preNode: typeof node | undefined;
 			if (Tag.isTag(node) && node.name === 'pre') {
 				preNode = node;
-			} else if (Tag.isTag(node) && node.name === 'div' && node.attributes.class === 'rf-codeblock') {
+			} else if (
+				Tag.isTag(node) &&
+				node.name === 'div' &&
+				node.attributes.class === 'rf-codeblock'
+			) {
 				const inner = node.children.find((c: any) => Tag.isTag(c) && c.name === 'pre');
 				if (inner) preNode = inner as typeof node;
 			}
 
 			if (preNode && Tag.isTag(preNode)) {
-				const label = customLabels[panelIndex]
-					|| preNode.attributes['data-language']
-					|| `Panel ${panelIndex + 1}`;
+				const label =
+					customLabels[panelIndex] ||
+					preNode.attributes['data-language'] ||
+					`Panel ${panelIndex + 1}`;
 
 				const labelTag = new Tag('span', { 'data-label': true }, [label]);
 				panels.push(new Tag('div', { 'data-panel': true }, [labelTag, node]));
@@ -57,11 +73,10 @@ export const compare = createContentModelSchema({
 
 		const panelsDiv = new Tag('div', { 'data-panels': true }, panels);
 
-		const header = title
-			? [new Tag('div', { 'data-name': 'header' }, [title])]
-			: [];
+		const header = title ? [new Tag('div', { 'data-name': 'header' }, [title])] : [];
 
-		const renderable = createComponentRenderable({ rune: 'compare',
+		const renderable = createComponentRenderable({
+			rune: 'compare',
 			tag: 'div',
 			properties: {
 				layout: layoutMeta,

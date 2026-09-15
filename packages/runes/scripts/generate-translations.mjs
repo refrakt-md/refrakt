@@ -41,4 +41,6 @@ const body =
 	';\n';
 
 writeFileSync(outPath, HEADER + body);
-console.log(`Generated src/translations.generated.ts (${Object.keys(bundles).length} locale bundle(s))`);
+console.log(
+	`Generated src/translations.generated.ts (${Object.keys(bundles).length} locale bundle(s))`,
+);

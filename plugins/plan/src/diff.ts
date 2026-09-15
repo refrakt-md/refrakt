@@ -7,7 +7,7 @@
 export interface AttributeChange {
 	field: string;
 	from: string | null; // null = attribute was added
-	to: string | null;   // null = attribute was removed
+	to: string | null; // null = attribute was removed
 }
 
 export interface CriteriaChange {
@@ -91,13 +91,10 @@ export function diffAttributes(
 /**
  * Diff two checkbox lists by text matching.
  */
-export function diffCriteria(
-	prev: ParsedCheckbox[],
-	curr: ParsedCheckbox[],
-): CriteriaChange[] {
+export function diffCriteria(prev: ParsedCheckbox[], curr: ParsedCheckbox[]): CriteriaChange[] {
 	const changes: CriteriaChange[] = [];
-	const prevByText = new Map(prev.map(c => [c.text, c.checked]));
-	const currByText = new Map(curr.map(c => [c.text, c.checked]));
+	const prevByText = new Map(prev.map((c) => [c.text, c.checked]));
+	const currByText = new Map(curr.map((c) => [c.text, c.checked]));
 
 	// Check for removed or changed criteria
 	for (const [text, wasChecked] of prevByText) {

@@ -12,16 +12,26 @@ export const dataTableSections = { table: 'body' } as const;
 export const datatable = createContentModelSchema({
 	sections: dataTableSections,
 	attributes: {
-		sortable: { type: String, required: false, description: 'Column names to enable sorting, or "all"' },
-		searchable: { type: Boolean, required: false, description: 'Show a search input to filter rows' },
-		pageSize: { type: Number, required: false, description: 'Rows per page; 0 disables pagination' },
+		sortable: {
+			type: String,
+			required: false,
+			description: 'Column names to enable sorting, or "all"',
+		},
+		searchable: {
+			type: Boolean,
+			required: false,
+			description: 'Show a search input to filter rows',
+		},
+		pageSize: {
+			type: Number,
+			required: false,
+			description: 'Rows per page; 0 disables pagination',
+		},
 		defaultSort: { type: String, required: false, description: 'Column to sort by initially' },
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const children = new RenderableNodeCursor(
@@ -40,13 +50,16 @@ export const datatable = createContentModelSchema({
 			tableTag = directTable.next();
 		} else {
 			// Unwrap from rf-table-wrapper div
-			const wrapper = children.toArray().find(
-				n => Tag.isTag(n) && n.name === 'div' && n.attributes.class === 'rf-table-wrapper'
-			);
-			const inner = wrapper && Tag.isTag(wrapper)
-				? wrapper.children.find((c: any) => Tag.isTag(c) && c.name === 'table')
-				: undefined;
-			tableTag = (inner && Tag.isTag(inner) ? inner : new Tag('table', {}, [])) as InstanceType<typeof Tag>;
+			const wrapper = children
+				.toArray()
+				.find((n) => Tag.isTag(n) && n.name === 'div' && n.attributes.class === 'rf-table-wrapper');
+			const inner =
+				wrapper && Tag.isTag(wrapper)
+					? wrapper.children.find((c: any) => Tag.isTag(c) && c.name === 'table')
+					: undefined;
+			tableTag = (inner && Tag.isTag(inner) ? inner : new Tag('table', {}, [])) as InstanceType<
+				typeof Tag
+			>;
 		}
 
 		// Wrap the table in a scroll container so wide tables overflow-x scroll
@@ -54,7 +67,9 @@ export const datatable = createContentModelSchema({
 		// siblings of this wrapper, keeping them outside the horizontal scroll.
 		const scrollDiv = new Tag('div', {}, [tableTag]);
 
-		return createComponentRenderable({ rune: 'data-table', schemaOrgType: 'Dataset',
+		return createComponentRenderable({
+			rune: 'data-table',
+			schemaOrgType: 'Dataset',
 			tag: 'div',
 			properties: {
 				sortable: sortableMeta,

@@ -8,7 +8,7 @@ export function loadRefraktConfig(configPath: string): RefraktConfig {
 	if (!existsSync(absPath)) {
 		throw new Error(
 			`refrakt.config.json not found at ${absPath}. ` +
-			`Create one with at minimum: { "site": { "contentDir": "./content", "theme": "<package-name>" } }`
+				`Create one with at minimum: { "site": { "contentDir": "./content", "theme": "<package-name>" } }`,
 		);
 	}
 
@@ -38,7 +38,9 @@ function validateConfig(raw: unknown): RefraktConfig {
 
 	if (!isNestedShape) {
 		if (typeof obj.contentDir !== 'string' || !obj.contentDir) {
-			throw new Error('refrakt.config.json: "contentDir" is required and must be a non-empty string');
+			throw new Error(
+				'refrakt.config.json: "contentDir" is required and must be a non-empty string',
+			);
 		}
 		if (typeof obj.theme === 'string') {
 			if (!obj.theme) {
@@ -47,10 +49,14 @@ function validateConfig(raw: unknown): RefraktConfig {
 		} else if (typeof obj.theme === 'object' && obj.theme !== null) {
 			const t = obj.theme as Record<string, unknown>;
 			if (typeof t.package !== 'string' || !t.package) {
-				throw new Error('refrakt.config.json: "theme.package" is required and must be a non-empty string');
+				throw new Error(
+					'refrakt.config.json: "theme.package" is required and must be a non-empty string',
+				);
 			}
 		} else {
-			throw new Error('refrakt.config.json: "theme" is required (string package name or { package, ... } object)');
+			throw new Error(
+				'refrakt.config.json: "theme" is required (string package name or { package, ... } object)',
+			);
 		}
 		// `target` is documentation-only — no adapter consumes it. Validate the
 		// type when present so typos are still caught, but don't require it.
@@ -61,8 +67,14 @@ function validateConfig(raw: unknown): RefraktConfig {
 
 	let overrides: Record<string, string> | undefined;
 	if (obj.overrides !== undefined) {
-		if (typeof obj.overrides !== 'object' || obj.overrides === null || Array.isArray(obj.overrides)) {
-			throw new Error('refrakt.config.json: "overrides" must be an object mapping typeof names to component paths');
+		if (
+			typeof obj.overrides !== 'object' ||
+			obj.overrides === null ||
+			Array.isArray(obj.overrides)
+		) {
+			throw new Error(
+				'refrakt.config.json: "overrides" must be an object mapping typeof names to component paths',
+			);
 		}
 		const entries = obj.overrides as Record<string, unknown>;
 		for (const [key, value] of Object.entries(entries)) {
@@ -81,14 +93,20 @@ function validateConfig(raw: unknown): RefraktConfig {
 		for (let i = 0; i < obj.routeRules.length; i++) {
 			const rule = obj.routeRules[i];
 			if (typeof rule !== 'object' || rule === null || Array.isArray(rule)) {
-				throw new Error(`refrakt.config.json: routeRules[${i}] must be an object with "pattern" and "layout" strings`);
+				throw new Error(
+					`refrakt.config.json: routeRules[${i}] must be an object with "pattern" and "layout" strings`,
+				);
 			}
 			const r = rule as Record<string, unknown>;
 			if (typeof r.pattern !== 'string' || !r.pattern) {
-				throw new Error(`refrakt.config.json: routeRules[${i}].pattern is required and must be a non-empty string`);
+				throw new Error(
+					`refrakt.config.json: routeRules[${i}].pattern is required and must be a non-empty string`,
+				);
 			}
 			if (typeof r.layout !== 'string' || !r.layout) {
-				throw new Error(`refrakt.config.json: routeRules[${i}].layout is required and must be a non-empty string`);
+				throw new Error(
+					`refrakt.config.json: routeRules[${i}].layout is required and must be a non-empty string`,
+				);
 			}
 		}
 		routeRules = obj.routeRules as RefraktConfig['routeRules'];
@@ -96,7 +114,11 @@ function validateConfig(raw: unknown): RefraktConfig {
 
 	let highlight: RefraktConfig['highlight'];
 	if (obj.highlight !== undefined) {
-		if (typeof obj.highlight !== 'object' || obj.highlight === null || Array.isArray(obj.highlight)) {
+		if (
+			typeof obj.highlight !== 'object' ||
+			obj.highlight === null ||
+			Array.isArray(obj.highlight)
+		) {
 			throw new Error('refrakt.config.json: "highlight" must be an object');
 		}
 		const hl = obj.highlight as Record<string, unknown>;
@@ -105,12 +127,21 @@ function validateConfig(raw: unknown): RefraktConfig {
 				highlight = { theme: hl.theme };
 			} else if (typeof hl.theme === 'object' && hl.theme !== null && !Array.isArray(hl.theme)) {
 				const pair = hl.theme as Record<string, unknown>;
-				if (typeof pair.light !== 'string' || !pair.light || typeof pair.dark !== 'string' || !pair.dark) {
-					throw new Error('refrakt.config.json: highlight.theme object must have "light" and "dark" string fields');
+				if (
+					typeof pair.light !== 'string' ||
+					!pair.light ||
+					typeof pair.dark !== 'string' ||
+					!pair.dark
+				) {
+					throw new Error(
+						'refrakt.config.json: highlight.theme object must have "light" and "dark" string fields',
+					);
 				}
 				highlight = { theme: { light: pair.light, dark: pair.dark } };
 			} else {
-				throw new Error('refrakt.config.json: highlight.theme must be a string or { light, dark } object');
+				throw new Error(
+					'refrakt.config.json: highlight.theme must be a string or { light, dark } object',
+				);
 			}
 		}
 	}
@@ -136,8 +167,14 @@ function validateConfig(raw: unknown): RefraktConfig {
 		const runesObj = obj.runes as Record<string, unknown>;
 		let prefer: Record<string, string> | undefined;
 		if (runesObj.prefer !== undefined) {
-			if (typeof runesObj.prefer !== 'object' || runesObj.prefer === null || Array.isArray(runesObj.prefer)) {
-				throw new Error('refrakt.config.json: "runes.prefer" must be an object mapping rune names to plugin names');
+			if (
+				typeof runesObj.prefer !== 'object' ||
+				runesObj.prefer === null ||
+				Array.isArray(runesObj.prefer)
+			) {
+				throw new Error(
+					'refrakt.config.json: "runes.prefer" must be an object mapping rune names to plugin names',
+				);
 			}
 			const preferObj = runesObj.prefer as Record<string, unknown>;
 			for (const [key, value] of Object.entries(preferObj)) {
@@ -149,26 +186,42 @@ function validateConfig(raw: unknown): RefraktConfig {
 		}
 		let aliases: Record<string, string> | undefined;
 		if (runesObj.aliases !== undefined) {
-			if (typeof runesObj.aliases !== 'object' || runesObj.aliases === null || Array.isArray(runesObj.aliases)) {
-				throw new Error('refrakt.config.json: "runes.aliases" must be an object mapping alias names to rune names');
+			if (
+				typeof runesObj.aliases !== 'object' ||
+				runesObj.aliases === null ||
+				Array.isArray(runesObj.aliases)
+			) {
+				throw new Error(
+					'refrakt.config.json: "runes.aliases" must be an object mapping alias names to rune names',
+				);
 			}
 			const aliasesObj = runesObj.aliases as Record<string, unknown>;
 			for (const [key, value] of Object.entries(aliasesObj)) {
 				if (typeof value !== 'string' || !value) {
-					throw new Error(`refrakt.config.json: runes.aliases["${key}"] must be a non-empty string`);
+					throw new Error(
+						`refrakt.config.json: runes.aliases["${key}"] must be a non-empty string`,
+					);
 				}
 			}
 			aliases = aliasesObj as Record<string, string>;
 		}
 		let local: Record<string, string> | undefined;
 		if (runesObj.local !== undefined) {
-			if (typeof runesObj.local !== 'object' || runesObj.local === null || Array.isArray(runesObj.local)) {
-				throw new Error('refrakt.config.json: "runes.local" must be an object mapping rune names to module paths');
+			if (
+				typeof runesObj.local !== 'object' ||
+				runesObj.local === null ||
+				Array.isArray(runesObj.local)
+			) {
+				throw new Error(
+					'refrakt.config.json: "runes.local" must be an object mapping rune names to module paths',
+				);
 			}
 			const localObj = runesObj.local as Record<string, unknown>;
 			for (const [key, value] of Object.entries(localObj)) {
 				if (typeof value !== 'string' || !value) {
-					throw new Error(`refrakt.config.json: runes.local["${key}"] must be a non-empty string path`);
+					throw new Error(
+						`refrakt.config.json: runes.local["${key}"] must be a non-empty string path`,
+					);
 				}
 			}
 			local = localObj as Record<string, string>;
@@ -183,15 +236,23 @@ function validateConfig(raw: unknown): RefraktConfig {
 	let tints: Record<string, Record<string, unknown>> | undefined;
 	if (obj.tints !== undefined) {
 		if (typeof obj.tints !== 'object' || obj.tints === null || Array.isArray(obj.tints)) {
-			throw new Error('refrakt.config.json: "tints" must be an object mapping tint names to tint definitions');
+			throw new Error(
+				'refrakt.config.json: "tints" must be an object mapping tint names to tint definitions',
+			);
 		}
 		tints = obj.tints as Record<string, Record<string, unknown>>;
 	}
 
 	let backgrounds: Record<string, Record<string, unknown>> | undefined;
 	if (obj.backgrounds !== undefined) {
-		if (typeof obj.backgrounds !== 'object' || obj.backgrounds === null || Array.isArray(obj.backgrounds)) {
-			throw new Error('refrakt.config.json: "backgrounds" must be an object mapping preset names to definitions');
+		if (
+			typeof obj.backgrounds !== 'object' ||
+			obj.backgrounds === null ||
+			Array.isArray(obj.backgrounds)
+		) {
+			throw new Error(
+				'refrakt.config.json: "backgrounds" must be an object mapping preset names to definitions',
+			);
 		}
 		backgrounds = obj.backgrounds as Record<string, Record<string, unknown>>;
 	}
@@ -216,7 +277,8 @@ function validateConfig(raw: unknown): RefraktConfig {
 		...(runes && { runes }),
 		...(typeof obj.baseUrl === 'string' && obj.baseUrl && { baseUrl: obj.baseUrl }),
 		...(typeof obj.siteName === 'string' && obj.siteName && { siteName: obj.siteName }),
-		...(typeof obj.defaultImage === 'string' && obj.defaultImage && { defaultImage: obj.defaultImage }),
+		...(typeof obj.defaultImage === 'string' &&
+			obj.defaultImage && { defaultImage: obj.defaultImage }),
 		...(typeof obj.logo === 'string' && obj.logo && { logo: obj.logo }),
 	};
 }

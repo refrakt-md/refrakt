@@ -48,40 +48,40 @@ const nord: ThemeTokensConfig = {
 	// while keeping the same Frost + Aurora accents at slightly darker
 	// values for contrast on the lighter background.
 	color: {
-		bg: '#eceff4',           // Snow Storm nord6 — canonical light canvas
-		text: '#2e3440',         // Polar Night nord0 — text on light canvas
-		muted: '#4c566a',        // Polar Night nord3
-		border: '#d8dee9',       // Snow Storm nord4 — between bg and elevated
-		primary: '#5e81ac',      // Frost nord10 — Nord's interactive accent
+		bg: '#eceff4', // Snow Storm nord6 — canonical light canvas
+		text: '#2e3440', // Polar Night nord0 — text on light canvas
+		muted: '#4c566a', // Polar Night nord3
+		border: '#d8dee9', // Snow Storm nord4 — between bg and elevated
+		primary: '#5e81ac', // Frost nord10 — Nord's interactive accent
 		'primary-hover': '#81a1c1', // Frost nord9 — lighter on hover
 		surface: {
-			base: '#e5e9f0',     // Snow Storm nord5 — slightly elevated card surface
-			hover: '#d8dee9',    // Snow Storm nord4
+			base: '#e5e9f0', // Snow Storm nord5 — slightly elevated card surface
+			hover: '#d8dee9', // Snow Storm nord4
 			active: '#d8dee9',
 			raised: '#eceff4',
 		},
 		code: {
-			bg: '#eceff4',         // Snow Storm nord6 — same as page canvas
-			text: '#2e3440',       // Polar Night nord0
+			bg: '#eceff4', // Snow Storm nord6 — same as page canvas
+			text: '#2e3440', // Polar Night nord0
 			'inline-bg': '#e5e9f0', // Snow Storm nord5 — slight elevation for inline code
 		},
 	},
 	syntax: {
-		keyword:  '#5e81ac',   // Frost nord10 — slightly darker for light contrast
-		function: '#88c0d0',   // Frost nord8
-		type:     '#8fbcbb',   // Frost nord7 — distinct from function (the SPEC-056 motivating split)
-		string:   '#a3be8c',   // Aurora nord14
-		constant: '#b48ead',   // Aurora nord15 — purple for booleans/null/symbols
-		comment:  '#4c566a',   // Polar Night nord3 — muted on light canvas
+		keyword: '#5e81ac', // Frost nord10 — slightly darker for light contrast
+		function: '#88c0d0', // Frost nord8
+		type: '#8fbcbb', // Frost nord7 — distinct from function (the SPEC-056 motivating split)
+		string: '#a3be8c', // Aurora nord14
+		constant: '#b48ead', // Aurora nord15 — purple for booleans/null/symbols
+		comment: '#4c566a', // Polar Night nord3 — muted on light canvas
 		punctuation: '#4c566a', // Polar Night nord3
-		variable: '#2e3440',   // Polar Night nord0 — body text on light
+		variable: '#2e3440', // Polar Night nord0 — body text on light
 
 		// Extended roles where Nord's spec has a distinct intent
-		number:    '#d08770',   // Aurora nord12 — orange, separating numbers from string-constants
-		regex:     '#ebcb8b',   // Aurora nord13 — yellow regex hue
-		tag:       '#5e81ac',   // Frost nord10 — Nord renders HTML tags as deep Frost
-		attribute: '#8fbcbb',   // Frost nord7 — Nord aligns attribute names with type-family
-		operator:  '#81a1c1',   // Frost nord9 — Nord splits operators from punctuation, painting them as keyword-family
+		number: '#d08770', // Aurora nord12 — orange, separating numbers from string-constants
+		regex: '#ebcb8b', // Aurora nord13 — yellow regex hue
+		tag: '#5e81ac', // Frost nord10 — Nord renders HTML tags as deep Frost
+		attribute: '#8fbcbb', // Frost nord7 — Nord aligns attribute names with type-family
+		operator: '#81a1c1', // Frost nord9 — Nord splits operators from punctuation, painting them as keyword-family
 		// `parameter` and `property` and `link`, `string-expression` left unset:
 		// Nord doesn't separately spec them, so they cascade via the fallback
 		// chain (parameter→variable, property→variable, link→function,
@@ -91,39 +91,39 @@ const nord: ThemeTokensConfig = {
 	modes: {
 		dark: {
 			color: {
-				bg: '#2e3440',           // Polar Night nord0 — canonical dark canvas
-				text: '#d8dee9',         // Snow Storm nord4
-				muted: '#616e88',        // between Polar Night nord3 and Snow Storm nord4
-				border: '#3b4252',       // Polar Night nord1 — subtle separator
-				primary: '#88c0d0',      // Frost nord8 — brighter on dark
+				bg: '#2e3440', // Polar Night nord0 — canonical dark canvas
+				text: '#d8dee9', // Snow Storm nord4
+				muted: '#616e88', // between Polar Night nord3 and Snow Storm nord4
+				border: '#3b4252', // Polar Night nord1 — subtle separator
+				primary: '#88c0d0', // Frost nord8 — brighter on dark
 				'primary-hover': '#8fbcbb', // Frost nord7
 				surface: {
-					base: '#3b4252',     // Polar Night nord1 — elevated card on dark
-					hover: '#434c5e',    // Polar Night nord2
-					active: '#4c566a',   // Polar Night nord3
+					base: '#3b4252', // Polar Night nord1 — elevated card on dark
+					hover: '#434c5e', // Polar Night nord2
+					active: '#4c566a', // Polar Night nord3
 					raised: '#434c5e',
 				},
 				code: {
-					bg: '#2e3440',         // Polar Night nord0 — canonical dark canvas
-					text: '#d8dee9',       // Snow Storm nord4
+					bg: '#2e3440', // Polar Night nord0 — canonical dark canvas
+					text: '#d8dee9', // Snow Storm nord4
 					'inline-bg': '#3b4252', // Polar Night nord1 — slightly elevated
 				},
 			},
 			syntax: {
-				keyword:  '#81a1c1',  // Frost nord9
-				function: '#88c0d0',  // Frost nord8
-				type:     '#8fbcbb',  // Frost nord7
-				string:   '#a3be8c',  // Aurora nord14
-				constant: '#b48ead',  // Aurora nord15
-				comment:  '#616e88',  // between nord3 and nord4 — Nord-spec'd comment on dark
+				keyword: '#81a1c1', // Frost nord9
+				function: '#88c0d0', // Frost nord8
+				type: '#8fbcbb', // Frost nord7
+				string: '#a3be8c', // Aurora nord14
+				constant: '#b48ead', // Aurora nord15
+				comment: '#616e88', // between nord3 and nord4 — Nord-spec'd comment on dark
 				punctuation: '#d8dee9', // Snow Storm nord4 — Nord's punctuation reads as default text
-				variable: '#d8dee9',  // Snow Storm nord4
+				variable: '#d8dee9', // Snow Storm nord4
 
-				number:    '#b48ead',  // Aurora nord15 in dark; some Nord impls use nord12 — picking nord15 for harmony with constant
-				regex:     '#ebcb8b',  // Aurora nord13
-				tag:       '#81a1c1',  // Frost nord9 in dark
-				attribute: '#8fbcbb',  // Frost nord7
-				operator:  '#81a1c1',  // Frost nord9
+				number: '#b48ead', // Aurora nord15 in dark; some Nord impls use nord12 — picking nord15 for harmony with constant
+				regex: '#ebcb8b', // Aurora nord13
+				tag: '#81a1c1', // Frost nord9 in dark
+				attribute: '#8fbcbb', // Frost nord7
+				operator: '#81a1c1', // Frost nord9
 			},
 		},
 	},

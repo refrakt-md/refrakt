@@ -36,12 +36,17 @@ export function inferFormat(path: string): DataFormat | null {
 	if (dot === -1) return null;
 	const ext = path.slice(dot + 1).toLowerCase();
 	switch (ext) {
-		case 'csv': return 'csv';
-		case 'tsv': return 'tsv';
-		case 'json': return 'json';
+		case 'csv':
+			return 'csv';
+		case 'tsv':
+			return 'tsv';
+		case 'json':
+			return 'json';
 		case 'ndjson':
-		case 'jsonl': return 'ndjson';
-		default: return null;
+		case 'jsonl':
+			return 'ndjson';
+		default:
+			return null;
 	}
 }
 
@@ -74,18 +79,34 @@ export function parseDelimited(text: string, delimiter: string): string[][] {
 
 		if (inQuotes) {
 			if (ch === '"') {
-				if (text[i + 1] === '"') { field += '"'; i++; }
-				else inQuotes = false;
+				if (text[i + 1] === '"') {
+					field += '"';
+					i++;
+				} else inQuotes = false;
 			} else {
 				field += ch;
 			}
 			continue;
 		}
 
-		if (ch === '"') { inQuotes = true; started = true; continue; }
-		if (ch === delimiter) { pushField(); started = true; continue; }
-		if (ch === '\r') { started = true; continue; } // CR handled with the following LF
-		if (ch === '\n') { pushRow(); continue; }
+		if (ch === '"') {
+			inQuotes = true;
+			started = true;
+			continue;
+		}
+		if (ch === delimiter) {
+			pushField();
+			started = true;
+			continue;
+		}
+		if (ch === '\r') {
+			started = true;
+			continue;
+		} // CR handled with the following LF
+		if (ch === '\n') {
+			pushRow();
+			continue;
+		}
 		field += ch;
 		started = true;
 	}
@@ -114,9 +135,12 @@ export interface DelimitedAdapterOptions {
  * header width so the grid stays rectangular.
  */
 export function delimitedAdapter(raw: string, opts: DelimitedAdapterOptions): DataTable {
-	const delimiter = opts.delimiter && opts.delimiter.length > 0
-		? opts.delimiter
-		: (opts.format === 'tsv' ? '\t' : ',');
+	const delimiter =
+		opts.delimiter && opts.delimiter.length > 0
+			? opts.delimiter
+			: opts.format === 'tsv'
+				? '\t'
+				: ',';
 
 	const grid = parseDelimited(raw, delimiter).filter(
 		// Drop fully-empty trailing rows (a single empty field from a blank line).
@@ -159,7 +183,8 @@ export function delimitedAdapter(raw: string, opts: DelimitedAdapterOptions): Da
  *  arrays of primitives comma-join; anything else JSON-serializes. */
 function cellString(v: unknown): string {
 	if (v === null || v === undefined) return '';
-	if (Array.isArray(v)) return v.map((x) => (x === null || x === undefined ? '' : String(x))).join(', ');
+	if (Array.isArray(v))
+		return v.map((x) => (x === null || x === undefined ? '' : String(x))).join(', ');
 	if (typeof v === 'object') return JSON.stringify(v);
 	return String(v);
 }
@@ -168,7 +193,11 @@ function cellString(v: unknown): string {
  *  (`{ geo: { country } }` → `geo.country`), so `columns` can pluck nested
  *  fields by exact (dotted) header and the intermediate shape stays flat text.
  *  Arrays and primitives are leaves. */
-function flattenRecord(obj: Record<string, unknown>, prefix = '', out: Record<string, string> = {}): Record<string, string> {
+function flattenRecord(
+	obj: Record<string, unknown>,
+	prefix = '',
+	out: Record<string, string> = {},
+): Record<string, string> {
 	for (const [k, v] of Object.entries(obj)) {
 		const key = prefix ? `${prefix}.${k}` : k;
 		if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
@@ -183,20 +212,31 @@ function flattenRecord(obj: Record<string, unknown>, prefix = '', out: Record<st
 /** Reduce an array of record objects to `{ headers, rows }` — headers are the
  *  union of flattened keys in first-seen order. Shared by JSON `records`/`index`
  *  and NDJSON. */
-function recordsToTable(records: Record<string, unknown>[], leadKey?: { header: string; values: string[] }): DataTable {
+function recordsToTable(
+	records: Record<string, unknown>[],
+	leadKey?: { header: string; values: string[] },
+): DataTable {
 	const flat = records.map((r) => flattenRecord(r));
 	const seen = new Set<string>();
 	const headers: string[] = [];
-	if (leadKey) { headers.push(leadKey.header); seen.add(leadKey.header); }
+	if (leadKey) {
+		headers.push(leadKey.header);
+		seen.add(leadKey.header);
+	}
 	for (const f of flat) {
 		for (const k of Object.keys(f)) {
-			if (!seen.has(k)) { seen.add(k); headers.push(k); }
+			if (!seen.has(k)) {
+				seen.add(k);
+				headers.push(k);
+			}
 		}
 	}
-	const rows = flat.map((f, i) => headers.map((h, c) => {
-		if (leadKey && c === 0) return leadKey.values[i];
-		return f[h] ?? '';
-	}));
+	const rows = flat.map((f, i) =>
+		headers.map((h, c) => {
+			if (leadKey && c === 0) return leadKey.values[i];
+			return f[h] ?? '';
+		}),
+	);
 	return { headers, rows };
 }
 
@@ -204,7 +244,10 @@ function recordsToTable(records: Record<string, unknown>[], leadKey?: { header: 
 function resolveRoot(doc: unknown, root: string): unknown {
 	if (!root) return doc;
 	const parts = root.startsWith('/')
-		? root.slice(1).split('/').map((p) => p.replace(/~1/g, '/').replace(/~0/g, '~'))
+		? root
+				.slice(1)
+				.split('/')
+				.map((p) => p.replace(/~1/g, '/').replace(/~0/g, '~'))
 		: root.split('.');
 	let cur: unknown = doc;
 	for (const p of parts) {
@@ -242,7 +285,9 @@ export function jsonAdapter(raw: string, opts: JsonAdapterOptions = {}): DataTab
 		if (Array.isArray(target)) {
 			orient = Array.isArray(target[0]) ? 'values' : 'records';
 		} else if (target && typeof target === 'object') {
-			throw new DataSourceError('source is an object map — set orient="index" (with key-column) to tabulate it');
+			throw new DataSourceError(
+				'source is an object map — set orient="index" (with key-column) to tabulate it',
+			);
 		} else {
 			throw new DataSourceError('source is not an array or object of records');
 		}
@@ -263,16 +308,25 @@ export function jsonAdapter(raw: string, opts: JsonAdapterOptions = {}): DataTab
 			throw new DataSourceError('orient="index" expects an object map ({ key: record, … })');
 		}
 		const entries = Object.entries(target as Record<string, unknown>);
-		const records = entries.map(([, v]) => (v && typeof v === 'object' && !Array.isArray(v) ? v as Record<string, unknown> : { value: v }));
+		const records = entries.map(([, v]) =>
+			v && typeof v === 'object' && !Array.isArray(v)
+				? (v as Record<string, unknown>)
+				: { value: v },
+		);
 		const keys = entries.map(([k]) => k);
-		return recordsToTable(records, { header: opts.keyColumn && opts.keyColumn.length > 0 ? opts.keyColumn : 'key', values: keys });
+		return recordsToTable(records, {
+			header: opts.keyColumn && opts.keyColumn.length > 0 ? opts.keyColumn : 'key',
+			values: keys,
+		});
 	}
 
 	// records
 	if (!Array.isArray(target)) {
 		throw new DataSourceError('orient="records" expects an array of objects');
 	}
-	const records = (target as unknown[]).map((r) => (r && typeof r === 'object' && !Array.isArray(r) ? r as Record<string, unknown> : { value: r }));
+	const records = (target as unknown[]).map((r) =>
+		r && typeof r === 'object' && !Array.isArray(r) ? (r as Record<string, unknown>) : { value: r },
+	);
 	return recordsToTable(records);
 }
 
@@ -290,7 +344,11 @@ export function ndjsonAdapter(raw: string): DataTable {
 		} catch (err) {
 			throw new DataSourceError(`invalid NDJSON on line ${i + 1} — ${(err as Error).message}`);
 		}
-		records.push(parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, unknown> : { value: parsed });
+		records.push(
+			parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+				? (parsed as Record<string, unknown>)
+				: { value: parsed },
+		);
 	}
 	if (records.length === 0) throw new DataSourceError('source is empty (no NDJSON records)');
 	return recordsToTable(records);

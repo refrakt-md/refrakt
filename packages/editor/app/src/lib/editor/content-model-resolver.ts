@@ -59,7 +59,7 @@ function nodeMatchesType(node: ContentNode, match: string): boolean {
 
 	// Pipe-separated alternatives: 'list|fence'
 	if (match.includes('|')) {
-		return match.split('|').some(m => nodeMatchesType(node, m));
+		return match.split('|').some((m) => nodeMatchesType(node, m));
 	}
 
 	// heading:N

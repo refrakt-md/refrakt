@@ -1,5 +1,5 @@
 @layer skin {
-/* Badge rune — standalone inline chip.
+	/* Badge rune — standalone inline chip.
  *
  * The universal chip primitive emitted by `{% badge %}` AND by every
  * chip-type field a block renders (`bar` chips, `definition-list` `<dd>`
@@ -11,16 +11,15 @@
  * gives `--meta-color` works without per-status selectors.
  */
 
-.rf-badge {
-	vertical-align: baseline;
-	border: none;
-	background: color-mix(in srgb, var(--meta-color, var(--rf-color-muted)) 10%, transparent);
-	color: var(--meta-color, var(--rf-color-muted));
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-medium);
-	padding: 0.125rem 0.5rem;
-	border-radius: var(--rf-radius-sm);
-	white-space: nowrap;
-}
-
+	.rf-badge {
+		vertical-align: baseline;
+		border: none;
+		background: color-mix(in srgb, var(--meta-color, var(--rf-color-muted)) 10%, transparent);
+		color: var(--meta-color, var(--rf-color-muted));
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-medium);
+		padding: 0.125rem 0.5rem;
+		border-radius: var(--rf-radius-sm);
+		white-space: nowrap;
+	}
 }

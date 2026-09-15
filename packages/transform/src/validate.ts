@@ -1,5 +1,9 @@
 import type { ThemeManifest } from '@refrakt-md/types';
-import { VARIANT_DELTA_RESERVED_FIELDS, findReservedFields, identityFieldMessage } from './identity-fields.js';
+import {
+	VARIANT_DELTA_RESERVED_FIELDS,
+	findReservedFields,
+	identityFieldMessage,
+} from './identity-fields.js';
 import { lintSectionRoles } from './section-roles.js';
 import type { RuneConfig } from './types.js';
 
@@ -52,7 +56,10 @@ export function validateThemeConfig(config: unknown): ValidationResult {
 			const icons = obj.icons as Record<string, unknown>;
 			for (const [group, variants] of Object.entries(icons)) {
 				if (typeof variants !== 'object' || variants === null || Array.isArray(variants)) {
-					errors.push({ path: `icons.${group}`, message: 'Must be an object mapping variant names to SVG strings' });
+					errors.push({
+						path: `icons.${group}`,
+						message: 'Must be an object mapping variant names to SVG strings',
+					});
 				} else {
 					for (const [variant, svg] of Object.entries(variants as Record<string, unknown>)) {
 						if (typeof svg !== 'string') {
@@ -71,9 +78,10 @@ export function validateThemeConfig(config: unknown): ValidationResult {
 		errors.push({ path: 'runes', message: 'Must be an object' });
 	} else {
 		const runes = obj.runes as Record<string, unknown>;
-		const icons = (typeof obj.icons === 'object' && obj.icons !== null && !Array.isArray(obj.icons))
-			? obj.icons as Record<string, unknown>
-			: {};
+		const icons =
+			typeof obj.icons === 'object' && obj.icons !== null && !Array.isArray(obj.icons)
+				? (obj.icons as Record<string, unknown>)
+				: {};
 
 		for (const [runeName, runeConfig] of Object.entries(runes)) {
 			validateRuneConfig(runeName, runeConfig, icons, errors, warnings);
@@ -92,7 +100,12 @@ export function validateThemeConfig(config: unknown): ValidationResult {
 	// backgrounds — SPEC-088 soft-lint: a raw gradient in the `style` escape hatch
 	// that the structured `gradient` facet now covers. Warns (the escape hatch is
 	// intentional & still valid), pointing at the portable, token-driven path.
-	if (obj.backgrounds !== undefined && typeof obj.backgrounds === 'object' && obj.backgrounds !== null && !Array.isArray(obj.backgrounds)) {
+	if (
+		obj.backgrounds !== undefined &&
+		typeof obj.backgrounds === 'object' &&
+		obj.backgrounds !== null &&
+		!Array.isArray(obj.backgrounds)
+	) {
 		for (const [name, preset] of Object.entries(obj.backgrounds as Record<string, unknown>)) {
 			if (typeof preset !== 'object' || preset === null) continue;
 			const style = (preset as Record<string, unknown>).style;
@@ -101,7 +114,8 @@ export function validateThemeConfig(config: unknown): ValidationResult {
 				if (typeof value === 'string' && /gradient\(/i.test(value)) {
 					warnings.push({
 						path: `backgrounds.${name}.style.${prop}`,
-						message: 'Raw gradient in the `style` escape hatch — prefer the structured, token-driven `gradient` field (portable, theme-tracking). Raw CSS bypasses the token system.',
+						message:
+							'Raw gradient in the `style` escape hatch — prefer the structured, token-driven `gradient` field (portable, theme-tracking). Raw CSS bypasses the token system.',
 					});
 				}
 			}
@@ -137,7 +151,11 @@ function validateRuneConfig(
 
 	// modifiers
 	if (rune.modifiers !== undefined) {
-		if (typeof rune.modifiers !== 'object' || rune.modifiers === null || Array.isArray(rune.modifiers)) {
+		if (
+			typeof rune.modifiers !== 'object' ||
+			rune.modifiers === null ||
+			Array.isArray(rune.modifiers)
+		) {
 			errors.push({ path: `${prefix}.modifiers`, message: 'Must be an object' });
 		} else {
 			const mods = rune.modifiers as Record<string, unknown>;
@@ -148,10 +166,16 @@ function validateRuneConfig(
 				} else {
 					const mod = modConfig as Record<string, unknown>;
 					if (mod.source !== 'meta' && mod.source !== 'attribute') {
-						errors.push({ path: `${prefix}.modifiers.${modName}.source`, message: 'Must be "meta" or "attribute"' });
+						errors.push({
+							path: `${prefix}.modifiers.${modName}.source`,
+							message: 'Must be "meta" or "attribute"',
+						});
 					}
 					if (mod.default !== undefined && typeof mod.default !== 'string') {
-						errors.push({ path: `${prefix}.modifiers.${modName}.default`, message: 'Must be a string if provided' });
+						errors.push({
+							path: `${prefix}.modifiers.${modName}.default`,
+							message: 'Must be a string if provided',
+						});
 					}
 				}
 			}
@@ -159,23 +183,40 @@ function validateRuneConfig(
 	}
 
 	// frameTarget (SPEC-086)
-	if (rune.frameTarget !== undefined && rune.frameTarget !== 'media' && rune.frameTarget !== 'self') {
+	if (
+		rune.frameTarget !== undefined &&
+		rune.frameTarget !== 'media' &&
+		rune.frameTarget !== 'self'
+	) {
 		errors.push({ path: `${prefix}.frameTarget`, message: 'Must be "media" or "self"' });
 	}
 
 	// substrateTarget (SPEC-087)
-	if (rune.substrateTarget !== undefined && rune.substrateTarget !== 'media' && rune.substrateTarget !== 'self') {
+	if (
+		rune.substrateTarget !== undefined &&
+		rune.substrateTarget !== 'media' &&
+		rune.substrateTarget !== 'self'
+	) {
 		errors.push({ path: `${prefix}.substrateTarget`, message: 'Must be "media" or "self"' });
 	}
 
 	// contextModifiers
 	if (rune.contextModifiers !== undefined) {
-		if (typeof rune.contextModifiers !== 'object' || rune.contextModifiers === null || Array.isArray(rune.contextModifiers)) {
+		if (
+			typeof rune.contextModifiers !== 'object' ||
+			rune.contextModifiers === null ||
+			Array.isArray(rune.contextModifiers)
+		) {
 			errors.push({ path: `${prefix}.contextModifiers`, message: 'Must be an object' });
 		} else {
-			for (const [parent, suffix] of Object.entries(rune.contextModifiers as Record<string, unknown>)) {
+			for (const [parent, suffix] of Object.entries(
+				rune.contextModifiers as Record<string, unknown>,
+			)) {
 				if (typeof suffix !== 'string') {
-					errors.push({ path: `${prefix}.contextModifiers.${parent}`, message: 'Must be a string' });
+					errors.push({
+						path: `${prefix}.contextModifiers.${parent}`,
+						message: 'Must be a string',
+					});
 				}
 			}
 		}
@@ -196,7 +237,11 @@ function validateRuneConfig(
 
 	// autoLabel
 	if (rune.autoLabel !== undefined) {
-		if (typeof rune.autoLabel !== 'object' || rune.autoLabel === null || Array.isArray(rune.autoLabel)) {
+		if (
+			typeof rune.autoLabel !== 'object' ||
+			rune.autoLabel === null ||
+			Array.isArray(rune.autoLabel)
+		) {
 			errors.push({ path: `${prefix}.autoLabel`, message: 'Must be an object' });
 		} else {
 			for (const [tag, label] of Object.entries(rune.autoLabel as Record<string, unknown>)) {
@@ -210,14 +255,23 @@ function validateRuneConfig(
 	// contentWrapper
 	if (rune.contentWrapper !== undefined) {
 		if (typeof rune.contentWrapper !== 'object' || rune.contentWrapper === null) {
-			errors.push({ path: `${prefix}.contentWrapper`, message: 'Must be an object with tag and ref' });
+			errors.push({
+				path: `${prefix}.contentWrapper`,
+				message: 'Must be an object with tag and ref',
+			});
 		} else {
 			const cw = rune.contentWrapper as Record<string, unknown>;
 			if (typeof cw.tag !== 'string' || !cw.tag) {
-				errors.push({ path: `${prefix}.contentWrapper.tag`, message: 'Required and must be a non-empty string' });
+				errors.push({
+					path: `${prefix}.contentWrapper.tag`,
+					message: 'Required and must be a non-empty string',
+				});
 			}
 			if (typeof cw.ref !== 'string' || !cw.ref) {
-				errors.push({ path: `${prefix}.contentWrapper.ref`, message: 'Required and must be a non-empty string' });
+				errors.push({
+					path: `${prefix}.contentWrapper.ref`,
+					message: 'Required and must be a non-empty string',
+				});
 			}
 		}
 	}
@@ -233,10 +287,16 @@ function validateRuneConfig(
 				} else if (typeof spec === 'object' && spec !== null) {
 					const s = spec as Record<string, unknown>;
 					if (typeof s.prop !== 'string' || typeof s.template !== 'string') {
-						errors.push({ path: `${prefix}.styles.${modName}`, message: 'Object form must have "prop" and "template" strings' });
+						errors.push({
+							path: `${prefix}.styles.${modName}`,
+							message: 'Object form must have "prop" and "template" strings',
+						});
 					}
 				} else {
-					errors.push({ path: `${prefix}.styles.${modName}`, message: 'Must be a string or { prop, template } object' });
+					errors.push({
+						path: `${prefix}.styles.${modName}`,
+						message: 'Must be a string or { prop, template } object',
+					});
 				}
 			}
 		}
@@ -244,11 +304,22 @@ function validateRuneConfig(
 
 	// structure — validate and cross-reference
 	if (rune.structure !== undefined) {
-		if (typeof rune.structure !== 'object' || rune.structure === null || Array.isArray(rune.structure)) {
+		if (
+			typeof rune.structure !== 'object' ||
+			rune.structure === null ||
+			Array.isArray(rune.structure)
+		) {
 			errors.push({ path: `${prefix}.structure`, message: 'Must be an object' });
 		} else {
 			for (const [key, entry] of Object.entries(rune.structure as Record<string, unknown>)) {
-				validateStructureEntry(entry, `${prefix}.structure.${key}`, modifierNames, icons, errors, warnings);
+				validateStructureEntry(
+					entry,
+					`${prefix}.structure.${key}`,
+					modifierNames,
+					icons,
+					errors,
+					warnings,
+				);
 			}
 		}
 	}
@@ -257,15 +328,25 @@ function validateRuneConfig(
 	// declared modifier (selection rides the modifier system), and a delta may
 	// not override identity fields (it restructures a rune, never redefines it).
 	if (rune.variants !== undefined) {
-		if (typeof rune.variants !== 'object' || rune.variants === null || Array.isArray(rune.variants)) {
+		if (
+			typeof rune.variants !== 'object' ||
+			rune.variants === null ||
+			Array.isArray(rune.variants)
+		) {
 			errors.push({ path: `${prefix}.variants`, message: 'Must be an object' });
 		} else {
 			for (const [axis, byValue] of Object.entries(rune.variants as Record<string, unknown>)) {
 				if (!modifierNames.has(axis)) {
-					errors.push({ path: `${prefix}.variants.${axis}`, message: `Variant axis "${axis}" must be a declared modifier` });
+					errors.push({
+						path: `${prefix}.variants.${axis}`,
+						message: `Variant axis "${axis}" must be a declared modifier`,
+					});
 				}
 				if (typeof byValue !== 'object' || byValue === null || Array.isArray(byValue)) {
-					errors.push({ path: `${prefix}.variants.${axis}`, message: 'Must be an object mapping modifier values to config deltas' });
+					errors.push({
+						path: `${prefix}.variants.${axis}`,
+						message: 'Must be an object mapping modifier values to config deltas',
+					});
 					continue;
 				}
 				for (const [value, delta] of Object.entries(byValue as Record<string, unknown>)) {
@@ -275,7 +356,10 @@ function validateRuneConfig(
 						continue;
 					}
 					for (const field of findReservedFields(delta, VARIANT_DELTA_RESERVED_FIELDS)) {
-						errors.push({ path: `${deltaPath}.${field}`, message: `Variant deltas ${identityFieldMessage(field)}` });
+						errors.push({
+							path: `${deltaPath}.${field}`,
+							message: `Variant deltas ${identityFieldMessage(field)}`,
+						});
 					}
 				}
 			}
@@ -307,7 +391,10 @@ function validateStructureEntry(
 		if (typeof e.condition !== 'string') {
 			errors.push({ path: `${path}.condition`, message: 'Must be a string' });
 		} else if (!modifierNames.has(e.condition)) {
-			warnings.push({ path: `${path}.condition`, message: `References modifier "${e.condition}" which is not defined in modifiers` });
+			warnings.push({
+				path: `${path}.condition`,
+				message: `References modifier "${e.condition}" which is not defined in modifiers`,
+			});
 		}
 	}
 
@@ -320,7 +407,10 @@ function validateStructureEntry(
 				if (typeof name !== 'string') {
 					errors.push({ path: `${path}.conditionAny`, message: 'All entries must be strings' });
 				} else if (!modifierNames.has(name)) {
-					warnings.push({ path: `${path}.conditionAny`, message: `References modifier "${name}" which is not defined in modifiers` });
+					warnings.push({
+						path: `${path}.conditionAny`,
+						message: `References modifier "${name}" which is not defined in modifiers`,
+					});
 				}
 			}
 		}
@@ -335,7 +425,10 @@ function validateStructureEntry(
 			if (typeof icon.group !== 'string') {
 				errors.push({ path: `${path}.icon.group`, message: 'Must be a string' });
 			} else if (!(icon.group in icons)) {
-				warnings.push({ path: `${path}.icon.group`, message: `References icon group "${icon.group}" which is not defined in icons` });
+				warnings.push({
+					path: `${path}.icon.group`,
+					message: `References icon group "${icon.group}" which is not defined in icons`,
+				});
 			}
 			if (typeof icon.variant !== 'string') {
 				errors.push({ path: `${path}.icon.variant`, message: 'Must be a string' });
@@ -353,7 +446,14 @@ function validateStructureEntry(
 				if (typeof child === 'string') {
 					// String literal children are fine
 				} else {
-					validateStructureEntry(child, `${path}.children[${i}]`, modifierNames, icons, errors, warnings);
+					validateStructureEntry(
+						child,
+						`${path}.children[${i}]`,
+						modifierNames,
+						icons,
+						errors,
+						warnings,
+					);
 				}
 			}
 		}
@@ -396,10 +496,16 @@ export function validateManifest(manifest: unknown): ValidationResult {
 				} else {
 					const l = layout as Record<string, unknown>;
 					if (typeof l.component !== 'string' || !l.component) {
-						errors.push({ path: `layouts.${name}.component`, message: 'Required and must be a non-empty string' });
+						errors.push({
+							path: `layouts.${name}.component`,
+							message: 'Required and must be a non-empty string',
+						});
 					}
 					if (!Array.isArray(l.regions)) {
-						errors.push({ path: `layouts.${name}.regions`, message: 'Required and must be an array' });
+						errors.push({
+							path: `layouts.${name}.regions`,
+							message: 'Required and must be an array',
+						});
 					}
 				}
 			}
@@ -418,12 +524,21 @@ export function validateManifest(manifest: unknown): ValidationResult {
 				} else {
 					const r = rule as Record<string, unknown>;
 					if (typeof r.pattern !== 'string' || !r.pattern) {
-						errors.push({ path: `routeRules[${i}].pattern`, message: 'Required and must be a non-empty string' });
+						errors.push({
+							path: `routeRules[${i}].pattern`,
+							message: 'Required and must be a non-empty string',
+						});
 					}
 					if (typeof r.layout !== 'string' || !r.layout) {
-						errors.push({ path: `routeRules[${i}].layout`, message: 'Required and must be a non-empty string' });
+						errors.push({
+							path: `routeRules[${i}].layout`,
+							message: 'Required and must be a non-empty string',
+						});
 					} else if (layoutNames.size > 0 && !layoutNames.has(r.layout)) {
-						warnings.push({ path: `routeRules[${i}].layout`, message: `References layout "${r.layout}" which is not defined in layouts` });
+						warnings.push({
+							path: `routeRules[${i}].layout`,
+							message: `References layout "${r.layout}" which is not defined in layouts`,
+						});
 					}
 				}
 			}
@@ -432,7 +547,11 @@ export function validateManifest(manifest: unknown): ValidationResult {
 
 	// components
 	if (obj.components !== undefined) {
-		if (typeof obj.components !== 'object' || obj.components === null || Array.isArray(obj.components)) {
+		if (
+			typeof obj.components !== 'object' ||
+			obj.components === null ||
+			Array.isArray(obj.components)
+		) {
 			errors.push({ path: 'components', message: 'Must be an object' });
 		} else {
 			const components = obj.components as Record<string, unknown>;
@@ -442,7 +561,10 @@ export function validateManifest(manifest: unknown): ValidationResult {
 				} else {
 					const c = comp as Record<string, unknown>;
 					if (typeof c.component !== 'string' || !c.component) {
-						errors.push({ path: `components.${name}.component`, message: 'Required and must be a non-empty string' });
+						errors.push({
+							path: `components.${name}.component`,
+							message: 'Required and must be a non-empty string',
+						});
 					}
 				}
 			}

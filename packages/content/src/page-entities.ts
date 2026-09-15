@@ -25,9 +25,14 @@ export function createPageEntityHooks(siteConfig: unknown): PluginPipelineHooks 
 	const routeRules = (siteConfig as { routeRules?: RouteRule[] } | undefined)?.routeRules ?? [];
 
 	return {
-		register(pages: readonly TransformedPage[], registry: EntityRegistry, ctx: PipelineContext): void {
+		register(
+			pages: readonly TransformedPage[],
+			registry: EntityRegistry,
+			ctx: PipelineContext,
+		): void {
 			for (const page of pages) {
-				const fmType = typeof page.frontmatter.type === 'string' ? page.frontmatter.type.trim() : '';
+				const fmType =
+					typeof page.frontmatter.type === 'string' ? page.frontmatter.type.trim() : '';
 				const type = fmType || matchRouteEntity(page.url, routeRules);
 				if (!type) continue;
 

@@ -6,12 +6,18 @@
  * width/border-collapse stays skin too (it contends with the table element
  * override + global table by value-identical rules). */
 
-.rf-comparison__grid { display: contents; }
+.rf-comparison__grid {
+	display: contents;
+}
 .rf-comparison-column__body,
-.rf-comparison-row__body { display: contents; }
+.rf-comparison-row__body {
+	display: contents;
+}
 
 .rf-comparison > meta,
-.rf-comparison > span[property] { display: none; }
+.rf-comparison > span[property] {
+	display: none;
+}
 
 /* Table layout */
 .rf-comparison__table-wrapper {
@@ -23,10 +29,18 @@
 	top: 0;
 	z-index: 1;
 }
-.rf-comparison__recommended-badge { display: block; }
-.rf-comparison__label-col { width: 1%; }
-.rf-comparison__cell strong { display: none; }
-.rf-comparison__callout-badge { display: inline-block; }
+.rf-comparison__recommended-badge {
+	display: block;
+}
+.rf-comparison__label-col {
+	width: 1%;
+}
+.rf-comparison__cell strong {
+	display: none;
+}
+.rf-comparison__callout-badge {
+	display: inline-block;
+}
 
 /* Cards layout */
 .rf-comparison__cards {
@@ -34,21 +48,29 @@
 	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 	align-items: start;
 }
-.rf-comparison-card { position: relative; }
+.rf-comparison-card {
+	position: relative;
+}
 .rf-comparison-card__badge {
 	position: absolute;
 	top: -0.625rem;
 	left: 50%;
 	transform: translateX(-50%);
 }
-.rf-comparison-card__rows { list-style: none; }
+.rf-comparison-card__rows {
+	list-style: none;
+}
 .rf-comparison-card__row {
 	display: flex;
 	align-items: baseline;
 }
-.rf-comparison-card__row p { display: inline; }
+.rf-comparison-card__row p {
+	display: inline;
+}
 
 /* Responsive */
 @media (max-width: 640px) {
-	.rf-comparison__cards { grid-template-columns: 1fr; }
+	.rf-comparison__cards {
+		grid-template-columns: 1fr;
+	}
 }

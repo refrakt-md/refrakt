@@ -1,65 +1,64 @@
 @layer skin {
-/* Faction — split/stacked geometry, the title, and the metadata def-list all
+	/* Faction — split/stacked geometry, the title, and the metadata def-list all
  * come from the shared layers: layouts/split.css ([data-layout] +
  * [data-section="media"]), dimensions/sections.css ([data-section="title"] /
  * "preamble"), and dimensions/metadata.css ([data-zone-layout]). This file
  * only carries faction-specific chrome. */
 
-/* Thin-edge inset model (matches `.rf-card` / `.rf-recipe`): card outer padding
+	/* Thin-edge inset model (matches `.rf-card` / `.rf-recipe`): card outer padding
  * is a thin edge, the content column adds the remaining inset back so text sits
  * at the full `--rune-padding` without negative-margin bleed. Like recipe, no
  * `--split-valign: stretch` — faction content can be long (multiple sections),
  * so we let the scene keep its natural aspect ratio rather than cover-cropping. */
-.rf-faction {
-	--rf-faction-edge: 0.5rem;
-	--rf-faction-media-gap: var(--rf-spacing-lg);
-	--rf-faction-split-gap: var(--rf-spacing-sm);
-	padding: var(--rf-faction-edge);
-}
+	.rf-faction {
+		--rf-faction-edge: 0.5rem;
+		--rf-faction-media-gap: var(--rf-spacing-lg);
+		--rf-faction-split-gap: var(--rf-spacing-sm);
+		padding: var(--rf-faction-edge);
+	}
 
-.rf-faction__content {
-	padding: max(0px, calc(var(--rune-padding, var(--rf-spacing-md)) - var(--rf-faction-edge)));
-}
+	.rf-faction__content {
+		padding: max(0px, calc(var(--rune-padding, var(--rf-spacing-md)) - var(--rf-faction-edge)));
+	}
 
-/* Direct grid properties (column-gap / row-gap) win via selector specificity
+	/* Direct grid properties (column-gap / row-gap) win via selector specificity
  * over the shared media-position layout vars. */
-.rf-faction[data-media-position="start"],
-.rf-faction[data-media-position="end"] {
-	column-gap: var(--rf-faction-split-gap);
-	row-gap: var(--rf-faction-media-gap);
-}
+	.rf-faction[data-media-position="start"],
+	.rf-faction[data-media-position="end"] {
+		column-gap: var(--rf-faction-split-gap);
+		row-gap: var(--rf-faction-media-gap);
+	}
 
-.rf-faction[data-media-position="top"] > .rf-faction__scene {
-	margin-bottom: var(--rf-faction-media-gap);
-}
-.rf-faction[data-media-position="bottom"] > .rf-faction__scene {
-	margin-top: var(--rf-faction-media-gap);
-}
+	.rf-faction[data-media-position="top"] > .rf-faction__scene {
+		margin-bottom: var(--rf-faction-media-gap);
+	}
+	.rf-faction[data-media-position="bottom"] > .rf-faction__scene {
+		margin-top: var(--rf-faction-media-gap);
+	}
 
-/* Content */
-.rf-faction__sections {
-	gap: 1rem;
-}
-.rf-faction__content ul,
-.rf-faction__content ol {
-	padding-left: 1.5rem;
-}
+	/* Content */
+	.rf-faction__sections {
+		gap: 1rem;
+	}
+	.rf-faction__content ul,
+	.rf-faction__content ol {
+		padding-left: 1.5rem;
+	}
 
-/* Faction Section */
-.rf-faction-section {
-	padding: 0.75rem 0;
-	border-top: 1px solid var(--rf-color-border);
-}
-.rf-faction-section__name {
-	font-size: var(--rf-text-xl);
-	font-weight: var(--rf-weight-bold);
-	line-height: var(--rf-leading-snug);
-	margin-bottom: 0.5rem;
-	color: var(--rf-color-text);
-}
-.rf-faction-section__body ul,
-.rf-faction-section__body ol {
-	padding-left: 1.5rem;
-}
-
+	/* Faction Section */
+	.rf-faction-section {
+		padding: 0.75rem 0;
+		border-top: 1px solid var(--rf-color-border);
+	}
+	.rf-faction-section__name {
+		font-size: var(--rf-text-xl);
+		font-weight: var(--rf-weight-bold);
+		line-height: var(--rf-leading-snug);
+		margin-bottom: 0.5rem;
+		color: var(--rf-color-text);
+	}
+	.rf-faction-section__body ul,
+	.rf-faction-section__body ol {
+		padding-left: 1.5rem;
+	}
 }

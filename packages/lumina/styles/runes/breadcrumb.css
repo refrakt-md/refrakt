@@ -1,38 +1,37 @@
 @layer skin {
-/* Breadcrumb — skin. The contents passthroughs + the flex trail live in
+	/* Breadcrumb — skin. The contents passthroughs + the flex trail live in
  * @refrakt-md/skeleton (styles/runes/breadcrumb.css). */
-.rf-breadcrumb {
-	font-size: var(--rf-text-sm);
-	margin: 0 0 1.5rem;
-}
-.rf-breadcrumb ol {
-	gap: 0.25rem;
-	padding: 0;
-	margin: 0;
-}
-.rf-breadcrumb li {
-	gap: 0.25rem;
-	padding: 0;
-	margin: 0;
-}
-.rf-breadcrumb li + li::before {
-	content: var(--separator);
-	color: var(--rf-color-muted);
-	opacity: 0.5;
-	margin-right: 0.125rem;
-}
-.rf-breadcrumb a {
-	color: var(--rf-color-muted);
-	text-decoration: none;
-	transition: color 150ms ease;
-}
-.rf-breadcrumb a:hover {
-	color: var(--rf-color-primary);
-	text-decoration: none;
-}
-.rf-breadcrumb li:last-child span {
-	color: var(--rf-color-text);
-	font-weight: var(--rf-weight-medium);
-}
-
+	.rf-breadcrumb {
+		font-size: var(--rf-text-sm);
+		margin: 0 0 1.5rem;
+	}
+	.rf-breadcrumb ol {
+		gap: 0.25rem;
+		padding: 0;
+		margin: 0;
+	}
+	.rf-breadcrumb li {
+		gap: 0.25rem;
+		padding: 0;
+		margin: 0;
+	}
+	.rf-breadcrumb li + li::before {
+		content: var(--separator);
+		color: var(--rf-color-muted);
+		opacity: 0.5;
+		margin-right: 0.125rem;
+	}
+	.rf-breadcrumb a {
+		color: var(--rf-color-muted);
+		text-decoration: none;
+		transition: color 150ms ease;
+	}
+	.rf-breadcrumb a:hover {
+		color: var(--rf-color-primary);
+		text-decoration: none;
+	}
+	.rf-breadcrumb li:last-child span {
+		color: var(--rf-color-text);
+		font-weight: var(--rf-weight-medium);
+	}
 }

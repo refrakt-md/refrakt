@@ -1,128 +1,127 @@
 @layer skin {
-/* Playlist */
+	/* Playlist */
 
-/* Thin-edge inset model (matches `.rf-card` / `.rf-recipe`): card outer padding
+	/* Thin-edge inset model (matches `.rf-card` / `.rf-recipe`): card outer padding
  * is a thin edge, the content column adds the remaining inset back so text sits
  * at the full `--rune-padding` without negative-margin bleed. Like recipe, no
  * `align-items: stretch` — the cover is a square album image (aspect-ratio: 1
  * on `__media img` below), and stretching the cell would just produce empty
  * card padding around it. */
-.rf-playlist {
-	--rf-playlist-edge: 0.5rem;
-	--rf-playlist-media-gap: var(--rf-spacing-lg);
-	--rf-playlist-split-gap: var(--rf-spacing-sm);
-	padding: var(--rf-playlist-edge);
-}
+	.rf-playlist {
+		--rf-playlist-edge: 0.5rem;
+		--rf-playlist-media-gap: var(--rf-spacing-lg);
+		--rf-playlist-split-gap: var(--rf-spacing-sm);
+		padding: var(--rf-playlist-edge);
+	}
 
-.rf-playlist__content {
-	padding: max(0px, calc(var(--rune-padding, var(--rf-spacing-md)) - var(--rf-playlist-edge)));
-}
+	.rf-playlist__content {
+		padding: max(0px, calc(var(--rune-padding, var(--rf-spacing-md)) - var(--rf-playlist-edge)));
+	}
 
-/* Direct grid properties (column-gap / row-gap) win via selector specificity
+	/* Direct grid properties (column-gap / row-gap) win via selector specificity
  * over the shared media-position layout vars. */
-.rf-playlist[data-media-position="start"],
-.rf-playlist[data-media-position="end"] {
-	column-gap: var(--rf-playlist-split-gap);
-	row-gap: var(--rf-playlist-media-gap);
-}
+	.rf-playlist[data-media-position="start"],
+	.rf-playlist[data-media-position="end"] {
+		column-gap: var(--rf-playlist-split-gap);
+		row-gap: var(--rf-playlist-media-gap);
+	}
 
-.rf-playlist[data-media-position="top"] > [data-section="media"] {
-	margin-bottom: var(--rf-playlist-media-gap);
-}
-.rf-playlist[data-media-position="bottom"] > [data-section="media"] {
-	margin-top: var(--rf-playlist-media-gap);
-}
+	.rf-playlist[data-media-position="top"] > [data-section="media"] {
+		margin-bottom: var(--rf-playlist-media-gap);
+	}
+	.rf-playlist[data-media-position="bottom"] > [data-section="media"] {
+		margin-top: var(--rf-playlist-media-gap);
+	}
 
-/* Inner header (headline + description) inside content */
-.rf-playlist__content > .rf-playlist__header {
-	gap: 0.25rem;
-	margin-bottom: 1rem;
-}
-.rf-playlist__headline {
-	margin: 0;
-}
-.rf-playlist__content > .rf-playlist__header p {
-	margin: 0;
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-muted);
-	line-height: var(--rf-leading-normal);
-}
+	/* Inner header (headline + description) inside content */
+	.rf-playlist__content > .rf-playlist__header {
+		gap: 0.25rem;
+		margin-bottom: 1rem;
+	}
+	.rf-playlist__headline {
+		margin: 0;
+	}
+	.rf-playlist__content > .rf-playlist__header p {
+		margin: 0;
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+		line-height: var(--rf-leading-normal);
+	}
 
-/* Tracks list wrapper */
-.rf-playlist__tracks {
-	padding: 0;
-	margin: 0;
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-md);
-}
+	/* Tracks list wrapper */
+	.rf-playlist__tracks {
+		padding: 0;
+		margin: 0;
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-md);
+	}
 
-/* Track items — override sequence dimension's absolute positioning */
-.rf-playlist__tracks > li {
-	gap: 0.75rem;
-	padding: 0.75rem 1.25rem;
-	padding-left: 1.25rem;
-	transition: background 0.15s ease;
-}
-.rf-playlist__tracks > li + li {
-	border-top: 1px solid var(--rf-color-border);
-}
-.rf-playlist__tracks > li:hover {
-	background: color-mix(in srgb, var(--rf-color-border) 15%, transparent);
-}
-.rf-playlist__tracks > li::before {
-	font-size: var(--rf-text-xs);
-	font-variant-numeric: tabular-nums;
-	color: var(--rf-color-muted);
-	background: none;
-	border-radius: 0;
-	text-align: right;
-}
+	/* Track items — override sequence dimension's absolute positioning */
+	.rf-playlist__tracks > li {
+		gap: 0.75rem;
+		padding: 0.75rem 1.25rem;
+		padding-left: 1.25rem;
+		transition: background 0.15s ease;
+	}
+	.rf-playlist__tracks > li + li {
+		border-top: 1px solid var(--rf-color-border);
+	}
+	.rf-playlist__tracks > li:hover {
+		background: color-mix(in srgb, var(--rf-color-border) 15%, transparent);
+	}
+	.rf-playlist__tracks > li::before {
+		font-size: var(--rf-text-xs);
+		font-variant-numeric: tabular-nums;
+		color: var(--rf-color-muted);
+		background: none;
+		border-radius: 0;
+		text-align: right;
+	}
 
-/* Track name */
-.rf-playlist__tracks [data-name="track-name"] {
-	font-size: var(--rf-text);
-	font-weight: var(--rf-weight-medium);
-	color: var(--rf-color-text);
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
+	/* Track name */
+	.rf-playlist__tracks [data-name="track-name"] {
+		font-size: var(--rf-text);
+		font-weight: var(--rf-weight-medium);
+		color: var(--rf-color-text);
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
 
-/* Track artist */
-.rf-playlist__tracks [data-name="track-artist"] {
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-muted);
-}
-.rf-playlist__tracks [data-name="track-artist"]::before {
-	content: '\00b7';
-	margin-right: 0.5rem;
-	opacity: 0.5;
-}
+	/* Track artist */
+	.rf-playlist__tracks [data-name="track-artist"] {
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+	}
+	.rf-playlist__tracks [data-name="track-artist"]::before {
+		content: "\00b7";
+		margin-right: 0.5rem;
+		opacity: 0.5;
+	}
 
-/* Track duration — pushed right */
-.rf-playlist__tracks [data-name="track-duration"] {
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-muted);
-	font-variant-numeric: tabular-nums;
-	text-align: right;
-}
+	/* Track duration — pushed right */
+	.rf-playlist__tracks [data-name="track-duration"] {
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+		font-variant-numeric: tabular-nums;
+		text-align: right;
+	}
 
-/* Track meta (date etc.) */
-.rf-playlist__tracks [data-name="track-meta"] {
-	font-size: var(--rf-text-xs);
-	color: var(--rf-color-muted);
-}
-.rf-playlist__tracks [data-name="track-meta"]::before {
-	content: '\00b7';
-	margin-right: 0.5rem;
-	opacity: 0.5;
-}
+	/* Track meta (date etc.) */
+	.rf-playlist__tracks [data-name="track-meta"] {
+		font-size: var(--rf-text-xs);
+		color: var(--rf-color-muted);
+	}
+	.rf-playlist__tracks [data-name="track-meta"]::before {
+		content: "\00b7";
+		margin-right: 0.5rem;
+		opacity: 0.5;
+	}
 
-/* Player area */
-.rf-playlist__player {
-	padding: 0.75rem 0;
-	margin-top: 0.5rem;
-}
+	/* Player area */
+	.rf-playlist__player {
+		padding: 0.75rem 0;
+		margin-top: 0.5rem;
+	}
 
-/* Hide secondary columns on narrow screens */
-
+	/* Hide secondary columns on narrow screens */
 }

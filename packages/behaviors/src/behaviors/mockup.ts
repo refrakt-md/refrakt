@@ -40,8 +40,7 @@ export function mockupBehavior(el: HTMLElement): CleanupFn {
 		const inset = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
 		const available = el.clientWidth - inset;
 
-		const scale =
-			deviceWidth > 0 && available > 0 ? available / deviceWidth : 1;
+		const scale = deviceWidth > 0 && available > 0 ? available / deviceWidth : 1;
 		frame.style.setProperty('--mockup-fit-scale', String(scale));
 	};
 

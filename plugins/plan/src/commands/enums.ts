@@ -12,19 +12,46 @@ import type { PlanRuneType } from '../types.js';
 /** Valid `status` values per rune type. */
 export const VALID_STATUS: Record<PlanRuneType, readonly string[]> = {
 	spec: ['draft', 'review', 'accepted', 'implemented', 'shipped', 'superseded', 'deprecated'],
-	work: ['draft', 'ready', 'in-progress', 'review', 'done', 'blocked', 'pending', 'cancelled', 'superseded'],
+	work: [
+		'draft',
+		'ready',
+		'in-progress',
+		'review',
+		'done',
+		'blocked',
+		'pending',
+		'cancelled',
+		'superseded',
+	],
 	bug: ['reported', 'confirmed', 'in-progress', 'fixed', 'wontfix', 'duplicate'],
 	decision: ['proposed', 'accepted', 'rejected', 'superseded', 'deprecated'],
 	milestone: ['planning', 'active', 'complete'],
 };
 
 export const VALID_PRIORITY: readonly string[] = ['critical', 'high', 'medium', 'low'];
-export const VALID_COMPLEXITY: readonly string[] = ['trivial', 'simple', 'moderate', 'complex', 'unknown'];
+export const VALID_COMPLEXITY: readonly string[] = [
+	'trivial',
+	'simple',
+	'moderate',
+	'complex',
+	'unknown',
+];
 export const VALID_SEVERITY: readonly string[] = ['critical', 'major', 'minor', 'cosmetic'];
 
 /** Attributes allowed per rune type (all of them, not just the enum-valued ones). */
 export const ALLOWED_ATTRS: Record<PlanRuneType, readonly string[]> = {
-	work: ['id', 'status', 'priority', 'complexity', 'assignee', 'milestone', 'source', 'supersedes', 'pr', 'tags'],
+	work: [
+		'id',
+		'status',
+		'priority',
+		'complexity',
+		'assignee',
+		'milestone',
+		'source',
+		'supersedes',
+		'pr',
+		'tags',
+	],
 	spec: ['id', 'status', 'version', 'supersedes', 'released-in', 'tags'],
 	bug: ['id', 'status', 'severity', 'assignee', 'milestone', 'source', 'pr', 'tags'],
 	decision: ['id', 'status', 'date', 'supersedes', 'source', 'tags'],
@@ -113,7 +140,7 @@ export const DONE_STATUS_SET: ReadonlySet<string> = new Set([
 /** Union of every terminal status across all types — for cross-type
  *  "is this resolved / collapse it in the sidebar" checks. */
 export const TERMINAL_STATUS_UNION: ReadonlySet<string> = new Set(
-	Object.values(TERMINAL_STATUSES).flatMap(s => [...s]),
+	Object.values(TERMINAL_STATUSES).flatMap((s) => [...s]),
 );
 
 // --- Spec lifecycle-drift predicate (SPEC-119) ---------------------------
@@ -128,7 +155,9 @@ export const TERMINAL_STATUS_UNION: ReadonlySet<string> = new Set(
  * and `suggestImplemented` fire only for these.
  */
 export const SPEC_PRE_IMPLEMENTED_STATUSES: ReadonlySet<string> = new Set([
-	'draft', 'review', 'accepted',
+	'draft',
+	'review',
+	'accepted',
 ]);
 
 /**
@@ -136,9 +165,7 @@ export const SPEC_PRE_IMPLEMENTED_STATUSES: ReadonlySet<string> = new Set([
  * work is actually built. `spec-status-ahead` fires when one of these is set
  * but a linked work item is still non-terminal.
  */
-export const SPEC_IMPLEMENTED_STATUSES: ReadonlySet<string> = new Set([
-	'implemented', 'shipped',
-]);
+export const SPEC_IMPLEMENTED_STATUSES: ReadonlySet<string> = new Set(['implemented', 'shipped']);
 
 /**
  * The spec↔work lifecycle-drift predicate shared by `plan status`
@@ -153,7 +180,7 @@ export const SPEC_IMPLEMENTED_STATUSES: ReadonlySet<string> = new Set([
 export function specStatusLags(specStatus: string, linkedWorkStatuses: readonly string[]): boolean {
 	if (!SPEC_PRE_IMPLEMENTED_STATUSES.has(specStatus)) return false;
 	if (linkedWorkStatuses.length === 0) return false;
-	return linkedWorkStatuses.every(s => DONE_STATUS_SET.has(s));
+	return linkedWorkStatuses.every((s) => DONE_STATUS_SET.has(s));
 }
 
 /**
@@ -164,10 +191,23 @@ export function specStatusLags(specStatus: string, linkedWorkStatuses: readonly 
  * consistently. Covers every canonical status so no group is left unsorted.
  */
 export const WORK_STATUS_DISPLAY_ORDER: readonly string[] = [
-	'blocked', 'in-progress', 'review', 'ready', 'pending', 'draft', 'done', 'cancelled', 'superseded',
+	'blocked',
+	'in-progress',
+	'review',
+	'ready',
+	'pending',
+	'draft',
+	'done',
+	'cancelled',
+	'superseded',
 ];
 export const BUG_STATUS_DISPLAY_ORDER: readonly string[] = [
-	'in-progress', 'confirmed', 'reported', 'fixed', 'wontfix', 'duplicate',
+	'in-progress',
+	'confirmed',
+	'reported',
+	'fixed',
+	'wontfix',
+	'duplicate',
 ];
 
 /** Attributes with constrained value sets, by rune type. */

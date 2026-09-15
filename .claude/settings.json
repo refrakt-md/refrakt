@@ -1,7 +1,5 @@
 {
   "permissions": {
-    "allow": [
-      "mcp__refrakt__*"
-    ]
+    "allow": ["mcp__refrakt__*"]
   }
 }

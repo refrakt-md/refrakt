@@ -2,12 +2,12 @@
 import 'reflect-metadata';
 
 import {
-  createConnection,
-  TextDocuments,
-  ProposedFeatures,
-  TextDocumentSyncKind,
-  type InitializeResult,
-  DidChangeWatchedFilesNotification,
+	createConnection,
+	TextDocuments,
+	ProposedFeatures,
+	TextDocumentSyncKind,
+	type InitializeResult,
+	DidChangeWatchedFilesNotification,
 } from 'vscode-languageserver/node.js';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
@@ -24,81 +24,81 @@ const documents = new TextDocuments(TextDocument);
 let workspaceRoot: string | undefined;
 
 connection.onInitialize((params): InitializeResult => {
-  if (params.rootUri) {
-    workspaceRoot = new URL(params.rootUri).pathname;
-  } else if (params.rootPath) {
-    workspaceRoot = params.rootPath;
-  }
+	if (params.rootUri) {
+		workspaceRoot = new URL(params.rootUri).pathname;
+	} else if (params.rootPath) {
+		workspaceRoot = params.rootPath;
+	}
 
-  return {
-    capabilities: {
-      textDocumentSync: TextDocumentSyncKind.Full,
-      completionProvider: {
-        triggerCharacters: [' ', '"', '=', '/'],
-      },
-      hoverProvider: true,
-      definitionProvider: true,
-    },
-  };
+	return {
+		capabilities: {
+			textDocumentSync: TextDocumentSyncKind.Full,
+			completionProvider: {
+				triggerCharacters: [' ', '"', '=', '/'],
+			},
+			hoverProvider: true,
+			definitionProvider: true,
+		},
+	};
 });
 
 // After handshake, load plugins asynchronously
 connection.onInitialized(async () => {
-  await initializeRegistry(workspaceRoot);
+	await initializeRegistry(workspaceRoot);
 
-  // Register for watched file change notifications
-  connection.client.register(DidChangeWatchedFilesNotification.type, {
-    watchers: [
-      { globPattern: '**/refrakt.config.json' },
-      { globPattern: '**/_partials/**/*.md' },
-    ],
-  });
+	// Register for watched file change notifications
+	connection.client.register(DidChangeWatchedFilesNotification.type, {
+		watchers: [{ globPattern: '**/refrakt.config.json' }, { globPattern: '**/_partials/**/*.md' }],
+	});
 
-  // Re-validate all open documents now that community runes are loaded
-  for (const doc of documents.all()) {
-    const diagnostics = provideDiagnostics(doc);
-    connection.sendDiagnostics({ uri: doc.uri, diagnostics });
-  }
+	// Re-validate all open documents now that community runes are loaded
+	for (const doc of documents.all()) {
+		const diagnostics = provideDiagnostics(doc);
+		connection.sendDiagnostics({ uri: doc.uri, diagnostics });
+	}
 });
 
 // Re-load when refrakt.config.json changes
 connection.onDidChangeWatchedFiles(async () => {
-  await reinitialize(workspaceRoot);
+	await reinitialize(workspaceRoot);
 
-  // Re-validate all open documents with updated rune set
-  for (const doc of documents.all()) {
-    const diagnostics = provideDiagnostics(doc);
-    connection.sendDiagnostics({ uri: doc.uri, diagnostics });
-  }
+	// Re-validate all open documents with updated rune set
+	for (const doc of documents.all()) {
+		const diagnostics = provideDiagnostics(doc);
+		connection.sendDiagnostics({ uri: doc.uri, diagnostics });
+	}
 });
 
 // Completion
 connection.onCompletion((params) => {
-  return provideCompletion(params, documents);
+	return provideCompletion(params, documents);
 });
 
 // Hover
 connection.onHover((params) => {
-  return provideHover(params, documents);
+	return provideHover(params, documents);
 });
 
 // Definition (go-to-definition for partial file references)
 connection.onDefinition((params) => {
-  return provideDefinition(params, documents);
+	return provideDefinition(params, documents);
 });
 
 // Rune Inspector — custom request
-connection.onRequest('refrakt/inspectRune', (params: { uri: string; position: { line: number; character: number } }) => {
-  return inspectRuneAtPosition(documents, params.uri, params.position, workspaceRoot);
-});
+connection.onRequest(
+	'refrakt/inspectRune',
+	(params: { uri: string; position: { line: number; character: number } }) => {
+		return inspectRuneAtPosition(documents, params.uri, params.position, workspaceRoot);
+	},
+);
 
 // Diagnostics — run on document open and change
 documents.onDidChangeContent((change) => {
-  const diagnostics = provideDiagnostics(change.document);
-  connection.sendDiagnostics({
-    uri: change.document.uri,
-    diagnostics,
-  });
+	const diagnostics = provideDiagnostics(change.document);
+	connection.sendDiagnostics({
+		uri: change.document.uri,
+		diagnostics,
+	});
 });
 
 documents.listen(connection);

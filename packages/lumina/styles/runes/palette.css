@@ -1,88 +1,86 @@
 @layer skin {
-
-/* WORK-538 — resting title size, so the prominence ramp computes from it
+	/* WORK-538 — resting title size, so the prominence ramp computes from it
  * rather than from the density default. */
-.rf-palette {
-	--rf-title-size: var(--rf-text-lg);
-}
+	.rf-palette {
+		--rf-title-size: var(--rf-text-lg);
+	}
 
-/* Palette — color swatch grid */
-.rf-palette__title {
-	/* WORK-538 — read the prominence override first; the fallback is this rune's
+	/* Palette — color swatch grid */
+	.rf-palette__title {
+		/* WORK-538 — read the prominence override first; the fallback is this rune's
 	 * resting size, stated as --rf-title-size on the root so the prominence ramp
 	 * can compute from it. */
-	font-size: var(--rf-prominence-size, var(--rf-title-size));
-	font-weight: var(--rf-weight-semibold);
-	margin-bottom: 1rem;
-}
-.rf-palette__group {
-	margin-bottom: 1.5rem;
-}
-.rf-palette__group:last-child {
-	margin-bottom: 0;
-}
-.rf-palette__group-title {
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-semibold);
-	text-transform: uppercase;
-	letter-spacing: var(--rf-tracking-wider);
-	color: var(--rf-color-muted);
-	margin-bottom: 0.75rem;
-}
-.rf-palette__grid {
-	gap: 0.75rem;
-}
-.rf-palette__swatch {
-	gap: 0.375rem;
-}
-.rf-palette__swatch-color {
-	border-radius: var(--rf-radius-md, 8px);
-	border: 1px solid rgba(0, 0, 0, 0.08);
-}
-.rf-palette__swatch-name {
-	font-weight: var(--rf-weight-medium);
-	font-size: var(--rf-text-sm);
-}
-.rf-palette__swatch-value {
-	font-family: var(--rf-font-mono, monospace);
-	font-size: var(--rf-text-xs);
-	color: var(--rf-color-muted);
-}
-.rf-palette__swatch-contrast {
-	font-family: var(--rf-font-mono, monospace);
-	font-size: var(--rf-text-xs);
-	color: var(--rf-color-muted);
-}
-.rf-palette__swatch-a11y {
-	gap: 0.5rem;
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-medium);
-}
-.rf-palette__swatch-a11y--pass {
-	color: var(--rf-color-success, #10b981);
-}
-.rf-palette__swatch-a11y--fail {
-	color: var(--rf-color-danger, #ef4444);
-}
+		font-size: var(--rf-prominence-size, var(--rf-title-size));
+		font-weight: var(--rf-weight-semibold);
+		margin-bottom: 1rem;
+	}
+	.rf-palette__group {
+		margin-bottom: 1.5rem;
+	}
+	.rf-palette__group:last-child {
+		margin-bottom: 0;
+	}
+	.rf-palette__group-title {
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-semibold);
+		text-transform: uppercase;
+		letter-spacing: var(--rf-tracking-wider);
+		color: var(--rf-color-muted);
+		margin-bottom: 0.75rem;
+	}
+	.rf-palette__grid {
+		gap: 0.75rem;
+	}
+	.rf-palette__swatch {
+		gap: 0.375rem;
+	}
+	.rf-palette__swatch-color {
+		border-radius: var(--rf-radius-md, 8px);
+		border: 1px solid rgba(0, 0, 0, 0.08);
+	}
+	.rf-palette__swatch-name {
+		font-weight: var(--rf-weight-medium);
+		font-size: var(--rf-text-sm);
+	}
+	.rf-palette__swatch-value {
+		font-family: var(--rf-font-mono, monospace);
+		font-size: var(--rf-text-xs);
+		color: var(--rf-color-muted);
+	}
+	.rf-palette__swatch-contrast {
+		font-family: var(--rf-font-mono, monospace);
+		font-size: var(--rf-text-xs);
+		color: var(--rf-color-muted);
+	}
+	.rf-palette__swatch-a11y {
+		gap: 0.5rem;
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-medium);
+	}
+	.rf-palette__swatch-a11y--pass {
+		color: var(--rf-color-success, #10b981);
+	}
+	.rf-palette__swatch-a11y--fail {
+		color: var(--rf-color-danger, #ef4444);
+	}
 
-/* Neutral scale — horizontal gradient strip */
-.rf-palette__scale {
-	border-radius: var(--rf-radius-md, 8px);
-	margin-bottom: 0.5rem;
-}
-.rf-palette__scale-stop {
-	padding: 1.25rem 0.5rem 0.5rem;
-	font-size: var(--rf-text-xs);
-	font-family: var(--rf-font-mono, monospace);
-}
-.rf-palette__scale + .rf-palette__swatch-name {
-	margin-top: 0.25rem;
-	font-size: var(--rf-text-xs);
-}
+	/* Neutral scale — horizontal gradient strip */
+	.rf-palette__scale {
+		border-radius: var(--rf-radius-md, 8px);
+		margin-bottom: 0.5rem;
+	}
+	.rf-palette__scale-stop {
+		padding: 1.25rem 0.5rem 0.5rem;
+		font-size: var(--rf-text-xs);
+		font-family: var(--rf-font-mono, monospace);
+	}
+	.rf-palette__scale + .rf-palette__swatch-name {
+		margin-top: 0.25rem;
+		font-size: var(--rf-text-xs);
+	}
 
-/* Context-aware: no outer margin when inside design-context */
-.rf-palette--in-design-context {
-	margin: 0;
-}
-
+	/* Context-aware: no outer margin when inside design-context */
+	.rf-palette--in-design-context {
+		margin: 0;
+	}
 }

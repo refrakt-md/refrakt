@@ -8,7 +8,12 @@ const { Tag } = Markdoc;
 import { tags, nodes, createCorePipelineHooks } from '../src/index.js';
 import { preprocessSnippets, wrapStandaloneSnippets } from '../src/snippet-pipeline.js';
 import { fsProjectFiles, memoryProjectFiles } from '@refrakt-md/types/project-files';
-import type { PreprocessContext, TransformedPage, AggregatedData, PipelineContext } from '@refrakt-md/types';
+import type {
+	PreprocessContext,
+	TransformedPage,
+	AggregatedData,
+	PipelineContext,
+} from '@refrakt-md/types';
 
 /** Build a preprocess context that captures diagnostics into a list. The
  *  sandbox provider (SPEC-113) is rooted at `projectRoot`; snippet reads (and
@@ -30,7 +35,11 @@ function makePreprocessCtx(projectRoot: string): {
 	};
 }
 
-function makePage(filePath: string, relativePath = 'page.md', url = '/page'): {
+function makePage(
+	filePath: string,
+	relativePath = 'page.md',
+	url = '/page',
+): {
 	url: string;
 	relativePath: string;
 	filePath: string;
@@ -49,7 +58,10 @@ function pipeline(source: string, opts: { projectRoot: string; pageFilePath?: st
 }
 
 /** Find the first descendant Tag matching the predicate. */
-function findTag(node: unknown, pred: (t: InstanceType<typeof Tag>) => boolean): InstanceType<typeof Tag> | undefined {
+function findTag(
+	node: unknown,
+	pred: (t: InstanceType<typeof Tag>) => boolean,
+): InstanceType<typeof Tag> | undefined {
 	if (Array.isArray(node)) {
 		for (const c of node) {
 			const found = findTag(c, pred);
@@ -67,10 +79,16 @@ function findTag(node: unknown, pred: (t: InstanceType<typeof Tag>) => boolean):
 	return undefined;
 }
 
-function findAllTags(node: unknown, pred: (t: InstanceType<typeof Tag>) => boolean): InstanceType<typeof Tag>[] {
+function findAllTags(
+	node: unknown,
+	pred: (t: InstanceType<typeof Tag>) => boolean,
+): InstanceType<typeof Tag>[] {
 	const out: InstanceType<typeof Tag>[] = [];
 	const walk = (n: unknown) => {
-		if (Array.isArray(n)) { for (const c of n) walk(c); return; }
+		if (Array.isArray(n)) {
+			for (const c of n) walk(c);
+			return;
+		}
 		if (!Tag.isTag(n as never)) return;
 		const tag = n as InstanceType<typeof Tag>;
 		if (pred(tag)) out.push(tag);
@@ -114,19 +132,29 @@ describe('snippet preprocess (SPEC-062)', () => {
 	});
 
 	it('attaches the lines marker when set', () => {
-		writeFileSync(join(tmpRoot, 'big.ts'), Array.from({ length: 20 }, (_, i) => `line ${i + 1}`).join('\n'));
+		writeFileSync(
+			join(tmpRoot, 'big.ts'),
+			Array.from({ length: 20 }, (_, i) => `line ${i + 1}`).join('\n'),
+		);
 		const ast = Markdoc.parse('{% snippet path="big.ts" lines="5-10" /%}\n');
 		const { ctx } = makePreprocessCtx(tmpRoot);
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
 
 		expect(ast.children[0].attributes.lines).toBe('5-10');
 		// 5-10 inclusive = lines 5 through 10 = 6 lines.
-		expect(ast.children[0].attributes.content).toBe('line 5\nline 6\nline 7\nline 8\nline 9\nline 10');
+		expect(ast.children[0].attributes.content).toBe(
+			'line 5\nline 6\nline 7\nline 8\nline 9\nline 10',
+		);
 	});
 
 	it('propagates linenumbers + highlight from the rune to the fence (WORK-304)', () => {
-		writeFileSync(join(tmpRoot, 'big.ts'), Array.from({ length: 20 }, (_, i) => `line ${i + 1}`).join('\n'));
-		const ast = Markdoc.parse('{% snippet path="big.ts" lines="5-10" linenumbers=true highlight="7-8" /%}\n');
+		writeFileSync(
+			join(tmpRoot, 'big.ts'),
+			Array.from({ length: 20 }, (_, i) => `line ${i + 1}`).join('\n'),
+		);
+		const ast = Markdoc.parse(
+			'{% snippet path="big.ts" lines="5-10" linenumbers=true highlight="7-8" /%}\n',
+		);
 		const { ctx } = makePreprocessCtx(tmpRoot);
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
 
@@ -158,21 +186,27 @@ describe('snippet preprocess (SPEC-062)', () => {
 		// back as the consolidated "cannot be resolved" error rather than a
 		// reason-specific message. The provider's own tests (WORK-481) cover the
 		// absolute / traversal / symlink distinctions.
-		expect(warnings.some(w => w.severity === 'error' && /cannot be resolved/.test(w.message))).toBe(true);
+		expect(
+			warnings.some((w) => w.severity === 'error' && /cannot be resolved/.test(w.message)),
+		).toBe(true);
 	});
 
 	it('rejects traversal escapes with a build error', () => {
 		const ast = Markdoc.parse('{% snippet path="../../etc/passwd" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
-		expect(warnings.some(w => w.severity === 'error' && /cannot be resolved/.test(w.message))).toBe(true);
+		expect(
+			warnings.some((w) => w.severity === 'error' && /cannot be resolved/.test(w.message)),
+		).toBe(true);
 	});
 
 	it('rejects missing files with a build error', () => {
 		const ast = Markdoc.parse('{% snippet path="ghost.ts" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
-		expect(warnings.some(w => w.severity === 'error' && /cannot be resolved/.test(w.message))).toBe(true);
+		expect(
+			warnings.some((w) => w.severity === 'error' && /cannot be resolved/.test(w.message)),
+		).toBe(true);
 	});
 
 	it('rejects directory paths with a build error', () => {
@@ -182,7 +216,9 @@ describe('snippet preprocess (SPEC-062)', () => {
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
 		// A directory is not a regular file → the provider returns null → the
 		// consolidated "cannot be resolved" error.
-		expect(warnings.some(w => w.severity === 'error' && /cannot be resolved/.test(w.message))).toBe(true);
+		expect(
+			warnings.some((w) => w.severity === 'error' && /cannot be resolved/.test(w.message)),
+		).toBe(true);
 	});
 
 	it('rejects symlinks pointing outside the project root', () => {
@@ -194,7 +230,9 @@ describe('snippet preprocess (SPEC-062)', () => {
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
 		// The provider's realpath check denies the symlink escape; the snippet
 		// surfaces it as the consolidated error and never reads the target.
-		const errored = warnings.some(w => w.severity === 'error' && /cannot be resolved/.test(w.message));
+		const errored = warnings.some(
+			(w) => w.severity === 'error' && /cannot be resolved/.test(w.message),
+		);
 		expect(errored).toBe(true);
 		expect(ast.children[0].attributes.content).not.toContain('const x = 1;');
 		rmSync(outside, { recursive: true, force: true });
@@ -205,7 +243,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 		const ast = Markdoc.parse('{% snippet path="short.ts" lines="2-20" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
-		expect(warnings.some(w => w.severity === 'warning' && /clamped/.test(w.message))).toBe(true);
+		expect(warnings.some((w) => w.severity === 'warning' && /clamped/.test(w.message))).toBe(true);
 		// Content includes lines 2..end of file.
 		expect(ast.children[0].attributes.content).toContain('b');
 	});
@@ -215,7 +253,9 @@ describe('snippet preprocess (SPEC-062)', () => {
 		const ast = Markdoc.parse('{% snippet path="tiny.ts" lines="50-60" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
-		expect(warnings.some(w => w.severity === 'error' && /past end of file/.test(w.message))).toBe(true);
+		expect(warnings.some((w) => w.severity === 'error' && /past end of file/.test(w.message))).toBe(
+			true,
+		);
 	});
 
 	it('rejects inverted line range with a build error', () => {
@@ -223,7 +263,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 		const ast = Markdoc.parse('{% snippet path="foo.ts" lines="25-10" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
-		expect(warnings.some(w => w.severity === 'error' && /inverted/.test(w.message))).toBe(true);
+		expect(warnings.some((w) => w.severity === 'error' && /inverted/.test(w.message))).toBe(true);
 	});
 
 	it('rejects malformed line-range strings with the input echoed', () => {
@@ -231,7 +271,12 @@ describe('snippet preprocess (SPEC-062)', () => {
 		const ast = Markdoc.parse('{% snippet path="foo.ts" lines="not-a-range" /%}\n');
 		const { ctx, warnings } = makePreprocessCtx(tmpRoot);
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
-		expect(warnings.some(w => w.severity === 'error' && /malformed/.test(w.message) && /not-a-range/.test(w.message))).toBe(true);
+		expect(
+			warnings.some(
+				(w) =>
+					w.severity === 'error' && /malformed/.test(w.message) && /not-a-range/.test(w.message),
+			),
+		).toBe(true);
 	});
 
 	it('resolves Markdoc Variable AST nodes in the path attribute', () => {
@@ -250,7 +295,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 		};
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
 
-		expect(warnings.filter(w => w.severity === 'error')).toHaveLength(0);
+		expect(warnings.filter((w) => w.severity === 'error')).toHaveLength(0);
 		expect(ast.children[0].type).toBe('fence');
 		expect(ast.children[0].attributes.content).toBe('const x = 1;\n');
 		expect(ast.children[0].attributes.source).toBe('foo.ts');
@@ -265,7 +310,9 @@ describe('snippet preprocess (SPEC-062)', () => {
 			error: (m) => warnings.push({ severity: 'error', message: m }),
 			projectRoot: tmpRoot,
 			sandbox: fsProjectFiles(tmpRoot),
-			variables: { /* no `missing` */ },
+			variables: {
+				/* no `missing` */
+			},
 		};
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
 
@@ -273,7 +320,7 @@ describe('snippet preprocess (SPEC-062)', () => {
 		// (the schema's transform would throw if it reached the snippet tag).
 		expect(ast.children[0].type).toBe('fence');
 		expect(ast.children[0].attributes['data-snippet-error']).toBeDefined();
-		expect(warnings.some(w => w.severity === 'error')).toBe(true);
+		expect(warnings.some((w) => w.severity === 'error')).toBe(true);
 	});
 
 	it('supports line shorthand "N" for single-line', () => {
@@ -301,7 +348,9 @@ describe('snippet preprocess (SPEC-062)', () => {
 	it('descends into nested AST to find snippet tags (e.g., inside codegroup)', () => {
 		writeFileSync(join(tmpRoot, 'a.ts'), 'a = 1\n');
 		writeFileSync(join(tmpRoot, 'b.py'), 'b = 1\n');
-		const ast = Markdoc.parse('{% codegroup %}\n{% snippet path="a.ts" /%}\n{% snippet path="b.py" /%}\n{% /codegroup %}\n');
+		const ast = Markdoc.parse(
+			'{% codegroup %}\n{% snippet path="a.ts" /%}\n{% snippet path="b.py" /%}\n{% /codegroup %}\n',
+		);
 		const { ctx } = makePreprocessCtx(tmpRoot);
 		preprocessSnippets(ast, makePage('/tmp/page.md'), ctx);
 
@@ -318,9 +367,9 @@ describe('snippet preprocess (SPEC-062)', () => {
 // with no filesystem access at all (the hosted/in-browser build path).
 describe('snippet via memoryProjectFiles (SPEC-113, fs-free)', () => {
 	it('resolves a snippet from a pure in-memory provider (no fs access)', () => {
-		const files = memoryProjectFiles(new Map([
-			['src/foo.ts', 'const x = 1;\nconst y = 2;\nconst z = 3;\n'],
-		]));
+		const files = memoryProjectFiles(
+			new Map([['src/foo.ts', 'const x = 1;\nconst y = 2;\nconst z = 3;\n']]),
+		);
 		const warnings: Array<{ severity: string; message: string }> = [];
 		const ctx: PreprocessContext = {
 			info: (m) => warnings.push({ severity: 'info', message: m }),
@@ -334,7 +383,7 @@ describe('snippet via memoryProjectFiles (SPEC-113, fs-free)', () => {
 		const ast = Markdoc.parse('{% snippet path="src/foo.ts" lines="1-2" /%}\n');
 		preprocessSnippets(ast, makePage('/page.md'), ctx);
 
-		expect(warnings.filter(w => w.severity === 'error')).toHaveLength(0);
+		expect(warnings.filter((w) => w.severity === 'error')).toHaveLength(0);
 		expect(ast.children[0].type).toBe('fence');
 		expect(ast.children[0].attributes.content).toBe('const x = 1;\nconst y = 2;');
 		expect(ast.children[0].attributes.language).toBe('typescript');
@@ -353,7 +402,9 @@ describe('snippet via memoryProjectFiles (SPEC-113, fs-free)', () => {
 		};
 		const ast = Markdoc.parse('{% snippet path="../../etc/passwd" /%}\n');
 		preprocessSnippets(ast, makePage('/page.md'), ctx);
-		expect(warnings.some(w => w.severity === 'error' && /cannot be resolved/.test(w.message))).toBe(true);
+		expect(
+			warnings.some((w) => w.severity === 'error' && /cannot be resolved/.test(w.message)),
+		).toBe(true);
 		expect(ast.children[0].attributes['data-snippet-error']).toBeDefined();
 	});
 });
@@ -378,14 +429,20 @@ describe('snippet composition (SPEC-062)', () => {
 		);
 
 		// codegroup tab list should contain two tabs.
-		const tabs = findAllTags(renderable, (t) => t.name === 'button' && (t.attributes as any)?.role === 'tab');
+		const tabs = findAllTags(
+			renderable,
+			(t) => t.name === 'button' && (t.attributes as any)?.role === 'tab',
+		);
 		expect(tabs).toHaveLength(2);
 		// Snippet content rendered into pre elements (via fence transform).
 		const pres = findAllTags(renderable, (t) => t.name === 'pre');
 		expect(pres.length).toBeGreaterThanOrEqual(2);
 		// No standalone snippet figure was applied — the fence-consuming
 		// container suppresses the wrap step.
-		const figure = findTag(renderable, (t) => t.name === 'figure' && (t.attributes as any)?.class === 'rf-snippet');
+		const figure = findTag(
+			renderable,
+			(t) => t.name === 'figure' && (t.attributes as any)?.class === 'rf-snippet',
+		);
 		expect(figure).toBeUndefined();
 	});
 
@@ -397,14 +454,22 @@ describe('snippet composition (SPEC-062)', () => {
 			{ projectRoot: tmpRoot },
 		);
 		// Diff produces line spans with `data-line-status` attributes (equal / add / remove).
-		const diffLines = findAllTags(renderable, (t) => (t.attributes as any)?.['data-name'] === 'line');
+		const diffLines = findAllTags(
+			renderable,
+			(t) => (t.attributes as any)?.['data-name'] === 'line',
+		);
 		expect(diffLines.length).toBeGreaterThan(0);
 		const hasAddOrRemove = diffLines.some(
-			(t) => (t.attributes as any)?.['data-line-status'] === 'add' || (t.attributes as any)?.['data-line-status'] === 'remove',
+			(t) =>
+				(t.attributes as any)?.['data-line-status'] === 'add' ||
+				(t.attributes as any)?.['data-line-status'] === 'remove',
 		);
 		expect(hasAddOrRemove).toBe(true);
 		// No snippet figure wrapper.
-		const figure = findTag(renderable, (t) => t.name === 'figure' && (t.attributes as any)?.class === 'rf-snippet');
+		const figure = findTag(
+			renderable,
+			(t) => t.name === 'figure' && (t.attributes as any)?.class === 'rf-snippet',
+		);
 		expect(figure).toBeUndefined();
 	});
 
@@ -414,7 +479,10 @@ describe('snippet composition (SPEC-062)', () => {
 			'{% codegroup %}\n{% snippet path="a.ts" /%}\n```python\nx = 1\n```\n{% /codegroup %}\n',
 			{ projectRoot: tmpRoot },
 		);
-		const tabs = findAllTags(renderable, (t) => t.name === 'button' && (t.attributes as any)?.role === 'tab');
+		const tabs = findAllTags(
+			renderable,
+			(t) => t.name === 'button' && (t.attributes as any)?.role === 'tab',
+		);
 		expect(tabs).toHaveLength(2);
 	});
 });
@@ -444,7 +512,10 @@ describe('snippet standalone wrap (SPEC-062)', () => {
 		};
 		const wrapped = wrapStandaloneSnippets(page, {} as AggregatedData, ctx);
 
-		const figure = findTag(wrapped.renderable, (t) => t.name === 'figure' && (t.attributes as any)?.class === 'rf-snippet');
+		const figure = findTag(
+			wrapped.renderable,
+			(t) => t.name === 'figure' && (t.attributes as any)?.class === 'rf-snippet',
+		);
 		expect(figure).toBeDefined();
 		expect((figure!.attributes as any)['data-rune']).toBe('snippet');
 		expect((figure!.attributes as any)['data-source-path']).toBe('foo.ts');
@@ -475,7 +546,10 @@ describe('snippet standalone wrap (SPEC-062)', () => {
 		const wrapped = wrapStandaloneSnippets(page, {} as AggregatedData, ctx);
 
 		// No figures applied — codegroup is on the allowlist.
-		const figures = findAllTags(wrapped.renderable, (t) => t.name === 'figure' && (t.attributes as any)?.class === 'rf-snippet');
+		const figures = findAllTags(
+			wrapped.renderable,
+			(t) => t.name === 'figure' && (t.attributes as any)?.class === 'rf-snippet',
+		);
 		expect(figures).toHaveLength(0);
 	});
 

@@ -34,7 +34,7 @@ export interface HistoryOptions {
 
 function findEntity(id: string, dir: string): { entity: PlanEntity; absPath: string } | null {
 	const entities = scanPlanFiles(dir);
-	const entity = entities.find(e => e.attributes.id === id || e.attributes.name === id);
+	const entity = entities.find((e) => e.attributes.id === id || e.attributes.name === id);
 	if (!entity) return null;
 	return { entity, absPath: resolve(join(dir, entity.file)) };
 }
@@ -60,7 +60,20 @@ function normalizeSince(since: string): string {
  */
 function formatDate(isoDate: string): string {
 	const d = new Date(isoDate);
-	const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	const months = [
+		'Jan',
+		'Feb',
+		'Mar',
+		'Apr',
+		'May',
+		'Jun',
+		'Jul',
+		'Aug',
+		'Sep',
+		'Oct',
+		'Nov',
+		'Dec',
+	];
 	return `${months[d.getMonth()]} ${String(d.getDate()).padStart(2, ' ')}`;
 }
 
@@ -78,10 +91,14 @@ function formatAttrChange(change: AttributeChange): string {
  */
 function formatCriteriaChange(change: CriteriaChange): string {
 	switch (change.action) {
-		case 'checked': return `☑ ${change.text}`;
-		case 'unchecked': return `☐ ${change.text}`;
-		case 'added': return `+ ${change.text}`;
-		case 'removed': return `- ${change.text}`;
+		case 'checked':
+			return `☑ ${change.text}`;
+		case 'unchecked':
+			return `☐ ${change.text}`;
+		case 'added':
+			return `+ ${change.text}`;
+		case 'removed':
+			return `- ${change.text}`;
 	}
 }
 
@@ -104,7 +121,9 @@ function formatSingleEntity(entity: PlanEntity, events: HistoryEvent[], limit: n
 			const parts = Object.entries(attrs)
 				.filter(([k]) => k !== 'id')
 				.map(([, v]) => v);
-			lines.push(`${date}  Created (${parts.join(', ')})${' '.repeat(Math.max(1, 40 - parts.join(', ').length))}${hash}`);
+			lines.push(
+				`${date}  Created (${parts.join(', ')})${' '.repeat(Math.max(1, 40 - parts.join(', ').length))}${hash}`,
+			);
 		} else {
 			// First line: date + first change + hash
 			const changeLines: string[] = [];
@@ -127,7 +146,9 @@ function formatSingleEntity(entity: PlanEntity, events: HistoryEvent[], limit: n
 			}
 
 			if (changeLines.length > 0) {
-				lines.push(`${date}  ${changeLines[0]}${' '.repeat(Math.max(1, 48 - changeLines[0].length))}${hash}`);
+				lines.push(
+					`${date}  ${changeLines[0]}${' '.repeat(Math.max(1, 48 - changeLines[0].length))}${hash}`,
+				);
 				for (let i = 1; i < changeLines.length; i++) {
 					lines.push(`        ${changeLines[i]}`);
 				}
@@ -153,7 +174,7 @@ function groupByCommit(
 	batchHistory: Map<string, HistoryEvent[]>,
 	entities: PlanEntity[],
 ): CommitGroup[] {
-	const entityByFile = new Map(entities.map(e => [e.file, e]));
+	const entityByFile = new Map(entities.map((e) => [e.file, e]));
 	const commitMap = new Map<string, CommitGroup>();
 
 	for (const [file, events] of batchHistory) {
@@ -201,7 +222,7 @@ function formatEntitySummary(entityId: string, event: HistoryEvent): string {
 	}
 
 	if (event.criteriaChanges && event.criteriaChanges.length > 0) {
-		const checked = event.criteriaChanges.filter(c => c.action === 'checked').length;
+		const checked = event.criteriaChanges.filter((c) => c.action === 'checked').length;
 		const total = event.criteriaChanges.length;
 		parts.push(`☑ ${checked}/${total} criteria`);
 	}
@@ -270,8 +291,8 @@ export function runHistory(options: HistoryOptions): void {
 		const entities = scanPlanFiles(dir);
 
 		// Apply filters
-		const typeFilter = type ? new Set(type.split(',').map(t => t.trim().toLowerCase())) : null;
-		const entityByFile = new Map(entities.map(e => [e.file, e]));
+		const typeFilter = type ? new Set(type.split(',').map((t) => t.trim().toLowerCase())) : null;
+		const entityByFile = new Map(entities.map((e) => [e.file, e]));
 
 		if (typeFilter || author || status || !all) {
 			for (const [file, events] of batchHistory) {
@@ -285,7 +306,7 @@ export function runHistory(options: HistoryOptions): void {
 
 				// Author filter (applied per-event, remove non-matching events)
 				if (author) {
-					const filtered = events.filter(e =>
+					const filtered = events.filter((e) =>
 						e.author.toLowerCase().includes(author.toLowerCase()),
 					);
 					if (filtered.length === 0) {
@@ -297,12 +318,12 @@ export function runHistory(options: HistoryOptions): void {
 
 				// Status filter — keep only events where status transitioned to the given value
 				if (status) {
-					const filtered = events.filter(e => {
+					const filtered = events.filter((e) => {
 						if (e.kind === 'created') {
 							return e.initialAttributes?.status === status;
 						}
 						if (e.attributeChanges) {
-							return e.attributeChanges.some(c => c.field === 'status' && c.to === status);
+							return e.attributeChanges.some((c) => c.field === 'status' && c.to === status);
 						}
 						return false;
 					});
@@ -315,7 +336,7 @@ export function runHistory(options: HistoryOptions): void {
 
 				// Exclude content-only events from global feed (unless --all)
 				if (!all) {
-					const filtered = (batchHistory.get(file) ?? events).filter(e => e.kind !== 'content');
+					const filtered = (batchHistory.get(file) ?? events).filter((e) => e.kind !== 'content');
 					if (filtered.length === 0) {
 						batchHistory.delete(file);
 					} else {

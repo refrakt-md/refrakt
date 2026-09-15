@@ -1,7 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes, pageSectionProperties } from '@refrakt-md/runes';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	asNodes,
+	pageSectionProperties,
+} from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
@@ -15,12 +20,36 @@ export const itineraryStop = createContentModelSchema({
 	sections: itineraryStopSections,
 	provides: ['prose'],
 	attributes: {
-		time: { type: String, required: false, description: 'Scheduled time for this stop (e.g. "9:00 AM").' },
-		location: { type: String, required: false, description: 'Name of the place or venue for this stop.' },
-		duration: { type: String, required: false, description: 'How long to spend at this stop (e.g. "2 hours").' },
-		activity: { type: String, required: false, description: 'Type of activity at this stop (e.g. "sightseeing", "dining").' },
-		lat: { type: String, required: false, description: 'Latitude coordinate for placing this stop on a map.' },
-		lng: { type: String, required: false, description: 'Longitude coordinate for placing this stop on a map.' },
+		time: {
+			type: String,
+			required: false,
+			description: 'Scheduled time for this stop (e.g. "9:00 AM").',
+		},
+		location: {
+			type: String,
+			required: false,
+			description: 'Name of the place or venue for this stop.',
+		},
+		duration: {
+			type: String,
+			required: false,
+			description: 'How long to spend at this stop (e.g. "2 hours").',
+		},
+		activity: {
+			type: String,
+			required: false,
+			description: 'Type of activity at this stop (e.g. "sightseeing", "dining").',
+		},
+		lat: {
+			type: String,
+			required: false,
+			description: 'Latitude coordinate for placing this stop on a map.',
+		},
+		lng: {
+			type: String,
+			required: false,
+			description: 'Longitude coordinate for placing this stop on a map.',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
@@ -37,7 +66,8 @@ export const itineraryStop = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable({ rune: 'itinerary-stop',
+		return createComponentRenderable({
+			rune: 'itinerary-stop',
 			tag: 'li',
 			properties: {
 				time: timeTag,
@@ -57,15 +87,21 @@ export const itineraryStop = createContentModelSchema({
 
 export const itineraryDay = createContentModelSchema({
 	attributes: {
-		label: { type: String, required: false, description: 'Display label for this day (e.g. "Day 1 — Arrival").' },
-		date: { type: String, required: false, description: 'Calendar date for this day of the itinerary.' },
+		label: {
+			type: String,
+			required: false,
+			description: 'Display label for this day (e.g. "Day 1 — Arrival").',
+		},
+		date: {
+			type: String,
+			required: false,
+			description: 'Calendar date for this day of the itinerary.',
+		},
 	},
 	contentModel: {
 		type: 'sections',
 		sectionHeading: 'heading',
-		fields: [
-			{ name: 'header', match: 'paragraph', optional: true, greedy: true },
-		],
+		fields: [{ name: 'header', match: 'paragraph', optional: true, greedy: true }],
 		sectionModel: {
 			type: 'sequence',
 			fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
@@ -103,7 +139,8 @@ export const itineraryDay = createContentModelSchema({
 		}
 		children.push(stopsList);
 
-		return createComponentRenderable({ rune: 'itinerary-day',
+		return createComponentRenderable({
+			rune: 'itinerary-day',
 			tag: 'article',
 			properties: {
 				label: labelTag,
@@ -121,13 +158,25 @@ export const itineraryDay = createContentModelSchema({
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
 // what a section *is* (ADR-028).
-export const itinerarySections = { preamble: 'preamble', headline: 'title', blurb: 'description' } as const;
+export const itinerarySections = {
+	preamble: 'preamble',
+	headline: 'title',
+	blurb: 'description',
+} as const;
 
 export const itinerary = createContentModelSchema({
 	sections: itinerarySections,
 	attributes: {
-		variant: { type: String, required: false, description: 'Layout style for the itinerary (e.g. "day-by-day").' },
-		direction: { type: String, required: false, description: 'Flow direction of the timeline: vertical or horizontal.' },
+		variant: {
+			type: String,
+			required: false,
+			description: 'Layout style for the itinerary (e.g. "day-by-day").',
+		},
+		direction: {
+			type: String,
+			required: false,
+			description: 'Flow direction of the timeline: vertical or horizontal.',
+		},
 	},
 	contentModel: {
 		when: [
@@ -136,9 +185,7 @@ export const itinerary = createContentModelSchema({
 				model: {
 					type: 'sections' as const,
 					sectionHeading: 'heading:2',
-					fields: [
-						{ name: 'header', match: 'heading|paragraph', optional: true, greedy: true },
-					],
+					fields: [{ name: 'header', match: 'heading|paragraph', optional: true, greedy: true }],
 					sectionModel: {
 						type: 'sequence' as const,
 						fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
@@ -182,7 +229,9 @@ export const itinerary = createContentModelSchema({
 		}
 		children.push(daysContainer);
 
-		return createComponentRenderable({ rune: 'itinerary', schemaOrgType: 'ItemList',
+		return createComponentRenderable({
+			rune: 'itinerary',
+			schemaOrgType: 'ItemList',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

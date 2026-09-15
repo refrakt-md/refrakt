@@ -34,10 +34,9 @@ describe('section anatomy', () => {
 				sections: { header: 'header' },
 				structure: {
 					header: {
-						tag: 'div', before: true,
-						children: [
-							{ tag: 'span', ref: 'title', metaText: 'hintType' },
-						],
+						tag: 'div',
+						before: true,
+						children: [{ tag: 'span', ref: 'title', metaText: 'hintType' }],
 					},
 				},
 			},
@@ -60,9 +59,7 @@ describe('section anatomy', () => {
 			},
 		});
 		const transform = createTransform(config);
-		const tag = makeTag('section', { 'data-rune': 'api' }, [
-			'Some content',
-		]);
+		const tag = makeTag('section', { 'data-rune': 'api' }, ['Some content']);
 
 		const result = asTag(transform(tag));
 		const body = findByName(result, 'body');
@@ -76,7 +73,8 @@ describe('section anatomy', () => {
 				block: 'hint',
 				structure: {
 					header: {
-						tag: 'div', before: true,
+						tag: 'div',
+						before: true,
 						children: [],
 					},
 				},
@@ -98,10 +96,9 @@ describe('section anatomy', () => {
 				sections: { header: 'header' },
 				structure: {
 					header: {
-						tag: 'div', before: true,
-						children: [
-							{ tag: 'span', ref: 'icon' },
-						],
+						tag: 'div',
+						before: true,
+						children: [{ tag: 'span', ref: 'icon' }],
 					},
 				},
 			},

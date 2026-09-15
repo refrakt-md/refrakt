@@ -1,119 +1,126 @@
 @layer skin {
-/* Feature — skin. The preamble/eyebrow/content/definitions/icon layout, the
+	/* Feature — skin. The preamble/eyebrow/content/definitions/icon layout, the
  * `[data-layout]` arrangement, and the media-position flip live in
  * @refrakt-md/skeleton (styles/runes/feature.css). */
-.rf-feature {
-	padding: 2.5rem 0 2rem;
-}
-.rf-feature__preamble {
-	gap: 0.25rem;
-	margin-bottom: 1.5rem;
-}
-.rf-feature__eyebrow {
-	font-size: var(--rf-text-sm);
-	font-weight: var(--rf-weight-semibold);
-	letter-spacing: var(--rf-tracking-wider);
-	text-transform: uppercase;
-	color: var(--rf-color-primary);
-	margin: 0 0 0.5rem;
-}
-.rf-feature__eyebrow:has(a) {
-	padding: 0.25rem 0.875rem;
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-full);
-	color: var(--rf-color-text);
-	font-weight: var(--rf-weight-normal);
-	text-transform: none;
-	letter-spacing: var(--rf-tracking-normal);
-	transition: border-color 150ms ease;
-}
-.rf-feature__eyebrow:has(a):hover { border-color: var(--rf-color-muted); }
-.rf-feature__eyebrow:has(a) a { color: var(--rf-color-primary); font-weight: var(--rf-weight-semibold); text-decoration: none; }
-.rf-feature__eyebrow:has(a) a::before { border-radius: inherit; }
-.rf-feature__headline {
-	margin-top: 0;
-}
-.rf-feature__blurb {
-	color: var(--rf-color-muted);
-	margin-bottom: 0;
-	max-width: 40rem;
-}
-.rf-feature__image {
-	margin-bottom: 1rem;
-}
-.rf-feature h2 {
-	margin-bottom: 2rem;
-}
-.rf-feature[data-align="center"] .rf-feature__preamble,
-.rf-feature[data-align="center"] h2 {
-	text-align: center;
-}
-.rf-feature[data-align="left"] .rf-feature__preamble,
-.rf-feature[data-align="left"] h2 {
-	text-align: left;
-}
-.rf-feature[data-align="right"] .rf-feature__preamble,
-.rf-feature[data-align="right"] h2 {
-	text-align: right;
-}
-/* Definitions skin. Arrangement + item chrome follow the `layout` axis
+	.rf-feature {
+		padding: 2.5rem 0 2rem;
+	}
+	.rf-feature__preamble {
+		gap: 0.25rem;
+		margin-bottom: 1.5rem;
+	}
+	.rf-feature__eyebrow {
+		font-size: var(--rf-text-sm);
+		font-weight: var(--rf-weight-semibold);
+		letter-spacing: var(--rf-tracking-wider);
+		text-transform: uppercase;
+		color: var(--rf-color-primary);
+		margin: 0 0 0.5rem;
+	}
+	.rf-feature__eyebrow:has(a) {
+		padding: 0.25rem 0.875rem;
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-full);
+		color: var(--rf-color-text);
+		font-weight: var(--rf-weight-normal);
+		text-transform: none;
+		letter-spacing: var(--rf-tracking-normal);
+		transition: border-color 150ms ease;
+	}
+	.rf-feature__eyebrow:has(a):hover {
+		border-color: var(--rf-color-muted);
+	}
+	.rf-feature__eyebrow:has(a) a {
+		color: var(--rf-color-primary);
+		font-weight: var(--rf-weight-semibold);
+		text-decoration: none;
+	}
+	.rf-feature__eyebrow:has(a) a::before {
+		border-radius: inherit;
+	}
+	.rf-feature__headline {
+		margin-top: 0;
+	}
+	.rf-feature__blurb {
+		color: var(--rf-color-muted);
+		margin-bottom: 0;
+		max-width: 40rem;
+	}
+	.rf-feature__image {
+		margin-bottom: 1rem;
+	}
+	.rf-feature h2 {
+		margin-bottom: 2rem;
+	}
+	.rf-feature[data-align="center"] .rf-feature__preamble,
+	.rf-feature[data-align="center"] h2 {
+		text-align: center;
+	}
+	.rf-feature[data-align="left"] .rf-feature__preamble,
+	.rf-feature[data-align="left"] h2 {
+		text-align: left;
+	}
+	.rf-feature[data-align="right"] .rf-feature__preamble,
+	.rf-feature[data-align="right"] h2 {
+		text-align: right;
+	}
+	/* Definitions skin. Arrangement + item chrome follow the `layout` axis
  * (SPEC-099): `grid` tiles carded items; `list` stacks flat rows. */
-.rf-feature__items {
-	margin: 0;
-}
-.rf-feature[data-layout="grid"] .rf-feature__items,
-.rf-feature[data-layout="carousel"] .rf-feature__items {
-	gap: 1.5rem;
-}
-/* Beside layouts (media on start/end): left-align the heading/preamble. */
-.rf-feature[data-media-position="start"] .rf-feature__preamble,
-.rf-feature[data-media-position="end"] .rf-feature__preamble,
-.rf-feature[data-media-position="start"] h2,
-.rf-feature[data-media-position="end"] h2 {
-	text-align: left;
-}
-/* List arrangement: items are flat rows, not carded tiles. */
-.rf-feature[data-layout="list"] .rf-feature__feature-item {
-	background: none;
-	border: none;
-	border-radius: 0;
-	padding: 0.75rem 0;
-}
-.rf-feature__feature-item {
-	padding: 1.75rem;
-	border-radius: var(--rf-radius-container);
-	border: 1px solid var(--rf-color-border);
-	background: var(--rf-color-surface);
-}
-.rf-feature__feature-item dt {
-	font-weight: var(--rf-weight-semibold);
-	font-size: var(--rf-text-lg);
-	margin-bottom: 0.75rem;
-	letter-spacing: var(--rf-tracking-tight);
-	color: var(--rf-color-text);
-}
-.rf-feature__feature-item dt > .rf-icon {
-	margin-bottom: 0.5rem;
-	color: var(--rf-color-primary);
-}
-.rf-feature__feature-item dd {
-	margin: 0;
-	color: var(--rf-color-muted);
-	font-size: var(--rf-text-sm);
-	line-height: var(--rf-leading-relaxed);
-}
+	.rf-feature__items {
+		margin: 0;
+	}
+	.rf-feature[data-layout="grid"] .rf-feature__items,
+	.rf-feature[data-layout="carousel"] .rf-feature__items {
+		gap: 1.5rem;
+	}
+	/* Beside layouts (media on start/end): left-align the heading/preamble. */
+	.rf-feature[data-media-position="start"] .rf-feature__preamble,
+	.rf-feature[data-media-position="end"] .rf-feature__preamble,
+	.rf-feature[data-media-position="start"] h2,
+	.rf-feature[data-media-position="end"] h2 {
+		text-align: left;
+	}
+	/* List arrangement: items are flat rows, not carded tiles. */
+	.rf-feature[data-layout="list"] .rf-feature__feature-item {
+		background: none;
+		border: none;
+		border-radius: 0;
+		padding: 0.75rem 0;
+	}
+	.rf-feature__feature-item {
+		padding: 1.75rem;
+		border-radius: var(--rf-radius-container);
+		border: 1px solid var(--rf-color-border);
+		background: var(--rf-color-surface);
+	}
+	.rf-feature__feature-item dt {
+		font-weight: var(--rf-weight-semibold);
+		font-size: var(--rf-text-lg);
+		margin-bottom: 0.75rem;
+		letter-spacing: var(--rf-tracking-tight);
+		color: var(--rf-color-text);
+	}
+	.rf-feature__feature-item dt > .rf-icon {
+		margin-bottom: 0.5rem;
+		color: var(--rf-color-primary);
+	}
+	.rf-feature__feature-item dd {
+		margin: 0;
+		color: var(--rf-color-muted);
+		font-size: var(--rf-text-sm);
+		line-height: var(--rf-leading-relaxed);
+	}
 
-/* Context-aware: feature inside a hero — no top padding, tighter spacing */
-.rf-feature--in-hero {
-	padding-top: 0;
-}
-.rf-feature--in-hero .rf-feature__feature-item {
-	background: transparent;
-}
+	/* Context-aware: feature inside a hero — no top padding, tighter spacing */
+	.rf-feature--in-hero {
+		padding-top: 0;
+	}
+	.rf-feature--in-hero .rf-feature__feature-item {
+		background: transparent;
+	}
 
-/* Context-aware: feature inside a grid — remove outer padding */
-.rf-feature--in-grid {
-	padding: 0;
-}
-
+	/* Context-aware: feature inside a grid — remove outer padding */
+	.rf-feature--in-grid {
+		padding: 0;
+	}
 }

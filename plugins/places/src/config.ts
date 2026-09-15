@@ -23,7 +23,15 @@ export const config: Record<string, RuneConfig> = {
 		sections: eventSections,
 		provides: ['prose'],
 		autoLabel: pageSectionAutoLabel,
-		editHints: { headline: 'inline', blurb: 'inline', body: 'none', date: 'none', endDate: 'none', location: 'none', register: 'link' },
+		editHints: {
+			headline: 'inline',
+			blurb: 'inline',
+			body: 'none',
+			date: 'none',
+			endDate: 'none',
+			location: 'none',
+			register: 'link',
+		},
 		modifiers: {
 			date: { source: 'meta' },
 			endDate: { source: 'meta' },
@@ -66,17 +74,20 @@ export const config: Record<string, RuneConfig> = {
 	// `sectionRoleExceptions`.
 	ItineraryDay: {
 		block: 'itinerary-day',
-		parent: 'Itinerary', requiresParent: 'Itinerary',
+		parent: 'Itinerary',
+		requiresParent: 'Itinerary',
 		sequence: 'connected',
 		autoLabel: { label: 'header' },
 		sectionRoleExceptions: {
-			header: 'The parent Itinerary already holds `title` on its headline, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-itinerary-day__header`\'s type, so the role would be inert there, while `[data-section="title"]`\'s `margin: 0` would strip the heading\'s top margin.',
+			header:
+				"The parent Itinerary already holds `title` on its headline, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-itinerary-day__header`'s type, so the role would be inert there, while `[data-section=\"title\"]`'s `margin: 0` would strip the heading's top margin.",
 		},
 		editHints: { header: 'inline', stops: 'none' },
 	},
 	ItineraryStop: {
 		block: 'itinerary-stop',
-		parent: 'Itinerary', requiresParent: 'Itinerary',
+		parent: 'Itinerary',
+		requiresParent: 'Itinerary',
 		modifiers: {
 			activity: { source: 'meta' },
 			duration: { source: 'meta' },
@@ -107,7 +118,8 @@ export const config: Record<string, RuneConfig> = {
 	},
 	MapPin: {
 		block: 'map-pin',
-		parent: 'Map', requiresParent: 'Map',
+		parent: 'Map',
+		requiresParent: 'Map',
 		editHints: { name: 'inline', description: 'inline' },
 		// Pin coordinates and metadata are read at runtime by the <rf-map> web
 		// component. They ride the SPEC-082 field bag through the transform, but

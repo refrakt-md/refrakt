@@ -27,12 +27,14 @@ export const include = createContentModelSchema({
 		file: {
 			type: String,
 			required: true,
-			description: 'Partial to paste, by the same key `{% partial %}` uses — a path under the site\'s `_partials/` (e.g. "attrs.md") or a namespaced file root ("shared:attrs.md").',
+			description:
+				'Partial to paste, by the same key `{% partial %}` uses — a path under the site\'s `_partials/` (e.g. "attrs.md") or a namespaced file root ("shared:attrs.md").',
 		},
 		variables: {
 			type: Object,
 			required: false,
-			description: 'Bindings substituted into the pasted AST at paste time, e.g. variables={q: "rune:card"} makes `$q` inside the file that string. Unlike `partial`, this is substitution rather than a transform-time scope, so bound values reach preprocessor attributes such as `{% data where=$q %}`.',
+			description:
+				'Bindings substituted into the pasted AST at paste time, e.g. variables={q: "rune:card"} makes `$q` inside the file that string. Unlike `partial`, this is substitution rather than a transform-time scope, so bound values reach preprocessor attributes such as `{% data where=$q %}`.',
 		},
 	},
 	contentModel: { type: 'sequence', fields: [] },
@@ -41,8 +43,8 @@ export const include = createContentModelSchema({
 		// `include` tags away before the transform runs.
 		throw new Error(
 			'{% include %} reached the transform phase unresolved — its preprocess hook was not ' +
-			'wired through. Ensure the content pipeline runs registered `preprocess` hooks before ' +
-			'`Markdoc.transform` (include pastes its file\'s AST; see SPEC-129).',
+				'wired through. Ensure the content pipeline runs registered `preprocess` hooks before ' +
+				"`Markdoc.transform` (include pastes its file's AST; see SPEC-129).",
 		);
 	},
 });

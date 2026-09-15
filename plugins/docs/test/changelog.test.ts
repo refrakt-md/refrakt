@@ -13,10 +13,10 @@ describe('changelog tag', () => {
 - **Fixed** Bug fix
 {% /changelog %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'changelog');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'changelog');
 		expect(tag).toBeDefined();
 
-		const releases = findAllTags(tag!, t => t.attributes['data-rune'] === 'changelog-release');
+		const releases = findAllTags(tag!, (t) => t.attributes['data-rune'] === 'changelog-release');
 		expect(releases.length).toBe(2);
 	});
 
@@ -27,15 +27,15 @@ describe('changelog tag', () => {
 - Feature added
 {% /changelog %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'changelog');
-		const release = findTag(tag!, t => t.attributes['data-rune'] === 'changelog-release');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'changelog');
+		const release = findTag(tag!, (t) => t.attributes['data-rune'] === 'changelog-release');
 		expect(release).toBeDefined();
 
-		const versionTag = findTag(release!, t => t.name === 'h3');
+		const versionTag = findTag(release!, (t) => t.name === 'h3');
 		expect(versionTag).toBeDefined();
 		expect(versionTag!.children[0]).toBe('2.1.0');
 
-		const dateTag = findTag(release!, t => t.name === 'time');
+		const dateTag = findTag(release!, (t) => t.name === 'time');
 		expect(dateTag).toBeDefined();
 		expect(dateTag!.children[0]).toBe('2024-03-15');
 	});
@@ -47,7 +47,7 @@ describe('changelog tag', () => {
 - Initial release
 {% /changelog %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'changelog');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'changelog');
 		expect(fields(tag).project).toBe('refrakt.md');
 	});
 
@@ -58,10 +58,10 @@ describe('changelog tag', () => {
 - Release
 {% /changelog %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'changelog');
-		const release = findTag(tag!, t => t.attributes['data-rune'] === 'changelog-release');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'changelog');
+		const release = findTag(tag!, (t) => t.attributes['data-rune'] === 'changelog-release');
 
-		const versionTag = findTag(release!, t => t.name === 'h3');
+		const versionTag = findTag(release!, (t) => t.name === 'h3');
 		expect(versionTag!.children[0]).toBe('1.0.0');
 	});
 });

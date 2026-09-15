@@ -52,8 +52,9 @@ export default defineNuxtModule<RefraktNuxtOptions>({
 		let summaryPrinted = false;
 		const getUsedBlocks = async () => {
 			try {
-				const { createRefraktLoader, analyzeRuneUsage, formatPipelineSummary } =
-					await import('@refrakt-md/content');
+				const { createRefraktLoader, analyzeRuneUsage, formatPipelineSummary } = await import(
+					'@refrakt-md/content'
+				);
 				const themeModule = await import(themePackage + '/transform');
 				const themeConfig =
 					themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
@@ -66,10 +67,7 @@ export default defineNuxtModule<RefraktNuxtOptions>({
 				const loadedSite = await loader.getSite();
 				if (!summaryPrinted) {
 					process.stderr.write(
-						formatPipelineSummary(
-							loadedSite.pipelineStats,
-							loadedSite.pipelineWarnings,
-						),
+						formatPipelineSummary(loadedSite.pipelineStats, loadedSite.pipelineWarnings),
 					);
 					summaryPrinted = true;
 				}

@@ -7,10 +7,7 @@ export interface LayoutOptions {
 }
 
 /** Generate a _layout.md with {% nav %} for API reference navigation */
-export function generateLayoutMarkdown(
-	symbols: SymbolDoc[],
-	options?: LayoutOptions,
-): string {
+export function generateLayoutMarkdown(symbols: SymbolDoc[], options?: LayoutOptions): string {
 	const title = options?.title ?? 'API Reference';
 	const lines: string[] = [];
 

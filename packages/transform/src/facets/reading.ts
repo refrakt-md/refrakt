@@ -1,4 +1,10 @@
-import { resolveReading, coerceRegister, READING_CAPABILITIES, DEFAULT_READING, READING_REGISTERS } from '../reading.js';
+import {
+	resolveReading,
+	coerceRegister,
+	READING_CAPABILITIES,
+	DEFAULT_READING,
+	READING_REGISTERS,
+} from '../reading.js';
 import type { RuneConfig } from '../types.js';
 import type { Facet } from './types.js';
 import type { UniversalAxisFacet } from './describe.js';
@@ -53,11 +59,13 @@ export const readingFacet: Facet = {
 			const requested = coerceRegister(ctx.tag.attributes?.reading);
 			if (!requested) return null;
 			return {
-				warnings: [{
-					code: 'reading-without-prose',
-					message: `[refrakt] reading="${requested}" on "${ctx.rune}" has nothing to apply to — ${NO_PROSE_REASON}, so no element carries an editorial register. Ignored.`,
-					dedupeKey: `${ctx.rune}:${requested}`,
-				}],
+				warnings: [
+					{
+						code: 'reading-without-prose',
+						message: `[refrakt] reading="${requested}" on "${ctx.rune}" has nothing to apply to — ${NO_PROSE_REASON}, so no element carries an editorial register. Ignored.`,
+						dedupeKey: `${ctx.rune}:${requested}`,
+					},
+				],
 			};
 		}
 
@@ -83,11 +91,13 @@ export const dropcapFacet: Facet = {
 		// report `reading="ui"` on a `datatable`, which is true and useless.
 		if (!bearsProse(ctx.config)) {
 			return {
-				warnings: [{
-					code: 'dropcap-without-prose',
-					message: `[refrakt] dropcap on "${ctx.rune}" has nothing to apply to — ${NO_PROSE_REASON}. Ignored.`,
-					dedupeKey: ctx.rune,
-				}],
+				warnings: [
+					{
+						code: 'dropcap-without-prose',
+						message: `[refrakt] dropcap on "${ctx.rune}" has nothing to apply to — ${NO_PROSE_REASON}. Ignored.`,
+						dedupeKey: ctx.rune,
+					},
+				],
 			};
 		}
 
@@ -96,10 +106,12 @@ export const dropcapFacet: Facet = {
 			return { state: { dropcap: 'true' } };
 		}
 		return {
-			warnings: [{
-				code: 'dropcap-off-register',
-				message: `[refrakt] dropcap is honoured only on a prose body — ignored on "${ctx.rune}" (reading="${register}").`,
-			}],
+			warnings: [
+				{
+					code: 'dropcap-off-register',
+					message: `[refrakt] dropcap is honoured only on a prose body — ignored on "${ctx.rune}" (reading="${register}").`,
+				},
+			],
 		};
 	},
 };
@@ -109,7 +121,8 @@ export const dropcapFacet: Facet = {
 export const readingAxis: UniversalAxisFacet = {
 	axis: 'reading',
 	contract: {
-		description: 'Editorial register for body text (SPEC-108). The author picks the register; the theme owns the magnitude.',
+		description:
+			'Editorial register for body text (SPEC-108). The author picks the register; the theme owns the magnitude.',
 		source: 'attribute',
 		inputs: ['reading'],
 		values: READING_REGISTERS,
@@ -133,7 +146,8 @@ export const dropcapAxis: UniversalAxisFacet = {
 		inputs: ['dropcap'],
 		dataAttributes: ['data-dropcap'],
 		target: '[data-section="body"]',
-		condition: 'honoured only when the resolved reading register enables it (`prose`); dropped with a warning otherwise',
+		condition:
+			'honoured only when the resolved reading register enables it (`prose`); dropped with a warning otherwise',
 	},
 	requires: PROSE_CAPABILITY,
 	describeForRune: (config) => (bearsProse(config) ? null : NO_PROSE_REASON),

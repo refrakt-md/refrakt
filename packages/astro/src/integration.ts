@@ -57,8 +57,9 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 				let summaryPrinted = false;
 				const getUsedBlocks = async () => {
 					try {
-						const { createRefraktLoader, analyzeRuneUsage, formatPipelineSummary } =
-							await import('@refrakt-md/content');
+						const { createRefraktLoader, analyzeRuneUsage, formatPipelineSummary } = await import(
+							'@refrakt-md/content'
+						);
 						const themeModule = await import(themePackage + '/transform');
 						const themeConfig =
 							themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
@@ -71,10 +72,7 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 						const loadedSite = await loader.getSite();
 						if (!summaryPrinted) {
 							process.stderr.write(
-								formatPipelineSummary(
-									loadedSite.pipelineStats,
-									loadedSite.pipelineWarnings,
-								),
+								formatPipelineSummary(loadedSite.pipelineStats, loadedSite.pipelineWarnings),
 							);
 							summaryPrinted = true;
 						}
@@ -87,10 +85,7 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 						return { usedBlocks, themePackage, themeConfig };
 					} catch (err) {
 						// eslint-disable-next-line no-console
-						console.warn(
-							'[refrakt] CSS tree-shaking skipped:',
-							(err as Error).message,
-						);
+						console.warn('[refrakt] CSS tree-shaking skipped:', (err as Error).message);
 						return { themePackage, fallbackToBarrel: true as const };
 					}
 				};

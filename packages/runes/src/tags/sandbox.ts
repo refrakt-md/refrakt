@@ -2,18 +2,29 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import type { ProjectFiles, ResolvedSecurityPolicy } from '@refrakt-md/types';
-import { createComponentRenderable, createContentModelSchema, sanitizeSandboxContent } from '../lib/index.js';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	sanitizeSandboxContent,
+} from '../lib/index.js';
 import { assembleFromDirectory, mergeContent } from '../sandbox-sources.js';
 
 /** Strip common leading whitespace from all lines. */
 function dedent(text: string): string {
 	const lines = text.split('\n');
-	const indents = lines.filter(l => l.trim().length > 0).map(l => l.match(/^(\s*)/)?.[0].length ?? 0);
+	const indents = lines
+		.filter((l) => l.trim().length > 0)
+		.map((l) => l.match(/^(\s*)/)?.[0].length ?? 0);
 	const min = indents.length > 0 ? Math.min(...indents) : 0;
-	return min > 0 ? lines.map(l => l.slice(min)).join('\n') : text;
+	return min > 0 ? lines.map((l) => l.slice(min)).join('\n') : text;
 }
 
-interface SourcePanel { label: string; language: string; content: string; origin?: string; }
+interface SourcePanel {
+	label: string;
+	language: string;
+	content: string;
+	origin?: string;
+}
 
 function extractDataSourcePanels(html: string): SourcePanel[] {
 	const panels: SourcePanel[] = [];
@@ -21,8 +32,7 @@ function extractDataSourcePanels(html: string): SourcePanel[] {
 	let match;
 	while ((match = regex.exec(html)) !== null) {
 		const [, tagName, before, labelAttr, after, inner] = match;
-		const language = tagName === 'style' ? 'css'
-			: tagName === 'script' ? 'javascript' : 'html';
+		const language = tagName === 'style' ? 'css' : tagName === 'script' ? 'javascript' : 'html';
 		const defaultLabel = language.charAt(0).toUpperCase() + language.slice(1);
 		let content: string;
 		if (tagName === 'style' || tagName === 'script') {
@@ -30,8 +40,10 @@ function extractDataSourcePanels(html: string): SourcePanel[] {
 		} else {
 			const attrs = (before + after).replace(/\s{2,}/g, ' ').trim();
 			const attrStr = attrs ? ` ${attrs}` : '';
-			const reindented = dedent(inner).split('\n')
-				.map(l => l.trim().length > 0 ? '  ' + l : l).join('\n');
+			const reindented = dedent(inner)
+				.split('\n')
+				.map((l) => (l.trim().length > 0 ? '  ' + l : l))
+				.join('\n');
 			content = `<${tagName}${attrStr}>${reindented}</${tagName}>`.trim();
 		}
 		panels.push({ label: labelAttr || defaultLabel, language, content });
@@ -53,27 +65,74 @@ function extractInlineContent(node: Node, config: Markdoc.Config): string {
 
 export const sandbox = createContentModelSchema({
 	attributes: {
-		src: { type: String, required: false, description: 'Directory containing external source files' },
-		framework: { type: String, required: false, description: 'JavaScript framework for the sandbox' },
-		dependencies: { type: String, required: false, description: 'Comma-separated npm packages to include' },
+		src: {
+			type: String,
+			required: false,
+			description: 'Directory containing external source files',
+		},
+		framework: {
+			type: String,
+			required: false,
+			description: 'JavaScript framework for the sandbox',
+		},
+		dependencies: {
+			type: String,
+			required: false,
+			description: 'Comma-separated npm packages to include',
+		},
 		label: { type: String, required: false, description: 'Label displayed above the sandbox' },
 		// SPEC-101 — `fill` pins the iframe to the host's height (100%) and
 		// disables auto-resize negotiation; the engine sets it automatically when
 		// the sandbox is a cover media zone's backdrop.
-		height: { type: [Number, String], required: false, description: 'Height of the sandbox iframe: pixels, "fill" (host owns height), or auto' },
-		context: { type: String, required: false, description: 'Shared context scope for multiple sandboxes' },
+		height: {
+			type: [Number, String],
+			required: false,
+			description: 'Height of the sandbox iframe: pixels, "fill" (host owns height), or auto',
+		},
+		context: {
+			type: String,
+			required: false,
+			description: 'Shared context scope for multiple sandboxes',
+		},
 		// WORK-381 — deferred activation: keep heavy sandboxes off the critical
 		// path. `eager` (default) is unchanged; `visible` mounts on scroll-in;
 		// `click` mounts on explicit activation. `poster` is the static preview
 		// shown in the iframe's place until activation.
-		activation: { type: String, required: false, matches: ['eager', 'visible', 'click'], description: 'When to mount the iframe: eager (default) | visible | click' },
-		poster: { type: String, required: false, description: 'Poster image URL shown until a non-eager sandbox activates' },
+		activation: {
+			type: String,
+			required: false,
+			matches: ['eager', 'visible', 'click'],
+			description: 'When to mount the iframe: eager (default) | visible | click',
+		},
+		poster: {
+			type: String,
+			required: false,
+			description: 'Poster image URL shown until a non-eager sandbox activates',
+		},
 		// SPEC-093 — data binding: resolve a registry query at build time and
 		// expose it to the iframe as `window.RF_DATA`.
-		data: { type: String, required: false, description: 'Registry query (SPEC-070 field-match, e.g. "type:page") bound into the iframe as window.RF_DATA' },
-		'data-fields': { type: String, required: false, description: 'Comma-separated entity data fields to project into the payload' },
-		'data-shape': { type: String, required: false, description: 'Payload shape: flat (default) | tree (nest by parentUrl) | graph (nodes + SPEC-072 edges)' },
-		'data-limit': { type: Number, required: false, description: 'Max records in the payload (default 500)' },
+		data: {
+			type: String,
+			required: false,
+			description:
+				'Registry query (SPEC-070 field-match, e.g. "type:page") bound into the iframe as window.RF_DATA',
+		},
+		'data-fields': {
+			type: String,
+			required: false,
+			description: 'Comma-separated entity data fields to project into the payload',
+		},
+		'data-shape': {
+			type: String,
+			required: false,
+			description:
+				'Payload shape: flat (default) | tree (nest by parentUrl) | graph (nodes + SPEC-072 edges)',
+		},
+		'data-limit': {
+			type: Number,
+			required: false,
+			description: 'Max records in the payload (default 500)',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
@@ -91,7 +150,8 @@ export const sandbox = createContentModelSchema({
 		const dataLimit = attrs['data-limit'];
 		// Only non-eager activation emits a data attribute, so eager sandboxes
 		// stay byte-for-byte identical (no regression).
-		const activation = attrs.activation === 'visible' || attrs.activation === 'click' ? attrs.activation : '';
+		const activation =
+			attrs.activation === 'visible' || attrs.activation === 'click' ? attrs.activation : '';
 		const poster = attrs.poster ?? '';
 
 		let rawContent = '';
@@ -108,7 +168,9 @@ export const sandbox = createContentModelSchema({
 		if (src && projectFiles && examplesDir !== undefined) {
 			// Directory source mode
 			const dirPath = examplesDir
-				? (examplesDir.endsWith('/') ? examplesDir + src : examplesDir + '/' + src)
+				? examplesDir.endsWith('/')
+					? examplesDir + src
+					: examplesDir + '/' + src
 				: src;
 			const result = assembleFromDirectory(
 				dirPath,
@@ -126,7 +188,7 @@ export const sandbox = createContentModelSchema({
 				rawContent = result.content;
 
 				// Convert SandboxSourcePanels to local SourcePanels
-				sourcePanels = result.panels.map(p => ({
+				sourcePanels = result.panels.map((p) => ({
 					label: p.label,
 					language: p.language,
 					content: p.content,
@@ -151,8 +213,11 @@ export const sandbox = createContentModelSchema({
 		// scripts/event-handlers/javascript-urls/dangerous-tags from rawContent
 		// before it ships to the iframe. Source panels keep the original code
 		// (visible code panels are inert) — the sanitised version is what runs.
-		const policy = (config.variables?.__securityPolicy as ResolvedSecurityPolicy | undefined)
-			?? { trust: 'trusted', allowJs: true, sandboxOrigin: undefined };
+		const policy = (config.variables?.__securityPolicy as ResolvedSecurityPolicy | undefined) ?? {
+			trust: 'trusted',
+			allowJs: true,
+			sandboxOrigin: undefined,
+		};
 		const sanitisedContent = sanitizeSandboxContent(rawContent, policy);
 
 		// SPEC-081: build the rf-sandbox element + its SSR fallback / source
@@ -161,15 +226,17 @@ export const sandbox = createContentModelSchema({
 
 		// Static SSR fallback — sanitised so the page never serializes
 		// would-be-executable content; lives in an inert <template>.
-		const fallbackPre = sanitisedContent ? new Tag('pre', { 'data-language': 'html' }, [
-			new Tag('code', { 'data-language': 'html' }, [sanitisedContent])
-		]) : undefined;
+		const fallbackPre = sanitisedContent
+			? new Tag('pre', { 'data-language': 'html' }, [
+					new Tag('code', { 'data-language': 'html' }, [sanitisedContent]),
+				])
+			: undefined;
 
 		// Directory-mode source origins → a labelled list the client uses to
 		// title the source panels (the panels themselves are built client-side).
 		const sourceOrigins = sourcePanels
-			.filter(p => p.origin)
-			.map(p => `${p.label}\t${p.origin}`);
+			.filter((p) => p.origin)
+			.map((p) => `${p.label}\t${p.origin}`);
 
 		const children: InstanceType<typeof Tag>[] = [];
 		if (fallbackPre) {
@@ -177,10 +244,7 @@ export const sandbox = createContentModelSchema({
 		}
 		children.push(new Tag('template', { 'data-content': 'source' }, [sanitisedContent]));
 
-		const el = createComponentRenderable({ rune: 'sandbox',
-			tag: 'div',
-			children,
-		});
+		const el = createComponentRenderable({ rune: 'sandbox', tag: 'div', children });
 		// Emit as the rf-sandbox custom element; the renderer reads its config off
 		// these data-* attributes (no field-metas).
 		el.name = 'rf-sandbox';
@@ -190,26 +254,35 @@ export const sandbox = createContentModelSchema({
 			...(dependencies ? { 'data-dependencies': dependencies } : {}),
 			...(label ? { 'data-label': label } : {}),
 			// Numeric → px sizing, `fill` → host-owned height, anything else → auto.
-			'data-height': typeof height === 'number' ? String(height)
-				: height === 'fill' ? 'fill'
-				: typeof height === 'string' && /^\d+$/.test(height) ? height : 'auto',
+			'data-height':
+				typeof height === 'number'
+					? String(height)
+					: height === 'fill'
+						? 'fill'
+						: typeof height === 'string' && /^\d+$/.test(height)
+							? height
+							: 'auto',
 			...(sourceOrigins.length > 0 ? { 'data-source-origins': sourceOrigins.join('\n') } : {}),
 			'data-security-mode': policy.trust,
 			'data-allow-js': policy.allowJs ? 'true' : 'false',
 			...(policy.sandboxOrigin ? { 'data-sandbox-origin': policy.sandboxOrigin } : {}),
 			// WORK-381 — deferred activation (omitted for eager so the markup is
 			// unchanged); the behaviour mounts the iframe on the chosen trigger.
-			...(activation ? {
-				'data-activation': activation,
-				...(poster ? { 'data-poster': poster } : {}),
-			} : {}),
+			...(activation
+				? {
+						'data-activation': activation,
+						...(poster ? { 'data-poster': poster } : {}),
+					}
+				: {}),
 			// SPEC-093 — the query for the postProcess data resolver to evaluate.
-			...(dataQuery ? {
-				'data-rf-query': dataQuery,
-				...(dataFields ? { 'data-rf-fields': dataFields } : {}),
-				...(dataShape ? { 'data-rf-shape': dataShape } : {}),
-				...(dataLimit != null ? { 'data-rf-limit': String(dataLimit) } : {}),
-			} : {}),
+			...(dataQuery
+				? {
+						'data-rf-query': dataQuery,
+						...(dataFields ? { 'data-rf-fields': dataFields } : {}),
+						...(dataShape ? { 'data-rf-shape': dataShape } : {}),
+						...(dataLimit != null ? { 'data-rf-limit': String(dataLimit) } : {}),
+					}
+				: {}),
 		});
 		return el;
 	},

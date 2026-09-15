@@ -328,9 +328,7 @@ export interface SyntaxTokens {
 }
 
 /** Recursive deep-partial. Every namespace optional; every leaf optional. */
-export type DeepPartial<T> = T extends object
-	? { [K in keyof T]?: DeepPartial<T[K]> }
-	: T;
+export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
 
 /** Partial token contract — for mode overlays, presets, and site overrides.
  *  Authors only specify the tokens they want to change; everything else

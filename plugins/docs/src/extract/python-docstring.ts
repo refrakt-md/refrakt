@@ -21,8 +21,10 @@ export type DocstringStyle = 'google' | 'numpy' | 'sphinx' | 'plain';
 
 // ── Detection ────────────────────────────────────────────────────────
 
-const GOOGLE_SECTIONS = /^(Args|Arguments|Parameters|Returns?|Raises?|Yields?|Examples?|Notes?|Attributes|Todo|References):\s*$/m;
-const NUMPY_SECTIONS = /^(Parameters|Returns?|Raises?|Yields?|See Also|Notes|References|Examples|Attributes)\s*\n-{3,}/m;
+const GOOGLE_SECTIONS =
+	/^(Args|Arguments|Parameters|Returns?|Raises?|Yields?|Examples?|Notes?|Attributes|Todo|References):\s*$/m;
+const NUMPY_SECTIONS =
+	/^(Parameters|Returns?|Raises?|Yields?|See Also|Notes|References|Examples|Attributes)\s*\n-{3,}/m;
 const SPHINX_DIRECTIVES = /:(param|type|returns?|rtype|raises?|var|ivar|cvar)[\s:]/;
 
 export function detectStyle(raw: string): DocstringStyle {
@@ -40,10 +42,18 @@ export function parseDocstring(raw: string): DocstringInfo {
 	const style = detectStyle(cleaned);
 	let info: DocstringInfo;
 	switch (style) {
-		case 'google': info = parseGoogleDocstring(cleaned); break;
-		case 'numpy': info = parseNumpyDocstring(cleaned); break;
-		case 'sphinx': info = parseSphinxDocstring(cleaned); break;
-		default: info = parsePlainDocstring(cleaned); break;
+		case 'google':
+			info = parseGoogleDocstring(cleaned);
+			break;
+		case 'numpy':
+			info = parseNumpyDocstring(cleaned);
+			break;
+		case 'sphinx':
+			info = parseSphinxDocstring(cleaned);
+			break;
+		default:
+			info = parsePlainDocstring(cleaned);
+			break;
 	}
 	// Extract reStructuredText directives from any style
 	extractRstDirectives(cleaned, info);
@@ -78,12 +88,18 @@ function parseGoogleDocstring(raw: string): DocstringInfo {
 	const info: DocstringInfo = { description: '', params: new Map(), raises: [] };
 
 	// Split into sections. Each section starts with a header like "Args:"
-	const sectionRe = /^(Args|Arguments|Parameters|Returns?|Raises?|Yields?|Examples?|Notes?|Attributes|Todo|References):\s*$/gm;
+	const sectionRe =
+		/^(Args|Arguments|Parameters|Returns?|Raises?|Yields?|Examples?|Notes?|Attributes|Todo|References):\s*$/gm;
 	const sections: { name: string; headerStart: number; start: number; end: number }[] = [];
 	let match: RegExpExecArray | null;
 
 	while ((match = sectionRe.exec(raw)) !== null) {
-		sections.push({ name: match[1], headerStart: match.index, start: match.index + match[0].length, end: raw.length });
+		sections.push({
+			name: match[1],
+			headerStart: match.index,
+			start: match.index + match[0].length,
+			end: raw.length,
+		});
 	}
 
 	// Set end boundaries
@@ -139,20 +155,29 @@ function parseGoogleParams(body: string, params: Map<string, DocstringParam>): v
 }
 
 function parseGoogleReturns(body: string): { type: string; description: string } | undefined {
-	const lines = body.split('\n').filter(l => l.trim());
+	const lines = body.split('\n').filter((l) => l.trim());
 	if (lines.length === 0) return undefined;
 
 	// Pattern: "    type: Description" or just "    Description"
 	const first = lines[0].trim();
 	const typeMatch = first.match(/^(\S+)\s*:\s*(.*)/);
 	if (typeMatch) {
-		const desc = [typeMatch[2], ...lines.slice(1).map(l => l.trim())].join(' ').trim();
+		const desc = [typeMatch[2], ...lines.slice(1).map((l) => l.trim())].join(' ').trim();
 		return { type: typeMatch[1], description: desc };
 	}
-	return { type: 'Any', description: lines.map(l => l.trim()).join(' ').trim() };
+	return {
+		type: 'Any',
+		description: lines
+			.map((l) => l.trim())
+			.join(' ')
+			.trim(),
+	};
 }
 
-function parseGoogleRaises(body: string, raises: Array<{ type: string; description: string }>): void {
+function parseGoogleRaises(
+	body: string,
+	raises: Array<{ type: string; description: string }>,
+): void {
 	const lines = body.split('\n');
 	let currentType = '';
 	let currentDesc = '';
@@ -267,7 +292,10 @@ function parseNumpyReturns(body: string): { type: string; description: string } 
 	return { type, description: desc.trim() };
 }
 
-function parseNumpyRaises(body: string, raises: Array<{ type: string; description: string }>): void {
+function parseNumpyRaises(
+	body: string,
+	raises: Array<{ type: string; description: string }>,
+): void {
 	const lines = body.split('\n');
 	let currentType = '';
 	let currentDesc = '';

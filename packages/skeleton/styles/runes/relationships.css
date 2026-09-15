@@ -6,29 +6,29 @@
 	display: flex;
 	flex-direction: column;
 }
-.rf-relationships[data-layout='grid'] .rf-relationships__items {
+.rf-relationships[data-layout="grid"] .rf-relationships__items {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
 	align-items: stretch;
 }
-.rf-relationships[data-layout='grid'] .rf-relationships__item {
+.rf-relationships[data-layout="grid"] .rf-relationships__item {
 	display: flex;
 }
-.rf-relationships[data-layout='grid'] .rf-relationships__item > * {
+.rf-relationships[data-layout="grid"] .rf-relationships__item > * {
 	flex: 1;
 	min-width: 0;
 }
-.rf-relationships[data-layout='grid'] .rf-relationships__items:has(.rf-relationships__group),
-.rf-relationships[data-layout='grid'] .rf-relationships__items:has(.rf-accordion) {
+.rf-relationships[data-layout="grid"] .rf-relationships__items:has(.rf-relationships__group),
+.rf-relationships[data-layout="grid"] .rf-relationships__items:has(.rf-accordion) {
 	display: flex;
 	flex-direction: column;
 }
-.rf-relationships[data-layout='grid'] .rf-relationships__group {
+.rf-relationships[data-layout="grid"] .rf-relationships__group {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
 	align-items: stretch;
 }
-.rf-relationships[data-layout='grid'] .rf-relationships__group-title {
+.rf-relationships[data-layout="grid"] .rf-relationships__group-title {
 	grid-column: 1 / -1;
 }
 .rf-relationships__group {

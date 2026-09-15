@@ -7,7 +7,9 @@ import type { SerializedTag } from '@refrakt-md/types';
 const asTag = (n: any): SerializedTag => n as SerializedTag;
 
 const config: ThemeConfig = {
-	prefix: 'rf', tokenPrefix: '--rf', icons: {},
+	prefix: 'rf',
+	tokenPrefix: '--rf',
+	icons: {},
 	runes: {
 		// A framed well — no guestFit → default 'clip'.
 		Card: { block: 'card', sections: { media: 'media' } },

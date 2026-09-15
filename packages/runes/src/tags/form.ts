@@ -22,7 +22,7 @@ const typeInference: [string[], string][] = [
 function inferFieldType(name: string): string {
 	const lower = name.toLowerCase();
 	for (const [keywords, type] of typeInference) {
-		if (keywords.some(k => lower.includes(k))) {
+		if (keywords.some((k) => lower.includes(k))) {
 			return type;
 		}
 	}
@@ -49,8 +49,8 @@ function parseFieldText(text: string): { name: string; optional: boolean; placeh
 // Extract plain text from an AST node
 function extractText(node: Node): string {
 	return Array.from(node.walk())
-		.filter(n => n.type === 'text')
-		.map(n => n.attributes.content)
+		.filter((n) => n.type === 'text')
+		.map((n) => n.attributes.content)
 		.join('');
 }
 
@@ -59,22 +59,27 @@ function extractText(node: Node): string {
 function isBoldOnlyParagraph(node: Node): boolean {
 	if (node.type !== 'paragraph') return false;
 	const allNodes = Array.from(node.walk());
-	const hasStrong = allNodes.some(n => n.type === 'strong');
+	const hasStrong = allNodes.some((n) => n.type === 'strong');
 	if (!hasStrong) return false;
 	const textContent = allNodes
-		.filter(n => n.type === 'text')
-		.map(n => n.attributes.content)
+		.filter((n) => n.type === 'text')
+		.map((n) => n.attributes.content)
 		.join('');
 	const strongText = allNodes
-		.filter(n => n.type === 'strong')
-		.flatMap(s => Array.from(s.walk()).filter(n => n.type === 'text'))
-		.map(n => n.attributes.content)
+		.filter((n) => n.type === 'strong')
+		.flatMap((s) => Array.from(s.walk()).filter((n) => n.type === 'text'))
+		.map((n) => n.attributes.content)
 		.join('');
 	return textContent.trim() === strongText.trim() && textContent.trim().length > 0;
 }
 
 // Parse blockquote text for selection modifiers
-function parseBlockquoteModifiers(text: string): { label: string; multiple: boolean; radio: boolean; optional: boolean } {
+function parseBlockquoteModifiers(text: string): {
+	label: string;
+	multiple: boolean;
+	radio: boolean;
+	optional: boolean;
+} {
 	const multiple = /\(multiple\)/i.test(text) || /select all/i.test(text);
 	const radio = /\(radio\)/i.test(text);
 	const optional = /\(optional\)/i.test(text);
@@ -107,7 +112,10 @@ const formField = createContentModelSchema({
 
 		const fieldId = `field-${fieldName.toLowerCase().replace(/\s+/g, '-')}`;
 		const optionsList = options
-			? options.split(',').map((o: string) => o.trim()).filter(Boolean)
+			? options
+					.split(',')
+					.map((o: string) => o.trim())
+					.filter(Boolean)
 			: [];
 
 		// --- Special types: return plain tags (no FormField wrapper) ---
@@ -145,28 +153,33 @@ const formField = createContentModelSchema({
 				);
 			}
 
-			const choiceElements = optionsList.map((o: string, i: number) =>
-				new Tag('label', { class: 'rf-form-choice' }, [
-					new Tag('input', {
-						type: fieldType,
-						name: fieldId,
-						value: o,
-						...(isRequired && fieldType === 'radio' && i === 0 ? { required: '' } : {}),
-					}, []),
-					new Tag('span', {}, [o]),
-				]),
+			const choiceElements = optionsList.map(
+				(o: string, i: number) =>
+					new Tag('label', { class: 'rf-form-choice' }, [
+						new Tag(
+							'input',
+							{
+								type: fieldType,
+								name: fieldId,
+								value: o,
+								...(isRequired && fieldType === 'radio' && i === 0 ? { required: '' } : {}),
+							},
+							[],
+						),
+						new Tag('span', {}, [o]),
+					]),
 			);
 
 			const fieldTypeMeta = new Tag('meta', { 'data-field': 'field-type', content: fieldType });
 
-			return new Tag('fieldset', {
-				'data-rune': 'form-field',
-				class: 'rf-form-choice-group',
-			}, [
-				fieldTypeMeta,
-				new Tag('legend', {}, labelChildren),
-				...choiceElements,
-			]);
+			return new Tag(
+				'fieldset',
+				{
+					'data-rune': 'form-field',
+					class: 'rf-form-choice-group',
+				},
+				[fieldTypeMeta, new Tag('legend', {}, labelChildren), ...choiceElements],
+			);
 		}
 
 		// --- Standard fields: label + input wrapped in createComponentRenderable ---
@@ -182,36 +195,49 @@ const formField = createContentModelSchema({
 		let inputElement: InstanceType<typeof Tag>;
 
 		if (fieldType === 'textarea') {
-			inputElement = new Tag('textarea', {
-				id: fieldId,
-				name: fieldId,
-				...(placeholder ? { placeholder } : {}),
-				...(isRequired ? { required: '' } : {}),
-				rows: '4',
-			}, []);
+			inputElement = new Tag(
+				'textarea',
+				{
+					id: fieldId,
+					name: fieldId,
+					...(placeholder ? { placeholder } : {}),
+					...(isRequired ? { required: '' } : {}),
+					rows: '4',
+				},
+				[],
+			);
 		} else if (fieldType === 'select') {
-			inputElement = new Tag('select', {
-				id: fieldId,
-				name: fieldId,
-				...(isRequired ? { required: '' } : {}),
-			}, [
-				new Tag('option', { value: '', disabled: '', selected: '' }, ['Select an option']),
-				...optionsList.map((o: string) => new Tag('option', { value: o }, [o])),
-			]);
+			inputElement = new Tag(
+				'select',
+				{
+					id: fieldId,
+					name: fieldId,
+					...(isRequired ? { required: '' } : {}),
+				},
+				[
+					new Tag('option', { value: '', disabled: '', selected: '' }, ['Select an option']),
+					...optionsList.map((o: string) => new Tag('option', { value: o }, [o])),
+				],
+			);
 		} else {
-			inputElement = new Tag('input', {
-				type: fieldType,
-				id: fieldId,
-				name: fieldId,
-				...(placeholder ? { placeholder } : {}),
-				...(isRequired ? { required: '' } : {}),
-			}, []);
+			inputElement = new Tag(
+				'input',
+				{
+					type: fieldType,
+					id: fieldId,
+					name: fieldId,
+					...(placeholder ? { placeholder } : {}),
+					...(isRequired ? { required: '' } : {}),
+				},
+				[],
+			);
 		}
 
 		const body = new Tag('div', {}, [label, inputElement]);
 		const fieldTypeMeta = new Tag('meta', { content: fieldType });
 
-		return createComponentRenderable({ rune: 'form-field',
+		return createComponentRenderable({
+			rune: 'form-field',
 			tag: 'div',
 			properties: {
 				fieldType: fieldTypeMeta,
@@ -240,13 +266,20 @@ function convertFormChildren(nodes: Node[]): Node[] {
 	const flushBlockquote = () => {
 		if (pendingBlockquote) {
 			const helpText = extractText(pendingBlockquote);
-			converted.push(new Ast.Node('tag', {
-				name: helpText,
-				fieldType: 'help',
-				required: false,
-				placeholder: '',
-				options: '',
-			}, [], 'form-field'));
+			converted.push(
+				new Ast.Node(
+					'tag',
+					{
+						name: helpText,
+						fieldType: 'help',
+						required: false,
+						placeholder: '',
+						options: '',
+					},
+					[],
+					'form-field',
+				),
+			);
 			pendingBlockquote = null;
 		}
 	};
@@ -257,13 +290,20 @@ function convertFormChildren(nodes: Node[]): Node[] {
 		if (node.type === 'heading') {
 			flushBlockquote();
 			const headingText = extractText(node);
-			converted.push(new Ast.Node('tag', {
-				name: headingText,
-				fieldType: 'group',
-				required: false,
-				placeholder: '',
-				options: '',
-			}, [], 'form-field'));
+			converted.push(
+				new Ast.Node(
+					'tag',
+					{
+						name: headingText,
+						fieldType: 'group',
+						required: false,
+						placeholder: '',
+						options: '',
+					},
+					[],
+					'form-field',
+				),
+			);
 		} else if (node.type === 'list' && pendingBlockquote) {
 			// Blockquote + list = selection field
 			const blockquoteText = extractText(pendingBlockquote);
@@ -285,13 +325,20 @@ function convertFormChildren(nodes: Node[]): Node[] {
 				fieldType = 'select';
 			}
 
-			converted.push(new Ast.Node('tag', {
-				name: mods.label,
-				fieldType,
-				required: !mods.optional,
-				placeholder: '',
-				options: optionTexts.join(','),
-			}, [], 'form-field'));
+			converted.push(
+				new Ast.Node(
+					'tag',
+					{
+						name: mods.label,
+						fieldType,
+						required: !mods.optional,
+						placeholder: '',
+						options: optionTexts.join(','),
+					},
+					[],
+					'form-field',
+				),
+			);
 
 			pendingBlockquote = null;
 		} else if (node.type === 'list') {
@@ -303,13 +350,20 @@ function convertFormChildren(nodes: Node[]): Node[] {
 					const parsed = parseFieldText(itemText);
 					const fieldType = inferFieldType(parsed.name);
 
-					converted.push(new Ast.Node('tag', {
-						name: parsed.name,
-						fieldType,
-						required: !parsed.optional,
-						placeholder: parsed.placeholder,
-						options: '',
-					}, [], 'form-field'));
+					converted.push(
+						new Ast.Node(
+							'tag',
+							{
+								name: parsed.name,
+								fieldType,
+								required: !parsed.optional,
+								placeholder: parsed.placeholder,
+								options: '',
+							},
+							[],
+							'form-field',
+						),
+					);
 				}
 			}
 		} else if (node.type === 'blockquote') {
@@ -318,32 +372,53 @@ function convertFormChildren(nodes: Node[]): Node[] {
 		} else if (i === lastBoldParaIndex) {
 			flushBlockquote();
 			const buttonText = extractText(node);
-			converted.push(new Ast.Node('tag', {
-				name: buttonText,
-				fieldType: 'submit',
-				required: false,
-				placeholder: '',
-				options: '',
-			}, [], 'form-field'));
+			converted.push(
+				new Ast.Node(
+					'tag',
+					{
+						name: buttonText,
+						fieldType: 'submit',
+						required: false,
+						placeholder: '',
+						options: '',
+					},
+					[],
+					'form-field',
+				),
+			);
 		} else if (node.type === 'hr') {
 			flushBlockquote();
-			converted.push(new Ast.Node('tag', {
-				name: '',
-				fieldType: 'separator',
-				required: false,
-				placeholder: '',
-				options: '',
-			}, [], 'form-field'));
+			converted.push(
+				new Ast.Node(
+					'tag',
+					{
+						name: '',
+						fieldType: 'separator',
+						required: false,
+						placeholder: '',
+						options: '',
+					},
+					[],
+					'form-field',
+				),
+			);
 		} else if (node.type === 'paragraph') {
 			flushBlockquote();
 			const text = extractText(node);
-			converted.push(new Ast.Node('tag', {
-				name: text,
-				fieldType: 'description',
-				required: false,
-				placeholder: '',
-				options: '',
-			}, [], 'form-field'));
+			converted.push(
+				new Ast.Node(
+					'tag',
+					{
+						name: text,
+						fieldType: 'description',
+						required: false,
+						placeholder: '',
+						options: '',
+					},
+					[],
+					'form-field',
+				),
+			);
 		} else {
 			flushBlockquote();
 			converted.push(node);
@@ -365,23 +440,45 @@ export const form = createContentModelSchema({
 	sections: formSections,
 	attributes: {
 		action: { type: String, required: true, description: 'URL the form submits to' },
-		method: { type: String, required: false, matches: methodType.slice(), description: 'HTTP method for form submission' },
-		success: { type: String, required: false, description: 'Message shown after successful submission' },
+		method: {
+			type: String,
+			required: false,
+			matches: methodType.slice(),
+			description: 'HTTP method for form submission',
+		},
+		success: {
+			type: String,
+			required: false,
+			description: 'Message shown after successful submission',
+		},
 		error: { type: String, required: false, description: 'Message shown when submission fails' },
-		variant: { type: String, required: false, matches: variantType.slice(), description: 'Form layout style' },
+		variant: {
+			type: String,
+			required: false,
+			matches: variantType.slice(),
+			description: 'Form layout style',
+		},
 		name: { type: String, required: false, description: 'Form name for identification' },
-		honeypot: { type: Boolean, required: false, description: 'Include a hidden field to prevent spam' },
+		honeypot: {
+			type: Boolean,
+			required: false,
+			description: 'Include a hidden field to prevent spam',
+		},
 	},
 	contentModel: {
 		type: 'custom',
 		processChildren: (nodes) => convertFormChildren(nodes as Node[]),
-		description: 'Multi-pass form field parser with type inference and selection detection. '
-			+ 'Converts lists to text inputs, blockquote + list to selection fields, '
-			+ 'headings to fieldsets, bold paragraphs to submit buttons, and blockquotes to help text.',
+		description:
+			'Multi-pass form field parser with type inference and selection detection. ' +
+			'Converts lists to text inputs, blockquote + list to selection fields, ' +
+			'headings to fieldsets, bold paragraphs to submit buttons, and blockquotes to help text.',
 	},
 	transform(resolved, attrs, config) {
 		const body = new RenderableNodeCursor(
-			Markdoc.transform(asNodes(resolved.children), config) as import('@markdoc/markdoc').RenderableTreeNode[],
+			Markdoc.transform(
+				asNodes(resolved.children),
+				config,
+			) as import('@markdoc/markdoc').RenderableTreeNode[],
 		);
 
 		const actionMeta = new Tag('meta', { content: attrs.action ?? '' });
@@ -394,7 +491,8 @@ export const form = createContentModelSchema({
 		const fields = body.tag('div').typeof('FormField');
 		const bodyContainer = body.wrap('div');
 
-		return createComponentRenderable({ rune: 'form',
+		return createComponentRenderable({
+			rune: 'form',
 			tag: 'form',
 			properties: {
 				action: actionMeta,
@@ -406,7 +504,15 @@ export const form = createContentModelSchema({
 				field: fields,
 			},
 			refs: { body: bodyContainer },
-			children: [actionMeta, methodMeta, successMeta, errorMeta, variantMeta, honeypotMeta, bodyContainer.next()],
+			children: [
+				actionMeta,
+				methodMeta,
+				successMeta,
+				errorMeta,
+				variantMeta,
+				honeypotMeta,
+				bodyContainer.next(),
+			],
 		});
 	},
 });

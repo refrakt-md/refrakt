@@ -1,7 +1,13 @@
 import type { SerializedTag } from '@refrakt-md/types';
 import { readMeta, findMediaZone } from '../helpers.js';
 import type { Facet, FacetStyle } from './types.js';
-import { applyChromeToTag, hasMediaSection, type Chrome, type ChromeCarry, type ChromeTarget } from './chrome.js';
+import {
+	applyChromeToTag,
+	hasMediaSection,
+	type Chrome,
+	type ChromeCarry,
+	type ChromeTarget,
+} from './chrome.js';
 import type { UniversalAxisFacet } from './describe.js';
 
 /** SPEC-087 — the substrate size and opacity scales.
@@ -17,7 +23,9 @@ const SUBSTRATE_OPACITY: Record<string, string> = { sm: '0.25', md: '0.5', lg: '
 /** Read the `substrate` pattern + `substrate-*` facet metas and build the
  *  markers-only contract: `data-substrate` (+ `data-substrate-fill`) and the
  *  `--substrate-*` custom props. CSS draws the pattern. */
-function resolveSubstrateChrome(tag: SerializedTag): { chrome: Chrome; targetOverride?: string } | null {
+function resolveSubstrateChrome(
+	tag: SerializedTag,
+): { chrome: Chrome; targetOverride?: string } | null {
 	const consumes: string[] = [];
 	const read = (field: string): string | undefined => {
 		const v = readMeta(tag, field);
@@ -37,7 +45,8 @@ function resolveSubstrateChrome(tag: SerializedTag): { chrome: Chrome; targetOve
 	if (fill) dataAttrs['data-substrate-fill'] = fill;
 	const styles: FacetStyle[] = [];
 	if (size && SUBSTRATE_CELL[size]) styles.push(['--substrate-cell', SUBSTRATE_CELL[size]]);
-	if (opacity && SUBSTRATE_OPACITY[opacity]) styles.push(['--substrate-opacity', SUBSTRATE_OPACITY[opacity]]);
+	if (opacity && SUBSTRATE_OPACITY[opacity])
+		styles.push(['--substrate-opacity', SUBSTRATE_OPACITY[opacity]]);
 
 	return { chrome: { dataAttrs, styles, consumes }, targetOverride };
 }
@@ -62,9 +71,10 @@ export const substrateFacet: Facet = {
 		if (!resolved) return null;
 		const { chrome, targetOverride } = resolved;
 
-		let target: ChromeTarget = (targetOverride === 'self' || targetOverride === 'media')
-			? targetOverride
-			: (ctx.config.substrateTarget ?? 'self');
+		let target: ChromeTarget =
+			targetOverride === 'self' || targetOverride === 'media'
+				? targetOverride
+				: (ctx.config.substrateTarget ?? 'self');
 
 		const warnings = [];
 		if (target === 'media' && !hasMediaSection(ctx.config.sections)) {
@@ -96,16 +106,25 @@ export const substrateFacet: Facet = {
 export const substrateAxis: UniversalAxisFacet = {
 	axis: 'substrate',
 	contract: {
-		description: 'Generated pattern fills (SPEC-087). Markers only — the engine sets the attributes and cell/opacity custom properties, CSS draws the pattern.',
+		description:
+			'Generated pattern fills (SPEC-087). Markers only — the engine sets the attributes and cell/opacity custom properties, CSS draws the pattern.',
 		source: 'meta',
-		inputs: ['substrate', 'substrate-size', 'substrate-opacity', 'substrate-fill', 'substrate-target'],
+		inputs: [
+			'substrate',
+			'substrate-size',
+			'substrate-opacity',
+			'substrate-fill',
+			'substrate-target',
+		],
 		dataAttributes: ['data-substrate', 'data-substrate-fill'],
 		customProperties: ['--substrate-cell', '--substrate-opacity'],
-		condition: 'defaults to the rune root. `substrate-target="media"` moves it to the media zone, and is dropped with a warning on a rune with no media section. The facets are inert without a `substrate` pattern.',
+		condition:
+			'defaults to the rune root. `substrate-target="media"` moves it to the media zone, and is dropped with a warning on a rune with no media section. The facets are inert without a `substrate` pattern.',
 	},
 	describeForRune: (config) => {
 		if (config.substrateTarget !== 'media') return null;
-		if (!hasMediaSection(config.sections)) return 'this rune targets the media zone but declares no media section';
+		if (!hasMediaSection(config.sections))
+			return 'this rune targets the media zone but declares no media section';
 		return { target: '[data-section="media"]' };
 	},
 };

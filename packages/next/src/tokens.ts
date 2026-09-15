@@ -99,16 +99,11 @@ export async function getUsedCssImports(
 	try {
 		const { createRefraktLoader, analyzeRuneUsage } = await import('@refrakt-md/content');
 		const themeModule = await import(themePackage + '/transform');
-		const themeConfig =
-			themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
+		const themeConfig = themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
 		const loader = createRefraktLoader({ configPath: absConfigPath, site: siteName });
 		const loadedSite = await loader.getSite();
 		const report = analyzeRuneUsage(loadedSite.pages);
-		const { usedBlocks } = await computeUsedCssBlocks(
-			report.allTypes,
-			themeConfig,
-			themePackage,
-		);
+		const { usedBlocks } = await computeUsedCssBlocks(report.allTypes, themeConfig, themePackage);
 		return buildUsedCssImports(themePackage, usedBlocks);
 	} catch {
 		// Fall back to the theme package barrel — pulls in every rune's CSS,
@@ -140,12 +135,14 @@ export async function getUsedCssImports(
  * For consumers who already wire `createRefraktLoader` directly: use that
  * import — this helper is purely a typed shorthand for the common case.
  */
-export async function createNextLoader(options: {
-	configPath?: string;
-	site?: string;
-	variables?: Record<string, unknown>;
-	security?: SecurityPolicy;
-} = {}) {
+export async function createNextLoader(
+	options: {
+		configPath?: string;
+		site?: string;
+		variables?: Record<string, unknown>;
+		security?: SecurityPolicy;
+	} = {},
+) {
 	const { createRefraktLoader } = await import('@refrakt-md/content');
 	return createRefraktLoader(options);
 }

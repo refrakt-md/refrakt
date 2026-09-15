@@ -15,11 +15,11 @@ describe('faction tag', () => {
 Their fortress overlooks the capital.
 {% /faction %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'faction');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'faction');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 
-		const sections = findAllTags(tag!, t => t.attributes['data-rune'] === 'faction-section');
+		const sections = findAllTags(tag!, (t) => t.attributes['data-rune'] === 'faction-section');
 		expect(sections.length).toBe(2);
 	});
 
@@ -28,18 +28,19 @@ Their fortress overlooks the capital.
 A secretive guild.
 {% /faction %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'faction');
-		const nameTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-name'] === 'name');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'faction');
+		const nameTag = findTag(tag!, (t) => t.name === 'span' && t.attributes['data-name'] === 'name');
 		expect(nameTag).toBeDefined();
 		expect(nameTag!.children[0]).toBe('The Arcane Circle');
 	});
 
 	it('should pass type, alignment, and size as meta tags', () => {
-		const result = parse(`{% faction name="Order" type="knightly order" alignment="lawful" size="large" %}
+		const result =
+			parse(`{% faction name="Order" type="knightly order" alignment="lawful" size="large" %}
 Content.
 {% /faction %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'faction');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'faction');
 		expect(fields(tag).factionType).toBe('knightly order');
 		expect(fields(tag).alignment).toBe('lawful');
 		expect(fields(tag).size).toBe('large');
@@ -50,10 +51,10 @@ Content.
 Just a description.
 {% /faction %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'faction');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'faction');
 		expect(tag).toBeDefined();
 
-		const sections = findAllTags(tag!, t => t.attributes['data-rune'] === 'faction-section');
+		const sections = findAllTags(tag!, (t) => t.attributes['data-rune'] === 'faction-section');
 		expect(sections.length).toBe(0);
 	});
 
@@ -62,7 +63,7 @@ Just a description.
 Operates in the shadows.
 {% /guild %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'faction');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'faction');
 		expect(tag).toBeDefined();
 	});
 });

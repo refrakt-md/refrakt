@@ -7,16 +7,15 @@ import { RenderableNodeCursor } from '../lib/renderable.js';
 export const annotateNote = createContentModelSchema({
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const body = new RenderableNodeCursor(
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable({ rune: 'annotate-note',
+		return createComponentRenderable({
+			rune: 'annotate-note',
 			tag: 'aside',
 			properties: {},
 			refs: {
@@ -38,13 +37,16 @@ export const annotate = createContentModelSchema({
 	sections: annotateSections,
 	provides: ['prose'],
 	attributes: {
-		variant: { type: String, required: false, matches: variantType.slice(), description: 'Annotation display style: margin, tooltip, or inline' },
+		variant: {
+			type: String,
+			required: false,
+			matches: variantType.slice(),
+			description: 'Annotation display style: margin, tooltip, or inline',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const children = new RenderableNodeCursor(
@@ -55,7 +57,8 @@ export const annotate = createContentModelSchema({
 		const notes = children.tag('aside').typeof('AnnotateNote');
 		const body = children.wrap('div');
 
-		return createComponentRenderable({ rune: 'annotate',
+		return createComponentRenderable({
+			rune: 'annotate',
 			tag: 'div',
 			properties: {
 				note: notes,

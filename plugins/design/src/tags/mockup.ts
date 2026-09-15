@@ -1,9 +1,26 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	RenderableNodeCursor,
+} from '@refrakt-md/runes';
 
-const deviceType = ['iphone-15', 'iphone-se', 'pixel', 'phone', 'ipad', 'tablet', 'browser', 'browser-dark', 'macbook', 'watch', 'none'] as const;
+const deviceType = [
+	'iphone-15',
+	'iphone-se',
+	'pixel',
+	'phone',
+	'ipad',
+	'tablet',
+	'browser',
+	'browser-dark',
+	'macbook',
+	'watch',
+	'none',
+] as const;
 const colorType = ['dark', 'light', 'auto'] as const;
 const fitType = ['auto', 'none'] as const;
 
@@ -15,19 +32,49 @@ export const mockupMediaSlots = { viewport: 'hero' } as const;
 export const mockup = createContentModelSchema({
 	mediaSlots: mockupMediaSlots,
 	attributes: {
-		device: { type: String, required: false, matches: deviceType.slice(), description: 'Device frame to render around the content (e.g. iphone-15, browser, macbook).' },
-		label: { type: String, required: false, description: 'Caption text shown below the device mockup.' },
-		color: { type: String, required: false, matches: colorType.slice(), description: 'Device chrome color scheme: dark, light, or auto to match the page.' },
-		statusBar: { type: Boolean, required: false, description: 'Enable/disable the status bar on phone and tablet device frames.' },
-		url: { type: String, required: false, description: 'URL displayed in the browser address bar for browser-type devices.' },
-		scale: { type: Number, required: false, description: 'Scaling factor for the mockup size (1 = default, 0.5 = half size).' },
-		fit: { type: String, required: false, matches: fitType.slice(), description: 'Content fitting mode: auto scales to fill the viewport, none uses natural size.' },
+		device: {
+			type: String,
+			required: false,
+			matches: deviceType.slice(),
+			description: 'Device frame to render around the content (e.g. iphone-15, browser, macbook).',
+		},
+		label: {
+			type: String,
+			required: false,
+			description: 'Caption text shown below the device mockup.',
+		},
+		color: {
+			type: String,
+			required: false,
+			matches: colorType.slice(),
+			description: 'Device chrome color scheme: dark, light, or auto to match the page.',
+		},
+		statusBar: {
+			type: Boolean,
+			required: false,
+			description: 'Enable/disable the status bar on phone and tablet device frames.',
+		},
+		url: {
+			type: String,
+			required: false,
+			description: 'URL displayed in the browser address bar for browser-type devices.',
+		},
+		scale: {
+			type: Number,
+			required: false,
+			description: 'Scaling factor for the mockup size (1 = default, 0.5 = half size).',
+		},
+		fit: {
+			type: String,
+			required: false,
+			matches: fitType.slice(),
+			description:
+				'Content fitting mode: auto scales to fill the viewport, none uses natural size.',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const body = new RenderableNodeCursor(
@@ -62,19 +109,27 @@ export const mockup = createContentModelSchema({
 		const isBrowser = device === 'browser' || device === 'browser-dark';
 		const isMacbook = device === 'macbook';
 
-		const notchStyle: Record<string, string> = { 'iphone-15': 'dynamic-island', 'iphone-se': 'classic', pixel: 'punch-hole' };
+		const notchStyle: Record<string, string> = {
+			'iphone-15': 'dynamic-island',
+			'iphone-se': 'classic',
+			pixel: 'punch-hole',
+		};
 
 		const frameChildren: InstanceType<typeof Tag>[] = [];
 		if (isMobile || isTablet) {
 			const bezelChildren: InstanceType<typeof Tag>[] = [];
 			if (isMobile && notchStyle[device]) {
-				bezelChildren.push(new Tag('div', { 'data-name': 'notch', 'data-notch': notchStyle[device] }, []));
+				bezelChildren.push(
+					new Tag('div', { 'data-name': 'notch', 'data-notch': notchStyle[device] }, []),
+				);
 			}
 			if (isMobile && statusBar) {
-				bezelChildren.push(new Tag('div', { 'data-name': 'status-bar' }, [
-					new Tag('span', { 'data-name': 'status-time' }, ['9:41']),
-					new Tag('span', { 'data-name': 'status-icons' }, []),
-				]));
+				bezelChildren.push(
+					new Tag('div', { 'data-name': 'status-bar' }, [
+						new Tag('span', { 'data-name': 'status-time' }, ['9:41']),
+						new Tag('span', { 'data-name': 'status-icons' }, []),
+					]),
+				);
 			}
 			bezelChildren.push(viewport);
 			if (isMobile) bezelChildren.push(new Tag('div', { 'data-name': 'home-indicator' }, []));
@@ -88,15 +143,22 @@ export const mockup = createContentModelSchema({
 				]),
 			];
 			if (isBrowser) {
-				titleBarChildren.push(new Tag('div', { 'data-name': 'address-bar' },
-					url ? [new Tag('span', { 'data-name': 'url' }, [url])] : []));
+				titleBarChildren.push(
+					new Tag(
+						'div',
+						{ 'data-name': 'address-bar' },
+						url ? [new Tag('span', { 'data-name': 'url' }, [url])] : [],
+					),
+				);
 			}
 			frameChildren.push(new Tag('div', { 'data-name': 'title-bar' }, titleBarChildren));
 			frameChildren.push(viewport);
 			if (isMacbook) {
-				frameChildren.push(new Tag('div', { 'data-name': 'keyboard' }, [
-					new Tag('div', { 'data-name': 'trackpad' }, []),
-				]));
+				frameChildren.push(
+					new Tag('div', { 'data-name': 'keyboard' }, [
+						new Tag('div', { 'data-name': 'trackpad' }, []),
+					]),
+				);
 			}
 		} else if (device === 'watch') {
 			frameChildren.push(new Tag('div', { 'data-name': 'bezel' }, [viewport]));
@@ -109,7 +171,8 @@ export const mockup = createContentModelSchema({
 		];
 		if (label) children.push(new Tag('div', { 'data-name': 'label' }, [label]));
 
-		const node = createComponentRenderable({ rune: 'mockup',
+		const node = createComponentRenderable({
+			rune: 'mockup',
 			tag: 'div',
 			properties: {
 				device: deviceMeta,

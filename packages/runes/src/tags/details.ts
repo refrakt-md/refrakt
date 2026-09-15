@@ -6,14 +6,16 @@ import { RenderableNodeCursor } from '../lib/renderable.js';
 
 export const details = createContentModelSchema({
 	attributes: {
-		summary: { type: String, required: false, description: 'Clickable summary text shown when collapsed' },
+		summary: {
+			type: String,
+			required: false,
+			description: 'Clickable summary text shown when collapsed',
+		},
 		open: { type: Boolean, required: false, description: 'Expand the details section by default' },
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const children = new RenderableNodeCursor(
@@ -24,7 +26,8 @@ export const details = createContentModelSchema({
 		const summaryTag = new Tag('summary', {}, [summaryText]);
 		const body = children.wrap('div');
 
-		const tag = createComponentRenderable({ rune: 'details',
+		const tag = createComponentRenderable({
+			rune: 'details',
 			tag: 'details',
 			properties: {
 				summary: summaryTag,

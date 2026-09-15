@@ -2,12 +2,27 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, linkItem, pageSectionProperties, extractMediaImage, unwrapParagraphImages } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	RenderableNodeCursor,
+	SplitLayoutModel,
+	buildLayoutMetas,
+	linkItem,
+	pageSectionProperties,
+	extractMediaImage,
+	unwrapParagraphImages,
+} from '@refrakt-md/runes';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
 // what a section *is* (ADR-028).
-export const heroSections = { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' } as const;
+export const heroSections = {
+	preamble: 'preamble',
+	headline: 'title',
+	blurb: 'description',
+	media: 'media',
+} as const;
 export const heroMediaSlots = { media: 'hero' } as const;
 
 export const hero = createContentModelSchema({
@@ -15,12 +30,30 @@ export const hero = createContentModelSchema({
 	mediaSlots: heroMediaSlots,
 	base: SplitLayoutModel,
 	attributes: {
-		align: { type: String, required: false, matches: ['left', 'center', 'right'], description: 'Horizontal alignment of headline and body text' },
+		align: {
+			type: String,
+			required: false,
+			matches: ['left', 'center', 'right'],
+			description: 'Horizontal alignment of headline and body text',
+		},
 		// SPEC-101 — cover-mode knobs (`media-position="cover"` overlays the
 		// content on a full-bleed media well). Same grammar as `card` (SPEC-089).
-		'content-place': { type: String, required: false, description: 'Cover overlay anchor: "<block> <inline>" (e.g. "end start") or "auto"' },
-		height: { type: String, required: false, matches: ['sm', 'md', 'lg', 'xl'], description: 'Intrinsic hero band height (named scale) for cover mode' },
-		aspect: { type: String, required: false, description: 'Intrinsic hero aspect ratio (e.g. "21/9", "16/9") for cover mode' },
+		'content-place': {
+			type: String,
+			required: false,
+			description: 'Cover overlay anchor: "<block> <inline>" (e.g. "end start") or "auto"',
+		},
+		height: {
+			type: String,
+			required: false,
+			matches: ['sm', 'md', 'lg', 'xl'],
+			description: 'Intrinsic hero band height (named scale) for cover mode',
+		},
+		aspect: {
+			type: String,
+			required: false,
+			description: 'Intrinsic hero aspect ratio (e.g. "21/9", "16/9") for cover mode',
+		},
 	},
 	contentModel: {
 		type: 'delimited',
@@ -31,9 +64,7 @@ export const hero = createContentModelSchema({
 			{
 				name: 'media',
 				type: 'sequence',
-				fields: [
-					{ name: 'media', match: 'any', optional: true, greedy: true },
-				],
+				fields: [{ name: 'media', match: 'any', optional: true, greedy: true }],
 			},
 			{
 				name: 'content',
@@ -53,18 +84,20 @@ export const hero = createContentModelSchema({
 		const mediaZone = (resolved.media ?? {}) as ResolvedContent;
 
 		// Collect header AST nodes (eyebrow, headline, blurb) and transform
-		const headerAstNodes = [
-			contentZone.eyebrow,
-			contentZone.headline,
-			contentZone.blurb,
-		].filter(Boolean) as Node[];
+		const headerAstNodes = [contentZone.eyebrow, contentZone.headline, contentZone.blurb].filter(
+			Boolean,
+		) as Node[];
 		const header = new RenderableNodeCursor(
 			Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[],
 		);
 
 		// Collect action AST nodes (list and/or fences) and transform with custom handlers
 		const actionAstNodes = (
-			Array.isArray(contentZone.actions) ? contentZone.actions : contentZone.actions ? [contentZone.actions] : []
+			Array.isArray(contentZone.actions)
+				? contentZone.actions
+				: contentZone.actions
+					? [contentZone.actions]
+					: []
 		) as Node[];
 		// Use the original config inside the fence handler to avoid recursion
 		// (same pattern as NodeStream.useNode — the inner transform uses the
@@ -77,9 +110,9 @@ export const hero = createContentModelSchema({
 				item: linkItem,
 				fence: {
 					transform(node: Node) {
-						const output = new RenderableNodeCursor(
-							[Markdoc.transform(node, baseConfig)] as RenderableTreeNode[],
-						);
+						const output = new RenderableNodeCursor([
+							Markdoc.transform(node, baseConfig),
+						] as RenderableTreeNode[]);
 						return new Tag('div', {}, [output.next()]);
 					},
 				},
@@ -93,9 +126,7 @@ export const hero = createContentModelSchema({
 		// or a single block rune like `{% sandbox %}`) in a `<p>`; unwrap those so
 		// the media zone holds the element directly — matching card / bento, and so
 		// the shared media-zone CSS targets the element, not a stray paragraph.
-		const mediaAstNodes = (
-			Array.isArray(mediaZone.media) ? mediaZone.media : []
-		) as Node[];
+		const mediaAstNodes = (Array.isArray(mediaZone.media) ? mediaZone.media : []) as Node[];
 		const side = new RenderableNodeCursor(
 			unwrapParagraphImages(Markdoc.transform(mediaAstNodes, config) as RenderableTreeNode[]),
 		);
@@ -107,8 +138,16 @@ export const hero = createContentModelSchema({
 		// the media-first stacked rules for hero accordingly.
 		const align = (attrs.align as string) || 'center';
 		const alignMeta = new Tag('meta', { content: align });
-		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas({ ...attrs, 'media-position': attrs['media-position'] ?? 'bottom' });
-		const { mediaPosition: mediaPositionMeta, mediaRatio: mediaRatioMeta, valign: valignMeta, collapse: collapseMeta } = layoutMetas;
+		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas({
+			...attrs,
+			'media-position': attrs['media-position'] ?? 'bottom',
+		});
+		const {
+			mediaPosition: mediaPositionMeta,
+			mediaRatio: mediaRatioMeta,
+			valign: valignMeta,
+			collapse: collapseMeta,
+		} = layoutMetas;
 
 		// SPEC-101 cover knobs — emitted only when set, same as card (SPEC-089).
 		const contentPlace = attrs['content-place'] as string | undefined;
@@ -117,7 +156,9 @@ export const hero = createContentModelSchema({
 		const contentPlaceMeta = contentPlace ? new Tag('meta', { content: contentPlace }) : undefined;
 		const heightMeta = heightAttr ? new Tag('meta', { content: heightAttr }) : undefined;
 		const aspectMeta = aspect ? new Tag('meta', { content: aspect }) : undefined;
-		const coverMetas = [contentPlaceMeta, heightMeta, aspectMeta].filter(Boolean) as InstanceType<typeof Tag>[];
+		const coverMetas = [contentPlaceMeta, heightMeta, aspectMeta].filter(Boolean) as InstanceType<
+			typeof Tag
+		>[];
 
 		// Structural wrapping
 		const actionsDiv = actions.wrap('div');
@@ -133,7 +174,8 @@ export const hero = createContentModelSchema({
 		const coverImg = isCover ? extractMediaImage(side) : undefined;
 		const mediaDiv = (coverImg ? new RenderableNodeCursor([coverImg]) : side).wrap('div');
 
-		return createComponentRenderable({ rune: 'hero',
+		return createComponentRenderable({
+			rune: 'hero',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

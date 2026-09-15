@@ -28,7 +28,16 @@ export const config: Record<string, RuneConfig> = {
 			auth: { source: 'meta' },
 		},
 		metaFields: {
-			method: { metaType: 'category', sentimentMap: { GET: 'positive', POST: 'neutral', PUT: 'neutral', PATCH: 'caution', DELETE: 'negative' } },
+			method: {
+				metaType: 'category',
+				sentimentMap: {
+					GET: 'positive',
+					POST: 'neutral',
+					PUT: 'neutral',
+					PATCH: 'caution',
+					DELETE: 'negative',
+				},
+			},
 			path: { metaType: 'code' },
 			auth: { metaType: 'status', condition: 'auth' },
 		},
@@ -36,7 +45,11 @@ export const config: Record<string, RuneConfig> = {
 		// pushed to the right. Shape is intrinsic — method/auth are chips
 		// (category/status), path is bare monospace (code).
 		blocks: {
-			eyebrow: { fields: ['method', 'path', { field: 'auth', align: 'end' }], layout: 'bar', wrap: false },
+			eyebrow: {
+				fields: ['method', 'path', { field: 'auth', align: 'end' }],
+				layout: 'bar',
+				wrap: false,
+			},
 		},
 		layout: { root: ['eyebrow', 'body'] },
 		editHints: { body: 'none', method: 'none', path: 'none', auth: 'none' },
@@ -57,7 +70,12 @@ export const config: Record<string, RuneConfig> = {
 			kind: { metaType: 'category' },
 			lang: { metaType: 'category' },
 			since: { metaType: 'temporal', label: 'Since', condition: 'since' },
-			deprecated: { metaType: 'status', label: 'Deprecated', condition: 'deprecated', sentimentMap: { true: 'negative' } },
+			deprecated: {
+				metaType: 'status',
+				label: 'Deprecated',
+				condition: 'deprecated',
+				sentimentMap: { true: 'negative' },
+			},
 			source: { label: 'Source', href: 'source', condition: 'source' },
 		},
 		// Signature bar (kind + lang chips, source link pushed right) above the
@@ -74,10 +92,37 @@ export const config: Record<string, RuneConfig> = {
 			preamble: { tag: 'header', children: ['headline', 'blurb', 'image'] },
 		},
 		autoLabel: pageSectionAutoLabel,
-		editHints: { headline: 'inline', body: 'none', kind: 'none', lang: 'none', since: 'none', deprecated: 'none', source: 'link' },
+		editHints: {
+			headline: 'inline',
+			body: 'none',
+			kind: 'none',
+			lang: 'none',
+			since: 'none',
+			deprecated: 'none',
+			source: 'link',
+		},
 	},
-	SymbolGroup: { block: 'symbol-group', parent: 'Symbol', editHints: { label: 'inline', body: 'none' } },
-	SymbolMember: { block: 'symbol-member', parent: 'Symbol', editHints: { name: 'inline', body: 'none' } },
-	Changelog: { block: 'changelog', defaultDensity: 'full', defaultElevation: 'flat', sections: changelogSections, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', releases: 'none' } },
-	ChangelogRelease: { block: 'changelog-release', parent: 'Changelog', editHints: { version: 'inline', body: 'none' } },
+	SymbolGroup: {
+		block: 'symbol-group',
+		parent: 'Symbol',
+		editHints: { label: 'inline', body: 'none' },
+	},
+	SymbolMember: {
+		block: 'symbol-member',
+		parent: 'Symbol',
+		editHints: { name: 'inline', body: 'none' },
+	},
+	Changelog: {
+		block: 'changelog',
+		defaultDensity: 'full',
+		defaultElevation: 'flat',
+		sections: changelogSections,
+		autoLabel: pageSectionAutoLabel,
+		editHints: { headline: 'inline', releases: 'none' },
+	},
+	ChangelogRelease: {
+		block: 'changelog-release',
+		parent: 'Changelog',
+		editHints: { version: 'inline', body: 'none' },
+	},
 };

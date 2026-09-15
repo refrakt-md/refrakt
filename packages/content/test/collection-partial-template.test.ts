@@ -27,8 +27,14 @@ describe('partial as a collection per-item template', () => {
 			path.join(root, '_partials', 'post-card.md'),
 			`{% card href=$item.url %}\n# {% $item.data.title %}\n\nfrom-partial\n{% /card %}\n`,
 		);
-		writeFileSync(path.join(root, 'blog', 'first.md'), `---\ntitle: First Post\n---\n\n# First Post\n\nBody.\n`);
-		writeFileSync(path.join(root, 'blog', 'second.md'), `---\ntitle: Second Post\n---\n\n# Second Post\n\nBody.\n`);
+		writeFileSync(
+			path.join(root, 'blog', 'first.md'),
+			`---\ntitle: First Post\n---\n\n# First Post\n\nBody.\n`,
+		);
+		writeFileSync(
+			path.join(root, 'blog', 'second.md'),
+			`---\ntitle: Second Post\n---\n\n# Second Post\n\nBody.\n`,
+		);
 		writeFileSync(
 			path.join(root, 'viapartial.md'),
 			`---\ntitle: Via Partial\n---\n\n{% collection type="page" filter="url:/blog/*" %}\n{% partial file="post-card.md" /%}\n{% /collection %}\n`,
@@ -40,7 +46,7 @@ describe('partial as a collection per-item template', () => {
 		const root = buildSite();
 		try {
 			const site = await loadContent(root);
-			const page = site.pages.find(p => p.route.filePath.includes('viapartial'));
+			const page = site.pages.find((p) => p.route.filePath.includes('viapartial'));
 			expect(page).toBeDefined();
 			const rendered = JSON.stringify(page!.renderable);
 

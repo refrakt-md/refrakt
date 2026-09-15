@@ -15,39 +15,37 @@ const CLOSE_SENTINEL = '\x01RFTC\x02';
  * Call this on raw markdown BEFORE passing to `Markdoc.parse()`.
  */
 export function escapeFenceTags(markdown: string): string {
-  const lines = markdown.split('\n');
-  const result: string[] = [];
-  let fenceChar: string | null = null;
-  let fenceLen = 0;
+	const lines = markdown.split('\n');
+	const result: string[] = [];
+	let fenceChar: string | null = null;
+	let fenceLen = 0;
 
-  for (const line of lines) {
-    if (fenceChar === null) {
-      // A fence opener is 3+ backticks/tildes followed by an optional info
-      // string (language + attributes, e.g. ```yaml title="config.ts"). Per
-      // CommonMark a backtick info string may not contain backticks; a tilde
-      // one may. Matching the full info string — not just a bare `\w*` word —
-      // keeps fence tracking in sync so `{% %}` after a titled fence aren't
-      // mis-escaped.
-      const match = line.match(/^(`{3,})([^`]*)$/) ?? line.match(/^(~{3,})(.*)$/);
-      if (match) {
-        fenceChar = match[1][0];
-        fenceLen = match[1].length;
-      }
-      result.push(line);
-    } else {
-      const re = new RegExp(`^\\${fenceChar}{${fenceLen},}\\s*$`);
-      if (re.test(line)) {
-        fenceChar = null;
-        result.push(line);
-      } else {
-        result.push(
-          line.replace(/\{%/g, OPEN_SENTINEL).replace(/%\}/g, CLOSE_SENTINEL),
-        );
-      }
-    }
-  }
+	for (const line of lines) {
+		if (fenceChar === null) {
+			// A fence opener is 3+ backticks/tildes followed by an optional info
+			// string (language + attributes, e.g. ```yaml title="config.ts"). Per
+			// CommonMark a backtick info string may not contain backticks; a tilde
+			// one may. Matching the full info string — not just a bare `\w*` word —
+			// keeps fence tracking in sync so `{% %}` after a titled fence aren't
+			// mis-escaped.
+			const match = line.match(/^(`{3,})([^`]*)$/) ?? line.match(/^(~{3,})(.*)$/);
+			if (match) {
+				fenceChar = match[1][0];
+				fenceLen = match[1].length;
+			}
+			result.push(line);
+		} else {
+			const re = new RegExp(`^\\${fenceChar}{${fenceLen},}\\s*$`);
+			if (re.test(line)) {
+				fenceChar = null;
+				result.push(line);
+			} else {
+				result.push(line.replace(/\{%/g, OPEN_SENTINEL).replace(/%\}/g, CLOSE_SENTINEL));
+			}
+		}
+	}
 
-  return result.join('\n');
+	return result.join('\n');
 }
 
 /**
@@ -55,8 +53,6 @@ export function escapeFenceTags(markdown: string): string {
  * Called from the fence node transform after Markdoc processing.
  */
 export function unescapeFenceContent(content: string): string {
-  if (!content.includes('\x01')) return content;
-  return content
-    .replaceAll(OPEN_SENTINEL, '{%')
-    .replaceAll(CLOSE_SENTINEL, '%}');
+	if (!content.includes('\x01')) return content;
+	return content.replaceAll(OPEN_SENTINEL, '{%').replaceAll(CLOSE_SENTINEL, '%}');
 }

@@ -1,7 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	RenderableNodeCursor,
+} from '@refrakt-md/runes';
 import { parseDuration } from '../duration.js';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
@@ -13,11 +18,31 @@ export const audio = createContentModelSchema({
 	sections: audioSections,
 	attributes: {
 		src: { type: String, required: false, description: 'URL of the audio file to play.' },
-		playlist: { type: String, required: false, description: 'ID of a playlist rune to load tracks from.' },
-		title: { type: String, required: false, description: 'Track title shown in the player interface.' },
-		artist: { type: String, required: false, description: 'Artist name displayed alongside the track title.' },
-		waveform: { type: Boolean, required: false, description: 'Enable/disable waveform visualization in the player.' },
-		chapters: { type: String, required: false, description: 'URL of an external chapters file (WebVTT or JSON).' },
+		playlist: {
+			type: String,
+			required: false,
+			description: 'ID of a playlist rune to load tracks from.',
+		},
+		title: {
+			type: String,
+			required: false,
+			description: 'Track title shown in the player interface.',
+		},
+		artist: {
+			type: String,
+			required: false,
+			description: 'Artist name displayed alongside the track title.',
+		},
+		waveform: {
+			type: Boolean,
+			required: false,
+			description: 'Enable/disable waveform visualization in the player.',
+		},
+		chapters: {
+			type: String,
+			required: false,
+			description: 'URL of an external chapters file (WebVTT or JSON).',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
@@ -31,8 +56,7 @@ export const audio = createContentModelSchema({
 				itemModel: {
 					fields: [
 						{ name: 'label', match: 'strong', optional: true },
-						{ name: 'time', match: 'text', optional: true,
-							pattern: /\((\d+:\d+(?::\d+)?)\)/ },
+						{ name: 'time', match: 'text', optional: true, pattern: /\((\d+:\d+(?::\d+)?)\)/ },
 						{ name: 'text', match: 'text', pattern: 'remainder', optional: false },
 					],
 				},
@@ -57,7 +81,7 @@ export const audio = createContentModelSchema({
 		// Process inline chapters
 		const chapterData = (resolved.chapterListData as Record<string, unknown>[] | undefined) ?? [];
 		if (chapterData.length > 0) {
-			playerData.chapters = chapterData.map(ch => ({
+			playerData.chapters = chapterData.map((ch) => ({
 				name: (ch.label as string) || (ch.text as string) || '',
 				time: ch.time ? parseDuration(ch.time as string) : 0,
 			}));
@@ -75,15 +99,15 @@ export const audio = createContentModelSchema({
 		if (waveformMeta) children.push(waveformMeta);
 
 		// Player element with JSON data
-		const audioEl = new Tag('rf-audio', {
-			waveform: String(waveform),
-			...(playlistId ? { playlist: playlistId } : {}),
-			...(chaptersUrl ? { chapters: chaptersUrl } : {}),
-		}, [
-			new Tag('script', { type: 'application/json' }, [JSON.stringify(
-				src ? [playerData] : [],
-			)]),
-		]);
+		const audioEl = new Tag(
+			'rf-audio',
+			{
+				waveform: String(waveform),
+				...(playlistId ? { playlist: playlistId } : {}),
+				...(chaptersUrl ? { chapters: chaptersUrl } : {}),
+			},
+			[new Tag('script', { type: 'application/json' }, [JSON.stringify(src ? [playerData] : [])])],
+		);
 
 		children.push(audioEl);
 
@@ -92,7 +116,8 @@ export const audio = createContentModelSchema({
 			children.push(descNodes.wrap('div', { 'data-name': 'description' }).next());
 		}
 
-		return createComponentRenderable({ rune: 'audio',
+		return createComponentRenderable({
+			rune: 'audio',
 			tag: 'div',
 			properties: {
 				...(waveformMeta ? { waveform: waveformMeta } : {}),

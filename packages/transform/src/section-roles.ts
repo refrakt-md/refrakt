@@ -130,7 +130,9 @@ export function lintSectionRoles(runes: Record<string, RuneConfig>): SectionRole
 			// `table`). Not drift.
 			if (declaredRoles.has('body')) continue;
 			findings.push({
-				rune, slot, kind: 'missing-body-role',
+				rune,
+				slot,
+				kind: 'missing-body-role',
 				message: `"${rune}" declares a \`${slot}\` slot but no \`body\` section role, so \`reading\` and \`dropcap\` are silently dropped on it. Map it in \`sections\`, or record why not in \`sectionRoleExceptions\`.`,
 			});
 		}
@@ -140,7 +142,9 @@ export function lintSectionRoles(runes: Record<string, RuneConfig>): SectionRole
 		for (const slot of HEADER_SLOT_NAMES) {
 			if (!slots.has(slot) || slot in exceptions) continue;
 			findings.push({
-				rune, slot, kind: 'missing-header-role',
+				rune,
+				slot,
+				kind: 'missing-header-role',
 				message: `"${rune}" declares a \`${slot}\` slot but no header-ish section role (header/preamble/title/description), so \`prominence\` is dropped with a warning. Map it in \`sections\`, or record why not in \`sectionRoleExceptions\`.`,
 			});
 			break; // One finding per rune is enough to act on.

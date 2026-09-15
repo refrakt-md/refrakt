@@ -1,6 +1,10 @@
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
-import { validateThemeConfig, validateManifest, type ValidationResult } from '@refrakt-md/transform';
+import {
+	validateThemeConfig,
+	validateManifest,
+	type ValidationResult,
+} from '@refrakt-md/transform';
 import { baseConfig } from '@refrakt-md/runes';
 
 export interface ValidateOptions {
@@ -61,7 +65,9 @@ function printResult(label: string, result: ValidationResult): void {
 	}
 
 	if (result.errors.length > 0) {
-		console.log(`  ${label}: FAIL (${result.errors.length} error${result.errors.length === 1 ? '' : 's'})`);
+		console.log(
+			`  ${label}: FAIL (${result.errors.length} error${result.errors.length === 1 ? '' : 's'})`,
+		);
 		for (const err of result.errors) {
 			console.log(`    ERROR ${err.path}: ${err.message}`);
 		}

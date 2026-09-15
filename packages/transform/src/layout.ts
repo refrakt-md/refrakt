@@ -128,13 +128,13 @@ function resolveComputed(
 				const knownSectionsOnly = def.options?.knownSectionsOnly ?? false;
 
 				// Check minCount before building
-				let filtered = headings.filter(h => h.level >= minLevel && h.level <= maxLevel);
+				let filtered = headings.filter((h) => h.level >= minLevel && h.level <= maxLevel);
 
 				// Filter to known-section headings if requested.
 				// Falls back to all headings when no known sections are found
 				// (e.g., specs and milestones that don't declare known sections).
 				if (knownSectionsOnly) {
-					const knownOnly = filtered.filter(h => h.knownSection);
+					const knownOnly = filtered.filter((h) => h.knownSection);
 					if (knownOnly.length > 0) {
 						filtered = knownOnly;
 					}
@@ -205,7 +205,13 @@ function resolveSlot(
 					const chromeName = child.slice(7);
 					const chromeEntry = config.chrome?.[chromeName];
 					if (chromeEntry) {
-						const built = buildLayoutChrome(chromeEntry, chromeEntry.ref ?? chromeName, page, prefix, locale);
+						const built = buildLayoutChrome(
+							chromeEntry,
+							chromeEntry.ref ?? chromeName,
+							page,
+							prefix,
+							locale,
+						);
 						if (built) content.push(built);
 					}
 				} else {
@@ -273,7 +279,13 @@ function isLayoutSlot(obj: any): boolean {
 		return false;
 	}
 	// If it has 'source' or 'conditionalRegion' or 'conditionalModifier' or 'wrapper', it's a slot
-	if (obj.source || obj.conditionalRegion || obj.conditionalModifier || obj.wrapper || obj.frontmatterCondition) {
+	if (
+		obj.source ||
+		obj.conditionalRegion ||
+		obj.conditionalModifier ||
+		obj.wrapper ||
+		obj.frontmatterCondition
+	) {
 		return true;
 	}
 	// If it has children that are strings starting with 'chrome:', it's a slot
@@ -410,10 +422,14 @@ function buildLayoutChrome(
 	if (entry.iterate) {
 		const items = resolvePagePath(page, entry.iterate.source) as any[] | undefined;
 		if (!items || !Array.isArray(items)) return makeTag(entry.tag, resolvedAttrs, []);
-		const itemChildren = items.map(item =>
-			makeTag(entry.iterate!.tag, {
-				class: entry.iterate!.class ?? undefined,
-			}, [String(item)])
+		const itemChildren = items.map((item) =>
+			makeTag(
+				entry.iterate!.tag,
+				{
+					class: entry.iterate!.class ?? undefined,
+				},
+				[String(item)],
+			),
 		);
 		return makeTag(entry.tag, resolvedAttrs, itemChildren);
 	}

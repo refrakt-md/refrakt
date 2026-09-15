@@ -59,8 +59,8 @@ describe('warn-once scope', () => {
 		const transform = createTransform(config);
 		transform(makeTag('div', { 'data-rune': 'widget' }, []));
 		transform(makeTag('div', { 'data-rune': 'tab' }, []));
-		expect(warn).toHaveBeenCalledTimes(1);   // widget → warn
-		expect(error).toHaveBeenCalledTimes(1);  // tab → error, a structural child
+		expect(warn).toHaveBeenCalledTimes(1); // widget → warn
+		expect(error).toHaveBeenCalledTimes(1); // tab → error, a structural child
 	});
 });
 
@@ -77,7 +77,9 @@ describe('severity', () => {
 		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 		const error = vi.spyOn(console, 'error').mockImplementation(() => {});
 		render('widget');
-		expect(warn).toHaveBeenCalledWith(expect.stringContaining('`widget` requires parent `dashboard`'));
+		expect(warn).toHaveBeenCalledWith(
+			expect.stringContaining('`widget` requires parent `dashboard`'),
+		);
 		expect(error).not.toHaveBeenCalled();
 	});
 
@@ -86,9 +88,9 @@ describe('severity', () => {
 		const transform = createTransform(config);
 		// top level, then nested inside dashboard-that-is-not-the-required-parent
 		transform(makeTag('div', { 'data-rune': 'widget' }, []));
-		transform(makeTag('div', { 'data-rune': 'dashboard' }, [
-			makeTag('div', { 'data-rune': 'widget' }, []),
-		]));
+		transform(
+			makeTag('div', { 'data-rune': 'dashboard' }, [makeTag('div', { 'data-rune': 'widget' }, [])]),
+		);
 		// `dashboard` IS the required parent, so the nested one is valid — only the
 		// top-level violation reports.
 		expect(warn).toHaveBeenCalledTimes(1);

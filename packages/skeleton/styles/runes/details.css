@@ -8,8 +8,13 @@
 	align-items: center;
 	list-style: none;
 }
-.rf-details__summary::-webkit-details-marker { display: none; }
-.rf-details__summary::marker { display: none; content: ''; }
+.rf-details__summary::-webkit-details-marker {
+	display: none;
+}
+.rf-details__summary::marker {
+	display: none;
+	content: "";
+}
 .rf-details__summary::after {
 	flex-shrink: 0;
 	margin-left: auto;

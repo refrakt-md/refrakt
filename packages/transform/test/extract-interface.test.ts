@@ -36,14 +36,9 @@ describe('extractComponentInterface', () => {
 			makeTag('li', {}, ['flour']),
 			makeTag('li', {}, ['sugar']),
 		]);
-		const steps = makeTag('ol', { 'data-name': 'steps' }, [
-			makeTag('li', {}, ['mix']),
-		]);
+		const steps = makeTag('ol', { 'data-name': 'steps' }, [makeTag('li', {}, ['mix'])]);
 
-		const tag = makeTag('article', { 'data-rune': 'recipe' }, [
-			ingredients,
-			steps,
-		]);
+		const tag = makeTag('article', { 'data-rune': 'recipe' }, [ingredients, steps]);
 
 		const result = extractComponentInterface(tag);
 
@@ -109,9 +104,7 @@ describe('extractComponentInterface', () => {
 		const meta1 = makeTag('meta', { 'data-field': 'prep-time', content: '10 min' });
 		const meta2 = makeTag('meta', { 'data-field': 'cook-time', content: '30 min' });
 		const headline = makeTag('header', { 'data-name': 'headline' }, ['My Recipe']);
-		const media = makeTag('div', { 'data-name': 'media' }, [
-			makeTag('img', { src: 'photo.jpg' }),
-		]);
+		const media = makeTag('div', { 'data-name': 'media' }, [makeTag('img', { src: 'photo.jpg' })]);
 		const textNode = 'Some body text';
 		const paragraph = makeTag('p', {}, ['More content']);
 
@@ -144,9 +137,7 @@ describe('extractComponentInterface', () => {
 	});
 
 	it('defaults missing content attribute to empty string', () => {
-		const tag = makeTag('div', {}, [
-			makeTag('meta', { 'data-field': 'empty-prop' }),
-		]);
+		const tag = makeTag('div', {}, [makeTag('meta', { 'data-field': 'empty-prop' })]);
 
 		const result = extractComponentInterface(tag);
 		expect(result.properties).toEqual({ emptyProp: '' });

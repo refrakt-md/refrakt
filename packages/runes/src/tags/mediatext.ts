@@ -18,15 +18,23 @@ export const mediatext = createContentModelSchema({
 	provides: ['prose'],
 	mediaSlots: mediaTextMediaSlots,
 	attributes: {
-		align: { type: String, required: false, matches: alignValues.slice(), description: 'Side the media appears on' },
-		ratio: { type: String, required: false, matches: ratioValues.slice(), description: 'Width ratio between media and text' },
+		align: {
+			type: String,
+			required: false,
+			matches: alignValues.slice(),
+			description: 'Side the media appears on',
+		},
+		ratio: {
+			type: String,
+			required: false,
+			matches: ratioValues.slice(),
+			description: 'Width ratio between media and text',
+		},
 		wrap: { type: Boolean, required: false, description: 'Wrap text around the media' },
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const children = new RenderableNodeCursor(
@@ -48,9 +56,13 @@ export const mediatext = createContentModelSchema({
 		const bodyChildren: any[] = [];
 
 		for (const node of children.toArray()) {
-			if (Markdoc.Tag.isTag(node) && node.name === 'p' &&
+			if (
+				Markdoc.Tag.isTag(node) &&
+				node.name === 'p' &&
 				node.children.length === 1 &&
-				Markdoc.Tag.isTag(node.children[0]) && node.children[0].name === 'img') {
+				Markdoc.Tag.isTag(node.children[0]) &&
+				node.children[0].name === 'img'
+			) {
 				mediaChildren.push(node.children[0]);
 			} else if (Markdoc.Tag.isTag(node) && node.name === 'img') {
 				mediaChildren.push(node);
@@ -66,7 +78,8 @@ export const mediatext = createContentModelSchema({
 		if (wrapMeta) childNodes.push(wrapMeta);
 		childNodes.push(mediaTag, bodyTag);
 
-		return createComponentRenderable({ rune: 'media-text',
+		return createComponentRenderable({
+			rune: 'media-text',
 			tag: 'div',
 			properties: {
 				align: alignMeta,

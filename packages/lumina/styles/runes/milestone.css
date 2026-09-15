@@ -1,106 +1,107 @@
 @layer skin {
-/* Milestone */
+	/* Milestone */
 
-/* SPEC-079: eyebrow + metadata zone names replace header-primary /
+	/* SPEC-079: eyebrow + metadata zone names replace header-primary /
  * header-secondary. */
 
-.rf-milestone__eyebrow {
-	margin-bottom: 0.75rem;
-}
-.rf-milestone__title h1,
-.rf-milestone__title h2,
-.rf-milestone__title h3 {
-	margin-top: 0;
-}
+	.rf-milestone__eyebrow {
+		margin-bottom: 0.75rem;
+	}
+	.rf-milestone__title h1,
+	.rf-milestone__title h2,
+	.rf-milestone__title h3 {
+		margin-top: 0;
+	}
 
-.rf-milestone__metadata {
-	margin-bottom: 1.5rem;
-}
-.rf-milestone__body {
-	font-size: var(--rf-text-sm);
-	line-height: var(--rf-leading-relaxed);
-}
-.rf-milestone__body ul {
-	padding-left: 1.5rem;
-}
+	.rf-milestone__metadata {
+		margin-bottom: 1.5rem;
+	}
+	.rf-milestone__body {
+		font-size: var(--rf-text-sm);
+		line-height: var(--rf-leading-relaxed);
+	}
+	.rf-milestone__body ul {
+		padding-left: 1.5rem;
+	}
 
-/* Auto-backlog */
-.rf-milestone__backlog {
-	margin-top: 1.25rem;
-	padding-top: 1rem;
-	border-top: 1px solid var(--rf-color-border);
-}
-.rf-milestone__backlog-group {
-	margin-bottom: 1rem;
-}
-.rf-milestone__backlog-group-label {
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-bold);
-	text-transform: uppercase;
-	letter-spacing: var(--rf-tracking-wider);
-	color: var(--rf-color-muted);
-	margin: 0 0 0.375rem;
-}
+	/* Auto-backlog */
+	.rf-milestone__backlog {
+		margin-top: 1.25rem;
+		padding-top: 1rem;
+		border-top: 1px solid var(--rf-color-border);
+	}
+	.rf-milestone__backlog-group {
+		margin-bottom: 1rem;
+	}
+	.rf-milestone__backlog-group-label {
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-bold);
+		text-transform: uppercase;
+		letter-spacing: var(--rf-tracking-wider);
+		color: var(--rf-color-muted);
+		margin: 0 0 0.375rem;
+	}
 
-/* Backlog tabs */
-.rf-milestone__tabs {
-	border-bottom: 1px solid var(--rf-color-border);
-	margin-bottom: 0;
-}
-.rf-milestone__tab {
-	padding: 0.5rem 1rem;
-	font-size: var(--rf-text-sm);
-	font-weight: var(--rf-weight-medium);
-	color: var(--rf-color-muted);
-	background: none;
-	border: none;
-	border-bottom: 2px solid transparent;
-	cursor: pointer;
-	transition: color 200ms ease, border-color 200ms ease;
-	white-space: nowrap;
-	font-family: inherit;
-}
-.rf-milestone__tab:hover {
-	color: var(--rf-color-text);
-}
-.rf-milestone__tab--active {
-	color: var(--rf-color-primary);
-	border-bottom-color: var(--rf-color-primary);
-	font-weight: var(--rf-weight-semibold);
-}
-.rf-milestone__panels {
-	padding: 0;
-	margin: 0;
-}
-.rf-milestone__panel {
-	padding-top: 0.75rem;
-}
+	/* Backlog tabs */
+	.rf-milestone__tabs {
+		border-bottom: 1px solid var(--rf-color-border);
+		margin-bottom: 0;
+	}
+	.rf-milestone__tab {
+		padding: 0.5rem 1rem;
+		font-size: var(--rf-text-sm);
+		font-weight: var(--rf-weight-medium);
+		color: var(--rf-color-muted);
+		background: none;
+		border: none;
+		border-bottom: 2px solid transparent;
+		cursor: pointer;
+		transition:
+			color 200ms ease,
+			border-color 200ms ease;
+		white-space: nowrap;
+		font-family: inherit;
+	}
+	.rf-milestone__tab:hover {
+		color: var(--rf-color-text);
+	}
+	.rf-milestone__tab--active {
+		color: var(--rf-color-primary);
+		border-bottom-color: var(--rf-color-primary);
+		font-weight: var(--rf-weight-semibold);
+	}
+	.rf-milestone__panels {
+		padding: 0;
+		margin: 0;
+	}
+	.rf-milestone__panel {
+		padding-top: 0.75rem;
+	}
 
-/* Aggregate progress */
-.rf-milestone__progress {
-	margin-bottom: 1rem;
-}
-.rf-milestone__progress-header {
-	margin-bottom: 0.375rem;
-}
-.rf-milestone__progress-label {
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-semibold);
-	color: var(--rf-color-muted);
-}
-.rf-milestone__progress-count {
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-semibold);
-	color: var(--rf-color-muted);
-}
-.rf-milestone__progress-bar {
-	border-radius: var(--rf-radius-sm);
-	background: var(--rf-color-surface-active);
-}
-.rf-milestone__progress-bar::after {
-	background: var(--rf-color-primary);
-	border-radius: var(--rf-radius-sm);
-	transition: width 0.3s ease;
-}
-
+	/* Aggregate progress */
+	.rf-milestone__progress {
+		margin-bottom: 1rem;
+	}
+	.rf-milestone__progress-header {
+		margin-bottom: 0.375rem;
+	}
+	.rf-milestone__progress-label {
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-semibold);
+		color: var(--rf-color-muted);
+	}
+	.rf-milestone__progress-count {
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-semibold);
+		color: var(--rf-color-muted);
+	}
+	.rf-milestone__progress-bar {
+		border-radius: var(--rf-radius-sm);
+		background: var(--rf-color-surface-active);
+	}
+	.rf-milestone__progress-bar::after {
+		background: var(--rf-color-primary);
+		border-radius: var(--rf-radius-sm);
+		transition: width 0.3s ease;
+	}
 }

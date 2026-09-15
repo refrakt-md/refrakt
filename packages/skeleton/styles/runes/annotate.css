@@ -3,7 +3,9 @@
  * hide. Type, colour, borders, spacing, and the `?` glyph stay skin (Lumina's
  * styles/runes/annotate.css). */
 
-.rf-annotate__body { display: contents; }
+.rf-annotate__body {
+	display: contents;
+}
 
 /* Margin style — float the note into the margin. */
 .rf-annotate--margin .rf-annotate-note {
@@ -13,7 +15,9 @@
 }
 
 /* Inline style */
-.rf-annotate--inline p { display: inline; }
+.rf-annotate--inline p {
+	display: inline;
+}
 .rf-annotate--inline .rf-annotate-note {
 	display: inline-block;
 	vertical-align: baseline;
@@ -45,7 +49,9 @@
 	display: block;
 }
 .rf-annotate-note__body > span[property],
-.rf-annotate-note__body > meta { display: none; }
+.rf-annotate-note__body > meta {
+	display: none;
+}
 
 @media (max-width: 768px) {
 	.rf-annotate--margin .rf-annotate-note {

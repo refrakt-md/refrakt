@@ -14,17 +14,23 @@ function createTabGroup(opts?: { tabCount?: number; rune?: string }): HTMLElemen
 	const count = opts?.tabCount ?? 3;
 	const rune = opts?.rune ?? 'tab-group';
 
-	const tabs = Array.from({ length: count }, (_, i) => `
+	const tabs = Array.from(
+		{ length: count },
+		(_, i) => `
 		<button data-rune="tab" role="tab" class="rf-tab">
 			<span data-name="name">Tab ${i + 1}</span>
 		</button>
-	`).join('');
+	`,
+	).join('');
 
-	const panels = Array.from({ length: count }, (_, i) => `
+	const panels = Array.from(
+		{ length: count },
+		(_, i) => `
 		<div data-rune="tab-panel" role="tabpanel">
 			<div>Content ${i + 1}</div>
 		</div>
-	`).join('');
+	`,
+	).join('');
 
 	const el = document.createElement('section');
 	el.setAttribute('data-rune', rune);
@@ -40,17 +46,23 @@ function createTabGroup(opts?: { tabCount?: number; rune?: string }): HTMLElemen
 function createCodeGroup(opts?: { tabCount?: number }): HTMLElement {
 	const count = opts?.tabCount ?? 2;
 
-	const tabs = Array.from({ length: count }, (_, i) => `
+	const tabs = Array.from(
+		{ length: count },
+		(_, i) => `
 		<button data-name="tab" role="tab" class="rf-codegroup__tab">
 			<span>file${i + 1}.ts</span>
 		</button>
-	`).join('');
+	`,
+	).join('');
 
-	const panels = Array.from({ length: count }, (_, i) => `
+	const panels = Array.from(
+		{ length: count },
+		(_, i) => `
 		<div data-name="panel" role="tabpanel" class="rf-codegroup__panel">
 			<pre><code>code ${i + 1}</code></pre>
 		</div>
-	`).join('');
+	`,
+	).join('');
 
 	const el = document.createElement('div');
 	el.setAttribute('data-rune', 'code-group');

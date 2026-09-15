@@ -16,14 +16,22 @@ export const pullquote = createContentModelSchema({
 	sections: pullQuoteSections,
 	provides: ['prose'],
 	attributes: {
-		align: { type: String, required: false, matches: alignValues.slice(), description: 'Text alignment of the quote' },
-		variant: { type: String, required: false, matches: variantValues.slice(), description: 'Visual style of the quote block' },
+		align: {
+			type: String,
+			required: false,
+			matches: alignValues.slice(),
+			description: 'Text alignment of the quote',
+		},
+		variant: {
+			type: String,
+			required: false,
+			matches: variantValues.slice(),
+			description: 'Visual style of the quote block',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const children = new RenderableNodeCursor(
@@ -35,13 +43,13 @@ export const pullquote = createContentModelSchema({
 
 		// Extract blockquote or use all children as the quote text
 		const blockquote = children.tag('blockquote');
-		const quoteChildren = blockquote.count() > 0
-			? blockquote.limit(1).toArray()
-			: children.tag('p').toArray();
+		const quoteChildren =
+			blockquote.count() > 0 ? blockquote.limit(1).toArray() : children.tag('p').toArray();
 
 		const childNodes: any[] = [...quoteChildren, alignMeta, variantMeta];
 
-		return createComponentRenderable({ rune: 'pull-quote',
+		return createComponentRenderable({
+			rune: 'pull-quote',
 			tag: 'blockquote',
 			properties: {
 				align: alignMeta,

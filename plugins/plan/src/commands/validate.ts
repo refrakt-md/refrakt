@@ -3,7 +3,19 @@ import { basename, join } from 'path';
 import { scanPlanFiles } from '../scanner.js';
 import { buildBlockedByAdjacency } from '../scanner-core.js';
 import type { PlanEntity, PlanRuneType } from '../types.js';
-import { VALID_STATUS, VALID_PRIORITY, VALID_COMPLEXITY, VALID_SEVERITY, DONE_STATUS_SET, isTerminal, isAchieving, specStatusLags, SPEC_IMPLEMENTED_STATUSES, PR_REF_RE, RELEASED_IN_RE } from './enums.js';
+import {
+	VALID_STATUS,
+	VALID_PRIORITY,
+	VALID_COMPLEXITY,
+	VALID_SEVERITY,
+	DONE_STATUS_SET,
+	isTerminal,
+	isAchieving,
+	specStatusLags,
+	SPEC_IMPLEMENTED_STATUSES,
+	PR_REF_RE,
+	RELEASED_IN_RE,
+} from './enums.js';
 
 // --- Valid attribute values per type (sets derived from the shared vocabularies) ---
 
@@ -115,7 +127,7 @@ function checkInvalidAttributes(entities: PlanEntity[]): ValidationIssue[] {
 
 		// Priority (work items)
 		const priority = e.attributes.priority;
-		if (priority && (e.type === 'work') && !VALID_PRIORITIES.has(priority)) {
+		if (priority && e.type === 'work' && !VALID_PRIORITIES.has(priority)) {
 			issues.push({
 				severity: 'error',
 				type: 'invalid-priority',
@@ -173,7 +185,7 @@ function checkCircularDeps(entities: PlanEntity[], knownIds: Set<string>): Valid
 	const adjMap = new Map<string, string[]>();
 	for (const [from, tos] of buildBlockedByAdjacency(entities)) {
 		if (!workBugIds.has(from)) continue;
-		const deps = tos.filter(t => workBugIds.has(t));
+		const deps = tos.filter((t) => workBugIds.has(t));
 		if (deps.length > 0) adjMap.set(from, deps);
 	}
 
@@ -291,7 +303,10 @@ function checkPrAndRelease(entities: PlanEntity[]): ValidationIssue[] {
 		if (e.type === 'work' || e.type === 'bug') {
 			const pr = (e.attributes.pr || '').trim();
 			if (pr) {
-				for (const ref of pr.split(',').map(s => s.trim()).filter(Boolean)) {
+				for (const ref of pr
+					.split(',')
+					.map((s) => s.trim())
+					.filter(Boolean)) {
 					if (!PR_REF_RE.test(ref)) {
 						issues.push({
 							severity: 'error',
@@ -385,7 +400,10 @@ function checkSourceRefs(entities: PlanEntity[], knownIds: Set<string>): Validat
 		const id = e.attributes.id || e.attributes.name || e.file;
 		const source = e.attributes.source;
 		if (!source) continue;
-		for (const refId of source.split(',').map(s => s.trim()).filter(Boolean)) {
+		for (const refId of source
+			.split(',')
+			.map((s) => s.trim())
+			.filter(Boolean)) {
 			if (!knownIds.has(refId)) {
 				issues.push({
 					severity: 'error',
@@ -546,7 +564,7 @@ function checkFilenameIdMatch(entities: PlanEntity[]): ValidationIssue[] {
 function sourcesSpec(e: PlanEntity, specId: string): boolean {
 	return (e.attributes.source || '')
 		.split(',')
-		.map(s => s.trim())
+		.map((s) => s.trim())
 		.includes(specId);
 }
 
@@ -558,17 +576,17 @@ function sourcesSpec(e: PlanEntity, specId: string): boolean {
  */
 function checkSpecLifecycleDrift(entities: PlanEntity[]): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
-	const specs = entities.filter(e => e.type === 'spec');
-	const workAndBugs = entities.filter(e => e.type === 'work' || e.type === 'bug');
+	const specs = entities.filter((e) => e.type === 'spec');
+	const workAndBugs = entities.filter((e) => e.type === 'work' || e.type === 'bug');
 
 	for (const spec of specs) {
 		const specId = spec.attributes.id;
 		if (!specId) continue;
 		const status = spec.attributes.status || '';
 
-		const linked = workAndBugs.filter(e => sourcesSpec(e, specId));
+		const linked = workAndBugs.filter((e) => sourcesSpec(e, specId));
 		if (linked.length === 0) continue; // no linked evidence → no drift
-		const linkedStatuses = linked.map(e => e.attributes.status || '');
+		const linkedStatuses = linked.map((e) => e.attributes.status || '');
 
 		// spec-status-lag — spec sits before `implemented` but all linked work
 		// is achieving-terminal. Shares its predicate with `plan status`'s
@@ -586,8 +604,9 @@ function checkSpecLifecycleDrift(entities: PlanEntity[]): ValidationIssue[] {
 		// spec-started-in-draft — a draft spec whose work has already begun
 		// (in-progress or achieving-terminal).
 		if (status === 'draft') {
-			const started = linked.filter(e =>
-				e.attributes.status === 'in-progress' || isAchieving(e.type, e.attributes.status || ''),
+			const started = linked.filter(
+				(e) =>
+					e.attributes.status === 'in-progress' || isAchieving(e.type, e.attributes.status || ''),
 			);
 			if (started.length > 0) {
 				issues.push({
@@ -595,7 +614,7 @@ function checkSpecLifecycleDrift(entities: PlanEntity[]): ValidationIssue[] {
 					type: 'spec-started-in-draft',
 					source: specId,
 					file: spec.file,
-					message: `${specId} is draft but linked work has started (${started.map(e => e.attributes.id || e.file).join(', ')})`,
+					message: `${specId} is draft but linked work has started (${started.map((e) => e.attributes.id || e.file).join(', ')})`,
 				});
 			}
 		}
@@ -603,7 +622,9 @@ function checkSpecLifecycleDrift(entities: PlanEntity[]): ValidationIssue[] {
 		// spec-status-ahead — spec claims implemented/shipped but a linked work
 		// item is still non-terminal (the status ran ahead of the work).
 		if (SPEC_IMPLEMENTED_STATUSES.has(status)) {
-			const open = linked.filter(e => !isTerminal(e.type as PlanRuneType, e.attributes.status || ''));
+			const open = linked.filter(
+				(e) => !isTerminal(e.type as PlanRuneType, e.attributes.status || ''),
+			);
 			if (open.length > 0) {
 				issues.push({
 					severity: 'warning',
@@ -641,7 +662,7 @@ function checkStaleBlocked(entities: PlanEntity[]): ValidationIssue[] {
 		const blockers = blockedByAdj.get(selfId) || [];
 		if (blockers.length === 0) continue; // blocked with no `## Blocked by` targets → nothing to be stale against
 
-		const allSatisfied = blockers.every(t => {
+		const allSatisfied = blockers.every((t) => {
 			const dep = byId.get(t);
 			return dep ? isAchieving(dep.type, dep.attributes.status || '') : false;
 		});
@@ -666,13 +687,17 @@ function checkStaleBlocked(entities: PlanEntity[]): ValidationIssue[] {
  */
 function checkMilestoneCompletionDrift(entities: PlanEntity[]): ValidationIssue[] {
 	const issues: ValidationIssue[] = [];
-	const milestones = entities.filter(e => e.type === 'milestone' && e.attributes.status === 'complete');
-	const workItems = entities.filter(e => e.type === 'work' || e.type === 'bug');
+	const milestones = entities.filter(
+		(e) => e.type === 'milestone' && e.attributes.status === 'complete',
+	);
+	const workItems = entities.filter((e) => e.type === 'work' || e.type === 'bug');
 
 	for (const m of milestones) {
 		const name = m.attributes.name || m.attributes.id || '';
-		const openItems = workItems.filter(w =>
-			w.attributes.milestone === name && !isTerminal(w.type as PlanRuneType, w.attributes.status || ''),
+		const openItems = workItems.filter(
+			(w) =>
+				w.attributes.milestone === name &&
+				!isTerminal(w.type as PlanRuneType, w.attributes.status || ''),
 		);
 		for (const item of openItems) {
 			const itemId = item.attributes.id || item.file;

@@ -30,7 +30,14 @@ export const config: Record<string, RuneConfig> = {
 			columns: { source: 'meta' },
 		},
 		contextModifiers: { 'design-context': 'in-design-context' },
-		editHints: { 'group-title': 'none', 'swatch-color': 'none', 'swatch-name': 'none', 'swatch-value': 'none', grid: 'none', scale: 'none' },
+		editHints: {
+			'group-title': 'none',
+			'swatch-color': 'none',
+			'swatch-name': 'none',
+			'swatch-value': 'none',
+			grid: 'none',
+			scale: 'none',
+		},
 	},
 	Typography: {
 		block: 'typography',
@@ -44,7 +51,14 @@ export const config: Record<string, RuneConfig> = {
 			showCharset: { source: 'meta' },
 		},
 		contextModifiers: { 'design-context': 'in-design-context' },
-		editHints: { title: 'none', specimen: 'none', specimens: 'none', sizes: 'none', weights: 'none', charset: 'none' },
+		editHints: {
+			title: 'none',
+			specimen: 'none',
+			specimens: 'none',
+			sizes: 'none',
+			weights: 'none',
+			charset: 'none',
+		},
 	},
 	Spacing: {
 		block: 'spacing',
@@ -76,19 +90,19 @@ export const config: Record<string, RuneConfig> = {
 			responsive: { source: 'meta' },
 			title: { source: 'meta' },
 		},
-		contextModifiers: { 'feature': 'in-feature' },
+		contextModifiers: { feature: 'in-feature' },
 		editHints: { source: 'code' },
 		postTransform(node) {
 			// Generate themed HTML when source mode is active.
 			// This must happen in postTransform (not the rune) because it needs
 			// the fully-transformed tree with BEM classes and structural elements.
 			const hasSource = node.children.some(
-				c => isTag(c) && c.name === 'pre' && c.attributes['data-name'] === 'source'
+				(c) => isTag(c) && c.name === 'pre' && c.attributes['data-name'] === 'source',
 			);
 			if (!hasSource) return node;
 
 			// Extract content children (skip meta, source, htmlSource, themedSource)
-			const contentChildren = node.children.filter(c => {
+			const contentChildren = node.children.filter((c) => {
 				if (!isTag(c)) return true;
 				if (c.name === 'meta' && c.attributes['data-field']) return false;
 				if (c.name === 'pre' && c.attributes['data-name']) return false;
@@ -98,12 +112,14 @@ export const config: Record<string, RuneConfig> = {
 			const html = renderToHtml(contentChildren, { pretty: true });
 			if (!html) return node;
 
-			const themedPre = makeTag('pre', {
-				'data-name': 'themed-source',
-				'data-language': 'html',
-			}, [
-				makeTag('code', { 'data-language': 'html' }, [html]),
-			]);
+			const themedPre = makeTag(
+				'pre',
+				{
+					'data-name': 'themed-source',
+					'data-language': 'html',
+				},
+				[makeTag('code', { 'data-language': 'html' }, [html])],
+			);
 
 			return { ...node, children: [...node.children, themedPre] };
 		},

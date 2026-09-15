@@ -52,11 +52,15 @@ describe('rf-sandbox deferred activation (WORK-381)', () => {
 		const observe = vi.fn();
 		const disconnect = vi.fn();
 		(globalThis as Record<string, unknown>).IntersectionObserver = class {
-			constructor(c: typeof cb) { cb = c; }
+			constructor(c: typeof cb) {
+				cb = c;
+			}
 			observe = observe;
 			disconnect = disconnect;
 			unobserve() {}
-			takeRecords() { return []; }
+			takeRecords() {
+				return [];
+			}
 		};
 		(globalThis as Record<string, unknown>).matchMedia = () => ({ matches: false });
 
@@ -75,7 +79,9 @@ describe('rf-sandbox deferred activation (WORK-381)', () => {
 			observe = observe;
 			disconnect() {}
 			unobserve() {}
-			takeRecords() { return []; }
+			takeRecords() {
+				return [];
+			}
 		};
 		(globalThis as Record<string, unknown>).matchMedia = () => ({ matches: true });
 
@@ -108,9 +114,11 @@ describe('rf-sandbox fill height mode (SPEC-101)', () => {
 	it('fill ignores resize messages — the host owns the height', () => {
 		const el = mount({ 'data-height': 'fill' });
 		const iframe = el.querySelector('iframe') as HTMLIFrameElement;
-		window.dispatchEvent(new MessageEvent('message', {
-			data: { type: 'rf-sandbox-resize', height: 432 },
-		}));
+		window.dispatchEvent(
+			new MessageEvent('message', {
+				data: { type: 'rf-sandbox-resize', height: 432 },
+			}),
+		);
 		expect(iframe.style.height).toBe('100%');
 	});
 
@@ -154,16 +162,20 @@ describe('rf-sandbox overflow signal (SPEC-116)', () => {
 		expect(iframe).toBeTruthy();
 		// jsdom doesn't lay out, so iframe.clientWidth is 0 — a positive scrollWidth
 		// reads as overflow, exercising the wiring end to end.
-		window.dispatchEvent(new MessageEvent('message', {
-			data: { type: 'rf-sandbox-resize', height: 300, scrollWidth: 900 },
-			source: iframe.contentWindow,
-		}));
+		window.dispatchEvent(
+			new MessageEvent('message', {
+				data: { type: 'rf-sandbox-resize', height: 300, scrollWidth: 900 },
+				source: iframe.contentWindow,
+			}),
+		);
 		expect(el.hasAttribute('data-overflowing')).toBe(true);
 
-		window.dispatchEvent(new MessageEvent('message', {
-			data: { type: 'rf-sandbox-resize', height: 300, scrollWidth: 0 },
-			source: iframe.contentWindow,
-		}));
+		window.dispatchEvent(
+			new MessageEvent('message', {
+				data: { type: 'rf-sandbox-resize', height: 300, scrollWidth: 0 },
+				source: iframe.contentWindow,
+			}),
+		);
 		expect(el.hasAttribute('data-overflowing')).toBe(false);
 	});
 });

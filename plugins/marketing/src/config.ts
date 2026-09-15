@@ -65,9 +65,32 @@ export const config: Record<string, RuneConfig> = {
 		sections: heroSections,
 		mediaSlots: heroMediaSlots,
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
-		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code', media: 'image' },
+		editHints: {
+			headline: 'inline',
+			eyebrow: 'inline',
+			blurb: 'inline',
+			action: 'link',
+			command: 'code',
+			media: 'image',
+		},
 	},
-	CallToAction: { block: 'cta', defaultDensity: 'full', defaultWidth: 'full', defaultElevation: 'flush', contentMeasure: 'anchored', sections: ctaSections, contextModifiers: { 'hero': 'in-hero', 'pricing': 'in-pricing' }, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', action: 'link', command: 'code' } },
+	CallToAction: {
+		block: 'cta',
+		defaultDensity: 'full',
+		defaultWidth: 'full',
+		defaultElevation: 'flush',
+		contentMeasure: 'anchored',
+		sections: ctaSections,
+		contextModifiers: { hero: 'in-hero', pricing: 'in-pricing' },
+		autoLabel: pageSectionAutoLabel,
+		editHints: {
+			headline: 'inline',
+			eyebrow: 'inline',
+			blurb: 'inline',
+			action: 'link',
+			command: 'code',
+		},
+	},
 	Bento: {
 		block: 'bento',
 		defaultDensity: 'full',
@@ -89,7 +112,8 @@ export const config: Record<string, RuneConfig> = {
 	},
 	BentoCell: {
 		block: 'bento-cell',
-		parent: 'Bento', requiresParent: 'Bento',
+		parent: 'Bento',
+		requiresParent: 'Bento',
 		modifiers: {
 			size: { source: 'meta', default: 'medium', noBemClass: true },
 			cols: { source: 'meta', noBemClass: true },
@@ -152,18 +176,35 @@ export const config: Record<string, RuneConfig> = {
 		styles: {
 			valign: { prop: '--split-valign', transform: resolveValign },
 		},
-		contextModifiers: { 'hero': 'in-hero', 'grid': 'in-grid' },
+		contextModifiers: { hero: 'in-hero', grid: 'in-grid' },
 		// SPEC-100: the feature-items container is the carousel track — marked
 		// `data-name="items"` (the shared contract token) so `layout="carousel"`
 		// works with no per-rune behavior code.
 		autoLabel: { ...pageSectionAutoLabel, dl: 'items' },
-		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', title: 'inline', description: 'inline', icon: 'icon' },
+		editHints: {
+			headline: 'inline',
+			eyebrow: 'inline',
+			blurb: 'inline',
+			title: 'inline',
+			description: 'inline',
+			icon: 'icon',
+		},
 	},
 	Definition: { block: 'definition', parent: 'Feature', requiresParent: 'Feature' },
-	Steps: { block: 'steps', defaultDensity: 'full', defaultElevation: 'flush', sequence: 'numbered', staggerItems: 'step', sections: stepsSections, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+	Steps: {
+		block: 'steps',
+		defaultDensity: 'full',
+		defaultElevation: 'flush',
+		sequence: 'numbered',
+		staggerItems: 'step',
+		sections: stepsSections,
+		autoLabel: pageSectionAutoLabel,
+		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' },
+	},
 	Step: {
 		block: 'step',
-		parent: 'Steps', requiresParent: 'Steps',
+		parent: 'Steps',
+		requiresParent: 'Steps',
 		modifiers: {
 			// BUG-001: content-first DOM, so the truthful stacked default is
 			// `bottom` (media beneath the text); Lumina counters the shared
@@ -179,9 +220,28 @@ export const config: Record<string, RuneConfig> = {
 		mediaSlots: stepMediaSlots,
 		editHints: { content: 'none', media: 'image' },
 	},
-	Pricing: { block: 'pricing', defaultDensity: 'full', defaultWidth: 'full', staggerItems: 'tier', sections: pricingSections, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
-	Tier: { block: 'tier', parent: 'Pricing', requiresParent: 'Pricing', editHints: { name: 'inline', price: 'inline' } },
-	FeaturedTier: { block: 'tier', parent: 'Pricing', requiresParent: 'Pricing', staticModifiers: ['featured'], editHints: { name: 'inline', price: 'inline' } },
+	Pricing: {
+		block: 'pricing',
+		defaultDensity: 'full',
+		defaultWidth: 'full',
+		staggerItems: 'tier',
+		sections: pricingSections,
+		autoLabel: pageSectionAutoLabel,
+		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' },
+	},
+	Tier: {
+		block: 'tier',
+		parent: 'Pricing',
+		requiresParent: 'Pricing',
+		editHints: { name: 'inline', price: 'inline' },
+	},
+	FeaturedTier: {
+		block: 'tier',
+		parent: 'Pricing',
+		requiresParent: 'Pricing',
+		staticModifiers: ['featured'],
+		editHints: { name: 'inline', price: 'inline' },
+	},
 	Testimonial: {
 		block: 'testimonial',
 		defaultDensity: 'compact',
@@ -203,7 +263,12 @@ export const config: Record<string, RuneConfig> = {
 			rating: { fields: ['rating'], layout: 'bar' },
 		},
 		layout: { root: ['rating', 'quote', 'author-name', 'author-role', 'avatar'] },
-		editHints: { 'author-name': 'inline', 'author-role': 'inline', avatar: 'image', quote: 'inline' },
+		editHints: {
+			'author-name': 'inline',
+			'author-role': 'inline',
+			avatar: 'image',
+			quote: 'inline',
+		},
 	},
 	Comparison: {
 		block: 'comparison',
@@ -214,7 +279,11 @@ export const config: Record<string, RuneConfig> = {
 			layout: { source: 'meta', default: 'table' },
 		},
 	},
-	ComparisonColumn: { block: 'comparison-column', parent: 'Comparison', editHints: { name: 'inline' } },
+	ComparisonColumn: {
+		block: 'comparison-column',
+		parent: 'Comparison',
+		editHints: { name: 'inline' },
+	},
 	ComparisonRow: {
 		block: 'comparison-row',
 		parent: 'Comparison',

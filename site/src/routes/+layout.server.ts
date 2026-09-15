@@ -9,7 +9,7 @@ const DEFAULT_CASCADE: ResolvedTintCascade = {
 
 export async function load({ url }) {
 	const site = await getSite();
-	const currentPage = site.pages.find(p => p.route.url === url.pathname);
+	const currentPage = site.pages.find((p) => p.route.url === url.pathname);
 	// Per-route cascade ships to the client so +layout.svelte can re-apply
 	// the SSR-equivalent <html> attributes on client-side navigation —
 	// SvelteKit reuses the same <html> across nav so attrs set by the
@@ -19,7 +19,7 @@ export async function load({ url }) {
 
 	return {
 		tintCascade,
-		pages: site.pages.map(p => ({
+		pages: site.pages.map((p) => ({
 			url: p.route.url,
 			title: p.frontmatter.title ?? '',
 			draft: p.route.draft,

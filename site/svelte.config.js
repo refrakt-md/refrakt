@@ -8,12 +8,12 @@ const config = {
 			assets: 'build',
 			fallback: undefined,
 			precompress: false,
-			strict: true
+			strict: true,
 		}),
 		prerender: {
-			handleMissingId: 'warn'
-		}
-	}
+			handleMissingId: 'warn',
+		},
+	},
 };
 
 export default config;

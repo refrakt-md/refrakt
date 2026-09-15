@@ -1,5 +1,10 @@
 import { createHighlighter } from 'shiki';
-import type { LanguageRegistration, HighlighterGeneric, BundledLanguage, BundledTheme } from 'shiki';
+import type {
+	LanguageRegistration,
+	HighlighterGeneric,
+	BundledLanguage,
+	BundledTheme,
+} from 'shiki';
 import { isTag } from '@refrakt-md/transform';
 import type { RendererNode, SerializedTag } from '@refrakt-md/types';
 import { markdocLanguage } from './langs/markdoc.js';
@@ -43,10 +48,33 @@ export interface HighlightOptions {
 export type HighlightTransform = ((tree: RendererNode) => RendererNode) & { css: string };
 
 const DEFAULT_LANGS: (string | LanguageRegistration)[] = [
-	'javascript', 'typescript', 'html', 'css', 'json', 'jsonc', 'shell',
-	'python', 'ruby', 'go', 'rust', 'java', 'c', 'cpp',
-	'markdown', 'yaml', 'toml', 'sql', 'graphql', 'svelte',
-	'jsx', 'tsx', 'diff', 'xml', 'vue', 'astro', 'jinja',
+	'javascript',
+	'typescript',
+	'html',
+	'css',
+	'json',
+	'jsonc',
+	'shell',
+	'python',
+	'ruby',
+	'go',
+	'rust',
+	'java',
+	'c',
+	'cpp',
+	'markdown',
+	'yaml',
+	'toml',
+	'sql',
+	'graphql',
+	'svelte',
+	'jsx',
+	'tsx',
+	'diff',
+	'xml',
+	'vue',
+	'astro',
+	'jinja',
 	markdocLanguage,
 ];
 
@@ -63,12 +91,11 @@ const DEFAULT_LANGS: (string | LanguageRegistration)[] = [
  * for the selected theme (background color overrides, dual-theme toggle rules).
  */
 export async function createHighlightTransform(
-	options: HighlightOptions = {}
+	options: HighlightOptions = {},
 ): Promise<HighlightTransform> {
 	const { langs = DEFAULT_LANGS, highlight: customHighlight, theme, codeColorScheme } = options;
-	const forcedScheme = codeColorScheme === 'light' || codeColorScheme === 'dark'
-		? codeColorScheme
-		: undefined;
+	const forcedScheme =
+		codeColorScheme === 'light' || codeColorScheme === 'dark' ? codeColorScheme : undefined;
 
 	let highlightFn: (code: string, lang: string) => string;
 	let css = '';
@@ -113,7 +140,8 @@ export async function createHighlightTransform(
 		};
 	}
 
-	const transform = ((tree: RendererNode) => walk(tree, highlightFn, forcedScheme, false).node) as HighlightTransform;
+	const transform = ((tree: RendererNode) =>
+		walk(tree, highlightFn, forcedScheme, false).node) as HighlightTransform;
 	transform.css = css;
 	return transform;
 }
@@ -211,7 +239,7 @@ function walk(
 
 	const childHasCodeHost = hasCodeHostAncestor || isCodeHost;
 	let anyHighlighted = false;
-	const children = node.children.map(c => {
+	const children = node.children.map((c) => {
 		const result = walk(c, highlightFn, forcedScheme, childHasCodeHost);
 		if (result.hasHighlighted) anyHighlighted = true;
 		return result.node;
@@ -252,7 +280,7 @@ function walk(
 }
 
 function hasTextChildren(node: SerializedTag): boolean {
-	return node.children.some(c => typeof c === 'string');
+	return node.children.some((c) => typeof c === 'string');
 }
 
 function highlightNode(
@@ -260,9 +288,7 @@ function highlightNode(
 	lang: string,
 	highlightFn: (code: string, lang: string) => string,
 ): SerializedTag {
-	const text = node.children
-		.filter((c): c is string => typeof c === 'string')
-		.join('');
+	const text = node.children.filter((c): c is string => typeof c === 'string').join('');
 
 	try {
 		let html = highlightFn(text, lang);

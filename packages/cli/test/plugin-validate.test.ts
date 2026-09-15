@@ -5,7 +5,10 @@ import { tmpdir } from 'os';
 
 // Helper to create a temp package directory
 function createTempDir(): string {
-	const dir = join(tmpdir(), `refrakt-pkg-validate-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+	const dir = join(
+		tmpdir(),
+		`refrakt-pkg-validate-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+	);
 	mkdirSync(dir, { recursive: true });
 	return dir;
 }
@@ -138,7 +141,10 @@ describe('plugin-validate', () => {
 			main: 'src/index.js',
 		});
 
-		writeModule(tempDir, 'src/index.js', `
+		writeModule(
+			tempDir,
+			'src/index.js',
+			`
 			export const myPkg = {
 				name: 'valid-pkg',
 				version: '1.0.0',
@@ -150,7 +156,8 @@ describe('plugin-validate', () => {
 					},
 				},
 			};
-		`);
+		`,
+		);
 
 		const { pluginValidateCommand } = await import('../src/commands/plugin-validate.js');
 
@@ -187,7 +194,10 @@ describe('plugin-validate', () => {
 		});
 
 		// Write a module that exports a Plugin where 'broken' rune has no transform
-		writeModule(tempDir, 'src/index.js', `
+		writeModule(
+			tempDir,
+			'src/index.js',
+			`
 			export default {
 				name: 'bad-rune',
 				version: '1.0.0',
@@ -197,7 +207,8 @@ describe('plugin-validate', () => {
 					},
 				},
 			};
-		`);
+		`,
+		);
 
 		const { pluginValidateCommand } = await import('../src/commands/plugin-validate.js');
 
@@ -228,7 +239,10 @@ describe('plugin-validate', () => {
 			main: 'src/index.js',
 		});
 
-		writeModule(tempDir, 'src/index.js', `
+		writeModule(
+			tempDir,
+			'src/index.js',
+			`
 			export const myPkg = {
 				name: 'empty-fixture',
 				version: '1.0.0',
@@ -240,7 +254,8 @@ describe('plugin-validate', () => {
 					},
 				},
 			};
-		`);
+		`,
+		);
 
 		const { pluginValidateCommand } = await import('../src/commands/plugin-validate.js');
 
@@ -275,7 +290,10 @@ describe('plugin-validate', () => {
 			main: 'src/index.js',
 		});
 
-		writeModule(tempDir, 'src/index.js', `
+		writeModule(
+			tempDir,
+			'src/index.js',
+			`
 			export const myPkg = {
 				name: 'theme-config',
 				version: '1.0.0',
@@ -291,7 +309,8 @@ describe('plugin-validate', () => {
 					},
 				},
 			};
-		`);
+		`,
+		);
 
 		const { pluginValidateCommand } = await import('../src/commands/plugin-validate.js');
 
@@ -324,7 +343,10 @@ describe('plugin-validate', () => {
 			version: '1.0.0',
 			main: 'src/index.js',
 		});
-		writeModule(tempDir, 'src/index.js', `
+		writeModule(
+			tempDir,
+			'src/index.js',
+			`
 			export default {
 				name: 'role-cov',
 				version: '1.0.0',
@@ -332,15 +354,24 @@ describe('plugin-validate', () => {
 					'widget': { transform: { attributes: {} }, description: 'A widget' },
 				},
 			};
-		`);
+		`,
+		);
 		// Only a non-canonical file fixture for widget.
 		writeFixture(tempDir, 'widget.rich.md', '---\nrole: rich\n---\n{% widget %}x{% /widget %}');
 
 		const { pluginValidateCommand } = await import('../src/commands/plugin-validate.js');
-		const exitMock = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit'); });
+		const exitMock = vi.spyOn(process, 'exit').mockImplementation(() => {
+			throw new Error('exit');
+		});
 		const logs: string[] = [];
-		const logMock = vi.spyOn(console, 'log').mockImplementation((...a) => { logs.push(a.join(' ')); });
-		try { await pluginValidateCommand({ pluginDir: tempDir, json: true }); } catch { /* may exit */ }
+		const logMock = vi.spyOn(console, 'log').mockImplementation((...a) => {
+			logs.push(a.join(' '));
+		});
+		try {
+			await pluginValidateCommand({ pluginDir: tempDir, json: true });
+		} catch {
+			/* may exit */
+		}
 		const result = JSON.parse(logs.join('\n'));
 
 		expect(result.warnings.some((w: any) => w.path === 'fixtures.role')).toBe(true);
@@ -357,7 +388,10 @@ describe('plugin-validate', () => {
 			version: '1.0.0',
 			main: 'src/index.js',
 		});
-		writeModule(tempDir, 'src/index.js', `
+		writeModule(
+			tempDir,
+			'src/index.js',
+			`
 			export default {
 				name: 'role-ok',
 				version: '1.0.0',
@@ -365,14 +399,23 @@ describe('plugin-validate', () => {
 					'widget': { transform: { attributes: {} }, description: 'A widget' },
 				},
 			};
-		`);
+		`,
+		);
 		writeFixture(tempDir, 'widget.md', '{% widget %}x{% /widget %}');
 
 		const { pluginValidateCommand } = await import('../src/commands/plugin-validate.js');
-		const exitMock = vi.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit'); });
+		const exitMock = vi.spyOn(process, 'exit').mockImplementation(() => {
+			throw new Error('exit');
+		});
 		const logs: string[] = [];
-		const logMock = vi.spyOn(console, 'log').mockImplementation((...a) => { logs.push(a.join(' ')); });
-		try { await pluginValidateCommand({ pluginDir: tempDir, json: true }); } catch { /* may exit */ }
+		const logMock = vi.spyOn(console, 'log').mockImplementation((...a) => {
+			logs.push(a.join(' '));
+		});
+		try {
+			await pluginValidateCommand({ pluginDir: tempDir, json: true });
+		} catch {
+			/* may exit */
+		}
 		const result = JSON.parse(logs.join('\n'));
 
 		expect(result.warnings.some((w: any) => w.path === 'fixtures')).toBe(false);
@@ -393,7 +436,10 @@ describe('plugin-validate', () => {
 					'./cli-plugin': './src/cli-plugin.js',
 				},
 			});
-			writeModule(tempDir, 'src/index.js', `
+			writeModule(
+				tempDir,
+				'src/index.js',
+				`
 				export default {
 					name: 'plugin-pkg',
 					version: '1.0.0',
@@ -404,7 +450,8 @@ describe('plugin-validate', () => {
 						},
 					},
 				};
-			`);
+			`,
+			);
 			writeModule(tempDir, 'src/cli-plugin.js', pluginSource);
 		}
 
@@ -434,13 +481,17 @@ describe('plugin-validate', () => {
 				version: '1.0.0',
 				main: 'src/index.js',
 			});
-			writeModule(tempDir, 'src/index.js', `
+			writeModule(
+				tempDir,
+				'src/index.js',
+				`
 				export default {
 					name: 'no-plugin',
 					version: '1.0.0',
 					runes: { widget: { transform: { attributes: {} } } },
 				};
-			`);
+			`,
+			);
 			const { output } = await runValidate();
 			// Should pass with no cli-plugin warnings/errors.
 			expect(output).not.toContain('cli-plugin');
@@ -561,7 +612,10 @@ describe('plugin-validate', () => {
 			main: 'src/index.js',
 		});
 
-		writeModule(tempDir, 'src/index.js', `
+		writeModule(
+			tempDir,
+			'src/index.js',
+			`
 			export const myPkg = {
 				name: 'json-output',
 				version: '1.0.0',
@@ -573,7 +627,8 @@ describe('plugin-validate', () => {
 					},
 				},
 			};
-		`);
+		`,
+		);
 
 		const { pluginValidateCommand } = await import('../src/commands/plugin-validate.js');
 

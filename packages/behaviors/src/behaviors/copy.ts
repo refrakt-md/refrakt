@@ -3,7 +3,8 @@ import { elStr } from '../i18n.js';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-const COPY_ICON = '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>';
+const COPY_ICON =
+	'<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>';
 const CHECK_ICON = '<polyline points="20 6 9 17 4 12"/>';
 
 function createIcon(svgContent: string): SVGSVGElement {
@@ -32,7 +33,9 @@ function getCopyText(pre: HTMLElement): string {
 	const selector = pre.getAttribute('data-copy-selector');
 	if (selector) {
 		const els = pre.querySelectorAll(selector);
-		return Array.from(els).map((el) => el.textContent ?? '').join('\n');
+		return Array.from(els)
+			.map((el) => el.textContent ?? '')
+			.join('\n');
 	}
 	return pre.textContent ?? '';
 }
@@ -52,7 +55,11 @@ export function copyBehavior(container: HTMLElement | Document): CleanupFn {
 	for (const pre of pres) {
 		// Skip if a copy button was already injected in this pre's wrapper
 		const parent = pre.parentElement;
-		if (parent?.classList.contains('rf-codeblock') && parent.querySelector(':scope > .rf-codeblock__copy')) continue;
+		if (
+			parent?.classList.contains('rf-codeblock') &&
+			parent.querySelector(':scope > .rf-codeblock__copy')
+		)
+			continue;
 
 		const btn = document.createElement('button');
 		btn.className = 'rf-codeblock__copy';
@@ -83,7 +90,9 @@ export function copyBehavior(container: HTMLElement | Document): CleanupFn {
 
 		btn.addEventListener('click', handler);
 
-		const existingWrapper = pre.parentElement?.classList.contains('rf-codeblock') ? pre.parentElement : null;
+		const existingWrapper = pre.parentElement?.classList.contains('rf-codeblock')
+			? pre.parentElement
+			: null;
 
 		if (existingWrapper) {
 			// Add button to the existing SSR wrapper

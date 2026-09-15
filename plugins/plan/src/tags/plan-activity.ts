@@ -1,6 +1,11 @@
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, readDeferredBody, COLLECTION_SENTINEL } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	readDeferredBody,
+	COLLECTION_SENTINEL,
+} from '@refrakt-md/runes';
 
 /**
  * `plan-activity` (SPEC-072 / WORK-284) — thin sugar for a `collection` query
@@ -30,12 +35,18 @@ const DEFAULT_PLAN_ACTIVITY_BODY = `# Item
 
 export const planActivity = createContentModelSchema({
 	attributes: {
-		limit: { type: Number, required: false, default: 10, description: 'Maximum number of recent items to show.' },
+		limit: {
+			type: Number,
+			required: false,
+			default: 10,
+			description: 'Maximum number of recent items to show.',
+		},
 	},
 	deferBody: true,
 	contentModel: { type: 'sequence', fields: [] },
 	transform(_resolved, attrs) {
-		const meta = (field: string, content: string) => new Tag('meta', { 'data-field': field, content });
+		const meta = (field: string, content: string) =>
+			new Tag('meta', { 'data-field': field, content });
 		const bodySource = readDeferredBody(attrs) ?? DEFAULT_PLAN_ACTIVITY_BODY;
 		const limit = attrs.limit ?? 10;
 

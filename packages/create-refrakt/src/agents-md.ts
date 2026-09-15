@@ -30,7 +30,7 @@ export async function buildScaffoldReferenceContext(plugins: string[]): Promise<
 	}
 
 	if (plugins.length > 0) {
-		const loaded = await Promise.all(plugins.map(name => loadPlugin(name)));
+		const loaded = await Promise.all(plugins.map((name) => loadPlugin(name)));
 		const coreRuneNames = new Set(Object.keys(coreRunes));
 		const merged = mergePlugins(loaded, coreRuneNames);
 

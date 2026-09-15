@@ -28,17 +28,34 @@ const TOKEN_CONTRACT_SHAPE: Record<string, ContractNode> = {
 	},
 	// SPEC-094 — typographic scale, weights, line-heights, tracking.
 	text: {
-		xs: 'leaf', sm: 'leaf', base: 'leaf', lg: 'leaf', xl: 'leaf',
-		'2xl': 'leaf', '3xl': 'leaf', '4xl': 'leaf',
+		xs: 'leaf',
+		sm: 'leaf',
+		base: 'leaf',
+		lg: 'leaf',
+		xl: 'leaf',
+		'2xl': 'leaf',
+		'3xl': 'leaf',
+		'4xl': 'leaf',
 	},
 	weight: {
-		light: 'leaf', normal: 'leaf', medium: 'leaf', semibold: 'leaf', bold: 'leaf',
+		light: 'leaf',
+		normal: 'leaf',
+		medium: 'leaf',
+		semibold: 'leaf',
+		bold: 'leaf',
 	},
 	leading: {
-		tight: 'leaf', snug: 'leaf', normal: 'leaf', relaxed: 'leaf', loose: 'leaf',
+		tight: 'leaf',
+		snug: 'leaf',
+		normal: 'leaf',
+		relaxed: 'leaf',
+		loose: 'leaf',
 	},
 	tracking: {
-		tight: 'leaf', normal: 'leaf', wide: 'leaf', wider: 'leaf',
+		tight: 'leaf',
+		normal: 'leaf',
+		wide: 'leaf',
+		wider: 'leaf',
 	},
 	color: {
 		text: 'leaf',
@@ -50,52 +67,91 @@ const TOKEN_CONTRACT_SHAPE: Record<string, ContractNode> = {
 		'primary-bg': 'leaf',
 		'on-primary': 'leaf',
 		surface: {
-			base: 'leaf', hover: 'leaf', active: 'leaf', raised: 'leaf',
+			base: 'leaf',
+			hover: 'leaf',
+			active: 'leaf',
+			raised: 'leaf',
 		},
 		info: sentimentShape,
 		warning: sentimentShape,
 		danger: sentimentShape,
 		success: sentimentShape,
 		code: {
-			bg: 'leaf', text: 'leaf', 'inline-bg': 'leaf',
+			bg: 'leaf',
+			text: 'leaf',
+			'inline-bg': 'leaf',
 		},
 		// WORK-304 — line-level annotation tokens (snippet / codegroup / diff).
 		line: {
-			highlight: 'leaf', 'highlight-rail': 'leaf', number: 'leaf',
+			highlight: 'leaf',
+			'highlight-rail': 'leaf',
+			number: 'leaf',
 		},
 	},
 	radius: {
-		sm: 'leaf', md: 'leaf', lg: 'leaf', full: 'leaf',
+		sm: 'leaf',
+		md: 'leaf',
+		lg: 'leaf',
+		full: 'leaf',
 	},
 	spacing: {
-		xs: 'leaf', sm: 'leaf', snug: 'leaf', cozy: 'leaf',
-		md: 'leaf', lg: 'leaf', xl: 'leaf', '2xl': 'leaf',
+		xs: 'leaf',
+		sm: 'leaf',
+		snug: 'leaf',
+		cozy: 'leaf',
+		md: 'leaf',
+		lg: 'leaf',
+		xl: 'leaf',
+		'2xl': 'leaf',
 		section: { base: 'leaf', tight: 'leaf', loose: 'leaf', breathe: 'leaf' },
 	},
 	inset: {
-		flush: 'leaf', tight: 'leaf', loose: 'leaf', breathe: 'leaf',
+		flush: 'leaf',
+		tight: 'leaf',
+		loose: 'leaf',
+		breathe: 'leaf',
 	},
 	shadow: {
-		none: 'leaf', xs: 'leaf', sm: 'leaf', md: 'leaf', lg: 'leaf',
+		none: 'leaf',
+		xs: 'leaf',
+		sm: 'leaf',
+		md: 'leaf',
+		lg: 'leaf',
 	},
 	syntax: {
 		// Required core roles.
-		keyword: 'leaf', function: 'leaf', string: 'leaf', constant: 'leaf',
-		comment: 'leaf', punctuation: 'leaf', variable: 'leaf',
+		keyword: 'leaf',
+		function: 'leaf',
+		string: 'leaf',
+		constant: 'leaf',
+		comment: 'leaf',
+		punctuation: 'leaf',
+		variable: 'leaf',
 		// Optional, existing — themes use these to break the function→link
 		// and string→string-expression auto-derive defaults.
-		link: 'leaf', 'string-expression': 'leaf',
+		link: 'leaf',
+		'string-expression': 'leaf',
 		// Optional, extended (SPEC-056) — preset authors set these to carry
 		// palettes that intentionally split distinctions the core collapses
 		// (e.g. Nord's type≠function, distinct tag/attribute/operator/number/
 		// regex hues). Each falls back to a documented core role when unset.
-		type: 'leaf', property: 'leaf', parameter: 'leaf', tag: 'leaf',
-		attribute: 'leaf', operator: 'leaf', number: 'leaf', regex: 'leaf',
+		type: 'leaf',
+		property: 'leaf',
+		parameter: 'leaf',
+		tag: 'leaf',
+		attribute: 'leaf',
+		operator: 'leaf',
+		number: 'leaf',
+		regex: 'leaf',
 	},
 	// SPEC-105 — scroll-reveal motion physics (optional group).
 	reveal: {
-		duration: 'leaf', easing: 'leaf', distance: 'leaf',
-		'scale-start': 'leaf', blur: 'leaf', stagger: 'leaf',
+		duration: 'leaf',
+		easing: 'leaf',
+		distance: 'leaf',
+		'scale-start': 'leaf',
+		blur: 'leaf',
+		stagger: 'leaf',
 	},
 };
 
@@ -143,7 +199,10 @@ export function validateThemeTokensConfig(input: unknown): TokenValidationResult
 
 	if (modes !== undefined) {
 		if (!isPlainObject(modes)) {
-			errors.push({ path: 'modes', message: 'modes must be a plain object of <name> → ThemeTokensModeOverlay' });
+			errors.push({
+				path: 'modes',
+				message: 'modes must be a plain object of <name> → ThemeTokensModeOverlay',
+			});
 		} else {
 			for (const [modeName, modeOverlay] of Object.entries(modes)) {
 				if (!isPlainObject(modeOverlay)) {
@@ -156,12 +215,7 @@ export function validateThemeTokensConfig(input: unknown): TokenValidationResult
 				const { extra: modeExtra, ...modeTokens } = modeOverlay as Record<string, unknown> & {
 					extra?: unknown;
 				};
-				walkConfig(
-					modeTokens,
-					`modes.${modeName}`,
-					TOKEN_CONTRACT_SHAPE,
-					errors,
-				);
+				walkConfig(modeTokens, `modes.${modeName}`, TOKEN_CONTRACT_SHAPE, errors);
 				if (modeExtra !== undefined) {
 					if (!isPlainObject(modeExtra)) {
 						errors.push({
@@ -185,7 +239,10 @@ export function validateThemeTokensConfig(input: unknown): TokenValidationResult
 
 	if (extra !== undefined) {
 		if (!isPlainObject(extra)) {
-			errors.push({ path: 'extra', message: 'extra must be a plain object of string keys to string values' });
+			errors.push({
+				path: 'extra',
+				message: 'extra must be a plain object of string keys to string values',
+			});
 		} else {
 			for (const [k, v] of Object.entries(extra)) {
 				if (typeof v !== 'string') {
@@ -255,7 +312,7 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
  */
 export function formatTokenValidationErrors(result: TokenValidationResult): string {
 	if (result.valid) return '';
-	const lines = result.errors.map(e => `  - ${e.message}`);
+	const lines = result.errors.map((e) => `  - ${e.message}`);
 	return `theme.tokens validation failed:\n${lines.join('\n')}`;
 }
 

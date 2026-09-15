@@ -1,49 +1,60 @@
 @layer skin {
-/* Work */
+	/* Work */
 
-/* SPEC-080: eyebrow / metadata / tags are projected blocks placed at the
+	/* SPEC-080: eyebrow / metadata / tags are projected blocks placed at the
  * rune root via `layout`. Geometry comes from the universal
  * `[data-zone-layout]` selectors in dimensions/metadata.css; this file
  * carries the work-specific spacing + complexity dots + assignee prefix. */
 
-.rf-work__eyebrow {
-	margin-bottom: 0.75rem;
-}
+	.rf-work__eyebrow {
+		margin-bottom: 0.75rem;
+	}
 
-.rf-work__title h1,
-.rf-work__title h2,
-.rf-work__title h3 {
-	margin-top: 0;
-}
+	.rf-work__title h1,
+	.rf-work__title h2,
+	.rf-work__title h3 {
+		margin-top: 0;
+	}
 
-.rf-work__metadata {
-	margin-bottom: 1.5rem;
-}
+	.rf-work__metadata {
+		margin-bottom: 1.5rem;
+	}
 
-/* Assignee — `@` prefix on the plain-text def-list value. Targets the
+	/* Assignee — `@` prefix on the plain-text def-list value. Targets the
  * row by field name so milestone / tags don't get the prefix too. */
-.rf-work__metadata [data-field="assignee"] dd .rf-badge::before { content: '@'; }
+	.rf-work__metadata [data-field="assignee"] dd .rf-badge::before {
+		content: "@";
+	}
 
-.rf-work__body {
-	font-size: var(--rf-text-sm);
-	line-height: var(--rf-leading-relaxed);
-}
-.rf-work__body > section {
-	margin-top: 1rem;
-	padding-top: 0.75rem;
-	border-top: 1px solid var(--rf-color-border);
-}
-.rf-work__body > section:first-child {
-	margin-top: 0.75rem;
-}
+	.rf-work__body {
+		font-size: var(--rf-text-sm);
+		line-height: var(--rf-leading-relaxed);
+	}
+	.rf-work__body > section {
+		margin-top: 1rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--rf-color-border);
+	}
+	.rf-work__body > section:first-child {
+		margin-top: 0.75rem;
+	}
 
-/* Complexity dots — appended after the value cell in the def-list. The
+	/* Complexity dots — appended after the value cell in the def-list. The
  * `data-complexity` attribute lives on the root work element (set by
  * engine modifier processing). */
-[data-complexity="trivial"]  .rf-work__metadata [data-field="complexity"] dd::after { content: '  ●'; }
-[data-complexity="simple"]   .rf-work__metadata [data-field="complexity"] dd::after { content: '  ●●'; }
-[data-complexity="moderate"] .rf-work__metadata [data-field="complexity"] dd::after { content: '  ●●●'; }
-[data-complexity="complex"]  .rf-work__metadata [data-field="complexity"] dd::after { content: '  ●●●●'; }
-[data-complexity="unknown"]  .rf-work__metadata [data-field="complexity"] dd::after { content: '  ?'; }
-
+	[data-complexity="trivial"] .rf-work__metadata [data-field="complexity"] dd::after {
+		content: "  ●";
+	}
+	[data-complexity="simple"] .rf-work__metadata [data-field="complexity"] dd::after {
+		content: "  ●●";
+	}
+	[data-complexity="moderate"] .rf-work__metadata [data-field="complexity"] dd::after {
+		content: "  ●●●";
+	}
+	[data-complexity="complex"] .rf-work__metadata [data-field="complexity"] dd::after {
+		content: "  ●●●●";
+	}
+	[data-complexity="unknown"] .rf-work__metadata [data-field="complexity"] dd::after {
+		content: "  ?";
+	}
 }

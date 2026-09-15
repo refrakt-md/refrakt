@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { findBrokenFragments, findComments, collectPages, headingIdsFor, urlForFile, hasGeneratedHeadings } from './check-content-links.mjs';
+import {
+	findBrokenFragments,
+	findComments,
+	collectPages,
+	headingIdsFor,
+	urlForFile,
+	hasGeneratedHeadings,
+} from './check-content-links.mjs';
 
 /**
  * Colocated with the script, the same shape as `check-rune-docs.mjs`: unit
@@ -61,7 +68,7 @@ describe('urlForFile', () => {
 describe('the real content tree', () => {
 	it('has no internal fragment pointing at a missing heading', () => {
 		const broken = findBrokenFragments(collectPages());
-		expect(broken.map(b => `${b.from} → ${b.url}#${b.fragment}`)).toEqual([]);
+		expect(broken.map((b) => `${b.from} → ${b.url}#${b.fragment}`)).toEqual([]);
 	});
 });
 

@@ -1,90 +1,91 @@
 @layer skin {
-/* DataTable — skin. The toolbar/pagination flex + input width live in
+	/* DataTable — skin. The toolbar/pagination flex + input width live in
  * @refrakt-md/skeleton (styles/runes/datatable.css). The table chrome (header
  * strip, cell padding, row borders, hover) stays here. */
 
-/* The sunken surface chrome (fill + border + container radius) stays, but the
+	/* The sunken surface chrome (fill + border + container radius) stays, but the
  * elevation padding is dropped: the toolbar, table, and pagination each carry
  * their own rhythm and sit flush with the surface edge. */
-.rf-datatable {
-	padding: 0;
-}
-.rf-datatable__toolbar {
-	padding: var(--rf-spacing-sm);
-}
-.rf-datatable__input {
-	padding: var(--rf-spacing-snug);
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-media);
-	font-size: var(--rf-text-xs);
-	font-family: var(--rf-font-sans);
-	background: var(--rf-color-bg);
-	color: var(--rf-color-text);
-}
-.rf-datatable__input:focus {
-	outline: none;
-	border-color: var(--rf-color-primary);
-	box-shadow: 0 0 0 2px color-mix(in srgb, var(--rf-color-primary) 15%, transparent);
-}
-.rf-datatable__table {
-	width: 100%;
-	border-collapse: collapse;
-	margin: 0;
-}
-.rf-datatable__table th {
-	text-align: left;
-	padding: 0.75rem 1rem;
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-semibold);
-	text-transform: uppercase;
-	letter-spacing: var(--rf-tracking-wider);
-	color: var(--rf-color-muted);
-}
-/* Sortable headers (the behavior sets inline cursor:pointer on them). */
-.rf-datatable__table th[style*="cursor"]:hover {
-	color: var(--rf-color-text);
-}
-.rf-datatable__sort-indicator {
-	font-size: var(--rf-text-xs);
-	opacity: 0.7;
-}
-.rf-datatable__table td {
-	padding: 0.75rem 1rem;
-	border-bottom: 1px solid var(--rf-color-border);
-	font-size: var(--rf-text-sm);
-}
-.rf-datatable__table tr:last-child td {
-	border-bottom: none;
-}
-.rf-datatable__table tr:hover td {
-	background: var(--rf-color-surface-hover);
-}
-.rf-datatable__pagination {
-	gap: 0.75rem;
-	padding: var(--rf-spacing-sm);
-}
-.rf-datatable__page-btn {
-	padding: 0.25rem 0.5rem;
-	border: none;
-	border-radius: var(--rf-radius-sm);
-	background: transparent;
-	color: var(--rf-color-muted);
-	font-size: var(--rf-text-xs);
-	font-family: var(--rf-font-sans);
-	cursor: pointer;
-	transition: color 150ms ease, background 150ms ease;
-}
-.rf-datatable__page-btn:hover:not(:disabled) {
-	color: var(--rf-color-text);
-	background: var(--rf-color-surface-hover);
-}
-.rf-datatable__page-btn:disabled {
-	opacity: 0.3;
-	cursor: not-allowed;
-}
-.rf-datatable__page-info {
-	font-size: var(--rf-text-xs);
-	color: var(--rf-color-muted);
-}
-
+	.rf-datatable {
+		padding: 0;
+	}
+	.rf-datatable__toolbar {
+		padding: var(--rf-spacing-sm);
+	}
+	.rf-datatable__input {
+		padding: var(--rf-spacing-snug);
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-media);
+		font-size: var(--rf-text-xs);
+		font-family: var(--rf-font-sans);
+		background: var(--rf-color-bg);
+		color: var(--rf-color-text);
+	}
+	.rf-datatable__input:focus {
+		outline: none;
+		border-color: var(--rf-color-primary);
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--rf-color-primary) 15%, transparent);
+	}
+	.rf-datatable__table {
+		width: 100%;
+		border-collapse: collapse;
+		margin: 0;
+	}
+	.rf-datatable__table th {
+		text-align: left;
+		padding: 0.75rem 1rem;
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-semibold);
+		text-transform: uppercase;
+		letter-spacing: var(--rf-tracking-wider);
+		color: var(--rf-color-muted);
+	}
+	/* Sortable headers (the behavior sets inline cursor:pointer on them). */
+	.rf-datatable__table th[style*="cursor"]:hover {
+		color: var(--rf-color-text);
+	}
+	.rf-datatable__sort-indicator {
+		font-size: var(--rf-text-xs);
+		opacity: 0.7;
+	}
+	.rf-datatable__table td {
+		padding: 0.75rem 1rem;
+		border-bottom: 1px solid var(--rf-color-border);
+		font-size: var(--rf-text-sm);
+	}
+	.rf-datatable__table tr:last-child td {
+		border-bottom: none;
+	}
+	.rf-datatable__table tr:hover td {
+		background: var(--rf-color-surface-hover);
+	}
+	.rf-datatable__pagination {
+		gap: 0.75rem;
+		padding: var(--rf-spacing-sm);
+	}
+	.rf-datatable__page-btn {
+		padding: 0.25rem 0.5rem;
+		border: none;
+		border-radius: var(--rf-radius-sm);
+		background: transparent;
+		color: var(--rf-color-muted);
+		font-size: var(--rf-text-xs);
+		font-family: var(--rf-font-sans);
+		cursor: pointer;
+		transition:
+			color 150ms ease,
+			background 150ms ease;
+	}
+	.rf-datatable__page-btn:hover:not(:disabled) {
+		color: var(--rf-color-text);
+		background: var(--rf-color-surface-hover);
+	}
+	.rf-datatable__page-btn:disabled {
+		opacity: 0.3;
+		cursor: not-allowed;
+	}
+	.rf-datatable__page-info {
+		font-size: var(--rf-text-xs);
+		color: var(--rf-color-muted);
+	}
 }

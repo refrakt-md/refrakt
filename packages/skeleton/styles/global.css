@@ -10,28 +10,68 @@
  * specificity within the same layer. In skin it would beat those resets
  * regardless of specificity, opening gaps at zone edges. */
 
-*, *::before, *::after { box-sizing: border-box; }
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
 
-body { margin: 0; }
+body {
+	margin: 0;
+}
 
 /* Consumed meta tags never render. */
-meta { display: none; }
+meta {
+	display: none;
+}
 
 /* Heading + paragraph vertical rhythm. */
-h1, h2, h3, h4, h5, h6 { margin-top: 2em; margin-bottom: 0.5em; }
-p { margin-top: 0; margin-bottom: 1rem; }
-hr { margin: 2rem 0; }
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	margin-top: 2em;
+	margin-bottom: 0.5em;
+}
+p {
+	margin-top: 0;
+	margin-bottom: 1rem;
+}
+hr {
+	margin: 2rem 0;
+}
 
 /* Lists — indent + rhythm (rune list resets override these in-layer). */
-ul, ol { padding-left: 1.5rem; margin-top: 0; margin-bottom: 1rem; }
-li { margin-bottom: 0.25rem; }
-li > p { margin-bottom: 0.5rem; }
+ul,
+ol {
+	padding-left: 1.5rem;
+	margin-top: 0;
+	margin-bottom: 1rem;
+}
+li {
+	margin-bottom: 0.25rem;
+}
+li > p {
+	margin-bottom: 0.5rem;
+}
 
 /* Responsive image constraint. */
-img { max-width: 100%; height: auto; }
+img {
+	max-width: 100%;
+	height: auto;
+}
 
 /* Code block scroll + rhythm (its surface treatment is skin). */
-pre { overflow-x: auto; margin: 1.5rem 0; }
+pre {
+	overflow-x: auto;
+	margin: 1.5rem 0;
+}
 
 /* Table layout + rhythm (cell treatment is skin). */
-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 1.5rem 0;
+}

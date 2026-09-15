@@ -33,7 +33,11 @@ export const date: ConfigFunction = {
 		const raw = parameters[0];
 		const d = new Date(String(raw));
 		if (Number.isNaN(d.getTime())) return String(raw ?? '');
-		return new Intl.DateTimeFormat(LOCALE, { year: 'numeric', month: 'short', day: 'numeric' }).format(d);
+		return new Intl.DateTimeFormat(LOCALE, {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric',
+		}).format(d);
 	},
 };
 
@@ -63,7 +67,9 @@ export const join: ConfigFunction = {
  */
 export const concat: ConfigFunction = {
 	transform(parameters) {
-		return Object.values(parameters).map((v) => (v == null ? '' : String(v))).join('');
+		return Object.values(parameters)
+			.map((v) => (v == null ? '' : String(v)))
+			.join('');
 	},
 };
 
@@ -88,4 +94,11 @@ const humanizeFn: ConfigFunction = {
 };
 
 /** The shared formatter-function set, keyed by their markdoc name. */
-export const functions: Record<string, ConfigFunction> = { currency, date, number, join, concat, humanize: humanizeFn };
+export const functions: Record<string, ConfigFunction> = {
+	currency,
+	date,
+	number,
+	join,
+	concat,
+	humanize: humanizeFn,
+};

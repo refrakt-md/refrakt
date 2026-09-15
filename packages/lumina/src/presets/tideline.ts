@@ -82,10 +82,26 @@ const tideline: ThemeTokensConfig = {
 					raised: '#1a2940',
 				},
 
-				info: { base: '#a8dadc', bg: 'rgba(69, 123, 157, 0.12)', border: 'rgba(69, 123, 157, 0.3)' },
-				warning: { base: '#e8c07a', bg: 'rgba(200, 144, 10, 0.12)', border: 'rgba(200, 144, 10, 0.3)' },
-				danger: { base: '#f07078', bg: 'rgba(230, 57, 70, 0.12)', border: 'rgba(230, 57, 70, 0.3)' },
-				success: { base: '#72c098', bg: 'rgba(61, 143, 101, 0.12)', border: 'rgba(61, 143, 101, 0.3)' },
+				info: {
+					base: '#a8dadc',
+					bg: 'rgba(69, 123, 157, 0.12)',
+					border: 'rgba(69, 123, 157, 0.3)',
+				},
+				warning: {
+					base: '#e8c07a',
+					bg: 'rgba(200, 144, 10, 0.12)',
+					border: 'rgba(200, 144, 10, 0.3)',
+				},
+				danger: {
+					base: '#f07078',
+					bg: 'rgba(230, 57, 70, 0.12)',
+					border: 'rgba(230, 57, 70, 0.3)',
+				},
+				success: {
+					base: '#72c098',
+					bg: 'rgba(61, 143, 101, 0.12)',
+					border: 'rgba(61, 143, 101, 0.3)',
+				},
 
 				code: {
 					bg: '#152238',

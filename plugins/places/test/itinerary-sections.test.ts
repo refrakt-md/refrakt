@@ -9,12 +9,19 @@ import { config as placesConfig } from '../src/config.js';
 // `ItineraryDay` as missing a header-ish role; the assessment declines it and
 // finds an undeclared body slot on `ItineraryStop` instead.
 
-const themeConfig: ThemeConfig = { prefix: 'rf', tokenPrefix: '--rf', icons: {}, runes: placesConfig };
+const themeConfig: ThemeConfig = {
+	prefix: 'rf',
+	tokenPrefix: '--rf',
+	icons: {},
+	runes: placesConfig,
+};
 
 function transformed(content: string): SerializedTag {
 	const found = findTag(parse(content) as any, (t) => t.attributes['data-rune'] === 'itinerary');
 	expect(found, 'no itinerary in schema output').toBeDefined();
-	return createTransform(themeConfig)(JSON.parse(JSON.stringify(found)) as SerializedTag) as SerializedTag;
+	return createTransform(themeConfig)(
+		JSON.parse(JSON.stringify(found)) as SerializedTag,
+	) as SerializedTag;
 }
 
 function findByAttr(node: any, attr: string, value: string): any {

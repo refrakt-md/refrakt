@@ -8,12 +8,19 @@ import { config as mediaConfig } from '../src/config.js';
 // SPEC-125 Phase 1 / WORK-531 — playlist declared a `body` slot in its layout
 // and never mapped it, so `reading` and `dropcap` were silently dropped.
 
-const themeConfig: ThemeConfig = { prefix: 'rf', tokenPrefix: '--rf', icons: {}, runes: mediaConfig };
+const themeConfig: ThemeConfig = {
+	prefix: 'rf',
+	tokenPrefix: '--rf',
+	icons: {},
+	runes: mediaConfig,
+};
 
 function transformed(content: string): SerializedTag {
 	const found = findTag(parse(content) as any, (t) => t.attributes['data-rune'] === 'playlist');
 	expect(found, 'no playlist in schema output').toBeDefined();
-	return createTransform(themeConfig)(JSON.parse(JSON.stringify(found)) as SerializedTag) as SerializedTag;
+	return createTransform(themeConfig)(
+		JSON.parse(JSON.stringify(found)) as SerializedTag,
+	) as SerializedTag;
 }
 
 function findByAttr(node: any, attr: string, value: string): any {
@@ -37,7 +44,9 @@ Recorded at Abbey Road between June 1972 and January 1973.
 
 describe('playlist section roles', () => {
 	it('emits data-section="body" on the trailing prose', () => {
-		expect(findByAttr(transformed(src()), 'data-name', 'body')?.attributes['data-section']).toBe('body');
+		expect(findByAttr(transformed(src()), 'data-name', 'body')?.attributes['data-section']).toBe(
+			'body',
+		);
 	});
 
 	it('reading and dropcap land on that prose', () => {

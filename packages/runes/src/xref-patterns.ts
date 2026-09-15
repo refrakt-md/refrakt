@@ -167,7 +167,7 @@ export function compileXrefPatterns(
 		if (unknown.length > 0) {
 			const dedup = [...new Set(unknown)];
 			result.errors.push(
-				`${ref}: unknown placeholder${dedup.length === 1 ? '' : 's'} ${dedup.map(n => `{${n}}`).join(', ')} (must be \`{id}\` or a named group of the regex)`,
+				`${ref}: unknown placeholder${dedup.length === 1 ? '' : 's'} ${dedup.map((n) => `{${n}}`).join(', ')} (must be \`{id}\` or a named group of the regex)`,
 			);
 			return;
 		}

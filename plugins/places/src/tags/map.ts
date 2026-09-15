@@ -17,8 +17,8 @@ const SEPARATOR = /\s*[-–—]\s*/;
 // Extract plain text content from an AST node
 function extractText(node: Node): string {
 	return Array.from(node.walk())
-		.filter(n => n.type === 'text')
-		.map(n => n.attributes.content)
+		.filter((n) => n.type === 'text')
+		.map((n) => n.attributes.content)
 		.join('');
 }
 
@@ -41,14 +41,14 @@ function parseLocationItem(node: Node): {
 	for (const child of allNodes) {
 		if (child.type === 'strong') {
 			name = Array.from(child.walk())
-				.filter(n => n.type === 'text')
-				.map(n => n.attributes.content)
+				.filter((n) => n.type === 'text')
+				.map((n) => n.attributes.content)
 				.join('');
 		} else if (child.type === 'em' && child !== node) {
 			// Only pick up em nodes that aren't the root
 			const emText = Array.from(child.walk())
-				.filter(n => n.type === 'text')
-				.map(n => n.attributes.content)
+				.filter((n) => n.type === 'text')
+				.map((n) => n.attributes.content)
 				.join('');
 			if (!description) description = emText;
 		} else if (child.type === 'link') {
@@ -111,7 +111,8 @@ const mapPin = createContentModelSchema({
 		const urlMeta = new Tag('meta', { content: attrs.url ?? '' });
 		const groupMeta = new Tag('meta', { content: attrs.group ?? '' });
 
-		return createComponentRenderable({ rune: 'map-pin',
+		return createComponentRenderable({
+			rune: 'map-pin',
 			tag: 'li',
 			properties: {
 				lat: latMeta,
@@ -141,15 +142,22 @@ function convertMapChildren(nodes: unknown[]): unknown[] {
 			for (const item of node.children) {
 				if (item.type === 'item') {
 					const loc = parseLocationItem(item);
-					converted.push(new Ast.Node('tag', {
-						name: loc.name,
-						description: loc.description,
-						lat: loc.lat,
-						lng: loc.lng,
-						address: loc.address,
-						url: loc.url,
-						group: currentGroup,
-					}, [], 'map-pin'));
+					converted.push(
+						new Ast.Node(
+							'tag',
+							{
+								name: loc.name,
+								description: loc.description,
+								lat: loc.lat,
+								lng: loc.lng,
+								address: loc.address,
+								url: loc.url,
+								group: currentGroup,
+							},
+							[],
+							'map-pin',
+						),
+					);
 				}
 			}
 		} else {
@@ -164,20 +172,56 @@ export { mapPin };
 
 export const map = createContentModelSchema({
 	attributes: {
-		zoom: { type: String, required: false, description: 'Initial zoom level of the map (higher values zoom in closer).' },
-		center: { type: String, required: false, description: 'Coordinates to center the map on (e.g. "48.8566, 2.3522").' },
-		variant: { type: String, required: false, matches: variantType.slice(), description: 'Visual style of the map tiles: street, satellite, terrain, dark, or minimal.' },
-		height: { type: String, required: false, matches: heightType.slice(), description: 'Vertical size of the map container: small, medium, large, or full.' },
-		provider: { type: String, required: false, matches: providerType.slice(), description: 'Tile provider used for rendering: openstreetmap or mapbox.' },
-		interactive: { type: Boolean, required: false, description: 'Enable or disable pan and zoom interaction on the map.' },
-		route: { type: Boolean, required: false, description: 'Enable or disable drawing a route line between pins.' },
-		cluster: { type: Boolean, required: false, description: 'Enable or disable grouping nearby pins into clusters at low zoom.' },
+		zoom: {
+			type: String,
+			required: false,
+			description: 'Initial zoom level of the map (higher values zoom in closer).',
+		},
+		center: {
+			type: String,
+			required: false,
+			description: 'Coordinates to center the map on (e.g. "48.8566, 2.3522").',
+		},
+		variant: {
+			type: String,
+			required: false,
+			matches: variantType.slice(),
+			description: 'Visual style of the map tiles: street, satellite, terrain, dark, or minimal.',
+		},
+		height: {
+			type: String,
+			required: false,
+			matches: heightType.slice(),
+			description: 'Vertical size of the map container: small, medium, large, or full.',
+		},
+		provider: {
+			type: String,
+			required: false,
+			matches: providerType.slice(),
+			description: 'Tile provider used for rendering: openstreetmap or mapbox.',
+		},
+		interactive: {
+			type: Boolean,
+			required: false,
+			description: 'Enable or disable pan and zoom interaction on the map.',
+		},
+		route: {
+			type: Boolean,
+			required: false,
+			description: 'Enable or disable drawing a route line between pins.',
+		},
+		cluster: {
+			type: Boolean,
+			required: false,
+			description: 'Enable or disable grouping nearby pins into clusters at low zoom.',
+		},
 	},
 	contentModel: {
 		type: 'custom',
 		processChildren: convertMapChildren,
-		description: 'Parses list items into map-pin tags with bold names, italic descriptions, '
-			+ 'link URLs, coordinate regex extraction, and heading-based grouping.',
+		description:
+			'Parses list items into map-pin tags with bold names, italic descriptions, ' +
+			'link URLs, coordinate regex extraction, and heading-based grouping.',
 	},
 	transform(resolved, attrs, config) {
 		const body = new RenderableNodeCursor(
@@ -196,7 +240,9 @@ export const map = createContentModelSchema({
 		const pins = body.tag('li').typeof('MapPin');
 		const pinsList = new Tag('ol', {}, pins.toArray());
 
-		const node = createComponentRenderable({ rune: 'map', schemaOrgType: 'Place',
+		const node = createComponentRenderable({
+			rune: 'map',
+			schemaOrgType: 'Place',
 			tag: 'div',
 			properties: {
 				zoom: zoomMeta,
@@ -210,7 +256,17 @@ export const map = createContentModelSchema({
 				pin: pins,
 			},
 			refs: { pins: pinsList },
-			children: [zoomMeta, centerMeta, variantMeta, heightMeta, providerMeta, interactiveMeta, routeMeta, clusterMeta, pinsList],
+			children: [
+				zoomMeta,
+				centerMeta,
+				variantMeta,
+				heightMeta,
+				providerMeta,
+				interactiveMeta,
+				routeMeta,
+				clusterMeta,
+				pinsList,
+			],
 		});
 		// Emit as the rf-map custom element (the web component upgrades it).
 		node.name = 'rf-map';

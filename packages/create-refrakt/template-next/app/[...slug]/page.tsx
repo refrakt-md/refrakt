@@ -6,7 +6,13 @@ import { getThemePackage } from '@refrakt-md/types';
 import manifest from '@refrakt-md/lumina/manifest';
 import { layouts } from '@refrakt-md/lumina/layouts';
 const theme = { manifest, layouts };
-import { RefraktContent, buildMetadata, buildJsonLd, buildUrlFromParams, hasInteractiveRunes } from '@refrakt-md/next';
+import {
+	RefraktContent,
+	buildMetadata,
+	buildJsonLd,
+	buildUrlFromParams,
+	hasInteractiveRunes,
+} from '@refrakt-md/next';
 import { BehaviorInit } from '@refrakt-md/next/client';
 import type { RendererNode } from '@refrakt-md/types';
 import type { Schema } from '@markdoc/markdoc';
@@ -34,9 +40,7 @@ async function getTransformAndTags() {
 		return { transform: createTransform(themeConfig), communityTags: undefined };
 	}
 
-	const loaded = await Promise.all(
-		pluginNames.map((name: string) => loadPlugin(name))
-	);
+	const loaded = await Promise.all(pluginNames.map((name: string) => loadPlugin(name)));
 	const coreRuneNames = new Set(Object.keys(coreRunes));
 	const merged = mergePlugins(loaded, coreRuneNames, site.runes?.prefer);
 

@@ -4,9 +4,15 @@
 .rf-textblock__body {
 	display: block;
 }
-.rf-textblock[data-columns="2"] .rf-textblock__body { column-count: 2; }
-.rf-textblock[data-columns="3"] .rf-textblock__body { column-count: 3; }
-.rf-textblock[data-columns="4"] .rf-textblock__body { column-count: 4; }
+.rf-textblock[data-columns="2"] .rf-textblock__body {
+	column-count: 2;
+}
+.rf-textblock[data-columns="3"] .rf-textblock__body {
+	column-count: 3;
+}
+.rf-textblock[data-columns="4"] .rf-textblock__body {
+	column-count: 4;
+}
 @media (max-width: 768px) {
 	.rf-textblock[data-columns="3"] .rf-textblock__body,
 	.rf-textblock[data-columns="4"] .rf-textblock__body {

@@ -37,17 +37,33 @@ const contract = generateStructureContract(fullConfig);
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 
 /** Every tag whose rune also has a contract entry, paired up. */
-function pairs(): Array<{ rune: string; tag: string; attrs: Set<string>; unavailable: Set<string> }> {
+function pairs(): Array<{
+	rune: string;
+	tag: string;
+	attrs: Set<string>;
+	unavailable: Set<string>;
+}> {
 	const byNorm = new Map<string, { rune: string; unavailable: Set<string> }>();
 	for (const [rune, entry] of Object.entries(contract.runes)) {
-		const u = new Set(Object.keys((entry as never as { universalAxes?: { unavailable?: object } }).universalAxes?.unavailable ?? {}));
+		const u = new Set(
+			Object.keys(
+				(entry as never as { universalAxes?: { unavailable?: object } }).universalAxes
+					?.unavailable ?? {},
+			),
+		);
 		byNorm.set(norm(rune), { rune, unavailable: u });
 	}
-	const out: Array<{ rune: string; tag: string; attrs: Set<string>; unavailable: Set<string> }> = [];
+	const out: Array<{ rune: string; tag: string; attrs: Set<string>; unavailable: Set<string> }> =
+		[];
 	for (const [tag, schema] of Object.entries(tags)) {
 		const hit = byNorm.get(norm(tag));
 		if (!hit) continue; // child/aliased tags with no config entry of their own
-		out.push({ rune: hit.rune, tag, attrs: new Set(Object.keys((schema as { attributes?: object }).attributes ?? {})), unavailable: hit.unavailable });
+		out.push({
+			rune: hit.rune,
+			tag,
+			attrs: new Set(Object.keys((schema as { attributes?: object }).attributes ?? {})),
+			unavailable: hit.unavailable,
+		});
 	}
 	return out;
 }
@@ -64,7 +80,10 @@ describe('narrowed schemas agree with the structure contract', () => {
 		for (const { rune, tag, attrs, unavailable } of rows) {
 			for (const axis of unavailable) {
 				for (const name of AXIS_ATTRIBUTES[axis] ?? []) {
-					if (attrs.has(name)) offenders.push(`${rune} (${tag}): contract says \`${axis}\` unavailable, schema still offers \`${name}\``);
+					if (attrs.has(name))
+						offenders.push(
+							`${rune} (${tag}): contract says \`${axis}\` unavailable, schema still offers \`${name}\``,
+						);
 				}
 			}
 		}
@@ -80,7 +99,10 @@ describe('narrowed schemas agree with the structure contract', () => {
 			for (const [axis, names] of Object.entries(AXIS_ATTRIBUTES)) {
 				if (unavailable.has(axis)) continue;
 				for (const name of names) {
-					if (!attrs.has(name)) offenders.push(`${rune} (${tag}): contract leaves \`${axis}\` available, schema drops \`${name}\``);
+					if (!attrs.has(name))
+						offenders.push(
+							`${rune} (${tag}): contract leaves \`${axis}\` available, schema drops \`${name}\``,
+						);
 				}
 			}
 		}
@@ -99,7 +121,9 @@ describe('narrowed schemas agree with the structure contract', () => {
 	it('narrowing actually happened', () => {
 		// A guard on the guard: if every schema still carried all 37 attributes the
 		// agreement checks above would pass trivially.
-		const narrowed = rows.filter((r) => [...UNIVERSAL_ATTRIBUTE_NAMES].some((a) => !r.attrs.has(a)));
+		const narrowed = rows.filter((r) =>
+			[...UNIVERSAL_ATTRIBUTE_NAMES].some((a) => !r.attrs.has(a)),
+		);
 		expect(narrowed.length).toBeGreaterThan(50);
 	});
 });

@@ -63,7 +63,9 @@ export function runCreate(options: CreateOptions): CreateResult {
 	// Auto-assign ID if not provided
 	if (!id) {
 		if (!isAutoIdType(type)) {
-			const err = new Error(`--id is required for type "${type}" (milestones use semver names)`) as any;
+			const err = new Error(
+				`--id is required for type "${type}" (milestones use semver names)`,
+			) as any;
 			err.exitCode = EXIT_INVALID_ARGS;
 			throw err;
 		}
@@ -84,7 +86,10 @@ export function runCreate(options: CreateOptions): CreateResult {
 	// Generate a filename from the title. Auto-ID types (work, bug, spec,
 	// decision) are prefixed with the ID so files are grep-friendly and sort
 	// by ID. Milestones use their semver name as the whole filename.
-	const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+	const slug = title
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/(^-|-$)/g, '');
 	const fileName = isAutoIdType(type) ? `${id}-${slug}.md` : `${slug}.md`;
 	const filePath = join(subDir, fileName);
 

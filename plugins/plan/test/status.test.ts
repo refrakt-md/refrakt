@@ -22,11 +22,23 @@ afterEach(() => {
 
 describe('plan status — counts', () => {
 	it('counts entities by type and status', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="ready" priority="high" %}\n# A\n{% /work %}');
-		writeMd('work/b.md', '{% work id="WORK-002" status="done" priority="medium" %}\n# B\n{% /work %}');
-		writeMd('work/c.md', '{% work id="WORK-003" status="in-progress" priority="medium" %}\n# C\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="ready" priority="high" %}\n# A\n{% /work %}',
+		);
+		writeMd(
+			'work/b.md',
+			'{% work id="WORK-002" status="done" priority="medium" %}\n# B\n{% /work %}',
+		);
+		writeMd(
+			'work/c.md',
+			'{% work id="WORK-003" status="in-progress" priority="medium" %}\n# C\n{% /work %}',
+		);
 		writeMd('spec/s.md', '{% spec id="SPEC-001" status="accepted" %}\n# S\n{% /spec %}');
-		writeMd('bug/b.md', '{% bug id="BUG-001" status="confirmed" severity="major" %}\n# Bug\n{% /bug %}');
+		writeMd(
+			'bug/b.md',
+			'{% bug id="BUG-001" status="confirmed" severity="major" %}\n# Bug\n{% /bug %}',
+		);
 
 		const result = runStatus({ dir: TMP });
 		expect(result.counts.work.total).toBe(3);
@@ -48,11 +60,26 @@ describe('plan status — counts', () => {
 
 describe('plan status — milestone progress', () => {
 	it('shows active milestone with progress', () => {
-		writeMd('milestone/m.md', '{% milestone name="v1.0" status="active" target="2026-04-01" %}\n# v1.0\n{% /milestone %}');
-		writeMd('work/a.md', '{% work id="WORK-001" status="done" priority="high" milestone="v1.0" %}\n# A\n{% /work %}');
-		writeMd('work/b.md', '{% work id="WORK-002" status="ready" priority="medium" milestone="v1.0" %}\n# B\n{% /work %}');
-		writeMd('work/c.md', '{% work id="WORK-003" status="in-progress" priority="medium" milestone="v1.0" %}\n# C\n{% /work %}');
-		writeMd('work/d.md', '{% work id="WORK-004" status="ready" priority="low" %}\n# D (no milestone)\n{% /work %}');
+		writeMd(
+			'milestone/m.md',
+			'{% milestone name="v1.0" status="active" target="2026-04-01" %}\n# v1.0\n{% /milestone %}',
+		);
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="done" priority="high" milestone="v1.0" %}\n# A\n{% /work %}',
+		);
+		writeMd(
+			'work/b.md',
+			'{% work id="WORK-002" status="ready" priority="medium" milestone="v1.0" %}\n# B\n{% /work %}',
+		);
+		writeMd(
+			'work/c.md',
+			'{% work id="WORK-003" status="in-progress" priority="medium" milestone="v1.0" %}\n# C\n{% /work %}',
+		);
+		writeMd(
+			'work/d.md',
+			'{% work id="WORK-004" status="ready" priority="low" %}\n# D (no milestone)\n{% /work %}',
+		);
 
 		const result = runStatus({ dir: TMP });
 		expect(result.milestone).toBeDefined();
@@ -64,9 +91,18 @@ describe('plan status — milestone progress', () => {
 	});
 
 	it('scopes to a specific milestone via --milestone', () => {
-		writeMd('milestone/m1.md', '{% milestone name="v1.0" status="active" %}\n# v1.0\n{% /milestone %}');
-		writeMd('milestone/m2.md', '{% milestone name="v2.0" status="planning" %}\n# v2.0\n{% /milestone %}');
-		writeMd('work/a.md', '{% work id="WORK-001" status="done" milestone="v2.0" %}\n# A\n{% /work %}');
+		writeMd(
+			'milestone/m1.md',
+			'{% milestone name="v1.0" status="active" %}\n# v1.0\n{% /milestone %}',
+		);
+		writeMd(
+			'milestone/m2.md',
+			'{% milestone name="v2.0" status="planning" %}\n# v2.0\n{% /milestone %}',
+		);
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="done" milestone="v2.0" %}\n# A\n{% /work %}',
+		);
 
 		const result = runStatus({ dir: TMP, milestone: 'v2.0' });
 		expect(result.milestone).toBeDefined();
@@ -84,7 +120,10 @@ describe('plan status — milestone progress', () => {
 
 describe('plan status — blocked items', () => {
 	it('lists blocked items', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="blocked" %}\n# A\n\n{% ref "WORK-002" /%}\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="blocked" %}\n# A\n\n{% ref "WORK-002" /%}\n{% /work %}',
+		);
 		writeMd('work/b.md', '{% work id="WORK-002" status="in-progress" %}\n# B\n{% /work %}');
 
 		const result = runStatus({ dir: TMP });
@@ -94,7 +133,10 @@ describe('plan status — blocked items', () => {
 	});
 
 	it('does not list blocked items whose deps are done', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="blocked" %}\n# A\n\n{% ref "WORK-002" /%}\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="blocked" %}\n# A\n\n{% ref "WORK-002" /%}\n{% /work %}',
+		);
 		writeMd('work/b.md', '{% work id="WORK-002" status="done" %}\n# B\n{% /work %}');
 
 		const result = runStatus({ dir: TMP });
@@ -106,9 +148,18 @@ describe('plan status — blocked items', () => {
 
 describe('plan status — ready items', () => {
 	it('lists highest-priority ready items', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="ready" priority="low" %}\n# Low\n{% /work %}');
-		writeMd('work/b.md', '{% work id="WORK-002" status="ready" priority="high" %}\n# High\n{% /work %}');
-		writeMd('work/c.md', '{% work id="WORK-003" status="ready" priority="critical" %}\n# Critical\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="ready" priority="low" %}\n# Low\n{% /work %}',
+		);
+		writeMd(
+			'work/b.md',
+			'{% work id="WORK-002" status="ready" priority="high" %}\n# High\n{% /work %}',
+		);
+		writeMd(
+			'work/c.md',
+			'{% work id="WORK-003" status="ready" priority="critical" %}\n# Critical\n{% /work %}',
+		);
 
 		const result = runStatus({ dir: TMP });
 		expect(result.ready.length).toBeGreaterThanOrEqual(3);
@@ -119,14 +170,20 @@ describe('plan status — ready items', () => {
 
 	it('caps ready items at 5', () => {
 		for (let i = 1; i <= 8; i++) {
-			writeMd(`work/w${i}.md`, `{% work id="WORK-${String(i).padStart(3, '0')}" status="ready" priority="medium" %}\n# W${i}\n{% /work %}`);
+			writeMd(
+				`work/w${i}.md`,
+				`{% work id="WORK-${String(i).padStart(3, '0')}" status="ready" priority="medium" %}\n# W${i}\n{% /work %}`,
+			);
 		}
 		const result = runStatus({ dir: TMP });
 		expect(result.ready).toHaveLength(5);
 	});
 
 	it('includes confirmed bugs as ready', () => {
-		writeMd('bug/b.md', '{% bug id="BUG-001" status="confirmed" severity="major" %}\n# Bug\n{% /bug %}');
+		writeMd(
+			'bug/b.md',
+			'{% bug id="BUG-001" status="confirmed" severity="major" %}\n# Bug\n{% /bug %}',
+		);
 		const result = runStatus({ dir: TMP });
 		expect(result.ready).toHaveLength(1);
 		expect(result.ready[0].type).toBe('bug');
@@ -135,9 +192,12 @@ describe('plan status — ready items', () => {
 
 describe('plan status — warnings', () => {
 	it('reports broken refs', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="ready" %}\n# A\n\n{% ref "SPEC-999" /%}\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="ready" %}\n# A\n\n{% ref "SPEC-999" /%}\n{% /work %}',
+		);
 		const result = runStatus({ dir: TMP });
-		const broken = result.warnings.filter(w => w.type === 'broken-ref');
+		const broken = result.warnings.filter((w) => w.type === 'broken-ref');
 		expect(broken).toHaveLength(1);
 		expect(broken[0].source).toBe('WORK-001');
 		expect(broken[0].target).toBe('SPEC-999');
@@ -146,7 +206,7 @@ describe('plan status — warnings', () => {
 	it('reports orphaned work items with no milestone', () => {
 		writeMd('work/a.md', '{% work id="WORK-001" status="ready" %}\n# A\n{% /work %}');
 		const result = runStatus({ dir: TMP });
-		const orphaned = result.warnings.filter(w => w.type === 'no-milestone');
+		const orphaned = result.warnings.filter((w) => w.type === 'no-milestone');
 		expect(orphaned).toHaveLength(1);
 		expect(orphaned[0].source).toBe('WORK-001');
 	});
@@ -154,22 +214,28 @@ describe('plan status — warnings', () => {
 	it('does not warn about milestone on done items', () => {
 		writeMd('work/a.md', '{% work id="WORK-001" status="done" %}\n# A\n{% /work %}');
 		const result = runStatus({ dir: TMP });
-		const orphaned = result.warnings.filter(w => w.type === 'no-milestone');
+		const orphaned = result.warnings.filter((w) => w.type === 'no-milestone');
 		expect(orphaned).toHaveLength(0);
 	});
 
 	it('does not warn when ref exists', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="ready" milestone="v1.0" %}\n# A\n\n{% ref "SPEC-001" /%}\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="ready" milestone="v1.0" %}\n# A\n\n{% ref "SPEC-001" /%}\n{% /work %}',
+		);
 		writeMd('spec/s.md', '{% spec id="SPEC-001" status="accepted" %}\n# S\n{% /spec %}');
 		const result = runStatus({ dir: TMP });
-		const broken = result.warnings.filter(w => w.type === 'broken-ref');
+		const broken = result.warnings.filter((w) => w.type === 'broken-ref');
 		expect(broken).toHaveLength(0);
 	});
 });
 
 describe('plan status — JSON output', () => {
 	it('returns structured result suitable for JSON', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="ready" priority="high" %}\n# A\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="ready" priority="high" %}\n# A\n{% /work %}',
+		);
 		writeMd('spec/s.md', '{% spec id="SPEC-001" status="accepted" %}\n# S\n{% /spec %}');
 
 		const result = runStatus({ dir: TMP, formatJson: true });

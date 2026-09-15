@@ -4,11 +4,13 @@ import { parseSvgToTags } from '../src/lib/svg.js';
 
 const testIcons = {
 	global: {
-		rocket: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15v5"/><circle cx="12" cy="10" r="3"/></svg>',
+		rocket:
+			'<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15v5"/><circle cx="12" cy="10" r="3"/></svg>',
 		star: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>',
 	},
 	hint: {
-		warning: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4"/></svg>',
+		warning:
+			'<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4"/></svg>',
 	},
 };
 
@@ -43,7 +45,7 @@ describe('parseSvgToTags', () => {
 describe('icon rune', () => {
 	it('should resolve a global icon by name', () => {
 		const result = parse('{% icon name="rocket" /%}', { __icons: testIcons });
-		const svg = findTag(result as any, t => t.name === 'svg');
+		const svg = findTag(result as any, (t) => t.name === 'svg');
 		expect(svg).toBeDefined();
 		expect(svg!.attributes['data-icon']).toBe('rocket');
 		expect(svg!.attributes.class).toBe('rf-icon');
@@ -51,30 +53,35 @@ describe('icon rune', () => {
 
 	it('should resolve a grouped icon with slash syntax', () => {
 		const result = parse('{% icon name="hint/warning" /%}', { __icons: testIcons });
-		const svg = findTag(result as any, t => t.name === 'svg');
+		const svg = findTag(result as any, (t) => t.name === 'svg');
 		expect(svg).toBeDefined();
 		expect(svg!.attributes['data-icon']).toBe('hint/warning');
 	});
 
 	it('should produce a fallback span for unknown icons', () => {
 		const result = parse('{% icon name="nonexistent" /%}', { __icons: testIcons });
-		const span = findTag(result as any, t => t.name === 'span' && t.attributes['data-icon'] === 'nonexistent');
+		const span = findTag(
+			result as any,
+			(t) => t.name === 'span' && t.attributes['data-icon'] === 'nonexistent',
+		);
 		expect(span).toBeDefined();
 		expect(span!.attributes.class).toBe('rf-icon');
 	});
 
 	it('should produce a fallback when no icon registry is provided', () => {
 		const result = parse('{% icon name="rocket" /%}');
-		const span = findTag(result as any, t => t.name === 'span' && t.attributes['data-icon'] === 'rocket');
+		const span = findTag(
+			result as any,
+			(t) => t.name === 'span' && t.attributes['data-icon'] === 'rocket',
+		);
 		expect(span).toBeDefined();
 	});
 
 	it('should apply size override', () => {
 		const result = parse('{% icon name="rocket" size="16px" /%}', { __icons: testIcons });
-		const svg = findTag(result as any, t => t.name === 'svg');
+		const svg = findTag(result as any, (t) => t.name === 'svg');
 		expect(svg).toBeDefined();
 		expect(svg!.attributes.width).toBe('16px');
 		expect(svg!.attributes.height).toBe('16px');
 	});
 });
-

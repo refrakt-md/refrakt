@@ -11,7 +11,9 @@ function asTag(node: any): SerializedTag {
 describe('styles', () => {
 	it('simple form: maps modifier value to CSS custom property', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Storyboard: {
 					block: 'storyboard',
@@ -31,7 +33,9 @@ describe('styles', () => {
 
 	it('template form: interpolates modifier value into CSS property', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Bento: {
 					block: 'bento',
@@ -49,7 +53,9 @@ describe('styles', () => {
 
 	it('multiple style entries produce semicolon-separated inline style', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Bento: {
 					block: 'bento',
@@ -76,7 +82,9 @@ describe('styles', () => {
 
 	it('skips style entry when modifier has no value', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Test: {
 					block: 'test',
@@ -94,7 +102,9 @@ describe('styles', () => {
 
 	it('preserves existing inline style on the tag', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Test: {
 					block: 'test',
@@ -116,7 +126,9 @@ describe('styles', () => {
 describe('staticModifiers', () => {
 	it('adds static modifier classes unconditionally', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				FeaturedTier: {
 					block: 'tier',
@@ -134,7 +146,9 @@ describe('staticModifiers', () => {
 
 	it('combines with regular modifiers', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Card: {
 					block: 'card',
@@ -156,7 +170,9 @@ describe('staticModifiers', () => {
 
 	it('multiple static modifiers all applied', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Widget: {
 					block: 'widget',
@@ -176,7 +192,9 @@ describe('staticModifiers', () => {
 describe('postTransform', () => {
 	it('receives transformed node and modifiers, returns modified node', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Grid: {
 					block: 'grid',
@@ -204,7 +222,9 @@ describe('postTransform', () => {
 
 	it('receives parentType in context when nested', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Hero: { block: 'hero' },
 				Child: {
@@ -228,7 +248,7 @@ describe('postTransform', () => {
 
 		const result = asTag(transform(hero));
 		const child = result.children.find(
-			(c: any) => c?.attributes?.['data-rune'] === 'child'
+			(c: any) => c?.attributes?.['data-rune'] === 'child',
 		) as SerializedTag;
 		expect(child.attributes['data-parent']).toBe('hero');
 	});
@@ -236,7 +256,9 @@ describe('postTransform', () => {
 	it('runs after all declarative processing', () => {
 		const spy = vi.fn((node: SerializedTag) => node);
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Test: {
 					block: 'test',
@@ -263,7 +285,9 @@ describe('postTransform', () => {
 
 	it('does not run when not defined', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Simple: { block: 'simple' },
 			},

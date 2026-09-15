@@ -5,7 +5,14 @@ import type { UniversalAxisFacet } from './describe.js';
  *
  *  Exported as the axis vocabulary: plugin and theme authors need the closed
  *  set, and it is the same list the docs and schemas describe. */
-export const ELEVATION_VALUES = ['sunken', 'flush', 'flat', 'raised', 'floating', 'overlay'] as const;
+export const ELEVATION_VALUES = [
+	'sunken',
+	'flush',
+	'flat',
+	'raised',
+	'floating',
+	'overlay',
+] as const;
 
 export type ElevationValue = (typeof ELEVATION_VALUES)[number];
 
@@ -40,10 +47,12 @@ export const elevationFacet: Facet = {
 		if (mapped) {
 			return {
 				axes: { elevation: mapped },
-				warnings: [{
-					code: 'elevation-deprecated-alias',
-					message: `[refrakt] elevation="${raw}" is deprecated (SPEC-107) — use "${mapped}". The alias will be removed in a future minor.`,
-				}],
+				warnings: [
+					{
+						code: 'elevation-deprecated-alias',
+						message: `[refrakt] elevation="${raw}" is deprecated (SPEC-107) — use "${mapped}". The alias will be removed in a future minor.`,
+					},
+				],
 			};
 		}
 
@@ -56,12 +65,14 @@ export const elevationFacet: Facet = {
 export const elevationAxis: UniversalAxisFacet = {
 	axis: 'elevation',
 	contract: {
-		description: 'The chrome/depth ladder (SPEC-107). The skin maps each rung to a chrome bundle by attribute, so there is no BEM class.',
+		description:
+			'The chrome/depth ladder (SPEC-107). The skin maps each rung to a chrome bundle by attribute, so there is no BEM class.',
 		source: 'attribute',
 		inputs: ['elevation'],
 		values: ELEVATION_VALUES,
 		dataAttributes: ['data-elevation'],
 		condition: 'emitted only when the author sets it or the rune declares `defaultElevation`',
 	},
-	describeForRune: (config) => (config.defaultElevation ? { default: config.defaultElevation } : null),
+	describeForRune: (config) =>
+		config.defaultElevation ? { default: config.defaultElevation } : null,
 };

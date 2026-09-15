@@ -57,9 +57,7 @@ describe('plan update — attribute editing', () => {
 	it('updates status attribute in place', () => {
 		writeMd('work/task.md', SAMPLE_WORK);
 		const result = runUpdate({ id: 'WORK-001', dir: TMP, attrs: { status: 'in-progress' } });
-		expect(result.changes).toEqual([
-			{ field: 'status', old: 'ready', new: 'in-progress' },
-		]);
+		expect(result.changes).toEqual([{ field: 'status', old: 'ready', new: 'in-progress' }]);
 		const content = readMd('work/task.md');
 		expect(content).toContain('status="in-progress"');
 		expect(content).not.toContain('status="ready"');
@@ -68,7 +66,8 @@ describe('plan update — attribute editing', () => {
 	it('updates multiple attributes in a single call', () => {
 		writeMd('work/task.md', SAMPLE_WORK);
 		const result = runUpdate({
-			id: 'WORK-001', dir: TMP,
+			id: 'WORK-001',
+			dir: TMP,
 			attrs: { status: 'in-progress', priority: 'critical', complexity: 'complex' },
 		});
 		expect(result.changes).toHaveLength(3);
@@ -81,9 +80,7 @@ describe('plan update — attribute editing', () => {
 	it('adds an attribute that does not exist yet', () => {
 		writeMd('work/task.md', SAMPLE_WORK);
 		const result = runUpdate({ id: 'WORK-001', dir: TMP, attrs: { assignee: 'claude' } });
-		expect(result.changes).toEqual([
-			{ field: 'assignee', old: '', new: 'claude' },
-		]);
+		expect(result.changes).toEqual([{ field: 'assignee', old: '', new: 'claude' }]);
 		const content = readMd('work/task.md');
 		expect(content).toContain('assignee="claude"');
 	});
@@ -115,7 +112,12 @@ describe('plan update — checkbox toggling', () => {
 
 	it('unchecks a matching criterion', () => {
 		writeMd('work/task.md', SAMPLE_WORK);
-		const result = runUpdate({ id: 'WORK-001', dir: TMP, attrs: {}, uncheck: 'Handles edge cases' });
+		const result = runUpdate({
+			id: 'WORK-001',
+			dir: TMP,
+			attrs: {},
+			uncheck: 'Handles edge cases',
+		});
 		expect(result.changes).toEqual([
 			{ field: 'criterion', old: '[x] Handles edge cases', new: '[ ] Handles edge cases' },
 		]);
@@ -132,7 +134,8 @@ describe('plan update — checkbox toggling', () => {
 	it('combines attribute changes with checkbox toggling', () => {
 		writeMd('work/task.md', SAMPLE_WORK);
 		const result = runUpdate({
-			id: 'WORK-001', dir: TMP,
+			id: 'WORK-001',
+			dir: TMP,
 			attrs: { status: 'in-progress' },
 			check: 'Scans directories',
 		});
@@ -250,7 +253,9 @@ describe('plan update — resolution', () => {
 	it('appends a resolution section when using --resolve', () => {
 		writeMd('work/task.md', SAMPLE_WORK);
 		const result = runUpdate({
-			id: 'WORK-001', dir: TMP, attrs: {},
+			id: 'WORK-001',
+			dir: TMP,
+			attrs: {},
 			resolve: 'Branch: `claude/feature`\n\n### What was done\n- Built the thing',
 		});
 		expect(result.changes).toContainEqual(expect.objectContaining({ field: 'resolution' }));
@@ -268,7 +273,8 @@ describe('plan update — resolution', () => {
 	it('combines --resolve with --status done', () => {
 		writeMd('work/task.md', SAMPLE_WORK);
 		runUpdate({
-			id: 'WORK-001', dir: TMP,
+			id: 'WORK-001',
+			dir: TMP,
 			attrs: { status: 'done' },
 			resolve: 'Quick fix',
 		});
@@ -292,7 +298,9 @@ Initial notes here.
 {% /work %}`;
 		writeMd('work/task.md', workWithResolution);
 		runUpdate({
-			id: 'WORK-001', dir: TMP, attrs: {},
+			id: 'WORK-001',
+			dir: TMP,
+			attrs: {},
 			resolve: 'Added more context.',
 		});
 		const content = readMd('work/task.md');
@@ -305,7 +313,9 @@ Initial notes here.
 		writeMd('spec/auth.md', SAMPLE_SPEC);
 		try {
 			runUpdate({
-				id: 'SPEC-001', dir: TMP, attrs: {},
+				id: 'SPEC-001',
+				dir: TMP,
+				attrs: {},
 				resolve: 'Some resolution',
 			});
 			expect.unreachable('should have thrown');
@@ -319,7 +329,8 @@ Initial notes here.
 	it('works on bug runes', () => {
 		writeMd('bug/mobile.md', SAMPLE_BUG);
 		runUpdate({
-			id: 'BUG-001', dir: TMP,
+			id: 'BUG-001',
+			dir: TMP,
 			attrs: { status: 'fixed' },
 			resolve: 'Fixed the click handler',
 		});
@@ -335,9 +346,7 @@ describe('plan update — attribute clearing', () => {
 		const content = `{% work id="WORK-001" status="ready" assignee="claude" priority="high" %}\n\n# A\n\n{% /work %}`;
 		writeMd('work/task.md', content);
 		const result = runUpdate({ id: 'WORK-001', dir: TMP, attrs: { assignee: '' } });
-		expect(result.changes).toEqual([
-			{ field: 'assignee', old: 'claude', new: '(removed)' },
-		]);
+		expect(result.changes).toEqual([{ field: 'assignee', old: 'claude', new: '(removed)' }]);
 		const updated = readMd('work/task.md');
 		expect(updated).not.toContain('assignee');
 		expect(updated).toContain('status="ready"');
@@ -348,9 +357,7 @@ describe('plan update — attribute clearing', () => {
 		const content = `{% work id="WORK-001" status="ready" milestone="v1.0" %}\n\n# A\n\n{% /work %}`;
 		writeMd('work/task.md', content);
 		const result = runUpdate({ id: 'WORK-001', dir: TMP, attrs: { milestone: '' } });
-		expect(result.changes).toEqual([
-			{ field: 'milestone', old: 'v1.0', new: '(removed)' },
-		]);
+		expect(result.changes).toEqual([{ field: 'milestone', old: 'v1.0', new: '(removed)' }]);
 		const updated = readMd('work/task.md');
 		expect(updated).not.toContain('milestone');
 	});
@@ -374,14 +381,13 @@ describe('plan update — JSON output', () => {
 	it('returns structured result for JSON format', () => {
 		writeMd('work/task.md', SAMPLE_WORK);
 		const result = runUpdate({
-			id: 'WORK-001', dir: TMP,
+			id: 'WORK-001',
+			dir: TMP,
 			attrs: { status: 'done' },
 			formatJson: true,
 		});
 		expect(result.file).toBe('work/task.md');
 		expect(result.type).toBe('work');
-		expect(result.changes).toEqual([
-			{ field: 'status', old: 'ready', new: 'done' },
-		]);
+		expect(result.changes).toEqual([{ field: 'status', old: 'ready', new: 'done' }]);
 	});
 });

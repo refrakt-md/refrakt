@@ -10,14 +10,14 @@ const isT = (c: unknown): c is SerializedTag =>
 
 function allText(node: unknown, out: string[] = []): string[] {
 	if (typeof node === 'string') out.push(node);
-	else if (isT(node)) node.children.forEach(c => allText(c, out));
-	else if (Array.isArray(node)) node.forEach(c => allText(c, out));
+	else if (isT(node)) node.children.forEach((c) => allText(c, out));
+	else if (Array.isArray(node)) node.forEach((c) => allText(c, out));
 	return out;
 }
 function hasAttr(node: unknown, attr: string): boolean {
 	if (!isT(node)) return false;
 	if (attr in node.attributes) return true;
-	return node.children.some(c => hasAttr(c, attr));
+	return node.children.some((c) => hasAttr(c, attr));
 }
 
 // Hint-shaped rune: an icon-decorated enum value that doubles as the title.
@@ -48,14 +48,18 @@ describe('SPEC-035 Zone 6 — enum-as-text', () => {
 	});
 
 	it('localizes a declared enum value under a locale', () => {
-		const t = createTransform(baseConfig({ locale: 'de', strings: { 'core.hint.warning': 'Warnung' } }));
+		const t = createTransform(
+			baseConfig({ locale: 'de', strings: { 'core.hint.warning': 'Warnung' } }),
+		);
 		const text = allText(asTag(t(makeHint('warning'))));
 		expect(text).toContain('Warnung');
 		expect(text).not.toContain('warning');
 	});
 
 	it('falls back to the raw value for an unconfigured enum key', () => {
-		const t = createTransform(baseConfig({ locale: 'de', strings: { 'core.hint.warning': 'Warnung' } }));
+		const t = createTransform(
+			baseConfig({ locale: 'de', strings: { 'core.hint.warning': 'Warnung' } }),
+		);
 		expect(allText(asTag(t(makeHint('note'))))).toContain('note');
 	});
 });
@@ -63,12 +67,17 @@ describe('SPEC-035 Zone 6 — enum-as-text', () => {
 describe('SPEC-035 Zone 2 — data-i18n programmatic text', () => {
 	const config: ThemeConfig = { prefix: 'rf', tokenPrefix: '--rf', icons: {}, runes: {} };
 	// A leaf label carrying a data-i18n marker (as budget totals emit).
-	const label = () => makeTag('div', {}, [
-		makeTag('span', { class: 'x', 'data-i18n': 'core.budget.total' }, ['Total']),
-	]);
+	const label = () =>
+		makeTag('div', {}, [
+			makeTag('span', { class: 'x', 'data-i18n': 'core.budget.total' }, ['Total']),
+		]);
 
 	it('resolves the marker and strips the attribute under a locale', () => {
-		const t = createTransform({ ...config, locale: 'de', strings: { 'core.budget.total': 'Gesamt' } });
+		const t = createTransform({
+			...config,
+			locale: 'de',
+			strings: { 'core.budget.total': 'Gesamt' },
+		});
 		const out = asTag(t(label()));
 		expect(allText(out)).toContain('Gesamt');
 		expect(hasAttr(out, 'data-i18n')).toBe(false);

@@ -21,14 +21,15 @@ export const error = createContentModelSchema({
 		const level = new Tag('td', {}, [err.level]);
 		const message = new Tag('td', {}, [err.message]);
 
-		return createComponentRenderable({ rune: 'error',
+		return createComponentRenderable({
+			rune: 'error',
 			tag: 'tr',
 			property: 'error',
 			properties: {
 				code,
 				tag,
 				level,
-				message
+				message,
 			},
 			children: [tag, code, level, message],
 		});

@@ -46,8 +46,7 @@ export function buildRefraktHead(input: RefraktMetaInput): {
 
 	// OG image — per-page wins; fall back to site-level defaultImage (prefixed
 	// with baseUrl if defaultImage isn't already absolute).
-	const resolvedImage =
-		data.ogImage ?? (defaultImage ? (baseUrl ?? '') + defaultImage : undefined);
+	const resolvedImage = data.ogImage ?? (defaultImage ? (baseUrl ?? '') + defaultImage : undefined);
 	if (resolvedImage) {
 		meta.push({ property: 'og:image', content: resolvedImage });
 		meta.push({ name: 'twitter:card', content: 'summary_large_image' });

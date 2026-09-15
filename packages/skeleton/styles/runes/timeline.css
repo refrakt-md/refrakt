@@ -2,12 +2,20 @@
  * display, the marker box placement (vertical + horizontal), the horizontal flex
  * scroll, and the horizontal entry min-width. Connector borders, marker chrome,
  * type, and spacing are skin. */
-.rf-timeline ol { list-style: none; }
-.rf-timeline-entry { position: relative; }
-.rf-timeline-entry > time { display: block; }
-.rf-timeline-entry > span { display: block; }
+.rf-timeline ol {
+	list-style: none;
+}
+.rf-timeline-entry {
+	position: relative;
+}
+.rf-timeline-entry > time {
+	display: block;
+}
+.rf-timeline-entry > span {
+	display: block;
+}
 .rf-timeline--vertical .rf-timeline-entry::before {
-	content: '';
+	content: "";
 	position: absolute;
 	left: -0.4375rem;
 	top: 0.25rem;
@@ -22,7 +30,7 @@
 	min-width: 12rem;
 }
 .rf-timeline--horizontal .rf-timeline-entry::before {
-	content: '';
+	content: "";
 	position: absolute;
 	top: -0.4375rem;
 	left: 0.5rem;

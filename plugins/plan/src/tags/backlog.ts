@@ -1,6 +1,11 @@
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, readDeferredBody, COLLECTION_SENTINEL } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	readDeferredBody,
+	COLLECTION_SENTINEL,
+} from '@refrakt-md/runes';
 
 /**
  * `backlog` (SPEC-072 / WORK-284) — thin sugar for a `collection` query over
@@ -65,18 +70,58 @@ const DEFAULT_TABLE_BODY = `# Identifier
 
 export const backlog = createContentModelSchema({
 	attributes: {
-		filter: { type: String, required: false, default: '', description: 'Filter: space-separated field:value pairs (e.g., "status:ready priority:high").' },
-		sort: { type: String, required: false, default: 'priority', description: 'Sort field (prefix - for descending). Default: priority.' },
-		group: { type: String, required: false, default: 'status', description: 'Group by field: status, priority, assignee, milestone, type, tags. Default: status.' },
-		show: { type: String, required: false, default: 'all', description: 'Entity types: all (work + bug), work, bug, spec, decision, milestone.' },
-		layout: { type: String, required: false, default: 'cards', matches: ['cards', 'list', 'table'], description: 'How items are laid out: cards (default), list, or table. Forwarded to the underlying collection.' },
-		limit: { type: Number, required: false, description: 'Cap the number of entities rendered (applied after sort, before group).' },
-		'group-display': { type: String, required: false, default: 'headings', matches: ['headings', 'accordion'], description: 'How groups are presented when `group` is set: headings (default) or accordion.' },
+		filter: {
+			type: String,
+			required: false,
+			default: '',
+			description:
+				'Filter: space-separated field:value pairs (e.g., "status:ready priority:high").',
+		},
+		sort: {
+			type: String,
+			required: false,
+			default: 'priority',
+			description: 'Sort field (prefix - for descending). Default: priority.',
+		},
+		group: {
+			type: String,
+			required: false,
+			default: 'status',
+			description:
+				'Group by field: status, priority, assignee, milestone, type, tags. Default: status.',
+		},
+		show: {
+			type: String,
+			required: false,
+			default: 'all',
+			description: 'Entity types: all (work + bug), work, bug, spec, decision, milestone.',
+		},
+		layout: {
+			type: String,
+			required: false,
+			default: 'cards',
+			matches: ['cards', 'list', 'table'],
+			description:
+				'How items are laid out: cards (default), list, or table. Forwarded to the underlying collection.',
+		},
+		limit: {
+			type: Number,
+			required: false,
+			description: 'Cap the number of entities rendered (applied after sort, before group).',
+		},
+		'group-display': {
+			type: String,
+			required: false,
+			default: 'headings',
+			matches: ['headings', 'accordion'],
+			description: 'How groups are presented when `group` is set: headings (default) or accordion.',
+		},
 	},
 	deferBody: true,
 	contentModel: { type: 'sequence', fields: [] },
 	transform(_resolved, attrs) {
-		const meta = (field: string, content: string) => new Tag('meta', { 'data-field': field, content });
+		const meta = (field: string, content: string) =>
+			new Tag('meta', { 'data-field': field, content });
 		const layout = String(attrs.layout ?? 'cards');
 		const showVal = String(attrs.show ?? 'all');
 		const type = SHOW_TO_TYPE[showVal] ?? showVal;
@@ -84,8 +129,9 @@ export const backlog = createContentModelSchema({
 		// A single-type backlog may surface that type's key field (work→priority,
 		// bug→severity); a mixed set stays universal (identifier/status/type).
 		const singleType = type.includes(',') ? '' : type;
-		const bodySource = readDeferredBody(attrs)
-			?? (layout === 'table' ? DEFAULT_TABLE_BODY : cardBody(TYPE_FIELD[singleType]));
+		const bodySource =
+			readDeferredBody(attrs) ??
+			(layout === 'table' ? DEFAULT_TABLE_BODY : cardBody(TYPE_FIELD[singleType]));
 
 		const metas = [
 			meta('collection-type', type),

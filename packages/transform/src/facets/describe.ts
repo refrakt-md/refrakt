@@ -5,14 +5,17 @@ import type { RuneConfig } from '../types.js';
  *  Deliberately a narrow, contract-shaped fragment rather than the full
  *  `RuneContract`: a facet describes only what it itself emits. */
 export interface FacetContract {
-	modifiers?: Record<string, {
-		source: string;
-		default?: string;
-		classPattern?: string;
-		dataAttribute: string;
-		valueMap?: Record<string, string>;
-		mapTarget?: string;
-	}>;
+	modifiers?: Record<
+		string,
+		{
+			source: string;
+			default?: string;
+			classPattern?: string;
+			dataAttribute: string;
+			valueMap?: Record<string, string>;
+			mapTarget?: string;
+		}
+	>;
 	contextModifiers?: Record<string, { suffix: string; selector: string }>;
 	staticModifiers?: Array<{ name: string; selector: string }>;
 }
@@ -138,7 +141,9 @@ export interface UniversalAxisFacet {
  *  Shared by `generateStructureContract` (which records them as `unavailable`
  *  reasons) and by the schema layer's `resolveUniversalAttributes`, so the two
  *  say the same thing rather than paraphrasing each other. */
-export const UNIVERSAL_POSTURE_REASONS: Readonly<Record<'inline' | 'configurator' | 'none', string>> = {
+export const UNIVERSAL_POSTURE_REASONS: Readonly<
+	Record<'inline' | 'configurator' | 'none', string>
+> = {
 	inline: 'this rune is inline — the block-level universal axes have nothing to act on',
 	configurator: 'this rune supplies axis values to its parent rather than carrying its own',
 	none: 'this rune declares no universal attributes',

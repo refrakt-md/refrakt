@@ -3,7 +3,12 @@ import type { ThemeTokensConfig } from '@refrakt-md/types';
 import type { RuneProvenance } from './provenance.js';
 import { mergeThemeConfig, applyRuneExtensions } from './merge.js';
 import type { ThemeConfigOverrides, RuneConfigExtension } from './merge.js';
-import { selectLocaleBundle, mergeLocaleStrings, normalizeLocale, type LocalizedValue } from './i18n.js';
+import {
+	selectLocaleBundle,
+	mergeLocaleStrings,
+	normalizeLocale,
+	type LocalizedValue,
+} from './i18n.js';
 
 /** Casing-agnostic rune-name key: lowercases and strips non-alphanumerics so
  *  `HowTo`, `how-to`, and `howto` all collapse to one bucket. Bridges the

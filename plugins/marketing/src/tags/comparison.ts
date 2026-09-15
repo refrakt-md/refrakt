@@ -1,14 +1,19 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes, headingsToList } from '@refrakt-md/runes';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	asNodes,
+	headingsToList,
+} from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 
 // Extract plain text from an AST node by walking all text children
 function extractText(node: Node): string {
 	return Array.from(node.walk())
-		.filter(n => n.type === 'text')
-		.map(n => n.attributes.content)
+		.filter((n) => n.type === 'text')
+		.map((n) => n.attributes.content)
 		.join('');
 }
 
@@ -17,8 +22,8 @@ function extractBoldLabel(node: Node): string | null {
 	for (const child of node.walk()) {
 		if (child.type === 'strong') {
 			return Array.from(child.walk())
-				.filter(n => n.type === 'text')
-				.map(n => n.attributes.content)
+				.filter((n) => n.type === 'text')
+				.map((n) => n.attributes.content)
 				.join('');
 		}
 	}
@@ -50,7 +55,7 @@ function getDescriptionChildren(node: Node): Node[] {
 	if (firstChild.type !== 'paragraph' && firstChild.type !== 'inline') return node.children;
 
 	// Find the first strong node in the paragraph
-	const strongIndex = firstChild.children.findIndex(c => c.type === 'strong');
+	const strongIndex = firstChild.children.findIndex((c) => c.type === 'strong');
 	if (strongIndex === -1) return node.children;
 
 	// Get everything after the strong node
@@ -98,9 +103,7 @@ const comparisonRow = createContentModelSchema({
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const labelTag = new Tag('span', {}, [attrs.label ?? '']);
@@ -109,7 +112,8 @@ const comparisonRow = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable({ rune: 'comparison-row',
+		return createComponentRenderable({
+			rune: 'comparison-row',
 			tag: 'div',
 			properties: {
 				rowType: rowTypeMeta,
@@ -130,9 +134,7 @@ const comparisonColumn = createContentModelSchema({
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
@@ -144,7 +146,8 @@ const comparisonColumn = createContentModelSchema({
 		const rowItems = rowStream.tag('div').typeof('ComparisonRow');
 		const body = rowItems.wrap('div');
 
-		return createComponentRenderable({ rune: 'comparison-column',
+		return createComponentRenderable({
+			rune: 'comparison-column',
 			tag: 'div',
 			properties: {
 				highlighted: highlightedMeta,
@@ -160,7 +163,10 @@ const comparisonColumn = createContentModelSchema({
 });
 
 // Multi-pass heading+list parser with cross-column row alignment
-function convertComparisonChildren(nodes: unknown[], attributes: Record<string, unknown>): unknown[] {
+function convertComparisonChildren(
+	nodes: unknown[],
+	attributes: Record<string, unknown>,
+): unknown[] {
 	const highlighted = (attributes.highlighted as string) ?? '';
 
 	const converted = headingsToList({ level: 2 })(nodes as Node[]);
@@ -231,9 +237,16 @@ function convertComparisonChildren(nodes: unknown[], attributes: Record<string, 
 	const result: Node[] = converted.slice(0, n);
 
 	// Embed master labels as a synthetic node so the transform can retrieve them
-	result.push(new Ast.Node('tag', {
-		_masterLabels: JSON.stringify(masterLabels),
-	}, [], '__comparison-meta'));
+	result.push(
+		new Ast.Node(
+			'tag',
+			{
+				_masterLabels: JSON.stringify(masterLabels),
+			},
+			[],
+			'__comparison-meta',
+		),
+	);
 
 	for (const col of parsedColumns) {
 		const rowNodes: Node[] = [];
@@ -242,39 +255,74 @@ function convertComparisonChildren(nodes: unknown[], attributes: Record<string, 
 		for (const label of masterLabels) {
 			const row = col.labeledRows.get(label);
 			if (row) {
-				rowNodes.push(new Ast.Node('tag', {
-					label,
-					rowType: row.rowType,
-				}, row.children, 'comparison-row'));
+				rowNodes.push(
+					new Ast.Node(
+						'tag',
+						{
+							label,
+							rowType: row.rowType,
+						},
+						row.children,
+						'comparison-row',
+					),
+				);
 			} else {
 				// Empty placeholder for missing label
-				rowNodes.push(new Ast.Node('tag', {
-					label,
-					rowType: 'empty',
-				}, [], 'comparison-row'));
+				rowNodes.push(
+					new Ast.Node(
+						'tag',
+						{
+							label,
+							rowType: 'empty',
+						},
+						[],
+						'comparison-row',
+					),
+				);
 			}
 		}
 
 		// Secondary (unlabeled) rows
 		for (const row of col.secondaryRows) {
-			rowNodes.push(new Ast.Node('tag', {
-				label: '',
-				rowType: row.rowType,
-			}, row.children, 'comparison-row'));
+			rowNodes.push(
+				new Ast.Node(
+					'tag',
+					{
+						label: '',
+						rowType: row.rowType,
+					},
+					row.children,
+					'comparison-row',
+				),
+			);
 		}
 
 		// Callout rows
 		for (const row of col.callouts) {
-			rowNodes.push(new Ast.Node('tag', {
-				label: '',
-				rowType: 'callout',
-			}, row.children, 'comparison-row'));
+			rowNodes.push(
+				new Ast.Node(
+					'tag',
+					{
+						label: '',
+						rowType: 'callout',
+					},
+					row.children,
+					'comparison-row',
+				),
+			);
 		}
 
-		result.push(new Ast.Node('tag', {
-			name: col.name,
-			highlighted: col.highlighted ? 'true' : 'false',
-		}, rowNodes, 'comparison-column'));
+		result.push(
+			new Ast.Node(
+				'tag',
+				{
+					name: col.name,
+					highlighted: col.highlighted ? 'true' : 'false',
+				},
+				rowNodes,
+				'comparison-column',
+			),
+		);
 	}
 
 	return result;
@@ -287,23 +335,48 @@ export { comparisonRow, comparisonColumn };
 // byte-for-byte (comparison was never theme-prefix-aware). Compound element-
 // modifier classes (`__cell--highlighted`, …) are likewise preserved as-is.
 
-interface RowData { label: string; rowType: string; body: RenderableTreeNode[]; }
-interface ColData { name: string; highlighted: boolean; rows: RowData[]; }
+interface RowData {
+	label: string;
+	rowType: string;
+	body: RenderableTreeNode[];
+}
+interface ColData {
+	name: string;
+	highlighted: boolean;
+	rows: RowData[];
+}
 
-function buildComparisonTable(columns: ColData[], rowLabels: string[], labelsPosition: string): InstanceType<typeof Tag> {
+function buildComparisonTable(
+	columns: ColData[],
+	rowLabels: string[],
+	labelsPosition: string,
+): InstanceType<typeof Tag> {
 	const headerCells: RenderableTreeNode[] = [];
-	if (labelsPosition !== 'hidden') headerCells.push(new Tag('th', { class: 'rf-comparison__label-col' }, []));
+	if (labelsPosition !== 'hidden')
+		headerCells.push(new Tag('th', { class: 'rf-comparison__label-col' }, []));
 	for (const col of columns) {
 		const thChildren: RenderableTreeNode[] = [col.name];
-		if (col.highlighted) thChildren.push(new Tag('span', { class: 'rf-comparison__recommended-badge' }, ['Recommended']));
-		headerCells.push(new Tag('th', col.highlighted ? { class: 'rf-comparison__col-header--highlighted' } : {}, thChildren));
+		if (col.highlighted)
+			thChildren.push(
+				new Tag('span', { class: 'rf-comparison__recommended-badge' }, ['Recommended']),
+			);
+		headerCells.push(
+			new Tag(
+				'th',
+				col.highlighted ? { class: 'rf-comparison__col-header--highlighted' } : {},
+				thChildren,
+			),
+		);
 	}
 	const thead = new Tag('thead', {}, [new Tag('tr', {}, headerCells)]);
 
 	const bodyRows: RenderableTreeNode[] = [];
 	for (let i = 0; i < rowLabels.length; i++) {
 		const cells: RenderableTreeNode[] = [];
-		if (labelsPosition !== 'hidden') cells.push(new Tag('th', { class: 'rf-comparison__row-label', scope: 'row' }, [rowLabels[i]]));
+		if (labelsPosition !== 'hidden')
+			cells.push(
+				new Tag('th', { class: 'rf-comparison__row-label', scope: 'row' }, [rowLabels[i]]),
+			);
 		for (const col of columns) {
 			const row = col.rows[i];
 			const rType = row ? row.rowType : 'empty';
@@ -315,13 +388,35 @@ function buildComparisonTable(columns: ColData[], rowLabels: string[], labelsPos
 
 			const cellChildren: RenderableTreeNode[] = [];
 			if (rType === 'check') {
-				cellChildren.push(new Tag('span', { class: 'rf-comparison__row-icon rf-comparison__row-icon--check', 'aria-label': 'Supported' }, ['✓']));
+				cellChildren.push(
+					new Tag(
+						'span',
+						{
+							class: 'rf-comparison__row-icon rf-comparison__row-icon--check',
+							'aria-label': 'Supported',
+						},
+						['✓'],
+					),
+				);
 			} else if (rType === 'cross') {
-				cellChildren.push(new Tag('span', { class: 'rf-comparison__row-icon rf-comparison__row-icon--cross', 'aria-label': 'Not supported' }, ['✗']));
+				cellChildren.push(
+					new Tag(
+						'span',
+						{
+							class: 'rf-comparison__row-icon rf-comparison__row-icon--cross',
+							'aria-label': 'Not supported',
+						},
+						['✗'],
+					),
+				);
 			} else if (rType === 'negative' && body.length) {
 				cellChildren.push(new Tag('span', { class: 'rf-comparison__negative' }, body));
 			} else if (rType === 'empty') {
-				cellChildren.push(new Tag('span', { class: 'rf-comparison__cell--empty', 'aria-label': 'Not applicable' }, ['—']));
+				cellChildren.push(
+					new Tag('span', { class: 'rf-comparison__cell--empty', 'aria-label': 'Not applicable' }, [
+						'—',
+					]),
+				);
 			} else if (rType === 'callout' && body.length) {
 				cellChildren.push(new Tag('span', { class: 'rf-comparison__callout-badge' }, body));
 			} else if (body.length) {
@@ -340,10 +435,13 @@ function buildComparisonTable(columns: ColData[], rowLabels: string[], labelsPos
 }
 
 function buildComparisonCards(columns: ColData[]): InstanceType<typeof Tag> {
-	const cards = columns.map(col => {
-		const cardCls = col.highlighted ? 'rf-comparison-card rf-comparison-card--highlighted' : 'rf-comparison-card';
+	const cards = columns.map((col) => {
+		const cardCls = col.highlighted
+			? 'rf-comparison-card rf-comparison-card--highlighted'
+			: 'rf-comparison-card';
 		const cardChildren: RenderableTreeNode[] = [];
-		if (col.highlighted) cardChildren.push(new Tag('div', { class: 'rf-comparison-card__badge' }, ['Recommended']));
+		if (col.highlighted)
+			cardChildren.push(new Tag('div', { class: 'rf-comparison-card__badge' }, ['Recommended']));
 		cardChildren.push(new Tag('h3', { class: 'rf-comparison-card__name' }, [col.name]));
 
 		const rowItems: RenderableTreeNode[] = [];
@@ -359,16 +457,35 @@ function buildComparisonCards(columns: ColData[]): InstanceType<typeof Tag> {
 
 			const liChildren: RenderableTreeNode[] = [];
 			if (rType === 'check') {
-				liChildren.push(new Tag('span', { class: 'rf-comparison__row-icon rf-comparison__row-icon--check', 'aria-label': 'Supported' }, ['✓']));
+				liChildren.push(
+					new Tag(
+						'span',
+						{
+							class: 'rf-comparison__row-icon rf-comparison__row-icon--check',
+							'aria-label': 'Supported',
+						},
+						['✓'],
+					),
+				);
 				if (label) liChildren.push(new Tag('strong', {}, [label]));
 				liChildren.push(...body);
 			} else if (rType === 'cross') {
-				liChildren.push(new Tag('span', { class: 'rf-comparison__row-icon rf-comparison__row-icon--cross', 'aria-label': 'Not supported' }, ['✗']));
+				liChildren.push(
+					new Tag(
+						'span',
+						{
+							class: 'rf-comparison__row-icon rf-comparison__row-icon--cross',
+							'aria-label': 'Not supported',
+						},
+						['✗'],
+					),
+				);
 				if (label) liChildren.push(new Tag('strong', {}, [label]));
 				liChildren.push(...body);
 			} else if (rType === 'negative') {
 				if (label) liChildren.push(new Tag('strong', {}, [label]));
-				if (body.length) liChildren.push(new Tag('span', { class: 'rf-comparison__negative' }, body));
+				if (body.length)
+					liChildren.push(new Tag('span', { class: 'rf-comparison__negative' }, body));
 			} else if (rType === 'callout') {
 				liChildren.push(new Tag('div', { class: 'rf-comparison__callout-badge' }, body));
 			} else {
@@ -388,19 +505,44 @@ function buildComparisonCards(columns: ColData[]): InstanceType<typeof Tag> {
 
 export const comparison = createContentModelSchema({
 	attributes: {
-		title: { type: String, required: false, description: 'Heading displayed above the comparison table' },
-		highlighted: { type: String, required: false, description: 'Column name to visually emphasize as the recommended choice' },
-		layout: { type: String, required: false, description: 'Display format for the comparison (e.g. table)' },
-		labels: { type: String, required: false, description: 'Position of row labels: left column or hidden' },
-		collapse: { type: Boolean, required: false, description: 'Whether rows collapse into an accordion on small screens' },
-		verdict: { type: String, required: false, description: 'Summary text shown below the table as a final recommendation' },
+		title: {
+			type: String,
+			required: false,
+			description: 'Heading displayed above the comparison table',
+		},
+		highlighted: {
+			type: String,
+			required: false,
+			description: 'Column name to visually emphasize as the recommended choice',
+		},
+		layout: {
+			type: String,
+			required: false,
+			description: 'Display format for the comparison (e.g. table)',
+		},
+		labels: {
+			type: String,
+			required: false,
+			description: 'Position of row labels: left column or hidden',
+		},
+		collapse: {
+			type: Boolean,
+			required: false,
+			description: 'Whether rows collapse into an accordion on small screens',
+		},
+		verdict: {
+			type: String,
+			required: false,
+			description: 'Summary text shown below the table as a final recommendation',
+		},
 	},
 	contentModel: {
 		type: 'custom',
 		processChildren: convertComparisonChildren,
-		description: 'Multi-pass heading+list parser with cross-column row alignment. '
-			+ 'Converts headings to columns, list items to rows with bold labels for alignment, '
-			+ 'blockquotes to callouts, and builds a master label list for cross-column row matching.',
+		description:
+			'Multi-pass heading+list parser with cross-column row alignment. ' +
+			'Converts headings to columns, list items to rows with bold labels for alignment, ' +
+			'blockquotes to callouts, and builds a master label list for cross-column row matching.',
 	},
 	transform(resolved, attrs, config) {
 		const allChildren = asNodes(resolved.children);
@@ -423,12 +565,12 @@ export const comparison = createContentModelSchema({
 		const verdict = (attrs.verdict as string) ?? '';
 		const title = (attrs.title as string) ?? '';
 
-		const columns: ColData[] = columnAst.map(colTag => ({
+		const columns: ColData[] = columnAst.map((colTag) => ({
 			name: (colTag.attributes.name as string) ?? '',
 			highlighted: colTag.attributes.highlighted === 'true',
 			rows: colTag.children
-				.filter(c => c.type === 'tag' && (c as any).tag === 'comparison-row')
-				.map(rowTag => ({
+				.filter((c) => c.type === 'tag' && (c as any).tag === 'comparison-row')
+				.map((rowTag) => ({
 					label: (rowTag.attributes.label as string) ?? '',
 					rowType: (rowTag.attributes.rowType as string) ?? 'text',
 					body: Markdoc.transform(rowTag.children, config) as RenderableTreeNode[],
@@ -440,12 +582,15 @@ export const comparison = createContentModelSchema({
 
 		const children: RenderableTreeNode[] = [];
 		if (title) children.push(new Tag('h2', { class: 'rf-comparison__title' }, [title]));
-		children.push(layout === 'cards'
-			? buildComparisonCards(columns)
-			: buildComparisonTable(columns, masterLabels, labelsPosition));
+		children.push(
+			layout === 'cards'
+				? buildComparisonCards(columns)
+				: buildComparisonTable(columns, masterLabels, labelsPosition),
+		);
 		if (verdict) children.push(new Tag('p', { class: 'rf-comparison__verdict' }, [verdict]));
 
-		return createComponentRenderable({ rune: 'comparison',
+		return createComponentRenderable({
+			rune: 'comparison',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

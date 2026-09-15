@@ -22,10 +22,7 @@ export interface RuneInfo {
 	aliases: string[];
 	description: string;
 	schema: {
-		attributes?: Record<
-			string,
-			{ type?: unknown; required?: boolean; matches?: unknown }
-		>;
+		attributes?: Record<string, { type?: unknown; required?: boolean; matches?: unknown }>;
 	};
 	authoringHints?: string;
 }

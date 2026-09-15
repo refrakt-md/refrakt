@@ -44,24 +44,33 @@ describe('spec/decision lifecycle statuses (WORK-495)', () => {
 
 	it('validate accepts implemented/shipped specs and rejected decisions', () => {
 		writeMd('specs/a.md', '{% spec id="SPEC-001" status="implemented" %}\n# A\n{% /spec %}');
-		writeMd('specs/b.md', '{% spec id="SPEC-002" status="shipped" released-in="v0.12.0" %}\n# B\n{% /spec %}');
-		writeMd('decisions/d.md', '{% decision id="ADR-001" status="rejected" %}\n# D\n\n## Context\nx\n\n## Decision\ny\n{% /decision %}');
+		writeMd(
+			'specs/b.md',
+			'{% spec id="SPEC-002" status="shipped" released-in="v0.12.0" %}\n# B\n{% /spec %}',
+		);
+		writeMd(
+			'decisions/d.md',
+			'{% decision id="ADR-001" status="rejected" %}\n# D\n\n## Context\nx\n\n## Decision\ny\n{% /decision %}',
+		);
 		const result = runValidate({ dir: TMP });
-		expect(result.issues.filter(i => i.type === 'invalid-status')).toHaveLength(0);
+		expect(result.issues.filter((i) => i.type === 'invalid-status')).toHaveLength(0);
 	});
 
 	it('errors on a shipped spec without released-in', () => {
 		writeMd('specs/a.md', '{% spec id="SPEC-001" status="shipped" %}\n# A\n{% /spec %}');
 		const result = runValidate({ dir: TMP });
-		const errs = result.issues.filter(i => i.type === 'shipped-without-release');
+		const errs = result.issues.filter((i) => i.type === 'shipped-without-release');
 		expect(errs).toHaveLength(1);
 		expect(errs[0].severity).toBe('error');
 	});
 
 	it('errors on a malformed released-in', () => {
-		writeMd('specs/a.md', '{% spec id="SPEC-001" status="shipped" released-in="soon" %}\n# A\n{% /spec %}');
+		writeMd(
+			'specs/a.md',
+			'{% spec id="SPEC-001" status="shipped" released-in="soon" %}\n# A\n{% /spec %}',
+		);
 		const result = runValidate({ dir: TMP });
-		expect(result.issues.filter(i => i.type === 'invalid-released-in')).toHaveLength(1);
+		expect(result.issues.filter((i) => i.type === 'invalid-released-in')).toHaveLength(1);
 	});
 
 	it('badge sentiment maps the new statuses', () => {
@@ -92,16 +101,21 @@ describe('pr attribute (WORK-496)', () => {
 	it('errors on a malformed pr value', () => {
 		writeMd('work/a.md', '{% work id="WORK-001" status="done" pr="not-a-pr" %}\n# A\n{% /work %}');
 		const result = runValidate({ dir: TMP });
-		expect(result.issues.filter(i => i.type === 'invalid-pr')).toHaveLength(1);
+		expect(result.issues.filter((i) => i.type === 'invalid-pr')).toHaveLength(1);
 	});
 
 	it('accepts a multi-valued pr and does not warn on a missing pr', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="done" pr="refrakt-md/refrakt#1,refrakt-md/refrakt#2" %}\n# A\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="done" pr="refrakt-md/refrakt#1,refrakt-md/refrakt#2" %}\n# A\n{% /work %}',
+		);
 		writeMd('work/b.md', '{% work id="WORK-002" status="done" %}\n# B\n{% /work %}');
 		const result = runValidate({ dir: TMP });
-		expect(result.issues.filter(i => i.type === 'invalid-pr')).toHaveLength(0);
+		expect(result.issues.filter((i) => i.type === 'invalid-pr')).toHaveLength(0);
 		// No "missing pr" warning type exists in v1.
-		expect(result.issues.filter(i => i.type.includes('pr') && i.severity === 'warning')).toHaveLength(0);
+		expect(
+			result.issues.filter((i) => i.type.includes('pr') && i.severity === 'warning'),
+		).toHaveLength(0);
 	});
 });
 
@@ -110,10 +124,16 @@ describe('pr attribute (WORK-496)', () => {
 describe('plan status PR rollups (WORK-497)', () => {
 	it('rolls up unique PRs per spec, deduping shared PRs', () => {
 		writeMd('specs/s.md', '{% spec id="SPEC-001" status="accepted" %}\n# S\n{% /spec %}');
-		writeMd('work/a.md', '{% work id="WORK-001" status="done" source="SPEC-001" pr="refrakt-md/refrakt#10" %}\n# A\n{% /work %}');
-		writeMd('work/b.md', '{% work id="WORK-002" status="done" source="SPEC-001" pr="refrakt-md/refrakt#10,refrakt-md/refrakt#11" %}\n# B\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="done" source="SPEC-001" pr="refrakt-md/refrakt#10" %}\n# A\n{% /work %}',
+		);
+		writeMd(
+			'work/b.md',
+			'{% work id="WORK-002" status="done" source="SPEC-001" pr="refrakt-md/refrakt#10,refrakt-md/refrakt#11" %}\n# B\n{% /work %}',
+		);
 		const result = runStatus({ dir: TMP });
-		const rollup = result.specRollups.find(r => r.id === 'SPEC-001');
+		const rollup = result.specRollups.find((r) => r.id === 'SPEC-001');
 		expect(rollup).toBeDefined();
 		expect(rollup!.prs.sort()).toEqual(['refrakt-md/refrakt#10', 'refrakt-md/refrakt#11']);
 		expect(rollup!.implementedBy.sort()).toEqual(['WORK-001', 'WORK-002']);
@@ -121,23 +141,37 @@ describe('plan status PR rollups (WORK-497)', () => {
 
 	it('suggests the implemented flip when all linked work is done', () => {
 		writeMd('specs/s.md', '{% spec id="SPEC-001" status="accepted" %}\n# S\n{% /spec %}');
-		writeMd('work/a.md', '{% work id="WORK-001" status="done" source="SPEC-001" %}\n# A\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="done" source="SPEC-001" %}\n# A\n{% /work %}',
+		);
 		const result = runStatus({ dir: TMP });
-		expect(result.specRollups.find(r => r.id === 'SPEC-001')!.suggestImplemented).toBe(true);
+		expect(result.specRollups.find((r) => r.id === 'SPEC-001')!.suggestImplemented).toBe(true);
 	});
 
 	it('does not suggest the flip while linked work is unfinished', () => {
 		writeMd('specs/s.md', '{% spec id="SPEC-001" status="accepted" %}\n# S\n{% /spec %}');
-		writeMd('work/a.md', '{% work id="WORK-001" status="done" source="SPEC-001" %}\n# A\n{% /work %}');
-		writeMd('work/b.md', '{% work id="WORK-002" status="in-progress" source="SPEC-001" %}\n# B\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="done" source="SPEC-001" %}\n# A\n{% /work %}',
+		);
+		writeMd(
+			'work/b.md',
+			'{% work id="WORK-002" status="in-progress" source="SPEC-001" %}\n# B\n{% /work %}',
+		);
 		const result = runStatus({ dir: TMP });
-		expect(result.specRollups.find(r => r.id === 'SPEC-001')!.suggestImplemented).toBe(false);
+		expect(result.specRollups.find((r) => r.id === 'SPEC-001')!.suggestImplemented).toBe(false);
 	});
 
 	it('falls back to the legacy PR: resolution line when no pr attribute is set', () => {
 		writeMd('specs/s.md', '{% spec id="SPEC-001" status="accepted" %}\n# S\n{% /spec %}');
-		writeMd('work/a.md', '{% work id="WORK-001" status="done" source="SPEC-001" %}\n# A\n\n## Resolution\n\nCompleted: 2026-01-01\nPR: refrakt-md/refrakt#99\n\nDone.\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="done" source="SPEC-001" %}\n# A\n\n## Resolution\n\nCompleted: 2026-01-01\nPR: refrakt-md/refrakt#99\n\nDone.\n{% /work %}',
+		);
 		const result = runStatus({ dir: TMP });
-		expect(result.specRollups.find(r => r.id === 'SPEC-001')!.prs).toEqual(['refrakt-md/refrakt#99']);
+		expect(result.specRollups.find((r) => r.id === 'SPEC-001')!.prs).toEqual([
+			'refrakt-md/refrakt#99',
+		]);
 	});
 });

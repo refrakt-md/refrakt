@@ -83,10 +83,10 @@ describe('repeated elements', () => {
 		expect(stars!.children).toHaveLength(5);
 
 		const filledCount = stars!.children.filter(
-			(c: any) => c.attributes['data-filled'] === 'true'
+			(c: any) => c.attributes['data-filled'] === 'true',
 		).length;
 		const unfilledCount = stars!.children.filter(
-			(c: any) => c.attributes['data-filled'] === 'false'
+			(c: any) => c.attributes['data-filled'] === 'false',
 		).length;
 		expect(filledCount).toBe(3);
 		expect(unfilledCount).toBe(2);

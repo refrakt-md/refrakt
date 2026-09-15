@@ -8,7 +8,7 @@ function tmpTarget(): string {
 	return join(
 		tmpdir(),
 		`create-refrakt-theme-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-		'my-theme'
+		'my-theme',
 	);
 }
 

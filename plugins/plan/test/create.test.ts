@@ -67,8 +67,9 @@ describe('plan create', () => {
 
 	it('throws on duplicate file for non-prefixed types (milestone)', () => {
 		runCreate({ dir: TMP, type: 'milestone', id: 'v1.0', title: 'Same Title' });
-		expect(() => runCreate({ dir: TMP, type: 'milestone', id: 'v2.0', title: 'Same Title' }))
-			.toThrow('already exists');
+		expect(() =>
+			runCreate({ dir: TMP, type: 'milestone', id: 'v2.0', title: 'Same Title' }),
+		).toThrow('already exists');
 	});
 
 	it('allows same-title entries across different IDs for prefixed types', () => {
@@ -78,23 +79,29 @@ describe('plan create', () => {
 	});
 
 	it('throws on missing id for milestone', () => {
-		expect(() => runCreate({ dir: TMP, type: 'milestone', title: 'v2.0 Release' }))
-			.toThrow('--id is required for type "milestone"');
+		expect(() => runCreate({ dir: TMP, type: 'milestone', title: 'v2.0 Release' })).toThrow(
+			'--id is required for type "milestone"',
+		);
 	});
 
 	it('throws on missing title', () => {
-		expect(() => runCreate({ dir: TMP, type: 'work', id: 'WORK-001', title: '' }))
-			.toThrow('--title is required');
+		expect(() => runCreate({ dir: TMP, type: 'work', id: 'WORK-001', title: '' })).toThrow(
+			'--title is required',
+		);
 	});
 
 	it('throws on invalid type', () => {
-		expect(() => runCreate({ dir: TMP, type: 'invalid' as any, id: 'X-001', title: 'Test' }))
-			.toThrow('Invalid type');
+		expect(() =>
+			runCreate({ dir: TMP, type: 'invalid' as any, id: 'X-001', title: 'Test' }),
+		).toThrow('Invalid type');
 	});
 
 	it('passes extra attrs through to template', () => {
 		const result = runCreate({
-			dir: TMP, type: 'work', id: 'WORK-001', title: 'Test',
+			dir: TMP,
+			type: 'work',
+			id: 'WORK-001',
+			title: 'Test',
 			attrs: { priority: 'critical', tags: 'cli' },
 		});
 		const content = readFileSync(result.file, 'utf-8');
@@ -130,52 +137,83 @@ describe('plan create', () => {
 
 	it('throws on duplicate ID', () => {
 		runCreate({ dir: TMP, type: 'work', id: 'WORK-001', title: 'First' });
-		expect(() => runCreate({ dir: TMP, type: 'work', id: 'WORK-001', title: 'Second' }))
-			.toThrow('ID "WORK-001" already exists');
+		expect(() => runCreate({ dir: TMP, type: 'work', id: 'WORK-001', title: 'Second' })).toThrow(
+			'ID "WORK-001" already exists',
+		);
 	});
 });
 
 describe('plan create — attribute validation', () => {
 	it('rejects an invalid complexity at write time, listing valid values', () => {
-		expect(() => runCreate({
-			dir: TMP, type: 'work', id: 'WORK-001', title: 'Test',
-			attrs: { complexity: 'small' },
-		})).toThrow('Invalid complexity "small" for work rune. Valid: trivial, simple, moderate, complex, unknown');
+		expect(() =>
+			runCreate({
+				dir: TMP,
+				type: 'work',
+				id: 'WORK-001',
+				title: 'Test',
+				attrs: { complexity: 'small' },
+			}),
+		).toThrow(
+			'Invalid complexity "small" for work rune. Valid: trivial, simple, moderate, complex, unknown',
+		);
 		// And nothing is written.
 		expect(existsSync(join(TMP, 'work', 'WORK-001-test.md'))).toBe(false);
 	});
 
 	it('rejects an invalid status', () => {
-		expect(() => runCreate({
-			dir: TMP, type: 'work', id: 'WORK-001', title: 'Test',
-			attrs: { status: 'todo' },
-		})).toThrow('Invalid status "todo" for work rune');
+		expect(() =>
+			runCreate({
+				dir: TMP,
+				type: 'work',
+				id: 'WORK-001',
+				title: 'Test',
+				attrs: { status: 'todo' },
+			}),
+		).toThrow('Invalid status "todo" for work rune');
 	});
 
 	it('rejects an invalid bug severity', () => {
-		expect(() => runCreate({
-			dir: TMP, type: 'bug', id: 'BUG-001', title: 'Test',
-			attrs: { severity: 'huge' },
-		})).toThrow('Invalid severity "huge" for bug rune');
+		expect(() =>
+			runCreate({
+				dir: TMP,
+				type: 'bug',
+				id: 'BUG-001',
+				title: 'Test',
+				attrs: { severity: 'huge' },
+			}),
+		).toThrow('Invalid severity "huge" for bug rune');
 	});
 
 	it('rejects an unknown attribute', () => {
-		expect(() => runCreate({
-			dir: TMP, type: 'work', id: 'WORK-001', title: 'Test',
-			attrs: { sevearity: 'major' },
-		})).toThrow('Unknown attribute "sevearity" for work rune');
+		expect(() =>
+			runCreate({
+				dir: TMP,
+				type: 'work',
+				id: 'WORK-001',
+				title: 'Test',
+				attrs: { sevearity: 'major' },
+			}),
+		).toThrow('Unknown attribute "sevearity" for work rune');
 	});
 
 	it('rejects setting id via attrs', () => {
-		expect(() => runCreate({
-			dir: TMP, type: 'work', id: 'WORK-001', title: 'Test',
-			attrs: { id: 'WORK-999' },
-		})).toThrow('Cannot set the "id" attribute');
+		expect(() =>
+			runCreate({
+				dir: TMP,
+				type: 'work',
+				id: 'WORK-001',
+				title: 'Test',
+				attrs: { id: 'WORK-999' },
+			}),
+		).toThrow('Cannot set the "id" attribute');
 	});
 
 	it('accepts valid enum attrs and writes them', () => {
 		const result = runCreate({
-			dir: TMP, type: 'work', id: 'WORK-001', title: 'Test',
+			dir: TMP,
+			type: 'work',
+			id: 'WORK-001',
+			title: 'Test',
 			attrs: { complexity: 'moderate', priority: 'high', status: 'ready' },
 		});
 		const content = readFileSync(result.file, 'utf-8');

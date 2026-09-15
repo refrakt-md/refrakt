@@ -33,7 +33,7 @@ export interface UpdateResult {
  */
 function findEntity(id: string, dir: string): { entity: PlanEntity; absPath: string } | null {
 	const entities = scanPlanFiles(dir);
-	const entity = entities.find(e => e.attributes.id === id || e.attributes.name === id);
+	const entity = entities.find((e) => e.attributes.id === id || e.attributes.name === id);
 	if (!entity) return null;
 	return { entity, absPath: resolve(join(dir, entity.file)) };
 }
@@ -42,7 +42,11 @@ function findEntity(id: string, dir: string): { entity: PlanEntity; absPath: str
  * Replace an attribute value in a rune opening tag line.
  * Handles both `attr="value"` and `attr='value'` styles.
  */
-function replaceAttr(line: string, attr: string, newValue: string): { line: string; oldValue: string | null } {
+function replaceAttr(
+	line: string,
+	attr: string,
+	newValue: string,
+): { line: string; oldValue: string | null } {
 	// Match attr="value" or attr='value'
 	const regex = new RegExp(`(${attr})=(["'])([^"']*?)\\2`);
 	const match = line.match(regex);
@@ -106,7 +110,9 @@ export function runUpdate(options: UpdateOptions): UpdateResult {
 			throw err;
 		}
 		if (!allowed.includes(attr)) {
-			const err = new Error(`Unknown attribute "${attr}" for ${entity.type} rune. Valid: ${allowed.join(', ')}`);
+			const err = new Error(
+				`Unknown attribute "${attr}" for ${entity.type} rune. Valid: ${allowed.join(', ')}`,
+			);
 			(err as any).exitCode = EXIT_VALIDATION_ERROR;
 			throw err;
 		}
@@ -115,7 +121,9 @@ export function runUpdate(options: UpdateOptions): UpdateResult {
 		if (enumAttrs[attr]) {
 			const valid = enumAttrs[attr];
 			if (!valid.includes(value)) {
-				const err = new Error(`Invalid ${attr} "${value}" for ${entity.type} rune. Valid: ${valid.join(', ')}`);
+				const err = new Error(
+					`Invalid ${attr} "${value}" for ${entity.type} rune. Valid: ${valid.join(', ')}`,
+				);
 				(err as any).exitCode = EXIT_VALIDATION_ERROR;
 				throw err;
 			}
@@ -127,7 +135,7 @@ export function runUpdate(options: UpdateOptions): UpdateResult {
 
 	// --- Find the rune opening tag line ---
 	const tagPattern = new RegExp(`^\\{%\\s+${entity.type}\\s`);
-	const tagLineIdx = lines.findIndex(l => tagPattern.test(l));
+	const tagLineIdx = lines.findIndex((l) => tagPattern.test(l));
 	if (tagLineIdx === -1) {
 		const err = new Error(`Could not find ${entity.type} tag in ${entity.file}`);
 		(err as any).exitCode = EXIT_VALIDATION_ERROR;
@@ -219,7 +227,9 @@ export function runUpdate(options: UpdateOptions): UpdateResult {
 	if (resolveBody !== undefined) {
 		// Only allow on work and bug types
 		if (entity.type !== 'work' && entity.type !== 'bug') {
-			const err = new Error(`Resolution sections are only supported on work and bug items, not ${entity.type}`);
+			const err = new Error(
+				`Resolution sections are only supported on work and bug items, not ${entity.type}`,
+			);
 			(err as any).exitCode = EXIT_VALIDATION_ERROR;
 			throw err;
 		}
@@ -228,7 +238,7 @@ export function runUpdate(options: UpdateOptions): UpdateResult {
 		const resolutionContent = `Completed: ${today}\n\n${resolveBody}`.trimEnd();
 
 		// Check if a ## Resolution section already exists
-		const resolutionHeadingIdx = lines.findIndex(l => /^##\s+Resolution\s*$/.test(l));
+		const resolutionHeadingIdx = lines.findIndex((l) => /^##\s+Resolution\s*$/.test(l));
 
 		if (resolutionHeadingIdx !== -1) {
 			// Find the closing rune tag or next H2 heading to know where to insert the append
@@ -248,7 +258,7 @@ export function runUpdate(options: UpdateOptions): UpdateResult {
 		} else {
 			// Insert new ## Resolution section before the closing rune tag
 			const closingTag = new RegExp(`^\\{%\\s+/${entity.type}\\s+%\\}`);
-			const closingIdx = lines.findIndex(l => closingTag.test(l));
+			const closingIdx = lines.findIndex((l) => closingTag.test(l));
 			if (closingIdx === -1) {
 				// No closing tag — append at end
 				lines.push('', '## Resolution', '', resolutionContent, '');

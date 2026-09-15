@@ -51,7 +51,8 @@ The Last Homely House East of the Sea.
 
 describe('SEO: Organization from faction', () => {
 	it('should extract Organization with name', () => {
-		const result = seo(`{% faction name="The Silver Order" type="knightly order" alignment="lawful" %}
+		const result =
+			seo(`{% faction name="The Silver Order" type="knightly order" alignment="lawful" %}
 A prestigious order of knights sworn to protect the realm.
 {% /faction %}`);
 

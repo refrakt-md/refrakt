@@ -21,12 +21,12 @@ import { describe, it, expect, vi } from 'vitest';
 // completion ever started resolving a config, every case here would fail.
 
 vi.mock('@refrakt-md/transform/node', () => ({
-  loadRefraktConfig: () => {
-    throw new Error('completion must not load theme config (SPEC-125 / WORK-534)');
-  },
-  resolveSite: () => {
-    throw new Error('completion must not resolve a site (SPEC-125 / WORK-534)');
-  },
+	loadRefraktConfig: () => {
+		throw new Error('completion must not load theme config (SPEC-125 / WORK-534)');
+	},
+	resolveSite: () => {
+		throw new Error('completion must not resolve a site (SPEC-125 / WORK-534)');
+	},
 }));
 
 const { provideCompletion } = await import('../src/providers/completion.js');
@@ -36,14 +36,14 @@ type Documents = Parameters<typeof provideCompletion>[1];
 /** Complete at the end of `content`, with the registry in its as-imported state
  *  — core runes only, indexed synchronously, no workspace initialization. */
 function labels(content: string): string[] {
-  const doc = TextDocument.create('file:///test.md', 'markdown', 1, content);
-  const documents = {
-    get: (uri: string) => (uri === 'file:///test.md' ? doc : undefined),
-  } as unknown as Documents;
-  return provideCompletion(
-    { textDocument: { uri: 'file:///test.md' }, position: doc.positionAt(content.length) },
-    documents,
-  ).map((item) => item.label);
+	const doc = TextDocument.create('file:///test.md', 'markdown', 1, content);
+	const documents = {
+		get: (uri: string) => (uri === 'file:///test.md' ? doc : undefined),
+	} as unknown as Documents;
+	return provideCompletion(
+		{ textDocument: { uri: 'file:///test.md' }, position: doc.positionAt(content.length) },
+		documents,
+	).map((item) => item.label);
 }
 
 describe('completion offers only the universal attributes that apply', () => {

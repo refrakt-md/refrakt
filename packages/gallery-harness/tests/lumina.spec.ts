@@ -13,7 +13,7 @@ registerGalleryTests({
 		light: resolve(art, 'lumina.light.html'),
 		dark: resolve(art, 'lumina.dark.html'),
 	},
-	layouts: ['default', 'docs', 'blog-article', 'plan'].map(name => ({
+	layouts: ['default', 'docs', 'blog-article', 'plan'].map((name) => ({
 		name,
 		light: resolve(art, `lumina.layout-${name}.light.html`),
 		dark: resolve(art, `lumina.layout-${name}.dark.html`),

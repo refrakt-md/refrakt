@@ -13,7 +13,7 @@ import { join, resolve, extname } from 'node:path';
 
 /** SPEC-107 §5 — the deprecated `elevation` scale → ladder mapping. */
 const ELEVATION_MAP: Record<string, string> = {
-	none: 'flat',     // ⚠ keeps the surface — NOT flush
+	none: 'flat', // ⚠ keeps the surface — NOT flush
 	sm: 'raised',
 	md: 'raised',
 	lg: 'floating',
@@ -66,10 +66,13 @@ function runElevationCodemod(args: string[]): void {
 	for (const file of files) {
 		const original = readFileSync(file, 'utf-8');
 		let count = 0;
-		const migrated = original.replace(ELEVATION_RE, (_m, eq: string, quote: string, value: string) => {
-			count++;
-			return `elevation${eq}${quote}${ELEVATION_MAP[value]}${quote}`;
-		});
+		const migrated = original.replace(
+			ELEVATION_RE,
+			(_m, eq: string, quote: string, value: string) => {
+				count++;
+				return `elevation${eq}${quote}${ELEVATION_MAP[value]}${quote}`;
+			},
+		);
 		if (count === 0) continue;
 
 		changedFiles++;
@@ -91,8 +94,8 @@ function runElevationCodemod(args: string[]): void {
 
 	const verb = opts.apply ? 'Migrated' : 'Would migrate';
 	console.log(
-		`\n${verb} ${totalReplacements} `
-		+ `${plural(totalReplacements, 'elevation value')} across ${changedFiles} ${plural(changedFiles, 'file')}.`,
+		`\n${verb} ${totalReplacements} ` +
+			`${plural(totalReplacements, 'elevation value')} across ${changedFiles} ${plural(changedFiles, 'file')}.`,
 	);
 	if (!opts.apply) {
 		console.log('(Dry run — pass --apply to write changes.)');

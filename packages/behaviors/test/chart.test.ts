@@ -14,7 +14,13 @@ const table = (rows: string, head = '<tr><th>Month</th><th>Revenue</th></tr>', c
 
 /** Mount a chart with optional inline `--rf-chart-*` overrides set *before*
  *  connection, so `readGeometry`'s getComputedStyle picks them up. */
-function mount(opts: { type?: string; head?: string; rows: string; caption?: string; props?: Record<string, string> }): HTMLElement {
+function mount(opts: {
+	type?: string;
+	head?: string;
+	rows: string;
+	caption?: string;
+	props?: Record<string, string>;
+}): HTMLElement {
 	const el = document.createElement('rf-chart');
 	el.setAttribute('data-type', opts.type ?? 'bar');
 	for (const [k, v] of Object.entries(opts.props ?? {})) el.style.setProperty(k, v);
@@ -25,8 +31,7 @@ function mount(opts: { type?: string; head?: string; rows: string; caption?: str
 
 describe('rf-chart element', () => {
 	it('renders an svg from the table and visually-hides the table (kept for SR)', () => {
-		document.body.innerHTML =
-			`<rf-chart data-type="bar">${table('<tr><td>Jan</td><td>100</td></tr><tr><td>Feb</td><td>200</td></tr>', undefined, 'Revenue')}</rf-chart>`;
+		document.body.innerHTML = `<rf-chart data-type="bar">${table('<tr><td>Jan</td><td>100</td></tr><tr><td>Feb</td><td>200</td></tr>', undefined, 'Revenue')}</rf-chart>`;
 		const el = document.querySelector('rf-chart')!;
 
 		expect(el.querySelector('.rf-chart__rendered svg')).toBeTruthy();
@@ -42,8 +47,7 @@ describe('rf-chart element', () => {
 	it('reads data-value over textContent for formatted cells', () => {
 		// `data-tick-step="1200"` pins the top tick at 1200 so this test isolates
 		// the data-value-over-textContent behaviour from the nice-tick snapping.
-		document.body.innerHTML =
-			`<rf-chart data-type="bar" data-tick-step="1200">${table('<tr><td>Jan</td><td data-value="1200">1,200</td></tr>')}</rf-chart>`;
+		document.body.innerHTML = `<rf-chart data-type="bar" data-tick-step="1200">${table('<tr><td>Jan</td><td data-value="1200">1,200</td></tr>')}</rf-chart>`;
 		const el = document.querySelector('rf-chart')!;
 		const rect = el.querySelector('rect')!;
 		// 1200 is the only/max value → full-height bar (ch = 230).
@@ -51,23 +55,21 @@ describe('rf-chart element', () => {
 	});
 
 	it('draws a legend and polylines for a multi-series line chart', () => {
-		document.body.innerHTML =
-			`<rf-chart data-type="line">${table(
-				'<tr><td>Q1</td><td>10</td><td>5</td></tr><tr><td>Q2</td><td>20</td><td>8</td></tr>',
-				'<tr><th>Quarter</th><th>Sales</th><th>Profit</th></tr>',
-			)}</rf-chart>`;
+		document.body.innerHTML = `<rf-chart data-type="line">${table(
+			'<tr><td>Q1</td><td>10</td><td>5</td></tr><tr><td>Q2</td><td>20</td><td>8</td></tr>',
+			'<tr><th>Quarter</th><th>Sales</th><th>Profit</th></tr>',
+		)}</rf-chart>`;
 		const el = document.querySelector('rf-chart')!;
 		expect(el.querySelectorAll('polyline').length).toBe(2);
 		expect(el.querySelectorAll('.rf-chart__legend-item').length).toBe(2);
 	});
 
 	it('is idempotent — re-connecting does not stack a second svg/title/legend', () => {
-		document.body.innerHTML =
-			`<rf-chart data-type="line">${table(
-				'<tr><td>Q1</td><td>10</td><td>5</td></tr>',
-				'<tr><th>Quarter</th><th>Sales</th><th>Profit</th></tr>',
-				'Growth',
-			)}</rf-chart>`;
+		document.body.innerHTML = `<rf-chart data-type="line">${table(
+			'<tr><td>Q1</td><td>10</td><td>5</td></tr>',
+			'<tr><th>Quarter</th><th>Sales</th><th>Profit</th></tr>',
+			'Growth',
+		)}</rf-chart>`;
 		const el = document.querySelector('rf-chart') as HTMLElement & { connectedCallback(): void };
 
 		// Simulate a second connection (e.g. hydration / reparenting).
@@ -98,8 +100,14 @@ describe('rf-chart theming contract (WORK-353)', () => {
 	});
 
 	it('rotates data-series across series on bars and legend swatches', () => {
-		const el = mount({ head: '<tr><th>Q</th><th>A</th><th>B</th></tr>', rows: '<tr><td>Q1</td><td>5</td><td>9</td></tr>' });
-		expect([...el.querySelectorAll('rect')].map((r) => r.getAttribute('data-series'))).toEqual(['0', '1']);
+		const el = mount({
+			head: '<tr><th>Q</th><th>A</th><th>B</th></tr>',
+			rows: '<tr><td>Q1</td><td>5</td><td>9</td></tr>',
+		});
+		expect([...el.querySelectorAll('rect')].map((r) => r.getAttribute('data-series'))).toEqual([
+			'0',
+			'1',
+		]);
 		const swatches = [...el.querySelectorAll('.rf-chart__legend-color')];
 		expect(swatches.map((s) => (s as HTMLElement).dataset.series)).toEqual(['0', '1']);
 		expect(swatches[0].getAttribute('style')).toBeNull(); // no inline background
@@ -108,17 +116,26 @@ describe('rf-chart theming contract (WORK-353)', () => {
 	it('reads bar thickness from --rf-chart-bar-thickness (default cap 12, overridable)', () => {
 		const def = mount({ rows: '<tr><td>Jan</td><td>100</td></tr>' });
 		expect(Number(def.querySelector('rect')!.getAttribute('width'))).toBeCloseTo(12, 0);
-		const wide = mount({ rows: '<tr><td>Jan</td><td>100</td></tr>', props: { '--rf-chart-bar-thickness': '48px' } });
+		const wide = mount({
+			rows: '<tr><td>Jan</td><td>100</td></tr>',
+			props: { '--rf-chart-bar-thickness': '48px' },
+		});
 		expect(Number(wide.querySelector('rect')!.getAttribute('width'))).toBeCloseTo(48, 0);
 	});
 
 	it('reads point radius from --rf-chart-point-radius', () => {
-		const el = mount({ type: 'line', rows: '<tr><td>Q1</td><td>10</td></tr>', props: { '--rf-chart-point-radius': '7px' } });
+		const el = mount({
+			type: 'line',
+			rows: '<tr><td>Q1</td><td>10</td></tr>',
+			props: { '--rf-chart-point-radius': '7px' },
+		});
 		expect(el.querySelector('circle')!.getAttribute('r')).toBe('7');
 	});
 
-	it('sentiment mode: a value cell\'s data-meta-sentiment tags its bar for semantic colour', () => {
-		const el = mount({ rows: '<tr><td>done</td><td data-meta-sentiment="positive">5</td></tr><tr><td>blocked</td><td data-meta-sentiment="negative">2</td></tr>' });
+	it("sentiment mode: a value cell's data-meta-sentiment tags its bar for semantic colour", () => {
+		const el = mount({
+			rows: '<tr><td>done</td><td data-meta-sentiment="positive">5</td></tr><tr><td>blocked</td><td data-meta-sentiment="negative">2</td></tr>',
+		});
 		const rects = [...el.querySelectorAll('rect')];
 		expect(rects[0].getAttribute('data-meta-sentiment')).toBe('positive');
 		expect(rects[1].getAttribute('data-meta-sentiment')).toBe('negative');
@@ -155,16 +172,16 @@ describe('rf-chart theming contract (WORK-353)', () => {
 		el.innerHTML = table('<tr><td>Jan</td><td>80</td></tr>');
 		document.body.appendChild(el);
 		const tickValues = [...el.querySelectorAll('.rf-chart__tick-label')]
-			.map((t) => t.textContent).join(',');
+			.map((t) => t.textContent)
+			.join(',');
 		expect(tickValues).toBe('0,25,50,75,100');
 	});
 
 	it('line charts render an area polygon under each line tagged for palette rotation', () => {
-		document.body.innerHTML =
-			`<rf-chart data-type="line">${table(
-				'<tr><td>Q1</td><td>10</td><td>5</td></tr><tr><td>Q2</td><td>20</td><td>8</td></tr>',
-				'<tr><th>Quarter</th><th>Sales</th><th>Profit</th></tr>',
-			)}</rf-chart>`;
+		document.body.innerHTML = `<rf-chart data-type="line">${table(
+			'<tr><td>Q1</td><td>10</td><td>5</td></tr><tr><td>Q2</td><td>20</td><td>8</td></tr>',
+			'<tr><th>Quarter</th><th>Sales</th><th>Profit</th></tr>',
+		)}</rf-chart>`;
 		const el = document.querySelector('rf-chart')!;
 		const areas = [...el.querySelectorAll('polygon.rf-chart__area')];
 		expect(areas.length).toBe(2);
@@ -180,8 +197,23 @@ describe('rf-chart theming contract (WORK-353)', () => {
 
 	it('auto-rotates X-axis labels to -45° when slots are too narrow for horizontal', () => {
 		// 12 months × full names → bgw ≈ 44px while max label ≈ 9×7≈63px > slot.
-		const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-		const rows = months.map((m) => `<tr><td>${m}</td><td>${Math.floor(Math.random() * 100)}</td></tr>`).join('');
+		const months = [
+			'January',
+			'February',
+			'March',
+			'April',
+			'May',
+			'June',
+			'July',
+			'August',
+			'September',
+			'October',
+			'November',
+			'December',
+		];
+		const rows = months
+			.map((m) => `<tr><td>${m}</td><td>${Math.floor(Math.random() * 100)}</td></tr>`)
+			.join('');
 		const el = mount({ rows });
 		const labelEls = [...el.querySelectorAll('.rf-chart__label')];
 		expect(labelEls.length).toBe(12);
@@ -192,7 +224,9 @@ describe('rf-chart theming contract (WORK-353)', () => {
 
 	it('keeps X-axis labels horizontal when slots are wide enough', () => {
 		// 3 short labels in 530px slot → plenty of room.
-		const el = mount({ rows: '<tr><td>Q1</td><td>10</td></tr><tr><td>Q2</td><td>20</td></tr><tr><td>Q3</td><td>30</td></tr>' });
+		const el = mount({
+			rows: '<tr><td>Q1</td><td>10</td></tr><tr><td>Q2</td><td>20</td></tr><tr><td>Q3</td><td>30</td></tr>',
+		});
 		const labelEls = [...el.querySelectorAll('.rf-chart__label')];
 		expect(labelEls[0].getAttribute('transform')).toBeNull();
 		expect(labelEls[0].getAttribute('text-anchor')).toBe('middle');
@@ -210,7 +244,20 @@ describe('rf-chart theming contract (WORK-353)', () => {
 	});
 
 	it('forces horizontal labels with data-label-angle="0" even when crowded', () => {
-		const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+		const months = [
+			'January',
+			'February',
+			'March',
+			'April',
+			'May',
+			'June',
+			'July',
+			'August',
+			'September',
+			'October',
+			'November',
+			'December',
+		];
 		const rows = months.map((m) => `<tr><td>${m}</td><td>50</td></tr>`).join('');
 		const el = document.createElement('rf-chart');
 		el.setAttribute('data-type', 'bar');
@@ -229,7 +276,8 @@ describe('rf-chart theming contract (WORK-353)', () => {
 		el.innerHTML = table('<tr><td>Jan</td><td>100</td></tr>');
 		document.body.appendChild(el);
 		const tickValues = [...el.querySelectorAll('.rf-chart__tick-label')]
-			.map((t) => t.textContent).join(',');
+			.map((t) => t.textContent)
+			.join(',');
 		expect(tickValues).toBe('0,50,100');
 	});
 });

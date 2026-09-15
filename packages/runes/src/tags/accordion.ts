@@ -1,7 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes, stripSchemaOrg } from '../lib/index.js';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	asNodes,
+	stripSchemaOrg,
+} from '../lib/index.js';
 import { RenderableNodeCursor } from '../lib/renderable.js';
 import { pageSectionProperties } from './common.js';
 
@@ -18,9 +23,7 @@ export const accordionItem = createContentModelSchema({
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const nameTag = new Tag('summary', {}, [attrs.name ?? '']);
@@ -39,7 +42,9 @@ export const accordionItem = createContentModelSchema({
 			}
 		}
 
-		return createComponentRenderable({ rune: 'accordion-item', schemaOrgType: 'Question',
+		return createComponentRenderable({
+			rune: 'accordion-item',
+			schemaOrgType: 'Question',
 			tag: 'details',
 			properties: {
 				name: nameTag,
@@ -59,13 +64,27 @@ export const accordionItem = createContentModelSchema({
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
 // what a section *is* (ADR-028).
-export const accordionSections = { preamble: 'preamble', headline: 'title', blurb: 'description' } as const;
+export const accordionSections = {
+	preamble: 'preamble',
+	headline: 'title',
+	blurb: 'description',
+} as const;
 
 export const accordion = createContentModelSchema({
 	sections: accordionSections,
 	attributes: {
-		multiple: { type: Boolean, required: false, description: 'Allow multiple panels to be open at once' },
-		schema: { type: String, required: false, matches: ['none'], description: 'Set to "none" to emit no schema.org markup. Use it when the panels are not a FAQ — a list of definitions, say — so the page does not publish fabricated Question entries. Suppresses the items too, not just the container.' },
+		multiple: {
+			type: Boolean,
+			required: false,
+			description: 'Allow multiple panels to be open at once',
+		},
+		schema: {
+			type: String,
+			required: false,
+			matches: ['none'],
+			description:
+				'Set to "none" to emit no schema.org markup. Use it when the panels are not a FAQ — a list of definitions, say — so the page does not publish fabricated Question entries. Suppresses the items too, not just the container.',
+		},
 	},
 	contentModel: () => ({
 		type: 'sections' as const,
@@ -113,11 +132,13 @@ export const accordion = createContentModelSchema({
 		const noSchema = attrs.schema === 'none';
 		if (noSchema) stripSchemaOrg(sectionNodes.nodes);
 
-		const children = headerNodes.count() > 0
-			? [headerNodes.wrap('header').next(), itemsContainer.next()]
-			: [itemsContainer.next()];
+		const children =
+			headerNodes.count() > 0
+				? [headerNodes.wrap('header').next(), itemsContainer.next()]
+				: [itemsContainer.next()];
 
-		return createComponentRenderable({ rune: 'accordion',
+		return createComponentRenderable({
+			rune: 'accordion',
 			...(noSchema ? {} : { schemaOrgType: 'FAQPage', schema: { mainEntity: items } }),
 			tag: 'section',
 			property: 'contentSection',

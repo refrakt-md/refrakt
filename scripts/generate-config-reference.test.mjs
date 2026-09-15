@@ -28,20 +28,29 @@ describe('readableType', () => {
 	});
 
 	it('collapses oneOf into a union a reader recognises', () => {
-		expect(readableType({
-			oneOf: [{ type: 'string' }, { $ref: '#/definitions/SiteThemeConfig' }],
-		}, schema)).toBe('string | SiteThemeConfig');
+		expect(
+			readableType(
+				{
+					oneOf: [{ type: 'string' }, { $ref: '#/definitions/SiteThemeConfig' }],
+				},
+				schema,
+			),
+		).toBe('string | SiteThemeConfig');
 	});
 
 	it('de-duplicates a union that collapses to one type', () => {
-		expect(readableType({ oneOf: [{ type: 'string' }, { type: 'string' }] }, schema)).toBe('string');
+		expect(readableType({ oneOf: [{ type: 'string' }, { type: 'string' }] }, schema)).toBe(
+			'string',
+		);
 	});
 
 	it('renders arrays and records structurally', () => {
-		expect(readableType({ type: 'array', items: { $ref: '#/definitions/RouteRule' } }, schema))
-			.toBe('RouteRule[]');
-		expect(readableType({ type: 'object', additionalProperties: { type: 'string' } }, schema))
-			.toBe('Record<string, string>');
+		expect(
+			readableType({ type: 'array', items: { $ref: '#/definitions/RouteRule' } }, schema),
+		).toBe('RouteRule[]');
+		expect(readableType({ type: 'object', additionalProperties: { type: 'string' } }, schema)).toBe(
+			'Record<string, string>',
+		);
 	});
 
 	it('renders an enum as its literal values', () => {
@@ -55,8 +64,12 @@ describe('resolveProperty', () => {
 	};
 
 	it('folds the sibling required array into a per-row flag', () => {
-		expect(resolveProperty('contentDir', { type: 'string' }, schema, ['contentDir']).required).toBe(true);
-		expect(resolveProperty('baseUrl', { type: 'string' }, schema, ['contentDir']).required).toBe(false);
+		expect(resolveProperty('contentDir', { type: 'string' }, schema, ['contentDir']).required).toBe(
+			true,
+		);
+		expect(resolveProperty('baseUrl', { type: 'string' }, schema, ['contentDir']).required).toBe(
+			false,
+		);
 	});
 
 	it('inherits a $ref description from its target', () => {
@@ -65,14 +78,21 @@ describe('resolveProperty', () => {
 	});
 
 	it('carries default and deprecated through', () => {
-		const row = resolveProperty('target', { type: 'string', deprecated: true, default: 'html' }, schema, []);
+		const row = resolveProperty(
+			'target',
+			{ type: 'string', deprecated: true, default: 'html' },
+			schema,
+			[],
+		);
 		expect(row.deprecated).toBe(true);
 		expect(row.default).toBe('"html"');
 	});
 
 	it('marks the theme-defaultable fields', () => {
 		expect(resolveProperty('baseUrl', { type: 'string' }, schema, []).themeDefaultable).toBe(true);
-		expect(resolveProperty('contentDir', { type: 'string' }, schema, []).themeDefaultable).toBeUndefined();
+		expect(
+			resolveProperty('contentDir', { type: 'string' }, schema, []).themeDefaultable,
+		).toBeUndefined();
 	});
 });
 
@@ -100,7 +120,11 @@ describe('the real schema', () => {
 	});
 
 	it('leaves no field without a description', () => {
-		expect(flatten(schema).filter((f) => !f.description).map((f) => f.name)).toEqual([]);
+		expect(
+			flatten(schema)
+				.filter((f) => !f.description)
+				.map((f) => f.name),
+		).toEqual([]);
 	});
 
 	it('is deterministic — two renders are byte-identical', () => {
@@ -119,14 +143,12 @@ describe('the real schema', () => {
 	 * would imply an effect it does not have.
 	 */
 	it('marks exactly the live fields a ThemeManifest can also supply', () => {
-		const source = readFileSync(
-			new URL('../packages/types/src/theme.ts', import.meta.url),
-			'utf8',
-		);
+		const source = readFileSync(new URL('../packages/types/src/theme.ts', import.meta.url), 'utf8');
 		const start = source.indexOf('export interface ThemeManifest {');
 		const body = source.slice(start, source.indexOf('\n}', start));
-		const declared = [...body.matchAll(/^\t(?:'([^']+)'|([A-Za-z_$][\w$]*))\??\s*:/gm)]
-			.map((m) => m[1] ?? m[2]);
+		const declared = [...body.matchAll(/^\t(?:'([^']+)'|([A-Za-z_$][\w$]*))\??\s*:/gm)].map(
+			(m) => m[1] ?? m[2],
+		);
 		const siteProps = schema.definitions.SiteConfig.properties;
 		const overlap = declared.filter((n) => siteProps[n] && !siteProps[n].deprecated);
 		expect(overlap.sort()).toEqual([...THEME_DEFAULTABLE].sort());

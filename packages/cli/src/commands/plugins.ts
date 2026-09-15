@@ -75,7 +75,10 @@ async function runPluginsList(args: string[]): Promise<void> {
 
 	console.log('\nInstalled refrakt plugins:\n');
 	const nsWidth = Math.max(...plugins.map((p) => p.namespace.length), 8);
-	const pkgWidth = Math.max(...plugins.map((p) => `${p.pluginName}@${p.packageVersion}`.length), 12);
+	const pkgWidth = Math.max(
+		...plugins.map((p) => `${p.pluginName}@${p.packageVersion}`.length),
+		12,
+	);
 	for (const plugin of plugins) {
 		const ns = plugin.namespace.padEnd(nsWidth);
 		const pkg = `${plugin.pluginName}@${plugin.packageVersion}`.padEnd(pkgWidth);

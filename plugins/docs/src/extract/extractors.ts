@@ -1,7 +1,13 @@
 export type {
-	SymbolDoc, SymbolExtractor, ExtractorResult, SymbolKind,
-	SymbolParameter, SymbolReturn, SymbolThrows,
-	SymbolMemberDoc, SymbolGroupDoc,
+	SymbolDoc,
+	SymbolExtractor,
+	ExtractorResult,
+	SymbolKind,
+	SymbolParameter,
+	SymbolReturn,
+	SymbolThrows,
+	SymbolMemberDoc,
+	SymbolGroupDoc,
 } from './types.js';
 
 export async function loadExtractor(

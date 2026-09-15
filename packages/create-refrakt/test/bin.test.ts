@@ -25,7 +25,9 @@ describe('bin — flag validation', () => {
 	it('rejects unknown --type value', () => {
 		const r = run(['x', '--type', 'website']);
 		expect(r.status).toBe(1);
-		expect(r.stderr).toContain('--type must be one of: site, theme, plan, preset-pack, plugin, template');
+		expect(r.stderr).toContain(
+			'--type must be one of: site, theme, plan, preset-pack, plugin, template',
+		);
 	});
 
 	it('rejects --type plan with --theme', () => {

@@ -9,7 +9,7 @@ describe('breadcrumb tag', () => {
 - Current Page
 {% /breadcrumb %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'breadcrumb');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'breadcrumb');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('nav');
 	});
@@ -21,8 +21,8 @@ describe('breadcrumb tag', () => {
 - Current
 {% /breadcrumb %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'breadcrumb');
-		const items = findAllTags(tag!, t => t.attributes['data-rune'] === 'breadcrumb-item');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'breadcrumb');
+		const items = findAllTags(tag!, (t) => t.attributes['data-rune'] === 'breadcrumb-item');
 		expect(items.length).toBe(3);
 	});
 
@@ -32,7 +32,7 @@ describe('breadcrumb tag', () => {
 - Current
 {% /breadcrumb %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'breadcrumb');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'breadcrumb');
 		expect(fields(tag).separator).toBe('>');
 	});
 
@@ -42,13 +42,13 @@ describe('breadcrumb tag', () => {
 - Current Page
 {% /breadcrumb %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'breadcrumb');
-		const items = findAllTags(tag!, t => t.attributes['data-rune'] === 'breadcrumb-item');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'breadcrumb');
+		const items = findAllTags(tag!, (t) => t.attributes['data-rune'] === 'breadcrumb-item');
 		expect(items.length).toBe(2);
 
 		// Last item should have a span but no anchor link
 		const lastItem = items[1];
-		const nameSpan = findTag(lastItem, t => t.name === 'span');
+		const nameSpan = findTag(lastItem, (t) => t.name === 'span');
 		expect(nameSpan).toBeDefined();
 	});
 });

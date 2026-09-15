@@ -37,9 +37,9 @@ export function normalizeNumber(text: string): number | null {
 	const trimmed = text.trim();
 	if (trimmed === '') return null;
 	const cleaned = trimmed
-		.replace(/[$£€¥₹]/g, '')   // leading/embedded currency symbols
-		.replace(/,/g, '')          // thousands separators
-		.replace(/\s/g, '');        // grouping spaces
+		.replace(/[$£€¥₹]/g, '') // leading/embedded currency symbols
+		.replace(/,/g, '') // thousands separators
+		.replace(/\s/g, ''); // grouping spaces
 	if (!/^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(cleaned)) return null;
 	const n = Number(cleaned);
 	return Number.isFinite(n) ? n : null;
@@ -86,8 +86,15 @@ function splitTopLevel(input: string, sep: string): string[] {
 			else cur += ch;
 			continue;
 		}
-		if (ch === '"' || ch === "'") { quote = ch; continue; }
-		if (ch === sep) { out.push(cur); cur = ''; continue; }
+		if (ch === '"' || ch === "'") {
+			quote = ch;
+			continue;
+		}
+		if (ch === sep) {
+			out.push(cur);
+			cur = '';
+			continue;
+		}
 		cur += ch;
 	}
 	out.push(cur);
@@ -95,7 +102,10 @@ function splitTopLevel(input: string, sep: string): string[] {
 }
 
 function stripQuotes(s: string): string {
-	if (s.length >= 2 && ((s[0] === '"' && s[s.length - 1] === '"') || (s[0] === "'" && s[s.length - 1] === "'"))) {
+	if (
+		s.length >= 2 &&
+		((s[0] === '"' && s[s.length - 1] === '"') || (s[0] === "'" && s[s.length - 1] === "'"))
+	) {
 		return s.slice(1, -1);
 	}
 	return s;
@@ -161,8 +171,9 @@ export function applySort(table: DataTable, spec: string | undefined): DataTable
 	if (idx === -1) return table;
 
 	const cells = table.rows.map((r) => r[idx] ?? '');
-	const allNumeric = cells.every((c) => c.trim() === '' || normalizeNumber(c) !== null)
-		&& cells.some((c) => normalizeNumber(c) !== null);
+	const allNumeric =
+		cells.every((c) => c.trim() === '' || normalizeNumber(c) !== null) &&
+		cells.some((c) => normalizeNumber(c) !== null);
 
 	const sorted = [...table.rows].sort((a, b) => {
 		const ca = a[idx] ?? '';
@@ -209,7 +220,9 @@ export function unknownFieldWarnings(
 	const warnings: string[] = [];
 	const check = (attr: string, field: string) => {
 		if (field === '' || known.has(field)) return;
-		warnings.push(`\`${attr}\` names a column the source does not have: "${field}". Available: ${available}.`);
+		warnings.push(
+			`\`${attr}\` names a column the source does not have: "${field}". Available: ${available}.`,
+		);
 	};
 
 	for (const clause of parseFieldMatch(specs.where).clauses) check('where', clause.field);
@@ -258,10 +271,12 @@ export function applyTyping(
 	});
 
 	const rows: TypedCell[][] = table.rows.map((row) =>
-		row.map((cell, c): TypedCell => ({
-			text: cell,
-			value: columnTypes[c] === 'numeric' ? normalizeNumber(cell) : null,
-		})),
+		row.map(
+			(cell, c): TypedCell => ({
+				text: cell,
+				value: columnTypes[c] === 'numeric' ? normalizeNumber(cell) : null,
+			}),
+		),
 	);
 
 	return { headers: table.headers, columnTypes, rows };

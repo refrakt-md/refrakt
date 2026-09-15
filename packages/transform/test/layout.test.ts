@@ -288,9 +288,7 @@ describe('wrapper', () => {
 						class: 'rf-inner',
 						conditionalModifier: { computed: 'toc', modifier: 'has-toc' },
 					},
-					children: [
-						{ tag: 'div', source: 'content' },
-					],
+					children: [{ tag: 'div', source: 'content' }],
 				},
 			},
 		});
@@ -602,11 +600,15 @@ describe('postTransform', () => {
 // SPEC-108 — a content slot's reading default applies to the bare body.
 describe('content slot reading register', () => {
 	const bodySlot = (reading?: 'fine' | 'ui' | 'prose') =>
-		asTag(layoutTransform(
-			minimalConfig({ slots: { body: { tag: 'div', class: 'body', source: 'content', reading } } }),
-			makePage(),
-			'rf',
-		)).children[0] as SerializedTag;
+		asTag(
+			layoutTransform(
+				minimalConfig({
+					slots: { body: { tag: 'div', class: 'body', source: 'content', reading } },
+				}),
+				makePage(),
+				'rf',
+			),
+		).children[0] as SerializedTag;
 
 	it('emits data-reading from a prose content slot', () => {
 		expect(bodySlot('prose').attributes['data-reading']).toBe('prose');

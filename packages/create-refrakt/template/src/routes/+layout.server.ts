@@ -10,7 +10,7 @@ export async function load() {
 	const site = await loadContent(contentDir);
 
 	return {
-		pages: site.pages.map(p => ({
+		pages: site.pages.map((p) => ({
 			url: p.route.url,
 			title: p.frontmatter.title ?? '',
 			draft: p.route.draft,

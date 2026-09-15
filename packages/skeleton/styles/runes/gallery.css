@@ -3,7 +3,9 @@
  * The thin-edge/gap vars, radii, scrim, and nav/lightbox chrome stay skin
  * (Lumina's styles/runes/gallery.css). */
 
-.rf-gallery { position: relative; }
+.rf-gallery {
+	position: relative;
+}
 .rf-gallery__items {
 	display: grid;
 	grid-template-columns: repeat(var(--gallery-columns, 3), 1fr);

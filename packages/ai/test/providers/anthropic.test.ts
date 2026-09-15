@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { createAnthropicProvider, formatAnthropicRequest, parseAnthropicSSE } from '../../src/providers/anthropic.js';
+import {
+	createAnthropicProvider,
+	formatAnthropicRequest,
+	parseAnthropicSSE,
+} from '../../src/providers/anthropic.js';
 import type { Message } from '../../src/provider.js';
 
 function mockSSEResponse(events: string[]): Response {
@@ -21,15 +25,10 @@ describe('formatAnthropicRequest', () => {
 			{ role: 'user', content: 'Hello' },
 		];
 
-		const result = formatAnthropicRequest(
-			{ messages },
-			{ model: 'claude-sonnet-4-5-20250929' },
-		);
+		const result = formatAnthropicRequest({ messages }, { model: 'claude-sonnet-4-5-20250929' });
 
 		expect(result.system).toEqual(['You are helpful.']);
-		expect(result.messages).toEqual([
-			{ role: 'user', content: 'Hello' },
-		]);
+		expect(result.messages).toEqual([{ role: 'user', content: 'Hello' }]);
 	});
 
 	it('collects multiple system messages', () => {
@@ -39,15 +38,10 @@ describe('formatAnthropicRequest', () => {
 			{ role: 'user', content: 'Hello' },
 		];
 
-		const result = formatAnthropicRequest(
-			{ messages },
-			{ model: 'claude-sonnet-4-5-20250929' },
-		);
+		const result = formatAnthropicRequest({ messages }, { model: 'claude-sonnet-4-5-20250929' });
 
 		expect(result.system).toEqual(['Base layer.', 'Mode layer.']);
-		expect(result.messages).toEqual([
-			{ role: 'user', content: 'Hello' },
-		]);
+		expect(result.messages).toEqual([{ role: 'user', content: 'Hello' }]);
 	});
 
 	it('uses provided model over default', () => {
@@ -186,8 +180,12 @@ describe('createAnthropicProvider', () => {
 
 		expect(capturedRequest).toBeDefined();
 		expect(capturedRequest!.url).toBe('https://test.api.com/v1/messages');
-		expect((capturedRequest!.init.headers as Record<string, string>)['x-api-key']).toBe('sk-test-123');
-		expect((capturedRequest!.init.headers as Record<string, string>)['anthropic-version']).toBe('2023-06-01');
+		expect((capturedRequest!.init.headers as Record<string, string>)['x-api-key']).toBe(
+			'sk-test-123',
+		);
+		expect((capturedRequest!.init.headers as Record<string, string>)['anthropic-version']).toBe(
+			'2023-06-01',
+		);
 
 		const body = JSON.parse(capturedRequest!.init.body as string);
 		expect(body.system).toBe('Be helpful');
@@ -220,7 +218,9 @@ describe('createAnthropicProvider', () => {
 				{ role: 'system', content: 'Mode layer' },
 				{ role: 'user', content: 'Hello' },
 			],
-		})) { /* drain */ }
+		})) {
+			/* drain */
+		}
 
 		const body = JSON.parse(capturedRequest!.init.body as string);
 		expect(body.system).toEqual([
@@ -252,7 +252,9 @@ describe('createAnthropicProvider', () => {
 				{ role: 'system', content: 'Mode layer' },
 				{ role: 'user', content: 'Hello' },
 			],
-		})) { /* drain */ }
+		})) {
+			/* drain */
+		}
 
 		const body = JSON.parse(capturedRequest!.init.body as string);
 		expect(body.system).toBe('Base layer\n\nMode layer');
@@ -273,7 +275,9 @@ describe('createAnthropicProvider', () => {
 		});
 
 		await expect(async () => {
-			for await (const _ of iter) { /* drain */ }
+			for await (const _ of iter) {
+				/* drain */
+			}
 		}).rejects.toThrow('Anthropic API error (401)');
 	});
 });

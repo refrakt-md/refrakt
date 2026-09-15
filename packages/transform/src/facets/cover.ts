@@ -5,7 +5,10 @@ import type { UniversalAxisFacet } from './describe.js';
 /** SPEC-089 — explicit cover-scrim edge → CSS gradient direction (the heaviest
  *  edge is where the named edge sits). Overrides the content-place default. */
 const COVER_SCRIM_DIR: Record<string, string> = {
-	top: 'to top', bottom: 'to bottom', left: 'to left', right: 'to right',
+	top: 'to top',
+	bottom: 'to bottom',
+	left: 'to left',
+	right: 'to right',
 };
 
 /** The scrim meta fields the media well claims in cover mode. */
@@ -84,11 +87,13 @@ export const coverFacet: Facet = {
 		if (strength !== undefined) {
 			result.consumes!.push(UNSUPPORTED_IN_COVER);
 			if (scrim !== 'none') {
-				result.warnings = [{
-					code: 'scrim-strength-in-cover',
-					message: `[refrakt] \`scrim-strength\` is not honoured in cover mode — on \`${ctx.rune}\` the scrim is rendered by the media well, which has no strength control. Ignored.`,
-					dedupeKey: ctx.rune,
-				}];
+				result.warnings = [
+					{
+						code: 'scrim-strength-in-cover',
+						message: `[refrakt] \`scrim-strength\` is not honoured in cover mode — on \`${ctx.rune}\` the scrim is rendered by the media well, which has no strength control. Ignored.`,
+						dedupeKey: ctx.rune,
+					},
+				];
 			}
 		}
 
@@ -126,15 +131,18 @@ export const coverFacet: Facet = {
 export const coverAxis: UniversalAxisFacet = {
 	axis: 'cover',
 	contract: {
-		description: 'Cover-mode chrome (SPEC-089): with `media-position="cover"` the media fills the surface and the content sits over it, so the scrim is rerouted from the background layer to the media well.',
+		description:
+			'Cover-mode chrome (SPEC-089): with `media-position="cover"` the media fills the surface and the content sits over it, so the scrim is rerouted from the background layer to the media well.',
 		source: 'meta',
 		inputs: SCRIM_META,
 		dataAttributes: ['data-scrim', 'data-scrim-type', 'data-scrim-blur'],
 		customProperties: ['--cover-scrim-dir'],
-		target: 'the rune root, except `data-color-scheme`, which is scoped to the `[data-name="content"]` overlay so only text on the darkened media flips',
+		target:
+			'the rune root, except `data-color-scheme`, which is scoped to the `[data-name="content"]` overlay so only text on the darkened media flips',
 		condition: 'active only when `media-position` resolves to `cover`',
 	},
-	describeForRune: (config) => (config.modifiers?.['media-position']
-		? null
-		: 'this rune declares no `media-position` modifier, so it cannot enter cover mode'),
+	describeForRune: (config) =>
+		config.modifiers?.['media-position']
+			? null
+			: 'this rune declares no `media-position` modifier, so it cannot enter cover mode',
 };

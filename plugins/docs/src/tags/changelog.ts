@@ -1,7 +1,13 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor, pageSectionProperties } from '@refrakt-md/runes';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	asNodes,
+	RenderableNodeCursor,
+	pageSectionProperties,
+} from '@refrakt-md/runes';
 
 // Parse "v2.1.0 - 2024-01-15" or "0.1.0 — January 2024"
 const VERSION_DATE_PATTERN = /^v?([\d.]+(?:-[\w.]+)?)\s*[-–—]\s*(.+)$/;
@@ -13,9 +19,7 @@ export const changelogRelease = createContentModelSchema({
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const versionTag = new Tag('h3', {}, [attrs.version ?? '']);
@@ -24,7 +28,8 @@ export const changelogRelease = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable({ rune: 'changelog-release',
+		return createComponentRenderable({
+			rune: 'changelog-release',
 			tag: 'section',
 			properties: {
 				date: dateTag,
@@ -46,7 +51,11 @@ export const changelogSections = { preamble: 'preamble', headline: 'title' } as 
 export const changelog = createContentModelSchema({
 	sections: changelogSections,
 	attributes: {
-		project: { type: String, required: false, description: 'Project name displayed in the changelog header.' },
+		project: {
+			type: String,
+			required: false,
+			description: 'Project name displayed in the changelog header.',
+		},
 	},
 	contentModel: () => ({
 		type: 'sections' as const,
@@ -74,12 +83,7 @@ export const changelog = createContentModelSchema({
 			const version = match ? match[1].trim() : headingText;
 			const date = match ? match[2].trim() : '';
 
-			return new Ast.Node(
-				'tag',
-				{ version, date },
-				asNodes(section.body),
-				'changelog-release',
-			);
+			return new Ast.Node('tag', { version, date }, asNodes(section.body), 'changelog-release');
 		});
 
 		// Combine explicit child tags (preamble items) with heading-derived releases
@@ -97,7 +101,8 @@ export const changelog = createContentModelSchema({
 		}
 		children.push(releasesDiv);
 
-		return createComponentRenderable({ rune: 'changelog',
+		return createComponentRenderable({
+			rune: 'changelog',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

@@ -6,7 +6,9 @@ import type { SerializedTag } from '@refrakt-md/types';
 
 const asTag = (n: any): SerializedTag => n as SerializedTag;
 const config: ThemeConfig = {
-	prefix: 'rf', tokenPrefix: '--rf', icons: {},
+	prefix: 'rf',
+	tokenPrefix: '--rf',
+	icons: {},
 	runes: {
 		Card: { block: 'card' },
 		// a rune with a per-rune default elevation
@@ -51,7 +53,7 @@ describe('SPEC-107 elevation depth-ladder axis', () => {
 
 	describe('deprecated shadow-scale aliases (none/sm/md/lg)', () => {
 		const cases: Array<[string, string]> = [
-			['none', 'flat'],   // ⚠ keeps the surface — NOT flush
+			['none', 'flat'], // ⚠ keeps the surface — NOT flush
 			['sm', 'raised'],
 			['md', 'raised'],
 			['lg', 'floating'],
@@ -62,7 +64,9 @@ describe('SPEC-107 elevation depth-ladder axis', () => {
 				const transform = createTransform(config);
 				const tag = makeTag('div', { 'data-rune': 'card', elevation: old }, []);
 				expect(asTag(transform(tag)).attributes['data-elevation']).toBe(mapped);
-				expect(warn).toHaveBeenCalledWith(expect.stringContaining(`elevation="${old}" is deprecated`));
+				expect(warn).toHaveBeenCalledWith(
+					expect.stringContaining(`elevation="${old}" is deprecated`),
+				);
 				warn.mockRestore();
 			});
 		}

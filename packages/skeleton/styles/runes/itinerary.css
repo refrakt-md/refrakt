@@ -3,19 +3,29 @@
  * block display, the duration-badge placement, the horizontal flex-scroll + stop
  * min-width, and the compact display toggles. Connector borders, marker chrome,
  * the duration text, type, and spacing are skin. */
-.rf-itinerary-day__header:empty { display: none; }
-.rf-itinerary-day ol { list-style: none; }
-.rf-itinerary-stop { position: relative; }
+.rf-itinerary-day__header:empty {
+	display: none;
+}
+.rf-itinerary-day ol {
+	list-style: none;
+}
+.rf-itinerary-stop {
+	position: relative;
+}
 .rf-itinerary-stop::before {
-	content: '';
+	content: "";
 	position: absolute;
 	left: -0.4375rem;
 	top: 0.25rem;
 	width: 0.75rem;
 	height: 0.75rem;
 }
-.rf-itinerary-stop__time { display: block; }
-.rf-itinerary-stop__location { display: block; }
+.rf-itinerary-stop__time {
+	display: block;
+}
+.rf-itinerary-stop__location {
+	display: block;
+}
 .rf-itinerary-stop[data-duration]::after {
 	position: absolute;
 	top: 0.15rem;
@@ -36,6 +46,12 @@
 	position: static;
 	display: inline-block;
 }
-.rf-itinerary--compact .rf-itinerary-stop__body { display: none; }
-.rf-itinerary--compact .rf-itinerary-stop__location { display: inline; }
-.rf-itinerary--compact .rf-itinerary-stop__time { display: inline; }
+.rf-itinerary--compact .rf-itinerary-stop__body {
+	display: none;
+}
+.rf-itinerary--compact .rf-itinerary-stop__location {
+	display: inline;
+}
+.rf-itinerary--compact .rf-itinerary-stop__time {
+	display: inline;
+}

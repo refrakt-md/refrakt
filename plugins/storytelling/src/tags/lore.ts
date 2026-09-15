@@ -1,7 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	RenderableNodeCursor,
+} from '@refrakt-md/runes';
 import { taxonomyAttributes } from './common.js';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
@@ -15,14 +20,20 @@ export const lore = createContentModelSchema({
 	base: taxonomyAttributes,
 	attributes: {
 		title: { type: String, required: true, description: 'Heading displayed for this lore entry.' },
-		category: { type: String, required: false, description: 'Grouping label used to organize lore entries (e.g. history, magic, culture).' },
-		spoiler: { type: Boolean, required: false, description: 'Enable/disable spoiler protection that hides content until revealed.' },
+		category: {
+			type: String,
+			required: false,
+			description: 'Grouping label used to organize lore entries (e.g. history, magic, culture).',
+		},
+		spoiler: {
+			type: Boolean,
+			required: false,
+			description: 'Enable/disable spoiler protection that hides content until revealed.',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const titleTag = new Tag('span', {}, [attrs.title ?? '']);
@@ -33,7 +44,9 @@ export const lore = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable({ rune: 'lore', schemaOrgType: 'Article',
+		return createComponentRenderable({
+			rune: 'lore',
+			schemaOrgType: 'Article',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {

@@ -6,7 +6,11 @@ import {
 	colorSchemeMetaContent,
 	type ResolvedTintCascade,
 } from '@refrakt-md/content';
-import { collectBehaviorStrings, resolveDocumentLang, type LocaleContext } from '@refrakt-md/transform';
+import {
+	collectBehaviorStrings,
+	resolveDocumentLang,
+	type LocaleContext,
+} from '@refrakt-md/transform';
 
 const PRE_PAINT_SCRIPT = prePaintScript();
 const DEFAULT_CASCADE: ResolvedTintCascade = { tint: null, tintMode: 'auto', locked: false };
@@ -57,7 +61,11 @@ export interface PageShellOptions {
 }
 
 function escapeHtml(s: string): string {
-	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	return s
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;');
 }
 
 function renderMetaTag(name: string, content: string): string {
@@ -108,7 +116,9 @@ export function renderFullPage(input: RenderPageInput, options: PageShellOptions
 	// No-flash theme chrome (SPEC-073): the color-scheme meta + anti-FOIT
 	// pre-paint script go early, before any stylesheet, so the saved theme is
 	// applied before first paint. Tint attrs go on <html> below.
-	headParts.push(`<meta name="color-scheme" content="${escapeHtml(colorSchemeMetaContent(tintCascade))}">`);
+	headParts.push(
+		`<meta name="color-scheme" content="${escapeHtml(colorSchemeMetaContent(tintCascade))}">`,
+	);
 	headParts.push(`<script>${PRE_PAINT_SCRIPT}</script>`);
 
 	// Title
@@ -221,12 +231,14 @@ export function renderFullPage(input: RenderPageInput, options: PageShellOptions
 	const bodyContent = renderPage(input);
 
 	// Scripts
-	const scriptTags = scripts.map(src => `<script src="${escapeHtml(src)}"></script>`).join('\n');
+	const scriptTags = scripts.map((src) => `<script src="${escapeHtml(src)}"></script>`).join('\n');
 
 	// Tint attrs (data-theme / data-tint / data-tint-lock) on <html>, matching
 	// the SvelteKit adapter's SSR output.
 	const htmlAttrs = htmlTintAttributes(tintCascade);
-	const htmlTag = htmlAttrs ? `<html lang="${escapeHtml(lang)}" ${htmlAttrs}>` : `<html lang="${escapeHtml(lang)}">`;
+	const htmlTag = htmlAttrs
+		? `<html lang="${escapeHtml(lang)}" ${htmlAttrs}>`
+		: `<html lang="${escapeHtml(lang)}">`;
 
 	return `<!DOCTYPE html>
 ${htmlTag}

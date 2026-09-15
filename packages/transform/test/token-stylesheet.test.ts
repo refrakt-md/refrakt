@@ -61,24 +61,30 @@ describe('generateTokenStylesheet', () => {
 
 	it('respects the selector option', () => {
 		const tokens: PartialTokenContract = { color: { text: '#000' } };
-		expect(generateTokenStylesheet(tokens, { selector: '[data-theme="dark"]' }))
-			.toBe('[data-theme="dark"] {\n\t--rf-color-text: #000;\n}\n');
+		expect(generateTokenStylesheet(tokens, { selector: '[data-theme="dark"]' })).toBe(
+			'[data-theme="dark"] {\n\t--rf-color-text: #000;\n}\n',
+		);
 	});
 
 	it('appends extras after contract declarations', () => {
 		const tokens: PartialTokenContract = { color: { text: '#000' } };
-		const css = generateTokenStylesheet(tokens, { extra: { 'rf-hero-overlay': 'rgba(0,0,0,0.5)' } });
+		const css = generateTokenStylesheet(tokens, {
+			extra: { 'rf-hero-overlay': 'rgba(0,0,0,0.5)' },
+		});
 		expect(css).toContain('--rf-color-text: #000;');
 		expect(css).toContain('--rf-hero-overlay: rgba(0,0,0,0.5);');
 	});
 
 	it('emits extras even when contract is empty', () => {
-		expect(generateTokenStylesheet({}, { extra: { 'rf-x': 'red' } }))
-			.toBe(':root {\n\t--rf-x: red;\n}\n');
+		expect(generateTokenStylesheet({}, { extra: { 'rf-x': 'red' } })).toBe(
+			':root {\n\t--rf-x: red;\n}\n',
+		);
 	});
 
 	it('skips both undefined and null leaves (null means "reset to inherit", not literal null)', () => {
-		const tokens = { color: { text: undefined, primary: null, muted: '#888' } } as unknown as PartialTokenContract;
+		const tokens = {
+			color: { text: undefined, primary: null, muted: '#888' },
+		} as unknown as PartialTokenContract;
 		const css = generateTokenStylesheet(tokens);
 		expect(css).not.toContain('color-text');
 		expect(css).not.toContain('color-primary');

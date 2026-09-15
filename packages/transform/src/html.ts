@@ -2,15 +2,31 @@ import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 import { isTag } from './helpers.js';
 
 const VOID_ELEMENTS = new Set([
-	'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
-	'link', 'meta', 'param', 'source', 'track', 'wbr',
+	'area',
+	'base',
+	'br',
+	'col',
+	'embed',
+	'hr',
+	'img',
+	'input',
+	'link',
+	'meta',
+	'param',
+	'source',
+	'track',
+	'wbr',
 ]);
 
 /** Attributes that are internal markers and should not appear in HTML output */
 const INTERNAL_ATTRS = new Set(['$$mdtype']);
 
 function escapeHtml(s: string): string {
-	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	return s
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;');
 }
 
 function renderAttrs(attrs: Record<string, any>): string {
@@ -18,7 +34,10 @@ function renderAttrs(attrs: Record<string, any>): string {
 	for (const [k, v] of Object.entries(attrs)) {
 		if (INTERNAL_ATTRS.has(k)) continue;
 		if (v === undefined || v === null || v === false) continue;
-		if (v === true) { parts.push(k); continue; }
+		if (v === true) {
+			parts.push(k);
+			continue;
+		}
 		parts.push(`${k}="${escapeHtml(String(v))}"`);
 	}
 	return parts.length ? ' ' + parts.join(' ') : '';
@@ -67,7 +86,7 @@ function renderFlat(node: RendererNode): string {
 	// data-codeblock and data-raw-html children are raw HTML — don't escape
 	const raw = node.attributes?.['data-codeblock'] || node.attributes?.['data-raw-html'];
 	const children = raw
-		? node.children.map(c => typeof c === 'string' ? c : renderFlat(c)).join('')
+		? node.children.map((c) => (typeof c === 'string' ? c : renderFlat(c))).join('')
 		: node.children.map(renderFlat).join('');
 	return `<${tag}${attrs}>${children}</${tag}>`;
 }
@@ -76,7 +95,11 @@ function renderPretty(node: RendererNode, depth: number, indent: string): string
 	if (node === null || node === undefined) return '';
 	if (typeof node === 'string') return indent.repeat(depth) + escapeHtml(node);
 	if (typeof node === 'number') return indent.repeat(depth) + String(node);
-	if (Array.isArray(node)) return node.map(n => renderPretty(n, depth, indent)).filter(Boolean).join('\n');
+	if (Array.isArray(node))
+		return node
+			.map((n) => renderPretty(n, depth, indent))
+			.filter(Boolean)
+			.join('\n');
 	if (!isTag(node)) return '';
 
 	const tag = node.name;
@@ -84,7 +107,7 @@ function renderPretty(node: RendererNode, depth: number, indent: string): string
 	// Null-named tags (Markdoc document root) — render children without wrapper
 	if (!tag) {
 		return node.children
-			.map(c => renderPretty(c, depth, indent))
+			.map((c) => renderPretty(c, depth, indent))
 			.filter(Boolean)
 			.join('\n');
 	}
@@ -98,27 +121,29 @@ function renderPretty(node: RendererNode, depth: number, indent: string): string
 
 	// <pre> preserves whitespace — render children flat to avoid visible indentation
 	if (tag === 'pre') {
-		const children = node.children.map(c => renderFlatChild(c)).join('');
+		const children = node.children.map((c) => renderFlatChild(c)).join('');
 		return `${pad}<${tag}${attrs}>${children}</${tag}>`;
 	}
 
 	// data-raw-html elements — render children flat without escaping
 	const raw = node.attributes?.['data-codeblock'] || node.attributes?.['data-raw-html'];
 	if (raw) {
-		const children = node.children.map(c => typeof c === 'string' ? c : renderFlatChild(c)).join('');
+		const children = node.children
+			.map((c) => (typeof c === 'string' ? c : renderFlatChild(c)))
+			.join('');
 		return `${pad}<${tag}${attrs}>${children}</${tag}>`;
 	}
 
 	// Inline elements with only text children
-	const allText = node.children.every(c => typeof c === 'string' || typeof c === 'number');
+	const allText = node.children.every((c) => typeof c === 'string' || typeof c === 'number');
 	if (allText && node.children.length <= 1) {
-		const text = node.children.map(c => typeof c === 'string' ? escapeHtml(c) : String(c)).join('');
+		const text = node.children
+			.map((c) => (typeof c === 'string' ? escapeHtml(c) : String(c)))
+			.join('');
 		return `${pad}<${tag}${attrs}>${text}</${tag}>`;
 	}
 
-	const childLines = node.children
-		.map(c => renderPretty(c, depth + 1, indent))
-		.filter(Boolean);
+	const childLines = node.children.map((c) => renderPretty(c, depth + 1, indent)).filter(Boolean);
 
 	return `${pad}<${tag}${attrs}>\n${childLines.join('\n')}\n${pad}</${tag}>`;
 }
@@ -145,7 +170,7 @@ function renderFlatChild(node: RendererNode): string {
 	// data-codeblock and data-raw-html children are raw HTML — don't escape
 	const raw = node.attributes?.['data-codeblock'] || node.attributes?.['data-raw-html'];
 	const children = raw
-		? node.children.map(c => typeof c === 'string' ? c : renderFlatChild(c)).join('')
+		? node.children.map((c) => (typeof c === 'string' ? c : renderFlatChild(c))).join('')
 		: node.children.map(renderFlatChild).join('');
 
 	return `<${tag}${attrs}>${children}</${tag}>`;

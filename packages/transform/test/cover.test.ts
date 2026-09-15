@@ -8,7 +8,9 @@ const asTag = (n: any): SerializedTag => n as SerializedTag;
 const meta = (f: string, c: string) => makeTag('meta', { 'data-field': f, content: c }, []);
 
 const config: ThemeConfig = {
-	prefix: 'rf', tokenPrefix: '--rf', icons: {},
+	prefix: 'rf',
+	tokenPrefix: '--rf',
+	icons: {},
 	runes: {
 		Card: {
 			block: 'card',
@@ -19,7 +21,11 @@ const config: ThemeConfig = {
 			},
 			sections: { media: 'media' },
 			layout: { root: ['media', 'content'], content: { tag: 'div', children: [] } },
-			variants: { 'media-position': { cover: { staticModifiers: ['cover'], rootAttributes: { 'data-cover-scope': 'full' } } } },
+			variants: {
+				'media-position': {
+					cover: { staticModifiers: ['cover'], rootAttributes: { 'data-cover-scope': 'full' } },
+				},
+			},
 		},
 		// Mirrors the recipe header-scope cover variant: the band carries the dark
 		// colour-scheme so only the overlaid preamble flips, not the body below.
@@ -35,7 +41,11 @@ const config: ThemeConfig = {
 						rootAttributes: { 'data-cover-scope': 'header' },
 						layout: {
 							root: ['cover-band', 'body'],
-							'cover-band': { tag: 'div', attrs: { 'data-color-scheme': 'dark' }, children: ['media', 'preamble'] },
+							'cover-band': {
+								tag: 'div',
+								attrs: { 'data-color-scheme': 'dark' },
+								children: ['media', 'preamble'],
+							},
 							body: { tag: 'div', children: [] },
 						},
 					},
@@ -66,14 +76,28 @@ describe('SPEC-089 cover variant', () => {
 
 	it('content-place in cover emits 2-axis vars (block × inline)', () => {
 		const t = createTransform(config);
-		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), meta('content-place', 'end start')])));
+		const r = asTag(
+			t(
+				makeTag('div', { 'data-rune': 'card' }, [
+					meta('media-position', 'cover'),
+					meta('content-place', 'end start'),
+				]),
+			),
+		);
 		expect(r.attributes.style).toContain('--cover-place-block: end');
 		expect(r.attributes.style).toContain('--cover-place-inline: start');
 	});
 
 	it('content-place="auto" emits no place vars (left to the container query)', () => {
 		const t = createTransform(config);
-		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), meta('content-place', 'auto')])));
+		const r = asTag(
+			t(
+				makeTag('div', { 'data-rune': 'card' }, [
+					meta('media-position', 'cover'),
+					meta('content-place', 'auto'),
+				]),
+			),
+		);
 		expect(r.attributes['data-content-place']).toBe('auto');
 		expect(r.attributes.style ?? '').not.toContain('--cover-place-block');
 	});
@@ -104,14 +128,23 @@ describe('SPEC-089 cover variant', () => {
 
 	it('scrim="none" opts out of the default cover scrim and the overlay scheme', () => {
 		const t = createTransform(config);
-		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), meta('scrim', 'none')])));
+		const r = asTag(
+			t(
+				makeTag('div', { 'data-rune': 'card' }, [
+					meta('media-position', 'cover'),
+					meta('scrim', 'none'),
+				]),
+			),
+		);
 		expect(r.attributes['data-scrim']).toBe('none');
 		expect(findByName(r, 'content')?.attributes['data-color-scheme']).toBeUndefined();
 	});
 
 	it('header-scope cover flips only the cover-band, not the rune root', () => {
 		const t = createTransform(config);
-		const r = asTag(t(makeTag('div', { 'data-rune': 'recipe' }, [meta('media-position', 'cover')])));
+		const r = asTag(
+			t(makeTag('div', { 'data-rune': 'recipe' }, [meta('media-position', 'cover')])),
+		);
 		// Root stays on the page palette; the band carries the dark scheme.
 		expect(r.attributes['data-color-scheme']).toBeUndefined();
 		const band = findByName(r, 'cover-band');
@@ -120,13 +153,28 @@ describe('SPEC-089 cover variant', () => {
 
 	it('height knob emits a data-height attribute on the card root', () => {
 		const t = createTransform(config);
-		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), meta('height', 'lg')])));
+		const r = asTag(
+			t(
+				makeTag('div', { 'data-rune': 'card' }, [
+					meta('media-position', 'cover'),
+					meta('height', 'lg'),
+				]),
+			),
+		);
 		expect(r.attributes['data-height']).toBe('lg');
 	});
 
 	it('an explicit scrim direction pins the cover-scrim gradient direction', () => {
 		const t = createTransform(config);
-		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), meta('content-place', 'start center'), meta('scrim', 'bottom')])));
+		const r = asTag(
+			t(
+				makeTag('div', { 'data-rune': 'card' }, [
+					meta('media-position', 'cover'),
+					meta('content-place', 'start center'),
+					meta('scrim', 'bottom'),
+				]),
+			),
+		);
 		// content-place block start → "to bottom"; explicit scrim="bottom" also "to bottom".
 		expect(r.attributes.style).toContain('--cover-scrim-dir: to bottom');
 		// And it is not data-scrim="none".
@@ -135,19 +183,36 @@ describe('SPEC-089 cover variant', () => {
 
 	it('scrim-tone="light" flips the cover overlay to a light scheme', () => {
 		const t = createTransform(config);
-		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), meta('scrim-tone', 'light')])));
+		const r = asTag(
+			t(
+				makeTag('div', { 'data-rune': 'card' }, [
+					meta('media-position', 'cover'),
+					meta('scrim-tone', 'light'),
+				]),
+			),
+		);
 		expect(findByName(r, 'content')?.attributes['data-color-scheme']).toBe('light');
 	});
 
 	it('scrim-type="frost" routes a frosted treatment to the cover host (no bg layer)', () => {
 		const t = createTransform(config);
-		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), meta('scrim-type', 'frost'), meta('scrim-blur', 'md')])));
+		const r = asTag(
+			t(
+				makeTag('div', { 'data-rune': 'card' }, [
+					meta('media-position', 'cover'),
+					meta('scrim-type', 'frost'),
+					meta('scrim-blur', 'md'),
+				]),
+			),
+		);
 		expect(r.attributes['data-scrim-type']).toBe('frost');
 		expect(r.attributes['data-scrim-blur']).toBe('md');
 		// The scrim stays on the media well (cover.css), not the self-surface bg layer.
 		expect(r.attributes.class).not.toContain('--has-bg');
 		// The SPEC-088 scrim metas are consumed, not leaked as stray <meta> tags.
-		const leaked = (r.children ?? []).filter((c: any) => c?.name === 'meta' && /^scrim/.test(c.attributes?.['data-field'] ?? ''));
+		const leaked = (r.children ?? []).filter(
+			(c: any) => c?.name === 'meta' && /^scrim/.test(c.attributes?.['data-field'] ?? ''),
+		);
 		expect(leaked).toHaveLength(0);
 	});
 });
@@ -168,7 +233,9 @@ describe('SPEC-101 cover sandbox backdrop', () => {
 		const media = makeTag('div', { 'data-name': 'media' }, [
 			makeTag('rf-sandbox', { 'data-height': 'auto' }, []),
 		]);
-		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), media])));
+		const r = asTag(
+			t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), media])),
+		);
 		expect(findSandbox(r)?.attributes['data-height']).toBe('fill');
 	});
 
@@ -177,7 +244,9 @@ describe('SPEC-101 cover sandbox backdrop', () => {
 		const media = makeTag('div', { 'data-name': 'media' }, [
 			makeTag('rf-sandbox', { 'data-height': '360' }, []),
 		]);
-		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), media])));
+		const r = asTag(
+			t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'cover'), media])),
+		);
 		expect(findSandbox(r)?.attributes['data-height']).toBe('360');
 	});
 
@@ -186,7 +255,9 @@ describe('SPEC-101 cover sandbox backdrop', () => {
 		const media = makeTag('div', { 'data-name': 'media' }, [
 			makeTag('rf-sandbox', { 'data-height': 'auto' }, []),
 		]);
-		const r = asTag(t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'top'), media])));
+		const r = asTag(
+			t(makeTag('div', { 'data-rune': 'card' }, [meta('media-position', 'top'), media])),
+		);
 		expect(findSandbox(r)?.attributes['data-height']).toBe('auto');
 	});
 });
@@ -215,10 +286,14 @@ describe('SPEC-101 non-eager sandbox under cover warns', () => {
 		expect(warn).not.toHaveBeenCalled();
 
 		// Non-eager outside cover: silent (the WORK-381 paths are untouched).
-		t(makeTag('div', { 'data-rune': 'card' }, [
-			meta('media-position', 'top'),
-			makeTag('div', { 'data-name': 'media' }, [makeTag('rf-sandbox', { 'data-activation': 'visible' }, [])]),
-		]));
+		t(
+			makeTag('div', { 'data-rune': 'card' }, [
+				meta('media-position', 'top'),
+				makeTag('div', { 'data-name': 'media' }, [
+					makeTag('rf-sandbox', { 'data-activation': 'visible' }, []),
+				]),
+			]),
+		);
 		expect(warn).not.toHaveBeenCalled();
 		warn.mockRestore();
 	});

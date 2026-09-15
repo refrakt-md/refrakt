@@ -43,7 +43,10 @@ export async function composeSiteTokensCss(site: SiteConfig, configDir: string):
 	const tintPresetSpecs: string[] = [];
 	for (const tint of Object.values(siteTints)) {
 		const ext = tint.extends;
-		if (typeof ext === 'string' && (ext.startsWith('@') || ext.startsWith('./') || ext.startsWith('../') || ext.startsWith('/'))) {
+		if (
+			typeof ext === 'string' &&
+			(ext.startsWith('@') || ext.startsWith('./') || ext.startsWith('../') || ext.startsWith('/'))
+		) {
 			if (!tintPresetSpecs.includes(ext) && !presetSpecs.includes(ext)) {
 				tintPresetSpecs.push(ext);
 			}
@@ -60,16 +63,17 @@ export async function composeSiteTokensCss(site: SiteConfig, configDir: string):
 	// (for scoped emission). Some paths may overlap; that's fine — load once,
 	// reuse the config.
 	const allPresetSpecs = [...presetSpecs, ...tintPresetSpecs];
-	const allPresetConfigs = allPresetSpecs.length > 0
-		? await loadPresets(allPresetSpecs, { from: configDir })
-		: [];
+	const allPresetConfigs =
+		allPresetSpecs.length > 0 ? await loadPresets(allPresetSpecs, { from: configDir }) : [];
 
 	// Split back into active (drives :root cascade) vs tint-only (drives
 	// scoped CSS only) — preserves the SPEC-056 invariant that a tint can
 	// expose a preset without making it the active site theme.
 	const activePresetConfigs = allPresetConfigs.slice(0, presetSpecs.length);
 	const presetMap: Record<string, ThemeTokensConfig> = {};
-	allPresetSpecs.forEach((spec, i) => { presetMap[spec] = allPresetConfigs[i]; });
+	allPresetSpecs.forEach((spec, i) => {
+		presetMap[spec] = allPresetConfigs[i];
+	});
 
 	const blocks: string[] = [];
 

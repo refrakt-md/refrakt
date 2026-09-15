@@ -29,7 +29,7 @@ export interface HistoryEvent {
 	kind: 'created' | 'attributes' | 'criteria' | 'resolution' | 'content';
 	hash: string;
 	shortHash: string;
-	date: string;    // ISO 8601 date string
+	date: string; // ISO 8601 date string
 	author: string;
 	message: string;
 	/** Attribute changes (only for kind === 'attributes') */
@@ -55,10 +55,12 @@ interface CommitInfo {
  */
 export function getFileCommits(filePath: string, cwd: string): CommitInfo[] {
 	try {
-		const output = execSync(
-			`git log --follow --format="%H %aI %aN%n%s" -- "${filePath}"`,
-			{ cwd, encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024, stdio: ['pipe', 'pipe', 'pipe'] },
-		);
+		const output = execSync(`git log --follow --format="%H %aI %aN%n%s" -- "${filePath}"`, {
+			cwd,
+			encoding: 'utf-8',
+			maxBuffer: 10 * 1024 * 1024,
+			stdio: ['pipe', 'pipe', 'pipe'],
+		});
 
 		const commits: CommitInfo[] = [];
 		const lines = output.trim().split('\n');
@@ -93,10 +95,12 @@ export function getFileCommits(filePath: string, cwd: string): CommitInfo[] {
  */
 export function getFileAtCommit(hash: string, filePath: string, cwd: string): string | null {
 	try {
-		return execSync(
-			`git show "${hash}:${filePath}"`,
-			{ cwd, encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024, stdio: ['pipe', 'pipe', 'pipe'] },
-		);
+		return execSync(`git show "${hash}:${filePath}"`, {
+			cwd,
+			encoding: 'utf-8',
+			maxBuffer: 10 * 1024 * 1024,
+			stdio: ['pipe', 'pipe', 'pipe'],
+		});
 	} catch {
 		// File may not exist at this commit (pre-rename)
 		// Try to find the file via diff-tree to handle renames
@@ -192,10 +196,19 @@ export function extractEntityHistory(filePath: string, cwd: string): HistoryEven
 			});
 		} else {
 			// Subsequent commits — diff against previous snapshot
-			const attrChanges = prevSnapshot ? diffAttributes(prevSnapshot.attributes, snapshot.attributes) : [];
-			const criteriaChanges = prevSnapshot ? diffCriteria(prevSnapshot.checkboxes, snapshot.checkboxes) : [];
-			const resolutionAdded = prevSnapshot ? (!prevSnapshot.hasResolution && snapshot.hasResolution) : false;
-			const resolutionModified = prevSnapshot?.hasResolution && snapshot.hasResolution && prevSnapshot.rawContent !== snapshot.rawContent;
+			const attrChanges = prevSnapshot
+				? diffAttributes(prevSnapshot.attributes, snapshot.attributes)
+				: [];
+			const criteriaChanges = prevSnapshot
+				? diffCriteria(prevSnapshot.checkboxes, snapshot.checkboxes)
+				: [];
+			const resolutionAdded = prevSnapshot
+				? !prevSnapshot.hasResolution && snapshot.hasResolution
+				: false;
+			const resolutionModified =
+				prevSnapshot?.hasResolution &&
+				snapshot.hasResolution &&
+				prevSnapshot.rawContent !== snapshot.rawContent;
 
 			if (attrChanges.length > 0 && criteriaChanges.length > 0) {
 				// Both attributes and criteria changed — emit a combined event
@@ -289,10 +302,10 @@ export function getBatchCommits(planDir: string, cwd: string, since?: string): B
 
 		const commits: BatchCommitInfo[] = [];
 		// Split on the NUL byte record separator we injected
-		const blocks = output.split('\x00').filter(b => b.trim() !== '');
+		const blocks = output.split('\x00').filter((b) => b.trim() !== '');
 
 		for (const block of blocks) {
-			const lines = block.split('\n').filter(l => l.trim() !== '');
+			const lines = block.split('\n').filter((l) => l.trim() !== '');
 			if (lines.length < 2) continue;
 
 			const metaLine = lines[0].trim();
@@ -306,7 +319,10 @@ export function getBatchCommits(planDir: string, cwd: string, since?: string): B
 			const date = metaLine.slice(spaceIdx1 + 1, spaceIdx2);
 			const author = metaLine.slice(spaceIdx2 + 1);
 
-			const files = lines.slice(2).map(l => l.trim()).filter(l => l.length > 0);
+			const files = lines
+				.slice(2)
+				.map((l) => l.trim())
+				.filter((l) => l.length > 0);
 
 			commits.push({ hash, date, author, message: messageLine, files });
 		}
@@ -362,18 +378,20 @@ export function extractBatchHistory(
 		let events: HistoryEvent[];
 		if (count === 1) {
 			// Single commit — emit a created event directly from batch data
-			const commit = batchCommits.find(c => c.files.includes(file))!;
+			const commit = batchCommits.find((c) => c.files.includes(file))!;
 			const content = getFileAtCommit(commit.hash, file, cwd);
 			const attrs = content ? parseTagAttributes(content.split('\n')[0] ?? '') : {};
-			events = [{
-				kind: 'created',
-				hash: commit.hash,
-				shortHash: commit.hash.slice(0, 7),
-				date: commit.date,
-				author: commit.author,
-				message: commit.message,
-				initialAttributes: attrs,
-			}];
+			events = [
+				{
+					kind: 'created',
+					hash: commit.hash,
+					shortHash: commit.hash.slice(0, 7),
+					date: commit.date,
+					author: commit.author,
+					message: commit.message,
+					initialAttributes: attrs,
+				},
+			];
 		} else {
 			events = extractEntityHistory(file, cwd);
 		}
@@ -431,9 +449,7 @@ export function writeHistoryCache(planDir: string, cache: HistoryCache): void {
  * Build a unified global timeline from batch history results.
  * Returns events sorted by date descending (newest first), with commit hash grouping info.
  */
-export function buildGlobalTimeline(
-	batchHistory: Map<string, HistoryEvent[]>,
-): HistoryEvent[] {
+export function buildGlobalTimeline(batchHistory: Map<string, HistoryEvent[]>): HistoryEvent[] {
 	const allEvents: HistoryEvent[] = [];
 	for (const events of batchHistory.values()) {
 		allEvents.push(...events);

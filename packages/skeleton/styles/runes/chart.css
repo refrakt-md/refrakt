@@ -3,9 +3,16 @@
  * --rf-chart-* theming contract (palette + geometry values), all SVG paint, the
  * data-table chrome, and type stay skin (Lumina's styles/runes/chart.css). */
 
-.rf-chart { display: block; }
-.rf-chart__container { width: 100%; }
-.rf-chart__svg { width: 100%; height: auto; }
+.rf-chart {
+	display: block;
+}
+.rf-chart__container {
+	width: 100%;
+}
+.rf-chart__svg {
+	width: 100%;
+	height: auto;
+}
 .rf-chart__legend {
 	display: flex;
 	justify-content: center;

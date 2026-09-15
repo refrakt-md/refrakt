@@ -30,7 +30,9 @@ export function contractsCommand(opts: ContractsOptions): void {
 		if (existing === json) {
 			console.log(`OK: ${target} is up to date (${Object.keys(contract.runes).length} runes)`);
 		} else {
-			console.error(`FAIL: ${target} is out of date. Run \`refrakt contracts -o ${opts.output}\` to regenerate.`);
+			console.error(
+				`FAIL: ${target} is out of date. Run \`refrakt contracts -o ${opts.output}\` to regenerate.`,
+			);
 			process.exit(1);
 		}
 		return;

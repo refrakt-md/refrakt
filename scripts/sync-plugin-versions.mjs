@@ -33,4 +33,6 @@ for (const name of readdirSync(pluginsDir)) {
 	}
 }
 
-console.log(updated ? `\nSynced ${updated} plugin version(s).` : 'All plugin versions already in sync.');
+console.log(
+	updated ? `\nSynced ${updated} plugin version(s).` : 'All plugin versions already in sync.',
+);

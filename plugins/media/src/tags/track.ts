@@ -1,20 +1,54 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNodes, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	RenderableNodeCursor,
+} from '@refrakt-md/runes';
 import { parseDuration, formatDuration } from '../duration.js';
 
 const trackType = ['song', 'episode', 'chapter', 'talk', 'video'] as const;
 
 export const track = createContentModelSchema({
 	attributes: {
-		src: { type: String, required: false, description: 'URL of the audio or video file for this track.' },
-		artist: { type: String, required: false, description: 'Performer or creator name for this track.' },
-		duration: { type: String, required: false, description: 'Track length in m:ss, h:mm:ss, or ISO 8601 duration format.' },
-		number: { type: Number, required: false, description: 'Position number of the track in its parent listing.' },
-		date: { type: String, required: false, description: 'Publication or release date for the track.' },
-		url: { type: String, required: false, description: 'External link to the track on a streaming platform or website.' },
-		type: { type: String, required: false, matches: trackType.slice(), description: 'Media category: song, episode, chapter, talk, or video.' },
+		src: {
+			type: String,
+			required: false,
+			description: 'URL of the audio or video file for this track.',
+		},
+		artist: {
+			type: String,
+			required: false,
+			description: 'Performer or creator name for this track.',
+		},
+		duration: {
+			type: String,
+			required: false,
+			description: 'Track length in m:ss, h:mm:ss, or ISO 8601 duration format.',
+		},
+		number: {
+			type: Number,
+			required: false,
+			description: 'Position number of the track in its parent listing.',
+		},
+		date: {
+			type: String,
+			required: false,
+			description: 'Publication or release date for the track.',
+		},
+		url: {
+			type: String,
+			required: false,
+			description: 'External link to the track on a streaming platform or website.',
+		},
+		type: {
+			type: String,
+			required: false,
+			matches: trackType.slice(),
+			description: 'Media category: song, episode, chapter, talk, or video.',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
@@ -82,18 +116,23 @@ export const track = createContentModelSchema({
 		if (src) rootAttrs['data-src'] = src;
 
 		const durationMeta = duration
-			? new Tag('meta', { content: duration.startsWith('PT') ? duration : `PT${parseDuration(duration)}S` })
+			? new Tag('meta', {
+					content: duration.startsWith('PT') ? duration : `PT${parseDuration(duration)}S`,
+				})
 			: undefined;
 		const artistMeta = artist ? new Tag('meta', { content: artist }) : undefined;
 		const urlMeta = url ? new Tag('meta', { content: url }) : undefined;
-		const numberMeta = number !== undefined ? new Tag('meta', { content: String(number) }) : undefined;
+		const numberMeta =
+			number !== undefined ? new Tag('meta', { content: String(number) }) : undefined;
 		const dateMeta = date ? new Tag('meta', { content: date }) : undefined;
 
 		if (urlMeta) children.push(urlMeta);
 		if (numberMeta) children.push(numberMeta);
 		if (dateMeta) children.push(dateMeta);
 
-		return createComponentRenderable({ rune: 'track', schemaOrgType: 'MusicRecording',
+		return createComponentRenderable({
+			rune: 'track',
+			schemaOrgType: 'MusicRecording',
 			tag: 'li',
 			properties: {
 				name: nameTag,

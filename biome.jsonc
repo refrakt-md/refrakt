@@ -1,0 +1,74 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": [
+      "**",
+      // npm rewrites the lockfile on every install.
+      "!**/package-lock.json",
+      "!site/static",
+
+      // Generated artifacts. Each is rewritten by a script whose output format
+      // is its own, and each is guarded by a drift test — formatting them here
+      // would put the formatter and the generator in a permanent fight.
+      "!**/contracts/structures.json", // refrakt contracts
+      "!packages/lumina/tokens/base.css", // generate-tokens.mjs
+      "!packages/lumina/tokens/dark.css", // generate-tokens.mjs
+      "!packages/runes/src/examples.ts", // generate-examples.mjs
+      "!packages/runes/src/translations.generated.ts", // generate-translations.mjs
+      "!site/content/_data", // generate-config-reference.mjs, generate-rune-attributes.mjs
+      "!**/CHANGELOG.md", // changesets
+      // Biome's support for these formats covers the <script> block only, so
+      // formatting them would leave the markup untouched and the file half
+      // converted. All of them are already tab-indented; .editorconfig keeps
+      // them that way in editors.
+      "!**/*.svelte",
+      "!**/*.astro",
+      "!**/*.vue"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "useEditorconfig": true,
+    "indentStyle": "tab",
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "double"
+    }
+  },
+  "json": {
+    "formatter": {
+      "indentStyle": "space",
+      "indentWidth": 2
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "style": {
+        // ~1800 sites. Non-null assertions are load-bearing in the Markdoc AST
+        // walking code, where the surrounding schema guarantees the invariant.
+        "noNonNullAssertion": "off"
+      },
+      "suspicious": {
+        // ~1650 sites. `any` is pragmatic against Markdoc's loosely typed
+        // Renderable tree; `strict: true` in tsconfig carries the real weight.
+        "noExplicitAny": "off",
+        // ~230 sites, all false positives: this codebase emits template syntax
+        // (Markdoc, Nunjucks, CSS custom properties) as string literals.
+        "noTemplateCurlyInString": "off"
+      }
+    }
+  },
+  "assist": {
+    "enabled": false
+  }
+}

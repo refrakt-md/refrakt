@@ -24,7 +24,9 @@ export function discoverVariants(schema: Schema): Record<string, string[]> {
  * Check if any flag value is the special "all" keyword requesting variant expansion.
  * Returns the attribute name that should be expanded, or null.
  */
-export function findExpandedVariant(flags: Record<string, string>): { attr: string; values: string[] } | null {
+export function findExpandedVariant(
+	flags: Record<string, string>,
+): { attr: string; values: string[] } | null {
 	// This is called after variant discovery — we look for flags with value "all"
 	// The caller resolves the actual values from discoverVariants()
 	for (const [key, value] of Object.entries(flags)) {

@@ -99,7 +99,7 @@ function findLayoutChain(page: ContentPage, rootDir: ContentDirectory): ContentP
 	if (current.layout) chain.push(current.layout);
 
 	for (const part of parts) {
-		current = current.children.find(c => c.name === part);
+		current = current.children.find((c) => c.name === part);
 		if (!current) break;
 		if (current.layout) chain.push(current.layout);
 	}

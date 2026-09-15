@@ -67,9 +67,7 @@ export async function createServer(options: CreateServerOptions = {}) {
 		if (!tool) {
 			return {
 				isError: true,
-				content: [
-					{ type: 'text' as const, text: `Unknown tool: ${request.params.name}` },
-				],
+				content: [{ type: 'text' as const, text: `Unknown tool: ${request.params.name}` }],
 				_meta: {
 					errorCode: 'UNKNOWN_TOOL',
 					hint: `Available tools: ${tools.map((t) => t.name).join(', ')}`,
@@ -96,9 +94,7 @@ export async function createServer(options: CreateServerOptions = {}) {
 			const error = err as { message?: string; errorCode?: string; hint?: string };
 			return {
 				isError: true,
-				content: [
-					{ type: 'text' as const, text: error.message ?? 'Tool invocation failed' },
-				],
+				content: [{ type: 'text' as const, text: error.message ?? 'Tool invocation failed' }],
 				_meta: {
 					errorCode: error.errorCode ?? 'TOOL_FAILED',
 					...(error.hint ? { hint: error.hint } : {}),

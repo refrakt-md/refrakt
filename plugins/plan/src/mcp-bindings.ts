@@ -22,7 +22,11 @@ import { runValidate, type ValidateOptions } from './commands/validate.js';
 import { runNextId, isAutoIdType, type AutoIdType } from './commands/next-id.js';
 import { runInit } from './commands/init.js';
 import { runHistory, type HistoryOptions } from './commands/history.js';
-import { runMigrateFilenames, runMigratePrAttrs, runMigrateDependencies } from './commands/migrate.js';
+import {
+	runMigrateFilenames,
+	runMigratePrAttrs,
+	runMigrateDependencies,
+} from './commands/migrate.js';
 import { resolvePlanDir } from './plan-config.js';
 import { VALID_TYPES, type PlanItemType } from './commands/templates.js';
 import { VALID_STATUS, VALID_PRIORITY, VALID_SEVERITY } from './commands/enums.js';
@@ -30,7 +34,8 @@ import { VALID_STATUS, VALID_PRIORITY, VALID_SEVERITY } from './commands/enums.j
 /** Common `dir` field used by every plan command. */
 const dirProp: JSONSchema7 = {
 	type: 'string',
-	description: 'Plan directory. Defaults to plan.dir from refrakt.config.json, then env REFRAKT_PLAN_DIR, then "plan".',
+	description:
+		'Plan directory. Defaults to plan.dir from refrakt.config.json, then env REFRAKT_PLAN_DIR, then "plan".',
 };
 
 const formatProp: JSONSchema7 = {
@@ -71,7 +76,11 @@ export const nextSchema: JSONSchema7 = {
 		milestone: { type: 'string', description: 'Restrict to items in a milestone.' },
 		tag: { type: 'string', description: 'Restrict to items with a tag.' },
 		assignee: { type: 'string', description: 'Restrict to items assigned to a specific person.' },
-		type: { type: 'string', enum: ['work', 'bug', 'all'], description: 'Entity type filter. Default: all.' },
+		type: {
+			type: 'string',
+			enum: ['work', 'bug', 'all'],
+			description: 'Entity type filter. Default: all.',
+		},
 		count: { type: 'integer', minimum: 1, description: 'How many items to return. Default: 1.' },
 	},
 	additionalProperties: false,
@@ -103,17 +112,39 @@ export const updateSchema: JSONSchema7 = {
 		severity: { type: 'string', enum: [...SEVERITY_VALUES] },
 		assignee: { type: 'string' },
 		milestone: { type: 'string' },
-		supersedes: { type: 'string', description: 'ID of the item this replaces (work/spec/decision).' },
-		pr: { type: 'string', description: 'Comma-separated PR references (<org>/<repo>#<number>) on work/bug items.' },
-		'released-in': { type: 'string', description: 'Release version a shipped spec landed in (semver, e.g. v0.11.4).' },
-		check: { type: 'string', description: 'Acceptance-criterion text to mark complete (substring match).' },
-		uncheck: { type: 'string', description: 'Acceptance-criterion text to mark incomplete (substring match).' },
-		resolve: { type: 'string', description: 'Resolution summary text appended at the bottom of the entity.' },
-		resolveFile: { type: 'string', description: 'Path to a file whose contents become the resolution summary.' },
+		supersedes: {
+			type: 'string',
+			description: 'ID of the item this replaces (work/spec/decision).',
+		},
+		pr: {
+			type: 'string',
+			description: 'Comma-separated PR references (<org>/<repo>#<number>) on work/bug items.',
+		},
+		'released-in': {
+			type: 'string',
+			description: 'Release version a shipped spec landed in (semver, e.g. v0.11.4).',
+		},
+		check: {
+			type: 'string',
+			description: 'Acceptance-criterion text to mark complete (substring match).',
+		},
+		uncheck: {
+			type: 'string',
+			description: 'Acceptance-criterion text to mark incomplete (substring match).',
+		},
+		resolve: {
+			type: 'string',
+			description: 'Resolution summary text appended at the bottom of the entity.',
+		},
+		resolveFile: {
+			type: 'string',
+			description: 'Path to a file whose contents become the resolution summary.',
+		},
 		attrs: {
 			type: 'object',
 			additionalProperties: { type: 'string' },
-			description: 'Free-form attributes to set on the entity (overrides specific status/priority fields if duplicated).',
+			description:
+				'Free-form attributes to set on the entity (overrides specific status/priority fields if duplicated).',
 		},
 	},
 	additionalProperties: false,
@@ -122,7 +153,16 @@ export const updateSchema: JSONSchema7 = {
 export async function updateMcpHandler(input: unknown, ctx?: McpHandlerContext): Promise<unknown> {
 	const o = input as Record<string, unknown>;
 	const attrs: Record<string, string> = { ...((o.attrs as Record<string, string>) ?? {}) };
-	for (const key of ['status', 'priority', 'severity', 'assignee', 'milestone', 'supersedes', 'pr', 'released-in']) {
+	for (const key of [
+		'status',
+		'priority',
+		'severity',
+		'assignee',
+		'milestone',
+		'supersedes',
+		'pr',
+		'released-in',
+	]) {
 		if (typeof o[key] === 'string') attrs[key] = o[key] as string;
 	}
 	const opts: UpdateOptions = {
@@ -203,7 +243,10 @@ export const validateSchema: JSONSchema7 = {
 	additionalProperties: false,
 };
 
-export async function validateMcpHandler(input: unknown, ctx?: McpHandlerContext): Promise<unknown> {
+export async function validateMcpHandler(
+	input: unknown,
+	ctx?: McpHandlerContext,
+): Promise<unknown> {
 	const o = input as Partial<ValidateOptions> & { dir?: string };
 	return runValidate({
 		dir: resolveDir(o, ctx),
@@ -218,7 +261,11 @@ export const nextIdSchema: JSONSchema7 = {
 	type: 'object',
 	required: ['type'],
 	properties: {
-		type: { type: 'string', enum: ['work', 'bug', 'spec', 'decision'], description: 'Entity type to compute the next ID for.' },
+		type: {
+			type: 'string',
+			enum: ['work', 'bug', 'spec', 'decision'],
+			description: 'Entity type to compute the next ID for.',
+		},
 		dir: dirProp,
 	},
 	additionalProperties: false,
@@ -267,10 +314,20 @@ export const historySchema: JSONSchema7 = {
 	type: 'object',
 	properties: {
 		dir: dirProp,
-		id: { type: 'string', description: 'Entity ID for single-entity history. Omitted for global history.' },
-		limit: { type: 'integer', minimum: 1, description: 'Max events. Default: 20 (single), 50 (global).' },
+		id: {
+			type: 'string',
+			description: 'Entity ID for single-entity history. Omitted for global history.',
+		},
+		limit: {
+			type: 'integer',
+			minimum: 1,
+			description: 'Max events. Default: 20 (single), 50 (global).',
+		},
 		since: { type: 'string', description: 'Time filter: "7d", "30d", or ISO date.' },
-		type: { type: 'string', description: 'Entity type filter, comma-separated (work, spec, bug, decision).' },
+		type: {
+			type: 'string',
+			description: 'Entity type filter, comma-separated (work, spec, bug, decision).',
+		},
 		author: { type: 'string' },
 	},
 	additionalProperties: false,
@@ -296,11 +353,16 @@ export const migrateSchema: JSONSchema7 = {
 		subcommand: {
 			type: 'string',
 			enum: ['filenames', 'pr-attrs', 'dependencies'],
-			description: '"filenames" normalizes plan filenames to the {ID}-{slug}.md scheme; "pr-attrs" backfills the pr attribute from git merge-commit history; "dependencies" renames legacy "## Dependencies" headings to the directed "## Blocked by" and flags reverse-direction entries.',
+			description:
+				'"filenames" normalizes plan filenames to the {ID}-{slug}.md scheme; "pr-attrs" backfills the pr attribute from git merge-commit history; "dependencies" renames legacy "## Dependencies" headings to the directed "## Blocked by" and flags reverse-direction entries.',
 		},
 		dir: dirProp,
 		apply: { type: 'boolean', description: 'Write the migration. Default: false (dry run).' },
-		useGit: { type: 'boolean', description: 'For filenames: use git mv. For pr-attrs: git add the edited files. Default: false.' },
+		useGit: {
+			type: 'boolean',
+			description:
+				'For filenames: use git mv. For pr-attrs: git add the edited files. Default: false.',
+		},
 	},
 	required: ['subcommand'],
 	additionalProperties: false,
@@ -316,7 +378,9 @@ export async function migrateMcpHandler(input: unknown, ctx?: McpHandlerContext)
 		return runMigrateDependencies({ dir, apply: Boolean(o.apply), useGit: Boolean(o.useGit) });
 	}
 	if (o.subcommand !== 'filenames') {
-		throw new Error(`Unknown migrate subcommand "${String(o.subcommand)}". Valid: filenames, pr-attrs, dependencies.`);
+		throw new Error(
+			`Unknown migrate subcommand "${String(o.subcommand)}". Valid: filenames, pr-attrs, dependencies.`,
+		);
 	}
 	return runMigrateFilenames({ dir, apply: Boolean(o.apply), useGit: Boolean(o.useGit) });
 }

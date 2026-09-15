@@ -1,44 +1,43 @@
 @layer skin {
-/* Table of Contents — skin. The list reset + the inline-block link live in
+	/* Table of Contents — skin. The list reset + the inline-block link live in
  * @refrakt-md/skeleton (styles/runes/toc.css). */
-.rf-toc {
-	padding: 1.25rem 1.5rem;
-	border-left: 3px solid var(--rf-color-primary);
-	background: var(--rf-color-surface);
-	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
-}
-.rf-toc__list {
-	font-weight: var(--rf-weight-semibold);
-	margin-bottom: 0.75rem;
-	font-size: var(--rf-text-xs);
-	text-transform: uppercase;
-	letter-spacing: var(--rf-tracking-wider);
-	color: var(--rf-color-muted);
-}
-.rf-toc ul,
-.rf-toc ol {
-	padding-left: 0;
-	margin: 0;
-}
-.rf-toc li {
-	margin: 0.125rem 0;
-}
-.rf-toc li[data-level="3"] {
-	padding-left: 1rem;
-}
-.rf-toc li[data-level="4"] {
-	padding-left: 2rem;
-}
-.rf-toc a {
-	color: var(--rf-color-text);
-	text-decoration: none;
-	font-size: var(--rf-text-sm);
-	padding: 0.2rem 0;
-	transition: color 150ms ease;
-}
-.rf-toc a:hover {
-	color: var(--rf-color-primary);
-	text-decoration: none;
-}
-
+	.rf-toc {
+		padding: 1.25rem 1.5rem;
+		border-left: 3px solid var(--rf-color-primary);
+		background: var(--rf-color-surface);
+		border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
+	}
+	.rf-toc__list {
+		font-weight: var(--rf-weight-semibold);
+		margin-bottom: 0.75rem;
+		font-size: var(--rf-text-xs);
+		text-transform: uppercase;
+		letter-spacing: var(--rf-tracking-wider);
+		color: var(--rf-color-muted);
+	}
+	.rf-toc ul,
+	.rf-toc ol {
+		padding-left: 0;
+		margin: 0;
+	}
+	.rf-toc li {
+		margin: 0.125rem 0;
+	}
+	.rf-toc li[data-level="3"] {
+		padding-left: 1rem;
+	}
+	.rf-toc li[data-level="4"] {
+		padding-left: 2rem;
+	}
+	.rf-toc a {
+		color: var(--rf-color-text);
+		text-decoration: none;
+		font-size: var(--rf-text-sm);
+		padding: 0.2rem 0;
+		transition: color 150ms ease;
+	}
+	.rf-toc a:hover {
+		color: var(--rf-color-primary);
+		text-decoration: none;
+	}
 }

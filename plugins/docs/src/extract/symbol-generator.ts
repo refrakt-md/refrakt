@@ -46,7 +46,12 @@ function formatChildParameter(param: SymbolParameter): string {
 	return `  - **${param.name}** \`${param.type}\`${optionalMark}${desc}${defaultMark}`;
 }
 
-function writeMember(lines: string[], member: SymbolMemberDoc, memberLevel: number, lang = 'typescript'): void {
+function writeMember(
+	lines: string[],
+	member: SymbolMemberDoc,
+	memberLevel: number,
+	lang = 'typescript',
+): void {
 	lines.push(heading(memberLevel, member.name));
 	lines.push('');
 

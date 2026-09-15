@@ -56,10 +56,7 @@ describe('Vue Renderer', () => {
 	});
 
 	it('renders nested elements', async () => {
-		const node = makeTag('div', {}, [
-			makeTag('h1', {}, ['Title']),
-			makeTag('p', {}, ['Body']),
-		]);
+		const node = makeTag('div', {}, [makeTag('h1', {}, ['Title']), makeTag('p', {}, ['Body'])]);
 		const html = await render(node);
 		expect(html).toContain('<h1>Title</h1>');
 		expect(html).toContain('<p>Body</p>');
@@ -86,7 +83,8 @@ describe('Vue Renderer', () => {
 		const MyHint = defineComponent({
 			props: { hintType: String },
 			setup(props, { slots }) {
-				return () => h('div', { class: `custom-hint custom-hint--${props.hintType}` }, slots.default?.());
+				return () =>
+					h('div', { class: `custom-hint custom-hint--${props.hintType}` }, slots.default?.());
 			},
 		});
 
@@ -120,10 +118,7 @@ describe('Vue Renderer', () => {
 	it('passes named refs as Vue named slots', async () => {
 		const Recipe = defineComponent({
 			setup(_props, { slots }) {
-				return () => h('div', null, [
-					slots.media?.(),
-					slots.content?.(),
-				]);
+				return () => h('div', null, [slots.media?.(), slots.content?.()]);
 			},
 		});
 
@@ -131,9 +126,7 @@ describe('Vue Renderer', () => {
 			makeTag('div', { 'data-name': 'media' }, [
 				makeTag('img', { src: '/photo.jpg', alt: 'Dish' }),
 			]),
-			makeTag('div', { 'data-name': 'content' }, [
-				makeTag('p', {}, ['Instructions here']),
-			]),
+			makeTag('div', { 'data-name': 'content' }, [makeTag('p', {}, ['Instructions here'])]),
 		]);
 
 		const html = await render(node, { recipe: Recipe });
@@ -190,9 +183,7 @@ describe('Vue Renderer', () => {
 		const TableWrapper = defineComponent({
 			props: { tag: Object },
 			setup(_props, { slots }) {
-				return () => h('div', { class: 'table-wrap' },
-					h('table', null, slots.default?.()),
-				);
+				return () => h('div', { class: 'table-wrap' }, h('table', null, slots.default?.()));
 			},
 		});
 
@@ -207,10 +198,14 @@ describe('Vue Renderer', () => {
 
 	it('component override takes precedence over element override', async () => {
 		const MyTable = defineComponent({
-			setup() { return () => h('div', null, 'component-override'); },
+			setup() {
+				return () => h('div', null, 'component-override');
+			},
 		});
 		const TableElement = defineComponent({
-			setup() { return () => h('div', null, 'element-override'); },
+			setup() {
+				return () => h('div', null, 'element-override');
+			},
 		});
 
 		const node = makeTag('table', { 'data-rune': 'datatable', class: 'rf-datatable' }, []);
@@ -219,5 +214,4 @@ describe('Vue Renderer', () => {
 		expect(html).toContain('component-override');
 		expect(html).not.toContain('element-override');
 	});
-
 });

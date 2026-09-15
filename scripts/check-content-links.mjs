@@ -71,7 +71,7 @@ export function hasGeneratedHeadings(source) {
 export function headingIdsFor(source) {
 	const body = source.replace(/^---\n[\s\S]*?\n---\n/, '');
 	try {
-		return new Set(extractHeadings(Markdoc.parse(body)).map(h => h.id));
+		return new Set(extractHeadings(Markdoc.parse(body)).map((h) => h.id));
 	} catch {
 		// An unparseable page is another check's problem, not this one's.
 		return null;
@@ -142,12 +142,13 @@ export function collectPages(root = ROOT) {
 export function findComments(pages) {
 	const found = [];
 	for (const page of pages) {
-		const bare = page.source
-			.replace(/```[\s\S]*?```/g, '')
-			.replace(/`[^`\n]*`/g, '');
+		const bare = page.source.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
 		// `{#` needs its closing `#}` to count: prose describing Svelte's `{#if}`
 		// is not a comment attempt, and `site/content/releases.md` has one.
-		for (const [pattern, form] of [[/<!--[\s\S]*?-->/, 'an HTML comment'], [/\{#[\s\S]*?#\}/, 'Markdoc comment syntax']]) {
+		for (const [pattern, form] of [
+			[/<!--[\s\S]*?-->/, 'an HTML comment'],
+			[/\{#[\s\S]*?#\}/, 'Markdoc comment syntax'],
+		]) {
 			if (pattern.test(bare)) found.push({ file: page.file, form });
 		}
 	}
@@ -157,7 +158,9 @@ export function findComments(pages) {
 function main() {
 	const comments = findComments(collectPages());
 	if (comments.length > 0) {
-		console.error(`${comments.length} content file(s) contain a comment that reaches the reader:\n`);
+		console.error(
+			`${comments.length} content file(s) contain a comment that reaches the reader:\n`,
+		);
 		for (const c of comments) console.error(`  ${c.file}  — ${c.form}`);
 		console.error('\nNeither form is stripped: an HTML comment is passed through to the page,');
 		console.error('and `{# … #}` renders literally while parsing any tag inside it for real.');
@@ -167,7 +170,9 @@ function main() {
 
 	const broken = findBrokenFragments(collectPages());
 	if (broken.length === 0) {
-		console.log('✓ every internal #fragment resolves to a heading, and no comment reaches the reader');
+		console.log(
+			'✓ every internal #fragment resolves to a heading, and no comment reaches the reader',
+		);
 		return 0;
 	}
 	console.error(`${broken.length} internal link(s) point at a heading that does not exist:\n`);
@@ -176,7 +181,7 @@ function main() {
 		console.error(`    → ${b.url}#${b.fragment}`);
 	}
 	console.error('\nHeading ids are lowercase, punctuation-stripped, separator-collapsed.');
-	console.error('Check the target page\'s headings rather than guessing the slug.');
+	console.error("Check the target page's headings rather than guessing the slug.");
 	return 1;
 }
 

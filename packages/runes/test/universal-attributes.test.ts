@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { resolveUniversalAttributes, AXIS_ATTRIBUTES, POSTURE_REASONS, UNIVERSAL_ATTRIBUTE_NAMES, tags } from '../src/index.js';
+import {
+	resolveUniversalAttributes,
+	AXIS_ATTRIBUTES,
+	POSTURE_REASONS,
+	UNIVERSAL_ATTRIBUTE_NAMES,
+	tags,
+} from '../src/index.js';
 import type { UniversalAttributePosture } from '../src/universal-attributes.js';
 
 // SPEC-125 Phase 3 / WORK-534 — `resolveUniversalAttributes` is the declared
@@ -29,7 +35,11 @@ describe('posture short-circuits every axis', () => {
 			// its anatomy would be answering a different question.
 			const res = resolveUniversalAttributes({
 				posture,
-				structure: { sections: { body: 'body', title: 'title' }, mediaSlots: { media: 'cover' }, frameTarget: 'media' },
+				structure: {
+					sections: { body: 'body', title: 'title' },
+					mediaSlots: { media: 'cover' },
+					frameTarget: 'media',
+				},
 			});
 			expect(res.available.size).toBe(0);
 			expect([...res.unavailable.keys()].sort()).toEqual(Object.keys(AXIS_ATTRIBUTES).sort());
@@ -43,8 +53,16 @@ describe('`auto` gates axis by axis on what the rune is made of', () => {
 		const { available, unavailable } = resolveUniversalAttributes({});
 		// Ungated: they act on the block itself, which every rune has.
 		expect([...available].sort()).toEqual(
-			[...AXIS_ATTRIBUTES.tint, ...AXIS_ATTRIBUTES.bg, ...AXIS_ATTRIBUTES.width, ...AXIS_ATTRIBUTES.spacing,
-				...AXIS_ATTRIBUTES.inset, ...AXIS_ATTRIBUTES.elevation, ...AXIS_ATTRIBUTES.motion, ...AXIS_ATTRIBUTES.substrate].sort(),
+			[
+				...AXIS_ATTRIBUTES.tint,
+				...AXIS_ATTRIBUTES.bg,
+				...AXIS_ATTRIBUTES.width,
+				...AXIS_ATTRIBUTES.spacing,
+				...AXIS_ATTRIBUTES.inset,
+				...AXIS_ATTRIBUTES.elevation,
+				...AXIS_ATTRIBUTES.motion,
+				...AXIS_ATTRIBUTES.substrate,
+			].sort(),
 		);
 		// Gated, and each says why rather than just vanishing.
 		for (const axis of ['reading', 'dropcap', 'prominence', 'frame', 'cover']) {
@@ -79,7 +97,9 @@ describe('`auto` gates axis by axis on what the rune is made of', () => {
 		const bare = resolveUniversalAttributes({});
 		expect(bare.available).not.toContain('frame');
 
-		const framed = resolveUniversalAttributes({ structure: { frameTarget: 'media', mediaSlots: { media: 'cover' } } });
+		const framed = resolveUniversalAttributes({
+			structure: { frameTarget: 'media', mediaSlots: { media: 'cover' } },
+		});
 		for (const name of AXIS_ATTRIBUTES.frame) expect(framed.available).toContain(name);
 	});
 
@@ -106,7 +126,9 @@ describe('`auto` gates axis by axis on what the rune is made of', () => {
 	});
 
 	it('an axis is never both available and explained away', () => {
-		const res = resolveUniversalAttributes({ structure: { sections: { body: 'body', title: 'title' } } });
+		const res = resolveUniversalAttributes({
+			structure: { sections: { body: 'body', title: 'title' } },
+		});
 		for (const [axis, names] of Object.entries(AXIS_ATTRIBUTES)) {
 			if (!res.unavailable.has(axis)) continue;
 			for (const name of names) expect(res.available, `${axis}/${name}`).not.toContain(name);
@@ -117,17 +139,27 @@ describe('`auto` gates axis by axis on what the rune is made of', () => {
 describe('the rule is what the shipped schemas actually got', () => {
 	// The unit tests above could all pass while `createContentModelSchema` ignored
 	// the result. These read the real schemas.
-	const attrs = (tag: string) => new Set(Object.keys((tags as Record<string, { attributes?: object }>)[tag]?.attributes ?? {}));
+	const attrs = (tag: string) =>
+		new Set(Object.keys((tags as Record<string, { attributes?: object }>)[tag]?.attributes ?? {}));
 
 	it('narrows a layout rune and keeps a prose rune whole', () => {
 		const grid = attrs('grid');
 		expect(grid.size).toBeGreaterThan(0);
-		for (const name of [...AXIS_ATTRIBUTES.reading, ...AXIS_ATTRIBUTES.dropcap, ...AXIS_ATTRIBUTES.prominence, ...AXIS_ATTRIBUTES.frame]) {
+		for (const name of [
+			...AXIS_ATTRIBUTES.reading,
+			...AXIS_ATTRIBUTES.dropcap,
+			...AXIS_ATTRIBUTES.prominence,
+			...AXIS_ATTRIBUTES.frame,
+		]) {
 			expect(grid, `grid should not offer \`${name}\``).not.toContain(name);
 		}
 
 		const blog = attrs('blog');
-		for (const name of [...AXIS_ATTRIBUTES.reading, ...AXIS_ATTRIBUTES.dropcap, ...AXIS_ATTRIBUTES.prominence]) {
+		for (const name of [
+			...AXIS_ATTRIBUTES.reading,
+			...AXIS_ATTRIBUTES.dropcap,
+			...AXIS_ATTRIBUTES.prominence,
+		]) {
 			expect(blog, `blog should offer \`${name}\``).toContain(name);
 		}
 	});
@@ -135,7 +167,12 @@ describe('the rule is what the shipped schemas actually got', () => {
 	it('leaves the ungated axes on every rune that has any universal attribute', () => {
 		// Over-narrowing is the worse failure: it rejects markup the engine honours.
 		for (const tag of ['grid', 'blog', 'card', 'figure', 'tabs']) {
-			for (const name of [...AXIS_ATTRIBUTES.tint, ...AXIS_ATTRIBUTES.width, ...AXIS_ATTRIBUTES.spacing, ...AXIS_ATTRIBUTES.motion]) {
+			for (const name of [
+				...AXIS_ATTRIBUTES.tint,
+				...AXIS_ATTRIBUTES.width,
+				...AXIS_ATTRIBUTES.spacing,
+				...AXIS_ATTRIBUTES.motion,
+			]) {
 				expect(attrs(tag), `${tag} should offer \`${name}\``).toContain(name);
 			}
 		}

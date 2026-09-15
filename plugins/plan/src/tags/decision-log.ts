@@ -1,6 +1,11 @@
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, readDeferredBody, COLLECTION_SENTINEL } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	readDeferredBody,
+	COLLECTION_SENTINEL,
+} from '@refrakt-md/runes';
 
 /**
  * `decision-log` (SPEC-072 / WORK-284) — thin sugar for a `collection` query
@@ -30,13 +35,25 @@ const DEFAULT_DECISION_LOG_BODY = `# Decision
 
 export const decisionLog = createContentModelSchema({
 	attributes: {
-		filter: { type: String, required: false, default: '', description: 'Filter: space-separated field:value pairs (e.g., "status:accepted").' },
-		sort: { type: String, required: false, default: 'date', description: 'Sort field. Bare `date` is reverse chronological (matches the rune\'s historical contract); use `+date` for ascending or any other field for the natural order.' },
+		filter: {
+			type: String,
+			required: false,
+			default: '',
+			description: 'Filter: space-separated field:value pairs (e.g., "status:accepted").',
+		},
+		sort: {
+			type: String,
+			required: false,
+			default: 'date',
+			description:
+				"Sort field. Bare `date` is reverse chronological (matches the rune's historical contract); use `+date` for ascending or any other field for the natural order.",
+		},
 	},
 	deferBody: true,
 	contentModel: { type: 'sequence', fields: [] },
 	transform(_resolved, attrs) {
-		const meta = (field: string, content: string) => new Tag('meta', { 'data-field': field, content });
+		const meta = (field: string, content: string) =>
+			new Tag('meta', { 'data-field': field, content });
 		const bodySource = readDeferredBody(attrs) ?? DEFAULT_DECISION_LOG_BODY;
 
 		// Preserve the rune's "date means reverse-chrono" contract: the bare

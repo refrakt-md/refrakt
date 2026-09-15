@@ -72,7 +72,7 @@ describe('density dimension', () => {
 		const result = asTag(transform(grid));
 		// Find the nested hint
 		const nestedHint = result.children.find(
-			(c: any) => c?.attributes?.['data-rune'] === 'hint'
+			(c: any) => c?.attributes?.['data-rune'] === 'hint',
 		) as SerializedTag;
 		expect(nestedHint).toBeDefined();
 		expect(nestedHint.attributes['data-density']).toBe('compact');
@@ -90,7 +90,7 @@ describe('density dimension', () => {
 
 		const result = asTag(transform(backlog));
 		const nestedWork = result.children.find(
-			(c: any) => c?.attributes?.['data-rune'] === 'work'
+			(c: any) => c?.attributes?.['data-rune'] === 'work',
 		) as SerializedTag;
 		expect(nestedWork).toBeDefined();
 		expect(nestedWork.attributes['data-density']).toBe('minimal');
@@ -109,7 +109,7 @@ describe('density dimension', () => {
 
 		const result = asTag(transform(grid));
 		const nestedHint = result.children.find(
-			(c: any) => c?.attributes?.['data-rune'] === 'hint'
+			(c: any) => c?.attributes?.['data-rune'] === 'hint',
 		) as SerializedTag;
 		expect(nestedHint.attributes['data-density']).toBe('full');
 	});
@@ -127,7 +127,7 @@ describe('density dimension', () => {
 
 		const result = asTag(transform(details));
 		const nestedHint = result.children.find(
-			(c: any) => c?.attributes?.['data-rune'] === 'hint'
+			(c: any) => c?.attributes?.['data-rune'] === 'hint',
 		) as SerializedTag;
 		expect(nestedHint.attributes['data-density']).toBe('compact');
 	});
@@ -144,7 +144,7 @@ describe('density dimension', () => {
 
 		const result = asTag(transform(dashboard));
 		const nestedCard = result.children.find(
-			(c: any) => c?.attributes?.['data-rune'] === 'card'
+			(c: any) => c?.attributes?.['data-rune'] === 'card',
 		) as SerializedTag;
 		expect(nestedCard.attributes['data-density']).toBe('compact');
 	});
@@ -161,7 +161,7 @@ describe('density dimension', () => {
 
 		const result = asTag(transform(list));
 		const nestedTask = result.children.find(
-			(c: any) => c?.attributes?.['data-rune'] === 'task'
+			(c: any) => c?.attributes?.['data-rune'] === 'task',
 		) as SerializedTag;
 		expect(nestedTask.attributes['data-density']).toBe('minimal');
 	});
@@ -178,7 +178,7 @@ describe('density dimension', () => {
 
 		const result = asTag(transform(wrapper));
 		const nestedItem = result.children.find(
-			(c: any) => c?.attributes?.['data-rune'] === 'item'
+			(c: any) => c?.attributes?.['data-rune'] === 'item',
 		) as SerializedTag;
 		expect(nestedItem.attributes['data-density']).toBe('full');
 	});

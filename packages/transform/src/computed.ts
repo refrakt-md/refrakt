@@ -62,7 +62,7 @@ function buildNavMap(content: RendererNode[]): Map<string, string> {
 			if (!isTag(node)) continue;
 			if (node.attributes['data-rune'] === 'nav-group') {
 				const heading = node.children.find(
-					(c): c is SerializedTag => isTag(c) && /^h[1-6]$/.test(c.name)
+					(c): c is SerializedTag => isTag(c) && /^h[1-6]$/.test(c.name),
 				);
 				walk(node.children, heading ? getTextContent(heading) : groupTitle);
 			} else if (node.attributes['data-rune'] === 'nav-item') {
@@ -94,7 +94,7 @@ function collectNavOrder(content: RendererNode[]): string[] {
 			if (node.attributes['data-rune'] === 'nav-item') {
 				const slugSpan = node.children.find(
 					(c): c is SerializedTag =>
-						isTag(c) && c.name === 'span' && c.attributes['data-field'] === 'slug'
+						isTag(c) && c.name === 'span' && c.attributes['data-field'] === 'slug',
 				);
 				if (slugSpan) {
 					slugs.push(getTextContent(slugSpan));
@@ -175,28 +175,36 @@ export function buildToc(
 ): SerializedTag | null {
 	const minLevel = options?.minLevel ?? 2;
 	const maxLevel = options?.maxLevel ?? 3;
-	const filtered = headings.filter(h => h.level >= minLevel && h.level <= maxLevel);
+	const filtered = headings.filter((h) => h.level >= minLevel && h.level <= maxLevel);
 
 	if (filtered.length === 0) return null;
 
-	const items = filtered.map(h =>
-		makeTag('li', {
-			class: `${prefix}-on-this-page__item`,
-			'data-level': String(h.level),
-		}, [
-			makeTag('a', { href: `#${h.id}` }, [h.text]),
-		])
+	const items = filtered.map((h) =>
+		makeTag(
+			'li',
+			{
+				class: `${prefix}-on-this-page__item`,
+				'data-level': String(h.level),
+			},
+			[makeTag('a', { href: `#${h.id}` }, [h.text])],
+		),
 	);
 
-	return makeTag('nav', {
-		class: `${prefix}-on-this-page`,
-		'data-scrollspy': '',
-	}, [
-		makeTag('p', { class: `${prefix}-on-this-page__title` }, [
-			locale ? resolveLocaleString(locale, 'core.toc.title', COMPUTED_STRINGS['core.toc.title']) : COMPUTED_STRINGS['core.toc.title'],
-		]),
-		makeTag('ul', { class: `${prefix}-on-this-page__list` }, items),
-	]);
+	return makeTag(
+		'nav',
+		{
+			class: `${prefix}-on-this-page`,
+			'data-scrollspy': '',
+		},
+		[
+			makeTag('p', { class: `${prefix}-on-this-page__title` }, [
+				locale
+					? resolveLocaleString(locale, 'core.toc.title', COMPUTED_STRINGS['core.toc.title'])
+					: COMPUTED_STRINGS['core.toc.title'],
+			]),
+			makeTag('ul', { class: `${prefix}-on-this-page__list` }, items),
+		],
+	);
 }
 
 /**
@@ -231,7 +239,7 @@ export function buildPrevNext(
 	if (currentIndex === -1) return null;
 
 	function findPage(slug: string) {
-		return pages.find(p => p.url.endsWith('/' + slug) || p.url === '/' + slug);
+		return pages.find((p) => p.url.endsWith('/' + slug) || p.url === '/' + slug);
 	}
 
 	const prevSlug = currentIndex > 0 ? slugs[currentIndex - 1] : null;
@@ -244,27 +252,51 @@ export function buildPrevNext(
 	const children: RendererNode[] = [];
 
 	if (prevPage) {
-		children.push(makeTag('a', {
-			class: `${prefix}-prev-next__prev`,
-			href: prevPage.url,
-		}, [
-			makeTag('span', { class: `${prefix}-prev-next__label` }, [
-				locale ? resolveLocaleString(locale, 'core.prevNext.previous', COMPUTED_STRINGS['core.prevNext.previous']) : COMPUTED_STRINGS['core.prevNext.previous'],
-			]),
-			makeTag('span', { class: `${prefix}-prev-next__title` }, [prevPage.title]),
-		]));
+		children.push(
+			makeTag(
+				'a',
+				{
+					class: `${prefix}-prev-next__prev`,
+					href: prevPage.url,
+				},
+				[
+					makeTag('span', { class: `${prefix}-prev-next__label` }, [
+						locale
+							? resolveLocaleString(
+									locale,
+									'core.prevNext.previous',
+									COMPUTED_STRINGS['core.prevNext.previous'],
+								)
+							: COMPUTED_STRINGS['core.prevNext.previous'],
+					]),
+					makeTag('span', { class: `${prefix}-prev-next__title` }, [prevPage.title]),
+				],
+			),
+		);
 	}
 
 	if (nextPage) {
-		children.push(makeTag('a', {
-			class: `${prefix}-prev-next__next`,
-			href: nextPage.url,
-		}, [
-			makeTag('span', { class: `${prefix}-prev-next__label` }, [
-				locale ? resolveLocaleString(locale, 'core.prevNext.next', COMPUTED_STRINGS['core.prevNext.next']) : COMPUTED_STRINGS['core.prevNext.next'],
-			]),
-			makeTag('span', { class: `${prefix}-prev-next__title` }, [nextPage.title]),
-		]));
+		children.push(
+			makeTag(
+				'a',
+				{
+					class: `${prefix}-prev-next__next`,
+					href: nextPage.url,
+				},
+				[
+					makeTag('span', { class: `${prefix}-prev-next__label` }, [
+						locale
+							? resolveLocaleString(
+									locale,
+									'core.prevNext.next',
+									COMPUTED_STRINGS['core.prevNext.next'],
+								)
+							: COMPUTED_STRINGS['core.prevNext.next'],
+					]),
+					makeTag('span', { class: `${prefix}-prev-next__title` }, [nextPage.title]),
+				],
+			),
+		);
 	}
 
 	return makeTag('nav', { class: `${prefix}-prev-next` }, children);
@@ -298,7 +330,7 @@ export function buildVersionSwitcher(
 	if (!version || !versionGroup) return null;
 
 	// Find peer pages: same versionGroup, not drafts
-	const peers = pages.filter(p => p.versionGroup === versionGroup && !p.draft);
+	const peers = pages.filter((p) => p.versionGroup === versionGroup && !p.draft);
 
 	// Need at least 2 versions (current + at least one other)
 	if (peers.length < 2) return null;
@@ -307,7 +339,7 @@ export function buildVersionSwitcher(
 	const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 	const sorted = [...peers].sort((a, b) => collator.compare(a.version ?? '', b.version ?? ''));
 
-	const options = sorted.map(p => {
+	const options = sorted.map((p) => {
 		const attrs: Record<string, any> = { value: p.url };
 		if (p.url === currentUrl) {
 			attrs.selected = '';
@@ -315,13 +347,23 @@ export function buildVersionSwitcher(
 		return makeTag('option', attrs, [p.version ?? '']);
 	});
 
-	return makeTag('nav', {
-		class: `${prefix}-version-switcher`,
-		'data-version-switcher': '',
-	}, [
-		makeTag('label', { class: `${prefix}-version-switcher__label` }, [
-			locale ? resolveLocaleString(locale, 'core.versionSwitcher.label', COMPUTED_STRINGS['core.versionSwitcher.label']) : COMPUTED_STRINGS['core.versionSwitcher.label'],
-		]),
-		makeTag('select', { class: `${prefix}-version-switcher__select` }, options),
-	]);
+	return makeTag(
+		'nav',
+		{
+			class: `${prefix}-version-switcher`,
+			'data-version-switcher': '',
+		},
+		[
+			makeTag('label', { class: `${prefix}-version-switcher__label` }, [
+				locale
+					? resolveLocaleString(
+							locale,
+							'core.versionSwitcher.label',
+							COMPUTED_STRINGS['core.versionSwitcher.label'],
+						)
+					: COMPUTED_STRINGS['core.versionSwitcher.label'],
+			]),
+			makeTag('select', { class: `${prefix}-version-switcher__select` }, options),
+		],
+	);
 }
