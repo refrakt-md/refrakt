@@ -1971,46 +1971,6 @@
 			"page": "embed"
 		},
 		{
-			"rune": "error",
-			"plugin": "core",
-			"scope": "own",
-			"name": "type",
-			"type": "string",
-			"required": false,
-			"description": "",
-			"page": null
-		},
-		{
-			"rune": "error",
-			"plugin": "core",
-			"scope": "own",
-			"name": "tag",
-			"type": "string",
-			"required": false,
-			"description": "",
-			"page": null
-		},
-		{
-			"rune": "error",
-			"plugin": "core",
-			"scope": "own",
-			"name": "lines",
-			"type": "array",
-			"required": false,
-			"description": "",
-			"page": null
-		},
-		{
-			"rune": "error",
-			"plugin": "core",
-			"scope": "own",
-			"name": "error",
-			"type": "Object",
-			"required": false,
-			"description": "",
-			"page": null
-		},
-		{
 			"rune": "event",
 			"plugin": "@refrakt-md/places",
 			"scope": "own",
@@ -8520,70 +8480,6 @@
 			"page": "embed"
 		},
 		{
-			"rune": "error",
-			"axis": "bg",
-			"available": true,
-			"description": "The background layer (SPEC-088): image, video, gradient, flat overlay wash and legibility scrim, in a single injected layer behind the rune's content.",
-			"query": "axis:bg",
-			"page": null
-		},
-		{
-			"rune": "error",
-			"axis": "elevation",
-			"available": true,
-			"description": "The chrome/depth ladder (SPEC-107). The skin maps each rung to a chrome bundle by attribute, so there is no BEM class.",
-			"query": "axis:elevation",
-			"page": null
-		},
-		{
-			"rune": "error",
-			"axis": "inset",
-			"available": true,
-			"description": "Internal padding override.",
-			"query": "axis:inset",
-			"page": null
-		},
-		{
-			"rune": "error",
-			"axis": "motion",
-			"available": true,
-			"description": "Scroll-reveal entrance (SPEC-105). The author declares the character, the theme owns the choreography, a behaviour owns the timing.",
-			"query": "axis:motion",
-			"page": null
-		},
-		{
-			"rune": "error",
-			"axis": "spacing",
-			"available": true,
-			"description": "Block-level rhythm override.",
-			"query": "axis:spacing",
-			"page": null
-		},
-		{
-			"rune": "error",
-			"axis": "substrate",
-			"available": true,
-			"description": "Generated pattern fills (SPEC-087). Markers only — the engine sets the attributes and cell/opacity custom properties, CSS draws the pattern.",
-			"query": "axis:substrate",
-			"page": null
-		},
-		{
-			"rune": "error",
-			"axis": "tint",
-			"available": true,
-			"description": "Per-rune colour override (SPEC-053): a named tint from the theme registry, with inline per-token overrides layered on top.",
-			"query": "axis:tint",
-			"page": null
-		},
-		{
-			"rune": "error",
-			"axis": "width",
-			"available": true,
-			"description": "The track a block rune occupies.",
-			"query": "axis:width",
-			"page": null
-		},
-		{
 			"rune": "event",
 			"axis": "bg",
 			"available": true,
@@ -14556,27 +14452,6 @@
 			"axes": "prominence",
 			"reason": "this rune has no page-section header",
 			"page": "embed"
-		},
-		{
-			"rune": "error",
-			"available": false,
-			"axes": "dropcap, reading",
-			"reason": "this rune declares no prose body",
-			"page": null
-		},
-		{
-			"rune": "error",
-			"available": false,
-			"axes": "frame",
-			"reason": "this rune declares neither a `frameTarget` nor a media section",
-			"page": null
-		},
-		{
-			"rune": "error",
-			"available": false,
-			"axes": "prominence",
-			"reason": "this rune has no page-section header",
-			"page": null
 		},
 		{
 			"rune": "event",

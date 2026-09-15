@@ -17,7 +17,6 @@ import {
 export { Page } from './documents/page.js';
 import { DocPage } from './documents/doc.js';
 
-import { error } from './tags/error.js';
 import { grid } from './tags/grid.js';
 import { codegroup } from './tags/codegroup.js';
 import { snippet } from './tags/snippet.js';
@@ -397,13 +396,6 @@ export const runes = {
 			'```',
 			'{% /codegroup %}',
 		],
-	}),
-	error: defineRune({
-		name: 'error',
-		schema: error,
-		description: 'Error reporting table',
-		typeName: 'Error',
-		category: 'Semantic',
 	}),
 	grid: defineRune({
 		name: 'grid',
