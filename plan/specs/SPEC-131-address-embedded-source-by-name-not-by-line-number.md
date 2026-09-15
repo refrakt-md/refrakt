@@ -55,6 +55,33 @@ deliberately-stable targets, so today's *damage* is low. The *mechanism* is
 what matters: `lang-map.ts:15-35` is meant to be `LANG_MAP`, and it stays
 correct only for as long as nobody edits the fourteen lines above it.
 
+### It has already happened, to this spec's own example
+
+The `SiteConfig` scenario above was written as a hypothetical. It is not one.
+Three live pages — `runes/drawer.md:155`, `runes/file-ref.md:51`, and
+`runes/file-ref.md:75` — carry:
+
+```markdoc
+{% file-ref path="packages/types/src/theme.ts" lines="74-125" label="SiteConfig" preview="drawer" /%}
+```
+
+- `SiteConfig` is **not in `theme.ts`**; it lives at
+  `packages/types/src/config.ts:42`. The symbol moved files.
+- `theme.ts` is **104 lines long**, so 21 of the 52 requested lines do not
+  exist.
+- Lines 74–104 are the tail of `ThemeManifest`, then `LayoutDefinition`
+  (86–93), then the start of `ComponentDefinition` (95–).
+
+A drawer captioned "SiteConfig" opens onto the back half of one interface and
+the whole of two others, on the documentation page for the rune whose
+addressing model is the subject of this spec. Tracked as
+{% ref "BUG-015" /%}.
+
+This is worse than the failure the spec predicted. The prediction was *drift* —
+a range sliding out of alignment with a symbol that is still there. What
+happened was a **move**, which no line range can survive at all, and which no
+amount of care in choosing the original range would have prevented.
+
 ### Two specs already flagged this and deferred it
 
 {% ref "SPEC-078" /%} listed symbol resolution as an explicit non-goal:
@@ -173,7 +200,9 @@ the resolution in the shared reader rather than in either pipeline.
 | `through` | As `until`, but **inclusive** of the matching line. D12. |
 | `extent` | `auto` (delimiter balance, default), `dedent` (indentation), `section` (next sibling at the anchor's own level), or `paired` (matching close token). D11. |
 | `doc` | Include the preceding doc comment. Defaults to on for `symbol`, off for `match` — D9. |
+| `highlight-match` | Regex(es) highlighting matching lines within the resolved slice. The anchor-native form of `highlight`. D13. |
 | `lines` | Unchanged. Mutually exclusive with `symbol` / `match`. |
+| `highlight`, `linenumbers` | Unchanged — still file coordinates. D13. |
 
 ### The algorithm
 
@@ -187,7 +216,19 @@ literals nest: `${` inside a backtick returns to code state, and the matching
 `}` returns to template state. ~40 lines, shared by the whole C family plus
 JSON and CSS. Not a grammar.
 
-**2. Anchor.** For `symbol=`, the first line matching:
+> **Markdown masking is recursive, and is the expensive one.** For `section`
+> and `paired` over Markdown the masker must blank fenced blocks and inline
+> code spans — and on a docs site those fences frequently *contain the very
+> tokens being counted*. `site/content/runes/tabs.md:44` has `{% tab %}` in an
+> inline code span; the pages most worth quoting with `paired` are exactly the
+> ones full of fenced examples of the tags. Without this, a `section` anchor
+> can match a `## Install` that lives inside a fence, and a `paired` count can
+> be thrown off by a tag nobody ever wrote as a tag. Budget this separately
+> from the C-family masker; it is not the same ~40 lines.
+
+**2. Anchor.** Matched against the **raw** source, not the masked source, with
+the mask used only to *reject* a match that lands inside a masked region — see
+the note below. For `symbol=`, the first line matching:
 
 ```
 ^([ \t]*)((export|public|private|pub|declare|default|async|abstract|static|final)\s+)*
@@ -195,7 +236,20 @@ JSON and CSS. Not a grammar.
 ```
 
 For `match=`, the author's regex, applied per line. No match → refuse, naming
-the symbol and the file.
+the symbol and the file. More than one match → take the first, but **warn**,
+naming every line that matched — D14.
+
+> **Raw for matching, masked for counting.** Read in order, steps 1 and 2 imply
+> anchoring against masked text — which blanks every string literal, so
+> `match='"scripts"'` against `package.json` could never match anything, and
+> neither could any anchor naming a JSON key, a quoted attribute selector, or
+> text inside a template. The anchor must see the raw line.
+>
+> The mask is still needed in the other direction: an anchor that matches
+> *inside* a masked region — a `.rf-hint {` mentioned in a comment, a
+> `## Install` inside a fenced block — is a false positive and must be
+> skipped rather than used. So the resolver needs the raw text and the mask
+> together at this step, which the original ordering did not provide.
 
 **3. Extent (`auto`).** Scan forward over the masked source tracking delimiter
 depth. **Depth is measured relative to the anchor line, not to the start of the
@@ -222,6 +276,22 @@ prototype to find:
 > The same applies to a method inside a class, a rule inside `@media`, and a job
 > under `jobs:`. Record the anchor's depth on entry and terminate on return to
 > it.
+>
+> `packages/lumina/styles/runes/hint.css` is the live proof, and it is this
+> spec's own showcase example. The whole file is wrapped in `@layer skin {`
+> (line 1, closing at line 67), so `.rf-hint` sits at depth 1 and no `}` ever
+> closes a depth-0 block: under absolute counting the extent runs to EOF and
+> returns all 67 lines instead of 4.
+
+**Reaching EOF without terminating is a refusal, never a return.** If `auto`
+scans to the end of the file without finding its terminator, the extent is
+unknown — returning the remainder is precisely the plausible-wrong render this
+spec exists to prevent. This is not an exotic case: `{% snippet
+path="classes.py" symbol="HttpClient" /%}` is the most natural invocation a
+Python author can write, `symbol` resolves it correctly, and then the default
+`auto` looks for a `;` or `}` that does not exist anywhere in the file. The
+refusal must name `extent="dedent"`. The same rule applies to `until` and
+`through` that never match — D4.
 
 **4. Extent (`dedent`).** Consume blank lines and lines indented deeper than
 the anchor. For Python, YAML, and anything else where indentation carries the
@@ -229,6 +299,11 @@ block. This was the prototype's *first* attempt as a **universal** rule, and it
 failed there — a multi-line parameter list returns to the anchor's indent level
 before the body opens, so it truncated roughly one TypeScript declaration in
 eight. It works well as a declared strategy; it does not work as a default.
+
+"Indented deeper" needs a stated tab-expansion width, taken from the language
+table. This repo indents TypeScript with tabs and YAML with spaces; a file
+mixing them compares a tab against four spaces and gets the comparison
+backwards without one.
 
 **5. Extent (`section`).** Consume forward until the next sibling at the
 anchor's own level. The terminator is *derived from the anchor line* rather than
@@ -240,9 +315,16 @@ table (D10), and a format absent from it falls back to `until` / `through`.
 **6. Extent (`paired`).** Balance a matching *token* pair rather than a
 delimiter: `{% tabs %}` / `{% /tabs %}`, `<section>` / `</section>`, `{#if}` /
 `{/if}`. The pairs come from the language table; nesting of the same token is
-counted, so an inner `{% tab %}` does not close the outer `{% tabs %}`. For
-symmetric fences (```` ``` ````) the first recurrence closes, because there is
-nothing to nest.
+counted, so an inner `{% tab %}` does not close the outer `{% tabs %}`. Three
+token shapes, and the table must distinguish them:
+
+- **Asymmetric, nestable** — `{% tabs %}` / `{% /tabs %}`, `<section>` /
+  `</section>`. Count depth.
+- **Symmetric** — a ``` fence. Cannot nest, so the first recurrence closes.
+- **Self-closing** — `{% snippet /%}`, `<img>`, `<br>`. There is no close, so a
+  `paired` scan anchored on one would run to EOF. Detect the self-closing form
+  (`/%}`, `/>`, a void-element list) and return the single line rather than
+  scanning.
 
 **7. Self-check.** For `auto` only: re-mask the extracted slice and verify `{}`,
 `()`, and `[]` all balance. Unbalanced → refuse. This is what converts the
@@ -328,6 +410,11 @@ extent is wrong. Use `through="^}"` to end the extent on a closing brace, or
 The example says `through`, not `until`, deliberately: the brace line belongs
 in the slice. D12.
 
+**The fallback must itself fail loudly.** An `until` or `through` whose regex
+never matches, like an `auto` extent that reaches EOF, refuses — it does not
+return the rest of the file. A fallback that fails silently is worse than no
+fallback, because every other refusal message points authors at it.
+
 **D5 — Look up lexical facts by language; never infer strategy from it.**
 Guessing `dedent` for `.py` and `auto` for `.ts` would be right most of the
 time, and *silently* wrong the rest — reintroducing the failure mode this spec
@@ -400,6 +487,14 @@ This is **not fixable by heuristic** and should not be chased. It is 4 cases in
 756, it is visible rather than silent, and the fix belongs in the source file
 (a blank line) rather than the resolver. Document it; do not add cleverness.
 
+**The file-header variant deserves naming separately**, because it hits the
+*first* declaration of every file rather than 4 scattered ones: a license
+block, an SPDX header, a `#!/usr/bin/env` line, or a module docblock abutting
+the first symbol is absorbed as that symbol's documentation. `lang-map.ts`
+escapes only because line 13 happens to be blank, which is luck rather than
+structure. Same limit, same non-fix, much larger blast radius — say so in the
+docs so authors reach for `doc=false` rather than filing it as a bug.
+
 **D10 — Comment and annotation prefixes come from the language table, never a
 union regex.** The prototype walks `^\s*(//|#|\*|/\*)` across all languages. In
 CSS that eats `#header { … }` as a comment; in a language where `#` is
@@ -453,6 +548,94 @@ attribute D4 designates as the escape hatch of last resort — the one place a
 silent wrong answer is least affordable. Two attributes, each saying what it
 means, costs one row in a table and removes the ambiguity entirely.
 
+**D13 — `highlight` and `linenumbers` keep file coordinates; `highlight-match`
+is the anchor-native form.** Both attributes are currently *defined in terms of
+`lines=`*. From the schema in `snippet.ts`:
+
+> `linenumbers` — "Starting number derives from the `lines` range start (e.g.
+> lines="74-125" → first line is 74), so numbers reflect the file's real
+> offsets."
+>
+> `highlight` — "Indices are file coordinates (same frame as `lines=`)."
+
+Remove `lines=` and neither has a defined frame. This is not an oversight to
+patch later: `{% snippet path="…/lang-map.ts" lines="10-40" linenumbers=true
+highlight="18-22" /%}` is live on the `snippet` doc page today, and phase 3's
+codemod has to rewrite it into something.
+
+Keep the frame. The resolver already produces a `[start, end]` in file
+coordinates, so `linenumbers` continues to start at `start` and `highlight`
+continues to mean file lines — no new concept, no breakage, and the displayed
+numbers stay meaningful as a pointer back into the real file.
+
+What changes is that a *numeric* `highlight` under an anchor is no longer
+something the author can write from knowledge: they would have to look up the
+current line numbers, which re-couples the invocation to the coordinates this
+spec exists to decouple it from. So add `highlight-match=` — one or more
+regexes, each highlighting the lines they match within the resolved slice.
+Numeric `highlight` stays legal and stays useful with `lines=`; under an anchor
+it carries the old exposure, and the docs should say so plainly rather than
+forbidding it.
+
+**D14 — An ambiguous anchor warns, and names every match.** `match=` and
+`symbol=` both take the first hit. For overload sets that is a stated non-goal
+and fine. It generalises badly: `symbol="get"` in a file of classes takes
+whichever `get` comes first, and a second `.rf-hint` rule inside a `@media`
+block is indistinguishable from the intended one.
+
+Taking the first match is the right behaviour — refusing would make the common
+case worse for no safety gain, since the first match is usually correct. But
+taking it *silently* turns an ambiguity the resolver can see into one the
+author cannot. Emit a warning naming each matching line, and keep rendering.
+Cheap, and it converts a silent ambiguity into a visible one. An `occurrence=`
+selector is the fuller answer and is deferred until something needs it.
+
+**D15 — The language table is data, and is built to be merged into.** The
+split between what is declarative here and what is not falls in a useful
+place:
+
+| Declarative — belongs in the table | Engine — stays code |
+|---|---|
+| `symbol` keywords, declaration modifiers | the masker state machine |
+| comment and annotation prefixes | the depth counter |
+| string / template delimiters | continuation lookahead |
+| token pairs and their shape (D11) | the `type`-alias special case |
+| heading shape and level capture | the balance self-check |
+| tab width (step 4) | |
+
+The `symbol=` anchor is a template with one hole — `modifiers* keyword \s+
+{name}` — which is as declarative as it gets. That is a consequence of D1: a
+parser could not be table-driven, a delimiter engine can.
+
+D3 already concedes the table "will always be incomplete". Two extension
+surfaces follow from that, and they are different features:
+
+- **Declaring a language** — comments, strings, delimiters, keywords, token
+  pairs for a format core does not ship. Terraform's `resource "…" "…"`, SQL's
+  `CREATE TABLE`, Ruby and Lua's `def`/`end` (which need `paired`, not `auto`).
+- **Declaring a named anchor** — site-scoped sugar over `match=`, bundling
+  match, extent and doc into one authored decision:
+  `anchor="rune" name="hint"` resolving through a config entry rather than a
+  regex copy-pasted across twenty pages.
+
+**Ship neither surface in this spec.** Nothing has hit the wall yet, and the
+right shape will be much better informed by phase 3, which is the first time
+the resolver meets languages chosen by need rather than by convenience. What
+this spec *does* commit to is structuring the built-in table as data behind a
+`mergeLanguages()` seam mirroring `mergeThemeConfig()` — costing nothing now,
+where retrofitting a hard-coded table later is the expensive part. When the
+surface does ship, the named-anchor half is the one to build first: it is pure
+aliasing with no engine involvement, and it gives drift a *name*, so a broken
+pattern is one wrong config entry rather than twenty wrong pages.
+
+Two things to get right when it lands. **This is not the sniffing D5 forbids** —
+a config entry saying "`.tf` uses `paired` with these tokens" is the project
+author declaring a strategy once instead of per-invocation, the same class of
+explicit authored choice as D9's inference from which attribute was written.
+The engine still never guesses. And **`{name}` interpolation must be escaped**:
+a symbol name containing `.` or `(` spliced raw into a regex is injection from
+content.
+
 ## Non-goals
 
 - **Cross-file resolution.** `symbol="SiteConfig"` searches the file named by
@@ -465,6 +648,10 @@ means, costs one row in a table and removes the ambiguity entirely.
   usable structure. D4.
 - **New preview targets.** `preview="drawer"` behaviour is unchanged; this
   spec only changes how the referenced region is located.
+- **A config surface for the language table.** The table is built as data and
+  merged (D15), but `refrakt.config.json` gains no `languages` or `anchors`
+  key in this spec. Deferred until phase 3 shows which formats authors
+  actually reach for.
 - **Explicit region markers in the source.** `// #region example` … `//
   #endregion`, resolved through the comment-prefix table D10 already builds, is
   the one mode that can address *part* of a construct — "the six lines inside
@@ -484,6 +671,14 @@ means, costs one row in a table and removes the ambiguity entirely.
 - [ ] `extent` accepts `auto` (default), `dedent`, `section`, and `paired`; `until` / `through` override all four
 - [ ] `until` excludes its matching line and `through` includes it; neither is inferred from the file or the strategy
 - [ ] The masker handles line comments, block comments, single- and double-quoted strings, and template literals including nested `${}`
+- [ ] For Markdown, the masker also blanks fenced blocks and inline code spans, covered by a test anchoring past a `## ` heading and a `{% %}` tag that appear inside a fence
+- [ ] Anchors match against raw source; a match landing inside a masked region is skipped, covered by tests for `match='"scripts"'` on `package.json` (must resolve) and an anchor mentioned only in a comment (must be skipped)
+- [ ] An `auto` extent reaching EOF without terminating refuses and names `extent="dedent"`; an `until` / `through` that never matches refuses the same way
+- [ ] An anchor matching more than once takes the first and warns, naming every matching line
+- [ ] `dedent` expands tabs at a width taken from the language table
+- [ ] `paired` handles asymmetric, symmetric, and self-closing token shapes; a self-closing anchor returns one line rather than scanning to EOF
+- [ ] `linenumbers` and numeric `highlight` stay in file coordinates under an anchor; `highlight-match` highlights by regex within the resolved slice
+- [ ] The language table is a data structure behind a merge seam, with no hard-coded per-language branching in the engine
 - [ ] The extent terminates only on a `;` at anchor depth or a `}` closing a brace block opened at anchor depth; parens and brackets nest without terminating
 - [ ] Depth is measured relative to the anchor line, covered by a test anchoring on a nested target (a `package.json` key, a class method, a rule inside `@media`)
 - [ ] Brace-less statements use continuation lookahead that skips blank and comment lines
@@ -523,8 +718,15 @@ Four phases, each shippable alone.
    half of `site/content` addressable at all, so phase 3's migration should not
    start before they land.
 3. **The codemod and the migration.** Converts the 23 existing invocations and
-   removes the live exposure. Regex-literal lexing (D8) lands here if the
-   migration surfaces refusals that need it.
+   removes the live exposure, {% ref "BUG-015" /%} included. Regex-literal
+   lexing (D8) lands here if the migration surfaces refusals that need it. The
+   codemod must also handle companion attributes: an invocation carrying
+   `highlight=` needs those coordinates preserved or rewritten as
+   `highlight-match=` (D13), and byte-identical verification covers the slice
+   only, not the highlight, so that rewrite needs its own check.
+   This phase is also the input to D15 — record which languages and formats
+   actually came up, because that is what decides the shape of the config
+   surface if one ships.
 4. **Adoption.** Point the reference pages at declarations. This is where
    {% ref "SPEC-126" /%}'s deferred `file-ref preview="drawer"` provenance idea
    becomes safe to build.
@@ -567,6 +769,7 @@ than reading them off this spec.
 - {% ref "SPEC-113" /%} — the `ProjectFiles` seam that owns containment, unchanged by this spec
 - {% ref "SPEC-129" /%} — the pre-transform `include` rune. A fourth path-addressed rune: if it lands, it should take the same addressing layer rather than growing its own `lines=`
 - {% ref "SPEC-126" /%} — rejected line-addressed embedding for the config reference and proposed the one-off assertion this spec generalises
+- {% ref "BUG-015" /%} — the observed instance: three live `file-ref` drawers labelled `SiteConfig` rendering three unrelated interfaces
 - `packages/runes/src/lib/read-file.ts` — the shared reader this extends
 
 {% /spec %}
