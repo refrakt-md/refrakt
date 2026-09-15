@@ -37,6 +37,7 @@ import { createEntityRoutesHooks } from './entity-routes.js';
 import { createPageEntityHooks } from './page-entities.js';
 import { getGitTimestamps, resolveTimestamps, type FileTimestamps } from './timestamps.js';
 import { readFileRoots, type FileRoots } from './file-roots.js';
+import { validatePage, type ValidatePageOptions, type ValidationSettings } from './validate.js';
 
 /** Async reader for ad-hoc lookups in virtual (non-FS) hosting environments.
  *  Returns the file content or `null` when the path is unknown. */
@@ -84,7 +85,8 @@ function transformContent(
 	additionalTags?: Record<string, Schema>,
 	contentVariables?: Record<string, unknown>,
 	partials?: Record<string, Node>,
-): { renderable: RenderableTreeNodes; headings: HeadingInfo[] } {
+	validation?: ValidatePageOptions,
+): { renderable: RenderableTreeNodes; headings: HeadingInfo[]; findings: PipelineWarning[] } {
 	const headings = extractHeadings(ast);
 	const mergedTags = additionalTags ? { ...tags, ...additionalTags } : tags;
 	// Capture deferBody runes' bodies as source before transform, so their
@@ -109,7 +111,13 @@ function transformContent(
 	if (partials) {
 		config.partials = partials;
 	}
-	return { renderable: Markdoc.transform(ast, config as any), headings };
+	// SPEC-132 — validate against `config`, the very object handed to
+	// `transform` below, so the two cannot disagree about which tags and
+	// attributes exist. Plugin runes are already merged into `mergedTags`, so
+	// they are covered with no extra wiring. Findings are returned, never
+	// rendered: nothing about the tree the transform produces changes (D9).
+	const findings = validation ? validatePage(ast, config, validation) : [];
+	return { renderable: Markdoc.transform(ast, config as any), headings, findings };
 }
 
 /** Convert a host-OS file path to POSIX form (forward slashes). */
@@ -337,6 +345,13 @@ async function processContentTree(
 		message: string;
 		url?: string;
 	}[] = [];
+
+	// SPEC-132 — per-page `Markdoc.validate()` findings, collected as pages are
+	// transformed and merged into the pipeline warnings below. Settings come
+	// from the site's config; absent config means the documented defaults.
+	const validationFindings: PipelineWarning[] = [];
+	const validationSettings = (opts.siteConfig as { validation?: ValidationSettings } | undefined)
+		?.validation;
 	const makePreprocessCtx = (pageUrl: string, variables?: Record<string, unknown>) => ({
 		info(message: string, url?: string) {
 			preprocessWarnings.push({ severity: 'info', message, url: url ?? pageUrl });
@@ -426,7 +441,7 @@ async function processContentTree(
 			if (next) ast = next;
 		}
 
-		const { renderable, headings } = transformContent(
+		const { renderable, headings, findings } = transformContent(
 			ast,
 			content,
 			route.url,
@@ -435,7 +450,9 @@ async function processContentTree(
 			opts.additionalTags,
 			contentVariables,
 			parsedPartials,
+			{ url: route.url, settings: validationSettings },
 		);
+		validationFindings.push(...findings);
 		const seo = extractSeo(renderable, frontmatter, route.url);
 
 		const tintCascade = resolveTintCascade(page, tree.root, {
@@ -481,7 +498,7 @@ async function processContentTree(
 			// Per-contribution bound variables (e.g. entityRoutes binds `item`).
 			...(cp.variables ?? {}),
 		};
-		const { renderable, headings } = transformContent(
+		const { renderable, headings, findings } = transformContent(
 			ast,
 			cp.content,
 			url,
@@ -490,7 +507,12 @@ async function processContentTree(
 			opts.additionalTags,
 			contentVariables,
 			parsedPartials,
+			// SPEC-132's open question: a finding on a synthesized page is a
+			// *plugin* bug, reported against a page whose source the author
+			// cannot open. Attribute it and say so, rather than exempting it.
+			{ url, settings: validationSettings, contributedBy: cp.source?.plugin ?? 'contributed' },
 		);
+		validationFindings.push(...findings);
 		const seo = extractSeo(renderable, frontmatter, url);
 		const tintCascade = resolveTintCascade(layoutPage, tree.root, {
 			colorScheme: opts.colorScheme,
@@ -539,6 +561,11 @@ async function processContentTree(
 			message: w.message,
 		});
 	}
+
+	// SPEC-132 — content-validation findings. Collected during Phase 1 (file
+	// pages) and during `runPipeline`'s contribute phase (synthesized pages),
+	// so both are complete by the time this runs.
+	warnings.push(...validationFindings);
 
 	// Apply auto-resolutions to layout regions per page. Layouts are parsed once
 	// and shared across pages, but the auto-open / auto-pagination sentinels need

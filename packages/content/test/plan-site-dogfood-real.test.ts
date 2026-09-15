@@ -3,6 +3,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadContent } from '../src/site.js';
+import { loadPlugin, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
 import plan, { planPipelineHooks } from '@refrakt-md/plan';
 
 // Real dogfood (SPEC-071, WORK-272): point loadContent at refrakt's own
@@ -80,11 +81,21 @@ describe('refrakt plan site dogfood (SPEC-071 / WORK-272)', () => {
 			configDir: repoRoot,
 		} as never);
 
+		// The plan plugin's *runes* have to reach Markdoc's tag set, not just its
+		// pipeline hooks. This argument was `undefined` until SPEC-132's
+		// validation reported `decision-log`, `plan-activity` and `plan-history`
+		// as undefined tags here: the test had been building the plan site with
+		// every plan rune missing from the tag set, and nothing noticed, because
+		// an undefined tag drops and renders its children as prose (BUG-014's
+		// symptom 1, in our own test suite). Mirrors what the adapter does.
+		const loadedPlan = await loadPlugin('@refrakt-md/plan');
+		const mergedPlan = mergePlugins([loadedPlan], new Set(Object.keys(coreRunes)));
+
 		const site = await loadContent(
 			join(repoRoot, 'plan-site', 'content'),
 			'/',
 			undefined,
-			undefined,
+			mergedPlan.tags,
 			[plan],
 			undefined,
 			undefined,

@@ -43,7 +43,7 @@ Previously, the Lumina theme was split across two separate packages -- one for t
 
 The SvelteKit Vite plugin now derives the theme adapter dynamically by combining the `theme` and `target` fields from `refrakt.config.json`. This means adding a future React or Astro adapter is just a matter of adding a new subpath export to the same package -- no new packages, no config changes.
 
-{% hint type="tip" %}
+{% hint type="note" %}
 If you were importing from `@refrakt-md/theme-lumina`, update your dependency to `@refrakt-md/lumina`. The Vite plugin handles the rest automatically.
 {% /hint %}
 
