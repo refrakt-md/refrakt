@@ -1,5 +1,158 @@
 # @refrakt-md/content
 
+## 0.34.0
+
+### Minor Changes
+
+- 7c2b184: Validate content during the build (WORK-556, SPEC-132 phase 1)
+
+  Every rune schema declares required attributes, typed attributes and `matches`
+  enums. Markdoc can check all of them and has been able to the whole time.
+  Nothing in the build ever asked it to — the validator ran in the language
+  server and over the fixture corpus, never over a user's pages (BUG-014).
+
+  `Markdoc.validate()` now runs per page in `packages/content/src/site.ts`,
+  against the _same config object_ handed to `Markdoc.transform`. Plugin runes are
+  covered with no extra wiring, because they are already merged into that config.
+
+  Findings become `PipelineWarning`s and nothing else. Nothing is injected into
+  the page: a validation finding annotates content that rendered perfectly well,
+  so it belongs beside the page rather than in it. `PipelineWarning.phase` gains a
+  `'validate'` member; core findings carry `pluginName: 'core'`, and a finding on a
+  plugin-contributed page is attributed to the contributing plugin and says the
+  page was generated.
+
+  Two error ids are enabled: `tag-undefined` and `attribute-undefined`. The
+  allow-list is explicit, so adding an id is a deliberate act. `variable-undefined`
+  is not enabled and a test pins that it stays out — Markdoc validates the full
+  path and has no scope model, so a collection template using `$item.data.*` would
+  light up entirely.
+
+  Fenced examples stay exempt. `escapeFenceTags` already neutralises tags inside
+  fences before parsing; a test now pins that ordering, with a companion assertion
+  that the same rune outside a fence _is_ reported.
+
+  **Three real defects this found immediately**, all of the "silently wrong" class
+  the feature exists to catch:
+
+  - `{% code %}` cells in the generated rune-attribute tables came out block-level.
+    `bindRow` in `data-pipeline.ts` cloned nodes without carrying `inline` across —
+    under a comment that claimed it copied exactly that. 6,609 findings; fixed
+    here, along with the same omission in `cloneNode`.
+  - `{% ref "Sandbox" %}` on the security page was written as an opening tag rather
+    than self-closing, so the ref swallowed the rest of the paragraph.
+  - `{% hint type="tip" %}` on an older blog post — `tip` is not one of
+    `caution | check | note | warning`, so it rendered `data-type="tip"` with no CSS
+    behind it.
+
+  Plus one in the test suite: `plan-site-dogfood-real.test.ts` had been building
+  the plan site with every plan rune missing from Markdoc's tag set, and passing,
+  because an undefined tag drops and renders its children as prose.
+
+  A clean build of `site/` and `plan-site/` now reports zero findings from these
+  two ids.
+
+- d75bffb: Enforce attribute schemas during the build (WORK-558, SPEC-132 phase 2)
+
+  `attribute-value-invalid`, `attribute-missing-required` and
+  `attribute-type-invalid` join the validation allow-list. This is the half that
+  makes rune schemas mean something: `required` and `matches` are declared on ~175
+  tags and, until now, enforced on none of them.
+
+  It is also the first release in which refrakt's **custom attribute validators
+  run at all**. `transform()` does not invoke a `CustomAttributeTypeInterface`'s
+  `validate()` — only `Markdoc.validate()` does — so `SeparatedString`,
+  `SpaceSeparatedList` and `SpaceSeparatedNumberList` had been dead code in the
+  build path since they were written. A test now proves one rejects non-numeric
+  input through the real pipeline.
+
+  **Severity correction.** All four custom validators returned
+  `level: 'critical'` for `attribute-type-invalid`, an id Markdoc emits at
+  `error` — the identical failure reported at two severities depending on which
+  code path produced it. They now emit `error`. This matters because `critical` is
+  the band configuration cannot silence: it means "the document could not be
+  understood", which an out-of-range attribute is not.
+
+  **Three schema defects this found**, each one a case where the schema disagreed
+  with something else in the repo and only a validator could notice:
+
+  - `frame-displace` rejected `"both"` — a value Lumina has styled all along
+    (`[data-displace="both"]`). The page rendered correctly and the schema refused
+    it; nothing else in the toolchain compares the two.
+  - `collection.limit` was declared `String` while its own documentation writes
+    `limit=5` and `limit=20`, and the resolver reads it as `Number(limitRaw)`.
+    Now `Number`, matching the plan plugin's `backlog` and `plan-activity`.
+  - `aggregate.limit` had the identical declaration. No content exercised it, so
+    it produced no finding; corrected anyway.
+
+  Markdoc's `if` / `else` are overridden to drop the `Object` type on their
+  `primary` attribute. That type describes expression _syntax_ — `{% if $var %}`
+  passes an AST node — and stops holding once preprocess hooks substitute
+  variables for their values, so `{% if true %}` failed it. That accounted for
+  3,302 findings on `site/`, every one a false positive, and the check cannot
+  catch a real error in either direction. `render: false` is preserved.
+
+  Five content fixes in this repo's own docs, all quoted booleans and numbers
+  (`showContrast="true"`, `route="true"`, `limit="5"`) that worked by accident
+  because a non-empty string is truthy — and would have failed silently the first
+  time anyone wrote the negative case.
+
+  `SeparatedString` and friends are now exported from `@refrakt-md/runes`. They
+  were not before, which is why `plugins/media` carries its own copies.
+
+  A clean build of `site/` and `plan-site/` reports zero findings across all five
+  enabled ids, down from 9,926 when the pass was first switched on.
+
+- e8f9d54: A narrow escape hatch for content validation (WORK-559, SPEC-132 D5)
+
+  Content validation is configurable per site and per error id:
+
+  ```json
+  {
+    "validation": {
+      "enabled": true,
+      "disableIds": ["attribute-type-invalid"]
+    }
+  }
+  ```
+
+  - `enabled: false` stops reporting every suppressible finding for that site.
+  - `ids` replaces the default error-id list entirely.
+  - `disableIds` stops treating specific ids as problems, leaving the rest
+    reporting. **This is the one to reach for first.**
+
+  **A disabled id is demoted to `info`, not dropped.** Someone who has judged an
+  id unimportant should stop seeing it in the build summary, but it should not
+  become invisible — a reader who goes looking, or the editor's validation rail,
+  can still see what was set aside, so turning the id back on later is an informed
+  choice rather than a leap. An id that was never in the allow-list is a different
+  thing and is simply not reported: there is no value in an `info` stream of every
+  check the project has decided against.
+
+  **`critical` findings are reported whatever you configure.** A parse error, an
+  unclosed tag, a tag in a position its schema forbids — these mean the document
+  could not be understood, which is not a matter of preference. A test pins that a
+  fully disabled config still surfaces one.
+
+  **There is no per-page or per-tag suppression, and there will not be.** That
+  granularity invites silencing the one call site that revealed a real bug, which
+  is how a validation feature becomes decoration.
+
+  The field is in `refrakt.config.schema.json` with a description, so it appears
+  in the generated configuration reference, and the reference page now lists which
+  error ids are on out of the box and what each one catches.
+
+### Patch Changes
+
+- Updated dependencies [7c2b184]
+- Updated dependencies [d75bffb]
+- Updated dependencies [550dc77]
+- Updated dependencies [e8f9d54]
+  - @refrakt-md/types@0.34.0
+  - @refrakt-md/runes@0.34.0
+  - @refrakt-md/transform@0.34.0
+  - @refrakt-md/highlight@0.34.0
+
 ## 0.33.0
 
 ### Minor Changes

@@ -7,7 +7,7 @@ import { config } from './config.js';
 export const docs: Plugin = {
 	name: 'docs',
 	displayName: 'Documentation',
-	version: '0.33.0',
+	version: '0.34.0',
 	runes: {
 		api: {
 			transform: api,
