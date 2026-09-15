@@ -121,7 +121,7 @@ npm run seo:baseline
 npm run seo:baseline:check
 ```
 
-`contracts/seo-baseline/baseline.json` records the structured data every rune emits today — 41 fixtures (`contracts/seo-baseline/fixtures/`) over all 30 emitting runes, captured at both harvest points: `jsonLd` is the pre-engine harvest `site.ts` publishes, `rendered` is the same tree after the identity transform.
+`contracts/seo-baseline/baseline.json` records the structured data every rune emits today — fixtures in `contracts/seo-baseline/fixtures/` covering all 30 emitting runes, captured at both harvest points: `jsonLd` is the pre-engine harvest `site.ts` publishes, `rendered` is the same tree after the identity transform.
 
 **It records today's output including its defects**, deliberately (SPEC-130 / WORK-562). JSON-LD is the one output nobody looks at — a page renders identically whether its structured data is right or ruined — so schema changes are reviewed as a diff against this file. Never hand-edit it, and never "correct" a recorded defect: regenerate, and let the diff show the fix landed.
 
