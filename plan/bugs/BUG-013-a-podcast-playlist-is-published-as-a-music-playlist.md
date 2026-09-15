@@ -61,22 +61,44 @@ Even `type="album"` is imprecise. `MusicAlbum` is a **subtype** of
 `MusicPlaylist`, so narrowing is safe — `track` and `byArtist` are inherited —
 and the more specific type is simply left on the table.
 
-## Two emitters
+## Two emitters — independent, not shared
 
-`MusicRecording` is stamped in two places: playlist's own `<li>` items
-(line 153) and the standalone `track` rune (`track.ts:96`). A fix has to reach
-both, or a podcast's inline items become `PodcastEpisode` while its
-`{% track %}` children stay `MusicRecording` — a mix that is worse than the
-current consistent wrongness.
+**Corrected.** An earlier revision of this bug said a fix "has to reach both, or
+a podcast's inline items become `PodcastEpisode` while its `{% track %}`
+children stay `MusicRecording`". That reasoning assumed a `{% track %}` inside a
+`{% playlist %}` is one of its tracks. It is not — it renders in the body zone
+and publishes a detached entity ({% ref "BUG-016" /%}), so the mix it warns
+about cannot occur.
+
+`MusicRecording` is stamped in two places — playlist's own `<li>` items
+(`playlist.ts:153`) and the standalone `track` rune (`track.ts:96`) — but they
+never populate the same collection, so nothing has to be kept in step.
+
+What they *do* share is this defect. `track` has its own five-value enum —
+`song | episode | chapter | talk | video` (`track.ts:15`) — and emits
+`MusicRecording` for all five, exactly as `playlist` ignores its own `type`:
+
+```markdoc
+{% track type="episode" artist="Acme" duration="42:30" %}
+## Episode Two
+{% /track %}
+```
+```json
+{ "@type": "MusicRecording", "name": "Episode Two" }
+```
+
+So this bug is two runes each ignoring the type its author declared, fixed the
+same way in each: a `by: 'type'` table over its own attribute. See
+{% ref "SPEC-130" /%} D9.
 
 ## Acceptance Criteria
 - [ ] Each `type` emits the schema.org type in the table above
 - [ ] Item types follow — a podcast's episodes are not `MusicRecording`
 - [ ] The track collection uses the property the emitted type actually defines (`track` vs `hasPart`)
-- [ ] Inline `<li>` items and `{% track %}` children agree, rather than one following the mapping and the other not
+- [ ] The standalone `track` rune honours its own `type` too — `type="episode"` is not a `MusicRecording`
 - [ ] `type="album"` narrows to `MusicAlbum` rather than staying generic
-- [ ] A test asserts the JSON-LD per type, not just the HTML attributes
-- [ ] The mapping is stated in one place, not repeated between the two emitters
+- [ ] A test asserts the JSON-LD per type, for both runes, not just the HTML attributes
+- [ ] Each rune's mapping is stated once, on the rune, keyed off the attribute the author already set
 
 ## Approach
 
@@ -96,7 +118,8 @@ which that trade is still the right one.
 
 ## References
 
-- {% ref "SPEC-130" /%} — the declarative mapping this motivates
+- {% ref "SPEC-130" /%} — the declarative mapping this motivates; D9 settles the two-emitter question
+- {% ref "BUG-016" /%} — why the two emitters are independent
 - {% ref "WORK-552" /%} — `schema="none"`, the suppression half of the same story
 
 {% /bug %}

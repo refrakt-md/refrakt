@@ -64,31 +64,39 @@ podcast: {
 }
 ```
 
-## The open question this item has to close
+## The two emitters — settled as D9
 
-**`MusicRecording` is stamped in two places**: `playlist`'s own `<li>` items
-(line 153) and the standalone `track` rune. A per-type child mapping has to
-reach both, or a podcast's inline items become `PodcastEpisode` while
-`{% track %}` children stay `MusicRecording` on the same page.
+{% ref "SPEC-130" /%} left this open, calling it a question it "must answer, not
+gloss", and none of D1–D8 resolved it: `MusicRecording` is stamped both by
+`playlist`'s own `<li>` items and by the standalone `track` rune, so does a
+per-type child mapping have to reach both?
 
-{% ref "SPEC-130" /%} names this as a question it "must answer, not gloss" — and
-then does not. None of D1–D8 resolves it. It is the same question as contextual
-schema (`contextProperties: { 'parent-rune': … }`), because a `{% track %}`
-inside a podcast is exactly "a child rune declares what it means inside a given
-parent".
+**Settled in D9, measured against the built packages. The premise was false.**
+The two emitters never populate the same collection — `playlist` builds its
+items exclusively from markdown-list `itemModel` data, and a `{% track %}`
+inside a `{% playlist %}` is not one of its tracks at all
+({% ref "BUG-016" /%}). So there is nothing to keep in step, and
+`contextProperties` is not needed.
 
-Two honest options, and this item picks one:
+Each rune keys off the attribute its author already set:
 
-1. **Include `contextProperties`** — the child declares its type per parent
-   rune, mirroring the existing `contextModifiers`. More mechanism, and it
-   generalises.
-2. **Narrow the criterion to transform-built children** — `playlist`'s inline
-   `<li>`s get per-type mappings; `{% track %}` keeps one type; the divergence
-   is documented as a known limitation and filed.
+| Rune | `by:` | Rows |
+|------|-------|------|
+| `playlist` | its `type` | album, mix, podcast, audiobook, series — plus the child mapping for its transform-built items |
+| `track` | its `type` | song, episode, chapter, talk, video |
 
-Option 2 is defensible and cheaper. What is **not** acceptable is shipping the
-per-type table without deciding, because that produces a page where two
-adjacent tracks carry different types for no reason an author can see.
+**So `track` is in scope here too.** It carries its own five-value enum
+(`track.ts:15`) and emits `MusicRecording` for all five — the same defect as
+`playlist`, in a second rune, and part of {% ref "BUG-013" /%}. Converting it
+here rather than leaving it in Group B keeps the pair coherent and the review in
+one place.
+
+What this item does **not** do is fix {% ref "BUG-016" /%}. That is a content
+model defect, not a schema one, and it is wrong today regardless of how the
+channel is expressed — but it should be decided before this lands, because if
+the composition is made to work then `playlist`'s `children:` mapping needs a
+matcher wide enough to reach tag-built children as well as transform-built ones.
+Still nothing declared on the child.
 
 ## Acceptance Criteria
 
@@ -97,7 +105,8 @@ adjacent tracks carry different types for no reason an author can see.
 - [ ] `{% playlist type="podcast" %}` publishes `PodcastSeries` / `hasPart` / `PodcastEpisode`, resolving {% ref "BUG-013" /%}
 - [ ] `byArtist` does not survive onto a `PodcastEpisode` — properties that do not belong to the child's type are dropped, not carried
 - [ ] `album` narrows to `MusicAlbum`, so the default stops being imprecise
-- [ ] The two-emitter question is **closed in writing** — either `contextProperties` ships, or the limitation is documented and filed with a reason
+- [ ] The standalone `track` rune gains its own `by: 'type'` table over `song | episode | chapter | talk | video`, so `{% track type="episode" %}` stops emitting `MusicRecording`
+- [ ] No context mechanism is added — neither rune declares anything about the other (D9)
 - [ ] The inline track spans resolve by their existing `data-name`s (`track-name`, `track-artist`, `track-duration`) — `playlist` needs no new names
 - [ ] `playlist`'s image source resolves through the name {% ref "WORK-561" /%} gave it
 - [ ] Every row is reviewed through `refrakt inspect`'s resolved-table view, per {% ref "WORK-566" /%}
@@ -114,7 +123,15 @@ The curation is a human judgement recorded in config, and nothing checks it:
 refrakt ships no schema.org ontology (D5). `Chapter` for an `Audiobook` and
 `CreativeWork` for a `CreativeWorkSeries` are the two rows worth a second
 opinion before they ship — review them in `inspect`'s resolved view, which is
-what that view is for.
+what that view is for. `track`'s `talk` row needs the same attention: there is
+no obvious schema.org type for it, and `CreativeWork` may be the honest answer.
+
+**Check the pair's output on one page.** With two independent tables, the
+failure mode D9 rules out by construction is still worth asserting once: a page
+carrying both a `{% playlist type="podcast" %}` and a standalone
+`{% track type="episode" %}` should emit a `PodcastSeries` with
+`PodcastEpisode` parts *and* a separate `PodcastEpisode`, each correct on its
+own terms.
 
 ## Blocked by
 
@@ -124,8 +141,10 @@ what that view is for.
 
 ## References
 
-- {% ref "SPEC-130" /%} — "The driving case: playlist", "Two emitters, one mapping", D3, D5
-- {% ref "BUG-013" /%} — the mistyped playlists this resolves
+- {% ref "SPEC-130" /%} — "The driving case: playlist", D3, D5, and **D9** which settles the two emitters
+- {% ref "BUG-013" /%} — the mistyped playlists *and* tracks this resolves
+- {% ref "BUG-016" /%} — decide before this lands; it widens the `children:` matcher if resolved the other way
 - `plugins/media/src/tags/playlist.ts:28,98,153,237` — the enum, the default, the item type, the unconditional parent type
+- `plugins/media/src/tags/track.ts:15,96` — `track`'s own enum and its unconditional `MusicRecording`
 
 {% /work %}

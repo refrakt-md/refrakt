@@ -27,7 +27,11 @@ for years:
 
 - **A podcast is published as a music playlist.** `playlist` validates
   `type="podcast"` against a five-value enum and then emits `MusicPlaylist` with
-  `MusicRecording` episodes, unconditionally ({% ref "BUG-013" /%}).
+  `MusicRecording` episodes, unconditionally. `track` does the same with its own
+  enum ({% ref "BUG-013" /%}).
+- **A `{% track %}` inside a `{% playlist %}` is not one of its tracks.** It
+  renders as an `<li>` outside any list and publishes a detached entity. The
+  docs recommend the composition ({% ref "BUG-016" /%}).
 - **`{% breadcrumb auto=true %}` publishes no `BreadcrumbList`.** It renders one
   correctly. `extractSeo` runs in phase 1; the hook that builds it runs in phase
   4. Nothing tests it — no pipeline test asserts on `seo` at all.
@@ -88,10 +92,47 @@ the ground the migration stands on.
 
 - {% ref "WORK-567" /%} — Group A: seven runes gain a mapping or lose their type.
 - {% ref "WORK-568" /%} — Group B: fourteen flat mappings, and `NGO`.
-- {% ref "WORK-569" /%} — `playlist`: `by:`, per-type `children:`,
-  {% ref "BUG-013" /%}, and the two-emitter question.
+- {% ref "WORK-569" /%} — `playlist` **and** `track`: `by:`, per-type
+  `children:`, and {% ref "BUG-013" /%}.
 - {% ref "WORK-570" /%} — retype and wrap: `accordion`, `recipe`, `how-to`.
 - {% ref "WORK-571" /%} — synthesised entities and `index`; closes Group C.
+
+Plus three bugs: {% ref "BUG-013" /%} and {% ref "BUG-015" /%} are fixed by
+{% ref "WORK-569" /%} and {% ref "WORK-564" /%}. {% ref "BUG-016" /%} is a
+content-model defect that needs deciding before {% ref "WORK-569" /%} lands —
+see below.
+
+## The spec's one open question, closed
+
+{% ref "SPEC-130" /%} named the two `MusicRecording` emitters — `playlist`'s own
+items and the standalone `track` rune — as "a design question this spec must
+answer, not gloss", and then none of D1–D8 answered it. It framed the choice as
+shipping `contextProperties` (a child rune declaring what it means inside a
+given parent) or narrowing the per-type child-mapping criterion.
+
+Closed as **D9**, measured against the built packages rather than argued from
+the source. **Neither option was needed, because the premise was false.**
+
+`playlist` builds its track items exclusively from markdown-list `itemModel`
+data. A `{% track %}` inside a `{% playlist %}` is not one of its tracks: it
+falls through to the greedy `body` field, renders as an `<li>` outside any list,
+and floats up as a detached top-level entity. The two emitters therefore never
+populate the same collection, so there is nothing to keep in step. Each keys off
+the attribute its author already set — `playlist.type` over five values,
+`track.type` over its own five — and neither declares anything about the other.
+
+The general rule D9 records outlives this rune pair: **the parent retypes its
+children; a child never declares its context.** `collectJsonLd` nests a typed
+node into its parent only when that node carries both `typeof` and `property`,
+and only the parent can supply the `property` — so a parent that wants a child
+in its graph is already stamping that child's attributes, and `contextProperties`
+would be a second mechanism for what `children:` does. Markdoc's bottom-up
+transform order agrees: a child cannot see its parent at transform time.
+
+Two things fell out of asking. `track` ignores its own `type` exactly as
+`playlist` does, which folds into {% ref "BUG-013" /%} and widens
+{% ref "WORK-569" /%} to cover both runes. And the broken composition is
+{% ref "BUG-016" /%} — documented, and wrong in three ways at once.
 
 ## Two deviations from the spec's migration shape
 
