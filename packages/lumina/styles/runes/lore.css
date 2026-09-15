@@ -10,8 +10,12 @@
 	.rf-lore__content blockquote {
 		font-style: italic;
 	}
-	.rf-lore > span[property="title"] {
-		font-size: var(--rf-text-2xl);
+	.rf-lore__title {
+		/* No `font-size`: the title carries `data-section="title"`, so sections.css
+		   supplies `var(--rf-prominence-size, var(--rf-title-size, --rf-text-2xl))`.
+		   The resting value at full density is already --rf-text-2xl, so pinning it
+		   here changed nothing visually while severing the prominence axis and the
+		   density ramp (WORK-538). */
 		font-weight: var(--rf-weight-bold);
 		margin-bottom: 0.5rem;
 		color: var(--rf-color-text);

@@ -146,7 +146,6 @@
 .rf-bento-cell__body {
 	min-height: 0;
 }
-.rf-bento-cell__body > span[property],
 .rf-bento-cell__body > meta {
 	display: none;
 }

@@ -16,7 +16,6 @@
 	height: auto;
 	display: block;
 }
-.rf-storyboard-panel__body > span[property],
 .rf-storyboard-panel__body > meta {
 	display: none;
 }
