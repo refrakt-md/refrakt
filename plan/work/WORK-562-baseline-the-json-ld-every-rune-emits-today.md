@@ -1,4 +1,4 @@
-{% work id="WORK-562" status="done" priority="high" complexity="simple" source="SPEC-130" tags="runes,schema-org,seo,testing" milestone="v0.35.0" %}
+{% work id="WORK-562" status="done" priority="high" complexity="simple" source="SPEC-130" tags="runes,schema-org,seo,testing" milestone="v0.35.0" pr="refrakt-md/refrakt#606" %}
 
 # Baseline the JSON-LD every rune emits today
 
