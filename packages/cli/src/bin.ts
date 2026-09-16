@@ -743,8 +743,13 @@ function runContracts(contractsArgs: string[]): void {
 		import('@refrakt-md/transform'),
 	])
 		.then(async ([{ contractsCommand }, runesModule, { assembleThemeConfig }]) => {
-			const { config } = await loadMergedConfig(runesModule, assembleThemeConfig, configDir, site);
-			contractsCommand({ output, check, config });
+			const { config, runes } = await loadMergedConfig(
+				runesModule,
+				assembleThemeConfig,
+				configDir,
+				site,
+			);
+			contractsCommand({ output, check, config, runes });
 		})
 		.catch((err) => {
 			console.error(`\nError: ${(err as Error).message}`);

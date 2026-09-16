@@ -4145,6 +4145,48 @@
 					"selector": ".rf-testimonial__quote",
 					"source": "autoLabel"
 				}
+			},
+			"schemaOrg": {
+				"type": "Review",
+				"properties": [
+					{
+						"source": "quote",
+						"property": "reviewBody",
+						"kind": "property"
+					},
+					{
+						"source": "author-name",
+						"property": "name",
+						"kind": "property",
+						"entity": "author"
+					},
+					{
+						"source": "author-role",
+						"property": "jobTitle",
+						"kind": "property",
+						"entity": "author"
+					},
+					{
+						"source": "rating",
+						"property": "ratingValue",
+						"kind": "property",
+						"entity": "rating"
+					}
+				],
+				"entities": [
+					{
+						"name": "author",
+						"type": "Person",
+						"property": "author"
+					},
+					{
+						"name": "rating",
+						"type": "Rating",
+						"property": "reviewRating"
+					}
+				],
+				"children": [],
+				"lists": []
 			}
 		},
 		"Comparison": {
@@ -5475,6 +5517,51 @@
 					"selector": ".rf-event__image",
 					"source": "autoLabel"
 				}
+			},
+			"schemaOrg": {
+				"type": "Event",
+				"properties": [
+					{
+						"source": "headline",
+						"property": "name",
+						"kind": "property"
+					},
+					{
+						"source": "blurb",
+						"property": "description",
+						"kind": "property"
+					},
+					{
+						"source": "date",
+						"property": "startDate",
+						"kind": "property"
+					},
+					{
+						"source": "endDate",
+						"property": "endDate",
+						"kind": "property"
+					},
+					{
+						"source": "url",
+						"property": "url",
+						"kind": "property"
+					},
+					{
+						"source": "location",
+						"property": "name",
+						"kind": "property",
+						"entity": "location"
+					}
+				],
+				"entities": [
+					{
+						"name": "location",
+						"type": "Place",
+						"property": "location"
+					}
+				],
+				"children": [],
+				"lists": []
 			}
 		},
 		"Itinerary": {

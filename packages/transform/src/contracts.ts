@@ -14,6 +14,18 @@ export interface RuneContract {
 	root: string;
 	dataRune: string;
 	parent?: string;
+	/**
+	 * The rune's resolved schema.org row — SPEC-130 / WORK-566.
+	 *
+	 * Declared here but filled in by the CLI: the tables live on the runes, and
+	 * `generateStructureContract` takes only a `ThemeConfig`. Reaching them from
+	 * this package would invert the dependency (`runes` depends on `transform`),
+	 * so the field is part of the contract's shape and the CLI supplies it.
+	 *
+	 * Typed loosely on purpose — the row's shape is owned by `@refrakt-md/runes`,
+	 * and restating it here would be a second definition to drift.
+	 */
+	schemaOrg?: unknown;
 	modifiers?: Record<
 		string,
 		{
@@ -109,12 +121,32 @@ export interface StructureContract {
  * Derives the complete BEM selector contract, data attributes, injected elements,
  * and child ordering for every rune — purely from config, no engine execution needed.
  */
-export function generateStructureContract(config: ThemeConfig): StructureContract {
+export interface StructureContractOptions {
+	/**
+	 * Resolved schema.org rows, keyed by the rune's own (kebab-case) name —
+	 * SPEC-130 / WORK-566.
+	 *
+	 * Passed in rather than read here: the tables are declared on the runes, and
+	 * `@refrakt-md/runes` depends on this package, so reaching them directly
+	 * would invert the dependency. Keyed by rune name rather than by the
+	 * theme-config key because a *plugin* rune has no `typeName` — keying off
+	 * that silently covered nothing for the 67 of 95 runes that live in plugins.
+	 */
+	schemaRows?: Record<string, unknown>;
+}
+
+export function generateStructureContract(
+	config: ThemeConfig,
+	options: StructureContractOptions = {},
+): StructureContract {
 	const { prefix, runes } = config;
 	const result: Record<string, RuneContract> = {};
 
 	for (const [runeName, runeConfig] of Object.entries(runes)) {
-		result[runeName] = generateRuneContract(runeName, runeConfig, prefix);
+		const contract = generateRuneContract(runeName, runeConfig, prefix);
+		const row = options.schemaRows?.[contract.dataRune];
+		if (row !== undefined) contract.schemaOrg = row;
+		result[runeName] = contract;
 	}
 
 	return {

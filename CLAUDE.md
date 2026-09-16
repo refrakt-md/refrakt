@@ -109,7 +109,21 @@ npx refrakt contracts -o contracts/structures.json
 npx refrakt contracts --check -o contracts/structures.json
 ```
 
-Structure contracts describe the complete HTML structure the identity transform produces for every rune — derived purely from config. Use `--check` in CI to catch config-contract drift.
+Structure contracts describe the complete HTML structure the identity transform produces for every rune — derived purely from config, plus each rune's resolved schema.org row. Use `--check` in CI to catch config-contract drift, on both channels.
+
+The contract is committed in **two** places that must stay in lock-step: `contracts/structures.json` (this repo's dev copy) and `packages/lumina/contracts/structures.json` (what Lumina ships via its `./contracts` export). Regenerate both.
+
+### Reviewing a rune's structured data
+
+```bash
+# The resolved schema.org row for one rune, with unresolvable sources flagged
+npx refrakt inspect <rune> --site main
+npx refrakt inspect <rune> --site main --json
+```
+
+**Nothing validates a schema table against schema.org** — refrakt ships no ontology, and SPEC-130 D5 makes that an explicit trade rather than an oversight. Visibility replaces validation: `inspect`, `contracts` and `reference` all print the resolved row, and a wrong row is caught by a reviewer reading it. Treat a table as human judgement recorded in config.
+
+What *is* checked mechanically is narrower and worth knowing: a source name that matches no emitted node, no field-bag entry and no declared attribute is flagged, because that property is silently absent from the published graph.
 
 ### Structured-data baseline
 

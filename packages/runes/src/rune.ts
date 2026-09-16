@@ -20,7 +20,6 @@ export interface RuneDescriptor {
 	typeName?: string;
 
 	/** Schema.org type for typeof attribute (e.g. 'FAQPage') */
-	schemaOrgType?: string;
 
 	/**
 	 * Authoring hints — a short note that reads naturally to both humans browsing
@@ -44,7 +43,6 @@ export class Rune {
 	readonly description: string;
 	readonly seoType: string | undefined;
 	readonly typeName: string | undefined;
-	readonly schemaOrgType: string | undefined;
 	readonly authoringHints: string | undefined;
 	readonly category: string | undefined;
 	readonly snippet: string[] | undefined;
@@ -56,7 +54,6 @@ export class Rune {
 		this.description = descriptor.description ?? '';
 		this.seoType = descriptor.seoType;
 		this.typeName = descriptor.typeName;
-		this.schemaOrgType = descriptor.schemaOrgType;
 		this.authoringHints = descriptor.authoringHints;
 		this.category = descriptor.category;
 		this.snippet = descriptor.snippet;

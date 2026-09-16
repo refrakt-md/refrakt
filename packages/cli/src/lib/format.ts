@@ -192,6 +192,8 @@ export function buildJsonOutput(opts: {
 	config: RuneConfig | undefined;
 	html: string;
 	selectors: string[];
+	/** The rune's resolved schema.org row (WORK-566), when it declares a table. */
+	schema?: unknown;
 }): object {
 	return {
 		rune: opts.rune,
@@ -213,6 +215,10 @@ export function buildJsonOutput(opts: {
 			: null,
 		html: opts.html,
 		selectors: opts.selectors,
+		// `null` rather than omitted: "this rune declares no schema table" is a
+		// fact a consumer wants, and distinguishable from an older payload that
+		// predates the field.
+		schema: opts.schema ?? null,
 	};
 }
 

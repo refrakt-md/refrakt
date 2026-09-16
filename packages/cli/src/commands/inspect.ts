@@ -4,6 +4,9 @@ import type { ThemeConfig } from '@refrakt-md/transform';
 import { extractComponentInterface, fromKebabCase, isTag } from '@refrakt-md/transform';
 import type { SerializedTag } from '@refrakt-md/types';
 import { getFixture, applyFixtureOverrides } from '../lib/fixtures.js';
+import { tableFor, describeSchemaRow } from '@refrakt-md/runes';
+import type { ResolvedSchemaRow } from '@refrakt-md/runes';
+import { auditSchemaSources } from '../lib/schema-row.js';
 import { discoverVariants } from '../lib/variants.js';
 import {
 	parseCssFile,
@@ -293,6 +296,7 @@ function inspectSingle(
 	const runeTypeof = rune.typeName;
 	const runeConfig = runeTypeof ? config.runes[runeTypeof] : undefined;
 
+	const table = tableFor(rune);
 	return buildJsonOutput({
 		rune: rune.name,
 		theme: 'base',
@@ -300,6 +304,7 @@ function inspectSingle(
 		config: runeConfig,
 		html,
 		selectors,
+		schema: table ? describeSchemaRow(table, flags) : undefined,
 	});
 }
 
@@ -328,6 +333,65 @@ function outputFormatted(
 
 	console.log(heading('Selectors'));
 	console.log(formatSelectors(selectors));
+
+	// WORK-566 — the review surface. SPEC-130 D5 dispenses with validating a
+	// table against schema.org (refrakt ships no ontology), on the grounds that a
+	// wrong row is *reviewable*. This is where it becomes reviewable.
+	const table = tableFor(rune);
+	if (table) {
+		const row = describeSchemaRow(table, flags);
+		const declared = Object.keys(rune.schema?.attributes ?? {});
+		console.log(heading('Structured Data'));
+		console.log(formatSchemaRow(row, auditSchemaSources(row, tree, declared)));
+	}
+}
+
+/** Render a resolved schema row, with any unresolvable source called out. */
+function formatSchemaRow(
+	row: ResolvedSchemaRow,
+	unresolved: ReturnType<typeof auditSchemaSources>,
+): string {
+	const lines: string[] = [];
+	const missing = new Set(unresolved.map((u) => `${u.entity ?? ''}:${u.source}`));
+
+	lines.push(`  @type  ${row.type ?? '(none)'}`);
+	if (row.by) {
+		lines.push(`  by     ${row.by}${row.selectedFor ? ` = ${row.selectedFor}` : ' (fallback)'}`);
+	}
+	if (row.lists.length > 0) lines.push(`  lists  ${row.lists.join(', ')}`);
+
+	if (row.entities.length > 0) {
+		lines.push('');
+		for (const e of row.entities) lines.push(`  ${e.property} -> ${e.type}  (entity: ${e.name})`);
+	}
+	if (row.children.length > 0) {
+		lines.push('');
+		for (const c of row.children) lines.push(`  ${c.property} -> ${c.type}  (child: ${c.rune})`);
+	}
+
+	if (row.properties.length > 0) {
+		lines.push('');
+		const width = Math.max(...row.properties.map((p) => p.property.length));
+		for (const p of row.properties) {
+			const scope = p.entity ? ` [${p.entity}]` : '';
+			const kind = p.kind === 'property' ? '' : ` (${p.kind})`;
+			const flag = missing.has(`${p.entity ?? ''}:${p.source}`) ? '  ← UNRESOLVABLE' : '';
+			lines.push(`  ${p.property.padEnd(width)}  <- ${p.source}${scope}${kind}${flag}`);
+		}
+	}
+
+	if (unresolved.length > 0) {
+		lines.push('');
+		lines.push(`  ${unresolved.length} source(s) match no emitted node, no field-bag entry and no`);
+		lines.push('  declared attribute — so the property is absent from the published graph,');
+		lines.push('  silently. That is the failure mode this check exists for.');
+	}
+
+	lines.push('');
+	lines.push('  Nothing validates these against schema.org: refrakt ships no ontology (D5).');
+	lines.push('  This view is the review mechanism. Read it as human judgement in config.');
+
+	return lines.join('\n');
 }
 
 /** Run the Markdoc parse → transform → serialize → identity transform pipeline */

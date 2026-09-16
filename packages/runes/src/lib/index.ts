@@ -91,6 +91,22 @@ export interface RuneStructure {
 export const schemaRuneStructures = new WeakMap<Schema, RuneStructure>();
 
 /**
+ * A rune's declarative schema.org table, keyed by its Markdoc schema — SPEC-130
+ * / WORK-566.
+ *
+ * The same shape as `schemaContentModels` and `schemaRuneStructures`, and for
+ * the same reason: the table is declared in the tag module, and tooling
+ * (`inspect`, `contracts`, `reference`) has only the schema to read from.
+ *
+ * This is the gap that kept reappearing across the milestone — config-derived
+ * tooling cannot see anything a rune declares in its `transform()`, which is why
+ * four dead CSS rules survived review (WORK-564) and why regenerating the
+ * structure contract showed none of WORK-561's new `data-name`s. Recording the
+ * table here is what lets the review surface D5 depends on exist at all.
+ */
+export const schemaTables = new WeakMap<Schema, SchemaTable>();
+
+/**
  * Record a hand-written schema's universal-attribute posture.
  *
  * `createContentModelSchema` records this itself. The handful of runes with
@@ -917,6 +933,8 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 	if (options.deferBody) {
 		(schema as Schema & { deferBody?: boolean }).deferBody = true;
 	}
+
+	if (options.schema) schemaTables.set(schema, options.schema);
 
 	// Register content model for introspection by editor / language server
 	schemaContentModels.set(schema, options.contentModel);

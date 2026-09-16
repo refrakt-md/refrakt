@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { generateStructureContract, toKebabCase } from '@refrakt-md/transform';
 import type { RuneConfig, ThemeConfig } from '@refrakt-md/transform';
-import { baseConfig } from '@refrakt-md/runes';
+import { baseConfig, runes as coreRunes, collectSchemaRows } from '@refrakt-md/runes';
 import marketing from '@refrakt-md/marketing';
 import docs from '@refrakt-md/docs';
 import storytelling from '@refrakt-md/storytelling';
@@ -35,6 +35,33 @@ const fullRunes: Record<string, RuneConfig> = {
 
 const fullConfig: ThemeConfig = { ...baseConfig, runes: fullRunes };
 
+// SPEC-130 / WORK-566 — the contract now carries each rune's resolved
+// schema.org row, and the rows come from the runes rather than from theme
+// config. Assembled here the same way `refrakt contracts` assembles them, and
+// passed through the same `generateStructureContract` call, so the committed
+// artifact and this guard are produced by one implementation with one input.
+const pluginPackages = [
+	marketing,
+	docs,
+	storytelling,
+	places,
+	business,
+	design,
+	learning,
+	media,
+	plan,
+];
+const schemaBearing: Record<string, { name: string; schema?: never }> = {};
+for (const [name, rune] of Object.entries(coreRunes)) {
+	schemaBearing[name] = { name: rune.name, schema: rune.schema as never };
+}
+for (const pkg of pluginPackages) {
+	for (const [name, entry] of Object.entries(pkg.runes ?? {})) {
+		schemaBearing[name] = { name, schema: (entry as { transform?: unknown }).transform as never };
+	}
+}
+const schemaRows = collectSchemaRows(schemaBearing as never);
+
 // The contract is committed in two places that must stay in lock-step: the
 // repo-level dev copy (CLAUDE.md's `refrakt contracts -o contracts/...`) and the
 // copy Lumina ships via its `./contracts` export. Guard both so neither drifts.
@@ -43,7 +70,7 @@ const ROOT_CONTRACTS_PATH = join(__dirname, '..', '..', '..', 'contracts', 'stru
 
 describe('Structure contracts', () => {
 	it('committed structures.json matches generated output', () => {
-		const generated = generateStructureContract(fullConfig);
+		const generated = generateStructureContract(fullConfig, { schemaRows });
 		const generatedJson = JSON.stringify(generated, null, '\t') + '\n';
 
 		const committed = readFileSync(CONTRACTS_PATH, 'utf-8');
@@ -52,14 +79,14 @@ describe('Structure contracts', () => {
 	});
 
 	it("the repo-level contracts/structures.json stays in sync with Lumina's copy", () => {
-		const generated = generateStructureContract(fullConfig);
+		const generated = generateStructureContract(fullConfig, { schemaRows });
 		const generatedJson = JSON.stringify(generated, null, '\t') + '\n';
 
 		expect(readFileSync(ROOT_CONTRACTS_PATH, 'utf-8')).toBe(generatedJson);
 	});
 
 	it('generates contracts for all runes in fullConfig', () => {
-		const generated = generateStructureContract(fullConfig);
+		const generated = generateStructureContract(fullConfig, { schemaRows });
 		const configRunes = Object.keys(fullConfig.runes).sort();
 		const contractRunes = Object.keys(generated.runes).sort();
 
@@ -67,7 +94,7 @@ describe('Structure contracts', () => {
 	});
 
 	it('every rune has required fields', () => {
-		const generated = generateStructureContract(fullConfig);
+		const generated = generateStructureContract(fullConfig, { schemaRows });
 
 		for (const [name, contract] of Object.entries(generated.runes)) {
 			expect(contract.block, `${name}: missing block`).toBeTruthy();

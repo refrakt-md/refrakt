@@ -100,12 +100,15 @@ export {
 	schemaRuneStructures,
 	declareUniversalPosture,
 	sanitizeSandboxContent,
+	schemaTables,
 	applySchemaTable,
 	validateSchemaTable,
 	selectRow,
 	findByName,
 } from './lib/index.js';
 export type { RuneStructure, SectionRole } from './lib/index.js';
+export { describeSchemaRow, bySchemaProperty, collectSchemaRows, tableFor } from './schema-row.js';
+export type { ResolvedSchemaRow, SchemaPropertyRow } from './schema-row.js';
 export type { SchemaTable, SchemaRow, EntityRow, PropertyMap } from './lib/index.js';
 
 // SPEC-125 Phase 3 — the declared rule for universal-attribute availability
@@ -490,7 +493,6 @@ export const runes = {
 		description: 'Enhanced image with caption, attribution, and sizing',
 		seoType: 'ImageObject',
 		typeName: 'Figure',
-		schemaOrgType: 'ImageObject',
 		category: 'Content',
 		snippet: [
 			'{% figure size="${1|medium,small,large,full|}" %}',
@@ -507,7 +509,6 @@ export const runes = {
 			'Multi-image container with grid, carousel, or masonry layout and optional lightbox',
 		seoType: 'ImageGallery',
 		typeName: 'Gallery',
-		schemaOrgType: 'ImageGallery',
 		category: 'Content',
 		snippet: [
 			'{% gallery layout="${1|grid,carousel,masonry|}" %}',
@@ -524,7 +525,6 @@ export const runes = {
 		description: 'Collapsible accordion sections where headings become toggleable headers',
 		seoType: 'FAQPage',
 		typeName: 'Accordion',
-		schemaOrgType: 'FAQPage',
 		category: 'Layout',
 		snippet: [
 			'{% accordion %}',
@@ -543,7 +543,6 @@ export const runes = {
 		schema: accordionItem,
 		description: 'Individual accordion section',
 		typeName: 'AccordionItem',
-		schemaOrgType: 'Question',
 	}),
 	toc: defineRune({
 		name: 'toc',
@@ -560,7 +559,6 @@ export const runes = {
 		description: 'Embedded content from external services (YouTube, Twitter, CodePen, Spotify)',
 		seoType: 'VideoObject',
 		typeName: 'Embed',
-		schemaOrgType: 'VideoObject',
 		category: 'Content',
 		snippet: ['{% embed url="${1:https://}" /%}'],
 	}),
@@ -570,7 +568,6 @@ export const runes = {
 		description: 'Navigation breadcrumb trail showing page hierarchy',
 		seoType: 'BreadcrumbList',
 		typeName: 'Breadcrumb',
-		schemaOrgType: 'BreadcrumbList',
 		category: 'Site',
 		snippet: ['{% breadcrumb /%}'],
 	}),
@@ -589,7 +586,6 @@ export const runes = {
 			'Structured cost breakdown with categories, line items, and auto-calculated totals',
 		seoType: 'ItemList',
 		typeName: 'Budget',
-		schemaOrgType: 'ItemList',
 		category: 'Semantic',
 		snippet: [
 			'{% budget %}',
@@ -638,7 +634,6 @@ export const runes = {
 			'Interactive data table with sorting, filtering, and pagination from a Markdown table',
 		seoType: 'Dataset',
 		typeName: 'DataTable',
-		schemaOrgType: 'Dataset',
 		category: 'Code & Data',
 		snippet: [
 			'{% datatable %}',
@@ -959,7 +954,6 @@ export const runes = {
 			'Blog post listing with filtering, sorting, and multiple layouts. Displays pages from a content folder as a navigable blog index.',
 		seoType: 'Blog',
 		typeName: 'Blog',
-		schemaOrgType: 'Blog',
 		category: 'Semantic',
 	}),
 	xref: defineRune({
