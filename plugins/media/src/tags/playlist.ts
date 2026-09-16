@@ -13,8 +13,35 @@ import {
 	extractMediaImage,
 } from '@refrakt-md/runes';
 import { parseDuration, formatDuration } from '../duration.js';
+import { TYPE_IMPLICIT } from './track.js';
 
 const playlistType = ['album', 'podcast', 'audiobook', 'series', 'mix'] as const;
+
+/**
+ * The track kind a playlist gives a nested `{% track %}` that states none
+ * (WORK-572). The parent retypes its children; a child never declares its
+ * context (SPEC-130 D9), and Markdoc's bottom-up transform order means a child
+ * could not see its parent even if it wanted to.
+ */
+const CHILD_KIND: Record<string, string> = {
+	album: 'song',
+	mix: 'song',
+	podcast: 'episode',
+	audiobook: 'chapter',
+	series: 'episode',
+};
+
+/**
+ * The schema.org type a playlist's children carry.
+ *
+ * One constant, not a per-type table, because that is the truth today: every
+ * playlist type emits `MusicRecording` children including podcasts, which is
+ * BUG-013. WORK-569 replaces this with the per-type table. Until it does, the
+ * inherited type has to be exactly what the list form produces or the two
+ * authoring forms would disagree — which is the equivalence this item exists to
+ * establish.
+ */
+const CHILD_TYPEOF = 'MusicRecording';
 const contentType = ['auto', 'lyrics', 'chapters'] as const;
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
@@ -99,8 +126,14 @@ export const playlist = createContentModelSchema({
 						description: 'Playlist description',
 					},
 					{
+						// WORK-572 — `tag:track` alongside `list` so the composition the
+						// docs promise works. Greedy because the two forms may alternate,
+						// and greedy collection is *consecutive*: prose between two tracks
+						// ends the run and pushes the rest to `body`. Documented on the
+						// rune page rather than left for an author to discover.
 						name: 'tracks',
-						match: 'list',
+						match: 'list|tag:track',
+						greedy: true,
 						optional: false,
 						description: 'Track listing',
 						template: '- **Track Name** (3:45)\n- **Another Track** (4:20)',
@@ -209,7 +242,45 @@ export const playlist = createContentModelSchema({
 			return new Tag('li', trackAttrs, trackChildrenArr);
 		});
 
-		const tracksOl = new Tag('ol', { 'data-name': 'tracks' }, trackChildren);
+		// WORK-572 / BUG-016 — merge nested `{% track %}` children with the list
+		// items, in document order.
+		//
+		// `resolved.tracks` holds the matched nodes in source order; `tracksData`
+		// is the flat itemModel extraction across every list among them. Walking
+		// the nodes and consuming `tracksData` by list length is what keeps the two
+		// forms interleaved correctly, rather than appending one block after the
+		// other.
+		//
+		// Before this, a `{% track %}` inside a `{% playlist %}` fell through to the
+		// greedy `body` field: it rendered as an `<li>` outside any list and floated
+		// up as a detached top-level entity, while the docs recommended the
+		// composition.
+		const trackNodes = (contentZone.tracks ?? []) as Node[];
+		const childKind = CHILD_KIND[playlistTypeValue] ?? 'song';
+		const orderedTracks: any[] = [];
+		let listCursor = 0;
+		for (const node of Array.isArray(trackNodes) ? trackNodes : [trackNodes]) {
+			if (!node || typeof node !== 'object') continue;
+			if ((node as Node).type === 'list') {
+				const count = ((node as Node).children ?? []).length;
+				orderedTracks.push(...trackChildren.slice(listCursor, listCursor + count));
+				listCursor += count;
+				continue;
+			}
+			const transformed = new RenderableNodeCursor(
+				Markdoc.transform([node], config) as RenderableTreeNode[],
+			)
+				.tag('li')
+				.toArray();
+			for (const li of transformed) {
+				orderedTracks.push(adoptNestedTrack(li as any, childKind, artistValue));
+			}
+		}
+		// Any list items a node walk missed (defensive: a shape the resolver
+		// collected but this loop did not recognise) still belong in the listing.
+		if (listCursor < trackChildren.length) orderedTracks.push(...trackChildren.slice(listCursor));
+
+		const tracksOl = new Tag('ol', { 'data-name': 'tracks' }, orderedTracks);
 
 		// Build player element (when player attribute is set)
 		let playerEl: any = null;
@@ -285,7 +356,10 @@ export const playlist = createContentModelSchema({
 		children.push(tracksOl);
 		if (bodyDiv) children.push(bodyDiv.next());
 
-		const trackItems = new RenderableNodeCursor(trackChildren);
+		// WORK-572 — the merged, ordered set, not just the list items: this is the
+		// cursor `schema: { track }` stamps `property="track"` onto, and an unstamped
+		// child floats up as a detached top-level entity (BUG-016 symptom 2).
+		const trackItems = new RenderableNodeCursor(orderedTracks);
 
 		return createComponentRenderable({
 			rune: 'playlist',
@@ -320,6 +394,77 @@ export const playlist = createContentModelSchema({
 		});
 	},
 });
+
+/**
+ * Adopt a nested `{% track %}` into its playlist (WORK-572).
+ *
+ * Two channels, and they behave differently (SPEC-130 D9):
+ *
+ * - **`typeof` — what the child *is* — is the child's when stated, else the
+ *   parent's child-row default.** The `TYPE_IMPLICIT` marker is how the parent
+ *   tells those apart; without it an absent `type` and an explicit
+ *   `type="song"` are the same value by transform time.
+ * - **`property` — which collection it joins — is always the parent's**, and it
+ *   is stamped by `createComponentRenderable`'s `schema:` map further down, not
+ *   here. `collectJsonLd` nests a typed node only when it carries both `typeof`
+ *   and `property`, so a child the parent never stamps floats free whatever type
+ *   it has.
+ *
+ * The artist default rides along for the same reason the type does: the list
+ * form does `track.artist ?? playlistArtist`, so without it the two forms would
+ * disagree on `byArtist` and the equivalence would be false.
+ */
+function adoptNestedTrack(li: any, childKind: string, playlistArtist: string): any {
+	if (!li || typeof li !== 'object') return li;
+
+	if (li[TYPE_IMPLICIT]) {
+		li.attributes.typeof = CHILD_TYPEOF;
+		// Keep the rendered modifier in step with the adopted kind, so a podcast's
+		// nested track does not present itself as a song.
+		const raw = li.attributes['data-rune-fields'];
+		if (typeof raw === 'string') {
+			try {
+				const bag = JSON.parse(raw);
+				bag.type = childKind;
+				li.attributes['data-rune-fields'] = JSON.stringify(bag);
+			} catch {
+				// A malformed bag is not this function's to repair.
+			}
+		}
+		for (const child of li.children ?? []) {
+			if (child?.name === 'meta' && child.attributes?.['data-field'] === 'type') {
+				child.attributes.content = childKind;
+			}
+		}
+		delete li[TYPE_IMPLICIT];
+	}
+
+	if (playlistArtist && !hasArtist(li)) {
+		const artistMeta = new Markdoc.Tag('meta', {
+			content: playlistArtist,
+			property: 'byArtist',
+		});
+		li.children = [...(li.children ?? []), artistMeta];
+	}
+
+	return li;
+}
+
+/** Whether a track already carries its own artist. */
+function hasArtist(li: any): boolean {
+	const raw = li.attributes?.['data-rune-fields'];
+	if (typeof raw === 'string') {
+		try {
+			if (JSON.parse(raw).artist) return true;
+		} catch {
+			// fall through to the node scan
+		}
+	}
+	return (li.children ?? []).some(
+		(c: any) =>
+			c?.attributes?.property === 'byArtist' || c?.attributes?.['data-name'] === 'track-artist',
+	);
+}
 
 /**
  * Build cue point list (chapters or lyrics) from extracted itemModel data.

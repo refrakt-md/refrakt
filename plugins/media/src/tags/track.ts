@@ -11,6 +11,21 @@ import { parseDuration, formatDuration } from '../duration.js';
 
 const trackType = ['song', 'episode', 'chapter', 'talk', 'video'] as const;
 
+/**
+ * Marks a track whose `type` the author did not state (WORK-572).
+ *
+ * A own-property on the Tag object rather than an attribute, deliberately: it is
+ * a transform-time hand-off from `track` to whichever parent adopts it, and
+ * `JSON.parse(JSON.stringify(...))` at the serialize boundary drops it, so it
+ * can never reach the HTML. `playlist` reads it to decide whether to retype a
+ * nested child; a standalone track carries it nowhere.
+ *
+ * Needed because Markdoc transforms bottom-up — a child cannot see its parent —
+ * so the *parent* retypes its children (SPEC-130 D9), and it can only do that if
+ * it can tell "no type stated" from an explicit `type="song"`.
+ */
+export const TYPE_IMPLICIT = '__refraktTrackTypeImplicit';
+
 export const track = createContentModelSchema({
 	attributes: {
 		src: {
@@ -64,7 +79,14 @@ export const track = createContentModelSchema({
 		const number = attrs.number as number | undefined;
 		const date = (attrs.date as string) ?? '';
 		const url = (attrs.url as string) ?? '';
-		const typeValue = (attrs.type as string) ?? 'song';
+		// WORK-572 — an absent `type` and an explicit `type="song"` must stay
+		// distinguishable. Coalescing here made them identical by transform time,
+		// so "no explicit type → inherit the playlist's" could never fire. The
+		// `'song'` default is now the *standalone* fallback only; a nested track
+		// with no explicit type is retyped by its parent (SPEC-130 D9 — the parent
+		// retypes its children; a child never declares its context).
+		const explicitType = attrs.type as string | undefined;
+		const typeValue = explicitType ?? 'song';
 
 		// Transform title
 		const titleNodes = new RenderableNodeCursor(
@@ -126,11 +148,19 @@ export const track = createContentModelSchema({
 			number !== undefined ? new Tag('meta', { content: String(number) }) : undefined;
 		const dateMeta = date ? new Tag('meta', { content: date }) : undefined;
 
+		// WORK-572 — `artistMeta` and `durationMeta` were declared in `properties`
+		// and `schema` but never pushed here, so they were stamped onto nodes that
+		// were not in the tree: a standalone `{% track artist="Radiohead"
+		// duration="4:01" %}` published its name and nothing else. The visible
+		// `track-artist` / `track-duration` spans carry no `property=`, so
+		// `collectProperties` never saw a value either.
+		if (artistMeta) children.push(artistMeta);
+		if (durationMeta) children.push(durationMeta);
 		if (urlMeta) children.push(urlMeta);
 		if (numberMeta) children.push(numberMeta);
 		if (dateMeta) children.push(dateMeta);
 
-		return createComponentRenderable({
+		const renderable = createComponentRenderable({
 			rune: 'track',
 			schemaOrgType: 'MusicRecording',
 			tag: 'li',
@@ -153,6 +183,12 @@ export const track = createContentModelSchema({
 			},
 			children,
 		});
+
+		// `rootAttrs` was assembled and then never applied, so `src` was dropped on
+		// a standalone track — the audio file the author pointed at reached nothing.
+		Object.assign((renderable as any).attributes, rootAttrs);
+		if (explicitType === undefined) (renderable as any)[TYPE_IMPLICIT] = true;
+		return renderable;
 	},
 });
 

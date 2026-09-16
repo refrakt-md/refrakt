@@ -1,4 +1,4 @@
-{% bug id="BUG-016" status="confirmed" severity="major" tags="runes,media,schema-org,seo,docs" milestone="v0.35.0" %}
+{% bug id="BUG-016" status="fixed" severity="major" tags="runes,media,schema-org,seo,docs" milestone="v0.35.0" %}
 
 # A track inside a playlist is not one of its tracks
 
@@ -132,5 +132,31 @@ expressed.
 - `plugins/media/src/tags/playlist.ts:121` — items built from `itemModel` only
 - `packages/runes/src/seo.ts:109` — the nesting rule the detached entity falls out of
 - `site/content/runes/media/track.md:16` — the claim
+
+## Resolution
+
+Completed: 2026-09-16
+
+Fixed by WORK-572 on `claude/v0.35-parallel-feasibility-eia5le`, in the "make the
+composition work" direction rather than by withdrawing it.
+
+All three symptoms are covered by tests in
+`plugins/media/test/playlist-track-children.test.ts`:
+
+- **The stray `<li>`** — nested tracks now render inside `<ol data-name="tracks">`
+  rather than falling through to the greedy `body` field.
+- **The detached entity** — `schema: { track }` stamps `property="track"` onto
+  the merged, ordered set, so nothing floats up as its own top-level entity.
+  `collectJsonLd` nests a typed node only when it carries both `typeof` and
+  `property`, and only the parent can supply the `property`.
+- **The docs claim** — `/runes/media/track` now has a worked mixed-form example,
+  and the claim it makes is true.
+
+The bar was equivalence, and it is asserted directly: the same track written as a
+list item and as a `{% track %}` child produces the same JSON-LD for the shared
+fields. Getting there required two fixes beyond the composition itself — the
+resolver could not handle a greedy itemModel field at all, and `track` had been
+dropping its own `artist` and `duration` because the metas were never pushed into
+`children`. Both are recorded in WORK-572's resolution.
 
 {% /bug %}

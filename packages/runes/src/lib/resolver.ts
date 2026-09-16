@@ -218,7 +218,21 @@ export function resolveSequence(
 					result[field.name] = tagNodes;
 				} else {
 					const node = result[field.name];
-					if (node && typeof node === 'object' && 'type' in (node as any)) {
+					if (Array.isArray(node)) {
+						// WORK-572 — a greedy field collects an array, which has no `type`,
+						// so the single-node branch below silently produced no `…Data` at
+						// all: making an itemModel field greedy used to disable its own
+						// extraction. Concatenate across the collected lists instead, in
+						// document order, and skip anything that is not a list (a greedy
+						// `list|tag:x` field collects both).
+						const items: Record<string, unknown>[] = [];
+						for (const n of node as Node[]) {
+							if (n && typeof n === 'object' && (n as Node).type === 'list') {
+								items.push(...resolveListItems(n as Node, field.itemModel));
+							}
+						}
+						result[`${field.name}Data`] = items;
+					} else if (node && typeof node === 'object' && 'type' in (node as any)) {
 						result[`${field.name}Data`] = resolveListItems(node as Node, field.itemModel);
 					}
 				}
