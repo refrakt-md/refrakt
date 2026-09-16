@@ -20,7 +20,6 @@
 	height: 0;
 	overflow: hidden;
 }
-.rf-reveal-step__body > span[property],
 .rf-reveal-step__body > meta {
 	display: none;
 }

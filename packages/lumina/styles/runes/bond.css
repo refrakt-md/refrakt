@@ -3,8 +3,8 @@
 	.rf-bond {
 		gap: 0.75rem;
 	}
-	.rf-bond > span[property="from"],
-	.rf-bond > span[property="to"] {
+	.rf-bond__from,
+	.rf-bond__to {
 		font-weight: var(--rf-weight-semibold);
 		font-size: var(--rf-text);
 		color: var(--rf-color-text);

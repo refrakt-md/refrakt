@@ -14,8 +14,7 @@
 	display: contents;
 }
 
-.rf-comparison > meta,
-.rf-comparison > span[property] {
+.rf-comparison > meta {
 	display: none;
 }
 

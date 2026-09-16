@@ -567,6 +567,34 @@ async function processContentTree(
 	// so both are complete by the time this runs.
 	warnings.push(...validationFindings);
 
+	// SPEC-130 / WORK-563 — re-harvest `seo` now the cross-page pipeline is done.
+	//
+	// The per-page harvests above run in Phase 1, before `register` / `aggregate`
+	// / `postProcess` have touched anything. Every sentinel resolved in Phase 4
+	// was therefore invisible to them: `{% breadcrumb auto=true %}` has
+	// `buildAutoBreadcrumb` construct its renderables in a `postProcess` hook, so
+	// the page rendered a correct `BreadcrumbList` and published *nothing*. The
+	// same blind spot covers collection, pagination, aggregate and drawer, should
+	// any of them ever carry schema.
+	//
+	// Recomputing over `enrichedPages` covers both original harvest points at
+	// once — file pages and the contributed pages `renderContributed` builds
+	// during the pipeline — so the fix cannot land half-applied.
+	//
+	// **After the pipeline, deliberately not after the engine.** There is no
+	// post-engine seam to move to: in SvelteKit the identity transform runs in
+	// the site's own load function (`site/src/routes/[...slug]/+page.server.ts`),
+	// and Eleventy never calls `createTransform` at all. A post-engine harvest
+	// would be N relocations, several of them in user-land site code. This is the
+	// last framework-agnostic point, which is why the harvest lives here.
+	//
+	// `extractSeo` recomputes `og` alongside `jsonLd` by construction — which is
+	// wanted, not incidental: `postProcess` can inject content that changes the
+	// first `h1`, paragraph or image `extractOgMeta` reads.
+	for (const page of enrichedPages) {
+		page.seo = extractSeo(page.renderable, page.frontmatter, page.route.url);
+	}
+
 	// Apply auto-resolutions to layout regions per page. Layouts are parsed once
 	// and shared across pages, but the auto-open / auto-pagination sentinels need
 	// per-page context (current URL, sibling order). The pipeline already wired

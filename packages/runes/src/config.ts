@@ -905,13 +905,28 @@ function buildAutoBreadcrumb(
 	);
 	const separator = separatorMeta?.attributes?.content ?? '/';
 
-	// Build breadcrumb items: ancestor pages + current page (no link)
+	// Build breadcrumb items: ancestor pages + current page (no link).
+	//
+	// WORK-563 — the `schema:` maps below are not decoration. `collectJsonLd`
+	// nests a typed node into its parent only when that node carries *both*
+	// `typeof` and `property`, and only a `schema:` entry supplies the
+	// `property`. Without them this hook emitted a `BreadcrumbList` with no
+	// `itemListElement` and a `ListItem` floating up beside it as a detached,
+	// empty top-level entity — while rendering a perfectly correct trail.
+	//
+	// The explicit `{% breadcrumb %}` form (tags/breadcrumb.ts) has always
+	// passed these. This path is the same output contract and must match it:
+	// the bar is that an auto trail publishes what the same trail written by
+	// hand would.
 	const listItems: any[] = [];
+	let position = 0;
 
 	for (const ancestorUrl of ancestorUrls) {
 		const ancestorPage = pagesByUrl.get(ancestorUrl);
 		if (!ancestorPage) continue;
 
+		position++;
+		const positionMeta = new Tag('meta', { content: position });
 		const nameSpan = new Tag('span', { hidden: true }, [ancestorPage.title]);
 		const urlLink = new Tag('a', { href: ancestorUrl }, [ancestorPage.title]);
 
@@ -921,7 +936,8 @@ function buildAutoBreadcrumb(
 				schemaOrgType: 'ListItem',
 				tag: 'li',
 				properties: { name: nameSpan, url: urlLink },
-				children: [nameSpan, urlLink],
+				schema: { name: nameSpan, item: urlLink, position: positionMeta },
+				children: [nameSpan, urlLink, positionMeta],
 			}) as any,
 		);
 	}
@@ -929,6 +945,8 @@ function buildAutoBreadcrumb(
 	// Add current page as the last item (no link)
 	const currentPage = pagesByUrl.get(pageUrl);
 	const currentTitle = currentPage?.title ?? pageUrl;
+	position++;
+	const currentPositionMeta = new Tag('meta', { content: position });
 	const currentSpan = new Tag('span', {}, [currentTitle]);
 	listItems.push(
 		createComponentRenderable({
@@ -936,7 +954,8 @@ function buildAutoBreadcrumb(
 			schemaOrgType: 'ListItem',
 			tag: 'li',
 			properties: { name: currentSpan },
-			children: [currentSpan],
+			schema: { name: currentSpan, position: currentPositionMeta },
+			children: [currentSpan, currentPositionMeta],
 		}) as any,
 	);
 
@@ -949,6 +968,7 @@ function buildAutoBreadcrumb(
 		tag: 'nav',
 		properties: { separator: newSeparatorMeta },
 		refs: { items: itemsList },
+		schema: { itemListElement: listItems },
 		children: [newSeparatorMeta, itemsList],
 	});
 }

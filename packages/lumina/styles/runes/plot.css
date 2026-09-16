@@ -1,6 +1,10 @@
 @layer skin {
-	.rf-plot > span[property="name"] {
-		font-size: var(--rf-text-2xl);
+	.rf-plot__title {
+		/* No `font-size` — see the note on .rf-lore__title. This rule was *live*
+		   under its old `[property="name"]` selector, so plot's prominence axis and
+		   density ramp have both been inert: `{% plot prominence="display" %}` did
+		   nothing. The guard could not see it because the selector named the
+		   schema.org channel rather than the BEM slot. */
 		font-weight: var(--rf-weight-bold);
 		margin-bottom: 0.5rem;
 		color: var(--rf-color-text);

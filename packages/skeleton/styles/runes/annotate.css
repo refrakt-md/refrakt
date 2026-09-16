@@ -48,7 +48,6 @@
 .rf-annotate--tooltip .rf-annotate-note:hover .rf-annotate-note__body {
 	display: block;
 }
-.rf-annotate-note__body > span[property],
 .rf-annotate-note__body > meta {
 	display: none;
 }

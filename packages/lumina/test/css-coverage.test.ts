@@ -501,3 +501,72 @@ describe('Lumina CSS coverage', () => {
 		});
 	});
 });
+
+/**
+ * WORK-564 / BUG-015 — presentation never selects on the schema.org channel.
+ *
+ * ADR-028 says a theme may not redefine a rune's schema.org output, because
+ * emission is a claim about the content rather than about the skin. Styling
+ * *off* that channel is the same coupling pointed the other way: it makes a
+ * rune's appearance depend on its SEO output, so correcting the structured data
+ * becomes a visual regression. Every property rename in SPEC-130's tables would
+ * be one, and `schema="none"` — which will have `stripSchemaOrg` delete `property`
+ * wholesale — would unstyle the node outright.
+ *
+ * The failure is silent in both directions, which is why this is a test rather
+ * than a convention. Coverage checks that config-derived selectors *exist*; it
+ * cannot tell that a hand-written one stopped *matching*. Eleven of the fourteen
+ * selectors removed here had already gone dead, leaving a `lore` title, a
+ * `bond`'s endpoints and a `tier`'s price rendering unstyled for as long as
+ * nobody looked.
+ *
+ * Refs already give every one of these nodes a BEM element class
+ * (`.rf-tier__name`, `.rf-lore__title`), which is what the CSS should select.
+ */
+describe('CSS does not select on the schema.org channel (WORK-564)', () => {
+	/** Every stylesheet in the repo, not just the rune and dimension dirs. */
+	function allStylesheets(): string[] {
+		const roots = [
+			join(__dirname, '..', '..'), // packages/
+			join(__dirname, '..', '..', '..', 'plugins'),
+		];
+		const found: string[] = [];
+		const walk = (dir: string) => {
+			if (!existsSync(dir)) return;
+			for (const entry of readdirSync(dir, { withFileTypes: true })) {
+				if (entry.name === 'node_modules' || entry.name === 'dist') continue;
+				const path = join(dir, entry.name);
+				if (entry.isDirectory()) walk(path);
+				else if (entry.name.endsWith('.css')) found.push(path);
+			}
+		};
+		for (const root of roots) walk(root);
+		return found;
+	}
+
+	const stylesheets = allStylesheets();
+
+	it('scans a non-trivial number of stylesheets', () => {
+		// Guards the guard: a broken walk would make the assertion below vacuous.
+		expect(stylesheets.length).toBeGreaterThan(50);
+	});
+
+	it('has no rule selecting on a `property` attribute', () => {
+		const offenders: string[] = [];
+		for (const file of stylesheets) {
+			const root = postcss.parse(readFileSync(file, 'utf-8'));
+			root.walkRules((rule) => {
+				// Both forms: `[property="name"]` pins a specific schema property and
+				// breaks on rename; bare `[property]` survives renames but depends on
+				// the channel existing at all, so `schema="none"` changes rendering.
+				if (/\[property(?:[~^$*|]?=|\])/.test(rule.selector)) {
+					offenders.push(`${file.replace(/.*\/(packages|plugins)\//, '$1/')}: ${rule.selector}`);
+				}
+			});
+		}
+		expect(
+			offenders,
+			`Presentation must not select on the schema.org channel — use the rune's BEM element class (the ref already emits one).\n${offenders.join('\n')}`,
+		).toEqual([]);
+	});
+});

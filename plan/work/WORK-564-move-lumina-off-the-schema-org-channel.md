@@ -1,4 +1,4 @@
-{% work id="WORK-564" status="ready" priority="medium" complexity="simple" source="BUG-015" tags="lumina,css,schema-org,seo" milestone="v0.35.0" %}
+{% work id="WORK-564" status="done" priority="medium" complexity="simple" source="BUG-015" tags="lumina,css,schema-org,seo" milestone="v0.35.0" pr="refrakt-md/refrakt#607" %}
 
 # Move Lumina off the schema.org channel
 
@@ -29,12 +29,12 @@ selectors *exist*, not that hand-written ones *match*.
 
 ## Acceptance Criteria
 
-- [ ] No stylesheet in `packages/lumina/styles/` or `plugins/*/styles/` selects on `property=`
-- [ ] Each of the six rules is expressed against the rune's BEM element class instead, and the four dead ones are verified to now apply — a screenshot or a rendered-HTML assertion, not an assumption
-- [ ] A CSS coverage assertion fails if a `property=` selector is reintroduced anywhere
-- [ ] `lore`'s title, `bond`'s endpoints and `tier`'s price are styled after this lands, having been unstyled before
-- [ ] {% ref "BUG-015" /%} is resolved, with the four dead rules recorded as the visual change they are
-- [ ] Any visual diff is deliberate: a rule that was dead and now applies changes the rendering, and the item says what changed rather than treating it as a no-op
+- [x] No stylesheet in `packages/lumina/styles/` or `plugins/*/styles/` selects on `property=`
+- [x] Each of the six rules is expressed against the rune's BEM element class instead, and the four dead ones are verified to now apply — a screenshot or a rendered-HTML assertion, not an assumption
+- [x] A CSS coverage assertion fails if a `property=` selector is reintroduced anywhere
+- [x] `lore`'s title, `bond`'s endpoints and `tier`'s price are styled after this lands, having been unstyled before
+- [x] {% ref "BUG-015" /%} is resolved, with the four dead rules recorded as the visual change they are
+- [x] Any visual diff is deliberate: a rule that was dead and now applies changes the rendering, and the item says what changed rather than treating it as a no-op
 
 ## Approach
 
@@ -70,5 +70,106 @@ shipped.
 - {% ref "SPEC-130" /%} — "Constraint: styling already selects on this channel"
 - {% ref "ADR-028" /%} — emission is not theme configuration
 - {% ref "WORK-552" /%} — `schema="none"`, shipped
+
+## Resolution
+
+Completed: 2026-09-15
+
+Branch: `claude/v0.35-parallel-feasibility-eia5le`
+
+### What was done
+
+- `packages/lumina/styles/runes/{bond,lore,plot,pricing}.css` — the six
+  catalogued selectors moved to the BEM element classes the refs emit
+  (`.rf-bond__from`, `.rf-bond__to`, `.rf-lore__title`, `.rf-plot__title`,
+  `.rf-tier__name`, `.rf-tier__price`).
+- `packages/skeleton/styles/runes/{annotate,bento,comparison,lore,map,plot,
+  reveal,storyboard}.css` — **eight more the item's survey missed** (see below).
+- `packages/lumina/test/css-coverage.test.ts` — the guard. Walks every
+  stylesheet under `packages/` and `plugins/` and fails on any rule selecting
+  `[property]`, in either the `="value"` or bare-presence form. Verified to fail
+  by reintroducing a selector, not assumed.
+- `plugins/storytelling/test/schema-channel-styling.test.ts` and
+  `plugins/marketing/test/schema-channel-styling.test.ts` — 8 rendered-HTML
+  assertions through `createTransform`, proving the BEM classes the new CSS
+  selects are really on those nodes.
+
+### The survey was short by eight
+
+The item catalogues six selectors in `packages/lumina/styles/`. There were
+**fourteen**: `packages/skeleton/styles/` — the second home for rune CSS, which
+the coverage test already scans — carried eight more.
+
+- **Two value selectors**, `.rf-lore > span[property="title"]` and
+  `.rf-plot > span[property="name"]`, exact duplicates of their Lumina twins.
+  Same defect, same fix.
+- **Six bare `span[property]` presence selectors** (reveal, storyboard, bento,
+  annotate, comparison, map), each paired with a live `meta { display: none }`.
+  All six are provably dead: those runes emit no `<span>` carrying `property` —
+  `annotate`, `bento` and `storyboard` never mention `property` in their
+  transforms at all, and `reveal`/`comparison` only set `contentSection` on the
+  block wrapper. Dropped the dead half, kept the `meta` half.
+
+Eleven of the fourteen selectors were already dead.
+
+### Visual changes — three runes gain styling they had lost
+
+- **`lore` title** — `font-weight: bold`, `margin-bottom: 0.5rem`, text colour,
+  plus `display: block` from the skeleton. Was an unstyled inline span.
+- **`bond` from / to** — `font-weight: semibold`, `white-space: nowrap`, text
+  colour.
+- **`tier` price** — `4xl`, bold, tight tracking, `margin-bottom: 1.5rem`,
+  tight leading. The one a user would actually notice.
+
+`tier`'s name and `plot`'s title were live and move to the same nodes, so no
+change there.
+
+### The finding: the channel hid these rules from another guard
+
+`npm test` failed on `prominence-reach.test.ts` — "no rune stylesheet pins a
+title font-size outside the prominence chain" — the moment the selectors were
+renamed. That guard (WORK-538) derives its targets from `config.sections`, as
+`.rf-{block}__{slot}` for every `title`-role slot, so it had **never been able
+to see these two rules**: they named the schema.org channel rather than the BEM
+slot. Styling off that channel did not only risk breakage, it made the rules
+invisible to the theme's own invariant.
+
+Underneath it was a live bug:
+
+- **`lore`** — the old rule was dead, nothing was pinned, prominence worked by
+  accident.
+- **`plot`** — the old rule was *live* and pinned `font-size` on the title
+  element, severing the chain. **`{% plot prominence="display" %}` did nothing**,
+  and the density ramp was inert too — precisely the failure WORK-538 exists to
+  prevent, hidden from its guard by a selector name.
+
+Fixed by dropping `font-size` from both rules rather than exempting them.
+`sections.css` gives `[data-section="title"]`
+`var(--rf-prominence-size, var(--rf-title-size, var(--rf-text-2xl)))`, and
+`density.css` sets the resting `--rf-title-size` at full density to
+`var(--rf-text-2xl)` — the value those rules pinned. Appearance at full density
+is unchanged; the prominence axis and density ramp are restored.
+
+### Notes
+
+- The two guards now compose: reverting to a `[property=]` selector fails the new
+  guard first, instead of silently blinding the prominence one as before.
+- `schema="none"` is **not** yet the hazard the item describes for `tier`:
+  `stripSchemaOrg` has exactly one caller (`accordion`), so the attribute does
+  nothing on `pricing` today. A test asserting it here passed vacuously and was
+  replaced. WORK-565 extends it to every rune carrying a table, which is when it
+  becomes real.
+- `tier`'s `<h1>` legitimately carries `property="name"` *and* the BEM class —
+  which is why selecting on it looked reasonable and stayed alive, while the
+  identical idiom on the price (no `property` at all) went dead unnoticed.
+- No plugin ships CSS today, so the AC's `plugins/*/styles/` clause is vacuous
+  now; the guard walks that tree anyway so a future plugin stylesheet is covered.
+- No changeset: Lumina and skeleton CSS ship in published packages, but this is a
+  defect fix with no API change — worth one if the release notes should mention
+  the three runes' restored styling.
+
+### Verification
+
+`npm test` — 365 files, 4468 tests, all passing. `npm run format:check` clean.
 
 {% /work %}

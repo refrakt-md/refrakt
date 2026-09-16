@@ -1,4 +1,4 @@
-{% bug id="BUG-015" status="confirmed" severity="minor" tags="lumina,css,schema-org,seo" milestone="v0.35.0" %}
+{% bug id="BUG-015" status="fixed" severity="minor" tags="lumina,css,schema-org,seo" milestone="v0.35.0" %}
 
 # Lumina rules selecting on schema.org property attributes have gone stale
 
@@ -74,5 +74,33 @@ either way, since four of them are broken today.
 
 - {% ref "SPEC-130" /%} — declarative schema.org mapping; where this surfaced
 - {% ref "WORK-552" /%} — `schema="none"`, which makes the coupling load-bearing
+
+## Resolution
+
+Completed: 2026-09-15
+
+Fixed by WORK-564 on `claude/v0.35-parallel-feasibility-eia5le`.
+
+All six catalogued selectors now target the BEM element classes the refs emit,
+and the rule is held by a guard in `packages/lumina/test/css-coverage.test.ts`
+that walks every stylesheet under `packages/` and `plugins/` and fails on any
+`[property]` selector.
+
+Two corrections to this report, both found while fixing it:
+
+- **It was fourteen selectors, not six.** `packages/skeleton/styles/` carried
+  eight more — two exact duplicates of the Lumina value selectors, and six bare
+  `span[property]` presence selectors that were also dead. Eleven of the
+  fourteen matched nothing.
+- **The coupling cost more than the four renames.** Renaming the selectors made
+  `prominence-reach.test.ts` fail immediately: that guard finds title rules as
+  `.rf-{block}__{slot}`, so it had never been able to see these. `plot`'s rule
+  was live and pinned `font-size` on the title element, so
+  `{% plot prominence="display" %}` did nothing and the density ramp was inert.
+  Selecting on the schema channel did not merely risk breakage — it hid the rule
+  from the invariant written to catch exactly that mistake.
+
+The three visual restorations are as reported: `lore`'s title, `bond`'s
+endpoints and `tier`'s price.
 
 {% /bug %}
