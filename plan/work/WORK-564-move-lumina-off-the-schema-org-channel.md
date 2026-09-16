@@ -1,4 +1,4 @@
-{% work id="WORK-564" status="done" priority="medium" complexity="simple" source="BUG-015" tags="lumina,css,schema-org,seo" milestone="v0.35.0" %}
+{% work id="WORK-564" status="done" priority="medium" complexity="simple" source="BUG-015" tags="lumina,css,schema-org,seo" milestone="v0.35.0" pr="refrakt-md/refrakt#607" %}
 
 # Move Lumina off the schema.org channel
 

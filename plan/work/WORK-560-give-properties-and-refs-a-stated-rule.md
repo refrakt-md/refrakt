@@ -1,4 +1,4 @@
-{% work id="WORK-560" status="done" priority="medium" complexity="simple" source="SPEC-133" tags="runes,transform,contract,docs" milestone="v0.35.0" %}
+{% work id="WORK-560" status="done" priority="medium" complexity="simple" source="SPEC-133" tags="runes,transform,contract,docs" milestone="v0.35.0" pr="refrakt-md/refrakt#607" %}
 
 # Give properties and refs a stated rule
 

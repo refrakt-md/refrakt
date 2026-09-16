@@ -1,4 +1,4 @@
-{% work id="WORK-563" status="done" priority="high" complexity="moderate" source="SPEC-130" tags="content,pipeline,schema-org,seo" milestone="v0.35.0" %}
+{% work id="WORK-563" status="done" priority="high" complexity="moderate" source="SPEC-130" tags="content,pipeline,schema-org,seo" milestone="v0.35.0" pr="refrakt-md/refrakt#607" %}
 
 # Harvest SEO after the pipeline, and assert both harvest points agree
 
