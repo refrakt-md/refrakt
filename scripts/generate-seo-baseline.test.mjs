@@ -232,17 +232,25 @@ describe('against the real corpus', () => {
 		expect(episode.jsonLd[0]['@type']).toBe('MusicRecording');
 	});
 
-	it('records `NonProfit`, the type schema.org does not have (D2)', () => {
-		const nonprofit = artifact.fixtures.find((f) => f.fixture === 'organization.nonprofit');
-		expect(nonprofit.jsonLd[0]['@type']).toBe('NonProfit');
+	it('publishes `NGO`, the type schema.org actually has (D2)', () => {
+		// Was `records NonProfit, the type schema.org does not have`. WORK-568
+		// corrected the enum, and the fixture writes `NGO`; nothing in the corpus
+		// may reintroduce a type outside the vocabulary the enum claims to speak.
+		const ngo = artifact.fixtures.find((f) => f.fixture === 'organization.nonprofit');
+		expect(ngo.jsonLd[0]['@type']).toBe('NGO');
+		const types = artifact.fixtures.flatMap((f) => f.jsonLd.map((e) => e['@type']));
+		expect(types).not.toContain('NonProfit');
 	});
 
-	it('pins D6 — a one-item collection is a scalar today, an array when it lands', () => {
+	it('pins D6 — a declared list is an array whatever the item count', () => {
 		// `appendToProperty` stores the first value as a scalar and only promotes
-		// on the second, so the shape of the output varies with the amount of
-		// content. Each pair below must diverge now and converge after D6.
-		const pairs = [
-			['pricing.single', 'pricing.tiers', 'offers'],
+		// on the second, so before a rune declares its collection a list, the
+		// *shape* of its output varies with the amount of content and every
+		// consumer has to handle both. Each pair diverges until the rune migrates
+		// and converges after — so a pair moving from `pending` to `declared` is
+		// what landing D6 for that rune looks like.
+		const declared = [['pricing.single', 'pricing.tiers', 'offers']];
+		const pending = [
 			['breadcrumb.single', 'breadcrumb', 'itemListElement'],
 			['timeline.single', 'timeline.entries', 'itemListElement'],
 			['playlist.single', 'playlist.album', 'track'],
@@ -250,19 +258,25 @@ describe('against the real corpus', () => {
 			['howto.single', 'howto', 'step'],
 			['recipe.single', 'recipe', 'recipeIngredient'],
 		];
-		for (const [singleName, multiName, property] of pairs) {
-			const single = artifact.fixtures.find((f) => f.fixture === singleName);
-			const multi = artifact.fixtures.find((f) => f.fixture === multiName);
-			expect(single, `missing fixture ${singleName}`).toBeTruthy();
-			expect(multi, `missing fixture ${multiName}`).toBeTruthy();
+
+		const shape = (name, property) => {
+			const fixture = artifact.fixtures.find((f) => f.fixture === name);
+			expect(fixture, `missing fixture ${name}`).toBeTruthy();
+			return Array.isArray(fixture.jsonLd[0][property]);
+		};
+
+		for (const [singleName, multiName, property] of declared) {
+			expect(shape(singleName, property), `${singleName}.${property} should be an array`).toBe(
+				true,
+			);
+			expect(shape(multiName, property), `${multiName}.${property} should be an array`).toBe(true);
+		}
+		for (const [singleName, multiName, property] of pending) {
 			expect(
-				Array.isArray(single.jsonLd[0][property]),
-				`${singleName}.${property} should be a scalar today`,
+				shape(singleName, property),
+				`${singleName}.${property} is still a scalar — move this pair to \`declared\``,
 			).toBe(false);
-			expect(
-				Array.isArray(multi.jsonLd[0][property]),
-				`${multiName}.${property} should be an array today`,
-			).toBe(true);
+			expect(shape(multiName, property), `${multiName}.${property} should be an array`).toBe(true);
 		}
 	});
 

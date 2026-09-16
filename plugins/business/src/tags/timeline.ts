@@ -9,7 +9,22 @@ import {
 	pageSectionProperties,
 } from '@refrakt-md/runes';
 
+// SPEC-130 / WORK-568 — Group B. The flat half of the pair: `timeline` still
+// builds its `itemListElement` and the `position` metas imperatively, and that
+// half is WORK-571's (the parent's property and the child's type are one
+// declaration, so the nesting moves when the parent does).
+//
+// `description` for the date is what shipped, recorded in the baseline. It is a
+// stretch — `ListItem` has no date property, and `startDate` would need a
+// different `@type` — but reproducing it exactly is this item's job; changing
+// the claim is not.
+export const timelineEntrySchema = {
+	type: 'ListItem',
+	properties: { label: 'name', date: 'description' },
+} as const;
+
 export const timelineEntry = createContentModelSchema({
+	schema: timelineEntrySchema,
 	attributes: {
 		date: {
 			type: String,
@@ -35,16 +50,11 @@ export const timelineEntry = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'timeline-entry',
-			schemaOrgType: 'ListItem',
 			tag: 'li',
 			refs: {
 				date: dateTag,
 				label: labelTag,
 				body: body.tag('div'),
-			},
-			schema: {
-				name: labelTag,
-				description: dateTag,
 			},
 			children: [dateTag, labelTag, body.next()],
 		});

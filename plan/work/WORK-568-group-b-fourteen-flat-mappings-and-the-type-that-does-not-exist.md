@@ -1,4 +1,4 @@
-{% work id="WORK-568" status="ready" priority="medium" complexity="moderate" source="SPEC-130" tags="runes,schema-org,seo,plugins" milestone="v0.35.0" %}
+{% work id="WORK-568" status="in-progress" priority="medium" complexity="moderate" source="SPEC-130" tags="runes,schema-org,seo,plugins" milestone="v0.35.0" %}
 
 # Group B — fourteen flat mappings, and the type that does not exist
 
@@ -36,14 +36,14 @@ already wrong, and it was wrong somewhere no tool could look.
 ## Acceptance Criteria
 
 - [ ] All fourteen runes declare their schema as a table and stop passing `schemaOrgType` and `schema:` to `createComponentRenderable`
-- [ ] Each reproduces its baseline JSON-LD exactly, except where a change is deliberate and named
-- [ ] `organization` becomes a `by: 'type'` table over its six rows, replacing the imperative derivation
-- [ ] `NonProfit` is corrected to `NGO`, with a note in the changeset that sites using the old value are affected
-- [ ] The corrected enum value is reflected in the rune's `matches` list and its documentation, not only in the schema table
-- [ ] `embed` and `tier`'s sources resolve through the names {% ref "WORK-561" /%} gave them, with no rune re-declaring `schema:` to keep a meta alive
-- [ ] `figure`, `realm` and `faction`'s image nodes resolve by name rather than by position
-- [ ] D6 lands visibly here: any of these runes emitting a single-item list changes shape from scalar to array, reviewed as a diff
-- [ ] Plugin runes in this group (`cast-member`, `character`, `realm`, `faction`, `plot`, `lore`, `organization`, `pricing`, `tier`, `timeline-entry`, `track`) go through the same public contract as core runes (D7)
+- [x] Each reproduces its baseline JSON-LD exactly, except where a change is deliberate and named
+- [x] `organization` becomes a `by: 'type'` table over its six rows, replacing the imperative derivation
+- [x] `NonProfit` is corrected to `NGO`, with a note in the changeset that sites using the old value are affected
+- [x] The corrected enum value is reflected in the rune's `matches` list and its documentation, not only in the schema table
+- [x] `embed` and `tier`'s sources resolve through the names {% ref "WORK-561" /%} gave them, with no rune re-declaring `schema:` to keep a meta alive
+- [x] `figure`, `realm` and `faction`'s image nodes resolve by name rather than by position
+- [x] D6 lands visibly here: any of these runes emitting a single-item list changes shape from scalar to array, reviewed as a diff
+- [x] Plugin runes in this group (`cast-member`, `character`, `realm`, `faction`, `plot`, `lore`, `organization`, `pricing`, `tier`, `timeline-entry`, `track`) go through the same public contract as core runes (D7)
 
 ## Approach
 

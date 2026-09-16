@@ -79,8 +79,13 @@ export interface SchemaRow {
 	entities?: Record<string, EntityRow>;
 	/** Properties whose value is generated. `index` is the only generator. */
 	generated?: Record<string, 'index'>;
-	/** Properties that always serialise as an array, however many items (D6). */
-	lists?: string[];
+	/**
+	 * Properties that always serialise as an array, however many items (D6).
+	 *
+	 * `readonly` so a table written the way every other one is — a single
+	 * `as const` literal — type-checks; nothing here mutates it.
+	 */
+	lists?: readonly string[];
 	/** Per-child-rune type and property remapping. */
 	children?: Record<string, EntityRow>;
 }

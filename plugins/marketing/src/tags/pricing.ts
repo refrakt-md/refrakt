@@ -84,7 +84,27 @@ export const pricingSections = {
 	blurb: 'description',
 } as const;
 
+// SPEC-130 / WORK-568 — Group B, and where D6 shows. `offers` is declared a
+// list, so a one-tier pricing block serialises `"offers": [{…}]` instead of the
+// bare object it used to emit — the shape no longer varies with how much content
+// an author wrote.
+//
+// The tiers are retyped from here rather than from `tier` itself (D9): the
+// property that holds a child and the child's type are one declaration, and only
+// the parent can supply the property. `featured-tier` is the same rune under a
+// different name, so both keys are listed.
+export const pricingSchema = {
+	type: 'Product',
+	properties: { headline: 'name', blurb: 'description' },
+	lists: ['offers'],
+	children: {
+		tier: { type: 'Offer', property: 'offers' },
+		'featured-tier': { type: 'Offer', property: 'offers' },
+	},
+} as const;
+
 export const pricing = createContentModelSchema({
+	schema: pricingSchema,
 	sections: pricingSections,
 	attributes: {},
 	contentModel: {
@@ -110,7 +130,6 @@ export const pricing = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'pricing',
-			schemaOrgType: 'Product',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
@@ -120,17 +139,28 @@ export const pricing = createContentModelSchema({
 				...sectionProps,
 				tiers: tiersList.tag('ul'),
 			},
-			schema: {
-				name: sectionProps.headline,
-				description: sectionProps.blurb,
-				offers: tiers,
-			},
 			children: [header.wrap('header').next(), tiersList.next()],
 		});
 	},
 });
 
+// SPEC-130 / WORK-568 — Group B, and the pair's careful half. `parsedPrice` and
+// `resolvedCurrency` survived only *because* the rune declared them in `schema:`
+// — that is the `isSeoMeta` check in `createComponentRenderable`. With the
+// declaration gone they are dropped as pure data, and the applier rebuilds them
+// from the field bag, which works only because WORK-561 put them there. Had this
+// landed first, the price would have vanished from the structured data while the
+// HTML looked identical.
+//
+// `pricing` restates this type in its `children` row: a standalone `{% tier %}`
+// is still an `Offer`, and inside a `{% pricing %}` the parent is what nests it.
+export const tierSchema = {
+	type: 'Offer',
+	properties: { name: 'name', parsedPrice: 'price', resolvedCurrency: 'priceCurrency' },
+} as const;
+
 export const tier = createContentModelSchema({
+	schema: tierSchema,
 	attributes: {
 		name: { type: String, required: true },
 		price: { type: String, required: false },
@@ -166,7 +196,6 @@ export const tier = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: runeName,
-			schemaOrgType: 'Offer',
 			tag: 'li',
 			properties: {
 				description: description(children),
@@ -188,11 +217,6 @@ export const tier = createContentModelSchema({
 				body: body.tag('div'),
 				name: nameTag,
 				price: priceTag,
-			},
-			schema: {
-				name: nameTag,
-				price: parsedPriceMeta,
-				priceCurrency: resolvedCurrencyMeta,
 			},
 			children: [
 				nameTag,
