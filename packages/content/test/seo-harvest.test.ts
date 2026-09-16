@@ -131,10 +131,9 @@ describe('seo is harvested after the pipeline (WORK-563)', () => {
 			const preEngine = collectJsonLd(page.renderable as never);
 			const serialized = JSON.parse(JSON.stringify(page.renderable));
 			const postEngine = collectJsonLd(identity(serialized) as never);
-			expect(
-				normalize(postEngine),
-				`${page.route.url} drifts between harvest points`,
-			).toEqual(normalize(preEngine));
+			expect(normalize(postEngine), `${page.route.url} drifts between harvest points`).toEqual(
+				normalize(preEngine),
+			);
 		}
 	});
 
