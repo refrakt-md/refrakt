@@ -1261,6 +1261,29 @@
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
+			},
+			"schemaOrg": {
+				"type": "VideoObject",
+				"properties": [
+					{
+						"source": "title",
+						"property": "name",
+						"kind": "property"
+					},
+					{
+						"source": "url",
+						"property": "contentUrl",
+						"kind": "property"
+					},
+					{
+						"source": "embedUrl",
+						"property": "embedUrl",
+						"kind": "property"
+					}
+				],
+				"entities": [],
+				"children": [],
+				"lists": []
 			}
 		},
 		"Breadcrumb": {
@@ -1310,6 +1333,40 @@
 					"prop": "--separator",
 					"template": "\"{}\""
 				}
+			},
+			"schemaOrg": {
+				"type": "BreadcrumbList",
+				"properties": [
+					{
+						"source": "name",
+						"property": "name",
+						"kind": "property",
+						"entity": "breadcrumb-item"
+					},
+					{
+						"source": "url",
+						"property": "item",
+						"kind": "property",
+						"entity": "breadcrumb-item"
+					},
+					{
+						"source": "(index)",
+						"property": "position",
+						"kind": "generated",
+						"entity": "breadcrumb-item"
+					}
+				],
+				"entities": [],
+				"children": [
+					{
+						"rune": "breadcrumb-item",
+						"type": "ListItem",
+						"property": "itemListElement"
+					}
+				],
+				"lists": [
+					"itemListElement"
+				]
 			}
 		},
 		"BreadcrumbItem": {
@@ -1754,6 +1811,24 @@
 					"content-place": "this rune declares no `content-place` modifier",
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode"
 				}
+			},
+			"schemaOrg": {
+				"type": "ImageObject",
+				"properties": [
+					{
+						"source": "image",
+						"property": "contentUrl",
+						"kind": "property"
+					},
+					{
+						"source": "caption",
+						"property": "caption",
+						"kind": "property"
+					}
+				],
+				"entities": [],
+				"children": [],
+				"lists": []
 			}
 		},
 		"Gallery": {
@@ -4001,6 +4076,37 @@
 					"selector": ".rf-pricing__image",
 					"source": "autoLabel"
 				}
+			},
+			"schemaOrg": {
+				"type": "Product",
+				"properties": [
+					{
+						"source": "headline",
+						"property": "name",
+						"kind": "property"
+					},
+					{
+						"source": "blurb",
+						"property": "description",
+						"kind": "property"
+					}
+				],
+				"entities": [],
+				"children": [
+					{
+						"rune": "tier",
+						"type": "Offer",
+						"property": "offers"
+					},
+					{
+						"rune": "featured-tier",
+						"type": "Offer",
+						"property": "offers"
+					}
+				],
+				"lists": [
+					"offers"
+				]
 			}
 		},
 		"Tier": {
@@ -4032,6 +4138,29 @@
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
+			},
+			"schemaOrg": {
+				"type": "Offer",
+				"properties": [
+					{
+						"source": "name",
+						"property": "name",
+						"kind": "property"
+					},
+					{
+						"source": "parsedPrice",
+						"property": "price",
+						"kind": "property"
+					},
+					{
+						"source": "resolvedCurrency",
+						"property": "priceCurrency",
+						"kind": "property"
+					}
+				],
+				"entities": [],
+				"children": [],
+				"lists": []
 			}
 		},
 		"FeaturedTier": {
@@ -4482,6 +4611,24 @@
 					"selector": ".rf-symbol__image",
 					"source": "autoLabel"
 				}
+			},
+			"schemaOrg": {
+				"type": "TechArticle",
+				"properties": [
+					{
+						"source": "headline",
+						"property": "name",
+						"kind": "property"
+					},
+					{
+						"source": "blurb",
+						"property": "description",
+						"kind": "property"
+					}
+				],
+				"entities": [],
+				"children": [],
+				"lists": []
 			}
 		},
 		"SymbolGroup": {
@@ -4729,6 +4876,24 @@
 						"name"
 					]
 				}
+			},
+			"schemaOrg": {
+				"type": "Person",
+				"properties": [
+					{
+						"source": "name",
+						"property": "name",
+						"kind": "property"
+					},
+					{
+						"source": "role",
+						"property": "jobTitle",
+						"kind": "property"
+					}
+				],
+				"entities": [],
+				"children": [],
+				"lists": []
 			}
 		},
 		"CharacterSection": {
@@ -4882,6 +5047,29 @@
 				"valign": {
 					"prop": "--split-valign"
 				}
+			},
+			"schemaOrg": {
+				"type": "Place",
+				"properties": [
+					{
+						"source": "name",
+						"property": "name",
+						"kind": "property"
+					},
+					{
+						"source": "realmType",
+						"property": "additionalType",
+						"kind": "property"
+					},
+					{
+						"source": "sceneImage",
+						"property": "image",
+						"kind": "property"
+					}
+				],
+				"entities": [],
+				"children": [],
+				"lists": []
 			}
 		},
 		"RealmSection": {
@@ -4986,6 +5174,24 @@
 						"category"
 					]
 				}
+			},
+			"schemaOrg": {
+				"type": "Article",
+				"properties": [
+					{
+						"source": "title",
+						"property": "headline",
+						"kind": "property"
+					},
+					{
+						"source": "category",
+						"property": "articleSection",
+						"kind": "property"
+					}
+				],
+				"entities": [],
+				"children": [],
+				"lists": []
 			}
 		},
 		"Faction": {
@@ -5103,6 +5309,24 @@
 				"valign": {
 					"prop": "--split-valign"
 				}
+			},
+			"schemaOrg": {
+				"type": "Organization",
+				"properties": [
+					{
+						"source": "name",
+						"property": "name",
+						"kind": "property"
+					},
+					{
+						"source": "sceneImage",
+						"property": "image",
+						"kind": "property"
+					}
+				],
+				"entities": [],
+				"children": [],
+				"lists": []
 			}
 		},
 		"FactionSection": {
@@ -5207,6 +5431,24 @@
 						"structure"
 					]
 				}
+			},
+			"schemaOrg": {
+				"type": "CreativeWork",
+				"properties": [
+					{
+						"source": "title",
+						"property": "name",
+						"kind": "property"
+					},
+					{
+						"source": "plotType",
+						"property": "genre",
+						"kind": "property"
+					}
+				],
+				"entities": [],
+				"children": [],
+				"lists": []
 			}
 		},
 		"Beat": {
@@ -5968,6 +6210,29 @@
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
+			},
+			"schemaOrg": {
+				"type": "Person",
+				"properties": [
+					{
+						"source": "name",
+						"property": "name",
+						"kind": "property"
+					},
+					{
+						"source": "role",
+						"property": "jobTitle",
+						"kind": "property"
+					},
+					{
+						"source": "portrait",
+						"property": "image",
+						"kind": "property"
+					}
+				],
+				"entities": [],
+				"children": [],
+				"lists": []
 			}
 		},
 		"Organization": {
@@ -6028,6 +6293,25 @@
 					"selector": ".rf-organization__image",
 					"source": "autoLabel"
 				}
+			},
+			"schemaOrg": {
+				"type": "Organization",
+				"by": "type",
+				"properties": [
+					{
+						"source": "headline",
+						"property": "name",
+						"kind": "property"
+					},
+					{
+						"source": "blurb",
+						"property": "description",
+						"kind": "property"
+					}
+				],
+				"entities": [],
+				"children": [],
+				"lists": []
 			}
 		},
 		"Timeline": {
@@ -6098,6 +6382,28 @@
 					"selector": ".rf-timeline__image",
 					"source": "autoLabel"
 				}
+			},
+			"schemaOrg": {
+				"type": "ItemList",
+				"properties": [
+					{
+						"source": "(index)",
+						"property": "position",
+						"kind": "generated",
+						"entity": "timeline-entry"
+					}
+				],
+				"entities": [],
+				"children": [
+					{
+						"rune": "timeline-entry",
+						"type": "ListItem",
+						"property": "itemListElement"
+					}
+				],
+				"lists": [
+					"itemListElement"
+				]
 			}
 		},
 		"TimelineEntry": {
@@ -6129,6 +6435,24 @@
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
+			},
+			"schemaOrg": {
+				"type": "ListItem",
+				"properties": [
+					{
+						"source": "label",
+						"property": "name",
+						"kind": "property"
+					},
+					{
+						"source": "date",
+						"property": "description",
+						"kind": "property"
+					}
+				],
+				"entities": [],
+				"children": [],
+				"lists": []
 			}
 		},
 		"Swatch": {
@@ -7103,6 +7427,44 @@
 					"cover": "this rune declares no `media-position` modifier, so it cannot enter cover mode",
 					"frame": "this rune declares neither a `frameTarget` nor a media section"
 				}
+			},
+			"schemaOrg": {
+				"type": "MusicRecording",
+				"properties": [
+					{
+						"source": "name",
+						"property": "name",
+						"kind": "property"
+					},
+					{
+						"source": "artist",
+						"property": "byArtist",
+						"kind": "property"
+					},
+					{
+						"source": "duration",
+						"property": "duration",
+						"kind": "property"
+					},
+					{
+						"source": "url",
+						"property": "url",
+						"kind": "property"
+					},
+					{
+						"source": "position",
+						"property": "position",
+						"kind": "property"
+					},
+					{
+						"source": "datePublished",
+						"property": "datePublished",
+						"kind": "property"
+					}
+				],
+				"entities": [],
+				"children": [],
+				"lists": []
 			}
 		},
 		"Audio": {

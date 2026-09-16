@@ -125,17 +125,26 @@ describe('the three resolution strategies', () => {
 	it('emits no entity when it would resolve to a bare @type (D4)', () => {
 		// Seven runes in the catalog assert a type and describe nothing. The table
 		// makes that a decision rather than an accident.
-		const tree = applySchemaTable(
-			root({}),
-			{
-				type: 'Review',
-				entities: {
-					author: { type: 'Person', property: 'author', properties: { 'author-name': 'name' } },
-				},
+		const table: SchemaTable = {
+			type: 'Review',
+			properties: { quote: 'reviewBody' },
+			entities: {
+				author: { type: 'Person', property: 'author', properties: { 'author-name': 'name' } },
 			},
-			{},
-		);
-		expect(first(tree).author).toBeUndefined();
+		};
+
+		// The `Person` has no name to give, so it is not nested — but the review
+		// still has its own quote, so the review itself stands.
+		const withQuote = applySchemaTable(root({}, [named('quote', 'Good stuff')]), table, {});
+		expect(first(withQuote)).toEqual({
+			'@context': 'https://schema.org',
+			'@type': 'Review',
+			reviewBody: 'Good stuff',
+		});
+
+		// With nothing at all to say, the review goes too — WORK-567 made this the
+		// collector's rule rather than each rune's discipline.
+		expect(graph(applySchemaTable(root({}), table, {}))).toEqual([]);
 	});
 
 	it('leaves the rendered HTML alone when synthesising', () => {
@@ -270,29 +279,36 @@ describe('declared lists always serialise as arrays (D6)', () => {
 	// and every consumer had to handle both.
 	const table: SchemaTable = {
 		type: 'MusicPlaylist',
+		properties: { heading: 'name' },
 		lists: ['track'],
-		children: { item: { type: 'MusicRecording', property: 'track' } },
+		children: { item: { type: 'MusicRecording', property: 'track', properties: { n: 'name' } } },
 	};
 
+	// Each item needs a property of its own: since WORK-567 a bare
+	// `MusicRecording` is dropped before it can be nested, so a placeholder child
+	// would leave nothing to promote and the test would measure D4 instead of D6.
 	const item = (name: string) =>
-		new Tag('li', { 'data-rune': 'item' }, [new Tag('meta', { 'data-name': 'n' }, [])] as never);
+		new Tag('li', { 'data-rune': 'item' }, [named('n', name)] as never);
+	const playlist = (...items: unknown[]) => root({}, [named('heading', 'Mixtape'), ...items]);
 
 	it('emits an array for a one-item collection', () => {
-		const tree = applySchemaTable(root({}, [item('one')]), table, {});
+		const tree = applySchemaTable(playlist(item('one')), table, {});
 		expect(Array.isArray(first(tree).track)).toBe(true);
 		expect(first(tree).track).toHaveLength(1);
 	});
 
 	it('emits an array for a two-item collection', () => {
-		const tree = applySchemaTable(root({}, [item('one'), item('two')]), table, {});
+		const tree = applySchemaTable(playlist(item('one'), item('two')), table, {});
 		expect(Array.isArray(first(tree).track)).toBe(true);
 		expect(first(tree).track).toHaveLength(2);
 	});
 
 	it('says nothing rather than asserting an empty collection', () => {
 		// `[]` is the claim "this has no tracks", which is not the same as making
-		// no claim.
-		const tree = applySchemaTable(root({}), table, {});
+		// no claim. The playlist keeps its name, so it is the `track` key alone
+		// that is absent rather than the whole entity.
+		const tree = applySchemaTable(playlist(), table, {});
+		expect(first(tree).name).toBe('Mixtape');
 		expect(first(tree).track).toBeUndefined();
 	});
 });

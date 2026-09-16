@@ -242,7 +242,13 @@ export const map = createContentModelSchema({
 
 		const node = createComponentRenderable({
 			rune: 'map',
-			schemaOrgType: 'Place',
+			// SPEC-130 D4 / WORK-567 — no `Place`, and this one is a type error
+			// rather than a thin entity: a map showing three landmarks is not
+			// itself a place. The `name` and `description` in the output belong to
+			// the `map-pin` children, which is where any `Place` data lives; the
+			// root's own properties are all viewport config (zoom, center,
+			// provider). Even fully mapped it would be a collection of places, not
+			// one.
 			tag: 'div',
 			properties: {
 				zoom: zoomMeta,

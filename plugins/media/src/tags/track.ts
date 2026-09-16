@@ -26,7 +26,24 @@ const trackType = ['song', 'episode', 'chapter', 'talk', 'video'] as const;
  */
 export const TYPE_IMPLICIT = '__refraktTrackTypeImplicit';
 
+// SPEC-130 / WORK-568 — Group B. The flat mapping only; `MusicRecording` stays
+// wrong for `type="episode"` (BUG-013), which is WORK-569's to fix along with
+// the playlist that contains it. Reproducing the defect here is the point — the
+// baseline diff for that fix should show the retype and nothing else.
+export const trackSchema = {
+	type: 'MusicRecording',
+	properties: {
+		name: 'name',
+		artist: 'byArtist',
+		duration: 'duration',
+		url: 'url',
+		position: 'position',
+		datePublished: 'datePublished',
+	},
+} as const;
+
 export const track = createContentModelSchema({
+	schema: trackSchema,
 	attributes: {
 		src: {
 			type: String,
@@ -162,7 +179,6 @@ export const track = createContentModelSchema({
 
 		const renderable = createComponentRenderable({
 			rune: 'track',
-			schemaOrgType: 'MusicRecording',
 			tag: 'li',
 			properties: {
 				name: nameTag,
@@ -172,14 +188,6 @@ export const track = createContentModelSchema({
 				...(numberMeta ? { position: numberMeta } : {}),
 				...(dateMeta ? { datePublished: dateMeta } : {}),
 				type: typeMeta,
-			},
-			schema: {
-				name: nameTag,
-				...(artistMeta ? { byArtist: artistMeta } : {}),
-				...(durationMeta ? { duration: durationMeta } : {}),
-				...(urlMeta ? { url: urlMeta } : {}),
-				...(numberMeta ? { position: numberMeta } : {}),
-				...(dateMeta ? { datePublished: dateMeta } : {}),
 			},
 			children,
 		});

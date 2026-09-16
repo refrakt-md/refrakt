@@ -71,13 +71,17 @@ describe('seo is harvested after the pipeline (WORK-563)', () => {
 		expect(items, 'BreadcrumbList carries no itemListElement').toBeDefined();
 		expect(Array.isArray(items), 'a two-item trail should be an array').toBe(true);
 		expect(items!.map((i) => i.name)).toEqual(['Home', 'About']);
-		expect(items!.map((i) => i.position)).toEqual([1, 2]);
+		// Strings since WORK-571: the position is generated as `String(index + 1)`
+		// so the RDFa attribute and the JSON-LD say the same thing (D8). A number
+		// here and a string in the markup is drift the invariant below would
+		// otherwise have to tolerate.
+		expect(items!.map((i) => i.position)).toEqual(['1', '2']);
 	});
 
 	it('nests its items rather than floating them up as detached entities', async () => {
 		// `collectJsonLd` nests a typed node into its parent only when that node
-		// carries *both* `typeof` and `property`, and only a `schema:` entry
-		// supplies the `property`. Without it the hook emitted an empty
+		// carries *both* `typeof` and `property`, and on this path the applier is
+		// what supplies the `property`. Without it the hook emitted an empty
 		// BreadcrumbList *and* a bare ListItem beside it — two top-level entities,
 		// neither describing anything. Nothing must float.
 		const site = await build();
@@ -111,8 +115,9 @@ describe('seo is harvested after the pipeline (WORK-563)', () => {
 		const intro = site.pages.find((p) => p.route.url === '/guide/intro')!;
 		const list = entitiesOfType(intro.seo.jsonLd, 'BreadcrumbList')[0] as Record<string, unknown>;
 		expect(list, 'no BreadcrumbList on the nested page').toBeDefined();
-		// One item, so `appendToProperty` leaves it a scalar rather than an array.
-		expect(list.itemListElement).toMatchObject({ name: 'Intro', position: 1 });
+		// An array even at one item, since WORK-571 declared `itemListElement` a
+		// list (D6) — the shape no longer varies with how deep the page sits.
+		expect(list.itemListElement).toMatchObject([{ name: 'Intro', position: '1' }]);
 	});
 
 	it('agrees at both harvest points, page-level, through runPipeline', async () => {

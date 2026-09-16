@@ -346,26 +346,11 @@
 			"fixture": "blog",
 			"rune": "blog",
 			"group": "A",
-			"notes": "Group A — emits Blog with no properties. The rune resolves its posts from a folder at build time.",
-			"jsonLd": [
-				{
-					"@context": "https://schema.org",
-					"@type": "Blog"
-				}
-			],
+			"notes": "Group A, resolved — no longer emits Blog. The rune resolves its posts from a folder at build time, so the container is empty here; `name`, `url` and `blogPost` are page-level facts SPEC-130 puts out of scope (WORK-567).",
+			"jsonLd": [],
 			"rendered": {
-				"jsonLd": [
-					{
-						"@context": "https://schema.org",
-						"@type": "Blog"
-					}
-				],
-				"annotations": [
-					{
-						"element": "section",
-						"typeof": "Blog"
-					}
-				]
+				"jsonLd": [],
+				"annotations": []
 			}
 		},
 		{
@@ -382,24 +367,24 @@
 							"@type": "ListItem",
 							"item": "/",
 							"name": "Home",
-							"position": 1
+							"position": "1"
 						},
 						{
 							"@type": "ListItem",
 							"item": "/docs/getting-started",
 							"name": "Getting started",
-							"position": 2
+							"position": "2"
 						},
 						{
 							"@type": "ListItem",
 							"item": "/runes/tabs",
 							"name": "Tabs",
-							"position": 3
+							"position": "3"
 						},
 						{
 							"@type": "ListItem",
 							"name": "Breadcrumb",
-							"position": 4
+							"position": "4"
 						}
 					]
 				}
@@ -414,24 +399,24 @@
 								"@type": "ListItem",
 								"item": "/",
 								"name": "Home",
-								"position": 1
+								"position": "1"
 							},
 							{
 								"@type": "ListItem",
 								"item": "/docs/getting-started",
 								"name": "Getting started",
-								"position": 2
+								"position": "2"
 							},
 							{
 								"@type": "ListItem",
 								"item": "/runes/tabs",
 								"name": "Tabs",
-								"position": 3
+								"position": "3"
 							},
 							{
 								"@type": "ListItem",
 								"name": "Breadcrumb",
-								"position": 4
+								"position": "4"
 							}
 						]
 					}
@@ -452,7 +437,7 @@
 										"property": "item"
 									},
 									{
-										"content": 1,
+										"content": "1",
 										"element": "meta",
 										"property": "position"
 									}
@@ -474,7 +459,7 @@
 										"property": "item"
 									},
 									{
-										"content": 2,
+										"content": "2",
 										"element": "meta",
 										"property": "position"
 									}
@@ -496,7 +481,7 @@
 										"property": "item"
 									},
 									{
-										"content": 3,
+										"content": "3",
 										"element": "meta",
 										"property": "position"
 									}
@@ -513,7 +498,7 @@
 										"text": "Breadcrumb"
 									},
 									{
-										"content": 4,
+										"content": "4",
 										"element": "meta",
 										"property": "position"
 									}
@@ -538,12 +523,14 @@
 				{
 					"@context": "https://schema.org",
 					"@type": "BreadcrumbList",
-					"itemListElement": {
-						"@type": "ListItem",
-						"item": "/",
-						"name": "Home",
-						"position": 1
-					}
+					"itemListElement": [
+						{
+							"@type": "ListItem",
+							"item": "/",
+							"name": "Home",
+							"position": "1"
+						}
+					]
 				}
 			],
 			"rendered": {
@@ -551,12 +538,14 @@
 					{
 						"@context": "https://schema.org",
 						"@type": "BreadcrumbList",
-						"itemListElement": {
-							"@type": "ListItem",
-							"item": "/",
-							"name": "Home",
-							"position": 1
-						}
+						"itemListElement": [
+							{
+								"@type": "ListItem",
+								"item": "/",
+								"name": "Home",
+								"position": "1"
+							}
+						]
 					}
 				],
 				"annotations": [
@@ -575,7 +564,7 @@
 										"property": "item"
 									},
 									{
-										"content": 1,
+										"content": "1",
 										"element": "meta",
 										"property": "position"
 									}
@@ -595,26 +584,11 @@
 			"fixture": "budget",
 			"rune": "budget",
 			"group": "A",
-			"notes": "Group A — emits ItemList with no itemListElement.",
-			"jsonLd": [
-				{
-					"@context": "https://schema.org",
-					"@type": "ItemList"
-				}
-			],
+			"notes": "Group A, resolved — no longer emits ItemList. The categories and line items carry real data, but `itemListElement` needs them typed, and a cost breakdown is not a ranked list to begin with (WORK-567).",
+			"jsonLd": [],
 			"rendered": {
-				"jsonLd": [
-					{
-						"@context": "https://schema.org",
-						"@type": "ItemList"
-					}
-				],
-				"annotations": [
-					{
-						"element": "section",
-						"typeof": "ItemList"
-					}
-				]
+				"jsonLd": [],
+				"annotations": []
 			}
 		},
 		{
@@ -887,26 +861,11 @@
 			"fixture": "datatable",
 			"rune": "datatable",
 			"group": "A",
-			"notes": "Group A — emits Dataset with no name, description or distribution.",
-			"jsonLd": [
-				{
-					"@context": "https://schema.org",
-					"@type": "Dataset"
-				}
-			],
+			"notes": "Group A, resolved — no longer emits Dataset. The rune has no headline slot to supply a `name` and no `distribution` to point at; its five properties are all interaction config (WORK-567).",
+			"jsonLd": [],
 			"rendered": {
-				"jsonLd": [
-					{
-						"@context": "https://schema.org",
-						"@type": "Dataset"
-					}
-				],
-				"annotations": [
-					{
-						"element": "div",
-						"typeof": "Dataset"
-					}
-				]
+				"jsonLd": [],
+				"annotations": []
 			}
 		},
 		{
@@ -937,14 +896,14 @@
 					{
 						"children": [
 							{
-								"content": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-								"element": "meta",
-								"property": "contentUrl"
-							},
-							{
 								"content": "Example video",
 								"element": "meta",
 								"property": "name"
+							},
+							{
+								"content": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+								"element": "meta",
+								"property": "contentUrl"
 							},
 							{
 								"content": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
@@ -1129,26 +1088,11 @@
 			"fixture": "gallery",
 			"rune": "gallery",
 			"group": "A",
-			"notes": "Group A — emits ImageGallery with no properties, despite six real images.",
-			"jsonLd": [
-				{
-					"@context": "https://schema.org",
-					"@type": "ImageGallery"
-				}
-			],
+			"notes": "Group A, resolved — no longer emits ImageGallery. The six images are plain markdown pictures with nothing naming them; `image`/`associatedMedia` needs each one typed as an ImageObject, which is a retype-and-wrap job rather than a flat mapping (WORK-567).",
+			"jsonLd": [],
 			"rendered": {
-				"jsonLd": [
-					{
-						"@context": "https://schema.org",
-						"@type": "ImageGallery"
-					}
-				],
-				"annotations": [
-					{
-						"element": "figure",
-						"typeof": "ImageGallery"
-					}
-				]
+				"jsonLd": [],
+				"annotations": []
 			}
 		},
 		{
@@ -1421,26 +1365,11 @@
 			"fixture": "itinerary",
 			"rune": "itinerary",
 			"group": "A",
-			"notes": "Group A — emits ItemList with no itemListElement, despite two days of structured stops. Generating this fixture also prints a pre-existing engine diagnostic, \"`itinerary-stop` requires parent `itinerary` — found nested directly in `itinerary-day`\". That is the rune's own structure tripping a parent check, not a defect in this fixture: the unabridged doc example at site/content/runes/places/itinerary.md prints it too. Out of scope here — noted so it is not mistaken for fixture breakage later.",
-			"jsonLd": [
-				{
-					"@context": "https://schema.org",
-					"@type": "ItemList"
-				}
-			],
+			"notes": "Group A, resolved — no longer emits ItemList. The two days of structured stops reach a list only once each day is a ListItem and each stop something like a TouristAttraction: per-child typing, not a flat mapping (WORK-567). Generating this fixture also prints a pre-existing engine diagnostic, \"`itinerary-stop` requires parent `itinerary` — found nested directly in `itinerary-day`\". That is the rune's own structure tripping a parent check, not a defect in this fixture: the unabridged doc example at site/content/runes/places/itinerary.md prints it too. Out of scope here — noted so it is not mistaken for fixture breakage later.",
+			"jsonLd": [],
 			"rendered": {
-				"jsonLd": [
-					{
-						"@context": "https://schema.org",
-						"@type": "ItemList"
-					}
-				],
-				"annotations": [
-					{
-						"element": "section",
-						"typeof": "ItemList"
-					}
-				]
+				"jsonLd": [],
+				"annotations": []
 			}
 		},
 		{
@@ -1489,26 +1418,11 @@
 			"fixture": "map",
 			"rune": "map",
 			"group": "A",
-			"notes": "Group A — emits Place with no name, address or geo, despite three pinned locations with coordinates.",
-			"jsonLd": [
-				{
-					"@context": "https://schema.org",
-					"@type": "Place"
-				}
-			],
+			"notes": "Group A, resolved — no longer emits Place, and this one was a type error rather than a thin entity. A map showing three landmarks is not itself a place; the name and description belong to the map-pin children (WORK-567).",
+			"jsonLd": [],
 			"rendered": {
-				"jsonLd": [
-					{
-						"@context": "https://schema.org",
-						"@type": "Place"
-					}
-				],
-				"annotations": [
-					{
-						"element": "rf-map",
-						"typeof": "Place"
-					}
-				]
+				"jsonLd": [],
+				"annotations": []
 			}
 		},
 		{
@@ -1557,11 +1471,11 @@
 			"fixture": "organization.nonprofit",
 			"rune": "organization",
 			"group": "B",
-			"notes": "Records D2 as it stands: `type=\"NonProfit\"` is accepted by the rune's curated six-value enum and published verbatim, but schema.org has no `NonProfit` type (it has `NGO`). WORK-568 corrects this, and the correction must show as a diff here.",
+			"notes": "Was the D2 record: `type=\"NonProfit\"` passed the rune's curated six-value enum and was published verbatim, though schema.org has no `NonProfit` type. WORK-568 corrected the enum to `NGO` — a breaking change for any site writing the old value, which now fails Markdoc validation instead of publishing a type no consumer resolves. The fixture writes `NGO` so this row records the corrected vocabulary; the old one survives in this file's history.",
 			"jsonLd": [
 				{
 					"@context": "https://schema.org",
-					"@type": "NonProfit",
+					"@type": "NGO",
 					"description": "A conservation charity restoring freshwater habitats across the region.",
 					"name": "Rivers Trust"
 				}
@@ -1570,7 +1484,7 @@
 				"jsonLd": [
 					{
 						"@context": "https://schema.org",
-						"@type": "NonProfit",
+						"@type": "NGO",
 						"description": "A conservation charity restoring freshwater habitats across the region.",
 						"name": "Rivers Trust"
 					}
@@ -1590,7 +1504,7 @@
 							}
 						],
 						"element": "article",
-						"typeof": "NonProfit"
+						"typeof": "NGO"
 					}
 				]
 			}
@@ -2099,12 +2013,14 @@
 					"@context": "https://schema.org",
 					"@type": "Product",
 					"name": "One plan",
-					"offers": {
-						"@type": "Offer",
-						"name": "Pro",
-						"price": "19",
-						"priceCurrency": "USD"
-					}
+					"offers": [
+						{
+							"@type": "Offer",
+							"name": "Pro",
+							"price": "19",
+							"priceCurrency": "USD"
+						}
+					]
 				}
 			],
 			"rendered": {
@@ -2113,12 +2029,14 @@
 						"@context": "https://schema.org",
 						"@type": "Product",
 						"name": "One plan",
-						"offers": {
-							"@type": "Offer",
-							"name": "Pro",
-							"price": "19",
-							"priceCurrency": "USD"
-						}
+						"offers": [
+							{
+								"@type": "Offer",
+								"name": "Pro",
+								"price": "19",
+								"priceCurrency": "USD"
+							}
+						]
 					}
 				],
 				"annotations": [
@@ -2553,22 +2471,38 @@
 			"fixture": "symbol",
 			"rune": "symbol",
 			"group": "A",
-			"notes": "Group A — emits TechArticle with no name or description, despite a full signature and prose.",
+			"notes": "Group A, resolved — the one Group A rune that kept its type, because it had something to say. `name` comes from the symbol's own heading, `description` from the lead paragraph (WORK-567).",
 			"jsonLd": [
 				{
 					"@context": "https://schema.org",
-					"@type": "TechArticle"
+					"@type": "TechArticle",
+					"description": "Transforms a Markdoc document into a renderable tree.",
+					"name": "renderContent"
 				}
 			],
 			"rendered": {
 				"jsonLd": [
 					{
 						"@context": "https://schema.org",
-						"@type": "TechArticle"
+						"@type": "TechArticle",
+						"description": "Transforms a Markdoc document into a renderable tree.",
+						"name": "renderContent"
 					}
 				],
 				"annotations": [
 					{
+						"children": [
+							{
+								"element": "h2",
+								"property": "name",
+								"text": "renderContent"
+							},
+							{
+								"element": "p",
+								"property": "description",
+								"text": "Transforms a Markdoc document into a renderable tree."
+							}
+						],
 						"element": "article",
 						"typeof": "TechArticle"
 					}
@@ -2753,13 +2687,13 @@
 							"@type": "ListItem",
 							"description": "Q1 2024",
 							"name": "Alpha release",
-							"position": 1
+							"position": "1"
 						},
 						{
 							"@type": "ListItem",
 							"description": "Q3 2024",
 							"name": "Beta release",
-							"position": 2
+							"position": "2"
 						}
 					]
 				}
@@ -2774,13 +2708,13 @@
 								"@type": "ListItem",
 								"description": "Q1 2024",
 								"name": "Alpha release",
-								"position": 1
+								"position": "1"
 							},
 							{
 								"@type": "ListItem",
 								"description": "Q3 2024",
 								"name": "Beta release",
-								"position": 2
+								"position": "2"
 							}
 						]
 					}
@@ -2801,7 +2735,7 @@
 										"text": "Alpha release"
 									},
 									{
-										"content": 1,
+										"content": "1",
 										"element": "meta",
 										"property": "position"
 									}
@@ -2823,7 +2757,7 @@
 										"text": "Beta release"
 									},
 									{
-										"content": 2,
+										"content": "2",
 										"element": "meta",
 										"property": "position"
 									}
@@ -2853,19 +2787,19 @@
 							"@type": "ListItem",
 							"description": "2023",
 							"name": "Founded",
-							"position": 1
+							"position": "1"
 						},
 						{
 							"@type": "ListItem",
 							"description": "2024",
 							"name": "Public launch",
-							"position": 2
+							"position": "2"
 						},
 						{
 							"@type": "ListItem",
 							"description": "2025",
 							"name": "Community growth",
-							"position": 3
+							"position": "3"
 						}
 					]
 				}
@@ -2880,19 +2814,19 @@
 								"@type": "ListItem",
 								"description": "2023",
 								"name": "Founded",
-								"position": 1
+								"position": "1"
 							},
 							{
 								"@type": "ListItem",
 								"description": "2024",
 								"name": "Public launch",
-								"position": 2
+								"position": "2"
 							},
 							{
 								"@type": "ListItem",
 								"description": "2025",
 								"name": "Community growth",
-								"position": 3
+								"position": "3"
 							}
 						]
 					}
@@ -2913,7 +2847,7 @@
 										"text": "Founded"
 									},
 									{
-										"content": 1,
+										"content": "1",
 										"element": "meta",
 										"property": "position"
 									}
@@ -2935,7 +2869,7 @@
 										"text": "Public launch"
 									},
 									{
-										"content": 2,
+										"content": "2",
 										"element": "meta",
 										"property": "position"
 									}
@@ -2957,7 +2891,7 @@
 										"text": "Community growth"
 									},
 									{
-										"content": 3,
+										"content": "3",
 										"element": "meta",
 										"property": "position"
 									}
@@ -2982,12 +2916,14 @@
 				{
 					"@context": "https://schema.org",
 					"@type": "ItemList",
-					"itemListElement": {
-						"@type": "ListItem",
-						"description": "Q1 2024",
-						"name": "Alpha release",
-						"position": 1
-					}
+					"itemListElement": [
+						{
+							"@type": "ListItem",
+							"description": "Q1 2024",
+							"name": "Alpha release",
+							"position": "1"
+						}
+					]
 				}
 			],
 			"rendered": {
@@ -2995,12 +2931,14 @@
 					{
 						"@context": "https://schema.org",
 						"@type": "ItemList",
-						"itemListElement": {
-							"@type": "ListItem",
-							"description": "Q1 2024",
-							"name": "Alpha release",
-							"position": 1
-						}
+						"itemListElement": [
+							{
+								"@type": "ListItem",
+								"description": "Q1 2024",
+								"name": "Alpha release",
+								"position": "1"
+							}
+						]
 					}
 				],
 				"annotations": [
@@ -3019,7 +2957,7 @@
 										"text": "Alpha release"
 									},
 									{
-										"content": 1,
+										"content": "1",
 										"element": "meta",
 										"property": "position"
 									}

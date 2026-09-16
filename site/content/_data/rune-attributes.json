@@ -3185,7 +3185,7 @@
 			"plugin": "@refrakt-md/business",
 			"scope": "own",
 			"name": "type",
-			"type": "\"Organization\" | \"LocalBusiness\" | \"Corporation\" | \"EducationalOrganization\" | \"GovernmentOrganization\" | \"NonProfit\"",
+			"type": "\"Organization\" | \"LocalBusiness\" | \"Corporation\" | \"EducationalOrganization\" | \"GovernmentOrganization\" | \"NGO\"",
 			"required": false,
 			"description": "Schema.org organization category used for structured data.",
 			"page": "organization"

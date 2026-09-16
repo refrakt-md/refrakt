@@ -242,8 +242,11 @@ Features.
 {% /tier %}
 {% /pricing %}`);
 
+		// `offers` is declared a list (SPEC-130 D6 / WORK-568), so a one-tier
+		// pricing block is an array of one rather than a bare object.
 		const product = result.jsonLd[0] as any;
-		expect(product.offers.priceCurrency).toBe('EUR');
+		expect(product.offers).toHaveLength(1);
+		expect(product.offers[0].priceCurrency).toBe('EUR');
 	});
 
 	it('should use explicit currency over inferred in SEO', () => {
@@ -256,6 +259,6 @@ Features.
 {% /pricing %}`);
 
 		const product = result.jsonLd[0] as any;
-		expect(product.offers.priceCurrency).toBe('CAD');
+		expect(product.offers[0].priceCurrency).toBe('CAD');
 	});
 });

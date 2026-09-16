@@ -57,7 +57,16 @@ export const characterSections = {
 } as const;
 export const characterMediaSlots = { portrait: 'portrait' } as const;
 
+// SPEC-130 / WORK-568 — Group B. `role` is a `properties` meta, so it is
+// dropped as pure data once the rune stops declaring `schema:`; the applier
+// rebuilds it from the field bag.
+export const characterSchema = {
+	type: 'Person',
+	properties: { name: 'name', role: 'jobTitle' },
+} as const;
+
 export const character = createContentModelSchema({
+	schema: characterSchema,
 	sections: characterSections,
 	provides: ['prose'],
 	mediaSlots: characterMediaSlots,
@@ -152,14 +161,8 @@ export const character = createContentModelSchema({
 		if (bodyDiv) children.push(bodyDiv.next());
 		if (sectionsContainer) children.push(sectionsContainer.next());
 
-		const schemaMap = {
-			name: nameTag,
-			jobTitle: roleMeta,
-		};
-
 		return createComponentRenderable({
 			rune: 'character',
-			schemaOrgType: 'Person',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
@@ -175,7 +178,6 @@ export const character = createContentModelSchema({
 				...(bodyDiv ? { body: bodyDiv } : {}),
 				...(sectionsContainer ? { sections: sectionsContainer } : {}),
 			},
-			schema: schemaMap,
 			children,
 		});
 	},

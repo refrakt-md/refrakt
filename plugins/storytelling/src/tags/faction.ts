@@ -53,7 +53,15 @@ export const factionSections = {
 } as const;
 export const factionMediaSlots = { scene: 'cover' } as const;
 
+// SPEC-130 / WORK-568 — Group B. As with `realm`, `sceneImage` is WORK-561's
+// name for the image the schema used to reach positionally.
+export const factionSchema = {
+	type: 'Organization',
+	properties: { name: 'name', sceneImage: 'image' },
+} as const;
+
 export const faction = createContentModelSchema({
+	schema: factionSchema,
 	sections: factionSections,
 	provides: ['prose'],
 	mediaSlots: factionMediaSlots,
@@ -146,17 +154,8 @@ export const faction = createContentModelSchema({
 		if (bodyDiv) children.push(bodyDiv.next());
 		if (sectionsContainer) children.push(sectionsContainer.next());
 
-		// SEO schema
-		const schemaMap: Record<string, any> = {
-			name: nameTag,
-		};
-		if (sceneImgTag) {
-			schemaMap.image = sceneImgTag;
-		}
-
 		return createComponentRenderable({
 			rune: 'faction',
-			schemaOrgType: 'Organization',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
@@ -180,7 +179,6 @@ export const faction = createContentModelSchema({
 				...(bodyDiv ? { body: bodyDiv } : {}),
 				...(sectionsContainer ? { sections: sectionsContainer } : {}),
 			},
-			schema: schemaMap,
 			children,
 		});
 	},

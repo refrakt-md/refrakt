@@ -70,6 +70,8 @@ Retrieve a single user by their unique identifier.
 			fixture: `{% symbol kind="function" lang="typescript" since="1.2.0" %}
 # createTransform
 
+Builds the identity transform a theme applies to every serialized tag tree.
+
 \`\`\`typescript
 function createTransform(config: ThemeConfig): (tree: RendererNode) => RendererNode
 \`\`\`

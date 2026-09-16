@@ -7,7 +7,34 @@ import { RenderableNodeCursor } from '../lib/renderable.js';
 /** Sentinel meta property written by breadcrumb auto mode; consumed by corePipelineHooks.postProcess */
 export const BREADCRUMB_AUTO_SENTINEL = '__breadcrumb-auto';
 
+/**
+ * SPEC-130 / WORK-571 — `breadcrumb` and `breadcrumb-item` as one declaration.
+ *
+ * The pair could not migrate separately: a position exists nowhere in the
+ * content, so it has to be generated, and only the parent knows a child's index.
+ * `generated: { position: 'index' }` is the whole vocabulary — `index` is the
+ * only generator in the codebase, used by exactly two runes.
+ *
+ * The generator emits `String(index + 1)`, so the RDFa attribute and the JSON-LD
+ * now agree on `position`. Before this the meta carried a *number*, which
+ * `collectJsonLd` passed through verbatim while the rendered markup stringified
+ * it — a drift the two-point invariant would otherwise have to tolerate (D8).
+ */
+export const breadcrumbSchema = {
+	type: 'BreadcrumbList',
+	lists: ['itemListElement'],
+	children: {
+		'breadcrumb-item': {
+			type: 'ListItem',
+			property: 'itemListElement',
+			properties: { name: 'name', url: 'item' },
+			generated: { position: 'index' },
+		},
+	},
+} as const;
+
 export const breadcrumb = createContentModelSchema({
+	schema: breadcrumbSchema,
 	attributes: {
 		separator: {
 			type: String,
@@ -45,7 +72,6 @@ export const breadcrumb = createContentModelSchema({
 
 			return createComponentRenderable({
 				rune: 'breadcrumb',
-				schemaOrgType: 'BreadcrumbList',
 				tag: 'nav',
 				properties: {
 					separator: separatorMeta,
@@ -63,14 +89,10 @@ export const breadcrumb = createContentModelSchema({
 
 		// Extract list items from children — each <li> with an <a> becomes a breadcrumb item
 		const listItems: any[] = [];
-		let position = 0;
 		for (const node of children.toArray()) {
 			if (Tag.isTag(node) && (node.name === 'ul' || node.name === 'ol')) {
 				for (const li of (node as any).children) {
 					if (Tag.isTag(li) && li.name === 'li') {
-						position++;
-						const positionMeta = new Tag('meta', { content: position });
-
 						// Find the link inside the list item
 						const link = (li as any).children.find((c: any) => Tag.isTag(c) && c.name === 'a');
 
@@ -81,18 +103,12 @@ export const breadcrumb = createContentModelSchema({
 							listItems.push(
 								createComponentRenderable({
 									rune: 'breadcrumb-item',
-									schemaOrgType: 'ListItem',
 									tag: 'li',
 									properties: {
 										name: nameSpan,
 										url: urlLink,
 									},
-									schema: {
-										name: nameSpan,
-										item: urlLink,
-										position: positionMeta,
-									},
-									children: [nameSpan, urlLink, positionMeta],
+									children: [nameSpan, urlLink],
 								}) as any,
 							);
 						} else {
@@ -106,16 +122,11 @@ export const breadcrumb = createContentModelSchema({
 							listItems.push(
 								createComponentRenderable({
 									rune: 'breadcrumb-item',
-									schemaOrgType: 'ListItem',
 									tag: 'li',
 									properties: {
 										name: nameSpan,
 									},
-									schema: {
-										name: nameSpan,
-										position: positionMeta,
-									},
-									children: [nameSpan, positionMeta],
+									children: [nameSpan],
 								}) as any,
 							);
 						}
@@ -128,16 +139,12 @@ export const breadcrumb = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'breadcrumb',
-			schemaOrgType: 'BreadcrumbList',
 			tag: 'nav',
 			properties: {
 				separator: separatorMeta,
 			},
 			refs: {
 				items: itemsList,
-			},
-			schema: {
-				itemListElement: listItems,
 			},
 			children: [separatorMeta, itemsList],
 		});
