@@ -1,4 +1,4 @@
-{% work id="WORK-572" status="done" priority="high" complexity="moderate" source="BUG-016" tags="runes,media,content-model,schema-org" milestone="v0.35.0" %}
+{% work id="WORK-572" status="done" priority="high" complexity="moderate" source="BUG-016" tags="runes,media,content-model,schema-org" milestone="v0.35.0" pr="refrakt-md/refrakt#608" %}
 
 # Accept track children in playlist
 

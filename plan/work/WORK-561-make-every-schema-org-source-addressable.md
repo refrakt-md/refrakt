@@ -1,4 +1,4 @@
-{% work id="WORK-561" status="done" priority="high" complexity="simple" source="SPEC-130" tags="runes,schema-org,seo" milestone="v0.35.0" %}
+{% work id="WORK-561" status="done" priority="high" complexity="simple" source="SPEC-130" tags="runes,schema-org,seo" milestone="v0.35.0" pr="refrakt-md/refrakt#608" %}
 
 # Make every schema.org source addressable
 
