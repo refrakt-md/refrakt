@@ -1,4 +1,4 @@
-{% spec id="SPEC-133" status="draft" tags="snippet, file-ref, drift, docs, tooling, dx" %}
+{% spec id="SPEC-134" status="draft" tags="snippet, file-ref, drift, docs, tooling, dx" %}
 
 # Review markers for embedded source
 
@@ -52,7 +52,7 @@ One instance is available, and it is this spec's own predecessor.
 changed, the prose did not, and nothing anywhere connected the two.
 
 That is the failure class exactly: an assertion about code, correct at the time,
-silently invalidated by an ordinary edit. {% ref "BUG-015" /%} is the same
+silently invalidated by an ordinary edit. {% ref "BUG-019" /%} is the same
 underlying event observed from the addressing side — `SPEC-131` catches the
 `file-ref` invocations, and nothing catches the sentence.
 
@@ -253,7 +253,7 @@ exists to prevent.
 **D9 — Layering: the anchor refuses first.** The two features never overlap.
 {% ref "SPEC-131" /%} answers *can I find the region* and refuses if not —
 `reviewed` is never evaluated on a refusal. This spec answers *I found it, is it
-still what was documented*. {% ref "BUG-015" /%} is a SPEC-131 failure and would
+still what was documented*. {% ref "BUG-019" /%} is a SPEC-131 failure and would
 never reach this layer.
 
 **D10 — `reviewed` on a fixed revision is a no-op.** If a future revision
@@ -294,13 +294,31 @@ fire. The tool should say so rather than stamping a marker that means nothing.
 
 ## Approach
 
-**Two prerequisites, and the first is hard.** {% ref "WORK-554" /%} must land
-before phase 1 is worth building: it establishes whether a pipeline diagnostic
-reaches anyone, and this feature's *only* output is a diagnostic. Unlike
-{% ref "SPEC-131" /%}, which paints an error fence on the page regardless, a
-review marker that reports into a void does nothing at all.
-{% ref "SPEC-131" /%} phases 1–2 are the second: there is no resolved slice to
-hash without the resolver, and D16's `reindent` is the first normalization step.
+**Two prerequisites, and the first is now measured rather than assumed.**
+{% ref "WORK-554" /%} established, by planting a synthetic error-severity
+`PipelineWarning` and observing every surface, that **it fails nothing,
+anywhere**: `vite build` exits 0 in both dogfooded sites, 4,402 tests exit 0
+because nothing observes the count, and — the sharpest result — the adapter dev
+server prints **nothing at all**, because `packages/sveltekit/src/plugin.ts:171`
+returns early on `if (!isBuild)`.
+
+That last row is disqualifying for this feature specifically. A review marker's
+entire audience is someone editing documentation, and someone editing
+documentation is running the dev server. Today they would see nothing, ever.
+{% ref "SPEC-131" /%} survives this — a refused anchor still paints an error
+fence on the page — but a review marker has no visual of its own by D6, so
+until {% ref "WORK-573" /%} makes the channel load-bearing, this feature would
+ship as a no-op with a CLI attached.
+
+`--check` (phase 1) is the partial exception and the reason phase 1 is still
+worth building first: it is a command with its own exit code, so it works
+independently of the diagnostic channel. The in-build diagnostic, and any
+chance of a marker being noticed without someone running a command, waits on
+{% ref "WORK-573" /%}.
+
+{% ref "SPEC-131" /%} phases 1–2 are the second prerequisite: there is no
+resolved slice to hash without the resolver, and D16's `reindent` is the first
+normalization step.
 
 Then three phases.
 
@@ -322,14 +340,13 @@ than not having it, because a noisy marker trains people to ignore a real one.
 
 ## Open questions
 
-- **Does a `PipelineWarning` reach anyone before merge?** {% ref "WORK-554" /%}
-  settles what an error-severity diagnostic actually does, and this spec's
-  guarantee is weaker than {% ref "SPEC-131" /%}'s until it lands: a refused
-  anchor at least paints an error fence on the page, whereas a stale marker has
-  no visual at all. If nothing is listening, this feature does literally
-  nothing. Hence `## Blocked by` rather than a footnote — and note that the
-  repository currently has **one** workflow, `release.yml`, triggered on push to
-  `main`, so there is no pre-merge check surface for this to report into yet.
+- **Where does `--check` run?** {% ref "WORK-554" /%} answered the diagnostic
+  question (it reaches nobody; see Approach), which leaves the CLI as this
+  feature's only reliable surface — and the repository has **one** workflow,
+  `release.yml`, triggered on push to `main`. There is no pre-merge job for
+  `--check` to run in, so a stale marker would be discovered after merge, on the
+  branch that publishes the site. Adding a PR workflow is outside this spec, but
+  something has to own it or `--check` is a command nobody invokes.
 - **What is the right granularity for the diagnostic summary?** D7's example
   says "+2 fields, 1 removed", which requires interpreting the diff rather than
   reporting it. A line count is cheaper and less useful. Worth deciding once
@@ -341,10 +358,11 @@ than not having it, because a noisy marker trains people to ignore a real one.
 ## References
 
 - {% ref "SPEC-131" /%} — the addressing layer this builds on; D16 (`reindent`), D6 (error fence for unproducible content), D7 (the codemod that must not stamp). A prerequisite — see Approach
-- {% ref "WORK-554" /%} — establishes whether a pipeline diagnostic reaches anyone, which this spec's entire value depends on. A prerequisite — see Approach
+- {% ref "WORK-554" /%} — established that an error-severity diagnostic fails nothing and is not printed at all in the dev server
+- {% ref "WORK-573" /%} — makes that channel load-bearing. A prerequisite for everything in this spec except `--check` — see Approach
 - {% ref "SPEC-132" /%} — the diagnostics routing model, and the prior statement of D6's principle: findings annotate content that rendered fine, so they belong beside the page
 - {% ref "SPEC-126" /%} — the one-off assertion this generalises from the other side, and D3's warning that a noisy guard gets disabled
-- {% ref "BUG-015" /%} — the same real-world event seen from the addressing side
+- {% ref "BUG-019" /%} — the same real-world event seen from the addressing side
 - {% ref "WORK-395" /%} — the editor validation rail where findings surface
 - `packages/runes/src/tags/diff.ts` — `computeLineDiff`, to extract
 - `packages/content/src/site.ts` — the diagnostics surface

@@ -75,7 +75,7 @@ Three live pages — `runes/drawer.md:155`, `runes/file-ref.md:51`, and
 A drawer captioned "SiteConfig" opens onto the back half of one interface and
 the whole of two others, on the documentation page for the rune whose
 addressing model is the subject of this spec. Tracked as
-{% ref "BUG-015" /%}.
+{% ref "BUG-019" /%}.
 
 This is worse than the failure the spec predicted. The prediction was *drift* —
 a range sliding out of alignment with a symbol that is still there. What
@@ -686,7 +686,7 @@ codemod itself introduced.
   the right *region* is quoted. A symbol can resolve perfectly and have changed
   meaning entirely, leaving the paragraph beside it false with nothing to
   detect it. That is a different failure class with a different mechanism —
-  {% ref "SPEC-133" /%}, which builds on this layer and depends on D16's
+  {% ref "SPEC-134" /%}, which builds on this layer and depends on D16's
   `reindent` as its first normalization step.
 - **A config surface for the language table.** The table is built as data and
   merged (D15), but `refrakt.config.json` gains no `languages` or `anchors`
@@ -760,7 +760,7 @@ Four phases, each shippable alone.
    half of `site/content` addressable at all, so phase 3's migration should not
    start before they land.
 3. **The codemod and the migration.** Converts the 23 existing invocations and
-   removes the live exposure, {% ref "BUG-015" /%} included. Regex-literal
+   removes the live exposure, {% ref "BUG-019" /%} included. Regex-literal
    lexing (D8) lands here if the migration surfaces refusals that need it. The
    codemod must also handle companion attributes: an invocation carrying
    `highlight=` needs those coordinates preserved or rewritten as
@@ -810,8 +810,8 @@ than reading them off this spec.
 - {% ref "SPEC-113" /%} — the `ProjectFiles` seam that owns containment, unchanged by this spec
 - {% ref "SPEC-129" /%} — the pre-transform `include` rune. A fourth path-addressed rune: if it lands, it should take the same addressing layer rather than growing its own `lines=`
 - {% ref "SPEC-126" /%} — rejected line-addressed embedding for the config reference and proposed the one-off assertion this spec generalises
-- {% ref "BUG-015" /%} — the observed instance: three live `file-ref` drawers labelled `SiteConfig` rendering three unrelated interfaces
-- {% ref "SPEC-133" /%} — review markers; the next failure class up, where the region resolves correctly and the prose beside it no longer holds
+- {% ref "BUG-019" /%} — the observed instance: three live `file-ref` drawers labelled `SiteConfig` rendering three unrelated interfaces
+- {% ref "SPEC-134" /%} — review markers; the next failure class up, where the region resolves correctly and the prose beside it no longer holds
 - `packages/runes/src/lib/read-file.ts` — the shared reader this extends
 
 {% /spec %}
