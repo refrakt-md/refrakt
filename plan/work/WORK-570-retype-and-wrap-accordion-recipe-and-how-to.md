@@ -1,4 +1,4 @@
-{% work id="WORK-570" status="done" priority="medium" complexity="moderate" source="SPEC-130" tags="runes,schema-org,seo,rdfa" milestone="v0.35.0" %}
+{% work id="WORK-570" status="done" priority="medium" complexity="moderate" source="SPEC-130" tags="runes,schema-org,seo,rdfa" milestone="v0.35.0" pr="refrakt-md/refrakt#612" %}
 
 # Retype and wrap — accordion, recipe and how-to
 

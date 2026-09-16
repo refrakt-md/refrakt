@@ -1,4 +1,4 @@
-{% work id="WORK-571" status="done" priority="medium" complexity="moderate" source="SPEC-130" tags="runes,schema-org,seo,pipeline" milestone="v0.35.0" pr="refrakt-md/refrakt#610" %}
+{% work id="WORK-571" status="done" priority="medium" complexity="moderate" source="SPEC-130" tags="runes,schema-org,seo,pipeline" milestone="v0.35.0" pr="refrakt-md/refrakt#610,refrakt-md/refrakt#612" %}
 
 # Synthesised entities and index-derived values
 

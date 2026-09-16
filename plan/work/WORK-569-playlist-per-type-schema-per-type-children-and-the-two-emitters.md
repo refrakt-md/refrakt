@@ -1,4 +1,4 @@
-{% work id="WORK-569" status="done" priority="high" complexity="complex" source="SPEC-130" tags="runes,media,schema-org,seo" milestone="v0.35.0" %}
+{% work id="WORK-569" status="done" priority="high" complexity="complex" source="SPEC-130" tags="runes,media,schema-org,seo" milestone="v0.35.0" pr="refrakt-md/refrakt#612" %}
 
 # playlist — per-type schema, per-type children, and the two emitters
 
