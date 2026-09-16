@@ -100,8 +100,13 @@ export {
 	schemaRuneStructures,
 	declareUniversalPosture,
 	sanitizeSandboxContent,
+	applySchemaTable,
+	validateSchemaTable,
+	selectRow,
+	findByName,
 } from './lib/index.js';
 export type { RuneStructure, SectionRole } from './lib/index.js';
+export type { SchemaTable, SchemaRow, EntityRow, PropertyMap } from './lib/index.js';
 
 // SPEC-125 Phase 3 — the declared rule for universal-attribute availability
 export {

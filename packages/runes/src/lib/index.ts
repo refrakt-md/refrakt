@@ -16,6 +16,16 @@ import { resolveUniversalAttributes } from '../universal-attributes.js';
 import type { UniversalAttributePosture } from '../universal-attributes.js';
 
 export { createComponentRenderable, stripSchemaOrg } from './component.js';
+import { stripSchemaOrg } from './component.js';
+import { applySchemaTable, validateSchemaTable } from './schema-table.js';
+import type { SchemaTable } from './schema-table.js';
+export {
+	applySchemaTable,
+	validateSchemaTable,
+	selectRow,
+	findByName,
+} from './schema-table.js';
+export type { SchemaTable, SchemaRow, EntityRow, PropertyMap } from './schema-table.js';
 export type { InlineTransformResult } from './component.js';
 export {
 	resolve,
@@ -663,6 +673,17 @@ export interface ContentModelSchemaOptions {
 		node: Node,
 	) => RenderableTreeNodes;
 
+	/**
+	 * SPEC-130 / WORK-565 — the rune's declarative schema.org table.
+	 *
+	 * Sits beside the rune's other self-declarations (`sections`, `mediaSlots`,
+	 * `provides`, `base`) because it is the same kind of fact: what this rune
+	 * *is*, not how a theme renders it (ADR-028). Applied to the transform's
+	 * output by `applySchemaTable`, so `createComponentRenderable` gains no
+	 * schema knowledge at all.
+	 */
+	schema?: SchemaTable;
+
 	/** Deprecated attribute mappings. */
 	deprecations?: Record<string, DeprecationRule>;
 
@@ -760,6 +781,19 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 		attributes['__deferred-body'] = { type: String, required: false } as SchemaAttribute;
 	}
 
+	// SPEC-130 / WORK-565 — check the table against the attributes the rune
+	// actually declares, at construction. `by` names an *attribute*, not a
+	// modifier: `modifiers` is read by the engine, which has no part in the
+	// schema path. Both declarations are in scope here, so the ambiguity is
+	// cheap to reject rather than ship.
+	if (options.schema) {
+		const issues = validateSchemaTable(options.schema, Object.keys(attributes));
+		if (issues.length > 0) {
+			const detail = issues.map((i) => `  ${i.path}: ${i.message}`).join('\n');
+			throw new Error(`Invalid schema table:\n${detail}`);
+		}
+	}
+
 	// Register deprecated attribute names
 	const deprecations = options.deprecations;
 	if (deprecations) {
@@ -811,7 +845,22 @@ export function createContentModelSchema(options: ContentModelSchemaOptions): Sc
 			);
 
 			// Call the user's transform function
-			const result = options.transform(content, attrs, config, node);
+			let result = options.transform(content, attrs, config, node);
+
+			// SPEC-130 / WORK-565 — realise the rune's schema table against its own
+			// output. Here, not in the engine: `site.ts` harvests `extractSeo` from
+			// the `Markdoc.transform` tree, and the engine runs later at render
+			// time, so schema emitted there would reach the HTML and never the
+			// JSON-LD.
+			if (options.schema) {
+				result = applySchemaTable(result as never, options.schema, attrs) as never;
+			}
+			// `schema="none"` strips the whole subtree, not just the root: a child
+			// rune declares its own type independently, so stripping only the root
+			// would leave orphan typed nodes with no container (WORK-552).
+			if (attrs.schema === 'none') {
+				stripSchemaOrg(result);
+			}
 
 			// Inject tint / bg metas
 			const tintBgCtx: TintBgContext = {

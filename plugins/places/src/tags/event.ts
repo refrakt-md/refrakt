@@ -15,7 +15,29 @@ import {
 // what a section *is* (ADR-028).
 export const eventSections = { headline: 'title', blurb: 'description', body: 'body' } as const;
 
+// SPEC-130 / WORK-565 — the rune's schema.org mapping, as data.
+//
+// `location` is the case that makes `event` the second proof: its source exists
+// only as an attribute value, so the applier rebuilds a carrier from the field
+// bag rather than stamping a node. `headline` / `blurb` come from
+// `pageSectionProperties` and survive as refs, so those stamp in place. One
+// table, three of the mechanism's resolution paths.
+export const eventSchema = {
+	type: 'Event',
+	properties: {
+		headline: 'name',
+		blurb: 'description',
+		date: 'startDate',
+		endDate: 'endDate',
+		url: 'url',
+	},
+	entities: {
+		location: { type: 'Place', property: 'location', properties: { location: 'name' } },
+	},
+} as const;
+
 export const event = createContentModelSchema({
+	schema: eventSchema,
 	sections: eventSections,
 	provides: ['prose'],
 	attributes: {
@@ -60,13 +82,6 @@ export const event = createContentModelSchema({
 
 		const bodyDiv = body.wrap('div');
 
-		// Schema.org nested Place for location
-		const locationWrapper = attrs.location
-			? new Tag('span', { typeof: 'Place', property: 'location' }, [
-					new Tag('meta', { property: 'name', content: attrs.location }),
-				])
-			: undefined;
-
 		// SPEC-081: emit flat `data-name` header slots — `layout` wraps
 		// eyebrow/headline/blurb in the preamble <header>, so each is
 		// individually addressable (fixes the buried-preamble bug).
@@ -78,11 +93,9 @@ export const event = createContentModelSchema({
 			...header.toArray(),
 			bodyDiv.next(),
 		];
-		if (locationWrapper) resultChildren.push(locationWrapper);
 
 		return createComponentRenderable({
 			rune: 'event',
-			schemaOrgType: 'Event',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
@@ -94,13 +107,6 @@ export const event = createContentModelSchema({
 			refs: {
 				...sectionProps,
 				body: bodyDiv,
-			},
-			schema: {
-				name: sectionProps.headline,
-				description: sectionProps.blurb,
-				startDate: dateMeta,
-				endDate: endDateMeta,
-				url: urlMeta,
 			},
 			children: resultChildren,
 		});

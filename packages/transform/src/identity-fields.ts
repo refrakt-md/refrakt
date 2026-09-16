@@ -46,6 +46,14 @@ export const IDENTITY_FIELDS = [
 	'frameTarget',
 	'universalAttributes',
 	'provides',
+	/** SPEC-130 / WORK-565 — a rune's schema.org table.
+	 *
+	 *  The strongest case in the list. Emission is a claim about the *content*,
+	 *  not about the skin: a theme that could restate a rune's schema.org type
+	 *  would be able to change what a site asserts about its own content by
+	 *  changing its appearance (ADR-028). The table is declared on the rune and
+	 *  referenced from config, exactly as `sections` is. */
+	'schema',
 ] as const;
 
 export type IdentityField = (typeof IDENTITY_FIELDS)[number];
