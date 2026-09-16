@@ -1,4 +1,4 @@
-{% work id="WORK-565" status="done" priority="high" complexity="complex" source="SPEC-130" tags="runes,schema-org,seo,config,transform" milestone="v0.35.0" %}
+{% work id="WORK-565" status="done" priority="high" complexity="complex" source="SPEC-130" tags="runes,schema-org,seo,config,transform" milestone="v0.35.0" pr="refrakt-md/refrakt#609" %}
 
 # The schema table and its applier
 

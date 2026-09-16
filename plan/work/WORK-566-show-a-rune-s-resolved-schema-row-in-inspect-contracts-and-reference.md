@@ -1,4 +1,4 @@
-{% work id="WORK-566" status="done" priority="high" complexity="moderate" source="SPEC-130" tags="cli,tooling,schema-org,contracts" milestone="v0.35.0" %}
+{% work id="WORK-566" status="done" priority="high" complexity="moderate" source="SPEC-130" tags="cli,tooling,schema-org,contracts" milestone="v0.35.0" pr="refrakt-md/refrakt#609" %}
 
 # Show a rune's resolved schema row in inspect, contracts and reference
 
