@@ -20,12 +20,17 @@ import { join } from 'node:path';
 
 const ROOT = join(import.meta.dirname, '../../..');
 
-/** Files that still build their schema by hand, and the work item that ends it. */
-const PENDING: Record<string, string> = {
-	'packages/runes/src/tags/accordion.ts': 'WORK-570 — retype and wrap',
-	'plugins/learning/src/tags/howto.ts': 'WORK-570 — retype and wrap',
-	'plugins/learning/src/tags/recipe.ts': 'WORK-570 — retype and wrap',
-};
+/**
+ * Files that still build their schema by hand, and the work item that ends it.
+ *
+ * **Empty since WORK-570.** That emptiness is SPEC-130's closing condition: no
+ * rune anywhere passes `schemaOrgType` or a `schema:` map to
+ * `createComponentRenderable`, and no transform mutates `attributes.typeof`. The
+ * list stays here rather than being deleted with the last entry, because a
+ * migration that ends with nothing to point at is exactly the one that quietly
+ * reacquires an exception.
+ */
+const PENDING: Record<string, string> = {};
 
 /** Every rune source file in the catalog: core tags plus every plugin's tags. */
 function runeSources(): string[] {

@@ -15,7 +15,37 @@ import { pageSectionProperties } from './common.js';
 // what a section *is* (ADR-028).
 export const accordionItemSections = { body: 'body' } as const;
 
+/**
+ * SPEC-130 / WORK-570 — retype and wrap, declared.
+ *
+ * The body `<div>` becomes the `Answer`, and its content becomes that answer's
+ * `text`. The rune used to do both by hand: set `typeof` on a node it did not
+ * create, then wrap its children in a `<div property="text">`.
+ *
+ * **The wrapper is conformant, not a workaround, and must not be optimised
+ * away.** RDFa Core 1.1 §7.5 step 11 resolves a property's object as `@content`
+ * → literal; else `@typeof` present and `@about` absent → *the typed resource*;
+ * else a plain literal from the text. So an element carrying both `property` and
+ * `typeof` has its object fixed to the typed resource and its own text is
+ * unreachable as a literal. Drop the inner element and
+ * `_:a text "…"` disappears from the RDFa — while `collectJsonLd`, which is not
+ * a conformant distiller, would go on emitting it. Since SPEC-082 renders the
+ * SEO carriers inline, refrakt publishes both channels on the same page, so the
+ * two would assert different graphs on every accordion.
+ *
+ * What was wrong was that the rune hand-wrote it. `text:` moves the wrapping
+ * into the applier and leaves the rune declaring only the role.
+ */
+export const accordionItemSchema = {
+	type: 'Question',
+	properties: { name: 'name' },
+	children: {
+		body: { type: 'Answer', property: 'acceptedAnswer', text: { body: 'text' } },
+	},
+} as const;
+
 export const accordionItem = createContentModelSchema({
+	schema: accordionItemSchema,
 	sections: accordionItemSections,
 	provides: ['prose'],
 	attributes: {
@@ -32,29 +62,14 @@ export const accordionItem = createContentModelSchema({
 		).wrap('div');
 		const bodyDivs = body.tag('div');
 
-		// For FAQ schema: body div becomes Answer entity with text property
-		// Wrap children in a div with property="text" so the visible content
-		// serves as the schema.org property value (no duplicated meta tag)
-		for (const node of bodyDivs.nodes) {
-			if (Tag.isTag(node)) {
-				node.attributes['typeof'] = 'Answer';
-				node.children = [new Tag('div', { property: 'text' }, node.children)];
-			}
-		}
-
 		return createComponentRenderable({
 			rune: 'accordion-item',
-			schemaOrgType: 'Question',
 			tag: 'details',
 			properties: {
 				name: nameTag,
 			},
 			refs: {
 				body: bodyDivs,
-			},
-			schema: {
-				name: nameTag,
-				acceptedAnswer: bodyDivs,
 			},
 			children: [nameTag, body.next()],
 		});
@@ -70,7 +85,26 @@ export const accordionSections = {
 	blurb: 'description',
 } as const;
 
+/**
+ * SPEC-130 / WORK-570 — the container, declared beside the item it holds.
+ *
+ * `schema="none"` (WORK-552) is the author-side out for an accordion that is not
+ * a FAQ, and its relationship to this table is now visible in one place: the
+ * applier honours the attribute and suppresses the whole subtree, so the
+ * emission and the suppression are no longer two unrelated pieces of code.
+ *
+ * Deliberately **no `lists: ['mainEntity']`**. D6 would be defensible here, but
+ * this item's whole evidence is a byte-identical diff, and declaring a list
+ * changes a one-question accordion's JSON-LD from an object to an array. That is
+ * a separate, deliberate change rather than a side effect of a refactor.
+ */
+export const accordionSchema = {
+	type: 'FAQPage',
+	children: { 'accordion-item': { type: 'Question', property: 'mainEntity' } },
+} as const;
+
 export const accordion = createContentModelSchema({
+	schema: accordionSchema,
 	sections: accordionSections,
 	attributes: {
 		multiple: {
@@ -139,7 +173,6 @@ export const accordion = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'accordion',
-			...(noSchema ? {} : { schemaOrgType: 'FAQPage', schema: { mainEntity: items } }),
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

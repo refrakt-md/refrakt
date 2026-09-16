@@ -73,6 +73,8 @@ export interface EntityRow {
 	properties?: PropertyMap;
 	/** Properties taking a node's own content, via an RDFa-conformant wrapper. */
 	text?: PropertyMap;
+	/** The wrapper element `text` emits. Defaults to `div`. */
+	textTag?: string;
 	/** Properties whose value is generated rather than read from content. */
 	generated?: Record<string, 'index'>;
 }
@@ -93,6 +95,15 @@ export interface SchemaRow {
 	 * channels assert different graphs on every accordion, recipe and how-to.
 	 */
 	text?: PropertyMap;
+	/**
+	 * The wrapper element `text` emits. Defaults to `div`.
+	 *
+	 * It is a rendering choice, not a schema one — `how-to` and `recipe` wrap an
+	 * `<li>`'s content in a `<p>`, and a `<div>` there would change the page's
+	 * margins. Declared rather than fixed so the applier can reproduce what each
+	 * rune already renders, byte for byte.
+	 */
+	textTag?: string;
 	entities?: Record<string, EntityRow>;
 	/** Properties whose value is generated. `index` is the only generator. */
 	generated?: Record<string, 'index'>;
@@ -212,30 +223,52 @@ const isTag = (n: unknown): n is AnyTag => Markdoc.Tag.isTag(n as never);
  * and SPEC-133 moves nodes between them. Checking both, in one pass, with no
  * branch on which matched, is what makes those moves a no-op here.
  */
+/**
+ * Every node bearing a name, in document order, within one rune.
+ *
+ * **The search stops at another rune's node.** ADR-008's flat namespace is
+ * unique *per rune*, so the same name means different things in a parent and in
+ * a child it contains: `character` names its title span `name`, and so does
+ * every `character-section` inside it. Reaching across that boundary published a
+ * character whose `name` was the character plus each of its section headings.
+ */
+export function findAllByName(
+	root: RenderableTreeNode | RenderableTreeNode[],
+	name: string,
+): AnyTag[] {
+	const kebab = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+	const out: AnyTag[] = [];
+	const visit = (node: unknown, top: boolean): void => {
+		if (Array.isArray(node)) {
+			for (const c of node) visit(c, top);
+			return;
+		}
+		if (!isTag(node)) return;
+		const attrs = node.attributes ?? {};
+		if (!top && attrs['data-rune'] !== undefined) return;
+		const named =
+			attrs['data-name'] === name ||
+			attrs['data-name'] === kebab ||
+			attrs['data-field'] === name ||
+			attrs['data-field'] === kebab;
+		if (named) {
+			out.push(node);
+			// A name marks one node, not a subtree: descending into a match would
+			// find nothing new and risks a nested re-use of the same name.
+			return;
+		}
+		for (const c of node.children ?? []) visit(c, false);
+	};
+	visit(root, true);
+	return out;
+}
+
+/** The first node bearing a name, within one rune — see `findAllByName`. */
 export function findByName(
 	root: RenderableTreeNode | RenderableTreeNode[],
 	name: string,
 ): AnyTag | undefined {
-	const kebab = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-	const visit = (node: unknown): AnyTag | undefined => {
-		if (Array.isArray(node)) {
-			for (const c of node) {
-				const hit = visit(c);
-				if (hit) return hit;
-			}
-			return undefined;
-		}
-		if (!isTag(node)) return undefined;
-		const attrs = node.attributes ?? {};
-		if (attrs['data-name'] === name || attrs['data-name'] === kebab) return node;
-		if (attrs['data-field'] === name || attrs['data-field'] === kebab) return node;
-		for (const c of node.children ?? []) {
-			const hit = visit(c);
-			if (hit) return hit;
-		}
-		return undefined;
-	};
-	return visit(root);
+	return findAllByName(root, name)[0];
 }
 
 /** The rune's field bag, as written by `createComponentRenderable`. */
@@ -264,10 +297,14 @@ function stamp(
 	property: string,
 	sink: AnyTag[],
 ): AnyTag | undefined {
-	const node = findByName(root, source);
-	if (node) {
-		node.attributes.property = property;
-		return node;
+	// Every node bearing the name, not just the first. A name in the rune's flat
+	// namespace can be worn by a whole collection — `recipe` gives each of its
+	// ingredient `<li>`s `data-name="ingredient"` — and stamping one of six would
+	// publish a single ingredient and silently drop the rest.
+	const nodes = findAllByName(root, source);
+	if (nodes.length > 0) {
+		for (const node of nodes) node.attributes.property = property;
+		return nodes[0];
 	}
 	const value = bag[source];
 	if (value === undefined || value === '') return undefined;
@@ -282,10 +319,10 @@ function stamp(
  * See the note on `SchemaRow.text` — an element carrying both `property` and
  * `typeof` cannot also contribute its text, so the value needs its own element.
  */
-function applyText(root: AnyTag, source: string, property: string): void {
+function applyText(root: AnyTag, source: string, property: string, tag = 'div'): void {
 	const node = findByName(root, source);
 	if (!node) return;
-	const wrapper = new Tag('div', { property }, node.children ?? []);
+	const wrapper = new Tag(tag, { property }, node.children ?? []);
 	node.children = [wrapper];
 }
 
@@ -311,7 +348,7 @@ function applyRow(
 	}
 
 	for (const [source, property] of Object.entries(row.text ?? {})) {
-		applyText(node, source, property);
+		applyText(node, source, property, row.textTag);
 	}
 
 	for (const [property, generator] of Object.entries(row.generated ?? {})) {

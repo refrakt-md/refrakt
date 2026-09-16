@@ -26,7 +26,45 @@ export const recipeSections = {
 } as const;
 export const recipeMediaSlots = { media: 'cover' } as const;
 
+/**
+ * SPEC-130 / WORK-570 — retype and wrap, declared.
+ *
+ * Two shapes in one table. An **ingredient** `<li>` carries no type of its own,
+ * so it is a plain property on the recipe and the collector takes its text
+ * directly — no wrapper needed, because nothing fixes its object to a typed
+ * resource. A **step** `<li>` does become a `HowToStep`, so its text needs the
+ * RDFa carrier; see `accordionItemSchema` for why.
+ *
+ * `textTag: 'p'` reproduces what the rune rendered inside an `<li>`.
+ *
+ * `mediaImage` is the name WORK-561 gave the media-slot image — `image` was
+ * already taken by the header's, and the namespace is flat per rune (ADR-008).
+ *
+ * No `lists:` here — see the note on `accordionSchema`.
+ */
+export const recipeSchema = {
+	type: 'Recipe',
+	properties: {
+		headline: 'name',
+		blurb: 'description',
+		prepTime: 'prepTime',
+		cookTime: 'cookTime',
+		servings: 'recipeYield',
+		mediaImage: 'image',
+		ingredient: 'recipeIngredient',
+	},
+	children: {
+		step: {
+			type: 'HowToStep',
+			property: 'recipeInstructions',
+			text: { step: 'text' },
+			textTag: 'p',
+		},
+	},
+} as const;
+
 export const recipe = createContentModelSchema({
+	schema: recipeSchema,
 	sections: recipeSections,
 	mediaSlots: recipeMediaSlots,
 	base: SplitLayoutModel,
@@ -152,22 +190,13 @@ export const recipe = createContentModelSchema({
 		});
 		const difficultyMeta = new Tag('meta', { content: attrs.difficulty });
 
-		// Annotate ingredient lis with data-name and recipeIngredient property
+		// WORK-570 — the names only; `recipeSchema` stamps the ingredient property,
+		// retypes the steps and emits their text wrapper.
 		for (const li of ingredients) {
-			if (Markdoc.Tag.isTag(li)) {
-				li.attributes['data-name'] = 'ingredient';
-				li.attributes.property = 'recipeIngredient';
-			}
+			if (Markdoc.Tag.isTag(li)) li.attributes['data-name'] = 'ingredient';
 		}
-
-		// Annotate step lis with data-name and HowToStep schema
 		for (const li of steps) {
-			if (Markdoc.Tag.isTag(li)) {
-				li.attributes['data-name'] = 'step';
-				li.attributes.typeof = 'HowToStep';
-				li.attributes.property = 'recipeInstructions';
-				li.children = [new Tag('p', { property: 'text' }, li.children)];
-			}
+			if (Markdoc.Tag.isTag(li)) li.attributes['data-name'] = 'step';
 		}
 
 		// Layout meta tags
@@ -217,7 +246,6 @@ export const recipe = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'recipe',
-			schemaOrgType: 'Recipe',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
@@ -243,14 +271,6 @@ export const recipe = createContentModelSchema({
 				// namespace is unique per rune (ADR-008). `media` is the wrapper;
 				// this is the image inside it.
 				...(seoImage ? { mediaImage: seoImage } : {}),
-			},
-			schema: {
-				name: sectionProps.headline,
-				description: sectionProps.blurb,
-				prepTime: prepTimeMeta,
-				cookTime: cookTimeMeta,
-				recipeYield: servingsMeta,
-				...(seoImage ? { image: seoImage } : {}),
 			},
 			children,
 		});
