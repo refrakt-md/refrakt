@@ -46,9 +46,10 @@ export function splitFiles(raw: string): Array<{ path: string; content: string }
 		}
 
 		const start = markers[i].index;
-		const nextMarkerPos = i + 1 < markers.length
-			? raw.indexOf(`--- FILE: ${markers[i + 1].path} ---`, start)
-			: raw.length;
+		const nextMarkerPos =
+			i + 1 < markers.length
+				? raw.indexOf(`--- FILE: ${markers[i + 1].path} ---`, start)
+				: raw.length;
 		const content = raw.slice(start, nextMarkerPos).replace(/^\n/, '').replace(/\n$/, '');
 
 		files.push({ path: filePath, content: content + '\n' });

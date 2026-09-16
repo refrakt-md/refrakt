@@ -178,22 +178,25 @@ export interface RuneConfig {
 	 *  **Identity (ADR-028)** — not theme-overridable: which modifiers a rune
 	 *  declares is what gates the `cover` and `content-place` axes, so a theme
 	 *  that could add one would grant an attribute the rune's schema rejects. */
-	modifiers?: Record<string, {
-		/** Where to read the modifier value */
-		source: 'meta' | 'attribute';
-		/** Default value if not found */
-		default?: string;
-		/** Skip BEM modifier class — only produce data attribute (useful for values like ratios) */
-		noBemClass?: boolean;
-		/** Maps raw modifier values to output values before emitting data attributes.
-		 *  Unmapped values pass through unchanged. */
-		valueMap?: Record<string, string>;
-		/** Target data attribute name for the mapped value (e.g., 'data-checked').
-		 *  When set, the mapped value is emitted on this attribute instead of the
-		 *  default `data-{modifier-name}` attribute. The original modifier attribute
-		 *  is still emitted with the raw value. */
-		mapTarget?: string;
-	}>;
+	modifiers?: Record<
+		string,
+		{
+			/** Where to read the modifier value */
+			source: 'meta' | 'attribute';
+			/** Default value if not found */
+			default?: string;
+			/** Skip BEM modifier class — only produce data attribute (useful for values like ratios) */
+			noBemClass?: boolean;
+			/** Maps raw modifier values to output values before emitting data attributes.
+			 *  Unmapped values pass through unchanged. */
+			valueMap?: Record<string, string>;
+			/** Target data attribute name for the mapped value (e.g., 'data-checked').
+			 *  When set, the mapped value is emitted on this attribute instead of the
+			 *  default `data-{modifier-name}` attribute. The original modifier attribute
+			 *  is still emitted with the raw value. */
+			mapTarget?: string;
+		}
+	>;
 
 	/** Context-aware modifiers — adds a BEM modifier when nested inside a parent rune.
 	 *  Key = parent typeof (e.g., 'Hero'), Value = modifier suffix (e.g., 'in-hero').
@@ -293,7 +296,10 @@ export interface RuneConfig {
 	 *  Template form: `{ columns: { prop: 'grid-template-columns', template: 'repeat({}, 1fr)' } }`
 	 *    → `style="grid-template-columns: repeat(3, 1fr)"`
 	 *  Transform form: `{ ratio: { prop: '--split-ratio', transform: v => v.split(' ').map(n => n+'fr').join(' ') } }` */
-	styles?: Record<string, string | { prop: string; template?: string; transform?: (value: string) => string }>;
+	styles?: Record<
+		string,
+		string | { prop: string; template?: string; transform?: (value: string) => string }
+	>;
 
 	/** Modifier class suffixes always applied (no meta source needed).
 	 *  E.g., `['featured']` → class includes `rf-tier--featured` */
@@ -357,7 +363,10 @@ export interface RuneConfig {
 	 *  it could do is rewire a pair, and `reading`, `prominence` and `frame`
 	 *  applicability hang off exactly those pairs. A theme still styles the
 	 *  emitted `data-section` freely; it just does not define the roles. */
-	sections?: Record<string, 'header' | 'preamble' | 'title' | 'description' | 'body' | 'footer' | 'media'>;
+	sections?: Record<
+		string,
+		'header' | 'preamble' | 'title' | 'description' | 'body' | 'footer' | 'media'
+	>;
 
 	/** Capabilities this rune declares about its own content — SPEC-125 Phase 4.
 	 *
@@ -486,38 +495,47 @@ export interface RuneConfig {
 		 *  creates a container *is* a group). Retained only for reshaping trees a
 		 *  theme does not own; new runes should declare structure via `layout`.
 		 *  Collect elements by data-name, wrap in a new container, place at first member's position. */
-		group?: Record<string, {
-			/** Container element tag */
-			tag: string;
-			/** data-name values to collect into this group */
-			members: string[];
-			/** Optional slot assignment for the group container */
-			slot?: string;
-		}>;
+		group?: Record<
+			string,
+			{
+				/** Container element tag */
+				tag: string;
+				/** data-name values to collect into this group */
+				members: string[];
+				/** Optional slot assignment for the group container */
+				slot?: string;
+			}
+		>;
 		/** @deprecated SPEC-081 — place the slot directly in the `layout` tree
 		 *  instead (you put a slot wherever you name it; no separate move op).
 		 *  Retained only for reshaping trees a theme does not own.
 		 *  Move elements by data-name into another element or slot. */
-		relocate?: Record<string, {
-			/** Target data-name or slot name */
-			into: string;
-			/** Where within the target (default: 'append') */
-			position?: 'prepend' | 'append';
-		}>;
+		relocate?: Record<
+			string,
+			{
+				/** Target data-name or slot name */
+				into: string;
+				/** Where within the target (default: 'append') */
+				position?: 'prepend' | 'append';
+			}
+		>;
 	};
 
 	/** Programmatic escape hatch. Runs after all declarative processing.
 	 *  Receives the fully transformed node and resolved modifier values.
 	 *  Use declarative config first — this is for cases that can't be expressed declaratively. */
-	postTransform?: (node: SerializedTag, context: {
-		modifiers: Record<string, string>;
-		parentType?: string;
-		/** The parsed SPEC-082 `data-rune-fields` bag for this node. The engine
-		 *  strips the bag attribute from the result before `postTransform` runs,
-		 *  so a hook that needs non-modifier field values reads them here (or via
-		 *  `readField(node, name, context.fields)` for bag-first + meta-fallback). */
-		fields: Record<string, unknown>;
-	}) => SerializedTag;
+	postTransform?: (
+		node: SerializedTag,
+		context: {
+			modifiers: Record<string, string>;
+			parentType?: string;
+			/** The parsed SPEC-082 `data-rune-fields` bag for this node. The engine
+			 *  strips the bag attribute from the result before `postTransform` runs,
+			 *  so a hook that needs non-modifier field values reads them here (or via
+			 *  `readField(node, name, context.fields)` for bag-first + meta-fallback). */
+			fields: Record<string, unknown>;
+		},
+	) => SerializedTag;
 }
 
 export interface StructureEntry {

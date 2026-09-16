@@ -23,8 +23,8 @@ describe('icon-from-config (SPEC-094 §8 / WORK-437)', () => {
 		const a = iconMaskTokenCss({ hint: { note: '<svg><circle/></svg>' } });
 		const b = iconMaskTokenCss({ hint: { note: '<svg><rect/></svg>' } });
 		expect(a).not.toBe(b);
-		expect(a).toContain('circle');   // encoded glyph A
-		expect(b).toContain('rect');     // encoded glyph B
+		expect(a).toContain('circle'); // encoded glyph A
+		expect(b).toContain('rect'); // encoded glyph B
 		// Same custom-property name in both — only the value (the glyph) changed,
 		// so a theme re-glyphs by config alone.
 		expect(a).toContain('--rf-icon-hint-note:');
@@ -38,7 +38,10 @@ describe('icon-from-config (SPEC-094 §8 / WORK-437)', () => {
 	});
 
 	it('excludes the global Lucide set (those are {% icon %} glyphs, not surface masks)', () => {
-		const css = iconMaskTokenCss({ global: { box: '<svg><rect/></svg>' }, hint: { note: '<svg/>' } });
+		const css = iconMaskTokenCss({
+			global: { box: '<svg><rect/></svg>' },
+			hint: { note: '<svg/>' },
+		});
 		expect(css).not.toContain('--rf-icon-global-');
 		expect(css).toContain('--rf-icon-hint-note');
 	});
@@ -56,7 +59,13 @@ describe('icon-from-config (SPEC-094 §8 / WORK-437)', () => {
 
 	it('ships the generated icon tokens in the committed base.css', () => {
 		const base = read('tokens/base.css');
-		for (const v of ['hint-note', 'hint-warning', 'hint-caution', 'hint-check', 'accordion-chevron']) {
+		for (const v of [
+			'hint-note',
+			'hint-warning',
+			'hint-caution',
+			'hint-check',
+			'accordion-chevron',
+		]) {
 			expect(base).toContain(`--rf-icon-${v}: url("data:image/svg+xml,`);
 		}
 	});

@@ -10,7 +10,12 @@ export interface OllamaOptions {
 export function formatOllamaRequest(
 	options: CompletionOptions,
 	defaults: { model: string },
-): { model: string; messages: Message[]; stream: boolean; options?: { temperature?: number; num_predict?: number } } {
+): {
+	model: string;
+	messages: Message[];
+	stream: boolean;
+	options?: { temperature?: number; num_predict?: number };
+} {
 	const reqOptions: { temperature?: number; num_predict?: number } = {};
 	if (options.temperature !== undefined) reqOptions.temperature = options.temperature;
 	if (options.maxTokens !== undefined) reqOptions.num_predict = options.maxTokens;
@@ -25,9 +30,10 @@ export function formatOllamaRequest(
 			nonSystem.push(msg);
 		}
 	}
-	const messages: Message[] = systemParts.length > 0
-		? [{ role: 'system', content: systemParts.join('\n\n') }, ...nonSystem]
-		: nonSystem;
+	const messages: Message[] =
+		systemParts.length > 0
+			? [{ role: 'system', content: systemParts.join('\n\n') }, ...nonSystem]
+			: nonSystem;
 
 	return {
 		model: options.model ?? defaults.model,

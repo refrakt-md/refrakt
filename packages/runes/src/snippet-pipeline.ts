@@ -26,7 +26,14 @@
 
 import Markdoc from '@markdoc/markdoc';
 import type { Node } from '@markdoc/markdoc';
-import type { ProjectFiles, PreprocessContext, PreprocessPage, PipelineContext, TransformedPage, AggregatedData } from '@refrakt-md/types';
+import type {
+	ProjectFiles,
+	PreprocessContext,
+	PreprocessPage,
+	PipelineContext,
+	TransformedPage,
+	AggregatedData,
+} from '@refrakt-md/types';
 import { readSnippetFile, SnippetSandboxError } from './lib/read-file.js';
 import { inferLanguage } from './lang-map.js';
 
@@ -37,7 +44,10 @@ const { Ast, Tag } = Markdoc;
  *  Variable, not a string). Unresolvable references (variable missing from
  *  the context, or attribute is some other AST shape) return an empty
  *  string — matching transform-time variable-evaluation behaviour. */
-function resolveAttributeValue(value: unknown, variables: Record<string, unknown> | undefined): string {
+function resolveAttributeValue(
+	value: unknown,
+	variables: Record<string, unknown> | undefined,
+): string {
 	if (value === undefined || value === null) return '';
 	if (typeof value === 'string') return value;
 	if (typeof value === 'number' || typeof value === 'boolean') return String(value);
@@ -134,23 +144,27 @@ function resolveSnippetToFence(
 	files: ProjectFiles,
 ): Node {
 	const pathAttr = resolveAttributeValue(tag.attributes.path, ctx.variables);
-	const lines = tag.attributes.lines !== undefined
-		? resolveAttributeValue(tag.attributes.lines, ctx.variables)
-		: undefined;
-	const langAttr = tag.attributes.lang !== undefined
-		? resolveAttributeValue(tag.attributes.lang, ctx.variables)
-		: undefined;
+	const lines =
+		tag.attributes.lines !== undefined
+			? resolveAttributeValue(tag.attributes.lines, ctx.variables)
+			: undefined;
+	const langAttr =
+		tag.attributes.lang !== undefined
+			? resolveAttributeValue(tag.attributes.lang, ctx.variables)
+			: undefined;
 	// WORK-304 — propagate author-set fence-level annotations from the
 	// snippet rune through to the fence node. The fence schema renders
 	// them as `data-linenumbers` / `data-highlight-lines`. `linenumbers`
 	// arrives as a Boolean from the rune schema; `highlight` as a String.
 	const linenumbers = tag.attributes.linenumbers === true;
-	const highlight = tag.attributes.highlight !== undefined
-		? resolveAttributeValue(tag.attributes.highlight, ctx.variables)
-		: undefined;
+	const highlight =
+		tag.attributes.highlight !== undefined
+			? resolveAttributeValue(tag.attributes.highlight, ctx.variables)
+			: undefined;
 
 	if (!pathAttr) {
-		const msg = 'snippet `path` attribute is required (and an unresolvable variable reference resolves to empty)';
+		const msg =
+			'snippet `path` attribute is required (and an unresolvable variable reference resolves to empty)';
 		ctx.error(msg, page.url);
 		return makeErrorFence('', msg);
 	}
@@ -179,7 +193,7 @@ function resolveSnippetToFence(
 		ctx.warn(warning, page.url);
 	}
 
-	const language = (langAttr && langAttr.length > 0) ? langAttr : inferLanguage(result.relativePath);
+	const language = langAttr && langAttr.length > 0 ? langAttr : inferLanguage(result.relativePath);
 
 	// WORK-304 — write unprefixed `source` / `lines` directly. The fence
 	// schema renders them as `data-source` / `data-lines`. `linenumbers` /
@@ -232,7 +246,8 @@ function walkAndWrap(node: unknown, insideFenceContainer: boolean): unknown {
 	const tag = node as InstanceType<typeof Tag>;
 
 	const dataRune = (tag.attributes as Record<string, unknown> | undefined)?.['data-rune'];
-	const enteredFenceContainer = typeof dataRune === 'string' && FENCE_CONSUMING_CONTAINERS.has(dataRune);
+	const enteredFenceContainer =
+		typeof dataRune === 'string' && FENCE_CONSUMING_CONTAINERS.has(dataRune);
 	const childAncestor = insideFenceContainer || enteredFenceContainer;
 
 	// Wrap matching <pre> elements that aren't inside a fence-consuming container.

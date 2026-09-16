@@ -1,7 +1,13 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Ast, Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, RenderableNodeCursor, asNodes, unwrapParagraphImages } from '@refrakt-md/runes';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	RenderableNodeCursor,
+	asNodes,
+	unwrapParagraphImages,
+} from '@refrakt-md/runes';
 
 /** Uniform outline level for every cell title — cells are siblings in the grid,
  *  so their titles share one heading level (and one visual size), regardless of
@@ -44,9 +50,25 @@ export const bentoCell = createContentModelSchema({
 		size: { type: String, required: false },
 		cols: { type: Number, required: false },
 		rows: { type: Number, required: false },
-		'media-position': { type: String, required: false, matches: ['top', 'bottom', 'start', 'end', 'cover'] },
-		'content-height': { type: String, required: false, matches: ['sm', 'md', 'lg', 'xl'], description: 'Override the grid content-height for this cell (column cells): pin its text area to sm/md/lg/xl' },
-		'media-ratio': { type: String, required: false, matches: ['1/3', '2/5', '1/2', '3/5', '2/3'], description: 'Override the grid media-ratio for this cell (beside cells): the media zone\'s share of the cell width' },
+		'media-position': {
+			type: String,
+			required: false,
+			matches: ['top', 'bottom', 'start', 'end', 'cover'],
+		},
+		'content-height': {
+			type: String,
+			required: false,
+			matches: ['sm', 'md', 'lg', 'xl'],
+			description:
+				'Override the grid content-height for this cell (column cells): pin its text area to sm/md/lg/xl',
+		},
+		'media-ratio': {
+			type: String,
+			required: false,
+			matches: ['1/3', '2/5', '1/2', '3/5', '2/3'],
+			description:
+				"Override the grid media-ratio for this cell (beside cells): the media zone's share of the cell width",
+		},
 		href: { type: String, required: false },
 	},
 	contentModel: {
@@ -93,7 +115,9 @@ export const bentoCell = createContentModelSchema({
 		// Per-cell overrides of the grid's content-height / media-ratio defaults.
 		// Empty when unset → the cell inherits the grid-level var (or the theme
 		// fallback). content-height applies to column cells, media-ratio to beside.
-		const contentHeightMeta = new Tag('meta', { content: (attrs['content-height'] as string) ?? '' });
+		const contentHeightMeta = new Tag('meta', {
+			content: (attrs['content-height'] as string) ?? '',
+		});
 		const mediaRatioMeta = new Tag('meta', { content: (attrs['media-ratio'] as string) ?? '' });
 		properties['content-height'] = contentHeightMeta;
 		properties['media-ratio'] = mediaRatioMeta;
@@ -102,10 +126,16 @@ export const bentoCell = createContentModelSchema({
 		// Media zone — clipped/sized by the shared media-zone selector (WORK-339);
 		// no bento-specific per-guest CSS.
 		if (media.length > 0) {
-			const mediaInner = unwrapParagraphImages(new RenderableNodeCursor(
-				Markdoc.transform(media, config) as RenderableTreeNode[],
-			).toArray() as RenderableTreeNode[]);
-			const mediaDiv = new Tag('div', { 'data-section': 'media', 'data-name': 'media' }, mediaInner);
+			const mediaInner = unwrapParagraphImages(
+				new RenderableNodeCursor(
+					Markdoc.transform(media, config) as RenderableTreeNode[],
+				).toArray() as RenderableTreeNode[],
+			);
+			const mediaDiv = new Tag(
+				'div',
+				{ 'data-section': 'media', 'data-name': 'media' },
+				mediaInner,
+			);
 			refs.media = mediaDiv;
 			children.push(mediaDiv);
 		}
@@ -120,11 +150,15 @@ export const bentoCell = createContentModelSchema({
 			const t = new RenderableNodeCursor(
 				Markdoc.transform([titleNode], config) as RenderableTreeNode[],
 			).toArray()[0];
-			if (Markdoc.Tag.isTag(t)) { titleTag = t; }
+			if (Markdoc.Tag.isTag(t)) {
+				titleTag = t;
+			}
 		}
-		const bodyInner = unwrapParagraphImages(new RenderableNodeCursor(
-			Markdoc.transform(body, config) as RenderableTreeNode[],
-		).toArray() as RenderableTreeNode[]);
+		const bodyInner = unwrapParagraphImages(
+			new RenderableNodeCursor(
+				Markdoc.transform(body, config) as RenderableTreeNode[],
+			).toArray() as RenderableTreeNode[],
+		);
 		const bodyDiv = new Tag('div', { 'data-name': 'body' }, bodyInner);
 
 		let footerTag: InstanceType<typeof Tag> | undefined;
@@ -137,16 +171,26 @@ export const bentoCell = createContentModelSchema({
 
 		// Flat slots, in order. The engine's layout assembly wraps title/body/
 		// footer into `content`.
-		if (titleTag) { refs.title = titleTag; children.push(titleTag); }
+		if (titleTag) {
+			refs.title = titleTag;
+			children.push(titleTag);
+		}
 		refs.body = bodyDiv;
 		children.push(bodyDiv);
-		if (footerTag) { refs.footer = footerTag; children.push(footerTag); }
+		if (footerTag) {
+			refs.footer = footerTag;
+			children.push(footerTag);
+		}
 
 		// Whole-cell link (stretched overlay; nested links stay clickable).
 		const href = String(attrs.href ?? '');
 		let linkTag: InstanceType<typeof Tag> | undefined;
 		if (href) {
-			linkTag = new Tag('a', { 'data-name': 'link', href, 'aria-hidden': 'true', tabindex: '-1' }, []);
+			linkTag = new Tag(
+				'a',
+				{ 'data-name': 'link', href, 'aria-hidden': 'true', tabindex: '-1' },
+				[],
+			);
 			refs.link = linkTag;
 			children.push(linkTag);
 		}
@@ -160,8 +204,11 @@ export const bentoCell = createContentModelSchema({
 		});
 		// Author-controlled media placement, with a size-derived default: large/
 		// full cells place media beside the body; smaller cells stack it on top.
-		const defaultPosition = (size === 'large' || size === 'full') ? 'start' : 'top';
-		(node as any).attributes = { ...(node as any).attributes, 'data-media-position': attrs['media-position'] ?? defaultPosition };
+		const defaultPosition = size === 'large' || size === 'full' ? 'start' : 'top';
+		(node as any).attributes = {
+			...(node as any).attributes,
+			'data-media-position': attrs['media-position'] ?? defaultPosition,
+		};
 		return node;
 	},
 });
@@ -184,11 +231,15 @@ function tieredSize(level: number): string {
 function presetSpans(size: string, columns: number): { cols: number; rows: number } {
 	const clamp = (n: number) => Math.max(1, Math.min(columns, Math.round(n)));
 	switch (size) {
-		case 'full': return { cols: columns, rows: 1 };
-		case 'large': return { cols: clamp((columns * 2) / 3), rows: 2 };
-		case 'medium': return { cols: clamp(columns / 2), rows: 1 };
+		case 'full':
+			return { cols: columns, rows: 1 };
+		case 'large':
+			return { cols: clamp((columns * 2) / 3), rows: 2 };
+		case 'medium':
+			return { cols: clamp(columns / 2), rows: 1 };
 		case 'small':
-		default: return { cols: clamp(columns / 3), rows: 1 };
+		default:
+			return { cols: clamp(columns / 3), rows: 1 };
 	}
 }
 
@@ -203,7 +254,9 @@ function parseLevels(spec: string): { cols: number; rows: number }[] {
 		if (!entry) continue;
 		const m = entry.match(/^(\d+)(?:x(\d+))?$/i);
 		if (!m) {
-			console.warn(`[bento] Ignoring malformed levels rung "${entry}" — expected a column count like "4" or a footprint like "4x2".`);
+			console.warn(
+				`[bento] Ignoring malformed levels rung "${entry}" — expected a column count like "4" or a footprint like "4x2".`,
+			);
 			continue;
 		}
 		rungs.push({ cols: parseInt(m[1], 10), rows: m[2] ? parseInt(m[2], 10) : 1 });
@@ -218,7 +271,13 @@ function parseLevels(spec: string): { cols: number; rows: number }[] {
  *  clamped to the last rung. The heading itself becomes the cell title; content
  *  before the first heading is returned as-is (bento is a grid primitive, not a
  *  page-section — no preamble semantics). */
-function convertHeadings(nodes: Node[], columns: number, ladder: { cols: number; rows: number }[] | null, gridPos?: string, gridFrame?: Record<string, string>): Node[] {
+function convertHeadings(
+	nodes: Node[],
+	columns: number,
+	ladder: { cols: number; rows: number }[] | null,
+	gridPos?: string,
+	gridFrame?: Record<string, string>,
+): Node[] {
 	const preamble: Node[] = [];
 	const cells: Node[] = [];
 
@@ -239,7 +298,9 @@ function convertHeadings(nodes: Node[], columns: number, ladder: { cols: number;
 			// auto-cap still applies.
 			const rungIndex = Math.max(0, level - 1);
 			const { cols, rows } = ladder[Math.min(rungIndex, ladder.length - 1)];
-			cells.push(new Ast.Node('tag', { size: '', cols, rows, ...posAttr }, cellChildren, 'bento-cell'));
+			cells.push(
+				new Ast.Node('tag', { size: '', cols, rows, ...posAttr }, cellChildren, 'bento-cell'),
+			);
 		} else {
 			const size = tieredSize(level);
 			const { cols, rows } = presetSpans(size, columns);
@@ -268,14 +329,56 @@ export { presetSpans };
 
 export const bento = createContentModelSchema({
 	attributes: {
-		gap: { type: String, required: false, description: 'Space between grid cells (CSS length value)' },
-		columns: { type: Number, required: false, description: 'Number of columns in the bento grid (default 6)' },
-		levels: { type: String, required: false, description: 'Heading-sugar footprint ladder, indexed by absolute heading level (rung 0 = h1, rung 1 = h2, …): comma-separated rungs, each a column count "W" (× 1 row) or a footprint "WxH" (e.g. "6,5,4,3,2,1" or "4x2,3x1,2x1"). Depths beyond the last rung clamp to it. Omit for tiered sizing. Ignored for explicit-cell grids.' },
-		'row-height': { type: String, required: false, matches: ['sm', 'md', 'lg', 'xl'], description: 'Uniform grid row track height: sm, md (default), lg, or xl' },
-		'content-height': { type: String, required: false, matches: ['sm', 'md', 'lg', 'xl'], description: 'Grid default: pin each column cell\'s text area to a fixed height (sm/md/lg/xl) so cells align vertically; per-cell overridable; reverts to natural height on mobile' },
-		'media-ratio': { type: String, required: false, matches: ['1/3', '2/5', '1/2', '3/5', '2/3'], description: 'Grid default for beside (start/end) cells: the media zone\'s share of the cell width; per-cell overridable' },
-		'media-position': { type: String, required: false, matches: ['top', 'bottom', 'start', 'end', 'cover'], description: 'Grid default media placement for every cell (overrides the per-cell size-derived default); a cell\'s own media-position still wins' },
-		collapse: { type: String, required: false, matches: ['sm', 'md', 'lg', 'never'], description: 'Binary collapse breakpoint: above it the grid renders as authored, below it cells stack into a single column with auto row tracks. Default sm (640px). `never` to disable.' },
+		gap: {
+			type: String,
+			required: false,
+			description: 'Space between grid cells (CSS length value)',
+		},
+		columns: {
+			type: Number,
+			required: false,
+			description: 'Number of columns in the bento grid (default 6)',
+		},
+		levels: {
+			type: String,
+			required: false,
+			description:
+				'Heading-sugar footprint ladder, indexed by absolute heading level (rung 0 = h1, rung 1 = h2, …): comma-separated rungs, each a column count "W" (× 1 row) or a footprint "WxH" (e.g. "6,5,4,3,2,1" or "4x2,3x1,2x1"). Depths beyond the last rung clamp to it. Omit for tiered sizing. Ignored for explicit-cell grids.',
+		},
+		'row-height': {
+			type: String,
+			required: false,
+			matches: ['sm', 'md', 'lg', 'xl'],
+			description: 'Uniform grid row track height: sm, md (default), lg, or xl',
+		},
+		'content-height': {
+			type: String,
+			required: false,
+			matches: ['sm', 'md', 'lg', 'xl'],
+			description:
+				"Grid default: pin each column cell's text area to a fixed height (sm/md/lg/xl) so cells align vertically; per-cell overridable; reverts to natural height on mobile",
+		},
+		'media-ratio': {
+			type: String,
+			required: false,
+			matches: ['1/3', '2/5', '1/2', '3/5', '2/3'],
+			description:
+				"Grid default for beside (start/end) cells: the media zone's share of the cell width; per-cell overridable",
+		},
+		'media-position': {
+			type: String,
+			required: false,
+			matches: ['top', 'bottom', 'start', 'end', 'cover'],
+			description:
+				"Grid default media placement for every cell (overrides the per-cell size-derived default); a cell's own media-position still wins",
+		},
+		collapse: {
+			type: String,
+			required: false,
+			matches: ['sm', 'md', 'lg', 'never'],
+			description:
+				'Binary collapse breakpoint: above it the grid renders as authored, below it cells stack into a single column with auto row tracks. Default sm (640px). `never` to disable.',
+		},
 	},
 	contentModel: (attrs) => ({
 		type: 'custom' as const,
@@ -291,25 +394,38 @@ export const bento = createContentModelSchema({
 			// the media-position cascade. The grid itself never claims this chrome
 			// (cells are the visual cards), so the attrs are consumed here and
 			// stripped from the grid. A cell's own value still wins.
-			const GRID_CASCADE = ['frame', 'frame-aspect', 'frame-displace', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-shadow', 'elevation'];
+			const GRID_CASCADE = [
+				'frame',
+				'frame-aspect',
+				'frame-displace',
+				'frame-offset',
+				'frame-oversize',
+				'frame-place',
+				'frame-anchor',
+				'frame-shadow',
+				'elevation',
+			];
 			const gridFrame: Record<string, string> = {};
 			for (const k of GRID_CASCADE) {
 				const v = attrs[k];
 				if (v != null && v !== '') gridFrame[k] = String(v);
 			}
-			const stripGridFrame = () => { for (const k of GRID_CASCADE) delete (attrs as Record<string, unknown>)[k]; };
+			const stripGridFrame = () => {
+				for (const k of GRID_CASCADE) delete (attrs as Record<string, unknown>)[k];
+			};
 			// Two front doors (no mixing): if the grid contains explicit
 			// `{% bento-cell %}` tags, use them directly and short-circuit heading
 			// conversion (headings/loose content are ignored — explicit wins).
-			const hasExplicit = ns.some(n => n.type === 'tag' && (n as any).tag === 'bento-cell');
+			const hasExplicit = ns.some((n) => n.type === 'tag' && (n as any).tag === 'bento-cell');
 			if (hasExplicit) {
-				const cells = ns.filter(n => n.type === 'tag' && (n as any).tag === 'bento-cell');
+				const cells = ns.filter((n) => n.type === 'tag' && (n as any).tag === 'bento-cell');
 				for (const cell of cells) {
 					if (gridPos && cell.attributes?.['media-position'] === undefined) {
 						cell.attributes = { ...cell.attributes, 'media-position': gridPos };
 					}
 					for (const [k, v] of Object.entries(gridFrame)) {
-						if (cell.attributes?.[k] === undefined) cell.attributes = { ...cell.attributes, [k]: v };
+						if (cell.attributes?.[k] === undefined)
+							cell.attributes = { ...cell.attributes, [k]: v };
 					}
 				}
 				stripGridFrame();
@@ -320,7 +436,8 @@ export const bento = createContentModelSchema({
 			stripGridFrame();
 			return cells;
 		},
-		description: 'A grid of cells. Heading sugar (each heading → a cell, tile size from depth) OR explicit {% bento-cell %} cells (full control). A grid primitive — no page-section preamble.',
+		description:
+			'A grid of cells. Heading sugar (each heading → a cell, tile size from depth) OR explicit {% bento-cell %} cells (full control). A grid primitive — no page-section preamble.',
 	}),
 	transform(resolved, attrs, config) {
 		const allChildren = asNodes(resolved.children);
@@ -344,15 +461,24 @@ export const bento = createContentModelSchema({
 		const gapMeta = new Tag('meta', { content: (attrs.gap as string) ?? '1rem' });
 		const columnsMeta = new Tag('meta', { content: String(columns) });
 		const rowHeightMeta = new Tag('meta', { content: (attrs['row-height'] as string) ?? '' });
-		const contentHeightMeta = new Tag('meta', { content: (attrs['content-height'] as string) ?? '' });
+		const contentHeightMeta = new Tag('meta', {
+			content: (attrs['content-height'] as string) ?? '',
+		});
 		const mediaRatioMeta = new Tag('meta', { content: (attrs['media-ratio'] as string) ?? '' });
 		const collapseMeta = new Tag('meta', { content: (attrs.collapse as string) ?? '' });
 
 		const cells = cellStream.tag('div').typeof('BentoCell');
 		const grid = cells.wrap('div');
 
-		const children: RenderableTreeNode[] = [gapMeta, columnsMeta, rowHeightMeta, contentHeightMeta, mediaRatioMeta, collapseMeta];
-		if (lead.count() > 0) children.push(...lead.toArray() as RenderableTreeNode[]);
+		const children: RenderableTreeNode[] = [
+			gapMeta,
+			columnsMeta,
+			rowHeightMeta,
+			contentHeightMeta,
+			mediaRatioMeta,
+			collapseMeta,
+		];
+		if (lead.count() > 0) children.push(...(lead.toArray() as RenderableTreeNode[]));
 		children.push(grid.next());
 
 		return createComponentRenderable({

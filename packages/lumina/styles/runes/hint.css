@@ -1,67 +1,66 @@
 @layer skin {
-/* Hint — skin. The sunken surface chrome (fill, border, radius) comes from
+	/* Hint — skin. The sunken surface chrome (fill, border, radius) comes from
  * dimensions/surfaces.css via defaultElevation: 'sunken'; only the bespoke
  * padding stays here so the icon+title+body breathes wider than --rune-padding
  * at compact density. The header layout + icon-glyph box mechanism live in
  * @refrakt-md/skeleton (styles/runes/hint.css). */
-.rf-hint {
-	--hint-color: var(--rf-color-info);
-	padding: var(--rf-spacing-snug) var(--rf-spacing-cozy);
-}
-.rf-hint__header {
-	margin-bottom: var(--rf-spacing-xs);
-	color: var(--hint-color);
-}
-.rf-hint__header > span {
-	gap: var(--rf-spacing-xs);
-}
-.rf-hint__header [data-icon-group="hint"]::before {
-	background-color: var(--hint-color);
-}
-.rf-hint__header [data-meta-value] {
-	font-weight: var(--rf-weight-semibold);
-	text-transform: capitalize;
-	font-size: var(--rf-text-xs);
-	letter-spacing: var(--rf-tracking-wide);
-}
-.rf-hint__body {
-	font-size: var(--rf-text-sm);
-	line-height: var(--rf-leading-relaxed);
-}
-.rf-hint__body p:last-child {
-	margin-bottom: 0;
-}
-/* Per-variant colour drives the icon and title only — surface stays
+	.rf-hint {
+		--hint-color: var(--rf-color-info);
+		padding: var(--rf-spacing-snug) var(--rf-spacing-cozy);
+	}
+	.rf-hint__header {
+		margin-bottom: var(--rf-spacing-xs);
+		color: var(--hint-color);
+	}
+	.rf-hint__header > span {
+		gap: var(--rf-spacing-xs);
+	}
+	.rf-hint__header [data-icon-group="hint"]::before {
+		background-color: var(--hint-color);
+	}
+	.rf-hint__header [data-meta-value] {
+		font-weight: var(--rf-weight-semibold);
+		text-transform: capitalize;
+		font-size: var(--rf-text-xs);
+		letter-spacing: var(--rf-tracking-wide);
+	}
+	.rf-hint__body {
+		font-size: var(--rf-text-sm);
+		line-height: var(--rf-leading-relaxed);
+	}
+	.rf-hint__body p:last-child {
+		margin-bottom: 0;
+	}
+	/* Per-variant colour drives the icon and title only — surface stays
    neutral so the hint reads as a quiet panel, not a saturated banner. */
-.rf-hint--note {
-	--hint-color: var(--rf-color-info);
-}
-.rf-hint--warning {
-	--hint-color: var(--rf-color-warning);
-}
-.rf-hint--caution {
-	--hint-color: var(--rf-color-danger);
-}
-.rf-hint--check {
-	--hint-color: var(--rf-color-success);
-}
+	.rf-hint--note {
+		--hint-color: var(--rf-color-info);
+	}
+	.rf-hint--warning {
+		--hint-color: var(--rf-color-warning);
+	}
+	.rf-hint--caution {
+		--hint-color: var(--rf-color-danger);
+	}
+	.rf-hint--check {
+		--hint-color: var(--rf-color-success);
+	}
 
-/* Context-aware: compact hint when nested inside a hero */
-.rf-hint--in-hero {
-	margin: var(--rf-spacing-cozy) 0 0;
-	padding: var(--rf-spacing-sm) var(--rf-spacing-cozy);
-	border-radius: var(--rf-radius-sm);
-	font-size: var(--rf-text-sm);
-}
-.rf-hint--in-hero .rf-hint__header {
-	margin-bottom: var(--rf-spacing-xs);
-}
+	/* Context-aware: compact hint when nested inside a hero */
+	.rf-hint--in-hero {
+		margin: var(--rf-spacing-cozy) 0 0;
+		padding: var(--rf-spacing-sm) var(--rf-spacing-cozy);
+		border-radius: var(--rf-radius-sm);
+		font-size: var(--rf-text-sm);
+	}
+	.rf-hint--in-hero .rf-hint__header {
+		margin-bottom: var(--rf-spacing-xs);
+	}
 
-/* Context-aware: hint inside a feature block */
-.rf-hint--in-feature {
-	margin: var(--rf-spacing-snug) 0 0;
-	padding: var(--rf-spacing-sm) var(--rf-spacing-snug);
-	font-size: var(--rf-text-sm);
-}
-
+	/* Context-aware: hint inside a feature block */
+	.rf-hint--in-feature {
+		margin: var(--rf-spacing-snug) 0 0;
+		padding: var(--rf-spacing-sm) var(--rf-spacing-snug);
+		font-size: var(--rf-text-sm);
+	}
 }

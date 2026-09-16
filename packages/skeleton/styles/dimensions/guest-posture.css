@@ -14,7 +14,8 @@
 [data-section="media"][data-guest-posture="presentational"] {
 	pointer-events: none;
 }
-[data-section="media"][data-guest-posture="presentational"] :is(.rf-tabs__tabs, .rf-codegroup__tabs) {
+[data-section="media"][data-guest-posture="presentational"]
+	:is(.rf-tabs__tabs, .rf-codegroup__tabs) {
 	display: none;
 }
 

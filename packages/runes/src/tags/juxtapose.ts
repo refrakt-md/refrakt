@@ -10,11 +10,33 @@ const orientationType = ['horizontal', 'vertical'] as const;
 
 export const juxtapose = createContentModelSchema({
 	attributes: {
-		variant: { type: String, required: false, matches: variantType.slice(), description: 'Interaction mode: slider, toggle, fade, or auto' },
-		orientation: { type: String, required: false, matches: orientationType.slice(), description: 'Divider axis for slider/auto variants (horizontal or vertical)' },
-		position: { type: Number, required: false, description: 'Initial slider position as a percentage (0-100)' },
-		duration: { type: Number, required: false, description: 'Animation duration in milliseconds (fade/auto variants)' },
-		labels: { type: String, required: false, description: 'Comma-separated custom labels for the two panels' },
+		variant: {
+			type: String,
+			required: false,
+			matches: variantType.slice(),
+			description: 'Interaction mode: slider, toggle, fade, or auto',
+		},
+		orientation: {
+			type: String,
+			required: false,
+			matches: orientationType.slice(),
+			description: 'Divider axis for slider/auto variants (horizontal or vertical)',
+		},
+		position: {
+			type: Number,
+			required: false,
+			description: 'Initial slider position as a percentage (0-100)',
+		},
+		duration: {
+			type: Number,
+			required: false,
+			description: 'Animation duration in milliseconds (fade/auto variants)',
+		},
+		labels: {
+			type: String,
+			required: false,
+			description: 'Comma-separated custom labels for the two panels',
+		},
 	},
 	contentModel: {
 		type: 'delimited' as const,
@@ -42,7 +64,8 @@ export const juxtapose = createContentModelSchema({
 			const label = labelParts[i];
 			const nameTag = label ? new Tag('span', {}, [label]) : undefined;
 
-			return createComponentRenderable({ rune: 'juxtapose-panel',
+			return createComponentRenderable({
+				rune: 'juxtapose-panel',
 				tag: 'div',
 				properties: {},
 				refs: {
@@ -62,7 +85,8 @@ export const juxtapose = createContentModelSchema({
 		const positionMeta = new Tag('meta', { content: String(attrs.position ?? 50) });
 		const durationMeta = new Tag('meta', { content: String(attrs.duration ?? 1000) });
 
-		return createComponentRenderable({ rune: 'juxtapose',
+		return createComponentRenderable({
+			rune: 'juxtapose',
 			tag: 'section',
 			properties: {
 				panel: panels,
@@ -72,13 +96,7 @@ export const juxtapose = createContentModelSchema({
 				duration: durationMeta,
 			},
 			refs: { panels: panelsContainer },
-			children: [
-				variantMeta,
-				orientationMeta,
-				positionMeta,
-				durationMeta,
-				panelsContainer.next(),
-			],
+			children: [variantMeta, orientationMeta, positionMeta, durationMeta, panelsContainer.next()],
 		});
 	},
 });

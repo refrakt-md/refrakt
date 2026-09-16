@@ -26,12 +26,15 @@ describe('Lumina CSS entry parity (base.css ↔ index.css)', () => {
 	const index = dimensionImports(read('index.css'));
 
 	it('base.css imports every dimension index.css does (production uses base.css)', () => {
-		const missingFromBase = [...index].filter(d => !base.has(d)).sort();
-		expect(missingFromBase, 'dimensions in index.css but not base.css — they would vanish from production builds').toEqual([]);
+		const missingFromBase = [...index].filter((d) => !base.has(d)).sort();
+		expect(
+			missingFromBase,
+			'dimensions in index.css but not base.css — they would vanish from production builds',
+		).toEqual([]);
 	});
 
 	it('index.css imports every dimension base.css does', () => {
-		const missingFromIndex = [...base].filter(d => !index.has(d)).sort();
+		const missingFromIndex = [...base].filter((d) => !index.has(d)).sort();
 		expect(missingFromIndex, 'dimensions in base.css but not index.css').toEqual([]);
 	});
 

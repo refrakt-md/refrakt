@@ -21,9 +21,7 @@ describe('Renderer extraction integration', () => {
 				makeTag('img', { src: '/photo.jpg', alt: 'Dish photo' }),
 			]),
 			makeTag('div', { 'data-name': 'content' }, [
-				makeTag('header', { 'data-name': 'headline' }, [
-					makeTag('h2', {}, ['Chocolate Cake']),
-				]),
+				makeTag('header', { 'data-name': 'headline' }, [makeTag('h2', {}, ['Chocolate Cake'])]),
 				makeTag('ul', { 'data-name': 'ingredients' }, [
 					makeTag('li', {}, ['flour']),
 					makeTag('li', {}, ['sugar']),
@@ -66,8 +64,11 @@ describe('Renderer extraction integration', () => {
 		// The 'content' ref has nested data-name children: headline, ingredients, steps
 		const contentRef = iface.refs.content[0];
 		const nestedNames = contentRef.children
-			.filter((c): c is SerializedTag => typeof c === 'object' && c !== null && !Array.isArray(c) && (c as any).$$mdtype === 'Tag')
-			.map(c => c.attributes['data-name'])
+			.filter(
+				(c): c is SerializedTag =>
+					typeof c === 'object' && c !== null && !Array.isArray(c) && (c as any).$$mdtype === 'Tag',
+			)
+			.map((c) => c.attributes['data-name'])
 			.filter(Boolean);
 
 		expect(nestedNames).toContain('headline');

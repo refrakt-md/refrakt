@@ -46,12 +46,21 @@ describe('validateThemeTokensConfig', () => {
 	it('accepts the SPEC-056 extended syntax roles (Nord active-preset case)', () => {
 		const r = validateThemeTokensConfig({
 			syntax: {
-				keyword: '#5e81ac', function: '#88c0d0', type: '#8fbcbb',
-				string: '#a3be8c', constant: '#b48ead', comment: '#4c566a',
-				punctuation: '#4c566a', variable: '#2e3440',
-				number: '#d08770', regex: '#ebcb8b', tag: '#5e81ac',
-				attribute: '#8fbcbb', operator: '#81a1c1',
-				property: '#2e3440', parameter: '#2e3440',
+				keyword: '#5e81ac',
+				function: '#88c0d0',
+				type: '#8fbcbb',
+				string: '#a3be8c',
+				constant: '#b48ead',
+				comment: '#4c566a',
+				punctuation: '#4c566a',
+				variable: '#2e3440',
+				number: '#d08770',
+				regex: '#ebcb8b',
+				tag: '#5e81ac',
+				attribute: '#8fbcbb',
+				operator: '#81a1c1',
+				property: '#2e3440',
+				parameter: '#2e3440',
 			},
 			modes: {
 				dark: {
@@ -174,8 +183,12 @@ describe('validateThemeTokensConfig', () => {
 		// Representative real config — verifies the full surface accepts a complete config
 		const r = validateThemeTokensConfig({
 			color: {
-				text: '#1c1a17', muted: '#6b6661', border: '#e8e5df', bg: '#f6f4ef',
-				primary: '#1c1a17', 'primary-hover': '#3a342d',
+				text: '#1c1a17',
+				muted: '#6b6661',
+				border: '#e8e5df',
+				bg: '#f6f4ef',
+				primary: '#1c1a17',
+				'primary-hover': '#3a342d',
 				surface: { base: '#fcfaf6', hover: '#efece5', active: '#e8e5df', raised: '#ffffff' },
 				info: { base: '#34547a', bg: '#e8edf4', border: '#c5d2e0' },
 				warning: { base: '#9c5a18', bg: '#f5ebd9', border: '#e0c9a3' },
@@ -184,9 +197,13 @@ describe('validateThemeTokensConfig', () => {
 				code: { bg: '#ebeae8', text: '#1c1a17', 'inline-bg': '#e6e5e3' },
 			},
 			syntax: {
-				keyword: '#2a5c63', function: '#4a3b6e', string: '#8a3a3a',
-				constant: '#876327', comment: '#8a857d',
-				punctuation: '#6b6661', variable: '#1c1a17',
+				keyword: '#2a5c63',
+				function: '#4a3b6e',
+				string: '#8a3a3a',
+				constant: '#876327',
+				comment: '#8a857d',
+				punctuation: '#6b6661',
+				variable: '#1c1a17',
 			},
 			modes: {
 				dark: {

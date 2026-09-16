@@ -36,7 +36,11 @@ export const referenceTool: McpTool = {
 	inputSchema: {
 		type: 'object',
 		properties: {
-			format: { type: 'string', enum: ['markdown', 'json'], description: 'Output format. Default: json.' },
+			format: {
+				type: 'string',
+				enum: ['markdown', 'json'],
+				description: 'Output format. Default: json.',
+			},
 			site: siteProp,
 			rune: { type: 'string', description: 'When set, emit reference for a single rune by name.' },
 		},
@@ -49,9 +53,7 @@ export const referenceTool: McpTool = {
 		args.push('--format', o.format ?? 'json');
 		if (o.site) args.push('--site', o.site);
 		const stdout = invokeCli(args, ctx.cwd);
-		return o.format === 'markdown'
-			? { format: 'markdown', text: stdout }
-			: tryParseJson(stdout);
+		return o.format === 'markdown' ? { format: 'markdown', text: stdout } : tryParseJson(stdout);
 	},
 };
 
@@ -171,7 +173,8 @@ export const inspectListTool: McpTool = {
 
 export const pluginsListTool: McpTool = {
 	name: 'refrakt.plugins_list',
-	description: 'List installed refrakt plugin packages with their commands and MCP schema availability.',
+	description:
+		'List installed refrakt plugin packages with their commands and MCP schema availability.',
 	inputSchema: { type: 'object', properties: {}, additionalProperties: false },
 	async handler(_input, ctx) {
 		return tryParseJson(invokeCli(['plugins', 'list', '--json'], ctx.cwd));
@@ -184,7 +187,8 @@ export const pluginsListTool: McpTool = {
 
 export const detectTool: McpTool = {
 	name: 'refrakt.detect',
-	description: 'Report the detected refrakt context (plan dir, declared sites, installed plugins, config source).',
+	description:
+		'Report the detected refrakt context (plan dir, declared sites, installed plugins, config source).',
 	inputSchema: { type: 'object', properties: {}, additionalProperties: false },
 	async handler(_input, ctx) {
 		const { detect } = await import('../detect.js');

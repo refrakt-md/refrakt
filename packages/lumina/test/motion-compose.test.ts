@@ -21,9 +21,12 @@ describe('motion dimension transform composition', () => {
 		// `transition: transform …` (which name the property without setting it).
 		const offending = motionCss
 			.split(/[;{}]/)
-			.map(s => s.trim())
-			.filter(decl => /^transform\s*:/.test(decl));
-		expect(offending, `motion.css must not set the transform shorthand: ${offending.join(' | ')}`).toEqual([]);
+			.map((s) => s.trim())
+			.filter((decl) => /^transform\s*:/.test(decl));
+		expect(
+			offending,
+			`motion.css must not set the transform shorthand: ${offending.join(' | ')}`,
+		).toEqual([]);
 	});
 
 	it('gates the pre-entrance (hidden) state under the root data-animate flag', () => {

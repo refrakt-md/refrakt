@@ -6,22 +6,28 @@ import type { RefraktConfig } from '@refrakt-md/types';
 import { applyTemplateSite } from '../src/commands/template.js';
 
 const cleanup: string[] = [];
-afterEach(() => { for (const d of cleanup) rmSync(d, { recursive: true, force: true }); cleanup.length = 0; });
+afterEach(() => {
+	for (const d of cleanup) rmSync(d, { recursive: true, force: true });
+	cleanup.length = 0;
+});
 
 function makeTemplate(): string {
 	const dir = mkdtempSync(join(tmpdir(), 'rf-tpl-'));
 	cleanup.push(dir);
 	mkdirSync(join(dir, 'content'), { recursive: true });
 	writeFileSync(join(dir, 'content', 'index.md'), '# hi\n');
-	writeFileSync(join(dir, 'template.json'), JSON.stringify({
-		kind: 'site',
-		refrakt: '>=0.24 <0.26',
-		site: {
-			theme: { package: '@refrakt-md/lumina' },
-			plugins: ['@refrakt-md/docs'],
-			routeRules: [{ pattern: '**', layout: 'docs' }],
-		},
-	}));
+	writeFileSync(
+		join(dir, 'template.json'),
+		JSON.stringify({
+			kind: 'site',
+			refrakt: '>=0.24 <0.26',
+			site: {
+				theme: { package: '@refrakt-md/lumina' },
+				plugins: ['@refrakt-md/docs'],
+				routeRules: [{ pattern: '**', layout: 'docs' }],
+			},
+		}),
+	);
 	return dir;
 }
 
@@ -30,7 +36,9 @@ describe('applyTemplateSite — add a new site (SPEC-110 §4 kind:site)', () => 
 		const tpl = makeTemplate();
 		const root = mkdtempSync(join(tmpdir(), 'rf-proj-'));
 		cleanup.push(root);
-		const raw: RefraktConfig = { site: { contentDir: './content', theme: '@refrakt-md/lumina' } } as RefraktConfig;
+		const raw: RefraktConfig = {
+			site: { contentDir: './content', theme: '@refrakt-md/lumina' },
+		} as RefraktConfig;
 
 		const { deps } = applyTemplateSite(raw, tpl, 'blog', root);
 
@@ -57,7 +65,9 @@ describe('applyTemplateSite — add a new site (SPEC-110 §4 kind:site)', () => 
 		writeFileSync(join(dir, 'template.json'), JSON.stringify({ kind: 'section', site: {} }));
 		const root = mkdtempSync(join(tmpdir(), 'rf-proj-'));
 		cleanup.push(root);
-		const raw = { sites: { default: { contentDir: './content', theme: 'x' } } } as unknown as RefraktConfig;
+		const raw = {
+			sites: { default: { contentDir: './content', theme: 'x' } },
+		} as unknown as RefraktConfig;
 		expect(() => applyTemplateSite(raw, dir, 'blog', root)).toThrow(/only "site" templates/);
 	});
 });

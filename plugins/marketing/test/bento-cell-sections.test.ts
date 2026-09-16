@@ -10,7 +10,9 @@ import { config as marketingConfig } from '../src/config.js';
 // layout has a `title` slot and a `body` slot side by side.
 
 const themeConfig: ThemeConfig = {
-	prefix: 'rf', tokenPrefix: '--rf', icons: {},
+	prefix: 'rf',
+	tokenPrefix: '--rf',
+	icons: {},
 	runes: marketingConfig,
 };
 

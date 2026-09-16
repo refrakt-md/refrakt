@@ -1,7 +1,12 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
 import { resolve, join, relative, dirname } from 'path';
 import type { CliPlugin, Plugin, PluginRune } from '@refrakt-md/types';
-import { validateThemeConfig, type ValidationResult, type ValidationError, type ValidationWarning } from '@refrakt-md/transform';
+import {
+	validateThemeConfig,
+	type ValidationResult,
+	type ValidationError,
+	type ValidationWarning,
+} from '@refrakt-md/transform';
 import { parseFixture, type FixtureRole } from '@refrakt-md/runes';
 import { discoverPlugins } from '../lib/plugins.js';
 
@@ -72,11 +77,16 @@ async function validatePlugin(pluginDir: string): Promise<PluginValidationResult
 		errors.push({ path: 'package.json.name', message: 'Required and must be a non-empty string' });
 	}
 	if (!pkgJson.version || typeof pkgJson.version !== 'string') {
-		errors.push({ path: 'package.json.version', message: 'Required and must be a non-empty string' });
+		errors.push({
+			path: 'package.json.version',
+			message: 'Required and must be a non-empty string',
+		});
 	}
 
 	// Check main/exports entry point
-	const mainEntry = pkgJson.main ?? (pkgJson.exports as Record<string, unknown>)?.['.' as keyof typeof pkgJson.exports];
+	const mainEntry =
+		pkgJson.main ??
+		(pkgJson.exports as Record<string, unknown>)?.['.' as keyof typeof pkgJson.exports];
 	if (!mainEntry) {
 		warnings.push({ path: 'package.json', message: 'No "main" or "exports" entry point defined' });
 	}
@@ -98,13 +108,20 @@ async function validatePlugin(pluginDir: string): Promise<PluginValidationResult
 				break;
 			} catch (err) {
 				// Try next entry point
-				warnings.push({ path: relative(pluginDir, entry), message: `Import failed: ${(err as Error).message}` });
+				warnings.push({
+					path: relative(pluginDir, entry),
+					message: `Import failed: ${(err as Error).message}`,
+				});
 			}
 		}
 	}
 
 	if (!pkg) {
-		errors.push({ path: 'exports', message: 'Could not find a valid Plugin export. Build the package first (npm run build) or ensure src/index.ts exports a Plugin object.' });
+		errors.push({
+			path: 'exports',
+			message:
+				'Could not find a valid Plugin export. Build the package first (npm run build) or ensure src/index.ts exports a Plugin object.',
+		});
 		return { valid: false, pluginName: npmName, errors, warnings };
 	}
 
@@ -134,7 +151,10 @@ async function validatePlugin(pluginDir: string): Promise<PluginValidationResult
 			}
 			const rc = config as Record<string, unknown>;
 			if (!rc.block || typeof rc.block !== 'string') {
-				errors.push({ path: `theme.runes.${typeofName}.block`, message: 'Required and must be a non-empty string' });
+				errors.push({
+					path: `theme.runes.${typeofName}.block`,
+					message: 'Required and must be a non-empty string',
+				});
 			}
 		}
 	}
@@ -143,11 +163,17 @@ async function validatePlugin(pluginDir: string): Promise<PluginValidationResult
 	if (pkg.theme?.icons) {
 		for (const [group, variants] of Object.entries(pkg.theme.icons)) {
 			if (typeof variants !== 'object' || variants === null) {
-				errors.push({ path: `theme.icons.${group}`, message: 'Must be an object mapping variant names to SVG strings' });
+				errors.push({
+					path: `theme.icons.${group}`,
+					message: 'Must be an object mapping variant names to SVG strings',
+				});
 			} else {
 				for (const [variant, svg] of Object.entries(variants)) {
 					if (typeof svg !== 'string') {
-						errors.push({ path: `theme.icons.${group}.${variant}`, message: 'Must be an SVG string' });
+						errors.push({
+							path: `theme.icons.${group}.${variant}`,
+							message: 'Must be an SVG string',
+						});
 					}
 				}
 			}
@@ -189,7 +215,10 @@ async function validatePlugin(pluginDir: string): Promise<PluginValidationResult
 	// Runes that have some fixture but no `canonical` one — the role consumers
 	// (gallery structural coverage, inspect) select by.
 	const runesWithoutCanonical = Object.entries(pkg.runes)
-		.filter(([name, entry]) => !isChildRune(entry) && hasAnyFixture(name, entry) && !hasCanonical(name, entry))
+		.filter(
+			([name, entry]) =>
+				!isChildRune(entry) && hasAnyFixture(name, entry) && !hasCanonical(name, entry),
+		)
 		.map(([name]) => name);
 
 	if (runesWithoutCanonical.length > 0) {
@@ -273,14 +302,20 @@ async function validateCliPlugin(
 	}
 
 	if (typeof plugin.namespace !== 'string' || plugin.namespace.length === 0) {
-		errors.push({ path: 'cli-plugin.namespace', message: 'Required and must be a non-empty string' });
+		errors.push({
+			path: 'cli-plugin.namespace',
+			message: 'Required and must be a non-empty string',
+		});
 	}
 	if (!Array.isArray(plugin.commands)) {
 		errors.push({ path: 'cli-plugin.commands', message: 'Required and must be an array' });
 		return { errors, warnings };
 	}
 	if (plugin.commands.length === 0) {
-		warnings.push({ path: 'cli-plugin.commands', message: 'No commands declared — the plugin contributes nothing' });
+		warnings.push({
+			path: 'cli-plugin.commands',
+			message: 'No commands declared — the plugin contributes nothing',
+		});
 	}
 
 	for (let i = 0; i < plugin.commands.length; i++) {
@@ -297,7 +332,10 @@ async function validateCliPlugin(
 		if (typeof cmd.description !== 'string') {
 			errors.push({ path: `${prefix}.description`, message: 'Required and must be a string' });
 		} else if (cmd.description.length === 0) {
-			warnings.push({ path: `${prefix}.description`, message: 'Empty description — used in --help output and as MCP tool fallback' });
+			warnings.push({
+				path: `${prefix}.description`,
+				message: 'Empty description — used in --help output and as MCP tool fallback',
+			});
 		}
 		if (typeof cmd.handler !== 'function') {
 			errors.push({ path: `${prefix}.handler`, message: 'Required and must be a function' });
@@ -354,9 +392,7 @@ async function validateCliPlugin(
 function isPluginLike(value: unknown): value is CliPlugin {
 	if (!value || typeof value !== 'object') return false;
 	const obj = value as Record<string, unknown>;
-	return (
-		typeof obj.namespace === 'string' && Array.isArray(obj.commands)
-	);
+	return typeof obj.namespace === 'string' && Array.isArray(obj.commands);
 }
 
 function isPlausibleJsonSchema(value: unknown): boolean {
@@ -373,7 +409,10 @@ function validateRuneEntry(
 
 	// transform is required
 	if (!entry.transform || typeof entry.transform !== 'object') {
-		errors.push({ path: `${prefix}.transform`, message: 'Required and must be a Markdoc Schema object' });
+		errors.push({
+			path: `${prefix}.transform`,
+			message: 'Required and must be a Markdoc Schema object',
+		});
 	}
 
 	// fixture validation
@@ -386,7 +425,10 @@ function validateRuneEntry(
 			// Check that fixture uses the rune's tag name
 			const tagPattern = new RegExp(`\\{%\\s*${escapeRegex(runeName)}[\\s%]`);
 			if (!tagPattern.test(entry.fixture)) {
-				warnings.push({ path: `${prefix}.fixture`, message: `Fixture does not appear to use the {% ${runeName} %} tag` });
+				warnings.push({
+					path: `${prefix}.fixture`,
+					message: `Fixture does not appear to use the {% ${runeName} %} tag`,
+				});
 			}
 		}
 	}
@@ -396,7 +438,10 @@ function validateRuneEntry(
 		if (typeof entry.authoringHints !== 'string') {
 			errors.push({ path: `${prefix}.authoringHints`, message: 'Must be a string' });
 		} else if (entry.authoringHints.trim().length === 0) {
-			warnings.push({ path: `${prefix}.authoringHints`, message: 'Empty authoringHints string — remove or add content' });
+			warnings.push({
+				path: `${prefix}.authoringHints`,
+				message: 'Empty authoringHints string — remove or add content',
+			});
 		}
 	}
 
@@ -414,7 +459,10 @@ function validateRuneEntry(
 		} else {
 			for (const alias of entry.aliases) {
 				if (typeof alias !== 'string' || !alias) {
-					errors.push({ path: `${prefix}.aliases`, message: 'Each alias must be a non-empty string' });
+					errors.push({
+						path: `${prefix}.aliases`,
+						message: 'Each alias must be a non-empty string',
+					});
 				}
 			}
 		}
@@ -517,7 +565,12 @@ function findPluginExport(mod: Record<string, unknown>): Plugin | null {
 function isPlugin(value: unknown): value is Plugin {
 	if (typeof value !== 'object' || value === null) return false;
 	const obj = value as Record<string, unknown>;
-	return typeof obj.name === 'string' && typeof obj.version === 'string' && typeof obj.runes === 'object' && obj.runes !== null;
+	return (
+		typeof obj.name === 'string' &&
+		typeof obj.version === 'string' &&
+		typeof obj.runes === 'object' &&
+		obj.runes !== null
+	);
 }
 
 function escapeRegex(s: string): string {

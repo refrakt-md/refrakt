@@ -2,16 +2,27 @@ import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 import type { ResolvedContent } from '@refrakt-md/types';
 const { Tag, Ast } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas, pageSectionProperties, unwrapParagraphImages, LAYOUT, layoutMatches } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	RenderableNodeCursor,
+	SplitLayoutModel,
+	buildLayoutMetas,
+	pageSectionProperties,
+	unwrapParagraphImages,
+	LAYOUT,
+	layoutMatches,
+} from '@refrakt-md/runes';
 
 /** Check if a paragraph node contains an image, icon tag, or strong element. */
 function isTermParagraph(node: Node): boolean {
-  for (const child of node.walk()) {
-    if (child.type === 'image') return true;
-    if (child.type === 'tag' && child.tag === 'icon') return true;
-    if (child.type === 'strong') return true;
-  }
-  return false;
+	for (const child of node.walk()) {
+		if (child.type === 'image') return true;
+		if (child.type === 'tag' && child.tag === 'icon') return true;
+		if (child.type === 'strong') return true;
+	}
+	return false;
 }
 
 /**
@@ -19,72 +30,101 @@ function isTermParagraph(node: Node): boolean {
  * and description (remaining paragraphs), matching the original @group behavior.
  */
 function splitDefinitionChildren(nodes: unknown[]): unknown[] {
-  // We don't actually rewrite nodes here — just pass them through.
-  // The term/description split happens in transform based on node type analysis.
-  return nodes as Node[];
+	// We don't actually rewrite nodes here — just pass them through.
+	// The term/description split happens in transform based on node type analysis.
+	return nodes as Node[];
 }
 
 export const definition = createContentModelSchema({
-  contentModel: {
-    type: 'custom',
-    processChildren: splitDefinitionChildren,
-    description: 'Splits children into term (headings + paragraphs with image/icon/strong) and description (remaining paragraphs).',
-  },
-  transform(resolved, attrs, config) {
-    const labelIcon = (node: any) => { if (Tag.isTag(node)) node.attributes['data-name'] = 'icon'; return node; };
+	contentModel: {
+		type: 'custom',
+		processChildren: splitDefinitionChildren,
+		description:
+			'Splits children into term (headings + paragraphs with image/icon/strong) and description (remaining paragraphs).',
+	},
+	transform(resolved, attrs, config) {
+		const labelIcon = (node: any) => {
+			if (Tag.isTag(node)) node.attributes['data-name'] = 'icon';
+			return node;
+		};
 
-    // Split children into term and description groups (replicating @group behavior)
-    const allChildren = asNodes(resolved.children);
-    const termNodes: Node[] = [];
-    const descNodes: Node[] = [];
-    let inDescription = false;
+		// Split children into term and description groups (replicating @group behavior)
+		const allChildren = asNodes(resolved.children);
+		const termNodes: Node[] = [];
+		const descNodes: Node[] = [];
+		let inDescription = false;
 
-    for (const node of allChildren) {
-      if (!inDescription && (node.type === 'heading' || (node.type === 'paragraph' && isTermParagraph(node)))) {
-        termNodes.push(node);
-      } else if (node.type === 'paragraph') {
-        inDescription = true;
-        descNodes.push(node);
-      } else if (!inDescription) {
-        // Non-matching node before description starts — skip (matches @group behavior)
-        inDescription = true;
-      }
-    }
+		for (const node of allChildren) {
+			if (
+				!inDescription &&
+				(node.type === 'heading' || (node.type === 'paragraph' && isTermParagraph(node)))
+			) {
+				termNodes.push(node);
+			} else if (node.type === 'paragraph') {
+				inDescription = true;
+				descNodes.push(node);
+			} else if (!inDescription) {
+				// Non-matching node before description starts — skip (matches @group behavior)
+				inDescription = true;
+			}
+		}
 
-    const dtChildren: any[] = [];
-    for (const node of termNodes) {
-      if (node.type === 'paragraph') {
-        const img = Array.from(node.walk()).find(n => n.type === 'image');
-        if (img) { dtChildren.push(labelIcon(Markdoc.transform(img, config))); continue; }
-        const iconTag = Array.from(node.walk()).find(n => n.type === 'tag' && n.tag === 'icon');
-        if (iconTag) {
-          const strong = Array.from(node.walk()).find(n => n.type === 'strong');
-          const iconResult = labelIcon(Markdoc.transform(iconTag, config));
-          if (strong) { dtChildren.push(iconResult, new Tag('span', { 'data-name': 'title' }, strong.transformChildren(config))); continue; }
-          dtChildren.push(iconResult); continue;
-        }
-        const strong = Array.from(node.walk()).find(n => n.type === 'strong');
-        if (strong) { dtChildren.push(new Tag('span', { 'data-name': 'title' }, strong.transformChildren(config))); continue; }
-        dtChildren.push(Markdoc.transform(node, config)); continue;
-      }
-      if (node.type === 'heading') {
-        const img = Array.from(node.walk()).find(n => n.type === 'image');
-        const text = Array.from(node.walk()).filter(n => n.type === 'text');
-        const span = new Tag('span', { 'data-name': 'title' }, Markdoc.transform(text, config));
-        if (img) { dtChildren.push(labelIcon(Markdoc.transform(img, config)), span); continue; }
-        dtChildren.push(span); continue;
-      }
-    }
-    const dt = new RenderableNodeCursor(dtChildren).wrap('dt');
+		const dtChildren: any[] = [];
+		for (const node of termNodes) {
+			if (node.type === 'paragraph') {
+				const img = Array.from(node.walk()).find((n) => n.type === 'image');
+				if (img) {
+					dtChildren.push(labelIcon(Markdoc.transform(img, config)));
+					continue;
+				}
+				const iconTag = Array.from(node.walk()).find((n) => n.type === 'tag' && n.tag === 'icon');
+				if (iconTag) {
+					const strong = Array.from(node.walk()).find((n) => n.type === 'strong');
+					const iconResult = labelIcon(Markdoc.transform(iconTag, config));
+					if (strong) {
+						dtChildren.push(
+							iconResult,
+							new Tag('span', { 'data-name': 'title' }, strong.transformChildren(config)),
+						);
+						continue;
+					}
+					dtChildren.push(iconResult);
+					continue;
+				}
+				const strong = Array.from(node.walk()).find((n) => n.type === 'strong');
+				if (strong) {
+					dtChildren.push(
+						new Tag('span', { 'data-name': 'title' }, strong.transformChildren(config)),
+					);
+					continue;
+				}
+				dtChildren.push(Markdoc.transform(node, config));
+				continue;
+			}
+			if (node.type === 'heading') {
+				const img = Array.from(node.walk()).find((n) => n.type === 'image');
+				const text = Array.from(node.walk()).filter((n) => n.type === 'text');
+				const span = new Tag('span', { 'data-name': 'title' }, Markdoc.transform(text, config));
+				if (img) {
+					dtChildren.push(labelIcon(Markdoc.transform(img, config)), span);
+					continue;
+				}
+				dtChildren.push(span);
+				continue;
+			}
+		}
+		const dt = new RenderableNodeCursor(dtChildren).wrap('dt');
 
-    const ddChildren: any[] = [];
-    for (const node of descNodes) {
-      ddChildren.push(new Tag('dd', { 'data-name': 'description' }, node.transformChildren(config)));
-    }
-    const dd = new RenderableNodeCursor(ddChildren);
+		const ddChildren: any[] = [];
+		for (const node of descNodes) {
+			ddChildren.push(
+				new Tag('dd', { 'data-name': 'description' }, node.transformChildren(config)),
+			);
+		}
+		const dd = new RenderableNodeCursor(ddChildren);
 
-    return new Tag('div', {}, dt.concat(dd).toArray());
-  },
+		return new Tag('div', {}, dt.concat(dd).toArray());
+	},
 });
 
 const alignType = ['left', 'center', 'right'] as const;
@@ -92,7 +132,12 @@ const alignType = ['left', 'center', 'right'] as const;
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
 // what a section *is* (ADR-028).
-export const featureSections = { preamble: 'preamble', headline: 'title', blurb: 'description', media: 'media' } as const;
+export const featureSections = {
+	preamble: 'preamble',
+	headline: 'title',
+	blurb: 'description',
+	media: 'media',
+} as const;
 export const featureMediaSlots = { media: 'cover' } as const;
 
 export const feature = createContentModelSchema({
@@ -100,9 +145,26 @@ export const feature = createContentModelSchema({
 	mediaSlots: featureMediaSlots,
 	base: SplitLayoutModel,
 	attributes: {
-		align: { type: String, required: false, matches: alignType.slice(), description: 'Horizontal alignment of headline and body text' },
-		layout: { type: String, required: false, matches: layoutMatches([LAYOUT.grid, LAYOUT.list, LAYOUT.carousel]), description: 'Arrangement of feature-items: grid (tiled), list (single column), or carousel (scroll-snap track). Defaults from media-position when unset.' },
-		'collapse-to': { type: String, required: false, matches: ['stack', 'carousel'], description: 'Collapsed (mobile) form below the `collapse` breakpoint: stack (default) or carousel (a scroll-snap row).' },
+		align: {
+			type: String,
+			required: false,
+			matches: alignType.slice(),
+			description: 'Horizontal alignment of headline and body text',
+		},
+		layout: {
+			type: String,
+			required: false,
+			matches: layoutMatches([LAYOUT.grid, LAYOUT.list, LAYOUT.carousel]),
+			description:
+				'Arrangement of feature-items: grid (tiled), list (single column), or carousel (scroll-snap track). Defaults from media-position when unset.',
+		},
+		'collapse-to': {
+			type: String,
+			required: false,
+			matches: ['stack', 'carousel'],
+			description:
+				'Collapsed (mobile) form below the `collapse` breakpoint: stack (default) or carousel (a scroll-snap row).',
+		},
 	},
 	contentModel: {
 		type: 'delimited',
@@ -113,9 +175,7 @@ export const feature = createContentModelSchema({
 			{
 				name: 'media',
 				type: 'sequence',
-				fields: [
-					{ name: 'media', match: 'any', optional: true, greedy: true },
-				],
+				fields: [{ name: 'media', match: 'any', optional: true, greedy: true }],
 			},
 			{
 				name: 'content',
@@ -125,7 +185,13 @@ export const feature = createContentModelSchema({
 					{ name: 'eyebrow', match: 'paragraph', optional: true },
 					{ name: 'headline', match: 'heading', optional: true },
 					{ name: 'blurb', match: 'paragraph', optional: true },
-					{ name: 'definitions', match: 'list', optional: true, greedy: true, template: '- **Title**\n\n  Description' },
+					{
+						name: 'definitions',
+						match: 'list',
+						optional: true,
+						greedy: true,
+						template: '- **Title**\n\n  Description',
+					},
 				],
 			},
 		],
@@ -134,11 +200,9 @@ export const feature = createContentModelSchema({
 		const contentZone = (resolved.content ?? {}) as ResolvedContent;
 		const mediaZone = (resolved.media ?? {}) as ResolvedContent;
 
-		const headerAstNodes = [
-			contentZone.eyebrow,
-			contentZone.headline,
-			contentZone.blurb,
-		].filter(Boolean) as Node[];
+		const headerAstNodes = [contentZone.eyebrow, contentZone.headline, contentZone.blurb].filter(
+			Boolean,
+		) as Node[];
 		const header = new RenderableNodeCursor(
 			Markdoc.transform(headerAstNodes, config) as RenderableTreeNode[],
 		);
@@ -153,12 +217,19 @@ export const feature = createContentModelSchema({
 				...config.nodes,
 				item: {
 					transform(node: Node, innerConfig: Record<string, any>) {
-						return Markdoc.transform(new Ast.Node('tag', {}, node.children, 'definition'), innerConfig);
+						return Markdoc.transform(
+							new Ast.Node('tag', {}, node.children, 'definition'),
+							innerConfig,
+						);
 					},
 				},
 				list: {
 					transform(node: Node, innerConfig: Record<string, any>) {
-						return new Tag('dl', { 'data-columns': node.children.length }, node.transformChildren(innerConfig));
+						return new Tag(
+							'dl',
+							{ 'data-columns': node.children.length },
+							node.transformChildren(innerConfig),
+						);
 					},
 				},
 			},
@@ -171,7 +242,9 @@ export const feature = createContentModelSchema({
 		// block rune) so the media zone holds the element directly — matching
 		// hero / card / bento.
 		const side = new RenderableNodeCursor(
-			unwrapParagraphImages(Markdoc.transform(asNodes(mediaZone.media), config) as RenderableTreeNode[]),
+			unwrapParagraphImages(
+				Markdoc.transform(asNodes(mediaZone.media), config) as RenderableTreeNode[],
+			),
 		);
 
 		const align = (attrs.align as string) || 'center';
@@ -179,8 +252,16 @@ export const feature = createContentModelSchema({
 		// Content-first DOM (header/definitions before media) → the truthful
 		// default placement is `bottom`, mirroring hero (BUG-001).
 		const resolvedMediaPosition = (attrs['media-position'] as string) ?? 'bottom';
-		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas({ ...attrs, 'media-position': resolvedMediaPosition });
-		const { mediaPosition: mediaPositionMeta, mediaRatio: mediaRatioMeta, valign: valignMeta, collapse: collapseMeta } = layoutMetas;
+		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas({
+			...attrs,
+			'media-position': resolvedMediaPosition,
+		});
+		const {
+			mediaPosition: mediaPositionMeta,
+			mediaRatio: mediaRatioMeta,
+			valign: valignMeta,
+			collapse: collapseMeta,
+		} = layoutMetas;
 
 		// SPEC-099 §1/§4: item arrangement is its own `layout` axis (grid|list),
 		// independent of `media-position`. Resolve the effective value in the
@@ -198,10 +279,13 @@ export const feature = createContentModelSchema({
 		// `data-collapse-to` only when non-default; orthogonal to the `collapse`
 		// breakpoint. Moot when `layout="carousel"` (already a carousel at all widths).
 		const collapseTo = (attrs['collapse-to'] as string) ?? 'stack';
-		const collapseToMeta = collapseTo !== 'stack' ? new Tag('meta', { content: collapseTo }) : undefined;
+		const collapseToMeta =
+			collapseTo !== 'stack' ? new Tag('meta', { content: collapseTo }) : undefined;
 
 		const headerContent = header.count() > 0 ? [header.wrap('header').next()] : [];
-		const mainContent = new RenderableNodeCursor([...headerContent, ...definitions.toArray()]).wrap('div');
+		const mainContent = new RenderableNodeCursor([...headerContent, ...definitions.toArray()]).wrap(
+			'div',
+		);
 		const mediaContent = side.wrap('div');
 
 		const children = [
@@ -213,7 +297,8 @@ export const feature = createContentModelSchema({
 			...(side.toArray().length > 0 ? [mediaContent.next()] : []),
 		];
 
-		return createComponentRenderable({ rune: 'feature',
+		return createComponentRenderable({
+			rune: 'feature',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

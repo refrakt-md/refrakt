@@ -40,7 +40,7 @@ export function readFrontmatter(src) {
 /** Render the `examples.ts` module from `fixtures/*.md`. */
 export function renderExamples() {
 	const files = readdirSync(fixturesDir)
-		.filter(f => f.endsWith('.md') && !f.slice(0, -3).includes('.')) // canonical only; scenarios (WORK-412) excluded
+		.filter((f) => f.endsWith('.md') && !f.slice(0, -3).includes('.')) // canonical only; scenarios (WORK-412) excluded
 		.sort();
 
 	const exampleEntries = [];

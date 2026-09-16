@@ -3,6 +3,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadContent } from '../src/site.js';
+import { loadPlugin, mergePlugins, runes as coreRunes } from '@refrakt-md/runes';
 import plan, { planPipelineHooks } from '@refrakt-md/plan';
 
 // Real dogfood (SPEC-071, WORK-272): point loadContent at refrakt's own
@@ -57,10 +58,11 @@ describe('refrakt plan site dogfood (SPEC-071 / WORK-272)', () => {
 		for (const rule of planSite.entityRoutes) {
 			const inline = rule.render ?? '';
 			const tmpl = rule['render-template'] ?? '';
-			const ok =
-				/\{% expand .* \/%\}/.test(inline) ||
-				/^entity\/[a-z]+\.md$/.test(tmpl);
-			expect(ok, `entityRoutes rule for type "${rule.type}" must declare render or render-template`).toBe(true);
+			const ok = /\{% expand .* \/%\}/.test(inline) || /^entity\/[a-z]+\.md$/.test(tmpl);
+			expect(
+				ok,
+				`entityRoutes rule for type "${rule.type}" must declare render or render-template`,
+			).toBe(true);
 		}
 	});
 
@@ -70,17 +72,30 @@ describe('refrakt plan site dogfood (SPEC-071 / WORK-272)', () => {
 	// timeout — a starvation timeout, not a hang or a race (WORK-330). Give it
 	// generous headroom so the full suite is deterministic; a genuine hang would
 	// still fail well within this bound.
-	it('builds a browsable plan site from refrakt\'s real plan/ via entityRoutes + collection', async () => {
+	it("builds a browsable plan site from refrakt's real plan/ via entityRoutes + collection", async () => {
 		const planSite = readPlanSiteConfig();
 		// configure() registers the plan: file-root and primes the plugin's
 		// scan target. Mirrors what the adapter does for the docs site.
-		await planPipelineHooks.configure!({ config: { plan: { dir: 'plan' } }, configDir: repoRoot } as never);
+		await planPipelineHooks.configure!({
+			config: { plan: { dir: 'plan' } },
+			configDir: repoRoot,
+		} as never);
+
+		// The plan plugin's *runes* have to reach Markdoc's tag set, not just its
+		// pipeline hooks. This argument was `undefined` until SPEC-132's
+		// validation reported `decision-log`, `plan-activity` and `plan-history`
+		// as undefined tags here: the test had been building the plan site with
+		// every plan rune missing from the tag set, and nothing noticed, because
+		// an undefined tag drops and renders its children as prose (BUG-014's
+		// symptom 1, in our own test suite). Mirrors what the adapter does.
+		const loadedPlan = await loadPlugin('@refrakt-md/plan');
+		const mergedPlan = mergePlugins([loadedPlan], new Set(Object.keys(coreRunes)));
 
 		const site = await loadContent(
 			join(repoRoot, 'plan-site', 'content'),
 			'/',
 			undefined,
-			undefined,
+			mergedPlan.tags,
 			[plan],
 			undefined,
 			undefined,
@@ -123,6 +138,9 @@ describe('refrakt plan site dogfood (SPEC-071 / WORK-272)', () => {
 		const errors = site.pipelineWarnings.filter(
 			(w) => w.severity === 'error' && w.phase !== 'register',
 		);
-		expect(errors, errors.map((e) => `${e.phase}/${e.pluginName}: ${e.message}`).join('\n')).toEqual([]);
+		expect(
+			errors,
+			errors.map((e) => `${e.phase}/${e.pluginName}: ${e.message}`).join('\n'),
+		).toEqual([]);
 	}, 30_000);
 });

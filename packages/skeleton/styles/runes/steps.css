@@ -3,7 +3,9 @@
  * resets, and the media-position flip. All spacing, type, surface, and the badge
  * chrome stay skin (Lumina's styles/runes/steps.css). */
 
-.rf-steps { counter-reset: step; }
+.rf-steps {
+	counter-reset: step;
+}
 
 .rf-steps__preamble {
 	flex-direction: column;
@@ -16,14 +18,18 @@
 	position: relative;
 }
 .rf-steps__eyebrow:has(a) a::before {
-	content: '';
+	content: "";
 	position: absolute;
 	inset: 0;
 }
 
-.rf-steps ol { list-style: none; }
+.rf-steps ol {
+	list-style: none;
+}
 
-.rf-step__content { display: contents; }
+.rf-step__content {
+	display: contents;
+}
 
 .rf-step {
 	counter-increment: step;
@@ -51,11 +57,15 @@
 /* A leading bold opening the step body acts as its title (list-based steps),
  * so it blocks onto its own line. Scoped to the first inline `strong` of the
  * first paragraph — inline bold elsewhere in the body must stay inline. */
-.rf-step__content > p:first-child > strong:first-child {
+	.rf-step__content
+	> p:first-child
+	> strong:first-child {
 	display: block;
 }
 
-.rf-step__media { overflow: hidden; }
+.rf-step__media {
+	overflow: hidden;
+}
 
 /* BUG-001 — content-first DOM inverts the shared media-first stacked contract
  * (layouts/split.css): counter it so the labels are truthful. */

@@ -55,13 +55,20 @@ describe('readPackageJsonFromTarball / resolveSource', () => {
 		writeFileSync(tgz, makeTarball({ name: '@acme/thing', version: '1.2.3' }));
 		expect(readPackageJsonFromTarball(tgz)).toEqual({ name: '@acme/thing', version: '1.2.3' });
 		const resolved = resolveSource(tgz);
-		expect(resolved).toMatchObject({ name: '@acme/thing', version: '1.2.3', sourceType: 'tarball' });
+		expect(resolved).toMatchObject({
+			name: '@acme/thing',
+			version: '1.2.3',
+			sourceType: 'tarball',
+		});
 	});
 
 	it('reads a directory package.json', () => {
 		const dir = mkdtempSync(join(tmpdir(), 'rf-dir-'));
 		mkdirSync(join(dir, 'pkg'));
-		writeFileSync(join(dir, 'pkg', 'package.json'), JSON.stringify({ name: '@acme/dir', version: '0.1.0' }));
+		writeFileSync(
+			join(dir, 'pkg', 'package.json'),
+			JSON.stringify({ name: '@acme/dir', version: '0.1.0' }),
+		);
 		const resolved = resolveSource(join(dir, 'pkg'));
 		expect(resolved).toMatchObject({ name: '@acme/dir', sourceType: 'directory' });
 		expect(resolved.installSource.startsWith('file:')).toBe(true);
@@ -83,8 +90,12 @@ describe('readPackageJsonFromTarball / resolveSource', () => {
 });
 
 describe('multi-site selection', () => {
-	const single: RefraktConfig = { site: { contentDir: 'site/content', theme: 'a' } } as RefraktConfig;
-	const multi: RefraktConfig = { sites: { default: { contentDir: 'c', theme: 'a' }, blog: { contentDir: 'b', theme: 'a' } } } as RefraktConfig;
+	const single: RefraktConfig = {
+		site: { contentDir: 'site/content', theme: 'a' },
+	} as RefraktConfig;
+	const multi: RefraktConfig = {
+		sites: { default: { contentDir: 'c', theme: 'a' }, blog: { contentDir: 'b', theme: 'a' } },
+	} as RefraktConfig;
 
 	it('infers the single site for existing-mode', () => {
 		expect(resolveTargetSite(single, undefined, 'existing').key).toBe('default');
@@ -108,7 +119,9 @@ describe('multi-site selection', () => {
 
 describe('config mutation helpers', () => {
 	it('sets a site theme preserving object form', () => {
-		const raw: RefraktConfig = { site: { contentDir: 'c', theme: { package: 'old', presets: ['p'] } } } as RefraktConfig;
+		const raw: RefraktConfig = {
+			site: { contentDir: 'c', theme: { package: 'old', presets: ['p'] } },
+		} as RefraktConfig;
 		const prev = setSiteTheme(raw, 'default', 'new');
 		expect(prev).toBe('old');
 		expect(raw.site!.theme).toEqual({ package: 'new', presets: ['p'] });
@@ -128,16 +141,29 @@ describe('config mutation helpers', () => {
 
 describe('preset scope validation (SPEC-111 §2)', () => {
 	it('finds chrome keys, ignoring syntax + color.code', () => {
-		expect(presetChromeKeys({ syntax: { keyword: '#000' }, color: { code: { bg: '#111' } } })).toEqual([]);
-		expect(presetChromeKeys({ color: { bg: '#fff', primary: '#abc' } }).sort()).toEqual(['color.bg', 'color.primary']);
-		expect(presetChromeKeys({ modes: { dark: { color: { bg: '#000' } } } })).toEqual(['modes.dark.color.bg']);
+		expect(
+			presetChromeKeys({ syntax: { keyword: '#000' }, color: { code: { bg: '#111' } } }),
+		).toEqual([]);
+		expect(presetChromeKeys({ color: { bg: '#fff', primary: '#abc' } }).sort()).toEqual([
+			'color.bg',
+			'color.primary',
+		]);
+		expect(presetChromeKeys({ modes: { dark: { color: { bg: '#000' } } } })).toEqual([
+			'modes.dark.color.bg',
+		]);
 	});
 	it('warns when a declared syntax preset sets chrome', () => {
-		const r = validatePresetEntry({ id: 'ember', scope: 'syntax', module: './e.json' }, { color: { bg: '#fff' } });
+		const r = validatePresetEntry(
+			{ id: 'ember', scope: 'syntax', module: './e.json' },
+			{ color: { bg: '#fff' } },
+		);
 		expect(r.warnings.join(' ')).toMatch(/really a "palette" preset/);
 	});
 	it('passes a true syntax preset', () => {
-		const r = validatePresetEntry({ id: 'ember', scope: 'syntax', module: './e.json' }, { syntax: { keyword: '#000' } });
+		const r = validatePresetEntry(
+			{ id: 'ember', scope: 'syntax', module: './e.json' },
+			{ syntax: { keyword: '#000' } },
+		);
 		expect(r.warnings).toEqual([]);
 		expect(r.errors).toEqual([]);
 	});
@@ -157,7 +183,9 @@ describe('validation', () => {
 	it('framework-aware theme exports: ./transform required, ./svelte optional', () => {
 		expect(validateThemeExports({ exports: { './transform': {} } })).toEqual([]);
 		expect(validateThemeExports({ exports: {} }).length).toBe(1);
-		expect(detectFrameworkLayers({ exports: { './transform': {}, './svelte': {} } })).toEqual(['svelte']);
+		expect(detectFrameworkLayers({ exports: { './transform': {}, './svelte': {} } })).toEqual([
+			'svelte',
+		]);
 		expect(detectFrameworkLayers({ exports: { './transform': {} } })).toEqual([]);
 	});
 });

@@ -1,30 +1,29 @@
 @layer skin {
-/* Xref — inline cross-reference link */
+	/* Xref — inline cross-reference link */
 
-.rf-xref {
-	/* Inherits normal link styling from the theme */
-}
+	.rf-xref {
+		/* Inherits normal link styling from the theme */
+	}
 
-/* External — pattern-resolved refs and any other type that doesn't have a
+	/* External — pattern-resolved refs and any other type that doesn't have a
  * dedicated treatment. A subtle outbound indicator distinguishes these
  * from local refs without being noisy. */
-.rf-xref--external {
-	/* Theme-inherited link colour; outbound indicator via a small inline
+	.rf-xref--external {
+		/* Theme-inherited link colour; outbound indicator via a small inline
 	 * arrow that adapts to RTL via the logical-property side. */
-}
-.rf-xref--external::after {
-	content: '\2197'; /* ↗ */
-	margin-inline-start: 0.15em;
-	font-size: 0.85em;
-	vertical-align: 0.05em;
-	opacity: 0.6;
-}
+	}
+	.rf-xref--external::after {
+		content: "\2197"; /* ↗ */
+		margin-inline-start: 0.15em;
+		font-size: 0.85em;
+		vertical-align: 0.05em;
+		opacity: 0.6;
+	}
 
-/* Unresolved reference */
-.rf-xref--unresolved {
-	text-decoration: underline dashed;
-	color: var(--rf-color-muted);
-	cursor: help;
-}
-
+	/* Unresolved reference */
+	.rf-xref--unresolved {
+		text-decoration: underline dashed;
+		color: var(--rf-color-muted);
+		cursor: help;
+	}
 }

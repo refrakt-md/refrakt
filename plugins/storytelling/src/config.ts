@@ -6,7 +6,11 @@ import { resolveValign } from '@refrakt-md/transform';
 // points at rune identity; it does not define it (ADR-028). The engine's read
 // path is unchanged — it still reads `config.sections` and friends.
 import { bondSections } from './tags/bond.js';
-import { characterMediaSlots, characterSectionSections, characterSections } from './tags/character.js';
+import {
+	characterMediaSlots,
+	characterSectionSections,
+	characterSections,
+} from './tags/character.js';
 import { factionMediaSlots, factionSectionSections, factionSections } from './tags/faction.js';
 import { loreSections } from './tags/lore.js';
 import { plotSections } from './tags/plot.js';
@@ -30,8 +34,14 @@ export const config: Record<string, RuneConfig> = {
 		metaFields: {
 			role: { metaType: 'category', label: 'Role' },
 			status: {
-				metaType: 'status', label: 'Status',
-				sentimentMap: { alive: 'positive', dead: 'negative', unknown: 'neutral', missing: 'caution' },
+				metaType: 'status',
+				label: 'Status',
+				sentimentMap: {
+					alive: 'positive',
+					dead: 'negative',
+					unknown: 'neutral',
+					missing: 'caution',
+				},
 			},
 		},
 		// Role/status render as a definition-list nested in the content column
@@ -57,11 +67,15 @@ export const config: Record<string, RuneConfig> = {
 	// SPEC-125 Phase 1 — the section's prose is its `body` role; the header
 	// decision is recorded in `sectionRoleExceptions`.
 	CharacterSection: {
-		block: 'character-section', parent: 'Character',
+		block: 'character-section',
+		parent: 'Character',
 		autoLabel: { span: 'header' },
 		sections: characterSectionSections,
 		provides: ['prose'],
-		sectionRoleExceptions: { header: 'The parent Character already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-character-section__name`\'s type outright, so the role would be inert there anyway.' },
+		sectionRoleExceptions: {
+			header:
+				"The parent Character already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-character-section__name`'s type outright, so the role would be inert there anyway.",
+		},
 		editHints: { header: 'inline', name: 'inline', body: 'none' },
 	},
 
@@ -107,11 +121,15 @@ export const config: Record<string, RuneConfig> = {
 	},
 	// SPEC-125 Phase 1 — see CharacterSection; same shape, same correction.
 	RealmSection: {
-		block: 'realm-section', parent: 'Realm',
+		block: 'realm-section',
+		parent: 'Realm',
 		autoLabel: { span: 'header' },
 		sections: realmSectionSections,
 		provides: ['prose'],
-		sectionRoleExceptions: { header: 'The parent Realm already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-realm-section__name`\'s type outright, so the role would be inert there anyway.' },
+		sectionRoleExceptions: {
+			header:
+				"The parent Realm already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-realm-section__name`'s type outright, so the role would be inert there anyway.",
+		},
 		editHints: { header: 'inline', name: 'inline', body: 'none' },
 	},
 
@@ -160,8 +178,16 @@ export const config: Record<string, RuneConfig> = {
 		metaFields: {
 			factionType: { metaType: 'category', label: 'Type', condition: 'factionType' },
 			alignment: {
-				metaType: 'category', label: 'Alignment', condition: 'alignment',
-				sentimentMap: { good: 'positive', neutral: 'neutral', evil: 'negative', chaotic: 'caution', lawful: 'neutral' },
+				metaType: 'category',
+				label: 'Alignment',
+				condition: 'alignment',
+				sentimentMap: {
+					good: 'positive',
+					neutral: 'neutral',
+					evil: 'negative',
+					chaotic: 'caution',
+					lawful: 'neutral',
+				},
 			},
 			size: { metaType: 'quantity', label: 'Size', condition: 'size' },
 		},
@@ -183,11 +209,15 @@ export const config: Record<string, RuneConfig> = {
 	},
 	// SPEC-125 Phase 1 — see CharacterSection; same shape, same correction.
 	FactionSection: {
-		block: 'faction-section', parent: 'Faction',
+		block: 'faction-section',
+		parent: 'Faction',
 		autoLabel: { span: 'header' },
 		sections: factionSectionSections,
 		provides: ['prose'],
-		sectionRoleExceptions: { header: 'The parent Faction already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-faction-section__name`\'s type outright, so the role would be inert there anyway.' },
+		sectionRoleExceptions: {
+			header:
+				"The parent Faction already holds `title` on its `name`, and `prominence` scales *the* header of a page-section family rune \u2014 a second title inside the same subtree flattens the hierarchy it exists to scale. Lumina also pins `.rf-faction-section__name`'s type outright, so the role would be inert there anyway.",
+		},
 		editHints: { header: 'inline', name: 'inline', body: 'none' },
 	},
 
@@ -216,8 +246,16 @@ export const config: Record<string, RuneConfig> = {
 				const children = [...node.children];
 				for (let i = 0; i < children.length; i++) {
 					const child = children[i];
-					if (typeof child === 'object' && child !== null && !Array.isArray(child) && (child as any).name === 'ol') {
-						children[i] = { ...child, attributes: { ...(child as any).attributes, 'data-sequence': 'connected' } } as any;
+					if (
+						typeof child === 'object' &&
+						child !== null &&
+						!Array.isArray(child) &&
+						(child as any).name === 'ol'
+					) {
+						children[i] = {
+							...child,
+							attributes: { ...(child as any).attributes, 'data-sequence': 'connected' },
+						} as any;
 					}
 				}
 				return { ...node, children };
@@ -272,5 +310,10 @@ export const config: Record<string, RuneConfig> = {
 		styles: { columns: '--sb-columns' },
 		editHints: { panels: 'none' },
 	},
-	StoryboardPanel: { block: 'storyboard-panel', parent: 'Storyboard', mediaSlots: storyboardPanelMediaSlots, editHints: { image: 'image', caption: 'inline', body: 'none' } },
+	StoryboardPanel: {
+		block: 'storyboard-panel',
+		parent: 'Storyboard',
+		mediaSlots: storyboardPanelMediaSlots,
+		editHints: { image: 'image', caption: 'inline', body: 'none' },
+	},
 };

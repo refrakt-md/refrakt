@@ -435,9 +435,19 @@ never for the second.
 failures raise `SnippetSandboxError`, which `resolveSnippetToFence` already
 turns into an error fence carrying `data-snippet-error`, plus a `ctx.error(…)`
 diagnostic. The build continues and the failure is visible on the page. This
-spec introduces no new failure channel — but see the open question about
-whether `ctx.error` is load-bearing in CI, because "loud" is only true if
-something is listening.
+spec introduces no new failure channel.
+
+{% ref "WORK-554" /%} has now settled what that diagnostic does, and the answer
+is **nothing**: an error-severity `PipelineWarning` leaves `npm run build` and
+`npm test` at exit 0, and the adapter dev server does not print the summary at
+all. So the `ctx.error` half of this decision is not load-bearing, and the
+guarantee rests entirely on its other half — the error fence, which *is* visible
+on the page and is what makes the failure loud. That is the stronger half
+anyway: it reports at the site of the problem rather than in a build log.
+
+The wording above is therefore accurate as written, but for a narrower reason
+than it first implied. Anyone relying on the `ctx.error` for CI enforcement
+should read {% ref "WORK-573" /%} first.
 
 **D7 — A `--fix` codemod, not a hand migration.** Converting 23 invocations by
 hand is tedious and exactly the kind of change where a slip reintroduces the
@@ -771,14 +781,13 @@ than reading them off this spec.
 
 ## Open questions
 
-- **Does `ctx.error` fail anything?** D6 routes failures to the existing
-  diagnostic channel, but this spec has not established whether a `ctx.error`
-  during a docs build produces a non-zero exit or a failing test. If it does
-  not, "loud failure" means "an error fence on a page nobody reloaded", and the
-  guarantee is weaker than claimed. Worth settling before phase 3 makes the
-  docs depend on it — and it is the same question
-  {% ref "SPEC-126" /%} raises about the two `--check` flags that never run in
-  CI.
+- ~~**Does `ctx.error` fail anything?**~~ **Answered — it does not.**
+  {% ref "WORK-554" /%} planted an error-severity diagnostic and measured every
+  surface: `npm run build` exits 0, `npm test` exits 0, and the dev server never
+  prints the summary. D6 is updated to state this. The practical consequence for
+  this spec is small, because D6's guarantee rests on the error fence rather than
+  the diagnostic — but phase 3 must not be written as though a `ctx.error` gates
+  anything. {% ref "WORK-573" /%} tracks making the channel load-bearing.
 - **Should `symbol=` support a member path?** `symbol="SiteConfig.baseUrl"`
   would let a reference quote one field. The anchor engine can do it — nested
   anchors and a `dedent`-like extent — but it multiplies the failure surface,

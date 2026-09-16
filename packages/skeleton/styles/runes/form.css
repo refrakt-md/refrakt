@@ -10,7 +10,9 @@
 	display: flex;
 	flex-direction: column;
 }
-.rf-form meta { display: none; }
+.rf-form meta {
+	display: none;
+}
 .rf-form__hp {
 	position: absolute;
 	left: -9999px;

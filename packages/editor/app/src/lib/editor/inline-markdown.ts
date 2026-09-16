@@ -134,21 +134,23 @@ function serializeNode(node: ChildNode): string {
  * Strip inline markdown formatting to produce plain text (for matching).
  */
 export function stripInlineMarkdown(source: string): string {
-	return source
-		// Links: [text](url) or [text](url "title") → text
-		.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-		// Images: ![alt](url) → alt
-		.replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
-		// Bold: **text** or __text__
-		.replace(/\*\*(.+?)\*\*/g, '$1')
-		.replace(/__(.+?)__/g, '$1')
-		// Italic: *text* or _text_
-		.replace(/\*(.+?)\*/g, '$1')
-		.replace(/_(.+?)_/g, '$1')
-		// Strikethrough: ~~text~~
-		.replace(/~~(.+?)~~/g, '$1')
-		// Inline code: `text`
-		.replace(/`([^`]+)`/g, '$1');
+	return (
+		source
+			// Links: [text](url) or [text](url "title") → text
+			.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+			// Images: ![alt](url) → alt
+			.replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+			// Bold: **text** or __text__
+			.replace(/\*\*(.+?)\*\*/g, '$1')
+			.replace(/__(.+?)__/g, '$1')
+			// Italic: *text* or _text_
+			.replace(/\*(.+?)\*/g, '$1')
+			.replace(/_(.+?)_/g, '$1')
+			// Strikethrough: ~~text~~
+			.replace(/~~(.+?)~~/g, '$1')
+			// Inline code: `text`
+			.replace(/`([^`]+)`/g, '$1')
+	);
 }
 
 // ── Helpers ──────────────────────────────────────────────────

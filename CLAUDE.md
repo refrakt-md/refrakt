@@ -109,7 +109,35 @@ npx refrakt contracts -o contracts/structures.json
 npx refrakt contracts --check -o contracts/structures.json
 ```
 
-Structure contracts describe the complete HTML structure the identity transform produces for every rune — derived purely from config. Use `--check` in CI to catch config-contract drift.
+Structure contracts describe the complete HTML structure the identity transform produces for every rune — derived purely from config, plus each rune's resolved schema.org row. Use `--check` in CI to catch config-contract drift, on both channels.
+
+The contract is committed in **two** places that must stay in lock-step: `contracts/structures.json` (this repo's dev copy) and `packages/lumina/contracts/structures.json` (what Lumina ships via its `./contracts` export). Regenerate both.
+
+### Reviewing a rune's structured data
+
+```bash
+# The resolved schema.org row for one rune, with unresolvable sources flagged
+npx refrakt inspect <rune> --site main
+npx refrakt inspect <rune> --site main --json
+```
+
+**Nothing validates a schema table against schema.org** — refrakt ships no ontology, and SPEC-130 D5 makes that an explicit trade rather than an oversight. Visibility replaces validation: `inspect`, `contracts` and `reference` all print the resolved row, and a wrong row is caught by a reviewer reading it. Treat a table as human judgement recorded in config.
+
+What *is* checked mechanically is narrower and worth knowing: a source name that matches no emitted node, no field-bag entry and no declared attribute is flagged, because that property is silently absent from the published graph.
+
+### Structured-data baseline
+
+```bash
+# Regenerate the JSON-LD / RDFa baseline for every emitting rune
+npm run seo:baseline
+
+# Verify it is up to date (drift check)
+npm run seo:baseline:check
+```
+
+`contracts/seo-baseline/baseline.json` records the structured data every rune emits today — fixtures in `contracts/seo-baseline/fixtures/` covering all 30 emitting runes, captured at both harvest points: `jsonLd` is the pre-engine harvest `site.ts` publishes, `rendered` is the same tree after the identity transform.
+
+**It records today's output including its defects**, deliberately (SPEC-130 / WORK-562). JSON-LD is the one output nobody looks at — a page renders identically whether its structured data is right or ruined — so schema changes are reviewed as a diff against this file. Never hand-edit it, and never "correct" a recorded defect: regenerate, and let the diff show the fix landed.
 
 ## Architecture
 
@@ -164,6 +192,22 @@ Runes are Markdoc tags that **reinterpret** standard Markdown. A heading inside 
 - `plugins/{marketing,docs,design,learning,storytelling,business,places,media,plan}/` — 9 official plugins implementing `Plugin`
 
 ## Conventions
+
+### Code Formatting
+
+[Biome](https://biomejs.dev) owns formatting. `biome.jsonc` is the config; `.editorconfig` mirrors the indentation rules for editors and for the file types Biome doesn't format.
+
+```bash
+npm run format        # rewrite files
+npm run format:check  # verify (this is what CI gates on)
+npm run lint          # Biome linter — advisory, not yet a gate
+```
+
+- **Tabs for indentation**, everywhere except JSON and YAML. Tab width is the reader's choice; don't hard-code someone's preference into the file.
+- **JSON uses two spaces** — npm rewrites `package.json` and the lockfile that way on every install.
+- Single quotes, semicolons, trailing commas, 100-column lines. All enforced; don't hand-tune.
+- `.svelte`, `.astro`, and `.vue` are excluded: Biome formats only their `<script>` blocks, which would leave the markup half-converted. They're tab-indented already and `.editorconfig` keeps them that way.
+- The linter runs `recommended` minus three rules that this codebase deliberately doesn't follow (see the comments in `biome.jsonc`). There are pre-existing findings in the remaining rules, so `npm run lint` is not clean yet and CI does not gate on it.
 
 ### BEM Naming
 

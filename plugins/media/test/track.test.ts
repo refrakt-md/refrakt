@@ -3,11 +3,12 @@ import { parse, findTag } from './helpers.js';
 
 describe('track rune', () => {
 	it('should create a Track component', () => {
-		const result = parse(`{% track src="/audio/breathe.mp3" artist="Pink Floyd" duration="PT2M43S" %}
+		const result =
+			parse(`{% track src="/audio/breathe.mp3" artist="Pink Floyd" duration="PT2M43S" %}
 Breathe
 {% /track %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'track');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'track');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('li');
 	});
@@ -17,8 +18,8 @@ Breathe
 # My Track
 {% /track %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'track');
-		const name = findTag(tag!, t => t.attributes['data-name'] === 'track-name');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'track');
+		const name = findTag(tag!, (t) => t.attributes['data-name'] === 'track-name');
 		expect(name).toBeDefined();
 		expect(name!.children).toContain('My Track');
 	});
@@ -28,8 +29,8 @@ Breathe
 Bohemian Rhapsody
 {% /track %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'track');
-		const artist = findTag(tag!, t => t.attributes['data-name'] === 'track-artist');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'track');
+		const artist = findTag(tag!, (t) => t.attributes['data-name'] === 'track-artist');
 		expect(artist).toBeDefined();
 		expect(artist!.children).toContain('Queen');
 	});
@@ -39,8 +40,8 @@ Bohemian Rhapsody
 Track
 {% /track %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'track');
-		const duration = findTag(tag!, t => t.attributes['data-name'] === 'track-duration');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'track');
+		const duration = findTag(tag!, (t) => t.attributes['data-name'] === 'track-duration');
 		expect(duration).toBeDefined();
 		expect(duration!.children).toContain('5:55');
 	});
@@ -51,8 +52,7 @@ Moonlight Sonata
 {% /music-recording %}`);
 
 		// Legacy name uses same schema, data-rune is 'track'
-		const tag = findTag(result as any, t =>
-			t.attributes['data-rune'] === 'track');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'track');
 		expect(tag).toBeDefined();
 	});
 });

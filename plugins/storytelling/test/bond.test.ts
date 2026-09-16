@@ -7,25 +7,26 @@ describe('bond tag', () => {
 A deep fellowship.
 {% /bond %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bond');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'bond');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('div');
 
-		const fromTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-name'] === 'from');
+		const fromTag = findTag(tag!, (t) => t.name === 'span' && t.attributes['data-name'] === 'from');
 		expect(fromTag).toBeDefined();
 		expect(fromTag!.children[0]).toBe('Aragorn');
 
-		const toTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-name'] === 'to');
+		const toTag = findTag(tag!, (t) => t.name === 'span' && t.attributes['data-name'] === 'to');
 		expect(toTag).toBeDefined();
 		expect(toTag!.children[0]).toBe('Legolas');
 	});
 
 	it('should pass type, status, and bidirectional as meta tags', () => {
-		const result = parse(`{% bond from="A" to="B" type="rivalry" status="active" bidirectional=false %}
+		const result =
+			parse(`{% bond from="A" to="B" type="rivalry" status="active" bidirectional=false %}
 Desc.
 {% /bond %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bond');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'bond');
 		expect(fields(tag).bondType).toBe('rivalry');
 		expect(fields(tag).status).toBe('active');
 		expect(fields(tag).bidirectional).toBe('false');
@@ -36,7 +37,7 @@ Desc.
 Desc.
 {% /bond %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bond');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'bond');
 		expect(fields(tag).status).toBe('active');
 	});
 
@@ -45,7 +46,7 @@ Desc.
 Desc.
 {% /bond %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bond');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'bond');
 		expect(fields(tag).bidirectional).toBe('true');
 	});
 
@@ -54,7 +55,7 @@ Desc.
 Best friends.
 {% /relationship %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bond');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'bond');
 		expect(tag).toBeDefined();
 	});
 
@@ -63,14 +64,14 @@ Best friends.
 A fellowship bond.
 {% /bond %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'bond');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'bond');
 		expect(tag).toBeDefined();
 
-		const connector = findTag(tag!, t => t.attributes['data-name'] === 'connector');
+		const connector = findTag(tag!, (t) => t.attributes['data-name'] === 'connector');
 		expect(connector).toBeDefined();
 		expect(connector!.name).toBe('div');
 
-		const arrow = findTag(connector!, t => t.attributes['data-name'] === 'arrow');
+		const arrow = findTag(connector!, (t) => t.attributes['data-name'] === 'arrow');
 		expect(arrow).toBeDefined();
 		expect(arrow!.name).toBe('span');
 

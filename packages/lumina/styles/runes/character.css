@@ -1,40 +1,39 @@
 @layer skin {
-/* Character — the title and the role/status def-list come from the shared
+	/* Character — the title and the role/status def-list come from the shared
  * dimensions (sections + metadata); only the floated portrait avatar is
  * character-specific chrome. Unlike faction/realm, character is not a split
  * rune: the portrait floats and the content column wraps around it. */
 
-/* Portrait — floated circular avatar */
-.rf-character__portrait {
-	margin-left: 1.5rem;
-	margin-bottom: 1rem;
-	border-radius: var(--rf-radius-full);
-}
+	/* Portrait — floated circular avatar */
+	.rf-character__portrait {
+		margin-left: 1.5rem;
+		margin-bottom: 1rem;
+		border-radius: var(--rf-radius-full);
+	}
 
-/* Content */
-.rf-character__sections {
-	gap: 1rem;
-}
-.rf-character__content ul,
-.rf-character__content ol {
-	padding-left: 1.5rem;
-}
+	/* Content */
+	.rf-character__sections {
+		gap: 1rem;
+	}
+	.rf-character__content ul,
+	.rf-character__content ol {
+		padding-left: 1.5rem;
+	}
 
-/* Character Section */
-.rf-character-section {
-	padding: 0.75rem 0;
-	border-top: 1px solid var(--rf-color-border);
-}
-.rf-character-section__name {
-	font-size: var(--rf-text-xl);
-	font-weight: var(--rf-weight-bold);
-	line-height: var(--rf-leading-snug);
-	margin-bottom: 0.5rem;
-	color: var(--rf-color-text);
-}
-.rf-character-section__body ul,
-.rf-character-section__body ol {
-	padding-left: 1.5rem;
-}
-
+	/* Character Section */
+	.rf-character-section {
+		padding: 0.75rem 0;
+		border-top: 1px solid var(--rf-color-border);
+	}
+	.rf-character-section__name {
+		font-size: var(--rf-text-xl);
+		font-weight: var(--rf-weight-bold);
+		line-height: var(--rf-leading-snug);
+		margin-bottom: 0.5rem;
+		color: var(--rf-color-text);
+	}
+	.rf-character-section__body ul,
+	.rf-character-section__body ol {
+		padding-left: 1.5rem;
+	}
 }

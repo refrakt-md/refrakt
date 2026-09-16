@@ -115,7 +115,7 @@ export function validateFixtureFrontmatter(fm: Record<string, unknown>): Fixture
 
 	if (fm.demonstrates !== undefined) {
 		const d = fm.demonstrates;
-		if (!Array.isArray(d) || d.some(item => typeof item !== 'string')) {
+		if (!Array.isArray(d) || d.some((item) => typeof item !== 'string')) {
 			issues.push({ path: 'demonstrates', message: 'Expected an array of strings' });
 		}
 	}
@@ -146,7 +146,7 @@ export function parseFixture(raw: string, filename: string): ParsedFixture {
 	const issues = validateFixtureFrontmatter(fm);
 	if (issues.length > 0) {
 		throw new Error(
-			`${filename}: invalid frontmatter — ${issues.map(i => `${i.path}: ${i.message}`).join('; ')}`,
+			`${filename}: invalid frontmatter — ${issues.map((i) => `${i.path}: ${i.message}`).join('; ')}`,
 		);
 	}
 

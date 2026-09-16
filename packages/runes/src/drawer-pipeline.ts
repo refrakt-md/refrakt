@@ -29,7 +29,12 @@
 
 import Markdoc from '@markdoc/markdoc';
 import { readField } from '@refrakt-md/transform';
-import type { EntityRegistry, PipelineContext, TransformedPage, ProjectFiles } from '@refrakt-md/types';
+import type {
+	EntityRegistry,
+	PipelineContext,
+	TransformedPage,
+	ProjectFiles,
+} from '@refrakt-md/types';
 import { DRAWER_TITLE_AUTO_MARKER } from './tags/drawer.js';
 
 const { Tag } = Markdoc;
@@ -69,10 +74,7 @@ export function registerDrawers(
 		walkForDrawers(page.renderable, (tag) => {
 			const id = readDataAttr(tag, 'data-drawer-id');
 			if (!id) {
-				ctx.error(
-					'drawer rune is missing required `id` attribute',
-					page.url,
-				);
+				ctx.error('drawer rune is missing required `id` attribute', page.url);
 				return;
 			}
 			if (seenIds.has(id)) {
@@ -115,10 +117,7 @@ export function registerDrawers(
 /** Walk the renderable looking for drawer-rune tags. Visits each drawer's
  *  shell exactly once (we don't recurse into a drawer's body, drawer-in-drawer
  *  is out of scope). */
-function walkForDrawers(
-	node: unknown,
-	visit: (drawerTag: InstanceType<typeof Tag>) => void,
-): void {
+function walkForDrawers(node: unknown, visit: (drawerTag: InstanceType<typeof Tag>) => void): void {
 	if (Array.isArray(node)) {
 		for (const c of node) walkForDrawers(c, visit);
 		return;
@@ -207,7 +206,8 @@ function walkAndRewriteTitles(
 	// last heading level we saw. Default to h2 when no heading has been
 	// encountered yet (the page-title h1 lives in layout, so the next
 	// reasonable level inside the body is h2).
-	const isAutoTitle = (tag.attributes as Record<string, unknown> | undefined)?.[DRAWER_TITLE_AUTO_MARKER] === 'true';
+	const isAutoTitle =
+		(tag.attributes as Record<string, unknown> | undefined)?.[DRAWER_TITLE_AUTO_MARKER] === 'true';
 	if (isAutoTitle) {
 		const base = state.lastHeadingLevel === 0 ? 1 : state.lastHeadingLevel;
 		const targetLevel = Math.min(6, Math.max(1, base + 1));
@@ -380,7 +380,10 @@ export function hoistPreviewDrawers(
 function collectAuthorDrawerIds(renderable: unknown): Set<string> {
 	const ids = new Set<string>();
 	const walk = (node: unknown): void => {
-		if (Array.isArray(node)) { for (const c of node) walk(c); return; }
+		if (Array.isArray(node)) {
+			for (const c of node) walk(c);
+			return;
+		}
 		if (!Tag.isTag(node as never)) return;
 		const tag = node as TagNode;
 		if ((tag.attributes as Record<string, unknown> | undefined)?.['data-rune'] === 'drawer') {
@@ -421,8 +424,10 @@ function walkStripSentinels(node: unknown, state: WalkState): unknown {
 	const tag = node as TagNode;
 
 	// Strip the sentinel meta itself.
-	if (tag.name === 'meta'
-		&& (tag.attributes as Record<string, unknown> | undefined)?.['data-field'] === HOIST_DRAWER_SENTINEL
+	if (
+		tag.name === 'meta' &&
+		(tag.attributes as Record<string, unknown> | undefined)?.['data-field'] ===
+			HOIST_DRAWER_SENTINEL
 	) {
 		const payload = readPayload(tag);
 		const targetId = payload['target-id'];
@@ -457,7 +462,8 @@ function walkStripSentinels(node: unknown, state: WalkState): unknown {
 		return STRIP;
 	}
 
-	const isDrawer = (tag.attributes as Record<string, unknown> | undefined)?.['data-rune'] === 'drawer';
+	const isDrawer =
+		(tag.attributes as Record<string, unknown> | undefined)?.['data-rune'] === 'drawer';
 	if (isDrawer) state.drawerDepth++;
 
 	if (!tag.children || tag.children.length === 0) {

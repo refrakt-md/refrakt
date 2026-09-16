@@ -21,9 +21,24 @@ export interface SectionMapping {
  */
 export function isEditableSection(el: HTMLElement): boolean {
 	const blockTags = new Set([
-		'DIV', 'SECTION', 'ARTICLE', 'HEADER', 'FOOTER', 'NAV',
-		'UL', 'OL', 'LI', 'TABLE', 'BLOCKQUOTE', 'PRE', 'FIGURE',
-		'DETAILS', 'SUMMARY', 'ASIDE', 'MAIN', 'FORM',
+		'DIV',
+		'SECTION',
+		'ARTICLE',
+		'HEADER',
+		'FOOTER',
+		'NAV',
+		'UL',
+		'OL',
+		'LI',
+		'TABLE',
+		'BLOCKQUOTE',
+		'PRE',
+		'FIGURE',
+		'DETAILS',
+		'SUMMARY',
+		'ASIDE',
+		'MAIN',
+		'FORM',
 	]);
 	for (const child of el.children) {
 		if (blockTags.has(child.tagName)) return false;
@@ -88,7 +103,10 @@ export function findSectionMapping(
 
 		// For multi-line paragraphs, check if the joined text matches
 		if (node.type === 'paragraph') {
-			const joined = node.source.split('\n').map(l => l.trim()).join(' ');
+			const joined = node.source
+				.split('\n')
+				.map((l) => l.trim())
+				.join(' ');
 			const joinedPlain = stripInlineMarkdown(joined);
 			if (normalizeText(joinedPlain) === normalizedRendered) {
 				return {
@@ -112,11 +130,7 @@ export function findSectionMapping(
 	// Fallback: try matching against child nodes of rune nodes
 	for (const node of nodes) {
 		if (node.children) {
-			const result = findSectionMapping(
-				node.innerContent ?? '',
-				dataName,
-				renderedText,
-			);
+			const result = findSectionMapping(node.innerContent ?? '', dataName, renderedText);
 			if (result) return result;
 		}
 	}
@@ -196,8 +210,9 @@ function findListItemMapping(
 
 		// Match continuation lines (description text)
 		if (lines.length > 1) {
-			const contLines = lines.slice(1)
-				.map(l => l.replace(/^\s+/, ''))
+			const contLines = lines
+				.slice(1)
+				.map((l) => l.replace(/^\s+/, ''))
 				.filter(Boolean);
 			const contText = contLines.join(' ');
 			const contPlain = stripInlineMarkdown(contText);
@@ -205,7 +220,7 @@ function findListItemMapping(
 				const contSource = lines.slice(1).join('\n');
 				// Find indentation from first non-empty continuation line
 				// (lines[1] may be a blank separator line)
-				const firstContentLine = lines.slice(1).find(l => l.trim().length > 0);
+				const firstContentLine = lines.slice(1).find((l) => l.trim().length > 0);
 				const indentMatch = firstContentLine?.match(/^(\s+)/);
 				const indent = indentMatch ? indentMatch[1] : '';
 				// Include leading blank lines in the prefix so the replacement
@@ -272,10 +287,7 @@ export function findActionMapping(
 		if (!match) continue;
 
 		const [, listPrefix, linkText, linkUrl] = match;
-		if (
-			normalizeText(linkText) === normalizedRendered ||
-			linkUrl === href
-		) {
+		if (normalizeText(linkText) === normalizedRendered || linkUrl === href) {
 			return { source: line, listPrefix, text: linkText, href: linkUrl };
 		}
 	}
@@ -396,10 +408,7 @@ export interface ImageMapping {
  * Find a markdown image in the rune's inner content,
  * matching by rendered src (from the <img> element's src attribute).
  */
-export function findImageMapping(
-	innerContent: string,
-	renderedSrc: string,
-): ImageMapping | null {
+export function findImageMapping(innerContent: string, renderedSrc: string): ImageMapping | null {
 	const lines = innerContent.split('\n');
 	for (const line of lines) {
 		const match = line.trim().match(/^!\[([^\]]*)\]\(([^)]*)\)\s*$/);
@@ -466,10 +475,7 @@ export function applyIconEdit(
 	mapping: IconMapping,
 	newIconName: string,
 ): string {
-	const newSource = mapping.source.replace(
-		/name=["'][^"']+["']/,
-		`name="${newIconName}"`,
-	);
+	const newSource = mapping.source.replace(/name=["'][^"']+["']/, `name="${newIconName}"`);
 	const idx = innerContent.indexOf(mapping.source);
 	if (idx === -1) return innerContent;
 	return innerContent.slice(0, idx) + newSource + innerContent.slice(idx + mapping.source.length);

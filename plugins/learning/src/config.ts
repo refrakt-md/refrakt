@@ -28,9 +28,16 @@ export const config: Record<string, RuneConfig> = {
 			difficulty: { source: 'meta', default: 'medium' },
 		},
 		metaFields: {
-			estimatedTime: { metaType: 'temporal', label: 'Est. time', condition: 'estimatedTime', transform: 'duration' },
+			estimatedTime: {
+				metaType: 'temporal',
+				label: 'Est. time',
+				condition: 'estimatedTime',
+				transform: 'duration',
+			},
 			difficulty: {
-				metaType: 'category', label: 'Difficulty', condition: 'difficulty',
+				metaType: 'category',
+				label: 'Difficulty',
+				condition: 'difficulty',
 				sentimentMap: { beginner: 'positive', intermediate: 'neutral', advanced: 'caution' },
 			},
 		},
@@ -47,7 +54,13 @@ export const config: Record<string, RuneConfig> = {
 			preamble: { tag: 'header', children: ['eyebrow', 'headline', 'blurb', 'image'] },
 		},
 		autoLabel: pageSectionAutoLabel,
-		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', tool: 'inline', step: 'inline' },
+		editHints: {
+			headline: 'inline',
+			eyebrow: 'inline',
+			blurb: 'inline',
+			tool: 'inline',
+			step: 'inline',
+		},
 	},
 	Recipe: {
 		block: 'recipe',
@@ -71,16 +84,31 @@ export const config: Record<string, RuneConfig> = {
 			valign: { prop: '--split-valign', transform: resolveValign },
 		},
 		metaFields: {
-			prepTime: { metaType: 'temporal', label: 'Prep', condition: 'prepTime', transform: 'duration' },
-			cookTime: { metaType: 'temporal', label: 'Cook', condition: 'cookTime', transform: 'duration' },
+			prepTime: {
+				metaType: 'temporal',
+				label: 'Prep',
+				condition: 'prepTime',
+				transform: 'duration',
+			},
+			cookTime: {
+				metaType: 'temporal',
+				label: 'Cook',
+				condition: 'cookTime',
+				transform: 'duration',
+			},
 			servings: { metaType: 'quantity', label: 'Serves', condition: 'servings' },
 			difficulty: {
-				metaType: 'category', label: 'Difficulty', condition: 'difficulty',
+				metaType: 'category',
+				label: 'Difficulty',
+				condition: 'difficulty',
 				sentimentMap: { easy: 'positive', medium: 'neutral', hard: 'caution' },
 			},
 		},
 		blocks: {
-			metadata: { fields: ['prepTime', 'cookTime', 'servings', 'difficulty'], layout: 'definition-list' },
+			metadata: {
+				fields: ['prepTime', 'cookTime', 'servings', 'difficulty'],
+				layout: 'definition-list',
+			},
 		},
 		// Recipe hand-assembles content + media columns for its split layout;
 		// the metadata def-list nests inside the content column, below the
@@ -104,7 +132,11 @@ export const config: Record<string, RuneConfig> = {
 						// The cover-band carries the dark colour-scheme so the overlaid
 						// preamble reads light against the scrimmed media — scoped to the
 						// band, leaving the body below on the page palette (SPEC-089).
-						'cover-band': { tag: 'div', attrs: { 'data-color-scheme': 'dark' }, children: ['media', 'preamble'] },
+						'cover-band': {
+							tag: 'div',
+							attrs: { 'data-color-scheme': 'dark' },
+							children: ['media', 'preamble'],
+						},
 						// Keep the body wrapper named `content` so it reuses the recipe
 						// content-column CSS (padding, section gap, ingredient/step/tip
 						// styling); only the preamble lifts out into the band.
@@ -114,7 +146,14 @@ export const config: Record<string, RuneConfig> = {
 			},
 		},
 		autoLabel: { ...pageSectionAutoLabel, media: 'media' },
-		editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', ingredient: 'inline', step: 'inline', media: 'image' },
+		editHints: {
+			headline: 'inline',
+			eyebrow: 'inline',
+			blurb: 'inline',
+			ingredient: 'inline',
+			step: 'inline',
+			media: 'image',
+		},
 	},
 	RecipeIngredient: { block: 'recipe-ingredient', parent: 'Recipe' },
 };

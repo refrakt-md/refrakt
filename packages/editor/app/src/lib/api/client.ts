@@ -86,7 +86,9 @@ export async function updateRouteRules(routeRules: RouteRule[]): Promise<void> {
 	});
 	if (!res.ok) {
 		const data = await res.json().catch(() => ({}));
-		throw new Error((data as { error?: string }).error ?? `Failed to update route rules: ${res.status}`);
+		throw new Error(
+			(data as { error?: string }).error ?? `Failed to update route rules: ${res.status}`,
+		);
 	}
 }
 
@@ -125,7 +127,9 @@ export async function createDirectory(options: {
 	});
 	if (!res.ok) {
 		const data = await res.json().catch(() => ({}));
-		throw new Error((data as { error?: string }).error ?? `Failed to create directory: ${res.status}`);
+		throw new Error(
+			(data as { error?: string }).error ?? `Failed to create directory: ${res.status}`,
+		);
 	}
 	return res.json();
 }

@@ -1,4 +1,8 @@
-import { parseFrontmatterClient, serializeFrontmatter, type Frontmatter } from '../utils/frontmatter.js';
+import {
+	parseFrontmatterClient,
+	serializeFrontmatter,
+	type Frontmatter,
+} from '../utils/frontmatter.js';
 import type { RuneInfo, RouteRule } from '../api/client.js';
 import type { RendererNode } from '@refrakt-md/transform';
 
@@ -83,7 +87,7 @@ class EditorState {
 
 	/** Whether the current file is a layout or a regular page */
 	currentFileType = $derived<'page' | 'layout'>(
-		this.currentPath?.endsWith('_layout.md') ? 'layout' : 'page'
+		this.currentPath?.endsWith('_layout.md') ? 'layout' : 'page',
 	);
 
 	/**

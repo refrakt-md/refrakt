@@ -1,6 +1,24 @@
 import type { ThemeConfig, SerializedTag, RendererNode } from '@refrakt-md/transform';
-import { isTag, makeTag, renderToHtml, findMeta, findByDataName, readMeta, readField, resolveGap, ratioToFr, resolveValign } from '@refrakt-md/transform';
-import type { PluginPipelineHooks, TransformedPage, EntityRegistry, AggregatedData, PipelineContext, ProjectFiles } from '@refrakt-md/types';
+import {
+	isTag,
+	makeTag,
+	renderToHtml,
+	findMeta,
+	findByDataName,
+	readMeta,
+	readField,
+	resolveGap,
+	ratioToFr,
+	resolveValign,
+} from '@refrakt-md/transform';
+import type {
+	PluginPipelineHooks,
+	TransformedPage,
+	EntityRegistry,
+	AggregatedData,
+	PipelineContext,
+	ProjectFiles,
+} from '@refrakt-md/types';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
 import { createComponentRenderable } from './lib/index.js';
@@ -13,7 +31,11 @@ import type { CompiledXrefPattern } from './xref-patterns.js';
 import { preprocessSnippets, wrapStandaloneSnippets } from './snippet-pipeline.js';
 import { preprocessData } from './data-pipeline.js';
 import { preprocessIncludes } from './include-pipeline.js';
-import { registerDrawers, resolveAutoDrawerTitleLevels, hoistPreviewDrawers } from './drawer-pipeline.js';
+import {
+	registerDrawers,
+	resolveAutoDrawerTitleLevels,
+	hoistPreviewDrawers,
+} from './drawer-pipeline.js';
 import { resolveFileRefs } from './file-ref-resolve.js';
 import { resolveXrefPreviews } from './xref-preview-resolve.js';
 import { applyOutlineScopeWalkers, harvestHeadingsFromRenderable } from './outline-scope.js';
@@ -50,7 +72,14 @@ import { tabGroupSections } from './tags/tabs.js';
 /** Read text content from a property span child */
 function readPropText(node: SerializedTag, prop: string): string {
 	for (const c of node.children) {
-		if (isTag(c) && c.attributes?.['data-field'] === prop.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/([A-Z])([A-Z][a-z])/g, '$1-$2').toLowerCase()) {
+		if (
+			isTag(c) &&
+			c.attributes?.['data-field'] ===
+				prop
+					.replace(/([a-z])([A-Z])/g, '$1-$2')
+					.replace(/([A-Z])([A-Z][a-z])/g, '$1-$2')
+					.toLowerCase()
+		) {
 			return c.children.filter((ch): ch is string => typeof ch === 'string').join('');
 		}
 	}
@@ -59,11 +88,11 @@ function readPropText(node: SerializedTag, prop: string): string {
 
 /** autoLabel entries shared by all PageSection-based runes */
 const pageSectionAutoLabel = {
-	header: 'preamble',   // <header> wrapper element → data-name="preamble"
-	eyebrow: 'eyebrow',   // property="eyebrow"
+	header: 'preamble', // <header> wrapper element → data-name="preamble"
+	eyebrow: 'eyebrow', // property="eyebrow"
 	headline: 'headline', // property="headline"
-	blurb: 'blurb',       // property="blurb"
-	image: 'image',       // property="image"
+	blurb: 'blurb', // property="blurb"
+	image: 'image', // property="image"
 };
 
 /** Core theme configuration — universal rune-to-BEM-block mappings shared by all themes.
@@ -75,22 +104,36 @@ export const coreConfig: ThemeConfig = {
 	runes: {
 		// ─── Simple runes (block name only, engine adds BEM classes) ───
 
-		Accordion: { block: 'accordion', defaultDensity: 'full', sections: accordionSections, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
+		Accordion: {
+			block: 'accordion',
+			defaultDensity: 'full',
+			sections: accordionSections,
+			autoLabel: pageSectionAutoLabel,
+			editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' },
+		},
 		// SPEC-125 Phase 1 — the answer panel is the item's `body` role, so
 		// `reading` / `dropcap` land on it. The header decision is recorded in
 		// `sectionRoleExceptions` so it travels with the rune.
 		AccordionItem: {
-			block: 'accordion-item', parent: 'Accordion', requiresParent: 'Accordion',
+			block: 'accordion-item',
+			parent: 'Accordion',
+			requiresParent: 'Accordion',
 			rootAttributes: { 'data-state': 'closed' },
 			autoLabel: { name: 'header' },
 			sections: accordionItemSections,
 			provides: ['prose'],
 			sectionRoleExceptions: {
-				header: 'The `header` slot is the <summary> disclosure control, not a page-section header. `header` would inherit the chrome-row rhythm (a 3rem margin under every summary); `title` would tighten every summary\'s line-height while leaving `prominence` inert anyway, since `.rf-accordion-item__header` pins the control\'s font size on purpose. The parent Accordion already holds `title`.',
+				header:
+					"The `header` slot is the <summary> disclosure control, not a page-section header. `header` would inherit the chrome-row rhythm (a 3rem margin under every summary); `title` would tighten every summary's line-height while leaving `prominence` inert anyway, since `.rf-accordion-item__header` pins the control's font size on purpose. The parent Accordion already holds `title`.",
 			},
 			editHints: { header: 'inline', body: 'none' },
 		},
-		Details: { block: 'details', defaultElevation: 'flush', autoLabel: { summary: 'summary' }, editHints: { summary: 'inline', body: 'none' } },
+		Details: {
+			block: 'details',
+			defaultElevation: 'flush',
+			autoLabel: { summary: 'summary' },
+			editHints: { summary: 'inline', body: 'none' },
+		},
 		Grid: {
 			block: 'grid',
 			defaultDensity: 'full',
@@ -119,7 +162,10 @@ export const coreConfig: ThemeConfig = {
 			interactive: true,
 			defaultDensity: 'compact',
 			defaultElevation: 'flat',
-			modifiers: { title: { source: 'meta', noBemClass: true }, overflow: { source: 'meta', default: 'scroll' } },
+			modifiers: {
+				title: { source: 'meta', noBemClass: true },
+				overflow: { source: 'meta', default: 'scroll' },
+			},
 			// The window chrome (three dots) is pure decoration — drawn in CSS
 			// on `.rf-codegroup__topbar`. The only metadata is the optional
 			// filename `title`, a bare monospace field in the topbar bar.
@@ -272,7 +318,11 @@ export const coreConfig: ThemeConfig = {
 				separator: { prop: '--separator', template: '"{}"' },
 			},
 		},
-		BreadcrumbItem: { block: 'breadcrumb-item', parent: 'Breadcrumb', requiresParent: 'Breadcrumb' },
+		BreadcrumbItem: {
+			block: 'breadcrumb-item',
+			parent: 'Breadcrumb',
+			requiresParent: 'Breadcrumb',
+		},
 		Blog: {
 			block: 'blog',
 			defaultDensity: 'full',
@@ -338,7 +388,7 @@ export const coreConfig: ThemeConfig = {
 			defaultDensity: 'compact',
 			defaultElevation: 'sunken',
 			modifiers: { hintType: { source: 'meta', default: 'note' } },
-			contextModifiers: { 'hero': 'in-hero', 'feature': 'in-feature' },
+			contextModifiers: { hero: 'in-hero', feature: 'in-feature' },
 			sections: hintSections,
 			// SPEC-035 Zone 6 — the hintType value doubles as the visible title
 			// (CSS capitalizes it). Declaring it as an enum lets `core.hint.<value>`
@@ -412,7 +462,12 @@ export const coreConfig: ThemeConfig = {
 			modifiers: { layout: { source: 'meta', default: 'side-by-side' } },
 			editHints: { panels: 'none' },
 		},
-		Conversation: { block: 'conversation', defaultDensity: 'compact', defaultElevation: 'flush', editHints: { messages: 'none' } },
+		Conversation: {
+			block: 'conversation',
+			defaultDensity: 'compact',
+			defaultElevation: 'flush',
+			editHints: { messages: 'none' },
+		},
 		ConversationMessage: {
 			block: 'conversation-message',
 			parent: 'Conversation',
@@ -455,7 +510,7 @@ export const coreConfig: ThemeConfig = {
 				// Extract slug from span[property="slug"] child → data-slug attribute
 				// Keep slug text as visible fallback for SSR; web component replaces with <a> links
 				let slug = '';
-				const children = node.children.filter(child => {
+				const children = node.children.filter((child) => {
 					if (isTag(child) && child.name === 'span' && child.attributes['data-field'] === 'slug') {
 						slug = child.children.filter((c): c is string => typeof c === 'string').join('');
 						return false; // remove slug span from DOM
@@ -474,10 +529,16 @@ export const coreConfig: ThemeConfig = {
 				}
 
 				// Explicit link item: add nav-item__link class to <a> tags for styling
-				const styledChildren = children.map(child => {
+				const styledChildren = children.map((child) => {
 					if (isTag(child) && child.name === 'a') {
 						const existing = child.attributes.class || '';
-						return { ...child, attributes: { ...child.attributes, class: ['rf-nav-item__link', existing].filter(Boolean).join(' ') } };
+						return {
+							...child,
+							attributes: {
+								...child.attributes,
+								class: ['rf-nav-item__link', existing].filter(Boolean).join(' '),
+							},
+						};
 					}
 					return child;
 				});
@@ -488,7 +549,12 @@ export const coreConfig: ThemeConfig = {
 		Diff: {
 			block: 'diff',
 			modifiers: { mode: { source: 'meta', default: 'unified' } },
-			editHints: { line: 'none', 'gutter-num': 'none', 'gutter-prefix': 'none', 'line-content': 'none' },
+			editHints: {
+				line: 'none',
+				'gutter-num': 'none',
+				'gutter-prefix': 'none',
+				'line-content': 'none',
+			},
 		},
 		Chart: {
 			block: 'chart',
@@ -569,9 +635,27 @@ export const coreConfig: ThemeConfig = {
 
 		// ─── Interactive runes (still get BEM classes, components add behavior) ───
 
-		TabGroup: { block: 'tabs', interactive: true, defaultDensity: 'full', sections: tabGroupSections, autoLabel: pageSectionAutoLabel, editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' } },
-		Tab: { block: 'tab', parent: 'TabGroup', requiresParent: 'TabGroup', rootAttributes: { 'data-state': 'inactive' }, editHints: { name: 'inline' } },
-		TabPanel: { block: 'tab-panel', parent: 'TabGroup', requiresParent: 'TabGroup', rootAttributes: { 'data-state': 'inactive' } },
+		TabGroup: {
+			block: 'tabs',
+			interactive: true,
+			defaultDensity: 'full',
+			sections: tabGroupSections,
+			autoLabel: pageSectionAutoLabel,
+			editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline' },
+		},
+		Tab: {
+			block: 'tab',
+			parent: 'TabGroup',
+			requiresParent: 'TabGroup',
+			rootAttributes: { 'data-state': 'inactive' },
+			editHints: { name: 'inline' },
+		},
+		TabPanel: {
+			block: 'tab-panel',
+			parent: 'TabGroup',
+			requiresParent: 'TabGroup',
+			rootAttributes: { 'data-state': 'inactive' },
+		},
 		DataTable: {
 			block: 'datatable',
 			interactive: true,
@@ -620,7 +704,12 @@ export const coreConfig: ThemeConfig = {
 			autoLabel: pageSectionAutoLabel,
 			editHints: { headline: 'inline', eyebrow: 'inline', blurb: 'inline', steps: 'none' },
 		},
-		RevealStep: { block: 'reveal-step', parent: 'Reveal', rootAttributes: { 'data-state': 'closed' }, editHints: { body: 'none' } },
+		RevealStep: {
+			block: 'reveal-step',
+			parent: 'Reveal',
+			rootAttributes: { 'data-state': 'closed' },
+			editHints: { body: 'none' },
+		},
 		Section: {
 			block: 'section',
 			modifiers: {
@@ -646,7 +735,13 @@ export const coreConfig: ThemeConfig = {
 			},
 			editHints: { panels: 'none' },
 		},
-		JuxtaposePanel: { block: 'juxtapose-panel', parent: 'Juxtapose', requiresParent: 'Juxtapose', rootAttributes: { 'data-state': 'inactive' }, editHints: { body: 'none' } },
+		JuxtaposePanel: {
+			block: 'juxtapose-panel',
+			parent: 'Juxtapose',
+			requiresParent: 'Juxtapose',
+			rootAttributes: { 'data-state': 'inactive' },
+			editHints: { body: 'none' },
+		},
 		Diagram: {
 			block: 'diagram',
 			defaultDensity: 'compact',
@@ -759,8 +854,8 @@ function resolveAutoBreadcrumbs(
 ): unknown {
 	if (!Tag.isTag(renderable as any)) {
 		if (Array.isArray(renderable)) {
-			const newChildren = (renderable as unknown[]).map(c =>
-				resolveAutoBreadcrumbs(c, pageUrl, breadcrumbPaths, pagesByUrl, ctx)
+			const newChildren = (renderable as unknown[]).map((c) =>
+				resolveAutoBreadcrumbs(c, pageUrl, breadcrumbPaths, pagesByUrl, ctx),
 			);
 			// Return original if nothing changed
 			if (newChildren.every((c, i) => c === (renderable as unknown[])[i])) return renderable;
@@ -774,7 +869,7 @@ function resolveAutoBreadcrumbs(
 	// Check if this is a Breadcrumb auto placeholder
 	if (tag.attributes?.['data-rune'] === 'breadcrumb') {
 		const hasSentinel = tag.children?.some(
-			(c: any) => Tag.isTag(c) && c.attributes?.['data-field'] === BREADCRUMB_AUTO_SENTINEL
+			(c: any) => Tag.isTag(c) && c.attributes?.['data-field'] === BREADCRUMB_AUTO_SENTINEL,
 		);
 
 		if (hasSentinel) {
@@ -784,7 +879,7 @@ function resolveAutoBreadcrumbs(
 
 	// Recurse into children
 	const newChildren = (tag.children ?? []).map((c: unknown) =>
-		resolveAutoBreadcrumbs(c, pageUrl, breadcrumbPaths, pagesByUrl, ctx)
+		resolveAutoBreadcrumbs(c, pageUrl, breadcrumbPaths, pagesByUrl, ctx),
 	);
 	if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
 	return { ...tag, children: newChildren };
@@ -806,48 +901,74 @@ function buildAutoBreadcrumb(
 
 	// Find separator from existing meta child
 	const separatorMeta = originalTag.children?.find(
-		(c: any) => Tag.isTag(c) && c.name === 'meta' && !c.attributes?.['data-field']
+		(c: any) => Tag.isTag(c) && c.name === 'meta' && !c.attributes?.['data-field'],
 	);
 	const separator = separatorMeta?.attributes?.content ?? '/';
 
-	// Build breadcrumb items: ancestor pages + current page (no link)
+	// Build breadcrumb items: ancestor pages + current page (no link).
+	//
+	// WORK-563 — the `schema:` maps below are not decoration. `collectJsonLd`
+	// nests a typed node into its parent only when that node carries *both*
+	// `typeof` and `property`, and only a `schema:` entry supplies the
+	// `property`. Without them this hook emitted a `BreadcrumbList` with no
+	// `itemListElement` and a `ListItem` floating up beside it as a detached,
+	// empty top-level entity — while rendering a perfectly correct trail.
+	//
+	// The explicit `{% breadcrumb %}` form (tags/breadcrumb.ts) has always
+	// passed these. This path is the same output contract and must match it:
+	// the bar is that an auto trail publishes what the same trail written by
+	// hand would.
 	const listItems: any[] = [];
+	let position = 0;
 
 	for (const ancestorUrl of ancestorUrls) {
 		const ancestorPage = pagesByUrl.get(ancestorUrl);
 		if (!ancestorPage) continue;
 
+		position++;
+		const positionMeta = new Tag('meta', { content: position });
 		const nameSpan = new Tag('span', { hidden: true }, [ancestorPage.title]);
 		const urlLink = new Tag('a', { href: ancestorUrl }, [ancestorPage.title]);
 
 		listItems.push(
-			createComponentRenderable({ rune: 'breadcrumb-item', schemaOrgType: 'ListItem',
+			createComponentRenderable({
+				rune: 'breadcrumb-item',
+				schemaOrgType: 'ListItem',
 				tag: 'li',
 				properties: { name: nameSpan, url: urlLink },
-				children: [nameSpan, urlLink],
-			}) as any
+				schema: { name: nameSpan, item: urlLink, position: positionMeta },
+				children: [nameSpan, urlLink, positionMeta],
+			}) as any,
 		);
 	}
 
 	// Add current page as the last item (no link)
 	const currentPage = pagesByUrl.get(pageUrl);
 	const currentTitle = currentPage?.title ?? pageUrl;
+	position++;
+	const currentPositionMeta = new Tag('meta', { content: position });
 	const currentSpan = new Tag('span', {}, [currentTitle]);
 	listItems.push(
-		createComponentRenderable({ rune: 'breadcrumb-item', schemaOrgType: 'ListItem',
+		createComponentRenderable({
+			rune: 'breadcrumb-item',
+			schemaOrgType: 'ListItem',
 			tag: 'li',
 			properties: { name: currentSpan },
-			children: [currentSpan],
-		}) as any
+			schema: { name: currentSpan, position: currentPositionMeta },
+			children: [currentSpan, currentPositionMeta],
+		}) as any,
 	);
 
 	const newSeparatorMeta = new Tag('meta', { content: separator });
 	const itemsList = new Tag('ol', {}, listItems);
 
-	return createComponentRenderable({ rune: 'breadcrumb', schemaOrgType: 'BreadcrumbList',
+	return createComponentRenderable({
+		rune: 'breadcrumb',
+		schemaOrgType: 'BreadcrumbList',
 		tag: 'nav',
 		properties: { separator: newSeparatorMeta },
 		refs: { items: itemsList },
+		schema: { itemListElement: listItems },
 		children: [newSeparatorMeta, itemsList],
 	});
 }
@@ -861,8 +982,8 @@ function resolveAutoNavs(
 ): unknown {
 	if (!Tag.isTag(renderable as any)) {
 		if (Array.isArray(renderable)) {
-			const newChildren = (renderable as unknown[]).map(c =>
-				resolveAutoNavs(c, pageUrl, pagesByUrl, ctx)
+			const newChildren = (renderable as unknown[]).map((c) =>
+				resolveAutoNavs(c, pageUrl, pagesByUrl, ctx),
 			);
 			if (newChildren.every((c, i) => c === (renderable as unknown[])[i])) return renderable;
 			return newChildren;
@@ -875,7 +996,7 @@ function resolveAutoNavs(
 	// Check if this is a Nav auto placeholder
 	if (tag.attributes?.['data-rune'] === 'nav') {
 		const hasSentinel = tag.children?.some(
-			(c: any) => Tag.isTag(c) && c.attributes?.['data-field'] === NAV_AUTO_SENTINEL
+			(c: any) => Tag.isTag(c) && c.attributes?.['data-field'] === NAV_AUTO_SENTINEL,
 		);
 
 		if (hasSentinel) {
@@ -885,7 +1006,7 @@ function resolveAutoNavs(
 
 	// Recurse into children
 	const newChildren = (tag.children ?? []).map((c: unknown) =>
-		resolveAutoNavs(c, pageUrl, pagesByUrl, ctx)
+		resolveAutoNavs(c, pageUrl, pagesByUrl, ctx),
 	);
 	if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
 	return { ...tag, children: newChildren };
@@ -904,18 +1025,19 @@ function buildAutoNav(
 ): unknown {
 	// Find direct children: pages whose parentUrl is this page's URL (excluding self)
 	const children = Array.from(pagesByUrl.values()).filter(
-		p => p.parentUrl === pageUrl && p.url !== pageUrl,
+		(p) => p.parentUrl === pageUrl && p.url !== pageUrl,
 	);
 
 	if (children.length === 0) {
 		ctx.warn(`Nav auto: page '${pageUrl}' has no registered child pages`, pageUrl);
 	}
 
-	const listItems: any[] = children.map(child => {
+	const listItems: any[] = children.map((child) => {
 		const titleSpan = new Tag('span', { 'data-field': 'slug' }, [child.title]);
 		const link = new Tag('a', { href: child.url }, [titleSpan]);
 
-		return createComponentRenderable({ rune: 'nav-item',
+		return createComponentRenderable({
+			rune: 'nav-item',
 			tag: 'li',
 			properties: { slug: titleSpan },
 			children: [link],
@@ -924,7 +1046,8 @@ function buildAutoNav(
 
 	const itemsList = new Tag('ul', {}, listItems);
 
-	const newNav = createComponentRenderable({ rune: 'nav',
+	const newNav = createComponentRenderable({
+		rune: 'nav',
 		tag: 'nav',
 		properties: {
 			group: [],
@@ -935,7 +1058,14 @@ function buildAutoNav(
 
 	// Preserve contextual attributes from the original nav so layout / auto /
 	// source-path survive sentinel replacement.
-	const carry = ['layout', 'data-layout', 'data-auto', 'data-source-path', 'data-collapsible', 'data-default-open'];
+	const carry = [
+		'layout',
+		'data-layout',
+		'data-auto',
+		'data-source-path',
+		'data-collapsible',
+		'data-default-open',
+	];
 	for (const k of carry) {
 		const v = originalTag?.attributes?.[k];
 		if (v !== undefined) {
@@ -1034,7 +1164,7 @@ function findNavSlugSuggestions(
 	sameSlug.sort();
 	typoMatches.sort((a, b) => a.distance - b.distance || a.url.localeCompare(b.url));
 
-	const suggestions = [...sameSlug, ...typoMatches.map(t => t.url)];
+	const suggestions = [...sameSlug, ...typoMatches.map((t) => t.url)];
 	return suggestions.slice(0, 3);
 }
 
@@ -1051,7 +1181,9 @@ function resolveNavSlug(
 	slug: string,
 	baseDir: string,
 	pagesByUrl: Map<string, PageRef>,
-): { ok: true; url: string } | { ok: false; reason: 'not-found'; attemptedUrl: string; suggestions: string[] } {
+):
+	| { ok: true; url: string }
+	| { ok: false; reason: 'not-found'; attemptedUrl: string; suggestions: string[] } {
 	if (slug.startsWith('/')) {
 		return { ok: true, url: slug };
 	}
@@ -1067,7 +1199,11 @@ function resolveNavSlug(
 		}
 	}
 
-	const suggestions = findNavSlugSuggestions(slug.includes('/') ? slug.split('/').pop()! : slug, base, pagesByUrl);
+	const suggestions = findNavSlugSuggestions(
+		slug.includes('/') ? slug.split('/').pop()! : slug,
+		base,
+		pagesByUrl,
+	);
 	return { ok: false, reason: 'not-found', attemptedUrl: candidate, suggestions };
 }
 
@@ -1089,14 +1225,15 @@ function resolveSlugToUrl(
 	currentUrl: string,
 ): string | null {
 	const candidates = Array.from(pagesByUrl.values()).filter(
-		p => p.url.endsWith('/' + slug) || p.url === '/' + slug,
+		(p) => p.url.endsWith('/' + slug) || p.url === '/' + slug,
 	);
 	if (candidates.length === 0) return null;
 	if (candidates.length === 1) return candidates[0].url;
 	return candidates
 		.slice()
-		.sort((a, b) => sharedPrefixLength(b.url, currentUrl) - sharedPrefixLength(a.url, currentUrl))[0]
-		.url;
+		.sort(
+			(a, b) => sharedPrefixLength(b.url, currentUrl) - sharedPrefixLength(a.url, currentUrl),
+		)[0].url;
 }
 
 /** Read a NavItem's slug from either `data-slug` (post-engine) or a nested
@@ -1210,8 +1347,8 @@ function resolveCollapsibleNavs(
 ): unknown {
 	if (!Tag.isTag(renderable as any)) {
 		if (Array.isArray(renderable)) {
-			const newChildren = (renderable as unknown[]).map(c =>
-				resolveCollapsibleNavs(c, pageUrl, pagesByUrl)
+			const newChildren = (renderable as unknown[]).map((c) =>
+				resolveCollapsibleNavs(c, pageUrl, pagesByUrl),
 			);
 			if (newChildren.every((c, i) => c === (renderable as unknown[])[i])) return renderable;
 			return newChildren;
@@ -1221,13 +1358,13 @@ function resolveCollapsibleNavs(
 
 	const tag = renderable as any;
 
-	if (
-		tag.attributes?.['data-rune'] === 'nav' &&
-		tag.attributes?.['data-collapsible'] === 'true'
-	) {
+	if (tag.attributes?.['data-rune'] === 'nav' && tag.attributes?.['data-collapsible'] === 'true') {
 		const defaultOpenRaw = String(tag.attributes?.['data-default-open'] ?? '');
 		const defaultOpen = defaultOpenRaw
-			? defaultOpenRaw.split(',').map(s => s.trim()).filter(Boolean)
+			? defaultOpenRaw
+					.split(',')
+					.map((s) => s.trim())
+					.filter(Boolean)
 			: [];
 
 		const groups: any[] = [];
@@ -1247,18 +1384,18 @@ function resolveCollapsibleNavs(
 			const inDefault = title && defaultOpen.includes(title);
 			const itemUrls = collectGroupItemUrls(group, pagesByUrl, pageUrl);
 			const matches = urlMatchesGroup(pageUrl, itemUrls);
-			group.attributes['data-collapsed'] = (inDefault || matches) ? 'false' : 'true';
+			group.attributes['data-collapsed'] = inDefault || matches ? 'false' : 'true';
 		}
 
 		const newChildren = (tag.children ?? []).map((c: unknown) =>
-			resolveCollapsibleNavs(c, pageUrl, pagesByUrl)
+			resolveCollapsibleNavs(c, pageUrl, pagesByUrl),
 		);
 		if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
 		return { ...tag, children: newChildren };
 	}
 
 	const newChildren = (tag.children ?? []).map((c: unknown) =>
-		resolveCollapsibleNavs(c, pageUrl, pagesByUrl)
+		resolveCollapsibleNavs(c, pageUrl, pagesByUrl),
 	);
 	if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
 	return { ...tag, children: newChildren };
@@ -1294,7 +1431,9 @@ function enrichNavItemAsCard(
 	);
 	if (description) {
 		linkChildren.push(
-			new Tag('span', { 'data-name': 'description', class: 'rf-nav-item__description' }, [description]),
+			new Tag('span', { 'data-name': 'description', class: 'rf-nav-item__description' }, [
+				description,
+			]),
 		);
 	}
 
@@ -1329,7 +1468,10 @@ function findNavItemHref(item: any): string | null {
 
 function getNavItemUrl(
 	item: any,
-	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string; description?: string; icon?: string }>,
+	pagesByUrl: Map<
+		string,
+		{ url: string; title: string; parentUrl: string; description?: string; icon?: string }
+	>,
 	currentUrl: string,
 ): { url: string; isExternal: boolean } | null {
 	// Prefer an explicit <a href> — covers `[Label](/url)` items whose link text
@@ -1359,20 +1501,28 @@ function augmentNavItemFromFrontmatter(item: any, pageMeta: PageMetadata): any {
 		const t = c as any;
 		if (t.name !== 'a') return c;
 		// Skip if this <a> has already been enriched (idempotency).
-		const hasIcon = (t.children ?? []).some((x: any) =>
-			Tag.isTag(x) && x.attributes?.['data-name'] === 'icon');
-		const hasDescription = (t.children ?? []).some((x: any) =>
-			Tag.isTag(x) && x.attributes?.['data-name'] === 'description');
+		const hasIcon = (t.children ?? []).some(
+			(x: any) => Tag.isTag(x) && x.attributes?.['data-name'] === 'icon',
+		);
+		const hasDescription = (t.children ?? []).some(
+			(x: any) => Tag.isTag(x) && x.attributes?.['data-name'] === 'description',
+		);
 
 		const newLinkChildren: any[] = [...(t.children ?? [])];
 		if (pageMeta.icon && !hasIcon) {
 			newLinkChildren.unshift(
-				new Tag('rf-icon', { name: pageMeta.icon, 'data-name': 'icon', class: 'rf-nav-item__icon' }, []),
+				new Tag(
+					'rf-icon',
+					{ name: pageMeta.icon, 'data-name': 'icon', class: 'rf-nav-item__icon' },
+					[],
+				),
 			);
 		}
 		if (pageMeta.description && !hasDescription) {
 			newLinkChildren.push(
-				new Tag('span', { 'data-name': 'description', class: 'rf-nav-item__description' }, [pageMeta.description]),
+				new Tag('span', { 'data-name': 'description', class: 'rf-nav-item__description' }, [
+					pageMeta.description,
+				]),
 			);
 		}
 		return { ...t, children: newLinkChildren };
@@ -1383,12 +1533,15 @@ function augmentNavItemFromFrontmatter(item: any, pageMeta: PageMetadata): any {
 function resolveCardsNavs(
 	renderable: unknown,
 	pageUrl: string,
-	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string; description?: string; icon?: string }>,
+	pagesByUrl: Map<
+		string,
+		{ url: string; title: string; parentUrl: string; description?: string; icon?: string }
+	>,
 ): unknown {
 	if (!Tag.isTag(renderable as any)) {
 		if (Array.isArray(renderable)) {
-			const newChildren = (renderable as unknown[]).map(c =>
-				resolveCardsNavs(c, pageUrl, pagesByUrl)
+			const newChildren = (renderable as unknown[]).map((c) =>
+				resolveCardsNavs(c, pageUrl, pagesByUrl),
 			);
 			if (newChildren.every((c, i) => c === (renderable as unknown[])[i])) return renderable;
 			return newChildren;
@@ -1447,7 +1600,7 @@ function resolveCardsNavs(
 	}
 
 	const newChildren = (tag.children ?? []).map((c: unknown) =>
-		resolveCardsNavs(c, pageUrl, pagesByUrl)
+		resolveCardsNavs(c, pageUrl, pagesByUrl),
 	);
 	if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
 	return { ...tag, children: newChildren };
@@ -1470,7 +1623,13 @@ function formatNavResolutionError(
 	const where = sourcePath ? ` in ${sourcePath}` : '';
 	const head = `Nav item \`${slug}\`${where} cannot be resolved (no page at \`${attemptedUrl}\`).`;
 	if (suggestions.length === 0) return head;
-	const lines = ['', 'Did you mean one of:', ...suggestions.map(s => `  - ${s}`), '', 'Use a multi-segment slug (e.g. `section/page`) or an explicit `[Label](/path)` link.'];
+	const lines = [
+		'',
+		'Did you mean one of:',
+		...suggestions.map((s) => `  - ${s}`),
+		'',
+		'Use a multi-segment slug (e.g. `section/page`) or an explicit `[Label](/path)` link.',
+	];
 	return head + '\n' + lines.join('\n');
 }
 
@@ -1549,7 +1708,9 @@ function resolveNavSlugs(
 ): unknown {
 	if (!Tag.isTag(renderable as any)) {
 		if (Array.isArray(renderable)) {
-			const next = (renderable as unknown[]).map(c => resolveNavSlugs(c, pagesByUrl, ctx, pageUrl));
+			const next = (renderable as unknown[]).map((c) =>
+				resolveNavSlugs(c, pagesByUrl, ctx, pageUrl),
+			);
 			return next.every((c, i) => c === (renderable as unknown[])[i]) ? renderable : next;
 		}
 		return renderable;
@@ -1559,7 +1720,7 @@ function resolveNavSlugs(
 		return resolveNavItemsInSubtree(tag, pagesByUrl, ctx, pageUrl);
 	}
 	const newChildren = (tag.children ?? []).map((c: unknown) =>
-		resolveNavSlugs(c, pagesByUrl, ctx, pageUrl)
+		resolveNavSlugs(c, pagesByUrl, ctx, pageUrl),
 	);
 	if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
 	return { ...tag, children: newChildren };
@@ -1775,11 +1936,9 @@ function getSiblingPages(
 			cursor = parent;
 		}
 		const prefix = sectionRoot.endsWith('/') ? sectionRoot : sectionRoot + '/';
-		candidates = pages.filter(
-			p => p.url === sectionRoot || p.url.startsWith(prefix),
-		);
+		candidates = pages.filter((p) => p.url === sectionRoot || p.url.startsWith(prefix));
 	} else {
-		candidates = pages.filter(p => p.parentUrl === current.parentUrl);
+		candidates = pages.filter((p) => p.parentUrl === current.parentUrl);
 	}
 
 	// Sort by frontmatter order (asc, missing → end), tie-break by URL.
@@ -1790,7 +1949,7 @@ function getSiblingPages(
 		return a.url.localeCompare(b.url);
 	});
 
-	return candidates.map(p => ({ url: p.url, title: p.title }));
+	return candidates.map((p) => ({ url: p.url, title: p.title }));
 }
 
 function pickPrevNextFromSequence(
@@ -1817,15 +1976,16 @@ function buildPaginationLink(
 ): any {
 	const marker = direction === 'prev' ? '←' : '→';
 	const linkText = label ?? target.title;
-	const linkChildren = direction === 'prev'
-		? [
-			new Tag('span', { 'data-name': 'marker' }, [marker]),
-			new Tag('span', { 'data-name': 'label' }, [linkText]),
-		]
-		: [
-			new Tag('span', { 'data-name': 'label' }, [linkText]),
-			new Tag('span', { 'data-name': 'marker' }, [marker]),
-		];
+	const linkChildren =
+		direction === 'prev'
+			? [
+					new Tag('span', { 'data-name': 'marker' }, [marker]),
+					new Tag('span', { 'data-name': 'label' }, [linkText]),
+				]
+			: [
+					new Tag('span', { 'data-name': 'label' }, [linkText]),
+					new Tag('span', { 'data-name': 'marker' }, [marker]),
+				];
 	return new Tag(
 		'a',
 		{
@@ -1840,13 +2000,23 @@ function buildPaginationLink(
 function resolveAutoPagination(
 	renderable: unknown,
 	pageUrl: string,
-	pagesByUrl: Map<string, { url: string; title: string; parentUrl: string; description?: string; icon?: string; order?: number }>,
+	pagesByUrl: Map<
+		string,
+		{
+			url: string;
+			title: string;
+			parentUrl: string;
+			description?: string;
+			icon?: string;
+			order?: number;
+		}
+	>,
 	rootRenderable: unknown,
 ): unknown {
 	if (!Tag.isTag(renderable as any)) {
 		if (Array.isArray(renderable)) {
-			const newChildren = (renderable as unknown[]).map(c =>
-				resolveAutoPagination(c, pageUrl, pagesByUrl, rootRenderable)
+			const newChildren = (renderable as unknown[]).map((c) =>
+				resolveAutoPagination(c, pageUrl, pagesByUrl, rootRenderable),
 			);
 			if (newChildren.every((c, i) => c === (renderable as unknown[])[i])) return renderable;
 			return newChildren;
@@ -1874,11 +2044,17 @@ function resolveAutoPagination(
 			const nextLabelMeta = (tag.children ?? []).find(
 				(c: any) => Tag.isTag(c) && c.attributes?.['data-field'] === 'next-label',
 			);
-			const prevLabel = prevLabelMeta ? String((prevLabelMeta as any).attributes.content ?? '') : undefined;
-			const nextLabel = nextLabelMeta ? String((nextLabelMeta as any).attributes.content ?? '') : undefined;
+			const prevLabel = prevLabelMeta
+				? String((prevLabelMeta as any).attributes.content ?? '')
+				: undefined;
+			const nextLabel = nextLabelMeta
+				? String((nextLabelMeta as any).attributes.content ?? '')
+				: undefined;
 
 			// Skip when current page is a section index (has children)
-			const hasChildren = Array.from(pagesByUrl.values()).some(p => p.parentUrl === pageUrl && p.url !== pageUrl);
+			const hasChildren = Array.from(pagesByUrl.values()).some(
+				(p) => p.parentUrl === pageUrl && p.url !== pageUrl,
+			);
 			if (hasChildren) {
 				return { ...tag, children: [] };
 			}
@@ -1900,7 +2076,7 @@ function resolveAutoPagination(
 			} else {
 				// 2. Sibling pages by frontmatter order → directory order
 				const siblings = getSiblingPages(pageUrl, pagesByUrl, scope);
-				const idx = siblings.findIndex(s => s.url === pageUrl);
+				const idx = siblings.findIndex((s) => s.url === pageUrl);
 				if (idx !== -1) {
 					prev = idx > 0 ? siblings[idx - 1] : null;
 					next = idx < siblings.length - 1 ? siblings[idx + 1] : null;
@@ -1924,7 +2100,11 @@ function resolveAutoPagination(
 		// Explicit prev/next mode — resolve any __slug:foo hrefs through pagesByUrl
 		const newChildren = (tag.children ?? []).map((c: any) => {
 			if (!Tag.isTag(c)) return c;
-			if (c.name === 'a' && typeof c.attributes?.href === 'string' && c.attributes.href.startsWith('__slug:')) {
+			if (
+				c.name === 'a' &&
+				typeof c.attributes?.href === 'string' &&
+				c.attributes.href.startsWith('__slug:')
+			) {
 				const slug = c.attributes.href.slice('__slug:'.length);
 				const resolvedUrl = resolveSlugToUrl(slug, pagesByUrl, pageUrl);
 				if (resolvedUrl) {
@@ -1933,14 +2113,20 @@ function resolveAutoPagination(
 					// Replace label text if user didn't override (label child has same text as slug)
 					const newChildren = (c.children ?? []).map((child: any) => {
 						if (Tag.isTag(child) && child.attributes?.['data-name'] === 'label') {
-							const currentLabel = (child.children ?? []).filter((x: any) => typeof x === 'string').join('');
+							const currentLabel = (child.children ?? [])
+								.filter((x: any) => typeof x === 'string')
+								.join('');
 							if (currentLabel === slug) {
 								return { ...child, children: [newLabel] };
 							}
 						}
 						return child;
 					});
-					return { ...c, attributes: { ...c.attributes, href: resolvedUrl }, children: newChildren };
+					return {
+						...c,
+						attributes: { ...c.attributes, href: resolvedUrl },
+						children: newChildren,
+					};
 				}
 			}
 			return c;
@@ -1949,7 +2135,7 @@ function resolveAutoPagination(
 	}
 
 	const newChildren = (tag.children ?? []).map((c: unknown) =>
-		resolveAutoPagination(c, pageUrl, pagesByUrl, rootRenderable)
+		resolveAutoPagination(c, pageUrl, pagesByUrl, rootRenderable),
 	);
 	if (newChildren.every((c: unknown, i: number) => c === tag.children[i])) return tag;
 	return { ...tag, children: newChildren };
@@ -1971,7 +2157,7 @@ function walkBlogTags(node: unknown, fn: (tag: InstanceType<typeof Tag>) => void
 		fn(node);
 		for (const child of node.children) walkBlogTags(child, fn);
 	} else if (Array.isArray(node)) {
-		node.forEach(n => walkBlogTags(n, fn));
+		node.forEach((n) => walkBlogTags(n, fn));
 	}
 }
 
@@ -1979,11 +2165,11 @@ function mapBlogTags(node: unknown, fn: (tag: InstanceType<typeof Tag>) => unkno
 	if (Tag.isTag(node)) {
 		const mapped = fn(node);
 		if (mapped !== node) return mapped;
-		const newChildren = node.children.map(c => mapBlogTags(c, fn));
+		const newChildren = node.children.map((c) => mapBlogTags(c, fn));
 		const changed = newChildren.some((c, i) => c !== node.children[i]);
 		return changed ? new Tag(node.name, node.attributes, newChildren as any[]) : node;
 	}
-	if (Array.isArray(node)) return node.map(n => mapBlogTags(n, fn));
+	if (Array.isArray(node)) return node.map((n) => mapBlogTags(n, fn));
 	return node;
 }
 
@@ -2006,7 +2192,7 @@ function isInFolder(pageUrl: string, folder: string): boolean {
 /** Parse a simple filter expression like "tag:javascript" into field/value pairs */
 function parseBlogFilter(filter: string): Array<{ field: string; value: string }> {
 	if (!filter || !filter.trim()) return [];
-	return filter.split(',').map(part => {
+	return filter.split(',').map((part) => {
 		const colonIdx = part.indexOf(':');
 		if (colonIdx === -1) return { field: part.trim(), value: '' };
 		return {
@@ -2017,13 +2203,16 @@ function parseBlogFilter(filter: string): Array<{ field: string; value: string }
 }
 
 /** Check if a post's frontmatter matches all filter conditions */
-function matchesBlogFilter(post: BlogPostData, filters: Array<{ field: string; value: string }>): boolean {
+function matchesBlogFilter(
+	post: BlogPostData,
+	filters: Array<{ field: string; value: string }>,
+): boolean {
 	for (const { field, value } of filters) {
 		const fmValue = post.frontmatter[field];
 		if (value === '') {
 			if (fmValue === undefined || fmValue === null) return false;
 		} else if (Array.isArray(fmValue)) {
-			if (!fmValue.some(v => String(v).toLowerCase() === value.toLowerCase())) return false;
+			if (!fmValue.some((v) => String(v).toLowerCase() === value.toLowerCase())) return false;
 		} else {
 			if (String(fmValue ?? '').toLowerCase() !== value.toLowerCase()) return false;
 		}
@@ -2054,9 +2243,7 @@ function sortBlogPosts(posts: BlogPostData[], sort: string): BlogPostData[] {
 
 /** Build an <article> Tag for a single blog post entry */
 function createBlogPostTag(post: BlogPostData): InstanceType<typeof Tag> {
-	const titleTag = new Tag('h3', {}, [
-		new Tag('a', { href: post.url }, [post.title]),
-	]);
+	const titleTag = new Tag('h3', {}, [new Tag('a', { href: post.url }, [post.title])]);
 
 	const children: any[] = [titleTag];
 
@@ -2098,7 +2285,7 @@ function resolveBlogPosts(
 		const normalised = normaliseFolderPath(folder);
 		const filters = parseBlogFilter(filterStr);
 
-		let posts = allPosts.filter(post => {
+		let posts = allPosts.filter((post) => {
 			if (post.draft) return false;
 			if (!isInFolder(post.url, normalised)) return false;
 			if (filters.length > 0 && !matchesBlogFilter(post, filters)) return false;
@@ -2144,7 +2331,17 @@ export function resolveCoreSentinels(
 	pageUrl: string,
 	coreData: {
 		breadcrumbPaths: Map<string, string[]>;
-		pagesByUrl: Map<string, { url: string; title: string; parentUrl: string; description?: string; icon?: string; order?: number }>;
+		pagesByUrl: Map<
+			string,
+			{
+				url: string;
+				title: string;
+				parentUrl: string;
+				description?: string;
+				icon?: string;
+				order?: number;
+			}
+		>;
 		allPosts: BlogPostData[];
 		registry: Readonly<EntityRegistry>;
 		/** Compiled xref patterns from `refrakt.config.json#/xrefs`. Empty
@@ -2159,7 +2356,13 @@ export function resolveCoreSentinels(
 	 *  a layout region where the sidebar nav lives in a different region. */
 	navSearchScope?: unknown[],
 ): unknown {
-	let result = resolveAutoBreadcrumbs(renderable, pageUrl, coreData.breadcrumbPaths, coreData.pagesByUrl, ctx);
+	let result = resolveAutoBreadcrumbs(
+		renderable,
+		pageUrl,
+		coreData.breadcrumbPaths,
+		coreData.pagesByUrl,
+		ctx,
+	);
 	result = resolveAutoNavs(result, pageUrl, coreData.pagesByUrl, ctx);
 	// SPEC-055 — resolve bare-slug nav items to real <a href> links before any
 	// downstream resolver consumes the tree. Must run after auto-nav (which
@@ -2168,9 +2371,8 @@ export function resolveCoreSentinels(
 	result = resolveNavSlugs(result, coreData.pagesByUrl, ctx, pageUrl);
 	result = resolveCollapsibleNavs(result, pageUrl, coreData.pagesByUrl);
 	result = resolveCardsNavs(result, pageUrl, coreData.pagesByUrl);
-	const searchRoot = navSearchScope && navSearchScope.length > 0
-		? [result, ...navSearchScope]
-		: result;
+	const searchRoot =
+		navSearchScope && navSearchScope.length > 0 ? [result, ...navSearchScope] : result;
 	result = resolveAutoPagination(result, pageUrl, coreData.pagesByUrl, searchRoot);
 	// SPEC-055 — mark aria-current / data-active="ancestor" on resolved nav
 	// links per page. Runs after slug + auto-pagination resolution so the
@@ -2231,9 +2433,15 @@ export interface CorePipelineHooksOptions {
  * any custom field.
  */
 const RESERVED_PAGE_FRONTMATTER = new Set([
-	'layout', 'tint', 'tint-mode', 'tint-lock', 'slug', 'redirect',
+	'layout',
+	'tint',
+	'tint-mode',
+	'tint-lock',
+	'slug',
+	'redirect',
 	// entity-declaration keys (SPEC-092 Layer 2) — meta, not queryable content
-	'type', 'id',
+	'type',
+	'id',
 ]);
 
 export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): PluginPipelineHooks {
@@ -2243,325 +2451,320 @@ export function createCorePipelineHooks(opts: CorePipelineHooksOptions = {}): Pl
 	const repoBranch = opts.repoBranch;
 
 	return {
-	// Compose the core preprocess steps: include (→ pasted AST), then snippet
-	// (→ fence), then data (→ table). All three mutate the AST in place, so a
-	// single pass over the same tree applies them; any one mutating means the
-	// caller takes the returned AST.
-	//
-	// **Include runs first, and the order is load-bearing** (SPEC-129): the
-	// whole point of the rune is that the pasted content is in the tree when the
-	// later preprocessors walk it. Anything added to this phase that authors may
-	// want inside an included file belongs after include, not before.
-	preprocess(ast, page, ctx) {
-		const includeChanged = preprocessIncludes(ast, page, ctx);
-		const snippetChanged = preprocessSnippets(ast, page, ctx);
-		const dataChanged = preprocessData(ast, page, ctx);
-		return (includeChanged || snippetChanged || dataChanged) ? ast : undefined;
-	},
+		// Compose the core preprocess steps: include (→ pasted AST), then snippet
+		// (→ fence), then data (→ table). All three mutate the AST in place, so a
+		// single pass over the same tree applies them; any one mutating means the
+		// caller takes the returned AST.
+		//
+		// **Include runs first, and the order is load-bearing** (SPEC-129): the
+		// whole point of the rune is that the pasted content is in the tree when the
+		// later preprocessors walk it. Anything added to this phase that authors may
+		// want inside an included file belongs after include, not before.
+		preprocess(ast, page, ctx) {
+			const includeChanged = preprocessIncludes(ast, page, ctx);
+			const snippetChanged = preprocessSnippets(ast, page, ctx);
+			const dataChanged = preprocessData(ast, page, ctx);
+			return includeChanged || snippetChanged || dataChanged ? ast : undefined;
+		},
 
-	register(pages: readonly TransformedPage[], registry: EntityRegistry, ctx: PipelineContext): void {
-		for (const page of pages) {
-			const parentUrl = deriveParentUrl(page.url);
+		register(
+			pages: readonly TransformedPage[],
+			registry: EntityRegistry,
+			ctx: PipelineContext,
+		): void {
+			for (const page of pages) {
+				const parentUrl = deriveParentUrl(page.url);
 
-			const existingPage = registry.getById('page', page.url);
-			if (existingPage && existingPage.sourceUrl !== page.url) {
-				ctx.warn(
-					`Page '${page.url}' already registered from '${existingPage.sourceUrl}'`,
-					page.url,
-				);
-			}
-
-			// SPEC-092 Layer 1 — pass page frontmatter through to the entity's
-			// queryable `data` (minus the routing/render-control keys above). The
-			// curated fields below are normalised and win over any raw same-named
-			// frontmatter value.
-			const passthrough: Record<string, unknown> = {};
-			for (const [k, val] of Object.entries(page.frontmatter)) {
-				if (!RESERVED_PAGE_FRONTMATTER.has(k)) passthrough[k] = val;
-			}
-
-			registry.register({
-				type: 'page',
-				id: page.url,
-				sourceUrl: page.url,
-				data: {
-					...passthrough,
-					title: page.title,
-					url: page.url,
-					parentUrl,
-					draft: page.frontmatter.draft ?? false,
-					description: page.frontmatter.description,
-					date: page.frontmatter.date,
-					order: page.frontmatter.order,
-					icon: page.frontmatter.icon,
-				},
-			});
-
-			for (const h of page.headings) {
-				const headingId = `${page.url}#${h.id}`;
-				const existingHeading = registry.getById('heading', headingId);
-				if (existingHeading && existingHeading.sourceUrl !== page.url) {
+				const existingPage = registry.getById('page', page.url);
+				if (existingPage && existingPage.sourceUrl !== page.url) {
 					ctx.warn(
-						`Heading '${headingId}' already registered from '${existingHeading.sourceUrl}'`,
+						`Page '${page.url}' already registered from '${existingPage.sourceUrl}'`,
 						page.url,
 					);
 				}
+
+				// SPEC-092 Layer 1 — pass page frontmatter through to the entity's
+				// queryable `data` (minus the routing/render-control keys above). The
+				// curated fields below are normalised and win over any raw same-named
+				// frontmatter value.
+				const passthrough: Record<string, unknown> = {};
+				for (const [k, val] of Object.entries(page.frontmatter)) {
+					if (!RESERVED_PAGE_FRONTMATTER.has(k)) passthrough[k] = val;
+				}
+
 				registry.register({
-					type: 'heading',
-					id: headingId,
+					type: 'page',
+					id: page.url,
 					sourceUrl: page.url,
-					data: { level: h.level, text: h.text, headingId: h.id, url: page.url },
+					data: {
+						...passthrough,
+						title: page.title,
+						url: page.url,
+						parentUrl,
+						draft: page.frontmatter.draft ?? false,
+						description: page.frontmatter.description,
+						date: page.frontmatter.date,
+						order: page.frontmatter.order,
+						icon: page.frontmatter.icon,
+					},
 				});
+
+				for (const h of page.headings) {
+					const headingId = `${page.url}#${h.id}`;
+					const existingHeading = registry.getById('heading', headingId);
+					if (existingHeading && existingHeading.sourceUrl !== page.url) {
+						ctx.warn(
+							`Heading '${headingId}' already registered from '${existingHeading.sourceUrl}'`,
+							page.url,
+						);
+					}
+					registry.register({
+						type: 'heading',
+						id: headingId,
+						sourceUrl: page.url,
+						data: { level: h.level, text: h.text, headingId: h.id, url: page.url },
+					});
+				}
 			}
-		}
 
-		// SPEC-060 — register every drawer rune as a page-scoped entity so
-		// `{% ref "drawer-id" /%}` resolves to the drawer's address.
-		registerDrawers(pages, registry, ctx);
-	},
+			// SPEC-060 — register every drawer rune as a page-scoped entity so
+			// `{% ref "drawer-id" /%}` resolves to the drawer's address.
+			registerDrawers(pages, registry, ctx);
+		},
 
-	aggregate(registry: Readonly<EntityRegistry>, ctx: PipelineContext) {
-		const pageEntities = registry.getAll('page') as unknown as Array<{
-			id: string;
-			data: { url: string; title: string; parentUrl: string; description?: string; icon?: string; order?: number };
-		}>;
+		aggregate(registry: Readonly<EntityRegistry>, ctx: PipelineContext) {
+			const pageEntities = registry.getAll('page') as unknown as Array<{
+				id: string;
+				data: {
+					url: string;
+					title: string;
+					parentUrl: string;
+					description?: string;
+					icon?: string;
+					order?: number;
+				};
+			}>;
 
-		const pages = pageEntities.map(e => ({
-			url: e.data.url,
-			title: e.data.title,
-			parentUrl: e.data.parentUrl,
-			description: e.data.description,
-			icon: e.data.icon,
-			order: e.data.order,
-		}));
+			const pages = pageEntities.map((e) => ({
+				url: e.data.url,
+				title: e.data.title,
+				parentUrl: e.data.parentUrl,
+				description: e.data.description,
+				icon: e.data.icon,
+				order: e.data.order,
+			}));
 
-		const pageTree = buildPageTree(pages);
-		const breadcrumbPaths = buildBreadcrumbPaths(pages);
+			const pageTree = buildPageTree(pages);
+			const breadcrumbPaths = buildBreadcrumbPaths(pages);
 
-		// Quick lookup: url → { url, title } for postProcess use
-		const pagesByUrl = new Map(pages.map(p => [p.url, p]));
+			// Quick lookup: url → { url, title } for postProcess use
+			const pagesByUrl = new Map(pages.map((p) => [p.url, p]));
 
-		// Build heading index: "url#id" → heading data
-		const headingIndex = new Map<string, Record<string, unknown>>();
-		for (const h of registry.getAll('heading')) {
-			headingIndex.set(h.id, h.data);
-		}
+			// Build heading index: "url#id" → heading data
+			const headingIndex = new Map<string, Record<string, unknown>>();
+			for (const h of registry.getAll('heading')) {
+				headingIndex.set(h.id, h.data);
+			}
 
-		// Blog: collect all pages as potential blog posts
-		const allPosts: BlogPostData[] = pageEntities.map(e => ({
-			title: (e.data as any).title as string || '',
-			url: (e.data as any).url as string || e.id,
-			date: (e.data as any).date as string || '',
-			description: (e.data as any).description as string || '',
-			draft: (e.data as any).draft as boolean || false,
-			frontmatter: e.data as Record<string, unknown>,
-		}));
+			// Blog: collect all pages as potential blog posts
+			const allPosts: BlogPostData[] = pageEntities.map((e) => ({
+				title: ((e.data as any).title as string) || '',
+				url: ((e.data as any).url as string) || e.id,
+				date: ((e.data as any).date as string) || '',
+				description: ((e.data as any).description as string) || '',
+				draft: ((e.data as any).draft as boolean) || false,
+				frontmatter: e.data as Record<string, unknown>,
+			}));
 
-		return { pageTree, breadcrumbPaths, pagesByUrl, headingIndex, allPosts, registry, xrefPatterns, embedConfig, repoUrl, repoBranch };
-	},
-
-	postProcess(page: TransformedPage, aggregated: AggregatedData, ctx: PipelineContext): TransformedPage {
-		const coreData = aggregated['__core__'] as {
-			breadcrumbPaths: Map<string, string[]>;
-			pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>;
-			allPosts: BlogPostData[];
-			registry: Readonly<EntityRegistry>;
-			xrefPatterns?: CompiledXrefPattern[];
-			repoUrl?: string;
-			repoBranch?: string;
-			embedConfig?: {
-				tags: Record<string, unknown>;
-				nodes: Record<string, unknown>;
-				functions?: Record<string, unknown>;
-				partials?: Record<string, unknown>;
-				projectRoot?: string;
-				projectFiles?: ProjectFiles;
+			return {
+				pageTree,
+				breadcrumbPaths,
+				pagesByUrl,
+				headingIndex,
+				allPosts,
+				registry,
+				xrefPatterns,
+				embedConfig,
+				repoUrl,
+				repoBranch,
 			};
-		} | undefined;
+		},
 
-		if (!coreData) return page;
+		postProcess(
+			page: TransformedPage,
+			aggregated: AggregatedData,
+			ctx: PipelineContext,
+		): TransformedPage {
+			const coreData = aggregated['__core__'] as
+				| {
+						breadcrumbPaths: Map<string, string[]>;
+						pagesByUrl: Map<string, { url: string; title: string; parentUrl: string }>;
+						allPosts: BlogPostData[];
+						registry: Readonly<EntityRegistry>;
+						xrefPatterns?: CompiledXrefPattern[];
+						repoUrl?: string;
+						repoBranch?: string;
+						embedConfig?: {
+							tags: Record<string, unknown>;
+							nodes: Record<string, unknown>;
+							functions?: Record<string, unknown>;
+							partials?: Record<string, unknown>;
+							projectRoot?: string;
+							projectFiles?: ProjectFiles;
+						};
+				  }
+				| undefined;
 
-		let renderable = resolveAutoBreadcrumbs(
-			page.renderable,
-			page.url,
-			coreData.breadcrumbPaths,
-			coreData.pagesByUrl,
-			ctx,
-		);
+			if (!coreData) return page;
 
-		renderable = resolveAutoNavs(
-			renderable,
-			page.url,
-			coreData.pagesByUrl,
-			ctx,
-		);
+			let renderable = resolveAutoBreadcrumbs(
+				page.renderable,
+				page.url,
+				coreData.breadcrumbPaths,
+				coreData.pagesByUrl,
+				ctx,
+			);
 
-		// SPEC-055 build-time slug resolution (see note in resolveCoreSentinels).
-		renderable = resolveNavSlugs(
-			renderable,
-			coreData.pagesByUrl,
-			ctx,
-			page.url,
-		);
+			renderable = resolveAutoNavs(renderable, page.url, coreData.pagesByUrl, ctx);
 
-		renderable = resolveCollapsibleNavs(
-			renderable,
-			page.url,
-			coreData.pagesByUrl,
-		);
+			// SPEC-055 build-time slug resolution (see note in resolveCoreSentinels).
+			renderable = resolveNavSlugs(renderable, coreData.pagesByUrl, ctx, page.url);
 
-		renderable = resolveCardsNavs(
-			renderable,
-			page.url,
-			coreData.pagesByUrl,
-		);
+			renderable = resolveCollapsibleNavs(renderable, page.url, coreData.pagesByUrl);
 
-		renderable = resolveAutoPagination(
-			renderable,
-			page.url,
-			coreData.pagesByUrl,
-			renderable,
-		);
+			renderable = resolveCardsNavs(renderable, page.url, coreData.pagesByUrl);
 
-		// SPEC-055 build-time active state.
-		renderable = applyNavActiveState(renderable, page.url);
+			renderable = resolveAutoPagination(renderable, page.url, coreData.pagesByUrl, renderable);
 
-		renderable = resolveBlogPosts(
-			renderable,
-			coreData.allPosts,
-			ctx,
-			page.url,
-		);
+			// SPEC-055 build-time active state.
+			renderable = applyNavActiveState(renderable, page.url);
 
-		// SPEC-060 — rewrite `data-drawer-title-auto` placeholders to the
-		// appropriate `h{n}` based on outline depth. Runs before xref
-		// resolution so the rewritten title doesn't carry the sentinel
-		// attribute into the rendered HTML.
-		renderable = resolveAutoDrawerTitleLevels(renderable);
+			renderable = resolveBlogPosts(renderable, coreData.allPosts, ctx, page.url);
 
-		// SPEC-078 — bind file-ref sentinels to their GitHub URLs and emit
-		// the hoist sentinel when `preview="drawer"`. Must run before
-		// `hoistPreviewDrawers` (which consumes the hoist sentinel) and
-		// before xref resolution (so the file-ref's inline `<a>` carries
-		// its final href into the rendered tree).
-		renderable = resolveFileRefs(
-			renderable,
-			page.url,
-			coreData.repoUrl,
-			coreData.repoBranch,
-			ctx,
-		);
+			// SPEC-060 — rewrite `data-drawer-title-auto` placeholders to the
+			// appropriate `h{n}` based on outline depth. Runs before xref
+			// resolution so the rewritten title doesn't carry the sentinel
+			// attribute into the rendered HTML.
+			renderable = resolveAutoDrawerTitleLevels(renderable);
 
-		// SPEC-078 — rewrite xref placeholders carrying `data-xref-preview=
-		// "drawer"` into an inline `<a href="#drawer-{id}">` + hoist
-		// sentinel. Non-preview xref placeholders pass through to
-		// resolveXrefs later in the chain.
-		renderable = resolveXrefPreviews(
-			renderable,
-			page.url,
-			coreData.registry,
-			ctx,
-		);
+			// SPEC-078 — bind file-ref sentinels to their GitHub URLs and emit
+			// the hoist sentinel when `preview="drawer"`. Must run before
+			// `hoistPreviewDrawers` (which consumes the hoist sentinel) and
+			// before xref resolution (so the file-ref's inline `<a>` carries
+			// its final href into the rendered tree).
+			renderable = resolveFileRefs(
+				renderable,
+				page.url,
+				coreData.repoUrl,
+				coreData.repoBranch,
+				ctx,
+			);
 
-		// SPEC-078 hoist mechanism — collect `preview="drawer"` sentinels
-		// from file-ref / xref / future reference runes and emit hoisted
-		// `<section class="rf-drawer">` at the page root. Runs before
-		// expand resolution so an xref-preview drawer's body (which uses
-		// the expand resolver internally) is resolved by the same pass.
-		renderable = hoistPreviewDrawers(
-			renderable,
-			page.url,
-			coreData.registry,
-			coreData.embedConfig?.projectFiles,
-			ctx,
-		);
+			// SPEC-078 — rewrite xref placeholders carrying `data-xref-preview=
+			// "drawer"` into an inline `<a href="#drawer-{id}">` + hoist
+			// sentinel. Non-preview xref placeholders pass through to
+			// resolveXrefs later in the chain.
+			renderable = resolveXrefPreviews(renderable, page.url, coreData.registry, ctx);
 
-		// SPEC-066 expand resolution — substitutes embedded entity content
-		// before xref runs so refs inside substituted content are resolved
-		// by the same pass as host-page refs.
-		renderable = resolveExpands(
-			renderable,
-			page.url,
-			coreData.registry,
-			coreData.xrefPatterns ?? [],
-			coreData.embedConfig,
-			ctx,
-		);
+			// SPEC-078 hoist mechanism — collect `preview="drawer"` sentinels
+			// from file-ref / xref / future reference runes and emit hoisted
+			// `<section class="rf-drawer">` at the page root. Runs before
+			// expand resolution so an xref-preview drawer's body (which uses
+			// the expand resolver internally) is resolved by the same pass.
+			renderable = hoistPreviewDrawers(
+				renderable,
+				page.url,
+				coreData.registry,
+				coreData.embedConfig?.projectFiles,
+				ctx,
+			);
 
-		// SPEC-070 collection resolution — runs after expand and before xref so
-		// item-template `{% ref %}`s are resolved by the same xref pass.
-		renderable = resolveCollections(
-			renderable,
-			page.url,
-			coreData.registry,
-			coreData.embedConfig,
-			ctx,
-		);
+			// SPEC-066 expand resolution — substitutes embedded entity content
+			// before xref runs so refs inside substituted content are resolved
+			// by the same pass as host-page refs.
+			renderable = resolveExpands(
+				renderable,
+				page.url,
+				coreData.registry,
+				coreData.xrefPatterns ?? [],
+				coreData.embedConfig,
+				ctx,
+			);
 
-		// SPEC-072 relationships resolution — same placement rationale as
-		// collection: after expand, before xref (so item-template `{% ref %}`s
-		// resolve in the same xref pass).
-		renderable = resolveRelationships(
-			renderable,
-			page.url,
-			coreData.registry,
-			coreData.embedConfig,
-			ctx,
-		);
+			// SPEC-070 collection resolution — runs after expand and before xref so
+			// item-template `{% ref %}`s are resolved by the same xref pass.
+			renderable = resolveCollections(
+				renderable,
+				page.url,
+				coreData.registry,
+				coreData.embedConfig,
+				ctx,
+			);
 
-		// SPEC-076 aggregate resolution — same placement as collection /
-		// relationships: after expand, before xref (so any `{% ref %}` inside
-		// the body template resolves in the same xref pass).
-		renderable = resolveAggregates(
-			renderable,
-			page.url,
-			coreData.registry,
-			coreData.embedConfig,
-			ctx,
-		);
+			// SPEC-072 relationships resolution — same placement rationale as
+			// collection: after expand, before xref (so item-template `{% ref %}`s
+			// resolve in the same xref pass).
+			renderable = resolveRelationships(
+				renderable,
+				page.url,
+				coreData.registry,
+				coreData.embedConfig,
+				ctx,
+			);
 
-		// SPEC-093 — data-bound sandboxes: evaluate the bound query against the
-		// registry and inject the JSON for the iframe to expose as window.RF_DATA.
-		renderable = resolveDataBindings(renderable, coreData.registry, ctx, page.url);
+			// SPEC-076 aggregate resolution — same placement as collection /
+			// relationships: after expand, before xref (so any `{% ref %}` inside
+			// the body template resolves in the same xref pass).
+			renderable = resolveAggregates(
+				renderable,
+				page.url,
+				coreData.registry,
+				coreData.embedConfig,
+				ctx,
+			);
 
-		renderable = resolveXrefs(
-			renderable,
-			page.url,
-			coreData.registry,
-			coreData.xrefPatterns ?? [],
-			ctx,
-		);
+			// SPEC-093 — data-bound sandboxes: evaluate the bound query against the
+			// registry and inject the JSON for the iframe to expose as window.RF_DATA.
+			renderable = resolveDataBindings(renderable, coreData.registry, ctx, page.url);
 
-		// SPEC-062 standalone snippet wrap: turn `<pre data-snippet-source>`
-		// into `<figure class="rf-snippet">` when not inside a fence-consuming
-		// container (codegroup, diff). The wrap is a no-op when the page
-		// has no snippet-derived fences.
-		const wrappedPage = wrapStandaloneSnippets(
-			renderable === page.renderable ? page : { ...page, renderable },
-			aggregated,
-			ctx,
-		);
+			renderable = resolveXrefs(
+				renderable,
+				page.url,
+				coreData.registry,
+				coreData.xrefPatterns ?? [],
+				ctx,
+			);
 
-		// SPEC-066 outline-scope walkers: prefix heading IDs and drop TOC
-		// items inside any `data-outline-scope` subtree. Generic — any rune
-		// can set the attribute and get the behaviour. Runs last so it can
-		// see the final tree (including expand-substituted content once
-		// that lands in v0.15.0).
-		applyOutlineScopeWalkers(wrappedPage.renderable);
+			// SPEC-062 standalone snippet wrap: turn `<pre data-snippet-source>`
+			// into `<figure class="rf-snippet">` when not inside a fence-consuming
+			// container (codegroup, diff). The wrap is a no-op when the page
+			// has no snippet-derived fences.
+			const wrappedPage = wrapStandaloneSnippets(
+				renderable === page.renderable ? page : { ...page, renderable },
+				aggregated,
+				ctx,
+			);
 
-		// Refresh `page.headings` from the final renderable. Parse-time
-		// `extractHeadings` only saw the raw AST — anything inlined by
-		// postProcess (expand `level=N`, collection bodies) wouldn't make
-		// it into the parse-time list, leaving the page TOC blind to those
-		// headings. Skips `data-outline-scope` subtrees so peer-document
-		// embeds stay isolated, matching the TOC walker.
-		const harvested = harvestHeadingsFromRenderable(wrappedPage.renderable);
-		if (harvested.length > 0 || wrappedPage.headings.length > 0) {
-			return { ...wrappedPage, headings: harvested };
-		}
+			// SPEC-066 outline-scope walkers: prefix heading IDs and drop TOC
+			// items inside any `data-outline-scope` subtree. Generic — any rune
+			// can set the attribute and get the behaviour. Runs last so it can
+			// see the final tree (including expand-substituted content once
+			// that lands in v0.15.0).
+			applyOutlineScopeWalkers(wrappedPage.renderable);
 
-		return wrappedPage;
-	},
+			// Refresh `page.headings` from the final renderable. Parse-time
+			// `extractHeadings` only saw the raw AST — anything inlined by
+			// postProcess (expand `level=N`, collection bodies) wouldn't make
+			// it into the parse-time list, leaving the page TOC blind to those
+			// headings. Skips `data-outline-scope` subtrees so peer-document
+			// embeds stay isolated, matching the TOC walker.
+			const harvested = harvestHeadingsFromRenderable(wrappedPage.renderable);
+			if (harvested.length > 0 || wrappedPage.headings.length > 0) {
+				return { ...wrappedPage, headings: harvested };
+			}
+
+			return wrappedPage;
+		},
 	};
 }
 

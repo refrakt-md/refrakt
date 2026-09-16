@@ -96,9 +96,7 @@ describe('formBehavior', () => {
 			const form = createForm({ action: '/api/submit', success: 'Thank you!' });
 			formBehavior(form);
 
-			vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-				new Response('ok', { status: 200 }),
-			);
+			vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
 
 			form.dispatchEvent(new Event('submit', { cancelable: true }));
 			await vi.waitFor(() => {
@@ -115,9 +113,7 @@ describe('formBehavior', () => {
 			const form = createForm({ action: '/api/submit', error: 'Something broke!' });
 			formBehavior(form);
 
-			vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-				new Response('error', { status: 500 }),
-			);
+			vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('error', { status: 500 }));
 
 			form.dispatchEvent(new Event('submit', { cancelable: true }));
 			await vi.waitFor(() => {
@@ -147,19 +143,22 @@ describe('formBehavior', () => {
 			const form = createForm({ action: '/api/submit', method: 'PUT' });
 			formBehavior(form);
 
-			const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-				new Response('ok', { status: 200 }),
-			);
+			const fetchSpy = vi
+				.spyOn(globalThis, 'fetch')
+				.mockResolvedValue(new Response('ok', { status: 200 }));
 
 			form.dispatchEvent(new Event('submit', { cancelable: true }));
 			await vi.waitFor(() => {
 				expect(fetchSpy).toHaveBeenCalled();
 			});
 
-			expect(fetchSpy).toHaveBeenCalledWith('/api/submit', expect.objectContaining({
-				method: 'PUT',
-				headers: { 'Accept': 'application/json' },
-			}));
+			expect(fetchSpy).toHaveBeenCalledWith(
+				'/api/submit',
+				expect.objectContaining({
+					method: 'PUT',
+					headers: { Accept: 'application/json' },
+				}),
+			);
 		});
 
 		it('does not submit if no action is set', () => {
@@ -180,9 +179,7 @@ describe('formBehavior', () => {
 			const input = form.querySelector<HTMLInputElement>('input[name="field-name"]')!;
 			input.value = 'Test';
 
-			vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-				new Response('ok', { status: 200 }),
-			);
+			vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('ok', { status: 200 }));
 
 			const resetSpy = vi.spyOn(form, 'reset');
 

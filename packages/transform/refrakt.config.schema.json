@@ -1,324 +1,431 @@
 {
-	"$schema": "http://json-schema.org/draft-07/schema#",
-	"$id": "https://refrakt.md/refrakt.config.schema.json",
-	"title": "RefraktConfig",
-	"description": "Project-level configuration for refrakt.md. Three valid shapes — flat (legacy, deprecated in v0.12, slated for removal in v1.0), singular `site`, plural `sites` — all collapse to a canonical normalized form internally. The unversioned URL https://refrakt.md/refrakt.config.schema.json is a 'latest' alias that always serves the most recently published schema.",
-	"type": "object",
-	"properties": {
-		"$schema": { "description": "JSON Schema reference, for editor completion and validation.", "type": "string" },
-		"plugins": {
-			"type": "array",
-			"description": "Plugins for this project — npm packages that contribute runes, layouts, pipeline hooks, behaviors, and/or CLI commands and MCP tools. When set, this is authoritative; when absent, plugin discovery falls back to scanning package.json for @refrakt-md/* dependencies.",
-			"items": { "type": "string" }
-		},
-		"plan": {
-			"$ref": "#/definitions/PlanConfig"
-		},
-		"xrefs": {
-			"type": "array",
-			"description": "Cross-reference URL templates. Patterns are tried in array order when an xref's ID isn't found in the registry (or when the registry-found entity has no usable `sourceUrl`). First match wins.",
-			"items": { "$ref": "#/definitions/XrefPattern" }
-		},
-		"fileRoots": {
-			"type": "object",
-			"description": "Named file roots — directories that file-reading runes can reach via a `namespace:filename` syntax (e.g. `{% partial file=\"shared:footer.md\" /%}`). Keys are namespace names; values are paths relative to the project root and must point at existing directories. The namespace `site` is reserved.",
-			"additionalProperties": { "type": "string" }
-		},
-		"site": {
-			"$ref": "#/definitions/SiteConfig",
-			"description": "Singular-site declaration. Mutually exclusive with `sites`."
-		},
-		"sites": {
-			"type": "object",
-			"description": "Multi-site declaration keyed by site name. Mutually exclusive with `site`.",
-			"minProperties": 1,
-			"additionalProperties": { "$ref": "#/definitions/SiteConfig" }
-		},
-		"contentDir": { "type": "string", "description": "Legacy shorthand for sites.default.contentDir" },
-		"theme": {
-			"description": "Legacy shorthand for sites.default.theme. Accepts either a package name string (legacy shorthand) or a full SiteThemeConfig object with `package`, `presets`, `tokens`, `modes`, and `code.colorScheme`.",
-			"oneOf": [
-				{ "type": "string" },
-				{ "$ref": "#/definitions/SiteThemeConfig" }
-			]
-		},
-		"target": { "type": "string", "description": "Legacy shorthand for sites.default.target. Documentation-only — no adapter consumes this field. Slated for removal in v1.0.", "deprecated": true },
-		"overrides": { "description": "Component overrides, mapping a `typeof` name to a component path relative to the project root.", "type": "object", "additionalProperties": { "type": "string" } },
-		"routeRules": { "description": "Route-to-layout mapping rules, evaluated in order — first match wins. A rule may also set `entity`, registering matching pages as registry entities of that type (e.g. `runes/**` → `rune`) without per-page frontmatter.",
-			"type": "array",
-			"items": { "$ref": "#/definitions/RouteRule" }
-		},
-		"search": { "type": "boolean", "description": "Whether to render the site-wide search UI (header button + Cmd/Ctrl+K dialog, powered by Pagefind). Defaults to true. Set false to omit the search chrome entirely. Results require a Pagefind index built and served at /pagefind/ — see the Setting up search guide." },
-		"highlight": { "$ref": "#/definitions/HighlightConfig" },
-		"icons": { "description": "Custom icon SVGs, merged into the theme's global icon group and referenced by name.", "type": "object", "additionalProperties": { "type": "string" } },
-		"backgrounds": { "type": "object", "description": "Named bg presets (keyed by name). Each is a BgPresetDefinition: `style` and/or token-driven `gradient` (engine-resolved), `extends` a base preset, and/or `sandbox` ({ src, framework?, dependencies? }) for a live sandbox backdrop resolved at transform time (SPEC-104). `sandbox` presets are project-level content.", "additionalProperties": { "type": "object" } },
-		"sandbox": { "$ref": "#/definitions/SandboxConfig" },
-		"baseUrl": { "description": "Public base URL of the site, used for canonical links, `og:url` and `og:image`.", "type": "string" },
-		"siteName": { "description": "Human-readable site name, used for `og:site_name` and Organization JSON-LD.", "type": "string" },
-		"defaultImage": { "description": "Default `og:image` for pages that do not set their own. 1200×630 is recommended.", "type": "string" },
-		"logo": { "description": "Site logo path used in Organization JSON-LD (e.g. `/favicon-192.png`).", "type": "string" },
-		"repoUrl": {
-			"type": "string",
-			"description": "Legacy shorthand for sites.default.repoUrl. Canonical GitHub (or compatible) repository URL — e.g. `https://github.com/owner/repo`. Used by the `file-ref` rune to build deep-link `View source` URLs."
-		},
-		"repoBranch": {
-			"type": "string",
-			"description": "Legacy shorthand for sites.default.repoBranch. Git ref appended to GitHub source URLs (branch / tag / commit SHA). Defaults to `main`. Use a commit SHA for archival URLs that won't drift when the file is edited later."
-		},
-		"runes": { "$ref": "#/definitions/RunesConfig" }
-	},
-	"not": {
-		"required": ["site", "sites"]
-	},
-	"definitions": {
-		"PlanConfig": {
-			"type": "object",
-			"description": "Plan-management configuration.",
-			"properties": {
-				"dir": {
-					"type": "string",
-					"description": "Plan directory, relative to project root. Default: 'plan'"
-				}
-			},
-			"additionalProperties": false
-		},
-		"SiteConfig": {
-			"description": "Configuration for one site — the unit a build renders. A single-site project declares one under `site`; a multi-site project declares several under `sites`.",
-			"type": "object",
-			"required": ["contentDir", "theme"],
-			"properties": {
-				"contentDir": { "description": "Path to the content directory, relative to the project root. Required for a site to load.", "type": "string" },
-				"theme": {
-					"description": "Active theme — accepts a package name string (legacy shorthand) or a full SiteThemeConfig with presets, token overrides, mode overlays, and code-block colour scheme.",
-					"oneOf": [
-						{ "type": "string" },
-						{ "$ref": "#/definitions/SiteThemeConfig" }
-					]
-				},
-				"target": {
-					"type": "string",
-					"description": "Documentation-only adapter hint (svelte, astro, next, nuxt, eleventy, html). No adapter validates or reads this field today; it serves as an in-config record of the intended adapter. Slated for removal in v1.0.",
-					"deprecated": true
-				},
-				"overrides": { "description": "Component overrides, mapping a `typeof` name to a component path relative to the project root.", "type": "object", "additionalProperties": { "type": "string" } },
-				"routeRules": { "description": "Route-to-layout mapping rules, evaluated in order — first match wins. A rule may also set `entity`, registering matching pages as registry entities of that type (e.g. `runes/**` → `rune`) without per-page frontmatter.", "type": "array", "items": { "$ref": "#/definitions/RouteRule" } },
-				"entityRoutes": {
-					"type": "array",
-					"description": "Declarative entity → page routes. Each rule generates one page per registered entity matching `type` plus an optional `filter` — the built-in alternative to writing a `contributePages` pipeline hook by hand.",
-					"items": { "$ref": "#/definitions/EntityRoute" }
-				},
-				"search": { "type": "boolean", "description": "Whether to render the site-wide search UI (header button + Cmd/Ctrl+K dialog, powered by Pagefind). Defaults to true. Set false to omit the search chrome entirely. Results require a Pagefind index built and served at /pagefind/ — see the Setting up search guide." },
-				"highlight": { "$ref": "#/definitions/HighlightConfig" },
-				"icons": { "description": "Custom icon SVGs, merged into the theme's global icon group and referenced by name.", "type": "object", "additionalProperties": { "type": "string" } },
-				"plugins": {
-					"type": "array",
-					"description": "Plugins to merge into this site's ThemeConfig (runes, layouts, hooks, etc.).",
-					"items": { "type": "string" }
-				},
-				"locale": {
-					"type": "string",
-					"description": "Active locale (BCP 47, e.g. `de`). Selects first-party and plugin translation bundles for framework-generated UI text and drives locale-aware date/number formatting. Defaults to `en`.",
-					"default": "en"
-				},
-				"strings": {
-					"type": "object",
-					"description": "Site-level translation overrides for framework-generated UI text, keyed by the auto-derived i18n key (`{scope}.{block}.{ref}`). Highest precedence — these win over first-party and plugin bundles. Each value is a string, or a map of CLDR plural categories (`one`, `other`, …) to strings.",
-					"additionalProperties": {
-						"oneOf": [
-							{ "type": "string" },
-							{ "type": "object", "additionalProperties": { "type": "string" } }
-						]
-					}
-				},
-				"tints": { "description": "Project-level tint presets, available to any page or rune via the `tint` attribute.", "type": "object", "additionalProperties": { "type": "object" } },
-				"backgrounds": { "type": "object", "description": "Named bg presets (keyed by name). Each is a BgPresetDefinition: `style` and/or token-driven `gradient` (engine-resolved), `extends` a base preset, and/or `sandbox` ({ src, framework?, dependencies? }) for a live sandbox backdrop resolved at transform time (SPEC-104). `sandbox` presets are project-level content.", "additionalProperties": { "type": "object" } },
-				"sandbox": { "$ref": "#/definitions/SandboxConfig" },
-				"baseUrl": { "description": "Public base URL of the site, used for canonical links, `og:url` and `og:image`.", "type": "string" },
-				"siteName": { "description": "Human-readable site name, used for `og:site_name` and Organization JSON-LD.", "type": "string" },
-				"defaultImage": { "description": "Default `og:image` for pages that do not set their own. 1200×630 is recommended.", "type": "string" },
-				"logo": { "description": "Site logo path used in Organization JSON-LD (e.g. `/favicon-192.png`).", "type": "string" },
-				"repoUrl": {
-					"type": "string",
-					"description": "Canonical GitHub (or compatible) repository URL — e.g. `https://github.com/owner/repo`. Used by the `file-ref` rune (SPEC-078) to build deep-link `View source on GitHub →` URLs of the form `{repoUrl}/blob/{repoBranch}/{path}#L{start}-L{end}`. When absent, `file-ref` falls back to a no-href link / in-page anchor with a build warning."
-				},
-				"repoBranch": {
-					"type": "string",
-					"description": "Git ref appended to GitHub source URLs — accepts any branch name, tag, or commit SHA. Defaults to `main` when omitted. Use a commit SHA for archival URLs that won't drift when the file is edited later."
-				},
-				"runes": { "$ref": "#/definitions/RunesConfig" }
-			}
-		},
-		"RouteRule": {
-			"description": "One route-to-layout mapping. `pattern` is a glob matched against a page URL; `layout` names the layout to apply. An optional `entity` also registers matching pages as registry entities of that type.",
-			"type": "object",
-			"required": ["pattern", "layout"],
-			"properties": {
-				"pattern": {
-					"type": "string",
-					"description": "Glob-style pattern matched against the page URL (e.g. `docs/**`, `**`)."
-				},
-				"layout": {
-					"type": "string",
-					"description": "Name of the layout to use (a key in manifest.layouts)."
-				},
-				"entity": {
-					"type": "string",
-					"description": "Register pages matching this pattern as registry entities of this type, in addition to their `page` registration (SPEC-092). A page's own frontmatter `type` overrides the rule — this types a whole section by convention (e.g. `runes/**` → `rune`) without per-page frontmatter."
-				}
-			},
-			"additionalProperties": false
-		},
-		"SandboxConfig": {
-			"type": "object",
-			"description": "Sandbox configuration — the runtime program-source directory scanned at build time (SPEC-104, ADR-022).",
-			"properties": {
-				"dir": {
-					"type": "string",
-					"description": "Directory of sandbox program sources, relative to the project root."
-				},
-				"examplesDir": {
-					"type": "string",
-					"description": "Renamed to `dir` (ADR-022). Still accepted — the config normalizer coalesces it into `dir` and emits a deprecation warning — but slated for removal.",
-					"deprecated": true
-				}
-			},
-			"additionalProperties": false
-		},
-		"EntityRoute": {
-			"type": "object",
-			"description": "One declarative entity → page route. Generates a page per registered entity matching `type` (plus optional `filter`), and back-fills each matched entity's `sourceUrl` with the generated route so `{% ref %}` prefers the on-site page.",
-			"required": ["type", "url"],
-			"properties": {
-				"type": {
-					"type": "string",
-					"description": "Entity type(s) the rule matches, comma-separated for multiple."
-				},
-				"filter": {
-					"type": "string",
-					"description": "Optional `field:value` filter using the same grammar as the `collection` rune's `filter` attribute (e.g. `status:ready`)."
-				},
-				"url": {
-					"type": "string",
-					"description": "Templated route, site-root-relative (the site's basePath is applied by the loader). `{name}` placeholders interpolate from the entity's fields — e.g. `/specs/{id}/`. Each substituted value is URL-encoded per path segment."
-				},
-				"title": {
-					"type": "string",
-					"description": "Templated page title. Falls back to the rendered content's heading when omitted."
-				},
-				"render": {
-					"type": "string",
-					"description": "Inline markdoc body transformed per entity with `$item` bound — e.g. `{% expand $item.id /%}`. Mutually exclusive with `render-template`."
-				},
-				"render-template": {
-					"type": "string",
-					"description": "Markdoc partial used as the body instead of `render` — e.g. `templates:decision-page.md`. Mutually exclusive with `render`."
-				},
-				"frontmatter": {
-					"type": "object",
-					"description": "Frontmatter for the generated page. `{name}` placeholders interpolate from the entity's fields.",
-					"additionalProperties": true
-				}
-			},
-			"not": { "required": ["render", "render-template"] },
-			"additionalProperties": false
-		},
-		"XrefPattern": {
-			"type": "object",
-			"description": "One cross-reference resolution pattern — turns an unresolved xref ID into a URL.",
-			"required": ["match", "template"],
-			"properties": {
-				"match": {
-					"type": "string",
-					"description": "Regex matched against the ID. Anchored to a whole-string match by default (`^` and `$` are auto-applied unless already present). Named groups `(?<name>…)` are extractable in `template` and `label` as `{name}`."
-				},
-				"template": {
-					"type": "string",
-					"description": "URL template. Supports `{id}` (the full matched ID) and `{name}` for named groups. Each substituted value is URL-encoded per path segment."
-				},
-				"type": {
-					"type": "string",
-					"description": "Entity type reported for links resolved through this pattern."
-				},
-				"label": {
-					"type": "string",
-					"description": "Label template for the generated link. Supports the same `{id}` / `{name}` placeholders as `template`."
-				}
-			},
-			"additionalProperties": false
-		},
-		"HighlightConfig": {
-			"type": "object",
-			"description": "Legacy syntax-highlighting configuration — picks a Shiki built-in theme by name (or a `{ light, dark }` pair) for fenced code blocks. The recommended modern approach is `theme.presets` (which contribute `--rf-syntax-*` token overrides via Lumina syntax presets like `@refrakt-md/lumina/presets/nord`) plus `theme.code.colorScheme` for forced light/dark code blocks. Kept for back-compat; both mechanisms can coexist.",
-			"properties": {
-				"theme": {
-					"description": "Built-in Shiki theme name (e.g. `github-dark`), or a `{ light, dark }` pair for dual-theme support that switches with the site's light/dark mode.",
-					"oneOf": [
-						{ "type": "string" },
-						{
-							"type": "object",
-							"required": ["light", "dark"],
-							"properties": {
-								"light": { "type": "string" },
-								"dark": { "type": "string" }
-							},
-							"additionalProperties": false
-						}
-					]
-				}
-			},
-			"additionalProperties": false
-		},
-		"SiteThemeConfig": {
-			"type": "object",
-			"description": "Per-site theme configuration with token overrides, presets, modes, and code-block colour-scheme behaviour. The legacy string form (`\"theme\": \"@refrakt-md/lumina\"`) is shorthand for `{ \"package\": \"@refrakt-md/lumina\" }`.",
-			"required": ["package"],
-			"properties": {
-				"package": {
-					"type": "string",
-					"description": "Active theme — npm package name (e.g., `@refrakt-md/lumina`) or relative path."
-				},
-				"presets": {
-					"type": "array",
-					"description": "Preset modules merged into the theme in declared order (last wins per token). Each entry is a module identifier (npm package + export path) resolving to a token preset — e.g. `@refrakt-md/lumina/presets/niwaki` for palette presets, `@refrakt-md/lumina/presets/nord` for syntax-colour presets.",
-					"items": { "type": "string" }
-				},
-				"colorScheme": {
-					"description": "Initial colour scheme behaviour for the rendered site. `auto` (default) respects user preference (saved or system); `light` / `dark` force the scheme regardless of preference.",
-					"enum": ["auto", "light", "dark"]
-				},
-				"tokens": {
-					"type": "object",
-					"description": "Site-level token overrides applied on top of the theme's base values and any presets. Validated against the theme's TokenContract at build time. Nested by token category (e.g. `color`, `space`, `radius`).",
-					"additionalProperties": true
-				},
-				"modes": {
-					"type": "object",
-					"description": "Site-level per-mode overlays (e.g. `dark`). Layer on top of the theme's modes and any preset modes. Keys are mode names; values are partial token contracts.",
-					"additionalProperties": { "type": "object", "additionalProperties": true }
-				},
-				"code": {
-					"type": "object",
-					"description": "Code-block-specific theme settings.",
-					"properties": {
-						"colorScheme": {
-							"description": "Force fenced code blocks to a fixed colour scheme regardless of the page's light/dark mode. `auto` (default) lets code follow the page mode; `light` / `dark` stamp `data-color-scheme` on each `<pre>` so the cascade picks that scheme's syntax token values — useful for an always-dark code aesthetic on light pages (Stripe / Vercel style) without a parallel override stylesheet.",
-							"enum": ["auto", "light", "dark"]
-						}
-					},
-					"additionalProperties": false
-				}
-			},
-			"additionalProperties": false
-		},
-		"RunesConfig": {
-			"description": "Rune resolution — which package wins when several define the same rune name, extra tag names for existing runes, and runes loaded from local files.",
-			"type": "object",
-			"properties": {
-				"prefer": { "description": "Which package wins when several define a rune of the same name, mapping rune name to package. Use `\"__core__\"` to force the built-in core rune to take precedence.", "type": "object", "additionalProperties": { "type": "string" } },
-				"aliases": { "description": "Additional tag names resolving to an existing rune, mapping alias to rune name. Useful for site-specific shorthand, or for keeping a previous tag name working.", "type": "object", "additionalProperties": { "type": "string" } },
-				"local": { "description": "Rune implementations loaded from local files rather than a published package, mapping rune name to file path. Paths resolve relative to `refrakt.config.json`.", "type": "object", "additionalProperties": { "type": "string" } }
-			},
-			"additionalProperties": false
-		}
-	}
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://refrakt.md/refrakt.config.schema.json",
+  "title": "RefraktConfig",
+  "description": "Project-level configuration for refrakt.md. Three valid shapes — flat (legacy, deprecated in v0.12, slated for removal in v1.0), singular `site`, plural `sites` — all collapse to a canonical normalized form internally. The unversioned URL https://refrakt.md/refrakt.config.schema.json is a 'latest' alias that always serves the most recently published schema.",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "description": "JSON Schema reference, for editor completion and validation.",
+      "type": "string"
+    },
+    "plugins": {
+      "type": "array",
+      "description": "Plugins for this project — npm packages that contribute runes, layouts, pipeline hooks, behaviors, and/or CLI commands and MCP tools. When set, this is authoritative; when absent, plugin discovery falls back to scanning package.json for @refrakt-md/* dependencies.",
+      "items": { "type": "string" }
+    },
+    "plan": {
+      "$ref": "#/definitions/PlanConfig"
+    },
+    "xrefs": {
+      "type": "array",
+      "description": "Cross-reference URL templates. Patterns are tried in array order when an xref's ID isn't found in the registry (or when the registry-found entity has no usable `sourceUrl`). First match wins.",
+      "items": { "$ref": "#/definitions/XrefPattern" }
+    },
+    "fileRoots": {
+      "type": "object",
+      "description": "Named file roots — directories that file-reading runes can reach via a `namespace:filename` syntax (e.g. `{% partial file=\"shared:footer.md\" /%}`). Keys are namespace names; values are paths relative to the project root and must point at existing directories. The namespace `site` is reserved.",
+      "additionalProperties": { "type": "string" }
+    },
+    "site": {
+      "$ref": "#/definitions/SiteConfig",
+      "description": "Singular-site declaration. Mutually exclusive with `sites`."
+    },
+    "sites": {
+      "type": "object",
+      "description": "Multi-site declaration keyed by site name. Mutually exclusive with `site`.",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/definitions/SiteConfig" }
+    },
+    "contentDir": {
+      "type": "string",
+      "description": "Legacy shorthand for sites.default.contentDir"
+    },
+    "theme": {
+      "description": "Legacy shorthand for sites.default.theme. Accepts either a package name string (legacy shorthand) or a full SiteThemeConfig object with `package`, `presets`, `tokens`, `modes`, and `code.colorScheme`.",
+      "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/SiteThemeConfig" }]
+    },
+    "target": {
+      "type": "string",
+      "description": "Legacy shorthand for sites.default.target. Documentation-only — no adapter consumes this field. Slated for removal in v1.0.",
+      "deprecated": true
+    },
+    "overrides": {
+      "description": "Component overrides, mapping a `typeof` name to a component path relative to the project root.",
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "routeRules": {
+      "description": "Route-to-layout mapping rules, evaluated in order — first match wins. A rule may also set `entity`, registering matching pages as registry entities of that type (e.g. `runes/**` → `rune`) without per-page frontmatter.",
+      "type": "array",
+      "items": { "$ref": "#/definitions/RouteRule" }
+    },
+    "search": {
+      "type": "boolean",
+      "description": "Whether to render the site-wide search UI (header button + Cmd/Ctrl+K dialog, powered by Pagefind). Defaults to true. Set false to omit the search chrome entirely. Results require a Pagefind index built and served at /pagefind/ — see the Setting up search guide."
+    },
+    "highlight": { "$ref": "#/definitions/HighlightConfig" },
+    "icons": {
+      "description": "Custom icon SVGs, merged into the theme's global icon group and referenced by name.",
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "backgrounds": {
+      "type": "object",
+      "description": "Named bg presets (keyed by name). Each is a BgPresetDefinition: `style` and/or token-driven `gradient` (engine-resolved), `extends` a base preset, and/or `sandbox` ({ src, framework?, dependencies? }) for a live sandbox backdrop resolved at transform time (SPEC-104). `sandbox` presets are project-level content.",
+      "additionalProperties": { "type": "object" }
+    },
+    "sandbox": { "$ref": "#/definitions/SandboxConfig" },
+    "validation": { "$ref": "#/definitions/ValidationConfig" },
+    "baseUrl": {
+      "description": "Public base URL of the site, used for canonical links, `og:url` and `og:image`.",
+      "type": "string"
+    },
+    "siteName": {
+      "description": "Human-readable site name, used for `og:site_name` and Organization JSON-LD.",
+      "type": "string"
+    },
+    "defaultImage": {
+      "description": "Default `og:image` for pages that do not set their own. 1200×630 is recommended.",
+      "type": "string"
+    },
+    "logo": {
+      "description": "Site logo path used in Organization JSON-LD (e.g. `/favicon-192.png`).",
+      "type": "string"
+    },
+    "repoUrl": {
+      "type": "string",
+      "description": "Legacy shorthand for sites.default.repoUrl. Canonical GitHub (or compatible) repository URL — e.g. `https://github.com/owner/repo`. Used by the `file-ref` rune to build deep-link `View source` URLs."
+    },
+    "repoBranch": {
+      "type": "string",
+      "description": "Legacy shorthand for sites.default.repoBranch. Git ref appended to GitHub source URLs (branch / tag / commit SHA). Defaults to `main`. Use a commit SHA for archival URLs that won't drift when the file is edited later."
+    },
+    "runes": { "$ref": "#/definitions/RunesConfig" }
+  },
+  "not": {
+    "required": ["site", "sites"]
+  },
+  "definitions": {
+    "PlanConfig": {
+      "type": "object",
+      "description": "Plan-management configuration.",
+      "properties": {
+        "dir": {
+          "type": "string",
+          "description": "Plan directory, relative to project root. Default: 'plan'"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SiteConfig": {
+      "description": "Configuration for one site — the unit a build renders. A single-site project declares one under `site`; a multi-site project declares several under `sites`.",
+      "type": "object",
+      "required": ["contentDir", "theme"],
+      "properties": {
+        "contentDir": {
+          "description": "Path to the content directory, relative to the project root. Required for a site to load.",
+          "type": "string"
+        },
+        "theme": {
+          "description": "Active theme — accepts a package name string (legacy shorthand) or a full SiteThemeConfig with presets, token overrides, mode overlays, and code-block colour scheme.",
+          "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/SiteThemeConfig" }]
+        },
+        "target": {
+          "type": "string",
+          "description": "Documentation-only adapter hint (svelte, astro, next, nuxt, eleventy, html). No adapter validates or reads this field today; it serves as an in-config record of the intended adapter. Slated for removal in v1.0.",
+          "deprecated": true
+        },
+        "overrides": {
+          "description": "Component overrides, mapping a `typeof` name to a component path relative to the project root.",
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "routeRules": {
+          "description": "Route-to-layout mapping rules, evaluated in order — first match wins. A rule may also set `entity`, registering matching pages as registry entities of that type (e.g. `runes/**` → `rune`) without per-page frontmatter.",
+          "type": "array",
+          "items": { "$ref": "#/definitions/RouteRule" }
+        },
+        "entityRoutes": {
+          "type": "array",
+          "description": "Declarative entity → page routes. Each rule generates one page per registered entity matching `type` plus an optional `filter` — the built-in alternative to writing a `contributePages` pipeline hook by hand.",
+          "items": { "$ref": "#/definitions/EntityRoute" }
+        },
+        "search": {
+          "type": "boolean",
+          "description": "Whether to render the site-wide search UI (header button + Cmd/Ctrl+K dialog, powered by Pagefind). Defaults to true. Set false to omit the search chrome entirely. Results require a Pagefind index built and served at /pagefind/ — see the Setting up search guide."
+        },
+        "highlight": { "$ref": "#/definitions/HighlightConfig" },
+        "icons": {
+          "description": "Custom icon SVGs, merged into the theme's global icon group and referenced by name.",
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "plugins": {
+          "type": "array",
+          "description": "Plugins to merge into this site's ThemeConfig (runes, layouts, hooks, etc.).",
+          "items": { "type": "string" }
+        },
+        "locale": {
+          "type": "string",
+          "description": "Active locale (BCP 47, e.g. `de`). Selects first-party and plugin translation bundles for framework-generated UI text and drives locale-aware date/number formatting. Defaults to `en`.",
+          "default": "en"
+        },
+        "strings": {
+          "type": "object",
+          "description": "Site-level translation overrides for framework-generated UI text, keyed by the auto-derived i18n key (`{scope}.{block}.{ref}`). Highest precedence — these win over first-party and plugin bundles. Each value is a string, or a map of CLDR plural categories (`one`, `other`, …) to strings.",
+          "additionalProperties": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "object", "additionalProperties": { "type": "string" } }
+            ]
+          }
+        },
+        "tints": {
+          "description": "Project-level tint presets, available to any page or rune via the `tint` attribute.",
+          "type": "object",
+          "additionalProperties": { "type": "object" }
+        },
+        "backgrounds": {
+          "type": "object",
+          "description": "Named bg presets (keyed by name). Each is a BgPresetDefinition: `style` and/or token-driven `gradient` (engine-resolved), `extends` a base preset, and/or `sandbox` ({ src, framework?, dependencies? }) for a live sandbox backdrop resolved at transform time (SPEC-104). `sandbox` presets are project-level content.",
+          "additionalProperties": { "type": "object" }
+        },
+        "sandbox": { "$ref": "#/definitions/SandboxConfig" },
+        "validation": { "$ref": "#/definitions/ValidationConfig" },
+        "validation": { "$ref": "#/definitions/ValidationConfig" },
+        "baseUrl": {
+          "description": "Public base URL of the site, used for canonical links, `og:url` and `og:image`.",
+          "type": "string"
+        },
+        "siteName": {
+          "description": "Human-readable site name, used for `og:site_name` and Organization JSON-LD.",
+          "type": "string"
+        },
+        "defaultImage": {
+          "description": "Default `og:image` for pages that do not set their own. 1200×630 is recommended.",
+          "type": "string"
+        },
+        "logo": {
+          "description": "Site logo path used in Organization JSON-LD (e.g. `/favicon-192.png`).",
+          "type": "string"
+        },
+        "repoUrl": {
+          "type": "string",
+          "description": "Canonical GitHub (or compatible) repository URL — e.g. `https://github.com/owner/repo`. Used by the `file-ref` rune (SPEC-078) to build deep-link `View source on GitHub →` URLs of the form `{repoUrl}/blob/{repoBranch}/{path}#L{start}-L{end}`. When absent, `file-ref` falls back to a no-href link / in-page anchor with a build warning."
+        },
+        "repoBranch": {
+          "type": "string",
+          "description": "Git ref appended to GitHub source URLs — accepts any branch name, tag, or commit SHA. Defaults to `main` when omitted. Use a commit SHA for archival URLs that won't drift when the file is edited later."
+        },
+        "runes": { "$ref": "#/definitions/RunesConfig" }
+      }
+    },
+    "RouteRule": {
+      "description": "One route-to-layout mapping. `pattern` is a glob matched against a page URL; `layout` names the layout to apply. An optional `entity` also registers matching pages as registry entities of that type.",
+      "type": "object",
+      "required": ["pattern", "layout"],
+      "properties": {
+        "pattern": {
+          "type": "string",
+          "description": "Glob-style pattern matched against the page URL (e.g. `docs/**`, `**`)."
+        },
+        "layout": {
+          "type": "string",
+          "description": "Name of the layout to use (a key in manifest.layouts)."
+        },
+        "entity": {
+          "type": "string",
+          "description": "Register pages matching this pattern as registry entities of this type, in addition to their `page` registration (SPEC-092). A page's own frontmatter `type` overrides the rule — this types a whole section by convention (e.g. `runes/**` → `rune`) without per-page frontmatter."
+        }
+      },
+      "additionalProperties": false
+    },
+    "ValidationConfig": {
+      "type": "object",
+      "description": "Content validation (SPEC-132). Every rune schema declares required attributes, typed attributes and `matches` enums; the build checks them with `Markdoc.validate()` and reports findings as pipeline warnings. Nothing is rendered into the page. Findings whose level is `critical` — a parse error, an unclosed tag, a tag in an impossible position — are reported whatever you set here: they mean the document could not be understood, which is not a matter of preference. Suppression is deliberately per-site and per-error-id only. There is no per-page or per-tag switch, because that granularity silences the one call site that revealed a real bug. Three options: `enabled` (false turns the pass off for this site), `ids` (replace the default error-id list entirely) and `disableIds` (stop treating specific ids as problems — they are demoted to `info`, not dropped). The defaults are `tag-undefined`, `attribute-undefined`, `attribute-value-invalid`, `attribute-missing-required` and `attribute-type-invalid`.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Set `false` to stop reporting every suppressible finding for this site. `critical` findings still report. Prefer `disableIds` — turning the whole pass off means a mistyped rune goes back to vanishing from the page with no diagnostic anywhere."
+        },
+        "ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Replace the default error ids entirely. Defaults to `tag-undefined`, `attribute-undefined`, `attribute-value-invalid`, `attribute-missing-required` and `attribute-type-invalid`. Adding `variable-undefined` is a mistake the framework will let you make: Markdoc validates the full variable path and has no scope model, so every `$item` and `$row` in a collection or per-row template is reported as undefined."
+        },
+        "disableIds": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Error ids to stop treating as problems, leaving the rest reporting. A disabled id is demoted to `info` rather than dropped, so it stays visible to anything reading the warnings without adding noise to the build summary. This is the narrow switch to reach for first."
+        }
+      },
+      "additionalProperties": false
+    },
+    "SandboxConfig": {
+      "type": "object",
+      "description": "Sandbox configuration — the runtime program-source directory scanned at build time (SPEC-104, ADR-022).",
+      "properties": {
+        "dir": {
+          "type": "string",
+          "description": "Directory of sandbox program sources, relative to the project root."
+        },
+        "examplesDir": {
+          "type": "string",
+          "description": "Renamed to `dir` (ADR-022). Still accepted — the config normalizer coalesces it into `dir` and emits a deprecation warning — but slated for removal.",
+          "deprecated": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "EntityRoute": {
+      "type": "object",
+      "description": "One declarative entity → page route. Generates a page per registered entity matching `type` (plus optional `filter`), and back-fills each matched entity's `sourceUrl` with the generated route so `{% ref %}` prefers the on-site page.",
+      "required": ["type", "url"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Entity type(s) the rule matches, comma-separated for multiple."
+        },
+        "filter": {
+          "type": "string",
+          "description": "Optional `field:value` filter using the same grammar as the `collection` rune's `filter` attribute (e.g. `status:ready`)."
+        },
+        "url": {
+          "type": "string",
+          "description": "Templated route, site-root-relative (the site's basePath is applied by the loader). `{name}` placeholders interpolate from the entity's fields — e.g. `/specs/{id}/`. Each substituted value is URL-encoded per path segment."
+        },
+        "title": {
+          "type": "string",
+          "description": "Templated page title. Falls back to the rendered content's heading when omitted."
+        },
+        "render": {
+          "type": "string",
+          "description": "Inline markdoc body transformed per entity with `$item` bound — e.g. `{% expand $item.id /%}`. Mutually exclusive with `render-template`."
+        },
+        "render-template": {
+          "type": "string",
+          "description": "Markdoc partial used as the body instead of `render` — e.g. `templates:decision-page.md`. Mutually exclusive with `render`."
+        },
+        "frontmatter": {
+          "type": "object",
+          "description": "Frontmatter for the generated page. `{name}` placeholders interpolate from the entity's fields.",
+          "additionalProperties": true
+        }
+      },
+      "not": { "required": ["render", "render-template"] },
+      "additionalProperties": false
+    },
+    "XrefPattern": {
+      "type": "object",
+      "description": "One cross-reference resolution pattern — turns an unresolved xref ID into a URL.",
+      "required": ["match", "template"],
+      "properties": {
+        "match": {
+          "type": "string",
+          "description": "Regex matched against the ID. Anchored to a whole-string match by default (`^` and `$` are auto-applied unless already present). Named groups `(?<name>…)` are extractable in `template` and `label` as `{name}`."
+        },
+        "template": {
+          "type": "string",
+          "description": "URL template. Supports `{id}` (the full matched ID) and `{name}` for named groups. Each substituted value is URL-encoded per path segment."
+        },
+        "type": {
+          "type": "string",
+          "description": "Entity type reported for links resolved through this pattern."
+        },
+        "label": {
+          "type": "string",
+          "description": "Label template for the generated link. Supports the same `{id}` / `{name}` placeholders as `template`."
+        }
+      },
+      "additionalProperties": false
+    },
+    "HighlightConfig": {
+      "type": "object",
+      "description": "Legacy syntax-highlighting configuration — picks a Shiki built-in theme by name (or a `{ light, dark }` pair) for fenced code blocks. The recommended modern approach is `theme.presets` (which contribute `--rf-syntax-*` token overrides via Lumina syntax presets like `@refrakt-md/lumina/presets/nord`) plus `theme.code.colorScheme` for forced light/dark code blocks. Kept for back-compat; both mechanisms can coexist.",
+      "properties": {
+        "theme": {
+          "description": "Built-in Shiki theme name (e.g. `github-dark`), or a `{ light, dark }` pair for dual-theme support that switches with the site's light/dark mode.",
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "object",
+              "required": ["light", "dark"],
+              "properties": {
+                "light": { "type": "string" },
+                "dark": { "type": "string" }
+              },
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "SiteThemeConfig": {
+      "type": "object",
+      "description": "Per-site theme configuration with token overrides, presets, modes, and code-block colour-scheme behaviour. The legacy string form (`\"theme\": \"@refrakt-md/lumina\"`) is shorthand for `{ \"package\": \"@refrakt-md/lumina\" }`.",
+      "required": ["package"],
+      "properties": {
+        "package": {
+          "type": "string",
+          "description": "Active theme — npm package name (e.g., `@refrakt-md/lumina`) or relative path."
+        },
+        "presets": {
+          "type": "array",
+          "description": "Preset modules merged into the theme in declared order (last wins per token). Each entry is a module identifier (npm package + export path) resolving to a token preset — e.g. `@refrakt-md/lumina/presets/niwaki` for palette presets, `@refrakt-md/lumina/presets/nord` for syntax-colour presets.",
+          "items": { "type": "string" }
+        },
+        "colorScheme": {
+          "description": "Initial colour scheme behaviour for the rendered site. `auto` (default) respects user preference (saved or system); `light` / `dark` force the scheme regardless of preference.",
+          "enum": ["auto", "light", "dark"]
+        },
+        "tokens": {
+          "type": "object",
+          "description": "Site-level token overrides applied on top of the theme's base values and any presets. Validated against the theme's TokenContract at build time. Nested by token category (e.g. `color`, `space`, `radius`).",
+          "additionalProperties": true
+        },
+        "modes": {
+          "type": "object",
+          "description": "Site-level per-mode overlays (e.g. `dark`). Layer on top of the theme's modes and any preset modes. Keys are mode names; values are partial token contracts.",
+          "additionalProperties": { "type": "object", "additionalProperties": true }
+        },
+        "code": {
+          "type": "object",
+          "description": "Code-block-specific theme settings.",
+          "properties": {
+            "colorScheme": {
+              "description": "Force fenced code blocks to a fixed colour scheme regardless of the page's light/dark mode. `auto` (default) lets code follow the page mode; `light` / `dark` stamp `data-color-scheme` on each `<pre>` so the cascade picks that scheme's syntax token values — useful for an always-dark code aesthetic on light pages (Stripe / Vercel style) without a parallel override stylesheet.",
+              "enum": ["auto", "light", "dark"]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "RunesConfig": {
+      "description": "Rune resolution — which package wins when several define the same rune name, extra tag names for existing runes, and runes loaded from local files.",
+      "type": "object",
+      "properties": {
+        "prefer": {
+          "description": "Which package wins when several define a rune of the same name, mapping rune name to package. Use `\"__core__\"` to force the built-in core rune to take precedence.",
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "aliases": {
+          "description": "Additional tag names resolving to an existing rune, mapping alias to rune name. Useful for site-specific shorthand, or for keeping a previous tag name working.",
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "local": {
+          "description": "Rune implementations loaded from local files rather than a published package, mapping rune name to file path. Paths resolve relative to `refrakt.config.json`.",
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
 }

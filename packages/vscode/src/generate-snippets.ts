@@ -40,22 +40,12 @@ interface SnippetEntry {
 const STATIC_SNIPPETS: Record<string, SnippetEntry> = {
 	'Generic Rune': {
 		prefix: 'rune',
-		body: [
-			'{% ${1:tagName} %}',
-			'$0',
-			'{% /${1:tagName} %}',
-		],
+		body: ['{% ${1:tagName} %}', '$0', '{% /${1:tagName} %}'],
 		description: 'Generic rune tag pair',
 	},
-	'Frontmatter': {
+	Frontmatter: {
 		prefix: 'frontmatter',
-		body: [
-			'---',
-			'title: ${1:Page Title}',
-			'description: ${2:Short description}',
-			'---',
-			'$0',
-		],
+		body: ['---', 'title: ${1:Page Title}', 'description: ${2:Short description}', '---', '$0'],
 		description: 'YAML frontmatter block',
 	},
 	'Blog Frontmatter': {
@@ -103,11 +93,7 @@ function generateSnippetFromSchema(name: string, rune: Rune): string[] {
 	if (selfClosing) {
 		return [`{% ${name}${attrStr} /%}`];
 	}
-	return [
-		`{% ${name}${attrStr} %}`,
-		'$0',
-		`{% /${name} %}`,
-	];
+	return [`{% ${name}${attrStr} %}`, '$0', `{% /${name} %}`];
 }
 
 /**
@@ -116,7 +102,7 @@ function generateSnippetFromSchema(name: string, rune: Rune): string[] {
 function displayName(name: string): string {
 	return name
 		.split('-')
-		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
 		.join(' ');
 }
 
@@ -124,7 +110,7 @@ function displayName(name: string): string {
  * Build prefix(es) for a rune snippet.
  */
 function buildPrefix(name: string, aliases: string[]): string | string[] {
-	const prefixes = [`rune:${name}`, ...aliases.map(a => `rune:${a}`)];
+	const prefixes = [`rune:${name}`, ...aliases.map((a) => `rune:${a}`)];
 	return prefixes.length === 1 ? prefixes[0] : prefixes;
 }
 
@@ -144,18 +130,23 @@ for (const rune of Object.values(runes) as Rune[]) {
 }
 
 // Plugins
-const packages: Plugin[] = [marketing, docs, storytelling, places, business, design, learning, media];
+const packages: Plugin[] = [
+	marketing,
+	docs,
+	storytelling,
+	places,
+	business,
+	design,
+	learning,
+	media,
+];
 
 for (const pkg of packages) {
 	for (const [name, runeEntry] of Object.entries(pkg.runes)) {
 		// Skip if already defined by core (shouldn't happen, but defensive)
 		if (snippets[displayName(name)]) continue;
 
-		const body = runeEntry.snippet ?? [
-			`{% ${name} %}`,
-			'$0',
-			`{% /${name} %}`,
-		];
+		const body = runeEntry.snippet ?? [`{% ${name} %}`, '$0', `{% /${name} %}`];
 		const aliases = runeEntry.aliases ?? [];
 		const entry: SnippetEntry = {
 			prefix: buildPrefix(name, aliases),

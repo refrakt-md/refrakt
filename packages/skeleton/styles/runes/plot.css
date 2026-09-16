@@ -2,12 +2,21 @@
  * beat positioning + dot box placement (incl. the linear connector dot offset and
  * the linear label block). Dot colours, connector borders, type, and spacing are
  * skin. */
-.rf-plot { display: flex; flex-direction: column; }
-.rf-plot > span[property="name"] { display: block; }
-.rf-plot ol { list-style: none; }
-.rf-beat { position: relative; }
+.rf-plot {
+	display: flex;
+	flex-direction: column;
+}
+.rf-plot__title {
+	display: block;
+}
+.rf-plot ol {
+	list-style: none;
+}
+.rf-beat {
+	position: relative;
+}
 .rf-beat::before {
-	content: '';
+	content: "";
 	position: absolute;
 	left: 0.375rem;
 	top: 1rem;

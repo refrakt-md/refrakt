@@ -188,9 +188,7 @@ describe('buildToc', () => {
 	});
 
 	it('creates anchor links with correct href', () => {
-		const headings = [
-			{ level: 2, text: 'My Section', id: 'my-section' },
-		];
+		const headings = [{ level: 2, text: 'My Section', id: 'my-section' }];
 		const result = buildToc(headings, 'rf')!;
 		const list = asTag(result.children[1]);
 		const item = asTag(list.children[0]);

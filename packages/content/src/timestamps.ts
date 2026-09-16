@@ -55,10 +55,12 @@ function isShallowClone(cwd: string): boolean {
 function getGitModifiedTimes(cwd: string): Map<string, number> {
 	const mtimes = new Map<string, number>();
 	try {
-		const output = execSync(
-			'git log --format="%at" --name-only --diff-filter=ACMR HEAD',
-			{ cwd, encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024, stdio: ['pipe', 'pipe', 'pipe'] },
-		);
+		const output = execSync('git log --format="%at" --name-only --diff-filter=ACMR HEAD', {
+			cwd,
+			encoding: 'utf-8',
+			maxBuffer: 10 * 1024 * 1024,
+			stdio: ['pipe', 'pipe', 'pipe'],
+		});
 
 		let currentTimestamp = 0;
 		for (const line of output.split('\n')) {
@@ -88,10 +90,12 @@ function getGitModifiedTimes(cwd: string): Map<string, number> {
 function getGitCreatedTimes(cwd: string): Map<string, number> {
 	const ctimes = new Map<string, number>();
 	try {
-		const output = execSync(
-			'git log --format="%at" --name-only --diff-filter=A --reverse HEAD',
-			{ cwd, encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024, stdio: ['pipe', 'pipe', 'pipe'] },
-		);
+		const output = execSync('git log --format="%at" --name-only --diff-filter=A --reverse HEAD', {
+			cwd,
+			encoding: 'utf-8',
+			maxBuffer: 10 * 1024 * 1024,
+			stdio: ['pipe', 'pipe', 'pipe'],
+		});
 
 		let currentTimestamp = 0;
 		for (const line of output.split('\n')) {
@@ -222,7 +226,10 @@ export function resolveTimestamps(
 
 	// Lazy fs.stat — only computed if needed
 	let stat: FileTimestamps | undefined;
-	const getStat = () => { stat ??= getStatTimestamps(absPath); return stat; };
+	const getStat = () => {
+		stat ??= getStatTimestamps(absPath);
+		return stat;
+	};
 
 	return {
 		created: fm.created ?? git?.created ?? getStat().created,

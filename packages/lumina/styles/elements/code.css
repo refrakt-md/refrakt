@@ -1,50 +1,52 @@
 @layer skin {
-/* Code block wrapper — the rf-codeblock div comes from the Markdoc fence node
+	/* Code block wrapper — the rf-codeblock div comes from the Markdoc fence node
    schema at build time. Inside codegroup the margin is removed by
    .rf-codegroup .rf-codeblock. */
-.rf-codeblock {
-	position: relative;
-	margin: 1.5rem 0;
-}
+	.rf-codeblock {
+		position: relative;
+		margin: 1.5rem 0;
+	}
 
-.rf-codeblock > pre {
-	margin: 0;
-}
+	.rf-codeblock > pre {
+		margin: 0;
+	}
 
-/* Copy button — injected by the copy behavior at runtime */
-.rf-codeblock__copy {
-	position: absolute;
-	top: 0.5rem;
-	right: 0.5rem;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 2rem;
-	height: 2rem;
-	border: none;
-	border-radius: var(--rf-radius-sm);
-	background: transparent;
-	color: var(--rf-color-code-text, #e2e8f0);
-	cursor: pointer;
-	opacity: 0;
-	transition: opacity 150ms ease, background-color 150ms ease;
-}
+	/* Copy button — injected by the copy behavior at runtime */
+	.rf-codeblock__copy {
+		position: absolute;
+		top: 0.5rem;
+		right: 0.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border: none;
+		border-radius: var(--rf-radius-sm);
+		background: transparent;
+		color: var(--rf-color-code-text, #e2e8f0);
+		cursor: pointer;
+		opacity: 0;
+		transition:
+			opacity 150ms ease,
+			background-color 150ms ease;
+	}
 
-.rf-codeblock:hover .rf-codeblock__copy {
-	opacity: 0.6;
-}
+	.rf-codeblock:hover .rf-codeblock__copy {
+		opacity: 0.6;
+	}
 
-.rf-codeblock__copy:hover {
-	opacity: 1 !important;
-	background: rgba(255, 255, 255, 0.1);
-}
+	.rf-codeblock__copy:hover {
+		opacity: 1 !important;
+		background: rgba(255, 255, 255, 0.1);
+	}
 
-.rf-codeblock__copy--copied {
-	opacity: 1 !important;
-	color: var(--rf-color-success, #4ade80);
-}
+	.rf-codeblock__copy--copied {
+		opacity: 1 !important;
+		color: var(--rf-color-success, #4ade80);
+	}
 
-/* WORK-304 — fence-level annotations: line numbers + line highlight.
+	/* WORK-304 — fence-level annotations: line numbers + line highlight.
  *
  * Shiki renders each line as `<span class="line">…</span>`. The fence
  * schema forwards `data-linenumbers` / `data-highlight-lines` /
@@ -71,49 +73,48 @@
  * consistent across highlighted and plain rows — matches the diff row
  * primitive at `runes/diff.css`. Highlighted rows just colour the
  * border + add the surface tint. */
-.rf-codeblock pre code {
-	display: grid;
-	min-width: max-content;
-}
+	.rf-codeblock pre code {
+		display: grid;
+		min-width: max-content;
+	}
 
-.rf-codeblock pre code .line {
-	border-left: 3px solid transparent;
-}
+	.rf-codeblock pre code .line {
+		border-left: 3px solid transparent;
+	}
 
-/* Line numbers — gutter::before owns the left column. Strip the pre's
+	/* Line numbers — gutter::before owns the left column. Strip the pre's
  * horizontal padding when linenumbers are on so the gutter sits flush
  * against the codeblock edge; the gutter's own padding + right border
  * provides the visual separation from the code body. */
-.rf-codeblock pre[data-linenumbers] {
-	padding-left: 0;
-}
+	.rf-codeblock pre[data-linenumbers] {
+		padding-left: 0;
+	}
 
-.rf-codeblock pre[data-linenumbers] code {
-	counter-reset: rf-line var(--rf-start-line, 0);
-}
+	.rf-codeblock pre[data-linenumbers] code {
+		counter-reset: rf-line var(--rf-start-line, 0);
+	}
 
-.rf-codeblock pre[data-linenumbers] code .line::before {
-	counter-increment: rf-line;
-	content: counter(rf-line);
-	display: inline-block;
-	width: 3em;
-	padding-inline: 0.75rem 0.5rem;
-	margin-right: 0.75rem;
-	text-align: right;
-	color: var(--rf-color-line-number);
-	font-variant-numeric: tabular-nums;
-	user-select: none;
-	border-right: 1px solid var(--rf-color-border);
-}
+	.rf-codeblock pre[data-linenumbers] code .line::before {
+		counter-increment: rf-line;
+		content: counter(rf-line);
+		display: inline-block;
+		width: 3em;
+		padding-inline: 0.75rem 0.5rem;
+		margin-right: 0.75rem;
+		text-align: right;
+		color: var(--rf-color-line-number);
+		font-variant-numeric: tabular-nums;
+		user-select: none;
+		border-right: 1px solid var(--rf-color-border);
+	}
 
-/* Highlighted lines share diff's row template — neutral surface tint
+	/* Highlighted lines share diff's row template — neutral surface tint
  * + primary-coloured left rail, no `+`/`-` sigil. The grid layout on
  * `<code>` above keeps consecutive highlighted rows continuous (no
  * subpixel gaps between the rails). Border is on every `.line` (above)
  * so the content alignment doesn't jump when highlighting a row. */
-.rf-codeblock pre code .line[data-line-status="highlight"] {
-	background: var(--rf-color-line-highlight);
-	border-left-color: var(--rf-color-line-highlight-rail);
-}
-
+	.rf-codeblock pre code .line[data-line-status="highlight"] {
+		background: var(--rf-color-line-highlight);
+		border-left-color: var(--rf-color-line-highlight-rail);
+	}
 }

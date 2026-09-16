@@ -68,7 +68,9 @@ export function createEntityRoutesHooks(
 				const inline = rule.render;
 				const templateName = rule['render-template'];
 				if (inline && templateName) {
-					ctx.error(`entityRoutes: rule for type "${rule.type}" sets both render and render-template`);
+					ctx.error(
+						`entityRoutes: rule for type "${rule.type}" sets both render and render-template`,
+					);
 					continue;
 				}
 				let content = inline ?? '';
@@ -81,13 +83,17 @@ export function createEntityRoutesHooks(
 					content = loaded;
 				}
 
-				const types = rule.type.split(',').map((s) => s.trim()).filter(Boolean);
+				const types = rule.type
+					.split(',')
+					.map((s) => s.trim())
+					.filter(Boolean);
 				const parsed = rule.filter ? parseFieldMatch(rule.filter) : undefined;
 				if (parsed) for (const w of parsed.warnings) ctx.warn(`entityRoutes filter: ${w}`);
 
 				let entities: EntityRegistration[] = [];
 				for (const type of types) entities.push(...ctx.registry.getAll(type));
-				if (parsed) entities = entities.filter((e) => matchesFieldMatch(e as MatchableEntity, parsed));
+				if (parsed)
+					entities = entities.filter((e) => matchesFieldMatch(e as MatchableEntity, parsed));
 
 				for (const entity of entities) {
 					const fields = substitutionFields(entity);

@@ -8,9 +8,14 @@
 import type { Schema } from '@markdoc/markdoc';
 import type { ContentModel, ContentFieldDefinition } from '@refrakt-md/types';
 import { RUNE_EXAMPLES } from './examples.js';
-import { UNIVERSAL_ATTRIBUTE_NAMES, lookupAttributePreset, schemaBasePresets } from './attribute-presets.js';
+import {
+	UNIVERSAL_ATTRIBUTE_NAMES,
+	lookupAttributePreset,
+	schemaBasePresets,
+} from './attribute-presets.js';
 import { AXIS_ATTRIBUTES } from './universal-attributes.js';
-import { schemaContentModels } from './lib/index.js';
+import { schemaContentModels, schemaTables } from './lib/index.js';
+import { describeSchemaRow, bySchemaProperty } from './schema-row.js';
 import { describeSchemaUniversals } from './schema-universals.js';
 
 // ---------------------------------------------------------------------------
@@ -39,12 +44,15 @@ export interface RuneInfo {
 	aliases: string[];
 	description: string;
 	schema: {
-		attributes?: Record<string, {
-			type?: unknown;
-			required?: boolean;
-			matches?: unknown;
-			description?: string;
-		}>;
+		attributes?: Record<
+			string,
+			{
+				type?: unknown;
+				required?: boolean;
+				matches?: unknown;
+				description?: string;
+			}
+		>;
 	};
 	/**
 	 * Authoring hints — a short note that reads naturally to both humans browsing
@@ -64,7 +72,6 @@ export interface RuneInfo {
 
 /** Runes that are internal or child-only — excluded from generated reference docs */
 export const EXCLUDED_RUNES = new Set([
-	'error',
 	'tab',
 	'accordion-item',
 	'budget-category',
@@ -76,9 +83,7 @@ export const EXCLUDED_RUNES = new Set([
 ]);
 
 /** Attributes hidden from generated reference docs (rune.attribute format) */
-export const HIDDEN_ATTRIBUTES = new Set([
-	'feature.split',
-]);
+export const HIDDEN_ATTRIBUTES = new Set(['feature.split']);
 
 // ---------------------------------------------------------------------------
 // Serialized content model types (JSON-safe projection of ContentModel)
@@ -213,9 +218,9 @@ export function describeRune(rune: RuneInfo): string {
 			const preset = rune.basePreset;
 			const presetSet = preset ? new Set(preset.attributes) : undefined;
 
-			const own: [string, typeof entries[number][1]][] = [];
-			const fromPreset: [string, typeof entries[number][1]][] = [];
-			const universal: [string, typeof entries[number][1]][] = [];
+			const own: [string, (typeof entries)[number][1]][] = [];
+			const fromPreset: [string, (typeof entries)[number][1]][] = [];
+			const universal: [string, (typeof entries)[number][1]][] = [];
 
 			for (const entry of entries) {
 				const [attrName] = entry;
@@ -324,13 +329,15 @@ export function stripContentModel(model: ContentModel): SerializedContentModel |
 		return {
 			type: 'delimited',
 			delimiter: model.delimiter,
-			zones: model.zones?.map(z => ({
+			zones: model.zones?.map((z) => ({
 				name: z.name,
 				type: 'sequence' as const,
 				fields: z.fields.map(stripField),
 			})),
 			dynamicZones: model.dynamicZones,
-			zoneModel: model.zoneModel ? { type: 'sequence' as const, fields: model.zoneModel.fields.map(stripField) } : undefined,
+			zoneModel: model.zoneModel
+				? { type: 'sequence' as const, fields: model.zoneModel.fields.map(stripField) }
+				: undefined,
 		};
 	}
 	if (model.type === 'sections') {
@@ -343,20 +350,23 @@ export function stripContentModel(model: ContentModel): SerializedContentModel |
 			emitTag: model.emitTag,
 			headingExtract: model.headingExtract
 				? {
-					fields: model.headingExtract.fields.map(f => ({
-						name: f.name,
-						pattern: f.pattern === 'remainder' ? 'remainder' : f.pattern.source,
-						optional: f.optional,
-					})),
-				}
+						fields: model.headingExtract.fields.map((f) => ({
+							name: f.name,
+							pattern: f.pattern === 'remainder' ? 'remainder' : f.pattern.source,
+							optional: f.optional,
+						})),
+					}
 				: undefined,
 			knownSections: model.knownSections
 				? Object.fromEntries(
-					Object.entries(model.knownSections).map(([name, def]) => [name, {
-						alias: def.alias,
-						hasModel: def.model != null,
-					}]),
-				)
+						Object.entries(model.knownSections).map(([name, def]) => [
+							name,
+							{
+								alias: def.alias,
+								hasModel: def.model != null,
+							},
+						]),
+					)
 				: undefined,
 			implicitSection: model.implicitSection,
 		};
@@ -390,10 +400,14 @@ function stripField(f: ContentFieldDefinition): SerializedContentField {
  */
 export function renderContentModel(model: SerializedContentModel): string {
 	switch (model.type) {
-		case 'custom': return renderCustomModel(model);
-		case 'sequence': return renderSequenceModel(model);
-		case 'sections': return renderSectionsModel(model);
-		case 'delimited': return renderDelimitedModel(model);
+		case 'custom':
+			return renderCustomModel(model);
+		case 'sequence':
+			return renderSequenceModel(model);
+		case 'sections':
+			return renderSectionsModel(model);
+		case 'delimited':
+			return renderDelimitedModel(model);
 	}
 }
 
@@ -402,13 +416,15 @@ function renderCustomModel(model: SerializedCustomModel): string {
 }
 
 function renderSequenceModel(model: SerializedSequenceModel): string {
-	const fieldLines = model.fields.map(f => `  - ${renderField(f)}`);
+	const fieldLines = model.fields.map((f) => `  - ${renderField(f)}`);
 	return ['Content:', ...fieldLines].join('\n');
 }
 
 function renderSectionsModel(model: SerializedSectionsModel): string {
 	const lines: string[] = [];
-	lines.push(`Content is split into sections by ${formatMatch(model.sectionHeading)} elements. Each section becomes one named block.`);
+	lines.push(
+		`Content is split into sections by ${formatMatch(model.sectionHeading)} elements. Each section becomes one named block.`,
+	);
 
 	if (model.fields && model.fields.length > 0) {
 		lines.push('Preamble (before first section):');
@@ -420,7 +436,7 @@ function renderSectionsModel(model: SerializedSectionsModel): string {
 	lines.push(`Section body: ${describeInner(model.sectionModel)}`);
 
 	if (model.headingExtract) {
-		const parts = model.headingExtract.fields.map(f => {
+		const parts = model.headingExtract.fields.map((f) => {
 			const shape = f.pattern === 'remainder' ? 'remaining text' : `pattern \`${f.pattern}\``;
 			const optional = f.optional ? ', optional' : '';
 			return `\`${f.name}\` (${shape}${optional})`;
@@ -430,7 +446,8 @@ function renderSectionsModel(model: SerializedSectionsModel): string {
 
 	if (model.knownSections && Object.keys(model.knownSections).length > 0) {
 		const parts = Object.entries(model.knownSections).map(([name, def]) => {
-			const aliases = def.alias && def.alias.length > 0 ? ` (aliases: ${def.alias.join(', ')})` : '';
+			const aliases =
+				def.alias && def.alias.length > 0 ? ` (aliases: ${def.alias.join(', ')})` : '';
 			return `\`${name}\`${aliases}`;
 		});
 		lines.push(`Known sections: ${parts.join(', ')}.`);
@@ -488,10 +505,11 @@ function describeInner(model: SerializedContentModel | undefined): string {
 		if (model.fields.length === 1 && model.fields[0].match === 'any' && model.fields[0].greedy) {
 			return 'any blocks';
 		}
-		const parts = model.fields.map(f => formatMatch(f.match));
+		const parts = model.fields.map((f) => formatMatch(f.match));
 		return parts.join(', ');
 	}
-	if (model.type === 'sections') return `nested sections split by ${formatMatch(model.sectionHeading)}`;
+	if (model.type === 'sections')
+		return `nested sections split by ${formatMatch(model.sectionHeading)}`;
 	if (model.type === 'delimited') return `zones split by \`${model.delimiter}\``;
 	if (model.type === 'custom') return model.description;
 	return 'any content';
@@ -535,10 +553,10 @@ export function hydrateRuneInfo(rune: RuneLike, options: HydrateOptions = {}): R
 	const presetMeta = baseRecord ? lookupAttributePreset(baseRecord) : undefined;
 	const basePreset: RuneBasePresetInfo | undefined = presetMeta
 		? {
-			name: presetMeta.name,
-			description: presetMeta.description,
-			attributes: Object.keys(baseRecord!),
-		}
+				name: presetMeta.name,
+				description: presetMeta.description,
+				attributes: Object.keys(baseRecord!),
+			}
 		: undefined;
 
 	return {
@@ -588,11 +606,13 @@ export function hydrateAllRuneInfos(
 ): RuneInfo[] {
 	const { includeExcluded = false } = options;
 	return Object.values(ctx.runes)
-		.filter(rune => includeExcluded || !EXCLUDED_RUNES.has(rune.name))
-		.map(rune => hydrateRuneInfo(rune, {
-			pluginName: ctx.source[rune.name] ?? 'core',
-			example: ctx.fixtures[rune.name] ?? RUNE_EXAMPLES[rune.name],
-		}))
+		.filter((rune) => includeExcluded || !EXCLUDED_RUNES.has(rune.name))
+		.map((rune) =>
+			hydrateRuneInfo(rune, {
+				pluginName: ctx.source[rune.name] ?? 'core',
+				example: ctx.fixtures[rune.name] ?? RUNE_EXAMPLES[rune.name],
+			}),
+		)
 		.sort((a, b) => a.name.localeCompare(b.name));
 }
 
@@ -627,12 +647,33 @@ export interface SerializedAttribute {
 	description?: string;
 }
 
+/** A rune's structured-data claims, ordered by schema.org property. */
+export interface SerializedSchemaOrg {
+	type?: string;
+	/** The attribute a multi-row table selects on. */
+	by?: string;
+	/** Every schema.org property, with the source name that supplies it. */
+	properties: Array<{ property: string; source: string; kind: string; entity?: string }>;
+	entities: Array<{ name: string; type: string; property: string }>;
+	children: Array<{ rune: string; type: string; property: string }>;
+	lists: string[];
+	/** Types this rune can emit, when the table selects a row by attribute. */
+	types: string[];
+}
+
 export interface SerializedRune {
 	name: string;
 	plugin: string;
 	aliases: string[];
 	description: string;
 	authoringHints?: string;
+	/**
+	 * What this rune publishes as structured data — SPEC-130 / WORK-566.
+	 *
+	 * Nothing validates it against schema.org: refrakt ships no ontology (D5).
+	 * Documenting it *is* the control, which is why it is here.
+	 */
+	schemaOrg?: SerializedSchemaOrg;
 	attributes: {
 		own: Record<string, SerializedAttribute>;
 		base?: { name: string; description: string; attributes: Record<string, SerializedAttribute> };
@@ -679,6 +720,7 @@ function toSerializedAttribute(attr: {
 }
 
 /** Serialize a hydrated RuneInfo into the stable JSON shape used by the reference command. */
+
 export function serializeRune(info: RuneInfo, pluginName?: string): SerializedRune {
 	const attrs = info.schema.attributes ?? {};
 	const presetAttrs = info.basePreset ? new Set(info.basePreset.attributes) : undefined;
@@ -710,6 +752,38 @@ export function serializeRune(info: RuneInfo, pluginName?: string): SerializedRu
 	// Fold the universal names through the axis map, so the available half is
 	// shaped like `universalUnavailable` rather than being a flat list the
 	// consumer has to re-group.
+	// WORK-566 — the rune's structured data, ordered by schema.org *property*
+	// rather than by authoring order. The review question is "what does this rune
+	// claim about its content", which is answered property-first; the authoring
+	// view is source-first, and the two need not agree.
+	const table = schemaTables.get(info.schema as Schema);
+	const described = table ? describeSchemaRow(table) : undefined;
+	const schemaOrg: SerializedSchemaOrg | undefined = described
+		? {
+				...(described.type ? { type: described.type } : {}),
+				...(described.by ? { by: described.by } : {}),
+				properties: bySchemaProperty(described.properties).map((p) => ({
+					property: p.property,
+					source: p.source,
+					kind: p.kind,
+					...(p.entity ? { entity: p.entity } : {}),
+				})),
+				entities: described.entities,
+				children: described.children,
+				lists: described.lists,
+				// A `by:` table publishes several types depending on an attribute, so
+				// list them all: a reader wants "what can this rune claim", not just
+				// what the fallback row claims.
+				types: [
+					...new Set(
+						[table?.fallback ?? table, ...Object.values(table?.rows ?? {})]
+							.map((r) => r?.type)
+							.filter((t): t is string => Boolean(t)),
+					),
+				].sort(),
+			}
+		: undefined;
+
 	const universalAvailable: SerializedRune['attributes']['universalAvailable'] = [];
 	for (const [axis, names] of Object.entries(AXIS_ATTRIBUTES)) {
 		const carried: Record<string, SerializedAttribute> = {};
@@ -730,12 +804,12 @@ export function serializeRune(info: RuneInfo, pluginName?: string): SerializedRu
 			own,
 			...(info.basePreset && Object.keys(baseAttrs).length > 0
 				? {
-					base: {
-						name: info.basePreset.name,
-						description: info.basePreset.description,
-						attributes: baseAttrs,
-					},
-				}
+						base: {
+							name: info.basePreset.name,
+							description: info.basePreset.description,
+							attributes: baseAttrs,
+						},
+					}
 				: {}),
 			universal,
 			universalAvailable,
@@ -743,6 +817,7 @@ export function serializeRune(info: RuneInfo, pluginName?: string): SerializedRu
 		},
 		...(info.contentModel ? { contentModel: info.contentModel } : {}),
 		...(info.example ? { example: info.example } : {}),
+		...(schemaOrg ? { schemaOrg } : {}),
 	};
 }
 
@@ -761,7 +836,7 @@ export interface ReferenceGroup {
 
 /** Group hydrated rune infos by source plugin, core first then alphabetical. */
 export function groupReferenceInfos(infos: RuneInfo[]): ReferenceGroup[] {
-	const labelOf = (pkg: string): string => pkg === 'core' ? '@refrakt-md/runes (core)' : pkg;
+	const labelOf = (pkg: string): string => (pkg === 'core' ? '@refrakt-md/runes (core)' : pkg);
 	const groups = new Map<string, ReferenceGroup>();
 	for (const info of infos) {
 		const pkg = info.plugin ?? 'core';
@@ -800,7 +875,10 @@ export interface RenderReferenceOptions {
  * context produces byte-identical output, so callers can diff it against a
  * checked-in AGENTS.md to detect drift.
  */
-export function renderReferenceMarkdown(ctx: ReferenceContext, options: RenderReferenceOptions = {}): string {
+export function renderReferenceMarkdown(
+	ctx: ReferenceContext,
+	options: RenderReferenceOptions = {},
+): string {
 	const infos = hydrateAllRuneInfos(ctx);
 	const groups = groupReferenceInfos(infos);
 
@@ -815,7 +893,9 @@ export function renderReferenceMarkdown(ctx: ReferenceContext, options: RenderRe
 		lines.push(options.preamble.trimEnd());
 		lines.push('');
 	} else {
-		lines.push('This site has the following runes available. Authors and AI agents can use any of these tags inside `.md` content files.');
+		lines.push(
+			'This site has the following runes available. Authors and AI agents can use any of these tags inside `.md` content files.',
+		);
 		lines.push('');
 	}
 
@@ -839,14 +919,19 @@ export function renderReferenceMarkdown(ctx: ReferenceContext, options: RenderRe
 	// claim it used to make.
 	lines.push('## Universal Attributes');
 	lines.push('');
-	lines.push('These attributes come from the shared universal vocabulary rather than from any one rune. **A rune carries only the ones that can affect it** — `reading` needs a body, `prominence` a section header, the `frame-*` facets a media surface. Each rune\'s section below lists the universal attributes it accepts, and names the reason for any it does not. Writing one where it does not apply is a build error, not a silent no-op.');
+	lines.push(
+		"These attributes come from the shared universal vocabulary rather than from any one rune. **A rune carries only the ones that can affect it** — `reading` needs a body, `prominence` a section header, the `frame-*` facets a media surface. Each rune's section below lists the universal attributes it accepts, and names the reason for any it does not. Writing one where it does not apply is a build error, not a silent no-op.",
+	);
 	lines.push('');
 	for (const attr of UNIVERSAL_ATTRIBUTE_NAMES) {
 		lines.push(`- \`${attr}\``);
 	}
 	lines.push('');
 
-	const presetUsage = new Map<string, { description: string; attributes: string[]; users: string[] }>();
+	const presetUsage = new Map<
+		string,
+		{ description: string; attributes: string[]; users: string[] }
+	>();
 	for (const info of infos) {
 		if (!info.basePreset) continue;
 		const existing = presetUsage.get(info.basePreset.name);
@@ -867,7 +952,9 @@ export function renderReferenceMarkdown(ctx: ReferenceContext, options: RenderRe
 		lines.push('_No attribute presets are used by the runes in this project._');
 		lines.push('');
 	} else {
-		lines.push('Runes opt into shared attribute sets via `base:`. Each preset is listed here once; per-rune sections below note which preset they inherit.');
+		lines.push(
+			'Runes opt into shared attribute sets via `base:`. Each preset is listed here once; per-rune sections below note which preset they inherit.',
+		);
 		lines.push('');
 		const sortedPresets = Array.from(presetUsage.entries()).sort(([a], [b]) => a.localeCompare(b));
 		for (const [name, usage] of sortedPresets) {
@@ -889,7 +976,7 @@ export function renderReferenceMarkdown(ctx: ReferenceContext, options: RenderRe
 		lines.push(`## ${group.label}`);
 		lines.push('');
 		for (const rune of group.runes) {
-			const info = infos.find(i => i.name === rune.name);
+			const info = infos.find((i) => i.name === rune.name);
 			if (!info) continue;
 			lines.push(describeRune(info));
 			lines.push('');

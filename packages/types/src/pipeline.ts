@@ -76,7 +76,9 @@ export interface EntityRegistration {
 	 *  away from the expected shape. Consumed by {% expand %} (SPEC-066) to
 	 *  extract the entity's subtree for inline substitution. Optional and
 	 *  paired with `sourceFile` — entities without a backing file omit both. */
-	extract?: (parsedSource: import('@markdoc/markdoc').Node) => import('@markdoc/markdoc').Node | null;
+	extract?: (
+		parsedSource: import('@markdoc/markdoc').Node,
+	) => import('@markdoc/markdoc').Node | null;
 	/** Return the entity's embeddable content as a Markdoc AST node directly,
 	 *  without reading a source file (SPEC-069). The generalization of
 	 *  `sourceFile` + `extract`: an entity is embeddable via `embed()` *or*
@@ -136,7 +138,10 @@ export interface EntityRegistry {
 	/** Edges whose `fromId` is `id`, each with its target resolved (SPEC-072).
 	 *  `opts.kind` / `opts.type` filter by edge kind and target entity type.
 	 *  Edges to unknown entities are dropped. Optional — see {@link relate}. */
-	getRelated?(id: string, opts?: { kind?: string | string[]; type?: string | string[] }): ResolvedEdge[];
+	getRelated?(
+		id: string,
+		opts?: { kind?: string | string[]; type?: string | string[] },
+	): ResolvedEdge[];
 }
 
 /**
@@ -155,7 +160,13 @@ export interface PipelineContext {
 /** A diagnostic emitted by a pipeline hook */
 export interface PipelineWarning {
 	severity: 'info' | 'warning' | 'error';
-	phase: 'register' | 'contribute' | 'aggregate' | 'postProcess';
+	/** Which build stage produced the diagnostic. `'validate'` is the
+	 *  per-page `Markdoc.validate()` pass (SPEC-132) — it runs during Phase 1
+	 *  parsing rather than in one of the cross-page hook phases, so it is not a
+	 *  hook phase like the other four. Core findings carry
+	 *  `pluginName: 'core'`; a finding on a plugin-contributed page carries that
+	 *  plugin's name. */
+	phase: 'register' | 'contribute' | 'aggregate' | 'postProcess' | 'validate';
 	pluginName: string;
 	/** Page URL that triggered the warning, if applicable */
 	url?: string;
@@ -281,9 +292,7 @@ export interface PluginPipelineHooks {
 	 * Sync or async; the loader awaits the promise. Errors are caught and the
 	 * plugin's contributions are skipped with a build warning.
 	 */
-	contributePages?: (
-		ctx: ContributePagesContext,
-	) => ContributedPage[] | Promise<ContributedPage[]>;
+	contributePages?: (ctx: ContributePagesContext) => ContributedPage[] | Promise<ContributedPage[]>;
 
 	/**
 	 * Phase 3 — Aggregate.
@@ -291,10 +300,7 @@ export interface PluginPipelineHooks {
 	 * Called once after all register hooks have run.
 	 * Return value is stored as aggregated[pluginName].
 	 */
-	aggregate?: (
-		registry: Readonly<EntityRegistry>,
-		ctx: PipelineContext,
-	) => unknown;
+	aggregate?: (registry: Readonly<EntityRegistry>, ctx: PipelineContext) => unknown;
 
 	/**
 	 * Phase 4 — Post-process.

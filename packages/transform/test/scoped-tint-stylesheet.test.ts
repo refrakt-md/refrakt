@@ -60,7 +60,9 @@ describe('generateScopedTintStylesheet — SPEC-056 preset projection', () => {
 		expect(css).toContain('--rf-color-code-text: #2e3440;');
 
 		// Dark block — paired selector for forced-scheme + page-scheme
-		expect(css).toContain('[data-tint="nord"][data-color-scheme="dark"], [data-color-scheme="dark"] [data-tint="nord"] {');
+		expect(css).toContain(
+			'[data-tint="nord"][data-color-scheme="dark"], [data-color-scheme="dark"] [data-tint="nord"] {',
+		);
 		expect(css).toContain('--rf-syntax-token-keyword: #81a1c1;');
 		expect(css).toContain('--rf-color-code-bg: #2e3440;');
 	});
@@ -102,10 +104,20 @@ describe('generateScopedTintStylesheet — SPEC-056 preset projection', () => {
 				font: { sans: 'Comic Sans, cursive', mono: 'monospace' },
 				radius: { md: '20px', sm: '6px', lg: '32px', full: '9999px' },
 				spacing: {
-					xs: '2px', sm: '4px', md: '8px', lg: '16px', xl: '32px', '2xl': '64px',
+					xs: '2px',
+					sm: '4px',
+					md: '8px',
+					lg: '16px',
+					xl: '32px',
+					'2xl': '64px',
 					section: { base: '64px', tight: '32px', loose: '128px', breathe: '256px' },
 				},
-				shadow: { xs: '0 1px 2px #000', sm: '0 2px 4px #000', md: '0 4px 8px #000', lg: '0 8px 16px #000' },
+				shadow: {
+					xs: '0 1px 2px #000',
+					sm: '0 2px 4px #000',
+					md: '0 4px 8px #000',
+					lg: '0 8px 16px #000',
+				},
 				color: {
 					info: { base: '#0af', bg: '#e0f5ff', border: '#5ac' },
 				},
@@ -208,7 +220,7 @@ describe('generateScopedTintStylesheet — SPEC-056 preset projection', () => {
 			generateScopedTintStylesheet(tints, presetMap);
 			// Should have warned about both font and radius being dropped
 			expect(warnSpy).toHaveBeenCalled();
-			const allWarnings = warnSpy.mock.calls.map(c => c[0]).join('\n');
+			const allWarnings = warnSpy.mock.calls.map((c) => c[0]).join('\n');
 			expect(allWarnings).toMatch(/font/);
 			expect(allWarnings).toMatch(/radius/);
 			expect(allWarnings).toMatch(/@example\/typed-preset/);

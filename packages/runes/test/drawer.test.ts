@@ -20,7 +20,7 @@ describe('drawer rune (SPEC-060)', () => {
 			const result = parse(`{% drawer id="auth" title="Auth system" %}
 A brief explainer.
 {% /drawer %}`);
-			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
+			const drawer = findTag(result as any, (t) => t.attributes['data-rune'] === 'drawer');
 			expect(drawer).toBeDefined();
 			expect(drawer!.name).toBe('section');
 			expect(drawer!.attributes.id).toBe('drawer-auth');
@@ -31,10 +31,10 @@ A brief explainer.
 			const result = parse(`{% drawer id="auth" title="Auth system" headingLevel=3 %}
 Body.
 {% /drawer %}`);
-			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
-			const header = findTag(drawer!, t => t.attributes['data-name'] === 'header');
+			const drawer = findTag(result as any, (t) => t.attributes['data-rune'] === 'drawer');
+			const header = findTag(drawer!, (t) => t.attributes['data-name'] === 'header');
 			expect(header).toBeDefined();
-			const title = findTag(header!, t => t.attributes['data-name'] === 'title');
+			const title = findTag(header!, (t) => t.attributes['data-name'] === 'title');
 			expect(title).toBeDefined();
 			expect(title!.name).toBe('h3');
 			expect(title!.children).toEqual(['Auth system']);
@@ -44,7 +44,7 @@ Body.
 			const result = parse(`{% drawer id="auth" title="Auth system" %}
 Body.
 {% /drawer %}`);
-			const title = findTag(result as any, t => t.attributes['data-name'] === 'title');
+			const title = findTag(result as any, (t) => t.attributes['data-name'] === 'title');
 			expect(title).toBeDefined();
 			expect(title!.name).toBe('h3'); // sentinel placeholder
 			expect(title!.attributes['data-drawer-title-auto']).toBe('true');
@@ -52,15 +52,15 @@ Body.
 
 		it('clamps explicit headingLevel into the 1-6 range', () => {
 			const big = parse(`{% drawer id="d1" title="T" headingLevel=99 %}body{% /drawer %}`);
-			expect(findTag(big as any, t => t.attributes['data-name'] === 'title')!.name).toBe('h6');
+			expect(findTag(big as any, (t) => t.attributes['data-name'] === 'title')!.name).toBe('h6');
 
 			const small = parse(`{% drawer id="d2" title="T" headingLevel=0 %}body{% /drawer %}`);
-			expect(findTag(small as any, t => t.attributes['data-name'] === 'title')!.name).toBe('h1');
+			expect(findTag(small as any, (t) => t.attributes['data-name'] === 'title')!.name).toBe('h1');
 		});
 
 		it('emits a close button that is hidden by default', () => {
 			const result = parse(`{% drawer id="auth" title="Auth system" %}body{% /drawer %}`);
-			const close = findTag(result as any, t => t.attributes['data-name'] === 'close');
+			const close = findTag(result as any, (t) => t.attributes['data-name'] === 'close');
 			expect(close).toBeDefined();
 			expect(close!.name).toBe('button');
 			expect(close!.attributes.hidden).toBe(true);
@@ -70,7 +70,7 @@ Body.
 
 		it('emits side and size meta tags with defaults', () => {
 			const result = parse(`{% drawer id="auth" title="T" %}body{% /drawer %}`);
-			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
+			const drawer = findTag(result as any, (t) => t.attributes['data-rune'] === 'drawer');
 			expect(fields(drawer).side).toBeDefined();
 			expect(fields(drawer).size).toBeDefined();
 			expect(fields(drawer).side).toBe('right');
@@ -79,25 +79,25 @@ Body.
 
 		it('omits the shortcut meta when no shortcut is set', () => {
 			const result = parse(`{% drawer id="auth" title="T" %}body{% /drawer %}`);
-			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
+			const drawer = findTag(result as any, (t) => t.attributes['data-rune'] === 'drawer');
 			expect(fields(drawer).shortcut).toBeUndefined();
 		});
 
 		it('emits a shortcut meta when set', () => {
 			const result = parse(`{% drawer id="auth" title="T" shortcut="." %}body{% /drawer %}`);
-			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
+			const drawer = findTag(result as any, (t) => t.attributes['data-rune'] === 'drawer');
 			expect(fields(drawer).shortcut).toBeDefined();
 			expect(fields(drawer).shortcut).toBe('.');
 		});
 
 		it('supports drawers without a title (header still emitted with the close button)', () => {
 			const result = parse(`{% drawer id="quick" %}Just a body.{% /drawer %}`);
-			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
-			const header = findTag(drawer!, t => t.attributes['data-name'] === 'header');
+			const drawer = findTag(result as any, (t) => t.attributes['data-rune'] === 'drawer');
+			const header = findTag(drawer!, (t) => t.attributes['data-name'] === 'header');
 			expect(header).toBeDefined();
-			const title = findTag(header!, t => t.attributes['data-name'] === 'title');
+			const title = findTag(header!, (t) => t.attributes['data-name'] === 'title');
 			expect(title).toBeUndefined();
-			const close = findTag(header!, t => t.attributes['data-name'] === 'close');
+			const close = findTag(header!, (t) => t.attributes['data-name'] === 'close');
 			expect(close).toBeDefined();
 		});
 	});
@@ -107,8 +107,8 @@ Body.
 			const result = parse(`{% drawer id="x" title="T" %}
 Body content.
 {% /drawer %}`);
-			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
-			const footer = findTag(drawer!, t => t.attributes['data-name'] === 'footer');
+			const drawer = findTag(result as any, (t) => t.attributes['data-rune'] === 'drawer');
+			const footer = findTag(drawer!, (t) => t.attributes['data-name'] === 'footer');
 			expect(footer).toBeUndefined();
 		});
 
@@ -120,9 +120,9 @@ Main content here.
 
 Footer text.
 {% /drawer %}`);
-			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
-			const body = findTag(drawer!, t => t.attributes['data-name'] === 'body');
-			const footer = findTag(drawer!, t => t.attributes['data-name'] === 'footer');
+			const drawer = findTag(result as any, (t) => t.attributes['data-rune'] === 'drawer');
+			const body = findTag(drawer!, (t) => t.attributes['data-name'] === 'body');
+			const footer = findTag(drawer!, (t) => t.attributes['data-name'] === 'footer');
 			expect(body).toBeDefined();
 			expect(footer).toBeDefined();
 			expect(footer!.name).toBe('footer');
@@ -139,10 +139,10 @@ Body.
 
 See [the source](https://example.com/source).
 {% /drawer %}`);
-			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
-			const footer = findTag(drawer!, t => t.attributes['data-name'] === 'footer');
+			const drawer = findTag(result as any, (t) => t.attributes['data-rune'] === 'drawer');
+			const footer = findTag(drawer!, (t) => t.attributes['data-name'] === 'footer');
 			expect(footer).toBeDefined();
-			const link = findTag(footer!, t => t.name === 'a');
+			const link = findTag(footer!, (t) => t.name === 'a');
 			expect(link).toBeDefined();
 			expect(link!.attributes.href).toBe('https://example.com/source');
 		});
@@ -153,9 +153,9 @@ See [the source](https://example.com/source).
 
 Just footer content.
 {% /drawer %}`);
-			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
-			const body = findTag(drawer!, t => t.attributes['data-name'] === 'body');
-			const footer = findTag(drawer!, t => t.attributes['data-name'] === 'footer');
+			const drawer = findTag(result as any, (t) => t.attributes['data-rune'] === 'drawer');
+			const body = findTag(drawer!, (t) => t.attributes['data-name'] === 'body');
+			const footer = findTag(drawer!, (t) => t.attributes['data-name'] === 'footer');
 			expect(body).toBeDefined();
 			expect(footer).toBeDefined();
 			expect(JSON.stringify(footer)).toContain('Just footer content');
@@ -173,13 +173,13 @@ First footer line.
 
 Second footer line.
 {% /drawer %}`);
-			const drawer = findTag(result as any, t => t.attributes['data-rune'] === 'drawer');
-			const footer = findTag(drawer!, t => t.attributes['data-name'] === 'footer');
+			const drawer = findTag(result as any, (t) => t.attributes['data-rune'] === 'drawer');
+			const footer = findTag(drawer!, (t) => t.attributes['data-name'] === 'footer');
 			expect(footer).toBeDefined();
 			expect(JSON.stringify(footer)).toContain('First footer line');
 			expect(JSON.stringify(footer)).toContain('Second footer line');
 			// hr renders as an <hr> tag inside the footer
-			const hrs = findAllTags(footer!, t => t.name === 'hr');
+			const hrs = findAllTags(footer!, (t) => t.name === 'hr');
 			expect(hrs.length).toBe(1);
 		});
 	});
@@ -261,7 +261,7 @@ Some body text.
 
 			registerDrawers([page], registry, ctx);
 
-			const warnings = messages.filter(m => m.severity === 'warning');
+			const warnings = messages.filter((m) => m.severity === 'warning');
 			expect(warnings.length).toBeGreaterThan(0);
 			expect(warnings[0].message).toContain('dup');
 		});
@@ -271,7 +271,7 @@ Some body text.
 		it('rewrites a placeholder to h2 when no preceding heading exists', () => {
 			const renderable = parse(`{% drawer id="d" title="T" %}body{% /drawer %}`);
 			const next = resolveAutoDrawerTitleLevels(renderable);
-			const title = findTag(next as any, t => t.attributes['data-name'] === 'title');
+			const title = findTag(next as any, (t) => t.attributes['data-name'] === 'title');
 			expect(title!.name).toBe('h2');
 			expect(title!.attributes['data-drawer-title-auto']).toBeUndefined();
 		});
@@ -281,7 +281,7 @@ Some body text.
 
 {% drawer id="d" title="T" %}body{% /drawer %}`);
 			const next = resolveAutoDrawerTitleLevels(renderable);
-			const title = findTag(next as any, t => t.attributes['data-name'] === 'title');
+			const title = findTag(next as any, (t) => t.attributes['data-name'] === 'title');
 			expect(title!.name).toBe('h3');
 		});
 
@@ -292,7 +292,7 @@ Some body text.
 
 {% drawer id="d" title="T" %}body{% /drawer %}`);
 			const next = resolveAutoDrawerTitleLevels(renderable);
-			const title = findTag(next as any, t => t.attributes['data-name'] === 'title');
+			const title = findTag(next as any, (t) => t.attributes['data-name'] === 'title');
 			expect(title!.name).toBe('h4');
 		});
 
@@ -301,7 +301,7 @@ Some body text.
 
 {% drawer id="d" title="T" %}body{% /drawer %}`);
 			const next = resolveAutoDrawerTitleLevels(renderable);
-			const title = findTag(next as any, t => t.attributes['data-name'] === 'title');
+			const title = findTag(next as any, (t) => t.attributes['data-name'] === 'title');
 			expect(title!.name).toBe('h6');
 		});
 
@@ -310,7 +310,7 @@ Some body text.
 
 {% drawer id="d" title="T" headingLevel=5 %}body{% /drawer %}`);
 			const next = resolveAutoDrawerTitleLevels(renderable);
-			const title = findTag(next as any, t => t.attributes['data-name'] === 'title');
+			const title = findTag(next as any, (t) => t.attributes['data-name'] === 'title');
 			expect(title!.name).toBe('h5');
 		});
 	});

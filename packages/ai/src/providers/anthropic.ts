@@ -18,7 +18,13 @@ interface AnthropicMessage {
 export function formatAnthropicRequest(
 	options: CompletionOptions,
 	defaults: { model: string },
-): { system: string[]; messages: AnthropicMessage[]; model: string; max_tokens: number; stream: boolean } {
+): {
+	system: string[];
+	messages: AnthropicMessage[];
+	model: string;
+	max_tokens: number;
+	stream: boolean;
+} {
 	const system: string[] = [];
 	const messages: AnthropicMessage[] = [];
 
@@ -91,7 +97,11 @@ export function createAnthropicProvider(options: AnthropicOptions): AIProvider {
 			let system: unknown;
 			if (formatted.system.length > 0) {
 				system = options.promptCaching
-					? formatted.system.map(text => ({ type: 'text', text, cache_control: { type: 'ephemeral' } }))
+					? formatted.system.map((text) => ({
+							type: 'text',
+							text,
+							cache_control: { type: 'ephemeral' },
+						}))
 					: formatted.system.join('\n\n');
 			}
 

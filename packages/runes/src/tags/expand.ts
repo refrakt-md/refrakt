@@ -35,17 +35,20 @@ export const expand: Schema = {
 		level: {
 			type: Number,
 			required: false,
-			description: 'Optional heading-demotion opt-in. When set, embedded headings shift by `N - 1` and the embed joins the host outline instead of staying TOC-isolated.',
+			description:
+				'Optional heading-demotion opt-in. When set, embedded headings shift by `N - 1` and the embed joins the host outline instead of staying TOC-isolated.',
 		},
 		type: {
 			type: String,
 			required: false,
-			description: 'Entity type hint for disambiguation when the same ID/name lives in multiple registries.',
+			description:
+				'Entity type hint for disambiguation when the same ID/name lives in multiple registries.',
 		},
 		canonical: {
 			type: Boolean,
 			required: false,
-			description: 'When true, append a visible "View canonical" link pointing at the entity\'s canonical URL.',
+			description:
+				'When true, append a visible "View canonical" link pointing at the entity\'s canonical URL.',
 		},
 		label: {
 			type: String,

@@ -65,7 +65,7 @@ describe('checkI18nBundle', () => {
 	const extracted = extractI18nKeys(config);
 
 	it('reports full coverage for a complete bundle', () => {
-		const full = Object.fromEntries(Object.keys(extracted).map(k => [k, 'x']));
+		const full = Object.fromEntries(Object.keys(extracted).map((k) => [k, 'x']));
 		const r = checkI18nBundle(extracted, full);
 		expect(r.coverage).toBe(1);
 		expect(r.missing).toEqual([]);

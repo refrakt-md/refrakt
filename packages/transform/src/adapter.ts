@@ -73,7 +73,7 @@ export function hasMatchingRunes(node: RendererNode, runeNames: Set<string>): bo
 		return false;
 	}
 	if (Array.isArray(node)) {
-		return node.some(child => hasMatchingRunes(child as RendererNode, runeNames));
+		return node.some((child) => hasMatchingRunes(child as RendererNode, runeNames));
 	}
 	const tag = node as SerializedTag;
 	if (tag.attributes) {
@@ -86,7 +86,7 @@ export function hasMatchingRunes(node: RendererNode, runeNames: Set<string>): bo
 		}
 	}
 	if (tag.children) {
-		return tag.children.some(child => hasMatchingRunes(child as RendererNode, runeNames));
+		return tag.children.some((child) => hasMatchingRunes(child as RendererNode, runeNames));
 	}
 	return false;
 }
@@ -132,7 +132,8 @@ export interface SeoData {
  */
 export function extractSeoData(input: SeoInput): SeoData {
 	const title = input.seo?.og?.title ?? input.title ?? '';
-	const description = input.seo?.og?.description ?? (input.frontmatter?.description as string | undefined) ?? '';
+	const description =
+		input.seo?.og?.description ?? (input.frontmatter?.description as string | undefined) ?? '';
 
 	return {
 		title,
@@ -160,7 +161,10 @@ export interface SeoToHtmlOptions {
  *
  * Used by Astro and Eleventy adapters that inject raw HTML into `<head>`.
  */
-export function seoToHtml(data: SeoData, options?: SeoToHtmlOptions): { title: string; metaTags: string; jsonLd: string } {
+export function seoToHtml(
+	data: SeoData,
+	options?: SeoToHtmlOptions,
+): { title: string; metaTags: string; jsonLd: string } {
 	const parts: string[] = [];
 
 	if (data.description) {
@@ -174,7 +178,9 @@ export function seoToHtml(data: SeoData, options?: SeoToHtmlOptions): { title: s
 		parts.push(`<meta name="twitter:title" content="${escapeAttr(data.title)}">`);
 	}
 
-	const resolvedImage = data.ogImage ?? (options?.defaultImage ? (options.baseUrl ?? '') + options.defaultImage : undefined);
+	const resolvedImage =
+		data.ogImage ??
+		(options?.defaultImage ? (options.baseUrl ?? '') + options.defaultImage : undefined);
 	if (resolvedImage) {
 		parts.push(`<meta property="og:image" content="${escapeAttr(resolvedImage)}">`);
 		parts.push(`<meta name="twitter:card" content="summary_large_image">`);
@@ -204,12 +210,14 @@ export function seoToHtml(data: SeoData, options?: SeoToHtmlOptions): { title: s
 
 	if (options?.baseUrl) {
 		const siteName = options.siteName ?? '';
-		jsonLdParts.push(`<script type="application/ld+json">${JSON.stringify({
-			'@context': 'https://schema.org',
-			'@type': 'WebSite',
-			name: siteName,
-			url: options.baseUrl,
-		})}</script>`);
+		jsonLdParts.push(
+			`<script type="application/ld+json">${JSON.stringify({
+				'@context': 'https://schema.org',
+				'@type': 'WebSite',
+				name: siteName,
+				url: options.baseUrl,
+			})}</script>`,
+		);
 		const org: Record<string, string> = {
 			'@context': 'https://schema.org',
 			'@type': 'Organization',
@@ -233,7 +241,11 @@ export function seoToHtml(data: SeoData, options?: SeoToHtmlOptions): { title: s
 
 /** Escape a string for use in an HTML attribute value. */
 export function escapeAttr(s: string): string {
-	return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+	return s
+		.replace(/&/g, '&amp;')
+		.replace(/"/g, '&quot;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;');
 }
 
 /** List of core @refrakt-md packages that bundlers typically need to transpile/mark as noExternal. */

@@ -11,7 +11,8 @@ const sentimentValues = ['positive', 'caution', 'negative'] as const;
 function textContent(node: unknown): string {
 	if (typeof node === 'string') return node;
 	if (Array.isArray(node)) return node.map(textContent).join('');
-	if (Markdoc.Tag.isTag(node as never)) return textContent((node as { children?: unknown[] }).children ?? []);
+	if (Markdoc.Tag.isTag(node as never))
+		return textContent((node as { children?: unknown[] }).children ?? []);
 	return '';
 }
 
@@ -25,9 +26,23 @@ export const progress = createContentModelSchema({
 	attributes: {
 		value: { type: Number, required: false, description: 'Completed amount (paired with `max`).' },
 		max: { type: Number, required: false, description: 'Total amount (paired with `value`).' },
-		percent: { type: Number, required: false, description: 'Direct percentage 0–100, when there is no count.' },
-		display: { type: String, required: false, matches: displayValues.slice(), description: 'Readout: fraction (default with value/max), percent, or none.' },
-		sentiment: { type: String, required: false, matches: sentimentValues.slice(), description: 'Tone cue: positive / caution / negative. Absent → the neutral primary fill.' },
+		percent: {
+			type: Number,
+			required: false,
+			description: 'Direct percentage 0–100, when there is no count.',
+		},
+		display: {
+			type: String,
+			required: false,
+			matches: displayValues.slice(),
+			description: 'Readout: fraction (default with value/max), percent, or none.',
+		},
+		sentiment: {
+			type: String,
+			required: false,
+			matches: sentimentValues.slice(),
+			description: 'Tone cue: positive / caution / negative. Absent → the neutral primary fill.',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
@@ -38,10 +53,17 @@ export const progress = createContentModelSchema({
 		const max = attrs.max != null ? Number(attrs.max) : undefined;
 		const percentAttr = attrs.percent != null ? Number(attrs.percent) : undefined;
 		const clamp = (n: number) => Math.max(0, Math.min(100, n));
-		const hasRatio = value != null && max != null && Number.isFinite(value) && Number.isFinite(max) && (max as number) > 0;
+		const hasRatio =
+			value != null &&
+			max != null &&
+			Number.isFinite(value) &&
+			Number.isFinite(max) &&
+			(max as number) > 0;
 		const pct = hasRatio
 			? clamp(Math.round((value! / max!) * 100))
-			: (percentAttr != null && Number.isFinite(percentAttr) ? clamp(percentAttr) : 0);
+			: percentAttr != null && Number.isFinite(percentAttr)
+				? clamp(percentAttr)
+				: 0;
 
 		const display = (attrs.display as string) || (hasRatio ? 'fraction' : 'percent');
 		let readout = '';

@@ -18,7 +18,10 @@ function page(url: string, over: Partial<SitePage> = {}): SitePage {
 }
 
 const renderContributed = (cp: ContributedPage): SitePage =>
-	page(cp.url, { content: cp.content, source: { type: 'contributed', plugin: cp.source?.plugin, ruleIndex: cp.source?.ruleIndex } });
+	page(cp.url, {
+		content: cp.content,
+		source: { type: 'contributed', plugin: cp.source?.plugin, ruleIndex: cp.source?.ruleIndex },
+	});
 
 describe('contribution phase (SPEC-069)', () => {
 	it('renders contributed pages and runs them through aggregate + postProcess', async () => {
@@ -54,25 +57,38 @@ describe('contribution phase (SPEC-069)', () => {
 				return [{ url: '/f/1/', content: 'dupe' }];
 			},
 		};
-		const result = await runPipeline([page('/f/1/', { content: 'original' })], [{ pluginName: 'test', hooks }], { renderContributed });
+		const result = await runPipeline(
+			[page('/f/1/', { content: 'original' })],
+			[{ pluginName: 'test', hooks }],
+			{ renderContributed },
+		);
 		expect(result.pages).toHaveLength(1);
 		expect(result.pages[0].content).toBe('original');
-		expect(result.warnings.some((w) => w.phase === 'contribute' && w.severity === 'warning')).toBe(true);
+		expect(result.warnings.some((w) => w.phase === 'contribute' && w.severity === 'warning')).toBe(
+			true,
+		);
 	});
 
 	it('two contributed pages at the same URL error and the second is skipped', async () => {
 		const hooks: PluginPipelineHooks = {
 			contributePages() {
-				return [{ url: '/c/x/', content: 'a' }, { url: '/c/x/', content: 'b' }];
+				return [
+					{ url: '/c/x/', content: 'a' },
+					{ url: '/c/x/', content: 'b' },
+				];
 			},
 		};
 		const result = await runPipeline([], [{ pluginName: 'test', hooks }], { renderContributed });
 		expect(result.pages).toHaveLength(1);
-		expect(result.warnings.some((w) => w.phase === 'contribute' && w.severity === 'error')).toBe(true);
+		expect(result.warnings.some((w) => w.phase === 'contribute' && w.severity === 'error')).toBe(
+			true,
+		);
 	});
 
 	it('is a no-op when no plugin contributes', async () => {
-		const result = await runPipeline([page('/f/1/')], [{ pluginName: 'none', hooks: {} }], { renderContributed });
+		const result = await runPipeline([page('/f/1/')], [{ pluginName: 'none', hooks: {} }], {
+			renderContributed,
+		});
 		expect(result.pages).toHaveLength(1);
 	});
 });

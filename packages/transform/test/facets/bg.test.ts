@@ -6,21 +6,28 @@ import type { BgPresetDefinition } from '../../src/types.js';
 import type { SerializedTag } from '@refrakt-md/types';
 
 const PRESETS: Record<string, BgPresetDefinition> = {
-	mesh: { style: { '--mesh': 'on' }, gradient: { direction: 'to-r', stops: ['primary', 'surface'] } },
+	mesh: {
+		style: { '--mesh': 'on' },
+		gradient: { direction: 'to-r', stops: ['primary', 'surface'] },
+	},
 	meshDark: { extends: 'mesh', style: { '--tone': 'dark' } },
 	plain: { style: { '--plain': '1' } },
 };
 
 const theme = (backgrounds = PRESETS): FacetTheme => ({ tints: {}, backgrounds, frames: {} });
 
-const meta = (field: string, content: string) => makeTag('meta', { 'data-field': field, content }, []);
+const meta = (field: string, content: string) =>
+	makeTag('meta', { 'data-field': field, content }, []);
 
 const ctx = (
 	metas: Array<[string, string]> = [],
 	axes: Record<string, string | undefined> = {},
 	extraChildren: SerializedTag[] = [],
 ): FacetContext => ({
-	tag: makeTag('div', { 'data-rune': 'hero' }, [...metas.map(([f, c]) => meta(f, c)), ...extraChildren]),
+	tag: makeTag('div', { 'data-rune': 'hero' }, [
+		...metas.map(([f, c]) => meta(f, c)),
+		...extraChildren,
+	]),
 	config: { block: 'hero' },
 	block: 'rf-hero',
 	rune: 'hero',
@@ -30,9 +37,10 @@ const ctx = (
 });
 
 /** The `[data-name="bg"]` layer the facet builds. */
-const layerOf = (result: ReturnType<typeof bgFacet.resolve>) => result?.layers?.[0].element as SerializedTag;
+const layerOf = (result: ReturnType<typeof bgFacet.resolve>) =>
+	result?.layers?.[0].element as SerializedTag;
 const childNames = (layer: SerializedTag) =>
-	layer.children.map(c => (c as SerializedTag).attributes['data-name']);
+	layer.children.map((c) => (c as SerializedTag).attributes['data-name']);
 
 describe('buildBgGradient', () => {
 	it('needs at least two stops', () => {
@@ -40,22 +48,27 @@ describe('buildBgGradient', () => {
 	});
 
 	it('resolves bare token names against the colour tokens', () => {
-		expect(buildBgGradient({ stops: ['primary', 'surface'] }))
-			.toBe('linear-gradient(to bottom, var(--rf-color-primary), var(--rf-color-surface))');
+		expect(buildBgGradient({ stops: ['primary', 'surface'] })).toBe(
+			'linear-gradient(to bottom, var(--rf-color-primary), var(--rf-color-surface))',
+		);
 	});
 
 	it('passes the transparent keyword through verbatim', () => {
-		expect(buildBgGradient({ stops: ['transparent', 'primary'] })).toContain('transparent, var(--rf-color-primary)');
+		expect(buildBgGradient({ stops: ['transparent', 'primary'] })).toContain(
+			'transparent, var(--rf-color-primary)',
+		);
 	});
 
 	it('mixes a token at fractional alpha', () => {
-		expect(buildBgGradient({ stops: ['primary/0.5', 'surface'] }))
-			.toContain('color-mix(in srgb, var(--rf-color-primary) 50%, transparent)');
+		expect(buildBgGradient({ stops: ['primary/0.5', 'surface'] })).toContain(
+			'color-mix(in srgb, var(--rf-color-primary) 50%, transparent)',
+		);
 	});
 
 	it('accepts percent alpha', () => {
-		expect(buildBgGradient({ stops: ['primary/40%', 'surface'] }))
-			.toContain('var(--rf-color-primary) 40%');
+		expect(buildBgGradient({ stops: ['primary/40%', 'surface'] })).toContain(
+			'var(--rf-color-primary) 40%',
+		);
 	});
 
 	// Pre-existing quirk, preserved verbatim by the migration: the out-of-range
@@ -63,18 +76,27 @@ describe('buildBgGradient', () => {
 	// `var(--rf-color-primary/900)` — not a valid custom-property name. Asserted
 	// as-is rather than fixed, since this refactor is behaviour-preserving.
 	it('falls back to interpolating the raw stop for out-of-range alpha', () => {
-		expect(buildBgGradient({ stops: ['primary/900', 'surface'] })).toContain('var(--rf-color-primary/900)');
+		expect(buildBgGradient({ stops: ['primary/900', 'surface'] })).toContain(
+			'var(--rf-color-primary/900)',
+		);
 	});
 
 	it('honours the named direction set', () => {
-		expect(buildBgGradient({ direction: 'to-tr', stops: ['a', 'b'] })).toContain('linear-gradient(to top right,');
+		expect(buildBgGradient({ direction: 'to-tr', stops: ['a', 'b'] })).toContain(
+			'linear-gradient(to top right,',
+		);
 	});
 
 	it('falls back to `to bottom` for an unknown direction', () => {
-		expect(buildBgGradient({ direction: 'sideways', stops: ['a', 'b'] })).toContain('linear-gradient(to bottom,');
+		expect(buildBgGradient({ direction: 'sideways', stops: ['a', 'b'] })).toContain(
+			'linear-gradient(to bottom,',
+		);
 	});
 
-	for (const [type, fn] of [['radial', 'radial-gradient'], ['conic', 'conic-gradient']] as const) {
+	for (const [type, fn] of [
+		['radial', 'radial-gradient'],
+		['conic', 'conic-gradient'],
+	] as const) {
 		it(`builds a ${type} gradient`, () => {
 			expect(buildBgGradient({ type, stops: ['a', 'b'] })).toContain(`${fn}(`);
 		});
@@ -110,32 +132,69 @@ describe('bg facet', () => {
 
 	describe('the layer element', () => {
 		it('puts an image on the base layer', () => {
-			expect(layerOf(bgFacet.resolve(ctx([['bg-src', '/h.jpg']]))).attributes.style)
-				.toBe('--bg-image: url(/h.jpg)');
+			expect(layerOf(bgFacet.resolve(ctx([['bg-src', '/h.jpg']]))).attributes.style).toBe(
+				'--bg-image: url(/h.jpg)',
+			);
 		});
 
 		it('lets a gradient fill the base when there is no image', () => {
-			const layer = layerOf(bgFacet.resolve(ctx([['bg-from', 'primary'], ['bg-to', 'surface']])));
+			const layer = layerOf(
+				bgFacet.resolve(
+					ctx([
+						['bg-from', 'primary'],
+						['bg-to', 'surface'],
+					]),
+				),
+			);
 			expect(layer.attributes.style).toContain('--bg-image: linear-gradient(');
 		});
 
 		it('prefers the image over the gradient when both are present', () => {
-			const layer = layerOf(bgFacet.resolve(ctx([['bg-src', '/h.jpg'], ['bg-from', 'a'], ['bg-to', 'b']])));
+			const layer = layerOf(
+				bgFacet.resolve(
+					ctx([
+						['bg-src', '/h.jpg'],
+						['bg-from', 'a'],
+						['bg-to', 'b'],
+					]),
+				),
+			);
 			expect(layer.attributes.style).toBe('--bg-image: url(/h.jpg)');
 		});
 
 		it('maps the blur scale', () => {
-			const layer = layerOf(bgFacet.resolve(ctx([['bg-src', '/h.jpg'], ['bg-blur', 'lg']])));
+			const layer = layerOf(
+				bgFacet.resolve(
+					ctx([
+						['bg-src', '/h.jpg'],
+						['bg-blur', 'lg'],
+					]),
+				),
+			);
 			expect(layer.attributes.style).toContain('--bg-blur: 16px');
 		});
 
 		it('passes an off-scale blur through as a raw value', () => {
-			const layer = layerOf(bgFacet.resolve(ctx([['bg-src', '/h.jpg'], ['bg-blur', '3px']])));
+			const layer = layerOf(
+				bgFacet.resolve(
+					ctx([
+						['bg-src', '/h.jpg'],
+						['bg-blur', '3px'],
+					]),
+				),
+			);
 			expect(layer.attributes.style).toContain('--bg-blur: 3px');
 		});
 
 		it('marks a fixed background', () => {
-			const layer = layerOf(bgFacet.resolve(ctx([['bg-src', '/h.jpg'], ['bg-fixed', 'true']])));
+			const layer = layerOf(
+				bgFacet.resolve(
+					ctx([
+						['bg-src', '/h.jpg'],
+						['bg-fixed', 'true'],
+					]),
+				),
+			);
 			expect(layer.attributes['data-bg-fixed']).toBe('');
 		});
 	});
@@ -159,24 +218,53 @@ describe('bg facet', () => {
 		});
 
 		it('lets an inline direction override the preset gradient’s', () => {
-			const layer = layerOf(bgFacet.resolve(ctx([['bg-preset', 'mesh'], ['bg-gradient', 'to-t']])));
+			const layer = layerOf(
+				bgFacet.resolve(
+					ctx([
+						['bg-preset', 'mesh'],
+						['bg-gradient', 'to-t'],
+					]),
+				),
+			);
 			expect(layer.attributes.style).toContain('linear-gradient(to top');
 		});
 
 		it('keeps the preset stops when fewer than two inline stops are given', () => {
-			const layer = layerOf(bgFacet.resolve(ctx([['bg-preset', 'mesh'], ['bg-from', 'muted']])));
+			const layer = layerOf(
+				bgFacet.resolve(
+					ctx([
+						['bg-preset', 'mesh'],
+						['bg-from', 'muted'],
+					]),
+				),
+			);
 			expect(layer.attributes.style).toContain('var(--rf-color-primary)');
 		});
 	});
 
 	describe('video', () => {
 		it('adds a video branch above the overlay', () => {
-			const layer = layerOf(bgFacet.resolve(ctx([['bg-video', '/loop.mp4'], ['bg-overlay', 'dark']])));
+			const layer = layerOf(
+				bgFacet.resolve(
+					ctx([
+						['bg-video', '/loop.mp4'],
+						['bg-overlay', 'dark'],
+					]),
+				),
+			);
 			expect(childNames(layer)).toEqual(['bg-video', 'bg-overlay']);
 		});
 
 		it('does not put the image variable on the video element', () => {
-			const layer = layerOf(bgFacet.resolve(ctx([['bg-video', '/l.mp4'], ['bg-src', '/h.jpg'], ['bg-opacity', '0.5']])));
+			const layer = layerOf(
+				bgFacet.resolve(
+					ctx([
+						['bg-video', '/l.mp4'],
+						['bg-src', '/h.jpg'],
+						['bg-opacity', '0.5'],
+					]),
+				),
+			);
 			const video = layer.children[0] as SerializedTag;
 			expect(video.attributes.style).toBe('--bg-opacity: 0.5');
 		});
@@ -190,36 +278,67 @@ describe('bg facet', () => {
 
 		it('resolves a token reference to a colour variable', () => {
 			const layer = layerOf(bgFacet.resolve(ctx([['bg-overlay', 'primary']])));
-			expect((layer.children[0] as SerializedTag).attributes.style).toBe('background: var(--rf-color-primary)');
+			expect((layer.children[0] as SerializedTag).attributes.style).toBe(
+				'background: var(--rf-color-primary)',
+			);
 		});
 
 		it('applies overlay opacity', () => {
-			const layer = layerOf(bgFacet.resolve(ctx([['bg-overlay', 'primary'], ['bg-overlay-opacity', '0.4']])));
+			const layer = layerOf(
+				bgFacet.resolve(
+					ctx([
+						['bg-overlay', 'primary'],
+						['bg-overlay-opacity', '0.4'],
+					]),
+				),
+			);
 			expect((layer.children[0] as SerializedTag).attributes.style).toContain('opacity: 0.4');
 		});
 
 		it('still accepts raw CSS, with a deprecation warning', () => {
 			const result = bgFacet.resolve(ctx([['bg-overlay', 'rgba(0,0,0,.5)']]));
-			expect((layerOf(result).children[0] as SerializedTag).attributes.style).toBe('background: rgba(0,0,0,.5)');
+			expect((layerOf(result).children[0] as SerializedTag).attributes.style).toBe(
+				'background: rgba(0,0,0,.5)',
+			);
 			expect(result?.warnings?.[0].code).toBe('raw-css-overlay');
 		});
 	});
 
 	describe('scrim', () => {
 		it('adds a gradient scrim with the strength scale', () => {
-			const layer = layerOf(bgFacet.resolve(ctx([['scrim', 'to-t'], ['scrim-strength', 'lg']])));
+			const layer = layerOf(
+				bgFacet.resolve(
+					ctx([
+						['scrim', 'to-t'],
+						['scrim-strength', 'lg'],
+					]),
+				),
+			);
 			const scrim = layer.children[0] as SerializedTag;
 			expect(scrim.attributes['data-scrim']).toBe('gradient');
 			expect(scrim.attributes.style).toBe('--scrim-strength: 0.8');
 		});
 
 		it('uses the blur scale for a frost scrim instead', () => {
-			const layer = layerOf(bgFacet.resolve(ctx([['scrim', 'to-t'], ['scrim-type', 'frost'], ['scrim-blur', 'sm']])));
+			const layer = layerOf(
+				bgFacet.resolve(
+					ctx([
+						['scrim', 'to-t'],
+						['scrim-type', 'frost'],
+						['scrim-blur', 'sm'],
+					]),
+				),
+			);
 			expect((layer.children[0] as SerializedTag).attributes.style).toBe('--scrim-blur: 4px');
 		});
 
 		it('flips the foreground polarity to the scrim tone', () => {
-			const result = bgFacet.resolve(ctx([['scrim', 'to-t'], ['scrim-tone', 'light']]));
+			const result = bgFacet.resolve(
+				ctx([
+					['scrim', 'to-t'],
+					['scrim-tone', 'light'],
+				]),
+			);
 			expect(result?.dataAttrs?.['data-color-scheme']).toBe('light');
 			expect(result?.state).toEqual({ 'color-scheme': 'light' });
 		});
@@ -241,8 +360,16 @@ describe('bg facet', () => {
 		});
 
 		it('still raises the layer in cover mode when an image is present', () => {
-			const result = bgFacet.resolve(ctx([['scrim', 'to-t'], ['bg-src', '/h.jpg']], { cover: 'true' }));
-			expect(childNames(layerOf(result))).toEqual([]);  // no scrim child — it went to the media well
+			const result = bgFacet.resolve(
+				ctx(
+					[
+						['scrim', 'to-t'],
+						['bg-src', '/h.jpg'],
+					],
+					{ cover: 'true' },
+				),
+			);
+			expect(childNames(layerOf(result))).toEqual([]); // no scrim child — it went to the media well
 		});
 	});
 
@@ -267,7 +394,18 @@ describe('bg facet', () => {
 
 		it('sits between the video branch and the overlay', () => {
 			const g = guest();
-			const layer = layerOf(bgFacet.resolve(ctx([['bg-video', '/l.mp4'], ['bg-overlay', 'dark']], {}, [g])));
+			const layer = layerOf(
+				bgFacet.resolve(
+					ctx(
+						[
+							['bg-video', '/l.mp4'],
+							['bg-overlay', 'dark'],
+						],
+						{},
+						[g],
+					),
+				),
+			);
 			expect(layer.children[1]).toBe(g);
 		});
 

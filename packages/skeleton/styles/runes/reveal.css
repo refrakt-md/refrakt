@@ -8,7 +8,7 @@
 	position: relative;
 }
 .rf-reveal__eyebrow:has(a) a::before {
-	content: '';
+	content: "";
 	position: absolute;
 	inset: 0;
 }
@@ -20,8 +20,9 @@
 	height: 0;
 	overflow: hidden;
 }
-.rf-reveal-step__body > span[property],
-.rf-reveal-step__body > meta { display: none; }
+.rf-reveal-step__body > meta {
+	display: none;
+}
 .rf-reveal__next,
 .rf-reveal__reset {
 	display: inline-flex;

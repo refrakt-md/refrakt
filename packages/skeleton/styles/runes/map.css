@@ -3,11 +3,22 @@
  * sr-only pins list, the pin-group inline box, metadata hide, the media-guest fill,
  * and the popup-title block. Margins, radii, surface, fallback type, and the
  * Leaflet popup chrome are skin. */
-.rf-map { overflow: hidden; }
-.rf-map--small .rf-map__container { height: 200px; }
-.rf-map--medium .rf-map__container { height: 400px; }
-.rf-map--large .rf-map__container { height: 600px; }
-.rf-map--full .rf-map__container { height: 80vh; min-height: 400px; }
+.rf-map {
+	overflow: hidden;
+}
+.rf-map--small .rf-map__container {
+	height: 200px;
+}
+.rf-map--medium .rf-map__container {
+	height: 400px;
+}
+.rf-map--large .rf-map__container {
+	height: 600px;
+}
+.rf-map--full .rf-map__container {
+	height: 80vh;
+	min-height: 400px;
+}
 .rf-map__container {
 	width: 100%;
 	position: relative;
@@ -30,8 +41,7 @@
 .rf-map-pin__group {
 	display: inline-block;
 }
-.rf-map meta,
-.rf-map span[property] {
+.rf-map meta {
 	display: none;
 }
 [data-section="media"] > .rf-map {

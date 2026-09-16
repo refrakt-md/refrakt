@@ -21,9 +21,15 @@ function makeCtx() {
 	const warnings: Array<{ severity: string; message: string; url?: string }> = [];
 	return {
 		ctx: {
-			info(message: string, url?: string) { warnings.push({ severity: 'info', message, url }); },
-			warn(message: string, url?: string) { warnings.push({ severity: 'warning', message, url }); },
-			error(message: string, url?: string) { warnings.push({ severity: 'error', message, url }); },
+			info(message: string, url?: string) {
+				warnings.push({ severity: 'info', message, url });
+			},
+			warn(message: string, url?: string) {
+				warnings.push({ severity: 'warning', message, url });
+			},
+			error(message: string, url?: string) {
+				warnings.push({ severity: 'error', message, url });
+			},
 		},
 		warnings,
 	};
@@ -36,7 +42,7 @@ function setupPipeline(pages: TransformedPage[]) {
 
 	corePipelineHooks.register!(pages, registry, ctx);
 	const aggregated: AggregatedData = {
-		'__core__': corePipelineHooks.aggregate!(registry, ctx),
+		__core__: corePipelineHooks.aggregate!(registry, ctx),
 	};
 
 	return { registry, aggregated };
@@ -67,7 +73,10 @@ describe('xref resolution (Phase 4 — postProcess)', () => {
 		const { ctx, warnings } = makeCtx();
 
 		const result = corePipelineHooks.postProcess!(pages[2], aggregated, ctx);
-		const link = findTag(result.renderable as any, t => t.name === 'a' && t.attributes.class?.includes('rf-xref'));
+		const link = findTag(
+			result.renderable as any,
+			(t) => t.name === 'a' && t.attributes.class?.includes('rf-xref'),
+		);
 
 		expect(link).toBeDefined();
 		expect(link!.attributes.href).toBe('/docs/guide/');
@@ -89,7 +98,10 @@ describe('xref resolution (Phase 4 — postProcess)', () => {
 		const { ctx } = makeCtx();
 
 		const result = corePipelineHooks.postProcess!(pages[0], aggregated, ctx);
-		const link = findTag(result.renderable as any, t => t.name === 'a' && t.attributes.class?.includes('rf-xref'));
+		const link = findTag(
+			result.renderable as any,
+			(t) => t.name === 'a' && t.attributes.class?.includes('rf-xref'),
+		);
 
 		expect(link).toBeDefined();
 		expect(link!.attributes.href).toBe('/docs/guide/');
@@ -108,7 +120,7 @@ describe('xref resolution (Phase 4 — postProcess)', () => {
 		const { ctx } = makeCtx();
 
 		const result = corePipelineHooks.postProcess!(pages[0], aggregated, ctx);
-		const link = findTag(result.renderable as any, t => t.name === 'a');
+		const link = findTag(result.renderable as any, (t) => t.name === 'a');
 
 		expect(link).toBeDefined();
 		expect(link!.children).toContain('the guide');
@@ -123,14 +135,17 @@ describe('xref resolution (Phase 4 — postProcess)', () => {
 		const { ctx, warnings } = makeCtx();
 
 		const result = corePipelineHooks.postProcess!(pages[0], aggregated, ctx);
-		const span = findTag(result.renderable as any, t =>
-			t.name === 'span' && t.attributes.class?.includes('rf-xref--unresolved')
+		const span = findTag(
+			result.renderable as any,
+			(t) => t.name === 'span' && t.attributes.class?.includes('rf-xref--unresolved'),
 		);
 
 		expect(span).toBeDefined();
 		expect(span!.attributes['data-xref-id']).toBe('RF-999');
 		expect(span!.children).toContain('RF-999');
-		expect(warnings.some(w => w.severity === 'warning' && w.message.includes('RF-999'))).toBe(true);
+		expect(warnings.some((w) => w.severity === 'warning' && w.message.includes('RF-999'))).toBe(
+			true,
+		);
 	});
 
 	it('should use custom label on unresolved reference', () => {
@@ -142,8 +157,9 @@ describe('xref resolution (Phase 4 — postProcess)', () => {
 		const { ctx } = makeCtx();
 
 		const result = corePipelineHooks.postProcess!(pages[0], aggregated, ctx);
-		const span = findTag(result.renderable as any, t =>
-			t.name === 'span' && t.attributes.class?.includes('rf-xref--unresolved')
+		const span = findTag(
+			result.renderable as any,
+			(t) => t.name === 'span' && t.attributes.class?.includes('rf-xref--unresolved'),
 		);
 
 		expect(span).toBeDefined();
@@ -153,16 +169,15 @@ describe('xref resolution (Phase 4 — postProcess)', () => {
 	it('should emit info diagnostic for self-reference', () => {
 		const xref = xrefPlaceholder('/docs/guide/');
 		const wrapper = new Tag('div', {}, [xref]);
-		const pages = [
-			makePage('/', 'Home'),
-			makePage('/docs/guide/', 'Guide', wrapper),
-		];
+		const pages = [makePage('/', 'Home'), makePage('/docs/guide/', 'Guide', wrapper)];
 
 		const { aggregated } = setupPipeline(pages);
 		const { ctx, warnings } = makeCtx();
 
 		corePipelineHooks.postProcess!(pages[1], aggregated, ctx);
-		expect(warnings.some(w => w.severity === 'info' && w.message.includes('references itself'))).toBe(true);
+		expect(
+			warnings.some((w) => w.severity === 'info' && w.message.includes('references itself')),
+		).toBe(true);
 	});
 
 	it('should warn on ambiguous name match', () => {
@@ -181,11 +196,13 @@ describe('xref resolution (Phase 4 — postProcess)', () => {
 		const result = corePipelineHooks.postProcess!(pages[0], aggregated, ctx);
 
 		// Should still produce a link (first match)
-		const link = findTag(result.renderable as any, t => t.name === 'a');
+		const link = findTag(result.renderable as any, (t) => t.name === 'a');
 		expect(link).toBeDefined();
 
 		// Should emit ambiguity warning
-		expect(warnings.some(w => w.severity === 'warning' && w.message.includes('matches 2 entities'))).toBe(true);
+		expect(
+			warnings.some((w) => w.severity === 'warning' && w.message.includes('matches 2 entities')),
+		).toBe(true);
 	});
 
 	it('should resolve name match case-insensitively', () => {
@@ -200,7 +217,7 @@ describe('xref resolution (Phase 4 — postProcess)', () => {
 		const { ctx } = makeCtx();
 
 		const result = corePipelineHooks.postProcess!(pages[0], aggregated, ctx);
-		const link = findTag(result.renderable as any, t => t.name === 'a');
+		const link = findTag(result.renderable as any, (t) => t.name === 'a');
 
 		expect(link).toBeDefined();
 		expect(link!.attributes.href).toBe('/docs/guide/');
@@ -209,10 +226,7 @@ describe('xref resolution (Phase 4 — postProcess)', () => {
 	it('should filter by type hint', () => {
 		const xref = xrefPlaceholder('Guide', 'page');
 		const wrapper = new Tag('div', {}, [xref]);
-		const pages = [
-			makePage('/', 'Home', wrapper),
-			makePage('/docs/guide/', 'Guide'),
-		];
+		const pages = [makePage('/', 'Home', wrapper), makePage('/docs/guide/', 'Guide')];
 
 		const { aggregated } = setupPipeline(pages);
 		const { ctx } = makeCtx();
@@ -221,16 +235,13 @@ describe('xref resolution (Phase 4 — postProcess)', () => {
 		// since 'Guide' is not a valid page ID but matches title
 		const xref2 = xrefPlaceholder('Guide', undefined, 'page');
 		const wrapper2 = new Tag('div', {}, [xref2]);
-		const pages2 = [
-			makePage('/', 'Home', wrapper2),
-			makePage('/docs/guide/', 'Guide'),
-		];
+		const pages2 = [makePage('/', 'Home', wrapper2), makePage('/docs/guide/', 'Guide')];
 
 		const { aggregated: agg2 } = setupPipeline(pages2);
 		const { ctx: ctx2 } = makeCtx();
 
 		const result = corePipelineHooks.postProcess!(pages2[0], agg2, ctx2);
-		const link = findTag(result.renderable as any, t => t.name === 'a');
+		const link = findTag(result.renderable as any, (t) => t.name === 'a');
 
 		expect(link).toBeDefined();
 		expect(link!.attributes['data-target-type']).toBe('page');
@@ -254,16 +265,14 @@ describe('xref resolution (Phase 4 — postProcess)', () => {
 		const wrapper = new Tag('div', {}, [xref]);
 		const pages = [
 			makePage('/', 'Home', wrapper),
-			makePage('/docs/guide/', 'Guide', null, [
-				{ level: 2, text: 'Setup', id: 'setup' },
-			]),
+			makePage('/docs/guide/', 'Guide', null, [{ level: 2, text: 'Setup', id: 'setup' }]),
 		];
 
 		const { aggregated } = setupPipeline(pages);
 		const { ctx } = makeCtx();
 
 		const result = corePipelineHooks.postProcess!(pages[0], aggregated, ctx);
-		const link = findTag(result.renderable as any, t => t.name === 'a');
+		const link = findTag(result.renderable as any, (t) => t.name === 'a');
 
 		expect(link).toBeDefined();
 		expect(link!.attributes['data-target-type']).toBe('heading');
@@ -272,7 +281,10 @@ describe('xref resolution (Phase 4 — postProcess)', () => {
 });
 
 describe('xref resolution — pattern fallback (SPEC-065)', () => {
-	function setupWithPatterns(pages: TransformedPage[], patternConfig: Array<{ match: string; template: string; type?: string; label?: string }>) {
+	function setupWithPatterns(
+		pages: TransformedPage[],
+		patternConfig: Array<{ match: string; template: string; type?: string; label?: string }>,
+	) {
 		const registry = new EntityRegistryImpl();
 		const { ctx } = makeCtx();
 		const { patterns } = compileXrefPatterns(patternConfig);
@@ -280,7 +292,7 @@ describe('xref resolution — pattern fallback (SPEC-065)', () => {
 
 		hooks.register!(pages, registry, ctx);
 		const aggregated: AggregatedData = {
-			'__core__': hooks.aggregate!(registry, ctx),
+			__core__: hooks.aggregate!(registry, ctx),
 		};
 		return { hooks, aggregated };
 	}
@@ -291,11 +303,16 @@ describe('xref resolution — pattern fallback (SPEC-065)', () => {
 		const pages = [makePage('/', 'Home', wrapper)];
 
 		const { hooks, aggregated } = setupWithPatterns(pages, [
-			{ match: '^GH-(?<num>\\d+)$', template: 'https://github.com/owner/repo/issues/{num}', type: 'github-issue', label: 'GH #{num}' },
+			{
+				match: '^GH-(?<num>\\d+)$',
+				template: 'https://github.com/owner/repo/issues/{num}',
+				type: 'github-issue',
+				label: 'GH #{num}',
+			},
 		]);
 		const { ctx } = makeCtx();
 		const result = hooks.postProcess!(pages[0], aggregated, ctx);
-		const link = findTag(result.renderable as any, t => t.name === 'a');
+		const link = findTag(result.renderable as any, (t) => t.name === 'a');
 
 		expect(link).toBeDefined();
 		expect(link!.attributes.href).toBe('https://github.com/owner/repo/issues/123');
@@ -308,10 +325,7 @@ describe('xref resolution — pattern fallback (SPEC-065)', () => {
 	it('uses entity URL when the registry entity has a usable sourceUrl', () => {
 		const xref = xrefPlaceholder('/docs/guide/');
 		const wrapper = new Tag('div', {}, [xref]);
-		const pages = [
-			makePage('/', 'Home', wrapper),
-			makePage('/docs/guide/', 'Guide'),
-		];
+		const pages = [makePage('/', 'Home', wrapper), makePage('/docs/guide/', 'Guide')];
 
 		// Patterns are configured but should NOT be used — registry wins.
 		const { hooks, aggregated } = setupWithPatterns(pages, [
@@ -319,7 +333,10 @@ describe('xref resolution — pattern fallback (SPEC-065)', () => {
 		]);
 		const { ctx } = makeCtx();
 		const result = hooks.postProcess!(pages[0], aggregated, ctx);
-		const link = findTag(result.renderable as any, t => t.name === 'a' && t.attributes.class?.includes('rf-xref'));
+		const link = findTag(
+			result.renderable as any,
+			(t) => t.name === 'a' && t.attributes.class?.includes('rf-xref'),
+		);
 
 		expect(link).toBeDefined();
 		expect(link!.attributes['data-xref-source']).toBe('registry');
@@ -340,14 +357,19 @@ describe('xref resolution — pattern fallback (SPEC-065)', () => {
 			data: { title: 'Auth system' },
 		});
 		const { patterns } = compileXrefPatterns([
-			{ match: '^SPEC-\\d+$', template: 'https://trace.example.com/{id}', type: 'spec', label: '{id}' },
+			{
+				match: '^SPEC-\\d+$',
+				template: 'https://trace.example.com/{id}',
+				type: 'spec',
+				label: '{id}',
+			},
 		]);
 		const hooks = createCorePipelineHooks({ xrefPatterns: patterns });
 		hooks.register!(pages, registry, regCtx);
-		const aggregated: AggregatedData = { '__core__': hooks.aggregate!(registry, regCtx) };
+		const aggregated: AggregatedData = { __core__: hooks.aggregate!(registry, regCtx) };
 		const { ctx } = makeCtx();
 		const result = hooks.postProcess!(pages[0], aggregated, ctx);
-		const link = findTag(result.renderable as any, t => t.name === 'a');
+		const link = findTag(result.renderable as any, (t) => t.name === 'a');
 
 		expect(link).toBeDefined();
 		expect(link!.attributes.href).toBe('https://trace.example.com/SPEC-023');
@@ -367,7 +389,7 @@ describe('xref resolution — pattern fallback (SPEC-065)', () => {
 		]);
 		const { ctx } = makeCtx();
 		const result = hooks.postProcess!(pages[0], aggregated, ctx);
-		const link = findTag(result.renderable as any, t => t.name === 'a');
+		const link = findTag(result.renderable as any, (t) => t.name === 'a');
 
 		expect(link).toBeDefined();
 		// Slashes preserved, not encoded to %2F.
@@ -384,7 +406,7 @@ describe('xref resolution — pattern fallback (SPEC-065)', () => {
 		]);
 		const { ctx } = makeCtx();
 		const result = hooks.postProcess!(pages[0], aggregated, ctx);
-		const link = findTag(result.renderable as any, t => t.name === 'a');
+		const link = findTag(result.renderable as any, (t) => t.name === 'a');
 
 		expect(link).toBeDefined();
 		// `@` is preserved per segment; `/` survives because we split first.
@@ -401,8 +423,9 @@ describe('xref resolution — pattern fallback (SPEC-065)', () => {
 		]);
 		const { ctx } = makeCtx();
 		const result = hooks.postProcess!(pages[0], aggregated, ctx);
-		const span = findTag(result.renderable as any, t =>
-			t.name === 'span' && t.attributes.class?.includes('rf-xref--unresolved')
+		const span = findTag(
+			result.renderable as any,
+			(t) => t.name === 'span' && t.attributes.class?.includes('rf-xref--unresolved'),
 		);
 
 		expect(span).toBeDefined();
@@ -421,7 +444,7 @@ describe('same-page href compaction', () => {
 			data: { title: 'A drawer' },
 		});
 		const aggregated: AggregatedData = {
-			'__core__': {
+			__core__: {
 				breadcrumbPaths: new Map(),
 				pagesByUrl: new Map(),
 				allPosts: [],
@@ -435,27 +458,39 @@ describe('same-page href compaction', () => {
 	}
 
 	it('compacts an entity href to a fragment-only anchor when the entity is on the current page', () => {
-		const { aggregated, page } = setupWithDrawerEntity('/runes/drawer/', 'auth', '/runes/drawer/#drawer-auth');
+		const { aggregated, page } = setupWithDrawerEntity(
+			'/runes/drawer/',
+			'auth',
+			'/runes/drawer/#drawer-auth',
+		);
 		const { ctx } = makeCtx();
 		const result = corePipelineHooks.postProcess!(page, aggregated, ctx);
-		const a = findTag(result.renderable as any, t => t.name === 'a');
+		const a = findTag(result.renderable as any, (t) => t.name === 'a');
 		expect(a).toBeDefined();
 		expect(a!.attributes.href).toBe('#drawer-auth');
 	});
 
 	it('tolerates trailing-slash mismatch between page URL and entity URL', () => {
-		const { aggregated, page } = setupWithDrawerEntity('/runes/drawer', 'auth', '/runes/drawer/#drawer-auth');
+		const { aggregated, page } = setupWithDrawerEntity(
+			'/runes/drawer',
+			'auth',
+			'/runes/drawer/#drawer-auth',
+		);
 		const { ctx } = makeCtx();
 		const result = corePipelineHooks.postProcess!(page, aggregated, ctx);
-		const a = findTag(result.renderable as any, t => t.name === 'a');
+		const a = findTag(result.renderable as any, (t) => t.name === 'a');
 		expect(a!.attributes.href).toBe('#drawer-auth');
 	});
 
 	it('leaves cross-page hrefs absolute', () => {
-		const { aggregated, page } = setupWithDrawerEntity('/some-other-page/', 'auth', '/runes/drawer/#drawer-auth');
+		const { aggregated, page } = setupWithDrawerEntity(
+			'/some-other-page/',
+			'auth',
+			'/runes/drawer/#drawer-auth',
+		);
 		const { ctx } = makeCtx();
 		const result = corePipelineHooks.postProcess!(page, aggregated, ctx);
-		const a = findTag(result.renderable as any, t => t.name === 'a');
+		const a = findTag(result.renderable as any, (t) => t.name === 'a');
 		expect(a!.attributes.href).toBe('/runes/drawer/#drawer-auth');
 	});
 });

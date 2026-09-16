@@ -15,10 +15,7 @@ import type { McpTool } from './core.js';
 
 /** Commands that should not be exposed via MCP — long-running servers,
  *  filesystem generators, etc. that don't fit the request/response model. */
-const EXCLUDED_COMMANDS = new Set<string>([
-	'plan.serve',
-	'plan.build',
-]);
+const EXCLUDED_COMMANDS = new Set<string>(['plan.serve', 'plan.build']);
 
 /** Discover installed plugins and convert each command into an MCP tool. */
 export async function loadPluginTools(cwd: string): Promise<McpTool[]> {
@@ -38,7 +35,8 @@ function buildPluginTool(name: string, command: CliPluginCommand): McpTool {
 	const inputSchema: JSONSchema7 = command.inputSchema ?? {
 		type: 'object',
 		additionalProperties: true,
-		description: 'Free-form arguments — this command has no inputSchema yet, so MCP cannot validate inputs.',
+		description:
+			'Free-form arguments — this command has no inputSchema yet, so MCP cannot validate inputs.',
 	};
 
 	return {

@@ -8,7 +8,7 @@ function tmpTarget(): string {
 	return join(
 		tmpdir(),
 		`create-refrakt-plan-test-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-		'my-plan'
+		'my-plan',
 	);
 }
 
@@ -42,7 +42,9 @@ describe('scaffoldPlan', () => {
 		// Example items from runInit
 		expect(existsSync(join(targetDir, 'plan', 'specs', 'SPEC-001-example-spec.md'))).toBe(true);
 		expect(existsSync(join(targetDir, 'plan', 'work', 'WORK-001-example-work-item.md'))).toBe(true);
-		expect(existsSync(join(targetDir, 'plan', 'decisions', 'ADR-001-example-decision.md'))).toBe(true);
+		expect(existsSync(join(targetDir, 'plan', 'decisions', 'ADR-001-example-decision.md'))).toBe(
+			true,
+		);
 		expect(existsSync(join(targetDir, 'plan', 'milestones', 'first-release.md'))).toBe(true);
 	});
 

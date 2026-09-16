@@ -108,10 +108,7 @@ describe('discoverPlugins', () => {
 
 	it('returns an empty array when no plugins are installed', async () => {
 		const cwd = tempDir;
-		writeFileSync(
-			join(cwd, 'package.json'),
-			JSON.stringify({ name: 'empty', dependencies: {} }),
-		);
+		writeFileSync(join(cwd, 'package.json'), JSON.stringify({ name: 'empty', dependencies: {} }));
 		const plugins = await discoverPlugins({ cwd, warn: false });
 		expect(plugins).toEqual([]);
 	});

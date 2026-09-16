@@ -12,9 +12,7 @@ import { uniqueId } from '../utils.js';
 export function navCollapsibleBehavior(el: HTMLElement): CleanupFn {
 	if (el.getAttribute('data-collapsible') !== 'true') return () => {};
 
-	const groups = Array.from(
-		el.querySelectorAll<HTMLElement>('[data-rune="nav-group"]'),
-	);
+	const groups = Array.from(el.querySelectorAll<HTMLElement>('[data-rune="nav-group"]'));
 	if (groups.length === 0) return () => {};
 
 	const cleanups: Array<() => void> = [];

@@ -8,12 +8,17 @@ beforeEach(() => {
 	document.body.innerHTML = '';
 	delete document.documentElement.dataset.theme;
 	delete document.documentElement.dataset.tintLock;
-	try { localStorage.clear(); } catch (_) { /* ignore */ }
+	try {
+		localStorage.clear();
+	} catch (_) {
+		/* ignore */
+	}
 });
 
 function mount(): { container: HTMLElement; btn: HTMLButtonElement } {
 	const container = document.createElement('div');
-	container.innerHTML = '<button class="rf-theme-toggle" data-theme-toggle><span class="rf-theme-toggle__icon"></span></button>';
+	container.innerHTML =
+		'<button class="rf-theme-toggle" data-theme-toggle><span class="rf-theme-toggle__icon"></span></button>';
 	document.body.appendChild(container);
 	return { container, btn: container.querySelector('button')! };
 }

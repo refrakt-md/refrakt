@@ -32,7 +32,9 @@ describe('structure before/after assembly', () => {
 		const result = asTag(transform(tag));
 		const iconIdx = result.children.findIndex((c: any) => c?.attributes?.['data-name'] === 'icon');
 		const textIdx = result.children.findIndex((c: any) => c === 'Content');
-		const badgeIdx = result.children.findIndex((c: any) => c?.attributes?.['data-name'] === 'badge');
+		const badgeIdx = result.children.findIndex(
+			(c: any) => c?.attributes?.['data-name'] === 'badge',
+		);
 
 		expect(iconIdx).toBeLessThan(textIdx);
 		expect(textIdx).toBeLessThan(badgeIdx);
@@ -54,7 +56,9 @@ describe('structure before/after assembly', () => {
 		const tag = makeTag('section', { 'data-rune': 'hint' }, ['Content']);
 
 		const result = asTag(transform(tag));
-		const status = result.children.find((c: any) => c?.attributes?.['data-name'] === 'status') as SerializedTag;
+		const status = result.children.find(
+			(c: any) => c?.attributes?.['data-name'] === 'status',
+		) as SerializedTag;
 		expect(status).toBeDefined();
 		expect(status.attributes['data-meta-type']).toBe('status');
 		expect(status.attributes.class ?? '').not.toContain('rf-badge');

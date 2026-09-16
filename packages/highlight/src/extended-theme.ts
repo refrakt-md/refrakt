@@ -62,11 +62,7 @@ export function createExtendedCssVariablesTheme(options: { variablePrefix?: stri
 		// JSX/HTML/XML element tag names. Stock theme routes these to
 		// token-string-expression (surprisingly); we split them off.
 		{
-			scope: [
-				'entity.name.tag',
-				'meta.tag entity.name',
-				'support.class.component',
-			],
+			scope: ['entity.name.tag', 'meta.tag entity.name', 'support.class.component'],
 			settings: { foreground: v('token-tag') },
 		},
 
@@ -74,10 +70,7 @@ export function createExtendedCssVariablesTheme(options: { variablePrefix?: stri
 		// JSX/HTML/XML attribute names. Stock theme routes these to
 		// token-function; we split them off.
 		{
-			scope: [
-				'entity.other.attribute-name',
-				'meta.attribute entity.other.attribute-name',
-			],
+			scope: ['entity.other.attribute-name', 'meta.attribute entity.other.attribute-name'],
 			settings: { foreground: v('token-attribute') },
 		},
 
@@ -151,11 +144,7 @@ export function createExtendedCssVariablesTheme(options: { variablePrefix?: stri
 		// Regular expression literals. Stock theme routes string.regexp to
 		// token-string-expression; we split them off.
 		{
-			scope: [
-				'string.regexp',
-				'string.regex',
-				'string.quoted.regex',
-			],
+			scope: ['string.regexp', 'string.regex', 'string.quoted.regex'],
 			settings: { foreground: v('token-regex') },
 		},
 	];

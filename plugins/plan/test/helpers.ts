@@ -1,7 +1,13 @@
 import 'reflect-metadata';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { tags as coreTags, nodes, extractHeadings, runeTagMap, defineRune } from '@refrakt-md/runes';
+import {
+	tags as coreTags,
+	nodes,
+	extractHeadings,
+	runeTagMap,
+	defineRune,
+} from '@refrakt-md/runes';
 import { plan } from '../src/index.js';
 
 // Create Rune instances from the package
@@ -14,7 +20,17 @@ const tags = { ...coreTags, ...runeTagMap(pluginRunes), ...Markdoc.tags };
 export function parse(content: string, variables: Record<string, any> = {}) {
 	const ast = Markdoc.parse(content);
 	const headings = extractHeadings(ast);
-	const config = { tags, nodes, variables: { generatedIds: new Set<string>(), path: '/test.md', headings, __source: content, ...variables } };
+	const config = {
+		tags,
+		nodes,
+		variables: {
+			generatedIds: new Set<string>(),
+			path: '/test.md',
+			headings,
+			__source: content,
+			...variables,
+		},
+	};
 	return Markdoc.transform(ast, config);
 }
 
@@ -41,5 +57,9 @@ export function findAllTags(node: any, predicate: (tag: Tag) => boolean): Tag[] 
 }
 
 export function fields(tag: any): Record<string, any> {
-	try { return JSON.parse(tag?.attributes?.['data-rune-fields'] ?? '{}'); } catch { return {}; }
+	try {
+		return JSON.parse(tag?.attributes?.['data-rune-fields'] ?? '{}');
+	} catch {
+		return {};
+	}
 }

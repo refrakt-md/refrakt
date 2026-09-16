@@ -1,24 +1,23 @@
 @layer skin {
-/* Embed — skin. The responsive iframe wrapper + empty-fallback hide live in
+	/* Embed — skin. The responsive iframe wrapper + empty-fallback hide live in
  * @refrakt-md/skeleton (styles/runes/embed.css). */
-.rf-embed {
-	margin: 0;
-	padding: 0;
-}
-.rf-embed__wrapper {
-	border-radius: var(--rf-radius-md);
-	background: var(--rf-color-surface);
-}
-.rf-embed__wrapper iframe {
-	border: none;
-}
-.rf-embed__fallback {
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-muted);
-	margin-top: 0.5rem;
-}
-.rf-embed__fallback p:last-child {
-	margin-bottom: 0;
-}
-
+	.rf-embed {
+		margin: 0;
+		padding: 0;
+	}
+	.rf-embed__wrapper {
+		border-radius: var(--rf-radius-md);
+		background: var(--rf-color-surface);
+	}
+	.rf-embed__wrapper iframe {
+		border: none;
+	}
+	.rf-embed__fallback {
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+		margin-top: 0.5rem;
+	}
+	.rf-embed__fallback p:last-child {
+		margin-bottom: 0;
+	}
 }

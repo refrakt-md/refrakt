@@ -38,9 +38,7 @@ export function resolveIcon(
 	opts: IconResolveOptions = {},
 ): ResolvedIcon {
 	const { group, name: iconName } = splitIconName(name);
-	const icons = config.variables?.__icons as
-		| Record<string, Record<string, string>>
-		| undefined;
+	const icons = config.variables?.__icons as Record<string, Record<string, string>> | undefined;
 	const svgString = icons?.[group]?.[iconName];
 
 	if (svgString) {

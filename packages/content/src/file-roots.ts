@@ -75,10 +75,7 @@ export function resolveUserFileRoots(
  * file-root contribution is silently dropped, with a soft warning so the
  * shadowing is visible during development.
  */
-export function mergeFileRoots(
-	userRoots: FileRoots,
-	pluginRoots: FileRoots,
-): MergedFileRoots {
+export function mergeFileRoots(userRoots: FileRoots, pluginRoots: FileRoots): MergedFileRoots {
 	const merged: FileRoots = { ...pluginRoots };
 	const warnings: string[] = [];
 	for (const [namespace, absPath] of Object.entries(userRoots)) {
@@ -131,14 +128,10 @@ export async function readFileRoots(
 		try {
 			stat = await fs.promises.stat(absPath);
 		} catch {
-			throw new Error(
-				`File root "${namespace}" — directory does not exist: ${absPath}`,
-			);
+			throw new Error(`File root "${namespace}" — directory does not exist: ${absPath}`);
 		}
 		if (!stat.isDirectory()) {
-			throw new Error(
-				`File root "${namespace}" — expected a directory, got a file: ${absPath}`,
-			);
+			throw new Error(`File root "${namespace}" — expected a directory, got a file: ${absPath}`);
 		}
 		await scanRoot(absPath, absPath, namespace, map);
 	}
@@ -223,10 +216,7 @@ async function scanRoot(
  *  is exported for runes (like the snippet rune's v2) that need to validate
  *  ad-hoc references against the same rules.
  */
-export function validateNamespacedReference(
-	ref: string,
-	roots: FileRoots,
-): string {
+export function validateNamespacedReference(ref: string, roots: FileRoots): string {
 	const colonIdx = ref.indexOf(':');
 	if (colonIdx <= 0) {
 		throw new Error(

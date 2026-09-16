@@ -39,8 +39,17 @@ export const AXIS_ATTRIBUTES: Readonly<Record<string, readonly string[]>> = {
 	// is gated on a `media-position` modifier) narrowed a working attribute off
 	// 82 of 83 runes; see WORK-536.
 	bg: [
-		'bg', 'bg-gradient', 'bg-from', 'bg-to', 'bg-via', 'bg-gradient-type',
-		'scrim', 'scrim-type', 'scrim-strength', 'scrim-blur', 'scrim-tone',
+		'bg',
+		'bg-gradient',
+		'bg-from',
+		'bg-to',
+		'bg-via',
+		'bg-gradient-type',
+		'scrim',
+		'scrim-type',
+		'scrim-strength',
+		'scrim-blur',
+		'scrim-tone',
 	],
 	width: ['width'],
 	spacing: ['spacing'],
@@ -51,10 +60,24 @@ export const AXIS_ATTRIBUTES: Readonly<Record<string, readonly string[]>> = {
 	dropcap: ['dropcap'],
 	motion: ['reveal', 'stagger'],
 	frame: [
-		'frame', 'frame-aspect', 'frame-displace', 'frame-displace-mode', 'frame-offset',
-		'frame-oversize', 'frame-place', 'frame-anchor', 'frame-overflow', 'frame-shadow',
+		'frame',
+		'frame-aspect',
+		'frame-displace',
+		'frame-displace-mode',
+		'frame-offset',
+		'frame-oversize',
+		'frame-place',
+		'frame-anchor',
+		'frame-overflow',
+		'frame-shadow',
 	],
-	substrate: ['substrate', 'substrate-size', 'substrate-opacity', 'substrate-fill', 'substrate-target'],
+	substrate: [
+		'substrate',
+		'substrate-size',
+		'substrate-opacity',
+		'substrate-fill',
+		'substrate-target',
+	],
 	// `cover` owns no author-facing attribute of its own — like `density`,
 	// `content-measure` and `content-place`, it can still be reported unavailable
 	// on a rune, it simply removes nothing from the schema.

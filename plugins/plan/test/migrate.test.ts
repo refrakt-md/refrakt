@@ -37,7 +37,7 @@ describe('plan migrate filenames — dry run (default)', () => {
 		expect(result.scanned).toBe(3);
 		expect(result.planned).toHaveLength(3);
 		expect(result.applied).toHaveLength(0);
-		expect(result.planned.map(p => p.to).sort()).toEqual([
+		expect(result.planned.map((p) => p.to).sort()).toEqual([
 			'decisions/ADR-005-rune-package-layouts.md',
 			'specs/SPEC-024-cross-page-pipeline.md',
 			'work/WORK-033-plan-validate-command.md',
@@ -58,11 +58,14 @@ describe('plan migrate filenames — dry run (default)', () => {
 	});
 
 	it('skips milestones entirely (they use semver names)', () => {
-		writeFileSync(join(TMP, 'v1.0.0.md'), `{% milestone name="v1.0.0" status="active" %}\n# v1.0\n{% /milestone %}\n`);
+		writeFileSync(
+			join(TMP, 'v1.0.0.md'),
+			`{% milestone name="v1.0.0" status="active" %}\n# v1.0\n{% /milestone %}\n`,
+		);
 		mkdirSync(join(TMP, 'milestones'), { recursive: true });
 		writeFileSync(
 			join(TMP, 'milestones/v2.0.0.md'),
-			`{% milestone name="v2.0.0" status="planning" %}\n# v2.0\n{% /milestone %}\n`
+			`{% milestone name="v2.0.0" status="planning" %}\n# v2.0\n{% /milestone %}\n`,
 		);
 
 		const result = runMigrateFilenames({ dir: TMP });
@@ -83,7 +86,10 @@ describe('plan migrate filenames — dry run (default)', () => {
 
 	it('reports files with missing frontmatter IDs', () => {
 		mkdirSync(join(TMP, 'work'), { recursive: true });
-		writeFileSync(join(TMP, 'work/orphan.md'), `{% work status="draft" %}\n# Orphan\n{% /work %}\n`);
+		writeFileSync(
+			join(TMP, 'work/orphan.md'),
+			`{% work status="draft" %}\n# Orphan\n{% /work %}\n`,
+		);
 
 		const result = runMigrateFilenames({ dir: TMP });
 
@@ -139,7 +145,7 @@ describe('plan migrate filenames — apply', () => {
 		seedFile('work/needs-renaming.md', 'work', 'WORK-011');
 		writeFileSync(
 			join(TMP, 'v1.md'),
-			`{% milestone name="v1" status="active" %}\n# v1\n{% /milestone %}\n`
+			`{% milestone name="v1" status="active" %}\n# v1\n{% /milestone %}\n`,
 		);
 
 		const result = runMigrateFilenames({ dir: TMP, apply: true });

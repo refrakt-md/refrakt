@@ -20,62 +20,139 @@ import media from '@refrakt-md/media';
 
 const UNSTYLED_BLOCKS = new Set([
 	'recipe-ingredient', // styled inline within recipe.css (no own block selector)
-	'tint',              // directive rune — applies CSS custom props to parent, no own visual
-	'bg',                // directive rune — sets parent backdrop, no own visual
-	'region',            // structural rune — layout region container, no own visual
-	'definition',        // child of feature — styled inline within feature.css
-	'deflist',           // styled via shared [data-zone-layout="definition-list"] selectors
-	'data',              // preprocess rune (SPEC-103) — emits a plain `table` node; styled by the shared table CSS, no own `.rf-data` element
-	'include',           // preprocess rune (SPEC-129) — splices the partial's content in and leaves nothing behind; there is no `.rf-include` element to style
-	'code',              // inline rune (WORK-551) — renders a bare `<code>` on purpose, styled by global.css's element rule so it is indistinguishable from a backtick span
+	'tint', // directive rune — applies CSS custom props to parent, no own visual
+	'bg', // directive rune — sets parent backdrop, no own visual
+	'region', // structural rune — layout region container, no own visual
+	'definition', // child of feature — styled inline within feature.css
+	'deflist', // styled via shared [data-zone-layout="definition-list"] selectors
+	'data', // preprocess rune (SPEC-103) — emits a plain `table` node; styled by the shared table CSS, no own `.rf-data` element
+	'include', // preprocess rune (SPEC-129) — splices the partial's content in and leaves nothing behind; there is no `.rf-include` element to style
+	'code', // inline rune (WORK-551) — renders a bare `<code>` on purpose, styled by global.css's element rule so it is indistinguishable from a backtick span
 ]);
 
 const KNOWN_MISSING_SELECTORS = new Set([
 	// pageSectionAutoLabel selectors — preamble + intro elements inherited from section system
 	'.rf-testimonial__quote',
-	'.rf-comparison__preamble', '.rf-comparison__eyebrow', '.rf-comparison__headline', '.rf-comparison__blurb', '.rf-comparison__image',
-	'.rf-symbol__preamble', '.rf-symbol__headline', '.rf-symbol__blurb', '.rf-symbol__image',
-	'.rf-changelog__preamble', '.rf-changelog__eyebrow', '.rf-changelog__headline', '.rf-changelog__blurb', '.rf-changelog__image',
-	'.rf-blog__content', '.rf-blog__eyebrow', '.rf-blog__image',
-	'.rf-howto__preamble', '.rf-howto__eyebrow', '.rf-howto__headline', '.rf-howto__blurb', '.rf-howto__image',
-	'.rf-itinerary__preamble', '.rf-itinerary__eyebrow', '.rf-itinerary__headline', '.rf-itinerary__blurb', '.rf-itinerary__image',
-	'.rf-cast__preamble', '.rf-cast__eyebrow', '.rf-cast__headline', '.rf-cast__blurb', '.rf-cast__image',
-	'.rf-organization__preamble', '.rf-organization__eyebrow', '.rf-organization__headline', '.rf-organization__blurb', '.rf-organization__image',
-	'.rf-timeline__preamble', '.rf-timeline__eyebrow', '.rf-timeline__headline', '.rf-timeline__blurb', '.rf-timeline__image',
-	'.rf-event__preamble', '.rf-event__eyebrow', '.rf-event__headline', '.rf-event__blurb', '.rf-event__image',
-	'.rf-preview__preamble', '.rf-preview__eyebrow', '.rf-preview__headline', '.rf-preview__blurb', '.rf-preview__image',
+	'.rf-comparison__preamble',
+	'.rf-comparison__eyebrow',
+	'.rf-comparison__headline',
+	'.rf-comparison__blurb',
+	'.rf-comparison__image',
+	'.rf-symbol__preamble',
+	'.rf-symbol__headline',
+	'.rf-symbol__blurb',
+	'.rf-symbol__image',
+	'.rf-changelog__preamble',
+	'.rf-changelog__eyebrow',
+	'.rf-changelog__headline',
+	'.rf-changelog__blurb',
+	'.rf-changelog__image',
+	'.rf-blog__content',
+	'.rf-blog__eyebrow',
+	'.rf-blog__image',
+	'.rf-howto__preamble',
+	'.rf-howto__eyebrow',
+	'.rf-howto__headline',
+	'.rf-howto__blurb',
+	'.rf-howto__image',
+	'.rf-itinerary__preamble',
+	'.rf-itinerary__eyebrow',
+	'.rf-itinerary__headline',
+	'.rf-itinerary__blurb',
+	'.rf-itinerary__image',
+	'.rf-cast__preamble',
+	'.rf-cast__eyebrow',
+	'.rf-cast__headline',
+	'.rf-cast__blurb',
+	'.rf-cast__image',
+	'.rf-organization__preamble',
+	'.rf-organization__eyebrow',
+	'.rf-organization__headline',
+	'.rf-organization__blurb',
+	'.rf-organization__image',
+	'.rf-timeline__preamble',
+	'.rf-timeline__eyebrow',
+	'.rf-timeline__headline',
+	'.rf-timeline__blurb',
+	'.rf-timeline__image',
+	'.rf-event__preamble',
+	'.rf-event__eyebrow',
+	'.rf-event__headline',
+	'.rf-event__blurb',
+	'.rf-event__image',
+	'.rf-preview__preamble',
+	'.rf-preview__eyebrow',
+	'.rf-preview__headline',
+	'.rf-preview__blurb',
+	'.rf-preview__image',
 	'.rf-recipe__preamble',
-	'.rf-faction__preamble', '.rf-realm__preamble', '.rf-character__preamble',  // styled via shared [data-section="preamble"] dimension
-	'.rf-playlist__eyebrow', '.rf-playlist__image',
+	'.rf-faction__preamble',
+	'.rf-realm__preamble',
+	'.rf-character__preamble', // styled via shared [data-section="preamble"] dimension
+	'.rf-playlist__eyebrow',
+	'.rf-playlist__image',
 	// Badge/meta-item selectors — now styled by shared metadata dimension rules ([data-meta-type])
-	'.rf-spec__id-badge', '.rf-spec__status-badge', '.rf-spec__version-badge', '.rf-spec__supersedes-badge',
-	'.rf-work__id-badge', '.rf-work__status-badge', '.rf-work__priority-badge', '.rf-work__milestone-badge',
-	'.rf-decision__id-badge', '.rf-decision__status-badge', '.rf-decision__date-badge', '.rf-decision__supersedes-badge',
-	'.rf-milestone__name-badge', '.rf-milestone__status-badge',
-	'.rf-bug__id-badge', '.rf-bug__status-badge', '.rf-bug__severity-badge', '.rf-bug__milestone-badge',
-	'.rf-symbol__kind-badge', '.rf-symbol__lang-badge', '.rf-symbol__since-badge', '.rf-symbol__deprecated-badge',
-	'.rf-recipe__meta-item', '.rf-recipe__badge',
+	'.rf-spec__id-badge',
+	'.rf-spec__status-badge',
+	'.rf-spec__version-badge',
+	'.rf-spec__supersedes-badge',
+	'.rf-work__id-badge',
+	'.rf-work__status-badge',
+	'.rf-work__priority-badge',
+	'.rf-work__milestone-badge',
+	'.rf-decision__id-badge',
+	'.rf-decision__status-badge',
+	'.rf-decision__date-badge',
+	'.rf-decision__supersedes-badge',
+	'.rf-milestone__name-badge',
+	'.rf-milestone__status-badge',
+	'.rf-bug__id-badge',
+	'.rf-bug__status-badge',
+	'.rf-bug__severity-badge',
+	'.rf-bug__milestone-badge',
+	'.rf-symbol__kind-badge',
+	'.rf-symbol__lang-badge',
+	'.rf-symbol__since-badge',
+	'.rf-symbol__deprecated-badge',
+	'.rf-recipe__meta-item',
+	'.rf-recipe__badge',
 	'.rf-howto__meta-item',
 	'.rf-budget__meta-item',
-	'.rf-character__role-badge', '.rf-character__status-badge',
-	'.rf-realm__type-badge', '.rf-realm__scale-badge',
+	'.rf-character__role-badge',
+	'.rf-character__status-badge',
+	'.rf-realm__type-badge',
+	'.rf-realm__scale-badge',
 	'.rf-lore__category-badge',
-	'.rf-faction__type-badge', '.rf-faction__alignment-badge', '.rf-faction__size-badge',
-	'.rf-plot__type-badge', '.rf-plot__structure-badge',
+	'.rf-faction__type-badge',
+	'.rf-faction__alignment-badge',
+	'.rf-faction__size-badge',
+	'.rf-plot__type-badge',
+	'.rf-plot__structure-badge',
 	// Badge/meta bar containers — now styled by section header dimension ([data-section="header"])
-	'.rf-character__badge', '.rf-lore__badge', '.rf-plot__badge',
+	'.rf-character__badge',
+	'.rf-lore__badge',
+	'.rf-plot__badge',
 	// Section header autoLabel selectors — styled via __name instead
-	'.rf-character-section__header', '.rf-realm-section__header', '.rf-faction-section__header',
+	'.rf-character-section__header',
+	'.rf-realm-section__header',
+	'.rf-faction-section__header',
 	// Header selectors — now fully handled by [data-section="header"] dimension
-	'.rf-spec__header', '.rf-bug__header',
-	'.rf-decision__header', '.rf-milestone__header',
+	'.rf-spec__header',
+	'.rf-bug__header',
+	'.rf-decision__header',
+	'.rf-milestone__header',
 	'.rf-recipe__header',
-	'.rf-budget__header', '.rf-event__header', // styled via [data-section="header"] dimension
+	'.rf-budget__header',
+	'.rf-event__header', // styled via [data-section="header"] dimension
 	'.rf-event__meta-item', // styled via metadata dimension
 	'.rf-recipe__meta', // meta bar styled via [data-section="header"] in shared split.css
 	'.rf-playlist__type-badge',
 	// Playlist pageSectionAutoLabel selectors — not used by playlist (pre-existing gap)
-	'.rf-playlist__blurb', '.rf-playlist__eyebrow', '.rf-playlist__image', '.rf-playlist__meta', '.rf-playlist__preamble',
+	'.rf-playlist__blurb',
+	'.rf-playlist__eyebrow',
+	'.rf-playlist__image',
+	'.rf-playlist__meta',
+	'.rf-playlist__preamble',
 ]);
 
 // ─── Helpers ───
@@ -87,9 +164,9 @@ const DIMENSIONS_DIR = join(__dirname, '..', 'styles', 'dimensions');
 // layer still counts as styled.
 const SKELETON_DIMENSIONS_DIR = join(__dirname, '..', '..', 'skeleton', 'styles', 'dimensions');
 const SKELETON_RUNES_DIR = join(__dirname, '..', '..', 'skeleton', 'styles', 'runes');
-const dimensionDirs = [DIMENSIONS_DIR, SKELETON_DIMENSIONS_DIR].filter(d => existsSync(d));
+const dimensionDirs = [DIMENSIONS_DIR, SKELETON_DIMENSIONS_DIR].filter((d) => existsSync(d));
 // Per-rune structure promoted to the skeleton package counts toward block coverage.
-const runeDirs = [CSS_DIR, SKELETON_RUNES_DIR].filter(d => existsSync(d));
+const runeDirs = [CSS_DIR, SKELETON_RUNES_DIR].filter((d) => existsSync(d));
 
 /** Parse all CSS files and collect every .rf-* class selector */
 function parseAllCssSelectors(): Set<string> {
@@ -97,11 +174,11 @@ function parseAllCssSelectors(): Set<string> {
 	const dirs = [...runeDirs, ...dimensionDirs];
 
 	for (const dir of dirs) {
-		const files = readdirSync(dir).filter(f => f.endsWith('.css'));
+		const files = readdirSync(dir).filter((f) => f.endsWith('.css'));
 		for (const file of files) {
 			const css = readFileSync(join(dir, file), 'utf-8');
 			const root = postcss.parse(css);
-			root.walkRules(rule => {
+			root.walkRules((rule) => {
 				const matches = rule.selector.matchAll(/\.rf-[\w-]+/g);
 				for (const m of matches) {
 					selectors.add(m[0]);
@@ -117,13 +194,15 @@ function parseAllCssSelectors(): Set<string> {
 function parseDimensionSelectors(): Set<string> {
 	const selectors = new Set<string>();
 	for (const dir of dimensionDirs) {
-		const files = readdirSync(dir).filter(f => f.endsWith('.css'));
+		const files = readdirSync(dir).filter((f) => f.endsWith('.css'));
 		for (const file of files) {
 			const css = readFileSync(join(dir, file), 'utf-8');
 			const root = postcss.parse(css);
-			root.walkRules(rule => {
+			root.walkRules((rule) => {
 				// Match data-meta-*, data-checked, data-sequence, and data-sequence-direction selectors
-				const matches = rule.selector.matchAll(/\[data-(?:meta-[\w-]+|checked|sequence(?:-direction)?)(?:="[\w-]+")?]/g);
+				const matches = rule.selector.matchAll(
+					/\[data-(?:meta-[\w-]+|checked|sequence(?:-direction)?)(?:="[\w-]+")?]/g,
+				);
 				for (const m of matches) {
 					selectors.add(m[0]);
 				}
@@ -150,7 +229,11 @@ function collectStructureRefs(entry: StructureEntry, key: string): string[] {
 }
 
 /** Collect the BEM selectors a single (base or variant-delta) config contributes. */
-function collectConfigSelectors(block: string, config: Partial<RuneConfig>, selectors: string[]): void {
+function collectConfigSelectors(
+	block: string,
+	config: Partial<RuneConfig>,
+	selectors: string[],
+): void {
 	// Context modifier selectors
 	if (config.contextModifiers) {
 		for (const suffix of Object.values(config.contextModifiers)) {
@@ -214,14 +297,14 @@ function expectedSelectors(prefix: string, config: RuneConfig): string[] {
 
 const fullRunes: Record<string, RuneConfig> = {
 	...baseConfig.runes,
-	...marketing.theme?.runes as Record<string, RuneConfig>,
-	...docs.theme?.runes as Record<string, RuneConfig>,
-	...storytelling.theme?.runes as Record<string, RuneConfig>,
-	...places.theme?.runes as Record<string, RuneConfig>,
-	...business.theme?.runes as Record<string, RuneConfig>,
-	...design.theme?.runes as Record<string, RuneConfig>,
-	...learning.theme?.runes as Record<string, RuneConfig>,
-	...media.theme?.runes as Record<string, RuneConfig>,
+	...(marketing.theme?.runes as Record<string, RuneConfig>),
+	...(docs.theme?.runes as Record<string, RuneConfig>),
+	...(storytelling.theme?.runes as Record<string, RuneConfig>),
+	...(places.theme?.runes as Record<string, RuneConfig>),
+	...(business.theme?.runes as Record<string, RuneConfig>),
+	...(design.theme?.runes as Record<string, RuneConfig>),
+	...(learning.theme?.runes as Record<string, RuneConfig>),
+	...(media.theme?.runes as Record<string, RuneConfig>),
 };
 
 const fullConfig: ThemeConfig = { ...baseConfig, runes: fullRunes };
@@ -234,7 +317,7 @@ const runes = fullRunes;
 
 // Build test entries: [runeName, blockName, config]
 const runeEntries = Object.entries(runes).map(
-	([name, config]) => [name, config.block, config] as [string, string, RuneConfig]
+	([name, config]) => [name, config.block, config] as [string, string, RuneConfig],
 );
 
 // Filter to runes that should have CSS (not in known-unstyled set)
@@ -242,48 +325,44 @@ const styledRuneEntries = runeEntries.filter(([, block]) => !UNSTYLED_BLOCKS.has
 
 // Runes with structural elements
 const structuralRunes = styledRuneEntries.filter(
-	([,, config]) => config.structure || config.contentWrapper || config.autoLabel
+	([, , config]) => config.structure || config.contentWrapper || config.autoLabel,
 );
 
 // Runes with context modifiers
 const contextRunes = styledRuneEntries.filter(
-	([,, config]) => config.contextModifiers && Object.keys(config.contextModifiers).length > 0
+	([, , config]) => config.contextModifiers && Object.keys(config.contextModifiers).length > 0,
 );
 
 // Runes with static modifiers
 const staticRunes = styledRuneEntries.filter(
-	([,, config]) => config.staticModifiers && config.staticModifiers.length > 0
+	([, , config]) => config.staticModifiers && config.staticModifiers.length > 0,
 );
 
 // ─── Tests ───
 
 describe('Lumina CSS coverage', () => {
 	describe('block selector coverage', () => {
-		it.each(styledRuneEntries)(
-			'%s (.rf-%s) has block selector in CSS',
-			(_name, block, _config) => {
-				const selector = `.${prefix}-${block}`;
-				// Accept if either the exact block selector or any child selector exists
-				const hasBlock = allCssSelectors.has(selector);
-				const hasChild = [...allCssSelectors].some(s => s.startsWith(`${selector}__`) || s.startsWith(`${selector}--`));
-				expect(hasBlock || hasChild, `Missing CSS for ${selector}`).toBe(true);
-			}
-		);
+		it.each(styledRuneEntries)('%s (.rf-%s) has block selector in CSS', (_name, block, _config) => {
+			const selector = `.${prefix}-${block}`;
+			// Accept if either the exact block selector or any child selector exists
+			const hasBlock = allCssSelectors.has(selector);
+			const hasChild = [...allCssSelectors].some(
+				(s) => s.startsWith(`${selector}__`) || s.startsWith(`${selector}--`),
+			);
+			expect(hasBlock || hasChild, `Missing CSS for ${selector}`).toBe(true);
+		});
 	});
 
 	describe('structural element selectors', () => {
-		it.each(structuralRunes)(
-			'%s has all element selectors styled',
-			(name, _block, config) => {
-				const expected = expectedSelectors(prefix, config);
-				const elementSelectors = expected.filter(s => s.includes('__'));
-				const missing = elementSelectors.filter(
-					s => !allCssSelectors.has(s) && !KNOWN_MISSING_SELECTORS.has(s)
-				);
+		it.each(structuralRunes)('%s has all element selectors styled', (name, _block, config) => {
+			const expected = expectedSelectors(prefix, config);
+			const elementSelectors = expected.filter((s) => s.includes('__'));
+			const missing = elementSelectors.filter(
+				(s) => !allCssSelectors.has(s) && !KNOWN_MISSING_SELECTORS.has(s),
+			);
 
-				expect(missing, `${name}: missing element selectors`).toEqual([]);
-			}
-		);
+			expect(missing, `${name}: missing element selectors`).toEqual([]);
+		});
 	});
 
 	describe('context modifier selectors', () => {
@@ -292,48 +371,45 @@ describe('Lumina CSS coverage', () => {
 			(_name, _block, config) => {
 				const block = `${prefix}-${config.block}`;
 				const expected = Object.values(config.contextModifiers!).map(
-					suffix => `.${block}--${suffix}`
+					(suffix) => `.${block}--${suffix}`,
 				);
 				const missing = expected.filter(
-					s => !allCssSelectors.has(s) && !KNOWN_MISSING_SELECTORS.has(s)
+					(s) => !allCssSelectors.has(s) && !KNOWN_MISSING_SELECTORS.has(s),
 				);
 
 				expect(missing, `Missing context modifier selectors`).toEqual([]);
-			}
+			},
 		);
 	});
 
 	describe('static modifier selectors', () => {
-		it.each(staticRunes)(
-			'%s has all static modifier selectors styled',
-			(_name, _block, config) => {
-				const block = `${prefix}-${config.block}`;
-				const expected = config.staticModifiers!.map(mod => `.${block}--${mod}`);
-				const missing = expected.filter(
-					s => !allCssSelectors.has(s) && !KNOWN_MISSING_SELECTORS.has(s)
-				);
+		it.each(staticRunes)('%s has all static modifier selectors styled', (_name, _block, config) => {
+			const block = `${prefix}-${config.block}`;
+			const expected = config.staticModifiers!.map((mod) => `.${block}--${mod}`);
+			const missing = expected.filter(
+				(s) => !allCssSelectors.has(s) && !KNOWN_MISSING_SELECTORS.has(s),
+			);
 
-				expect(missing, `Missing static modifier selectors`).toEqual([]);
-			}
-		);
+			expect(missing, `Missing static modifier selectors`).toEqual([]);
+		});
 	});
 
 	describe('coverage summary', () => {
 		it('overall block coverage meets threshold', () => {
-			const allBlocks = [...new Set(Object.values(runes).map(c => c.block))];
+			const allBlocks = [...new Set(Object.values(runes).map((c) => c.block))];
 			// SPEC-107 — surface runes carry their chrome from the `data-elevation` /
 			// `data-prominence` attribute rules in surfaces.css (not a bare
 			// `.rf-{block}` rule). A block with a per-rune surface default is styled
 			// by the axis dimension, so count it as covered.
 			const surfaceAxisBlocks = new Set(
 				Object.values(runes)
-					.filter(c => c.defaultElevation || c.defaultProminence)
-					.map(c => c.block),
+					.filter((c) => c.defaultElevation || c.defaultProminence)
+					.map((c) => c.block),
 			);
 			const isStyled = (block: string) =>
 				allCssSelectors.has(`.${prefix}-${block}`) || surfaceAxisBlocks.has(block);
 			const styledBlocks = allBlocks.filter(isStyled);
-			const unstyledBlocks = allBlocks.filter(block => !isStyled(block));
+			const unstyledBlocks = allBlocks.filter((block) => !isStyled(block));
 			const pct = Math.round((styledBlocks.length / allBlocks.length) * 100);
 
 			// Log for visibility
@@ -348,23 +424,21 @@ describe('Lumina CSS coverage', () => {
 		it('known unstyled blocks are documented', () => {
 			// Ensure UNSTYLED_BLOCKS doesn't contain blocks that now HAVE CSS
 			// (i.e., remove entries from the set when CSS is added)
-			const nowStyled = [...UNSTYLED_BLOCKS].filter(
-				block => allCssSelectors.has(`.${prefix}-${block}`)
+			const nowStyled = [...UNSTYLED_BLOCKS].filter((block) =>
+				allCssSelectors.has(`.${prefix}-${block}`),
 			);
 			expect(
 				nowStyled,
-				`These blocks now have CSS — remove from UNSTYLED_BLOCKS: ${nowStyled.join(', ')}`
+				`These blocks now have CSS — remove from UNSTYLED_BLOCKS: ${nowStyled.join(', ')}`,
 			).toEqual([]);
 		});
 
 		it('known missing selectors are still actually missing', () => {
 			// Ensure KNOWN_MISSING_SELECTORS doesn't contain selectors that now exist
-			const nowPresent = [...KNOWN_MISSING_SELECTORS].filter(
-				s => allCssSelectors.has(s)
-			);
+			const nowPresent = [...KNOWN_MISSING_SELECTORS].filter((s) => allCssSelectors.has(s));
 			expect(
 				nowPresent,
-				`These selectors now have CSS — remove from KNOWN_MISSING_SELECTORS: ${nowPresent.join(', ')}`
+				`These selectors now have CSS — remove from KNOWN_MISSING_SELECTORS: ${nowPresent.join(', ')}`,
 			).toEqual([]);
 		});
 	});
@@ -375,25 +449,19 @@ describe('Lumina CSS coverage', () => {
 		const META_TYPES = ['status', 'category', 'quantity', 'temporal', 'tag', 'id'] as const;
 		const SENTIMENTS = ['positive', 'negative', 'caution', 'neutral'] as const;
 
-		it.each(META_TYPES)(
-			'meta type "%s" has CSS rule',
-			(type) => {
-				expect(
-					dimensionSelectors.has(`[data-meta-type="${type}"]`),
-					`Missing CSS for [data-meta-type="${type}"]`
-				).toBe(true);
-			}
-		);
+		it.each(META_TYPES)('meta type "%s" has CSS rule', (type) => {
+			expect(
+				dimensionSelectors.has(`[data-meta-type="${type}"]`),
+				`Missing CSS for [data-meta-type="${type}"]`,
+			).toBe(true);
+		});
 
-		it.each(SENTIMENTS)(
-			'sentiment "%s" has CSS rule',
-			(sentiment) => {
-				expect(
-					dimensionSelectors.has(`[data-meta-sentiment="${sentiment}"]`),
-					`Missing CSS for [data-meta-sentiment="${sentiment}"]`
-				).toBe(true);
-			}
-		);
+		it.each(SENTIMENTS)('sentiment "%s" has CSS rule', (sentiment) => {
+			expect(
+				dimensionSelectors.has(`[data-meta-sentiment="${sentiment}"]`),
+				`Missing CSS for [data-meta-sentiment="${sentiment}"]`,
+			).toBe(true);
+		});
 	});
 
 	describe('checklist dimension selectors', () => {
@@ -402,21 +470,15 @@ describe('Lumina CSS coverage', () => {
 		const CHECKED_VALUES = ['checked', 'unchecked', 'active', 'skipped'] as const;
 
 		it('has base [data-checked] rule', () => {
-			expect(
-				dimensionSelectors.has('[data-checked]'),
-				'Missing CSS for [data-checked]'
-			).toBe(true);
+			expect(dimensionSelectors.has('[data-checked]'), 'Missing CSS for [data-checked]').toBe(true);
 		});
 
-		it.each(CHECKED_VALUES)(
-			'checked value "%s" has CSS rule',
-			(value) => {
-				expect(
-					dimensionSelectors.has(`[data-checked="${value}"]`),
-					`Missing CSS for [data-checked="${value}"]`
-				).toBe(true);
-			}
-		);
+		it.each(CHECKED_VALUES)('checked value "%s" has CSS rule', (value) => {
+			expect(
+				dimensionSelectors.has(`[data-checked="${value}"]`),
+				`Missing CSS for [data-checked="${value}"]`,
+			).toBe(true);
+		});
 	});
 
 	describe('sequence dimension selectors', () => {
@@ -424,21 +486,87 @@ describe('Lumina CSS coverage', () => {
 
 		const SEQUENCE_VALUES = ['numbered', 'connected', 'plain'] as const;
 
-		it.each(SEQUENCE_VALUES)(
-			'sequence value "%s" has CSS rule',
-			(value) => {
-				expect(
-					dimensionSelectors.has(`[data-sequence="${value}"]`),
-					`Missing CSS for [data-sequence="${value}"]`
-				).toBe(true);
-			}
-		);
+		it.each(SEQUENCE_VALUES)('sequence value "%s" has CSS rule', (value) => {
+			expect(
+				dimensionSelectors.has(`[data-sequence="${value}"]`),
+				`Missing CSS for [data-sequence="${value}"]`,
+			).toBe(true);
+		});
 
 		it('has horizontal direction rule', () => {
 			expect(
 				dimensionSelectors.has('[data-sequence-direction="horizontal"]'),
-				'Missing CSS for [data-sequence-direction="horizontal"]'
+				'Missing CSS for [data-sequence-direction="horizontal"]',
 			).toBe(true);
 		});
+	});
+});
+
+/**
+ * WORK-564 / BUG-015 — presentation never selects on the schema.org channel.
+ *
+ * ADR-028 says a theme may not redefine a rune's schema.org output, because
+ * emission is a claim about the content rather than about the skin. Styling
+ * *off* that channel is the same coupling pointed the other way: it makes a
+ * rune's appearance depend on its SEO output, so correcting the structured data
+ * becomes a visual regression. Every property rename in SPEC-130's tables would
+ * be one, and `schema="none"` — which will have `stripSchemaOrg` delete `property`
+ * wholesale — would unstyle the node outright.
+ *
+ * The failure is silent in both directions, which is why this is a test rather
+ * than a convention. Coverage checks that config-derived selectors *exist*; it
+ * cannot tell that a hand-written one stopped *matching*. Eleven of the fourteen
+ * selectors removed here had already gone dead, leaving a `lore` title, a
+ * `bond`'s endpoints and a `tier`'s price rendering unstyled for as long as
+ * nobody looked.
+ *
+ * Refs already give every one of these nodes a BEM element class
+ * (`.rf-tier__name`, `.rf-lore__title`), which is what the CSS should select.
+ */
+describe('CSS does not select on the schema.org channel (WORK-564)', () => {
+	/** Every stylesheet in the repo, not just the rune and dimension dirs. */
+	function allStylesheets(): string[] {
+		const roots = [
+			join(__dirname, '..', '..'), // packages/
+			join(__dirname, '..', '..', '..', 'plugins'),
+		];
+		const found: string[] = [];
+		const walk = (dir: string) => {
+			if (!existsSync(dir)) return;
+			for (const entry of readdirSync(dir, { withFileTypes: true })) {
+				if (entry.name === 'node_modules' || entry.name === 'dist') continue;
+				const path = join(dir, entry.name);
+				if (entry.isDirectory()) walk(path);
+				else if (entry.name.endsWith('.css')) found.push(path);
+			}
+		};
+		for (const root of roots) walk(root);
+		return found;
+	}
+
+	const stylesheets = allStylesheets();
+
+	it('scans a non-trivial number of stylesheets', () => {
+		// Guards the guard: a broken walk would make the assertion below vacuous.
+		expect(stylesheets.length).toBeGreaterThan(50);
+	});
+
+	it('has no rule selecting on a `property` attribute', () => {
+		const offenders: string[] = [];
+		for (const file of stylesheets) {
+			const root = postcss.parse(readFileSync(file, 'utf-8'));
+			root.walkRules((rule) => {
+				// Both forms: `[property="name"]` pins a specific schema property and
+				// breaks on rename; bare `[property]` survives renames but depends on
+				// the channel existing at all, so `schema="none"` changes rendering.
+				if (/\[property(?:[~^$*|]?=|\])/.test(rule.selector)) {
+					offenders.push(`${file.replace(/.*\/(packages|plugins)\//, '$1/')}: ${rule.selector}`);
+				}
+			});
+		}
+		expect(
+			offenders,
+			`Presentation must not select on the schema.org channel — use the rune's BEM element class (the ref already emits one).\n${offenders.join('\n')}`,
+		).toEqual([]);
 	});
 });

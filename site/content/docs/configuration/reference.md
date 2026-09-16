@@ -97,6 +97,38 @@ Locale selection and string overrides — see [i18n](/docs/configuration/i18n) f
 {% $row.description %}
 {% /data %}
 
+## Content validation
+
+Which authoring mistakes the build reports, and how to narrow that.
+
+Five error ids are enabled out of the box:
+
+| id | what it catches |
+|---|---|
+| `tag-undefined` | A rune name that does not exist — a typo, or a rune you removed. Without this the tag is dropped and its children render as bare prose, so the block silently vanishes. |
+| `attribute-undefined` | An attribute the rune does not declare. Dropped silently. |
+| `attribute-value-invalid` | A value outside the attribute's `matches` enum. Passed through as written, usually landing on a `data-*` attribute no CSS matches. |
+| `attribute-missing-required` | A `required` attribute you did not supply. |
+| `attribute-type-invalid` | A value of the wrong type — most often a quoted boolean or number, which is truthy and so appears to work. |
+
+Everything else Markdoc can report is off. `variable-undefined` in particular is not something to switch on: Markdoc validates the full variable path and has no scope model, so every `$item` inside a `{% collection %}` template and every `$row` inside a `{% data %}` per-row template is reported as undefined.
+
+Findings become pipeline warnings. Nothing is written into the page.
+
+{% data src="site/content/_data/config-fields.json" root="fields" where="group:validation" %}
+### {% $row.name %}
+
+**{% $row.type %}**
+
+{% $row.description %}
+{% /data %}
+
+{% hint type="note" %}
+`critical` findings — a parse error, an unclosed tag, a tag in a position its schema forbids — are reported whatever you configure. They mean the document could not be understood, which is not a matter of preference.
+
+Suppression is per-site and per-error-id only, on purpose. There is no per-page or per-tag switch: that granularity is how you end up silencing the one call site that revealed a real bug.
+{% /hint %}
+
 ## Top-level
 
 Fields that sit outside a site entry, at the root of the file. Everything else above belongs inside `site` (or an entry under `sites`).

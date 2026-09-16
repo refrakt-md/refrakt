@@ -52,9 +52,12 @@ const bodyOf = (rune: string, src: string) => {
 
 describe('prose written directly in a character body', () => {
 	it('renders, as it does on realm and faction', () => {
-		const body = bodyOf('character', `{% character name="Veshra" %}
+		const body = bodyOf(
+			'character',
+			`{% character name="Veshra" %}
 Prose about Veshra.
-{% /character %}`);
+{% /character %}`,
+		);
 		expect(body, 'character emitted no body slot').toBeDefined();
 		expect(text(body)).toContain('Prose about Veshra.');
 	});
@@ -93,11 +96,14 @@ She was born in the north.
 	it('emits no body slot when there is no prose', () => {
 		// The slot is conditional, like Realm's — an empty `<div data-name="body">`
 		// on every section-only character is what made the defect invisible.
-		const body = bodyOf('character', `{% character name="Veshra" %}
+		const body = bodyOf(
+			'character',
+			`{% character name="Veshra" %}
 ## History
 
 She was born in the north.
-{% /character %}`);
+{% /character %}`,
+		);
 		expect(body).toBeUndefined();
 	});
 
@@ -110,7 +116,10 @@ She was born in the north.
 Prose about Veshra.
 {% /character %}`;
 		const root = findTag(parse(src) as never, (t) => t.attributes['data-rune'] === 'character')!;
-		expect(findTag(root, (t) => t.name === 'img'), 'portrait lost').toBeDefined();
+		expect(
+			findTag(root, (t) => t.name === 'img'),
+			'portrait lost',
+		).toBeDefined();
 		expect(text(bodyOf('character', src))).toContain('Prose about Veshra.');
 	});
 });

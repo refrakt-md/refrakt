@@ -5,7 +5,10 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 const cleanup: string[] = [];
-afterEach(() => { for (const d of cleanup) rmSync(d, { recursive: true, force: true }); cleanup.length = 0; });
+afterEach(() => {
+	for (const d of cleanup) rmSync(d, { recursive: true, force: true });
+	cleanup.length = 0;
+});
 
 /** Simulate a freshly-run framework scaffolder: stub content + a config with the
  *  singular `sites: { main }` shape + a package.json. */
@@ -15,10 +18,28 @@ function fakeScaffoldedProject(): string {
 	mkdirSync(join(dir, 'content', 'docs'), { recursive: true });
 	writeFileSync(join(dir, 'content', 'index.md'), '# stub\n');
 	writeFileSync(join(dir, 'content', 'docs', 'getting-started.md'), '# stub\n');
-	writeFileSync(join(dir, 'refrakt.config.json'), JSON.stringify({
-		sites: { main: { contentDir: './content', theme: '@refrakt-md/lumina', target: 'html', plugins: ['@refrakt-md/marketing'], routeRules: [{ pattern: '**', layout: 'default' }] } },
-	}, null, '\t'));
-	writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'x', dependencies: { '@refrakt-md/lumina': '~0.24.6' } }, null, '\t'));
+	writeFileSync(
+		join(dir, 'refrakt.config.json'),
+		JSON.stringify(
+			{
+				sites: {
+					main: {
+						contentDir: './content',
+						theme: '@refrakt-md/lumina',
+						target: 'html',
+						plugins: ['@refrakt-md/marketing'],
+						routeRules: [{ pattern: '**', layout: 'default' }],
+					},
+				},
+			},
+			null,
+			'\t',
+		),
+	);
+	writeFileSync(
+		join(dir, 'package.json'),
+		JSON.stringify({ name: 'x', dependencies: { '@refrakt-md/lumina': '~0.24.6' } }, null, '\t'),
+	);
 	return dir;
 }
 
@@ -76,13 +97,16 @@ describe('applyTemplate (SPEC-109 §2–§3)', () => {
 		mkdirSync(join(tpl, 'sandboxes', 'hero'), { recursive: true });
 		writeFileSync(join(tpl, 'content', 'index.md'), '# t\n');
 		writeFileSync(join(tpl, 'sandboxes', 'hero', 'index.js'), '// visualizer\n');
-		writeFileSync(join(tpl, 'template.json'), JSON.stringify({
-			kind: 'site',
-			site: {
-				assets: { baseUrl: '', shapes: {} },
-				backgrounds: { 'midnight-waves': { framework: 'three' } },
-			},
-		}));
+		writeFileSync(
+			join(tpl, 'template.json'),
+			JSON.stringify({
+				kind: 'site',
+				site: {
+					assets: { baseUrl: '', shapes: {} },
+					backgrounds: { 'midnight-waves': { framework: 'three' } },
+				},
+			}),
+		);
 		applyTemplate({ targetDir: target, templateSource: tpl });
 
 		const cfg = JSON.parse(readFileSync(join(target, 'refrakt.config.json'), 'utf-8'));
@@ -99,6 +123,8 @@ describe('applyTemplate (SPEC-109 §2–§3)', () => {
 		cleanup.push(fakeTpl);
 		mkdirSync(fakeTpl, { recursive: true });
 		writeFileSync(join(fakeTpl, 'template.json'), JSON.stringify({ kind: 'section', site: {} }));
-		expect(() => applyTemplate({ targetDir: target, templateSource: fakeTpl })).toThrow(/only "site" templates/);
+		expect(() => applyTemplate({ targetDir: target, templateSource: fakeTpl })).toThrow(
+			/only "site" templates/,
+		);
 	});
 });

@@ -45,9 +45,15 @@ export const STATUS_VOCABULARY = ['stable', 'beta', 'experimental', 'deprecated'
 const DEFAULT_STATUS = 'stable';
 
 const PLUGIN_LABEL = {
-	marketing: 'Marketing', docs: 'Docs', storytelling: 'Storytelling',
-	places: 'Places', business: 'Business', learning: 'Learning',
-	design: 'Design', media: 'Media', plan: 'Plan',
+	marketing: 'Marketing',
+	docs: 'Docs',
+	storytelling: 'Storytelling',
+	places: 'Places',
+	business: 'Business',
+	learning: 'Learning',
+	design: 'Design',
+	media: 'Media',
+	plan: 'Plan',
 };
 
 const dryRun = process.argv.includes('--dry-run');
@@ -73,7 +79,10 @@ function navCategories() {
 	let group = null;
 	for (const line of readFileSync(LAYOUT, 'utf8').split('\n')) {
 		const heading = line.match(/^##\s+(.+?)\s*$/);
-		if (heading) { group = heading[1]; continue; }
+		if (heading) {
+			group = heading[1];
+			continue;
+		}
 		const item = line.match(/^-\s+(\S+)\s*$/);
 		if (item && group && !item[1].startsWith('[')) map.set(item[1], group);
 	}
@@ -120,7 +129,8 @@ function main() {
 	const names = canonicalRuneNames();
 	const categories = navCategories();
 
-	let updated = 0, complete = 0;
+	let updated = 0,
+		complete = 0;
 	const skipped = [];
 	const missingCategory = [];
 
@@ -130,7 +140,10 @@ function main() {
 		const name = basename(slug);
 
 		// Gate: only genuine runes get metadata (excludes index/concept/guide pages).
-		if (!names.has(name)) { skipped.push(rel); continue; }
+		if (!names.has(name)) {
+			skipped.push(rel);
+			continue;
+		}
 
 		const parts = slug.split('/');
 		const plugin = parts.length > 1 ? parts[0] : 'core';
@@ -148,15 +161,22 @@ function main() {
 			['status', DEFAULT_STATUS],
 		]);
 
-		if (added.length === 0) { complete++; continue; }
+		if (added.length === 0) {
+			complete++;
+			continue;
+		}
 		if (!dryRun) writeFileSync(file, next);
 		updated++;
 		console.log(`${dryRun ? 'would update' : 'updated'} ${rel}  +[${added.join(', ')}]`);
 	}
 
-	console.log(`\n${dryRun ? 'DRY RUN — ' : ''}rune pages: ${updated} ${dryRun ? 'to update' : 'updated'}, ${complete} already complete, ${skipped.length} non-rune skipped`);
+	console.log(
+		`\n${dryRun ? 'DRY RUN — ' : ''}rune pages: ${updated} ${dryRun ? 'to update' : 'updated'}, ${complete} already complete, ${skipped.length} non-rune skipped`,
+	);
 	if (missingCategory.length) {
-		console.warn(`\n⚠ no nav category for: ${missingCategory.join(', ')} (add them to runes/_layout.md)`);
+		console.warn(
+			`\n⚠ no nav category for: ${missingCategory.join(', ')} (add them to runes/_layout.md)`,
+		);
 	}
 }
 

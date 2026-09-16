@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { assembleFromDirectory, mergeContent, type SandboxSourceResult } from '../src/sandbox-sources.js';
+import {
+	assembleFromDirectory,
+	mergeContent,
+	type SandboxSourceResult,
+} from '../src/sandbox-sources.js';
 
 /** Create a mock file system for testing */
 function mockFs(files: Record<string, string>) {
@@ -29,7 +33,13 @@ describe('assembleFromDirectory', () => {
 			'/examples/login/script.js': 'console.log("hello");',
 		});
 
-		const result = assembleFromDirectory('/examples/login', 'login', fs.readFile, fs.listDir, fs.dirExists);
+		const result = assembleFromDirectory(
+			'/examples/login',
+			'login',
+			fs.readFile,
+			fs.listDir,
+			fs.dirExists,
+		);
 
 		expect(result.errors).toHaveLength(0);
 		expect(result.warnings).toHaveLength(0);
@@ -48,12 +58,30 @@ describe('assembleFromDirectory', () => {
 			'/examples/login/script.js': 'console.log("hello");',
 		});
 
-		const result = assembleFromDirectory('/examples/login', 'login', fs.readFile, fs.listDir, fs.dirExists);
+		const result = assembleFromDirectory(
+			'/examples/login',
+			'login',
+			fs.readFile,
+			fs.listDir,
+			fs.dirExists,
+		);
 
 		expect(result.panels).toHaveLength(3);
-		expect(result.panels[0]).toMatchObject({ label: 'HTML', language: 'html', origin: 'login/index.html' });
-		expect(result.panels[1]).toMatchObject({ label: 'CSS', language: 'css', origin: 'login/style.css' });
-		expect(result.panels[2]).toMatchObject({ label: 'JavaScript', language: 'javascript', origin: 'login/script.js' });
+		expect(result.panels[0]).toMatchObject({
+			label: 'HTML',
+			language: 'html',
+			origin: 'login/index.html',
+		});
+		expect(result.panels[1]).toMatchObject({
+			label: 'CSS',
+			language: 'css',
+			origin: 'login/style.css',
+		});
+		expect(result.panels[2]).toMatchObject({
+			label: 'JavaScript',
+			language: 'javascript',
+			origin: 'login/script.js',
+		});
 	});
 
 	it('should concatenate multiple CSS files alphabetically', () => {
@@ -63,10 +91,16 @@ describe('assembleFromDirectory', () => {
 			'/examples/widget/theme.css': '.theme { color: blue; }',
 		});
 
-		const result = assembleFromDirectory('/examples/widget', 'widget', fs.readFile, fs.listDir, fs.dirExists);
+		const result = assembleFromDirectory(
+			'/examples/widget',
+			'widget',
+			fs.readFile,
+			fs.listDir,
+			fs.dirExists,
+		);
 
 		expect(result.errors).toHaveLength(0);
-		const cssPanel = result.panels.find(p => p.language === 'css')!;
+		const cssPanel = result.panels.find((p) => p.language === 'css')!;
 		expect(cssPanel.content).toBe('.base { color: red; }\n.theme { color: blue; }');
 		expect(cssPanel.origin).toBe('widget/base.css, widget/theme.css');
 	});
@@ -78,10 +112,16 @@ describe('assembleFromDirectory', () => {
 			'/examples/app/interactions.js': 'function interact() {}',
 		});
 
-		const result = assembleFromDirectory('/examples/app', 'app', fs.readFile, fs.listDir, fs.dirExists);
+		const result = assembleFromDirectory(
+			'/examples/app',
+			'app',
+			fs.readFile,
+			fs.listDir,
+			fs.dirExists,
+		);
 
 		expect(result.errors).toHaveLength(0);
-		const jsPanel = result.panels.find(p => p.language === 'javascript')!;
+		const jsPanel = result.panels.find((p) => p.language === 'javascript')!;
 		expect(jsPanel.content).toBe('function chart() {}\nfunction interact() {}');
 	});
 
@@ -91,7 +131,13 @@ describe('assembleFromDirectory', () => {
 			'/examples/multi/index.html': '<div>Index</div>',
 		});
 
-		const result = assembleFromDirectory('/examples/multi', 'multi', fs.readFile, fs.listDir, fs.dirExists);
+		const result = assembleFromDirectory(
+			'/examples/multi',
+			'multi',
+			fs.readFile,
+			fs.listDir,
+			fs.dirExists,
+		);
 
 		expect(result.warnings).toHaveLength(1);
 		expect(result.warnings[0]).toContain('multiple .html files');
@@ -105,7 +151,13 @@ describe('assembleFromDirectory', () => {
 			'/examples/styles/style.css': '.foo { color: red; }',
 		});
 
-		const result = assembleFromDirectory('/examples/styles', 'styles', fs.readFile, fs.listDir, fs.dirExists);
+		const result = assembleFromDirectory(
+			'/examples/styles',
+			'styles',
+			fs.readFile,
+			fs.listDir,
+			fs.dirExists,
+		);
 
 		expect(result.errors).toHaveLength(0);
 		expect(result.warnings).toHaveLength(1);
@@ -116,7 +168,13 @@ describe('assembleFromDirectory', () => {
 	it('should error when directory does not exist', () => {
 		const fs = mockFs({});
 
-		const result = assembleFromDirectory('/examples/missing', 'missing', fs.readFile, fs.listDir, fs.dirExists);
+		const result = assembleFromDirectory(
+			'/examples/missing',
+			'missing',
+			fs.readFile,
+			fs.listDir,
+			fs.dirExists,
+		);
 
 		expect(result.errors).toHaveLength(1);
 		expect(result.errors[0]).toContain('not found');
@@ -146,10 +204,16 @@ describe('assembleFromDirectory', () => {
 			'/examples/icon/logo.svg': '<svg><circle r="10"/></svg>',
 		});
 
-		const result = assembleFromDirectory('/examples/icon', 'icon', fs.readFile, fs.listDir, fs.dirExists);
+		const result = assembleFromDirectory(
+			'/examples/icon',
+			'icon',
+			fs.readFile,
+			fs.listDir,
+			fs.dirExists,
+		);
 
 		expect(result.errors).toHaveLength(0);
-		const htmlPanel = result.panels.find(p => p.language === 'html')!;
+		const htmlPanel = result.panels.find((p) => p.language === 'html')!;
 		expect(htmlPanel.content).toContain('<div>Icon demo</div>');
 		expect(htmlPanel.content).toContain('<svg><circle r="10"/></svg>');
 	});
@@ -162,10 +226,16 @@ describe('assembleFromDirectory', () => {
 			'/examples/gl/script.js': 'initGL();',
 		});
 
-		const result = assembleFromDirectory('/examples/gl', 'gl', fs.readFile, fs.listDir, fs.dirExists);
+		const result = assembleFromDirectory(
+			'/examples/gl',
+			'gl',
+			fs.readFile,
+			fs.listDir,
+			fs.dirExists,
+		);
 
 		expect(result.errors).toHaveLength(0);
-		const jsPanel = result.panels.find(p => p.language === 'javascript')!;
+		const jsPanel = result.panels.find((p) => p.language === 'javascript')!;
 		expect(jsPanel.content).toContain('VERTEX_SHADER');
 		expect(jsPanel.content).toContain('FRAGMENT_SHADER');
 		expect(jsPanel.content).toContain('initGL()');
@@ -176,7 +246,13 @@ describe('assembleFromDirectory', () => {
 			'/examples/simple/index.html': '<p>Simple</p>',
 		});
 
-		const result = assembleFromDirectory('/examples/simple', 'simple', fs.readFile, fs.listDir, fs.dirExists);
+		const result = assembleFromDirectory(
+			'/examples/simple',
+			'simple',
+			fs.readFile,
+			fs.listDir,
+			fs.dirExists,
+		);
 
 		expect(result.errors).toHaveLength(0);
 		expect(result.panels).toHaveLength(1);
@@ -190,7 +266,13 @@ describe('assembleFromDirectory', () => {
 			'/examples/mixed/data.json': '{}',
 		});
 
-		const result = assembleFromDirectory('/examples/mixed', 'mixed', fs.readFile, fs.listDir, fs.dirExists);
+		const result = assembleFromDirectory(
+			'/examples/mixed',
+			'mixed',
+			fs.readFile,
+			fs.listDir,
+			fs.dirExists,
+		);
 
 		expect(result.errors).toHaveLength(0);
 		expect(result.panels).toHaveLength(1);

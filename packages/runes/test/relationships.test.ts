@@ -4,12 +4,20 @@ import type { RenderableTreeNode } from '@markdoc/markdoc';
 import { tags, nodes } from '../src/index.js';
 import { captureDeferredBodies } from '../src/deferred-body.js';
 import { resolveRelationships } from '../src/relationships-resolve.js';
-import type { EntityRegistration, EntityRegistry, ResolvedEdge, PipelineContext } from '@refrakt-md/types';
+import type {
+	EntityRegistration,
+	EntityRegistry,
+	ResolvedEdge,
+	PipelineContext,
+} from '@refrakt-md/types';
 
 const ctx: PipelineContext = { info() {}, warn() {}, error() {} };
 
 const ent = (type: string, id: string, data: Record<string, unknown>): EntityRegistration => ({
-	type, id, sourceUrl: `/${type}/${id}/`, data,
+	type,
+	id,
+	sourceUrl: `/${type}/${id}/`,
+	data,
 });
 
 const entities = [
@@ -38,19 +46,26 @@ function registry(): EntityRegistry {
 			if (id !== 'WORK-1') return [];
 			const kinds = opts?.kind ? (Array.isArray(opts.kind) ? opts.kind : [opts.kind]) : undefined;
 			const types = opts?.type ? (Array.isArray(opts.type) ? opts.type : [opts.type]) : undefined;
-			return edges.filter((e) => (!kinds || kinds.includes(e.kind)) && (!types || types.includes(e.target.type)));
+			return edges.filter(
+				(e) => (!kinds || kinds.includes(e.kind)) && (!types || types.includes(e.target.type)),
+			);
 		},
 	} as EntityRegistry;
 }
 
 function render(src: string, reg: EntityRegistry): RenderableTreeNode {
 	const ast = Markdoc.parse(src);
-	captureDeferredBodies(ast, (n) => Boolean((tags as Record<string, { deferBody?: boolean }>)[n]?.deferBody));
+	captureDeferredBodies(ast, (n) =>
+		Boolean((tags as Record<string, { deferBody?: boolean }>)[n]?.deferBody),
+	);
 	const transformed = Markdoc.transform(ast, { tags, nodes, variables: {} } as never);
 	return resolveRelationships(transformed, '/p/', reg, { tags, nodes }, ctx) as RenderableTreeNode;
 }
 
-function findAll(node: unknown, pred: (t: InstanceType<typeof Markdoc.Tag>) => boolean): InstanceType<typeof Markdoc.Tag>[] {
+function findAll(
+	node: unknown,
+	pred: (t: InstanceType<typeof Markdoc.Tag>) => boolean,
+): InstanceType<typeof Markdoc.Tag>[] {
 	const out: InstanceType<typeof Markdoc.Tag>[] = [];
 	const walk = (n: unknown) => {
 		if (Array.isArray(n)) return n.forEach(walk);
@@ -114,8 +129,13 @@ describe('relationships resolver', () => {
 	});
 
 	it('leading-empty preamble (--- template --- fallback) renders the fallback when there are no edges', () => {
-		const out = render('{% relationships of="SPEC-1" %}\n---\n- {% $item.data.title %}\n---\nNo links.\n{% /relationships %}', registry());
-		expect(findAll(out, (t) => t.attributes.class === 'rf-relationships__preamble')).toHaveLength(0);
+		const out = render(
+			'{% relationships of="SPEC-1" %}\n---\n- {% $item.data.title %}\n---\nNo links.\n{% /relationships %}',
+			registry(),
+		);
+		expect(findAll(out, (t) => t.attributes.class === 'rf-relationships__preamble')).toHaveLength(
+			0,
+		);
 		const empty = findAll(out, (t) => t.attributes.class === 'rf-relationships__empty');
 		expect(empty).toHaveLength(1);
 		expect(JSON.stringify(empty[0])).toContain('No links.');
@@ -124,13 +144,22 @@ describe('relationships resolver', () => {
 	it('group-display=accordion renders details panels styled like the accordion rune', () => {
 		const out = render('{% relationships of="WORK-1" group-display="accordion" /%}', registry());
 		expect(findAll(out, (t) => t.attributes.class === 'rf-accordion')).toHaveLength(1);
-		const panels = findAll(out, (t) => t.name === 'details' && t.attributes.class === 'rf-accordion-item');
+		const panels = findAll(
+			out,
+			(t) => t.name === 'details' && t.attributes.class === 'rf-accordion-item',
+		);
 		expect(panels.map((p) => p.attributes['data-group'])).toEqual(['implements', 'blocked-by']);
 		expect(panels.every((p) => p.attributes.open === undefined)).toBe(true);
-		expect(findAll(out, (t) => t.attributes.class === 'rf-accordion-item__title').map((t) => (t.children ?? [])[0]))
-			.toEqual(['Implements', 'Blocked By']);
-		expect(findAll(out, (t) => t.attributes.class === 'rf-accordion-item__count').map((c) => (c.children ?? [])[0]))
-			.toEqual(['2', '1']);
+		expect(
+			findAll(out, (t) => t.attributes.class === 'rf-accordion-item__title').map(
+				(t) => (t.children ?? [])[0],
+			),
+		).toEqual(['Implements', 'Blocked By']);
+		expect(
+			findAll(out, (t) => t.attributes.class === 'rf-accordion-item__count').map(
+				(c) => (c.children ?? [])[0],
+			),
+		).toEqual(['2', '1']);
 		expect(findAll(out, (t) => t.attributes.class === 'rf-relationships__group')).toHaveLength(0);
 	});
 
@@ -138,7 +167,10 @@ describe('relationships resolver', () => {
 		const out = render('{% relationships of="WORK-1" layout="grid" group="none" /%}', registry());
 		const root = findAll(out, (t) => t.attributes['data-rune'] === 'relationships')[0];
 		expect(root.attributes['data-layout']).toBe('grid');
-		const cards = findAll(out, (t) => t.name === 'article' && t.attributes.class === 'rf-relationships__card');
+		const cards = findAll(
+			out,
+			(t) => t.name === 'article' && t.attributes.class === 'rf-relationships__card',
+		);
 		expect(cards).toHaveLength(3);
 		// list layout keeps the inline __item shape
 		const list = render('{% relationships of="WORK-1" group="none" /%}', registry());
@@ -147,7 +179,10 @@ describe('relationships resolver', () => {
 	});
 
 	it('binds $count (pre-limit) and $shown (post-limit) in the preamble', () => {
-		const out = render('{% relationships of="WORK-1" group="none" limit=2 %}\n{% $shown %} of {% $count %} links\n---\n- {% $item.data.title %}\n{% /relationships %}', registry());
+		const out = render(
+			'{% relationships of="WORK-1" group="none" limit=2 %}\n{% $shown %} of {% $count %} links\n---\n- {% $item.data.title %}\n{% /relationships %}',
+			registry(),
+		);
 		const pre = findAll(out, (t) => t.attributes.class === 'rf-relationships__preamble');
 		expect(pre).toHaveLength(1);
 		const blob = JSON.stringify(pre[0]);

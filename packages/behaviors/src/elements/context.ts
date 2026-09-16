@@ -53,7 +53,7 @@ export class RfContext {
 	static onThemeChange(listener: (theme: string) => void): () => void {
 		RfContext.themeListeners.push(listener);
 		return () => {
-			RfContext.themeListeners = RfContext.themeListeners.filter(l => l !== listener);
+			RfContext.themeListeners = RfContext.themeListeners.filter((l) => l !== listener);
 		};
 	}
 

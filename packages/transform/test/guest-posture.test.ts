@@ -8,7 +8,9 @@ const asTag = (n: any): SerializedTag => n as SerializedTag;
 const meta = (f: string, c: string) => makeTag('meta', { 'data-field': f, content: c }, []);
 
 const config: ThemeConfig = {
-	prefix: 'rf', tokenPrefix: '--rf', icons: {},
+	prefix: 'rf',
+	tokenPrefix: '--rf',
+	icons: {},
 	runes: {
 		Card: {
 			block: 'card',
@@ -32,7 +34,9 @@ function card(opts: { href?: boolean; cover?: boolean; guestRune?: string }) {
 		: [makeTag('img', { src: '/a.png' }, [])];
 	const children: any[] = [
 		makeTag('div', { 'data-section': 'media', 'data-name': 'media' }, guest),
-		makeTag('div', { 'data-name': 'content' }, [makeTag('a', { 'data-name': 'follow', href: '/b' }, ['Follow'])]),
+		makeTag('div', { 'data-name': 'content' }, [
+			makeTag('a', { 'data-name': 'follow', href: '/b' }, ['Follow']),
+		]),
 	];
 	if (opts.cover) children.unshift(meta('media-position', 'cover'));
 	if (opts.href) children.push(makeTag('a', { 'data-name': 'link', href: '/a' }, []));
@@ -62,7 +66,9 @@ describe('SPEC-090 media-guest interaction posture', () => {
 		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 		const t = createTransform(config);
 		t(card({ href: true, guestRune: 'widget2' }));
-		expect(warn).toHaveBeenCalledWith(expect.stringContaining('interactive guest `widget2` in a linked `card`'));
+		expect(warn).toHaveBeenCalledWith(
+			expect.stringContaining('interactive guest `widget2` in a linked `card`'),
+		);
 		warn.mockRestore();
 	});
 

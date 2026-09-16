@@ -111,9 +111,18 @@ function setupLightbox(el: HTMLElement): CleanupFn | void {
 	}
 
 	function onOverlayKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape') { e.preventDefault(); close(); }
-		if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
-		if (e.key === 'ArrowRight') { e.preventDefault(); navigate(1); }
+		if (e.key === 'Escape') {
+			e.preventDefault();
+			close();
+		}
+		if (e.key === 'ArrowLeft') {
+			e.preventDefault();
+			navigate(-1);
+		}
+		if (e.key === 'ArrowRight') {
+			e.preventDefault();
+			navigate(1);
+		}
 	}
 
 	const itemHandlers: Array<[HTMLElement, () => void]> = [];

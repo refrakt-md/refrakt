@@ -46,21 +46,70 @@ function guestName(guest: InstanceType<typeof Tag>): string {
  */
 export const bg: Schema = {
 	attributes: {
-		preset: { type: String, required: false, description: 'Named background preset from the theme' },
+		preset: {
+			type: String,
+			required: false,
+			description: 'Named background preset from the theme',
+		},
 		src: { type: String, required: false, description: 'URL of the background image' },
 		video: { type: String, required: false, description: 'URL of a background video' },
-		overlay: { type: String, required: false, description: 'Flat wash over the background: none | dark | light | a token name (raw CSS is deprecated)' },
-		'overlay-opacity': { type: String, required: false, description: 'Opacity of a token-coloured overlay wash (0 to 1)' },
-		gradient: { type: String, required: false, matches: ['to-t', 'to-b', 'to-l', 'to-r', 'to-tr', 'to-br', 'to-bl', 'to-tl'], description: 'Gradient direction (token-driven fill)' },
-		from: { type: String, required: false, description: 'Gradient start colour — semantic token name' },
+		overlay: {
+			type: String,
+			required: false,
+			description:
+				'Flat wash over the background: none | dark | light | a token name (raw CSS is deprecated)',
+		},
+		'overlay-opacity': {
+			type: String,
+			required: false,
+			description: 'Opacity of a token-coloured overlay wash (0 to 1)',
+		},
+		gradient: {
+			type: String,
+			required: false,
+			matches: ['to-t', 'to-b', 'to-l', 'to-r', 'to-tr', 'to-br', 'to-bl', 'to-tl'],
+			description: 'Gradient direction (token-driven fill)',
+		},
+		from: {
+			type: String,
+			required: false,
+			description: 'Gradient start colour — semantic token name',
+		},
 		to: { type: String, required: false, description: 'Gradient end colour — semantic token name' },
-		via: { type: String, required: false, description: 'Optional middle gradient stop — semantic token name' },
-		'gradient-type': { type: String, required: false, matches: ['linear', 'radial', 'conic'], description: 'Gradient type: linear (default), radial, conic' },
-		blur: { type: String, required: false, matches: ['none', 'sm', 'md', 'lg'], description: 'Blur intensity applied to the background' },
+		via: {
+			type: String,
+			required: false,
+			description: 'Optional middle gradient stop — semantic token name',
+		},
+		'gradient-type': {
+			type: String,
+			required: false,
+			matches: ['linear', 'radial', 'conic'],
+			description: 'Gradient type: linear (default), radial, conic',
+		},
+		blur: {
+			type: String,
+			required: false,
+			matches: ['none', 'sm', 'md', 'lg'],
+			description: 'Blur intensity applied to the background',
+		},
 		position: { type: String, required: false, description: 'CSS background-position value' },
-		fit: { type: String, required: false, matches: ['cover', 'contain'], description: 'How the background image fills its container' },
-		opacity: { type: String, required: false, description: 'Opacity of the background layer (0 to 1)' },
-		fixed: { type: Boolean, required: false, description: 'Fix the background so it stays in place while scrolling' },
+		fit: {
+			type: String,
+			required: false,
+			matches: ['cover', 'contain'],
+			description: 'How the background image fills its container',
+		},
+		opacity: {
+			type: String,
+			required: false,
+			description: 'Opacity of the background layer (0 to 1)',
+		},
+		fixed: {
+			type: Boolean,
+			required: false,
+			description: 'Fix the background so it stays in place while scrolling',
+		},
 	},
 	transform(node: Node, config): RenderableTreeNodes {
 		const attrs = node.transformAttributes(config);
@@ -80,15 +129,21 @@ export const bg: Schema = {
 			metas.push(new Tag('meta', { 'data-field': 'bg-overlay', content: attrs.overlay }));
 		}
 		if (attrs['overlay-opacity']) {
-			metas.push(new Tag('meta', { 'data-field': 'bg-overlay-opacity', content: attrs['overlay-opacity'] }));
+			metas.push(
+				new Tag('meta', { 'data-field': 'bg-overlay-opacity', content: attrs['overlay-opacity'] }),
+			);
 		}
 		// SPEC-088 — gradient facets (directive form: `gradient`/`from`/`to`/`via`/
 		// `gradient-type` → the `bg-*` metas the engine resolves).
-		if (attrs.gradient) metas.push(new Tag('meta', { 'data-field': 'bg-gradient', content: attrs.gradient }));
+		if (attrs.gradient)
+			metas.push(new Tag('meta', { 'data-field': 'bg-gradient', content: attrs.gradient }));
 		if (attrs.from) metas.push(new Tag('meta', { 'data-field': 'bg-from', content: attrs.from }));
 		if (attrs.to) metas.push(new Tag('meta', { 'data-field': 'bg-to', content: attrs.to }));
 		if (attrs.via) metas.push(new Tag('meta', { 'data-field': 'bg-via', content: attrs.via }));
-		if (attrs['gradient-type']) metas.push(new Tag('meta', { 'data-field': 'bg-gradient-type', content: attrs['gradient-type'] }));
+		if (attrs['gradient-type'])
+			metas.push(
+				new Tag('meta', { 'data-field': 'bg-gradient-type', content: attrs['gradient-type'] }),
+			);
 		if (attrs.blur && attrs.blur !== 'none') {
 			metas.push(new Tag('meta', { 'data-field': 'bg-blur', content: attrs.blur }));
 		}
@@ -111,7 +166,7 @@ export const bg: Schema = {
 		// any `data-bg-guest` element into the bg layer.
 		const guestNodes: RenderableTreeNode[] = [];
 		if (node.children?.length) {
-			const rendered = node.children.map(child => Markdoc.transform(child, config));
+			const rendered = node.children.map((child) => Markdoc.transform(child, config));
 			const flat = rendered.flat().filter(Boolean) as RenderableTreeNode[];
 			const guest = findGuest(flat);
 			if (guest) {
@@ -120,7 +175,7 @@ export const bg: Schema = {
 					// Bare-surface guardrail (§3): chromed runes are subject media.
 					console.warn(
 						`[refrakt] bg backdrop guest must be presentational (a sandbox); "${name}" carries content chrome — ` +
-						`place it in the media zone as a positioned guest, or use \`bg video="…"\` for a bare video backdrop.`,
+							`place it in the media zone as a positioned guest, or use \`bg video="…"\` for a bare video backdrop.`,
 					);
 				} else {
 					guest.attributes = {

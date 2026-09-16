@@ -75,8 +75,8 @@ registerImageScheme('icon', (name, ctx) => {
 registerImageScheme('placeholder', (shape, ctx) => {
 	if (shape && !PLACEHOLDER_SHAPES.includes(shape)) {
 		console.warn(
-			`[refrakt] placeholder: unknown shape "${shape}" — falling back to "${DEFAULT_PLACEHOLDER_SHAPE}". `
-			+ `Known shapes: ${PLACEHOLDER_SHAPES.join(', ')}.`,
+			`[refrakt] placeholder: unknown shape "${shape}" — falling back to "${DEFAULT_PLACEHOLDER_SHAPE}". ` +
+				`Known shapes: ${PLACEHOLDER_SHAPES.join(', ')}.`,
 		);
 	}
 	return placeholderSvg(shape, { label: ctx.alt });

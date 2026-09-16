@@ -1,5 +1,5 @@
 @layer skin {
-/* Theme-mode toggle button (SPEC-073).
+	/* Theme-mode toggle button (SPEC-073).
  *
  * Layout chrome — a peer of the search trigger, placed in the header/toolbar.
  * The `theme-toggle` behavior cycles auto → light → dark and reflects the
@@ -8,37 +8,39 @@
  * attribute. Chrome (surface fill, full radius, muted colour, primary hover
  * accent) is kept in sync with the search trigger so the two header buttons
  * read as a matched set. */
-.rf-theme-toggle {
-	padding: 0;
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-full);
-	background: var(--rf-color-surface);
-	color: var(--rf-color-muted);
-	cursor: pointer;
-	transition: border-color 0.15s, color 0.15s, background 0.15s;
-}
-.rf-theme-toggle:hover {
-	border-color: var(--rf-color-primary);
-	color: var(--rf-color-text);
-	background: var(--rf-color-surface-hover);
-}
-.rf-theme-toggle:focus-visible {
-	outline: 2px solid var(--rf-color-primary);
-	outline-offset: 2px;
-}
+	.rf-theme-toggle {
+		padding: 0;
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-full);
+		background: var(--rf-color-surface);
+		color: var(--rf-color-muted);
+		cursor: pointer;
+		transition:
+			border-color 0.15s,
+			color 0.15s,
+			background 0.15s;
+	}
+	.rf-theme-toggle:hover {
+		border-color: var(--rf-color-primary);
+		color: var(--rf-color-text);
+		background: var(--rf-color-surface-hover);
+	}
+	.rf-theme-toggle:focus-visible {
+		outline: 2px solid var(--rf-color-primary);
+		outline-offset: 2px;
+	}
 
-/* Icon — a currentColor-tinted mask. Defaults to the auto glyph so the SSR'd
+	/* Icon — a currentColor-tinted mask. Defaults to the auto glyph so the SSR'd
  * button shows an icon before the behavior sets data-theme-pref; the light and
  * dark glyphs swap in by state. */
-.rf-theme-toggle__icon {
-	background: currentColor;
-	mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><path d='M12 2a10 10 0 0 0 0 20Z' fill='currentColor'/></svg>");
-}
-.rf-theme-toggle[data-theme-pref="light"] .rf-theme-toggle__icon {
-	mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='4'/><path d='M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41'/></svg>");
-}
-.rf-theme-toggle[data-theme-pref="dark"] .rf-theme-toggle__icon {
-	mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'/></svg>");
-}
-
+	.rf-theme-toggle__icon {
+		background: currentColor;
+		mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><path d='M12 2a10 10 0 0 0 0 20Z' fill='currentColor'/></svg>");
+	}
+	.rf-theme-toggle[data-theme-pref="light"] .rf-theme-toggle__icon {
+		mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='4'/><path d='M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41'/></svg>");
+	}
+	.rf-theme-toggle[data-theme-pref="dark"] .rf-theme-toggle__icon {
+		mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'/></svg>");
+	}
 }

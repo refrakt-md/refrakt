@@ -59,7 +59,9 @@ const MEDIA_SLOTS = ['portrait', 'cover', 'thumbnail', 'hero', 'icon'] as const;
 const SEQUENCE_VALUES = ['numbered', 'connected', 'plain'] as const;
 
 /** Collect dimension declarations from all rune configs */
-export function collectDimensions(config: ThemeConfig): Omit<DimensionAuditResult, 'css' | 'surfaces' | 'unassignedRunes'> {
+export function collectDimensions(
+	config: ThemeConfig,
+): Omit<DimensionAuditResult, 'css' | 'surfaces' | 'unassignedRunes'> {
 	const densityLevels: Record<string, number> = {};
 	const sectionRoles: Record<string, number> = {};
 	const interactiveRunes: string[] = [];
@@ -102,10 +104,15 @@ export function collectDimensions(config: ThemeConfig): Omit<DimensionAuditResul
 }
 
 const SURFACE_RE = /\.rf-[\w-]+/g;
-const DIM_ATTR_RE = /\[data-(?:density|section|state|media|sequence(?:-direction)?)(?:="[^"]*")?\]/g;
+const DIM_ATTR_RE =
+	/\[data-(?:density|section|state|media|sequence(?:-direction)?)(?:="[^"]*")?\]/g;
 
 /** Scan CSS for surface assignments and dimension selectors */
-export function checkDimensionCss(cssDir: string): { surfaces: SurfaceGroup[]; unassignedRunes: string[]; css: DimensionCssCoverage } {
+export function checkDimensionCss(cssDir: string): {
+	surfaces: SurfaceGroup[];
+	unassignedRunes: string[];
+	css: DimensionCssCoverage;
+} {
 	const dimSelectors = new Map<string, { file: string; line: number }>();
 
 	// Surface detection: track which runes appear in which surface-like rule groups
@@ -132,7 +139,7 @@ export function checkDimensionCss(cssDir: string): { surfaces: SurfaceGroup[]; u
 
 	for (const dir of dirs) {
 		if (!existsSync(dir)) continue;
-		const files = readdirSync(dir).filter(f => f.endsWith('.css'));
+		const files = readdirSync(dir).filter((f) => f.endsWith('.css'));
 		for (const file of files) {
 			const content = readFileSync(join(dir, file), 'utf-8');
 			const root = postcss.parse(content);
@@ -148,7 +155,7 @@ export function checkDimensionCss(cssDir: string): { surfaces: SurfaceGroup[]; u
 
 				// Detect surface groupings (rules in surfaces.css with multiple .rf-* selectors)
 				if (file === 'surfaces.css') {
-					const runeClasses = [...rule.selector.matchAll(SURFACE_RE)].map(m => m[0]);
+					const runeClasses = [...rule.selector.matchAll(SURFACE_RE)].map((m) => m[0]);
 					if (runeClasses.length > 0) {
 						// Determine surface type from CSS properties
 						const surfaceName = detectSurfaceType(rule);
@@ -178,21 +185,27 @@ export function checkDimensionCss(cssDir: string): { surfaces: SurfaceGroup[]; u
 	for (const level of DENSITY_LEVELS) {
 		const sel = `[data-density="${level}"]`;
 		const match = dimSelectors.get(sel);
-		density[level] = match ? { styled: true, file: match.file, line: match.line } : { styled: false };
+		density[level] = match
+			? { styled: true, file: match.file, line: match.line }
+			: { styled: false };
 	}
 
 	const sections: DimensionCssCoverage['sections'] = {};
 	for (const role of SECTION_ROLES) {
 		const sel = `[data-section="${role}"]`;
 		const match = dimSelectors.get(sel);
-		sections[role] = match ? { styled: true, file: match.file, line: match.line } : { styled: false };
+		sections[role] = match
+			? { styled: true, file: match.file, line: match.line }
+			: { styled: false };
 	}
 
 	const states: DimensionCssCoverage['states'] = {};
 	for (const state of STATE_VALUES) {
 		const sel = `[data-state="${state}"]`;
 		const match = dimSelectors.get(sel);
-		states[state] = match ? { styled: true, file: match.file, line: match.line } : { styled: false };
+		states[state] = match
+			? { styled: true, file: match.file, line: match.line }
+			: { styled: false };
 	}
 
 	const media: DimensionCssCoverage['media'] = {};
@@ -206,7 +219,9 @@ export function checkDimensionCss(cssDir: string): { surfaces: SurfaceGroup[]; u
 	for (const seq of SEQUENCE_VALUES) {
 		const sel = `[data-sequence="${seq}"]`;
 		const match = dimSelectors.get(sel);
-		sequence[seq] = match ? { styled: true, file: match.file, line: match.line } : { styled: false };
+		sequence[seq] = match
+			? { styled: true, file: match.file, line: match.line }
+			: { styled: false };
 	}
 
 	return {

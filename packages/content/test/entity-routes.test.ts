@@ -12,7 +12,10 @@ function registry(entries: EntityRegistration[]): EntityRegistry {
 	} as EntityRegistry;
 }
 
-function ctx(entries: EntityRegistration[], siteConfig: unknown): ContributePagesContext & { warnings: string[]; errors: string[] } {
+function ctx(
+	entries: EntityRegistration[],
+	siteConfig: unknown,
+): ContributePagesContext & { warnings: string[]; errors: string[] } {
 	const warnings: string[] = [];
 	const errors: string[] = [];
 	return {
@@ -20,32 +23,63 @@ function ctx(entries: EntityRegistration[], siteConfig: unknown): ContributePage
 		siteConfig,
 		projectRoot: '/root',
 		info() {},
-		warn(m) { warnings.push(m); },
-		error(m) { errors.push(m); },
+		warn(m) {
+			warnings.push(m);
+		},
+		error(m) {
+			errors.push(m);
+		},
 		warnings,
 		errors,
 	};
 }
 
-const partials: Record<string, string> = { 'templates:decision.md': '# {% $item.data.title %}\n\nA decision.' };
+const partials: Record<string, string> = {
+	'templates:decision.md': '# {% $item.data.title %}\n\nA decision.',
+};
 const hooks = createEntityRoutesHooks((name) => partials[name]);
 
 const specs: EntityRegistration[] = [
-	{ type: 'spec', id: 'SPEC-1', sourceUrl: '/plan/spec-1/', data: { title: 'First', status: 'accepted' } },
-	{ type: 'spec', id: 'SPEC-2', sourceUrl: '/plan/spec-2/', data: { title: 'Second', status: 'draft' } },
+	{
+		type: 'spec',
+		id: 'SPEC-1',
+		sourceUrl: '/plan/spec-1/',
+		data: { title: 'First', status: 'accepted' },
+	},
+	{
+		type: 'spec',
+		id: 'SPEC-2',
+		sourceUrl: '/plan/spec-2/',
+		data: { title: 'Second', status: 'draft' },
+	},
 ];
 
 describe('entityRoutes adapter', () => {
 	it('generates one page per matching entity with substitution + bound $item', () => {
-		const c = ctx(specs, { entityRoutes: [{ type: 'spec', url: '/specs/{id}/', title: '{title}', render: '{% expand $item.id /%}' }] });
-		const pages = hooks.contributePages!(c) as Array<{ url: string; title?: string; content: string; variables?: Record<string, unknown> }>;
+		const c = ctx(specs, {
+			entityRoutes: [
+				{ type: 'spec', url: '/specs/{id}/', title: '{title}', render: '{% expand $item.id /%}' },
+			],
+		});
+		const pages = hooks.contributePages!(c) as Array<{
+			url: string;
+			title?: string;
+			content: string;
+			variables?: Record<string, unknown>;
+		}>;
 		expect(pages).toHaveLength(2);
-		expect(pages[0]).toMatchObject({ url: '/specs/SPEC-1/', title: 'First', content: '{% expand $item.id /%}' });
+		expect(pages[0]).toMatchObject({
+			url: '/specs/SPEC-1/',
+			title: 'First',
+			content: '{% expand $item.id /%}',
+		});
 		expect((pages[0].variables!.item as { id: string }).id).toBe('SPEC-1');
 	});
 
 	it('applies the filter', () => {
-		const c = ctx(specs, { entityRoutes: [{ type: 'spec', filter: 'status:accepted', url: '/specs/{id}/', render: 'x' }] });
+		const c = ctx(specs, {
+			entityRoutes: [{ type: 'spec', filter: 'status:accepted', url: '/specs/{id}/', render: 'x' }],
+		});
 		const pages = hooks.contributePages!(c) as Array<{ url: string }>;
 		expect(pages).toHaveLength(1);
 		expect(pages[0].url).toBe('/specs/SPEC-1/');
@@ -59,19 +93,34 @@ describe('entityRoutes adapter', () => {
 	});
 
 	it('substitutes frontmatter string values', () => {
-		const c = ctx(specs, { entityRoutes: [{ type: 'spec', url: '/s/{id}/', render: 'x', frontmatter: { category: 'spec', label: '{title}' } }] });
+		const c = ctx(specs, {
+			entityRoutes: [
+				{
+					type: 'spec',
+					url: '/s/{id}/',
+					render: 'x',
+					frontmatter: { category: 'spec', label: '{title}' },
+				},
+			],
+		});
 		const pages = hooks.contributePages!(c) as Array<{ frontmatter?: Record<string, unknown> }>;
 		expect(pages[0].frontmatter).toMatchObject({ category: 'spec', label: 'First' });
 	});
 
 	it('resolves a render-template partial', () => {
-		const c = ctx(specs.slice(0, 1), { entityRoutes: [{ type: 'spec', url: '/s/{id}/', 'render-template': 'templates:decision.md' }] });
+		const c = ctx(specs.slice(0, 1), {
+			entityRoutes: [{ type: 'spec', url: '/s/{id}/', 'render-template': 'templates:decision.md' }],
+		});
 		const pages = hooks.contributePages!(c) as Array<{ content: string }>;
 		expect(pages[0].content).toContain('$item.data.title');
 	});
 
 	it('errors when both render and render-template are set', () => {
-		const c = ctx(specs, { entityRoutes: [{ type: 'spec', url: '/s/{id}/', render: 'x', 'render-template': 'templates:decision.md' }] });
+		const c = ctx(specs, {
+			entityRoutes: [
+				{ type: 'spec', url: '/s/{id}/', render: 'x', 'render-template': 'templates:decision.md' },
+			],
+		});
 		const pages = hooks.contributePages!(c);
 		expect(pages).toHaveLength(0);
 		expect(c.errors.length).toBe(1);

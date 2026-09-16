@@ -69,7 +69,7 @@ Enable `showContrast` and `showA11y` to display WCAG contrast ratios and AA/AAA 
 
 {% preview source=true %}
 
-{% palette title="Accessible Colors" showContrast="true" showA11y="true" %}
+{% palette title="Accessible Colors" showContrast=true showA11y=true %}
 - Navy: #1E3A5F
 - Teal: #0D9488
 - Coral: #FB7185

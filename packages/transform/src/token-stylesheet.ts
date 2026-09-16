@@ -32,8 +32,8 @@ import type { PartialTokenContract, ThemeTokensConfig } from '@refrakt-md/types'
  */
 export function tokenPathToCssVar(path: readonly string[]): string {
 	const segments = path
-		.filter(seg => seg !== 'base')
-		.map(seg => (seg.endsWith('-scale') ? seg.slice(0, -'-scale'.length) : seg));
+		.filter((seg) => seg !== 'base')
+		.map((seg) => (seg.endsWith('-scale') ? seg.slice(0, -'-scale'.length) : seg));
 	return `--rf-${segments.join('-')}`;
 }
 
@@ -102,9 +102,10 @@ const SYNTAX_REFINEMENTS: Record<string, string> = {
  * {@link ThemeTokensConfig.extra} directly. Explicit entries in the
  * caller's `extra` always win — this helper only fills gaps.
  */
-function deriveSyntaxAliases(
-	layer: { syntax?: Record<string, unknown>; color?: Record<string, unknown> },
-): Record<string, string> {
+function deriveSyntaxAliases(layer: {
+	syntax?: Record<string, unknown>;
+	color?: Record<string, unknown>;
+}): Record<string, string> {
 	const aliases: Record<string, string> = {};
 
 	if (layer.syntax) {
@@ -172,7 +173,7 @@ export function generateTokenStylesheet(
 	}
 
 	if (declarations.length === 0) return '';
-	const body = declarations.map(d => `${indent}${d}`).join('\n');
+	const body = declarations.map((d) => `${indent}${d}`).join('\n');
 	return `${selector} {\n${body}\n}\n`;
 }
 
@@ -384,15 +385,15 @@ export function generateScopedTintStylesheet(
 
 		const reportDrop = isDev
 			? (key: string) => {
-				const seenKey = `${extendsValue}:${key}`;
-				if (__DROP_WARNINGS_SEEN.has(seenKey)) return;
-				__DROP_WARNINGS_SEEN.add(seenKey);
-				console.warn(
-					`[refrakt] Preset "${extendsValue}" sets non-scope-eligible token "${key}" — ` +
-					`dropped from projected tint "${name}" per SPEC-056. Move this to a chrome preset ` +
-					`if you want it applied globally.`,
-				);
-			}
+					const seenKey = `${extendsValue}:${key}`;
+					if (__DROP_WARNINGS_SEEN.has(seenKey)) return;
+					__DROP_WARNINGS_SEEN.add(seenKey);
+					console.warn(
+						`[refrakt] Preset "${extendsValue}" sets non-scope-eligible token "${key}" — ` +
+							`dropped from projected tint "${name}" per SPEC-056. Move this to a chrome preset ` +
+							`if you want it applied globally.`,
+					);
+				}
 			: undefined;
 
 		const lightProjection = filterScopeEligible(preset, reportDrop);
@@ -400,7 +401,9 @@ export function generateScopedTintStylesheet(
 			lightProjection as Parameters<typeof generateTokenStylesheet>[0],
 			{
 				selector: `[data-tint="${name}"]`,
-				extra: deriveSyntaxAliases(lightProjection as { syntax?: Record<string, unknown>; color?: Record<string, unknown> }),
+				extra: deriveSyntaxAliases(
+					lightProjection as { syntax?: Record<string, unknown>; color?: Record<string, unknown> },
+				),
 			},
 		);
 		if (lightBlock) blocks.push(lightBlock);
@@ -415,7 +418,9 @@ export function generateScopedTintStylesheet(
 				darkProjection as Parameters<typeof generateTokenStylesheet>[0],
 				{
 					selector: `[data-tint="${name}"][data-color-scheme="dark"], [data-color-scheme="dark"] [data-tint="${name}"]`,
-					extra: deriveSyntaxAliases(darkProjection as { syntax?: Record<string, unknown>; color?: Record<string, unknown> }),
+					extra: deriveSyntaxAliases(
+						darkProjection as { syntax?: Record<string, unknown>; color?: Record<string, unknown> },
+					),
 				},
 			);
 			if (darkBlock) blocks.push(darkBlock);
@@ -431,11 +436,7 @@ interface TintDefinitionLike {
 	extends?: string;
 }
 
-function walkTokens(
-	node: Record<string, unknown>,
-	path: string[],
-	out: string[],
-): void {
+function walkTokens(node: Record<string, unknown>, path: string[], out: string[]): void {
 	for (const [key, value] of Object.entries(node)) {
 		const nextPath = [...path, key];
 		if (isPlainObject(value)) {

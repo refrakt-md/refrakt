@@ -1,7 +1,14 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas } from '@refrakt-md/runes';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	asNodes,
+	RenderableNodeCursor,
+	SplitLayoutModel,
+	buildLayoutMetas,
+} from '@refrakt-md/runes';
 import { extractScene, buildStoryContent } from './common.js';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
@@ -17,9 +24,7 @@ export const factionSection = createContentModelSchema({
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
@@ -27,7 +32,8 @@ export const factionSection = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable({ rune: 'faction-section',
+		return createComponentRenderable({
+			rune: 'faction-section',
 			tag: 'div',
 			refs: { name: nameTag, body: body.tag('div') },
 			children: [nameTag, body.next()],
@@ -39,7 +45,12 @@ export const factionSection = createContentModelSchema({
 // from the theme config rather than owned by it: a theme may not redefine
 // what a section *is* (ADR-028).
 // SPEC-125 Phase 1 — see `characterSections`; same shape, same correction.
-export const factionSections = { preamble: 'preamble', name: 'title', scene: 'media', body: 'body' } as const;
+export const factionSections = {
+	preamble: 'preamble',
+	name: 'title',
+	scene: 'media',
+	body: 'body',
+} as const;
 export const factionMediaSlots = { scene: 'cover' } as const;
 
 export const faction = createContentModelSchema({
@@ -48,11 +59,31 @@ export const faction = createContentModelSchema({
 	mediaSlots: factionMediaSlots,
 	base: SplitLayoutModel,
 	attributes: {
-		name: { type: String, required: true, description: 'Display name shown in the faction header.' },
-		type: { type: String, required: false, description: 'Classification of the group (e.g. guild, kingdom, cult, order).' },
-		alignment: { type: String, required: false, description: 'Moral or political stance of the faction (e.g. lawful, chaotic, neutral).' },
-		size: { type: String, required: false, description: 'Approximate scale of the faction (e.g. small, medium, large, massive).' },
-		tags: { type: String, required: false, description: 'Comma-separated keywords for filtering and cross-referencing.' },
+		name: {
+			type: String,
+			required: true,
+			description: 'Display name shown in the faction header.',
+		},
+		type: {
+			type: String,
+			required: false,
+			description: 'Classification of the group (e.g. guild, kingdom, cult, order).',
+		},
+		alignment: {
+			type: String,
+			required: false,
+			description: 'Moral or political stance of the faction (e.g. lawful, chaotic, neutral).',
+		},
+		size: {
+			type: String,
+			required: false,
+			description: 'Approximate scale of the faction (e.g. small, medium, large, massive).',
+		},
+		tags: {
+			type: String,
+			required: false,
+			description: 'Comma-separated keywords for filtering and cross-referencing.',
+		},
 	},
 	contentModel: () => ({
 		type: 'sections' as const,
@@ -85,7 +116,12 @@ export const faction = createContentModelSchema({
 
 		// Layout meta tags
 		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
-		const { mediaPosition: mediaPositionMeta, mediaRatio: mediaRatioMeta, valign: valignMeta, collapse: collapseMeta } = layoutMetas;
+		const {
+			mediaPosition: mediaPositionMeta,
+			mediaRatio: mediaRatioMeta,
+			valign: valignMeta,
+			collapse: collapseMeta,
+		} = layoutMetas;
 
 		// Extract scene image (shared helper)
 		const { sceneDiv, sceneImgTag, extraDescription } = extractScene(resolved.scene, config);
@@ -94,17 +130,18 @@ export const faction = createContentModelSchema({
 		// content column (preamble header + metadata + body + sections) and the
 		// split sees only scene (media) + content.
 		const { bodyDiv, sectionsContainer, sections, hasSections } = buildStoryContent(
-			extraDescription, resolved.description, sectionNodes, 'FactionSection', config,
+			extraDescription,
+			resolved.description,
+			sectionNodes,
+			'FactionSection',
+			config,
 		);
 
 		// Build children array. Scene first so it sits on top in stacked /
 		// media-position="top".
 		const children: any[] = [];
 		if (sceneDiv) children.push(sceneDiv.next());
-		children.push(
-			factionTypeMeta, alignmentMeta, sizeMeta, tagsMeta,
-			...layoutChildren,
-		);
+		children.push(factionTypeMeta, alignmentMeta, sizeMeta, tagsMeta, ...layoutChildren);
 		children.push(nameTag);
 		if (bodyDiv) children.push(bodyDiv.next());
 		if (sectionsContainer) children.push(sectionsContainer.next());
@@ -117,7 +154,9 @@ export const faction = createContentModelSchema({
 			schemaMap.image = sceneImgTag;
 		}
 
-		return createComponentRenderable({ rune: 'faction', schemaOrgType: 'Organization',
+		return createComponentRenderable({
+			rune: 'faction',
+			schemaOrgType: 'Organization',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
@@ -134,6 +173,10 @@ export const faction = createContentModelSchema({
 			refs: {
 				name: nameTag,
 				...(sceneDiv ? { scene: sceneDiv } : {}),
+				// WORK-561 — the scene image survives and is rendered, so it is a ref.
+				// Named `sceneImage` after its `scene` wrapper, so the wrapper and the
+				// image inside it are separately addressable.
+				...(sceneImgTag ? { sceneImage: sceneImgTag } : {}),
 				...(bodyDiv ? { body: bodyDiv } : {}),
 				...(sectionsContainer ? { sections: sectionsContainer } : {}),
 			},

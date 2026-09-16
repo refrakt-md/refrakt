@@ -9,7 +9,9 @@ import { createContentModelSchema, asNodes } from '../lib/index.js';
  *  inline content of the paragraph + subsequent block children. If no
  *  bold prefix is found, returns `null` — the deflist rune falls back
  *  to an empty `<dt>` + the item's full content in `<dd>`. */
-function extractTermPrefix(itemNode: Node): { term: Node[]; rest: Node[]; restBlocks: Node[] } | null {
+function extractTermPrefix(
+	itemNode: Node,
+): { term: Node[]; rest: Node[]; restBlocks: Node[] } | null {
 	const children = itemNode.children ?? [];
 	if (children.length === 0) return null;
 
@@ -72,13 +74,10 @@ function extractTermPrefix(itemNode: Node): { term: Node[]; rest: Node[]; restBl
 		return remainingInline;
 	})();
 
-	const restInline = trimmed.length > 0
-		? [new Ast.Node('inline', {}, trimmed) as Node]
-		: [];
+	const restInline = trimmed.length > 0 ? [new Ast.Node('inline', {}, trimmed) as Node] : [];
 
-	const restParagraph: Node[] = restInline.length > 0
-		? [new Ast.Node('paragraph', {}, restInline) as Node]
-		: [];
+	const restParagraph: Node[] =
+		restInline.length > 0 ? [new Ast.Node('paragraph', {}, restInline) as Node] : [];
 
 	return {
 		term: termNodes,
@@ -108,24 +107,26 @@ export const deflist = createContentModelSchema({
 	attributes: {},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'list', match: 'list', optional: false },
-		],
+		fields: [{ name: 'list', match: 'list', optional: false }],
 	},
 	transform(resolved, _attrs, config) {
 		const listNodes = asNodes(resolved.list);
-		const listNode = listNodes.find(n => n.type === 'list');
+		const listNode = listNodes.find((n) => n.type === 'list');
 		if (!listNode) {
 			// Fallback when the content model didn't capture a list — render
 			// an empty dl so DOM stays valid; the content-model resolver
 			// already emits its own diagnostic.
-			return new Tag('dl', {
-				'data-rune': 'deflist',
-				'data-zone-layout': 'definition-list',
-			}, []);
+			return new Tag(
+				'dl',
+				{
+					'data-rune': 'deflist',
+					'data-zone-layout': 'definition-list',
+				},
+				[],
+			);
 		}
 
-		const items = (listNode.children ?? []).filter(c => c.type === 'item');
+		const items = (listNode.children ?? []).filter((c) => c.type === 'item');
 		const rows: RenderableTreeNode[] = [];
 
 		for (const item of items) {
@@ -135,7 +136,10 @@ export const deflist = createContentModelSchema({
 
 			if (extracted) {
 				const termRendered = Markdoc.transform(extracted.term, config) as RenderableTreeNode[];
-				const valueRendered = Markdoc.transform(extracted.restBlocks, config) as RenderableTreeNode[];
+				const valueRendered = Markdoc.transform(
+					extracted.restBlocks,
+					config,
+				) as RenderableTreeNode[];
 				dt = new Tag('dt', { 'data-meta-label': '' }, termRendered);
 				dd = new Tag('dd', {}, unwrapSingleParagraph(valueRendered));
 			} else {
@@ -150,10 +154,14 @@ export const deflist = createContentModelSchema({
 			rows.push(new Tag('div', { 'data-name': 'row' }, [dt, dd]));
 		}
 
-		return new Tag('dl', {
-			'data-rune': 'deflist',
-			'data-zone-layout': 'definition-list',
-		}, rows);
+		return new Tag(
+			'dl',
+			{
+				'data-rune': 'deflist',
+				'data-zone-layout': 'definition-list',
+			},
+			rows,
+		);
 	},
 });
 
@@ -177,7 +185,7 @@ function warnDeflistUnparsedItem(item: Node): void {
 	// eslint-disable-next-line no-console
 	console.warn(
 		`[refrakt] {% deflist %} item at line ${loc?.start?.line ?? '?'} lacks ` +
-		`a \`**Term:**\` prefix — rendered with empty <dt>. Prefix the item ` +
-		`with bold term text ending in \`:\` to label it.`,
+			`a \`**Term:**\` prefix — rendered with empty <dt>. Prefix the item ` +
+			`with bold term text ending in \`:\` to label it.`,
 	);
 }

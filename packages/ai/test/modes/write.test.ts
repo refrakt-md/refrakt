@@ -55,7 +55,7 @@ describe('exemplarSection', () => {
 		expect(section).not.toContain('### chart');
 	});
 
-	it('surfaces a fixture\'s notes as authoring guidance', () => {
+	it("surfaces a fixture's notes as authoring guidance", () => {
 		// `badge` carries notes in its fixture frontmatter.
 		expect(exemplarSection()).toContain('Inline rune — embed within prose');
 	});
@@ -64,4 +64,3 @@ describe('exemplarSection', () => {
 		expect(exemplarSection()).toMatch(/### \w[\s\S]*?```md[\s\S]*?```/);
 	});
 });
-

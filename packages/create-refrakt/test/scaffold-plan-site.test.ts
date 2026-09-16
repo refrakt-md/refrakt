@@ -42,7 +42,15 @@ describe('scaffoldPlanSite (SPEC-071 / WORK-271)', () => {
 		expect(existsSync(join(targetDir, 'plan', 'work', 'WORK-001-example-work-item.md'))).toBe(true);
 
 		// content/ content dir authored.
-		for (const f of ['_layout.md', 'index.md', 'work.md', 'specs.md', 'bugs.md', 'decisions.md', 'milestones.md']) {
+		for (const f of [
+			'_layout.md',
+			'index.md',
+			'work.md',
+			'specs.md',
+			'bugs.md',
+			'decisions.md',
+			'milestones.md',
+		]) {
 			expect(existsSync(join(targetDir, 'content', f)), `missing content/${f}`).toBe(true);
 		}
 	});
@@ -58,7 +66,9 @@ describe('scaffoldPlanSite (SPEC-071 / WORK-271)', () => {
 		expect(cfg.sites.main.plugins).toEqual(['@refrakt-md/plan']);
 		expect(cfg.plan.dir).toBe('plan');
 
-		const types = (cfg.sites.main.entityRoutes as Array<{ type: string }>).map((r) => r.type).sort();
+		const types = (cfg.sites.main.entityRoutes as Array<{ type: string }>)
+			.map((r) => r.type)
+			.sort();
 		expect(types).toEqual(['bug', 'decision', 'milestone', 'spec', 'work']);
 		for (const rule of cfg.sites.main.entityRoutes as Array<{ render: string }>) {
 			expect(rule.render).toMatch(/\{% expand .* \/%\}/);

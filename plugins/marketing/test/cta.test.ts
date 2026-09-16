@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { parse, findTag } from './helpers.js';
 
 describe('cta tag', () => {
-  it('should transform a basic call-to-action', () => {
-    const result = parse(`{% cta %}
+	it('should transform a basic call-to-action', () => {
+		const result = parse(`{% cta %}
 # Get Started Today
 
 Build something amazing with our platform.
@@ -12,15 +12,15 @@ Build something amazing with our platform.
 - [Learn More](/docs)
 {% /cta %}`);
 
-    expect(result).toBeDefined();
+		expect(result).toBeDefined();
 
-    const ctaTag = findTag(result as any, t => t.attributes['data-rune'] === 'call-to-action');
-    expect(ctaTag).toBeDefined();
-    expect(ctaTag!.name).toBe('section');
-  });
+		const ctaTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'call-to-action');
+		expect(ctaTag).toBeDefined();
+		expect(ctaTag!.name).toBe('section');
+	});
 
-  it('should work with the call-to-action alias', () => {
-    const result = parse(`{% call-to-action %}
+	it('should work with the call-to-action alias', () => {
+		const result = parse(`{% call-to-action %}
 # Welcome
 
 Get started now.
@@ -28,12 +28,12 @@ Get started now.
 - [Start](/start)
 {% /call-to-action %}`);
 
-    const ctaTag = findTag(result as any, t => t.attributes['data-rune'] === 'call-to-action');
-    expect(ctaTag).toBeDefined();
-  });
+		const ctaTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'call-to-action');
+		expect(ctaTag).toBeDefined();
+	});
 
-  it('should handle a code fence as a command action', () => {
-    const result = parse(`{% cta %}
+	it('should handle a code fence as a command action', () => {
+		const result = parse(`{% cta %}
 # Install
 
 \`\`\`shell
@@ -41,15 +41,18 @@ npm install refrakt-md
 \`\`\`
 {% /cta %}`);
 
-    const ctaTag = findTag(result as any, t => t.attributes['data-rune'] === 'call-to-action');
-    expect(ctaTag).toBeDefined();
+		const ctaTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'call-to-action');
+		expect(ctaTag).toBeDefined();
 
-    const command = findTag(ctaTag!, t => t.name === 'div' && t.attributes['data-name'] === 'command');
-    expect(command).toBeDefined();
-  });
+		const command = findTag(
+			ctaTag!,
+			(t) => t.name === 'div' && t.attributes['data-name'] === 'command',
+		);
+		expect(command).toBeDefined();
+	});
 
-  it('should handle action links as LinkItem components', () => {
-    const result = parse(`{% cta %}
+	it('should handle action links as LinkItem components', () => {
+		const result = parse(`{% cta %}
 # Ready?
 
 Take the next step.
@@ -58,10 +61,13 @@ Take the next step.
 - [Learn More](/docs)
 {% /cta %}`);
 
-    const ctaTag = findTag(result as any, t => t.attributes['data-rune'] === 'call-to-action');
-    expect(ctaTag).toBeDefined();
+		const ctaTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'call-to-action');
+		expect(ctaTag).toBeDefined();
 
-    const linkItem = findTag(ctaTag!, t => t.name === 'li' && t.attributes['data-name'] === 'action');
-    expect(linkItem).toBeDefined();
-  });
+		const linkItem = findTag(
+			ctaTag!,
+			(t) => t.name === 'li' && t.attributes['data-name'] === 'action',
+		);
+		expect(linkItem).toBeDefined();
+	});
 });

@@ -1,6 +1,14 @@
 import type { ContentModel, ResolvedContent } from '@refrakt-md/types';
 import Markdoc from '@markdoc/markdoc';
-import type { Config, Node, RenderableTreeNodes, Schema, SchemaAttribute, Tag, ValidationError } from '@markdoc/markdoc';
+import type {
+	Config,
+	Node,
+	RenderableTreeNodes,
+	Schema,
+	SchemaAttribute,
+	Tag,
+	ValidationError,
+} from '@markdoc/markdoc';
 
 import { resolveContentModel } from './resolver.js';
 import { schemaBasePresets } from '../attribute-presets.js';
@@ -8,8 +16,27 @@ import { resolveUniversalAttributes } from '../universal-attributes.js';
 import type { UniversalAttributePosture } from '../universal-attributes.js';
 
 export { createComponentRenderable, stripSchemaOrg } from './component.js';
+import { stripSchemaOrg } from './component.js';
+import { applySchemaTable, validateSchemaTable } from './schema-table.js';
+import type { SchemaTable } from './schema-table.js';
+export {
+	applySchemaTable,
+	validateSchemaTable,
+	selectRow,
+	findByName,
+} from './schema-table.js';
+export type { SchemaTable, SchemaRow, EntityRow, PropertyMap } from './schema-table.js';
 export type { InlineTransformResult } from './component.js';
-export { resolve, resolveSequence, resolveDelimited, resolveSections, resolveContentModel, resolveListItems, evaluateCondition, matchesType } from './resolver.js';
+export {
+	resolve,
+	resolveSequence,
+	resolveDelimited,
+	resolveSections,
+	resolveContentModel,
+	resolveListItems,
+	evaluateCondition,
+	matchesType,
+} from './resolver.js';
 export { sanitizeSandboxContent } from './sanitize.js';
 
 /**
@@ -17,7 +44,10 @@ export { sanitizeSandboxContent } from './sanitize.js';
  * Populated by `createContentModelSchema()` so consumers (editor, language server)
  * can introspect a rune's expected content structure without re-parsing.
  */
-export const schemaContentModels = new WeakMap<Schema, ContentModel | ((attrs: Record<string, any>) => ContentModel)>();
+export const schemaContentModels = new WeakMap<
+	Schema,
+	ContentModel | ((attrs: Record<string, any>) => ContentModel)
+>();
 
 /**
  * The schema↔engine join tables a rune declares about itself — SPEC-125 Phase 2.
@@ -34,31 +64,47 @@ export const schemaContentModels = new WeakMap<Schema, ContentModel | ((attrs: R
  * `config.mediaSlots` and `config.frameTarget`.
  */
 export interface RuneStructure {
-  sections?: Record<string, SectionRole>;
-  mediaSlots?: Record<string, string>;
-  frameTarget?: 'media' | 'self';
-  /**
-   * The rune's universal-attribute posture — SPEC-125 Phase 3.
-   *
-   * Recorded alongside the join tables because it answers the same question
-   * from the same place: *what can an author write on this rune?* Consumers
-   * that only have the schema — `refrakt reference`, the language server —
-   * need it to explain an axis's absence, and `RuneConfig.universalAttributes`
-   * is not reachable from there without loading theme config.
-   */
-  universalAttributes?: UniversalAttributePosture;
-  /**
-   * Content capabilities the rune declares — SPEC-125 Phase 4.
-   *
-   * Recorded here for the same reason as the join tables: `reading` and
-   * `dropcap` availability hangs off it, and the schema layer must answer that
-   * without reaching for theme config. `RuneConfig.provides` carries the same
-   * list for the engine; a test holds the two together.
-   */
-  provides?: readonly string[];
+	sections?: Record<string, SectionRole>;
+	mediaSlots?: Record<string, string>;
+	frameTarget?: 'media' | 'self';
+	/**
+	 * The rune's universal-attribute posture — SPEC-125 Phase 3.
+	 *
+	 * Recorded alongside the join tables because it answers the same question
+	 * from the same place: *what can an author write on this rune?* Consumers
+	 * that only have the schema — `refrakt reference`, the language server —
+	 * need it to explain an axis's absence, and `RuneConfig.universalAttributes`
+	 * is not reachable from there without loading theme config.
+	 */
+	universalAttributes?: UniversalAttributePosture;
+	/**
+	 * Content capabilities the rune declares — SPEC-125 Phase 4.
+	 *
+	 * Recorded here for the same reason as the join tables: `reading` and
+	 * `dropcap` availability hangs off it, and the schema layer must answer that
+	 * without reaching for theme config. `RuneConfig.provides` carries the same
+	 * list for the engine; a test holds the two together.
+	 */
+	provides?: readonly string[];
 }
 
 export const schemaRuneStructures = new WeakMap<Schema, RuneStructure>();
+
+/**
+ * A rune's declarative schema.org table, keyed by its Markdoc schema — SPEC-130
+ * / WORK-566.
+ *
+ * The same shape as `schemaContentModels` and `schemaRuneStructures`, and for
+ * the same reason: the table is declared in the tag module, and tooling
+ * (`inspect`, `contracts`, `reference`) has only the schema to read from.
+ *
+ * This is the gap that kept reappearing across the milestone — config-derived
+ * tooling cannot see anything a rune declares in its `transform()`, which is why
+ * four dead CSS rules survived review (WORK-564) and why regenerating the
+ * structure contract showed none of WORK-561's new `data-name`s. Recording the
+ * table here is what lets the review surface D5 depends on exist at all.
+ */
+export const schemaTables = new WeakMap<Schema, SchemaTable>();
 
 /**
  * Record a hand-written schema's universal-attribute posture.
@@ -69,25 +115,35 @@ export const schemaRuneStructures = new WeakMap<Schema, RuneStructure>();
  * from an oversight; calling this states which it is, where the rune lives.
  */
 export function declareUniversalPosture(schema: Schema, posture: UniversalAttributePosture): void {
-  schemaRuneStructures.set(schema, { ...schemaRuneStructures.get(schema), universalAttributes: posture });
+	schemaRuneStructures.set(schema, {
+		...schemaRuneStructures.get(schema),
+		universalAttributes: posture,
+	});
 }
 
 /** The closed vocabulary `sections` values are drawn from. */
-export type SectionRole = 'header' | 'preamble' | 'title' | 'description' | 'body' | 'footer' | 'media';
+export type SectionRole =
+	| 'header'
+	| 'preamble'
+	| 'title'
+	| 'description'
+	| 'body'
+	| 'footer'
+	| 'media';
 
 /** Normalize resolver output (single Node, Node[], or undefined) into Node[]. */
 export function asNodes(value: unknown): Node[] {
-  if (Array.isArray(value)) return value as Node[];
-  if (value != null) return [value as Node];
-  return [];
+	if (Array.isArray(value)) return value as Node[];
+	if (value != null) return [value as Node];
+	return [];
 }
 
 /** Rule for mapping a deprecated attribute to its replacement */
 export interface DeprecationRule {
-  /** New attribute name to copy the value to */
-  newName: string;
-  /** Optional transform — receives the old value and all attributes, returns the new value */
-  transform?: (value: any, allAttrs: Record<string, any>) => any;
+	/** New attribute name to copy the value to */
+	newName: string;
+	/** Optional transform — receives the old value and all attributes, returns the new value */
+	transform?: (value: any, allAttrs: Record<string, any>) => any;
 }
 
 // ---------------------------------------------------------------------------
@@ -95,141 +151,345 @@ export interface DeprecationRule {
 // ---------------------------------------------------------------------------
 
 const universalAttributes: Record<string, SchemaAttribute> = {
-  'tint': { type: String, required: false, description: 'Color tint preset applied to this block' },
-  'tint-mode': { type: String, required: false, matches: ['auto', 'dark', 'light'], description: 'Whether the tint adapts to auto, dark, or light mode' },
-  'bg': { type: String, required: false, description: 'Background preset applied to this block' },
-  'width': { type: String, required: false, matches: ['compact', 'narrow', 'content', 'wide', 'full'], description: 'Maximum width constraint for this block' },
-  'reading': { type: String, required: false, matches: ['fine', 'ui', 'prose'], description: 'Reading register for this block’s body (SPEC-108): fine | ui | prose. The theme owns the editorial treatment.' },
-  'dropcap': { type: Boolean, required: false, description: 'Style the opening letter of a prose body as a drop cap (SPEC-108). Honoured only when the body reads as prose; ignored otherwise.' },
-  'spacing': { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'], description: 'Vertical spacing above and below this block' },
-  'inset': { type: String, required: false, matches: ['flush', 'tight', 'default', 'loose', 'breathe'], description: 'Inner padding of this block' },
-  // SPEC-107 — `elevation` is a depth ladder. The legacy shadow-scale values
-  // (none/sm/md/lg) stay in `matches` so authored content still validates during
-  // the deprecation window; the engine maps them onto the ladder with a warning.
-  'elevation': { type: String, required: false, matches: ['sunken', 'flush', 'flat', 'raised', 'floating', 'overlay', 'none', 'sm', 'md', 'lg'], description: 'Surface depth on the SPEC-107 ladder (sunken→overlay); none/sm/md/lg are deprecated aliases' },
-  'prominence': { type: String, required: false, matches: ['quiet', 'normal', 'prominent', 'display'], description: 'Section-header emphasis (only on page-section-header family runes)' },
-  // SPEC-105 — scroll-reveal motion. `reveal` is a closed entrance vocabulary
-  // (author declares intent; the theme owns choreography, a behaviour owns
-  // timing); an unknown value is a build error via Markdoc `matches`. `stagger`
-  // cascades a multi-child block's items in — a silent no-op on single-child runes.
-  'reveal': { type: String, required: false, matches: ['none', 'fade', 'slide', 'scale', 'blur'], description: 'Scroll-reveal entrance character (none|fade|slide|scale|blur); the theme owns the choreography' },
-  'stagger': { type: Boolean, required: false, description: 'Cascade this block\'s items in as it reveals (no-op on single-child runes)' },
-  // SPEC-086 — frame: media-surface chrome preset + inline facet overrides.
-  'frame': { type: String, required: false, description: 'Named frame preset presenting this block\'s media surface' },
-  'frame-aspect': { type: String, required: false, description: 'Aspect ratio of the framed media, e.g. "16/9"' },
-  'frame-displace': { type: String, required: false, matches: ['top', 'bottom', 'end', 'bottom-end', 'top-end'], description: 'Edge/corner the framed guest moves toward' },
-  'frame-displace-mode': { type: String, required: false, matches: ['peek', 'bleed'], description: 'How displacement renders: `peek` (default) translates the guest visually inside its frame target; `bleed` uses negative margin on the media zone so following layout pulls up — extends past a section like a hero without leaving a gap above' },
-  'frame-offset': { type: String, required: false, matches: ['none', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl'], description: 'Displacement distance (non-linear named scale: sm…xl ride the block-spacing tokens, 2xl/3xl/4xl step up to section-spacing for bleed-mode displacements that clear a section edge)' },
-  'frame-oversize': { type: String, required: false, description: 'How far the guest exceeds its slot (scale factor)' },
-  'frame-place': { type: String, required: false, description: 'Guest-box alignment in the slot (e.g. "left top")' },
-  'frame-anchor': { type: String, required: false, description: 'Crop focal point when the guest is cut (object-position)' },
-  'frame-overflow': { type: String, required: false, matches: ['clip', 'bleed'], description: 'How the frame handles a guest whose content is wider than it: `clip` (default) keeps it inside the rounded frame; `bleed` runs an overflowing guest out to the layout edge on a narrow viewport so it reads as cropped by the screen (a bleed host only — hero/feature)' },
-  'frame-shadow': { type: String, required: false, matches: ['none', 'sm', 'md', 'lg'], description: 'Silhouette drop-shadow strength for the framed media' },
-  // SPEC-087 — substrate: generated surface pattern + inline facet overrides.
-  'substrate': { type: String, required: false, matches: ['dots', 'grid', 'lines', 'cross', 'checker', 'none'], description: 'Generated surface pattern' },
-  'substrate-size': { type: String, required: false, matches: ['sm', 'md', 'lg'], description: 'Pattern cell size' },
-  'substrate-opacity': { type: String, required: false, matches: ['sm', 'md', 'lg'], description: 'Pattern ink strength' },
-  'substrate-fill': { type: String, required: false, matches: ['inherit', 'inset'], description: 'Surface fill the pattern sits on (full colour stays with tint)' },
-  'substrate-target': { type: String, required: false, matches: ['self', 'media'], description: 'Which surface the pattern fills (overrides the rune/theme default)' },
-  // SPEC-088 — bg gradient fill facets (token-driven; colours stay token-owned).
-  'bg-gradient': { type: String, required: false, matches: ['to-t', 'to-b', 'to-l', 'to-r', 'to-tr', 'to-br', 'to-bl', 'to-tl'], description: 'Gradient direction (bounded named set)' },
-  'bg-from': { type: String, required: false, description: 'Gradient start colour — a semantic token name (→ var(--rf-color-*))' },
-  'bg-to': { type: String, required: false, description: 'Gradient end colour — a semantic token name' },
-  'bg-via': { type: String, required: false, description: 'Optional middle gradient stop — a semantic token name' },
-  'bg-gradient-type': { type: String, required: false, matches: ['linear', 'radial', 'conic'], description: 'Gradient type' },
-  // SPEC-088 — structured scrim (legibility treatment behind overlaid text).
-  'scrim': { type: String, required: false, matches: ['top', 'bottom', 'left', 'right', 'none'], description: 'Scrim direction (heaviest edge); presence turns the scrim on, "none" opts out of the default cover scrim' },
-  'scrim-type': { type: String, required: false, matches: ['gradient', 'frost'], description: 'Scrim treatment: gradient (default) or frost (backdrop blur)' },
-  'scrim-strength': { type: String, required: false, matches: ['sm', 'md', 'lg'], description: 'Gradient scrim strength' },
-  'scrim-blur': { type: String, required: false, matches: ['none', 'sm', 'md', 'lg'], description: 'Frost scrim blur amount' },
-  'scrim-tone': { type: String, required: false, matches: ['dark', 'light'], description: 'Whether the scrim darkens (for light text) or lightens (for dark text)' },
+	tint: { type: String, required: false, description: 'Color tint preset applied to this block' },
+	'tint-mode': {
+		type: String,
+		required: false,
+		matches: ['auto', 'dark', 'light'],
+		description: 'Whether the tint adapts to auto, dark, or light mode',
+	},
+	bg: { type: String, required: false, description: 'Background preset applied to this block' },
+	width: {
+		type: String,
+		required: false,
+		matches: ['compact', 'narrow', 'content', 'wide', 'full'],
+		description: 'Maximum width constraint for this block',
+	},
+	reading: {
+		type: String,
+		required: false,
+		matches: ['fine', 'ui', 'prose'],
+		description:
+			'Reading register for this block’s body (SPEC-108): fine | ui | prose. The theme owns the editorial treatment.',
+	},
+	dropcap: {
+		type: Boolean,
+		required: false,
+		description:
+			'Style the opening letter of a prose body as a drop cap (SPEC-108). Honoured only when the body reads as prose; ignored otherwise.',
+	},
+	spacing: {
+		type: String,
+		required: false,
+		matches: ['flush', 'tight', 'default', 'loose', 'breathe'],
+		description: 'Vertical spacing above and below this block',
+	},
+	inset: {
+		type: String,
+		required: false,
+		matches: ['flush', 'tight', 'default', 'loose', 'breathe'],
+		description: 'Inner padding of this block',
+	},
+	// SPEC-107 — `elevation` is a depth ladder. The legacy shadow-scale values
+	// (none/sm/md/lg) stay in `matches` so authored content still validates during
+	// the deprecation window; the engine maps them onto the ladder with a warning.
+	elevation: {
+		type: String,
+		required: false,
+		matches: ['sunken', 'flush', 'flat', 'raised', 'floating', 'overlay', 'none', 'sm', 'md', 'lg'],
+		description:
+			'Surface depth on the SPEC-107 ladder (sunken→overlay); none/sm/md/lg are deprecated aliases',
+	},
+	prominence: {
+		type: String,
+		required: false,
+		matches: ['quiet', 'normal', 'prominent', 'display'],
+		description: 'Section-header emphasis (only on page-section-header family runes)',
+	},
+	// SPEC-105 — scroll-reveal motion. `reveal` is a closed entrance vocabulary
+	// (author declares intent; the theme owns choreography, a behaviour owns
+	// timing); an unknown value is a build error via Markdoc `matches`. `stagger`
+	// cascades a multi-child block's items in — a silent no-op on single-child runes.
+	reveal: {
+		type: String,
+		required: false,
+		matches: ['none', 'fade', 'slide', 'scale', 'blur'],
+		description:
+			'Scroll-reveal entrance character (none|fade|slide|scale|blur); the theme owns the choreography',
+	},
+	stagger: {
+		type: Boolean,
+		required: false,
+		description: "Cascade this block's items in as it reveals (no-op on single-child runes)",
+	},
+	// SPEC-086 — frame: media-surface chrome preset + inline facet overrides.
+	frame: {
+		type: String,
+		required: false,
+		description: "Named frame preset presenting this block's media surface",
+	},
+	'frame-aspect': {
+		type: String,
+		required: false,
+		description: 'Aspect ratio of the framed media, e.g. "16/9"',
+	},
+	'frame-displace': {
+		type: String,
+		required: false,
+		// `both` was missing until SPEC-132's validation pass reported
+		// `{% showcase frame-displace="both" %}` as out-of-enum — while Lumina
+		// has styled `[data-displace="both"]` all along. The schema and the
+		// stylesheet disagreed, the page rendered correctly, and nothing else in
+		// the toolchain compares those two.
+		matches: ['top', 'bottom', 'end', 'bottom-end', 'top-end', 'both'],
+		description: 'Edge/corner the framed guest moves toward',
+	},
+	'frame-displace-mode': {
+		type: String,
+		required: false,
+		matches: ['peek', 'bleed'],
+		description:
+			'How displacement renders: `peek` (default) translates the guest visually inside its frame target; `bleed` uses negative margin on the media zone so following layout pulls up — extends past a section like a hero without leaving a gap above',
+	},
+	'frame-offset': {
+		type: String,
+		required: false,
+		matches: ['none', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl'],
+		description:
+			'Displacement distance (non-linear named scale: sm…xl ride the block-spacing tokens, 2xl/3xl/4xl step up to section-spacing for bleed-mode displacements that clear a section edge)',
+	},
+	'frame-oversize': {
+		type: String,
+		required: false,
+		description: 'How far the guest exceeds its slot (scale factor)',
+	},
+	'frame-place': {
+		type: String,
+		required: false,
+		description: 'Guest-box alignment in the slot (e.g. "left top")',
+	},
+	'frame-anchor': {
+		type: String,
+		required: false,
+		description: 'Crop focal point when the guest is cut (object-position)',
+	},
+	'frame-overflow': {
+		type: String,
+		required: false,
+		matches: ['clip', 'bleed'],
+		description:
+			'How the frame handles a guest whose content is wider than it: `clip` (default) keeps it inside the rounded frame; `bleed` runs an overflowing guest out to the layout edge on a narrow viewport so it reads as cropped by the screen (a bleed host only — hero/feature)',
+	},
+	'frame-shadow': {
+		type: String,
+		required: false,
+		matches: ['none', 'sm', 'md', 'lg'],
+		description: 'Silhouette drop-shadow strength for the framed media',
+	},
+	// SPEC-087 — substrate: generated surface pattern + inline facet overrides.
+	substrate: {
+		type: String,
+		required: false,
+		matches: ['dots', 'grid', 'lines', 'cross', 'checker', 'none'],
+		description: 'Generated surface pattern',
+	},
+	'substrate-size': {
+		type: String,
+		required: false,
+		matches: ['sm', 'md', 'lg'],
+		description: 'Pattern cell size',
+	},
+	'substrate-opacity': {
+		type: String,
+		required: false,
+		matches: ['sm', 'md', 'lg'],
+		description: 'Pattern ink strength',
+	},
+	'substrate-fill': {
+		type: String,
+		required: false,
+		matches: ['inherit', 'inset'],
+		description: 'Surface fill the pattern sits on (full colour stays with tint)',
+	},
+	'substrate-target': {
+		type: String,
+		required: false,
+		matches: ['self', 'media'],
+		description: 'Which surface the pattern fills (overrides the rune/theme default)',
+	},
+	// SPEC-088 — bg gradient fill facets (token-driven; colours stay token-owned).
+	'bg-gradient': {
+		type: String,
+		required: false,
+		matches: ['to-t', 'to-b', 'to-l', 'to-r', 'to-tr', 'to-br', 'to-bl', 'to-tl'],
+		description: 'Gradient direction (bounded named set)',
+	},
+	'bg-from': {
+		type: String,
+		required: false,
+		description: 'Gradient start colour — a semantic token name (→ var(--rf-color-*))',
+	},
+	'bg-to': {
+		type: String,
+		required: false,
+		description: 'Gradient end colour — a semantic token name',
+	},
+	'bg-via': {
+		type: String,
+		required: false,
+		description: 'Optional middle gradient stop — a semantic token name',
+	},
+	'bg-gradient-type': {
+		type: String,
+		required: false,
+		matches: ['linear', 'radial', 'conic'],
+		description: 'Gradient type',
+	},
+	// SPEC-088 — structured scrim (legibility treatment behind overlaid text).
+	scrim: {
+		type: String,
+		required: false,
+		matches: ['top', 'bottom', 'left', 'right', 'none'],
+		description:
+			'Scrim direction (heaviest edge); presence turns the scrim on, "none" opts out of the default cover scrim',
+	},
+	'scrim-type': {
+		type: String,
+		required: false,
+		matches: ['gradient', 'frost'],
+		description: 'Scrim treatment: gradient (default) or frost (backdrop blur)',
+	},
+	'scrim-strength': {
+		type: String,
+		required: false,
+		matches: ['sm', 'md', 'lg'],
+		description: 'Gradient scrim strength',
+	},
+	'scrim-blur': {
+		type: String,
+		required: false,
+		matches: ['none', 'sm', 'md', 'lg'],
+		description: 'Frost scrim blur amount',
+	},
+	'scrim-tone': {
+		type: String,
+		required: false,
+		matches: ['dark', 'light'],
+		description: 'Whether the scrim darkens (for light text) or lightens (for dark text)',
+	},
 };
 
 /** SPEC-088 bg gradient + scrim facet attribute names (host-level). */
 const BG_GRADIENT_FACET_NAMES = [
-  'bg-gradient', 'bg-from', 'bg-to', 'bg-via', 'bg-gradient-type',
-  'scrim', 'scrim-type', 'scrim-strength', 'scrim-blur', 'scrim-tone',
+	'bg-gradient',
+	'bg-from',
+	'bg-to',
+	'bg-via',
+	'bg-gradient-type',
+	'scrim',
+	'scrim-type',
+	'scrim-strength',
+	'scrim-blur',
+	'scrim-tone',
 ] as const;
 
 /** SPEC-086 frame facet attribute names (excluding the `frame` preset key). */
-const FRAME_FACET_NAMES = ['frame-aspect', 'frame-displace', 'frame-displace-mode', 'frame-offset', 'frame-oversize', 'frame-place', 'frame-anchor', 'frame-overflow', 'frame-shadow'] as const;
+const FRAME_FACET_NAMES = [
+	'frame-aspect',
+	'frame-displace',
+	'frame-displace-mode',
+	'frame-offset',
+	'frame-oversize',
+	'frame-place',
+	'frame-anchor',
+	'frame-overflow',
+	'frame-shadow',
+] as const;
 
 /** SPEC-087 substrate facet attribute names (excluding the `substrate` enum key). */
-const SUBSTRATE_FACET_NAMES = ['substrate-size', 'substrate-opacity', 'substrate-fill', 'substrate-target'] as const;
+const SUBSTRATE_FACET_NAMES = [
+	'substrate-size',
+	'substrate-opacity',
+	'substrate-fill',
+	'substrate-target',
+] as const;
 
 // ---------------------------------------------------------------------------
 // Tint / bg injection helpers (Model-free versions)
 // ---------------------------------------------------------------------------
 
 interface TintBgContext {
-  tintNode?: Node;
-  bgNode?: Node;
-  tint?: string;
-  'tint-mode'?: string;
-  bg?: string;
-  config: Config;
+	tintNode?: Node;
+	bgNode?: Node;
+	tint?: string;
+	'tint-mode'?: string;
+	bg?: string;
+	config: Config;
 }
 
 function injectTintMetasFrom(result: RenderableTreeNodes, ctx: TintBgContext): RenderableTreeNodes {
-  if (!Markdoc.Tag.isTag(result)) return result;
+	if (!Markdoc.Tag.isTag(result)) return result;
 
-  const metas: Tag[] = [];
+	const metas: Tag[] = [];
 
-  if (ctx.tintNode) {
-    const tintResult = Markdoc.transform(ctx.tintNode, ctx.config);
-    if (Markdoc.Tag.isTag(tintResult)) {
-      for (const child of tintResult.children) {
-        if (Markdoc.Tag.isTag(child) && child.name === 'meta') {
-          metas.push(child);
-        }
-      }
-    }
-  }
+	if (ctx.tintNode) {
+		const tintResult = Markdoc.transform(ctx.tintNode, ctx.config);
+		if (Markdoc.Tag.isTag(tintResult)) {
+			for (const child of tintResult.children) {
+				if (Markdoc.Tag.isTag(child) && child.name === 'meta') {
+					metas.push(child);
+				}
+			}
+		}
+	}
 
-  const hasMetaProp = (prop: string) => metas.some(
-    m => Markdoc.Tag.isTag(m) && m.attributes['data-field'] === prop
-  );
+	const hasMetaProp = (prop: string) =>
+		metas.some((m) => Markdoc.Tag.isTag(m) && m.attributes['data-field'] === prop);
 
-  if (ctx.tint && !hasMetaProp('tint')) {
-    metas.push(new Markdoc.Tag('meta', { 'data-field': 'tint', content: ctx.tint }));
-  }
-  if (ctx['tint-mode'] && ctx['tint-mode'] !== 'auto' && !hasMetaProp('tint-mode')) {
-    metas.push(new Markdoc.Tag('meta', { 'data-field': 'tint-mode', content: ctx['tint-mode'] }));
-  }
+	if (ctx.tint && !hasMetaProp('tint')) {
+		metas.push(new Markdoc.Tag('meta', { 'data-field': 'tint', content: ctx.tint }));
+	}
+	if (ctx['tint-mode'] && ctx['tint-mode'] !== 'auto' && !hasMetaProp('tint-mode')) {
+		metas.push(new Markdoc.Tag('meta', { 'data-field': 'tint-mode', content: ctx['tint-mode'] }));
+	}
 
-  if (metas.length === 0) return result;
-  result.children = [...result.children, ...metas];
-  return result;
+	if (metas.length === 0) return result;
+	result.children = [...result.children, ...metas];
+	return result;
 }
 
 /** A `sandbox`-typed bg preset descriptor (SPEC-104 §5 — a sibling of `BgPresetDefinition`). */
 interface BgSandboxPreset {
-  src: string;
-  framework?: string;
-  dependencies?: string;
+	src: string;
+	framework?: string;
+	dependencies?: string;
 }
 
 /** Recursively find the rendered `rf-sandbox` element in a transformed tree. */
 function findRfSandbox(node: RenderableTreeNodes): Tag | undefined {
-  const nodes = Array.isArray(node) ? node : [node];
-  for (const n of nodes) {
-    if (!Markdoc.Tag.isTag(n)) continue;
-    if (n.name === 'rf-sandbox') return n;
-    const nested = findRfSandbox(n.children as RenderableTreeNodes);
-    if (nested) return nested;
-  }
-  return undefined;
+	const nodes = Array.isArray(node) ? node : [node];
+	for (const n of nodes) {
+		if (!Markdoc.Tag.isTag(n)) continue;
+		if (n.name === 'rf-sandbox') return n;
+		const nested = findRfSandbox(n.children as RenderableTreeNodes);
+		if (nested) return nested;
+	}
+	return undefined;
 }
 
 /** Tag a rendered sandbox as the bg backdrop guest (matches the WORK-428 body path). */
 function asBackdropGuest(sandbox: Tag): Tag {
-  return new Markdoc.Tag(sandbox.name, {
-    ...sandbox.attributes,
-    'data-bg-guest': '',
-    'data-guest-posture': 'backdrop',
-    'data-height': 'fill',
-    'data-activation': 'eager',
-  }, sandbox.children);
+	return new Markdoc.Tag(
+		sandbox.name,
+		{
+			...sandbox.attributes,
+			'data-bg-guest': '',
+			'data-guest-posture': 'backdrop',
+			'data-height': 'fill',
+			'data-activation': 'eager',
+		},
+		sandbox.children,
+	);
 }
 
 // SPEC-104 §5 — memoise an assembled scene per config + descriptor: a named
@@ -241,139 +501,163 @@ const presetGuestCache = new WeakMap<object, Map<string, Tag>>();
 /** SPEC-104 §5 — expand a `sandbox`-typed bg preset into the WORK-428
  *  `data-bg-guest` body. Runs at transform time (the sandbox readers live on
  *  `config.variables`), producing the same element the engine relocates. */
-function expandSandboxPreset(preset: BgSandboxPreset, config: Config, registry: object): Tag | undefined {
-  const key = `${preset.src} ${preset.framework ?? ''} ${preset.dependencies ?? ''}`;
-  let cache = presetGuestCache.get(registry);
-  if (!cache) { cache = new Map(); presetGuestCache.set(registry, cache); }
-  const cached = cache.get(key);
-  if (cached) return asBackdropGuest(cached);
+function expandSandboxPreset(
+	preset: BgSandboxPreset,
+	config: Config,
+	registry: object,
+): Tag | undefined {
+	const key = `${preset.src} ${preset.framework ?? ''} ${preset.dependencies ?? ''}`;
+	let cache = presetGuestCache.get(registry);
+	if (!cache) {
+		cache = new Map();
+		presetGuestCache.set(registry, cache);
+	}
+	const cached = cache.get(key);
+	if (cached) return asBackdropGuest(cached);
 
-  const attrs: Record<string, unknown> = { src: preset.src };
-  if (preset.framework) attrs.framework = preset.framework;
-  if (preset.dependencies) attrs.dependencies = preset.dependencies;
-  // Synthesise the `{% sandbox %}` and run the real rune (file resolution +
-  // sanitisation via the config readers) — the preset is sugar over the body.
-  const node = new Markdoc.Ast.Node('tag', attrs, [], 'sandbox');
-  const sandbox = findRfSandbox(Markdoc.transform(node, config));
-  if (!sandbox) return undefined;
-  cache.set(key, sandbox);
-  return asBackdropGuest(sandbox);
+	const attrs: Record<string, unknown> = { src: preset.src };
+	if (preset.framework) attrs.framework = preset.framework;
+	if (preset.dependencies) attrs.dependencies = preset.dependencies;
+	// Synthesise the `{% sandbox %}` and run the real rune (file resolution +
+	// sanitisation via the config readers) — the preset is sugar over the body.
+	const node = new Markdoc.Ast.Node('tag', attrs, [], 'sandbox');
+	const sandbox = findRfSandbox(Markdoc.transform(node, config));
+	if (!sandbox) return undefined;
+	cache.set(key, sandbox);
+	return asBackdropGuest(sandbox);
 }
 
 function injectBgMetasFrom(result: RenderableTreeNodes, ctx: TintBgContext): RenderableTreeNodes {
-  if (!Markdoc.Tag.isTag(result)) return result;
+	if (!Markdoc.Tag.isTag(result)) return result;
 
-  const metas: Tag[] = [];
-  // SPEC-104 — a `{% bg %}` body may render a `data-bg-guest` element (a sandbox
-  // backdrop). Hoist it to the host alongside the metas; the engine (§1f)
-  // relocates it into the bg layer.
-  const guests: Tag[] = [];
+	const metas: Tag[] = [];
+	// SPEC-104 — a `{% bg %}` body may render a `data-bg-guest` element (a sandbox
+	// backdrop). Hoist it to the host alongside the metas; the engine (§1f)
+	// relocates it into the bg layer.
+	const guests: Tag[] = [];
 
-  if (ctx.bgNode) {
-    const bgResult = Markdoc.transform(ctx.bgNode, ctx.config);
-    if (Markdoc.Tag.isTag(bgResult)) {
-      for (const child of bgResult.children) {
-        if (!Markdoc.Tag.isTag(child)) continue;
-        if (child.name === 'meta') metas.push(child);
-        else if (child.attributes['data-bg-guest'] !== undefined) guests.push(child);
-      }
-    }
-  }
+	if (ctx.bgNode) {
+		const bgResult = Markdoc.transform(ctx.bgNode, ctx.config);
+		if (Markdoc.Tag.isTag(bgResult)) {
+			for (const child of bgResult.children) {
+				if (!Markdoc.Tag.isTag(child)) continue;
+				if (child.name === 'meta') metas.push(child);
+				else if (child.attributes['data-bg-guest'] !== undefined) guests.push(child);
+			}
+		}
+	}
 
-  const hasPresetMeta = metas.some(
-    m => Markdoc.Tag.isTag(m) && m.attributes['data-field'] === 'bg-preset'
-  );
-  if (ctx.bg && !hasPresetMeta) {
-    metas.push(new Markdoc.Tag('meta', { 'data-field': 'bg-preset', content: ctx.bg }));
-  }
+	const hasPresetMeta = metas.some(
+		(m) => Markdoc.Tag.isTag(m) && m.attributes['data-field'] === 'bg-preset',
+	);
+	if (ctx.bg && !hasPresetMeta) {
+		metas.push(new Markdoc.Tag('meta', { 'data-field': 'bg-preset', content: ctx.bg }));
+	}
 
-  // SPEC-104 §5 — `bg="name"` where the named preset is `sandbox`-typed expands
-  // to a live backdrop guest, the same as an inline `{% bg %}{% sandbox %}` body.
-  // Only when no body guest was authored (an explicit body wins).
-  if (ctx.bg && guests.length === 0) {
-    const backgrounds = ctx.config?.variables?.__backgrounds as Record<string, { sandbox?: BgSandboxPreset; extends?: string }> | undefined;
-    const preset = backgrounds?.[ctx.bg];
-    if (preset && backgrounds) {
-      // Resolve `extends` (single level, mirroring the engine's preset chain) so a
-      // sandbox preset can build on a base scene; the preset's own fields win.
-      const base = preset.extends ? backgrounds[preset.extends] : undefined;
-      const sandbox = preset.sandbox || base?.sandbox
-        ? { ...base?.sandbox, ...preset.sandbox } as BgSandboxPreset
-        : undefined;
-      if (sandbox?.src) {
-        const guest = expandSandboxPreset(sandbox, ctx.config, backgrounds);
-        if (guest) guests.push(guest);
-      }
-    }
-  }
+	// SPEC-104 §5 — `bg="name"` where the named preset is `sandbox`-typed expands
+	// to a live backdrop guest, the same as an inline `{% bg %}{% sandbox %}` body.
+	// Only when no body guest was authored (an explicit body wins).
+	if (ctx.bg && guests.length === 0) {
+		const backgrounds = ctx.config?.variables?.__backgrounds as
+			| Record<string, { sandbox?: BgSandboxPreset; extends?: string }>
+			| undefined;
+		const preset = backgrounds?.[ctx.bg];
+		if (preset && backgrounds) {
+			// Resolve `extends` (single level, mirroring the engine's preset chain) so a
+			// sandbox preset can build on a base scene; the preset's own fields win.
+			const base = preset.extends ? backgrounds[preset.extends] : undefined;
+			const sandbox =
+				preset.sandbox || base?.sandbox
+					? ({ ...base?.sandbox, ...preset.sandbox } as BgSandboxPreset)
+					: undefined;
+			if (sandbox?.src) {
+				const guest = expandSandboxPreset(sandbox, ctx.config, backgrounds);
+				if (guest) guests.push(guest);
+			}
+		}
+	}
 
-  if (metas.length === 0 && guests.length === 0) return result;
-  result.children = [...result.children, ...metas, ...guests];
-  return result;
+	if (metas.length === 0 && guests.length === 0) return result;
+	result.children = [...result.children, ...metas, ...guests];
+	return result;
 }
 
 /** SPEC-086 — surface the `frame` preset + `frame-*` facet attributes as
  *  `<meta data-field>` tags so the engine reads them via the same meta channel
  *  as `bg`, then routes the chrome to the rune's frame-target element. */
-function injectFrameMetas(result: RenderableTreeNodes, attrs: Record<string, any>): RenderableTreeNodes {
-  if (!Markdoc.Tag.isTag(result)) return result;
-  const has = (name: string) => result.children.some(
-    c => Markdoc.Tag.isTag(c) && c.name === 'meta' && c.attributes['data-field'] === name,
-  );
-  const metas: Tag[] = [];
-  if (attrs.frame && !has('frame')) {
-    metas.push(new Markdoc.Tag('meta', { 'data-field': 'frame', content: String(attrs.frame) }));
-  }
-  for (const name of FRAME_FACET_NAMES) {
-    const value = attrs[name];
-    if (value != null && value !== '' && !has(name)) {
-      metas.push(new Markdoc.Tag('meta', { 'data-field': name, content: String(value) }));
-    }
-  }
-  if (metas.length === 0) return result;
-  result.children = [...result.children, ...metas];
-  return result;
+function injectFrameMetas(
+	result: RenderableTreeNodes,
+	attrs: Record<string, any>,
+): RenderableTreeNodes {
+	if (!Markdoc.Tag.isTag(result)) return result;
+	const has = (name: string) =>
+		result.children.some(
+			(c) => Markdoc.Tag.isTag(c) && c.name === 'meta' && c.attributes['data-field'] === name,
+		);
+	const metas: Tag[] = [];
+	if (attrs.frame && !has('frame')) {
+		metas.push(new Markdoc.Tag('meta', { 'data-field': 'frame', content: String(attrs.frame) }));
+	}
+	for (const name of FRAME_FACET_NAMES) {
+		const value = attrs[name];
+		if (value != null && value !== '' && !has(name)) {
+			metas.push(new Markdoc.Tag('meta', { 'data-field': name, content: String(value) }));
+		}
+	}
+	if (metas.length === 0) return result;
+	result.children = [...result.children, ...metas];
+	return result;
 }
 
 /** SPEC-088 — surface the `bg-*` gradient facets as `<meta data-field>` tags so
  *  the engine's bg resolution reads them (host-level, no `{% bg %}` child needed). */
-function injectBgFacetMetas(result: RenderableTreeNodes, attrs: Record<string, any>): RenderableTreeNodes {
-  if (!Markdoc.Tag.isTag(result)) return result;
-  const has = (name: string) => result.children.some(
-    c => Markdoc.Tag.isTag(c) && c.name === 'meta' && c.attributes['data-field'] === name,
-  );
-  const metas: Tag[] = [];
-  for (const name of BG_GRADIENT_FACET_NAMES) {
-    const value = attrs[name];
-    if (value != null && value !== '' && !has(name)) {
-      metas.push(new Markdoc.Tag('meta', { 'data-field': name, content: String(value) }));
-    }
-  }
-  if (metas.length === 0) return result;
-  result.children = [...result.children, ...metas];
-  return result;
+function injectBgFacetMetas(
+	result: RenderableTreeNodes,
+	attrs: Record<string, any>,
+): RenderableTreeNodes {
+	if (!Markdoc.Tag.isTag(result)) return result;
+	const has = (name: string) =>
+		result.children.some(
+			(c) => Markdoc.Tag.isTag(c) && c.name === 'meta' && c.attributes['data-field'] === name,
+		);
+	const metas: Tag[] = [];
+	for (const name of BG_GRADIENT_FACET_NAMES) {
+		const value = attrs[name];
+		if (value != null && value !== '' && !has(name)) {
+			metas.push(new Markdoc.Tag('meta', { 'data-field': name, content: String(value) }));
+		}
+	}
+	if (metas.length === 0) return result;
+	result.children = [...result.children, ...metas];
+	return result;
 }
 
 /** SPEC-087 — surface the `substrate` pattern + `substrate-*` facets as
  *  `<meta data-field>` tags so the engine reads and routes them like `frame`. */
-function injectSubstrateMetas(result: RenderableTreeNodes, attrs: Record<string, any>): RenderableTreeNodes {
-  if (!Markdoc.Tag.isTag(result)) return result;
-  const has = (name: string) => result.children.some(
-    c => Markdoc.Tag.isTag(c) && c.name === 'meta' && c.attributes['data-field'] === name,
-  );
-  const metas: Tag[] = [];
-  if (attrs.substrate && !has('substrate')) {
-    metas.push(new Markdoc.Tag('meta', { 'data-field': 'substrate', content: String(attrs.substrate) }));
-  }
-  for (const name of SUBSTRATE_FACET_NAMES) {
-    const value = attrs[name];
-    if (value != null && value !== '' && !has(name)) {
-      metas.push(new Markdoc.Tag('meta', { 'data-field': name, content: String(value) }));
-    }
-  }
-  if (metas.length === 0) return result;
-  result.children = [...result.children, ...metas];
-  return result;
+function injectSubstrateMetas(
+	result: RenderableTreeNodes,
+	attrs: Record<string, any>,
+): RenderableTreeNodes {
+	if (!Markdoc.Tag.isTag(result)) return result;
+	const has = (name: string) =>
+		result.children.some(
+			(c) => Markdoc.Tag.isTag(c) && c.name === 'meta' && c.attributes['data-field'] === name,
+		);
+	const metas: Tag[] = [];
+	if (attrs.substrate && !has('substrate')) {
+		metas.push(
+			new Markdoc.Tag('meta', { 'data-field': 'substrate', content: String(attrs.substrate) }),
+		);
+	}
+	for (const name of SUBSTRATE_FACET_NAMES) {
+		const value = attrs[name];
+		if (value != null && value !== '' && !has(name)) {
+			metas.push(new Markdoc.Tag('meta', { 'data-field': name, content: String(value) }));
+		}
+	}
+	if (metas.length === 0) return result;
+	result.children = [...result.children, ...metas];
+	return result;
 }
 
 // ---------------------------------------------------------------------------
@@ -381,79 +665,90 @@ function injectSubstrateMetas(result: RenderableTreeNodes, attrs: Record<string,
 // ---------------------------------------------------------------------------
 
 export interface ContentModelSchemaOptions {
-  /**
-   * Optional base providing additional attribute definitions.
-   * Accepts a plain attribute record that is merged before explicit attributes.
-   */
-  base?: Record<string, SchemaAttribute>;
+	/**
+	 * Optional base providing additional attribute definitions.
+	 * Accepts a plain attribute record that is merged before explicit attributes.
+	 */
+	base?: Record<string, SchemaAttribute>;
 
-  /** Explicit attribute definitions (merged with base class attributes). */
-  attributes?: Record<string, SchemaAttribute>;
+	/** Explicit attribute definitions (merged with base class attributes). */
+	attributes?: Record<string, SchemaAttribute>;
 
-  /** The declarative content model (or a function of resolved attributes). */
-  contentModel: ContentModel | ((attrs: Record<string, any>) => ContentModel);
+	/** The declarative content model (or a function of resolved attributes). */
+	contentModel: ContentModel | ((attrs: Record<string, any>) => ContentModel);
 
-  /**
-   * Transform function that receives resolved content, the rune's
-   * attributes, the Markdoc config, and optionally the AST node.
-   * Returns the renderable output.
-   */
-  transform: (
-    resolved: ResolvedContent,
-    attrs: Record<string, any>,
-    config: Config,
-    node: Node,
-  ) => RenderableTreeNodes;
+	/**
+	 * Transform function that receives resolved content, the rune's
+	 * attributes, the Markdoc config, and optionally the AST node.
+	 * Returns the renderable output.
+	 */
+	transform: (
+		resolved: ResolvedContent,
+		attrs: Record<string, any>,
+		config: Config,
+		node: Node,
+	) => RenderableTreeNodes;
 
-  /** Deprecated attribute mappings. */
-  deprecations?: Record<string, DeprecationRule>;
+	/**
+	 * SPEC-130 / WORK-565 — the rune's declarative schema.org table.
+	 *
+	 * Sits beside the rune's other self-declarations (`sections`, `mediaSlots`,
+	 * `provides`, `base`) because it is the same kind of fact: what this rune
+	 * *is*, not how a theme renders it (ADR-028). Applied to the transform's
+	 * output by `applySchemaTable`, so `createComponentRenderable` gains no
+	 * schema knowledge at all.
+	 */
+	schema?: SchemaTable;
 
-  /** Whether this tag is self-closing (no children). */
-  selfClosing?: boolean;
+	/** Deprecated attribute mappings. */
+	deprecations?: Record<string, DeprecationRule>;
 
-  /**
-   * Mark this rune as deferring its body to postProcess (per-entity template).
-   * The content loader captures the pristine body as source on `__deferred-body`
-   * and empties it before transform; the rune reads it via `readDeferredBody`.
-   */
-  deferBody?: boolean;
+	/** Whether this tag is self-closing (no children). */
+	selfClosing?: boolean;
 
-  /**
-   * SPEC-125 Phase 2 — the rune's own join tables: which of its emitted slots
-   * carry which section role, which are media slots, and which surface `frame`
-   * chrome decorates. Declared here (and referenced from `ThemeConfig.runes`)
-   * rather than owned by config, because a rune's universal-attribute
-   * applicability derives from these facts and a theme may not redefine them.
-   *
-   * Recorded on {@link schemaRuneStructures}, and read here: they are what
-   * narrows the universal attributes this rune offers (SPEC-125 Phase 3).
-   */
-  sections?: Record<string, SectionRole>;
-  mediaSlots?: Record<string, string>;
-  frameTarget?: 'media' | 'self';
+	/**
+	 * Mark this rune as deferring its body to postProcess (per-entity template).
+	 * The content loader captures the pristine body as source on `__deferred-body`
+	 * and empties it before transform; the rune reads it via `readDeferredBody`.
+	 */
+	deferBody?: boolean;
 
-  /**
-   * SPEC-125 Phase 3 — why this rune carries *no* universal attributes, when it
-   * carries none. Defaults to `auto`, where structural applicability decides
-   * axis by axis from the join tables above.
-   *
-   * Stated rather than inferred from which constructor a schema used: an
-   * `inline` span and a `configurator` rune both end up with none, for
-   * different reasons, and a reader cannot tell either from an oversight.
-   */
-  universalAttributes?: UniversalAttributePosture;
-  /**
-   * Content capabilities this rune's own content provides — SPEC-125 Phase 4.
-   *
-   * Today only `'prose'`: this rune's body holds authored prose, so `reading`
-   * and `dropcap` mean something on it. Declared here *and* on the rune's
-   * `RuneConfig`, exactly as `sections` is — the schema layer narrows from this
-   * copy, the engine gates on the config one.
-   *
-   * Default-off. A rune that bears prose and forgets to say so loses `reading`,
-   * which schema narrowing makes visible rather than silent.
-   */
-  provides?: readonly string[];
+	/**
+	 * SPEC-125 Phase 2 — the rune's own join tables: which of its emitted slots
+	 * carry which section role, which are media slots, and which surface `frame`
+	 * chrome decorates. Declared here (and referenced from `ThemeConfig.runes`)
+	 * rather than owned by config, because a rune's universal-attribute
+	 * applicability derives from these facts and a theme may not redefine them.
+	 *
+	 * Recorded on {@link schemaRuneStructures}, and read here: they are what
+	 * narrows the universal attributes this rune offers (SPEC-125 Phase 3).
+	 */
+	sections?: Record<string, SectionRole>;
+	mediaSlots?: Record<string, string>;
+	frameTarget?: 'media' | 'self';
+
+	/**
+	 * SPEC-125 Phase 3 — why this rune carries *no* universal attributes, when it
+	 * carries none. Defaults to `auto`, where structural applicability decides
+	 * axis by axis from the join tables above.
+	 *
+	 * Stated rather than inferred from which constructor a schema used: an
+	 * `inline` span and a `configurator` rune both end up with none, for
+	 * different reasons, and a reader cannot tell either from an oversight.
+	 */
+	universalAttributes?: UniversalAttributePosture;
+	/**
+	 * Content capabilities this rune's own content provides — SPEC-125 Phase 4.
+	 *
+	 * Today only `'prose'`: this rune's body holds authored prose, so `reading`
+	 * and `dropcap` mean something on it. Declared here *and* on the rune's
+	 * `RuneConfig`, exactly as `sections` is — the schema layer narrows from this
+	 * copy, the engine gates on the config one.
+	 *
+	 * Default-off. A rune that bears prose and forgets to say so loses `reading`,
+	 * which schema narrowing makes visible rather than silent.
+	 */
+	provides?: readonly string[];
 }
 
 /**
@@ -463,164 +758,205 @@ export interface ContentModelSchemaOptions {
  * that receives the resolver's output.
  */
 export function createContentModelSchema(options: ContentModelSchemaOptions): Schema {
-  const attributes: Record<string, SchemaAttribute> = {};
+	const attributes: Record<string, SchemaAttribute> = {};
 
-  // Merge base attributes
-  if (options.base) {
-    Object.assign(attributes, options.base);
-  }
+	// Merge base attributes
+	if (options.base) {
+		Object.assign(attributes, options.base);
+	}
 
-  // Merge explicit attributes
-  if (options.attributes) {
-    Object.assign(attributes, options.attributes);
-  }
+	// Merge explicit attributes
+	if (options.attributes) {
+		Object.assign(attributes, options.attributes);
+	}
 
-  // Universal attributes — only the ones that can affect this rune (SPEC-125
-  // Phase 3). Availability comes from the same axis registry the structure
-  // contract derives its `unavailable` map from, so the schema and the contract
-  // cannot disagree. `declaredAttributes` is what has been merged so far: the
-  // `cover` and `content-place` gates read modifiers the rune declares as its
-  // own author attributes, and those are already in `attributes` by now — which
-  // is why `modifiers` did not need to move out of config.
-  const { available: applicableUniversals } = resolveUniversalAttributes({
-    posture: options.universalAttributes,
-    structure: {
-      ...(options.sections && { sections: options.sections }),
-      ...(options.mediaSlots && { mediaSlots: options.mediaSlots }),
-      ...(options.frameTarget && { frameTarget: options.frameTarget }),
-      ...(options.provides && { provides: options.provides }),
-    },
-    declaredAttributes: Object.keys(attributes),
-  });
-  for (const [name, def] of Object.entries(universalAttributes)) {
-    if (applicableUniversals.has(name)) attributes[name] = def;
-  }
+	// Universal attributes — only the ones that can affect this rune (SPEC-125
+	// Phase 3). Availability comes from the same axis registry the structure
+	// contract derives its `unavailable` map from, so the schema and the contract
+	// cannot disagree. `declaredAttributes` is what has been merged so far: the
+	// `cover` and `content-place` gates read modifiers the rune declares as its
+	// own author attributes, and those are already in `attributes` by now — which
+	// is why `modifiers` did not need to move out of config.
+	const { available: applicableUniversals } = resolveUniversalAttributes({
+		posture: options.universalAttributes,
+		structure: {
+			...(options.sections && { sections: options.sections }),
+			...(options.mediaSlots && { mediaSlots: options.mediaSlots }),
+			...(options.frameTarget && { frameTarget: options.frameTarget }),
+			...(options.provides && { provides: options.provides }),
+		},
+		declaredAttributes: Object.keys(attributes),
+	});
+	for (const [name, def] of Object.entries(universalAttributes)) {
+		if (applicableUniversals.has(name)) attributes[name] = def;
+	}
 
-  // deferBody: declare the stash attribute so the loader-captured body source
-  // is readable in the transform (see deferred-body.ts).
-  if (options.deferBody) {
-    attributes['__deferred-body'] = { type: String, required: false } as SchemaAttribute;
-  }
+	// deferBody: declare the stash attribute so the loader-captured body source
+	// is readable in the transform (see deferred-body.ts).
+	if (options.deferBody) {
+		attributes['__deferred-body'] = { type: String, required: false } as SchemaAttribute;
+	}
 
-  // Register deprecated attribute names
-  const deprecations = options.deprecations;
-  if (deprecations) {
-    for (const [oldName, rule] of Object.entries(deprecations)) {
-      if (!attributes[oldName]) {
-        const target = attributes[rule.newName];
-        attributes[oldName] = { type: target?.type ?? String, required: false, deprecated: true } as SchemaAttribute;
-      }
-    }
-  }
+	// SPEC-130 / WORK-565 — check the table against the attributes the rune
+	// actually declares, at construction. `by` names an *attribute*, not a
+	// modifier: `modifiers` is read by the engine, which has no part in the
+	// schema path. Both declarations are in scope here, so the ambiguity is
+	// cheap to reject rather than ship.
+	if (options.schema) {
+		const issues = validateSchemaTable(options.schema, Object.keys(attributes));
+		if (issues.length > 0) {
+			const detail = issues.map((i) => `  ${i.path}: ${i.message}`).join('\n');
+			throw new Error(`Invalid schema table:\n${detail}`);
+		}
+	}
 
-  const schema: Schema = {
-    attributes,
-    ...(options.selfClosing != null && { selfClosing: options.selfClosing }),
-    transform: (node, config) => {
-      // Resolve deprecated attributes
-      if (deprecations) {
-        for (const [oldName, rule] of Object.entries(deprecations)) {
-          if (node.attributes[oldName] !== undefined && node.attributes[rule.newName] === undefined) {
-            const newVal = rule.transform
-              ? rule.transform(node.attributes[oldName], node.attributes)
-              : node.attributes[oldName];
-            if (newVal !== undefined) {
-              node.attributes[rule.newName] = newVal;
-            }
-          }
-        }
-      }
+	// Register deprecated attribute names
+	const deprecations = options.deprecations;
+	if (deprecations) {
+		for (const [oldName, rule] of Object.entries(deprecations)) {
+			if (!attributes[oldName]) {
+				const target = attributes[rule.newName];
+				attributes[oldName] = {
+					type: target?.type ?? String,
+					required: false,
+					deprecated: true,
+				} as SchemaAttribute;
+			}
+		}
+	}
 
-      // Extract attributes
-      const attrs = node.transformAttributes(config);
+	const schema: Schema = {
+		attributes,
+		...(options.selfClosing != null && { selfClosing: options.selfClosing }),
+		transform: (node, config) => {
+			// Resolve deprecated attributes
+			if (deprecations) {
+				for (const [oldName, rule] of Object.entries(deprecations)) {
+					if (
+						node.attributes[oldName] !== undefined &&
+						node.attributes[rule.newName] === undefined
+					) {
+						const newVal = rule.transform
+							? rule.transform(node.attributes[oldName], node.attributes)
+							: node.attributes[oldName];
+						if (newVal !== undefined) {
+							node.attributes[rule.newName] = newVal;
+						}
+					}
+				}
+			}
 
-      // Resolve content model
-      const resolvedModel = typeof options.contentModel === 'function'
-        ? options.contentModel(attrs)
-        : options.contentModel;
-      const { content, tintNode, bgNode } = resolveContentModel(
-        node.children,
-        resolvedModel,
-        attrs,
-      );
+			// Extract attributes
+			const attrs = node.transformAttributes(config);
 
-      // Call the user's transform function
-      const result = options.transform(content, attrs, config, node);
+			// Resolve content model
+			const resolvedModel =
+				typeof options.contentModel === 'function'
+					? options.contentModel(attrs)
+					: options.contentModel;
+			const { content, tintNode, bgNode } = resolveContentModel(
+				node.children,
+				resolvedModel,
+				attrs,
+			);
 
-      // Inject tint / bg metas
-      const tintBgCtx: TintBgContext = {
-        tintNode,
-        bgNode,
-        tint: attrs.tint,
-        'tint-mode': attrs['tint-mode'],
-        bg: attrs.bg,
-        config,
-      };
-      const output = injectBgMetasFrom(injectTintMetasFrom(result, tintBgCtx), tintBgCtx);
+			// Call the user's transform function
+			let result = options.transform(content, attrs, config, node);
 
-      // Forward universal layout/surface attributes
-      if (Markdoc.Tag.isTag(output)) {
-        if (attrs.width) output.attributes.width = attrs.width;
-        if (attrs.spacing) output.attributes.spacing = attrs.spacing;
-        if (attrs.inset) output.attributes.inset = attrs.inset;
-        if (attrs.elevation) output.attributes.elevation = attrs.elevation;
-        if (attrs.prominence) output.attributes.prominence = attrs.prominence;
-        if (attrs.reveal) output.attributes.reveal = attrs.reveal;
-        if (attrs.stagger) output.attributes.stagger = attrs.stagger;
-        // SPEC-108 reading register + drop cap. The engine reads these off the
-        // rune tag (resolveReading author input + the dropcap gate); forward them
-        // so an author `reading=`/`dropcap=` override actually reaches it.
-        if (attrs.reading) output.attributes.reading = attrs.reading;
-        if (attrs.dropcap) output.attributes.dropcap = attrs.dropcap;
-      }
+			// SPEC-130 / WORK-565 — realise the rune's schema table against its own
+			// output. Here, not in the engine: `site.ts` harvests `extractSeo` from
+			// the `Markdoc.transform` tree, and the engine runs later at render
+			// time, so schema emitted there would reach the HTML and never the
+			// JSON-LD.
+			if (options.schema) {
+				result = applySchemaTable(result as never, options.schema, attrs) as never;
+			}
+			// `schema="none"` strips the whole subtree, not just the root: a child
+			// rune declares its own type independently, so stripping only the root
+			// would leave orphan typed nodes with no container (WORK-552).
+			if (attrs.schema === 'none') {
+				stripSchemaOrg(result);
+			}
 
-      return injectBgFacetMetas(injectSubstrateMetas(injectFrameMetas(output, attrs), attrs), attrs);
-    },
-  };
+			// Inject tint / bg metas
+			const tintBgCtx: TintBgContext = {
+				tintNode,
+				bgNode,
+				tint: attrs.tint,
+				'tint-mode': attrs['tint-mode'],
+				bg: attrs.bg,
+				config,
+			};
+			const output = injectBgMetasFrom(injectTintMetasFrom(result, tintBgCtx), tintBgCtx);
 
-  // Add validation for deprecation warnings
-  if (deprecations) {
-    schema.validate = (node) => {
-      const errors: ValidationError[] = [];
-      for (const [oldName, rule] of Object.entries(deprecations)) {
-        if (node.attributes[oldName] !== undefined) {
-          errors.push({
-            id: 'deprecated-attribute',
-            level: 'warning',
-            message: `Attribute "${oldName}" is deprecated. Use "${rule.newName}" instead.`,
-          });
-        }
-      }
-      return errors;
-    };
-  }
+			// Forward universal layout/surface attributes
+			if (Markdoc.Tag.isTag(output)) {
+				if (attrs.width) output.attributes.width = attrs.width;
+				if (attrs.spacing) output.attributes.spacing = attrs.spacing;
+				if (attrs.inset) output.attributes.inset = attrs.inset;
+				if (attrs.elevation) output.attributes.elevation = attrs.elevation;
+				if (attrs.prominence) output.attributes.prominence = attrs.prominence;
+				if (attrs.reveal) output.attributes.reveal = attrs.reveal;
+				if (attrs.stagger) output.attributes.stagger = attrs.stagger;
+				// SPEC-108 reading register + drop cap. The engine reads these off the
+				// rune tag (resolveReading author input + the dropcap gate); forward them
+				// so an author `reading=`/`dropcap=` override actually reaches it.
+				if (attrs.reading) output.attributes.reading = attrs.reading;
+				if (attrs.dropcap) output.attributes.dropcap = attrs.dropcap;
+			}
 
-  // Mark deferBody so the content loader captures the body pre-transform.
-  if (options.deferBody) {
-    (schema as Schema & { deferBody?: boolean }).deferBody = true;
-  }
+			return injectBgFacetMetas(
+				injectSubstrateMetas(injectFrameMetas(output, attrs), attrs),
+				attrs,
+			);
+		},
+	};
 
-  // Register content model for introspection by editor / language server
-  schemaContentModels.set(schema, options.contentModel);
+	// Add validation for deprecation warnings
+	if (deprecations) {
+		schema.validate = (node) => {
+			const errors: ValidationError[] = [];
+			for (const [oldName, rule] of Object.entries(deprecations)) {
+				if (node.attributes[oldName] !== undefined) {
+					errors.push({
+						id: 'deprecated-attribute',
+						level: 'warning',
+						message: `Attribute "${oldName}" is deprecated. Use "${rule.newName}" instead.`,
+					});
+				}
+			}
+			return errors;
+		};
+	}
 
-  // SPEC-125 Phase 2 — record the rune's own join tables, so the applicability
-  // facts are reachable from the schema without loading theme config.
-  // Phase 3 added the posture to the same record — it is recorded even when it
-  // is the `auto` default, so a consumer can tell "this rune was built through
-  // the schema builder and is structurally gated" from "nothing is known".
-  schemaRuneStructures.set(schema, {
-    ...(options.sections && { sections: options.sections }),
-    ...(options.mediaSlots && { mediaSlots: options.mediaSlots }),
-    ...(options.frameTarget && { frameTarget: options.frameTarget }),
-    universalAttributes: options.universalAttributes ?? 'auto',
-    ...(options.provides && { provides: options.provides }),
-  });
+	// Mark deferBody so the content loader captures the body pre-transform.
+	if (options.deferBody) {
+		(schema as Schema & { deferBody?: boolean }).deferBody = true;
+	}
 
-  // Record the base record reference so reference output can identify
-  // attributes inherited from a registered preset.
-  if (options.base) {
-    schemaBasePresets.set(schema, options.base);
-  }
+	if (options.schema) schemaTables.set(schema, options.schema);
 
-  return schema;
+	// Register content model for introspection by editor / language server
+	schemaContentModels.set(schema, options.contentModel);
+
+	// SPEC-125 Phase 2 — record the rune's own join tables, so the applicability
+	// facts are reachable from the schema without loading theme config.
+	// Phase 3 added the posture to the same record — it is recorded even when it
+	// is the `auto` default, so a consumer can tell "this rune was built through
+	// the schema builder and is structurally gated" from "nothing is known".
+	schemaRuneStructures.set(schema, {
+		...(options.sections && { sections: options.sections }),
+		...(options.mediaSlots && { mediaSlots: options.mediaSlots }),
+		...(options.frameTarget && { frameTarget: options.frameTarget }),
+		universalAttributes: options.universalAttributes ?? 'auto',
+		...(options.provides && { provides: options.provides }),
+	});
+
+	// Record the base record reference so reference output can identify
+	// attributes inherited from a registered preset.
+	if (options.base) {
+		schemaBasePresets.set(schema, options.base);
+	}
+
+	return schema;
 }

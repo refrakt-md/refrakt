@@ -1,8 +1,25 @@
 import { describe, it, expect } from 'vitest';
 import Markdoc from '@markdoc/markdoc';
 const { Ast } = Markdoc;
-import { matchesType, resolveSequence, resolveDelimited, resolveSections, resolve, resolveContentModel, resolveListItems, evaluateCondition } from '../src/lib/resolver.js';
-import type { ContentFieldDefinition, DelimitedModel, SequenceModel, SectionsModel, CustomModel, ConditionalContentModel, ItemModel } from '@refrakt-md/types';
+import {
+	matchesType,
+	resolveSequence,
+	resolveDelimited,
+	resolveSections,
+	resolve,
+	resolveContentModel,
+	resolveListItems,
+	evaluateCondition,
+} from '../src/lib/resolver.js';
+import type {
+	ContentFieldDefinition,
+	DelimitedModel,
+	SequenceModel,
+	SectionsModel,
+	CustomModel,
+	ConditionalContentModel,
+	ItemModel,
+} from '@refrakt-md/types';
 
 // ---------------------------------------------------------------------------
 // Helpers — create synthetic AST nodes
@@ -106,7 +123,9 @@ describe('matchesType', () => {
 		// `![alt](src)` on its own line parses as `paragraph > inline > image`.
 		expect(matchesType(imageParagraph(), 'image')).toBe(true);
 		// A paragraph with prose plus an image is real text — not an image match.
-		const mixed = node('paragraph', {}, [node('inline', {}, [node('text', { content: 'see ' }), image()])]);
+		const mixed = node('paragraph', {}, [
+			node('inline', {}, [node('text', { content: 'see ' }), image()]),
+		]);
 		expect(matchesType(mixed, 'image')).toBe(false);
 		// A plain paragraph is still not an image.
 		expect(matchesType(paragraph(), 'image')).toBe(false);
@@ -134,9 +153,7 @@ describe('resolveSequence', () => {
 
 	it('unwraps a paragraph-wrapped image for an `image` field', () => {
 		const children = [imageParagraph('/portrait.png'), heading(2, 'Background')];
-		const fields: ContentFieldDefinition[] = [
-			{ name: 'portrait', match: 'image', optional: true },
-		];
+		const fields: ContentFieldDefinition[] = [{ name: 'portrait', match: 'image', optional: true }];
 
 		const result = resolveSequence(children, fields);
 		// Resolves to the bare image node, not the wrapping paragraph.
@@ -278,9 +295,7 @@ describe('resolveDelimited', () => {
 				{
 					name: 'media',
 					type: 'sequence',
-					fields: [
-						{ name: 'media', match: 'any', greedy: true },
-					],
+					fields: [{ name: 'media', match: 'any', greedy: true }],
 				},
 			],
 		};
@@ -312,9 +327,7 @@ describe('resolveDelimited', () => {
 				{
 					name: 'media',
 					type: 'sequence',
-					fields: [
-						{ name: 'media', match: 'any', greedy: true, optional: true },
-					],
+					fields: [{ name: 'media', match: 'any', greedy: true, optional: true }],
 				},
 			],
 		};
@@ -329,9 +342,7 @@ describe('resolveDelimited', () => {
 	});
 
 	it('handles dynamic zones', () => {
-		const children = [
-			paragraph('a'), hr(), paragraph('b'), hr(), paragraph('c'),
-		];
+		const children = [paragraph('a'), hr(), paragraph('b'), hr(), paragraph('c')];
 
 		const model: DelimitedModel = {
 			type: 'delimited',
@@ -339,9 +350,7 @@ describe('resolveDelimited', () => {
 			dynamicZones: true,
 			zoneModel: {
 				type: 'sequence',
-				fields: [
-					{ name: 'content', match: 'any', greedy: true },
-				],
+				fields: [{ name: 'content', match: 'any', greedy: true }],
 			},
 		};
 
@@ -362,9 +371,7 @@ describe('resolveDelimited', () => {
 				{
 					name: 'content',
 					type: 'sequence',
-					fields: [
-						{ name: 'title', match: 'heading', optional: true },
-					],
+					fields: [{ name: 'title', match: 'heading', optional: true }],
 				},
 			],
 		};
@@ -391,14 +398,10 @@ describe('resolveSections', () => {
 		const model: SectionsModel = {
 			type: 'sections',
 			sectionHeading: 'heading',
-			fields: [
-				{ name: 'preamble', match: 'any', greedy: true, optional: true },
-			],
+			fields: [{ name: 'preamble', match: 'any', greedy: true, optional: true }],
 			sectionModel: {
 				type: 'sequence',
-				fields: [
-					{ name: 'body', match: 'any', greedy: true, optional: true },
-				],
+				fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
 			},
 		};
 
@@ -424,9 +427,7 @@ describe('resolveSections', () => {
 			sectionHeading: 'heading:2',
 			sectionModel: {
 				type: 'sequence',
-				fields: [
-					{ name: 'body', match: 'any', greedy: true, optional: true },
-				],
+				fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
 			},
 		};
 
@@ -446,9 +447,7 @@ describe('resolveSections', () => {
 		const model: SectionsModel = {
 			type: 'sections',
 			sectionHeading: 'heading',
-			fields: [
-				{ name: 'content', match: 'any', greedy: true, optional: true },
-			],
+			fields: [{ name: 'content', match: 'any', greedy: true, optional: true }],
 			sectionModel: {
 				type: 'sequence',
 				fields: [],
@@ -485,31 +484,50 @@ describe('resolveSections', () => {
 				i18nAliases: { de: ['Akzeptanzkriterien'], 'de-AT': ['Abnahmekriterien'] },
 			},
 		},
-		sectionModel: { type: 'sequence', fields: [{ name: 'body', match: 'any', greedy: true, optional: true }] },
+		sectionModel: {
+			type: 'sequence',
+			fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
+		},
 	};
 
 	it('attaches a language-stable $canonicalSlug for a matched known section', () => {
-		const sections = resolveSections([heading(2, 'Acceptance Criteria'), paragraph('x')], knownModel).sections as any[];
+		const sections = resolveSections(
+			[heading(2, 'Acceptance Criteria'), paragraph('x')],
+			knownModel,
+		).sections as any[];
 		expect(sections[0].$canonicalName).toBe('Acceptance Criteria');
 		expect(sections[0].$canonicalSlug).toBe('acceptance-criteria');
 	});
 
 	it('matches a locale i18nAlias heading and still yields the canonical slug', () => {
-		const sections = resolveSections([heading(2, 'Akzeptanzkriterien'), paragraph('x')], knownModel, 'de').sections as any[];
+		const sections = resolveSections(
+			[heading(2, 'Akzeptanzkriterien'), paragraph('x')],
+			knownModel,
+			'de',
+		).sections as any[];
 		expect(sections[0].$canonicalName).toBe('Acceptance Criteria');
 		expect(sections[0].$canonicalSlug).toBe('acceptance-criteria');
 	});
 
 	it('applies BCP-47 region-strip so de-AT also matches de aliases', () => {
-		const s1 = resolveSections([heading(2, 'Akzeptanzkriterien'), paragraph('x')], knownModel, 'de-AT').sections as any[];
+		const s1 = resolveSections(
+			[heading(2, 'Akzeptanzkriterien'), paragraph('x')],
+			knownModel,
+			'de-AT',
+		).sections as any[];
 		expect(s1[0].$canonicalName).toBe('Acceptance Criteria');
 		// …and the region-specific alias matches too.
-		const s2 = resolveSections([heading(2, 'Abnahmekriterien'), paragraph('x')], knownModel, 'de-AT').sections as any[];
+		const s2 = resolveSections(
+			[heading(2, 'Abnahmekriterien'), paragraph('x')],
+			knownModel,
+			'de-AT',
+		).sections as any[];
 		expect(s2[0].$canonicalName).toBe('Acceptance Criteria');
 	});
 
 	it('does not match a locale alias without a configured locale', () => {
-		const sections = resolveSections([heading(2, 'Akzeptanzkriterien'), paragraph('x')], knownModel).sections as any[];
+		const sections = resolveSections([heading(2, 'Akzeptanzkriterien'), paragraph('x')], knownModel)
+			.sections as any[];
 		expect(sections[0].$canonicalName).toBeUndefined();
 		expect(sections[0].$canonicalSlug).toBeUndefined();
 	});
@@ -519,9 +537,13 @@ describe('resolveSections', () => {
 			type: 'sections',
 			sectionHeading: 'heading:2',
 			knownSections: { 'Blocked By': {} },
-			sectionModel: { type: 'sequence', fields: [{ name: 'body', match: 'any', greedy: true, optional: true }] },
+			sectionModel: {
+				type: 'sequence',
+				fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
+			},
 		};
-		const sections = resolveSections([heading(2, 'Blocked By'), paragraph('x')], model).sections as any[];
+		const sections = resolveSections([heading(2, 'Blocked By'), paragraph('x')], model)
+			.sections as any[];
 		expect(sections[0].$canonicalSlug).toBe('blocked-by');
 	});
 
@@ -539,14 +561,10 @@ describe('resolveSections', () => {
 		const model: SectionsModel = {
 			type: 'sections',
 			sectionHeading: 'heading',
-			fields: [
-				{ name: 'header', match: 'heading|paragraph', greedy: true, optional: true },
-			],
+			fields: [{ name: 'header', match: 'heading|paragraph', greedy: true, optional: true }],
 			sectionModel: {
 				type: 'sequence',
-				fields: [
-					{ name: 'body', match: 'any', greedy: true, optional: true },
-				],
+				fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
 			},
 		};
 
@@ -572,9 +590,7 @@ describe('resolveSections', () => {
 			sectionHeading: 'heading',
 			sectionModel: {
 				type: 'sequence',
-				fields: [
-					{ name: 'body', match: 'any', greedy: true, optional: true },
-				],
+				fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
 			},
 		};
 
@@ -598,9 +614,7 @@ describe('resolveSections', () => {
 			sectionHeading: 'heading',
 			sectionModel: {
 				type: 'sequence',
-				fields: [
-					{ name: 'body', match: 'any', greedy: true, optional: true },
-				],
+				fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
 			},
 		};
 
@@ -619,14 +633,10 @@ describe('resolveSections', () => {
 		const model: SectionsModel = {
 			type: 'sections',
 			sectionHeading: 'heading',
-			fields: [
-				{ name: 'preamble', match: 'any', greedy: true, optional: true },
-			],
+			fields: [{ name: 'preamble', match: 'any', greedy: true, optional: true }],
 			sectionModel: {
 				type: 'sequence',
-				fields: [
-					{ name: 'body', match: 'any', greedy: true, optional: true },
-				],
+				fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
 			},
 		};
 
@@ -652,9 +662,7 @@ describe('resolveSections', () => {
 			emitAttributes: { name: '$heading' },
 			sectionModel: {
 				type: 'sequence',
-				fields: [
-					{ name: 'body', match: 'any', greedy: true, optional: true },
-				],
+				fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
 			},
 		};
 
@@ -683,16 +691,12 @@ describe('resolveSections', () => {
 		const model: SectionsModel = {
 			type: 'sections',
 			sectionHeading: 'heading',
-			fields: [
-				{ name: 'header', match: 'paragraph', greedy: true, optional: true },
-			],
+			fields: [{ name: 'header', match: 'paragraph', greedy: true, optional: true }],
 			emitTag: 'step',
 			emitAttributes: { name: '$heading' },
 			sectionModel: {
 				type: 'sequence',
-				fields: [
-					{ name: 'body', match: 'any', greedy: true, optional: true },
-				],
+				fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
 			},
 		};
 
@@ -722,9 +726,7 @@ describe('resolveSections', () => {
 			},
 			sectionModel: {
 				type: 'sequence',
-				fields: [
-					{ name: 'body', match: 'any', greedy: true, optional: true },
-				],
+				fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
 			},
 		};
 
@@ -760,9 +762,7 @@ describe('resolveSections', () => {
 			emitAttributes: { date: '$date', label: '$label' },
 			sectionModel: {
 				type: 'sequence',
-				fields: [
-					{ name: 'body', match: 'any', greedy: true, optional: true },
-				],
+				fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
 			},
 		};
 
@@ -790,9 +790,7 @@ describe('resolveSections', () => {
 				sectionHeading: 'heading:3',
 				sectionModel: {
 					type: 'sequence',
-					fields: [
-						{ name: 'body', match: 'any', greedy: true, optional: true },
-					],
+					fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
 				},
 			},
 		};
@@ -821,9 +819,7 @@ describe('resolveSections', () => {
 			sectionHeading: 'heading',
 			sectionModel: {
 				type: 'sequence',
-				fields: [
-					{ name: 'body', match: 'any', greedy: true, optional: true },
-				],
+				fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
 			},
 		};
 
@@ -842,9 +838,7 @@ describe('resolveSections', () => {
 			sectionHeading: 'heading',
 			sectionModel: {
 				type: 'sequence',
-				fields: [
-					{ name: 'body', match: 'any', greedy: true, optional: true },
-				],
+				fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
 			},
 		};
 
@@ -999,9 +993,7 @@ describe('resolve', () => {
 			sectionHeading: 'heading',
 			sectionModel: {
 				type: 'sequence',
-				fields: [
-					{ name: 'body', match: 'any', greedy: true, optional: true },
-				],
+				fields: [{ name: 'body', match: 'any', greedy: true, optional: true }],
 			},
 		};
 
@@ -1269,44 +1261,26 @@ describe('conditional content models (when)', () => {
 
 describe('evaluateCondition', () => {
 	it('evaluates attribute in condition', () => {
-		expect(evaluateCondition(
-			{ attribute: 'kind', in: ['class', 'interface'] },
-			[], { kind: 'class' },
-		)).toBe(true);
-		expect(evaluateCondition(
-			{ attribute: 'kind', in: ['class', 'interface'] },
-			[], { kind: 'function' },
-		)).toBe(false);
+		expect(
+			evaluateCondition({ attribute: 'kind', in: ['class', 'interface'] }, [], { kind: 'class' }),
+		).toBe(true);
+		expect(
+			evaluateCondition({ attribute: 'kind', in: ['class', 'interface'] }, [], {
+				kind: 'function',
+			}),
+		).toBe(false);
 	});
 
 	it('evaluates attribute exists condition', () => {
-		expect(evaluateCondition(
-			{ attribute: 'icon', exists: true },
-			[], { icon: 'star' },
-		)).toBe(true);
-		expect(evaluateCondition(
-			{ attribute: 'icon', exists: true },
-			[], {},
-		)).toBe(false);
-		expect(evaluateCondition(
-			{ attribute: 'icon', exists: true },
-			[], { icon: '' },
-		)).toBe(false);
+		expect(evaluateCondition({ attribute: 'icon', exists: true }, [], { icon: 'star' })).toBe(true);
+		expect(evaluateCondition({ attribute: 'icon', exists: true }, [], {})).toBe(false);
+		expect(evaluateCondition({ attribute: 'icon', exists: true }, [], { icon: '' })).toBe(false);
 	});
 
 	it('evaluates hasChild condition', () => {
-		expect(evaluateCondition(
-			{ hasChild: 'heading:2' },
-			[heading(2, 'test')], {},
-		)).toBe(true);
-		expect(evaluateCondition(
-			{ hasChild: 'heading:2' },
-			[heading(3, 'test')], {},
-		)).toBe(false);
-		expect(evaluateCondition(
-			{ hasChild: 'heading:2' },
-			[], {},
-		)).toBe(false);
+		expect(evaluateCondition({ hasChild: 'heading:2' }, [heading(2, 'test')], {})).toBe(true);
+		expect(evaluateCondition({ hasChild: 'heading:2' }, [heading(3, 'test')], {})).toBe(false);
+		expect(evaluateCondition({ hasChild: 'heading:2' }, [], {})).toBe(false);
 	});
 });
 
@@ -1337,11 +1311,7 @@ describe('resolveListItems', () => {
 	});
 
 	it('extracts link href with extract property', () => {
-		const items = list(false, [
-			listItem([
-				link('/audio/track.mp3', [strong('Track Name')]),
-			]),
-		]);
+		const items = list(false, [listItem([link('/audio/track.mp3', [strong('Track Name')])])]);
 
 		const itemModel: ItemModel = {
 			fields: [
@@ -1356,9 +1326,7 @@ describe('resolveListItems', () => {
 	});
 
 	it('extracts text patterns with regex', () => {
-		const items = list(false, [
-			listItem([textNode('Brand identity: $8,000')]),
-		]);
+		const items = list(false, [listItem([textNode('Brand identity: $8,000')])]);
 
 		const itemModel: ItemModel = {
 			fields: [
@@ -1373,9 +1341,7 @@ describe('resolveListItems', () => {
 	});
 
 	it('handles remainder pattern', () => {
-		const items = list(false, [
-			listItem([textNode('a pinch of salt')]),
-		]);
+		const items = list(false, [listItem([textNode('a pinch of salt')])]);
 
 		const itemModel: ItemModel = {
 			fields: [
@@ -1390,9 +1356,7 @@ describe('resolveListItems', () => {
 	});
 
 	it('extracts with regex and remainder together', () => {
-		const items = list(false, [
-			listItem([textNode('500g bread flour')]),
-		]);
+		const items = list(false, [listItem([textNode('500g bread flour')])]);
 
 		const itemModel: ItemModel = {
 			fields: [
@@ -1409,9 +1373,7 @@ describe('resolveListItems', () => {
 	});
 
 	it('handles mixed inline and text patterns', () => {
-		const items = list(false, [
-			listItem([strong('Sarah Chen'), textNode(' — VP Engineering')]),
-		]);
+		const items = list(false, [listItem([strong('Sarah Chen'), textNode(' — VP Engineering')])]);
 
 		const itemModel: ItemModel = {
 			fields: [
@@ -1430,9 +1392,7 @@ describe('resolveListItems', () => {
 			listItem([textNode('(1:30) Verse 1')]),
 			listItem([textNode('(3:00) Chorus')]),
 		]);
-		const items = list(false, [
-			listItem([strong('Track Name'), textNode(' (5:55)'), subList]),
-		]);
+		const items = list(false, [listItem([strong('Track Name'), textNode(' (5:55)'), subList])]);
 
 		const itemModel: ItemModel = {
 			fields: [

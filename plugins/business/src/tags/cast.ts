@@ -1,7 +1,15 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes, pageSectionProperties, resolveImageScheme, LAYOUT, layoutMatches } from '@refrakt-md/runes';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	asNodes,
+	pageSectionProperties,
+	resolveImageScheme,
+	LAYOUT,
+	layoutMatches,
+} from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 
 export const castMember = createContentModelSchema({
@@ -12,9 +20,7 @@ export const castMember = createContentModelSchema({
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
@@ -37,7 +43,9 @@ export const castMember = createContentModelSchema({
 
 		children.push(nameTag, roleTag, body.next());
 
-		return createComponentRenderable({ rune: 'cast-member', schemaOrgType: 'Person',
+		return createComponentRenderable({
+			rune: 'cast-member',
+			schemaOrgType: 'Person',
 			tag: 'li',
 			refs: {
 				name: nameTag,
@@ -57,20 +65,33 @@ export const castMember = createContentModelSchema({
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
 // what a section *is* (ADR-028).
-export const castSections = { preamble: 'preamble', headline: 'title', blurb: 'description' } as const;
+export const castSections = {
+	preamble: 'preamble',
+	headline: 'title',
+	blurb: 'description',
+} as const;
 
 export const cast = createContentModelSchema({
 	sections: castSections,
 	attributes: {
 		// `grid`/`list`/`carousel` from the canonical const (ADR-018 / SPEC-100).
-		layout: { type: String, required: false, matches: layoutMatches([LAYOUT.grid, LAYOUT.list, LAYOUT.carousel]), description: 'Visual arrangement of members: grid (cards), list (compact roster), or carousel (scroll-snap track).' },
+		layout: {
+			type: String,
+			required: false,
+			matches: layoutMatches([LAYOUT.grid, LAYOUT.list, LAYOUT.carousel]),
+			description:
+				'Visual arrangement of members: grid (cards), list (compact roster), or carousel (scroll-snap track).',
+		},
 	},
 	contentModel: {
 		type: 'sequence' as const,
 		fields: [
 			{ name: 'header', match: 'heading|paragraph|image', optional: true, greedy: true },
 			{
-				name: 'members', match: 'list', optional: true, greedy: true,
+				name: 'members',
+				match: 'list',
+				optional: true,
+				greedy: true,
 				itemModel: {
 					fields: [
 						{ name: 'image', match: 'image' as const, optional: true, extract: 'src' },
@@ -106,7 +127,8 @@ export const cast = createContentModelSchema({
 		}
 		children.push(membersList);
 
-		return createComponentRenderable({ rune: 'cast',
+		return createComponentRenderable({
+			rune: 'cast',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

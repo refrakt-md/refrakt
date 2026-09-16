@@ -1,214 +1,218 @@
 @layer skin {
-/* Hero — skin. The relative root, preamble/eyebrow/actions/button layout + their
+	/* Hero — skin. The relative root, preamble/eyebrow/actions/button layout + their
  * auto-margin alignment + mobile stack, the media-position flip, the responsive
  * image box, and the cover-band height/containment authority live in
  * @refrakt-md/skeleton (styles/runes/hero.css). What remains here is skin:
  * spacing, type, the headline gradient, surface chrome, the scrim, radii, and
  * text-align. */
-/* The hero rests above the --rf-text scale's top step (4xl = 2.5rem); stated
+	/* The hero rests above the --rf-text scale's top step (4xl = 2.5rem); stated
  * here rather than promoted to a --rf-text-5xl token, because the type scale is
  * a typed contract every theme must satisfy (SPEC-048) and one rune's one-off
  * does not belong in it. The prominence ramp scales around this value. */
-.rf-hero {
-	--rf-title-size: 3.25rem;
-	padding: 7rem 2rem 6.5rem;
-	background-size: cover;
-	background-position: center;
-}
-.rf-hero__preamble {
-	gap: 0.25rem;
-	margin-bottom: 2rem;
-}
-/* Higher specificity needed to override .rf-hero p (0,1,1) */
-.rf-hero .rf-hero__eyebrow {
-	font-size: var(--rf-text-sm);
-	font-weight: var(--rf-weight-semibold);
-	letter-spacing: var(--rf-tracking-wider);
-	text-transform: uppercase;
-	color: var(--rf-color-primary);
-	margin: 0 0 1rem;
-	max-width: none;
-}
-/* Pill-badge variant when eyebrow contains a link */
-.rf-hero .rf-hero__eyebrow:has(a) {
-	padding: 0.25rem 0.875rem;
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-full);
-	color: var(--rf-color-text);
-	font-weight: var(--rf-weight-normal);
-	text-transform: none;
-	letter-spacing: var(--rf-tracking-normal);
-	transition: border-color 150ms ease;
-}
-.rf-hero .rf-hero__eyebrow:has(a):hover {
-	border-color: var(--rf-color-muted);
-}
-.rf-hero .rf-hero__eyebrow:has(a) a {
-	color: var(--rf-color-primary);
-	font-weight: var(--rf-weight-semibold);
-	text-decoration: none;
-}
-.rf-hero .rf-hero__eyebrow:has(a) a::before {
-	border-radius: inherit;
-}
-.rf-hero__image {
-	margin-bottom: 1.5rem;
-}
-.rf-hero__actions {
-	max-width: 720px;
-	gap: 0.75rem;
-}
-.rf-hero[data-align="center"] .rf-hero__preamble,
-.rf-hero[data-align="center"] > h1,
-.rf-hero[data-align="center"] > p {
-	text-align: center;
-}
-.rf-hero[data-align="left"] .rf-hero__preamble,
-.rf-hero[data-align="left"] > h1,
-.rf-hero[data-align="left"] > p {
-	text-align: left;
-}
-.rf-hero[data-align="right"] .rf-hero__preamble,
-.rf-hero[data-align="right"] > h1,
-.rf-hero[data-align="right"] > p {
-	text-align: right;
-}
-.rf-hero__actions pre {
-	margin: 0;
-	padding: 0.7rem 1.75rem;
-	font-size: var(--rf-text);
-	border-radius: var(--rf-radius-sm);
-	background: var(--rf-color-code-bg);
-	color: var(--rf-color-code-text);
-	border: 1px solid var(--rf-color-border);
-	white-space: nowrap;
-}
-.rf-hero h1,
-.rf-hero__headline {
-	/* WORK-538 — read the prominence override first; the fallback is this rune's
-	 * resting size, stated as --rf-title-size on the root so the prominence ramp
-	 * can compute from it. */
-	font-size: var(--rf-prominence-size, var(--rf-title-size));
-	font-weight: var(--rf-weight-bold);
-	letter-spacing: var(--rf-tracking-tight);
-	line-height: var(--rf-leading-tight);
-	margin: 0 0 1rem;
-	background: linear-gradient(135deg, var(--rf-color-text) 0%, var(--rf-color-muted) 100%);
-	-webkit-background-clip: text;
-	-webkit-text-fill-color: transparent;
-	background-clip: text;
-}
-/* Higher specificity needed to override .rf-hero p (0,1,1) */
-.rf-hero p,
-.rf-hero .rf-hero__blurb {
-	font-size: var(--rf-text-xl);
-	line-height: var(--rf-leading-relaxed);
-	color: var(--rf-color-muted);
-	margin: 0 0 2rem;
-	max-width: 40rem;
-}
-.rf-hero[data-align="center"] > p,
-.rf-hero[data-align="center"] .rf-hero__blurb {
-	max-width: 560px;
-	margin-bottom: 2rem;
-}
-.rf-hero ul,
-.rf-hero nav {
-	gap: 0.75rem;
-	padding: 0;
-	margin: 0;
-}
-.rf-hero li {
-	padding: 0;
-	margin: 0;
-}
-.rf-hero li a,
-.rf-hero nav a {
-	padding: 0.7rem 1.75rem;
-	border-radius: var(--rf-radius-sm);
-	text-decoration: none;
-	font-weight: var(--rf-weight-semibold);
-	font-size: var(--rf-text);
-	transition: all 200ms ease;
-}
-.rf-hero li:first-child a {
-	background: var(--rf-color-primary);
-	color: white;
-	box-shadow: var(--rf-shadow-sm);
-}
-.rf-hero li:first-child a:hover {
-	background: var(--rf-color-primary-hover);
-	box-shadow: var(--rf-shadow-md);
-	transform: translateY(-1px);
-	text-decoration: none;
-}
-.rf-hero li:not(:first-child) a {
-	background: var(--rf-color-surface);
-	color: var(--rf-color-text);
-	border: 1px solid var(--rf-color-border);
-}
-.rf-hero li:not(:first-child) a:hover {
-	background: var(--rf-color-surface-hover);
-	border-color: var(--rf-color-surface-active);
-	text-decoration: none;
-}
-.rf-hero__media {
-	margin-top: 3rem;
-	border-radius: var(--rf-radius-lg);
-}
-/* Rune-guest chrome handling (don't round a sandbox / codegroup / juxtapose) is
- * the shared `data-guest-fit="bleed"` behaviour — see layouts/split.css. The
- * hero only sets the image radius tier here. */
-.rf-hero[data-media-position="top"] > .rf-hero__media {
-	margin-top: 0;
-	margin-bottom: 3rem;
-}
-.rf-hero__media pre {
-	margin: 0;
-}
-
-/* ── Cover mode (SPEC-101) — skin (the height/containment authority is skeleton).
- * The section's generous padding moves to the overlaid content — on the root it
- * would inset the media well (the backdrop must be flush with the band). */
-.rf-hero--cover {
-	padding: 0;
-}
-.rf-hero--cover > [data-name="content"] {
-	--rune-padding: 7rem 2rem 6.5rem;
-}
-
-/* Mobile: the desktop overlay padding (7rem bands) would eat most of the well
- * on a phone — tighten it so the content fits the band. */
-@media (max-width: 640px) {
-	.rf-hero--cover > [data-name="content"] {
-		--rune-padding: 3.5rem 1.25rem 3rem;
+	.rf-hero {
+		--rf-title-size: 3.25rem;
+		padding: 7rem 2rem 6.5rem;
+		background-size: cover;
+		background-position: center;
 	}
-}
-
-/* A full-bleed band sits flush — no media radius on the well. */
-.rf-hero--cover > [data-section="media"] {
-	border-radius: 0;
-}
-
-/* Legibility over the scrim: the primary action hard-codes white text above,
- * which inverts to white-on-near-white once the cover scheme flips
- * --rf-color-primary on the dark overlay. Use the scheme's tokens instead. */
-.rf-hero--cover li:first-child a {
-	color: var(--rf-color-on-accent, var(--rf-color-bg));
-}
-
-/* The default cover scrim is edge-weighted (a caption-strip treatment); under
- * the centred band it would leave the headline on undarkened media. With no
- * explicit `content-place`, darken the well evenly (slightly bottom-weighted). */
-.rf-hero--cover:is([data-content-place="auto"], :not([data-content-place])):not([data-scrim="none"]) > [data-section="media"]::after {
-	background-image: var(--cover-scrim-image, linear-gradient(rgb(0 0 0 / 0.45), rgb(0 0 0 / 0.35) 50%, rgb(0 0 0 / 0.55)));
-}
-
-/* Mobile: stack actions full-width so the code block and button line up */
-@media (max-width: 640px) {
-	.rf-hero__actions {
+	.rf-hero__preamble {
+		gap: 0.25rem;
+		margin-bottom: 2rem;
+	}
+	/* Higher specificity needed to override .rf-hero p (0,1,1) */
+	.rf-hero .rf-hero__eyebrow {
+		font-size: var(--rf-text-sm);
+		font-weight: var(--rf-weight-semibold);
+		letter-spacing: var(--rf-tracking-wider);
+		text-transform: uppercase;
+		color: var(--rf-color-primary);
+		margin: 0 0 1rem;
 		max-width: none;
 	}
-}
+	/* Pill-badge variant when eyebrow contains a link */
+	.rf-hero .rf-hero__eyebrow:has(a) {
+		padding: 0.25rem 0.875rem;
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-full);
+		color: var(--rf-color-text);
+		font-weight: var(--rf-weight-normal);
+		text-transform: none;
+		letter-spacing: var(--rf-tracking-normal);
+		transition: border-color 150ms ease;
+	}
+	.rf-hero .rf-hero__eyebrow:has(a):hover {
+		border-color: var(--rf-color-muted);
+	}
+	.rf-hero .rf-hero__eyebrow:has(a) a {
+		color: var(--rf-color-primary);
+		font-weight: var(--rf-weight-semibold);
+		text-decoration: none;
+	}
+	.rf-hero .rf-hero__eyebrow:has(a) a::before {
+		border-radius: inherit;
+	}
+	.rf-hero__image {
+		margin-bottom: 1.5rem;
+	}
+	.rf-hero__actions {
+		max-width: 720px;
+		gap: 0.75rem;
+	}
+	.rf-hero[data-align="center"] .rf-hero__preamble,
+	.rf-hero[data-align="center"] > h1,
+	.rf-hero[data-align="center"] > p {
+		text-align: center;
+	}
+	.rf-hero[data-align="left"] .rf-hero__preamble,
+	.rf-hero[data-align="left"] > h1,
+	.rf-hero[data-align="left"] > p {
+		text-align: left;
+	}
+	.rf-hero[data-align="right"] .rf-hero__preamble,
+	.rf-hero[data-align="right"] > h1,
+	.rf-hero[data-align="right"] > p {
+		text-align: right;
+	}
+	.rf-hero__actions pre {
+		margin: 0;
+		padding: 0.7rem 1.75rem;
+		font-size: var(--rf-text);
+		border-radius: var(--rf-radius-sm);
+		background: var(--rf-color-code-bg);
+		color: var(--rf-color-code-text);
+		border: 1px solid var(--rf-color-border);
+		white-space: nowrap;
+	}
+	.rf-hero h1,
+	.rf-hero__headline {
+		/* WORK-538 — read the prominence override first; the fallback is this rune's
+	 * resting size, stated as --rf-title-size on the root so the prominence ramp
+	 * can compute from it. */
+		font-size: var(--rf-prominence-size, var(--rf-title-size));
+		font-weight: var(--rf-weight-bold);
+		letter-spacing: var(--rf-tracking-tight);
+		line-height: var(--rf-leading-tight);
+		margin: 0 0 1rem;
+		background: linear-gradient(135deg, var(--rf-color-text) 0%, var(--rf-color-muted) 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+	}
+	/* Higher specificity needed to override .rf-hero p (0,1,1) */
+	.rf-hero p,
+	.rf-hero .rf-hero__blurb {
+		font-size: var(--rf-text-xl);
+		line-height: var(--rf-leading-relaxed);
+		color: var(--rf-color-muted);
+		margin: 0 0 2rem;
+		max-width: 40rem;
+	}
+	.rf-hero[data-align="center"] > p,
+	.rf-hero[data-align="center"] .rf-hero__blurb {
+		max-width: 560px;
+		margin-bottom: 2rem;
+	}
+	.rf-hero ul,
+	.rf-hero nav {
+		gap: 0.75rem;
+		padding: 0;
+		margin: 0;
+	}
+	.rf-hero li {
+		padding: 0;
+		margin: 0;
+	}
+	.rf-hero li a,
+	.rf-hero nav a {
+		padding: 0.7rem 1.75rem;
+		border-radius: var(--rf-radius-sm);
+		text-decoration: none;
+		font-weight: var(--rf-weight-semibold);
+		font-size: var(--rf-text);
+		transition: all 200ms ease;
+	}
+	.rf-hero li:first-child a {
+		background: var(--rf-color-primary);
+		color: white;
+		box-shadow: var(--rf-shadow-sm);
+	}
+	.rf-hero li:first-child a:hover {
+		background: var(--rf-color-primary-hover);
+		box-shadow: var(--rf-shadow-md);
+		transform: translateY(-1px);
+		text-decoration: none;
+	}
+	.rf-hero li:not(:first-child) a {
+		background: var(--rf-color-surface);
+		color: var(--rf-color-text);
+		border: 1px solid var(--rf-color-border);
+	}
+	.rf-hero li:not(:first-child) a:hover {
+		background: var(--rf-color-surface-hover);
+		border-color: var(--rf-color-surface-active);
+		text-decoration: none;
+	}
+	.rf-hero__media {
+		margin-top: 3rem;
+		border-radius: var(--rf-radius-lg);
+	}
+	/* Rune-guest chrome handling (don't round a sandbox / codegroup / juxtapose) is
+ * the shared `data-guest-fit="bleed"` behaviour — see layouts/split.css. The
+ * hero only sets the image radius tier here. */
+	.rf-hero[data-media-position="top"] > .rf-hero__media {
+		margin-top: 0;
+		margin-bottom: 3rem;
+	}
+	.rf-hero__media pre {
+		margin: 0;
+	}
 
+	/* ── Cover mode (SPEC-101) — skin (the height/containment authority is skeleton).
+ * The section's generous padding moves to the overlaid content — on the root it
+ * would inset the media well (the backdrop must be flush with the band). */
+	.rf-hero--cover {
+		padding: 0;
+	}
+	.rf-hero--cover > [data-name="content"] {
+		--rune-padding: 7rem 2rem 6.5rem;
+	}
+
+	/* Mobile: the desktop overlay padding (7rem bands) would eat most of the well
+ * on a phone — tighten it so the content fits the band. */
+	@media (max-width: 640px) {
+		.rf-hero--cover > [data-name="content"] {
+			--rune-padding: 3.5rem 1.25rem 3rem;
+		}
+	}
+
+	/* A full-bleed band sits flush — no media radius on the well. */
+	.rf-hero--cover > [data-section="media"] {
+		border-radius: 0;
+	}
+
+	/* Legibility over the scrim: the primary action hard-codes white text above,
+ * which inverts to white-on-near-white once the cover scheme flips
+ * --rf-color-primary on the dark overlay. Use the scheme's tokens instead. */
+	.rf-hero--cover li:first-child a {
+		color: var(--rf-color-on-accent, var(--rf-color-bg));
+	}
+
+	/* The default cover scrim is edge-weighted (a caption-strip treatment); under
+ * the centred band it would leave the headline on undarkened media. With no
+ * explicit `content-place`, darken the well evenly (slightly bottom-weighted). */
+	.rf-hero--cover:is([data-content-place="auto"], :not([data-content-place])):not(
+		[data-scrim="none"]
+	) > [data-section="media"]::after {
+		background-image: var(
+			--cover-scrim-image,
+			linear-gradient(rgb(0 0 0 / 0.45), rgb(0 0 0 / 0.35) 50%, rgb(0 0 0 / 0.55))
+		);
+	}
+
+	/* Mobile: stack actions full-width so the code block and button line up */
+	@media (max-width: 640px) {
+		.rf-hero__actions {
+			max-width: none;
+		}
+	}
 }

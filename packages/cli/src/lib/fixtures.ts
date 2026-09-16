@@ -32,7 +32,11 @@ export function getFixture(runeName: string, attrOverrides?: Record<string, stri
  *  fixture). Returns the source unchanged when there are no overrides. Shared by
  *  `getFixture` and the inspect/gallery variant matrices so plugin fixtures get
  *  the same variant expansion as core ones. */
-export function applyFixtureOverrides(source: string, runeName: string, attrOverrides?: Record<string, string>): string {
+export function applyFixtureOverrides(
+	source: string,
+	runeName: string,
+	attrOverrides?: Record<string, string>,
+): string {
 	if (!attrOverrides || Object.keys(attrOverrides).length === 0) {
 		return source;
 	}
@@ -40,7 +44,11 @@ export function applyFixtureOverrides(source: string, runeName: string, attrOver
 }
 
 /** Replace or add attributes in the opening tag of a fixture */
-function applyOverrides(source: string, tagName: string, overrides: Record<string, string>): string {
+function applyOverrides(
+	source: string,
+	tagName: string,
+	overrides: Record<string, string>,
+): string {
 	// Match the opening tag: {% tagName ... %} or {% tagName ... /%}
 	const openTagPattern = new RegExp(`(\\{%\\s*${escapeRegex(tagName)})([^%]*?)(/?%\\})`);
 	const match = source.match(openTagPattern);

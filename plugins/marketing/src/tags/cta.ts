@@ -1,12 +1,23 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, linkItem, pageSectionProperties } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	RenderableNodeCursor,
+	linkItem,
+	pageSectionProperties,
+} from '@refrakt-md/runes';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
 // what a section *is* (ADR-028).
-export const ctaSections = { preamble: 'preamble', headline: 'title', blurb: 'description' } as const;
+export const ctaSections = {
+	preamble: 'preamble',
+	headline: 'title',
+	blurb: 'description',
+} as const;
 
 export const cta = createContentModelSchema({
 	sections: ctaSections,
@@ -31,9 +42,9 @@ export const cta = createContentModelSchema({
 				item: linkItem,
 				fence: {
 					transform(node: Node) {
-						const output = new RenderableNodeCursor(
-							[Markdoc.transform(node, baseConfig)] as RenderableTreeNode[],
-						);
+						const output = new RenderableNodeCursor([
+							Markdoc.transform(node, baseConfig),
+						] as RenderableTreeNode[]);
 						return new Tag('div', {}, [output.next()]);
 					},
 				},
@@ -45,7 +56,8 @@ export const cta = createContentModelSchema({
 
 		const actionsDiv = actions.wrap('div');
 
-		return createComponentRenderable({ rune: 'call-to-action',
+		return createComponentRenderable({
+			rune: 'call-to-action',
 			tag: 'section',
 			property: 'contentSection',
 			class: attrs.class,
@@ -57,10 +69,7 @@ export const cta = createContentModelSchema({
 				action: actions.flatten().tags('li'),
 				command: actions.flatten().tags('div'),
 			},
-			children: [
-				header.wrap('header').next(),
-				actionsDiv.next(),
-			],
+			children: [header.wrap('header').next(), actionsDiv.next()],
 		});
 	},
 });

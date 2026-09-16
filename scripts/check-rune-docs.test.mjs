@@ -13,11 +13,19 @@ import {
 } from './check-rune-docs.mjs';
 
 const pkg = (names, aliases = []) => ({ names: new Set(names), aliases: new Set(aliases) });
-const pages = (entries) => new Map(entries.map(([name, isRune, rel]) => [name, { isRune, rel: rel ?? `${name}.md` }]));
+const pages = (entries) =>
+	new Map(entries.map(([name, isRune, rel]) => [name, { isRune, rel: rel ?? `${name}.md` }]));
 
 describe('computeDrift (WORK-387)', () => {
 	it('passes when every documentable rune has a type: rune page', () => {
-		const drift = computeDrift(pkg(['hint', 'card']), pages([['hint', true], ['card', true]]), new Set());
+		const drift = computeDrift(
+			pkg(['hint', 'card']),
+			pages([
+				['hint', true],
+				['card', true],
+			]),
+			new Set(),
+		);
 		expect(drift).toEqual({ missing: [], orphans: [], mislabelled: [] });
 	});
 
@@ -27,17 +35,35 @@ describe('computeDrift (WORK-387)', () => {
 	});
 
 	it('ignores aliases and PAGELESS runes', () => {
-		const drift = computeDrift(pkg(['hint', 'faq', 'accordion-item'], ['faq']), pages([['hint', true]]), new Set(['accordion-item']));
+		const drift = computeDrift(
+			pkg(['hint', 'faq', 'accordion-item'], ['faq']),
+			pages([['hint', true]]),
+			new Set(['accordion-item']),
+		);
 		expect(drift.missing).toEqual([]);
 	});
 
 	it('flags an orphan page that declares type: rune with no backing rune', () => {
-		const drift = computeDrift(pkg(['hint']), pages([['hint', true], ['removed', true, 'removed.md']]), new Set());
+		const drift = computeDrift(
+			pkg(['hint']),
+			pages([
+				['hint', true],
+				['removed', true, 'removed.md'],
+			]),
+			new Set(),
+		);
 		expect(drift.orphans).toEqual(['removed.md']);
 	});
 
 	it('does not flag a concept page (no type: rune) as an orphan', () => {
-		const drift = computeDrift(pkg(['hint']), pages([['hint', true], ['surfaces', false]]), new Set());
+		const drift = computeDrift(
+			pkg(['hint']),
+			pages([
+				['hint', true],
+				['surfaces', false],
+			]),
+			new Set(),
+		);
 		expect(drift.orphans).toEqual([]);
 	});
 
@@ -52,8 +78,16 @@ describe('computeDrift (WORK-387)', () => {
 // checkout doesn't fail spuriously. CI builds before testing, so it runs there.
 describe.skipIf(!existsSync(CLI_PATH))('rune docs are in parity (live)', () => {
 	it('every documentable rune has a page and every type: rune page has a backing rune', () => {
-		const { missing, orphans, mislabelled } = computeDrift(loadPackageRunes(), findDocPages(), PAGELESS);
-		expect({ missing, orphans, mislabelled }).toEqual({ missing: [], orphans: [], mislabelled: [] });
+		const { missing, orphans, mislabelled } = computeDrift(
+			loadPackageRunes(),
+			findDocPages(),
+			PAGELESS,
+		);
+		expect({ missing, orphans, mislabelled }).toEqual({
+			missing: [],
+			orphans: [],
+			mislabelled: [],
+		});
 	});
 
 	it('no PAGELESS rune actually has a doc page (keeps the known-gaps set honest)', () => {

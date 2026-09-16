@@ -7,12 +7,16 @@ describe('embed tag', () => {
 Watch the video.
 {% /embed %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'embed');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'embed');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('figure');
 
-		const embedUrlMeta = findTag(tag!, t =>
-			t.name === 'meta' && typeof t.attributes.content === 'string' && t.attributes.content.includes('youtube-nocookie.com/embed/')
+		const embedUrlMeta = findTag(
+			tag!,
+			(t) =>
+				t.name === 'meta' &&
+				typeof t.attributes.content === 'string' &&
+				t.attributes.content.includes('youtube-nocookie.com/embed/'),
 		);
 		expect(embedUrlMeta).toBeDefined();
 	});
@@ -20,9 +24,13 @@ Watch the video.
 	it('should detect youtu.be short URLs', () => {
 		const result = parse(`{% embed url="https://youtu.be/dQw4w9WgXcQ" %}{% /embed %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'embed');
-		const embedUrlMeta = findTag(tag!, t =>
-			t.name === 'meta' && typeof t.attributes.content === 'string' && t.attributes.content.includes('youtube-nocookie.com/embed/dQw4w9WgXcQ')
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'embed');
+		const embedUrlMeta = findTag(
+			tag!,
+			(t) =>
+				t.name === 'meta' &&
+				typeof t.attributes.content === 'string' &&
+				t.attributes.content.includes('youtube-nocookie.com/embed/dQw4w9WgXcQ'),
 		);
 		expect(embedUrlMeta).toBeDefined();
 	});
@@ -30,9 +38,12 @@ Watch the video.
 	it('should default aspect ratio to 16:9 (56.25% padding on the wrapper)', () => {
 		const result = parse(`{% embed url="https://example.com/video" %}{% /embed %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'embed');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'embed');
 		// SPEC-081: the transform builds the wrapper; aspect drives its padding.
-		const wrapper = findTag(tag!, t => t.name === 'div' && t.attributes['data-name'] === 'wrapper');
+		const wrapper = findTag(
+			tag!,
+			(t) => t.name === 'div' && t.attributes['data-name'] === 'wrapper',
+		);
 		expect(wrapper).toBeDefined();
 		expect(String(wrapper!.attributes.style)).toContain('56.25%');
 	});
@@ -42,7 +53,7 @@ Watch the video.
 
 		// `type` is a vestigial attribute now (no output surface); it must still
 		// be accepted and the embed must transform.
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'embed');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'embed');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('figure');
 	});
@@ -52,15 +63,15 @@ Watch the video.
 Watch this video for a demo.
 {% /embed %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'embed');
-		const fallback = findTag(tag!, t => t.name === 'div');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'embed');
+		const fallback = findTag(tag!, (t) => t.name === 'div');
 		expect(fallback).toBeDefined();
 	});
 
 	it('should detect CodePen URLs', () => {
 		const result = parse(`{% embed url="https://codepen.io/user/pen/abc123" %}{% /embed %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'embed');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'embed');
 		// SPEC-082: provider rides the data-rune-fields bag (→ data-provider).
 		const fields = JSON.parse(tag!.attributes['data-rune-fields'] as string);
 		expect(fields.provider).toBe('codepen');

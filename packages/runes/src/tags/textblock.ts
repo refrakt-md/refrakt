@@ -17,13 +17,16 @@ export const textblock = createContentModelSchema({
 	attributes: {
 		columns: { type: Number, required: false, description: 'Number of text columns' },
 		lead: { type: Boolean, required: false, description: 'Style the first paragraph as a lead' },
-		align: { type: String, required: false, matches: alignValues.slice(), description: 'Text alignment' },
+		align: {
+			type: String,
+			required: false,
+			matches: alignValues.slice(),
+			description: 'Text alignment',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const children = new RenderableNodeCursor(
@@ -48,7 +51,8 @@ export const textblock = createContentModelSchema({
 		if (alignMeta) childNodes.push(alignMeta);
 		childNodes.push(body.next());
 
-		return createComponentRenderable({ rune: 'text-block',
+		return createComponentRenderable({
+			rune: 'text-block',
 			tag: 'div',
 			properties: {
 				...(columnsMeta ? { columns: columnsMeta } : {}),

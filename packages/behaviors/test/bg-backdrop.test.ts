@@ -21,11 +21,15 @@ let ioCb: IOCb | undefined;
 function stubIO(): void {
 	ioCb = undefined;
 	(globalThis as Record<string, unknown>).IntersectionObserver = class {
-		constructor(cb: IOCb) { ioCb = cb; }
+		constructor(cb: IOCb) {
+			ioCb = cb;
+		}
 		observe() {}
 		unobserve() {}
 		disconnect() {}
-		takeRecords() { return []; }
+		takeRecords() {
+			return [];
+		}
 	};
 }
 const setReduce = (m: boolean) => {
@@ -93,7 +97,12 @@ describe('backdrop vs presentational enhancement (SPEC-104 §2)', () => {
 
 	it('enhances a backdrop guest but skips a presentational one', () => {
 		const enhanced: string[] = [];
-		registerBehaviors({ 'spec104-probe': (el) => { enhanced.push(el.parentElement!.getAttribute('data-guest-posture')!); return () => {}; } });
+		registerBehaviors({
+			'spec104-probe': (el) => {
+				enhanced.push(el.parentElement!.getAttribute('data-guest-posture')!);
+				return () => {};
+			},
+		});
 
 		rune('presentational');
 		rune('backdrop');

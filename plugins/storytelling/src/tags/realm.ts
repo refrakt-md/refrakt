@@ -1,7 +1,14 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor, SplitLayoutModel, buildLayoutMetas } from '@refrakt-md/runes';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	asNodes,
+	RenderableNodeCursor,
+	SplitLayoutModel,
+	buildLayoutMetas,
+} from '@refrakt-md/runes';
 import { extractScene, buildStoryContent } from './common.js';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
@@ -17,9 +24,7 @@ export const realmSection = createContentModelSchema({
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
@@ -27,7 +32,8 @@ export const realmSection = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable({ rune: 'realm-section',
+		return createComponentRenderable({
+			rune: 'realm-section',
 			tag: 'div',
 			refs: { name: nameTag, body: body.tag('div') },
 			children: [nameTag, body.next()],
@@ -39,7 +45,12 @@ export const realmSection = createContentModelSchema({
 // from the theme config rather than owned by it: a theme may not redefine
 // what a section *is* (ADR-028).
 // SPEC-125 Phase 1 — see `characterSections`; same shape, same correction.
-export const realmSections = { preamble: 'preamble', name: 'title', scene: 'media', body: 'body' } as const;
+export const realmSections = {
+	preamble: 'preamble',
+	name: 'title',
+	scene: 'media',
+	body: 'body',
+} as const;
 export const realmMediaSlots = { scene: 'cover' } as const;
 
 export const realm = createContentModelSchema({
@@ -49,10 +60,26 @@ export const realm = createContentModelSchema({
 	base: SplitLayoutModel,
 	attributes: {
 		name: { type: String, required: true, description: 'Display name shown in the realm header.' },
-		type: { type: String, required: false, description: 'Kind of location (e.g. city, forest, dungeon, plane, continent).' },
-		scale: { type: String, required: false, description: 'Geographic scope of the realm (e.g. room, district, region, world).' },
-		tags: { type: String, required: false, description: 'Comma-separated keywords for filtering and cross-referencing.' },
-		parent: { type: String, required: false, description: 'Name of the containing realm for hierarchical nesting.' },
+		type: {
+			type: String,
+			required: false,
+			description: 'Kind of location (e.g. city, forest, dungeon, plane, continent).',
+		},
+		scale: {
+			type: String,
+			required: false,
+			description: 'Geographic scope of the realm (e.g. room, district, region, world).',
+		},
+		tags: {
+			type: String,
+			required: false,
+			description: 'Comma-separated keywords for filtering and cross-referencing.',
+		},
+		parent: {
+			type: String,
+			required: false,
+			description: 'Name of the containing realm for hierarchical nesting.',
+		},
 	},
 	contentModel: () => ({
 		type: 'sections' as const,
@@ -85,7 +112,12 @@ export const realm = createContentModelSchema({
 
 		// Layout meta tags
 		const { metas: layoutMetas, children: layoutChildren } = buildLayoutMetas(attrs);
-		const { mediaPosition: mediaPositionMeta, mediaRatio: mediaRatioMeta, valign: valignMeta, collapse: collapseMeta } = layoutMetas;
+		const {
+			mediaPosition: mediaPositionMeta,
+			mediaRatio: mediaRatioMeta,
+			valign: valignMeta,
+			collapse: collapseMeta,
+		} = layoutMetas;
 
 		// Extract scene image (shared helper)
 		const { sceneDiv, sceneImgTag, extraDescription } = extractScene(resolved.scene, config);
@@ -94,17 +126,18 @@ export const realm = createContentModelSchema({
 		// content column (preamble header + metadata + body + sections) and the
 		// split sees only scene (media) + content.
 		const { bodyDiv, sectionsContainer, sections, hasSections } = buildStoryContent(
-			extraDescription, resolved.description, sectionNodes, 'RealmSection', config,
+			extraDescription,
+			resolved.description,
+			sectionNodes,
+			'RealmSection',
+			config,
 		);
 
 		// Build children array. Scene first so it sits on top in stacked /
 		// media-position="top".
 		const children: any[] = [];
 		if (sceneDiv) children.push(sceneDiv.next());
-		children.push(
-			realmTypeMeta, scaleMeta, tagsMeta, parentMeta,
-			...layoutChildren,
-		);
+		children.push(realmTypeMeta, scaleMeta, tagsMeta, parentMeta, ...layoutChildren);
 		children.push(nameTag);
 		if (bodyDiv) children.push(bodyDiv.next());
 		if (sectionsContainer) children.push(sectionsContainer.next());
@@ -118,7 +151,9 @@ export const realm = createContentModelSchema({
 			schemaMap.image = sceneImgTag;
 		}
 
-		return createComponentRenderable({ rune: 'realm', schemaOrgType: 'Place',
+		return createComponentRenderable({
+			rune: 'realm',
+			schemaOrgType: 'Place',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
@@ -135,6 +170,10 @@ export const realm = createContentModelSchema({
 			refs: {
 				name: nameTag,
 				...(sceneDiv ? { scene: sceneDiv } : {}),
+				// WORK-561 — the scene image survives and is rendered, so it is a ref.
+				// Named `sceneImage` after its `scene` wrapper, so the wrapper and the
+				// image inside it are separately addressable.
+				...(sceneImgTag ? { sceneImage: sceneImgTag } : {}),
 				...(bodyDiv ? { body: bodyDiv } : {}),
 				...(sectionsContainer ? { sections: sectionsContainer } : {}),
 			},

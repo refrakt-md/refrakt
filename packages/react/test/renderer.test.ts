@@ -5,7 +5,11 @@ import { makeTag } from '@refrakt-md/transform';
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
 import { Renderer } from '../src/Renderer.js';
 
-function render(node: RendererNode, components?: Record<string, any>, elements?: Record<string, any>): string {
+function render(
+	node: RendererNode,
+	components?: Record<string, any>,
+	elements?: Record<string, any>,
+): string {
 	return renderToStaticMarkup(createElement(Renderer, { node, components, elements }));
 }
 
@@ -44,10 +48,7 @@ describe('React Renderer', () => {
 	});
 
 	it('renders nested elements', () => {
-		const node = makeTag('div', {}, [
-			makeTag('h1', {}, ['Title']),
-			makeTag('p', {}, ['Body']),
-		]);
+		const node = makeTag('div', {}, [makeTag('h1', {}, ['Title']), makeTag('p', {}, ['Body'])]);
 		expect(render(node)).toBe('<div><h1>Title</h1><p>Body</p></div>');
 	});
 
@@ -111,9 +112,7 @@ describe('React Renderer', () => {
 			makeTag('div', { 'data-name': 'media' }, [
 				makeTag('img', { src: '/photo.jpg', alt: 'Dish' }),
 			]),
-			makeTag('div', { 'data-name': 'content' }, [
-				makeTag('p', {}, ['Instructions here']),
-			]),
+			makeTag('div', { 'data-name': 'content' }, [makeTag('p', {}, ['Instructions here'])]),
 		]);
 
 		const html = render(node, { recipe: Recipe });
@@ -163,7 +162,9 @@ describe('React Renderer', () => {
 
 	it('dispatches to element override by tag name', () => {
 		function TableWrapper({ tag, children }: any) {
-			return createElement('div', { className: 'table-wrap' },
+			return createElement(
+				'div',
+				{ className: 'table-wrap' },
 				createElement('table', null, children),
 			);
 		}
@@ -191,5 +192,4 @@ describe('React Renderer', () => {
 		expect(html).toContain('component-override');
 		expect(html).not.toContain('element-override');
 	});
-
 });

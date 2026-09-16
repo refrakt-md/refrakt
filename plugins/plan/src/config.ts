@@ -52,7 +52,15 @@ export const config: Record<string, RuneConfig> = {
 				metaType: 'status',
 				// `implemented` (in main) and `shipped` (released) both read positive;
 				// they extend the accepted → built → available happy path (SPEC-049).
-				sentimentMap: { draft: 'neutral', review: 'caution', accepted: 'positive', implemented: 'positive', shipped: 'positive', superseded: 'caution', deprecated: 'negative' },
+				sentimentMap: {
+					draft: 'neutral',
+					review: 'caution',
+					accepted: 'positive',
+					implemented: 'positive',
+					shipped: 'positive',
+					superseded: 'caution',
+					deprecated: 'negative',
+				},
 			},
 			version: { metaType: 'tag', label: 'Version', condition: 'version' },
 			supersedes: { metaType: 'id', label: 'Supersedes', condition: 'supersedes' },
@@ -63,7 +71,10 @@ export const config: Record<string, RuneConfig> = {
 		},
 		blocks: {
 			eyebrow: { fields: ['id', { field: 'status', align: 'end' }], layout: 'bar' },
-			metadata: { fields: ['version', 'supersedes', 'released-in', 'created', 'modified'], layout: 'definition-list' },
+			metadata: {
+				fields: ['version', 'supersedes', 'released-in', 'created', 'modified'],
+				layout: 'definition-list',
+			},
 			tags: { fields: ['tags'], layout: 'bar' },
 		},
 		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
@@ -95,10 +106,21 @@ export const config: Record<string, RuneConfig> = {
 				metaType: 'status',
 				// `cancelled` / `superseded` are terminal-but-retired: caution (muted),
 				// never positive — retiring is not completing (SPEC-117).
-				sentimentMap: { draft: 'neutral', ready: 'neutral', 'in-progress': 'neutral', review: 'caution', done: 'positive', blocked: 'negative', pending: 'neutral', cancelled: 'caution', superseded: 'caution' },
+				sentimentMap: {
+					draft: 'neutral',
+					ready: 'neutral',
+					'in-progress': 'neutral',
+					review: 'caution',
+					done: 'positive',
+					blocked: 'negative',
+					pending: 'neutral',
+					cancelled: 'caution',
+					superseded: 'caution',
+				},
 			},
 			priority: {
-				metaType: 'category', label: 'Priority',
+				metaType: 'category',
+				label: 'Priority',
 				sentimentMap: { critical: 'negative', high: 'caution', medium: 'neutral', low: 'neutral' },
 			},
 			complexity: { metaType: 'quantity', label: 'Complexity' },
@@ -113,7 +135,20 @@ export const config: Record<string, RuneConfig> = {
 		},
 		blocks: {
 			eyebrow: { fields: ['id', { field: 'status', align: 'end' }], layout: 'bar' },
-			metadata: { fields: ['priority', 'complexity', 'assignee', 'milestone', 'source', 'supersedes', 'pr', 'created', 'modified'], layout: 'definition-list' },
+			metadata: {
+				fields: [
+					'priority',
+					'complexity',
+					'assignee',
+					'milestone',
+					'source',
+					'supersedes',
+					'pr',
+					'created',
+					'modified',
+				],
+				layout: 'definition-list',
+			},
 			tags: { fields: ['tags'], layout: 'bar' },
 		},
 		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
@@ -141,11 +176,24 @@ export const config: Record<string, RuneConfig> = {
 			id: idField,
 			status: {
 				metaType: 'status',
-				sentimentMap: { reported: 'neutral', confirmed: 'caution', 'in-progress': 'neutral', fixed: 'positive', wontfix: 'neutral', duplicate: 'neutral' },
+				sentimentMap: {
+					reported: 'neutral',
+					confirmed: 'caution',
+					'in-progress': 'neutral',
+					fixed: 'positive',
+					wontfix: 'neutral',
+					duplicate: 'neutral',
+				},
 			},
 			severity: {
-				metaType: 'category', label: 'Severity',
-				sentimentMap: { critical: 'negative', major: 'caution', minor: 'neutral', cosmetic: 'neutral' },
+				metaType: 'category',
+				label: 'Severity',
+				sentimentMap: {
+					critical: 'negative',
+					major: 'caution',
+					minor: 'neutral',
+					cosmetic: 'neutral',
+				},
 			},
 			assignee: tagField('Assignee', 'assignee'),
 			milestone: tagField('Milestone', 'milestone'),
@@ -157,7 +205,10 @@ export const config: Record<string, RuneConfig> = {
 		},
 		blocks: {
 			eyebrow: { fields: ['id', { field: 'status', align: 'end' }], layout: 'bar' },
-			metadata: { fields: ['severity', 'assignee', 'milestone', 'source', 'pr', 'created', 'modified'], layout: 'definition-list' },
+			metadata: {
+				fields: ['severity', 'assignee', 'milestone', 'source', 'pr', 'created', 'modified'],
+				layout: 'definition-list',
+			},
 			tags: { fields: ['tags'], layout: 'bar' },
 		},
 		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },
@@ -182,7 +233,13 @@ export const config: Record<string, RuneConfig> = {
 			id: idField,
 			status: {
 				metaType: 'status',
-				sentimentMap: { proposed: 'neutral', accepted: 'positive', rejected: 'negative', superseded: 'caution', deprecated: 'negative' },
+				sentimentMap: {
+					proposed: 'neutral',
+					accepted: 'positive',
+					rejected: 'negative',
+					superseded: 'caution',
+					deprecated: 'negative',
+				},
 			},
 			date: timeField('Date', 'date'),
 			supersedes: { metaType: 'id', label: 'Supersedes', condition: 'supersedes' },
@@ -193,7 +250,10 @@ export const config: Record<string, RuneConfig> = {
 		},
 		blocks: {
 			eyebrow: { fields: ['id', { field: 'status', align: 'end' }], layout: 'bar' },
-			metadata: { fields: ['date', 'supersedes', 'source', 'created', 'modified'], layout: 'definition-list' },
+			metadata: {
+				fields: ['date', 'supersedes', 'source', 'created', 'modified'],
+				layout: 'definition-list',
+			},
 			tags: { fields: ['tags'], layout: 'bar' },
 		},
 		layout: { root: ['eyebrow', 'title', 'blurb', 'metadata', 'tags', 'body'] },

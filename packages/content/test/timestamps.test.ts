@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getGitTimestamps, getStatTimestamps, resolveTimestamps, type FileTimestamps } from '../src/timestamps.js';
+import {
+	getGitTimestamps,
+	getStatTimestamps,
+	resolveTimestamps,
+	type FileTimestamps,
+} from '../src/timestamps.js';
 
 describe('getGitTimestamps', () => {
 	it('should return a Map', () => {

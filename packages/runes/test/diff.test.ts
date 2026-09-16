@@ -13,7 +13,7 @@ const x = 2;
 \`\`\`
 {% /diff %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diff');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('div');
 	});
@@ -29,7 +29,7 @@ const x: number = 1;
 \`\`\`
 {% /diff %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diff');
 
 		expect(fields(tag).mode).toBe('split');
 		expect(fields(tag).language).toBe('typescript');
@@ -48,20 +48,20 @@ const z = 3;
 \`\`\`
 {% /diff %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
-		const lines = findAllTags(tag!, t => t.attributes['data-name'] === 'line');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diff');
+		const lines = findAllTags(tag!, (t) => t.attributes['data-name'] === 'line');
 		expect(lines.length).toBeGreaterThan(0);
 
 		// "const x = 1;" is equal in both
-		const equalLine = lines.find(l => l.attributes['data-line-status'] === 'equal');
+		const equalLine = lines.find((l) => l.attributes['data-line-status'] === 'equal');
 		expect(equalLine).toBeDefined();
 
 		// "const y = 2;" is removed
-		const removeLine = lines.find(l => l.attributes['data-line-status'] === 'remove');
+		const removeLine = lines.find((l) => l.attributes['data-line-status'] === 'remove');
 		expect(removeLine).toBeDefined();
 
 		// "const z = 3;" is added
-		const addLine = lines.find(l => l.attributes['data-line-status'] === 'add');
+		const addLine = lines.find((l) => l.attributes['data-line-status'] === 'add');
 		expect(addLine).toBeDefined();
 	});
 
@@ -76,17 +76,17 @@ let y = 2;
 \`\`\`
 {% /diff %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
-		const lineContents = findAllTags(tag!, t => t.attributes['data-name'] === 'line-content');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diff');
+		const lineContents = findAllTags(tag!, (t) => t.attributes['data-name'] === 'line-content');
 		expect(lineContents.length).toBeGreaterThan(0);
 
 		// Line content should have data-language for the highlight transform
-		const hasLang = lineContents.some(lc => lc.attributes['data-language'] === 'javascript');
+		const hasLang = lineContents.some((lc) => lc.attributes['data-language'] === 'javascript');
 		expect(hasLang).toBe(true);
 
 		// Line content children should be plain text (not highlighted HTML)
-		const hasPlainText = lineContents.some(lc =>
-			lc.children.some(c => typeof c === 'string' && !c.includes('<span'))
+		const hasPlainText = lineContents.some((lc) =>
+			lc.children.some((c) => typeof c === 'string' && !c.includes('<span')),
 		);
 		expect(hasPlainText).toBe(true);
 	});
@@ -102,12 +102,12 @@ const x = 1;
 \`\`\`
 {% /diff %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
-		const lines = findAllTags(tag!, t => t.attributes['data-name'] === 'line');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diff');
+		const lines = findAllTags(tag!, (t) => t.attributes['data-name'] === 'line');
 		expect(lines.length).toBeGreaterThan(0);
 
 		// All lines should be equal
-		expect(lines.every(l => l.attributes['data-line-status'] === 'equal')).toBe(true);
+		expect(lines.every((l) => l.attributes['data-line-status'] === 'equal')).toBe(true);
 	});
 
 	it('should produce split renderable with panels', () => {
@@ -121,16 +121,19 @@ let y = 2;
 \`\`\`
 {% /diff %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
-		const splitContainer = findTag(tag!, t => t.attributes['data-name'] === 'split-container');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diff');
+		const splitContainer = findTag(tag!, (t) => t.attributes['data-name'] === 'split-container');
 		expect(splitContainer).toBeDefined();
 
-		const panels = findAllTags(splitContainer!, t => t.attributes['data-name'] === 'panel');
+		const panels = findAllTags(splitContainer!, (t) => t.attributes['data-name'] === 'panel');
 		expect(panels.length).toBe(2);
 
 		// Per-panel Before/After headers were removed in favour of a single
 		// optional full-width header above the split container.
-		const perPanelHeaders = findAllTags(splitContainer!, t => t.attributes['data-name'] === 'header');
+		const perPanelHeaders = findAllTags(
+			splitContainer!,
+			(t) => t.attributes['data-name'] === 'header',
+		);
 		expect(perPanelHeaders.length).toBe(0);
 	});
 
@@ -145,8 +148,8 @@ let y = 2;
 \`\`\`
 {% /diff %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
-		const header = findTag(tag!, t => t.attributes['data-name'] === 'header');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diff');
+		const header = findTag(tag!, (t) => t.attributes['data-name'] === 'header');
 		expect(header).toBeUndefined();
 	});
 
@@ -163,24 +166,27 @@ const z = 3;
 \`\`\`
 {% /diff %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
-		const splitContainer = findTag(tag!, t => t.attributes['data-name'] === 'split-container');
-		const panels = findAllTags(splitContainer!, t => t.attributes['data-name'] === 'panel');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diff');
+		const splitContainer = findTag(tag!, (t) => t.attributes['data-name'] === 'split-container');
+		const panels = findAllTags(splitContainer!, (t) => t.attributes['data-name'] === 'panel');
 
 		// The +/- prefix column is gone — directional cue is encoded in the
 		// number's colour + the absence of a number on the opposite side.
-		const prefixSpans = findAllTags(splitContainer!, t => t.attributes['data-name'] === 'gutter-prefix');
+		const prefixSpans = findAllTags(
+			splitContainer!,
+			(t) => t.attributes['data-name'] === 'gutter-prefix',
+		);
 		expect(prefixSpans.length).toBe(0);
 
 		// Left panel: numbers tagged data-side="before".
-		const beforeNums = findAllTags(panels[0], t => t.attributes['data-name'] === 'gutter-num');
+		const beforeNums = findAllTags(panels[0], (t) => t.attributes['data-name'] === 'gutter-num');
 		expect(beforeNums.length).toBeGreaterThan(0);
-		expect(beforeNums.every(n => n.attributes['data-side'] === 'before')).toBe(true);
+		expect(beforeNums.every((n) => n.attributes['data-side'] === 'before')).toBe(true);
 
 		// Right panel: numbers tagged data-side="after".
-		const afterNums = findAllTags(panels[1], t => t.attributes['data-name'] === 'gutter-num');
+		const afterNums = findAllTags(panels[1], (t) => t.attributes['data-name'] === 'gutter-num');
 		expect(afterNums.length).toBeGreaterThan(0);
-		expect(afterNums.every(n => n.attributes['data-side'] === 'after')).toBe(true);
+		expect(afterNums.every((n) => n.attributes['data-side'] === 'after')).toBe(true);
 	});
 
 	it('should leave the off-side number empty on add/remove rows in unified mode', () => {
@@ -196,23 +202,25 @@ const z = 3;
 \`\`\`
 {% /diff %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
-		const lines = findAllTags(tag!, t => t.attributes['data-name'] === 'line');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diff');
+		const lines = findAllTags(tag!, (t) => t.attributes['data-name'] === 'line');
 
-		const removeLine = lines.find(l => l.attributes['data-line-status'] === 'remove');
+		const removeLine = lines.find((l) => l.attributes['data-line-status'] === 'remove');
 		expect(removeLine).toBeDefined();
-		const removeNums = findAllTags(removeLine!, t => t.attributes['data-name'] === 'gutter-num');
+		const removeNums = findAllTags(removeLine!, (t) => t.attributes['data-name'] === 'gutter-num');
 		expect(removeNums.length).toBe(2);
 		// before-num populated, after-num empty
-		expect(removeNums.find(n => n.attributes['data-side'] === 'before')!.children[0]).not.toBe('');
-		expect(removeNums.find(n => n.attributes['data-side'] === 'after')!.children[0]).toBe('');
+		expect(removeNums.find((n) => n.attributes['data-side'] === 'before')!.children[0]).not.toBe(
+			'',
+		);
+		expect(removeNums.find((n) => n.attributes['data-side'] === 'after')!.children[0]).toBe('');
 
-		const addLine = lines.find(l => l.attributes['data-line-status'] === 'add');
+		const addLine = lines.find((l) => l.attributes['data-line-status'] === 'add');
 		expect(addLine).toBeDefined();
-		const addNums = findAllTags(addLine!, t => t.attributes['data-name'] === 'gutter-num');
+		const addNums = findAllTags(addLine!, (t) => t.attributes['data-name'] === 'gutter-num');
 		// after-num populated, before-num empty
-		expect(addNums.find(n => n.attributes['data-side'] === 'after')!.children[0]).not.toBe('');
-		expect(addNums.find(n => n.attributes['data-side'] === 'before')!.children[0]).toBe('');
+		expect(addNums.find((n) => n.attributes['data-side'] === 'after')!.children[0]).not.toBe('');
+		expect(addNums.find((n) => n.attributes['data-side'] === 'before')!.children[0]).toBe('');
 	});
 
 	it('should not emit a gutter-prefix column in unified mode', () => {
@@ -226,8 +234,8 @@ const x = 2;
 \`\`\`
 {% /diff %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
-		const prefixSpans = findAllTags(tag!, t => t.attributes['data-name'] === 'gutter-prefix');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diff');
+		const prefixSpans = findAllTags(tag!, (t) => t.attributes['data-name'] === 'gutter-prefix');
 		expect(prefixSpans.length).toBe(0);
 	});
 
@@ -242,14 +250,17 @@ const x = 2;
 \`\`\`
 {% /diff %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
-		const header = findTag(tag!, t => t.attributes['data-name'] === 'header');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diff');
+		const header = findTag(tag!, (t) => t.attributes['data-name'] === 'header');
 		expect(header).toBeDefined();
 		expect(header!.children).toContain('src/app.ts');
 
 		// The header sits at the rune root, not inside a panel.
-		const splitContainer = findTag(tag!, t => t.attributes['data-name'] === 'split-container');
-		const headerInsidePanel = findTag(splitContainer!, t => t.attributes['data-name'] === 'header');
+		const splitContainer = findTag(tag!, (t) => t.attributes['data-name'] === 'split-container');
+		const headerInsidePanel = findTag(
+			splitContainer!,
+			(t) => t.attributes['data-name'] === 'header',
+		);
 		expect(headerInsidePanel).toBeUndefined();
 	});
 
@@ -266,8 +277,8 @@ const x = 1;
 const x = 2;
 \`\`\`
 {% /diff %}`);
-			const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
-			const header = findTag(tag!, t => t.attributes['data-name'] === 'header');
+			const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diff');
+			const header = findTag(tag!, (t) => t.attributes['data-name'] === 'header');
 			expect(header).toBeDefined();
 			expect(header!.children).toContain('theme.ts');
 		});
@@ -282,8 +293,8 @@ const x = 1;
 const x = 2;
 \`\`\`
 {% /diff %}`);
-			const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
-			const header = findTag(tag!, t => t.attributes['data-name'] === 'header');
+			const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diff');
+			const header = findTag(tag!, (t) => t.attributes['data-name'] === 'header');
 			expect(header).toBeDefined();
 			expect(header!.children?.[0]).toBe('old/theme.ts → new/theme.ts');
 		});
@@ -298,8 +309,8 @@ const x = 1;
 const x = 2;
 \`\`\`
 {% /diff %}`);
-			const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
-			const header = findTag(tag!, t => t.attributes['data-name'] === 'header');
+			const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diff');
+			const header = findTag(tag!, (t) => t.attributes['data-name'] === 'header');
 			expect(header!.children?.[0]).toBe('explicit');
 		});
 
@@ -317,12 +328,22 @@ const y = 1;
 const z = 1;
 \`\`\`
 {% /diff %}`);
-			const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
-			const beforeGutters = findAllTags(tag!, t => t.attributes['data-name'] === 'gutter-num' && t.attributes['data-side'] === 'before');
-			const afterGutters = findAllTags(tag!, t => t.attributes['data-name'] === 'gutter-num' && t.attributes['data-side'] === 'after');
+			const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diff');
+			const beforeGutters = findAllTags(
+				tag!,
+				(t) => t.attributes['data-name'] === 'gutter-num' && t.attributes['data-side'] === 'before',
+			);
+			const afterGutters = findAllTags(
+				tag!,
+				(t) => t.attributes['data-name'] === 'gutter-num' && t.attributes['data-side'] === 'after',
+			);
 			// First non-empty before gutter should start at 50, not 1.
-			const beforeFirst = beforeGutters.map(g => String(g.children?.[0] ?? '')).find(s => s !== '');
-			const afterFirst = afterGutters.map(g => String(g.children?.[0] ?? '')).find(s => s !== '');
+			const beforeFirst = beforeGutters
+				.map((g) => String(g.children?.[0] ?? ''))
+				.find((s) => s !== '');
+			const afterFirst = afterGutters
+				.map((g) => String(g.children?.[0] ?? ''))
+				.find((s) => s !== '');
 			expect(beforeFirst).toBe('50');
 			expect(afterFirst).toBe('100');
 		});
@@ -340,12 +361,18 @@ const x = 2;
 			// No data-highlight-lines on any diff descendant — the annotation
 			// is read at the rune level (not at all, in fact) and never
 			// propagated to the rendered <pre>/<code>.
-			const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diff');
-			const hl = findTag(tag!, t => 'data-highlight-lines' in (t.attributes ?? {}));
+			const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diff');
+			const hl = findTag(tag!, (t) => 'data-highlight-lines' in (t.attributes ?? {}));
 			expect(hl).toBeUndefined();
 			// And the diff still rendered cleanly — content with an add and a remove.
-			const lines = findAllTags(tag!, t => t.attributes['data-name'] === 'line');
-			expect(lines.some(l => l.attributes['data-line-status'] === 'add' || l.attributes['data-line-status'] === 'remove')).toBe(true);
+			const lines = findAllTags(tag!, (t) => t.attributes['data-name'] === 'line');
+			expect(
+				lines.some(
+					(l) =>
+						l.attributes['data-line-status'] === 'add' ||
+						l.attributes['data-line-status'] === 'remove',
+				),
+			).toBe(true);
 		});
 	});
 });

@@ -24,16 +24,16 @@ const isT = (c: unknown): c is SerializedTag =>
 
 function allText(node: unknown, out: string[] = []): string[] {
 	if (typeof node === 'string') out.push(node);
-	else if (isT(node)) node.children.forEach(c => allText(c, out));
-	else if (Array.isArray(node)) node.forEach(c => allText(c, out));
+	else if (isT(node)) node.children.forEach((c) => allText(c, out));
+	else if (Array.isArray(node)) node.forEach((c) => allText(c, out));
 	return out;
 }
 
 function allAttrValues(node: unknown, out: string[] = []): string[] {
 	if (isT(node)) {
 		for (const v of Object.values(node.attributes)) if (typeof v === 'string') out.push(v);
-		node.children.forEach(c => allAttrValues(c, out));
-	} else if (Array.isArray(node)) node.forEach(c => allAttrValues(c, out));
+		node.children.forEach((c) => allAttrValues(c, out));
+	} else if (Array.isArray(node)) node.forEach((c) => allAttrValues(c, out));
 	return out;
 }
 
@@ -48,9 +48,15 @@ describe('SPEC-035 Zone 4 — computed transforms', () => {
 	it('localizes prev/next labels', () => {
 		const nav = [
 			makeTag('section', { 'data-rune': 'nav-group' }, [
-				makeTag('div', { 'data-rune': 'nav-item' }, [makeTag('span', { 'data-field': 'slug' }, ['a'])]),
-				makeTag('div', { 'data-rune': 'nav-item' }, [makeTag('span', { 'data-field': 'slug' }, ['b'])]),
-				makeTag('div', { 'data-rune': 'nav-item' }, [makeTag('span', { 'data-field': 'slug' }, ['c'])]),
+				makeTag('div', { 'data-rune': 'nav-item' }, [
+					makeTag('span', { 'data-field': 'slug' }, ['a']),
+				]),
+				makeTag('div', { 'data-rune': 'nav-item' }, [
+					makeTag('span', { 'data-field': 'slug' }, ['b']),
+				]),
+				makeTag('div', { 'data-rune': 'nav-item' }, [
+					makeTag('span', { 'data-field': 'slug' }, ['c']),
+				]),
 			]),
 		];
 		const pages = [

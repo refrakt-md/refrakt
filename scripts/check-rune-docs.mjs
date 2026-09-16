@@ -81,8 +81,7 @@ export const PAGELESS = new Map([
 	// Internal — not authored directly, so their content belongs on no page at
 	// all. `null` is a different answer from "documented on the parent's page",
 	// and the generator must not confuse the two.
-	['error', null],  // validation error reporting — never authored
-	['region', null],  // layout — documented in layout.md
+	['region', null], // layout — documented in layout.md
 ]);
 
 /** The active package set's runes + aliases, from the built CLI. */
@@ -108,11 +107,17 @@ export function findDocPages(dir = RUNES_DIR) {
 	const walk = (d) => {
 		for (const entry of readdirSync(d)) {
 			const abs = join(d, entry);
-			if (statSync(abs).isDirectory()) { walk(abs); continue; }
+			if (statSync(abs).isDirectory()) {
+				walk(abs);
+				continue;
+			}
 			if (!entry.endsWith('.md') || entry === '_layout.md') continue;
 			const fm = readFileSync(abs, 'utf8').match(/^---\n([\s\S]*?)\n---/);
 			const isRune = !!fm && /^type:\s*rune\s*$/m.test(fm[1]);
-			pages.set(basename(entry, '.md'), { rel: relative(RUNES_DIR, abs).split('\\').join('/'), isRune });
+			pages.set(basename(entry, '.md'), {
+				rel: relative(RUNES_DIR, abs).split('\\').join('/'),
+				isRune,
+			});
 		}
 	};
 	walk(dir);
@@ -124,9 +129,9 @@ export function findDocPages(dir = RUNES_DIR) {
  * @returns `{ missing, orphans, mislabelled }` — each an array naming the rune.
  */
 export function computeDrift({ names, aliases }, docPages, pageless = PAGELESS) {
-	const missing = [];      // documentable rune with no doc page
-	const orphans = [];      // page declares `type: rune` but no backing rune
-	const mislabelled = [];  // rune has a page, but the page lacks `type: rune`
+	const missing = []; // documentable rune with no doc page
+	const orphans = []; // page declares `type: rune` but no backing rune
+	const mislabelled = []; // rune has a page, but the page lacks `type: rune`
 
 	for (const name of names) {
 		if (aliases.has(name) || pageless.has(name)) continue;
@@ -187,14 +192,20 @@ export function attributeCoverage(artifact, dir = RUNES_DIR) {
 		if (!byPage.has(row.page)) byPage.set(row.page, new Set());
 		byPage.get(row.page).add(row.rune);
 	}
-	const files = new Map([...findDocPages(dir)].map(([page, { rel }]) => [page, join(RUNES_DIR, rel)]));
+	const files = new Map(
+		[...findDocPages(dir)].map(([page, { rel }]) => [page, join(RUNES_DIR, rel)]),
+	);
 	const missing = [];
 	for (const [page, runes] of byPage) {
 		const file = files.get(page);
-		if (!file) { missing.push(`${page} (no page file)`); continue; }
+		if (!file) {
+			missing.push(`${page} (no page file)`);
+			continue;
+		}
 		const text = readFileSync(file, 'utf8');
 		for (const rune of runes) {
-			if (!text.includes(`variables={r: "rune:${rune}"}`)) missing.push(`${rune} (on /runes/${page})`);
+			if (!text.includes(`variables={r: "rune:${rune}"}`))
+				missing.push(`${rune} (on /runes/${page})`);
 		}
 	}
 	return missing.sort();
@@ -212,7 +223,10 @@ function main() {
 	if (missing.length) {
 		failed = true;
 		console.error(`✗ ${missing.length} rune(s) have no /runes/<name> doc page:`);
-		for (const n of missing) console.error(`    ${n}  — add site/content/runes/.../${n}.md, or add "${n}" to PAGELESS if it's a child/internal rune`);
+		for (const n of missing)
+			console.error(
+				`    ${n}  — add site/content/runes/.../${n}.md, or add "${n}" to PAGELESS if it's a child/internal rune`,
+			);
 	}
 	if (orphans.length) {
 		failed = true;
@@ -221,8 +235,11 @@ function main() {
 	}
 	if (mislabelled.length) {
 		failed = true;
-		console.error(`✗ ${mislabelled.length} rune doc page(s) are missing \`type: rune\` frontmatter:`);
-		for (const n of mislabelled) console.error(`    ${n}  — run \`node scripts/backfill-rune-metadata.mjs\``);
+		console.error(
+			`✗ ${mislabelled.length} rune doc page(s) are missing \`type: rune\` frontmatter:`,
+		);
+		for (const n of mislabelled)
+			console.error(`    ${n}  — run \`node scripts/backfill-rune-metadata.mjs\``);
 	}
 
 	// WORK-548 — the content half: the artifact is fresh, every rune with rows
@@ -241,20 +258,30 @@ function main() {
 		if (uncovered.length) {
 			failed = true;
 			console.error(`✗ ${uncovered.length} rune(s) have generated attribute rows no page renders:`);
-			for (const n of uncovered) console.error(`    ${n}  — add {% include file="rune-attributes.md" variables={r: "rune:<name>"} /%}`);
+			for (const n of uncovered)
+				console.error(
+					`    ${n}  — add {% include file="rune-attributes.md" variables={r: "rune:<name>"} /%}`,
+				);
 		}
 
 		const handWritten = handWrittenTables(artifact);
 		if (handWritten.length) {
 			failed = true;
-			console.error(`✗ ${handWritten.length} page(s) hand-write an attribute table beside the generated one:`);
-			for (const n of handWritten) console.error(`    ${n}  — delete the table; the include renders it from the schema`);
+			console.error(
+				`✗ ${handWritten.length} page(s) hand-write an attribute table beside the generated one:`,
+			);
+			for (const n of handWritten)
+				console.error(`    ${n}  — delete the table; the include renders it from the schema`);
 		}
 	}
 
 	if (failed) process.exit(1);
-	console.log(`✓ rune docs in parity — every documentable rune has a page, every type: rune page has a backing rune,`);
-	console.log(`  and every generated attribute table is rendered from the schema rather than copied`);
+	console.log(
+		`✓ rune docs in parity — every documentable rune has a page, every type: rune page has a backing rune,`,
+	);
+	console.log(
+		`  and every generated attribute table is rendered from the schema rather than copied`,
+	);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) main();

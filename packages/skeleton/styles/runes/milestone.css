@@ -24,7 +24,7 @@
 	overflow: hidden;
 }
 .rf-milestone__progress-bar::after {
-	content: '';
+	content: "";
 	display: block;
 	height: 100%;
 	width: var(--rf-progress, 0%);

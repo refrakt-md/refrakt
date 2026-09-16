@@ -6,8 +6,8 @@ import { createContentModelSchema, createComponentRenderable, asNodes } from '@r
 // Extract plain text from an AST node
 function extractText(node: Node): string {
 	return Array.from(node.walk())
-		.filter(n => n.type === 'text')
-		.map(n => n.attributes.content)
+		.filter((n) => n.type === 'text')
+		.map((n) => n.attributes.content)
 		.join('');
 }
 
@@ -40,8 +40,14 @@ function maxScale(values: string[]): number {
 
 type SectionType = 'spacing' | 'radius' | 'shadows';
 
-interface SpacingItem { name: string; value: string; }
-interface SpacingScaleData { unit: string; values: string[]; }
+interface SpacingItem {
+	name: string;
+	value: string;
+}
+interface SpacingScaleData {
+	unit: string;
+	values: string[];
+}
 interface ParsedSections {
 	spacing: SpacingScaleData | null;
 	radii: SpacingItem[];
@@ -56,7 +62,12 @@ export const spacingSections = { title: 'title' } as const;
 export const spacing = createContentModelSchema({
 	sections: spacingSections,
 	attributes: {
-		title: { type: String, required: false, default: '', description: 'Heading displayed above the spacing, radii, and shadow sections.' },
+		title: {
+			type: String,
+			required: false,
+			default: '',
+			description: 'Heading displayed above the spacing, radii, and shadow sections.',
+		},
 	},
 	contentModel: {
 		type: 'sequence' as const,
@@ -87,7 +98,7 @@ export const spacing = createContentModelSchema({
 
 						if (currentSection === 'spacing') {
 							if (entry.name === 'scale') {
-								scaleValues = entry.value.split(',').map(v => v.trim());
+								scaleValues = entry.value.split(',').map((v) => v.trim());
 							} else if (entry.name === 'unit') {
 								unit = entry.value;
 							}
@@ -116,7 +127,7 @@ export const spacing = createContentModelSchema({
 		// Spacing scale section
 		if (result.spacing) {
 			const max = maxScale(result.spacing.values);
-			const scaleItems = result.spacing.values.map(val => {
+			const scaleItems = result.spacing.values.map((val) => {
 				const px = numericPx(val);
 				const pct = Math.max((px / max) * 100, 2);
 				const labelChildren: (string | InstanceType<typeof Tag>)[] = [
@@ -124,7 +135,9 @@ export const spacing = createContentModelSchema({
 				];
 				if (result.spacing?.unit) {
 					labelChildren.push(
-						new Tag('span', { 'data-name': 'scale-multiplier' }, [multiplier(val, result.spacing.unit)])
+						new Tag('span', { 'data-name': 'scale-multiplier' }, [
+							multiplier(val, result.spacing.unit),
+						]),
 					);
 				}
 				return new Tag('div', { 'data-name': 'scale-item' }, [
@@ -133,44 +146,61 @@ export const spacing = createContentModelSchema({
 				]);
 			});
 
-			topChildren.push(new Tag('div', { 'data-name': 'section' }, [
-				new Tag('h4', { 'data-name': 'section-title' }, ['Spacing']),
-				new Tag('div', { 'data-name': 'scale' }, scaleItems),
-			]));
+			topChildren.push(
+				new Tag('div', { 'data-name': 'section' }, [
+					new Tag('h4', { 'data-name': 'section-title' }, ['Spacing']),
+					new Tag('div', { 'data-name': 'scale' }, scaleItems),
+				]),
+			);
 		}
 
 		// Radii section
 		if (result.radii.length > 0) {
-			const radiusItems = result.radii.map(item =>
-				new Tag('div', { 'data-name': 'radius-item' }, [
-					new Tag('div', { 'data-name': 'radius-sample', style: `border-radius: ${item.value}` }, []),
-					new Tag('span', { 'data-name': 'radius-label' }, [item.name]),
-					new Tag('span', { 'data-name': 'radius-value' }, [item.value]),
-				])
+			const radiusItems = result.radii.map(
+				(item) =>
+					new Tag('div', { 'data-name': 'radius-item' }, [
+						new Tag(
+							'div',
+							{ 'data-name': 'radius-sample', style: `border-radius: ${item.value}` },
+							[],
+						),
+						new Tag('span', { 'data-name': 'radius-label' }, [item.name]),
+						new Tag('span', { 'data-name': 'radius-value' }, [item.value]),
+					]),
 			);
 
-			topChildren.push(new Tag('div', { 'data-name': 'section' }, [
-				new Tag('h4', { 'data-name': 'section-title' }, ['Radius']),
-				new Tag('div', { 'data-name': 'radii' }, radiusItems),
-			]));
+			topChildren.push(
+				new Tag('div', { 'data-name': 'section' }, [
+					new Tag('h4', { 'data-name': 'section-title' }, ['Radius']),
+					new Tag('div', { 'data-name': 'radii' }, radiusItems),
+				]),
+			);
 		}
 
 		// Shadows section
 		if (result.shadows.length > 0) {
-			const shadowItems = result.shadows.map(item =>
-				new Tag('div', { 'data-name': 'shadow-item' }, [
-					new Tag('div', { 'data-name': 'shadow-sample', style: `box-shadow: ${item.value}` }, []),
-					new Tag('span', { 'data-name': 'shadow-label' }, [item.name]),
-				])
+			const shadowItems = result.shadows.map(
+				(item) =>
+					new Tag('div', { 'data-name': 'shadow-item' }, [
+						new Tag(
+							'div',
+							{ 'data-name': 'shadow-sample', style: `box-shadow: ${item.value}` },
+							[],
+						),
+						new Tag('span', { 'data-name': 'shadow-label' }, [item.name]),
+					]),
 			);
 
-			topChildren.push(new Tag('div', { 'data-name': 'section' }, [
-				new Tag('h4', { 'data-name': 'section-title' }, ['Shadows']),
-				new Tag('div', { 'data-name': 'shadows' }, shadowItems),
-			]));
+			topChildren.push(
+				new Tag('div', { 'data-name': 'section' }, [
+					new Tag('h4', { 'data-name': 'section-title' }, ['Shadows']),
+					new Tag('div', { 'data-name': 'shadows' }, shadowItems),
+				]),
+			);
 		}
 
-		return createComponentRenderable({ rune: 'spacing',
+		return createComponentRenderable({
+			rune: 'spacing',
 			tag: 'section',
 			properties: {
 				title: titleMeta,
@@ -213,7 +243,7 @@ export function extractSpacingTokens(node: Node): {
 
 					if (currentSection === 'spacing') {
 						if (entry.name === 'scale') {
-							scaleValues = entry.value.split(',').map(v => v.trim());
+							scaleValues = entry.value.split(',').map((v) => v.trim());
 						} else if (entry.name === 'unit') {
 							unit = entry.value;
 						}
@@ -228,7 +258,10 @@ export function extractSpacingTokens(node: Node): {
 	}
 
 	if (unit || scaleValues.length > 0) {
-		result.spacing = { unit: unit || undefined, scale: scaleValues.length > 0 ? scaleValues : undefined };
+		result.spacing = {
+			unit: unit || undefined,
+			scale: scaleValues.length > 0 ? scaleValues : undefined,
+		};
 	}
 	if (radii.length > 0) result.radii = radii;
 	if (shadows.length > 0) result.shadows = shadows;

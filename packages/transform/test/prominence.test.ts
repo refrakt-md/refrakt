@@ -9,9 +9,14 @@ const asTag = (n: any): SerializedTag => n as SerializedTag;
 // A page-section-header rune (its `sections` map a header-ish role) vs a
 // header-less rune (badge). Hero carries a default prominence.
 const config: ThemeConfig = {
-	prefix: 'rf', tokenPrefix: '--rf', icons: {},
+	prefix: 'rf',
+	tokenPrefix: '--rf',
+	icons: {},
 	runes: {
-		Recipe: { block: 'recipe', sections: { preamble: 'preamble', headline: 'title', blurb: 'description' } },
+		Recipe: {
+			block: 'recipe',
+			sections: { preamble: 'preamble', headline: 'title', blurb: 'description' },
+		},
 		Hero: { block: 'hero', sections: { headline: 'title' }, defaultProminence: 'display' },
 		Badge: { block: 'badge' }, // no page-section header
 	},
@@ -53,7 +58,9 @@ describe('SPEC-107 prominence axis (page-section-header family)', () => {
 			const transform = createTransform(config);
 			const tag = makeTag('div', { 'data-rune': 'badge', prominence: 'display' }, []);
 			expect(asTag(transform(tag)).attributes['data-prominence']).toBeUndefined();
-			expect(warn).toHaveBeenCalledWith(expect.stringContaining('prominence is not supported on "badge"'));
+			expect(warn).toHaveBeenCalledWith(
+				expect.stringContaining('prominence is not supported on "badge"'),
+			);
 			warn.mockRestore();
 		});
 

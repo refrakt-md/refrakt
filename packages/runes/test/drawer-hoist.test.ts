@@ -84,7 +84,7 @@ describe('drawer hoist mechanism (SPEC-078, WORK-300)', () => {
 			});
 			const { ctx, messages } = makeCtx();
 			hoistPreviewDrawers([sentinel], '/p/', undefined, undefined, ctx);
-			const warnings = messages.filter(m => m.severity === 'warning');
+			const warnings = messages.filter((m) => m.severity === 'warning');
 			expect(warnings.length).toBe(1);
 			expect(warnings[0].message).toContain('data-target-id');
 		});
@@ -93,7 +93,7 @@ describe('drawer hoist mechanism (SPEC-078, WORK-300)', () => {
 			const sentinel = sentinelSpan('unknown-source', 'foo');
 			const { ctx, messages } = makeCtx();
 			hoistPreviewDrawers([sentinel], '/p/', undefined, undefined, ctx);
-			const warnings = messages.filter(m => m.severity === 'warning');
+			const warnings = messages.filter((m) => m.severity === 'warning');
 			expect(warnings.length).toBe(1);
 			expect(warnings[0].message).toContain('unknown-source');
 		});
@@ -112,13 +112,16 @@ describe('drawer hoist mechanism (SPEC-078, WORK-300)', () => {
 			// The sentinel meta is gone from the span.
 			const sentinels = findAllTags(
 				out,
-				t => t.attributes['data-field'] === HOIST_DRAWER_SENTINEL,
+				(t) => t.attributes['data-field'] === HOIST_DRAWER_SENTINEL,
 			);
 			expect(sentinels.length).toBe(0);
 
 			// The inline `<a>` link inside the span is preserved at its original position.
 			expect(out.length).toBe(4); // 2 paragraphs + sentinel-span (with anchor) + hoisted drawer
-			const anchor = findTag(root(out), t => t.name === 'a' && t.attributes.href === '#drawer-foo');
+			const anchor = findTag(
+				root(out),
+				(t) => t.name === 'a' && t.attributes.href === '#drawer-foo',
+			);
 			expect(anchor).toBeDefined();
 
 			// The hoisted drawer is appended at the page root.
@@ -132,7 +135,7 @@ describe('drawer hoist mechanism (SPEC-078, WORK-300)', () => {
 			const tree = [sentinelSpan('test-source', 'foo', { label: 'click me' })];
 			const { ctx } = makeCtx();
 			const out = hoistPreviewDrawers(tree, '/p/', undefined, undefined, ctx);
-			const anchor = findTag(root(out), t => t.name === 'a');
+			const anchor = findTag(root(out), (t) => t.name === 'a');
 			expect(anchor).toBeDefined();
 			expect(anchor!.attributes.href).toBe('#drawer-foo');
 			expect(anchor!.children).toEqual(['click me']);
@@ -142,26 +145,27 @@ describe('drawer hoist mechanism (SPEC-078, WORK-300)', () => {
 	describe('dedup', () => {
 		it('collapses N mentions of the same target-id to one hoisted drawer', () => {
 			const tree = [
-				new Tag('p', {}, [sentinelSpan('test-source', 'shared'), ' and ', sentinelSpan('test-source', 'shared')]),
+				new Tag('p', {}, [
+					sentinelSpan('test-source', 'shared'),
+					' and ',
+					sentinelSpan('test-source', 'shared'),
+				]),
 				new Tag('p', {}, [sentinelSpan('test-source', 'shared')]),
 			];
 			const { ctx } = makeCtx();
 			const out = hoistPreviewDrawers(tree, '/p/', undefined, undefined, ctx) as unknown[];
-			const drawers = findAllTags(root(out), t => t.attributes['data-rune'] === 'drawer');
+			const drawers = findAllTags(root(out), (t) => t.attributes['data-rune'] === 'drawer');
 			expect(drawers.length).toBe(1);
 			expect(drawers[0].attributes['data-drawer-id']).toBe('shared');
 		});
 
 		it('keeps distinct target-ids separate', () => {
-			const tree = [
-				sentinelSpan('test-source', 'one'),
-				sentinelSpan('test-source', 'two'),
-			];
+			const tree = [sentinelSpan('test-source', 'one'), sentinelSpan('test-source', 'two')];
 			const { ctx } = makeCtx();
 			const out = hoistPreviewDrawers(tree, '/p/', undefined, undefined, ctx) as unknown[];
-			const drawers = findAllTags(root(out), t => t.attributes['data-rune'] === 'drawer');
+			const drawers = findAllTags(root(out), (t) => t.attributes['data-rune'] === 'drawer');
 			expect(drawers.length).toBe(2);
-			const ids = drawers.map(d => d.attributes['data-drawer-id']).sort();
+			const ids = drawers.map((d) => d.attributes['data-drawer-id']).sort();
 			expect(ids).toEqual(['one', 'two']);
 		});
 	});
@@ -177,12 +181,12 @@ describe('drawer hoist mechanism (SPEC-078, WORK-300)', () => {
 			const out = hoistPreviewDrawers(tree, '/p/', undefined, undefined, ctx) as unknown[];
 
 			// Only the author drawer remains — no hoisted one was emitted.
-			const drawers = findAllTags(root(out), t => t.attributes['data-rune'] === 'drawer');
+			const drawers = findAllTags(root(out), (t) => t.attributes['data-rune'] === 'drawer');
 			expect(drawers.length).toBe(1);
 			expect(drawers[0].attributes['data-built-from']).toBeUndefined();
 
 			// Info note names the source.
-			const infos = messages.filter(m => m.severity === 'info');
+			const infos = messages.filter((m) => m.severity === 'info');
 			expect(infos.length).toBe(1);
 			expect(infos[0].message).toContain('auth');
 			expect(infos[0].message).toContain('test-source');
@@ -194,7 +198,12 @@ describe('drawer hoist mechanism (SPEC-078, WORK-300)', () => {
 			const inner = sentinelSpan('test-source', 'inner');
 			const authorDrawerWithNested = new Tag(
 				'section',
-				{ class: 'rf-drawer', 'data-rune': 'drawer', 'data-drawer-id': 'outer', id: 'drawer-outer' },
+				{
+					class: 'rf-drawer',
+					'data-rune': 'drawer',
+					'data-drawer-id': 'outer',
+					id: 'drawer-outer',
+				},
 				[
 					new Tag('div', { 'data-name': 'body' }, [
 						new Tag('p', {}, ['Outer body — contains ', inner, ' a nested preview.']),
@@ -207,13 +216,13 @@ describe('drawer hoist mechanism (SPEC-078, WORK-300)', () => {
 			const out = hoistPreviewDrawers(tree, '/p/', undefined, undefined, ctx) as unknown[];
 
 			// Both drawers exist in the output (author + hoisted inner).
-			const drawers = findAllTags(root(out), t => t.attributes['data-rune'] === 'drawer');
+			const drawers = findAllTags(root(out), (t) => t.attributes['data-rune'] === 'drawer');
 			expect(drawers.length).toBe(2);
-			const ids = drawers.map(d => d.attributes['data-drawer-id']).sort();
+			const ids = drawers.map((d) => d.attributes['data-drawer-id']).sort();
 			expect(ids).toEqual(['inner', 'outer']);
 
 			// Info-level note flags the nesting.
-			const infos = messages.filter(m => m.severity === 'info');
+			const infos = messages.filter((m) => m.severity === 'info');
 			expect(infos.length).toBe(1);
 			expect(infos[0].message).toContain('inside another drawer');
 		});
@@ -222,8 +231,9 @@ describe('drawer hoist mechanism (SPEC-078, WORK-300)', () => {
 
 describe('pathToSlug', () => {
 	it('lowercases, replaces non-alphanumeric with -, and trims', () => {
-		expect(pathToSlug('packages/types/src/token-contract.ts'))
-			.toBe('packages-types-src-token-contract.ts');
+		expect(pathToSlug('packages/types/src/token-contract.ts')).toBe(
+			'packages-types-src-token-contract.ts',
+		);
 	});
 
 	it('appends L{n} for a single-line range', () => {
@@ -231,13 +241,13 @@ describe('pathToSlug', () => {
 	});
 
 	it('appends L{start}-L{end} for a range', () => {
-		expect(pathToSlug('packages/types/src/token-contract.ts', '42-58'))
-			.toBe('packages-types-src-token-contract.ts-L42-L58');
+		expect(pathToSlug('packages/types/src/token-contract.ts', '42-58')).toBe(
+			'packages-types-src-token-contract.ts-L42-L58',
+		);
 	});
 
 	it('handles paths with spaces and special characters', () => {
-		expect(pathToSlug('docs/My Folder/foo (bar).md', '12'))
-			.toBe('docs-my-folder-foo-bar-.md-L12');
+		expect(pathToSlug('docs/My Folder/foo (bar).md', '12')).toBe('docs-my-folder-foo-bar-.md-L12');
 	});
 
 	it('distinct paths produce distinct slugs', () => {

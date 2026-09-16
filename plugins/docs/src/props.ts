@@ -30,7 +30,19 @@ export interface SymbolGroupProps<R = unknown> extends BaseComponentProps<R> {
 }
 
 export interface SymbolProps<R = unknown> extends BaseComponentProps<R>, PageSectionSlots<R> {
-	kind?: 'function' | 'class' | 'interface' | 'type' | 'enum' | 'variable' | 'method' | 'property' | 'event' | 'hook' | 'component' | 'module';
+	kind?:
+		| 'function'
+		| 'class'
+		| 'interface'
+		| 'type'
+		| 'enum'
+		| 'variable'
+		| 'method'
+		| 'property'
+		| 'event'
+		| 'hook'
+		| 'component'
+		| 'module';
 	lang?: string;
 	since?: string;
 	deprecated?: string;

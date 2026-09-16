@@ -1,98 +1,96 @@
 @layer skin {
-
-/* WORK-538 — resting title size, so the prominence ramp computes from it
+	/* WORK-538 — resting title size, so the prominence ramp computes from it
  * rather than from the density default. */
-.rf-typography {
-	--rf-title-size: var(--rf-text-lg);
-}
+	.rf-typography {
+		--rf-title-size: var(--rf-text-lg);
+	}
 
-/* Typography — font specimen display */
-.rf-typography__title {
-	/* WORK-538 — read the prominence override first; the fallback is this rune's
+	/* Typography — font specimen display */
+	.rf-typography__title {
+		/* WORK-538 — read the prominence override first; the fallback is this rune's
 	 * resting size, stated as --rf-title-size on the root so the prominence ramp
 	 * can compute from it. */
-	font-size: var(--rf-prominence-size, var(--rf-title-size));
-	font-weight: var(--rf-weight-semibold);
-	margin-bottom: 1rem;
-}
-.rf-typography__specimens {
-	gap: 2rem;
-}
-.rf-typography__specimen {
-	border-radius: var(--rf-radius-lg, 12px);
-	padding: 0;
-}
-.rf-typography__specimen-header {
-	gap: 0.75rem;
-	margin-bottom: 1.25rem;
-	padding-bottom: 0.75rem;
-	border-bottom: 1px solid var(--rf-color-border, #e5e7eb);
-}
-.rf-typography__specimen-role {
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-semibold);
-	text-transform: uppercase;
-	letter-spacing: var(--rf-tracking-wider);
-	color: var(--rf-color-muted);
-	background: var(--rf-color-surface-raised);
-	padding: 0.125rem 0.5rem;
-	border-radius: var(--rf-radius-sm, 4px);
-}
-.rf-typography__specimen-family {
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-muted);
-}
-.rf-typography__sizes {
-	gap: 0.5rem;
-	margin-bottom: 1rem;
-}
-.rf-typography__size-sample {
-	gap: 1rem;
-	line-height: var(--rf-leading-snug);
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-.rf-typography__size-label {
-	font-size: var(--rf-text-xs);
-	font-family: var(--rf-font-mono, monospace);
-	color: var(--rf-color-muted);
-	text-align: right;
-}
-.rf-typography__weights {
-	gap: 1.5rem;
-	padding-top: 1rem;
-	border-top: 1px solid var(--rf-color-border, #e5e7eb);
-}
-.rf-typography__weight-sample {
-	gap: 0.25rem;
-}
-.rf-typography__weight-label {
-	font-size: var(--rf-text-xs);
-	font-family: var(--rf-font-mono, monospace);
-	color: var(--rf-color-muted);
-}
-.rf-typography__charset {
-	margin-top: 1rem;
-	padding-top: 1rem;
-	border-top: 1px solid var(--rf-color-border, #e5e7eb);
-	font-size: var(--rf-text-sm);
-	line-height: var(--rf-leading-relaxed);
-	letter-spacing: var(--rf-tracking-wider);
-	word-break: break-all;
-	color: var(--rf-color-muted);
-}
+		font-size: var(--rf-prominence-size, var(--rf-title-size));
+		font-weight: var(--rf-weight-semibold);
+		margin-bottom: 1rem;
+	}
+	.rf-typography__specimens {
+		gap: 2rem;
+	}
+	.rf-typography__specimen {
+		border-radius: var(--rf-radius-lg, 12px);
+		padding: 0;
+	}
+	.rf-typography__specimen-header {
+		gap: 0.75rem;
+		margin-bottom: 1.25rem;
+		padding-bottom: 0.75rem;
+		border-bottom: 1px solid var(--rf-color-border, #e5e7eb);
+	}
+	.rf-typography__specimen-role {
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-semibold);
+		text-transform: uppercase;
+		letter-spacing: var(--rf-tracking-wider);
+		color: var(--rf-color-muted);
+		background: var(--rf-color-surface-raised);
+		padding: 0.125rem 0.5rem;
+		border-radius: var(--rf-radius-sm, 4px);
+	}
+	.rf-typography__specimen-family {
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+	}
+	.rf-typography__sizes {
+		gap: 0.5rem;
+		margin-bottom: 1rem;
+	}
+	.rf-typography__size-sample {
+		gap: 1rem;
+		line-height: var(--rf-leading-snug);
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.rf-typography__size-label {
+		font-size: var(--rf-text-xs);
+		font-family: var(--rf-font-mono, monospace);
+		color: var(--rf-color-muted);
+		text-align: right;
+	}
+	.rf-typography__weights {
+		gap: 1.5rem;
+		padding-top: 1rem;
+		border-top: 1px solid var(--rf-color-border, #e5e7eb);
+	}
+	.rf-typography__weight-sample {
+		gap: 0.25rem;
+	}
+	.rf-typography__weight-label {
+		font-size: var(--rf-text-xs);
+		font-family: var(--rf-font-mono, monospace);
+		color: var(--rf-color-muted);
+	}
+	.rf-typography__charset {
+		margin-top: 1rem;
+		padding-top: 1rem;
+		border-top: 1px solid var(--rf-color-border, #e5e7eb);
+		font-size: var(--rf-text-sm);
+		line-height: var(--rf-leading-relaxed);
+		letter-spacing: var(--rf-tracking-wider);
+		word-break: break-all;
+		color: var(--rf-color-muted);
+	}
 
-/* Context-aware: no outer border when inside design-context (parent already has one) */
-.rf-typography--in-design-context {
-	margin: 0;
-}
-.rf-typography--in-design-context .rf-typography__specimen {
-	border: none;
-	border-radius: 0;
-	padding: 0;
-}
-.rf-typography--in-design-context .rf-typography__specimen + .rf-typography__specimen {
-	padding-top: 1.5rem;
-}
-
+	/* Context-aware: no outer border when inside design-context (parent already has one) */
+	.rf-typography--in-design-context {
+		margin: 0;
+	}
+	.rf-typography--in-design-context .rf-typography__specimen {
+		border: none;
+		border-radius: 0;
+		padding: 0;
+	}
+	.rf-typography--in-design-context .rf-typography__specimen + .rf-typography__specimen {
+		padding-top: 1.5rem;
+	}
 }

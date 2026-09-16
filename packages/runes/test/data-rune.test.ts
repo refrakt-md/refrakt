@@ -39,7 +39,8 @@ function textOf(tag: InstanceType<typeof Tag>): string {
 	return (tag.children ?? []).filter((c) => typeof c === 'string').join('');
 }
 
-const REVENUE_CSV = 'product,revenue,region\nWidget,"$1,200",EMEA\nGadget,"$900",AMER\nGizmo,"$1,500",EMEA\n';
+const REVENUE_CSV =
+	'product,revenue,region\nWidget,"$1,200",EMEA\nGadget,"$900",AMER\nGizmo,"$1,500",EMEA\n';
 
 describe('data rune — CSV → table (SPEC-103)', () => {
 	it('emits a table node from a CSV source', () => {
@@ -54,7 +55,10 @@ describe('data rune — CSV → table (SPEC-103)', () => {
 
 	it('emits the table wrapped in div.rf-table-wrapper (chart/datatable lookup shape)', () => {
 		const { rendered } = runData('{% data src="d.csv" /%}', { 'd.csv': REVENUE_CSV });
-		const wrapper = findTag(rendered, (t) => t.name === 'div' && t.attributes.class === 'rf-table-wrapper');
+		const wrapper = findTag(
+			rendered,
+			(t) => t.name === 'div' && t.attributes.class === 'rf-table-wrapper',
+		);
 		expect(wrapper).toBeDefined();
 		expect(findTag(wrapper, (t) => t.name === 'table')).toBeDefined();
 	});
@@ -73,7 +77,9 @@ describe('data rune — CSV → table (SPEC-103)', () => {
 	});
 
 	it('honors `where` (field:value filter)', () => {
-		const { rendered } = runData('{% data src="d.csv" where="region:EMEA" /%}', { 'd.csv': REVENUE_CSV });
+		const { rendered } = runData('{% data src="d.csv" where="region:EMEA" /%}', {
+			'd.csv': REVENUE_CSV,
+		});
 		const tds = cellsOf(findTable(rendered), 'td');
 		expect(tds).toHaveLength(6); // 2 EMEA rows × 3 cols
 		const products = tds.filter((_t, i) => i % 3 === 0).map(textOf);
@@ -81,8 +87,12 @@ describe('data rune — CSV → table (SPEC-103)', () => {
 	});
 
 	it('honors `sort` (descending, numeric on a formatted column)', () => {
-		const { rendered } = runData('{% data src="d.csv" sort="-revenue" /%}', { 'd.csv': REVENUE_CSV });
-		const products = cellsOf(findTable(rendered), 'td').filter((_t, i) => i % 3 === 0).map(textOf);
+		const { rendered } = runData('{% data src="d.csv" sort="-revenue" /%}', {
+			'd.csv': REVENUE_CSV,
+		});
+		const products = cellsOf(findTable(rendered), 'td')
+			.filter((_t, i) => i % 3 === 0)
+			.map(textOf);
 		expect(products).toEqual(['Gizmo', 'Widget', 'Gadget']); // 1500, 1200, 900
 	});
 
@@ -99,8 +109,12 @@ describe('data rune — CSV → table (SPEC-103)', () => {
 	});
 
 	it('honors `limit` and `offset`', () => {
-		const { rendered } = runData('{% data src="d.csv" limit=1 offset=1 /%}', { 'd.csv': REVENUE_CSV });
-		const products = cellsOf(findTable(rendered), 'td').filter((_t, i) => i % 3 === 0).map(textOf);
+		const { rendered } = runData('{% data src="d.csv" limit=1 offset=1 /%}', {
+			'd.csv': REVENUE_CSV,
+		});
+		const products = cellsOf(findTable(rendered), 'td')
+			.filter((_t, i) => i % 3 === 0)
+			.map(textOf);
 		expect(products).toEqual(['Gadget']);
 	});
 
@@ -117,7 +131,9 @@ describe('data rune — CSV → table (SPEC-103)', () => {
 	});
 
 	it('forces text typing via `text` (suppresses data-value)', () => {
-		const { rendered } = runData('{% data src="d.csv" text="revenue" /%}', { 'd.csv': 'product,revenue\nA,5\n' });
+		const { rendered } = runData('{% data src="d.csv" text="revenue" /%}', {
+			'd.csv': 'product,revenue\nA,5\n',
+		});
 		const tds = cellsOf(findTable(rendered), 'td');
 		expect(tds.every((t) => t.attributes['data-value'] === undefined)).toBe(true);
 	});
@@ -142,9 +158,13 @@ describe('data rune — JSON / NDJSON (SPEC-103, WORK-486)', () => {
 		const table = findTable(rendered);
 		expect(cellsOf(table, 'th').map(textOf)).toEqual(['Product', 'Country', 'Units']);
 		// EMEA rows only (W, Y), sorted -units → Y(1500) then W(1200).
-		const products = cellsOf(table, 'td').filter((_t, i) => i % 3 === 0).map(textOf);
+		const products = cellsOf(table, 'td')
+			.filter((_t, i) => i % 3 === 0)
+			.map(textOf);
 		expect(products).toEqual(['Y', 'W']);
-		const countries = cellsOf(table, 'td').filter((_t, i) => i % 3 === 1).map(textOf);
+		const countries = cellsOf(table, 'td')
+			.filter((_t, i) => i % 3 === 1)
+			.map(textOf);
 		expect(countries).toEqual(['DE', 'FR']);
 		// units typed numeric → data-value on the formatted values.
 		const unitCells = cellsOf(table, 'td').filter((_t, i) => i % 3 === 2);
@@ -152,14 +172,19 @@ describe('data rune — JSON / NDJSON (SPEC-103, WORK-486)', () => {
 	});
 
 	it('reads an object-map JSON via orient=index + key-column into datatable', () => {
-		const INV = JSON.stringify({ ABC: { name: 'Widget', stock: 5 }, DEF: { name: 'Gadget', stock: 9 } });
+		const INV = JSON.stringify({
+			ABC: { name: 'Widget', stock: 5 },
+			DEF: { name: 'Gadget', stock: 9 },
+		});
 		const { rendered } = runData(
 			'{% datatable %}\n{% data src="inv.json" orient="index" key-column="sku" columns="sku as SKU, name as Item, stock as Stock" numeric="stock" /%}\n{% /datatable %}',
 			{ 'inv.json': INV },
 		);
 		const table = findTable(rendered);
 		expect(cellsOf(table, 'th').map(textOf)).toEqual(['SKU', 'Item', 'Stock']);
-		const skus = cellsOf(table, 'td').filter((_t, i) => i % 3 === 0).map(textOf);
+		const skus = cellsOf(table, 'td')
+			.filter((_t, i) => i % 3 === 0)
+			.map(textOf);
 		expect(skus).toEqual(['ABC', 'DEF']);
 		expect(findTag(rendered, (t) => t.attributes?.['data-rune'] === 'data-table')).toBeDefined();
 	});
@@ -185,10 +210,14 @@ describe('data rune — JSON / NDJSON (SPEC-103, WORK-486)', () => {
 	});
 
 	it('surfaces invalid JSON as an error callout', () => {
-		const { rendered, warnings } = runData('{% data src="bad.json" /%}', { 'bad.json': '{not json' });
+		const { rendered, warnings } = runData('{% data src="bad.json" /%}', {
+			'bad.json': '{not json',
+		});
 		expect(findTable(rendered)).toBeUndefined();
 		expect(findTag(rendered, (t) => t.attributes?.['data-rune'] === 'hint')).toBeDefined();
-		expect(warnings.some((w) => w.severity === 'error' && /invalid JSON/.test(w.message))).toBe(true);
+		expect(warnings.some((w) => w.severity === 'error' && /invalid JSON/.test(w.message))).toBe(
+			true,
+		);
 	});
 });
 
@@ -221,11 +250,13 @@ describe('data rune — error path (SPEC-103)', () => {
 		expect(findTable(rendered)).toBeUndefined();
 		const hint = findTag(rendered, (t) => t.attributes?.['data-rune'] === 'hint');
 		expect(hint).toBeDefined();
-		expect(warnings.some((w) => w.severity === 'error' && /cannot be resolved/.test(w.message))).toBe(true);
+		expect(
+			warnings.some((w) => w.severity === 'error' && /cannot be resolved/.test(w.message)),
+		).toBe(true);
 	});
 
 	it('denies a root-escaping src (ProjectFiles containment) with a callout', () => {
-		const { rendered, warnings } = runData('{% data src="../../etc/passwd" /%}', { 'secret': 'x' });
+		const { rendered, warnings } = runData('{% data src="../../etc/passwd" /%}', { secret: 'x' });
 		expect(findTable(rendered)).toBeUndefined();
 		expect(findTag(rendered, (t) => t.attributes?.['data-rune'] === 'hint')).toBeDefined();
 		expect(warnings.some((w) => w.severity === 'error')).toBe(true);
@@ -234,14 +265,18 @@ describe('data rune — error path (SPEC-103)', () => {
 	it('errors visibly on an unknown format', () => {
 		const { rendered, warnings } = runData('{% data src="d.dat" /%}', { 'd.dat': 'a,b\n1,2\n' });
 		expect(findTable(rendered)).toBeUndefined();
-		expect(warnings.some((w) => w.severity === 'error' && /infer format/.test(w.message))).toBe(true);
+		expect(warnings.some((w) => w.severity === 'error' && /infer format/.test(w.message))).toBe(
+			true,
+		);
 	});
 
 	describe('an empty result (BUG-011)', () => {
 		it('renders nothing, silently, when a valid filter legitimately matches no rows', () => {
 			// Asking real data a question with no answer today is normal, not a
 			// build failure. `region` is a real column; no row has that value.
-			const { rendered, warnings } = runData('{% data src="d.csv" where="region:NOPE" /%}', { 'd.csv': REVENUE_CSV });
+			const { rendered, warnings } = runData('{% data src="d.csv" where="region:NOPE" /%}', {
+				'd.csv': REVENUE_CSV,
+			});
 			expect(findTable(rendered)).toBeUndefined();
 			expect(findTag(rendered, (t) => t.attributes?.['data-rune'] === 'hint')).toBeUndefined();
 			expect(warnings).toEqual([]);
@@ -250,7 +285,9 @@ describe('data rune — error path (SPEC-103)', () => {
 		it('warns when a `where` clause names a column the source does not have', () => {
 			// This is the case the blanket empty-result error used to stand in
 			// for. Detecting it directly is what lets the case above go quiet.
-			const { warnings } = runData('{% data src="d.csv" where="regio:North" /%}', { 'd.csv': REVENUE_CSV });
+			const { warnings } = runData('{% data src="d.csv" where="regio:North" /%}', {
+				'd.csv': REVENUE_CSV,
+			});
 			const warned = warnings.filter((w) => w.severity === 'warning');
 			expect(warned).toHaveLength(1);
 			expect(warned[0].message).toContain('"regio"');
@@ -261,26 +298,30 @@ describe('data rune — error path (SPEC-103)', () => {
 		it('warns about a misspelt column even when the result is not empty', () => {
 			// A clause that names nothing is a mistake whether or not some other
 			// clause still matches — so the warning cannot be gated on emptiness.
-			const { rendered, warnings } = runData(
-				'{% data src="d.csv" sort="revenu" /%}',
-				{ 'd.csv': REVENUE_CSV },
-			);
+			const { rendered, warnings } = runData('{% data src="d.csv" sort="revenu" /%}', {
+				'd.csv': REVENUE_CSV,
+			});
 			expect(findTable(rendered)).toBeDefined();
-			expect(warnings.some((w) => w.severity === 'warning' && w.message.includes('"revenu"'))).toBe(true);
+			expect(warnings.some((w) => w.severity === 'warning' && w.message.includes('"revenu"'))).toBe(
+				true,
+			);
 		});
 
 		it('warns on a `columns` spec naming an absent source column', () => {
-			const { warnings } = runData(
-				'{% data src="d.csv" columns="regoin as Region" /%}',
-				{ 'd.csv': REVENUE_CSV },
-			);
-			expect(warnings.some((w) => w.severity === 'warning' && /`columns`.*"regoin"/.test(w.message))).toBe(true);
+			const { warnings } = runData('{% data src="d.csv" columns="regoin as Region" /%}', {
+				'd.csv': REVENUE_CSV,
+			});
+			expect(
+				warnings.some((w) => w.severity === 'warning' && /`columns`.*"regoin"/.test(w.message)),
+			).toBe(true);
 		});
 
 		it('still errors when the source itself yielded no rows', () => {
 			// A different author mistake — the wrong file, or a `root` pointing at
 			// nothing — and it keeps its own message.
-			const { rendered, warnings } = runData('{% data src="d.csv" /%}', { 'd.csv': 'region,revenue\n' });
+			const { rendered, warnings } = runData('{% data src="d.csv" /%}', {
+				'd.csv': 'region,revenue\n',
+			});
 			expect(findTable(rendered)).toBeUndefined();
 			expect(warnings.some((w) => w.severity === 'error')).toBe(true);
 		});
@@ -289,10 +330,18 @@ describe('data rune — error path (SPEC-103)', () => {
 	it('no-ops (leaves the tag) when no provider is available', () => {
 		const ast = Markdoc.parse('{% data src="d.csv" /%}');
 		const ctx = {
-			info: () => {}, warn: () => {}, error: () => {},
-			projectRoot: '/project', sandbox: undefined, variables: {},
+			info: () => {},
+			warn: () => {},
+			error: () => {},
+			projectRoot: '/project',
+			sandbox: undefined,
+			variables: {},
 		} as unknown as PreprocessContext;
-		const result = preprocessData(ast, { url: '/p', relativePath: 'p.md', filePath: '/project/p.md' }, ctx);
+		const result = preprocessData(
+			ast,
+			{ url: '/p', relativePath: 'p.md', filePath: '/project/p.md' },
+			ctx,
+		);
 		expect(result).toBeUndefined(); // no mutation
 	});
 });
@@ -306,7 +355,10 @@ describe('an unreadable attribute (BUG-010)', () => {
 		// `applyWhere` treats an empty expression as *no filter*. Composed, "I
 		// could not read your filter" became "you wrote no filter" and the page
 		// rendered the entire source — which looks plausible until someone counts.
-		const { rendered, warnings } = runData('{% data src="d.csv" where=concat("region:", "North") /%}', files);
+		const { rendered, warnings } = runData(
+			'{% data src="d.csv" where=concat("region:", "North") /%}',
+			files,
+		);
 		expect(findTable(rendered)).toBeUndefined();
 		const errs = warnings.filter((w) => w.severity === 'error');
 		expect(errs).toHaveLength(1);
@@ -359,9 +411,9 @@ describe('an unreadable attribute (BUG-010)', () => {
 	});
 
 	it('accepts a variable that *is* defined', () => {
-		const { rendered, warnings } = runData(
-			'{% data src="d.csv" where=$q /%}', files, { q: 'region:North' },
-		);
+		const { rendered, warnings } = runData('{% data src="d.csv" where=$q /%}', files, {
+			q: 'region:North',
+		});
 		expect(warnings.filter((w) => w.severity === 'error')).toEqual([]);
 		const json = JSON.stringify(rendered);
 		expect(json).toContain('North');

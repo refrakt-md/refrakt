@@ -42,7 +42,8 @@ export const xref: Schema = {
 			type: String,
 			required: false,
 			matches: ['drawer'],
-			description: 'Preview target. `"drawer"` hoists a drawer containing the entity\'s expanded content + a link to its resolved page URL in the chrome footer, leaving an inline link at the call site that opens it. Absent → today\'s behaviour (just the inline link). SPEC-078.',
+			description:
+				'Preview target. `"drawer"` hoists a drawer containing the entity\'s expanded content + a link to its resolved page URL in the chrome footer, leaving an inline link at the call site that opens it. Absent → today\'s behaviour (just the inline link). SPEC-078.',
 		},
 	},
 	transform(node: Node, config: Config) {

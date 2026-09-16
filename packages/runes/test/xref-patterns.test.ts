@@ -20,8 +20,8 @@ describe('compileXrefPatterns', () => {
 		expect(result.errors).toEqual([]);
 		expect(result.patterns).toHaveLength(1);
 		const p = result.patterns[0];
-		expect(p.type).toBe('external');     // default
-		expect(p.label).toBe('{id}');         // default
+		expect(p.type).toBe('external'); // default
+		expect(p.label).toBe('{id}'); // default
 		expect(p.groupNames).toEqual([]);
 		// Anchored to whole-string match.
 		expect('SPEC-001').toMatch(p.match);
@@ -86,9 +86,7 @@ describe('compileXrefPatterns', () => {
 	});
 
 	it('allows templates that omit placeholders (constant URL)', () => {
-		const result = compileXrefPatterns([
-			{ match: 'home', template: 'https://example.com/' },
-		]);
+		const result = compileXrefPatterns([{ match: 'home', template: 'https://example.com/' }]);
 		expect(result.errors).toEqual([]);
 		expect(result.patterns).toHaveLength(1);
 	});
@@ -130,7 +128,12 @@ describe('compileXrefPatterns', () => {
 	it('compiles multiple distinct patterns and preserves order', () => {
 		const result = compileXrefPatterns([
 			{ match: 'SPEC-\\d+', template: 'https://specs/{id}', type: 'spec' },
-			{ match: 'GH-(?<num>\\d+)', template: 'https://gh/{num}', type: 'github-issue', label: 'GH #{num}' },
+			{
+				match: 'GH-(?<num>\\d+)',
+				template: 'https://gh/{num}',
+				type: 'github-issue',
+				label: 'GH #{num}',
+			},
 			{ match: 'npm:(?<pkg>.+)', template: 'https://npm/{pkg}', type: 'npm' },
 		]);
 		expect(result.errors).toEqual([]);
@@ -142,9 +145,7 @@ describe('compileXrefPatterns', () => {
 	});
 
 	it('treats `{id}` as always-available even when no named groups are declared', () => {
-		const result = compileXrefPatterns([
-			{ match: 'X-\\d+', template: '/{id}' },
-		]);
+		const result = compileXrefPatterns([{ match: 'X-\\d+', template: '/{id}' }]);
 		expect(result.errors).toEqual([]);
 		expect(result.patterns[0].groupNames).toEqual([]);
 	});

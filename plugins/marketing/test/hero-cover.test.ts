@@ -6,14 +6,16 @@ import { parse, findTag } from './helpers.js';
 import { config as marketingConfig } from '../src/config.js';
 
 const themeConfig: ThemeConfig = {
-	prefix: 'rf', tokenPrefix: '--rf', icons: {},
+	prefix: 'rf',
+	tokenPrefix: '--rf',
+	icons: {},
 	runes: marketingConfig,
 };
 
 /** Schema output → plain serialized tree → identity transform. */
 function identity(content: string): SerializedTag {
 	const result = parse(content);
-	const hero = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+	const hero = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 	expect(hero).toBeDefined();
 	const serialized = JSON.parse(JSON.stringify(hero)) as SerializedTag;
 	const t = createTransform(themeConfig);
@@ -66,17 +68,26 @@ describe('SPEC-101 hero cover', () => {
 	});
 
 	it('height knob surfaces as a data attribute', () => {
-		const r = identity(coverHero.replace('media-position="cover"', 'media-position="cover" height="lg"'));
+		const r = identity(
+			coverHero.replace('media-position="cover"', 'media-position="cover" height="lg"'),
+		);
 		expect(r.attributes['data-height']).toBe('lg');
 	});
 
 	it('aspect knob lands as an inline aspect-ratio style', () => {
-		const r = identity(coverHero.replace('media-position="cover"', 'media-position="cover" aspect="16/9"'));
+		const r = identity(
+			coverHero.replace('media-position="cover"', 'media-position="cover" aspect="16/9"'),
+		);
 		expect(r.attributes.style).toContain('aspect-ratio: 16/9');
 	});
 
 	it('content-place emits the 2-axis overlay vars', () => {
-		const r = identity(coverHero.replace('media-position="cover"', 'media-position="cover" content-place="end start"'));
+		const r = identity(
+			coverHero.replace(
+				'media-position="cover"',
+				'media-position="cover" content-place="end start"',
+			),
+		);
 		expect(r.attributes['data-content-place']).toBe('end start');
 		expect(r.attributes.style).toContain('--cover-place-block: end');
 		expect(r.attributes.style).toContain('--cover-place-inline: start');

@@ -1,7 +1,11 @@
 import type { ThemeConfig, RuneConfig, StructureEntry } from './types.js';
 import { toKebabCase } from './helpers.js';
 import { mergeRuneConfig } from './merge.js';
-import { DESCRIBABLE_FACETS, UNIVERSAL_AXIS_FACETS, UNIVERSAL_POSTURE_REASONS } from './facets/index.js';
+import {
+	DESCRIBABLE_FACETS,
+	UNIVERSAL_AXIS_FACETS,
+	UNIVERSAL_POSTURE_REASONS,
+} from './facets/index.js';
 import type { UniversalAxisContract, RuneAxisContract } from './facets/describe.js';
 
 /** Structure contract for a single rune */
@@ -10,39 +14,63 @@ export interface RuneContract {
 	root: string;
 	dataRune: string;
 	parent?: string;
-	modifiers?: Record<string, {
-		source: string;
-		default?: string;
-		classPattern?: string;
-		dataAttribute: string;
-		valueMap?: Record<string, string>;
-		mapTarget?: string;
-	}>;
-	contextModifiers?: Record<string, {
-		suffix: string;
-		selector: string;
-	}>;
+	/**
+	 * The rune's resolved schema.org row — SPEC-130 / WORK-566.
+	 *
+	 * Declared here but filled in by the CLI: the tables live on the runes, and
+	 * `generateStructureContract` takes only a `ThemeConfig`. Reaching them from
+	 * this package would invert the dependency (`runes` depends on `transform`),
+	 * so the field is part of the contract's shape and the CLI supplies it.
+	 *
+	 * Typed loosely on purpose — the row's shape is owned by `@refrakt-md/runes`,
+	 * and restating it here would be a second definition to drift.
+	 */
+	schemaOrg?: unknown;
+	modifiers?: Record<
+		string,
+		{
+			source: string;
+			default?: string;
+			classPattern?: string;
+			dataAttribute: string;
+			valueMap?: Record<string, string>;
+			mapTarget?: string;
+		}
+	>;
+	contextModifiers?: Record<
+		string,
+		{
+			suffix: string;
+			selector: string;
+		}
+	>;
 	staticModifiers?: Array<{
 		name: string;
 		selector: string;
 	}>;
-	elements?: Record<string, {
-		tag: string;
-		selector: string;
-		source: string;
-		parent?: string;
-		condition?: string;
-		conditionAny?: string[];
-		/** For `source: 'block'` — the layout primitive the block renders with. */
-		layout?: string;
-		/** For `source: 'block'` — the field names projected into the block. */
-		fields?: string[];
-		/** For `source: 'layout'` — the ordered child membership of a created wrapper. */
-		children?: string[];
-		/** For `source: 'layout'` — extra static attributes set on the wrapper. */
-		attrs?: Record<string, string>;
-	}>;
-	inlineStyles?: Record<string, string | { prop: string; template?: string; transform?: (value: string) => string }>;
+	elements?: Record<
+		string,
+		{
+			tag: string;
+			selector: string;
+			source: string;
+			parent?: string;
+			condition?: string;
+			conditionAny?: string[];
+			/** For `source: 'block'` — the layout primitive the block renders with. */
+			layout?: string;
+			/** For `source: 'block'` — the field names projected into the block. */
+			fields?: string[];
+			/** For `source: 'layout'` — the ordered child membership of a created wrapper. */
+			children?: string[];
+			/** For `source: 'layout'` — extra static attributes set on the wrapper. */
+			attrs?: Record<string, string>;
+		}
+	>;
+	inlineStyles?: Record<
+		string,
+		string | { prop: string; template?: string; transform?: (value: string) => string }
+	>;
 	childOrder: string[];
 	/** Child density imposed on nested runes */
 	childDensity?: 'compact' | 'minimal';
@@ -93,12 +121,32 @@ export interface StructureContract {
  * Derives the complete BEM selector contract, data attributes, injected elements,
  * and child ordering for every rune — purely from config, no engine execution needed.
  */
-export function generateStructureContract(config: ThemeConfig): StructureContract {
+export interface StructureContractOptions {
+	/**
+	 * Resolved schema.org rows, keyed by the rune's own (kebab-case) name —
+	 * SPEC-130 / WORK-566.
+	 *
+	 * Passed in rather than read here: the tables are declared on the runes, and
+	 * `@refrakt-md/runes` depends on this package, so reaching them directly
+	 * would invert the dependency. Keyed by rune name rather than by the
+	 * theme-config key because a *plugin* rune has no `typeName` — keying off
+	 * that silently covered nothing for the 67 of 95 runes that live in plugins.
+	 */
+	schemaRows?: Record<string, unknown>;
+}
+
+export function generateStructureContract(
+	config: ThemeConfig,
+	options: StructureContractOptions = {},
+): StructureContract {
 	const { prefix, runes } = config;
 	const result: Record<string, RuneContract> = {};
 
 	for (const [runeName, runeConfig] of Object.entries(runes)) {
-		result[runeName] = generateRuneContract(runeName, runeConfig, prefix);
+		const contract = generateRuneContract(runeName, runeConfig, prefix);
+		const row = options.schemaRows?.[contract.dataRune];
+		if (row !== undefined) contract.schemaOrg = row;
+		result[runeName] = contract;
 	}
 
 	return {
@@ -109,13 +157,18 @@ export function generateStructureContract(config: ThemeConfig): StructureContrac
 		// Emitted by reference — the registry freezes each `contract`, so this
 		// cannot leak a mutable handle back into it.
 		universalAxes: Object.fromEntries(
-			UNIVERSAL_AXIS_FACETS.map(facet => [facet.axis, facet.contract]),
+			UNIVERSAL_AXIS_FACETS.map((facet) => [facet.axis, facet.contract]),
 		),
 		runes: result,
 	};
 }
 
-function generateRuneContract(runeName: string, config: RuneConfig, prefix: string, expandVariants = true): RuneContract {
+function generateRuneContract(
+	runeName: string,
+	config: RuneConfig,
+	prefix: string,
+	expandVariants = true,
+): RuneContract {
 	const block = `${prefix}-${config.block}`;
 	const contract: RuneContract = {
 		block: config.block,
@@ -144,7 +197,8 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 	// one that happens to also apply.
 	const posture = config.universalAttributes ?? 'auto';
 	if (posture !== 'auto') {
-		for (const facet of UNIVERSAL_AXIS_FACETS) unavailable[facet.axis] = UNIVERSAL_POSTURE_REASONS[posture];
+		for (const facet of UNIVERSAL_AXIS_FACETS)
+			unavailable[facet.axis] = UNIVERSAL_POSTURE_REASONS[posture];
 	} else {
 		for (const facet of UNIVERSAL_AXIS_FACETS) {
 			const described = facet.describeForRune(config, block);
@@ -160,7 +214,10 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 	}
 
 	// Elements: collected from structure, contentWrapper, and autoLabel
-	const elements: Record<string, RuneContract['elements'] extends Record<string, infer V> | undefined ? V : never> = {};
+	const elements: Record<
+		string,
+		RuneContract['elements'] extends Record<string, infer V> | undefined ? V : never
+	> = {};
 
 	// Structure elements (recursive)
 	if (config.structure) {
@@ -179,7 +236,7 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 				selector: `.${block}__${name}`,
 				source: 'block',
 				layout: def.layout,
-				fields: def.fields.map(f => (typeof f === 'string' ? f : f.field)),
+				fields: def.fields.map((f) => (typeof f === 'string' ? f : f.field)),
 			};
 		}
 	}
@@ -262,7 +319,9 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 		if (config.projection.group) {
 			// SPEC-081: `projection.group` is subsumed by a `layout` tag-entry
 			// (a wrapper that creates a container is exactly a group). Deprecated.
-			warnings.push('projection.group is deprecated — use a `layout` tag-entry (a wrapper that groups its children) instead');
+			warnings.push(
+				'projection.group is deprecated — use a `layout` tag-entry (a wrapper that groups its children) instead',
+			);
 			contract.projection.group = {};
 			for (const [key, def] of Object.entries(config.projection.group)) {
 				contract.projection.group[key] = { tag: def.tag, members: def.members };
@@ -283,7 +342,9 @@ function generateRuneContract(runeName: string, config: RuneConfig, prefix: stri
 		if (config.projection.relocate) {
 			// SPEC-081: `projection.relocate` is subsumed by `layout` — you place a
 			// slot wherever you name it in the layout tree (no separate move op).
-			warnings.push('projection.relocate is deprecated — place the slot directly in the `layout` tree instead');
+			warnings.push(
+				'projection.relocate is deprecated — place the slot directly in the `layout` tree instead',
+			);
 			contract.projection.relocate = {};
 			for (const [source, def] of Object.entries(config.projection.relocate)) {
 				contract.projection.relocate[source] = {

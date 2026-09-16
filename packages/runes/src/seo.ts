@@ -32,10 +32,7 @@ export function textContent(tag: Tag): string {
 	return parts.join('').trim();
 }
 
-function findFirst(
-	tree: RenderableTreeNodes,
-	predicate: (tag: Tag) => boolean,
-): Tag | undefined {
+function findFirst(tree: RenderableTreeNodes, predicate: (tag: Tag) => boolean): Tag | undefined {
 	if (Array.isArray(tree)) {
 		for (const node of tree) {
 			const found = findFirst(node as RenderableTreeNodes, predicate);
@@ -120,6 +117,20 @@ function walkForTypeof(
 		for (const child of node.children) {
 			walkForTypeof(child as RenderableTreeNodes, obj, topLevel);
 		}
+
+		// SPEC-130 D6 / WORK-565 — properties a rune's schema table declares a
+		// list always serialise as an array.
+		//
+		// `appendToProperty` stores the first value as a scalar and only promotes
+		// on the second, so a one-track playlist emitted `"track": {…}` and a
+		// two-track one `"track": [{…}]` — the *shape* of the output varying with
+		// the amount of content, which every consumer then has to handle twice.
+		//
+		// **After the recursion, not before it.** Nested children are appended to
+		// `obj` by the walk above, so running this first would find the property
+		// absent and promote nothing — which is exactly how it failed the first
+		// time it was written.
+		forceDeclaredLists(node, obj);
 	} else {
 		// Pass through — look deeper for typeof nodes
 		for (const child of node.children) {
@@ -172,6 +183,37 @@ function extractPropertyValue(tag: Tag): string | number | undefined {
 	return textContent(tag) || undefined;
 }
 
+/**
+ * The attribute a schema table's `lists:` declaration travels on.
+ *
+ * A `data-*` attribute rather than a side channel because `collectJsonLd` reads
+ * the transformed tree and nothing else — the same reason the whole mechanism
+ * runs at transform time. It sits beside `data-rune-fields`, which already
+ * carries a JSON blob on the rune root for the same kind of reason.
+ */
+export const SCHEMA_LISTS_ATTR = 'data-schema-lists';
+
+/** Promote every property the node declares a list to an array, in place. */
+function forceDeclaredLists(node: Tag, obj: Record<string, any>): void {
+	const raw = node.attributes?.[SCHEMA_LISTS_ATTR];
+	if (typeof raw !== 'string') return;
+	let names: unknown;
+	try {
+		names = JSON.parse(raw);
+	} catch {
+		return;
+	}
+	if (!Array.isArray(names)) return;
+	for (const name of names) {
+		if (typeof name !== 'string') continue;
+		// Declared a list, so an absent value is an empty collection rather than a
+		// missing one — but emitting `[]` would assert "this has no tracks", which
+		// is not the same claim as saying nothing. Only promote what is present.
+		if (obj[name] === undefined) continue;
+		if (!Array.isArray(obj[name])) obj[name] = [obj[name]];
+	}
+}
+
 /** Append a value to an object property, creating arrays for duplicates */
 function appendToProperty(obj: Record<string, any>, prop: string, value: any): void {
 	if (obj[prop] === undefined) {
@@ -210,7 +252,7 @@ function extractOgMeta(
 	if (frontmatter.image) og.image = frontmatter.image as string;
 
 	// Priority 2: Hero rune
-	const hero = findFirst(tree, tag => tag.attributes?.['data-rune'] === 'hero');
+	const hero = findFirst(tree, (tag) => tag.attributes?.['data-rune'] === 'hero');
 	if (hero) {
 		if (!og.title) {
 			const headline = findProperty(hero, 'headline');
@@ -224,15 +266,15 @@ function extractOgMeta(
 
 	// Priority 3: First content elements
 	if (!og.title) {
-		const h1 = findFirst(tree, tag => tag.name === 'h1');
+		const h1 = findFirst(tree, (tag) => tag.name === 'h1');
 		if (h1) og.title = textContent(h1);
 	}
 	if (!og.description) {
-		const p = findFirst(tree, tag => tag.name === 'p' && !tag.attributes['data-field']);
+		const p = findFirst(tree, (tag) => tag.name === 'p' && !tag.attributes['data-field']);
 		if (p) og.description = textContent(p).slice(0, 200);
 	}
 	if (!og.image) {
-		const img = findFirst(tree, tag => tag.name === 'img');
+		const img = findFirst(tree, (tag) => tag.name === 'img');
 		if (img) og.image = img.attributes.src;
 	}
 

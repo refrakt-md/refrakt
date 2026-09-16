@@ -24,7 +24,9 @@ describe('CliPluginCommand', () => {
 				type: 'object',
 				properties: { greeting: { type: 'string' } },
 			},
-			mcpHandler: async (input) => ({ greeting: `hi ${(input as { name?: string }).name ?? 'there'}` }),
+			mcpHandler: async (input) => ({
+				greeting: `hi ${(input as { name?: string }).name ?? 'there'}`,
+			}),
 		};
 		expectTypeOf(extended).toMatchTypeOf<CliPluginCommand>();
 	});

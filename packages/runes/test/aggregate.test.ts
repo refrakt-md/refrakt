@@ -19,9 +19,15 @@ function registry(entries: EntityRegistration[]): EntityRegistry {
 	} as EntityRegistry;
 }
 
-function render(src: string, reg: EntityRegistry, embed?: CollectionEmbedConfig): RenderableTreeNode {
+function render(
+	src: string,
+	reg: EntityRegistry,
+	embed?: CollectionEmbedConfig,
+): RenderableTreeNode {
 	const ast = Markdoc.parse(src);
-	captureDeferredBodies(ast, (n) => Boolean((tags as Record<string, { deferBody?: boolean }>)[n]?.deferBody));
+	captureDeferredBodies(ast, (n) =>
+		Boolean((tags as Record<string, { deferBody?: boolean }>)[n]?.deferBody),
+	);
 	const transformed = Markdoc.transform(ast, { tags, nodes, variables: {} } as never);
 	const config: CollectionEmbedConfig = embed ?? { tags: tags as never, nodes: nodes as never };
 	return resolveAggregates(transformed, '/p/', reg, config, ctx) as RenderableTreeNode;
@@ -52,7 +58,10 @@ function textOf(node: unknown): string {
 			out += String(n);
 			return;
 		}
-		if (Array.isArray(n)) { n.forEach(walk); return; }
+		if (Array.isArray(n)) {
+			n.forEach(walk);
+			return;
+		}
 		if (Markdoc.Tag.isTag(n as never)) {
 			((n as InstanceType<typeof Markdoc.Tag>).children ?? []).forEach(walk);
 		}
@@ -61,10 +70,18 @@ function textOf(node: unknown): string {
 	return out;
 }
 
-const work = (id: string, data: Record<string, unknown>): EntityRegistration =>
-	({ type: 'work', id, sourceUrl: `/work/${id}/`, data });
-const bug = (id: string, data: Record<string, unknown>): EntityRegistration =>
-	({ type: 'bug', id, sourceUrl: `/bug/${id}/`, data });
+const work = (id: string, data: Record<string, unknown>): EntityRegistration => ({
+	type: 'work',
+	id,
+	sourceUrl: `/work/${id}/`,
+	data,
+});
+const bug = (id: string, data: Record<string, unknown>): EntityRegistration => ({
+	type: 'bug',
+	id,
+	sourceUrl: `/bug/${id}/`,
+	data,
+});
 
 describe('aggregate rune (SPEC-076)', () => {
 	describe('no-body single-number form', () => {
@@ -75,7 +92,10 @@ describe('aggregate rune (SPEC-076)', () => {
 				work('W-3', { status: 'ready' }),
 			]);
 			const out = render('Done: {% aggregate type="work" filter="status:done" /%}.', reg);
-			const spans = findAll(out, (t) => t.name === 'span' && t.attributes['data-rune'] === 'aggregate');
+			const spans = findAll(
+				out,
+				(t) => t.name === 'span' && t.attributes['data-rune'] === 'aggregate',
+			);
 			expect(spans).toHaveLength(1);
 			expect(spans[0].attributes['data-aggregate']).toBe('count');
 			expect(spans[0].attributes['data-count']).toBe('2');
@@ -210,8 +230,8 @@ describe('aggregate rune (SPEC-076)', () => {
 				data,
 			);
 			const blob = JSON.stringify(cls(out, 'rf-aggregate__items')[0]);
-			expect(blob).toContain('2');  // value
-			expect(blob).toContain('3');  // count
+			expect(blob).toContain('2'); // value
+			expect(blob).toContain('3'); // count
 			expect(blob).toContain('67'); // percent: round(2/3*100) = 67
 		});
 
@@ -286,10 +306,7 @@ describe('aggregate rune (SPEC-076)', () => {
 		});
 
 		it('outer wrapper is a <section> for body forms; data-aggregate marks it as a breakdown', () => {
-			const out = render(
-				'{% aggregate type="work" %}\nx={% $item.count %}\n{% /aggregate %}',
-				reg,
-			);
+			const out = render('{% aggregate type="work" %}\nx={% $item.count %}\n{% /aggregate %}', reg);
 			const root = findAll(out, (t) => t.attributes['data-rune'] === 'aggregate')[0];
 			expect(root.name).toBe('section');
 			expect(root.attributes['data-aggregate']).toBe('breakdown');
@@ -307,7 +324,10 @@ describe('aggregate rune (SPEC-076)', () => {
 			const charts = findAll(out, (t) => t.name === 'rf-chart');
 			expect(charts.length).toBe(1);
 			expect(charts[0].attributes['data-type']).toBe('bar');
-			const table = findAll(charts[0], (t) => t.name === 'table' && t.attributes['data-name'] === 'data');
+			const table = findAll(
+				charts[0],
+				(t) => t.name === 'table' && t.attributes['data-name'] === 'data',
+			);
 			expect(table.length).toBe(1);
 			expect(findAll(table[0], (t) => t.name === 'th').map(textOf)).toEqual(['Status', 'Count']);
 			const rows = findAll(table[0], (t) => t.name === 'tr')
@@ -319,7 +339,10 @@ describe('aggregate rune (SPEC-076)', () => {
 
 		it('chart-type + chart-title ride through (data-type + caption)', () => {
 			const reg = registry([work('W-1', { status: 'done' })]);
-			const out = render('{% aggregate type="work" group="status" layout="chart" chart-type="line" chart-title="Status" /%}', reg);
+			const out = render(
+				'{% aggregate type="work" group="status" layout="chart" chart-type="line" chart-title="Status" /%}',
+				reg,
+			);
 			const chart = findAll(out, (t) => t.name === 'rf-chart')[0];
 			expect(chart.attributes['data-type']).toBe('line');
 			expect(textOf(findAll(chart, (t) => t.name === 'caption')[0])).toBe('Status');
@@ -331,9 +354,16 @@ describe('aggregate rune (SPEC-076)', () => {
 				work('W-2', { status: 'done' }),
 				work('W-3', { status: 'ready' }),
 			]);
-			const out = render('{% aggregate type="work" value="status:done" group="status" layout="chart" /%}', reg);
+			const out = render(
+				'{% aggregate type="work" value="status:done" group="status" layout="chart" /%}',
+				reg,
+			);
 			const table = findAll(out, (t) => t.name === 'table')[0];
-			expect(findAll(table, (t) => t.name === 'th').map(textOf)).toEqual(['Status', 'Count', 'Value']);
+			expect(findAll(table, (t) => t.name === 'th').map(textOf)).toEqual([
+				'Status',
+				'Count',
+				'Value',
+			]);
 			const rows = findAll(table, (t) => t.name === 'tr')
 				.filter((tr) => findAll(tr, (t) => t.name === 'td').length > 0)
 				.map((r) => findAll(r, (t) => t.name === 'td').map(textOf));
@@ -354,13 +384,18 @@ describe('aggregate rune (SPEC-076)', () => {
 			};
 			const out = render('{% aggregate type="work" group="status" layout="chart" /%}', reg, embed);
 			const tbody = findAll(out, (t) => t.name === 'tbody')[0];
-			const rowLabels = findAll(tbody, (t) => t.name === 'tr').map((r) => textOf(findAll(r, (t) => t.name === 'td')[0]));
+			const rowLabels = findAll(tbody, (t) => t.name === 'tr').map((r) =>
+				textOf(findAll(r, (t) => t.name === 'td')[0]),
+			);
 			expect(rowLabels).toEqual(['Todo', 'Doing', 'Done']);
 		});
 
 		it('empty query renders the empty fallback, not a broken chart', () => {
 			const reg = registry([]);
-			const out = render('{% aggregate type="work" group="status" layout="chart" empty="No work yet" /%}', reg);
+			const out = render(
+				'{% aggregate type="work" group="status" layout="chart" empty="No work yet" /%}',
+				reg,
+			);
 			expect(findAll(out, (t) => t.name === 'rf-chart').length).toBe(0);
 			expect(cls(out, 'rf-aggregate__empty').length).toBe(1);
 			expect(textOf(cls(out, 'rf-aggregate__empty')[0])).toContain('No work yet');
@@ -398,10 +433,15 @@ describe('aggregate rune (SPEC-076)', () => {
 
 		it('chart layout tags the label cell with data-meta-sentiment', () => {
 			const reg = registry([work('W-1', { status: 'done' }), work('W-2', { status: 'blocked' })]);
-			const out = render('{% aggregate type="work" group="status" layout="chart" /%}', reg, sentiEmbed);
+			const out = render(
+				'{% aggregate type="work" group="status" layout="chart" /%}',
+				reg,
+				sentiEmbed,
+			);
 			const tbody = findAll(out, (t) => t.name === 'tbody')[0];
-			const labelSentiments = findAll(tbody, (t) => t.name === 'tr')
-				.map((r) => findAll(r, (t) => t.name === 'td')[0]?.attributes['data-meta-sentiment']);
+			const labelSentiments = findAll(tbody, (t) => t.name === 'tr').map(
+				(r) => findAll(r, (t) => t.name === 'td')[0]?.attributes['data-meta-sentiment'],
+			);
 			expect(labelSentiments).toContain('positive');
 			expect(labelSentiments).toContain('negative');
 		});

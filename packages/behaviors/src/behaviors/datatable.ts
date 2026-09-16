@@ -36,7 +36,10 @@ export function datatableBehavior(el: HTMLElement): CleanupFn {
 	// Read configuration from data attributes
 	const searchable = el.getAttribute('data-searchable') === 'true';
 	const sortableStr = el.getAttribute('data-sortable') || '';
-	const sortable = sortableStr.split(',').map((s) => s.trim()).filter(Boolean);
+	const sortable = sortableStr
+		.split(',')
+		.map((s) => s.trim())
+		.filter(Boolean);
 	const pageSize = parseInt(el.getAttribute('data-page-size') || '0', 10);
 	const defaultSort = el.getAttribute('data-default-sort') || '';
 
@@ -170,9 +173,7 @@ export function datatableBehavior(el: HTMLElement): CleanupFn {
 		// Filter
 		if (searchQuery) {
 			const q = searchQuery.toLowerCase();
-			filtered = filtered.filter((r) =>
-				r.cells.some((c) => c.toLowerCase().includes(q)),
-			);
+			filtered = filtered.filter((r) => r.cells.some((c) => c.toLowerCase().includes(q)));
 		}
 
 		// Sort. Prefer a cell's `data-value` when present and numeric (mirrors
@@ -188,9 +189,10 @@ export function datatableBehavior(el: HTMLElement): CleanupFn {
 					const bv = b.dataValues[idx];
 					const an = av !== null ? Number(av) : NaN;
 					const bn = bv !== null ? Number(bv) : NaN;
-					const cmp = (av !== null && bv !== null && !Number.isNaN(an) && !Number.isNaN(bn))
-						? an - bn
-						: a.cells[idx].localeCompare(b.cells[idx], undefined, { numeric: true });
+					const cmp =
+						av !== null && bv !== null && !Number.isNaN(an) && !Number.isNaN(bn)
+							? an - bn
+							: a.cells[idx].localeCompare(b.cells[idx], undefined, { numeric: true });
 					return sortDirection === 'asc' ? cmp : -cmp;
 				});
 			}
@@ -203,9 +205,10 @@ export function datatableBehavior(el: HTMLElement): CleanupFn {
 		if (currentPage >= totalPages) currentPage = Math.max(0, totalPages - 1);
 
 		// Determine visible rows
-		const visible = pageSize > 0
-			? filtered.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
-			: filtered;
+		const visible =
+			pageSize > 0
+				? filtered.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
+				: filtered;
 
 		const tbody = table!.querySelector('tbody') || table!;
 

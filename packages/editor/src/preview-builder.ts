@@ -17,16 +17,18 @@ export interface PreviewBuildResult {
  * If Vite or @sveltejs/vite-plugin-svelte aren't available (e.g. non-SvelteKit
  * project), returns { success: false } and the editor falls back to HTML preview.
  */
-export async function buildPreviewRuntime(
-	themeSveltePath: string,
-): Promise<PreviewBuildResult> {
+export async function buildPreviewRuntime(themeSveltePath: string): Promise<PreviewBuildResult> {
 	const cacheDir = resolve(import.meta.dirname, '..', '.preview-cache');
 	const runtimeDir = resolve(import.meta.dirname, '..', 'preview-runtime');
 
 	// Cache key includes theme path + runtime source content so any source change busts the cache
 	const hasher = createHash('md5').update(themeSveltePath);
 	for (const file of ['App.svelte', 'index.html']) {
-		try { hasher.update(readFileSync(resolve(runtimeDir, file))); } catch { /**/ }
+		try {
+			hasher.update(readFileSync(resolve(runtimeDir, file)));
+		} catch {
+			/**/
+		}
 	}
 	const hash = hasher.digest('hex').slice(0, 8);
 	const outputDir = resolve(cacheDir, hash);
@@ -70,7 +72,10 @@ export async function buildPreviewRuntime(
 
 		return { outputDir, success: true };
 	} catch (err) {
-		console.warn('Preview runtime build failed (falling back to HTML preview):', (err as Error).message);
+		console.warn(
+			'Preview runtime build failed (falling back to HTML preview):',
+			(err as Error).message,
+		);
 		return { outputDir: '', success: false };
 	}
 }

@@ -77,7 +77,7 @@ export function formBehavior(el: HTMLElement): CleanupFn {
 			const response = await fetch(action, {
 				method,
 				body: formData,
-				headers: { 'Accept': 'application/json' },
+				headers: { Accept: 'application/json' },
 			});
 
 			if (response.ok) {

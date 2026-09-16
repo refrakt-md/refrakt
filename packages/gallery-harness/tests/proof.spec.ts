@@ -17,7 +17,7 @@ registerGalleryTests({
 		light: resolve(art, 'proof-skin.light.html'),
 		dark: resolve(art, 'proof-skin.dark.html'),
 	},
-	layouts: ['default', 'docs', 'blog-article', 'plan'].map(name => ({
+	layouts: ['default', 'docs', 'blog-article', 'plan'].map((name) => ({
 		name,
 		light: resolve(art, `proof-skin.layout-${name}.light.html`),
 		dark: resolve(art, `proof-skin.layout-${name}.dark.html`),

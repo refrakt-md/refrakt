@@ -7,7 +7,7 @@ import { asNodes } from '@refrakt-md/runes';
  *  Plan content uses `---` as editorial separators in markdown source;
  *  these don't serve a purpose in the rendered output. */
 export function stripHorizontalRules(nodes: RenderableTreeNode[]): RenderableTreeNode[] {
-	return nodes.filter(n => !(n instanceof Tag && n.name === 'hr'));
+	return nodes.filter((n) => !(n instanceof Tag && n.name === 'hr'));
 }
 
 /** Convert heading text to a kebab-case data-name slug. */

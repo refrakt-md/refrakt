@@ -1,0 +1,3144 @@
+{
+	"regenerateWith": "npm run seo:baseline",
+	"about": "Structured data every rune emits today, defects included (WORK-562 / SPEC-130). `jsonLd` is the pre-engine harvest `site.ts` publishes; `rendered` is the same tree after the identity transform. Object keys are sorted; array order is significant. Don't hand-edit — regenerate.",
+	"plugins": [
+		"@refrakt-md/marketing",
+		"@refrakt-md/docs",
+		"@refrakt-md/storytelling",
+		"@refrakt-md/places",
+		"@refrakt-md/business",
+		"@refrakt-md/design",
+		"@refrakt-md/learning",
+		"@refrakt-md/media",
+		"@refrakt-md/plan"
+	],
+	"runeCount": 30,
+	"fixtureCount": 42,
+	"coverageGaps": [],
+	"fixtures": [
+		{
+			"fixture": "accordion.items",
+			"rune": "accordion-item",
+			"group": "C",
+			"notes": "The `accordion-item` rune's own authorable form, and it is already wrong: the Question carries no `name`, and the heading text is concatenated into `acceptedAnswer.text` with no separator (\"What is refrakt?A content framework.\"). The heading-based fixture produces a correct name/answer split. Recorded as-is — WORK-570 retypes and wraps these nodes.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "FAQPage",
+					"mainEntity": [
+						{
+							"@type": "Question",
+							"acceptedAnswer": {
+								"@type": "Answer",
+								"text": "What is refrakt?A content framework."
+							}
+						},
+						{
+							"@type": "Question",
+							"acceptedAnswer": {
+								"@type": "Answer",
+								"text": "How do runes work?They reinterpret Markdown."
+							}
+						}
+					]
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "FAQPage",
+						"mainEntity": [
+							{
+								"@type": "Question",
+								"acceptedAnswer": {
+									"@type": "Answer",
+									"text": "What is refrakt?A content framework."
+								}
+							},
+							{
+								"@type": "Question",
+								"acceptedAnswer": {
+									"@type": "Answer",
+									"text": "How do runes work?They reinterpret Markdown."
+								}
+							}
+						]
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"children": [
+									{
+										"element": "summary",
+										"property": "name"
+									},
+									{
+										"children": [
+											{
+												"element": "div",
+												"property": "text",
+												"text": "What is refrakt?A content framework."
+											}
+										],
+										"element": "div",
+										"property": "acceptedAnswer",
+										"typeof": "Answer"
+									}
+								],
+								"element": "details",
+								"property": "mainEntity",
+								"typeof": "Question"
+							},
+							{
+								"children": [
+									{
+										"element": "summary",
+										"property": "name"
+									},
+									{
+										"children": [
+											{
+												"element": "div",
+												"property": "text",
+												"text": "How do runes work?They reinterpret Markdown."
+											}
+										],
+										"element": "div",
+										"property": "acceptedAnswer",
+										"typeof": "Answer"
+									}
+								],
+								"element": "details",
+								"property": "mainEntity",
+								"typeof": "Question"
+							}
+						],
+						"element": "section",
+						"typeof": "FAQPage"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "accordion",
+			"rune": "accordion",
+			"group": "C",
+			"notes": "Group C — FAQPage; headings become Questions, bodies become Answers.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "FAQPage",
+					"mainEntity": [
+						{
+							"@type": "Question",
+							"acceptedAnswer": {
+								"@type": "Answer",
+								"text": "A content framework built on Markdoc that extends Markdown with semantic runes."
+							},
+							"name": "What is refrakt.md?"
+						},
+						{
+							"@type": "Question",
+							"acceptedAnswer": {
+								"@type": "Answer",
+								"text": "Runes are Markdoc tags that wrap ordinary Markdown."
+							},
+							"name": "How do runes work?"
+						},
+						{
+							"@type": "Question",
+							"acceptedAnswer": {
+								"@type": "Answer",
+								"text": "No. Runes use standard Markdoc tag syntax."
+							},
+							"name": "Do I need to learn a new syntax?"
+						}
+					]
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "FAQPage",
+						"mainEntity": [
+							{
+								"@type": "Question",
+								"acceptedAnswer": {
+									"@type": "Answer",
+									"text": "A content framework built on Markdoc that extends Markdown with semantic runes."
+								},
+								"name": "What is refrakt.md?"
+							},
+							{
+								"@type": "Question",
+								"acceptedAnswer": {
+									"@type": "Answer",
+									"text": "Runes are Markdoc tags that wrap ordinary Markdown."
+								},
+								"name": "How do runes work?"
+							},
+							{
+								"@type": "Question",
+								"acceptedAnswer": {
+									"@type": "Answer",
+									"text": "No. Runes use standard Markdoc tag syntax."
+								},
+								"name": "Do I need to learn a new syntax?"
+							}
+						]
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"children": [
+									{
+										"element": "summary",
+										"property": "name",
+										"text": "What is refrakt.md?"
+									},
+									{
+										"children": [
+											{
+												"element": "div",
+												"property": "text",
+												"text": "A content framework built on Markdoc that extends Markdown with semantic runes."
+											}
+										],
+										"element": "div",
+										"property": "acceptedAnswer",
+										"typeof": "Answer"
+									}
+								],
+								"element": "details",
+								"property": "mainEntity",
+								"typeof": "Question"
+							},
+							{
+								"children": [
+									{
+										"element": "summary",
+										"property": "name",
+										"text": "How do runes work?"
+									},
+									{
+										"children": [
+											{
+												"element": "div",
+												"property": "text",
+												"text": "Runes are Markdoc tags that wrap ordinary Markdown."
+											}
+										],
+										"element": "div",
+										"property": "acceptedAnswer",
+										"typeof": "Answer"
+									}
+								],
+								"element": "details",
+								"property": "mainEntity",
+								"typeof": "Question"
+							},
+							{
+								"children": [
+									{
+										"element": "summary",
+										"property": "name",
+										"text": "Do I need to learn a new syntax?"
+									},
+									{
+										"children": [
+											{
+												"element": "div",
+												"property": "text",
+												"text": "No. Runes use standard Markdoc tag syntax."
+											}
+										],
+										"element": "div",
+										"property": "acceptedAnswer",
+										"typeof": "Answer"
+									}
+								],
+								"element": "details",
+								"property": "mainEntity",
+								"typeof": "Question"
+							}
+						],
+						"element": "section",
+						"typeof": "FAQPage"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "accordion.single",
+			"rune": "accordion",
+			"group": "C",
+			"notes": "D6 probe — one Question, so `mainEntity` is an object here and an array in the multi fixture.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "FAQPage",
+					"mainEntity": {
+						"@type": "Question",
+						"acceptedAnswer": {
+							"@type": "Answer",
+							"text": "A content framework built on Markdoc."
+						},
+						"name": "What is refrakt.md?"
+					}
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "FAQPage",
+						"mainEntity": {
+							"@type": "Question",
+							"acceptedAnswer": {
+								"@type": "Answer",
+								"text": "A content framework built on Markdoc."
+							},
+							"name": "What is refrakt.md?"
+						}
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"children": [
+									{
+										"element": "summary",
+										"property": "name",
+										"text": "What is refrakt.md?"
+									},
+									{
+										"children": [
+											{
+												"element": "div",
+												"property": "text",
+												"text": "A content framework built on Markdoc."
+											}
+										],
+										"element": "div",
+										"property": "acceptedAnswer",
+										"typeof": "Answer"
+									}
+								],
+								"element": "details",
+								"property": "mainEntity",
+								"typeof": "Question"
+							}
+						],
+						"element": "section",
+						"typeof": "FAQPage"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "blog",
+			"rune": "blog",
+			"group": "A",
+			"notes": "Group A — emits Blog with no properties. The rune resolves its posts from a folder at build time.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Blog"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Blog"
+					}
+				],
+				"annotations": [
+					{
+						"element": "section",
+						"typeof": "Blog"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "breadcrumb",
+			"rune": "breadcrumb",
+			"group": "C",
+			"notes": "Group C — BreadcrumbList whose ListItem positions come from the loop index. Also the only baseline for `breadcrumb-item`, which is not an author-writable tag: `breadcrumb`'s transform builds those nodes itself.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "BreadcrumbList",
+					"itemListElement": [
+						{
+							"@type": "ListItem",
+							"item": "/",
+							"name": "Home",
+							"position": 1
+						},
+						{
+							"@type": "ListItem",
+							"item": "/docs/getting-started",
+							"name": "Getting started",
+							"position": 2
+						},
+						{
+							"@type": "ListItem",
+							"item": "/runes/tabs",
+							"name": "Tabs",
+							"position": 3
+						},
+						{
+							"@type": "ListItem",
+							"name": "Breadcrumb",
+							"position": 4
+						}
+					]
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "BreadcrumbList",
+						"itemListElement": [
+							{
+								"@type": "ListItem",
+								"item": "/",
+								"name": "Home",
+								"position": 1
+							},
+							{
+								"@type": "ListItem",
+								"item": "/docs/getting-started",
+								"name": "Getting started",
+								"position": 2
+							},
+							{
+								"@type": "ListItem",
+								"item": "/runes/tabs",
+								"name": "Tabs",
+								"position": 3
+							},
+							{
+								"@type": "ListItem",
+								"name": "Breadcrumb",
+								"position": 4
+							}
+						]
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Home"
+									},
+									{
+										"element": "a",
+										"href": "/",
+										"property": "item"
+									},
+									{
+										"content": 1,
+										"element": "meta",
+										"property": "position"
+									}
+								],
+								"element": "li",
+								"property": "itemListElement",
+								"typeof": "ListItem"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Getting started"
+									},
+									{
+										"element": "a",
+										"href": "/docs/getting-started",
+										"property": "item"
+									},
+									{
+										"content": 2,
+										"element": "meta",
+										"property": "position"
+									}
+								],
+								"element": "li",
+								"property": "itemListElement",
+								"typeof": "ListItem"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Tabs"
+									},
+									{
+										"element": "a",
+										"href": "/runes/tabs",
+										"property": "item"
+									},
+									{
+										"content": 3,
+										"element": "meta",
+										"property": "position"
+									}
+								],
+								"element": "li",
+								"property": "itemListElement",
+								"typeof": "ListItem"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Breadcrumb"
+									},
+									{
+										"content": 4,
+										"element": "meta",
+										"property": "position"
+									}
+								],
+								"element": "li",
+								"property": "itemListElement",
+								"typeof": "ListItem"
+							}
+						],
+						"element": "nav",
+						"typeof": "BreadcrumbList"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "breadcrumb.single",
+			"rune": "breadcrumb",
+			"group": "C",
+			"notes": "D6 probe — one ListItem, so `itemListElement` is an object here and an array in the multi fixture.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "BreadcrumbList",
+					"itemListElement": {
+						"@type": "ListItem",
+						"item": "/",
+						"name": "Home",
+						"position": 1
+					}
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "BreadcrumbList",
+						"itemListElement": {
+							"@type": "ListItem",
+							"item": "/",
+							"name": "Home",
+							"position": 1
+						}
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Home"
+									},
+									{
+										"element": "a",
+										"href": "/",
+										"property": "item"
+									},
+									{
+										"content": 1,
+										"element": "meta",
+										"property": "position"
+									}
+								],
+								"element": "li",
+								"property": "itemListElement",
+								"typeof": "ListItem"
+							}
+						],
+						"element": "nav",
+						"typeof": "BreadcrumbList"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "budget",
+			"rune": "budget",
+			"group": "A",
+			"notes": "Group A — emits ItemList with no itemListElement.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "ItemList"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "ItemList"
+					}
+				],
+				"annotations": [
+					{
+						"element": "section",
+						"typeof": "ItemList"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "cast",
+			"rune": "cast",
+			"group": null,
+			"notes": "Group B — each member floats up as its own top-level Person entity rather than joining a collection. List items are `- Name - Role`, with an optional image on a continuation line.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Person",
+					"image": "https://assets.refrakt.md/team-alice-johnson.png",
+					"jobTitle": "CEO",
+					"name": "Alice Johnson"
+				},
+				{
+					"@context": "https://schema.org",
+					"@type": "Person",
+					"image": "https://assets.refrakt.md/team-bob-smith.png",
+					"jobTitle": "CTO",
+					"name": "Bob Smith"
+				},
+				{
+					"@context": "https://schema.org",
+					"@type": "Person",
+					"jobTitle": "Head of Design",
+					"name": "Carol Williams"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Person",
+						"image": "https://assets.refrakt.md/team-alice-johnson.png",
+						"jobTitle": "CEO",
+						"name": "Alice Johnson"
+					},
+					{
+						"@context": "https://schema.org",
+						"@type": "Person",
+						"image": "https://assets.refrakt.md/team-bob-smith.png",
+						"jobTitle": "CTO",
+						"name": "Bob Smith"
+					},
+					{
+						"@context": "https://schema.org",
+						"@type": "Person",
+						"jobTitle": "Head of Design",
+						"name": "Carol Williams"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "img",
+								"property": "image",
+								"src": "https://assets.refrakt.md/team-alice-johnson.png"
+							},
+							{
+								"element": "span",
+								"property": "name",
+								"text": "Alice Johnson"
+							},
+							{
+								"element": "span",
+								"property": "jobTitle",
+								"text": "CEO"
+							}
+						],
+						"element": "li",
+						"typeof": "Person"
+					},
+					{
+						"children": [
+							{
+								"element": "img",
+								"property": "image",
+								"src": "https://assets.refrakt.md/team-bob-smith.png"
+							},
+							{
+								"element": "span",
+								"property": "name",
+								"text": "Bob Smith"
+							},
+							{
+								"element": "span",
+								"property": "jobTitle",
+								"text": "CTO"
+							}
+						],
+						"element": "li",
+						"typeof": "Person"
+					},
+					{
+						"children": [
+							{
+								"element": "span",
+								"property": "name",
+								"text": "Carol Williams"
+							},
+							{
+								"element": "span",
+								"property": "jobTitle",
+								"text": "Head of Design"
+							}
+						],
+						"element": "li",
+						"typeof": "Person"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "cast.members",
+			"rune": "cast-member",
+			"group": "B",
+			"notes": "The `cast-member` rune's own authorable form, with bios the list form cannot express.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Person",
+					"jobTitle": "CEO",
+					"name": "Alice Johnson"
+				},
+				{
+					"@context": "https://schema.org",
+					"@type": "Person",
+					"jobTitle": "CTO",
+					"name": "Bob Smith"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Person",
+						"jobTitle": "CEO",
+						"name": "Alice Johnson"
+					},
+					{
+						"@context": "https://schema.org",
+						"@type": "Person",
+						"jobTitle": "CTO",
+						"name": "Bob Smith"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "span",
+								"property": "name",
+								"text": "Alice Johnson"
+							},
+							{
+								"element": "span",
+								"property": "jobTitle",
+								"text": "CEO"
+							}
+						],
+						"element": "li",
+						"typeof": "Person"
+					},
+					{
+						"children": [
+							{
+								"element": "span",
+								"property": "name",
+								"text": "Bob Smith"
+							},
+							{
+								"element": "span",
+								"property": "jobTitle",
+								"text": "CTO"
+							}
+						],
+						"element": "li",
+						"typeof": "Person"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "cast.single",
+			"rune": "cast-member",
+			"group": "B",
+			"notes": "One Person, to pin the single-vs-multi shape for a rune whose entities are top-level rather than nested.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Person",
+					"jobTitle": "CEO",
+					"name": "Alice Johnson"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Person",
+						"jobTitle": "CEO",
+						"name": "Alice Johnson"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "span",
+								"property": "name",
+								"text": "Alice Johnson"
+							},
+							{
+								"element": "span",
+								"property": "jobTitle",
+								"text": "CEO"
+							}
+						],
+						"element": "li",
+						"typeof": "Person"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "character",
+			"rune": "character",
+			"group": "B",
+			"notes": "Group B — Person; `role` lands on jobTitle.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Person",
+					"jobTitle": "antagonist",
+					"name": "Veshra"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Person",
+						"jobTitle": "antagonist",
+						"name": "Veshra"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "span",
+								"property": "name",
+								"text": "Veshra"
+							},
+							{
+								"content": "antagonist",
+								"element": "meta",
+								"property": "jobTitle"
+							}
+						],
+						"element": "article",
+						"typeof": "Person"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "datatable",
+			"rune": "datatable",
+			"group": "A",
+			"notes": "Group A — emits Dataset with no name, description or distribution.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Dataset"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Dataset"
+					}
+				],
+				"annotations": [
+					{
+						"element": "div",
+						"typeof": "Dataset"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "embed",
+			"rune": "embed",
+			"group": "B",
+			"notes": "Group B — self-closing. The only emitting rune with no block form in the docs.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "VideoObject",
+					"contentUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+					"embedUrl": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+					"name": "Example video"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "VideoObject",
+						"contentUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+						"embedUrl": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+						"name": "Example video"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"content": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+								"element": "meta",
+								"property": "contentUrl"
+							},
+							{
+								"content": "Example video",
+								"element": "meta",
+								"property": "name"
+							},
+							{
+								"content": "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
+								"element": "meta",
+								"property": "embedUrl"
+							}
+						],
+						"element": "figure",
+						"typeof": "VideoObject"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "event",
+			"rune": "event",
+			"group": "C",
+			"notes": "Group C — Event with a synthesised Place built from the `location` attribute.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Event",
+					"description": "Join us for three days of talks, workshops, and networking.",
+					"endDate": "2025-06-17",
+					"location": {
+						"@type": "Place",
+						"name": "San Francisco, CA"
+					},
+					"name": "Tech Conference 2025",
+					"startDate": "2025-06-15",
+					"url": "https://example.com/register"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Event",
+						"description": "Join us for three days of talks, workshops, and networking.",
+						"endDate": "2025-06-17",
+						"location": {
+							"@type": "Place",
+							"name": "San Francisco, CA"
+						},
+						"name": "Tech Conference 2025",
+						"startDate": "2025-06-15",
+						"url": "https://example.com/register"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "Tech Conference 2025"
+							},
+							{
+								"element": "p",
+								"property": "description",
+								"text": "Join us for three days of talks, workshops, and networking."
+							},
+							{
+								"content": "2025-06-15",
+								"element": "meta",
+								"property": "startDate"
+							},
+							{
+								"content": "2025-06-17",
+								"element": "meta",
+								"property": "endDate"
+							},
+							{
+								"content": "https://example.com/register",
+								"element": "meta",
+								"property": "url"
+							},
+							{
+								"children": [
+									{
+										"content": "San Francisco, CA",
+										"element": "meta",
+										"property": "name"
+									}
+								],
+								"element": "span",
+								"property": "location",
+								"typeof": "Place"
+							}
+						],
+						"element": "article",
+						"typeof": "Event"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "faction",
+			"rune": "faction",
+			"group": "B",
+			"notes": "Group B — Organization. Note `type=\"knightly order\"` and `alignment` reach no schema property.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Organization",
+					"image": "https://assets.refrakt.md/faction-the-silver-order.png",
+					"name": "The Silver Order"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Organization",
+						"image": "https://assets.refrakt.md/faction-the-silver-order.png",
+						"name": "The Silver Order"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "img",
+								"property": "image",
+								"src": "https://assets.refrakt.md/faction-the-silver-order.png"
+							},
+							{
+								"element": "span",
+								"property": "name",
+								"text": "The Silver Order"
+							}
+						],
+						"element": "article",
+						"typeof": "Organization"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "figure",
+			"rune": "figure",
+			"group": "B",
+			"notes": "Group B — a flat map, contentUrl + caption.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "ImageObject",
+					"caption": "A coral reef teeming with life beneath turquoise waters",
+					"contentUrl": "https://assets.refrakt.md/figure-coral-reef.jpg"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "ImageObject",
+						"caption": "A coral reef teeming with life beneath turquoise waters",
+						"contentUrl": "https://assets.refrakt.md/figure-coral-reef.jpg"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "img",
+								"property": "contentUrl",
+								"src": "https://assets.refrakt.md/figure-coral-reef.jpg"
+							},
+							{
+								"element": "figcaption",
+								"property": "caption",
+								"text": "A coral reef teeming with life beneath turquoise waters"
+							}
+						],
+						"element": "figure",
+						"typeof": "ImageObject"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "gallery",
+			"rune": "gallery",
+			"group": "A",
+			"notes": "Group A — emits ImageGallery with no properties, despite six real images.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "ImageGallery"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "ImageGallery"
+					}
+				],
+				"annotations": [
+					{
+						"element": "figure",
+						"typeof": "ImageGallery"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "howto",
+			"rune": "howto",
+			"group": "C",
+			"notes": "Group C — HowTo. The bare unordered list becomes `tool` and the bare ordered list becomes `step`; both are ordered sequences.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "HowTo",
+					"description": "Get a local development environment running from scratch.",
+					"name": "How to Set Up a Development Environment",
+					"step": [
+						{
+							"@type": "HowToStep",
+							"text": "Install Node.js from the official website"
+						},
+						{
+							"@type": "HowToStep",
+							"text": "Clone the repository with git clone"
+						},
+						{
+							"@type": "HowToStep",
+							"text": "Run npm install to install dependencies"
+						}
+					],
+					"tool": [
+						{
+							"@type": "HowToTool",
+							"name": "Node.js 18+"
+						},
+						{
+							"@type": "HowToTool",
+							"name": "Git"
+						},
+						{
+							"@type": "HowToTool",
+							"name": "A code editor"
+						}
+					],
+					"totalTime": "PT1H"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "HowTo",
+						"description": "Get a local development environment running from scratch.",
+						"name": "How to Set Up a Development Environment",
+						"step": [
+							{
+								"@type": "HowToStep",
+								"text": "Install Node.js from the official website"
+							},
+							{
+								"@type": "HowToStep",
+								"text": "Clone the repository with git clone"
+							},
+							{
+								"@type": "HowToStep",
+								"text": "Run npm install to install dependencies"
+							}
+						],
+						"tool": [
+							{
+								"@type": "HowToTool",
+								"name": "Node.js 18+"
+							},
+							{
+								"@type": "HowToTool",
+								"name": "Git"
+							},
+							{
+								"@type": "HowToTool",
+								"name": "A code editor"
+							}
+						],
+						"totalTime": "PT1H"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "How to Set Up a Development Environment"
+							},
+							{
+								"element": "p",
+								"property": "description",
+								"text": "Get a local development environment running from scratch."
+							},
+							{
+								"children": [
+									{
+										"element": "p",
+										"property": "name",
+										"text": "Node.js 18+"
+									}
+								],
+								"element": "li",
+								"property": "tool",
+								"typeof": "HowToTool"
+							},
+							{
+								"children": [
+									{
+										"element": "p",
+										"property": "name",
+										"text": "Git"
+									}
+								],
+								"element": "li",
+								"property": "tool",
+								"typeof": "HowToTool"
+							},
+							{
+								"children": [
+									{
+										"element": "p",
+										"property": "name",
+										"text": "A code editor"
+									}
+								],
+								"element": "li",
+								"property": "tool",
+								"typeof": "HowToTool"
+							},
+							{
+								"children": [
+									{
+										"element": "p",
+										"property": "text",
+										"text": "Install Node.js from the official website"
+									}
+								],
+								"element": "li",
+								"property": "step",
+								"typeof": "HowToStep"
+							},
+							{
+								"children": [
+									{
+										"element": "p",
+										"property": "text",
+										"text": "Clone the repository with git clone"
+									}
+								],
+								"element": "li",
+								"property": "step",
+								"typeof": "HowToStep"
+							},
+							{
+								"children": [
+									{
+										"element": "p",
+										"property": "text",
+										"text": "Run npm install to install dependencies"
+									}
+								],
+								"element": "li",
+								"property": "step",
+								"typeof": "HowToStep"
+							},
+							{
+								"content": "PT1H",
+								"element": "meta",
+								"property": "totalTime"
+							}
+						],
+						"element": "article",
+						"typeof": "HowTo"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "howto.single",
+			"rune": "howto",
+			"group": "C",
+			"notes": "D6 probe — one tool and one step, so both are scalars here and arrays in the multi fixture.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "HowTo",
+					"description": "Confirm the toolchain is present.",
+					"name": "How to Check the Node Version",
+					"step": {
+						"@type": "HowToStep",
+						"text": "Run node --version"
+					},
+					"tool": {
+						"@type": "HowToTool",
+						"name": "Node.js 18+"
+					},
+					"totalTime": "PT5M"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "HowTo",
+						"description": "Confirm the toolchain is present.",
+						"name": "How to Check the Node Version",
+						"step": {
+							"@type": "HowToStep",
+							"text": "Run node --version"
+						},
+						"tool": {
+							"@type": "HowToTool",
+							"name": "Node.js 18+"
+						},
+						"totalTime": "PT5M"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "How to Check the Node Version"
+							},
+							{
+								"element": "p",
+								"property": "description",
+								"text": "Confirm the toolchain is present."
+							},
+							{
+								"children": [
+									{
+										"element": "p",
+										"property": "name",
+										"text": "Node.js 18+"
+									}
+								],
+								"element": "li",
+								"property": "tool",
+								"typeof": "HowToTool"
+							},
+							{
+								"children": [
+									{
+										"element": "p",
+										"property": "text",
+										"text": "Run node --version"
+									}
+								],
+								"element": "li",
+								"property": "step",
+								"typeof": "HowToStep"
+							},
+							{
+								"content": "PT5M",
+								"element": "meta",
+								"property": "totalTime"
+							}
+						],
+						"element": "article",
+						"typeof": "HowTo"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "itinerary",
+			"rune": "itinerary",
+			"group": "A",
+			"notes": "Group A — emits ItemList with no itemListElement, despite two days of structured stops. Generating this fixture also prints a pre-existing engine diagnostic, \"`itinerary-stop` requires parent `itinerary` — found nested directly in `itinerary-day`\". That is the rune's own structure tripping a parent check, not a defect in this fixture: the unabridged doc example at site/content/runes/places/itinerary.md prints it too. Out of scope here — noted so it is not mistaken for fixture breakage later.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "ItemList"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "ItemList"
+					}
+				],
+				"annotations": [
+					{
+						"element": "section",
+						"typeof": "ItemList"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "lore",
+			"rune": "lore",
+			"group": "B",
+			"notes": "Group B — Article; `title` lands on headline, `category` on articleSection. BUG-015's dead Lumina rule selects this rune's title.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Article",
+					"articleSection": "prophecy",
+					"headline": "The Prophecy of the Chosen One"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Article",
+						"articleSection": "prophecy",
+						"headline": "The Prophecy of the Chosen One"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "span",
+								"property": "headline",
+								"text": "The Prophecy of the Chosen One"
+							},
+							{
+								"content": "prophecy",
+								"element": "meta",
+								"property": "articleSection"
+							}
+						],
+						"element": "article",
+						"typeof": "Article"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "map",
+			"rune": "map",
+			"group": "A",
+			"notes": "Group A — emits Place with no name, address or geo, despite three pinned locations with coordinates.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Place"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Place"
+					}
+				],
+				"annotations": [
+					{
+						"element": "rf-map",
+						"typeof": "Place"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "organization",
+			"rune": "organization",
+			"group": "B",
+			"notes": "Group B — the `by:`-style precedent (D2). `type` selects the emitted schema.org type.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "LocalBusiness",
+					"description": "Your neighborhood coffee shop since 2015. We serve locally roasted coffee and fresh pastries.",
+					"name": "Acme Coffee Shop"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "LocalBusiness",
+						"description": "Your neighborhood coffee shop since 2015. We serve locally roasted coffee and fresh pastries.",
+						"name": "Acme Coffee Shop"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "Acme Coffee Shop"
+							},
+							{
+								"element": "p",
+								"property": "description",
+								"text": "Your neighborhood coffee shop since 2015. We serve locally roasted coffee and fresh pastries."
+							}
+						],
+						"element": "article",
+						"typeof": "LocalBusiness"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "organization.nonprofit",
+			"rune": "organization",
+			"group": "B",
+			"notes": "Records D2 as it stands: `type=\"NonProfit\"` is accepted by the rune's curated six-value enum and published verbatim, but schema.org has no `NonProfit` type (it has `NGO`). WORK-568 corrects this, and the correction must show as a diff here.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "NonProfit",
+					"description": "A conservation charity restoring freshwater habitats across the region.",
+					"name": "Rivers Trust"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "NonProfit",
+						"description": "A conservation charity restoring freshwater habitats across the region.",
+						"name": "Rivers Trust"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "Rivers Trust"
+							},
+							{
+								"element": "p",
+								"property": "description",
+								"text": "A conservation charity restoring freshwater habitats across the region."
+							}
+						],
+						"element": "article",
+						"typeof": "NonProfit"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "playlist.album",
+			"rune": "playlist",
+			"group": "C",
+			"notes": "Group C — MusicPlaylist with inline property stamps (byArtist, duration) on each track span. Correct-ish today, though BUG-013 narrows `album` to MusicAlbum.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "MusicPlaylist",
+					"byArtist": "Pink Floyd",
+					"image": "https://assets.refrakt.md/playlist-dark-side-of-the-moon.png",
+					"name": "The Dark Side of the Moon",
+					"track": [
+						{
+							"@type": "MusicRecording",
+							"byArtist": "Pink Floyd",
+							"duration": "PT73S",
+							"name": "Speak to Me"
+						},
+						{
+							"@type": "MusicRecording",
+							"byArtist": "Pink Floyd",
+							"duration": "PT163S",
+							"name": "Breathe"
+						},
+						{
+							"@type": "MusicRecording",
+							"byArtist": "Pink Floyd",
+							"duration": "PT425S",
+							"name": "Time"
+						}
+					]
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "MusicPlaylist",
+						"byArtist": "Pink Floyd",
+						"image": "https://assets.refrakt.md/playlist-dark-side-of-the-moon.png",
+						"name": "The Dark Side of the Moon",
+						"track": [
+							{
+								"@type": "MusicRecording",
+								"byArtist": "Pink Floyd",
+								"duration": "PT73S",
+								"name": "Speak to Me"
+							},
+							{
+								"@type": "MusicRecording",
+								"byArtist": "Pink Floyd",
+								"duration": "PT163S",
+								"name": "Breathe"
+							},
+							{
+								"@type": "MusicRecording",
+								"byArtist": "Pink Floyd",
+								"duration": "PT425S",
+								"name": "Time"
+							}
+						]
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "img",
+								"property": "image",
+								"src": "https://assets.refrakt.md/playlist-dark-side-of-the-moon.png"
+							},
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "The Dark Side of the Moon"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Speak to Me"
+									},
+									{
+										"element": "span",
+										"property": "byArtist",
+										"text": "Pink Floyd"
+									},
+									{
+										"content": "PT73S",
+										"element": "meta",
+										"property": "duration"
+									}
+								],
+								"element": "li",
+								"property": "track",
+								"typeof": "MusicRecording"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Breathe"
+									},
+									{
+										"element": "span",
+										"property": "byArtist",
+										"text": "Pink Floyd"
+									},
+									{
+										"content": "PT163S",
+										"element": "meta",
+										"property": "duration"
+									}
+								],
+								"element": "li",
+								"property": "track",
+								"typeof": "MusicRecording"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Time"
+									},
+									{
+										"element": "span",
+										"property": "byArtist",
+										"text": "Pink Floyd"
+									},
+									{
+										"content": "PT425S",
+										"element": "meta",
+										"property": "duration"
+									}
+								],
+								"element": "li",
+								"property": "track",
+								"typeof": "MusicRecording"
+							},
+							{
+								"content": "Pink Floyd",
+								"element": "meta",
+								"property": "byArtist"
+							}
+						],
+						"element": "section",
+						"typeof": "MusicPlaylist"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "playlist.podcast",
+			"rune": "playlist",
+			"group": "C",
+			"notes": "BUG-013, recorded as it stands: `type=\"podcast\"` validates against the rune's five-value enum and then emits MusicPlaylist with MusicRecording episodes unconditionally. Should be PodcastSeries / PodcastEpisode. WORK-569 fixes it, and the fix must show as a diff here.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "MusicPlaylist",
+					"name": "Design Systems Weekly",
+					"track": [
+						{
+							"@type": "MusicRecording",
+							"datePublished": "March 2025",
+							"duration": "PT2730S",
+							"name": "Component Libraries at Scale"
+						},
+						{
+							"@type": "MusicRecording",
+							"datePublished": "February 2025",
+							"duration": "PT2295S",
+							"name": "Token Architecture"
+						}
+					]
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "MusicPlaylist",
+						"name": "Design Systems Weekly",
+						"track": [
+							{
+								"@type": "MusicRecording",
+								"datePublished": "March 2025",
+								"duration": "PT2730S",
+								"name": "Component Libraries at Scale"
+							},
+							{
+								"@type": "MusicRecording",
+								"datePublished": "February 2025",
+								"duration": "PT2295S",
+								"name": "Token Architecture"
+							}
+						]
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "Design Systems Weekly"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Component Libraries at Scale"
+									},
+									{
+										"content": "PT2730S",
+										"element": "meta",
+										"property": "duration"
+									},
+									{
+										"element": "span",
+										"property": "datePublished",
+										"text": "March 2025"
+									}
+								],
+								"element": "li",
+								"property": "track",
+								"typeof": "MusicRecording"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Token Architecture"
+									},
+									{
+										"content": "PT2295S",
+										"element": "meta",
+										"property": "duration"
+									},
+									{
+										"element": "span",
+										"property": "datePublished",
+										"text": "February 2025"
+									}
+								],
+								"element": "li",
+								"property": "track",
+								"typeof": "MusicRecording"
+							}
+						],
+						"element": "section",
+						"typeof": "MusicPlaylist"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "playlist.single",
+			"rune": "playlist",
+			"group": "C",
+			"notes": "D6 probe — one track, so `track` is an object here and an array in the album fixture.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "MusicPlaylist",
+					"byArtist": "Pink Floyd",
+					"name": "The Dark Side of the Moon",
+					"track": {
+						"@type": "MusicRecording",
+						"byArtist": "Pink Floyd",
+						"duration": "PT73S",
+						"name": "Speak to Me"
+					}
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "MusicPlaylist",
+						"byArtist": "Pink Floyd",
+						"name": "The Dark Side of the Moon",
+						"track": {
+							"@type": "MusicRecording",
+							"byArtist": "Pink Floyd",
+							"duration": "PT73S",
+							"name": "Speak to Me"
+						}
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "The Dark Side of the Moon"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Speak to Me"
+									},
+									{
+										"element": "span",
+										"property": "byArtist",
+										"text": "Pink Floyd"
+									},
+									{
+										"content": "PT73S",
+										"element": "meta",
+										"property": "duration"
+									}
+								],
+								"element": "li",
+								"property": "track",
+								"typeof": "MusicRecording"
+							},
+							{
+								"content": "Pink Floyd",
+								"element": "meta",
+								"property": "byArtist"
+							}
+						],
+						"element": "section",
+						"typeof": "MusicPlaylist"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "plot",
+			"rune": "plot",
+			"group": "B",
+			"notes": "Group B — CreativeWork; `type` lands on genre. The beat checklist reaches no schema property.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "CreativeWork",
+					"genre": "quest",
+					"name": "The Quest for the Crown"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "CreativeWork",
+						"genre": "quest",
+						"name": "The Quest for the Crown"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "span",
+								"property": "name",
+								"text": "The Quest for the Crown"
+							},
+							{
+								"content": "quest",
+								"element": "meta",
+								"property": "genre"
+							}
+						],
+						"element": "section",
+						"typeof": "CreativeWork"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "pricing",
+			"rune": "pricing",
+			"group": "B",
+			"notes": "Group B/C — Product with nested Offers. Tiers come from `## Name — Price` headings.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Product",
+					"description": "Pick the plan that fits your needs.",
+					"name": "Plans",
+					"offers": [
+						{
+							"@type": "Offer",
+							"name": "Free",
+							"price": "0",
+							"priceCurrency": "USD"
+						},
+						{
+							"@type": "Offer",
+							"name": "Pro",
+							"price": "19",
+							"priceCurrency": "USD"
+						}
+					]
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Product",
+						"description": "Pick the plan that fits your needs.",
+						"name": "Plans",
+						"offers": [
+							{
+								"@type": "Offer",
+								"name": "Free",
+								"price": "0",
+								"priceCurrency": "USD"
+							},
+							{
+								"@type": "Offer",
+								"name": "Pro",
+								"price": "19",
+								"priceCurrency": "USD"
+							}
+						]
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "Plans"
+							},
+							{
+								"element": "p",
+								"property": "description",
+								"text": "Pick the plan that fits your needs."
+							},
+							{
+								"children": [
+									{
+										"element": "h1",
+										"property": "name",
+										"text": "Free"
+									},
+									{
+										"content": "0",
+										"element": "meta",
+										"property": "price"
+									},
+									{
+										"content": "USD",
+										"element": "meta",
+										"property": "priceCurrency"
+									}
+								],
+								"element": "li",
+								"property": "offers",
+								"typeof": "Offer"
+							},
+							{
+								"children": [
+									{
+										"element": "h1",
+										"property": "name",
+										"text": "Pro"
+									},
+									{
+										"content": "19",
+										"element": "meta",
+										"property": "price"
+									},
+									{
+										"content": "USD",
+										"element": "meta",
+										"property": "priceCurrency"
+									}
+								],
+								"element": "li",
+								"property": "offers",
+								"typeof": "Offer"
+							}
+						],
+						"element": "section",
+						"typeof": "Product"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "pricing.single",
+			"rune": "pricing",
+			"group": "B",
+			"notes": "D6 probe — one Offer. `appendToProperty` stores the first value as a scalar, so `offers` is an object here and an array in the multi-tier fixture. D6 makes both arrays.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Product",
+					"name": "One plan",
+					"offers": {
+						"@type": "Offer",
+						"name": "Pro",
+						"price": "19",
+						"priceCurrency": "USD"
+					}
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Product",
+						"name": "One plan",
+						"offers": {
+							"@type": "Offer",
+							"name": "Pro",
+							"price": "19",
+							"priceCurrency": "USD"
+						}
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "One plan"
+							},
+							{
+								"children": [
+									{
+										"element": "h1",
+										"property": "name",
+										"text": "Pro"
+									},
+									{
+										"content": "19",
+										"element": "meta",
+										"property": "price"
+									},
+									{
+										"content": "USD",
+										"element": "meta",
+										"property": "priceCurrency"
+									}
+								],
+								"element": "li",
+								"property": "offers",
+								"typeof": "Offer"
+							}
+						],
+						"element": "section",
+						"typeof": "Product"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "pricing.tiers",
+			"rune": "tier",
+			"group": "B",
+			"notes": "The `tier` rune's own authorable form. The heading-based fixture exercises the same Offer mapping via `pricing`'s item model; this one exercises `tier` itself.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Product",
+					"name": "Choose your plan",
+					"offers": [
+						{
+							"@type": "Offer",
+							"name": "Free",
+							"price": "0",
+							"priceCurrency": "USD"
+						},
+						{
+							"@type": "Offer",
+							"name": "Pro",
+							"price": "19",
+							"priceCurrency": "USD"
+						}
+					]
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Product",
+						"name": "Choose your plan",
+						"offers": [
+							{
+								"@type": "Offer",
+								"name": "Free",
+								"price": "0",
+								"priceCurrency": "USD"
+							},
+							{
+								"@type": "Offer",
+								"name": "Pro",
+								"price": "19",
+								"priceCurrency": "USD"
+							}
+						]
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "Choose your plan"
+							},
+							{
+								"children": [
+									{
+										"element": "h1",
+										"property": "name",
+										"text": "Free"
+									},
+									{
+										"content": "0",
+										"element": "meta",
+										"property": "price"
+									},
+									{
+										"content": "USD",
+										"element": "meta",
+										"property": "priceCurrency"
+									}
+								],
+								"element": "li",
+								"property": "offers",
+								"typeof": "Offer"
+							},
+							{
+								"children": [
+									{
+										"element": "h1",
+										"property": "name",
+										"text": "Pro"
+									},
+									{
+										"content": "19",
+										"element": "meta",
+										"property": "price"
+									},
+									{
+										"content": "USD",
+										"element": "meta",
+										"property": "priceCurrency"
+									}
+								],
+								"element": "li",
+								"property": "offers",
+								"typeof": "Offer"
+							}
+						],
+						"element": "section",
+						"typeof": "Product"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "realm",
+			"rune": "realm",
+			"group": "B",
+			"notes": "Group B — Place; `type` lands on additionalType.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Place",
+					"additionalType": "sanctuary",
+					"image": "https://assets.refrakt.md/realm-rivendell.png",
+					"name": "Rivendell"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Place",
+						"additionalType": "sanctuary",
+						"image": "https://assets.refrakt.md/realm-rivendell.png",
+						"name": "Rivendell"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "img",
+								"property": "image",
+								"src": "https://assets.refrakt.md/realm-rivendell.png"
+							},
+							{
+								"element": "span",
+								"property": "name",
+								"text": "Rivendell"
+							},
+							{
+								"content": "sanctuary",
+								"element": "meta",
+								"property": "additionalType"
+							}
+						],
+						"element": "article",
+						"typeof": "Place"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "recipe",
+			"rune": "recipe",
+			"group": "C",
+			"notes": "Group C — Recipe. The bare unordered list becomes recipeIngredient and the bare ordered list becomes recipeInstructions; both are ordered sequences.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Recipe",
+					"cookTime": "PT30M",
+					"description": "A rich and creamy Italian pasta dish.",
+					"name": "Classic Pasta Carbonara",
+					"prepTime": "PT15M",
+					"recipeIngredient": [
+						"400g spaghetti",
+						"200g pancetta",
+						"4 egg yolks"
+					],
+					"recipeInstructions": [
+						{
+							"@type": "HowToStep",
+							"text": "Cook pasta in salted boiling water until al dente"
+						},
+						{
+							"@type": "HowToStep",
+							"text": "Fry pancetta in a large pan until crispy"
+						},
+						{
+							"@type": "HowToStep",
+							"text": "Toss hot pasta with pancetta, then stir in egg mixture off the heat"
+						}
+					],
+					"recipeYield": "4"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Recipe",
+						"cookTime": "PT30M",
+						"description": "A rich and creamy Italian pasta dish.",
+						"name": "Classic Pasta Carbonara",
+						"prepTime": "PT15M",
+						"recipeIngredient": [
+							"400g spaghetti",
+							"200g pancetta",
+							"4 egg yolks"
+						],
+						"recipeInstructions": [
+							{
+								"@type": "HowToStep",
+								"text": "Cook pasta in salted boiling water until al dente"
+							},
+							{
+								"@type": "HowToStep",
+								"text": "Fry pancetta in a large pan until crispy"
+							},
+							{
+								"@type": "HowToStep",
+								"text": "Toss hot pasta with pancetta, then stir in egg mixture off the heat"
+							}
+						],
+						"recipeYield": "4"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "Classic Pasta Carbonara"
+							},
+							{
+								"element": "p",
+								"property": "description",
+								"text": "A rich and creamy Italian pasta dish."
+							},
+							{
+								"element": "li",
+								"property": "recipeIngredient",
+								"text": "400g spaghetti"
+							},
+							{
+								"element": "li",
+								"property": "recipeIngredient",
+								"text": "200g pancetta"
+							},
+							{
+								"element": "li",
+								"property": "recipeIngredient",
+								"text": "4 egg yolks"
+							},
+							{
+								"children": [
+									{
+										"element": "p",
+										"property": "text",
+										"text": "Cook pasta in salted boiling water until al dente"
+									}
+								],
+								"element": "li",
+								"property": "recipeInstructions",
+								"typeof": "HowToStep"
+							},
+							{
+								"children": [
+									{
+										"element": "p",
+										"property": "text",
+										"text": "Fry pancetta in a large pan until crispy"
+									}
+								],
+								"element": "li",
+								"property": "recipeInstructions",
+								"typeof": "HowToStep"
+							},
+							{
+								"children": [
+									{
+										"element": "p",
+										"property": "text",
+										"text": "Toss hot pasta with pancetta, then stir in egg mixture off the heat"
+									}
+								],
+								"element": "li",
+								"property": "recipeInstructions",
+								"typeof": "HowToStep"
+							},
+							{
+								"content": "PT15M",
+								"element": "meta",
+								"property": "prepTime"
+							},
+							{
+								"content": "PT30M",
+								"element": "meta",
+								"property": "cookTime"
+							},
+							{
+								"content": "4",
+								"element": "meta",
+								"property": "recipeYield"
+							}
+						],
+						"element": "article",
+						"typeof": "Recipe"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "recipe.single",
+			"rune": "recipe",
+			"group": "C",
+			"notes": "D6 probe — one ingredient and one instruction, so `recipeIngredient` and `recipeInstructions` are scalars here and arrays in the multi fixture.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Recipe",
+					"description": "The simplest thing worth writing down.",
+					"name": "Buttered Toast",
+					"prepTime": "PT2M",
+					"recipeIngredient": "2 slices of bread",
+					"recipeInstructions": {
+						"@type": "HowToStep",
+						"text": "Toast the bread and butter it"
+					},
+					"recipeYield": "1"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Recipe",
+						"description": "The simplest thing worth writing down.",
+						"name": "Buttered Toast",
+						"prepTime": "PT2M",
+						"recipeIngredient": "2 slices of bread",
+						"recipeInstructions": {
+							"@type": "HowToStep",
+							"text": "Toast the bread and butter it"
+						},
+						"recipeYield": "1"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "Buttered Toast"
+							},
+							{
+								"element": "p",
+								"property": "description",
+								"text": "The simplest thing worth writing down."
+							},
+							{
+								"element": "li",
+								"property": "recipeIngredient",
+								"text": "2 slices of bread"
+							},
+							{
+								"children": [
+									{
+										"element": "p",
+										"property": "text",
+										"text": "Toast the bread and butter it"
+									}
+								],
+								"element": "li",
+								"property": "recipeInstructions",
+								"typeof": "HowToStep"
+							},
+							{
+								"content": "PT2M",
+								"element": "meta",
+								"property": "prepTime"
+							},
+							{
+								"content": "1",
+								"element": "meta",
+								"property": "recipeYield"
+							}
+						],
+						"element": "article",
+						"typeof": "Recipe"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "symbol",
+			"rune": "symbol",
+			"group": "A",
+			"notes": "Group A — emits TechArticle with no name or description, despite a full signature and prose.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "TechArticle"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "TechArticle"
+					}
+				],
+				"annotations": [
+					{
+						"element": "article",
+						"typeof": "TechArticle"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "testimonial.comma",
+			"rune": "testimonial",
+			"group": "C",
+			"notes": "Probes the attribution parser with a comma instead of the em dash the docs use. WORK-562's brief names a `jobTitle: \", CTO at Acme\"` defect; this fixture records whatever the comma form actually produces, so the parser's behaviour is pinned either way rather than assumed.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Review",
+					"author": {
+						"@type": "Person",
+						"jobTitle": ", CTO at Acme",
+						"name": "Alex Rivera"
+					},
+					"reviewBody": "The semantic approach just makes sense.",
+					"reviewRating": {
+						"@type": "Rating",
+						"ratingValue": 4
+					}
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Review",
+						"author": {
+							"@type": "Person",
+							"jobTitle": ", CTO at Acme",
+							"name": "Alex Rivera"
+						},
+						"reviewBody": "The semantic approach just makes sense.",
+						"reviewRating": {
+							"@type": "Rating",
+							"ratingValue": 4
+						}
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "blockquote",
+								"property": "reviewBody",
+								"text": "The semantic approach just makes sense."
+							},
+							{
+								"children": [
+									{
+										"content": "Alex Rivera",
+										"element": "meta",
+										"property": "name"
+									},
+									{
+										"content": ", CTO at Acme",
+										"element": "meta",
+										"property": "jobTitle"
+									}
+								],
+								"element": "span",
+								"property": "author",
+								"typeof": "Person"
+							},
+							{
+								"children": [
+									{
+										"content": 4,
+										"element": "meta",
+										"property": "ratingValue"
+									}
+								],
+								"element": "span",
+								"property": "reviewRating",
+								"typeof": "Rating"
+							}
+						],
+						"element": "article",
+						"typeof": "Review"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "testimonial",
+			"rune": "testimonial",
+			"group": "C",
+			"notes": "Group C — Review with a synthesised Person and Rating, built from text pulled out of other tags. The quote must be a blockquote; the attribution line is `**Name** — Role`.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Review",
+					"author": {
+						"@type": "Person",
+						"jobTitle": "Head of Content, Acme Corp",
+						"name": "Sarah Chen"
+					},
+					"reviewBody": "refrakt.md completely changed how we think about content. Writing docs has never been this productive.",
+					"reviewRating": {
+						"@type": "Rating",
+						"ratingValue": 5
+					}
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Review",
+						"author": {
+							"@type": "Person",
+							"jobTitle": "Head of Content, Acme Corp",
+							"name": "Sarah Chen"
+						},
+						"reviewBody": "refrakt.md completely changed how we think about content. Writing docs has never been this productive.",
+						"reviewRating": {
+							"@type": "Rating",
+							"ratingValue": 5
+						}
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "blockquote",
+								"property": "reviewBody",
+								"text": "refrakt.md completely changed how we think about content. Writing docs has never been this productive."
+							},
+							{
+								"children": [
+									{
+										"content": "Sarah Chen",
+										"element": "meta",
+										"property": "name"
+									},
+									{
+										"content": "Head of Content, Acme Corp",
+										"element": "meta",
+										"property": "jobTitle"
+									}
+								],
+								"element": "span",
+								"property": "author",
+								"typeof": "Person"
+							},
+							{
+								"children": [
+									{
+										"content": 5,
+										"element": "meta",
+										"property": "ratingValue"
+									}
+								],
+								"element": "span",
+								"property": "reviewRating",
+								"typeof": "Rating"
+							}
+						],
+						"element": "article",
+						"typeof": "Review"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "timeline.entries",
+			"rune": "timeline-entry",
+			"group": "B",
+			"notes": "The `timeline-entry` rune's own authorable form, with bodies the list form cannot express.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "ItemList",
+					"itemListElement": [
+						{
+							"@type": "ListItem",
+							"description": "Q1 2024",
+							"name": "Alpha release",
+							"position": 1
+						},
+						{
+							"@type": "ListItem",
+							"description": "Q3 2024",
+							"name": "Beta release",
+							"position": 2
+						}
+					]
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "ItemList",
+						"itemListElement": [
+							{
+								"@type": "ListItem",
+								"description": "Q1 2024",
+								"name": "Alpha release",
+								"position": 1
+							},
+							{
+								"@type": "ListItem",
+								"description": "Q3 2024",
+								"name": "Beta release",
+								"position": 2
+							}
+						]
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"children": [
+									{
+										"element": "time",
+										"property": "description",
+										"text": "Q1 2024"
+									},
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Alpha release"
+									},
+									{
+										"content": 1,
+										"element": "meta",
+										"property": "position"
+									}
+								],
+								"element": "li",
+								"property": "itemListElement",
+								"typeof": "ListItem"
+							},
+							{
+								"children": [
+									{
+										"element": "time",
+										"property": "description",
+										"text": "Q3 2024"
+									},
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Beta release"
+									},
+									{
+										"content": 2,
+										"element": "meta",
+										"property": "position"
+									}
+								],
+								"element": "li",
+								"property": "itemListElement",
+								"typeof": "ListItem"
+							}
+						],
+						"element": "section",
+						"typeof": "ItemList"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "timeline",
+			"rune": "timeline",
+			"group": "C",
+			"notes": "Group C — ItemList whose ListItem positions come from the loop index, a value that exists nowhere in the content. Entries come from `## date - label` headings; the explicit `{% timeline-entry %}` form is a separate fixture.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "ItemList",
+					"itemListElement": [
+						{
+							"@type": "ListItem",
+							"description": "2023",
+							"name": "Founded",
+							"position": 1
+						},
+						{
+							"@type": "ListItem",
+							"description": "2024",
+							"name": "Public launch",
+							"position": 2
+						},
+						{
+							"@type": "ListItem",
+							"description": "2025",
+							"name": "Community growth",
+							"position": 3
+						}
+					]
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "ItemList",
+						"itemListElement": [
+							{
+								"@type": "ListItem",
+								"description": "2023",
+								"name": "Founded",
+								"position": 1
+							},
+							{
+								"@type": "ListItem",
+								"description": "2024",
+								"name": "Public launch",
+								"position": 2
+							},
+							{
+								"@type": "ListItem",
+								"description": "2025",
+								"name": "Community growth",
+								"position": 3
+							}
+						]
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"children": [
+									{
+										"element": "time",
+										"property": "description",
+										"text": "2023"
+									},
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Founded"
+									},
+									{
+										"content": 1,
+										"element": "meta",
+										"property": "position"
+									}
+								],
+								"element": "li",
+								"property": "itemListElement",
+								"typeof": "ListItem"
+							},
+							{
+								"children": [
+									{
+										"element": "time",
+										"property": "description",
+										"text": "2024"
+									},
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Public launch"
+									},
+									{
+										"content": 2,
+										"element": "meta",
+										"property": "position"
+									}
+								],
+								"element": "li",
+								"property": "itemListElement",
+								"typeof": "ListItem"
+							},
+							{
+								"children": [
+									{
+										"element": "time",
+										"property": "description",
+										"text": "2025"
+									},
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Community growth"
+									},
+									{
+										"content": 3,
+										"element": "meta",
+										"property": "position"
+									}
+								],
+								"element": "li",
+								"property": "itemListElement",
+								"typeof": "ListItem"
+							}
+						],
+						"element": "section",
+						"typeof": "ItemList"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "timeline.single",
+			"rune": "timeline-entry",
+			"group": "B",
+			"notes": "D6 probe — one ListItem, so `itemListElement` is an object here and an array in the multi fixture.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "ItemList",
+					"itemListElement": {
+						"@type": "ListItem",
+						"description": "Q1 2024",
+						"name": "Alpha release",
+						"position": 1
+					}
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "ItemList",
+						"itemListElement": {
+							"@type": "ListItem",
+							"description": "Q1 2024",
+							"name": "Alpha release",
+							"position": 1
+						}
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"children": [
+									{
+										"element": "time",
+										"property": "description",
+										"text": "Q1 2024"
+									},
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Alpha release"
+									},
+									{
+										"content": 1,
+										"element": "meta",
+										"property": "position"
+									}
+								],
+								"element": "li",
+								"property": "itemListElement",
+								"typeof": "ListItem"
+							}
+						],
+						"element": "section",
+						"typeof": "ItemList"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "track.episode",
+			"rune": "track",
+			"group": "B",
+			"notes": "BUG-013's second half, recorded as it stands: `track` validates `type=\"episode\"` against its own five-value enum and then emits MusicRecording regardless, exactly as `playlist` ignores its own `type`. WORK-569 covers both runes.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "MusicRecording",
+					"byArtist": "Tech Weekly",
+					"datePublished": "March 2025",
+					"duration": "PT2550S",
+					"name": "Shipping Design Systems"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "MusicRecording",
+						"byArtist": "Tech Weekly",
+						"datePublished": "March 2025",
+						"duration": "PT2550S",
+						"name": "Shipping Design Systems"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "span",
+								"property": "name",
+								"text": "Shipping Design Systems"
+							},
+							{
+								"content": "Tech Weekly",
+								"element": "meta",
+								"property": "byArtist"
+							},
+							{
+								"content": "PT2550S",
+								"element": "meta",
+								"property": "duration"
+							},
+							{
+								"content": "March 2025",
+								"element": "meta",
+								"property": "datePublished"
+							}
+						],
+						"element": "li",
+						"typeof": "MusicRecording"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "track",
+			"rune": "track",
+			"group": "B",
+			"notes": "Group B — MusicRecording. Correct for `type=\"song\"`.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "MusicRecording",
+					"byArtist": "Radiohead",
+					"duration": "PT241S",
+					"name": "Everything in Its Right Place"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "MusicRecording",
+						"byArtist": "Radiohead",
+						"duration": "PT241S",
+						"name": "Everything in Its Right Place"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "span",
+								"property": "name",
+								"text": "Everything in Its Right Place"
+							},
+							{
+								"content": "Radiohead",
+								"element": "meta",
+								"property": "byArtist"
+							},
+							{
+								"content": "PT241S",
+								"element": "meta",
+								"property": "duration"
+							}
+						],
+						"element": "li",
+						"typeof": "MusicRecording"
+					}
+				]
+			}
+		}
+	]
+}

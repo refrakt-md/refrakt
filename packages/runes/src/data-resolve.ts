@@ -11,7 +11,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 import type { EntityRegistry, EntityRegistration, PipelineContext } from '@refrakt-md/types';
-import { parseFieldMatch, matchesFieldMatch, type MatchableEntity, type ParsedFieldMatch } from './field-match.js';
+import {
+	parseFieldMatch,
+	matchesFieldMatch,
+	type MatchableEntity,
+	type ParsedFieldMatch,
+} from './field-match.js';
 
 const { Tag } = Markdoc;
 type TagNode = InstanceType<typeof Tag>;
@@ -55,7 +60,10 @@ function readDataQuery(tag: TagNode): DataQuery | null {
 	const limitRaw = Number(tag.attributes['data-rf-limit']);
 	return {
 		expr,
-		fields: String(tag.attributes['data-rf-fields'] ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+		fields: String(tag.attributes['data-rf-fields'] ?? '')
+			.split(',')
+			.map((s) => s.trim())
+			.filter(Boolean),
 		shape: String(tag.attributes['data-rf-shape'] ?? 'flat') || 'flat',
 		limit: Number.isFinite(limitRaw) && limitRaw > 0 ? Math.floor(limitRaw) : undefined,
 	};
@@ -151,19 +159,26 @@ function resolveOne(
 
 	const cap = q.limit ?? DEFAULT_MAX_RECORDS;
 	if (records.length > cap) {
-		ctx.warn(`data-bound sandbox query "${q.expr}" yielded ${records.length} records, over the ${cap} cap — truncated`, pageUrl);
+		ctx.warn(
+			`data-bound sandbox query "${q.expr}" yielded ${records.length} records, over the ${cap} cap — truncated`,
+			pageUrl,
+		);
 		records = records.slice(0, cap);
 	}
 
 	if (!hasStaticFallback(tag)) {
-		ctx.warn(`data-bound sandbox has no fallback — provide a no-WebGL fallback (e.g. a {% collection %} with the same query) for accessibility`, pageUrl);
+		ctx.warn(
+			`data-bound sandbox has no fallback — provide a no-WebGL fallback (e.g. a {% collection %} with the same query) for accessibility`,
+			pageUrl,
+		);
 	}
 
-	const payload = q.shape === 'tree'
-		? { shape: 'tree', tree: toTree(records) }
-		: q.shape === 'graph'
-			? { shape: 'graph', nodes: records, edges: toGraph(records, registry) }
-			: { shape: 'flat', records };
+	const payload =
+		q.shape === 'tree'
+			? { shape: 'tree', tree: toTree(records) }
+			: q.shape === 'graph'
+				? { shape: 'graph', nodes: records, edges: toGraph(records, registry) }
+				: { shape: 'flat', records };
 
 	// Carry the JSON on a data attribute — the same proven rail the design-token
 	// injection uses (cross-adapter safe). The behaviour reads `data-rf-records`
@@ -184,7 +199,9 @@ export function resolveDataBindings(
 	if (Array.isArray(node)) return node.map((n) => resolveDataBindings(n, registry, ctx, pageUrl));
 	if (!isTag(node)) return node;
 
-	const children = (node.children ?? []).map((c) => resolveDataBindings(c, registry, ctx, pageUrl)) as RenderableTreeNode[];
+	const children = (node.children ?? []).map((c) =>
+		resolveDataBindings(c, registry, ctx, pageUrl),
+	) as RenderableTreeNode[];
 	let tag = new Tag(node.name, node.attributes, children);
 
 	if (tag.name === 'rf-sandbox' && tag.attributes['data-rf-query']) {

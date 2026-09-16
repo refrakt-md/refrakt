@@ -14,11 +14,11 @@ A hidden valley.
 - Libraries
 {% /realm %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'realm');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'realm');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 
-		const sections = findAllTags(tag!, t => t.attributes['data-rune'] === 'realm-section');
+		const sections = findAllTags(tag!, (t) => t.attributes['data-rune'] === 'realm-section');
 		expect(sections.length).toBe(2);
 	});
 
@@ -27,8 +27,8 @@ A hidden valley.
 A dark land.
 {% /realm %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'realm');
-		const nameTag = findTag(tag!, t => t.name === 'span' && t.attributes['data-name'] === 'name');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'realm');
+		const nameTag = findTag(tag!, (t) => t.name === 'span' && t.attributes['data-name'] === 'name');
 		expect(nameTag).toBeDefined();
 		expect(nameTag!.children[0]).toBe('Mordor');
 	});
@@ -38,7 +38,7 @@ A dark land.
 Content.
 {% /realm %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'realm');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'realm');
 		// SPEC-082: field values live in the data-rune-fields bag.
 		const fields = JSON.parse(tag!.attributes['data-rune-fields'] as string);
 		expect(fields.realmType).toBe('sanctuary');
@@ -50,7 +50,7 @@ Content.
 Content.
 {% /realm %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'realm');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'realm');
 		expect(fields(tag).parent).toBe('Eriador');
 	});
 
@@ -59,7 +59,7 @@ Content.
 A peaceful land.
 {% /location %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'realm');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'realm');
 		expect(tag).toBeDefined();
 	});
 });

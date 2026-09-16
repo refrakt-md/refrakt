@@ -25,10 +25,7 @@ export function parseSvgToTags(svg: string, iconName: string): InstanceType<type
 	// Extract child elements
 	const children: InstanceType<typeof Tag>[] = [];
 	const childTags = ['path', 'circle', 'line', 'polyline', 'rect', 'polygon', 'ellipse'];
-	const childPattern = new RegExp(
-		`<(${childTags.join('|')})\\s([^>]*?)\\s*/?>`,
-		'g',
-	);
+	const childPattern = new RegExp(`<(${childTags.join('|')})\\s([^>]*?)\\s*/?>`, 'g');
 
 	let match;
 	while ((match = childPattern.exec(svg)) !== null) {

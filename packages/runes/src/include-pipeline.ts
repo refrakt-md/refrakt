@@ -63,7 +63,16 @@ export function preprocessIncludes(
 	const partials = (ctx as { partials?: Record<string, unknown> }).partials;
 	if (!partials) return;
 	let mutated = false;
-	walkAndReplaceIncludes(ast, page, ctx, partials, () => { mutated = true; }, []);
+	walkAndReplaceIncludes(
+		ast,
+		page,
+		ctx,
+		partials,
+		() => {
+			mutated = true;
+		},
+		[],
+	);
 	return mutated ? ast : undefined;
 }
 
@@ -107,7 +116,11 @@ function resolveInclude(
 ): Node[] {
 	const file = resolveValue(tag.attributes?.file, ctx.variables);
 	if (typeof file !== 'string' || file.length === 0) {
-		return fail(ctx, page, 'the `file` attribute is required (an unresolvable variable reference resolves to empty)');
+		return fail(
+			ctx,
+			page,
+			'the `file` attribute is required (an unresolvable variable reference resolves to empty)',
+		);
 	}
 
 	if (stack.includes(file)) {
@@ -124,9 +137,10 @@ function resolveInclude(
 	const source = partials[file];
 	if (!source || typeof source !== 'object') {
 		const known = Object.keys(partials).sort();
-		const available = known.length > 0
-			? ` Available: ${known.join(', ')}.`
-			: ' No partials are registered for this site.';
+		const available =
+			known.length > 0
+				? ` Available: ${known.join(', ')}.`
+				: ' No partials are registered for this site.';
 		return fail(
 			ctx,
 			page,

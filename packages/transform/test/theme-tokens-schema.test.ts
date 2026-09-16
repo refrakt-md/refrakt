@@ -11,8 +11,17 @@ const schema = JSON.parse(readFileSync(resolve(here, '..', 'theme-tokens.schema.
 // A drift guard: if the contract gains/loses a namespace, this list — and the
 // schema — must be updated together (WORK-458).
 const EXPECTED_NAMESPACES = [
-	'font', 'text', 'weight', 'leading', 'tracking',
-	'color', 'radius', 'spacing', 'shadow', 'syntax', 'reveal',
+	'font',
+	'text',
+	'weight',
+	'leading',
+	'tracking',
+	'color',
+	'radius',
+	'spacing',
+	'shadow',
+	'syntax',
+	'reveal',
 ];
 
 describe('theme-tokens.schema.json', () => {
@@ -36,7 +45,9 @@ describe('theme-tokens.schema.json', () => {
 	it('accepts a palette preset with chrome + surface + sentiment + dark mode', () => {
 		const tideline = {
 			color: {
-				text: '#1d3557', bg: '#faf5eb', primary: '#457b9d',
+				text: '#1d3557',
+				bg: '#faf5eb',
+				primary: '#457b9d',
 				surface: { base: '#fffaf0' },
 				info: { base: '#457b9d', bg: '#edf4f8', border: '#a8dadc' },
 				code: { bg: '#1d3557' },

@@ -57,7 +57,7 @@ describe('contracts: layout wrappers (SPEC-081)', () => {
 				layout: {
 					root: ['shell'],
 					shell: { tag: 'div', children: ['inner'], attrs: { role: 'group' } },
-					inner: ['a', 'b'],           // tagless → reorders, no element
+					inner: ['a', 'b'], // tagless → reorders, no element
 				},
 			},
 		});
@@ -65,8 +65,8 @@ describe('contracts: layout wrappers (SPEC-081)', () => {
 		const els = contract.runes.Box.elements!;
 
 		expect(els.shell.attrs).toEqual({ role: 'group' });
-		expect(els.root).toBeUndefined();          // root is the rune's own element
-		expect(els.inner).toBeUndefined();          // bare array → no created wrapper
+		expect(els.root).toBeUndefined(); // root is the rune's own element
+		expect(els.inner).toBeUndefined(); // bare array → no created wrapper
 	});
 
 	it('a created wrapper supersedes a same-named autoLabel stub', () => {
@@ -140,7 +140,7 @@ describe('contracts: projection', () => {
 		});
 		const contract = generateStructureContract(config);
 		expect(contract.runes.Test.warnings).toContain(
-			'projection.hide references unknown data-name "nonexistent"'
+			'projection.hide references unknown data-name "nonexistent"',
 		);
 	});
 
@@ -160,7 +160,7 @@ describe('contracts: projection', () => {
 		});
 		const contract = generateStructureContract(config);
 		expect(contract.runes.Test.warnings).toContain(
-			'projection.group "chrome" references unknown member "missing"'
+			'projection.group "chrome" references unknown member "missing"',
 		);
 	});
 
@@ -180,7 +180,7 @@ describe('contracts: projection', () => {
 		});
 		const contract = generateStructureContract(config);
 		expect(contract.runes.Test.warnings).toContain(
-			'projection.relocate target "nonexistent" is unknown'
+			'projection.relocate target "nonexistent" is unknown',
 		);
 	});
 
@@ -194,7 +194,7 @@ describe('contracts: projection', () => {
 		});
 		const contract = generateStructureContract(config);
 		expect(contract.runes.Card.warnings).toContain(
-			'projection.group is deprecated — use a `layout` tag-entry (a wrapper that groups its children) instead'
+			'projection.group is deprecated — use a `layout` tag-entry (a wrapper that groups its children) instead',
 		);
 	});
 

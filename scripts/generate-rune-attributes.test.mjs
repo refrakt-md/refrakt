@@ -38,46 +38,75 @@ const rune = (name, over = {}) => ({
 
 describe('rowsForRune', () => {
 	it('flattens own attributes with type, requiredness and prose', () => {
-		const rows = rowsForRune(rune('card', {
-			own: { href: { type: 'string', required: false, description: 'Link target.' } },
-		}));
-		expect(rows).toEqual([{
-			rune: 'card', plugin: 'core', scope: 'own', name: 'href',
-			type: 'string', required: false, description: 'Link target.',
-		}]);
+		const rows = rowsForRune(
+			rune('card', {
+				own: { href: { type: 'string', required: false, description: 'Link target.' } },
+			}),
+		);
+		expect(rows).toEqual([
+			{
+				rune: 'card',
+				plugin: 'core',
+				scope: 'own',
+				name: 'href',
+				type: 'string',
+				required: false,
+				description: 'Link target.',
+			},
+		]);
 	});
 
 	it('renders a closed vocabulary as a union rather than "string"', () => {
-		const [row] = rowsForRune(rune('card', {
-			own: { height: { type: 'string', matches: ['sm', 'md'] } },
-		}));
+		const [row] = rowsForRune(
+			rune('card', {
+				own: { height: { type: 'string', matches: ['sm', 'md'] } },
+			}),
+		);
 		expect(row.type).toBe('"sm" | "md"');
 	});
 
 	it('carries base-preset attributes with the preset that supplied them', () => {
-		const rows = rowsForRune(rune('card', {
-			base: { name: 'split layout', attributes: { valign: { type: 'string' } } },
-		}));
-		expect(rows).toEqual([{
-			rune: 'card', plugin: 'core', scope: 'base', name: 'valign',
-			type: 'string', required: false, description: '', preset: 'split layout',
-		}]);
+		const rows = rowsForRune(
+			rune('card', {
+				base: { name: 'split layout', attributes: { valign: { type: 'string' } } },
+			}),
+		);
+		expect(rows).toEqual([
+			{
+				rune: 'card',
+				plugin: 'core',
+				scope: 'base',
+				name: 'valign',
+				type: 'string',
+				required: false,
+				description: '',
+				preset: 'split layout',
+			},
+		]);
 	});
 
-	it('leaves universal attributes out — they are the axis rows\' job', () => {
-		expect(rowsForRune(rune('card', {
-			universalAvailable: [{ axis: 'tint', attributes: { tint: {} } }],
-		}))).toEqual([]);
+	it("leaves universal attributes out — they are the axis rows' job", () => {
+		expect(
+			rowsForRune(
+				rune('card', {
+					universalAvailable: [{ axis: 'tint', attributes: { tint: {} } }],
+				}),
+			),
+		).toEqual([]);
 	});
 });
 
 describe('axisRowsForRune', () => {
 	it('names the axis, its prose and the filter its subquery uses', () => {
-		const [row] = axisRowsForRune(rune('card', {
-			universalAvailable: [{ axis: 'tint', attributes: { tint: {}, 'tint-mode': {} } }],
-		}));
+		const [row] = axisRowsForRune(
+			rune('card', {
+				universalAvailable: [{ axis: 'tint', attributes: { tint: {}, 'tint-mode': {} } }],
+			}),
+		);
 		expect(row).toMatchObject({
-			rune: 'card', axis: 'tint', available: true,
+			rune: 'card',
+			axis: 'tint',
+			available: true,
 			// The ready-made filter a page's subquery hands `axisAttributes`.
 			query: 'axis:tint',
 		});
@@ -87,13 +116,15 @@ describe('axisRowsForRune', () => {
 	it('groups unavailable axes by reason rather than emitting one row each', () => {
 		// `badge` has twelve unavailable axes sharing a single reason; as one row
 		// per axis that section says "no" twelve times (SPEC-128 D1b).
-		const rows = axisRowsForRune(rune('badge', {
-			universalUnavailable: [
-				{ axis: 'tint', reason: 'inline rune', attributes: ['tint'] },
-				{ axis: 'bg', reason: 'inline rune', attributes: ['bg'] },
-				{ axis: 'prominence', reason: 'no header', attributes: ['prominence'] },
-			],
-		}));
+		const rows = axisRowsForRune(
+			rune('badge', {
+				universalUnavailable: [
+					{ axis: 'tint', reason: 'inline rune', attributes: ['tint'] },
+					{ axis: 'bg', reason: 'inline rune', attributes: ['bg'] },
+					{ axis: 'prominence', reason: 'no header', attributes: ['prominence'] },
+				],
+			}),
+		);
 		expect(rows).toEqual([
 			{ rune: 'badge', available: false, axes: 'tint, bg', reason: 'inline rune' },
 			{ rune: 'badge', available: false, axes: 'prominence', reason: 'no header' },
@@ -101,9 +132,13 @@ describe('axisRowsForRune', () => {
 	});
 
 	it('spells out an axis whose attributes are not just its own name', () => {
-		const [row] = axisRowsForRune(rune('badge', {
-			universalUnavailable: [{ axis: 'motion', reason: 'inline rune', attributes: ['reveal', 'stagger'] }],
-		}));
+		const [row] = axisRowsForRune(
+			rune('badge', {
+				universalUnavailable: [
+					{ axis: 'motion', reason: 'inline rune', attributes: ['reveal', 'stagger'] },
+				],
+			}),
+		);
 		expect(row.axes).toBe('motion (reveal, stagger)');
 	});
 });
@@ -113,14 +148,14 @@ describe('pageForRune', () => {
 		expect(pageForRune('card')).toBe('card');
 	});
 
-	it('sends a child rune to its parent\'s page', () => {
+	it("sends a child rune to its parent's page", () => {
 		expect(pageForRune('accordion-item')).toBe('accordion');
 	});
 
 	it('sends an internal rune nowhere — not to some arbitrary page', () => {
 		// `null` and "documented on the parent's page" are different answers, and
-		// collapsing them would put `error`'s attributes somewhere at random.
-		expect(pageForRune('error')).toBeNull();
+		// collapsing them would put `region`'s attributes somewhere at random.
+		expect(pageForRune('region')).toBeNull();
 	});
 });
 
@@ -145,20 +180,26 @@ describe('coverageGaps', () => {
 	});
 
 	it('catches a rune dropped from the artifact for its axes alone', () => {
-		const all = [{
-			site: 'main',
-			runes: [rune('tint', { universalAvailable: [{ axis: 'tint', attributes: { tint: {} } }] })],
-		}];
-		expect(coverageGaps(all, { own: [], base: [], axesAvailable: [], axesUnavailable: [] })).toEqual(['main:tint (axes)']);
+		const all = [
+			{
+				site: 'main',
+				runes: [rune('tint', { universalAvailable: [{ axis: 'tint', attributes: { tint: {} } }] })],
+			},
+		];
+		expect(
+			coverageGaps(all, { own: [], base: [], axesAvailable: [], axesUnavailable: [] }),
+		).toEqual(['main:tint (axes)']);
 	});
 });
 
 describe('build', () => {
 	it('stamps every row with the page it belongs on', () => {
-		const artifact = build([{
-			site: 'main',
-			runes: [rune('accordion-item', { own: { open: { type: 'boolean' } } })],
-		}]);
+		const artifact = build([
+			{
+				site: 'main',
+				runes: [rune('accordion-item', { own: { open: { type: 'boolean' } } })],
+			},
+		]);
 		expect(artifact.own[0].page).toBe('accordion');
 	});
 
@@ -175,15 +216,21 @@ describe('build', () => {
 		// The partitioning is the page contract: it is what lets a call site pass
 		// one binding (`$r` = "rune:card") instead of four pre-built filter
 		// strings, since `where` takes one string and cannot concatenate.
-		const artifact = build([{
-			site: 'main',
-			runes: [rune('card', {
-				own: { href: { type: 'string' } },
-				base: { name: 'split layout', attributes: { valign: { type: 'string' } } },
-				universalAvailable: [{ axis: 'tint', attributes: { tint: {} } }],
-				universalUnavailable: [{ axis: 'prominence', reason: 'no header', attributes: ['prominence'] }],
-			})],
-		}]);
+		const artifact = build([
+			{
+				site: 'main',
+				runes: [
+					rune('card', {
+						own: { href: { type: 'string' } },
+						base: { name: 'split layout', attributes: { valign: { type: 'string' } } },
+						universalAvailable: [{ axis: 'tint', attributes: { tint: {} } }],
+						universalUnavailable: [
+							{ axis: 'prominence', reason: 'no header', attributes: ['prominence'] },
+						],
+					}),
+				],
+			},
+		]);
 		expect(Object.keys(artifact)).toEqual(PARTITIONS);
 		expect(artifact.own.map((r) => r.name)).toEqual(['href']);
 		expect(artifact.base.map((r) => r.name)).toEqual(['valign']);
@@ -282,7 +329,7 @@ describe('against the real rune set', () => {
 		expect(allAttributeRows(artifact).filter((r) => r.name.startsWith('__'))).toEqual([]);
 	});
 
-	it('routes each child rune\'s rows onto its parent\'s page', () => {
+	it("routes each child rune's rows onto its parent's page", () => {
 		for (const row of allAttributeRows(artifact)) {
 			if (!PAGELESS.has(row.rune)) continue;
 			expect(row.page).toBe(PAGELESS.get(row.rune));

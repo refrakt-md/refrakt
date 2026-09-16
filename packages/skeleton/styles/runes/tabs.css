@@ -9,7 +9,7 @@
 	position: relative;
 }
 .rf-tabs__eyebrow:has(a) a::before {
-	content: '';
+	content: "";
 	position: absolute;
 	inset: 0;
 }

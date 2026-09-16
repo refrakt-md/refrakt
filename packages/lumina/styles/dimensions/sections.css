@@ -1,67 +1,66 @@
 @layer skin {
-/* ─── Section Anatomy Dimension — skin ──────────────────────────────────
+	/* ─── Section Anatomy Dimension — skin ──────────────────────────────────
  * Zone rhythm (margins, gaps, padding), typography, and borders for the 6
  * standard section roles. The flex zone *containers* (header / preamble /
  * footer) live in @refrakt-md/skeleton (dimensions/sections.css). Rhythm stays
  * here so rune zone overrides resolve against it by source order.
  * ────────────────────────────────────────────────────────────────────── */
 
-/* ─── Header: chrome metadata row (badges, status, icons) ────────── */
-[data-section="header"] {
-	gap: 0.5rem;
-	margin-bottom: 3rem;
-}
+	/* ─── Header: chrome metadata row (badges, status, icons) ────────── */
+	[data-section="header"] {
+		gap: 0.5rem;
+		margin-bottom: 3rem;
+	}
 
-/* ─── Preamble: intro section (eyebrow, headline, blurb) ─────────── */
-[data-section="preamble"] {
-	gap: 0.25rem;
-}
+	/* ─── Preamble: intro section (eyebrow, headline, blurb) ─────────── */
+	[data-section="preamble"] {
+		gap: 0.25rem;
+	}
 
-/* ─── Title: primary heading ──────────────────────────────────────── */
-/* Two inputs, in priority order:
+	/* ─── Title: primary heading ──────────────────────────────────────── */
+	/* Two inputs, in priority order:
  *   --rf-prominence-size  an explicit author `prominence=` (surfaces.css)
  *   --rf-title-size       the resting size for this density (density.css)
  * They were one variable until v0.32.0, which meant a rune could not state its
  * own resting size without also clobbering the author's override — the reason
  * `prominence` was inert on eight runes (WORK-538). Splitting them lets a rune
  * pin its default while `prominence` still wins. */
-[data-section="title"] {
-	font-family: var(--rf-font-sans);
-	font-size: var(--rf-prominence-size, var(--rf-title-size, var(--rf-text-2xl)));
-	font-weight: var(--rf-weight-bold);
-	line-height: var(--rf-leading-tight);
-	color: var(--rf-color-text);
-	margin: 0;
-}
+	[data-section="title"] {
+		font-family: var(--rf-font-sans);
+		font-size: var(--rf-prominence-size, var(--rf-title-size, var(--rf-text-2xl)));
+		font-weight: var(--rf-weight-bold);
+		line-height: var(--rf-leading-tight);
+		color: var(--rf-color-text);
+		margin: 0;
+	}
 
-/* ─── Description: secondary text ─────────────────────────────────── */
-[data-section="description"] {
-	font-size: var(--rf-text);
-	line-height: var(--rf-leading-normal);
-	color: var(--rf-color-muted);
-	margin: var(--rf-spacing-xs) 0 var(--rf-spacing-md);
-}
+	/* ─── Description: secondary text ─────────────────────────────────── */
+	[data-section="description"] {
+		font-size: var(--rf-text);
+		line-height: var(--rf-leading-normal);
+		color: var(--rf-color-muted);
+		margin: var(--rf-spacing-xs) 0 var(--rf-spacing-md);
+	}
 
-/* ─── Body: main content ──────────────────────────────────────────── */
-[data-section="body"] {
-	line-height: var(--rf-leading-relaxed);
-	color: var(--rf-color-text);
-}
+	/* ─── Body: main content ──────────────────────────────────────────── */
+	[data-section="body"] {
+		line-height: var(--rf-leading-relaxed);
+		color: var(--rf-color-text);
+	}
 
-/* ─── Footer: actions and links ───────────────────────────────────── */
-[data-section="footer"] {
-	gap: var(--rf-spacing-sm);
-	margin-top: var(--rf-spacing-md);
-	padding-top: var(--rf-spacing-sm);
-	border-top: 1px solid var(--rf-color-border);
-}
+	/* ─── Footer: actions and links ───────────────────────────────────── */
+	[data-section="footer"] {
+		gap: var(--rf-spacing-sm);
+		margin-top: var(--rf-spacing-md);
+		padding-top: var(--rf-spacing-sm);
+		border-top: 1px solid var(--rf-color-border);
+	}
 
-/* ─── Media: visual content ───────────────────────────────────────── */
-[data-section="media"] {
-	/* Media zones manage their own spacing via their layout (split gap, cell
+	/* ─── Media: visual content ───────────────────────────────────────── */
+	[data-section="media"] {
+		/* Media zones manage their own spacing via their layout (split gap, cell
 	 * padding, flow margins); a blanket block margin here misaligns media in
 	 * flex/beside layouts, so keep it neutral. */
-	margin: 0;
-}
-
+		margin: 0;
+	}
 }

@@ -1,36 +1,39 @@
 @layer skin {
-/* Conversation — skin. The column stack, bubble flex/width/side-alignment, and the
+	/* Conversation — skin. The column stack, bubble flex/width/side-alignment, and the
  * data-carrier hides live in @refrakt-md/skeleton (styles/runes/conversation.css). */
-.rf-conversation {
-	gap: 1rem;
-	max-width: 40rem;
-}
-.rf-conversation__messages {
-	gap: 1rem;
-}
-.rf-conversation-message__speaker {
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-semibold);
-	color: var(--rf-color-muted);
-	margin-bottom: 0.25rem;
-	padding: 0 0.75rem;
-}
-.rf-conversation-message__body {
-	padding: 0.75rem 1rem;
-	border-radius: 1rem;
-	font-size: var(--rf-text);
-	line-height: var(--rf-leading-normal);
-}
-.rf-conversation-message--left .rf-conversation-message__body {
-	background: var(--rf-color-surface);
-	border-bottom-left-radius: 0.25rem;
-}
-.rf-conversation-message--right .rf-conversation-message__body {
-	background: var(--rf-color-primary);
-	color: white;
-	border-bottom-right-radius: 0.25rem;
-}
-.rf-conversation-message__body p { margin: 0; }
-.rf-conversation-message__body p + p { margin-top: 0.5rem; }
-
+	.rf-conversation {
+		gap: 1rem;
+		max-width: 40rem;
+	}
+	.rf-conversation__messages {
+		gap: 1rem;
+	}
+	.rf-conversation-message__speaker {
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-semibold);
+		color: var(--rf-color-muted);
+		margin-bottom: 0.25rem;
+		padding: 0 0.75rem;
+	}
+	.rf-conversation-message__body {
+		padding: 0.75rem 1rem;
+		border-radius: 1rem;
+		font-size: var(--rf-text);
+		line-height: var(--rf-leading-normal);
+	}
+	.rf-conversation-message--left .rf-conversation-message__body {
+		background: var(--rf-color-surface);
+		border-bottom-left-radius: 0.25rem;
+	}
+	.rf-conversation-message--right .rf-conversation-message__body {
+		background: var(--rf-color-primary);
+		color: white;
+		border-bottom-right-radius: 0.25rem;
+	}
+	.rf-conversation-message__body p {
+		margin: 0;
+	}
+	.rf-conversation-message__body p + p {
+		margin-top: 0.5rem;
+	}
 }

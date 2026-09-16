@@ -33,12 +33,12 @@ export function useBehaviors(options: BehaviorOptions): void {
 		cleanup?.();
 		cleanup = undefined;
 
-		const { registerElements, RfContext, initRuneBehaviors, initLayoutBehaviors } =
-			await import('@refrakt-md/behaviors');
+		const { registerElements, RfContext, initRuneBehaviors, initLayoutBehaviors } = await import(
+			'@refrakt-md/behaviors'
+		);
 
-		const url = typeof options.currentUrl === 'string'
-			? options.currentUrl
-			: options.currentUrl.value;
+		const url =
+			typeof options.currentUrl === 'string' ? options.currentUrl : options.currentUrl.value;
 
 		RfContext.pages = options.pages;
 		RfContext.currentUrl = url;

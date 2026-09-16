@@ -23,7 +23,19 @@ const PLAN_RUNE_TYPES = new Set(['spec', 'work', 'bug', 'decision', 'milestone']
 /** Fields to extract from each rune type's property meta tags */
 const RUNE_FIELDS: Record<string, string[]> = {
 	spec: ['id', 'status', 'version', 'supersedes', 'released-in', 'tags', 'modified'],
-	work: ['id', 'status', 'priority', 'complexity', 'assignee', 'milestone', 'source', 'supersedes', 'pr', 'tags', 'modified'],
+	work: [
+		'id',
+		'status',
+		'priority',
+		'complexity',
+		'assignee',
+		'milestone',
+		'source',
+		'supersedes',
+		'pr',
+		'tags',
+		'modified',
+	],
 	bug: ['id', 'status', 'severity', 'assignee', 'milestone', 'source', 'pr', 'tags', 'modified'],
 	decision: ['id', 'status', 'date', 'supersedes', 'source', 'tags', 'modified'],
 	milestone: ['name', 'status', 'target', 'modified'],
@@ -34,7 +46,7 @@ function walkTags(node: unknown, fn: (tag: InstanceType<typeof Tag>) => void): v
 		fn(node);
 		for (const child of node.children) walkTags(child, fn);
 	} else if (Array.isArray(node)) {
-		node.forEach(n => walkTags(n, fn));
+		node.forEach((n) => walkTags(n, fn));
 	}
 }
 
@@ -42,11 +54,11 @@ function mapTags(node: unknown, fn: (tag: InstanceType<typeof Tag>) => unknown):
 	if (Markdoc.Tag.isTag(node)) {
 		const mapped = fn(node);
 		if (mapped !== node) return mapped;
-		const newChildren = node.children.map(c => mapTags(c, fn));
+		const newChildren = node.children.map((c) => mapTags(c, fn));
 		const changed = newChildren.some((c, i) => c !== node.children[i]);
 		return changed ? new Tag(node.name, node.attributes, newChildren as any[]) : node;
 	}
-	if (Array.isArray(node)) return node.map(n => mapTags(n, fn));
+	if (Array.isArray(node)) return node.map((n) => mapTags(n, fn));
 	return node;
 }
 
@@ -74,7 +86,7 @@ function extractTitle(tag: InstanceType<typeof Tag>): string {
 function extractTextContent(node: unknown): string {
 	if (typeof node === 'string') return node;
 	if (!Markdoc.Tag.isTag(node)) return '';
-	return node.children.map(c => extractTextContent(c)).join('');
+	return node.children.map((c) => extractTextContent(c)).join('');
 }
 
 /** Count checkbox items ([ ] and [x]) in a renderable tree's text content */
@@ -281,7 +293,10 @@ function performUnconditionalScan(
 	planDir: string,
 	projectRoot: string | undefined,
 	projectFiles: ProjectFiles | undefined,
-	registry: { register: (e: EntityRegistration) => void; getById: (type: string, id: string) => EntityRegistration | undefined },
+	registry: {
+		register: (e: EntityRegistration) => void;
+		getById: (type: string, id: string) => EntityRegistration | undefined;
+	},
 	ctx: { info: (m: string) => void; warn: (m: string) => void; error: (m: string) => void },
 ): void {
 	// SPEC-113 — when a provider is wired and the plan dir is contained within
@@ -290,7 +305,9 @@ function performUnconditionalScan(
 	if (projectFiles && projectRoot) {
 		const planKey = posixPath(path.relative(projectRoot, path.resolve(planDir)));
 		if (planKey !== '' && !planKey.startsWith('..') && !path.isAbsolute(planKey)) {
-			scanViaProvider(projectFiles, planKey, (sourceFile, raw) => processPlanFile(sourceFile, raw, undefined, registry, ctx));
+			scanViaProvider(projectFiles, planKey, (sourceFile, raw) =>
+				processPlanFile(sourceFile, raw, undefined, registry, ctx),
+			);
 			return;
 		}
 	}
@@ -325,7 +342,9 @@ function performUnconditionalScan(
 		let mtimeMs: number | undefined;
 		try {
 			mtimeMs = fs.statSync(absPath).mtimeMs;
-		} catch { /* ignore */ }
+		} catch {
+			/* ignore */
+		}
 
 		processPlanFile(sourceFile, raw, mtimeMs, registry, ctx);
 	});
@@ -359,7 +378,10 @@ function processPlanFile(
 	sourceFile: string,
 	raw: string,
 	mtimeMs: number | undefined,
-	registry: { register: (e: EntityRegistration) => void; getById: (type: string, id: string) => EntityRegistration | undefined },
+	registry: {
+		register: (e: EntityRegistration) => void;
+		getById: (type: string, id: string) => EntityRegistration | undefined;
+	},
 	ctx: { info: (m: string) => void; warn: (m: string) => void; error: (m: string) => void },
 ): void {
 	{
@@ -373,11 +395,12 @@ function processPlanFile(
 		}
 
 		const runeType = entity.type;
-		const id = runeType === 'milestone'
-			? (entity.attributes.name ?? '')
-			: (entity.attributes.id ?? '');
+		const id =
+			runeType === 'milestone' ? (entity.attributes.name ?? '') : (entity.attributes.id ?? '');
 		if (!id) {
-			ctx.warn(`Plan scan: ${sourceFile} has a ${runeType} rune missing ${runeType === 'milestone' ? 'name' : 'id'} attribute`);
+			ctx.warn(
+				`Plan scan: ${sourceFile} has a ${runeType} rune missing ${runeType === 'milestone' ? 'name' : 'id'} attribute`,
+			);
 			return;
 		}
 
@@ -397,7 +420,9 @@ function processPlanFile(
 			.filter((r): r is { id: string; type: string } => r !== null);
 		if (refs.length > 0) _idReferences.set(id, refs);
 
-		const sourceRefs = parseSourceIds(String(entity.attributes.source ?? '')).filter((r) => r.id !== id);
+		const sourceRefs = parseSourceIds(String(entity.attributes.source ?? '')).filter(
+			(r) => r.id !== id,
+		);
 		if (sourceRefs.length > 0) _sourceReferences.set(id, sourceRefs);
 
 		const supersedesRef = String(entity.attributes.supersedes ?? '').trim();
@@ -426,7 +451,9 @@ function processPlanFile(
 		}
 		if (existing && existing.sourceFile && existing.sourceFile !== sourceFile) {
 			// Duplicate ID across two different plan files — surface clearly.
-			ctx.error(`Plan scan: duplicate ${runeType} id "${id}" found in both "${existing.sourceFile}" and "${sourceFile}"`);
+			ctx.error(
+				`Plan scan: duplicate ${runeType} id "${id}" found in both "${existing.sourceFile}" and "${sourceFile}"`,
+			);
 			return;
 		}
 
@@ -465,9 +492,10 @@ function processPlanFile(
 		const extract = (parsedSource: Node): Node | null => {
 			for (const child of parsedSource.children) {
 				if (child.type === 'tag' && child.tag === runeType) {
-					const childId = runeType === 'milestone'
-						? String(child.attributes.name ?? '')
-						: String(child.attributes.id ?? '');
+					const childId =
+						runeType === 'milestone'
+							? String(child.attributes.name ?? '')
+							: String(child.attributes.id ?? '');
 					if (childId === id) return child;
 				}
 			}
@@ -524,12 +552,13 @@ export const planPipelineHooks: PluginPipelineHooks = {
 					data[field] = readField(tag, field);
 				}
 
-				const entityId = runeType === 'milestone'
-					? (data.name as string)
-					: (data.id as string);
+				const entityId = runeType === 'milestone' ? (data.name as string) : (data.id as string);
 
 				if (!entityId) {
-					ctx.warn(`Plan ${runeType} missing ${runeType === 'milestone' ? 'name' : 'id'} attribute`, page.url);
+					ctx.warn(
+						`Plan ${runeType} missing ${runeType === 'milestone' ? 'name' : 'id'} attribute`,
+						page.url,
+					);
 					return;
 				}
 
@@ -546,14 +575,14 @@ export const planPipelineHooks: PluginPipelineHooks = {
 				}
 
 				// Scan content for ID references
-				const refs = extractIdReferences(tag).filter(r => r.id !== entityId);
+				const refs = extractIdReferences(tag).filter((r) => r.id !== entityId);
 				if (refs.length > 0) {
 					_idReferences.set(entityId, refs);
 				}
 
 				// Extract structured source references from source= attribute
 				const sourceVal = String(data.source ?? '');
-				const sourceRefs = parseSourceIds(sourceVal).filter(r => r.id !== entityId);
+				const sourceRefs = parseSourceIds(sourceVal).filter((r) => r.id !== entityId);
 				if (sourceRefs.length > 0) {
 					_sourceReferences.set(entityId, sourceRefs);
 				}
@@ -636,11 +665,16 @@ export const planPipelineHooks: PluginPipelineHooks = {
 		if (registry.relate) {
 			for (const edges of relationships.values()) {
 				for (const e of edges) {
-					registry.relate({ fromId: e.fromId, toId: e.toId, kind: e.kind, fromType: e.fromType, toType: e.toType });
+					registry.relate({
+						fromId: e.fromId,
+						toId: e.toId,
+						kind: e.kind,
+						fromType: e.fromType,
+						toType: e.toType,
+					});
 				}
 			}
 		}
-
 
 		// Extract git history for all entities
 		let history = new Map<string, HistoryEvent[]>();
@@ -669,7 +703,9 @@ export const planPipelineHooks: PluginPipelineHooks = {
 			}
 		} catch (err) {
 			// Git not available or not a git repo — history will be empty
-			ctx.warn(`Could not extract git history: ${err instanceof Error ? err.message : String(err)}`);
+			ctx.warn(
+				`Could not extract git history: ${err instanceof Error ? err.message : String(err)}`,
+			);
 		}
 
 		return {
@@ -703,7 +739,10 @@ export const planPipelineHooks: PluginPipelineHooks = {
 			// plan-activity over `collection`.
 
 			// Handle plan-history sentinel
-			if (tag.attributes['data-rune'] === 'plan-history' && hasSentinel(tag, PLAN_HISTORY_SENTINEL)) {
+			if (
+				tag.attributes['data-rune'] === 'plan-history' &&
+				hasSentinel(tag, PLAN_HISTORY_SENTINEL)
+			) {
 				modified = true;
 				return resolvePlanHistory(tag, planData);
 			}
@@ -724,28 +763,48 @@ export const planPipelineHooks: PluginPipelineHooks = {
 	},
 };
 
-
 // ─── Plan History Resolution ───
 
 function formatHistoryDate(isoDate: string): string {
 	const d = new Date(isoDate);
-	const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	const months = [
+		'Jan',
+		'Feb',
+		'Mar',
+		'Apr',
+		'May',
+		'Jun',
+		'Jul',
+		'Aug',
+		'Sep',
+		'Oct',
+		'Nov',
+		'Dec',
+	];
 	return `${months[d.getMonth()]} ${d.getDate()}`;
 }
 
-function buildAttrChangeTag(change: { field: string; from: string | null; to: string | null }): InstanceType<typeof Tag> {
-	const children: any[] = [
-		new Tag('span', { class: 'rf-plan-history__field' }, [change.field]),
-	];
+function buildAttrChangeTag(change: {
+	field: string;
+	from: string | null;
+	to: string | null;
+}): InstanceType<typeof Tag> {
+	const children: any[] = [new Tag('span', { class: 'rf-plan-history__field' }, [change.field])];
 	if (change.from !== null) {
-		children.push(new Tag('span', { class: 'rf-plan-history__value', 'data-type': 'remove' }, [change.from]));
+		children.push(
+			new Tag('span', { class: 'rf-plan-history__value', 'data-type': 'remove' }, [change.from]),
+		);
 	}
 	if (change.from !== null && change.to !== null) {
 		children.push(new Tag('span', { class: 'rf-plan-history__arrow' }, ['→']));
 	}
 	if (change.to !== null) {
 		const prefix = change.from === null ? '+' : '';
-		children.push(new Tag('span', { class: 'rf-plan-history__value', 'data-type': 'add' }, [prefix + change.to]));
+		children.push(
+			new Tag('span', { class: 'rf-plan-history__value', 'data-type': 'add' }, [
+				prefix + change.to,
+			]),
+		);
 	}
 	if (change.from !== null && change.to === null) {
 		// Removed attribute — show as removal only
@@ -753,16 +812,26 @@ function buildAttrChangeTag(change: { field: string; from: string | null; to: st
 	return new Tag('span', { class: 'rf-plan-history__change' }, children);
 }
 
-function buildEventTag(event: HistoryEvent, repositoryUrl?: string, collapseThreshold = 3): InstanceType<typeof Tag> {
-	const dateTag = new Tag('time', { class: 'rf-plan-history__date' }, [formatHistoryDate(event.date)]);
+function buildEventTag(
+	event: HistoryEvent,
+	repositoryUrl?: string,
+	collapseThreshold = 3,
+): InstanceType<typeof Tag> {
+	const dateTag = new Tag('time', { class: 'rf-plan-history__date' }, [
+		formatHistoryDate(event.date),
+	]);
 
 	const hashChildren: any[] = [event.shortHash];
 	const hashAttrs: Record<string, any> = { class: 'rf-plan-history__hash' };
 	if (repositoryUrl) {
-		const hashTag = new Tag('a', {
-			class: 'rf-plan-history__hash',
-			href: `${repositoryUrl}/commit/${event.hash}`,
-		}, [event.shortHash]);
+		const hashTag = new Tag(
+			'a',
+			{
+				class: 'rf-plan-history__hash',
+				href: `${repositoryUrl}/commit/${event.hash}`,
+			},
+			[event.shortHash],
+		);
 		return buildEventTagInner(event, dateTag, hashTag, collapseThreshold);
 	}
 	const hashTag = new Tag('code', hashAttrs, hashChildren);
@@ -782,7 +851,9 @@ function buildEventTagInner(
 		const parts = Object.entries(attrs)
 			.filter(([k]) => k !== 'id' && k !== 'name')
 			.map(([, v]) => v);
-		changesChildren.push(new Tag('span', { class: 'rf-plan-history__created' }, [`Created (${parts.join(', ')})`]));
+		changesChildren.push(
+			new Tag('span', { class: 'rf-plan-history__created' }, [`Created (${parts.join(', ')})`]),
+		);
 	}
 
 	if (event.attributeChanges) {
@@ -792,8 +863,15 @@ function buildEventTagInner(
 	}
 
 	if (event.criteriaChanges) {
-		const items = event.criteriaChanges.map(c => {
-			const marker = c.action === 'checked' ? '☑' : c.action === 'unchecked' ? '☐' : c.action === 'added' ? '+' : '−';
+		const items = event.criteriaChanges.map((c) => {
+			const marker =
+				c.action === 'checked'
+					? '☑'
+					: c.action === 'unchecked'
+						? '☐'
+						: c.action === 'added'
+							? '+'
+							: '−';
 			return new Tag('li', { 'data-action': c.action }, [`${marker} ${c.text}`]);
 		});
 
@@ -801,7 +879,9 @@ function buildEventTagInner(
 		if (items.length > collapseThreshold) {
 			const visible: any[] = items.slice(0, collapseThreshold);
 			const remaining = items.length - collapseThreshold;
-			visible.push(new Tag('li', { class: 'rf-plan-history__more' }, [`+${remaining} more criteria`]));
+			visible.push(
+				new Tag('li', { class: 'rf-plan-history__more' }, [`+${remaining} more criteria`]),
+			);
 			changesChildren.push(new Tag('ul', { class: 'rf-plan-history__criteria' }, visible));
 		} else {
 			changesChildren.push(new Tag('ul', { class: 'rf-plan-history__criteria' }, items));
@@ -809,22 +889,33 @@ function buildEventTagInner(
 	}
 
 	if (event.kind === 'resolution') {
-		changesChildren.push(new Tag('span', { class: 'rf-plan-history__resolution' }, ['Resolution recorded']));
+		changesChildren.push(
+			new Tag('span', { class: 'rf-plan-history__resolution' }, ['Resolution recorded']),
+		);
 	}
 
 	if (event.kind === 'content') {
-		changesChildren.push(new Tag('span', { class: 'rf-plan-history__content-edit' }, ['Content edited']));
+		changesChildren.push(
+			new Tag('span', { class: 'rf-plan-history__content-edit' }, ['Content edited']),
+		);
 	}
 
 	const changesDiv = new Tag('div', { class: 'rf-plan-history__changes' }, changesChildren);
 
-	return new Tag('li', {
-		class: 'rf-plan-history__event',
-		'data-kind': event.kind,
-	}, [dateTag, hashTag, changesDiv]);
+	return new Tag(
+		'li',
+		{
+			class: 'rf-plan-history__event',
+			'data-kind': event.kind,
+		},
+		[dateTag, hashTag, changesDiv],
+	);
 }
 
-function resolvePlanHistory(tag: InstanceType<typeof Tag>, data: PlanAggregatedData): InstanceType<typeof Tag> {
+function resolvePlanHistory(
+	tag: InstanceType<typeof Tag>,
+	data: PlanAggregatedData,
+): InstanceType<typeof Tag> {
 	const entityId = readField(tag, 'id');
 	const limit = parseInt(readField(tag, 'limit') || '20', 10);
 	const typeFilter = readField(tag, 'type') || 'all';
@@ -843,7 +934,7 @@ function resolvePlanHistory(tag: InstanceType<typeof Tag>, data: PlanAggregatedD
 
 	if (entityId) {
 		// Per-entity mode: find the entity's file path and look up its history
-		const entity = allEntities.find(e => e.id === entityId || e.data.name === entityId);
+		const entity = allEntities.find((e) => e.id === entityId || e.data.name === entityId);
 		if (!entity) {
 			listContent = new Tag('ol', { 'data-name': 'events', class: 'rf-plan-history__events' }, [
 				new Tag('li', { class: 'rf-plan-history__empty' }, [`No history found for ${entityId}`]),
@@ -864,38 +955,57 @@ function resolvePlanHistory(tag: InstanceType<typeof Tag>, data: PlanAggregatedD
 
 			// Reverse to newest-first, apply limit
 			const limited = [...entityEvents].reverse().slice(0, limit);
-			const items = limited.map(e => buildEventTag(e, data.repositoryUrl));
+			const items = limited.map((e) => buildEventTag(e, data.repositoryUrl));
 
-			listContent = new Tag('ol', { 'data-name': 'events', class: 'rf-plan-history__events' },
-				items.length > 0 ? items : [new Tag('li', { class: 'rf-plan-history__empty' }, ['No history available'])],
+			listContent = new Tag(
+				'ol',
+				{ 'data-name': 'events', class: 'rf-plan-history__events' },
+				items.length > 0
+					? items
+					: [new Tag('li', { class: 'rf-plan-history__empty' }, ['No history available'])],
 			);
 		}
 	} else {
 		// Global feed mode
 		isGlobal = true;
-		const typeSet = typeFilter !== 'all' ? new Set(typeFilter.split(',').map(t => t.trim())) : null;
-		const entityByFile = new Map(allEntities.map(e => {
-			// Try to find the file path from history keys
-			const filePath = e.data.file as string | undefined;
-			return [filePath ?? e.id, e];
-		}));
+		const typeSet =
+			typeFilter !== 'all' ? new Set(typeFilter.split(',').map((t) => t.trim())) : null;
+		const entityByFile = new Map(
+			allEntities.map((e) => {
+				// Try to find the file path from history keys
+				const filePath = e.data.file as string | undefined;
+				return [filePath ?? e.id, e];
+			}),
+		);
 
 		// Group events by commit
-		const commitMap = new Map<string, {
-			hash: string; shortHash: string; date: string; message: string;
-			entities: Array<{ id: string; event: HistoryEvent }>;
-		}>();
+		const commitMap = new Map<
+			string,
+			{
+				hash: string;
+				shortHash: string;
+				date: string;
+				message: string;
+				entities: Array<{ id: string; event: HistoryEvent }>;
+			}
+		>();
 
 		for (const [file, events] of data.history) {
 			// Determine entity type for filtering
 			const firstEvent = events[0];
 			const initialType = firstEvent?.initialAttributes?.id?.split('-')[0]?.toLowerCase();
-			const entityTypeMap: Record<string, string> = { work: 'work', spec: 'spec', bug: 'bug', adr: 'decision' };
+			const entityTypeMap: Record<string, string> = {
+				work: 'work',
+				spec: 'spec',
+				bug: 'bug',
+				adr: 'decision',
+			};
 			const entityType = entityTypeMap[initialType ?? ''];
 
 			if (typeSet && entityType && !typeSet.has(entityType)) continue;
 
-			const entityId = firstEvent?.initialAttributes?.id ?? firstEvent?.initialAttributes?.name ?? file;
+			const entityId =
+				firstEvent?.initialAttributes?.id ?? firstEvent?.initialAttributes?.name ?? file;
 
 			for (const event of events) {
 				if (event.kind === 'content') continue; // Skip content events in global feed
@@ -920,27 +1030,37 @@ function resolvePlanHistory(tag: InstanceType<typeof Tag>, data: PlanAggregatedD
 			.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 			.slice(0, limit);
 
-		const commitItems = sortedCommits.map(commit => {
-			const dateTag = new Tag('time', { class: 'rf-plan-history__date' }, [formatHistoryDate(commit.date)]);
+		const commitItems = sortedCommits.map((commit) => {
+			const dateTag = new Tag('time', { class: 'rf-plan-history__date' }, [
+				formatHistoryDate(commit.date),
+			]);
 
 			const hashAttrs: Record<string, any> = { class: 'rf-plan-history__hash' };
 			let hashTag: InstanceType<typeof Tag>;
 			if (data.repositoryUrl) {
-				hashTag = new Tag('a', {
-					class: 'rf-plan-history__hash',
-					href: `${data.repositoryUrl}/commit/${commit.hash}`,
-				}, [commit.shortHash]);
+				hashTag = new Tag(
+					'a',
+					{
+						class: 'rf-plan-history__hash',
+						href: `${data.repositoryUrl}/commit/${commit.hash}`,
+					},
+					[commit.shortHash],
+				);
 			} else {
 				hashTag = new Tag('code', hashAttrs, [commit.shortHash]);
 			}
 
-			const messageTag = new Tag('span', { class: 'rf-plan-history__commit-message' }, [commit.message]);
+			const messageTag = new Tag('span', { class: 'rf-plan-history__commit-message' }, [
+				commit.message,
+			]);
 
 			const entitySummaries = commit.entities.map(({ id, event }) => {
 				const parts: string[] = [];
 				if (event.kind === 'created') {
 					const attrs = event.initialAttributes ?? {};
-					const vals = Object.entries(attrs).filter(([k]) => k !== 'id' && k !== 'name').map(([, v]) => v);
+					const vals = Object.entries(attrs)
+						.filter(([k]) => k !== 'id' && k !== 'name')
+						.map(([, v]) => v);
 					parts.push(`Created (${vals.join(', ')})`);
 				}
 				if (event.attributeChanges) {
@@ -951,7 +1071,7 @@ function resolvePlanHistory(tag: InstanceType<typeof Tag>, data: PlanAggregatedD
 					}
 				}
 				if (event.criteriaChanges && event.criteriaChanges.length > 0) {
-					const checked = event.criteriaChanges.filter(c => c.action === 'checked').length;
+					const checked = event.criteriaChanges.filter((c) => c.action === 'checked').length;
 					const total = event.criteriaChanges.length;
 					parts.push(`☑ ${checked}/${total}`);
 				}
@@ -964,13 +1084,19 @@ function resolvePlanHistory(tag: InstanceType<typeof Tag>, data: PlanAggregatedD
 			});
 
 			return new Tag('li', { class: 'rf-plan-history__event' }, [
-				dateTag, hashTag, messageTag,
+				dateTag,
+				hashTag,
+				messageTag,
 				new Tag('div', { class: 'rf-plan-history__changes' }, entitySummaries),
 			]);
 		});
 
-		listContent = new Tag('ol', { 'data-name': 'events', class: 'rf-plan-history__events' },
-			commitItems.length > 0 ? commitItems : [new Tag('li', { class: 'rf-plan-history__empty' }, ['No history available'])],
+		listContent = new Tag(
+			'ol',
+			{ 'data-name': 'events', class: 'rf-plan-history__events' },
+			commitItems.length > 0
+				? commitItems
+				: [new Tag('li', { class: 'rf-plan-history__empty' }, ['No history available'])],
 		);
 	}
 
@@ -980,14 +1106,15 @@ function resolvePlanHistory(tag: InstanceType<typeof Tag>, data: PlanAggregatedD
 	}
 
 	const newChildren = tag.children.filter(
-		(c: unknown) => !(Markdoc.Tag.isTag(c) && (
-			c.attributes['data-field'] === PLAN_HISTORY_SENTINEL ||
-			c.attributes['data-name'] === 'events' ||
-			c.attributes['data-name'] === 'items'
-		)),
+		(c: unknown) =>
+			!(
+				Markdoc.Tag.isTag(c) &&
+				(c.attributes['data-field'] === PLAN_HISTORY_SENTINEL ||
+					c.attributes['data-name'] === 'events' ||
+					c.attributes['data-name'] === 'items')
+			),
 	);
 	newChildren.push(listContent);
 
 	return new Tag(tag.name, attrs, newChildren as any[]);
 }
-

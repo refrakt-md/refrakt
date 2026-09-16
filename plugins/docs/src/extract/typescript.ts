@@ -2,8 +2,15 @@ import ts from 'typescript';
 import { resolve, relative, dirname } from 'node:path';
 import { readdirSync, statSync, existsSync } from 'node:fs';
 import type {
-	SymbolDoc, SymbolKind, SymbolParameter, SymbolReturn, SymbolThrows,
-	SymbolGroupDoc, SymbolMemberDoc, SymbolExtractor, ExtractorResult,
+	SymbolDoc,
+	SymbolKind,
+	SymbolParameter,
+	SymbolReturn,
+	SymbolThrows,
+	SymbolGroupDoc,
+	SymbolMemberDoc,
+	SymbolExtractor,
+	ExtractorResult,
 } from './types.js';
 
 interface JSDocInfo {
@@ -35,9 +42,10 @@ function extractJSDoc(node: ts.Node): JSDocInfo {
 	const tags = ts.getJSDocTags(node);
 	for (const tag of tags) {
 		const tagName = tag.tagName.text;
-		const comment = typeof tag.comment === 'string'
-			? tag.comment
-			: tag.comment?.map((c: any) => c.text ?? '').join('') ?? '';
+		const comment =
+			typeof tag.comment === 'string'
+				? tag.comment
+				: (tag.comment?.map((c: any) => c.text ?? '').join('') ?? '');
 
 		switch (tagName) {
 			case 'param': {
@@ -79,7 +87,12 @@ function findTsFiles(dir: string): string[] {
 		const stat = statSync(fullPath);
 		if (stat.isDirectory()) {
 			files.push(...findTsFiles(fullPath));
-		} else if (/\.tsx?$/.test(entry) && !entry.endsWith('.d.ts') && !entry.endsWith('.test.ts') && !entry.endsWith('.spec.ts')) {
+		} else if (
+			/\.tsx?$/.test(entry) &&
+			!entry.endsWith('.d.ts') &&
+			!entry.endsWith('.test.ts') &&
+			!entry.endsWith('.spec.ts')
+		) {
 			files.push(fullPath);
 		}
 	}
@@ -170,32 +183,51 @@ export class TypeScriptExtractor implements SymbolExtractor {
 		return null;
 	}
 
-	private extractFunction(name: string, symbol: ts.Symbol, decl: ts.FunctionDeclaration, sourceFile: ts.SourceFile): SymbolDoc {
+	private extractFunction(
+		name: string,
+		symbol: ts.Symbol,
+		decl: ts.FunctionDeclaration,
+		sourceFile: ts.SourceFile,
+	): SymbolDoc {
 		const jsDoc = extractJSDoc(decl);
 		const kind: SymbolKind = name.startsWith('use') && /^use[A-Z]/.test(name) ? 'hook' : 'function';
 		const type = this.checker.getTypeOfSymbolAtLocation(symbol, decl);
 		const signatures = type.getCallSignatures();
-		const signature = signatures.length > 0
-			? this.checker.signatureToString(signatures[0], decl, ts.TypeFormatFlags.WriteArrowStyleSignature | ts.TypeFormatFlags.NoTruncation)
-			: this.checker.typeToString(type, decl, ts.TypeFormatFlags.NoTruncation);
+		const signature =
+			signatures.length > 0
+				? this.checker.signatureToString(
+						signatures[0],
+						decl,
+						ts.TypeFormatFlags.WriteArrowStyleSignature | ts.TypeFormatFlags.NoTruncation,
+					)
+				: this.checker.typeToString(type, decl, ts.TypeFormatFlags.NoTruncation);
 
 		const parameters = this.extractParameters(decl.parameters, jsDoc);
 		const returns = this.extractReturn(signatures[0], jsDoc);
 		const throws = this.extractThrows(jsDoc);
 
 		return {
-			name, kind, signature,
+			name,
+			kind,
+			signature,
 			description: jsDoc.description,
 			parameters: parameters.length > 0 ? parameters : undefined,
-			returns, throws: throws.length > 0 ? throws : undefined,
-			since: jsDoc.since, deprecated: jsDoc.deprecated,
+			returns,
+			throws: throws.length > 0 ? throws : undefined,
+			since: jsDoc.since,
+			deprecated: jsDoc.deprecated,
 			source: this.buildSourceUrl(sourceFile.fileName, getLineNumber(decl, sourceFile)),
 			filePath: sourceFile.fileName,
 			line: getLineNumber(decl, sourceFile),
 		};
 	}
 
-	private extractVariable(name: string, symbol: ts.Symbol, decl: ts.VariableDeclaration, sourceFile: ts.SourceFile): SymbolDoc | null {
+	private extractVariable(
+		name: string,
+		symbol: ts.Symbol,
+		decl: ts.VariableDeclaration,
+		sourceFile: ts.SourceFile,
+	): SymbolDoc | null {
 		const type = this.checker.getTypeOfSymbolAtLocation(symbol, decl);
 		const callSigs = type.getCallSignatures();
 
@@ -204,12 +236,20 @@ export class TypeScriptExtractor implements SymbolExtractor {
 			// Get JSDoc from the variable statement, not the declaration
 			const varStatement = decl.parent?.parent;
 			const jsDoc = varStatement ? extractJSDoc(varStatement) : extractJSDoc(decl);
-			const kind: SymbolKind = name.startsWith('use') && /^use[A-Z]/.test(name) ? 'hook' : 'function';
-			const signature = this.checker.signatureToString(callSigs[0], decl, ts.TypeFormatFlags.WriteArrowStyleSignature | ts.TypeFormatFlags.NoTruncation);
+			const kind: SymbolKind =
+				name.startsWith('use') && /^use[A-Z]/.test(name) ? 'hook' : 'function';
+			const signature = this.checker.signatureToString(
+				callSigs[0],
+				decl,
+				ts.TypeFormatFlags.WriteArrowStyleSignature | ts.TypeFormatFlags.NoTruncation,
+			);
 
 			// Try to get parameters from the initializer if it's an arrow function
 			let parameters: SymbolParameter[] = [];
-			if (decl.initializer && (ts.isArrowFunction(decl.initializer) || ts.isFunctionExpression(decl.initializer))) {
+			if (
+				decl.initializer &&
+				(ts.isArrowFunction(decl.initializer) || ts.isFunctionExpression(decl.initializer))
+			) {
 				parameters = this.extractParameters(decl.initializer.parameters, jsDoc);
 			}
 
@@ -217,11 +257,15 @@ export class TypeScriptExtractor implements SymbolExtractor {
 			const throws = this.extractThrows(jsDoc);
 
 			return {
-				name, kind, signature,
+				name,
+				kind,
+				signature,
 				description: jsDoc.description,
 				parameters: parameters.length > 0 ? parameters : undefined,
-				returns, throws: throws.length > 0 ? throws : undefined,
-				since: jsDoc.since, deprecated: jsDoc.deprecated,
+				returns,
+				throws: throws.length > 0 ? throws : undefined,
+				since: jsDoc.since,
+				deprecated: jsDoc.deprecated,
 				source: this.buildSourceUrl(sourceFile.fileName, getLineNumber(decl, sourceFile)),
 				filePath: sourceFile.fileName,
 				line: getLineNumber(decl, sourceFile),
@@ -234,17 +278,24 @@ export class TypeScriptExtractor implements SymbolExtractor {
 		const typeStr = this.checker.typeToString(type, decl, ts.TypeFormatFlags.NoTruncation);
 
 		return {
-			name, kind: 'function', // use 'function' kind for exported constants since there's no 'const' kind
+			name,
+			kind: 'function', // use 'function' kind for exported constants since there's no 'const' kind
 			signature: `const ${name}: ${typeStr}`,
 			description: jsDoc.description,
-			since: jsDoc.since, deprecated: jsDoc.deprecated,
+			since: jsDoc.since,
+			deprecated: jsDoc.deprecated,
 			source: this.buildSourceUrl(sourceFile.fileName, getLineNumber(decl, sourceFile)),
 			filePath: sourceFile.fileName,
 			line: getLineNumber(decl, sourceFile),
 		};
 	}
 
-	private extractClass(name: string, _symbol: ts.Symbol, decl: ts.ClassDeclaration, sourceFile: ts.SourceFile): SymbolDoc {
+	private extractClass(
+		name: string,
+		_symbol: ts.Symbol,
+		decl: ts.ClassDeclaration,
+		sourceFile: ts.SourceFile,
+	): SymbolDoc {
 		const jsDoc = extractJSDoc(decl);
 
 		// Build class signature
@@ -252,7 +303,7 @@ export class TypeScriptExtractor implements SymbolExtractor {
 		if (decl.heritageClauses) {
 			for (const clause of decl.heritageClauses) {
 				const keyword = clause.token === ts.SyntaxKind.ExtendsKeyword ? 'extends' : 'implements';
-				const types = clause.types.map(t => t.getText(sourceFile)).join(', ');
+				const types = clause.types.map((t) => t.getText(sourceFile)).join(', ');
 				signature += ` ${keyword} ${types}`;
 			}
 		}
@@ -260,17 +311,23 @@ export class TypeScriptExtractor implements SymbolExtractor {
 		const groups = this.extractClassMembers(decl, sourceFile);
 
 		return {
-			name, kind: 'class', signature,
+			name,
+			kind: 'class',
+			signature,
 			description: jsDoc.description,
 			groups: groups.length > 0 ? groups : undefined,
-			since: jsDoc.since, deprecated: jsDoc.deprecated,
+			since: jsDoc.since,
+			deprecated: jsDoc.deprecated,
 			source: this.buildSourceUrl(sourceFile.fileName, getLineNumber(decl, sourceFile)),
 			filePath: sourceFile.fileName,
 			line: getLineNumber(decl, sourceFile),
 		};
 	}
 
-	private extractClassMembers(decl: ts.ClassDeclaration, sourceFile: ts.SourceFile): SymbolGroupDoc[] {
+	private extractClassMembers(
+		decl: ts.ClassDeclaration,
+		sourceFile: ts.SourceFile,
+	): SymbolGroupDoc[] {
 		const constructors: SymbolMemberDoc[] = [];
 		const properties: SymbolMemberDoc[] = [];
 		const methods: SymbolMemberDoc[] = [];
@@ -302,42 +359,54 @@ export class TypeScriptExtractor implements SymbolExtractor {
 		if (constructors.length > 0) groups.push({ label: 'Constructor', members: constructors });
 		if (properties.length > 0) groups.push({ label: 'Properties', members: properties });
 		if (methods.length > 0) groups.push({ label: 'Methods', members: methods });
-		if (staticProperties.length > 0) groups.push({ label: 'Static Properties', members: staticProperties });
+		if (staticProperties.length > 0)
+			groups.push({ label: 'Static Properties', members: staticProperties });
 		if (staticMethods.length > 0) groups.push({ label: 'Static Methods', members: staticMethods });
 		if (accessors.length > 0) groups.push({ label: 'Accessors', members: accessors });
 
 		return groups;
 	}
 
-	private extractInterface(name: string, _symbol: ts.Symbol, decl: ts.InterfaceDeclaration, sourceFile: ts.SourceFile): SymbolDoc {
+	private extractInterface(
+		name: string,
+		_symbol: ts.Symbol,
+		decl: ts.InterfaceDeclaration,
+		sourceFile: ts.SourceFile,
+	): SymbolDoc {
 		const jsDoc = extractJSDoc(decl);
 
 		let signature = `interface ${name}`;
 		if (decl.heritageClauses) {
 			for (const clause of decl.heritageClauses) {
-				const types = clause.types.map(t => t.getText(sourceFile)).join(', ');
+				const types = clause.types.map((t) => t.getText(sourceFile)).join(', ');
 				signature += ` extends ${types}`;
 			}
 		}
 		if (decl.typeParameters && decl.typeParameters.length > 0) {
-			const params = decl.typeParameters.map(tp => tp.getText(sourceFile)).join(', ');
+			const params = decl.typeParameters.map((tp) => tp.getText(sourceFile)).join(', ');
 			signature = `interface ${name}<${params}>` + signature.slice(`interface ${name}`.length);
 		}
 
 		const groups = this.extractInterfaceMembers(decl, sourceFile);
 
 		return {
-			name, kind: 'interface', signature,
+			name,
+			kind: 'interface',
+			signature,
 			description: jsDoc.description,
 			groups: groups.length > 0 ? groups : undefined,
-			since: jsDoc.since, deprecated: jsDoc.deprecated,
+			since: jsDoc.since,
+			deprecated: jsDoc.deprecated,
 			source: this.buildSourceUrl(sourceFile.fileName, getLineNumber(decl, sourceFile)),
 			filePath: sourceFile.fileName,
 			line: getLineNumber(decl, sourceFile),
 		};
 	}
 
-	private extractInterfaceMembers(decl: ts.InterfaceDeclaration, sourceFile: ts.SourceFile): SymbolGroupDoc[] {
+	private extractInterfaceMembers(
+		decl: ts.InterfaceDeclaration,
+		sourceFile: ts.SourceFile,
+	): SymbolGroupDoc[] {
 		const properties: SymbolMemberDoc[] = [];
 		const methods: SymbolMemberDoc[] = [];
 		const indexSignatures: SymbolMemberDoc[] = [];
@@ -355,12 +424,18 @@ export class TypeScriptExtractor implements SymbolExtractor {
 		const groups: SymbolGroupDoc[] = [];
 		if (properties.length > 0) groups.push({ label: 'Properties', members: properties });
 		if (methods.length > 0) groups.push({ label: 'Methods', members: methods });
-		if (indexSignatures.length > 0) groups.push({ label: 'Index Signatures', members: indexSignatures });
+		if (indexSignatures.length > 0)
+			groups.push({ label: 'Index Signatures', members: indexSignatures });
 
 		return groups;
 	}
 
-	private extractEnum(name: string, _symbol: ts.Symbol, decl: ts.EnumDeclaration, sourceFile: ts.SourceFile): SymbolDoc {
+	private extractEnum(
+		name: string,
+		_symbol: ts.Symbol,
+		decl: ts.EnumDeclaration,
+		sourceFile: ts.SourceFile,
+	): SymbolDoc {
 		const jsDoc = extractJSDoc(decl);
 
 		const parameters: SymbolParameter[] = [];
@@ -376,7 +451,8 @@ export class TypeScriptExtractor implements SymbolExtractor {
 				if (memberSymbol) {
 					const constantValue = this.checker.getConstantValue(member);
 					if (constantValue !== undefined) {
-						value = typeof constantValue === 'string' ? `"${constantValue}"` : String(constantValue);
+						value =
+							typeof constantValue === 'string' ? `"${constantValue}"` : String(constantValue);
 					}
 				}
 			}
@@ -390,32 +466,42 @@ export class TypeScriptExtractor implements SymbolExtractor {
 		}
 
 		return {
-			name, kind: 'enum',
+			name,
+			kind: 'enum',
 			signature: `enum ${name}`,
 			description: jsDoc.description,
 			parameters: parameters.length > 0 ? parameters : undefined,
-			since: jsDoc.since, deprecated: jsDoc.deprecated,
+			since: jsDoc.since,
+			deprecated: jsDoc.deprecated,
 			source: this.buildSourceUrl(sourceFile.fileName, getLineNumber(decl, sourceFile)),
 			filePath: sourceFile.fileName,
 			line: getLineNumber(decl, sourceFile),
 		};
 	}
 
-	private extractTypeAlias(name: string, _symbol: ts.Symbol, decl: ts.TypeAliasDeclaration, sourceFile: ts.SourceFile): SymbolDoc {
+	private extractTypeAlias(
+		name: string,
+		_symbol: ts.Symbol,
+		decl: ts.TypeAliasDeclaration,
+		sourceFile: ts.SourceFile,
+	): SymbolDoc {
 		const jsDoc = extractJSDoc(decl);
 		const typeNode = decl.type;
 		const typeText = typeNode.getText(sourceFile);
 		let signature = `type ${name}`;
 		if (decl.typeParameters && decl.typeParameters.length > 0) {
-			const params = decl.typeParameters.map(tp => tp.getText(sourceFile)).join(', ');
+			const params = decl.typeParameters.map((tp) => tp.getText(sourceFile)).join(', ');
 			signature += `<${params}>`;
 		}
 		signature += ` = ${typeText}`;
 
 		return {
-			name, kind: 'type', signature,
+			name,
+			kind: 'type',
+			signature,
 			description: jsDoc.description,
-			since: jsDoc.since, deprecated: jsDoc.deprecated,
+			since: jsDoc.since,
+			deprecated: jsDoc.deprecated,
 			source: this.buildSourceUrl(sourceFile.fileName, getLineNumber(decl, sourceFile)),
 			filePath: sourceFile.fileName,
 			line: getLineNumber(decl, sourceFile),
@@ -436,7 +522,7 @@ export class TypeScriptExtractor implements SymbolExtractor {
 
 		if (ts.isConstructorDeclaration(member)) {
 			name = 'constructor';
-			const paramTexts = member.parameters.map(p => p.getText(sourceFile)).join(', ');
+			const paramTexts = member.parameters.map((p) => p.getText(sourceFile)).join(', ');
 			signature = `new (${paramTexts})`;
 			parameters = this.extractParameters(member.parameters, jsDoc);
 		} else if (ts.isMethodDeclaration(member) || ts.isMethodSignature(member)) {
@@ -496,16 +582,23 @@ export class TypeScriptExtractor implements SymbolExtractor {
 		}
 
 		return {
-			name, kind, signature,
+			name,
+			kind,
+			signature,
 			description: jsDoc.description,
 			parameters: parameters && parameters.length > 0 ? parameters : undefined,
-			returns, throws,
-			since: jsDoc.since, deprecated: jsDoc.deprecated,
+			returns,
+			throws,
+			since: jsDoc.since,
+			deprecated: jsDoc.deprecated,
 		};
 	}
 
-	private extractParameters(params: ts.NodeArray<ts.ParameterDeclaration>, jsDoc: JSDocInfo): SymbolParameter[] {
-		return params.map(param => {
+	private extractParameters(
+		params: ts.NodeArray<ts.ParameterDeclaration>,
+		jsDoc: JSDocInfo,
+	): SymbolParameter[] {
+		return params.map((param) => {
 			const name = param.name.getText();
 			const paramSymbol = this.checker.getSymbolAtLocation(param.name);
 			let type = 'unknown';
@@ -527,9 +620,10 @@ export class TypeScriptExtractor implements SymbolExtractor {
 			// Check for destructured object parameters with documented children
 			let children: SymbolParameter[] | undefined;
 			if (ts.isObjectBindingPattern(param.name)) {
-				children = param.name.elements.map(element => {
+				children = param.name.elements.map((element) => {
 					const childName = element.name.getText();
-					const childDesc = jsDoc.params.get(`${name}.${childName}`) ?? jsDoc.params.get(childName) ?? '';
+					const childDesc =
+						jsDoc.params.get(`${name}.${childName}`) ?? jsDoc.params.get(childName) ?? '';
 					const childSymbol = this.checker.getSymbolAtLocation(element.name);
 					let childType = 'unknown';
 					if (childSymbol) {
@@ -550,10 +644,17 @@ export class TypeScriptExtractor implements SymbolExtractor {
 		});
 	}
 
-	private extractReturn(signature: ts.Signature | undefined, jsDoc: JSDocInfo): SymbolReturn | undefined {
+	private extractReturn(
+		signature: ts.Signature | undefined,
+		jsDoc: JSDocInfo,
+	): SymbolReturn | undefined {
 		if (!signature) return undefined;
 		const returnType = this.checker.getReturnTypeOfSignature(signature);
-		const typeStr = this.checker.typeToString(returnType, undefined, ts.TypeFormatFlags.NoTruncation);
+		const typeStr = this.checker.typeToString(
+			returnType,
+			undefined,
+			ts.TypeFormatFlags.NoTruncation,
+		);
 		if (typeStr === 'void' && !jsDoc.returns) return undefined;
 		return {
 			type: typeStr,
@@ -562,7 +663,7 @@ export class TypeScriptExtractor implements SymbolExtractor {
 	}
 
 	private extractThrows(jsDoc: JSDocInfo): SymbolThrows[] {
-		return jsDoc.throws.map(text => {
+		return jsDoc.throws.map((text) => {
 			// Parse "ErrorType description" or just "description"
 			const match = text.match(/^(\w+)\s+(.*)/);
 			if (match) {

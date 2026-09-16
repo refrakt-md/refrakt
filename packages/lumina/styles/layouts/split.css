@@ -1,5 +1,5 @@
 @layer skin {
-/* Shared media + content layout — skin.
+	/* Shared media + content layout — skin.
  *
  * The layout *structure* (start/end grid, top/bottom stack, 3-section placement,
  * the media-zone fill/clip mechanism, responsive collapse) lives in
@@ -7,24 +7,24 @@
  * radius tier, the beside-image depth shadow, the codegroup radius alignment,
  * and the default side-by-side spacing rhythm. */
 
-/* Default side-by-side spacing — applies to every rune using the split layout
+	/* Default side-by-side spacing — applies to every rune using the split layout
  * (hero, feature, step, realm, faction, etc.). Contained-chrome runes
  * (card, recipe, bento-cell, playlist) override `column-gap` / `row-gap` with
  * higher-specificity selectors to hug their internal media well; everything
  * else inherits this comfortable default so columns don't sit flush. */
-[data-media-position="start"],
-[data-media-position="end"] {
-	column-gap: var(--rf-spacing-lg);
-	row-gap: var(--rf-spacing-lg);
-}
+	[data-media-position="start"],
+	[data-media-position="end"] {
+		column-gap: var(--rf-spacing-lg);
+		row-gap: var(--rf-spacing-lg);
+	}
 
-/* Media guests use the smaller media radius tier so they never read as more
+	/* Media guests use the smaller media radius tier so they never read as more
  * rounded than the (larger-radius) container they sit in. */
-[data-section="media"] {
-	border-radius: var(--rf-radius-media);
-}
+	[data-section="media"] {
+		border-radius: var(--rf-radius-media);
+	}
 
-/* `data-guest-fit` (emitted from rune config) is the chrome/containment axis:
+	/* `data-guest-fit` (emitted from rune config) is the chrome/containment axis:
  *
  *   clip  — a framed well (card, bento-cell, recipe, playlist). Every guest
  *           adopts the slot radius so it reads as one surface with the well.
@@ -35,44 +35,44 @@
  *           chrome of its own, so a bare hero image stays rounded).
  *
  * Absence of the attribute reads as `clip` (the historical default). */
-[data-section="media"]:not([data-guest-fit="bleed"]) > * {
-	border-radius: inherit;
-}
-[data-section="media"]:not([data-guest-fit="bleed"]) .rf-codegroup {
-	border-radius: var(--rf-radius-media);
-}
+	[data-section="media"]:not([data-guest-fit="bleed"]) > * {
+		border-radius: inherit;
+	}
+	[data-section="media"]:not([data-guest-fit="bleed"]) .rf-codegroup {
+		border-radius: var(--rf-radius-media);
+	}
 
-/* Bleed host: leaf media adopts the slot radius; a rune guest does not, and the
+	/* Bleed host: leaf media adopts the slot radius; a rune guest does not, and the
  * slot drops its own radius so its clip never rounds the guest's corners. */
-[data-section="media"][data-guest-fit="bleed"] > :is(img, video, svg, .rf-placeholder) {
-	border-radius: inherit;
-}
-[data-section="media"][data-guest-fit="bleed"]:has(> [data-rune]) {
-	border-radius: 0;
-}
+	[data-section="media"][data-guest-fit="bleed"] > :is(img, video, svg, .rf-placeholder) {
+		border-radius: inherit;
+	}
+	[data-section="media"][data-guest-fit="bleed"]:has(> [data-rune]) {
+		border-radius: 0;
+	}
 
-/* `preview` (negative-margin breakout) and a displaced `showcase` (peek spill)
+	/* `preview` (negative-margin breakout) and a displaced `showcase` (peek spill)
  * want the slot fully de-chromed so the bleed reads as edge-to-edge. Juxtapose
  * keeps the slot's rounded corners (it still reads as part of the card surface). */
-[data-section="media"]:is(
-	:has(> [data-rune="preview"]),
-	:has(> .rf-showcase[data-displace]:not(.rf-showcase--in-bento-cell))
-) {
-	border-radius: 0;
-}
-[data-section="media"]:is(
-	:has(> [data-rune="preview"]),
-	:has(> [data-rune="juxtapose"]),
-	:has(> .rf-showcase[data-displace]:not(.rf-showcase--in-bento-cell))
-) > * {
-	border-radius: 0;
-}
+	[data-section="media"]:is(
+		:has(> [data-rune="preview"]),
+		:has(> .rf-showcase[data-displace]:not(.rf-showcase--in-bento-cell))
+	) {
+		border-radius: 0;
+	}
+	[data-section="media"]:is(
+			:has(> [data-rune="preview"]),
+			:has(> [data-rune="juxtapose"]),
+			:has(> .rf-showcase[data-displace]:not(.rf-showcase--in-bento-cell))
+		)
+		> * {
+		border-radius: 0;
+	}
 
-/* Beside-layout images get subtle depth. Block runes carry their own visual
+	/* Beside-layout images get subtle depth. Block runes carry their own visual
  * weight (topbars, frames) so the shadow is image-only. */
-[data-media-position="start"] > [data-section="media"] > img,
-[data-media-position="end"] > [data-section="media"] > img {
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
+	[data-media-position="start"] > [data-section="media"] > img,
+	[data-media-position="end"] > [data-section="media"] > img {
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	}
 }

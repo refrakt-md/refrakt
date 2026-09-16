@@ -4,10 +4,17 @@ import { makeTag } from '../../src/helpers.js';
 import type { FacetContext } from '../../src/facets/types.js';
 import type { RuneConfig } from '../../src/types.js';
 
-const HEADER_RUNE: RuneConfig = { block: 'recipe', sections: { preamble: 'preamble', headline: 'title' } };
+const HEADER_RUNE: RuneConfig = {
+	block: 'recipe',
+	sections: { preamble: 'preamble', headline: 'title' },
+};
 const BARE_RUNE: RuneConfig = { block: 'badge' };
 
-const ctx = (attrs: Record<string, any> = {}, config: RuneConfig = HEADER_RUNE, rune = 'recipe'): FacetContext => ({
+const ctx = (
+	attrs: Record<string, any> = {},
+	config: RuneConfig = HEADER_RUNE,
+	rune = 'recipe',
+): FacetContext => ({
 	tag: makeTag('div', { 'data-rune': rune, ...attrs }, []),
 	config,
 	block: `rf-${config.block}`,
@@ -48,7 +55,9 @@ describe('prominence facet', () => {
 	});
 
 	it('resolves the authored attribute on a header-family rune', () => {
-		expect(prominenceFacet.resolve(ctx({ prominence: 'display' }))).toEqual({ axes: { prominence: 'display' } });
+		expect(prominenceFacet.resolve(ctx({ prominence: 'display' }))).toEqual({
+			axes: { prominence: 'display' },
+		});
 	});
 
 	it('emits no BEM class — the axis is styled by attribute', () => {
@@ -62,7 +71,9 @@ describe('prominence facet', () => {
 
 	it('lets the author override the rune default', () => {
 		const config = { ...HEADER_RUNE, block: 'hero', defaultProminence: 'display' as const };
-		expect(prominenceFacet.resolve(ctx({ prominence: 'quiet' }, config))).toEqual({ axes: { prominence: 'quiet' } });
+		expect(prominenceFacet.resolve(ctx({ prominence: 'quiet' }, config))).toEqual({
+			axes: { prominence: 'quiet' },
+		});
 	});
 
 	describe('family gating', () => {

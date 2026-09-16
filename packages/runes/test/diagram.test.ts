@@ -11,7 +11,7 @@ graph TD
 \`\`\`
 {% /diagram %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diagram');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diagram');
 		expect(tag).toBeDefined();
 		// SPEC-081: the transform emits the rf-diagram custom element directly.
 		expect(tag!.name).toBe('rf-diagram');
@@ -25,14 +25,17 @@ graph LR
 \`\`\`
 {% /diagram %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diagram');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diagram');
 
 		// SPEC-082: language rides the data-rune-fields bag (→ data-language).
 		const fields = JSON.parse(tag!.attributes['data-rune-fields'] as string);
 		expect(fields.language).toBe('mermaid');
 
 		// SPEC-081: title is built as a figcaption, not a meta.
-		const title = findTag(tag!, t => t.name === 'figcaption' && t.attributes['data-name'] === 'title');
+		const title = findTag(
+			tag!,
+			(t) => t.name === 'figcaption' && t.attributes['data-name'] === 'title',
+		);
 		expect(title).toBeDefined();
 		expect(title!.children).toContain('Architecture');
 	});
@@ -45,8 +48,8 @@ graph TD
 \`\`\`
 {% /diagram %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'diagram');
-		const source = findTag(tag!, t => t.name === 'pre' && t.attributes['data-name'] === 'source');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'diagram');
+		const source = findTag(tag!, (t) => t.name === 'pre' && t.attributes['data-name'] === 'source');
 		expect(source).toBeDefined();
 		expect(JSON.stringify(source)).toContain('graph TD');
 	});

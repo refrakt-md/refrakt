@@ -1,0 +1,28 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Tabs for indentation: the rendered width is the reader's choice, not the
+# file's. `indent_size` here only tells editors how wide to *display* a tab.
+indent_style = tab
+indent_size = 2
+
+# npm rewrites package.json (and the lockfile) with two-space indentation on
+# every install, so JSON stays on spaces rather than fighting the package
+# manager forever.
+[*.{json,jsonc}]
+indent_style = space
+indent_size = 2
+
+# YAML forbids tabs for indentation outright.
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# Two trailing spaces are a hard line break in Markdown.
+[*.md]
+trim_trailing_whitespace = false

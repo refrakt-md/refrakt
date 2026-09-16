@@ -13,9 +13,7 @@ export const revealStep = createContentModelSchema({
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
@@ -23,7 +21,8 @@ export const revealStep = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable({ rune: 'reveal-step',
+		return createComponentRenderable({
+			rune: 'reveal-step',
 			tag: 'div',
 			properties: {
 				name: nameTag,
@@ -39,12 +38,21 @@ export const revealStep = createContentModelSchema({
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
 // what a section *is* (ADR-028).
-export const revealSections = { preamble: 'preamble', headline: 'title', blurb: 'description' } as const;
+export const revealSections = {
+	preamble: 'preamble',
+	headline: 'title',
+	blurb: 'description',
+} as const;
 
 export const reveal = createContentModelSchema({
 	sections: revealSections,
 	attributes: {
-		mode: { type: String, required: false, matches: modeType.slice(), description: 'Step progression: click, scroll, or auto' },
+		mode: {
+			type: String,
+			required: false,
+			matches: modeType.slice(),
+			description: 'Step progression: click, scroll, or auto',
+		},
 	},
 	contentModel: () => ({
 		type: 'sections' as const,
@@ -74,11 +82,13 @@ export const reveal = createContentModelSchema({
 		const steps = sectionNodes.tag('div').typeof('RevealStep');
 		const stepsContainer = steps.wrap('div');
 
-		const children = headerNodes.count() > 0
-			? [headerNodes.wrap('header').next(), modeMeta, stepsContainer.next()]
-			: [modeMeta, stepsContainer.next()];
+		const children =
+			headerNodes.count() > 0
+				? [headerNodes.wrap('header').next(), modeMeta, stepsContainer.next()]
+				: [modeMeta, stepsContainer.next()];
 
-		return createComponentRenderable({ rune: 'reveal',
+		return createComponentRenderable({
+			rune: 'reveal',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

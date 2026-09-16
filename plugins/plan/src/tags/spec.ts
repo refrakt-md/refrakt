@@ -1,7 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	RenderableNodeCursor,
+} from '@refrakt-md/runes';
 import { stripHorizontalRules } from '../util.js';
 import { VALID_STATUS } from '../commands/enums.js';
 
@@ -15,13 +20,32 @@ export const spec = createContentModelSchema({
 	provides: ['prose'],
 	attributes: {
 		id: { type: String, required: true, description: 'Unique identifier (e.g., "SPEC-008").' },
-		status: { type: String, required: false, matches: [...VALID_STATUS.spec], description: 'Current status: draft, review, accepted, implemented, shipped, superseded, or deprecated.' },
+		status: {
+			type: String,
+			required: false,
+			matches: [...VALID_STATUS.spec],
+			description:
+				'Current status: draft, review, accepted, implemented, shipped, superseded, or deprecated.',
+		},
 		version: { type: String, required: false, description: 'Spec version (e.g., "1.0", "1.2").' },
 		supersedes: { type: String, required: false, description: 'ID of the spec this replaces.' },
-		'released-in': { type: String, required: false, description: 'Release version this spec shipped in (semver, e.g. "v0.11.4"). Required when status="shipped".' },
+		'released-in': {
+			type: String,
+			required: false,
+			description:
+				'Release version this spec shipped in (semver, e.g. "v0.11.4"). Required when status="shipped".',
+		},
 		tags: { type: String, required: false, description: 'Comma-separated labels.' },
-		created: { type: String, required: false, description: 'Creation date (ISO 8601). Defaults to file creation date from git.' },
-		modified: { type: String, required: false, description: 'Last modified date (ISO 8601). Defaults to file modification date from git.' },
+		created: {
+			type: String,
+			required: false,
+			description: 'Creation date (ISO 8601). Defaults to file creation date from git.',
+		},
+		modified: {
+			type: String,
+			required: false,
+			description: 'Last modified date (ISO 8601). Defaults to file modification date from git.',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
@@ -60,7 +84,8 @@ export const spec = createContentModelSchema({
 		}
 		const bodyDiv = new Tag('div', {}, contentChildren);
 
-		return createComponentRenderable({ rune: 'spec',
+		return createComponentRenderable({
+			rune: 'spec',
 			tag: 'article',
 			properties: {
 				id: idMeta,
@@ -77,7 +102,19 @@ export const spec = createContentModelSchema({
 				blurb,
 				body: bodyDiv,
 			},
-			children: [idMeta, statusMeta, versionMeta, supersedesMeta, releasedInMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), ...(blurb ? [blurb] : []), bodyDiv],
+			children: [
+				idMeta,
+				statusMeta,
+				versionMeta,
+				supersedesMeta,
+				releasedInMeta,
+				tagsMeta,
+				createdMeta,
+				modifiedMeta,
+				title.next(),
+				...(blurb ? [blurb] : []),
+				bodyDiv,
+			],
 		});
 	},
 });

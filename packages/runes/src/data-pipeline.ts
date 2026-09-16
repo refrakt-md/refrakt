@@ -64,14 +64,18 @@ function resolveAttr(value: unknown, variables: Record<string, unknown> | undefi
 	if (typeof value === 'string') {
 		return value === '' ? { ok: false, why: 'is empty' } : { ok: true, value };
 	}
-	if (typeof value === 'number' || typeof value === 'boolean') return { ok: true, value: String(value) };
+	if (typeof value === 'number' || typeof value === 'boolean')
+		return { ok: true, value: String(value) };
 	if (typeof value === 'object' && '$$mdtype' in (value as Record<string, unknown>)) {
 		const node = value as { $$mdtype: string; path?: unknown; name?: string };
 		if (node.$$mdtype === 'Variable' && Array.isArray(node.path)) {
 			const path = (node.path as string[]).join('.');
 			let current: unknown = variables;
 			for (const segment of node.path as string[]) {
-				if (current === null || current === undefined) { current = undefined; break; }
+				if (current === null || current === undefined) {
+					current = undefined;
+					break;
+				}
 				current = (current as Record<string, unknown>)[segment];
 			}
 			return current === null || current === undefined
@@ -84,8 +88,9 @@ function resolveAttr(value: unknown, variables: Record<string, unknown> | undefi
 			// happened yet and there is nothing to read.
 			return {
 				ok: false,
-				why: `is a call to \`${node.name ?? 'a function'}()\`, and \`data\` reads its attributes `
-					+ 'during preprocess — before functions are evaluated',
+				why:
+					`is a call to \`${node.name ?? 'a function'}()\`, and \`data\` reads its attributes ` +
+					'during preprocess — before functions are evaluated',
 			};
 		}
 	}
@@ -108,13 +113,26 @@ function resolveString(value: unknown, variables: Record<string, unknown> | unde
  * than quietly becoming `''`.
  */
 const STRING_ATTRIBUTES = [
-	'src', 'format', 'delimiter', 'root', 'orient', 'key-column',
-	'columns', 'where', 'sort', 'numeric', 'text', 'headers',
+	'src',
+	'format',
+	'delimiter',
+	'root',
+	'orient',
+	'key-column',
+	'columns',
+	'where',
+	'sort',
+	'numeric',
+	'text',
+	'headers',
 ] as const;
 
 /** Parse a comma-separated column list into trimmed, non-empty names. */
 function splitList(raw: string): string[] {
-	return raw.split(',').map((s) => s.trim()).filter((s) => s.length > 0);
+	return raw
+		.split(',')
+		.map((s) => s.trim())
+		.filter((s) => s.length > 0);
 }
 
 /**
@@ -129,7 +147,9 @@ export function preprocessData(
 ): Node | void {
 	if (!ctx.sandbox) return;
 	let mutated = false;
-	walkAndReplaceData(ast, page, ctx, ctx.sandbox, () => { mutated = true; });
+	walkAndReplaceData(ast, page, ctx, ctx.sandbox, () => {
+		mutated = true;
+	});
 	return mutated ? ast : undefined;
 }
 
@@ -207,14 +227,23 @@ function bindRow(node: Node, row: Record<string, unknown>): Node {
 	// Without the stop, the outer bind resolves the inner body's `$row.name`
 	// against the outer row, which has no such column, and blanks it to `''`
 	// before the subquery ever runs. Measured, not theorised.
-	const children = node.tag === 'data'
-		? (node.children ?? []).map(cloneNode)
-		: (node.children ?? []).map((child) => bindRow(child, row));
+	const children =
+		node.tag === 'data'
+			? (node.children ?? []).map(cloneNode)
+			: (node.children ?? []).map((child) => bindRow(child, row));
 	const copy = new Ast.Node(node.type, attributes, children, node.tag);
 	// `inline` and a few other node types carry meaning in fields the
 	// constructor does not take; copy what Markdoc sets.
 	if (node.lines) copy.lines = node.lines;
 	if (node.location) copy.location = node.location;
+	// `inline` was named in the comment above and then not copied, so every
+	// node a row template bound came out block-level. Harmless while nothing
+	// validated — and then 6,609 `tag-placement-invalid` findings the moment
+	// SPEC-132 pointed Markdoc's validator at the content, because `{% code %}`
+	// declares `inline: true` and the rune-attribute tables bind it per row.
+	// `cloneWithBindings` in include-pipeline.ts had it right all along.
+	copy.inline = node.inline;
+	if (node.annotations?.length) copy.annotations = node.annotations;
 	return copy;
 }
 
@@ -249,6 +278,10 @@ function cloneNode(node: Node): Node {
 	);
 	if (node.lines) copy.lines = node.lines;
 	if (node.location) copy.location = node.location;
+	// Same omission as `bindRow` had — a nested `data`'s verbatim body copy must
+	// keep `inline` too, or the subquery's `{% code %}` cells come out block.
+	copy.inline = node.inline;
+	if (node.annotations?.length) copy.annotations = node.annotations;
 	return copy;
 }
 
@@ -304,7 +337,9 @@ function resolveData(
 	files: ProjectFiles,
 	enclosing?: string,
 ): Node[] {
-	const body = (tag.children ?? []).filter((child) => child.type !== 'text' || String(child.attributes?.content ?? '').trim() !== '');
+	const body = (tag.children ?? []).filter(
+		(child) => child.type !== 'text' || String(child.attributes?.content ?? '').trim() !== '',
+	);
 	if (body.length > 0 && enclosing && TABLE_CONSUMERS.has(enclosing)) {
 		const msg = `a per-row body cannot be used inside {% ${enclosing} %}, which consumes the table this rune would otherwise emit — remove the body, or move the {% data %} outside`;
 		ctx.error(`data: ${msg}`, page.url);
@@ -335,9 +370,10 @@ function resolveDataToNodes(
 		if (!r.ok) unreadable.push(`\`${name}\` ${r.why}`);
 	}
 	if (unreadable.length > 0) {
-		const msg = unreadable.length === 1
-			? unreadable[0]
-			: `${unreadable.length} attributes could not be read — ${unreadable.join('; ')}`;
+		const msg =
+			unreadable.length === 1
+				? unreadable[0]
+				: `${unreadable.length} attributes could not be read — ${unreadable.join('; ')}`;
 		ctx.error(`data: ${msg}`, page.url);
 		return [emitErrorNode(`data error: ${msg}`)];
 	}
@@ -349,14 +385,16 @@ function resolveDataToNodes(
 	// for it to describe. Ignoring it silently would read as a rename of
 	// `columns`, which selects and renames source columns instead.
 	if (headers.length > 0 && body.length === 0) {
-		const msg = '`headers` names the columns of a `---`-delimited body and needs one. '
-			+ 'For a bodyless table, select and rename source columns with `columns`.';
+		const msg =
+			'`headers` names the columns of a `---`-delimited body and needs one. ' +
+			'For a bodyless table, select and rename source columns with `columns`.';
 		ctx.error(`data "${src || '(unresolved)'}": ${msg}`, page.url);
 		return [emitErrorNode(`data error: ${msg}`)];
 	}
 
 	if (!src) {
-		const msg = 'data `src` attribute is required (and an unresolvable variable reference resolves to empty)';
+		const msg =
+			'data `src` attribute is required (and an unresolvable variable reference resolves to empty)';
 		ctx.error(msg, page.url);
 		return [emitErrorNode(`data error: ${msg}`)];
 	}
@@ -389,7 +427,11 @@ function resolveDataToNodes(
 		// The typo detector (BUG-011). Fires on a misspelt column whether or not
 		// the result ends up empty — a clause that names nothing is a mistake even
 		// when some other clause still matches rows.
-		for (const w of unknownFieldWarnings(table, { where: whereSpec, sort: sortSpec, columns: columnsSpec })) {
+		for (const w of unknownFieldWarnings(table, {
+			where: whereSpec,
+			sort: sortSpec,
+			columns: columnsSpec,
+		})) {
 			ctx.warn(`data "${src}": ${w}`, page.url);
 		}
 
@@ -398,7 +440,11 @@ function resolveDataToNodes(
 		for (const w of warnings) ctx.warn(`data "${src}": ${w}`, page.url);
 		const sorted = applySort(filtered, sortSpec);
 		const { table: selected, sources } = applyColumns(sorted, columnsSpec);
-		const projected: DataTable = applyLimitOffset(selected, numberAttr(a.limit), numberAttr(a.offset));
+		const projected: DataTable = applyLimitOffset(
+			selected,
+			numberAttr(a.limit),
+			numberAttr(a.offset),
+		);
 
 		// A filter that legitimately matched nothing renders nothing, silently.
 		// Asking real data a question with no answer today is normal — a page
@@ -422,9 +468,9 @@ function resolveDataToNodes(
 			const cells = splitCells(body);
 			if (cells.length !== headers.length) {
 				throw new DataSourceError(
-					`\`headers\` names ${headers.length} column${headers.length === 1 ? '' : 's'} but the body has `
-					+ `${cells.length} \`---\`-delimited cell${cells.length === 1 ? '' : 's'}. `
-					+ 'Separate each cell with a `---` line; the counts must match.',
+					`\`headers\` names ${headers.length} column${headers.length === 1 ? '' : 's'} but the body has ` +
+						`${cells.length} \`---\`-delimited cell${cells.length === 1 ? '' : 's'}. ` +
+						'Separate each cell with a `---` line; the counts must match.',
 				);
 			}
 			const rows = rowObjects(typed).map((row) =>
@@ -440,17 +486,18 @@ function resolveDataToNodes(
 		if (numericCols.length > 0 || textCols.length > 0) {
 			ctx.warn(
 				`data "${src}": \`numeric\` / \`text\` set alongside a per-row body — they type the ` +
-				'`data-value` attribute on table cells, and a body emits no cells. Numeric columns are ' +
-				'still bound to `$row` as numbers.',
+					'`data-value` attribute on table cells, and a body emits no cells. Numeric columns are ' +
+					'still bound to `$row` as numbers.',
 				page.url,
 			);
 		}
 
 		return rowObjects(typed).flatMap((row) => body.map((child) => bindRow(child, row)));
 	} catch (err) {
-		const msg = err instanceof DataSourceError
-			? err.message
-			: `unexpected failure — ${err instanceof Error ? err.message : String(err)}`;
+		const msg =
+			err instanceof DataSourceError
+				? err.message
+				: `unexpected failure — ${err instanceof Error ? err.message : String(err)}`;
 		ctx.error(`data "${src}": ${msg}`, page.url);
 		return [emitErrorNode(`data error: ${msg}`)];
 	}

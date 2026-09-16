@@ -13,21 +13,71 @@ export const COLLECTION_SENTINEL = '__collection-sentinel';
  */
 export const collection = createContentModelSchema({
 	attributes: {
-		type: { type: String, required: false, default: '', description: 'Entity type(s), comma-separated.' },
-		filter: { type: String, required: false, default: '', description: 'field:value clauses (SPEC-070 grammar).' },
-		sort: { type: String, required: false, default: '', description: 'Sort field (prefix - for descending).' },
+		type: {
+			type: String,
+			required: false,
+			default: '',
+			description: 'Entity type(s), comma-separated.',
+		},
+		filter: {
+			type: String,
+			required: false,
+			default: '',
+			description: 'field:value clauses (SPEC-070 grammar).',
+		},
+		sort: {
+			type: String,
+			required: false,
+			default: '',
+			description: 'Sort field (prefix - for descending).',
+		},
 		group: { type: String, required: false, default: '', description: 'Group-by field.' },
-		limit: { type: String, required: false, default: '', description: 'Max items.' },
-		show: { type: String, required: false, default: '', description: 'Alias for type (entity types to include).' },
-		fields: { type: String, required: false, default: '', description: 'Comma-separated data fields to project.' },
-		layout: { type: String, required: false, default: 'list', description: 'Arrangement: list (stacked) | grid (multi-column) | table (aligned columns). Item chrome comes from the item — the no-body built-in, or a rune like {% card %} in the body template.' },
-		'group-display': { type: String, required: false, default: 'headings', matches: ['headings', 'accordion'], description: 'How groups are presented when `group` is set: headings (default) or accordion (collapsible native <details> panels, styled like the accordion rune, with a per-group count).' },
-		empty: { type: String, required: false, default: '', description: 'Fallback text shown when the query yields nothing (no-body form; body-template form uses a fallback zone). Absent → render nothing.' },
+		// A count, consumed as `Number(limitRaw)` in `collection-resolve.ts`, and
+		// written unquoted everywhere it is documented (`limit=5`, `limit=20`).
+		// It was declared `String`, so SPEC-132's validation reported the rune's
+		// own doc page against its own schema. The plan plugin's `backlog` and
+		// `plan-activity` already declare `Number`; this aligns core with them.
+		limit: { type: Number, required: false, description: 'Max items.' },
+		show: {
+			type: String,
+			required: false,
+			default: '',
+			description: 'Alias for type (entity types to include).',
+		},
+		fields: {
+			type: String,
+			required: false,
+			default: '',
+			description: 'Comma-separated data fields to project.',
+		},
+		layout: {
+			type: String,
+			required: false,
+			default: 'list',
+			description:
+				'Arrangement: list (stacked) | grid (multi-column) | table (aligned columns). Item chrome comes from the item — the no-body built-in, or a rune like {% card %} in the body template.',
+		},
+		'group-display': {
+			type: String,
+			required: false,
+			default: 'headings',
+			matches: ['headings', 'accordion'],
+			description:
+				'How groups are presented when `group` is set: headings (default) or accordion (collapsible native <details> panels, styled like the accordion rune, with a per-group count).',
+		},
+		empty: {
+			type: String,
+			required: false,
+			default: '',
+			description:
+				'Fallback text shown when the query yields nothing (no-body form; body-template form uses a fallback zone). Absent → render nothing.',
+		},
 	},
 	deferBody: true,
 	contentModel: { type: 'sequence', fields: [] },
 	transform(_resolved, attrs) {
-		const meta = (field: string, content: string) => new Tag('meta', { 'data-field': field, content });
+		const meta = (field: string, content: string) =>
+			new Tag('meta', { 'data-field': field, content });
 		const bodySource = readDeferredBody(attrs) ?? '';
 
 		const metas = [

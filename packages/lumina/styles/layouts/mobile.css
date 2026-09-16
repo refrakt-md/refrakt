@@ -1,72 +1,71 @@
 @layer skin {
-/* Shared mobile UI — menu button, panel docked below header, close */
+	/* Shared mobile UI — menu button, panel docked below header, close */
 
-/* ---- Mobile menu button (hidden on desktop) ---- */
-.rf-mobile-menu-btn {
-	background: none;
-	border: none;
-	padding: 0.25rem;
-	cursor: pointer;
-	color: var(--rf-color-muted);
-	line-height: 0;
-}
-.rf-mobile-menu-btn:hover {
-	color: var(--rf-color-text);
-}
+	/* ---- Mobile menu button (hidden on desktop) ---- */
+	.rf-mobile-menu-btn {
+		background: none;
+		border: none;
+		padding: 0.25rem;
+		cursor: pointer;
+		color: var(--rf-color-muted);
+		line-height: 0;
+	}
+	.rf-mobile-menu-btn:hover {
+		color: var(--rf-color-text);
+	}
 
-/* ---- Mobile panel — docks below the header ----
+	/* ---- Mobile panel — docks below the header ----
    The header height is fixed by --rf-header-height (default 3.5rem to
    match the rendered chrome height — 0.625rem padding + 2rem logo +
    line-box rounding). Layouts with a taller header set the variable on
    their layout root so the panel — a sibling of the header — inherits. */
-.rf-mobile-panel {
-	background: var(--rf-color-bg, #fff);
-}
-/* Layout-specific panels (e.g. the docs sidebar-nav panel that sits
+	.rf-mobile-panel {
+		background: var(--rf-color-bg, #fff);
+	}
+	/* Layout-specific panels (e.g. the docs sidebar-nav panel that sits
    under the docs header *and* toolbar) override `top` in their own
    layout CSS. */
-.rf-mobile-panel__nav {
-	padding: 1.5rem;
-}
-.rf-mobile-panel__nav p {
-	margin: 0;
-}
-/* Panel items — top-level links and group items render uniformly. The
+	.rf-mobile-panel__nav {
+		padding: 1.5rem;
+	}
+	.rf-mobile-panel__nav p {
+		margin: 0;
+	}
+	/* Panel items — top-level links and group items render uniformly. The
    selectors below need to beat nav.css's nested-columns mobile overrides
    ((0,4,0)) on equal source position (nav.css is imported later than
    mobile.css in index.css), so the columns-context selectors carry
    (0,5,0) by including `.rf-nav-group__panel` in the chain. */
-.rf-mobile-panel__nav a,
-.rf-mobile-panel .rf-nav--menubar .rf-nav__top-level .rf-nav-item__link,
-.rf-mobile-panel .rf-nav--menubar .rf-nav-group .rf-nav-item__link,
-.rf-mobile-panel .rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link {
-	padding: 0;
-	font-size: var(--rf-text-2xl);
-	font-weight: var(--rf-weight-bold);
-	color: var(--rf-color-text);
-	text-decoration: none;
-	background: transparent;
-	border: 0;
-}
-.rf-mobile-panel__nav a:hover,
-.rf-mobile-panel .rf-nav--menubar .rf-nav__top-level .rf-nav-item__link:hover,
-.rf-mobile-panel .rf-nav--menubar .rf-nav-group .rf-nav-item__link:hover,
-.rf-mobile-panel .rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link:hover {
-	color: var(--rf-color-primary, var(--rf-color-text));
-	background: transparent;
-	text-decoration: none;
-}
-/* Group headings inside the panel — flush with items (no horizontal
+	.rf-mobile-panel__nav a,
+	.rf-mobile-panel .rf-nav--menubar .rf-nav__top-level .rf-nav-item__link,
+	.rf-mobile-panel .rf-nav--menubar .rf-nav-group .rf-nav-item__link,
+	.rf-mobile-panel .rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link {
+		padding: 0;
+		font-size: var(--rf-text-2xl);
+		font-weight: var(--rf-weight-bold);
+		color: var(--rf-color-text);
+		text-decoration: none;
+		background: transparent;
+		border: 0;
+	}
+	.rf-mobile-panel__nav a:hover,
+	.rf-mobile-panel .rf-nav--menubar .rf-nav__top-level .rf-nav-item__link:hover,
+	.rf-mobile-panel .rf-nav--menubar .rf-nav-group .rf-nav-item__link:hover,
+	.rf-mobile-panel .rf-nav--menubar .rf-nav-group__panel .rf-nav--columns .rf-nav-item__link:hover {
+		color: var(--rf-color-primary, var(--rf-color-text));
+		background: transparent;
+		text-decoration: none;
+	}
+	/* Group headings inside the panel — flush with items (no horizontal
    padding) and breathing room above so each group reads as a section. */
-.rf-mobile-panel .rf-nav--menubar .rf-nav-group h2,
-.rf-mobile-panel .rf-nav--menubar .rf-nav-group h3 {
-	padding: 1.5rem 0 0.25rem;
-}
-/* Nested column collapse for the menubar drawer is handled in nav.css's
+	.rf-mobile-panel .rf-nav--menubar .rf-nav-group h2,
+	.rf-mobile-panel .rf-nav--menubar .rf-nav-group h3 {
+		padding: 1.5rem 0 0.25rem;
+	}
+	/* Nested column collapse for the menubar drawer is handled in nav.css's
    ≤768px block (it already resets grid-template-columns and the rich-panel
    min-width rules). */
-.rf-mobile-panel__body {
-	padding: 1rem 1.5rem;
-}
-
+	.rf-mobile-panel__body {
+		padding: 1rem 1.5rem;
+	}
 }

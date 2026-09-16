@@ -12,8 +12,20 @@ export interface RendererProps {
 }
 
 const VOID_ELEMENTS = new Set([
-	'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
-	'link', 'meta', 'param', 'source', 'track', 'wbr',
+	'area',
+	'base',
+	'br',
+	'col',
+	'embed',
+	'hr',
+	'img',
+	'input',
+	'link',
+	'meta',
+	'param',
+	'source',
+	'track',
+	'wbr',
 ]);
 
 /**
@@ -27,7 +39,10 @@ function toReactProps(attrs: Record<string, any>): Record<string, any> {
 	const result: Record<string, any> = {};
 	for (const [k, v] of Object.entries(attrs)) {
 		if (k === '$$mdtype' || v === undefined || v === null || v === false) continue;
-		if (k === 'class') { result.className = v; continue; }
+		if (k === 'class') {
+			result.className = v;
+			continue;
+		}
 		result[k] = v === true ? '' : v;
 	}
 	return result;
@@ -56,7 +71,9 @@ export function Renderer({ node, components, elements }: RendererProps): ReactNo
 	if (typeof node === 'number') return String(node);
 
 	if (Array.isArray(node)) {
-		return createElement(Fragment, null,
+		return createElement(
+			Fragment,
+			null,
 			...node.map((child, i) =>
 				createElement(Renderer, { key: i, node: child, components, elements }),
 			),
@@ -75,7 +92,7 @@ export function Renderer({ node, components, elements }: RendererProps): ReactNo
 		// Convert named refs to ReactNode values (pre-rendered HTML)
 		const refNodes: Record<string, ReactNode> = {};
 		for (const [name, tags] of Object.entries(iface.refs)) {
-			const html = tags.map(t => renderToHtml(t)).join('');
+			const html = tags.map((t) => renderToHtml(t)).join('');
 			refNodes[name] = createElement('div', {
 				'data-ref': name,
 				dangerouslySetInnerHTML: { __html: html },
@@ -83,13 +100,16 @@ export function Renderer({ node, components, elements }: RendererProps): ReactNo
 		}
 
 		// Convert anonymous children to ReactNode
-		const childContent = iface.children.length > 0
-			? createElement(Fragment, null,
-				...iface.children.map((child, i) =>
-					createElement(Renderer, { key: i, node: child, components, elements }),
-				),
-			)
-			: undefined;
+		const childContent =
+			iface.children.length > 0
+				? createElement(
+						Fragment,
+						null,
+						...iface.children.map((child, i) =>
+							createElement(Renderer, { key: i, node: child, components, elements }),
+						),
+					)
+				: undefined;
 
 		return createElement(Component, {
 			...iface.properties,
@@ -103,7 +123,9 @@ export function Renderer({ node, components, elements }: RendererProps): ReactNo
 	const ElementOverride = elements?.[node.name];
 
 	if (ElementOverride) {
-		return createElement(ElementOverride, { tag: node },
+		return createElement(
+			ElementOverride,
+			{ tag: node },
 			...node.children.map((child, i) =>
 				createElement(Renderer, { key: i, node: child, components, elements }),
 			),
@@ -119,7 +141,9 @@ export function Renderer({ node, components, elements }: RendererProps): ReactNo
 
 	// Null-named tags (Markdoc document root) — render children without wrapper
 	if (!node.name) {
-		return createElement(Fragment, null,
+		return createElement(
+			Fragment,
+			null,
 			...node.children.map((child, i) =>
 				createElement(Renderer, { key: i, node: child, components, elements }),
 			),
@@ -134,10 +158,12 @@ export function Renderer({ node, components, elements }: RendererProps): ReactNo
 	// Raw HTML content (code blocks, raw-html attribute)
 	const isRaw = node.attributes?.['data-codeblock'] || node.attributes?.['data-raw-html'];
 	if (isRaw) {
-		const html = node.children.map(child => {
-			if (typeof child === 'string') return child;
-			return renderToHtml(child);
-		}).join('');
+		const html = node.children
+			.map((child) => {
+				if (typeof child === 'string') return child;
+				return renderToHtml(child);
+			})
+			.join('');
 		return createElement(node.name, {
 			...toReactProps(node.attributes),
 			dangerouslySetInnerHTML: { __html: html },
@@ -145,7 +171,9 @@ export function Renderer({ node, components, elements }: RendererProps): ReactNo
 	}
 
 	// Regular HTML element — recursively render children
-	return createElement(node.name, toReactProps(node.attributes),
+	return createElement(
+		node.name,
+		toReactProps(node.attributes),
 		...node.children.map((child, i) =>
 			createElement(Renderer, { key: i, node: child, components, elements }),
 		),

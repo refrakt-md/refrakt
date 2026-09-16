@@ -65,7 +65,12 @@ describe('EntityRegistryImpl', () => {
 		const registry = new EntityRegistryImpl();
 		registry.register({ type: 'page', id: '/a/', sourceUrl: '/a/', data: { title: 'A' } });
 		registry.register({ type: 'page', id: '/b/', sourceUrl: '/b/', data: { title: 'B' } });
-		registry.register({ type: 'heading', id: '/a/#intro', sourceUrl: '/a/', data: { text: 'Intro' } });
+		registry.register({
+			type: 'heading',
+			id: '/a/#intro',
+			sourceUrl: '/a/',
+			data: { text: 'Intro' },
+		});
 
 		const pages = registry.getAll('page');
 		expect(pages).toHaveLength(2);
@@ -100,8 +105,18 @@ describe('EntityRegistryImpl', () => {
 
 	it('last-writer-wins on id collision', () => {
 		const registry = new EntityRegistryImpl();
-		registry.register({ type: 'page', id: '/docs/', sourceUrl: '/docs/', data: { title: 'First' } });
-		registry.register({ type: 'page', id: '/docs/', sourceUrl: '/docs/', data: { title: 'Second' } });
+		registry.register({
+			type: 'page',
+			id: '/docs/',
+			sourceUrl: '/docs/',
+			data: { title: 'First' },
+		});
+		registry.register({
+			type: 'page',
+			id: '/docs/',
+			sourceUrl: '/docs/',
+			data: { title: 'Second' },
+		});
 
 		const result = registry.getById('page', '/docs/');
 		expect(result?.data.title).toBe('Second');
@@ -191,10 +206,14 @@ describe('EntityRegistryImpl', () => {
 			});
 
 			// From /auth-guide/, the page-scoped entry wins.
-			expect(registry.getById('term', 'oauth', '/auth-guide/')?.data.title).toBe('Page-local OAuth note');
+			expect(registry.getById('term', 'oauth', '/auth-guide/')?.data.title).toBe(
+				'Page-local OAuth note',
+			);
 
 			// From any other page, the site-scoped entry is the fallback.
-			expect(registry.getById('term', 'oauth', '/some-other-page/')?.data.title).toBe('Site-scoped OAuth term');
+			expect(registry.getById('term', 'oauth', '/some-other-page/')?.data.title).toBe(
+				'Site-scoped OAuth term',
+			);
 
 			// Without a pageUrl, only the site-scoped entry is reachable.
 			expect(registry.getById('term', 'oauth')?.data.title).toBe('Site-scoped OAuth term');
@@ -219,7 +238,7 @@ describe('EntityRegistryImpl', () => {
 
 			const drawers = registry.getByUrl('drawer', '/page-a/');
 			expect(drawers).toHaveLength(2);
-			expect(drawers.map(d => d.id).sort()).toEqual(['auth', 'billing']);
+			expect(drawers.map((d) => d.id).sort()).toEqual(['auth', 'billing']);
 		});
 
 		it('re-registering the same (type, id, sourceUrl) page-scoped entry overwrites the prior one', () => {

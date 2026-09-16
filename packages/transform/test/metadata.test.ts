@@ -27,7 +27,9 @@ function findByDataName(node: SerializedTag, name: string): SerializedTag | unde
 describe('metadata dimensions', () => {
 	it('emits data-meta-type on a structure entry with metaType', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Recipe: {
 					block: 'recipe',
@@ -57,7 +59,9 @@ describe('metadata dimensions', () => {
 
 	it('emits data-meta-sentiment when modifier value matches sentimentMap', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Work: {
 					block: 'work',
@@ -92,7 +96,9 @@ describe('metadata dimensions', () => {
 
 	it('does not emit data-meta-sentiment when modifier value is not in sentimentMap', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Work: {
 					block: 'work',
@@ -125,7 +131,9 @@ describe('metadata dimensions', () => {
 
 	it('emits temporal metaType correctly', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Recipe: {
 					block: 'recipe',
@@ -156,7 +164,9 @@ describe('metadata dimensions', () => {
 
 	it('emits tag metaType correctly', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Lore: {
 					block: 'lore',
@@ -184,7 +194,9 @@ describe('metadata dimensions', () => {
 
 	it('emits id metaType correctly', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Spec: {
 					block: 'spec',
@@ -213,7 +225,9 @@ describe('metadata dimensions', () => {
 
 	it('structure entries without metadata fields continue to work unchanged', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Hint: {
 					block: 'hint',
@@ -248,7 +262,9 @@ describe('metadata dimensions', () => {
 			backlog: 'neutral' as const,
 		};
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Task: {
 					block: 'task',
@@ -278,7 +294,9 @@ describe('metadata dimensions', () => {
 
 	it('metadata attributes coexist with existing data attributes and BEM classes', () => {
 		const config: ThemeConfig = {
-			prefix: 'rf', tokenPrefix: '--rf', icons: {},
+			prefix: 'rf',
+			tokenPrefix: '--rf',
+			icons: {},
 			runes: {
 				Api: {
 					block: 'api',

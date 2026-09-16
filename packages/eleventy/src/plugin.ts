@@ -15,12 +15,7 @@ import type { RefraktEleventyOptions } from './types.js';
  * rebuild completes (~1–2s on a typical site).
  */
 export function refraktPlugin(eleventyConfig: any, options: RefraktEleventyOptions = {}): void {
-	const {
-		cssPrefix = '/css',
-		jsPrefix = '/js',
-		contentDir,
-		examplesDir,
-	} = options;
+	const { cssPrefix = '/css', jsPrefix = '/js', contentDir, examplesDir } = options;
 
 	// Passthrough copy theme CSS from node_modules
 	if (options.cssFiles) {

@@ -149,13 +149,15 @@ Footer note.          <!-- footer -->
 
 ## Frame & elevation
 
-A bento cell exposes the same two surfaces as `card` ([surface model](/runes/surfaces)): `elevation` floats the cell box (`box-shadow`), and `frame` chrome decorates the cell's media zone (aspect, crop anchor, silhouette shadow, oversize). `frame-aspect` and `frame-anchor` feed bento's existing media knobs (`--bento-media-aspect` / `--bento-media-anchor`) rather than a parallel mechanism.
+`elevation` floats the cell box (`box-shadow`). Because heading-sugar cells have no per-cell attribute surface, **grid-level `elevation`** on the `bento` cascades to every cell as a default — mirroring `media-position`; a cell's own value still wins. The grid never takes this chrome itself (the cells are the visual cards) — so `{% bento elevation="raised" %}` lifts each cell, not the grid box.
 
-Because heading-sugar cells have no per-cell attribute surface, **grid-level `frame`** (preset + facets) **and `elevation`** on the `bento` cascade to every cell as a default — mirroring `media-position`; a cell's own value still wins. The grid never takes this chrome itself (the cells are the visual cards) — so `{% bento elevation="raised" %}` lifts each cell, not the grid box.
+{% hint type="note" %}
+The `frame` axis is **not** available on `bento` — see the universal attribute table below. `frame-aspect` and `frame-anchor` written on a bento are accepted by the parser and then dropped: the engine emits no `--bento-media-aspect` or `--bento-media-anchor` from them. Use `media-ratio` for the cell aspect instead. Whether the `frame` cascade described for `card` should extend here is tracked as BUG-017.
+{% /hint %}
 
 {% preview source=true %}
 
-{% bento columns=6 elevation="raised" frame-aspect="16/9" frame-anchor="center" %}
+{% bento columns=6 elevation="raised" %}
 # Coral reef
 ![A coral reef](https://assets.refrakt.md/figure-coral-reef.jpg)
 ---

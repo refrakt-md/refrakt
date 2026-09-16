@@ -96,7 +96,16 @@ export const CHAT_MODES: Record<ChatMode, ChatModeDefinition> = {
 		id: 'design',
 		label: 'Design',
 		description: 'Design systems, tokens, and visual prototyping',
-		runes: [...CORE_RUNES, 'sandbox', 'preview', 'swatch', 'palette', 'typography', 'spacing', 'design-context'],
+		runes: [
+			...CORE_RUNES,
+			'sandbox',
+			'preview',
+			'swatch',
+			'palette',
+			'typography',
+			'spacing',
+			'design-context',
+		],
 	},
 	full: {
 		id: 'full',

@@ -33,11 +33,11 @@ For professional developers.
 
 		expect(result).toBeDefined();
 
-		const pricingTag = findTag(result as any, t => t.attributes['data-rune'] === 'pricing');
+		const pricingTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'pricing');
 		expect(pricingTag).toBeDefined();
 		expect(pricingTag!.name).toBe('section');
 
-		const tiers = findAllTags(pricingTag!, t => t.attributes['data-rune'] === 'tier');
+		const tiers = findAllTags(pricingTag!, (t) => t.attributes['data-rune'] === 'tier');
 		expect(tiers.length).toBe(2);
 	});
 
@@ -54,10 +54,10 @@ All features included.
 {% /tier %}
 {% /pricing %}`);
 
-		const pricingTag = findTag(result as any, t => t.attributes['data-rune'] === 'pricing');
+		const pricingTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'pricing');
 		expect(pricingTag).toBeDefined();
 
-		const featured = findTag(pricingTag!, t => t.attributes['data-rune'] === 'featured-tier');
+		const featured = findTag(pricingTag!, (t) => t.attributes['data-rune'] === 'featured-tier');
 		expect(featured).toBeDefined();
 	});
 
@@ -68,10 +68,10 @@ Features.
 {% /tier %}
 {% /pricing %}`);
 
-		const tier = findTag(result as any, t => t.attributes['data-rune'] === 'tier');
+		const tier = findTag(result as any, (t) => t.attributes['data-rune'] === 'tier');
 		expect(tier).toBeDefined();
 
-		const priceTag = findTag(tier!, t => t.attributes['data-name'] === 'price');
+		const priceTag = findTag(tier!, (t) => t.attributes['data-name'] === 'price');
 		expect(priceTag).toBeDefined();
 		expect(priceTag!.children[0]).toBe('$5');
 	});
@@ -87,26 +87,26 @@ Features.
 - Priority support
 {% /pricing %}`);
 
-		const pricingTag = findTag(result as any, t => t.attributes['data-rune'] === 'pricing');
+		const pricingTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'pricing');
 		expect(pricingTag).toBeDefined();
 
-		const tiers = findAllTags(pricingTag!, t => t.attributes['data-rune'] === 'tier');
+		const tiers = findAllTags(pricingTag!, (t) => t.attributes['data-rune'] === 'tier');
 		expect(tiers.length).toBe(2);
 
 		// Check first tier
-		const nameTag0 = findTag(tiers[0], t => t.attributes['data-name'] === 'name');
+		const nameTag0 = findTag(tiers[0], (t) => t.attributes['data-name'] === 'name');
 		expect(nameTag0).toBeDefined();
 		expect(nameTag0!.children[0]).toBe('Free');
 
-		const priceTag0 = findTag(tiers[0], t => t.attributes['data-name'] === 'price');
+		const priceTag0 = findTag(tiers[0], (t) => t.attributes['data-name'] === 'price');
 		expect(priceTag0).toBeDefined();
 		expect(priceTag0!.children[0]).toBe('$0');
 
 		// Check second tier
-		const nameTag1 = findTag(tiers[1], t => t.attributes['data-name'] === 'name');
+		const nameTag1 = findTag(tiers[1], (t) => t.attributes['data-name'] === 'name');
 		expect(nameTag1!.children[0]).toBe('Pro');
 
-		const priceTag1 = findTag(tiers[1], t => t.attributes['data-name'] === 'price');
+		const priceTag1 = findTag(tiers[1], (t) => t.attributes['data-name'] === 'price');
 		expect(priceTag1!.children[0]).toBe('$19/mo');
 	});
 
@@ -121,8 +121,8 @@ Features.
 - Unlimited projects
 {% /pricing %}`);
 
-		const pricingTag = findTag(result as any, t => t.attributes['data-rune'] === 'pricing');
-		const tiers = findAllTags(pricingTag!, t => t.attributes['data-rune'] === 'tier');
+		const pricingTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'pricing');
+		const tiers = findAllTags(pricingTag!, (t) => t.attributes['data-rune'] === 'tier');
 		expect(tiers.length).toBe(2);
 	});
 
@@ -138,8 +138,8 @@ Standard.
 Premium.
 {% /pricing %}`);
 
-		const pricingTag = findTag(result as any, t => t.attributes['data-rune'] === 'pricing');
-		const tiers = findAllTags(pricingTag!, t => t.attributes['data-rune'] === 'tier');
+		const pricingTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'pricing');
+		const tiers = findAllTags(pricingTag!, (t) => t.attributes['data-rune'] === 'tier');
 		expect(tiers.length).toBe(3);
 	});
 
@@ -152,8 +152,8 @@ For professionals.
 {% /tier %}
 {% /pricing %}`);
 
-		const tier = findTag(result as any, t => t.attributes['data-rune'] === 'tier');
-		const urlTag = findTag(tier!, t => t.attributes['data-field'] === 'url');
+		const tier = findTag(result as any, (t) => t.attributes['data-rune'] === 'tier');
+		const urlTag = findTag(tier!, (t) => t.attributes['data-field'] === 'url');
 		expect(urlTag).toBeDefined();
 	});
 
@@ -166,8 +166,8 @@ For professionals who need more power.
 {% /tier %}
 {% /pricing %}`);
 
-		const tier = findTag(result as any, t => t.attributes['data-rune'] === 'tier');
-		const descTag = findTag(tier!, t => t.attributes['data-field'] === 'description');
+		const tier = findTag(result as any, (t) => t.attributes['data-rune'] === 'tier');
+		const descTag = findTag(tier!, (t) => t.attributes['data-field'] === 'description');
 		expect(descTag).toBeDefined();
 	});
 
@@ -186,8 +186,11 @@ Enterprise.
 {% /tier %}
 {% /pricing %}`);
 
-		const pricingTag = findTag(result as any, t => t.attributes['data-rune'] === 'pricing');
-		const tiersList = findTag(pricingTag!, t => t.name === 'ul' && t.attributes['data-columns'] !== undefined);
+		const pricingTag = findTag(result as any, (t) => t.attributes['data-rune'] === 'pricing');
+		const tiersList = findTag(
+			pricingTag!,
+			(t) => t.name === 'ul' && t.attributes['data-columns'] !== undefined,
+		);
 		expect(tiersList).toBeDefined();
 		expect(tiersList!.attributes['data-columns']).toBe(3);
 	});
@@ -199,7 +202,7 @@ Features.
 {% /tier %}
 {% /pricing %}`);
 
-		const tier = findTag(result as any, t => t.attributes['data-rune'] === 'tier');
+		const tier = findTag(result as any, (t) => t.attributes['data-rune'] === 'tier');
 		expect(fields(tier).currency).toBe('EUR');
 	});
 

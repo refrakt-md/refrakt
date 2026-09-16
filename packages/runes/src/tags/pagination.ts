@@ -7,18 +7,41 @@ export const PAGINATION_AUTO_SENTINEL = '__pagination-auto';
 
 export const pagination = createContentModelSchema({
 	attributes: {
-		auto: { type: Boolean, required: false, default: false, description: 'Derive prev/next from sibling page order' },
+		auto: {
+			type: Boolean,
+			required: false,
+			default: false,
+			description: 'Derive prev/next from sibling page order',
+		},
 		prev: { type: String, required: false, description: 'Explicit previous page (slug or URL)' },
 		next: { type: String, required: false, description: 'Explicit next page (slug or URL)' },
-		scope: { type: String, required: false, matches: ['siblings', 'section'], default: 'siblings', description: 'Auto-mode scope: direct siblings, or all pages in the current top-level section' },
-		'prev-label': { type: String, required: false, description: 'Override label for the previous link' },
-		'next-label': { type: String, required: false, description: 'Override label for the next link' },
+		scope: {
+			type: String,
+			required: false,
+			matches: ['siblings', 'section'],
+			default: 'siblings',
+			description:
+				'Auto-mode scope: direct siblings, or all pages in the current top-level section',
+		},
+		'prev-label': {
+			type: String,
+			required: false,
+			description: 'Override label for the previous link',
+		},
+		'next-label': {
+			type: String,
+			required: false,
+			description: 'Override label for the next link',
+		},
 	},
 	contentModel: { type: 'sequence', fields: [] },
 	selfClosing: true,
 	transform(_resolved, attrs, _config) {
 		if (attrs.auto) {
-			const sentinelMeta = new Tag('meta', { 'data-field': PAGINATION_AUTO_SENTINEL, content: 'true' });
+			const sentinelMeta = new Tag('meta', {
+				'data-field': PAGINATION_AUTO_SENTINEL,
+				content: 'true',
+			});
 			const scopeMeta = attrs.scope
 				? new Tag('meta', { 'data-field': 'scope', content: String(attrs.scope) })
 				: null;
@@ -28,7 +51,9 @@ export const pagination = createContentModelSchema({
 			const nextLabelMeta = attrs['next-label']
 				? new Tag('meta', { 'data-field': 'next-label', content: String(attrs['next-label']) })
 				: null;
-			const metas = [sentinelMeta, scopeMeta, prevLabelMeta, nextLabelMeta].filter(Boolean) as any[];
+			const metas = [sentinelMeta, scopeMeta, prevLabelMeta, nextLabelMeta].filter(
+				Boolean,
+			) as any[];
 			return createComponentRenderable({
 				rune: 'pagination',
 				tag: 'nav',

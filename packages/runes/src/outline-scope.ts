@@ -124,9 +124,10 @@ function walkAndScopeHeadings(
 	const tag = node as InstanceType<typeof Tag>;
 
 	const attrs = tag.attributes as Record<string, unknown> | undefined;
-	const ownScope = attrs && typeof attrs[OUTLINE_SCOPE_ATTR] === 'string'
-		? (attrs[OUTLINE_SCOPE_ATTR] as string)
-		: undefined;
+	const ownScope =
+		attrs && typeof attrs[OUTLINE_SCOPE_ATTR] === 'string'
+			? (attrs[OUTLINE_SCOPE_ATTR] as string)
+			: undefined;
 
 	if (HEADING_TAG_RE.test(tag.name) && scopeStack.length > 0) {
 		const scope = scopeStack[scopeStack.length - 1];
@@ -140,9 +141,7 @@ function walkAndScopeHeadings(
 		return;
 	}
 
-	const childScopeStack = ownScope !== undefined
-		? [...scopeStack, ownScope]
-		: scopeStack;
+	const childScopeStack = ownScope !== undefined ? [...scopeStack, ownScope] : scopeStack;
 
 	if (!tag.children || tag.children.length === 0) return;
 	for (const c of tag.children) {
@@ -202,10 +201,7 @@ function filterTocItems_recurse(node: unknown, scopedIds: Set<string>): void {
 	for (const c of tag.children ?? []) filterTocItems_recurse(c, scopedIds);
 }
 
-function liReferencesScopedHeading(
-	li: InstanceType<typeof Tag>,
-	scopedIds: Set<string>,
-): boolean {
+function liReferencesScopedHeading(li: InstanceType<typeof Tag>, scopedIds: Set<string>): boolean {
 	for (const c of li.children ?? []) {
 		if (!Tag.isTag(c as never)) continue;
 		const tag = c as InstanceType<typeof Tag>;

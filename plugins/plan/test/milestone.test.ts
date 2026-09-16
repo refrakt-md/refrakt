@@ -11,7 +11,7 @@ describe('milestone tag', () => {
 - Publish layout spec
 {% /milestone %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'milestone');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'milestone');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('section');
 	});
@@ -21,7 +21,7 @@ describe('milestone tag', () => {
 - Launch the product
 {% /milestone %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'milestone');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'milestone');
 		expect(fields(tag).name).toBe('v1.0');
 		expect(fields(tag).target).toBe('2026-06-01');
 		expect(fields(tag).status).toBe('planning');
@@ -32,7 +32,7 @@ describe('milestone tag', () => {
 - Big goals
 {% /milestone %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'milestone');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'milestone');
 		expect(tag).toBeDefined();
 
 		expect(fields(tag).status).toBe('planning');

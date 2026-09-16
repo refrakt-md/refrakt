@@ -2,8 +2,15 @@ import { readFileSync } from 'node:fs';
 import { resolve, relative } from 'node:path';
 import { createRequire } from 'node:module';
 import type {
-	SymbolDoc, SymbolKind, SymbolParameter, SymbolReturn, SymbolThrows,
-	SymbolGroupDoc, SymbolMemberDoc, SymbolExtractor, ExtractorResult,
+	SymbolDoc,
+	SymbolKind,
+	SymbolParameter,
+	SymbolReturn,
+	SymbolThrows,
+	SymbolGroupDoc,
+	SymbolMemberDoc,
+	SymbolExtractor,
+	ExtractorResult,
 } from './types.js';
 import { parseDocstring } from './python-docstring.js';
 
@@ -33,7 +40,7 @@ interface TSParser {
 interface TSParserClass {
 	init(): Promise<void>;
 	Language: { load(path: string): Promise<unknown> };
-	new(): TSParser;
+	new (): TSParser;
 }
 
 // ── Enum / interface base classes ────────────────────────────────────
@@ -57,8 +64,8 @@ function getDocstring(node: SyntaxNode): string {
 			// concatenated_string is also possible but rare
 			if (strNode && strNode.type === 'concatenated_string') {
 				return strNode.children
-					.filter(c => c.type === 'string')
-					.map(c => stripQuotes(c.text))
+					.filter((c) => c.type === 'string')
+					.map((c) => stripQuotes(c.text))
 					.join('');
 			}
 			break; // first statement isn't a docstring
@@ -107,7 +114,7 @@ function getDecorators(node: SyntaxNode): string[] {
 }
 
 function hasDecorator(node: SyntaxNode, name: string): boolean {
-	return getDecorators(node).some(d => d === `@${name}` || d.startsWith(`@${name}(`));
+	return getDecorators(node).some((d) => d === `@${name}` || d.startsWith(`@${name}(`));
 }
 
 function getBaseClasses(node: SyntaxNode): string[] {
@@ -155,8 +162,11 @@ function extractSingleParam(node: SyntaxNode, skipSelfCls: boolean): SymbolParam
 			return { name, type: 'Any', description: '', optional: false };
 		}
 		case 'typed_parameter': {
-			const nameNode = node.children.find(c =>
-				c.type === 'identifier' || c.type === 'list_splat_pattern' || c.type === 'dictionary_splat_pattern'
+			const nameNode = node.children.find(
+				(c) =>
+					c.type === 'identifier' ||
+					c.type === 'list_splat_pattern' ||
+					c.type === 'dictionary_splat_pattern',
 			);
 			const typeNode = node.childForFieldName('type');
 			if (!nameNode) return null;
@@ -164,10 +174,10 @@ function extractSingleParam(node: SyntaxNode, skipSelfCls: boolean): SymbolParam
 			let prefix = '';
 			if (nameNode.type === 'list_splat_pattern') {
 				prefix = '*';
-				name = nameNode.children.find(c => c.type === 'identifier')?.text ?? name;
+				name = nameNode.children.find((c) => c.type === 'identifier')?.text ?? name;
 			} else if (nameNode.type === 'dictionary_splat_pattern') {
 				prefix = '**';
-				name = nameNode.children.find(c => c.type === 'identifier')?.text ?? name;
+				name = nameNode.children.find((c) => c.type === 'identifier')?.text ?? name;
 			}
 			if (skipSelfCls && !prefix && (name === 'self' || name === 'cls')) return null;
 			return {
@@ -207,12 +217,12 @@ function extractSingleParam(node: SyntaxNode, skipSelfCls: boolean): SymbolParam
 			};
 		}
 		case 'list_splat_pattern': {
-			const inner = node.children.find(c => c.type === 'identifier');
+			const inner = node.children.find((c) => c.type === 'identifier');
 			const name = inner?.text ?? node.text.replace(/^\*/, '');
 			return { name: `*${name}`, type: 'Any', description: '', optional: true };
 		}
 		case 'dictionary_splat_pattern': {
-			const inner = node.children.find(c => c.type === 'identifier');
+			const inner = node.children.find((c) => c.type === 'identifier');
 			const name = inner?.text ?? node.text.replace(/^\*\*/, '');
 			return { name: `**${name}`, type: 'Any', description: '', optional: true };
 		}
@@ -291,7 +301,7 @@ export class PythonExtractor implements SymbolExtractor {
 
 		const require = createRequire(import.meta.url);
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const Parser = (await import('web-tree-sitter') as any).default as TSParserClass;
+		const Parser = ((await import('web-tree-sitter')) as any).default as TSParserClass;
 
 		await Parser.init();
 
@@ -320,9 +330,12 @@ export class PythonExtractor implements SymbolExtractor {
 
 		// Walk top-level statements
 		for (const child of root.children) {
-			const node = child.type === 'decorated_definition'
-				? child.namedChildren.find(c => c.type === 'function_definition' || c.type === 'class_definition')
-				: child;
+			const node =
+				child.type === 'decorated_definition'
+					? child.namedChildren.find(
+							(c) => c.type === 'function_definition' || c.type === 'class_definition',
+						)
+					: child;
 
 			if (!node) continue;
 
@@ -442,26 +455,32 @@ export class PythonExtractor implements SymbolExtractor {
 		if (kind === 'enum') {
 			const parameters = this.extractEnumMembers(node);
 			return {
-				name, kind, signature,
+				name,
+				kind,
+				signature,
 				description: docInfo?.description ?? '',
 				parameters: parameters.length > 0 ? parameters : undefined,
 				since: docInfo?.since,
 				deprecated: docInfo?.deprecated,
 				source: this.buildSourceUrl(filePath, line),
-				filePath, line,
+				filePath,
+				line,
 			};
 		}
 
 		const groups = this.extractClassMembers(node, filePath);
 
 		return {
-			name, kind, signature,
+			name,
+			kind,
+			signature,
 			description: docInfo?.description ?? '',
 			groups: groups.length > 0 ? groups : undefined,
 			since: docInfo?.since,
 			deprecated: docInfo?.deprecated,
 			source: this.buildSourceUrl(filePath, line),
-			filePath, line,
+			filePath,
+			line,
 		};
 	}
 
@@ -503,9 +522,12 @@ export class PythonExtractor implements SymbolExtractor {
 		const classMethods: SymbolMemberDoc[] = [];
 
 		for (const child of body.children) {
-			const funcNode = child.type === 'decorated_definition'
-				? child.namedChildren.find(c => c.type === 'function_definition')
-				: child.type === 'function_definition' ? child : null;
+			const funcNode =
+				child.type === 'decorated_definition'
+					? child.namedChildren.find((c) => c.type === 'function_definition')
+					: child.type === 'function_definition'
+						? child
+						: null;
 
 			if (!funcNode) continue;
 
@@ -613,7 +635,7 @@ export class PythonExtractor implements SymbolExtractor {
 		params: SymbolParameter[],
 		docParams: Map<string, { type: string; description: string }>,
 	): SymbolParameter[] {
-		return params.map(p => {
+		return params.map((p) => {
 			const cleanName = p.name.replace(/^\*{1,2}/, '');
 			const docParam = docParams.get(cleanName);
 			if (!docParam) return p;

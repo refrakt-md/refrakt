@@ -111,12 +111,14 @@ export function checkI18nBundle(
 ): I18nCheckResult {
 	const keys = Object.keys(extracted);
 	const missing: string[] = [];
-	const entries: I18nCoverageEntry[] = keys.map(key => {
+	const entries: I18nCoverageEntry[] = keys.map((key) => {
 		const translated = Object.prototype.hasOwnProperty.call(bundle, key);
 		if (!translated) missing.push(key);
 		return { key, default: extracted[key], translated };
 	});
-	const orphaned = Object.keys(bundle).filter(k => !Object.prototype.hasOwnProperty.call(extracted, k));
+	const orphaned = Object.keys(bundle).filter(
+		(k) => !Object.prototype.hasOwnProperty.call(extracted, k),
+	);
 	const total = keys.length;
 	const translatedCount = total - missing.length;
 	return {

@@ -13,15 +13,24 @@ const FRAMES: Record<string, FramePresetDefinition> = {
 
 const theme = (frames = FRAMES): FacetTheme => ({ tints: {}, backgrounds: {}, frames });
 
-const meta = (field: string, content: string) => makeTag('meta', { 'data-field': field, content }, []);
+const meta = (field: string, content: string) =>
+	makeTag('meta', { 'data-field': field, content }, []);
 
 /** A rune with a media section — the default frame target. */
 const MEDIA_RUNE: RuneConfig = { block: 'card', sections: { visual: 'media' } };
 /** A rune with no media section and no configured frameTarget — untargetable. */
 const BARE_RUNE: RuneConfig = { block: 'badge' };
 
-const ctx = (metas: Array<[string, string]>, config: RuneConfig = MEDIA_RUNE, rune = 'card'): FacetContext => ({
-	tag: makeTag('div', { 'data-rune': rune }, metas.map(([f, c]) => meta(f, c))),
+const ctx = (
+	metas: Array<[string, string]>,
+	config: RuneConfig = MEDIA_RUNE,
+	rune = 'card',
+): FacetContext => ({
+	tag: makeTag(
+		'div',
+		{ 'data-rune': rune },
+		metas.map(([f, c]) => meta(f, c)),
+	),
 	config,
 	block: `rf-${config.block}`,
 	rune,
@@ -38,29 +47,52 @@ describe('frame facet', () => {
 	});
 
 	it('resolves a named preset', () => {
-		const result = frameFacet.resolve(ctx([['frame', 'polaroid']], { ...MEDIA_RUNE, frameTarget: 'self' }));
+		const result = frameFacet.resolve(
+			ctx([['frame', 'polaroid']], { ...MEDIA_RUNE, frameTarget: 'self' }),
+		);
 		expect(result?.dataAttrs).toEqual({ 'data-frame': 'polaroid', 'data-frame-shadow': 'lg' });
 		expect(result?.styles).toEqual([['--frame-aspect', '1/1']]);
 	});
 
 	it('resolves one level of preset `extends`', () => {
-		const result = frameFacet.resolve(ctx([['frame', 'tilted']], { ...MEDIA_RUNE, frameTarget: 'self' }));
-		expect(result?.dataAttrs).toMatchObject({ 'data-frame': 'tilted', 'data-displace': 'top', 'data-frame-shadow': 'lg' });
+		const result = frameFacet.resolve(
+			ctx([['frame', 'tilted']], { ...MEDIA_RUNE, frameTarget: 'self' }),
+		);
+		expect(result?.dataAttrs).toMatchObject({
+			'data-frame': 'tilted',
+			'data-displace': 'top',
+			'data-frame-shadow': 'lg',
+		});
 	});
 
 	it('lets an inline facet override the preset', () => {
-		const result = frameFacet.resolve(ctx([['frame', 'polaroid'], ['frame-shadow', 'sm']], { ...MEDIA_RUNE, frameTarget: 'self' }));
+		const result = frameFacet.resolve(
+			ctx(
+				[
+					['frame', 'polaroid'],
+					['frame-shadow', 'sm'],
+				],
+				{ ...MEDIA_RUNE, frameTarget: 'self' },
+			),
+		);
 		expect(result?.dataAttrs?.['data-frame-shadow']).toBe('sm');
 	});
 
 	it('works from inline facets alone, with no preset', () => {
-		const result = frameFacet.resolve(ctx([['frame-aspect', '16/9']], { ...MEDIA_RUNE, frameTarget: 'self' }));
+		const result = frameFacet.resolve(
+			ctx([['frame-aspect', '16/9']], { ...MEDIA_RUNE, frameTarget: 'self' }),
+		);
 		expect(result?.styles).toEqual([['--frame-aspect', '16/9']]);
 		expect(result?.dataAttrs?.['data-frame']).toBeUndefined();
 	});
 
 	it('consumes every frame meta it read', () => {
-		const result = frameFacet.resolve(ctx([['frame', 'polaroid'], ['frame-offset', 'md']]));
+		const result = frameFacet.resolve(
+			ctx([
+				['frame', 'polaroid'],
+				['frame-offset', 'md'],
+			]),
+		);
 		expect(result?.consumes).toEqual(['frame', 'frame-offset']);
 	});
 
@@ -70,12 +102,16 @@ describe('frame facet', () => {
 		});
 
 		it('honours an explicit frameTarget: self', () => {
-			const result = frameFacet.resolve(ctx([['frame', 'polaroid']], { ...MEDIA_RUNE, frameTarget: 'self' }));
+			const result = frameFacet.resolve(
+				ctx([['frame', 'polaroid']], { ...MEDIA_RUNE, frameTarget: 'self' }),
+			);
 			expect(carryOf(result).target).toBe('self');
 		});
 
 		it('puts self-target chrome on the resolution, for the root', () => {
-			const result = frameFacet.resolve(ctx([['frame', 'polaroid']], { ...MEDIA_RUNE, frameTarget: 'self' }));
+			const result = frameFacet.resolve(
+				ctx([['frame', 'polaroid']], { ...MEDIA_RUNE, frameTarget: 'self' }),
+			);
 			expect(result?.dataAttrs).toBeDefined();
 		});
 
@@ -112,7 +148,15 @@ describe('frame facet', () => {
 
 		it('an explicit mode still wins on a bleed host', () => {
 			const config: RuneConfig = { ...MEDIA_RUNE, frameTarget: 'self', guestFit: 'bleed' };
-			const result = frameFacet.resolve(ctx([['frame-displace', 'top'], ['frame-displace-mode', 'peek']], config));
+			const result = frameFacet.resolve(
+				ctx(
+					[
+						['frame-displace', 'top'],
+						['frame-displace-mode', 'peek'],
+					],
+					config,
+				),
+			);
 			expect(result?.dataAttrs?.['data-displace-mode']).toBe('peek');
 		});
 	});
@@ -155,7 +199,9 @@ describe('frame facet', () => {
 			const c = ctx([['frame', 'polaroid']]);
 			const children = [makeTag('div', { 'data-section': 'media', style: 'color: red' }, [])];
 			frameFacet.postAssemble!(c, children, frameFacet.resolve(c)!.carry);
-			expect((children[0] as SerializedTag).attributes.style).toBe('color: red; --frame-aspect: 1/1');
+			expect((children[0] as SerializedTag).attributes.style).toBe(
+				'color: red; --frame-aspect: 1/1',
+			);
 		});
 
 		it('finds a nested media zone', () => {

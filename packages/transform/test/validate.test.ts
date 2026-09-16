@@ -46,29 +46,29 @@ describe('validateThemeConfig', () => {
 	it('fails when prefix is missing', () => {
 		const result = validateThemeConfig({ ...validConfig, prefix: '' });
 		expect(result.valid).toBe(false);
-		expect(result.errors.some(e => e.path === 'prefix')).toBe(true);
+		expect(result.errors.some((e) => e.path === 'prefix')).toBe(true);
 	});
 
 	it('fails when tokenPrefix is missing', () => {
 		const result = validateThemeConfig({ ...validConfig, tokenPrefix: undefined });
 		expect(result.valid).toBe(false);
-		expect(result.errors.some(e => e.path === 'tokenPrefix')).toBe(true);
+		expect(result.errors.some((e) => e.path === 'tokenPrefix')).toBe(true);
 	});
 
 	it('fails when runes is missing', () => {
 		const { runes, ...rest } = validConfig;
 		const result = validateThemeConfig(rest);
 		expect(result.valid).toBe(false);
-		expect(result.errors.some(e => e.path === 'runes')).toBe(true);
+		expect(result.errors.some((e) => e.path === 'runes')).toBe(true);
 	});
 
 	it('fails when a rune has no block', () => {
 		const result = validateThemeConfig({
 			...validConfig,
-			runes: { Bad: { } },
+			runes: { Bad: {} },
 		});
 		expect(result.valid).toBe(false);
-		expect(result.errors.some(e => e.path === 'runes.Bad.block')).toBe(true);
+		expect(result.errors.some((e) => e.path === 'runes.Bad.block')).toBe(true);
 	});
 
 	it('fails for invalid modifier source', () => {
@@ -82,7 +82,7 @@ describe('validateThemeConfig', () => {
 			},
 		});
 		expect(result.valid).toBe(false);
-		expect(result.errors.some(e => e.path === 'runes.Bad.modifiers.foo.source')).toBe(true);
+		expect(result.errors.some((e) => e.path === 'runes.Bad.modifiers.foo.source')).toBe(true);
 	});
 
 	it('warns when icon group is referenced but not defined', () => {
@@ -98,16 +98,14 @@ describe('validateThemeConfig', () => {
 					structure: {
 						header: {
 							tag: 'div',
-							children: [
-								{ tag: 'span', icon: { group: 'hint', variant: 'hintType' } },
-							],
+							children: [{ tag: 'span', icon: { group: 'hint', variant: 'hintType' } }],
 						},
 					},
 				},
 			},
 		});
 		expect(result.valid).toBe(true);
-		expect(result.warnings.some(w => w.message.includes('icon group "hint"'))).toBe(true);
+		expect(result.warnings.some((w) => w.message.includes('icon group "hint"'))).toBe(true);
 	});
 
 	it('warns when condition references non-existent modifier', () => {
@@ -122,16 +120,14 @@ describe('validateThemeConfig', () => {
 					structure: {
 						header: {
 							tag: 'div',
-							children: [
-								{ tag: 'span', condition: 'nonExistent' },
-							],
+							children: [{ tag: 'span', condition: 'nonExistent' }],
 						},
 					},
 				},
 			},
 		});
 		expect(result.valid).toBe(true);
-		expect(result.warnings.some(w => w.message.includes('"nonExistent"'))).toBe(true);
+		expect(result.warnings.some((w) => w.message.includes('"nonExistent"'))).toBe(true);
 	});
 
 	it('validates contentWrapper requires tag and ref', () => {
@@ -147,8 +143,8 @@ describe('validateThemeConfig', () => {
 			},
 		});
 		expect(result.valid).toBe(false);
-		expect(result.errors.some(e => e.path.includes('contentWrapper.tag'))).toBe(true);
-		expect(result.errors.some(e => e.path.includes('contentWrapper.ref'))).toBe(true);
+		expect(result.errors.some((e) => e.path.includes('contentWrapper.tag'))).toBe(true);
+		expect(result.errors.some((e) => e.path.includes('contentWrapper.ref'))).toBe(true);
 	});
 
 	it('validates staticModifiers must be string array', () => {
@@ -161,7 +157,7 @@ describe('validateThemeConfig', () => {
 			},
 		});
 		expect(result.valid).toBe(false);
-		expect(result.errors.some(e => e.path.includes('staticModifiers'))).toBe(true);
+		expect(result.errors.some((e) => e.path.includes('staticModifiers'))).toBe(true);
 	});
 
 	it('validates styles entries', () => {
@@ -181,7 +177,7 @@ describe('validateThemeConfig', () => {
 			},
 		});
 		expect(result.valid).toBe(false);
-		expect(result.errors.some(e => e.path === 'runes.Test.styles.bad')).toBe(true);
+		expect(result.errors.some((e) => e.path === 'runes.Test.styles.bad')).toBe(true);
 	});
 
 	it('validates contextModifiers values are strings', () => {
@@ -194,7 +190,7 @@ describe('validateThemeConfig', () => {
 			},
 		});
 		expect(result.valid).toBe(false);
-		expect(result.errors.some(e => e.path.includes('contextModifiers.Hero'))).toBe(true);
+		expect(result.errors.some((e) => e.path.includes('contextModifiers.Hero'))).toBe(true);
 	});
 });
 
@@ -231,10 +227,10 @@ describe('validateManifest', () => {
 	it('fails when required string fields are missing', () => {
 		const result = validateManifest({});
 		expect(result.valid).toBe(false);
-		expect(result.errors.some(e => e.path === 'name')).toBe(true);
-		expect(result.errors.some(e => e.path === 'version')).toBe(true);
-		expect(result.errors.some(e => e.path === 'target')).toBe(true);
-		expect(result.errors.some(e => e.path === 'designTokens')).toBe(true);
+		expect(result.errors.some((e) => e.path === 'name')).toBe(true);
+		expect(result.errors.some((e) => e.path === 'version')).toBe(true);
+		expect(result.errors.some((e) => e.path === 'target')).toBe(true);
+		expect(result.errors.some((e) => e.path === 'designTokens')).toBe(true);
 	});
 
 	it('validates layout entries have component and regions', () => {
@@ -243,8 +239,8 @@ describe('validateManifest', () => {
 			layouts: { bad: { regions: 'not-array' } },
 		});
 		expect(result.valid).toBe(false);
-		expect(result.errors.some(e => e.path === 'layouts.bad.component')).toBe(true);
-		expect(result.errors.some(e => e.path === 'layouts.bad.regions')).toBe(true);
+		expect(result.errors.some((e) => e.path === 'layouts.bad.component')).toBe(true);
+		expect(result.errors.some((e) => e.path === 'layouts.bad.regions')).toBe(true);
 	});
 
 	it('passes for a manifest without routeRules (now optional)', () => {
@@ -260,8 +256,8 @@ describe('validateManifest', () => {
 			routeRules: [{}],
 		});
 		expect(result.valid).toBe(false);
-		expect(result.errors.some(e => e.path === 'routeRules[0].pattern')).toBe(true);
-		expect(result.errors.some(e => e.path === 'routeRules[0].layout')).toBe(true);
+		expect(result.errors.some((e) => e.path === 'routeRules[0].pattern')).toBe(true);
+		expect(result.errors.some((e) => e.path === 'routeRules[0].layout')).toBe(true);
 	});
 
 	it('warns when routeRule references non-existent layout', () => {
@@ -270,7 +266,7 @@ describe('validateManifest', () => {
 			routeRules: [{ pattern: '**', layout: 'nonexistent' }],
 		});
 		expect(result.valid).toBe(true);
-		expect(result.warnings.some(w => w.message.includes('"nonexistent"'))).toBe(true);
+		expect(result.warnings.some((w) => w.message.includes('"nonexistent"'))).toBe(true);
 	});
 
 	it('validates component entries have component field', () => {
@@ -279,6 +275,6 @@ describe('validateManifest', () => {
 			components: { Bad: {} },
 		});
 		expect(result.valid).toBe(false);
-		expect(result.errors.some(e => e.path === 'components.Bad.component')).toBe(true);
+		expect(result.errors.some((e) => e.path === 'components.Bad.component')).toBe(true);
 	});
 });

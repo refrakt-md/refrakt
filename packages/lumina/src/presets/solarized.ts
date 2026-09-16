@@ -39,40 +39,40 @@ const solarized: ThemeTokensConfig = {
 	// Light mode — base3 canvas with base00 text. The eight accents are
 	// shared with the dark mode (see comment in modes.dark).
 	color: {
-		bg: '#fdf6e3',           // base3  — canonical light canvas
-		text: '#657b83',         // base00 — light text
-		muted: '#93a1a1',        // base1  — light muted / optional emphasis
-		border: '#eee8d5',       // base2  — light secondary surface as border
-		primary: '#268bd2',      // blue   — Solarized's interactive accent
+		bg: '#fdf6e3', // base3  — canonical light canvas
+		text: '#657b83', // base00 — light text
+		muted: '#93a1a1', // base1  — light muted / optional emphasis
+		border: '#eee8d5', // base2  — light secondary surface as border
+		primary: '#268bd2', // blue   — Solarized's interactive accent
 		'primary-hover': '#2aa198', // cyan
 		surface: {
-			base: '#eee8d5',     // base2 — light elevated card
+			base: '#eee8d5', // base2 — light elevated card
 			hover: '#fdf6e3',
 			active: '#eee8d5',
 			raised: '#fdf6e3',
 		},
 		code: {
-			bg: '#fdf6e3',         // base3 — uniform canvas in light mode
-			text: '#657b83',       // base00
+			bg: '#fdf6e3', // base3 — uniform canvas in light mode
+			text: '#657b83', // base00
 			'inline-bg': '#eee8d5', // base2 — slight elevation for inline code
 		},
 	},
 	syntax: {
-		keyword:  '#dc322f',   // red     — control flow, declarations
-		function: '#268bd2',   // blue    — function names
-		type:     '#b58900',   // yellow  — Solarized's "class/type" colour
-		string:   '#2aa198',   // cyan    — strings
-		constant: '#6c71c4',   // violet  — language constants
-		comment:  '#93a1a1',   // base1   — comments (Solarized uses lighter base in light mode)
+		keyword: '#dc322f', // red     — control flow, declarations
+		function: '#268bd2', // blue    — function names
+		type: '#b58900', // yellow  — Solarized's "class/type" colour
+		string: '#2aa198', // cyan    — strings
+		constant: '#6c71c4', // violet  — language constants
+		comment: '#93a1a1', // base1   — comments (Solarized uses lighter base in light mode)
 		punctuation: '#657b83', // base00  — Solarized treats punctuation as default text
-		variable: '#657b83',   // base00  — identifiers read as default text
+		variable: '#657b83', // base00  — identifiers read as default text
 
 		// Extended roles — same accent palette as the core roles
-		number:    '#cb4b16',   // orange  — Solarized splits numbers from boolean-constants
-		regex:     '#859900',   // green   — Solarized's "string-special" colour
-		tag:       '#dc322f',   // red     — HTML/JSX tags read like keywords in Solarized
-		attribute: '#268bd2',   // blue    — attribute names align with function-family
-		operator:  '#6c71c4',   // violet  — Solarized's operator colour
+		number: '#cb4b16', // orange  — Solarized splits numbers from boolean-constants
+		regex: '#859900', // green   — Solarized's "string-special" colour
+		tag: '#dc322f', // red     — HTML/JSX tags read like keywords in Solarized
+		attribute: '#268bd2', // blue    — attribute names align with function-family
+		operator: '#6c71c4', // violet  — Solarized's operator colour
 		'string-expression': '#d33682', // magenta — interpolations get the magenta accent
 		// `parameter`, `property`, `link` left unset (cascade through fallback).
 	},
@@ -80,21 +80,21 @@ const solarized: ThemeTokensConfig = {
 	modes: {
 		dark: {
 			color: {
-				bg: '#002b36',           // base03 — canonical dark canvas
-				text: '#839496',         // base0  — dark text
-				muted: '#586e75',        // base01 — dark muted
-				border: '#073642',       // base02 — dark secondary surface as border
-				primary: '#268bd2',      // blue   — same as light (accents are mode-symmetric)
+				bg: '#002b36', // base03 — canonical dark canvas
+				text: '#839496', // base0  — dark text
+				muted: '#586e75', // base01 — dark muted
+				border: '#073642', // base02 — dark secondary surface as border
+				primary: '#268bd2', // blue   — same as light (accents are mode-symmetric)
 				'primary-hover': '#2aa198', // cyan
 				surface: {
-					base: '#073642',     // base02 — dark elevated card
+					base: '#073642', // base02 — dark elevated card
 					hover: '#586e75',
 					active: '#586e75',
 					raised: '#073642',
 				},
 				code: {
-					bg: '#002b36',         // base03 — uniform canvas in dark mode
-					text: '#839496',       // base0
+					bg: '#002b36', // base03 — uniform canvas in dark mode
+					text: '#839496', // base0
 					'inline-bg': '#073642', // base02 — slight elevation
 				},
 			},
@@ -103,20 +103,20 @@ const solarized: ThemeTokensConfig = {
 			// restated rather than omitted, so a reader looking at just the
 			// dark block sees the full picture.
 			syntax: {
-				keyword:  '#dc322f',   // red
-				function: '#268bd2',   // blue
-				type:     '#b58900',   // yellow
-				string:   '#2aa198',   // cyan
-				constant: '#6c71c4',   // violet
-				comment:  '#586e75',   // base01 — comments use the darker base in dark mode
+				keyword: '#dc322f', // red
+				function: '#268bd2', // blue
+				type: '#b58900', // yellow
+				string: '#2aa198', // cyan
+				constant: '#6c71c4', // violet
+				comment: '#586e75', // base01 — comments use the darker base in dark mode
 				punctuation: '#839496', // base0
-				variable: '#839496',   // base0
+				variable: '#839496', // base0
 
-				number:    '#cb4b16',   // orange
-				regex:     '#859900',   // green
-				tag:       '#dc322f',   // red
-				attribute: '#268bd2',   // blue
-				operator:  '#6c71c4',   // violet
+				number: '#cb4b16', // orange
+				regex: '#859900', // green
+				tag: '#dc322f', // red
+				attribute: '#268bd2', // blue
+				operator: '#6c71c4', // violet
 				'string-expression': '#d33682', // magenta
 			},
 		},

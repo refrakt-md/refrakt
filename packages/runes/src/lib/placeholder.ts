@@ -51,9 +51,7 @@ export function placeholderSvg(
 	const spec = SHAPES[key];
 	const { w, h } = spec;
 
-	const children = spec.round
-		? avatarScene(w, h)
-		: framedScene(w, h);
+	const children = spec.round ? avatarScene(w, h) : framedScene(w, h);
 
 	const attrs: Record<string, unknown> = {
 		class: 'rf-placeholder',
@@ -77,10 +75,11 @@ export function placeholderSvg(
 function framedScene(w: number, h: number): InstanceType<typeof Tag>[] {
 	const stroke = r(Math.min(w, h) * 0.008);
 	const sunR = r(Math.min(w, h) * 0.1);
-	const hill = `M0 ${r(h * 0.72)} `
-		+ `Q ${r(w * 0.28)} ${r(h * 0.55)} ${r(w * 0.5)} ${r(h * 0.7)} `
-		+ `T ${w} ${r(h * 0.64)} `
-		+ `L ${w} ${h} L 0 ${h} Z`;
+	const hill =
+		`M0 ${r(h * 0.72)} ` +
+		`Q ${r(w * 0.28)} ${r(h * 0.55)} ${r(w * 0.5)} ${r(h * 0.7)} ` +
+		`T ${w} ${r(h * 0.64)} ` +
+		`L ${w} ${h} L 0 ${h} Z`;
 
 	return [
 		new Tag('rect', { x: 0, y: 0, width: w, height: h, fill: 'var(--rf-color-surface)' }),
@@ -106,8 +105,7 @@ function avatarScene(w: number, h: number): InstanceType<typeof Tag>[] {
 	const ringR = r(w / 2 - stroke);
 	const headR = r(w * 0.16);
 	const headCy = r(h * 0.42);
-	const shoulders = `M ${r(w * 0.24)} ${h} `
-		+ `Q ${cx} ${r(h * 0.6)} ${r(w * 0.76)} ${h} Z`;
+	const shoulders = `M ${r(w * 0.24)} ${h} ` + `Q ${cx} ${r(h * 0.6)} ${r(w * 0.76)} ${h} Z`;
 
 	return [
 		new Tag('circle', { cx, cy, r: r(w / 2), fill: 'var(--rf-color-surface)' }),

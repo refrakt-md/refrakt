@@ -24,6 +24,10 @@
 	align-items: flex-end;
 }
 .rf-conversation-message > span[data-field="speaker"],
-.rf-conversation-message > meta[data-field] { display: none; }
+.rf-conversation-message > meta[data-field] {
+	display: none;
+}
 .rf-conversation-message__body > span[data-field],
-.rf-conversation-message__body > meta { display: none; }
+.rf-conversation-message__body > meta {
+	display: none;
+}

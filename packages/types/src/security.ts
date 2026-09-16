@@ -17,38 +17,38 @@
  *                          protections. Falls back to srcdoc + meta-CSP when unset.
  */
 export type SecurityPolicy =
-  | 'trusted'
-  | 'strict'
-  | {
-      trust: 'untrusted';
-      /** Allow author `<script>` blocks and event-handler attributes through.
-       *  Default `false` — scripts are stripped before they reach the iframe. */
-      allowJs?: boolean;
-      /** When set, sandbox iframes load from this origin instead of `srcdoc`.
-       *  The host must serve sandbox content from this origin with appropriate
-       *  CSP headers — see docs/security for the endpoint contract. */
-      sandboxOrigin?: string;
-    };
+	| 'trusted'
+	| 'strict'
+	| {
+			trust: 'untrusted';
+			/** Allow author `<script>` blocks and event-handler attributes through.
+			 *  Default `false` — scripts are stripped before they reach the iframe. */
+			allowJs?: boolean;
+			/** When set, sandbox iframes load from this origin instead of `srcdoc`.
+			 *  The host must serve sandbox content from this origin with appropriate
+			 *  CSP headers — see docs/security for the endpoint contract. */
+			sandboxOrigin?: string;
+	  };
 
 /** Internal resolved form of `SecurityPolicy` after preset expansion. */
 export interface ResolvedSecurityPolicy {
-  trust: 'trusted' | 'untrusted';
-  allowJs: boolean;
-  sandboxOrigin: string | undefined;
+	trust: 'trusted' | 'untrusted';
+	allowJs: boolean;
+	sandboxOrigin: string | undefined;
 }
 
 /** Expand the `SecurityPolicy` shorthand into its canonical resolved form.
  *  Centralised so every consumer reads the same defaults. */
 export function resolveSecurityPolicy(policy: SecurityPolicy | undefined): ResolvedSecurityPolicy {
-  if (policy === undefined || policy === 'trusted') {
-    return { trust: 'trusted', allowJs: true, sandboxOrigin: undefined };
-  }
-  if (policy === 'strict') {
-    return { trust: 'untrusted', allowJs: false, sandboxOrigin: undefined };
-  }
-  return {
-    trust: 'untrusted',
-    allowJs: policy.allowJs ?? false,
-    sandboxOrigin: policy.sandboxOrigin,
-  };
+	if (policy === undefined || policy === 'trusted') {
+		return { trust: 'trusted', allowJs: true, sandboxOrigin: undefined };
+	}
+	if (policy === 'strict') {
+		return { trust: 'untrusted', allowJs: false, sandboxOrigin: undefined };
+	}
+	return {
+		trust: 'untrusted',
+		allowJs: policy.allowJs ?? false,
+		sandboxOrigin: policy.sandboxOrigin,
+	};
 }

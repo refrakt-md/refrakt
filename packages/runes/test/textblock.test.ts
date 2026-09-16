@@ -7,7 +7,7 @@ describe('textblock tag', () => {
 Some lead text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
+		const tb = findTag(result as any, (t) => t.attributes['data-rune'] === 'text-block');
 		expect(tb).toBeDefined();
 
 		expect(fields(tb).lead).toBe('lead');
@@ -22,10 +22,10 @@ Some lead text.
 Some text content.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
+		const tb = findTag(result as any, (t) => t.attributes['data-rune'] === 'text-block');
 		expect(tb).toBeDefined();
 
-		const bodyDivs = findAllTags(tb!, t => t.attributes['data-name'] === 'body');
+		const bodyDivs = findAllTags(tb!, (t) => t.attributes['data-name'] === 'body');
 		expect(bodyDivs.length).toBe(1);
 	});
 
@@ -34,7 +34,7 @@ Some text content.
 Multi-column text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
+		const tb = findTag(result as any, (t) => t.attributes['data-rune'] === 'text-block');
 		expect(fields(tb).columns).toBe('3');
 	});
 
@@ -43,7 +43,7 @@ Multi-column text.
 Single column text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
+		const tb = findTag(result as any, (t) => t.attributes['data-rune'] === 'text-block');
 		expect(fields(tb).columns).toBeUndefined();
 	});
 
@@ -56,7 +56,7 @@ Single column text.
 Some text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
+		const tb = findTag(result as any, (t) => t.attributes['data-rune'] === 'text-block');
 		expect(tb!.attributes.reading).toBe('fine');
 	});
 
@@ -65,7 +65,7 @@ Some text.
 Some text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
+		const tb = findTag(result as any, (t) => t.attributes['data-rune'] === 'text-block');
 		expect(tb!.attributes.dropcap).toBe(true);
 	});
 
@@ -74,7 +74,7 @@ Some text.
 Justified text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
+		const tb = findTag(result as any, (t) => t.attributes['data-rune'] === 'text-block');
 		expect(fields(tb).align).toBe('justify');
 	});
 
@@ -83,7 +83,7 @@ Justified text.
 Left-aligned text.
 {% /textblock %}`);
 
-		const tb = findTag(result as any, t => t.attributes['data-rune'] === 'text-block');
+		const tb = findTag(result as any, (t) => t.attributes['data-rune'] === 'text-block');
 		expect(fields(tb).align).toBeUndefined();
 	});
 });

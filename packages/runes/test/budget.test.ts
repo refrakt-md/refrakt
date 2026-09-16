@@ -23,18 +23,24 @@ describe('budget tag', () => {
 	it('renders category labels and formatted subtotals in the header', () => {
 		const result = parse(SOURCE);
 
-		const labels = findAllTags(result as any, t => /rf-budget-category__label/.test(String(t.attributes.class))).map(text);
+		const labels = findAllTags(result as any, (t) =>
+			/rf-budget-category__label/.test(String(t.attributes.class)),
+		).map(text);
 		expect(labels).toContain('Accommodation');
 		expect(labels).toContain('Transportation');
 
-		const subtotals = findAllTags(result as any, t => /rf-budget-category__subtotal/.test(String(t.attributes.class))).map(text);
-		expect(subtotals.some(s => /40,000/.test(s))).toBe(true);
-		expect(subtotals.every(s => s !== '¥0')).toBe(true);
+		const subtotals = findAllTags(result as any, (t) =>
+			/rf-budget-category__subtotal/.test(String(t.attributes.class)),
+		).map(text);
+		expect(subtotals.some((s) => /40,000/.test(s))).toBe(true);
+		expect(subtotals.every((s) => s !== '¥0')).toBe(true);
 	});
 
 	it('sums category subtotals into a grand total', () => {
 		const result = parse(SOURCE);
-		const total = findTag(result as any, t => /rf-budget__total-amount/.test(String(t.attributes.class)));
+		const total = findTag(result as any, (t) =>
+			/rf-budget__total-amount/.test(String(t.attributes.class)),
+		);
 		expect(total).toBeDefined();
 		expect(text(total)).toMatch(/69,650/); // 15000 + 25000 + 29650
 	});

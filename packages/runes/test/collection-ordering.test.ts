@@ -8,7 +8,12 @@ function ent(type: string, id: string, data: Record<string, unknown>): EntityReg
 
 const embed = {
 	tags: {
-		work: { attributes: { priority: { matches: ['critical', 'high', 'medium', 'low'] }, status: { matches: ['draft', 'ready', 'in-progress', 'review', 'done'] } } },
+		work: {
+			attributes: {
+				priority: { matches: ['critical', 'high', 'medium', 'low'] },
+				status: { matches: ['draft', 'ready', 'in-progress', 'review', 'done'] },
+			},
+		},
 		bug: { attributes: { status: { matches: ['confirmed', 'in-progress', 'fixed'] } } },
 	},
 	nodes: {},
@@ -18,7 +23,11 @@ describe('domain-aware ordering (WORK-276)', () => {
 	it('derives default order from a rune attribute matches array', () => {
 		const ord = buildOrdering(embed as never);
 		expect(ord.order('work', 'priority')).toEqual(['critical', 'high', 'medium', 'low']);
-		const items = [ent('work', 'W-1', { priority: 'low' }), ent('work', 'W-2', { priority: 'critical' }), ent('work', 'W-3', { priority: 'medium' })];
+		const items = [
+			ent('work', 'W-1', { priority: 'low' }),
+			ent('work', 'W-2', { priority: 'critical' }),
+			ent('work', 'W-3', { priority: 'medium' }),
+		];
 		expect(sortEntities(items, 'priority', ord).map((e) => e.id)).toEqual(['W-2', 'W-3', 'W-1']);
 	});
 
@@ -27,7 +36,10 @@ describe('domain-aware ordering (WORK-276)', () => {
 			{ work: { status: ['draft', 'ready', 'in-progress', 'review', 'done'] } },
 			{ work: { status: ['in-progress', 'review', 'ready', 'draft', 'done'] } },
 		);
-		const items = [ent('work', 'A', { status: 'draft' }), ent('work', 'B', { status: 'in-progress' })];
+		const items = [
+			ent('work', 'A', { status: 'draft' }),
+			ent('work', 'B', { status: 'in-progress' }),
+		];
 		expect(sortEntities(items, 'status', ord).map((e) => e.id)).toEqual(['B', 'A']);
 	});
 
@@ -41,11 +53,15 @@ describe('domain-aware ordering (WORK-276)', () => {
 		const ord = buildOrdering(embed as never);
 		// work.status: ...in-progress(2)...; bug.status: confirmed(0), in-progress(1), fixed(2)
 		const items = [
-			ent('work', 'W-done', { status: 'done' }),       // rank 4
+			ent('work', 'W-done', { status: 'done' }), // rank 4
 			ent('bug', 'B-confirmed', { status: 'confirmed' }), // rank 0
-			ent('work', 'W-ready', { status: 'ready' }),      // rank 1
+			ent('work', 'W-ready', { status: 'ready' }), // rank 1
 		];
-		expect(sortEntities(items, 'status', ord).map((e) => e.id)).toEqual(['B-confirmed', 'W-ready', 'W-done']);
+		expect(sortEntities(items, 'status', ord).map((e) => e.id)).toEqual([
+			'B-confirmed',
+			'W-ready',
+			'W-done',
+		]);
 	});
 
 	it('orders groups by representative rank', () => {

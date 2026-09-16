@@ -1,7 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	RenderableNodeCursor,
+} from '@refrakt-md/runes';
 import { slugify, buildSections } from '../util.js';
 import { VALID_STATUS, VALID_PRIORITY, VALID_COMPLEXITY } from '../commands/enums.js';
 
@@ -15,17 +20,54 @@ export const work = createContentModelSchema({
 	provides: ['prose'],
 	attributes: {
 		id: { type: String, required: true, description: 'Unique identifier (e.g., "RF-142").' },
-		status: { type: String, required: false, matches: [...VALID_STATUS.work], description: 'Current status: draft, ready, in-progress, review, done, blocked, pending, cancelled, or superseded.' },
-		priority: { type: String, required: false, matches: [...VALID_PRIORITY], description: 'Priority level: critical, high, medium, or low.' },
-		complexity: { type: String, required: false, matches: [...VALID_COMPLEXITY], description: 'Complexity signal: trivial, simple, moderate, complex, or unknown.' },
+		status: {
+			type: String,
+			required: false,
+			matches: [...VALID_STATUS.work],
+			description:
+				'Current status: draft, ready, in-progress, review, done, blocked, pending, cancelled, or superseded.',
+		},
+		priority: {
+			type: String,
+			required: false,
+			matches: [...VALID_PRIORITY],
+			description: 'Priority level: critical, high, medium, or low.',
+		},
+		complexity: {
+			type: String,
+			required: false,
+			matches: [...VALID_COMPLEXITY],
+			description: 'Complexity signal: trivial, simple, moderate, complex, or unknown.',
+		},
 		assignee: { type: String, required: false, description: 'Person or agent working on this.' },
 		milestone: { type: String, required: false, description: 'Milestone this belongs to.' },
-		source: { type: String, required: false, description: 'Comma-separated IDs of specs or decisions this item implements.' },
-		supersedes: { type: String, required: false, description: 'ID of the work item this replaces (set when status="superseded").' },
-		pr: { type: String, required: false, description: 'Comma-separated PR references that implemented this item (e.g. "refrakt-md/refrakt#142").' },
+		source: {
+			type: String,
+			required: false,
+			description: 'Comma-separated IDs of specs or decisions this item implements.',
+		},
+		supersedes: {
+			type: String,
+			required: false,
+			description: 'ID of the work item this replaces (set when status="superseded").',
+		},
+		pr: {
+			type: String,
+			required: false,
+			description:
+				'Comma-separated PR references that implemented this item (e.g. "refrakt-md/refrakt#142").',
+		},
 		tags: { type: String, required: false, description: 'Comma-separated labels.' },
-		created: { type: String, required: false, description: 'Creation date (ISO 8601). Defaults to file creation date from git.' },
-		modified: { type: String, required: false, description: 'Last modified date (ISO 8601). Defaults to file modification date from git.' },
+		created: {
+			type: String,
+			required: false,
+			description: 'Creation date (ISO 8601). Defaults to file creation date from git.',
+		},
+		modified: {
+			type: String,
+			required: false,
+			description: 'Last modified date (ISO 8601). Defaults to file modification date from git.',
+		},
 	},
 	contentModel: () => ({
 		type: 'sections' as const,
@@ -45,19 +87,19 @@ export const work = createContentModelSchema({
 			'Blocked by': {
 				alias: ['Depends On', 'Requires', 'Deps', 'Needs', 'Dependencies'],
 			},
-			'Blocks': {
+			Blocks: {
 				alias: ['Unblocks', 'Enables', 'Required By'],
 			},
-			'Approach': {
+			Approach: {
 				alias: ['Technical Notes', 'Implementation Notes', 'How'],
 			},
-			'References': {
+			References: {
 				alias: ['Refs', 'Related', 'Context'],
 			},
 			'Edge Cases': {
 				alias: ['Exceptions', 'Corner Cases'],
 			},
-			'Verification': {
+			Verification: {
 				alias: ['Test Cases', 'Tests'],
 			},
 		},
@@ -92,7 +134,8 @@ export const work = createContentModelSchema({
 
 		const bodyDiv = new Tag('div', {}, contentChildren);
 
-		return createComponentRenderable({ rune: 'work',
+		return createComponentRenderable({
+			rune: 'work',
 			tag: 'article',
 			properties: {
 				id: idMeta,
@@ -113,7 +156,23 @@ export const work = createContentModelSchema({
 				blurb,
 				body: bodyDiv,
 			},
-			children: [idMeta, statusMeta, priorityMeta, complexityMeta, assigneeMeta, milestoneMeta, sourceMeta, supersedesMeta, prMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), ...(blurb ? [blurb] : []), bodyDiv],
+			children: [
+				idMeta,
+				statusMeta,
+				priorityMeta,
+				complexityMeta,
+				assigneeMeta,
+				milestoneMeta,
+				sourceMeta,
+				supersedesMeta,
+				prMeta,
+				tagsMeta,
+				createdMeta,
+				modifiedMeta,
+				title.next(),
+				...(blurb ? [blurb] : []),
+				bodyDiv,
+			],
 		});
 	},
 });

@@ -16,20 +16,21 @@ CSS custom properties via inline styles.
 - Themes must include bridge CSS
 {% /decision %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'decision');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'decision');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('article');
 	});
 
 	it('should pass date and status as meta', () => {
-		const result = parse(`{% decision id="ADR-010" status="proposed" date="2026-03-15" supersedes="ADR-003" tags="architecture" %}
+		const result =
+			parse(`{% decision id="ADR-010" status="proposed" date="2026-03-15" supersedes="ADR-003" tags="architecture" %}
 # Some decision
 
 ## Context
 Context here.
 {% /decision %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'decision');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'decision');
 		expect(fields(tag).date).toBe('2026-03-15');
 		expect(fields(tag).supersedes).toBe('ADR-003');
 	});
@@ -42,19 +43,20 @@ Context here.
 Context.
 {% /adr %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'decision');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'decision');
 		expect(tag).toBeDefined();
 	});
 
 	it('should pass source as meta', () => {
-		const result = parse(`{% decision id="ADR-010" status="proposed" date="2026-03-15" source="SPEC-001" %}
+		const result =
+			parse(`{% decision id="ADR-010" status="proposed" date="2026-03-15" source="SPEC-001" %}
 # Some decision
 
 ## Context
 Context here.
 {% /decision %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'decision');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'decision');
 		expect(fields(tag).source).toBe('SPEC-001');
 	});
 
@@ -79,8 +81,8 @@ Because it works.
 - Impact one
 {% /decision %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'decision');
-		const sections = findAllTags(tag!, t => t.name === 'section' && !!t.attributes['data-name']);
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'decision');
+		const sections = findAllTags(tag!, (t) => t.name === 'section' && !!t.attributes['data-name']);
 		expect(sections.length).toBe(5);
 		expect(sections[0].attributes['data-name']).toBe('context');
 		expect(sections[1].attributes['data-name']).toBe('options-considered');

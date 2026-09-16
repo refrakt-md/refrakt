@@ -2,30 +2,30 @@ import { describe, it, expect } from 'vitest';
 import { parse, findTag, findAllTags } from './helpers.js';
 
 describe('reveal tag', () => {
-  it('should create a Reveal component', () => {
-    const result = parse(`{% reveal %}
+	it('should create a Reveal component', () => {
+		const result = parse(`{% reveal %}
 First content to show.
 
 Then more content appears.
 {% /reveal %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'reveal');
-    expect(tag).toBeDefined();
-    expect(tag!.name).toBe('section');
-  });
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'reveal');
+		expect(tag).toBeDefined();
+		expect(tag!.name).toBe('section');
+	});
 
-  it('should pass mode attribute as meta', () => {
-    const result = parse(`{% reveal mode="scroll" %}
+	it('should pass mode attribute as meta', () => {
+		const result = parse(`{% reveal mode="scroll" %}
 Content here.
 {% /reveal %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'reveal');
-    const modeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'scroll');
-    expect(modeMeta).toBeDefined();
-  });
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'reveal');
+		const modeMeta = findTag(tag!, (t) => t.name === 'meta' && t.attributes.content === 'scroll');
+		expect(modeMeta).toBeDefined();
+	});
 
-  it('should create RevealStep children from headings', () => {
-    const result = parse(`{% reveal %}
+	it('should create RevealStep children from headings', () => {
+		const result = parse(`{% reveal %}
 ## Step One
 
 First step content.
@@ -35,18 +35,18 @@ First step content.
 Second step content.
 {% /reveal %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'reveal');
-    const steps = findAllTags(tag!, t => t.attributes['data-rune'] === 'reveal-step');
-    expect(steps.length).toBe(2);
-  });
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'reveal');
+		const steps = findAllTags(tag!, (t) => t.attributes['data-rune'] === 'reveal-step');
+		expect(steps.length).toBe(2);
+	});
 
-  it('should default mode to click', () => {
-    const result = parse(`{% reveal %}
+	it('should default mode to click', () => {
+		const result = parse(`{% reveal %}
 Content.
 {% /reveal %}`);
 
-    const tag = findTag(result as any, t => t.attributes['data-rune'] === 'reveal');
-    const modeMeta = findTag(tag!, t => t.name === 'meta' && t.attributes.content === 'click');
-    expect(modeMeta).toBeDefined();
-  });
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'reveal');
+		const modeMeta = findTag(tag!, (t) => t.name === 'meta' && t.attributes.content === 'click');
+		expect(modeMeta).toBeDefined();
+	});
 });

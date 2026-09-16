@@ -14,11 +14,14 @@ describe('loadRefraktConfig', () => {
 	it('loads a valid config file', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
-		writeFileSync(configPath, JSON.stringify({
-			contentDir: './content',
-			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
-		}));
+		writeFileSync(
+			configPath,
+			JSON.stringify({
+				contentDir: './content',
+				theme: '@refrakt-md/lumina',
+				target: 'sveltekit',
+			}),
+		);
 
 		const config = loadRefraktConfig(configPath);
 		expect(config).toEqual({
@@ -31,8 +34,9 @@ describe('loadRefraktConfig', () => {
 	});
 
 	it('throws when the file is missing', () => {
-		expect(() => loadRefraktConfig('/nonexistent/refrakt.config.json'))
-			.toThrow('refrakt.config.json not found');
+		expect(() => loadRefraktConfig('/nonexistent/refrakt.config.json')).toThrow(
+			'refrakt.config.json not found',
+		);
 	});
 
 	it('throws on malformed JSON', () => {
@@ -40,8 +44,7 @@ describe('loadRefraktConfig', () => {
 		const configPath = join(dir, 'refrakt.config.json');
 		writeFileSync(configPath, '{ not valid json }');
 
-		expect(() => loadRefraktConfig(configPath))
-			.toThrow('Failed to parse refrakt.config.json');
+		expect(() => loadRefraktConfig(configPath)).toThrow('Failed to parse refrakt.config.json');
 
 		rmSync(dir, { recursive: true });
 	});
@@ -49,13 +52,15 @@ describe('loadRefraktConfig', () => {
 	it('throws when contentDir is missing', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
-		writeFileSync(configPath, JSON.stringify({
-			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
-		}));
+		writeFileSync(
+			configPath,
+			JSON.stringify({
+				theme: '@refrakt-md/lumina',
+				target: 'sveltekit',
+			}),
+		);
 
-		expect(() => loadRefraktConfig(configPath))
-			.toThrow('"contentDir" is required');
+		expect(() => loadRefraktConfig(configPath)).toThrow('"contentDir" is required');
 
 		rmSync(dir, { recursive: true });
 	});
@@ -63,13 +68,15 @@ describe('loadRefraktConfig', () => {
 	it('throws when theme is missing', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
-		writeFileSync(configPath, JSON.stringify({
-			contentDir: './content',
-			target: 'sveltekit',
-		}));
+		writeFileSync(
+			configPath,
+			JSON.stringify({
+				contentDir: './content',
+				target: 'sveltekit',
+			}),
+		);
 
-		expect(() => loadRefraktConfig(configPath))
-			.toThrow('"theme" is required');
+		expect(() => loadRefraktConfig(configPath)).toThrow('"theme" is required');
 
 		rmSync(dir, { recursive: true });
 	});
@@ -77,10 +84,13 @@ describe('loadRefraktConfig', () => {
 	it('accepts a config without target (target is documentation-only as of v0.12)', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
-		writeFileSync(configPath, JSON.stringify({
-			contentDir: './content',
-			theme: '@refrakt-md/lumina',
-		}));
+		writeFileSync(
+			configPath,
+			JSON.stringify({
+				contentDir: './content',
+				theme: '@refrakt-md/lumina',
+			}),
+		);
 
 		const config = loadRefraktConfig(configPath);
 		expect(config.contentDir).toBe('./content');
@@ -93,14 +103,18 @@ describe('loadRefraktConfig', () => {
 	it('rejects a target that is present but empty', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
-		writeFileSync(configPath, JSON.stringify({
-			contentDir: './content',
-			theme: '@refrakt-md/lumina',
-			target: '',
-		}));
+		writeFileSync(
+			configPath,
+			JSON.stringify({
+				contentDir: './content',
+				theme: '@refrakt-md/lumina',
+				target: '',
+			}),
+		);
 
-		expect(() => loadRefraktConfig(configPath))
-			.toThrow('"target" must be a non-empty string when present');
+		expect(() => loadRefraktConfig(configPath)).toThrow(
+			'"target" must be a non-empty string when present',
+		);
 
 		rmSync(dir, { recursive: true });
 	});
@@ -112,12 +126,15 @@ describe('loadRefraktConfig', () => {
 			{ pattern: 'docs/**', layout: 'docs' },
 			{ pattern: '**', layout: 'default' },
 		];
-		writeFileSync(configPath, JSON.stringify({
-			contentDir: './content',
-			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
-			routeRules: rules,
-		}));
+		writeFileSync(
+			configPath,
+			JSON.stringify({
+				contentDir: './content',
+				theme: '@refrakt-md/lumina',
+				target: 'sveltekit',
+				routeRules: rules,
+			}),
+		);
 
 		const config = loadRefraktConfig(configPath);
 		expect(config.routeRules).toEqual(rules);
@@ -128,15 +145,17 @@ describe('loadRefraktConfig', () => {
 	it('throws when routeRules is not an array', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
-		writeFileSync(configPath, JSON.stringify({
-			contentDir: './content',
-			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
-			routeRules: 'not-an-array',
-		}));
+		writeFileSync(
+			configPath,
+			JSON.stringify({
+				contentDir: './content',
+				theme: '@refrakt-md/lumina',
+				target: 'sveltekit',
+				routeRules: 'not-an-array',
+			}),
+		);
 
-		expect(() => loadRefraktConfig(configPath))
-			.toThrow('"routeRules" must be an array');
+		expect(() => loadRefraktConfig(configPath)).toThrow('"routeRules" must be an array');
 
 		rmSync(dir, { recursive: true });
 	});
@@ -144,15 +163,17 @@ describe('loadRefraktConfig', () => {
 	it('throws when routeRules entry is missing pattern', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
-		writeFileSync(configPath, JSON.stringify({
-			contentDir: './content',
-			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
-			routeRules: [{ layout: 'default' }],
-		}));
+		writeFileSync(
+			configPath,
+			JSON.stringify({
+				contentDir: './content',
+				theme: '@refrakt-md/lumina',
+				target: 'sveltekit',
+				routeRules: [{ layout: 'default' }],
+			}),
+		);
 
-		expect(() => loadRefraktConfig(configPath))
-			.toThrow('routeRules[0].pattern is required');
+		expect(() => loadRefraktConfig(configPath)).toThrow('routeRules[0].pattern is required');
 
 		rmSync(dir, { recursive: true });
 	});
@@ -160,12 +181,15 @@ describe('loadRefraktConfig', () => {
 	it('ignores extra fields', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
-		writeFileSync(configPath, JSON.stringify({
-			contentDir: './content',
-			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
-			extra: 'field',
-		}));
+		writeFileSync(
+			configPath,
+			JSON.stringify({
+				contentDir: './content',
+				theme: '@refrakt-md/lumina',
+				target: 'sveltekit',
+				extra: 'field',
+			}),
+		);
 
 		const config = loadRefraktConfig(configPath);
 		expect(config).toEqual({
@@ -180,12 +204,15 @@ describe('loadRefraktConfig', () => {
 	it('loads config with plugins array', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
-		writeFileSync(configPath, JSON.stringify({
-			contentDir: './content',
-			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
-			plugins: ['@refrakt-community/dnd-5e', '@refrakt-community/screenplay'],
-		}));
+		writeFileSync(
+			configPath,
+			JSON.stringify({
+				contentDir: './content',
+				theme: '@refrakt-md/lumina',
+				target: 'sveltekit',
+				plugins: ['@refrakt-community/dnd-5e', '@refrakt-community/screenplay'],
+			}),
+		);
 
 		const config = loadRefraktConfig(configPath);
 		expect(config.plugins).toEqual(['@refrakt-community/dnd-5e', '@refrakt-community/screenplay']);
@@ -196,15 +223,17 @@ describe('loadRefraktConfig', () => {
 	it('throws when plugins is not an array', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
-		writeFileSync(configPath, JSON.stringify({
-			contentDir: './content',
-			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
-			plugins: 'not-an-array',
-		}));
+		writeFileSync(
+			configPath,
+			JSON.stringify({
+				contentDir: './content',
+				theme: '@refrakt-md/lumina',
+				target: 'sveltekit',
+				plugins: 'not-an-array',
+			}),
+		);
 
-		expect(() => loadRefraktConfig(configPath))
-			.toThrow('"plugins" must be an array');
+		expect(() => loadRefraktConfig(configPath)).toThrow('"plugins" must be an array');
 
 		rmSync(dir, { recursive: true });
 	});
@@ -212,15 +241,17 @@ describe('loadRefraktConfig', () => {
 	it('throws when plugins entry is not a string', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
-		writeFileSync(configPath, JSON.stringify({
-			contentDir: './content',
-			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
-			plugins: [123],
-		}));
+		writeFileSync(
+			configPath,
+			JSON.stringify({
+				contentDir: './content',
+				theme: '@refrakt-md/lumina',
+				target: 'sveltekit',
+				plugins: [123],
+			}),
+		);
 
-		expect(() => loadRefraktConfig(configPath))
-			.toThrow('plugins[0] must be a non-empty string');
+		expect(() => loadRefraktConfig(configPath)).toThrow('plugins[0] must be a non-empty string');
 
 		rmSync(dir, { recursive: true });
 	});
@@ -228,13 +259,16 @@ describe('loadRefraktConfig', () => {
 	it('loads config with runes.prefer', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
-		writeFileSync(configPath, JSON.stringify({
-			contentDir: './content',
-			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
-			plugins: ['@refrakt-community/dnd-5e', '@refrakt-community/pathfinder-2e'],
-			runes: { prefer: { item: 'dnd-5e', spell: 'dnd-5e' } },
-		}));
+		writeFileSync(
+			configPath,
+			JSON.stringify({
+				contentDir: './content',
+				theme: '@refrakt-md/lumina',
+				target: 'sveltekit',
+				plugins: ['@refrakt-community/dnd-5e', '@refrakt-community/pathfinder-2e'],
+				runes: { prefer: { item: 'dnd-5e', spell: 'dnd-5e' } },
+			}),
+		);
 
 		const config = loadRefraktConfig(configPath);
 		expect(config.runes?.prefer).toEqual({ item: 'dnd-5e', spell: 'dnd-5e' });
@@ -245,15 +279,17 @@ describe('loadRefraktConfig', () => {
 	it('throws when runes is not an object', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
-		writeFileSync(configPath, JSON.stringify({
-			contentDir: './content',
-			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
-			runes: 'not-an-object',
-		}));
+		writeFileSync(
+			configPath,
+			JSON.stringify({
+				contentDir: './content',
+				theme: '@refrakt-md/lumina',
+				target: 'sveltekit',
+				runes: 'not-an-object',
+			}),
+		);
 
-		expect(() => loadRefraktConfig(configPath))
-			.toThrow('"runes" must be an object');
+		expect(() => loadRefraktConfig(configPath)).toThrow('"runes" must be an object');
 
 		rmSync(dir, { recursive: true });
 	});
@@ -261,15 +297,19 @@ describe('loadRefraktConfig', () => {
 	it('throws when runes.prefer value is not a string', () => {
 		const dir = tmpDir();
 		const configPath = join(dir, 'refrakt.config.json');
-		writeFileSync(configPath, JSON.stringify({
-			contentDir: './content',
-			theme: '@refrakt-md/lumina',
-			target: 'sveltekit',
-			runes: { prefer: { item: 123 } },
-		}));
+		writeFileSync(
+			configPath,
+			JSON.stringify({
+				contentDir: './content',
+				theme: '@refrakt-md/lumina',
+				target: 'sveltekit',
+				runes: { prefer: { item: 123 } },
+			}),
+		);
 
-		expect(() => loadRefraktConfig(configPath))
-			.toThrow('runes.prefer["item"] must be a non-empty string');
+		expect(() => loadRefraktConfig(configPath)).toThrow(
+			'runes.prefer["item"] must be a non-empty string',
+		);
 
 		rmSync(dir, { recursive: true });
 	});

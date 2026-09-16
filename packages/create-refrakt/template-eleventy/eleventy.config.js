@@ -5,10 +5,7 @@ import { resolve } from 'node:path';
 // SPEC-056 scoped tint projections) once at config-load time and write the
 // CSS to a build-input directory. Eleventy's passthrough copy picks it up
 // and ships it as `/css/site-tokens.css`.
-await writeSiteTokensCss(
-	resolve('refrakt.config.json'),
-	resolve('src/_generated/site-tokens.css'),
-);
+await writeSiteTokensCss(resolve('refrakt.config.json'), resolve('src/_generated/site-tokens.css'));
 
 export default function (eleventyConfig) {
 	eleventyConfig.addPlugin(refraktPlugin, {

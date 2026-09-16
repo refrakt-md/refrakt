@@ -11,7 +11,18 @@ export interface EntityRelationship {
 	toId: string;
 	toType: string;
 	/** Relationship kind */
-	kind: 'blocks' | 'blocked-by' | 'depends-on' | 'dependency-of' | 'implements' | 'implemented-by' | 'informs' | 'informed-by' | 'supersedes' | 'superseded-by' | 'related';
+	kind:
+		| 'blocks'
+		| 'blocked-by'
+		| 'depends-on'
+		| 'dependency-of'
+		| 'implements'
+		| 'implemented-by'
+		| 'informs'
+		| 'informed-by'
+		| 'supersedes'
+		| 'superseded-by'
+		| 'related';
 }
 
 /** Minimal entity shape needed for relationship building */
@@ -64,13 +75,17 @@ export function buildRelationships(
 		supersedesLinked.add(`${toId}→${fromId}`);
 
 		addRel(fromId, {
-			fromId, fromType: fromEntity.type,
-			toId, toType: toEntity.type,
+			fromId,
+			fromType: fromEntity.type,
+			toId,
+			toType: toEntity.type,
 			kind: 'supersedes',
 		});
 		addRel(toId, {
-			fromId: toId, fromType: toEntity.type,
-			toId: fromId, toType: fromEntity.type,
+			fromId: toId,
+			fromType: toEntity.type,
+			toId: fromId,
+			toType: fromEntity.type,
 			kind: 'superseded-by',
 		});
 	}
@@ -93,14 +108,18 @@ export function buildRelationships(
 
 			// A implements/informs B
 			addRel(fromId, {
-				fromId, fromType: fromEntity.type,
-				toId: ref.id, toType: toEntity.type,
+				fromId,
+				fromType: fromEntity.type,
+				toId: ref.id,
+				toType: toEntity.type,
 				kind: forwardKind,
 			});
 			// B is implemented-by/informed-by A
 			addRel(ref.id, {
-				fromId: ref.id, fromType: toEntity.type,
-				toId: fromId, toType: fromEntity.type,
+				fromId: ref.id,
+				fromType: toEntity.type,
+				toId: fromId,
+				toType: fromEntity.type,
 				kind: reverseKind,
 			});
 		}
@@ -122,14 +141,18 @@ export function buildRelationships(
 
 			// A depends-on B
 			addRel(fromId, {
-				fromId, fromType: fromEntity.type,
-				toId: depId, toType: toEntity.type,
+				fromId,
+				fromType: fromEntity.type,
+				toId: depId,
+				toType: toEntity.type,
 				kind: 'depends-on',
 			});
 			// B is dependency-of A
 			addRel(depId, {
-				fromId: depId, fromType: toEntity.type,
-				toId: fromId, toType: fromEntity.type,
+				fromId: depId,
+				fromType: toEntity.type,
+				toId: fromId,
+				toType: fromEntity.type,
 				kind: 'dependency-of',
 			});
 		}
@@ -157,26 +180,34 @@ export function buildRelationships(
 			if (isBlockedBy) {
 				// A is blocked by B
 				addRel(fromId, {
-					fromId, fromType: fromEntity.type,
-					toId: ref.id, toType: toEntity.type,
+					fromId,
+					fromType: fromEntity.type,
+					toId: ref.id,
+					toType: toEntity.type,
 					kind: 'blocked-by',
 				});
 				// B blocks A
 				addRel(ref.id, {
-					fromId: ref.id, fromType: toEntity.type,
-					toId: fromId, toType: fromEntity.type,
+					fromId: ref.id,
+					fromType: toEntity.type,
+					toId: fromId,
+					toType: fromEntity.type,
 					kind: 'blocks',
 				});
 			} else {
 				// General related reference (bidirectional)
 				addRel(fromId, {
-					fromId, fromType: fromEntity.type,
-					toId: ref.id, toType: toEntity.type,
+					fromId,
+					fromType: fromEntity.type,
+					toId: ref.id,
+					toType: toEntity.type,
 					kind: 'related',
 				});
 				addRel(ref.id, {
-					fromId: ref.id, fromType: toEntity.type,
-					toId: fromId, toType: fromEntity.type,
+					fromId: ref.id,
+					fromType: toEntity.type,
+					toId: fromId,
+					toType: fromEntity.type,
 					kind: 'related',
 				});
 			}

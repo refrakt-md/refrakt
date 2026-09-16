@@ -41,7 +41,9 @@ export async function editCommand(options: EditOptions): Promise<void> {
 				console.error('Pass --content-dir to bypass site resolution, or pick a site explicitly.');
 				process.exit(1);
 			}
-			console.error('Error: No refrakt.config.json found. Specify --content-dir or run from a refrakt.md project.');
+			console.error(
+				'Error: No refrakt.config.json found. Specify --content-dir or run from a refrakt.md project.',
+			);
 			process.exit(1);
 		}
 	} else {
@@ -72,26 +74,38 @@ export async function editCommand(options: EditOptions): Promise<void> {
 		themeConfig = { ...themeConfig, tints: { ...themeConfig.tints, ...projectSite.tints } as any };
 	}
 	if (projectSite?.backgrounds) {
-		themeConfig = { ...themeConfig, backgrounds: { ...themeConfig.backgrounds, ...projectSite.backgrounds } as any };
+		themeConfig = {
+			...themeConfig,
+			backgrounds: { ...themeConfig.backgrounds, ...projectSite.backgrounds } as any,
+		};
 	}
 
 	// Load plugins for editor palette + preview
 	let extraTags: Record<string, import('@markdoc/markdoc').Schema> | undefined;
-	let communityRuneEntries: Array<{
-		name: string; aliases: string[]; description: string;
-		selfClosing: boolean; category: string;
-		attributes: Record<string, { type: string; required: boolean; values?: string[] }>;
-		example?: string;
-		contentModel?: object;
-	}> | undefined;
+	let communityRuneEntries:
+		| Array<{
+				name: string;
+				aliases: string[];
+				description: string;
+				selfClosing: boolean;
+				category: string;
+				attributes: Record<string, { type: string; required: boolean; values?: string[] }>;
+				example?: string;
+				contentModel?: object;
+		  }>
+		| undefined;
 
 	if (projectSite?.plugins?.length) {
 		try {
-			const { loadPlugin, mergePlugins, runes: coreRuneMap, schemaContentModels, serializeContentModel } = await import('@refrakt-md/runes');
+			const {
+				loadPlugin,
+				mergePlugins,
+				runes: coreRuneMap,
+				schemaContentModels,
+				serializeContentModel,
+			} = await import('@refrakt-md/runes');
 
-			const loaded = await Promise.all(
-				projectSite.plugins.map((name: string) => loadPlugin(name))
-			);
+			const loaded = await Promise.all(projectSite.plugins.map((name: string) => loadPlugin(name)));
 
 			const merged = mergePlugins(
 				loaded,
@@ -113,14 +127,17 @@ export async function editCommand(options: EditOptions): Promise<void> {
 			for (const [group, icons] of Object.entries(merged.themeIcons)) {
 				themeConfig = {
 					...themeConfig,
-					icons: { ...themeConfig.icons, [group]: { ...(themeConfig.icons[group] ?? {}), ...icons } },
+					icons: {
+						...themeConfig.icons,
+						[group]: { ...(themeConfig.icons[group] ?? {}), ...icons },
+					},
 				};
 			}
 
 			// Build community rune entries for the editor palette
 			communityRuneEntries = [];
 			for (const [name, rune] of Object.entries(merged.runes)) {
-				const srcPkg = loaded.find(p => p.runes[name]);
+				const srcPkg = loaded.find((p) => p.runes[name]);
 				const entry = srcPkg ? srcPkg.pkg.runes[name] : undefined;
 				// Skip child-only runes — a fixture is how packages signal a top-level rune belongs in the palette
 				if (entry && !entry.fixture) continue;
@@ -129,11 +146,14 @@ export async function editCommand(options: EditOptions): Promise<void> {
 				if (rune.schema.attributes) {
 					for (const [attrName, attr] of Object.entries(rune.schema.attributes)) {
 						if ((attr as any).deprecated) continue;
-						const typeName = typeof attr.type === 'function'
-							? attr.type.name
-							: Array.isArray(attr.type)
-								? attr.type.map((t: unknown) => (t as { name?: string }).name ?? 'unknown').join(' | ')
-								: 'String';
+						const typeName =
+							typeof attr.type === 'function'
+								? attr.type.name
+								: Array.isArray(attr.type)
+									? attr.type
+											.map((t: unknown) => (t as { name?: string }).name ?? 'unknown')
+											.join(' | ')
+									: 'String';
 						attrs[attrName] = {
 							type: typeName,
 							required: attr.required ?? false,

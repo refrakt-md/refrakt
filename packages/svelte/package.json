@@ -1,37 +1,37 @@
 {
-	"name": "@refrakt-md/svelte",
-	"description": "Svelte renderer for refrakt.md content",
-	"version": "0.33.0",
-	"type": "module",
-	"license": "MIT",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/refrakt-md/refrakt.git",
-		"directory": "packages/svelte"
-	},
-	"bugs": "https://github.com/refrakt-md/refrakt/issues",
-	"homepage": "https://github.com/refrakt-md/refrakt",
-	"publishConfig": {
-		"access": "public"
-	},
-	"svelte": "src/index.ts",
-	"exports": {
-		".": {
-			"types": "./src/index.ts",
-			"svelte": "./src/index.ts",
-			"default": "./src/index.ts"
-		}
-	},
-	"files": [
-		"src"
-	],
-	"dependencies": {
-		"@markdoc/markdoc": "0.4.0",
-		"@refrakt-md/behaviors": "0.33.0",
-		"@refrakt-md/transform": "0.33.0",
-		"@refrakt-md/types": "0.33.0"
-	},
-	"peerDependencies": {
-		"svelte": "^5.0.0"
-	}
+  "name": "@refrakt-md/svelte",
+  "description": "Svelte renderer for refrakt.md content",
+  "version": "0.34.0",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/refrakt-md/refrakt.git",
+    "directory": "packages/svelte"
+  },
+  "bugs": "https://github.com/refrakt-md/refrakt/issues",
+  "homepage": "https://github.com/refrakt-md/refrakt",
+  "publishConfig": {
+    "access": "public"
+  },
+  "svelte": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "svelte": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "files": [
+    "src"
+  ],
+  "dependencies": {
+    "@markdoc/markdoc": "0.4.0",
+    "@refrakt-md/behaviors": "0.34.0",
+    "@refrakt-md/transform": "0.34.0",
+    "@refrakt-md/types": "0.34.0"
+  },
+  "peerDependencies": {
+    "svelte": "^5.0.0"
+  }
 }

@@ -9,7 +9,7 @@ describe('blog tag', () => {
 Check out our blog.
 {% /blog %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'blog');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'blog');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('section');
 	});
@@ -19,7 +19,7 @@ Check out our blog.
 # Articles
 {% /blog %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'blog');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'blog');
 		expect(tag).toBeDefined();
 
 		expect(fields(tag).folder).toBe('/articles');
@@ -31,10 +31,10 @@ Check out our blog.
 	it('should include a posts container with data-name', () => {
 		const result = parse(`{% blog folder="/blog" %}{% /blog %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'blog');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'blog');
 		expect(tag).toBeDefined();
 
-		const posts = findTag(tag!, t => t.attributes['data-name'] === 'posts');
+		const posts = findTag(tag!, (t) => t.attributes['data-name'] === 'posts');
 		expect(posts).toBeDefined();
 		expect(posts!.name).toBe('div');
 	});
@@ -42,7 +42,7 @@ Check out our blog.
 	it('should use default values for optional attributes', () => {
 		const result = parse(`{% blog folder="/blog" %}{% /blog %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'blog');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'blog');
 		expect(fields(tag).sort).toBe('date-desc');
 		expect(fields(tag).layout).toBe('list');
 	});
@@ -54,11 +54,11 @@ Check out our blog.
 A description of my blog.
 {% /blog %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'blog');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'blog');
 		expect(tag).toBeDefined();
 
 		// The header wraps the heading; look for an h1 inside the blog tag
-		const heading = findTag(tag!, t => t.name === 'h1');
+		const heading = findTag(tag!, (t) => t.name === 'h1');
 		expect(heading).toBeDefined();
 	});
 });

@@ -111,7 +111,7 @@ export function checkMetaCss(cssDir: string): MetaCssCoverage {
 
 	for (const dir of dirs) {
 		if (!existsSync(dir)) continue;
-		const files = readdirSync(dir).filter(f => f.endsWith('.css'));
+		const files = readdirSync(dir).filter((f) => f.endsWith('.css'));
 		for (const file of files) {
 			const content = readFileSync(join(dir, file), 'utf-8');
 			const root = postcss.parse(content);
@@ -140,7 +140,9 @@ export function checkMetaCss(cssDir: string): MetaCssCoverage {
 	for (const sentiment of EXPECTED_SENTIMENTS) {
 		const sel = `[data-meta-sentiment="${sentiment}"]`;
 		const match = selectors.get(sel);
-		sentiments[sentiment] = match ? { styled: true, file: match.file, line: match.line } : { styled: false };
+		sentiments[sentiment] = match
+			? { styled: true, file: match.file, line: match.line }
+			: { styled: false };
 	}
 
 	return { types, sentiments };

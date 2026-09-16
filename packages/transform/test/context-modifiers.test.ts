@@ -15,15 +15,15 @@ const testConfig: ThemeConfig = {
 		Hint: {
 			block: 'hint',
 			modifiers: { hintType: { source: 'meta', default: 'note' } },
-			contextModifiers: { 'hero': 'in-hero', 'grid': 'in-grid' },
+			contextModifiers: { hero: 'in-hero', grid: 'in-grid' },
 		},
 		CallToAction: {
 			block: 'cta',
-			contextModifiers: { 'hero': 'in-hero' },
+			contextModifiers: { hero: 'in-hero' },
 		},
 		Feature: {
 			block: 'feature',
-			contextModifiers: { 'hero': 'in-hero' },
+			contextModifiers: { hero: 'in-hero' },
 		},
 		// A rune with no contextModifiers
 		Plain: { block: 'plain' },
@@ -88,9 +88,7 @@ describe('context-aware BEM modifiers', () => {
 
 	it('rune nested inside a non-matching parent gets no context modifier', () => {
 		const grid = makeTag('section', { 'data-rune': 'grid' }, [
-			makeTag('section', { 'data-rune': 'call-to-action' }, [
-				'CTA inside grid',
-			]),
+			makeTag('section', { 'data-rune': 'call-to-action' }, ['CTA inside grid']),
 		]);
 
 		const result = asTag(transform(grid));

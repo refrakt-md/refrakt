@@ -10,7 +10,7 @@ import { createContentModelSchema, asNodes } from '../lib/index.js';
  *  convention `{% drawer %}` and `{% card %}` use, scaled to the two-group
  *  case the `bar` layout primitive renders (SPEC-080). */
 function splitBarZones(nodes: Node[]): { left: Node[]; right: Node[] } {
-	const hrIndex = nodes.findIndex(n => n.type === 'hr');
+	const hrIndex = nodes.findIndex((n) => n.type === 'hr');
 	if (hrIndex < 0) return { left: nodes, right: [] };
 	return {
 		left: nodes.slice(0, hrIndex),
@@ -42,9 +42,7 @@ export const bar = createContentModelSchema({
 	attributes: {},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, _attrs, config) {
 		const zones = splitBarZones(asNodes(resolved.body));
@@ -53,17 +51,20 @@ export const bar = createContentModelSchema({
 		const rightNodes = Markdoc.transform(zones.right, config) as RenderableTreeNode[];
 
 		const left = new Tag('div', {}, leftNodes);
-		const right = zones.right.length > 0
-			? new Tag('div', { 'data-align': 'end' }, rightNodes)
-			: null;
+		const right =
+			zones.right.length > 0 ? new Tag('div', { 'data-align': 'end' }, rightNodes) : null;
 
 		const children: RenderableTreeNode[] = right ? [left, right] : [left];
 
 		// Same DOM as the engine's `bar` layout primitive so themes target
 		// both via `[data-zone-layout="bar"]`.
-		return new Tag('div', {
-			'data-rune': 'bar',
-			'data-zone-layout': 'bar',
-		}, children);
+		return new Tag(
+			'div',
+			{
+				'data-rune': 'bar',
+				'data-zone-layout': 'bar',
+			},
+			children,
+		);
 	},
 });

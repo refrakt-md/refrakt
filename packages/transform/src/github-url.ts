@@ -26,7 +26,7 @@ export function buildGithubBlobUrl(
 	const ref = repoBranch && repoBranch.length > 0 ? repoBranch : 'main';
 	const encodedPath = path
 		.split('/')
-		.map(segment => encodeURIComponent(segment))
+		.map((segment) => encodeURIComponent(segment))
 		.join('/');
 	const anchor = lines ? `#${formatLineAnchor(lines)}` : '';
 	return `${trimmedRepo}/blob/${ref}/${encodedPath}${anchor}`;

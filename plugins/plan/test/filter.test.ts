@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { parseFilter, matchesFilter } from '../src/filter.js';
 import type { EntityRegistration } from '@refrakt-md/types';
 
-function makeEntity(overrides: Partial<EntityRegistration> & { data: Record<string, unknown> }): EntityRegistration {
+function makeEntity(
+	overrides: Partial<EntityRegistration> & { data: Record<string, unknown> },
+): EntityRegistration {
 	return {
 		type: overrides.type ?? 'work',
 		id: overrides.id ?? 'W-1',

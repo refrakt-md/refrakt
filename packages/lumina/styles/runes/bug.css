@@ -1,36 +1,37 @@
 @layer skin {
-/* Bug */
+	/* Bug */
 
-/* SPEC-079: eyebrow + metadata zone names replace header-primary /
+	/* SPEC-079: eyebrow + metadata zone names replace header-primary /
  * header-secondary. Layout-level geometry lives on [data-zone-layout]
  * selectors; this file carries bug-specific spacing + assignee prefix. */
 
-.rf-bug__eyebrow {
-	margin-bottom: 0.75rem;
-}
-.rf-bug__title h1,
-.rf-bug__title h2,
-.rf-bug__title h3 {
-	margin-top: 0;
-}
+	.rf-bug__eyebrow {
+		margin-bottom: 0.75rem;
+	}
+	.rf-bug__title h1,
+	.rf-bug__title h2,
+	.rf-bug__title h3 {
+		margin-top: 0;
+	}
 
-.rf-bug__metadata {
-	margin-bottom: 1.5rem;
-}
+	.rf-bug__metadata {
+		margin-bottom: 1.5rem;
+	}
 
-.rf-bug__metadata [data-field="assignee"] dd .rf-badge::before { content: '@'; }
+	.rf-bug__metadata [data-field="assignee"] dd .rf-badge::before {
+		content: "@";
+	}
 
-.rf-bug__body {
-	font-size: var(--rf-text-sm);
-	line-height: var(--rf-leading-relaxed);
-}
-.rf-bug__body > section {
-	margin-top: 1rem;
-	padding-top: 0.75rem;
-	border-top: 1px solid var(--rf-color-border);
-}
-.rf-bug__body > section:first-child {
-	margin-top: 0.75rem;
-}
-
+	.rf-bug__body {
+		font-size: var(--rf-text-sm);
+		line-height: var(--rf-leading-relaxed);
+	}
+	.rf-bug__body > section {
+		margin-top: 1rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--rf-color-border);
+	}
+	.rf-bug__body > section:first-child {
+		margin-top: 0.75rem;
+	}
 }

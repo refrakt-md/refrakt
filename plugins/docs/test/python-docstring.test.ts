@@ -26,14 +26,16 @@ describe('detectStyle', () => {
 
 	it('prefers NumPy over Google when both match', () => {
 		// NumPy is checked first
-		expect(detectStyle('Summary.\n\nParameters\n----------\nx : int\n    value\n\nArgs:\n    x: value')).toBe('numpy');
+		expect(
+			detectStyle('Summary.\n\nParameters\n----------\nx : int\n    value\n\nArgs:\n    x: value'),
+		).toBe('numpy');
 	});
 });
 
 describe('parseDocstring — Google style', () => {
 	it('parses description and args', () => {
 		const info = parseDocstring(
-			'Generate a greeting.\n\nArgs:\n    name (str): The person name.\n    greeting (str): The word to use.'
+			'Generate a greeting.\n\nArgs:\n    name (str): The person name.\n    greeting (str): The word to use.',
 		);
 		expect(info.description).toBe('Generate a greeting.');
 		expect(info.params.size).toBe(2);
@@ -53,7 +55,7 @@ describe('parseDocstring — Google style', () => {
 
 	it('parses raises section', () => {
 		const info = parseDocstring(
-			'Summary.\n\nRaises:\n    ValueError: If input is bad.\n    TypeError: If type is wrong.'
+			'Summary.\n\nRaises:\n    ValueError: If input is bad.\n    TypeError: If type is wrong.',
 		);
 		expect(info.raises).toHaveLength(2);
 		expect(info.raises[0]).toEqual({ type: 'ValueError', description: 'If input is bad.' });
@@ -62,15 +64,13 @@ describe('parseDocstring — Google style', () => {
 
 	it('handles multi-line descriptions in args', () => {
 		const info = parseDocstring(
-			'Summary.\n\nArgs:\n    x (int): First line\n        continuation of description.'
+			'Summary.\n\nArgs:\n    x (int): First line\n        continuation of description.',
 		);
 		expect(info.params.get('x')?.description).toBe('First line continuation of description.');
 	});
 
 	it('handles *args and **kwargs', () => {
-		const info = parseDocstring(
-			'Summary.\n\nArgs:\n    **kwargs: Extra arguments.'
-		);
+		const info = parseDocstring('Summary.\n\nArgs:\n    **kwargs: Extra arguments.');
 		expect(info.params.get('**kwargs')).toEqual({ type: 'Any', description: 'Extra arguments.' });
 	});
 });
@@ -96,8 +96,14 @@ describe('parseDocstring — NumPy style', () => {
 		const info = parseDocstring(raw);
 		expect(info.description).toBe('Compute the mean.');
 		expect(info.params.size).toBe(2);
-		expect(info.params.get('data')).toEqual({ type: 'List[float]', description: 'The input data.' });
-		expect(info.params.get('axis')).toEqual({ type: 'int', description: 'The axis to compute along.' });
+		expect(info.params.get('data')).toEqual({
+			type: 'List[float]',
+			description: 'The input data.',
+		});
+		expect(info.params.get('axis')).toEqual({
+			type: 'int',
+			description: 'The axis to compute along.',
+		});
 		expect(info.returns).toEqual({ type: 'float', description: 'The mean value.' });
 	});
 
@@ -166,7 +172,8 @@ describe('parseDocstring — RST directives', () => {
 	});
 
 	it('extracts both from Google style', () => {
-		const raw = 'Summary.\n\nArgs:\n    x (int): Value.\n\n.. versionadded:: 1.0\n.. deprecated:: 2.0';
+		const raw =
+			'Summary.\n\nArgs:\n    x (int): Value.\n\n.. versionadded:: 1.0\n.. deprecated:: 2.0';
 		const info = parseDocstring(raw);
 		expect(info.since).toBe('1.0');
 		expect(info.deprecated).toBe('2.0');

@@ -1,8 +1,8 @@
 @layer skin {
-/* Sandbox — skin. The iframe clip/fill + banner/poster/activate layout live in
+	/* Sandbox — skin. The iframe clip/fill + banner/poster/activate layout live in
  * @refrakt-md/skeleton (styles/runes/sandbox.css). */
 
-/* The iframe canvas is opaque (the behaviour writes `color-scheme` onto the
+	/* The iframe canvas is opaque (the behaviour writes `color-scheme` onto the
  * srcdoc `<html>`, so the UA paints a solid backdrop — `background: transparent`
  * can't make it see-through). A rounded shape therefore can't come from inside
  * the sandbox; the embedding element has to clip it. The sandbox owns its
@@ -13,62 +13,61 @@
  * (hero/feature) where the guest keeps its own chrome — while a clip-host well
  * rounds it to the smaller media tier via the shared `[data-section="media"]
  * > *` rule. A full-bleed cover/backdrop sandbox sits flush. */
-.rf-sandbox {
-	border-radius: var(--rf-radius-container);
-}
-[data-media-position="cover"] .rf-sandbox {
-	border-radius: 0;
-}
-.rf-sandbox iframe {
-	border: none;
-	border-radius: inherit;
-}
-/* Static fallback (pre/code shown before hydration) */
-.rf-sandbox pre {
-	margin: 0;
-}
-/* When inside preview, remove sandbox margin */
-.rf-preview .rf-sandbox {
-	margin: 0;
-}
-/* Untrusted-mode affordance. */
-.rf-sandbox[data-security-mode="untrusted"] {
-	border: 1px solid var(--rf-color-warning, #b45309);
-}
-.rf-sandbox__untrusted-banner {
-	padding: 0.5rem 0.75rem;
-	font-size: var(--rf-text-sm);
-	line-height: 1.25rem;
-	font-weight: var(--rf-weight-semibold);
-	color: var(--rf-color-warning);
-	background: var(--rf-color-warning-bg, #fef3c7);
-	border-bottom: 1px solid var(--rf-color-warning, #b45309);
-}
-.rf-sandbox__poster {
-	background: var(--rf-color-surface-2, var(--rf-color-surface, #f4f4f5));
-}
-.rf-sandbox__activate {
-	gap: 0.5ch;
-	padding: 0.5rem 1rem;
-	font: inherit;
-	font-weight: var(--rf-weight-semibold);
-	color: var(--rf-color-on-accent, #fff);
-	background: var(--rf-color-accent, #2563eb);
-	border: none;
-	border-radius: var(--rf-radius-md);
-	cursor: pointer;
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
-}
-.rf-sandbox__activate::before {
-	content: "▶";
-	font-size: 0.85em;
-}
-.rf-sandbox__activate:hover {
-	background: var(--rf-color-accent-hover, var(--rf-color-accent, #1d4ed8));
-}
-.rf-sandbox__activate:focus-visible {
-	outline: 2px solid var(--rf-color-accent, #2563eb);
-	outline-offset: 2px;
-}
-
+	.rf-sandbox {
+		border-radius: var(--rf-radius-container);
+	}
+	[data-media-position="cover"] .rf-sandbox {
+		border-radius: 0;
+	}
+	.rf-sandbox iframe {
+		border: none;
+		border-radius: inherit;
+	}
+	/* Static fallback (pre/code shown before hydration) */
+	.rf-sandbox pre {
+		margin: 0;
+	}
+	/* When inside preview, remove sandbox margin */
+	.rf-preview .rf-sandbox {
+		margin: 0;
+	}
+	/* Untrusted-mode affordance. */
+	.rf-sandbox[data-security-mode="untrusted"] {
+		border: 1px solid var(--rf-color-warning, #b45309);
+	}
+	.rf-sandbox__untrusted-banner {
+		padding: 0.5rem 0.75rem;
+		font-size: var(--rf-text-sm);
+		line-height: 1.25rem;
+		font-weight: var(--rf-weight-semibold);
+		color: var(--rf-color-warning);
+		background: var(--rf-color-warning-bg, #fef3c7);
+		border-bottom: 1px solid var(--rf-color-warning, #b45309);
+	}
+	.rf-sandbox__poster {
+		background: var(--rf-color-surface-2, var(--rf-color-surface, #f4f4f5));
+	}
+	.rf-sandbox__activate {
+		gap: 0.5ch;
+		padding: 0.5rem 1rem;
+		font: inherit;
+		font-weight: var(--rf-weight-semibold);
+		color: var(--rf-color-on-accent, #fff);
+		background: var(--rf-color-accent, #2563eb);
+		border: none;
+		border-radius: var(--rf-radius-md);
+		cursor: pointer;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+	}
+	.rf-sandbox__activate::before {
+		content: "▶";
+		font-size: 0.85em;
+	}
+	.rf-sandbox__activate:hover {
+		background: var(--rf-color-accent-hover, var(--rf-color-accent, #1d4ed8));
+	}
+	.rf-sandbox__activate:focus-visible {
+		outline: 2px solid var(--rf-color-accent, #2563eb);
+		outline-offset: 2px;
+	}
 }

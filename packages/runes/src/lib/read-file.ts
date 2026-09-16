@@ -51,7 +51,9 @@ interface LineRange {
 export function parseLineRange(raw: string | undefined): LineRange | null {
 	if (raw === undefined || raw === null || raw === '') return null;
 	if (typeof raw !== 'string') {
-		throw new SnippetSandboxError(`snippet \`lines\` attribute must be a string, got ${typeof raw}`);
+		throw new SnippetSandboxError(
+			`snippet \`lines\` attribute must be a string, got ${typeof raw}`,
+		);
 	}
 	const trimmed = raw.trim();
 	if (trimmed.length === 0) return null;
@@ -59,27 +61,34 @@ export function parseLineRange(raw: string | undefined): LineRange | null {
 	// "10" — single line shorthand
 	if (/^\d+$/.test(trimmed)) {
 		const n = Number(trimmed);
-		if (!Number.isFinite(n) || n < 1) throw new SnippetSandboxError(`snippet \`lines\` value "${raw}" is not a positive integer`);
+		if (!Number.isFinite(n) || n < 1)
+			throw new SnippetSandboxError(`snippet \`lines\` value "${raw}" is not a positive integer`);
 		return { start: n, end: n };
 	}
 
 	// "10-25" | "10-" | "-20"
 	const m = /^(\d*)-(\d*)$/.exec(trimmed);
 	if (!m) {
-		throw new SnippetSandboxError(`snippet \`lines\` value "${raw}" is malformed; expected "N", "N-M", "N-", or "-M"`);
+		throw new SnippetSandboxError(
+			`snippet \`lines\` value "${raw}" is malformed; expected "N", "N-M", "N-", or "-M"`,
+		);
 	}
 	const startStr = m[1];
 	const endStr = m[2];
 	const start = startStr.length > 0 ? Number(startStr) : undefined;
 	const end = endStr.length > 0 ? Number(endStr) : undefined;
 	if (start !== undefined && (!Number.isFinite(start) || start < 1)) {
-		throw new SnippetSandboxError(`snippet \`lines\` start "${startStr}" is not a positive integer`);
+		throw new SnippetSandboxError(
+			`snippet \`lines\` start "${startStr}" is not a positive integer`,
+		);
 	}
 	if (end !== undefined && (!Number.isFinite(end) || end < 1)) {
 		throw new SnippetSandboxError(`snippet \`lines\` end "${endStr}" is not a positive integer`);
 	}
 	if (start !== undefined && end !== undefined && end < start) {
-		throw new SnippetSandboxError(`snippet \`lines\` value "${raw}" is inverted (end before start)`);
+		throw new SnippetSandboxError(
+			`snippet \`lines\` value "${raw}" is inverted (end before start)`,
+		);
 	}
 	return { start, end };
 }
@@ -105,9 +114,7 @@ export function sliceContent(
 		);
 	}
 	if (endLine > total) {
-		warnings.push(
-			`snippet \`lines\` end ${endLine} exceeds file length; clamped to ${total}`,
-		);
+		warnings.push(`snippet \`lines\` end ${endLine} exceeds file length; clamped to ${total}`);
 		endLine = total;
 	}
 

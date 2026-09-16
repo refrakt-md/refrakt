@@ -17,16 +17,29 @@ function stubIO(): void {
 	unobserved = [];
 	disconnected = false;
 	(globalThis as Record<string, unknown>).IntersectionObserver = class {
-		constructor(cb: IOCallback) { ioCallback = cb; }
-		observe = (el: Element) => { observed.push(el); };
-		unobserve = (el: Element) => { unobserved.push(el); };
-		disconnect = () => { disconnected = true; };
-		takeRecords() { return []; }
+		constructor(cb: IOCallback) {
+			ioCallback = cb;
+		}
+		observe = (el: Element) => {
+			observed.push(el);
+		};
+		unobserve = (el: Element) => {
+			unobserved.push(el);
+		};
+		disconnect = () => {
+			disconnected = true;
+		};
+		takeRecords() {
+			return [];
+		}
 	};
 }
 
 function setReducedMotion(reduce: boolean): void {
-	(globalThis as Record<string, unknown>).matchMedia = (q: string) => ({ matches: reduce, media: q });
+	(globalThis as Record<string, unknown>).matchMedia = (q: string) => ({
+		matches: reduce,
+		media: q,
+	});
 }
 
 beforeEach(() => {
@@ -79,7 +92,9 @@ describe('scroll-reveal behaviour (SPEC-105)', () => {
 		expect(a.hasAttribute('data-in-view')).toBe(false);
 
 		// `a` scrolls into view.
-		ioCallback!([{ isIntersecting: true, target: a }], { unobserve: (el: Element) => unobserved.push(el) });
+		ioCallback!([{ isIntersecting: true, target: a }], {
+			unobserve: (el: Element) => unobserved.push(el),
+		});
 		expect(a.getAttribute('data-in-view')).toBe('');
 		expect(unobserved).toContain(a);
 		// `b` not yet intersecting → still hidden, still observed.
@@ -90,7 +105,9 @@ describe('scroll-reveal behaviour (SPEC-105)', () => {
 	it('does not reveal on a non-intersecting entry', () => {
 		const a = reveal();
 		scrollRevealBehavior(document);
-		ioCallback!([{ isIntersecting: false, target: a }], { unobserve: (el: Element) => unobserved.push(el) });
+		ioCallback!([{ isIntersecting: false, target: a }], {
+			unobserve: (el: Element) => unobserved.push(el),
+		});
 		expect(a.hasAttribute('data-in-view')).toBe(false);
 	});
 

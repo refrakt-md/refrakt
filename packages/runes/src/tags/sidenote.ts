@@ -15,13 +15,16 @@ export const sidenote = createContentModelSchema({
 	sections: sidenoteSections,
 	provides: ['prose'],
 	attributes: {
-		variant: { type: String, required: false, matches: variantType.slice(), description: 'Display style: sidenote, footnote, or tooltip' },
+		variant: {
+			type: String,
+			required: false,
+			matches: variantType.slice(),
+			description: 'Display style: sidenote, footnote, or tooltip',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const variantMeta = new Tag('meta', { content: attrs.variant ?? 'sidenote' });
@@ -30,7 +33,8 @@ export const sidenote = createContentModelSchema({
 		);
 		const bodyDiv = body.wrap('div');
 
-		return createComponentRenderable({ rune: 'sidenote',
+		return createComponentRenderable({
+			rune: 'sidenote',
 			tag: 'aside',
 			properties: {
 				variant: variantMeta,

@@ -14,7 +14,7 @@
 
 /* Indicator base — positioned left of text (the box; its chrome is skin). */
 [data-checked]::before {
-	content: '';
+	content: "";
 	position: absolute;
 	left: 0.125rem;
 	top: 0.5em;

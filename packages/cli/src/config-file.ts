@@ -1,10 +1,7 @@
 import { existsSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { RefraktConfig } from '@refrakt-md/types';
-import {
-	loadRefraktConfigWithRaw,
-	type NormalizedRefraktConfig,
-} from '@refrakt-md/transform/node';
+import { loadRefraktConfigWithRaw, type NormalizedRefraktConfig } from '@refrakt-md/transform/node';
 
 export interface PackageManager {
 	name: 'npm' | 'pnpm' | 'yarn' | 'bun';

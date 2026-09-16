@@ -8,8 +8,25 @@ export { layoutTransform, LAYOUT_STRINGS } from './layout.js';
 export { buildBreadcrumb, buildToc, buildPrevNext, buildVersionSwitcher } from './computed.js';
 
 // Configuration types
-export type { ThemeConfig, RuneConfig, StructureEntry, TintTokens, TintDefinition, BgPresetDefinition, LayoutPrimitive, BlockDef, MetaField, LayoutEntry } from './types.js';
-export type { LayoutConfig, LayoutSlot, LayoutPageData, ComputedContent, LayoutStructureEntry } from './types.js';
+export type {
+	ThemeConfig,
+	RuneConfig,
+	StructureEntry,
+	TintTokens,
+	TintDefinition,
+	BgPresetDefinition,
+	LayoutPrimitive,
+	BlockDef,
+	MetaField,
+	LayoutEntry,
+} from './types.js';
+export type {
+	LayoutConfig,
+	LayoutSlot,
+	LayoutPageData,
+	ComputedContent,
+	LayoutStructureEntry,
+} from './types.js';
 
 // Re-export serialized tree types for convenience
 export type { SerializedTag, RendererNode } from '@refrakt-md/types';
@@ -19,7 +36,24 @@ export { generateStructureContract } from './contracts.js';
 export type { StructureContract, RuneContract } from './contracts.js';
 
 // Helpers (useful for theme authors building custom transforms)
-export { toKebabCase, fromKebabCase, isTag, makeTag, findMeta, findByDataName, nonMetaChildren, readMeta, parseFields, readField, extractComponentInterface, resolveGap, ratioToFr, resolveOffset, resolveValign, parsePlacement } from './helpers.js';
+export {
+	toKebabCase,
+	fromKebabCase,
+	isTag,
+	makeTag,
+	findMeta,
+	findByDataName,
+	nonMetaChildren,
+	readMeta,
+	parseFields,
+	readField,
+	extractComponentInterface,
+	resolveGap,
+	ratioToFr,
+	resolveOffset,
+	resolveValign,
+	parsePlacement,
+} from './helpers.js';
 export type { ComponentInterface } from './helpers.js';
 
 // HTML rendering
@@ -50,13 +84,34 @@ export type { IdentityField } from './identity-fields.js';
 // does and when it is unavailable on a rune. `generateStructureContract` builds
 // its `unavailable` map from `describeForRune`; SPEC-125 Phase 3 narrows rune
 // schemas from the same call, so the contract and the schemas cannot disagree.
-export { UNIVERSAL_AXIS_FACETS, DESCRIBABLE_FACETS, UNIVERSAL_POSTURE_REASONS } from './facets/index.js';
-export type { UniversalAxisFacet, UniversalAxisContract, RuneAxisContract, DescribableFacet, FacetContract } from './facets/index.js';
+export {
+	UNIVERSAL_AXIS_FACETS,
+	DESCRIBABLE_FACETS,
+	UNIVERSAL_POSTURE_REASONS,
+} from './facets/index.js';
+export type {
+	UniversalAxisFacet,
+	UniversalAxisContract,
+	RuneAxisContract,
+	DescribableFacet,
+	FacetContract,
+} from './facets/index.js';
 
 // Section-role drift lint (SPEC-125) — shared "declared slots" helper + check
-export { declaredSlots, lintSectionRoles, BODY_SLOT_NAMES, HEADER_SLOT_NAMES } from './section-roles.js';
+export {
+	declaredSlots,
+	lintSectionRoles,
+	BODY_SLOT_NAMES,
+	HEADER_SLOT_NAMES,
+} from './section-roles.js';
 export type { SectionRoleFinding } from './section-roles.js';
-export { READING_REGISTERS, DEFAULT_READING, READING_CAPABILITIES, resolveReading, coerceRegister } from './reading.js';
+export {
+	READING_REGISTERS,
+	DEFAULT_READING,
+	READING_CAPABILITIES,
+	resolveReading,
+	coerceRegister,
+} from './reading.js';
 export type { ReadingRegister, ReadingResolutionInput } from './reading.js';
 
 // Locale-aware string resolution (SPEC-035)
@@ -100,7 +155,14 @@ export { validateThemeTokensConfig, formatTokenValidationErrors } from './token-
 export type { TokenValidationError, TokenValidationResult } from './token-validate.js';
 
 // Layout configs
-export { defaultLayout, docsLayout, blogArticleLayout, planLayout, withoutSearch, withoutSearchLayout } from './layouts.js';
+export {
+	defaultLayout,
+	docsLayout,
+	blogArticleLayout,
+	planLayout,
+	withoutSearch,
+	withoutSearchLayout,
+} from './layouts.js';
 
 // Provenance tracking
 export type { RuneProvenance } from './provenance.js';
@@ -116,6 +178,20 @@ export { matchRouteRule, matchRouteEntity } from './route-rules.js';
 export { serialize, serializeTree } from './serialize.js';
 
 // Adapter utilities (shared across Astro, Nuxt, Next.js, Eleventy)
-export { renderPage, hasMatchingRunes, extractSeoData, seoToHtml, escapeAttr, CORE_PACKAGES } from './adapter.js';
-export type { AdapterTheme, RenderPageInput, OgMeta, PageSeo, SeoInput, SeoData, SeoToHtmlOptions } from './adapter.js';
-
+export {
+	renderPage,
+	hasMatchingRunes,
+	extractSeoData,
+	seoToHtml,
+	escapeAttr,
+	CORE_PACKAGES,
+} from './adapter.js';
+export type {
+	AdapterTheme,
+	RenderPageInput,
+	OgMeta,
+	PageSeo,
+	SeoInput,
+	SeoData,
+	SeoToHtmlOptions,
+} from './adapter.js';

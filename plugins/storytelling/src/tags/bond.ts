@@ -1,7 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	RenderableNodeCursor,
+} from '@refrakt-md/runes';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
@@ -12,17 +17,35 @@ export const bond = createContentModelSchema({
 	sections: bondSections,
 	provides: ['prose'],
 	attributes: {
-		from: { type: String, required: true, description: 'Name of the first character or entity in this bond.' },
-		to: { type: String, required: true, description: 'Name of the second character or entity in this bond.' },
-		type: { type: String, required: false, description: 'Kind of relationship (e.g. ally, rival, mentor, sibling).' },
-		status: { type: String, required: false, description: 'Current state of the bond (e.g. active, broken, strained).' },
-		bidirectional: { type: Boolean, required: false, description: 'Enable/disable mutual connection between both entities.' },
+		from: {
+			type: String,
+			required: true,
+			description: 'Name of the first character or entity in this bond.',
+		},
+		to: {
+			type: String,
+			required: true,
+			description: 'Name of the second character or entity in this bond.',
+		},
+		type: {
+			type: String,
+			required: false,
+			description: 'Kind of relationship (e.g. ally, rival, mentor, sibling).',
+		},
+		status: {
+			type: String,
+			required: false,
+			description: 'Current state of the bond (e.g. active, broken, strained).',
+		},
+		bidirectional: {
+			type: Boolean,
+			required: false,
+			description: 'Enable/disable mutual connection between both entities.',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const fromTag = new Tag('span', {}, [attrs.from ?? '']);
@@ -37,7 +60,8 @@ export const bond = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable({ rune: 'bond',
+		return createComponentRenderable({
+			rune: 'bond',
 			tag: 'div',
 			properties: {
 				bondType: bondTypeMeta,
@@ -50,7 +74,15 @@ export const bond = createContentModelSchema({
 				connector,
 				body: body.tag('div'),
 			},
-			children: [fromTag, connector, toTag, bondTypeMeta, statusMeta, bidirectionalMeta, body.next()],
+			children: [
+				fromTag,
+				connector,
+				toTag,
+				bondTypeMeta,
+				statusMeta,
+				bidirectionalMeta,
+				body.next(),
+			],
 		});
 	},
 });

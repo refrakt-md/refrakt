@@ -1,138 +1,136 @@
 @layer skin {
-/* Recipe — editorial cookbook aesthetic */
+	/* Recipe — editorial cookbook aesthetic */
 
-/* Thin-edge inset model (matches `.rf-card`): card outer padding is a thin edge,
+	/* Thin-edge inset model (matches `.rf-card`): card outer padding is a thin edge,
  * the content column adds the remaining inset back so text sits at the full
  * `--rune-padding` without negative-margin bleed. Unlike `card`, the split
  * layout keeps `align-items: start` (no `--split-valign: stretch`) — recipe
  * content can be very tall (ingredients + many steps + tips), so stretching the
  * media to match would crop the image hard. The image keeps its natural ratio
  * and any leftover height in the media column sits as quiet card padding. */
-.rf-recipe {
-	--rf-recipe-edge: 0.5rem;
-	--rf-recipe-media-gap: var(--rf-spacing-lg);
-	--rf-recipe-split-gap: var(--rf-spacing-sm);
-	padding: var(--rf-recipe-edge);
-}
+	.rf-recipe {
+		--rf-recipe-edge: 0.5rem;
+		--rf-recipe-media-gap: var(--rf-spacing-lg);
+		--rf-recipe-split-gap: var(--rf-spacing-sm);
+		padding: var(--rf-recipe-edge);
+	}
 
-.rf-recipe__content {
-	padding: max(0px, calc(var(--rune-padding, var(--rf-spacing-md)) - var(--rf-recipe-edge)));
-}
+	.rf-recipe__content {
+		padding: max(0px, calc(var(--rune-padding, var(--rf-spacing-md)) - var(--rf-recipe-edge)));
+	}
 
-/* Direct grid properties (column-gap / row-gap) rather than overriding shared
+	/* Direct grid properties (column-gap / row-gap) rather than overriding shared
  * media-position layout vars — the per-rune rules win via selector specificity
  * and stay in our control regardless of inline styles. */
-.rf-recipe[data-media-position="start"],
-.rf-recipe[data-media-position="end"] {
-	column-gap: var(--rf-recipe-split-gap);
-	row-gap: var(--rf-recipe-media-gap);
-}
+	.rf-recipe[data-media-position="start"],
+	.rf-recipe[data-media-position="end"] {
+		column-gap: var(--rf-recipe-split-gap);
+		row-gap: var(--rf-recipe-media-gap);
+	}
 
-.rf-recipe[data-media-position="top"] > [data-section="media"] {
-	margin-bottom: var(--rf-recipe-media-gap);
-}
-.rf-recipe[data-media-position="bottom"] > [data-section="media"] {
-	margin-top: var(--rf-recipe-media-gap);
-}
+	.rf-recipe[data-media-position="top"] > [data-section="media"] {
+		margin-bottom: var(--rf-recipe-media-gap);
+	}
+	.rf-recipe[data-media-position="bottom"] > [data-section="media"] {
+		margin-top: var(--rf-recipe-media-gap);
+	}
 
-.rf-recipe .rf-recipe__eyebrow {
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-semibold);
-	letter-spacing: var(--rf-tracking-wider);
-	text-transform: uppercase;
-	color: var(--rf-color-primary);
-	margin: 0 0 0.375rem;
-}
-.rf-recipe__headline {
-	margin-top: 0;
-	margin-bottom: 0.25rem;
-}
-.rf-recipe .rf-recipe__blurb {
-	color: var(--rf-color-muted);
-	margin-bottom: 0;
-	max-width: 40rem;
-}
-.rf-recipe__image {
-	margin-bottom: 1rem;
-}
+	.rf-recipe .rf-recipe__eyebrow {
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-semibold);
+		letter-spacing: var(--rf-tracking-wider);
+		text-transform: uppercase;
+		color: var(--rf-color-primary);
+		margin: 0 0 0.375rem;
+	}
+	.rf-recipe__headline {
+		margin-top: 0;
+		margin-bottom: 0.25rem;
+	}
+	.rf-recipe .rf-recipe__blurb {
+		color: var(--rf-color-muted);
+		margin-bottom: 0;
+		max-width: 40rem;
+	}
+	.rf-recipe__image {
+		margin-bottom: 1rem;
+	}
 
-/* Content wrapper */
-.rf-recipe__content {
-	gap: 1.75rem;
-}
+	/* Content wrapper */
+	.rf-recipe__content {
+		gap: 1.75rem;
+	}
 
-/* Ingredients — surfaced zone with custom markers */
-.rf-recipe__content ul {
-	background: var(--rf-color-surface);
-	border: 1px solid var(--rf-color-border);
-	border-radius: var(--rf-radius-md);
-	padding: 1.25rem 1.25rem 1.25rem 2.5rem;
-	list-style: disc;
-	margin: 0;
-}
-.rf-recipe__content ul li {
-	padding: 0.2rem 0;
-	line-height: var(--rf-leading-relaxed);
-}
-.rf-recipe__content ul li::marker {
-	color: var(--rf-color-primary);
-}
+	/* Ingredients — surfaced zone with custom markers */
+	.rf-recipe__content ul {
+		background: var(--rf-color-surface);
+		border: 1px solid var(--rf-color-border);
+		border-radius: var(--rf-radius-md);
+		padding: 1.25rem 1.25rem 1.25rem 2.5rem;
+		list-style: disc;
+		margin: 0;
+	}
+	.rf-recipe__content ul li {
+		padding: 0.2rem 0;
+		line-height: var(--rf-leading-relaxed);
+	}
+	.rf-recipe__content ul li::marker {
+		color: var(--rf-color-primary);
+	}
 
-/* Steps — numbered with styled counters */
-.rf-recipe__content ol {
-	padding-left: 0;
-	margin: 0;
-}
-.rf-recipe__content ol > li {
-	padding: 0.625rem 0;
-	padding-left: 2.25rem;
-	line-height: var(--rf-leading-relaxed);
-}
-.rf-recipe__content ol > li + li {
-	border-top: 1px solid var(--rf-color-border);
-}
-.rf-recipe__content ol > li::before {
-	font-size: var(--rf-text-xs);
-	font-weight: var(--rf-weight-bold);
-	color: var(--rf-color-primary);
-	background: var(--rf-color-surface);
-	border-radius: var(--rf-radius-full);
-}
+	/* Steps — numbered with styled counters */
+	.rf-recipe__content ol {
+		padding-left: 0;
+		margin: 0;
+	}
+	.rf-recipe__content ol > li {
+		padding: 0.625rem 0;
+		padding-left: 2.25rem;
+		line-height: var(--rf-leading-relaxed);
+	}
+	.rf-recipe__content ol > li + li {
+		border-top: 1px solid var(--rf-color-border);
+	}
+	.rf-recipe__content ol > li::before {
+		font-size: var(--rf-text-xs);
+		font-weight: var(--rf-weight-bold);
+		color: var(--rf-color-primary);
+		background: var(--rf-color-surface);
+		border-radius: var(--rf-radius-full);
+	}
 
-.rf-recipe__content ol > li > p,
-.rf-recipe__content ul > li > p {
-	margin: 0;
-}
+	.rf-recipe__content ol > li > p,
+	.rf-recipe__content ul > li > p {
+		margin: 0;
+	}
 
-/* Tips — callout accent like hint */
-.rf-recipe__content blockquote {
-	border-left: 2px solid var(--rf-color-primary);
-	background: var(--rf-color-surface);
-	border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
-	padding: 0.75rem 1.25rem;
-	margin: 0;
-	font-size: var(--rf-text-sm);
-	font-style: italic;
-	color: var(--rf-color-muted);
-	line-height: var(--rf-leading-relaxed);
-}
-.rf-recipe__content blockquote p {
-	margin: 0;
-}
+	/* Tips — callout accent like hint */
+	.rf-recipe__content blockquote {
+		border-left: 2px solid var(--rf-color-primary);
+		background: var(--rf-color-surface);
+		border-radius: 0 var(--rf-radius-md) var(--rf-radius-md) 0;
+		padding: 0.75rem 1.25rem;
+		margin: 0;
+		font-size: var(--rf-text-sm);
+		font-style: italic;
+		color: var(--rf-color-muted);
+		line-height: var(--rf-leading-relaxed);
+	}
+	.rf-recipe__content blockquote p {
+		margin: 0;
+	}
 
-/* Media zone — base sizing/clip come from the shared [data-section="media"]
+	/* Media zone — base sizing/clip come from the shared [data-section="media"]
  * rule in split.css. The image uses the media radius tier so it reads as a
  * guest nested inside the (larger-radius) recipe card. */
-.rf-recipe__media img {
-	border-radius: var(--rf-radius-media);
-}
-@media (max-width: 48rem) {
-	.rf-recipe__metadata {
-		gap: 0.75rem;
-		padding: 0;
-		border: none;
+	.rf-recipe__media img {
+		border-radius: var(--rf-radius-media);
 	}
-}
-
-
+	@media (max-width: 48rem) {
+		.rf-recipe__metadata {
+			gap: 0.75rem;
+			padding: 0;
+			border: none;
+		}
+	}
 }

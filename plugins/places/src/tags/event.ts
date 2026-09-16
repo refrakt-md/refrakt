@@ -1,20 +1,57 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, pageSectionProperties, unwrapParagraphImages } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	RenderableNodeCursor,
+	pageSectionProperties,
+	unwrapParagraphImages,
+} from '@refrakt-md/runes';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
 // what a section *is* (ADR-028).
 export const eventSections = { headline: 'title', blurb: 'description', body: 'body' } as const;
 
+// SPEC-130 / WORK-565 — the rune's schema.org mapping, as data.
+//
+// `location` is the case that makes `event` the second proof: its source exists
+// only as an attribute value, so the applier rebuilds a carrier from the field
+// bag rather than stamping a node. `headline` / `blurb` come from
+// `pageSectionProperties` and survive as refs, so those stamp in place. One
+// table, three of the mechanism's resolution paths.
+export const eventSchema = {
+	type: 'Event',
+	properties: {
+		headline: 'name',
+		blurb: 'description',
+		date: 'startDate',
+		endDate: 'endDate',
+		url: 'url',
+	},
+	entities: {
+		location: { type: 'Place', property: 'location', properties: { location: 'name' } },
+	},
+} as const;
+
 export const event = createContentModelSchema({
+	schema: eventSchema,
 	sections: eventSections,
 	provides: ['prose'],
 	attributes: {
-		date: { type: String, required: false, description: 'Start date of the event (e.g. 2025-06-15).' },
+		date: {
+			type: String,
+			required: false,
+			description: 'Start date of the event (e.g. 2025-06-15).',
+		},
 		endDate: { type: String, required: false, description: 'End date for multi-day events.' },
-		location: { type: String, required: false, description: 'Venue or place name where the event is held.' },
+		location: {
+			type: String,
+			required: false,
+			description: 'Venue or place name where the event is held.',
+		},
 		url: { type: String, required: false, description: 'Link to the event page or ticket source.' },
 	},
 	contentModel: {
@@ -29,7 +66,9 @@ export const event = createContentModelSchema({
 		// the header (and so `pageSectionProperties`' top-level `img` lookup finds
 		// it).
 		const header = new RenderableNodeCursor(
-			unwrapParagraphImages(Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[]),
+			unwrapParagraphImages(
+				Markdoc.transform(asNodes(resolved.header), config) as RenderableTreeNode[],
+			),
 		);
 		const body = new RenderableNodeCursor(
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
@@ -43,11 +82,6 @@ export const event = createContentModelSchema({
 
 		const bodyDiv = body.wrap('div');
 
-		// Schema.org nested Place for location
-		const locationWrapper = attrs.location ? new Tag('span', { typeof: 'Place', property: 'location' }, [
-			new Tag('meta', { property: 'name', content: attrs.location }),
-		]) : undefined;
-
 		// SPEC-081: emit flat `data-name` header slots — `layout` wraps
 		// eyebrow/headline/blurb in the preamble <header>, so each is
 		// individually addressable (fixes the buried-preamble bug).
@@ -59,9 +93,9 @@ export const event = createContentModelSchema({
 			...header.toArray(),
 			bodyDiv.next(),
 		];
-		if (locationWrapper) resultChildren.push(locationWrapper);
 
-		return createComponentRenderable({ rune: 'event', schemaOrgType: 'Event',
+		return createComponentRenderable({
+			rune: 'event',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
@@ -73,13 +107,6 @@ export const event = createContentModelSchema({
 			refs: {
 				...sectionProps,
 				body: bodyDiv,
-			},
-			schema: {
-				name: sectionProps.headline,
-				description: sectionProps.blurb,
-				startDate: dateMeta,
-				endDate: endDateMeta,
-				url: urlMeta,
 			},
 			children: resultChildren,
 		});

@@ -39,7 +39,7 @@ export function formatConfig(runeTypeof: string, config: ThemeConfig): string {
 		const structs = Object.entries(runeConfig.structure)
 			.map(([name, entry]) => {
 				const children = entry.children
-					? entry.children.map(c => typeof c === 'string' ? c : (c.ref ?? '?')).join(' + ')
+					? entry.children.map((c) => (typeof c === 'string' ? c : (c.ref ?? '?'))).join(' + ')
 					: name;
 				const slot = entry.before ? 'before' : 'after';
 				const repeat = entry.repeat ? ` ×${entry.repeat.count}` : '';
@@ -58,13 +58,15 @@ export function formatConfig(runeTypeof: string, config: ThemeConfig): string {
 			parts.push(`hide: ${runeConfig.projection.hide.join(', ')}`);
 		}
 		if (runeConfig.projection.group) {
-			const groups = Object.entries(runeConfig.projection.group)
-				.map(([name, def]) => `${name} ← [${def.members.join(', ')}]`);
+			const groups = Object.entries(runeConfig.projection.group).map(
+				([name, def]) => `${name} ← [${def.members.join(', ')}]`,
+			);
 			parts.push(`group: ${groups.join('; ')}`);
 		}
 		if (runeConfig.projection.relocate) {
-			const relocations = Object.entries(runeConfig.projection.relocate)
-				.map(([name, def]) => `${name} → ${def.into}`);
+			const relocations = Object.entries(runeConfig.projection.relocate).map(
+				([name, def]) => `${name} → ${def.into}`,
+			);
 			parts.push(`relocate: ${relocations.join('; ')}`);
 		}
 		lines.push(`  ${DIM}projection:${RESET}       ${parts.join(' | ')}`);
@@ -72,14 +74,18 @@ export function formatConfig(runeTypeof: string, config: ThemeConfig): string {
 
 	// Content wrapper
 	if (runeConfig.contentWrapper) {
-		lines.push(`  ${DIM}contentWrapper:${RESET}   ${runeConfig.contentWrapper.tag}[ref=${runeConfig.contentWrapper.ref}]`);
+		lines.push(
+			`  ${DIM}contentWrapper:${RESET}   ${runeConfig.contentWrapper.tag}[ref=${runeConfig.contentWrapper.ref}]`,
+		);
 	} else {
 		lines.push(`  ${DIM}contentWrapper:${RESET}   ${DIM}none${RESET}`);
 	}
 
 	// Composability: hard nesting requirement (SPEC-084)
 	if (runeConfig.requiresParent) {
-		lines.push(`  ${DIM}requiresParent:${RESET}   ${runeConfig.requiresParent}  ${DIM}(validated; warns/errors if nested elsewhere)${RESET}`);
+		lines.push(
+			`  ${DIM}requiresParent:${RESET}   ${runeConfig.requiresParent}  ${DIM}(validated; warns/errors if nested elsewhere)${RESET}`,
+		);
 	}
 
 	// Context modifiers
@@ -116,12 +122,14 @@ export function formatConfig(runeTypeof: string, config: ThemeConfig): string {
 
 /** Format the selector list with visual grouping */
 export function formatSelectors(selectors: string[]): string {
-	return selectors.map(s => {
-		if (s.startsWith('[')) return `  ${YELLOW}${s}${RESET}`;
-		if (s.includes('__')) return `  ${CYAN}${s}${RESET}`;
-		if (s.includes('--')) return `  ${GREEN}${s}${RESET}`;
-		return `  ${BOLD}${s}${RESET}`;
-	}).join('\n');
+	return selectors
+		.map((s) => {
+			if (s.startsWith('[')) return `  ${YELLOW}${s}${RESET}`;
+			if (s.includes('__')) return `  ${CYAN}${s}${RESET}`;
+			if (s.includes('--')) return `  ${GREEN}${s}${RESET}`;
+			return `  ${BOLD}${s}${RESET}`;
+		})
+		.join('\n');
 }
 
 /** Format a section heading */
@@ -131,16 +139,29 @@ export function heading(text: string): string {
 
 /** Format the input Markdoc source (indented) */
 export function formatInput(source: string): string {
-	return source.split('\n').map(line => `  ${DIM}${line}${RESET}`).join('\n');
+	return source
+		.split('\n')
+		.map((line) => `  ${DIM}${line}${RESET}`)
+		.join('\n');
 }
 
 /** Format the HTML output (indented, already pretty-printed) */
 export function formatHtml(html: string): string {
-	return html.split('\n').map(line => `  ${line}`).join('\n');
+	return html
+		.split('\n')
+		.map((line) => `  ${line}`)
+		.join('\n');
 }
 
 /** Format the rune list for --list mode */
-export function formatRuneList(runes: Array<{ name: string; aliases: string[]; description: string; variants: Record<string, string[]> }>): string {
+export function formatRuneList(
+	runes: Array<{
+		name: string;
+		aliases: string[];
+		description: string;
+		variants: Record<string, string[]>;
+	}>,
+): string {
 	const lines: string[] = [];
 
 	for (const rune of runes) {
@@ -171,25 +192,33 @@ export function buildJsonOutput(opts: {
 	config: RuneConfig | undefined;
 	html: string;
 	selectors: string[];
+	/** The rune's resolved schema.org row (WORK-566), when it declares a table. */
+	schema?: unknown;
 }): object {
 	return {
 		rune: opts.rune,
 		theme: opts.theme,
 		input: opts.input,
-		config: opts.config ? {
-			block: opts.config.block,
-			modifiers: opts.config.modifiers ?? {},
-			structure: opts.config.structure ?? {},
-			contentWrapper: opts.config.contentWrapper ?? null,
-			contextModifiers: opts.config.contextModifiers ?? {},
-			rootAttributes: opts.config.rootAttributes ?? {},
-			staticModifiers: opts.config.staticModifiers ?? [],
-			styles: opts.config.styles ?? {},
-			...(opts.config.childDensity ? { childDensity: opts.config.childDensity } : {}),
-			...(opts.config.projection ? { projection: opts.config.projection } : {}),
-		} : null,
+		config: opts.config
+			? {
+					block: opts.config.block,
+					modifiers: opts.config.modifiers ?? {},
+					structure: opts.config.structure ?? {},
+					contentWrapper: opts.config.contentWrapper ?? null,
+					contextModifiers: opts.config.contextModifiers ?? {},
+					rootAttributes: opts.config.rootAttributes ?? {},
+					staticModifiers: opts.config.staticModifiers ?? [],
+					styles: opts.config.styles ?? {},
+					...(opts.config.childDensity ? { childDensity: opts.config.childDensity } : {}),
+					...(opts.config.projection ? { projection: opts.config.projection } : {}),
+				}
+			: null,
 		html: opts.html,
 		selectors: opts.selectors,
+		// `null` rather than omitted: "this rune declares no schema table" is a
+		// fact a consumer wants, and distinguishable from an older payload that
+		// predates the field.
+		schema: opts.schema ?? null,
 	};
 }
 
@@ -201,12 +230,14 @@ export function formatAuditResult(result: AuditResult, theme: string): string {
 
 	// Find the longest selector for alignment
 	const selectors = Object.keys(result.selectors);
-	const maxLen = Math.max(...selectors.map(s => s.length));
+	const maxLen = Math.max(...selectors.map((s) => s.length));
 
 	for (const [sel, info] of Object.entries(result.selectors)) {
 		const padded = sel.padEnd(maxLen + 2);
 		if (info.styled) {
-			lines.push(`  ${GREEN}\u2713${RESET} ${padded} ${DIM}\u2192 ${info.file}:${info.line}${RESET}`);
+			lines.push(
+				`  ${GREEN}\u2713${RESET} ${padded} ${DIM}\u2192 ${info.file}:${info.line}${RESET}`,
+			);
 		} else {
 			lines.push(`  ${RED}\u2717${RESET} ${padded} ${RED}NOT STYLED${RESET}`);
 		}
@@ -214,9 +245,12 @@ export function formatAuditResult(result: AuditResult, theme: string): string {
 
 	lines.push('');
 	const pct = result.total > 0 ? Math.round((result.styled / result.total) * 100) : 0;
-	const statusIcon = result.status === 'complete' ? `${GREEN}\u2713 complete${RESET}`
-		: result.status === 'partial' ? `${YELLOW}\u26a0 ${result.total - result.styled} unstyled${RESET}`
-		: `${RED}\u2717 not started${RESET}`;
+	const statusIcon =
+		result.status === 'complete'
+			? `${GREEN}\u2713 complete${RESET}`
+			: result.status === 'partial'
+				? `${YELLOW}\u26a0 ${result.total - result.styled} unstyled${RESET}`
+				: `${RED}\u2717 not started${RESET}`;
 	lines.push(`  Coverage: ${result.styled}/${result.total} selectors (${pct}%)  ${statusIcon}`);
 
 	return lines.join('\n');
@@ -229,23 +263,26 @@ export function formatAuditSummary(results: AuditResult[], theme: string): strin
 	lines.push('');
 
 	// Find the longest rune name for alignment
-	const maxNameLen = Math.max(...results.map(r => r.rune.length));
+	const maxNameLen = Math.max(...results.map((r) => r.rune.length));
 
 	for (const r of results) {
 		const name = r.rune.padEnd(maxNameLen + 2);
 		const fraction = `${r.styled}/${r.total}`.padStart(7);
-		const statusIcon = r.status === 'complete' ? `${GREEN}\u2713 complete${RESET}`
-			: r.status === 'partial' ? `${YELLOW}\u26a0 ${r.total - r.styled} unstyled${RESET}`
-			: `${RED}\u2717 not started${RESET}`;
+		const statusIcon =
+			r.status === 'complete'
+				? `${GREEN}\u2713 complete${RESET}`
+				: r.status === 'partial'
+					? `${YELLOW}\u26a0 ${r.total - r.styled} unstyled${RESET}`
+					: `${RED}\u2717 not started${RESET}`;
 		lines.push(`  ${name} ${fraction}  selectors   ${statusIcon}`);
 	}
 
 	// Summary
 	const totalSelectors = results.reduce((sum, r) => sum + r.total, 0);
 	const totalStyled = results.reduce((sum, r) => sum + r.styled, 0);
-	const complete = results.filter(r => r.status === 'complete').length;
-	const partial = results.filter(r => r.status === 'partial').length;
-	const notStarted = results.filter(r => r.status === 'not-started').length;
+	const complete = results.filter((r) => r.status === 'complete').length;
+	const partial = results.filter((r) => r.status === 'partial').length;
+	const notStarted = results.filter((r) => r.status === 'not-started').length;
 	const pct = totalSelectors > 0 ? Math.round((totalStyled / totalSelectors) * 100) : 0;
 
 	lines.push('');
@@ -268,12 +305,17 @@ export function buildAuditJson(results: AuditResult[], theme: string): object {
 		totalSelectors,
 		styledSelectors: totalStyled,
 		coverage: totalSelectors > 0 ? Math.round((totalStyled / totalSelectors) * 100) / 100 : 0,
-		runes: Object.fromEntries(results.map(r => [r.rune, {
-			total: r.total,
-			styled: r.styled,
-			status: r.status,
-			selectors: r.selectors,
-		}])),
+		runes: Object.fromEntries(
+			results.map((r) => [
+				r.rune,
+				{
+					total: r.total,
+					styled: r.styled,
+					status: r.status,
+					selectors: r.selectors,
+				},
+			]),
+		),
 	};
 }
 
@@ -285,7 +327,7 @@ export function formatMetaAuditResult(result: MetaAuditResult): string {
 	// Meta types in use
 	lines.push('');
 	lines.push(`  ${BOLD}Meta Types in Use${RESET}`);
-	for (const [type, count] of Object.entries(result.typeCount).sort(([,a], [,b]) => b - a)) {
+	for (const [type, count] of Object.entries(result.typeCount).sort(([, a], [, b]) => b - a)) {
 		lines.push(`    ${type.padEnd(12)} ${count} field${count !== 1 ? 's' : ''}`);
 	}
 	if (Object.keys(result.typeCount).length === 0) {
@@ -295,8 +337,12 @@ export function formatMetaAuditResult(result: MetaAuditResult): string {
 	// Sentiment coverage
 	lines.push('');
 	lines.push(`  ${BOLD}Sentiment Coverage${RESET}`);
-	lines.push(`    With sentiment map:    ${result.withSentiment} field${result.withSentiment !== 1 ? 's' : ''}`);
-	lines.push(`    Without sentiment map: ${result.withoutSentiment} field${result.withoutSentiment !== 1 ? 's' : ''}`);
+	lines.push(
+		`    With sentiment map:    ${result.withSentiment} field${result.withSentiment !== 1 ? 's' : ''}`,
+	);
+	lines.push(
+		`    Without sentiment map: ${result.withoutSentiment} field${result.withoutSentiment !== 1 ? 's' : ''}`,
+	);
 
 	// Fields grouped by rune
 	lines.push('');
@@ -310,7 +356,9 @@ export function formatMetaAuditResult(result: MetaAuditResult): string {
 	for (const [rune, fields] of [...byRune.entries()].sort(([a], [b]) => a.localeCompare(b))) {
 		lines.push(`    ${CYAN}${rune}${RESET}`);
 		for (const f of fields) {
-			const sentiment = f.hasSentiment ? `${GREEN}\u2713 sentiment${RESET}` : `${DIM}no sentiment${RESET}`;
+			const sentiment = f.hasSentiment
+				? `${GREEN}\u2713 sentiment${RESET}`
+				: `${DIM}no sentiment${RESET}`;
 			lines.push(`      ${f.ref.padEnd(20)} ${f.metaType.padEnd(10)} ${sentiment}`);
 		}
 	}
@@ -322,13 +370,17 @@ export function formatMetaAuditResult(result: MetaAuditResult): string {
 
 		const allChecks = [
 			...Object.entries(result.css.types).map(([k, v]) => [`[data-meta-type="${k}"]`, v] as const),
-			...Object.entries(result.css.sentiments).map(([k, v]) => [`[data-meta-sentiment="${k}"]`, v] as const),
+			...Object.entries(result.css.sentiments).map(
+				([k, v]) => [`[data-meta-sentiment="${k}"]`, v] as const,
+			),
 		];
 
 		const warnings: string[] = [];
 		for (const [sel, info] of allChecks) {
 			if (info.styled) {
-				lines.push(`    ${GREEN}\u2713${RESET} ${sel}  ${DIM}\u2192 ${info.file}:${info.line}${RESET}`);
+				lines.push(
+					`    ${GREEN}\u2713${RESET} ${sel}  ${DIM}\u2192 ${info.file}:${info.line}${RESET}`,
+				);
 			} else {
 				lines.push(`    ${RED}\u2717${RESET} ${sel}  ${RED}MISSING${RESET}`);
 				warnings.push(sel);
@@ -337,7 +389,9 @@ export function formatMetaAuditResult(result: MetaAuditResult): string {
 
 		if (warnings.length > 0) {
 			lines.push('');
-			lines.push(`  ${YELLOW}\u26a0 ${warnings.length} missing CSS rule${warnings.length !== 1 ? 's' : ''}${RESET}`);
+			lines.push(
+				`  ${YELLOW}\u26a0 ${warnings.length} missing CSS rule${warnings.length !== 1 ? 's' : ''}${RESET}`,
+			);
 		} else {
 			lines.push('');
 			lines.push(`  ${GREEN}\u2713 All metadata CSS rules present${RESET}`);
@@ -376,7 +430,9 @@ export function formatDimensionAuditResult(result: DimensionAuditResult): string
 	lines.push(`  ${BOLD}Surface Assignments${RESET}`);
 	if (result.surfaces.length > 0) {
 		for (const group of result.surfaces) {
-			lines.push(`    ${CYAN}${group.name}${RESET} (${group.runes.length} rune${group.runes.length !== 1 ? 's' : ''})`);
+			lines.push(
+				`    ${CYAN}${group.name}${RESET} (${group.runes.length} rune${group.runes.length !== 1 ? 's' : ''})`,
+			);
 			for (const rune of group.runes) {
 				lines.push(`      ${DIM}${rune}${RESET}`);
 			}
@@ -396,14 +452,14 @@ export function formatDimensionAuditResult(result: DimensionAuditResult): string
 	// Density
 	lines.push('');
 	lines.push(`  ${BOLD}Density Coverage${RESET}`);
-	for (const [level, count] of Object.entries(result.densityLevels).sort(([,a], [,b]) => b - a)) {
+	for (const [level, count] of Object.entries(result.densityLevels).sort(([, a], [, b]) => b - a)) {
 		lines.push(`    ${level.padEnd(12)} ${count} rune${count !== 1 ? 's' : ''}`);
 	}
 
 	// Section anatomy
 	lines.push('');
 	lines.push(`  ${BOLD}Section Anatomy${RESET}`);
-	for (const [role, count] of Object.entries(result.sectionRoles).sort(([,a], [,b]) => b - a)) {
+	for (const [role, count] of Object.entries(result.sectionRoles).sort(([, a], [, b]) => b - a)) {
 		lines.push(`    ${role.padEnd(14)} ${count} rune${count !== 1 ? 's' : ''}`);
 	}
 
@@ -411,7 +467,9 @@ export function formatDimensionAuditResult(result: DimensionAuditResult): string
 	lines.push('');
 	lines.push(`  ${BOLD}Interactive State${RESET}`);
 	if (result.interactiveRunes.length > 0) {
-		lines.push(`    ${result.interactiveRunes.length} rune${result.interactiveRunes.length !== 1 ? 's' : ''} with initial data-state:`);
+		lines.push(
+			`    ${result.interactiveRunes.length} rune${result.interactiveRunes.length !== 1 ? 's' : ''} with initial data-state:`,
+		);
 		for (const rune of result.interactiveRunes.sort()) {
 			lines.push(`      ${DIM}${rune}${RESET}`);
 		}
@@ -453,17 +511,29 @@ export function formatDimensionAuditResult(result: DimensionAuditResult): string
 		lines.push(`  ${BOLD}Theme CSS Coverage${RESET}`);
 
 		const allChecks: [string, DimCssEntry][] = [
-			...Object.entries(result.css.density).map(([k, v]) => [`[data-density="${k}"]`, v] as [string, DimCssEntry]),
-			...Object.entries(result.css.sections).map(([k, v]) => [`[data-section="${k}"]`, v] as [string, DimCssEntry]),
-			...Object.entries(result.css.states).map(([k, v]) => [`[data-state="${k}"]`, v] as [string, DimCssEntry]),
-			...Object.entries(result.css.media).map(([k, v]) => [`[data-media="${k}"]`, v] as [string, DimCssEntry]),
-			...Object.entries(result.css.sequence).map(([k, v]) => [`[data-sequence="${k}"]`, v] as [string, DimCssEntry]),
+			...Object.entries(result.css.density).map(
+				([k, v]) => [`[data-density="${k}"]`, v] as [string, DimCssEntry],
+			),
+			...Object.entries(result.css.sections).map(
+				([k, v]) => [`[data-section="${k}"]`, v] as [string, DimCssEntry],
+			),
+			...Object.entries(result.css.states).map(
+				([k, v]) => [`[data-state="${k}"]`, v] as [string, DimCssEntry],
+			),
+			...Object.entries(result.css.media).map(
+				([k, v]) => [`[data-media="${k}"]`, v] as [string, DimCssEntry],
+			),
+			...Object.entries(result.css.sequence).map(
+				([k, v]) => [`[data-sequence="${k}"]`, v] as [string, DimCssEntry],
+			),
 		];
 
 		const warnings: string[] = [];
 		for (const [sel, info] of allChecks) {
 			if (info.styled) {
-				lines.push(`    ${GREEN}\u2713${RESET} ${sel}  ${DIM}\u2192 ${info.file}:${info.line}${RESET}`);
+				lines.push(
+					`    ${GREEN}\u2713${RESET} ${sel}  ${DIM}\u2192 ${info.file}:${info.line}${RESET}`,
+				);
 			} else {
 				lines.push(`    ${RED}\u2717${RESET} ${sel}  ${RED}MISSING${RESET}`);
 				warnings.push(sel);
@@ -472,7 +542,9 @@ export function formatDimensionAuditResult(result: DimensionAuditResult): string
 
 		if (warnings.length > 0) {
 			lines.push('');
-			lines.push(`  ${YELLOW}\u26a0 ${warnings.length} missing CSS rule${warnings.length !== 1 ? 's' : ''}${RESET}`);
+			lines.push(
+				`  ${YELLOW}\u26a0 ${warnings.length} missing CSS rule${warnings.length !== 1 ? 's' : ''}${RESET}`,
+			);
 		} else {
 			lines.push('');
 			lines.push(`  ${GREEN}\u2713 All dimension CSS rules present${RESET}`);
@@ -485,7 +557,9 @@ export function formatDimensionAuditResult(result: DimensionAuditResult): string
 	const totalSequence = Object.values(result.sequenceStyles).reduce((sum, r) => sum + r.length, 0);
 	lines.push('');
 	lines.push(`  ${DIM}${'─'.repeat(40)}${RESET}`);
-	lines.push(`  ${totalSections} section assignments, ${result.interactiveRunes.length} interactive runes, ${totalSlots} media slots, ${totalSequence} sequential runes`);
+	lines.push(
+		`  ${totalSections} section assignments, ${result.interactiveRunes.length} interactive runes, ${totalSlots} media slots, ${totalSequence} sequential runes`,
+	);
 
 	return lines.join('\n');
 }

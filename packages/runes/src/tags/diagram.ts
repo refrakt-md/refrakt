@@ -6,14 +6,17 @@ const languageType = ['mermaid', 'plantuml', 'ascii'] as const;
 
 export const diagram = createContentModelSchema({
 	attributes: {
-		language: { type: String, required: false, matches: languageType.slice(), description: 'Diagram language: mermaid, plantuml, or ascii' },
+		language: {
+			type: String,
+			required: false,
+			matches: languageType.slice(),
+			description: 'Diagram language: mermaid, plantuml, or ascii',
+		},
 		title: { type: String, required: false, description: 'Title displayed above the diagram' },
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'source', match: 'fence' },
-		],
+		fields: [{ name: 'source', match: 'fence' }],
 	},
 	transform(resolved, attrs) {
 		const language = attrs.language ?? 'mermaid';
@@ -54,7 +57,8 @@ export const diagram = createContentModelSchema({
 			children.push(new Tag('template', { 'data-content': 'source' }, [source]));
 		}
 
-		const node = createComponentRenderable({ rune: 'diagram',
+		const node = createComponentRenderable({
+			rune: 'diagram',
 			tag: 'figure',
 			properties: {
 				language: languageMeta,

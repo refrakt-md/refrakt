@@ -1,33 +1,32 @@
 @layer skin {
-/* Spec */
+	/* Spec */
 
-/* SPEC-079: eyebrow + metadata zone names replace header-primary /
+	/* SPEC-079: eyebrow + metadata zone names replace header-primary /
  * header-secondary. Layout-level geometry lives on [data-zone-layout]
  * selectors. */
 
-.rf-spec__eyebrow {
-	margin-bottom: 0.75rem;
-}
-.rf-spec__title h1,
-.rf-spec__title h2,
-.rf-spec__title h3 {
-	margin-top: 0;
-}
+	.rf-spec__eyebrow {
+		margin-bottom: 0.75rem;
+	}
+	.rf-spec__title h1,
+	.rf-spec__title h2,
+	.rf-spec__title h3 {
+		margin-top: 0;
+	}
 
-.rf-spec__metadata {
-	margin-bottom: 1.5rem;
-}
+	.rf-spec__metadata {
+		margin-bottom: 1.5rem;
+	}
 
-.rf-spec__body {
-	font-size: var(--rf-text-sm);
-	line-height: var(--rf-leading-relaxed);
-}
-.rf-spec__body blockquote {
-	border-left: 3px solid var(--rf-color-border);
-	padding: 0.5rem 1rem;
-	margin: 0.75rem 0;
-	font-style: italic;
-	color: var(--rf-color-muted);
-}
-
+	.rf-spec__body {
+		font-size: var(--rf-text-sm);
+		line-height: var(--rf-leading-relaxed);
+	}
+	.rf-spec__body blockquote {
+		border-left: 3px solid var(--rf-color-border);
+		padding: 0.5rem 1rem;
+		margin: 0.75rem 0;
+		font-style: italic;
+		color: var(--rf-color-muted);
+	}
 }

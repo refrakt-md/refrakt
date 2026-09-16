@@ -57,9 +57,7 @@ describe('readSchema', () => {
 
 	it('stamps the current release onto the unversioned alias', () => {
 		const body = JSON.parse(readSchema('theme-tokens.json', null));
-		expect(body.$id).toBe(
-			`https://refrakt.md/schemas/${currentSchemaVersion()}/theme-tokens.json`,
-		);
+		expect(body.$id).toBe(`https://refrakt.md/schemas/${currentSchemaVersion()}/theme-tokens.json`);
 	});
 
 	it('changes nothing but the $id', () => {

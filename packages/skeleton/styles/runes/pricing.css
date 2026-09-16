@@ -15,7 +15,7 @@
 	position: relative;
 }
 .rf-pricing__eyebrow:has(a) a::before {
-	content: '';
+	content: "";
 	position: absolute;
 	inset: 0;
 }
@@ -32,8 +32,12 @@
 	flex-direction: column;
 }
 
-.rf-tier__body { flex: 1; }
-.rf-tier__body ul { list-style: none; }
+.rf-tier__body {
+	flex: 1;
+}
+.rf-tier__body ul {
+	list-style: none;
+}
 .rf-tier__body a {
 	display: block;
 	margin-top: auto;

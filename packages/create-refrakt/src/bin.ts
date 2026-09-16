@@ -1,6 +1,14 @@
 #!/usr/bin/env node
 
-import { scaffold, scaffoldPlan, scaffoldPlanSite, scaffoldTheme, scaffoldPresetPack, scaffoldPlugin, scaffoldTemplate } from './scaffold.js';
+import {
+	scaffold,
+	scaffoldPlan,
+	scaffoldPlanSite,
+	scaffoldTheme,
+	scaffoldPresetPack,
+	scaffoldPlugin,
+	scaffoldTemplate,
+} from './scaffold.js';
 import type { ScaffoldTarget } from './scaffold.js';
 import * as path from 'node:path';
 
@@ -39,8 +47,17 @@ for (let i = 0; i < args.length; i++) {
 		}
 	} else if (arg === '--type') {
 		const val = args[++i];
-		if (val !== 'site' && val !== 'theme' && val !== 'plan' && val !== 'preset-pack' && val !== 'plugin' && val !== 'template') {
-			console.error('Error: --type must be one of: site, theme, plan, preset-pack, plugin, template');
+		if (
+			val !== 'site' &&
+			val !== 'theme' &&
+			val !== 'plan' &&
+			val !== 'preset-pack' &&
+			val !== 'plugin' &&
+			val !== 'template'
+		) {
+			console.error(
+				'Error: --type must be one of: site, theme, plan, preset-pack, plugin, template',
+			);
 			process.exit(1);
 		}
 		type = val;
@@ -56,7 +73,9 @@ for (let i = 0; i < args.length; i++) {
 			target = val as ScaffoldTarget;
 			targetExplicit = true;
 		} else {
-			console.error(`Error: ${arg} must be one of: ${VALID_TARGETS.join(', ')}${arg === '--target' ? ', or "svelte" (theme component layer)' : ''}`);
+			console.error(
+				`Error: ${arg} must be one of: ${VALID_TARGETS.join(', ')}${arg === '--target' ? ', or "svelte" (theme component layer)' : ''}`,
+			);
 			process.exit(1);
 		}
 	} else if (arg === '--template') {
@@ -144,14 +163,15 @@ function validateFlagCombos(): void {
 		if (theme !== '@refrakt-md/lumina') rejected.push('--theme');
 		if (scope) rejected.push('--scope');
 		if (rejected.length > 0) {
-			console.error(
-				`Error: ${rejected.join(', ')} cannot be used with --type plan\n`
-			);
+			console.error(`Error: ${rejected.join(', ')} cannot be used with --type plan\n`);
 			process.exit(1);
 		}
 	}
 	// A site adapter target (--target sveltekit|astro|…) is invalid for packages.
-	if ((type === 'theme' || type === 'preset-pack' || type === 'plugin' || type === 'template') && targetExplicit) {
+	if (
+		(type === 'theme' || type === 'preset-pack' || type === 'plugin' || type === 'template') &&
+		targetExplicit
+	) {
 		console.error(`Error: a site adapter --target cannot be used with --type ${type}\n`);
 		process.exit(1);
 	}
@@ -160,8 +180,16 @@ function validateFlagCombos(): void {
 		console.error('Error: --target svelte (theme component layer) requires --type theme\n');
 		process.exit(1);
 	}
-	if (type !== 'theme' && type !== 'preset-pack' && type !== 'plugin' && type !== 'template' && scope) {
-		console.error('Error: --scope can only be used with publishable packages (--type theme | preset-pack | plugin | template)\n');
+	if (
+		type !== 'theme' &&
+		type !== 'preset-pack' &&
+		type !== 'plugin' &&
+		type !== 'template' &&
+		scope
+	) {
+		console.error(
+			'Error: --scope can only be used with publishable packages (--type theme | preset-pack | plugin | template)\n',
+		);
 		process.exit(1);
 	}
 	// `--template` (consume) composes a template onto a *site*; `--type template`
@@ -175,8 +203,7 @@ function validateFlagCombos(): void {
 async function run(): Promise<void> {
 	validateFlagCombos();
 
-	const needsPrompt =
-		!projectName || !typeExplicit || (type === 'site' && !targetExplicit);
+	const needsPrompt = !projectName || !typeExplicit || (type === 'site' && !targetExplicit);
 
 	if (needsPrompt && process.stdout.isTTY) {
 		const { intro, text, select, isCancel, cancel, outro } = await import('@clack/prompts');
@@ -207,10 +234,18 @@ async function run(): Promise<void> {
 				options: [
 					{ value: 'site', label: 'Site', hint: 'full refrakt.md site with a framework adapter' },
 					{ value: 'theme', label: 'Theme', hint: 'publishable theme package' },
-					{ value: 'preset-pack', label: 'Preset pack', hint: 'distributable token presets (JSON)' },
+					{
+						value: 'preset-pack',
+						label: 'Preset pack',
+						hint: 'distributable token presets (JSON)',
+					},
 					{ value: 'plugin', label: 'Plugin', hint: 'custom runes package' },
 					{ value: 'template', label: 'Template', hint: 'distributable site template' },
-					{ value: 'plan', label: 'Planning only', hint: 'specs, work items, decisions, milestones' },
+					{
+						value: 'plan',
+						label: 'Planning only',
+						hint: 'specs, work items, decisions, milestones',
+					},
 				],
 			});
 
@@ -278,7 +313,13 @@ async function run(): Promise<void> {
 				scaffoldPlan({ projectName: projectName!, targetDir });
 			}
 		} else {
-			await scaffold({ projectName: projectName!, targetDir, theme, target, template: templateName });
+			await scaffold({
+				projectName: projectName!,
+				targetDir,
+				theme,
+				target,
+				template: templateName,
+			});
 		}
 	} catch (err) {
 		console.error(`\nError: ${(err as Error).message}`);
@@ -300,10 +341,14 @@ Then use it in a site:
   {
     "theme": "${scope ? `${scope}/${projectName}` : projectName}"
   }
-${themeLayer ? '' : `
+${
+	themeLayer
+		? ''
+		: `
 This theme is framework-agnostic — it renders under any adapter. To add a
 Svelte component layer, re-scaffold with \`--target svelte\`.
-`}
+`
+}
 Run \`refrakt scaffold-css\` to generate CSS stubs for all runes.
 `);
 	} else if (type === 'preset-pack') {

@@ -1,48 +1,47 @@
 @layer skin {
-/* Testimonial — skin. The author block display + avatar box (size/crop) live in
+	/* Testimonial — skin. The author block display + avatar box (size/crop) live in
  * @refrakt-md/skeleton (styles/runes/testimonial.css). */
-.rf-testimonial {
-	border-radius: var(--rf-radius-lg);
-	padding: 1.75rem 2rem;
-	background: var(--rf-color-surface);
-}
-/* Rating block — stars rendered by the shared `[data-meta-type=rating]`
+	.rf-testimonial {
+		border-radius: var(--rf-radius-lg);
+		padding: 1.75rem 2rem;
+		background: var(--rf-color-surface);
+	}
+	/* Rating block — stars rendered by the shared `[data-meta-type=rating]`
  * treatment; this rule only owns the spacing below the row. */
-.rf-testimonial__rating {
-	margin-bottom: 0.75rem;
-	font-size: var(--rf-text-lg);
-}
-.rf-testimonial blockquote {
-	border: none;
-	padding: 0;
-	margin: 0 0 1rem;
-	font-size: var(--rf-text);
-	font-style: italic;
-	line-height: var(--rf-leading-relaxed);
-	color: var(--rf-color-text);
-	background: none;
-	border-radius: 0;
-}
-.rf-testimonial blockquote::before {
-	display: none;
-}
-.rf-testimonial blockquote p {
-	margin: 0;
-}
-.rf-testimonial__author-name {
-	font-weight: var(--rf-weight-bold);
-	font-style: normal;
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-text);
-}
-.rf-testimonial__author-role {
-	margin-top: 0.125rem;
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-muted);
-}
-.rf-testimonial :is(img, .rf-placeholder) {
-	border-radius: 50%;
-	margin-top: 0.75rem;
-}
-
+	.rf-testimonial__rating {
+		margin-bottom: 0.75rem;
+		font-size: var(--rf-text-lg);
+	}
+	.rf-testimonial blockquote {
+		border: none;
+		padding: 0;
+		margin: 0 0 1rem;
+		font-size: var(--rf-text);
+		font-style: italic;
+		line-height: var(--rf-leading-relaxed);
+		color: var(--rf-color-text);
+		background: none;
+		border-radius: 0;
+	}
+	.rf-testimonial blockquote::before {
+		display: none;
+	}
+	.rf-testimonial blockquote p {
+		margin: 0;
+	}
+	.rf-testimonial__author-name {
+		font-weight: var(--rf-weight-bold);
+		font-style: normal;
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-text);
+	}
+	.rf-testimonial__author-role {
+		margin-top: 0.125rem;
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+	}
+	.rf-testimonial :is(img, .rf-placeholder) {
+		border-radius: 50%;
+		margin-top: 0.75rem;
+	}
 }

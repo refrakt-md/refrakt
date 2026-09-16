@@ -191,7 +191,11 @@ export interface MigratePrAttrsResult {
 /** Run a git command in `cwd`, returning trimmed stdout or null on failure. */
 function git(cwd: string, args: string[]): string | null {
 	try {
-		return execFileSync('git', args, { cwd, stdio: ['pipe', 'pipe', 'pipe'], encoding: 'utf8' }).trim();
+		return execFileSync('git', args, {
+			cwd,
+			stdio: ['pipe', 'pipe', 'pipe'],
+			encoding: 'utf8',
+		}).trim();
 	} catch {
 		return null;
 	}
@@ -234,19 +238,34 @@ const MERGE_PR_RE = /Merge pull request #(\d+)/;
  * Returns `{ pr }` on success, `{ ambiguous }` when two distinct status flips
  * map to different PRs, or `{ reason }` when nothing resolves.
  */
-function resolvePrForFile(cwd: string, relFile: string, statusRe: string): { pr?: number; ambiguous?: boolean; reason?: string } {
+function resolvePrForFile(
+	cwd: string,
+	relFile: string,
+	statusRe: string,
+): { pr?: number; ambiguous?: boolean; reason?: string } {
 	// Commits (newest-first) whose diff touched a done/fixed status line.
 	const log = git(cwd, ['log', '--format=%H', `-G${statusRe}`, '--', relFile]);
 	if (log === null) return { reason: 'git log failed (not a repo or file untracked)' };
-	const commits = log.split('\n').map(s => s.trim()).filter(Boolean);
-	if (commits.length === 0) return { reason: 'no status-flip commit in history (direct edit / lost history)' };
+	const commits = log
+		.split('\n')
+		.map((s) => s.trim())
+		.filter(Boolean);
+	if (commits.length === 0)
+		return { reason: 'no status-flip commit in history (direct edit / lost history)' };
 
 	const prForCommit = (commit: string): number | null => {
 		// Walk the merges that descend from `commit`, earliest first. The PR that
 		// actually landed the work is the one whose *topic branch* (second parent)
 		// contains the commit — this skips unrelated release/main merges that
 		// merely happen to come after it on the first-parent line.
-		const merges = git(cwd, ['log', '--merges', '--ancestry-path', '--reverse', '--format=%H%x09%P%x09%s', `${commit}..HEAD`]);
+		const merges = git(cwd, [
+			'log',
+			'--merges',
+			'--ancestry-path',
+			'--reverse',
+			'--format=%H%x09%P%x09%s',
+			`${commit}..HEAD`,
+		]);
 		if (!merges) return null;
 		for (const line of merges.split('\n').filter(Boolean)) {
 			const [, parentStr = '', subject = ''] = line.split('\t');
@@ -276,7 +295,8 @@ function resolvePrForFile(cwd: string, relFile: string, statusRe: string): { pr?
 		const pr = prForCommit(c);
 		if (pr !== null) prs.add(pr);
 	}
-	if (prs.size === 0) return { reason: 'no PR merge commit reachable (direct-to-main or squash-merge)' };
+	if (prs.size === 0)
+		return { reason: 'no PR merge commit reachable (direct-to-main or squash-merge)' };
 	if (prs.size > 1) return { ambiguous: true };
 	return { pr: [...prs][0] };
 }
@@ -285,7 +305,7 @@ function resolvePrForFile(cwd: string, relFile: string, statusRe: string): { pr?
  *  `id="…"` attribute. Returns the new content, or null if no tag was found. */
 function insertPrAttr(content: string, pr: string): string | null {
 	const lines = content.split('\n');
-	const idx = lines.findIndex(l => /^\{%\s+(work|bug)\s/.test(l) && /\sid=("|')/.test(l));
+	const idx = lines.findIndex((l) => /^\{%\s+(work|bug)\s/.test(l) && /\sid=("|')/.test(l));
 	if (idx === -1) return null;
 	if (/\spr=("|')/.test(lines[idx])) return null; // already has one
 	lines[idx] = lines[idx].replace(/(\sid=(["'])[^"']*\2)/, `$1 pr="${pr}"`);
@@ -309,16 +329,21 @@ export function runMigratePrAttrs(options: MigratePrAttrsOptions): MigratePrAttr
 	const unresolved: PrUnresolved[] = [];
 
 	// Candidates: done work / fixed bug items with no `pr` attribute yet.
-	const candidates = entities.filter(e =>
-		((e.type === 'work' && e.attributes.status === 'done') ||
-		 (e.type === 'bug' && e.attributes.status === 'fixed')) &&
-		!(e.attributes.pr && e.attributes.pr.trim()),
+	const candidates = entities.filter(
+		(e) =>
+			((e.type === 'work' && e.attributes.status === 'done') ||
+				(e.type === 'bug' && e.attributes.status === 'fixed')) &&
+			!(e.attributes.pr && e.attributes.pr.trim()),
 	);
 
 	for (const e of candidates) {
 		const id = e.attributes.id || e.file;
 		if (!repoSlug) {
-			unresolved.push({ id, file: e.file, reason: 'no origin remote — cannot form <org>/<repo> slug' });
+			unresolved.push({
+				id,
+				file: e.file,
+				reason: 'no origin remote — cannot form <org>/<repo> slug',
+			});
 			continue;
 		}
 
@@ -405,7 +430,10 @@ export interface MigrateDependenciesResult {
  *  other way (this item unblocks / is required by the ref) and should probably
  *  move to a `## Blocks` section. Inference is advisory only. */
 const REVERSE_HINTS: Array<{ re: RegExp; reason: string }> = [
-	{ re: /collects?\s+from\s+me\b/i, reason: 'reads as "collects from me" — incoming, consider ## Blocks' },
+	{
+		re: /collects?\s+from\s+me\b/i,
+		reason: 'reads as "collects from me" — incoming, consider ## Blocks',
+	},
 	{ re: /\bunblock(s|ed)?\b/i, reason: 'mentions "unblocks" — outgoing, consider ## Blocks' },
 	{ re: /\benables?\b/i, reason: 'mentions "enables" — outgoing, consider ## Blocks' },
 	{ re: /\brequired by\b/i, reason: 'reads as "required by" — incoming, consider ## Blocks' },
@@ -419,7 +447,9 @@ const DEPENDENCIES_HEADING_RE = /^(##\s+)Dependencies(\s*)$/i;
  * human to move to `## Blocks`. Dry-run by default; `--apply` writes files and
  * `--git` stages them.
  */
-export function runMigrateDependencies(options: MigrateDependenciesOptions): MigrateDependenciesResult {
+export function runMigrateDependencies(
+	options: MigrateDependenciesOptions,
+): MigrateDependenciesResult {
 	const { dir, apply = false, useGit = false } = options;
 	const cwd = resolve(dir);
 	const entities = scanPlanFiles(dir, { cache: false });
@@ -451,9 +481,14 @@ export function runMigrateDependencies(options: MigrateDependenciesOptions): Mig
 			// reverse-direction prose, flagging lines that reference an entity ID.
 			for (let j = i + 1; j < lines.length; j++) {
 				if (/^##\s+/.test(lines[j]) || /^\{%\s+\//.test(lines[j])) break;
-				const hint = REVERSE_HINTS.find(h => h.re.test(lines[j]));
+				const hint = REVERSE_HINTS.find((h) => h.re.test(lines[j]));
 				if (hint && /\b(WORK|BUG|SPEC|ADR)-\d+\b/.test(lines[j])) {
-					reverseFlags.push({ file: entity.file, line: j + 1, text: lines[j].trim(), reason: hint.reason });
+					reverseFlags.push({
+						file: entity.file,
+						line: j + 1,
+						text: lines[j].trim(),
+						reason: hint.reason,
+					});
 				}
 			}
 		}

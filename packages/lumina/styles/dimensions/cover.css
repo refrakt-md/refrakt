@@ -1,5 +1,5 @@
 @layer skin {
-/* Cover layout (SPEC-089) — skin.
+	/* Cover layout (SPEC-089) — skin.
  *
  * The grid-overlay *structure* (media well + content share one grid cell, the
  * well fills/crops its guest, the overlay positions via content-place) lives in
@@ -7,83 +7,103 @@
  * media radii, the overlay's surface padding, and the legibility scrim
  * (gradient / frost) painted over the media. */
 
-[data-cover-scope="header"] > [data-name="cover-band"] {
-	border-radius: var(--rf-radius-media);
-}
+	[data-cover-scope="header"] > [data-name="cover-band"] {
+		border-radius: var(--rf-radius-media);
+	}
 
-[data-media-position="cover"] [data-section="media"] {
-	border-radius: var(--rf-radius-media);
-}
+	[data-media-position="cover"] [data-section="media"] {
+		border-radius: var(--rf-radius-media);
+	}
 
-/* A backdrop sandbox sits flush in the well — the well's own radius/overflow
+	/* A backdrop sandbox sits flush in the well — the well's own radius/overflow
  * does the clipping. */
-[data-media-position="cover"] [data-section="media"] .rf-sandbox {
-	border-radius: 0;
-}
+	[data-media-position="cover"] [data-section="media"] .rf-sandbox {
+		border-radius: 0;
+	}
 
-/* The overlaid box carries the surface padding (density-aware via --rune-padding). */
-[data-media-position="cover"]:not([data-cover-scope="header"]) > [data-name="content"],
-[data-cover-scope="header"] > [data-name="cover-band"] > [data-name="preamble"] {
-	padding: var(--rune-padding, var(--rf-spacing-md));
-}
+	/* The overlaid box carries the surface padding (density-aware via --rune-padding). */
+	[data-media-position="cover"]:not([data-cover-scope="header"]) > [data-name="content"],
+	[data-cover-scope="header"] > [data-name="cover-band"] > [data-name="preamble"] {
+		padding: var(--rune-padding, var(--rf-spacing-md));
+	}
 
-/* ── default cover scrim (SPEC-088 scrim, on the media surface) ────────
+	/* ── default cover scrim (SPEC-088 scrim, on the media surface) ────────
  * Overlaying text on an arbitrary image without a scrim is a legibility footgun,
  * so cover applies a default gradient scrim weighted toward the content edge.
  * `scrim="none"` opts out. The overlaid foreground is set light by the engine
  * (data-color-scheme) so text reads against the darkened media. */
-[data-media-position="cover"]:not([data-scrim="none"]) [data-section="media"]::after {
-	content: "";
-	position: absolute;
-	inset: 0;
-	pointer-events: none;
-	/* `inherit` matches the media zone's `--rf-radius-media`, so a frost scrim's
+	[data-media-position="cover"]:not([data-scrim="none"]) [data-section="media"]::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		/* `inherit` matches the media zone's `--rf-radius-media`, so a frost scrim's
 	 * `backdrop-filter` region clips at the same rounded corners — `overflow:
 	 * hidden` on the media zone doesn't reliably clip backdrop-filter past the
 	 * rounded edge in WebKit, so the pseudo carries its own radius. (The
 	 * gradient variant doesn't strictly need this, but it's harmless and keeps
 	 * the two scrim variants visually congruent.) */
-	border-radius: inherit;
-	/* The scrim shape is `--cover-scrim-image` (custom property override) when
+		border-radius: inherit;
+		/* The scrim shape is `--cover-scrim-image` (custom property override) when
 	 * the engine emits one — for `content-place="center …"` it emits a radial
 	 * ellipse so the dark falls under the centred overlay. For the directional
 	 * cases (`start`/`end` block-axis) the engine sets `--cover-scrim-dir` and
 	 * the linear fallback resolves to the right edge. */
-	background-image: var(--cover-scrim-image, linear-gradient(var(--cover-scrim-dir, to top), rgb(0 0 0 / 0.55), transparent 62%));
-}
+		background-image: var(
+			--cover-scrim-image,
+			linear-gradient(var(--cover-scrim-dir, to top), rgb(0 0 0 / 0.55), transparent 62%)
+		);
+	}
 
-/* Frost treatment (`scrim-type="frost"`) — a frosted-glass blur over the media
+	/* Frost treatment (`scrim-type="frost"`) — a frosted-glass blur over the media
  * instead of a gradient. `scrim-blur` (named scale) sets the blur radius; the
  * tint follows the cover scheme (a dark scheme → a dark frost for light text).
  * The frost is masked to the content edge (following `--cover-scrim-dir`, default
  * bottom) so it reads as a band behind the text, not a blur over the whole
  * image. `--cover-scrim-mask` is the radial equivalent for centred content. */
-[data-media-position="cover"][data-scrim-blur="none"] { --cover-scrim-blur: 0px; }
-[data-media-position="cover"][data-scrim-blur="sm"]   { --cover-scrim-blur: 4px; }
-[data-media-position="cover"][data-scrim-blur="md"]   { --cover-scrim-blur: 8px; }
-[data-media-position="cover"][data-scrim-blur="lg"]   { --cover-scrim-blur: 16px; }
-[data-media-position="cover"][data-scrim-type="frost"]:not([data-scrim="none"]) [data-section="media"]::after {
-	background-image: none;
-	background-color: rgb(0 0 0 / 0.18);
-	-webkit-backdrop-filter: blur(var(--cover-scrim-blur, 8px));
-	backdrop-filter: blur(var(--cover-scrim-blur, 8px));
-	-webkit-mask-image: var(--cover-scrim-mask, linear-gradient(var(--cover-scrim-dir, to top), #000 30%, transparent 72%));
-	mask-image: var(--cover-scrim-mask, linear-gradient(var(--cover-scrim-dir, to top), #000 30%, transparent 72%));
-}
-[data-media-position="cover"][data-scrim-type="frost"][data-color-scheme="light"]:not([data-scrim="none"]) [data-section="media"]::after {
-	background-color: rgb(255 255 255 / 0.25);
-}
+	[data-media-position="cover"][data-scrim-blur="none"] {
+		--cover-scrim-blur: 0px;
+	}
+	[data-media-position="cover"][data-scrim-blur="sm"] {
+		--cover-scrim-blur: 4px;
+	}
+	[data-media-position="cover"][data-scrim-blur="md"] {
+		--cover-scrim-blur: 8px;
+	}
+	[data-media-position="cover"][data-scrim-blur="lg"] {
+		--cover-scrim-blur: 16px;
+	}
+	[data-media-position="cover"][data-scrim-type="frost"]:not([data-scrim="none"])
+		[data-section="media"]::after {
+		background-image: none;
+		background-color: rgb(0 0 0 / 0.18);
+		-webkit-backdrop-filter: blur(var(--cover-scrim-blur, 8px));
+		backdrop-filter: blur(var(--cover-scrim-blur, 8px));
+		-webkit-mask-image: var(
+			--cover-scrim-mask,
+			linear-gradient(var(--cover-scrim-dir, to top), #000 30%, transparent 72%)
+		);
+		mask-image: var(
+			--cover-scrim-mask,
+			linear-gradient(var(--cover-scrim-dir, to top), #000 30%, transparent 72%)
+		);
+	}
+	[data-media-position="cover"][data-scrim-type="frost"][data-color-scheme="light"]:not(
+			[data-scrim="none"]
+		)
+		[data-section="media"]::after {
+		background-color: rgb(255 255 255 / 0.25);
+	}
 
-/* The overlay carries the cover colour-scheme (set by the engine) so its text
+	/* The overlay carries the cover colour-scheme (set by the engine) so its text
  * reads against the darkened media. The standalone `[data-color-scheme]` rule
  * also paints a `background-color`; null it out here so the overlay stays
  * see-through over the media (the scrim, not a solid box, does the legibility). */
-[data-media-position="cover"] [data-name="content"][data-color-scheme],
-[data-cover-scope="header"] > [data-name="cover-band"][data-color-scheme] {
-	background-color: transparent;
-	/* Muted text (the blurb) is barely legible over a photo, so on the overlay it
+	[data-media-position="cover"] [data-name="content"][data-color-scheme],
+	[data-cover-scope="header"] > [data-name="cover-band"][data-color-scheme] {
+		background-color: transparent;
+		/* Muted text (the blurb) is barely legible over a photo, so on the overlay it
 	 * reads at full foreground strength — the same colour as the headline. */
-	--rf-color-muted: var(--rf-color-text);
-}
-
+		--rf-color-muted: var(--rf-color-text);
+	}
 }

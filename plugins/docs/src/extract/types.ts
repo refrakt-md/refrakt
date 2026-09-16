@@ -1,4 +1,12 @@
-export type SymbolKind = 'function' | 'class' | 'interface' | 'enum' | 'type' | 'module' | 'hook' | 'component';
+export type SymbolKind =
+	| 'function'
+	| 'class'
+	| 'interface'
+	| 'enum'
+	| 'type'
+	| 'module'
+	| 'hook'
+	| 'component';
 
 export interface SymbolParameter {
 	name: string;

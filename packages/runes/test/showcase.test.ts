@@ -7,11 +7,11 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('div');
 
-		const viewport = findTag(tag!, t => t.attributes['data-name'] === 'viewport');
+		const viewport = findTag(tag!, (t) => t.attributes['data-name'] === 'viewport');
 		expect(viewport).toBeDefined();
 	});
 
@@ -22,7 +22,7 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 
 		expect(fields(tag)['frame-shadow']).toBe('lg');
@@ -33,7 +33,7 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'showcase');
 		expect(fields(tag)['frame-displace']).toBe('top');
 	});
 
@@ -42,7 +42,7 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'showcase');
 		expect(fields(tag)['frame-offset']).toBe('lg');
 	});
 
@@ -51,7 +51,7 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'showcase');
 		expect(fields(tag)['frame-aspect']).toBe('16/9');
 	});
 
@@ -60,7 +60,7 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 
 		expect(fields(tag)['frame-shadow']).toBeUndefined();
@@ -72,7 +72,7 @@ describe('showcase tag', () => {
 ![Dashboard](/images/dashboard.png)
 {% /showcase %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'showcase');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'showcase');
 		expect(tag).toBeDefined();
 
 		expect(fields(tag)['frame-shadow']).toBe('sm');

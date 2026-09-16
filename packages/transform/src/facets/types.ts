@@ -1,5 +1,10 @@
 import type { SerializedTag, RendererNode } from '@refrakt-md/types';
-import type { RuneConfig, TintDefinition, BgPresetDefinition, FramePresetDefinition } from '../types.js';
+import type {
+	RuneConfig,
+	TintDefinition,
+	BgPresetDefinition,
+	FramePresetDefinition,
+} from '../types.js';
 
 /** Theme-level preset registries a facet may resolve a named preset against.
  *

@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { mergeThemeConfig, mergeRuneConfig, type IdentityViolation } from '../src/merge.js';
 import { validateThemeConfig } from '../src/validate.js';
-import { IDENTITY_FIELDS, VARIANT_DELTA_RESERVED_FIELDS, findReservedFields } from '../src/identity-fields.js';
+import {
+	IDENTITY_FIELDS,
+	VARIANT_DELTA_RESERVED_FIELDS,
+	findReservedFields,
+} from '../src/identity-fields.js';
 import type { ThemeConfig, RuneConfig } from '../src/types.js';
 
 // ADR-028 / SPEC-125 Phase 2 — `block`, `modifiers` and `sections` are rune
@@ -36,8 +40,19 @@ describe('the identity rule is expressed once', () => {
 		// `universalAttributes` joined in v0.32.0, when Phase 3 made it decide what
 		// an author may write on the rune at all, and `provides` with it, when
 		// Phase 4 moved the `reading`/`dropcap` gate onto a declared capability.
+		// `schema` joined in v0.35.0 (SPEC-130 / WORK-565) — arguably the strongest
+		// case in the list: a theme that could restate a rune's schema.org type
+		// would change what a site asserts about its own content by changing how it
+		// looks.
 		expect([...IDENTITY_FIELDS]).toEqual([
-			'block', 'modifiers', 'sections', 'mediaSlots', 'frameTarget', 'universalAttributes', 'provides',
+			'block',
+			'modifiers',
+			'sections',
+			'mediaSlots',
+			'frameTarget',
+			'universalAttributes',
+			'provides',
+			'schema',
 		]);
 		expect([...VARIANT_DELTA_RESERVED_FIELDS]).toEqual([...IDENTITY_FIELDS, 'variants']);
 	});
@@ -56,8 +71,13 @@ describe('ADR-028 — theme overrides may not redefine a rune', () => {
 	// A plausible override value per field — `block` and `frameTarget` are
 	// scalars, the rest are maps.
 	const overrideValue: Record<string, unknown> = {
-		block: 'other', frameTarget: 'self', modifiers: {}, sections: {}, mediaSlots: {},
-		universalAttributes: 'inline', provides: ['prose'],
+		block: 'other',
+		frameTarget: 'self',
+		modifiers: {},
+		sections: {},
+		mediaSlots: {},
+		universalAttributes: 'inline',
+		provides: ['prose'],
 	};
 
 	for (const field of IDENTITY_FIELDS) {
@@ -198,21 +218,32 @@ describe('the variant-delta path still enforces the same rule', () => {
 	function validateDelta(delta: Partial<RuneConfig>) {
 		return validateThemeConfig(
 			themeConfig({
-				Card: { block: 'card', modifiers: { mode: { source: 'meta' } }, variants: { mode: { cover: delta } } },
+				Card: {
+					block: 'card',
+					modifiers: { mode: { source: 'meta' } },
+					variants: { mode: { cover: delta } },
+				},
 			}),
 		);
 	}
 
 	for (const field of VARIANT_DELTA_RESERVED_FIELDS) {
 		it(`errors on a delta carrying \`${field}\``, () => {
-			const value = field === 'block' ? 'other'
-				: field === 'frameTarget' ? 'self'
-				: field === 'universalAttributes' ? 'inline'
-				: field === 'provides' ? ['prose']
-				: {};
+			const value =
+				field === 'block'
+					? 'other'
+					: field === 'frameTarget'
+						? 'self'
+						: field === 'universalAttributes'
+							? 'inline'
+							: field === 'provides'
+								? ['prose']
+								: {};
 			const res = validateDelta({ [field]: value } as Partial<RuneConfig>);
 			expect(res.valid).toBe(false);
-			expect(res.errors.some((e) => e.path === `runes.Card.variants.mode.cover.${field}`)).toBe(true);
+			expect(res.errors.some((e) => e.path === `runes.Card.variants.mode.cover.${field}`)).toBe(
+				true,
+			);
 			expect(res.errors.some((e) => e.message.includes(`identity field "${field}"`))).toBe(true);
 		});
 	}

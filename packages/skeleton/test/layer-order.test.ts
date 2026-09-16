@@ -22,26 +22,28 @@ describe('@refrakt-md/skeleton — layer-order contract (SPEC-094 §3 / WORK-436
 	});
 
 	it('orders skeleton before skin, so skin wins on equal specificity', () => {
-		const order = atRules[0].params.split(',').map(s => s.trim());
+		const order = atRules[0].params.split(',').map((s) => s.trim());
 		expect(order.indexOf(SKELETON_LAYER)).toBeLessThan(order.indexOf(SKIN_LAYER));
 	});
 
 	it('emits the order declaration before any layered structure import', () => {
 		// Structure arrives via `@import './styles/…' layer(skeleton);` (WORK-438),
 		// so the order declaration must precede the first such import.
-		const declIdx = atRules.findIndex(r => r.name === 'layer' && r.nodes === undefined);
-		const firstImport = atRules.findIndex(r => r.name === 'import');
+		const declIdx = atRules.findIndex((r) => r.name === 'layer' && r.nodes === undefined);
+		const firstImport = atRules.findIndex((r) => r.name === 'import');
 		expect(declIdx).toBe(0);
 		expect(firstImport).toBeGreaterThan(declIdx);
 		// Every structure import targets the skeleton layer.
-		for (const imp of atRules.filter(r => r.name === 'import')) {
+		for (const imp of atRules.filter((r) => r.name === 'import')) {
 			expect(imp.params).toContain('layer(skeleton)');
 		}
 	});
 
 	it('uses no !important anywhere — layer order alone carries precedence', () => {
 		let bang = false;
-		root.walkDecls(d => { if (d.important) bang = true; });
+		root.walkDecls((d) => {
+			if (d.important) bang = true;
+		});
 		expect(bang).toBe(false);
 	});
 

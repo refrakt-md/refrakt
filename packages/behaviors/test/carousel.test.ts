@@ -44,7 +44,9 @@ describe('carousel behavior (SPEC-100)', () => {
 
 		next!.click();
 		prev!.click();
-		expect((track as unknown as { scrollBy: ReturnType<typeof vi.fn> }).scrollBy).toHaveBeenCalledTimes(2);
+		expect(
+			(track as unknown as { scrollBy: ReturnType<typeof vi.fn> }).scrollBy,
+		).toHaveBeenCalledTimes(2);
 	});
 
 	it('scrolls by a finite distance even when the track gap computes to "normal"', () => {
@@ -54,7 +56,8 @@ describe('carousel behavior (SPEC-100)', () => {
 		const realGCS = window.getComputedStyle.bind(window);
 		const spy = vi.spyOn(window, 'getComputedStyle').mockImplementation((el: Element) => {
 			const style = realGCS(el);
-			if (el === track) Object.defineProperty(style, 'columnGap', { value: 'normal', configurable: true });
+			if (el === track)
+				Object.defineProperty(style, 'columnGap', { value: 'normal', configurable: true });
 			return style;
 		});
 
@@ -73,7 +76,9 @@ describe('carousel behavior (SPEC-100)', () => {
 
 		host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
 		host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
-		expect((track as unknown as { scrollBy: ReturnType<typeof vi.fn> }).scrollBy).toHaveBeenCalledTimes(2);
+		expect(
+			(track as unknown as { scrollBy: ReturnType<typeof vi.fn> }).scrollBy,
+		).toHaveBeenCalledTimes(2);
 	});
 
 	it('mounts nav in the track container, not the host root (multi-region)', () => {
@@ -96,7 +101,9 @@ describe('carousel behavior (SPEC-100)', () => {
 		expect(host.hasAttribute('tabindex')).toBe(false);
 
 		host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
-		expect((track as unknown as { scrollBy: ReturnType<typeof vi.fn> }).scrollBy).not.toHaveBeenCalled();
+		expect(
+			(track as unknown as { scrollBy: ReturnType<typeof vi.fn> }).scrollBy,
+		).not.toHaveBeenCalled();
 	});
 
 	it('is a no-op without a track or items', () => {

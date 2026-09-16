@@ -7,7 +7,7 @@ import { taxonomyAttributes } from './common.js';
 
 // Map marker characters to status strings
 const MARKER_TO_STATUS: Record<string, string> = {
-	'x': 'complete',
+	x: 'complete',
 	'>': 'active',
 	' ': 'planned',
 	'-': 'abandoned',
@@ -24,9 +24,7 @@ export const beat = createContentModelSchema({
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const labelTag = new Tag('span', {}, [attrs.label ?? '']);
@@ -51,7 +49,8 @@ export const beat = createContentModelSchema({
 		}
 		const body = new RenderableNodeCursor(bodyChildren).wrap('div');
 
-		return createComponentRenderable({ rune: 'beat',
+		return createComponentRenderable({
+			rune: 'beat',
 			tag: 'li',
 			properties: {
 				status: statusMeta,
@@ -78,20 +77,43 @@ export const plot = createContentModelSchema({
 	base: taxonomyAttributes,
 	attributes: {
 		title: { type: String, required: true, description: 'Heading displayed for this plot line.' },
-		type: { type: String, required: false, matches: plotType.slice(), description: 'Narrative scope: arc, quest, subplot, campaign, episode, act, or chapter.' },
-		structure: { type: String, required: false, matches: structureType.slice(), description: 'How beats connect: linear (sequential), parallel, branching, or web.' },
+		type: {
+			type: String,
+			required: false,
+			matches: plotType.slice(),
+			description: 'Narrative scope: arc, quest, subplot, campaign, episode, act, or chapter.',
+		},
+		structure: {
+			type: String,
+			required: false,
+			matches: structureType.slice(),
+			description: 'How beats connect: linear (sequential), parallel, branching, or web.',
+		},
 	},
 	contentModel: {
 		type: 'sequence' as const,
 		fields: [
 			{ name: 'description', match: 'paragraph', optional: true, greedy: true },
 			{
-				name: 'beats', match: 'list', optional: true, greedy: true,
+				name: 'beats',
+				match: 'list',
+				optional: true,
+				greedy: true,
 				itemModel: {
 					fields: [
-						{ name: 'marker', match: 'text' as const, pattern: /^\[(x|>|\s|-)\]\s*/, optional: true },
+						{
+							name: 'marker',
+							match: 'text' as const,
+							pattern: /^\[(x|>|\s|-)\]\s*/,
+							optional: true,
+						},
 						{ name: 'label', match: 'strong' as const, optional: true },
-						{ name: 'description', match: 'text' as const, pattern: 'remainder' as const, optional: true },
+						{
+							name: 'description',
+							match: 'text' as const,
+							pattern: 'remainder' as const,
+							optional: true,
+						},
 					],
 				},
 				emitTag: 'beat',
@@ -121,7 +143,9 @@ export const plot = createContentModelSchema({
 		}
 		children.push(beatsList);
 
-		return createComponentRenderable({ rune: 'plot', schemaOrgType: 'CreativeWork',
+		return createComponentRenderable({
+			rune: 'plot',
+			schemaOrgType: 'CreativeWork',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

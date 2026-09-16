@@ -39,7 +39,7 @@ const drawerSizes = ['sm', 'md', 'lg'] as const;
  *  body-zone convention `{% card %}` uses (positional, count-driven), scaled
  *  down to the two-zone case the drawer needs. */
 function splitDrawerBodyZones(nodes: Node[]): { body: Node[]; footer: Node[] | null } {
-	const hrIndex = nodes.findIndex(n => n.type === 'hr');
+	const hrIndex = nodes.findIndex((n) => n.type === 'hr');
 	if (hrIndex < 0) return { body: nodes, footer: null };
 	return {
 		body: nodes.slice(0, hrIndex),
@@ -59,22 +59,26 @@ export const drawer = createContentModelSchema({
 		id: {
 			type: String,
 			required: true,
-			description: 'Stable id for the drawer. Used in entity registration and as the `id="drawer-{value}"` on the rendered element so xref triggers can target it via fragment.',
+			description:
+				'Stable id for the drawer. Used in entity registration and as the `id="drawer-{value}"` on the rendered element so xref triggers can target it via fragment.',
 		},
 		title: {
 			type: String,
 			required: false,
-			description: 'Panel heading text. Rendered in the drawer header (or as a heading in the no-JS in-flow rendering).',
+			description:
+				'Panel heading text. Rendered in the drawer header (or as a heading in the no-JS in-flow rendering).',
 		},
 		headingLevel: {
 			type: Number,
 			required: false,
-			description: 'Heading level (1-6) for the title. When omitted, the level is auto-detected from outline position (one deeper than the nearest preceding heading). Out-of-range values are clamped to the 1-6 range.',
+			description:
+				'Heading level (1-6) for the title. When omitted, the level is auto-detected from outline position (one deeper than the nearest preceding heading). Out-of-range values are clamped to the 1-6 range.',
 		},
 		shortcut: {
 			type: String,
 			required: false,
-			description: 'Keyboard shortcut that opens the drawer when behaviors are loaded (e.g. ".", "cmd+k"). Surfaces as `data-shortcut`; the progressive-enhancement layer wires the listener.',
+			description:
+				'Keyboard shortcut that opens the drawer when behaviors are loaded (e.g. ".", "cmd+k"). Surfaces as `data-shortcut`; the progressive-enhancement layer wires the listener.',
 		},
 		side: {
 			type: String,
@@ -86,14 +90,13 @@ export const drawer = createContentModelSchema({
 			type: String,
 			required: false,
 			matches: drawerSizes.slice(),
-			description: 'Panel size. "sm" / "md" (default) / "lg" — width for left/right sides, height for top/bottom.',
+			description:
+				'Panel size. "sm" / "md" (default) / "lg" — width for left/right sides, height for top/bottom.',
 		},
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const drawerId = attrs.id;
@@ -106,20 +109,25 @@ export const drawer = createContentModelSchema({
 		// postProcess walk inspects outline depth and rewrites the tag name.
 		// We pick `h3` as the sentinel because it's the no-postProcess
 		// fallback (most drawers live under an h2 page section).
-		const clampedLevel = typeof attrs.headingLevel === 'number'
-			? Math.min(6, Math.max(1, Math.trunc(attrs.headingLevel)))
-			: undefined;
+		const clampedLevel =
+			typeof attrs.headingLevel === 'number'
+				? Math.min(6, Math.max(1, Math.trunc(attrs.headingLevel)))
+				: undefined;
 		const titleTag = titleText
-			? (clampedLevel
+			? clampedLevel
 				? new Tag(`h${clampedLevel}`, {}, [titleText])
-				: new Tag('h3', { [DRAWER_TITLE_AUTO_MARKER]: 'true' }, [titleText]))
+				: new Tag('h3', { [DRAWER_TITLE_AUTO_MARKER]: 'true' }, [titleText])
 			: undefined;
 
-		const closeButton = new Tag('button', {
-			type: 'button',
-			'aria-label': 'Close',
-			hidden: true,
-		}, ['×']);
+		const closeButton = new Tag(
+			'button',
+			{
+				type: 'button',
+				'aria-label': 'Close',
+				hidden: true,
+			},
+			['×'],
+		);
 
 		const headerChildren: RenderableTreeNode[] = [];
 		if (titleTag) headerChildren.push(titleTag);
@@ -135,11 +143,12 @@ export const drawer = createContentModelSchema({
 		const body = new RenderableNodeCursor(
 			Markdoc.transform(zones.body, config) as RenderableTreeNode[],
 		).wrap('div');
-		const footer = zones.footer !== null
-			? new RenderableNodeCursor(
-				Markdoc.transform(zones.footer, config) as RenderableTreeNode[],
-			).wrap('footer')
-			: null;
+		const footer =
+			zones.footer !== null
+				? new RenderableNodeCursor(
+						Markdoc.transform(zones.footer, config) as RenderableTreeNode[],
+					).wrap('footer')
+				: null;
 
 		// Property meta tags drive engine modifier-from-meta + data-attribute
 		// derivation. We always emit `side` and `size` so the engine applies

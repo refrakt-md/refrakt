@@ -25,28 +25,46 @@ afterEach(() => {
 
 describe('directed dependency edges', () => {
 	it('derives blocked-by from a Blocked by section', () => {
-		const e = parseFileContent('{% work id="WORK-001" status="ready" %}\n# A\n\n## Blocked by\n- {% ref "WORK-002" /%}\n{% /work %}', 'a.md')!;
+		const e = parseFileContent(
+			'{% work id="WORK-001" status="ready" %}\n# A\n\n## Blocked by\n- {% ref "WORK-002" /%}\n{% /work %}',
+			'a.md',
+		)!;
 		expect(e.dependencies).toEqual([{ id: 'WORK-002', direction: 'blocked-by' }]);
 	});
 
 	it('derives blocks from a Blocks section', () => {
-		const e = parseFileContent('{% work id="WORK-001" status="ready" %}\n# A\n\n## Blocks\n- {% ref "WORK-002" /%}\n{% /work %}', 'a.md')!;
+		const e = parseFileContent(
+			'{% work id="WORK-001" status="ready" %}\n# A\n\n## Blocks\n- {% ref "WORK-002" /%}\n{% /work %}',
+			'a.md',
+		)!;
 		expect(e.dependencies).toEqual([{ id: 'WORK-002', direction: 'blocks' }]);
 	});
 
 	it('treats `## Dependencies` as a deprecated alias of Blocked by', () => {
-		const e = parseFileContent('{% work id="WORK-001" status="ready" %}\n# A\n\n## Dependencies\n- {% ref "WORK-002" /%}\n{% /work %}', 'a.md')!;
+		const e = parseFileContent(
+			'{% work id="WORK-001" status="ready" %}\n# A\n\n## Dependencies\n- {% ref "WORK-002" /%}\n{% /work %}',
+			'a.md',
+		)!;
 		expect(e.dependencies).toEqual([{ id: 'WORK-002', direction: 'blocked-by' }]);
 	});
 
 	it('excludes prose / References refs from the typed edges', () => {
-		const e = parseFileContent('{% work id="WORK-001" status="ready" %}\n# A\n\nMentions {% ref "WORK-009" /%}.\n\n## References\n- {% ref "SPEC-001" /%}\n{% /work %}', 'a.md')!;
+		const e = parseFileContent(
+			'{% work id="WORK-001" status="ready" %}\n# A\n\nMentions {% ref "WORK-009" /%}.\n\n## References\n- {% ref "SPEC-001" /%}\n{% /work %}',
+			'a.md',
+		)!;
 		expect(e.dependencies).toEqual([]);
 	});
 
 	it('normalises both directions into "A blocked by B" adjacency', () => {
-		const a = parseFileContent('{% work id="WORK-001" status="ready" %}\n# A\n\n## Blocked by\n- {% ref "WORK-002" /%}\n{% /work %}', 'a.md')!;
-		const c = parseFileContent('{% work id="WORK-003" status="ready" %}\n# C\n\n## Blocks\n- {% ref "WORK-004" /%}\n{% /work %}', 'c.md')!;
+		const a = parseFileContent(
+			'{% work id="WORK-001" status="ready" %}\n# A\n\n## Blocked by\n- {% ref "WORK-002" /%}\n{% /work %}',
+			'a.md',
+		)!;
+		const c = parseFileContent(
+			'{% work id="WORK-003" status="ready" %}\n# C\n\n## Blocks\n- {% ref "WORK-004" /%}\n{% /work %}',
+			'c.md',
+		)!;
 		const adj = buildBlockedByAdjacency([a, c]);
 		// WORK-001 is blocked by WORK-002.
 		expect(adj.get('WORK-001')).toEqual(['WORK-002']);
@@ -59,7 +77,10 @@ describe('directed dependency edges', () => {
 
 describe('migrate dependencies', () => {
 	it('renames `## Dependencies` headings to `## Blocked by` on --apply', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="ready" %}\n# A\n\n## Dependencies\n- {% ref "WORK-002" /%}\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="ready" %}\n# A\n\n## Dependencies\n- {% ref "WORK-002" /%}\n{% /work %}',
+		);
 		const dry = runMigrateDependencies({ dir: TMP });
 		expect(dry.mode).toBe('dry-run');
 		expect(dry.renamed).toHaveLength(1);
@@ -74,7 +95,10 @@ describe('migrate dependencies', () => {
 	});
 
 	it('flags reverse-direction entries without auto-flipping them', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="ready" %}\n# A\n\n## Dependencies\n- Unblocks {% ref "WORK-002" /%} once done\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="ready" %}\n# A\n\n## Dependencies\n- Unblocks {% ref "WORK-002" /%} once done\n{% /work %}',
+		);
 		const result = runMigrateDependencies({ dir: TMP });
 		expect(result.reverseFlags).toHaveLength(1);
 		expect(result.reverseFlags[0].file).toBe('work/a.md');
@@ -87,16 +111,30 @@ describe('migrate dependencies', () => {
 
 describe('cycle detection on directed edges', () => {
 	it('reports zero cycles for a prose cross-reference pair', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="done" %}\n# A\n\nSee {% ref "WORK-002" /%}.\n{% /work %}');
-		writeMd('work/b.md', '{% work id="WORK-002" status="done" %}\n# B\n\nSee {% ref "WORK-001" /%}.\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="done" %}\n# A\n\nSee {% ref "WORK-002" /%}.\n{% /work %}',
+		);
+		writeMd(
+			'work/b.md',
+			'{% work id="WORK-002" status="done" %}\n# B\n\nSee {% ref "WORK-001" /%}.\n{% /work %}',
+		);
 		const result = runValidate({ dir: TMP });
-		expect(result.issues.filter(i => i.type === 'circular-dependency')).toHaveLength(0);
+		expect(result.issues.filter((i) => i.type === 'circular-dependency')).toHaveLength(0);
 	});
 
 	it('still catches a genuine directed deadlock', () => {
-		writeMd('work/a.md', '{% work id="WORK-001" status="ready" %}\n# A\n\n## Blocked by\n- {% ref "WORK-002" /%}\n{% /work %}');
-		writeMd('work/b.md', '{% work id="WORK-002" status="ready" %}\n# B\n\n## Blocked by\n- {% ref "WORK-001" /%}\n{% /work %}');
+		writeMd(
+			'work/a.md',
+			'{% work id="WORK-001" status="ready" %}\n# A\n\n## Blocked by\n- {% ref "WORK-002" /%}\n{% /work %}',
+		);
+		writeMd(
+			'work/b.md',
+			'{% work id="WORK-002" status="ready" %}\n# B\n\n## Blocked by\n- {% ref "WORK-001" /%}\n{% /work %}',
+		);
 		const result = runValidate({ dir: TMP });
-		expect(result.issues.filter(i => i.type === 'circular-dependency').length).toBeGreaterThanOrEqual(1);
+		expect(
+			result.issues.filter((i) => i.type === 'circular-dependency').length,
+		).toBeGreaterThanOrEqual(1);
 	});
 });

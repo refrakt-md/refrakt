@@ -59,35 +59,19 @@ dialog.rf-drawer .rf-drawer__footer {
 
 /* Per-side inset positioning. */
 dialog.rf-drawer[data-side="right"] {
-	inset:
-		var(--rf-drawer-gutter)
-		var(--rf-drawer-gutter)
-		var(--rf-drawer-gutter)
-		auto;
+	inset: var(--rf-drawer-gutter) var(--rf-drawer-gutter) var(--rf-drawer-gutter) auto;
 	height: auto;
 }
 dialog.rf-drawer[data-side="left"] {
-	inset:
-		var(--rf-drawer-gutter)
-		auto
-		var(--rf-drawer-gutter)
-		var(--rf-drawer-gutter);
+	inset: var(--rf-drawer-gutter) auto var(--rf-drawer-gutter) var(--rf-drawer-gutter);
 	height: auto;
 }
 dialog.rf-drawer[data-side="top"] {
-	inset:
-		var(--rf-drawer-gutter)
-		var(--rf-drawer-gutter)
-		auto
-		var(--rf-drawer-gutter);
+	inset: var(--rf-drawer-gutter) var(--rf-drawer-gutter) auto var(--rf-drawer-gutter);
 	width: auto;
 }
 dialog.rf-drawer[data-side="bottom"] {
-	inset:
-		auto
-		var(--rf-drawer-gutter)
-		var(--rf-drawer-gutter)
-		var(--rf-drawer-gutter);
+	inset: auto var(--rf-drawer-gutter) var(--rf-drawer-gutter) var(--rf-drawer-gutter);
 	width: auto;
 }
 

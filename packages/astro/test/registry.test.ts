@@ -45,9 +45,7 @@ describe('Astro renderer extraction (shared with RfRenderer.astro)', () => {
 
 	it('extracts named refs that become Astro named slots', () => {
 		const tag = makeTag('article', { 'data-rune': 'recipe' }, [
-			makeTag('div', { 'data-name': 'headline' }, [
-				makeTag('h2', {}, ['Chocolate Cake']),
-			]),
+			makeTag('div', { 'data-name': 'headline' }, [makeTag('h2', {}, ['Chocolate Cake'])]),
 			makeTag('div', { 'data-name': 'ingredients' }, [
 				makeTag('ul', {}, [makeTag('li', {}, ['flour'])]),
 			]),
@@ -56,8 +54,8 @@ describe('Astro renderer extraction (shared with RfRenderer.astro)', () => {
 		const iface = extractComponentInterface(tag);
 
 		// Refs are pre-rendered to HTML for <Fragment slot="name" set:html={html} />
-		const headlineHtml = iface.refs.headline.map(t => renderToHtml(t)).join('');
-		const ingredientsHtml = iface.refs.ingredients.map(t => renderToHtml(t)).join('');
+		const headlineHtml = iface.refs.headline.map((t) => renderToHtml(t)).join('');
+		const ingredientsHtml = iface.refs.ingredients.map((t) => renderToHtml(t)).join('');
 
 		expect(headlineHtml).toContain('<h2>Chocolate Cake</h2>');
 		expect(ingredientsHtml).toContain('<li>flour</li>');

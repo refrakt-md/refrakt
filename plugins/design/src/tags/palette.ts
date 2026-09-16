@@ -6,8 +6,8 @@ import { createContentModelSchema, createComponentRenderable, asNodes } from '@r
 // Extract plain text from an AST node
 function extractText(node: Node): string {
 	return Array.from(node.walk())
-		.filter(n => n.type === 'text')
-		.map(n => n.attributes.content)
+		.filter((n) => n.type === 'text')
+		.map((n) => n.attributes.content)
 		.join('');
 }
 
@@ -19,7 +19,10 @@ function parseColorEntry(text: string): { name: string; values: string[] } | nul
 	const name = text.slice(0, colonIndex).trim();
 	const valueStr = text.slice(colonIndex + 1).trim();
 
-	const values = valueStr.split(',').map(v => v.trim()).filter(Boolean);
+	const values = valueStr
+		.split(',')
+		.map((v) => v.trim())
+		.filter(Boolean);
 	return { name, values };
 }
 
@@ -27,15 +30,19 @@ function parseColorEntry(text: string): { name: string; values: string[] } | nul
 function hexToRgb(hex: string): [number, number, number] | null {
 	const clean = hex.replace('#', '');
 	if (clean.length !== 6 && clean.length !== 3) return null;
-	const full = clean.length === 3
-		? clean.split('').map(c => c + c).join('')
-		: clean;
+	const full =
+		clean.length === 3
+			? clean
+					.split('')
+					.map((c) => c + c)
+					.join('')
+			: clean;
 	const num = parseInt(full, 16);
 	return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 }
 
 function relativeLuminance(r: number, g: number, b: number): number {
-	const [rs, gs, bs] = [r, g, b].map(c => {
+	const [rs, gs, bs] = [r, g, b].map((c) => {
 		const s = c / 255;
 		return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
 	});
@@ -68,8 +75,15 @@ function autoColumns(count: number, columns?: number): number {
 	return 5;
 }
 
-interface ColorEntry { name: string; values: string[]; group: string; }
-interface ColorGroup { title: string; entries: ColorEntry[]; }
+interface ColorEntry {
+	name: string;
+	values: string[];
+	group: string;
+}
+interface ColorGroup {
+	title: string;
+	entries: ColorEntry[];
+}
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
@@ -79,10 +93,29 @@ export const paletteSections = { title: 'title' } as const;
 export const palette = createContentModelSchema({
 	sections: paletteSections,
 	attributes: {
-		title: { type: String, required: false, default: '', description: 'Heading displayed above the palette section.' },
-		showContrast: { type: Boolean, required: false, default: false, description: 'Enable/disable WCAG contrast ratio values against white and black.' },
-		showA11y: { type: Boolean, required: false, default: false, description: 'Enable/disable AA/AAA accessibility compliance badges per swatch.' },
-		columns: { type: Number, required: false, description: 'Number of swatch columns in the grid; auto-calculated from count when omitted.' },
+		title: {
+			type: String,
+			required: false,
+			default: '',
+			description: 'Heading displayed above the palette section.',
+		},
+		showContrast: {
+			type: Boolean,
+			required: false,
+			default: false,
+			description: 'Enable/disable WCAG contrast ratio values against white and black.',
+		},
+		showA11y: {
+			type: Boolean,
+			required: false,
+			default: false,
+			description: 'Enable/disable AA/AAA accessibility compliance badges per swatch.',
+		},
+		columns: {
+			type: Number,
+			required: false,
+			description: 'Number of swatch columns in the grid; auto-calculated from count when omitted.',
+		},
 	},
 	contentModel: {
 		type: 'sequence' as const,
@@ -117,13 +150,15 @@ export const palette = createContentModelSchema({
 			}
 		}
 
-		const activeGroups = groups.filter(g => g.entries.length > 0);
+		const activeGroups = groups.filter((g) => g.entries.length > 0);
 
 		// Build complete presentational Tag tree
 		const titleMeta = new Tag('meta', { content: attrs.title });
 		const showContrastMeta = new Tag('meta', { content: String(attrs.showContrast) });
 		const showA11yMeta = new Tag('meta', { content: String(attrs.showA11y) });
-		const columnsMeta = new Tag('meta', { content: attrs.columns != null ? String(attrs.columns) : '' });
+		const columnsMeta = new Tag('meta', {
+			content: attrs.columns != null ? String(attrs.columns) : '',
+		});
 
 		const groupTags: InstanceType<typeof Tag>[] = [];
 
@@ -135,15 +170,19 @@ export const palette = createContentModelSchema({
 			}
 
 			// Split into singles (1 value) and scales (multiple values)
-			const singles = group.entries.filter(e => e.values.length <= 1);
-			const scales = group.entries.filter(e => e.values.length > 1);
+			const singles = group.entries.filter((e) => e.values.length <= 1);
+			const scales = group.entries.filter((e) => e.values.length > 1);
 
 			if (singles.length > 0) {
 				const cols = autoColumns(singles.length, attrs.columns as number | undefined);
-				const swatchTags = singles.map(entry => {
+				const swatchTags = singles.map((entry) => {
 					const color = entry.values[0] || '';
 					const swatchChildren: (string | InstanceType<typeof Tag>)[] = [
-						new Tag('div', { 'data-name': 'swatch-color', style: `background-color: ${color}` }, []),
+						new Tag(
+							'div',
+							{ 'data-name': 'swatch-color', style: `background-color: ${color}` },
+							[],
+						),
 						new Tag('span', { 'data-name': 'swatch-name' }, [entry.name]),
 						new Tag('span', { 'data-name': 'swatch-value' }, [color]),
 					];
@@ -153,30 +192,52 @@ export const palette = createContentModelSchema({
 						const onBlack = contrastRatio(color, '#000000');
 
 						if (attrs.showContrast) {
-							swatchChildren.push(new Tag('span', { 'data-name': 'swatch-contrast' }, [
-								`W: ${onWhite.toFixed(1)} \u00b7 B: ${onBlack.toFixed(1)}`,
-							]));
+							swatchChildren.push(
+								new Tag('span', { 'data-name': 'swatch-contrast' }, [
+									`W: ${onWhite.toFixed(1)} \u00b7 B: ${onBlack.toFixed(1)}`,
+								]),
+							);
 						}
 
 						if (attrs.showA11y) {
 							const aaPass = onWhite >= 4.5;
 							const aaaPass = onWhite >= 7;
-							swatchChildren.push(new Tag('span', { 'data-name': 'swatch-a11y' }, [
-								new Tag('span', { 'data-name': aaPass ? 'swatch-a11y--pass' : 'swatch-a11y--fail' }, [`AA ${aaPass ? '\u2713' : '\u2717'}`]),
-								new Tag('span', { 'data-name': aaaPass ? 'swatch-a11y--pass' : 'swatch-a11y--fail' }, [`AAA ${aaaPass ? '\u2713' : '\u2717'}`]),
-							]));
+							swatchChildren.push(
+								new Tag('span', { 'data-name': 'swatch-a11y' }, [
+									new Tag(
+										'span',
+										{ 'data-name': aaPass ? 'swatch-a11y--pass' : 'swatch-a11y--fail' },
+										[`AA ${aaPass ? '\u2713' : '\u2717'}`],
+									),
+									new Tag(
+										'span',
+										{ 'data-name': aaaPass ? 'swatch-a11y--pass' : 'swatch-a11y--fail' },
+										[`AAA ${aaaPass ? '\u2713' : '\u2717'}`],
+									),
+								]),
+							);
 						}
 					}
 
 					return new Tag('div', { 'data-name': 'swatch' }, swatchChildren);
 				});
 
-				groupChildren.push(new Tag('div', { 'data-name': 'grid', style: `--rf-palette-cols: ${cols}` }, swatchTags));
+				groupChildren.push(
+					new Tag('div', { 'data-name': 'grid', style: `--rf-palette-cols: ${cols}` }, swatchTags),
+				);
 			}
 
 			for (const entry of scales) {
-				const stops = entry.values.map(value =>
-					new Tag('div', { 'data-name': 'scale-stop', style: `background-color: ${value}; color: ${textColorFor(value)}` }, [value])
+				const stops = entry.values.map(
+					(value) =>
+						new Tag(
+							'div',
+							{
+								'data-name': 'scale-stop',
+								style: `background-color: ${value}; color: ${textColorFor(value)}`,
+							},
+							[value],
+						),
 				);
 				groupChildren.push(new Tag('div', { 'data-name': 'scale' }, stops));
 				groupChildren.push(new Tag('span', { 'data-name': 'swatch-name' }, [entry.name]));
@@ -187,14 +248,18 @@ export const palette = createContentModelSchema({
 
 		// Title is rendered as a structural element — include conditionally
 		const topChildren: (string | InstanceType<typeof Tag>)[] = [
-			titleMeta, showContrastMeta, showA11yMeta, columnsMeta,
+			titleMeta,
+			showContrastMeta,
+			showA11yMeta,
+			columnsMeta,
 		];
 		if (attrs.title) {
 			topChildren.push(new Tag('h3', { 'data-name': 'title' }, [attrs.title as string]));
 		}
 		topChildren.push(...groupTags);
 
-		return createComponentRenderable({ rune: 'palette',
+		return createComponentRenderable({
+			rune: 'palette',
 			tag: 'section',
 			properties: {
 				title: titleMeta,
@@ -208,7 +273,9 @@ export const palette = createContentModelSchema({
 });
 
 /** Extract color tokens from a palette AST node (used by design-context). */
-export function extractPaletteTokens(node: Node): { name: string; value: string; group?: string }[] {
+export function extractPaletteTokens(
+	node: Node,
+): { name: string; value: string; group?: string }[] {
 	const tokens: { name: string; value: string; group?: string }[] = [];
 	let currentGroup = '';
 
@@ -222,7 +289,11 @@ export function extractPaletteTokens(node: Node): { name: string; value: string;
 					const entry = parseColorEntry(text);
 					if (entry) {
 						if (entry.values.length <= 1) {
-							tokens.push({ name: entry.name, value: entry.values[0] || '', group: currentGroup || undefined });
+							tokens.push({
+								name: entry.name,
+								value: entry.values[0] || '',
+								group: currentGroup || undefined,
+							});
 						} else {
 							for (const v of entry.values) {
 								tokens.push({ name: entry.name, value: v, group: currentGroup || undefined });

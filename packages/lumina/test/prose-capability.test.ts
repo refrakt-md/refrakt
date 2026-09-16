@@ -33,7 +33,9 @@ for (const plugin of Object.values(plugins)) {
 /** Every rune schema reachable from core + the nine plugins, by tag name. */
 const allSchemas: Record<string, Schema> = { ...(tags as unknown as Record<string, Schema>) };
 for (const plugin of Object.values(plugins)) {
-	for (const [name, rune] of Object.entries(plugin.runes as Record<string, { transform: Schema }>)) {
+	for (const [name, rune] of Object.entries(
+		plugin.runes as Record<string, { transform: Schema }>,
+	)) {
 		allSchemas[name] = rune.transform;
 	}
 }
@@ -57,7 +59,9 @@ describe('the prose capability is one fact, declared twice', () => {
 			const schema = Object.entries(allSchemas).find(([tag]) => norm(tag) === norm(name))?.[1];
 			if (!schema) continue; // child/aliased runes with no tag of their own
 			if (configProvides(config) !== schemaProvides(schema)) {
-				offenders.push(`${name}: config says ${configProvides(config)}, schema says ${schemaProvides(schema)}`);
+				offenders.push(
+					`${name}: config says ${configProvides(config)}, schema says ${schemaProvides(schema)}`,
+				);
 			}
 		}
 		expect(offenders).toEqual([]);

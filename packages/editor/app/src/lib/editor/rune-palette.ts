@@ -14,9 +14,9 @@ import type { RuneInfo } from '../api/client.js';
  */
 function stripSnippetPlaceholders(line: string): string {
 	return line
-		.replace(/\$\{\d+\|([^,}]+)[^}]*\}/g, '$1')  // ${N|first,...|} → first
-		.replace(/\$\{\d+:([^}]*)}/g, '$1')             // ${N:text} → text
-		.replace(/\$\d+/g, '');                          // $0, $1 → empty
+		.replace(/\$\{\d+\|([^,}]+)[^}]*\}/g, '$1') // ${N|first,...|} → first
+		.replace(/\$\{\d+:([^}]*)}/g, '$1') // ${N:text} → text
+		.replace(/\$\d+/g, ''); // $0, $1 → empty
 }
 
 /**

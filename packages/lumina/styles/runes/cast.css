@@ -1,59 +1,58 @@
 @layer skin {
-/* Cast */
+	/* Cast */
 
-/* Members list — base */
-.rf-cast__items {
-	padding: 0;
-	margin: 0;
-}
+	/* Members list — base */
+	.rf-cast__items {
+		padding: 0;
+		margin: 0;
+	}
 
-/* Grid layout (default) */
-.rf-cast--grid .rf-cast__items {
-	gap: 1rem;
-}
+	/* Grid layout (default) */
+	.rf-cast--grid .rf-cast__items {
+		gap: 1rem;
+	}
 
-/* List layout */
-.rf-cast--list .rf-cast__items {
-	gap: 0.75rem;
-}
+	/* List layout */
+	.rf-cast--list .rf-cast__items {
+		gap: 0.75rem;
+	}
 
-/* Member card — surface chrome (fill, border, radius, padding) comes from
+	/* Member card — surface chrome (fill, border, radius, padding) comes from
  * dimensions/surfaces.css via defaultElevation: 'flat'. */
-.rf-cast-member {
-	text-align: center;
-}
-.rf-cast-member__name {
-	font-weight: var(--rf-weight-semibold);
-	font-size: var(--rf-text);
-	color: var(--rf-color-text);
-}
-.rf-cast-member__role {
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-muted);
-	margin-top: 0.125rem;
-}
-.rf-cast-member__body {
-	margin-top: 0.75rem;
-	font-size: var(--rf-text-sm);
-	color: var(--rf-color-muted);
-	line-height: var(--rf-leading-normal);
-}
-.rf-cast-member img {
-	border-radius: var(--rf-radius-full);
-	margin: 0 auto 0.75rem;
-}
+	.rf-cast-member {
+		text-align: center;
+	}
+	.rf-cast-member__name {
+		font-weight: var(--rf-weight-semibold);
+		font-size: var(--rf-text);
+		color: var(--rf-color-text);
+	}
+	.rf-cast-member__role {
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+		margin-top: 0.125rem;
+	}
+	.rf-cast-member__body {
+		margin-top: 0.75rem;
+		font-size: var(--rf-text-sm);
+		color: var(--rf-color-muted);
+		line-height: var(--rf-leading-normal);
+	}
+	.rf-cast-member img {
+		border-radius: var(--rf-radius-full);
+		margin: 0 auto 0.75rem;
+	}
 
-/* List layout — horizontal member cards */
-.rf-cast--list .rf-cast-member {
-	gap: 1rem;
-	text-align: left;
-	padding: 0.75rem 1rem;
-}
-.rf-cast--list .rf-cast-member img {
-	margin: 0;
-}
-.rf-cast--list .rf-cast-member__body {
-	margin-top: 0;
-}
-
+	/* List layout — horizontal member cards */
+	.rf-cast--list .rf-cast-member {
+		gap: 1rem;
+		text-align: left;
+		padding: 0.75rem 1rem;
+	}
+	.rf-cast--list .rf-cast-member img {
+		margin: 0;
+	}
+	.rf-cast--list .rf-cast-member__body {
+		margin-top: 0;
+	}
 }

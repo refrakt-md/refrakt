@@ -27,12 +27,17 @@ for (const plugin of Object.values(plugins)) {
 }
 
 /** Every schema the core catalogue registered a structure for, by object. */
-function structuresByRune(): Array<[string, RuneConfig, ReturnType<typeof schemaRuneStructures.get>]> {
+function structuresByRune(): Array<
+	[string, RuneConfig, ReturnType<typeof schemaRuneStructures.get>]
+> {
 	const out: Array<[string, RuneConfig, ReturnType<typeof schemaRuneStructures.get>]> = [];
 	for (const [name, schema] of Object.entries(tags)) {
 		const structure = schemaRuneStructures.get(schema as never);
 		if (!structure) continue;
-		const key = Object.keys(allRunes).find((k) => k.toLowerCase().replace(/[^a-z0-9]/g, '') === name.toLowerCase().replace(/[^a-z0-9]/g, ''));
+		const key = Object.keys(allRunes).find(
+			(k) =>
+				k.toLowerCase().replace(/[^a-z0-9]/g, '') === name.toLowerCase().replace(/[^a-z0-9]/g, ''),
+		);
 		if (key) out.push([key, allRunes[key], structure]);
 	}
 	return out;
@@ -66,7 +71,11 @@ describe('join tables are declared in tag modules', () => {
 		// schema-build time, which is the gap this work closes.
 		const missing: string[] = [];
 		for (const [name, schema] of Object.entries(tags)) {
-			const key = Object.keys(allRunes).find((k) => k.toLowerCase().replace(/[^a-z0-9]/g, '') === name.toLowerCase().replace(/[^a-z0-9]/g, ''));
+			const key = Object.keys(allRunes).find(
+				(k) =>
+					k.toLowerCase().replace(/[^a-z0-9]/g, '') ===
+					name.toLowerCase().replace(/[^a-z0-9]/g, ''),
+			);
 			if (!key) continue;
 			const config = allRunes[key];
 			if (!config?.sections) continue;

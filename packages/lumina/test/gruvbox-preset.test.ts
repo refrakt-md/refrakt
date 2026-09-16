@@ -88,8 +88,8 @@ describe('Gruvbox preset module — SPEC-057 import (the warm one)', () => {
 		});
 
 		it('emits warm-distinctive syntax tokens', () => {
-			expect(baseDecls.get('--rf-syntax-keyword')).toBe('#9d0006');  // faded_red
-			expect(darkDecls.get('--rf-syntax-keyword')).toBe('#fb4934');  // bright_red
+			expect(baseDecls.get('--rf-syntax-keyword')).toBe('#9d0006'); // faded_red
+			expect(darkDecls.get('--rf-syntax-keyword')).toBe('#fb4934'); // bright_red
 			expect(darkDecls.get('--rf-syntax-token-operator')).toBe('#fe8019'); // bright_orange
 		});
 	});

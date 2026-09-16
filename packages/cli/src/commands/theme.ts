@@ -1,10 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { execSync } from 'node:child_process';
-import {
-	loadRefraktConfigFile,
-	writeRefraktConfigFile,
-} from '../config-file.js';
+import { loadRefraktConfigFile, writeRefraktConfigFile } from '../config-file.js';
 import {
 	resolveSource,
 	buildInstallCommand,
@@ -93,7 +90,10 @@ export async function themeInstallCommand(options: ThemeInstallOptions): Promise
 	}
 
 	// 4. Validate refrakt compatibility (ADR-023) before wiring it in.
-	const compat = validateCompat(readThemeCompatRange(cwd, pluginName), getProjectRefraktVersion(cwd));
+	const compat = validateCompat(
+		readThemeCompatRange(cwd, pluginName),
+		getProjectRefraktVersion(cwd),
+	);
 	if (compat.errors.length > 0) {
 		console.error('');
 		console.error(`Error: theme "${pluginName}" is not compatible with this project:`);
@@ -113,11 +113,15 @@ export async function themeInstallCommand(options: ThemeInstallOptions): Promise
 
 	// 7. Report.
 	console.log('');
-	console.log(`Theme "${pluginName}" installed successfully${selection.key !== 'default' ? ` for site "${selection.key}"` : ''}.`);
+	console.log(
+		`Theme "${pluginName}" installed successfully${selection.key !== 'default' ? ` for site "${selection.key}"` : ''}.`,
+	);
 	if (previousTheme !== pluginName) {
 		console.log(`  Updated refrakt.config.json: "${previousTheme ?? '(none)'}" → "${pluginName}"`);
 	}
-	console.log(`  Framework layer: ${layers.length ? layers.join(', ') : 'none (framework-agnostic)'}`);
+	console.log(
+		`  Framework layer: ${layers.length ? layers.join(', ') : 'none (framework-agnostic)'}`,
+	);
 	if (warnings.length > 0) {
 		console.log('');
 		console.log('Warnings:');
@@ -158,7 +162,9 @@ export async function themeInfoCommand(options: ThemeInfoOptions): Promise<void>
 		if (exportsMap['./styles/runes/*.css']) features.push('rune CSS');
 		const layers = detectFrameworkLayers(pkg);
 		if (features.length) console.log(`  Provides: ${features.join(', ')}`);
-		console.log(`  Framework layer: ${layers.length ? layers.join(', ') : 'none (framework-agnostic)'}`);
+		console.log(
+			`  Framework layer: ${layers.length ? layers.join(', ') : 'none (framework-agnostic)'}`,
+		);
 	} else if (themeName.startsWith('.')) {
 		console.log(`  Type: Local directory`);
 		console.log(`  Path: ${resolve(cwd, themeName)}`);
@@ -180,7 +186,7 @@ export async function themeListCommand(_options: ThemeListOptions): Promise<void
 	}
 
 	const active = new Set<string>();
-	for (const key of (configData.raw.site ? ['default'] : Object.keys(configData.raw.sites ?? {}))) {
+	for (const key of configData.raw.site ? ['default'] : Object.keys(configData.raw.sites ?? {})) {
 		const t = readThemeForSite(configData.raw, key);
 		if (t) active.add(t);
 	}
@@ -191,7 +197,11 @@ export async function themeListCommand(_options: ThemeListOptions): Promise<void
 		const pkg = readInstalledManifest(cwd, dir);
 		const exportsMap = (pkg?.exports ?? {}) as Record<string, unknown>;
 		if (pkg && exportsMap['./transform']) {
-			found.push({ name: dir, version: String(pkg.version ?? '?'), layers: detectFrameworkLayers(pkg) });
+			found.push({
+				name: dir,
+				version: String(pkg.version ?? '?'),
+				layers: detectFrameworkLayers(pkg),
+			});
 		}
 	}
 
@@ -213,7 +223,8 @@ export async function themeListCommand(_options: ThemeListOptions): Promise<void
 function listPackageDirs(modulesDir: string): string[] {
 	if (!existsSync(modulesDir)) return [];
 	const out: string[] = [];
-	const isDir = (e: { isDirectory(): boolean; isSymbolicLink(): boolean }) => e.isDirectory() || e.isSymbolicLink();
+	const isDir = (e: { isDirectory(): boolean; isSymbolicLink(): boolean }) =>
+		e.isDirectory() || e.isSymbolicLink();
 	for (const entry of readdirSync(modulesDir, { withFileTypes: true })) {
 		if (!isDir(entry)) continue;
 		if (entry.name.startsWith('@')) {
@@ -228,7 +239,10 @@ function listPackageDirs(modulesDir: string): string[] {
 }
 
 /** Read the theme package name configured for a given site key. */
-function readThemeForSite(raw: import('@refrakt-md/types').RefraktConfig, key: string): string | undefined {
+function readThemeForSite(
+	raw: import('@refrakt-md/types').RefraktConfig,
+	key: string,
+): string | undefined {
 	const site = key === 'default' && raw.site ? raw.site : raw.sites?.[key];
 	const value = site?.theme ?? raw.theme;
 	if (value === undefined) return undefined;

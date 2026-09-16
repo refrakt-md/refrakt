@@ -32,9 +32,7 @@ function createDataTable(opts?: {
 	if (opts?.pageSize) el.setAttribute('data-page-size', String(opts.pageSize));
 	if (opts?.defaultSort) el.setAttribute('data-default-sort', opts.defaultSort);
 
-	const rowsHtml = rows.map((r) =>
-		`<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`,
-	).join('');
+	const rowsHtml = rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join('')}</tr>`).join('');
 
 	el.innerHTML = `
 		<div class="rf-datatable__scroll">
@@ -50,8 +48,9 @@ function createDataTable(opts?: {
 }
 
 function getVisibleRows(el: HTMLElement): HTMLTableRowElement[] {
-	return Array.from(el.querySelectorAll<HTMLTableRowElement>('tbody tr'))
-		.filter((r) => r.style.display !== 'none');
+	return Array.from(el.querySelectorAll<HTMLTableRowElement>('tbody tr')).filter(
+		(r) => r.style.display !== 'none',
+	);
 }
 
 describe('datatableBehavior', () => {
@@ -194,12 +193,15 @@ describe('datatableBehavior', () => {
 			const el = document.createElement('div');
 			el.setAttribute('data-rune', 'datatable');
 			el.setAttribute('data-sortable', 'Revenue');
-			const rowsHtml = rows.map((r) => {
-				const rev = r.revenueValue !== undefined
-					? `<td data-value="${r.revenueValue}">${r.revenueText}</td>`
-					: `<td>${r.revenueText}</td>`;
-				return `<tr><td>${r.product}</td>${rev}</tr>`;
-			}).join('');
+			const rowsHtml = rows
+				.map((r) => {
+					const rev =
+						r.revenueValue !== undefined
+							? `<td data-value="${r.revenueValue}">${r.revenueText}</td>`
+							: `<td>${r.revenueText}</td>`;
+					return `<tr><td>${r.product}</td>${rev}</tr>`;
+				})
+				.join('');
 			el.innerHTML = `<div class="rf-datatable__scroll"><table>
 				<thead><tr><th>Product</th><th>Revenue</th></tr></thead>
 				<tbody>${rowsHtml}</tbody></table></div>`;

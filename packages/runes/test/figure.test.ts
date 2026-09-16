@@ -7,11 +7,11 @@ describe('figure tag', () => {
 ![Sunset](/images/sunset.jpg)
 {% /figure %}`);
 
-		const fig = findTag(result as any, t => t.attributes['data-rune'] === 'figure');
+		const fig = findTag(result as any, (t) => t.attributes['data-rune'] === 'figure');
 		expect(fig).toBeDefined();
 		expect(fig!.name).toBe('figure');
 
-		const caption = findTag(fig!, t => t.name === 'figcaption');
+		const caption = findTag(fig!, (t) => t.name === 'figcaption');
 		expect(caption).toBeDefined();
 		expect(caption!.children).toContain('A sunset');
 	});
@@ -23,10 +23,10 @@ describe('figure tag', () => {
 A beautiful sunset over the ocean.
 {% /figure %}`);
 
-		const fig = findTag(result as any, t => t.attributes['data-rune'] === 'figure');
+		const fig = findTag(result as any, (t) => t.attributes['data-rune'] === 'figure');
 		expect(fig).toBeDefined();
 
-		const caption = findTag(fig!, t => t.name === 'figcaption');
+		const caption = findTag(fig!, (t) => t.name === 'figcaption');
 		expect(caption).toBeDefined();
 	});
 
@@ -35,7 +35,7 @@ A beautiful sunset over the ocean.
 ![Photo](/images/photo.jpg)
 {% /figure %}`);
 
-		const fig = findTag(result as any, t => t.attributes['data-rune'] === 'figure');
+		const fig = findTag(result as any, (t) => t.attributes['data-rune'] === 'figure');
 		expect(fig).toBeDefined();
 
 		expect(fields(fig).size).toBe('large');
@@ -49,9 +49,12 @@ A beautiful sunset over the ocean.
 ![Dashboard](placeholder:cover)
 {% /figure %}`);
 
-		const fig = findTag(result as any, t => t.attributes['data-rune'] === 'figure');
+		const fig = findTag(result as any, (t) => t.attributes['data-rune'] === 'figure');
 		expect(fig).toBeDefined();
-		const svg = findTag(fig!, t => t.name === 'svg' && /rf-placeholder/.test(String(t.attributes.class)));
+		const svg = findTag(
+			fig!,
+			(t) => t.name === 'svg' && /rf-placeholder/.test(String(t.attributes.class)),
+		);
 		expect(svg).toBeDefined();
 		expect(svg!.attributes['data-shape']).toBe('cover');
 	});

@@ -24,8 +24,7 @@ function detectLanguage(inputPath: string): 'typescript' | 'python' {
 	}
 
 	// Check for tsconfig.json
-	if (existsSync(join(abs, 'tsconfig.json')) ||
-		existsSync(join(dirname(abs), 'tsconfig.json'))) {
+	if (existsSync(join(abs, 'tsconfig.json')) || existsSync(join(dirname(abs), 'tsconfig.json'))) {
 		return 'typescript';
 	}
 
@@ -33,8 +32,8 @@ function detectLanguage(inputPath: string): 'typescript' | 'python' {
 	if (existsSync(abs) && statSync(abs).isDirectory()) {
 		try {
 			const files = readdirSync(abs);
-			if (files.some(f => f.endsWith('.ts') || f.endsWith('.tsx'))) return 'typescript';
-			if (files.some(f => f.endsWith('.py'))) return 'python';
+			if (files.some((f) => f.endsWith('.ts') || f.endsWith('.tsx'))) return 'typescript';
+			if (files.some((f) => f.endsWith('.py'))) return 'python';
 		} catch {
 			// fall through
 		}
@@ -64,10 +63,16 @@ function walkFiles(dir: string, ext: RegExp): string[] {
 		const stat = statSync(fullPath);
 		if (stat.isDirectory()) {
 			files.push(...walkFiles(fullPath, ext));
-		} else if (ext.test(entry)
-			&& !entry.endsWith('.d.ts') && !entry.endsWith('.test.ts') && !entry.endsWith('.spec.ts')
-			&& !entry.startsWith('test_') && !entry.endsWith('_test.py')
-			&& entry !== 'conftest.py' && entry !== 'setup.py') {
+		} else if (
+			ext.test(entry) &&
+			!entry.endsWith('.d.ts') &&
+			!entry.endsWith('.test.ts') &&
+			!entry.endsWith('.spec.ts') &&
+			!entry.startsWith('test_') &&
+			!entry.endsWith('_test.py') &&
+			entry !== 'conftest.py' &&
+			entry !== 'setup.py'
+		) {
 			files.push(fullPath);
 		}
 	}

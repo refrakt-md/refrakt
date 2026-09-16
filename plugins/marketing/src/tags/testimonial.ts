@@ -1,7 +1,13 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor, isMediaNode } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	RenderableNodeCursor,
+	isMediaNode,
+} from '@refrakt-md/runes';
 
 const variantType = ['card', 'inline', 'quote'] as const;
 
@@ -11,18 +17,53 @@ const variantType = ['card', 'inline', 'quote'] as const;
 export const testimonialSections = { avatar: 'media' } as const;
 export const testimonialMediaSlots = { avatar: 'portrait' } as const;
 
+// SPEC-130 / WORK-565 — the rune's schema.org mapping, as data. Beside
+// `sections` and `mediaSlots` because it is the same kind of fact: what this
+// rune *is*, not how a theme renders it (ADR-028).
+//
+// The two nested entities were hand-built spans below. `entities:` carries them
+// declaratively, and the applier resolves each source by name — `quote` and
+// `author-name` survive in the output as refs, while `rating`'s meta is dropped
+// by `createComponentRenderable` as pure data and is rebuilt from the field bag.
+// That third case is what settled the mechanism's shape.
+export const testimonialSchema = {
+	type: 'Review',
+	properties: { quote: 'reviewBody' },
+	entities: {
+		author: {
+			type: 'Person',
+			property: 'author',
+			properties: { 'author-name': 'name', 'author-role': 'jobTitle' },
+		},
+		rating: {
+			type: 'Rating',
+			property: 'reviewRating',
+			properties: { rating: 'ratingValue' },
+		},
+	},
+} as const;
+
 export const testimonial = createContentModelSchema({
 	sections: testimonialSections,
 	mediaSlots: testimonialMediaSlots,
+	schema: testimonialSchema,
 	attributes: {
-		rating: { type: Number, required: false, description: 'Star rating value (1-5) shown alongside the testimonial' },
-		variant: { type: String, required: false, matches: variantType.slice(), description: 'Visual style: card with border, inline with text flow, or quote with large quotation marks' },
+		rating: {
+			type: Number,
+			required: false,
+			description: 'Star rating value (1-5) shown alongside the testimonial',
+		},
+		variant: {
+			type: String,
+			required: false,
+			matches: variantType.slice(),
+			description:
+				'Visual style: card with border, inline with text flow, or quote with large quotation marks',
+		},
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	deprecations: {
 		layout: { newName: 'variant' },
@@ -52,7 +93,8 @@ export const testimonial = createContentModelSchema({
 
 						// Get the role text after the strong tag
 						const idx = node.children.indexOf(child);
-						const rest = node.children.slice(idx + 1)
+						const rest = node.children
+							.slice(idx + 1)
 							.filter((c: any) => typeof c === 'string')
 							.join('')
 							.replace(/^\s*[-–—]\s*/, '')
@@ -63,7 +105,10 @@ export const testimonial = createContentModelSchema({
 						}
 					}
 				}
-			} else if (isMediaNode(node) || (node.name === 'p' && (node as any).children.some((c: any) => isMediaNode(c)))) {
+			} else if (
+				isMediaNode(node) ||
+				(node.name === 'p' && (node as any).children.some((c: any) => isMediaNode(c)))
+			) {
 				// Extract the avatar — an <img> or a scheme-resolved <svg>
 				// (placeholder:/icon:), direct or wrapped in a paragraph (SPEC-106).
 				if (isMediaNode(node)) {
@@ -88,23 +133,8 @@ export const testimonial = createContentModelSchema({
 		resultChildren.push(variantMeta);
 		if (avatarTag) resultChildren.push(avatarTag);
 
-		// Schema.org nested entities for Person author and Rating
-		if (authorNameTag) {
-			const authorMetas: any[] = [
-				new Tag('meta', { property: 'name', content: authorNameTag.children.filter((c: any) => typeof c === 'string').join('') }),
-			];
-			if (authorRoleTag) {
-				authorMetas.push(new Tag('meta', { property: 'jobTitle', content: authorRoleTag.children.filter((c: any) => typeof c === 'string').join('') }));
-			}
-			resultChildren.push(new Tag('span', { typeof: 'Person', property: 'author' }, authorMetas));
-		}
-		if (rating !== undefined) {
-			resultChildren.push(new Tag('span', { typeof: 'Rating', property: 'reviewRating' }, [
-				new Tag('meta', { property: 'ratingValue', content: rating }),
-			]));
-		}
-
-		return createComponentRenderable({ rune: 'testimonial', schemaOrgType: 'Review',
+		return createComponentRenderable({
+			rune: 'testimonial',
 			tag: 'article',
 			properties: {
 				rating: ratingMeta,
@@ -114,9 +144,6 @@ export const testimonial = createContentModelSchema({
 				'author-name': authorNameTag,
 				'author-role': authorRoleTag,
 				avatar: avatarTag,
-			},
-			schema: {
-				reviewBody: quoteTag,
 			},
 			children: resultChildren,
 		});

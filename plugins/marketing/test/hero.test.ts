@@ -9,7 +9,7 @@ describe('hero tag', () => {
 Build something amazing with our platform.
 {% /hero %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(tag).toBeDefined();
 		expect(tag!.name).toBe('section');
 	});
@@ -21,7 +21,7 @@ Build something amazing with our platform.
 Description text.
 {% /hero %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(tag).toBeDefined();
 
 		expect(fields(tag).align).toBe('left');
@@ -37,13 +37,16 @@ Build faster.
 - [Learn More](/docs)
 {% /hero %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(tag).toBeDefined();
 
-		const linkItem = findTag(tag!, t => t.name === 'li' && t.attributes['data-name'] === 'action');
+		const linkItem = findTag(
+			tag!,
+			(t) => t.name === 'li' && t.attributes['data-name'] === 'action',
+		);
 		expect(linkItem).toBeDefined();
 
-		const link = findTag(tag!, t => t.name === 'a' && t.attributes.href === '/signup');
+		const link = findTag(tag!, (t) => t.name === 'a' && t.attributes.href === '/signup');
 		expect(link).toBeDefined();
 	});
 
@@ -58,10 +61,13 @@ npm create refrakt
 \`\`\`
 {% /hero %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(tag).toBeDefined();
 
-		const command = findTag(tag!, t => t.name === 'div' && t.attributes['data-name'] === 'command');
+		const command = findTag(
+			tag!,
+			(t) => t.name === 'div' && t.attributes['data-name'] === 'command',
+		);
 		expect(command).toBeDefined();
 	});
 
@@ -79,13 +85,19 @@ npm create refrakt
 - [GitHub](https://github.com)
 {% /hero %}`);
 
-		const tag = findTag(result as any, t => t.attributes['data-rune'] === 'hero');
+		const tag = findTag(result as any, (t) => t.attributes['data-rune'] === 'hero');
 		expect(tag).toBeDefined();
 
-		const command = findTag(tag!, t => t.name === 'div' && t.attributes['data-name'] === 'command');
+		const command = findTag(
+			tag!,
+			(t) => t.name === 'div' && t.attributes['data-name'] === 'command',
+		);
 		expect(command).toBeDefined();
 
-		const linkItem = findTag(tag!, t => t.name === 'li' && t.attributes['data-name'] === 'action');
+		const linkItem = findTag(
+			tag!,
+			(t) => t.name === 'li' && t.attributes['data-name'] === 'action',
+		);
 		expect(linkItem).toBeDefined();
 	});
 
@@ -100,12 +112,12 @@ npm create refrakt
 Body text.
 {% /hero %}`);
 
-		const media = findTag(result as any, t => t.attributes['data-name'] === 'media');
+		const media = findTag(result as any, (t) => t.attributes['data-name'] === 'media');
 		expect(media).toBeDefined();
 		// The image is a direct child of the media zone — no stray <p> wrapper,
 		// matching card / bento.
 		expect(media!.children.some((c: any) => c?.name === 'p')).toBe(false);
-		const img = findTag(media!, t => t.name === 'img');
+		const img = findTag(media!, (t) => t.name === 'img');
 		expect(img).toBeDefined();
 		expect(media!.children).toContain(img);
 	});
@@ -125,10 +137,10 @@ Body text.
 Body text.
 {% /hero %}`);
 
-		const media = findTag(result as any, t => t.attributes['data-name'] === 'media');
+		const media = findTag(result as any, (t) => t.attributes['data-name'] === 'media');
 		expect(media).toBeDefined();
 		expect(media!.children.some((c: any) => c?.name === 'p')).toBe(false);
-		const sandbox = findTag(media!, t => t.attributes['data-rune'] === 'sandbox');
+		const sandbox = findTag(media!, (t) => t.attributes['data-rune'] === 'sandbox');
 		expect(sandbox).toBeDefined();
 	});
 });

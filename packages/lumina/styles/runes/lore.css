@@ -1,37 +1,39 @@
 @layer skin {
+	/* Content */
+	.rf-lore__content {
+		transition: filter 0.3s ease;
+	}
+	.rf-lore__content ul,
+	.rf-lore__content ol {
+		padding-left: 1.5rem;
+	}
+	.rf-lore__content blockquote {
+		font-style: italic;
+	}
+	.rf-lore__title {
+		/* No `font-size`: the title carries `data-section="title"`, so sections.css
+		   supplies `var(--rf-prominence-size, var(--rf-title-size, --rf-text-2xl))`.
+		   The resting value at full density is already --rf-text-2xl, so pinning it
+		   here changed nothing visually while severing the prominence axis and the
+		   density ramp (WORK-538). */
+		font-weight: var(--rf-weight-bold);
+		margin-bottom: 0.5rem;
+		color: var(--rf-color-text);
+	}
 
-/* Content */
-.rf-lore__content {
-	transition: filter 0.3s ease;
-}
-.rf-lore__content ul,
-.rf-lore__content ol {
-	padding-left: 1.5rem;
-}
-.rf-lore__content blockquote {
-	font-style: italic;
-}
-.rf-lore > span[property="title"] {
-	font-size: var(--rf-text-2xl);
-	font-weight: var(--rf-weight-bold);
-	margin-bottom: 0.5rem;
-	color: var(--rf-color-text);
-}
-
-/* Spoiler mode */
-.rf-lore--spoiler .rf-lore__content {
-	filter: blur(5px);
-	user-select: none;
-}
-.rf-lore--spoiler::after {
-	content: 'Contains spoilers \2014 click to reveal';
-	padding: 0.5rem 1rem;
-	background: var(--rf-color-bg);
-	border-radius: var(--rf-radius-md);
-	font-size: var(--rf-text-sm);
-	font-weight: var(--rf-weight-medium);
-	color: var(--rf-color-muted);
-	cursor: pointer;
-}
-
+	/* Spoiler mode */
+	.rf-lore--spoiler .rf-lore__content {
+		filter: blur(5px);
+		user-select: none;
+	}
+	.rf-lore--spoiler::after {
+		content: "Contains spoilers \2014 click to reveal";
+		padding: 0.5rem 1rem;
+		background: var(--rf-color-bg);
+		border-radius: var(--rf-radius-md);
+		font-size: var(--rf-text-sm);
+		font-weight: var(--rf-weight-medium);
+		color: var(--rf-color-muted);
+		cursor: pointer;
+	}
 }

@@ -56,9 +56,7 @@ describe('highlight transform', () => {
 
 	it('should skip elements with data-language but no text children', async () => {
 		const hl = await createHighlightTransform({ langs: ['javascript'] });
-		const tree = tag('div', { 'data-language': 'javascript' }, [
-			tag('span', {}, ['nested']),
-		]);
+		const tree = tag('div', { 'data-language': 'javascript' }, [tag('span', {}, ['nested'])]);
 
 		const result = hl(tree) as SerializedTag;
 		expect(result.attributes['data-codeblock']).toBeUndefined();
@@ -76,7 +74,9 @@ describe('highlight transform', () => {
 
 	it('should highlight markdoc code blocks', async () => {
 		const hl = await createHighlightTransform();
-		const tree = tag('code', { 'data-language': 'markdoc' }, ['{% hint type="warning" %}\nBe careful\n{% /hint %}']);
+		const tree = tag('code', { 'data-language': 'markdoc' }, [
+			'{% hint type="warning" %}\nBe careful\n{% /hint %}',
+		]);
 
 		const result = hl(tree) as SerializedTag;
 		expect(result.attributes['data-codeblock']).toBe(true);
@@ -254,7 +254,9 @@ describe('highlight transform — codeColorScheme', () => {
 		});
 		const tree = tag('div', { 'data-rune': 'diff', 'data-code-host': true }, [
 			tag('pre', { 'data-name': 'code' }, [
-				tag('span', { 'data-name': 'line-content', 'data-language': 'javascript' }, ['const x = 1;']),
+				tag('span', { 'data-name': 'line-content', 'data-language': 'javascript' }, [
+					'const x = 1;',
+				]),
 			]),
 		]);
 
@@ -286,7 +288,9 @@ describe('highlight transform — codeColorScheme', () => {
 		const tree = tag('div', { 'data-rune': 'preview' }, [
 			tag('div', { 'data-rune': 'diff', 'data-code-host': true }, [
 				tag('pre', { 'data-name': 'code' }, [
-					tag('span', { 'data-name': 'line-content', 'data-language': 'javascript' }, ['const x = 1;']),
+					tag('span', { 'data-name': 'line-content', 'data-language': 'javascript' }, [
+						'const x = 1;',
+					]),
 				]),
 			]),
 		]);
@@ -341,9 +345,7 @@ describe('highlight transform — SPEC-056 extended syntax roles', () => {
 		const hl = await createHighlightTransform({ langs: ['typescript'] });
 		// Use an interface declaration — interface names are the canonical
 		// "type" scope across most languages.
-		const tree = tag('code', { 'data-language': 'typescript' }, [
-			'interface User { id: number; }',
-		]);
+		const tree = tag('code', { 'data-language': 'typescript' }, ['interface User { id: number; }']);
 		const result = hl(tree) as SerializedTag;
 		const html = result.children[0] as string;
 		// The interface name "User" should now reference --rf-syntax-token-type
@@ -372,9 +374,7 @@ describe('highlight transform — SPEC-056 extended syntax roles', () => {
 
 	it('routes numeric literals to --rf-syntax-token-number', async () => {
 		const hl = await createHighlightTransform({ langs: ['javascript'] });
-		const tree = tag('code', { 'data-language': 'javascript' }, [
-			'const x = 42; const y = 3.14;',
-		]);
+		const tree = tag('code', { 'data-language': 'javascript' }, ['const x = 42; const y = 3.14;']);
 		const result = hl(tree) as SerializedTag;
 		const html = result.children[0] as string;
 		expect(html).toContain('--rf-syntax-token-number');
@@ -392,9 +392,7 @@ describe('highlight transform — SPEC-056 extended syntax roles', () => {
 
 	it('routes regex literals to --rf-syntax-token-regex', async () => {
 		const hl = await createHighlightTransform({ langs: ['javascript'] });
-		const tree = tag('code', { 'data-language': 'javascript' }, [
-			'const re = /^hello/i;',
-		]);
+		const tree = tag('code', { 'data-language': 'javascript' }, ['const re = /^hello/i;']);
 		const result = hl(tree) as SerializedTag;
 		const html = result.children[0] as string;
 		expect(html).toContain('--rf-syntax-token-regex');
@@ -462,10 +460,14 @@ describe('highlight transform — line highlight (WORK-304)', () => {
 		const hl = await createHighlightTransform({ langs: ['javascript'] });
 		// 5 lines of code; highlight lines 2-3.
 		const code = ['a();', 'b();', 'c();', 'd();', 'e();'].join('\n');
-		const tree = tag('code', {
-			'data-language': 'javascript',
-			'data-highlight-lines': '2-3',
-		}, [code]);
+		const tree = tag(
+			'code',
+			{
+				'data-language': 'javascript',
+				'data-highlight-lines': '2-3',
+			},
+			[code],
+		);
 		const result = hl(tree) as SerializedTag;
 		const html = result.children[0] as string;
 		// Two `<span class="line"` rows should carry the status attribute,
@@ -480,27 +482,37 @@ describe('highlight transform — line highlight (WORK-304)', () => {
 		const hl = await createHighlightTransform({ langs: ['javascript'] });
 		// 3 lines of code representing file lines 50-52; highlight file line 51.
 		const code = ['a();', 'b();', 'c();'].join('\n');
-		const tree = tag('code', {
-			'data-language': 'javascript',
-			'data-lines': '50-52',
-			'data-highlight-lines': '51',
-		}, [code]);
+		const tree = tag(
+			'code',
+			{
+				'data-language': 'javascript',
+				'data-lines': '50-52',
+				'data-highlight-lines': '51',
+			},
+			[code],
+		);
 		const result = hl(tree) as SerializedTag;
 		const html = result.children[0] as string;
 		// Only one line should be highlighted (the second of three — file 51).
 		const highlighted = html.match(/<span class="line" data-line-status="highlight"/g) ?? [];
 		expect(highlighted.length).toBe(1);
 		// First and third lines remain unmarked.
-		expect(html.indexOf('<span class="line" data-line-status="highlight"')).toBeGreaterThan(html.indexOf('a();'));
+		expect(html.indexOf('<span class="line" data-line-status="highlight"')).toBeGreaterThan(
+			html.indexOf('a();'),
+		);
 	});
 
 	it('handles multi-range highlight values (comma-separated)', async () => {
 		const hl = await createHighlightTransform({ langs: ['javascript'] });
 		const code = ['a();', 'b();', 'c();', 'd();', 'e();', 'f();'].join('\n');
-		const tree = tag('code', {
-			'data-language': 'javascript',
-			'data-highlight-lines': '1,3-4,6',
-		}, [code]);
+		const tree = tag(
+			'code',
+			{
+				'data-language': 'javascript',
+				'data-highlight-lines': '1,3-4,6',
+			},
+			[code],
+		);
 		const result = hl(tree) as SerializedTag;
 		const html = result.children[0] as string;
 		// 4 lines highlighted (1, 3, 4, 6).
@@ -511,10 +523,14 @@ describe('highlight transform — line highlight (WORK-304)', () => {
 	it('silently drops invalid range tokens', async () => {
 		const hl = await createHighlightTransform({ langs: ['javascript'] });
 		const code = 'a();\nb();';
-		const tree = tag('code', {
-			'data-language': 'javascript',
-			'data-highlight-lines': 'foo,2,5-3', // garbage + valid + reversed
-		}, [code]);
+		const tree = tag(
+			'code',
+			{
+				'data-language': 'javascript',
+				'data-highlight-lines': 'foo,2,5-3', // garbage + valid + reversed
+			},
+			[code],
+		);
 		const result = hl(tree) as SerializedTag;
 		const html = result.children[0] as string;
 		const highlighted = html.match(/<span class="line" data-line-status="highlight"/g) ?? [];

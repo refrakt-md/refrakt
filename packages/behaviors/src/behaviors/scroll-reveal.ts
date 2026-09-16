@@ -27,13 +27,14 @@ export function scrollRevealBehavior(container: HTMLElement | Document): Cleanup
 
 	// The gate lives on the document root so it is an ancestor of every reveal
 	// container regardless of where the scan started.
-	const root = container instanceof Document
-		? container.documentElement
-		: (container.ownerDocument?.documentElement ?? container);
+	const root =
+		container instanceof Document
+			? container.documentElement
+			: (container.ownerDocument?.documentElement ?? container);
 	root.setAttribute('data-animate', '');
 
-	const reducedMotion = typeof matchMedia === 'function'
-		&& matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const reducedMotion =
+		typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 	// Reduced motion (or no IO support): reveal everything now — same final state,
 	// no entrance animation.

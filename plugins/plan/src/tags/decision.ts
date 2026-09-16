@@ -1,7 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	RenderableNodeCursor,
+} from '@refrakt-md/runes';
 import { buildSections } from '../util.js';
 import { VALID_STATUS } from '../commands/enums.js';
 
@@ -15,13 +20,30 @@ export const decision = createContentModelSchema({
 	provides: ['prose'],
 	attributes: {
 		id: { type: String, required: true, description: 'Identifier (e.g., "ADR-007").' },
-		status: { type: String, required: false, matches: [...VALID_STATUS.decision], description: 'Decision status: proposed, accepted, rejected, superseded, or deprecated.' },
+		status: {
+			type: String,
+			required: false,
+			matches: [...VALID_STATUS.decision],
+			description: 'Decision status: proposed, accepted, rejected, superseded, or deprecated.',
+		},
 		date: { type: String, required: false, description: 'Date decided (ISO 8601).' },
 		supersedes: { type: String, required: false, description: 'ID of the decision this replaces.' },
-		source: { type: String, required: false, description: 'Comma-separated IDs of specs or other entities this decision informs.' },
+		source: {
+			type: String,
+			required: false,
+			description: 'Comma-separated IDs of specs or other entities this decision informs.',
+		},
 		tags: { type: String, required: false, description: 'Comma-separated labels.' },
-		created: { type: String, required: false, description: 'Creation date (ISO 8601). Defaults to file creation date from git.' },
-		modified: { type: String, required: false, description: 'Last modified date (ISO 8601). Defaults to file modification date from git.' },
+		created: {
+			type: String,
+			required: false,
+			description: 'Creation date (ISO 8601). Defaults to file creation date from git.',
+		},
+		modified: {
+			type: String,
+			required: false,
+			description: 'Last modified date (ISO 8601). Defaults to file modification date from git.',
+		},
 	},
 	contentModel: () => ({
 		type: 'sections' as const,
@@ -35,17 +57,17 @@ export const decision = createContentModelSchema({
 			fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 		},
 		knownSections: {
-			'Context': {
+			Context: {
 				alias: ['Background'],
 			},
 			'Options Considered': {
 				alias: ['Options', 'Alternatives'],
 			},
-			'Decision': {},
-			'Rationale': {
+			Decision: {},
+			Rationale: {
 				alias: ['Reasoning'],
 			},
-			'Consequences': {
+			Consequences: {
 				alias: ['Impact', 'Trade-offs'],
 			},
 		},
@@ -75,7 +97,8 @@ export const decision = createContentModelSchema({
 		const contentChildren = buildSections(sections, config);
 		const bodyDiv = new Tag('div', {}, contentChildren);
 
-		return createComponentRenderable({ rune: 'decision',
+		return createComponentRenderable({
+			rune: 'decision',
 			tag: 'article',
 			properties: {
 				id: idMeta,
@@ -92,7 +115,19 @@ export const decision = createContentModelSchema({
 				blurb,
 				body: bodyDiv,
 			},
-			children: [idMeta, statusMeta, dateMeta, supersedesMeta, sourceMeta, tagsMeta, createdMeta, modifiedMeta, title.next(), ...(blurb ? [blurb] : []), bodyDiv],
+			children: [
+				idMeta,
+				statusMeta,
+				dateMeta,
+				supersedesMeta,
+				sourceMeta,
+				tagsMeta,
+				createdMeta,
+				modifiedMeta,
+				title.next(),
+				...(blurb ? [blurb] : []),
+				bodyDiv,
+			],
 		});
 	},
 });

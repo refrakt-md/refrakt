@@ -52,9 +52,26 @@ export const config: Record<string, RuneConfig> = {
 			image: 'image',
 			media: 'media',
 		},
-		editHints: { headline: 'inline', blurb: 'inline', preamble: 'none', tracks: 'none', player: 'none' },
+		editHints: {
+			headline: 'inline',
+			blurb: 'inline',
+			preamble: 'none',
+			tracks: 'none',
+			player: 'none',
+		},
 	},
-	Track: { block: 'track', parent: 'Playlist', defaultElevation: 'flat', editHints: { 'track-name': 'inline', 'track-artist': 'inline', 'track-description': 'inline', 'track-duration': 'none', 'track-meta': 'none' } },
+	Track: {
+		block: 'track',
+		parent: 'Playlist',
+		defaultElevation: 'flat',
+		editHints: {
+			'track-name': 'inline',
+			'track-artist': 'inline',
+			'track-description': 'inline',
+			'track-duration': 'none',
+			'track-meta': 'none',
+		},
+	},
 	Audio: {
 		block: 'audio',
 		defaultDensity: 'compact',

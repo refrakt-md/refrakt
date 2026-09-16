@@ -14,9 +14,15 @@
     "build": "npm run build -w packages/types -w packages/skeleton -w packages/transform -w packages/behaviors && npm run build -w packages/runes && npm run build -w plugins/marketing -w plugins/docs -w plugins/storytelling -w plugins/places -w plugins/business -w plugins/design -w plugins/learning -w plugins/media && npm run build -w packages/lumina -w packages/highlight && npm run build -w packages/content && npm run build -w packages/sveltekit -w packages/html -w packages/astro -w packages/nuxt -w packages/next -w packages/react -w packages/vue && npm run build -w packages/ai && npm run build -w packages/eleventy -w plugins/plan && npm run build -w packages/create-refrakt -w packages/editor && npm run build -w packages/cli && npm run build -w packages/mcp",
     "test": "vitest run",
     "test:watch": "vitest",
+    "format": "biome format --write",
+    "format:check": "biome format",
+    "lint": "biome lint",
+    "lint:fix": "biome lint --write",
     "runes:metadata": "node scripts/backfill-rune-metadata.mjs",
     "runes:check-docs": "node scripts/check-rune-docs.mjs",
     "runes:attributes": "node scripts/generate-rune-attributes.mjs",
+    "seo:baseline": "node scripts/generate-seo-baseline.mjs",
+    "seo:baseline:check": "node scripts/generate-seo-baseline.mjs --check",
     "content:check-links": "node scripts/check-content-links.mjs",
     "config:reference": "node scripts/generate-config-reference.mjs",
     "changeset": "changeset",
@@ -24,6 +30,7 @@
     "release": "npm run build && changeset publish"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.13",
     "@changesets/cli": "^2.29.8",
     "@types/node": "^25.2.3",
     "jsdom": "^25.0.1",

@@ -6,8 +6,14 @@ import type { UniversalAxisFacet } from './describe.js';
 
 /** SPEC-088 — the bounded set of named gradient directions. */
 const BG_GRADIENT_DIRECTIONS: Record<string, string> = {
-	'to-t': 'to top', 'to-b': 'to bottom', 'to-l': 'to left', 'to-r': 'to right',
-	'to-tr': 'to top right', 'to-br': 'to bottom right', 'to-bl': 'to bottom left', 'to-tl': 'to top left',
+	'to-t': 'to top',
+	'to-b': 'to bottom',
+	'to-l': 'to left',
+	'to-r': 'to right',
+	'to-tr': 'to top right',
+	'to-br': 'to bottom right',
+	'to-bl': 'to bottom left',
+	'to-tl': 'to top left',
 };
 
 /** SPEC-088 — gradient scrim strength (alpha of the tone colour).
@@ -26,10 +32,26 @@ const TOKEN_REF = /^[a-z][a-z0-9-]*$/;
 
 /** Every meta field the background layer claims once it is raised. */
 const BG_META = [
-	'bg-preset', 'bg-src', 'bg-video', 'bg-overlay', 'bg-blur', 'bg-position',
-	'bg-fit', 'bg-opacity', 'bg-fixed', 'bg-gradient', 'bg-from', 'bg-via', 'bg-to',
-	'bg-gradient-type', 'bg-overlay-opacity',
-	'scrim', 'scrim-type', 'scrim-strength', 'scrim-blur', 'scrim-tone',
+	'bg-preset',
+	'bg-src',
+	'bg-video',
+	'bg-overlay',
+	'bg-blur',
+	'bg-position',
+	'bg-fit',
+	'bg-opacity',
+	'bg-fixed',
+	'bg-gradient',
+	'bg-from',
+	'bg-via',
+	'bg-to',
+	'bg-gradient-type',
+	'bg-overlay-opacity',
+	'scrim',
+	'scrim-type',
+	'scrim-strength',
+	'scrim-blur',
+	'scrim-tone',
 ];
 
 /** Resolve a single gradient stop into a CSS colour expression.
@@ -64,7 +86,11 @@ function resolveBgStop(stop: string): string {
  *  names resolved to `var(--rf-color-*)` (colours stay token-owned); `direction`
  *  is a bounded named set; `type` is linear (default) | radial | conic. Returns
  *  null when there are fewer than two stops. */
-export function buildBgGradient(opts: { type?: string; direction?: string; stops: (string | undefined)[] }): string | null {
+export function buildBgGradient(opts: {
+	type?: string;
+	direction?: string;
+	stops: (string | undefined)[];
+}): string | null {
 	const stops = opts.stops.filter((s): s is string => !!s).map(resolveBgStop);
 	if (stops.length < 2) return null;
 	const type = opts.type ?? 'linear';
@@ -75,12 +101,19 @@ export function buildBgGradient(opts: { type?: string; direction?: string; stops
 }
 
 /** Resolve a background preset, following one level of `extends`. */
-function resolvePreset(name: string | undefined, presets: Record<string, BgPresetDefinition>): BgPresetDefinition | undefined {
+function resolvePreset(
+	name: string | undefined,
+	presets: Record<string, BgPresetDefinition>,
+): BgPresetDefinition | undefined {
 	if (!name || !presets[name]) return undefined;
 	const preset = presets[name];
 	if (preset.extends && presets[preset.extends]) {
 		const base = presets[preset.extends];
-		return { ...base, params: { ...base.params, ...preset.params }, style: { ...base.style, ...preset.style } };
+		return {
+			...base,
+			params: { ...base.params, ...preset.params },
+			style: { ...base.style, ...preset.style },
+		};
 	}
 	return preset;
 }
@@ -105,9 +138,10 @@ export const bgFacet: Facet = {
 		// SPEC-104 — a `{% bg %}` body hoists a `data-bg-guest` element (a sandbox
 		// backdrop) into the host's children. It is relocated into the bg layer
 		// and dropped from the flow via `absorbs`.
-		const guest = (tag.children ?? []).find(
-			(c): c is SerializedTag => isTag(c) && c.attributes?.['data-bg-guest'] !== undefined,
-		) ?? null;
+		const guest =
+			(tag.children ?? []).find(
+				(c): c is SerializedTag => isTag(c) && c.attributes?.['data-bg-guest'] !== undefined,
+			) ?? null;
 
 		const preset = readMeta(tag, 'bg-preset');
 		const src = readMeta(tag, 'bg-src');
@@ -174,12 +208,19 @@ export const bgFacet: Facet = {
 		const state: Record<string, string> = {};
 
 		if (video) {
-			layerChildren.push(makeTag('video', {
-				'data-name': 'bg-video',
-				autoplay: '', muted: '', loop: '', playsinline: '',
-				src: video,
-				...(styleParts.length ? { style: styleParts.filter(s => !s.startsWith('--bg-image')).join('; ') } : {}),
-			}));
+			layerChildren.push(
+				makeTag('video', {
+					'data-name': 'bg-video',
+					autoplay: '',
+					muted: '',
+					loop: '',
+					playsinline: '',
+					src: video,
+					...(styleParts.length
+						? { style: styleParts.filter((s) => !s.startsWith('--bg-image')).join('; ') }
+						: {}),
+				}),
+			);
 		}
 
 		// SPEC-104 — the relocated sandbox backdrop sits as a sibling of the
@@ -216,8 +257,10 @@ export const bgFacet: Facet = {
 			const scrimType = readMeta(tag, 'scrim-type') ?? 'gradient';
 			const scrimTone = readMeta(tag, 'scrim-tone') ?? 'dark';
 			const scrimAttrs: Record<string, string> = {
-				'data-name': 'scrim', 'data-scrim': scrimType,
-				'data-scrim-tone': scrimTone, 'data-scrim-dir': scrimDir,
+				'data-name': 'scrim',
+				'data-scrim': scrimType,
+				'data-scrim-tone': scrimTone,
+				'data-scrim-dir': scrimDir,
 			};
 			if (scrimType === 'frost') {
 				const scrimBlur = readMeta(tag, 'scrim-blur') ?? 'md';
@@ -262,14 +305,29 @@ export const bgFacet: Facet = {
 export const bgAxis: UniversalAxisFacet = {
 	axis: 'bg',
 	contract: {
-		description: 'The background layer (SPEC-088): image, video, gradient, flat overlay wash and legibility scrim, in a single injected layer behind the rune\'s content.',
+		description:
+			"The background layer (SPEC-088): image, video, gradient, flat overlay wash and legibility scrim, in a single injected layer behind the rune's content.",
 		source: 'meta',
 		inputs: BG_META,
 		selectors: ['.{block}--has-bg'],
 		dataAttributes: ['data-bg', 'data-color-scheme'],
-		customProperties: ['--bg-image', '--bg-position', '--bg-blur', '--bg-fit', '--bg-opacity', '--scrim-strength', '--scrim-blur'],
-		elements: ['[data-name="bg"]', '[data-name="bg-video"]', '[data-name="bg-overlay"]', '[data-name="scrim"]'],
-		condition: 'the layer is raised only when a preset, image, video, gradient, overlay, scrim or `{% bg %}` sandbox guest resolves. In cover mode the scrim is routed to the media well instead, and `data-color-scheme` yields to a scheme a tint already claimed.',
+		customProperties: [
+			'--bg-image',
+			'--bg-position',
+			'--bg-blur',
+			'--bg-fit',
+			'--bg-opacity',
+			'--scrim-strength',
+			'--scrim-blur',
+		],
+		elements: [
+			'[data-name="bg"]',
+			'[data-name="bg-video"]',
+			'[data-name="bg-overlay"]',
+			'[data-name="scrim"]',
+		],
+		condition:
+			'the layer is raised only when a preset, image, video, gradient, overlay, scrim or `{% bg %}` sandbox guest resolves. In cover mode the scrim is routed to the media well instead, and `data-color-scheme` yields to a scheme a tint already claimed.',
 	},
 	describeForRune: (_config, block) => ({ selectors: [`.${block}--has-bg`] }),
 };

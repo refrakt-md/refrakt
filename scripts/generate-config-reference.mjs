@@ -81,6 +81,12 @@ export const GROUPS = [
 		blurb: 'Locale selection and string overrides.',
 		fields: ['locale', 'strings'],
 	},
+	{
+		slug: 'validation',
+		name: 'Content validation',
+		blurb: 'Which authoring mistakes the build reports, and how to narrow that.',
+		fields: ['validation'],
+	},
 ];
 
 /**
@@ -169,7 +175,12 @@ export function flatten(schema) {
 			if (!prop) continue;
 			// `group` is the slug, not the display name: the `where` grammar splits
 			// clauses on whitespace, so a multi-word value cannot be filtered on.
-			rows.push({ group: group.slug, groupName: group.name, scope: 'site', ...resolveProperty(field, prop, schema, required) });
+			rows.push({
+				group: group.slug,
+				groupName: group.name,
+				scope: 'site',
+				...resolveProperty(field, prop, schema, required),
+			});
 		}
 	}
 	for (const field of TOP_LEVEL.fields) {
@@ -226,14 +237,16 @@ export function staleGroupEntries(schema) {
 export function render(schema) {
 	// Key order is fixed by construction, so the freshness check below is a
 	// stable equality comparison rather than something that flaps.
-	return JSON.stringify(
-		{
-			groups: [...GROUPS, TOP_LEVEL].map(({ slug, name, blurb }) => ({ slug, name, blurb })),
-			fields: flatten(schema),
-		},
-		null,
-		'\t',
-	) + '\n';
+	return (
+		JSON.stringify(
+			{
+				groups: [...GROUPS, TOP_LEVEL].map(({ slug, name, blurb }) => ({ slug, name, blurb })),
+				fields: flatten(schema),
+			},
+			null,
+			'\t',
+		) + '\n'
+	);
 }
 
 export function readSchema() {
@@ -254,7 +267,8 @@ export function readFrontmatterSchema() {
 export function flattenFrontmatter(schema) {
 	const required = schema.required ?? [];
 	return Object.entries(schema.properties).map(([name, prop]) =>
-		resolveProperty(name, prop, schema, required));
+		resolveProperty(name, prop, schema, required),
+	);
 }
 
 export function renderFrontmatter(schema) {

@@ -1,36 +1,40 @@
 @layer skin {
-
-/* Drop cap is now the universal SPEC-108 opt-in, styled on
+	/* Drop cap is now the universal SPEC-108 opt-in, styled on
  * `[data-reading="prose"][data-dropcap]` (dimensions/reading.css); textblock's
  * body reads as prose, so it inherits the treatment. */
 
-/* Lead paragraph — emphasized opening text */
-.rf-textblock--lead .rf-textblock__body > p:first-child {
-	font-size: var(--rf-text-xl);
-	line-height: var(--rf-leading-relaxed);
-	font-weight: var(--rf-weight-normal);
-	color: var(--rf-color-text);
-}
+	/* Lead paragraph — emphasized opening text */
+	.rf-textblock--lead .rf-textblock__body > p:first-child {
+		font-size: var(--rf-text-xl);
+		line-height: var(--rf-leading-relaxed);
+		font-weight: var(--rf-weight-normal);
+		color: var(--rf-color-text);
+	}
 
-/* Multi-column text flow */
-.rf-textblock[data-columns="2"] .rf-textblock__body {
-	column-gap: 2rem;
-	column-rule: 1px solid var(--rf-color-border);
-}
-.rf-textblock[data-columns="3"] .rf-textblock__body {
-	column-gap: 2rem;
-	column-rule: 1px solid var(--rf-color-border);
-}
-.rf-textblock[data-columns="4"] .rf-textblock__body {
-	column-gap: 2rem;
-	column-rule: 1px solid var(--rf-color-border);
-}
+	/* Multi-column text flow */
+	.rf-textblock[data-columns="2"] .rf-textblock__body {
+		column-gap: 2rem;
+		column-rule: 1px solid var(--rf-color-border);
+	}
+	.rf-textblock[data-columns="3"] .rf-textblock__body {
+		column-gap: 2rem;
+		column-rule: 1px solid var(--rf-color-border);
+	}
+	.rf-textblock[data-columns="4"] .rf-textblock__body {
+		column-gap: 2rem;
+		column-rule: 1px solid var(--rf-color-border);
+	}
 
-/* Text alignment */
-.rf-textblock--center .rf-textblock__body { text-align: center; }
-.rf-textblock--right .rf-textblock__body { text-align: right; }
-.rf-textblock--justify .rf-textblock__body { text-align: justify; }
+	/* Text alignment */
+	.rf-textblock--center .rf-textblock__body {
+		text-align: center;
+	}
+	.rf-textblock--right .rf-textblock__body {
+		text-align: right;
+	}
+	.rf-textblock--justify .rf-textblock__body {
+		text-align: justify;
+	}
 
-/* Responsive — columns collapse on smaller screens */
-
+	/* Responsive — columns collapse on smaller screens */
 }

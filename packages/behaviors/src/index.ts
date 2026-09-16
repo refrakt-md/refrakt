@@ -179,7 +179,7 @@ export function initRuneBehaviors(
 /** Map of layout behavior name → behavior function */
 const layoutBehaviors: Record<string, (container: HTMLElement | Document) => () => void> = {
 	'mobile-menu': mobileMenuBehavior,
-	'search': searchBehavior,
+	search: searchBehavior,
 	'theme-toggle': themeToggleBehavior,
 	'section-nav': sectionNavBehavior,
 };
@@ -192,9 +192,7 @@ const layoutBehaviors: Record<string, (container: HTMLElement | Document) => () 
  *
  * Returns a cleanup function that removes all event listeners.
  */
-export function initLayoutBehaviors(
-	container: HTMLElement | Document = document,
-): () => void {
+export function initLayoutBehaviors(container: HTMLElement | Document = document): () => void {
 	const cleanups: Array<() => void> = [];
 
 	container.querySelectorAll<HTMLElement>('[data-layout-behaviors]').forEach((el) => {
@@ -246,5 +244,12 @@ export type { BehaviorFn, CleanupFn, InitOptions } from './types.js';
 export { BEHAVIOR_STRINGS, BEHAVIOR_STRING_KEYS, bstr, elStr } from './i18n.js';
 
 // Web component elements — framework-neutral custom elements for interactive runes
-export { registerElements, RfContext, RfDiagram, RfNav, RfMap, RfSandbox } from './elements/index.js';
+export {
+	registerElements,
+	RfContext,
+	RfDiagram,
+	RfNav,
+	RfMap,
+	RfSandbox,
+} from './elements/index.js';
 export type { PageEntry, DesignTokens } from './elements/index.js';

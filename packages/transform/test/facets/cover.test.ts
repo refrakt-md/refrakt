@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { coverFacet } from '../../src/facets/cover.js';
 import { contentPlaceFacet } from '../../src/facets/content-place.js';
-import { orderFacets, runFacets, runPostAssemble, WarningCollector } from '../../src/facets/driver.js';
+import {
+	orderFacets,
+	runFacets,
+	runPostAssemble,
+	WarningCollector,
+} from '../../src/facets/driver.js';
 import { modifiersFacet } from '../../src/facets/modifiers.js';
 import { tintFacet } from '../../src/facets/tint.js';
 import { makeTag } from '../../src/helpers.js';
@@ -17,7 +22,11 @@ const ctx = (
 	axes: Record<string, string | undefined> = { 'media-position': 'cover' },
 	config: RuneConfig = { block: 'card' },
 ): FacetContext => ({
-	tag: makeTag('div', { 'data-rune': 'card' }, metas.map(([f, c]) => meta(f, c))),
+	tag: makeTag(
+		'div',
+		{ 'data-rune': 'card' },
+		metas.map(([f, c]) => meta(f, c)),
+	),
 	config,
 	block: 'rf-card',
 	rune: 'card',
@@ -44,32 +53,55 @@ describe('cover facet', () => {
 	// The reroute: the media well claims the scrim facet, so the strip pass must
 	// drop these metas even when no bg layer was built.
 	it('claims the scrim metas unconditionally in cover mode', () => {
-		expect(coverFacet.resolve(ctx())?.consumes)
-			.toEqual(['scrim', 'scrim-type', 'scrim-blur', 'scrim-tone']);
+		expect(coverFacet.resolve(ctx())?.consumes).toEqual([
+			'scrim',
+			'scrim-type',
+			'scrim-blur',
+			'scrim-tone',
+		]);
 	});
 
 	it('signals scrim="none" to CSS on the host', () => {
-		expect(coverFacet.resolve(ctx([['scrim', 'none']]))?.dataAttrs)
-			.toEqual({ 'data-scrim': 'none' });
+		expect(coverFacet.resolve(ctx([['scrim', 'none']]))?.dataAttrs).toEqual({
+			'data-scrim': 'none',
+		});
 	});
 
 	it('emits the scrim treatment type', () => {
-		expect(coverFacet.resolve(ctx([['scrim-type', 'frost'], ['scrim-blur', 'lg']]))?.dataAttrs)
-			.toEqual({ 'data-scrim-type': 'frost', 'data-scrim-blur': 'lg' });
+		expect(
+			coverFacet.resolve(
+				ctx([
+					['scrim-type', 'frost'],
+					['scrim-blur', 'lg'],
+				]),
+			)?.dataAttrs,
+		).toEqual({ 'data-scrim-type': 'frost', 'data-scrim-blur': 'lg' });
 	});
 
 	it('carries blur only for the frost treatment', () => {
-		const result = coverFacet.resolve(ctx([['scrim-type', 'gradient'], ['scrim-blur', 'lg']]));
+		const result = coverFacet.resolve(
+			ctx([
+				['scrim-type', 'gradient'],
+				['scrim-blur', 'lg'],
+			]),
+		);
 		expect(result?.dataAttrs?.['data-scrim-blur']).toBeUndefined();
 	});
 
 	it('suppresses the treatment type when the scrim is off', () => {
-		const result = coverFacet.resolve(ctx([['scrim', 'none'], ['scrim-type', 'frost']]));
+		const result = coverFacet.resolve(
+			ctx([
+				['scrim', 'none'],
+				['scrim-type', 'frost'],
+			]),
+		);
 		expect(result?.dataAttrs?.['data-scrim-type']).toBeUndefined();
 	});
 
 	it('maps an explicit scrim edge to a gradient direction', () => {
-		expect(coverFacet.resolve(ctx([['scrim', 'top']]))?.styles).toEqual([['--cover-scrim-dir', 'to top']]);
+		expect(coverFacet.resolve(ctx([['scrim', 'top']]))?.styles).toEqual([
+			['--cover-scrim-dir', 'to top'],
+		]);
 	});
 
 	describe('postAssemble — foreground polarity', () => {
@@ -95,13 +127,19 @@ describe('cover facet', () => {
 
 		it('yields to a scheme already claimed by tint or the bg layer', () => {
 			const children = [overlay()];
-			coverFacet.postAssemble!(ctx([], { 'media-position': 'cover', 'color-scheme': 'light' }), children);
+			coverFacet.postAssemble!(
+				ctx([], { 'media-position': 'cover', 'color-scheme': 'light' }),
+				children,
+			);
 			expect((children[0] as SerializedTag).attributes['data-color-scheme']).toBeUndefined();
 		});
 
 		it('leaves the root alone under header cover-scope', () => {
 			const children = [overlay()];
-			const config: RuneConfig = { block: 'card', rootAttributes: { 'data-cover-scope': 'header' } };
+			const config: RuneConfig = {
+				block: 'card',
+				rootAttributes: { 'data-cover-scope': 'header' },
+			};
 			coverFacet.postAssemble!(ctx([], { 'media-position': 'cover' }, config), children);
 			expect((children[0] as SerializedTag).attributes['data-color-scheme']).toBeUndefined();
 		});
@@ -137,12 +175,12 @@ describe('cover ↔ content-place ordering', () => {
 	});
 
 	it('orders cover after content-place', () => {
-		const names = REGISTRY.map(f => f.name);
+		const names = REGISTRY.map((f) => f.name);
 		expect(names.indexOf('cover')).toBeGreaterThan(names.indexOf('content-place'));
 	});
 
 	it('orders both after the modifier facet that supplies their axes', () => {
-		const names = REGISTRY.map(f => f.name);
+		const names = REGISTRY.map((f) => f.name);
 		expect(names.indexOf('content-place')).toBeGreaterThan(names.indexOf('modifiers'));
 		expect(names.indexOf('cover')).toBeGreaterThan(names.indexOf('modifiers'));
 	});
@@ -156,7 +194,10 @@ describe('cover ↔ content-place ordering', () => {
 			new WarningCollector(),
 		);
 		const dirs = result.styles.filter(([prop]) => prop === '--cover-scrim-dir');
-		expect(dirs).toEqual([['--cover-scrim-dir', 'to bottom'], ['--cover-scrim-dir', 'to top']]);
+		expect(dirs).toEqual([
+			['--cover-scrim-dir', 'to bottom'],
+			['--cover-scrim-dir', 'to top'],
+		]);
 	});
 
 	it('runs both phases against a shared resolution', () => {

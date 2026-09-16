@@ -1,7 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createComponentRenderable, createContentModelSchema, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
+import {
+	createComponentRenderable,
+	createContentModelSchema,
+	asNodes,
+	RenderableNodeCursor,
+} from '@refrakt-md/runes';
 import { taxonomyAttributes, buildStoryContent } from './common.js';
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
@@ -17,9 +22,7 @@ export const characterSection = createContentModelSchema({
 	},
 	contentModel: {
 		type: 'sequence',
-		fields: [
-			{ name: 'body', match: 'any', optional: true, greedy: true },
-		],
+		fields: [{ name: 'body', match: 'any', optional: true, greedy: true }],
 	},
 	transform(resolved, attrs, config) {
 		const nameTag = new Tag('span', {}, [attrs.name ?? '']);
@@ -27,7 +30,8 @@ export const characterSection = createContentModelSchema({
 			Markdoc.transform(asNodes(resolved.body), config) as RenderableTreeNode[],
 		).wrap('div');
 
-		return createComponentRenderable({ rune: 'character-section',
+		return createComponentRenderable({
+			rune: 'character-section',
 			tag: 'div',
 			refs: { name: nameTag, body: body.tag('div') },
 			children: [nameTag, body.next()],
@@ -45,7 +49,12 @@ const statusType = ['alive', 'dead', 'unknown', 'missing'] as const;
 // unmapped, so `reading` / `dropcap` were silently dropped. The header roles
 // were already right: `name` is the title, inside the `preamble` header, so
 // `prominence` already worked. Realm and Faction share this shape exactly.
-export const characterSections = { preamble: 'preamble', name: 'title', portrait: 'media', body: 'body' } as const;
+export const characterSections = {
+	preamble: 'preamble',
+	name: 'title',
+	portrait: 'media',
+	body: 'body',
+} as const;
 export const characterMediaSlots = { portrait: 'portrait' } as const;
 
 export const character = createContentModelSchema({
@@ -54,10 +63,28 @@ export const character = createContentModelSchema({
 	mediaSlots: characterMediaSlots,
 	base: taxonomyAttributes,
 	attributes: {
-		name: { type: String, required: true, description: 'Display name shown in the character header.' },
-		role: { type: String, required: false, matches: roleType.slice(), description: 'Narrative importance: protagonist, antagonist, supporting, or minor.' },
-		status: { type: String, required: false, matches: statusType.slice(), description: 'Whether the character is alive, dead, unknown, or missing.' },
-		aliases: { type: String, required: false, description: 'Comma-separated alternate names or titles for this character.' },
+		name: {
+			type: String,
+			required: true,
+			description: 'Display name shown in the character header.',
+		},
+		role: {
+			type: String,
+			required: false,
+			matches: roleType.slice(),
+			description: 'Narrative importance: protagonist, antagonist, supporting, or minor.',
+		},
+		status: {
+			type: String,
+			required: false,
+			matches: statusType.slice(),
+			description: 'Whether the character is alive, dead, unknown, or missing.',
+		},
+		aliases: {
+			type: String,
+			required: false,
+			description: 'Comma-separated alternate names or titles for this character.',
+		},
 	},
 	contentModel: () => ({
 		type: 'sections' as const,
@@ -108,7 +135,11 @@ export const character = createContentModelSchema({
 		// from an `image` field directly, so there is no leftover scene text —
 		// hence the empty `extraDescription`.
 		const { bodyDiv, sectionsContainer, sections, hasSections } = buildStoryContent(
-			[], resolved.description, sectionNodes, 'CharacterSection', config,
+			[],
+			resolved.description,
+			sectionNodes,
+			'CharacterSection',
+			config,
 		);
 
 		// SPEC-081: emit flat `data-name` slots — the `layout` config builds the
@@ -126,7 +157,9 @@ export const character = createContentModelSchema({
 			jobTitle: roleMeta,
 		};
 
-		return createComponentRenderable({ rune: 'character', schemaOrgType: 'Person',
+		return createComponentRenderable({
+			rune: 'character',
+			schemaOrgType: 'Person',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {

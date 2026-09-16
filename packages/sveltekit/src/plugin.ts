@@ -95,12 +95,20 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 			// Load community/official packages and local runes if configured
 			const hasPackages = activeSite.plugins && activeSite.plugins.length > 0;
 			const hasLocal = activeSite.runes?.local && Object.keys(activeSite.runes.local).length > 0;
-			const hasAliases = activeSite.runes?.aliases && Object.keys(activeSite.runes.aliases).length > 0;
+			const hasAliases =
+				activeSite.runes?.aliases && Object.keys(activeSite.runes.aliases).length > 0;
 
 			if (hasPackages || hasLocal || hasAliases) {
 				try {
 					const runesPkg = '@refrakt-md/runes';
-					const { loadPlugin, mergePlugins, applyAliases, loadLocalRunes, runes: coreRunes, runeTagMap } = await import(runesPkg);
+					const {
+						loadPlugin,
+						mergePlugins,
+						applyAliases,
+						loadLocalRunes,
+						runes: coreRunes,
+						runeTagMap,
+					} = await import(runesPkg);
 					const coreRuneNames = new Set(Object.keys(coreRunes));
 
 					let mergedRunes = { ...coreRunes };
@@ -110,7 +118,7 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 					// Load installed packages
 					if (hasPackages) {
 						const loaded = await Promise.all(
-							activeSite.plugins!.map((name: string) => loadPlugin(name))
+							activeSite.plugins!.map((name: string) => loadPlugin(name)),
 						);
 						merged = mergePlugins(loaded, coreRuneNames, activeSite.runes?.prefer);
 						mergedRunes = { ...coreRunes, ...merged.runes };
@@ -139,7 +147,12 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 					communityTags = Object.keys(mergedTags).length > 0 ? mergedTags : undefined;
 
 					// Assemble theme config for CSS tree-shaking
-					if (merged && (Object.keys(merged.themeRunes).length > 0 || Object.keys(merged.themeIcons).length > 0 || Object.keys(merged.themeBackgrounds).length > 0)) {
+					if (
+						merged &&
+						(Object.keys(merged.themeRunes).length > 0 ||
+							Object.keys(merged.themeIcons).length > 0 ||
+							Object.keys(merged.themeBackgrounds).length > 0)
+					) {
 						const { assembleThemeConfig } = await import('@refrakt-md/transform');
 						const { baseConfig } = await import(runesPkg);
 						assembledResult = assembleThemeConfig({
@@ -206,15 +219,14 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 					activeSite.repoBranch,
 				);
 
-				process.stderr.write(
-					formatPipelineSummary(site.pipelineStats, site.pipelineWarnings),
-				);
+				process.stderr.write(formatPipelineSummary(site.pipelineStats, site.pipelineWarnings));
 
 				const report = analyzeRuneUsage(site.pages);
 
 				const themePackage = getThemePackage(activeSite.theme);
 				const themeTransform = await import(`${themePackage}/transform`);
-				const themeConfig = themeTransform.themeConfig ?? themeTransform.luminaConfig ?? themeTransform.default;
+				const themeConfig =
+					themeTransform.themeConfig ?? themeTransform.luminaConfig ?? themeTransform.default;
 				const effectiveConfig = assembledResult?.config ?? themeConfig;
 
 				const { usedBlocks } = await computeUsedCssBlocks(
@@ -254,9 +266,7 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 
 		configureServer(server) {
 			const sandboxDirField = activeSite.sandbox?.dir ?? activeSite.sandbox?.examplesDir;
-			const examplesDir = sandboxDirField
-				? resolve(resolvedRoot, sandboxDirField)
-				: undefined;
+			const examplesDir = sandboxDirField ? resolve(resolvedRoot, sandboxDirField) : undefined;
 
 			// On .md changes, drop the cached Site so the next SSR pass rebuilds
 			// it. The virtual content module memoizes the loader's `getSite()`

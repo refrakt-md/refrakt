@@ -35,7 +35,9 @@ export function carouselBehavior(el: HTMLElement): CleanupFn | void {
 	if (mountPosition === 'static' || mountPosition === '') {
 		const prev = mount.style.position;
 		mount.style.position = 'relative';
-		restorePosition = () => { mount.style.position = prev; };
+		restorePosition = () => {
+			mount.style.position = prev;
+		};
 	}
 
 	const prevBtn = document.createElement('button');
@@ -69,8 +71,14 @@ export function carouselBehavior(el: HTMLElement): CleanupFn | void {
 
 	// Keyboard navigation when the carousel host is focused.
 	const onKeydown = (e: KeyboardEvent) => {
-		if (e.key === 'ArrowLeft') { e.preventDefault(); scrollByItem(-1); }
-		if (e.key === 'ArrowRight') { e.preventDefault(); scrollByItem(1); }
+		if (e.key === 'ArrowLeft') {
+			e.preventDefault();
+			scrollByItem(-1);
+		}
+		if (e.key === 'ArrowRight') {
+			e.preventDefault();
+			scrollByItem(1);
+		}
 	};
 	el.setAttribute('tabindex', '0');
 	el.addEventListener('keydown', onKeydown);

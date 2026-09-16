@@ -102,7 +102,16 @@ describe('prominence reaches every title-role rune', () => {
 		// The ramp computes `calc(var(--rf-title-size) * …)` on the rune root, so a
 		// resting size declared on the title element instead would be invisible to
 		// it — the axis would still be inert, just less obviously.
-		for (const block of ['hero', 'cta', 'blog', 'bento-cell', 'palette', 'typography', 'spacing', 'design-context']) {
+		for (const block of [
+			'hero',
+			'cta',
+			'blog',
+			'bento-cell',
+			'palette',
+			'typography',
+			'spacing',
+			'design-context',
+		]) {
 			const root = new RegExp(`\\.rf-${block}\\s*\\{[^}]*--rf-title-size\\s*:`, 's');
 			expect(root.test(css), `.rf-${block} should declare its resting --rf-title-size`).toBe(true);
 		}

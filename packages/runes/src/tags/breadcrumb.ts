@@ -9,8 +9,18 @@ export const BREADCRUMB_AUTO_SENTINEL = '__breadcrumb-auto';
 
 export const breadcrumb = createContentModelSchema({
 	attributes: {
-		separator: { type: String, required: false, default: '/', description: 'Character between breadcrumb items' },
-		auto: { type: Boolean, required: false, default: false, description: 'Automatically generate from page hierarchy' },
+		separator: {
+			type: String,
+			required: false,
+			default: '/',
+			description: 'Character between breadcrumb items',
+		},
+		auto: {
+			type: Boolean,
+			required: false,
+			default: false,
+			description: 'Automatically generate from page hierarchy',
+		},
 	},
 	contentModel: (attrs) => {
 		if (attrs.auto) {
@@ -18,9 +28,7 @@ export const breadcrumb = createContentModelSchema({
 		}
 		return {
 			type: 'sequence' as const,
-			fields: [
-				{ name: 'list', match: 'list' as const, optional: true, greedy: true },
-			],
+			fields: [{ name: 'list', match: 'list' as const, optional: true, greedy: true }],
 		};
 	},
 	transform(resolved, attrs, config) {
@@ -29,10 +37,15 @@ export const breadcrumb = createContentModelSchema({
 		if (attrs.auto) {
 			// Emit a placeholder with an empty items list and a sentinel meta tag.
 			// The core post-process hook will replace the empty ol with resolved items.
-			const sentinelMeta = new Tag('meta', { 'data-field': BREADCRUMB_AUTO_SENTINEL, content: 'true' });
+			const sentinelMeta = new Tag('meta', {
+				'data-field': BREADCRUMB_AUTO_SENTINEL,
+				content: 'true',
+			});
 			const emptyList = new Tag('ol', {}, []);
 
-			return createComponentRenderable({ rune: 'breadcrumb', schemaOrgType: 'BreadcrumbList',
+			return createComponentRenderable({
+				rune: 'breadcrumb',
+				schemaOrgType: 'BreadcrumbList',
 				tag: 'nav',
 				properties: {
 					separator: separatorMeta,
@@ -59,16 +72,16 @@ export const breadcrumb = createContentModelSchema({
 						const positionMeta = new Tag('meta', { content: position });
 
 						// Find the link inside the list item
-						const link = (li as any).children.find(
-							(c: any) => Tag.isTag(c) && c.name === 'a'
-						);
+						const link = (li as any).children.find((c: any) => Tag.isTag(c) && c.name === 'a');
 
 						if (link) {
 							const nameSpan = new Tag('span', { hidden: true }, link.children);
 							const urlLink = new Tag('a', { href: link.attributes.href }, link.children);
 
 							listItems.push(
-								createComponentRenderable({ rune: 'breadcrumb-item', schemaOrgType: 'ListItem',
+								createComponentRenderable({
+									rune: 'breadcrumb-item',
+									schemaOrgType: 'ListItem',
 									tag: 'li',
 									properties: {
 										name: nameSpan,
@@ -80,15 +93,20 @@ export const breadcrumb = createContentModelSchema({
 										position: positionMeta,
 									},
 									children: [nameSpan, urlLink, positionMeta],
-								}) as any
+								}) as any,
 							);
 						} else {
 							// Last item (no link) — current page
-							const text = li.children.filter((c: any) => typeof c === 'string').join('').trim();
+							const text = li.children
+								.filter((c: any) => typeof c === 'string')
+								.join('')
+								.trim();
 							const nameSpan = new Tag('span', {}, text ? [text] : li.children);
 
 							listItems.push(
-								createComponentRenderable({ rune: 'breadcrumb-item', schemaOrgType: 'ListItem',
+								createComponentRenderable({
+									rune: 'breadcrumb-item',
+									schemaOrgType: 'ListItem',
 									tag: 'li',
 									properties: {
 										name: nameSpan,
@@ -98,7 +116,7 @@ export const breadcrumb = createContentModelSchema({
 										position: positionMeta,
 									},
 									children: [nameSpan, positionMeta],
-								}) as any
+								}) as any,
 							);
 						}
 					}
@@ -108,7 +126,9 @@ export const breadcrumb = createContentModelSchema({
 
 		const itemsList = new Tag('ol', {}, listItems);
 
-		return createComponentRenderable({ rune: 'breadcrumb', schemaOrgType: 'BreadcrumbList',
+		return createComponentRenderable({
+			rune: 'breadcrumb',
+			schemaOrgType: 'BreadcrumbList',
 			tag: 'nav',
 			properties: {
 				separator: separatorMeta,

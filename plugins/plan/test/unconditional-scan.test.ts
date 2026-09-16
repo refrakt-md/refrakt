@@ -27,10 +27,18 @@ function makeRegistry() {
 			if (!byTypeId.has(entry.type)) byTypeId.set(entry.type, new Map());
 			byTypeId.get(entry.type)!.set(entry.id, entry);
 		},
-		getAll(type: string) { return entries.filter(e => e.type === type); },
-		getById(type: string, id: string) { return byTypeId.get(type)?.get(id); },
-		getByUrl(type: string, url: string) { return entries.filter(e => e.type === type && e.sourceUrl === url); },
-		getTypes() { return [...new Set(entries.map(e => e.type))]; },
+		getAll(type: string) {
+			return entries.filter((e) => e.type === type);
+		},
+		getById(type: string, id: string) {
+			return byTypeId.get(type)?.get(id);
+		},
+		getByUrl(type: string, url: string) {
+			return entries.filter((e) => e.type === type && e.sourceUrl === url);
+		},
+		getTypes() {
+			return [...new Set(entries.map((e) => e.type))];
+		},
 	};
 	return { entries, registry };
 }
@@ -107,7 +115,7 @@ describe('planPipelineHooks unconditional scan (SPEC-064)', () => {
 		planPipelineHooks.register!([], registry, ctx);
 
 		// Only the original (site-loaded) registration survives.
-		const allSpecs = entries.filter(e => e.type === 'spec' && e.id === 'SPEC-101');
+		const allSpecs = entries.filter((e) => e.type === 'spec' && e.id === 'SPEC-101');
 		expect(allSpecs).toHaveLength(1);
 		expect(allSpecs[0].sourceUrl).toBe('/plan/specs/SPEC-101');
 		expect(allSpecs[0].data.title).toBe('Shared from site');
@@ -144,7 +152,7 @@ describe('planPipelineHooks unconditional scan (SPEC-064)', () => {
 		expect(entries).toHaveLength(1);
 		expect(entries[0].id).toBe('SPEC-103');
 		// No warning emitted for the README — it's silently treated as auxiliary content.
-		expect(warnings.filter(w => w.message.includes('README'))).toHaveLength(0);
+		expect(warnings.filter((w) => w.message.includes('README'))).toHaveLength(0);
 	});
 
 	it('errors on duplicate IDs across two different plan files', () => {
@@ -163,7 +171,7 @@ describe('planPipelineHooks unconditional scan (SPEC-064)', () => {
 
 		// First one wins; second triggers an error warning.
 		expect(entries).toHaveLength(1);
-		const errors = warnings.filter(w => w.severity === 'error');
+		const errors = warnings.filter((w) => w.severity === 'error');
 		expect(errors.length).toBeGreaterThan(0);
 		expect(errors[0].message).toContain('SPEC-200');
 		expect(errors[0].message).toContain('duplicate');
@@ -177,7 +185,7 @@ describe('planPipelineHooks unconditional scan (SPEC-064)', () => {
 		planPipelineHooks.register!([], registry, ctx);
 
 		expect(entries).toHaveLength(0);
-		expect(warnings.filter(w => w.severity === 'error')).toHaveLength(0);
+		expect(warnings.filter((w) => w.severity === 'error')).toHaveLength(0);
 	});
 
 	it('registers a milestone using its name attribute (not id)', () => {
@@ -197,7 +205,7 @@ describe('planPipelineHooks unconditional scan (SPEC-064)', () => {
 		expect(entries[0].sourceFile).toBe('plan/milestones/v1.0.0.md');
 	});
 
-	it("the registered extract function returns the top-level plan rune AST node", () => {
+	it('the registered extract function returns the top-level plan rune AST node', () => {
 		writeFileSync(
 			join(planDir, 'specs', 'SPEC-300-extract.md'),
 			'{% spec id="SPEC-300" status="draft" %}\n# Extract test\n\nBody.\n{% /spec %}\n',
@@ -285,11 +293,19 @@ describe('planPipelineHooks unconditional scan via ProjectFiles (SPEC-113)', () 
 	});
 
 	it('scans plan entities from a pure in-memory provider (no fs)', async () => {
-		const files = memoryProjectFiles(new Map([
-			['plan/specs/SPEC-400-auth.md', '{% spec id="SPEC-400" status="accepted" %}\n# Auth\n\nBody.\n{% /spec %}\n'],
-			['plan/work/WORK-400-impl.md', '{% work id="WORK-400" status="ready" %}\n# Impl\n{% /work %}\n'],
-			['plan/README.md', '# Plan\n\nNo rune here.\n'],
-		]));
+		const files = memoryProjectFiles(
+			new Map([
+				[
+					'plan/specs/SPEC-400-auth.md',
+					'{% spec id="SPEC-400" status="accepted" %}\n# Auth\n\nBody.\n{% /spec %}\n',
+				],
+				[
+					'plan/work/WORK-400-impl.md',
+					'{% work id="WORK-400" status="ready" %}\n# Impl\n{% /work %}\n',
+				],
+				['plan/README.md', '# Plan\n\nNo rune here.\n'],
+			]),
+		);
 
 		await planPipelineHooks.configure!({
 			config: { plan: { dir: 'plan' } },

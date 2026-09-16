@@ -30,7 +30,10 @@ const docsPkg: Plugin = {
 };
 
 describe('mergePlugins — translation aggregation', () => {
-	const merged = mergePlugins([makeLoaded(learningPkg, '@x/learning'), makeLoaded(docsPkg, '@x/docs')], new Set());
+	const merged = mergePlugins(
+		[makeLoaded(learningPkg, '@x/learning'), makeLoaded(docsPkg, '@x/docs')],
+		new Set(),
+	);
 
 	it('aggregates per-locale bundles across plugins', () => {
 		expect(merged.translations.de['learning.recipe.prepTime']).toBe('Vorbereitung');
@@ -74,7 +77,9 @@ describe('assembleThemeConfig — D5 precedence', () => {
 		const { config } = assembleThemeConfig({
 			coreConfig,
 			locale: 'de',
-			coreTranslations: { de: { 'learning.recipe.prepTime': 'CORE', 'core.toc.title': 'Auf dieser Seite' } },
+			coreTranslations: {
+				de: { 'learning.recipe.prepTime': 'CORE', 'core.toc.title': 'Auf dieser Seite' },
+			},
 			pluginTranslations: merged.translations,
 		});
 		// Plugin overrides core for the shared key…
@@ -84,7 +89,11 @@ describe('assembleThemeConfig — D5 precedence', () => {
 	});
 
 	it('unknown locale falls to English (no strings substituted)', () => {
-		const { config } = assembleThemeConfig({ coreConfig, locale: 'ja', pluginTranslations: merged.translations });
+		const { config } = assembleThemeConfig({
+			coreConfig,
+			locale: 'ja',
+			pluginTranslations: merged.translations,
+		});
 		expect(config.strings).toEqual({});
 	});
 });

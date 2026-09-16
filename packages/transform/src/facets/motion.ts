@@ -10,12 +10,16 @@ import type { UniversalAxisFacet } from './describe.js';
  * existing inline style. A matched item is NOT descended into: a nested
  * same-named cascade belongs to that child rune's own stagger pass.
  */
-function stampStaggerIndex(children: RendererNode[], itemName: string, counter: { n: number }): void {
+function stampStaggerIndex(
+	children: RendererNode[],
+	itemName: string,
+	counter: { n: number },
+): void {
 	for (let i = 0; i < children.length; i++) {
 		const child = children[i];
 		if (!isTag(child)) continue;
-		const isItem = child.attributes?.['data-field'] === itemName
-			|| child.attributes?.['data-name'] === itemName;
+		const isItem =
+			child.attributes?.['data-field'] === itemName || child.attributes?.['data-name'] === itemName;
 		if (isItem) {
 			const existing = child.attributes?.style ? String(child.attributes.style) : '';
 			const decl = `--rf-reveal-index: ${counter.n}`;
@@ -73,14 +77,17 @@ export const motionFacet: Facet = {
 export const motionAxis: UniversalAxisFacet = {
 	axis: 'motion',
 	contract: {
-		description: 'Scroll-reveal entrance (SPEC-105). The author declares the character, the theme owns the choreography, a behaviour owns the timing.',
+		description:
+			'Scroll-reveal entrance (SPEC-105). The author declares the character, the theme owns the choreography, a behaviour owns the timing.',
 		source: 'attribute',
 		inputs: ['reveal', 'stagger'],
 		dataAttributes: ['data-reveal', 'data-stagger'],
 		customProperties: ['--rf-reveal-index'],
-		condition: '`--rf-reveal-index` is stamped on the cascade items named by the rune\'s `staggerItems`; without `staggerItems`, `stagger` marks the root and nothing else',
+		condition:
+			"`--rf-reveal-index` is stamped on the cascade items named by the rune's `staggerItems`; without `staggerItems`, `stagger` marks the root and nothing else",
 	},
-	describeForRune: (config) => (config.staggerItems
-		? { target: `[data-name="${config.staggerItems}"], [data-field="${config.staggerItems}"]` }
-		: null),
+	describeForRune: (config) =>
+		config.staggerItems
+			? { target: `[data-name="${config.staggerItems}"], [data-field="${config.staggerItems}"]` }
+			: null,
 };

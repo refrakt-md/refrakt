@@ -1,7 +1,12 @@
 import Markdoc from '@markdoc/markdoc';
 import type { Node, RenderableTreeNode } from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createContentModelSchema, createComponentRenderable, asNodes, RenderableNodeCursor } from '@refrakt-md/runes';
+import {
+	createContentModelSchema,
+	createComponentRenderable,
+	asNodes,
+	RenderableNodeCursor,
+} from '@refrakt-md/runes';
 import { extractPaletteTokens } from './palette.js';
 import { extractTypographyTokens } from './typography.js';
 import { extractSpacingTokens } from './spacing.js';
@@ -15,8 +20,18 @@ export const designContextSections = { title: 'title' } as const;
 export const designContext = createContentModelSchema({
 	sections: designContextSections,
 	attributes: {
-		title: { type: String, required: false, default: '', description: 'Heading displayed above the grouped design token sections.' },
-		scope: { type: String, required: false, default: 'default', description: 'Named scope that identifies this token set for cross-page references.' },
+		title: {
+			type: String,
+			required: false,
+			default: '',
+			description: 'Heading displayed above the grouped design token sections.',
+		},
+		scope: {
+			type: String,
+			required: false,
+			default: 'default',
+			description: 'Named scope that identifies this token set for cross-page references.',
+		},
 	},
 	contentModel: {
 		type: 'sequence' as const,
@@ -46,7 +61,7 @@ export const designContext = createContentModelSchema({
 
 		// Transform child body (palette/typography/spacing render as identity-layer tags)
 		// Filter to only tag children for the body
-		const tagChildren = children.filter(c => c.type === 'tag');
+		const tagChildren = children.filter((c) => c.type === 'tag');
 		const body = new RenderableNodeCursor(
 			Markdoc.transform(tagChildren, config) as RenderableTreeNode[],
 		);
@@ -56,22 +71,18 @@ export const designContext = createContentModelSchema({
 		const tokensMeta = new Tag('meta', { content: JSON.stringify(tokens) });
 		const scopeMeta = new Tag('meta', { content: attrs.scope });
 
-		const titleTag = attrs.title
-			? new Tag('h3', {}, [attrs.title as string])
-			: undefined;
+		const titleTag = attrs.title ? new Tag('h3', {}, [attrs.title as string]) : undefined;
 
 		// Wrap transformed child runes in a sections container
 		const childTags = body.toArray();
 		const sectionsTag = new Tag('div', {}, childTags);
 
-		const topChildren: (string | InstanceType<typeof Tag>)[] = [
-			titleMeta,
-			tokensMeta,
-		];
+		const topChildren: (string | InstanceType<typeof Tag>)[] = [titleMeta, tokensMeta];
 		if (titleTag) topChildren.push(titleTag);
 		topChildren.push(sectionsTag);
 
-		return createComponentRenderable({ rune: 'design-context',
+		return createComponentRenderable({
+			rune: 'design-context',
 			tag: 'section',
 			properties: {
 				titleText: titleMeta,

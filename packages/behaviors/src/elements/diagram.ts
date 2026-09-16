@@ -41,13 +41,19 @@ function computedColorToHex(value: string): string | null {
 	};
 	const rgb = value.match(/rgba?\(([^)]+)\)/i);
 	if (rgb) {
-		const [r, g, b, a] = rgb[1].split(/[\s,/]+/).filter(Boolean).map(parseFloat);
+		const [r, g, b, a] = rgb[1]
+			.split(/[\s,/]+/)
+			.filter(Boolean)
+			.map(parseFloat);
 		if ([r, g, b].some(Number.isNaN)) return null;
 		return toHex(r, g, b, a);
 	}
 	const srgb = value.match(/color\(srgb\s+([^)]+)\)/i);
 	if (srgb) {
-		const [r, g, b, a] = srgb[1].split(/[\s/]+/).filter(Boolean).map(parseFloat);
+		const [r, g, b, a] = srgb[1]
+			.split(/[\s/]+/)
+			.filter(Boolean)
+			.map(parseFloat);
 		if ([r, g, b].some(Number.isNaN)) return null;
 		return toHex(r * 255, g * 255, b * 255, a);
 	}

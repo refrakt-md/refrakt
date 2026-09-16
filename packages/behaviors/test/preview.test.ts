@@ -32,14 +32,16 @@ function createPreview(opts?: {
 	if (opts?.hasHtmlSource) {
 		const htmlSource = document.createElement('div');
 		htmlSource.setAttribute('data-name', 'html-source');
-		htmlSource.innerHTML = '<pre><code data-language="html">&lt;div typeof="Hint"&gt;...&lt;/div&gt;</code></pre>';
+		htmlSource.innerHTML =
+			'<pre><code data-language="html">&lt;div typeof="Hint"&gt;...&lt;/div&gt;</code></pre>';
 		el.appendChild(htmlSource);
 	}
 
 	if (opts?.hasThemedSource) {
 		const themedSource = document.createElement('div');
 		themedSource.setAttribute('data-name', 'themed-source');
-		themedSource.innerHTML = '<pre><code data-language="html">&lt;div class="rf-hint"&gt;...&lt;/div&gt;</code></pre>';
+		themedSource.innerHTML =
+			'<pre><code data-language="html">&lt;div class="rf-hint"&gt;...&lt;/div&gt;</code></pre>';
 		el.appendChild(themedSource);
 	}
 

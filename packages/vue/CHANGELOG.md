@@ -1,5 +1,14 @@
 # @refrakt-md/vue
 
+## 0.34.0
+
+### Patch Changes
+
+- Updated dependencies [7c2b184]
+- Updated dependencies [e8f9d54]
+  - @refrakt-md/types@0.34.0
+  - @refrakt-md/transform@0.34.0
+
 ## 0.33.0
 
 ### Patch Changes

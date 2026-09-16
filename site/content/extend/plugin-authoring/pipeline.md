@@ -281,6 +281,20 @@ interface PipelineContext {
 
 Warnings are surfaced in the build output and available as `Site.pipelineWarnings` for logging or CI checks.
 
+### What each severity actually does
+
+Measured, not assumed — the three severities differ only in how they are *printed*. None of them changes the outcome of anything:
+
+| Surface | Behaviour on `severity: 'error'` |
+|---|---|
+| `npm run build` (any adapter) | Exit code **0**. `formatPipelineSummary` writes `✗  Build complete (1 error, …)` to stderr; nothing reads the count. |
+| `npm test` | Exit code **0**. No test asserts on the global error count. |
+| Adapter dev server | **Not printed at all.** The summary sits behind an `isBuild` guard, so a dev session shows no diagnostics. |
+
+So `ctx.error` is a *louder line of stderr on a build*, not a failure. Do not design a feature around the assumption that an error-severity diagnostic stops anything — if you need a hard failure today, throw, or assert on `Site.pipelineWarnings` in a test of your own.
+
+The severity is still worth setting correctly: it is the ranking that a consumer of `Site.pipelineWarnings` sorts and filters by, and it is what the editor's validation rail will display.
+
 ## AggregatedData and Namespacing
 
 Aggregated data is keyed by package name to prevent collisions between packages:
@@ -318,3 +332,5 @@ Errors thrown inside any hook are caught automatically:
 - The affected page or phase produces no output from that hook
 
 This means a bug in one package's pipeline hook cannot crash the build. Check `Site.pipelineWarnings` in your Vite plugin output or CI logs to detect problems.
+
+Note the consequence, given the severity table above: a hook that throws is downgraded to a stderr line on a build and to nothing at all in dev. Nothing in the toolchain turns a caught hook error into a non-zero exit, so a package whose hook throws on every page still "builds".

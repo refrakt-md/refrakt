@@ -26,7 +26,7 @@ export const altSystem: Plugin = {
 	displayName: 'Alternative System',
 	version: '1.0.0',
 	runes: {
-		'item': {
+		item: {
 			transform: itemSchema,
 			schema: {
 				name: { type: 'string', required: true },

@@ -16,11 +16,12 @@ import { WORK_STATUS_DISPLAY_ORDER, BUG_STATUS_DISPLAY_ORDER } from './commands/
 export const plan: Plugin = {
 	name: 'plan',
 	displayName: 'Plan',
-	version: '0.33.0',
+	version: '0.34.0',
 	runes: {
-		'spec': {
+		spec: {
 			transform: spec,
-			description: 'Specification document with status tracking, versioning, and entity registry integration',
+			description:
+				'Specification document with status tracking, versioning, and entity registry integration',
 			fixture: `{% spec id="SPEC-001" status="accepted" version="1.0" %}
 # Authentication System
 
@@ -30,7 +31,7 @@ Users authenticate via JWT tokens issued by the auth endpoint.
 Tokens expire after 24 hours and can be refreshed.
 {% /spec %}`,
 		},
-		'work': {
+		work: {
 			transform: work,
 			aliases: ['task'],
 			description: 'Work item with acceptance criteria, references, and implementation tracking',
@@ -48,7 +49,7 @@ The theme needs dual light/dark token definitions.
 Use CSS custom properties with media query swapping.
 {% /work %}`,
 		},
-		'bug': {
+		bug: {
 			transform: bug,
 			description: 'Bug report with structured reproduction steps and severity tracking',
 			fixture: `{% bug id="RF-201" status="confirmed" severity="major" %}
@@ -66,10 +67,11 @@ Showcase extends above the section boundary.
 Showcase is clipped at the section edge.
 {% /bug %}`,
 		},
-		'decision': {
+		decision: {
 			transform: decision,
 			aliases: ['adr'],
-			description: 'Architecture decision record capturing context, options, decision, rationale, and consequences',
+			description:
+				'Architecture decision record capturing context, options, decision, rationale, and consequences',
 			fixture: `{% decision id="ADR-007" status="accepted" date="2026-03-11" %}
 # Use CSS custom properties for token injection
 
@@ -92,7 +94,7 @@ Custom properties cascade naturally without JavaScript.
 - Inline styles cannot use media queries
 {% /decision %}`,
 		},
-		'milestone': {
+		milestone: {
 			transform: milestone,
 			description: 'Named release target with scope, goals, and status tracking',
 			fixture: `{% milestone name="v0.5.0" target="2026-03-29" status="active" %}
@@ -103,7 +105,7 @@ Custom properties cascade naturally without JavaScript.
 - Publish layout spec as documentation
 {% /milestone %}`,
 		},
-		'backlog': {
+		backlog: {
 			transform: backlog,
 			description: 'Aggregation view of work items and bugs with filtering, sorting, and grouping',
 			fixture: `{% backlog filter="status:ready" sort="priority" group="status" /%}`,
@@ -125,7 +127,8 @@ Custom properties cascade naturally without JavaScript.
 		},
 		'plan-history': {
 			transform: planHistory,
-			description: 'Git-native entity history timeline showing attribute transitions, criteria progress, and lifecycle events',
+			description:
+				'Git-native entity history timeline showing attribute transitions, criteria progress, and lifecycle events',
 			fixture: `{% plan-history limit="20" /%}`,
 		},
 	},
@@ -152,4 +155,12 @@ export default plan;
 
 export { planPipelineHooks } from './pipeline.js';
 export { parseFileContent, scanPlanSources } from './scanner.js';
-export type { PlanEntity, PlanRuneType, Criterion, FileSource, ScanCache, ScanCacheEntry, ScanOptions } from './types.js';
+export type {
+	PlanEntity,
+	PlanRuneType,
+	Criterion,
+	FileSource,
+	ScanCache,
+	ScanCacheEntry,
+	ScanOptions,
+} from './types.js';
