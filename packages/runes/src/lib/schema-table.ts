@@ -45,6 +45,23 @@ const { Tag } = Markdoc;
  * (ADR-008), not on the attribute that happens to carry it.
  */
 
+/**
+ * Marks a `typeof` the **author** stated, which a parent may not overrule.
+ *
+ * D9's default stands: a parent's `children` row retypes its children, and a
+ * child that says nothing about its type gets the parent's. This is the narrow
+ * opt-out — a `{% track type="song" %}` inside a `{% playlist type="podcast" %}`
+ * stays a song, because saying so and being overruled anyway would make the
+ * attribute a lie.
+ *
+ * It has to be a marker because "no type stated" and "this exact type stated"
+ * are the same value by transform time, and Markdoc transforms bottom-up so a
+ * child cannot ask its parent. An own-property on the Tag rather than an
+ * attribute, so `JSON.parse(JSON.stringify(…))` at the serialize boundary drops
+ * it and it can never reach the HTML; the applier deletes it once read.
+ */
+export const SCHEMA_TYPE_EXPLICIT = Symbol.for('refrakt.schemaTypeExplicit');
+
 /** A source name in the rune's flat namespace, mapped to a schema.org property. */
 export type PropertyMap = Record<string, string>;
 
@@ -360,6 +377,37 @@ function carry(value: unknown): string | number | boolean {
 	return String(value);
 }
 
+/**
+ * Strip every `property=` stamp inside a child the parent is about to retype.
+ *
+ * Stops at a nested `typeof`: that subtree is its own entity and its properties
+ * belong to it, not to the child being retyped.
+ */
+function clearProperties(node: AnyTag): void {
+	const kept: unknown[] = [];
+	for (const child of node.children ?? []) {
+		if (!isTag(child)) {
+			kept.push(child);
+			continue;
+		}
+		const tag = child as AnyTag;
+		const attrs = tag.attributes ?? {};
+		// A rebuilt carrier — a `<meta property=… content=…>` with no name — exists
+		// only to carry a schema value. Stripping its property would leave an inert
+		// `<meta>` in the markup, so it goes with the mapping that created it.
+		const isCarrier =
+			tag.name === 'meta' &&
+			attrs.property !== undefined &&
+			attrs['data-name'] === undefined &&
+			attrs['data-field'] === undefined;
+		if (isCarrier) continue;
+		if (attrs.property !== undefined) delete tag.attributes.property;
+		if (attrs.typeof === undefined) clearProperties(tag);
+		kept.push(child);
+	}
+	node.children = kept as typeof node.children;
+}
+
 function textOf(node: unknown): string {
 	if (typeof node === 'string') return node;
 	if (Array.isArray(node)) return node.map(textOf).join('');
@@ -396,10 +444,34 @@ export function applySchemaTable(
 	// transforms bottom-up, so by now the children carry their own `typeof` and
 	// this rewrites them — and only the parent can supply the `property` that
 	// nests them.
-	for (const [childRune, childRow] of Object.entries(row.children ?? {})) {
-		const items = findChildren(root, childRune);
+	for (const [childName, childRow] of Object.entries(row.children ?? {})) {
+		const items = findChildren(root, childName);
 		items.forEach((item, i) => {
-			applyRow(item, childRow, readBag(item), i);
+			// A type the *author* stated is the child's own and survives: a
+			// `{% track type="song" %}` inside a podcast stays a song, because
+			// saying so and being overruled would make the attribute a lie. A type
+			// that came from the child's fallback row is marked implicit, and the
+			// parent is the better authority on what an unlabelled child is.
+			const marked = item as unknown as Record<symbol, boolean>;
+			const ownType = Boolean(marked[SCHEMA_TYPE_EXPLICIT]);
+			delete marked[SCHEMA_TYPE_EXPLICIT];
+
+			if (ownType) {
+				// A child that kept its own type keeps its own property map with it —
+				// the two are one statement, and re-stamping the parent's over it
+				// would duplicate every value it already carries. What the parent
+				// still supplies is the containing property and anything positional,
+				// which only a parent can know.
+				applyRow(item, { type: undefined, generated: childRow.generated }, readBag(item), i);
+			} else {
+				// The parent retypes, so the parent's map is the whole truth for this
+				// child. Clearing first is what makes a property that does not belong
+				// to the new type disappear rather than linger: `byArtist` on a
+				// `PodcastEpisode` is worse than the `MusicRecording` it replaced,
+				// which was at least coherently wrong.
+				if (childRow.properties) clearProperties(item);
+				applyRow(item, childRow, readBag(item), i);
+			}
 			item.attributes.property = childRow.property;
 		});
 	}
@@ -407,8 +479,16 @@ export function applySchemaTable(
 	return output;
 }
 
-/** Every node in the tree emitted by the named child rune, in document order. */
-function findChildren(root: AnyTag, rune: string): AnyTag[] {
+/**
+ * Every node the named child occupies, in document order.
+ *
+ * Matched on `data-rune` *or* a name, for the same reason `findByName` is
+ * attribute-agnostic: a parent may build some of a collection itself and receive
+ * the rest as authored child tags — `playlist` does exactly that, with markdown
+ * list items beside `{% track %}` children. Both populations belong to one
+ * collection and must take one row, or half of it would go unmapped.
+ */
+function findChildren(root: AnyTag, name: string): AnyTag[] {
 	const out: AnyTag[] = [];
 	const visit = (node: unknown): void => {
 		if (Array.isArray(node)) {
@@ -416,7 +496,9 @@ function findChildren(root: AnyTag, rune: string): AnyTag[] {
 			return;
 		}
 		if (!isTag(node)) return;
-		if (node.attributes?.['data-rune'] === rune) out.push(node as AnyTag);
+		const attrs = node.attributes ?? {};
+		if (attrs['data-rune'] === name || attrs['data-name'] === name || attrs['data-field'] === name)
+			out.push(node as AnyTag);
 		for (const c of node.children ?? []) visit(c);
 	};
 	for (const c of root.children ?? []) visit(c);

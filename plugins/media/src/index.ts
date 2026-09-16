@@ -28,14 +28,23 @@ export const media: Plugin = {
 				'- **${6:Track Two}** (${7:4:20})',
 				'{% /playlist %}',
 			],
-			fixture: `{% playlist type="album" artist="Pink Floyd" %}
-# The Dark Side of the Moon
-
+			// WORK-569 — the fixture is also the review surface for `playlistSchema`
+			// (`refrakt inspect playlist`), so it exercises every source the child
+			// row names: a date, a per-track link, and one `{% track %}` child,
+			// which is the only form that can carry a position.
+			fixture: `{% playlist type="album" artist="Pink Floyd" media-position="start" %}
 ![Cover](/images/dsotm.jpg)
 
-1. **Speak to Me** (1:13)
-2. **Breathe** (2:43)
-3. **On the Run** (3:36)
+---
+
+# The Dark Side of the Moon
+
+1. **Speak to Me** (1:13) — March 1973
+2. **[Breathe](/tracks/breathe)** (2:43) — March 1973
+
+{% track number=3 duration="3:36" date="March 1973" url="/tracks/on-the-run" %}
+# On the Run
+{% /track %}
 {% /playlist %}`,
 		},
 		track: {
@@ -50,7 +59,10 @@ export const media: Plugin = {
 				'# ${4:Track Name}',
 				'{% /track %}',
 			],
-			fixture: `{% track src="/audio/breathe.mp3" artist="Pink Floyd" duration="PT2M43S" %}
+			// WORK-569 — every source `trackSchema`'s rows name, so
+			// `refrakt inspect track --type=all` reviews a fully resolved row rather
+			// than one the example happens not to exercise.
+			fixture: `{% track src="/audio/breathe.mp3" artist="Pink Floyd" duration="PT2M43S" number=2 date="March 1973" url="/tracks/breathe" %}
 Breathe
 {% /track %}`,
 		},

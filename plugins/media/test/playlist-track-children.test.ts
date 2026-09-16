@@ -32,6 +32,11 @@ function normalize(value: unknown): unknown {
 const entities = (jsonLd: object[], type: string) =>
 	jsonLd.filter((e) => (e as Record<string, unknown>)['@type'] === type);
 
+// WORK-569 gave `playlist` a per-type table, so an `album` is a `MusicAlbum` and
+// its `track` is a declared list — an array however many items it holds (D6).
+const album = (jsonLd: object[]) => entities(jsonLd, 'MusicAlbum')[0] as Record<string, unknown>;
+const tracksOf = (jsonLd: object[]) => album(jsonLd).track as Record<string, unknown>[];
+
 /** Every `track` rune's field bag in a transformed tree, in document order. */
 function trackFields(node: any, out: Record<string, unknown>[] = []): Record<string, unknown>[] {
 	if (Array.isArray(node)) {
@@ -68,9 +73,8 @@ describe('playlist accepts track children (WORK-572)', () => {
 		const jsonLd = seo(TAG_FORM);
 		expect(entities(jsonLd, 'MusicRecording'), 'a track floated to top level').toEqual([]);
 
-		const playlist = entities(jsonLd, 'MusicPlaylist')[0] as Record<string, unknown>;
-		expect(playlist.track, 'the playlist has no track').toBeDefined();
-		expect((playlist.track as Record<string, unknown>).name).toBe('Speak to Me');
+		expect(album(jsonLd).track, 'the playlist has no track').toBeDefined();
+		expect(tracksOf(jsonLd)[0].name).toBe('Speak to Me');
 	});
 
 	it('renders nested tracks inside the track list, not beside it', () => {
@@ -87,16 +91,13 @@ describe('playlist accepts track children (WORK-572)', () => {
 	it('produces the same schema as the same content written as a list item', () => {
 		// The equivalence, asserted directly. This is the whole point: the escape
 		// hatch costs the author nothing.
-		const asList = entities(seo(LIST_FORM), 'MusicPlaylist')[0] as Record<string, unknown>;
-		const asTag = entities(seo(TAG_FORM), 'MusicPlaylist')[0] as Record<string, unknown>;
-		expect(normalize(asTag.track)).toEqual(normalize(asList.track));
+		expect(normalize(tracksOf(seo(TAG_FORM)))).toEqual(normalize(tracksOf(seo(LIST_FORM))));
 	});
 
 	it('inherits the playlist artist the way a list item does', () => {
 		// `track` has no artist fallback of its own, so without the parent applying
 		// one the two forms disagree on `byArtist`.
-		const playlist = entities(seo(TAG_FORM), 'MusicPlaylist')[0] as Record<string, unknown>;
-		expect((playlist.track as Record<string, unknown>).byArtist).toBe('Pink Floyd');
+		expect(tracksOf(seo(TAG_FORM))[0].byArtist).toBe('Pink Floyd');
 	});
 
 	it('lets a track keep its own artist over the playlist default', () => {
@@ -107,8 +108,7 @@ describe('playlist accepts track children (WORK-572)', () => {
 # So What
 {% /track %}
 {% /playlist %}`;
-		const playlist = entities(seo(content), 'MusicPlaylist')[0] as Record<string, unknown>;
-		expect((playlist.track as Record<string, unknown>).byArtist).toBe('Miles Davis');
+		expect(tracksOf(seo(content))[0].byArtist).toBe('Miles Davis');
 	});
 
 	it('keeps document order when both forms are mixed', () => {
@@ -123,9 +123,7 @@ describe('playlist accepts track children (WORK-572)', () => {
 
 - **Third** (3:00)
 {% /playlist %}`;
-		const playlist = entities(seo(content), 'MusicPlaylist')[0] as Record<string, unknown>;
-		const names = (playlist.track as Record<string, unknown>[]).map((t) => t.name);
-		expect(names).toEqual(['First', 'Second', 'Third']);
+		expect(tracksOf(seo(content)).map((t) => t.name)).toEqual(['First', 'Second', 'Third']);
 	});
 
 	it('carries track-only fields the list form cannot express', () => {
@@ -137,8 +135,7 @@ describe('playlist accepts track children (WORK-572)', () => {
 # Everything in Its Right Place
 {% /track %}
 {% /playlist %}`;
-		const track = (entities(seo(content), 'MusicPlaylist')[0] as Record<string, unknown>)
-			.track as Record<string, unknown>;
+		const track = tracksOf(seo(content))[0];
 		expect(track.url).toBe('https://example.test/track');
 		expect(track.position).toBe('3');
 		expect(track.duration).toBe('PT241S');
@@ -190,10 +187,84 @@ describe('playlist accepts track children (WORK-572)', () => {
 	it('keeps the list form working unchanged', () => {
 		// The `tracks` field became greedy, which had disabled its own itemModel
 		// extraction until the resolver learned to handle greedy + itemModel.
-		const playlist = entities(seo(LIST_FORM), 'MusicPlaylist')[0] as Record<string, unknown>;
-		const track = playlist.track as Record<string, unknown>;
+		const track = tracksOf(seo(LIST_FORM))[0];
 		expect(track.name).toBe('Speak to Me');
 		expect(track.duration).toBe('PT73S');
 		expect(track.byArtist).toBe('Pink Floyd');
+	});
+
+	it('gives an explicitly typed child its own type and its own properties', () => {
+		// WORK-569 — the counterpart to the `type` assertion above, at the schema
+		// level. The parent's `children` row for a podcast maps no `byArtist`; a
+		// track that kept its own `MusicRecording` keeps its own map with it, so
+		// the artist survives on the song and not on the episodes around it.
+		const content = `{% playlist type="podcast" artist="Acme" %}
+# Show
+
+{% track duration="45:30" %}
+# Episode One
+{% /track %}
+
+{% track type="song" artist="Miles Davis" duration="9:22" %}
+# So What
+{% /track %}
+{% /playlist %}`;
+		const series = entities(seo(content), 'PodcastSeries')[0] as Record<string, unknown>;
+		const parts = series.hasPart as Record<string, unknown>[];
+		expect(parts.map((p) => p['@type'])).toEqual(['PodcastEpisode', 'MusicRecording']);
+		expect(parts[0].byArtist, 'a PodcastEpisode has no byArtist').toBeUndefined();
+		expect(parts[1].byArtist).toBe('Miles Davis');
+	});
+});
+
+// SPEC-130 D9 / WORK-569 — the two emitters, checked on one page.
+//
+// The premise the spec left open was that `playlist` and `track` both stamp
+// `MusicRecording` and might have to be kept in step. They never populate the
+// same collection, so each keys off the attribute its own author set and neither
+// declares anything about the other. Worth asserting once rather than trusting
+// the argument.
+describe('playlist and track are independent emitters (D9)', () => {
+	const PAGE = `{% playlist type="podcast" %}
+# Design Systems Weekly
+
+{% track duration="45:30" %}
+# Episode One
+{% /track %}
+{% /playlist %}
+
+{% track type="episode" duration="42:30" %}
+# A Standalone Episode
+{% /track %}`;
+
+	it('publishes a series with parts and a separate episode, each correct alone', () => {
+		const jsonLd = seo(PAGE);
+		const series = entities(jsonLd, 'PodcastSeries');
+		expect(series).toHaveLength(1);
+		expect((series[0] as Record<string, unknown>).name).toBe('Design Systems Weekly');
+		expect((series[0] as Record<string, unknown>).hasPart).toHaveLength(1);
+
+		// The standalone one stands alone: a top-level `PodcastEpisode`, not a part
+		// of the series above it and not swallowed by it.
+		const loose = entities(jsonLd, 'PodcastEpisode');
+		expect(loose).toHaveLength(1);
+		expect((loose[0] as Record<string, unknown>).name).toBe('A Standalone Episode');
+	});
+
+	it('resolves each rune from its own attribute, with no shared state', () => {
+		// A music playlist on the same page as a standalone episode: if either rune
+		// read the other's type, one of these would be wrong.
+		const jsonLd = seo(`{% playlist type="album" artist="Pink Floyd" %}
+# The Dark Side of the Moon
+
+- **Speak to Me** (1:13)
+{% /playlist %}
+
+{% track type="episode" duration="42:30" %}
+# An Episode
+{% /track %}`);
+		expect(album(jsonLd)['@type']).toBe('MusicAlbum');
+		expect(tracksOf(jsonLd)[0]['@type']).toBe('MusicRecording');
+		expect(entities(jsonLd, 'PodcastEpisode')).toHaveLength(1);
 	});
 });

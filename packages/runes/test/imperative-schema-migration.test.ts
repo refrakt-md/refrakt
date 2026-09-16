@@ -25,7 +25,6 @@ const PENDING: Record<string, string> = {
 	'packages/runes/src/tags/accordion.ts': 'WORK-570 — retype and wrap',
 	'plugins/learning/src/tags/howto.ts': 'WORK-570 — retype and wrap',
 	'plugins/learning/src/tags/recipe.ts': 'WORK-570 — retype and wrap',
-	'plugins/media/src/tags/playlist.ts': 'WORK-569 — playlist, track and BUG-013',
 };
 
 /** Every rune source file in the catalog: core tags plus every plugin's tags. */

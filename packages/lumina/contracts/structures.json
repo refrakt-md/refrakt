@@ -1341,19 +1341,22 @@
 						"source": "name",
 						"property": "name",
 						"kind": "property",
-						"entity": "breadcrumb-item"
+						"entity": "breadcrumb-item",
+						"scope": "child"
 					},
 					{
 						"source": "url",
 						"property": "item",
 						"kind": "property",
-						"entity": "breadcrumb-item"
+						"entity": "breadcrumb-item",
+						"scope": "child"
 					},
 					{
 						"source": "(index)",
 						"property": "position",
 						"kind": "generated",
-						"entity": "breadcrumb-item"
+						"entity": "breadcrumb-item",
+						"scope": "child"
 					}
 				],
 				"entities": [],
@@ -6390,7 +6393,8 @@
 						"source": "(index)",
 						"property": "position",
 						"kind": "generated",
-						"entity": "timeline-entry"
+						"entity": "timeline-entry",
+						"scope": "child"
 					}
 				],
 				"entities": [],
@@ -7393,6 +7397,80 @@
 				"valign": {
 					"prop": "--split-valign"
 				}
+			},
+			"schemaOrg": {
+				"type": "MusicAlbum",
+				"by": "type",
+				"properties": [
+					{
+						"source": "headline",
+						"property": "name",
+						"kind": "property"
+					},
+					{
+						"source": "mediaImage",
+						"property": "image",
+						"kind": "property"
+					},
+					{
+						"source": "artist",
+						"property": "byArtist",
+						"kind": "property"
+					},
+					{
+						"source": "track-name",
+						"property": "name",
+						"kind": "property",
+						"entity": "track",
+						"scope": "child"
+					},
+					{
+						"source": "track-artist",
+						"property": "byArtist",
+						"kind": "property",
+						"entity": "track",
+						"scope": "child"
+					},
+					{
+						"source": "duration",
+						"property": "duration",
+						"kind": "property",
+						"entity": "track",
+						"scope": "child"
+					},
+					{
+						"source": "track-meta",
+						"property": "datePublished",
+						"kind": "property",
+						"entity": "track",
+						"scope": "child"
+					},
+					{
+						"source": "url",
+						"property": "url",
+						"kind": "property",
+						"entity": "track",
+						"scope": "child"
+					},
+					{
+						"source": "position",
+						"property": "position",
+						"kind": "property",
+						"entity": "track",
+						"scope": "child"
+					}
+				],
+				"entities": [],
+				"children": [
+					{
+						"rune": "track",
+						"type": "MusicRecording",
+						"property": "track"
+					}
+				],
+				"lists": [
+					"track"
+				]
 			}
 		},
 		"Track": {
@@ -7430,15 +7508,11 @@
 			},
 			"schemaOrg": {
 				"type": "MusicRecording",
+				"by": "type",
 				"properties": [
 					{
 						"source": "name",
 						"property": "name",
-						"kind": "property"
-					},
-					{
-						"source": "artist",
-						"property": "byArtist",
 						"kind": "property"
 					},
 					{
@@ -7459,6 +7533,11 @@
 					{
 						"source": "datePublished",
 						"property": "datePublished",
+						"kind": "property"
+					},
+					{
+						"source": "artist",
+						"property": "byArtist",
 						"kind": "property"
 					}
 				],

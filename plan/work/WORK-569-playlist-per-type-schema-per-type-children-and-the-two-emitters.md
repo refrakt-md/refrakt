@@ -1,4 +1,4 @@
-{% work id="WORK-569" status="ready" priority="high" complexity="complex" source="SPEC-130" tags="runes,media,schema-org,seo" milestone="v0.35.0" %}
+{% work id="WORK-569" status="done" priority="high" complexity="complex" source="SPEC-130" tags="runes,media,schema-org,seo" milestone="v0.35.0" %}
 
 # playlist — per-type schema, per-type children, and the two emitters
 
@@ -103,20 +103,20 @@ ships.
 
 ## Acceptance Criteria
 
-- [ ] `playlist` declares a `by: 'type'` table with rows for all five values, and an explicit fallback row for the absent case matching the attribute's own `album` default
-- [ ] A child row carries its own property map, not just a type name
-- [ ] `{% playlist type="podcast" %}` publishes `PodcastSeries` / `hasPart` / `PodcastEpisode`, resolving {% ref "BUG-013" /%}
-- [ ] `byArtist` does not survive onto a `PodcastEpisode` — properties that do not belong to the child's type are dropped, not carried
-- [ ] `album` narrows to `MusicAlbum`, so the default stops being imprecise
-- [ ] The standalone `track` rune gains its own `by: 'type'` table over `song | episode | chapter | talk | video`, so `{% track type="episode" %}` stops emitting `MusicRecording`
-- [ ] No context mechanism is added — neither rune declares anything about the other (D9)
-- [ ] The `children:` mapping reaches tag-built children as well as transform-built ones, so a `{% track %}` child and a list item get the same row
-- [ ] The declarative table replaces {% ref "WORK-572" /%}'s imperative stamping on both shapes — not one migrated and one left behind
-- [ ] A nested track with no explicit `type` still matches its list-item equivalent after the table replaces the imperative form
-- [ ] The inline track spans resolve by their existing `data-name`s (`track-name`, `track-artist`, `track-duration`) — `playlist` needs no new names
-- [ ] `playlist`'s image source resolves through the name {% ref "WORK-561" /%} gave it
-- [ ] Every row is reviewed through `refrakt inspect`'s resolved-table view, per {% ref "WORK-566" /%}
-- [ ] The diff against {% ref "WORK-562" /%}'s baseline shows exactly the intended change per `type` value — `mix` unchanged, the other four changed
+- [x] `playlist` declares a `by: 'type'` table with rows for all five values, and an explicit fallback row for the absent case matching the attribute's own `album` default
+- [x] A child row carries its own property map, not just a type name
+- [x] `{% playlist type="podcast" %}` publishes `PodcastSeries` / `hasPart` / `PodcastEpisode`, resolving {% ref "BUG-013" /%}
+- [x] `byArtist` does not survive onto a `PodcastEpisode` — properties that do not belong to the child's type are dropped, not carried
+- [x] `album` narrows to `MusicAlbum`, so the default stops being imprecise
+- [x] The standalone `track` rune gains its own `by: 'type'` table over `song | episode | chapter | talk | video`, so `{% track type="episode" %}` stops emitting `MusicRecording`
+- [x] No context mechanism is added — neither rune declares anything about the other (D9)
+- [x] The `children:` mapping reaches tag-built children as well as transform-built ones, so a `{% track %}` child and a list item get the same row
+- [x] The declarative table replaces {% ref "WORK-572" /%}'s imperative stamping on both shapes — not one migrated and one left behind
+- [x] A nested track with no explicit `type` still matches its list-item equivalent after the table replaces the imperative form
+- [x] The inline track spans resolve by their existing `data-name`s (`track-name`, `track-artist`, `track-duration`) — `playlist` needs no new names
+- [x] `playlist`'s image source resolves through the name {% ref "WORK-561" /%} gave it
+- [x] Every row is reviewed through `refrakt inspect`'s resolved-table view, per {% ref "WORK-566" /%}
+- [x] The diff against {% ref "WORK-562" /%}'s baseline shows exactly the intended change per `type` value — `mix` unchanged, the other four changed
 
 ## Approach
 
@@ -154,5 +154,73 @@ own terms.
 - **`position`** — {% ref "WORK-572" /%} notes nested tracks could take `position: 'index'`, which list items lack entirely. Decide here, where the one generator lives
 - `plugins/media/src/tags/playlist.ts:28,98,153,237` — the enum, the default, the item type, the unconditional parent type
 - `plugins/media/src/tags/track.ts:15,96` — `track`'s own enum and its unconditional `MusicRecording`
+
+## Resolution
+
+Completed: 2026-09-16
+
+Branch: `claude/v0.35-parallel-feasibility-eia5le`
+
+### What was done
+
+**Two independent `by: 'type'` tables.** `playlistSchema` has five rows; two are
+safe narrowings (`album` → `MusicAlbum`, `mix` unchanged) and three are branch
+switches (`podcast` → `PodcastSeries`/`hasPart`/`PodcastEpisode`, `audiobook` →
+`Audiobook`/`Chapter`, `series` → `CreativeWorkSeries`/`CreativeWork`).
+`trackSchema` has the same shape over its own five-value enum. Neither rune
+declares anything about the other — D9 held, and the pair is asserted on one
+page rather than trusted.
+
+**Three additions to the mechanism**, each forced by this rune:
+
+- `findChildren` matches `data-rune`, `data-name` *or* `data-field`, for the
+  same reason `findByName` is attribute-agnostic. `playlist` builds half its
+  track collection itself and receives the rest as `{% track %}` children; both
+  populations carry `data-field="track"` and take one row.
+- **A parent that retypes a child owns that child's mapping.** `clearProperties`
+  strips the child's stamps first, so a property that does not belong to the new
+  type disappears rather than lingering. It also removes a rebuilt carrier — a
+  `<meta property= content=>` with no name — since stripping its property would
+  leave an inert meta in the markup.
+- `SCHEMA_TYPE_EXPLICIT` marks a type the *author* stated, which no parent may
+  overrule. WORK-572 had this the other way round (`TYPE_IMPLICIT`), because
+  `playlist` was its only reader; inverting it keeps D9's default — the parent
+  retypes — and makes the marker the narrow exception it should be.
+
+**Six new baseline fixtures** for the kinds nothing covered: `playlist.mix`
+(the control), `playlist.audiobook`, `playlist.series`, `track.chapter`,
+`track.talk`, `track.video`. The AC asked for per-`type` evidence and the corpus
+could not give it.
+
+**The `inspect` audit had two defects this surfaced**, both of the
+guard-stops-guarding kind:
+
+- It audited a `children:` row against the *parent's* tree and declared
+  attributes, so every child source reported as broken. It now resolves them
+  against the children.
+- It could not see a source the applier rebuilds from the field bag, because the
+  identity transform consumes `data-rune-fields` before the audit reads the
+  tree. It now accepts the stamped property as evidence — scoped, so a child's
+  stamp cannot cover for a parent's typo when both map to `name`.
+
+Verified by probe: a typo'd child source and a typo'd parent source are each
+reported, and the shipped tables are silent.
+
+### Notes
+
+- **`position` is not generated here.** The work item asked for the decision.
+  Generating it would put a position on every list item for no consumer benefit,
+  and `position` belongs to `ItemList` ordering rather than to an album's tracks.
+  An author-stated `number` on a nested `{% track %}` still publishes.
+- **`byArtist` is dropped, not relocated**, on every non-music row. `author`
+  would fit `CreativeWork`, but it expects a Person or Organization and the value
+  is a bare string — a new claim rather than a relocation. Stated in the table
+  for a reviewer to disagree with (D5).
+- The `playlist` and `track` `defineRune` fixtures gained the fields their rows
+  name (a date, a link, a number, a media-zone image), so `refrakt inspect`
+  reviews a fully resolved row. Same correction as `symbol` in WORK-567: the
+  review surface's input should exercise what the table claims.
+- I reverted this file once mid-item with a careless `git checkout` on
+  uncommitted work and reconstructed it. No content was lost.
 
 {% /work %}
