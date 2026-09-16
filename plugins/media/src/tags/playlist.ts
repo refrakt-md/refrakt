@@ -31,18 +31,82 @@ const CHILD_KIND: Record<string, string> = {
 	series: 'episode',
 };
 
-/**
- * The schema.org type a playlist's children carry.
- *
- * One constant, not a per-type table, because that is the truth today: every
- * playlist type emits `MusicRecording` children including podcasts, which is
- * BUG-013. WORK-569 replaces this with the per-type table. Until it does, the
- * inherited type has to be exactly what the list form produces or the two
- * authoring forms would disagree — which is the equivalence this item exists to
- * establish.
- */
-const CHILD_TYPEOF = 'MusicRecording';
 const contentType = ['auto', 'lyrics', 'chapters'] as const;
+
+/**
+ * SPEC-130 / WORK-569 — the driving case, and the other half of BUG-013.
+ *
+ * `playlist` declared five kinds and published `MusicPlaylist` with
+ * `MusicRecording` items for every one of them, so `{% playlist type="podcast" %}`
+ * announced a podcast as a music playlist whose episodes were music recordings.
+ * The rune already knew what its content was and emitted the wrong schema anyway.
+ *
+ * | `type`      | was                     | is                             |
+ * |-------------|-------------------------|--------------------------------|
+ * | `album`     | `MusicPlaylist`/`track` | `MusicAlbum`/`track`           |
+ * | `mix`       | `MusicPlaylist`/`track` | unchanged                      |
+ * | `podcast`   | `MusicPlaylist`/`track` | `PodcastSeries`/`hasPart`      |
+ * | `audiobook` | `MusicPlaylist`/`track` | `Audiobook`/`hasPart`          |
+ * | `series`    | `MusicPlaylist`/`track` | `CreativeWorkSeries`/`hasPart` |
+ *
+ * **A child row is a type and a property map, not a type alone.** Retyping the
+ * item and leaving its stamps would put `byArtist` on a `PodcastEpisode`, which
+ * does not have that property — worse than the `MusicRecording` it replaced,
+ * which was at least coherently wrong. So the parent's map is the whole truth
+ * for a child it retypes, and the applier clears what it does not name.
+ *
+ * `Chapter` for an `Audiobook` and `CreativeWork` for a `CreativeWorkSeries` are
+ * the rows worth a second opinion. Nothing validates them (D5) — read them in
+ * `refrakt inspect playlist --type=all` and disagree there.
+ */
+const MUSIC_ITEM = {
+	'track-name': 'name',
+	'track-artist': 'byArtist',
+	duration: 'duration',
+	'track-meta': 'datePublished',
+	url: 'url',
+	position: 'position',
+} as const;
+
+// Everything but the artist: `byArtist` is a `MusicRecording` property, and a
+// series carries its publisher rather than each item doing so.
+const SPOKEN_ITEM = {
+	'track-name': 'name',
+	duration: 'duration',
+	'track-meta': 'datePublished',
+	url: 'url',
+	position: 'position',
+} as const;
+
+const musicRow = (type: string) => ({
+	type,
+	properties: { headline: 'name', mediaImage: 'image', artist: 'byArtist' },
+	lists: ['track'],
+	children: { track: { type: 'MusicRecording', property: 'track', properties: MUSIC_ITEM } },
+});
+
+const spokenRow = (type: string, itemType: string) => ({
+	type,
+	// No `byArtist` here either, for the same reason it is absent from the item.
+	properties: { headline: 'name', mediaImage: 'image' },
+	lists: ['hasPart'],
+	children: { track: { type: itemType, property: 'hasPart', properties: SPOKEN_ITEM } },
+});
+
+export const playlistSchema = {
+	by: 'type',
+	rows: {
+		album: musicRow('MusicAlbum'),
+		mix: musicRow('MusicPlaylist'),
+		podcast: spokenRow('PodcastSeries', 'PodcastEpisode'),
+		audiobook: spokenRow('Audiobook', 'Chapter'),
+		series: spokenRow('CreativeWorkSeries', 'CreativeWork'),
+	},
+	// The attribute defaults to `album` in the transform, so the absent case is
+	// an album — and `MusicAlbum`, a subtype of `MusicPlaylist`, has been
+	// available and unused the whole time.
+	fallback: musicRow('MusicAlbum'),
+};
 
 // SPEC-125 Phase 2 — join tables the rune declares about itself. Referenced
 // from the theme config rather than owned by it: a theme may not redefine
@@ -62,6 +126,7 @@ export const playlistSections = {
 export const playlistMediaSlots = { media: 'cover' } as const;
 
 export const playlist = createContentModelSchema({
+	schema: playlistSchema,
 	sections: playlistSections,
 	provides: ['prose'],
 	mediaSlots: playlistMediaSlots,
@@ -209,25 +274,29 @@ export const playlist = createContentModelSchema({
 			const date = (track.date as string)?.trim() ?? '';
 			const cuePoints = (track.cuePoints as Record<string, unknown>[] | undefined) ?? [];
 
-			const trackNameTag = new Tag('span', { 'data-name': 'track-name', property: 'name' }, [name]);
+			// WORK-569 — no `property=` here any more: `playlistSchema`'s child row
+			// stamps both populations, so the list form and a nested `{% track %}`
+			// take the same mapping instead of one being declared and one written
+			// out by hand.
+			const trackNameTag = new Tag('span', { 'data-name': 'track-name' }, [name]);
 			const trackChildrenArr: any[] = [trackNameTag];
 
 			if (artist) {
-				trackChildrenArr.push(
-					new Tag('span', { 'data-name': 'track-artist', property: 'byArtist' }, [artist]),
-				);
+				trackChildrenArr.push(new Tag('span', { 'data-name': 'track-artist' }, [artist]));
 			}
 			if (duration) {
 				trackChildrenArr.push(new Tag('span', { 'data-name': 'track-duration' }, [duration]));
 				const durationSeconds = parseDuration(duration);
+				// Named `duration`, matching what `{% track %}` calls its ISO carrier,
+				// so one source reaches both forms. `track-duration` beside it is the
+				// *rendered* value ("3:45") and stays unmapped — publishing that as a
+				// schema.org duration is what naming them apart prevents.
 				trackChildrenArr.push(
-					new Tag('meta', { property: 'duration', content: `PT${durationSeconds}S` }),
+					new Tag('meta', { 'data-name': 'duration', content: `PT${durationSeconds}S` }),
 				);
 			}
 			if (date) {
-				trackChildrenArr.push(
-					new Tag('span', { 'data-name': 'track-meta', property: 'datePublished' }, [date]),
-				);
+				trackChildrenArr.push(new Tag('span', { 'data-name': 'track-meta' }, [date]));
 			}
 
 			// Build cue point elements
@@ -236,7 +305,9 @@ export const playlist = createContentModelSchema({
 				if (cueListTag) trackChildrenArr.push(cueListTag);
 			}
 
-			const trackAttrs: Record<string, any> = { typeof: 'MusicRecording' };
+			// No `typeof` either — the child row types these. A list item states no
+			// kind of its own, so the parent is the only authority on what it is.
+			const trackAttrs: Record<string, any> = {};
 			if (src) trackAttrs['data-src'] = src;
 
 			return new Tag('li', trackAttrs, trackChildrenArr);
@@ -363,7 +434,6 @@ export const playlist = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'playlist',
-			schemaOrgType: 'MusicPlaylist',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
@@ -383,12 +453,6 @@ export const playlist = createContentModelSchema({
 				// WORK-561 — see the note on `recipe`: `image` is taken by
 				// `sectionProps`, so the media slot's image is `mediaImage`.
 				...(seoImage ? { mediaImage: seoImage } : {}),
-			},
-			schema: {
-				name: sectionProps.headline,
-				...(seoImage ? { image: seoImage } : {}),
-				...(artistMeta ? { byArtist: artistMeta } : {}),
-				track: trackItems,
 			},
 			children,
 		});
@@ -417,10 +481,12 @@ export const playlist = createContentModelSchema({
 function adoptNestedTrack(li: any, childKind: string, playlistArtist: string): any {
 	if (!li || typeof li !== 'object') return li;
 
-	if (li[TYPE_IMPLICIT]) {
-		li.attributes.typeof = CHILD_TYPEOF;
-		// Keep the rendered modifier in step with the adopted kind, so a podcast's
-		// nested track does not present itself as a song.
+	if (!li[TYPE_IMPLICIT]) {
+		// The marker means "the author stated this type" (WORK-569), so its absence
+		// is what licenses adoption. The schema type is the applier's to set from
+		// `playlistSchema`'s child row, and the marker stays on the node for it to
+		// read; what is left here is the *rendered* modifier, so a podcast's nested
+		// track does not present itself as a song.
 		const raw = li.attributes['data-rune-fields'];
 		if (typeof raw === 'string') {
 			try {
@@ -436,13 +502,15 @@ function adoptNestedTrack(li: any, childKind: string, playlistArtist: string): a
 				child.attributes.content = childKind;
 			}
 		}
-		delete li[TYPE_IMPLICIT];
 	}
 
 	if (playlistArtist && !hasArtist(li)) {
+		// Named rather than stamped, so the child row decides whether a playlist's
+		// artist reaches the item at all — on a podcast or an audiobook it does
+		// not, because the series carries its publisher.
 		const artistMeta = new Markdoc.Tag('meta', {
 			content: playlistArtist,
-			property: 'byArtist',
+			'data-name': 'track-artist',
 		});
 		li.children = [...(li.children ?? []), artistMeta];
 	}

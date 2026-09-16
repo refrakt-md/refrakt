@@ -223,13 +223,36 @@ describe('against the real corpus', () => {
 		expect([...EMITTING_RUNES.A].sort()).toEqual([...DELIBERATELY_SILENT, 'symbol'].sort());
 	});
 
-	it('records BUG-013 as it stands, rather than as it should be', () => {
-		const podcast = artifact.fixtures.find((f) => f.fixture === 'playlist.podcast');
-		expect(podcast.jsonLd[0]['@type']).toBe('MusicPlaylist');
-		expect(podcast.jsonLd[0].track[0]['@type']).toBe('MusicRecording');
-		// The standalone rune ignores its own `type` the same way.
-		const episode = artifact.fixtures.find((f) => f.fixture === 'track.episode');
-		expect(episode.jsonLd[0]['@type']).toBe('MusicRecording');
+	it('resolves BUG-013 — each kind publishes the type it declares', () => {
+		// Was `records BUG-013 as it stands`: a podcast published as a music
+		// playlist whose episodes were music recordings, in both runes. WORK-569
+		// gave each its own `by: 'type'` table, so the row below is the whole
+		// per-kind contract and a regression in any one cell fails here.
+		const of = (name) => artifact.fixtures.find((f) => f.fixture === name).jsonLd[0];
+
+		const podcast = of('playlist.podcast');
+		expect(podcast['@type']).toBe('PodcastSeries');
+		expect(podcast.hasPart[0]['@type']).toBe('PodcastEpisode');
+		expect(podcast.track, 'a PodcastSeries has no `track`').toBeUndefined();
+		expect(podcast.hasPart[0].byArtist, 'a PodcastEpisode has no `byArtist`').toBeUndefined();
+
+		expect(of('playlist.album')['@type']).toBe('MusicAlbum');
+		expect(of('playlist.audiobook')['@type']).toBe('Audiobook');
+		expect(of('playlist.audiobook').hasPart[0]['@type']).toBe('Chapter');
+		expect(of('playlist.series')['@type']).toBe('CreativeWorkSeries');
+		expect(of('playlist.series').hasPart[0]['@type']).toBe('CreativeWork');
+
+		// `mix` is the control: the one kind with no narrower type, unchanged.
+		expect(of('playlist.mix')['@type']).toBe('MusicPlaylist');
+		expect(of('playlist.mix').track[0]['@type']).toBe('MusicRecording');
+
+		// The standalone rune keys off its own enum, independently (D9).
+		expect(of('track')['@type']).toBe('MusicRecording');
+		expect(of('track.episode')['@type']).toBe('PodcastEpisode');
+		expect(of('track.episode').byArtist).toBeUndefined();
+		expect(of('track.chapter')['@type']).toBe('Chapter');
+		expect(of('track.talk')['@type']).toBe('CreativeWork');
+		expect(of('track.video')['@type']).toBe('VideoObject');
 	});
 
 	it('publishes `NGO`, the type schema.org actually has (D2)', () => {
@@ -253,9 +276,9 @@ describe('against the real corpus', () => {
 			['pricing.single', 'pricing.tiers', 'offers'],
 			['breadcrumb.single', 'breadcrumb', 'itemListElement'],
 			['timeline.single', 'timeline.entries', 'itemListElement'],
+			['playlist.single', 'playlist.album', 'track'],
 		];
 		const pending = [
-			['playlist.single', 'playlist.album', 'track'],
 			['accordion.single', 'accordion', 'mainEntity'],
 			['howto.single', 'howto', 'step'],
 			['recipe.single', 'recipe', 'recipeIngredient'],

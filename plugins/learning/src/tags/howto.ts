@@ -26,7 +26,32 @@ export const howToSections = {
 	blurb: 'description',
 } as const;
 
+/**
+ * SPEC-130 / WORK-570 — retype and wrap, declared.
+ *
+ * The `<li>`s become `HowToTool`s and `HowToStep`s, and each one's own content
+ * becomes the property value through the RDFa wrapper the applier emits. See
+ * `accordionItemSchema` for why that wrapper is required rather than
+ * convenient — an element carrying both `property` and `typeof` has its object
+ * fixed to the typed resource, so its text is unreachable as a literal.
+ *
+ * `textTag: 'p'` because that is what the rune rendered: a `<div>` inside an
+ * `<li>` would change the page's margins, and this item's bar is that the HTML
+ * does not move.
+ *
+ * No `lists:` here — see the note on `accordionSchema`.
+ */
+export const howToSchema = {
+	type: 'HowTo',
+	properties: { headline: 'name', blurb: 'description', estimatedTime: 'totalTime' },
+	children: {
+		tool: { type: 'HowToTool', property: 'tool', text: { tool: 'name' }, textTag: 'p' },
+		step: { type: 'HowToStep', property: 'step', text: { step: 'text' }, textTag: 'p' },
+	},
+} as const;
+
 export const howto = createContentModelSchema({
+	schema: howToSchema,
 	sections: howToSections,
 	attributes: {
 		estimatedTime: {
@@ -76,24 +101,14 @@ export const howto = createContentModelSchema({
 			}
 		}
 
-		// Annotate tool lis as HowToTool
+		// WORK-570 — the names only; `howToSchema` retypes these and emits the
+		// text wrapper, so the rune no longer sets `typeof` on nodes it did not
+		// create or hand-writes an RDFa carrier.
 		for (const li of tools) {
-			if (Markdoc.Tag.isTag(li)) {
-				li.attributes['data-name'] = 'tool';
-				li.attributes.typeof = 'HowToTool';
-				li.attributes.property = 'tool';
-				li.children = [new Tag('p', { property: 'name' }, li.children)];
-			}
+			if (Markdoc.Tag.isTag(li)) li.attributes['data-name'] = 'tool';
 		}
-
-		// Annotate step lis as HowToStep
 		for (const li of steps) {
-			if (Markdoc.Tag.isTag(li)) {
-				li.attributes['data-name'] = 'step';
-				li.attributes.typeof = 'HowToStep';
-				li.attributes.property = 'step';
-				li.children = [new Tag('p', { property: 'text' }, li.children)];
-			}
+			if (Markdoc.Tag.isTag(li)) li.attributes['data-name'] = 'step';
 		}
 
 		const sectionProps = pageSectionProperties(header);
@@ -112,7 +127,6 @@ export const howto = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'how-to',
-			schemaOrgType: 'HowTo',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
@@ -123,11 +137,6 @@ export const howto = createContentModelSchema({
 				...sectionProps,
 				tools: toolsList,
 				steps: stepsList,
-			},
-			schema: {
-				name: sectionProps.headline,
-				description: sectionProps.blurb,
-				totalTime: estimatedTimeMeta,
 			},
 			children,
 		});

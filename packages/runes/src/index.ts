@@ -103,6 +103,7 @@ export {
 	schemaTables,
 	applySchemaTable,
 	validateSchemaTable,
+	SCHEMA_TYPE_EXPLICIT,
 	selectRow,
 	findByName,
 } from './lib/index.js';

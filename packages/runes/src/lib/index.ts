@@ -24,6 +24,7 @@ export {
 	validateSchemaTable,
 	selectRow,
 	findByName,
+	SCHEMA_TYPE_EXPLICIT,
 } from './schema-table.js';
 export type { SchemaTable, SchemaRow, EntityRow, PropertyMap } from './schema-table.js';
 export type { InlineTransformResult } from './component.js';

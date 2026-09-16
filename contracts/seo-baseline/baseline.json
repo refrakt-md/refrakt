@@ -13,7 +13,7 @@
 		"@refrakt-md/plan"
 	],
 	"runeCount": 30,
-	"fixtureCount": 42,
+	"fixtureCount": 48,
 	"coverageGaps": [],
 	"fixtures": [
 		{
@@ -1517,7 +1517,7 @@
 			"jsonLd": [
 				{
 					"@context": "https://schema.org",
-					"@type": "MusicPlaylist",
+					"@type": "MusicAlbum",
 					"byArtist": "Pink Floyd",
 					"image": "https://assets.refrakt.md/playlist-dark-side-of-the-moon.png",
 					"name": "The Dark Side of the Moon",
@@ -1547,7 +1547,7 @@
 				"jsonLd": [
 					{
 						"@context": "https://schema.org",
-						"@type": "MusicPlaylist",
+						"@type": "MusicAlbum",
 						"byArtist": "Pink Floyd",
 						"image": "https://assets.refrakt.md/playlist-dark-side-of-the-moon.png",
 						"name": "The Dark Side of the Moon",
@@ -1659,6 +1659,213 @@
 							}
 						],
 						"element": "section",
+						"typeof": "MusicAlbum"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "playlist.audiobook",
+			"rune": "playlist",
+			"group": "C",
+			"notes": "One of the three branch switches (WORK-569): `Audiobook` with `hasPart` chapters rather than `MusicPlaylist` with music recordings. `Chapter` is a curated judgement with nothing to check it (D5) — schema.org has `Chapter` as a CreativeWork part, which is what an audiobook's sections are. The artist is deliberately unmapped here: `byArtist` is a MusicRecording property, and `Audiobook` carries `author` and `readBy`, which are different claims.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Audiobook",
+					"hasPart": [
+						{
+							"@type": "Chapter",
+							"duration": "PT2472S",
+							"name": "Warriors in the Mist"
+						},
+						{
+							"@type": "Chapter",
+							"duration": "PT2324S",
+							"name": "The Shadow"
+						}
+					],
+					"name": "A Wizard of Earthsea"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Audiobook",
+						"hasPart": [
+							{
+								"@type": "Chapter",
+								"duration": "PT2472S",
+								"name": "Warriors in the Mist"
+							},
+							{
+								"@type": "Chapter",
+								"duration": "PT2324S",
+								"name": "The Shadow"
+							}
+						],
+						"name": "A Wizard of Earthsea"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "A Wizard of Earthsea"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Warriors in the Mist"
+									},
+									{
+										"content": "PT2472S",
+										"element": "meta",
+										"property": "duration"
+									}
+								],
+								"element": "li",
+								"property": "hasPart",
+								"typeof": "Chapter"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "The Shadow"
+									},
+									{
+										"content": "PT2324S",
+										"element": "meta",
+										"property": "duration"
+									}
+								],
+								"element": "li",
+								"property": "hasPart",
+								"typeof": "Chapter"
+							}
+						],
+						"element": "section",
+						"typeof": "Audiobook"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "playlist.mix",
+			"rune": "playlist",
+			"group": "C",
+			"notes": "The one playlist kind WORK-569 leaves alone. `MusicPlaylist` is the right type for a mix — there is no narrower one — so this row is the control: if a change to the table moves it, the change reached further than intended.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "MusicPlaylist",
+					"byArtist": "Various",
+					"name": "Late Night Drive",
+					"track": [
+						{
+							"@type": "MusicRecording",
+							"byArtist": "Various",
+							"duration": "PT258S",
+							"name": "Nightcall"
+						},
+						{
+							"@type": "MusicRecording",
+							"byArtist": "Various",
+							"duration": "PT243S",
+							"name": "Midnight City"
+						}
+					]
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "MusicPlaylist",
+						"byArtist": "Various",
+						"name": "Late Night Drive",
+						"track": [
+							{
+								"@type": "MusicRecording",
+								"byArtist": "Various",
+								"duration": "PT258S",
+								"name": "Nightcall"
+							},
+							{
+								"@type": "MusicRecording",
+								"byArtist": "Various",
+								"duration": "PT243S",
+								"name": "Midnight City"
+							}
+						]
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "Late Night Drive"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Nightcall"
+									},
+									{
+										"element": "span",
+										"property": "byArtist",
+										"text": "Various"
+									},
+									{
+										"content": "PT258S",
+										"element": "meta",
+										"property": "duration"
+									}
+								],
+								"element": "li",
+								"property": "track",
+								"typeof": "MusicRecording"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Midnight City"
+									},
+									{
+										"element": "span",
+										"property": "byArtist",
+										"text": "Various"
+									},
+									{
+										"content": "PT243S",
+										"element": "meta",
+										"property": "duration"
+									}
+								],
+								"element": "li",
+								"property": "track",
+								"typeof": "MusicRecording"
+							},
+							{
+								"content": "Various",
+								"element": "meta",
+								"property": "byArtist"
+							}
+						],
+						"element": "section",
 						"typeof": "MusicPlaylist"
 					}
 				]
@@ -1672,44 +1879,44 @@
 			"jsonLd": [
 				{
 					"@context": "https://schema.org",
-					"@type": "MusicPlaylist",
-					"name": "Design Systems Weekly",
-					"track": [
+					"@type": "PodcastSeries",
+					"hasPart": [
 						{
-							"@type": "MusicRecording",
+							"@type": "PodcastEpisode",
 							"datePublished": "March 2025",
 							"duration": "PT2730S",
 							"name": "Component Libraries at Scale"
 						},
 						{
-							"@type": "MusicRecording",
+							"@type": "PodcastEpisode",
 							"datePublished": "February 2025",
 							"duration": "PT2295S",
 							"name": "Token Architecture"
 						}
-					]
+					],
+					"name": "Design Systems Weekly"
 				}
 			],
 			"rendered": {
 				"jsonLd": [
 					{
 						"@context": "https://schema.org",
-						"@type": "MusicPlaylist",
-						"name": "Design Systems Weekly",
-						"track": [
+						"@type": "PodcastSeries",
+						"hasPart": [
 							{
-								"@type": "MusicRecording",
+								"@type": "PodcastEpisode",
 								"datePublished": "March 2025",
 								"duration": "PT2730S",
 								"name": "Component Libraries at Scale"
 							},
 							{
-								"@type": "MusicRecording",
+								"@type": "PodcastEpisode",
 								"datePublished": "February 2025",
 								"duration": "PT2295S",
 								"name": "Token Architecture"
 							}
-						]
+						],
+						"name": "Design Systems Weekly"
 					}
 				],
 				"annotations": [
@@ -1739,8 +1946,8 @@
 									}
 								],
 								"element": "li",
-								"property": "track",
-								"typeof": "MusicRecording"
+								"property": "hasPart",
+								"typeof": "PodcastEpisode"
 							},
 							{
 								"children": [
@@ -1761,12 +1968,119 @@
 									}
 								],
 								"element": "li",
-								"property": "track",
-								"typeof": "MusicRecording"
+								"property": "hasPart",
+								"typeof": "PodcastEpisode"
 							}
 						],
 						"element": "section",
-						"typeof": "MusicPlaylist"
+						"typeof": "PodcastSeries"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "playlist.series",
+			"rune": "playlist",
+			"group": "C",
+			"notes": "The loosest of the three branch switches (WORK-569). `CreativeWorkSeries` with `CreativeWork` parts is the honest answer for a kind that says only \"a series of things\": narrowing further would need to know what the things are, and the rune does not.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "CreativeWorkSeries",
+					"hasPart": [
+						{
+							"@type": "CreativeWork",
+							"datePublished": "January 2025",
+							"duration": "PT750S",
+							"name": "Parsing Markdoc"
+						},
+						{
+							"@type": "CreativeWork",
+							"datePublished": "February 2025",
+							"duration": "PT1085S",
+							"name": "The Identity Transform"
+						}
+					],
+					"name": "Building refrakt"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "CreativeWorkSeries",
+						"hasPart": [
+							{
+								"@type": "CreativeWork",
+								"datePublished": "January 2025",
+								"duration": "PT750S",
+								"name": "Parsing Markdoc"
+							},
+							{
+								"@type": "CreativeWork",
+								"datePublished": "February 2025",
+								"duration": "PT1085S",
+								"name": "The Identity Transform"
+							}
+						],
+						"name": "Building refrakt"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "h1",
+								"property": "name",
+								"text": "Building refrakt"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "Parsing Markdoc"
+									},
+									{
+										"content": "PT750S",
+										"element": "meta",
+										"property": "duration"
+									},
+									{
+										"element": "span",
+										"property": "datePublished",
+										"text": "January 2025"
+									}
+								],
+								"element": "li",
+								"property": "hasPart",
+								"typeof": "CreativeWork"
+							},
+							{
+								"children": [
+									{
+										"element": "span",
+										"property": "name",
+										"text": "The Identity Transform"
+									},
+									{
+										"content": "PT1085S",
+										"element": "meta",
+										"property": "duration"
+									},
+									{
+										"element": "span",
+										"property": "datePublished",
+										"text": "February 2025"
+									}
+								],
+								"element": "li",
+								"property": "hasPart",
+								"typeof": "CreativeWork"
+							}
+						],
+						"element": "section",
+						"typeof": "CreativeWorkSeries"
 					}
 				]
 			}
@@ -1779,30 +2093,34 @@
 			"jsonLd": [
 				{
 					"@context": "https://schema.org",
-					"@type": "MusicPlaylist",
+					"@type": "MusicAlbum",
 					"byArtist": "Pink Floyd",
 					"name": "The Dark Side of the Moon",
-					"track": {
-						"@type": "MusicRecording",
-						"byArtist": "Pink Floyd",
-						"duration": "PT73S",
-						"name": "Speak to Me"
-					}
+					"track": [
+						{
+							"@type": "MusicRecording",
+							"byArtist": "Pink Floyd",
+							"duration": "PT73S",
+							"name": "Speak to Me"
+						}
+					]
 				}
 			],
 			"rendered": {
 				"jsonLd": [
 					{
 						"@context": "https://schema.org",
-						"@type": "MusicPlaylist",
+						"@type": "MusicAlbum",
 						"byArtist": "Pink Floyd",
 						"name": "The Dark Side of the Moon",
-						"track": {
-							"@type": "MusicRecording",
-							"byArtist": "Pink Floyd",
-							"duration": "PT73S",
-							"name": "Speak to Me"
-						}
+						"track": [
+							{
+								"@type": "MusicRecording",
+								"byArtist": "Pink Floyd",
+								"duration": "PT73S",
+								"name": "Speak to Me"
+							}
+						]
 					}
 				],
 				"annotations": [
@@ -1842,7 +2160,7 @@
 							}
 						],
 						"element": "section",
-						"typeof": "MusicPlaylist"
+						"typeof": "MusicAlbum"
 					}
 				]
 			}
@@ -2974,6 +3292,55 @@
 			}
 		},
 		{
+			"fixture": "track.chapter",
+			"rune": "track",
+			"group": "B",
+			"notes": "WORK-569 — `track`'s own five-value enum, one row per kind. `Chapter` has no `byArtist`, so the narrator attribute is not carried across; see `playlist.audiobook` for the same judgement at container level.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "Chapter",
+					"duration": "PT2472S",
+					"name": "Warriors in the Mist",
+					"position": "4"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "Chapter",
+						"duration": "PT2472S",
+						"name": "Warriors in the Mist",
+						"position": "4"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "span",
+								"property": "name",
+								"text": "Warriors in the Mist"
+							},
+							{
+								"content": "PT2472S",
+								"element": "meta",
+								"property": "duration"
+							},
+							{
+								"content": "4",
+								"element": "meta",
+								"property": "position"
+							}
+						],
+						"element": "li",
+						"typeof": "Chapter"
+					}
+				]
+			}
+		},
+		{
 			"fixture": "track.episode",
 			"rune": "track",
 			"group": "B",
@@ -2981,8 +3348,7 @@
 			"jsonLd": [
 				{
 					"@context": "https://schema.org",
-					"@type": "MusicRecording",
-					"byArtist": "Tech Weekly",
+					"@type": "PodcastEpisode",
 					"datePublished": "March 2025",
 					"duration": "PT2550S",
 					"name": "Shipping Design Systems"
@@ -2992,8 +3358,7 @@
 				"jsonLd": [
 					{
 						"@context": "https://schema.org",
-						"@type": "MusicRecording",
-						"byArtist": "Tech Weekly",
+						"@type": "PodcastEpisode",
 						"datePublished": "March 2025",
 						"duration": "PT2550S",
 						"name": "Shipping Design Systems"
@@ -3008,11 +3373,6 @@
 								"text": "Shipping Design Systems"
 							},
 							{
-								"content": "Tech Weekly",
-								"element": "meta",
-								"property": "byArtist"
-							},
-							{
 								"content": "PT2550S",
 								"element": "meta",
 								"property": "duration"
@@ -3024,7 +3384,7 @@
 							}
 						],
 						"element": "li",
-						"typeof": "MusicRecording"
+						"typeof": "PodcastEpisode"
 					}
 				]
 			}
@@ -3062,18 +3422,116 @@
 								"text": "Everything in Its Right Place"
 							},
 							{
-								"content": "Radiohead",
-								"element": "meta",
-								"property": "byArtist"
-							},
-							{
 								"content": "PT241S",
 								"element": "meta",
 								"property": "duration"
+							},
+							{
+								"content": "Radiohead",
+								"element": "meta",
+								"property": "byArtist"
 							}
 						],
 						"element": "li",
 						"typeof": "MusicRecording"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "track.talk",
+			"rune": "track",
+			"group": "B",
+			"notes": "The row with no obvious type. schema.org has no talk, and `PresentationDigitalDocument` describes the slides rather than the talk, so `CreativeWork` is the honest answer (WORK-569). Recorded as its own fixture because a later narrowing should show up here as a diff.",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "CreativeWork",
+					"datePublished": "June 2025",
+					"duration": "PT1720S",
+					"name": "What Runes Are For"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "CreativeWork",
+						"datePublished": "June 2025",
+						"duration": "PT1720S",
+						"name": "What Runes Are For"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "span",
+								"property": "name",
+								"text": "What Runes Are For"
+							},
+							{
+								"content": "PT1720S",
+								"element": "meta",
+								"property": "duration"
+							},
+							{
+								"content": "June 2025",
+								"element": "meta",
+								"property": "datePublished"
+							}
+						],
+						"element": "li",
+						"typeof": "CreativeWork"
+					}
+				]
+			}
+		},
+		{
+			"fixture": "track.video",
+			"rune": "track",
+			"group": "B",
+			"notes": "`VideoObject` — the one `track` row whose type exists outside the music branch and is unambiguous (WORK-569).",
+			"jsonLd": [
+				{
+					"@context": "https://schema.org",
+					"@type": "VideoObject",
+					"duration": "PT750S",
+					"name": "Parsing Markdoc",
+					"url": "https://example.test/watch"
+				}
+			],
+			"rendered": {
+				"jsonLd": [
+					{
+						"@context": "https://schema.org",
+						"@type": "VideoObject",
+						"duration": "PT750S",
+						"name": "Parsing Markdoc",
+						"url": "https://example.test/watch"
+					}
+				],
+				"annotations": [
+					{
+						"children": [
+							{
+								"element": "span",
+								"property": "name",
+								"text": "Parsing Markdoc"
+							},
+							{
+								"content": "PT750S",
+								"element": "meta",
+								"property": "duration"
+							},
+							{
+								"content": "https://example.test/watch",
+								"element": "meta",
+								"property": "url"
+							}
+						],
+						"element": "li",
+						"typeof": "VideoObject"
 					}
 				]
 			}

@@ -45,6 +45,23 @@ const { Tag } = Markdoc;
  * (ADR-008), not on the attribute that happens to carry it.
  */
 
+/**
+ * Marks a `typeof` the **author** stated, which a parent may not overrule.
+ *
+ * D9's default stands: a parent's `children` row retypes its children, and a
+ * child that says nothing about its type gets the parent's. This is the narrow
+ * opt-out — a `{% track type="song" %}` inside a `{% playlist type="podcast" %}`
+ * stays a song, because saying so and being overruled anyway would make the
+ * attribute a lie.
+ *
+ * It has to be a marker because "no type stated" and "this exact type stated"
+ * are the same value by transform time, and Markdoc transforms bottom-up so a
+ * child cannot ask its parent. An own-property on the Tag rather than an
+ * attribute, so `JSON.parse(JSON.stringify(…))` at the serialize boundary drops
+ * it and it can never reach the HTML; the applier deletes it once read.
+ */
+export const SCHEMA_TYPE_EXPLICIT = Symbol.for('refrakt.schemaTypeExplicit');
+
 /** A source name in the rune's flat namespace, mapped to a schema.org property. */
 export type PropertyMap = Record<string, string>;
 
@@ -56,6 +73,8 @@ export interface EntityRow {
 	properties?: PropertyMap;
 	/** Properties taking a node's own content, via an RDFa-conformant wrapper. */
 	text?: PropertyMap;
+	/** The wrapper element `text` emits. Defaults to `div`. */
+	textTag?: string;
 	/** Properties whose value is generated rather than read from content. */
 	generated?: Record<string, 'index'>;
 }
@@ -76,6 +95,15 @@ export interface SchemaRow {
 	 * channels assert different graphs on every accordion, recipe and how-to.
 	 */
 	text?: PropertyMap;
+	/**
+	 * The wrapper element `text` emits. Defaults to `div`.
+	 *
+	 * It is a rendering choice, not a schema one — `how-to` and `recipe` wrap an
+	 * `<li>`'s content in a `<p>`, and a `<div>` there would change the page's
+	 * margins. Declared rather than fixed so the applier can reproduce what each
+	 * rune already renders, byte for byte.
+	 */
+	textTag?: string;
 	entities?: Record<string, EntityRow>;
 	/** Properties whose value is generated. `index` is the only generator. */
 	generated?: Record<string, 'index'>;
@@ -195,30 +223,52 @@ const isTag = (n: unknown): n is AnyTag => Markdoc.Tag.isTag(n as never);
  * and SPEC-133 moves nodes between them. Checking both, in one pass, with no
  * branch on which matched, is what makes those moves a no-op here.
  */
+/**
+ * Every node bearing a name, in document order, within one rune.
+ *
+ * **The search stops at another rune's node.** ADR-008's flat namespace is
+ * unique *per rune*, so the same name means different things in a parent and in
+ * a child it contains: `character` names its title span `name`, and so does
+ * every `character-section` inside it. Reaching across that boundary published a
+ * character whose `name` was the character plus each of its section headings.
+ */
+export function findAllByName(
+	root: RenderableTreeNode | RenderableTreeNode[],
+	name: string,
+): AnyTag[] {
+	const kebab = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+	const out: AnyTag[] = [];
+	const visit = (node: unknown, top: boolean): void => {
+		if (Array.isArray(node)) {
+			for (const c of node) visit(c, top);
+			return;
+		}
+		if (!isTag(node)) return;
+		const attrs = node.attributes ?? {};
+		if (!top && attrs['data-rune'] !== undefined) return;
+		const named =
+			attrs['data-name'] === name ||
+			attrs['data-name'] === kebab ||
+			attrs['data-field'] === name ||
+			attrs['data-field'] === kebab;
+		if (named) {
+			out.push(node);
+			// A name marks one node, not a subtree: descending into a match would
+			// find nothing new and risks a nested re-use of the same name.
+			return;
+		}
+		for (const c of node.children ?? []) visit(c, false);
+	};
+	visit(root, true);
+	return out;
+}
+
+/** The first node bearing a name, within one rune — see `findAllByName`. */
 export function findByName(
 	root: RenderableTreeNode | RenderableTreeNode[],
 	name: string,
 ): AnyTag | undefined {
-	const kebab = name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
-	const visit = (node: unknown): AnyTag | undefined => {
-		if (Array.isArray(node)) {
-			for (const c of node) {
-				const hit = visit(c);
-				if (hit) return hit;
-			}
-			return undefined;
-		}
-		if (!isTag(node)) return undefined;
-		const attrs = node.attributes ?? {};
-		if (attrs['data-name'] === name || attrs['data-name'] === kebab) return node;
-		if (attrs['data-field'] === name || attrs['data-field'] === kebab) return node;
-		for (const c of node.children ?? []) {
-			const hit = visit(c);
-			if (hit) return hit;
-		}
-		return undefined;
-	};
-	return visit(root);
+	return findAllByName(root, name)[0];
 }
 
 /** The rune's field bag, as written by `createComponentRenderable`. */
@@ -247,10 +297,14 @@ function stamp(
 	property: string,
 	sink: AnyTag[],
 ): AnyTag | undefined {
-	const node = findByName(root, source);
-	if (node) {
-		node.attributes.property = property;
-		return node;
+	// Every node bearing the name, not just the first. A name in the rune's flat
+	// namespace can be worn by a whole collection — `recipe` gives each of its
+	// ingredient `<li>`s `data-name="ingredient"` — and stamping one of six would
+	// publish a single ingredient and silently drop the rest.
+	const nodes = findAllByName(root, source);
+	if (nodes.length > 0) {
+		for (const node of nodes) node.attributes.property = property;
+		return nodes[0];
 	}
 	const value = bag[source];
 	if (value === undefined || value === '') return undefined;
@@ -265,10 +319,10 @@ function stamp(
  * See the note on `SchemaRow.text` — an element carrying both `property` and
  * `typeof` cannot also contribute its text, so the value needs its own element.
  */
-function applyText(root: AnyTag, source: string, property: string): void {
+function applyText(root: AnyTag, source: string, property: string, tag = 'div'): void {
 	const node = findByName(root, source);
 	if (!node) return;
-	const wrapper = new Tag('div', { property }, node.children ?? []);
+	const wrapper = new Tag(tag, { property }, node.children ?? []);
 	node.children = [wrapper];
 }
 
@@ -294,7 +348,7 @@ function applyRow(
 	}
 
 	for (const [source, property] of Object.entries(row.text ?? {})) {
-		applyText(node, source, property);
+		applyText(node, source, property, row.textTag);
 	}
 
 	for (const [property, generator] of Object.entries(row.generated ?? {})) {
@@ -360,6 +414,37 @@ function carry(value: unknown): string | number | boolean {
 	return String(value);
 }
 
+/**
+ * Strip every `property=` stamp inside a child the parent is about to retype.
+ *
+ * Stops at a nested `typeof`: that subtree is its own entity and its properties
+ * belong to it, not to the child being retyped.
+ */
+function clearProperties(node: AnyTag): void {
+	const kept: unknown[] = [];
+	for (const child of node.children ?? []) {
+		if (!isTag(child)) {
+			kept.push(child);
+			continue;
+		}
+		const tag = child as AnyTag;
+		const attrs = tag.attributes ?? {};
+		// A rebuilt carrier — a `<meta property=… content=…>` with no name — exists
+		// only to carry a schema value. Stripping its property would leave an inert
+		// `<meta>` in the markup, so it goes with the mapping that created it.
+		const isCarrier =
+			tag.name === 'meta' &&
+			attrs.property !== undefined &&
+			attrs['data-name'] === undefined &&
+			attrs['data-field'] === undefined;
+		if (isCarrier) continue;
+		if (attrs.property !== undefined) delete tag.attributes.property;
+		if (attrs.typeof === undefined) clearProperties(tag);
+		kept.push(child);
+	}
+	node.children = kept as typeof node.children;
+}
+
 function textOf(node: unknown): string {
 	if (typeof node === 'string') return node;
 	if (Array.isArray(node)) return node.map(textOf).join('');
@@ -396,10 +481,34 @@ export function applySchemaTable(
 	// transforms bottom-up, so by now the children carry their own `typeof` and
 	// this rewrites them — and only the parent can supply the `property` that
 	// nests them.
-	for (const [childRune, childRow] of Object.entries(row.children ?? {})) {
-		const items = findChildren(root, childRune);
+	for (const [childName, childRow] of Object.entries(row.children ?? {})) {
+		const items = findChildren(root, childName);
 		items.forEach((item, i) => {
-			applyRow(item, childRow, readBag(item), i);
+			// A type the *author* stated is the child's own and survives: a
+			// `{% track type="song" %}` inside a podcast stays a song, because
+			// saying so and being overruled would make the attribute a lie. A type
+			// that came from the child's fallback row is marked implicit, and the
+			// parent is the better authority on what an unlabelled child is.
+			const marked = item as unknown as Record<symbol, boolean>;
+			const ownType = Boolean(marked[SCHEMA_TYPE_EXPLICIT]);
+			delete marked[SCHEMA_TYPE_EXPLICIT];
+
+			if (ownType) {
+				// A child that kept its own type keeps its own property map with it —
+				// the two are one statement, and re-stamping the parent's over it
+				// would duplicate every value it already carries. What the parent
+				// still supplies is the containing property and anything positional,
+				// which only a parent can know.
+				applyRow(item, { type: undefined, generated: childRow.generated }, readBag(item), i);
+			} else {
+				// The parent retypes, so the parent's map is the whole truth for this
+				// child. Clearing first is what makes a property that does not belong
+				// to the new type disappear rather than linger: `byArtist` on a
+				// `PodcastEpisode` is worse than the `MusicRecording` it replaced,
+				// which was at least coherently wrong.
+				if (childRow.properties) clearProperties(item);
+				applyRow(item, childRow, readBag(item), i);
+			}
 			item.attributes.property = childRow.property;
 		});
 	}
@@ -407,8 +516,16 @@ export function applySchemaTable(
 	return output;
 }
 
-/** Every node in the tree emitted by the named child rune, in document order. */
-function findChildren(root: AnyTag, rune: string): AnyTag[] {
+/**
+ * Every node the named child occupies, in document order.
+ *
+ * Matched on `data-rune` *or* a name, for the same reason `findByName` is
+ * attribute-agnostic: a parent may build some of a collection itself and receive
+ * the rest as authored child tags — `playlist` does exactly that, with markdown
+ * list items beside `{% track %}` children. Both populations belong to one
+ * collection and must take one row, or half of it would go unmapped.
+ */
+function findChildren(root: AnyTag, name: string): AnyTag[] {
 	const out: AnyTag[] = [];
 	const visit = (node: unknown): void => {
 		if (Array.isArray(node)) {
@@ -416,7 +533,9 @@ function findChildren(root: AnyTag, rune: string): AnyTag[] {
 			return;
 		}
 		if (!isTag(node)) return;
-		if (node.attributes?.['data-rune'] === rune) out.push(node as AnyTag);
+		const attrs = node.attributes ?? {};
+		if (attrs['data-rune'] === name || attrs['data-name'] === name || attrs['data-field'] === name)
+			out.push(node as AnyTag);
 		for (const c of node.children ?? []) visit(c);
 	};
 	for (const c of root.children ?? []) visit(c);
