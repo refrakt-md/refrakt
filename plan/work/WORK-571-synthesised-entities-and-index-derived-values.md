@@ -1,4 +1,4 @@
-{% work id="WORK-571" status="ready" priority="medium" complexity="moderate" source="SPEC-130" tags="runes,schema-org,seo,pipeline" milestone="v0.35.0" %}
+{% work id="WORK-571" status="in-progress" priority="medium" complexity="moderate" source="SPEC-130" tags="runes,schema-org,seo,pipeline" milestone="v0.35.0" %}
 
 # Synthesised entities and index-derived values
 
@@ -59,14 +59,14 @@ matter what the hook emitted.
 
 ## Acceptance Criteria
 
-- [ ] `testimonial` and `event` declare `entities:` tables and stop synthesising entity spans in their transforms
-- [ ] Both reproduce {% ref "WORK-562" /%}'s baseline — `testimonial` exactly, `event` under the normalised comparison
-- [ ] `testimonial`'s existing `jobTitle: ", CTO at Acme"` comma defect is either preserved deliberately or fixed deliberately, and the choice is stated — it must not change by accident
-- [ ] `breadcrumb` and `timeline` declare `position: 'index'` instead of emitting positions from the loop
-- [ ] `buildAutoBreadcrumb`'s `postProcess` hook applies its resolved row through the same applier, not a hand-written mapping (D8)
-- [ ] `breadcrumb` emits `String(index + 1)` so the RDFa and the JSON-LD agree on `position` — a string in one and a number in the other is a drift the invariant would otherwise have to tolerate (D8)
-- [ ] The page-level two-point invariant passes for a page using `{% breadcrumb auto=true %}`
-- [ ] `event`'s `location` resolves by name rather than being duplicated into a `Place` span by hand
+- [x] `testimonial` and `event` declare `entities:` tables and stop synthesising entity spans in their transforms
+- [x] Both reproduce {% ref "WORK-562" /%}'s baseline — `testimonial` exactly, `event` under the normalised comparison
+- [x] `testimonial`'s existing `jobTitle: ", CTO at Acme"` comma defect is either preserved deliberately or fixed deliberately, and the choice is stated — it must not change by accident
+- [x] `breadcrumb` and `timeline` declare `position: 'index'` instead of emitting positions from the loop
+- [x] `buildAutoBreadcrumb`'s `postProcess` hook applies its resolved row through the same applier, not a hand-written mapping (D8)
+- [x] `breadcrumb` emits `String(index + 1)` so the RDFa and the JSON-LD agree on `position` — a string in one and a number in the other is a drift the invariant would otherwise have to tolerate (D8)
+- [x] The page-level two-point invariant passes for a page using `{% breadcrumb auto=true %}`
+- [x] `event`'s `location` resolves by name rather than being duplicated into a `Place` span by hand
 - [ ] After this item, no rune passes `schemaOrgType` or a `schema:` map to `createComponentRenderable`, and no transform mutates `attributes.typeof` — the imperative form is fully migrated, not half of each
 
 ## Approach

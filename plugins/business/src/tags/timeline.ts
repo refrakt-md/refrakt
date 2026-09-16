@@ -9,14 +9,13 @@ import {
 	pageSectionProperties,
 } from '@refrakt-md/runes';
 
-// SPEC-130 / WORK-568 — Group B. The flat half of the pair: `timeline` still
-// builds its `itemListElement` and the `position` metas imperatively, and that
-// half is WORK-571's (the parent's property and the child's type are one
-// declaration, so the nesting moves when the parent does).
+// SPEC-130 / WORK-568 — Group B, the flat half of the pair. The entry declares
+// what it says about itself; `timelineSchema` below declares the property that
+// holds it and the position it sits at, because only the parent knows an index.
 //
 // `description` for the date is what shipped, recorded in the baseline. It is a
 // stretch — `ListItem` has no date property, and `startDate` would need a
-// different `@type` — but reproducing it exactly is this item's job; changing
+// different `@type` — but reproducing it exactly was that item's job; changing
 // the claim is not.
 export const timelineEntrySchema = {
 	type: 'ListItem',
@@ -70,7 +69,28 @@ export const timelineSections = {
 	blurb: 'description',
 } as const;
 
+// SPEC-130 / WORK-571 — the other half of `position: 'index'`. `timeline` used
+// to walk its entries and push a `<meta property="position">` into each; the
+// index is now declared and the applier generates it, as `String(index + 1)` so
+// the RDFa and the JSON-LD agree.
+//
+// `itemListElement` is a declared list, so a one-entry timeline emits an array
+// like any other (D6). The `ItemList` itself carries no properties of its own —
+// that is what shipped, and the entries keep it from being a bare entity (D4).
+export const timelineSchema = {
+	type: 'ItemList',
+	lists: ['itemListElement'],
+	children: {
+		'timeline-entry': {
+			type: 'ListItem',
+			property: 'itemListElement',
+			generated: { position: 'index' },
+		},
+	},
+} as const;
+
 export const timeline = createContentModelSchema({
+	schema: timelineSchema,
 	sections: timelineSections,
 	attributes: {
 		direction: {
@@ -112,13 +132,6 @@ export const timeline = createContentModelSchema({
 
 		const items = sectionNodes.tag('li').typeof('TimelineEntry');
 
-		// Inject position meta into each entry for schema.org ListItem
-		items.toArray().forEach((entry: any, index: number) => {
-			if (Tag.isTag(entry)) {
-				entry.children.push(new Tag('meta', { property: 'position', content: index + 1 }));
-			}
-		});
-
 		const entriesList = new Tag('ol', {}, items.toArray());
 
 		const children: any[] = [directionMeta];
@@ -129,7 +142,6 @@ export const timeline = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'timeline',
-			schemaOrgType: 'ItemList',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
@@ -137,9 +149,6 @@ export const timeline = createContentModelSchema({
 				entry: items,
 			},
 			refs: { ...pageSectionProperties(headerNodes), entries: entriesList },
-			schema: {
-				itemListElement: items,
-			},
 			children,
 		});
 	},

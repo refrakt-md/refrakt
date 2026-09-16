@@ -21,8 +21,8 @@ import type {
 } from '@refrakt-md/types';
 import Markdoc from '@markdoc/markdoc';
 const { Tag } = Markdoc;
-import { createComponentRenderable } from './lib/index.js';
-import { BREADCRUMB_AUTO_SENTINEL } from './tags/breadcrumb.js';
+import { applySchemaTable, createComponentRenderable } from './lib/index.js';
+import { BREADCRUMB_AUTO_SENTINEL, breadcrumbSchema } from './tags/breadcrumb.js';
 import { NAV_AUTO_SENTINEL, NAV_COLLAPSED_AUTO } from './tags/nav.js';
 import { PAGINATION_AUTO_SENTINEL } from './tags/pagination.js';
 import { XREF_RUNE_MARKER } from './tags/xref.js';
@@ -907,37 +907,32 @@ function buildAutoBreadcrumb(
 
 	// Build breadcrumb items: ancestor pages + current page (no link).
 	//
-	// WORK-563 — the `schema:` maps below are not decoration. `collectJsonLd`
+	// WORK-563 — the schema is not decoration on this path. `collectJsonLd`
 	// nests a typed node into its parent only when that node carries *both*
-	// `typeof` and `property`, and only a `schema:` entry supplies the
-	// `property`. Without them this hook emitted a `BreadcrumbList` with no
-	// `itemListElement` and a `ListItem` floating up beside it as a detached,
-	// empty top-level entity — while rendering a perfectly correct trail.
+	// `typeof` and `property`. Without them this hook emitted a
+	// `BreadcrumbList` with no `itemListElement` and a `ListItem` floating up
+	// beside it as a detached, empty top-level entity — while rendering a
+	// perfectly correct trail.
 	//
-	// The explicit `{% breadcrumb %}` form (tags/breadcrumb.ts) has always
-	// passed these. This path is the same output contract and must match it:
-	// the bar is that an auto trail publishes what the same trail written by
-	// hand would.
+	// The explicit `{% breadcrumb %}` form (tags/breadcrumb.ts) has always got
+	// this right. This path is the same output contract and must match it: the
+	// bar is that an auto trail publishes what the same trail written by hand
+	// would.
 	const listItems: any[] = [];
-	let position = 0;
 
 	for (const ancestorUrl of ancestorUrls) {
 		const ancestorPage = pagesByUrl.get(ancestorUrl);
 		if (!ancestorPage) continue;
 
-		position++;
-		const positionMeta = new Tag('meta', { content: position });
 		const nameSpan = new Tag('span', { hidden: true }, [ancestorPage.title]);
 		const urlLink = new Tag('a', { href: ancestorUrl }, [ancestorPage.title]);
 
 		listItems.push(
 			createComponentRenderable({
 				rune: 'breadcrumb-item',
-				schemaOrgType: 'ListItem',
 				tag: 'li',
 				properties: { name: nameSpan, url: urlLink },
-				schema: { name: nameSpan, item: urlLink, position: positionMeta },
-				children: [nameSpan, urlLink, positionMeta],
+				children: [nameSpan, urlLink],
 			}) as any,
 		);
 	}
@@ -945,32 +940,38 @@ function buildAutoBreadcrumb(
 	// Add current page as the last item (no link)
 	const currentPage = pagesByUrl.get(pageUrl);
 	const currentTitle = currentPage?.title ?? pageUrl;
-	position++;
-	const currentPositionMeta = new Tag('meta', { content: position });
 	const currentSpan = new Tag('span', {}, [currentTitle]);
 	listItems.push(
 		createComponentRenderable({
 			rune: 'breadcrumb-item',
-			schemaOrgType: 'ListItem',
 			tag: 'li',
 			properties: { name: currentSpan },
-			schema: { name: currentSpan, position: currentPositionMeta },
-			children: [currentSpan, currentPositionMeta],
+			children: [currentSpan],
 		}) as any,
 	);
 
 	const newSeparatorMeta = new Tag('meta', { content: separator });
 	const itemsList = new Tag('ol', {}, listItems);
 
-	return createComponentRenderable({
+	const node = createComponentRenderable({
 		rune: 'breadcrumb',
-		schemaOrgType: 'BreadcrumbList',
 		tag: 'nav',
 		properties: { separator: newSeparatorMeta },
 		refs: { items: itemsList },
-		schema: { itemListElement: listItems },
 		children: [newSeparatorMeta, itemsList],
 	});
+
+	// SPEC-130 D8 / WORK-571 — the hook calls the applier itself.
+	//
+	// `buildAutoBreadcrumb` runs from a `postProcess` hook, not from a Markdoc
+	// schema, so the `createContentModelSchema` wrapper that normally applies a
+	// rune's table cannot reach it. One extra call site keeps "the imperative
+	// form is fully migrated, not half of each" exceptionless rather than
+	// carving out the one emitter that happens to live in a pipeline phase —
+	// and, more to the point, it means both breadcrumb paths publish from the
+	// *same* table rather than from a declaration and a hand-written copy of it
+	// that can drift.
+	return applySchemaTable(node, breadcrumbSchema, {}) as typeof node;
 }
 
 /** Walk a Markdoc renderable tree, resolving any auto-nav placeholders */

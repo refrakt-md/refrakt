@@ -1,4 +1,4 @@
-{% work id="WORK-568" status="in-progress" priority="medium" complexity="moderate" source="SPEC-130" tags="runes,schema-org,seo,plugins" milestone="v0.35.0" %}
+{% work id="WORK-568" status="done" priority="medium" complexity="moderate" source="SPEC-130" tags="runes,schema-org,seo,plugins" milestone="v0.35.0" %}
 
 # Group B — fourteen flat mappings, and the type that does not exist
 
@@ -35,7 +35,7 @@ already wrong, and it was wrong somewhere no tool could look.
 
 ## Acceptance Criteria
 
-- [ ] All fourteen runes declare their schema as a table and stop passing `schemaOrgType` and `schema:` to `createComponentRenderable`
+- [x] All fourteen runes declare their schema as a table and stop passing `schemaOrgType` and `schema:` to `createComponentRenderable`
 - [x] Each reproduces its baseline JSON-LD exactly, except where a change is deliberate and named
 - [x] `organization` becomes a `by: 'type'` table over its six rows, replacing the imperative derivation
 - [x] `NonProfit` is corrected to `NGO`, with a note in the changeset that sites using the old value are affected
@@ -81,5 +81,58 @@ in step, since the parent's property and the child's type are one declaration
 - {% ref "WORK-561" /%} — the names `embed`, `tier` and the image nodes depend on
 - {% ref "WORK-564" /%} — the CSS that must move first
 - `plugins/business/src/tags/organization.ts` — the six-value enum and `NonProfit`
+
+## Resolution
+
+Completed: 2026-09-16
+
+Branch: `claude/v0.35-parallel-feasibility-eia5le`
+
+### What was done
+
+Thirteen of the fourteen converted here; `breadcrumb-item` landed one commit
+later with its parent, in WORK-571, because a child entity is never declared
+without the property that holds it and its position needs the parent's index.
+
+**Core** — `figure` (`image → contentUrl`, `caption → caption`, both refs
+stamped in place) and `embed` (`title → name`, `url → contentUrl`,
+`embedUrl → embedUrl`, all three rebuilt from the field bag: they are
+`properties` metas, so they lose the `isSeoMeta` protection and are dropped as
+pure data once `schema:` goes).
+
+**business** — `cast-member` (its portrait gained a `portrait` name; the schema
+had been reaching it through a local variable), `organization`, `timeline-entry`.
+
+**storytelling** — `character`, `realm`, `faction`, `plot`, `lore`. `realm` and
+`faction` resolve `image` through WORK-561's `sceneImage` rather than positionally.
+
+**marketing** — `pricing` and `tier`, the pair the work item flagged. `tier`'s
+`parsedPrice` and `resolvedCurrency` survived only because the rune declared
+them in `schema:`; with that gone the applier rebuilds them from the bag, which
+works only because WORK-561 put them there. `pricing` retypes the tiers from its
+own `children` row (D9) and declares `offers` a list (D6).
+
+**media** — `track`, flat mapping only; `MusicRecording` stays wrong for
+`type="episode"` (BUG-013), which is WORK-569's, so that fix shows as its own
+one-line baseline diff.
+
+**`NonProfit` → `NGO`** in the enum, the table, `site/content/_data/rune-attributes.json`
+(regenerated) and the `organization.nonprofit` fixture. `organization` becomes a
+`by: 'type'` table whose rows are keyed off the same list that feeds `matches`.
+
+`lists?: string[]` became `readonly string[]` so a table written as a single
+`as const` literal — the way every other one is written — type-checks.
+
+### Notes
+
+- **Baseline diff is exactly three things**: `NonProfit → NGO`, `pricing`'s
+  `offers` becoming an array, and `embed`'s rebuilt RDFa carriers moving to the
+  end of the markup. The other eleven runes reproduce byte-for-byte, which is
+  the evidence the applier is faithful.
+- `timeline-entry` maps `date → description`. That is a stretch — `ListItem` has
+  no date property — but it is what shipped, and changing the claim was not this
+  item's job.
+- The corrected enum fails loudly: `type="NonProfit"` no longer passes Markdoc
+  validation rather than silently publishing an unresolvable type.
 
 {% /work %}

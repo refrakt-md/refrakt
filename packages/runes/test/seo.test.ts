@@ -56,11 +56,13 @@ Run npm install.
 		const bc = result.jsonLd[0] as any;
 		expect(bc['@type']).toBe('BreadcrumbList');
 		expect(bc.itemListElement).toHaveLength(3);
-		expect(bc.itemListElement[0].position).toBe(1);
+		// Positions are strings since WORK-571 — generated as `String(index + 1)`
+		// so the RDFa attribute and the JSON-LD agree (SPEC-130 D8).
+		expect(bc.itemListElement[0].position).toBe('1');
 		expect(bc.itemListElement[0].name).toBe('Home');
 		expect(bc.itemListElement[0].item).toBe('/');
-		expect(bc.itemListElement[1].position).toBe(2);
-		expect(bc.itemListElement[2].position).toBe(3);
+		expect(bc.itemListElement[1].position).toBe('2');
+		expect(bc.itemListElement[2].position).toBe('3');
 	});
 
 	it('should extract VideoObject from embed', () => {

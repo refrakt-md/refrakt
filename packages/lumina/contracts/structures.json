@@ -1333,6 +1333,40 @@
 					"prop": "--separator",
 					"template": "\"{}\""
 				}
+			},
+			"schemaOrg": {
+				"type": "BreadcrumbList",
+				"properties": [
+					{
+						"source": "name",
+						"property": "name",
+						"kind": "property",
+						"entity": "breadcrumb-item"
+					},
+					{
+						"source": "url",
+						"property": "item",
+						"kind": "property",
+						"entity": "breadcrumb-item"
+					},
+					{
+						"source": "(index)",
+						"property": "position",
+						"kind": "generated",
+						"entity": "breadcrumb-item"
+					}
+				],
+				"entities": [],
+				"children": [
+					{
+						"rune": "breadcrumb-item",
+						"type": "ListItem",
+						"property": "itemListElement"
+					}
+				],
+				"lists": [
+					"itemListElement"
+				]
 			}
 		},
 		"BreadcrumbItem": {
@@ -6348,6 +6382,28 @@
 					"selector": ".rf-timeline__image",
 					"source": "autoLabel"
 				}
+			},
+			"schemaOrg": {
+				"type": "ItemList",
+				"properties": [
+					{
+						"source": "(index)",
+						"property": "position",
+						"kind": "generated",
+						"entity": "timeline-entry"
+					}
+				],
+				"entities": [],
+				"children": [
+					{
+						"rune": "timeline-entry",
+						"type": "ListItem",
+						"property": "itemListElement"
+					}
+				],
+				"lists": [
+					"itemListElement"
+				]
 			}
 		},
 		"TimelineEntry": {

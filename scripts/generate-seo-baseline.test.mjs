@@ -249,10 +249,12 @@ describe('against the real corpus', () => {
 		// consumer has to handle both. Each pair diverges until the rune migrates
 		// and converges after — so a pair moving from `pending` to `declared` is
 		// what landing D6 for that rune looks like.
-		const declared = [['pricing.single', 'pricing.tiers', 'offers']];
-		const pending = [
+		const declared = [
+			['pricing.single', 'pricing.tiers', 'offers'],
 			['breadcrumb.single', 'breadcrumb', 'itemListElement'],
 			['timeline.single', 'timeline.entries', 'itemListElement'],
+		];
+		const pending = [
 			['playlist.single', 'playlist.album', 'track'],
 			['accordion.single', 'accordion', 'mainEntity'],
 			['howto.single', 'howto', 'step'],
