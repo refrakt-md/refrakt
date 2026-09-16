@@ -14,7 +14,8 @@ import {
 	schemaBasePresets,
 } from './attribute-presets.js';
 import { AXIS_ATTRIBUTES } from './universal-attributes.js';
-import { schemaContentModels } from './lib/index.js';
+import { schemaContentModels, schemaTables } from './lib/index.js';
+import { describeSchemaRow, bySchemaProperty } from './schema-row.js';
 import { describeSchemaUniversals } from './schema-universals.js';
 
 // ---------------------------------------------------------------------------
@@ -646,12 +647,33 @@ export interface SerializedAttribute {
 	description?: string;
 }
 
+/** A rune's structured-data claims, ordered by schema.org property. */
+export interface SerializedSchemaOrg {
+	type?: string;
+	/** The attribute a multi-row table selects on. */
+	by?: string;
+	/** Every schema.org property, with the source name that supplies it. */
+	properties: Array<{ property: string; source: string; kind: string; entity?: string }>;
+	entities: Array<{ name: string; type: string; property: string }>;
+	children: Array<{ rune: string; type: string; property: string }>;
+	lists: string[];
+	/** Types this rune can emit, when the table selects a row by attribute. */
+	types: string[];
+}
+
 export interface SerializedRune {
 	name: string;
 	plugin: string;
 	aliases: string[];
 	description: string;
 	authoringHints?: string;
+	/**
+	 * What this rune publishes as structured data — SPEC-130 / WORK-566.
+	 *
+	 * Nothing validates it against schema.org: refrakt ships no ontology (D5).
+	 * Documenting it *is* the control, which is why it is here.
+	 */
+	schemaOrg?: SerializedSchemaOrg;
 	attributes: {
 		own: Record<string, SerializedAttribute>;
 		base?: { name: string; description: string; attributes: Record<string, SerializedAttribute> };
@@ -698,6 +720,7 @@ function toSerializedAttribute(attr: {
 }
 
 /** Serialize a hydrated RuneInfo into the stable JSON shape used by the reference command. */
+
 export function serializeRune(info: RuneInfo, pluginName?: string): SerializedRune {
 	const attrs = info.schema.attributes ?? {};
 	const presetAttrs = info.basePreset ? new Set(info.basePreset.attributes) : undefined;
@@ -729,6 +752,38 @@ export function serializeRune(info: RuneInfo, pluginName?: string): SerializedRu
 	// Fold the universal names through the axis map, so the available half is
 	// shaped like `universalUnavailable` rather than being a flat list the
 	// consumer has to re-group.
+	// WORK-566 — the rune's structured data, ordered by schema.org *property*
+	// rather than by authoring order. The review question is "what does this rune
+	// claim about its content", which is answered property-first; the authoring
+	// view is source-first, and the two need not agree.
+	const table = schemaTables.get(info.schema as Schema);
+	const described = table ? describeSchemaRow(table) : undefined;
+	const schemaOrg: SerializedSchemaOrg | undefined = described
+		? {
+				...(described.type ? { type: described.type } : {}),
+				...(described.by ? { by: described.by } : {}),
+				properties: bySchemaProperty(described.properties).map((p) => ({
+					property: p.property,
+					source: p.source,
+					kind: p.kind,
+					...(p.entity ? { entity: p.entity } : {}),
+				})),
+				entities: described.entities,
+				children: described.children,
+				lists: described.lists,
+				// A `by:` table publishes several types depending on an attribute, so
+				// list them all: a reader wants "what can this rune claim", not just
+				// what the fallback row claims.
+				types: [
+					...new Set(
+						[table?.fallback ?? table, ...Object.values(table?.rows ?? {})]
+							.map((r) => r?.type)
+							.filter((t): t is string => Boolean(t)),
+					),
+				].sort(),
+			}
+		: undefined;
+
 	const universalAvailable: SerializedRune['attributes']['universalAvailable'] = [];
 	for (const [axis, names] of Object.entries(AXIS_ATTRIBUTES)) {
 		const carried: Record<string, SerializedAttribute> = {};
@@ -762,6 +817,7 @@ export function serializeRune(info: RuneInfo, pluginName?: string): SerializedRu
 		},
 		...(info.contentModel ? { contentModel: info.contentModel } : {}),
 		...(info.example ? { example: info.example } : {}),
+		...(schemaOrg ? { schemaOrg } : {}),
 	};
 }
 

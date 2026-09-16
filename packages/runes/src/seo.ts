@@ -117,6 +117,20 @@ function walkForTypeof(
 		for (const child of node.children) {
 			walkForTypeof(child as RenderableTreeNodes, obj, topLevel);
 		}
+
+		// SPEC-130 D6 / WORK-565 — properties a rune's schema table declares a
+		// list always serialise as an array.
+		//
+		// `appendToProperty` stores the first value as a scalar and only promotes
+		// on the second, so a one-track playlist emitted `"track": {…}` and a
+		// two-track one `"track": [{…}]` — the *shape* of the output varying with
+		// the amount of content, which every consumer then has to handle twice.
+		//
+		// **After the recursion, not before it.** Nested children are appended to
+		// `obj` by the walk above, so running this first would find the property
+		// absent and promote nothing — which is exactly how it failed the first
+		// time it was written.
+		forceDeclaredLists(node, obj);
 	} else {
 		// Pass through — look deeper for typeof nodes
 		for (const child of node.children) {
@@ -167,6 +181,37 @@ function extractPropertyValue(tag: Tag): string | number | undefined {
 	}
 	// Everything else: text content
 	return textContent(tag) || undefined;
+}
+
+/**
+ * The attribute a schema table's `lists:` declaration travels on.
+ *
+ * A `data-*` attribute rather than a side channel because `collectJsonLd` reads
+ * the transformed tree and nothing else — the same reason the whole mechanism
+ * runs at transform time. It sits beside `data-rune-fields`, which already
+ * carries a JSON blob on the rune root for the same kind of reason.
+ */
+export const SCHEMA_LISTS_ATTR = 'data-schema-lists';
+
+/** Promote every property the node declares a list to an array, in place. */
+function forceDeclaredLists(node: Tag, obj: Record<string, any>): void {
+	const raw = node.attributes?.[SCHEMA_LISTS_ATTR];
+	if (typeof raw !== 'string') return;
+	let names: unknown;
+	try {
+		names = JSON.parse(raw);
+	} catch {
+		return;
+	}
+	if (!Array.isArray(names)) return;
+	for (const name of names) {
+		if (typeof name !== 'string') continue;
+		// Declared a list, so an absent value is an empty collection rather than a
+		// missing one — but emitting `[]` would assert "this has no tracks", which
+		// is not the same claim as saying nothing. Only promote what is present.
+		if (obj[name] === undefined) continue;
+		if (!Array.isArray(obj[name])) obj[name] = [obj[name]];
+	}
 }
 
 /** Append a value to an object property, creating arrays for duplicates */

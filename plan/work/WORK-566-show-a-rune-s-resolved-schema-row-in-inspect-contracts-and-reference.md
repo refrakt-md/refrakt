@@ -1,4 +1,4 @@
-{% work id="WORK-566" status="ready" priority="high" complexity="moderate" source="SPEC-130" tags="cli,tooling,schema-org,contracts" milestone="v0.35.0" %}
+{% work id="WORK-566" status="done" priority="high" complexity="moderate" source="SPEC-130" tags="cli,tooling,schema-org,contracts" milestone="v0.35.0" pr="refrakt-md/refrakt#609" %}
 
 # Show a rune's resolved schema row in inspect, contracts and reference
 
@@ -29,15 +29,15 @@ first-party code that had been reviewed.
 
 ## Acceptance Criteria
 
-- [ ] `refrakt inspect <rune>` shows the resolved schema row — type, property mapping, nested entities, child mappings — the way it already shows BEM classes and data attributes
-- [ ] `--json` carries the same, so it is machine-readable
-- [ ] `inspect --audit` reports a table naming a source the rune does not emit, alongside the CSS coverage it already audits
-- [ ] The audit covers plugin runes, not just core (D7)
-- [ ] `refrakt contracts` describes each rune's schema.org output, closing the gap between what `contracts` claims to cover and what it does
-- [ ] `contracts --check` catches config-to-contract drift on the schema channel, as it does for structure
-- [ ] `refrakt reference` documents a rune's structured data, and can order the resolved table by schema property regardless of authoring order — the review view need not match the authoring view
-- [ ] `defineRune({ schemaOrgType })` is deleted or fed from the table, so the type is declared once
-- [ ] Documentation says explicitly that these views are the review mechanism, and that no validation against schema.org exists (D5)
+- [x] `refrakt inspect <rune>` shows the resolved schema row — type, property mapping, nested entities, child mappings — the way it already shows BEM classes and data attributes
+- [x] `--json` carries the same, so it is machine-readable
+- [x] `inspect --audit` reports a table naming a source the rune does not emit, alongside the CSS coverage it already audits
+- [x] The audit covers plugin runes, not just core (D7)
+- [x] `refrakt contracts` describes each rune's schema.org output, closing the gap between what `contracts` claims to cover and what it does
+- [x] `contracts --check` catches config-to-contract drift on the schema channel, as it does for structure
+- [x] `refrakt reference` documents a rune's structured data, and can order the resolved table by schema property regardless of authoring order — the review view need not match the authoring view
+- [x] `defineRune({ schemaOrgType })` is deleted or fed from the table, so the type is declared once
+- [x] Documentation says explicitly that these views are the review mechanism, and that no validation against schema.org exists (D5)
 
 ## Approach
 
@@ -74,5 +74,83 @@ mechanically checkable. Ship it here, so Groups A–C land against it.
 - {% ref "WORK-552" /%} — why `Accordion: 'FAQPage'` is already stale
 - `packages/runes/src/rune.ts:59` — the write-only `schemaOrgType`
 - `packages/cli/src/commands/` — `inspect`, `contracts`, `reference`
+
+## Resolution
+
+Completed: 2026-09-16
+
+Branch: `claude/v0.35-parallel-feasibility-eia5le`
+
+### What was done
+
+- `packages/runes/src/schema-row.ts` — `describeSchemaRow`, `bySchemaProperty`,
+  `collectSchemaRows`, `tableFor`. Lives beside the tables because three
+  consumers need the same answer.
+- `packages/runes/src/lib/index.ts` — `schemaTables`, a `WeakMap` keyed on the
+  Markdoc schema, alongside `schemaContentModels` and `schemaRuneStructures`.
+- `packages/cli/src/lib/schema-row.ts` — `auditSchemaSources`, the half that
+  needs a rendered tree.
+- `packages/cli/src/commands/inspect.ts` — a `Structured Data` section, text and
+  `--json`.
+- `packages/transform/src/contracts.ts` — `schemaOrg` on `RuneContract`, and
+  `generateStructureContract(config, { schemaRows })`.
+- `packages/runes/src/reference.ts` — `schemaOrg`, ordered by schema.org
+  property rather than authoring order.
+- `packages/runes/src/rune.ts` + `index.ts` — `defineRune({ schemaOrgType })`
+  deleted, with its nine stale catalog entries.
+- `packages/cli/test/schema-row.test.ts` — 11 tests.
+- `CLAUDE.md` — the review mechanism, and D5 stated plainly.
+
+### The gap this closes
+
+`schemaTables` is the point. Config-derived tooling could not see anything a
+rune declares in its `transform()` — the same gap that let four dead CSS rules
+survive years of review (WORK-564), that kept `.rf-lore__title` out of the CSS
+coverage set, and that made regenerating the structure contract show none of
+WORK-561's new `data-name`s. Recording the table where tooling can reach it is
+what makes D5's "visibility replaces validation" possible at all.
+
+### Three bugs, each of which would have defeated the item
+
+- **The contracts join silently covered no plugin rune.** My first version keyed
+  on `rune.typeName ?? rune.name`; `loadPlugin` never sets `typeName`, and the
+  contract is keyed PascalCase, so the lowercase fallback matched nothing. It
+  reported **0 runes with a schema row** while both tables were correctly
+  recorded — skipping exactly the 67-of-95 population D7 is about. Now joined on
+  `dataRune`, the rune's own name on both sides.
+- **The audit's first version was a false positive.** It flagged
+  `testimonial`'s `ratingValue <- rating` as not emitted, when `rating` is a
+  declared attribute the canonical fixture simply does not set. Calling a correct
+  table broken because the input was minimal is worse than not checking. A source
+  now resolves against an emitted node, a field-bag entry **or** a declared
+  attribute, which leaves the failure actually worth catching: a typo'd or
+  renamed source that resolves to nothing ever. Verified both directions by
+  renaming `headline` to `headlinee` in `event`'s table and watching it fire.
+- **Enriching the contract after generation forked the implementation.**
+  `packages/lumina/test/contracts.test.ts` regenerates and compares byte-for-byte,
+  and it was right to fail: the CLI's output and the test's regeneration came
+  from different paths. The rows now go *into* `generateStructureContract`, so
+  the artifact and its guard are one call with one input. That is also what
+  forced the describing half out of the CLI and into `runes`, where it belonged.
+
+### Notes
+
+- The contract is committed in **two** places that must stay in lock-step —
+  `contracts/structures.json` and `packages/lumina/contracts/structures.json`.
+  Both regenerated; a test guards both.
+- `schemaOrg` is declared on `RuneContract` rather than cast in: it is genuinely
+  part of the contract's shape now. Typed loosely on purpose — the row's shape is
+  owned by `@refrakt-md/runes`, and restating it in `transform` would be a second
+  definition to drift.
+- The rows are passed *into* the generator rather than read there, because
+  `runes` depends on `transform` and reaching the tables would invert that.
+- Deleting `defineRune({ schemaOrgType })` broke no build, confirming the item's
+  claim that it was write-only — nine entries against thirty emitting runes.
+
+### Verification
+
+`npm test` — 370 files, 4538 tests, all passing. `npm run format:check` clean
+(run on its own, exit code read directly). `npm run seo:baseline:check`
+byte-identical — this item changes no emission.
 
 {% /work %}

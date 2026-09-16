@@ -138,6 +138,66 @@ export const gameItem = createContentModelSchema({
 });
 ```
 
+## Declaring schema.org output
+
+A rune that publishes structured data declares it as a **table**, beside its other self-declarations. The table maps names in the rune's flat namespace to schema.org properties; an applier realises it at transform time.
+
+```typescript
+export const reviewSchema = {
+  type: 'Review',
+  properties: { quote: 'reviewBody' },
+  entities: {
+    author: {
+      type: 'Person',
+      property: 'author',
+      properties: { 'author-name': 'name' },
+    },
+  },
+} as const;
+
+export const review = createContentModelSchema({
+  sections: reviewSections,
+  schema: reviewSchema,   // ← beside its siblings
+  attributes: { ... },
+  transform(resolved, attrs, config) { ... },
+});
+```
+
+Your transform stops hand-writing `schemaOrgType`, the `schema:` map, and any nested entity spans. It emits the content; the table says what that content means.
+
+### The keys are names, not attributes
+
+A key is a name in the rune's flat namespace — whatever you called the node in `properties` or `refs`. The applier resolves it whether it surfaced as `data-field` or `data-name`, and never branches on which. **So moving a node between the two maps never breaks a table.**
+
+Sources resolve three ways, in order: a node that survives into the output is stamped in place; a value-only source is rebuilt from the field bag; and a nested entity is synthesised from either. A source that resolves to nothing emits nothing — an omitted optional is not an error.
+
+### What the table can express
+
+| Field | Purpose |
+|---|---|
+| `type` | The schema.org type this rune emits. |
+| `properties` | Source name → schema.org property. |
+| `text` | A property taking a node's own content. The applier emits the RDFa wrapper; never hand-write one. |
+| `entities` | A nested entity: its own `type`, the `property` that holds it, its own map. |
+| `children` | Per-child-rune type and property remapping. |
+| `generated` | A value that exists nowhere in the content. `index` is the only generator. |
+| `lists` | Properties that always serialise as an array, however many items. |
+| `by` / `rows` / `fallback` | Select a row by the value of a **declared attribute**. |
+
+Three rules the table enforces, because getting them wrong fails silently:
+
+- **A nested entity must declare the `property` that holds it.** `collectJsonLd` nests a typed node only when the same node carries both `typeof` and `property` — so a type without a property publishes a detached top-level entity related to nothing.
+- **`by` names an attribute your rune declares**, not a modifier. Modifiers are read by the engine, which has no part in this path.
+- **An entity resolving to a bare `@type` emits nothing.** If you want an entity, give it at least one property.
+
+Declare `lists` for any collection. Without it a one-item collection serialises as an object and a two-item one as an array, so every consumer has to handle both shapes.
+
+### It is curation, not validation
+
+Nothing checks your mapping against schema.org — refrakt ships no ontology. The table is human judgement recorded in config, and should be reviewed as such. What *is* checked is the structural consistency above, at build time.
+
+`refrakt inspect <rune>` prints a rune's resolved schema row, which is the review surface.
+
 ## Exporting typed component interfaces
 
 Plugins should export generic TypeScript interfaces for each rune that uses `createComponentRenderable`. These interfaces describe the component override contract — scalar property types and named slot names — parameterized over a framework-specific renderable type.

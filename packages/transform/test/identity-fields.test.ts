@@ -40,6 +40,10 @@ describe('the identity rule is expressed once', () => {
 		// `universalAttributes` joined in v0.32.0, when Phase 3 made it decide what
 		// an author may write on the rune at all, and `provides` with it, when
 		// Phase 4 moved the `reading`/`dropcap` gate onto a declared capability.
+		// `schema` joined in v0.35.0 (SPEC-130 / WORK-565) — arguably the strongest
+		// case in the list: a theme that could restate a rune's schema.org type
+		// would change what a site asserts about its own content by changing how it
+		// looks.
 		expect([...IDENTITY_FIELDS]).toEqual([
 			'block',
 			'modifiers',
@@ -48,6 +52,7 @@ describe('the identity rule is expressed once', () => {
 			'frameTarget',
 			'universalAttributes',
 			'provides',
+			'schema',
 		]);
 		expect([...VARIANT_DELTA_RESERVED_FIELDS]).toEqual([...IDENTITY_FIELDS, 'variants']);
 	});

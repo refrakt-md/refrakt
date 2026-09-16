@@ -17,9 +17,36 @@ const variantType = ['card', 'inline', 'quote'] as const;
 export const testimonialSections = { avatar: 'media' } as const;
 export const testimonialMediaSlots = { avatar: 'portrait' } as const;
 
+// SPEC-130 / WORK-565 — the rune's schema.org mapping, as data. Beside
+// `sections` and `mediaSlots` because it is the same kind of fact: what this
+// rune *is*, not how a theme renders it (ADR-028).
+//
+// The two nested entities were hand-built spans below. `entities:` carries them
+// declaratively, and the applier resolves each source by name — `quote` and
+// `author-name` survive in the output as refs, while `rating`'s meta is dropped
+// by `createComponentRenderable` as pure data and is rebuilt from the field bag.
+// That third case is what settled the mechanism's shape.
+export const testimonialSchema = {
+	type: 'Review',
+	properties: { quote: 'reviewBody' },
+	entities: {
+		author: {
+			type: 'Person',
+			property: 'author',
+			properties: { 'author-name': 'name', 'author-role': 'jobTitle' },
+		},
+		rating: {
+			type: 'Rating',
+			property: 'reviewRating',
+			properties: { rating: 'ratingValue' },
+		},
+	},
+} as const;
+
 export const testimonial = createContentModelSchema({
 	sections: testimonialSections,
 	mediaSlots: testimonialMediaSlots,
+	schema: testimonialSchema,
 	attributes: {
 		rating: {
 			type: Number,
@@ -106,35 +133,8 @@ export const testimonial = createContentModelSchema({
 		resultChildren.push(variantMeta);
 		if (avatarTag) resultChildren.push(avatarTag);
 
-		// Schema.org nested entities for Person author and Rating
-		if (authorNameTag) {
-			const authorMetas: any[] = [
-				new Tag('meta', {
-					property: 'name',
-					content: authorNameTag.children.filter((c: any) => typeof c === 'string').join(''),
-				}),
-			];
-			if (authorRoleTag) {
-				authorMetas.push(
-					new Tag('meta', {
-						property: 'jobTitle',
-						content: authorRoleTag.children.filter((c: any) => typeof c === 'string').join(''),
-					}),
-				);
-			}
-			resultChildren.push(new Tag('span', { typeof: 'Person', property: 'author' }, authorMetas));
-		}
-		if (rating !== undefined) {
-			resultChildren.push(
-				new Tag('span', { typeof: 'Rating', property: 'reviewRating' }, [
-					new Tag('meta', { property: 'ratingValue', content: rating }),
-				]),
-			);
-		}
-
 		return createComponentRenderable({
 			rune: 'testimonial',
-			schemaOrgType: 'Review',
 			tag: 'article',
 			properties: {
 				rating: ratingMeta,
@@ -144,9 +144,6 @@ export const testimonial = createContentModelSchema({
 				'author-name': authorNameTag,
 				'author-role': authorRoleTag,
 				avatar: avatarTag,
-			},
-			schema: {
-				reviewBody: quoteTag,
 			},
 			children: resultChildren,
 		});
