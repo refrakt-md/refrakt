@@ -1,4 +1,4 @@
-{% work id="WORK-571" status="in-progress" priority="medium" complexity="moderate" source="SPEC-130" tags="runes,schema-org,seo,pipeline" milestone="v0.35.0" %}
+{% work id="WORK-571" status="in-progress" priority="medium" complexity="moderate" source="SPEC-130" tags="runes,schema-org,seo,pipeline" milestone="v0.35.0" pr="refrakt-md/refrakt#610" %}
 
 # Synthesised entities and index-derived values
 
@@ -97,5 +97,61 @@ the pair together.
 - {% ref "SPEC-130" /%} — "Prototype: the `entities:` shape, measured", Group C shapes 2 and 3, D8
 - {% ref "WORK-563" /%} — the harvest move that makes the `postProcess` hook's output reachable
 - `packages/runes/src/config.ts` — `buildAutoBreadcrumb`
+
+## Resolution
+
+Completed: 2026-09-16
+
+Branch: `claude/v0.35-parallel-feasibility-eia5le`
+
+### What was done
+
+**Synthesised entities** — `testimonial` and `event` were already converted with
+the mechanism in WORK-565, so this item verified them rather than moving them.
+Both tables are in place, `event`'s `location` resolves by name, and both
+reproduce the baseline.
+
+`testimonial`'s `jobTitle: ", CTO at Acme"` comma defect is **preserved
+deliberately**, filed as BUG-019. The fault is in the attribution parser, not
+the mapping — `testimonialSchema` reads `author-role` faithfully; the text handed
+to it is what is wrong — and fixing it changes rendered HTML on every comma-form
+testimonial. That is a separate user-visible change and should not ride inside a
+migration whose entire evidence is "the baseline diff shows only what was
+intended".
+
+**Index-derived values** — `breadcrumbSchema` and `timelineSchema` declare
+`generated: { position: 'index' }`, replacing the loops that pushed a
+`<meta property="position">` into each child. `breadcrumb` and `breadcrumb-item`
+moved together, which also closed WORK-568's fourteenth rune: a position exists
+nowhere in the content, and only the parent knows a child's index.
+
+**D8** — `buildAutoBreadcrumb` calls `applySchemaTable` directly. It runs from a
+`postProcess` hook, so `createContentModelSchema`'s wrapper cannot reach it. The
+payoff beyond exceptionlessness is that both breadcrumb paths now publish from
+the *same* table instead of a declaration plus a hand-written copy of it.
+
+**The closing condition became a test.**
+`packages/runes/test/imperative-schema-migration.test.ts` reads every rune source
+in the catalog and counts the three imperative spellings (`schemaOrgType:`, a
+`schema:`/`typeof:` map passed to `createComponentRenderable`, and
+`attributes.typeof =`). `PENDING` names the four files WORK-569 and WORK-570 own.
+It fails both ways — a migrated rune left in the list fails as loudly as a
+reintroduced imperative form — and it self-tests its matcher, since a guard whose
+regex silently stops matching passes forever.
+
+### Notes
+
+- **`position` is now a string** in the published JSON-LD, which is the point:
+  `String(index + 1)` is what the RDFa attribute carries, so the two channels
+  finally agree. Four tests pinned the number and were updated with the reason.
+- `itemListElement` is a declared list, so `breadcrumb.single`, `timeline.single`
+  and the truncated trail in the BUG-018 test emit arrays. Those three fixtures
+  moved from `pending` to `declared` in the baseline's D6 guard.
+- Baseline diff is exactly those two shapes and nothing else.
+- The last acceptance criterion — no rune anywhere passes `schemaOrgType` or a
+  `schema:` map, and no transform mutates `attributes.typeof` — is the
+  milestone's closing condition and stays open until WORK-569 and WORK-570 land.
+  The guard above is what will confirm it, mechanically, rather than by
+  inspection.
 
 {% /work %}

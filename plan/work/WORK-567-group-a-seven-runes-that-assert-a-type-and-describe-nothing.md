@@ -1,4 +1,4 @@
-{% work id="WORK-567" status="done" priority="medium" complexity="moderate" source="SPEC-130" tags="runes,schema-org,seo" milestone="v0.35.0" %}
+{% work id="WORK-567" status="done" priority="medium" complexity="moderate" source="SPEC-130" tags="runes,schema-org,seo" milestone="v0.35.0" pr="refrakt-md/refrakt#610" %}
 
 # Group A — seven runes that assert a type and describe nothing
 

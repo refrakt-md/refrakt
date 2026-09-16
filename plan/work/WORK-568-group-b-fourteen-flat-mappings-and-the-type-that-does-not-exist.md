@@ -1,4 +1,4 @@
-{% work id="WORK-568" status="done" priority="medium" complexity="moderate" source="SPEC-130" tags="runes,schema-org,seo,plugins" milestone="v0.35.0" %}
+{% work id="WORK-568" status="done" priority="medium" complexity="moderate" source="SPEC-130" tags="runes,schema-org,seo,plugins" milestone="v0.35.0" pr="refrakt-md/refrakt#610" %}
 
 # Group B — fourteen flat mappings, and the type that does not exist
 
