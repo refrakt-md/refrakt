@@ -306,6 +306,9 @@ export const playlist = createContentModelSchema({
 				...sectionProps,
 				...(bodyDiv ? { body: bodyDiv } : {}),
 				media: mediaDiv,
+				// WORK-561 — see the note on `recipe`: `image` is taken by
+				// `sectionProps`, so the media slot's image is `mediaImage`.
+				...(seoImage ? { mediaImage: seoImage } : {}),
 			},
 			schema: {
 				name: sectionProps.headline,

@@ -149,6 +149,16 @@ export const embed = createContentModelSchema({
 			tag: 'figure',
 			properties: {
 				provider: providerMeta,
+				// WORK-561 — these three exist only to carry a string into the schema
+				// channel, so under WORK-560's rule they are values and belong here.
+				// They stay in `schema:` as well: a meta in both maps is an SEO
+				// carrier, so it keeps its `property=`, is not given `data-field`, and
+				// is not dropped from the children — the bag entry is purely
+				// additional. That entry is what lets WORK-565's applier find them by
+				// name once runes stop declaring `schema:` themselves.
+				title: titleMeta,
+				url: urlMeta,
+				embedUrl: embedUrlMeta,
 			},
 			refs: {
 				...(wrapperDiv ? { wrapper: wrapperDiv } : {}),
