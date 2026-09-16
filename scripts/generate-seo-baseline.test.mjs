@@ -5,6 +5,7 @@ import {
 	REGENERATE_COMMAND,
 	EMITTING_RUNES,
 	COVERED_BY_PARENT,
+	DELIBERATELY_SILENT,
 	allEmittingRunes,
 	groupOf,
 	pluginsForSite,
@@ -189,26 +190,37 @@ describe('against the real corpus', () => {
 		}
 	});
 
-	it('emits a bare entity for exactly the seven Group A runes, and nothing else', () => {
-		// This is the guard on the *fixtures*, not on the runes. A fixture that
-		// uses the wrong content model — headings where the rune wants a bare
-		// list, say — produces a bare entity and a baseline that records nothing.
-		// SPEC-130 measured exactly seven such runes; any other bare entity here
-		// is a broken fixture, and any missing one would mean Group A changed.
+	it('emits no bare entity anywhere (D4)', () => {
+		// Was "a bare entity for exactly the seven Group A runes", which is what
+		// the corpus measured before WORK-567 applied D4. It is now the inverse,
+		// and a stronger guard: `collectJsonLd` drops an entity that resolves to a
+		// bare `@type`, so a bare one appearing here would mean the mechanism
+		// stopped working — or, as before, that a fixture uses the wrong content
+		// model and the rune found nothing to map.
 		const bare = [];
 		for (const f of artifact.fixtures) {
 			for (const entity of f.jsonLd) {
 				const props = Object.keys(entity).filter((k) => k !== '@type' && k !== '@context');
-				if (props.length === 0) bare.push(f.rune);
+				if (props.length === 0) bare.push(`${f.fixture} (${entity['@type']})`);
 			}
 		}
-		expect([...new Set(bare)].sort()).toEqual([...EMITTING_RUNES.A].sort());
+		expect(bare).toEqual([]);
 	});
 
-	it('emits at least one entity per fixture', () => {
+	it('emits at least one entity per fixture, bar the runes that say nothing on purpose', () => {
 		for (const f of artifact.fixtures) {
+			if (DELIBERATELY_SILENT.includes(f.rune)) {
+				expect(f.jsonLd, `${f.fixture} should publish nothing`).toEqual([]);
+				continue;
+			}
 			expect(f.jsonLd.length, `${f.fixture} emitted no entity`).toBeGreaterThan(0);
 		}
+	});
+
+	it('keeps Group A intact as a roster even though six of it went quiet', () => {
+		// The group is SPEC-130's unit of migration, not a claim about output.
+		// Losing a name from it would lose the fixture that records the silence.
+		expect([...EMITTING_RUNES.A].sort()).toEqual([...DELIBERATELY_SILENT, 'symbol'].sort());
 	});
 
 	it('records BUG-013 as it stands, rather than as it should be', () => {
@@ -257,7 +269,15 @@ describe('against the real corpus', () => {
 	it('captures the rendered RDFa alongside the JSON-LD, for WORK-563 to compare', () => {
 		for (const f of artifact.fixtures) {
 			expect(f.rendered.jsonLd, `${f.fixture} has no post-engine JSON-LD`).toBeTruthy();
-			expect(f.rendered.annotations.length, `${f.fixture} rendered no RDFa`).toBeGreaterThan(0);
+			// A rune that publishes nothing stamps nothing: dropping the type also
+			// removed the `typeof` from the HTML, so the RDFa channel goes quiet
+			// with the JSON-LD rather than keeping a bare assertion in the markup.
+			const expected = DELIBERATELY_SILENT.includes(f.rune) ? 0 : 1;
+			expect(
+				f.rendered.annotations.length,
+				`${f.fixture} rendered ${f.rendered.annotations.length} RDFa nodes`,
+			).toBeGreaterThanOrEqual(expected);
+			if (expected === 0) expect(f.rendered.annotations).toEqual([]);
 		}
 	});
 

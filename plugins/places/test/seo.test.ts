@@ -42,15 +42,16 @@ A three-day conference for developers and designers.
 	});
 });
 
-describe('SEO: Place from map', () => {
-	it('should extract Place from map rune', () => {
+describe('SEO: map publishes nothing', () => {
+	it('no longer claims the map is itself a Place (WORK-567)', () => {
+		// The rune used to type its root `Place` and give it no name, address or
+		// geo — and even filled in, that would be the wrong claim: a map showing
+		// the Eiffel Tower is not the Eiffel Tower. The coordinates and the name
+		// below belong to the pin, which is where a `Place` can honestly live.
 		const result = seo(`{% map zoom="13" %}
 - **Eiffel Tower** - *Iconic iron lattice tower* - 48.8566, 2.3522
 {% /map %}`);
 
-		expect(result.jsonLd).toHaveLength(1);
-		const place = result.jsonLd[0] as any;
-		expect(place['@context']).toBe('https://schema.org');
-		expect(place['@type']).toBe('Place');
+		expect(result.jsonLd).toEqual([]);
 	});
 });

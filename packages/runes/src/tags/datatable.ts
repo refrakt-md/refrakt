@@ -69,7 +69,12 @@ export const datatable = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'data-table',
-			schemaOrgType: 'Dataset',
+			// SPEC-130 D4 / WORK-567 — no `Dataset`. A `Dataset` is identified by
+			// `name` and made useful by `distribution`, and this rune has neither
+			// to give: it has no headline slot at all, and its five properties
+			// (`sortable`, `searchable`, `pageSize`, `defaultSort`) are all
+			// interaction config, describing how the table behaves rather than
+			// what it contains.
 			tag: 'div',
 			properties: {
 				sortable: sortableMeta,

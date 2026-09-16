@@ -457,7 +457,13 @@ export const budget = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'budget',
-			schemaOrgType: 'ItemList',
+			// SPEC-130 D4 / WORK-567 — no `ItemList`. The rune does carry real
+			// data (`budget-category` has a label and a subtotal, each line item a
+			// description and an amount), but `itemListElement` needs those
+			// children typed, and a cost breakdown is not a ranked list in the
+			// first place — the shapes that fit are `MonetaryAmount`-flavoured.
+			// Mapping only `name` from the headline would leave an `ItemList` that
+			// still claims "list" and lists nothing.
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

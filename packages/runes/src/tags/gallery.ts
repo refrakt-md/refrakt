@@ -70,7 +70,14 @@ export const gallery = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'gallery',
-			schemaOrgType: 'ImageGallery',
+			// SPEC-130 D4 / WORK-567 — no `ImageGallery`. The only honest mapping
+			// is `image` (or `associatedMedia`) naming each picture, and the
+			// pictures are plain markdown images wrapped as `data-name="item"`
+			// figures: typing each one as an `ImageObject` with a `contentUrl` is
+			// a retype-and-wrap job, not a flat mapping. `caption` would give the
+			// gallery a `name`, but a named collection that lists none of its
+			// contents is the same empty claim with a label on it. The type can
+			// come back when the items can carry it.
 			tag: 'figure',
 			properties: {
 				layout: layoutMeta,

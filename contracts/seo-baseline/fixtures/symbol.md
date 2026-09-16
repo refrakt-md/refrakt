@@ -2,7 +2,10 @@
 rune: symbol
 title: API symbol
 role: canonical
-notes: Group A — emits TechArticle with no name or description, despite a full signature and prose.
+notes: >
+  Group A, resolved — the one Group A rune that kept its type, because it
+  had something to say. `name` comes from the symbol's own heading,
+  `description` from the lead paragraph (WORK-567).
 ---
 {% symbol kind="function" lang="typescript" since="1.0.0" %}
 

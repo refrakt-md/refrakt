@@ -89,7 +89,15 @@ export const blog = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'blog',
-			schemaOrgType: 'Blog',
+			// SPEC-130 D4 / WORK-567 — no `Blog`, and the reason is the one the
+			// work item asked to check for: this belongs to the page, not the
+			// rune. A `Blog` is identified by `name`, `url` and `blogPost`; the
+			// rune's own properties are query config (`folder`, `sort`, `filter`,
+			// `limit`, `layout`), and its `posts` container is empty at transform
+			// time because the cross-page pipeline fills it later. Page- and
+			// site-level schema is built in `seoToHtml`, which SPEC-130 puts
+			// explicitly out of scope — so the type is dropped here rather than
+			// kept alive by a rune-level mapping invented to justify it.
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

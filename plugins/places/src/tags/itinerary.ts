@@ -231,7 +231,12 @@ export const itinerary = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'itinerary',
-			schemaOrgType: 'ItemList',
+			// SPEC-130 D4 / WORK-567 — no `ItemList`. The days and stops carry
+			// the data that would make one worth publishing (`label`, `time`,
+			// `location`), but they reach it only once each day is a `ListItem`
+			// and each stop something like a `TouristAttraction` — per-child
+			// typing, not a flat mapping. Without `itemListElement` the type is
+			// the definitional gap rather than a thin entry.
 			tag: 'section',
 			property: 'contentSection',
 			properties: {

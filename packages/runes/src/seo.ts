@@ -103,17 +103,17 @@ function walkForTypeof(
 		// Collect property values from direct and nested children
 		collectProperties(node, obj);
 
-		if (parent && propertyValue) {
-			// Nested typed entity (e.g., Offer inside Product)
-			appendToProperty(parent, propertyValue, obj);
-		} else {
-			// Top-level entity
+		// The top-level slot is claimed *now* so the entity keeps its document
+		// position: descendants push after it during the recursion below, and a
+		// deferred push would invert parent and child in the output array.
+		const nested = Boolean(parent && propertyValue);
+		if (!nested) {
 			obj['@context'] = 'https://schema.org';
 			topLevel.push(obj);
 		}
 
 		// Recurse into children to find further top-level typeof nodes
-		// (but nested typed children with `property` are already handled above)
+		// (but nested typed children with `property` are already handled below)
 		for (const child of node.children) {
 			walkForTypeof(child as RenderableTreeNodes, obj, topLevel);
 		}
@@ -131,12 +131,40 @@ function walkForTypeof(
 		// absent and promote nothing — which is exactly how it failed the first
 		// time it was written.
 		forceDeclaredLists(node, obj);
+
+		// SPEC-130 D4 / WORK-567 — an entity with no properties is not emitted.
+		//
+		// `{"@context": …, "@type": "Dataset"}` tells a consumer nothing: it
+		// asserts that something exists and then declines to say anything about
+		// it. Seven runes published exactly that, and the value of enforcing it
+		// here rather than by convention is that it stays enforced — a future
+		// rune that declares a type and forgets the mapping loses the entity
+		// instead of quietly joining them.
+		//
+		// **After the recursion**, for the same reason `forceDeclaredLists` is:
+		// a nested child appends itself to `obj` during the walk, so an entity
+		// whose only content is a typed child is not bare, and asking earlier
+		// would say it was.
+		if (describesSomething(obj)) {
+			if (nested) appendToProperty(parent as Record<string, any>, propertyValue, obj);
+		} else if (!nested) {
+			const at = topLevel.indexOf(obj);
+			if (at >= 0) topLevel.splice(at, 1);
+		}
 	} else {
 		// Pass through — look deeper for typeof nodes
 		for (const child of node.children) {
 			walkForTypeof(child as RenderableTreeNodes, parent, topLevel);
 		}
 	}
+}
+
+/** Does this entity say anything beyond its own type? (SPEC-130 D4) */
+function describesSomething(obj: Record<string, any>): boolean {
+	for (const key of Object.keys(obj)) {
+		if (key !== '@type' && key !== '@context') return true;
+	}
+	return false;
 }
 
 /**

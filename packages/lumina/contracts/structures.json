@@ -4482,6 +4482,24 @@
 					"selector": ".rf-symbol__image",
 					"source": "autoLabel"
 				}
+			},
+			"schemaOrg": {
+				"type": "TechArticle",
+				"properties": [
+					{
+						"source": "headline",
+						"property": "name",
+						"kind": "property"
+					},
+					{
+						"source": "blurb",
+						"property": "description",
+						"kind": "property"
+					}
+				],
+				"entities": [],
+				"children": [],
+				"lists": []
 			}
 		},
 		"SymbolGroup": {

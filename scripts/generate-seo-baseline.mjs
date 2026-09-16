@@ -137,6 +137,19 @@ export const EMITTING_RUNES = {
  */
 export const COVERED_BY_PARENT = { 'breadcrumb-item': 'breadcrumb' };
 
+/**
+ * Runes that deliberately publish no structured data — SPEC-130 D4 / WORK-567.
+ *
+ * Six of Group A's seven lost their type rather than gaining a mapping: each had
+ * nothing to say beyond the assertion that it existed. They keep their fixtures,
+ * which now record an empty harvest — the point of a baseline is that a silence
+ * is a recorded silence, so a rune that starts emitting again shows up as a diff
+ * rather than as a gap nobody was watching.
+ *
+ * `symbol` is the one that stayed: it has a name and a description to give.
+ */
+export const DELIBERATELY_SILENT = ['blog', 'budget', 'datatable', 'gallery', 'itinerary', 'map'];
+
 /** Every rune in the three groups, flat. */
 export function allEmittingRunes() {
 	return [...EMITTING_RUNES.A, ...EMITTING_RUNES.B, ...EMITTING_RUNES.C];
