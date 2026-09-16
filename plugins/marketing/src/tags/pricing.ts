@@ -172,6 +172,17 @@ export const tier = createContentModelSchema({
 				description: description(children),
 				...(currencyMeta ? { currency: currencyMeta } : {}),
 				url: children.flatten().tag('a'),
+				// WORK-561 — value-only SEO carriers, addressable by name for
+				// WORK-565's applier. Both stay in `schema:`, so they keep their
+				// `property=` and are not dropped; the bag entry is additional.
+				//
+				// Deliberately *not* named `price`/`currency`: `price` is already the
+				// `<p>` ref (the rendered price, "$19") and `currency` is already the
+				// author's raw attribute. These two are the parsed numeric value and
+				// the resolved-or-inferred code — different nodes with different
+				// values, so they get their own names rather than shadowing.
+				parsedPrice: parsedPriceMeta,
+				resolvedCurrency: resolvedCurrencyMeta,
 			},
 			refs: {
 				body: body.tag('div'),

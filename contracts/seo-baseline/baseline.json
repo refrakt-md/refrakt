@@ -3044,7 +3044,9 @@
 				{
 					"@context": "https://schema.org",
 					"@type": "MusicRecording",
+					"byArtist": "Tech Weekly",
 					"datePublished": "March 2025",
+					"duration": "PT2550S",
 					"name": "Shipping Design Systems"
 				}
 			],
@@ -3053,7 +3055,9 @@
 					{
 						"@context": "https://schema.org",
 						"@type": "MusicRecording",
+						"byArtist": "Tech Weekly",
 						"datePublished": "March 2025",
+						"duration": "PT2550S",
 						"name": "Shipping Design Systems"
 					}
 				],
@@ -3064,6 +3068,16 @@
 								"element": "span",
 								"property": "name",
 								"text": "Shipping Design Systems"
+							},
+							{
+								"content": "Tech Weekly",
+								"element": "meta",
+								"property": "byArtist"
+							},
+							{
+								"content": "PT2550S",
+								"element": "meta",
+								"property": "duration"
 							},
 							{
 								"content": "March 2025",
@@ -3086,6 +3100,8 @@
 				{
 					"@context": "https://schema.org",
 					"@type": "MusicRecording",
+					"byArtist": "Radiohead",
+					"duration": "PT241S",
 					"name": "Everything in Its Right Place"
 				}
 			],
@@ -3094,6 +3110,8 @@
 					{
 						"@context": "https://schema.org",
 						"@type": "MusicRecording",
+						"byArtist": "Radiohead",
+						"duration": "PT241S",
 						"name": "Everything in Its Right Place"
 					}
 				],
@@ -3104,6 +3122,16 @@
 								"element": "span",
 								"property": "name",
 								"text": "Everything in Its Right Place"
+							},
+							{
+								"content": "Radiohead",
+								"element": "meta",
+								"property": "byArtist"
+							},
+							{
+								"content": "PT241S",
+								"element": "meta",
+								"property": "duration"
 							}
 						],
 						"element": "li",

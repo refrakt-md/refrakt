@@ -1,4 +1,4 @@
-{% work id="WORK-572" status="ready" priority="high" complexity="moderate" source="BUG-016" tags="runes,media,content-model,schema-org" milestone="v0.35.0" %}
+{% work id="WORK-572" status="done" priority="high" complexity="moderate" source="BUG-016" tags="runes,media,content-model,schema-org" milestone="v0.35.0" pr="refrakt-md/refrakt#608" %}
 
 # Accept track children in playlist
 
@@ -57,17 +57,17 @@ forms are not equivalent.
 
 ## Acceptance Criteria
 
-- [ ] `playlist`'s `tracks` field accepts `{% track %}` tags as well as a markdown list, preserving document order across both
-- [ ] Nested tracks render inside the `<ol data-name="tracks">` — no `<li>` is emitted outside a list
-- [ ] A nested track with **no** explicit `type` takes the playlist's child type; one **with** an explicit `type` keeps it
-- [ ] `track` distinguishes an absent `type` from `type="song"`; the `'song'` default becomes the standalone fallback, not a transform-time coalesce
-- [ ] A nested track inherits the playlist's `artist` the way a list item does, so the two forms agree on `byArtist`
-- [ ] The parent stamps the collection property on nested children, so no detached top-level entity is published
-- [ ] **The equivalence is asserted directly**: the same track as a list item and as a `{% track %}` child produce the same JSON-LD for the shared fields
-- [ ] Track-only fields (`url`, `position` from `number`) still come through — the fuller form may carry more, it just may not carry less
-- [ ] An explicit child type that contradicts its container (`{% track type="song" %}` in a podcast) is honoured, and the decision is written down
-- [ ] `/runes/media/track`'s claim that the composition works is true, with a worked example
-- [ ] {% ref "BUG-016" /%}'s three symptoms are each covered by a test: the stray `<li>`, the detached entity, and the docs claim
+- [x] `playlist`'s `tracks` field accepts `{% track %}` tags as well as a markdown list, preserving document order across both
+- [x] Nested tracks render inside the `<ol data-name="tracks">` — no `<li>` is emitted outside a list
+- [x] A nested track with **no** explicit `type` takes the playlist's child type; one **with** an explicit `type` keeps it
+- [x] `track` distinguishes an absent `type` from `type="song"`; the `'song'` default becomes the standalone fallback, not a transform-time coalesce
+- [x] A nested track inherits the playlist's `artist` the way a list item does, so the two forms agree on `byArtist`
+- [x] The parent stamps the collection property on nested children, so no detached top-level entity is published
+- [x] **The equivalence is asserted directly**: the same track as a list item and as a `{% track %}` child produce the same JSON-LD for the shared fields
+- [x] Track-only fields (`url`, `position` from `number`) still come through — the fuller form may carry more, it just may not carry less
+- [x] An explicit child type that contradicts its container (`{% track type="song" %}` in a podcast) is honoured, and the decision is written down
+- [x] `/runes/media/track`'s claim that the composition works is true, with a worked example
+- [x] {% ref "BUG-016" /%}'s three symptoms are each covered by a test: the stray `<li>`, the detached entity, and the docs claim
 
 ## Approach
 
@@ -122,5 +122,99 @@ Note it for {% ref "WORK-569" /%} rather than building a second mechanism now.
 - `packages/runes/src/lib/resolver.ts:88,107` — the matcher support already present
 - `plugins/media/src/tags/playlist.ts:121-155` — the single-input-shape transform
 - `plugins/media/src/tags/track.ts:37` — the default that hides the absence
+
+## Resolution
+
+Completed: 2026-09-16
+
+Branch: `claude/v0.35-parallel-feasibility-eia5le`
+
+### What was done
+
+- `plugins/media/src/tags/playlist.ts` — `tracks` matches `list|tag:track` and is
+  greedy; the transform walks the matched nodes in source order, consuming
+  `tracksData` by list length, so the two forms interleave correctly rather than
+  one block following the other. `trackItems` now points at the merged set, which
+  is what `schema: { track }` stamps `property="track"` onto. `adoptNestedTrack`
+  retypes implicit children and applies the artist default.
+- `plugins/media/src/tags/track.ts` — `explicitType` separated from the `'song'`
+  fallback; a `TYPE_IMPLICIT` marker for the parent.
+- `packages/runes/src/lib/resolver.ts` — greedy + itemModel (see below).
+- `plugins/media/test/playlist-track-children.test.ts` — 11 tests.
+- `site/content/runes/media/track.md` — an "Inside a playlist" section with a
+  worked mixed-form example, and the two caveats.
+
+### The item's stated approach does not work as written
+
+"It must also become greedy" — but with `greedy`, `result[field.name]` is an
+**array**, and the resolver guarded its itemModel extraction on
+`'type' in node`. An array has no `type`, so `tracksData` was never populated:
+making the field greedy **silently disabled its own extraction and broke the
+list form outright**. "Greedy itemModel field" was simply unimplemented.
+
+Fixed in `resolver.ts` by concatenating `resolveListItems` across the collected
+lists, in document order, skipping non-list nodes (a greedy `list|tag:x` field
+collects both). Shared code, so it is covered by the existing suite plus the new
+"keeps the list form working unchanged" test.
+
+### `track` was dropping two of its own fields
+
+`artistMeta` and `durationMeta` were declared in `properties` *and* `schema` but
+never pushed into `children`, so they were stamped onto nodes that were not in
+the tree. A standalone `{% track artist="Radiohead" duration="4:01" %}`
+published its name and nothing else. The visible `track-artist` /
+`track-duration` spans carry no `property=`, so `collectProperties` found no
+value either.
+
+WORK-562's baseline had recorded this and it went unnoticed at the time. In
+scope here because the equivalence criterion cannot hold otherwise.
+
+**Baseline diff: +28 lines, all additions.** `track` and `track.episode` gain
+`byArtist` and `duration`. Nothing removed; playlists unchanged.
+
+Separately, `rootAttrs` in `track` was assembled with `data-src` and never
+applied — dead code, so `src` reached nothing. Now applied.
+
+### How the inheritance works
+
+Markdoc transforms bottom-up, so a child cannot see its parent: the parent
+retypes its children (SPEC-130 D9), and it can only do that if it can tell "no
+type stated" from an explicit `type="song"`. `TYPE_IMPLICIT` is an own-property
+on the Tag object rather than an attribute — `JSON.parse(JSON.stringify(...))`
+at the serialize boundary drops it, so it can never reach the HTML.
+
+`CHILD_TYPEOF` is deliberately **one constant, not a per-type table**: every
+playlist type emits `MusicRecording` children today, podcasts included, which is
+BUG-013. WORK-569 replaces that constant. Until then the inherited type must be
+exactly what the list form produces, or the two forms would disagree — which is
+the equivalence this item exists to establish.
+
+`CHILD_KIND` (album/mix → song, podcast/series → episode, audiobook → chapter)
+is the *rendered* kind, so a podcast's nested track does not present itself as a
+song. That is observable today and is what makes the inheritance criterion
+non-vacuous ahead of WORK-569.
+
+### The decision the item asked to be written down
+
+**An explicit child type that contradicts its container is honoured.** A
+`{% track type="song" %}` inside a podcast stays a song. The author stated it;
+silently overriding would make the attribute a lie. Tested, and documented on
+the rune page.
+
+### Notes
+
+- Greedy collection is consecutive, so prose between two tracks ends the run and
+  pushes the rest to `body`. Acceptable, and stated on the rune page rather than
+  left for an author to hit.
+- The `emitTag` / `listToTags` path in the resolver would have converged both
+  forms on one code path, which is tempting. Not taken: the list itemModel
+  carries `cuePoints`, which `track` has no attribute for, so it would have
+  regressed the list form.
+
+### Verification
+
+`npm test` — 368 files, 4498 tests, all passing. `npm run format:check` clean
+(run on its own, exit code read directly). `content:check-links` and
+`runes:check-docs` clean.
 
 {% /work %}

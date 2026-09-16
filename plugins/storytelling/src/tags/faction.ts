@@ -173,6 +173,10 @@ export const faction = createContentModelSchema({
 			refs: {
 				name: nameTag,
 				...(sceneDiv ? { scene: sceneDiv } : {}),
+				// WORK-561 — the scene image survives and is rendered, so it is a ref.
+				// Named `sceneImage` after its `scene` wrapper, so the wrapper and the
+				// image inside it are separately addressable.
+				...(sceneImgTag ? { sceneImage: sceneImgTag } : {}),
 				...(bodyDiv ? { body: bodyDiv } : {}),
 				...(sectionsContainer ? { sections: sectionsContainer } : {}),
 			},

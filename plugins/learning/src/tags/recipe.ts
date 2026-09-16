@@ -237,6 +237,12 @@ export const recipe = createContentModelSchema({
 				steps: stepsList,
 				tips: tipsDiv,
 				media: mediaDiv,
+				// WORK-561 — the image survives, so it is a ref. Named `mediaImage`
+				// rather than `image` because `sectionProps` (spread above) already
+				// contributes an `image` key for the *header's* image, and the flat
+				// namespace is unique per rune (ADR-008). `media` is the wrapper;
+				// this is the image inside it.
+				...(seoImage ? { mediaImage: seoImage } : {}),
 			},
 			schema: {
 				name: sectionProps.headline,
