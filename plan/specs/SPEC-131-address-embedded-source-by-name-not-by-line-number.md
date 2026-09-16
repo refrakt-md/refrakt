@@ -672,6 +672,12 @@ codemod itself introduced.
   usable structure. D4.
 - **New preview targets.** `preview="drawer"` behaviour is unchanged; this
   spec only changes how the referenced region is located.
+- **Checking that the prose still describes the code.** This spec guarantees
+  the right *region* is quoted. A symbol can resolve perfectly and have changed
+  meaning entirely, leaving the paragraph beside it false with nothing to
+  detect it. That is a different failure class with a different mechanism —
+  {% ref "SPEC-133" /%}, which builds on this layer and depends on D16's
+  `reindent` as its first normalization step.
 - **A config surface for the language table.** The table is built as data and
   merged (D15), but `refrakt.config.json` gains no `languages` or `anchors`
   key in this spec. Deferred until phase 3 shows which formats authors
@@ -796,6 +802,7 @@ than reading them off this spec.
 - {% ref "SPEC-129" /%} — the pre-transform `include` rune. A fourth path-addressed rune: if it lands, it should take the same addressing layer rather than growing its own `lines=`
 - {% ref "SPEC-126" /%} — rejected line-addressed embedding for the config reference and proposed the one-off assertion this spec generalises
 - {% ref "BUG-015" /%} — the observed instance: three live `file-ref` drawers labelled `SiteConfig` rendering three unrelated interfaces
+- {% ref "SPEC-133" /%} — review markers; the next failure class up, where the region resolves correctly and the prose beside it no longer holds
 - `packages/runes/src/lib/read-file.ts` — the shared reader this extends
 
 {% /spec %}
