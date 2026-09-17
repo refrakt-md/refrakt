@@ -130,7 +130,7 @@ function processBulletBlock(lines, versionSet) {
 	// particular throws at transform time by design. Stripping fences keeps the
 	// changelog inert. Inline `` `{% x %}` `` code spans are untouched (Markdoc
 	// doesn't parse tags inside inline code), so prose examples still render.
-	lines = stripCodeFences(lines);
+	lines = stripTables(stripCodeFences(lines));
 	if (!lines.length) return;
 
 	const firstContent = lines[0].replace(/^- /, '');
@@ -163,17 +163,27 @@ function processBulletBlock(lines, versionSet) {
 	if (current.length) paragraphs.push(current);
 
 	for (const para of paragraphs) {
-		// Separate sub-bullets from prose lines
+		// Separate sub-bullets from prose lines.
+		//
+		// A wrapped sub-bullet continues on indented lines that are not themselves
+		// bullets, and those belong to the bullet above them. Treating them as
+		// prose truncated every sub-bullet at its first line and then joined all
+		// the orphaned tails into one sentence — three unrelated half-thoughts run
+		// together, which is what v0.34.0's entry for BUG-014 reads like.
 		const subBullets = [];
 		const proseLines = [];
 		for (const l of para) {
-			if (/^\s+- .+/.test(l)) subBullets.push(l);
+			if (/^\s+- .+/.test(l)) subBullets.push([l]);
+			else if (subBullets.length > 0 && /^\s+\S/.test(l)) subBullets[subBullets.length - 1].push(l);
 			else proseLines.push(l);
 		}
 
-		// Process sub-bullets individually
+		// Process sub-bullets individually, each unwrapped across its own lines
 		for (const sb of subBullets) {
-			const content = sb.replace(/^\s+- /, '');
+			const content = sb
+				.map((l, i) => (i === 0 ? l.replace(/^\s+- /, '') : l.trim()))
+				.join(' ')
+				.trim();
 			if (/^#{1,6}\s/.test(content)) continue;
 			if (/^@[\w-]+\/[\w-]+@\d/.test(content)) continue;
 			const cleaned = cleanEntry(`- ${content}`);
@@ -209,6 +219,20 @@ function processBulletBlock(lines, versionSet) {
  *  including the fence markers and everything between them. Toggles on any
  *  line whose first non-whitespace characters are three backticks, so it
  *  handles the indented fences that changesets nest under a bullet. */
+/**
+ * Drop markdown tables, for the same reason fences go.
+ *
+ * The changelog is a flat prose summary — every entry becomes one bullet — and a
+ * table has no flat form. Unwrapped it becomes a single line of pipes and
+ * dashes, which is less readable than the sentence beside it and tells a reader
+ * nothing. A changeset that wants its table read should say the same thing in a
+ * sentence; the full table is still in the package CHANGELOG.
+ */
+export function stripTables(lines) {
+	const isRow = (l) => /^\s*\|.*\|\s*$/.test(l);
+	return lines.filter((l) => !isRow(l));
+}
+
 export function stripCodeFences(lines) {
 	const out = [];
 	let inFence = false;

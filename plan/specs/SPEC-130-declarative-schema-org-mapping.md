@@ -1,4 +1,4 @@
-{% spec id="SPEC-130" status="accepted" tags="runes, schema-org, seo, config" %}
+{% spec id="SPEC-130" status="implemented" tags="runes, schema-org, seo, config" %}
 
 # Declarative schema.org mapping
 
