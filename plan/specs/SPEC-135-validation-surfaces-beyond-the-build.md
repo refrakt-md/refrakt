@@ -283,6 +283,28 @@ sync and six places to drift. One injection point at the function they all call
 makes divergence unrepresentable. Same argument as
 {% ref "SPEC-132" /%}'s decision to validate where the tag set is assembled.
 
+**It arrives as an options-bag overload, not a fifteenth positional.**
+`loadContent` already takes **fourteen positional parameters**
+(`site.ts:697`), and it is what all four callers use — sveltekit
+`plugin.ts:205`, eleventy `data.ts:71`, editor `server.ts:217`, and the dev path
+at `loader.ts:58`. So "an option at `loadContent`" is not something that can be
+added as written.
+
+`loadContentFromTree(tree, options)` has the bag, and it already carries the
+precedent: `reader` is documented as accepted "so hosts can wire it once and not
+need to thread it again when new internal consumers land". The reporter is the
+case that comment anticipated.
+
+So: add `reporter` to `LoadContentFromTreeOptions`, give `loadContent` an
+options-bag overload beside its positional form, and move the four callers onto
+it. The positional form keeps working, so nothing external breaks — but inside
+the repo everything converges on the bag, and the next thing to thread is a
+field rather than a fifteenth argument.
+
+This is the cheap fix, deliberately. Whether a 1.0 should ship this shape at all
+is {% ref "WORK-576" /%} — a public function with fourteen positional
+parameters is much cheaper to redesign before 1.0 than after.
+
 **D6 — MCP returns findings, not a rendered report.** The point of the tool over
 the CLI is that a caller can filter, count and act on individual findings without
 parsing text. A tool that returns the CLI's formatted output is a worse CLI.
