@@ -14,7 +14,14 @@ import { taxonomyAttributes } from './common.js';
 // what a section *is* (ADR-028).
 export const loreSections = { title: 'title', body: 'body' } as const;
 
+// SPEC-130 / WORK-568 — Group B.
+export const loreSchema = {
+	type: 'Article',
+	properties: { title: 'headline', category: 'articleSection' },
+} as const;
+
 export const lore = createContentModelSchema({
+	schema: loreSchema,
 	sections: loreSections,
 	provides: ['prose'],
 	base: taxonomyAttributes,
@@ -46,7 +53,6 @@ export const lore = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'lore',
-			schemaOrgType: 'Article',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
@@ -57,10 +63,6 @@ export const lore = createContentModelSchema({
 			refs: {
 				title: titleTag,
 				body: body.tag('div'),
-			},
-			schema: {
-				headline: titleTag,
-				articleSection: categoryMeta,
 			},
 			children: [titleTag, categoryMeta, spoilerMeta, tagsMeta, body.next()],
 		});

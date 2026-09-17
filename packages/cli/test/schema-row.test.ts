@@ -122,4 +122,72 @@ describe('auditSchemaSources', () => {
 		const generated = describeSchemaRow({ type: 'ListItem', generated: { position: 'index' } });
 		expect(auditSchemaSources(generated, root({}))).toEqual([]);
 	});
+
+	it('accepts the stamped property as evidence the source resolved', () => {
+		// The only evidence left for a source the applier recovered from the field
+		// bag: the identity transform consumes `data-rune-fields`, and this audit
+		// reads the rendered tree, so all that survives is the carrier the applier
+		// built. Without this every rebuilt property reported as broken.
+		const rebuilt = describeSchemaRow({ type: 'Review', properties: { quote: 'reviewBody' } });
+		const carrier = new Tag('meta', { property: 'reviewBody', content: 'Good stuff' });
+		expect(auditSchemaSources(rebuilt, root({}, [carrier]))).toEqual([]);
+	});
+});
+
+// WORK-569 — a `children:` row names sources on nodes *another rune* emitted,
+// with their own attributes and their own field bag. Auditing those against the
+// parent's tree reported every one of them, which is how a check stops being
+// read.
+describe('auditSchemaSources, across a children: row', () => {
+	const TABLE: SchemaTable = {
+		type: 'MusicAlbum',
+		properties: { headline: 'name' },
+		children: { track: { type: 'MusicRecording', property: 'track', properties: { n: 'name' } } },
+	};
+	const row = describeSchemaRow(TABLE);
+	const item = (children: unknown[]) => new Tag('li', { 'data-rune': 'track' }, children as never);
+
+	it('is silent when the child carries the property the row maps', () => {
+		const tree = root({}, [
+			named('headline'),
+			item([new Tag('span', { 'data-name': 'n', property: 'name' }, ['Breathe'])]),
+		]);
+		expect(auditSchemaSources(row, tree)).toEqual([]);
+	});
+
+	it('reports a child source no child resolves', () => {
+		const typo: SchemaTable = {
+			...TABLE,
+			children: {
+				track: { type: 'MusicRecording', property: 'track', properties: { nn: 'name' } },
+			},
+		};
+		const tree = root({}, [named('headline'), item([named('n')])]);
+		expect(auditSchemaSources(describeSchemaRow(typo), tree)).toEqual([
+			{ source: 'nn', property: 'name', entity: 'track' },
+		]);
+	});
+
+	it('says nothing when the input contains no such child at all', () => {
+		// "This fixture did not exercise it", not "this row is wrong" — the same
+		// distinction the declared-attribute check draws for the rune's own
+		// sources.
+		expect(auditSchemaSources(row, root({}, [named('headline')]))).toEqual([]);
+	});
+
+	it('does not let a child stamp cover for a parent typo, or the reverse', () => {
+		// `headline` and `track-name` both map to `name`, so a check that looked at
+		// the whole tree would find one stamped and clear the other.
+		const parentTypo = describeSchemaRow({
+			...TABLE,
+			properties: { headlinee: 'name' },
+		});
+		const tree = root({}, [
+			named('headline'),
+			item([new Tag('span', { 'data-name': 'n', property: 'name' }, ['Breathe'])]),
+		]);
+		expect(auditSchemaSources(parentTypo, tree)).toEqual([
+			{ source: 'headlinee', property: 'name', entity: undefined },
+		]);
+	});
 });

@@ -30,8 +30,21 @@ describe('SEO: Playlist', () => {
 		expect(result.jsonLd).toHaveLength(1);
 		const playlist = result.jsonLd[0] as any;
 		expect(playlist['@context']).toBe('https://schema.org');
-		expect(playlist['@type']).toBe('MusicPlaylist');
+		// `MusicAlbum` since WORK-569, not `MusicPlaylist`: the `type` attribute
+		// defaults to `album`, and `MusicAlbum` — a subtype of `MusicPlaylist` —
+		// had been available and unused the whole time. `type="mix"` still gives
+		// the broader type.
+		expect(playlist['@type']).toBe('MusicAlbum');
 		expect(playlist.name).toBe('Summer Vibes');
+	});
+
+	it('keeps MusicPlaylist for a mix, the one kind with no narrower type', () => {
+		const result = seo(`{% playlist type="mix" %}
+# Summer Vibes
+
+- **Track One** (3:42)
+{% /playlist %}`);
+		expect((result.jsonLd[0] as any)['@type']).toBe('MusicPlaylist');
 	});
 });
 
@@ -47,7 +60,8 @@ describe('SEO: MusicPlaylist (legacy)', () => {
 		expect(result.jsonLd).toHaveLength(1);
 		const playlist = result.jsonLd[0] as any;
 		expect(playlist['@context']).toBe('https://schema.org');
-		expect(playlist['@type']).toBe('MusicPlaylist');
+		// The legacy alias resolves to the same rune and the same table.
+		expect(playlist['@type']).toBe('MusicAlbum');
 		expect(playlist.name).toBe('Summer Vibes');
 	});
 });

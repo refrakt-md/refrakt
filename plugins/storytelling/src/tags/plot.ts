@@ -72,7 +72,16 @@ const structureType = ['linear', 'parallel', 'branching', 'web'] as const;
 // what a section *is* (ADR-028).
 export const plotSections = { title: 'title' } as const;
 
+// SPEC-130 / WORK-568 — Group B. `plotType → genre` is what shipped and what
+// the baseline records; the beats stay imperative (`beat` is a `properties`
+// cursor the parent nests itself) because retyping children is WORK-570's.
+export const plotSchema = {
+	type: 'CreativeWork',
+	properties: { title: 'name', plotType: 'genre' },
+} as const;
+
 export const plot = createContentModelSchema({
+	schema: plotSchema,
 	sections: plotSections,
 	base: taxonomyAttributes,
 	attributes: {
@@ -145,7 +154,6 @@ export const plot = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'plot',
-			schemaOrgType: 'CreativeWork',
 			tag: 'section',
 			property: 'contentSection',
 			properties: {
@@ -155,10 +163,6 @@ export const plot = createContentModelSchema({
 				beat: beats,
 			},
 			refs: { title: titleTag, beats: beatsList },
-			schema: {
-				name: titleTag,
-				genre: plotTypeMeta,
-			},
 			children,
 		});
 	},

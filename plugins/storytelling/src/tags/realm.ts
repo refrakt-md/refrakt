@@ -53,7 +53,16 @@ export const realmSections = {
 } as const;
 export const realmMediaSlots = { scene: 'cover' } as const;
 
+// SPEC-130 / WORK-568 — Group B. `sceneImage` is the name WORK-561 gave the
+// scene image, so `image` resolves to a node rather than to a position in the
+// children array.
+export const realmSchema = {
+	type: 'Place',
+	properties: { name: 'name', realmType: 'additionalType', sceneImage: 'image' },
+} as const;
+
 export const realm = createContentModelSchema({
+	schema: realmSchema,
 	sections: realmSections,
 	provides: ['prose'],
 	mediaSlots: realmMediaSlots,
@@ -142,18 +151,8 @@ export const realm = createContentModelSchema({
 		if (bodyDiv) children.push(bodyDiv.next());
 		if (sectionsContainer) children.push(sectionsContainer.next());
 
-		// SEO schema
-		const schemaMap: Record<string, any> = {
-			name: nameTag,
-			additionalType: realmTypeMeta,
-		};
-		if (sceneImgTag) {
-			schemaMap.image = sceneImgTag;
-		}
-
 		return createComponentRenderable({
 			rune: 'realm',
-			schemaOrgType: 'Place',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {
@@ -177,7 +176,6 @@ export const realm = createContentModelSchema({
 				...(bodyDiv ? { body: bodyDiv } : {}),
 				...(sectionsContainer ? { sections: sectionsContainer } : {}),
 			},
-			schema: schemaMap,
 			children,
 		});
 	},

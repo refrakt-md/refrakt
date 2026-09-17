@@ -14,7 +14,18 @@ const alignValues = ['left', 'center', 'right'] as const;
 export const figureSections = { caption: 'description' } as const;
 export const figureFrameTarget = 'self' as const;
 
+// SPEC-130 / WORK-568 — Group B. Both sources are refs, so the applier stamps
+// them where they already are: the `<img>` yields its `src` and the
+// `<figcaption>` its text. The image is the node WORK-561 gave a name to —
+// before that, the schema reached it only as an anonymous `imgs[0]`, and a
+// reordering of the transform would have silently repointed `contentUrl`.
+export const figureSchema = {
+	type: 'ImageObject',
+	properties: { image: 'contentUrl', caption: 'caption' },
+} as const;
+
 export const figure = createContentModelSchema({
+	schema: figureSchema,
 	sections: figureSections,
 	frameTarget: figureFrameTarget,
 	attributes: {
@@ -77,7 +88,6 @@ export const figure = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'figure',
-			schemaOrgType: 'ImageObject',
 			tag: 'figure',
 			properties: {
 				...(sizeMeta ? { size: sizeMeta } : {}),
@@ -89,10 +99,6 @@ export const figure = createContentModelSchema({
 				// rule it is a ref, not a property. It had no name at all: the schema
 				// reached it only as an anonymous positional `imgs[0]`.
 				...(imgs.length > 0 ? { image: imgs[0] } : {}),
-			},
-			schema: {
-				...(imgs.length > 0 ? { contentUrl: imgs[0] } : {}),
-				...(captionTag ? { caption: captionTag } : {}),
 			},
 			children: childNodes,
 		});

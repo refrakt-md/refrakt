@@ -81,7 +81,19 @@ function detectProvider(url: string): ProviderInfo {
 	};
 }
 
+// SPEC-130 / WORK-568 — Group B, and the case that proves the applier's second
+// resolution path. All three sources are `properties` metas, which exist only to
+// carry a string: once the rune stops declaring `schema:` they lose the
+// `isSeoMeta` protection and are dropped from the children as pure data. The
+// applier rebuilds each as a fresh carrier from the `data-rune-fields` bag,
+// which only works because WORK-561 put them there.
+export const embedSchema = {
+	type: 'VideoObject',
+	properties: { title: 'name', url: 'contentUrl', embedUrl: 'embedUrl' },
+} as const;
+
 export const embed = createContentModelSchema({
+	schema: embedSchema,
 	attributes: {
 		url: { type: String, required: true, description: 'URL of the content to embed' },
 		type: { type: String, required: false, description: 'Override auto-detected embed type' },
@@ -145,17 +157,14 @@ export const embed = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'embed',
-			schemaOrgType: 'VideoObject',
 			tag: 'figure',
 			properties: {
 				provider: providerMeta,
 				// WORK-561 — these three exist only to carry a string into the schema
 				// channel, so under WORK-560's rule they are values and belong here.
-				// They stay in `schema:` as well: a meta in both maps is an SEO
-				// carrier, so it keeps its `property=`, is not given `data-field`, and
-				// is not dropped from the children — the bag entry is purely
-				// additional. That entry is what lets WORK-565's applier find them by
-				// name once runes stop declaring `schema:` themselves.
+				// Their bag entries are what `embedSchema` resolves against now that
+				// the rune no longer declares `schema:` and the metas themselves are
+				// dropped as pure data.
 				title: titleMeta,
 				url: urlMeta,
 				embedUrl: embedUrlMeta,
@@ -163,11 +172,6 @@ export const embed = createContentModelSchema({
 			refs: {
 				...(wrapperDiv ? { wrapper: wrapperDiv } : {}),
 				fallback: fallbackDiv,
-			},
-			schema: {
-				name: titleMeta,
-				contentUrl: urlMeta,
-				embedUrl: embedUrlMeta,
 			},
 			children,
 		});

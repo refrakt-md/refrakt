@@ -104,7 +104,21 @@ const headerBodyFields = [
 // what a section *is* (ADR-028).
 export const symbolSections = { preamble: 'preamble', headline: 'title', body: 'body' } as const;
 
+// SPEC-130 D4 / WORK-567 — the one Group A rune that keeps its type, because it
+// is the one with something to say. `headline` is the symbol's own name
+// (`createTransform`), which is exactly what a reader searches for; `blurb` is
+// the one-line summary above the signature. Deliberately *not* mapped: `body`,
+// which would push a whole code fence, a parameter list and a blockquote into a
+// single `description` string, and `lang`/`since`, whose schema.org homes
+// (`programmingLanguage`, `softwareVersion`) belong to `SoftwareSourceCode`
+// rather than an article about it.
+export const symbolSchema = {
+	type: 'TechArticle',
+	properties: { headline: 'name', blurb: 'description' },
+} as const;
+
 export const symbol = createContentModelSchema({
+	schema: symbolSchema,
 	sections: symbolSections,
 	attributes: {
 		kind: {
@@ -206,7 +220,6 @@ export const symbol = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'symbol',
-			schemaOrgType: 'TechArticle',
 			tag: 'article',
 			property: 'contentSection',
 			properties: {

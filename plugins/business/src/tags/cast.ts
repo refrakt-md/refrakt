@@ -12,7 +12,16 @@ import {
 } from '@refrakt-md/runes';
 import { RenderableNodeCursor } from '@refrakt-md/runes';
 
+// SPEC-130 / WORK-568 — Group B. `portrait` is the source that needed a name:
+// the schema reached the image as an anonymous local variable, so nothing
+// outside this function could see what `image` pointed at.
+export const castMemberSchema = {
+	type: 'Person',
+	properties: { name: 'name', role: 'jobTitle', portrait: 'image' },
+} as const;
+
 export const castMember = createContentModelSchema({
+	schema: castMemberSchema,
 	attributes: {
 		name: { type: String, required: false, description: 'Display name of the cast member.' },
 		role: { type: String, required: false, description: 'Job title or role held by this member.' },
@@ -45,17 +54,12 @@ export const castMember = createContentModelSchema({
 
 		return createComponentRenderable({
 			rune: 'cast-member',
-			schemaOrgType: 'Person',
 			tag: 'li',
 			refs: {
 				name: nameTag,
 				role: roleTag,
 				body: body.tag('div'),
-			},
-			schema: {
-				name: nameTag,
-				jobTitle: roleTag,
-				...(portraitTag ? { image: portraitTag } : {}),
+				...(portraitTag ? { portrait: portraitTag } : {}),
 			},
 			children,
 		});

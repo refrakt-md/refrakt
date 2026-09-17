@@ -28,6 +28,17 @@ export interface SchemaPropertyRow {
 	kind: 'property' | 'text' | 'generated';
 	/** The entity this row belongs to, when nested. */
 	entity?: string;
+	/**
+	 * Set when the mapping applies to a *child rune's* node rather than to this
+	 * rune's own output.
+	 *
+	 * A nested `entities:` span is built out of the rune's own content, so its
+	 * sources resolve against the same tree. A `children:` row does not: it
+	 * retypes nodes another rune emitted, which carry their own attributes and
+	 * their own field bag. Anything auditing a source has to look in the right
+	 * place, and without this it cannot tell which place that is.
+	 */
+	scope?: 'child';
 }
 
 /** A rune's resolved schema row, flattened for display. */
@@ -53,15 +64,20 @@ export function tableFor(rune: { schema?: Schema }): SchemaTable | undefined {
 	return rune.schema ? schemaTables.get(rune.schema) : undefined;
 }
 
-function flattenEntity(name: string, entity: EntityRow, into: SchemaPropertyRow[]): void {
+function flattenEntity(
+	name: string,
+	entity: EntityRow,
+	into: SchemaPropertyRow[],
+	scope?: 'child',
+): void {
 	for (const [source, property] of Object.entries(entity.properties ?? {})) {
-		into.push({ source, property, kind: 'property', entity: name });
+		into.push({ source, property, kind: 'property', entity: name, scope });
 	}
 	for (const [source, property] of Object.entries(entity.text ?? {})) {
-		into.push({ source, property, kind: 'text', entity: name });
+		into.push({ source, property, kind: 'text', entity: name, scope });
 	}
 	for (const property of Object.keys(entity.generated ?? {})) {
-		into.push({ source: '(index)', property, kind: 'generated', entity: name });
+		into.push({ source: '(index)', property, kind: 'generated', entity: name, scope });
 	}
 }
 
@@ -92,7 +108,7 @@ export function describeSchemaRow(
 	const children: ResolvedSchemaRow['children'] = [];
 	for (const [rune, child] of Object.entries(row.children ?? {})) {
 		children.push({ rune, type: child.type, property: child.property });
-		flattenEntity(rune, child, properties);
+		flattenEntity(rune, child, properties, 'child');
 	}
 
 	const selected =

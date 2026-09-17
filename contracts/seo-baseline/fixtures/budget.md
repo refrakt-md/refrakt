@@ -2,7 +2,10 @@
 rune: budget
 title: Trip budget
 role: canonical
-notes: Group A — emits ItemList with no itemListElement.
+notes: >
+  Group A, resolved — no longer emits ItemList. The categories and line
+  items carry real data, but `itemListElement` needs them typed, and a
+  cost breakdown is not a ranked list to begin with (WORK-567).
 ---
 {% budget currency="JPY" duration="5 days" %}
 # Tokyo Trip

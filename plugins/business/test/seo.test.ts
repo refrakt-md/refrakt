@@ -70,6 +70,8 @@ First public release.
 		expect(list.itemListElement).toBeDefined();
 		expect(list.itemListElement.length).toBeGreaterThanOrEqual(2);
 		expect(list.itemListElement[0]['@type']).toBe('ListItem');
-		expect(list.itemListElement[0].position).toBe(1);
+		// A string since WORK-571 — the position is generated as `String(index + 1)`
+		// so the RDFa attribute and the JSON-LD say the same thing (SPEC-130 D8).
+		expect(list.itemListElement[0].position).toBe('1');
 	});
 });

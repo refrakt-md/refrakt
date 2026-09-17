@@ -5,6 +5,7 @@ import {
 	REGENERATE_COMMAND,
 	EMITTING_RUNES,
 	COVERED_BY_PARENT,
+	DELIBERATELY_SILENT,
 	allEmittingRunes,
 	groupOf,
 	pluginsForSite,
@@ -189,75 +190,133 @@ describe('against the real corpus', () => {
 		}
 	});
 
-	it('emits a bare entity for exactly the seven Group A runes, and nothing else', () => {
-		// This is the guard on the *fixtures*, not on the runes. A fixture that
-		// uses the wrong content model — headings where the rune wants a bare
-		// list, say — produces a bare entity and a baseline that records nothing.
-		// SPEC-130 measured exactly seven such runes; any other bare entity here
-		// is a broken fixture, and any missing one would mean Group A changed.
+	it('emits no bare entity anywhere (D4)', () => {
+		// Was "a bare entity for exactly the seven Group A runes", which is what
+		// the corpus measured before WORK-567 applied D4. It is now the inverse,
+		// and a stronger guard: `collectJsonLd` drops an entity that resolves to a
+		// bare `@type`, so a bare one appearing here would mean the mechanism
+		// stopped working — or, as before, that a fixture uses the wrong content
+		// model and the rune found nothing to map.
 		const bare = [];
 		for (const f of artifact.fixtures) {
 			for (const entity of f.jsonLd) {
 				const props = Object.keys(entity).filter((k) => k !== '@type' && k !== '@context');
-				if (props.length === 0) bare.push(f.rune);
+				if (props.length === 0) bare.push(`${f.fixture} (${entity['@type']})`);
 			}
 		}
-		expect([...new Set(bare)].sort()).toEqual([...EMITTING_RUNES.A].sort());
+		expect(bare).toEqual([]);
 	});
 
-	it('emits at least one entity per fixture', () => {
+	it('emits at least one entity per fixture, bar the runes that say nothing on purpose', () => {
 		for (const f of artifact.fixtures) {
+			if (DELIBERATELY_SILENT.includes(f.rune)) {
+				expect(f.jsonLd, `${f.fixture} should publish nothing`).toEqual([]);
+				continue;
+			}
 			expect(f.jsonLd.length, `${f.fixture} emitted no entity`).toBeGreaterThan(0);
 		}
 	});
 
-	it('records BUG-013 as it stands, rather than as it should be', () => {
-		const podcast = artifact.fixtures.find((f) => f.fixture === 'playlist.podcast');
-		expect(podcast.jsonLd[0]['@type']).toBe('MusicPlaylist');
-		expect(podcast.jsonLd[0].track[0]['@type']).toBe('MusicRecording');
-		// The standalone rune ignores its own `type` the same way.
-		const episode = artifact.fixtures.find((f) => f.fixture === 'track.episode');
-		expect(episode.jsonLd[0]['@type']).toBe('MusicRecording');
+	it('keeps Group A intact as a roster even though six of it went quiet', () => {
+		// The group is SPEC-130's unit of migration, not a claim about output.
+		// Losing a name from it would lose the fixture that records the silence.
+		expect([...EMITTING_RUNES.A].sort()).toEqual([...DELIBERATELY_SILENT, 'symbol'].sort());
 	});
 
-	it('records `NonProfit`, the type schema.org does not have (D2)', () => {
-		const nonprofit = artifact.fixtures.find((f) => f.fixture === 'organization.nonprofit');
-		expect(nonprofit.jsonLd[0]['@type']).toBe('NonProfit');
+	it('resolves BUG-013 — each kind publishes the type it declares', () => {
+		// Was `records BUG-013 as it stands`: a podcast published as a music
+		// playlist whose episodes were music recordings, in both runes. WORK-569
+		// gave each its own `by: 'type'` table, so the row below is the whole
+		// per-kind contract and a regression in any one cell fails here.
+		const of = (name) => artifact.fixtures.find((f) => f.fixture === name).jsonLd[0];
+
+		const podcast = of('playlist.podcast');
+		expect(podcast['@type']).toBe('PodcastSeries');
+		expect(podcast.hasPart[0]['@type']).toBe('PodcastEpisode');
+		expect(podcast.track, 'a PodcastSeries has no `track`').toBeUndefined();
+		expect(podcast.hasPart[0].byArtist, 'a PodcastEpisode has no `byArtist`').toBeUndefined();
+
+		expect(of('playlist.album')['@type']).toBe('MusicAlbum');
+		expect(of('playlist.audiobook')['@type']).toBe('Audiobook');
+		expect(of('playlist.audiobook').hasPart[0]['@type']).toBe('Chapter');
+		expect(of('playlist.series')['@type']).toBe('CreativeWorkSeries');
+		expect(of('playlist.series').hasPart[0]['@type']).toBe('CreativeWork');
+
+		// `mix` is the control: the one kind with no narrower type, unchanged.
+		expect(of('playlist.mix')['@type']).toBe('MusicPlaylist');
+		expect(of('playlist.mix').track[0]['@type']).toBe('MusicRecording');
+
+		// The standalone rune keys off its own enum, independently (D9).
+		expect(of('track')['@type']).toBe('MusicRecording');
+		expect(of('track.episode')['@type']).toBe('PodcastEpisode');
+		expect(of('track.episode').byArtist).toBeUndefined();
+		expect(of('track.chapter')['@type']).toBe('Chapter');
+		expect(of('track.talk')['@type']).toBe('CreativeWork');
+		expect(of('track.video')['@type']).toBe('VideoObject');
 	});
 
-	it('pins D6 — a one-item collection is a scalar today, an array when it lands', () => {
+	it('publishes `NGO`, the type schema.org actually has (D2)', () => {
+		// Was `records NonProfit, the type schema.org does not have`. WORK-568
+		// corrected the enum, and the fixture writes `NGO`; nothing in the corpus
+		// may reintroduce a type outside the vocabulary the enum claims to speak.
+		const ngo = artifact.fixtures.find((f) => f.fixture === 'organization.nonprofit');
+		expect(ngo.jsonLd[0]['@type']).toBe('NGO');
+		const types = artifact.fixtures.flatMap((f) => f.jsonLd.map((e) => e['@type']));
+		expect(types).not.toContain('NonProfit');
+	});
+
+	it('pins D6 — a declared list is an array whatever the item count', () => {
 		// `appendToProperty` stores the first value as a scalar and only promotes
-		// on the second, so the shape of the output varies with the amount of
-		// content. Each pair below must diverge now and converge after D6.
-		const pairs = [
+		// on the second, so before a rune declares its collection a list, the
+		// *shape* of its output varies with the amount of content and every
+		// consumer has to handle both. Each pair diverges until the rune migrates
+		// and converges after — so a pair moving from `pending` to `declared` is
+		// what landing D6 for that rune looks like.
+		const declared = [
 			['pricing.single', 'pricing.tiers', 'offers'],
 			['breadcrumb.single', 'breadcrumb', 'itemListElement'],
 			['timeline.single', 'timeline.entries', 'itemListElement'],
 			['playlist.single', 'playlist.album', 'track'],
+		];
+		const pending = [
 			['accordion.single', 'accordion', 'mainEntity'],
 			['howto.single', 'howto', 'step'],
 			['recipe.single', 'recipe', 'recipeIngredient'],
 		];
-		for (const [singleName, multiName, property] of pairs) {
-			const single = artifact.fixtures.find((f) => f.fixture === singleName);
-			const multi = artifact.fixtures.find((f) => f.fixture === multiName);
-			expect(single, `missing fixture ${singleName}`).toBeTruthy();
-			expect(multi, `missing fixture ${multiName}`).toBeTruthy();
+
+		const shape = (name, property) => {
+			const fixture = artifact.fixtures.find((f) => f.fixture === name);
+			expect(fixture, `missing fixture ${name}`).toBeTruthy();
+			return Array.isArray(fixture.jsonLd[0][property]);
+		};
+
+		for (const [singleName, multiName, property] of declared) {
+			expect(shape(singleName, property), `${singleName}.${property} should be an array`).toBe(
+				true,
+			);
+			expect(shape(multiName, property), `${multiName}.${property} should be an array`).toBe(true);
+		}
+		for (const [singleName, multiName, property] of pending) {
 			expect(
-				Array.isArray(single.jsonLd[0][property]),
-				`${singleName}.${property} should be a scalar today`,
+				shape(singleName, property),
+				`${singleName}.${property} is still a scalar — move this pair to \`declared\``,
 			).toBe(false);
-			expect(
-				Array.isArray(multi.jsonLd[0][property]),
-				`${multiName}.${property} should be an array today`,
-			).toBe(true);
+			expect(shape(multiName, property), `${multiName}.${property} should be an array`).toBe(true);
 		}
 	});
 
 	it('captures the rendered RDFa alongside the JSON-LD, for WORK-563 to compare', () => {
 		for (const f of artifact.fixtures) {
 			expect(f.rendered.jsonLd, `${f.fixture} has no post-engine JSON-LD`).toBeTruthy();
-			expect(f.rendered.annotations.length, `${f.fixture} rendered no RDFa`).toBeGreaterThan(0);
+			// A rune that publishes nothing stamps nothing: dropping the type also
+			// removed the `typeof` from the HTML, so the RDFa channel goes quiet
+			// with the JSON-LD rather than keeping a bare assertion in the markup.
+			const expected = DELIBERATELY_SILENT.includes(f.rune) ? 0 : 1;
+			expect(
+				f.rendered.annotations.length,
+				`${f.fixture} rendered ${f.rendered.annotations.length} RDFa nodes`,
+			).toBeGreaterThanOrEqual(expected);
+			if (expected === 0) expect(f.rendered.annotations).toEqual([]);
 		}
 	});
 

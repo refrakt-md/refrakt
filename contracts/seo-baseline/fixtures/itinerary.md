@@ -3,8 +3,10 @@ rune: itinerary
 title: Day-by-day itinerary
 role: canonical
 notes: >
-  Group A — emits ItemList with no itemListElement, despite two days of
-  structured stops. Generating this fixture also prints a pre-existing engine
+  Group A, resolved — no longer emits ItemList. The two days of structured
+  stops reach a list only once each day is a ListItem and each stop something
+  like a TouristAttraction: per-child typing, not a flat mapping (WORK-567).
+  Generating this fixture also prints a pre-existing engine
   diagnostic, "`itinerary-stop` requires parent `itinerary` — found nested
   directly in `itinerary-day`". That is the rune's own structure tripping a
   parent check, not a defect in this fixture: the unabridged doc example at
