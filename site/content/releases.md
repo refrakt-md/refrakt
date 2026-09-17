@@ -6,7 +6,76 @@ description: Release history for refrakt.md
 # Changelog
 
 {% changelog %}
-## v0.34.0
+## v0.35.0
+
+- Declare a rune's schema.org mapping as a table (SPEC-130, WORK-561/563/565/566)
+- A rune's structured data used to be built by hand inside its `transform()`: `schemaOrgType: 'Product'` here, a `schema: { name: someLocalTag }` there, a `<span typeof="Person">` assembled from filtered children somewhere else. No tool could see any of it, because it only existed as JavaScript that had already run — and JSON-LD is the one output nobody looks at, since a page renders identically whether its structured data is right or ruined.
+- A rune now declares `schema:` on `createContentModelSchema` as data, and an applier resolves it against the rendered tree:
+- Sources resolve by name, and the lookup is attribute-agnostic: a `data-name` and a `data-field` are equally findable, so a node moving between `properties` and `refs` never breaks a table. A source that exists only as an attribute value is rebuilt from the `data-rune-fields` bag; the rendered HTML is never relocated to suit the schema.
+- **`schema` is an identity field.** A theme may restructure and re-decorate a rune; it may not restate what the rune asserts about a site's content by changing how it looks (ADR-028).
+- **Declared lists always serialise as arrays.** `lists: ['track']` fixes the shape of a collection property regardless of how many items an author wrote — previously a one-item collection emitted an object and a two-item one an array, so every consumer had to handle both.
+- **Every source is addressable.** Roughly 20 nodes the schema reached only as anonymous local variables or array positions now carry names.
+- **`refrakt inspect <rune>`, `refrakt contracts` and `refrakt reference` all print the resolved row.** Nothing validates a table against schema.org — refrakt ships no ontology — so visibility replaces validation, and a wrong row is caught by a reviewer reading it. What _is_ checked: a source matching no emitted node, no field-bag entry and no declared attribute is flagged, because that property is silently absent from the published graph.
+- **SEO is now harvested after the cross-page pipeline**, not during per-page transform. `{% breadcrumb auto=true %}` resolves its ancestors in a `postProcess` hook, so before this its JSON-LD was harvested from a tree that did not yet have them — the rendered RDFa and the published JSON-LD disagreed on every auto breadcrumb.
+- Also new: `contracts/seo-baseline/baseline.json`, a committed record of the structured data every rune emits, so a schema change is reviewed as a diff.
+- Per-type schema for `playlist` and `track` — BUG-013 (WORK-569, SPEC-130)
+- Both runes declared an enum of kinds and then published one type for all of them. `{% playlist type="podcast" %}` announced a podcast as a `MusicPlaylist` whose episodes were `MusicRecording`s, and `{% track type="episode" %}` did the same on its own. Each rune already knew what its content was and emitted the wrong schema anyway.
+- Each now keys off the attribute its author already set, with its own table, and neither rune declares anything about the other.
+- A `playlist` publishes by kind: `album` is a `MusicAlbum` with `track`, a narrowing of the `MusicPlaylist` it used to emit; `mix` stays a `MusicPlaylist`, the one kind with no narrower type; and `podcast`, `audiobook` and `series` switch branch to `PodcastSeries`, `Audiobook` and `CreativeWorkSeries`, holding their items in `hasPart` as `PodcastEpisode`s, `Chapter`s and `CreativeWork`s.
+- `track`'s five kinds map to `MusicRecording`, `PodcastEpisode`, `Chapter`, `CreativeWork` and `VideoObject`.
+- **A child row carries a property map, not just a type.** Retyping an item and leaving its stamps would put `byArtist` on a `PodcastEpisode`, which does not have that property — worse than the `MusicRecording` it replaced, which was at least coherently wrong. A parent that retypes a child now owns that child's mapping, and anything it does not name is dropped. A type the _author_ stated is the exception and survives: a `{% track type="song" %}` inside a podcast stays a song, with its own properties.
+- **Breaking for consumers of this data.** Four of the five playlist kinds change type, three of them change the property holding their items from `track` to `hasPart`, and `byArtist` no longer appears on non-music items or on a `PodcastSeries`. `track`/`hasPart` are also declared lists now, so a one-item playlist emits an array rather than a bare object.
+- Also in this change: `refrakt inspect` audits a `children:` row against the children rather than against the parent, and accepts a stamped property as evidence that a source resolved — without which every property the applier rebuilds from the field bag reported as broken, since the identity transform consumes the bag before the audit reads the tree.
+- Style runes by BEM class, not the schema.org channel (WORK-564, BUG-015)
+- Fourteen CSS rules across Lumina and Skeleton selected on `[property=…]` — the RDFa attribute the structured-data channel writes. That coupled a rune's appearance to what it asserts about its content, so renaming a schema.org property would unstyle a rune, and four of the rules were already dead because a `property` had moved years ago.
+- All fourteen now select on the `data-name`-derived BEM element class instead (`.rf-lore__title`, `.rf-plot__title`, and so on). Where a rule had a live `meta[property]` half and a dead `span[property]` half, the dead half is gone and the live one kept. A CSS coverage assertion walks every stylesheet under `packages/` and `plugins/` and fails on any `[property…]` selector, so the coupling cannot come back.
+- `.rf-lore__title` and `.rf-plot__title` pinned `font-size`, which overrode the prominence chain — `{% plot prominence="display" %}` had been inert. The declarations are removed; `sections.css` already supplies the resting value.
+- A `schema="none"` test passed vacuously: `stripSchemaOrg` has exactly one caller (`accordion`), so the attribute does nothing on `pricing`.
+- **If you override Lumina or Skeleton CSS** and your selectors mention `[property=…]` on a rune's children, they no longer match the shipped markup's intent — switch to the BEM element class. If you relied on `.rf-lore__title` or `.rf-plot__title` carrying a fixed `font-size`, set it yourself or use the `prominence` axis, which now works.
+- An entity with no properties is not emitted (WORK-567, SPEC-130 D4)
+- Seven runes declared a schema.org type and no property mapping at all, each publishing `{"@context": …, "@type": "Dataset"}` and nothing more. A type assertion with nothing attached tells a consumer nothing; it is noise in every channel that reads it.
+- `collectJsonLd` now drops an entity that resolves to a bare `@type`, and never nests a bare child into its parent. Enforcing it in the collector rather than per rune keeps it enforced: a rune that declares a type and forgets the mapping loses the entity instead of quietly joining the seven.
+- `gallery` (`ImageGallery`) — the images are plain markdown pictures with nothing naming them; `image`/`associatedMedia` needs each typed as an `ImageObject`.
+- `data-table` (`Dataset`) — no headline to supply a `name`, no `distribution` to point at; its properties are all interaction config.
+- `budget` and `itinerary` (`ItemList`) — the children carry real data, but `itemListElement` needs them typed, and neither a cost breakdown nor a day-by-day plan is a ranked list to begin with.
+- `map` (`Place`) — a type error rather than a thin entity: a map showing three landmarks is not itself a place. The name and description belong to the `map-pin` children.
+- `blog` (`Blog`) — this belongs to the page, not the rune. Its `posts` container is empty at transform time and `name`/`url`/`blogPost` are page-level facts.
+- `symbol` kept `TechArticle` and gained a real mapping — `name` from the symbol's own heading, `description` from the lead paragraph.
+- **If you consume structured data from those six runes**, there is now nothing where an empty type assertion used to be. Dropping the type also removes the `typeof` from the rendered HTML, so the RDFa channel goes quiet with the JSON-LD rather than keeping a bare assertion in the markup.
+- Thirteen flat schema tables, and `NonProfit` becomes `NGO` (WORK-568, SPEC-130)
+- `figure`, `embed`, `cast-member`, `character`, `realm`, `faction`, `plot`, `lore`, `organization`, `pricing`, `tier`, `timeline-entry` and `track` now declare their schema.org mapping as a table instead of building it inside their transform. Each reproduces its previous JSON-LD exactly, except where a change is named below. (`breadcrumb-item` is the fourteenth of the group and moves with its parent, since the property that holds a child and the child's type are one declaration.)
+- **`organization type="NonProfit"` is now `type="NGO"`.** schema.org has `NGO` and has never had `NonProfit`. The rune's curated six-value enum validated against itself, so `matches` was satisfied and nothing noticed the value was not in the vocabulary it claimed to speak — every site writing `NonProfit` published a `@type` no consumer resolves. The enum, the schema table and the generated attribute reference all say `NGO` now.
+- **This is breaking for content.** `{% organization type="NonProfit" %}` no longer passes validation; change it to `type="NGO"`. Failing loudly is the point — the old value silently published an unresolvable type.
+- `organization` also becomes a `by: 'type'` table over its six rows, which is what its `typeof: attrs.type` was already doing, now written where a reviewer can read it and keyed off the same list that feeds `matches`, so the accepted values and the published types cannot drift apart.
+- **`pricing` declares `offers` a list.** A single-tier pricing block serialises `"offers": [{…}]` instead of the bare object it used to emit, so the shape no longer varies with how much content an author wrote.
+- Two smaller shape notes: `embed`'s three RDFa carriers are rebuilt from the field bag and therefore appended last, so their order in the markup changes (the JSON-LD is identical); and `cast-member`'s portrait image gains a `portrait` name, and with it an `rf-cast-member__portrait` class, so the schema reaches it by name rather than through a local variable.
+- Generate breadcrumb and timeline positions from a declared index (WORK-571)
+- `breadcrumb` and `timeline` used to walk their children and push a `<meta property="position">` into each. Both now declare `generated: { position: 'index' }` and the applier produces it — the one generator in the vocabulary, used by exactly these two runes.
+- **`position` is now a string.** The generator emits `String(index + 1)`, so the RDFa attribute and the JSON-LD say the same thing. Before this the meta carried a _number_, which the JSON-LD collector passed through verbatim while the rendered markup stringified it — the two channels disagreed on every breadcrumb and every timeline. If you read `position` out of a page's JSON-LD, compare it as a string or coerce it.
+- **`itemListElement` is a declared list**, so a one-item breadcrumb trail or a one-entry timeline emits an array rather than a bare object, as `pricing`'s `offers` already did.
+- `{% breadcrumb auto=true %}` is built from a pipeline hook rather than a Markdoc schema, so the wrapper that normally applies a rune's table cannot reach it. The hook now calls the applier itself, which means both breadcrumb paths publish from the _same_ table instead of from a declaration and a hand-written copy that can drift apart.
+- Fix the changelog generator mangling wrapped bullets and tables
+- `scripts/generate-changelog.mjs` flattens each package CHANGELOG into the prose summary at `site/content/releases.md`. Two shapes did not survive the flattening:
+- **A sub-bullet that wraps** had its continuation lines classified as prose, so every bullet was truncated at its first line and the orphaned tails were joined into a single sentence. v0.34.0's entry for the three validation defects reads as three unrelated half-thoughts run together, and every release back to v0.30.1 has instances of it.
+- **A markdown table** was unwrapped into one line of pipes and dashes.
+- Continuation lines now attach to the bullet above them, and tables are dropped the way fenced code blocks already are — the changelog is a flat prose summary and a table has no flat form, so the readable choice is to leave it in the package CHANGELOG and say the same thing in a sentence.
+- `releases.md` is regenerated here, which repairs the existing entries: 68 releases unchanged, fourteen garbled lines gone, nothing else moved.
+- Accept `{% track %}` children in `{% playlist %}` (WORK-569 part, BUG-016)
+- A `{% track %}` written inside a `{% playlist %}` is now one of that playlist's tracks — in the listing, in the HTML, and in the structured data. It used to fall through to the greedy `body` field: rendered as an `<li>` outside any list, published as a detached top-level entity, and recommended by the docs the whole time.
+- The bar is equivalence — a nested track with no explicit `type` produces the same schema as the same content written as a list item — asserted directly rather than assumed. An explicit child type that contradicts its container is honoured: a `{% track type="song" %}` inside a podcast stays a song, because the author said so.
+- **Two defects fixed to get there:**
+- The sequence resolver could not handle a greedy `itemModel` field. With `greedy`, the resolved value is an array, and the extraction guarded on `'type' in node` — so making `tracks` greedy silently disabled its own extraction and broke the list form outright. It now concatenates `resolveListItems` across the collected lists in document order.
+- `track` was dropping two of its own fields. `artistMeta` and `durationMeta` were declared but never pushed into `children`, so they were stamped onto nodes that were not in the tree: a standalone `{% track artist="Radiohead" duration="4:01" %}` published its name and nothing else. `rootAttrs` was likewise assembled and never applied, so `src` reached nothing.
+- **If you have a `{% track %}` nested inside a `{% playlist %}`**, its rendered position and its structured data both change — the track moves into the playlist's `<ol>` and its entity nests under the playlist's `track` property instead of standing alone at the top level. That is the shape the docs always described.
+- Declare `accordion`, `recipe` and `how-to`'s retype-and-wrap (WORK-570)
+- The last four runes building their schema.org data by hand. Each set `typeof` on nodes it did not create and hand-wrote a `<div property="text">` wrapper to carry the value; both are now declared, and the applier emits the wrapper.
+- **No output changes.** The rendered HTML is the same elements with the same attributes and values in the same positions — only the attribute _serialisation order_ moves on eight of them, since the applier runs after the renderable is built rather than before. The published JSON-LD is unchanged across the whole baseline corpus.
+- The wrapper stays, and there is now a test saying why. RDFa Core 1.1 §7.5 step 11 fixes a property's object to the typed resource when an element carries both `property` and `typeof`, so its own text is unreachable as a literal; deleting the inner element looks like a simplification and silently drops a triple from the RDFa while the JSON-LD keeps emitting it.
+- A source naming several nodes stamped only the first, so a recipe published one of its six ingredients and dropped the rest.
+- Fixing that made name lookup reach into nested runes, so a character's `name` became the character plus each of its section headings. Name resolution now stops at another rune's node, matching the flat namespace's per-rune scope.
+- With this, no rune anywhere passes `schemaOrgType` or a `schema:` map to `createComponentRenderable`, and no transform mutates `attributes.typeof` — the declarative mapping SPEC-130 set out to build is the only form left, and a test over the catalog keeps it that way.
+
+## v0.34.0 - September 15, 2026
 
 - Validate content during the build (WORK-556, SPEC-132 phase 1)
 - Every rune schema declares required attributes, typed attributes and `matches` enums. Markdoc can check all of them and has been able to the whole time. Nothing in the build ever asked it to — the validator ran in the language server and over the fixture corpus, never over a user's pages (BUG-014).
@@ -49,7 +118,7 @@ description: Release history for refrakt.md
 - `nodes.error` is untouched. That is Markdoc's built-in parse-error node and is unrelated to this rune.
 - The exception lists shrink with it: `'error'` is dropped from `EXCLUDED_RUNES` in `reference.ts` and from `PAGELESS` in `check-rune-docs.mjs`, rather than being left behind as a suppression for something that no longer exists.
 
-## v0.33.0
+## v0.33.0 - September 13, 2026
 
 - Make `music-playlist` / `music-recording` real aliases, and let the JSON reference dump carry child runes (BUG-009)
 - `music-playlist` and `music-recording` were registered as separate runes carrying a self-referential `aliases: ['music-playlist']`, rather than as aliases on `playlist` / `track`. They already shared the primary's transform, so rendering is unchanged — but the duplication printed "Aliases: music-playlist" in the reference, put a phantom duplicate of every playlist attribute in `reference dump --format json`, and forced duplicate theme config entries that then had to be kept in sync by hand. Both spellings still parse.
@@ -139,7 +208,7 @@ description: Release history for refrakt.md
 - The generated section agrees with `refrakt reference <name>` — both read the same serialized rune.
 - `check-rune-docs` gains the content half of its question: every rune with generated rows has a page that renders them, and no page hand-writes a table beside a generated one. `npm run runes:attributes -- --check` keeps the artifact fresh.
 
-## v0.32.0
+## v0.32.0 - September 10, 2026
 
 - `refrakt reference` reports each rune's actual universal attributes (WORK-535)
 - `refrakt reference card` printed all 37 universal attributes under the heading **"Universal attributes (available on every rune)"**. On most runes several of them do nothing — the CLI stated as fact something false about the rune it was describing, which is the symptom that opened SPEC-125. Unlike language-server completion, this did not fall out of the schema narrowing for free: the line was a separate code path printing the static universal set wholesale.
@@ -213,7 +282,7 @@ description: Release history for refrakt.md
 - **What changes on screen.** Prose that currently vanishes starts rendering, in the character's body slot above its sections. A character that has only sections is unaffected — no body slot is emitted, as before. The `body` slot also moves ahead of `sections` in the content column, matching `realm` and `faction`: the two were previously mutually exclusive, so the order never mattered.
 - This also makes Character's `body` section role meaningful in practice. The role was declared correctly in 0.31.0 and `data-reading` / `data-dropcap` landed on the slot, but there was never any prose in it for a reading register to style.
 
-## v0.31.0
+## v0.31.0 - September 8, 2026
 
 - Correct missing section roles on card, bento-cell and accordion-item (SPEC-125 Phase 1)
 - Three runes declared a slot in their layout that their `sections` map never mapped to a role. Because `data-section` is what `reading`, `dropcap` and `prominence` gate on, the omission silently dropped those attributes — `{% card reading="prose" %}` did nothing at all, with no warning.
@@ -254,7 +323,7 @@ description: Release history for refrakt.md
 - **Rendered output changes**: the six runes now emit `data-section="body"` on those slots. Checked in a browser against the real stylesheet — including the `realm` case where the new body role sits beside an existing `media` role — every element's computed style and box geometry is unchanged. `[data-section="body"]`'s declarations are already the values inherited from `html`, and none of the six stylesheets sets `line-height` or `color` on its body element. A theme with its own `[data-section]` rules may see a change; that is the intended, visible half of the correction.
 - Note: `character`'s entity-level body slot is currently always empty — prose written directly inside `{% character %}` is dropped by its content model, unlike `realm` and `faction`, which handle the same input correctly. The role is declared correctly here; the content-model defect is tracked separately as BUG-003.
 
-## v0.30.1
+## v0.30.1 - September 5, 2026
 
 - Describe the universal axes in structure contracts (SPEC-124, WORK-527).
 - `refrakt contracts` is documented as describing "the complete HTML structure the identity transform produces for every rune". It did not: across the 132 runes in the checked-in contract, not one universal axis appeared. A theme author reading it learned nothing about `[data-elevation]`, `.rf-card--tinted`, `.rf-hero--has-bg`, `[data-reveal]` or `[data-substrate]` — every one of which the engine emits and Lumina styles.
@@ -325,7 +394,7 @@ description: Release history for refrakt.md
 - Internal only: no public API changes. Rendered output is unchanged **except** for one benign difference: the `--tinted` BEM modifier now appears _after_ `--width` / `--spacing` / `--inset` in the class attribute, where it used to come before them. The facet pass runs at a fixed point that sits after those still-inline axes. Class order within a `class` attribute has no effect on CSS matching or specificity, and no test pinned it — but it is an output difference, so it is recorded here rather than described as byte-identical. It resolves itself when width/spacing/inset migrate under WORK-521.
 - Everything else is byte-identical, including inline-style declaration order (tint registers first, so its `--tint-*` declarations still lead), and the 630 pre-existing transform tests pass unmodified.
 
-## v0.30.0
+## v0.30.0 - August 27, 2026
 
 - Add lifecycle-drift validation to `plan validate` (SPEC-119).
 - `plan validate` now flags entities whose status contradicts the terminal evidence around them — the symmetric counterpart to the existing one-directional lifecycle checks. New v1 checks:
@@ -340,7 +409,7 @@ description: Release history for refrakt.md
 - **Breaking:** the `refrakt plan build` and `refrakt plan serve` commands are gone, along with their private static-site generator (the three-family render-pipeline router, `planLayout` shell, the port-3000 dev server + file watcher + SSE reload, the behavior bundler, and the pagefind invocation). Invoking either command now yields an unknown-command error.
 - A plan directory is an ordinary refrakt site since SPEC-071: scaffold a deployable plan site with `create-refrakt --type plan` (or `refrakt plan init
 
-## v0.29.0
+## v0.29.0 - July 23, 2026
 
 - Multi-language support (i18n foundation) — SPEC-035
 - Framework-generated text (labels, navigation chrome, accessibility strings, structural headings, and client-side behavior strings) is now localizable. Zero-config English is unchanged — adding a language means providing a strings dictionary, no structural changes.
@@ -353,7 +422,7 @@ description: Release history for refrakt.md
 - **Cross-adapter `<html lang>`** + locale-aware `Intl` duration/number/currency.
 - **First-party bundles**: in-package per-locale JSON (`i18n/<locale>.json`) with a seeded German translation; partial bundles degrade per key to English.
 
-## v0.28.0
+## v0.28.0 - July 17, 2026
 
 - Add the `data` rune (SPEC-103) — ingest an external tabular source and render it as a table, chart, or datatable.
 - A preprocess-time `{% data %}` rune reads an external file through the SPEC-113 `ProjectFiles` sandbox and emits a Markdoc `table` node that `chart` and `datatable` consume with **no structural changes** — the emitted table is also the honest no-JS fallback.
@@ -392,7 +461,7 @@ description: Release history for refrakt.md
 - Every consumer keeps an `fs` fallback, so self-hosted builds are unchanged; the only behavioural change is containment on previously-unguarded paths.
 - Docs: a new "Hosted & In-Memory Builds" guide covers the contract and the fetch-then-build materialization pattern.
 
-## v0.26.0
+## v0.26.0 - June 30, 2026
 
 - **Carousel is now a shared layout mode any rune can adopt, not a one-off.** `layout="carousel"` is a canonical layout token backed by a shared DOM contract (a `data-name="items"` track whose direct children are the slides) and an attribute-triggered behavior dispatch path: the carousel behavior enhances any block carrying `[data-layout="carousel"]`, lifted out of the gallery to be block-agnostic. A CSS-only `collapse-to` dial lets a grid/list collapse into a carousel at a breakpoint. `feature` (marketing) and `cast` (business) are the first adopters; the shared track + `collapse-to` contract is documented for further runes.
 - **Fix the `feature` carousel layout: gap between slides and working prev/next buttons.** The shared carousel behavior computed its per-item scroll distance from `getComputedStyle(track).gap`, but an unset flex `gap` computes to the string `"normal"` in real browsers — `parseFloat("normal")` is `NaN`, so `scrollBy({ left: NaN })` was a silent no-op and the nav buttons did nothing. It now reads `columnGap` and falls back to `0` on any non-finite value. Lumina's `feature` styles also gained the missing `gap` on the `[data-layout="carousel"]` track (matching the existing `grid` gap), so carousel slides no longer butt together. Separately, the `preview` rune's `responsive` attribute description is corrected: it accepts viewport **presets** (`mobile`, `tablet`, `desktop`), not pixel widths.
@@ -402,13 +471,13 @@ description: Release history for refrakt.md
 - **Beside layouts collapse on their own column width, not the global viewport.** The shared `split.css` beside→stack collapse (used by card, recipe, hero, feature, step, realm, faction, playlist) moves from `@media` to `@container`, so a media-beside layout now collapses to a stack based on the width actually available to it — its nearest query container (`.rf-page-content` on a page) — rather than the browser viewport. A beside layout embedded in a narrow column (e.g. a docs page beside the sidebar) now collapses when _that column_ is tight. The `data-collapse` breakpoints (sm/md/lg) and the `never` opt-out are unchanged. Additionally, the `preview` rune's viewport frame is now a query container, so container-query-driven layouts (this beside→stack collapse, and carousel `collapse-to`) are faithfully simulated when you narrow the preview's viewport selector.
 - **Fix carousel nav buttons rendering unstyled in production builds.** `carousel` is a shared layout mode (`data-layout="carousel"`, SPEC-100) that runes like `feature`, `cast`, and `gallery` adopt — it is not a `data-rune="carousel"`, so it never surfaced in the per-rune CSS usage analysis. As a result the production CSS tree-shaker (`computeUsedCssBlocks`) dropped the theme's `carousel.css` skin, and the JS-injected `.rf-carousel__nav` prev/next buttons rendered as unstyled UA squares (gray surface, no rounding) on built sites while looking correct in dev (which loads the full CSS barrel). `carousel.css` is now always included when the theme ships it, matching the existing `tint`/`bg` universal-axis handling. Applies to every adapter that tree-shakes theme CSS (SvelteKit, Next, Nuxt, Astro, Eleventy, HTML).
 
-## v0.25.1
+## v0.25.1 - June 24, 2026
 
 - Fix diagram rune silently failing when theme colors are non-hex. Mermaid only accepts hex colors, but `--rf-color-*` tokens defined as `oklch(...)`, `color-mix(...)`, named colors, or nested `var()` reached it unconverted. The `<rf-diagram>` element now resolves each token to hex at render time via the browser's own color engine before initializing mermaid.
 - Fix steps rune forcing `display: block` on every `<strong>`. The title rule was scoped to `.rf-step strong`, which caught all inline bold in step body text and broke it onto its own line. It now targets only the leading title bold (`.rf-step__content > p:first-child > strong:first-child`), so inline bold renders inline.
 - Fix mobile docs layout where the secondary toolbar covered the top of the open side-nav panel, hiding its first link. The nav panel's `top` override had the same specificity as the base `.rf-mobile-panel` rule and lost on import order, so the panel docked under the site header instead of the toolbar. The override is now a two-class selector that wins regardless of order, and the toolbar is pinned to a known height the panel offsets against exactly.
 
-## v0.25.0
+## v0.25.0 - June 24, 2026
 
 - v0.25.0 — Distribution & onboarding
 - Make the refrakt stack distributable and cut the blank-page activation cost.
@@ -418,7 +487,7 @@ description: Release history for refrakt.md
 - **Config.** Sandbox runtime directory renamed `sandbox.examplesDir` → `sandbox.dir` (ADR-022); the old name is still accepted with a deprecation warning. New `TemplateManifest` / `PresetPackManifest` types and a dependency-free `checkRefraktCompat` helper.
 - Authoring docs for all four distributable layers live under `extend/distributing/`.
 
-## v0.24.6
+## v0.24.6 - June 23, 2026
 
 - Add a `search` opt-out and document search setup.
 - New `SiteConfig.search` option (`refrakt.config.json`). Defaults to `true`; set `false` to omit the search chrome entirely — no trigger button and the `search` behavior (including `Cmd/Ctrl+K`) is never initialized.
@@ -429,11 +498,11 @@ description: Release history for refrakt.md
 - Add the `frame-overflow: clip | bleed` media-frame facet (SPEC-116, WORK-444). A guest whose content is wider than its frame — a fixed-width or naturally wide component — is clipped at the rounded inset edge by default; `frame-overflow="bleed"` instead runs an overflowing guest's inline-end out to the layout edge on a narrow viewport and squares those corners, so it reads as cropped by the screen.
 - It's a universal frame facet (host/slot-set), resolved onto the media zone as `data-frame-overflow`, and gated by a runtime per-guest `data-overflowing` signal — the guest reports the fact (the `sandbox` measures its iframe with hysteresis), the host decides the policy. It's meaningful only on a bleed host (hero/feature); on a clip host (card/bento-cell) the media well crops the over-width, so it's a no-op and emits a build warning. The bleed reaches a layout-owned boundary (`--rf-bleed-room-end`, default the page gutter), never the raw viewport, so a chrome'd layout can cap it at the content row. v1 is collapsed-viewport, inline-end only; direction (via `frame-anchor`) and side-by-side are deferred.
 
-## v0.24.5
+## v0.24.5 - June 22, 2026
 
 - **Fixed the gap that could appear between a sticky header and the bar below it while scrolling.** Layout headers (`.rf-header`, `.rf-docs-header`, `.rf-blog-header`) now pin their height to `--rf-header-height` instead of being content-driven, so the sticky offsets that dock below them — the docs mobile toolbar and the mobile nav panel — line up exactly with the header bottom. Previously a header that rendered shorter than the assumed `3.5rem` left a strip where page content scrolled through between the two bars (and a taller one overlapped). The docs toolbar also hard-coded the `3.5rem` literal rather than reading the token, so layout overrides like the blog layout's `4.25rem` never reached it; all offsets now derive from `--rf-header-height`. Sites whose header needs to be taller should set `--rf-header-height` on their layout root.
 
-## v0.24.4
+## v0.24.4 - June 18, 2026
 
 - `codegroup` and `diff` chrome now derives from the code surface instead of the page chrome. For both runes the wrapper fill, header/topbar, tabs, their text, and the internal separators are now derived from `--rf-color-code-bg` / `--rf-color-code-text` (the tokens a syntax preset owns) via `color-mix`, with only the outer frame (border + shadow) staying in the page world. Previously `codegroup`'s topbar/tabs and `diff`'s header used `--rf-color-surface`, so when the active preset gave the code surface a palette that diverged from the page — e.g. Nord's Polar Night code surface on an otherwise-neutral site — the light card chrome clashed with the dark code body. Both runes are now internally coherent with their own code body in light and dark modes.
 - Add a `contentMeasure` axis so page sections keep their content readable when bled to the `wide` track. Previously `width="wide"` widened both a section's background _and_ its content, while `width="full"` widened only the background (content stayed anchored to the text measure) — an inconsistency for runes like `hero` and `feature`.
@@ -442,18 +511,18 @@ description: Release history for refrakt.md
 - The sandbox now owns a `border-radius` and lets the iframe inherit it, so skeleton's `overflow: hidden` clips the iframe to the rounded shape. It mirrors `codegroup`: `radius-container` standalone (and in a bleed host, keeping its own chrome), the smaller media tier when merged into a clip-host well (card/bento), and flush in a full-bleed cover/backdrop.
 - Fix `validateThemeTokensConfig` rejecting valid tokens because its internal `TOKEN_CONTRACT_SHAPE` had drifted from the `TokenContract` type. The validator was missing the SPEC-056 extended syntax roles (`type`, `property`, `parameter`, `tag`, `attribute`, `operator`, `number`, `regex`), the spacing densification band (`spacing.snug`, `spacing.cozy`), and `shadow.none`. As a result, an integrated preset like Nord — which sets the extended syntax roles when it's the _active_ preset — failed validation with "unknown token key" errors, even though those keys are part of the contract (scoped Nord _tints_ took a different code path and were unaffected). The validator shape now mirrors `SyntaxTokens` and the rest of `TokenContract`.
 
-## v0.24.3
+## v0.24.3 - June 17, 2026
 
 - Add a `guestFit` media-host axis so a theme declares whether a rune frames its media-zone guests or leaves them alone. `RuneConfig.guestFit: 'clip' | 'bleed'` (default `clip`) is emitted by the engine as `data-guest-fit` on the media zone, a sibling to `data-guest-posture`.
 - This fixes rich guests (`sandbox`, `codegroup`, `juxtapose`) being given rounded corners in bare section hosts like `hero` and `feature`: those now declare `guestFit: 'bleed'`, so a rune guest keeps its own chrome (its natural radius/border) instead of being masked by the slot — while leaf images still frame to the slot. Framed wells (`card`, `bento-cell`, …) keep `clip` and are unchanged, still merging a guest into the well as one surface. The shared rule replaces the per-host CSS so any rune can opt into either behavior from config.
 - `guestFit` also drives the displace containment default: a displaced guest now defaults to `peek` (cropped) in a clip host and `bleed` (spills) in a bleed host, so a hero no longer needs `frame-displace-mode="bleed"` spelled out (an explicit mode still overrides). The hero-specific media-zone unclip is retired in favour of the shared `data-guest-fit="bleed"` rule; the guest-intrinsic opt-outs (`preview`, `juxtapose`, displaced `showcase`) are unchanged.
 - A bleed host no longer clips its rune guest at all (not just on displace), so a guest's own drop-shadow is no longer cropped into the corner gaps left by its rounding — which showed as darker corners behind, e.g., a codegroup in a hero.
 
-## v0.24.2
+## v0.24.2 - June 17, 2026
 
 - Fix paragraph-wrapped media in media+content runes. Markdoc wraps inline media (a bare image, or a single block rune like `{% sandbox %}`) in a `<p>`; several runes passed their media/header zone through raw, so the media well held a stray paragraph instead of the element. `hero`, `feature`, `step`, `event`, `organization`, `symbol`, and `howto` now unwrap it, matching `card`/`bento`. Additionally, content-model fields matching `image` now capture standalone images (parsed by Markdoc as a paragraph), fixing the `character` portrait being silently dropped.
 
-## v0.24.1
+## v0.24.1 - June 17, 2026
 
 - **Frame displacement gains a `bleed` mode and a longer offset ramp; bg gradients accept `transparent` and `name/alpha` stops; spacing-attribute overrides now win cleanly.**
 - **`frame-displace-mode="bleed"`** — a second rendering model for `frame-displace`. `peek` (default) keeps the existing `transform: translate()` behaviour where a displaced media guest is cropped by its zone — correct for card / bento-cell. `bleed` puts a negative margin on the media zone so following layout pulls up and the guest extends past the host's edge with no gap above — useful for a hero or cta whose media should overflow downward.
@@ -467,7 +536,7 @@ description: Release history for refrakt.md
 - **`sandbox height="fill"` now actually fills the host.** The behaviour set the iframe to `height: 100%`, but the `.rf-sandbox` host itself was auto-height, so the iframe's 100% resolved against an undefined containing block and collapsed to the 150px fallback. This only worked in cover media (`media-position="cover"`) where the host was positioned absolutely with `inset: 0`. Any other context — a card with `frame-aspect`, a hero with a media zone, a parent that owns its height some other way — silently produced a 150px iframe. Skeleton now sets `.rf-sandbox[data-height="fill"] { height: 100% }` so the host claims its container's height and the iframe's `100%` means what it says.
 - **`juxtapose` panels container radius `md` → `lg`.** A standalone juxtapose now matches the container-radius tier used by card / hero / bento-cell (`--rf-radius-lg`). The existing media-zone-guest override (`--rf-radius-media`) still wins when a juxtapose is dropped into a card's media well, so it never out-rounds its host.
 
-## v0.24.0
+## v0.24.0 - June 16, 2026
 
 - **Live sandbox guests in the `bg` backdrop layer (SPEC-104).** A surface can now carry **both** an animated backdrop **and** a positioned subject media — the visualiser is the `bg`, the image/code/embed stays an in-flow media guest, so they stop competing for the single media zone.
 - `bg` gains an optional body holding one bare `sandbox`: it's transformed normally (the real rune runs, with file resolution + sanitisation), tagged `data-bg-guest`, and the engine relocates it into the bg layer (a sibling of `bg-video`, above the boot frame, below overlay/scrim). A chromed guest (`video`/`audio`/`figure`) is rejected with a build warning.
@@ -483,7 +552,7 @@ description: Release history for refrakt.md
 - **Fix: `preview` no longer bleeds to the viewport edge inside a `feature` (default layout).** The WORK-438 skeleton/skin split promoted the in-feature breakout `.rf-preview--in-feature { margin-inline: calc(-1 * var(--rf-content-gutter)) }` into `@layer skeleton`, where it lost to Lumina's skin rule `.rf-preview { margin: 2rem 0 }` (skin beats skeleton regardless of specificity), nullifying the breakout. The bleed is moved back to `@layer skin`, where it again wins over the base margin by specificity and fires together with the canvas border-radius reset at the `@container (max-width: 1280px)` breakpoint. Docs-layout previews were unaffected (they bleed via the canvas de-chrome, not the in-feature root margin).
 - **Fix: `plan create` now validates enum attributes at write time.** `plan update` rejected invalid `status`/`priority`/`complexity`/`severity` values, but `plan create` passed any `attrs` straight into the scaffolded file unchecked — so a stray `complexity="small"` (or `status="todo"`) landed silently and only surfaced later as a `plan validate` error. `create` (and the `plan.create` MCP tool) now run the same validation as `update`, rejecting unknown attributes and out-of-vocabulary enum values with a message listing the valid set, before any file is written. The vocabularies (`VALID_STATUS`, `VALID_PRIORITY`, `VALID_COMPLEXITY`, `VALID_SEVERITY`, allowed-attr lists) are consolidated into a single shared `enums` module so `create`, `update`, and `validate` can no longer drift apart, and the `plan.create` MCP schema documents the accepted enum values.
 
-## v0.23.0
+## v0.23.0 - June 16, 2026
 
 - **Surface axes — `elevation` is now a depth ladder (SPEC-107).** The `elevation` attribute is decomposed into three composable axes so the same content rune can read as a contained card _or_ a full-bleed hero with no rune fork:
 - **`elevation`** — a depth ladder `sunken | flush | flat | raised | floating | overlay` (was the `none|sm|md|lg` shadow scale). Each rune ships a `defaultElevation` (a `card` is `flat`, a `hint` is `flush`, a `chart` is `sunken`); styled by `[data-elevation]`, no BEM modifier class.
@@ -501,7 +570,7 @@ description: Release history for refrakt.md
 - **Lumina** keeps only the skin remainder (colour, border, radius, shadow, font, and spacing _values_), which wins over the skeleton layer purely by cascade-layer order — ordinary single-class/attribute selectors, no `!important`. Rendered output is unchanged: the split is a re-bucketing, verified declaration-for-declaration against the pre-split CSS.
 - This is what makes a second theme a token file + skin rather than a fork: the structure is now shared infrastructure, and a skin overrides only the aesthetic deltas.
 
-## v0.22.0
+## v0.22.0 - June 15, 2026
 
 - **AI `write` mode draws fixtures as few-shot exemplars** (SPEC-102) — the write-mode prompt's hardcoded "Example structure" stub is replaced by the fixture corpus: fixtures explicitly tagged `role: canonical`/`rich` (with their authoring `notes`) are surfaced as in-context exemplars, so generated content reflects idiomatic, well-formed rune usage. The set grows automatically as the corpus is annotated. Prompt-time retrieval only — no training or fine-tuning pipeline.
 - **Standardised rune-fixture corpus + CI validation** (SPEC-102) — rune examples now live as annotated Markdown fixtures (`fixtures/*.md`) with validated YAML frontmatter (`role`, `attributes`, `demonstrates`, `notes`) and `<rune>.<scenario>.md` scenarios; `RUNE_EXAMPLES` is generated from them. A CI test parses, schema-validates, and transforms every fixture in the corpus (rejecting unknown keys / wrong types and any parse/transform error), and `refrakt plugins validate` now reports role coverage — e.g. a rune that has fixtures but no `canonical` one. One source of truth for the inspect command, the gallery, docs, and AI few-shot, with an authoring guide for content authors.
@@ -509,7 +578,7 @@ description: Release history for refrakt.md
 - **Image-src scheme sugar** (SPEC-106) — standard Markdown image syntax now resolves two custom URL schemes to inline SVG at transform time. `![Portrait](placeholder:portrait)` emits a deterministic, theme-token-tinted placeholder (shapes: `cover`/`wide`/`banner`/`square`/`portrait`/`thumbnail`/`avatar`), and `![GitHub](icon:github)` inlines a named icon from the theme's icon set — the same source the `{% icon %}` rune uses, with `alt` as the accessible label. Unknown schemes, relative paths, and absolute URLs pass through to `<img>` unchanged, and the scheme set is a small registry a plugin can extend. Authors can draft image-heavy pages before the assets exist and swap in real paths later. The image-consuming runes (`figure`, `gallery`, `juxtapose`, `mediatext`, `showcase`, `card`, `cast`, `recipe`, `realm`, `testimonial`, `storyboard`) now accept scheme-resolved `<svg>` media, not just `<img>`.
 - **Tokenized typography** (SPEC-094) — the token contract gains a full type system: a modular type scale, line-heights, font-weights, letter-spacing, and a display family, as typed `--rf-*` tokens. Lumina's ~351 hardcoded `font-size` declarations are refactored onto the tokens with no visual change, and the token CSS is now generated from `tokens.ts` rather than hand-maintained against a coverage test. Typography is the single largest visual differentiator between a product/docs theme and an editorial one, so this makes it themeable by overriding tokens instead of forking rune CSS — the foundation for themes beyond Lumina.
 
-## v0.21.0
+## v0.21.0 - June 12, 2026
 
 - **Data-bound sandboxes** (SPEC-093 core) — the registry's third render target, after `collection` (HTML) and `aggregate` (SVG): bring your own renderer. A `{% sandbox data="type:page" %}` binds a registry query (SPEC-070 field-match grammar); the build resolves it, projects (`data-fields`) and shapes it (`data-shape="flat"` | `"tree"`), caps the payload, and injects the JSON so the iframe code can read it as a frozen `window.RF_DATA`. The payload rides the same data-attribute rail as design tokens, so it works across every adapter. Over-cap payloads warn and truncate; a sandbox with no static fallback warns (progressive-enhancement reminder). Enables registry-fed visualizations like a 3D sitemap or relationship graph.
 - **Hero cover layout + animated sandbox backgrounds** (SPEC-101). `hero` is now a first-class `media-position="cover"` host: the media well fills the section interior and the headline/blurb/actions overlay it, with the cover knobs (`content-place`, `height`, `aspect`), a band-appropriate height authority (a viewport-relative floor instead of the 3/4 tile default), root padding rerouted to the overlay, and a centred-band overlay default with an even scrim. Any non-`img`/`video` media guest now fills a cover well; `sandbox` gains `height="fill"` (iframe pinned to 100%, auto-resize negotiation disabled), applied automatically when a sandbox is a cover backdrop — so a live three.js scene drops into a hero as a full-bleed, inert animated background. A non-eager (`activation="visible"|"click"`) sandbox under cover warns at build time (the Run affordance is unreachable on an inert backdrop). Ships with the wireframe-waves showcase (`site/examples/wireframe-waves/`) — a displaced wireframe terrain whose crests pick up the niwaki palette. Also fixes nested-density title sizing: `[data-section="title"]` now sizes via `--rf-title-size` (set per density root), so a full-density rune inside a compact host (a hero in a `preview`) keeps its real title size. And fixes inverted stacked media labels (BUG-001): hero/feature/step have content-first DOM, so the shared media-first stacked CSS rendered `top` at the bottom and vice versa — their default is now a truthful `bottom` (zero visual change for existing content) and explicit `top`/`bottom` render where they say.
@@ -522,12 +591,12 @@ description: Release history for refrakt.md
 - **`data-shape="graph"` for data-bound sandboxes** (SPEC-093 / WORK-390) — the third payload shape, after `flat` and `tree`. A `{% sandbox data="type:spec type:work" data-shape="graph" %}` projects the queried entities as **nodes** and walks their SPEC-072 relationship edges into a node-link payload: `window.RF_DATA = { shape: "graph", nodes, edges }`, where each edge is `{ from, to, kind }`. Only edges whose both endpoints are in the selection are kept, so the graph is closed — ready for a force-directed or node-link layout.
 - Fix the `tree` shape of a data-bound sandbox: page entity `url`s carry no trailing slash while `parentUrl`s do, so the nesting never matched and the tree came out flat. Normalize trailing slashes when building the tree so parent↔child relationships resolve.
 
-## v0.20.2
+## v0.20.2 - June 11, 2026
 
 - The `@refrakt-md/html` scaffold now ships a working client runtime. `template-html`'s build bundles `initPage()` (from `@refrakt-md/html/client` + `@refrakt-md/behaviors`) to `build/client.js` via esbuild and loads it on every page, and it ships the layout-chrome CSS (header, theme-toggle, search, mobile, on-this-page). Scaffolded static HTML sites now have working interactive runes (tabs, accordion, drawer, search) and a functioning, styled theme-toggle — previously all inert.
 - Also fixes a nav-slug error in the `template-html` starter content (`_layout.md` linked `getting-started` instead of `docs/getting-started`), so a freshly scaffolded html site now builds with zero errors.
 
-## v0.20.1
+## v0.20.1 - June 11, 2026
 
 - `diagram` now renders after SPA navigation and re-renders when the colour scheme changes, so diagrams stay correct across client-side route changes and theme toggles.
 - Surface model fixes, found and fixed while building the surface documentation:
@@ -537,7 +606,7 @@ description: Release history for refrakt.md
 - **Media-zone guests** (chart, diagram, map) drop their own double chrome and inherit the slot surface; a `map` card gains a slot aspect.
 - **`bg`** stacks content above the background layer and clips to the rounded surface.
 
-## v0.20.0
+## v0.20.0 - June 10, 2026
 
 - SPEC-090 media-guest interaction posture. A rune in another rune's media slot is a presentational guest by default; interactivity is now an explicit capability — `RuneConfig.interactive`, set on the behaviour-driven runes (`codegroup`, `tabs`, `datatable`, `form`, `map`, `sandbox`, `juxtapose`). When the container is itself an interaction target — a `card`/`bento-cell` with a stretched whole-tile `href` — or the guest is a `cover` backdrop (SPEC-089), the engine marks the media zone `data-guest-posture="presentational"`: it goes `pointer-events: none` (so clicks fall through to the link / the overlay owns interaction) and the behaviours layer skips enhancement, so the guest renders its static fallback (the demoted `codegroup`/`tabs` tab strip is hidden so panels read as plain stacked content). The demotion is scoped to the media zone only — content-overlay controls (body/footer links & buttons) stay interactive. An interactive guest in a linked tile emits an informative (non-fatal) build warning. A container without `href` (and not `cover`) hosts interactive guests normally.
 - SPEC-086 surface chrome. Adds a universal `elevation` attribute (self-surface `box-shadow` on the `--rf-shadow-*` scale), a `frames` preset registry with the `frame` attribute and inline `frame-*` facets (modelled on `bg`), `RuneConfig.frameTarget` routing (media zone vs self) with a build warning when unresolved, and a shared frame CSS layer (silhouette drop-shadow, displacement/peek, oversize, place, anchor). `showcase` collapses into the frame model as `frameTarget: 'self'`; its `shadow`/`bleed`/`offset`/`aspect`/`place` attributes are deprecated aliases for `frame-*` facets (warn for one minor, then removed), with breakout retained. The `offset` named scale is completed (`none|sm|md|lg|xl`) and its raw-length fallthrough closed.
@@ -546,7 +615,7 @@ description: Release history for refrakt.md
 - SPEC-089 cover layout. Adds `media-position="cover"` as a `media-position` engine variant (SPEC-091): the media well fills the rune interior and content overlays it, with a one-attribute switch from `top|bottom|start|end`. Two rune-declared scopes — `full` (card: the whole box overlays) and `header` (recipe: only the title band overlays, body flows below) — bound the overlay region; there is no overlay primitive in the layout config. Adds `content-place`, a 2-axis logical overlay anchor (`<block> <inline>`, mapping to `align`/`justify`) active only in cover mode (warns otherwise), whose `auto` default — also the behaviour when unset — adapts to the cover region's container-query orientation. Cover turns on a default scrim on the media surface (consuming the SPEC-088 scrim facet), weighted toward the content edge and following `content-place` unless an explicit `scrim="top|bottom|left|right"` pins it; `scrim="none"` opts out. `scrim-type="frost"` swaps the gradient for a frosted-glass blur (`scrim-blur` scale) — in cover mode the scrim renders on the media well, never the self-surface bg layer, masked to the content edge so it never covers the whole image. The overlay foreground follows `scrim-tone` (a dark scrim yields light text) and is scoped to the overlay (`[data-name="content"]` in full scope, the cover-band in header scope), so the card's own surface keeps the page palette (light in light mode) while only the text on the media flips. Adds a card intrinsic-height knob (`height` named scale + `aspect`) for cover / `bg`-only cards, and documents cover mode in the card reference.
 - Bento: a grid-level `elevation` now cascades to cells (joining the `frame` cascade) so `{% bento elevation="md" %}` lifts each cell rather than the grid box; a cell's own `elevation` still wins. Fixes the bento reference page's frame/elevation example (the images needed an `---` to land in the media zone).
 
-## v0.19.0
+## v0.19.0 - June 9, 2026
 
 - Chart theming contract (SPEC-083 / WORK-353): the `rf-chart` SVG renderer no longer hardcodes its palette or geometry. Every paint + geometry value is now an `--rf-chart-*` custom property Lumina ships on `.rf-chart` — a dedicated categorical series palette (distinct from the semantic status tokens), bar/point/ line geometry, and typography/grid. The renderer emits only tagged elements (`.rf-chart__bar[data-series]`, `__point`, `__line`, `__axis`, `__label`) that `chart.css` paints from the props, and reads layout geometry via `getComputedStyle` — so a theme retones a chart by setting `--rf-chart-*` alone, and a future canvas/ d3 provider reads the same vocabulary. Adds a **sentiment colouring** mode: data cells carrying `data-meta-sentiment` colour by the semantic token (positive→success, negative→danger, caution→warning, neutral→muted).
 - Also fixes `aggregate layout="chart"` to emit the chart rune's field channel, so a non-bar `chart-type` survives the identity transform and the `.rf-chart` class isn't doubled.
@@ -602,7 +671,7 @@ description: Release history for refrakt.md
 - Fix `escapeFenceTags` desyncing on code fences with info strings. A titled/attributed fence (e.g. ` ```yaml title="config.ts" `) was not recognised as a fence opener, so fence tracking lost sync and `{% %}` tags following the fence were wrongly escaped — corrupting document structure (for instance a `{% /codegroup %}` after a titled fence leaking as literal text). The opener now matches the full info string.
 - Add a `levels` attribute to the `bento` rune's heading-sugar path: an author-defined footprint ladder, indexed by relative heading depth, where each rung is a column count `W` (× 1 row) or a footprint `WxH` — e.g. `levels="6,5,4,3,2,1"` (uniform-height, width-by-depth; the former `span` mode) or `levels="4x2,3x1,2x1"`. Depth is measured from the auto-detected base (shallowest heading), so the shallowest is always rung 0; ladders shorter than the heading depth clamp to the last rung. Omitting `levels` keeps the default tiered sizing unchanged, and explicit `{% bento-cell %}` grids ignore it.
 
-## v0.18.0
+## v0.18.0 - June 3, 2026
 
 - Remove the legacy `slots` + `structure` assembly shim from the identity transform engine (SPEC-079 phase 3).
 - **Breaking for third-party themes/plugins that still declare `RuneConfig.slots`.** Every first-party rune migrated to the SPEC-080 `metaFields` + `blocks` + `layout` model across v0.17.0, and the deprecation warning shipped for a full minor release. This release removes:
@@ -617,7 +686,7 @@ description: Release history for refrakt.md
 - **Chart seam.** `chart` keeps the authored `<table>` as the single source of truth and emits an `<rf-chart>` custom element that renders an SVG (bar/line) on the client; the table remains as the no-JS fallback.
 - Contracts now surface the layout skeleton; `projection.group`/`projection.relocate` are deprecated in favour of placing slots directly in the `layout` tree.
 
-## v0.17.0
+## v0.17.0 - June 2, 2026
 
 - **v0.17.0 — Declarative metadata & layout.**
 - A new, fully declarative model for how metadata-bearing and media-bearing runes are assembled — replacing per-rune imperative structure code with a small, orthogonal config vocabulary, and giving every rune a consistent metadata treatment. Additive: existing content keeps rendering; meta-bearing runes simply gain a cleaner, theme-overridable structure.
@@ -637,7 +706,7 @@ description: Release history for refrakt.md
 - **Structure contracts** (`refrakt contracts`) now surface each projected block as an addressable element with its layout primitive and fields, and derive child order from `layout`.
 - The legacy `slots` + `structure` config path still renders, but is superseded by `metaFields` + `blocks` + `layout` and emits a one-time migration warning. Its removal — and the removal of `RuneConfig.slots` — is a breaking change planned for a later release; third-party plugins on the legacy path should migrate. `projection` (hide / group / relocate) and `postTransform` remain as escape hatches.
 
-## v0.16.1
+## v0.16.1 - May 31, 2026
 
 - `file-ref` rune + shared `preview="drawer"` attribute on reference runes (SPEC-078, WORK-298..303).
 - **New rune — `file-ref`.** Path-based inline reference to a project file — third member of the Registry family beside `xref` (one entity) and `expand` (one entity inlined). Renders as an inline `<a>` to the file's canonical GitHub URL; optional `preview="drawer"` hoists a drawer containing the file's snippet plus a "View source on GitHub →" footer link. Sandbox shared with `snippet` (rejects absolute paths / traversal escapes / out-of-root symlinks).
@@ -660,7 +729,7 @@ description: Release history for refrakt.md
 - Diff's per-line `data-type` attribute is renamed to `data-line-status` to share one CSS row primitive across snippet / codegroup / diff with the three states `add | remove | highlight`.
 - Diff's `<pre>` output now wraps its line spans in an inner `<div data-name="rows">` (`.rf-diff__rows`) — mirrors the codeblock's `<pre><code>` shape so the row tint extends across horizontal scroll. Themes targeting `.rf-diff__code > .rf-diff__line` directly need to update the selector.
 
-## v0.16.0
+## v0.16.0 - May 29, 2026
 
 - **v0.16.0 — Registry-driven sites.**
 - Turns the entity registry into pages and listings declaratively, ships the three sibling registry-query runes (`collection` / `relationships` / `aggregate` — items / edges / numbers), and proves the system by scaffolding refrakt's own plan site from the `plan/` content tree.
@@ -679,7 +748,7 @@ description: Release history for refrakt.md
 - Mobile docs toolbar long page titles now ellipsise instead of forcing horizontal page scroll (`flex: 1 1 0` + `max-width: 100%; overflow: hidden;` on the toolbar).
 - Conversation rune's `speakers="A,B"` attribute now renders names as bold-inline prefix inside the bubble, matching the explicit `> **Name**:` form. Two related issues fixed: the extractor was missing the Markdoc `inline` wrapper around paragraph content, and the fallback path didn't inject a strong-prefix. The speaker-carrier span is now hidden via the correct `data-field="speaker"` selector.
 
-## v0.15.0
+## v0.15.0 - May 25, 2026
 
 - Drawer rune: a body-only rune that opens its content as a slide-in panel from an xref-as-trigger in prose (SPEC-060). A cross-reference to the drawer's id anywhere on the page opens the drawer; the body is registered as a page-scoped entity rather than rendered inline.
 - Ships in two states: a no-JS `<details>`-style fallback that works without scripts, and a progressively-enhanced `<dialog>` with slide-in animation, scroll-lock, a keyboard shortcut, URL-hash sync, and back-button integration.
@@ -738,7 +807,7 @@ description: Release history for refrakt.md
 - `@refrakt-md/runes`: `{% expand %}` schema + resolver + expand pipeline; `outline-scope` walkers.
 - `@refrakt-md/lumina`: expand CSS (embedded-entity framing + canonical-link affordance).
 
-## v0.14.4
+## v0.14.4 - May 22, 2026
 
 - Framework adapter parity with the SvelteKit reference (SPEC-058) — six capabilities that previously lived only in `@refrakt-md/sveltekit` now ship in working form across `@refrakt-md/astro`, `@refrakt-md/nuxt`, `@refrakt-md/next`, `@refrakt-md/eleventy`, and `@refrakt-md/html`. Application work — no new contracts, no breaking changes.
 - **Site-level token-overrides CSS now works in every adapter.** `composeSiteTokensCss` (the generator that turns `theme.presets`, `theme.tokens`, `theme.modes`, and `site.tints` into a stylesheet — SPEC-048 + SPEC-056) moved out of the SvelteKit plugin and into `@refrakt-md/transform/node` as a shared module. The Astro and Nuxt adapters expose it as a Vite virtual module (`virtual:refrakt/site-tokens.css`); Eleventy ships it as a passthrough-managed file; Next.js exposes it through a Server Component helper; the HTML renderer inlines it via a `page-shell` helper. Sites authored on any adapter can now drop tokens into `refrakt.config.json` and skip writing CSS for the common case, just like SvelteKit.
@@ -750,7 +819,7 @@ description: Release history for refrakt.md
 - **`template-astro/src/setup.ts` replaced with `createRefraktLoader`.** The Astro starter template's bespoke setup boilerplate folds into a thin `createRefraktLoader` wrapper — the single entry point now handles loader construction, security/variables options, and the new HMR + tokens wiring. Same for the Next.js template's adapter glue.
 - **Footer nav two-column mobile rule.** Cosmetic: footer nav drops to two columns on mobile instead of stacking to one, applies to both the auto-columns rendering and the explicit-column variant. Keeps the footer scannable on phone width where one-column footers turn into long scrolls.
 
-## v0.14.3
+## v0.14.3 - May 21, 2026
 
 - Navigation enrichment: build-time slug resolution + richer dropdowns (SPEC-054 + SPEC-055), `{% badge %}` core inline rune, and a docs IA split into separate author and developer handbooks.
 - **SPEC-055: build-time slug resolution + active state.** `{% nav %}` slug references now resolve at build time rather than runtime, so the SSR HTML carries fully-resolved `href` attributes and the "multiple items active at once" symptom is gone. Multi-segment slugs (`docs/configuration/plugins`) are the first-class disambiguator when a leaf slug appears in multiple subtrees — ambiguous bare slugs raise a build error pointing at the offending nav with the candidates listed, instead of silently picking the wrong one. Active state is also computed at build time using exact + longest-prefix matching, with the active class stamped into the SSR HTML so there's no client-side flash. Lumina ships dedicated active-state styles; existing site navs migrated in-place to multi-segment slugs where bare slugs collided.
@@ -762,14 +831,14 @@ description: Release history for refrakt.md
 - **Docs IA split (WORK-238).** The site's docs tree now splits into two handbooks aimed at different audiences. **Docs** (`/docs/*`) is the author handbook — getting started, authoring, configuration, CLI, adapters, MCP. **Extend** (`/extend/*`) is the new developer handbook — rune authoring, plugin authoring, theme authoring, pipeline, security, contributing. Header restructured to five panels (Docs · Runes · Themes · Extend · Project); footer columns updated to match (Learn · Reference · Extend · Project). Old URLs (`/docs/authoring/*`, `/docs/themes/*`, `/docs/plugins/authoring*`, `/docs/security/*`) redirect to their new homes under `/extend/*`. A new author-facing plugin catalog landed at `/docs/configuration/plugins`. Internal cross-doc links, `CLAUDE.md`, and root READMEs swept to the new paths.
 - **Hint rune visual cleanup.** Dropped the border on `{% hint %}` — the tinted surface alone separates it from surrounding prose, the extra border was visual noise.
 
-## v0.14.2
+## v0.14.2 - May 20, 2026
 
 - Curated syntax preset lineup phase 1 (SPEC-057) + tint-mode override fix on preset-extending tints + jsonc highlighter language.
 - **Six imported syntax palettes.** New `@refrakt-md/lumina/presets/{dracula,solarized,catppuccin,tokyo-night,one-dark,gruvbox}` ship the six most widely-recognised community palettes as first-party presets, following the pattern established by Nord in v0.14.1. Dracula and One Dark are dark-only; Solarized, Catppuccin, Tokyo Night, and Gruvbox carry both light and dark canvases. Each preset uses the SPEC-056 mechanism unchanged — a `ThemeTokensConfig` module with extended `SyntaxTokens` roles, opt-in `color.code.*` for canvas-claiming palettes, and live doc pages at `/themes/<name>` rendered through the scoped-tint mechanism. Application work only; no architectural changes.
 - **Tint-mode override fix on preset-extending tints.** When a tint extended a preset module path (e.g. `tint="nord"` → `extends: '@refrakt-md/lumina/presets/nord'`), only the build-time scoped tint stylesheet knew about the preset and emitted `--rf-color-*` directly under `[data-tint="nord"]`. The runtime engine never saw the projected chrome accents because `presetMap` wasn't plumbed through `mergeThemeConfig` → `resolveTintExtends`, so no inline `--tint-*` styles were emitted on tinted elements — `tint.css`'s `[data-color-scheme][data-tint]` selectors collapsed to the colour scheme's neutral defaults regardless of the preset. `presetMap` now threads from the SvelteKit loader path through `assembleThemeConfig` and `mergeThemeConfig` into `resolveTintExtends`, so preset chrome accents land in `TintTokens` shape and the engine emits them as inline `--tint-*` styles. The static scoped tint stylesheet keeps emitting `--rf-color-*`; inline styles override on the same element exactly as `token-stylesheet.ts` already anticipated.
 - **`jsonc` added to pre-loaded highlighter languages.** Config snippets across the preset doc pages (and other refrakt docs) use ` ```jsonc ` to fence JSON-with-comments. `jsonc` was intentional but not in Shiki's `DEFAULT_LANGS`, so the highlighter silently fell back to plain text. One-line add — Shiki ships `jsonc` as a bundled language.
 
-## v0.14.1
+## v0.14.1 - May 20, 2026
 
 - Syntax token contract extension (SPEC-056) + diff/compare restyle + mobile and nav polish.
 - **SPEC-056: tiered `SyntaxTokens` contract.** `SyntaxTokens` widens from 7 required + 2 optional roles to 7 required + 9 optional. The new optional roles (`type`, `property`, `parameter`, `tag`, `attribute`, `operator`, `number`, `regex`, `decorator`) let preset authors faithfully carry palettes that split distinctions the core collapses (Nord's Frost variants, Tokyo Night, Catppuccin, etc.) while the core stays minimal. Each optional role emits a `var()` fallback chain in the generated CSS, so a preset that doesn't set an optional role still renders correctly — it just shares colour with its documented fallback (`type` → `function`, `property` → `variable`, `tag` → `keyword`, and so on).
@@ -781,7 +850,7 @@ description: Release history for refrakt.md
 - **Sidebar nav polish.** Collapsible nav groups now animate height transitions from JS (cross-browser consistent across mobile Safari and Firefox) instead of relying on `grid-template-rows` interpolation, which bounced on Firefox. Active items pick up a primary-tinted background instead of the neutral hover style. URL-aware auto-open is unchanged.
 - **Mobile layout fixes.** Hero and CTA action rows now stack full-width below 640px instead of trying to fit side-by-side and overflowing. Table cells use a single mobile font-size so adjacent columns don't render at visibly different sizes on iOS. Mobile Safari's automatic text-size adjustment is disabled on `html` so the user's set font-size is respected.
 
-## v0.14.0
+## v0.14.0 - May 19, 2026
 
 - **Typed design tokens contract.** `ThemeTokensConfig` is now the canonical authoring surface for theme values. Site authors can drop tokens directly into `refrakt.config.json` under `theme.tokens` / `theme.modes` and skip writing CSS for the common case. Validated at build time against the contract; presets and modes deep-merge in declared order.
 - **Two opt-in Lumina presets.** `tideline` preserves the previous cream-and-navy chrome (now with IBM Plex Sans/Mono typography); `niwaki` is a syntax-only preset with a Japanese-garden palette. Both demonstrate that scoped presets (syntax-only, chrome-only, font-only) are first-class.
@@ -802,7 +871,7 @@ description: Release history for refrakt.md
 - restoring the previous appearance via the tideline preset
 - the per-page tint cascade frontmatter fields
 
-## v0.12.0
+## v0.12.0 - May 11, 2026
 
 - Rename "rune packages" to "plugins" and unify with CLI plugins. Plugins now contribute runes, layouts, theme config, pipeline hooks, behaviors, **and** CLI commands through a single npm package.
 - **Breaking changes:**
@@ -840,7 +909,7 @@ description: Release history for refrakt.md
 - **`target` field downgraded to documentation-only.** No adapter actually validates or consumes `site.target`, so `SiteConfig.target` is now optional and the SvelteKit validator no longer requires it on flat-shape configs. The schema marks `target` `deprecated: true` with a note that it's slated for removal in v1.0.
 - Auto-migrate the legacy `packages` config field to `plugins` and emit a one-time deprecation warning. The field was renamed in v0.12.0 when rune packages and CLI plugins were unified, but the parser was silently ignoring the legacy field rather than warning, which broke sites that still used `sites.X.packages`. The legacy field now auto-migrates with a console warning and will be removed in v1.0.
 
-## v0.11.3
+## v0.11.3 - May 4, 2026
 
 - Fix two bugs in the MCP server:
 - `serverInfo.version` was hardcoded as `0.10.1` and never tracked the package version. It now reads the version from `package.json` at startup so each release reports correctly.
@@ -851,18 +920,18 @@ description: Release history for refrakt.md
 - `@refrakt-md/mcp`: `buildPluginTool` forwards the server's `ctx` to the plugin's `mcpHandler`. The argv-shimming fallback path is unchanged (it still uses `process.cwd()`); plugins that need project-cwd awareness should provide an explicit `mcpHandler`.
 - `@refrakt-md/plan`: every `*McpHandler` accepts the new `ctx`, threads it into `resolvePlanDir`, and absolutizes the resolved `dir` against `ctx.cwd` so relative paths from any source (flag, env, config, default) consistently resolve against the project root.
 
-## v0.11.2
+## v0.11.2 - May 3, 2026
 
 - Fix MCP server failing to invoke the refrakt CLI for `inspect`, `contracts`, `reference`, `inspect_list`, and `plugins_list` tools.
 - The MCP server resolves the CLI bin via `require.resolve('@refrakt-md/cli/package.json')`, but the cli package's `exports` map didn't declare `./package.json`, so Node threw `ERR_PACKAGE_PATH_NOT_EXPORTED`. The MCP server's catch branch silently fell back to the bare string `'refrakt'`, which `execFileSync` then tried to resolve as a relative path against the user's cwd, producing a confusing `Cannot find module '<cwd>/refrakt'` error.
 - `@refrakt-md/cli` now exports `./package.json` so the existing resolution path works.
 - `@refrakt-md/mcp` adds a secondary fallback (resolve via the always-exported `lib/plugins.js` and walk up to the package root) and now throws a clear error instead of returning a bogus bin path. Both core tools and resource handlers go through the shared helper.
 
-## v0.11.1
+## v0.11.1 - May 3, 2026
 
 - Include `packages/mcp` in the root build chain so the published tarball contains `dist/`. Previously the package was added to the workspace but never built during `npm run release`, causing `npx -y @refrakt-md/mcp` to fail because `bin: ./dist/bin.js` was missing from the npm artifact (only `package.json` shipped).
 
-## v0.11.0
+## v0.11.0 - May 3, 2026
 
 - v0.11.0 — unified config + multi-site + MCP server.
 - **Unified `refrakt.config.json`**. New `$schema`, `plugins`, `plan`, `site` / `sites` sections collapsed into a canonical sites map by `normalizeRefraktConfig()` in `@refrakt-md/transform/node`. Flat / singular / plural shapes all valid; single-site fields mirror to the top level for backwards compat. JSON Schema published from `@refrakt-md/transform` and referenced from a repo-root symlink for in-repo `$schema` references.
@@ -875,11 +944,11 @@ description: Release history for refrakt.md
 - **Site docs**. New `site/content/docs/configuration/` (overview, plugins, plan, sites, migration, schema) and `site/content/docs/mcp/` (overview, installation, tools, resources, errors). `packages/authoring.md` extended with an "Adding CLI Commands and MCP Tools" section. `CLAUDE.md` gains an MCP section directing agents to prefer MCP tools over the CLI when both are available.
 - **Path resolution semantics**. Nested-shape paths (`contentDir`, `sandbox.examplesDir`, `theme`, `overrides`, `runes.local`) now resolve relative to the config file's directory when a `configDir` is provided to `normalizeRefraktConfig()`. Flat-shape paths remain cwd-relative for legacy projects. `DEFAULT_SITE_NAME` exported as `'main'` (was `'default'`) so flat / singular configs promote to `sites.main` and match the `create-refrakt` scaffolds.
 
-## v0.10.1
+## v0.10.1 - April 29, 2026
 
 - Add nav top-level links support. Items before the first heading in a `{% nav %}` rune now render as prominent top-level links above the grouped navigation, styled with `.rf-nav__top-level`. Explicit markdown links (`[Label](/path)`) in nav items pass through as-is rather than being treated as slugs for web component resolution.
 
-## v0.10.0
+## v0.10.0 - April 28, 2026
 
 - Version bump for coordinated release
 - Adopt `{ID}-{slug}.md` as the canonical filename for plan items. `refrakt plan create` now emits e.g. `WORK-058-my-task.md` instead of `my-task.md` for every auto-ID type (work, bug, spec, decision). Milestones still use their semver names (`v1.0.0.md`).
@@ -887,7 +956,7 @@ description: Release history for refrakt.md
 - `refrakt plan validate` now emits `filename-missing-id` / `filename-id-mismatch` warnings when a file's name doesn't match its frontmatter `id`.
 - `refrakt plan init` no longer scaffolds the root `index.md`, type-level `index.md` pages, or status filter pages. The plan site synthesises these dynamically.
 
-## v0.9.9
+## v0.9.9 - April 19, 2026
 
 - Expand `refrakt plan init` to fully wire the host project for agent use:
 - **AGENTS.md is now canonical** — full workflow content lives in `AGENTS.md` at the project root; tool-specific files (`CLAUDE.md`, `.cursorrules`, etc.) get one-line pointers to it.
@@ -897,15 +966,15 @@ description: Release history for refrakt.md
 - **Opt-out flags** — `--no-package-json`, `--no-hooks`, `--no-wrapper`, and `--minimal` (all three) for users who want bare scaffolding.
 - Also fixes the `esbuild` dependency leak in `@refrakt-md/plan`: the `bundleBehaviors` helper now lazy-imports `esbuild`, so non-build plan commands (`status`, `next`, `update`, etc.) no longer fail to load when esbuild isn't installed. `esbuild` is declared as an optional peer dependency.
 
-## v0.9.8
+## v0.9.8 - April 15, 2026
 
 - Add edge-safe `./render` entry point for rendering plan entity Markdoc source to a serialized RendererNode. Works on Cloudflare Workers — no Node.js dependencies. Consumers apply their own theme's identity transform and render to HTML.
 
-## v0.9.7
+## v0.9.7 - April 15, 2026
 
 - Plan package improvements: tool-agnostic `plan init` with `--agent` flag for multi-editor support, renamed plan directories to plural form (specs/, decisions/, milestones/), and refactored internals for edge runtime compatibility with new entry points (./diff, ./relationships, ./cards)
 
-## v0.9.6
+## v0.9.6 - April 14, 2026
 
 - Bug Fixes:
 - Fix ThemeShell build failure ({@const} inside {#if} block)
@@ -935,7 +1004,7 @@ description: Release history for refrakt.md
 - Simplify codegroup chrome: skip tabs for single fence without labels
 - Move event register button from header to bottom of component
 
-## v0.9.5
+## v0.9.5 - April 10, 2026
 
 - Fix sidenote rune rendering empty due to minimal density hiding body
 - Fix juxtapose label rendering and restyle toggle buttons
@@ -947,7 +1016,7 @@ description: Release history for refrakt.md
 - Improve SEO and AI discoverability
 - - Fix annotate rune: margin notes invisible, inline notes not inline
 
-## v0.9.4
+## v0.9.4 - April 9, 2026
 
 - Fix Vite dev server warnings: deprecated svelte:component, dynamic imports, void elements
 - Fix gallery responsive behavior: reset margin, columns, and gap at breakpoints
@@ -962,7 +1031,7 @@ description: Release history for refrakt.md
 - Align mark.svg dark mode color with Lumina palette
 - Add SVG favicon using existing mark.svg logo
 
-## v0.9.3
+## v0.9.3 - April 9, 2026
 
 - Bug fixes, rune restyling, and new features since v0.9.2.
 - Add `createRefraktLoader` and `virtual:refrakt/content` to eliminate content loading boilerplate
@@ -993,11 +1062,11 @@ description: Release history for refrakt.md
 - Audit and fix site documentation gaps
 - Redesign milestone progress indicator as two-row layout
 
-## v0.9.2
+## v0.9.2 - April 7, 2026
 
 - Add multi-framework adapter packages (Astro, Eleventy, Next.js, Nuxt, React, Vue) with ADR-008 framework-native component interfaces. Implement ADR-009 framework-agnostic theme architecture. Add vue, astro, and jinja to Shiki default languages.
 
-## v0.9.1
+## v0.9.1 - April 3, 2026
 
 - Named slots with ordering for structured element placement
 - Repeated element generation for multi-instance structures
@@ -1014,7 +1083,7 @@ description: Release history for refrakt.md
 - Auto-assign IDs and detect duplicates in plan CLI
 - Inspect and contracts updated for structure slots
 
-## v0.9.0
+## v0.9.0 - March 30, 2026
 
 - Metadata dimensions system: density, section anatomy, media slots, checklist, sequential items, and interactive state dimensions added to rune configs and identity transform engine
 - Universal dimension CSS in Lumina theme with generic metadata styling
@@ -1040,15 +1109,15 @@ description: Release history for refrakt.md
 - Fix theme CSS resolution to load full theme instead of tokens only
 - Many Lumina CSS refinements: recipe cover ratio, CTA alignment, hero centering, testimonial borders, blog post hover shadows
 
-## v0.8.5
+## v0.8.5 - March 20, 2026
 
 - Add blog rune for listing posts with filtering and sorting. Expose frontmatter and page data as content-level Markdoc variables. Redesign juxtapose rune with --- delimiter and overlay labels. Auto-discover runes in VS Code extension and editor. Fix map rune collapsed border and add spacing support. Fix juxtapose tint mode.
 
-## v0.8.4
+## v0.8.4 - March 19, 2026
 
 - Fix scaffolded sites not loading community packages or applying identity transform. Fix preview rune code toggle broken by data-field/data-name mismatch. Add smarter heading-level detection in sections content model for preamble support. Restore ordered-list-based steps authoring pattern.
 
-## v0.8.3
+## v0.8.3 - March 19, 2026
 
 - Add draggable popover and clickable prose blocks
 - Redesign prose editor with popover tabs and hover inline editing
@@ -1064,15 +1133,15 @@ description: Release history for refrakt.md
 - Sync language server and VS Code extension with current runes
 - Polish datatable rune and unify table wrapper class
 
-## v0.8.2
+## v0.8.2 - March 17, 2026
 
 - Bug fixes and editor improvements including CodeMirror code editing, mobile search fix, structure tab enhancements, and block editor UI refinements.
 
-## v0.8.1
+## v0.8.1 - March 16, 2026
 
 - Add @refrakt-md/html pure HTML renderer, content-model-driven Structure tab in editor, inline editing popovers, accessible tab structure for tabs/codegroup, feature rune redesign with granular field editing, and editor hover tooltips with edit hint controls.
 
-## v0.8.0
+## v0.8.0 - March 10, 2026
 
 - Declarative content model: migrated 50+ runes from imperative Model classes to `createContentModelSchema`
 - Cross-page pipeline: EntityRegistry, breadcrumb auto-resolution, aggregated data
@@ -1088,7 +1157,7 @@ description: Release history for refrakt.md
 - `style` attribute renamed to `variant` across all runes
 - `typeof`/`property` renamed to `data-rune`/`data-field` across the pipeline
 
-## v0.7.2
+## v0.7.2 - March 4, 2026
 
 - Add cross-page pipeline infrastructure with `EntityRegistry`, `runPipeline()`, and `PackagePipelineHooks`. Includes nav auto mode, pipeline build output, design token context propagation, and editor preview/autocomplete support for community runes.
 - Fix duplicate BEM classes on runes nested inside `data-name` elements. Make `autoLabel` recursive in the identity transform engine so eyebrow, headline, and blurb children inside `<header>` wrappers receive BEM classes. Add `pageSectionAutoLabel` to all marketing and core page-section runes.
@@ -1096,15 +1165,15 @@ description: Release history for refrakt.md
 - Add `mockup` rune to `@refrakt-md/design` for wrapping content in device frames.
 - Fix multiple preview runtime issues: `structuredClone` errors, `DataCloneError` when sending `routeRules` via `postMessage`, and cache not invalidating on source changes. Remove `ComponentType` and `PropertyNodes` from the schema system.
 
-## v0.7.1
+## v0.7.1 - March 3, 2026
 
 - Fix production builds excluding CSS for runes from @refrakt-md/\* rune packages. The CSS tree-shaker now uses the assembled config (core + package runes) instead of only the core theme config when determining which rune CSS files to include.
 
-## v0.7.0
+## v0.7.0 - March 3, 2026
 
 - Introduce 8 official @refrakt-md/\* rune packages: marketing, docs, storytelling, places, business, design, learning, and media. 33 runes migrated from core @refrakt-md/runes into domain-specific installable packages. Rune schema interfaces moved from @refrakt-md/types to owning packages. Added package tooling (validate command, fixture discovery, AI prompt extensions). Site docs reorganized to reflect official rune packages.
 
-## v0.6.0
+## v0.6.0 - March 2, 2026
 
 - WYSIWYG block editor with stacked previews, Shadow DOM isolation, and rail navigation
 - Three-mode editor toggle: Visual, Code, and Preview with unified header bar
@@ -1139,7 +1208,7 @@ description: Release history for refrakt.md
 
 - Fix scaffolded dependency versions to derive from package version at runtime instead of hardcoding. Previously, the template hardcoded `^0.4.0` which with 0.x semver resolved to `<0.5.0`, causing newly scaffolded sites to install incompatible older packages. Also fixes invalid rune attribute usage in the kitchen sink template.
 
-## v0.5.0
+## v0.5.0 - February 23, 2026
 
 - **`refrakt scaffold --theme`** generates a complete custom theme with layout, CSS tokens, manifest, test infrastructure, and kitchen sink content
 - **`refrakt inspect`** command for theme developers — rune coverage audit, CSS audit, structure contracts
@@ -1192,7 +1261,7 @@ description: Release history for refrakt.md
 - Fix mobile nav hidden links and panel positioning
 - Fix TS2307 on Cloudflare with dynamic import
 
-## v0.4.0
+## v0.4.0 - February 16, 2026
 
 - `@refrakt-md/highlight` — Shiki-based syntax highlighting with Markdoc grammar support, CSS variables integration, and copy-to-clipboard
 - `@refrakt-md/transform` — Identity transform engine extracted into its own package (BEM classes, structural injection, meta consumption)
@@ -1213,14 +1282,14 @@ description: Release history for refrakt.md
 - Copy-to-clipboard for code blocks
 - Test coverage expanded from ~299 to 370 tests
 
-## v0.3.0
+## v0.3.0 - February 13, 2026
 
 - New runes and bug fixes
 - recipe — Ingredients, steps, chef's tips with prep/cook time metadata howto — Step-by-step instructions with tools/materials list event — Event info with date, location, registration URL cast (alias: team) — People directory with name/role parsing organization (alias: business) — Structured business information
 - datatable (alias: data-table) — Interactive table with sortable/searchable attributes api (alias: endpoint) — API endpoint documentation with method badges diff — Side-by-side or unified diff between two code blocks 0chart — Bar/line/pie/area charts from Markdown tables diagram — Mermaid.js diagram rendering
 - Other: sidenote (aliases: footnote, marginnote) — Margin notes, footnotes, and tooltips
 
-## v0.2.0
+## v0.2.0 - February 12, 2026
 
 - Added SEO layer
 {% /changelog %}

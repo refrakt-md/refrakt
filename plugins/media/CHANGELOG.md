@@ -1,5 +1,133 @@
 # @refrakt-md/media
 
+## 0.35.0
+
+### Minor Changes
+
+- f1908a3: Thirteen flat schema tables, and `NonProfit` becomes `NGO` (WORK-568, SPEC-130)
+
+  `figure`, `embed`, `cast-member`, `character`, `realm`, `faction`, `plot`,
+  `lore`, `organization`, `pricing`, `tier`, `timeline-entry` and `track` now
+  declare their schema.org mapping as a table instead of building it inside their
+  transform. Each reproduces its previous JSON-LD exactly, except where a change
+  is named below. (`breadcrumb-item` is the fourteenth of the group and moves with
+  its parent, since the property that holds a child and the child's type are one
+  declaration.)
+
+  **`organization type="NonProfit"` is now `type="NGO"`.** schema.org has `NGO`
+  and has never had `NonProfit`. The rune's curated six-value enum validated
+  against itself, so `matches` was satisfied and nothing noticed the value was not
+  in the vocabulary it claimed to speak — every site writing `NonProfit` published
+  a `@type` no consumer resolves. The enum, the schema table and the generated
+  attribute reference all say `NGO` now.
+
+  **This is breaking for content.** `{% organization type="NonProfit" %}` no
+  longer passes validation; change it to `type="NGO"`. Failing loudly is the
+  point — the old value silently published an unresolvable type.
+
+  `organization` also becomes a `by: 'type'` table over its six rows, which is
+  what its `typeof: attrs.type` was already doing, now written where a reviewer
+  can read it and keyed off the same list that feeds `matches`, so the accepted
+  values and the published types cannot drift apart.
+
+  **`pricing` declares `offers` a list.** A single-tier pricing block serialises
+  `"offers": [{…}]` instead of the bare object it used to emit, so the shape no
+  longer varies with how much content an author wrote.
+
+  Two smaller shape notes: `embed`'s three RDFa carriers are rebuilt from the
+  field bag and therefore appended last, so their order in the markup changes
+  (the JSON-LD is identical); and `cast-member`'s portrait image gains a
+  `portrait` name, and with it an `rf-cast-member__portrait` class, so the schema
+  reaches it by name rather than through a local variable.
+
+- f1908a3: Accept `{% track %}` children in `{% playlist %}` (WORK-569 part, BUG-016)
+
+  A `{% track %}` written inside a `{% playlist %}` is now one of that playlist's
+  tracks — in the listing, in the HTML, and in the structured data. It used to
+  fall through to the greedy `body` field: rendered as an `<li>` outside any list,
+  published as a detached top-level entity, and recommended by the docs the whole
+  time.
+
+  The bar is equivalence — a nested track with no explicit `type` produces the
+  same schema as the same content written as a list item — asserted directly
+  rather than assumed. An explicit child type that contradicts its container is
+  honoured: a `{% track type="song" %}` inside a podcast stays a song, because the
+  author said so.
+
+  **Two defects fixed to get there:**
+
+  - The sequence resolver could not handle a greedy `itemModel` field. With
+    `greedy`, the resolved value is an array, and the extraction guarded on
+    `'type' in node` — so making `tracks` greedy silently disabled its own
+    extraction and broke the list form outright. It now concatenates
+    `resolveListItems` across the collected lists in document order.
+  - `track` was dropping two of its own fields. `artistMeta` and `durationMeta`
+    were declared but never pushed into `children`, so they were stamped onto
+    nodes that were not in the tree: a standalone
+    `{% track artist="Radiohead" duration="4:01" %}` published its name and
+    nothing else. `rootAttrs` was likewise assembled and never applied, so `src`
+    reached nothing.
+
+  **If you have a `{% track %}` nested inside a `{% playlist %}`**, its rendered
+  position and its structured data both change — the track moves into the
+  playlist's `<ol>` and its entity nests under the playlist's `track` property
+  instead of standing alone at the top level. That is the shape the docs always
+  described.
+
+- b40cbac: Per-type schema for `playlist` and `track` — BUG-013 (WORK-569, SPEC-130)
+
+  Both runes declared an enum of kinds and then published one type for all of
+  them. `{% playlist type="podcast" %}` announced a podcast as a `MusicPlaylist`
+  whose episodes were `MusicRecording`s, and `{% track type="episode" %}` did the
+  same on its own. Each rune already knew what its content was and emitted the
+  wrong schema anyway.
+
+  Each now keys off the attribute its author already set, with its own table, and
+  neither rune declares anything about the other.
+
+  A `playlist` publishes by kind: `album` is a `MusicAlbum` with `track`, a
+  narrowing of the `MusicPlaylist` it used to emit; `mix` stays a `MusicPlaylist`,
+  the one kind with no narrower type; and `podcast`, `audiobook` and `series`
+  switch branch to `PodcastSeries`, `Audiobook` and `CreativeWorkSeries`, holding
+  their items in `hasPart` as `PodcastEpisode`s, `Chapter`s and `CreativeWork`s.
+
+  `track`'s five kinds map to `MusicRecording`, `PodcastEpisode`, `Chapter`,
+  `CreativeWork` and `VideoObject`.
+
+  **A child row carries a property map, not just a type.** Retyping an item and
+  leaving its stamps would put `byArtist` on a `PodcastEpisode`, which does not
+  have that property — worse than the `MusicRecording` it replaced, which was at
+  least coherently wrong. A parent that retypes a child now owns that child's
+  mapping, and anything it does not name is dropped. A type the _author_ stated is
+  the exception and survives: a `{% track type="song" %}` inside a podcast stays a
+  song, with its own properties.
+
+  **Breaking for consumers of this data.** Four of the five playlist kinds change
+  type, three of them change the property holding their items from `track` to
+  `hasPart`, and `byArtist` no longer appears on non-music items or on a
+  `PodcastSeries`. `track`/`hasPart` are also declared lists now, so a one-item
+  playlist emits an array rather than a bare object.
+
+  Also in this change: `refrakt inspect` audits a `children:` row against the
+  children rather than against the parent, and accepts a stamped property as
+  evidence that a source resolved — without which every property the applier
+  rebuilds from the field bag reported as broken, since the identity transform
+  consumes the bag before the audit reads the tree.
+
+### Patch Changes
+
+- Updated dependencies [a8012b6]
+- Updated dependencies [f1908a3]
+- Updated dependencies [f1908a3]
+- Updated dependencies [846d2d4]
+- Updated dependencies [f1908a3]
+- Updated dependencies [b40cbac]
+- Updated dependencies [d123b67]
+- Updated dependencies [f1908a3]
+  - @refrakt-md/runes@0.35.0
+  - @refrakt-md/transform@0.35.0
+  - @refrakt-md/types@0.35.0
+
 ## 0.34.0
 
 ### Patch Changes
