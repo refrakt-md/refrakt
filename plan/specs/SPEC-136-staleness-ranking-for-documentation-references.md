@@ -8,9 +8,14 @@ invocation — so it only ever covers the references someone already suspected.
 
 This spec adds the cheap, wide signal underneath it. Documentation already
 declares edges into the repository — `snippet path=`, `file-ref path=`, a
-backticked module path in a paragraph. Indexing those edges costs nothing per
+backticked module path in a paragraph. Indexing those costs nothing per
 reference and needs no new syntax, no marker and no change to a single existing
 page.
+
+Extraction alone reaches 28 of this repository's 237 content pages, because a
+page can be entirely about a subsystem without ever naming a file in it. So one
+optional frontmatter field, `documents:`, lets an author state what extraction
+cannot recover — written once per page, never re-stamped. See D13.
 
 It never verifies anything, and it never fails a build. It answers two questions
 nothing in the repository answers today, and the second one matters more:
@@ -151,6 +156,35 @@ everything are the same kind of useless. Only the middle row supports a ranking,
 and which row a class lands in is not predictable from how well-typed its edges
 are — it has to be measured before an extractor is written for it.
 
+### The corpus is mostly invisible
+
+Base rates describe the edges that exist. The harder number is how much of the
+corpus has no edge at all — **209 of 237 pages**, because a page can describe a
+subsystem thoroughly without ever naming a file in it.
+
+| Section | Pages | With any edge | Blind |
+|---|---|---|---|
+| `docs/` | 56 | 6 | **50** |
+| `extend/` | 35 | 8 | **27** |
+| `themes/` | 12 | 0 | **12** |
+| `runes/` | 116 | 10 | 106 |
+| `blog/` | 7 | 0 | 7 |
+
+The first three rows are the problem. They are the explanatory prose — the
+authoring guides, the theme documentation, the conceptual `docs/` pages — which
+is exactly where the measured rot lives, and 89 of their 103 pages are invisible
+to every automatic extraction rule.
+
+`site/content/extend/theme-authoring/overview.md` is representative: it explains
+what a theme is, how the two-layer system works, and how themes are structured.
+It is *about* `packages/transform/src/merge.ts` and `packages/runes/src/config.ts`
+in every meaningful sense, and it names neither. No extractor recovers that,
+because the relationship is in the author's head and nowhere in the text.
+
+The automatic classes cannot close this. **A page's subject is not always
+recoverable from its words** — which is the argument for letting an author state
+it, rather than for extracting harder. See D13.
+
 ## What already exists
 
 | Piece | State |
@@ -188,10 +222,37 @@ marker is present — D3.
 
 | Class | Extracted from | Precision | Status |
 |---|---|---|---|
+| **Declared** | `documents:` in frontmatter | Highest — the author stated it | **New** — D13 |
 | **Embedded source** | `snippet` / `file-ref` / `expand` `path=` (+ `symbol=`/`lines=`) | High — exact path, and exact region under {% ref "SPEC-131" /%} | Extractor exists |
 | **Prose path mention** | Backticked repo-relative path in body text | Low — file-granular, and the paragraph may not be about the file | **New** — D7 |
 | Plan source | `source=` on a `done` work item | None — 99% base rate | **Rejected** — D10 |
 | Entity `ref` / `xref` | Page → page | Too low to be worth it | Non-goal |
+
+### Declared edges
+
+A page states what it is about, once, in frontmatter:
+
+```yaml
+---
+title: Theme Overview
+documents:
+  - packages/transform/src/merge.ts
+  - packages/runes/src/config.ts
+---
+```
+
+Each entry is a repo-root-relative POSIX path, resolved through the same
+`ProjectFiles` containment as `snippet path=` — absolute paths and traversal
+escapes rejected identically. The resulting edges are ordinary edges: they rank
+like any other, and `touching` returns them like any other.
+
+`documents` joins the declared members of `Frontmatter`
+(`packages/content/src/frontmatter.ts:3`) rather than living in its index
+signature — WORK-545's correction, and it means {% ref "SPEC-126" /%} generates
+the reference entry for it automatically.
+
+Unlike every other class, a declared path that does not resolve is an **error**,
+not a skip — D14.
 
 ### The command
 
@@ -451,6 +512,46 @@ and that is the same "a command nobody invokes" problem the open questions carry
 except that the remedy here is a line in CLAUDE.md rather than a scheduled job,
 which is considerably cheaper.
 
+**D13 — An author may declare edges, and the authoring cost is acceptable because
+it is paid once.** This is the one place the spec asks for something to be
+written by hand, which sits awkwardly against its own selling point — every other
+class works on content nobody touches. The measurement is what justifies it: 209
+of 237 pages have no edge at all, and 89 of those sit in the three sections where
+the rot was actually found. No extraction rule reaches them, because a page's
+subject is not always in its words.
+
+The cost model is what separates this from {% ref "SPEC-134" /%} D8's prohibition
+on bulk stamping:
+
+| | What it asserts | When it must be rewritten |
+|---|---|---|
+| `reviewed="a3f91c4e"` | A human read *this version* of this code | **Every time the code changes** |
+| `documents: [path]` | This page is *about* that file | Only if the page changes subject |
+
+A `reviewed` marker decays by design — that is the mechanism. A `documents` entry
+does not decay at all: it names what the page is about, which survives every edit
+to the code it describes. Written once when the page is created, it keeps
+producing edges for years. That is a genuinely different trade from stamping
+fifty hashes and re-stamping them each release, and it is why D8's reasoning does
+not carry over.
+
+It is also the highest-precision class in the spec, for the obvious reason: an
+author who lists three files has chosen three files the page actually describes.
+There is no extraction heuristic to be wrong.
+
+**D14 — A declared path that does not resolve is an error; a mentioned one is
+skipped.** D7 skips a backticked path that matches no file, because the likeliest
+explanation is that the extractor misfired on something that was never a path.
+Silence is right there.
+
+A `documents` entry that matches no file has no such excuse. The author asserted
+the relationship, so a miss means the file was renamed, moved or deleted and the
+declaration was not updated — a fact worth reporting loudly. Without this, the
+mechanism designed to catch rot would quietly accumulate its own.
+
+The asymmetry is the point: **inferred edges fail quietly, declared edges fail
+loudly**, and which one applies follows from whether a human made a claim.
+
 ## Non-goals
 
 - **Verifying that documentation is correct.** Same impossibility as
@@ -470,6 +571,16 @@ which is considerably cheaper.
   different hat.
 - **Weighting by churn, blame, or authorship.** D4. Revisit only with evidence
   that the plain count mis-ranks.
+- **Globs in `documents`.** `packages/runes/src/tags/*.ts` is the obvious ask and
+  the obvious trap: it expands to an edge set that is stale whenever *any* member
+  moves, so a page declaring it fires permanently. That is the 99% base rate of
+  D10, invited in by hand. Literal paths only until someone shows a case the
+  ranking survives.
+- **Cascading `documents` through `_layout.md`.** Frontmatter cascades in refrakt,
+  and this field deliberately does not. A subtree declaration would put the same
+  edge on every page beneath it, so one file moving lights up all 27 pages of a
+  section at once — noise that buries the three pages that individually declared
+  it. Per page, where the claim is specific enough to be actionable.
 
 ## Acceptance Criteria
 
@@ -478,6 +589,12 @@ which is considerably cheaper.
 - [ ] Embedded-source edges are extracted from `snippet`, `file-ref` and `expand` `path=` attributes
 - [ ] Prose path mentions are extracted from backticked repo-relative paths that resolve to an existing file
 - [ ] A backticked path that does not resolve to an existing file is skipped, not reported
+- [ ] `documents` is a declared member of the `Frontmatter` interface, not read through its index signature
+- [ ] Each `documents` entry produces an edge that ranks and answers `touching` identically to an extracted one
+- [ ] `documents` entries resolve through `ProjectFiles`, rejecting absolute paths and traversal escapes as `snippet path=` does
+- [ ] A `documents` entry that resolves to no existing file is reported as an error, naming the page and the entry
+- [ ] A `documents` entry set in a `_layout.md` does not cascade to pages beneath it
+- [ ] The frontmatter reference documents `documents`, generated from the schema
 - [ ] An edge whose referrer is newer than every change to its target scores zero and is omitted
 - [ ] An invocation carrying a matching {% ref "SPEC-134" /%} `reviewed` marker scores zero regardless of commit count
 - [ ] Output is bounded by `--top`, defaulting to 10, and each entry lists commit subjects for the target's changes
@@ -510,11 +627,15 @@ Four phases. Phase 1 is self-contained and shippable alone.
    This phase will find almost nothing in this repository — see the measurement —
    and that is the correct order anyway: it establishes the index, the scan and
    the output shape against the class whose extraction is already trustworthy.
-2. **Prose path extraction.** The class that carries the value (D7). Its own
-   extractor, its own precision tuning, and the first run over `site/content`
-   treated as the real acceptance test: if the top ten are not things a
-   maintainer agrees are worth reading, the extraction rule is wrong and the
-   phase is not done.
+2. **Coverage: prose extraction and declared edges.** The two classes that
+   between them reach the pages that matter — prose for the ones that name files
+   (D7), `documents` for the 89 explanatory pages that do not (D13). The
+   frontmatter half is the smaller job by far (a declared field, a resolver, an
+   error path) and should land first, because it needs no precision tuning and
+   makes the phase useful while the extraction rule is still being argued about.
+   The first run over `site/content` is the real acceptance test for the prose
+   half: if the top ten are not things a maintainer agrees are worth reading, the
+   rule is wrong and the phase is not done.
 3. **The MCP tool, and the `touching` query.** Both modes, plus the CLAUDE.md
    line that puts the call in the per-task loop. **This is the phase where the
    feature stops being retrospective** (D12), so it is not a tail — it is the
@@ -565,6 +686,17 @@ a rewrite avoided in phase 3.
   Worth re-measuring, not assuming, and worth `refrakt stale` printing its own
   base rate in the report footer so the degradation is visible rather than
   inferred.
+- **Should the 116 rune pages get edges derived from the catalog instead of by
+  hand?** They are the largest blind section, and asking anyone to hand-write
+  `documents` on 116 pages is a plan that does not survive contact. But their
+  binding is mechanical in a way no other section's is: `runes/hint.md` documents
+  the `hint` rune, and refrakt already knows from the catalog where that rune's
+  schema lives and which config key it uses. A derived class could cover all 116
+  for free.
+  Deliberately not in this spec — it is refrakt-specific machinery, it needs the
+  per-page↔rune mapping to be exact rather than slug-guessed, and its base rate is
+  unmeasured. Worth asking before anyone starts stamping frontmatter onto rune
+  pages, since the answer decides whether they should.
 - **Should prose extraction honour an opt-out?** A page that legitimately mentions
   many paths without documenting them (CLAUDE.md's monorepo map, for instance)
   will rank persistently. Frontmatter opt-out is the easy answer and also the easy
@@ -583,10 +715,11 @@ a rewrite avoided in phase 3.
 - {% ref "SPEC-135" /%} — the advisory-finding category (D10), the sibling-commands argument (D11) this spec answers to, and D6's rule that an MCP tool returns findings rather than a rendered report
 - {% ref "SPEC-043" /%} — the MCP server `refrakt_stale` joins; `plugins/plan/src/mcp-bindings.ts` is the binding pattern
 - {% ref "SPEC-113" /%} — the hosted, git-less build that keeps this out of the pipeline
-- {% ref "SPEC-126" /%} — guards that nothing runs; the open question above is its fourth instance
+- {% ref "SPEC-126" /%} — guards that nothing runs (the open question above is its fourth instance), and the generator that turns a declared `documents` into its own reference entry
 - {% ref "BUG-020" /%} — prose invalidated by an ordinary edit, found by a human rather than a check
 - `packages/content/src/timestamps.ts` — the single-pass git scan and `isShallowClone`, both adapted rather than rewritten
 - `packages/runes/src/lib/read-file.ts` — the shared reader carrying `path=` / `lines=`
+- `packages/content/src/frontmatter.ts` — the `Frontmatter` interface `documents` joins; `created` / `modified` are the precedent for a field that overrides what git reports
 - `plugins/plan/src/scanner-core.ts` — `extractRefs`, the plan-edge index
 - `site/content/extend/rune-authoring/authoring-overview.md` — the instance in Problem
 
