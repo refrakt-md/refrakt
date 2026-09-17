@@ -1,5 +1,296 @@
 # @refrakt-md/runes
 
+## 0.35.0
+
+### Minor Changes
+
+- f1908a3: An entity with no properties is not emitted (WORK-567, SPEC-130 D4)
+
+  Seven runes declared a schema.org type and no property mapping at all, each
+  publishing `{"@context": …, "@type": "Dataset"}` and nothing more. A type
+  assertion with nothing attached tells a consumer nothing; it is noise in every
+  channel that reads it.
+
+  `collectJsonLd` now drops an entity that resolves to a bare `@type`, and never
+  nests a bare child into its parent. Enforcing it in the collector rather than
+  per rune keeps it enforced: a rune that declares a type and forgets the mapping
+  loses the entity instead of quietly joining the seven.
+
+  **Six of the seven lost the type**, with the reason recorded at each call site:
+
+  - `gallery` (`ImageGallery`) — the images are plain markdown pictures with
+    nothing naming them; `image`/`associatedMedia` needs each typed as an
+    `ImageObject`.
+  - `data-table` (`Dataset`) — no headline to supply a `name`, no `distribution`
+    to point at; its properties are all interaction config.
+  - `budget` and `itinerary` (`ItemList`) — the children carry real data, but
+    `itemListElement` needs them typed, and neither a cost breakdown nor a
+    day-by-day plan is a ranked list to begin with.
+  - `map` (`Place`) — a type error rather than a thin entity: a map showing three
+    landmarks is not itself a place. The name and description belong to the
+    `map-pin` children.
+  - `blog` (`Blog`) — this belongs to the page, not the rune. Its `posts`
+    container is empty at transform time and `name`/`url`/`blogPost` are
+    page-level facts.
+
+  `symbol` kept `TechArticle` and gained a real mapping — `name` from the symbol's
+  own heading, `description` from the lead paragraph.
+
+  **If you consume structured data from those six runes**, there is now nothing
+  where an empty type assertion used to be. Dropping the type also removes the
+  `typeof` from the rendered HTML, so the RDFa channel goes quiet with the JSON-LD
+  rather than keeping a bare assertion in the markup.
+
+- f1908a3: Thirteen flat schema tables, and `NonProfit` becomes `NGO` (WORK-568, SPEC-130)
+
+  `figure`, `embed`, `cast-member`, `character`, `realm`, `faction`, `plot`,
+  `lore`, `organization`, `pricing`, `tier`, `timeline-entry` and `track` now
+  declare their schema.org mapping as a table instead of building it inside their
+  transform. Each reproduces its previous JSON-LD exactly, except where a change
+  is named below. (`breadcrumb-item` is the fourteenth of the group and moves with
+  its parent, since the property that holds a child and the child's type are one
+  declaration.)
+
+  **`organization type="NonProfit"` is now `type="NGO"`.** schema.org has `NGO`
+  and has never had `NonProfit`. The rune's curated six-value enum validated
+  against itself, so `matches` was satisfied and nothing noticed the value was not
+  in the vocabulary it claimed to speak — every site writing `NonProfit` published
+  a `@type` no consumer resolves. The enum, the schema table and the generated
+  attribute reference all say `NGO` now.
+
+  **This is breaking for content.** `{% organization type="NonProfit" %}` no
+  longer passes validation; change it to `type="NGO"`. Failing loudly is the
+  point — the old value silently published an unresolvable type.
+
+  `organization` also becomes a `by: 'type'` table over its six rows, which is
+  what its `typeof: attrs.type` was already doing, now written where a reviewer
+  can read it and keyed off the same list that feeds `matches`, so the accepted
+  values and the published types cannot drift apart.
+
+  **`pricing` declares `offers` a list.** A single-tier pricing block serialises
+  `"offers": [{…}]` instead of the bare object it used to emit, so the shape no
+  longer varies with how much content an author wrote.
+
+  Two smaller shape notes: `embed`'s three RDFa carriers are rebuilt from the
+  field bag and therefore appended last, so their order in the markup changes
+  (the JSON-LD is identical); and `cast-member`'s portrait image gains a
+  `portrait` name, and with it an `rf-cast-member__portrait` class, so the schema
+  reaches it by name rather than through a local variable.
+
+- 846d2d4: Generate breadcrumb and timeline positions from a declared index (WORK-571)
+
+  `breadcrumb` and `timeline` used to walk their children and push a
+  `<meta property="position">` into each. Both now declare
+  `generated: { position: 'index' }` and the applier produces it — the one
+  generator in the vocabulary, used by exactly these two runes.
+
+  **`position` is now a string.** The generator emits `String(index + 1)`, so the
+  RDFa attribute and the JSON-LD say the same thing. Before this the meta carried
+  a _number_, which the JSON-LD collector passed through verbatim while the
+  rendered markup stringified it — the two channels disagreed on every breadcrumb
+  and every timeline. If you read `position` out of a page's JSON-LD, compare it
+  as a string or coerce it.
+
+  **`itemListElement` is a declared list**, so a one-item breadcrumb trail or a
+  one-entry timeline emits an array rather than a bare object, as `pricing`'s
+  `offers` already did.
+
+  `{% breadcrumb auto=true %}` is built from a pipeline hook rather than a Markdoc
+  schema, so the wrapper that normally applies a rune's table cannot reach it. The
+  hook now calls the applier itself, which means both breadcrumb paths publish
+  from the _same_ table instead of from a declaration and a hand-written copy that
+  can drift apart.
+
+- b40cbac: Per-type schema for `playlist` and `track` — BUG-013 (WORK-569, SPEC-130)
+
+  Both runes declared an enum of kinds and then published one type for all of
+  them. `{% playlist type="podcast" %}` announced a podcast as a `MusicPlaylist`
+  whose episodes were `MusicRecording`s, and `{% track type="episode" %}` did the
+  same on its own. Each rune already knew what its content was and emitted the
+  wrong schema anyway.
+
+  Each now keys off the attribute its author already set, with its own table, and
+  neither rune declares anything about the other.
+
+  A `playlist` publishes by kind: `album` is a `MusicAlbum` with `track`, a
+  narrowing of the `MusicPlaylist` it used to emit; `mix` stays a `MusicPlaylist`,
+  the one kind with no narrower type; and `podcast`, `audiobook` and `series`
+  switch branch to `PodcastSeries`, `Audiobook` and `CreativeWorkSeries`, holding
+  their items in `hasPart` as `PodcastEpisode`s, `Chapter`s and `CreativeWork`s.
+
+  `track`'s five kinds map to `MusicRecording`, `PodcastEpisode`, `Chapter`,
+  `CreativeWork` and `VideoObject`.
+
+  **A child row carries a property map, not just a type.** Retyping an item and
+  leaving its stamps would put `byArtist` on a `PodcastEpisode`, which does not
+  have that property — worse than the `MusicRecording` it replaced, which was at
+  least coherently wrong. A parent that retypes a child now owns that child's
+  mapping, and anything it does not name is dropped. A type the _author_ stated is
+  the exception and survives: a `{% track type="song" %}` inside a podcast stays a
+  song, with its own properties.
+
+  **Breaking for consumers of this data.** Four of the five playlist kinds change
+  type, three of them change the property holding their items from `track` to
+  `hasPart`, and `byArtist` no longer appears on non-music items or on a
+  `PodcastSeries`. `track`/`hasPart` are also declared lists now, so a one-item
+  playlist emits an array rather than a bare object.
+
+  Also in this change: `refrakt inspect` audits a `children:` row against the
+  children rather than against the parent, and accepts a stamped property as
+  evidence that a source resolved — without which every property the applier
+  rebuilds from the field bag reported as broken, since the identity transform
+  consumes the bag before the audit reads the tree.
+
+- f1908a3: Declare a rune's schema.org mapping as a table (SPEC-130, WORK-561/563/565/566)
+
+  A rune's structured data used to be built by hand inside its `transform()`:
+  `schemaOrgType: 'Product'` here, a `schema: { name: someLocalTag }` there, a
+  `<span typeof="Person">` assembled from filtered children somewhere else. No
+  tool could see any of it, because it only existed as JavaScript that had already
+  run — and JSON-LD is the one output nobody looks at, since a page renders
+  identically whether its structured data is right or ruined.
+
+  A rune now declares `schema:` on `createContentModelSchema` as data, and an
+  applier resolves it against the rendered tree:
+
+  ```ts
+  export const eventSchema = {
+    type: "Event",
+    properties: { headline: "name", blurb: "description", date: "startDate" },
+    entities: {
+      location: {
+        type: "Place",
+        property: "location",
+        properties: { location: "name" },
+      },
+    },
+  } as const;
+  ```
+
+  Sources resolve by name, and the lookup is attribute-agnostic: a `data-name` and
+  a `data-field` are equally findable, so a node moving between `properties` and
+  `refs` never breaks a table. A source that exists only as an attribute value is
+  rebuilt from the `data-rune-fields` bag; the rendered HTML is never relocated to
+  suit the schema.
+
+  New to the public surface:
+
+  - **`schema` is an identity field.** A theme may restructure and re-decorate a
+    rune; it may not restate what the rune asserts about a site's content by
+    changing how it looks (ADR-028).
+  - **Declared lists always serialise as arrays.** `lists: ['track']` fixes the
+    shape of a collection property regardless of how many items an author wrote —
+    previously a one-item collection emitted an object and a two-item one an
+    array, so every consumer had to handle both.
+  - **Every source is addressable.** Roughly 20 nodes the schema reached only as
+    anonymous local variables or array positions now carry names.
+  - **`refrakt inspect <rune>`, `refrakt contracts` and `refrakt reference` all
+    print the resolved row.** Nothing validates a table against schema.org —
+    refrakt ships no ontology — so visibility replaces validation, and a wrong row
+    is caught by a reviewer reading it. What _is_ checked: a source matching no
+    emitted node, no field-bag entry and no declared attribute is flagged, because
+    that property is silently absent from the published graph.
+
+  **SEO is now harvested after the cross-page pipeline**, not during per-page
+  transform. `{% breadcrumb auto=true %}` resolves its ancestors in a
+  `postProcess` hook, so before this its JSON-LD was harvested from a tree that
+  did not yet have them — the rendered RDFa and the published JSON-LD disagreed on
+  every auto breadcrumb.
+
+  Also new: `contracts/seo-baseline/baseline.json`, a committed record of the
+  structured data every rune emits, so a schema change is reviewed as a diff.
+
+### Patch Changes
+
+- a8012b6: Fix the changelog generator mangling wrapped bullets and tables
+
+  `scripts/generate-changelog.mjs` flattens each package CHANGELOG into the prose
+  summary at `site/content/releases.md`. Two shapes did not survive the flattening:
+
+  - **A sub-bullet that wraps** had its continuation lines classified as prose, so
+    every bullet was truncated at its first line and the orphaned tails were joined
+    into a single sentence. v0.34.0's entry for the three validation defects reads
+    as three unrelated half-thoughts run together, and every release back to
+    v0.30.1 has instances of it.
+  - **A markdown table** was unwrapped into one line of pipes and dashes.
+
+  Continuation lines now attach to the bullet above them, and tables are dropped
+  the way fenced code blocks already are — the changelog is a flat prose summary
+  and a table has no flat form, so the readable choice is to leave it in the
+  package CHANGELOG and say the same thing in a sentence.
+
+  `releases.md` is regenerated here, which repairs the existing entries: 68
+  releases unchanged, fourteen garbled lines gone, nothing else moved.
+
+- f1908a3: Accept `{% track %}` children in `{% playlist %}` (WORK-569 part, BUG-016)
+
+  A `{% track %}` written inside a `{% playlist %}` is now one of that playlist's
+  tracks — in the listing, in the HTML, and in the structured data. It used to
+  fall through to the greedy `body` field: rendered as an `<li>` outside any list,
+  published as a detached top-level entity, and recommended by the docs the whole
+  time.
+
+  The bar is equivalence — a nested track with no explicit `type` produces the
+  same schema as the same content written as a list item — asserted directly
+  rather than assumed. An explicit child type that contradicts its container is
+  honoured: a `{% track type="song" %}` inside a podcast stays a song, because the
+  author said so.
+
+  **Two defects fixed to get there:**
+
+  - The sequence resolver could not handle a greedy `itemModel` field. With
+    `greedy`, the resolved value is an array, and the extraction guarded on
+    `'type' in node` — so making `tracks` greedy silently disabled its own
+    extraction and broke the list form outright. It now concatenates
+    `resolveListItems` across the collected lists in document order.
+  - `track` was dropping two of its own fields. `artistMeta` and `durationMeta`
+    were declared but never pushed into `children`, so they were stamped onto
+    nodes that were not in the tree: a standalone
+    `{% track artist="Radiohead" duration="4:01" %}` published its name and
+    nothing else. `rootAttrs` was likewise assembled and never applied, so `src`
+    reached nothing.
+
+  **If you have a `{% track %}` nested inside a `{% playlist %}`**, its rendered
+  position and its structured data both change — the track moves into the
+  playlist's `<ol>` and its entity nests under the playlist's `track` property
+  instead of standing alone at the top level. That is the shape the docs always
+  described.
+
+- d123b67: Declare `accordion`, `recipe` and `how-to`'s retype-and-wrap (WORK-570)
+
+  The last four runes building their schema.org data by hand. Each set `typeof` on
+  nodes it did not create and hand-wrote a `<div property="text">` wrapper to carry
+  the value; both are now declared, and the applier emits the wrapper.
+
+  **No output changes.** The rendered HTML is the same elements with the same
+  attributes and values in the same positions — only the attribute _serialisation
+  order_ moves on eight of them, since the applier runs after the renderable is
+  built rather than before. The published JSON-LD is unchanged across the whole
+  baseline corpus.
+
+  The wrapper stays, and there is now a test saying why. RDFa Core 1.1 §7.5 step 11
+  fixes a property's object to the typed resource when an element carries both
+  `property` and `typeof`, so its own text is unreachable as a literal; deleting
+  the inner element looks like a simplification and silently drops a triple from
+  the RDFa while the JSON-LD keeps emitting it.
+
+  Two applier fixes this surfaced, both affecting published data:
+
+  - A source naming several nodes stamped only the first, so a recipe published
+    one of its six ingredients and dropped the rest.
+  - Fixing that made name lookup reach into nested runes, so a character's `name`
+    became the character plus each of its section headings. Name resolution now
+    stops at another rune's node, matching the flat namespace's per-rune scope.
+
+  With this, no rune anywhere passes `schemaOrgType` or a `schema:` map to
+  `createComponentRenderable`, and no transform mutates `attributes.typeof` — the
+  declarative mapping SPEC-130 set out to build is the only form left, and a test
+  over the catalog keeps it that way.
+
+- Updated dependencies [f1908a3]
+  - @refrakt-md/transform@0.35.0
+  - @refrakt-md/types@0.35.0
+
 ## 0.34.0
 
 ### Minor Changes

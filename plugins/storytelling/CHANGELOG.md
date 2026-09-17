@@ -1,5 +1,88 @@
 # @refrakt-md/storytelling
 
+## 0.35.0
+
+### Minor Changes
+
+- f1908a3: Thirteen flat schema tables, and `NonProfit` becomes `NGO` (WORK-568, SPEC-130)
+
+  `figure`, `embed`, `cast-member`, `character`, `realm`, `faction`, `plot`,
+  `lore`, `organization`, `pricing`, `tier`, `timeline-entry` and `track` now
+  declare their schema.org mapping as a table instead of building it inside their
+  transform. Each reproduces its previous JSON-LD exactly, except where a change
+  is named below. (`breadcrumb-item` is the fourteenth of the group and moves with
+  its parent, since the property that holds a child and the child's type are one
+  declaration.)
+
+  **`organization type="NonProfit"` is now `type="NGO"`.** schema.org has `NGO`
+  and has never had `NonProfit`. The rune's curated six-value enum validated
+  against itself, so `matches` was satisfied and nothing noticed the value was not
+  in the vocabulary it claimed to speak — every site writing `NonProfit` published
+  a `@type` no consumer resolves. The enum, the schema table and the generated
+  attribute reference all say `NGO` now.
+
+  **This is breaking for content.** `{% organization type="NonProfit" %}` no
+  longer passes validation; change it to `type="NGO"`. Failing loudly is the
+  point — the old value silently published an unresolvable type.
+
+  `organization` also becomes a `by: 'type'` table over its six rows, which is
+  what its `typeof: attrs.type` was already doing, now written where a reviewer
+  can read it and keyed off the same list that feeds `matches`, so the accepted
+  values and the published types cannot drift apart.
+
+  **`pricing` declares `offers` a list.** A single-tier pricing block serialises
+  `"offers": [{…}]` instead of the bare object it used to emit, so the shape no
+  longer varies with how much content an author wrote.
+
+  Two smaller shape notes: `embed`'s three RDFa carriers are rebuilt from the
+  field bag and therefore appended last, so their order in the markup changes
+  (the JSON-LD is identical); and `cast-member`'s portrait image gains a
+  `portrait` name, and with it an `rf-cast-member__portrait` class, so the schema
+  reaches it by name rather than through a local variable.
+
+### Patch Changes
+
+- f1908a3: Style runes by BEM class, not the schema.org channel (WORK-564, BUG-015)
+
+  Fourteen CSS rules across Lumina and Skeleton selected on `[property=…]` — the
+  RDFa attribute the structured-data channel writes. That coupled a rune's
+  appearance to what it asserts about its content, so renaming a schema.org
+  property would unstyle a rune, and four of the rules were already dead because a
+  `property` had moved years ago.
+
+  All fourteen now select on the `data-name`-derived BEM element class instead
+  (`.rf-lore__title`, `.rf-plot__title`, and so on). Where a rule had a live
+  `meta[property]` half and a dead `span[property]` half, the dead half is gone
+  and the live one kept. A CSS coverage assertion walks every stylesheet under
+  `packages/` and `plugins/` and fails on any `[property…]` selector, so the
+  coupling cannot come back.
+
+  **Two defects this surfaced**, both of the kind a dead selector hides:
+
+  - `.rf-lore__title` and `.rf-plot__title` pinned `font-size`, which overrode the
+    prominence chain — `{% plot prominence="display" %}` had been inert. The
+    declarations are removed; `sections.css` already supplies the resting value.
+  - A `schema="none"` test passed vacuously: `stripSchemaOrg` has exactly one
+    caller (`accordion`), so the attribute does nothing on `pricing`.
+
+  **If you override Lumina or Skeleton CSS** and your selectors mention
+  `[property=…]` on a rune's children, they no longer match the shipped markup's
+  intent — switch to the BEM element class. If you relied on `.rf-lore__title` or
+  `.rf-plot__title` carrying a fixed `font-size`, set it yourself or use the
+  `prominence` axis, which now works.
+
+- Updated dependencies [a8012b6]
+- Updated dependencies [f1908a3]
+- Updated dependencies [f1908a3]
+- Updated dependencies [846d2d4]
+- Updated dependencies [f1908a3]
+- Updated dependencies [b40cbac]
+- Updated dependencies [d123b67]
+- Updated dependencies [f1908a3]
+  - @refrakt-md/runes@0.35.0
+  - @refrakt-md/transform@0.35.0
+  - @refrakt-md/types@0.35.0
+
 ## 0.34.0
 
 ### Patch Changes
