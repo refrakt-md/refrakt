@@ -1,4 +1,4 @@
-{% bug id="BUG-017" status="confirmed" severity="minor" source="SPEC-132" tags="bento, surfaces, applicability, docs, validation" %}
+{% bug id="BUG-017" status="confirmed" severity="minor" tags="bento, surfaces, applicability, docs, validation" %}
 
 # bento documents a frame cascade the engine does not implement
 
@@ -62,6 +62,14 @@ the applicability table until that is settled — `bento` has its own
 `media-ratio` / `media-position` knobs, and `frame` may be deliberately excluded
 to avoid two mechanisms for one effect, which is what the removed prose itself
 claimed to be avoiding.
+
+**This item deliberately carries no `source`.** It was filed under
+{% ref "SPEC-132" /%}, which surfaced it but does not own it — and because
+`source` feeds the `implemented-by` rollups, that made SPEC-132 permanently
+un-implementable by an unrelated open bug. Until the question above is
+answered, no spec is being delivered by fixing this, so claiming one would
+assert something false. Candidates when it is answered: {% ref "SPEC-086" /%}
+(which owns the `frame` axis) or {% ref "SPEC-085" /%} (which owns bento).
 
 ## Interim
 
