@@ -305,6 +305,28 @@ This is the cheap fix, deliberately. Whether a 1.0 should ship this shape at all
 is {% ref "WORK-576" /%} — a public function with fourteen positional
 parameters is much cheaper to redesign before 1.0 than after.
 
+**D5a — the fast tier inherits the build's disposition rules, it does not
+restate them.** {% ref "WORK-559" /%} put both the policy and its resolution in
+one exported module — `packages/content/src/validate.ts` exports
+`DEFAULT_VALIDATION_IDS`, `ValidationSettings`, `resolveValidationIds` and
+`validatePage` — and `loadContent` reads the settings off the site config itself
+(`site.ts:353`) rather than an adapter passing them in. So any caller handing
+over the site's config inherits identical dispositions for free, including the
+three-way refinement: `disableIds` demotes to `info`, an id never in the
+allow-list is dropped, `enabled: false` drops, `critical` is always reported.
+
+That is why "the CLI might disagree with the build" is not a design decision —
+it is a consequence of D5, and free as long as the CLI goes through the same
+entry point.
+
+**It stops being free at D3.** The fast tier exists precisely to bypass
+`loadContent`, which means bypassing `site.ts:353`. Whatever the parse-only
+entry point turns out to be, it must take `ValidationSettings` and run them
+through `resolveValidationIds` rather than reimplementing the dispositions.
+This is stated as a criterion because the failure is silent: a CLI that missed
+it would report findings the build had demoted, and nobody would notice until
+the gate contradicted a green build.
+
 **D6 — MCP returns findings, not a rendered report.** The point of the tool over
 the CLI is that a caller can filter, count and act on individual findings without
 parsing text. A tool that returns the CLI's formatted output is a worse CLI.
@@ -505,6 +527,8 @@ to include `packages/**`.
 - [ ] `refrakt config validate` runs the config layer alone, through the same function `refrakt validate` calls
 - [ ] A PR workflow runs `npm ci` → `npm run build` → `refrakt validate`, and fails the PR on an error-severity finding
 - [ ] The default run does not execute the register/aggregate phases, demonstrated by a timing test against a `--deep` run on the same site
+- [ ] The fast tier resolves validation settings through `resolveValidationIds` rather than reimplementing the dispositions — D5a
+- [ ] A test asserts the CLI and a build agree, finding for finding, on a site configured with `disableIds`
 - [ ] `refrakt validate` exits non-zero when any finding is at error severity, and zero otherwise
 - [ ] An `refrakt_validate` MCP tool returns structured findings — file, line, severity, error id, message — not formatted text
 - [ ] `plan validate` reports duplicate entity IDs at error severity, naming every file claiming each ID
