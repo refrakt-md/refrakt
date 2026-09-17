@@ -118,10 +118,10 @@ loadContent ──── ├── dev     → stderr on each HMR reload
 Divergence between adapters stops being something a checklist polices and starts
 being impossible to express.
 
-### `refrakt validate` validates the project
+### `refrakt validate` validates the site
 
 ```bash
-refrakt validate                      # content + config, for every site
+refrakt validate                      # config resolution, then content, for every site
 refrakt validate --site main          # one site
 refrakt validate --only content       # narrow
 refrakt validate --only config
@@ -134,11 +134,29 @@ refrakt validate --format json
 | `--site <name>` | Restrict to one site from `refrakt.config.json`. Already parsed and ignored today. |
 | `--only <content\|config>` | Narrow. Both run when absent. |
 | `--deep` | Run the cross-page tier. Off by default — D3. |
-| `--config <path>` | **Unchanged** — still a path to a theme config. D2. |
 | `--format json` | Machine-readable findings. |
 
 Exit non-zero when anything at error severity is found. This is the pre-merge
 gate — D4.
+
+**Two layers, in order** — D1. Config resolution runs first because its failures
+*cause* content findings; content validation runs against a config already known
+to resolve.
+
+### The command surface this lands in
+
+`refrakt validate` gets its name back for the site author. The theme-authoring
+checks it carries today move to the noun group that already exists for them:
+
+```bash
+refrakt validate              # site: config resolution, then content
+refrakt config validate       # just the config layer — beside `config migrate`
+refrakt theme validate        # ThemeConfig + manifest — beside `theme install/info/list`
+refrakt plugins validate      # unchanged
+```
+
+No new groups. `theme`, `config`, `plugins` and `template` are all existing
+dispatch targets (`bin.ts:23-29`) — D12.
 
 ### Two tiers, and the default is the fast one
 
@@ -182,23 +200,62 @@ resolution is still unambiguous — see D8.
 
 ## Design decisions
 
-**D1 — `refrakt validate` validates the project: content and config, both by
-default.** "Validate my project" is the obvious reading of the command, and it
-is what `plan validate` already means for its own root. The change is cheap to
-justify because the current zero-argument behaviour is close to a no-op: it
-validates refrakt's own `baseConfig` and reports it as though it were the user's.
+**D1 — `refrakt validate` is site-scoped, and its two layers run in order.**
+"Validate my project" is the obvious reading of the command, and it is what
+`plan validate` already means for its own root. The change is cheap to justify
+because the current zero-argument behaviour is close to a no-op: it validates
+refrakt's own `baseConfig` and reports it as though it were the user's.
+
+**Three different things are called "config" here**, and only one of them
+belongs in this command:
+
+| Artifact | Who writes it | Checked today by |
+|---|---|---|
+| `refrakt.config.json` | site author | a published JSON Schema — editors only, nothing in a build |
+| `ThemeConfig` (`prefix`, rune configs) | theme author | `validateThemeConfig` — what `--config <path>` calls |
+| Theme manifest | theme author | `validateManifest` — what `--manifest` calls |
+
+So the command validates the two **theme-authoring** artifacts under a name that
+reads like a **site-authoring** one. Those go to `theme validate` (D12).
+
+**And the site half checks resolution, not shape.** Shape-checking
+`refrakt.config.json` is the JSON Schema's job and it already does it. What
+nothing covers is whether the config's *names resolve*: does `theme.package`
+exist, does every entry in `plugins[]` load, do `routeRules` layout names exist,
+do `entityRoutes` types match a registered type. None of that is expressible in
+JSON Schema.
+
+That layer is not optional garnish — it is load-bearing for the content layer.
+`packages/sveltekit/src/plugin.ts:166` catches a failed package load, warns to
+console, and continues with that plugin's runes **absent**. Post-
+{% ref "SPEC-132" /%} every use of those runes is now a `tag-undefined` finding:
+dozens of errors against content that is perfectly correct, when the cause is
+one line of config. Running resolution first, and letting it annotate or
+suppress the findings it would cause, is what stops the symptom drowning the
+cause.
 
 This is a behaviour change to a public CLI. Pre-1.0 under fixed-mode Changesets
 it is a minor, but it is the kind of change that deserves saying out loud in the
 milestone rather than appearing in a changelog line.
 
-**D2 — the scope flag is not `--config`.** `--config <path>` already means "the
-theme config file to validate". Overloading it to mean "only validate config"
-breaks every existing invocation. `--only content|config` avoids the collision
-entirely, and `--config` keeps its current meaning.
+**D2 — the scope flag is `--only`, and `--config <path>` leaves the command.**
+An earlier draft kept `--config <path>` on `refrakt validate` and avoided the
+name collision by calling the scope flag `--only`. The collision is now moot:
+under D12 the theme-config path moves to `theme validate`, so the bare command
+has no `--config` at all.
 
-This is worth deciding in the spec rather than in review, because `--config` is
-the name everyone reaches for first.
+`--only content|config` stays the scope flag regardless — it reads as a filter
+rather than an input, which is what it is.
+
+Retire `--config` / `--manifest` from the bare command rather than aliasing
+them through a deprecation window. Pre-1.0, and today's zero-argument behaviour
+is close to a no-op, so nobody can be meaningfully depending on it.
+
+**A validation command must never report success on nothing.** Standing in a
+theme package with no `refrakt.config.json` and no content should say exactly
+that, not print a checkmark. This is the real defect in today's command: it
+validates `baseConfig`, reports success, and tells the user nothing while
+looking like it told them something.
 
 **D3 — the per-page tier is the default; cross-page is opt-in.**
 {% ref "SPEC-132" /%} puts validation where the tag set is assembled, inside
@@ -327,13 +384,62 @@ cycles, status lag, and now duplicate IDs — over a different content root;
 `refrakt validate` would make it mean "everything", which is less useful than
 "this site".
 
+**D12 — theme validation moves to the `theme` group, which already exists.**
+`bin.ts:23-29` dispatches five noun groups — `theme`, `template`, `plugins`,
+`config`, `reference` — so subcommands are this CLI's general shape for "acting
+on a named thing", not a plugin convention. `theme` already holds `install`,
+`info` and `list`; `theme validate` slots in beside them.
+
+Being a *core* concern does not argue against a group: `config` is as core as
+anything in the product and has one. The grouping tracks what you are acting on,
+not whether it is first- or third-party.
+
+The alternatives considered, and why not:
+
+| Option | Why not |
+|---|---|
+| Keep `--config` / `--manifest` on `refrakt validate` | Zero migration, but permanently mixes two audiences and leaves `--only config` ambiguous — the thing D1 exists to fix |
+| Generalise to `refrakt extension validate` | Themes, plugins and templates are one family ({% ref "SPEC-118" /%}), but this invents a noun where three concrete ones already exist, and nobody thinks "I am validating my extension" |
+| `refrakt validate --only theme` | Keeps one command, at the cost of it meaning different things depending on what kind of project you are standing in — the ambiguity D1 removes |
+| Drop theme validation | Theme authoring loses its only check |
+
+The same reasoning gives the config layer a focused entry point for free:
+`refrakt config validate`, beside the `config migrate` that already exists. It
+does not replace running resolution inside `refrakt validate` — D1's ordering
+still holds — it is the same function with a second caller, per D5.
+
+**D13 — the pre-merge gate is a PR job that builds.** `format.yml` runs on
+`pull_request:` and establishes the shape: checkout → setup-node 24 →
+`npm ci` → one check command. A validate job follows it, with one addition —
+`npm run build` — because there is no build-free route:
+
+- `format.yml` escapes it only because Biome reads source.
+- `fixture-corpus.test.ts` imports `../src/index.js`, so it needs no build
+  *within* one package; validating site content needs the assembled tag set
+  across `runes`, nine plugins and `content`, which resolves through
+  `node_modules` to `dist`.
+- `release.yml` confirms the ordering: `npm ci` → `npm run build` → `npm test`.
+
+**The build is not a tax this spec imposes — it closes a second gap.** Nothing
+builds the monorepo on a PR today, so a type error merges clean and breaks the
+release job. A building PR job gates validation *and* that, which is most of its
+justification.
+
+Two notes. The cost is **ours, not users'** — in a consumer project the CLI is
+installed from npm and starts instantly, so the monorepo's build time must not
+shape the command's design. And a `paths:` filter is tempting and near-useless:
+a rune schema change can invalidate content anywhere, so the filter would have
+to include `packages/**`.
+
 ## Non-goals
 
 - **Making a build fail.** {% ref "WORK-573" /%}'s exit-code half stays its own
   decision. D4 exists so that this spec does not depend on it.
-- **Adding a CI workflow.** This spec gives CI something worth running; whether
-  and where it runs is a repository-operations decision, raised in Open
-  questions.
+- **Changing what the release workflow does.** D13 adds a PR job; `release.yml`
+  is untouched.
+- **Shape-validating `refrakt.config.json`.** The published JSON Schema does
+  that and editors already enforce it. This spec's config layer checks
+  resolution — D1.
 - **Post-merge collision resolution.** D8.
 - **New error ids.** The set is {% ref "SPEC-132" /%}'s; this spec changes only
   where findings are reported and who can ask for them.
@@ -346,8 +452,13 @@ cycles, status lag, and now duplicate IDs — over a different content root;
 - [ ] `loadContent` accepts a reporter; build, dev, CLI and MCP all report through it, with no per-adapter diagnostic handling left behind
 - [ ] A dev-server content load prints its pipeline diagnostics, on first load and on each HMR reload
 - [ ] `refrakt validate` with no arguments validates the project's content and config, for every site in `refrakt.config.json`
-- [ ] `refrakt validate` never validates `baseConfig` as a stand-in for the user's project
-- [ ] `--site`, `--only content|config`, `--deep` and `--format json` behave as specified, and `--config <path>` keeps its existing meaning
+- [ ] `refrakt validate` never validates `baseConfig` as a stand-in for the user's project, and never reports success when it validated nothing — it says what it found no input for
+- [ ] `--site`, `--only content|config`, `--deep` and `--format json` behave as specified
+- [ ] The config layer checks resolution — `theme.package`, every `plugins[]` entry, `routeRules` layout names, `entityRoutes` types — not the shape the JSON Schema already covers
+- [ ] Config resolution runs before content validation, and a resolution failure annotates or suppresses the `tag-undefined` findings it causes rather than reporting both as peers
+- [ ] `refrakt theme validate` carries `validateThemeConfig` and `validateManifest`; `--config` and `--manifest` are gone from the bare command
+- [ ] `refrakt config validate` runs the config layer alone, through the same function `refrakt validate` calls
+- [ ] A PR workflow runs `npm ci` → `npm run build` → `refrakt validate`, and fails the PR on an error-severity finding
 - [ ] The default run does not execute the register/aggregate phases, demonstrated by a timing test against a `--deep` run on the same site
 - [ ] `refrakt validate` exits non-zero when any finding is at error severity, and zero otherwise
 - [ ] An `refrakt_validate` MCP tool returns structured findings — file, line, severity, error id, message — not formatted text
@@ -385,17 +496,17 @@ nobody runs on save because it costs a build.
 
 ## Open questions
 
-- **Where does `refrakt validate --format json` actually run?** The repository
-  has one workflow, on push to `main`. Cloudflare Pages does auto-build previews
-  for non-production branches (per the comment at `release.yml:43-52`), which is
-  a real pre-merge surface that could be made a required check — but a GitHub
-  Actions job running `refrakt validate` would be more direct. Someone has to own
-  this or D4's gate is a command nobody invokes.
-- **Does `--only config` still mean anything useful?** Config validation today is
-  theme config plus manifest, both of which are schema checks that could plausibly
-  move under the JSON Schema already published for `refrakt.config.json`. Worth
-  asking whether the config half earns its place in the command or is legacy
-  being carried forward.
+- ~~**Where does `refrakt validate --format json` actually run?**~~ **Answered —
+  a PR job that builds.** `format.yml` landed on `pull_request:` and supplies the
+  shape; every route pays a build, so there is no cleverness to find; and the
+  build closes a second gap, since nothing builds the monorepo on a PR today.
+  D13.
+- ~~**Does `--only config` still mean anything useful?**~~ **Answered — yes, but
+  it was the wrong question.** The issue is *which* config: three artifacts share
+  the word, shape is already covered by the JSON Schema, and the uncovered half
+  is resolution — which is load-bearing, because a failed plugin load degrades
+  into dozens of misattributed `tag-undefined` findings. D1, with the theme
+  artifacts moving out under D12.
 - **Should `plan validate` be reachable from `refrakt validate --deep`?** D11
   keeps them siblings, which is right for scoping. It does mean a project with a
   plan directory needs two commands in CI. Acceptable, possibly worth a
