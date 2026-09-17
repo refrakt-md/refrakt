@@ -52,7 +52,7 @@ One instance is available, and it is this spec's own predecessor.
 changed, the prose did not, and nothing anywhere connected the two.
 
 That is the failure class exactly: an assertion about code, correct at the time,
-silently invalidated by an ordinary edit. {% ref "BUG-019" /%} is the same
+silently invalidated by an ordinary edit. {% ref "BUG-020" /%} is the same
 underlying event observed from the addressing side — `SPEC-131` catches the
 `file-ref` invocations, and nothing catches the sentence.
 
@@ -253,7 +253,7 @@ exists to prevent.
 **D9 — Layering: the anchor refuses first.** The two features never overlap.
 {% ref "SPEC-131" /%} answers *can I find the region* and refuses if not —
 `reviewed` is never evaluated on a refusal. This spec answers *I found it, is it
-still what was documented*. {% ref "BUG-019" /%} is a SPEC-131 failure and would
+still what was documented*. {% ref "BUG-020" /%} is a SPEC-131 failure and would
 never reach this layer.
 
 **D10 — `reviewed` on a fixed revision is a no-op.** If a future revision
@@ -362,7 +362,7 @@ than not having it, because a noisy marker trains people to ignore a real one.
 - {% ref "WORK-573" /%} — makes that channel load-bearing. A prerequisite for everything in this spec except `--check` — see Approach
 - {% ref "SPEC-132" /%} — the diagnostics routing model, and the prior statement of D6's principle: findings annotate content that rendered fine, so they belong beside the page
 - {% ref "SPEC-126" /%} — the one-off assertion this generalises from the other side, and D3's warning that a noisy guard gets disabled
-- {% ref "BUG-019" /%} — the same real-world event seen from the addressing side
+- {% ref "BUG-020" /%} — the same real-world event seen from the addressing side
 - {% ref "WORK-395" /%} — the editor validation rail where findings surface
 - `packages/runes/src/tags/diff.ts` — `computeLineDiff`, to extract
 - `packages/content/src/site.ts` — the diagnostics surface
