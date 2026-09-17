@@ -12,16 +12,14 @@ whose episodes were `MusicRecording`s, and `{% track type="episode" %}` did the
 same on its own. Each rune already knew what its content was and emitted the
 wrong schema anyway.
 
-Each now keys off the attribute its author already set, with its own table —
-neither rune declares anything about the other:
+Each now keys off the attribute its author already set, with its own table, and
+neither rune declares anything about the other.
 
-| `playlist type` | now publishes                                   |
-|-----------------|-------------------------------------------------|
-| `album`         | `MusicAlbum` with `track` (was `MusicPlaylist`)  |
-| `mix`           | `MusicPlaylist` with `track` — unchanged         |
-| `podcast`       | `PodcastSeries` with `hasPart` `PodcastEpisode`s |
-| `audiobook`     | `Audiobook` with `hasPart` `Chapter`s            |
-| `series`        | `CreativeWorkSeries` with `hasPart` `CreativeWork`s |
+A `playlist` publishes by kind: `album` is a `MusicAlbum` with `track`, a
+narrowing of the `MusicPlaylist` it used to emit; `mix` stays a `MusicPlaylist`,
+the one kind with no narrower type; and `podcast`, `audiobook` and `series`
+switch branch to `PodcastSeries`, `Audiobook` and `CreativeWorkSeries`, holding
+their items in `hasPart` as `PodcastEpisode`s, `Chapter`s and `CreativeWork`s.
 
 `track`'s five kinds map to `MusicRecording`, `PodcastEpisode`, `Chapter`,
 `CreativeWork` and `VideoObject`.
