@@ -377,12 +377,35 @@ reflexively.
 failing. One command and one CI job for all content health, without one
 category's semantics leaking into another's.
 
-**D11 — `plan validate` and `plugins validate` stay siblings.** Three commands
-already share the word. `plan validate` runs semantic checks — dependency
-cycles, status lag, and now duplicate IDs — over a different content root;
-`plugins validate` is about authoring a plugin package. Folding either into
-`refrakt validate` would make it mean "everything", which is less useful than
-"this site".
+**D11 — `refrakt validate` is not coupled to `plan validate`, and the reason is
+architectural, not ergonomic.**
+
+`plan validate` is **contributed by a plugin** — `@refrakt-md/plan` supplies it
+through the `cli-plugin` entry point. A core command reaching into it would
+invert the dependency, and would make `refrakt validate`'s behaviour depend on
+which plugins happen to be installed. That is unpredictable for a user and
+untestable in core. No convenience justifies it.
+
+The supporting reasons hold too, and would be enough on their own:
+
+- They check different things. `plan validate` walks an entity graph —
+  dependency cycles, status lag, missing sections, duplicate IDs (D7).
+  `refrakt validate` runs Markdoc validation over page content.
+- They do not even read the same files. In this repo `plan/` is the entity
+  source and `plan-site/content` is the rendered site, so "two commands" is two
+  inputs rather than duplication.
+- Once `refrakt validate` can reach one, the next question is why it does not
+  reach `plugins validate` and `theme validate` — and then it means
+  "everything", which is less useful than "this site".
+
+Discoverability is the only cost, and it is a docs and help-text problem. D13's
+PR job should run both, so the repository's own workflow documents the pairing
+by example — cheaper than a wrapper, and it muddies neither command. A project
+wanting one entry point should write an `npm run check` script; that belongs in
+the project, not the CLI.
+
+`plugins validate` stays a sibling for the same reason: it is about authoring a
+plugin package, not validating a site.
 
 **D12 — theme validation moves to the `theme` group, which already exists.**
 `bin.ts:23-29` dispatches five noun groups — `theme`, `template`, `plugins`,
@@ -507,10 +530,10 @@ nobody runs on save because it costs a build.
   is resolution — which is load-bearing, because a failed plugin load degrades
   into dozens of misattributed `tag-undefined` findings. D1, with the theme
   artifacts moving out under D12.
-- **Should `plan validate` be reachable from `refrakt validate --deep`?** D11
-  keeps them siblings, which is right for scoping. It does mean a project with a
-  plan directory needs two commands in CI. Acceptable, possibly worth a
-  convenience wrapper later.
+- ~~**Should `plan validate` be reachable from `refrakt validate --deep`?**~~
+  **Answered — no, categorically.** `plan validate` is plugin-contributed, so
+  coupling core to it inverts the dependency and makes a core command's
+  behaviour depend on installed plugins. D11.
 
 ## References
 
