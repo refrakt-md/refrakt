@@ -1,4 +1,4 @@
-{% spec id="SPEC-136" status="draft" tags="drift, docs, git, cli, tooling, dx, plan" %}
+{% spec id="SPEC-136" status="draft" tags="drift, docs, git, cli, mcp, ai-workflow, tooling, dx" %}
 
 # Staleness ranking for documentation references
 
@@ -8,15 +8,22 @@ invocation — so it only ever covers the references someone already suspected.
 
 This spec adds the cheap, wide signal underneath it. Documentation already
 declares edges into the repository — `snippet path=`, `file-ref path=`, a
-backticked module path in a paragraph, a work item's `source=`. Git already
-knows how much each end of every edge has moved. Crossing the two costs nothing
-per reference and produces a **ranked list of which documentation is most likely
-to have rotted**.
+backticked module path in a paragraph. Indexing those edges costs nothing per
+reference and needs no new syntax, no marker and no change to a single existing
+page.
 
-It never verifies anything, and it never fails a build. It answers one question
-that nothing in the repository answers today: *of the several hundred places
-documentation makes a claim about code, which ones should someone look at
-first?*
+It never verifies anything, and it never fails a build. It answers two questions
+nothing in the repository answers today, and the second one matters more:
+
+- *Of the several hundred places documentation makes a claim about code, which
+  should someone look at first?* — a survey, run occasionally, over rot that has
+  already happened.
+- *I am about to change this file. What documents it?* — asked at edit time, by
+  whoever or whatever is making the change, before the divergence exists.
+
+Both read the same edge index. The first is a list of debts; the second is how
+you avoid taking one on — and it is the query an agent can be made to ask every
+time, which a human reliably will not. See D12.
 
 ## Problem
 
@@ -156,6 +163,7 @@ are — it has to be measured before an extractor is written for it.
 | Entity reference extraction | `plugins/plan/src/scanner-core.ts:175` — `extractRefs` |
 | `source=` / `status=` attribute parsing | `plugins/plan/src/diff.ts` — `parseTagAttributes` |
 | A ranked-report CLI with `--format json` | `plan status`, the pattern to follow |
+| An MCP tool surface returning structured findings | {% ref "SPEC-043" /%} — `plugins/plan/src/mcp-bindings.ts`, the binding pattern `refrakt_stale` follows |
 | Advisory-severity finding category | {% ref "SPEC-135" /%} D10 |
 
 Nothing here is new machinery. The git scan is a near-copy of one that already
@@ -196,6 +204,35 @@ refrakt stale --format json
 ```
 
 Always exits zero — D1.
+
+### The MCP tool, which asks the question backwards
+
+The CLI answers *"what is stalest across the corpus?"* — a survey, run
+occasionally. An agent editing code has a different and better-timed question:
+**"I am about to change these files. What documents them?"**
+
+`refrakt_stale` serves both, and the second is the one that matters:
+
+| Argument | Query | Caller |
+|---|---|---|
+| *(none)* | The ranked report, as the CLI | Periodic review |
+| `touching: [paths]` | Every page whose edges point at those paths | **An agent mid-edit** |
+| `since: <ref>` | The same, for everything changed since a git ref | A PR-scoped sweep |
+
+`touching` is an edge-index lookup, not a staleness measurement — there is no
+commit count involved, because the change has not happened yet. It returns
+structured rows (referring page, line, the edge's target, and whether a
+{% ref "SPEC-134" /%} `reviewed` marker is attached), never formatted text, per
+{% ref "SPEC-135" /%} D6.
+
+The agent loop this is for:
+
+```
+agent edits packages/runes/src/config.ts
+  → refrakt_stale { touching: ["packages/runes/src/config.ts"] }
+  → extend/rune-authoring/authoring-overview.md:106 documents this file
+  → agent opens that page and updates it in the same change
+```
 
 ### Output
 
@@ -385,6 +422,35 @@ The useful consequence: **this spec is blocked on nothing.**
 channel load-bearing, because a marker with no visible surface is a no-op. A
 command with its own stdout has no such dependency.
 
+**D12 — The MCP surface inverts the query, and that turns the feature from
+archaeology into prevention.** The CLI is retrospective by construction: it finds
+rot that already happened, months after the commit that caused it, and only when
+someone remembers to look. That is worth having, and it is the weaker half.
+
+Inverted — *"what documents the file I am about to change?"* — the same edge index
+answers at the only moment when fixing the docs is nearly free: while the author
+still has the change in their head, in the same commit, before the divergence
+exists. A staleness report is a list of debts. An impact lookup is how you avoid
+taking one on.
+
+This is also the decision that makes agents the primary consumer rather than an
+afterthought. A human editing `config.ts` does not stop to run a CLI; an agent
+with a tool call in its loop does, reliably, every time — and this repository's
+documentation is already agent-edited, with CLAUDE.md prescribing a structured
+per-task workflow that has an obvious slot for one more step.
+
+Two consequences follow. **The edge index is the product, not the ranking.** The
+counting is one consumer of it; `touching` is another, and does not use the git
+scan at all. Build it as an index that several queries read, not as a report
+generator with a lookup bolted on. And **`touching` is exempt from D9's bound** —
+it is already scoped by its input, so returning every match is correct where
+returning every stale edge would not be.
+
+The honest limitation: this only helps an agent that asks. Nothing makes it ask,
+and that is the same "a command nobody invokes" problem the open questions carry —
+except that the remedy here is a line in CLAUDE.md rather than a scheduled job,
+which is considerably cheaper.
+
 ## Non-goals
 
 - **Verifying that documentation is correct.** Same impossibility as
@@ -423,27 +489,42 @@ command with its own stdout has no such dependency.
 - [ ] A test fixture reproduces the measured case: a page referencing a file that has since taken N commits ranks above one referencing an unchanged file
 - [ ] `--precise` scopes both ends to line ranges via `git log -L` where a region is resolvable, and falls back to file granularity where it is not
 - [ ] The report footer states each class's base rate — how many edges of that class were non-zero out of how many scanned
+- [ ] A `refrakt_stale` MCP tool with no arguments returns the ranked report as structured findings, not formatted text
+- [ ] `refrakt_stale { touching: [paths] }` returns every page whose edges point at those paths, with referring page, line, target, and whether a `reviewed` marker is attached
+- [ ] `touching` runs without the git scan and returns results for a path with no commit history — including a file created in the working tree and never committed
+- [ ] `touching` returns every match, unbounded by `--top`
+- [ ] `refrakt_stale { since: <ref> }` resolves the changed paths from that ref and answers as `touching` would
+- [ ] The edge index is a shared module that the ranking, `touching` and `since` queries all read, with no query owning it
+- [ ] CLAUDE.md documents the `touching` call as a step in the per-task workflow
 - [ ] Docs state that a zero score is the absence of evidence of staleness, not evidence of freshness
 
 ## Approach
 
-Three phases. Phase 1 is self-contained and shippable alone.
+Four phases. Phase 1 is self-contained and shippable alone.
 
-1. **The edge index and the report.** The single-pass git scan (adapted from
-   `timestamps.ts`), embedded-source edge extraction from the existing reader,
-   ranking, and the `refrakt stale` command with `--top` / `--min` / `--format
-   json`. Plus D5's refusals, which are load-bearing from the first commit.
+1. **The edge index and the report.** The index as a standalone module (D12), the
+   single-pass git scan (adapted from `timestamps.ts`), embedded-source edge
+   extraction from the existing reader, ranking, and the `refrakt stale` command
+   with `--top` / `--min` / `--format json`. Plus D5's refusals, which are
+   load-bearing from the first commit.
    This phase will find almost nothing in this repository — see the measurement —
-   and that is the correct order anyway: it establishes the scan, the ranking and
+   and that is the correct order anyway: it establishes the index, the scan and
    the output shape against the class whose extraction is already trustworthy.
 2. **Prose path extraction.** The class that carries the value (D7). Its own
    extractor, its own precision tuning, and the first run over `site/content`
    treated as the real acceptance test: if the top ten are not things a
    maintainer agrees are worth reading, the extraction rule is wrong and the
    phase is not done.
-3. **Region scoping (`--precise`).** `git log -L` on both ends where
+3. **The MCP tool, and the `touching` query.** Both modes, plus the CLAUDE.md
+   line that puts the call in the per-task loop. **This is the phase where the
+   feature stops being retrospective** (D12), so it is not a tail — it is the
+   payoff, and it is deliberately placed after phase 2 only because an impact
+   lookup that knows about `snippet` invocations but not about the guides is a
+   lookup that misses the pages most worth updating.
+4. **Region scoping (`--precise`).** `git log -L` on both ends where
    {% ref "SPEC-131" /%} makes a region resolvable. Measure the cost before
-   deciding whether it can ever be the default.
+   deciding whether it can ever be the default. Last because it sharpens a signal
+   the earlier phases have to prove is worth sharpening.
 
 **Budget the extraction rule, not the arithmetic.** The counting is a map lookup
 and a subtraction. What decides whether anyone runs this a second time is whether
@@ -451,16 +532,31 @@ phase 2's top ten are worth reading — which is a question about which prose
 mentions count as claims, and is answered by trying it on a real corpus and
 throwing away rules that surface noise.
 
+**Build the index so phase 3 does not have to rewrite it.** The temptation in
+phase 1 is a function that walks content, scores as it goes, and prints. That
+shape cannot answer `touching`, because the query runs in the opposite direction
+and without the git scan at all. Extract edges into an addressable index first
+and let the ranking be one reader of it — the cost is an afternoon in phase 1 and
+a rewrite avoided in phase 3.
+
 ## Open questions
 
-- **Who reads the report, and when?** This has no gate and no diagnostic surface
-  by construction (D1, D11), which means it is a command someone must choose to
-  run — the failure mode {% ref "SPEC-126" /%} has now documented three times in
-  this repository. A scheduled job that opens an issue with the current top ten
-  is the obvious answer and is outside this spec; without something like it, the
-  honest expectation is that this gets run during doc-maintenance passes and not
-  otherwise. Worth deciding before phase 2, since phase 2 is the phase that
-  produces findings worth routing.
+- **Who reads the report, and when?** Largely answered by D12, and worth recording
+  that it was the spec's weakest point before the MCP surface existed. The
+  retrospective report still has no gate and no diagnostic surface by construction
+  (D1, D11), so as a *report* it remains a command someone must choose to run —
+  {% ref "SPEC-126" /%}'s failure mode, for the fourth time here. What changed is
+  that the feature no longer depends on that: `touching` is invoked by an agent
+  mid-task, needs no scheduling, and catches the divergence before it exists. The
+  residual question is narrower — whether the periodic survey earns a scheduled
+  job on top, or whether prevention at edit time makes it a tool you reach for
+  only when inheriting an unmaintained corpus.
+- **Does a CLAUDE.md line actually change agent behaviour?** D12 leans on it, and
+  it is an assumption, not a result. The per-task workflow already prescribes
+  several structured steps and they are followed, which is weak evidence in
+  favour. Phase 3 should check rather than assume: if agents do not call
+  `touching` unprompted, the remedy is a hook or a `plan update` side effect, not
+  a more emphatic sentence.
 - **Does the prose class hold its base rate as the corpus grows?** 13 of 35 is
   healthy, but 35 edges across 11 pages is a small sample, and the rate is a
   property of how often this repository edits guides versus code — not a constant.
@@ -484,7 +580,8 @@ throwing away rules that surface noise.
 
 - {% ref "SPEC-134" /%} — the precise instrument this feeds; D8 (no bulk stamping), which D2 distinguishes, and D7 (a prompt, not a failure), which D1 extends
 - {% ref "SPEC-131" /%} — symbol addressing, which makes D8's region scoping possible
-- {% ref "SPEC-135" /%} — the advisory-finding category (D10) and the sibling-commands argument (D11) this spec answers to
+- {% ref "SPEC-135" /%} — the advisory-finding category (D10), the sibling-commands argument (D11) this spec answers to, and D6's rule that an MCP tool returns findings rather than a rendered report
+- {% ref "SPEC-043" /%} — the MCP server `refrakt_stale` joins; `plugins/plan/src/mcp-bindings.ts` is the binding pattern
 - {% ref "SPEC-113" /%} — the hosted, git-less build that keeps this out of the pipeline
 - {% ref "SPEC-126" /%} — guards that nothing runs; the open question above is its fourth instance
 - {% ref "BUG-020" /%} — prose invalidated by an ordinary edit, found by a human rather than a check
