@@ -281,11 +281,34 @@ appears in prose, in commit messages, in branch names and in conversation; the
 readability *is* the feature. A scheme that cannot collide but that nobody can
 say out loud costs more than three collisions did.
 
-A central counter file (`plan/ids.json`) is the other structural fix: it moves
-contention into one file so git raises a conflict instead of silently accepting
-two claims. Rejected for now as a tax on every parallel plan addition to catch a
-problem that `--against` catches without one — but it is the fallback if
-collisions continue after this ships.
+An allocation ledger (`plan/ids.json`) is the other structural fix: it moves the
+claim out of "a file with this name exists" — which two branches can both do
+without git noticing, because different filenames never conflict — and into one
+file, so git's own conflict detection does the work.
+
+Its shape decides whether it works at all, and the obvious shape does not:
+
+| Shape | Two branches both take WORK-575 | Two branches take 575 and 576 |
+|---|---|---|
+| Counter (`{"work": 575}`) | both write the same line → **merges clean** | different values → conflict |
+| Append-only list | same insertion point → conflict | same insertion point → **false conflict** |
+| **Sorted ID-keyed map** | same line, different value → **conflict** | different lines → merges clean |
+
+A counter conflicts on the case that is fine and merges the case that is broken,
+exactly backwards. An append-only list is correct but fires on every parallel
+plan addition, most of which collide with nothing. Only a sorted map keyed by ID
+(`{"WORK-575": "<slug>", …}`, one entry per line) puts the conflict surface on
+the ID itself.
+
+Rejected for now: `--against` catches the same collisions with no false
+positives and no standing friction, and the ledger's advantage — working when
+nobody runs a check — is the condition this spec exists to end. It also
+introduces a second source of truth needing its own drift check against the
+filesystem, and it binds only callers that go through `plan create`.
+
+Revisit if collisions continue after `--against` has somewhere to run, or if
+parallel plan authoring makes a pre-merge check too late in the loop. If it is
+ever built, build the sorted-map shape; the other two are traps.
 
 **D10 — advisory findings do not fail `--check` by default.**
 {% ref "SPEC-134" /%}'s review markers are a review prompt, not a defect
