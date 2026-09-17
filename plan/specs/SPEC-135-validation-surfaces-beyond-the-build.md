@@ -264,7 +264,12 @@ cross-page pipeline and is not meaningfully faster than a build — which would
 defeat the reason for having a CLI at all.
 
 The naive implementation is the slow one, so the split has to be stated. Default
-to parse-and-validate; put register/aggregate behind `--deep`.
+to parse-and-validate; put register/aggregate behind `--deep`. What that means
+concretely is D14.
+
+**Warnings never fail, and there is no `--strict` in v1.** `site/` carries 35 of
+them. A gate that goes red on day one is a gate someone turns off, and the
+severity levels already exist to say which findings are worth stopping for.
 
 **D4 — the CLI is the pre-merge gate, not the build.** Getting a PR check today
 otherwise requires {% ref "WORK-573" /%}'s exit-code half — a behaviour change
@@ -421,6 +426,14 @@ reflexively.
 failing. One command and one CI job for all content health, without one
 category's semantics leaking into another's.
 
+**Do not build the category yet.** {% ref "SPEC-134" /%} is draft and
+unscheduled, so there is no producer — and a category with nothing in it is
+speculative surface that will be designed against an imagined consumer rather
+than a real one. This decision exists to stop the *opposite* mistake: shipping
+an exit-code rule that assumes every finding is a defect, which would have to be
+unpicked when review markers arrive. Reserve the seam in the docs, write no
+code.
+
 **D11 — `refrakt validate` is not coupled to `plan validate`, and the reason is
 architectural, not ergonomic.**
 
@@ -498,6 +511,55 @@ shape the command's design. And a `paths:` filter is tempting and near-useless:
 a rune schema change can invalidate content anywhere, so the filter would have
 to include `packages/**`.
 
+**D14 — the fast tier is a new `validateContent`, and the config seam is
+extracted so it cannot disagree with the build.**
+
+D3 says the default tier skips the cross-page pipeline. Concretely, the per-page
+loop (`site.ts:382`) does six things and validation needs two of them:
+
+| Step | Needed to validate |
+|---|---|
+| `parseFrontmatter` | **yes** |
+| `router.resolve` | no |
+| `resolveLayouts` | no |
+| `resolveTimestamps` — git, batched once at `:735` | no |
+| `Markdoc.parse` | **yes** |
+| `transformContent` — builds `config`, calls `validatePage`, then `Markdoc.transform` | the first two, not the transform |
+| `runPipeline` (`:545`) — phases 2-4 | no, that is `--deep` |
+
+So the fast tier skips routes, layouts, git, the transform and the whole
+cross-page pipeline. A real saving, not a rounding error.
+
+**What rules out the cheap options is an invariant, not taste.**
+`transformContent` validates and transforms against **one shared `config`
+object**, and {% ref "SPEC-132" /%} chose that deliberately (`site.ts:114-118`):
+
+> validate against `config`, the very object handed to `transform` below, **so
+> the two cannot disagree** about which tags and attributes exist.
+
+A parse-only path that builds its own config re-opens exactly the disagreement
+SPEC-132 closed, and D5a then has nothing holding it up.
+
+| Option | Verdict |
+|---|---|
+| A `phases` option on `loadContentFromTree` that stops before `runPipeline` | Still pays routes, layouts, git and the transform — barely faster — and returns a `Site` with empty `aggregated`, which is a lie the type system will not catch |
+| A standalone `validateContent` that builds its own config | Fast and honest, but breaks the invariant above |
+| **`validateContent` plus extracting config construction out of `transformContent`** | Keeps the invariant, gets the speed, returns the right type |
+
+The third. Extract the config-building half of `transformContent`
+(`site.ts:90-113`) so both paths build it identically, then:
+
+- **fast tier** → `validateContent()`: parse, build config, `validatePage`.
+- **`--deep`** → `loadContent()`, collecting `pipelineWarnings`. Literally a
+  build without rendering.
+
+The extraction is the mechanism that makes D5a's guarantee hold rather than be
+hoped for.
+
+**It returns findings, not a `Site`.** A half-populated `Site` is the worse of
+the two failures: it type-checks everywhere a real one does, and is wrong in
+ways nothing catches.
+
 ## Non-goals
 
 - **Making a build fail.** {% ref "WORK-573" /%}'s exit-code half stays its own
@@ -527,7 +589,11 @@ to include `packages/**`.
 - [ ] `refrakt config validate` runs the config layer alone, through the same function `refrakt validate` calls
 - [ ] A PR workflow runs `npm ci` → `npm run build` → `refrakt validate`, and fails the PR on an error-severity finding
 - [ ] The default run does not execute the register/aggregate phases, demonstrated by a timing test against a `--deep` run on the same site
+- [ ] Config construction is extracted from `transformContent` and shared, so the fast tier and the build validate against an identically-built config — D14
+- [ ] `validateContent` returns findings, never a partially-populated `Site`
 - [ ] The fast tier resolves validation settings through `resolveValidationIds` rather than reimplementing the dispositions — D5a
+- [ ] Warnings do not affect the exit code, and no `--strict` flag ships in v1
+- [ ] No advisory-finding category is built until a producer exists — D10
 - [ ] A test asserts the CLI and a build agree, finding for finding, on a site configured with `disableIds`
 - [ ] `refrakt validate` exits non-zero when any finding is at error severity, and zero otherwise
 - [ ] An `refrakt_validate` MCP tool returns structured findings — file, line, severity, error id, message — not formatted text
@@ -542,18 +608,24 @@ to include `packages/**`.
 
 ## Approach
 
-Four phases. The first two are independent of every open question.
+Five phases.
 
 1. **The reporter seam and the dev loop.** The `loadContent` reporter option, and
    the dev-server print. No behaviour change for any existing consumer, no
    dependency on the exit-code debate, and it closes the most damaging half of
-   {% ref "WORK-554" /%}'s finding. {% ref "WORK-573" /%} should be split, with
-   its dev-visibility half re-sourced to this spec.
-2. **`refrakt validate`.** The redefinition, the two tiers, the flags, the exit
-   code. This is the phase that gives CI something to run.
-3. **The MCP tool.** Thin over phase 2, and the phase that changes the agent
+   {% ref "WORK-554" /%}'s finding. Already split out as
+   {% ref "WORK-575" /%}.
+2. **`validateContent` and the config seam.** The extraction from
+   `transformContent`, the new entry point, and the agreement test from D5a.
+   Pure `packages/content` work with a sharp definition of done, and it is where
+   D14's invariant is established. Separated from the command because the
+   command is mostly argument parsing once this exists.
+3. **`refrakt validate`.** The redefinition, the two tiers, the flags, the exit
+   code, and `theme validate` / `config validate` taking their halves (D12).
+   Plus the PR workflow — D13. This is the phase that gives CI something to run.
+4. **The MCP tool.** Thin over phase 3, and the phase that changes the agent
    authoring loop.
-4. **Duplicate IDs.** The `plan validate` check, `--against`, and
+5. **Duplicate IDs.** The `plan validate` check, `--against`, and
    `plan migrate ids`. Last because it is the smallest and the most separable —
    but the check alone is an afternoon and could be pulled forward if collisions
    keep happening.
