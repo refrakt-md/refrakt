@@ -1,4 +1,4 @@
-{% work id="WORK-575" status="ready" priority="high" complexity="moderate" source="SPEC-135" tags="pipeline, dx, diagnostics, dev-server" %}
+{% work id="WORK-575" status="ready" priority="high" complexity="moderate" source="SPEC-135" tags="pipeline, dx, diagnostics, dev-server" milestone="v0.36.0" %}
 
 # Route pipeline diagnostics through one reporter, and print them in dev
 
@@ -48,7 +48,9 @@ plumbing.
 
 ## Acceptance Criteria
 
-- [ ] `loadContent` accepts an optional reporter and calls it with the pipeline stats and warnings
+- [ ] `reporter` is added to `LoadContentFromTreeOptions`, and `loadContent` gains an options-bag overload beside its fourteen-positional form — no fifteenth positional
+- [ ] All four callers move onto the options-bag form: sveltekit `plugin.ts:205`, eleventy `data.ts:71`, editor `server.ts:217`, and `loader.ts:58`
+- [ ] The positional `loadContent` still works and is still exported, so no external consumer breaks
 - [ ] The default reporter preserves today's behaviour exactly — `formatPipelineSummary` to stderr — so no existing consumer changes
 - [ ] Every adapter (sveltekit, eleventy, astro, nuxt, next, html) reports through the reporter rather than calling `formatPipelineSummary` itself
 - [ ] A dev session prints its pipeline diagnostics on first content load
@@ -59,9 +61,13 @@ plumbing.
 
 ## Approach
 
-1. Add the reporter option to `loadContent`, defaulting to the current stderr
-   behaviour. Nothing observable changes.
-2. Move each adapter's `process.stderr.write(formatPipelineSummary(…))` onto it.
+1. Add `reporter` to `LoadContentFromTreeOptions` and an options-bag overload to
+   `loadContent`, defaulting to the current stderr behaviour. Nothing observable
+   changes. **Not a fifteenth positional** — the signature is already at
+   fourteen, and the bag exists one function over precisely because of that.
+   Whether 1.0 keeps this shape is {% ref "WORK-576" /%}.
+2. Move each adapter's `process.stderr.write(formatPipelineSummary(…))` onto it,
+   migrating the four callers to the bag as you go.
 3. Have the dev path report after each load — either from `createRefraktLoader`
    when it populates its cache, or from the Vite plugin's HMR hook after
    `invalidateSite()`. The loader is the better home: it is where both modes
