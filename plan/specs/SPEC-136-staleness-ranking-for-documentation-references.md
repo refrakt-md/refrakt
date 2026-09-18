@@ -142,19 +142,22 @@ Two conclusions shape the whole design.
 lowest-yield is the one the pipeline already models — a feature that only ranked
 `snippet` invocations would find almost nothing here today.
 
-And **an edge class earns inclusion by its base rate, not by existing.** Put the
-three side by side:
+And **an edge class earns inclusion by its base rate, not by existing.** All four
+measured classes, side by side:
 
-| Class | Non-zero | Of | Rate |
-|---|---|---|---|
-| Embedded source | 3 | 263 | 1% — too sparse to rank |
-| **Prose mention** | **13** | **35** | **37% — discriminates** |
-| Plan `source=` | 500 | 505 | 99% — fires on everything |
+| Class | Non-zero | Of | Rate | |
+|---|---|---|---|---|
+| Embedded source | 3 | 263 | 1% | too sparse to rank |
+| **Prose mention** | **13** | **35** | **37%** | **discriminates** |
+| Derived rune page | 94 | 98 | 96% | fires on everything — D15 |
+| Plan `source=` | 500 | 505 | 99% | fires on everything — D10 |
 
 A signal that fires on almost nothing and a signal that fires on almost
-everything are the same kind of useless. Only the middle row supports a ranking,
+everything are the same kind of useless. Only the second row supports a ranking,
 and which row a class lands in is not predictable from how well-typed its edges
-are — it has to be measured before an extractor is written for it.
+are — both rejected classes have *more* reliable edges than the one that works.
+Two of the four candidates died to this check, which is the argument for running
+it before writing an extractor rather than after.
 
 ### The corpus is mostly invisible
 
@@ -184,6 +187,12 @@ because the relationship is in the author's head and nowhere in the text.
 The automatic classes cannot close this. **A page's subject is not always
 recoverable from its words** — which is the argument for letting an author state
 it, rather than for extracting harder. See D13.
+
+`runes/` is the exception that stays blind on purpose. It is the largest gap by
+count and the only section whose binding to source *is* mechanically derivable —
+and D15 records that the derived edges were built, measured at a 96% base rate,
+and rejected. Its 106 blind pages are not a gap this spec intends to close, by
+derivation or by hand.
 
 ## What already exists
 
@@ -226,6 +235,7 @@ marker is present — D3.
 | **Embedded source** | `snippet` / `file-ref` / `expand` `path=` (+ `symbol=`/`lines=`) | High — exact path, and exact region under {% ref "SPEC-131" /%} | Extractor exists |
 | **Prose path mention** | Backticked repo-relative path in body text | Low — file-granular, and the paragraph may not be about the file | **New** — D7 |
 | Plan source | `source=` on a `done` work item | None — 99% base rate | **Rejected** — D10 |
+| Derived rune page | `plugin:` + slug → conventional schema path | None — 96% base rate | **Rejected** — D15 |
 | Entity `ref` / `xref` | Page → page | Too low to be worth it | Non-goal |
 
 ### Declared edges
@@ -552,6 +562,61 @@ mechanism designed to catch rot would quietly accumulate its own.
 The asymmetry is the point: **inferred edges fail quietly, declared edges fail
 loudly**, and which one applies follows from whether a human made a claim.
 
+**D15 — Rune pages do not get derived edges. Measured, and rejected for the same
+reason as D10.** The 116 rune pages are the largest blind section, and their
+binding to source looks mechanical enough to derive for free — which made this
+the most promising way to close the coverage gap without asking anyone to write
+`documents:` 116 times.
+
+The derivation works. From a page's `plugin:` frontmatter and its slug, the
+conventional schema path (`packages/runes/src/tags/{name}.ts`, or
+`plugins/{plugin}/src/tags/{name}.ts`) resolves for **98 of 99** pages — and the
+single miss, `runes/image-schemes.md`, is a concept page rather than a rune, so
+the convention is exact over the set it applies to.
+
+The resulting edges are worthless:
+
+| Commits since the page changed | Pages |
+|---|---|
+| 1 | **65** |
+| 2 | 19 |
+| 3 | 9 |
+| 4 | 1 |
+
+96% non-zero, and **no head to the distribution** — a top ten would be ten
+arbitrary picks from the 9 pages tied at 3. Compare the prose class over the same
+corpus, which has a genuine tail: 15, 11, 6, 5, 5, then the mass.
+
+The cause is the same as D10's, and equally benign. CLAUDE.md's rune checklist
+prescribes editing the schema, the config and the page together, so a rune page
+trailing its schema file by one or two commits is what a healthy workflow looks
+like, not evidence of rot.
+
+Three things follow, and the third is the one that would have wasted the most
+time:
+
+- **Region scoping cannot rescue it.** D8's `-L` refinement narrows a target to
+  the part the page is about; here the schema file *is* the rune, so there is no
+  sub-region to narrow to.
+- **The config edge would be worse.** All 53 core rune pages resolve to one
+  `config.ts`, which takes commits constantly — file-granularly they would fire
+  in unison, permanently. It is viable only region-scoped, and even then it
+  inherits this row's base rate.
+- **`documents:` on rune pages is not the fallback.** The class fails on the
+  edge's signal, not on how the edge is produced. Declaring by hand what
+  derivation would have produced automatically buys nothing, and it would take
+  116 pages of effort to buy it.
+
+**A correction worth recording**, because it changed this decision's basis: the
+catalog does *not* know where a rune's schema lives. `defineRune({ schema: hint })`
+holds an imported binding, not a path, so a catalog-driven derivation was never
+available — the filesystem convention is what carries it. And page slug is not
+rune name in at least 25 cases: `tabs.md` covers `tab`, `tab-group` and
+`tab-panel`; `toc.md` documents `table-of-contents`; `icon.ts` and `badge.ts`
+export a bare `Schema` and declare no rune name at all. Any future attempt here
+should start from the path convention, which is exact, rather than from the
+catalog, which cannot answer the question.
+
 ## Non-goals
 
 - **Verifying that documentation is correct.** Same impossibility as
@@ -682,21 +747,10 @@ a rewrite avoided in phase 3.
   healthy, but 35 edges across 11 pages is a small sample, and the rate is a
   property of how often this repository edits guides versus code — not a constant.
   If it drifts toward the plan class's 99%, the ranking degrades into a list of
-  everything and the feature needs the region scoping of phase 3 to stay useful.
+  everything and the feature needs the region scoping of phase 4 to stay useful.
   Worth re-measuring, not assuming, and worth `refrakt stale` printing its own
   base rate in the report footer so the degradation is visible rather than
   inferred.
-- **Should the 116 rune pages get edges derived from the catalog instead of by
-  hand?** They are the largest blind section, and asking anyone to hand-write
-  `documents` on 116 pages is a plan that does not survive contact. But their
-  binding is mechanical in a way no other section's is: `runes/hint.md` documents
-  the `hint` rune, and refrakt already knows from the catalog where that rune's
-  schema lives and which config key it uses. A derived class could cover all 116
-  for free.
-  Deliberately not in this spec — it is refrakt-specific machinery, it needs the
-  per-page↔rune mapping to be exact rather than slug-guessed, and its base rate is
-  unmeasured. Worth asking before anyone starts stamping frontmatter onto rune
-  pages, since the answer decides whether they should.
 - **Should prose extraction honour an opt-out?** A page that legitimately mentions
   many paths without documenting them (CLAUDE.md's monorepo map, for instance)
   will rank persistently. Frontmatter opt-out is the easy answer and also the easy
