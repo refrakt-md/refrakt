@@ -1,4 +1,4 @@
-{% work id="WORK-575" status="ready" priority="high" complexity="moderate" source="SPEC-135" tags="pipeline, dx, diagnostics, dev-server" %}
+{% work id="WORK-575" status="ready" priority="high" complexity="moderate" source="SPEC-135" tags="pipeline, dx, diagnostics, dev-server" milestone="v0.36.0" %}
 
 # Route pipeline diagnostics through one reporter, and print them in dev
 

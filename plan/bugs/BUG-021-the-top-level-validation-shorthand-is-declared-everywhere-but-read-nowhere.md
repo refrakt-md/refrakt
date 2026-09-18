@@ -1,4 +1,4 @@
-{% bug id="BUG-021" status="confirmed" severity="minor" source="SPEC-132" tags="config, validation, dx" %}
+{% bug id="BUG-021" status="confirmed" severity="minor" source="SPEC-132" tags="config, validation, dx" milestone="v0.36.0" %}
 
 # The top-level validation shorthand is declared everywhere but read nowhere
 
