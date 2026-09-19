@@ -127,9 +127,12 @@ ends join*: `stack` mode is a vertical ladder, `strip` is horizontal + wrap,
 alongside vertical and horizontal, and `wrap` is the one genuinely new modifier
 — it is what distinguishes a cycle from a list.
 
-**Nesting is a prerequisite, not a later refinement.** Rule 4 is what makes a
-theme able to change a playlist from rows to cards. Without it, arrangements
-reach containers only, and every repeated item keeps its bespoke inner CSS.
+**Nesting needs no new machinery.** Rule 4 is what makes a theme able to change
+a playlist from rows to cards. {% ref "WORK-584" /%} Q1 established that the
+engine already supports it: every `data-rune` node gets its own assembly pass from
+its own config, so a container's topology and its items' inner layout are
+declared independently as a matter of course. An arrangement vocabulary inherits
+this rather than having to build it.
 
 **Semantic locking needs somewhere to live.** Rule 3 requires the engine to
 distinguish rune-owned from theme-owned modifiers on the same arrangement.

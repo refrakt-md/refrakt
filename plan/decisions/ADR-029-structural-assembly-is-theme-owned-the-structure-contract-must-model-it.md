@@ -92,20 +92,29 @@ so.**
    `identity-fields.ts` and {% ref "SPEC-081" /%} already state; it is recorded
    here because the contract generator encodes the opposite assumption.
 
-2. **Two kinds of container, with separate channels.**
-   - A **semantic container** carries a `data-section` role. It is identity,
-     already governed by ADR-028 through `sections`, and a theme may not create,
-     remove or re-role one.
+2. **Two kinds of container — and the distinction is already emitted.**
+   - A **semantic container** carries a `data-section` role, assigned from the
+     rune's `sections` map. It is identity, governed by ADR-028, and a theme may
+     not create, remove or re-role one.
    - A **presentational group** is an anonymous wrapper that exists so parts can
-     share a geometry. It carries `data-group`, never `data-section`, is declared
-     through a `groups` channel on `RuneConfig`, and is fully theme-owned.
+     share a geometry. It carries `data-name` and a BEM element class, and no
+     section role.
+
+   No new config channel is needed: `layout`'s tag-creating form already does
+   this, and because `sections` is identity-guarded a theme structurally cannot
+   promote its wrapper to a semantic one.
 
    ```ts
    Track: {
-     groups: { byline: ['track-artist', 'track-duration', 'track-meta'] },
-     layout: { root: { children: ['track-name', 'byline'] } },
+     layout: {
+       root: ['track-name', 'byline'],
+       byline: { tag: 'div', children: ['track-artist', 'track-duration', 'track-meta'] },
+     },
    }
    ```
+
+   An earlier draft proposed a separate `groups` channel emitting `data-group`.
+   WORK-584 Q1 established that it would be redundant — see the findings below.
 
 3. **The base contract is the rune-identity contract.** It records what a rune
    guarantees regardless of theme — its parts, `data-name`s, section roles, data
@@ -182,15 +191,41 @@ text boxes — a rune-authoring gap, not a theme limitation.
 
 ## Open questions
 
-Three couplings are assumed by this decision and none is verified. Each is a
-spike, not a blocker, and all three should be settled before the implementing
-spec is written.
+Three couplings are assumed by this decision. {% ref "WORK-584" /%} settles them;
+Q1 is answered below and amended decision 2, Q2 and Q3 are outstanding. None is
+a blocker, and all three should be settled before the implementing spec is
+written.
 
-1. **Does `layout` reach across the parent/child rune boundary?** `Track` has its
-   own `RuneConfig`, so in principle a theme can restructure it. The layout tree
-   was built for intra-rune slots and may not traverse into a child rune's root.
-   This decides whether item-level theming is a config addition or an engine
-   change.
+1. ~~**Does `layout` reach across the parent/child rune boundary?**~~
+   **Answered (WORK-584 Q1): yes, because there is no boundary to cross.**
+
+   `identityTransform` (`engine.ts:138`) dispatches `transformRune` for *every*
+   node whose `data-rune` resolves to a config key, nested ones included, and
+   block-and-layout assembly runs inside that per-rune pass (`engine.ts:409`).
+   A child rune assembles itself from its own config; `mapDataNames` does not
+   recurse, so each rune's layout pool is its own direct `data-name`d children.
+
+   Verified in `packages/transform/test/child-rune-layout.test.ts`:
+
+   | | Result |
+   |---|---|
+   | A theme `layout` on `Track` reorders its parts | works |
+   | A theme `layout` on `Track` creates a `byline` wrapper → `.rf-track__byline`, no `data-section` | works |
+   | A wrapper named in `sections` gets its role | works — and `sections` is identity-guarded, so a theme cannot do this |
+   | `Playlist`'s layout reaching into `Track`'s internals | correctly impossible |
+
+   **Consequences.** Item-level theming is a *config* capability that already
+   ships — no engine change, and the implementing spec shrinks accordingly.
+   Decision 2's `groups` channel is redundant and was removed: `layout`'s
+   tag-creating form provides it, and the semantic boundary is already legible
+   in the output as the presence or absence of `data-section`.
+
+   One nuance the test also pins: rune-created and theme-created anonymous
+   wrappers are structurally identical — `Card`'s own `content` wrapper carries
+   no section role either, since `cardSections` is `{ media, body }`. The output
+   distinguishes *semantic from presentational*, not *rune-authored from
+   theme-authored*. The latter is what the base-versus-theme contract diff in
+   decisions 3 and 4 answers, which is the right place for it.
 
 2. **Is the omission channel wired?** `data-meta-rank` is specified in
    {% ref "SPEC-026" /%} and {% ref "SPEC-079" /%} and styled by four rules in

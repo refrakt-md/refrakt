@@ -78,17 +78,14 @@ other order means editing five counter implementations instead of one.
 
 ## Acceptance Criteria
 
-- A numbered sequence emits its ordinal as a text node, not generated content.
-- The ordinal is selectable and copyable, and announced in document order.
-- `connected` and `plain` sequences emit no ordinal node.
-- An explicit `number=` on an item wins over the assigned ordinal.
-- `playlist` assigns ordinals to tracks that carry none.
-- The ordinal is addressable from a `layout` tree by name.
-- `contracts/structures.json` and `packages/lumina/contracts/structures.json` are
-  regenerated together and the new node appears in both.
-- `npm run seo:baseline:check` passes, or the baseline is regenerated and the
-  diff reviewed — `track`'s `position` property already rides on a meta node, so
-  no schema change is expected, and an unexpected diff is a finding.
+- [ ] A numbered sequence emits its ordinal as a text node, not as generated content
+- [ ] The ordinal is selectable and copyable, and announced in document order
+- [ ] `connected` and `plain` sequences emit no ordinal node
+- [ ] An explicit `number=` on an item wins over the assigned ordinal
+- [ ] `playlist` assigns ordinals to tracks that carry none
+- [ ] The ordinal is addressable from a `layout` tree by name
+- [ ] Both copies of `structures.json` are regenerated together and the new node appears in each
+- [ ] `npm run seo:baseline:check` passes, or the baseline is regenerated and the diff reviewed — no schema change is expected, so an unexpected diff is a finding
 
 ## Risks
 

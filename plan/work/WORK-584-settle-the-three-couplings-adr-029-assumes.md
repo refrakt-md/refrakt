@@ -1,4 +1,4 @@
-{% work id="WORK-584" status="ready" priority="high" complexity="simple" source="ADR-029" tags="spike, engine, layout, contract, schema, research" %}
+{% work id="WORK-584" status="in-progress" priority="high" complexity="simple" source="ADR-029" tags="spike, engine, layout, contract, schema, research" %}
 
 # Settle the three couplings ADR-029 assumes
 
@@ -10,21 +10,51 @@ expectations.
 
 It is a research item. The deliverable is three findings, not a code change.
 
-## Q1 — Does `layout` traverse the parent/child rune boundary?
+## Q1 — Does `layout` traverse the parent/child rune boundary? — ANSWERED
 
-`Track` has its own `RuneConfig` (`plugins/media/src/config.ts:63`), so in
-principle a theme can restructure it independently of `Playlist`. But the
-`layout` tree was built by {% ref "SPEC-081" /%} for intra-rune slots, and it may
-not reach into a child rune's root.
+**Yes, because there is no boundary to cross.** `identityTransform`
+(`engine.ts:138`) dispatches `transformRune` for every node whose `data-rune`
+resolves to a config key, nested ones included, and block-and-layout assembly
+runs inside that per-rune pass (`engine.ts:409`). Each rune assembles itself
+from its own `RuneConfig`; `mapDataNames` is flat, so a rune's layout pool is
+its own direct `data-name`d children and nothing deeper.
 
-**Method.** Read the layout assembly path in `packages/transform/src/engine.ts`
-and `assemble.ts`. Then test it: give `Track` a `layout` entry reordering its
-named parts (`track-name`, `track-artist`, `track-duration`) and observe whether
-`refrakt inspect playlist` reflects it.
+Verified in `packages/transform/test/child-rune-layout.test.ts` (4 cases, added
+by this item): a theme `layout` on `Track` reorders its parts and creates a
+`byline` wrapper (`.rf-track__byline`, no `data-section`); a wrapper named in
+`sections` does get its role, and `sections` is identity-guarded so a theme
+cannot add one; `Playlist`'s layout cannot reach into `Track`.
 
-**Why it matters.** It decides whether item-level theming — the whole
-playlist-as-card-grid case — is a config addition or an engine change, and
-therefore how large {% ref "ADR-029" /%}'s implementing spec is.
+**Consequences, applied to {% ref "ADR-029" /%}:**
+
+- Item-level theming is an existing *config* capability. No engine change, and
+  the implementing spec shrinks.
+- Decision 2's proposed `groups` channel is **redundant and was removed**.
+  `layout`'s tag-creating form already groups parts, and the semantic boundary
+  is already emitted as the presence or absence of `data-section`.
+- Rune-created and theme-created anonymous wrappers are structurally identical
+  (`Card`'s own `content` wrapper has no section role either — `cardSections` is
+  `{ media, body }`). The output distinguishes semantic from presentational, not
+  rune-authored from theme-authored; the latter is the base-versus-theme
+  contract diff's job, per decisions 3 and 4.
+
+### Original framing, and why it was wrong
+
+The question was posed as *"`Track` has its own `RuneConfig`, so in principle a
+theme can restructure it — but the `layout` tree was built by
+{% ref "SPEC-081" /%} for intra-rune slots and may not reach into a child rune's
+root."*
+
+That presumed a boundary the engine does not have. Assembly is not a single
+whole-page walk that must descend into nested runes; it is a per-rune pass that
+recurses naturally, so "reaching into a child rune" is not something `layout`
+ever needs to do. The correct question was whether a child rune gets its own
+pass — and it does.
+
+Worth noting for the remaining two: the planned method here was
+`refrakt inspect playlist`, which needs a built CLI. Driving `createTransform`
+from source under vitest answered it in minutes with no build at all, and left a
+regression test behind.
 
 ## Q2 — Is the omission channel wired anywhere?
 
@@ -65,16 +95,11 @@ where it would fire.
 
 ## Acceptance Criteria
 
-- Q1 answered with the code path named, and a worked example showing whether a
-  theme-supplied `layout` on `Track` takes effect.
-- Q2 resolved into a decision: either {% ref "ADR-029" /%} decision 5 gains a
-  dependency on wiring `data-meta-rank`, or it adopts a different bound.
-- Q3 answered with the explicit list of runes whose `property=` rides on
-  omittable visible nodes, derived from the seo-baseline fixtures.
-- {% ref "ADR-029" /%}'s Open questions section is rewritten with the findings,
-  and any decision the findings contradict is amended rather than left standing.
-- Findings are recorded even where they confirm the assumption — a verified
-  assumption and an unexamined one should not look alike in the record.
+- [x] Q1 answered with the code path named, and a worked example showing whether a theme-supplied `layout` on `Track` takes effect
+- [ ] Q2 resolved into a decision: either {% ref "ADR-029" /%} decision 5 gains a dependency on wiring `data-meta-rank`, or it adopts a different bound
+- [ ] Q3 answered with the explicit list of runes whose `property=` rides on omittable visible nodes, derived from the seo-baseline fixtures
+- [ ] {% ref "ADR-029" /%}'s Open questions section is rewritten with the findings, and any decision they contradict is amended rather than left standing
+- [ ] Findings are recorded even where they confirm the assumption — a verified assumption and an unexamined one should not look alike in the record
 
 ## Notes
 

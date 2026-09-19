@@ -108,17 +108,13 @@ second theme, which makes the check meaningful rather than Lumina-specific.
 
 ## Acceptance Criteria
 
-- A dimension manifest exists in code, declaring each dimension's attribute,
-  closed value set, and governed property set.
-- The shadowing check reports the four counter blocks in {% ref "BUG-022" /%}.
-- The orphan check reports the four `data-meta-rank` rules in
-  {% ref "BUG-023" /%}.
-- Both checks run against Lumina and proof-skin.
-- Both support an allowlist whose entries carry a written reason, following the
-  `KNOWN_MISSING_SELECTORS` precedent.
-- The suite passes with the two known bugs allowlisted, so it can land before
-  either fix.
-- `dimensions.md` documents the checks and when to add an allowlist entry.
+- [ ] A dimension manifest exists in code, declaring each dimension's attribute, closed value set, and governed property set
+- [ ] The shadowing check reports the four duplicated counter blocks in {% ref "BUG-022" /%}
+- [ ] The orphan check reports the four dead `data-meta-rank` rules in {% ref "BUG-023" /%}
+- [ ] Both checks run against Lumina and proof-skin, not Lumina alone
+- [ ] Both support an allowlist whose entries carry a written reason, following the `KNOWN_MISSING_SELECTORS` precedent
+- [ ] The suite passes with the two known bugs allowlisted, so it can land before either fix
+- [ ] `dimensions.md` documents the checks and when to add an allowlist entry
 
 ## Blocks
 
