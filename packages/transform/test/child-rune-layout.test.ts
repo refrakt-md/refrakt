@@ -123,6 +123,35 @@ describe('layout assembly on a child rune', () => {
 		expect(byline.attributes['data-section']).toBe('footer');
 	});
 
+	it('B2. a group gets shared geometry from an arrangement attr, not from its name', () => {
+		const config: ThemeConfig = {
+			...base,
+			runes: {
+				Playlist: { block: 'playlist' },
+				Track: {
+					block: 'track',
+					parent: 'Playlist',
+					layout: {
+						root: ['track-name', 'byline'],
+						byline: {
+							tag: 'div',
+							attrs: { 'data-zone-layout': 'bar' },
+							children: ['track-artist', 'track-duration'],
+						},
+					},
+				},
+			},
+		} as ThemeConfig;
+		const track = findTrack(asTag(createTransform(config)(playlistTree())));
+		const byline = track.children.find(
+			(c: any) => c?.attributes?.['data-name'] === 'byline',
+		) as SerializedTag;
+		// skeleton's dimensions/metadata.css already styles [data-zone-layout="bar"]
+		// generically, so the row geometry costs the theme nothing.
+		expect(byline.attributes['data-zone-layout']).toBe('bar');
+		expect(byline.attributes['data-name']).toBe('byline');
+	});
+
 	it('D. Playlist layout can NOT reach into Track internals', () => {
 		const config: ThemeConfig = {
 			...base,

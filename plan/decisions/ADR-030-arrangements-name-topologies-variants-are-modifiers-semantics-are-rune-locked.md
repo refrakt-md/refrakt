@@ -129,9 +129,38 @@ its own wrapper names. A **conventional, open** set of group names — `byline`,
 topology, because a wrong name costs nothing (add another) while a wrong
 mechanism costs migrations.
 
-It also closes a concrete gap. A **plugin shipping CSS for its own runes cannot
-target a group a theme invented.** Without a conventional vocabulary, plugin CSS
-and theme structure cannot meet.
+**A group name carries no geometry.** Its shape comes from the arrangement it
+declares, exactly as any other container's does — so a `byline` is a group
+*named* byline that *arranges* as a row, and skeleton styles the arrangement,
+never the name. This is what keeps the vocabulary free: nothing is stamped on a
+node for being called something, so a rune part that happens to share a
+conventional name inherits nothing and needs no reserved-name rule to protect
+it. Opt-in is by declaring an arrangement, not by choosing a label.
+
+**The capability is already there, under the pre-rename spelling.** A `layout`
+entry's `attrs` are spread onto the wrapper the engine creates
+(`placeNames`, `engine.ts`), and `skeleton/styles/dimensions/metadata.css`
+already styles `[data-zone-layout="bar"]` generically — `display: flex`,
+`flex-wrap: wrap`, `align-items: center`, plus `data-wrap` and `data-align`
+modifiers. So this works today, in any theme, with no new code:
+
+```ts
+byline: {
+  tag: 'div',
+  attrs: { 'data-zone-layout': 'bar' },
+  children: ['track-artist', 'track-duration'],
+}
+```
+
+Pinned by case B2 in `packages/transform/test/child-rune-layout.test.ts`. What
+the rename buys is type safety rather than capability: stamping the attribute
+through `attrs` is a stringly-typed back door that nothing validates, where a
+first-class `arrange` key on `LayoutEntry` would be checked against the
+vocabulary.
+
+Rule 6 also closes a concrete gap. A **plugin shipping CSS for its own runes
+cannot target a group a theme invented.** Without a conventional vocabulary,
+plugin CSS and theme structure cannot meet.
 
 ## Rationale
 
@@ -206,12 +235,13 @@ container carries `data-section`, a presentational group does not, and
 `sections` is identity-guarded so a theme cannot cross it. Modifiers need the
 same treatment, and the two should use one mechanism.
 
-**A group-name vocabulary is separable and cheaper than everything else here.**
-Rule 6 costs a documentation page and an agreed list; it needs no engine change,
-because {% ref "WORK-584" /%} Q1 established that themes can already create named
-groups through `layout`. It can ship before any arrangement work and is the one
-part of this decision with an immediate audience — including plugin authors, who
-today have no group name they can rely on when shipping CSS for their own runes.
+**A group-name vocabulary is separable and costs almost nothing.** Rule 6 is a
+documentation page and an agreed list — no engine change and no CSS. Themes can
+already create named groups through `layout` ({% ref "WORK-584" /%} Q1) and
+already give them shared geometry by declaring a zone layout, which skeleton
+already styles. It can ship before any arrangement work and is the one part of
+this decision with an immediate audience, plugin authors included: they have no
+group name they can rely on today when shipping CSS for their own runes.
 
 **This decision does not authorise building anything.** It constrains a later
 spec. If that spec never comes, nothing is owed.
