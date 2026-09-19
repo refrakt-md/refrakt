@@ -43,8 +43,8 @@ ordinal itself information?"** — a fact about the content, not about the theme
 
 ## Decision
 
-Five rules governing how the arrangement vocabulary may grow. They govern a
-vocabulary that does not exist yet; that is deliberate, and the last rule says
+Six rules governing how the arrangement vocabulary may grow. They govern a
+vocabulary that does not exist yet; that is deliberate, and rule 5 says
 why.
 
 ### 1. Topologies get names
@@ -80,46 +80,111 @@ the capability whose absence currently forces bespoke CSS: after
 `display: flex` / `flex: 1` / ellipsis in `skeleton/styles/runes/track.css` is
 the track's *inner* arrangement, which no mechanism can declare.
 
-### 5. A topology needs three existing implementations before promotion
+### 5. Two bars, by what the addition is for
 
-A primitive is derived from repetition already in the codebase, never proposed
-speculatively. Two consumers is a coincidence; three is a pattern. A generic
-primitive that is 80% right for its consumers is worse than the bespoke CSS it
-replaced, because the 20% is fought silently in every consumer and the cost is
-invisible until the fourth one.
+An earlier draft had one rule — *three existing implementations before
+promotion* — which is right for one kind of addition and circular for the other.
+Existing implementations only exist for shapes the current vocabulary permitted,
+so counting them approves consolidations of what people already hand-rolled and
+can never approve anything new. `rail` reads as having one consumer not because
+rails are rare, but because nothing could declare one: every would-be rail
+became bespoke CSS and does not register as an implementation of anything.
+
+**5a — a consolidating topology needs three existing implementations.** It
+replaces bespoke CSS that already exists, so the claim being made is *this
+pattern recurs*, and the repetitions are the evidence. Two is a coincidence;
+three is a pattern. A generic primitive that is 80% right is worse than the
+bespoke CSS it replaced, because the remaining 20% is fought silently in every
+consumer and the cost is invisible until the fourth one. Ships stable.
+
+**5b — an enabling topology needs a contract, a case, and a tier.** It offers
+what nothing does today, so there is nothing to count. Instead it needs:
+
+- a contract statable **without naming any rune** — if the definition needs an
+  example to be intelligible, it is not a topology yet;
+- at least one concrete design that wants it, with a sketch of the markup and
+  CSS it would produce;
+- no overlap with an existing topology (see rule 1 — a variant is not a
+  topology);
+
+and it ships **provisional**: recorded in the theme contract as unstable,
+excluded from the stability guarantee, and changeable without a migration.
+
+**Promotion from provisional to stable requires a second independent consumer
+that adopted it without needing its shape changed.** That is what the old
+three-implementation bar was a crude proxy for. The thing a second consumer
+teaches is not "people want this" — it is "the contract survived contact with a
+use case its author did not have in mind."
+
+### 6. Vocabulary is cheap; mechanism is expensive
+
+Rules 5a and 5b govern *mechanism*. They do not govern *names*.
+
+`sections` has a closed seven-value role vocabulary
+(`header | preamble | title | description | body | footer | media`), which is
+right because a role changes what the engine does. Presentational **groups**
+(rule 2 of {% ref "ADR-029" /%}) have no vocabulary at all: every theme invents
+its own wrapper names. A **conventional, open** set of group names — `byline`,
+`meta`, `actions`, `aside` — is worth publishing at a much lower bar than a
+topology, because a wrong name costs nothing (add another) while a wrong
+mechanism costs migrations.
+
+It also closes a concrete gap. A **plugin shipping CSS for its own runes cannot
+target a group a theme invented.** Without a conventional vocabulary, plugin CSS
+and theme structure cannot meet.
 
 ## Rationale
 
-The promotion rule is the load-bearing one, and it is already earning its keep
-by disqualifying most of what a vocabulary would naively contain:
+Rule 5 is the load-bearing one, and splitting it changes the answer materially:
 
-| Candidate | Existing consumers | Verdict |
-|---|---|---|
-| `row`, `pairs` | shipped as `bar` / `definition-list` | rename only |
-| `ladder` | howto, recipe, steps, track, timeline, itinerary | qualifies — but it already exists as `data-sequence`, so this is consolidation, not new capability |
-| `grid` | bento, gallery, grid, palette, swatch | **qualifies, and genuinely new** |
-| `rail` | progress | 1 — wait |
-| `track`, `split`, `radial` | 1 each | wait |
+| Candidate | Existing consumers | Bar | Verdict |
+|---|---|---|---|
+| `row`, `pairs` | shipped as `bar` / `definition-list` | — | rename only |
+| `ladder` | howto, recipe, steps, track, timeline, itinerary | 5a | consolidation — it already exists as `data-sequence` |
+| `grid` | bento, gallery, grid, palette, swatch | 5a | **stable, and genuinely new capability** |
+| `split` | compare, comparison | 5a | 2 — wait for a third |
+| `rail` | progress | 5b | **provisional** — contract is statable, `tolerance` is the case |
+| `track` | — | 5b | **provisional** — `mix` is the case |
+| `radial` | — | — | not a topology; a `ladder` direction (rule 2) |
 
-So **`grid` is the only arrangement that adds capability today.** Everything
-else is renaming and unification. That is a smaller result than the idea
-promises, and stating it here is the point: without rule 5 the same analysis
-would have produced eight primitives, five of them guesses.
+Under the single old bar, everything below `grid` was blocked and the honest
+summary was *"`grid` is the only arrangement that adds capability."* That result
+was an artefact of the rule, not of the domain: it measured what the existing
+vocabulary had permitted people to build by hand.
 
-`rail` is the instructive near-miss. It looked like it had two consumers —
-`progress` and `budget` — until `budget` was read: `skeleton/styles/runes/budget.css`
-is entirely `justify-content: space-between` rows, with no proportional bars
-anywhere. It is a stack of rows, built from the two primitives that already
-ship. A vocabulary designed from the plausible-sounding list rather than the
-code would have shipped `rail` with one real consumer.
+Under 5a/5b the vocabulary can grow where a contract is genuinely clear, without
+freezing guesses into a public surface — the provisional tier absorbs the
+uncertainty that the old rule handled by refusing outright.
+
+**Rules 5a and 5b fail in opposite directions, which is why both are needed.**
+5a's failure mode is the near-miss: `rail` looked like it had two consumers —
+`progress` and `budget` — until `budget` was read. `skeleton/styles/runes/budget.css`
+is entirely `justify-content: space-between` rows with no proportional bars
+anywhere; it is a stack of rows built from the two primitives that already ship.
+Counting plausible-sounding consumers rather than reading code would have
+shipped `rail` as stable on false evidence. 5b's failure mode is the opposite —
+a well-argued contract with no real use — which is why it ships provisional and
+why promotion requires a consumer the author did not anticipate.
 
 ## Consequences
 
-**The first shipment is small and mostly a rename.** `data-zone-layout` and
-`data-sequence` become values of one `data-arrange` vocabulary; `grid` is added.
-Theme authors learn one vocabulary with uniform applicability instead of three
-with different coupling rules — which is the real win, and it is a coherence win
-rather than a capability one.
+**The first shipment is a rename plus one stable and two provisional additions.**
+`data-zone-layout` and `data-sequence` become values of one `data-arrange`
+vocabulary; `grid` lands stable; `rail` and `track` land provisional. Theme
+authors learn one vocabulary with uniform applicability instead of three with
+different coupling rules.
+
+**The provisional tier needs teeth or it is a comment nobody reads.** If nothing
+marks a provisional arrangement as unstable, it becomes stable by adoption and
+the tier has achieved nothing. Minimally: the theme contract records each
+arrangement's tier, and a theme using a provisional one is told so at build
+time. Without that, 5b is strictly worse than the old rule, because it ships
+guesses with the appearance of a guarantee.
+
+**Provisional is not a parking space.** An arrangement that sits provisional
+across several releases with no second consumer is evidence the contract was
+wrong or the need imagined, and should be removed rather than left to accrete
+users. Removal is the tier's whole point and has to actually happen.
 
 **`radial` is not a topology.** Under rules 1 and 2 a cycle is a *ladder whose
 ends join*: `stack` mode is a vertical ladder, `strip` is horizontal + wrap,
@@ -136,9 +201,17 @@ this rather than having to build it.
 
 **Semantic locking needs somewhere to live.** Rule 3 requires the engine to
 distinguish rune-owned from theme-owned modifiers on the same arrangement.
-{% ref "ADR-029" /%} draws the equivalent line for containers (`data-section`
-versus `data-group`); modifiers need the same treatment, and the two should use
-one mechanism.
+{% ref "ADR-029" /%} draws the equivalent line for containers — a semantic
+container carries `data-section`, a presentational group does not, and
+`sections` is identity-guarded so a theme cannot cross it. Modifiers need the
+same treatment, and the two should use one mechanism.
+
+**A group-name vocabulary is separable and cheaper than everything else here.**
+Rule 6 costs a documentation page and an agreed list; it needs no engine change,
+because {% ref "WORK-584" /%} Q1 established that themes can already create named
+groups through `layout`. It can ship before any arrangement work and is the one
+part of this decision with an immediate audience — including plugin authors, who
+today have no group name they can rely on when shipping CSS for their own runes.
 
 **This decision does not authorise building anything.** It constrains a later
 spec. If that spec never comes, nothing is owed.
@@ -161,8 +234,23 @@ geometry pays full CSS cost forever, and leaves the `blocks`/`metaFields`
 coupling — which is the thing actually blocking grid declarations — unaddressed.
 
 **Define the full vocabulary now and let consumers catch up.** Faster to a
-coherent-looking system. Rejected by rule 5, and by the `rail`/`budget`
-near-miss that produced it.
+coherent-looking system. Rejected by rule 5a, and by the `rail`/`budget`
+near-miss that produced it — a vocabulary assembled from plausible-sounding
+names rather than read code ships primitives on false evidence.
+
+**One bar for everything: three existing implementations, no exceptions.** This
+was the first draft, and it is simpler to state and to enforce. Rejected as
+circular: existing implementations only exist for shapes the vocabulary already
+permitted, so the rule can approve consolidations and nothing else. It would
+also have blocked `rail` indefinitely on the grounds that nothing declares a
+rail today — which is true, and is the problem rather than the answer.
+
+**Ship enabling topologies stable, and accept the compatibility risk.** Serves
+theme authors immediately with no tier machinery. Rejected because the cost of a
+wrong arrangement is not the code but the migration: once themes depend on a
+contract it cannot be changed quietly. The provisional tier gets the same
+availability at a fraction of the risk, and the only thing it asks for is
+honesty about which parts are settled.
 
 ## References
 
