@@ -221,6 +221,14 @@ ends join*: `stack` mode is a vertical ladder, `strip` is horizontal + wrap,
 alongside vertical and horizontal, and `wrap` is the one genuinely new modifier
 — it is what distinguishes a cycle from a list.
 
+**The rename needs addressable item containers.** `sequence:` is declared
+rune-level and applied by walking the tree for `<ol>` elements; `arrange` is
+declared per container, which requires that container to be nameable in the
+`layout` tree. Five of the six `sequence` consumers already name theirs through
+`refs` — `HowTo`, `Recipe`, `Timeline`, `Itinerary` — or directly on the tag
+(`Playlist`). `Steps` does not, and {% ref "WORK-585" /%} closes that gap
+independently of this decision.
+
 **Nesting needs no new machinery.** Rule 4 is what makes a theme able to change
 a playlist from rows to cards. {% ref "WORK-584" /%} Q1 established that the
 engine already supports it: every `data-rune` node gets its own assembly pass from
