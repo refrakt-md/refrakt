@@ -16,6 +16,7 @@ import { mergeFileRoots, resolveUserFileRoots, type FileRoots } from './file-roo
 import { createSiteLoader, createVirtualSiteLoader, type SiteLoader } from './loader.js';
 import type { ContentTree } from './content-tree.js';
 import type { Site, VirtualReader } from './site.js';
+import type { PipelineReporter } from './format.js';
 
 export interface RefraktLoaderOptions {
 	/** Path to refrakt.config.json. Default: './refrakt.config.json' */
@@ -32,6 +33,11 @@ export interface RefraktLoaderOptions {
 	security?: SecurityPolicy;
 	/** Skip caching — re-read on every load(). Default: false. */
 	dev?: boolean;
+	/** Sink for each load's pipeline diagnostics (SPEC-135 D5). Defaults to
+	 *  writing `formatPipelineSummary` to stderr, in both dev and build — this
+	 *  is what gives a dev session the diagnostics WORK-554 found it was
+	 *  missing entirely. Pass `() => {}` to silence it. */
+	reporter?: PipelineReporter;
 }
 
 export interface RefraktLoader {
@@ -278,6 +284,7 @@ export function createRefraktLoader(options?: RefraktLoaderOptions): RefraktLoad
 				fileRoots: Object.keys(fileRoots).length > 0 ? fileRoots : undefined,
 				siteConfig: site,
 				dev: options?.dev ?? false,
+				reporter: options?.reporter,
 			});
 		})();
 		return _initPromise;

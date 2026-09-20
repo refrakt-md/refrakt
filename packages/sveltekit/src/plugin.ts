@@ -174,7 +174,7 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 
 			try {
 				const contentPkg = '@refrakt-md/content';
-				const { loadContent, analyzeRuneUsage, formatPipelineSummary } = await import(contentPkg);
+				const { loadContent, analyzeRuneUsage, stderrReporter } = await import(contentPkg);
 				const sandboxDirField = activeSite.sandbox?.dir ?? activeSite.sandbox?.examplesDir;
 				const sandboxExamplesDir = sandboxDirField
 					? resolve(resolvedRoot, sandboxDirField)
@@ -202,24 +202,21 @@ export function refrakt(options: RefractPluginOptions = {}): VitePlugin {
 				// the plan plugin and the expand/snippet resolvers all
 				// compute their sandbox + sourceFile paths relative to it.
 				// This mirrors createRefraktLoader's `projectRoot: configDir`.
-				const site = await loadContent(
-					resolve(resolvedRoot, activeSite.contentDir),
-					'/',
-					undefined,
-					communityTags,
-					mergedPackages,
+				// SPEC-135 D5 — the summary is the reporter's job now, so there
+				// is no `formatPipelineSummary` call here to drift from the
+				// other adapters'.
+				const site = await loadContent(resolve(resolvedRoot, activeSite.contentDir), {
+					basePath: '/',
+					additionalTags: communityTags,
+					plugins: mergedPackages,
 					sandboxExamplesDir,
-					undefined,
-					options.security,
-					activeConfigDir,
-					undefined,
-					undefined,
-					activeSite,
-					activeSite.repoUrl,
-					activeSite.repoBranch,
-				);
-
-				process.stderr.write(formatPipelineSummary(site.pipelineStats, site.pipelineWarnings));
+					securityPolicy: options.security,
+					projectRoot: activeConfigDir,
+					siteConfig: activeSite,
+					repoUrl: activeSite.repoUrl,
+					repoBranch: activeSite.repoBranch,
+					reporter: stderrReporter,
+				});
 
 				const report = analyzeRuneUsage(site.pages);
 

@@ -26,6 +26,7 @@ import type {
 import { resolveSecurityPolicy } from '@refrakt-md/types';
 import { fsProjectFiles } from '@refrakt-md/types/project-files';
 import type { PipelineStats } from './pipeline.js';
+import type { PipelineReporter } from './format.js';
 import { ContentTree, type PartialFile } from './content-tree.js';
 import { parseFrontmatter, Frontmatter } from './frontmatter.js';
 import { Router, Route } from './router.js';
@@ -205,6 +206,12 @@ interface ProcessContentTreeOptions {
 	 *  root is scanned at content-load time and its `.md` files become
 	 *  available as Markdoc partials under `namespace:filename` keys. */
 	fileRoots?: FileRoots;
+	/** Sink for this load's pipeline diagnostics (SPEC-135 D5). Called once,
+	 *  after every phase has run, with the same stats and warnings the
+	 *  returned `Site` carries. Omitted means silent — see
+	 *  {@link LoadContentFromTreeOptions.reporter} for why the default sits at
+	 *  the loader boundary rather than here. */
+	reporter?: PipelineReporter;
 }
 
 async function processContentTree(
@@ -637,6 +644,12 @@ async function processContentTree(
 		}
 	}
 
+	// SPEC-135 D5 — one report per load, at the function every mode goes
+	// through. Fires after all four phases so `warnings` is complete; the
+	// caller's cache decides how often a load actually happens, which is what
+	// keeps a dev session from re-printing on every navigation.
+	opts.reporter?.(stats, warnings);
+
 	return {
 		tree,
 		pages: enrichedPages,
@@ -694,9 +707,26 @@ function makeContextForRegions(warnings: PipelineWarning[], url: string) {
  * to `'trusted'` (current behaviour). Set `'strict'` for hosted-product use
  * to strip scripts and harden the sandbox iframe.
  */
+export async function loadContent(dirPath: string, options: LoadContentOptions): Promise<Site>;
 export async function loadContent(
 	dirPath: string,
-	basePath: string = '/',
+	basePath?: string,
+	icons?: Record<string, Record<string, string>>,
+	additionalTags?: Record<string, Schema>,
+	packages?: Plugin[],
+	sandboxExamplesDir?: string,
+	variables?: Record<string, unknown>,
+	securityPolicy?: SecurityPolicy,
+	projectRoot?: string,
+	xrefPatterns?: CompiledXrefPattern[],
+	fileRoots?: FileRoots,
+	siteConfig?: unknown,
+	repoUrl?: string,
+	repoBranch?: string,
+): Promise<Site>;
+export async function loadContent(
+	dirPath: string,
+	basePathOrOptions: string | LoadContentOptions = '/',
 	icons?: Record<string, Record<string, string>>,
 	additionalTags?: Record<string, Schema>,
 	packages?: Plugin[],
@@ -710,6 +740,36 @@ export async function loadContent(
 	repoUrl?: string,
 	repoBranch?: string,
 ): Promise<Site> {
+	// SPEC-135 D5 — the options-bag form. The positional signature had already
+	// reached fourteen parameters, so `reporter` arrives as a field rather than
+	// a fifteenth argument. Both forms are supported and both stay exported;
+	// whether 1.0 keeps the positional one is WORK-576.
+	//
+	// `reporter` is reachable only from the bag: the positional form predates
+	// it and gains no fifteenth slot, so a positional caller is silent — which
+	// is exactly today's behaviour for every one of them.
+	let reporter: PipelineReporter | undefined;
+	let basePath: string;
+	if (typeof basePathOrOptions === 'object') {
+		const o = basePathOrOptions;
+		basePath = o.basePath ?? '/';
+		icons = o.icons;
+		additionalTags = o.additionalTags;
+		packages = o.plugins;
+		sandboxExamplesDir = o.sandboxExamplesDir;
+		variables = o.variables;
+		securityPolicy = o.securityPolicy;
+		projectRoot = o.projectRoot;
+		xrefPatterns = o.xrefPatterns;
+		fileRoots = o.fileRoots;
+		siteConfig = o.siteConfig;
+		repoUrl = o.repoUrl;
+		repoBranch = o.repoBranch;
+		reporter = o.reporter;
+	} else {
+		basePath = basePathOrOptions;
+	}
+
 	const tree = await ContentTree.fromDirectory(dirPath);
 	const resolvedExamplesDir = sandboxExamplesDir
 		? resolve(sandboxExamplesDir)
@@ -741,7 +801,48 @@ export async function loadContent(
 		siteConfig,
 		repoUrl,
 		repoBranch,
+		reporter,
 	});
+}
+
+/**
+ * Options accepted by {@link loadContent}'s options-bag overload.
+ *
+ * The same fields the positional form takes, plus `reporter` (SPEC-135 D5),
+ * which has no positional equivalent. `plugins` is spelled as it is on
+ * {@link LoadContentFromTreeOptions} rather than the positional form's
+ * `packages`, so the two bags read the same.
+ */
+export interface LoadContentOptions {
+	/** URL base path for the Router. Default: `'/'`. */
+	basePath?: string;
+	/** Icon registry to inject into the Markdoc transform context. */
+	icons?: Record<string, Record<string, string>>;
+	/** Markdoc tag schemas to merge on top of the core runes. */
+	additionalTags?: Record<string, Schema>;
+	/** Plugins whose pipeline hooks should run in addition to core hooks. */
+	plugins?: Plugin[];
+	/** Directory holding sandbox example sources. Defaults to `<dirPath>/../examples`. */
+	sandboxExamplesDir?: string;
+	/** Site-wide Markdoc variables available in content via `{% $name %}`. */
+	variables?: Record<string, unknown>;
+	/** Security policy for sandbox runes. Default: `'trusted'`. */
+	securityPolicy?: SecurityPolicy;
+	/** Absolute path to the project root (where `refrakt.config.json` lives). */
+	projectRoot?: string;
+	/** Compiled xref patterns from `refrakt.config.json#/xrefs`. */
+	xrefPatterns?: CompiledXrefPattern[];
+	/** Registered file roots — namespace → absolute directory path. */
+	fileRoots?: FileRoots;
+	/** Per-site config slice — also where `validation` settings are read from. */
+	siteConfig?: unknown;
+	/** Canonical repo URL (`SiteConfig.repoUrl`) for GitHub source URLs. */
+	repoUrl?: string;
+	/** Git ref appended to GitHub source URLs. Defaults to `"main"`. */
+	repoBranch?: string;
+	/** Sink for this load's pipeline diagnostics. See
+	 *  {@link LoadContentFromTreeOptions.reporter} — omitted means silent. */
+	reporter?: PipelineReporter;
 }
 
 /** Options accepted by {@link loadContentFromTree}. */
@@ -804,6 +905,21 @@ export interface LoadContentFromTreeOptions {
 	/** Project-root-relative POSIX key of the sandbox examples directory, joined
 	 *  with a sandbox's `src` and resolved through `projectFiles`. */
 	sandboxExamplesDir?: string;
+	/** Sink for this load's pipeline diagnostics (SPEC-135 D5). Called once per
+	 *  load, after every phase, with the same stats and warnings the returned
+	 *  `Site` carries — so no adapter has to format or write its own summary,
+	 *  and none of them can drift apart.
+	 *
+	 *  **Omitted means silent, and the stderr default lives one layer up** —
+	 *  on `createSiteLoader` / `createVirtualSiteLoader` / `createRefraktLoader`
+	 *  (and passed explicitly by the two adapters that call `loadContent`
+	 *  directly). SPEC-135 D5 originally put the default here; see D5b for why
+	 *  it moved. In short: this function is a library entry point that hundreds
+	 *  of tests and any embedding consumer call directly, and printing a build
+	 *  summary from it would be a behaviour change for all of them. The loaders
+	 *  are the boundary where "a site is being built for somebody to look at"
+	 *  is actually true. */
+	reporter?: PipelineReporter;
 }
 
 /**
@@ -847,5 +963,6 @@ export async function loadContentFromTree(
 		sandbox: options.projectFiles,
 		sandboxExamplesDir: options.sandboxExamplesDir,
 		gitTimestamps: options.gitTimestamps,
+		reporter: options.reporter,
 	});
 }

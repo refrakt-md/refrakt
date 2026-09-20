@@ -2,6 +2,7 @@ import type { Schema } from '@markdoc/markdoc';
 import type { Plugin, SecurityPolicy } from '@refrakt-md/types';
 import type { CompiledXrefPattern } from '@refrakt-md/runes';
 import { loadContent, loadContentFromTree, type Site, type VirtualReader } from './site.js';
+import { stderrReporter, type PipelineReporter } from './format.js';
 import type { ContentTree } from './content-tree.js';
 import type { FileRoots } from './file-roots.js';
 
@@ -40,6 +41,16 @@ export interface SiteLoaderOptions {
 	siteConfig?: unknown;
 	/** When true, every load() call re-reads from disk (no caching). Default: false. */
 	dev?: boolean;
+	/** Sink for each load's pipeline diagnostics (SPEC-135 D5).
+	 *
+	 *  **Defaults to {@link stderrReporter}** — this is the boundary where the
+	 *  default lives (D5b), because a `SiteLoader` exists to build a site for
+	 *  somebody to look at, which `loadContent` on its own does not imply.
+	 *  Every adapter that goes through here gets diagnostics in dev *and*
+	 *  build without opting in, which is the divergence D5 exists to prevent.
+	 *
+	 *  Pass `() => {}` to silence it. */
+	reporter?: PipelineReporter;
 }
 
 export interface SiteLoader {
@@ -54,23 +65,28 @@ export function createSiteLoader(options: SiteLoaderOptions): SiteLoader {
 
 	return {
 		load() {
+			// Cache *hit* returns without re-reporting: the diagnostics were
+			// printed when this promise was created. Reporting here instead
+			// would re-print on every navigation in a dev session, since the
+			// SvelteKit plugin deliberately keeps the cache on in dev and
+			// drives reloads through `invalidate()` (SPEC-135 / WORK-575).
 			if (!options.dev && cached) return cached;
-			const promise = loadContent(
-				options.dirPath,
-				options.basePath,
-				options.icons,
-				options.additionalTags,
-				options.plugins,
-				options.sandboxExamplesDir,
-				options.variables,
-				options.securityPolicy,
-				options.projectRoot,
-				options.xrefPatterns,
-				options.fileRoots,
-				options.siteConfig,
-				options.repoUrl,
-				options.repoBranch,
-			);
+			const promise = loadContent(options.dirPath, {
+				basePath: options.basePath,
+				icons: options.icons,
+				additionalTags: options.additionalTags,
+				plugins: options.plugins,
+				sandboxExamplesDir: options.sandboxExamplesDir,
+				variables: options.variables,
+				securityPolicy: options.securityPolicy,
+				projectRoot: options.projectRoot,
+				xrefPatterns: options.xrefPatterns,
+				fileRoots: options.fileRoots,
+				siteConfig: options.siteConfig,
+				repoUrl: options.repoUrl,
+				repoBranch: options.repoBranch,
+				reporter: options.reporter ?? stderrReporter,
+			});
 			if (!options.dev) cached = promise;
 			return promise;
 		},
@@ -114,6 +130,10 @@ export interface VirtualSiteLoaderOptions {
 	/** When true, every load() call re-runs the pipeline against the current
 	 *  tree (no caching). Use when the host swaps the tree's contents in place. */
 	dev?: boolean;
+	/** Sink for each load's pipeline diagnostics. Defaults to
+	 *  {@link stderrReporter} — see {@link SiteLoaderOptions.reporter}. Pass
+	 *  `() => {}` to silence it. */
+	reporter?: PipelineReporter;
 }
 
 /**
@@ -142,6 +162,7 @@ export function createVirtualSiteLoader(options: VirtualSiteLoaderOptions): Site
 				repoBranch: options.repoBranch,
 				fileRoots: options.fileRoots,
 				siteConfig: options.siteConfig,
+				reporter: options.reporter ?? stderrReporter,
 			});
 			if (!options.dev) cached = promise;
 			return promise;

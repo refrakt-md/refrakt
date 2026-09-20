@@ -214,17 +214,20 @@ export async function startEditor(options: EditorOptions): Promise<void> {
 
 	async function refreshPipelineCache(): Promise<void> {
 		try {
-			const site = await loadContent(
-				absContentDir,
-				'/',
-				themeConfig.icons,
-				extraTags,
-				options.plugins,
-				options.sandboxExamplesDir,
-				undefined,
-				undefined,
-				process.cwd(),
-			);
+			// No `reporter` on purpose (SPEC-135 D5). This is a background
+			// refresh of the preview's aggregated-data cache, re-run whenever
+			// the editor saves — printing a build summary on every keystroke-
+			// triggered refresh would bury the editor's own output. The
+			// divergence is deliberate and recorded here rather than being an
+			// adapter that forgot.
+			const site = await loadContent(absContentDir, {
+				basePath: '/',
+				icons: themeConfig.icons,
+				additionalTags: extraTags,
+				plugins: options.plugins,
+				sandboxExamplesDir: options.sandboxExamplesDir,
+				projectRoot: process.cwd(),
+			});
 			cachedAggregated = site.aggregated;
 			layoutResolver.setAggregated(site.aggregated, buildHookSets());
 		} catch {

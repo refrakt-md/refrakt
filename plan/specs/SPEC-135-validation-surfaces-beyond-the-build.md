@@ -354,6 +354,39 @@ This is stated as a criterion because the failure is silent: a CLI that missed
 it would report findings the build had demoted, and nobody would notice until
 the gate contradicted a green build.
 
+**D5b — the reporter's *default* sits at the loader boundary, not at
+`loadContent`.** D5 says "a `reporter` option there, defaulting to stderr".
+Implementing it (WORK-575) showed the second half cannot be taken literally.
+
+`loadContent` is a library entry point. Roughly forty tests call it directly,
+as do both `create-refrakt` scaffold templates and any embedding consumer. A
+stderr default *inside* it means every one of them starts printing a build
+summary — which contradicts the same item's requirement that no existing
+consumer changes, and would put four screens of pipeline output into the test
+suite.
+
+So the option lives where D5 puts it, and the **default** moved one layer out:
+
+| Layer | Default | Why |
+|---|---|---|
+| `loadContent` / `loadContentFromTree` | silent | a pure library call; the caller decides if anyone is watching |
+| `createSiteLoader` / `createVirtualSiteLoader` / `createRefraktLoader` | `stderrReporter` | a loader exists to build a site *for somebody to look at* |
+
+This keeps what D5 was actually protecting. Every adapter that goes through a
+loader — sveltekit, astro, nuxt — gets diagnostics in dev *and* build without
+opting in, and cannot silently diverge. The two that call `loadContent`
+directly (eleventy, the html scaffold) pass `reporter: stderrReporter` as one
+visible field, and the editor passes none *on purpose*, recorded at the call
+site: it re-loads on every save to refresh a preview cache, and a summary per
+keystroke would bury its own output.
+
+The cache boundary is what makes "once per load" true in dev. `createSiteLoader`
+reports on cache *fill*, not cache *hit*, so a dev session prints on first load
+and on each `invalidate()` — not on every navigation. Verified end to end:
+first request prints, three further navigations print nothing, a `.md` edit
+prints again, and an edit introducing an undefined tag prints
+`✗ Build complete (1 error, 35 warnings)` naming the finding and its line.
+
 **D6 — MCP returns findings, not a rendered report.** The point of the tool over
 the CLI is that a caller can filter, count and act on individual findings without
 parsing text. A tool that returns the CLI's formatted output is a worse CLI.
@@ -615,7 +648,7 @@ ways nothing catches.
 
 ## Acceptance Criteria
 
-- [ ] `loadContent` accepts a reporter; build, dev, CLI and MCP all report through it, with no per-adapter diagnostic handling left behind
+- [ ] `loadContent` accepts a reporter; build, dev, CLI and MCP all report through it, with no per-adapter diagnostic handling left behind — the stderr default sitting at the loader boundary per D5b
 - [ ] A dev-server content load prints its pipeline diagnostics, on first load and on each HMR reload
 - [ ] `refrakt validate` with no arguments validates the project's content and config, for every site in `refrakt.config.json`
 - [ ] `refrakt validate` never validates `baseConfig` as a stand-in for the user's project, and never reports success when it validated nothing — it says what it found no input for

@@ -32,6 +32,32 @@ const pad = (s: string, n: number) => s + ' '.repeat(Math.max(0, n - s.length));
  *   ✓  Build complete (0 errors, 1 warning)
  * ```
  */
+/**
+ * Sink for a content load's pipeline diagnostics.
+ *
+ * SPEC-135 D5 — every surface that loads content reports through one of these
+ * rather than each adapter formatting and writing its own summary. The reporter
+ * is called exactly once per *actual* load: a cached `SiteLoader.load()` that
+ * returns a memoized site does not re-report, so a dev session prints on first
+ * load and on each `invalidate()`-triggered reload, not on every navigation.
+ *
+ * Receives the raw stats and warnings rather than a rendered string, so
+ * non-terminal consumers (the CLI's `--format json`, the MCP tool) can act on
+ * individual findings instead of parsing text.
+ */
+export type PipelineReporter = (stats: PipelineStats, warnings: PipelineWarning[]) => void;
+
+/**
+ * The default reporter: `formatPipelineSummary` to stderr.
+ *
+ * This is the behaviour the adapters each implemented by hand before SPEC-135 —
+ * kept identical, byte for byte, so moving them onto the seam changes nothing
+ * a user sees.
+ */
+export const stderrReporter: PipelineReporter = (stats, warnings) => {
+	process.stderr.write(formatPipelineSummary(stats, warnings));
+};
+
 export function formatPipelineSummary(stats: PipelineStats, warnings: PipelineWarning[]): string {
 	const lines: string[] = [];
 	lines.push(`  ${pad('Phase 1: Parse', 30)} ${stats.pageCount} pages`);
