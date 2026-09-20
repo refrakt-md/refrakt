@@ -1,4 +1,4 @@
-{% spec id="SPEC-135" status="draft" tags="validation, cli, mcp, dx, diagnostics, plan" %}
+{% spec id="SPEC-135" status="accepted" tags="validation, cli, mcp, dx, diagnostics, plan" %}
 
 # Validation surfaces beyond the build
 
@@ -64,22 +64,42 @@ publishes the site.
 `content:check-links` and `runes:check-docs` are npm scripts nothing invokes.
 This is {% ref "SPEC-126" /%}'s finding for the third time in this repo.
 
-### Duplicate IDs pass validation silently
+### Duplicate IDs are detected by a check nothing runs
 
 A concrete instance, found while writing {% ref "SPEC-131" /%}: three ID
 collisions in two days between a branch and `main` — `SPEC-133`, then `BUG-015`,
-then `BUG-019`.
+then `BUG-019`. The `BUG-019` case had already corrupted the rollups before a
+human noticed: {% ref "SPEC-130" /%} and {% ref "SPEC-131" /%} each claimed a
+different entity under the same ID, and `plan status` emitted the same
+no-milestone warning twice.
 
-CLAUDE.md says duplicate IDs "are rejected at create time". Nothing re-checks
-afterwards, so a collision introduced by a **merge** passes `plan validate` with
-zero errors. The `BUG-019` case had already corrupted the rollups before a human
-noticed: {% ref "SPEC-130" /%} and {% ref "SPEC-131" /%} each claimed a different
-entity under the same ID, and `plan status` emitted the same no-milestone
-warning twice.
+**An earlier draft of this spec said the check was missing. It is not.**
+`checkDuplicateIds` (`plugins/plan/src/commands/validate.ts:87`, wired at
+`:729`) reports a duplicate at **error** severity and names the other file, and
+has done since 2026-07-09 — two months before these three collisions. It is
+covered by tests at `validate.test.ts:49` and `unconditional-scan.test.ts:158`.
+Planting two files claiming one ID reports today:
 
-This belongs in this spec rather than beside it, because it is the same disease:
-a check that would have caught it is cheap and absent, and even present it would
-not have helped without somewhere pre-merge to run.
+```json
+{"severity":"error","type":"duplicate-id","source":"WORK-999",
+ "file":"work/WORK-999-probe-b.md","target":"work/WORK-999-probe-a.md"}
+```
+
+So all three collisions were detectable, at error severity, by a command that
+already existed. **Nobody ran it.**
+
+That correction does not weaken the case for this spec — it is the case for this
+spec, in its purest form. Everywhere else here a finding exists and cannot be
+reached; here a finding exists, *can* be reached, and still reached nobody,
+because reaching it was a thing someone had to remember to do. It is
+{% ref "SPEC-126" /%}'s guards-that-nothing-runs for the fourth time in this
+repository, and it relocates the fix: the duplicate-ID half of this spec is
+mostly {% ref "WORK-580" /%}'s CI job, not {% ref "WORK-582" /%}'s check.
+
+What is genuinely missing is narrower, and it is the half that changes outcomes:
+`--against <ref>`, which catches a collision *while resolution is still
+unambiguous*, and `migrate ids`, which resolves one when it can prove what each
+reference meant.
 
 ## What already exists
 
@@ -92,6 +112,7 @@ not have helped without somewhere pre-merge to run.
 | Per-site / per-error-id disable | {% ref "SPEC-132" /%} — `WORK-559` |
 | `refrakt validate` with a reserved-but-ignored `--site` | `packages/cli/src/bin.ts:913` |
 | `plan validate` with findings that name their own fix command | `plugins/plan/src/commands/validate.ts:548` |
+| `checkDuplicateIds` — error severity, names the other file, tested | `plugins/plan/src/commands/validate.ts:87`, wired at `:729` |
 | `plan migrate <filenames\|pr-attrs\|dependencies>` with `--dry-run` / `--apply` / `--git` | `plugins/plan/src/commands/migrate.ts` |
 | `extractRefs` — every `{% ref %}` / `{% xref %}` ID in a file | `plugins/plan/src/scanner-core.ts:175` |
 | MCP tool surface, including `plan_validate` | `plugins/plan/src/mcp-bindings.ts` |
@@ -187,8 +208,9 @@ is a reporter call, not a new pipeline.
 
 ### Duplicate ID detection, and what to do about it
 
-`plan validate` gains a duplicate-ID check — error severity, naming both files
-(D7). Plus two things that make it useful rather than merely correct:
+`plan validate` already detects duplicates at error severity, naming both files
+(D7) — what it lacks is anywhere to run and any way to resolve what it finds.
+Two additions, plus the CI job that makes the existing check load-bearing:
 
 ```bash
 refrakt plan validate --against origin/main   # collisions with a base ref, pre-merge
@@ -336,16 +358,31 @@ the gate contradicted a green build.
 the CLI is that a caller can filter, count and act on individual findings without
 parsing text. A tool that returns the CLI's formatted output is a worse CLI.
 
-**D7 — a duplicate ID is an error, not a warning.** It is not a style
-preference: it silently corrupts the rollups. `plan status` builds
+**D7 — a duplicate ID is an error, not a warning, and it already is one.** It is
+not a style preference: it silently corrupts the rollups. `plan status` builds
 `implementedBy` by ID, so two entities sharing one ID produce a graph where each
 spec claims whichever file was scanned last. That is wrong data presented
 confidently, which is the failure class this repository keeps deciding not to
 tolerate.
 
-The check itself is trivial — group by ID, report groups larger than one. What
-makes it worth a decision is the severity, and that the absence was invisible:
-three collisions passed `plan validate` with zero errors.
+`checkDuplicateIds` makes exactly this call already, and has since 2026-07-09.
+The decision is therefore **ratified, not taken** — recorded here because the
+reasoning was never written down where the next person would find it, and
+because an earlier draft of this spec assumed the check was absent and planned
+to build it. It was not absent. It was unrun.
+
+**That is the more uncomfortable finding, and the one to design against.** A
+missing check is a gap you can close once. A check that exists, is correct, is
+tested, and still lets three collisions through in two days is a gap that closing
+*again* would not fix. The severity was already right; what was missing was a
+place it fires without anyone choosing to fire it. That place is D13's PR job.
+
+The general form, worth stating because this spec keeps meeting it: **a check
+with no automatic caller is indistinguishable from a check that does not
+exist**, and is worse, because its presence in the source reads as coverage.
+`content:check-links` and `runes:check-docs` are the same shape; so was every
+row of {% ref "WORK-554" /%}'s table. Prefer wiring an existing check to a
+trigger over writing a new one.
 
 **D8 — collisions are resolved only when resolution is provable, and prevented
 in preference to being resolved.**
@@ -597,8 +634,7 @@ ways nothing catches.
 - [ ] A test asserts the CLI and a build agree, finding for finding, on a site configured with `disableIds`
 - [ ] `refrakt validate` exits non-zero when any finding is at error severity, and zero otherwise
 - [ ] An `refrakt_validate` MCP tool returns structured findings — file, line, severity, error id, message — not formatted text
-- [ ] `plan validate` reports duplicate entity IDs at error severity, naming every file claiming each ID
-- [ ] A test reproduces the observed case: two files claiming one ID pass today and fail after
+- [ ] The PR job runs `plan validate`, so the duplicate-ID check that already exists finally has an automatic caller — the fix for the three observed collisions is D13, not a new check
 - [ ] `plan validate --against <ref>` reports IDs that collide with those on the given git ref
 - [ ] `plan migrate ids` renumbers a colliding entity, rewrites its filename, and rewrites every `{% ref %}`, `source`, `supersedes` and dependency-section reference to it
 - [ ] `plan migrate ids` refuses rather than guessing when it cannot establish which entity a reference meant, and names those references
@@ -625,10 +661,11 @@ Five phases.
    Plus the PR workflow — D13. This is the phase that gives CI something to run.
 4. **The MCP tool.** Thin over phase 3, and the phase that changes the agent
    authoring loop.
-5. **Duplicate IDs.** The `plan validate` check, `--against`, and
-   `plan migrate ids`. Last because it is the smallest and the most separable —
-   but the check alone is an afternoon and could be pulled forward if collisions
-   keep happening.
+5. **Duplicate IDs.** `--against` and `plan migrate ids`. Last because it is the
+   smallest and the most separable — and smaller than first planned, because
+   the detection half already ships (D7). Note that phase 3's PR job is what
+   actually closes the observed case; this phase is the part that catches a
+   collision early enough to resolve cheaply, and resolves one when it can.
 
 **Budget the tiering, not the command.** Wiring a CLI to an existing function is
 straightforward. Making the default tier genuinely skip the cross-page pipeline —
@@ -659,13 +696,14 @@ nobody runs on save because it costs a build.
 - {% ref "WORK-554" /%} — measured that an error-severity diagnostic fails nothing, and that the dev server prints nothing at all
 - {% ref "WORK-573" /%} — the exit-code and dev-visibility work this spec re-homes and splits
 - {% ref "WORK-559" /%} — the per-site / per-error-id disable this spec reuses rather than duplicating
-- {% ref "SPEC-126" /%} — guards that nothing runs; this is its third instance in this repository
+- {% ref "SPEC-126" /%} — guards that nothing runs; this is its third instance in this repository, and the duplicate-ID check is its fourth
 - {% ref "SPEC-134" /%} — review markers, the advisory category D10 accommodates
 - {% ref "SPEC-131" /%} — the branch whose ID collisions produced the duplicate-ID half of this spec
 - `packages/cli/src/commands/validate.ts` — the `baseConfig` default
 - `packages/cli/src/bin.ts` — the reserved-but-ignored `--site`
 - `packages/content/src/format.ts` — `formatPipelineSummary`, where `errorCount` is computed and dropped
 - `packages/sveltekit/src/plugin.ts` — the `isBuild` guard
+- `plugins/plan/src/commands/validate.ts` — `checkDuplicateIds`, the check D7 ratifies rather than commissions
 - `plugins/plan/src/scanner-core.ts` — `extractRefs`, the reference index a renumber would reuse
 - `plugins/plan/src/commands/migrate.ts` — the migration family `migrate ids` joins
 
