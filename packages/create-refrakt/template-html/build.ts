@@ -2,7 +2,7 @@ import {
 	loadContent,
 	buildHighlightOptions,
 	analyzeRuneUsage,
-	formatPipelineSummary,
+	stderrReporter,
 } from '@refrakt-md/content';
 import {
 	renderFullPage,
@@ -121,14 +121,15 @@ async function build() {
 	// `security` / `variables` via a CLI flag — for hosted-product use, edit
 	// this file to pass them through to `loadContent` (matches the option
 	// shape `createRefraktLoader` accepts for the Vite-based adapters).
-	const loadedSite = await loadContent(contentDir, '/', icons, communityTags);
-
-	// Print the standard Phase 1/2/3/4 + warnings summary so the HTML build
-	// gets the same visibility into the cross-page pipeline that the SvelteKit
-	// reference adapter prints.
-	process.stderr.write(
-		formatPipelineSummary(loadedSite.pipelineStats, loadedSite.pipelineWarnings),
-	);
+	// `reporter` prints the standard Phase 1/2/3/4 + warnings summary, so this
+	// build gets the same output as every other adapter without formatting it
+	// here.
+	const loadedSite = await loadContent(contentDir, {
+		basePath: '/',
+		icons,
+		additionalTags: communityTags,
+		reporter: stderrReporter,
+	});
 
 	mkdirSync(outDir, { recursive: true });
 

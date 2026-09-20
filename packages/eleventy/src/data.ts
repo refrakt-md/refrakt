@@ -65,25 +65,20 @@ export function createDataFile(config: {
 	} = config;
 
 	return async function loadRefrakt(): Promise<EleventyPageData[]> {
-		const { loadContent, formatPipelineSummary } = await import('@refrakt-md/content');
+		const { loadContent, stderrReporter } = await import('@refrakt-md/content');
 
+		// SPEC-135 D5 — the Phase 1/2/3/4 + warnings summary comes from the
+		// reporter, so every adapter prints the same thing without each one
+		// formatting it.
 		const absContentDir = resolve(contentDir);
-		const site = await loadContent(
-			absContentDir,
+		const site = await loadContent(absContentDir, {
 			basePath,
-			undefined, // icons
-			undefined, // additionalTags
-			config.plugins,
-			undefined, // sandboxExamplesDir
+			plugins: config.plugins,
 			variables,
-			security,
-			process.cwd(),
-		);
-
-		// Print the standard Phase 1/2/3/4 + warnings summary so Eleventy
-		// builds get the same visibility into the cross-page pipeline that
-		// the SvelteKit reference adapter prints.
-		process.stderr.write(formatPipelineSummary(site.pipelineStats, site.pipelineWarnings));
+			securityPolicy: security,
+			projectRoot: process.cwd(),
+			reporter: stderrReporter,
+		});
 
 		// Build the pages list for LayoutPageData and RfContext
 		const pagesList = site.pages.map((p: any) => ({

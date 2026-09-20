@@ -49,12 +49,9 @@ export default defineNuxtModule<RefraktNuxtOptions>({
 		// the tree-shaken rune set + print the standard Phase 1/2/3/4 + warnings
 		// summary to stderr (matches SvelteKit reference output). Same shape
 		// as the Astro integration.
-		let summaryPrinted = false;
 		const getUsedBlocks = async () => {
 			try {
-				const { createRefraktLoader, analyzeRuneUsage, formatPipelineSummary } = await import(
-					'@refrakt-md/content'
-				);
+				const { createRefraktLoader, analyzeRuneUsage } = await import('@refrakt-md/content');
 				const themeModule = await import(themePackage + '/transform');
 				const themeConfig =
 					themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
@@ -64,13 +61,10 @@ export default defineNuxtModule<RefraktNuxtOptions>({
 					variables: options.variables,
 					security: options.security,
 				});
+				// SPEC-135 D5 — the loader reports the summary itself, once per
+				// actual load; its cache subsumes the `summaryPrinted` latch
+				// this call site used to carry.
 				const loadedSite = await loader.getSite();
-				if (!summaryPrinted) {
-					process.stderr.write(
-						formatPipelineSummary(loadedSite.pipelineStats, loadedSite.pipelineWarnings),
-					);
-					summaryPrinted = true;
-				}
 				const report = analyzeRuneUsage(loadedSite.pages);
 				const { usedBlocks } = await computeUsedCssBlocks(
 					report.allTypes,

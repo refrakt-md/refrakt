@@ -1,25 +1,41 @@
 {% work id="WORK-582" status="ready" priority="medium" complexity="moderate" milestone="v0.36.0" source="SPEC-135" tags="plan, validation, cli" %}
 
-# Detect duplicate plan IDs, prevent them pre-merge, and resolve them when provable
+# Prevent duplicate plan IDs pre-merge, and resolve them when provable
 
-CLAUDE.md says duplicate IDs "are rejected at create time". Nothing re-checks
-afterwards, so a collision introduced by a **merge** passes `plan validate` with
-zero errors.
+Three collisions happened in two days on the {% ref "SPEC-131" /%} branch —
+`SPEC-133`, then `BUG-015`, then `BUG-019`. The `BUG-019` case had already
+corrupted the rollups before a human noticed: {% ref "SPEC-130" /%} and
+{% ref "SPEC-131" /%} each claimed a different entity under the same ID, and
+`plan status` emitted the same no-milestone warning twice.
 
-Three happened in two days on the {% ref "SPEC-131" /%} branch — `SPEC-133`,
-then `BUG-015`, then `BUG-019`. The `BUG-019` case had already corrupted the
-rollups before a human noticed: {% ref "SPEC-130" /%} and {% ref "SPEC-131" /%}
-each claimed a different entity under the same ID, and `plan status` emitted the
-same no-milestone warning twice.
+## Detection already ships — this item is the other two tiers
 
-## Three tiers, and the middle one is the valuable one
+**This item was originally scoped to add the detection. It is already there.**
+`checkDuplicateIds` (`plugins/plan/src/commands/validate.ts:87`, wired at
+`:729`) reports at **error** severity and names the other file, and has since
+2026-07-09 — two months before these collisions. Tests cover it at
+`validate.test.ts:49` and `unconditional-scan.test.ts:158`. Verified by planting
+two files claiming `WORK-999`:
 
-- **Detect always.** Group by ID, report groups larger than one. Trivial, and
-  always correct.
+```json
+{"severity":"error","type":"duplicate-id","source":"WORK-999",
+ "file":"work/WORK-999-probe-b.md","target":"work/WORK-999-probe-a.md"}
+```
+
+All three collisions were detectable, at error severity, by a command that
+already existed. **Nobody ran it** — which is why the fix for the observed case
+is {% ref "WORK-580" /%}'s CI job, not anything in this item. See
+{% ref "SPEC-135" /%} D7.
+
+So the three tiers stand, but only two are work:
+
+- **Detect always.** ✅ Ships today. Nothing to build.
 - **Prevent early.** `plan validate --against <ref>` compares IDs against a base
   ref. On a branch, before a merge, every reference to the branch's own entity
   is unambiguously the branch's — the moment resolution is free, and the moment
-  a PR check fires.
+  a PR check fires. **This is the valuable tier**, and the one detection cannot
+  substitute for: detection tells you two files collide *after* the merge that
+  made both reachable, when every reference to that ID is already ambiguous.
 - **Resolve only when provable.** `plan migrate ids` renumbers, and **refuses,
   naming what it cannot resolve**, rather than guessing.
 
@@ -39,9 +55,8 @@ looking at. A tool that guesses here reproduces the failure class
 
 ## Acceptance Criteria
 
-- [ ] `plan validate` reports duplicate entity IDs at **error** severity, naming every file claiming each ID
-- [ ] A test reproduces the observed case: two files claiming one ID pass today and fail after
 - [ ] `plan validate --against <ref>` reports IDs colliding with those on the given git ref
+- [ ] `--against` resolves the ref through git and fails clearly when it does not exist, rather than silently reporting no collisions
 - [ ] `plan migrate ids` renumbers a colliding entity to the next free ID, rewrites its filename to the `{ID}-{slug}` convention, and rewrites every `{% ref %}`, `source`, `supersedes` and `## Blocked by` / `## Blocks` entry pointing at it
 - [ ] It refuses, naming the references it cannot resolve, rather than guessing
 - [ ] It follows the family's conventions: dry-run by default, `--apply` writes, `--git` stages
@@ -49,14 +64,22 @@ looking at. A tool that guesses here reproduces the failure class
 
 ## Approach
 
-The check alone is an afternoon and could be pulled forward at any point — it
-is independent of everything else in {% ref "SPEC-135" /%}, and only lives in
-this spec because it is the same disease: a check that would have caught it is
-cheap and absent.
+Independent of everything else in {% ref "SPEC-135" /%}, and smaller than first
+scoped now that detection is accounted for.
 
-`--against` is the piece that changes outcomes, so build it second rather than
-last. `migrate ids` is the largest part and the least urgent, since prevention
-removes most of its occasions.
+`--against` first — it is the piece that changes outcomes, and it is what
+{% ref "WORK-580" /%}'s job wants to run once it exists. `migrate ids` is the
+largest part and the least urgent, since prevention removes most of its
+occasions.
+
+**Check the assumption before building on it.** This item was scoped against a
+belief about the code that turned out to be false, and the same trap is open for
+`migrate ids`: confirm what `extractRefs` actually returns (does it carry line
+numbers? does it cover `source=` / `supersedes=` attributes, or only
+`{% ref %}` / `{% xref %}` bodies?) before designing the rewrite around it. The
+AC below says "every `{% ref %}`, `source`, `supersedes` and dependency-section
+reference" — verify each of those four is reachable from the existing index
+rather than assuming it, and widen the index if not.
 
 **Do not build post-merge resolution.** It is possible with line-level
 `git blame` on each ambiguous reference, and it is deliberately out of scope:
@@ -71,9 +94,21 @@ shape that would actually work (a sorted ID-keyed map; a counter merges cleanly
 on precisely the case that matters). Revisit only if collisions continue after
 `--against` has somewhere to run.
 
+## Notes on ordering
+
+**Deliberately not a dependency edge in either direction.**
+{% ref "WORK-580" /%} ships with plain `plan validate` — which already catches
+duplicates — and gains `--against origin/main` whenever this item lands. Making
+the job wait on this item would delay the thing that actually fixes the observed
+case; making this item wait on the job would be false, since `--against` is
+testable on its own.
+
 ## References
 
-- {% ref "SPEC-135" /%} — D7 (error severity, and why), D8 (detect, prevent, resolve-when-provable), D9 (the ledger, rejected, with its working shape)
+- {% ref "SPEC-135" /%} — D7 (error severity, already shipped, and what its being unrun implies), D8 (detect, prevent, resolve-when-provable), D9 (the ledger, rejected, with its working shape)
+- {% ref "WORK-580" /%} — the CI job that makes the existing detection load-bearing; the actual fix for the three observed collisions
+- `plugins/plan/src/commands/validate.ts` — `checkDuplicateIds` at `:87`, the tier this item no longer has to build
+- `plugins/plan/test/validate.test.ts`, `plugins/plan/test/unconditional-scan.test.ts` — the tests that already cover detection
 - `plugins/plan/src/scanner-core.ts` — `extractRefs`, the reference index a renumber reuses
 - `plugins/plan/src/commands/migrate.ts` — the family this joins
 - `plugins/plan/src/commands/validate.ts` — the precedent of a finding naming its migration
