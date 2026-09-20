@@ -43,6 +43,42 @@ describe('normalizeRefraktConfig', () => {
 			expect(result.contentDir).toBe('./content');
 			expect(result.icons).toEqual({ foo: '<svg/>' });
 		});
+
+		// BUG-021 — `validation` was declared in the types, the JSON Schema and
+		// the generated reference, but missing from SITE_FIELDS, which is the
+		// only one of the four with behaviour attached. The shorthand was
+		// documented, schema-checked, and silently did nothing.
+		it('folds the `validation` shorthand into the site (BUG-021)', () => {
+			const raw = {
+				contentDir: './content',
+				validation: { disableIds: ['attribute-undefined'] },
+			};
+			const result = normalizeFlat(raw);
+			expect(result.sites.main!.validation).toEqual({
+				disableIds: ['attribute-undefined'],
+			});
+		});
+
+		it('folds every `validation` sub-field, not just disableIds', () => {
+			const raw = {
+				contentDir: './content',
+				validation: { enabled: false, ids: ['tag-undefined'], disableIds: ['attribute-undefined'] },
+			};
+			const result = normalizeFlat(raw);
+			expect(result.sites.main!.validation).toEqual({
+				enabled: false,
+				ids: ['tag-undefined'],
+				disableIds: ['attribute-undefined'],
+			});
+		});
+
+		it('makes `validation` alone enough to be recognised as the flat shape', () => {
+			// `hasFlatSiteFields` is SITE_FIELDS-driven, so adding `validation`
+			// also makes a config carrying only it take the flat branch rather
+			// than falling through to the plan-only/empty case.
+			const result = normalizeFlat({ validation: { enabled: false } });
+			expect(result.sites.main!.validation).toEqual({ enabled: false });
+		});
 	});
 
 	describe('flat-shape deprecation warning', () => {
@@ -229,6 +265,38 @@ describe('normalizeRefraktConfig', () => {
 			};
 			const result = normalizeRefraktConfig(raw) as Record<string, unknown>;
 			expect(result.site).toBeUndefined();
+		});
+
+		// BUG-021 asked for this direction to be confirmed rather than assumed:
+		// SITE_FIELDS also mirrors site → top level for single-site configs, so
+		// adding `validation` to it mirrors too. Harmless because the only
+		// reader in the tree (`packages/content/src/site.ts`) reads the
+		// per-site object, never the top-level one — but "nothing reads it" is
+		// an argument from absence, so pin the shape it takes.
+		it('mirrors `validation` to the top level without altering the site copy', () => {
+			const raw = {
+				site: { contentDir: './content', validation: { disableIds: ['attribute-undefined'] } },
+			};
+			const result = normalizeRefraktConfig(raw);
+			expect(result.validation).toEqual({ disableIds: ['attribute-undefined'] });
+			expect(result.sites.main!.validation).toEqual({ disableIds: ['attribute-undefined'] });
+		});
+
+		// Not a `validation` bug — the same is true of `sandbox`, `baseUrl` and
+		// every other entry. The shorthands are the *flat shape*: they apply
+		// when the config has no `site`/`sites` key at all, and are ignored
+		// wholesale next to one. BUG-021's own Steps to Reproduce used this
+		// mixed form, so verifying the fix against it would have looked like a
+		// failure. Pinned here so the distinction is not rediscovered.
+		it('ignores top-level shorthands next to an explicit `sites` map', () => {
+			const raw = {
+				validation: { disableIds: ['attribute-undefined'] },
+				sandbox: { dir: './ex' },
+				sites: { main: { contentDir: './site/content' } },
+			};
+			const result = normalizeRefraktConfig(raw);
+			expect(result.sites.main!.validation).toBeUndefined();
+			expect(result.sites.main!.sandbox).toBeUndefined();
 		});
 	});
 

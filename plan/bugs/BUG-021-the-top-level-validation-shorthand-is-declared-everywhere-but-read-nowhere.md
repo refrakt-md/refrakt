@@ -1,4 +1,4 @@
-{% bug id="BUG-021" status="confirmed" severity="minor" source="SPEC-132" tags="config, validation, dx" milestone="v0.36.0" %}
+{% bug id="BUG-021" status="fixed" severity="minor" source="SPEC-132" tags="config, validation, dx" milestone="v0.36.0" pr="refrakt-md/refrakt#622" %}
 
 # The top-level validation shorthand is declared everywhere but read nowhere
 
@@ -99,5 +99,65 @@ failure class {% ref "SPEC-132" /%} and its milestone exist to remove.
 - `packages/transform/src/config-normalize.ts` — `SITE_FIELDS`, the list it is missing from
 - `packages/content/src/site.ts` — the only reader, and it reads per-site
 - `packages/types/src/config.ts` — the deprecated declaration
+
+## Resolution
+
+Completed: 2026-09-20
+
+Branch: `claude/bug-021-validation-shorthand`
+
+### What was done
+
+- `packages/transform/src/config-normalize.ts` — added `'validation'` to
+  `SITE_FIELDS`, the one list of the four declaration sites with behaviour
+  attached. Restores both directions the list drives: the shorthand folds into
+  the site config at load, and `refrakt config migrate` moves it into `site`.
+- `packages/transform/test/config-normalize.test.ts` — six tests: the fold, all
+  three sub-fields, `validation` alone being enough to trigger the flat shape,
+  the site → top-level mirror, and the mixed-shape case below.
+
+### The bug's own Steps to Reproduce were wrong
+
+Worth recording, because verifying the fix against them would have looked like
+a failure. The documented repro is:
+
+```json
+{ "validation": {...}, "sites": { "main": {...} } }
+```
+
+That config takes the `hasPlural` branch of `normalizeRefraktConfig`, where
+top-level shorthands are ignored **wholesale** — not just `validation`. A
+control proves it is not validation-specific: `sandbox`, which was already in
+`SITE_FIELDS`, is equally ignored in that shape.
+
+The shorthands are the *flat shape*: they apply to a config with no
+`site`/`sites` key at all. The real defect is the pure-flat case
+(`{ validation, contentDir }`), where `validation` was dropped while every
+other shorthand survived. That is what the fix addresses, and it is pinned by a
+test alongside one pinning the mixed-shape behaviour so the distinction is not
+rediscovered.
+
+### Verified
+
+End to end through `normalizeRefraktConfig` → `resolveSite` → `loadContent`,
+against a page producing an `attribute-undefined` finding:
+
+| Config | Finding |
+|---|---|
+| no validation | `error` |
+| per-site `validation` | suppressed |
+| top-level shorthand | suppressed *(was: `error`)* |
+
+The shorthand now behaves identically to the per-site form. 4,589 tests pass.
+
+### Notes
+
+- Chose the "add to `SITE_FIELDS`" fix over removing the declaration. Both were
+  valid per the bug; adding it is one line, restores the migrate path for free,
+  and keeps the field consistent with the other eighteen shorthands rather than
+  making `validation` the one documented option that does not work flat.
+- The mirror direction was confirmed, not assumed: nothing reads top-level
+  `validation`, and a test now pins the shape it takes so that stays an
+  observation rather than an argument from absence.
 
 {% /bug %}
