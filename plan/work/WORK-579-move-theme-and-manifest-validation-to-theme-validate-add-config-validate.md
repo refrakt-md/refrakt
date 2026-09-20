@@ -1,4 +1,4 @@
-{% work id="WORK-579" status="ready" priority="medium" complexity="simple" milestone="v0.36.0" source="SPEC-135" tags="cli, themes, validation" %}
+{% work id="WORK-579" status="in-progress" priority="medium" complexity="simple" milestone="v0.36.0" source="SPEC-135" tags="cli, themes, validation" pr="refrakt-md/refrakt#624" %}
 
 # Move theme and manifest validation to theme validate, add config validate
 
@@ -30,11 +30,11 @@ anything in the product and has one.
 
 **Part A — the vacation. No dependencies; land this first.**
 
-- [ ] `refrakt theme validate` runs `validateThemeConfig` and `validateManifest`, taking the paths `--config` / `--manifest` take today
-- [ ] `--config` and `--manifest` are gone from the bare `refrakt validate`, not aliased through a deprecation window
-- [ ] `refrakt theme validate` with no arguments reports what it found no input for, rather than validating `baseConfig` and printing success
-- [ ] Help text and docs describe `theme validate` as theme-authoring and `refrakt validate` as site-authoring
-- [ ] The changeset notes the moved flags
+- [x] `refrakt theme validate` runs `validateThemeConfig` and `validateManifest`, taking the paths `--config` / `--manifest` take today
+- [x] `--config` and `--manifest` are gone from the bare `refrakt validate`, not aliased through a deprecation window
+- [x] `refrakt theme validate` with no arguments reports what it found no input for, rather than validating `baseConfig` and printing success
+- [x] Help text and docs describe `theme validate` as theme-authoring and `refrakt validate` as site-authoring
+- [x] The changeset notes the moved flags
 
 **Part B — `config validate`. Needs {% ref "WORK-578" /%}'s resolution layer to exist.**
 
