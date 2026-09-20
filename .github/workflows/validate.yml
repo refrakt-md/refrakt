@@ -1,0 +1,62 @@
+name: Validate
+
+# The pre-merge gate (SPEC-135 D13 / WORK-580).
+#
+# Before this job, `format.yml` was the only workflow on `pull_request:`, and it
+# runs Biome alone. Nothing built the monorepo and nothing ran the tests on a
+# PR — the first build happened on push to `main`, inside the release job — so a
+# type error merged clean and broke the release.
+#
+# Kept separate from `format.yml` rather than folded into one `ci.yml`: Biome is
+# cheap and finishes in seconds, and a formatting failure should report in
+# seconds rather than queue behind a build.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Deliberately no `paths:` filter. A rune schema change can invalidate content
+# anywhere, so the filter would have to include `packages/**` — at which point
+# it excludes almost nothing and mainly creates a way to miss a regression.
+
+jobs:
+  validate:
+    name: Build & validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # There is no build-free route to validating site content: it needs the
+      # assembled tag set across `runes`, nine plugins and `content`, which
+      # resolves through `node_modules` to `dist`. `release.yml` establishes the
+      # same ordering — npm ci → build → test.
+      - run: npm run build
+
+      - run: npm test
+
+      # `npx refrakt` does NOT work in this repo: the workspace package is
+      # symlinked into `node_modules/@refrakt-md/cli`, but npm does not link its
+      # `refrakt` bin into `node_modules/.bin`. Invoke the built entry point
+      # directly so this job does not depend on that being fixed.
+      #
+      # This already catches duplicate plan IDs — `checkDuplicateIds` has
+      # reported them at error severity since 2026-07-09, and the three
+      # collisions on the SPEC-131 branch went through only because nothing ran
+      # it. This step is that missing caller.
+      - name: refrakt plan validate
+        run: node packages/cli/dist/bin.js plan validate
+
+      # TODO(WORK-580b): add `refrakt validate --format json` here once
+      # WORK-578 lands. That is the step SPEC-135 D4 makes the content gate;
+      # everything above closes the build/test hole that existed regardless.
