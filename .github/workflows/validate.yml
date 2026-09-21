@@ -57,6 +57,14 @@ jobs:
       - name: refrakt plan validate
         run: node packages/cli/dist/bin.js plan validate
 
-      # TODO(WORK-580b): add `refrakt validate --format json` here once
-      # WORK-578 lands. That is the step SPEC-135 D4 makes the content gate;
-      # everything above closes the build/test hole that existed regardless.
+      # The content gate (SPEC-135 D4 / WORK-580b). Config resolution, then
+      # content, for every site in refrakt.config.json. Exits non-zero on any
+      # error-severity finding; warnings never fail it, which matters because
+      # `site/` carries 35 of them.
+      #
+      # Text output rather than `--format json`: the exit code is the gate, and
+      # a human reading a failed job wants the readable form. The JSON shape
+      # exists for callers that parse findings — the MCP tool (WORK-581), and
+      # anything that later wants to turn these into PR annotations.
+      - name: refrakt validate
+        run: node packages/cli/dist/bin.js validate
