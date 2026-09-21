@@ -92,6 +92,11 @@ export const SITE_FIELDS = [
 	// `sites.<name>.tints` (or the singular `site.tints`) instead.
 	'backgrounds',
 	'sandbox',
+	// BUG-021 — `validation` (SPEC-132 / WORK-559) was declared in the types,
+	// the JSON Schema and the generated reference, but left out of this list,
+	// which is the only one with behaviour attached. The shorthand was
+	// documented, schema-checked and inert.
+	'validation',
 	'baseUrl',
 	'siteName',
 	'defaultImage',

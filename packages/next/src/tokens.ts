@@ -82,8 +82,13 @@ export async function getSiteTokensCss(
  */
 export function printPipelineSummary(site: Site): void {
 	// Resolved lazily so the import surface stays Server-Component-safe.
-	void import('@refrakt-md/content').then(({ formatPipelineSummary }) => {
-		process.stderr.write(formatPipelineSummary(site.pipelineStats, site.pipelineWarnings));
+	// SPEC-135 D5 — goes through the shared reporter rather than formatting
+	// here, so this helper cannot drift from what every other adapter prints.
+	// It stays a `Site`-taking helper because Next has no single load call site
+	// to hang a reporter on: the page module is re-evaluated per static param,
+	// which is why the doc comment above asks callers to memoise.
+	void import('@refrakt-md/content').then(({ stderrReporter }) => {
+		stderrReporter(site.pipelineStats, site.pipelineWarnings);
 	});
 }
 

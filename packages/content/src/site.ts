@@ -26,6 +26,7 @@ import type {
 import { resolveSecurityPolicy } from '@refrakt-md/types';
 import { fsProjectFiles } from '@refrakt-md/types/project-files';
 import type { PipelineStats } from './pipeline.js';
+import type { PipelineReporter } from './format.js';
 import { ContentTree, type PartialFile } from './content-tree.js';
 import { parseFrontmatter, Frontmatter } from './frontmatter.js';
 import { Router, Route } from './router.js';
@@ -76,6 +77,263 @@ export interface SitePage {
 	source?: { type: 'file' | 'contributed'; plugin?: string; ruleIndex?: number };
 }
 
+/** The subset of {@link ProcessContentTreeOptions} the shared page-environment
+ *  helpers read, so `validateContent` can satisfy it without pretending to be
+ *  a full content load. */
+export interface PageEnvironmentOptions {
+	fileRoots?: FileRoots;
+	sandbox?: ProjectFiles;
+	projectRoot?: string;
+	additionalTags?: Record<string, Schema>;
+	plugins?: Plugin[];
+	xrefPatterns?: CompiledXrefPattern[];
+	repoUrl?: string;
+	repoBranch?: string;
+}
+
+/**
+ * Pre-parse partials into Markdoc ASTs for the transform config. Two sources
+ * contribute:
+ * - Site-local `_partials/` (already scanned by `ContentTree`; keys are
+ *   unprefixed relative paths like `footer.md`).
+ * - Registered file roots (project-wide; keys are namespaced like
+ *   `shared:footer.md`). Plugins contribute roots via `Plugin.fileRoots`; both
+ *   arrive in `opts.fileRoots` already merged by the loader bootstrap.
+ *
+ * Shared with `validateContent` (SPEC-135 D14): a validation run that skipped
+ * partials would not see `{% partial %}` / `{% include %}` content, and would
+ * report a different finding set from the build for the same corpus.
+ */
+export async function parsePagePartials(
+	tree: ContentTree,
+	opts: PageEnvironmentOptions,
+): Promise<Record<string, Node> | undefined> {
+	const partialFiles = tree.partials();
+	const namespacedPartials =
+		opts.fileRoots && Object.keys(opts.fileRoots).length > 0
+			? await readFileRoots(opts.fileRoots, {
+					projectFiles: opts.sandbox,
+					projectRoot: opts.projectRoot,
+				})
+			: new Map<string, PartialFile>();
+	if (partialFiles.size === 0 && namespacedPartials.size === 0) return undefined;
+	const parsed: Record<string, Node> = {};
+	for (const [name, partial] of partialFiles) {
+		parsed[name] = Markdoc.parse(escapeFenceTags(partial.raw));
+	}
+	for (const [name, partial] of namespacedPartials) {
+		parsed[name] = Markdoc.parse(escapeFenceTags(partial.raw));
+	}
+	return parsed;
+}
+
+/**
+ * Build the hook sets whose `preprocess` phase rewrites a page's AST before it
+ * is validated and transformed — the core set (carrying snippet's SPEC-062
+ * implementation) plus every plugin that registers hooks.
+ *
+ * The merged tags + nodes are threaded to the core hooks as `embedConfig`:
+ * expand (SPEC-066) and collection (SPEC-070) need them to re-transform
+ * extracted entity subtrees with the same schemas the host page used. Always
+ * threaded, even when a site sets no xref patterns or project root.
+ *
+ * Shared with `validateContent` (SPEC-135 D14). Preprocess is not optional for
+ * agreement: `{% snippet %}` resolves itself into a fence node here and
+ * `{% include %}` pastes partial content in, so a validation run that skipped
+ * it would validate a different tree than the build does.
+ *
+ * `processContentTree` appends two more hook sets (`__entity-routes__`,
+ * `__page-entities__`) after these. Neither defines `preprocess`, so their
+ * absence here cannot change a finding — they only matter to the
+ * register/aggregate phases, which are the `--deep` tier's business.
+ */
+export function buildPreprocessHookSets(
+	opts: PageEnvironmentOptions,
+	parsedPartials: Record<string, Node> | undefined,
+): HookSet[] {
+	const embedTags = opts.additionalTags ? { ...tags, ...opts.additionalTags } : tags;
+	// SPEC-072 — plugin-declared (type, field) ordering overrides so
+	// collection/relationships sort & group in domain order. Defaults still come
+	// from each rune's attribute `matches`; these only cover divergent cases.
+	const orderings: Record<string, Record<string, string[]>> = {};
+	for (const pkg of opts.plugins ?? []) {
+		const o = pkg.theme?.orderings;
+		if (!o) continue;
+		for (const [type, fields] of Object.entries(o)) {
+			orderings[type] = { ...(orderings[type] ?? {}), ...fields };
+		}
+	}
+	// SPEC-076 / WORK-357 — `(type, field, value) → sentiment` derived from each
+	// rune's `metaFields.*.sentimentMap`, keyed by the rune's `block`.
+	const sentiments: Record<string, Record<string, Record<string, string>>> = {};
+	for (const pkg of opts.plugins ?? []) {
+		for (const cfg of Object.values(pkg.theme?.runes ?? {})) {
+			const type = (cfg as { block?: string }).block;
+			const metaFields = (
+				cfg as { metaFields?: Record<string, { sentimentMap?: Record<string, string> }> }
+			).metaFields;
+			if (!type || !metaFields) continue;
+			for (const [field, fieldCfg] of Object.entries(metaFields)) {
+				if (!fieldCfg?.sentimentMap) continue;
+				sentiments[type] = sentiments[type] ?? {};
+				sentiments[type][field] = { ...(sentiments[type][field] ?? {}), ...fieldCfg.sentimentMap };
+			}
+		}
+	}
+	const coreHooks = createCorePipelineHooks({
+		xrefPatterns: opts.xrefPatterns,
+		repoUrl: opts.repoUrl,
+		repoBranch: opts.repoBranch,
+		embedConfig: {
+			tags: embedTags as Record<string, unknown>,
+			nodes: nodes as Record<string, unknown>,
+			functions: functions as Record<string, unknown>,
+			orderings,
+			sentiments,
+			// Pass parsed partials so `{% partial file="…" /%}` inside a collection
+			// body template (or an expand-resolved entity body) resolves the same
+			// way it would inside a top-level page.
+			partials: parsedPartials,
+			projectRoot: opts.projectRoot,
+			// SPEC-113 — expand / file-ref read source files through the same
+			// provider as snippet (the sandbox provider on the options bag).
+			projectFiles: opts.sandbox,
+		},
+	} as Parameters<typeof createCorePipelineHooks>[0]);
+	const hookSets: HookSet[] = [{ pluginName: '__core__', hooks: coreHooks }];
+	for (const pkg of opts.plugins ?? []) {
+		if (pkg.pipeline) {
+			hookSets.push({ pluginName: pkg.name, hooks: pkg.pipeline });
+		}
+	}
+	return hookSets;
+}
+
+/** Inputs to {@link buildPageContentVariables}. */
+export interface PageContentVariablesOptions {
+	ast: Node;
+	frontmatter: Frontmatter;
+	relativePath: string;
+	filePath: string;
+	url: string;
+	draft?: boolean;
+	timestamps?: FileTimestamps;
+	variables?: Record<string, unknown>;
+	projectRoot?: string;
+	sandbox?: ProjectFiles;
+	sandboxExamplesDir?: string;
+	securityPolicy?: unknown;
+	siteConfig?: unknown;
+}
+
+/**
+ * Build the `$page` / `$file` variable surface a page is processed against.
+ *
+ * Computed *before* preprocess so file-reading preprocessors (snippet) can
+ * resolve `path=$file.path`-style attribute references against the same
+ * variables a transform-time evaluator would.
+ *
+ * Shared with `validateContent` (SPEC-135 D14), and not optional for agreement:
+ * a validation run that handed preprocess an empty variable surface leaves
+ * every `{% snippet path=$file.path %}` unresolved, which then reports an
+ * `attribute-undefined` finding for the error attribute snippet substitutes —
+ * a finding the build does not have. Found exactly that way, against refrakt's
+ * own site, before this was extracted.
+ */
+export function buildPageContentVariables(
+	opts: PageContentVariablesOptions,
+): Record<string, unknown> {
+	const pagePath = posixPath(opts.relativePath);
+	const filePath = opts.projectRoot
+		? posixRelativeFromRoot(opts.projectRoot, opts.filePath)
+		: pagePath;
+	return {
+		...opts.variables,
+		frontmatter: opts.frontmatter,
+		page: {
+			url: opts.url,
+			path: pagePath,
+			dir: posixDirname(opts.relativePath),
+			slug: lastUrlSegment(opts.url),
+			title: derivePageTitle(opts.frontmatter, opts.ast),
+			draft: opts.draft,
+		},
+		file: {
+			path: filePath,
+			created: opts.timestamps?.created,
+			modified: opts.timestamps?.modified,
+		},
+		__sandboxFiles: opts.sandbox,
+		__sandboxExamplesDir: opts.sandboxExamplesDir,
+		__securityPolicy: opts.securityPolicy,
+		// SPEC-104 §5 — the project's bg preset registry, so `bg="name"` can expand
+		// a `sandbox`-typed preset into a backdrop guest at transform time (where
+		// the sandbox readers live). Sandbox presets are project-level config.
+		__backgrounds: (opts.siteConfig as { backgrounds?: Record<string, unknown> } | undefined)
+			?.backgrounds,
+	};
+}
+
+/** Inputs to {@link buildPageTransformConfig} — the per-page surface deciding
+ *  which tags, nodes, functions and partials a page is read against. */
+export interface PageTransformConfigOptions {
+	ast: Node;
+	content: string;
+	path: string;
+	sourcePath: string;
+	icons?: Record<string, Record<string, string>>;
+	additionalTags?: Record<string, Schema>;
+	contentVariables?: Record<string, unknown>;
+	partials?: Record<string, Node>;
+}
+
+/**
+ * Build the Markdoc config one page is validated and transformed against.
+ *
+ * **Extracted so the two paths cannot build it differently** — SPEC-135 D14.
+ * SPEC-132 deliberately validates against *the very object* handed to
+ * `transform`, so the two cannot disagree about which tags and attributes
+ * exist. A `validateContent` that assembled its own tag set would re-open
+ * exactly that gap, and then nothing holds up D5a's guarantee that the CLI and
+ * the build report the same findings. This function is that mechanism, not
+ * tidying: both callers go through it, or the guarantee is only hoped for.
+ *
+ * Mutates `ast` — `captureDeferredBodies` rewrites deferBody runes' bodies to
+ * source before transform (SPEC-070 / WORK-262). Kept inside this function
+ * rather than beside it so a validation run sees the same AST shape the
+ * transform would.
+ */
+export function buildPageTransformConfig(opts: PageTransformConfigOptions): {
+	config: Record<string, unknown>;
+	headings: HeadingInfo[];
+} {
+	const headings = extractHeadings(opts.ast);
+	const mergedTags = opts.additionalTags ? { ...tags, ...opts.additionalTags } : tags;
+	// Capture deferBody runes' bodies as source before transform, so their
+	// per-entity `$item` templates aren't resolved here (SPEC-070 / WORK-262).
+	captureDeferredBodies(opts.ast, (name) =>
+		Boolean((mergedTags as Record<string, { deferBody?: boolean }>)[name]?.deferBody),
+	);
+	const config: Record<string, unknown> = {
+		tags: mergedTags,
+		nodes,
+		functions,
+		variables: {
+			generatedIds: new Set<string>(),
+			path: opts.path,
+			headings,
+			__source: opts.content,
+			__sourcePath: opts.sourcePath,
+			...(opts.icons ? { __icons: opts.icons } : {}),
+			...opts.contentVariables,
+		},
+	};
+	if (opts.partials) {
+		config.partials = opts.partials;
+	}
+	return { config, headings };
+}
+
 function transformContent(
 	ast: Node,
 	content: string,
@@ -87,30 +345,16 @@ function transformContent(
 	partials?: Record<string, Node>,
 	validation?: ValidatePageOptions,
 ): { renderable: RenderableTreeNodes; headings: HeadingInfo[]; findings: PipelineWarning[] } {
-	const headings = extractHeadings(ast);
-	const mergedTags = additionalTags ? { ...tags, ...additionalTags } : tags;
-	// Capture deferBody runes' bodies as source before transform, so their
-	// per-entity `$item` templates aren't resolved here (SPEC-070 / WORK-262).
-	captureDeferredBodies(ast, (name) =>
-		Boolean((mergedTags as Record<string, { deferBody?: boolean }>)[name]?.deferBody),
-	);
-	const config: Record<string, unknown> = {
-		tags: mergedTags,
-		nodes,
-		functions,
-		variables: {
-			generatedIds: new Set<string>(),
-			path,
-			headings,
-			__source: content,
-			__sourcePath: sourcePath,
-			...(icons ? { __icons: icons } : {}),
-			...contentVariables,
-		},
-	};
-	if (partials) {
-		config.partials = partials;
-	}
+	const { config, headings } = buildPageTransformConfig({
+		ast,
+		content,
+		path,
+		sourcePath,
+		icons,
+		additionalTags,
+		contentVariables,
+		partials,
+	});
 	// SPEC-132 — validate against `config`, the very object handed to
 	// `transform` below, so the two cannot disagree about which tags and
 	// attributes exist. Plugin runes are already merged into `mergedTags`, so
@@ -205,6 +449,12 @@ interface ProcessContentTreeOptions {
 	 *  root is scanned at content-load time and its `.md` files become
 	 *  available as Markdoc partials under `namespace:filename` keys. */
 	fileRoots?: FileRoots;
+	/** Sink for this load's pipeline diagnostics (SPEC-135 D5). Called once,
+	 *  after every phase has run, with the same stats and warnings the
+	 *  returned `Site` carries. Omitted means silent — see
+	 *  {@link LoadContentFromTreeOptions.reporter} for why the default sits at
+	 *  the loader boundary rather than here. */
+	reporter?: PipelineReporter;
 }
 
 async function processContentTree(
@@ -226,23 +476,7 @@ async function processContentTree(
 	//   `Plugin.fileRoots`; both arrive in `opts.fileRoots` already
 	//   merged by the loader bootstrap.
 	const partialFiles = tree.partials();
-	const namespacedPartials =
-		opts.fileRoots && Object.keys(opts.fileRoots).length > 0
-			? await readFileRoots(opts.fileRoots, {
-					projectFiles: opts.sandbox,
-					projectRoot: opts.projectRoot,
-				})
-			: new Map<string, PartialFile>();
-	let parsedPartials: Record<string, Node> | undefined;
-	if (partialFiles.size > 0 || namespacedPartials.size > 0) {
-		parsedPartials = {};
-		for (const [name, partial] of partialFiles) {
-			parsedPartials[name] = Markdoc.parse(escapeFenceTags(partial.raw));
-		}
-		for (const [name, partial] of namespacedPartials) {
-			parsedPartials[name] = Markdoc.parse(escapeFenceTags(partial.raw));
-		}
-	}
+	const parsedPartials = await parsePagePartials(tree, opts);
 
 	// Build hook sets here (rather than after the per-page loop, as before)
 	// so the preprocess phase can run during page processing — each hook set
@@ -254,68 +488,7 @@ async function processContentTree(
 	// through to the core hooks as `embedConfig` — expand (SPEC-066) needs
 	// them to re-transform extracted entity subtrees using the same schemas
 	// the host page used.
-	const embedTags = opts.additionalTags ? { ...tags, ...opts.additionalTags } : tags;
-	// SPEC-072 — collect plugin-declared (type, field) ordering overrides so
-	// collection/relationships sort & group in domain order. Defaults still come
-	// from each rune's attribute `matches`; these only cover the divergent cases.
-	const orderings: Record<string, Record<string, string[]>> = {};
-	for (const pkg of opts.plugins ?? []) {
-		const o = pkg.theme?.orderings;
-		if (!o) continue;
-		for (const [type, fields] of Object.entries(o)) {
-			orderings[type] = { ...(orderings[type] ?? {}), ...fields };
-		}
-	}
-	// SPEC-076 / WORK-357 — derive `(type, field, value) → sentiment` from each
-	// rune's `metaFields.*.sentimentMap` (keyed by the rune's `block` = entity
-	// type), so `aggregate` can project `$item.sentiment` for sentiment-coloured
-	// breakdowns. No duplication: the same maps that colour entity badges.
-	const sentiments: Record<string, Record<string, Record<string, string>>> = {};
-	for (const pkg of opts.plugins ?? []) {
-		for (const cfg of Object.values(pkg.theme?.runes ?? {})) {
-			const type = (cfg as { block?: string }).block;
-			const metaFields = (
-				cfg as { metaFields?: Record<string, { sentimentMap?: Record<string, string> }> }
-			).metaFields;
-			if (!type || !metaFields) continue;
-			for (const [field, fieldCfg] of Object.entries(metaFields)) {
-				if (!fieldCfg?.sentimentMap) continue;
-				sentiments[type] = sentiments[type] ?? {};
-				sentiments[type][field] = { ...(sentiments[type][field] ?? {}), ...fieldCfg.sentimentMap };
-			}
-		}
-	}
-	const coreHooksOptions = {
-		xrefPatterns: opts.xrefPatterns,
-		repoUrl: opts.repoUrl,
-		repoBranch: opts.repoBranch,
-		embedConfig: {
-			tags: embedTags as Record<string, unknown>,
-			nodes: nodes as Record<string, unknown>,
-			functions: functions as Record<string, unknown>,
-			orderings,
-			sentiments,
-			// Pass parsed partials so `{% partial file="…" /%}` inside a collection
-			// body template (or an expand-resolved entity body) resolves the same
-			// way it would inside a top-level page. Without this, partial nodes in
-			// deferred templates silently render as empty `<article>` tags.
-			partials: parsedPartials,
-			projectRoot: opts.projectRoot,
-			// SPEC-113 — expand / file-ref read source files through the same
-			// provider as snippet (the sandbox provider on the options bag).
-			projectFiles: opts.sandbox,
-		},
-	};
-	// Always thread embedConfig: collection (SPEC-070) and expand (SPEC-066) need
-	// the merged tags/nodes/functions to transform per-entity templates, even
-	// when a site sets no xref patterns or project root.
-	const coreHooks = createCorePipelineHooks(coreHooksOptions);
-	const hookSets: HookSet[] = [{ pluginName: '__core__', hooks: coreHooks }];
-	for (const pkg of opts.plugins ?? []) {
-		if (pkg.pipeline) {
-			hookSets.push({ pluginName: pkg.name, hooks: pkg.pipeline });
-		}
-	}
+	const hookSets: HookSet[] = buildPreprocessHookSets(opts, parsedPartials);
 	// Built-in entityRoutes config-rules adapter (SPEC-069). Resolves render-template
 	// partials from the (lazily populated) partials map. No-op unless the site
 	// config declares `entityRoutes`.
@@ -394,35 +567,21 @@ async function processContentTree(
 		// Compute the page-variable surface before preprocess so file-reading
 		// preprocessors (snippet) can resolve `path=$file.path` style attribute
 		// references against the same variables a transform-time evaluator would.
-		const pagePath = posixPath(page.relativePath);
-		const filePath = opts.projectRoot
-			? posixRelativeFromRoot(opts.projectRoot, page.filePath)
-			: pagePath;
-		const contentVariables: Record<string, unknown> = {
-			...opts.variables,
+		const contentVariables = buildPageContentVariables({
+			ast,
 			frontmatter,
-			page: {
-				url: route.url,
-				path: pagePath,
-				dir: posixDirname(page.relativePath),
-				slug: lastUrlSegment(route.url),
-				title: derivePageTitle(frontmatter, ast),
-				draft: route.draft,
-			},
-			file: {
-				path: filePath,
-				created: fileTimestamps.created,
-				modified: fileTimestamps.modified,
-			},
-			__sandboxFiles: sandbox,
-			__sandboxExamplesDir: opts.sandboxExamplesDir,
-			__securityPolicy: resolvedSecurity,
-			// SPEC-104 §5 — the project's bg preset registry, so `bg="name"` can expand
-			// a `sandbox`-typed preset into a backdrop guest at transform time (where
-			// the sandbox readers live). Sandbox presets are project-level config.
-			__backgrounds: (opts.siteConfig as { backgrounds?: Record<string, unknown> } | undefined)
-				?.backgrounds,
-		};
+			relativePath: page.relativePath,
+			filePath: page.filePath,
+			url: route.url,
+			draft: route.draft,
+			timestamps: fileTimestamps,
+			variables: opts.variables,
+			projectRoot: opts.projectRoot,
+			sandbox,
+			sandboxExamplesDir: opts.sandboxExamplesDir,
+			securityPolicy: resolvedSecurity,
+			siteConfig: opts.siteConfig,
+		});
 
 		// SPEC-062 preprocess phase — runs after variables are computed (so
 		// hooks can resolve `path=$file.path`-style attribute references against
@@ -637,6 +796,12 @@ async function processContentTree(
 		}
 	}
 
+	// SPEC-135 D5 — one report per load, at the function every mode goes
+	// through. Fires after all four phases so `warnings` is complete; the
+	// caller's cache decides how often a load actually happens, which is what
+	// keeps a dev session from re-printing on every navigation.
+	opts.reporter?.(stats, warnings);
+
 	return {
 		tree,
 		pages: enrichedPages,
@@ -694,9 +859,26 @@ function makeContextForRegions(warnings: PipelineWarning[], url: string) {
  * to `'trusted'` (current behaviour). Set `'strict'` for hosted-product use
  * to strip scripts and harden the sandbox iframe.
  */
+export async function loadContent(dirPath: string, options: LoadContentOptions): Promise<Site>;
 export async function loadContent(
 	dirPath: string,
-	basePath: string = '/',
+	basePath?: string,
+	icons?: Record<string, Record<string, string>>,
+	additionalTags?: Record<string, Schema>,
+	packages?: Plugin[],
+	sandboxExamplesDir?: string,
+	variables?: Record<string, unknown>,
+	securityPolicy?: SecurityPolicy,
+	projectRoot?: string,
+	xrefPatterns?: CompiledXrefPattern[],
+	fileRoots?: FileRoots,
+	siteConfig?: unknown,
+	repoUrl?: string,
+	repoBranch?: string,
+): Promise<Site>;
+export async function loadContent(
+	dirPath: string,
+	basePathOrOptions: string | LoadContentOptions = '/',
 	icons?: Record<string, Record<string, string>>,
 	additionalTags?: Record<string, Schema>,
 	packages?: Plugin[],
@@ -710,6 +892,36 @@ export async function loadContent(
 	repoUrl?: string,
 	repoBranch?: string,
 ): Promise<Site> {
+	// SPEC-135 D5 — the options-bag form. The positional signature had already
+	// reached fourteen parameters, so `reporter` arrives as a field rather than
+	// a fifteenth argument. Both forms are supported and both stay exported;
+	// whether 1.0 keeps the positional one is WORK-576.
+	//
+	// `reporter` is reachable only from the bag: the positional form predates
+	// it and gains no fifteenth slot, so a positional caller is silent — which
+	// is exactly today's behaviour for every one of them.
+	let reporter: PipelineReporter | undefined;
+	let basePath: string;
+	if (typeof basePathOrOptions === 'object') {
+		const o = basePathOrOptions;
+		basePath = o.basePath ?? '/';
+		icons = o.icons;
+		additionalTags = o.additionalTags;
+		packages = o.plugins;
+		sandboxExamplesDir = o.sandboxExamplesDir;
+		variables = o.variables;
+		securityPolicy = o.securityPolicy;
+		projectRoot = o.projectRoot;
+		xrefPatterns = o.xrefPatterns;
+		fileRoots = o.fileRoots;
+		siteConfig = o.siteConfig;
+		repoUrl = o.repoUrl;
+		repoBranch = o.repoBranch;
+		reporter = o.reporter;
+	} else {
+		basePath = basePathOrOptions;
+	}
+
 	const tree = await ContentTree.fromDirectory(dirPath);
 	const resolvedExamplesDir = sandboxExamplesDir
 		? resolve(sandboxExamplesDir)
@@ -741,7 +953,48 @@ export async function loadContent(
 		siteConfig,
 		repoUrl,
 		repoBranch,
+		reporter,
 	});
+}
+
+/**
+ * Options accepted by {@link loadContent}'s options-bag overload.
+ *
+ * The same fields the positional form takes, plus `reporter` (SPEC-135 D5),
+ * which has no positional equivalent. `plugins` is spelled as it is on
+ * {@link LoadContentFromTreeOptions} rather than the positional form's
+ * `packages`, so the two bags read the same.
+ */
+export interface LoadContentOptions {
+	/** URL base path for the Router. Default: `'/'`. */
+	basePath?: string;
+	/** Icon registry to inject into the Markdoc transform context. */
+	icons?: Record<string, Record<string, string>>;
+	/** Markdoc tag schemas to merge on top of the core runes. */
+	additionalTags?: Record<string, Schema>;
+	/** Plugins whose pipeline hooks should run in addition to core hooks. */
+	plugins?: Plugin[];
+	/** Directory holding sandbox example sources. Defaults to `<dirPath>/../examples`. */
+	sandboxExamplesDir?: string;
+	/** Site-wide Markdoc variables available in content via `{% $name %}`. */
+	variables?: Record<string, unknown>;
+	/** Security policy for sandbox runes. Default: `'trusted'`. */
+	securityPolicy?: SecurityPolicy;
+	/** Absolute path to the project root (where `refrakt.config.json` lives). */
+	projectRoot?: string;
+	/** Compiled xref patterns from `refrakt.config.json#/xrefs`. */
+	xrefPatterns?: CompiledXrefPattern[];
+	/** Registered file roots — namespace → absolute directory path. */
+	fileRoots?: FileRoots;
+	/** Per-site config slice — also where `validation` settings are read from. */
+	siteConfig?: unknown;
+	/** Canonical repo URL (`SiteConfig.repoUrl`) for GitHub source URLs. */
+	repoUrl?: string;
+	/** Git ref appended to GitHub source URLs. Defaults to `"main"`. */
+	repoBranch?: string;
+	/** Sink for this load's pipeline diagnostics. See
+	 *  {@link LoadContentFromTreeOptions.reporter} — omitted means silent. */
+	reporter?: PipelineReporter;
 }
 
 /** Options accepted by {@link loadContentFromTree}. */
@@ -804,6 +1057,21 @@ export interface LoadContentFromTreeOptions {
 	/** Project-root-relative POSIX key of the sandbox examples directory, joined
 	 *  with a sandbox's `src` and resolved through `projectFiles`. */
 	sandboxExamplesDir?: string;
+	/** Sink for this load's pipeline diagnostics (SPEC-135 D5). Called once per
+	 *  load, after every phase, with the same stats and warnings the returned
+	 *  `Site` carries — so no adapter has to format or write its own summary,
+	 *  and none of them can drift apart.
+	 *
+	 *  **Omitted means silent, and the stderr default lives one layer up** —
+	 *  on `createSiteLoader` / `createVirtualSiteLoader` / `createRefraktLoader`
+	 *  (and passed explicitly by the two adapters that call `loadContent`
+	 *  directly). SPEC-135 D5 originally put the default here; see D5b for why
+	 *  it moved. In short: this function is a library entry point that hundreds
+	 *  of tests and any embedding consumer call directly, and printing a build
+	 *  summary from it would be a behaviour change for all of them. The loaders
+	 *  are the boundary where "a site is being built for somebody to look at"
+	 *  is actually true. */
+	reporter?: PipelineReporter;
 }
 
 /**
@@ -847,5 +1115,6 @@ export async function loadContentFromTree(
 		sandbox: options.projectFiles,
 		sandboxExamplesDir: options.sandboxExamplesDir,
 		gitTimestamps: options.gitTimestamps,
+		reporter: options.reporter,
 	});
 }

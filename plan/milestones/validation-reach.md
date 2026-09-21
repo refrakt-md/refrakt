@@ -40,15 +40,29 @@ one continues it: **the findings now exist, and nobody can reach them.**
 
 That is the same disease one step further along, which is why the duplicate-ID
 work belongs here rather than beside. {% ref "SPEC-131" /%}'s branch hit three
-ID collisions in two days — `SPEC-133`, `BUG-015`, `BUG-019` — every one
-passing `plan validate` with zero errors, and one of them corrupting the spec
-rollups before a human noticed. CLAUDE.md says duplicate IDs "are rejected at
-create time"; nothing re-checks, so a collision introduced by a *merge* is
-invisible. A cheap check, absent.
+ID collisions in two days — `SPEC-133`, `BUG-015`, `BUG-019` — one of them
+corrupting the spec rollups before a human noticed.
+
+**And the sharpest finding in this milestone is that the check for them already
+exists.** `checkDuplicateIds` has reported duplicates at error severity, naming
+both files, since 2026-07-09 — two months before those collisions — with tests
+covering it. All three were detectable by a command nobody ran.
+
+So this is not a cheap check absent. It is a cheap check *present, correct,
+tested, and unwired* — which is worse, because its presence in the source reads
+as coverage. Closing that gap is not writing the check again; it is
+{% ref "WORK-580" /%}, the job that runs it without anyone choosing to.
+
+Which makes the milestone's own thesis sharper than when it was written: **a
+check with no automatic caller is indistinguishable from a check that does not
+exist.** `content:check-links` and `runes:check-docs` are npm scripts nothing
+invokes. Every row of {% ref "WORK-554" /%}'s table was a finding computed and
+dropped. This is the same shape a fourth time, and the only one where the
+machinery was already complete.
 
 ## What lands
 
-{% ref "SPEC-135" /%} carries the design. Five pieces:
+{% ref "SPEC-135" /%} carries the design. Six pieces:
 
 - {% ref "WORK-575" /%} — the reporter seam at `loadContent`, and the dev-server
   print. No behaviour change for any consumer, so it carries none of the
@@ -64,9 +78,10 @@ invisible. A cheap check, absent.
   `plan validate` beside it.
 - {% ref "WORK-581" /%} — the MCP tool, returning structured findings rather
   than a rendered report.
-- {% ref "WORK-582" /%} — duplicate IDs: the check, `--against <ref>` to catch
-  collisions while resolution is still unambiguous, and `plan migrate ids` to
-  resolve them when it can prove what each reference meant.
+- {% ref "WORK-582" /%} — duplicate IDs: `--against <ref>` to catch collisions
+  while resolution is still unambiguous, and `plan migrate ids` to resolve them
+  when it can prove what each reference meant. Smaller than first planned — see
+  below.
 
 Plus {% ref "BUG-021" /%}, found while establishing that the CLI and the build
 cannot disagree: the top-level `validation` shorthand is declared in the types,

@@ -54,12 +54,9 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 				// 1/2/3/4 + warnings summary to stderr (matches SvelteKit
 				// reference output). Falls back to the theme barrel when
 				// analysis fails.
-				let summaryPrinted = false;
 				const getUsedBlocks = async () => {
 					try {
-						const { createRefraktLoader, analyzeRuneUsage, formatPipelineSummary } = await import(
-							'@refrakt-md/content'
-						);
+						const { createRefraktLoader, analyzeRuneUsage } = await import('@refrakt-md/content');
 						const themeModule = await import(themePackage + '/transform');
 						const themeConfig =
 							themeModule.themeConfig ?? themeModule.luminaConfig ?? themeModule.default;
@@ -69,13 +66,12 @@ export function refrakt(options: RefraktAstroOptions = {}): AstroIntegration {
 							variables: options.variables,
 							security: options.security,
 						});
+						// SPEC-135 D5 — `createRefraktLoader` reports the summary
+						// itself, once per actual load. The `summaryPrinted` latch
+						// that used to guard this call site is gone with it: the
+						// loader's own cache already makes repeat `getUsedBlocks`
+						// calls free, so there is nothing left to de-duplicate.
 						const loadedSite = await loader.getSite();
-						if (!summaryPrinted) {
-							process.stderr.write(
-								formatPipelineSummary(loadedSite.pipelineStats, loadedSite.pipelineWarnings),
-							);
-							summaryPrinted = true;
-						}
 						const report = analyzeRuneUsage(loadedSite.pages);
 						const { usedBlocks } = await computeUsedCssBlocks(
 							report.allTypes,

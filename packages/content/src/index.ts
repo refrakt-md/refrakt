@@ -48,9 +48,16 @@ export {
 	type VirtualRefraktLoaderOptions,
 } from './refract-loader.js';
 export { runPipeline, type HookSet, type PipelineResult, type PipelineStats } from './pipeline.js';
-export { formatPipelineSummary } from './format.js';
+export { formatPipelineSummary, stderrReporter, type PipelineReporter } from './format.js';
+export {
+	validateContent,
+	type ContentFinding,
+	type ValidateContentOptions,
+} from './validate-content.js';
 export {
 	validatePage,
+	validatePageDetailed,
+	type DetailedFinding,
 	resolveValidationIds,
 	isSuppressible,
 	DEFAULT_VALIDATION_IDS,

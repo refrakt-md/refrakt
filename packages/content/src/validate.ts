@@ -158,6 +158,46 @@ export function validatePage(
 	config: unknown,
 	opts: ValidatePageOptions,
 ): PipelineWarning[] {
+	return validatePageDetailed(ast, config, opts).map((f) => f.warning);
+}
+
+/**
+ * A finding, plus the structured fields `PipelineWarning` has nowhere to put.
+ *
+ * `PipelineWarning` is the build's diagnostic shape: severity, phase, plugin,
+ * url, message. The Markdoc error id and source line are *formatted into* the
+ * message there, which is fine for a build summary a human reads and useless to
+ * a caller that wants to filter by id or open a file at a line — the CLI's
+ * `--format json` (WORK-578) and the MCP tool (WORK-581, SPEC-135 D6).
+ *
+ * Carried alongside rather than added to `PipelineWarning` so the build's
+ * diagnostic shape is unchanged and the two cannot drift: the warning here is
+ * the identical object `validatePage` returns.
+ */
+export interface DetailedFinding {
+	/** Exactly what `validatePage` reports for this finding. */
+	warning: PipelineWarning;
+	/** Markdoc error id, e.g. `tag-undefined`. Absent only when validation
+	 *  itself crashed and the finding is the fallback. */
+	id?: string;
+	/** 1-based source line, matching what the message renders. */
+	line?: number;
+}
+
+/**
+ * {@link validatePage}, keeping the structured fields.
+ *
+ * This is where the dispositions actually live; `validatePage` is a projection
+ * of it. Single-sourced deliberately — SPEC-135 D5a requires that every caller
+ * resolve settings through `resolveValidationIds` rather than reimplementing
+ * the three-way refinement, and the cheapest way to guarantee that is for there
+ * to be exactly one implementation to call.
+ */
+export function validatePageDetailed(
+	ast: Node,
+	config: unknown,
+	opts: ValidatePageOptions,
+): DetailedFinding[] {
 	const settings = opts.settings ?? DEFAULT_VALIDATION_SETTINGS;
 	const allowed = resolveValidationIds(settings);
 	const demoted = demotedIds(settings);
@@ -169,16 +209,18 @@ export function validatePage(
 	} catch (err) {
 		return [
 			{
-				severity: 'warning',
-				phase: 'validate',
-				pluginName,
-				url: opts.url,
-				message: `content validation could not run: ${(err as Error).message}`,
+				warning: {
+					severity: 'warning',
+					phase: 'validate',
+					pluginName,
+					url: opts.url,
+					message: `content validation could not run: ${(err as Error).message}`,
+				},
 			},
 		];
 	}
 
-	const out: PipelineWarning[] = [];
+	const out: DetailedFinding[] = [];
 	for (const finding of findings) {
 		const level = finding.error.level as MarkdocLevel;
 		const id = finding.error.id;
@@ -195,12 +237,19 @@ export function validatePage(
 			}
 		}
 
+		const rawLine = finding.lines?.[0];
 		out.push({
-			severity,
-			phase: 'validate',
-			pluginName,
-			url: opts.url,
-			message: formatFinding(finding, opts.contributedBy),
+			warning: {
+				severity,
+				phase: 'validate',
+				pluginName,
+				url: opts.url,
+				message: formatFinding(finding, opts.contributedBy),
+			},
+			id,
+			// `formatFinding` renders `line + 1`; match it so a caller and the
+			// message never disagree about which line is meant.
+			line: typeof rawLine === 'number' ? rawLine + 1 : undefined,
 		});
 	}
 	return out;

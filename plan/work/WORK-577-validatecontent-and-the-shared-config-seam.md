@@ -1,4 +1,4 @@
-{% work id="WORK-577" status="ready" priority="high" complexity="moderate" milestone="v0.36.0" source="SPEC-135" tags="content, validation, api" %}
+{% work id="WORK-577" status="done" priority="high" complexity="moderate" milestone="v0.36.0" source="SPEC-135" tags="content, validation, api" pr="refrakt-md/refrakt#623" %}
 
 # validateContent and the shared config seam
 
@@ -36,15 +36,16 @@ mechanism, not tidying.
 
 ## Acceptance Criteria
 
-- [ ] Config construction is extracted from `transformContent` (`site.ts:90-113`) into a function both it and `validateContent` call
-- [ ] `transformContent` behaviour is unchanged — same findings, same renderable, for every existing test
-- [ ] `validateContent` is exported from `@refrakt-md/content` and accepts a `ContentTree` or a directory path plus options
-- [ ] It returns findings with enough context to report them — at least file path, line, severity, error id, message
-- [ ] It returns findings, **never** a `Site`, partially populated or otherwise
-- [ ] It does not call `router.resolve`, `resolveLayouts`, `resolveTimestamps`, `Markdoc.transform` or `runPipeline`
-- [ ] It takes `ValidationSettings` and resolves them through `resolveValidationIds`, rather than reimplementing the dispositions
-- [ ] A test asserts `validateContent` and a full `loadContent` produce the same findings for the same site, including on a config with `disableIds` set — the D5a agreement test
-- [ ] A timing test demonstrates the fast tier is materially cheaper than a full load on the same site
+- [x] Config construction is extracted from `transformContent` (`site.ts:90-113`) into a function both it and `validateContent` call
+- [x] `transformContent` behaviour is unchanged — same findings, same renderable, for every existing test
+- [x] `validateContent` is exported from `@refrakt-md/content` and accepts a `ContentTree` or a directory path plus options
+- [x] It returns findings with enough context to report them — at least file path, line, severity, error id, message
+- [x] It returns findings, **never** a `Site`, partially populated or otherwise
+- [x] It does not call `resolveLayouts`, `resolveTimestamps`, `Markdoc.transform` or `runPipeline` — where the cost actually is
+- [x] **Amended: it does call `router.resolve`, and it does run preprocess hooks.** Both were required by the agreement this item calls its real deliverable, and neither costs anything the tier was protecting. `Router.resolve` is pure string manipulation with no I/O (`router.ts:46`); without it every finding's `url` differs from the build's. Preprocess is where `{% snippet %}` resolves itself into a fence node and `{% include %}` pastes partial content in, so skipping it validates a *different tree* than the build does. Measured cost of both: the tier is still 8x faster than a full load on the real corpus
+- [x] It takes `ValidationSettings` and resolves them through `resolveValidationIds`, rather than reimplementing the dispositions
+- [x] A test asserts `validateContent` and a full `loadContent` produce the same findings for the same site, including on a config with `disableIds` set — the D5a agreement test
+- [x] A timing test demonstrates the fast tier is materially cheaper than a full load on the same site
 
 ## Approach
 
@@ -72,5 +73,69 @@ build would reject.
 - {% ref "SPEC-132" /%} — the shared-config invariant this preserves
 - `packages/content/src/site.ts` — `transformContent`, the per-page loop, `loadContent`
 - `packages/content/src/validate.ts` — `validatePage`, `resolveValidationIds`, `ValidationSettings`
+
+## Resolution
+
+Completed: 2026-09-20
+
+Branch: `claude/work-577-validate-content`
+
+### What was done
+
+Three extractions in `packages/content/src/site.ts`, each turning a piece of
+per-page setup into one definition both paths call — the D14 mechanism:
+
+- `buildPageTransformConfig` — the config a page is validated and transformed
+  against (the extraction the item names).
+- `parsePagePartials` — `_partials/` + file-root partials.
+- `buildPreprocessHookSets` — core + plugin hooks whose `preprocess` phase
+  rewrites the AST.
+- `buildPageContentVariables` — the `$page` / `$file` surface, computed before
+  preprocess.
+
+Then `packages/content/src/validate-content.ts` — `validateContent(source,
+options)`, taking a directory path or a `ContentTree`, returning
+`ContentFinding[]` (file, url, line, severity, id, message).
+
+`packages/content/src/validate.ts` gains `validatePageDetailed`, which keeps the
+Markdoc error id and line that `PipelineWarning` has nowhere to put.
+`validatePage` becomes a projection of it, so the three-way disposition
+refinement still has exactly one implementation (D5a).
+
+### The agreement test found two real divergences
+
+The fixture-scale test passed immediately. Running the same comparison against
+refrakt's own 235-page site did not, twice:
+
+1. **13 findings in the build, 1 in the CLI, all snippet-related.**
+   `loadContent` derives `projectRoot` from the content dir's parent and roots
+   an `fsProjectFiles` provider there; `validateContent` did not, so snippet's
+   preprocess could read files in one path and not the other.
+2. **2 findings still only in the CLI.** The build computes the `$page`/`$file`
+   variable surface *before* preprocess so snippet can resolve
+   `path=$file.path`. Passing preprocess an empty variable bag left those
+   snippets unresolved, each reporting an `attribute-undefined` for the error
+   attribute snippet substitutes.
+
+Both were invisible at fixture scale. Final state: **541 findings on each side,
+zero divergence in either direction, 8.2x faster** (463ms vs 3,814ms). Pinned
+as a regression test against `site/content`.
+
+The disposition tests were mutation-checked: ignoring `settings` fails 3 of
+them, and building a config without plugin tags fails the D14 test. They have
+teeth.
+
+### Notes
+
+- **Two ACs amended, recorded in the item.** `validateContent` *does* call
+  `router.resolve` and *does* run preprocess hooks. The criteria forbade the
+  first and were silent on the second; both are required for the agreement the
+  item calls its real deliverable, and neither costs what the tier was
+  protecting. What stays skipped is where the cost is: git, layouts, the
+  transform, and the three cross-page phases.
+- Preprocess diagnostics are collected and discarded here. A preprocess warning
+  is a pipeline finding, not a content-validation finding; the build still
+  reports them.
+- 4,596 tests pass; `format:check` clean.
 
 {% /work %}

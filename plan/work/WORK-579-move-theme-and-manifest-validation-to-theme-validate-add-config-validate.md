@@ -1,4 +1,4 @@
-{% work id="WORK-579" status="ready" priority="medium" complexity="simple" milestone="v0.36.0" source="SPEC-135" tags="cli, themes, validation" %}
+{% work id="WORK-579" status="in-progress" priority="medium" complexity="simple" milestone="v0.36.0" source="SPEC-135" tags="cli, themes, validation" pr="refrakt-md/refrakt#624" %}
 
 # Move theme and manifest validation to theme validate, add config validate
 
@@ -28,12 +28,17 @@ anything in the product and has one.
 
 ## Acceptance Criteria
 
-- [ ] `refrakt theme validate` runs `validateThemeConfig` and `validateManifest`, taking the paths `--config` / `--manifest` take today
+**Part A — the vacation. No dependencies; land this first.**
+
+- [x] `refrakt theme validate` runs `validateThemeConfig` and `validateManifest`, taking the paths `--config` / `--manifest` take today
+- [x] `--config` and `--manifest` are gone from the bare `refrakt validate`, not aliased through a deprecation window
+- [x] `refrakt theme validate` with no arguments reports what it found no input for, rather than validating `baseConfig` and printing success
+- [x] Help text and docs describe `theme validate` as theme-authoring and `refrakt validate` as site-authoring
+- [x] The changeset notes the moved flags
+
+**Part B — `config validate`. Needs {% ref "WORK-578" /%}'s resolution layer to exist.**
+
 - [ ] `refrakt config validate` runs the config-resolution layer alone, through the same function {% ref "WORK-578" /%} calls — not a second implementation
-- [ ] `--config` and `--manifest` are gone from the bare `refrakt validate`, not aliased through a deprecation window
-- [ ] `refrakt theme validate` with no arguments reports what it found no input for, rather than validating `baseConfig` and printing success
-- [ ] Help text and docs describe `theme validate` as theme-authoring and `refrakt validate` as site-authoring
-- [ ] The changeset notes the moved flags
 
 ## Approach
 
@@ -41,13 +46,20 @@ Mostly a relocation: the two validators already exist in
 `@refrakt-md/transform` and the command already calls them. The work is
 dispatch, help text, and deciding what each command does when handed nothing.
 
-**Can land before {% ref "WORK-578" /%}.** It has no dependency on
-`validateContent` — it only needs to vacate the bare command. Doing it first
-makes WORK-578 a smaller diff, since the bare command is then empty rather than
-being rewritten around existing flags.
+**Part A can land before {% ref "WORK-578" /%}, and should.** It has no
+dependency on `validateContent` — it only needs to vacate the bare command.
+Doing it first makes WORK-578 a smaller diff, since the bare command is then
+empty rather than being rewritten around existing flags.
 
-`config validate` is the one part that does depend on WORK-578's resolution
-layer existing; it can follow, or the item can ship in two commits.
+**Part B cannot**, because there is no resolution layer for `config validate` to
+call until WORK-578 builds one, and building a second implementation is exactly
+what its criterion forbids. Hence the split above: this item ships in two
+commits, with Part B landing after WORK-578 rather than the whole item waiting
+on it.
+
+That split is why there is no `## Blocked by` here — a whole-item edge would
+hide Part A, which is unblocked, simple, and makes the next item easier. Do not
+start Part B before WORK-578 is done.
 
 ## Notes
 
