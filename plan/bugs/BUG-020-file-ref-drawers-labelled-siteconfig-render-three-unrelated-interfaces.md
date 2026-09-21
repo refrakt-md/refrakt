@@ -1,4 +1,4 @@
-{% bug id="BUG-020" status="confirmed" severity="major" source="SPEC-131" tags="snippet, file-ref, docs, drift" %}
+{% bug id="BUG-020" status="confirmed" severity="major" source="SPEC-131" tags="snippet, file-ref, docs, drift" milestone="v0.37.0" %}
 
 # file-ref drawers labelled SiteConfig render three unrelated interfaces
 

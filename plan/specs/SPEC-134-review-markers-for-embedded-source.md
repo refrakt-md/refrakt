@@ -1,4 +1,4 @@
-{% spec id="SPEC-134" status="draft" tags="snippet, file-ref, drift, docs, tooling, dx" %}
+{% spec id="SPEC-134" status="accepted" tags="snippet, file-ref, drift, docs, tooling, dx" %}
 
 # Review markers for embedded source
 
