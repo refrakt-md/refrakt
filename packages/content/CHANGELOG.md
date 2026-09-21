@@ -1,5 +1,108 @@
 # @refrakt-md/content
 
+## 0.36.0
+
+### Minor Changes
+
+- c050169: **`refrakt validate` now validates your project.**
+
+  With no arguments it used to validate `baseConfig` — refrakt's own built-in
+  theme config — and print a checkmark. In a user's project that is a self-test of
+  the library, reported as though it were a check of their work. It now validates
+  every site in `refrakt.config.json`: config resolution first, then content.
+
+  ```bash
+  refrakt validate                 # every site
+  refrakt validate --site main     # one site
+  refrakt validate --only content  # narrow to one layer
+  refrakt validate --deep          # add the cross-page tier
+  refrakt validate --format json   # structured findings
+  ```
+
+  Exits non-zero when any finding is at error severity, zero otherwise. Warnings
+  never affect the exit code and there is no `--strict`: a gate that goes red on
+  day one is a gate someone turns off.
+
+  **Config resolution runs first, because its failures cause content findings.** A
+  plugin that fails to resolve takes its runes with it, and every use of them
+  would be reported as an undefined tag — dozens of errors against correct
+  content, caused by one line of config. When that happens the command reports the
+  config failure and skips the content layer rather than listing both as peers.
+
+  The config layer checks resolution, not shape: whether `theme`, every entry in
+  `plugins[]`, and `entityRoutes` types actually resolve. Shape is the published
+  JSON Schema's job.
+
+  `@refrakt-md/content` gains `RefraktLoader.validateSite({ deep })`, which
+  returns structured findings for a site using the loader's own assembled tag set
+  — so the fast tier cannot disagree with the build about which runes exist.
+
+- 481415f: Add `validateContent` — validate a content tree without building it.
+
+  `loadContent` validates as a side effect of building a `Site`: it resolves
+  routes and layouts, shells out to git for timestamps, runs the identity
+  transform, then runs three cross-page phases over every page. `validateContent`
+  runs only what validation needs — parse, preprocess, `Markdoc.validate` — and
+  returns findings rather than a `Site`. On refrakt's own 235-page site that is
+  **8x faster** (460ms vs 3.8s).
+
+  Findings are structured, so a caller can filter by error id or open a file at a
+  line without parsing text:
+
+  ```ts
+  import { validateContent } from "@refrakt-md/content";
+
+  const findings = await validateContent("./site/content", { siteConfig });
+  // → [{ file, url, line, severity, id, message }, …]
+  ```
+
+  The two paths validate against a config built by the _same_ function, so they
+  cannot disagree about which tags and attributes exist — and a test asserts they
+  produce identical findings over the real site corpus, including under
+  `disableIds`, a narrowed `ids` allow-list, and `enabled: false`.
+
+  Also exported: `validatePageDetailed` and `DetailedFinding`, which carry the
+  Markdoc error id and source line alongside the `PipelineWarning` that
+  `validatePage` already returns. `validatePage` is unchanged.
+
+- a911cc4: Pipeline diagnostics now print in the adapter dev server.
+
+  Previously a dev session showed **no pipeline diagnostics of any severity** —
+  the data was there (`loadContent` runs in dev via `createRefraktLoader` and
+  populates `site.pipelineWarnings`), but nothing read it. Content validation
+  findings, including error-severity ones, were computed on every edit and
+  discarded. They now appear on first load and again on each HMR reload, so a
+  mistyped rune name or an undefined attribute surfaces while you are editing
+  rather than at build time.
+
+  New in `@refrakt-md/content`:
+
+  - `PipelineReporter` — a `(stats, warnings) => void` sink.
+  - `stderrReporter` — the default, writing `formatPipelineSummary` to stderr.
+  - A `reporter` option on `loadContent`, `loadContentFromTree`,
+    `createSiteLoader`, `createVirtualSiteLoader` and `createRefraktLoader`.
+  - An options-bag overload for `loadContent`, beside its existing positional
+    form. **The positional form is unchanged and still exported** — no consumer
+    needs to migrate.
+
+  Reporting happens once per _actual_ content load: a cached site returned
+  without re-loading does not re-report, so dev prints per reload rather than per
+  request. `loadContent` itself stays silent unless given a reporter; the stderr
+  default lives on the loaders, so calling the library directly prints nothing it
+  did not print before.
+
+  Adapters no longer format their own summary — sveltekit, eleventy, astro, nuxt,
+  next and the HTML scaffold template all route through the reporter. Build output
+  is byte-identical.
+
+### Patch Changes
+
+- Updated dependencies [0348f37]
+  - @refrakt-md/transform@0.36.0
+  - @refrakt-md/highlight@0.36.0
+  - @refrakt-md/runes@0.36.0
+  - @refrakt-md/types@0.36.0
+
 ## 0.35.0
 
 ### Minor Changes
