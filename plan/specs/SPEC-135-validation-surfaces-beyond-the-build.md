@@ -1,4 +1,4 @@
-{% spec id="SPEC-135" status="accepted" tags="validation, cli, mcp, dx, diagnostics, plan" %}
+{% spec id="SPEC-135" status="implemented" tags="validation, cli, mcp, dx, diagnostics, plan" %}
 
 # Validation surfaces beyond the build
 
