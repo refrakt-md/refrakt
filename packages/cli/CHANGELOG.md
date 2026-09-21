@@ -1,5 +1,134 @@
 # @refrakt-md/cli
 
+## 0.36.0
+
+### Minor Changes
+
+- c050169: **`refrakt validate` now validates your project.**
+
+  With no arguments it used to validate `baseConfig` — refrakt's own built-in
+  theme config — and print a checkmark. In a user's project that is a self-test of
+  the library, reported as though it were a check of their work. It now validates
+  every site in `refrakt.config.json`: config resolution first, then content.
+
+  ```bash
+  refrakt validate                 # every site
+  refrakt validate --site main     # one site
+  refrakt validate --only content  # narrow to one layer
+  refrakt validate --deep          # add the cross-page tier
+  refrakt validate --format json   # structured findings
+  ```
+
+  Exits non-zero when any finding is at error severity, zero otherwise. Warnings
+  never affect the exit code and there is no `--strict`: a gate that goes red on
+  day one is a gate someone turns off.
+
+  **Config resolution runs first, because its failures cause content findings.** A
+  plugin that fails to resolve takes its runes with it, and every use of them
+  would be reported as an undefined tag — dozens of errors against correct
+  content, caused by one line of config. When that happens the command reports the
+  config failure and skips the content layer rather than listing both as peers.
+
+  The config layer checks resolution, not shape: whether `theme`, every entry in
+  `plugins[]`, and `entityRoutes` types actually resolve. Shape is the published
+  JSON Schema's job.
+
+  `@refrakt-md/content` gains `RefraktLoader.validateSite({ deep })`, which
+  returns structured findings for a site using the loader's own assembled tag set
+  — so the fast tier cannot disagree with the build about which runes exist.
+
+- 09150ab: Add `refrakt config validate` — the config-resolution layer on its own.
+
+  ```bash
+  refrakt config validate
+  refrakt config validate --site main
+  refrakt config validate --format json
+  ```
+
+  Checks that `refrakt.config.json`'s names resolve — the theme package and every
+  entry in `plugins[]` — which is the half the published JSON Schema cannot cover,
+  since it validates shape rather than resolution.
+
+  It sits beside the `refrakt config migrate` that already exists, and runs the
+  same layer `refrakt validate` runs first, narrowed to that layer rather than
+  reimplemented. A test pins the two commands to identical findings for the same
+  project.
+
+  This completes WORK-579: the theme-authoring checks moved to
+  `refrakt theme validate`, and the config layer now has its own entry point.
+
+- cb240a2: Add a `refrakt.validate` MCP tool.
+
+  The MCP surface had `plan_validate` and no content equivalent — exactly the gap
+  an agent falls into: it could check the plan graph it just edited, and not the
+  content.
+
+  ```
+  refrakt.validate({ site?, only?, deep?, configPath?, limit? })
+  → { ok, configPath, sites: [{ site, config, content, counts, … }] }
+  ```
+
+  Findings are structured — file, line, severity, error id, message — not a
+  rendered report, so a caller can filter and act on individual ones rather than
+  parsing text. Per-site counts come with them, and the content list is capped
+  (default 200) with a `contentTruncated` count, because a site mid-migration can
+  produce thousands.
+
+  It calls the same function `refrakt validate` calls. `@refrakt-md/cli` now
+  exports that run as `@refrakt-md/cli/validate.js` (`runValidation`,
+  `hasErrors`), with the CLI command reduced to formatting and an exit code — no
+  second implementation, and no shelling out to parse output back into data.
+
+- 770c064: **Breaking (pre-1.0):** `refrakt validate`'s `--config` and `--manifest` flags
+  have moved to `refrakt theme validate`.
+
+  They validate **theme-authoring** artifacts — a `ThemeConfig` and a theme
+  manifest — under a name that reads like a **site-authoring** one. `theme`
+  already holds `install`, `info` and `list`, so they slot in beside them:
+
+  ```bash
+  refrakt theme validate --config ./theme.config.json
+  refrakt theme validate --manifest ./manifest.json
+  ```
+
+  Passing `--config` or `--manifest` to the bare command now errors and names
+  where the flag went. They are retired rather than aliased through a deprecation
+  window: pre-1.0, and the behaviour they hung off was close to a no-op.
+
+  **`refrakt validate` no longer validates `baseConfig`.** With no arguments it
+  used to validate refrakt's own built-in theme config and print a checkmark — in
+  a user's project, a self-test of the library reported as though it were a check
+  of their work. It now reports that it validated nothing and exits non-zero.
+  Site validation — config resolution, then content, for every site in
+  `refrakt.config.json` — lands in the next release of this milestone.
+
+  `refrakt theme validate` with no arguments does the same rather than falling
+  back to `baseConfig`: a validation command must never report success on nothing.
+
+### Patch Changes
+
+- c30dcf2: Fix `npx refrakt` not working from a fresh clone.
+
+  npm skips creating a workspace bin symlink when its target does not exist at
+  install time, and every bin in this repo points into `dist/` — which `npm ci`
+  runs before. So `node_modules/.bin/refrakt` was never created, and every
+  documented `npx refrakt …` command failed with "could not determine executable
+  to run".
+
+  The root `build` script now ends with `npm rebuild --workspaces` (~3s), which
+  relinks `refrakt`, `create-refrakt` and `refrakt-mcp` once their `dist/` exists.
+
+  This only ever affected working in this repository; consumers install the CLI
+  from npm, where the bin is linked normally.
+
+- Updated dependencies [a911cc4]
+- Updated dependencies [0348f37]
+  - @refrakt-md/editor@0.36.0
+  - @refrakt-md/transform@0.36.0
+  - @refrakt-md/html@0.36.0
+  - @refrakt-md/runes@0.36.0
+  - @refrakt-md/ai@0.36.0
+
 ## 0.35.0
 
 ### Minor Changes
