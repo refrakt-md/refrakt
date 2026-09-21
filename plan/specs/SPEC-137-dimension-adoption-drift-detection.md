@@ -93,7 +93,21 @@ reported.
 This is the cheaper of the two and catches {% ref "BUG-023" /%} outright. It also
 guards against value typos, which today fail silently.
 
-### D4 — scope
+### D4 — measure checks ({% ref "ADR-033" /%})
+
+Measures are custom properties drawn from a registered vocabulary, and they rot
+the same two ways. The same instrument covers them with two more checks:
+
+- every `--rf-`-prefixed property appearing in a `styles` entry resolves to a
+  registered measure — an unregistered one is the orphan case (D3) in custom-
+  property form;
+- every registered measure has at least one consumer — an unused entry is
+  vocabulary that outlived its need, the shadowing case (D2) inverted.
+
+The measure registry is the same kind of artifact as D1's dimension manifest and
+should live beside it.
+
+### D5 — scope
 
 The checks run over the dimension stylesheets and per-rune stylesheets of any
 package that opts in — Lumina and skeleton at minimum, and `proof-skin` as the
@@ -114,6 +128,8 @@ second theme, which makes the check meaningful rather than Lumina-specific.
 - [ ] Both checks run against Lumina and proof-skin, not Lumina alone
 - [ ] Both support an allowlist whose entries carry a written reason, following the `KNOWN_MISSING_SELECTORS` precedent
 - [ ] The suite passes with the two known bugs allowlisted, so it can land before either fix
+- [ ] An unregistered `--rf-`-prefixed property in a `styles` entry is reported ({% ref "ADR-033" /%})
+- [ ] A registered measure with no consumer is reported
 - [ ] `dimensions.md` documents the checks and when to add an allowlist entry
 
 ## Blocks
