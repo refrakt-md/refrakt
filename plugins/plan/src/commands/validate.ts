@@ -98,7 +98,11 @@ function checkDuplicateIds(entities: PlanEntity[]): ValidationIssue[] {
 				source: id,
 				file: e.file,
 				target: existing.file,
-				message: `${id} duplicate ID — also defined in ${existing.file}`,
+				// Name the fix, matching how the filename findings name theirs
+				// (SPEC-135 D8 / WORK-582). `migrate ids` renumbers only when it
+				// can prove what every reference meant, and refuses otherwise —
+				// so the hint is safe to follow.
+				message: `${id} duplicate ID — also defined in ${existing.file}. Run \`refrakt plan migrate ids\` to see whether it can be renumbered safely`,
 			});
 		} else {
 			seen.set(id, e);

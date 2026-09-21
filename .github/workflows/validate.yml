@@ -57,6 +57,20 @@ jobs:
       - name: refrakt plan validate
         run: node packages/cli/dist/bin.js plan validate
 
+      # WORK-582 — catch an ID collision *before* the merge that creates it.
+      # Plain detection above is correct but can only fire once both claimants
+      # are reachable, which is after the merge, when every reference to the ID
+      # has already become ambiguous. This fires on the branch, where the base
+      # ref still makes resolution free.
+      #
+      # PR-only: on a push to `main` the base IS this commit, so every ID would
+      # match itself and there is nothing left to prevent.
+      - name: refrakt plan validate --against base
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+          node packages/cli/dist/bin.js plan validate --against FETCH_HEAD
+
       # The content gate (SPEC-135 D4 / WORK-580b). Config resolution, then
       # content, for every site in refrakt.config.json. Exits non-zero on any
       # error-severity finding; warnings never fail it, which matters because

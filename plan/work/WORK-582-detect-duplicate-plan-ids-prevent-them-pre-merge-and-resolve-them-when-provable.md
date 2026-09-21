@@ -1,4 +1,4 @@
-{% work id="WORK-582" status="ready" priority="medium" complexity="moderate" milestone="v0.36.0" source="SPEC-135" tags="plan, validation, cli" %}
+{% work id="WORK-582" status="done" priority="medium" complexity="moderate" milestone="v0.36.0" source="SPEC-135" tags="plan, validation, cli" pr="refrakt-md/refrakt#632" %}
 
 # Prevent duplicate plan IDs pre-merge, and resolve them when provable
 
@@ -55,12 +55,12 @@ looking at. A tool that guesses here reproduces the failure class
 
 ## Acceptance Criteria
 
-- [ ] `plan validate --against <ref>` reports IDs colliding with those on the given git ref
-- [ ] `--against` resolves the ref through git and fails clearly when it does not exist, rather than silently reporting no collisions
-- [ ] `plan migrate ids` renumbers a colliding entity to the next free ID, rewrites its filename to the `{ID}-{slug}` convention, and rewrites every `{% ref %}`, `source`, `supersedes` and `## Blocked by` / `## Blocks` entry pointing at it
-- [ ] It refuses, naming the references it cannot resolve, rather than guessing
-- [ ] It follows the family's conventions: dry-run by default, `--apply` writes, `--git` stages
-- [ ] The duplicate-ID finding names `plan migrate ids` as its fix, matching how the filename finding names its migration
+- [x] `plan validate --against <ref>` reports IDs colliding with those on the given git ref
+- [x] `--against` resolves the ref through git and fails clearly when it does not exist, rather than silently reporting no collisions
+- [x] `plan migrate ids` renumbers a colliding entity to the next free ID, rewrites its filename to the `{ID}-{slug}` convention, and rewrites every `{% ref %}`, `source`, `supersedes` and `## Blocked by` / `## Blocks` entry pointing at it
+- [x] It refuses, naming the references it cannot resolve, rather than guessing
+- [x] It follows the family's conventions: dry-run by default, `--apply` writes, `--git` stages
+- [x] The duplicate-ID finding names `plan migrate ids` as its fix, matching how the filename finding names its migration
 
 ## Approach
 
@@ -112,5 +112,74 @@ testable on its own.
 - `plugins/plan/src/scanner-core.ts` — `extractRefs`, the reference index a renumber reuses
 - `plugins/plan/src/commands/migrate.ts` — the family this joins
 - `plugins/plan/src/commands/validate.ts` — the precedent of a finding naming its migration
+
+## Resolution
+
+Completed: 2026-09-21
+
+Branch: `claude/work-582-duplicate-ids`
+
+### What was done
+
+- `plugins/plan/src/commands/against.ts` — `readRefIds` + `collisionsFrom`,
+  behind `plan validate --against <ref>`.
+- `plugins/plan/src/commands/migrate-ids.ts` — `runMigrateIds`, joining the
+  `filenames` / `pr-attrs` / `dependencies` family.
+- `plugins/plan/src/commands/validate.ts` — the duplicate-ID finding names
+  `plan migrate ids` as its fix, matching the filename findings' precedent.
+- `.github/workflows/validate.yml` — the PR job runs `--against` the base ref.
+  PR-only: on a push to `main` the base *is* the commit, so every ID would
+  match itself.
+- `CLAUDE.md` — a "Duplicate IDs" section covering all three tiers.
+
+### `--against` catches what detection cannot
+
+Demonstrated on this repo. Deleting `WORK-575`'s file and creating a different
+file claiming the same ID gives **one** local claimant, so plain detection finds
+nothing:
+
+```
+plain plan validate:   duplicate findings: 0
+plan validate --against main:
+  ✗ WORK-575
+      here: work/WORK-575-a-completely-different-entity.md
+      main: work/WORK-575-route-pipeline-diagnostics-...md
+  EXIT=1
+```
+
+That is the gap D8 describes: detection can only fire once both claimants are
+reachable, which is after the merge, when every reference has already become
+ambiguous.
+
+### Three bugs `--apply` found that a dry run could not
+
+Worth recording, because two were silent and only writing surfaced them:
+
+1. **`require is not defined`** — `require('node:fs')` in an ESM module.
+2. **Write-then-rename left inconsistent state.** The write succeeded and the
+   rename threw, leaving a file whose `id=` had moved while its name had not —
+   a duplicate that had become invisible to the check that found it. Renaming
+   first means a failure leaves the file untouched.
+3. **Every rewrite dropped the closing quote.** The patterns consume it via a
+   backreference and the replacement did not put it back, producing
+   `id="WORK-002 status="`. It would have corrupted every file it touched, and
+   a dry run cannot see it because only `--apply` writes. Pinned by a
+   quote-balance regression test.
+
+### Notes
+
+- **`extractRefs` could not be reused, contrary to the item's own References.**
+  The item's approach section said to verify rather than assume, and it was
+  right to: `extractRefs` (`scanner-core.ts:175`) is private, returns a
+  deduplicated `string[]` with no positions, and covers only `{% ref %}` /
+  `{% xref %}` — not `source=` or `supersedes=`. It tells you *which* IDs a file
+  mentions, not *where*, so it cannot drive a rewrite. `migrate ids` works on
+  source text instead. Dependency sections needed no separate handling: their
+  entries are `{% ref %}` tags already.
+- **The provable case is narrower than "renumber and repoint".** An entity is
+  renumbered only when *nothing outside it* references the colliding ID — then
+  no reference's meaning has to be inferred. Everything else refuses, naming the
+  blocking references with file and line.
+- 17 new tests; 4,669 pass overall.
 
 {% /work %}

@@ -316,6 +316,24 @@ Plan files use `{ID}-{slug}.md` (e.g. `WORK-051-plan-validate-command.md`, `SPEC
 - `{% decision id="ADR-001" status="accepted" source="SPEC-001" %}` — architecture decision record (`source` links to spec it informs)
 - `{% milestone name="v0.5.0" status="active" %}` — release target
 
+### Duplicate IDs
+
+`plan validate` reports a duplicate ID at **error** severity, naming both files. Two more tiers sit beside it:
+
+```bash
+# Catch a collision BEFORE the merge that creates it
+refrakt plan validate --against origin/main
+
+# Renumber a colliding entity, when it can be proved what every reference meant
+refrakt plan migrate ids --apply --git
+```
+
+**`--against` is the one that changes outcomes.** Plain detection can only fire once both claimants are reachable — after the merge, when every `{% ref %}` to that ID has already become ambiguous. `--against` fires on the branch, where the base ref still makes resolution free. The PR job runs it.
+
+`migrate ids` renumbers only when **nothing outside the moved entity references the colliding ID**. Otherwise it refuses and names the references that blocked it, with file and line. It will not guess which entity a reference meant — repointing one at the wrong entity is silent and permanent.
+
+A ref that cannot be resolved fails loudly rather than reporting a clean run: "no collisions" and "I could not look" are different answers.
+
 ### Declaring dependencies (`Blocked by` / `Blocks`)
 
 Work/bug dependencies are **directed** and authored as H2 sections, not attributes:
