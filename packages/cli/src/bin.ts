@@ -60,7 +60,7 @@ Commands:
   contracts [options]  Generate structure contracts from theme config
   i18n <subcommand>    i18n tooling (extract translation keys, check coverage)
   scaffold-css         Generate CSS stub files for all runes
-  validate             Validate theme config and manifest
+  validate             Validate this project's sites (config + content)
   theme <subcommand>   Manage themes (install, info)
   edit                 Launch the browser-based content editor
   reference <subcommand>  Emit rune syntax reference for authors and AI agents
@@ -892,28 +892,28 @@ function runScaffoldCss(scaffoldArgs: string[]): void {
 }
 
 function runValidate(validateArgs: string[]): void {
-	let configPath: string | undefined;
-	let manifestPath: string | undefined;
+	let site: string | undefined;
 
 	for (let i = 0; i < validateArgs.length; i++) {
 		const arg = validateArgs[i];
 
-		if (arg === '--config') {
-			configPath = validateArgs[++i];
-			if (!configPath) {
-				console.error('Error: --config requires a file path');
-				process.exit(1);
-			}
-		} else if (arg === '--manifest') {
-			manifestPath = validateArgs[++i];
-			if (!manifestPath) {
-				console.error('Error: --manifest requires a file path');
-				process.exit(1);
-			}
+		// SPEC-135 D2 / D12 — retired rather than aliased through a deprecation
+		// window. These check theme-authoring artifacts, and they now live in the
+		// noun group that owns them. Pre-1.0, and the behaviour they hung off was
+		// close to a no-op, so nobody can be meaningfully depending on it; an
+		// alias would keep the audience confusion alive for no one's benefit.
+		if (arg === '--config' || arg === '--manifest') {
+			console.error(`Error: \`${arg}\` has moved to \`refrakt theme validate\`.\n`);
+			console.error(`  refrakt theme validate ${arg} ${validateArgs[i + 1] ?? '<path>'}\n`);
+			console.error('It validates a theme-authoring artifact; `refrakt validate` is the');
+			console.error("site author's command. See SPEC-135 D12.");
+			process.exit(1);
 		} else if (arg === '--site') {
-			// Accepted for forward compatibility; theme/manifest validation
-			// operates on explicit paths and is not yet site-scoped.
-			validateArgs[++i];
+			site = validateArgs[++i];
+			if (!site) {
+				console.error('Error: --site requires a site name');
+				process.exit(1);
+			}
 		} else if (arg === '--help' || arg === '-h') {
 			printUsage();
 			process.exit(0);
@@ -930,7 +930,60 @@ function runValidate(validateArgs: string[]): void {
 
 	import('./commands/validate.js')
 		.then(({ validateCommand }) => {
-			validateCommand({ configPath, manifestPath });
+			validateCommand({ site });
+		})
+		.catch((err) => {
+			console.error(`\nError: ${(err as Error).message}`);
+			process.exit(1);
+		});
+}
+
+/** `refrakt theme validate` — the theme-authoring checks, moved off the bare
+ *  `validate` command by WORK-579 (SPEC-135 D12). */
+function runThemeValidate(tvArgs: string[]): void {
+	let configPath: string | undefined;
+	let manifestPath: string | undefined;
+
+	for (let i = 0; i < tvArgs.length; i++) {
+		const arg = tvArgs[i];
+
+		if (arg === '--config') {
+			configPath = tvArgs[++i];
+			if (!configPath) {
+				console.error('Error: --config requires a file path');
+				process.exit(1);
+			}
+		} else if (arg === '--manifest') {
+			manifestPath = tvArgs[++i];
+			if (!manifestPath) {
+				console.error('Error: --manifest requires a file path');
+				process.exit(1);
+			}
+		} else if (arg === '--help' || arg === '-h') {
+			console.log(`
+Usage: refrakt theme validate [options]
+
+Validate theme-authoring artifacts. For a site's own content and config, use
+\`refrakt validate\`.
+
+Options:
+  --config <path>     Validate a ThemeConfig JSON file
+  --manifest <path>   Validate a theme manifest
+
+Examples:
+  refrakt theme validate --config ./theme.config.json
+  refrakt theme validate --manifest ./manifest.json
+`);
+			process.exit(0);
+		} else {
+			console.error(`Error: Unexpected argument "${arg}"\n`);
+			process.exit(1);
+		}
+	}
+
+	import('./commands/theme-validate.js')
+		.then(({ themeValidateCommand }) => {
+			themeValidateCommand({ configPath, manifestPath });
 		})
 		.catch((err) => {
 			console.error(`\nError: ${(err as Error).message}`);
@@ -1002,6 +1055,7 @@ Subcommands:
   install <source>      Install a theme (directory, .tgz, or npm package name)
   info                  Show current theme details
   list                  List installed themes and the active one
+  validate              Validate a ThemeConfig and/or a theme manifest
   presets list          List presets from installed packs + the active theme
   presets validate      Validate installed preset-pack manifests
 
@@ -1017,6 +1071,14 @@ Examples:
   refrakt theme list
 `);
 		process.exit(subcommand ? 0 : 1);
+	}
+
+	// `theme validate` — the theme-authoring checks WORK-579 moved here from the
+	// bare `refrakt validate` (SPEC-135 D12). Dispatched before `presets` so
+	// `theme validate` and `theme presets validate` stay distinct.
+	if (subcommand === 'validate') {
+		runThemeValidate(themeArgs.slice(1));
+		return;
 	}
 
 	// `theme presets <list|validate>` — preset-pack discovery/listing (SPEC-111 §4).
