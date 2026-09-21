@@ -59,6 +59,8 @@ npx vitest run packages/runes/test/diff.test.ts
 cd site && npm run dev
 ```
 
+`npm run build` ends with `npm rebuild --workspaces` (the root `postbuild`). That is what puts `refrakt`, `create-refrakt` and `refrakt-mcp` on `PATH`: npm skips a workspace bin symlink when its target does not exist at install time, and every one of them points into `dist/`, which `npm ci` runs before. **Without it `npx refrakt` does not work from a fresh clone** — build once and the documented commands below work.
+
 Build order (see the `build` script in the root `package.json` for the canonical sequence): types + transform + behaviors → runes → 8 plugins (marketing, docs, storytelling, places, business, design, learning, media) → lumina + highlight → content → sveltekit + html + astro + nuxt + next + react + vue → ai → eleventy + plan plugin → create-refrakt + editor → cli → mcp. Getting this wrong causes missing type errors.
 
 ### CSS Coverage Tests
