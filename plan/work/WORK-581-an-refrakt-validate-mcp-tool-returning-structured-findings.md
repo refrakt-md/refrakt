@@ -1,4 +1,4 @@
-{% work id="WORK-581" status="ready" priority="medium" complexity="simple" milestone="v0.36.0" source="SPEC-135" tags="mcp, validation, agents" %}
+{% work id="WORK-581" status="done" priority="medium" complexity="simple" milestone="v0.36.0" source="SPEC-135" tags="mcp, validation, agents" pr="refrakt-md/refrakt#629" %}
 
 # An refrakt_validate MCP tool returning structured findings
 
@@ -19,12 +19,12 @@ which is the shape {% ref "SPEC-135" /%} D5 exists to produce.
 
 ## Acceptance Criteria
 
-- [ ] `refrakt_validate` is registered on the MCP server with typed inputs mirroring the CLI: site, only, deep
-- [ ] It returns findings as structured data — file, line, severity, error id, message — not a rendered report
-- [ ] It calls the same function {% ref "WORK-578" /%} calls; no second implementation and no shelling out to the CLI
-- [ ] Findings carry enough location detail for a caller to open the right file at the right line without guessing
-- [ ] The tool's description states that the default tier is per-page and `deep` adds cross-page checks, so a caller can choose knowingly
-- [ ] Docs list it alongside the other `refrakt.*` tools in CLAUDE.md's substitution table
+- [x] `refrakt_validate` is registered on the MCP server with typed inputs mirroring the CLI: site, only, deep
+- [x] It returns findings as structured data — file, line, severity, error id, message — not a rendered report
+- [x] It calls the same function {% ref "WORK-578" /%} calls; no second implementation and no shelling out to the CLI
+- [x] Findings carry enough location detail for a caller to open the right file at the right line without guessing
+- [x] The tool's description states that the default tier is per-page and `deep` adds cross-page checks, so a caller can choose knowingly
+- [x] Docs list it alongside the other `refrakt.*` tools in CLAUDE.md's substitution table
 
 ## Approach
 
@@ -49,5 +49,57 @@ is not.
 - {% ref "SPEC-135" /%} — D6 (structured findings, not text), D5 (one function, several callers)
 - `plugins/plan/src/mcp-bindings.ts` — the binding pattern to follow
 - `packages/mcp/` — the server this registers on
+
+## Resolution
+
+Completed: 2026-09-21
+
+Branch: `claude/work-581-mcp-validate`
+
+### What was done
+
+- `packages/cli/src/commands/validate-core.ts` — the validation run, extracted
+  from the command. Returns data; never prints, never calls `process.exit`.
+- `packages/cli/src/commands/validate.ts` — reduced to formatting and an exit
+  code over that function.
+- `packages/cli/package.json` — new `./validate.js` subpath export.
+- `packages/mcp/src/tools/core.ts` — `refrakt.validate`, with typed inputs
+  mirroring the CLI (`site`, `only`, `deep`, `configPath`) plus `limit`.
+- `CLAUDE.md` — added to the MCP substitution table with a note on the tiers.
+
+### The extraction was required, not tidying
+
+The acceptance criterion says the tool must call the same function the CLI
+calls, with "no second implementation and **no shelling out to the CLI**".
+Every other `refrakt.*` tool in `core.ts` shells out and parses stdout, so
+following the local pattern would have violated the criterion.
+
+`@refrakt-md/mcp` already depends on `@refrakt-md/cli`, so the fix was to give
+the run a home that returns data and export it. The CLI command is now
+presentation over the same call the tool makes.
+
+### Bounded output, decided while implementing
+
+The item flagged "what happens on a site with hundreds of findings" as worth
+deciding. Capped at 200 per site by default, with `contentTruncated` carrying
+the count that was dropped, and `limit` to override. Unbounded output is not
+useful to a caller and a silent truncation is worse than a counted one.
+
+### Verified
+
+Called through the registered tool against this repo and against scaffolded
+fixtures:
+
+| Case | Result |
+|---|---|
+| clean repo, `site: 'main'` | `ok: true`, no findings |
+| planted undefined tag | `ok: false`, `{file, url, line: 162, severity, id, message}` |
+| `only: 'config'` | content layer empty, `ok: true` |
+| `limit: 5` against 12 findings | 5 returned, `contentTruncated: 7` |
+| no config | `ok: false`, error, `sites: []` |
+| unresolvable plugin | `contentSuppressed` explains the skip |
+
+9 new MCP tests; the existing `declares the expected core tools` assertion
+updated for the new entry. 4,639 tests pass.
 
 {% /work %}
