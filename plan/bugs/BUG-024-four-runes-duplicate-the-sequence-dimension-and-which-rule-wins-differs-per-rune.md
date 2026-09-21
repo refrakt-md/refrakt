@@ -1,4 +1,4 @@
-{% bug id="BUG-022" status="confirmed" severity="minor" source="SPEC-137" tags="dimensions, sequence, css, skeleton, lumina, drift" %}
+{% bug id="BUG-024" status="confirmed" severity="minor" source="SPEC-137" tags="dimensions, sequence, css, skeleton, lumina, drift" %}
 
 # Four runes duplicate the sequence dimension, and which rule wins differs per rune
 

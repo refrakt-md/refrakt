@@ -76,7 +76,7 @@ prevent.
 
 ## Why this is filed against SPEC-137
 
-This is the *reverse* direction of the drift {% ref "BUG-022" /%} shows. There,
+This is the *reverse* direction of the drift {% ref "BUG-024" /%} shows. There,
 per-rune CSS shadows a dimension that works. Here, theme CSS targets a dimension
 that was never wired. Both are invisible to
 `packages/lumina/test/css-coverage.test.ts`, which only asks whether generated

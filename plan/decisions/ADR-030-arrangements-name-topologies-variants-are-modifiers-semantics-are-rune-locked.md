@@ -76,7 +76,7 @@ what a section is, and it may not redefine whether an index is information.
 A container's topology and its items' internal layout are independent. A
 playlist is a *ladder of rows*; a steps list is a *ladder of stacks*. This is
 the capability whose absence currently forces bespoke CSS: after
-{% ref "BUG-022" /%} removes `track`'s duplicated counter, the remaining
+{% ref "BUG-024" /%} removes `track`'s duplicated counter, the remaining
 `display: flex` / `flex: 1` / ellipsis in `skeleton/styles/runes/track.css` is
 the track's *inner* arrangement, which no mechanism can declare.
 
@@ -297,6 +297,6 @@ honesty about which parts are settled.
 - {% ref "ADR-018" /%} — canonical layout vocabulary; the author-facing sibling
 - {% ref "ADR-028" /%} — attribute applicability is rune identity; the source of the semantic-locking principle
 - {% ref "ADR-029" /%} — structural assembly is theme-owned; draws the container half of the same line
-- {% ref "BUG-022" /%} — the sequence duplication that exposed the `<ol>`/`<li>` coupling
+- {% ref "BUG-024" /%} — the sequence duplication that exposed the `<ol>`/`<li>` coupling
 
 {% /decision %}

@@ -22,7 +22,7 @@ hatches.
 It cannot answer either of the converse questions, and both have real instances:
 
 **Shadowing — per-rune CSS that duplicates a dimension.**
-{% ref "BUG-022" /%}: `howto`, `recipe`, `steps` and `track` each hand-roll a
+{% ref "BUG-024" /%}: `howto`, `recipe`, `steps` and `track` each hand-roll a
 counter that `[data-sequence="numbered"]` already provides, on elements the
 dimension already reaches (`annotateSequence` recurses, and all four are
 `<ol>`/`<li>`). The rules land at different specificities, so a theme restyling
@@ -45,7 +45,8 @@ missing is anything that notices when a rune *wasn't*.
 
 ## Design
 
-Two checks, sharing a vocabulary source.
+Four checks over two vocabularies — dimensions (D2, D3) and measures (D4) —
+sharing one manifest and one allowlist discipline.
 
 ### D1 — the dimension manifest
 
@@ -123,7 +124,7 @@ second theme, which makes the check meaningful rather than Lumina-specific.
 ## Acceptance Criteria
 
 - [ ] A dimension manifest exists in code, declaring each dimension's attribute, closed value set, and governed property set
-- [ ] The shadowing check reports the four duplicated counter blocks in {% ref "BUG-022" /%}
+- [ ] The shadowing check reports the four duplicated counter blocks in {% ref "BUG-024" /%}
 - [ ] The orphan check reports the four dead `data-meta-rank` rules in {% ref "BUG-023" /%}
 - [ ] Both checks run against Lumina and proof-skin, not Lumina alone
 - [ ] Both support an allowlist whose entries carry a written reason, following the `KNOWN_MISSING_SELECTORS` precedent
@@ -134,7 +135,7 @@ second theme, which makes the check meaningful rather than Lumina-specific.
 
 ## Blocks
 
-- {% ref "BUG-022" /%}
+- {% ref "BUG-024" /%}
 - {% ref "BUG-023" /%}
 
 ## Open questions

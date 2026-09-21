@@ -66,15 +66,15 @@ promote. The decorative dot on `connected` stays a CSS `::before`.
 4. Keep the author's explicit `number=` authoritative where supplied, so a
    playlist with a gap or a non-1-based numbering renders what the author wrote.
 
-## Interaction with BUG-022
+## Interaction with BUG-024
 
-{% ref "BUG-022" /%} removes four runes' *duplicate* counters and should land
+{% ref "BUG-024" /%} removes four runes' *duplicate* counters and should land
 first. This item then changes the single remaining mechanism. Doing it in the
 other order means editing five counter implementations instead of one.
 
 ## Blocked by
 
-- {% ref "BUG-022" /%}
+- {% ref "BUG-024" /%}
 
 ## Acceptance Criteria
 
