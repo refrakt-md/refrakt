@@ -1,4 +1,4 @@
-{% work id="WORK-579" status="in-progress" priority="medium" complexity="simple" milestone="v0.36.0" source="SPEC-135" tags="cli, themes, validation" pr="refrakt-md/refrakt#624" %}
+{% work id="WORK-579" status="done" priority="medium" complexity="simple" milestone="v0.36.0" source="SPEC-135" tags="cli, themes, validation" pr="refrakt-md/refrakt#624,refrakt-md/refrakt#630" %}
 
 # Move theme and manifest validation to theme validate, add config validate
 
@@ -38,7 +38,7 @@ anything in the product and has one.
 
 **Part B — `config validate`. Needs {% ref "WORK-578" /%}'s resolution layer to exist.**
 
-- [ ] `refrakt config validate` runs the config-resolution layer alone, through the same function {% ref "WORK-578" /%} calls — not a second implementation
+- [x] `refrakt config validate` runs the config-resolution layer alone, through the same function {% ref "WORK-578" /%} calls — not a second implementation
 
 ## Approach
 
@@ -73,5 +73,45 @@ the audience confusion alive for no one's benefit.
 - `packages/cli/src/bin.ts` — the noun-group dispatch at `:23-29`
 - `packages/cli/src/commands/validate.ts` — what moves
 - `packages/transform/src/validate.ts` — `validateThemeConfig`
+
+## Resolution
+
+Completed: 2026-09-21
+
+Branch: `claude/work-579a-theme-validate`, `claude/work-579b-config-validate`
+
+Shipped in two commits, as the item's own approach anticipated.
+
+### Part A — the vacation (PR #624)
+
+`refrakt theme validate` takes `validateThemeConfig` and `validateManifest`,
+with the paths `--config` / `--manifest` used to take. Those flags are retired
+from the bare command rather than aliased (D2) and now error, naming where each
+went.
+
+Both commands also stopped reporting success on nothing — the defect D2 was
+written for. Handed no arguments, the old command validated `baseConfig` and
+printed a checkmark; in a user's project that is a self-test of the library
+reported as a check of their work.
+
+### Part B — `config validate` (PR #630)
+
+`refrakt config validate`, beside the `config migrate` that already exists.
+It calls `runValidation({ only: 'config' })` — **the same function `refrakt
+validate` calls**, narrowed. The criterion forbids a second implementation, and
+a test pins the two commands to identical findings for the same project, so a
+divergent copy would fail rather than drift.
+
+### Notes
+
+- Part B waited for {% ref "WORK-578" /%}, which built the resolution layer.
+  Part A did not, and landing it first is what made WORK-578 a small diff — the
+  bare command was empty by then rather than being rewritten around existing
+  flags.
+- Found while testing Part A: Lumina's own shipped manifest fails
+  `validateManifest`. Filed as {% ref "BUG-022" /%} rather than fixed here — the
+  validator encodes the pre-{% ref "ADR-024" /%} manifest shape, so it also
+  rejects every theme `create-refrakt` scaffolds.
+- 4,652 tests pass.
 
 {% /work %}
