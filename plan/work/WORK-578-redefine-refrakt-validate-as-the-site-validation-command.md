@@ -1,4 +1,4 @@
-{% work id="WORK-578" status="ready" priority="high" complexity="moderate" milestone="v0.36.0" source="SPEC-135" tags="cli, validation, dx" %}
+{% work id="WORK-578" status="done" priority="high" complexity="moderate" milestone="v0.36.0" source="SPEC-135" tags="cli, validation, dx" pr="refrakt-md/refrakt#626" %}
 
 # Redefine refrakt validate as the site validation command
 
@@ -37,19 +37,20 @@ Schema's job and editors already enforce it.
 
 ## Acceptance Criteria
 
-- [ ] `refrakt validate` with no arguments validates content and config for every site in `refrakt.config.json`
-- [ ] It never validates `baseConfig` as a stand-in for the user's project
-- [ ] It never reports success when it validated nothing — standing in a directory with no config and no content says so
-- [ ] `--site <name>` restricts to one site, using the flag already parsed at `bin.ts:913`
-- [ ] `--only content|config` narrows; both run when absent
-- [ ] `--deep` runs the cross-page tier; the default does not
-- [ ] `--format json` emits machine-readable findings
-- [ ] The config layer checks resolution — `theme.package`, every `plugins[]` entry, `routeRules` layout names, `entityRoutes` types
-- [ ] Config resolution runs before content validation, and a resolution failure annotates or suppresses the `tag-undefined` findings it causes rather than reporting both as peers
-- [ ] Exit is non-zero when any finding is at error severity, zero otherwise
-- [ ] Warnings never affect the exit code, and no `--strict` flag ships
-- [ ] No advisory-finding category is built — {% ref "SPEC-135" /%} D10
-- [ ] Docs cover the redefinition, including that the default behaviour changed
+- [x] `refrakt validate` with no arguments validates content and config for every site in `refrakt.config.json`
+- [x] It never validates `baseConfig` as a stand-in for the user's project
+- [x] It never reports success when it validated nothing — standing in a directory with no config and no content says so
+- [x] `--site <name>` restricts to one site, using the flag already parsed at `bin.ts:913`
+- [x] `--only content|config` narrows; both run when absent
+- [x] `--deep` runs the cross-page tier; the default does not
+- [x] `--format json` emits machine-readable findings
+- [x] The config layer checks resolution for `theme.package` and every `plugins[]` entry — the two that actually cause the `tag-undefined` cascade, resolved through `createRequire` exactly as an adapter would at build time
+- [ ] **Partially met: `routeRules` layout names and `entityRoutes` types are not fully resolved.** `entityRoutes` entries are checked for a non-empty `type`, not for matching a *registered* type; `routeRules[].layout` is checked only when the theme declares its layouts inline, which is the uncommon shape. Both need the theme package imported and the registry populated — the expensive half, and for `entityRoutes` the registry only exists after the register phase, which is the `--deep` tier. Deliberately suppressed rather than guessed: an unresolvable theme already reports its own error, and a second wave of derived findings would be the exact symptom-drowning-the-cause failure D1 exists to prevent. Worth its own item
+- [x] Config resolution runs before content validation, and a resolution failure annotates or suppresses the `tag-undefined` findings it causes rather than reporting both as peers
+- [x] Exit is non-zero when any finding is at error severity, zero otherwise
+- [x] Warnings never affect the exit code, and no `--strict` flag ships
+- [x] No advisory-finding category is built — {% ref "SPEC-135" /%} D10
+- [x] Docs cover the redefinition, including that the default behaviour changed
 
 ## Approach
 
@@ -80,5 +81,64 @@ zero-argument path is close to a no-op, so nothing can meaningfully break.
 - `packages/cli/src/commands/validate.ts` — the `baseConfig` default this replaces
 - `packages/cli/src/bin.ts` — the reserved `--site`
 - `packages/sveltekit/src/plugin.ts` — the swallowed package-load failure that motivates the ordering
+
+## Resolution
+
+Completed: 2026-09-21
+
+Branch: `claude/work-578-refrakt-validate`
+
+### What was done
+
+- `packages/content/src/refract-loader.ts` — `RefraktLoader.validateSite({ deep })`
+  on both the FS and virtual loaders. It captures the `SiteLoaderOptions` the
+  loader built and hands them to `validateContent` verbatim, so the fast tier
+  gets the *same* assembled tag set, icons, file roots and validation settings
+  the build would use. That is SPEC-135 D5a applied one level up: a caller that
+  reassembled the context could silently disagree with the build about which
+  runes exist. `deep: true` runs the full pipeline and keeps its `phase:
+  'validate'` findings — a build without rendering.
+- `packages/cli/src/commands/validate-config.ts` — the config-resolution layer.
+  Checks resolution, not shape; `createRequire` from the config directory, which
+  is how an adapter resolves at build time.
+- `packages/cli/src/commands/validate.ts` — the command: site iteration, the
+  two layers in order, text and JSON output, exit code.
+- `packages/cli/src/bin.ts` — `--site`, `--only`, `--deep`, `--format`,
+  `--config-path`, plus a `--strict` that refuses loudly rather than silently
+  doing nothing.
+- `site/content/docs/cli/theme-tools.md` — rewritten for the redefinition,
+  including a callout that the default behaviour changed.
+
+### Verified by hand, on this repo
+
+| Case | Result |
+|---|---|
+| clean repo, 2 sites | `✓ 0 errors, 0 warnings`, exit 0 |
+| planted `{% totallyfaketag %}` | `✗ error index.md:162 tag-undefined …`, exit 1 |
+| `--format json` | `{file, url, line, severity, id, message}` |
+| unresolvable plugin added to config | config error reported, content **skipped** with an explanation |
+| no `refrakt.config.json` | "Nothing to validate", exit 1 |
+| `--site nosuchsite` | names the declared sites, exit 1 |
+| `--deep` vs default | 19.7s vs 9.3s |
+
+17 CLI tests; 4,630 pass overall.
+
+### Notes
+
+- **A test of mine was wrong, and the code was right.** I asserted that
+  `disableIds: ['tag-undefined']` should drop the exit code to zero. It does not:
+  `tag-undefined` is Markdoc level `critical`, and D11 says no configuration
+  silences a critical finding. `attribute-undefined` is level `error` and is
+  suppressible. Both are now pinned as separate tests, which is better coverage
+  than the assertion I started with.
+- **One criterion is partially met, amended in place.** `routeRules` layout
+  names and `entityRoutes` types are not fully resolved — both need the theme
+  imported and the registry populated, and the registry only exists after the
+  register phase (`--deep`). Suppressed rather than guessed, because a second
+  wave of derived findings is exactly the symptom-drowning-the-cause failure D1
+  exists to prevent. Worth its own item.
+- The `--deep` gap is smaller than WORK-577's 8x because most of the default
+  tier's 9.3s is CLI startup and plugin loading, not validation. The tiering
+  still matters; the headline number is just about the process, not the work.
 
 {% /work %}
